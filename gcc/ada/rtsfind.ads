@@ -258,7 +258,9 @@ package Rtsfind is
       System_Img_Int,
       System_Img_LLD,
       System_Img_LLI,
+      System_Img_LLLI,
       System_Img_LLU,
+      System_Img_LLLU,
       System_Img_Name,
       System_Img_Real,
       System_Img_Uns,
@@ -420,7 +422,9 @@ package Rtsfind is
       System_Val_Int,
       System_Val_LLD,
       System_Val_LLI,
+      System_Val_LLLI,
       System_Val_LLU,
+      System_Val_LLLU,
       System_Val_Name,
       System_Val_Real,
       System_Val_Uns,
@@ -431,9 +435,13 @@ package Rtsfind is
       System_Wid_Bool,
       System_Wid_Char,
       System_Wid_Enum,
+      System_Wid_Int,
       System_Wid_LLI,
+      System_Wid_LLLI,
       System_Wid_LLU,
+      System_Wid_LLLU,
       System_Wid_Name,
+      System_Wid_Uns,
       System_Wid_WChar,
       System_WWd_Char,
       System_WWd_Enum,
@@ -956,7 +964,11 @@ package Rtsfind is
 
      RE_Image_Long_Long_Integer,         -- System.Img_LLI
 
+     RE_Image_Long_Long_Long_Integer,    -- System.Img_LLLI
+
      RE_Image_Long_Long_Unsigned,        -- System.Img_LLU
+
+     RE_Image_Long_Long_Long_Unsigned,   -- System.Img_LLLU
 
      RE_Image_Ordinary_Fixed_Point,      -- System.Img_Real
      RE_Image_Floating_Point,            -- System.Img_Real
@@ -1616,8 +1628,10 @@ package Rtsfind is
 
      RE_Put_Image_Integer,               -- System.Put_Images
      RE_Put_Image_Long_Long_Integer,     -- System.Put_Images
+     RE_Put_Image_Long_Long_Long_Integer, -- System.Put_Images
      RE_Put_Image_Unsigned,              -- System.Put_Images
      RE_Put_Image_Long_Long_Unsigned,    -- System.Put_Images
+     RE_Put_Image_Long_Long_Long_Unsigned, -- System.Put_Images
      RE_Put_Image_Thin_Pointer,          -- System.Put_Images
      RE_Put_Image_Fat_Pointer,           -- System.Put_Images
      RE_Put_Image_Access_Subp,           -- System.Put_Images
@@ -1965,6 +1979,7 @@ package Rtsfind is
      RE_Bits_4,                          -- System.Unsigned_Types
      RE_Float_Unsigned,                  -- System.Unsigned_Types
      RE_Long_Long_Unsigned,              -- System.Unsigned_Types
+     RE_Long_Long_Long_Unsigned,         -- System.Unsigned_Types
      RE_Packed_Byte,                     -- System.Unsigned_Types
      RE_Packed_Bytes1,                   -- System.Unsigned_Types
      RE_Packed_Bytes2,                   -- System.Unsigned_Types
@@ -1990,7 +2005,11 @@ package Rtsfind is
 
      RE_Value_Long_Long_Integer,         -- System.Val_LLI
 
+     RE_Value_Long_Long_Long_Integer,    -- System.Val_LLLI
+
      RE_Value_Long_Long_Unsigned,        -- System.Val_LLU
+
+     RE_Value_Long_Long_Long_Unsigned,   -- System.Val_LLLU
 
      RE_Value_Real,                      -- System.Val_Real
 
@@ -2032,9 +2051,17 @@ package Rtsfind is
      RE_Width_Enumeration_16,            -- System.Wid_Enum
      RE_Width_Enumeration_32,            -- System.Wid_Enum
 
+     RE_Width_Integer,                   -- System.Wid_Int
+
      RE_Width_Long_Long_Integer,         -- System.Wid_LLI
 
+     RE_Width_Long_Long_Long_Integer,    -- System.Wid_LLLI
+
      RE_Width_Long_Long_Unsigned,        -- System.Wid_LLU
+
+     RE_Width_Long_Long_Long_Unsigned,   -- System.Wid_LLLU
+
+     RE_Width_Unsigned,                  -- System.Wid_Uns
 
      RE_Width_Wide_Character,            -- System.Wid_WChar
      RE_Width_Wide_Wide_Character,       -- System.Wid_WChar
@@ -2592,7 +2619,11 @@ package Rtsfind is
 
      RE_Image_Long_Long_Integer          => System_Img_LLI,
 
+     RE_Image_Long_Long_Long_Integer     => System_Img_LLLI,
+
      RE_Image_Long_Long_Unsigned         => System_Img_LLU,
+
+     RE_Image_Long_Long_Long_Unsigned    => System_Img_LLLU,
 
      RE_Image_Ordinary_Fixed_Point       => System_Img_Real,
      RE_Image_Floating_Point             => System_Img_Real,
@@ -3372,8 +3403,10 @@ package Rtsfind is
 
      RE_Put_Image_Integer                => System_Put_Images,
      RE_Put_Image_Long_Long_Integer      => System_Put_Images,
+     RE_Put_Image_Long_Long_Long_Integer => System_Put_Images,
      RE_Put_Image_Unsigned               => System_Put_Images,
      RE_Put_Image_Long_Long_Unsigned     => System_Put_Images,
+     RE_Put_Image_Long_Long_Long_Unsigned => System_Put_Images,
      RE_Put_Image_Thin_Pointer           => System_Put_Images,
      RE_Put_Image_Fat_Pointer            => System_Put_Images,
      RE_Put_Image_Access_Subp            => System_Put_Images,
@@ -3601,6 +3634,7 @@ package Rtsfind is
      RE_Bits_4                           => System_Unsigned_Types,
      RE_Float_Unsigned                   => System_Unsigned_Types,
      RE_Long_Long_Unsigned               => System_Unsigned_Types,
+     RE_Long_Long_Long_Unsigned          => System_Unsigned_Types,
      RE_Packed_Byte                      => System_Unsigned_Types,
      RE_Packed_Bytes1                    => System_Unsigned_Types,
      RE_Packed_Bytes2                    => System_Unsigned_Types,
@@ -3626,7 +3660,11 @@ package Rtsfind is
 
      RE_Value_Long_Long_Integer          => System_Val_LLI,
 
+     RE_Value_Long_Long_Long_Integer     => System_Val_LLLI,
+
      RE_Value_Long_Long_Unsigned         => System_Val_LLU,
+
+     RE_Value_Long_Long_Long_Unsigned    => System_Val_LLLU,
 
      RE_Value_Real                       => System_Val_Real,
 
@@ -3669,9 +3707,17 @@ package Rtsfind is
      RE_Width_Enumeration_16             => System_Wid_Enum,
      RE_Width_Enumeration_32             => System_Wid_Enum,
 
+     RE_Width_Integer                    => System_Wid_Int,
+
      RE_Width_Long_Long_Integer          => System_Wid_LLI,
 
+     RE_Width_Long_Long_Long_Integer     => System_Wid_LLLI,
+
      RE_Width_Long_Long_Unsigned         => System_Wid_LLU,
+
+     RE_Width_Long_Long_Long_Unsigned    => System_Wid_LLLU,
+
+     RE_Width_Unsigned                   => System_Wid_Uns,
 
      RE_Width_Wide_Character             => System_Wid_WChar,
      RE_Width_Wide_Wide_Character        => System_Wid_WChar,

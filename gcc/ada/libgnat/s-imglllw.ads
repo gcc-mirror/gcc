@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . I M G _ L L W                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,27 +29,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  Contains the routine for computing the image  of signed and unsigned
+--  integers larger than Integer for use by Text_IO.Integer_IO and
+--  Text_IO.Modular_IO.
 
-with System.Image_I;
+with System.Image_W;
+with System.Unsigned_Types;
 
-package System.Img_Int is
+package System.Img_LLLW is
    pragma Pure;
 
-   package Impl is new Image_I (Integer);
+   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+   package Impl is
+    new Image_W (Long_Long_Long_Integer, Long_Long_Long_Unsigned);
 
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
+   procedure Set_Image_Width_Long_Long_Long_Integer
+     (V : Long_Long_Long_Integer;
+      W : Integer;
+      S : out String;
       P : in out Natural)
-     renames Impl.Set_Image_Integer;
+     renames Impl.Set_Image_Width_Integer;
 
-end System.Img_Int;
+   procedure Set_Image_Width_Long_Long_Long_Unsigned
+     (V : Long_Long_Long_Unsigned;
+      W : Integer;
+      S : out String;
+      P : in out Natural)
+     renames Impl.Set_Image_Width_Unsigned;
+
+end System.Img_LLLW;

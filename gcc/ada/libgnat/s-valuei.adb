@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . V A L _ L L U                        --
+--                       S Y S T E M . V A L U E _ I                        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,8 +29,88 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is an instantiation. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
+with System.Val_Util; use System.Val_Util;
 
-pragma No_Body;
+package body System.Value_I is
+
+   ------------------
+   -- Scan_Integer --
+   ------------------
+
+   function Scan_Integer
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer) return Int
+   is
+      Uval : Uns;
+      --  Unsigned result
+
+      Minus : Boolean := False;
+      --  Set to True if minus sign is present, otherwise to False
+
+      Start : Positive;
+      --  Saves location of first non-blank (not used in this case)
+
+   begin
+      Scan_Sign (Str, Ptr, Max, Minus, Start);
+
+      if Str (Ptr.all) not in '0' .. '9' then
+         Ptr.all := Start;
+         Bad_Value (Str);
+      end if;
+
+      Uval := Scan_Raw_Unsigned (Str, Ptr, Max);
+
+      --  Deal with overflow cases, and also with maximum negative number
+
+      if Uval > Uns (Int'Last) then
+         if Minus and then Uval = Uns (-(Int'First)) then
+            return Int'First;
+         else
+            Bad_Value (Str);
+         end if;
+
+      --  Negative values
+
+      elsif Minus then
+         return -(Int (Uval));
+
+      --  Positive values
+
+      else
+         return Int (Uval);
+      end if;
+   end Scan_Integer;
+
+   -------------------
+   -- Value_Integer --
+   -------------------
+
+   function Value_Integer (Str : String) return Int is
+   begin
+      --  We have to special case Str'Last = Positive'Last because the normal
+      --  circuit ends up setting P to Str'Last + 1 which is out of bounds. We
+      --  deal with this by converting to a subtype which fixes the bounds.
+
+      if Str'Last = Positive'Last then
+         declare
+            subtype NT is String (1 .. Str'Length);
+         begin
+            return Value_Integer (NT (Str));
+         end;
+
+      --  Normal case where Str'Last < Positive'Last
+
+      else
+         declare
+            V : Int;
+            P : aliased Integer := Str'First;
+         begin
+            V := Scan_Integer (Str, P'Access, Str'Last);
+            Scan_Trailing_Blanks (Str, P);
+            return V;
+         end;
+      end if;
+   end Value_Integer;
+
+end System.Value_I;

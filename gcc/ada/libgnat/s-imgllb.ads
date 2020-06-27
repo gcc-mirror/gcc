@@ -30,43 +30,33 @@
 ------------------------------------------------------------------------------
 
 --  Contains the routine for computing the image in based format of signed and
---  unsigned integers whose size > Integer'Size for use by Text_IO.Integer_IO
---  and Text_IO.Modular_IO.
+--  unsigned integers larger than Integer for use by Text_IO.Integer_IO and
+--  Text_IO.Modular_IO.
 
+with System.Image_B;
 with System.Unsigned_Types;
 
 package System.Img_LLB is
    pragma Preelaborate;
+
+   subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
+
+   package Impl is new Image_B (Long_Long_Integer, Long_Long_Unsigned);
 
    procedure Set_Image_Based_Long_Long_Integer
      (V : Long_Long_Integer;
       B : Natural;
       W : Integer;
       S : out String;
-      P : in out Natural);
-   --  Sets the signed image of V in based format, using base value B (2..16)
-   --  starting at S (P + 1), updating P to point to the last character stored.
-   --  The image includes a leading minus sign if necessary, but no leading
-   --  spaces unless W is positive, in which case leading spaces are output if
-   --  necessary to ensure that the output string is no less than W characters
-   --  long. The caller promises that the buffer is large enough and no check
-   --  is made for this. Constraint_Error will not necessarily be raised if
-   --  this is violated, since it is perfectly valid to compile this unit with
-   --  checks off.
+      P : in out Natural)
+     renames Impl.Set_Image_Based_Integer;
 
    procedure Set_Image_Based_Long_Long_Unsigned
-     (V : System.Unsigned_Types.Long_Long_Unsigned;
+     (V : Long_Long_Unsigned;
       B : Natural;
       W : Integer;
       S : out String;
-      P : in out Natural);
-   --  Sets the unsigned image of V in based format, using base value B (2..16)
-   --  starting at S (P + 1), updating P to point to the last character stored.
-   --  The image includes no leading spaces unless W is positive, in which case
-   --  leading spaces are output if necessary to ensure that the output string
-   --  is no less than W characters long. The caller promises that the buffer
-   --  is large enough and no check is made for this. Constraint_Error will not
-   --  necessarily be raised if this is violated, since it is perfectly valid
-   --  to compile this unit with checks off).
+      P : in out Natural)
+     renames Impl.Set_Image_Based_Unsigned;
 
 end System.Img_LLB;

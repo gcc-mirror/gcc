@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . W I D T H _ I                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,27 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  Compute Width attribute for non-static type derived from a signed integer
+--  type. The arguments Lo, Hi are the bounds of the type.
 
-with System.Image_I;
+generic
 
-package System.Img_Int is
-   pragma Pure;
+   type Int is range <>;
 
-   package Impl is new Image_I (Integer);
-
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
-
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Integer;
-
-end System.Img_Int;
+function System.Width_I (Lo, Hi : Int) return Natural;

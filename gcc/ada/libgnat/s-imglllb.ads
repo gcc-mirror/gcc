@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                      S Y S T E M . I M G _ L L L B                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,27 +29,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  Contains the routine for computing the image in based format of signed and
+--  unsigned integers larger than Long_Long_Integer for use by
+--  Text_IO.Integer_IO and Text_IO.Modular_IO.
 
-with System.Image_I;
+with System.Image_B;
+with System.Unsigned_Types;
 
-package System.Img_Int is
-   pragma Pure;
+package System.Img_LLLB is
+   pragma Preelaborate;
 
-   package Impl is new Image_I (Integer);
+   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+   package Impl is
+    new Image_B (Long_Long_Long_Integer, Long_Long_Long_Unsigned);
 
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
+   procedure Set_Image_Based_Long_Long_Long_Integer
+     (V : Long_Long_Long_Integer;
+      B : Natural;
+      W : Integer;
+      S : out String;
       P : in out Natural)
-     renames Impl.Set_Image_Integer;
+     renames Impl.Set_Image_Based_Integer;
 
-end System.Img_Int;
+   procedure Set_Image_Based_Long_Long_Long_Unsigned
+     (V : Long_Long_Long_Unsigned;
+      B : Natural;
+      W : Integer;
+      S : out String;
+      P : in out Natural)
+     renames Impl.Set_Image_Based_Unsigned;
+
+end System.Img_LLLB;

@@ -93,21 +93,30 @@ package body System.Put_Images is
 
    end Generic_Integer_Images;
 
-   package Small is new Generic_Integer_Images (Integer, Unsigned, Base => 10);
-   package Large is new Generic_Integer_Images
+   package Integer_Images is new Generic_Integer_Images
+     (Integer, Unsigned, Base => 10);
+   package LL_Integer_Images is new Generic_Integer_Images
      (Long_Long_Integer, Long_Long_Unsigned, Base => 10);
+   package LLL_Integer_Images is new Generic_Integer_Images
+     (Long_Long_Long_Integer, Long_Long_Long_Unsigned, Base => 10);
 
    procedure Put_Image_Integer (S : in out Sink'Class; X : Integer)
-     renames Small.Put_Image;
+     renames Integer_Images.Put_Image;
    procedure Put_Image_Long_Long_Integer
      (S : in out Sink'Class; X : Long_Long_Integer)
-     renames Large.Put_Image;
+     renames LL_Integer_Images.Put_Image;
+   procedure Put_Image_Long_Long_Long_Integer
+     (S : in out Sink'Class; X : Long_Long_Long_Integer)
+     renames LLL_Integer_Images.Put_Image;
 
    procedure Put_Image_Unsigned (S : in out Sink'Class; X : Unsigned)
-     renames Small.Put_Image;
+     renames Integer_Images.Put_Image;
    procedure Put_Image_Long_Long_Unsigned
      (S : in out Sink'Class; X : Long_Long_Unsigned)
-     renames Large.Put_Image;
+     renames LL_Integer_Images.Put_Image;
+   procedure Put_Image_Long_Long_Long_Unsigned
+     (S : in out Sink'Class; X : Long_Long_Long_Unsigned)
+     renames LLL_Integer_Images.Put_Image;
 
    type Signed_Address is range
      -2**(Standard'Address_Size - 1) .. 2**(Standard'Address_Size - 1) - 1;

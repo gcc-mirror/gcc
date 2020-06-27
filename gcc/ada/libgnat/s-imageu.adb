@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . I M A G E _ U                        --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -29,27 +29,51 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+package body System.Image_U is
 
-with System.Image_I;
+   --------------------
+   -- Image_Unsigned --
+   --------------------
 
-package System.Img_Int is
-   pragma Pure;
-
-   package Impl is new Image_I (Integer);
-
-   procedure Image_Integer
-     (V : Integer;
+   procedure Image_Unsigned
+     (V : Uns;
       S : in out String;
       P : out Natural)
-     renames Impl.Image_Integer;
+   is
+      pragma Assert (S'First = 1);
+   begin
+      S (1) := ' ';
+      P := 1;
+      Set_Image_Unsigned (V, S, P);
+   end Image_Unsigned;
 
-   procedure Set_Image_Integer
-     (V : Integer;
+   ------------------------
+   -- Set_Image_Unsigned --
+   ------------------------
+
+   procedure Set_Image_Unsigned
+     (V : Uns;
       S : in out String;
       P : in out Natural)
-     renames Impl.Set_Image_Integer;
+   is
+   begin
+      if V >= 10 then
+         Set_Image_Unsigned (V / 10, S, P);
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the specification,
+         --  the caller guarantees that S is long enough to hold the result.
+         P := P + 1;
+         S (P) := Character'Val (48 + (V rem 10));
 
-end System.Img_Int;
+      else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the specification,
+         --  the caller guarantees that S is long enough to hold the result.
+         P := P + 1;
+         S (P) := Character'Val (48 + V);
+      end if;
+   end Set_Image_Unsigned;
+
+end System.Image_U;

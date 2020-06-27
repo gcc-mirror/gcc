@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                      S Y S T E M . W I D _ L L L U                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,27 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  Width attribute for modular integers larger than Long_Long_Integer
 
-with System.Image_I;
+with System.Width_U;
+with System.Unsigned_Types;
 
-package System.Img_Int is
-   pragma Pure;
+package System.Wid_LLLU is
 
-   package Impl is new Image_I (Integer);
+   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+   function Width_Long_Long_Long_Unsigned is
+     new Width_U (Long_Long_Long_Unsigned);
+   pragma Pure_Function (Width_Long_Long_Long_Unsigned);
 
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Integer;
-
-end System.Img_Int;
+end System.Wid_LLLU;

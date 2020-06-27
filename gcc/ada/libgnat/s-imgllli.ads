@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                      S Y S T E M . I M G _ L L L I                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -30,26 +30,26 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  signed integer types larger than Long_Long_Integer, and also for conversion
+--  operations required in Text_IO.Integer_IO for such types.
 
 with System.Image_I;
 
-package System.Img_Int is
+package System.Img_LLLI is
    pragma Pure;
 
-   package Impl is new Image_I (Integer);
+   package Impl is new Image_I (Long_Long_Long_Integer);
 
-   procedure Image_Integer
-     (V : Integer;
+   procedure Image_Long_Long_Long_Integer
+     (V : Long_Long_Long_Integer;
       S : in out String;
       P : out Natural)
      renames Impl.Image_Integer;
 
-   procedure Set_Image_Integer
-     (V : Integer;
+   procedure Set_Image_Long_Long_Long_Integer
+     (V : Long_Long_Long_Integer;
       S : in out String;
       P : in out Natural)
      renames Impl.Set_Image_Integer;
 
-end System.Img_Int;
+end System.Img_LLLI;

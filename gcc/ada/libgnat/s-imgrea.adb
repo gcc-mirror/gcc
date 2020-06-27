@@ -29,10 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Img_LLU;        use System.Img_LLU;
-with System.Img_Uns;        use System.Img_Uns;
-with System.Powten_Table;   use System.Powten_Table;
-with System.Unsigned_Types; use System.Unsigned_Types;
+with System.Img_LLU;      use System.Img_LLU;
+with System.Img_Uns;      use System.Img_Uns;
+with System.Powten_Table; use System.Powten_Table;
 with System.Float_Control;
 
 package body System.Img_Real is

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . I M A G E _ B                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,27 +29,47 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  Contains the routine for computing the image in based format of signed and
+--  unsigned integers for use by Text_IO.Integer_IO and Text_IO.Modular_IO.
 
-with System.Image_I;
+generic
 
-package System.Img_Int is
+   type Int is range <>;
+
+   type Uns is mod <>;
+
+package System.Image_B is
    pragma Pure;
 
-   package Impl is new Image_I (Integer);
+   procedure Set_Image_Based_Integer
+     (V : Int;
+      B : Natural;
+      W : Integer;
+      S : out String;
+      P : in out Natural);
+   --  Sets the signed image of V in based format, using base value B (2..16)
+   --  starting at S (P + 1), updating P to point to the last character stored.
+   --  The image includes a leading minus sign if necessary, but no leading
+   --  spaces unless W is positive, in which case leading spaces are output if
+   --  necessary to ensure that the output string is no less than W characters
+   --  long. The caller promises that the buffer is large enough and no check
+   --  is made for this. Constraint_Error will not necessarily be raised if
+   --  this is violated, since it is perfectly valid to compile this unit with
+   --  checks off.
 
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+   procedure Set_Image_Based_Unsigned
+     (V : Uns;
+      B : Natural;
+      W : Integer;
+      S : out String;
+      P : in out Natural);
+   --  Sets the unsigned image of V in based format, using base value B (2..16)
+   --  starting at S (P + 1), updating P to point to the last character stored.
+   --  The image includes no leading spaces unless W is positive, in which case
+   --  leading spaces are output if necessary to ensure that the output string
+   --  is no less than W characters long. The caller promises that the buffer
+   --  is large enough and no check is made for this. Constraint_Error will not
+   --  necessarily be raised if this is violated, since it is perfectly valid
+   --  to compile this unit with checks off).
 
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Integer;
-
-end System.Img_Int;
+end System.Image_B;

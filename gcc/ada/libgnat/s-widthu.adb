@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . W I D T H _ U                        --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -29,27 +29,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+function System.Width_U (Lo, Hi : Uns) return Natural is
+   W : Natural;
+   T : Uns;
 
-with System.Image_I;
+begin
+   if Lo > Hi then
+      return 0;
 
-package System.Img_Int is
-   pragma Pure;
+   else
+      --  Minimum value is 2, one for sign, one for digit
 
-   package Impl is new Image_I (Integer);
+      W := 2;
 
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+      --  Get max of absolute values, but avoid bomb if we have the maximum
+      --  negative number (note that First + 1 has same digits as First)
 
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Integer;
+      T := Uns'Max (Lo, Hi);
 
-end System.Img_Int;
+      --  Increase value if more digits required
+
+      while T >= 10 loop
+         T := T / 10;
+         W := W + 1;
+      end loop;
+
+      return W;
+   end if;
+
+end System.Width_U;

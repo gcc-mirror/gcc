@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                      S Y S T E M . V A L _ L L L I                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,27 +29,31 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  This package contains routines for scanning signed Long_Long_Long_Integer
+--  values for use in Text_IO.Integer_IO, and the Value attribute.
 
-with System.Image_I;
+with System.Unsigned_Types;
+with System.Val_LLLU;
+with System.Value_I;
 
-package System.Img_Int is
-   pragma Pure;
+package System.Val_LLLI is
+   pragma Preelaborate;
 
-   package Impl is new Image_I (Integer);
+   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
-   procedure Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+   package Impl is new
+     Value_I (Long_Long_Long_Integer,
+              Long_Long_Long_Unsigned,
+              Val_LLLU.Scan_Raw_Long_Long_Long_Unsigned);
 
-   procedure Set_Image_Integer
-     (V : Integer;
-      S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Integer;
+   function Scan_Long_Long_Long_Integer
+     (Str  : String;
+      Ptr  : not null access Integer;
+      Max  : Integer) return Long_Long_Long_Integer
+     renames Impl.Scan_Integer;
 
-end System.Img_Int;
+   function Value_Long_Long_Long_Integer
+      (Str : String) return Long_Long_Long_Integer
+     renames Impl.Value_Integer;
+
+end System.Val_LLLI;

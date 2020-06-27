@@ -92,6 +92,9 @@ begin
       if Buffer (Curlen - 2 .. Curlen) = "128"
         or else Buffer (3 .. 9) = "exn_lll"
         or else Buffer (3 .. 9) = "exp_lll"
+        or else Buffer (3 .. 9) = "img_lll"
+        or else Buffer (3 .. 9) = "val_lll"
+        or else Buffer (3 .. 9) = "wid_lll"
         or else (Buffer (3 .. 6) = "pack" and then Curlen = 10)
       then
          if Buffer (3 .. 15) = "compare_array" then

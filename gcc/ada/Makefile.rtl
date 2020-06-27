@@ -604,6 +604,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \
+  s-imageb$(objext) \
+  s-imagei$(objext) \
+  s-imageu$(objext) \
+  s-imagew$(objext) \
   s-imenne$(objext) \
   s-imgbiu$(objext) \
   s-imgboo$(objext) \
@@ -738,6 +742,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
+  s-valuei$(objext) \
+  s-valueu$(objext) \
   s-valuns$(objext) \
   s-valuti$(objext) \
   s-valwch$(objext) \
@@ -752,8 +758,12 @@ GNATRTL_NONTASKING_OBJS= \
   s-widboo$(objext) \
   s-widcha$(objext) \
   s-widenu$(objext) \
+  s-widint$(objext) \
   s-widlli$(objext) \
   s-widllu$(objext) \
+  s-widthi$(objext) \
+  s-widthu$(objext) \
+  s-widuns$(objext) \
   s-widwch$(objext) \
   s-wwdcha$(objext) \
   s-wwdenu$(objext) \
@@ -883,6 +893,10 @@ GNATRTL_128BIT_OBJS = \
   s-exnllli$(objext) \
   s-expllli$(objext) \
   s-explllu$(objext) \
+  s-imglllb$(objext) \
+  s-imgllli$(objext) \
+  s-imglllu$(objext) \
+  s-imglllw$(objext) \
   s-pack65$(objext)  \
   s-pack66$(objext)  \
   s-pack67$(objext)  \
@@ -945,7 +959,11 @@ GNATRTL_128BIT_OBJS = \
   s-pack124$(objext) \
   s-pack125$(objext) \
   s-pack126$(objext) \
-  s-pack127$(objext)
+  s-pack127$(objext) \
+  s-valllli$(objext) \
+  s-vallllu$(objext) \
+  s-widllli$(objext) \
+  s-widlllu$(objext)
 
 # Shared library version
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(GNAT_SRC)/gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))

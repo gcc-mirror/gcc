@@ -30,28 +30,26 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  signed integer types larger than Size Integer'Size, and also for conversion
---  operations required in Text_IO.Integer_IO for such types.
+--  signed integer types larger Integer, and also for conversion operations
+--  required in Text_IO.Integer_IO for such types.
+
+with System.Image_I;
 
 package System.Img_LLI is
    pragma Pure;
 
+   package Impl is new Image_I (Long_Long_Integer);
+
    procedure Image_Long_Long_Integer
      (V : Long_Long_Integer;
       S : in out String;
-      P : out Natural);
-   --  Computes Long_Long_Integer'Image (V) and stores the result in
-   --  S (1 .. P) setting the resulting value of P. The caller guarantees
-   --  that S is long enough to hold the result, and that S'First is 1.
+      P : out Natural)
+     renames Impl.Image_Integer;
 
    procedure Set_Image_Long_Long_Integer
      (V : Long_Long_Integer;
       S : in out String;
-      P : in out Natural);
-   --  Stores the image of V in S starting at S (P + 1), P is updated to point
-   --  to the last character stored. The value stored is identical to the value
-   --  of Long_Long_Integer'Image (V) except that no leading space is stored
-   --  when V is non-negative. The caller guarantees that S is long enough to
-   --  hold the result. S need not have a lower bound of 1.
+      P : in out Natural)
+     renames Impl.Set_Image_Integer;
 
 end System.Img_LLI;

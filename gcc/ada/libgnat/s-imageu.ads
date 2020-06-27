@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . I M A G E _ U                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -30,26 +30,33 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  modular integer types, and also for conversion operations required in
+--  Text_IO.Modular_IO for such types.
 
-with System.Image_I;
+generic
 
-package System.Img_Int is
+   type Uns is mod <>;
+
+package System.Image_U is
    pragma Pure;
 
-   package Impl is new Image_I (Integer);
-
-   procedure Image_Integer
-     (V : Integer;
+   procedure Image_Unsigned
+     (V : Uns;
       S : in out String;
-      P : out Natural)
-     renames Impl.Image_Integer;
+      P : out Natural);
+   pragma Inline (Image_Unsigned);
+   --  Computes Uns'Image (V) and stores the result in S (1 .. P) setting
+   --  the resulting value of P. The caller guarantees that S is long enough to
+   --  hold the result, and that S'First is 1.
 
-   procedure Set_Image_Integer
-     (V : Integer;
+   procedure Set_Image_Unsigned
+     (V : Uns;
       S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Integer;
+      P : in out Natural);
+   --  Stores the image of V in S starting at S (P + 1), P is updated to point
+   --  to the last character stored. The value stored is identical to the value
+   --  of Uns'Image (V) except that no leading space is stored. The caller
+   --  guarantees that S is long enough to hold the result. S need not have a
+   --  lower bound of 1.
 
-end System.Img_Int;
+end System.Image_U;

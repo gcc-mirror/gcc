@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ I N T                        --
+--                       S Y S T E M . I M A G E _ I                        --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -29,27 +29,93 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+package body System.Image_I is
 
-with System.Image_I;
+   subtype Non_Positive is Int range Int'First .. 0;
 
-package System.Img_Int is
-   pragma Pure;
+   procedure Set_Digits
+     (T : Non_Positive;
+      S : in out String;
+      P : in out Natural);
+   --  Set digits of absolute value of T, which is zero or negative. We work
+   --  with the negative of the value so that the largest negative number is
+   --  not a special case.
 
-   package Impl is new Image_I (Integer);
+   -------------------
+   -- Image_Integer --
+   -------------------
 
    procedure Image_Integer
-     (V : Integer;
+     (V : Int;
       S : in out String;
       P : out Natural)
-     renames Impl.Image_Integer;
+   is
+      pragma Assert (S'First = 1);
 
-   procedure Set_Image_Integer
-     (V : Integer;
+   begin
+      if V >= 0 then
+         S (1) := ' ';
+         P := 1;
+      else
+         P := 0;
+      end if;
+
+      Set_Image_Integer (V, S, P);
+   end Image_Integer;
+
+   ----------------
+   -- Set_Digits --
+   ----------------
+
+   procedure Set_Digits
+     (T : Non_Positive;
       S : in out String;
       P : in out Natural)
-     renames Impl.Set_Image_Integer;
+   is
+   begin
+      if T <= -10 then
+         Set_Digits (T / 10, S, P);
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the Set_Image_Integer
+         --  specification, the caller guarantees that S is long enough to
+         --  hold the result.
+         P := P + 1;
+         S (P) := Character'Val (48 - (T rem 10));
 
-end System.Img_Int;
+      else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the Set_Image_Integer
+         --  specification, the caller guarantees that S is long enough to
+         --  hold the result.
+         P := P + 1;
+         S (P) := Character'Val (48 - T);
+      end if;
+   end Set_Digits;
+
+   -----------------------
+   -- Set_Image_Integer --
+   -----------------------
+
+   procedure Set_Image_Integer
+     (V : Int;
+      S : in out String;
+      P : in out Natural)
+   is
+   begin
+      if V >= 0 then
+         Set_Digits (-V, S, P);
+
+      else
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done since, as documented in the specification,
+         --  the caller guarantees that S is long enough to hold the result.
+         P := P + 1;
+         S (P) := '-';
+         Set_Digits (V, S, P);
+      end if;
+   end Set_Image_Integer;
+
+end System.Image_I;

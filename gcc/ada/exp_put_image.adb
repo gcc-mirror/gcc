@@ -300,17 +300,21 @@ package body Exp_Put_Image is
       if Is_Signed_Integer_Type (U_Type) then
          if P_Size <= Standard_Integer_Size then
             Lib_RE := RE_Put_Image_Integer;
-         else
-            pragma Assert (P_Size <= Standard_Long_Long_Integer_Size);
+         elsif P_Size <= Standard_Long_Long_Integer_Size then
             Lib_RE := RE_Put_Image_Long_Long_Integer;
+         else
+            pragma Assert (P_Size <= Standard_Long_Long_Long_Integer_Size);
+            Lib_RE := RE_Put_Image_Long_Long_Long_Integer;
          end if;
 
       elsif Is_Modular_Integer_Type (U_Type) then
          if P_Size <= Standard_Integer_Size then -- Yes, Integer
             Lib_RE := RE_Put_Image_Unsigned;
-         else
-            pragma Assert (P_Size <= Standard_Long_Long_Integer_Size);
+         elsif P_Size <= Standard_Long_Long_Integer_Size then
             Lib_RE := RE_Put_Image_Long_Long_Unsigned;
+         else
+            pragma Assert (P_Size <= Standard_Long_Long_Long_Integer_Size);
+            Lib_RE := RE_Put_Image_Long_Long_Long_Unsigned;
          end if;
 
       elsif Is_Access_Type (U_Type) then
