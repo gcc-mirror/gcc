@@ -1,3 +1,8 @@
+2020-06-26  Nick Clifton  <nickc@redhat.com>
+
+	* bsearch.c (bsearch): Remove use of register keyword.
+	* bsearch_r.c (bsearch_r): Likewise.
+
 2020-06-23  Nick Alcock  <nick.alcock@oracle.com>
 
 	* bsearch_r.c: New file.
