@@ -740,6 +740,30 @@ enum suspend_point_kind {
   FINAL_SUSPEND_POINT
 };
 
+/* Helper function to build a named variable for the temps we use for each
+   await point.  The root of the name is determined by SUSPEND_KIND, and
+   the variable is of type V_TYPE.  The awaitable number is reset each time
+   we encounter a final suspend.  */
+
+static tree
+get_awaitable_var (suspend_point_kind suspend_kind, tree v_type)
+{
+  static int awn = 0;
+  char *buf;
+  switch (suspend_kind)
+    {
+      default: buf = xasprintf ("Aw%d", awn++); break;
+      case CO_YIELD_SUSPEND_POINT: buf =  xasprintf ("Yd%d", awn++); break;
+      case INITIAL_SUSPEND_POINT: buf =  xasprintf ("Is"); break;
+      case FINAL_SUSPEND_POINT: buf =  xasprintf ("Fs"); awn = 0; break;
+  }
+  tree ret = get_identifier (buf);
+  free (buf);
+  ret = build_lang_decl (VAR_DECL, ret, v_type);
+  DECL_ARTIFICIAL (ret) = true;
+  return ret;
+}
+
 /*  This performs [expr.await] bullet 3.3 and validates the interface obtained.
     It is also used to build the initial and final suspend points.
 
@@ -798,23 +822,57 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
     return error_mark_node;
 
   /* To complete the lookups, we need an instance of 'e' which is built from
-     'o' according to [expr.await] 3.4.  However, we don't want to materialize
-     'e' here (it might need to be placed in the coroutine frame) so we will
-     make a temp placeholder instead.  If 'o' is a parameter or a local var,
-     then we do not need an additional var (parms and local vars are already
-     copied into the frame and will have lifetimes according to their original
-     scope).  */
+     'o' according to [expr.await] 3.4.
+
+     If we need to materialize this as a temporary, then that will have to be
+     'promoted' to a coroutine frame var.  However, if the awaitable is a
+     user variable, parameter or comes from a scope outside this function,
+     then we must use it directly - or we will see unnecessary copies.
+
+     If o is a variable, find the underlying var.  */
   tree e_proxy = STRIP_NOPS (o);
   if (INDIRECT_REF_P (e_proxy))
     e_proxy = TREE_OPERAND (e_proxy, 0);
+  while (TREE_CODE (e_proxy) == COMPONENT_REF)
+    {
+      e_proxy = TREE_OPERAND (e_proxy, 0);
+      if (INDIRECT_REF_P (e_proxy))
+	e_proxy = TREE_OPERAND (e_proxy, 0);
+      if (TREE_CODE (e_proxy) == CALL_EXPR)
+	{
+	  /* We could have operator-> here too.  */
+	  tree op = TREE_OPERAND (CALL_EXPR_FN (e_proxy), 0);
+	  if (DECL_OVERLOADED_OPERATOR_P (op)
+	      && DECL_OVERLOADED_OPERATOR_IS (op, COMPONENT_REF))
+	    {
+	      e_proxy = CALL_EXPR_ARG (e_proxy, 0);
+	      STRIP_NOPS (e_proxy);
+	      gcc_checking_assert (TREE_CODE (e_proxy) == ADDR_EXPR);
+	      e_proxy = TREE_OPERAND (e_proxy, 0);
+	    }
+	}
+      STRIP_NOPS (e_proxy);
+    }
+
+  /* Only build a temporary if we need it.  */
   if (TREE_CODE (e_proxy) == PARM_DECL
-      || (VAR_P (e_proxy) && (!DECL_ARTIFICIAL (e_proxy)
-			      || DECL_HAS_VALUE_EXPR_P (e_proxy))))
-    e_proxy = o;
+      || (VAR_P (e_proxy) && !is_local_temp (e_proxy)))
+    {
+      e_proxy = o;
+      o = NULL_TREE; /* The var is already present.  */
+    }
+  else if (CLASS_TYPE_P (o_type) || TYPE_NEEDS_CONSTRUCTING (o_type))
+    {
+      e_proxy = get_awaitable_var (suspend_kind, o_type);
+      releasing_vec arg (make_tree_vector_single (rvalue (o)));
+      o = build_special_member_call (e_proxy, complete_ctor_identifier,
+				     &arg, o_type, LOOKUP_NORMAL,
+				     tf_warning_or_error);
+    }
   else
     {
-      e_proxy = build_lang_decl (VAR_DECL, NULL_TREE, o_type);
-      DECL_ARTIFICIAL (e_proxy) = true;
+      e_proxy = get_awaitable_var (suspend_kind, o_type);
+      o = build2 (INIT_EXPR, o_type, e_proxy, rvalue (o));
     }
 
   /* I suppose we could check that this is contextually convertible to bool.  */
@@ -1531,16 +1589,14 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
 
   tree await_type = TREE_TYPE (var);
   tree stmt_list = NULL;
-  tree t_expr = STRIP_NOPS (expr);
   tree r;
   tree *await_init = NULL;
-  if (t_expr == var)
-    needs_dtor = false;
+
+  if (!expr)
+    needs_dtor = false; /* No need, the var's lifetime is managed elsewhere.  */
   else
     {
-      /* Initialize the var from the provided 'o' expression.  */
-      r = build2 (INIT_EXPR, await_type, var, expr);
-      r = coro_build_cvt_void_expr_stmt (r, loc);
+      r = coro_build_cvt_void_expr_stmt (expr, loc);
       append_to_statement_list_force (r, &stmt_list);
       /* We have an initializer, which might itself contain await exprs.  */
       await_init = tsi_stmt_ptr (tsi_last (stmt_list));
@@ -2840,15 +2896,12 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   /* If the awaitable is a parm or a local variable, then we already have
      a frame copy, so don't make a new one.  */
   tree aw = TREE_OPERAND (aw_expr, 1);
+  tree o = TREE_OPERAND (aw_expr, 2); /* Initializer for the frame var.  */
+  /* If we have an initializer, then the var is a temp and we need to make
+     it in the frame.  */
   tree aw_field_type = TREE_TYPE (aw);
   tree aw_field_nam = NULL_TREE;
-  if (INDIRECT_REF_P (aw))
-    aw = TREE_OPERAND (aw, 0);
-  if (TREE_CODE (aw) == PARM_DECL
-      || (VAR_P (aw) && (!DECL_ARTIFICIAL (aw)
-			 || DECL_HAS_VALUE_EXPR_P (aw))))
-    ; /* Don't make an additional copy.  */
-  else
+  if (o)
     {
       /* The required field has the same type as the proxy stored in the
 	 await expr.  */
@@ -2856,13 +2909,12 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       aw_field_nam = coro_make_frame_entry (data->field_list, nam,
 					    aw_field_type, aw_loc);
       free (nam);
-    }
 
-  tree o = TREE_OPERAND (aw_expr, 2); /* Initialiser for the frame var.  */
-  /* If this is a target expression, then we need to remake it to strip off
-     any extra cleanups added.  */
-  if (TREE_CODE (o) == TARGET_EXPR)
-    TREE_OPERAND (aw_expr, 2) = get_target_expr (TREE_OPERAND (o, 1));
+      /* If the init is a target expression, then we need to remake it to
+	 strip off any extra cleanups added.  */
+      if (o && TREE_CODE (o) == TARGET_EXPR)
+	TREE_OPERAND (aw_expr, 2) = get_target_expr (TREE_OPERAND (o, 1));
+    }
 
   tree v = TREE_OPERAND (aw_expr, 3);
   o = TREE_VEC_ELT (v, 1);
