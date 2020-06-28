@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_pcrel } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10" } */
 
 /* Tests whether pc-relative prefixed instructions are generated for the
