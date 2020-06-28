@@ -5619,40 +5619,101 @@ package body Exp_Attr is
             E2      : constant Node_Id := Next (E1);
             Bnn     : constant Entity_Id := Make_Temporary (Loc, 'B', N);
             Typ     : constant Entity_Id := Etype (N);
+
             New_Loop : Node_Id;
+            Stat    : Node_Id;
+
+            function Build_Stat (Comp : Node_Id) return Node_Id;
+            --  The reducer can be a function, a procedure whose first
+            --  parameter is in-out, or an attribute that is a function,
+            --  which (for now) can only be Min/Max. This subprogram
+            --  builds the corresponding computation for the generated loop.
+
+            ----------------
+            -- Build_Stat --
+            ----------------
+
+            function Build_Stat (Comp : Node_Id) return Node_Id is
+            begin
+               if Nkind (E1) = N_Attribute_Reference then
+                  Stat :=  Make_Assignment_Statement (Loc,
+                             Name => New_Occurrence_Of (Bnn, Loc),
+                             Expression => Make_Attribute_Reference (Loc,
+                               Attribute_Name => Attribute_Name (E1),
+                               Prefix => New_Copy (Prefix (E1)),
+                               Expressions => New_List (
+                                 New_Occurrence_Of (Bnn, Loc),
+                                 Comp)));
+
+               elsif Ekind (Entity (E1)) = E_Procedure then
+                  Stat := Make_Procedure_Call_Statement (Loc,
+                            Name => New_Occurrence_Of (Entity (E1), Loc),
+                               Parameter_Associations => New_List (
+                                 New_Occurrence_Of (Bnn, Loc),
+                                 Comp));
+               else
+                  Stat :=  Make_Assignment_Statement (Loc,
+                             Name => New_Occurrence_Of (Bnn, Loc),
+                             Expression => Make_Function_Call (Loc,
+                               Name => New_Occurrence_Of (Entity (E1), Loc),
+                               Parameter_Associations => New_List (
+                                 New_Occurrence_Of (Bnn, Loc),
+                                 Comp)));
+               end if;
+
+               return Stat;
+            end Build_Stat;
 
          --  If the prefix is an aggregate, its unique component is an
          --  Iterated_Element, and we create a loop out of its iterator.
+         --  The iterated_component_Association is parsed as a loop
+         --  parameter specification with "in" or as a container
+         --  iterator with "of".
 
          begin
             if Nkind (Prefix (N)) = N_Aggregate then
                declare
                   Stream  : constant Node_Id :=
                               First (Component_Associations (Prefix (N)));
-                  Id      : constant Node_Id := Defining_Identifier (Stream);
                   Expr    : constant Node_Id := Expression (Stream);
-                  Ch      : constant Node_Id :=
-                              First (Discrete_Choices (Stream));
+                  Id      : constant Node_Id := Defining_Identifier (Stream);
+                  It_Spec : constant Node_Id :=
+                                             Iterator_Specification (Stream);
+                  Ch      : Node_Id;
+                  Iter    : Node_Id;
+
                begin
-                  New_Loop := Make_Loop_Statement (Loc,
-                    Iteration_Scheme =>
+                  --  Iteration may be given by an element iterator:
+
+                  if Nkind (Stream) = N_Iterated_Component_Association
+                      and then Present (It_Spec)
+                      and then Of_Present (It_Spec)
+                  then
+                     Iter :=
+                       Make_Iteration_Scheme (Loc,
+                         Iterator_Specification =>
+                           Relocate_Node (It_Spec),
+                         Loop_Parameter_Specification => Empty);
+
+                  else
+                     Ch   := First (Discrete_Choices (Stream));
+                     Iter :=
                       Make_Iteration_Scheme (Loc,
                         Iterator_Specification => Empty,
                         Loop_Parameter_Specification =>
                           Make_Loop_Parameter_Specification  (Loc,
                             Defining_Identifier => New_Copy (Id),
                             Discrete_Subtype_Definition =>
-                              Relocate_Node (Ch))),
+                              Relocate_Node (Ch)));
+                  end if;
+
+                  New_Loop := Make_Loop_Statement (Loc,
+                    Iteration_Scheme => Iter,
                       End_Label => Empty,
-                      Statements => New_List (
-                        Make_Assignment_Statement (Loc,
-                          Name => New_Occurrence_Of (Bnn, Loc),
-                          Expression => Make_Function_Call (Loc,
-                            Name => New_Occurrence_Of (Entity (E1), Loc),
-                            Parameter_Associations => New_List (
-                              New_Occurrence_Of (Bnn, Loc),
-                              Relocate_Node (Expr))))));
+                      Statements =>
+                        New_List (Build_Stat (Relocate_Node (Expr))));
                end;
+
             else
                --  If the prefix is a name, we construct an element iterator
                --  over it. Its expansion will verify that it is an array or
@@ -5677,13 +5738,7 @@ package body Exp_Attr is
                         Loop_Parameter_Specification => Empty),
                       End_Label => Empty,
                       Statements => New_List (
-                        Make_Assignment_Statement (Loc,
-                          Name => New_Occurrence_Of (Bnn, Loc),
-                          Expression => Make_Function_Call (Loc,
-                            Name => New_Occurrence_Of (Entity (E1), Loc),
-                            Parameter_Associations => New_List (
-                              New_Occurrence_Of (Bnn, Loc),
-                              New_Occurrence_Of (Elem, Loc))))));
+                        Build_Stat (New_Occurrence_Of (Elem, Loc))));
                end;
             end if;
 
