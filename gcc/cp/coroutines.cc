@@ -3563,7 +3563,8 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  local_var.field_idx = local_var.field_id = NULL_TREE;
 
 	  /* Make sure that we only present vars to the tests below.  */
-	  if (TREE_CODE (lvar) == TYPE_DECL)
+	  if (TREE_CODE (lvar) == TYPE_DECL
+	      || TREE_CODE (lvar) == NAMESPACE_DECL)
 	    continue;
 
 	  /* We don't move static vars into the frame. */
