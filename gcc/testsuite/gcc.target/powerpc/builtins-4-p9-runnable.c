@@ -1,4 +1,5 @@
-/* { dg-do run { target { powerpc*-*-* && { p9vector_hw } } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
 
 #include <altivec.h> // vector
