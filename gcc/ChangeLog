@@ -1,3 +1,84 @@
+2020-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.h (vrp_visit_cond_stmt): Use
+	simplify_using_ranges class.
+	* gimple-ssa-evrp.c (class evrp_folder): New simplify_using_ranges
+	field.  Adjust all methods to use new field.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Use
+	simplify_using_ranges class.
+	* tree-vrp.c (class vrp_folder): New simplify_using_ranges
+	field.  Adjust all methods to use new field.
+	(simplify_stmt_for_jump_threading): Use simplify_using_ranges class.
+	(vrp_prop::vrp_finalize): New vrp_folder argument.
+	(execute_vrp): Pass folder to vrp_finalize.  Use
+	simplify_using_ranges class.
+	Remove cleanup_edges_and_switches call.
+	* vr-values.c (vr_values::op_with_boolean_value_range_p): Change
+	value_range_equiv uses to value_range.
+	(simplify_using_ranges::op_with_boolean_value_range_p): Use
+	simplify_using_ranges class.
+	(check_for_binary_op_overflow): Make static.
+	(vr_values::extract_range_basic): Pass this to
+	check_for_binary_op_overflow.
+	(compare_range_with_value): Change value_range_equiv uses to
+	value_range.
+	(vr_values::vr_values): Initialize simplifier field.
+	Remove uses of to_remove_edges and to_update_switch_stmts.
+	(vr_values::~vr_values): Remove uses of to_remove_edges and
+	to_update_switch_stmts.
+	(vr_values::get_vr_for_comparison): Move to simplify_using_ranges
+	class.
+	(vr_values::compare_name_with_value): Same.
+	(vr_values::compare_names): Same.
+	(vr_values::vrp_evaluate_conditional_warnv_with_ops): Same.
+	(vr_values::vrp_evaluate_conditional): Same.
+	(vr_values::vrp_visit_cond_stmt): Same.
+	(find_case_label_ranges): Change value_range_equiv uses to
+	value_range.
+	(vr_values::extract_range_from_stmt): Use simplify_using_ranges class.
+	(vr_values::simplify_truth_ops_using_ranges): Move to
+	simplify_using_ranges class.
+	(vr_values::simplify_div_or_mod_using_ranges): Same.
+	(vr_values::simplify_min_or_max_using_ranges): Same.
+	(vr_values::simplify_abs_using_ranges): Same.
+	(vr_values::simplify_bit_ops_using_ranges): Same.
+	(test_for_singularity): Change value_range_equiv uses to
+	value_range.
+	(range_fits_type_p): Same.
+	(vr_values::simplify_cond_using_ranges_1): Same.
+	(vr_values::simplify_cond_using_ranges_2): Make extern.
+	(vr_values::fold_cond): Move to simplify_using_ranges class.
+	(vr_values::simplify_switch_using_ranges): Same.
+	(vr_values::cleanup_edges_and_switches): Same.
+	(vr_values::simplify_float_conversion_using_ranges): Same.
+	(vr_values::simplify_internal_call_using_ranges): Same.
+	(vr_values::two_valued_val_range_p): Same.
+	(vr_values::simplify_stmt_using_ranges): Move to...
+	(simplify_using_ranges::simplify): ...here.
+	* vr-values.h (class vr_values): Move all the simplification of
+	statements using ranges methods and code from here...
+	(class simplify_using_ranges): ...to here.
+	(simplify_cond_using_ranges_2): New extern prototype.
+
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data_loop): Add non_rect_referenced
+	member, move outer member.
+	(struct omp_for_data): Add first_nonrect and last_nonrect members.
+	* omp-general.c (omp_extract_for_data): Initialize first_nonrect,
+	last_nonrect and non_rect_referenced members.
+	* omp-expand.c (expand_omp_for_init_counts): Handle non-rectangular
+	loops.
+	(expand_omp_for_init_vars): Add nonrect_bounds parameter.  Handle
+	non-rectangular loops.
+	(extract_omp_for_update_vars): Likewise.
+	(expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_simd,
+	expand_omp_taskloop_for_outer, expand_omp_taskloop_for_inner): Adjust
+	expand_omp_for_init_vars and extract_omp_for_update_vars callers.
+	(expand_omp_for): Don't sorry on non-composite worksharing-loop or
+	distribute.
+
 2020-06-26  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95655

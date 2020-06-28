@@ -1,3 +1,8 @@
+2020-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95881
+	* resolve.c (resolve_symbol): Avoid NULL pointer dereference.
+
 2020-06-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95828

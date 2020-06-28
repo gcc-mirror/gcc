@@ -1,3 +1,61 @@
+2020-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95881
+	* gfortran.dg/pr95881.f90: New file.
+
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95903
+	* c-c++-common/pr95903.c: New test.
+
+2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95736
+	* g++.dg/coroutines/pr95736.C: New test.
+
+2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-bad-grooaf-01-grooaf-expected.C: New test.
+
+2020-06-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/prefix-add.c: New test.
+	* gcc.target/powerpc/prefix-si-constant.c: New test.
+	* gcc.target/powerpc/prefix-di-constant.c: New test.
+	* gcc.target/powerpc/prefix-ds-dq.c: New test.
+	* gcc.target/powerpc/prefix-no-update.c: New test.
+	* gcc.target/powerpc/prefix-large-dd.c: New test.
+	* gcc.target/powerpc/prefix-large-df.c: New test.
+	* gcc.target/powerpc/prefix-large-di.c: New test.
+	* gcc.target/powerpc/prefix-large-hi.c: New test.
+	* gcc.target/powerpc/prefix-large-kf.c: New test.
+	* gcc.target/powerpc/prefix-large-qi.c: New test.
+	* gcc.target/powerpc/prefix-large-sd.c: New test.
+	* gcc.target/powerpc/prefix-large-sf.c: New test.
+	* gcc.target/powerpc/prefix-large-si.c: New test.
+	* gcc.target/powerpc/prefix-large-udi.c: New test.
+	* gcc.target/powerpc/prefix-large-uhi.c: New test.
+	* gcc.target/powerpc/prefix-large-uqi.c: New test.
+	* gcc.target/powerpc/prefix-large-usi.c: New test.
+	* gcc.target/powerpc/prefix-large-v2df.c: New test.
+	* gcc.target/powerpc/prefix-large.h: Include file for new tests.
+	* gcc.target/powerpc/prefix-pcrel-dd.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-df.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-di.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-hi.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-kf.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-qi.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-sd.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-sf.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-si.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-udi.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-uhi.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-uqi.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-usi.c: New test.
+	* gcc.target/powerpc/prefix-pcrel-v2df.c: New test.
+	* gcc.target/powerpc/prefix-pcrel.h: Include file for new tests.
+	* gcc.target/powerpc/prefix-stack-protect.c: New test.
+
 2020-06-26  Yichao Yu  <yyc1992@gmail.com>
 
 	* gcc.target/i386/pr95778-1.c: New test.
