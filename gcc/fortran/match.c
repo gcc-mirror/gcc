@@ -6695,7 +6695,8 @@ gfc_match_select_rank (void)
       if (expr1->symtree)
 	{
 	  sym = expr1->symtree->n.sym;
-	  as = sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->as : sym->as;
+	  as = (sym->ts.type == BT_CLASS
+		&& CLASS_DATA (sym)) ? CLASS_DATA (sym)->as : sym->as;
 	}
 
       if (expr1->expr_type != EXPR_VARIABLE
