@@ -3530,12 +3530,24 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   tree fn_name = get_fn_local_identifier (orig, name);
   tree fn = build_lang_decl (FUNCTION_DECL, fn_name, fn_type);
   DECL_CONTEXT (fn) = DECL_CONTEXT (orig);
+  DECL_ARTIFICIAL (fn) = true;
   DECL_INITIAL (fn) = error_mark_node;
   tree id = get_identifier ("frame_ptr");
   tree fp = build_lang_decl (PARM_DECL, id, coro_frame_ptr);
   DECL_CONTEXT (fp) = fn;
   DECL_ARG_TYPE (fp) = type_passed_as (coro_frame_ptr);
   DECL_ARGUMENTS (fn) = fp;
+  /* Copy selected attributes from the original function.  */
+  TREE_USED (fn) = TREE_USED (orig);
+  if (DECL_SECTION_NAME (orig))
+    set_decl_section_name (fn, DECL_SECTION_NAME (orig));
+  /* Copy any alignment that the FE added.  */
+  if (DECL_ALIGN (orig))
+    SET_DECL_ALIGN (fn, DECL_ALIGN (orig));
+  /* Copy any alignment the user added.  */
+  DECL_USER_ALIGN (fn) = DECL_USER_ALIGN (orig);
+  /* Apply attributes from the original fn.  */
+  DECL_ATTRIBUTES (fn) = copy_list (DECL_ATTRIBUTES (orig));
   return fn;
 }
 
