@@ -2027,7 +2027,9 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
       || flavor == FL_DERIVED || flavor == FL_NAMELIST)
     {
-      gfc_error ("Symbol %qs at %L cannot have a type", sym->ns->proc_name->name, where);
+      gfc_error ("Symbol %qs at %L cannot have a type",
+		 sym->ns->proc_name ? sym->ns->proc_name->name : sym->name,
+		 where);
       return false;
     }
 
