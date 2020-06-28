@@ -21,11 +21,11 @@ f<float>(float*, float*, float*);
 
 void test_nonnull (void)
 {
-  f<void>(0, 0, 0);           // { dg-warning "null argument where non-null required \\\(argument 1\\\)" }
+  f<void>(0, 0, 0);           // { dg-warning "argument 1 null where non-null expected" }
 
-  f<int>(0, 0, 0);            // { dg-bogus "null argument" }
+  f<int>(0, 0, 0);            // { dg-bogus "null" }
 
   f<float>(0, 0, 0);
-  // { dg-bogus "null argument where non-null required \\\(argument 1\\\)" "" { target *-*-* } .-1 }
-  // { dg-warning "null argument where non-null required \\\(argument 3\\\)" "" { target *-*-* } .-2 }
+  // { dg-bogus "argument 1 null where non-null expected" "" { target *-*-* } .-1 }
+  // { dg-warning "argument 3 null where non-null expected" "" { target *-*-* } .-2 }
 }

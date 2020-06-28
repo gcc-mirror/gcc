@@ -3540,43 +3540,58 @@ pass_post_ipa_warn::execute (function *fun)
 	  if (!is_gimple_call (stmt) || gimple_no_warning_p (stmt))
 	    continue;
 
-	  if (warn_nonnull)
+	  tree fntype = gimple_call_fntype (stmt);
+	  bitmap nonnullargs = get_nonnull_args (fntype);
+	  if (!nonnullargs)
+	    continue;
+
+	  tree fndecl = gimple_call_fndecl (stmt);
+
+	  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
 	    {
-	      bitmap nonnullargs
-		= get_nonnull_args (gimple_call_fntype (stmt));
-	      if (nonnullargs)
+	      tree arg = gimple_call_arg (stmt, i);
+	      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
+		continue;
+	      if (!integer_zerop (arg))
+		continue;
+	      if (!bitmap_empty_p (nonnullargs)
+		  && !bitmap_bit_p (nonnullargs, i))
+		continue;
+
+	      /* In C++ non-static member functions argument 0 refers
+		 to the implicit this pointer.  Use the same one-based
+		 numbering for ordinary arguments.  */
+	      unsigned argno = TREE_CODE (fntype) == METHOD_TYPE ? i : i + 1;
+	      location_t loc = (EXPR_HAS_LOCATION (arg)
+				? EXPR_LOCATION (arg)
+				: gimple_location (stmt));
+	      auto_diagnostic_group d;
+	      if (argno == 0)
 		{
-		  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
-		    {
-		      tree arg = gimple_call_arg (stmt, i);
-		      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
-			continue;
-		      if (!integer_zerop (arg))
-			continue;
-		      if (!bitmap_empty_p (nonnullargs)
-			  && !bitmap_bit_p (nonnullargs, i))
-			continue;
-
-		      location_t loc = gimple_location (stmt);
-		      auto_diagnostic_group d;
-		      if (warning_at (loc, OPT_Wnonnull,
-				      "%Gargument %u null where non-null "
-				      "expected", stmt, i + 1))
-			{
-			  tree fndecl = gimple_call_fndecl (stmt);
-			  if (fndecl && DECL_IS_BUILTIN (fndecl))
-			    inform (loc, "in a call to built-in function %qD",
-				    fndecl);
-			  else if (fndecl)
-			    inform (DECL_SOURCE_LOCATION (fndecl),
-				    "in a call to function %qD declared here",
-				    fndecl);
-
-			}
-		    }
-		  BITMAP_FREE (nonnullargs);
+		  if (warning_at (loc, OPT_Wnonnull,
+				  "%G%qs pointer null", stmt, "this")
+		      && fndecl)
+		    inform (DECL_SOURCE_LOCATION (fndecl),
+			    "in a call to non-static member function %qD",
+			    fndecl);
+		  continue;
 		}
+
+	      if (!warning_at (loc, OPT_Wnonnull,
+			       "%Gargument %u null where non-null "
+			       "expected", stmt, argno))
+		continue;
+
+	      tree fndecl = gimple_call_fndecl (stmt);
+	      if (fndecl && DECL_IS_BUILTIN (fndecl))
+		inform (loc, "in a call to built-in function %qD",
+			fndecl);
+	      else if (fndecl)
+		inform (DECL_SOURCE_LOCATION (fndecl),
+			"in a call to function %qD declared %qs",
+			fndecl, "nonnull");
 	    }
+	  BITMAP_FREE (nonnullargs);
 	}
     }
   return 0;

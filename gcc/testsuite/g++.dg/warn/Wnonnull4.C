@@ -10,8 +10,8 @@ int
 main ()
 {
   int *const p = 0;
-  declared_not_defined (p);	// { dg-warning "null argument where non-null required" }
-  declared_and_defined (p);	// { dg-warning "null argument where non-null required" }
+  declared_not_defined (p);	// { dg-warning "argument 1 null where non-null expected" }
+  declared_and_defined (p);	// { dg-warning "argument 1 null where non-null expected" }
 }
 
 void *
