@@ -749,7 +749,7 @@ namespace __gnu_test
   // Generator to test default constructor.
   struct constexpr_default_constructible
   {
-    template<typename _Tp, bool _IsLitp = std::is_literal_type<_Tp>::value>
+    template<typename _Tp, bool _IsLitp = __is_literal_type(_Tp)>
       struct _Concept;
 
     // NB: _Tp must be a literal type.
@@ -801,7 +801,7 @@ namespace __gnu_test
   struct constexpr_single_value_constructible
   {
     template<typename _Ttesttype, typename _Tvaluetype,
-	     bool _IsLitp = std::is_literal_type<_Ttesttype>::value>
+	     bool _IsLitp = __is_literal_type(_Ttesttype)>
       struct _Concept;
 
     // NB: _Tvaluetype and _Ttesttype must be literal types.
