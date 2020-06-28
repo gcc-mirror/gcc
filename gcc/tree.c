@@ -14965,11 +14965,18 @@ get_nonnull_args (const_tree fntype)
   if (fntype == NULL_TREE)
     return NULL;
 
+  bitmap argmap = NULL;
+  if (TREE_CODE (fntype) == METHOD_TYPE)
+    {
+      /* The this pointer in C++ non-static member functions is
+	 implicitly nonnull whether or not it's declared as such.  */
+      argmap = BITMAP_ALLOC (NULL);
+      bitmap_set_bit (argmap, 0);
+    }
+
   tree attrs = TYPE_ATTRIBUTES (fntype);
   if (!attrs)
-    return NULL;
-
-  bitmap argmap = NULL;
+    return argmap;
 
   /* A function declaration can specify multiple attribute nonnull,
      each with zero or more arguments.  The loop below creates a bitmap

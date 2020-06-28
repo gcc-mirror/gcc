@@ -305,6 +305,9 @@ struct expand_depth
   int entryvals;
 };
 
+/* Type for dependencies actively used when expand FROM into cur_loc.  */
+typedef vec<loc_exp_dep, va_heap, vl_embed> deps_vec;
+
 /* This data structure is allocated for one-part variables at the time
    of emitting notes.  */
 struct onepart_aux
@@ -325,7 +328,7 @@ struct onepart_aux
   /* The depth of the cur_loc expression.  */
   expand_depth depth;
   /* Dependencies actively used when expand FROM into cur_loc.  */
-  vec<loc_exp_dep, va_heap, vl_embed> deps;
+  deps_vec deps;
 };
 
 /* Structure describing one part of variable.  */
@@ -434,10 +437,16 @@ int_mem_offset (const_rtx mem)
 			       : NULL)
 #define VAR_LOC_FROM(var) (VAR_LOC_1PAUX (var)->from)
 #define VAR_LOC_DEPTH(var) (VAR_LOC_1PAUX (var)->depth)
-#define VAR_LOC_DEP_VEC(var) (VAR_LOC_1PAUX (var)		  \
-			      ? &VAR_LOC_1PAUX (var)->deps	  \
-			      : NULL)
+#define VAR_LOC_DEP_VEC(var) var_loc_dep_vec (var)
 
+/* Implements the VAR_LOC_DEP_VEC above as a function to work around
+   a bogus -Wnonnull (PR c/95554). */
+
+static inline deps_vec*
+var_loc_dep_vec (variable *var)
+{
+  return VAR_LOC_1PAUX (var) ? &VAR_LOC_1PAUX (var)->deps : NULL;
+}
 
 
 typedef unsigned int dvuid;
@@ -8112,7 +8121,7 @@ loc_exp_dep_alloc (variable *var, int count)
     return;
 
   allocsize = offsetof (struct onepart_aux, deps)
-	      + vec<loc_exp_dep, va_heap, vl_embed>::embedded_size (count);
+	      + deps_vec::embedded_size (count);
 
   if (VAR_LOC_1PAUX (var))
     {
