@@ -522,6 +522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // 3076. basic_string CTAD ambiguity
       template<typename = _RequireAllocator<_Alloc>>
 #endif
+      __attribute__((__nonnull__))
       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
       { _M_construct(__s, __s ? __s + traits_type::length(__s) : __s+npos); }
