@@ -74,7 +74,7 @@ int main ()
 
   if (called_rv_op != 1 || called_lambda != 1)
     {
-      PRINT ("Failed to call one of the return_void cases");
+      PRINT ("Failed to call one of the return_value cases");
       abort ();
     }
 }
