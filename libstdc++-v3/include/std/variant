@@ -202,15 +202,9 @@ namespace __variant
 	  std::forward<_Variants>(__variants)...);
     }
 
-  // _Uninitialized<T> is guaranteed to be a literal type, even if T is not.
-  // We have to do this, because [basic.types]p10.5.3 (n4606) is not implemented
-  // yet. When it's implemented, _Uninitialized<T> can be changed to the alias
-  // to T, therefore equivalent to being removed entirely.
-  //
-  // Another reason we may not want to remove _Uninitialzied<T> may be that, we
-  // want _Uninitialized<T> to be trivially destructible, no matter whether T
-  // is; but we will see.
-  template<typename _Type, bool = std::is_literal_type_v<_Type>>
+  // _Uninitialized<T> is guaranteed to be a trivially destructible type,
+  // even if T is not.
+  template<typename _Type, bool = std::is_trivially_destructible_v<_Type>>
     struct _Uninitialized;
 
   template<typename _Type>

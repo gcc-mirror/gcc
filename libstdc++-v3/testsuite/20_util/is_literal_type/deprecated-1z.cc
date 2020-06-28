@@ -1,9 +1,4 @@
-// { dg-additional-options "-Wno-deprecated" { target c++17 } }
-// { dg-do compile { target c++11 } }
-
-// 2010-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,17 +15,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-//
-// NB: This file is for testing type_traits with NO OTHER INCLUDES.
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 #include <type_traits>
 
-void test01()
-{
-  // Check for required typedefs
-  typedef std::is_literal_type<int>                test_type;
-  typedef test_type::value_type               value_type;
-  typedef test_type::type                     type;
-  typedef test_type::type::value_type         type_value_type;
-  typedef test_type::type::type               type_type;
-}
+static_assert(std::is_literal_type<int>::value); // { dg-warning "is deprecated" }
+static_assert(std::is_literal_type_v<int>); // { dg-warning "is deprecated" }
+
+// { dg-prune-output "declared here" }
