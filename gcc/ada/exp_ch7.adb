@@ -5668,10 +5668,18 @@ package body Exp_Ch7 is
                --      <or>
                --    Hook := Obj_Id'Unrestricted_Access;
 
-               if Ekind (Obj_Id) in E_Constant | E_Variable
-                 and then Present (Last_Aggregate_Assignment (Obj_Id))
-               then
-                  Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
+               --  Similarly if we have a build in place call: we must
+               --  initialize Hook only after the call has happened, otherwise
+               --  Obj_Id will not be initialized yet.
+
+               if Ekind (Obj_Id) in E_Constant | E_Variable then
+                  if Present (Last_Aggregate_Assignment (Obj_Id)) then
+                     Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
+                  elsif Present (BIP_Initialization_Call (Obj_Id)) then
+                     Hook_Insert := BIP_Initialization_Call (Obj_Id);
+                  else
+                     Hook_Insert := Obj_Decl;
+                  end if;
 
                --  Otherwise the hook seizes the related object immediately
 

@@ -9593,7 +9593,7 @@ package body Exp_Ch6 is
          --  which prompted the generation of the transient block. To resolve
          --  this scenario, store the build-in-place call.
 
-         if Scope_Is_Transient and then Node_To_Be_Wrapped = Obj_Decl then
+         if Scope_Is_Transient then
             Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
          end if;
 
