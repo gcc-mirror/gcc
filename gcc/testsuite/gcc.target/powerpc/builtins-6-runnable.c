@@ -1,4 +1,5 @@
-/* { dg-do run { target { powerpc*-*-* && { lp64 && p8vector_hw } } } } */
+/* { dg-do run { target lp64 } } */
+/* { dg-require-effective-target p8vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power8 -O3" } */
 
 #include <stdint.h>
