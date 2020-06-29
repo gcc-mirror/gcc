@@ -3,6 +3,17 @@
 	Backport from mainline:
 	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-protos.h (get_exec): Add prototypes for two variants.
+	* config/gcn/gcn-valu.md
+	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): New define_expand.
+	* config/gcn/gcn.cc (get_exec): Export the existing function. Add a
+	new overload variant.
+
+2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md
 	(<cvt_name><VCVT_MODE:mode><VCVT_FMODE:mode>2<exec>): Use MODE_VF.
 	(<cvt_name><VCVT_FMODE:mode><VCVT_IMODE:mode>2<exec>): Likewise.
