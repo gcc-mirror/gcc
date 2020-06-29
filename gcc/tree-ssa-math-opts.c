@@ -446,7 +446,7 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
 	  if (should_insert_square_recip)
 	    gsi_insert_before (&gsi, new_square_stmt, GSI_SAME_STMT);
 	}
-      else if (def_gsi && occ->bb == def_gsi->bb)
+      else if (def_gsi && occ->bb == gsi_bb (*def_gsi))
 	{
 	  /* Case 2: insert right after the definition.  Note that this will
 	     never happen if the definition statement can throw, because in
