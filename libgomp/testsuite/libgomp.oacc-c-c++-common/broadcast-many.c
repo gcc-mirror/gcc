@@ -1,3 +1,7 @@
+/* To avoid 'error: shared-memory region overflow':
+   { dg-additional-options "-foffload-options=amdgcn-amdhsa=-mgang-private-size=64" { target openacc_radeon_accel_selected } }
+*/
+
 #include <assert.h>
 #include <stdio.h>
 
