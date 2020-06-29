@@ -26,7 +26,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
-#include <utility>
+
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
@@ -869,7 +869,7 @@ public:
   {
     const_reverse_iterator begin = region_end;
     if (*begin == NULL)
-      begin = const_reverse_iterator (gsi_last_bb (region_end.bb));
+      begin = const_reverse_iterator (gsi_last_bb (gsi_bb (region_end)));
     else
       ++begin;
 

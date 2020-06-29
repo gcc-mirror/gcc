@@ -598,6 +598,10 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
   if (TREE_CODE (rhs1) == BIT_FIELD_REF
       && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
     {
+      if (!tree_fits_uhwi_p (TREE_OPERAND (rhs1, 1))
+	  || !tree_fits_uhwi_p (TREE_OPERAND (rhs1, 2)))
+	return NULL;
+
       unsigned HOST_WIDE_INT bitsize = tree_to_uhwi (TREE_OPERAND (rhs1, 1));
       unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (TREE_OPERAND (rhs1, 2));
       if (bitpos % BITS_PER_UNIT == 0

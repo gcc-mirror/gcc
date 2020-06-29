@@ -5267,6 +5267,8 @@ ix86_frame_pointer_required (void)
 	  || ix86_current_function_calls_tls_descriptor))
     return true;
 
+  /* Several versions of mcount for the x86 assumes that there is a
+     frame, so we cannot allow profiling without a frame pointer.  */
   if (crtl->profile && !flag_fentry)
     return true;
 

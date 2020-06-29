@@ -4293,6 +4293,21 @@ vect_schedule_slp_instance (vec_info *vinfo,
 		  || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
 		last_stmt = vstmt;
 	  }
+	else if (!SLP_TREE_VECTYPE (child))
+	  {
+	    /* For externals we use unvectorized at all scalar defs.  */
+	    unsigned j;
+	    tree def;
+	    FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (child), j, def)
+	      if (TREE_CODE (def) == SSA_NAME
+		  && !SSA_NAME_IS_DEFAULT_DEF (def))
+		{
+		  gimple *stmt = SSA_NAME_DEF_STMT (def);
+		  if (!last_stmt
+		      || vect_stmt_dominates_stmt_p (last_stmt, stmt))
+		    last_stmt = stmt;
+		}
+	  }
 	else
 	  {
 	    /* For externals we have to look at all defs since their

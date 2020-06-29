@@ -10,6 +10,9 @@ struct vec_s {
     vector short member;
 };
 
+#if defined(__cplusplus) && __cplusplus >= 201703L
+#define register /* nothing */
+#endif
 
 int main () {
   register short vector v0 = {1,2,3,4,5,6,7};

@@ -2943,6 +2943,19 @@ Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
 @end table
 
+The @var{suffix} argument which describes the dump file to be scanned
+may contain a glob pattern that must expand to exactly one file
+name. This is useful if, e.g., different pass instances are executed
+depending on torture testing command-line flags, producing dump files
+whose names differ only in their pass instance number suffix.  For
+example, to scan instances 1, 2, 3 of a tree pass ``mypass'' for
+occurrences of the string ``code has been optimized'', use:
+@smallexample
+/* @{ dg-options "-fdump-tree-mypass" @} */
+/* @{ dg-final @{ scan-tree-dump "code has been optimized" "mypass\[1-3\]" @} @} */
+@end smallexample
+
+
 @subsubsection Check for output files
 
 @table @code

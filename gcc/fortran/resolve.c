@@ -15170,6 +15170,7 @@ resolve_symbol (gfc_symbol *sym)
   if (flag_coarray == GFC_FCOARRAY_LIB && sym->ts.type == BT_CLASS
       && sym->ts.u.derived && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.codimension
+      && CLASS_DATA (sym)->ts.u.derived
       && (CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp
 	  || CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp))
     {

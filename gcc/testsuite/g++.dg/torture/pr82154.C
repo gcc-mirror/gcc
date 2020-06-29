@@ -1,5 +1,6 @@
 // { dg-do compile }
-// { dg-additional-options "-Wno-deprecated" }
+// { dg-additional-options "-std=c++14 -Wno-deprecated" }
+// C++17 does not allow dynamic exception specification.
 
 namespace a {
 int b;

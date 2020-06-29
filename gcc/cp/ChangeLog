@@ -1,3 +1,43 @@
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95711
+	* coroutines.cc (register_local_var_uses): Skip past
+	namespace decls.
+
+2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95736
+	* coroutines.cc (get_awaitable_var): New helper.
+	(build_co_await): Check more carefully before
+	copying an awaitable.
+	(expand_one_await_expression): No initializer
+	is required when the awaitable is not a temp.
+	(register_awaits): Remove handling that is now
+	completed when the await expression is built.
+
+2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Diagnose unavailable
+	get_return_object_on_allocation_failure.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95519
+	* coroutines.cc (struct coroutine_info):Add a field
+	to hold computed p.return_void expressions.
+	(coro_build_promise_expression): New.
+	(get_coroutine_return_void_expr): New.
+	(finish_co_yield_expr): Build the promise expression
+	using coro_build_promise_expression.
+	(finish_co_return_stmt): Likewise.
+	(build_init_or_final_await): Likewise.
+	(morph_fn_to_coro): Likewise, for several cases.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Handle error
+	returns in building g-r-o-o-a-f expressions.
+
 2020-06-24  Nicholas Krause  <xerofoify@gmail.com>
 
 	PR c++/95672
