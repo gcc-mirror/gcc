@@ -1263,4 +1263,14 @@ void gcc_stablesort (void *, size_t, size_t,
    of the number.  */
 #define PRsa(n) "%" #n PRIu64 "%c"
 
+/* System headers may define NULL to be an integer (e.g. 0L), which cannot be
+   used safely in certain contexts (e.g. as sentinels).  Redefine NULL to
+   nullptr in order to make it safer.  Note that this might confuse system
+   headers, however, by convention they must not be included after this point.
+*/
+#ifdef __cplusplus
+#undef NULL
+#define NULL nullptr
+#endif
+
 #endif /* ! GCC_SYSTEM_H */
