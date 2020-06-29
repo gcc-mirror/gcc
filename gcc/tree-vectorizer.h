@@ -26,7 +26,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
-#include <utility>
+
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
