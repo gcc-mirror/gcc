@@ -6606,6 +6606,7 @@ extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
 extern unsigned build_clones 			(tree, bool, bool);
 extern void clone_function_decl			(tree, bool, bool = false);
+extern tree copy_fndecl_with_name		(tree, tree);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
 extern bool uniquely_derived_from_p             (tree, tree);

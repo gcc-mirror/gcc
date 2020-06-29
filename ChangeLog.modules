@@ -1,3 +1,11 @@
+2020-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	Merge master 44492e248cb
+	c++: implicit operator== adjustments from P2002. [Jason Merrill]
+	gcc/cp/
+	* class.c (build_clone): Retain old version for the moment.
+	(DECL_NEETS_VTT_PARM_P): Resurrect, before we kill it again.
+
 2020-06-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
