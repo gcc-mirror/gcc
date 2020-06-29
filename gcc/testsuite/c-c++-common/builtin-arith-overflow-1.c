@@ -43,10 +43,10 @@ generic_2 (int a, int b)
   int x = __builtin_add_overflow (a, b);/* { dg-error "too few arguments to function" } */
   x += __builtin_sub_overflow (a, b);	/* { dg-error "too few arguments to function" } */
   x += __builtin_mul_overflow (a, b);	/* { dg-error "too few arguments to function" } */
-  x += __builtin_add_overflow (a, 1);   /* { dg-error "too few arguments to function" } */
+  x += __builtin_add_overflow (a, 1);	/* { dg-error "too few arguments to function" } */
   x += __builtin_sub_overflow (a, 2);	/* { dg-error "too few arguments to function" } */
   x += __builtin_mul_overflow (a, 3);	/* { dg-error "too few arguments to function" } */
-  x += __builtin_add_overflow (4, b);   /* { dg-error "too few arguments to function" } */
+  x += __builtin_add_overflow (4, b);	/* { dg-error "too few arguments to function" } */
   x += __builtin_sub_overflow (5, b);	/* { dg-error "too few arguments to function" } */
   x += __builtin_mul_overflow (6, b);	/* { dg-error "too few arguments to function" } */
   return x;
