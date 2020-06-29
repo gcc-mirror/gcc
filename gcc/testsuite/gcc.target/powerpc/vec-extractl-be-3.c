@@ -1,4 +1,5 @@
-/* { dg-options "-mdejagnu-cpu=future -mbig-endian" } */
+/* { dg-options "-mdejagnu-cpu=power10" } */
+/* { dg-additional-options "-mbig" { target powerpc64le-*-* } } */
 
 #include <altivec.h>
 

@@ -1,3 +1,20 @@
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95903
+	* c-common.c (pointer_int_sum): Use TYPE_OVERFLOW_UNDEFINED instead of
+	!TYPE_UNSIGNED check to see if we can apply distributive law and handle
+	smaller precision intop operands separately.
+
+2020-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_init_options): Default to gnu++17.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/95378
+	* c-common.c (get_atomic_generic_size): Check cv-qualifiers in
+	pointer arguments.
+
 2020-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_omp_check_loop_iv_exprs): Add an int argument.

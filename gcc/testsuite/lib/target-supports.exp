@@ -2176,7 +2176,7 @@ proc check_effective_target_powerpc_pcrel { } {
 	{\mpla\M} assembly {
 	    static unsigned short s;
 	    unsigned short *p_foo (void) { return &s; }
-	} {-O2 -mcpu=future}]
+	} {-O2 -mcpu=power10}]
 }
 
 # Return 1 if the PowerPC target generates prefixed instructions automatically
@@ -2185,7 +2185,7 @@ proc check_effective_target_powerpc_prefixed_addr { } {
     return [check_no_messages_and_pattern powerpc_prefixed_addr \
 	{\mplwz\M} assembly {
 	    unsigned int foo (unsigned int *p) { return p[0x12345]; }
-	} {-O2 -mcpu=future}]
+	} {-O2 -mcpu=power10}]
 }
 
 # Return 1 if the target supports executing power9 modulo instructions, 0
@@ -2214,13 +2214,13 @@ proc check_p9modulo_hw_available { } {
 }
 
 
-# Return 1 if the target supports executing FUTURE instructions, 0 otherwise.
+# Return 1 if the target supports executing power10 instructions, 0 otherwise.
 # Cache the result.  It is assumed that if a simulator does not support the
-# FUTURE instructions, that it will generate an error and this test will fail.
+# power10 instructions, that it will generate an error and this test will fail.
 
-proc check_powerpc_future_hw_available { } {
-    return [check_cached_effective_target powerpc_future_hw_available {
-	check_runtime_nocache powerpc_future_hw_available {
+proc check_power10_hw_available { } {
+    return [check_cached_effective_target power10_hw_available {
+	check_runtime_nocache power10_hw_available {
 	    int main()
 	    {
 		/* Set e first and use +r to check if pli actually works.  */
@@ -2228,7 +2228,7 @@ proc check_powerpc_future_hw_available { } {
 		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
 		return (e == 0x12345);
 	    }
-	} "-mcpu=future"
+	} "-mcpu=power10"
     }]
 }
 
@@ -2670,7 +2670,7 @@ proc check_effective_target_p8 {  } {
   } ""]
 }
 
-# Return 1 if we're generating code for power9 and future platforms.
+# Return 1 if we're generating code for power9 or later platforms.
 
 proc check_effective_target_p9+ {  } {
   return [check_no_compiler_messages_nocache p9+ assembly {
@@ -4671,6 +4671,24 @@ proc check_effective_target_arm_cmse_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if the target supports executing MVE instructions, 0
+# otherwise.
+
+proc check_effective_target_arm_mve_hw {} {
+    return [check_runtime arm_mve_hw_available {
+	int
+	main (void)
+	{
+	  long long a = 16;
+	  int b = 3;
+	  asm ("sqrshrl %Q1, %R1, #64, %2"
+	       : "=l" (a)
+	       : "0" (a), "r" (b));
+	  return (a != 2);
+	}
+    } ""]
+}
+
 # Return 1 if this is an ARM target where ARMv8-M Security Extensions with
 # clearing instructions (clrm, vscclrm, vstr/vldr with FPCXT) is available.
 
@@ -5856,19 +5874,19 @@ proc check_effective_target_has_arch_pwr9 { } {
 	}]
 }
 
-# Return 1 if this is a PowerPC target supporting -mfuture.
-# Limit this to 64-bit linux systems for now until other
-# targets support FUTURE.
+# Return 1 if this is a PowerPC target supporting -mcpu=power10.
+# Limit this to 64-bit linux systems for now until other targets support
+# power10.
 
-proc check_effective_target_powerpc_future_ok { } {
+proc check_effective_target_power10_ok { } {
     if { ([istarget powerpc64*-*-linux*]) } {
-	return [check_no_compiler_messages powerpc_future_ok object {
+	return [check_no_compiler_messages power10_ok object {
 	    int main (void) {
 		long e;
 		asm ("pli %0,%1" : "=r" (e) : "n" (0x12345));
 		return e;
 	    }
-	} "-mcpu=future"]
+	} "-mcpu=power10"]
     } else {
 	return 0
     }
@@ -7815,7 +7833,7 @@ proc is-effective-target { arg } {
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
-	  "powerpc_future_hw" { set selected [check_powerpc_future_hw_available] }
+	  "power10_hw" { set selected [check_power10_hw_available] }
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }
@@ -9071,7 +9089,7 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
-set cxx_default "c++14"
+set cxx_default "c++17"
 # Check whether the current active language standard supports the features
 # of C++11/C++14 by checking for the presence of one of the -std flags.
 # This assumes that the default for the compiler is $cxx_default, and that
@@ -9802,6 +9820,14 @@ proc check_effective_target_vect_max_reduc { } {
     return 0
 }
 
+# Return 1 if the compiler has been configured with nvptx offloading.
+
+proc check_effective_target_offload_nvptx { } {
+    return [check_no_compiler_messages offload_nvptx assembly {
+	int main () {return 0;}
+    } "-foffload=nvptx-none" ]
+}
+
 # Return 1 if the compiler has been configured with hsa offloading.
 
 proc check_effective_target_offload_hsa { } {
@@ -9810,7 +9836,7 @@ proc check_effective_target_offload_hsa { } {
     } "-foffload=hsa" ]
 }
 
-# Return 1 if the compiler has been configured with hsa offloading.
+# Return 1 if the compiler has been configured with gcn offloading.
 
 proc check_effective_target_offload_gcn { } {
     return [check_no_compiler_messages offload_gcn assembly {

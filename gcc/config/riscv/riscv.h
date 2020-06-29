@@ -64,9 +64,13 @@ extern const char *riscv_expand_arch (int argc, const char **argv);
 #define ASM_SPEC "\
 %(subtarget_asm_debugging_spec) \
 %{" FPIE_OR_FPIC_SPEC ":-fpic} \
-%{march=*:-march=%:riscv_expand_arch(%*)} \
+%{march=*} \
 %{mabi=*} \
 %(subtarget_asm_spec)"
+
+#undef DRIVER_SELF_SPECS
+#define DRIVER_SELF_SPECS \
+"%{march=*:-march=%:riscv_expand_arch(%*)}"
 
 #define TARGET_DEFAULT_CMODEL CM_MEDLOW
 

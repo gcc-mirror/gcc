@@ -139,6 +139,20 @@ void arbitrary_ctor()
     variant<float, big_int> v3 = 0;
     VERIFY(v3.index() == 1);
   }
+
+  {
+    // P1957R2 Converting from T* to bool should be considered narrowing
+    struct ConvertibleToBool
+    {
+      operator bool() const { return true; }
+    };
+    variant<bool> v1 = ConvertibleToBool();
+    VERIFY(std::get<0>(v1) == true);
+    variant<bool, int> v2 = ConvertibleToBool();
+    VERIFY(std::get<0>(v2) == true);
+    variant<int, bool> v3 = ConvertibleToBool();
+    VERIFY(std::get<1>(v3) == true);
+  }
 }
 
 struct ThrowingMoveCtorThrowsCopyCtor
@@ -225,6 +239,23 @@ void arbitrary_assign()
     T3 v3;
     v3 = 0;
     VERIFY(v3.index() == 1);
+  }
+
+  {
+    // P1957R2 Converting from T* to bool should be considered narrowing
+    struct ConvertibleToBool
+    {
+      operator bool() const { return true; }
+    };
+    variant<bool> v1;
+    v1 = ConvertibleToBool();
+    VERIFY(std::get<0>(v1) == true);
+    variant<bool, int> v2;
+    v2 = ConvertibleToBool();
+    VERIFY(std::get<0>(v2) == true);
+    variant<int, bool> v3;
+    v3 = ConvertibleToBool();
+    VERIFY(std::get<1>(v3) == true);
   }
 }
 

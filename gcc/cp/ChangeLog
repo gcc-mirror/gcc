@@ -1,3 +1,157 @@
+2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95736
+	* coroutines.cc (get_awaitable_var): New helper.
+	(build_co_await): Check more carefully before
+	copying an awaitable.
+	(expand_one_await_expression): No initializer
+	is required when the awaitable is not a temp.
+	(register_awaits): Remove handling that is now
+	completed when the await expression is built.
+
+2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Diagnose unavailable
+	get_return_object_on_allocation_failure.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95519
+	* coroutines.cc (struct coroutine_info):Add a field
+	to hold computed p.return_void expressions.
+	(coro_build_promise_expression): New.
+	(get_coroutine_return_void_expr): New.
+	(finish_co_yield_expr): Build the promise expression
+	using coro_build_promise_expression.
+	(finish_co_return_stmt): Likewise.
+	(build_init_or_final_await): Likewise.
+	(morph_fn_to_coro): Likewise, for several cases.
+
+2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Handle error
+	returns in building g-r-o-o-a-f expressions.
+
+2020-06-24  Nicholas Krause  <xerofoify@gmail.com>
+
+	PR c++/95672
+	* typeck2.c (cxx_incomplete_type_diagnostic): Add missing
+	TYPE_EXPANSION_PACK check for diagnosing incomplete types in
+	cxx_incomplete_type_diagnostic.
+
+2020-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95518
+	PR c++/95813
+	* coroutines.cc (act_des_fn): Copy function
+	attributes onto the outlined coroutine helpers.
+
+2020-06-24  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_over_call): Only call build_base_path once.
+
+2020-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95719
+	* call.c (build_over_call): Look up the overrider in base_binfo.
+	* class.c (lookup_vfn_in_binfo): Look through BINFO_PRIMARY_P.
+
+2020-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93976
+	Implement C++20 P2082R1, Fixing CTAD for aggregates.
+	* cp-tree.h (TPARMS_PRIMARY_TEMPLATE): Split out from...
+	(DECL_PRIMARY_TEMPLATE): ...here.
+	(builtin_guide_p): Declare.
+	* decl.c (reshape_init_class): Handle bases of a template.
+	(reshape_init_r): An array with dependent bound takes a single
+	initializer.
+	* pt.c (tsubst_default_argument): Shortcut {}.
+	(unify_pack_expansion): Allow omitted arguments to trailing pack.
+	(builtin_guide_p): New.
+	(collect_ctor_idx_types): Give a trailing pack a {} default
+	argument.  Handle arrays better.
+
+2020-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95477
+	* coroutines.cc (morph_fn_to_coro): Apply a cleanup to
+	the get return object when the DTOR is non-trivial.
+
+2020-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95505
+	* coroutines.cc (morph_fn_to_coro): Update handling of
+	get-return-object-on-allocation-fail and diagnose missing
+	std::nothrow.
+
+2020-06-20  Jason Merrill  <jason@redhat.com>
+
+	* call.c (joust): Only compare constraints for non-template
+	candidates with matching parameters.
+	* pt.c (tsubst_pack_expansion): Fix getting a type parameter
+	pack.
+	(more_specialized_fn): Only compare constraints for candidates with
+	matching parameters.
+
+2020-06-19  Jason Merrill  <jason@redhat.com>
+
+	* method.c (early_check_defaulted_comparison): Allow defaulting
+	comparison outside class.  Complain if non-member operator isn't a
+	friend.
+
+2020-06-18  Jason Merrill  <jason@redhat.com>
+
+	* method.c (early_check_defaulted_comparison): Check for &&.
+	(build_comparison_op): Allow empty union.  Diagnose non-category
+	type.
+	(common_comparison_type): Remove handling for non-category type.
+
+2020-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95735
+	* pt.c (finish_template_variable): Return if
+	coerce_innermost_template_parms return error_mark_node.
+
+2020-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95728
+	* pt.c (tsubst_copy_and_build) <case NEW_EXPR>: Return error_mark_node
+	if placement is erroneous.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/66159
+	* parser.c (cp_parser_elaborated_type_specifier): Do not warn
+	unless in a declaration.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (copy_fndecl_with_name): Declare.
+	* class.c (copy_fndecl_with_name): Split out from...
+	(build_clone): ...here.
+	(add_implicitly_declared_members): Add op== to TYPE_FIELDS.
+	* method.c (implicitly_declare_fn): Use copy_fndecl_with_name.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_op_1): Don't look for a CALL_EXPR when
+	calling a consteval function.
+
+2020-06-17  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (grokfield): Pass SD_DEFAULTED and SD_DELETED.
+	* decl.c (duplicate_decls): Reduce error for delete
+	after earlier declaration to pedwarn.
+
+2020-06-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95508
+	* constexpr.c (maybe_fold_non_dependent_expr): New.
+	* cp-tree.h (maybe_fold_non_dependent_expr): Declare.
+	* typeck.c (cp_build_array_ref): Call maybe_fold_non_dependent_expr
+	instead of maybe_constant_value.
+
 2020-06-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95369

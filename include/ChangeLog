@@ -1,3 +1,12 @@
+2020-06-26  Nick Clifton  <nickc@redhat.com>
+
+	* libiberty.h (bsearch_r): Remove use of the register keyword from
+	the prototype.
+
+2020-06-23  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libiberty.h (bsearch_r): New.
+
 2020-04-17  Martin Liska  <mliska@suse.cz>
 	    Jonathan Yong <10walls@gmail.com>
 

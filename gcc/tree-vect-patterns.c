@@ -5120,20 +5120,12 @@ vect_determine_precisions (vec_info *vinfo)
   else
     {
       bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
-      gimple_stmt_iterator si = bb_vinfo->region_end;
-      gimple *stmt;
-      do
+      for (gimple *stmt : bb_vinfo->reverse_region_stmts ())
 	{
-	  if (!gsi_stmt (si))
-	    si = gsi_last_bb (bb_vinfo->bb);
-	  else
-	    gsi_prev (&si);
-	  stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
 	  if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
 	    vect_determine_stmt_precisions (vinfo, stmt_info);
 	}
-      while (stmt != gsi_stmt (bb_vinfo->region_begin));
     }
 }
 
@@ -5492,10 +5484,8 @@ vect_pattern_recog (vec_info *vinfo)
   else
     {
       bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
-      for (si = bb_vinfo->region_begin;
-	   gsi_stmt (si) != gsi_stmt (bb_vinfo->region_end); gsi_next (&si))
+      for (gimple *stmt : bb_vinfo->region_stmts ())
 	{
-	  gimple *stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
 	  if (!stmt_info || !STMT_VINFO_VECTORIZABLE (stmt_info))
 	    continue;

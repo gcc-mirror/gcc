@@ -598,8 +598,6 @@ extern d_tree_node_structure_enum d_tree_node_structure (lang_tree_node *);
 extern struct lang_type *build_lang_type (Type *);
 extern struct lang_decl *build_lang_decl (Declaration *);
 extern tree d_pushdecl (tree);
-extern tree d_unsigned_type (tree);
-extern tree d_signed_type (tree);
 extern void d_keep (tree);
 
 /* In decl.cc.  */
@@ -672,6 +670,8 @@ extern void add_stmt (tree);
 extern void build_function_body (FuncDeclaration *);
 
 /* In types.cc.  */
+extern tree d_unsigned_type (tree);
+extern tree d_signed_type (tree);
 extern bool valist_array_p (Type *);
 extern bool empty_aggregate_p (tree);
 extern bool same_type_p (Type *, Type *);

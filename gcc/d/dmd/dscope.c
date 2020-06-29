@@ -291,54 +291,64 @@ unsigned *Scope::saveFieldInit()
     return fi;
 }
 
-static bool mergeFieldInit(unsigned &fieldInit, unsigned fi, bool mustInit)
+/****************************************
+ * Merge `b` flow analysis results into `a`.
+ * Params:
+ *      a = the path to merge fi into
+ *      b = the other path
+ * Returns:
+ *      false means either `a` or `b` skips initialization
+ */
+static bool mergeFieldInit(unsigned &a, const unsigned b)
 {
-    if (fi != fieldInit)
+    if (b == a)
+        return true;
+
+    // Have any branches returned?
+    bool aRet = (a & CSXreturn) != 0;
+    bool bRet = (b & CSXreturn) != 0;
+
+    // Have any branches halted?
+    bool aHalt = (a & CSXhalt) != 0;
+    bool bHalt = (b & CSXhalt) != 0;
+
+    if (aHalt && bHalt)
     {
-        // Have any branches returned?
-        bool aRet = (fi        & CSXreturn) != 0;
-        bool bRet = (fieldInit & CSXreturn) != 0;
-
-        // Have any branches halted?
-        bool aHalt = (fi        & CSXhalt) != 0;
-        bool bHalt = (fieldInit & CSXhalt) != 0;
-
-        bool ok;
-
-        if (aHalt && bHalt)
-        {
-            ok = true;
-            fieldInit = CSXhalt;
-        }
-        else if (!aHalt && aRet)
-        {
-            ok = !mustInit || (fi & CSXthis_ctor);
-            fieldInit = fieldInit;
-        }
-        else if (!bHalt && bRet)
-        {
-            ok = !mustInit || (fieldInit & CSXthis_ctor);
-            fieldInit = fi;
-        }
-        else if (aHalt)
-        {
-            ok = !mustInit || (fieldInit & CSXthis_ctor);
-            fieldInit = fieldInit;
-        }
-        else if (bHalt)
-        {
-            ok = !mustInit || (fi & CSXthis_ctor);
-            fieldInit = fi;
-        }
-        else
-        {
-            ok = !mustInit || !((fieldInit ^ fi) & CSXthis_ctor);
-            fieldInit |= fi;
-        }
-
-        return ok;
+        a = CSXhalt;
+        return true;
     }
-    return true;
+
+    // The logic here is to prefer the branch that neither halts nor returns.
+    bool ok;
+    if (!bHalt && bRet)
+    {
+        // Branch b returns, no merging required.
+        ok = (b & CSXthis_ctor);
+    }
+    else if (!aHalt && aRet)
+    {
+        // Branch a returns, but b doesn't, b takes precedence.
+        ok = (a & CSXthis_ctor);
+        a = b;
+    }
+    else if (bHalt)
+    {
+        // Branch b halts, no merging required.
+        ok = (a & CSXthis_ctor);
+    }
+    else if (aHalt)
+    {
+        // Branch a halts, but b doesn't, b takes precedence
+        ok = (b & CSXthis_ctor);
+        a = b;
+    }
+    else
+    {
+        // Neither branch returns nor halts, merge flags
+        ok = !((a ^ b) & CSXthis_ctor);
+        a |= b;
+    }
+    return ok;
 }
 
 void Scope::mergeFieldInit(Loc loc, unsigned *fies)
@@ -356,9 +366,9 @@ void Scope::mergeFieldInit(Loc loc, unsigned *fies)
             bool mustInit = (v->storage_class & STCnodefaultctor ||
                              v->type->needsNested());
 
-            if (!::mergeFieldInit(fieldinit[i], fies[i], mustInit))
+            if (!::mergeFieldInit(fieldinit[i], fies[i]) && mustInit)
             {
-                ::error(loc, "one path skips field %s", ad->fields[i]->toChars());
+                ::error(loc, "one path skips field %s", v->toChars());
             }
         }
     }

@@ -1,3 +1,146 @@
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_binary): Ignore leading zeros.
+	* testsuite/20_util/from_chars/1.cc: Check "0x1" for all bases,
+	not just 10 and 16.
+	* testsuite/20_util/from_chars/3.cc: New test.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__find_if): Add FALLTHRU markers.
+	* include/std/charconv (__detail::__to_chars): Avoid
+	-Wsign-compare warning.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95851
+	* include/std/charconv (__to_chars_i): Check for zero-sized
+	buffer unconditionally.
+	* testsuite/20_util/to_chars/95851.cc: New test.
+
+2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: Check enumeration
+	type.
+	* testsuite/20_util/from_chars/1_neg.cc: Likewise. Move dg-error
+	directives outside preprocessor condition.
+
+2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95832
+	* include/std/variant (__detail::__variant::_Build_FUN): Remove
+	partial specialization to prevent narrowing conversions to bool.
+	* testsuite/20_util/variant/compile.cc: Test non-narrowing
+	conversions to bool.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
+2020-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am: Use -include.
+	* Makefile.in: Regenerate.
+
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am (tmake_file): Build and install AIX-style FAT libraries.
+	* Makefile.in: Regenerate.
+	* configure.ac (tmake_file): Substitute.
+	* configure: Regenerate.
+	* configure.host (aix*): Define tmake_file.
+	* config/os/aix/t-aix: New file.
+
+2020-06-20  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc:
+	Remove greedy_ops tests.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc:
+	Remove greedy_ops tests.
+
+2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95765
+	* include/bits/stl_algobase.h (__size_to_integer(float))
+	(__size_to_integer(double), __size_to_integer(long double))
+	(__size_to_integer(__float128)): Cast return type explicitly.
+	* include/bits/stl_uninitialized.h (__uninitialized_default_1<true>):
+	Remove unused typedef.
+
+2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (_Index_tuple): Remove redundant
+	namespace qualification.
+	(pair::pair(tuple<>&, tuple<>&, _Index_tuple, _Index_tuple)):
+	Likewise.
+	* include/std/tuple (_Head_base, _Tuple_impl, tuple_size)
+	(tuple_element, __get_helper, get, __make_tuple_impl)
+	(__make_1st_indices, __tuple_concater)
+	(pair::pair(tuple<>&, tuple<>&, _Index_tuple, _Index_tuple)):
+	Likewise.
+	* include/std/utility (tuple_element, __is_tuple_like_impl)
+	(tuple_size, __pair_get, get): Likewise.
+
+2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function): Define all member
+	functions inline.
+
+2020-06-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/bits/stl_algo.h (__includes): Simplify the code.
+
+2020-06-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/optional (optional()): Explicitly define it.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94540
+	* include/bits/stl_uninitialized.h (__uninitialized_default_1<true>):
+	Construct the first value at *__first instead of on the stack.
+	(__uninitialized_default_n_1<true>): Likewise.
+	Improve comments on several of the non-standard algorithms.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default/94540.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_n/94540.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/94540.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct_n/94540.cc:
+	New test.
+	* testsuite/23_containers/vector/cons/94540.cc: New test.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_n/sizes.cc:
+	Replace Value type with int so trivial code path is used.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct_n/sizes.cc:
+	Likewise.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (uninitialized_fill_n): Only
+	use std::fill_n when the size is an integral type.
+	(__uninitialized_default_n): Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_n/sizes.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/sizes.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct_n/sizes.cc:
+	New test.
+
 2020-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95282

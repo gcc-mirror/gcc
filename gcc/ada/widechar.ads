@@ -81,9 +81,7 @@ package Widechar is
    --  On entry, S (P) points to an ESC character for a wide character escape
    --  sequence or to an upper half character if the encoding method uses the
    --  upper bit, or to a left bracket if the brackets encoding method is in
-   --  use. On exit, P is bumped past the wide character sequence. No error
-   --  checking is done, since this is only used on escape sequences generated
-   --  by Set_Wide, which are known to be correct.
+   --  use. On exit, P is bumped past the wide character sequence.
 
    procedure Skip_Wide (S : Source_Buffer_Ptr; P : in out Source_Ptr);
    --  Similar to the above procedure, but operates on a source buffer

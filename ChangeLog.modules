@@ -1,5 +1,7 @@
 2020-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge master 9a33c41fe42
+
 	Merge master 44492e248cb
 	c++: implicit operator== adjustments from P2002. [Jason Merrill]
 	gcc/cp/

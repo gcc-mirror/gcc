@@ -1,6 +1,6 @@
-/* { dg-options "-mdejagnu-cpu=future" } */
+/* { dg-options "-mdejagnu-cpu=power10" } */
 
-/* This tests that powerpc_future_ok works.  */
+/* This tests that power10_ok works.  */
 
 extern void abort (void);
 

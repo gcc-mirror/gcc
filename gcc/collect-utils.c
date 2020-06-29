@@ -34,6 +34,7 @@ static char *response_file;
 bool debug;
 bool verbose;
 bool save_temps;
+const char *dumppfx;
 
 
 /* Notify user of a non-error.  */

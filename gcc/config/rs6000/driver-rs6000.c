@@ -447,6 +447,7 @@ static const struct asm_name asm_names[] = {
   { "power7",	"-mpwr7" },
   { "power8",	"-mpwr8" },
   { "power9",	"-mpwr9" },
+  { "power10",	"-mpwr10" },
   { "powerpc",	"-mppc" },
   { "rs64",	"-mppc" },
   { "603",	"-m603" },
@@ -457,7 +458,6 @@ static const struct asm_name asm_names[] = {
   { "630",	"-m620" },
   { "970",	"-m970" },
   { "G5",	"-m970" },
-  { "future",	"-mfuture" },
   { NULL,	"\
   %{mvsx: -mpwr6; \
     maltivec: -m970; \
@@ -475,6 +475,7 @@ static const struct asm_name asm_names[] = {
   { "power7",	"-mpower7" },
   { "power8",	"%{mpower9-vector:-mpower9;:-mpower8}" },
   { "power9",	"-mpower9" },
+  { "power10",	"-mpower10" },
   { "a2",	"-ma2" },
   { "powerpc",	"-mppc" },
   { "powerpc64", "-mppc64" },
@@ -521,7 +522,6 @@ static const struct asm_name asm_names[] = {
   { "e5500",	"-me5500" },
   { "e6500",	"-me6500" },
   { "titan",	"-mtitan" },
-  { "future",	"-mfuture" },
   { NULL,	"\
 %{mpower9-vector: -mpower9; \
   mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \

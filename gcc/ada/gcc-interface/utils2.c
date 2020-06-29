@@ -972,7 +972,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		       && (((TREE_CODE (restype)
 			     == TREE_CODE (operand_type (result))
 			     && TYPE_MODE (restype)
-				 == TYPE_MODE (operand_type (result))))
+				== TYPE_MODE (operand_type (result))))
 			   || TYPE_ALIGN_OK (restype))))
 	    result = TREE_OPERAND (result, 0);
 
@@ -1997,6 +1997,8 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (record));
   tree ref;
 
+  /* The failure of this assertion will very likely come from a missing
+     insertion of an explicit dereference.  */
   gcc_assert (RECORD_OR_UNION_TYPE_P (type) && COMPLETE_TYPE_P (type));
 
   /* Try to fold a conversion from another record or union type unless the type

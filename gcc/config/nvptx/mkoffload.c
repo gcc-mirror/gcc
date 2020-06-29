@@ -55,6 +55,7 @@ static id_map *var_ids, **vars_tail = &var_ids;
 /* Files to unlink.  */
 static const char *ptx_name;
 static const char *ptx_cfile_name;
+static const char *ptx_dumpbase;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 
@@ -369,6 +370,12 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
     obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&argv_obstack, "");
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, ptx_dumpbase);
+  obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&argv_obstack, ".c");
   switch (offload_abi)
     {
     case OFFLOAD_ABI_LP64:
@@ -486,6 +493,9 @@ main (int argc, char **argv)
 	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
+      else if (strcmp (argv[i], "-dumpbase") == 0
+	       && i + 1 < argc)
+	dumppfx = argv[++i];
     }
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either %<-fopenacc%> or %<-fopenmp%> "
@@ -521,7 +531,14 @@ main (int argc, char **argv)
 	obstack_ptr_grow (&argv_obstack, argv[ix]);
     }
 
-  ptx_cfile_name = make_temp_file (".c");
+  if (!dumppfx)
+    dumppfx = outname;
+
+  ptx_dumpbase = concat (dumppfx, ".c", NULL);
+  if (save_temps)
+    ptx_cfile_name = ptx_dumpbase;
+  else
+    ptx_cfile_name = make_temp_file (".c");
 
   out = fopen (ptx_cfile_name, "w");
   if (!out)
@@ -531,7 +548,17 @@ main (int argc, char **argv)
      configurations.  */
   if (offload_abi == OFFLOAD_ABI_LP64)
     {
-      ptx_name = make_temp_file (".mkoffload");
+      char *mko_dumpbase = concat (dumppfx, ".mkoffload", NULL);
+      if (save_temps)
+	ptx_name = mko_dumpbase;
+      else
+	ptx_name = make_temp_file (".mkoffload");
+      obstack_ptr_grow (&argv_obstack, "-dumpdir");
+      obstack_ptr_grow (&argv_obstack, "");
+      obstack_ptr_grow (&argv_obstack, "-dumpbase");
+      obstack_ptr_grow (&argv_obstack, mko_dumpbase);
+      obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+      obstack_ptr_grow (&argv_obstack, "");
       obstack_ptr_grow (&argv_obstack, "-o");
       obstack_ptr_grow (&argv_obstack, ptx_name);
       obstack_ptr_grow (&argv_obstack, NULL);

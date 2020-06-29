@@ -1119,6 +1119,11 @@
   return gpc_reg_operand (op, mode);
 })
 
+;; Return 1 if this operand is valid for a MMA assemble accumulator insn.
+(define_special_predicate "mma_assemble_input_operand"
+  (match_test "(mode == V16QImode
+		&& (vsx_register_operand (op, mode) || MEM_P (op)))"))
+
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"
   (match_code "rotate,ashift,lshiftrt"))

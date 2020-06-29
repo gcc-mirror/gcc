@@ -80,6 +80,7 @@
    UNSPEC_VUPKHPX
    UNSPEC_VUPKLPX
    UNSPEC_CONVERT_4F32_8I16
+   UNSPEC_CONVERT_4F32_8F16
    UNSPEC_DST
    UNSPEC_DSTT
    UNSPEC_DSTST
@@ -791,7 +792,7 @@
 		      (match_operand:VI2 2 "altivec_register_operand")
 		      (match_operand:SI 3 "register_operand")]
 		     UNSPEC_EXTRACTL))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
     {
@@ -811,7 +812,7 @@
 		      (match_operand:VEC_I 2 "altivec_register_operand" "v")
 		      (match_operand:SI 3 "register_operand" "r")]
 		     UNSPEC_EXTRACTL))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "vext<du_or_d><wd>vlx %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
 
@@ -821,7 +822,7 @@
 		      (match_operand:VI2 2 "altivec_register_operand")
 		      (match_operand:SI 3 "register_operand")]
 		     UNSPEC_EXTRACTR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
     {
@@ -841,7 +842,7 @@
 		      (match_operand:VEC_I 2 "altivec_register_operand" "v")
 		      (match_operand:SI 3 "register_operand" "r")]
 		     UNSPEC_EXTRACTR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "vext<du_or_d><wd>vrx %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
 
@@ -849,7 +850,7 @@
   [(set (match_operand:VIshort 0 "altivec_register_operand")
 	(unspec:VIshort [(match_operand:VIshort 1 "altivec_register_operand")]
 			UNSPEC_VSTRIR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_vstrir_code_<mode> (operands[0], operands[1]));
@@ -863,7 +864,7 @@
 	(unspec:VIshort
 	   [(match_operand:VIshort 1 "altivec_register_operand" "v")]
 	   UNSPEC_VSTRIR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "vstri<wd>r %0,%1"
   [(set_attr "type" "vecsimple")])
 
@@ -874,7 +875,7 @@
 (define_expand "vstrir_p_<mode>"
   [(match_operand:SI 0 "gpc_reg_operand")
    (match_operand:VIshort 1 "altivec_register_operand")]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   rtx scratch = gen_reg_rtx (<MODE>mode);
   if (BYTES_BIG_ENDIAN)
@@ -893,7 +894,7 @@
    (set (reg:CC CR6_REGNO)
 	(unspec:CC [(match_dup 1)]
 		   UNSPEC_VSTRIR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "vstri<wd>r. %0,%1"
   [(set_attr "type" "vecsimple")])
 
@@ -901,7 +902,7 @@
   [(set (match_operand:VIshort 0 "altivec_register_operand")
 	(unspec:VIshort [(match_operand:VIshort 1 "altivec_register_operand")]
 			UNSPEC_VSTRIR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_vstril_code_<mode> (operands[0], operands[1]));
@@ -915,7 +916,7 @@
 	(unspec:VIshort
 	   [(match_operand:VIshort 1 "altivec_register_operand" "v")]
 	   UNSPEC_VSTRIL))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "vstri<wd>l %0,%1"
   [(set_attr "type" "vecsimple")])
 
@@ -926,7 +927,7 @@
 (define_expand "vstril_p_<mode>"
   [(match_operand:SI 0 "gpc_reg_operand")
    (match_operand:VIshort 1 "altivec_register_operand")]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
 {
   rtx scratch = gen_reg_rtx (<MODE>mode);
   if (BYTES_BIG_ENDIAN)
@@ -945,7 +946,7 @@
    (set (reg:CC CR6_REGNO)
 	(unspec:CC [(match_dup 1)]
 		   UNSPEC_VSTRIR))]
-  "TARGET_FUTURE"
+  "TARGET_POWER10"
   "vstri<wd>l. %0,%1"
   [(set_attr "type" "vecsimple")])
 
@@ -3217,6 +3218,39 @@
   DONE;
 })
 
+
+;; Convert two vector F32 to packed vector F16.
+;; This builtin packs 32-bit floating-point values into a packed
+;; 16-bit floating point values (stored in 16bit integer type).
+;; (vector unsigned short r = vec_pack_to_short_fp32 (a, b);
+;; The expected codegen for this builtin is
+;;    xvcvsphp t, a
+;;    xvcvsphp u, b
+;;    if (little endian)
+;;      vpkuwum r, t, u
+;;    else
+;;      vpkuwum r, u, t
+
+(define_expand "convert_4f32_8f16"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(unspec:V8HI [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_operand:V4SF 2 "register_operand" "v")]
+		     UNSPEC_CONVERT_4F32_8F16))]
+  "TARGET_P9_VECTOR"
+{
+  rtx rtx_tmp_hi = gen_reg_rtx (V4SImode);
+  rtx rtx_tmp_lo = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vsx_xvcvsphp (rtx_tmp_hi, operands[1]));
+  emit_insn (gen_vsx_xvcvsphp (rtx_tmp_lo, operands[2]));
+  if (!BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_hi, rtx_tmp_lo));
+  else
+    emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_lo, rtx_tmp_hi));
+  DONE;
+})
+
+
 ;; Generate
 ;;    xxlxor/vxor SCRATCH0,SCRATCH0,SCRATCH0
 ;;    vsubu?m SCRATCH2,SCRATCH1,%1
@@ -3446,7 +3480,7 @@
 		      (match_operand:V2DI 3 "altivec_register_operand" "wa")
 		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
 		     UNSPEC_XXEVAL))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "xxeval %0,%1,%2,%3,%4"
    [(set_attr "type" "vecsimple")])
 
@@ -4287,7 +4321,7 @@
 	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
 		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VCFUGED))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "vcfuged %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
@@ -4296,7 +4330,7 @@
 	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
 		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VCLZDM))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "vclzdm %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
@@ -4305,7 +4339,7 @@
 	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
 		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VCTZDM))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "vctzdm %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
@@ -4314,7 +4348,7 @@
 	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
 		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VPDEPD))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "vpdepd %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
@@ -4323,7 +4357,7 @@
 	(unspec:V2DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
 		      (match_operand:V2DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VPEXTD))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "vpextd %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
@@ -4332,7 +4366,7 @@
         (unspec:DI [(match_operand:V2DI 1 "altivec_register_operand" "v")
 	            (match_operand:QI 2 "u3bit_cint_operand" "n")]
          UNSPEC_VGNB))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
    "vgnb %0,%1,%2"
    [(set_attr "type" "vecsimple")])
 
@@ -4341,7 +4375,7 @@
 	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
 		       (match_operand:SI 2 "gpc_reg_operand" "r")]
 	 UNSPEC_VCLRLB))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
     return "vclrlb %0,%1,%2";
@@ -4355,7 +4389,7 @@
 	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
 		       (match_operand:SI 2 "gpc_reg_operand" "r")]
 	 UNSPEC_VCLRRB))]
-   "TARGET_FUTURE"
+   "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
     return "vclrrb %0,%1,%2";

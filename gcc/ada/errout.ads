@@ -700,6 +700,14 @@ package Errout is
    --  or the semantic analyzer. If N is set, points to the relevant node for
    --  this message.
 
+   procedure Error_Msg
+     (Msg                    : String;
+      Flag_Location          : Source_Ptr;
+      Is_Compile_Time_Pragma : Boolean);
+   --  Same as Error_Msg (String, Source_Ptr) except Is_Compile_Time_Pragma
+   --  lets the caller specify whether the is a
+   --  Compile_Time_Warning/Compile_Time_Error pragma.
+
    procedure Error_Msg_S (Msg : String);
    --  Output a message at current scan pointer location. This routine can be
    --  called only from the parser, since it references Scan_Ptr.

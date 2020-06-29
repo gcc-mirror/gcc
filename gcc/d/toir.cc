@@ -555,7 +555,7 @@ public:
      try/catch/finally.  At this point, this statement is just an empty
      placeholder.  Maybe the frontend shouldn't leak these.  */
 
-  void visit (OnScopeStatement *)
+  void visit (ScopeGuardStatement *)
   {
   }
 

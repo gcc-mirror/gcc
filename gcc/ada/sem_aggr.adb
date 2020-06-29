@@ -2762,9 +2762,9 @@ package body Sem_Aggr is
       --  part, verify that it is within the same variant as that of previous
       --  specified variant components of the delta.
 
-      function Get_Component_Type (Nam : Node_Id) return Entity_Id;
-      --  Locate component with a given name and return its type. If none found
-      --  report error.
+      function Get_Component (Nam : Node_Id) return Entity_Id;
+      --  Locate component with a given name and return it. If none found then
+      --  report error and return Empty.
 
       function Nested_In (V1 : Node_Id; V2 : Node_Id) return Boolean;
       --  Determine whether variant V1 is within variant V2
@@ -2828,11 +2828,11 @@ package body Sem_Aggr is
          end if;
       end Check_Variant;
 
-      ------------------------
-      -- Get_Component_Type --
-      ------------------------
+      -------------------
+      -- Get_Component --
+      -------------------
 
-      function Get_Component_Type (Nam : Node_Id) return Entity_Id is
+      function Get_Component (Nam : Node_Id) return Entity_Id is
          Comp : Entity_Id;
 
       begin
@@ -2843,15 +2843,15 @@ package body Sem_Aggr is
                   Error_Msg_N ("delta cannot apply to discriminant", Nam);
                end if;
 
-               return Etype (Comp);
+               return Comp;
             end if;
 
             Next_Entity (Comp);
          end loop;
 
          Error_Msg_NE ("type& has no component with this name", Nam, Typ);
-         return Any_Type;
-      end Get_Component_Type;
+         return Empty;
+      end Get_Component;
 
       ---------------
       -- Nested_In --
@@ -2898,6 +2898,7 @@ package body Sem_Aggr is
 
       Assoc     : Node_Id;
       Choice    : Node_Id;
+      Comp      : Entity_Id;
       Comp_Type : Entity_Id := Empty; -- init to avoid warning
 
    --  Start of processing for Resolve_Delta_Record_Aggregate
@@ -2909,10 +2910,21 @@ package body Sem_Aggr is
       while Present (Assoc) loop
          Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
-            Comp_Type := Get_Component_Type (Choice);
+            Comp := Get_Component (Choice);
 
-            if Comp_Type /= Any_Type then
+            if Present (Comp) then
                Check_Variant (Choice);
+
+               Comp_Type := Etype (Comp);
+
+               --  Decorate the component reference by setting its entity and
+               --  type, as otherwise backends like GNATprove would have to
+               --  rediscover this information by themselves.
+
+               Set_Entity (Choice, Comp);
+               Set_Etype  (Choice, Comp_Type);
+            else
+               Comp_Type := Any_Type;
             end if;
 
             Next (Choice);

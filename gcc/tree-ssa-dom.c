@@ -887,12 +887,11 @@ simplify_stmt_for_jump_threading (gimple *stmt,
      copy in tree-vrp is scheduled for removal in gcc-9.  */
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
-      cached_lhs
-	= x_vr_values->vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-						 gimple_cond_lhs (cond_stmt),
-						 gimple_cond_rhs (cond_stmt),
-						 within_stmt);
-      return cached_lhs;
+      simplify_using_ranges simplifier (x_vr_values);
+      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+						  gimple_cond_lhs (cond_stmt),
+						  gimple_cond_rhs (cond_stmt),
+						  within_stmt);
     }
 
   if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))

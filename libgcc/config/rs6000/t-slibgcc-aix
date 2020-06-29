@@ -37,48 +37,44 @@ SHLIB_SONAME = @shlib_base_name@.so.$(SHLIB_SOVERSION)
 SHLIB_LINK = \
 	if test svr4 != $(with_aix_soname) ; then \
 	  $(CC) $(LIBGCC2_CFLAGS) -shared -Wl,-bnortl -nodefaultlibs \
-	  -Wl,-bE:@shlib_map_file@ -o @multilib_dir@/shr.o \
+	  -Wl,-bE:@shlib_map_file@ -o shr.o \
 	  @multilib_flags@ @shlib_objs@ -lc \
 	  `case @multilib_dir@ in \
 	  *pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
 	  *) echo -lc ;; esac` ; \
-	  rm -f @multilib_dir@/tmp-@shlib_base_name@.a ; \
-	  $(AR_CREATE_FOR_TARGET) @multilib_dir@/tmp-@shlib_base_name@.a \
-	    @multilib_dir@/shr.o ; \
-	  mv @multilib_dir@/tmp-@shlib_base_name@.a \
-	     @multilib_dir@/@shlib_base_name@.a ; \
-	  rm -f @multilib_dir@/shr.o ; \
+	  rm -f tmp-@shlib_base_name@.a ; \
+	  $(AR_CREATE_FOR_TARGET) tmp-@shlib_base_name@.a shr.o ; \
+	  mv tmp-@shlib_base_name@.a @shlib_base_name@.a ; \
+	  rm -f shr.o ; \
 	fi ; \
 	if test aix != $(with_aix_soname) ; then \
 	  case @multilib_dir@ in *64*) shr='shr_64' ;; *) shr='shr' ;; esac ; \
 	  $(CC) $(LIBGCC2_CFLAGS) -shared -Wl,-G -nodefaultlibs \
-	  -Wl,-bE:@shlib_map_file@ -o @multilib_dir@/$$shr.o \
+	  -Wl,-bE:@shlib_map_file@ -o $$shr.o \
 	  @multilib_flags@ @shlib_objs@ -lc \
 	  `case @multilib_dir@ in \
 	  *pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
 	  *) echo -lc ;; esac` ; \
-	  $(STRIP_FOR_TARGET) -X32_64 -e @multilib_dir@/$$shr.o ; \
+	  $(STRIP_FOR_TARGET) -X32_64 -e $$shr.o ; \
 	  { echo "\#! $(SHLIB_SONAME)($$shr.o)" ; \
 	    case @multilib_dir@ in *64*) echo '\# 64' ;; *) echo '\# 32' ;; esac ; \
 	    cat @shlib_map_file@ ; \
-	  } > @multilib_dir@/$$shr.imp ; \
-	  rm -f @multilib_dir@/tmp-$(SHLIB_SONAME) ; \
-	  $(AR_CREATE_FOR_TARGET) @multilib_dir@/tmp-$(SHLIB_SONAME) \
-	    @multilib_dir@/$$shr.imp @multilib_dir@/$$shr.o ; \
-	  mv @multilib_dir@/tmp-$(SHLIB_SONAME) \
-	     @multilib_dir@/$(SHLIB_SONAME) ; \
-	  rm -f @multilib_dir@/@shlib_base_name@.so ; \
-	  $(LN_S) $(SHLIB_SONAME) @multilib_dir@/@shlib_base_name@.so ; \
-	  rm -f @multilib_dir@/$$shr.imp @multilib_dir@/$$shr.o ; \
+	  } > $$shr.imp ; \
+	  rm -f tmp-$(SHLIB_SONAME) ; \
+	  $(AR_CREATE_FOR_TARGET) tmp-$(SHLIB_SONAME) $$shr.imp $$shr.o ; \
+	  mv tmp-$(SHLIB_SONAME) $(SHLIB_SONAME) ; \
+	  rm -f @shlib_base_name@.so ; \
+	  $(LN_S) $(SHLIB_SONAME) @shlib_base_name@.so ; \
+	  rm -f $$shr.imp $$shr.o ; \
 	fi
 SHLIB_INSTALL = \
 	$(mkinstalldirs) $(DESTDIR)$(slibdir)@shlib_slibdir_qual@; \
 	if test svr4 != $(with_aix_soname) ; then \
-	  $(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.a \
+	  $(INSTALL_DATA) @shlib_base_name@.a \
 		  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/ ; \
 	fi ; \
 	if test aix != $(with_aix_soname) ; then \
-	  $(INSTALL_DATA) @multilib_dir@/$(SHLIB_SONAME) \
+	  $(INSTALL_DATA) $(SHLIB_SONAME) \
 		  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/ ; \
 	  rm -f $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so ; \
 	  $(LN_S) $(SHLIB_SONAME) \
@@ -91,3 +87,36 @@ SHLIB_NM_FLAGS = -Bpg -X32_64
 
 # Either 32-bit and 64-bit objects in archives.
 AR_FLAGS_FOR_TARGET = -X32_64
+
+# Build and install AIX-style FAT libraries
+ifeq ($(MULTIBUILDTOP),)
+BITS=$(shell if test -z "`ar -X64 t libgcc_s.a`" ; then \
+    echo '64'; else echo '32'; fi)
+all: all-multi
+ifeq ($(enable_shared),yes)
+	ar -X$(BITS) x ../ppc$(BITS)/libgcc/libgcc_s.a shr.o
+	ar -X$(BITS) rc ./libgcc_s.a shr.o
+	rm -f shr.o
+	ar -X$(BITS) x ../pthread/ppc$(BITS)/libgcc/libgcc_s.a shr.o
+	ar -X$(BITS) rc ../pthread/libgcc/libgcc_s.a shr.o
+	rm -f shr.o
+endif
+	ar -X$(BITS) rc libgcc.a \
+	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcc-objects))
+	ar -X$(BITS) rc libgcc_eh.a \
+	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcc-eh-objects))
+	ar -X$(BITS) rc ../pthread/libgcc/libgcc.a \
+	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcc-objects))
+	ar -X$(BITS) rc ../pthread/libgcc/libgcc_eh.a \
+	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcc-eh-objects))
+ifeq ($(enable_gcov),yes)
+	ar -X$(BITS) rc libgcov.a \
+	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcov-objects))
+	ar -X$(BITS) rc ../pthread/libgcc/libgcov.a \
+	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcov-objects))
+endif
+	$(MAKE) install-leaf DESTDIR=$(gcc_objdir) \
+	    slibdir= libsubdir= MULTIOSDIR=$(MULTIDIR)
+	cp ../pthread/libgcc/libgcc_s.a ../../gcc/pthread/
+	cp ../pthread/libgcc/libgcc_eh.a ../../gcc/pthread/
+endif

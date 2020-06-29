@@ -511,6 +511,13 @@ that returns the appropriate string when called. This means that
 ``X'Img`` can be renamed as a function-returning-string, or used
 in an instantiation as a function parameter.
 
+Attribute Initialized
+=====================
+.. index:: Initialized
+
+For the syntax and semantics of this attribute, see the SPARK 2014 Reference
+Manual, section 6.10.
+
 Attribute Integer_Value
 =======================
 .. index:: Integer_Value
@@ -1616,4 +1623,3 @@ Attribute Word_Size
 ``Standard'Word_Size`` (``Standard`` is the only permissible
 prefix) provides the value ``System.Word_Size``. The result is
 a static constant.
-

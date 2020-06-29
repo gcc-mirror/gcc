@@ -164,7 +164,7 @@ namespace __detail
 {
 namespace __variant
 {
-  // Returns the first appearence of _Tp in _Types.
+  // Returns the first appearance of _Tp in _Types.
   // Returns sizeof...(_Types) if _Tp is not in _Types.
   template<typename _Tp, typename... _Types>
     struct __index_of : std::integral_constant<size_t, 0> {};
@@ -733,10 +733,8 @@ namespace __variant
   // Helper used to check for valid conversions that don't involve narrowing.
   template<typename _Ti> struct _Arr { _Ti _M_x[1]; };
 
-  // Build an imaginary function FUN(Ti) for each alternative type Ti
-  template<size_t _Ind, typename _Tp, typename _Ti,
-	   bool _Ti_is_cv_bool = is_same_v<remove_cv_t<_Ti>, bool>,
-	   typename = void>
+  // "Build an imaginary function FUN(Ti) for each alternative type Ti"
+  template<size_t _Ind, typename _Tp, typename _Ti, typename = void>
     struct _Build_FUN
     {
       // This function means 'using _Build_FUN<I, T, Ti>::_S_fun;' is valid,
@@ -744,21 +742,12 @@ namespace __variant
       void _S_fun();
     };
 
-  // ... for which Ti x[] = {std::forward<T>(t)}; is well-formed,
+  // "... for which Ti x[] = {std::forward<T>(t)}; is well-formed."
   template<size_t _Ind, typename _Tp, typename _Ti>
-    struct _Build_FUN<_Ind, _Tp, _Ti, false,
+    struct _Build_FUN<_Ind, _Tp, _Ti,
 		      void_t<decltype(_Arr<_Ti>{{std::declval<_Tp>()}})>>
     {
       // This is the FUN function for type _Ti, with index _Ind
-      static integral_constant<size_t, _Ind> _S_fun(_Ti);
-    };
-
-  // ... and if Ti is cv bool, remove_cvref_t<T> is bool.
-  template<size_t _Ind, typename _Tp, typename _Ti>
-    struct _Build_FUN<_Ind, _Tp, _Ti, true,
-		      enable_if_t<is_same_v<__remove_cvref_t<_Tp>, bool>>>
-    {
-      // This is the FUN function for when _Ti is cv bool, with index _Ind
       static integral_constant<size_t, _Ind> _S_fun(_Ti);
     };
 

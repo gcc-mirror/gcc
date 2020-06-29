@@ -26,5 +26,5 @@ along with GCC; see the file COPYING3.  If not see
       LIST contains the return-type code followed by the codes for each
         argument type.  */
 
-DEF_RISCV_FTYPE (1, (USI, VOID))
+DEF_RISCV_FTYPE (0, (USI))
 DEF_RISCV_FTYPE (1, (VOID, USI))

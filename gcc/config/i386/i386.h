@@ -2475,11 +2475,11 @@ const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
   | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
 const wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
   | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
-  | PTA_RDPID | PTA_CLWB | PTA_AVX512VPOPCNTDQ;
+  | PTA_RDPID | PTA_AVX512VPOPCNTDQ;
 const wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT | PTA_PCONFIG
-  | PTA_WBNOINVD;
+  | PTA_WBNOINVD | PTA_CLWB;
 const wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
-  | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT;
+  | PTA_MOVDIR64B | PTA_CLWB | PTA_AVX512VP2INTERSECT;
 const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
   | PTA_AVX512F | PTA_AVX512CD;
 const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -2498,6 +2498,8 @@ const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
 
 #include "insn-attr-common.h"
 
+#include "common/config/i386/i386-cpuinfo.h"
+
 class pta
 {
 public:
@@ -2505,10 +2507,13 @@ public:
   const enum processor_type processor;
   const enum attr_cpu schedule;
   const wide_int_bitmask flags;
+  const int model;
+  const enum feature_priority priority;
 };
 
 extern const pta processor_alias_table[];
 extern int const pta_size;
+extern unsigned int const num_arch_names;
 #endif
 
 #endif

@@ -373,7 +373,7 @@ gthr-default.h: $(srcdir)/$(thread_header)
 	-$(LN_S) $< $@
 
 tmake_file = @tmake_file@
-include $(srcdir)/empty.mk $(tmake_file)
+-include $(tmake_file)
 
 # Collect target defines and headers from config.host.
 libgcc_tm_defines = @tm_defines@
@@ -393,7 +393,7 @@ ifeq ($(SHLIB_LINK),)
 endif
 
 ifeq ($(enable_shared),yes)
-  iterator = $(srcdir)/empty.mk $(patsubst %,$(srcdir)/shared-object.mk,$(iter-items))
+  iterator = $(patsubst %,$(srcdir)/shared-object.mk,$(iter-items))
 
   install-shared = install-shared
 
@@ -425,7 +425,7 @@ gen-hide-list = echo > $@
 endif
 
 ifneq ($(enable_shared),yes)
-iterator = $(srcdir)/empty.mk $(patsubst %,$(srcdir)/static-object.mk,$(iter-items))
+iterator = $(patsubst %,$(srcdir)/static-object.mk,$(iter-items))
 endif
 
 LIB2ADD += enable-execute-stack.c
@@ -522,7 +522,7 @@ iter-items := $(sifuncs) $(difuncs) $(tifuncs)
 iter-labels := $(sifuncs) $(difuncs) $(difuncs)
 iter-sizes := $(patsubst %,4,$(sifuncs) $(difuncs)) $(patsubst %,8,$(tifuncs))
 
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/siditi-object.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/siditi-object.mk,$(iter-items))
 
 libgcc-objects += $(patsubst %,%$(objext),$(sifuncs) $(difuncs) $(tifuncs))
 ifeq ($(enable_shared),yes)
@@ -805,7 +805,7 @@ iter-items := $(fixed-funcs)
 iter-labels := $(fixed-labels)
 iter-from := $(fixed-modes)
 iter-to := $(fixed-modes)
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
 
 # Add arithmetic functions to list of objects to be built
 libgcc-objects += $(patsubst %,%$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-funcs)))
@@ -824,7 +824,7 @@ iter-items := $(fixed-conv-funcs)
 iter-labels := $(fixed-conv-labels)
 iter-from := $(fixed-conv-from)
 iter-to := $(fixed-conv-to)
-include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
+-include $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
 
 # Add conversion functions to list of objects to be built
 libgcc-objects += $(patsubst %,%$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-conv-funcs)))
@@ -844,7 +844,7 @@ libgcc-objects += $(addsuffix $(objext),$(basename $(notdir $(LIB2ADD_ST))))
 
 c_flags :=
 iter-items := $(LIB2ADD) $(LIB2ADD_ST)
-include $(iterator)
+-include $(iterator)
 
 ifeq ($(enable_shared),yes)
 libgcc-s-objects += $(addsuffix _s$(objext),$(basename $(notdir $(LIB2ADD))))
@@ -862,7 +862,7 @@ libgcc-eh-objects += $(addsuffix $(objext),$(basename $(notdir $(LIB2ADDEHSTATIC
 libgcc-s-objects += $(addsuffix _s$(objext),$(basename $(notdir $(LIB2ADDEHSHARED))))
 
 iter-items := $(sort $(LIB2ADDEHSTATIC) $(LIB2ADDEHSHARED))
-include $(iterator)
+-include $(iterator)
 
 else
 # Not shared.  LIB2ADDEH are added to libgcc.a.
@@ -870,7 +870,7 @@ else
 libgcc-objects += $(addsuffix $(objext),$(basename $(notdir $(LIB2ADDEH))))
 
 iter-items := $(LIB2ADDEH)
-include $(iterator)
+-include $(iterator)
 
 endif
 
@@ -886,7 +886,7 @@ libunwind-s-objects += $(addsuffix _s$(objext),$(basename $(notdir $(LIBUNWIND))
 endif
 
 iter-items := $(LIBUNWIND)
-include $(iterator)
+-include $(iterator)
 
 # Build libgcov components.
 
@@ -1203,4 +1203,4 @@ install-strip: install
 # configure.
 .NOEXPORT:
 
-include $(srcdir)/empty.mk $(wildcard *.dep)
+-include $(wildcard *.dep)

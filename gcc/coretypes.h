@@ -359,9 +359,22 @@ struct kv_pair
   const ValueType value;	/* the value of the name */
 };
 
-/* Alias of the first type, ignoring the second.  */
-template<typename T1, typename T2>
-using first_type = T1;
+/* Iterator pair used for a collection iteration with range-based loops.  */
+
+template<typename T>
+struct iterator_range
+{
+public:
+  iterator_range (const T &begin, const T &end)
+    : m_begin (begin), m_end (end) {}
+
+  T begin () const { return m_begin; }
+  T end () const { return m_end; }
+
+private:
+  T m_begin;
+  T m_end;
+};
 
 #else
 

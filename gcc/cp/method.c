@@ -1107,17 +1107,6 @@ early_check_defaulted_comparison (tree fn)
       return false;
     }
 
-  if (!ctx)
-    {
-      if (DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR))
-	error_at (loc, "three-way comparison operator can only be defaulted "
-		  "in a class definition");
-      else
-	error_at (loc, "equality comparison operator can only be defaulted "
-		  "in a class definition");
-      return false;
-    }
-
   if (!DECL_OVERLOADED_OPERATOR_IS (fn, SPACESHIP_EXPR)
       && !same_type_p (TREE_TYPE (TREE_TYPE (fn)), boolean_type_node))
     {
@@ -1139,6 +1128,11 @@ early_check_defaulted_comparison (tree fn)
       error_at (loc, "defaulted %qD must be %<const%>", fn);
       ok = false;
     }
+  if (mem && type_memfn_rqual (TREE_TYPE (fn)) == REF_QUAL_RVALUE)
+    {
+      error_at (loc, "defaulted %qD must not have %<&&%> ref-qualifier", fn);
+      ok = false;
+    }
   tree parmnode = FUNCTION_FIRST_USER_PARMTYPE (fn);
   bool saw_byval = false;
   bool saw_byref = mem;
@@ -1146,15 +1140,27 @@ early_check_defaulted_comparison (tree fn)
   for (; parmnode != void_list_node; parmnode = TREE_CHAIN (parmnode))
     {
       tree parmtype = TREE_VALUE (parmnode);
-      if (same_type_p (parmtype, ctx))
+      if (CLASS_TYPE_P (parmtype))
 	saw_byval = true;
-      else if (TREE_CODE (parmtype) != REFERENCE_TYPE
-	       || TYPE_QUALS (TREE_TYPE (parmtype)) != TYPE_QUAL_CONST
-	       || !(same_type_ignoring_top_level_qualifiers_p
-		    (TREE_TYPE (parmtype), ctx)))
-	saw_bad = true;
+      else if (TREE_CODE (parmtype) == REFERENCE_TYPE
+	       && !TYPE_REF_IS_RVALUE (parmtype)
+	       && TYPE_QUALS (TREE_TYPE (parmtype)) == TYPE_QUAL_CONST)
+	{
+	  saw_byref = true;
+	  parmtype = TREE_TYPE (parmtype);
+	}
       else
-	saw_byref = true;
+	saw_bad = true;
+
+      if (!saw_bad && !ctx)
+	{
+	  /* Defaulted outside the class body.  */
+	  ctx = TYPE_MAIN_VARIANT (parmtype);
+	  if (!is_friend (ctx, fn))
+	    error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
+	}
+      else if (!same_type_ignoring_top_level_qualifiers_p (parmtype, ctx))
+	saw_bad = true;
     }
 
   if (saw_bad || (saw_byval && saw_byref))
@@ -1191,11 +1197,9 @@ common_comparison_type (vec<tree> &comps)
       tree comp = comps[i];
       tree ctype = TREE_TYPE (comp);
       comp_cat_tag tag = cat_tag_for (ctype);
-      if (tag < cc_last)
-	seen[tag] = ctype;
-      else
-	/* If any Ti is not a comparison category type, U is void.  */
-	return void_type_node;
+      /* build_comparison_op already checked this.  */
+      gcc_checking_assert (tag < cc_last);
+      seen[tag] = ctype;
     }
 
   /* Otherwise, if at least one T i is std::partial_ordering, U is
@@ -1317,8 +1321,9 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
   iloc_sentinel ils (info.loc);
 
   /* A defaulted comparison operator function for class C is defined as
-     deleted if ... C is a union-like class.  */
-  if (TREE_CODE (ctype) == UNION_TYPE)
+     deleted if ... C has variant members.  */
+  if (TREE_CODE (ctype) == UNION_TYPE
+      && next_initializable_field (TYPE_FIELDS (ctype)))
     {
       if (complain & tf_error)
 	inform (info.loc, "cannot default compare union %qT", ctype);
@@ -1341,6 +1346,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 
   if (code == EQ_EXPR || code == SPACESHIP_EXPR)
     {
+      bool bad = false;
       auto_vec<tree> comps;
 
       /* Compare each of the subobjects.  Note that we get bases from
@@ -1353,21 +1359,22 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 
 	  /* A defaulted comparison operator function for class C is defined as
 	     deleted if any non-static data member of C is of reference type or
-	     C is a union-like class.  */
+	     C has variant members.  */
 	  if (TREE_CODE (expr_type) == REFERENCE_TYPE)
 	    {
 	      if (complain & tf_error)
 		inform (DECL_SOURCE_LOCATION (field), "cannot default compare "
 			"reference member %qD", field);
-	      DECL_DELETED_FN (fndecl) = true;
+	      bad = true;
 	      continue;
 	    }
-	  else if (ANON_UNION_TYPE_P (expr_type))
+	  else if (ANON_UNION_TYPE_P (expr_type)
+		   && next_initializable_field (TYPE_FIELDS (expr_type)))
 	    {
 	      if (complain & tf_error)
 		inform (DECL_SOURCE_LOCATION (field), "cannot default compare "
 			"anonymous union member");
-	      DECL_DELETED_FN (fndecl) = true;
+	      bad = true;
 	      continue;
 	    }
 
@@ -1379,7 +1386,19 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 				    NULL_TREE, NULL, complain);
 	  if (comp == error_mark_node)
 	    {
-	      DECL_DELETED_FN (fndecl) = true;
+	      bad = true;
+	      continue;
+	    }
+	  if (code == SPACESHIP_EXPR
+	      && cat_tag_for (TREE_TYPE (comp)) == cc_last)
+	    {
+	      /* The operator function is defined as deleted if ... Ri is not a
+		 comparison category type.  */
+	      if (complain & tf_error)
+		inform (DECL_SOURCE_LOCATION (field),
+			"three-way comparison of %qD has type %qT, not a "
+			"comparison category type", field, TREE_TYPE (comp));
+	      bad = true;
 	      continue;
 	    }
 	  comps.safe_push (comp);
@@ -1388,6 +1407,11 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	{
 	  rettype = common_comparison_type (comps);
 	  apply_deduced_return_type (fndecl, rettype);
+	}
+      if (bad)
+	{
+	  DECL_DELETED_FN (fndecl) = true;
+	  goto out;
 	}
       for (unsigned i = 0; i < comps.length(); ++i)
 	{
@@ -1473,6 +1497,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	finish_return_stmt (comp2);
     }
 
+ out:
   if (info.defining)
     finish_compound_stmt (compound_stmt);
   else

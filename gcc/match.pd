@@ -1109,6 +1109,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && !TYPE_SATURATING (type))
   (bit_ior @0 @1)))
 
+/* (x | y) - y -> (x & ~y) */
+(simplify
+ (minus (bit_ior:cs @0 @1) @1)
+ (bit_and @0 (bit_not @1)))
+
 /* (x | y) - (x ^ y) -> x & y */
 (simplify
  (minus (bit_ior @0 @1) (bit_xor @0 @1))

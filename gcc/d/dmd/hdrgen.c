@@ -58,7 +58,7 @@ void genhdrfile(Module *m)
     toCBuffer(m, &buf, &hgs);
 
     // Transfer image to file
-    m->hdrfile->setbuffer(buf.data, buf.offset);
+    m->hdrfile->setbuffer(buf.slice().ptr, buf.length());
     buf.extractData();
 
     ensurePathToNameExists(Loc(), m->hdrfile->toChars());
@@ -618,7 +618,7 @@ public:
         buf->writenl();
     }
 
-    void visit(OnScopeStatement *s)
+    void visit(ScopeGuardStatement *s)
     {
         buf->writestring(Token::toChars(s->tok));
         buf->writeByte(' ');
@@ -2303,7 +2303,7 @@ public:
                     /* fall through */
                 case Tchar:
                 {
-                    size_t o = buf->offset;
+                    size_t o = buf->length();
                     if (v == '\'')
                         buf->writestring("'\\''");
                     else if (isprint((int)v) && v != '\\')
@@ -2478,7 +2478,7 @@ public:
     void visit(StringExp *e)
     {
         buf->writeByte('"');
-        size_t o = buf->offset;
+        size_t o = buf->length();
         for (size_t i = 0; i < e->len; i++)
         {
             unsigned c = e->charAt(i);

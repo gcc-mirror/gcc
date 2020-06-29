@@ -155,6 +155,14 @@ void arbitrary_ctor()
   static_assert(!is_constructible_v<variant<int>, unsigned>);
   static_assert(!is_constructible_v<variant<bool>, int>);
   static_assert(!is_constructible_v<variant<bool>, void*>);
+
+  // P1957R2 Converting from T* to bool should be considered narrowing
+  struct ConvertibleToBool
+  {
+    operator bool() const { return true; }
+  };
+  static_assert(is_constructible_v<variant<bool>, ConvertibleToBool>);
+  static_assert(is_constructible_v<variant<bool, int>, ConvertibleToBool>);
 }
 
 struct none { none() = delete; };

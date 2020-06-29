@@ -712,42 +712,19 @@ RM 13.13.2(1.6): Stream Oriented Attributes
   to the nearest factor or multiple of the word size that is also a
   multiple of the stream element size."
 
-Followed, except that the number of stream elements is a power of 2.
+Followed, except that the number of stream elements is 1, 2, 3, 4 or 8.
 The Stream_Size may be used to override the default choice.
 
-However, such an implementation is based on direct binary
-representations and is therefore target- and endianness-dependent.  To
-address this issue, GNAT also supplies an alternate implementation of
-the stream attributes ``Read`` and ``Write``, which uses the
-target-independent XDR standard representation for scalar types.
+The default implementation is based on direct binary representations and is
+therefore target- and endianness-dependent.  To address this issue, GNAT also
+supplies an alternate implementation of the stream attributes ``Read`` and
+``Write``, which uses the target-independent XDR standard representation for
+scalar types. This XDR alternative can be enabled via the binder switch -xdr.
 
 .. index:: XDR representation
-
 .. index:: Read attribute
-
 .. index:: Write attribute
-
 .. index:: Stream oriented attributes
-
-The XDR implementation is provided as an alternative body of the
-``System.Stream_Attributes`` package, in the file
-:file:`s-stratt-xdr.adb` in the GNAT library.
-There is no :file:`s-stratt-xdr.ads` file.
-In order to install the XDR implementation, do the following:
-
-* Replace the default implementation of the
-  ``System.Stream_Attributes`` package with the XDR implementation.
-  For example on a Unix platform issue the commands:
-
-  .. code-block:: sh
-
-    $ mv s-stratt.adb s-stratt-default.adb
-    $ mv s-stratt-xdr.adb s-stratt.adb
-
-
-*
-  Rebuild the GNAT run-time library as documented in
-  the *GNAT and Libraries* section of the :title:`GNAT User's Guide`.
 
 RM A.1(52): Names of Predefined Numeric Types
 =============================================

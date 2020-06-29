@@ -26960,7 +26960,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 	continue;
       if (IN_RANGE (regno, IP_REGNUM, PC_REGNUM))
 	continue;
-      if (call_used_or_fixed_reg_p (regno)
+      if (!callee_saved_reg_p (regno)
 	  && (!IN_RANGE (regno, FIRST_VFP_REGNUM, LAST_VFP_REGNUM)
 	      || TARGET_HARD_FLOAT))
 	bitmap_set_bit (to_clear_bitmap, regno);

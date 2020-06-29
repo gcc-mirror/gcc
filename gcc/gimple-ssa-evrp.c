@@ -46,14 +46,13 @@ class evrp_folder : public substitute_and_fold_engine
 {
 public:
   evrp_folder () : m_range_analyzer (/*update_global_ranges=*/true),
-    m_vr_values (m_range_analyzer.get_vr_values ())
+    m_vr_values (m_range_analyzer.get_vr_values ()),
+    simplifier (m_vr_values)
   {
   }
 
   ~evrp_folder ()
   {
-    m_vr_values->cleanup_edges_and_switches ();
-
     if (dump_file)
       {
 	fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
@@ -86,7 +85,7 @@ public:
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
   {
-    return m_vr_values->simplify_stmt_using_ranges (gsi);
+    return simplifier.simplify (gsi);
   }
 
   void post_fold_bb (basic_block bb) OVERRIDE
@@ -96,13 +95,15 @@ public:
 
   void post_new_stmt (gimple *stmt) OVERRIDE
   {
-    m_vr_values->set_defs_to_varying (stmt);
+    m_range_analyzer.get_vr_values ()->set_defs_to_varying (stmt);
   }
 
 private:
   DISABLE_COPY_AND_ASSIGN (evrp_folder);
   class evrp_range_analyzer m_range_analyzer;
   class vr_values *m_vr_values;
+
+  simplify_using_ranges simplifier;
 };
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative

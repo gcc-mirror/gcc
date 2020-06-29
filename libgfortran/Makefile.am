@@ -1236,4 +1236,7 @@ endif
 
 EXTRA_DIST = $(m4_files)
 
+# target overrides
+-include $(tmake_file)
+
 include $(top_srcdir)/../multilib.am

@@ -7410,8 +7410,7 @@ package body Sem_Util is
 
       --  No body is generated if the protected operation is eliminated
 
-      elsif Convention (Dyn_Scop) = Convention_Protected
-        and then not Is_Eliminated (Dyn_Scop)
+      elsif not Is_Eliminated (Dyn_Scop)
         and then Present (Protected_Body_Subprogram (Dyn_Scop))
       then
          return Protected_Body_Subprogram (Dyn_Scop);
@@ -17298,6 +17297,7 @@ package body Sem_Util is
       elsif Nkind (Context) = N_Object_Declaration
         and then Present (Expression (Context))
         and then Expression (Context) = Obj_Ref
+        and then Nkind (Parent (Context)) /= N_Expression_With_Actions
       then
          Obj_Id := Defining_Entity (Context);
 
@@ -24235,6 +24235,18 @@ package body Sem_Util is
       --  will hold their value.
 
       elsif Nkind (Orig_Obj) = N_Aggregate then
+         return Object_Access_Level (Current_Scope);
+
+      --  Treat an Old/Loop_Entry attribute reference like an aggregate.
+      --  AARM 6.1.1(27.d) says "... the implicit constant declaration
+      --  defines the accessibility level of X'Old", so that is what
+      --  we are trying to implement here.
+
+      elsif Nkind (Orig_Obj) = N_Attribute_Reference
+        and then Nam_In (Attribute_Name (Orig_Obj),
+                         Name_Old,
+                         Name_Loop_Entry)
+      then
          return Object_Access_Level (Current_Scope);
 
       --  Otherwise return the scope level of Standard. (If there are cases

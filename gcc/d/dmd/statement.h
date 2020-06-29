@@ -626,13 +626,13 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 };
 
-class OnScopeStatement : public Statement
+class ScopeGuardStatement : public Statement
 {
 public:
     TOK tok;
     Statement *statement;
 
-    OnScopeStatement(Loc loc, TOK tok, Statement *statement);
+    ScopeGuardStatement(Loc loc, TOK tok, Statement *statement);
     Statement *syntaxCopy();
     Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexit, Statement **sfinally);
 
@@ -670,7 +670,7 @@ public:
     Identifier *ident;
     LabelDsymbol *label;
     TryFinallyStatement *tf;
-    OnScopeStatement *os;
+    ScopeGuardStatement *os;
     VarDeclaration *lastVar;
 
     GotoStatement(Loc loc, Identifier *ident);
@@ -686,7 +686,7 @@ public:
     Identifier *ident;
     Statement *statement;
     TryFinallyStatement *tf;
-    OnScopeStatement *os;
+    ScopeGuardStatement *os;
     VarDeclaration *lastVar;
     Statement *gotoTarget;      // interpret
 

@@ -5140,9 +5140,6 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 	return;
     }
 
-  e->ts.type = BT_CHARACTER;
-  e->ts.kind = gfc_default_character_kind;
-
   if (!e->ts.u.cl)
     e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
@@ -9638,7 +9635,7 @@ resolve_select_rank (gfc_code *code, gfc_namespace *old_ns)
   gfc_namespace *ns;
   gfc_code *body, *new_st, *tail;
   gfc_case *c;
-  char tname[GFC_MAX_SYMBOL_LEN];
+  char tname[GFC_MAX_SYMBOL_LEN + 7];
   char name[2 * GFC_MAX_SYMBOL_LEN];
   gfc_symtree *st;
   gfc_expr *selector_expr = NULL;
@@ -12999,6 +12996,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  if (arg->sym
 	      && arg->sym->ts.type == BT_DERIVED
+	      && arg->sym->ts.u.derived
 	      && !arg->sym->ts.u.derived->attr.use_assoc
 	      && !gfc_check_symbol_access (arg->sym->ts.u.derived)
 	      && !gfc_notify_std (GFC_STD_F2003, "%qs is of a PRIVATE type "
@@ -15172,6 +15170,7 @@ resolve_symbol (gfc_symbol *sym)
   if (flag_coarray == GFC_FCOARRAY_LIB && sym->ts.type == BT_CLASS
       && sym->ts.u.derived && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.codimension
+      && CLASS_DATA (sym)->ts.u.derived
       && (CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp
 	  || CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp))
     {

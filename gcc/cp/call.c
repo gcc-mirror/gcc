@@ -8658,13 +8658,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   /* Bypass access control for 'this' parameter.  */
   else if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
     {
-      tree parmtype = TREE_VALUE (parm);
       tree arg = build_this (first_arg != NULL_TREE
 			     ? first_arg
 			     : (*args)[arg_index]);
       tree argtype = TREE_TYPE (arg);
-      tree converted_arg;
-      tree base_binfo;
 
       if (arg == error_mark_node)
 	return error_mark_node;
@@ -8683,20 +8680,13 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
+      /* The class where FN is defined.  */
+      tree ctx = DECL_CONTEXT (fn);
+
       /* See if the function member or the whole class type is declared
 	 final and the call can be devirtualized.  */
-      if (DECL_FINAL_P (fn)
-	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
+      if (DECL_FINAL_P (fn) || CLASSTYPE_FINAL (ctx))
 	flags |= LOOKUP_NONVIRTUAL;
-
-      /* If we know the dynamic type of the object, look up the final overrider
-	 in the BINFO.  */
-      if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
-	  && resolves_to_fixed_type_p (arg))
-	{
-	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), cand->conversion_path);
-	  flags |= LOOKUP_NONVIRTUAL;
-	}
 
       /* [class.mfct.non-static]: If a non-static member function of a class
 	 X is called for an object that is not of type X, or of a type
@@ -8704,13 +8694,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
 	 So we can assume that anything passed as 'this' is non-null, and
 	 optimize accordingly.  */
-      gcc_assert (TYPE_PTR_P (parmtype));
-      /* Convert to the base in which the function was declared.  */
-      gcc_assert (cand->conversion_path != NULL_TREE);
-      converted_arg = build_base_path (PLUS_EXPR,
-				       arg,
-				       cand->conversion_path,
-				       1, complain);
       /* Check that the base class is accessible.  */
       if (!accessible_base_p (TREE_TYPE (argtype),
 			      BINFO_TYPE (cand->conversion_path), true))
@@ -8724,12 +8707,25 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       /* If fn was found by a using declaration, the conversion path
 	 will be to the derived class, not the base declaring fn. We
-	 must convert from derived to base.  */
-      base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
-				TREE_TYPE (parmtype), ba_unique,
-				NULL, complain);
-      converted_arg = build_base_path (PLUS_EXPR, converted_arg,
-				       base_binfo, 1, complain);
+	 must convert to the base.  */
+      tree base_binfo = cand->conversion_path;
+      if (BINFO_TYPE (base_binfo) != ctx)
+	{
+	  base_binfo = lookup_base (base_binfo, ctx, ba_unique, NULL, complain);
+	  if (base_binfo == error_mark_node)
+	    return error_mark_node;
+	}
+      tree converted_arg = build_base_path (PLUS_EXPR, arg,
+					    base_binfo, 1, complain);
+
+      /* If we know the dynamic type of the object, look up the final overrider
+	 in the BINFO.  */
+      if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
+	  && resolves_to_fixed_type_p (arg))
+	{
+	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), base_binfo);
+	  flags |= LOOKUP_NONVIRTUAL;
+	}
 
       argarray[j++] = converted_arg;
       parm = TREE_CHAIN (parm);
@@ -11435,12 +11431,13 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	return winner;
     }
 
-  /* Concepts: ... or, if not that, F1 is more constrained than F2.
+  /* Concepts: F1 and F2 are non-template functions with the same
+     parameter-type-lists, and F1 is more constrained than F2 according to the
+     partial ordering of constraints described in 13.5.4.  */
 
-     FIXME: For function templates with no winner, this subsumption may
-     be computed a separate time.  This needs to be validated, and if
-     so, the redundant check removed.  */
-  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn))
+  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn)
+      && !cand1->template_decl && !cand2->template_decl
+      && cand_parms_match (cand1, cand2))
     {
       winner = more_constrained (cand1->fn, cand2->fn);
       if (winner)

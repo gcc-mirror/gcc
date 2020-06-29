@@ -2447,37 +2447,7 @@ package body Exp_Ch5 is
             if Is_Constrained (Etype (Lhs)) then
                Apply_Length_Check (Rhs, Etype (Lhs));
             end if;
-
-            if Nkind (Rhs) = N_Allocator then
-               declare
-                  Target_Typ : constant Entity_Id := Etype (Expression (Rhs));
-                  C_Es       : Check_Result;
-
-               begin
-                  C_Es :=
-                    Get_Range_Checks
-                      (Lhs,
-                       Target_Typ,
-                       Etype (Designated_Type (Etype (Lhs))));
-
-                  Insert_Range_Checks
-                    (C_Es,
-                     N,
-                     Target_Typ,
-                     Sloc (Lhs));
-               end;
-            end if;
          end if;
-
-      --  Apply range check for access type case
-
-      elsif Is_Access_Type (Etype (Lhs))
-        and then Nkind (Rhs) = N_Allocator
-        and then Nkind (Expression (Rhs)) = N_Qualified_Expression
-      then
-         Analyze_And_Resolve (Expression (Rhs));
-         Apply_Range_Check
-           (Expression (Rhs), Designated_Type (Etype (Lhs)));
       end if;
 
       --  Ada 2005 (AI-231): Generate the run-time check

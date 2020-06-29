@@ -171,7 +171,7 @@ bool Statement::usesEH()
         void visit(Statement *)             {}
         void visit(TryCatchStatement *)     { stop = true; }
         void visit(TryFinallyStatement *)   { stop = true; }
-        void visit(OnScopeStatement *)      { stop = true; }
+        void visit(ScopeGuardStatement *)      { stop = true; }
         void visit(SynchronizedStatement *) { stop = true; }
     };
 
@@ -1418,23 +1418,23 @@ bool TryFinallyStatement::hasContinue()
     return false; //true;
 }
 
-/****************************** OnScopeStatement ***************************/
+/****************************** ScopeGuardStatement ***************************/
 
-OnScopeStatement::OnScopeStatement(Loc loc, TOK tok, Statement *statement)
+ScopeGuardStatement::ScopeGuardStatement(Loc loc, TOK tok, Statement *statement)
     : Statement(loc)
 {
     this->tok = tok;
     this->statement = statement;
 }
 
-Statement *OnScopeStatement::syntaxCopy()
+Statement *ScopeGuardStatement::syntaxCopy()
 {
-    return new OnScopeStatement(loc, tok, statement->syntaxCopy());
+    return new ScopeGuardStatement(loc, tok, statement->syntaxCopy());
 }
 
-Statement *OnScopeStatement::scopeCode(Scope *sc, Statement **sentry, Statement **sexception, Statement **sfinally)
+Statement *ScopeGuardStatement::scopeCode(Scope *sc, Statement **sentry, Statement **sexception, Statement **sfinally)
 {
-    //printf("OnScopeStatement::scopeCode()\n");
+    //printf("ScopeGuardStatement::scopeCode()\n");
     //print();
     *sentry = NULL;
     *sexception = NULL;

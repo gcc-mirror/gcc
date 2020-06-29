@@ -243,7 +243,7 @@ void test36b()(char val)
 auto test36c_1()
 {
     int a;
-    void c() {};
+    void c() {}
     class Result
     {
         int b;

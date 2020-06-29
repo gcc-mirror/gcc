@@ -1573,7 +1573,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
 		  && ! PURE_SLP_STMT (stmt_info))
 		ok = vectorizable_induction (loop_vinfo,
-					     stmt_info, NULL, NULL, NULL,
+					     stmt_info, NULL, NULL,
 					     &cost_vec);
 	      else if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
 			|| (STMT_VINFO_DEF_TYPE (stmt_info)
@@ -7285,7 +7285,6 @@ vect_worthwhile_without_simd_p (vec_info *vinfo, tree_code code)
 bool
 vectorizable_induction (loop_vec_info loop_vinfo,
 			stmt_vec_info stmt_info,
-			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 			gimple **vec_stmt, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
 {

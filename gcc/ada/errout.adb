@@ -311,6 +311,18 @@ package body Errout is
    end Error_Msg;
 
    procedure Error_Msg
+      (Msg : String;
+       Flag_Location : Source_Ptr;
+       Is_Compile_Time_Pragma : Boolean)
+   is
+      Save_Is_Compile_Time_Msg : constant Boolean := Is_Compile_Time_Msg;
+   begin
+      Is_Compile_Time_Msg := Is_Compile_Time_Pragma;
+      Error_Msg (Msg, Flag_Location, Current_Node);
+      Is_Compile_Time_Msg := Save_Is_Compile_Time_Msg;
+   end Error_Msg;
+
+   procedure Error_Msg
      (Msg           : String;
       Flag_Location : Source_Ptr;
       N             : Node_Id)
@@ -1084,25 +1096,26 @@ package body Errout is
       --  Here we build a new error object
 
       Errors.Append
-        ((Text     => new String'(Msg_Buffer (1 .. Msglen)),
-          Next     => No_Error_Msg,
-          Prev     => No_Error_Msg,
-          Sptr     => Sptr,
-          Optr     => Optr,
-          Sfile    => Get_Source_File_Index (Sptr),
-          Line     => Get_Physical_Line_Number (Sptr),
-          Col      => Get_Column_Number (Sptr),
-          Warn     => Is_Warning_Msg,
-          Info     => Is_Info_Msg,
-          Check    => Is_Check_Msg,
-          Warn_Err => False, -- reset below
-          Warn_Chr => Warning_Msg_Char,
-          Style    => Is_Style_Msg,
-          Serious  => Is_Serious_Error,
-          Uncond   => Is_Unconditional_Msg,
-          Msg_Cont => Continuation,
-          Deleted  => False,
-          Node     => Node));
+        ((Text                => new String'(Msg_Buffer (1 .. Msglen)),
+          Next                => No_Error_Msg,
+          Prev                => No_Error_Msg,
+          Sptr                => Sptr,
+          Optr                => Optr,
+          Sfile               => Get_Source_File_Index (Sptr),
+          Line                => Get_Physical_Line_Number (Sptr),
+          Col                 => Get_Column_Number (Sptr),
+          Compile_Time_Pragma => Is_Compile_Time_Msg,
+          Warn                => Is_Warning_Msg,
+          Info                => Is_Info_Msg,
+          Check               => Is_Check_Msg,
+          Warn_Err            => False, -- reset below
+          Warn_Chr            => Warning_Msg_Char,
+          Style               => Is_Style_Msg,
+          Serious             => Is_Serious_Error,
+          Uncond              => Is_Unconditional_Msg,
+          Msg_Cont            => Continuation,
+          Deleted             => False,
+          Node                => Node));
       Cur_Msg := Errors.Last;
 
       --  Test if warning to be treated as error
@@ -1857,30 +1870,77 @@ package body Errout is
             Write_Str (" errors");
          end if;
 
-         if Warnings_Detected - Warning_Info_Messages /= 0 then
-            Write_Str (", ");
-            Write_Int (Warnings_Detected);
-            Write_Str (" warning");
+         --  We now need to output warnings. When using -gnatwe, all warnings
+         --  should be treated as errors, except for warnings originating from
+         --  the use of the Compile_Time_Warning pragma. Another situation
+         --  where a warning might be treated as an error is when the source
+         --  code contains a Warning_As_Error pragma.
+         --  When warnings are treated as errors, we still log them as
+         --  warnings, but we add a message denoting how many of these warnings
+         --  are also errors.
 
-            if Warnings_Detected - Warning_Info_Messages /= 1 then
-               Write_Char ('s');
-            end if;
+         declare
+            Warnings_Count : constant Int :=
+               Warnings_Detected - Warning_Info_Messages;
 
-            if Warning_Mode = Treat_As_Error then
-               Write_Str (" (treated as error");
+            Compile_Time_Warnings : Int;
+            --  Number of warnings that come from a Compile_Time_Warning
+            --  pragma.
 
-               if Warnings_Detected /= 1 then
+            Non_Compile_Time_Warnings : Int;
+            --  Number of warnings that do not come from a Compile_Time_Warning
+            --  pragmas.
+
+         begin
+            if Warnings_Count > 0 then
+               Write_Str (", ");
+               Write_Int (Warnings_Count);
+               Write_Str (" warning");
+
+               if Warnings_Count > 1 then
                   Write_Char ('s');
                end if;
 
-               Write_Char (')');
+               Compile_Time_Warnings := Count_Compile_Time_Pragma_Warnings;
+               Non_Compile_Time_Warnings :=
+                  Warnings_Count - Compile_Time_Warnings;
 
-            elsif Warnings_Treated_As_Errors /= 0 then
-               Write_Str (" (");
-               Write_Int (Warnings_Treated_As_Errors);
-               Write_Str (" treated as errors)");
+               if Warning_Mode = Treat_As_Error
+                 and then Non_Compile_Time_Warnings > 0
+               then
+                  Write_Str (" (");
+
+                  if Compile_Time_Warnings > 0 then
+                     Write_Int (Non_Compile_Time_Warnings);
+                     Write_Str (" ");
+                  end if;
+
+                  Write_Str ("treated as error");
+
+                  if Non_Compile_Time_Warnings > 1 then
+                     Write_Char ('s');
+                  end if;
+
+                  Write_Char (')');
+
+               elsif Warnings_Treated_As_Errors > 0 then
+                  Write_Str (" (");
+
+                  if Warnings_Treated_As_Errors /= Warnings_Count then
+                     Write_Int (Warnings_Treated_As_Errors);
+                     Write_Str (" ");
+                  end if;
+
+                  Write_Str ("treated as error");
+
+                  if Warnings_Treated_As_Errors > 1 then
+                     Write_Str ("s");
+                  end if;
+
+                  Write_Str (")");
+               end if;
             end if;
-         end if;
+         end;
 
          if Warning_Info_Messages + Report_Info_Messages /= 0 then
             Write_Str (", ");
@@ -2195,9 +2255,15 @@ package body Errout is
       --  must not be treated as errors when -gnatwe is in effect.
 
       if Warning_Mode = Treat_As_Error then
-         Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected - Warning_Info_Messages;
-         Warnings_Detected := Warning_Info_Messages;
+         declare
+            Compile_Time_Pragma_Warnings : constant Int :=
+               Count_Compile_Time_Pragma_Warnings;
+         begin
+            Total_Errors_Detected := Total_Errors_Detected + Warnings_Detected
+               - Warning_Info_Messages - Compile_Time_Pragma_Warnings;
+            Warnings_Detected :=
+               Warning_Info_Messages + Compile_Time_Pragma_Warnings;
+         end;
       end if;
    end Output_Messages;
 

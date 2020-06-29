@@ -142,7 +142,7 @@ namespace __detail
 	'u', 'v', 'w', 'x', 'y', 'z'
       };
 
-      while (__val >= __base)
+      while (__val >= (unsigned)__base)
 	{
 	  auto const __quo = __val / __base;
 	  auto const __rem = __val % __base;
@@ -327,7 +327,10 @@ namespace __detail
       using _Up = __detail::__unsigned_least_t<_Tp>;
       _Up __unsigned_val = __value;
 
-      if (__value == 0 && __first != __last)
+      if (__first == __last) [[__unlikely__]]
+	return { __last, errc::value_too_large };
+
+      if (__value == 0)
 	{
 	  *__first = '0';
 	  return { __first + 1, errc{} };
@@ -414,7 +417,11 @@ namespace __detail
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
 
       const ptrdiff_t __len = __last - __first;
-      int __i = 0;
+      ptrdiff_t __i = 0;
+      while (__i < __len && __first[__i] == '0')
+	++__i;
+      const ptrdiff_t __leading_zeroes = __i;
+
       while (__i < __len)
 	{
 	  const unsigned char __c = (unsigned)__first[__i] - '0';
@@ -425,7 +432,7 @@ namespace __detail
 	  __i++;
 	}
       __first += __i;
-      return __i <= __detail::__int_limits<_Tp>::digits;
+      return (__i - __leading_zeroes) <= __detail::__int_limits<_Tp>::digits;
     }
 
   /// std::from_chars implementation for integers in bases 3 to 10.

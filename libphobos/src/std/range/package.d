@@ -4874,7 +4874,7 @@ if (allSatisfy!(isInputRange, Ranges))
     // Just make sure 1-range case instantiates.  This hangs the compiler
     // when no explicit stopping policy is specified due to Bug 4652.
     auto stuff = lockstep([1,2,3,4,5], StoppingPolicy.shortest);
-    foreach (int i, a; stuff)
+    foreach (i, a; stuff)
     {
         assert(stuff[i] == a);
     }

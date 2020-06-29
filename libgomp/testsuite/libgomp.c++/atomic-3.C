@@ -1,5 +1,6 @@
 // { dg-do run }
-// { dg-options "-Wno-deprecated" }
+// C++17 forbids ++ on bool.
+// { dg-options "-Wno-deprecated -std=gnu++14" }
 
 extern "C" void abort (void);
 bool v, x1, x2, x3, x4, x5, x6;

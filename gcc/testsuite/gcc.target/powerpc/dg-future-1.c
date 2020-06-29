@@ -1,8 +1,8 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_future_hw } */
-/* { dg-options "-mdejagnu-cpu=future" } */
+/* { dg-require-effective-target power10_hw } */
+/* { dg-options "-mdejagnu-cpu=power10" } */
 
-/* This tests that powerpc_future_hw works.  */
+/* This tests that power10_hw works.  */
 
 extern void abort (void);
 

@@ -697,13 +697,18 @@ public:
 	    return;
 	  }
 
-	if (d->_init && !d->_init->isVoidInitializer ())
+	if (d->_init)
 	  {
-	    Expression *e = initializerToExpression (d->_init, d->type);
-	    DECL_INITIAL (decl) = build_expr (e, true);
+	    /* Use the explicit initializer, this includes `void`.  */
+	    if (!d->_init->isVoidInitializer ())
+	      {
+		Expression *e = initializerToExpression (d->_init, d->type);
+		DECL_INITIAL (decl) = build_expr (e, true);
+	      }
 	  }
 	else
 	  {
+	    /* Use default initializer for the type.  */
 	    if (TypeStruct *ts = d->type->isTypeStruct ())
 	      DECL_INITIAL (decl) = layout_struct_initializer (ts->sym);
 	    else
@@ -1245,13 +1250,6 @@ get_symbol_decl (Declaration *decl)
 	}
 
       /* Miscellaneous function flags.  */
-      if (fd->isMember2 () || fd->isFuncLiteralDeclaration ())
-	{
-	  /* See grokmethod in cp/decl.c.  Maybe we shouldn't be setting inline
-	     flags without reason or proper handling.  */
-	  DECL_DECLARED_INLINE_P (decl->csym) = 1;
-	  DECL_NO_INLINE_WARNING_P (decl->csym) = 1;
-	}
 
       /* In [pragma/inline], functions decorated with `pragma(inline)' affects
 	 whether they are inlined or not.  */

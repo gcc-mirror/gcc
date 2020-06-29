@@ -5267,6 +5267,8 @@ ix86_frame_pointer_required (void)
 	  || ix86_current_function_calls_tls_descriptor))
     return true;
 
+  /* Several versions of mcount for the x86 assumes that there is a
+     frame, so we cannot allow profiling without a frame pointer.  */
   if (crtl->profile && !flag_fentry)
     return true;
 
@@ -13846,7 +13848,9 @@ ix86_dirflag_mode_needed (rtx_insn *insn)
 static bool
 ix86_check_avx_upper_register (const_rtx exp)
 {
-  return SSE_REG_P (exp) && GET_MODE_BITSIZE (GET_MODE (exp)) > 128;
+  return (SSE_REG_P (exp)
+	  && !EXT_REX_SSE_REG_P (exp)
+	  && GET_MODE_BITSIZE (GET_MODE (exp)) > 128);
 }
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */

@@ -141,4 +141,7 @@ stamp-build-info: libgomp.texi
 CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO)
 MAINTAINERCLEANFILES = $(srcdir)/libgomp.info
 
+# target overrides
+-include $(tmake_file)
+
 include $(top_srcdir)/../multilib.am

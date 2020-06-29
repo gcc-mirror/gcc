@@ -820,14 +820,6 @@ vect_model_simple_cost (vec_info *,
 	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
 					   stmt_info, 0, vect_prologue);
 
-  /* Adjust for two-operator SLP nodes.  */
-  if (node && SLP_TREE_TWO_OPERATORS (node))
-    {
-      ncopies *= 2;
-      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_perm,
-				       stmt_info, 0, vect_body);
-    }
-
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
   inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
 				   stmt_info, 0, vect_body);
@@ -2846,33 +2838,26 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
 				 tree *dataref_bump, tree *vec_offset)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  gimple_seq stmts;
 
   tree bump = size_binop (MULT_EXPR,
 			  fold_convert (sizetype, unshare_expr (DR_STEP (dr))),
 			  size_int (TYPE_VECTOR_SUBPARTS (vectype)));
-  *dataref_bump = force_gimple_operand (bump, &stmts, true, NULL_TREE);
-  if (stmts)
-    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+  *dataref_bump = cse_and_gimplify_to_preheader (loop_vinfo, bump);
 
   /* The offset given in GS_INFO can have pointer type, so use the element
      type of the vector instead.  */
-  tree offset_type = TREE_TYPE (gs_info->offset);
-  offset_type = TREE_TYPE (gs_info->offset_vectype);
+  tree offset_type = TREE_TYPE (gs_info->offset_vectype);
 
   /* Calculate X = DR_STEP / SCALE and convert it to the appropriate type.  */
   tree step = size_binop (EXACT_DIV_EXPR, unshare_expr (DR_STEP (dr)),
 			  ssize_int (gs_info->scale));
   step = fold_convert (offset_type, step);
-  step = force_gimple_operand (step, &stmts, true, NULL_TREE);
 
   /* Create {0, X, X*2, X*3, ...}.  */
-  *vec_offset = gimple_build (&stmts, VEC_SERIES_EXPR, gs_info->offset_vectype,
-			      build_zero_cst (offset_type), step);
-  if (stmts)
-    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+  tree offset = fold_build2 (VEC_SERIES_EXPR, gs_info->offset_vectype,
+			     build_zero_cst (offset_type), step);
+  *vec_offset = cse_and_gimplify_to_preheader (loop_vinfo, offset);
 }
 
 /* Return the amount that should be added to a vector pointer to move
@@ -5428,6 +5413,15 @@ vectorizable_shift (vec_info *vinfo,
 		= (!op1_vectype
 		   || !tree_nop_conversion_p (TREE_TYPE (vectype),
 					      TREE_TYPE (op1)));
+	      if (incompatible_op1_vectype_p
+		  && dt[1] == vect_internal_def)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "unusable type for last operand in"
+				     " vector/vector shift/rotate.\n");
+		  return false;
+		}
             }
         }
     }
@@ -5472,7 +5466,7 @@ vectorizable_shift (vec_info *vinfo,
     {
       if (slp_node
 	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
-	      || (!scalar_shift_arg
+	      || ((!scalar_shift_arg || dt[1] == vect_internal_def)
 		  && (!incompatible_op1_vectype_p
 		      || dt[1] == vect_constant_def)
 		  && !vect_maybe_update_slp_op_vectype
@@ -5514,6 +5508,7 @@ vectorizable_shift (vec_info *vinfo,
 
   if (incompatible_op1_vectype_p && !slp_node)
     {
+      gcc_assert (!scalar_shift_arg && was_scalar_shift_arg);
       op1 = fold_convert (TREE_TYPE (vectype), op1);
       if (dt[1] != vect_constant_def)
 	op1 = vect_init_vector (vinfo, stmt_info, op1,
@@ -5523,7 +5518,7 @@ vectorizable_shift (vec_info *vinfo,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
-  if (scalar_shift_arg)
+  if (scalar_shift_arg && dt[1] != vect_internal_def)
     {
       /* Vector shl and shr insn patterns can be defined with scalar
 	 operand 2 (shift operand).  In this case, use constant or loop
@@ -5548,7 +5543,7 @@ vectorizable_shift (vec_info *vinfo,
 	    vec_oprnds1.quick_push (vec_oprnd1);
 	}
     }
-  else if (slp_node && incompatible_op1_vectype_p)
+  else if (!scalar_shift_arg && slp_node && incompatible_op1_vectype_p)
     {
       if (was_scalar_shift_arg)
 	{
@@ -5581,6 +5576,20 @@ vectorizable_shift (vec_info *vinfo,
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
     {
       vop1 = vec_oprnds1[i];
+      /* For internal defs where we need to use a scalar shift arg
+	 extract the first lane.  */
+      if (scalar_shift_arg && dt[1] == vect_internal_def)
+	{
+	  new_temp = make_ssa_name (TREE_TYPE (TREE_TYPE (vop1)));
+	  gassign *new_stmt
+	    = gimple_build_assign (new_temp,
+				   build3 (BIT_FIELD_REF, TREE_TYPE (new_temp),
+					   vop1,
+					   TYPE_SIZE (TREE_TYPE (new_temp)),
+					   bitsize_zero_node));
+	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	  vop1 = new_temp;
+	}
       gassign *new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
@@ -8743,7 +8752,8 @@ vectorizable_load (vec_info *vinfo,
       /* For BB vectorization always use the first stmt to base
 	 the data ref pointer on.  */
       if (bb_vinfo)
-	first_stmt_info_for_drptr = SLP_TREE_SCALAR_STMTS (slp_node)[0];
+	first_stmt_info_for_drptr
+	  = vect_find_first_scalar_stmt_in_slp (slp_node);
 
       /* Check if the chain of loads is already vectorized.  */
       if (STMT_VINFO_VEC_STMTS (first_stmt_info).exists ()
@@ -10539,7 +10549,7 @@ vect_analyze_stmt (vec_info *vinfo,
 	  || vectorizable_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
 				     node, node_instance, cost_vec)
 	  || vectorizable_induction (as_a <loop_vec_info> (vinfo), stmt_info,
-				     NULL, NULL, node, cost_vec)
+				     NULL, node, cost_vec)
 	  || vectorizable_shift (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_condition (vinfo, stmt_info,
 				     NULL, NULL, node, cost_vec)
@@ -10621,7 +10631,7 @@ vect_transform_stmt (vec_info *vinfo,
 
     case induc_vec_info_type:
       done = vectorizable_induction (as_a <loop_vec_info> (vinfo),
-				     stmt_info, gsi, &vec_stmt, slp_node,
+				     stmt_info, &vec_stmt, slp_node,
 				     NULL);
       gcc_assert (done);
       break;

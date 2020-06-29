@@ -2589,6 +2589,8 @@ expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_fixed_operand (&ops[4], XEXP (comparison, 0));
   create_fixed_operand (&ops[5], XEXP (comparison, 1));
   expand_insn (icode, 6, ops);
+  if (!rtx_equal_p (ops[0].value, target))
+    emit_move_insn (target, ops[0].value);
 }
 
 #define expand_vec_cond_optab_fn expand_vect_cond_optab_fn
@@ -2629,6 +2631,8 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_input_operand (&ops[2], rtx_op2, mode);
   create_input_operand (&ops[3], mask, mask_mode);
   expand_insn (icode, 4, ops);
+  if (!rtx_equal_p (ops[0].value, target))
+    emit_move_insn (target, ops[0].value);
 }
 
 #define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn

@@ -2291,6 +2291,10 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
+      /* Vector parameters are not supported yet.  */
+      if (VECTOR_MODE_P (arg.mode))
+	return 0;
+
       int reg_num = FIRST_PARM_REG + cum->num;
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
@@ -2476,6 +2480,10 @@ gcn_return_in_memory (const_tree type, const_tree ARG_UNUSED (fntype))
   HOST_WIDE_INT size = int_size_in_bytes (type);
 
   if (AGGREGATE_TYPE_P (type))
+    return true;
+
+  /* Vector return values are not supported yet.  */
+  if (VECTOR_TYPE_P (type))
     return true;
 
   if (mode == BLKmode)
@@ -4038,8 +4046,8 @@ gcn_vectorize_preferred_simd_mode (scalar_mode mode)
    In particular, we do *not* want to match vector bit-size.  */
 
 static opt_machine_mode
-gcn_related_vector_mode (machine_mode vector_mode, scalar_mode element_mode,
-			 poly_uint64 nunits)
+gcn_related_vector_mode (machine_mode ARG_UNUSED (vector_mode),
+			 scalar_mode element_mode, poly_uint64 nunits)
 {
   if (known_ne (nunits, 0U) && known_ne (nunits, 64U))
     return VOIDmode;
@@ -4937,7 +4945,7 @@ gcn_fixup_accel_lto_options (tree fndecl)
 static void
 output_file_start (void)
 {
-  char *cpu;
+  const char *cpu;
   switch (gcn_arch)
     {
     case PROCESSOR_FIJI: cpu = "gfx803"; break;

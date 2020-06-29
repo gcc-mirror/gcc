@@ -1,3 +1,1024 @@
+2020-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.h (vrp_visit_cond_stmt): Use
+	simplify_using_ranges class.
+	* gimple-ssa-evrp.c (class evrp_folder): New simplify_using_ranges
+	field.  Adjust all methods to use new field.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Use
+	simplify_using_ranges class.
+	* tree-vrp.c (class vrp_folder): New simplify_using_ranges
+	field.  Adjust all methods to use new field.
+	(simplify_stmt_for_jump_threading): Use simplify_using_ranges class.
+	(vrp_prop::vrp_finalize): New vrp_folder argument.
+	(execute_vrp): Pass folder to vrp_finalize.  Use
+	simplify_using_ranges class.
+	Remove cleanup_edges_and_switches call.
+	* vr-values.c (vr_values::op_with_boolean_value_range_p): Change
+	value_range_equiv uses to value_range.
+	(simplify_using_ranges::op_with_boolean_value_range_p): Use
+	simplify_using_ranges class.
+	(check_for_binary_op_overflow): Make static.
+	(vr_values::extract_range_basic): Pass this to
+	check_for_binary_op_overflow.
+	(compare_range_with_value): Change value_range_equiv uses to
+	value_range.
+	(vr_values::vr_values): Initialize simplifier field.
+	Remove uses of to_remove_edges and to_update_switch_stmts.
+	(vr_values::~vr_values): Remove uses of to_remove_edges and
+	to_update_switch_stmts.
+	(vr_values::get_vr_for_comparison): Move to simplify_using_ranges
+	class.
+	(vr_values::compare_name_with_value): Same.
+	(vr_values::compare_names): Same.
+	(vr_values::vrp_evaluate_conditional_warnv_with_ops): Same.
+	(vr_values::vrp_evaluate_conditional): Same.
+	(vr_values::vrp_visit_cond_stmt): Same.
+	(find_case_label_ranges): Change value_range_equiv uses to
+	value_range.
+	(vr_values::extract_range_from_stmt): Use simplify_using_ranges class.
+	(vr_values::simplify_truth_ops_using_ranges): Move to
+	simplify_using_ranges class.
+	(vr_values::simplify_div_or_mod_using_ranges): Same.
+	(vr_values::simplify_min_or_max_using_ranges): Same.
+	(vr_values::simplify_abs_using_ranges): Same.
+	(vr_values::simplify_bit_ops_using_ranges): Same.
+	(test_for_singularity): Change value_range_equiv uses to
+	value_range.
+	(range_fits_type_p): Same.
+	(vr_values::simplify_cond_using_ranges_1): Same.
+	(vr_values::simplify_cond_using_ranges_2): Make extern.
+	(vr_values::fold_cond): Move to simplify_using_ranges class.
+	(vr_values::simplify_switch_using_ranges): Same.
+	(vr_values::cleanup_edges_and_switches): Same.
+	(vr_values::simplify_float_conversion_using_ranges): Same.
+	(vr_values::simplify_internal_call_using_ranges): Same.
+	(vr_values::two_valued_val_range_p): Same.
+	(vr_values::simplify_stmt_using_ranges): Move to...
+	(simplify_using_ranges::simplify): ...here.
+	* vr-values.h (class vr_values): Move all the simplification of
+	statements using ranges methods and code from here...
+	(class simplify_using_ranges): ...to here.
+	(simplify_cond_using_ranges_2): New extern prototype.
+
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data_loop): Add non_rect_referenced
+	member, move outer member.
+	(struct omp_for_data): Add first_nonrect and last_nonrect members.
+	* omp-general.c (omp_extract_for_data): Initialize first_nonrect,
+	last_nonrect and non_rect_referenced members.
+	* omp-expand.c (expand_omp_for_init_counts): Handle non-rectangular
+	loops.
+	(expand_omp_for_init_vars): Add nonrect_bounds parameter.  Handle
+	non-rectangular loops.
+	(extract_omp_for_update_vars): Likewise.
+	(expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_simd,
+	expand_omp_taskloop_for_outer, expand_omp_taskloop_for_inner): Adjust
+	expand_omp_for_init_vars and extract_omp_for_update_vars callers.
+	(expand_omp_for): Don't sorry on non-composite worksharing-loop or
+	distribute.
+
+2020-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95655
+	* config/i386/gnu-user.h (SUBTARGET_FRAME_POINTER_REQUIRED):
+	Removed.
+	* config/i386/i386.c (ix86_frame_pointer_required): Update
+	comments.
+
+2020-06-26  Yichao Yu  <yyc1992@gmail.com>
+
+	* multiple_target.c (redirect_to_specific_clone): Fix tests
+	to check individual attribute rather than an attribute list.
+
+2020-06-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (cpu_is_info) <power10>: New.
+	* doc/extend.texi (PowerPC Built-in Functions): Document power10,
+	arch_3_1 and mma.
+
+2020-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (C Dialect Options): Adjust -std default for C++.
+	* doc/standards.texi (C Language): Correct the default dialect.
+	(C++ Language): Update the default for C++ to gnu++17.
+
+2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* tree-ssa-reassoc.c (dump_range_entry): New function.
+	(debug_range_entry): New debug function.
+	(update_range_test): Invoke dump_range_entry for dumping.
+	(optimize_range_tests_to_bit_test): Merge the entry test in the
+	bit test when possible and lower the profitability threshold.
+
+2020-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95897
+	* tree-vectorizer.h (vectorizable_induction): Remove
+	unused gimple_stmt_iterator * parameter.
+	* tree-vect-loop.c (vectorizable_induction): Likewise.
+	(vect_analyze_loop_operations): Adjust.
+	* tree-vect-stmts.c (vect_analyze_stmt): Likewise.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Adjust
+	for fold-left reductions, clarify existing reduction case.
+
+2020-06-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.md (movsicc): Disable pattern.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95839
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Remove premature
+	check on the number of datarefs.
+
+2020-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Cast
+	the insn_data n_operands value to unsigned.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_schedule_slp_instance): Always use
+	vector defs to determine insertion place.
+
+2020-06-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95874
+	* config/i386/i386.h (PTA_ICELAKE_CLIENT): Remove PTA_CLWB.
+	(PTA_ICELAKE_SERVER): Add PTA_CLWB.
+	(PTA_TIGERLAKE): Add PTA_CLWB.
+
+2020-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95866
+	* tree-vect-stmts.c (vectorizable_shift): Reject incompatible
+	vectorized shift operands.  For scalar shifts use lane zero
+	of a vectorized shift operand.
+
+2020-06-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/95745
+	PR middle-end/95830
+	* gimple-isel.cc (gimple_expand_vec_cond_exprs): Delete dead
+	SSA_NAMEs used as the first argument of a VEC_COND_EXPR.  Always
+	return 0.
+	* tree-vect-generic.c (expand_vector_condition): Remove dead
+	SSA_NAMEs used as the first argument of a VEC_COND_EXPR.
+
+2020-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/94954
+	* config/rs6000/altivec.h (vec_pack_to_short_fp32): Update.
+	* config/rs6000/altivec.md (UNSPEC_CONVERT_4F32_8F16): New unspec.
+	(convert_4f32_8f16): New define_expand
+	* config/rs6000/rs6000-builtin.def (convert_4f32_8f16): New builtin define
+	and overload.
+	* config/rs6000/rs6000-call.c (P9V_BUILTIN_VEC_CONVERT_4F32_8F16): New
+	overloaded builtin entry.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVSPHP): New unspec.
+	(vsx_xvcvsphp): New define_insn.
+
+2020-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Simplify rotates by 0.
+
+2020-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Simplify
+	(parity (parity x)) as (parity x), i.e. PARITY is idempotent.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95866
+	* tree-vect-slp.c (vect_slp_tree_uniform_p): New.
+	(vect_build_slp_tree_2): Properly reset matches[0],
+	ignore uniform constants.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95660
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove brand_id.
+	(cpu_indicator_init): Likewise.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Updated.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95774
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add Cooper Lake
+	detection with AVX512BF16.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95843
+	* common/config/i386/i386-isas.h: New file.  Extracted from
+	gcc/config/i386/i386-builtins.c.
+	(_isa_names_table): Add option.
+	(ISA_NAMES_TABLE_START): New.
+	(ISA_NAMES_TABLE_END): Likewise.
+	(ISA_NAMES_TABLE_ENTRY): Likewise.
+	(isa_names_table): Defined with ISA_NAMES_TABLE_START,
+	ISA_NAMES_TABLE_END and ISA_NAMES_TABLE_ENTRY.  Add more ISAs
+	from enum processor_features.
+	* config/i386/driver-i386.c: Include
+	"common/config/i386/cpuinfo.h" and
+	"common/config/i386/i386-isas.h".
+	(has_feature): New macro.
+	(host_detect_local_cpu): Call cpu_indicator_init to get CPU
+	features.  Use has_feature to detect processor features.  Call
+	Call get_intel_cpu to get the newer Intel CPU name.  Use
+	isa_names_table to generate command-line options.
+	* config/i386/i386-builtins.c: Include
+	"common/config/i386/i386-isas.h".
+	(_arch_names_table): Removed.
+	(isa_names_table): Likewise.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95259
+	* common/config/i386/cpuinfo.h: New file.
+	(__processor_model): Moved from libgcc/config/i386/cpuinfo.h.
+	(__processor_model2): New.
+	(CHECK___builtin_cpu_is): New.  Defined as empty if not defined.
+	(has_cpu_feature): New function.
+	(set_cpu_feature): Likewise.
+	(get_amd_cpu): Moved from libgcc/config/i386/cpuinfo.c.  Use
+	CHECK___builtin_cpu_is.  Return AMD CPU name.
+	(get_intel_cpu): Moved from libgcc/config/i386/cpuinfo.c.  Use
+	Use CHECK___builtin_cpu_is.  Return Intel CPU name.
+	(get_available_features): Moved from libgcc/config/i386/cpuinfo.c.
+	Also check FEATURE_3DNOW, FEATURE_3DNOWP, FEATURE_ADX,
+	FEATURE_ABM, FEATURE_CLDEMOTE, FEATURE_CLFLUSHOPT, FEATURE_CLWB,
+	FEATURE_CLZERO, FEATURE_CMPXCHG16B, FEATURE_CMPXCHG8B,
+	FEATURE_ENQCMD, FEATURE_F16C, FEATURE_FSGSBASE, FEATURE_FXSAVE,
+	FEATURE_HLE, FEATURE_IBT, FEATURE_LAHF_LM, FEATURE_LM,
+	FEATURE_LWP, FEATURE_LZCNT, FEATURE_MOVBE, FEATURE_MOVDIR64B,
+	FEATURE_MOVDIRI, FEATURE_MWAITX, FEATURE_OSXSAVE,
+	FEATURE_PCONFIG, FEATURE_PKU, FEATURE_PREFETCHWT1, FEATURE_PRFCHW,
+	FEATURE_PTWRITE, FEATURE_RDPID, FEATURE_RDRND, FEATURE_RDSEED,
+	FEATURE_RTM, FEATURE_SERIALIZE, FEATURE_SGX, FEATURE_SHA,
+	FEATURE_SHSTK, FEATURE_TBM, FEATURE_TSXLDTRK, FEATURE_VAES,
+	FEATURE_WAITPKG, FEATURE_WBNOINVD, FEATURE_XSAVE, FEATURE_XSAVEC,
+	FEATURE_XSAVEOPT and FEATURE_XSAVES
+	(cpu_indicator_init): Moved from libgcc/config/i386/cpuinfo.c.
+	Also update cpu_model2.
+	* common/config/i386/i386-cpuinfo.h (processor_vendor): Add
+	Add VENDOR_CENTAUR, VENDOR_CYRIX and VENDOR_NSC.
+	(processor_features): Moved from gcc/config/i386/i386-builtins.c.
+	Renamed F_XXX to FEATURE_XXX.  Add FEATURE_3DNOW, FEATURE_3DNOWP,
+	FEATURE_ADX, FEATURE_ABM, FEATURE_CLDEMOTE, FEATURE_CLFLUSHOPT,
+	FEATURE_CLWB, FEATURE_CLZERO, FEATURE_CMPXCHG16B,
+	FEATURE_CMPXCHG8B, FEATURE_ENQCMD, FEATURE_F16C,
+	FEATURE_FSGSBASE, FEATURE_FXSAVE, FEATURE_HLE, FEATURE_IBT,
+	FEATURE_LAHF_LM, FEATURE_LM, FEATURE_LWP, FEATURE_LZCNT,
+	FEATURE_MOVBE, FEATURE_MOVDIR64B, FEATURE_MOVDIRI,
+	FEATURE_MWAITX, FEATURE_OSXSAVE, FEATURE_PCONFIG,
+	FEATURE_PKU, FEATURE_PREFETCHWT1, FEATURE_PRFCHW,
+	FEATURE_PTWRITE, FEATURE_RDPID, FEATURE_RDRND, FEATURE_RDSEED,
+	FEATURE_RTM, FEATURE_SERIALIZE, FEATURE_SGX, FEATURE_SHA,
+	FEATURE_SHSTK, FEATURE_TBM, FEATURE_TSXLDTRK, FEATURE_VAES,
+	FEATURE_WAITPKG, FEATURE_WBNOINVD, FEATURE_XSAVE, FEATURE_XSAVEC,
+	FEATURE_XSAVEOPT, FEATURE_XSAVES and CPU_FEATURE_MAX.
+	(SIZE_OF_CPU_FEATURES): New.
+	* config/i386/i386-builtins.c (processor_features): Removed.
+	(isa_names_table): Replace F_XXX with FEATURE_XXX.
+	(fold_builtin_cpu): Change __cpu_features2 to an array.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95842
+	* common/config/i386/i386-common.c (processor_alias_table): Add
+	processor model and priority to each entry.
+	(pta_size): Updated with -6.
+	(num_arch_names): New.
+	* common/config/i386/i386-cpuinfo.h: New file.
+	* config/i386/i386-builtins.c (feature_priority): Removed.
+	(processor_model): Likewise.
+	(_arch_names_table): Likewise.
+	(arch_names_table): Likewise.
+	(_isa_names_table): Replace P_ZERO with P_NONE.
+	(get_builtin_code_for_version): Replace P_ZERO with P_NONE.  Use
+	processor_alias_table.
+	(fold_builtin_cpu): Replace arch_names_table with
+	processor_alias_table.
+	* config/i386/i386.h: Include "common/config/i386/i386-cpuinfo.h".
+	(pta): Add model and priority.
+	(num_arch_names): New.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_find_first_scalar_stmt_in_slp):
+	Declare.
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p):
+	Simplify for new position of vectorized SLP loads.
+	(vect_slp_analyze_node_dependences): Adjust for it.
+	(vect_slp_analyze_and_verify_node_alignment): Compute alignment
+	for the first stmts dataref.
+	* tree-vect-slp.c (vect_find_first_scalar_stmt_in_slp): New.
+	(vect_schedule_slp_instance): Emit loads before the
+	first scalar stmt.
+	* tree-vect-stmts.c (vectorizable_load): Do what the comment
+	says and use vect_find_first_scalar_stmt_in_slp.
+
+2020-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95856
+	* tree-vectorizer.c (vect_stmt_dominates_stmt_p): Honor
+	region marker -1u.
+
+2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95810
+	* fold-const.c (fold_cond_expr_with_comparison): Optimize
+	A <= 0 ? A : -A into (type)-absu(A) rather than -abs(A).
+
+2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_for): Fix two pastos.
+
+2020-06-24  Martin Liska  <mliska@suse.cz>
+
+	* optc-save-gen.awk: Compare string options in cl_optimization_compare
+	by strcmp.
+
+2020-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config.gcc: Identify power10 as a 64-bit processor and as valid
+	for --with-cpu and --with-tune.
+
+2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in (LANG_MAKEFRAGS): Same.
+	(tmake_file): Use -include.
+	(xmake_file): Same.
+
+2020-06-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* REVISION: Delete file meant for a private branch.
+
+2020-06-23  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/95646
+	* config/arm/arm.c: (cmse_nonsecure_entry_clear_before_return): Use
+	'callee_saved_reg_p' instead of 'calL_used_or_fixed_reg_p'.
+
+2020-06-23  Alexandre Oliva  <oliva@adacore.com>
+
+	* collect-utils.h (dumppfx): New.
+	* collect-utils.c (dumppfx): Likewise.
+	* lto-wrapper.c (run_gcc): Set global dumppfx.
+	(compile_offload_image): Pass a -dumpbase on to mkoffload.
+	* config/nvptx/mkoffload.c (ptx_dumpbase): New.
+	(main): Handle incoming -dumpbase.  Set ptx_dumpbase.  Obey
+	save_temps.
+	(compile_native): Pass -dumpbase et al to compiler.
+	* config/gcn/mkoffload.c (gcn_dumpbase): New.
+	(main): Handle incoming -dumpbase.  Set gcn_dumpbase.  Obey
+	save_temps.  Pass -dumpbase et al to offload target compiler.
+	(compile_native): Pass -dumpbase et al to compiler.
+
+2020-06-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* REVISION: New file.
+
+2020-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.h: Use _ARCH_PWR10, not _ARCH_PWR_FUTURE.
+	Update comment for ISA 3.1.
+	* config/rs6000/altivec.md: Use TARGET_POWER10, not TARGET_FUTURE.
+	* config/rs6000/driver-rs6000.c (asm_names): Use -mpwr10 for power10
+	on AIX, and -mpower10 elsewhere.
+	* config/rs6000/future.md: Delete.
+	* config/rs6000/linux64.h: Update comments.  Use TARGET_POWER10, not
+	TARGET_FUTURE.
+	* config/rs6000/power10.md: New file.
+	* config/rs6000/ppc-auxv.h: Use PPC_PLATFORM_POWER10, not
+	PPC_PLATFORM_FUTURE.
+	* config/rs6000/rs6000-builtin.def: Update comments.  Use BU_P10V_*
+	names instead of BU_FUTURE_V_* names.  Use RS6000_BTM_P10 instead of
+	RS6000_BTM_FUTURE.  Use P10_BUILTIN_* instead of FUTURE_BUILTIN_*.
+	Use BU_P10_* instead of BU_FUTURE_*.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	_ARCH_PWR10 instead of _ARCH_PWR_FUTURE.
+	(altivec_resolve_overloaded_builtin): Use P10_BUILTIN_VEC_XXEVAL, not
+	FUTURE_BUILTIN_VEC_XXEVAL.
+	* config/rs6000/rs6000-call.c: Use P10_BUILTIN_*, not FUTURE_BUILTIN_*.
+	Update compiler messages.
+	* config/rs6000/rs6000-cpus.def: Update comments.  Use ISA_3_1_*, not
+	ISA_FUTURE_*.  Use OPTION_MASK_POWER10, not OPTION_MASK_FUTURE.
+	* config/rs6000/rs6000-opts.h: Use PROCESSOR_POWER10, not
+	PROCESSOR_FUTURE.
+	* config/rs6000/rs6000-string.c: Ditto.
+	* config/rs6000/rs6000-tables.opt (rs6000_cpu_opt_value): Use "power10"
+	instead of "future", reorder it to right after "power9".
+	* config/rs6000/rs6000.c: Update comments.  Use OPTION_MASK_POWER10,
+	not OPTION_MASK_FUTURE.  Use TARGET_POWER10, not TARGET_FUTURE.  Use
+	RS6000_BTM_P10, not RS6000_BTM_FUTURE.  Update compiler messages.
+	Use PROCESSOR_POWER10, not PROCESSOR_FUTURE.  Use ISA_3_1_MASKS_SERVER,
+	not ISA_FUTURE_MASKS_SERVER.
+	(rs6000_opt_masks): Use "power10" instead of "future".
+	(rs6000_builtin_mask_names): Ditto.
+	(rs6000_disable_incompatible_switches): Ditto.
+	* config/rs6000/rs6000.h: Use -mpower10, not -mfuture.  Use
+	-mcpu=power10, not -mcpu=future.  Use MASK_POWER10, not MASK_FUTURE.
+	Use OPTION_MASK_POWER10, not OPTION_MASK_FUTURE.  Use RS6000_BTM_P10,
+	not RS6000_BTM_FUTURE.
+	* config/rs6000/rs6000.md: Use "power10", not "future".  Use
+	TARGET_POWER10, not TARGET_FUTURE.  Include "power10.md", not
+	"future.md".
+	* config/rs6000/rs6000.opt (mfuture): Delete.
+	(mpower10): New.
+	* config/rs6000/t-rs6000: Use "power10.md", not "future.md".
+	* config/rs6000/vsx.md: Use TARGET_POWER10, not TARGET_FUTURE.
+
+2020-06-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* coretypes.h (first_type): Delete.
+	* recog.h (insn_gen_fn::operator()): Go back to using a decltype.
+
+2020-06-22  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* doc/sourcebuild.texi (arm_v8_1m_mve_fp_ok): Add item.
+	(arm_mve_hw): Likewise.
+
+2020-06-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95791
+	* config/i386/i386.c (ix86_dirflag_mode_needed): Skip
+	EXT_REX_SSE_REG_P.
+
+2020-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95770
+	* tree-vect-slp.c (vect_schedule_slp_instance): Also consider
+	external defs.
+
+2020-06-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_function_arg): Disallow vector arguments.
+	(gcn_return_in_memory): Return vectors in memory.
+
+2020-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.c (omp_extract_for_data): For triangular loops with
+	all loop invariant expressions constant where the innermost loop is
+	executed at least once compute number of iterations at compile time.
+
+2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.h (ASM_SPEC): Remove riscv_expand_arch call.
+	(DRIVER_SELF_SPECS): New.
+
+2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-builtins.c (RISCV_FTYPE_NAME0): New.
+	(RISCV_FTYPE_ATYPES0): New.
+	(riscv_builtins): Using RISCV_USI_FTYPE for frflags.
+	* config/riscv/riscv-ftypes.def: Remove VOID argument.
+
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc: Use t-aix64, biarch64 and default64 for cpu_is_64bit.
+	* config/rs6000/aix72.h (ASM_SPEC): Remove aix64 option.
+	(ASM_SPEC32): New.
+	(ASM_SPEC64): New.
+	(ASM_CPU_SPEC): Remove vsx and altivec options.
+	(CPP_SPEC_COMMON): Rename from CPP_SPEC.
+	(CPP_SPEC32): New.
+	(CPP_SPEC64): New.
+	(CPLUSPLUS_CPP_SPEC): Rename to CPLUSPLUS_CPP_SPEC_COMMON..
+	(TARGET_DEFAULT): Only define if not BIARCH.
+	(LIB_SPEC_COMMON): Rename from LIB_SPEC.
+	(LIB_SPEC32): New.
+	(LIB_SPEC64): New.
+	(LINK_SPEC_COMMON): Rename from LINK_SPEC.
+	(LINK_SPEC32): New.
+	(LINK_SPEC64): New.
+	(STARTFILE_SPEC): Add 64 bit version of crtcxa and crtdbase.
+	(ASM_SPEC): Define 32 and 64 bit alternatives using DEFAULT_ARCH64_P.
+	(CPP_SPEC): Same.
+	(CPLUSPLUS_CPP_SPEC): Same.
+	(LIB_SPEC): Same.
+	(LINK_SPEC): Same.
+	(SUBTARGET_EXTRA_SPECS): Add new 32/64 specs.
+	* config/rs6000/defaultaix64.h: New file.
+	* config/rs6000/t-aix64: New file.
+
+2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (mma_assemble_input_operand): New.
+	* config/rs6000/rs6000-builtin.def (BU_MMA_1, BU_MMA_V2, BU_MMA_3,
+	BU_MMA_5, BU_MMA_6, BU_VSX_1): Add support macros for defining MMA
+	built-in functions.
+	(ASSEMBLE_ACC, ASSEMBLE_PAIR, DISASSEMBLE_ACC, DISASSEMBLE_PAIR,
+	PMXVBF16GER2, PMXVBF16GER2NN, PMXVBF16GER2NP, PMXVBF16GER2PN,
+	PMXVBF16GER2PP, PMXVF16GER2, PMXVF16GER2NN, PMXVF16GER2NP,
+	PMXVF16GER2PN, PMXVF16GER2PP, PMXVF32GER, PMXVF32GERNN,
+	PMXVF32GERNP, PMXVF32GERPN, PMXVF32GERPP, PMXVF64GER, PMXVF64GERNN,
+	PMXVF64GERNP, PMXVF64GERPN, PMXVF64GERPP, PMXVI16GER2, PMXVI16GER2PP,
+	PMXVI16GER2S, PMXVI16GER2SPP, PMXVI4GER8, PMXVI4GER8PP, PMXVI8GER4,
+	PMXVI8GER4PP, PMXVI8GER4SPP, XVBF16GER2, XVBF16GER2NN, XVBF16GER2NP,
+	XVBF16GER2PN, XVBF16GER2PP, XVCVBF16SP, XVCVSPBF16, XVF16GER2,
+	XVF16GER2NN, XVF16GER2NP, XVF16GER2PN, XVF16GER2PP, XVF32GER,
+	XVF32GERNN, XVF32GERNP, XVF32GERPN, XVF32GERPP, XVF64GER, XVF64GERNN,
+	XVF64GERNP, XVF64GERPN, XVF64GERPP, XVI16GER2, XVI16GER2PP, XVI16GER2S,
+	XVI16GER2SPP, XVI4GER8, XVI4GER8PP, XVI8GER4, XVI8GER4PP, XVI8GER4SPP,
+	XXMFACC, XXMTACC, XXSETACCZ): Add MMA built-ins.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use CONST_INT_P.
+	Allow zero constants.
+	(print_operand) <case 'A'>: New output modifier.
+	(rs6000_split_multireg_move): Add support for inserting accumulator
+	priming and depriming instructions.  Add support for splitting an
+	assemble accumulator pattern.
+	* config/rs6000/rs6000-call.c (mma_init_builtins, mma_expand_builtin,
+	rs6000_gimple_fold_mma_builtin): New functions.
+	(RS6000_BUILTIN_M): New macro.
+	(def_builtin): Handle RS6000_BTC_QUAD and RS6000_BTC_PAIR attributes.
+	(bdesc_mma): Add new MMA built-in support.
+	(htm_expand_builtin): Use RS6000_BTC_OPND_MASK.
+	(rs6000_invalid_builtin): Add handling of RS6000_BTM_FUTURE and
+	RS6000_BTM_MMA.
+	(rs6000_builtin_valid_without_lhs): Handle RS6000_BTC_VOID attribute.
+	(rs6000_gimple_fold_builtin): Call rs6000_builtin_is_supported_p
+	and rs6000_gimple_fold_mma_builtin.
+	(rs6000_expand_builtin): Call mma_expand_builtin.
+	Use RS6000_BTC_OPND_MASK.
+	(rs6000_init_builtins): Adjust comment.  Call mma_init_builtins.
+	(htm_init_builtins): Use RS6000_BTC_OPND_MASK.
+	(builtin_function_type): Handle VSX_BUILTIN_XVCVSPBF16 and
+	VSX_BUILTIN_XVCVBF16SP.
+	* config/rs6000/rs6000.h (RS6000_BTC_QUINARY, RS6000_BTC_SENARY,
+	RS6000_BTC_OPND_MASK, RS6000_BTC_QUAD, RS6000_BTC_PAIR,
+	RS6000_BTC_QUADPAIR, RS6000_BTC_GIMPLE): New defines.
+	(RS6000_BTC_PREDICATE, RS6000_BTC_ABS, RS6000_BTC_DST,
+	RS6000_BTC_TYPE_MASK, RS6000_BTC_ATTR_MASK): Adjust values.
+	* config/rs6000/mma.md (MAX_MMA_OPERANDS): New define_constant.
+	(UNSPEC_MMA_ASSEMBLE_ACC, UNSPEC_MMA_PMXVBF16GER2,
+	UNSPEC_MMA_PMXVBF16GER2NN, UNSPEC_MMA_PMXVBF16GER2NP,
+	UNSPEC_MMA_PMXVBF16GER2PN, UNSPEC_MMA_PMXVBF16GER2PP,
+	UNSPEC_MMA_PMXVF16GER2, UNSPEC_MMA_PMXVF16GER2NN,
+	UNSPEC_MMA_PMXVF16GER2NP, UNSPEC_MMA_PMXVF16GER2PN,
+	UNSPEC_MMA_PMXVF16GER2PP, UNSPEC_MMA_PMXVF32GER,
+	UNSPEC_MMA_PMXVF32GERNN, UNSPEC_MMA_PMXVF32GERNP,
+	UNSPEC_MMA_PMXVF32GERPN, UNSPEC_MMA_PMXVF32GERPP,
+	UNSPEC_MMA_PMXVF64GER, UNSPEC_MMA_PMXVF64GERNN,
+	UNSPEC_MMA_PMXVF64GERNP, UNSPEC_MMA_PMXVF64GERPN,
+	UNSPEC_MMA_PMXVF64GERPP, UNSPEC_MMA_PMXVI16GER2,
+	UNSPEC_MMA_PMXVI16GER2PP, UNSPEC_MMA_PMXVI16GER2S,
+	UNSPEC_MMA_PMXVI16GER2SPP, UNSPEC_MMA_PMXVI4GER8,
+	UNSPEC_MMA_PMXVI4GER8PP, UNSPEC_MMA_PMXVI8GER4,
+	UNSPEC_MMA_PMXVI8GER4PP, UNSPEC_MMA_PMXVI8GER4SPP,
+	UNSPEC_MMA_XVBF16GER2, UNSPEC_MMA_XVBF16GER2NN,
+	UNSPEC_MMA_XVBF16GER2NP, UNSPEC_MMA_XVBF16GER2PN,
+	UNSPEC_MMA_XVBF16GER2PP, UNSPEC_MMA_XVF16GER2, UNSPEC_MMA_XVF16GER2NN,
+	UNSPEC_MMA_XVF16GER2NP, UNSPEC_MMA_XVF16GER2PN, UNSPEC_MMA_XVF16GER2PP,
+	UNSPEC_MMA_XVF32GER, UNSPEC_MMA_XVF32GERNN, UNSPEC_MMA_XVF32GERNP,
+	UNSPEC_MMA_XVF32GERPN, UNSPEC_MMA_XVF32GERPP, UNSPEC_MMA_XVF64GER,
+	UNSPEC_MMA_XVF64GERNN, UNSPEC_MMA_XVF64GERNP, UNSPEC_MMA_XVF64GERPN,
+	UNSPEC_MMA_XVF64GERPP, UNSPEC_MMA_XVI16GER2, UNSPEC_MMA_XVI16GER2PP,
+	UNSPEC_MMA_XVI16GER2S, UNSPEC_MMA_XVI16GER2SPP, UNSPEC_MMA_XVI4GER8,
+	UNSPEC_MMA_XVI4GER8PP, UNSPEC_MMA_XVI8GER4, UNSPEC_MMA_XVI8GER4PP,
+	UNSPEC_MMA_XVI8GER4SPP, UNSPEC_MMA_XXMFACC, UNSPEC_MMA_XXMTACC): New.
+	(MMA_ACC, MMA_VV, MMA_AVV, MMA_PV, MMA_APV, MMA_VVI4I4I8,
+	MMA_AVVI4I4I8, MMA_VVI4I4I2, MMA_AVVI4I4I2, MMA_VVI4I4,
+	MMA_AVVI4I4, MMA_PVI4I2, MMA_APVI4I2, MMA_VVI4I4I4,
+	MMA_AVVI4I4I4): New define_int_iterator.
+	(acc, vv, avv, pv, apv, vvi4i4i8, avvi4i4i8, vvi4i4i2,
+	avvi4i4i2, vvi4i4, avvi4i4, pvi4i2, apvi4i2, vvi4i4i4,
+	avvi4i4i4): New define_int_attr.
+	(*movpxi): Add zero constant alternative.
+	(mma_assemble_pair, mma_assemble_acc): New define_expand.
+	(*mma_assemble_acc): New define_insn_and_split.
+	(mma_<acc>, mma_xxsetaccz, mma_<vv>, mma_<avv>, mma_<pv>, mma_<apv>,
+	mma_<vvi4i4i8>, mma_<avvi4i4i8>, mma_<vvi4i4i2>, mma_<avvi4i4i2>,
+	mma_<vvi4i4>, mma_<avvi4i4>, mma_<pvi4i2>, mma_<apvi4i2>,
+	mma_<vvi4i4i4>, mma_<avvi4i4i4>): New define_insn.
+	* config/rs6000/rs6000.md (define_attr "type"): New type mma.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVBF16SP): New.
+	(UNSPEC_VSX_XVCVSPBF16): Likewise.
+	(XVCVBF16): New define_int_iterator.
+	(xvcvbf16): New define_int_attr.
+	(vsx_<xvcvbf16>): New define_insn.
+	* doc/extend.texi: Document the mma built-ins.
+
+2020-06-21  Peter Bergner  <bergner@linux.ibm.com>
+	    Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/mma.md: New file.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__MMA__ for mma.
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Add support
+	for __vector_pair and __vector_quad types.
+	* config/rs6000/rs6000-cpus.def (OTHER_FUTURE_MASKS): Add
+	OPTION_MASK_MMA.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000-modes.def (OI, XI): New integer modes.
+	(POI, PXI): New partial integer modes.
+	* config/rs6000/rs6000.c (TARGET_INVALID_CONVERSION): Define.
+	(rs6000_hard_regno_nregs_internal): Use VECTOR_ALIGNMENT_P.
+	(rs6000_hard_regno_mode_ok_uncached): Likewise.
+	Add support for POImode being allowed in VSX registers and PXImode
+	being allowed in FP registers.
+	(rs6000_modes_tieable_p): Adjust comment.
+	Add support for POImode and PXImode.
+	(rs6000_debug_reg_global) <print_tieable_modes>: Add OImode, POImode
+	XImode, PXImode, V2SImode, V2SFmode and CCFPmode..
+	(rs6000_setup_reg_addr_masks): Use VECTOR_ALIGNMENT_P.
+	Set up appropriate addr_masks for vector pair and vector quad addresses.
+	(rs6000_init_hard_regno_mode_ok): Add support for vector pair and
+	vector quad registers.  Setup reload handlers for POImode and PXImode.
+	(rs6000_builtin_mask_calculate): Add support for RS6000_BTM_MMA.
+	(rs6000_option_override_internal): Error if -mmma is specified
+	without -mcpu=future.
+	(rs6000_slow_unaligned_access): Use VECTOR_ALIGNMENT_P.
+	(quad_address_p): Change size test to less than 16 bytes.
+	(reg_offset_addressing_ok_p): Add support for ISA 3.1 vector pair
+	and vector quad instructions.
+	(avoiding_indexed_address_p): Likewise.
+	(rs6000_emit_move): Disallow POImode and PXImode moves involving
+	constants.
+	(rs6000_preferred_reload_class): Prefer VSX registers for POImode
+	and FP registers for PXImode.
+	(rs6000_split_multireg_move): Support splitting POImode and PXImode
+	move instructions.
+	(rs6000_mangle_type): Adjust comment.  Add support for mangling
+	__vector_pair and __vector_quad types.
+	(rs6000_opt_masks): Add entry for mma.
+	(rs6000_builtin_mask_names): Add RS6000_BTM_MMA and RS6000_BTM_FUTURE.
+	(rs6000_function_value): Use VECTOR_ALIGNMENT_P.
+	(address_to_insn_form): Likewise.
+	(reg_to_non_prefixed): Likewise.
+	(rs6000_invalid_conversion): New function.
+	* config/rs6000/rs6000.h (MASK_MMA): Define.
+	(BIGGEST_ALIGNMENT): Set to 512 if MMA support is enabled.
+	(VECTOR_ALIGNMENT_P): New helper macro.
+	(ALTIVEC_VECTOR_MODE): Use VECTOR_ALIGNMENT_P.
+	(RS6000_BTM_MMA): Define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_MMA and RS6000_BTM_FUTURE.
+	(rs6000_builtin_type_index): Add RS6000_BTI_vector_pair and
+	RS6000_BTI_vector_quad.
+	(vector_pair_type_node): New.
+	(vector_quad_type_node): New.
+	* config/rs6000/rs6000.md: Include mma.md.
+	(define_mode_iterator RELOAD): Add POI and PXI.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add mma.md.
+	* config/rs6000/rs6000.opt (-mmma): New.
+	* doc/invoke.texi: Document -mmma.
+
+2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95638
+	* tree-loop-distribution.c (pg_edge_callback_data): New field.
+	(loop_distribution::break_alias_scc_partitions): Record and restore
+	postorder information.  Fix memory leak.
+
+2020-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_related_vector_mode): Add ARG_UNUSED.
+	(output_file_start): Use const 'char *'.
+
+2020-06-19  Przemyslaw Wirkus  <Przemyslaw.Wirkus@arm.com>
+
+	PR tree-optimization/94880
+	* match.pd (A | B) - B -> (A & ~B): New simplification.
+
+2020-06-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Adjust
+	for lane permutations.
+
+2020-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95761
+	* tree-vect-slp.c (vect_schedule_slp_instance): Walk all
+	vectorized stmts for finding the last one.
+
+2020-06-18  Felix Yang  <felix.yang@huawei.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Call
+	vect_relevant_for_alignment_p to filter out data references in
+	the loop whose alignment is irrelevant when trying loop peeling
+	to force alignment.
+
+2020-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpqi_ext<mode>_1): Use SWI248 mode
+	iterator instead of SImode for ZERO_EXTRACT RTX.  Use SWI248
+	mode iterator for the first operand of ZERO_EXTRACT RTX.
+	Change ext_register_operand predicate to register_operand.
+	Rename from *cmpqi_ext_1.
+	(*cmpqi_ext<mode>_2): Ditto.  Rename from *cmpqi_ext_2.
+	(*cmpqi_ext<mode>_3): Ditto.  Rename from *cmpqi_ext_3.
+	(*cmpqi_ext<mode>_4): Ditto.  Rename from *cmpqi_ext_4.
+	(cmpi_ext_3): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(*extv<mode>): Use SWI24 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.
+	(*extzv<mode>): Use SWI248 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.
+	(*extzvqi): Use SWI248 mode iterator instead of SImode for
+	ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate to
+	register_operand.
+	(*extzvqi_mem_rex64 and corresponding peephole2):  Use SWI248 mode
+	iterator instead of SImode for ZERO_EXTRACT RTX.  Use SWI248
+	mode iterator for the first operand of ZERO_EXTRACT RTX.
+	Change ext_register_operand predicate to register_operand.
+	(@insv<mode>_1): Use SWI248 mode iterator for the first operand
+	of ZERO_EXTRACT RTX.  Change ext_register_operand predicate to
+	register_operand.
+	(*insvqi_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the
+	first operand of ZERO_EXTRACT RTX.  Change ext_register_operand
+	predicate to register_operand.
+	(*insvqi_2): Ditto.
+	(*insvqi_3): Ditto.
+	(*insvqi_1_mem_rex64 and corresponding peephole2):  Use SWI248 mode
+	iterator instead of SImode for ZERO_EXTRACT RTX.  Use SWI248
+	mode iterator for the first operand of ZERO_EXTRACT RTX.
+	Change ext_register_operand predicate to register_operand.
+	(addqi_ext_1): New expander.
+	(*addqi_ext<mode>_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from *addqi_ext_1.
+	(*addqi_ext<mode>_2): Ditto. Rename from *addqi_ext_2.
+	(divmodqi4): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(udivmodqi4): Ditto.
+	(testqi_ext_1): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(*testqi_ext<mode>_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from *testqi_ext_1.
+	(*testqi_ext<mode>_2): Ditto.  Rename from *testqi_ext_2.
+	(andqi_ext_1): New expander.
+	(*andqi_ext<mode>_1): Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from andqi_ext_1.
+	(*andqi_ext<mode>_1_cc): Ditto.  Rename from *andqi_ext_1_cc.
+	(*andqi_ext<mode>_2): Ditto.  Rename from *andqi_ext_2.
+	(*<code>qi_ext<mode>_1): Ditto.  Rename from *<code>qi_ext_1.
+	(*<code>qi_ext<mode>_2): Ditto.  Rename from *<code>qi_ext_2.
+	(xorqi_ext_1_cc): Use HImode instead of SImode for ZERO_EXTRACT RTX.
+	(*xorqi_ext<mode>_1_cc):  Use SWI248 mode iterator instead of SImode
+	for ZERO_EXTRACT RTX.  Use SWI248 mode iterator for the first
+	operand of ZERO_EXTRACT RTX.  Change ext_register_operand predicate
+	to register_operand.  Rename from *xorqi_ext_1_cc.
+	* config/i386/i386-expand.c (ix86_split_idivmod): Emit ZERO_EXTRACT
+	in mode, matching its first operand.
+	(promote_duplicated_reg): Update for renamed insv<mode>_1.
+	* config/i386/predicates.md (ext_register_operand): Remove predicate.
+
+2020-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95667
+	PR middle-end/92814
+	* builtins.c (compute_objsize): Remove call to
+	compute_builtin_object_size and instead compute conservative sizes
+	directly here.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* coretypes.h (struct iterator_range): New type.
+	* tree-vect-patterns.c (vect_determine_precisions): Use
+	range-based iterator.
+	(vect_pattern_recog): Likewise.
+	* tree-vect-slp.c (_bb_vec_info):  Likewise.
+	(_bb_vec_info::~_bb_vec_info): Likewise.
+	(vect_slp_check_for_constructors): Likewise.
+	* tree-vectorizer.h:Add new iterators
+	and functions that use it.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.c (fold_build_vec_cmp):
+	Since 502d63b6d6141597bb18fd23c87736a1b384cf8f, first argument
+	of a VEC_COND_EXPR cannot be tcc_comparison and so that
+	a SSA_NAME needs to be created before we use it for the first
+	argument of the VEC_COND_EXPR.
+	(fold_compare_helper): Pass gsi to fold_build_vec_cmp.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95739
+	* internal-fn.c (expand_vect_cond_optab_fn): Move the result
+	to the target if necessary.
+	(expand_vect_cond_mask_optab_fn): Likewise.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-reassoc.c (ovce_extract_ops): Replace *vcond with
+	vcond as we check for NULL pointer.
+
+2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimple-pretty-print.c (dump_binary_rhs): Use braces to
+	silence empty-body warning with gcc_fallthrough.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95699
+	* tree-ssa-phiopt.c (minmax_replacement): Treat (signed int)x < 0
+	as x > INT_MAX and (signed int)x >= 0 as x <= INT_MAX.  Move variable
+	declarations to the statements that set them where possible.
+
+2020-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95713
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Don't allow
+	scalar mode halfvectype other than vector boolean for
+	VEC_PACK_TRUNC_EXPR.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	* varasm.c (assemble_variable): Make sure to not
+	defer output when outputting addressed constants.
+	(output_constant_def_contents): Likewise.
+	(add_constant_to_table): Take and pass on whether to
+	defer output.
+	(output_addressed_constants): Likewise.
+	(output_constant_def): Pass on whether to defer output
+	to add_constant_to_table.
+	(tree_output_constant_def): Defer output of constants.
+
+2020-06-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::two_operators): Remove.
+	(_slp_tree::lane_permutation): New member.
+	(_slp_tree::code): Likewise.
+	(SLP_TREE_TWO_OPERATORS): Remove.
+	(SLP_TREE_LANE_PERMUTATION): New.
+	(SLP_TREE_CODE): Likewise.
+	(vect_stmt_dominates_stmt_p): Declare.
+	* tree-vectorizer.c (vect_stmt_dominates_stmt_p): New function.
+	* tree-vect-stmts.c (vect_model_simple_cost): Remove
+	SLP_TREE_TWO_OPERATORS handling.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Amend.
+	(_slp_tree::~_slp_tree): Likewise.
+	(vect_two_operations_perm_ok_p): Remove.
+	(vect_build_slp_tree_1): Remove verification of two-operator
+	permutation here.
+	(vect_build_slp_tree_2): When we have two different operators
+	build two computation SLP nodes and a blend.
+	(vect_print_slp_tree): Print the lane permutation if it exists.
+	(slp_copy_subtree): Copy it.
+	(vect_slp_rearrange_stmts): Re-arrange it.
+	(vect_slp_analyze_node_operations_1): Handle SLP_TREE_CODE
+	VEC_PERM_EXPR explicitely.
+	(vect_schedule_slp_instance): Likewise.  Remove old
+	SLP_TREE_TWO_OPERATORS code.
+	(vectorizable_slp_permutation): New function.
+
+2020-06-18  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-generic.c (expand_vector_condition): Check
+	for gassign before inspecting RHS.
+
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (omp_notice_threadprivate_variable)
+	(omp_default_clause, omp_notice_variable): 'inform' after 'error'
+	diagnostic.  Adjust all users.
+
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* hsa-gen.c (gen_hsa_insns_for_call): Move 'function_decl ==
+	NULL_TREE' check earlier.
+
+2020-06-17  Forrest Timour  <forrest.timour@gmail.com>
+
+	* doc/extend.texi (attribute access): Fix a typo.
+
+2020-06-17  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	PR tree-optimization/95199
+	* tree-vect-stmts.c: Eliminate common stmts for bump and offset in
+	strided load/store operations and remove redundant code.
+
+2020-06-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* coretypes.h (first_type): New alias template.
+	* recog.h (insn_gen_fn::operator()): Use it instead of a decltype.
+	Remove spurious “...” and split the function type out into a typedef.
+
+2020-06-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_fix_long_loop_prediction): Exit early
+	for PARALLELs.
+
+2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): Set the passed
+	in *vectype parameter.
+	(vect_build_slp_tree_2): Set SLP_TREE_VECTYPE from what
+	vect_build_slp_tree_1 computed.
+	(vect_analyze_slp_instance): Set SLP_TREE_VECTYPE.
+	(vect_slp_analyze_node_operations_1): Use the SLP node vector type.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_use): Take the vector type
+	from SLP_TREE_VECTYPE.
+
+2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95717
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Move BB SSA updating before exit/latch PHI current def copying.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add new file.
+	* expr.c (expand_expr_real_2): Add gcc_unreachable as we should
+	not meet this condition.
+	(do_store_flag): Likewise.
+	* gimplify.c (gimplify_expr): Gimplify first argument of
+	VEC_COND_EXPR to be a SSA name.
+	* internal-fn.c (vec_cond_mask_direct): New.
+	(vec_cond_direct): Likewise.
+	(vec_condu_direct): Likewise.
+	(vec_condeq_direct): Likewise.
+	(expand_vect_cond_optab_fn):  New.
+	(expand_vec_cond_optab_fn): Likewise.
+	(expand_vec_condu_optab_fn): Likewise.
+	(expand_vec_condeq_optab_fn): Likewise.
+	(expand_vect_cond_mask_optab_fn): Likewise.
+	(expand_vec_cond_mask_optab_fn): Likewise.
+	(direct_vec_cond_mask_optab_supported_p): Likewise.
+	(direct_vec_cond_optab_supported_p): Likewise.
+	(direct_vec_condu_optab_supported_p): Likewise.
+	(direct_vec_condeq_optab_supported_p): Likewise.
+	* internal-fn.def (VCOND): New OPTAB.
+	(VCONDU): Likewise.
+	(VCONDEQ): Likewise.
+	(VCOND_MASK): Likewise.
+	* optabs.c (get_rtx_code): Make it global.
+	(expand_vec_cond_mask_expr): Removed.
+	(expand_vec_cond_expr): Removed.
+	* optabs.h (expand_vec_cond_expr): Likewise.
+	(vector_compare_rtx): Make it global.
+	* passes.def: Add new pass_gimple_isel pass.
+	* tree-cfg.c (verify_gimple_assign_ternary): Add check
+	for VEC_COND_EXPR about first argument.
+	* tree-pass.h (make_pass_gimple_isel): New.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Prevent
+	propagation of the first argument of a VEC_COND_EXPR.
+	* tree-ssa-reassoc.c (ovce_extract_ops): Support SSA_NAME as
+	first argument of a VEC_COND_EXPR.
+	(optimize_vec_cond_expr): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod): Make SSA_NAME
+	for a first argument of created VEC_COND_EXPR.
+	(expand_vector_condition): Fix coding style.
+	* tree-vect-stmts.c (vectorizable_condition): Gimplify
+	first argument.
+	* gimple-isel.cc: New file.
+
+2020-06-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (TEXT_SECTION_ASM_OP): Use ".text".
+	(BSS_SECTION_ASM_OP): Use ".bss".
+	(ASM_SPEC): Remove "-mattr=-code-object-v3".
+	(LINK_SPEC): Add "--export-dynamic".
+	* config/gcn/gcn-opts.h (processor_type): Replace PROCESSOR_VEGA with
+	PROCESSOR_VEGA10 and PROCESSOR_VEGA20.
+	* config/gcn/gcn-run.c (HSA_RUNTIME_LIB): Use ".so.1" variant.
+	(load_image): Remove obsolete relocation handling.
+	Add ".kd" suffix to the symbol names.
+	* config/gcn/gcn.c (MAX_NORMAL_SGPR_COUNT): Set to 62.
+	(gcn_option_override): Update gcn_isa test.
+	(gcn_kernel_arg_types): Update all the assembler directives.
+	Remove the obsolete options.
+	(gcn_conditional_register_usage): Update MAX_NORMAL_SGPR_COUNT usage.
+	(gcn_omp_device_kind_arch_isa): Handle PROCESSOR_VEGA10 and
+	PROCESSOR_VEGA20.
+	(output_file_start): Rework assembler file header.
+	(gcn_hsa_declare_function_name): Rework kernel metadata.
+	* config/gcn/gcn.h (GCN_KERNEL_ARG_TYPES): Set to 16.
+	* config/gcn/gcn.opt (PROCESSOR_VEGA): Remove enum.
+	(PROCESSOR_VEGA10): New enum value.
+	(PROCESSOR_VEGA20): New enum value.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* gcov-dump.c (print_version): Collapse lisence header to 2 lines
+	in --version.
+	* gcov-tool.c (print_version): Likewise.
+	* gcov.c (print_version): Likewise.
+
+2020-06-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/95524
+	* config/i386/i386-expand.c
+	(ix86_expand_vec_shift_qihi_constant): New function.
+	* config/i386/i386-protos.h
+	(ix86_expand_vec_shift_qihi_constant): Declare.
+	* config/i386/sse.md (<shift_insn><mode>3): Optimize shift
+	V*QImode by constant.
+
 2020-06-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/95649

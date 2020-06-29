@@ -47,8 +47,11 @@ force=0
 OS=$(uname)
 
 case $OS in
-  "Darwin"|"FreeBSD"|"DragonFly")
+  "Darwin"|"FreeBSD"|"DragonFly"|"AIX")
     chksum='shasum -a 512 --check'
+  ;;
+  "OpenBSD")
+    chksum='sha512 -c'
   ;;
   *)
     chksum='sha512sum -c'
@@ -242,8 +245,19 @@ for ar in $(echo_archives)
 do
     package="${ar%.tar*}"
     if [ ${force} -gt 0 ]; then rm -rf "${directory}/${package}"; fi
+    case $ar in
+    *.gz)
+	uncompress='gzip -d'
+	;;
+    *.bz2)
+	uncompress='bzip2 -d'
+	;;
+    *)
+	uncompress='cat'
+	;;
+    esac
     [ -e "${directory}/${package}" ]                                          \
-        || ( cd "${directory}" && tar -xf "${ar}" )                           \
+        || ( cd "${directory}" && $uncompress <"${ar}" | tar -xf - )          \
         || die "Cannot extract package from ${ar}"
     unset package
 done

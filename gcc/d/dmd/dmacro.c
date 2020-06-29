@@ -237,14 +237,14 @@ void Macro::expand(OutBuffer *buf, size_t start, size_t *pend,
 
     size_t end = *pend;
     assert(start <= end);
-    assert(end <= buf->offset);
+    assert(end <= buf->length());
 
     /* First pass - replace $0
      */
     arg = memdup(arg, arglen);
     for (size_t u = start; u + 1 < end; )
     {
-        utf8_t *p = (utf8_t *)buf->data;   // buf->data is not loop invariant
+        utf8_t *p = (utf8_t *)buf->slice().ptr;   // buf->slice().ptr is not loop invariant
 
         /* Look for $0, but not $$0, and replace it with arg.
          */
@@ -294,8 +294,8 @@ void Macro::expand(OutBuffer *buf, size_t start, size_t *pend,
             {
                 // Replace '$1' with '\xFF{arg\xFF}'
                 //printf("Replacing '$%c' with '\xFF{%.*s\xFF}'\n", p[u + 1], marglen, marg);
-                buf->data[u] = 0xFF;
-                buf->data[u + 1] = '{';
+                buf->slice().ptr[u] = 0xFF;
+                buf->slice().ptr[u + 1] = '{';
                 buf->insert(u + 2, marg, marglen);
                 buf->insert(u + 2 + marglen, (const char *)"\xFF}", 2);
                 end += -2 + 2 + marglen + 2;
@@ -307,7 +307,7 @@ void Macro::expand(OutBuffer *buf, size_t start, size_t *pend,
                 u = mend;
             }
             //printf("u = %d, end = %d\n", u, end);
-            //printf("#%.*s#\n", end, &buf->data[0]);
+            //printf("#%.*s#\n", end, &buf->slice().ptr[0]);
             continue;
         }
 
@@ -318,7 +318,7 @@ void Macro::expand(OutBuffer *buf, size_t start, size_t *pend,
      */
     for (size_t u = start; u + 4 < end; )
     {
-        utf8_t *p = (utf8_t *)buf->data;   // buf->data is not loop invariant
+        utf8_t *p = (utf8_t *)buf->slice().ptr;   // buf->slice().ptr is not loop invariant
 
         /* A valid start of macro expansion is $(c, where c is
          * an id start character, and not $$(c.
@@ -418,11 +418,11 @@ void Macro::expand(OutBuffer *buf, size_t start, size_t *pend,
                         marg = memdup(marg, marglen);
                         // Insert replacement text
                         buf->spread(v + 1, 2 + m->textlen + 2);
-                        buf->data[v + 1] = 0xFF;
-                        buf->data[v + 2] = '{';
-                        memcpy(buf->data + v + 3, m->text, m->textlen);
-                        buf->data[v + 3 + m->textlen] = 0xFF;
-                        buf->data[v + 3 + m->textlen + 1] = '}';
+                        buf->slice().ptr[v + 1] = 0xFF;
+                        buf->slice().ptr[v + 2] = '{';
+                        memcpy(buf->slice().ptr + v + 3, m->text, m->textlen);
+                        buf->slice().ptr[v + 3 + m->textlen] = 0xFF;
+                        buf->slice().ptr[v + 3 + m->textlen + 1] = '}';
 
                         end += 2 + m->textlen + 2;
 
@@ -438,7 +438,7 @@ void Macro::expand(OutBuffer *buf, size_t start, size_t *pend,
                         u += mend - (v + 1);
                         mem.xfree(const_cast<utf8_t *>(marg));
                         //printf("u = %d, end = %d\n", u, end);
-                        //printf("#%.*s#\n", end - u, &buf->data[u]);
+                        //printf("#%.*s#\n", end - u, &buf->slice().ptr[u]);
                         continue;
                     }
                 }

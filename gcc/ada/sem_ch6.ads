@@ -69,6 +69,16 @@ package Sem_Ch6 is
    --  the source location of the partial view, which may be different than
    --  Prev in the case of private types.
 
+   procedure Check_Formal_Subprogram_Conformance
+     (New_Id  : Entity_Id;
+      Old_Id  : Entity_Id;
+      Err_Loc : Node_Id := Empty);
+   --  Check RM 6.3.1(17/3): the profile of a generic formal subprogram is not
+   --  subtype conformant with any other profile and post an error message if
+   --  either New_Id or Old_Id denotes a formal subprogram, with the flag being
+   --  placed on the Err_Loc node if it is specified, and on New_Id if not. See
+   --  also spec of Check_Fully_Conformant below for New_Id and Old_Id usage.
+
    procedure Check_Fully_Conformant
      (New_Id  : Entity_Id;
       Old_Id  : Entity_Id;

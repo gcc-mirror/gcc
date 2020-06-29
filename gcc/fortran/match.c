@@ -5700,6 +5700,11 @@ gfc_match_equivalence (void)
 
 	  if (!gfc_add_in_equivalence (&sym->attr, sym->name, NULL))
 	    goto cleanup;
+	  if (sym->ts.type == BT_CLASS
+	      && CLASS_DATA (sym)
+	      && !gfc_add_in_equivalence (&CLASS_DATA (sym)->attr,
+					  sym->name, NULL))
+	    goto cleanup;
 
 	  if (sym->attr.in_common)
 	    {
@@ -6491,7 +6496,7 @@ static void
 select_rank_set_tmp (gfc_typespec *ts, int *case_value)
 {
   char name[2 * GFC_MAX_SYMBOL_LEN];
-  char tname[GFC_MAX_SYMBOL_LEN];
+  char tname[GFC_MAX_SYMBOL_LEN + 7];
   gfc_symtree *tmp;
   gfc_symbol *selector = select_type_stack->selector;
   gfc_symbol *sym;

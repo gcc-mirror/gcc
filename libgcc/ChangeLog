@@ -1,3 +1,56 @@
+2020-06-25  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (merge_summary): Remove function as its name
+	is misleading and doing something different.
+	(dump_one_gcov): Add ATTRIBUTE_UNUSED for 2 args. Take read summary
+	in gcov-tool.
+	* libgcov-util.c (curr_object_summary): Remove.
+	(read_gcda_file): Remove unused curr_object_summary.
+	(gcov_merge): Merge summaries.
+	* libgcov.h: Add summary argument for gcov_info struct.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95259
+	* config/i386/cpuinfo.c: Don't include "cpuinfo.h".  Include
+	"common/config/i386/i386-cpuinfo.h" and
+	"common/config/i386/cpuinfo.h".
+	(__cpu_features2): Changed to array.
+	(get_amd_cpu): Removed.
+	(get_intel_cpu): Likewise.
+	(get_available_features): Likewise.
+	(__cpu_indicator_init): Call cpu_indicator_init.
+	* config/i386/cpuinfo.h: Removed.
+
+2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in: Remove uses of empty.mk. Use -include.
+	* config/avr/t-avr: Use -include.
+	* empty.mk: Delete.
+
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (extra_parts): Add crtcxa_64 and crtdbase_64.
+	* config/rs6000/t-aix-cxa: Explicitly compile 32 bit with -maix32
+	and 64 bit with -maix64.
+	* config/rs6000/t-slibgcc-aix: Remove extra @multilib_dir@ level.
+	Build and install AIX-style FAT libraries.
+
+2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config.host (md_unwind_header) <i[34567]86-*-gnu*>: Set to
+	'i386/gnu-unwind.h'
+	* config/i386/gnu-unwind.h: New file.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-util.c (read_gcda_finalize): Remove const operator.
+	(merge_wrapper): Add both counts and use them properly.
+	(topn_to_memory_representation): New function.
+	(gcov_merge): Covert on disk representation to in memory
+	representation.
+	* libgcov.h: Remove const operator.
+
 2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* configure: Regenerate.

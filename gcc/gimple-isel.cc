@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "gimplify.h"
 #include "tree-cfg.h"
+#include "bitmap.h"
+#include "tree-ssa-dce.h"
 
 /* Expand all VEC_COND_EXPR gimple assignments into calls to internal
    function based on type of selected expansion.  */
@@ -178,8 +180,8 @@ gimple_expand_vec_cond_exprs (void)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
-  bool cfg_changed = false;
   hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
+  auto_bitmap dce_ssa_names;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -196,7 +198,13 @@ gimple_expand_vec_cond_exprs (void)
 	}
     }
 
-  return cfg_changed ? TODO_cleanup_cfg : 0;
+  for (hash_map<tree, unsigned int>::iterator it = vec_cond_ssa_name_uses.begin ();
+       it != vec_cond_ssa_name_uses.end (); ++it)
+    bitmap_set_bit (dce_ssa_names, SSA_NAME_VERSION ((*it).first));
+
+  simple_dce_from_worklist (dce_ssa_names);
+
+  return 0;
 }
 
 namespace {

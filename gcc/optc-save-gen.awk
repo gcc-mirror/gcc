@@ -126,8 +126,10 @@ for (i = 0; i < n_opts; i++) {
 			else if (otype ~ "^signed +char *$")
 				var_opt_range[name] = "-128, 127"
 		}
-		else if (otype ~ "^const char \\**$")
+		else if (otype ~ "^const char \\**$") {
 			var_opt_string[n_opt_string++] = name;
+			string_options_names[name]++
+		}
 		else
 			var_opt_other[n_opt_other++] = name;
 	}
@@ -382,8 +384,10 @@ if (have_save) {
 				if (otype == var_type(flags[i]))
 					var_target_range[name] = ""
 			}
-			else if (otype ~ "^const char \\**$")
+			else if (otype ~ "^const char \\**$") {
 				var_target_string[n_target_string++] = name;
+				string_options_names[name]++
+			}
 			else
 				var_target_other[n_target_other++] = name;
 		}
@@ -966,8 +970,16 @@ for (i = 0; i < n_opts; i++) {
 		continue;
 	checked_options[name]++
 
-	print "  if (ptr1->x_" name " != ptr2->x_" name ")"
-	print "    internal_error (\"%<global_options%> are modified in local context\");";
+	if (name in string_options_names) {
+	  print "  if (ptr1->x_" name " != ptr2->x_" name "";
+	  print "      && (!ptr1->x_" name" || !ptr2->x_" name
+	  print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
+	  print "    internal_error (\"%<global_options%> are modified in local context\");";
+	}
+	else {
+	  print "  if (ptr1->x_" name " != ptr2->x_" name ")"
+	  print "    internal_error (\"%<global_options%> are modified in local context\");";
+	}
 }
 
 print "}";

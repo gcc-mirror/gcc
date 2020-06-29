@@ -30,6 +30,10 @@ enum processor_vendor
   VENDOR_INTEL = 1,
   VENDOR_AMD,
   VENDOR_OTHER,
+  VENDOR_CENTAUR,
+  VENDOR_CYRIX,
+  VENDOR_NSC,
+  BUILTIN_VENDOR_MAX = VENDOR_OTHER,
   VENDOR_MAX
 };
 
@@ -45,13 +49,14 @@ enum processor_types
   INTEL_SILVERMONT,
   INTEL_KNL,
   AMD_BTVER1,
-  AMD_BTVER2,  
+  AMD_BTVER2,
   AMDFAM17H,
   INTEL_KNM,
   INTEL_GOLDMONT,
   INTEL_GOLDMONT_PLUS,
   INTEL_TREMONT,
-  CPU_TYPE_MAX
+  CPU_TYPE_MAX,
+  BUILTIN_CPU_TYPE_MAX = CPU_TYPE_MAX
 };
 
 enum processor_subtypes
@@ -80,6 +85,44 @@ enum processor_subtypes
   INTEL_COREI7_TIGERLAKE,
   INTEL_COREI7_COOPERLAKE,
   CPU_SUBTYPE_MAX
+};
+
+/* Priority of i386 features, greater value is higher priority.   This is
+   used to decide the order in which function dispatch must happen.  For
+   instance, a version specialized for SSE4.2 should be checked for dispatch
+   before a version for SSE3, as SSE4.2 implies SSE3.  */
+enum feature_priority
+{
+  P_NONE = 0,
+  P_MMX,
+  P_SSE,
+  P_SSE2,
+  P_SSE3,
+  P_SSSE3,
+  P_PROC_SSSE3,
+  P_SSE4_A,
+  P_PROC_SSE4_A,
+  P_SSE4_1,
+  P_SSE4_2,
+  P_PROC_SSE4_2,
+  P_POPCNT,
+  P_AES,
+  P_PCLMUL,
+  P_AVX,
+  P_PROC_AVX,
+  P_BMI,
+  P_PROC_BMI,
+  P_FMA4,
+  P_XOP,
+  P_PROC_XOP,
+  P_FMA,
+  P_PROC_FMA,
+  P_BMI2,
+  P_AVX2,
+  P_PROC_AVX2,
+  P_AVX512F,
+  P_PROC_AVX512F,
+  P_PROC_DYNAMIC
 };
 
 /* ISA Features supported. New features have to be inserted at the end.  */
@@ -123,14 +166,67 @@ enum processor_features
   FEATURE_AVX512VNNI,
   FEATURE_AVX512BITALG,
   FEATURE_AVX512BF16,
-  FEATURE_AVX512VP2INTERSECT
+  FEATURE_AVX512VP2INTERSECT,
+  FEATURE_3DNOW,
+  FEATURE_3DNOWP,
+  FEATURE_ADX,
+  FEATURE_ABM,
+  FEATURE_CLDEMOTE,
+  FEATURE_CLFLUSHOPT,
+  FEATURE_CLWB,
+  FEATURE_CLZERO,
+  FEATURE_CMPXCHG16B,
+  FEATURE_CMPXCHG8B,
+  FEATURE_ENQCMD,
+  FEATURE_F16C,
+  FEATURE_FSGSBASE,
+  FEATURE_FXSAVE,
+  FEATURE_HLE,
+  FEATURE_IBT,
+  FEATURE_LAHF_LM,
+  FEATURE_LM,
+  FEATURE_LWP,
+  FEATURE_LZCNT,
+  FEATURE_MOVBE,
+  FEATURE_MOVDIR64B,
+  FEATURE_MOVDIRI,
+  FEATURE_MWAITX,
+  FEATURE_OSXSAVE,
+  FEATURE_PCONFIG,
+  FEATURE_PKU,
+  FEATURE_PREFETCHWT1,
+  FEATURE_PRFCHW,
+  FEATURE_PTWRITE,
+  FEATURE_RDPID,
+  FEATURE_RDRND,
+  FEATURE_RDSEED,
+  FEATURE_RTM,
+  FEATURE_SERIALIZE,
+  FEATURE_SGX,
+  FEATURE_SHA,
+  FEATURE_SHSTK,
+  FEATURE_TBM,
+  FEATURE_TSXLDTRK,
+  FEATURE_VAES,
+  FEATURE_WAITPKG,
+  FEATURE_WBNOINVD,
+  FEATURE_XSAVE,
+  FEATURE_XSAVEC,
+  FEATURE_XSAVEOPT,
+  FEATURE_XSAVES,
+  CPU_FEATURE_MAX
 };
 
-extern struct __processor_model
-{
-  unsigned int __cpu_vendor;
-  unsigned int __cpu_type;
-  unsigned int __cpu_subtype;
-  unsigned int __cpu_features[1];
-} __cpu_model;
-extern unsigned int __cpu_features2;
+/* Size of __cpu_features2 array in libgcc/config/i386/cpuinfo.c.  */
+#define SIZE_OF_CPU_FEATURES ((CPU_FEATURE_MAX - 1) / 32)
+
+/* These are the values for vendor types, cpu types and subtypes.  Cpu
+   types and subtypes should be subtracted by the corresponding start
+   value.  */
+
+#define M_CPU_TYPE_START (BUILTIN_VENDOR_MAX)
+#define M_CPU_SUBTYPE_START \
+  (M_CPU_TYPE_START + BUILTIN_CPU_TYPE_MAX)
+#define M_VENDOR(a) (a)
+#define M_CPU_TYPE(a) (M_CPU_TYPE_START + a)
+#define M_CPU_SUBTYPE(a) (M_CPU_SUBTYPE_START + a)

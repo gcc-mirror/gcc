@@ -197,6 +197,7 @@ package body Bindgen is
    --     Main_CPU                      : Integer;
    --     Default_Sized_SS_Pool         : System.Address;
    --     Binder_Sec_Stacks_Count       : Natural;
+   --     XDR_Stream                    : Integer;
 
    --  Main_Priority is the priority value set by pragma Priority in the main
    --  program. If no such pragma is present, the value is -1.
@@ -294,6 +295,9 @@ package body Bindgen is
 
    --  Binder_Sec_Stacks_Count is the number of generated secondary stacks in
    --  the Default_Sized_SS_Pool.
+
+   --  XDR_Stream indicates whether streaming should be performed using the
+   --  XDR protocol. A value of one indicates that XDR streaming is enabled.
 
    procedure WBI (Info : String) renames Osint.B.Write_Binder_Info;
    --  Convenient shorthand used throughout
@@ -758,12 +762,20 @@ package body Bindgen is
                  """__gnat_default_ss_size"");");
          end if;
 
-         WBI ("      Leap_Seconds_Support : Integer;");
-         WBI ("      pragma Import (C, Leap_Seconds_Support, " &
-              """__gl_leap_seconds_support"");");
+         if Leap_Seconds_Support then
+            WBI ("      Leap_Seconds_Support : Integer;");
+            WBI ("      pragma Import (C, Leap_Seconds_Support, " &
+                 """__gl_leap_seconds_support"");");
+         end if;
+
          WBI ("      Bind_Env_Addr : System.Address;");
          WBI ("      pragma Import (C, Bind_Env_Addr, " &
               """__gl_bind_env_addr"");");
+
+         if XDR_Stream then
+            WBI ("      XDR_Stream : Integer;");
+            WBI ("      pragma Import (C, XDR_Stream, ""__gl_xdr_stream"");");
+         end if;
 
          --  Import entry point for elaboration time signal handler
          --  installation, and indication of if it's been called previously.
@@ -978,16 +990,13 @@ package body Bindgen is
          Set_String (";");
          Write_Statement_Buffer;
 
-         Set_String ("      Leap_Seconds_Support := ");
-
          if Leap_Seconds_Support then
-            Set_Int (1);
-         else
-            Set_Int (0);
+            WBI ("      Leap_Seconds_Support := 1;");
          end if;
 
-         Set_String (";");
-         Write_Statement_Buffer;
+         if XDR_Stream then
+            WBI ("      XDR_Stream := 1;");
+         end if;
 
          if Bind_Env_String_Built then
             WBI ("      Bind_Env_Addr := Bind_Env'Address;");

@@ -1,3 +1,62 @@
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (get_symbol_decl): Do not implicitly set
+	DECL_DECLARED_INLINE_P on member functions.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_gimplify_expr_p): Make static.
+	(d_parse_file): Likewise.
+	(d_signed_or_unsigned_type): Move to types.cc.
+	(d_unsigned_type): Likewise.
+	(d_signed_type): Likewise.
+	* d-tree.h (d_unsigned_type): Change the location in file.
+	(d_signed_type): Likewise.
+	* types.cc (d_signed_or_unsigned_type): Moved from d-lang.cc.
+	(d_unsigned_type): Likewise.
+	(d_signed_type): Likewise.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95075
+	* dmd/MERGE: Merge upstream dmd 4be011355.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95250
+	* dmd/MERGE: Merge upstream dmd 90450f3ef.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_parse_file): Replace OutBuffer with obstack.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 5fc1806cd.
+	* d-lang.cc (d_parse_file): Use peekChars to get string representation
+	of OutBuffer data.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95173
+	* d-attribs.cc (uda_attribute_p): Don't search target attribute table
+	if NULL.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Don't set
+	DECL_INITIAL if initializer is 'void'.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_init_options): Turn on deprecation warnings by default.
+
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4f1046222.
+	* toir.cc (IRVisitor::visit (OnScopeGuardStatement *)): Rename to ...
+	(IRVisitor::visit (ScopeGuardStatement *)): ... this.
+
 2020-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-attribs.cc (handle_noreturn_attribute): Remove names of unused

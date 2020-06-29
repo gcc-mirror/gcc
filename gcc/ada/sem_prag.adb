@@ -8304,7 +8304,8 @@ package body Sem_Prag is
                  ("??C_Variadic_0 cannot be used for an 'I'S'O C function",
                   Get_Pragma_Arg (Arg2));
 
-            --  Now check the number of parameters of the subprogram
+            --  Now check the number of parameters of the subprogram and give
+            --  an error if it is lower than n.
 
             elsif Present (Subp) then
                declare
@@ -31293,10 +31294,12 @@ package body Sem_Prag is
 
                   if Force then
                      if Cont = False then
-                        Error_Msg ("<<~!!", Eloc);
+                        Error_Msg
+                           ("<<~!!", Eloc, Is_Compile_Time_Pragma => True);
                         Cont := True;
                      else
-                        Error_Msg ("\<<~!!", Eloc);
+                        Error_Msg
+                           ("\<<~!!", Eloc, Is_Compile_Time_Pragma => True);
                      end if;
 
                   --  Error, rather than warning, or in a body, so we do not
@@ -31307,10 +31310,12 @@ package body Sem_Prag is
 
                   else
                      if Cont = False then
-                        Error_Msg ("<<~", Eloc);
+                        Error_Msg
+                           ("<<~", Eloc, Is_Compile_Time_Pragma => True);
                         Cont := True;
                      else
-                        Error_Msg ("\<<~", Eloc);
+                        Error_Msg
+                           ("\<<~", Eloc, Is_Compile_Time_Pragma => True);
                      end if;
                   end if;
 

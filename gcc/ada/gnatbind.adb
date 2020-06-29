@@ -499,6 +499,11 @@ procedure Gnatbind is
             Opt.Bind_Alternate_Main_Name := True;
             Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
 
+         --  -xdr
+
+         elsif Argv (2 .. Argv'Last) = "xdr" then
+            Opt.XDR_Stream := True;
+
          --  All other options are single character and are handled by
          --  Scan_Binder_Switches.
 

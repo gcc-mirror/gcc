@@ -4095,7 +4095,7 @@ match
 gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 {
   /* Provide sufficient space to hold "pdtsymbol".  */
-  char name[GFC_MAX_SYMBOL_LEN + 1 + 3];
+  char *name = XALLOCAVEC (char, GFC_MAX_SYMBOL_LEN + 1);
   gfc_symbol *sym, *dt_sym;
   match m;
   char c;
@@ -4286,8 +4286,10 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
 	  ts->u.derived = sym;
 	  const char* lower = gfc_dt_lower_string (sym->name);
-	  size_t len = strnlen (lower, sizeof (name));
-	  gcc_assert (len < sizeof (name));
+	  size_t len = strlen (lower);
+	  /* Reallocate with sufficient size.  */
+	  if (len > GFC_MAX_SYMBOL_LEN)
+	    name = XALLOCAVEC (char, len + 1);
 	  memcpy (name, lower, len);
 	  name[len] = '\0';
 	}
@@ -4827,7 +4829,7 @@ gfc_match_implicit (void)
       /* Last chance -- check <TYPE> <SELECTOR> (<RANGE>).  */
       if (ts.type == BT_CHARACTER)
 	m = gfc_match_char_spec (&ts);
-      else
+      else if (ts.type != BT_DERIVED)
 	{
 	  m = gfc_match_kind_spec (&ts, false);
 	  if (m == MATCH_NO)

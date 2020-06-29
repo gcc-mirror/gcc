@@ -48,23 +48,23 @@ package Checks is
    --  Called for each new main source program, to initialize internal
    --  variables used in the package body of the Checks unit.
 
-   function Access_Checks_Suppressed          (E : Entity_Id) return Boolean;
-   function Accessibility_Checks_Suppressed   (E : Entity_Id) return Boolean;
-   function Alignment_Checks_Suppressed       (E : Entity_Id) return Boolean;
-   function Allocation_Checks_Suppressed      (E : Entity_Id) return Boolean;
-   function Atomic_Synchronization_Disabled   (E : Entity_Id) return Boolean;
-   function Discriminant_Checks_Suppressed    (E : Entity_Id) return Boolean;
-   function Division_Checks_Suppressed        (E : Entity_Id) return Boolean;
-   function Duplicated_Tag_Checks_Suppressed  (E : Entity_Id) return Boolean;
-   function Elaboration_Checks_Suppressed     (E : Entity_Id) return Boolean;
-   function Index_Checks_Suppressed           (E : Entity_Id) return Boolean;
-   function Length_Checks_Suppressed          (E : Entity_Id) return Boolean;
-   function Overflow_Checks_Suppressed        (E : Entity_Id) return Boolean;
-   function Predicate_Checks_Suppressed       (E : Entity_Id) return Boolean;
-   function Range_Checks_Suppressed           (E : Entity_Id) return Boolean;
-   function Storage_Checks_Suppressed         (E : Entity_Id) return Boolean;
-   function Tag_Checks_Suppressed             (E : Entity_Id) return Boolean;
-   function Validity_Checks_Suppressed        (E : Entity_Id) return Boolean;
+   function Access_Checks_Suppressed         (E : Entity_Id) return Boolean;
+   function Accessibility_Checks_Suppressed  (E : Entity_Id) return Boolean;
+   function Alignment_Checks_Suppressed      (E : Entity_Id) return Boolean;
+   function Allocation_Checks_Suppressed     (E : Entity_Id) return Boolean;
+   function Atomic_Synchronization_Disabled  (E : Entity_Id) return Boolean;
+   function Discriminant_Checks_Suppressed   (E : Entity_Id) return Boolean;
+   function Division_Checks_Suppressed       (E : Entity_Id) return Boolean;
+   function Duplicated_Tag_Checks_Suppressed (E : Entity_Id) return Boolean;
+   function Elaboration_Checks_Suppressed    (E : Entity_Id) return Boolean;
+   function Index_Checks_Suppressed          (E : Entity_Id) return Boolean;
+   function Length_Checks_Suppressed         (E : Entity_Id) return Boolean;
+   function Overflow_Checks_Suppressed       (E : Entity_Id) return Boolean;
+   function Predicate_Checks_Suppressed      (E : Entity_Id) return Boolean;
+   function Range_Checks_Suppressed          (E : Entity_Id) return Boolean;
+   function Storage_Checks_Suppressed        (E : Entity_Id) return Boolean;
+   function Tag_Checks_Suppressed            (E : Entity_Id) return Boolean;
+   function Validity_Checks_Suppressed       (E : Entity_Id) return Boolean;
    --  These functions check to see if the named check is suppressed, either
    --  by an active scope suppress setting, or because the check has been
    --  specifically suppressed for the given entity. If no entity is relevant
@@ -578,10 +578,20 @@ package Checks is
    --  which the check is to be done. Used to filter out specific cases where
    --  the check is superfluous.
 
-   procedure Apply_Range_Check
+   procedure Apply_Static_Length_Check
      (Expr       : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id := Empty);
+   --  Tries to determine statically whether the two array types source type
+   --  and Target_Typ have the same length. If it can be determined at compile
+   --  time that they do not, then an N_Raise_Constraint_Error node replaces
+   --  Expr, and a warning message is issued.
+
+   procedure Apply_Range_Check
+     (Expr        : Node_Id;
+      Target_Typ  : Entity_Id;
+      Source_Typ  : Entity_Id := Empty;
+      Insert_Node : Node_Id   := Empty);
    --  For a Node of kind N_Range, constructs a range check action that tests
    --  first that the range is not null and then that the range is contained in
    --  the Target_Typ range.
@@ -606,14 +616,8 @@ package Checks is
    --  The source type is used by type conversions to unconstrained array
    --  types to retrieve the corresponding bounds.
 
-   procedure Apply_Static_Length_Check
-     (Expr       : Node_Id;
-      Target_Typ : Entity_Id;
-      Source_Typ : Entity_Id := Empty);
-   --  Tries to determine statically whether the two array types source type
-   --  and Target_Typ have the same length. If it can be determined at compile
-   --  time that they do not, then an N_Raise_Constraint_Error node replaces
-   --  Expr, and a warning message is issued.
+   --  Insert_Node indicates the node where the check should be inserted.
+   --  If it is empty, then the check is inserted directly at Expr instead.
 
    procedure Apply_Scalar_Range_Check
      (Expr       : Node_Id;
