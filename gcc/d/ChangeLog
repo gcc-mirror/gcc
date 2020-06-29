@@ -1,3 +1,7 @@
+2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 8508c4e68.
+
 2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* decl.cc (get_symbol_decl): Do not implicitly set

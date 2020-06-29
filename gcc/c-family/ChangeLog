@@ -1,3 +1,13 @@
+2020-06-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86568
+	* c-common.c (struct nonnull_arg_ctx): Add members.
+	(check_function_nonnull): Use nonnull_arg_ctx as argument.  Handle
+	C++ member functions specially.  Consider the this pointer implicitly
+	nonnull.
+	(check_nonnull_arg): Use location of argument when available.
+	(check_function_arguments): Use nonnull_arg_ctx as argument.
+
 2020-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/95903
