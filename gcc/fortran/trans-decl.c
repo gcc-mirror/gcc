@@ -6789,7 +6789,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 		 || (sym->attr.entry_master
 		     && sym->ns->entries->sym->attr.recursive);
   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
-      && !is_recursive && !flag_recursive)
+      && !is_recursive && !flag_recursive && !sym->attr.artificial)
     {
       char * msg;
 
