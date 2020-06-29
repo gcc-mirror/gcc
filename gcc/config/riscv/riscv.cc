@@ -420,6 +420,15 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
       /* Simply BSETI.  */
       codes[0].code = UNKNOWN;
       codes[0].value = value;
+
+      /* RISC-V sign-extends all 32bit values that live in a 32bit
+	 register.  To avoid paradoxes, we thus need to use the
+	 sign-extended (negative) representation (-1 << 31) for the
+	 value, if we want to build (1 << 31) in SImode.  This will
+	 then expand to an LUI instruction.  */
+      if (mode == SImode && value == (HOST_WIDE_INT_1U << 31))
+	codes[0].value = (HOST_WIDE_INT_M1U << 31);
+
       return 1;
     }
 
