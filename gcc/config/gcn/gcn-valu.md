@@ -808,6 +808,40 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
+(define_expand "vec_extract<V_ALL:mode><V_ALL_ALT:mode>"
+  [(set (match_operand:V_ALL_ALT 0 "register_operand")
+	(vec_select:V_ALL_ALT
+	  (match_operand:V_ALL 1 "register_operand")
+	  (parallel [(match_operand 2 "immediate_operand")])))]
+  "MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)
+   && <V_ALL_ALT:SCALAR_MODE>mode == <V_ALL:SCALAR_MODE>mode"
+  {
+    int numlanes = GET_MODE_NUNITS (<V_ALL_ALT:MODE>mode);
+    int firstlane = INTVAL (operands[2]) * numlanes;
+    rtx tmp;
+
+    if (firstlane == 0)
+      {
+	/* A plain move will do.  */
+	tmp = operands[1];
+      } else {
+        /* FIXME: optimize this by using DPP where available.  */
+
+        rtx permutation = gen_reg_rtx (<V_ALL:VnSI>mode);
+	emit_insn (gen_vec_series<V_ALL:vnsi> (permutation,
+					       GEN_INT (firstlane*4),
+					       GEN_INT (4)));
+
+	tmp = gen_reg_rtx (<V_ALL:MODE>mode);
+	emit_insn (gen_ds_bpermute<V_ALL:mode> (tmp, permutation, operands[1],
+						get_exec (<V_ALL:MODE>mode)));
+      }
+
+    emit_move_insn (operands[0],
+		    gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+    DONE;
+  })
+
 (define_expand "extract_last_<mode>"
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (match_operand:DI 1 "gcn_alu_operand")

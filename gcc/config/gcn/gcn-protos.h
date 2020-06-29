@@ -24,6 +24,8 @@ extern bool gcn_constant64_p (rtx);
 extern bool gcn_constant_p (rtx);
 extern rtx gcn_convert_mask_mode (rtx reg);
 extern unsigned int gcn_dwarf_register_number (unsigned int regno);
+extern rtx get_exec (int64_t);
+extern rtx get_exec (machine_mode mode);
 extern char * gcn_expand_dpp_shr_insn (machine_mode, const char *, int, int);
 extern void gcn_expand_epilogue ();
 extern rtx gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets,

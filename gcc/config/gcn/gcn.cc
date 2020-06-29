@@ -846,12 +846,19 @@ gcn_ira_change_pseudo_allocno_class (int regno, reg_class_t cl,
 /* Create a new DImode pseudo reg and emit an instruction to initialize
    it to VAL.  */
 
-static rtx
+rtx
 get_exec (int64_t val)
 {
   rtx reg = gen_reg_rtx (DImode);
   emit_insn (gen_rtx_SET (reg, gen_int_mode (val, DImode)));
   return reg;
+}
+
+rtx
+get_exec (machine_mode mode)
+{
+  int vf = (VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1);
+  return get_exec (0xffffffffffffffffUL >> (64-vf));
 }
 
 /* }}}  */
