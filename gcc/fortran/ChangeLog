@@ -1,3 +1,14 @@
+2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95340
+	* match.c (gfc_match_select_rank): Do not dereference NULL pointer.
+
+2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95880
+	* symbol.c (gfc_add_type): If sym->ns->proc_name is set, use it,
+	otherwise fall back to sym->name.
+
 2020-06-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95881

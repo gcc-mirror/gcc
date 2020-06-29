@@ -1,3 +1,53 @@
+2020-06-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86568
+	* g++.dg/warn/Wnonnull5.C: New test.
+	* c-c++-common/pr28656.c: Adjust text of expected warning.
+	* c-c++-common/pr66208.c: Same.
+	* g++.dg/cpp0x/nullptr22.C: Same.
+	* g++.dg/ext/attr-nonnull.C: Same.
+	* g++.dg/ext/attrib49.C: Same.
+	* g++.dg/pr71973-2.C: Same.
+	* g++.dg/warn/Wnonnull3.C: Same.
+	* g++.dg/warn/Wnonnull4.C: Same.
+	* obj-c++.dg/attributes/method-nonnull-1.mm: Same.
+	* objc.dg/attributes/method-nonnull-1.m: Same.
+
+2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95340
+	* gfortran.dg/pr95340.f90: New file.
+
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95711
+	* g++.dg/coroutines/pr95711.C: New test.
+
+2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95880
+	* gfortran.dg/pr95880.f90: New file.
+
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95519
+	* g++.dg/coroutines/torture/pr95519-02-final_suspend.C:
+	Amend log messages.
+	* g++.dg/coroutines/torture/pr95519-03-return-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-04-yield-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-05-gro.C: Likewise.
+
+2020-06-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/prefix-large-dd.c: Require DFP.
+	* gcc.target/powerpc/prefix-large-sd.c: Require DFP.
+	* gcc.target/powerpc/prefix-large-kf.c: Require float128.
+	* gcc.target/powerpc/prefix-pcrel-dd.c: Require DFP.
+	* gcc.target/powerpc/prefix-pcrel-sd.c: Require DFP.
+	* gcc.target/powerpc/prefix-pcrel-kf.c: Require float128.
+
 2020-06-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95881

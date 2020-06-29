@@ -1,3 +1,22 @@
+2020-06-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86568
+	* calls.c (maybe_warn_rdwr_sizes): Use location of argument if
+	available.
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Same.  Adjust
+	indentation.
+	* tree.c (get_nonnull_args): Consider the this pointer implicitly
+	nonnull.
+	* var-tracking.c (deps_vec): New type.
+	(var_loc_dep_vec): New function.
+	(VAR_LOC_DEP_VEC): Use it.
+
+2020-06-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	* internal-fn.c (direct_mask_load_optab_supported_p): Use
+	convert_optab_supported_p instead of direct_optab_supported_p.
+	(direct_mask_store_optab_supported_p): Likewise.
+
 2020-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-ssa-evrp-analyze.h (vrp_visit_cond_stmt): Use

@@ -1,3 +1,35 @@
+2020-06-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/bits/basic_string.h (string(_CharT*, const _Alloc&)):
+	Add a __nonnull__ attribute.
+	* testsuite/21_strings/basic_string/cons/char/nonnull.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/nonnull.cc: Likewise.
+
+2020-06-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/95915
+	* include/std/type_traits (is_literal_type, is_literal_type_v):
+	Deprecate in C++17.
+	* include/std/variant (_Uninitialized):
+	Adjust the condition and the comment.
+	* testsuite/20_util/is_literal_type/deprecated-1z.cc: New.
+	* testsuite/20_util/is_literal_type/requirements/explicit_instantiation.cc:
+	Adjust.
+	* testsuite/20_util/is_literal_type/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_literal_type/value.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/nullopt.cc:
+	Use __is_literal_type directly.
+	* testsuite/20_util/optional/nullopt.cc: Likewise.
+	* testsuite/20_util/variable_templates_for_traits.cc: Adjust.
+	* testsuite/20_util/variant/95915.cc: New.
+	* testsuite/20_util/variant/compile.cc: Add new test.
+	* testsuite/experimental/optional/constexpr/nullopt.cc:
+	Use __is_literal_type directly.
+	* testsuite/experimental/optional/nullopt.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Adjust.
+	* testsuite/util/testsuite_common_types.h:
+	Use __is_literal_type directly.
+
 2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/charconv (__from_chars_binary): Ignore leading zeros.

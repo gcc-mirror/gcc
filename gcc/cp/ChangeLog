@@ -1,3 +1,9 @@
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95711
+	* coroutines.cc (register_local_var_uses): Skip past
+	namespace decls.
+
 2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95736
