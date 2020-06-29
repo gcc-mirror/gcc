@@ -1378,18 +1378,17 @@ execute_omp_oacc_neuter_broadcast ()
 
   /* If this is a routine, calculate MASK as if the outer levels are already
      partitioned.  */
-  tree attr = oacc_get_fn_attrib (current_function_decl);
-  if (attr)
-    {
-      tree dims = TREE_VALUE (attr);
-      unsigned ix;
-      for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
-	{
-	  tree allowed = TREE_PURPOSE (dims);
-	  if (allowed && integer_zerop (allowed))
-	    mask |= GOMP_DIM_MASK (ix);
-	}
-    }
+  {
+    tree attr = oacc_get_fn_attrib (current_function_decl);
+    tree dims = TREE_VALUE (attr);
+    unsigned ix;
+    for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
+      {
+	tree allowed = TREE_PURPOSE (dims);
+	if (allowed && integer_zerop (allowed))
+	  mask |= GOMP_DIM_MASK (ix);
+      }
+  }
 
   parallel_g *par = omp_sese_discover_pars (&bb_stmt_map);
   populate_single_mode_bitmaps (par, worker_single, vector_single, mask, 0);
@@ -1506,11 +1505,27 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  virtual bool gate (function *fun)
   {
-    return (flag_openacc
-	    && targetm.goacc.create_worker_broadcast_record);
-  };
+    if (!flag_openacc)
+      return false;
+
+    if (!targetm.goacc.create_worker_broadcast_record)
+      return false;
+
+    /* Only relevant for OpenACC offloaded functions.  */
+    tree attr = oacc_get_fn_attrib (fun->decl);
+    if (!attr)
+      return false;
+
+    /* Not relevant for 'num_workers(1)'.  */
+    int worker_dim
+      = oacc_get_fn_dim_size (fun->decl, GOMP_DIM_WORKER);
+    if (worker_dim == 1)
+      return false;
+
+    return true;
+  }
 
   virtual unsigned int execute (function *)
     {
