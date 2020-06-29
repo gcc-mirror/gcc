@@ -1,3 +1,12 @@
+2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/cond.c (lowerArrayAggregate): Directly use the elements of the
+	array for TupleExp creation.
+	(lowerNonArrayAggregate): Inline creation of foreach range indexes.
+
 2020-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

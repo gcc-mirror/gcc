@@ -1,3 +1,22 @@
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95518
+	PR c++/95813
+	* g++.dg/coroutines/pr95518.C: New test.
+	* g++.dg/coroutines/pr95813.C: New test.
+
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/void-gro-non-class-coro.C: Moved to...
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C: ...here.
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C: New test.
+
 2020-06-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95518
+	PR c++/95813
+	* coroutines.cc (act_des_fn): Copy function
+	attributes onto the outlined coroutine helpers.
+
 2020-06-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
