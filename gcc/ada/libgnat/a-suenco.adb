@@ -398,7 +398,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                               or Shift_Right (yyyyyyyy, 4));
             Result (Len + 3) :=
               Character'Val
-                (2#10_000000# or Shift_Left (yyyyyyyy and 2#1111#, 4)
+                (2#10_000000# or Shift_Left (yyyyyyyy and 2#1111#, 2)
                               or Shift_Right (xxxxxxxx, 6));
             Result (Len + 4) :=
               Character'Val
