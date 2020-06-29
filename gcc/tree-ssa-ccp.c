@@ -2159,7 +2159,7 @@ gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
   gsi_prev_nondebug (i);
   while (gsi_end_p (*i))
     {
-      dom = get_immediate_dominator (CDI_DOMINATORS, i->bb);
+      dom = get_immediate_dominator (CDI_DOMINATORS, gsi_bb (*i));
       if (dom == NULL || dom == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	return;
 

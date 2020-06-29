@@ -869,7 +869,7 @@ public:
   {
     const_reverse_iterator begin = region_end;
     if (*begin == NULL)
-      begin = const_reverse_iterator (gsi_last_bb (region_end.bb));
+      begin = const_reverse_iterator (gsi_last_bb (gsi_bb (region_end)));
     else
       ++begin;
 
