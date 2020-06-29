@@ -8884,11 +8884,11 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
  */
 
 static int
-epilogue_renumber (register rtx *where, int test)
+epilogue_renumber (rtx *where, int test)
 {
-  register const char *fmt;
-  register int i;
-  register enum rtx_code code;
+  const char *fmt;
+  int i;
+  enum rtx_code code;
 
   if (*where == 0)
     return 0;
@@ -8945,7 +8945,7 @@ epilogue_renumber (register rtx *where, int test)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (*where, i) - 1; j >= 0; j--)
 	    if (epilogue_renumber (&(XVECEXP (*where, i, j)), test))
 	      return 1;
@@ -9668,9 +9668,9 @@ sparc_print_operand (FILE *file, rtx x, int code)
 static void
 sparc_print_operand_address (FILE *file, machine_mode /*mode*/, rtx x)
 {
-  register rtx base, index = 0;
+  rtx base, index = 0;
   int offset = 0;
-  register rtx addr = x;
+  rtx addr = x;
 
   if (REG_P (addr))
     fputs (reg_names[REGNO (addr)], file);
@@ -9804,10 +9804,10 @@ sparc_assemble_integer (rtx x, unsigned int size, int aligned_p)
 #endif
 
 unsigned long
-sparc_type_code (register tree type)
+sparc_type_code (tree type)
 {
-  register unsigned long qualifiers = 0;
-  register unsigned shift;
+  unsigned long qualifiers = 0;
+  unsigned shift;
 
   /* Only the first 30 bits of the qualifier are valid.  We must refrain from
      setting more, since some assemblers will give an error for this.  Also,
@@ -10303,7 +10303,7 @@ sparc_branch_cost (bool speed_p, bool predictable_p)
 static int
 set_extends (rtx_insn *insn)
 {
-  register rtx pat = PATTERN (insn);
+  rtx pat = PATTERN (insn);
 
   switch (GET_CODE (SET_SRC (pat)))
     {
