@@ -7457,10 +7457,9 @@ package body Exp_Ch6 is
       --  Check the result expression of a scalar function against the subtype
       --  of the function by inserting a conversion. This conversion must
       --  eventually be performed for other classes of types, but for now it's
-      --  only done for scalars.
-      --  ???
+      --  only done for scalars ???
 
-      if Is_Scalar_Type (Exp_Typ) then
+      if Is_Scalar_Type (Exp_Typ) and then Exp_Typ /= R_Type then
          Rewrite (Exp, Convert_To (R_Type, Exp));
 
          --  The expression is resolved to ensure that the conversion gets

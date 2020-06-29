@@ -3646,14 +3646,10 @@ package body Checks is
                             (Entity (High_Bound (Scalar_Range (Enum_T))));
                      end if;
 
-                     if Last_E <= Last_I then
-                        null;
-
-                     else
+                     if Last_E > Last_I then
                         Activate_Overflow_Check (N);
                      end if;
                   end;
-
                else
                   Activate_Overflow_Check (N);
                end if;
@@ -3666,7 +3662,6 @@ package body Checks is
                  and then not GNATprove_Mode
                then
                   Apply_Float_Conversion_Check (Expr, Target_Type);
-
                else
                   --  Conversions involving fixed-point types are expanded
                   --  separately, and do not need a Range_Check flag, except

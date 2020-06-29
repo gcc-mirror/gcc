@@ -11447,13 +11447,28 @@ package body Exp_Ch4 is
       --  Start of processing for Discrete_Range_Check
 
       begin
-         --  Nothing to do if conversion was rewritten
+         --  Clear the Do_Range_Check flag on N if needed: this can occur when
+         --  e.g. a trivial type conversion is rewritten by its expression.
+
+         Set_Do_Range_Check (N, False);
+
+         --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
             return;
          end if;
 
          Expr := Expression (N);
+
+         --  Nothing to do if no range check flag set
+
+         if not Do_Range_Check (Expr) then
+            return;
+         end if;
+
+         --  Clear the Do_Range_Check flag on Expr
+
+         Set_Do_Range_Check (Expr, False);
 
          --  Nothing to do if range checks suppressed
 
@@ -11473,23 +11488,20 @@ package body Exp_Ch4 is
          --  Before we do a range check, we have to deal with treating
          --  a fixed-point operand as an integer. The way we do this
          --  is simply to do an unchecked conversion to an appropriate
-         --  integer type large enough to hold the result.
+         --  integer type with the smallest size, so that we can suppress
+         --  trivial checks.
 
          if Is_Fixed_Point_Type (Etype (Expr)) then
-            if Esize (Base_Type (Etype (Expr))) > Standard_Integer_Size then
-               Ityp := Standard_Long_Long_Integer;
-            else
-               Ityp := Standard_Integer;
-            end if;
+            Ityp := Small_Integer_Type_For
+                      (Esize (Base_Type (Etype (Expr))), False);
 
-            --  Generate a temporary with the large type to facilitate in the C
-            --  backend the code generation for the unchecked conversion.
+            --  Generate a temporary with the integer type to facilitate in the
+            --  C backend the code generation for the unchecked conversion.
 
             if Modify_Tree_For_C then
                Generate_Temporary;
             end if;
 
-            Set_Do_Range_Check (Expr, False);
             Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
          end if;
 
@@ -11726,7 +11738,12 @@ package body Exp_Ch4 is
          Tnn    : Entity_Id;
 
       begin
-         --  Nothing to do if conversion was rewritten
+         --  Clear the Do_Range_Check flag on N if needed: this can occur when
+         --  e.g. a trivial type conversion is rewritten by its expression.
+
+         Set_Do_Range_Check (N, False);
+
+         --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
             return;
@@ -11734,7 +11751,7 @@ package body Exp_Ch4 is
 
          Expr := Expression (N);
 
-         --  Clear the flag once for all
+         --  Clear the Do_Range_Check flag on Expr
 
          Set_Do_Range_Check (Expr, False);
 
@@ -12009,7 +12026,8 @@ package body Exp_Ch4 is
 
       --  Nothing at all to do if conversion is to the identical type so remove
       --  the conversion completely, it is useless, except that it may carry
-      --  an Assignment_OK attribute, which must be propagated to the operand.
+      --  an Assignment_OK attribute, which must be propagated to the operand
+      --  and the Do_Range_Check flag on Operand should be taken into account.
 
       if Operand_Type = Target_Type then
          if Assignment_OK (N) then
@@ -12017,6 +12035,13 @@ package body Exp_Ch4 is
          end if;
 
          Rewrite (N, Relocate_Node (Operand));
+
+         if Do_Range_Check (Operand) then
+            pragma Assert (Is_Discrete_Type (Operand_Type));
+
+            Discrete_Range_Check;
+         end if;
+
          goto Done;
       end if;
 
@@ -12125,7 +12150,7 @@ package body Exp_Ch4 is
       --  in Checks.Apply_Arithmetic_Overflow_Check, but we catch more cases in
       --  the processing here. Also we still need the Checks circuit, since we
       --  have to be sure not to generate junk overflow checks in the first
-      --  place, since it would be trick to remove them here.
+      --  place, since it would be tricky to remove them here.
 
       if Integer_Promotion_Possible (N) then
 
@@ -12409,7 +12434,9 @@ package body Exp_Ch4 is
       --  These conversions require special expansion and processing, found in
       --  the Exp_Fixd package. We ignore cases where Conversion_OK is set,
       --  since from a semantic point of view, these are simple integer
-      --  conversions, which do not need further processing.
+      --  conversions, which do not need further processing except for the
+      --  generation of range checks, which is performed at the end of this
+      --  procedure.
 
       elsif Is_Fixed_Point_Type (Operand_Type)
         and then not Conversion_OK (N)
@@ -12617,11 +12644,15 @@ package body Exp_Ch4 is
          then
             Real_Range_Check;
          end if;
+
+         pragma Assert (not Do_Range_Check (Expression (N)));
       end if;
 
       --  Here at end of processing
 
    <<Done>>
+      pragma Assert (not Do_Range_Check (N));
+
       --  Apply predicate check if required. Note that we can't just call
       --  Apply_Predicate_Check here, because the type looks right after
       --  the conversion and it would omit the check. The Comes_From_Source
