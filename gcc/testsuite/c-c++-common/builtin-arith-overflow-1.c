@@ -79,8 +79,7 @@ generic_3 (int a, int b, int c)
     x += __builtin_add_overflow (0, 0, (bool *)0);
 
     enum E { e0 };
-    x += __builtin_add_overflow (0, 0, (enum E *)0);
-  */
+    x += __builtin_add_overflow (0, 0, (enum E *)0);  */
 
   x += __builtin_sub_overflow (0, 0, (char *)0);   /* { dg-warning "argument 3 null" } */
   x += __builtin_add_overflow (0, 0, (short *)0);   /* { dg-warning "argument 3 null" } */
