@@ -769,16 +769,19 @@ static void
 find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 			      hash_set<tree> *partitioned_var_uses,
 			      hash_set<tree> *gang_private_vars,
+			      bitmap writes_gang_private,
 			      vec<propagation_set *> *prop_set)
 {
   unsigned mask = outer_mask | par->mask;
 
   if (par->inner)
     find_local_vars_to_propagate (par->inner, mask, partitioned_var_uses,
-				  gang_private_vars, prop_set);
+				  gang_private_vars, writes_gang_private,
+				  prop_set);
   if (par->next)
     find_local_vars_to_propagate (par->next, outer_mask, partitioned_var_uses,
-				  gang_private_vars, prop_set);
+				  gang_private_vars, writes_gang_private,
+				  prop_set);
 
   if (!(mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
     {
@@ -799,8 +802,7 @@ find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 		  if (!VAR_P (var)
 		      || is_global_var (var)
 		      || AGGREGATE_TYPE_P (TREE_TYPE (var))
-		      || !partitioned_var_uses->contains (var)
-		      || gang_private_vars->contains (var))
+		      || !partitioned_var_uses->contains (var))
 		    continue;
 
 		  if (stmt_may_clobber_ref_p (stmt, var))
@@ -812,6 +814,14 @@ find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 				   mask_name (mask));
 			  print_generic_expr (dump_file, var, TDF_SLIM);
 			  fprintf (dump_file, "\n");
+			}
+
+		      if (gang_private_vars->contains (var))
+			{
+			  /* If we write a gang-private variable, we want a
+			     barrier at the end of the block.  */
+			  bitmap_set_bit (writes_gang_private, block->index);
+			  continue;
 			}
 
 		      if (!(*prop_set)[block->index])
@@ -925,14 +935,6 @@ worker_single_simple (basic_block from, basic_block to,
 	    }
 	}
     }
-
-  gsi = gsi_start_bb (skip_block);
-
-  decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
-  gimple *acc_bar = gimple_build_call (decl, 0);
-
-  gsi_insert_before (&gsi, acc_bar, GSI_SAME_STMT);
-  update_stmt (acc_bar);
 }
 
 /* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
@@ -1011,7 +1013,7 @@ worker_single_copy (basic_block from, basic_block to,
 		    hash_set<tree> *worker_partitioned_uses,
 		    tree record_type, record_field_map_t *record_field_map,
 		    unsigned HOST_WIDE_INT placement,
-		    bool isolate_broadcasts)
+		    bool isolate_broadcasts, bool has_gang_private_write)
 {
   /* If we only have virtual defs, we'll have no record type, but we still want
      to emit single_copy_start and (particularly) single_copy_end to act as
@@ -1094,14 +1096,19 @@ worker_single_copy (basic_block from, basic_block to,
   edge ef = make_edge (from, barrier_block, EDGE_FALSE_VALUE);
   ef->probability = et->probability.invert ();
 
-  decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
-  gimple *acc_bar = gimple_build_call (decl, 0);
-
   gimple_stmt_iterator bar_gsi = gsi_start_bb (barrier_block);
-  gsi_insert_before (&bar_gsi, acc_bar, GSI_NEW_STMT);
-
   cond = gimple_build_cond (NE_EXPR, recv_tmp, zero_ptr, NULL_TREE, NULL_TREE);
-  gsi_insert_after (&bar_gsi, cond, GSI_NEW_STMT);
+
+  if (record_type != char_type_node || has_gang_private_write)
+    {
+      decl = builtin_decl_explicit (BUILT_IN_GOACC_BARRIER);
+      gimple *acc_bar = gimple_build_call (decl, 0);
+
+      gsi_insert_before (&bar_gsi, acc_bar, GSI_NEW_STMT);
+      gsi_insert_after (&bar_gsi, cond, GSI_NEW_STMT);
+    }
+  else
+    gsi_insert_before (&bar_gsi, cond, GSI_NEW_STMT);
 
   edge et2 = split_block (barrier_block, cond);
   et2->flags &= ~EDGE_FALLTHRU;
@@ -1263,7 +1270,8 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 		      vec<propagation_set *> *prop_set,
 		      hash_set<tree> *partitioned_var_uses,
 		      record_field_map_t *record_field_map,
-		      blk_offset_map_t *blk_offset_map)
+		      blk_offset_map_t *blk_offset_map,
+		      bitmap writes_gang_private)
 {
   unsigned mask = outer_mask | par->mask;
 
@@ -1349,10 +1357,57 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 	      (*prop_set)[block->index] = 0;
 	    }
 
-	  tree record_type = (tree) block->aux;
+	  bool only_marker_fns = true;
+	  bool join_block = false;
+
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (block);
+	       !gsi_end_p (gsi);
+	       gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (gimple_code (stmt) == GIMPLE_CALL
+		  && gimple_call_internal_p (stmt, IFN_UNIQUE))
+		{
+		  enum ifn_unique_kind k = ((enum ifn_unique_kind)
+		    TREE_INT_CST_LOW (gimple_call_arg (stmt, 0)));
+		  if (k != IFN_UNIQUE_OACC_PRIVATE
+		      && k != IFN_UNIQUE_OACC_JOIN
+		      && k != IFN_UNIQUE_OACC_FORK
+		      && k != IFN_UNIQUE_OACC_HEAD_MARK
+		      && k != IFN_UNIQUE_OACC_TAIL_MARK)
+		    only_marker_fns = false;
+		  else if (k == IFN_UNIQUE_OACC_JOIN)
+		    /* The JOIN marker is special in that it *cannot* be
+		       predicated for worker zero, because it may be lowered
+		       to a barrier instruction and all workers must typically
+		       execute that barrier.  We shouldn't be doing any
+		       broadcasts from the join block anyway.  */
+		    join_block = true;
+		}
+	      else if (gimple_code (stmt) == GIMPLE_CALL
+		       && gimple_call_internal_p (stmt, IFN_GOACC_LOOP))
+		/* Empty.  */;
+	      else if (gimple_nop_p (stmt))
+		/* Empty.  */;
+	      else
+		only_marker_fns = false;
+	    }
+
+	  /* We can skip predicating this block for worker zero if the only
+	     thing it contains is marker functions that will be removed in the
+	     oaccdevlow pass anyway.
+	     Don't do this if the block has (any) phi nodes, because those
+	     might define SSA names that need broadcasting.
+	     TODO: We might be able to skip transforming blocks that only
+	     contain some other trivial statements too.  */
+	  if (only_marker_fns && !phi_nodes (block))
+	    continue;
+
+	  gcc_assert (!join_block);
 
 	  if (has_defs)
 	    {
+	      tree record_type = (tree) block->aux;
 	      std::pair<unsigned HOST_WIDE_INT, bool> *off_rngalloc
 		= blk_offset_map->get (block);
 	      gcc_assert (!record_type || off_rngalloc);
@@ -1360,10 +1415,13 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 		= off_rngalloc ? off_rngalloc->first : 0;
 	      bool range_allocated
 		= off_rngalloc ? off_rngalloc->second : true;
+	      bool has_gang_private_write
+		= bitmap_bit_p (writes_gang_private, block->index);
 	      worker_single_copy (block, block, &def_escapes_block,
 				  &worker_partitioned_uses, record_type,
 				  record_field_map,
-				  offset, !range_allocated);
+				  offset, !range_allocated,
+				  has_gang_private_write);
 	    }
 	  else
 	    worker_single_simple (block, block, &def_escapes_block);
@@ -1401,11 +1459,11 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
   if (par->inner)
     neuter_worker_single (par->inner, mask, worker_single, vector_single,
 			  prop_set, partitioned_var_uses, record_field_map,
-			  blk_offset_map);
+			  blk_offset_map, writes_gang_private);
   if (par->next)
     neuter_worker_single (par->next, outer_mask, worker_single, vector_single,
 			  prop_set, partitioned_var_uses, record_field_map,
-			  blk_offset_map);
+			  blk_offset_map, writes_gang_private);
 }
 
 static void
@@ -1596,11 +1654,13 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 
   hash_set<tree> partitioned_var_uses;
   hash_set<tree> gang_private_vars;
+  auto_bitmap writes_gang_private;
 
   find_gang_private_vars (&gang_private_vars);
   find_partitioned_var_uses (par, mask, &partitioned_var_uses);
   find_local_vars_to_propagate (par, mask, &partitioned_var_uses,
-				&gang_private_vars, &prop_set);
+				&gang_private_vars, writes_gang_private,
+				&prop_set);
 
   record_field_map_t record_field_map;
 
@@ -1757,7 +1817,7 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 
   neuter_worker_single (par, mask, worker_single, vector_single, &prop_set,
 			&partitioned_var_uses, &record_field_map,
-			&blk_offset_map);
+			&blk_offset_map, writes_gang_private);
 
   for (auto it : record_field_map)
     delete it.second;
