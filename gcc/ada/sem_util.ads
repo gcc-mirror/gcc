@@ -1598,7 +1598,7 @@ package Sem_Util is
 
    function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of in-out mode in a subprogram
-   --  call
+   --  call.
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call

@@ -19641,7 +19641,7 @@ package body Sem_Util is
    function Is_View_Conversion (N : Node_Id) return Boolean is
    begin
       if Nkind (N) = N_Type_Conversion
-        and then Nkind (Unqual_Conv (N)) = N_Identifier
+        and then Nkind (Unqual_Conv (N)) in N_Expanded_Name | N_Identifier
       then
          if Is_Tagged_Type (Etype (N))
            and then Is_Tagged_Type (Etype (Unqual_Conv (N)))
