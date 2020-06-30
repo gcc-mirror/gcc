@@ -4722,7 +4722,6 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
       set_constraints (clone, copy_node (ci));
 
   SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
-  DECL_CLONED_FUNCTION (clone) = fn;
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;
@@ -4815,9 +4814,10 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL);
-  // FIXME: Why top level here?  it is namespace_bindings on trunk,
-  // which seems equally spurious
-  rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
+
+  /* Regardless of the current scope, this is a member function, so
+     not at namespace scope.  */
+  rest_of_decl_compilation (clone, /*top_level=*/0, at_eof);
 
   return clone;
 }
