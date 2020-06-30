@@ -1429,6 +1429,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { "arm_sve_vector_bits", 1, 1, false, true,  false, true,
 			  aarch64_sve::handle_arm_sve_vector_bits_attribute,
 			  NULL },
+  { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
@@ -22721,8 +22722,18 @@ aarch64_simd_clone_usable (struct cgraph_node *node)
 static int
 aarch64_comp_type_attributes (const_tree type1, const_tree type2)
 {
-  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type1))
-      != lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type2)))
+  auto check_attr = [&](const char *name) {
+    tree attr1 = lookup_attribute (name, TYPE_ATTRIBUTES (type1));
+    tree attr2 = lookup_attribute (name, TYPE_ATTRIBUTES (type2));
+    if (!attr1 && !attr2)
+      return true;
+
+    return attr1 && attr2 && attribute_value_equal (attr1, attr2);
+  };
+
+  if (!check_attr ("aarch64_vector_pcs"))
+    return 0;
+  if (!check_attr ("Advanced SIMD type"))
     return 0;
   return 1;
 }
