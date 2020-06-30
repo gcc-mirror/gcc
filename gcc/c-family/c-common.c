@@ -5815,7 +5815,7 @@ check_function_arguments_recurse (void (*callback)
       return;
     }
 
-  if (TREE_CODE (param) == CALL_EXPR)
+  if (TREE_CODE (param) == CALL_EXPR && CALL_EXPR_FN (param))
     {
       tree type = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (param)));
       tree attrs;

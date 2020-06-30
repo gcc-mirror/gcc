@@ -1,3 +1,13 @@
+2020-06-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Revert:
+	2020-06-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/bits/basic_string.h (string(_CharT*, const _Alloc&)):
+	Add a __nonnull__ attribute.
+	* testsuite/21_strings/basic_string/cons/char/nonnull.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/nonnull.cc: Likewise.
+
 2020-06-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* include/bits/basic_string.h (string(_CharT*, const _Alloc&)):

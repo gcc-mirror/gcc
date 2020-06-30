@@ -728,7 +728,7 @@ gfc_match_data (void)
 	  gfc_constructor *c;
 	  c = gfc_constructor_first (new_data->value->expr->value.constructor);
 	  for (; c; c = gfc_constructor_next (c))
-	    if (c->expr->ts.type == BT_BOZ)
+	    if (c->expr && c->expr->ts.type == BT_BOZ)
 	      {
 		gfc_error ("BOZ literal constant at %L cannot appear in a "
 			   "structure constructor", &c->expr->where);

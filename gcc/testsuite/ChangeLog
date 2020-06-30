@@ -1,3 +1,72 @@
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95978
+	* gfortran.dg/pr95978.f90: New file.
+
+2020-06-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95743
+	* gfortran.dg/recursive_check_16.f90: New file.
+
+2020-06-29  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/char4-subscript.f90: Simplify regex.
+	Accept big endian or little endian output.
+
+2020-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94553
+	* g++.dg/cpp1y/pr68578.C: Adjust dg-error.
+	* g++.dg/cpp1y/var-templ66.C: New test.
+	* g++.dg/cpp2a/concepts-redecl1.C: New test.
+
+2020-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95568
+	* g++.dg/cpp2a/class-deduction-aggr5.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr6.C: New test.
+
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71706
+	* gfortran.dg/pr71706.f90: New file.
+
+2020-06-29  Martin Liska  <mliska@suse.cz>
+
+	PR c++/86568
+	* c-c++-common/builtin-arith-overflow-1.c (generic_3, typed_3_null):
+	Fix coding style.
+
+2020-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95916
+	* gcc.dg/vect/pr95916.c: New testcase.
+
+2020-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86568
+	* c-c++-common/builtin-arith-overflow-1.c (generic_3, typed_3_null):
+	Adjust dg-warning.
+
+2020-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86568
+	* c-c++-common/builtin-arith-overflow-1.c (generic_3, typed_3_null):
+	Adjust dg-warning.
+
+2020-06-29  Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	PR tree-optimization/95854
+	* gcc.dg/pr95854.c: New test.
+
+2020-06-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* lib/scandump.exp (glob-dump-file): New proc.
+	(scan-dump): Use glob-dump-file for file name expansion.
+	(scan-dump-times): Likewise.
+	(scan-dump-dem): Likewise.
+	(scan-dump-dem-not): Likewise.
+
 2020-06-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86568

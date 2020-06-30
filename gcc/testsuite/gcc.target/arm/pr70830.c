@@ -1,7 +1,7 @@
 /* PR target/70830.  */
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_arm_ok } */
-/* { dg-options "-Os -marm -save-temps" } */
+/* { dg-options "-mgeneral-regs-only -Os -marm -save-temps" } */
 
 /* This test is not valid when -mthumb.  */
 

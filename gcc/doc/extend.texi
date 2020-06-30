@@ -17091,7 +17091,7 @@ implementing assertions.
 * Basic PowerPC Built-in Functions Available on ISA 2.06::
 * Basic PowerPC Built-in Functions Available on ISA 2.07::
 * Basic PowerPC Built-in Functions Available on ISA 3.0::
-* Basic PowerPC Built-in Functions Available for a Future Architecture::
+* Basic PowerPC Built-in Functions Available on ISA 3.1::
 @end menu
 
 This section describes PowerPC built-in functions that do not require
@@ -17651,25 +17651,23 @@ the FPSCR.  The instruction is a lower latency version of the @code{mffs}
 instruction.  If the @code{mffsl} instruction is not available, then the
 builtin uses the older @code{mffs} instruction to read the FPSCR.
 
-@node Basic PowerPC Built-in Functions Available for a Future Architecture
-@subsubsection Basic PowerPC Built-in Functions Available for a Future Architecture
+@node Basic PowerPC Built-in Functions Available on ISA 3.1
+@subsubsection Basic PowerPC Built-in Functions Available on ISA 3.1
 
 The basic built-in functions described in this section are
-available on the PowerPC family of processors starting with a
-hypothetical CPU which may or may not be available in the future, as
-requested by specifying @option{-mcpu=future} on the command line.
-Unless explicitly disabled on the command line,
-specifying @option{-mcpu=future} has the effect of enabling all the
-same options as for @option{-mcpu=power9}.
+available on the PowerPC family of processors starting with ISA 3.1.
+Unless specific options are explicitly disabled on the
+command line, specifying option @option{-mcpu=power10} has the effect of
+enabling all the same options as for @option{-mcpu=power9}.
 
 The following built-in functions are available on Linux 64-bit systems
-that use a future architecture instruction set (@option{-mcpu=future}):
+that use a future architecture instruction set (@option{-mcpu=power10}):
 
 @smallexample
 @exdent unsigned long long int
 @exdent __builtin_cfuged (unsigned long long int, unsigned long long int)
 @end smallexample
-Perform a 64-bit centrifuge operation, as if implemented by the Future
+Perform a 64-bit centrifuge operation, as if implemented by the
 @code{cfuged} instruction.
 @findex __builtin_cfuged
 
@@ -17678,7 +17676,7 @@ Perform a 64-bit centrifuge operation, as if implemented by the Future
 @exdent __builtin_cntlzdm (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit count leading zeros operation under mask, as if
-implemented by the future @code{cntlzdm} instruction.
+implemented by the @code{cntlzdm} instruction.
 @findex __builtin_cntlzdm
 
 @smallexample
@@ -17686,7 +17684,7 @@ implemented by the future @code{cntlzdm} instruction.
 @exdent __builtin_cnttzdm (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit count trailing zeros operation under mask, as if
-implemented by the future @code{cnttzdm} instruction.
+implemented by the @code{cnttzdm} instruction.
 @findex __builtin_cnttzdm
 
 @smallexample
@@ -17694,7 +17692,7 @@ implemented by the future @code{cnttzdm} instruction.
 @exdent __builtin_pdepd (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit parallel bits deposit operation, as if implemented by the
-Future @code{pdepd} instruction.
+@code{pdepd} instruction.
 @findex __builtin_pdepd
 
 @smallexample
@@ -17702,7 +17700,7 @@ Future @code{pdepd} instruction.
 @exdent __builtin_pextd (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit parallel bits extract operation, as if implemented by the
-Future @code{pextd} instruction.
+@code{pextd} instruction.
 @findex __builtin_pextd
 
 @node PowerPC AltiVec/VSX Built-in Functions
@@ -17816,7 +17814,7 @@ briefly described below.
 * PowerPC AltiVec Built-in Functions Available on ISA 2.06::
 * PowerPC AltiVec Built-in Functions Available on ISA 2.07::
 * PowerPC AltiVec Built-in Functions Available on ISA 3.0::
-* PowerPC AltiVec Built-in Functions Available for a Future Architecture::
+* PowerPC AltiVec Built-in Functions Available on ISA 3.1::
 @end menu
 
 @node PowerPC AltiVec Built-in Functions on ISA 2.05
@@ -20860,20 +20858,18 @@ void vec_xst (vector unsigned char, int, vector unsigned char *);
 void vec_xst (vector unsigned char, int, unsigned char *);
 @end smallexample
 
-@node PowerPC AltiVec Built-in Functions Available for a Future Architecture
-@subsubsection PowerPC AltiVec Built-in Functions Available for a Future Architecture
+@node PowerPC AltiVec Built-in Functions Available on ISA 3.1
+@subsubsection PowerPC AltiVec Built-in Functions Available on ISA 3.1
 
 The following additional built-in functions are also available for the
-PowerPC family of processors, starting with a hypothetical CPU
-which may or may not be available in the future
-(@option{-mcpu=future}) or later:
+PowerPC family of processors, starting with ISA 3.1 (@option{-mcpu=power10}):
 
 
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
-Perform a vector centrifuge operation, as if implemented by the Future
+Perform a vector centrifuge operation, as if implemented by the
 @code{vcfuged} instruction.
 @findex vec_cfuge
 
@@ -20882,7 +20878,7 @@ Perform a vector centrifuge operation, as if implemented by the Future
 @exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector count leading zeros under bit mask operation, as if
-implemented by the Future @code{vclzdm} instruction.
+implemented by the @code{vclzdm} instruction.
 @findex vec_cntlzm
 
 @smallexample
@@ -20890,7 +20886,7 @@ implemented by the Future @code{vclzdm} instruction.
 @exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector count trailing zeros under bit mask operation, as if
-implemented by the Future @code{vctzdm} instruction.
+implemented by the @code{vctzdm} instruction.
 @findex vec_cnttzm
 
 @smallexample
@@ -20921,7 +20917,7 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 @exdent vector unsigned long long int
 @exdent vec_gnb (vector unsigned __int128, const unsigned char)
 @end smallexample
-Perform a 128-bit vector gather  operation, as if implemented by the Future
+Perform a 128-bit vector gather  operation, as if implemented by the
 @code{vgnb} instruction.  The second argument must be a literal
 integer value between 2 and 7 inclusive.
 @findex vec_gnb
@@ -20939,10 +20935,10 @@ integer value between 2 and 7 inclusive.
 Extract a single element from the vector formed by catenating this function's
 first two arguments at the byte offset specified by this function's
 third argument.  On big-endian targets, this function behaves as if
-implemented by the Future @code{vextdubvlx}, @code{vextduhvlx},
+implemented by the @code{vextdubvlx}, @code{vextduhvlx},
 @code{vextduwvlx}, or @code{vextddvlx} instructions, depending on the
 types of the function's first two arguments.  On little-endian
-targets, this function behaves as if implemented by the Future
+targets, this function behaves as if implemented by the
 @code{vextdubvrx}, @code{vextduhvrx},
 @code{vextduwvrx}, or @code{vextddvrx} instructions.
 The byte offset of the element to be extracted is calculated
@@ -20966,12 +20962,12 @@ Extract a single element from the vector formed by catenating this function's
 first two arguments at the byte offset calculated by subtracting this
 function's third argument from 31.  On big-endian targets, this
 function behaves as if
-implemented by the Future
+implemented by the
 @code{vextdubvrx}, @code{vextduhvrx},
 @code{vextduwvrx}, or @code{vextddvrx} instructions, depending on the
 types of the function's first two arguments.
 On little-endian
-targets, this function behaves as if implemented by the Future
+targets, this function behaves as if implemented by the
 @code{vextdubvlx}, @code{vextduhvlx},
 @code{vextduwvlx}, or @code{vextddvlx} instructions.
 The byte offset of the element to be extracted, measured from the
@@ -20987,7 +20983,7 @@ result is undefined.
 @exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector parallel bits deposit operation, as if implemented by
-the Future @code{vpdepd} instruction.
+the @code{vpdepd} instruction.
 @findex vec_pdep
 
 @smallexample
@@ -20995,7 +20991,7 @@ the Future @code{vpdepd} instruction.
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector parallel bit extract operation, as if implemented by
-the Future @code{vpextd} instruction.
+the @code{vpextd} instruction.
 @findex vec_pext
 
 @smallexample
@@ -21072,7 +21068,7 @@ zero element if the same argument is also passed to @code{vec_strir}.
             vector unsigned __int128, const unsigned int)
 @end smallexample
 Perform a 128-bit vector evaluate operation, as if implemented by the
-Future @code{xxeval} instruction.  The fourth argument must be a literal
+@code{xxeval} instruction.  The fourth argument must be a literal
 integer value between 0 and 255 inclusive.
 @findex vec_ternarylogic
 
@@ -21083,7 +21079,7 @@ integer value between 0 and 255 inclusive.
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
                                          const int)
 @end smallexample
-Generate PCV from specified Mask size, as if implemented by the Future
+Generate PCV from specified Mask size, as if implemented by the
 @code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
 immediate value is either 0, 1, 2 or 3.
 @findex vec_genpcvm

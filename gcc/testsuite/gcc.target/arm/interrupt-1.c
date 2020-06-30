@@ -2,7 +2,7 @@
    __attribute__ ((interrupt)).  */
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_nothumb } */
-/* { dg-options "-O0 -marm -save-temps" } */
+/* { dg-options "-mgeneral-regs-only -O0 -marm -save-temps" } */
 
 /* This test is not valid when -mthumb.  */
 extern void bar (int);

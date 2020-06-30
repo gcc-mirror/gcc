@@ -11106,15 +11106,11 @@ Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
   if (this->is_error_)
     return Expression::make_error(this->location_);
-  if (name == NULL && this->is_alias_)
-    {
-      if (this->seen_alias_)
-	return Expression::make_error(this->location_);
-      this->seen_alias_ = true;
-      Expression* ret = this->type_->type_descriptor(gogo, NULL);
-      this->seen_alias_ = false;
-      return ret;
-    }
+
+  // We shouldn't see unnamed type aliases here.  They should have
+  // been removed by the call to unalias in Type::type_descriptor_pointer.
+  // We can see named type aliases via Type::named_type_descriptor.
+  go_assert(name != NULL || !this->is_alias_);
 
   // If NAME is not NULL, then we don't really want the type
   // descriptor for this type; we want the descriptor for the
