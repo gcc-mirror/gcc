@@ -1142,7 +1142,9 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
 
   if (array->expr_type == EXPR_VARIABLE)
     {
-      ar = gfc_find_array_ref (array);
+      ar = gfc_find_array_ref (array, true);
+      if (!ar)
+	return false;
       if (ar->as->type == AS_ASSUMED_SIZE
 	  && !allow_assumed
 	  && ar->type != AR_ELEMENT
