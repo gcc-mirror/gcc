@@ -4696,7 +4696,7 @@ check_methods (tree t)
     }
 }
 
-tree
+static tree
 copy_fndecl_with_name (tree fn, tree name)
 {
   /* Copy the function.  */
@@ -4804,6 +4804,14 @@ copy_fndecl_with_name (tree fn, tree name)
   return clone;
 }
 
+/* FN is an operator function, create a variant for CODE.  */
+
+tree
+copy_operator_fn (tree fn, tree_code code)
+{
+  return copy_fndecl_with_name (fn, ovl_op_identifier (code));
+}
+
 /* FN is a constructor or destructor.  Clone the declaration to create
    a specialized in-charge or not-in-charge version, as indicated by
    NAME.  */
@@ -4847,8 +4855,8 @@ build_clone (tree fn, tree name)
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-unsigned
-build_clones (tree fn)
+static unsigned
+build_cdtor_clones (tree fn)
 {
   unsigned count = 0;
 
@@ -4891,14 +4899,14 @@ build_clones (tree fn)
    CLASSTYPE_MEMBER_VEC.  */
 
 void
-clone_function_decl (tree fn, bool update_methods)
+clone_cdtor (tree fn, bool update_methods)
 {
   /* Avoid inappropriate cloning.  */
   if (DECL_CHAIN (fn)
       && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
     return;
 
-  unsigned count = build_clones (fn);
+  unsigned count = build_cdtor_clones (fn);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
@@ -4998,10 +5006,10 @@ clone_constructors_and_destructors (tree t)
   /* While constructors can be via a using declaration, at this point
      we no longer need to know that.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    clone_function_decl (*iter, /*update_methods=*/true);
+    clone_cdtor (*iter, /*update_methods=*/true);
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
-    clone_function_decl (dtor, /*update_methods=*/true);
+    clone_cdtor (dtor, /*update_methods=*/true);
 }
 
 /* Deduce noexcept for a destructor DTOR.  */

@@ -1552,7 +1552,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	 reversal.  */
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
-      clone_function_decl (decl, /*update_methods=*/true);
+      clone_cdtor (decl, /*update_methods=*/true);
       gcc_assert (TYPE_FIELDS (current_class_type) == decl);
       TYPE_FIELDS (current_class_type)
 	= nreverse (TYPE_FIELDS (current_class_type));
