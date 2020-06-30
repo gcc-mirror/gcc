@@ -1,6 +1,6 @@
-/* { dg-do compile { target lp64 } } */
+/* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9" } */
 
 /* Source code for the test in vsx-vector-6.h */
