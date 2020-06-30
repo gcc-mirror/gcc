@@ -1337,6 +1337,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Dump the callgraph to file F.  */
   static void dump_cgraph (FILE *f);
 
+  void maybe_release_dominators ();
+
   /* Dump the call graph to stderr.  */
   static inline
   void debug_cgraph (void)

@@ -226,6 +226,20 @@ cgraph_node::delete_function_version_by_decl (tree decl)
   decl_node->remove ();
 }
 
+void
+cgraph_node::maybe_release_dominators (void)
+{
+  struct function *fun = DECL_STRUCT_FUNCTION (decl);
+
+  if (fun && fun->cfg)
+    {
+      if (dom_info_available_p (fun, CDI_DOMINATORS))
+	free_dominance_info (fun, CDI_DOMINATORS);
+      if (dom_info_available_p (fun, CDI_POST_DOMINATORS))
+	free_dominance_info (fun, CDI_POST_DOMINATORS);
+    }
+}
+
 /* Record that DECL1 and DECL2 are semantically identical function
    versions.  */
 void

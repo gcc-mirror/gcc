@@ -1,3 +1,16 @@
+2020-06-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+	* lto-cgraph.c (lto_apply_partition_mask): Avoid removal of nodes
+	in partition.
+	(maybe_release_function_dominators): Move from.
+	* cgraph.c (maybe_release_dominators): To here.
+	* ipa-visibility.c (localize_node): Skip assertion if
+	split_outputs.
+	* lto-partition.c (analyse_symbol_references): Merge
+	partitions if reference to static varnode instead of any global.
+	(promote_symbol): Correctly handle statics.
+	(lto_max_no_alonevap_map): Remove quick returns.
+	(privatize_symbol_name_1): Implement hashing of static names.
+
 2020-06-24  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (ipa_passes): Assert for non-empty partition.

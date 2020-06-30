@@ -472,18 +472,28 @@ analyse_symbol_references (symtab_node *node, int set)
 	  symtab_node *node1 = ref->referred;
 	  analyse_symbol (node1, set);
 	}
-      /* References to a readonly variable may be constant foled into its value.
-	 Recursively look into the initializers of the constant variable and add
-	 references, too.  */
+
       /* Check if we have a reference to global variable or function.  */
       if (is_a <varpool_node *> (ref->referred)
-	       || is_a <cgraph_node *> (ref->referred))
+	  && TREE_STATIC (ref->referred->decl)
+	  && !TREE_PUBLIC (ref->referred->decl))
+	{
+	  symtab_node *node1 = ref->referred;
+	  analyse_symbol (node1, set);
+	}
+      else if (is_a <cgraph_node *> (ref->referred))
 	{
 	  symtab_node *node1 = ref->referred;
 	  analyse_symbol (node1, set);
 	}
     }
 }
+
+static bool
+privatize_symbol_name (symtab_node *);
+
+static void
+promote_symbol (symtab_node *);
 
 static bool analyse_symbol_1 (symtab_node *node, int set)
 {
@@ -505,14 +515,29 @@ static bool analyse_symbol_1 (symtab_node *node, int set)
 
       /* Add all inline clones and callees that are duplicated.  */
       for (e = cnode->callees; e; e = e->next_callee)
-	if (!e->inline_failed || TREE_STATIC (e->callee->decl))
+	if (!e->inline_failed)
 	  analyse_symbol_1 (e->callee, set);
 	else if (e->callee->get_partitioning_class () == SYMBOL_DUPLICATE)
 	  analyse_symbol (e->callee, set);
 
+      /*
+      if (!node->same_comdat_group && TREE_STATIC (cnode->decl)
+	  && !TREE_PUBLIC (cnode->decl) && !cnode->inlined_to &&
+	  !DECL_DECLARED_INLINE_P (cnode->decl))
+	{
+
+	  promote_symbol (cnode);
+	  cnode->local = false;
+	}
+	*/
+
       /* Add all thunks associated with the function.  */
       for (e = cnode->callers; e; e = e->next_caller)
 	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
+	  analyse_symbol_1 (e->caller, set);
+
+	else if (e->inline_failed && TREE_STATIC (cnode->decl)
+		 && !TREE_PUBLIC (cnode->decl))
 	  analyse_symbol_1 (e->caller, set);
     }
 
@@ -571,7 +596,6 @@ lto_max_no_alonevap_map (void)
 {
   symtab_node *node;
   int n_partitions = 0, i, n = 0, j = 0;
-  int total_size = 0, max_size = -1;
   int *compression;
   int *sizes;
 
@@ -580,6 +604,22 @@ lto_max_no_alonevap_map (void)
 
   union_find disjoint_sets = union_find (n);
   ds = &disjoint_sets;
+
+
+  /* Allocate a compression vector, where we will map each disjoint set into
+     0, ..., n_partitions - 1.  Also allocates a size vector which will
+     hold each partition size.  Complexity: n.  */
+
+  compression = (int *) alloca (n * sizeof (*compression));
+  sizes       = (int *) alloca (n * sizeof (*sizes));
+  memset (sizes, 0, n * sizeof (*sizes));
+  for (i = 0; i < n; ++i)
+    compression[i] = -1; /* Invalid value.  */
+
+  int total_size = 0, max_size = -1;
+  int target_size;
+  const int eps = 0;
+  /* Compute the size of each node.  */
 
   /* Look for each function neighbor, checking for global-like variables that
      it references.  Complexity:
@@ -594,18 +634,6 @@ lto_max_no_alonevap_map (void)
   FOR_EACH_SYMBOL (node)
     analyse_symbol (node, node->aux2);
 
-  /* Allocate a compression vector, where we will map each disjoint set into
-     0, ..., n_partitions - 1.  Also allocates a size vector which will
-     hold each partition size.  Complexity: n.  */
-
-  compression = (int *) alloca (n * sizeof (*compression));
-  sizes       = (int *) alloca (n * sizeof (*sizes));
-  memset (sizes, 0, n * sizeof (*sizes));
-  for (i = 0; i < n; ++i)
-    compression[i] = -1; /* Invalid value.  */
-
-
-  /* Compute the size of each partition.  */
   i = 0;
   FOR_EACH_SYMBOL (node)
     {
@@ -633,12 +661,13 @@ lto_max_no_alonevap_map (void)
     }
 
   /* Quick return if total size is small.  */
-  if (total_size < param_min_partition_size)
-    return;
+  //if (total_size < param_min_partition_size)
+  //  return;
+
+  target_size = total_size / 8;
 
   /* Unite small partitions.  */
-
-  for (i = -1, j = 0; j < n; ++j)
+  for (i = 0, j = 0; j < n; ++j)
     {
       if (sizes[j] == 0)
 	continue;
@@ -647,41 +676,15 @@ lto_max_no_alonevap_map (void)
 	i = j;
       else
 	{
-	  if (sizes[i] + sizes[j] < max_size)
+	  if (sizes[i] + sizes[j] < target_size + eps)
 	    {
 	      ds->unite (i, j);
-	      sizes[j] += sizes[i];
-	      sizes[i] = 0;
+	      sizes[i] += sizes[j];
+	      sizes[j] = 0;
 	    }
 	  else
 	      i = j;
 	}
-    }
-
-  /* Unite the smallest partition with the second smallest.  This is
-     to avoid having one very big partition and two other very small ones.  */
-  int smallest_pos = -1;
-  int second_smallest_pos = -1;
-  int smallest = INT_MAX;
-
-  for (i = 0; i < n; ++i)
-    {
-      if (sizes[i] == 0)
-	continue;
-
-      if (sizes[i] < smallest)
-	{
-	  smallest = sizes[i];
-	  second_smallest_pos = smallest_pos;
-	  smallest_pos = i;
-	}
-    }
-
-  if (smallest_pos != -1 && second_smallest_pos != -1)
-    {
-      ds->unite (smallest_pos, second_smallest_pos);
-      sizes[smallest_pos] += sizes[second_smallest_pos];
-      sizes[second_smallest_pos] = 0;
     }
 
   /* Compress 0...(n-1) into 0...(n_partitions-1) so that we avoid manuvers with
@@ -703,8 +706,11 @@ lto_max_no_alonevap_map (void)
   n_partitions = j;
 
   /* Quick return if we have only one partition.  */
+  /* FIXME: We can't quiclky return here because nodes may be dirty.  */
+#if 0
   if (n_partitions <= 1)
     return;
+#endif
 
   /* Create LTRANS partitions.  */
   ltrans_partitions.create (n_partitions);
@@ -718,7 +724,7 @@ lto_max_no_alonevap_map (void)
       if (node->get_partitioning_class () != SYMBOL_PARTITION
 	  || symbol_partitioned_p (node))
 	  continue;
-      
+
       int p = compression[node->aux2];
       add_symbol_to_partition (ltrans_partitions[p], node);
     }
@@ -1294,11 +1300,17 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
     return false;
 
   name = maybe_rewrite_identifier (name);
-  unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
-  symtab->change_decl_assembler_name (decl,
-				      clone_function_name (
-					  name, "lto_priv", clone_number));
-  clone_number++;
+  if (lto_clone_numbers)
+    {
+      unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
+      symtab->change_decl_assembler_name (decl,
+					  clone_function_name (
+					      name, "lto_priv", clone_number));
+      clone_number++;
+    }
+  else
+    symtab->change_decl_assembler_name (decl, get_file_function_name
+					(node->asm_name ()));
 
   if (node->lto_file_data)
     lto_record_renamed_decl (node->lto_file_data, name,
