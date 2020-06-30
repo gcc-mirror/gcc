@@ -498,6 +498,36 @@ acc_unmap_data (void *h)
 }
 
 
+/* Helper function to map a single dynamic data item, represented by a single
+   mapping.  The acc_dev->lock should be held on entry, and remains locked on
+   exit.  */
+
+static void *
+goacc_map_var_existing (struct gomp_device_descr *acc_dev, void *hostaddr,
+			size_t size, splay_tree_key n)
+{
+  assert (n);
+
+  /* Present. */
+  void *d = (void *) (n->tgt->tgt_start + n->tgt_offset + hostaddr
+	    - n->host_start);
+
+  if (hostaddr + size > (void *) n->host_end)
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("[%p,+%d] not mapped", hostaddr, (int) size);
+    }
+
+  assert (n->refcount != REFCOUNT_LINK);
+  if (n->refcount != REFCOUNT_INFINITY)
+    {
+      n->refcount++;
+      n->virtual_refcount++;
+    }
+
+  return d;
+}
+
 /* Enter dynamic mapping for a single datum.  Return the device pointer.  */
 
 static void *
@@ -531,25 +561,7 @@ goacc_enter_datum (void **hostaddrs, size_t *sizes, void *kinds, int async)
   n = lookup_host (acc_dev, hostaddrs[0], sizes[0]);
   if (n)
     {
-      void *h = hostaddrs[0];
-      size_t s = sizes[0];
-
-      /* Present. */
-      d = (void *) (n->tgt->tgt_start + n->tgt_offset + h - n->host_start);
-
-      if ((h + s) > (void *)n->host_end)
-	{
-	  gomp_mutex_unlock (&acc_dev->lock);
-	  gomp_fatal ("[%p,+%d] not mapped", (void *)h, (int)s);
-	}
-
-      assert (n->refcount != REFCOUNT_LINK);
-      if (n->refcount != REFCOUNT_INFINITY)
-	{
-	  n->refcount++;
-	  n->virtual_refcount++;
-	}
-
+      d = goacc_map_var_existing (acc_dev, hostaddrs[0], sizes[0], n);
       gomp_mutex_unlock (&acc_dev->lock);
     }
   else
@@ -649,38 +661,13 @@ acc_pcopyin (void *h, size_t s)
 #endif
 
 
-/* Exit a dynamic mapping for a single variable.  */
+/* Helper function to unmap a single data item.  Device lock should be held on
+   entry, and remains locked on exit.  */
 
 static void
-goacc_exit_datum (void *h, size_t s, unsigned short kind, int async)
+goacc_exit_datum_1 (struct gomp_device_descr *acc_dev, void *h, size_t s,
+		    unsigned short kind, splay_tree_key n, goacc_aq aq)
 {
-  /* No need to call lazy open, as the data must already have been
-     mapped.  */
-
-  kind &= 0xff;
-
-  struct goacc_thread *thr = goacc_thread ();
-  struct gomp_device_descr *acc_dev = thr->dev;
-
-  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-    return;
-
-  acc_prof_info prof_info;
-  acc_api_info api_info;
-  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
-  if (profiling_p)
-    {
-      prof_info.async = async;
-      prof_info.async_queue = prof_info.async;
-    }
-
-  gomp_mutex_lock (&acc_dev->lock);
-
-  splay_tree_key n = lookup_host (acc_dev, h, s);
-  if (!n)
-    /* PR92726, RP92970, PR92984: no-op.  */
-    goto out;
-
   if ((uintptr_t) h < n->host_start || (uintptr_t) h + s > n->host_end)
     {
       size_t host_size = n->host_end - n->host_start;
@@ -691,6 +678,7 @@ goacc_exit_datum (void *h, size_t s, unsigned short kind, int async)
 
   bool finalize = (kind == GOMP_MAP_DELETE
 		   || kind == GOMP_MAP_FORCE_FROM);
+
   if (finalize)
     {
       if (n->refcount != REFCOUNT_INFINITY)
@@ -709,8 +697,6 @@ goacc_exit_datum (void *h, size_t s, unsigned short kind, int async)
 
   if (n->refcount == 0)
     {
-      goacc_aq aq = get_goacc_asyncqueue (async);
-
       bool copyout = (kind == GOMP_MAP_FROM
 		      || kind == GOMP_MAP_FORCE_FROM);
       if (copyout)
@@ -740,8 +726,44 @@ goacc_exit_datum (void *h, size_t s, unsigned short kind, int async)
 	  assert (is_tgt_unmapped || num_mappings > 1);
 	}
     }
+}
 
- out:
+
+/* Exit a dynamic mapping for a single variable.  */
+
+static void
+goacc_exit_datum (void *h, size_t s, unsigned short kind, int async)
+{
+  /* No need to call lazy open, as the data must already have been
+     mapped.  */
+
+  kind &= 0xff;
+
+  struct goacc_thread *thr = goacc_thread ();
+  struct gomp_device_descr *acc_dev = thr->dev;
+
+  if (acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return;
+
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+  if (profiling_p)
+    {
+      prof_info.async = async;
+      prof_info.async_queue = prof_info.async;
+    }
+
+  gomp_mutex_lock (&acc_dev->lock);
+
+  splay_tree_key n = lookup_host (acc_dev, h, s);
+  /* Non-present data is a no-op: PR92726, RP92970, PR92984.  */
+  if (n)
+    {
+      goacc_aq aq = get_goacc_asyncqueue (async);
+      goacc_exit_datum_1 (acc_dev, h, s, kind, n, aq);
+    }
+
   gomp_mutex_unlock (&acc_dev->lock);
 
   if (profiling_p)
