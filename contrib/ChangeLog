@@ -1,3 +1,16 @@
+2020-06-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Print revision
+	of original_info.
+	* gcc-changelog/git_commit.py: Support Revert commits.
+
+2020-06-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Use GitInfo
+	* gcc-changelog/git_commit.py: Add GitInfo class.
+	* gcc-changelog/git_email.py: Use GitInfo class.
+	* gcc-changelog/git_repository.py: Likewise.
+
 2020-06-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* download_prerequisites: Support AIX and OpenBSD unames.

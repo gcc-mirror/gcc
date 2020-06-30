@@ -1,3 +1,76 @@
+2020-06-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/extend.texi: Change references to "future architecture" to
+	"ISA 3.1", "-mcpu=future" to "-mcpu=power10", and remove vaguer
+	references to "future" (because the future is now).
+
+2020-06-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (isa): Rename "fut" to "p10".
+
+2020-06-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_distributive_operation): New function
+	to un-distribute a binary operation of two binary operations.
+	(X & C) ^ (Y & C) to (X ^ Y) & C, when C is simple (i.e. a constant).
+	(simplify_binary_operation_1) <IOR, XOR, AND>: Call it from here
+	when appropriate.
+	(test_scalar_int_ops): New function for unit self-testing
+	scalar integer transformations in simplify-rtx.c.
+	(test_scalar_ops): Call test_scalar_int_ops for each integer mode.
+	(simplify_rtx_c_tests): Call test_scalar_ops.
+
+2020-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95916
+	* tree-vect-slp.c (vect_schedule_slp_instance): Explicitely handle
+	the case of not vectorized externals.
+
+2020-06-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h: Do not include <utility>.
+
+2020-06-29  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-ccp.c (gsi_prev_dom_bb_nondebug): Use gsi_bb
+	instead of gimple_stmt_iterator::bb.
+	* tree-ssa-math-opts.c (insert_reciprocals): Likewise.
+	* tree-vectorizer.h: Likewise.
+
+2020-06-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (DBX_REGISTER_NUMBER): New macro.
+	* config/gcn/gcn-protos.h (gcn_dwarf_register_number): New prototype.
+	* config/gcn/gcn.c (gcn_expand_prologue): Add RTX_FRAME_RELATED_P
+	and REG_FRAME_RELATED_EXPR to stack and frame pointer adjustments.
+	(gcn_dwarf_register_number): New function.
+	(gcn_dwarf_register_span): New function.
+	(TARGET_DWARF_REGISTER_SPAN): New hook macro.
+
+2020-06-29  Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	PR tree-optimization/95854
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_1): Return NULL
+	if operand 1 or 2 of a BIT_FIELD_REF cannot be converted to
+	unsigned HOST_WIDE_INT.
+
+2020-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.c (epilogue_renumber): Remove register.
+	(sparc_print_operand_address): Likewise.
+	(sparc_type_code): Likewise.
+	(set_extends): Likewise.
+
+2020-06-29  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* optc-save-gen.awk: Add exceptions for arc target.
+
+2020-06-29  Frederik Harwath  <frederik@codesourcery.com>
+
+	* doc/sourcebuild.texi: Describe globbing of the
+	dump file scanning commands "suffix" argument.
+
 2020-06-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86568
