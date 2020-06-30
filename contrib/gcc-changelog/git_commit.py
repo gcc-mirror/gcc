@@ -159,6 +159,7 @@ LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 CHERRY_PICK_PREFIX = '(cherry picked from commit '
+REVERT_PREFIX = 'This reverts commit '
 
 REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
                    'acked-by: ', 'tested-by: ', 'reported-by: ',
@@ -256,6 +257,7 @@ class GitInfo:
 
 class GitCommit:
     def __init__(self, info, strict=True, commit_to_info_hook=None):
+        self.original_info = info
         self.info = info
         self.message = None
         self.changes = None
@@ -265,7 +267,16 @@ class GitCommit:
         self.co_authors = []
         self.top_level_prs = []
         self.cherry_pick_commit = None
+        self.revert_commit = None
         self.commit_to_info_hook = commit_to_info_hook
+
+        # Identify first if the commit is a Revert commit
+        for line in self.info.lines:
+            if line.startswith(REVERT_PREFIX):
+                self.revert_commit = line[len(REVERT_PREFIX):].rstrip('.')
+                break
+        if self.revert_commit:
+            self.info = self.commit_to_info_hook(self.revert_commit)
 
         project_files = [f for f in self.info.modified_files
                          if self.is_changelog_filename(f[0])
@@ -625,6 +636,10 @@ class GitCommit:
                     timestamp = info.date.strftime(DATE_FORMAT)
                 else:
                     timestamp = current_timestamp
+            elif self.revert_commit:
+                timestamp = current_timestamp
+                orig_date = self.original_info.date
+                current_timestamp = orig_date.strftime(DATE_FORMAT)
             elif not timestamp or use_commit_ts:
                 timestamp = current_timestamp
             authors = entry.authors if entry.authors else [self.info.author]
@@ -633,10 +648,13 @@ class GitCommit:
                 if author not in authors:
                     authors.append(author)
 
-            if self.cherry_pick_commit:
+            if self.cherry_pick_commit or self.revert_commit:
                 output += self.format_authors_in_changelog([self.info.author],
                                                            current_timestamp)
-                output += '\tBackported from master:\n'
+                if self.cherry_pick_commit:
+                    output += '\tBackported from master:\n'
+                else:
+                    output += '\tRevert:\n'
                 output += self.format_authors_in_changelog(authors,
                                                            timestamp, '\t')
             else:
