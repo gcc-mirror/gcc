@@ -7993,7 +7993,7 @@ trees_in::decl_value ()
 	  dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
 				       decl, cloned_p ? "" : "not ");
 	  if (cloned_p)
-	    build_clones (decl, flags & 2, flags & 4);
+	    build_cdtor_clones (decl, flags & 2, flags & 4);
 	}
     }
 

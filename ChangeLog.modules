@@ -1,3 +1,25 @@
+2020-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	Unify copy_fndecl_with_name and clone_decls.
+	gcc/cp/
+	* class.c (DECL_NEEDS_VTT_PARM_P): Delete.
+	(copy_fndecl_with_name): Add ctor booleans, use them.  Make static.
+	(copy_operator_fn): New wrapper.
+	(build_clone): Adjust to use copy_fndecl_with_name.
+	(build_clones): Rename to ...
+	(build_cdtor_clones): ... here.
+	(clone_function_decl): Rename to ...
+	(clone_cdtor): ... here.
+	(clone_constructors_and_destructors): Adjust.
+	* cp-tree.h (build_clones): Rename to build_cdtor_clones.
+	(clone_function_decl): Rename to clone_cdtor.
+	(copy_fndecl_with_name): Rename to copy_operator_fn.  Change arg
+	type.
+	* method.c (implicitly_declare_fn): Adjust.
+	(lazily_declare_fn): Likewise.
+	* module.c (trees_in::decl_value): Adjust.
+	* pt.c (tsubst_function_Decl, instantiate_template_1): Adjust.
+
 2020-06-29  Nathan Sidwell  <nathan@acm.org>
 
 	Merge master 9a33c41fe42
