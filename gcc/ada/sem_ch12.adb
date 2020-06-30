@@ -7512,11 +7512,60 @@ package body Sem_Ch12 is
             null;
 
          elsif Present (Entity (Gen_Id))
+           and then No (Renamed_Entity (Entity (Gen_Id)))
            and then Is_Child_Unit (Entity (Gen_Id))
            and then not In_Open_Scopes (Inst_Par)
          then
             Install_Parent (Inst_Par);
             Parent_Installed := True;
+
+         --  Handle renaming of generic child unit
+
+         elsif Present (Entity (Gen_Id))
+           and then Present (Renamed_Entity (Entity (Gen_Id)))
+           and then Is_Child_Unit (Renamed_Entity (Entity (Gen_Id)))
+         then
+            declare
+               E        : Entity_Id;
+               Ren_Decl : Node_Id;
+
+            begin
+               --  The entity of the renamed generic child unit does not
+               --  have any reference to the instantiated parent. In order to
+               --  locate it we traverse the scope containing the renaming
+               --  declaration; the instance of the parent is available in
+               --  the prefix of the renaming declaration. For example:
+
+               --     package A is
+               --       package Inst_Par is new ...
+               --       generic package Ren_Child renames Ins_Par.Child;
+               --     end;
+
+               --     with A;
+               --     package B is
+               --       package Inst_Child is new A.Ren_Child;
+               --     end;
+
+               E := First_Entity (Entity (Prefix (Gen_Id)));
+               while Present (E) loop
+                  if Present (Renamed_Entity (E))
+                    and then
+                      Renamed_Entity (E) = Renamed_Entity (Entity (Gen_Id))
+                  then
+                     Ren_Decl := Parent (E);
+                     Inst_Par := Entity (Prefix (Name (Ren_Decl)));
+
+                     if not In_Open_Scopes (Inst_Par) then
+                        Install_Parent (Inst_Par);
+                        Parent_Installed := True;
+                     end if;
+
+                     exit;
+                  end if;
+
+                  E := Next_Entity (E);
+               end loop;
+            end;
          end if;
 
       elsif In_Enclosing_Instance then
