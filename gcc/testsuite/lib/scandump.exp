@@ -301,7 +301,7 @@ proc scan-dump-dem-not { args } {
     set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set filename [lindex $testcase 0]
-    set printable_pattern [make_pattern_printable [lindex $args 1]
+    set printable_pattern [make_pattern_printable [lindex $args 1]]
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"$printable_pattern\""
     set src [file tail $filename]
