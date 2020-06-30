@@ -1,3 +1,63 @@
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95340
+	* gfortran.dg/pr95340.f90: New file.
+
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95880
+	* gfortran.dg/pr95880.f90: New file.
+
+2020-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95519
+	* g++.dg/coroutines/torture/pr95519-00-return_void.C: New test.
+	* g++.dg/coroutines/torture/pr95519-01-initial-suspend.C: New test.
+	* g++.dg/coroutines/torture/pr95519-02-final_suspend.C: New test.
+	* g++.dg/coroutines/torture/pr95519-03-return-value.C: New test.
+	* g++.dg/coroutines/torture/pr95519-04-yield-value.C: New test.
+	* g++.dg/coroutines/torture/pr95519-05-gro.C: New test.
+	* g++.dg/coroutines/torture/pr95519-06-grooaf.C: New test.
+	* g++.dg/coroutines/torture/pr95519-07-unhandled-exception.C: New test.
+
+2020-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-allocators.h (BAD_GROOAF_STATIC):
+	New.
+	* g++.dg/coroutines/coro-bad-grooaf-00-static.C: New test.
+
+2020-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/pr95493.C: Add -Wno-psabi -w to dg-additional-options.
+
+2020-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95903
+	* c-c++-common/pr95903.c: New test.
+
+2020-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95810
+	* gcc.dg/ubsan/pr95810.c: New test.
+
 2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

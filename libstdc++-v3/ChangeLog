@@ -1,3 +1,14 @@
+2020-06-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backported from master:
+	2020-06-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/95915
+	* include/std/variant (_Uninitialized):
+	Adjust the condition and the comment.
+	* testsuite/20_util/variant/95915.cc: New.
+	* testsuite/20_util/variant/compile.cc: Add new test.
+
 2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
