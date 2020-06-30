@@ -39,11 +39,15 @@ def parse_git_revisions(repo_path, revisions, strict=False):
 
             modified_files = []
             for file in diff:
+                if hasattr(file, 'renamed_file'):
+                    is_renamed = file.renamed_file
+                else:
+                    is_renamed = file.renamed
                 if file.new_file:
                     t = 'A'
                 elif file.deleted_file:
                     t = 'D'
-                elif file.renamed_file:
+                elif is_renamed:
                     # Consider that renamed files are two operations:
                     # the deletion of the original name
                     # and the addition of the new one.
