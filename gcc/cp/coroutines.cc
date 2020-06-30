@@ -1573,8 +1573,6 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
 
   tree source = TREE_OPERAND (saved_co_await, 4);
-  bool is_initial =
-    (source && TREE_INT_CST_LOW (source) == (int) INITIAL_SUSPEND_POINT);
   bool is_final = (source
 		   && TREE_INT_CST_LOW (source) == (int) FINAL_SUSPEND_POINT);
   bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
@@ -1723,16 +1721,6 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
   /* Resume point.  */
   resume_label = build_stmt (loc, LABEL_EXPR, resume_label);
   append_to_statement_list (resume_label, &stmt_list);
-
-  if (is_initial)
-    {
-      /* Note that we are about to execute the await_resume() for the initial
-	 await expression.  */
-      r = build2_loc (loc, MODIFY_EXPR, boolean_type_node, data->i_a_r_c,
-		      boolean_true_node);
-      r = coro_build_cvt_void_expr_stmt (r, loc);
-      append_to_statement_list (r, &stmt_list);
-    }
 
   /* This will produce the value (if one is provided) from the co_await
      expression.  */
@@ -2102,19 +2090,16 @@ static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 		tree orig, hash_map<tree, param_info> *param_uses,
 		hash_map<tree, local_var_info> *local_var_uses,
-		vec<tree, va_gc> *param_dtor_list, tree initial_await,
-		tree final_await, unsigned body_count, tree frame_size)
+		vec<tree, va_gc> *param_dtor_list,
+		tree fs_label, tree resume_fn_field,
+		unsigned body_count, tree frame_size)
 {
   verify_stmt_tree (fnbody);
   /* Some things we inherit from the original function.  */
-  tree coro_frame_ptr = build_pointer_type (coro_frame_type);
   tree handle_type = get_coroutine_handle_type (orig);
   tree self_h_proxy = get_coroutine_self_handle_proxy (orig);
   tree promise_type = get_coroutine_promise_type (orig);
   tree promise_proxy = get_coroutine_promise_proxy (orig);
-  tree act_des_fn_type
-    = build_function_type_list (void_type_node, coro_frame_ptr, NULL_TREE);
-  tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
 
   /* One param, the coro frame pointer.  */
   tree actor_fp = DECL_ARGUMENTS (actor);
@@ -2145,21 +2130,15 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   DECL_CONTEXT (continuation) = actor;
   BIND_EXPR_VARS (actor_bind) = continuation;
 
-  /* Update the block associated with the outer scope of the orig fn.  */
+  /* Link in the block associated with the outer scope of the re-written
+     function body.  */
   tree first = expr_first (fnbody);
-  if (first && TREE_CODE (first) == BIND_EXPR)
-    {
-      /* We will discard this, since it's connected to the original scope
-	 nest.  */
-      tree block = BIND_EXPR_BLOCK (first);
-      if (block) /* For this to be missing is probably a bug.  */
-	{
-	  gcc_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
-	  gcc_assert (BLOCK_CHAIN (block) == NULL_TREE);
-	  BLOCK_SUPERCONTEXT (block) = top_block;
-	  BLOCK_SUBBLOCKS (top_block) = block;
-	}
-    }
+  gcc_checking_assert (first && TREE_CODE (first) == BIND_EXPR);
+  tree block = BIND_EXPR_BLOCK (first);
+  gcc_checking_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
+  gcc_checking_assert (BLOCK_CHAIN (block) == NULL_TREE);
+  BLOCK_SUPERCONTEXT (block) = top_block;
+  BLOCK_SUBBLOCKS (top_block) = block;
 
   add_stmt (actor_bind);
   tree actor_body = push_stmt_list ();
@@ -2236,7 +2215,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (b);
 
   short unsigned lab_num = 3;
-  for (unsigned destr_pt = 0; destr_pt < body_count + 2; destr_pt++)
+  for (unsigned destr_pt = 0; destr_pt < body_count; destr_pt++)
     {
       tree l_num = build_int_cst (short_unsigned_type_node, lab_num);
       b = build_case_label (l_num, NULL_TREE,
@@ -2272,8 +2251,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (b);
 
   lab_num = 2;
-  /* The final resume should be made to hit the default (trap, UB) entry.  */
-  for (unsigned resu_pt = 0; resu_pt < body_count + 1; resu_pt++)
+  /* The final resume should be made to hit the default (trap, UB) entry
+     although it will be unreachable via the normal entry point, since that
+     is set to NULL on reaching final suspend.  */
+  for (unsigned resu_pt = 0; resu_pt < body_count; resu_pt++)
     {
       tree l_num = build_int_cst (short_unsigned_type_node, lab_num);
       b = build_case_label (l_num, NULL_TREE,
@@ -2326,55 +2307,19 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   await_xform_data xform
     = {actor, actor_frame, promise_proxy, ap, self_h_proxy, ash};
 
-  /* Get a reference to the initial suspend var in the frame.  */
-  transform_await_expr (initial_await, &xform);
-  tree initial_await_stmt = coro_build_expr_stmt (initial_await, loc);
-
-  /* co_return branches to the final_suspend label, so declare that now.  */
-  tree fs_label = create_named_label_with_ctx (loc, "final.suspend", actor);
-
   /* Expand co_returns in the saved function body  */
   fnbody = expand_co_returns (&fnbody, promise_proxy, ap, fs_label);
-
-  /* Specific behaviour to treat exceptions thrown by the await_resume ()
-     of the initial suspend expression.  In order to implement this, we
-     need to treat the initial_suspend expression as if it were part of the
-     user-authored function body.  This only applies if exceptions are
-     enabled.  */
-  if (flag_exceptions)
-    {
-      tree outer = fnbody;
-      if (TREE_CODE (outer) == BIND_EXPR)
-	outer = BIND_EXPR_BODY (outer);
-      gcc_checking_assert (TREE_CODE (outer) == TRY_BLOCK);
-      tree sl = TRY_STMTS (outer);
-      if (TREE_CODE (sl) == STATEMENT_LIST)
-	{
-	  tree_stmt_iterator si = tsi_start (sl);
-	  tsi_link_before (&si, initial_await_stmt, TSI_NEW_STMT);
-	}
-      else
-	{
-	  tree new_try = NULL_TREE;
-	  append_to_statement_list (initial_await_stmt, &new_try);
-	  append_to_statement_list (sl, &new_try);
-	  TRY_STMTS (outer) = new_try;
-	}
-    }
-  else
-    add_stmt (initial_await_stmt);
 
   /* Transform the await expressions in the function body.  Only do each
      await tree once!  */
   hash_set<tree> pset;
   cp_walk_tree (&fnbody, transform_await_wrapper, &xform, &pset);
 
-  /* Add in our function body with the co_returns rewritten to final form.  */
-  add_stmt (fnbody);
-
-  /* Final suspend starts here.  */
-  r = build_stmt (loc, LABEL_EXPR, fs_label);
-  add_stmt (r);
+  /* Now replace the promise proxy with its real value.  */
+  proxy_replace p_data;
+  p_data.from = promise_proxy;
+  p_data.to = ap;
+  cp_walk_tree (&fnbody, replace_proxy, &p_data, NULL);
 
   /* Set the actor pointer to null, so that 'done' will work.
      Resume from here is UB anyway - although a 'ready' await will
@@ -2384,15 +2329,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
   tree res_x = build_class_member_access_expr (actor_frame, resume_m, NULL_TREE,
 					       false, tf_warning_or_error);
-  r = build1 (CONVERT_EXPR, act_des_fn_ptr, integer_zero_node);
-  r = build2 (INIT_EXPR, act_des_fn_ptr, res_x, r);
-  r = coro_build_cvt_void_expr_stmt (r, loc);
-  add_stmt (r);
+  p_data.from = resume_fn_field;
+  p_data.to = res_x;
+  cp_walk_tree (&fnbody, replace_proxy, &p_data, NULL);
 
-  /* Get a reference to the final suspend var in the frame.  */
-  transform_await_expr (final_await, &xform);
-  r = coro_build_expr_stmt (final_await, loc);
-  add_stmt (r);
+  /* Add in our function body with the co_returns rewritten to final form.  */
+  add_stmt (fnbody);
 
   /* now do the tail of the function.  */
   tree del_promise_label
@@ -2559,20 +2501,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
     = build_class_member_access_expr (actor_frame, res_idx_m, NULL_TREE, false,
 				      tf_warning_or_error);
 
-  /* Boolean value to flag that the initial suspend expression's
-     await_resume () has been called, and therefore we are in the user's
-     function body for the purposes of handing exceptions.  */
-  tree i_a_r_c_m
-    = lookup_member (coro_frame_type, get_identifier ("__i_a_r_c"),
-		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-  tree i_a_r_c
-    = build_class_member_access_expr (actor_frame, i_a_r_c_m, NULL_TREE,
-				      false, tf_warning_or_error);
-
   /* We've now rewritten the tree and added the initial and final
      co_awaits.  Now pass over the tree and expand the co_awaits.  */
 
-  coro_aw_data data = {actor, actor_fp, resume_pt_number, i_a_r_c,
+  coro_aw_data data = {actor, actor_fp, resume_pt_number, NULL_TREE,
 		       ash, del_promise_label, ret_label,
 		       continue_label, continuation, 2};
   cp_walk_tree (&actor_body, await_statement_expander, &data, NULL);
@@ -3641,23 +3573,165 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   return fn;
 }
 
-/* Return a bind expression if we see one, else NULL_TREE.  */
-static tree
-bind_expr_find_in_subtree (tree *stmt, int *, void *)
-{
-  if (TREE_CODE (*stmt) == BIND_EXPR)
-    return *stmt;
-  return NULL_TREE;
-}
-
-/* Return the first bind expression that the sub-tree given by STMT
-   contains.  */
+/* Re-write the body as per [dcl.fct.def.coroutine] / 5.  */
 
 static tree
-coro_body_contains_bind_expr_p (tree *stmt)
+coro_rewrite_function_body (location_t fn_start, tree fnbody,
+			    tree orig, tree resume_fn_ptr_type,
+			    tree& resume_fn_field, tree& fs_label)
 {
-  hash_set<tree> visited;
-  return cp_walk_tree (stmt, bind_expr_find_in_subtree, NULL, &visited);
+  /* This will be our new outer scope.  */
+  tree update_body = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  tree top_block = make_node (BLOCK);
+  BIND_EXPR_BLOCK (update_body) = top_block;
+  BIND_EXPR_BODY (update_body) = push_stmt_list ();
+
+  /* If the function has a top level bind expression, then connect that
+     after first making sure we give it a new block.  */
+  tree first = expr_first (fnbody);
+  if (first && TREE_CODE (first) == BIND_EXPR)
+    {
+      tree block = BIND_EXPR_BLOCK (first);
+      gcc_checking_assert (block);
+      gcc_checking_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
+      gcc_checking_assert (BLOCK_CHAIN (block) == NULL_TREE);
+      /* Replace the top block to avoid issues with locations for args
+	 appearing to be in a non-existent place.  */
+      tree replace_blk = make_node (BLOCK);
+      BLOCK_VARS (replace_blk) = BLOCK_VARS (block);
+      BLOCK_SUBBLOCKS (replace_blk) = BLOCK_SUBBLOCKS (block);
+      for (tree b = BLOCK_SUBBLOCKS (replace_blk); b; b = BLOCK_CHAIN (b))
+	BLOCK_SUPERCONTEXT (b) = replace_blk;
+      BIND_EXPR_BLOCK (first) = replace_blk;
+      /* The top block has one child, so far, and we have now got a 
+	 superblock.  */
+      BLOCK_SUPERCONTEXT (block) = top_block;
+      BLOCK_SUBBLOCKS (top_block) = block;
+    }
+
+  /* Wrap the function body in a try {} catch (...) {} block, if exceptions
+     are enabled.  */
+  tree promise = get_coroutine_promise_proxy (orig);
+  tree var_list = NULL_TREE;
+  tree initial_await = build_init_or_final_await (fn_start, false);
+
+  /* [stmt.return.coroutine] / 3
+     If p.return_void() is a valid expression, flowing off the end of a
+     coroutine is equivalent to a co_return with no operand; otherwise
+     flowing off the end of a coroutine results in undefined behavior.  */
+  tree return_void
+    = get_coroutine_return_void_expr (current_function_decl, fn_start, false);
+
+  if (flag_exceptions)
+    {
+      /* Build promise.unhandled_exception();  */
+      tree ueh
+	= coro_build_promise_expression (current_function_decl, promise,
+					 coro_unhandled_exception_identifier,
+					 fn_start, NULL, /*musthave=*/true);
+      /* Create and initialize the initial-await-resume-called variable per
+	 [dcl.fct.def.coroutine] / 5.3.  */
+      tree i_a_r_c = build_lang_decl (VAR_DECL, get_identifier ("__i_a_r_c"),
+				      boolean_type_node);
+      DECL_ARTIFICIAL (i_a_r_c) = true;
+      DECL_CHAIN (i_a_r_c) = var_list;
+      var_list = i_a_r_c;
+      DECL_INITIAL (i_a_r_c) = boolean_false_node;
+      add_decl_expr (i_a_r_c);
+      /* Start the try-catch.  */
+      tree tcb = build_stmt (fn_start, TRY_BLOCK, NULL_TREE, NULL_TREE);
+      add_stmt (tcb);
+      TRY_STMTS (tcb) = push_stmt_list ();
+      if (initial_await != error_mark_node)
+	{
+	  /* Build a compound expression that sets the
+	     initial-await-resume-called variable true and then calls the
+	     initial suspend expression await resume.  */
+	  tree vec = TREE_OPERAND (initial_await, 3);
+	  tree aw_r = TREE_VEC_ELT (vec, 2);
+	  tree update = build2 (MODIFY_EXPR, boolean_type_node, i_a_r_c,
+				boolean_true_node);
+	  aw_r = cp_build_compound_expr (update, aw_r, tf_warning_or_error);
+	  TREE_VEC_ELT (vec, 2) = aw_r;
+	}
+      /* Add the initial await to the start of the user-authored function.  */
+      finish_expr_stmt (initial_await);
+      /* Append the original function body.  */
+      add_stmt (fnbody);
+      if (return_void)
+	add_stmt (return_void);
+      TRY_STMTS (tcb) = pop_stmt_list (TRY_STMTS (tcb));
+      TRY_HANDLERS (tcb) = push_stmt_list ();
+      /* Mimic what the parser does for the catch.  */
+      tree handler = begin_handler ();
+      finish_handler_parms (NULL_TREE, handler); /* catch (...) */
+
+      /* Get the initial await resume called value.  */
+      tree not_iarc_if = begin_if_stmt ();
+      tree not_iarc = build1_loc (fn_start, TRUTH_NOT_EXPR,
+				  boolean_type_node, i_a_r_c);
+      finish_if_stmt_cond (not_iarc, not_iarc_if);
+      /* If the initial await resume called value is false, rethrow...  */
+      tree rethrow = build_throw (fn_start, NULL_TREE);
+      TREE_NO_WARNING (rethrow) = true;
+      finish_expr_stmt (rethrow);
+      finish_then_clause (not_iarc_if);
+      tree iarc_scope = IF_SCOPE (not_iarc_if);
+      IF_SCOPE (not_iarc_if) = NULL;
+      not_iarc_if = do_poplevel (iarc_scope);
+      add_stmt (not_iarc_if);
+      /* ... else call the promise unhandled exception method.  */
+      ueh = maybe_cleanup_point_expr_void (ueh);
+      add_stmt (ueh);
+      finish_handler (handler);
+      TRY_HANDLERS (tcb) = pop_stmt_list (TRY_HANDLERS (tcb));
+    }
+  else
+    {
+      if (pedantic)
+	{
+	  /* We still try to look for the promise method and warn if it's not
+	     present.  */
+	  tree ueh_meth
+	    = lookup_promise_method (orig, coro_unhandled_exception_identifier,
+				     fn_start, /*musthave=*/false);
+	  if (!ueh_meth || ueh_meth == error_mark_node)
+	    warning_at (fn_start, 0, "no member named %qE in %qT",
+			coro_unhandled_exception_identifier,
+			get_coroutine_promise_type (orig));
+	}
+      /* Else we don't check and don't care if the method is missing..
+	 just add the initial suspend, function and return.  */
+      finish_expr_stmt (initial_await);
+      /* Append the original function body.  */
+      add_stmt (fnbody);
+      if (return_void)
+	add_stmt (return_void);
+    }
+
+  /* co_return branches to the final_suspend label, so declare that now.  */
+  fs_label
+    = create_named_label_with_ctx (fn_start, "final.suspend", NULL_TREE);
+  add_stmt (build_stmt (fn_start, LABEL_EXPR, fs_label));
+
+  /* Before entering the final suspend point, we signal that this point has
+     been reached by setting the resume function pointer to zero (this is
+     what the 'done()' builtin tests) as per the current ABI.  */
+  resume_fn_field
+    = build_lang_decl (VAR_DECL, get_identifier ("resume.fn.ptr.proxy"),
+		       resume_fn_ptr_type);
+  DECL_ARTIFICIAL (resume_fn_field) = true;
+  tree zero_resume
+    = build1 (CONVERT_EXPR, resume_fn_ptr_type, integer_zero_node);
+  zero_resume
+    = build2 (INIT_EXPR, resume_fn_ptr_type, resume_fn_field, zero_resume);
+  finish_expr_stmt (zero_resume);
+  finish_expr_stmt (build_init_or_final_await (fn_start, true));
+  BIND_EXPR_BODY (update_body) = pop_stmt_list (BIND_EXPR_BODY (update_body));
+  BIND_EXPR_VARS (update_body) = nreverse (var_list);
+  BLOCK_VARS (top_block) = BIND_EXPR_VARS (update_body);
+
+  return update_body;
 }
 
 /* Here we:
@@ -3734,53 +3808,30 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       return false;
     }
 
-  /* So, we've tied off the original body.  Now start the replacement.
+  /* So, we've tied off the original user-authored body in fn_body.
+
+     Start the replacement synthesized ramp body as newbody.
      If we encounter a fatal error we might return a now-empty body.
-     TODO: determine if it would help to restore the original.
-	   determine if looking for more errors in coro_function_valid_p()
-	   and stashing types is a better solution.  */
+
+     Note, the returned ramp body is not 'popped', to be compatible with
+     the way that decl.c handles regular functions, the scope pop is done
+     in the caller.  */
 
   tree newbody = push_stmt_list ();
   DECL_SAVED_TREE (orig) = newbody;
 
   /* If our original body is noexcept, then that's what we apply to our
-     generated functions.  Remember that we're NOEXCEPT and fish out the
-     contained list (we tied off to the top level already).  */
+     generated ramp, transfer any MUST_NOT_THOW_EXPR to that.  */
   bool is_noexcept = TREE_CODE (body_start) == MUST_NOT_THROW_EXPR;
   if (is_noexcept)
     {
-      /* Simplified abstract from begin_eh_spec_block, since we already
-	 know the outcome.  */
-      fnbody = TREE_OPERAND (body_start, 0); /* Stash the original...  */
-      add_stmt (body_start);		     /* ... and start the new.  */
+      /* The function body we will continue with is the single operand to
+	 the must-not-throw.  */
+      fnbody = TREE_OPERAND (body_start, 0);
+      /* Transfer the must-not-throw to the ramp body.  */
+      add_stmt (body_start);
+      /* Re-start the ramp as must-not-throw.  */
       TREE_OPERAND (body_start, 0) = push_stmt_list ();
-    }
-
-  /* We can be presented with a function that currently has no outer bind
-     expression.  We will insert bind scopes in expanding await expressions,
-     and therefore need a top level to the tree, so synthesize an outer bind
-     expression and scope.  */
-  tree check_bind = expr_first (fnbody);
-  if (check_bind && TREE_CODE (check_bind) != BIND_EXPR)
-    {
-      tree update_body = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-      tree blk = make_node (BLOCK);
-      gcc_checking_assert (!coro_body_contains_bind_expr_p (&fnbody));
-      BIND_EXPR_BLOCK (update_body) = blk;
-      if (TREE_CODE (fnbody) == STATEMENT_LIST)
-	BIND_EXPR_BODY (update_body) = fnbody;
-      else
-	{
-	  tree tlist = NULL_TREE;
-	  append_to_statement_list_force (fnbody, &tlist);
-	  TREE_SIDE_EFFECTS (tlist) = TREE_SIDE_EFFECTS (fnbody);
-	  BIND_EXPR_BODY (update_body) = tlist;
-	}
-      tree new_body_list = NULL_TREE;
-      TREE_SIDE_EFFECTS (update_body) = true;
-      append_to_statement_list (update_body, &new_body_list);
-      TREE_SIDE_EFFECTS (new_body_list) = true;
-      fnbody = new_body_list;
     }
 
   /* Create the coro frame type, as far as it can be known at this stage.
@@ -3791,35 +3842,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree promise_type = get_coroutine_promise_type (orig);
 
   /* 2. Types we need to define or look up.  */
-
-  /* We need to know, and inspect, each suspend point in the function
-     in several places.  It's convenient to place this map out of line
-     since it's used from tree walk callbacks.  */
-  suspend_points = new hash_map<tree, suspend_point_info>;
-
-  /* Initial and final suspend types are special in that the co_awaits for
-     them are synthetic.  We need to find the type for each awaiter from
-     the coroutine promise.  */
-  tree initial_await = build_init_or_final_await (fn_start, false);
-  if (initial_await == error_mark_node)
-    {
-      /* Suppress warnings about the missing return value.  */
-      TREE_NO_WARNING (orig) = true;
-      return false;
-    }
-  /* The type of the frame var for this is the type of its temp proxy.  */
-  tree initial_suspend_type = TREE_TYPE (TREE_OPERAND (initial_await, 1));
-
-  tree final_await = build_init_or_final_await (fn_start, true);
-  if (final_await == error_mark_node)
-    {
-      /* Suppress warnings about the missing return value.  */
-      TREE_NO_WARNING (orig) = true;
-      return false;
-    }
-
-  /* The type of the frame var for this is the type of its temp proxy.  */
-  tree final_suspend_type = TREE_TYPE (TREE_OPERAND (final_await, 1));
 
   tree fr_name = get_fn_local_identifier (orig, "frame");
   tree coro_frame_type = xref_tag (record_type, fr_name, ts_current, false);
@@ -3833,19 +3855,26 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree actor = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "actor");
   tree destroy = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "destroy");
 
+  /* Construct the wrapped function body; we will analyze this to determine
+     the requirements for the coroutine frame.  */
+
+  tree resume_fn_field = NULL_TREE;
+  tree fs_label = NULL_TREE;
+  fnbody = coro_rewrite_function_body (fn_start, fnbody, orig, act_des_fn_ptr,
+				       resume_fn_field, fs_label);
   /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
 
   tree field_list = NULL_TREE;
   tree resume_name
-    = coro_make_frame_entry (&field_list, "__resume", act_des_fn_ptr, fn_start);
-  tree destroy_name = coro_make_frame_entry (&field_list, "__destroy",
-					     act_des_fn_ptr, fn_start);
+    = coro_make_frame_entry (&field_list, "__resume",
+			     act_des_fn_ptr, fn_start);
+  tree destroy_name
+    = coro_make_frame_entry (&field_list, "__destroy",
+			     act_des_fn_ptr, fn_start);
   tree promise_name
     = coro_make_frame_entry (&field_list, "__p", promise_type, fn_start);
   tree fnf_name = coro_make_frame_entry (&field_list, "__frame_needs_free",
-					 boolean_type_node, fn_start);
-  tree iarc_name = coro_make_frame_entry (&field_list, "__i_a_r_c",
 					 boolean_type_node, fn_start);
   tree resume_idx_name
     = coro_make_frame_entry (&field_list, "__resume_at",
@@ -3928,11 +3957,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       cp_walk_tree (&fnbody, register_param_uses, &param_data, NULL);
     }
 
-  /* Initial suspend is mandated.  */
-  tree init_susp_name = coro_make_frame_entry (&field_list, "__aw_s.is",
-					       initial_suspend_type, fn_start);
-
-  register_await_info (initial_await, initial_suspend_type, init_susp_name);
+  /* We need to know, and inspect, each suspend point in the function
+     in several places.  It's convenient to place this map out of line
+     since it's used from tree walk callbacks.  */
+  suspend_points = new hash_map<tree, suspend_point_info>;
 
   /* Now insert the data for any body await points, at this time we also need
      to promote any temporaries that are captured by reference (to regular
@@ -3944,12 +3972,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   body_aw_points.bind_stack = make_tree_vector ();
   body_aw_points.to_replace = make_tree_vector ();
   cp_walk_tree (&fnbody, await_statement_walker, &body_aw_points, NULL);
-
-  /* Final suspend is mandated.  */
-  tree fin_susp_name = coro_make_frame_entry (&field_list, "__aw_s.fs",
-					      final_suspend_type, fn_start);
-
-  register_await_info (final_await, final_suspend_type, fin_susp_name);
 
   /* 4. Now make space for local vars, this is conservative again, and we
      would expect to delete unused entries later.  */
@@ -4455,17 +4477,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* Initialize 'initial-await-resume-called' as per
-     [dcl.fct.def.coroutine] / 5.3 */
-  tree i_a_r_c_m
-    = lookup_member (coro_frame_type, iarc_name, 1, 0, tf_warning_or_error);
-  tree i_a_r_c = build_class_member_access_expr (deref_fp, i_a_r_c_m,
-						 NULL_TREE, false,
-						 tf_warning_or_error);
-  r = build2 (INIT_EXPR, boolean_type_node, i_a_r_c, boolean_false_node);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
-
   /* So .. call the actor ..  */
   r = build_call_expr_loc (fn_start, actor, 1, coro_fp);
   r = maybe_cleanup_point_expr_void (r);
@@ -4535,133 +4546,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
   TREE_SIDE_EFFECTS (ramp_bind) = true;
 
-  /* We know the "real" promise and have a frame layout with a slot for each
-     suspend point, so we can build an actor function (which contains the
-     functionality for both 'resume' and 'destroy').
-
-     wrap the function body in a try {} catch (...) {} block, if exceptions
-     are enabled.  */
-
-  /* First make a new block for the body - that will be embedded in the
-     re-written function.  */
-  tree first = expr_first (fnbody);
-  bool orig_fn_has_outer_bind = false;
-  tree replace_blk = NULL_TREE;
-  if (first && TREE_CODE (first) == BIND_EXPR)
-    {
-      orig_fn_has_outer_bind = true;
-      tree block = BIND_EXPR_BLOCK (first);
-      replace_blk = make_node (BLOCK);
-      if (block) /* missing block is probably an error.  */
-	{
-	  gcc_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
-	  gcc_assert (BLOCK_CHAIN (block) == NULL_TREE);
-	  BLOCK_VARS (replace_blk) = BLOCK_VARS (block);
-	  BLOCK_SUBBLOCKS (replace_blk) = BLOCK_SUBBLOCKS (block);
-	  for (tree b = BLOCK_SUBBLOCKS (replace_blk); b; b = BLOCK_CHAIN (b))
-	    BLOCK_SUPERCONTEXT (b) = replace_blk;
-	}
-      BIND_EXPR_BLOCK (first) = replace_blk;
-    }
-
-  /* actor's version of the promise.  */
-  tree actor_frame = build1_loc (fn_start, INDIRECT_REF, coro_frame_type,
-				 DECL_ARGUMENTS (actor));
-  tree ap_m = lookup_member (coro_frame_type, get_identifier ("__p"), 1, 0,
-			     tf_warning_or_error);
-  tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE,
-					    false, tf_warning_or_error);
-
-  /* Now we've built the promise etc, process fnbody for co_returns.
-     We want the call to return_void () below and it has no params so
-     we can create it once here.
-     Calls to return_value () will have to be checked and created as
-     required.  */
-
-  tree return_void
-    = coro_build_promise_expression (current_function_decl, ap,
-				     coro_return_void_identifier,
-				     fn_start, NULL, /*musthave=*/false);
-
-  /* [stmt.return.coroutine] (2.2 : 3) if p.return_void() is a valid
-     expression, flowing off the end of a coroutine is equivalent to
-     co_return; otherwise UB.
-     We just inject the call to p.return_void() here, and fall through to
-     the final_suspend: label (eliding the goto).  If the function body has
-     a co_return, then this statement will be unreachable and DCEd.  */
-  if (return_void != NULL_TREE)
-    {
-      tree append = push_stmt_list ();
-      add_stmt (fnbody);
-      add_stmt (return_void);
-      fnbody = pop_stmt_list(append);
-    }
-
-  if (flag_exceptions)
-    {
-      tree ueh
-	= coro_build_promise_expression (current_function_decl, ap,
-					 coro_unhandled_exception_identifier,
-					 fn_start, NULL, /*musthave=*/true);
-
-      /* The try block is just the original function, there's no real
-	 need to call any function to do this.  */
-      fnbody = build_stmt (fn_start, TRY_BLOCK, fnbody, NULL_TREE);
-      TRY_HANDLERS (fnbody) = push_stmt_list ();
-      /* Mimic what the parser does for the catch.  */
-      tree handler = begin_handler ();
-      finish_handler_parms (NULL_TREE, handler); /* catch (...) */
-
-      /* Get the initial await resume called value.  */
-      tree i_a_r_c = build_class_member_access_expr (actor_frame, i_a_r_c_m,
-						     NULL_TREE, false,
-						     tf_warning_or_error);
-      tree not_iarc_if = begin_if_stmt ();
-      tree not_iarc = build1_loc (fn_start, TRUTH_NOT_EXPR,
-				  boolean_type_node, i_a_r_c);
-      finish_if_stmt_cond (not_iarc, not_iarc_if);
-      /* If the initial await resume called value is false, rethrow...  */
-      tree rethrow = build_throw (fn_start, NULL_TREE);
-      TREE_NO_WARNING (rethrow) = true;
-      finish_expr_stmt (rethrow);
-      finish_then_clause (not_iarc_if);
-      tree iarc_scope = IF_SCOPE (not_iarc_if);
-      IF_SCOPE (not_iarc_if) = NULL;
-      not_iarc_if = do_poplevel (iarc_scope);
-      add_stmt (not_iarc_if);
-      /* ... else call the promise unhandled exception method.  */
-      ueh = maybe_cleanup_point_expr_void (ueh);
-      add_stmt (ueh);
-      finish_handler (handler);
-      TRY_HANDLERS (fnbody) = pop_stmt_list (TRY_HANDLERS (fnbody));
-      /* If the function starts with a BIND_EXPR, then we need to create
-	 one here to contain the try-catch and to link up the scopes.  */
-      if (orig_fn_has_outer_bind)
-	{
-	  fnbody = build3 (BIND_EXPR, void_type_node, NULL, fnbody, NULL);
-	  /* Make and connect the scope blocks.  */
-	  tree tcb_block = make_node (BLOCK);
-	  /* .. and connect it here.  */
-	  BLOCK_SUPERCONTEXT (replace_blk) = tcb_block;
-	  BLOCK_SUBBLOCKS (tcb_block) = replace_blk;
-	  BIND_EXPR_BLOCK (fnbody) = tcb_block;
-	  TREE_SIDE_EFFECTS (fnbody) = true;
-	}
-    }
-  else if (pedantic)
-    {
-      /* We still try to look for the promise method and warn if it's not
-	 present.  */
-      tree ueh_meth
-	= lookup_promise_method (orig, coro_unhandled_exception_identifier,
-				 fn_start, /*musthave=*/false);
-      if (!ueh_meth || ueh_meth == error_mark_node)
-	warning_at (fn_start, 0, "no member named %qE in %qT",
-		    coro_unhandled_exception_identifier,
-		    get_coroutine_promise_type (orig));
-    }
-  /* Else we don't check and don't care if the method is missing.  */
-
   /* Start to build the final functions.
 
      We push_deferring_access_checks to avoid these routines being seen as
@@ -4671,7 +4555,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Build the actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
-		  &local_var_uses, param_dtor_list, initial_await, final_await,
+		  &local_var_uses, param_dtor_list, fs_label, resume_fn_field,
 		  body_aw_points.await_number, frame_size);
 
   /* Destroyer ... */
