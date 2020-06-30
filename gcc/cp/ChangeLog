@@ -1,3 +1,27 @@
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (expand_one_await_expression): Remove
+	code dealing with initial suspend.
+	(build_actor_fn): Remove code special-casing initial
+	and final suspend. Handle the final suspend and marking
+	of the coroutine as done.
+	(coro_rewrite_function_body): New.
+	(bind_expr_find_in_subtree): Remove.
+	(coro_body_contains_bind_expr_p): Remove.
+	(morph_fn_to_coro): Split the rewrite of the original
+	function into coro_rewrite_function_body and call it.
+
+2020-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94553
+	* decl.c (duplicate_decls): Make sure a concept or a variable
+	template is unique in its declarative region.
+
+2020-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95568
+	* pt.c (collect_ctor_idx_types): Use TREE_TYPE.
+
 2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95711
