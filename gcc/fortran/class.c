@@ -564,7 +564,7 @@ unsigned int
 gfc_intrinsic_hash_value (gfc_typespec *ts)
 {
   unsigned int hash = 0;
-  const char *c = gfc_typename (ts);
+  const char *c = gfc_typename (ts, true);
   int i, len;
 
   len = strlen (c);
