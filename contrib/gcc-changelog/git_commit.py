@@ -245,30 +245,34 @@ class ChangeLogEntry:
         return False
 
 
-class GitCommit:
-    def __init__(self, hexsha, date, author, body, modified_files,
-                 strict=True, commit_to_date_hook=None):
+class GitInfo:
+    def __init__(self, hexsha, date, author, lines, modified_files):
         self.hexsha = hexsha
-        self.lines = body
+        self.date = date
+        self.author = author
+        self.lines = lines
         self.modified_files = modified_files
+
+
+class GitCommit:
+    def __init__(self, info, strict=True, commit_to_info_hook=None):
+        self.info = info
         self.message = None
         self.changes = None
         self.changelog_entries = []
         self.errors = []
-        self.date = date
-        self.author = author
         self.top_level_authors = []
         self.co_authors = []
         self.top_level_prs = []
         self.cherry_pick_commit = None
-        self.commit_to_date_hook = commit_to_date_hook
+        self.commit_to_info_hook = commit_to_info_hook
 
-        project_files = [f for f in self.modified_files
+        project_files = [f for f in self.info.modified_files
                          if self.is_changelog_filename(f[0])
                          or f[0] in misc_files]
-        ignored_files = [f for f in self.modified_files
+        ignored_files = [f for f in self.info.modified_files
                          if self.in_ignored_location(f[0])]
-        if len(project_files) == len(self.modified_files):
+        if len(project_files) == len(self.info.modified_files):
             # All modified files are only MISC files
             return
         elif project_files and strict:
@@ -278,7 +282,7 @@ class GitCommit:
             return
 
         all_are_ignored = (len(project_files) + len(ignored_files)
-                           == len(self.modified_files))
+                           == len(self.info.modified_files))
         self.parse_lines(all_are_ignored)
         if self.changes:
             self.parse_changelog()
@@ -296,7 +300,7 @@ class GitCommit:
 
     @property
     def new_files(self):
-        return [x[0] for x in self.modified_files if x[1] == 'A']
+        return [x[0] for x in self.info.modified_files if x[1] == 'A']
 
     @classmethod
     def is_changelog_filename(cls, path):
@@ -331,7 +335,7 @@ class GitCommit:
         return modified_files
 
     def parse_lines(self, all_are_ignored):
-        body = self.lines
+        body = self.info.lines
 
         for i, b in enumerate(body):
             if not b:
@@ -475,7 +479,7 @@ class GitCommit:
                     self.errors.append(Error(msg, line))
 
     def get_file_changelog_location(self, changelog_file):
-        for file in self.modified_files:
+        for file in self.info.modified_files:
             if file[0] == changelog_file:
                 # root ChangeLog file
                 return ''
@@ -538,7 +542,7 @@ class GitCommit:
             for pattern in entry.file_patterns:
                 mentioned_patterns.append(os.path.join(entry.folder, pattern))
 
-        cand = [x[0] for x in self.modified_files
+        cand = [x[0] for x in self.info.modified_files
                 if not self.is_changelog_filename(x[0])]
         changed_files = set(cand)
         for file in sorted(mentioned_files - changed_files):
@@ -609,28 +613,28 @@ class GitCommit:
         return output
 
     def to_changelog_entries(self, use_commit_ts=False):
-        current_timestamp = self.date.strftime(DATE_FORMAT)
+        current_timestamp = self.info.date.strftime(DATE_FORMAT)
         for entry in self.changelog_entries:
             output = ''
             timestamp = entry.datetime
             if self.cherry_pick_commit:
-                timestamp = self.commit_to_date_hook(self.cherry_pick_commit)
+                info = self.commit_to_info_hook(self.cherry_pick_commit)
                 # it can happen that it is a cherry-pick for a different
                 # repository
-                if timestamp:
-                    timestamp = timestamp.strftime(DATE_FORMAT)
+                if info:
+                    timestamp = info.date.strftime(DATE_FORMAT)
                 else:
                     timestamp = current_timestamp
             elif not timestamp or use_commit_ts:
                 timestamp = current_timestamp
-            authors = entry.authors if entry.authors else [self.author]
+            authors = entry.authors if entry.authors else [self.info.author]
             # add Co-Authored-By authors to all ChangeLog entries
             for author in self.co_authors:
                 if author not in authors:
                     authors.append(author)
 
             if self.cherry_pick_commit:
-                output += self.format_authors_in_changelog([self.author],
+                output += self.format_authors_in_changelog([self.info.author],
                                                            current_timestamp)
                 output += '\tBackported from master:\n'
                 output += self.format_authors_in_changelog(authors,

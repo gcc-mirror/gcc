@@ -37,7 +37,7 @@ retval = 0
 for git_commit in parse_git_revisions(args.git_path, args.revisions,
                                       not args.non_strict_mode):
     res = 'OK' if git_commit.success else 'FAILED'
-    print('Checking %s: %s' % (git_commit.hexsha, res))
+    print('Checking %s: %s' % (git_commit.info.hexsha, res))
     if git_commit.success:
         if args.print_changelog:
             git_commit.print_output()
