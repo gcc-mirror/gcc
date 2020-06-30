@@ -46,7 +46,7 @@ CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h ope
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-c++: cc1plus$(exeext) mapper-server$(exeext) 
+c++: cc1plus$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c++
