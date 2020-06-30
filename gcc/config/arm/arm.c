@@ -7257,6 +7257,11 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 		   name);
 	  *no_add_attrs = true;
 	}
+      else if (TARGET_VFP_BASE)
+	{
+	  warning (OPT_Wattributes, "FP registers might be clobbered despite %qE attribute: compile with %<-mgeneral-regs-only%>",
+		   name);
+	}
       /* FIXME: the argument if any is checked for type attributes;
 	 should it be checked for decl ones?  */
     }
