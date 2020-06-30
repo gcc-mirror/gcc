@@ -4708,8 +4708,8 @@ check_methods (tree t)
    OMIT_INHERITED_PARMS_P are relevant if it's a cdtor.  */
 
 static tree
-copy_fndecl_with_name (tree fn, tree name, bool need_vtt_parm_p,
-		       bool omit_inherited_parms_p)
+copy_fndecl_with_name (tree fn, tree name, tree_code code,
+		       bool need_vtt_parm_p, bool omit_inherited_parms_p)
 {
   /* Copy the function.  */
   tree clone = copy_decl (fn);
@@ -4733,10 +4733,11 @@ copy_fndecl_with_name (tree fn, tree name, bool need_vtt_parm_p,
       DECL_VIRTUAL_P (clone) = 0;
       DECL_VINDEX (clone) = NULL_TREE;
     }
-  else if (IDENTIFIER_OVL_OP_P (name))
+
+  if (code != ERROR_MARK)
     {
       /* Set the operator code.  */
-      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      const ovl_op_info_t *ovl_op = OVL_OP_INFO (false, code);
       DECL_OVERLOADED_OPERATOR_CODE_RAW (clone) = ovl_op->ovl_op_code;
     }
 
@@ -4826,7 +4827,8 @@ copy_fndecl_with_name (tree fn, tree name, bool need_vtt_parm_p,
 tree
 copy_operator_fn (tree fn, tree_code code)
 {
-  return copy_fndecl_with_name (fn, ovl_op_identifier (code), false, false);
+  return copy_fndecl_with_name (fn, ovl_op_identifier (code),
+				code, false, false);
 }
 
 /* FN is a constructor or destructor.  Clone the declaration to create
@@ -4856,7 +4858,7 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
     }
   else
     {
-      clone = copy_fndecl_with_name (fn, name,
+      clone = copy_fndecl_with_name (fn, name, ERROR_MARK,
 				     need_vtt_parm_p, omit_inherited_parms_p);
       DECL_CLONED_FUNCTION (clone) = fn;
     }

@@ -1,5 +1,9 @@
 2020-06-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* class.c (copy_fndecl_with_name): Add tree code parm.  Adjust
+	callers.
+
 	libcc1/
 	* libcp1plugin.cc (plugin_build_decl): Adjust.
 
