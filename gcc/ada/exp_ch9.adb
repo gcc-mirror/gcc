@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Aspects;  use Aspects;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -4089,8 +4090,17 @@ package body Exp_Ch9 is
                     Parameter_Associations => Uactuals));
          end if;
 
-         Lock_Kind := RE_Lock_Read_Only;
-
+         if Has_Aspect (Pid, Aspect_Exclusive_Functions)
+           and then
+             (No (Find_Value_Of_Aspect (Pid, Aspect_Exclusive_Functions))
+               or else
+                 Is_True (Static_Boolean (Find_Value_Of_Aspect
+                   (Pid, Aspect_Exclusive_Functions))))
+         then
+            Lock_Kind := RE_Lock;
+         else
+            Lock_Kind := RE_Lock_Read_Only;
+         end if;
       else
          Unprot_Call :=
            Make_Procedure_Call_Statement (Loc,

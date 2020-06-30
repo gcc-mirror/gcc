@@ -190,6 +190,7 @@ package Aspects is
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
       Aspect_CUDA_Global,                   -- GNAT
+      Aspect_Exclusive_Functions,
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Independent,
@@ -472,6 +473,7 @@ package Aspects is
       Aspect_Dynamic_Predicate            => False,
       Aspect_Effective_Reads              => False,
       Aspect_Effective_Writes             => False,
+      Aspect_Exclusive_Functions          => False,
       Aspect_Extensions_Visible           => False,
       Aspect_External_Name                => False,
       Aspect_External_Tag                 => False,
@@ -619,6 +621,7 @@ package Aspects is
       Aspect_Effective_Reads              => Name_Effective_Reads,
       Aspect_Effective_Writes             => Name_Effective_Writes,
       Aspect_Elaborate_Body               => Name_Elaborate_Body,
+      Aspect_Exclusive_Functions          => Name_Exclusive_Functions,
       Aspect_Export                       => Name_Export,
       Aspect_Extensions_Visible           => Name_Extensions_Visible,
       Aspect_External_Name                => Name_External_Name,
@@ -851,6 +854,7 @@ package Aspects is
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,
       Aspect_Elaborate_Body               => Always_Delay,
+      Aspect_Exclusive_Functions          => Always_Delay,
       Aspect_External_Name                => Always_Delay,
       Aspect_External_Tag                 => Always_Delay,
       Aspect_Favor_Top_Level              => Always_Delay,

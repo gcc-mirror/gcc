@@ -4397,14 +4397,16 @@ package body Sem_Ch13 is
                      if Ekind (E) /= E_Protected_Type then
                         Error_Msg_Name_1 := Nam;
                         Error_Msg_N
-                          ("aspect % only applies to a protected object",
+                          ("aspect % only applies to a protected type " &
+                           "or object",
                            Aspect);
 
                      else
                         --  Set the Uses_Lock_Free flag to True if there is no
                         --  expression or if the expression is True. The
                         --  evaluation of this aspect should be delayed to the
-                        --  freeze point (why???)
+                        --  freeze point if we wanted to handle the corner case
+                        --  of "true" or "false" being redefined.
 
                         if No (Expr)
                           or else Is_True (Static_Boolean (Expr))
@@ -4424,6 +4426,19 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Disable_Controlled then
                      Analyze_Aspect_Disable_Controlled;
+                     goto Continue;
+
+                  --  Ada 202x (AI12-0129): Exclusive_Functions
+
+                  elsif A_Id = Aspect_Exclusive_Functions then
+                     if Ekind (E) /= E_Protected_Type then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_N
+                          ("aspect % only applies to a protected type " &
+                           "or object",
+                           Aspect);
+                     end if;
+
                      goto Continue;
 
                   --  Ada 202x (AI12-0075): static expression functions
