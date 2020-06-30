@@ -4119,7 +4119,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     else if (!grooaf && TYPE_NOTHROW_P (TREE_TYPE (func)))
       warning_at (fn_start, 0, "%qE is marked %<throw()%> or %<noexcept%> but"
 		  " no usable %<get_return_object_on_allocation_failure%>"
-		  " is provided by %qT ", nwname, promise_type);
+		  " is provided by %qT", nwname, promise_type);
     }
   else /* No operator new in the promise.  */
     {
