@@ -1,5 +1,8 @@
 2020-06-30  Nathan Sidwell  <nathan@acm.org>
 
+	libcc1/
+	* libcp1plugin.cc (plugin_build_decl): Adjust.
+
 	Unify copy_fndecl_with_name and clone_decls.
 	gcc/cp/
 	* class.c (DECL_NEEDS_VTT_PARM_P): Delete.
