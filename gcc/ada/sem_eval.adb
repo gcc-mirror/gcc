@@ -6554,8 +6554,65 @@ package body Sem_Eval is
          end if;
 
          declare
-            DL1 : constant Elist_Id := Discriminant_Constraint (T1);
-            DL2 : constant Elist_Id := Discriminant_Constraint (T2);
+
+            function Original_Discriminant_Constraint
+              (Typ : Entity_Id) return Elist_Id;
+            --  Returns Typ's discriminant constraint, or if the constraint
+            --  is inherited from an ancestor type, then climbs the parent
+            --  types to locate and return the constraint farthest up the
+            --  parent chain that Typ's constraint is ultimately inherited
+            --  from (stopping before a parent that doesn't impose a constraint
+            --  or a parent that has new discriminants). This ensures a proper
+            --  result from the equality comparison of Elist_Ids below (as
+            --  otherwise, derived types that inherit constraints may appear
+            --  to be unequal, because each level of derivation can have its
+            --  own copy of the constraint).
+
+            function Original_Discriminant_Constraint
+              (Typ : Entity_Id) return Elist_Id
+            is
+            begin
+               if not Has_Discriminants (Typ) then
+                  return No_Elist;
+
+               --  If Typ is not a derived type, then directly return the
+               --  its constraint.
+
+               elsif not Is_Derived_Type (Typ) then
+                  return Discriminant_Constraint (Typ);
+
+               --  If the parent type doesn't have discriminants, doesn't
+               --  have a constraint, or has new discriminants, then stop
+               --  and return Typ's constraint.
+
+               elsif not Has_Discriminants (Etype (Typ))
+
+                 --  No constraint on the parent type
+
+                 or else not Present (Discriminant_Constraint (Etype (Typ)))
+                 or else Is_Empty_Elmt_List
+                           (Discriminant_Constraint (Etype (Typ)))
+
+                 --  The parent type defines new discriminants
+
+                 or else
+                   (Is_Base_Type (Etype (Typ))
+                     and then Present (Discriminant_Specifications
+                                         (Parent (Etype (Typ)))))
+               then
+                  return Discriminant_Constraint (Typ);
+
+               --  Otherwise, make a recursive call on the parent type
+
+               else
+                  return Original_Discriminant_Constraint (Etype (Typ));
+               end if;
+            end Original_Discriminant_Constraint;
+
+            --  Local variables
+
+            DL1 : constant Elist_Id := Original_Discriminant_Constraint (T1);
+            DL2 : constant Elist_Id := Original_Discriminant_Constraint (T2);
 
             DA1 : Elmt_Id;
             DA2 : Elmt_Id;
