@@ -2688,7 +2688,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
      comparison operator function. --end note]  */
   if (kind == sfk_comparison)
     {
-      fn = copy_fndecl_with_name (pattern_fn, ovl_op_identifier (EQ_EXPR));
+      fn = copy_operator_fn (pattern_fn, EQ_EXPR);
       DECL_ARTIFICIAL (fn) = 1;
       TREE_TYPE (fn) = change_return_type (boolean_type_node, TREE_TYPE (fn));
       return fn;
@@ -3152,7 +3152,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
   if (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn))
     /* Create appropriate clones.  */
-    clone_function_decl (fn, /*update_methods=*/true);
+    clone_cdtor (fn, /*update_methods=*/true);
 
   return fn;
 }
