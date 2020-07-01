@@ -17,13 +17,13 @@ dummy_t global_d1;
 
 /* This function may clobber VFP registers.  */
 __attribute__ ((interrupt("IRQ"))) void IRQ_HDLR_Test(void)
-{ /* { dg-warning { FP registers might be clobbered despite 'interrupt' attribute: compile with -mgeneral-regs-only} "" { target *-*-* } . } */
+{ /* { dg-warning { FP registers might be clobbered despite 'interrupt' attribute: compile with '-mgeneral-regs-only'} "" { target *-*-* } . } */
   global_d.fpdata[3] += global_d.fpdata[3] * global_d1.fpdata[3];
 }
 
 /* This function does not need to clobber VFP registers.  */
 /* Do we want to emit a (useless?) warning?  */
 __attribute__ ((interrupt("IRQ"))) void IRQ_HDLR_Test2(void)
-{ /* { dg-warning { FP registers might be clobbered despite 'interrupt' attribute: compile with -mgeneral-regs-only} "" { target *-*-* } . } */
+{ /* { dg-warning { FP registers might be clobbered despite 'interrupt' attribute: compile with '-mgeneral-regs-only'} "" { target *-*-* } . } */
   global_d.fpdata[3] = 1.0;
 }
