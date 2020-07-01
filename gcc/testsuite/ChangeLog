@@ -1,3 +1,11 @@
+2020-06-30  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.c-torture/compile/packed-aligned-1.c: New test.
+	* gcc.c-torture/execute/packed-aligned.c: New test.
+
 2020-06-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95689
