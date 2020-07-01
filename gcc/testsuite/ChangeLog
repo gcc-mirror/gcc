@@ -1,3 +1,99 @@
+2020-06-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-2-p9-runnable.c: lp64 to int128.
+	* gcc.target/powerpc/builtins-6-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-6-runnable.c: Same.
+	* gcc.target/powerpc/builtins-revb-runnable.c: Same.
+
+2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88379
+	* gfortran.dg/pr88379.f90: New file.
+
+2020-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/92789
+	PR target/95726
+	* g++.target/aarch64/pr95726.C: New test.
+
+2020-06-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-1-p9-runnable.c: Fix target requirements.
+	* gcc.target/powerpc/builtins-1.c: Same.
+	* gcc.target/powerpc/builtins-2-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-2.c: Same.
+	* gcc.target/powerpc/builtins-3-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-3-p9.c: Same.
+	* gcc.target/powerpc/builtins-3-runnable-p8.c: Same.
+	* gcc.target/powerpc/builtins-3.c: Same.
+	* gcc.target/powerpc/builtins-4-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-4.c: Same.
+	* gcc.target/powerpc/builtins-5-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-5.c: Same.
+	* gcc.target/powerpc/builtins-6-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-6-runnable.c: Same.
+	* gcc.target/powerpc/builtins-7-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-7-runnable.c: Same.
+	* gcc.target/powerpc/builtins-8-p9-runnable.c: Same.
+	* gcc.target/powerpc/builtins-8-runnable.c: Same.
+	* gcc.target/powerpc/cpu-builtin-1.c: Same.
+	* gcc.target/powerpc/float128-fma1.c: Same.
+	* gcc.target/powerpc/float128-hw.c: Same.
+	* gcc.target/powerpc/float128-hw10.c: Same.
+	* gcc.target/powerpc/float128-hw11.c: Same.
+	* gcc.target/powerpc/float128-hw2.c: Same.
+	* gcc.target/powerpc/float128-hw3.c: Same.
+	* gcc.target/powerpc/float128-hw4.c: Same.
+	* gcc.target/powerpc/float128-hw5.c: Same.
+	* gcc.target/powerpc/float128-hw6.c: Same.
+	* gcc.target/powerpc/float128-hw7.c: Same.
+	* gcc.target/powerpc/float128-hw8.c: Same.
+	* gcc.target/powerpc/float128-hw9.c: Same.
+	* gcc.target/powerpc/float128-minmax.c: Same.
+	* gcc.target/powerpc/float128-odd.c: Same.
+	* gcc.target/powerpc/float128-sqrt1.c: Same.
+
+2020-06-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/analyzer/pr93993.f90: Expect leak tm warning.
+
+2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scanoffload.exp (scoff) <offload_targets>: Skip HSA.
+
+2020-06-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94743
+	* gcc.misc-tests/arm-isr.c: Add -mgeneral-regs-only.
+	* gcc.target/arm/empty_fiq_handler.c: Add -mgeneral-regs-only.
+	* gcc.target/arm/interrupt-1.c: Add -mgeneral-regs-only.
+	* gcc.target/arm/interrupt-2.c: Add -mgeneral-regs-only.
+	* gcc.target/arm/pr70830.c: Add -mgeneral-regs-only.
+	* gcc.target/arm/pr94743-1-hard.c: New test.
+	* gcc.target/arm/pr94743-1-soft.c: New test.
+	* gcc.target/arm/pr94743-1-softfp.c: New test.
+	* gcc.target/arm/pr94743-2.c: New test.
+	* gcc.target/arm/pr94743-3.c: New test.
+
+2020-06-30  Yang Yang  <yangyang305@huawei.com>
+
+	PR tree-optimization/95855
+	* gcc.dg/tree-ssa/split-path-12.c: New testcase.
+
+2020-06-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-is_literal.C: Limit test to -std=c++14.
+
+2020-06-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95355
+	* gfortran.dg/select_type_49.f90: New file.
+
+2020-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95963
+	* g++.dg/cpp1z/launder9.C: New test.
+
 2020-06-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95978
