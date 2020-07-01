@@ -1,5 +1,15 @@
 2020-07-01  Nathan Sidwell  <nathan@acm.org>
 
+	GMF entities are not findable by name
+	gcc/cp/
+	* modules.cc (enum depset::disc_bits): Remove DB_GLOBAL_BIT.
+	(depset::is_global): Delete
+	(depset::hash::make_dependency): Drop reachable GMF binding
+	insertion.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-[13]_[ab].C: Adjust scans.
+	* g++.dg/modules/mod-sym-2.C: Adjust scans.
+
 	Implement FR039 -- dependent ADL and friend fns
 	gcc/cp/
 	* name-lookup.c (name_lookup::adl_namespace): Instantiation path

@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-alias-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-alias" }
 import builtins;
 
 int main ()

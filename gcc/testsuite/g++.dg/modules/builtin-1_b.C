@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-alias-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-alias" }
 import builtin;
 
 int main ()
@@ -8,7 +8,5 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {>Loading entity builtin\[1\] section:.} module } }
 // { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) function_decl:'::operator delete \[\]'} module } }
-// { dg-final { scan-lang-dump {>Loading entity builtin\[0\] section:.} module } }
 // { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) function_decl:'::operator delete'} module } }

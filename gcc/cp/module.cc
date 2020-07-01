@@ -2257,7 +2257,6 @@ private:
     DB_IS_INTERNAL_BIT,		/* It is an internal-linkage entity.  */
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
 				   entity. */
-    DB_GLOBAL_BIT,		/* Global module entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
@@ -2347,10 +2346,6 @@ public:
   bool refs_internal () const
   {
     return get_flag_bit<DB_REFS_INTERNAL_BIT> ();
-  }
-  bool is_global () const
-  {
-    return get_flag_bit<DB_GLOBAL_BIT> ();
   }
   bool is_import () const
   {
@@ -12010,32 +12005,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 			&& true)))
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	    }
-	  else if (DECL_IMPLICIT_TYPEDEF_P (not_tmpl)
-		   && IDENTIFIER_ANON_P (DECL_NAME (not_tmpl)))
-	    /* No linkage or linkage from typedef name (which
-	       cannot be internal, because that's from the linkage
-	       of the context.  */;
-	  else if (!for_binding)
-	    {
-	      // FIXME: We have to walk the non-emitted entities
-	      // in the module's purview too.  Discussing this in
-	      // CWG, it is weird.
-	      /* A reachable global module fragment entity.  Add
-		 it to its scope's binding depset.  */
-	      depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
-	      depset *bdep = *bslot;
-	      if (!bdep)
-		{
-		  *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
-		  add_namespace_context (bdep, ctx);
-		}
 
-	      bdep->deps.safe_push (dep);
-	      dep->deps.safe_push (bdep);
-	      dep->set_flag_bit<DB_GLOBAL_BIT> ();
-	      dump (dumper::DEPEND)
-		&& dump ("Reachable GMF %N added", decl);
-	    }
 	}
 
       if (!dep->is_import ())
