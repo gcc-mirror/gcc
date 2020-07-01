@@ -7,3 +7,5 @@ unsigned test (unsigned a, unsigned b)
   return a / b;
 } /* { dg-missed "\[^\n\]*execution counts estimated" } */
 /* { dg-prune-output "function body not available" } */
+/* Ignore inlinable warning on AIX.  */
+/* { dg-prune-output "function not inlinable" } */
