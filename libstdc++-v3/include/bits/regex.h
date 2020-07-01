@@ -1989,7 +1989,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, typename _Alloc>
     inline bool
     operator==(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
+	       const match_results<_Bi_iter, _Alloc>& __m2)
     {
       if (__m1.ready() != __m2.ready())
 	return false;
@@ -2013,7 +2013,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, class _Alloc>
     inline bool
     operator!=(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
+	       const match_results<_Bi_iter, _Alloc>& __m2)
     { return !(__m1 == __m2); }
 
   // [7.10.6] match_results swap
