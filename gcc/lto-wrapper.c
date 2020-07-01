@@ -48,6 +48,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "lto-section-names.h"
 #include "collect-utils.h"
+#include <stdio.h>
+#include <unistd.h>
+
+#define MAPPER_FOR_GCC 1
+#include "mapper.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -83,6 +88,45 @@ static const char **early_debug_object_names;
 static bool xassembler_options_error = false;
 
 const char tool_name[] = "lto-wrapper";
+
+/********************************************************************/
+
+// FIXME: Put in header somewhere, and maybe verify value
+static const location_t main_source_loc = 32;
+
+/* Our module mapper (created lazily).  */
+module_client *mapper;
+
+static module_client *make_mapper (location_t loc);
+inline module_client *get_mapper (location_t loc) {
+  auto *res = mapper;
+  if (!res)
+    res = make_mapper (loc);
+  return res;
+}
+
+/********************************************************************/
+
+/* Create a new mapper connecting to OPTION.  */
+
+module_client *
+make_mapper (location_t loc)
+{
+  //const char *option = module_mapper_name;
+  //if (!option)
+  //  option = getenv ("CXX_MODULE_MAPPER");
+
+  const char *option = getenv ("CXX_MODULE_MAPPER");
+  fprintf(stderr, "\tCXX_MODULE_MAPPER option: %s\n", option);
+
+  //mapper = module_client::open_module_client(loc, option, &set_cmi_repo, (save_decoded_options[0].opt_index == OPT_SPECIAL_program_name) && save_decoded_options[0].arg != progname ? save_decoded_options[0].arg : nullptr);
+  
+  fprintf(stderr, "\tcalling module_client constructor\n");
+  mapper = module_client::open_module_client(loc, option, nullptr, nullptr);
+
+  return mapper;
+}
+
 
 /* Delete tempfiles.  Called from utils_cleanup.  */
 
@@ -1818,6 +1862,7 @@ cont:
 	  qsort (ltrans_priorities, nr, sizeof (int) * 2, cmp_priority);
 	}
 
+    auto *mapper = get_mapper (main_source_loc);
       /* Execute the LTRANS stage for each input file (or prepare a
 	 makefile to invoke this in parallel).  */
       for (i = 0; i < nr; ++i)
@@ -1861,8 +1906,31 @@ cont:
 	    }
 	  else
 	    {
-	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
-			    true);
+        //fprintf(stderr, "\tRAVI PRINT: %s ", new_argv[0]);
+        mapper->Cork();
+
+        // TODO: better way to figure out the number of arguments?
+        for (j = 1; new_argv[j] != NULL; ++j);
+        fprintf(stderr, "argc: %d\n", j);
+
+        //std::vector<const char*> v_new_argv(new_argv, new_argv + j);
+        //mapper->LTOCompile(v_new_argv);
+        mapper->LTOCompile(new_argv, j);
+        const char **arg_it = new_argv + 1;
+
+        while(*arg_it != NULL) 
+        {
+          //fprintf(stderr, "\tRAVI PRINT: %s\n", *arg_it);
+          fprintf(stderr, " \'%s\' ", *arg_it);
+          //mapper->LTOCompile(*arg_it);
+          arg_it++;
+        }
+        ////fprintf(stderr, "\n");
+        mapper->Uncork();
+
+        //fprintf(stderr, "\tRAVI PRINT: %s\n", new_argv[0]);
+	      //fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
+			  //  true);
 	      maybe_unlink (input_name);
 	    }
 

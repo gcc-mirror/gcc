@@ -388,6 +388,10 @@ GMPINC = @GMPINC@
 ISLLIBS = @ISLLIBS@
 ISLINC = @ISLINC@
 
+# How to find libcody
+CODYLIB = @CODYLIB@ -lcody
+CODYLIBINC = @CODYLIBINC@
+
 # Set to 'yes' if the LTO front end is enabled.
 enable_lto = @enable_lto@
 
@@ -1069,7 +1073,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 # and the system's installed libraries.
 LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) \
 	$(LIBIBERTY) $(LIBDECNUMBER) $(HOST_LIBS)
-BACKENDLIBS = $(ISLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
+BACKENDLIBS = $(ISLLIBS) $(GMPLIBS) $(CODYLIB) $(PLUGINLIBS) $(HOST_LIBS) \
 	$(ZLIB) $(ZSTD_LIB)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -1103,7 +1107,7 @@ BUILD_ERRORS = build/errors.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
+	   $(CPPINC) $(GMPINC) $(CODYLIBINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(ISLINC)
 
 COMPILE.base = $(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -o $@
@@ -1688,7 +1692,7 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
   $(GCOV_TOOL_OBJS) $(GENGTYPE_OBJS) gcc-ar.o gcc-nm.o gcc-ranlib.o \
-  lto-wrapper.o collect-utils.o
+  lto-wrapper.o mapper-client.o mapper-resolver.o mapper-server.o collect-utils.o
 
 # for anything that is shared use the cc1plus profile data, as that
 # is likely the most exercised during the build
@@ -1763,16 +1767,22 @@ SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
 gnat_install_lib = @gnat_install_lib@
 
 # per-language makefile fragments
--include $(LANG_MAKEFRAGS)
+ifneq ($(LANG_MAKEFRAGS),)
+include $(LANG_MAKEFRAGS)
+endif
 
 # target and host overrides must follow the per-language makefile fragments
 # so they can override or augment language-specific variables
 
 # target overrides
--include $(tmake_file)
+ifneq ($(tmake_file),)
+include $(tmake_file)
+endif
 
 # host overrides
--include $(xmake_file)
+ifneq ($(xmake_file),)
+include $(xmake_file)
+endif
 
 # all-tree.def includes all the tree.def files.
 all-tree.def: s-alltree; @true
@@ -2187,11 +2197,27 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	@TARGET_SYSTEM_ROOT_DEFINE@
 
-LTO_WRAPPER_OBJS = lto-wrapper.o collect-utils.o ggc-none.o
+LTO_WRAPPER_OBJS = lto-wrapper.o mapper-client.o mapper-resolver.o collect-utils.o ggc-none.o
 lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o T$@ \
-	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
+	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(CODYLIB) $(LIBS)
 	mv -f T$@ $@
+
+#MAPPER_SERVER_OBJS := mapper-server.o mapper-resolver.o
+#mapper-server$(exeext): $(MAPPER_SERVER_OBJS) $(LIBDEPS)
+#	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+#	$(MAPPER_SERVER_OBJS) version.o $(CODYLIB) $(LIBIBERTY) $(LIBINTL)
+	
+MAPPER_SERVER_OBJS := mapper-server.o mapper-resolver.o collect-utils.o
+mapper-server$(exeext): $(MAPPER_SERVER_OBJS) libcommon-target.a $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	$(MAPPER_SERVER_OBJS) libcommon-target.a version.o $(CODYLIB) $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) $(LIBIBERTY) $(LIBDECNUMBER) $(HOST_LIBS)
+
+
+#MAPPER_SERVER_OBJS := mapper-server.o mapper-resolver.o collect-utils.o
+#mapper-server$(exeext): $(MAPPER_SERVER_OBJS) libcommon-target.a $(LIBDEPS)
+#	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+#	$(MAPPER_SERVER_OBJS) libcommon-target.a version.o $(CODYLIB) $(LIBS)
 
 # Files used by all variants of C or by the stand-alone pre-processor.
 
@@ -3683,6 +3709,10 @@ install-common: native lang.install-common installdirs
 	    gcov-dump$(exeext) $(DESTDIR)$(bindir)/$(GCOV_DUMP_INSTALL_NAME)$(exeext); \
 	  fi; \
 	fi
+	rm -f $(DESTDIR)$(libexecsubdir)/mapper-server$(exeext)
+	$(INSTALL_PROGRAM) mapper-server$(exeext) \
+	  $(DESTDIR)$(libexecsubdir)/mapper-server$(exeext)
+
 
 # Install the driver program as $(target_noncanonical)-gcc,
 # $(target_noncanonical)-gcc-$(version), and also as gcc if native.

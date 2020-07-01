@@ -308,6 +308,24 @@
 #endif
 
 
+/* Define if accept4 provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ACCEPT4
+#endif
+
+
+/* Define if AF_INET6 supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AF_INET6
+#endif
+
+
+/* Define if AF_UNIX supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AF_UNIX
+#endif
+
+
 /* Define if your assembler supports architecture modifiers. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ARCHITECTURE_MODIFIERS
@@ -1161,6 +1179,18 @@
 #endif
 
 
+/* Define if epoll_create, epoll_ctl, epoll_pwait provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_EPOLL
+#endif
+
+
+/* Define to 1 if you have the `execv' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_EXECV
+#endif
+
+
 /* Define to 1 if you have the <ext/hash_map> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_EXT_HASH_MAP
@@ -1431,6 +1461,12 @@
 #endif
 
 
+/* Define if inet_ntop provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_INET_NTOP
+#endif
+
+
 /* Define 0/1 if .init_array/.fini_array sections are available and working.
    */
 #ifndef USED_FOR_TARGET
@@ -1695,6 +1731,12 @@
 #endif
 
 
+/* Define to 1 if you have the `memrchr' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MEMRCHR
+#endif
+
+
 /* Define to 1 if you have the `mmap' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MMAP
@@ -1738,6 +1780,18 @@
 #endif
 
 
+/* Define to 1 if you have the `posix_fallocate' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_POSIX_FALLOCATE
+#endif
+
+
+/* Define if pselect provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_PSELECT
+#endif
+
+
 /* Define to 1 if you have the `putchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_PUTCHAR_UNLOCKED
@@ -1750,6 +1804,12 @@
 #endif
 
 
+/* Define if select provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SELECT
+#endif
+
+
 /* Define to 1 if you have the `setlocale' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SETLOCALE
@@ -1759,6 +1819,12 @@
 /* Define to 1 if you have the `setrlimit' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SETRLIMIT
+#endif
+
+
+/* Define if <sys/signal.h> defines sighandler_t */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SIGHANDLER_T
 #endif
 
 

@@ -1439,6 +1439,10 @@ fi
 
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(caddr_t, char *)
+AC_CHECK_TYPE(sighander_t,
+  AC_DEFINE(HAVE_SIGHANDLER_T, 1,
+    [Define if <sys/signal.h> defines sighandler_t]),
+    ,signal.h)
 
 GCC_AC_FUNC_MMAP_BLACKLIST
 
@@ -1582,6 +1586,136 @@ return fcntl (1, F_SETLKW, &fl);]])],
 if test $ac_cv_f_setlkw = yes; then
   AC_DEFINE(HOST_HAS_F_SETLKW, 1,
   [Define if F_SETLKW supported by fcntl.])
+fi
+
+# C++ Modules would like some networking features to provide the mapping
+# server.  You can still use modules without them though.
+# The following network-related checks could probably do with some
+# Windows and other non-linux defenses and checking.
+# C++ LTO will take advantage of these networking features too.
+
+# Local socket connectivity wants AF_UNIX networking
+# Check for AF_UNIX networking
+AC_CACHE_CHECK(for AF_UNIX, ac_cv_af_unix, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>]],[[
+sockaddr_un un;
+un.sun_family = AF_UNSPEC;
+int fd = socket (AF_UNIX, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&un, sizeof (un));]])],
+[ac_cv_af_unix=yes],
+[ac_cv_af_unix=no])])
+if test $ac_cv_af_unix = yes; then
+  AC_DEFINE(HAVE_AF_UNIX, 1,
+  [Define if AF_UNIX supported.])
+fi
+
+# Remote socket connectivity wants AF_INET6 networking
+# Check for AF_INET6 networking
+AC_CACHE_CHECK(for AF_INET6, ac_cv_af_inet6, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>]],[[
+sockaddr_in6 in6;
+in6.sin6_family = AF_UNSPEC;
+struct addrinfo *addrs = 0;
+struct addrinfo hints;
+hints.ai_flags = 0;
+hints.ai_family = AF_INET6;
+hints.ai_socktype = SOCK_STREAM;
+hints.ai_protocol = 0;
+hints.ai_canonname = 0;
+hints.ai_addr = 0;
+hints.ai_next = 0;
+int e = getaddrinfo ("localhost", 0, &hints, &addrs);
+const char *str = gai_strerror (e);
+freeaddrinfo (addrs);
+int fd = socket (AF_INET6, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
+[ac_cv_af_inet6=yes],
+[ac_cv_af_inet6=no])])
+if test $ac_cv_af_inet6 = yes; then
+  AC_DEFINE(HAVE_AF_INET6, 1,
+  [Define if AF_INET6 supported.])
+fi
+
+# Efficient server response wants epoll
+# Check for epoll_create, epoll_ctl, epoll_pwait
+AC_CACHE_CHECK(for epoll, ac_cv_epoll, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/epoll.h>]],[[
+int fd = epoll_create (1);
+epoll_event ev;
+ev.events = EPOLLIN;
+ev.data.fd = 0;
+epoll_ctl (fd, EPOLL_CTL_ADD, 0, &ev);
+epoll_pwait (fd, 0, 0, -1, 0);]])],
+[ac_cv_epoll=yes],
+[ac_cv_epoll=no])])
+if test $ac_cv_epoll = yes; then
+  AC_DEFINE(HAVE_EPOLL, 1,
+  [Define if epoll_create, epoll_ctl, epoll_pwait provided.])
+fi
+
+# If we can't use epoll, try pselect.
+# Check for pselect
+AC_CACHE_CHECK(for pselect, ac_cv_pselect, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/select.h>]],[[
+pselect (0, 0, 0, 0, 0, 0);]])],
+[ac_cv_pselect=yes],
+[ac_cv_pselect=no])])
+if test $ac_cv_pselect = yes; then
+  AC_DEFINE(HAVE_PSELECT, 1,
+  [Define if pselect provided.])
+fi
+
+# And failing that, use good old select.
+# If we can't even use this, the server is serialized.
+# Check for select
+AC_CACHE_CHECK(for select, ac_cv_select, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/select.h>]],[[
+select (0, 0, 0, 0, 0);]])],
+[ac_cv_select=yes],
+[ac_cv_select=no])])
+if test $ac_cv_select = yes; then
+  AC_DEFINE(HAVE_SELECT, 1,
+  [Define if select provided.])
+fi
+
+# Avoid some fnctl calls by using accept4, when available.
+# Check for accept4
+AC_CACHE_CHECK(for accept4, ac_cv_accept4, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/socket.h>]],[[
+int err = accept4 (1, 0, 0, SOCK_NONBLOCK);]])],
+[ac_cv_accept4=yes],
+[ac_cv_accept4=no])])
+if test $ac_cv_accept4 = yes; then
+  AC_DEFINE(HAVE_ACCEPT4, 1,
+  [Define if accept4 provided.])
+fi
+
+# For better server messages, look for a way to stringize network addresses
+# Check for inet_ntop
+AC_CACHE_CHECK(for inet_ntop, ac_cv_inet_ntop, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <arpa/inet.h>
+#include <netinet/in.h>]],[[
+sockaddr_in6 in6;
+char buf[INET6_ADDRSTRLEN];
+const char *str = inet_ntop (AF_INET6, &in6, buf, sizeof (buf));]])],
+[ac_cv_inet_ntop=yes],
+[ac_cv_inet_ntop=no])])
+if test $ac_cv_inet_ntop = yes; then
+  AC_DEFINE(HAVE_INET_NTOP, 1,
+  [Define if inet_ntop provided.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
@@ -6697,6 +6831,9 @@ AC_ARG_VAR(ISLINC,[How to find isl include files])
 if test "x${ISLLIBS}" != "x" ; then 
    AC_DEFINE(HAVE_isl, 1, [Define if isl is in use.])
 fi
+
+AC_ARG_VAR(CODYLIB,[How to link Cody])
+AC_ARG_VAR(CODYLIBINC,[How to find Cody include files])
 
 GCC_ENABLE_PLUGINS
 AC_SUBST(pluginlibs)
