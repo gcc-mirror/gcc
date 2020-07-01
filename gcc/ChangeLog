@@ -1,4 +1,12 @@
 2020-06-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* lto-partition.c (analyse_symbol_references): Dump information if
+	dump_file is provided.
+	(analyse_symbol_1): Same as above.
+	(analyse_symbol_1): Same as above.
+	(lto_max_no_alonevap_map): Same as above.
+
+2020-06-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 	* lto-cgraph.c (lto_apply_partition_mask): Avoid removal of nodes
 	in partition.
 	(maybe_release_function_dominators): Move from.

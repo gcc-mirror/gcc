@@ -470,6 +470,9 @@ analyse_symbol_references (symtab_node *node, int set)
       if (ref->referred->get_partitioning_class () == SYMBOL_DUPLICATE)
 	{
 	  symtab_node *node1 = ref->referred;
+	  if (dump_file)
+	    fprintf (dump_file, "  Adding %s to partition because it "
+		     "SYMBOL_DUPLICATE\n", node1->dump_name ());
 	  analyse_symbol (node1, set);
 	}
 
@@ -479,11 +482,15 @@ analyse_symbol_references (symtab_node *node, int set)
 	  && !TREE_PUBLIC (ref->referred->decl))
 	{
 	  symtab_node *node1 = ref->referred;
+	  fprintf (dump_file, "  Adding %s to partition because it is static variable\n",
+		   node1->dump_name ());
 	  analyse_symbol (node1, set);
 	}
       else if (is_a <cgraph_node *> (ref->referred))
 	{
 	  symtab_node *node1 = ref->referred;
+	  fprintf (dump_file, "  Adding %s to partition because reference to "
+		   "function\n", node1->dump_name ());
 	  analyse_symbol (node1, set);
 	}
     }
@@ -516,29 +523,39 @@ static bool analyse_symbol_1 (symtab_node *node, int set)
       /* Add all inline clones and callees that are duplicated.  */
       for (e = cnode->callees; e; e = e->next_callee)
 	if (!e->inline_failed)
-	  analyse_symbol_1 (e->callee, set);
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "  Adding %s to partition because "
+		       "INLINED.\n", e->callee->dump_name ());
+	    analyse_symbol_1 (e->callee, set);
+	  }
 	else if (e->callee->get_partitioning_class () == SYMBOL_DUPLICATE)
-	  analyse_symbol (e->callee, set);
-
-      /*
-      if (!node->same_comdat_group && TREE_STATIC (cnode->decl)
-	  && !TREE_PUBLIC (cnode->decl) && !cnode->inlined_to &&
-	  !DECL_DECLARED_INLINE_P (cnode->decl))
-	{
-
-	  promote_symbol (cnode);
-	  cnode->local = false;
-	}
-	*/
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "  Adding %s to partition because "
+		       "SYMBOL_DUPLICATE\n", e->callee->dump_name ());
+	    analyse_symbol (e->callee, set);
+	  }
 
       /* Add all thunks associated with the function.  */
       for (e = cnode->callers; e; e = e->next_caller)
 	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
-	  analyse_symbol_1 (e->caller, set);
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "  Adding %s to partition because THUNK.THUNK_P\n",
+		       e->caller->dump_name ());
+	    analyse_symbol_1 (e->caller, set);
+	  }
 
 	else if (e->inline_failed && TREE_STATIC (cnode->decl)
 		 && !TREE_PUBLIC (cnode->decl))
-	  analyse_symbol_1 (e->caller, set);
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "  Adding %s to partition because STATIC\n",
+		       e->caller->dump_name ());
+	    analyse_symbol_1 (e->caller, set);
+	  }
+
     }
 
   analyse_symbol_references (node, set);
@@ -547,7 +564,12 @@ static bool analyse_symbol_1 (symtab_node *node, int set)
 
   FOR_EACH_ALIAS (node, ref)
     if (!ref->referring->transparent_alias)
-      analyse_symbol_1 (ref->referring, set);
+      {
+	if (dump_file)
+	  fprintf (dump_file, "  Adding %s to partition because ref1 TRANSPARENT_ALIAS\n",
+		       ref->referring->dump_name ());
+	analyse_symbol_1 (ref->referring, set);
+      }
     else
       {
 	struct ipa_ref *ref2;
@@ -557,6 +579,10 @@ static bool analyse_symbol_1 (symtab_node *node, int set)
 	  {
 	    /* Nested transparent aliases are not permitted.  */
 	    gcc_checking_assert (!ref2->referring->transparent_alias);
+	    
+	    if (dump_file)
+	      fprintf (dump_file, "  Adding %s to partition because TRANSPARENT_ALIAS\n",
+		       ref2->referring->dump_name ());
 	    analyse_symbol_1 (ref2->referring, set);
 	  }
       }
@@ -567,6 +593,9 @@ static bool analyse_symbol_1 (symtab_node *node, int set)
 	 node1 != node; node1 = node1->same_comdat_group)
       if (!node->alias)
 	{
+	  if (dump_file)
+	    fprintf (dump_file, "  Adding %s to partition because COMDAT\n",
+		       node1->dump_name ());
 	  bool added = analyse_symbol_1 (node1, set);
 	  gcc_assert (added);
 	}
@@ -581,6 +610,9 @@ static void analyse_symbol (symtab_node *node, int set)
   while ((node1 = contained_in_symbol (node)) != node)
     {
       ds->unite (node->aux2, node1->aux2);
+      if (dump_file)
+	fprintf (dump_file, "  Adding %s to partition because CONTAINED_IN_SYMBOL\n",
+		   node->dump_name ());
       node = node1;
     }
   analyse_symbol_1 (node, set);
@@ -604,7 +636,6 @@ lto_max_no_alonevap_map (void)
 
   union_find disjoint_sets = union_find (n);
   ds = &disjoint_sets;
-
 
   /* Allocate a compression vector, where we will map each disjoint set into
      0, ..., n_partitions - 1.  Also allocates a size vector which will
@@ -632,7 +663,11 @@ lto_max_no_alonevap_map (void)
      is |2E|*log*(n) is a consequence from the handshake lemma.  */
 
   FOR_EACH_SYMBOL (node)
-    analyse_symbol (node, node->aux2);
+    {
+      if (dump_file)
+	fprintf (dump_file, "Analysing %s\n", node->dump_name ());
+      analyse_symbol (node, node->aux2);
+    }
 
   i = 0;
   FOR_EACH_SYMBOL (node)
@@ -717,6 +752,9 @@ lto_max_no_alonevap_map (void)
   for (i = 0; i < n_partitions; i++)
     new_partition ("");
 
+  if (dump_file)
+    fprintf (dump_file, "\n\nResulting partitions:\n");
+
   /* Indeed insert vertex into the LTRANS partitions, and clear AUX
      variable.  Complexity: n.  */
   FOR_EACH_SYMBOL (node)
@@ -726,6 +764,8 @@ lto_max_no_alonevap_map (void)
 	  continue;
 
       int p = compression[node->aux2];
+      if (dump_file)
+	fprintf (dump_file, "p = %d\t;; %s\n", p, node->dump_name ());
       add_symbol_to_partition (ltrans_partitions[p], node);
     }
 }
