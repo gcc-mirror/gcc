@@ -24,6 +24,6 @@ int
 test01()
 {
   std::string_view s = "abcd";
-  return s.rfind((const char*)nullptr);		// { dg-warning "null arg" }
-  return s.rfind((const char*)nullptr, 1);	// { dg-warning "null arg" }
+  return s.rfind((const char*)nullptr);		// { dg-warning "\\\[-Wnonnull" }
+  return s.rfind((const char*)nullptr, 1);	// { dg-warning "\\\[-Wnonnull" }
 }

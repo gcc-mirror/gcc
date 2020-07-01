@@ -24,10 +24,10 @@ int
 test01()
 {
   std::string_view s = "abcd";
-  return s.find((const char*)nullptr);		// { dg-warning "null arg" }
-  return s.find((const char*)nullptr, 1);	// { dg-warning "null arg" }
-  return s.find_first_of((const char*)nullptr);	// { dg-warning "null arg" }
-  return s.find_first_of((const char*)nullptr, 1); // { dg-warning "null arg" }
-  return s.find_first_not_of((const char*)nullptr); // { dg-warning "null arg" }
-  return s.find_first_not_of((const char*)nullptr, 1); // { dg-warning "null arg" }
+  return s.find((const char*)nullptr);		// { dg-warning "\\\[-Wnonnull" }
+  return s.find((const char*)nullptr, 1);	// { dg-warning "\\\[-Wnonnull" }
+  return s.find_first_of((const char*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
+  return s.find_first_of((const char*)nullptr, 1); // { dg-warning "\\\[-Wnonnull" }
+  return s.find_first_not_of((const char*)nullptr); // { dg-warning "\\\[-Wnonnull" }
+  return s.find_first_not_of((const char*)nullptr, 1); // { dg-warning "\\\[-Wnonnull" }
 }

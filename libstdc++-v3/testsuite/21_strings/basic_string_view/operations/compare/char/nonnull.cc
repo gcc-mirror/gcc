@@ -24,6 +24,6 @@ int
 test01()
 {
   std::string_view s = "abcd";
-  return s.compare((const char*)nullptr);	// { dg-warning "null arg" }
-  return s.compare(0, 2, (const char*)nullptr);	// { dg-warning "null arg" }
+  return s.compare((const char*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
+  return s.compare(0, 2, (const char*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
 }
