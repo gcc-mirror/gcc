@@ -112,6 +112,7 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
 
     gcc-dg-runtest $tests "$tagopt" ""
 }
+unset offload_target
 
 # All done.
 torture-finish
