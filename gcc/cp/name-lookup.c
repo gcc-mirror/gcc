@@ -767,7 +767,8 @@ name_lookup::process_binding (tree new_val, tree new_type)
 /* If we're importing a module containing this binding, add it to the
    lookup set.  The trickiness is with namespaces, we only want to
    find it once.  */
-
+// FIXME: For global module slots we'll need to invoke deduping on the
+// 2nd one.  Likewise partitions
 unsigned
 name_lookup::process_module_binding (tree new_val, tree new_type,
 				     unsigned marker)
@@ -1130,20 +1131,18 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
 		  /* Load errors could mean there's nothing here.  */
 		  continue;
 
-		// FIXME: See comment in search_namespace_only
+		// FIXME: See comment in search_namespace_only about
+		// STAT_HACK_P's meaning for an imported slot.
+		// We want module-linkage entities, if this is part of
+		// the same module.  Oh, STAT_VISIBLE will already
+		// tell us?
 		if (STAT_HACK_P (bind))
-		  {
-		    /* Modules of the instantiation path are as-if
-		       from the module.  */
-		    if (inst_path
-			&& bitmap_bit_p (inst_path, cluster->indices[jx].base))
-		      bind = ovl_skip_hidden (STAT_DECL (bind));
-		    else
-		      bind = STAT_VISIBLE (bind);
-		  }
+		  bind = STAT_VISIBLE (bind);
 		else
 		  bind = ovl_skip_hidden (bind);
 
+		// FIXME: Turn on deduping if this is a global module
+		// entity, (or a partition of us, or our primary interface?)
 		add_fns (bind);
 	      }
 	}
@@ -1485,12 +1484,19 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	}
       value = fns;
 
+      /* INST_PATH will be NULL, if this is /not/ 2nd-phase ADL.  */
       bitmap inst_path = NULL;
+      /* VISIBLE is the regular import bitmap.  */
       bitmap visible = module_visible_instantiation_path (&inst_path);
 
       for (unsigned ix = scopes->length (); ix--;)
 	{
 	  tree scope = (*scopes)[ix];
+	  // FIXME: There are cases where we'll need to turn on
+	  // deduping inside here -- eg, global module fns,
+	  // Also check we see module-linkage fns from ourselves (if
+	  // we're an implementation unit and they're declared in an
+	  // interface).
 	  if (TREE_CODE (scope) == NAMESPACE_DECL)
 	    adl_namespace_fns (scope, visible, inst_path);
 	  else
@@ -1498,40 +1504,61 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	      if (RECORD_OR_UNION_TYPE_P (scope))
 		adl_class_fns (scope);
 
-	      if (modules_p ())
-		{
-		  /* Add fns in the innermost namespace partition of the
-		     type.  */
-		  tree origin = get_originating_module_decl (TYPE_NAME (scope));
-		  if (DECL_LANG_SPECIFIC (origin)
-		      && DECL_MODULE_IMPORT_P (origin))
-		    {
-		      unsigned module = get_importing_module (origin);
+	      /* During 2nd phase ADL: Any exported declaration D in N
+		 declared within the purview of a named module M
+		 (10.2) is visible if there is an associated entity
+		 attached to M with the same innermost enclosing
+		 non-inline namespace as D.
+		 [basic.lookup.argdep]/4.4 */ 
 
-		      /* If the module was in the inst path, we'll look at its
-			 namespace partition anyway.  */
-		      if (!(inst_path && bitmap_bit_p (inst_path, module)))
-			{
-			  tree ns = CP_DECL_CONTEXT (origin);
-			  if (tree *slot = find_namespace_slot (ns, name, false))
-			    if (mc_slot *mslot
-				= search_imported_binding_slot (slot, module))
-			      {
-				if (mslot->is_lazy ())
-				  lazy_load_binding (module, ns, name, mslot);
-				else if (!deduping)
-				  {
-				    deduping = true;
-				    lookup_mark (value, true);
-				  }
+	      if (!inst_path)
+		/* Not 2nd phase.  */
+		continue;
 
-				if (tree bind = *mslot)
-				  add_fns (ovl_skip_hidden
-					   (MAYBE_STAT_DECL (bind)));
-			      }
-			}
-		    }
-		}
+	      tree ctx = CP_DECL_CONTEXT (TYPE_NAME (scope));
+	      if (TREE_CODE (ctx) != NAMESPACE_DECL)
+		/* Not namespace-scope class.  */
+		continue;
+
+	      tree origin = get_originating_module_decl (TYPE_NAME (scope));
+	      if (!DECL_LANG_SPECIFIC (origin)
+		  || !DECL_MODULE_IMPORT_P (origin))
+		/* Not imported.  */
+		continue;
+
+	      unsigned module = get_importing_module (origin);
+
+	      if (!bitmap_bit_p (inst_path, module))
+		/* Not on path of instantiation.  */
+		continue;
+
+	      if (bitmap_bit_p (visible, module))
+		/* If the module was in the visible set, we'll look at
+		   its namespace partition anyway.  */
+		continue;
+
+	      if (tree *slot = find_namespace_slot (ctx, name, false))
+		if (mc_slot *mslot = search_imported_binding_slot (slot, module))
+		  {
+		    if (mslot->is_lazy ())
+		      lazy_load_binding (module, ctx, name, mslot);
+
+		    if (tree bind = *mslot)
+		      {
+			if (!deduping)
+			  {
+			    /* We must turn on deduping, because some
+			       other class from this module might also
+			       be in this namespace.  */
+			    deduping = true;
+			    lookup_mark (value, true);
+			  }
+
+			/* Add the exported fns  */
+			if (STAT_HACK_P (bind))
+			  add_fns (STAT_VISIBLE (bind));
+		      }
+		  }
 	    }
 	}
 

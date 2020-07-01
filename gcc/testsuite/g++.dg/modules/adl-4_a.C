@@ -2,13 +2,10 @@
 export module inter;
 // { dg-module-cmi inter }
 
-import worker;
-
 namespace hidden {
-export int fn (int x)
-{
-  return -x;
-}
+// not found via ADL
+int fn (int x);
+
 }
 
 export template <typename T>

@@ -15,7 +15,8 @@ export struct X
   }
 };
 
-export int frob (int x)
+// Not found via any ADL outside of module hidden
+int frob (int x)
 {
   return x;
 }

@@ -1,3 +1,14 @@
+2020-07-01  Nathan Sidwell  <nathan@acm.org>
+
+	Implement FR039 -- dependent ADL and friend fns
+	gcc/cp/
+	* name-lookup.c (name_lookup::adl_namespace): Instantiation path
+	is not important here.
+	(name_lookup::search_adl): Reimplement dependent adl for modules.
+	gcc/testsuite/
+	* g++.dg/modules/adl-[12]_b.C: export.
+	* g++.dg/modules/adl-[45]_[abcd].C: New.
+
 2020-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
@@ -175,6 +186,8 @@
 	* mapper-server2.cc: New stub.
 
 2020-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	FR39 ...
 
 	Merge master 149c8c7c27a
 
