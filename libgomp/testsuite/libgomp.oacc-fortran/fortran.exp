@@ -121,6 +121,7 @@ if { $lang_test_file_found } {
 	# typically not the case for C/C++.
 	gfortran-dg-runtest $tests "$tagopt" ""
     }
+    unset offload_target
 }
 
 # All done.
