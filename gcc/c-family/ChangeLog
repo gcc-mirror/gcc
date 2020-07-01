@@ -1,3 +1,9 @@
+2020-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95963
+	* c-common.c (check_function_arguments_recurse): Don't crash on
+	calls to internal functions.
+
 2020-06-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86568

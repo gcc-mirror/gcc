@@ -1,5 +1,10 @@
 2020-06-30  Martin Liska  <mliska@suse.cz>
 
+	* gcc-changelog/git_repository.py: Support older releases of
+	GitPython when renamed_file was named renamed.
+
+2020-06-30  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_check_commit.py: Print revision
 	of original_info.
 	* gcc-changelog/git_commit.py: Support Revert commits.

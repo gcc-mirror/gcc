@@ -1,3 +1,32 @@
+2020-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/92789
+	PR target/95726
+	* config/aarch64/aarch64.c (aarch64_attribute_table): Add
+	"Advanced SIMD type".
+	(aarch64_comp_type_attributes): Check that the "Advanced SIMD type"
+	attributes are equal.
+	* config/aarch64/aarch64-builtins.c: Include stringpool.h and
+	attribs.h.
+	(aarch64_mangle_builtin_vector_type): Use the mangling recorded
+	in the "Advanced SIMD type" attribute.
+	(aarch64_init_simd_builtin_types): Add an "Advanced SIMD type"
+	attribute to each Advanced SIMD type, using the mangled type
+	as the attribute's single argument.
+
+2020-06-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94743
+	* config/arm/arm.c (arm_handle_isr_attribute): Warn if
+	-mgeneral-regs-only is not used.
+
+2020-06-30  Yang Yang  <yangyang305@huawei.com>
+
+	PR tree-optimization/95855
+	* gimple-ssa-split-paths.c (is_feasible_trace): Add extra
+	checks to recognize a missed if-conversion opportunity when
+	judging whether to duplicate a block.
+
 2020-06-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/extend.texi: Change references to "future architecture" to

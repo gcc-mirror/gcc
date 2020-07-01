@@ -1,3 +1,18 @@
+2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: Replace fragile
+	'scan-assembler' with 'scan-offload-rtl'.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381.c: Likewise.
+
+2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Assert 'kind !=
+	GOMP_MAP_ATTACH'.
+	(gomp_map_vars_internal): Clean up.
+
 2020-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/loop-17.c: New test.
