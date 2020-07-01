@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-linux* && lp64 } } } */
+/* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mpower8-vector -O2" } */
