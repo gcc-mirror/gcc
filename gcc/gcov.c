@@ -898,7 +898,7 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -j, --json-format               Output JSON intermediate format \n\
+  fnotice (file, "  -j, --json-format               Output JSON intermediate format\n\
                                     into .gcov.json.gz file\n");
   fnotice (file, "  -H, --human-readable            Output human readable numbers\n");
   fnotice (file, "  -k, --use-colors                Emit colored output\n");
