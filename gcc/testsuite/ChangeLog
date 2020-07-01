@@ -1,3 +1,74 @@
+2020-06-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/cpu-future.c: Something was done here.
+	* gcc.target/powerpc/localentry-1.c: Something was done here.
+	* gcc.target/powerpc/localentry-detect-1.c: Something was done here.
+	* gcc.target/powerpc/mma-builtin-1.c: Something was done here.
+	* gcc.target/powerpc/mma-builtin-2.c: Something was done here.
+	* gcc.target/powerpc/mma-builtin-3.c: Something was done here.
+	* gcc.target/powerpc/mma-builtin-4.c: Something was done here.
+	* gcc.target/powerpc/mma-builtin-5.c: Something was done here.
+	* gcc.target/powerpc/mma-builtin-6.c: Something was done here.
+	* gcc.target/powerpc/notoc-direct-1.c: Something was done here.
+	* gcc.target/powerpc/pcrel-sibcall-1.c: Something was done here.
+	* gcc.target/powerpc/pr93122.c: Something was done here.
+	* lib/target-supports.exp: Stuff.
+
+2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95978
+	* gfortran.dg/pr95978.f90: New file.
+
+2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71706
+	* gfortran.dg/pr71706.f90: New file.
+
+2020-06-30  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.c-torture/compile/packed-aligned-1.c: New test.
+	* gcc.c-torture/execute/packed-aligned.c: New test.
+
+2020-06-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95743
+	* gfortran.dg/recursive_check_16.f90: New file.
+
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95711
+	* g++.dg/coroutines/pr95711.C: New test.
+
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95736
+	* g++.dg/coroutines/pr95736.C: New test.
+
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-bad-grooaf-01-grooaf-expected.C: New test.
+
 2020-06-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

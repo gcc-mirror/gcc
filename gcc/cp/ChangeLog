@@ -1,3 +1,34 @@
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95711
+	* coroutines.cc (register_local_var_uses): Skip past
+	namespace decls.
+
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95736
+	* coroutines.cc (get_awaitable_var): New helper.
+	(build_co_await): Check more carefully before
+	copying an awaitable.
+	(expand_one_await_expression): No initializer
+	is required when the awaitable is not a temp.
+	(register_awaits): Remove handling that is now
+	completed when the await expression is built.
+
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Diagnose unavailable
+	get_return_object_on_allocation_failure.
+
 2020-06-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95519

@@ -1,3 +1,12 @@
+2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Assert 'kind !=
+	GOMP_MAP_ATTACH'.
+	(gomp_map_vars_internal): Clean up.
+
 2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
