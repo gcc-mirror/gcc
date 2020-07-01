@@ -1631,9 +1631,9 @@ pa_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 int
 pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 {
-  register rtx operand0 = operands[0];
-  register rtx operand1 = operands[1];
-  register rtx tem;
+  rtx operand0 = operands[0];
+  rtx operand1 = operands[1];
+  rtx tem;
 
   /* We can only handle indexed addresses in the destination operand
      of floating point stores.  Thus, we need to break out indexed
@@ -3381,7 +3381,7 @@ pa_output_ascii (FILE *file, const char *p, int size)
       int io = 0;
       for (io = 0, co = 0; io < MIN (4, size - i); io++)
 	{
-	  register unsigned int c = (unsigned char) p[i + io];
+	  unsigned int c = (unsigned char) p[i + io];
 
 	  if (c == '\"' || c == '\\')
 	    partial_output[co++] = '\\';
