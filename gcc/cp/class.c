@@ -182,7 +182,6 @@ static void dfs_accumulate_vtbl_inits (tree, tree, tree, tree, tree,
 static void build_rtti_vtbl_entries (tree, vtbl_init_data *);
 static void build_vcall_and_vbase_vtbl_entries (tree, vtbl_init_data *);
 static void clone_constructors_and_destructors (tree);
-static tree build_clone (tree, tree);
 static void update_vtable_entry_for_fn (tree, tree, tree, tree *, unsigned);
 static void build_ctor_vtbl_group (tree, tree);
 static void build_vtt (tree);
@@ -4697,7 +4696,8 @@ check_methods (tree t)
 }
 
 static tree
-copy_fndecl_with_name (tree fn, tree name)
+copy_fndecl_with_name (tree fn, tree name, tree_code code,
+		       bool need_vtt_parm_p, bool omit_inherited_parms_p)
 {
   /* Copy the function.  */
   tree clone = copy_decl (fn);
@@ -4714,23 +4714,24 @@ copy_fndecl_with_name (tree fn, tree name)
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;
 
-  /* The base-class destructor is not virtual.  */
   if (name == base_dtor_identifier)
     {
+      /* The base-class destructor is not virtual.  */
       DECL_VIRTUAL_P (clone) = 0;
       DECL_VINDEX (clone) = NULL_TREE;
     }
-  else if (IDENTIFIER_OVL_OP_P (name))
+  else if (code != ERROR_MARK)
     {
-      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      /* Set the operator code.  */
+      const ovl_op_info_t *ovl_op = OVL_OP_INFO (false, code);
       DECL_OVERLOADED_OPERATOR_CODE_RAW (clone) = ovl_op->ovl_op_code;
-    }
 
-  if (DECL_VIRTUAL_P (clone))
-    IDENTIFIER_VIRTUAL_P (name) = true;
+      /* The operator could be virtual.  */
+      if (DECL_VIRTUAL_P (clone))
+	IDENTIFIER_VIRTUAL_P (name) = true;
+   }
 
-  bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
-  if (ctor_omit_inherited_parms_p)
+  if (omit_inherited_parms_p)
     gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (clone));
 
   /* If there was an in-charge parameter, drop it from the function
@@ -4744,13 +4745,12 @@ copy_fndecl_with_name (tree fn, tree name)
       /* Skip the in-charge parameter.  */
       parmtypes = TREE_CHAIN (parmtypes);
       /* And the VTT parm, in a complete [cd]tor.  */
-      if (DECL_HAS_VTT_PARM_P (fn)
-	  && ! DECL_NEEDS_VTT_PARM_P (clone))
+      if (DECL_HAS_VTT_PARM_P (fn) && !need_vtt_parm_p)
 	parmtypes = TREE_CHAIN (parmtypes);
-      if (ctor_omit_inherited_parms_p)
+      if (omit_inherited_parms_p)
 	{
 	  /* If we're omitting inherited parms, that just leaves the VTT.  */
-	  gcc_assert (DECL_NEEDS_VTT_PARM_P (clone));
+	  gcc_assert (need_vtt_parm_p);
 	  parmtypes = tree_cons (NULL_TREE, vtt_parm_type, void_list_node);
 	}
       TREE_TYPE (clone)
@@ -4766,6 +4766,7 @@ copy_fndecl_with_name (tree fn, tree name)
 
   /* Copy the function parameters.  */
   DECL_ARGUMENTS (clone) = copy_list (DECL_ARGUMENTS (clone));
+
   /* Remove the in-charge parameter.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
     {
@@ -4773,10 +4774,11 @@ copy_fndecl_with_name (tree fn, tree name)
 	= DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone)));
       DECL_HAS_IN_CHARGE_PARM_P (clone) = 0;
     }
+
   /* And the VTT parm, in a complete [cd]tor.  */
   if (DECL_HAS_VTT_PARM_P (fn))
     {
-      if (DECL_NEEDS_VTT_PARM_P (clone))
+      if (need_vtt_parm_p)
 	DECL_HAS_VTT_PARM_P (clone) = 1;
       else
 	{
@@ -4788,7 +4790,7 @@ copy_fndecl_with_name (tree fn, tree name)
 
   /* A base constructor inheriting from a virtual base doesn't get the
      arguments.  */
-  if (ctor_omit_inherited_parms_p)
+  if (omit_inherited_parms_p)
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
   for (tree parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
@@ -4809,7 +4811,8 @@ copy_fndecl_with_name (tree fn, tree name)
 tree
 copy_operator_fn (tree fn, tree_code code)
 {
-  return copy_fndecl_with_name (fn, ovl_op_identifier (code));
+  return copy_fndecl_with_name (fn, ovl_op_identifier (code),
+				code, false, false);
 }
 
 /* FN is a constructor or destructor.  Clone the declaration to create
@@ -4817,7 +4820,8 @@ copy_operator_fn (tree fn, tree_code code)
    NAME.  */
 
 static tree
-build_clone (tree fn, tree name)
+build_clone (tree fn, tree name, bool need_vtt_parm_p,
+	     bool omit_inherited_parms_p)
 {
   tree clone;
 
@@ -4827,7 +4831,8 @@ build_clone (tree fn, tree name)
       clone = copy_decl (fn);
       DECL_NAME (clone) = name;
 
-      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name);
+      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name,
+				 need_vtt_parm_p, omit_inherited_parms_p);
       DECL_TEMPLATE_RESULT (clone) = result;
 
       DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
@@ -4837,7 +4842,8 @@ build_clone (tree fn, tree name)
     }
   else
     {
-      clone = copy_fndecl_with_name (fn, name);
+      clone = copy_fndecl_with_name (fn, name, ERROR_MARK,
+				     need_vtt_parm_p, omit_inherited_parms_p);
       DECL_CLONED_FUNCTION (clone) = fn;
     }
 
@@ -4856,7 +4862,7 @@ build_clone (tree fn, tree name)
    will be inserted onto DECL_CHAIN of FN.  */
 
 static unsigned
-build_cdtor_clones (tree fn)
+build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
 {
   unsigned count = 0;
 
@@ -4864,8 +4870,9 @@ build_cdtor_clones (tree fn)
     {
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
-      build_clone (fn, complete_ctor_identifier);
-      build_clone (fn, base_ctor_identifier);
+      build_clone (fn, complete_ctor_identifier, false, false);
+      build_clone (fn, base_ctor_identifier, needs_vtt_parm_p,
+		   omit_inherited_parms_p);
       count += 2;
     }
   else
@@ -4883,11 +4890,11 @@ build_cdtor_clones (tree fn)
 	 destructor.  */
       if (DECL_VIRTUAL_P (fn))
 	{
-	  build_clone (fn, deleting_dtor_identifier);
+	  build_clone (fn, deleting_dtor_identifier, false, false);
 	  count++;
 	}
-      build_clone (fn, complete_dtor_identifier);
-      build_clone (fn, base_dtor_identifier);
+      build_clone (fn, complete_dtor_identifier, false, false);
+      build_clone (fn, base_dtor_identifier, needs_vtt_parm_p, false);
       count += 2;
     }
 
@@ -4906,7 +4913,14 @@ clone_cdtor (tree fn, bool update_methods)
       && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
     return;
 
-  unsigned count = build_cdtor_clones (fn);
+  /* Base cdtors need a vtt parm if there are virtual bases.  */
+  bool vtt = CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn));
+
+  /* Base ctor omits inherited parms it needs a vttparm and inherited
+     from a virtual nase ctor.  */
+  bool omit_inherited = ctor_omit_inherited_parms (fn);
+
+  unsigned count = build_cdtor_clones (fn, vtt, omit_inherited);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;

@@ -2997,13 +2997,6 @@ struct GTY(()) lang_decl {
 #define DECL_HAS_VTT_PARM_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->has_vtt_parm_p)
 
-/* Nonzero if NODE is a FUNCTION_DECL for which a VTT parameter is
-   required.  */
-#define DECL_NEEDS_VTT_PARM_P(NODE)			\
-  (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (NODE))		\
-   && (DECL_BASE_CONSTRUCTOR_P (NODE)			\
-       || DECL_BASE_DESTRUCTOR_P (NODE)))
-
 /* Nonzero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE) IDENTIFIER_CONV_OP_P (DECL_NAME (NODE))
 
