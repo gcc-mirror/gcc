@@ -2277,12 +2277,28 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  && (set_by_optional || arg->expr->rank != rank)
 	  && !(isym && isym->id == GFC_ISYM_CONVERSION))
 	{
-	  gfc_warning (OPT_Wpedantic,
-		       "%qs at %L is an array and OPTIONAL; IF IT IS "
-		       "MISSING, it cannot be the actual argument of an "
-		       "ELEMENTAL procedure unless there is a non-optional "
-		       "argument with the same rank (12.4.1.5)",
-		       arg->expr->symtree->n.sym->name, &arg->expr->where);
+	  bool t = false;
+	  gfc_actual_arglist *a;
+
+	  /* Scan the argument list for a non-optional argument with the
+	     same rank as arg.  */
+	  for (a = arg0; a; a = a->next)
+	    if (a != arg
+		&& a->expr->rank == arg->expr->rank
+		&& !a->expr->symtree->n.sym->attr.optional)
+	      {
+		t = true;
+		break;
+	      }
+
+	  if (!t)
+	    gfc_warning (OPT_Wpedantic,
+			 "%qs at %L is an array and OPTIONAL; If it is not "
+			 "present, then it cannot be the actual argument of "
+			 "an ELEMENTAL procedure unless there is a non-optional"
+			 " argument with the same rank "
+			 "(Fortran 2018, 15.5.2.12)",
+			 arg->expr->symtree->n.sym->name, &arg->expr->where);
 	}
     }
 
@@ -2299,7 +2315,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
       /* Elemental procedure's array actual arguments must conform.  */
       if (e != NULL)
 	{
-	  if (!gfc_check_conformance (arg->expr, e, "elemental procedure"))
+	  if (!gfc_check_conformance (arg->expr, e, _("elemental procedure")))
 	    return false;
 	}
       else
@@ -4174,9 +4190,9 @@ resolve_operator (gfc_expr *e)
       /* If op1 is BOZ, then op2 is not!.  Try to convert to type of op2.  */
       if (op1->ts.type == BT_BOZ)
 	{
-	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
-				"an operand of a relational operator",
-				&op1->where))
+	  if (gfc_invalid_boz (G_("BOZ literal constant near %L cannot appear "
+			       "as an operand of a relational operator"),
+			       &op1->where))
 	    return false;
 
 	  if (op2->ts.type == BT_INTEGER && !gfc_boz2int (op1, op2->ts.kind))
@@ -4189,8 +4205,8 @@ resolve_operator (gfc_expr *e)
       /* If op2 is BOZ, then op1 is not!.  Try to convert to type of op2. */
       if (op2->ts.type == BT_BOZ)
 	{
-	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
-				"an operand of a relational operator",
+	  if (gfc_invalid_boz (G_("BOZ literal constant near %L cannot appear"
+			       " as an operand of a relational operator"),
 				&op2->where))
 	    return false;
 
@@ -4228,9 +4244,9 @@ resolve_operator (gfc_expr *e)
 		  const char *msg;
 
 		  if (op == INTRINSIC_EQ || op == INTRINSIC_EQ_OS)
-		    msg = "Equality comparison for %s at %L";
+		    msg = G_("Equality comparison for %s at %L");
 		  else
-		    msg = "Inequality comparison for %s at %L";
+		    msg = G_("Inequality comparison for %s at %L");
 
 		  gfc_warning (OPT_Wcompare_reals, msg,
 			       gfc_typename (op1), &op1->where);
@@ -9045,7 +9061,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  as = NULL;
 	  sym->ts = *ts;
 	  sym->ts.type = BT_CLASS;
-	  attr = CLASS_DATA (sym)->attr;
+	  attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
 	  attr.class_ok = 0;
 	  attr.associate_var = 1;
 	  attr.dimension = attr.codimension = 0;

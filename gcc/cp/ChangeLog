@@ -1,3 +1,28 @@
+2020-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (copy_fndecl_with_name): Rename to ...
+	(copy_operatorn_fn): ... this.  Change arg type.
+	(clone_function_decl): Rename to ...
+	(clone_cdtor): ... this.
+	* class.c (copy_fndecl_with_name): Make static.
+	(copy_operator_fn): New wrapper.
+	(build_clones): Rename to ...
+	(build_cdtor_clones): ... this.
+	(clone_function_decl): Rename to ...
+	(clone_cdtor): ... this.  Adjust build_clones calls.
+	(clone_constructors_and_destructors): Adjust clone_function_decl
+	calls.
+	* method.c (implicitly_declare_fn): Adjust copy_fndecl_with_name
+	call.
+	(lazily_declare_fn): Adjust clone_function_decl call.
+	* pt.c (tsubst_function_decl): Likewise.
+	(instantiate_template_1): Likewise.
+
+2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (morph_fn_to_coro): Remove trailing
+	space in a diagnostic.
+
 2020-06-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (expand_one_await_expression): Remove

@@ -13923,7 +13923,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	 If it isn't, that'll be handled by
 	 clone_constructors_and_destructors.  */
       if (PRIMARY_TEMPLATE_P (gen_tmpl))
-	clone_function_decl (r, /*update_methods=*/false);
+	clone_cdtor (r, /*update_methods=*/false);
     }
   else if ((complain & tf_error) != 0
 	   && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
@@ -20769,7 +20769,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
      instantiating the template clones.  */
   if (tree chain = DECL_CHAIN (gen_tmpl))
     if (DECL_P (chain) && DECL_CLONED_FUNCTION_P (chain))
-      clone_function_decl (fndecl, /*update_methods=*/false);
+      clone_cdtor (fndecl, /*update_methods=*/false);
 
   if (!access_ok)
     {

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    The wiki page http://gcc.gnu.org/wiki/Graphite contains pointers to
    the related work.  */
 
-#define USES_ISL
+#define INCLUDE_ISL
 
 #include "config.h"
 #include "system.h"

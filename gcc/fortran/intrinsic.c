@@ -4775,8 +4775,8 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
 
       for ( ; arg && arg->expr; arg = arg->next, n++)
 	if (!gfc_check_conformance (first_expr, arg->expr,
-				    "arguments '%s' and '%s' for "
-				    "intrinsic '%s'",
+				    _("arguments '%s' and '%s' for "
+				    "intrinsic '%s'"),
 				    gfc_current_intrinsic_arg[0]->name,
 				    gfc_current_intrinsic_arg[n]->name,
 				    gfc_current_intrinsic))
@@ -4812,39 +4812,39 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
   switch (isym->standard)
     {
     case GFC_STD_F77:
-      symstd_msg = "available since Fortran 77";
+      symstd_msg = _("available since Fortran 77");
       break;
 
     case GFC_STD_F95_OBS:
-      symstd_msg = "obsolescent in Fortran 95";
+      symstd_msg = _("obsolescent in Fortran 95");
       break;
 
     case GFC_STD_F95_DEL:
-      symstd_msg = "deleted in Fortran 95";
+      symstd_msg = _("deleted in Fortran 95");
       break;
 
     case GFC_STD_F95:
-      symstd_msg = "new in Fortran 95";
+      symstd_msg = _("new in Fortran 95");
       break;
 
     case GFC_STD_F2003:
-      symstd_msg = "new in Fortran 2003";
+      symstd_msg = _("new in Fortran 2003");
       break;
 
     case GFC_STD_F2008:
-      symstd_msg = "new in Fortran 2008";
+      symstd_msg = _("new in Fortran 2008");
       break;
 
     case GFC_STD_F2018:
-      symstd_msg = "new in Fortran 2018";
+      symstd_msg = _("new in Fortran 2018");
       break;
 
     case GFC_STD_GNU:
-      symstd_msg = "a GNU Fortran extension";
+      symstd_msg = _("a GNU Fortran extension");
       break;
 
     case GFC_STD_LEGACY:
-      symstd_msg = "for backward compatibility";
+      symstd_msg = _("for backward compatibility");
       break;
 
     default:
@@ -4857,8 +4857,8 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
     {
       /* Do only print a warning if not a GNU extension.  */
       if (!silent && isym->standard != GFC_STD_GNU)
-	gfc_warning (0, "Intrinsic %qs (is %s) is used at %L",
-		     isym->name, _(symstd_msg), &where);
+	gfc_warning (0, "Intrinsic %qs (%s) used at %L",
+		     isym->name, symstd_msg, &where);
 
       return true;
     }
@@ -4869,7 +4869,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 
   /* Otherwise, fail.  */
   if (symstd)
-    *symstd = _(symstd_msg);
+    *symstd = symstd_msg;
   return false;
 }
 

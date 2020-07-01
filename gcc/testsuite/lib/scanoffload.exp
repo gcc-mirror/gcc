@@ -39,6 +39,9 @@ proc scoff { args } {
     } else {
 	global offload_targets
 	foreach target [split $offload_targets ","] {
+	    # HSA offloading is doing things differently, doesn't use 'mkoffload'.
+	    if { "$target" == "hsa" } continue
+
 	    eval $prc [lreplace $args $idx $idx "[scoff-format $target [lindex $args $idx]]"]
 	}
     }
