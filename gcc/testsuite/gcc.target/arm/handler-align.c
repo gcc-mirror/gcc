@@ -1,6 +1,6 @@
 /* Test epilogue of a realigned interrupt handler. */
 /* { dg-do run } */
-/* { dg-options "-mthumb -Os" } */
+/* { dg-options "-mthumb -Os -mgeneral-regs-only" } */
 /* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
 /* { dg-require-effective-target arm_cortex_m } */
 /* { dg-require-effective-target arm_eabi } */
