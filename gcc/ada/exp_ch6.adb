@@ -2971,9 +2971,7 @@ package body Exp_Ch6 is
          function May_Fold (N : Node_Id) return Traverse_Result is
          begin
             case Nkind (N) is
-               when N_Binary_Op
-                  | N_Unary_Op
-               =>
+               when N_Op =>
                   return OK;
 
                when N_Expanded_Name
