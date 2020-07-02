@@ -1,3 +1,26 @@
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95282
+	* include/bits/atomic_base.h (__atomic_impl::load): Add
+	const-qualifier to parameter so that _Tp is deduced as the
+	non-const type, and use _Val to get the unqualified type.
+	(__atomic_impl::exchange): Use the _Val alias to remove
+	volatile from the reinterpret_cast result type.
+	* testsuite/29_atomics/atomic_float/95282.cc: New test.
+
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94627
+	* include/bits/regex.h (operator==, operator!=): Remove noexcept
+	equality comparisons for match_results.
+	* testsuite/28_regex/match_results/94627.cc: New test.
+
 2020-06-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backported from master:

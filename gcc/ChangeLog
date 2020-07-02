@@ -1,3 +1,11 @@
+2020-07-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-06-22  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* doc/sourcebuild.texi (arm_v8_1m_mve_fp_ok): Add item.
+	(arm_mve_hw): Likewise.
+
 2020-06-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (isa): Rename "fut" to "p10".
