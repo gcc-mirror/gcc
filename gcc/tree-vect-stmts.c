@@ -5403,7 +5403,7 @@ vectorizable_shift (vec_info *vinfo,
 	      if (!op1_vectype)
 		op1_vectype = get_vectype_for_scalar_type (vinfo,
 							   TREE_TYPE (op1),
-							   slp_node);
+							   slp_op1);
 
               /* Unlike the other binary operators, shifts/rotates have
                  the rhs being int, instead of the same type as the lhs,
@@ -5575,11 +5575,11 @@ vectorizable_shift (vec_info *vinfo,
   /* Arguments are ready.  Create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
     {
-      vop1 = vec_oprnds1[i];
       /* For internal defs where we need to use a scalar shift arg
 	 extract the first lane.  */
       if (scalar_shift_arg && dt[1] == vect_internal_def)
 	{
+	  vop1 = vec_oprnds1[0];
 	  new_temp = make_ssa_name (TREE_TYPE (TREE_TYPE (vop1)));
 	  gassign *new_stmt
 	    = gimple_build_assign (new_temp,
@@ -5590,6 +5590,8 @@ vectorizable_shift (vec_info *vinfo,
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	  vop1 = new_temp;
 	}
+      else
+	vop1 = vec_oprnds1[i];
       gassign *new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
