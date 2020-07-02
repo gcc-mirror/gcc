@@ -1,3 +1,164 @@
+2020-07-01  Omar Tahir  <omar.tahir@arm.com>
+
+	* gcc.target/aarch64/bti-4.c: New test.
+
+2020-07-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/94882
+	* gcc.dg/tree-ssa/pr94882.c: New test.
+	* gcc.dg/tree-ssa/pr94882-1.c: New test.
+	* gcc.dg/tree-ssa/pr94882-2.c: New test.
+	* gcc.dg/tree-ssa/pr94882-3.c: New test.
+
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/96014
+	* g++.dg/analyzer/pr94028.C: Make operator new non-throwing so
+	that the compiler doesn't implicitly mark it as returning
+	non-null.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/pr95690.f90: Adjust dg-error line number.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/direct-move-double1.c: Require lp64.
+	* gcc.target/powerpc/direct-move-float1.c: Same.
+	* gcc.target/powerpc/direct-move-float3.c: Same.
+	* gcc.target/powerpc/direct-move-vint1.c: Same.
+	* gcc.target/powerpc/vsx-vector-5.c: Same.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Same.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Same.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Same.
+
+2020-07-01  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/get_fpcr64_1.c: New test.
+	* gcc.target/aarch64/set_fpcr64_1.c: New test.
+	* gcc.target/aarch64/get_fpsr64_1.c: New test.
+	* gcc.target/aarch64/set_fpsr64_1.c: New test.
+
+2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95446
+	* gfortran.dg/elemental_optional_args_6.f90: Remove check
+	for warnings that were erroneously output.
+	* gfortran.dg/pr95446.f90: New test.
+
+2020-07-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94743
+	* gcc.target/arm/handler-align.c: Add -mgeneral-regs-only.
+
+2020-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95839
+	* gcc.dg/vect/bb-slp-pr95839-2.c: New testcase.
+
+2020-07-01  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/loop.C: Use -H option instead of -j option.
+
+2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95829
+	* gfortran.dg/pr95829.f90: New test.
+
+2020-07-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94743
+	* gcc.target/arm/pr94743-1-hard.c: Add missing quotes in expected
+	warning.
+	* gcc.target/arm/pr94743-1-softfp.c: Likewise.
+
+2020-07-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/attribute-13.c: New.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/direct-move-double1.c: Remove lp64 requirement.
+	* gcc.target/powerpc/direct-move-double2.c: Same.
+	* gcc.target/powerpc/direct-move-float1.c: Same.
+	* gcc.target/powerpc/direct-move-float2.c: Same.
+	* gcc.target/powerpc/direct-move-float3.c: Same.
+	* gcc.target/powerpc/direct-move-vint1.c: Same.
+	* gcc.target/powerpc/direct-move-vint2.c: Same.
+	* gcc.target/powerpc/direct-move-long1.c: Remove linux requirement..
+	* gcc.target/powerpc/direct-move-long2.c: Same.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/20030218-1.c: Delete.
+	* gcc.target/powerpc/20030505.c: Delete.
+	* gcc.target/powerpc/20081204-1.c: Delete.
+	* gcc.target/powerpc/bcd-1.c: Remove dg-skip-if SPE.
+	* gcc.target/powerpc/bcd-2.c: Same.
+	* gcc.target/powerpc/bcd-3.c: Same.
+	* gcc.target/powerpc/direct-move-double1.c: Same.
+	* gcc.target/powerpc/direct-move-double2.c: Same.
+	* gcc.target/powerpc/direct-move-float1.c: Same.
+	* gcc.target/powerpc/direct-move-float2.c: Same.
+	* gcc.target/powerpc/direct-move-float3.c: Same.
+	* gcc.target/powerpc/direct-move-long1.c: Same.
+	* gcc.target/powerpc/direct-move-long2.c: Same.
+	* gcc.target/powerpc/direct-move-vint1.c: Same.
+	* gcc.target/powerpc/direct-move-vint2.c: Same.
+	* gcc.target/powerpc/extend-divide-1.c: Same.
+	* gcc.target/powerpc/extend-divide-2.c: Same.
+	* gcc.target/powerpc/pack01.c: Same.
+	* gcc.target/powerpc/pack02.c: Same.
+	* gcc.target/powerpc/pack03.c: Same.
+	* gcc.target/powerpc/pr52457.c: Same.
+	* gcc.target/powerpc/pr88845.c: Same.
+	* gcc.target/powerpc/quad-atomic.c: Same.
+	* gcc.target/powerpc/recip-6.c: Same.
+	* gcc.target/powerpc/recip-7.c: Same.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/p8vector-int128-1.c: Require int128 not lp64.
+	* gcc.target/powerpc/p8vector-int128-2.c: Same.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr90763.c: Adjust requirements.
+	* gcc.target/powerpc/vsx-vector-1.c: Same.
+	* gcc.target/powerpc/vsx-vector-2.c: Same.
+	* gcc.target/powerpc/vsx-vector-3.c: Same.
+	* gcc.target/powerpc/vsx-vector-4.c: Same.
+	* gcc.target/powerpc/vsx-vector-5.c: Same.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Same.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Same.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Same.
+	* gcc.target/powerpc/vsx-vector-abss.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-1.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-2.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-3.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-4.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-5.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-6.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-7.c: Same.
+	* gcc.target/powerpc/vsx-vectorize-8.c: Same.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/ppc-spe.c: Delete.
+	* gcc.target/powerpc/ppc-spe64-1.c: Delete.
+	* gcc.target/powerpc/pr60102.c: Delete.
+	* gcc.target/powerpc/pr60158.c: Delete.
+	* gcc.target/powerpc/pr60735.c: Delete.
+	* gcc.target/powerpc/pr78458.c: Delete.
+	* gcc.target/powerpc/pr80343.c: Delete.
+	* gcc.target/powerpc/spe-evmerge.c: Delete.
+	* gcc.target/powerpc/spe-small-data-1.c: Delete.
+	* gcc.target/powerpc/spe-small-data-2.c: Delete.
+	* gcc.target/powerpc/spe-unwind-1.c: Delete.
+	* gcc.target/powerpc/spe-vector-memcpy.c: Delete.
+	* gcc.target/powerpc/spe-vector-memset.c: Delete.
+	* gcc.target/powerpc/spe1.c: Delete.
+
 2020-06-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/builtins-2-p9-runnable.c: lp64 to int128.

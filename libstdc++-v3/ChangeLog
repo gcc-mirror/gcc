@@ -1,3 +1,19 @@
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94627
+	* include/bits/regex.h (operator==, operator!=): Remove noexcept
+	equality comparisons for match_results.
+	* testsuite/28_regex/match_results/94627.cc: New test.
+
+2020-07-01  Martin Sebor  <msebor@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/cons/char/nonnull.cc: Adjust
+	text of expected warning.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/nonnull.cc: Same.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/nonnull.cc: Same.
+	* testsuite/21_strings/basic_string_view/operations/find/char/nonnull.cc: Same.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/nonnull.cc: Same.
+
 2020-06-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Revert:

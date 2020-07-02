@@ -1,3 +1,65 @@
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* check.c (gfc_invalid_boz): Fix bootstrap. Revert
+	Mark hint for translation using _().
+
+2020-07-01  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/52279
+	* arith.c (reduce_binary_aa): Mark for translation the string
+	parameter to gfc_check_conformance with G_().
+	* check.c (gfc_invalid_boz): Mark hint for translation using
+	_().  (gfc_check_achar): Mark for translation the message
+	parameter to gfc_invalid_boz using G_().  (gfc_check_char):
+	Mark for translation the message parameter to gfc_invalid_boz
+	using G_().  (gfc_check_complex): Mark for translation the
+	message parameter to gfc_invalid_boz using G_().
+	(gfc_check_float): Mark for translation the message
+	parameter to gfc_invalid_boz using G_().  (check_rest): Mark
+	for translation the string parameter to gfc_check_conformance
+	with _().  (gfc_check_minloc_maxloc): Mark for translation
+	the string parameter to gfc_check_conformance with _().
+	(gfc_check_findloc): Mark for translation the string parameter
+	to gfc_check_conformance with _().  (check_reduction): Mark
+	for translation the string parameter to gfc_check_conformance
+	with _().  (gfc_check_pack): Mark for translation the string
+	parameter to gfc_check_conformance with _().
+	* decl.c (match_old_style_init): Mark for translation the
+	message parameter to gfc_invalid_boz using G_().
+	* expr.c (gfc_check_assign): Mark for translation the string
+	parameter to gfc_check_conformance with _().
+	* intrinsic.c (check_specific): Mark for translation the string
+	parameter to gfc_check_conformance with _().
+	(gfc_check_intrinsic_standard): Mark symstd_msg strings for
+	translation using G_(). No need to mark symstd_msg for
+	translation in call to gfc_warning or when setting symstd.
+	* io.c (check_open_constraints):  Mark strings for translation
+	using G_() in all calls to warn_or_error.  (match_io_element):
+	Mark for translation the message parameter to gfc_invalid_boz
+	using G_().
+	* primary.c (match_boz_constant): Mark for translation the
+	message parameter to gfc_invalid_boz using G_().
+	* resolve.c (resolve_elemental_actual):  Mark for translation
+	the string parameter to gfc_check_conformance with _().
+	(resolve_operator):  Mark for translation the string parameter
+	to gfc_check_conformance with _().  Mark translation strings
+	assigned to msg using G_() for use in a call to cfg_warning.
+
+2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95446
+	* resolve.c (resolve_elemental_actual): Add code to check for
+	non-optional argument of the same rank.  Revise warning message
+	to refer to the Fortran 2018 standard.
+
+2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95829
+	* decl.c (gfc_match_decl_type_spec): Compare with "* ) " instead
+	of "*)".
+
 2020-06-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/88379
