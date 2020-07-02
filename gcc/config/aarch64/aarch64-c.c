@@ -156,6 +156,18 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM4", pfile);
   aarch64_def_or_undef (TARGET_F16FML, "__ARM_FEATURE_FP16_FML", pfile);
 
+  aarch64_def_or_undef (aarch64_bti_enabled (),
+			"__ARM_FEATURE_BTI_DEFAULT", pfile);
+
+  cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
+  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+    {
+      int v = 1;
+      if (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL)
+	v |= 4;
+      builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", v);
+    }
+
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
      16-bit floating-point extensions.  */
