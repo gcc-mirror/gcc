@@ -1391,6 +1391,9 @@ package body Ch4 is
          return Maybe;
       end Is_Quantified_Expression;
 
+      Start_Token : constant Token_Type := Token;
+      --  Used to prevent mismatches (...] and [...)
+
    --  Start of processing for P_Aggregate_Or_Paren_Expr
 
    begin
@@ -1697,23 +1700,26 @@ package body Ch4 is
          end if;
       end loop;
 
-      --  All component associations (positional and named) have been scanned
+      --  All component associations (positional and named) have been scanned.
+      --  Scan ] or ) based on Start_Token.
 
-      if Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020 then
-         Set_Component_Associations (Aggregate_Node, Assoc_List);
-         Set_Is_Homogeneous_Aggregate (Aggregate_Node);
-         Scan;  --  past right bracket
+      case Start_Token is
+         when Tok_Left_Bracket =>
+            Set_Component_Associations (Aggregate_Node, Assoc_List);
+            Set_Is_Homogeneous_Aggregate (Aggregate_Node);
+            T_Right_Bracket;
 
-         if Token = Tok_Apostrophe then
-            Scan;
+            if Token = Tok_Apostrophe then
+               Scan;
 
-            if Token = Tok_Identifier then
-               return P_Reduction_Attribute_Reference (Aggregate_Node);
+               if Token = Tok_Identifier then
+                  return P_Reduction_Attribute_Reference (Aggregate_Node);
+               end if;
             end if;
-         end if;
-      else
-         T_Right_Paren;
-      end if;
+         when Tok_Left_Paren =>
+            T_Right_Paren;
+         when others => raise Program_Error;
+      end case;
 
       if Nkind (Aggregate_Node) /= N_Delta_Aggregate then
          Set_Expressions (Aggregate_Node, Expr_List);
