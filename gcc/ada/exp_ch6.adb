@@ -2366,9 +2366,7 @@ package body Exp_Ch6 is
 
             elsif Nkind (Actual) = N_Type_Conversion
               and then
-                (Is_Numeric_Type (E_Formal)
-                  or else Is_Access_Type (E_Formal)
-                  or else Is_Enumeration_Type (E_Formal)
+                (Is_Elementary_Type (E_Formal)
                   or else Is_Bit_Packed_Array (Etype (Formal))
                   or else Is_Bit_Packed_Array (Etype (Expression (Actual)))
 
