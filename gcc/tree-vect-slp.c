@@ -1530,11 +1530,11 @@ fail:
 
   vect_free_oprnd_info (oprnds_info);
 
-  /* If we have all children of a non-unary child built up from
-     uniform scalars then just throw that away, causing it built up
-     from scalars.  */
-  if (nops > 1
-      && is_a <bb_vec_info> (vinfo)
+  /* If we have all children of a child built up from uniform scalars
+     then just throw that away, causing it built up from scalars.
+     The exception is the SLP node for the vector store.  */
+  if (is_a <bb_vec_info> (vinfo)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info)
       /* ???  Rejecting patterns this way doesn't work.  We'd have to
 	 do extra work to cancel the pattern so the uses see the
 	 scalar version.  */
@@ -2230,6 +2230,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      return false;
 	    }
 	  /* Fatal mismatch.  */
+	  matches[0] = true;
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
 	  vect_free_slp_tree (node, false);
 	}
