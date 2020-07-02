@@ -15918,7 +15918,7 @@ resolve_symbol (gfc_symbol *sym)
       if (formal)
 	{
 	  sym->formal_ns = formal->sym->ns;
-          if (sym->ns != formal->sym->ns)
+	  if (sym->formal_ns && sym->ns != formal->sym->ns)
 	    sym->formal_ns->refs++;
 	}
     }
