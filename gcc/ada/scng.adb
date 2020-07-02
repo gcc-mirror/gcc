@@ -1378,13 +1378,18 @@ package body Scng is
          --  Left bracket
 
          when '[' =>
-            if Source (Scan_Ptr + 1) = '"' then
-               goto Scan_Wide_Character;
 
-            elsif Ada_Version >= Ada_2020 then
+            --  [] under -gnatX is an aggregate notation and the special
+            --  wide character notation becomes unsupported since the two
+            --  are ambiguous.
+
+            if Extensions_Allowed then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
                return;
+
+            elsif Source (Scan_Ptr + 1) = '"' then
+               goto Scan_Wide_Character;
 
             else
                Error_Msg_S ("illegal character, replaced by ""(""");
