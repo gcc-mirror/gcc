@@ -1,3 +1,13 @@
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94627
+	* include/bits/regex.h (operator==, operator!=): Remove noexcept
+	equality comparisons for match_results.
+	* testsuite/28_regex/match_results/94627.cc: New test.
+
 2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
