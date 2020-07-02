@@ -37,6 +37,7 @@ private with Ada.Containers.Hash_Tables;
 with Ada.Containers.Helpers;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -500,7 +501,11 @@ private
      new Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is
-     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+     new HT_Types.Hash_Table_Type (Capacity, Modulus)
+      with null record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set);
 
    use HT_Types, HT_Types.Implementation;
    use Ada.Streams;

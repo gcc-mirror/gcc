@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Key_Type is private;
@@ -342,7 +343,11 @@ private
      new Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is
-      new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+      new HT_Types.Hash_Table_Type (Capacity, Modulus)
+      with null record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
 
    use HT_Types, HT_Types.Implementation;
    use Ada.Streams;

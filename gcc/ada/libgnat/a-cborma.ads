@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Key_Type is private;
@@ -250,7 +251,11 @@ private
      new Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
    type Map (Capacity : Count_Type) is
-     new Tree_Types.Tree_Type (Capacity) with null record;
+     new Tree_Types.Tree_Type (Capacity)
+      with null record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
 
    use Red_Black_Trees;
    use Tree_Types, Tree_Types.Implementation;

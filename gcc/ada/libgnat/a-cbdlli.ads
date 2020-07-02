@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -279,7 +280,10 @@ private
       Last   : Count_Type := 0;
       Length : Count_Type := 0;
       TC     : aliased Tamper_Counts;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : List);
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;

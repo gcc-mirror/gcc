@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada.Strings.Text_Output.Utils with Preelaborate is
+package Ada.Strings.Text_Output.Utils with Pure is
 
    --  This package provides utility functions on Sink'Class. These are
    --  intended for use by Put_Image attributes, both the default versions
@@ -70,7 +70,8 @@ package Ada.Strings.Text_Output.Utils with Preelaborate is
    --  Send data that is already UTF-8 encoded (including 7-bit ASCII) to
    --  S. These are more efficient than Put_String.
 
-   procedure New_Line (S : in out Sink'Class) with Inline;
+   procedure New_Line (S : in out Sink'Class) with
+     Inline, Post => Column (S) = 1;
    --  Puts the new-line character.
 
    function Column (S : Sink'Class) return Positive with Inline;
