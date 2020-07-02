@@ -20952,6 +20952,9 @@ Perform a 128-bit vector gather  operation, as if implemented by the
 integer value between 2 and 7 inclusive.
 @findex vec_gnb
 
+
+Vector Extract
+
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int)
@@ -20962,52 +20965,54 @@ integer value between 2 and 7 inclusive.
 @exdent vector unsigned long long int
 @exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int)
 @end smallexample
-Extract a single element from the vector formed by catenating this function's
-first two arguments at the byte offset specified by this function's
-third argument.  On big-endian targets, this function behaves as if
-implemented by the @code{vextdubvlx}, @code{vextduhvlx},
-@code{vextduwvlx}, or @code{vextddvlx} instructions, depending on the
-types of the function's first two arguments.  On little-endian
-targets, this function behaves as if implemented by the
-@code{vextdubvrx}, @code{vextduhvrx},
-@code{vextduwvrx}, or @code{vextddvrx} instructions.
-The byte offset of the element to be extracted is calculated
-by computing the remainder of dividing the third argument by 32.
-If this reminader value is not a multiple of the vector element size,
-or if its value added to the vector element size exceeds 32, the
-result is undefined.
+Extract an element from two concatenated vectors starting at the given byte index
+in natural-endian order, and place it zero-extended in doubleword 1 of the result
+according to natural element order.  If the byte index is out of range for the
+data type, the intrinsic will be rejected.
+For little-endian, this output will match the placement by the hardware
+instruction, i.e., dword[0] in RTL notation.  For big-endian, an additional
+instruction is needed to move it from the "left" doubleword to the  "right" one.
+For little-endian, semantics matching the @code{vextdubvrx},
+@code{vextduhvrx}, @code{vextduwvrx} instruction will be generated, while for
+big-endian, semantics matching the @code{vextdubvlx}, @code{vextduhvlx},
+@code{vextduwvlx} instructions
+will be generated.  Note that some fairly anomalous results can be generated if
+the byte index is not aligned on an element boundary for the element being
+extracted.  This is a limitation of the bi-endian vector programming model is
+consistent with the limitation on @code{vec_perm}.
 @findex vec_extractl
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vec_extracth (vector unsigned char, vector unsigned char, unsigned int)
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vec_extracth (vector unsigned short, vector unsigned short,
+unsigned int)
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vec_extracth (vector unsigned int, vector unsigned int, unsigned int)
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned long long, vector unsigned long long, unsigned int)
+@exdent vec_extracth (vector unsigned long long, vector unsigned long long,
+unsigned int)
 @end smallexample
-Extract a single element from the vector formed by catenating this function's
-first two arguments at the byte offset calculated by subtracting this
-function's third argument from 31.  On big-endian targets, this
-function behaves as if
-implemented by the
-@code{vextdubvrx}, @code{vextduhvrx},
-@code{vextduwvrx}, or @code{vextddvrx} instructions, depending on the
-types of the function's first two arguments.
-On little-endian
-targets, this function behaves as if implemented by the
-@code{vextdubvlx}, @code{vextduhvlx},
-@code{vextduwvlx}, or @code{vextddvlx} instructions.
-The byte offset of the element to be extracted, measured from the
-right end of the catenation of the two vector arguments, is calculated
-by computing the remainder of dividing the third argument by 32.
-If this reminader value is not a multiple of the vector element size,
-or if its value added to the vector element size exceeds 32, the
-result is undefined.
-@findex vec_extractr
-
+Extract an element from two concatenated vectors starting at the given byte
+index.  The index is based on big endian order for a little endian system.
+Similarly, the index is based on little endian order for a big endian system.
+The extraced elements are zero-extended and put in doubleword 1
+according to natural element order.  If the byte index is out of range for the
+data type, the intrinsic will be rejected.  For little-endian, this output
+will match the placement by the hardware instruction (vextdubvrx, vextduhvrx,
+vextduwvrx, vextddvrx) i.e., dword[0] in RTL
+notation.  For big-endian, an additional instruction is needed to move it
+from the "left" doubleword to the "right" one.  For little-endian, semantics
+matching the @code{vextdubvlx}, @code{vextduhvlx}, @code{vextduwvlx}
+instructions will be generated, while for big-endian, semantics matching the
+@code{vextdubvrx}, @code{vextduhvrx}, @code{vextduwvrx} instructions will
+be generated.  Note that some fairly anomalous
+results can be generated if the byte index is not aligned on the
+element boundary for the element being extracted.  This is a
+limitation of the bi-endian vector programming model consistent with the
+limitation on @code{vec_perm}.
+@findex vec_extracth
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
