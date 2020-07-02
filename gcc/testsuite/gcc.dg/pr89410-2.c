@@ -9,5 +9,5 @@ int main(void)
  #line 9223372036854775807
        ^~~~~~~~~~~~~~~~~~~
      { dg-end-multiline-output "" } */
-  /* { dg-warning "msg" "" { target *-*-* } -1 } */
+  /* { dg-warning "msg" "" { target *-*-* } { -1 } } */
 }
