@@ -59,9 +59,11 @@ extern int Compiler_Abort (String_Pointer, String_Pointer, Boolean) ATTRIBUTE_NO
 
 /* debug: */
 
+#define Debug_Flag_Dot_KK	debug__debug_flag_dot_kk
 #define Debug_Flag_Dot_R	debug__debug_flag_dot_r
 #define Debug_Flag_NN		debug__debug_flag_nn
 
+extern Boolean Debug_Flag_Dot_KK;
 extern Boolean Debug_Flag_Dot_R;
 extern Boolean Debug_Flag_NN;
 
