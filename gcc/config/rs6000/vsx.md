@@ -355,6 +355,8 @@
    UNSPEC_VCNTMB
    UNSPEC_VEXPAND
    UNSPEC_VEXTRACT
+   UNSPEC_EXTRACTL
+   UNSPEC_EXTRACTR
   ])
 
 (define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
@@ -362,6 +364,9 @@
 
 (define_int_attr xvcvbf16       [(UNSPEC_VSX_XVCVSPBF16 "xvcvspbf16")
 				 (UNSPEC_VSX_XVCVBF16SP "xvcvbf16sp")])
+
+;; Like VI, defined in vector.md, but add ISA 2.07 integer vector ops
+(define_mode_iterator VI2 [V4SI V8HI V16QI V2DI])
 
 ;; VSX moves
 
@@ -3845,6 +3850,67 @@
 					   operands[3], <VS_scalar>mode);
 }
   [(set_attr "type" "load")])
+
+;; ISA 3.1 extract
+(define_expand "vextractl<mode>"
+  [(set (match_operand:V2DI 0 "altivec_register_operand")
+	(unspec:V2DI [(match_operand:VI2 1 "altivec_register_operand")
+		      (match_operand:VI2 2 "altivec_register_operand")
+		      (match_operand:SI 3 "register_operand")]
+		     UNSPEC_EXTRACTL))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_insn (gen_vextractl<mode>_internal (operands[0], operands[1],
+					       operands[2], operands[3]));
+      emit_insn (gen_xxswapd_v2di (operands[0], operands[0]));
+    }
+  else
+    emit_insn (gen_vextractr<mode>_internal (operands[0], operands[2],
+					     operands[1], operands[3]));
+  DONE;
+})
+
+(define_insn "vextractl<mode>_internal"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:VEC_I 1 "altivec_register_operand" "v")
+		      (match_operand:VEC_I 2 "altivec_register_operand" "v")
+		      (match_operand:SI 3 "register_operand" "r")]
+		     UNSPEC_EXTRACTL))]
+  "TARGET_POWER10"
+  "vext<du_or_d><wd>vlx %0,%1,%2,%3"
+  [(set_attr "type" "vecsimple")])
+
+(define_expand "vextractr<mode>"
+  [(set (match_operand:V2DI 0 "altivec_register_operand")
+	(unspec:V2DI [(match_operand:VI2 1 "altivec_register_operand")
+		      (match_operand:VI2 2 "altivec_register_operand")
+		      (match_operand:SI 3 "register_operand")]
+		     UNSPEC_EXTRACTR))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_insn (gen_vextractr<mode>_internal (operands[0], operands[1],
+					       operands[2], operands[3]));
+      emit_insn (gen_xxswapd_v2di (operands[0], operands[0]));
+    }
+  else
+    emit_insn (gen_vextractl<mode>_internal (operands[0], operands[2],
+					     operands[1], operands[3]));
+  DONE;
+})
+
+(define_insn "vextractr<mode>_internal"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI [(match_operand:VEC_I 1 "altivec_register_operand" "v")
+		      (match_operand:VEC_I 2 "altivec_register_operand" "v")
+		      (match_operand:SI 3 "register_operand" "r")]
+		     UNSPEC_EXTRACTR))]
+  "TARGET_POWER10"
+  "vext<du_or_d><wd>vrx %0,%1,%2,%3"
+  [(set_attr "type" "vecsimple")])
 
 ;; VSX_EXTRACT optimizations
 ;; Optimize double d = (double) vec_extract (vi, <n>)
