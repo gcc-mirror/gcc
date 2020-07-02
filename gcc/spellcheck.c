@@ -474,13 +474,17 @@ static const char * const test_data[] = {
   "food",
   "boo",
   "1234567890123456789012345678901234567890123456789012345678901234567890"
+  "abc",
+  "ac",
+  "ca",
 };
 
 /* Verify that get_edit_distance appears to be a sane distance function,
-   i.e. the conditions for being a metric.  This is done directly for a
-   small set of examples, using test_data above.  This is O(N^3) in the size
-   of the array, due to the test for the triangle inequality, so we keep the
-   array small.  */
+   even though it doesn't satisfy the conditions for being a metric.  (This
+   is because the triangle inequality fails to hold: the distance between
+   "ca" and "ac" is 1, and so is the distance between "abc" and "ac", but
+   the distance between "abc" and "ca" is 3. Algorithms that calculate the
+   true Levenshtein-Damerau metric are much more expensive.)  */
 
 static void
 test_metric_conditions ()
@@ -504,16 +508,6 @@ test_metric_conditions ()
 	  edit_distance_t dist_ji
 	    = get_edit_distance (test_data[j], test_data[i]);
 	  ASSERT_EQ (dist_ij, dist_ji);
-
-	  /* Triangle inequality.  */
-	  for (int k = 0; k < num_test_cases; k++)
-	    {
-	      edit_distance_t dist_ik
-		= get_edit_distance (test_data[i], test_data[k]);
-	      edit_distance_t dist_jk
-		= get_edit_distance (test_data[j], test_data[k]);
-	      ASSERT_TRUE (dist_ik <= dist_ij + dist_jk);
-	    }
 	}
     }
 }

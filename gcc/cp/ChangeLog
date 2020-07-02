@@ -1,3 +1,15 @@
+2020-07-01  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (copy_fndecl_with_name): Add additional predicate args, do
+	not deduce them locally.
+	(copy_operator_fn): Adjust copy_fndecl_with_name call.
+	(build_clone): Add vtt and inherited predicate args.  Pass through
+	to copy_fndecl_with_name call.
+	(build_cdtor_clones): Likewise, pass through to build_clone as
+	needed.
+	(build_cdtor): Determine vtt and inherited here.
+	* cp-tree.h (DECL_NEEDS_CTT_PARM_P): Delete.
+
 2020-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (copy_fndecl_with_name): Rename to ...

@@ -1,3 +1,110 @@
+2020-07-01  Pip Cet  <pipcet@gmail.com>
+
+	* spellcheck.c (test_data): Add problematic strings.
+	(test_metric_conditions): Don't test the triangle inequality
+	condition, which our distance function does not satisfy.
+
+2020-07-01  Omar Tahir  <omar.tahir@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_asm_trampoline_template): Always
+	generate a BTI instruction.
+
+2020-07-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/94882
+	* match.pd (x & y) - (x | y) - 1 -> ~(x ^ y): New simplification.
+
+2020-07-01  Jeff Law  <law@redhat.com>
+
+	* config/m68k/m68k.c (m68k_output_btst): Drop "register" keyword.
+	(emit_move_sequence, output_iorsi3, output_xorsi3): Likewise.
+
+2020-07-01  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_builtins): Add enums
+	for 64bits fpsr/fpcr getter setters builtin variants.
+	(aarch64_init_fpsr_fpcr_builtins): New function.
+	(aarch64_general_init_builtins): Modify to make use of the later.
+	(aarch64_expand_fpsr_fpcr_setter): New function.
+	(aarch64_general_expand_builtin): Modify to make use of the later.
+	* config/aarch64/aarch64.md (@aarch64_set_<fpscr_name><GPI:mode>)
+	(@aarch64_get_<fpscr_name><GPI:mode>): New patterns replacing and
+	generalizing 'get_fpcr', 'set_fpsr'.
+	* config/aarch64/iterators.md (GET_FPSCR, SET_FPSCR): New int
+	iterators.
+	(fpscr_name): New int attribute.
+	* doc/extend.texi (__builtin_aarch64_get_fpcr64)
+	(__builtin_aarch64_set_fpcr64, __builtin_aarch64_get_fpsr64)
+	(__builtin_aarch64_set_fpsr64): Add into AArch64 Built-in
+	Functions.
+
+2020-07-01  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (print_usage): Avoid trailing space for -j option.
+
+2020-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95839
+	* tree-vect-slp.c (vect_slp_tree_uniform_p): Pre-existing
+	vectors are not uniform.
+	(vect_build_slp_tree_1): Handle BIT_FIELD_REFs of
+	vector registers.
+	(vect_build_slp_tree_2): For groups of lane extracts
+	from a vector register generate a permute node
+	with a special child representing the pre-existing vector.
+	(vect_prologue_cost_for_slp): Pre-existing vectors cost nothing.
+	(vect_slp_analyze_node_operations): Use SLP_TREE_LANES.
+	(vectorizable_slp_permutation): Do not generate or cost identity
+	permutes.
+	(vect_schedule_slp_instance): Handle pre-existing vector
+	that are function arguments.
+
+2020-07-01  Richard Biener  <rguenther@suse.de>
+
+	* system.h (INCLUDE_ISL): New guarded include.
+	* graphite-dependences.c: Use it.
+	* graphite-isl-ast-to-gimple.c: Likewise.
+	* graphite-optimize-isl.c: Likewise.
+	* graphite-poly.c: Likewise.
+	* graphite-scop-detection.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* graphite.c: Likewise.
+	* graphite.h: Drop the includes here.
+
+2020-07-01  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (print_usage): Shorted option description for -j
+	option.
+
+2020-07-01  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov.texi: Rename 2 options.
+	* gcov.c (print_usage): Rename -i,--json-format to
+	-j,--json-format and -j,--human-readable to -H,--human-readable.
+	(process_args): Fix up parsing.  Document obsolete options and
+	how are they changed.
+
+2020-07-01  Jeff Law  <law@redhat.com>
+
+	* config/pa/pa.c (pa_emit_move_sequence): Drop register keyword.
+	(pa_output_ascii): Likewise.
+
+2020-07-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_subset_t): New field
+	added.
+	(riscv_subset_list::parsing_subset_version): Add parameter for
+	indicate explicitly version, and handle explicitly version.
+	(riscv_subset_list::handle_implied_ext): Ditto.
+	(riscv_subset_list::add): Ditto.
+	(riscv_subset_t::riscv_subset_t): Init new field.
+	(riscv_subset_list::to_string): Always output version info if version
+	explicitly specified.
+	(riscv_subset_list::parsing_subset_version): Handle explicitly
+	arch version.
+	(riscv_subset_list::parse_std_ext): Ditto.
+	(riscv_subset_list::parse_multiletter_ext): Ditto.
+
 2020-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/92789

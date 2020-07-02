@@ -65,8 +65,6 @@ typedef struct priority_info_s {
   int destructions_p;
 } *priority_info;
 
-static void mark_vtable_entries (tree);
-static bool maybe_emit_vtables (tree);
 static tree start_objects (int, int);
 static void finish_objects (int, int, tree);
 static tree start_static_storage_duration_function (unsigned);
@@ -1879,13 +1877,15 @@ coerce_delete_type (tree decl, location_t loc)
    and mark them as needed.  */
 
 static void
-mark_vtable_entries (tree decl)
+mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 {
   tree fnaddr;
   unsigned HOST_WIDE_INT idx;
 
   /* It's OK for the vtable to refer to deprecated virtual functions.  */
   warning_sentinel w(warn_deprecated_decl);
+
+  bool consteval_seen = false;
 
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)),
 			      idx, fnaddr)
@@ -1901,6 +1901,15 @@ mark_vtable_entries (tree decl)
 	continue;
 
       fn = TREE_OPERAND (fnaddr, 0);
+      if (TREE_CODE (fn) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (fn))
+	{
+	  if (!consteval_seen)
+	    {
+	      consteval_seen = true;
+	      consteval_vtables.safe_push (decl);
+	    }
+	  continue;
+	}
       TREE_ADDRESSABLE (fn) = 1;
       /* When we don't have vcall offsets, we output thunks whenever
 	 we output the vtables that contain them.  With vcall offsets,
@@ -1915,6 +1924,20 @@ mark_vtable_entries (tree decl)
       input_location = DECL_SOURCE_LOCATION (fn);
       mark_used (fn);
     }
+}
+
+/* Replace any consteval functions in vtables with null pointers.  */
+
+static void
+clear_consteval_vfns (vec<tree> &consteval_vtables)
+{
+  for (tree vtable : consteval_vtables)
+    for (constructor_elt &elt : *CONSTRUCTOR_ELTS (DECL_INITIAL (vtable)))
+      {
+	tree fn = cp_get_fndecl_from_callee (elt.value, /*fold*/false);
+	if (fn && DECL_IMMEDIATE_FUNCTION_P (fn))
+	  elt.value = build_zero_cst (vtable_entry_type);
+      }
 }
 
 /* Adjust the TLS model on variable DECL if need be, typically after
@@ -2228,7 +2251,7 @@ decl_needed_p (tree decl)
    Returns true if any vtables were emitted.  */
 
 static bool
-maybe_emit_vtables (tree ctype)
+maybe_emit_vtables (tree ctype, vec<tree> &consteval_vtables)
 {
   tree vtbl;
   tree primary_vtbl;
@@ -2273,7 +2296,7 @@ maybe_emit_vtables (tree ctype)
   for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = DECL_CHAIN (vtbl))
     {
       /* Mark entities references from the virtual table as used.  */
-      mark_vtable_entries (vtbl);
+      mark_vtable_entries (vtbl, consteval_vtables);
 
       if (TREE_TYPE (DECL_INITIAL (vtbl)) == 0)
 	{
@@ -4887,6 +4910,9 @@ c_parse_final_cleanups (void)
 
   emit_support_tinfos ();
 
+  /* Track vtables we want to emit that refer to consteval functions.  */
+  auto_vec<tree> consteval_vtables;
+
   do
     {
       tree t;
@@ -4906,7 +4932,7 @@ c_parse_final_cleanups (void)
 	 have to look at it again.  */
       for (i = keyed_classes->length ();
 	   keyed_classes->iterate (--i, &t);)
-	if (maybe_emit_vtables (t))
+	if (maybe_emit_vtables (t, consteval_vtables))
 	  {
 	    reconsider = true;
 	    keyed_classes->unordered_remove (i);
@@ -5177,6 +5203,7 @@ c_parse_final_cleanups (void)
   perform_deferred_noexcept_checks ();
 
   fini_constexpr ();
+  clear_consteval_vfns (consteval_vtables);
 
   /* The entire file is now complete.  If requested, dump everything
      to a file.  */

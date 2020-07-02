@@ -1530,11 +1530,11 @@ fail:
 
   vect_free_oprnd_info (oprnds_info);
 
-  /* If we have all children of a non-unary child built up from
-     uniform scalars then just throw that away, causing it built up
-     from scalars.  */
-  if (nops > 1
-      && is_a <bb_vec_info> (vinfo)
+  /* If we have all children of a child built up from uniform scalars
+     then just throw that away, causing it built up from scalars.
+     The exception is the SLP node for the vector store.  */
+  if (is_a <bb_vec_info> (vinfo)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info)
       /* ???  Rejecting patterns this way doesn't work.  We'd have to
 	 do extra work to cancel the pattern so the uses see the
 	 scalar version.  */
@@ -2230,6 +2230,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      return false;
 	    }
 	  /* Fatal mismatch.  */
+	  matches[0] = true;
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
 	  vect_free_slp_tree (node, false);
 	}
@@ -2788,6 +2789,7 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
 
   if (!is_a <bb_vec_info> (vinfo)
       || node == SLP_INSTANCE_TREE (node_instance)
+      || !SLP_TREE_SCALAR_STMTS (node).exists ()
       || vect_contains_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (node)))
     return false;
 
@@ -2892,16 +2894,25 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
      doesn't result in any issue since we throw away the lvisited set
      when we fail.  */
   if (visited.contains (node)
-      || lvisited.add (node))
+      || lvisited.contains (node))
     return true;
 
+  bool res = true;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!vect_slp_analyze_node_operations (vinfo, child, node_instance,
-					   visited, lvisited, cost_vec))
-      return false;
+    {
+      res = vect_slp_analyze_node_operations (vinfo, child, node_instance,
+					      visited, lvisited, cost_vec);
+      if (!res)
+	break;
+    }
 
-  bool res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
-						 cost_vec);
+  if (res)
+    {
+      res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
+						cost_vec);
+      if (res)
+	lvisited.add (node);
+    }
 
   /* When the node can be vectorized cost invariant nodes it references.
      This is not done in DFS order to allow the refering node
@@ -2943,13 +2954,12 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	  vect_prologue_cost_for_slp (child, cost_vec);
 	}
 
-  /* If this node can't be vectorized, try pruning the tree here rather
-     than felling the whole thing.  */
+  /* If this node or any of its children can't be vectorized, try pruning
+     the tree here rather than felling the whole thing.  */
   if (!res && vect_slp_convert_to_external (vinfo, node, node_instance))
     {
       /* We'll need to revisit this for invariant costing and number
 	 of vectorized stmt setting.   */
-      lvisited.remove (node);
       res = true;
     }
 
