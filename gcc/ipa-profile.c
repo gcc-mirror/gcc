@@ -653,7 +653,7 @@ ipa_propagate_frequency (struct cgraph_node *node)
       || (opt_for_fn (node->decl, flag_devirtualize)
 	  && DECL_VIRTUAL_P (node->decl)))
     return false;
-  gcc_assert (node->analyzed);
+  //gcc_assert (node->analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing frequency %s\n", node->dump_name ());
 

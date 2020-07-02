@@ -1,3 +1,14 @@
+2020-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Call lto_merge_comdat_map.
+	* ipa-cp.c (initialize_node_lattices): Comment assertion for now.
+	* ipa-profile.c (ipa_propagate_frequency): Comment assertion for now.
+	* lto-partition.c (merge_comdat_nodes): New function.
+	(privatize_symbol_name_1): New argument wpa.
+	(privatize_symbol_name): Check if in WPA mode.
+	(lto_merge_comdat_map): New function.
+	* lto-partition.h: Declare lto_merge_comdat_map.
+
 2020-06-30  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* lto-partition.c (analyse_symbol_references): Dump information if

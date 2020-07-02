@@ -215,10 +215,6 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 	 node1 != node; node1 = node1->same_comdat_group)
       if (!node->alias)
 	{
-	  if (node->aux2 != node1->aux2)
-	    fatal_error (UNKNOWN_LOCATION, "Nodes from the same COMDAT group in"
-			    "distinct partitions");
-
 	  bool added = add_symbol_to_partition_1 (part, node1);
 	  gcc_assert (added);
 	}
@@ -579,7 +575,7 @@ static bool analyse_symbol_1 (symtab_node *node, int set)
 	  {
 	    /* Nested transparent aliases are not permitted.  */
 	    gcc_checking_assert (!ref2->referring->transparent_alias);
-	    
+
 	    if (dump_file)
 	      fprintf (dump_file, "  Adding %s to partition because TRANSPARENT_ALIAS\n",
 		       ref2->referring->dump_name ());
@@ -769,6 +765,127 @@ lto_max_no_alonevap_map (void)
       add_symbol_to_partition (ltrans_partitions[p], node);
     }
 }
+
+static bool
+merge_comdat_nodes (symtab_node *node, int set)
+{
+  enum symbol_partitioning_class c = node->get_partitioning_class ();
+  bool ret = false;
+  symtab_node *node1;
+  cgraph_edge *e;
+
+  /* If node is already analysed, quickly return.  */
+  if (node->aux)
+    return false;
+
+  node->aux = (void *) 1;
+
+
+  /* Aglomerate the COMDAT group into the same partition.  */
+  if (node->same_comdat_group)
+    {
+      for (node1 = node->same_comdat_group;
+	   node1 != node; node1 = node1->same_comdat_group)
+	if (!node->alias)
+	  {
+	    ds->unite (node1->aux2, set);
+	    merge_comdat_nodes (node1, set);
+	    ret = true;
+	  }
+    }
+
+  /* Look at nodes that can reach the COMDAT group, and aglomerate to the
+     same partition.  These nodes are called the "COMDAT Frontier".  The
+     idea is that every unpartitioned node that reaches a COMDAT group MUST
+     go through the COMDAT frontier before reaching it.  Therefore, only
+     nodes in the frontier are exported.  */
+  if (node->same_comdat_group || c == SYMBOL_DUPLICATE)
+    {
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	{
+	  /* Add all inline clones and callees that are duplicated.  */
+	  for (e = cnode->callers; e; e = e->next_caller)
+	    if (!e->inline_failed)
+	      {
+		ds->unite (set, e->caller->aux2);
+		merge_comdat_nodes (e->caller, set);
+		ret = true;
+	      }
+	    else if (c == SYMBOL_DUPLICATE)
+	      {
+		ds->unite (set, e->caller->aux2);
+		merge_comdat_nodes (e->caller, set);
+		ret = true;
+	      }
+
+	  /* Add all thunks associated with the function.  */
+	  for (e = cnode->callees; e; e = e->next_callee)
+	    if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
+	      {
+		ds->unite (set, e->callee->aux2);
+		merge_comdat_nodes (e->callee, set);
+		ret = true;
+	      }
+	}
+    }
+
+  return ret;
+}
+
+void
+lto_merge_comdat_map (void)
+{
+  symtab_node *node;
+  int n_partitions = 0, i, n = 0, j = 0;
+  int *compression;
+
+  FOR_EACH_SYMBOL (node)
+    node->aux2 = n++;
+
+  union_find disjoint_sets = union_find (n);
+  ds = &disjoint_sets;
+
+  compression = (int *) alloca (n * sizeof (*compression));
+  for (i = 0; i < n; ++i)
+    compression[i] = -1; /* Invalid value.  */
+
+
+  FOR_EACH_SYMBOL (node)
+    if (node->same_comdat_group)
+      merge_comdat_nodes (node, node->aux2);
+
+
+  i = 0, j = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      int root = disjoint_sets.find (i);
+      node->aux2 = root;
+      node->aux = NULL;
+
+      if (node->get_partitioning_class () == SYMBOL_PARTITION
+	  && compression[root] < 0)
+	compression[root] = j++;
+      i++;
+    }
+
+  n_partitions = j;
+
+  /* Create LTRANS partitions.  */
+  ltrans_partitions.create (n_partitions);
+  for (i = 0; i < n_partitions; i++)
+    new_partition ("");
+
+  FOR_EACH_SYMBOL (node)
+    {
+      if (node->get_partitioning_class () != SYMBOL_PARTITION
+	  || symbol_partitioned_p (node))
+	  continue;
+
+      int p = compression[node->aux2];
+      add_symbol_to_partition (ltrans_partitions[p], node);
+    }
+}
+
 
 /* Helper function for qsort; sort nodes by order.  */
 static int
@@ -1332,7 +1449,7 @@ static hash_map<const char *, unsigned> *lto_clone_numbers;
    represented by DECL.  */
 
 static bool
-privatize_symbol_name_1 (symtab_node *node, tree decl)
+privatize_symbol_name_1 (symtab_node *node, tree decl, bool wpa)
 {
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
@@ -1340,8 +1457,10 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
     return false;
 
   name = maybe_rewrite_identifier (name);
-  if (lto_clone_numbers)
+  if (wpa)
     {
+      gcc_assert (lto_clone_numbers);
+
       unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
       symtab->change_decl_assembler_name (decl,
 					  clone_function_name (
@@ -1375,7 +1494,9 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
 static bool
 privatize_symbol_name (symtab_node *node)
 {
-  if (!privatize_symbol_name_1 (node, node->decl))
+  bool wpa = !split_outputs;
+
+  if (!privatize_symbol_name_1 (node, node->decl, wpa))
     return false;
 
   return true;
