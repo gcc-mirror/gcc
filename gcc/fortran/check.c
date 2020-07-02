@@ -67,7 +67,7 @@ gfc_invalid_boz (const char *msg, locus *loc)
       return false;
     }
 
-  const char *hint = " [see %<-fno-allow-invalid-boz%>]";
+  const char *hint = _(" [see %<-fno-allow-invalid-boz%>]");
   size_t len = strlen (msg) + strlen (hint) + 1;
   char *msg2 = (char *) alloca (len);
   strcpy (msg2, msg);
