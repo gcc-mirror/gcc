@@ -4519,19 +4519,24 @@ zero_init_expr_p (tree t)
 bool
 structural_type_p (tree t, bool explain)
 {
-  t = strip_array_types (t);
-  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
+  /* A structural type is one of the following: */
+
+  /* a scalar type, or */
+  if (SCALAR_TYPE_P (t))
     return true;
-  if (NULLPTR_TYPE_P (t))
-    return true;
-  if (TYPE_PTR_P (t) || TYPE_PTRMEM_P (t))
-    return true;
+  /* an lvalue reference type, or */
   if (TYPE_REF_P (t) && !TYPE_REF_IS_RVALUE (t))
     return true;
+  /* a literal class type with the following properties:
+     - all base classes and non-static data members are public and non-mutable
+       and
+     - the types of all bases classes and non-static data members are
+       structural types or (possibly multi-dimensional) array thereof.  */
   if (!CLASS_TYPE_P (t))
     return false;
   if (TREE_CODE (t) == UNION_TYPE)
     {
+      /* FIXME allow (and mangle) unions.  */
       if (explain)
 	inform (location_of (t), "%qT is a union", t);
       return false;
@@ -4540,12 +4545,6 @@ structural_type_p (tree t, bool explain)
     {
       if (explain)
 	explain_non_literal_class (t);
-      return false;
-    }
-  if (CLASSTYPE_HAS_MUTABLE (t))
-    {
-      if (explain)
-	inform (location_of (t), "%qT has a mutable member", t);
       return false;
     }
   for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
@@ -4563,12 +4562,19 @@ structural_type_p (tree t, bool explain)
 	    }
 	  return false;
 	}
-      if (!structural_type_p (TREE_TYPE (m)))
+      if (DECL_MUTABLE_P (m))
+	{
+	  if (explain)
+	    inform (location_of (m), "%qD is mutable", m);
+	  return false;
+	}
+      tree mtype = strip_array_types (TREE_TYPE (m));
+      if (!structural_type_p (mtype))
 	{
 	  if (explain)
 	    {
 	      inform (location_of (m), "%qD has a non-structural type", m);
-	      structural_type_p (TREE_TYPE (m), true);
+	      structural_type_p (mtype, true);
 	    }
 	  return false;
 	}
