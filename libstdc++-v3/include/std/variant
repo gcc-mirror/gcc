@@ -611,7 +611,8 @@ namespace __variant
 		      this->_M_destructive_copy(__rhs_index, __rhs_mem);
 		    else
 		      __variant_cast<_Types...>(*this)
-			= variant<_Types...>(__rhs_mem);
+			= variant<_Types...>(std::in_place_index<__rhs_index>,
+					     __rhs_mem);
 		  }
 	      }
 	    else
