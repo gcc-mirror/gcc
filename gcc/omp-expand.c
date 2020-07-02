@@ -7174,15 +7174,55 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
   struct omp_for_data fd;
   struct omp_for_data_loop *loops;
 
-  loops
-    = (struct omp_for_data_loop *)
-      alloca (gimple_omp_for_collapse (last_stmt (region->entry))
-	      * sizeof (struct omp_for_data_loop));
+  loops = XALLOCAVEC (struct omp_for_data_loop,
+		      gimple_omp_for_collapse (last_stmt (region->entry)));
   omp_extract_for_data (as_a <gomp_for *> (last_stmt (region->entry)),
 			&fd, loops);
   region->sched_kind = fd.sched_kind;
   region->sched_modifiers = fd.sched_modifiers;
   region->has_lastprivate_conditional = fd.lastprivate_conditional != 0;
+  if (fd.non_rect && !gimple_omp_for_combined_into_p (fd.for_stmt))
+    {
+      for (int i = fd.first_nonrect; i <= fd.last_nonrect; i++)
+	if ((loops[i].m1 || loops[i].m2)
+	    && (loops[i].m1 == NULL_TREE
+		|| TREE_CODE (loops[i].m1) == INTEGER_CST)
+	    && (loops[i].m2 == NULL_TREE
+		|| TREE_CODE (loops[i].m2) == INTEGER_CST)
+	    && TREE_CODE (loops[i].step) == INTEGER_CST
+	    && TREE_CODE (loops[i - loops[i].outer].step) == INTEGER_CST)
+	  {
+	    tree t;
+	    tree itype = TREE_TYPE (loops[i].v);
+	    if (loops[i].m1 && loops[i].m2)
+	      t = fold_build2 (MINUS_EXPR, itype, loops[i].m2, loops[i].m1);
+	    else if (loops[i].m1)
+	      t = fold_build1 (NEGATE_EXPR, itype, loops[i].m1);
+	    else
+	      t = loops[i].m2;
+	    t = fold_build2 (MULT_EXPR, itype, t,
+			     fold_convert (itype,
+					   loops[i - loops[i].outer].step));
+	    if (TYPE_UNSIGNED (itype) && loops[i].cond_code == GT_EXPR)
+	      t = fold_build2 (TRUNC_MOD_EXPR, itype,
+			       fold_build1 (NEGATE_EXPR, itype, t),
+			       fold_build1 (NEGATE_EXPR, itype,
+					    fold_convert (itype,
+							  loops[i].step)));
+	    else
+	      t = fold_build2 (TRUNC_MOD_EXPR, itype, t,
+			       fold_convert (itype, loops[i].step));
+	    if (integer_nonzerop (t))
+	      error_at (gimple_location (fd.for_stmt),
+			"invalid OpenMP non-rectangular loop step; "
+			"%<(%E - %E) * %E%> is not a multiple of loop %d "
+			"step %qE",
+			loops[i].m2 ? loops[i].m2 : integer_zero_node,
+			loops[i].m1 ? loops[i].m1 : integer_zero_node,
+			loops[i - loops[i].outer].step, i + 1,
+			loops[i].step);
+	  }
+    }
 
   gcc_assert (EDGE_COUNT (region->entry->succs) == 2);
   BRANCH_EDGE (region->entry)->flags &= ~EDGE_ABNORMAL;

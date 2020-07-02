@@ -1,6 +1,15 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for): Diagnose non-rectangular loops with
+	invalid steps - ((m2 - m1) * incr_outer) % incr must be 0 in valid
+	OpenMP non-rectangular loops.  Use XALLOCAVEC.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-general.h (struct omp_for_data_loop): Add non_rect_referenced

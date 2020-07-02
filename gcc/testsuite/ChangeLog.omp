@@ -1,6 +1,13 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-7.c: New test.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/loop-6.c: New test.
