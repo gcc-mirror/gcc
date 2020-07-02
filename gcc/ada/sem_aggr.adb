@@ -3967,7 +3967,7 @@ package body Sem_Aggr is
 
                         --  Copy the expression so that it is resolved
                         --  independently for each component, This is needed
-                        --  for accessibility checks on compoents of anonymous
+                        --  for accessibility checks on components of anonymous
                         --  access types, even in compile_only mode.
 
                         if not Inside_A_Generic then

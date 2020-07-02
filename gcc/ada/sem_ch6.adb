@@ -306,8 +306,6 @@ package body Sem_Ch6 is
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
-   --  Start of processing for Analyze_Expression_Function
-
    begin
       --  This is one of the occasions on which we transform the tree during
       --  semantic analysis. If this is a completion, transform the expression

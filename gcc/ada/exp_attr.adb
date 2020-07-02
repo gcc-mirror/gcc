@@ -1806,9 +1806,9 @@ package body Exp_Attr is
    ----------------------------------
 
    procedure Expand_N_Attribute_Reference (N : Node_Id) is
-      Loc   : constant Source_Ptr   := Sloc (N);
-      Pref  : constant Node_Id      := Prefix (N);
-      Exprs : constant List_Id      := Expressions (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Pref  : constant Node_Id    := Prefix (N);
+      Exprs : constant List_Id    := Expressions (N);
 
       function Get_Integer_Type (Typ : Entity_Id) return Entity_Id;
       --  Return a small integer type appropriate for the enumeration type
@@ -1950,10 +1950,10 @@ package body Exp_Attr is
          Analyze (N);
       end Rewrite_Attribute_Proc_Call;
 
-      Typ   : constant Entity_Id    := Etype (N);
-      Btyp  : constant Entity_Id    := Base_Type (Typ);
-      Ptyp  : constant Entity_Id    := Etype (Pref);
-      Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
+      Typ  : constant Entity_Id    := Etype (N);
+      Btyp : constant Entity_Id    := Base_Type (Typ);
+      Ptyp : constant Entity_Id    := Etype (Pref);
+      Id   : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
    --  Start of processing for Expand_N_Attribute_Reference
 

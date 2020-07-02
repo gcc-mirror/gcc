@@ -6376,7 +6376,7 @@ package body Exp_Aggr is
 
       Convert_To_Positional (N);
 
-      --  if the result is no longer an aggregate (e.g. it may be a string
+      --  If the result is no longer an aggregate (e.g. it may be a string
       --  literal, or a temporary which has the needed value), then we are
       --  done, since there is no longer a nested aggregate.
 
@@ -8165,7 +8165,7 @@ package body Exp_Aggr is
             Convert_To_Assignments (N, Typ);
 
          --  In all other cases, build a proper aggregate to be handled by
-         --  the back-end
+         --  the back-end.
 
          else
             Build_Back_End_Aggregate;

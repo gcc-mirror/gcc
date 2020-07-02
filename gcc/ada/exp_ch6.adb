@@ -2682,22 +2682,22 @@ package body Exp_Ch6 is
                                 | N_Function_Call
                                 | N_Procedure_Call_Statement);
 
-      --  Check that this is not the call in the body of the wrapper.
+      --  Check that this is not the call in the body of the wrapper
 
       if Must_Rewrite_Indirect_Call
         and then (not Is_Overloadable (Current_Scope)
              or else not Is_Access_Subprogram_Wrapper (Current_Scope))
       then
          declare
-            Loc : constant Source_Ptr := Sloc (N);
-            Wrapper : constant Entity_Id :=
+            Loc      : constant Source_Ptr := Sloc (N);
+            Wrapper  : constant Entity_Id :=
               Access_Subprogram_Wrapper (Etype (Name (N)));
             Ptr      : constant Node_Id   := Prefix (Name (N));
             Ptr_Type : constant Entity_Id := Etype (Ptr);
             Typ      : constant Entity_Id := Etype (N);
 
             New_N    : Node_Id;
-            Parms    : List_Id   := Parameter_Associations (N);
+            Parms    : List_Id := Parameter_Associations (N);
             Ptr_Act  : Node_Id;
 
          begin
@@ -2735,7 +2735,7 @@ package body Exp_Ch6 is
 
             if Nkind (N) = N_Procedure_Call_Statement then
                New_N := Make_Procedure_Call_Statement (Loc,
-                  Name  => New_Occurrence_Of (Wrapper, Loc),
+                  Name => New_Occurrence_Of (Wrapper, Loc),
                   Parameter_Associations => Parms);
             else
                New_N := Make_Function_Call (Loc,
@@ -2927,7 +2927,7 @@ package body Exp_Ch6 is
             if Has_Invariants (Curr_Typ)
               and then Present (Invariant_Procedure (Curr_Typ))
             then
-               --  Verify the invariate of the current type. Generate:
+               --  Verify the invariant of the current type. Generate:
 
                --    <Curr_Typ>Invariant (Curr_Typ (Arg));
 
@@ -3405,8 +3405,7 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  if this is a call to a predicate function, try to constant
-      --  fold it.
+      --  If this is a call to a predicate function, try to constant fold it
 
       if Nkind (Call_Node) = N_Function_Call
         and then Is_Entity_Name (Name (Call_Node))
@@ -4516,7 +4515,7 @@ package body Exp_Ch6 is
       end if;
 
       --  Ada 2005 (AI-251): If some formal is a class-wide interface, expand
-      --  it to point to the correct secondary virtual table
+      --  it to point to the correct secondary virtual table.
 
       if Nkind (Call_Node) in N_Subprogram_Call
         and then CW_Interface_Formals_Present
@@ -4932,7 +4931,7 @@ package body Exp_Ch6 is
          --  A call to a null procedure is replaced by a null statement, but we
          --  are not allowed to ignore possible side effects of the call, so we
          --  make sure that actuals are evaluated.
-         --  We also suppress this optimization for GNATCoverage.
+         --  We also suppress this optimization for GNATcoverage.
 
          elsif Is_Null_Procedure (Subp)
            and then not Opt.Suppress_Control_Flow_Optimizations

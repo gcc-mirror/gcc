@@ -19256,7 +19256,7 @@ package body Sem_Util is
 
    function Is_True (U : Uint) return Boolean is
    begin
-      return (U /= 0);
+      return U /= 0;
    end Is_True;
 
    --------------------------------------

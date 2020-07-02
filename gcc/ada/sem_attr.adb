@@ -6871,7 +6871,7 @@ package body Sem_Attr is
             end if;
 
             --  Verify the consistency of types when the current component is
-            --  part of a miltiple component update.
+            --  part of a multiple component update.
 
             --    Comp_1 | ... | Comp_N => <value>
 
@@ -7315,7 +7315,7 @@ package body Sem_Attr is
    --------------------
 
    procedure Eval_Attribute (N : Node_Id) is
-      Loc   : constant Source_Ptr   := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       C_Type : constant Entity_Id := Etype (N);
       --  The type imposed by the context
