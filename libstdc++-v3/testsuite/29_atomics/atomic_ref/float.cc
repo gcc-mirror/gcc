@@ -267,31 +267,32 @@ test03()
     ok = a.compare_exchange_strong(expected, 6.4l, mo);
     VERIFY( !ok && a.load() == 204.8l && expected == 204.8l );
 
-    v = a.fetch_add(3.2l);
-    VERIFY( v == 204.8l );
-    VERIFY( a == 208.0l );
-    v = a.fetch_add(-8.5l, mo);
-    VERIFY( v == 208.0l );
-    VERIFY( a == 199.5l );
+    a = 0.5l;
+    v = a.fetch_add(0.5l);
+    VERIFY( v == 0.5l );
+    VERIFY( a == 1.0l );
+    v = a.fetch_add(-0.2l, mo);
+    VERIFY( v == 1.0l );
+    VERIFY( a == 0.8l );
 
-    v = a.fetch_sub(109.5l);
-    VERIFY( v == 199.5l );
-    VERIFY( a == 90.0l );
-    v = a.fetch_sub(2, mo);
-    VERIFY( v == 90.0l );
-    VERIFY( a == 88.0l );
+    v = a.fetch_sub(0.4l);
+    VERIFY( v == 0.8l );
+    VERIFY( a == 0.4l );
+    v = a.fetch_sub(-0.4l, mo);
+    VERIFY( v == 0.4l );
+    VERIFY( a == 0.8l );
 
-    v = a += 5.0l;
-    VERIFY( v == 93.0l );
-    VERIFY( a == 93.0l );
+    v = a += .8l;
+    VERIFY( v == 1.6l );
+    VERIFY( a == 1.6l );
 
-    v = a -= 6.5l;
-    VERIFY( v == 86.5l );
-    VERIFY( a == 86.5l );
+    v = a -= 0.6l;
+    VERIFY( v == 1.0l );
+    VERIFY( a == 1.0l );
   }
 
   if constexpr (std::atomic_ref<long double>::is_always_lock_free)
-    VERIFY( value == 86.5l );
+    VERIFY( value == 1.0l );
 }
 
 void
