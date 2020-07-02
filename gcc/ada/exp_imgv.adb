@@ -481,9 +481,15 @@ package body Exp_Imgv is
 
       --  Ada 2020 allows 'Image on private types, so fetch the underlying
       --  type to obtain the structure of the type. We use the base type,
-      --  not the root type, to handle properly derived types.
+      --  not the root type, to handle properly derived types, but we use
+      --  the root type for enumeration types, because the literal map is
+      --  attached to the root. Should be inherited ???
 
-      Rtyp := Underlying_Type (Base_Type (Ptyp));
+      if Is_Enumeration_Type (Ptyp) then
+         Rtyp := Underlying_Type (Root_Type (Ptyp));
+      else
+         Rtyp := Underlying_Type (Base_Type (Ptyp));
+      end if;
 
       --  Enable speed-optimized expansion of user-defined enumeration types
       --  if we are compiling with optimizations enabled and enumeration type
