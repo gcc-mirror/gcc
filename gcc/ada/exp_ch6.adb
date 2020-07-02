@@ -3215,7 +3215,7 @@ package body Exp_Ch6 is
          then
             declare
                Actual : Node_Id;
-               Formal : Node_Id;
+               Formal : Entity_Id;
 
             begin
                Actual := First (Parameter_Associations (Call_Node));
