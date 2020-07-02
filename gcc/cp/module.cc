@@ -13887,6 +13887,7 @@ module_state_config::get_dialect ()
 		      /* C++ 20 implies concepts.  */
 		      cxx_dialect < cxx20 && flag_concepts ? "/concepts" : "",
 		      flag_coroutines ? "/coroutines" : "",
+		      flag_module_implicit_inline ? "/implicit-inline" : "",
 		      NULL);
 
   return dialect;
@@ -18580,8 +18581,8 @@ preprocessed_module (cpp_reader *reader)
       module_state *module = *iter;
       if (module->is_direct () && !module->filename)
 	{
-	  if (module->module_p && (module->is_partition ()
-				   || module->exported_p))
+	  if (module->module_p
+	      && (module->is_partition () || module->exported_p))
 	    mapper->ModuleExport (module->get_flatname ());
 	  else
 	    mapper->ModuleImport (module->get_flatname ());

@@ -13601,7 +13601,7 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
 		  " must not be include-translated");
       else if (preamble == MP_PREAMBLE && !token->main_source_p)
 	error_at (token->location, "post-module-declaration imports"
-		  " must not be from header inclusion ");
+		  " must not be from header inclusion");
 
       import_module (mod, token->location, exporting, attrs, parse_in);
     }

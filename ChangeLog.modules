@@ -1,3 +1,20 @@
+2020-07-02  Nathan Sidwell  <nathan@acm.org>
+
+	p1779 ABI isolation
+	gcc/cp/
+	* cp-tree.h (named_module_purview_p): New.
+	* decl.c (grokmethod): Don't always implicitly inline.
+	* module.cc (module_state_config::get_dialect): Add
+	module_implicit_inline.
+	gcc/
+	* doc/invoke.texi (fmodule-implicit-inline): Document.
+	gcc/c-family/
+	* c.opt (-fmodule-implicit-inline): New.
+	gcc/testsuite/
+	* g++.dg/modules/imp-member-[12]_b.C: Add some inlines.
+	* g++.dg/modules/vmort-1_a.C: Likewise.
+	* g++.dg/modules/imp-inline-1_[ab].C: New.
+
 2020-07-01  Nathan Sidwell  <nathan@acm.org>
 
 	GMF entities are not findable by name

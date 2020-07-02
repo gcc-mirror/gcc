@@ -3037,6 +3037,17 @@ Disable lazy module importing and module mapper creation.
 @opindex fmodule-header
 Compile as a header unit.
 
+@item -fmodule-implicit-inline
+@opindex fmodule-implicit-inline
+Memmber functions defined in their class definitions are not
+implicitly inline for modular code.  This is different to traditional
+C++ behaviour, for good reasons.  However, it may result in a
+difficulty during code porting.  This option will make such function
+definitions implicitly inline.  It does however generate an ABI
+incompatibility, so you must use it everywhere or nowhere.  (Such
+definitions outside of a named module remain implicitly inline,
+regardless.)
+
 @item -fmodule-only
 @opindex fmodule-only
 Only emit the module CMI, inhibiting any object file.

@@ -1651,6 +1651,10 @@ Enable C++ header module (experimental).
 fmodule-header=
 C++ ObjC++ Joined RejectNegative Undocumented
 
+fmodule-implicit-inline
+C++ ObjC++ Var(flag_module_implicit_inline,0) Integer
+Member functions defined within their class are inline in module purview.
+
 fmodule-only
 C++ ObjC RejectNegative Var(flag_module_only) Integer
 Only emit Binary Module Interface.
