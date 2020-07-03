@@ -698,7 +698,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  : _Node_allocator(__a), _Base_key_compare(__comp)
 	  { }
 #else
-	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
+	  _Rb_tree_impl(_Rb_tree_impl&&)
+	    noexcept( is_nothrow_move_constructible<_Base_key_compare>::value )
+	  = default;
 
 	  explicit
 	  _Rb_tree_impl(_Node_allocator&& __a)
