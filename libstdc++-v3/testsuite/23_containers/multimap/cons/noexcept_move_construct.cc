@@ -29,6 +29,33 @@ static_assert( std::is_nothrow_constructible<mmtype,
 	       mmtype&&, const typename mmtype::allocator_type&>::value,
 	       "noexcept move constructor with allocator" );
 
+template<typename Type>
+  class not_noexcept_move_constructor_alloc : public std::allocator<Type>
+  {
+  public:
+    not_noexcept_move_constructor_alloc() noexcept { }
+
+    not_noexcept_move_constructor_alloc(
+	const not_noexcept_move_constructor_alloc& x) noexcept
+    : std::allocator<Type>(x)
+    { }
+
+    not_noexcept_move_constructor_alloc(
+	not_noexcept_move_constructor_alloc&& x) noexcept(false)
+    : std::allocator<Type>(std::move(x))
+    { }
+
+    template<typename _Tp1>
+      struct rebind
+      { typedef not_noexcept_move_constructor_alloc<_Tp1> other; };
+  };
+
+typedef std::multimap<int, int, std::less<int>,
+		      not_noexcept_move_constructor_alloc<std::pair<const int, int>>> ammtype;
+
+static_assert( std::is_nothrow_move_constructible<ammtype>::value,
+	       "noexcept move constructor with not noexcept alloc" );
+
 struct not_noexcept_less
 {
   not_noexcept_less() = default;
@@ -42,6 +69,9 @@ struct not_noexcept_less
 
 typedef std::multimap<int, int, not_noexcept_less> emmtype;
 
+static_assert( !std::is_nothrow_move_constructible<emmtype>::value,
+	       "not noexcept move constructor with not noexcept less" );
+
 static_assert( !std::is_nothrow_constructible<emmtype, emmtype&&,
 	       const typename emmtype::allocator_type&>::value,
-	       "except move constructor with allocator" );
+	       "not noexcept move constructor with allocator" );
