@@ -925,7 +925,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a CALL_EXPR, if the function being called is BUILT_IN_ALLOCA, means that
-   it has been built for the declaration of a variable-sized object.  */
+   it has been built for the declaration of a variable-sized object and, if the
+   function being called is BUILT_IN_MEMCPY, means that it has been built for
+   the assignment of a variable-sized object.  */
 #define CALL_ALLOCA_FOR_VAR_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 

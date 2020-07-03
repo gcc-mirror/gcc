@@ -334,6 +334,8 @@ public:
   void move_dr (stmt_vec_info, stmt_vec_info);
   void remove_stmt (stmt_vec_info);
   void replace_stmt (gimple_stmt_iterator *, stmt_vec_info, gimple *);
+  void insert_on_entry (stmt_vec_info, gimple *);
+  void insert_seq_on_entry (stmt_vec_info, gimple_seq);
 
   /* The type of vectorization.  */
   vec_kind kind;

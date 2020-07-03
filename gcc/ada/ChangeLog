@@ -1,3 +1,10 @@
+2020-07-02  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* debug.adb (d.K): Document new usage.
+	* fe.h (Debug_Flag_Dot_KK): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_field): Give an error when the
+	component overlaps with the parent subtype, except with -gnatd.K.
+
 2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* exp_ch4.adb (Expand_Set_Membership): Expand the membership test

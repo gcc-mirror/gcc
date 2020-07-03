@@ -3076,6 +3076,26 @@
     DONE;
   })
 
+;; Warning: This "-ffast-math" implementation converts in-order reductions
+;;          into associative reductions. It's also used where OpenMP or
+;;          OpenACC paralellization has already broken the in-order semantics.
+(define_expand "fold_left_plus_<mode>"
+ [(match_operand:<SCALAR_MODE> 0 "register_operand")
+  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
+  (match_operand:V_FP 2 "gcn_alu_operand")]
+  "can_create_pseudo_p ()
+   && (flag_openacc || flag_openmp
+       || flag_associative_math)"
+  {
+    rtx dest = operands[0];
+    rtx scalar = operands[1];
+    rtx vector = operands[2];
+    rtx tmp = gen_reg_rtx (<SCALAR_MODE>mode);
+
+    emit_insn (gen_reduc_plus_scal_<mode> (tmp, vector));
+    emit_insn (gen_add<scalar_mode>3 (dest, scalar, tmp));
+     DONE;
+   })
 
 (define_insn "*<reduc_op>_dpp_shr_<mode>"
   [(set (match_operand:V_1REG 0 "register_operand"   "=v")

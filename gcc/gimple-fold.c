@@ -700,7 +700,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
   tree len = gimple_call_arg (stmt, 2);
-  tree destvar, srcvar;
   location_t loc = gimple_location (stmt);
 
   /* If the LEN parameter is a constant zero or in range where
@@ -741,7 +740,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
     }
   else
     {
-      tree srctype, desttype;
+      tree srctype, desttype, destvar, srcvar, srcoff;
       unsigned int src_align, dest_align;
       tree off0;
       const char *tmp_str;
@@ -991,7 +990,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       /* Choose between src and destination type for the access based
          on alignment, whether the access constitutes a register access
 	 and whether it may actually expose a declaration for SSA rewrite
-	 or SRA decomposition.  */
+	 or SRA decomposition.  Also try to expose a string constant, we
+	 might be able to concatenate several of them later into a single
+	 string store.  */
       destvar = NULL_TREE;
       srcvar = NULL_TREE;
       if (TREE_CODE (dest) == ADDR_EXPR
@@ -1008,7 +1009,16 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	       && (is_gimple_reg_type (srctype)
 		   || dest_align >= TYPE_ALIGN (srctype)))
 	srcvar = fold_build2 (MEM_REF, srctype, src, off0);
-      if (srcvar == NULL_TREE && destvar == NULL_TREE)
+      /* FIXME: Don't transform copies from strings with known original length.
+	 As soon as strlenopt tests that rely on it for passing are adjusted,
+	 this hack can be removed.  */
+      else if (gimple_call_alloca_for_var_p (stmt)
+	       && (srcvar = string_constant (src, &srcoff, NULL, NULL))
+	       && integer_zerop (srcoff)
+	       && tree_int_cst_equal (TYPE_SIZE_UNIT (TREE_TYPE (srcvar)), len)
+	       && dest_align >= TYPE_ALIGN (TREE_TYPE (srcvar)))
+	srctype = TREE_TYPE (srcvar);
+      else
 	return false;
 
       /* Now that we chose an access type express the other side in
@@ -1071,19 +1081,29 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  goto set_vop_and_replace;
 	}
 
-      /* We get an aggregate copy.  Use an unsigned char[] type to
-	 perform the copying to preserve padding and to avoid any issues
-	 with TREE_ADDRESSABLE types or float modes behavior on copying.  */
-      desttype = build_array_type_nelts (unsigned_char_type_node,
-					 tree_to_uhwi (len));
-      srctype = desttype;
-      if (src_align > TYPE_ALIGN (srctype))
-	srctype = build_aligned_type (srctype, src_align);
+      /* We get an aggregate copy.  If the source is a STRING_CST, then
+	 directly use its type to perform the copy.  */
+      if (TREE_CODE (srcvar) == STRING_CST)
+	  desttype = srctype;
+
+      /* Or else, use an unsigned char[] type to perform the copy in order
+	 to preserve padding and to avoid any issues with TREE_ADDRESSABLE
+	 types or float modes behavior on copying.  */
+      else
+	{
+	  desttype = build_array_type_nelts (unsigned_char_type_node,
+					     tree_to_uhwi (len));
+	  srctype = desttype;
+	  if (src_align > TYPE_ALIGN (srctype))
+	    srctype = build_aligned_type (srctype, src_align);
+	  srcvar = fold_build2 (MEM_REF, srctype, src, off0);
+	}
+
       if (dest_align > TYPE_ALIGN (desttype))
 	desttype = build_aligned_type (desttype, dest_align);
-      new_stmt
-	= gimple_build_assign (fold_build2 (MEM_REF, desttype, dest, off0),
-			       fold_build2 (MEM_REF, srctype, src, off0));
+      destvar = fold_build2 (MEM_REF, desttype, dest, off0);
+      new_stmt = gimple_build_assign (destvar, srcvar);
+
 set_vop_and_replace:
       gimple_move_vops (new_stmt, stmt);
       if (!lhs)
