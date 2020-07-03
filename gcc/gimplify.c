@@ -4329,6 +4329,7 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
   t = builtin_decl_implicit (BUILT_IN_MEMCPY);
 
   gs = gimple_build_call (t, 3, to_ptr, from_ptr, size);
+  gimple_call_set_alloca_for_var (gs, true);
 
   if (want_value)
     {
