@@ -1315,29 +1315,7 @@ vect_init_vector_1 (vec_info *vinfo, stmt_vec_info stmt_vinfo, gimple *new_stmt,
   if (gsi)
     vect_finish_stmt_generation (vinfo, stmt_vinfo, new_stmt, gsi);
   else
-    {
-      loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-
-      if (loop_vinfo)
-        {
-	  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-	  basic_block new_bb;
-	  edge pe;
-
-	  if (stmt_vinfo && nested_in_vect_loop_p (loop, stmt_vinfo))
-	    loop = loop->inner;
-
-	  pe = loop_preheader_edge (loop);
-          new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
-          gcc_assert (!new_bb);
-	}
-      else
-       {
-          bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
-	  gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
-	  gsi_insert_before (&gsi_region_begin, new_stmt, GSI_SAME_STMT);
-       }
-    }
+    vinfo->insert_on_entry (stmt_vinfo, new_stmt);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -1592,6 +1570,7 @@ vect_finish_stmt_generation (vec_info *vinfo,
 	{
 	  tree vdef = gimple_vdef (at_stmt);
 	  gimple_set_vuse (vec_stmt, gimple_vuse (at_stmt));
+	  gimple_set_modified (vec_stmt, true);
 	  /* If we have an SSA vuse and insert a store, update virtual
 	     SSA form to avoid triggering the renamer.  Do so only
 	     if we can easily see all uses - which is what almost always
