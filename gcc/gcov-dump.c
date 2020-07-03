@@ -299,7 +299,7 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
 	      unsigned tag ATTRIBUTE_UNUSED, int length,
 	      unsigned depth ATTRIBUTE_UNUSED)
 {
-  long pos = gcov_position ();
+  gcov_position_t pos = gcov_position ();
 
   if (!length)
     printf (" placeholder");
@@ -309,7 +309,7 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
       printf (", lineno_checksum=0x%08x", gcov_read_unsigned ());
       printf (", cfg_checksum=0x%08x", gcov_read_unsigned ());
 
-      if (gcov_position () - pos < length)
+      if (gcov_position () - pos < (gcov_position_t) length)
 	{
 	  const char *name;
 	  
