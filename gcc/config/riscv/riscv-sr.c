@@ -244,6 +244,12 @@ check_for_no_return_call (rtx_insn *prologue)
 void
 riscv_remove_unneeded_save_restore_calls (void)
 {
+  /* We'll adjust stack size after this optimization, that require update every
+     sp use site, which could be unsafe, so we decide to turn off this
+     optimization if there are any arguments put on stack.  */
+  if (crtl->args.size != 0)
+    return;
+
   /* Will point to the first instruction of the function body, after the
      prologue end note.  */
   rtx_insn *body = NULL;
