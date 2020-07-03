@@ -11238,6 +11238,7 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
     }
   else
     {
+      *slp_def = NULL;
       if (gassign *ass = dyn_cast <gassign *> (stmt->stmt))
 	{
 	  if (gimple_assign_rhs_code (ass) == COND_EXPR
