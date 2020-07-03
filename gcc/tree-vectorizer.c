@@ -625,6 +625,46 @@ vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
   gsi_replace (gsi, new_stmt, true);
 }
 
+/* Insert stmts in SEQ on the VEC_INFO region entry.  If CONTEXT is
+   not NULL it specifies whether to use the sub-region entry
+   determined by it, currently used for loop vectorization to insert
+   on the inner loop entry vs. the outer loop entry.  */
+
+void
+vec_info::insert_seq_on_entry (stmt_vec_info context, gimple_seq seq)
+{
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (this))
+    {
+      class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      basic_block new_bb;
+      edge pe;
+
+      if (context && nested_in_vect_loop_p (loop, context))
+	loop = loop->inner;
+
+      pe = loop_preheader_edge (loop);
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+      gcc_assert (!new_bb);
+    }
+  else
+    {
+      bb_vec_info bb_vinfo = as_a <bb_vec_info> (this);
+      gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
+      gsi_insert_seq_before (&gsi_region_begin, seq, GSI_SAME_STMT);
+    }
+}
+
+/* Like insert_seq_on_entry but just inserts the single stmt NEW_STMT.  */
+
+void
+vec_info::insert_on_entry (stmt_vec_info context, gimple *new_stmt)
+{
+  gimple_seq seq = NULL;
+  gimple_stmt_iterator gsi = gsi_start (seq);
+  gsi_insert_before_without_update (&gsi, new_stmt, GSI_SAME_STMT);
+  insert_seq_on_entry (context, seq);
+}
+
 /* Create and initialize a new stmt_vec_info struct for STMT.  */
 
 stmt_vec_info

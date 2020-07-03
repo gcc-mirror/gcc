@@ -3786,26 +3786,20 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 					      permute_results);
 		  vec_cst = permute_results[number_of_vectors - j - 1];
 		}
-	      tree init;
-	      if (insert_after)
+	      if (!gimple_seq_empty_p (ctor_seq))
 		{
-		  gimple_stmt_iterator gsi = gsi_for_stmt (insert_after->stmt);
-		  /* vect_init_vector inserts before.  */
-		  gsi_next (&gsi);
-		  init = vect_init_vector (vinfo, NULL, vec_cst,
-					   vector_type, &gsi);
-		}
-	      else
-		init = vect_init_vector (vinfo, NULL, vec_cst,
-					 vector_type, NULL);
-	      if (ctor_seq != NULL)
-		{
-		  gimple_stmt_iterator gsi
-		    = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
-		  gsi_insert_seq_before (&gsi, ctor_seq, GSI_SAME_STMT);
+		  if (insert_after)
+		    {
+		      gimple_stmt_iterator gsi
+			= gsi_for_stmt (insert_after->stmt);
+		      gsi_insert_seq_after (&gsi, ctor_seq,
+					    GSI_CONTINUE_LINKING);
+		    }
+		  else
+		    vinfo->insert_seq_on_entry (NULL, ctor_seq);
 		  ctor_seq = NULL;
 		}
-	      voprnds.quick_push (init);
+	      voprnds.quick_push (vec_cst);
 	      insert_after = NULL;
               number_of_places_left_in_vector = nunits;
 	      constant_p = true;
@@ -4418,10 +4412,11 @@ vect_schedule_slp_instance (vec_info *vinfo,
 		      || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
 		    last_stmt = vstmt;
 		}
-	    /* This can happen when all children are pre-existing vectors.  */
-	    if (!last_stmt)
-	      last_stmt = vect_find_first_scalar_stmt_in_slp (node)->stmt;
 	  }
+      /* This can happen when all children are pre-existing vectors or
+	 constants.  */
+      if (!last_stmt)
+	last_stmt = vect_find_first_scalar_stmt_in_slp (node)->stmt;
       if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));
       else
