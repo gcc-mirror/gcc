@@ -1,3 +1,8 @@
+2020-07-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	* config/gcn/gcn-valu.md (fold_left_plus_<mode>): New.
+
 2020-06-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-hsa.h (TEXT_SECTION_ASM_OP): Use ".text".
