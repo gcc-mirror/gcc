@@ -615,6 +615,130 @@ static void analyse_symbol (symtab_node *node, int set)
 
 }
 
+/* Quickly balance partitions, trying to reach target_size in each of
+   them.  Returns true if something was done, or false if we decided
+   that it is not worth.  */
+
+static bool
+balance_partitions (union_find *ds, int n)
+{
+  int *sizes, i, j;
+  int total_size = 0, max_size = -1;
+  int target_size;
+  const int eps = 0;
+
+  symtab_node *node;
+
+  sizes = (int *) alloca (n * sizeof (*sizes));
+  memset (sizes, 0, n * sizeof (*sizes));
+ 
+  /* Compute costs.  */
+  i = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
+      if (!cnode)
+	{
+	  i++;
+	  continue;
+	}
+
+      ipa_size_summary *summary = ipa_size_summaries->get (cnode);
+      if (summary)
+	{
+	  int root = ds->find (i);
+	  sizes[root] += summary->size;
+	}
+      i++;
+    }
+
+  /* Compute the total size and maximum size.  */
+  for (i = 0; i < n; ++i)
+    {
+      total_size += sizes[i];
+      max_size    = MAX (max_size, sizes[i]);
+    }
+
+  /* Quick return if total size is small.  */
+  if (total_size < param_min_partition_size)
+    return false;
+
+  target_size = total_size / 8;
+
+  /* Unite small partitions.  */
+  for (i = 0, j = 0; j < n; ++j)
+    {
+      if (sizes[j] == 0)
+	continue;
+
+      if (i == -1)
+	i = j;
+      else
+	{
+	  if (sizes[i] + sizes[j] < target_size + eps)
+	    {
+	      ds->unite (i, j);
+	      sizes[i] += sizes[j];
+	      sizes[j] = 0;
+	    }
+	  else
+	      i = j;
+	}
+    }
+  return true;
+}
+
+/* Builds the LTRANS partitions, or return if not needed.  */
+
+static int
+build_ltrans_partitions (union_find *ds, int n)
+{
+  int i, n_partitions;
+  symtab_node *node;
+
+  int *compression = (int *) alloca (n * sizeof (*compression));
+  for (i = 0; i < n; ++i)
+    compression[i] = -1; /* Invalid value.  */
+
+  i = 0, n_partitions = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      int root = ds->find (i);
+      node->aux2 = root;
+      node->aux = NULL;
+
+      if (node->get_partitioning_class () == SYMBOL_PARTITION
+	  && compression[root] < 0)
+	compression[root] = n_partitions++;
+      i++;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "n_partitions = %d\n", n_partitions);
+
+  if (n_partitions <= 1)
+    return false;
+
+  /* Create LTRANS partitions.  */
+  ltrans_partitions.create (n_partitions);
+  for (i = 0; i < n_partitions; i++)
+    new_partition ("");
+
+  FOR_EACH_SYMBOL (node)
+    {
+      if (node->get_partitioning_class () != SYMBOL_PARTITION
+	  || symbol_partitioned_p (node))
+	  continue;
+
+      int p = compression[node->aux2];
+      if (dump_file)
+	fprintf (dump_file, "p = %d\t;; %s\n", p, node->dump_name ());
+      add_symbol_to_partition (ltrans_partitions[p], node);
+    }
+
+  return true;
+}
+
 /* Maximal partitioning with a restriction: Varnodes can't be let alone in a
    single partition, i.e. there must be at least one function adjacent to a
    varnode.  Complexity: (2|E| + |V|)*log*(|V|) + 2|V|.  */
@@ -766,6 +890,10 @@ lto_max_no_alonevap_map (void)
     }
 }
 
+/* Partition COMDAT groups together, and also bring together nodes that
+   requires them. Such nodes that are not in the COMDAT group that have
+   references to COMDAT grouped nodes are called the COMDAT frontier.  */
+
 static bool
 merge_comdat_nodes (symtab_node *node, int set)
 {
@@ -778,6 +906,7 @@ merge_comdat_nodes (symtab_node *node, int set)
   if (node->aux)
     return false;
 
+  /* Mark as analysed.  */
   node->aux = (void *) 1;
 
 
@@ -832,58 +961,88 @@ merge_comdat_nodes (symtab_node *node, int set)
   return ret;
 }
 
+/* Bring together static nodes that are called by static functions, so 
+   promotion of statics to globals are not required.  This *MIGHT* negatively
+   impact the number of partitions, and even generate very umbalanced
+   partitions that can't be fixed.  */
+
+static bool
+merge_static_calls (symtab_node *node, int set)
+{
+  bool ret = false;
+
+  if (node->aux)
+    return false;
+
+  node->aux = (void *) 1;
+
+  if (!TREE_PUBLIC (node->decl))
+    {
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	{
+	  for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
+	    {
+	      if (e->inline_failed)
+		{
+		  ds->unite (node->aux2, e->caller->aux2);
+		  merge_static_calls (e->caller, set);
+		  ret = true;
+		}
+	    }
+
+	}
+      else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
+	{
+	  int i;
+	  struct ipa_ref *ref = NULL;
+	  for (i = 0; vnode->iterate_referring (i, ref); ++i)
+	    {
+	      symtab_node *node1 = ref->referring;
+	      ds->unite (node1->aux2, set);
+	      ret = true;
+	    }
+
+	}
+    }
+
+  return ret;
+}
+
+/* Partition the program into several partitions with a restriction that
+   COMDATS are partitioned together with all nodes requiring them.  If
+   promote_statics is false, we also partition together static functions
+   and nodes that call eachother, so non-public functions are not promoted
+   to globals.  */
+
 void
-lto_merge_comdat_map (void)
+lto_merge_comdat_map (bool balance, bool promote_statics)
 {
   symtab_node *node;
-  int n_partitions = 0, i, n = 0, j = 0;
-  int *compression;
+  int n = 0;
 
+  /* Initialize each not into its own distinct disjoint sets.  */
   FOR_EACH_SYMBOL (node)
     node->aux2 = n++;
 
   union_find disjoint_sets = union_find (n);
   ds = &disjoint_sets;
 
-  compression = (int *) alloca (n * sizeof (*compression));
-  for (i = 0; i < n; ++i)
-    compression[i] = -1; /* Invalid value.  */
-
-
+  /* First look at COMDATs.  */
   FOR_EACH_SYMBOL (node)
     if (node->same_comdat_group)
       merge_comdat_nodes (node, node->aux2);
 
+  /* Then look at STATICs, if needed.  */
+  if (!promote_statics)
+    FOR_EACH_SYMBOL (node)
+      if (!TREE_PUBLIC (node->decl))
+	merge_static_calls (node, node->aux2);
 
-  i = 0, j = 0;
-  FOR_EACH_SYMBOL (node)
-    {
-      int root = disjoint_sets.find (i);
-      node->aux2 = root;
-      node->aux = NULL;
+  if (balance)
+    if (!balance_partitions (&disjoint_sets, n))
+      return;
 
-      if (node->get_partitioning_class () == SYMBOL_PARTITION
-	  && compression[root] < 0)
-	compression[root] = j++;
-      i++;
-    }
-
-  n_partitions = j;
-
-  /* Create LTRANS partitions.  */
-  ltrans_partitions.create (n_partitions);
-  for (i = 0; i < n_partitions; i++)
-    new_partition ("");
-
-  FOR_EACH_SYMBOL (node)
-    {
-      if (node->get_partitioning_class () != SYMBOL_PARTITION
-	  || symbol_partitioned_p (node))
-	  continue;
-
-      int p = compression[node->aux2];
-      add_symbol_to_partition (ltrans_partitions[p], node);
-    }
+  build_ltrans_partitions (&disjoint_sets, n);
 }
 
 

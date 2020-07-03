@@ -2656,6 +2656,8 @@ ipa_passes (void)
 
       if (split_outputs)
 	{
+	  bool promote_statics = true;
+
 	  /* Trick the compiler to think that we are in WPA.  */
 	  flag_wpa = "";
 	  symtab_node::checking_verify_symtab_nodes ();
@@ -2663,7 +2665,7 @@ ipa_passes (void)
 	  /* Map with a restriction of varpool nodes be in the same partition
 	     if functions that have references to them.  */
 	  //lto_max_no_alonevap_map ();
-	  lto_merge_comdat_map ();
+	  lto_merge_comdat_map (false, promote_statics);
 
 	  /* AUX pointers are used by partitioning code to bookkeep number of
 	     partitions symbol is in.  This is no longer needed.  */
@@ -2681,7 +2683,7 @@ ipa_passes (void)
 	  /* Find out statics that need to be promoted
 	     to globals with hidden visibility because they are accessed from
 	     multiple partitions.  */
-	  lto_promote_cross_file_statics (true);
+	  lto_promote_cross_file_statics (promote_statics);
 
 	  /* Check if we have variables being referenced across partitions.  */
 	  lto_check_usage_from_other_partitions ();

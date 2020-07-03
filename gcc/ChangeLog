@@ -1,3 +1,12 @@
+2020-07-02  Giuliano Belinass  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Update ipa_passes.
+	* lto-partition.c (balance_partitions): New function.
+	* (merge_comdat_nodes): New function.
+	* (merge_static_calls): New function.
+	* (lto_merge_comdat_map): Refactor.
+	* lto-partition.h: Update lto_merge_comdat_map.
+
 2020-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (ipa_passes): Call lto_merge_comdat_map.
