@@ -10,7 +10,7 @@ __attribute__ ((__nothrow__));
 
 void foo () throw ()
 {
-  strftime (0,0,0,0); // { dg-warning "null argument where non-null required" }
+  strftime (0,0,0,0); // { dg-warning "argument \(1|3|4\) null where non-null expected" }
   // { dg-warning "too many arguments for format" "" { target *-*-* } .-1 }
 }
 

@@ -63,7 +63,7 @@ int main ()
     bar ();
     if (called_fs_op != 1 || called_lambda != 1)
       {
-        PRINT ("Failed to call one of the initial_suspend cases");
+        PRINT ("Failed to call one of the final_suspend cases");
         abort ();
       }
 }

@@ -128,7 +128,7 @@ package body Debug is
    --  d.H
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
-   --  d.K
+   --  d.K  Do not reject components in extensions overlapping with parent
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -897,6 +897,11 @@ package body Debug is
    --       if it applies to a body. This switch disables the legality check
    --       for that. If the procedure does in fact return normally, execution
    --       is erroneous, and therefore unpredictable.
+
+   --  d.K  Do not reject components in extensions overlapping with the parent
+   --       component. Such components can be specified by means of a component
+   --       clause but they cannot be fully supported by the GCC type system.
+   --       This switch nevertheless allows them for the sake of compatibility.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special

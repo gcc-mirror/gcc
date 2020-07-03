@@ -493,6 +493,50 @@
   DONE;
 })
 
+(define_insn "popcount<mode>2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(popcount:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tpopc.b%T1\\t%0, %1;")
+
+;; Multiplication variants
+
+(define_insn "mulhisi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "nvptx_register_operand" "R"))
+		 (sign_extend:SI
+		  (match_operand:HI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.s16\\t%0, %1, %2;")
+
+(define_insn "mulsidi3"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(mult:DI (sign_extend:DI
+		  (match_operand:SI 1 "nvptx_register_operand" "R"))
+		 (sign_extend:DI
+		  (match_operand:SI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.s32\\t%0, %1, %2;")
+
+(define_insn "umulhisi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "nvptx_register_operand" "R"))
+		 (zero_extend:SI
+		  (match_operand:HI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.u16\\t%0, %1, %2;")
+
+(define_insn "umulsidi3"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(mult:DI (zero_extend:DI
+		  (match_operand:SI 1 "nvptx_register_operand" "R"))
+		 (zero_extend:DI
+		  (match_operand:SI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.u32\\t%0, %1, %2;")
+
 ;; Shifts
 
 (define_insn "ashl<mode>3"

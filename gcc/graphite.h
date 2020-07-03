@@ -23,22 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GRAPHITE_POLY_H
 
 #include "sese.h"
-#include <isl/options.h>
-#include <isl/ctx.h>
-#include <isl/val.h>
-#include <isl/set.h>
-#include <isl/union_set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/aff.h>
-#include <isl/constraint.h>
-#include <isl/flow.h>
-#include <isl/ilp.h>
-#include <isl/schedule.h>
-#include <isl/ast_build.h>
-#include <isl/schedule_node.h>
-#include <isl/id.h>
-#include <isl/space.h>
 
 typedef struct poly_dr *poly_dr_p;
 

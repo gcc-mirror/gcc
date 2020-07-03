@@ -1938,6 +1938,8 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
   if (!fntype)
     return;
 
+  auto_diagnostic_group adg;
+
   /* A string describing the attributes that the warnings issued by this
      function apply to.  Used to print one informational note per function
      call, rather than one per warning.  That reduces clutter.  */
@@ -2036,7 +2038,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
 	     attribute nonnull when the function accepts null pointers
 	     only when the corresponding size is zero.  */
 	  bool warned = false;
-	  location_t loc = EXPR_LOCATION (exp);
+	  const location_t loc = EXPR_LOC_OR_LOC (ptr, EXPR_LOCATION (exp));
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
 	    warned = warning_at (loc, OPT_Wnonnull,
 				 "%Kargument %i is null but the corresponding "

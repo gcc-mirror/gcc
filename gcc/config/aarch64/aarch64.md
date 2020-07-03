@@ -7230,36 +7230,20 @@
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
-;; Write Floating-point Control Register.
-(define_insn "set_fpcr"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPCR)]
+;; Write into the Floating-point Status or Control Register.
+(define_insn "@aarch64_set_<fpscr_name><GPI:mode>"
+  [(unspec_volatile [(match_operand:GPI 0 "register_operand" "r")] SET_FPSCR)]
   ""
-  "msr\\tfpcr, %0"
+  "msr\\t<fpscr_name>, %0"
   [(set_attr "type" "mrs")])
 
-;; Read Floating-point Control Register.
-(define_insn "get_fpcr"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPCR))]
+;; Read into the Floating-point Status or Control Register.
+(define_insn "@aarch64_get_<fpscr_name><GPI:mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (unspec_volatile:GPI [(const_int 0)] GET_FPSCR))]
   ""
-  "mrs\\t%0, fpcr"
+  "mrs\\t%0, <fpscr_name>"
   [(set_attr "type" "mrs")])
-
-;; Write Floating-point Status Register.
-(define_insn "set_fpsr"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPSR)]
-  ""
-  "msr\\tfpsr, %0"
-  [(set_attr "type" "mrs")])
-
-;; Read Floating-point Status Register.
-(define_insn "get_fpsr"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPSR))]
-  ""
-  "mrs\\t%0, fpsr"
-  [(set_attr "type" "mrs")])
-
 
 ;; Define the subtract-one-and-jump insns so loop.c
 ;; knows what to generate.

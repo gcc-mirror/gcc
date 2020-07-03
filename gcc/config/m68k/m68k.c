@@ -1946,7 +1946,7 @@ m68k_output_btst (rtx countop, rtx dataop, rtx_code code, int signpos)
 
   if (GET_CODE (countop) == CONST_INT)
     {
-      register int count = INTVAL (countop);
+      int count = INTVAL (countop);
       /* If COUNT is bigger than size of storage unit in use,
 	 advance to the containing unit of same size.  */
       if (count > signpos)
@@ -3850,9 +3850,9 @@ fp_reg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 int
 emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 {
-  register rtx operand0 = operands[0];
-  register rtx operand1 = operands[1];
-  register rtx tem;
+  rtx operand0 = operands[0];
+  rtx operand1 = operands[1];
+  rtx tem;
 
   if (scratch_reg
       && reload_in_progress && GET_CODE (operand0) == REG
@@ -5474,7 +5474,7 @@ output_andsi3 (rtx *operands)
 const char *
 output_iorsi3 (rtx *operands)
 {
-  register int logval;
+  int logval;
   CC_STATUS_INIT;
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) >> 16 == 0
@@ -5513,7 +5513,7 @@ output_iorsi3 (rtx *operands)
 const char *
 output_xorsi3 (rtx *operands)
 {
-  register int logval;
+  int logval;
   CC_STATUS_INIT;
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) >> 16 == 0

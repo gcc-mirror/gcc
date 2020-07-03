@@ -703,7 +703,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// is_literal_type
   template<typename _Tp>
-    struct is_literal_type
+    struct
+    _GLIBCXX17_DEPRECATED
+    is_literal_type
     : public integral_constant<bool, __is_literal_type(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
@@ -3085,10 +3087,11 @@ template <typename _Tp>
 template <typename _Tp>
   _GLIBCXX20_DEPRECATED("use is_standard_layout_v && is_trivial_v instead")
   inline constexpr bool is_pod_v = is_pod<_Tp>::value;
-#pragma GCC diagnostic pop
 template <typename _Tp>
+  _GLIBCXX17_DEPRECATED
   inline constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;
-template <typename _Tp>
+#pragma GCC diagnostic pop
+ template <typename _Tp>
   inline constexpr bool is_empty_v = is_empty<_Tp>::value;
 template <typename _Tp>
   inline constexpr bool is_polymorphic_v = is_polymorphic<_Tp>::value;

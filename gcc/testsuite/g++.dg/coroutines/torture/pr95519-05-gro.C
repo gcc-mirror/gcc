@@ -46,13 +46,13 @@ int main ()
   foo (f);
   if (f.done())
     {
-      PRINT ("unexptected finished f coro");
+      PRINT ("unexpected finished foo coro");
       abort ();
    }
   f.resume();
   if (!f.done())
     {
-      PRINT ("expected f to be finished");
+      PRINT ("expected foo to be finished");
       abort ();
    }
 

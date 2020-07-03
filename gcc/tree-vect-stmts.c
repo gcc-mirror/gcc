@@ -1315,29 +1315,7 @@ vect_init_vector_1 (vec_info *vinfo, stmt_vec_info stmt_vinfo, gimple *new_stmt,
   if (gsi)
     vect_finish_stmt_generation (vinfo, stmt_vinfo, new_stmt, gsi);
   else
-    {
-      loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-
-      if (loop_vinfo)
-        {
-	  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-	  basic_block new_bb;
-	  edge pe;
-
-	  if (stmt_vinfo && nested_in_vect_loop_p (loop, stmt_vinfo))
-	    loop = loop->inner;
-
-	  pe = loop_preheader_edge (loop);
-          new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
-          gcc_assert (!new_bb);
-	}
-      else
-       {
-          bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
-	  gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
-	  gsi_insert_before (&gsi_region_begin, new_stmt, GSI_SAME_STMT);
-       }
-    }
+    vinfo->insert_on_entry (stmt_vinfo, new_stmt);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -1592,6 +1570,7 @@ vect_finish_stmt_generation (vec_info *vinfo,
 	{
 	  tree vdef = gimple_vdef (at_stmt);
 	  gimple_set_vuse (vec_stmt, gimple_vuse (at_stmt));
+	  gimple_set_modified (vec_stmt, true);
 	  /* If we have an SSA vuse and insert a store, update virtual
 	     SSA form to avoid triggering the renamer.  Do so only
 	     if we can easily see all uses - which is what almost always
@@ -5403,7 +5382,7 @@ vectorizable_shift (vec_info *vinfo,
 	      if (!op1_vectype)
 		op1_vectype = get_vectype_for_scalar_type (vinfo,
 							   TREE_TYPE (op1),
-							   slp_node);
+							   slp_op1);
 
               /* Unlike the other binary operators, shifts/rotates have
                  the rhs being int, instead of the same type as the lhs,
@@ -5575,11 +5554,11 @@ vectorizable_shift (vec_info *vinfo,
   /* Arguments are ready.  Create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
     {
-      vop1 = vec_oprnds1[i];
       /* For internal defs where we need to use a scalar shift arg
 	 extract the first lane.  */
       if (scalar_shift_arg && dt[1] == vect_internal_def)
 	{
+	  vop1 = vec_oprnds1[0];
 	  new_temp = make_ssa_name (TREE_TYPE (TREE_TYPE (vop1)));
 	  gassign *new_stmt
 	    = gimple_build_assign (new_temp,
@@ -5590,6 +5569,8 @@ vectorizable_shift (vec_info *vinfo,
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	  vop1 = new_temp;
 	}
+      else
+	vop1 = vec_oprnds1[i];
       gassign *new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
@@ -11257,6 +11238,7 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
     }
   else
     {
+      *slp_def = NULL;
       if (gassign *ass = dyn_cast <gassign *> (stmt->stmt))
 	{
 	  if (gimple_assign_rhs_code (ass) == COND_EXPR

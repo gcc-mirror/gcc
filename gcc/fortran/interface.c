@@ -1257,7 +1257,7 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 
   while (f1)
     {
-      if (f1->sym->attr.optional)
+      if (!f1->sym || f1->sym->attr.optional)
 	goto next;
 
       if (p1 && strcmp (f1->sym->name, p1) == 0)

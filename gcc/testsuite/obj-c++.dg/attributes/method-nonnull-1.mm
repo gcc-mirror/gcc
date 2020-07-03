@@ -39,12 +39,12 @@ typedef __SIZE_TYPE__ my_size_t;
 void test (MyArray *object)
 {
   [object addObject: object];
-  [object addObject: nil]; /* { dg-warning "null argument where non-null required" } */
+  [object addObject: nil]; /* { dg-warning "\\\[-Wnonnull" } */
 
   [object insertObject: object atIndex: 4];
-  [object insertObject: nil    atIndex: 4]; /* { dg-warning "null argument where non-null required" } */
+  [object insertObject: nil    atIndex: 4]; /* { dg-warning "\\\[-Wnonnull" } */
 
   [object insertObject: object atIndex: 2 andObject: object atIndex: 3];
-  [object insertObject: nil    atIndex: 2 andObject: object atIndex: 3]; /* { dg-warning "null argument where non-null required" } */
-  [object insertObject: object atIndex: 2 andObject: nil    atIndex: 3]; /* { dg-warning "null argument where non-null required" } */
+  [object insertObject: nil    atIndex: 2 andObject: object atIndex: 3]; /* { dg-warning "\\\[-Wnonnull" } */
+  [object insertObject: object atIndex: 2 andObject: nil    atIndex: 3]; /* { dg-warning "\\\[-Wnonnull" } */
 }

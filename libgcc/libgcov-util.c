@@ -57,12 +57,12 @@ void gcov_set_verbose (void)
 #include <ftw.h>
 #endif
 
-static void tag_function (unsigned, unsigned);
-static void tag_blocks (unsigned, unsigned);
-static void tag_arcs (unsigned, unsigned);
-static void tag_lines (unsigned, unsigned);
-static void tag_counters (unsigned, unsigned);
-static void tag_summary (unsigned, unsigned);
+static void tag_function (unsigned, int);
+static void tag_blocks (unsigned, int);
+static void tag_arcs (unsigned, int);
+static void tag_lines (unsigned, int);
+static void tag_counters (unsigned, int);
+static void tag_summary (unsigned, int);
 
 /* The gcov_info for the first module.  */
 static struct gcov_info *curr_gcov_info;
@@ -117,7 +117,7 @@ typedef struct tag_format
 {
     unsigned tag;
     char const *name;
-    void (*proc) (unsigned, unsigned);
+    void (*proc) (unsigned, int);
 } tag_format_t;
 
 /* Handler table for various Tags.  */
@@ -138,7 +138,7 @@ static const tag_format_t tag_table[] =
 /* Handler for reading function tag.  */
 
 static void
-tag_function (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_function (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   int i;
 
@@ -171,7 +171,7 @@ tag_function (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading block tag.  */
 
 static void
-tag_blocks (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_blocks (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   /* TBD: gcov-tool currently does not handle gcno files. Assert here.  */
   gcc_unreachable ();
@@ -180,7 +180,7 @@ tag_blocks (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading flow arc tag.  */
 
 static void
-tag_arcs (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_arcs (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   /* TBD: gcov-tool currently does not handle gcno files. Assert here.  */
   gcc_unreachable ();
@@ -189,7 +189,7 @@ tag_arcs (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading line tag.  */
 
 static void
-tag_lines (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_lines (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   /* TBD: gcov-tool currently does not handle gcno files. Assert here.  */
   gcc_unreachable ();
@@ -198,9 +198,9 @@ tag_lines (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading counters array tag with value as TAG and length of LENGTH.  */
 
 static void
-tag_counters (unsigned tag, unsigned length)
+tag_counters (unsigned tag, int length)
 {
-  unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
+  unsigned n_counts = GCOV_TAG_COUNTER_NUM (abs (length));
   gcov_type *values;
   unsigned ix;
   unsigned tag_ix;
@@ -211,17 +211,19 @@ tag_counters (unsigned tag, unsigned length)
   gcc_assert (k_ctrs[tag_ix].num == 0);
   k_ctrs[tag_ix].num = n_counts;
 
-  k_ctrs[tag_ix].values = values = (gcov_type *) xmalloc (n_counts * sizeof (gcov_type));
+  k_ctrs[tag_ix].values = values = (gcov_type *) xcalloc (sizeof (gcov_type),
+							  n_counts);
   gcc_assert (values);
 
-  for (ix = 0; ix != n_counts; ix++)
-    values[ix] = gcov_read_counter ();
+  if (length > 0)
+    for (ix = 0; ix != n_counts; ix++)
+      values[ix] = gcov_read_counter ();
 }
 
 /* Handler for reading summary tag.  */
 
 static void
-tag_summary (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_summary (unsigned tag ATTRIBUTE_UNUSED, int ATTRIBUTE_UNUSED)
 {
   gcov_read_summary (&curr_gcov_info->summary);
 }
@@ -320,7 +322,8 @@ read_gcda_file (const char *filename)
       tag = gcov_read_unsigned ();
       if (!tag)
         break;
-      length = gcov_read_unsigned ();
+      int read_length = (int)gcov_read_unsigned ();
+      length = read_length > 0 ? read_length : 0;
       base = gcov_position ();
       mask = GCOV_TAG_MASK (tag) >> 1;
       for (tag_depth = 4; mask; mask >>= 8)
@@ -353,7 +356,7 @@ read_gcda_file (const char *filename)
         {
           unsigned long actual_length;
 
-          (*format->proc) (tag, length);
+	  (*format->proc) (tag, read_length);
 
           actual_length = gcov_position () - base;
           if (actual_length > length)

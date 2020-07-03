@@ -2931,7 +2931,7 @@ void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
 const char *gfc_basic_typename (bt);
 const char *gfc_dummy_typename (gfc_typespec *);
-const char *gfc_typename (gfc_typespec *);
+const char *gfc_typename (gfc_typespec *, bool for_hash = false);
 const char *gfc_typename (gfc_expr *);
 const char *gfc_op2string (gfc_intrinsic_op);
 const char *gfc_code2string (const mstring *, int);

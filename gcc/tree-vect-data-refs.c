@@ -1722,7 +1722,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   dr_vec_info *first_store = NULL;
   dr_vec_info *dr0_info = NULL;
   struct data_reference *dr;
-  unsigned int i, j;
+  unsigned int i;
   bool do_peeling = false;
   bool do_versioning = false;
   unsigned int npeel = 0;
@@ -1730,9 +1730,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool one_misalignment_unknown = false;
   bool one_dr_unsupportable = false;
   dr_vec_info *unsupportable_dr_info = NULL;
-  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  unsigned possible_npeel_number = 1;
-  tree vectype;
   unsigned int mis, same_align_drs_max = 0;
   hash_table<peel_info_hasher> peeling_htab (1);
 
@@ -1792,7 +1789,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      bool negative = tree_int_cst_compare (DR_STEP (dr),
 						    size_zero_node) < 0;
 
-	      vectype = STMT_VINFO_VECTYPE (stmt_info);
 	      /* If known_alignment_for_access_p then we have set
 	         DR_MISALIGNMENT which is only done if we know it at compiler
 	         time, so it is safe to assume target alignment is constant.
@@ -1819,22 +1815,17 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  vectorization factor.
                  We do this automatically for cost model, since we calculate
 		 cost for every peeling option.  */
+	      poly_uint64 nscalars = npeel_tmp;
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
-		  poly_uint64 nscalars = (STMT_SLP_TYPE (stmt_info)
-					  ? vf * DR_GROUP_SIZE (stmt_info) : vf);
-		  possible_npeel_number
-		    = vect_get_num_vectors (nscalars, vectype);
-
-		  /* NPEEL_TMP is 0 when there is no misalignment, but also
-		     allow peeling NELEMENTS.  */
-		  if (DR_MISALIGNMENT (dr_info) == 0)
-		    possible_npeel_number++;
+		  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+		  nscalars = (STMT_SLP_TYPE (stmt_info)
+			      ? vf * DR_GROUP_SIZE (stmt_info) : vf);
 		}
 
 	      /* Save info about DR in the hash table.  Also include peeling
 	         amounts according to the explanation above.  */
-              for (j = 0; j < possible_npeel_number; j++)
+	      while (known_le (npeel_tmp, nscalars))
                 {
                   vect_peeling_hash_insert (&peeling_htab, loop_vinfo,
 					    dr_info, npeel_tmp);
@@ -2059,8 +2050,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   if (do_peeling)
     {
       stmt_vec_info stmt_info = dr0_info->stmt;
-      vectype = STMT_VINFO_VECTYPE (stmt_info);
-
       if (known_alignment_for_access_p (dr0_info))
         {
 	  bool negative = tree_int_cst_compare (DR_STEP (dr0_info->dr),

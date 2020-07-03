@@ -18,7 +18,7 @@ contains
 
     allocate (tm) ! { dg-bogus "dereference of possibly-NULL" }
     ce => tm
-  end function hv
+  end function hv ! { dg-warning "leak of 'tm'" }
 
 end module gg
 

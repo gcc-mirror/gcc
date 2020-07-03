@@ -1682,6 +1682,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else if (DECL_TYPE_TEMPLATE_P (olddecl)
 	       || DECL_TYPE_TEMPLATE_P (newdecl))
 	/* Class template conflicts.  */;
+      else if ((TREE_CODE (olddecl) == TEMPLATE_DECL
+		&& DECL_TEMPLATE_RESULT (olddecl)
+		&& TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == VAR_DECL)
+	       || (TREE_CODE (newdecl) == TEMPLATE_DECL
+		   && DECL_TEMPLATE_RESULT (newdecl)
+		   && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == VAR_DECL))
+	/* Variable template conflicts.  */;
+      else if (concept_definition_p (olddecl)
+	       || concept_definition_p (newdecl))
+	/* Concept conflicts.  */;
       else if ((TREE_CODE (newdecl) == FUNCTION_DECL
 		&& DECL_FUNCTION_TEMPLATE_P (olddecl))
 	       || (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -1704,7 +1714,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      " literal operator template", newdecl);
 	  else
 	    return NULL_TREE;
-	  
+
 	  inform (olddecl_loc, "previous declaration %q#D", olddecl);
 	  return error_mark_node;
 	}
@@ -9595,15 +9605,6 @@ grokfndecl (tree ctype,
 		       "arguments and isn%'t a definition", decl);
 	    break;
 	  }
-    }
-
-  /* FIXME: For now.  */
-  if (virtualp && (inlinep & 8) != 0)
-    {
-      sorry_at (DECL_SOURCE_LOCATION (decl),
-		"%<virtual%> %<consteval%> method %qD not supported yet",
-		decl);
-      inlinep &= ~8;
     }
 
   /* If this decl has namespace scope, set that up.  */

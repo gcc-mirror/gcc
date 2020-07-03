@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "fold-const.h"
 
 /* Given LATCH, the latch block in a loop, see if the shape of the
    path reaching LATCH is suitable for being split by duplication.
@@ -249,6 +250,44 @@ is_feasible_trace (basic_block bb)
 				 bb->index);
 		      return false;
 		    }
+		}
+	    }
+	}
+    }
+
+  /* Canonicalize the form.  */
+  if (single_pred_p (pred1) && single_pred (pred1) == pred2
+      && num_stmts_in_pred1 == 0)
+    std::swap (pred1, pred2);
+
+  /* This is meant to catch another kind of cases that are likely opportunities
+     for if-conversion.  After canonicalizing, PRED2 must be an empty block and
+     PRED1 must be the only predecessor of PRED2.  Moreover, PRED1 is supposed
+     to end with a cond_stmt which has the same args with the PHI in BB.  */
+  if (single_pred_p (pred2) && single_pred (pred2) == pred1
+      && num_stmts_in_pred2 == 0)
+    {
+      gimple *cond_stmt = last_stmt (pred1);
+      if (cond_stmt && gimple_code (cond_stmt) == GIMPLE_COND)
+	{
+	  tree lhs = gimple_cond_lhs (cond_stmt);
+	  tree rhs = gimple_cond_rhs (cond_stmt);
+
+	  gimple_stmt_iterator gsi;
+	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *phi = gsi_stmt (gsi);
+	      if ((operand_equal_p (gimple_phi_arg_def (phi, 0), lhs)
+		   && operand_equal_p (gimple_phi_arg_def (phi, 1), rhs))
+		  || (operand_equal_p (gimple_phi_arg_def (phi, 0), rhs)
+		      && (operand_equal_p (gimple_phi_arg_def (phi, 1), lhs))))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "Block %d appears to be optimized to a join "
+			     "point for if-convertable half-diamond.\n",
+			     bb->index);
+		  return false;
 		}
 	    }
 	}

@@ -10,6 +10,6 @@ struct S2 { static const int i = 1; typedef void* U; };
 void
 g ()
 {
-  f<S1>(0); // { dg-warning "null argument where non-null required" }
-  f<S2>(0); // { dg-warning "null argument where non-null required" }
+  f<S1>(0); // { dg-warning "argument 1 null where non-null expected" }
+  f<S2>(0); // { dg-warning "argument 1 null where non-null expected" }
 }

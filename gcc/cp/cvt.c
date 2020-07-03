@@ -1000,12 +1000,11 @@ cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
   if (fold)
     fn = maybe_constant_init (fn);
   STRIP_NOPS (fn);
-  if (TREE_CODE (fn) == ADDR_EXPR)
-    {
-      fn = TREE_OPERAND (fn, 0);
-      if (TREE_CODE (fn) == FUNCTION_DECL)
-	return fn;
-    }
+  if (TREE_CODE (fn) == ADDR_EXPR
+      || TREE_CODE (fn) == FDESC_EXPR)
+    fn = TREE_OPERAND (fn, 0);
+  if (TREE_CODE (fn) == FUNCTION_DECL)
+    return fn;
   return NULL_TREE;
 }
 

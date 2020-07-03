@@ -995,7 +995,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr=201907L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
-	  /* cpp_define (pfile, "__cpp_consteval=201811L"); */
+	  cpp_define (pfile, "__cpp_consteval=201811L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
 	  cpp_define (pfile, "__cpp_deduction_guides=201907L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");

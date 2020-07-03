@@ -124,8 +124,8 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-c}|@option{--branch-counts}]
      [@option{-d}|@option{--display-progress}]
      [@option{-f}|@option{--function-summaries}]
-     [@option{-i}|@option{--json-format}]
-     [@option{-j}|@option{--human-readable}]
+     [@option{-j}|@option{--json-format}]
+     [@option{-H}|@option{--human-readable}]
      [@option{-k}|@option{--use-colors}]
      [@option{-l}|@option{--long-file-names}]
      [@option{-m}|@option{--demangled-names}]
@@ -180,7 +180,7 @@ Output summaries for each function in addition to the file level summary.
 Display help about using @command{gcov} (on the standard output), and
 exit without doing any further processing.
 
-@item -i
+@item -j
 @itemx --json-format
 Output gcov file in an easy-to-parse JSON intermediate format
 which does not require source code for generation.  The JSON
@@ -339,7 +339,7 @@ Fields of the @var{branch} element have following semantics:
 @var{throw}: true when the branch is an exceptional branch
 @end itemize
 
-@item -j
+@item -H
 @itemx --human-readable
 Write counts in human readable format (like 24.6k).
 

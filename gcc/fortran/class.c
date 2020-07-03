@@ -564,7 +564,7 @@ unsigned int
 gfc_intrinsic_hash_value (gfc_typespec *ts)
 {
   unsigned int hash = 0;
-  const char *c = gfc_typename (ts);
+  const char *c = gfc_typename (ts, true);
   int i, len;
 
   len = strlen (c);
@@ -2275,6 +2275,9 @@ gfc_find_derived_vtab (gfc_symbol *derived)
     derived = gfc_get_derived_super_type (derived);
 
   if (!derived)
+    return NULL;
+
+  if (!derived->name)
     return NULL;
 
   /* Find the gsymbol for the module of use associated derived types.  */

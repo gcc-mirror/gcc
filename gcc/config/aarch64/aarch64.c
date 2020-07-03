@@ -1429,6 +1429,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { "arm_sve_vector_bits", 1, 1, false, true,  false, true,
 			  aarch64_sve::handle_arm_sve_vector_bits_attribute,
 			  NULL },
+  { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
@@ -10832,39 +10833,25 @@ aarch64_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
   return get_hard_reg_initial_val (Pmode, LR_REGNUM);
 }
 
-
 static void
 aarch64_asm_trampoline_template (FILE *f)
 {
-  int offset1 = 16;
-  int offset2 = 20;
-
-  if (aarch64_bti_enabled ())
-    {
-      asm_fprintf (f, "\thint\t34 // bti c\n");
-      offset1 -= 4;
-      offset2 -= 4;
-    }
+  /* Even if the current function doesn't have branch protection, some
+     later function might, so since this template is only generated once
+     we have to add a BTI just in case. */
+  asm_fprintf (f, "\thint\t34 // bti c\n");
 
   if (TARGET_ILP32)
     {
-      asm_fprintf (f, "\tldr\tw%d, .+%d\n", IP1_REGNUM - R0_REGNUM, offset1);
-      asm_fprintf (f, "\tldr\tw%d, .+%d\n", STATIC_CHAIN_REGNUM - R0_REGNUM,
-		   offset1);
+      asm_fprintf (f, "\tldr\tw%d, .+12\n", IP1_REGNUM - R0_REGNUM);
+      asm_fprintf (f, "\tldr\tw%d, .+12\n", STATIC_CHAIN_REGNUM - R0_REGNUM);
     }
   else
     {
-      asm_fprintf (f, "\tldr\t%s, .+%d\n", reg_names [IP1_REGNUM], offset1);
-      asm_fprintf (f, "\tldr\t%s, .+%d\n", reg_names [STATIC_CHAIN_REGNUM],
-		   offset2);
+      asm_fprintf (f, "\tldr\t%s, .+12\n", reg_names [IP1_REGNUM]);
+      asm_fprintf (f, "\tldr\t%s, .+16\n", reg_names [STATIC_CHAIN_REGNUM]);
     }
   asm_fprintf (f, "\tbr\t%s\n", reg_names [IP1_REGNUM]);
-
-  /* The trampoline needs an extra padding instruction.  In case if BTI is
-     enabled the padding instruction is replaced by the BTI instruction at
-     the beginning.  */
-  if (!aarch64_bti_enabled ())
-    assemble_aligned_integer (4, const0_rtx);
 
   assemble_aligned_integer (POINTER_BYTES, const0_rtx);
   assemble_aligned_integer (POINTER_BYTES, const0_rtx);
@@ -22721,8 +22708,18 @@ aarch64_simd_clone_usable (struct cgraph_node *node)
 static int
 aarch64_comp_type_attributes (const_tree type1, const_tree type2)
 {
-  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type1))
-      != lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type2)))
+  auto check_attr = [&](const char *name) {
+    tree attr1 = lookup_attribute (name, TYPE_ATTRIBUTES (type1));
+    tree attr2 = lookup_attribute (name, TYPE_ATTRIBUTES (type2));
+    if (!attr1 && !attr2)
+      return true;
+
+    return attr1 && attr2 && attribute_value_equal (attr1, attr2);
+  };
+
+  if (!check_attr ("aarch64_vector_pcs"))
+    return 0;
+  if (!check_attr ("Advanced SIMD type"))
     return 0;
   return 1;
 }

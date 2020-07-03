@@ -42,6 +42,34 @@ proc dump-base { args } {
     return $dumpbase
 }
 
+# Expand dump file name pattern to exactly one file.
+# Return a single dump file name or an empty string
+# if the pattern matches no file or more than one file.
+#
+# Argument 0 is the testcase name
+# Argument 1 is the dump file glob pattern
+proc glob-dump-file { args } {
+
+    set pattern [lindex $args 1]
+    set dump_file "[glob -nocomplain $pattern]"
+    set num_files [llength $dump_file]
+
+    if { $num_files != 1 } {
+	set testcase [lindex $args 0]
+	if { $num_files == 0 } {
+	    verbose -log "$testcase: dump file does not exist"
+	}
+
+	if { $num_files > 1 } {
+	    verbose -log "$testcase: multiple dump files found"
+	}
+
+	return
+    }
+
+    return $dump_file
+}
+
 # Utility for scanning compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
 #
@@ -70,10 +98,10 @@ proc scan-dump { args } {
     set testname "$testcase scan-[lindex $args 0]-dump $suf \"$printable_pattern\""
     set src [file tail $filename]
     set dumpbase [dump-base $src [lindex $args 3]]
-    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
+
+    set pattern "$dumpbase.[lindex $args 2]"
+    set output_file "[glob-dump-file $testcase $pattern]"
     if { $output_file == "" } {
-	verbose -log "$testcase: dump file does not exist"
-	verbose -log "dump file: $dumpbase.$suf"
 	unresolved "$testname"
 	return
     }
@@ -116,9 +144,10 @@ proc scan-dump-times { args } {
     set testname "$testcase scan-[lindex $args 0]-dump-times $suf \"$printable_pattern\" [lindex $args 2]"
     set src [file tail $filename]
     set dumpbase [dump-base $src [lindex $args 4]]
-    set output_file "[glob -nocomplain $dumpbase.[lindex $args 3]]"
+
+    set pattern "$dumpbase.[lindex $args 3]"
+    set output_file "[glob-dump-file $testcase $pattern]"
     if { $output_file == "" } {
-	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
 	return
     }
@@ -162,9 +191,10 @@ proc scan-dump-not { args } {
     set testname "$testcase scan-[lindex $args 0]-dump-not $suf \"$printable_pattern\""
     set src [file tail $filename]
     set dumpbase [dump-base $src [lindex $args 3]]
-    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
+
+    set pattern "$dumpbase.[lindex $args 2]"
+    set output_file "[glob-dump-file $testcase $pattern]"
     if { $output_file == "" } {
-	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
 	return
     }
@@ -219,9 +249,10 @@ proc scan-dump-dem { args } {
     set testname "$testcase scan-[lindex $args 0]-dump-dem $suf \"$printable_pattern\""
     set src [file tail $filename]
     set dumpbase [dump-base $src [lindex $args 3]]
-    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
+
+    set pattern "$dumpbase.[lindex $args 2]"
+    set output_file "[glob-dump-file $testcase $pattern]"
     if { $output_file == "" } {
-	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
 	return
     }
@@ -275,9 +306,10 @@ proc scan-dump-dem-not { args } {
     set testname "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"$printable_pattern\""
     set src [file tail $filename]
     set dumpbase [dump-base $src [lindex $args 3]]
-    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
+
+    set pattern "$dumpbase.[lindex $args 2]"
+    set output_file "[glob-dump-file $testcase $pattern]"
     if { $output_file == "" } {
-	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
 	return
     }

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define USES_ISL
+#define INCLUDE_ISL
 
 #include "config.h"
 
@@ -46,15 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "domwalk.h"
 #include "tree-ssa-propagate.h"
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/constraint.h>
-#include <isl/aff.h>
-#include <isl/val.h>
-
 #include "graphite.h"
 
 /* Return an isl identifier for the polyhedral basic block PBB.  */

@@ -182,7 +182,6 @@ static void dfs_accumulate_vtbl_inits (tree, tree, tree, tree, tree,
 static void build_rtti_vtbl_entries (tree, vtbl_init_data *);
 static void build_vcall_and_vbase_vtbl_entries (tree, vtbl_init_data *);
 static void clone_constructors_and_destructors (tree);
-static tree build_clone (tree, tree, bool, bool);
 static void update_vtable_entry_for_fn (tree, tree, tree, tree *, unsigned);
 static void build_ctor_vtbl_group (tree, tree);
 static void build_vtt (tree);
@@ -4732,17 +4731,16 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
       DECL_VIRTUAL_P (clone) = 0;
       DECL_VINDEX (clone) = NULL_TREE;
     }
-
-  if (code != ERROR_MARK)
+  else if (code != ERROR_MARK)
     {
       /* Set the operator code.  */
       const ovl_op_info_t *ovl_op = OVL_OP_INFO (false, code);
       DECL_OVERLOADED_OPERATOR_CODE_RAW (clone) = ovl_op->ovl_op_code;
-    }
 
-  /* The operator could be virtual.  */
-  if (DECL_VIRTUAL_P (clone))
-    IDENTIFIER_VIRTUAL_P (name) = true;
+      /* The operator could be virtual.  */
+      if (DECL_VIRTUAL_P (clone))
+	IDENTIFIER_VIRTUAL_P (name) = true;
+   }
 
   if (omit_inherited_parms_p)
     gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (clone));
@@ -4932,14 +4930,13 @@ clone_cdtor (tree fn, bool update_methods, bool via_using)
     return;
 
   /* Base cdtors need a vtt parm if there are virtual bases.  */
-  bool needs_vtt_parm_p = CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn));
+  bool vtt = CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn));
 
   /* Base ctor omits inherited parms it needs a vttparm and inherited
      from a virtual nase ctor.  */
-  bool omit_inherited_parms_p = ctor_omit_inherited_parms (fn, false);
+  bool omit_inherited = ctor_omit_inherited_parms (fn, false);
 
-  unsigned count = build_cdtor_clones (fn,
-				       needs_vtt_parm_p, omit_inherited_parms_p);
+  unsigned count = build_cdtor_clones (fn, vtt, omit_inherited);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
