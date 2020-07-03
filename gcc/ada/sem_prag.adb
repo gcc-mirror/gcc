@@ -583,7 +583,7 @@ package body Sem_Prag is
       --  Otherwise the pragma is illegal
 
       else
-         Error_Msg_N ("wrong syntax for constract cases", N);
+         Error_Msg_N ("wrong syntax for contract cases", N);
       end if;
 
       Set_Is_Analyzed_Pragma (N);
