@@ -1,3 +1,26 @@
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93423
+	* resolve.c (resolve_symbol): Avoid NULL pointer dereference.
+
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93337
+	* class.c (gfc_find_derived_vtab): Punt if name is not set.
+
+2020-07-02  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/52279
+	* check.c (gfc_invalid_boz):  Change array declaration for
+	hint into a pointer.
+
+2020-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95584
+	* interface.c (generic_correspondence): Only use the pointer
+	to a symbol if exists.
+
 2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* check.c (gfc_invalid_boz): Fix bootstrap. Revert

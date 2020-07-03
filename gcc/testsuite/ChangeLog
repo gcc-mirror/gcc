@@ -1,3 +1,64 @@
+2020-07-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/pr95690.f90: Solaris error appears on line 5.
+
+2020-07-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr26570.c: dg-prune function not inlinable warning.
+
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93423
+	* gfortran.dg/pr93423.f90: New file.
+
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93337
+	* gfortran.dg/pr93337.f90: New file.
+
+2020-07-02  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/consteval-virtual1.C: New test.
+	* g++.dg/cpp2a/consteval-virtual2.C: New test.
+	* g++.dg/cpp2a/consteval-virtual3.C: New test.
+	* g++.dg/cpp2a/consteval-virtual4.C: New test.
+	* g++.dg/cpp2a/consteval-virtual5.C: New test.
+
+2020-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/95343
+	* gcc.dg/guality/pr95343.c: New test.
+
+2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95857
+	* gcc.dg/pr95857.c: New test.
+
+2020-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96022
+	* g++.dg/vect/pr96022.cc: New testcase.
+
+2020-07-02  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/95961
+	* gcc.target/aarch64/sve/pr95961.c: New test.
+
+2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-7.c: New test.
+
+2020-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95584
+	* gfortran.dg/pr95584.f90: New test.
+
+2020-07-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	* g++.dg/vect/slp-pr56812.cc: Ignore line number for basic block
+	vectorization messages.
+
 2020-07-01  Omar Tahir  <omar.tahir@arm.com>
 
 	* gcc.target/aarch64/bti-4.c: New test.
