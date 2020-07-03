@@ -1080,7 +1080,7 @@ name_lookup::add_fns (tree fns)
 /* Add the overloaded fns of SCOPE.  */
 
 void
-name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
+name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap /*inst_path*/)
 {
   if (tree *binding = find_namespace_slot (scope, name))
     {
