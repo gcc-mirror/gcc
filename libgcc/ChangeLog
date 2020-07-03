@@ -1,3 +1,19 @@
+2020-07-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95348
+	* libgcov-driver.c (merge_one_data): Merge only profiles
+	that are not of non-zero type.
+	(write_one_data): Write counters only if there's one non-zero
+	value.
+	* libgcov-util.c (tag_function): Change signature from unsigned
+	to int.
+	(tag_blocks): Likewise.
+	(tag_arcs): Likewise.
+	(tag_counters): Likewise.
+	(tag_summary): Likewise.
+	(tag_lines): Read only if COUNTERS is non-zero.
+	(read_gcda_file): Handle negative length for COUNTERS type.
+
 2020-06-25  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c (merge_summary): Remove function as its name

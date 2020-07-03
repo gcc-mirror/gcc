@@ -1,3 +1,83 @@
+2020-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96028
+	* tree-vect-slp.c (vect_slp_convert_to_external): Make sure
+	we have scalar stmts to use.
+	(vect_slp_analyze_node_operations): When analyzing a child
+	failed try externalizing the parent node.
+
+2020-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/95343
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Adjust
+	argument index if necessary.
+
+2020-07-02  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/95830
+	* tree-vect-generic.c (expand_vector_condition): Forward declaration.
+	(expand_vector_comparison): Do not expand a comparison if all
+	uses are consumed by a VEC_COND_EXPR.
+	(expand_vector_operation): Change void return type to bool.
+	(expand_vector_operations_1): Pass dce_ssa_names.
+
+2020-07-02  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR bootstrap/95700
+	* system.h (NULL): Redefine to nullptr.
+
+2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95857
+	* tree-cfg.c (group_case_labels_stmt): When removing an unreachable
+	base_bb, remember all forced and non-local labels on it and later
+	treat those as if they have NULL label_to_block.  Formatting fix.
+	Fix a comment typo.
+
+2020-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96022
+	* tree-vect-stmts.c (vectorizable_shift): Only use the
+	first vector stmt when extracting the scalar shift amount.
+	* tree-vect-slp.c (vect_build_slp_tree_2): Also build unary
+	nodes with all-scalar children from scalars but not stores.
+	(vect_analyze_slp_instance): Mark the node not failed.
+
+2020-07-02  Felix Yang  <felix.yang@huawei.com>
+
+	PR tree-optimization/95961
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Use the
+	number of scalars instead of the number of vectors as an upper bound
+	for the loop saving info about DR in the hash table.  Remove unused
+	local variables.
+
+2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for): Diagnose non-rectangular loops with
+	invalid steps - ((m2 - m1) * incr_outer) % incr must be 0 in valid
+	OpenMP non-rectangular loops.  Use XALLOCAVEC.
+
+2020-07-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95348
+	* coverage.c (read_counts_file): Read only COUNTERS that are
+	not all-zero.
+	* gcov-dump.c (tag_function): Change signature from unsigned to
+	signed integer.
+	(tag_blocks): Likewise.
+	(tag_arcs): Likewise.
+	(tag_lines): Likewise.
+	(tag_counters): Likewise.
+	(tag_summary): Likewise.
+	* gcov.c (read_count_file): Read all non-zero counters
+	sensitively.
+
+2020-07-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator (arch_canonicalize): Handle
+	multi-letter extension.
+	Using underline as separator between different extensions.
+
 2020-07-01  Pip Cet  <pipcet@gmail.com>
 
 	* spellcheck.c (test_data): Add problematic strings.

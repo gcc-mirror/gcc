@@ -1,3 +1,68 @@
+2020-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ios/conv/voidptr.cc: Add c++98_only
+	target selector.
+
+2020-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/cstdalign/std_c++0x_neg.cc: Add
+	c++98_only target selector.
+	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/18_support/headers/cstdint/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/18_support/headers/new/synopsis_cxx98.cc: Likewise.
+	* testsuite/19_diagnostics/headers/system_error/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/20_util/headers/type_traits/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/23_containers/headers/array/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/23_containers/headers/tuple/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/23_containers/headers/unordered_map/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/23_containers/headers/unordered_set/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cfenv/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c++98.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/random/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/27_io/headers/cinttypes/std_c++0x_neg.cc: Likewise.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Likewise.
+	* testsuite/29_atomics/headers/atomic/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/30_threads/headers/condition_variable/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/30_threads/headers/future/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/30_threads/headers/mutex/std_c++0x_neg.cc: Likewise.
+	* testsuite/30_threads/headers/thread/std_c++0x_neg.cc:
+	Likewise.
+
+2020-07-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/91807
+	* include/std/variant
+	(_Copy_assign_base::operator=(const _Copy_assign_base&):
+	Do the move-assignment from a temporary so that the temporary
+	is constructed with an explicit index.
+	* testsuite/20_util/variant/91807.cc: New.
+
+2020-07-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/91153
+	PR target/93224
+	* testsuite/29_atomics/atomic_float/1.cc: Use different values
+	for tests.
+	* testsuite/29_atomics/atomic_ref/float.cc: Likewise.
+
 2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94627

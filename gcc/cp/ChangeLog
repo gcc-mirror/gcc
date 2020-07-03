@@ -1,3 +1,16 @@
+2020-07-02  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (grokfndecl): Allow consteval virtual.
+	* search.c (check_final_overrider): Check consteval mismatch.
+	* constexpr.c (cxx_eval_thunk_call): New.
+	(cxx_eval_call_expression): Call it.
+	* cvt.c (cp_get_fndecl_from_callee): Handle FDESC_EXPR.
+	* decl2.c (mark_vtable_entries): Track vtables with consteval.
+	(maybe_emit_vtables): Pass consteval_vtables through.
+	(clear_consteval_vfns): Replace consteval with nullptr.
+	(c_parse_final_cleanups): Call it.
+
 2020-07-01  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (copy_fndecl_with_name): Add additional predicate args, do
