@@ -3039,7 +3039,6 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
-      gimple *stmt = stmt_info->stmt;
       ssa_op_iter op_iter;
       def_operand_p def_p;
 
@@ -3051,7 +3050,9 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	 required defs in the SLP children in the scalar cost.  This
 	 way we make the vectorization more costly when compared to
 	 the scalar cost.  */
-      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_DEF)
+      stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+      gimple *orig_stmt = orig_stmt_info->stmt;
+      FOR_EACH_SSA_DEF_OPERAND (def_p, orig_stmt, op_iter, SSA_OP_DEF)
 	{
 	  imm_use_iterator use_iter;
 	  gimple *use_stmt;
@@ -3059,7 +3060,8 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	    if (!is_gimple_debug (use_stmt))
 	      {
 		stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
-		if (!use_stmt_info || !PURE_SLP_STMT (use_stmt_info))
+		if (!use_stmt_info
+		    || !PURE_SLP_STMT (vect_stmt_to_vectorize (use_stmt_info)))
 		  {
 		    (*life)[i] = true;
 		    BREAK_FROM_IMM_USE_STMT (use_iter);
@@ -3070,23 +3072,23 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	continue;
 
       /* Count scalar stmts only once.  */
-      if (gimple_visited_p (stmt))
+      if (gimple_visited_p (orig_stmt))
 	continue;
-      gimple_set_visited (stmt, true);
+      gimple_set_visited (orig_stmt, true);
 
       vect_cost_for_stmt kind;
-      if (STMT_VINFO_DATA_REF (stmt_info))
-        {
-          if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
+      if (STMT_VINFO_DATA_REF (orig_stmt_info))
+	{
+	  if (DR_IS_READ (STMT_VINFO_DATA_REF (orig_stmt_info)))
 	    kind = scalar_load;
-          else
+	  else
 	    kind = scalar_store;
-        }
-      else if (vect_nop_conversion_p (stmt_info))
+	}
+      else if (vect_nop_conversion_p (orig_stmt_info))
 	continue;
       else
 	kind = scalar_stmt;
-      record_stmt_cost (cost_vec, 1, kind, stmt_info, 0, vect_body);
+      record_stmt_cost (cost_vec, 1, kind, orig_stmt_info, 0, vect_body);
     }
 
   auto_vec<bool, 20> subtree_life;
