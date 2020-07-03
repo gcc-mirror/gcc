@@ -274,3 +274,7 @@ STARTFN	NAME(LDNM)
 
 ENDFN	NAME(LDNM)
 #endif
+
+#if defined(__linux__) || defined(__FreeBSD__)
+.section .note.GNU-stack, "", %progbits
+#endif
