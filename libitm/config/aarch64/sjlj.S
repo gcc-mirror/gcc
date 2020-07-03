@@ -87,6 +87,6 @@ GTM_longjmp:
 	cfi_endproc
 	.size	GTM_longjmp, . - GTM_longjmp
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__)
 .section .note.GNU-stack, "", %progbits
 #endif
