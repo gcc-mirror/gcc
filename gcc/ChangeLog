@@ -1,3 +1,29 @@
+2020-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	_ARCH_PWR10 when appropriate.
+
+2020-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-06-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (cpu_is_info) <power10>: New.
+	* doc/extend.texi (PowerPC Built-in Functions): Document power10,
+	arch_3_1 and mma.
+
+2020-07-02  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2020-06-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/ppc-auxv.h (PPC_PLATFORM_POWER10): Allocate
+	'power10' PowerPC platform.
+	(PPC_FEATURE2_ARCH_3_1): New HWCAP2 bit for ARCH 3.1.
+	(PPC_FEATURE2_MMA): New HWCAP2 bit for MMA.
+	* config/rs6000/rs6000-call.c (cpu_supports_info): Add ARCH 3.1 and
+	MMA HWCAP2 bits.
+
 2020-07-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:

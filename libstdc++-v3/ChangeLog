@@ -1,3 +1,26 @@
+2020-07-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backported from master:
+	2020-07-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/91807
+	* include/std/variant
+	(_Copy_assign_base::operator=(const _Copy_assign_base&):
+	Do the move-assignment from a temporary so that the temporary
+	is constructed with an explicit index.
+	* testsuite/20_util/variant/91807.cc: New.
+
+2020-07-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	Backported from master:
+	2020-07-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/91153
+	PR target/93224
+	* testsuite/29_atomics/atomic_float/1.cc: Use different values
+	for tests.
+	* testsuite/29_atomics/atomic_ref/float.cc: Likewise.
+
 2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
