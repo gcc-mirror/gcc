@@ -1,3 +1,90 @@
+2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Fold calls that
+	were initially created for the assignment of a variable-sized
+	object and whose source is now a string constant.
+	* gimple-ssa-store-merging.c (struct merged_store_group): Document
+	STRING_CST for rhs_code field.
+	Add string_concatenation boolean field.
+	(merged_store_group::merged_store_group): Initialize it as well as
+	bit_insertion here.
+	(merged_store_group::do_merge): Set it upon seeing a STRING_CST.
+	Also set bit_insertion here upon seeing a BIT_INSERT_EXPR.
+	(merged_store_group::apply_stores): Clear it for small regions.
+	Do not create a power-of-2-sized buffer if it is still true.
+	And do not set bit_insertion here again.
+	(encode_tree_to_bitpos): Deal with BLKmode for the expression.
+	(merged_store_group::can_be_merged_into): Deal with STRING_CST.
+	(imm_store_chain_info::coalesce_immediate_stores): Set bit_insertion
+	to true after changing MEM_REF stores into BIT_INSERT_EXPR stores.
+	(count_multiple_uses): Return 0 for STRING_CST.
+	(split_group): Do not split the group for a string concatenation.
+	(imm_store_chain_info::output_merged_store): Constify and rename
+	some local variables.  Build an array type as destination type
+	for a string concatenation, as well as a zero mask, and call
+	build_string to build the source.
+	(lhs_valid_for_store_merging_p): Return true for VIEW_CONVERT_EXPR.
+	(pass_store_merging::process_store): Accept STRING_CST on the RHS.
+	* gimple.h (gimple_call_alloca_for_var_p): New accessor function.
+	* gimplify.c (gimplify_modify_expr_to_memcpy): Set alloca_for_var.
+	* tree.h (CALL_ALLOCA_FOR_VAR_P): Document it for BUILT_IN_MEMCPY.
+
+2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96040
+	* ipa-sra.c (all_callee_accesses_present_p): Do not accept type
+	mismatched accesses.
+
+2020-07-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (popcount<mode>2): New instructions.
+	(mulhishi3, mulsidi3, umulhisi3, umulsidi3): New instructions.
+
+2020-07-03  Martin Liska  <mliska@suse.cz>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/96046
+	* gcov-dump.c (tag_function): Use gcov_position_t
+	type.
+
+2020-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96037
+	* tree-vect-stmts.c (vect_is_simple_use): Initialize *slp_def.
+
+2020-07-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Cost the
+	original non-pattern stmts, look at the pattern stmt
+	vectorization status.
+
+2020-07-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (fold_left_plus_<mode>): New.
+
+2020-07-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vec_info::insert_on_entry): New.
+	(vec_info::insert_seq_on_entry): Likewise.
+	* tree-vectorizer.c (vec_info::insert_on_entry): Implement.
+	(vec_info::insert_seq_on_entry): Likewise.
+	* tree-vect-stmts.c (vect_init_vector_1): Use
+	vec_info::insert_on_entry.
+	(vect_finish_stmt_generation): Set modified bit after
+	adjusting VUSE.
+	* tree-vect-slp.c (vect_create_constant_vectors): Simplify
+	by using vec_info::insert_seq_on_entry and bypassing
+	vec_init_vector.
+	(vect_schedule_slp_instance): Deal with all-constant
+	children later.
+
+2020-07-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR target/90932
+	* config/nvptx/nvptx.c (nvptx_vector_alignment): Use tree_to_uhwi
+	to access TYPE_SIZE (type).  Return at least the mode's alignment.
+
 2020-07-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/96028

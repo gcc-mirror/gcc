@@ -1,3 +1,34 @@
+2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/opt87.adb: New test.
+	* gnat.dg/opt87_pkg.ads: New helper.
+	* gnat.dg/opt87_pkg.adb: Likewise.
+
+2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96040
+	* gcc.dg/ipa/pr96040.c: New test.
+
+2020-07-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/popc-1.c: New test.
+	* gcc.target/nvptx/popc-2.c: New test.
+	* gcc.target/nvptx/popc-3.c: New test.
+	* gcc.target/nvptx/mul-wide.c: New test.
+	* gcc.target/nvptx/umul-wide.c: New test.
+
+2020-07-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp-2.c: New
+	testcase.
+
+2020-07-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/fixits-pr84852-1.c: Enclose negative line number in braces.
+	* gcc.dg/fixits-pr84852-2.c: Same.
+	* gcc.dg/pr89410-1.c: Same.
+	* gcc.dg/pr89410-2.c: Same.
+
 2020-07-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/pr95690.f90: Solaris error appears on line 5.
