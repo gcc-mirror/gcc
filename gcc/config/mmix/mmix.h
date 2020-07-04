@@ -133,6 +133,32 @@ struct GTY(()) machine_function
     }								\
   while (0)
 
+#define TARGET_RUST_CPU_INFO() \
+  do { \
+    rust_add_target_info("target_arch", "mmix"); \
+    /*ignoring libfuncs as options say to get rid of it*/ \
+    if (TARGET_ABI_GNU) \
+      rust_add_target_info("target_feature", "abi-gnu"); \
+    else \
+      rust_add_target_info("target_feature", "abi-mmixware"); \
+    if (TARGET_FCMP_EPSILON) \
+      rust_add_target_info("target_feature", "epsilon"); \
+    if (TARGET_ZERO_EXTEND) \
+      rust_add_target_info("target_feature", "zero-extend"); \
+    if (TARGET_KNUTH_DIVISION) \
+      rust_add_target_info("target_feature", "knuthdiv"); \
+    if (TARGET_TOPLEVEL_SYMBOLS) \
+      rust_add_target_info("target_feature", "toplevel-symbols"); \
+    if (TARGET_BRANCH_PREDICT) \
+      rust_add_target_info("target_feature", "branch-predict"); \
+    if (TARGET_BASE_ADDRESSES) \
+      rust_add_target_info("target_feature", "base-addresses"); \
+    if (!(USE_RETURN_INSN)) \
+      rust_add_target_info("target_feature", "single-exit"); \
+    /*TODO: find way of getting no-set-program-start and elf info?*/ \
+    /*TODO: find way of defining set-program-start, set-data-start usefully?*/ \
+  } while (0)
+
 #define TARGET_DEFAULT \
  (MASK_BRANCH_PREDICT | MASK_BASE_ADDRESSES | MASK_USE_RETURN_INSN)
 
