@@ -661,6 +661,9 @@ struct mips_cpu_info {
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS mips_d_target_versions
 
+/* Target CPU info for Rust.  */
+#define TARGET_RUST_CPU_INFO mips_rust_target_cpu_info
+
 /* Default target_flags if no switches are specified  */
 
 #ifndef TARGET_DEFAULT
