@@ -423,6 +423,18 @@ enum reg_class
       builtin_define ("__MOXIE_BIG_ENDIAN__");		\
   }
 
+#define TARGET_RUST_CPU_INFO() \
+  do { \
+    rust_add_target_info("target_arch", "moxie"); \
+    if (TARGET_LITTLE_ENDIAN) \
+      rust_add_target_info("target_feature", "el"); \
+    else \
+      rust_add_target_info("target_feature", "eb"); \
+    if (TARGET_HAS_MULX) \
+      rust_add_target_info("target_feature", "mul.x"); \
+    /*TODO: find way of getting no-crt0 info?*/ \
+  } while (0)
+
 #define HAS_LONG_UNCOND_BRANCH true
 
 #endif /* GCC_MOXIE_H */
