@@ -1,3 +1,11 @@
+2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/95343
+	* gcc.dg/guality/pr95343.c: New test.
+
 2020-07-02  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

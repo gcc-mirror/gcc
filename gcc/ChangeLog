@@ -1,3 +1,12 @@
+2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/95343
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Adjust
+	argument index if necessary.
+
 2020-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
