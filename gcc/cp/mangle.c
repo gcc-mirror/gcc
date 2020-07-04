@@ -3189,6 +3189,7 @@ write_expression (tree expr)
 	    {
 	      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (expr);
 	      unsigned last_nonzero = UINT_MAX, i;
+	      constructor_elt *ce;
 	      tree val;
 
 	      if (!nontriv)
@@ -3197,12 +3198,18 @@ write_expression (tree expr)
 		    last_nonzero = i;
 
 	      if (nontriv || last_nonzero != UINT_MAX)
-		FOR_EACH_CONSTRUCTOR_VALUE (elts, i, val)
+		for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
 		  {
 		    if (i > last_nonzero)
 		      break;
 		    /* FIXME handle RANGE_EXPR */
-		    write_expression (val);
+		    if (TREE_CODE (etype) == UNION_TYPE)
+		      {
+			/* Express the active member as a designator.  */
+			write_string ("di");
+			write_unqualified_name (ce->index);
+		      }
+		    write_expression (ce->value);
 		  }
 	    }
 	  else

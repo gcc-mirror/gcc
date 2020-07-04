@@ -1809,13 +1809,16 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "cm", NL (","),         2 },
   { "co", NL ("~"),         1 },
   { "dV", NL ("/="),        2 },
+  { "dX", NL ("[...]="),     3 }, /* [expr...expr] = expr */
   { "da", NL ("delete[] "), 1 },
   { "dc", NL ("dynamic_cast"), 2 },
   { "de", NL ("*"),         1 },
+  { "di", NL ("="),         2 }, /* .name = expr */
   { "dl", NL ("delete "),   1 },
   { "ds", NL (".*"),        2 },
   { "dt", NL ("."),         2 },
   { "dv", NL ("/"),         2 },
+  { "dx", NL ("]="),        2 }, /* [expr] = expr */
   { "eO", NL ("^="),        2 },
   { "eo", NL ("^"),         2 },
   { "eq", NL ("=="),        2 },
@@ -3291,6 +3294,12 @@ op_is_new_cast (struct demangle_component *op)
                 ::= sr <type> <unqualified-name>
                 ::= sr <type> <unqualified-name> <template-args>
                 ::= <expr-primary>
+
+  <braced-expression> ::= <expression>
+		      ::= di <field source-name> <braced-expression>	# .name = expr
+		      ::= dx <index expression> <braced-expression>	# [expr] = expr
+		      ::= dX <range begin expression> <range end expression> <braced-expression>
+									# [expr ... expr] = expr
 */
 
 static inline struct demangle_component *
@@ -3453,6 +3462,8 @@ d_expression_1 (struct d_info *di)
 	    else if (code[0] == 'f')
 	      /* fold-expression.  */
 	      left = d_operator_name (di);
+	    else if (!strcmp (code, "di"))
+	      left = d_unqualified_name (di);
 	    else
 	      left = d_expression_1 (di);
 	    if (!strcmp (code, "cl"))
@@ -3480,7 +3491,8 @@ d_expression_1 (struct d_info *di)
 
 	    if (code == NULL)
 	      return NULL;
-	    else if (!strcmp (code, "qu"))
+	    else if (!strcmp (code, "qu")
+		     || !strcmp (code, "dX"))
 	      {
 		/* ?: expression.  */
 		first = d_expression_1 (di);
@@ -4675,6 +4687,64 @@ d_maybe_print_fold_expression (struct d_print_info *dpi, int options,
   return 1;
 }
 
+/* True iff DC represents a C99-style designated initializer.  */
+
+static int
+is_designated_init (struct demangle_component *dc)
+{
+  if (dc->type != DEMANGLE_COMPONENT_BINARY
+      && dc->type != DEMANGLE_COMPONENT_TRINARY)
+    return 0;
+
+  struct demangle_component *op = d_left (dc);
+  const char *code = op->u.s_operator.op->code;
+  return (code[0] == 'd'
+	  && (code[1] == 'i' || code[1] == 'x' || code[1] == 'X'));
+}
+
+/* If DC represents a C99-style designated initializer, print it and return
+   true; otherwise, return false.  */
+
+static int
+d_maybe_print_designated_init (struct d_print_info *dpi, int options,
+			       struct demangle_component *dc)
+{
+  if (!is_designated_init (dc))
+    return 0;
+
+  const char *code = d_left (dc)->u.s_operator.op->code;
+
+  struct demangle_component *operands = d_right (dc);
+  struct demangle_component *op1 = d_left (operands);
+  struct demangle_component *op2 = d_right (operands);
+
+  if (code[1] == 'i')
+    d_append_char (dpi, '.');
+  else
+    d_append_char (dpi, '[');
+
+  d_print_comp (dpi, options, op1);
+  if (code[1] == 'X')
+    {
+      d_append_string (dpi, " ... ");
+      d_print_comp (dpi, options, d_left (op2));
+      op2 = d_right (op2);
+    }
+  if (code[1] != 'i')
+    d_append_char (dpi, ']');
+  if (is_designated_init (op2))
+    {
+      /* Don't put '=' or '(' between chained designators.  */
+      d_print_comp (dpi, options, op2);
+    }
+  else
+    {
+      d_append_char (dpi, '=');
+      d_print_subexpr (dpi, options, op2);
+    }
+  return 1;
+}
+
 /* Subroutine to handle components.  */
 
 static void
@@ -5491,6 +5561,9 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       if (d_maybe_print_fold_expression (dpi, options, dc))
 	return;
 
+      if (d_maybe_print_designated_init (dpi, options, dc))
+	return;
+
       /* We wrap an expression which uses the greater-than operator in
 	 an extra layer of parens so that it does not get confused
 	 with the '>' which ends the template parameters.  */
@@ -5547,6 +5620,8 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	  return;
 	}
       if (d_maybe_print_fold_expression (dpi, options, dc))
+	return;
+      if (d_maybe_print_designated_init (dpi, options, dc))
 	return;
       {
 	struct demangle_component *op = d_left (dc);
