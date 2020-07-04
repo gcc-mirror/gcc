@@ -4534,13 +4534,6 @@ structural_type_p (tree t, bool explain)
        structural types or (possibly multi-dimensional) array thereof.  */
   if (!CLASS_TYPE_P (t))
     return false;
-  if (TREE_CODE (t) == UNION_TYPE)
-    {
-      /* FIXME allow (and mangle) unions.  */
-      if (explain)
-	inform (location_of (t), "%qT is a union", t);
-      return false;
-    }
   if (!literal_type_p (t))
     {
       if (explain)
