@@ -183,6 +183,25 @@
 (define_code_attr u [(sign_extend "") (zero_extend "u")])
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
+;; For extended-operand variants.
+(define_code_iterator plusminus [plus minus])
+(define_code_attr addsub [(plus "add") (minus "sub")])
+
+;; Similar, other cases also matching bound/umin.
+(define_code_iterator plusminusumin [plus minus umin])
+
+;; Ditto, commutative operators (i.e. not minus).
+(define_code_iterator plusumin [plus umin])
+
+;; The addsubbo and nd code-attributes form a hack.  We need to output
+;; "addu.b", "subu.b" but "bound.b" (no "u"-suffix) which means we'd
+;; need to refer to one iterator from the next.  But, that can't be
+;; done.  Instead output the "u" for unsigned as the "u" in "bound",
+;; i.e. the mnemonic as three parts including the extend-letter, and
+;; with an empty third part for "add" and "sub".
+(define_code_attr addsubbo [(plus "add") (minus "sub") (umin "bo")])
+(define_code_attr nd [(plus "") (minus "") (umin "nd")])
+
 ;; For the shift variants.
 (define_code_iterator shift [ashiftrt lshiftrt ashift])
 (define_code_iterator shiftrt [ashiftrt lshiftrt])
@@ -1113,42 +1132,37 @@
 ;; QImode to HImode
 ;; FIXME: GCC should widen.
 
-(define_insn "*extopqihi"
+(define_insn "*<addsub><su>qihi"
   [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
-	(match_operator:HI
-	 3 "cris_additive_operand_extend_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0,0,r")
-	  (match_operator:HI
-	   4 "cris_extend_operator"
-	   [(match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To")])]))
+	(plusminus:HI
+	 (match_operand:HI 1 "register_operand" "0,0,0,r")
+	 (szext:HI (match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To"))))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   "GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
-   && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
+   && (operands[1] != frame_pointer_rtx || <plusminus:CODE> != PLUS)"
   "@
-   %x3%E4.%m4 %2,%0
-   %x3%E4.%m4 %2,%0
-   %x3%E4.%m4 %2,%0
-   %x3%E4.%m4 %2,%1,%0"
+   <addsub><su>.b %2,%0
+   <addsub><su>.b %2,%0
+   <addsub><su>.b %2,%0
+   <addsub><su>.b %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")
    (set_attr "cc" "clobber")])
 
-(define_insn "*extop<mode>si<setnz>"
+;; FIXME: bound is actually also <setnzvc>, but is so rarely used in this
+;; form that it's not worthwhile to make that distinction.
+(define_insn "*<addsubbo><su><nd><mode>si<setnz>"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operator:SI
-	 3 "cris_operand_extend_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0,0,r")
-	  (match_operator:SI
-	   4 "cris_extend_operator"
-	   [(match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To")])]))
+	(plusminusumin:SI
+	 (match_operand:SI 1 "register_operand" "0,0,0,r")
+	 (szext:SI (match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To"))))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
-  "(GET_CODE (operands[3]) != UMIN || GET_CODE (operands[4]) == ZERO_EXTEND)
-   && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
-   && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
+  "(<plusminusumin:CODE> != UMIN || <szext:CODE> == ZERO_EXTEND)
+   && (operands[1] != frame_pointer_rtx || <plusminusumin:CODE> != PLUS)"
   "@
-   %x3%E4<m> %2,%0
-   %x3%E4<m> %2,%0
-   %x3%E4<m> %2,%0
-   %x3%E4<m> %2,%1,%0"
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")])
 
 ;; We may have swapped operands for add or bound.
@@ -1156,39 +1170,34 @@
 
 ;; QImode to HImode
 
-(define_insn "*addxqihi_swap"
+(define_insn "*add<su>qihi_swap"
   [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
 	(plus:HI
-	 (match_operator:HI
-	  3 "cris_extend_operator"
-	  [(match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To")])
+	 (szext:HI (match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To"))
 	 (match_operand:HI 1 "register_operand" "0,0,0,r")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   "operands[1] != frame_pointer_rtx"
   "@
-   add%e3.b %2,%0
-   add%e3.b %2,%0
-   add%e3.b %2,%0
-   add%e3.b %2,%1,%0"
+   add<su>.b %2,%0
+   add<su>.b %2,%0
+   add<su>.b %2,%0
+   add<su>.b %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")
    (set_attr "cc" "clobber")])
 
-(define_insn "*extop<mode>si<setnz>_swap"
+(define_insn "*<addsubbo><su><nd><mode>si<setnz>_swap"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operator:SI
-	 4 "cris_plus_or_bound_operator"
-	 [(match_operator:SI
-	   3 "cris_extend_operator"
-	   [(match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To")])
-	  (match_operand:SI 1 "register_operand" "0,0,0,r")]))
+	(plusumin:SI
+	 (szext:SI (match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To"))
+	 (match_operand:SI 1 "register_operand" "0,0,0,r")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
-  "(GET_CODE (operands[4]) != UMIN || GET_CODE (operands[3]) == ZERO_EXTEND)
+  "(<plusumin:CODE> != UMIN || <szext:CODE> == ZERO_EXTEND)
    && operands[1] != frame_pointer_rtx"
   "@
-   %x4%E3<m> %2,%0
-   %x4%E3<m> %2,%0
-   %x4%E3<m> %2,%0
-   %x4%E3<m> %2,%1,%0"
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")])
 
 ;; This is the special case when we use what corresponds to the
