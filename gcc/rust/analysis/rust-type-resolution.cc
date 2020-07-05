@@ -7,11 +7,12 @@
       AST::PathIdentSegment seg (_X);                                          \
       auto typePath = ::std::unique_ptr<AST::TypePathSegment> (                \
 	new AST::TypePathSegment (::std::move (seg), false,                    \
-				  Linemap::unknown_location ()));              \
+				  Linemap::predeclared_location ()));          \
       ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;           \
       segs.push_back (::std::move (typePath));                                 \
-      auto bType = new AST::TypePath (::std::move (segs),                      \
-				      Linemap::unknown_location (), false);    \
+      auto bType                                                               \
+	= new AST::TypePath (::std::move (segs),                               \
+			     Linemap::predeclared_location (), false);         \
       _S.InsertType (_X, bType);                                               \
     }                                                                          \
   while (0)
@@ -413,22 +414,120 @@ TypeResolution::visit (AST::TupleExpr &expr)
 void
 TypeResolution::visit (AST::TupleIndexExpr &expr)
 {}
+
 void
 TypeResolution::visit (AST::StructExprStruct &expr)
 {}
+
 // void TypeResolution::visit(StructExprField& field) {}
 void
 TypeResolution::visit (AST::StructExprFieldIdentifier &field)
 {}
+
 void
 TypeResolution::visit (AST::StructExprFieldIdentifierValue &field)
-{}
+{
+  identifierBuffer = &field.field_name;
+  field.value->accept_vis (*this);
+}
+
 void
 TypeResolution::visit (AST::StructExprFieldIndexValue &field)
-{}
+{
+  tupleIndexBuffer = &field.index;
+  field.value->accept_vis (*this);
+}
+
 void
 TypeResolution::visit (AST::StructExprStructFields &expr)
-{}
+{
+  AST::StructStruct *decl = NULL;
+  if (!scope.LookupStruct (expr.get_struct_name ().as_string (), &decl))
+    {
+      rust_error_at (expr.get_locus_slow (), "unknown type");
+      return;
+    }
+
+  for (auto &field : expr.fields)
+    {
+      identifierBuffer = NULL;
+      tupleIndexBuffer = NULL;
+
+      auto before = typeBuffer.size ();
+      field->accept_vis (*this);
+      if (typeBuffer.size () <= before)
+	{
+	  rust_error_at (expr.get_locus_slow (),
+			 "unable to determine type for field");
+	  return;
+	}
+
+      auto inferedType = typeBuffer.back ();
+      typeBuffer.pop_back ();
+
+      // do we have a name for this
+      if (identifierBuffer != NULL)
+	{
+	  AST::StructField *declField = NULL;
+	  for (auto &df : decl->fields)
+	    {
+	      if (identifierBuffer->compare (df.field_name) == 0)
+		{
+		  declField = &df;
+		  break;
+		}
+	    }
+	  identifierBuffer = NULL;
+
+	  if (declField == NULL)
+	    {
+	      rust_error_at (expr.get_locus_slow (), "unknown field");
+	      return;
+	    }
+
+	  if (!typesAreCompatible (declField->field_type.get (), inferedType,
+				   expr.get_locus_slow ()))
+	    return;
+	}
+      // do we have an index for this
+      else if (tupleIndexBuffer != NULL)
+	{
+	  AST::StructField *declField = NULL;
+	  if (*tupleIndexBuffer < decl->fields.size ())
+	    {
+	      declField = &decl->fields[*tupleIndexBuffer];
+	    }
+	  tupleIndexBuffer = NULL;
+
+	  if (declField == NULL)
+	    {
+	      rust_error_at (expr.get_locus_slow (), "unknown field at index");
+	      return;
+	    }
+
+	  if (!typesAreCompatible (declField->field_type.get (), inferedType,
+				   expr.get_locus_slow ()))
+	    return;
+	}
+      else
+	{
+	  rust_fatal_error (expr.get_locus_slow (), "unknown field initialise");
+	  return;
+	}
+    }
+
+  // setup a path in type
+  AST::PathIdentSegment seg (expr.get_struct_name ().as_string ());
+  auto typePath = ::std::unique_ptr<AST::TypePathSegment> (
+    new AST::TypePathSegment (::std::move (seg), false,
+			      expr.get_locus_slow ()));
+  ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;
+  segs.push_back (::std::move (typePath));
+  auto bType
+    = new AST::TypePath (::std::move (segs), expr.get_locus_slow (), false);
+  typeBuffer.push_back (bType);
+}
+
 void
 TypeResolution::visit (AST::StructExprStructBase &expr)
 {}

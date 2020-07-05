@@ -1671,13 +1671,11 @@ protected:
 // struct
 struct StructBase
 {
-private:
+public:
   // Expr* base_struct;
   ::std::unique_ptr<Expr> base_struct;
 
   // TODO: should this store location data?
-
-public:
   StructBase (::std::unique_ptr<Expr> base_struct_ptr)
     : base_struct (::std::move (base_struct_ptr))
   {}
@@ -1749,11 +1747,11 @@ protected:
 // Identifier-only variant of StructExprField AST node
 class StructExprFieldIdentifier : public StructExprField
 {
+public:
   Identifier field_name;
 
   // TODO: should this store location data?
 
-public:
   StructExprFieldIdentifier (Identifier field_identifier)
     : field_name (::std::move (field_identifier))
   {}
@@ -1776,6 +1774,7 @@ protected:
 // abstract
 class StructExprFieldWithVal : public StructExprField
 {
+public:
   // Expr* value;
   ::std::unique_ptr<Expr> value;
 
@@ -1814,11 +1813,11 @@ public:
 // Identifier and value variant of StructExprField AST node
 class StructExprFieldIdentifierValue : public StructExprFieldWithVal
 {
+public:
   Identifier field_name;
 
   // TODO: should this store location data?
 
-public:
   StructExprFieldIdentifierValue (Identifier field_identifier,
 				  ::std::unique_ptr<Expr> field_value)
     : StructExprFieldWithVal (::std::move (field_value)),
@@ -1845,11 +1844,11 @@ protected:
 // Tuple index and value variant of StructExprField AST node
 class StructExprFieldIndexValue : public StructExprFieldWithVal
 {
+public:
   TupleIndex index;
 
   // TODO: should this store location data?
 
-public:
   StructExprFieldIndexValue (TupleIndex tuple_index,
 			     ::std::unique_ptr<Expr> field_value)
     : StructExprFieldWithVal (::std::move (field_value)), index (tuple_index)
@@ -1875,13 +1874,13 @@ protected:
 // AST node of a struct creator with fields
 class StructExprStructFields : public StructExprStruct
 {
+public:
   //::std::vector<StructExprField> fields;
   ::std::vector< ::std::unique_ptr<StructExprField> > fields;
 
   // bool has_struct_base;
   StructBase struct_base;
 
-public:
   ::std::string as_string () const;
 
   inline bool has_struct_base () const { return !struct_base.is_invalid (); }

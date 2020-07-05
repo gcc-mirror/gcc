@@ -301,6 +301,8 @@ private:
   bool isTypeInScope (AST::Type *type, Location locus);
 
   TypeScoping scope;
+  std::string *identifierBuffer;
+  int *tupleIndexBuffer;
 };
 
 } // namespace Analysis
