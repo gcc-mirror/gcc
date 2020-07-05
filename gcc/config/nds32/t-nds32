@@ -144,3 +144,7 @@ nds32-utils.o: \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/nds32/nds32-utils.c
+
+nds32-rust.o: $(srcdir)/config/nds32/nds32-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
