@@ -1,3 +1,11 @@
+2020-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96040
+	* gcc.dg/ipa/pr96040.c: New test.
+
 2020-07-03  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

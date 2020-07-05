@@ -1,3 +1,12 @@
+2020-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96040
+	* ipa-sra.c (all_callee_accesses_present_p): Do not accept type
+	mismatched accesses.
+
 2020-07-03  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
