@@ -3185,6 +3185,25 @@ package body Sem_Ch7 is
                end loop;
             end;
 
+         --  For subtypes of private types the frontend generates two entities:
+         --  one associated with the partial view and the other associated with
+         --  the full view. When the subtype declaration is public the frontend
+         --  places the former entity in the list of public entities of the
+         --  package and the latter entity in the private part of the package.
+         --  When the subtype declaration is private it generates these two
+         --  entities but both are placed in the private part of the package
+         --  (and the full view has the same source location as the partial
+         --  view and no parent; see Prepare_Private_Subtype_Completion).
+
+         elsif Ekind (Id) in E_Private_Subtype
+                           | E_Limited_Private_Subtype
+           and then Present (Full_View (Id))
+           and then Sloc (Id) = Sloc (Full_View (Id))
+           and then No (Parent (Full_View (Id)))
+         then
+            Set_Is_Hidden (Id);
+            Set_Is_Potentially_Use_Visible (Id, False);
+
          elsif not Is_Child_Unit (Id)
            and then (not Is_Private_Type (Id) or else No (Full_View (Id)))
          then
