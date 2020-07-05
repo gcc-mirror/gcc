@@ -8379,7 +8379,10 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
   /* Handle calls that pass values in multiple non-contiguous
      locations.  The Irix 6 ABI has examples of this.  */
   if (target == 0 || ! safe_from_p (target, exp, 1)
-      || GET_CODE (target) == PARALLEL || modifier == EXPAND_STACK_PARM)
+      || GET_CODE (target) == PARALLEL || modifier == EXPAND_STACK_PARM
+      /* Also make a temporary if the store is to volatile memory, to
+	 avoid individual accesses to aggregate members.  */
+      || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
     {
       if (avoid_temp_mem)
 	return NULL_RTX;
