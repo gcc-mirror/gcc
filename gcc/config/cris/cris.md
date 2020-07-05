@@ -1108,6 +1108,89 @@
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
    (set_attr "cc<ccnz>" "normal,normal,clobber,clobber,normal,normal")])
 
+;; Extend versions (zero/sign) of normal add/sub (no side-effects).
+
+;; QImode to HImode
+;; FIXME: GCC should widen.
+
+(define_insn "*extopqihi"
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
+	(match_operator:HI
+	 3 "cris_additive_operand_extend_operator"
+	 [(match_operand:HI 1 "register_operand" "0,0,0,r")
+	  (match_operator:HI
+	   4 "cris_extend_operator"
+	   [(match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To")])]))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
+   && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
+  "@
+   %x3%E4.%m4 %2,%0
+   %x3%E4.%m4 %2,%0
+   %x3%E4.%m4 %2,%0
+   %x3%E4.%m4 %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*extop<mode>si<setnz>"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+	(match_operator:SI
+	 3 "cris_operand_extend_operator"
+	 [(match_operand:SI 1 "register_operand" "0,0,0,r")
+	  (match_operator:SI
+	   4 "cris_extend_operator"
+	   [(match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To")])]))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "(GET_CODE (operands[3]) != UMIN || GET_CODE (operands[4]) == ZERO_EXTEND)
+   && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
+   && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
+  "@
+   %x3%E4<m> %2,%0
+   %x3%E4<m> %2,%0
+   %x3%E4<m> %2,%0
+   %x3%E4<m> %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")])
+
+;; We may have swapped operands for add or bound.
+;; For commutative operands, these are the canonical forms.
+
+;; QImode to HImode
+
+(define_insn "*addxqihi_swap"
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
+	(plus:HI
+	 (match_operator:HI
+	  3 "cris_extend_operator"
+	  [(match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To")])
+	 (match_operand:HI 1 "register_operand" "0,0,0,r")))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "operands[1] != frame_pointer_rtx"
+  "@
+   add%e3.b %2,%0
+   add%e3.b %2,%0
+   add%e3.b %2,%0
+   add%e3.b %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*extop<mode>si<setnz>_swap"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+	(match_operator:SI
+	 4 "cris_plus_or_bound_operator"
+	 [(match_operator:SI
+	   3 "cris_extend_operator"
+	   [(match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To")])
+	  (match_operand:SI 1 "register_operand" "0,0,0,r")]))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "(GET_CODE (operands[4]) != UMIN || GET_CODE (operands[3]) == ZERO_EXTEND)
+   && operands[1] != frame_pointer_rtx"
+  "@
+   %x4%E3<m> %2,%0
+   %x4%E3<m> %2,%0
+   %x4%E3<m> %2,%0
+   %x4%E3<m> %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")])
+
 ;; This is the special case when we use what corresponds to the
 ;; instruction above in "casesi".  Do *not* change it to use the generic
 ;; pattern and "REG 15" as pc; I did that and it led to madness and
