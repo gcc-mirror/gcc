@@ -2634,6 +2634,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 
 	  gfc_error ("Interface mismatch in global procedure %qs at %L: %s",
 		     sym->name, &sym->declared_at, reason);
+	  sym->error = 1;
 	  gfc_errors_to_warnings (false);
 	  goto done;
 	}
