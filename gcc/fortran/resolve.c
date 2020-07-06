@@ -9241,7 +9241,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	{
 	  if (code->expr1->symtree->n.sym->attr.untyped)
 	    code->expr1->symtree->n.sym->ts = code->expr2->ts;
-	  selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+	  selector_type = CLASS_DATA (code->expr2)
+	    ? CLASS_DATA (code->expr2)->ts.u.derived : code->expr2->ts.u.derived;
 	}
 
       if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
