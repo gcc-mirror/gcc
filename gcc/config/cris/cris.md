@@ -2515,8 +2515,45 @@
 
 ;; We have trouble with and:s and shifts.  Maybe something is broken in
 ;; gcc?  Or it could just be that bit-field insn expansion is a bit
-;; suboptimal when not having extzv insns.
-;; Testcase for the following four peepholes: gcc.dg/cris-peep2-xsrand.c
+;; suboptimal when not having extzv insns.  Or combine being over-eager
+;; to canonicalize to "and", and ignorant on the benefits of the right
+;; mixture of "and" and "zero-extend".
+
+;; Testcase for the following peephole: gcc.target/cris/peep2-movulsr.c
+
+;; Where equivalent and where the "and" argument doesn't fit "andq" but
+;; is 16 bits or smaller, replace the "and" with a zero-extend preceding
+;; the shift.  A zero-extend is shorter and faster than "and" with a
+;; 32-bit argument.
+
+(define_peephole2 ; movulsr
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand")
+	  (lshiftrt:SI (match_dup 0)
+		       (match_operand:SI 1 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 0)
+	  (and:SI (match_dup 0)
+		  (match_operand 2 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "INTVAL (operands[2]) > 31 && INTVAL (operands[2]) <= 0xffff
+   && (((INTVAL (operands[2]) <= 0xff ? 0xff : 0xffff) >> INTVAL (operands[1]))
+       == INTVAL (operands[2]))"
+  [(parallel
+    ;; The zero-extend is expressed as an "and", only because that's easier
+    ;; than messing with zero-extend of a subreg.
+    [(set (match_dup 0) (and:SI (match_dup 0) (match_dup 3)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 1)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+{
+  operands[3]
+    = INTVAL (operands[2]) <= 0xff ? GEN_INT (0xff) :  GEN_INT (0xffff);
+})
+
+;; Testcase for the following four peepholes: gcc.target/cris/peep2-xsrand.c
 
 (define_peephole2 ; asrandb
   [(parallel
@@ -2635,7 +2672,7 @@
 ;;   move.d reg_or_mem,reg_32
 ;;   and.d const_32__65535,reg_32
 ;; Fix it with these two peephole2's.
-;; Testcases: gcc.dg/cris-peep2-andu1.c gcc.dg/cris-peep2-andu2.c
+;; Testcases: gcc.target/cris/peep2-andu1.c gcc.target/cris/peep2-andu2.c
 
 (define_peephole2 ; andu
   [(parallel
@@ -2679,7 +2716,7 @@
 						? QImode : amode)));
 })
 
-;; Since r186861, gcc.dg/cris-peep2-andu2.c trigs this pattern, with which
+;; Since r186861, gcc.target/cris/peep2-andu2.c trigs this pattern, with which
 ;; we fix up e.g.:
 ;;  movu.b 254,$r9.
 ;;  and.d $r10,$r9
