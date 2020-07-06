@@ -698,6 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 is_convertible<_Up&&, _Tp>> = true>
 	constexpr
 	optional(_Up&& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	: _Base(std::in_place, std::forward<_Up>(__t)) { }
 
       template<typename _Up = _Tp,
@@ -706,6 +707,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 __not_<is_convertible<_Up&&, _Tp>>> = false>
 	explicit constexpr
 	optional(_Up&& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
         : _Base(std::in_place, std::forward<_Up>(__t)) { }
 
       template<typename _Up,
@@ -715,6 +717,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
 	constexpr
 	optional(const optional<_Up>& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
 	{
 	  if (__t)
 	    emplace(*__t);
@@ -727,6 +730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
 	explicit constexpr
 	optional(const optional<_Up>& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
 	{
 	  if (__t)
 	    emplace(*__t);
@@ -739,6 +743,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
 	constexpr
 	optional(optional<_Up>&& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	{
 	  if (__t)
 	    emplace(std::move(*__t));
@@ -751,6 +756,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
 	explicit constexpr
 	optional(optional<_Up>&& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	{
 	  if (__t)
 	    emplace(std::move(*__t));
@@ -760,6 +766,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Requires<is_constructible<_Tp, _Args&&...>> = false>
 	explicit constexpr
 	optional(in_place_t, _Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	: _Base(std::in_place, std::forward<_Args>(__args)...) { }
 
       template<typename _Up, typename... _Args,
@@ -768,7 +775,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  _Args&&...>> = false>
 	explicit constexpr
 	optional(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
+					    _Args...>)
 	: _Base(std::in_place, __il, std::forward<_Args>(__args)...) { }
+
 
       // Assignment operators.
       optional&
@@ -786,6 +796,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    is_assignable<_Tp&, _Up>>,
 		    optional&>
 	operator=(_Up&& __u)
+	noexcept(__and_v<is_nothrow_constructible<_Tp, _Up>,
+			 is_nothrow_assignable<_Tp&, _Up>>)
 	{
 	  if (this->_M_is_engaged())
 	    this->_M_get() = std::forward<_Up>(__u);
@@ -803,6 +815,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    __not_<__assigns_from_optional<_Tp, _Up>>>,
 		    optional&>
 	operator=(const optional<_Up>& __u)
+	noexcept(__and_v<is_nothrow_constructible<_Tp, const _Up&>,
+			 is_nothrow_assignable<_Tp&, const _Up&>>)
 	{
 	  if (__u)
 	    {
@@ -826,6 +840,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    __not_<__assigns_from_optional<_Tp, _Up>>>,
 		    optional&>
 	operator=(optional<_Up>&& __u)
+	noexcept(__and_v<is_nothrow_constructible<_Tp, _Up>,
+			 is_nothrow_assignable<_Tp&, _Up>>)
 	{
 	  if (__u)
 	    {
@@ -845,6 +861,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _Args>
 	enable_if_t<is_constructible_v<_Tp, _Args&&...>, _Tp&>
 	emplace(_Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	{
 	  this->_M_reset();
 	  this->_M_construct(std::forward<_Args>(__args)...);
@@ -855,6 +872,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&,
 				       _Args&&...>, _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
+					    _Args...>)
 	{
 	  this->_M_reset();
 	  this->_M_construct(__il, std::forward<_Args>(__args)...);
@@ -887,27 +906,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Observers.
       constexpr const _Tp*
-      operator->() const
+      operator->() const noexcept
       { return std::__addressof(this->_M_get()); }
 
       constexpr _Tp*
-      operator->()
+      operator->() noexcept
       { return std::__addressof(this->_M_get()); }
 
       constexpr const _Tp&
-      operator*() const&
+      operator*() const& noexcept
       { return this->_M_get(); }
 
       constexpr _Tp&
-      operator*()&
+      operator*()& noexcept
       { return this->_M_get(); }
 
       constexpr _Tp&&
-      operator*()&&
+      operator*()&& noexcept
       { return std::move(this->_M_get()); }
 
       constexpr const _Tp&&
-      operator*() const&&
+      operator*() const&& noexcept
       { return std::move(this->_M_get()); }
 
       constexpr explicit operator bool() const noexcept
