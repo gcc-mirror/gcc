@@ -395,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Type of the function object returned from bind().
   template<typename _Signature>
-    struct _Bind;
+    class _Bind;
 
    template<typename _Functor, typename... _Bound_args>
     class _Bind<_Functor(_Bound_args...)>
@@ -546,7 +546,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Type of the function object returned from bind<R>().
   template<typename _Result, typename _Signature>
-    struct _Bind_result;
+    class _Bind_result;
 
   template<typename _Result, typename _Functor, typename... _Bound_args>
     class _Bind_result<_Result, _Functor(_Bound_args...)>

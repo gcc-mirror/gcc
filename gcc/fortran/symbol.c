@@ -3145,11 +3145,15 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
 }
 
 
-/* Generate an error if a symbol is ambiguous.  */
+/* Generate an error if a symbol is ambiguous, and set the error flag
+   on it.  */
 
 static void
 ambiguous_symbol (const char *name, gfc_symtree *st)
 {
+
+  if (st->n.sym->error)
+    return;
 
   if (st->n.sym->module)
     gfc_error ("Name %qs at %C is an ambiguous reference to %qs "
@@ -3157,6 +3161,8 @@ ambiguous_symbol (const char *name, gfc_symtree *st)
   else
     gfc_error ("Name %qs at %C is an ambiguous reference to %qs "
 	       "from current program unit", name, st->n.sym->name);
+
+  st->n.sym->error = 1;
 }
 
 

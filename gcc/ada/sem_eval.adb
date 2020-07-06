@@ -1848,6 +1848,13 @@ package body Sem_Eval is
 
    exception
       when others =>
+         --  With debug flag K we will get an exception unless an error has
+         --  already occurred (useful for debugging).
+
+         if Debug_Flag_K then
+            Check_Error_Detected;
+         end if;
+
          return False;
    end Compile_Time_Known_Value;
 
@@ -4962,14 +4969,14 @@ package body Sem_Eval is
 
    exception
       when others =>
-
-         --  Debug flag K disables this behavior (useful for debugging)
+         --  With debug flag K we will get an exception unless an error has
+         --  already occurred (useful for debugging).
 
          if Debug_Flag_K then
-            raise;
-         else
-            return False;
+            Check_Error_Detected;
          end if;
+
+         return False;
    end In_Subrange_Of;
 
    -----------------

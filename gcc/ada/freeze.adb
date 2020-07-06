@@ -8726,8 +8726,8 @@ package body Freeze is
             return True;
          end if;
 
-         --  Check attribute Extra_Formal: if available it must be set only
-         --  in the last formal of E
+         --  Check attribute Extra_Formal: If available, it must be set only
+         --  on the last formal of E.
 
          Formal := First_Formal (E);
          while Present (Formal) loop
@@ -8752,15 +8752,15 @@ package body Freeze is
             return False;
          end if;
 
-         --  Check attribute Extra_Formals: if E has extra formals then this
-         --  attribute must must point to the first extra formal of E.
+         --  Check attribute Extra_Formals: If E has extra formals, then this
+         --  attribute must point to the first extra formal of E.
 
          if Has_Extra_Formals then
             return Present (Extra_Formals (E))
               and then Present (Extra_Formal (Last_Formal))
               and then Extra_Formal (Last_Formal) = Extra_Formals (E);
 
-         --  When E has no formals the first extra formal is available through
+         --  When E has no formals, the first extra formal is available through
          --  the Extra_Formals attribute.
 
          elsif Present (Extra_Formals (E)) then
@@ -8908,9 +8908,9 @@ package body Freeze is
       if not Has_Foreign_Convention (E) then
          if No (Extra_Formals (E)) then
 
-            --  Extra formals are shared by derived subprograms; therefore if
+            --  Extra formals are shared by derived subprograms; therefore, if
             --  the ultimate alias of E has been frozen before E then the extra
-            --  formals have been added but the attribute Extra_Formals is
+            --  formals have been added, but the attribute Extra_Formals is
             --  still unset (and must be set now).
 
             if Present (Alias (E))

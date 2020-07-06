@@ -1,3 +1,55 @@
+2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-39.c: New test.
+
+2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-36.c, gcc.target/cris/pr93372-37.c,
+	gcc.target/cris/pr93372-38.c: New tests.
+
+2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/27318
+	* gfortran.dg/error_recovery_1.f90: Adjust test case.
+	* gfortran.dg/use_15.f90: Likewise.
+	* gfortran.dg/interface_47.f90: New test.
+
+2020-07-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/pr9xxxx-mismatched-traits-and-promise-prev.C: Moved to...
+	* g++.dg/coroutines/pr94760-mismatched-traits-and-promise-prev.C: ...here.
+
+2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/opt87.adb: New test.
+	* gnat.dg/opt87_pkg.ads: New helper.
+	* gnat.dg/opt87_pkg.adb: Likewise.
+
+2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96040
+	* gcc.dg/ipa/pr96040.c: New test.
+
+2020-07-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/popc-1.c: New test.
+	* gcc.target/nvptx/popc-2.c: New test.
+	* gcc.target/nvptx/popc-3.c: New test.
+	* gcc.target/nvptx/mul-wide.c: New test.
+	* gcc.target/nvptx/umul-wide.c: New test.
+
+2020-07-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp-2.c: New
+	testcase.
+
+2020-07-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/fixits-pr84852-1.c: Enclose negative line number in braces.
+	* gcc.dg/fixits-pr84852-2.c: Same.
+	* gcc.dg/pr89410-1.c: Same.
+	* gcc.dg/pr89410-2.c: Same.
+
 2020-07-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/pr95690.f90: Solaris error appears on line 5.

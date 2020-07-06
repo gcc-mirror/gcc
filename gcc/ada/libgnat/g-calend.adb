@@ -226,7 +226,8 @@ package body GNAT.Calendar is
 
    begin
       --  Even though the input time zone is UTC (0), the flag Use_TZ will
-      --  ensure that Split picks up the local time zone.
+      --  ensure that Split picks up the local time zone. ???But Use_TZ is
+      --  False below, and anyway, Use_TZ has no effect if Time_Zone is 0.
 
       Ada_Calendar_Split
         (Date        => Date,
@@ -315,7 +316,8 @@ package body GNAT.Calendar is
 
    begin
       --  Even though the input time zone is UTC (0), the flag Use_TZ will
-      --  ensure that Split picks up the local time zone.
+      --  ensure that Split picks up the local time zone. ???But there is no
+      --  call to Split here.
 
       return
         Ada_Calendar_Time_Of

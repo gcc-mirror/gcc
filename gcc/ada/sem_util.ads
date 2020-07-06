@@ -1693,6 +1693,13 @@ package Sem_Util is
    --  declarations. In Ada 2012 it also covers type and subtype declarations
    --  with aspects: Invariant, Predicate, and Default_Initial_Condition.
 
+   function Is_Current_Instance_Reference_In_Type_Aspect
+     (N : Node_Id) return Boolean;
+   --  True if N is a reference to a current instance object that occurs within
+   --  an aspect_specification for a type or subtype. In this case N will be
+   --  a formal parameter of a subprogram created for a predicate, invariant,
+   --  or Default_Initial_Condition aspect.
+
    function Is_Declaration
      (N                : Node_Id;
       Body_OK          : Boolean := True;
@@ -3109,6 +3116,12 @@ package Sem_Util is
       --  successive intervals (i.e., mergeable intervals are merged).
       --  Low bound is one; high bound is nonnegative.
 
+      function Aggregate_Intervals (N : Node_Id) return Discrete_Interval_List;
+      --  Given an array aggregate N, returns the (unique) interval list
+      --  representing the values of the aggregate choices; if all the array
+      --  components are covered by the others choice then the length of the
+      --  result is zero.
+
       function Type_Intervals (Typ : Entity_Id) return Discrete_Interval_List;
       --  Given a static discrete type or subtype, returns the (unique)
       --  interval list representing the values of the type/subtype.
@@ -3131,5 +3144,9 @@ package Sem_Util is
       --  rules that reference "is statically compatible" pertain to
       --  discriminants and therefore do require support for real types;
       --  the exception is 12.5.1(8).
+
+      Intervals_Error : exception;
+      --  Raised when the list of non-empty pair-wise disjoint intervals cannot
+      --  be built.
    end Interval_Lists;
 end Sem_Util;

@@ -2343,7 +2343,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// result_of
   template<typename _Signature>
-    class result_of;
+    struct result_of;
 
   // Sfinae-friendly result_of implementation:
 

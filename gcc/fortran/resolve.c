@@ -2634,6 +2634,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 
 	  gfc_error ("Interface mismatch in global procedure %qs at %L: %s",
 		     sym->name, &sym->declared_at, reason);
+	  sym->error = 1;
 	  gfc_errors_to_warnings (false);
 	  goto done;
 	}
@@ -9240,7 +9241,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	{
 	  if (code->expr1->symtree->n.sym->attr.untyped)
 	    code->expr1->symtree->n.sym->ts = code->expr2->ts;
-	  selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+	  selector_type = CLASS_DATA (code->expr2)
+	    ? CLASS_DATA (code->expr2)->ts.u.derived : code->expr2->ts.u.derived;
 	}
 
       if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
@@ -11814,10 +11816,18 @@ start:
 	case EXEC_GOTO:
 	  if (code->expr1 != NULL)
 	    {
-	      if (code->expr1->ts.type != BT_INTEGER)
-		gfc_error ("ASSIGNED GOTO statement at %L requires an "
-			   "INTEGER variable", &code->expr1->where);
-	      else if (code->expr1->symtree->n.sym->attr.assign != 1)
+	      if (code->expr1->expr_type != EXPR_VARIABLE
+		  || code->expr1->ts.type != BT_INTEGER
+		  || (code->expr1->ref
+		      && code->expr1->ref->type == REF_ARRAY)
+		  || code->expr1->symtree == NULL
+		  || (code->expr1->symtree->n.sym
+		      && (code->expr1->symtree->n.sym->attr.flavor
+			  == FL_PARAMETER)))
+		gfc_error ("ASSIGNED GOTO statement at %L requires a "
+			   "scalar INTEGER variable", &code->expr1->where);
+	      else if (code->expr1->symtree->n.sym
+		       && code->expr1->symtree->n.sym->attr.assign != 1)
 		gfc_error ("Variable %qs has not been assigned a target "
 			   "label at %L", code->expr1->symtree->n.sym->name,
 			   &code->expr1->where);

@@ -1530,21 +1530,11 @@ cris_select_cc_mode (enum rtx_code op, rtx x, rtx y)
   if (GET_MODE_CLASS (GET_MODE (x)) != MODE_INT || y != const0_rtx)
     return CCmode;
 
-  /* If we have a comparison that doesn't have to look at V or C, check
-     operand x; if it's a valid operator, return CC_NZmode, else CCmode,
-     so we only use CC_NZmode for the cases where we don't actually have
-     both V and C valid.  */
+  /* If we have a comparison that doesn't have to look at V or C, return
+     CC_NZmode.  */
   if (op == EQ || op ==  NE || op ==  GTU || op ==  LEU
       || op ==  LT || op ==  GE)
-    {
-      enum rtx_code e = GET_CODE (x);
-
-    /* Mentioning the rtx_code here is required but not sufficient: the
-       insn also needs to be decorated with <setnz> (and the
-       anonymization prefix <anz> for a named pattern).  */
-      return e == PLUS || e == MINUS || e == MULT || e == NOT || e == NEG
-	? CC_NZmode : CCmode;
-    }
+    return CC_NZmode;
 
   /* We should only get here for comparison operators.  */
   gcc_assert (op ==  GEU || op ==  LTU || op ==  GT || op ==  LE);
