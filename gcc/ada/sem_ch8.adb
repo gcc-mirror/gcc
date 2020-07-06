@@ -5627,6 +5627,21 @@ package body Sem_Ch8 is
          if Is_Type (Entity (N)) then
             Set_Etype (N, Entity (N));
 
+         --  The exception to this general rule are constants associated with
+         --  discriminals of protected types because for each protected op
+         --  a new set of discriminals is internally created by the frontend
+         --  (see Exp_Ch9.Set_Discriminals), and the current decoration of the
+         --  entity pointer may have been set as part of a preanalysis, where
+         --  discriminals still reference the first subprogram or entry to be
+         --  expanded (see Expand_Protected_Body_Declarations).
+
+         elsif Full_Analysis
+           and then Ekind (Entity (N)) = E_Constant
+           and then Present (Discriminal_Link (Entity (N)))
+           and then Is_Protected_Type (Scope (Discriminal_Link (Entity (N))))
+         then
+            goto Find_Name;
+
          else
             declare
                Entyp : constant Entity_Id := Etype (Entity (N));
@@ -5666,6 +5681,8 @@ package body Sem_Ch8 is
 
          return;
       end if;
+
+      <<Find_Name>>
 
       --  Preserve relevant elaboration-related attributes of the context which
       --  are no longer available or very expensive to recompute once analysis,
