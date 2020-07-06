@@ -1,3 +1,11 @@
+2020-07-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88379
+	* gfortran.dg/pr88379.f90: New file.
+
 2020-07-02  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
