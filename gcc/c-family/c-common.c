@@ -5308,12 +5308,26 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
   int firstarg = 0;
   if (TREE_CODE (ctx.fntype) == METHOD_TYPE)
     {
+      bool closure = false;
+      if (ctx.fndecl)
+	{
+	  /* For certain lambda expressions the C++ front end emits calls
+	     that pass a null this pointer as an argument named __closure
+	     to the member operator() of empty function.  Detect those
+	     and avoid checking them, but proceed to check the remaining
+	     arguments.  */
+	  tree arg0 = DECL_ARGUMENTS (ctx.fndecl);
+	  if (tree arg0name = DECL_NAME (arg0))
+	    closure = id_equal (arg0name, "__closure");
+	}
+
       /* In calls to C++ non-static member functions check the this
 	 pointer regardless of whether the function is declared with
 	 attribute nonnull.  */
       firstarg = 1;
-      check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[0],
-					firstarg);
+      if (!closure)
+	check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[0],
+					  firstarg);
     }
 
   tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
@@ -5503,7 +5517,9 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
      happen if the "nonnull" attribute was given without an operand
      list (which means to check every pointer argument).  */
 
-  if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
+  tree paramtype = TREE_TYPE (param);
+  if (TREE_CODE (paramtype) != POINTER_TYPE
+      && TREE_CODE (paramtype) != NULLPTR_TYPE)
     return;
 
   /* Diagnose the simple cases of null arguments.  */
