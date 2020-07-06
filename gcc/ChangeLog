@@ -1,3 +1,24 @@
+2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_select_cc_mode): Always return
+	CC_NZmode for matching comparisons.  Clarify comments.
+	* config/cris/cris-modes.def: Clarify mode comment.
+	* config/cris/cris.md (plusminus, plusminusumin, plusumin): New
+	code iterators.
+	(addsub, addsubbo, nd): New code iterator attributes.
+	("*<addsub><su>qihi"): Rename from "*extopqihi".  Use code
+	iterator constructs instead of match_operator constructs.
+	("*<addsubbo><su><nd><mode>si<setnz>"): Similar from
+	"*extop<mode>si<setnz>".
+	("*add<su>qihi_swap"): Similar from "*addxqihi_swap".
+	("*<addsubbo><su><nd><mode>si<setnz>_swap"): Similar from
+	"*extop<mode>si<setnz>_swap".
+
+2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*extopqihi", "*extop<mode>si<setnz>_swap")
+	("*extop<mode>si<setnz>", "*addxqihi_swap"): Reinstate.
+
 2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Fold calls that

@@ -1,3 +1,15 @@
+2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/27318
+	* frontend-passes.c (check_against_globals): New function.
+	(gfc_check_externals): Split; also invoke check_against_globals
+	via gfc_traverse_ns.
+	(gfc_check_externals0): Recursive part formerly in
+	gfc_check_externals.
+	* resolve.c (resolve_global_procedure): Set sym->error on
+	interface mismatch.
+	* symbol.c (ambiguous_symbol): Check for, and set sym->error.
+
 2020-07-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93423
