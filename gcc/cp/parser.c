@@ -13502,10 +13502,11 @@ cp_parser_toplevel_declaration (cp_parser* parser)
     cp_parser_pragma (parser, pragma_external, NULL);
   else if (token->type == CPP_SEMICOLON)
     {
-      /* A declaration consisting of a single semicolon is
-	 invalid.  Allow it unless we're being pedantic.  */
       cp_lexer_consume_token (parser->lexer);
-      pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+      /* A declaration consisting of a single semicolon is invalid
+       * before C++11.  Allow it unless we're being pedantic.  */
+      if (cxx_dialect < cxx11)
+	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
     }
   else
     /* Parse the declaration itself.  */
