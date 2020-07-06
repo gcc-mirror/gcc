@@ -25,3 +25,7 @@
 # MULTILIB_OPTIONS += EL/EB
 # MULTILIB_DIRNAMES += le be
 # MULTILIB_MATCHES += EL=mel EB=meb
+
+nios2-rust.o: $(srcdir)/config/nios2/nios2-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

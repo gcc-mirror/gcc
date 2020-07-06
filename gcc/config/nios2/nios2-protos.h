@@ -29,6 +29,9 @@ extern void nios2_expand_epilogue (bool);
 extern bool nios2_expand_return (void);
 extern void nios2_function_profiler (FILE *, int);
 
+/* Routines implemented in nios2-rust.c  */
+extern void nios2_rust_target_cpu_info (void);
+
 #ifdef RTX_CODE
 extern bool nios2_large_constant_p (rtx);
 extern bool nios2_large_constant_memory_operand_p (rtx);

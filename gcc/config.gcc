@@ -521,6 +521,7 @@ nds32*)
 	;;
 nios2-*-*)
 	cpu_type=nios2
+	rust_target_objs="nios2-rust.o"
 	extra_options="${extra_options} g.opt"
 	;;
 nvptx-*-*)

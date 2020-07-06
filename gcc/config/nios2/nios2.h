@@ -44,6 +44,9 @@
     }						    \
   while (0)
 
+/* Target CPU info for Rust.  */
+#define TARGET_RUST_CPU_INFO nios2_rust_target_cpu_info
+
 /* We're little endian, unless otherwise specified by defining
    BIG_ENDIAN_FLAG.  */
 #ifndef TARGET_ENDIAN_DEFAULT
