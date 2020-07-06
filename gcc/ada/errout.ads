@@ -453,6 +453,15 @@ package Errout is
    --  Note that is mandatory that the caller ensure that global variables
    --  are set before the Error_Msg call, otherwise the result is undefined.
 
+   --  Also note that calls to Error_Msg and its variants destroy the value of
+   --  these global variables, as a way to support the inclusion of multiple
+   --  insertion characters of the same type. For example, support for
+   --  multiple characters % for a name in the message (up to 3) is
+   --  implemented by unconditionally shifting the value for Error_Msg_Nam_2
+   --  to Error_Msg_Nam_1 and from Error_Msg_Nam_3 to Error_Msg_Nam_2 after
+   --  dealing with insertion character %. The caller should ensure that all
+   --  global variables are restored if needed prior to calling Error_Msg.
+
    Error_Msg_Col : Column_Number renames Err_Vars.Error_Msg_Col;
    --  Column for @ insertion character in message
 
