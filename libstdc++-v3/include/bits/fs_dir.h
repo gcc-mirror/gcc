@@ -312,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
   private:
-    friend class _Dir;
+    friend struct _Dir;
     friend class directory_iterator;
     friend class recursive_directory_iterator;
 
