@@ -1220,19 +1220,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(optional<_Tp>&, optional<_Tp>&) = delete;
 
   template<typename _Tp>
-    constexpr optional<decay_t<_Tp>>
+    constexpr
+    enable_if_t<is_constructible_v<decay_t<_Tp>, _Tp>,
+		optional<decay_t<_Tp>>>
     make_optional(_Tp&& __t)
-    { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
+    noexcept(is_nothrow_constructible_v<optional<decay_t<_Tp>>, _Tp>)
+    { return optional<decay_t<_Tp>>{ std::forward<_Tp>(__t) }; }
 
-  template<typename _Tp, typename ..._Args>
-    constexpr optional<_Tp>
+  template<typename _Tp, typename... _Args>
+    constexpr
+    enable_if_t<is_constructible_v<_Tp, _Args...>,
+		optional<_Tp>>
     make_optional(_Args&&... __args)
-    { return optional<_Tp> { in_place, std::forward<_Args>(__args)... }; }
+    noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
+    { return optional<_Tp>{ in_place, std::forward<_Args>(__args)... }; }
 
-  template<typename _Tp, typename _Up, typename ..._Args>
-    constexpr optional<_Tp>
+  template<typename _Tp, typename _Up, typename... _Args>
+    constexpr
+    enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>,
+		optional<_Tp>>
     make_optional(initializer_list<_Up> __il, _Args&&... __args)
-    { return optional<_Tp> { in_place, __il, std::forward<_Args>(__args)... }; }
+    noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&, _Args...>)
+    { return optional<_Tp>{ in_place, __il, std::forward<_Args>(__args)... }; }
 
   // Hash.
 
