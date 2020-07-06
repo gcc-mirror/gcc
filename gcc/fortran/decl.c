@@ -1889,13 +1889,16 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
   /* If this symbol is confirming an implicit parameter type,
      then an initialization expression is not allowed.  */
-  if (attr.flavor == FL_PARAMETER
-      && sym->value != NULL
-      && *initp != NULL)
+  if (attr.flavor == FL_PARAMETER && sym->value != NULL)
     {
-      gfc_error ("Initializer not allowed for PARAMETER %qs at %C",
-		 sym->name);
-      return false;
+      if (*initp != NULL)
+	{
+	  gfc_error ("Initializer not allowed for PARAMETER %qs at %C",
+		     sym->name);
+	  return false;
+	}
+      else
+	return true;
     }
 
   if (init == NULL)
