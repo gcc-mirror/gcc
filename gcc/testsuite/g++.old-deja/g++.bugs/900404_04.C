@@ -7,12 +7,14 @@
 // elaborated-type-specifier with class key, or an enum-specifier. The
 // declaration below contains neither.
 
-// g++ fails to flag errors for such usage.
+// Since C++11 this is allowed as an empty-declaration.
+
+// g++ fails to flag errors for such usage in C++98.
 
 // keywords: semicolon, vacuous, file scope, declaration
 
 int i;
 
-;			// { dg-error "extra ';'" } 
+;			// { dg-error "extra ';'" "" { target c++98_only } 0 } 
 
 int main () { return 0; }
