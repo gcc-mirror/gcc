@@ -1,3 +1,10 @@
+2020-07-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	* config/gcn/mkoffload.c (compile_native, main): Pass -fPIC/-fpic
+	on to the native compiler, if used.
+	* config/nvptx/mkoffload.c (compile_native, main): Likewise.
+
 2020-07-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
