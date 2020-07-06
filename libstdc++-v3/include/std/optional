@@ -163,9 +163,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr void
       _M_copy_assign(const _Optional_payload_base& __other)
       {
-        if (this->_M_engaged && __other._M_engaged)
-          this->_M_get() = __other._M_get();
-        else
+	if (this->_M_engaged && __other._M_engaged)
+	  this->_M_get() = __other._M_get();
+	else
 	  {
 	    if (__other._M_engaged)
 	      this->_M_construct(__other._M_get());
@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    { }
 
 	  _Empty_byte _M_empty;
-          _Up _M_value;
+	  _Up _M_value;
 	};
 
       template<typename _Up>
@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  ~_Storage() { }
 
 	  _Empty_byte _M_empty;
-          _Up _M_value;
+	  _Up _M_value;
 	};
 
       _Storage<_Stored_type> _M_payload;
@@ -243,14 +243,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool _M_engaged = false;
 
       template<typename... _Args>
-        void
-        _M_construct(_Args&&... __args)
-        noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
-        {
-          ::new ((void *) std::__addressof(this->_M_payload))
-            _Stored_type(std::forward<_Args>(__args)...);
-          this->_M_engaged = true;
-        }
+	void
+	_M_construct(_Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
+	{
+	  ::new ((void *) std::__addressof(this->_M_payload))
+	    _Stored_type(std::forward<_Args>(__args)...);
+	  this->_M_engaged = true;
+	}
 
       constexpr void
       _M_destroy() noexcept
@@ -471,39 +471,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   bool = is_trivially_copy_constructible_v<_Tp>,
 	   bool = is_trivially_move_constructible_v<_Tp>>
     struct _Optional_base
-      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
       // Constructors for engaged optionals.
       template<typename... _Args,
-	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
-        : _M_payload(in_place,
-		     std::forward<_Args>(__args)...) { }
+	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t, _Args&&... __args)
+	: _M_payload(in_place, std::forward<_Args>(__args)...)
+	{ }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible_v<_Tp,
+	       enable_if_t<is_constructible_v<_Tp,
 					      initializer_list<_Up>&,
-					      _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t,
-                                          initializer_list<_Up> __il,
-                                          _Args&&... __args)
-        : _M_payload(in_place,
-		     __il, std::forward<_Args>(__args)...)
-        { }
+					      _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t,
+		       initializer_list<_Up> __il,
+		       _Args&&... __args)
+	: _M_payload(in_place, __il, std::forward<_Args>(__args)...)
+	{ }
 
       // Copy and move constructors.
-      constexpr _Optional_base(const _Optional_base& __other)
-	: _M_payload(__other._M_payload._M_engaged,
-		     __other._M_payload)
+      constexpr
+      _Optional_base(const _Optional_base& __other)
+      : _M_payload(__other._M_payload._M_engaged, __other._M_payload)
       { }
 
-      constexpr _Optional_base(_Optional_base&& __other)
+      constexpr
+      _Optional_base(_Optional_base&& __other)
       noexcept(is_nothrow_move_constructible_v<_Tp>)
-	: _M_payload(__other._M_payload._M_engaged,
-		     std::move(__other._M_payload))
+      : _M_payload(__other._M_payload._M_engaged,
+		   std::move(__other._M_payload))
       { }
 
       // Assignment operators.
@@ -515,33 +517,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct _Optional_base<_Tp, false, true>
-      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
       // Constructors for engaged optionals.
       template<typename... _Args,
-	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
-        : _M_payload(in_place,
-		     std::forward<_Args>(__args)...) { }
+	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t, _Args&&... __args)
+	: _M_payload(in_place, std::forward<_Args>(__args)...)
+	{ }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible_v<_Tp,
+	       enable_if_t<is_constructible_v<_Tp,
 					      initializer_list<_Up>&,
-					      _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t,
-                                          initializer_list<_Up> __il,
-                                          _Args&&... __args)
-        : _M_payload(in_place,
-		     __il, std::forward<_Args>(__args)...)
-        { }
+					      _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t,
+		       initializer_list<_Up> __il,
+		       _Args... __args)
+	: _M_payload(in_place, __il, std::forward<_Args>(__args)...)
+	{ }
 
       // Copy and move constructors.
       constexpr _Optional_base(const _Optional_base& __other)
-	: _M_payload(__other._M_payload._M_engaged,
-		     __other._M_payload)
+      : _M_payload(__other._M_payload._M_engaged, __other._M_payload)
       { }
 
       constexpr _Optional_base(_Optional_base&& __other) = default;
@@ -555,36 +557,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct _Optional_base<_Tp, true, false>
-      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
       // Constructors for engaged optionals.
       template<typename... _Args,
-	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
-        : _M_payload(in_place,
-		     std::forward<_Args>(__args)...) { }
+	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t, _Args&&... __args)
+	: _M_payload(in_place, std::forward<_Args>(__args)...)
+	{ }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible_v<_Tp,
+	       enable_if_t<is_constructible_v<_Tp,
 					      initializer_list<_Up>&,
-					      _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t,
-                                          initializer_list<_Up> __il,
-                                          _Args&&... __args)
-        : _M_payload(in_place,
-		     __il, std::forward<_Args>(__args)...)
-        { }
+					      _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t,
+		       initializer_list<_Up> __il,
+		       _Args&&... __args)
+	: _M_payload(in_place, __il, std::forward<_Args>(__args)...)
+	{ }
 
       // Copy and move constructors.
       constexpr _Optional_base(const _Optional_base& __other) = default;
 
-      constexpr _Optional_base(_Optional_base&& __other)
+      constexpr
+      _Optional_base(_Optional_base&& __other)
       noexcept(is_nothrow_move_constructible_v<_Tp>)
-	: _M_payload(__other._M_payload._M_engaged,
-		     std::move(__other._M_payload))
+      : _M_payload(__other._M_payload._M_engaged,
+		   std::move(__other._M_payload))
       { }
 
       // Assignment operators.
@@ -596,28 +600,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct _Optional_base<_Tp, true, true>
-      : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
+    : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
       constexpr _Optional_base() = default;
 
       // Constructors for engaged optionals.
       template<typename... _Args,
-	       enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
-        : _M_payload(in_place,
-		     std::forward<_Args>(__args)...) { }
+	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t, _Args&&... __args)
+	: _M_payload(in_place, std::forward<_Args>(__args)...)
+	{ }
 
       template<typename _Up, typename... _Args,
-               enable_if_t<is_constructible_v<_Tp,
+	       enable_if_t<is_constructible_v<_Tp,
 					      initializer_list<_Up>&,
-					      _Args&&...>, bool> = false>
-        constexpr explicit _Optional_base(in_place_t,
-                                          initializer_list<_Up> __il,
-                                          _Args&&... __args)
-        : _M_payload(in_place,
-		     __il, std::forward<_Args>(__args)...)
-        { }
+					      _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t,
+		       initializer_list<_Up> __il,
+		       _Args&&... __args)
+	: _M_payload(in_place, __il, std::forward<_Args>(__args)...)
+	{ }
 
       // Copy and move constructors.
       constexpr _Optional_base(const _Optional_base& __other) = default;
@@ -694,8 +699,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Converting constructors for engaged optionals.
       template<typename _Up = _Tp,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
-			 is_constructible<_Tp, _Up&&>,
-			 is_convertible<_Up&&, _Tp>> = true>
+			 is_constructible<_Tp, _Up>,
+			 is_convertible<_Up, _Tp>> = true>
 	constexpr
 	optional(_Up&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -703,12 +708,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up = _Tp,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
-			 is_constructible<_Tp, _Up&&>,
-			 __not_<is_convertible<_Up&&, _Tp>>> = false>
+			 is_constructible<_Tp, _Up>,
+			 __not_<is_convertible<_Up, _Tp>>> = false>
 	explicit constexpr
 	optional(_Up&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
-        : _Base(std::in_place, std::forward<_Up>(__t)) { }
+	: _Base(std::in_place, std::forward<_Up>(__t)) { }
 
       template<typename _Up,
 	       _Requires<__not_<is_same<_Tp, _Up>>,
@@ -736,11 +741,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    emplace(*__t);
 	}
 
-      template <typename _Up,
-		_Requires<__not_<is_same<_Tp, _Up>>,
-			  is_constructible<_Tp, _Up&&>,
-			  is_convertible<_Up&&, _Tp>,
-			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
+      template<typename _Up,
+	       _Requires<__not_<is_same<_Tp, _Up>>,
+			 is_constructible<_Tp, _Up>,
+			 is_convertible<_Up, _Tp>,
+			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
 	constexpr
 	optional(optional<_Up>&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -749,11 +754,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    emplace(std::move(*__t));
 	}
 
-      template <typename _Up,
-		_Requires<__not_<is_same<_Tp, _Up>>,
-			  is_constructible<_Tp, _Up&&>,
-			  __not_<is_convertible<_Up&&, _Tp>>,
-			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
+      template<typename _Up,
+	       _Requires<__not_<is_same<_Tp, _Up>>,
+			 is_constructible<_Tp, _Up>,
+			 __not_<is_convertible<_Up, _Tp>>,
+			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
 	explicit constexpr
 	optional(optional<_Up>&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -763,7 +768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _Args,
-	       _Requires<is_constructible<_Tp, _Args&&...>> = false>
+	       _Requires<is_constructible<_Tp, _Args...>> = false>
 	explicit constexpr
 	optional(in_place_t, _Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
@@ -772,7 +777,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args,
 	       _Requires<is_constructible<_Tp,
 					  initializer_list<_Up>&,
-					  _Args&&...>> = false>
+					  _Args...>> = false>
 	explicit constexpr
 	optional(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
@@ -833,7 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-        enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
+	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
 			    is_constructible<_Tp, _Up>,
 			    is_assignable<_Tp&, _Up>,
 			    __not_<__converts_from_optional<_Tp, _Up>>,
@@ -859,7 +864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _Args>
-	enable_if_t<is_constructible_v<_Tp, _Args&&...>, _Tp&>
+	enable_if_t<is_constructible_v<_Tp, _Args...>, _Tp&>
 	emplace(_Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	{
@@ -869,8 +874,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up, typename... _Args>
-	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&,
-				       _Args&&...>, _Tp&>
+	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>,
+		    _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
 					    _Args...>)
@@ -1246,17 +1251,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Hash.
 
   template<typename _Tp, typename _Up = remove_const_t<_Tp>,
-           bool = __poison_hash<_Up>::__enable_hash_call>
+	   bool = __poison_hash<_Up>::__enable_hash_call>
     struct __optional_hash_call_base
     {
       size_t
       operator()(const optional<_Tp>& __t) const
       noexcept(noexcept(hash<_Up>{}(*__t)))
       {
-        // We pick an arbitrary hash for disengaged optionals which hopefully
-        // usual values of _Tp won't typically hash to.
-        constexpr size_t __magic_disengaged_hash = static_cast<size_t>(-3333);
-        return __t ? hash<_Up>{}(*__t) : __magic_disengaged_hash;
+	// We pick an arbitrary hash for disengaged optionals which hopefully
+	// usual values of _Tp won't typically hash to.
+	constexpr size_t __magic_disengaged_hash = static_cast<size_t>(-3333);
+	return __t ? hash<_Up>{}(*__t) : __magic_disengaged_hash;
       }
     };
 
