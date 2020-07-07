@@ -1536,11 +1536,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_CONSTEXPR TYPE					\
       denorm_min() _GLIBCXX_USE_NOEXCEPT				\
       { return static_cast<TYPE>(0); }					\
- 									\
+									\
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false; 		\
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true; 		\
       static _GLIBCXX_USE_CONSTEXPR bool is_modulo = false; 		\
- 									\
+									\
       static _GLIBCXX_USE_CONSTEXPR bool traps 				\
 	= __glibcxx_integral_traps; 					\
       static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false; 	\
