@@ -154,6 +154,7 @@ changelog_regex = re.compile(r'^(?:[fF]or +)?([a-z0-9+-/]*)ChangeLog:?')
 pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?([0-9]+)$')
 dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
+end_of_location_regex = re.compile(r'[\[<(:]')
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
@@ -204,14 +205,13 @@ class ChangeLogEntry:
                 line = m.group('content')
 
             if in_location:
-                # Strip everything that is not a filename in "line": entities
-                # "(NAME)", entry text (the colon, if present, and anything
-                # that follows it).
-                if '(' in line:
-                    line = line[:line.index('(')]
-                    in_location = False
-                if ':' in line:
-                    line = line[:line.index(':')]
+                # Strip everything that is not a filename in "line":
+                # entities "(NAME)", cases "<PATTERN>", conditions
+                # "[COND]", entry text (the colon, if present, and
+                # anything that follows it).
+                m = end_of_location_regex.search(line)
+                if m:
+                    line = line[:m.start()]
                     in_location = False
 
                 # At this point, all that's left is a list of filenames
