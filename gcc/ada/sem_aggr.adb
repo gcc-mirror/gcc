@@ -5033,16 +5033,28 @@ package body Sem_Aggr is
                   end if;
 
                --  Ada 2012: If component is scalar with default value, use it
+               --  by converting it to Ctyp, so that subtype constraints are
+               --  checked.
 
                elsif Is_Scalar_Type (Ctyp)
                  and then Has_Default_Aspect (Ctyp)
                then
-                  Add_Association
-                    (Component  => Component,
-                     Expr       =>
-                       Default_Aspect_Value
-                         (First_Subtype (Underlying_Type (Ctyp))),
-                     Assoc_List => New_Assoc_List);
+                  declare
+                     Conv : constant Node_Id :=
+                       Convert_To
+                         (Typ  => Ctyp,
+                          Expr =>
+                            New_Copy_Tree
+                              (Default_Aspect_Value
+                                 (First_Subtype (Underlying_Type (Ctyp)))));
+
+                  begin
+                     Analyze_And_Resolve (Conv, Ctyp);
+                     Add_Association
+                       (Component  => Component,
+                        Expr       => Conv,
+                        Assoc_List => New_Assoc_List);
+                  end;
 
                elsif Has_Non_Null_Base_Init_Proc (Ctyp)
                  or else not Expander_Active

@@ -6830,7 +6830,7 @@ package body Freeze is
          end if;
 
          --  If the type has a Defaut_Value/Default_Component_Value aspect,
-         --  this is where we analye the expression (after the type is frozen,
+         --  this is where we analyze the expression (after the type is frozen,
          --  since in the case of Default_Value, we are analyzing with the
          --  type itself, and we treat Default_Component_Value similarly for
          --  the sake of uniformity).
