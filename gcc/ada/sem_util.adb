@@ -2544,10 +2544,6 @@ package body Sem_Util is
       --  second occurrence, the error is reported, and the tree traversal
       --  is abandoned.
 
-      procedure Preanalyze_Without_Errors (N : Node_Id);
-      --  Preanalyze N without reporting errors. Very dubious, you can't just
-      --  go analyzing things more than once???
-
       -------------------------
       -- Collect_Identifiers --
       -------------------------
@@ -2773,18 +2769,6 @@ package body Sem_Util is
 
          Do_Traversal (N);
       end Collect_Identifiers;
-
-      -------------------------------
-      -- Preanalyze_Without_Errors --
-      -------------------------------
-
-      procedure Preanalyze_Without_Errors (N : Node_Id) is
-         Status : constant Boolean := Get_Ignore_Errors;
-      begin
-         Set_Ignore_Errors (True);
-         Preanalyze (N);
-         Set_Ignore_Errors (Status);
-      end Preanalyze_Without_Errors;
 
    --  Start of processing for Check_Function_Writable_Actuals
 
@@ -25056,6 +25040,18 @@ package body Sem_Util is
 
       return Kind;
    end Policy_In_Effect;
+
+   -------------------------------
+   -- Preanalyze_Without_Errors --
+   -------------------------------
+
+   procedure Preanalyze_Without_Errors (N : Node_Id) is
+      Status : constant Boolean := Get_Ignore_Errors;
+   begin
+      Set_Ignore_Errors (True);
+      Preanalyze (N);
+      Set_Ignore_Errors (Status);
+   end Preanalyze_Without_Errors;
 
    -----------------------
    -- Predicate_Enabled --

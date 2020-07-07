@@ -2574,7 +2574,7 @@ package body Scng is
 
          Token := Tok_Identifier;
 
-         --  Here is where we check if it was a keyword
+         --  Check if it is a keyword
 
          if Is_Keyword_Name (Token_Name) then
             Accumulate_Token_Checksum;

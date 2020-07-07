@@ -5013,12 +5013,7 @@ package body Sem_Ch8 is
    -- Find_Direct_Name --
    ----------------------
 
-   procedure Find_Direct_Name
-     (N            : Node_Id;
-      Errors_OK    : Boolean := True;
-      Marker_OK    : Boolean := True;
-      Reference_OK : Boolean := True)
-   is
+   procedure Find_Direct_Name (N : Node_Id) is
       E   : Entity_Id;
       E2  : Entity_Id;
       Msg : Boolean;
@@ -5285,10 +5280,6 @@ package body Sem_Ch8 is
          Item      : Node_Id;
 
       begin
-         if not Errors_OK then
-            return;
-         end if;
-
          --  Ada 2005 (AI-262): Generate a precise error concerning the
          --  Beaujolais effect that was previously detected
 
@@ -5456,8 +5447,7 @@ package body Sem_Ch8 is
 
          --  Named aggregate should also be handled similarly ???
 
-         if Errors_OK
-           and then Nkind (N) = N_Identifier
+         if Nkind (N) = N_Identifier
            and then Nkind (Parent (N)) = N_Case_Statement_Alternative
          then
             declare
@@ -5493,122 +5483,119 @@ package body Sem_Ch8 is
          Set_Entity (N, Any_Id);
          Set_Etype  (N, Any_Type);
 
-         if Errors_OK then
+         --  We use the table Urefs to keep track of entities for which we
+         --  have issued errors for undefined references. Multiple errors
+         --  for a single name are normally suppressed, however we modify
+         --  the error message to alert the programmer to this effect.
 
-            --  We use the table Urefs to keep track of entities for which we
-            --  have issued errors for undefined references. Multiple errors
-            --  for a single name are normally suppressed, however we modify
-            --  the error message to alert the programmer to this effect.
-
-            for J in Urefs.First .. Urefs.Last loop
-               if Chars (N) = Chars (Urefs.Table (J).Node) then
-                  if Urefs.Table (J).Err /= No_Error_Msg
-                    and then Sloc (N) /= Urefs.Table (J).Loc
-                  then
-                     Error_Msg_Node_1 := Urefs.Table (J).Node;
-
-                     if Urefs.Table (J).Nvis then
-                        Change_Error_Text (Urefs.Table (J).Err,
-                          "& is not visible (more references follow)");
-                     else
-                        Change_Error_Text (Urefs.Table (J).Err,
-                          "& is undefined (more references follow)");
-                     end if;
-
-                     Urefs.Table (J).Err := No_Error_Msg;
-                  end if;
-
-                  --  Although we will set Msg False, and thus suppress the
-                  --  message, we also set Error_Posted True, to avoid any
-                  --  cascaded messages resulting from the undefined reference.
-
-                  Msg := False;
-                  Set_Error_Posted (N);
-                  return;
-               end if;
-            end loop;
-
-            --  If entry not found, this is first undefined occurrence
-
-            if Nvis then
-               Error_Msg_N ("& is not visible!", N);
-               Emsg := Get_Msg_Id;
-
-            else
-               Error_Msg_N ("& is undefined!", N);
-               Emsg := Get_Msg_Id;
-
-               --  A very bizarre special check, if the undefined identifier
-               --  is Put or Put_Line, then add a special error message (since
-               --  this is a very common error for beginners to make).
-
-               if Chars (N) in Name_Put | Name_Put_Line then
-                  Error_Msg_N -- CODEFIX
-                    ("\\possible missing `WITH Ada.Text_'I'O; " &
-                     "USE Ada.Text_'I'O`!", N);
-
-               --  Another special check if N is the prefix of a selected
-               --  component which is a known unit: add message complaining
-               --  about missing with for this unit.
-
-               elsif Nkind (Parent (N)) = N_Selected_Component
-                 and then N = Prefix (Parent (N))
-                 and then Is_Known_Unit (Parent (N))
+         for J in Urefs.First .. Urefs.Last loop
+            if Chars (N) = Chars (Urefs.Table (J).Node) then
+               if Urefs.Table (J).Err /= No_Error_Msg
+                 and then Sloc (N) /= Urefs.Table (J).Loc
                then
-                  Error_Msg_Node_2 := Selector_Name (Parent (N));
-                  Error_Msg_N -- CODEFIX
-                    ("\\missing `WITH &.&;`", Prefix (Parent (N)));
+                  Error_Msg_Node_1 := Urefs.Table (J).Node;
+
+                  if Urefs.Table (J).Nvis then
+                     Change_Error_Text (Urefs.Table (J).Err,
+                       "& is not visible (more references follow)");
+                  else
+                     Change_Error_Text (Urefs.Table (J).Err,
+                       "& is undefined (more references follow)");
+                  end if;
+
+                  Urefs.Table (J).Err := No_Error_Msg;
                end if;
 
-               --  Now check for possible misspellings
+               --  Although we will set Msg False, and thus suppress the
+               --  message, we also set Error_Posted True, to avoid any
+               --  cascaded messages resulting from the undefined reference.
 
-               declare
-                  E      : Entity_Id;
-                  Ematch : Entity_Id := Empty;
+               Msg := False;
+               Set_Error_Posted (N);
+               return;
+            end if;
+         end loop;
 
-                  Last_Name_Id : constant Name_Id :=
-                                   Name_Id (Nat (First_Name_Id) +
-                                              Name_Entries_Count - 1);
+         --  If entry not found, this is first undefined occurrence
 
-               begin
-                  for Nam in First_Name_Id .. Last_Name_Id loop
-                     E := Get_Name_Entity_Id (Nam);
+         if Nvis then
+            Error_Msg_N ("& is not visible!", N);
+            Emsg := Get_Msg_Id;
 
-                     if Present (E)
-                        and then (Is_Immediately_Visible (E)
-                                    or else
-                                  Is_Potentially_Use_Visible (E))
-                     then
-                        if Is_Bad_Spelling_Of (Chars (N), Nam) then
-                           Ematch := E;
-                           exit;
-                        end if;
+         else
+            Error_Msg_N ("& is undefined!", N);
+            Emsg := Get_Msg_Id;
+
+            --  A very bizarre special check, if the undefined identifier
+            --  is Put or Put_Line, then add a special error message (since
+            --  this is a very common error for beginners to make).
+
+            if Chars (N) in Name_Put | Name_Put_Line then
+               Error_Msg_N -- CODEFIX
+                 ("\\possible missing `WITH Ada.Text_'I'O; " &
+                  "USE Ada.Text_'I'O`!", N);
+
+            --  Another special check if N is the prefix of a selected
+            --  component which is a known unit: add message complaining
+            --  about missing with for this unit.
+
+            elsif Nkind (Parent (N)) = N_Selected_Component
+              and then N = Prefix (Parent (N))
+              and then Is_Known_Unit (Parent (N))
+            then
+               Error_Msg_Node_2 := Selector_Name (Parent (N));
+               Error_Msg_N -- CODEFIX
+                 ("\\missing `WITH &.&;`", Prefix (Parent (N)));
+            end if;
+
+            --  Now check for possible misspellings
+
+            declare
+               E      : Entity_Id;
+               Ematch : Entity_Id := Empty;
+
+               Last_Name_Id : constant Name_Id :=
+                                Name_Id (Nat (First_Name_Id) +
+                                           Name_Entries_Count - 1);
+
+            begin
+               for Nam in First_Name_Id .. Last_Name_Id loop
+                  E := Get_Name_Entity_Id (Nam);
+
+                  if Present (E)
+                     and then (Is_Immediately_Visible (E)
+                                 or else
+                               Is_Potentially_Use_Visible (E))
+                  then
+                     if Is_Bad_Spelling_Of (Chars (N), Nam) then
+                        Ematch := E;
+                        exit;
                      end if;
-                  end loop;
-
-                  if Present (Ematch) then
-                     Error_Msg_NE -- CODEFIX
-                       ("\possible misspelling of&", N, Ematch);
                   end if;
-               end;
-            end if;
+               end loop;
 
-            --  Make entry in undefined references table unless the full errors
-            --  switch is set, in which case by refraining from generating the
-            --  table entry we guarantee that we get an error message for every
-            --  undefined reference. The entry is not added if we are ignoring
-            --  errors.
-
-            if not All_Errors_Mode and then Ignore_Errors_Enable = 0 then
-               Urefs.Append (
-                 (Node => N,
-                  Err  => Emsg,
-                  Nvis => Nvis,
-                  Loc  => Sloc (N)));
-            end if;
-
-            Msg := True;
+               if Present (Ematch) then
+                  Error_Msg_NE -- CODEFIX
+                    ("\possible misspelling of&", N, Ematch);
+               end if;
+            end;
          end if;
+
+         --  Make entry in undefined references table unless the full errors
+         --  switch is set, in which case by refraining from generating the
+         --  table entry we guarantee that we get an error message for every
+         --  undefined reference. The entry is not added if we are ignoring
+         --  errors.
+
+         if not All_Errors_Mode and then Ignore_Errors_Enable = 0 then
+            Urefs.Append (
+              (Node => N,
+               Err  => Emsg,
+               Nvis => Nvis,
+               Loc  => Sloc (N)));
+         end if;
+
+         Msg := True;
       end Undefined;
 
       --  Local variables
@@ -5730,6 +5717,12 @@ package body Sem_Ch8 is
 
          E := Homonym (E);
       end loop;
+
+      --  If we are ignoring errors, skip the error processing
+
+      if Get_Ignore_Errors then
+         return;
+      end if;
 
       --  If no entries on homonym chain that were potentially visible,
       --  and no entities reasonably considered as non-visible, then
@@ -6050,7 +6043,7 @@ package body Sem_Ch8 is
             --  If no homonyms were visible, the entity is unambiguous
 
             if not Is_Overloaded (N) then
-               if Reference_OK and then not Is_Actual_Parameter then
+               if not Is_Actual_Parameter then
                   Generate_Reference (E, N);
                end if;
             end if;
@@ -6069,8 +6062,7 @@ package body Sem_Ch8 is
             --  in SPARK mode where renamings are traversed for generating
             --  local effects of subprograms.
 
-            if Reference_OK
-              and then Is_Object (E)
+            if Is_Object (E)
               and then Present (Renamed_Object (E))
               and then not GNATprove_Mode
             then
@@ -6100,7 +6092,7 @@ package body Sem_Ch8 is
                   --  Generate reference unless this is an actual parameter
                   --  (see comment below).
 
-                  if Reference_OK and then not Is_Actual_Parameter then
+                  if not Is_Actual_Parameter then
                      Generate_Reference (E, N);
                      Set_Referenced (E, R);
                   end if;
@@ -6109,7 +6101,7 @@ package body Sem_Ch8 is
             --  Normal case, not a label: generate reference
 
             else
-               if Reference_OK and then not Is_Actual_Parameter then
+               if not Is_Actual_Parameter then
 
                   --  Package or generic package is always a simple reference
 
@@ -6129,7 +6121,7 @@ package body Sem_Ch8 is
                         --  If we don't know now, generate reference later
 
                         when Unknown =>
-                           Deferred_References.Append ((E, N));
+                           Defer_Reference ((E, N));
                      end case;
                   end if;
                end if;
@@ -6178,11 +6170,7 @@ package body Sem_Ch8 is
       --  reference is a write when it appears on the left hand side of an
       --  assignment.
 
-      if Marker_OK
-        and then Needs_Variable_Reference_Marker
-                   (N        => N,
-                    Calls_OK => False)
-      then
+      if Needs_Variable_Reference_Marker (N => N, Calls_OK => False) then
          declare
             Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
 
@@ -6746,7 +6734,7 @@ package body Sem_Ch8 is
                Generate_Reference (Id, N, 'r');
 
             when Unknown =>
-               Deferred_References.Append ((Id, N));
+               Defer_Reference ((Id, N));
          end case;
       end if;
 

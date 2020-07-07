@@ -112,8 +112,8 @@ package Errout is
    --        already placed an error (not warning) message at that location,
    --        then we assume this is cascaded junk and delete the message.
 
-   --  This normal suppression action may be overridden in cases 2-5 (but not
-   --  in case 1 or 7 by setting All_Errors mode, or by setting the special
+   --  This normal suppression action may be overridden in cases 2-5 (but
+   --  not in case 1 or 7) by setting All_Errors mode, or by setting the
    --  unconditional message insertion character (!) as described below.
 
    ---------------------------------------------------------

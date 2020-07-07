@@ -17021,7 +17021,7 @@ package body Sem_Prag is
                      return;
                   end if;
 
-               --  Otherwie the expression is not static
+               --  Otherwise the expression is not static
 
                else
                   Error_Pragma_Arg
