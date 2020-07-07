@@ -1,3 +1,16 @@
+2020-07-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/94954
+	* config/rs6000/altivec.h (vec_pack_to_short_fp32): Update.
+	* config/rs6000/altivec.md (UNSPEC_CONVERT_4F32_8F16): New unspec.
+	(convert_4f32_8f16): New define_expand
+	* config/rs6000/rs6000-builtin.def (convert_4f32_8f16): New builtin define
+	and overload.
+	* config/rs6000/rs6000-c.c (P9V_BUILTIN_VEC_CONVERT_4F32_8F16): New
+	overloaded builtin entry.
+	* config/rs6000/vsx.md (UNSPEC_VSX_XVCVSPHP): New unspec.
+	(vsx_xvcvsphp): New define_insn.
+
 2020-06-30  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
