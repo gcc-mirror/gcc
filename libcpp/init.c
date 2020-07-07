@@ -657,10 +657,11 @@ cpp_post_options (cpp_reader *pfile)
 }
 
 /* Setup for processing input from the file named FNAME, or stdin if
-   it is the empty string.  Return the original filename
-   on success (e.g. foo.i->foo.c), or NULL on failure.  */
+   it is the empty string.  Return the original filename on success
+   (e.g. foo.i->foo.c), or NULL on failure.  INJECTING is true if
+   there may be injected headers before line 1 of the main file.  */
 const char *
-cpp_read_main_file (cpp_reader *pfile, const char *fname)
+cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
@@ -677,16 +678,16 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 
-  _cpp_stack_file (pfile, pfile->main_file, IT_MAIN, 0);
+  _cpp_stack_file (pfile, pfile->main_file,
+		   injecting ? IT_MAIN_INJECT : IT_MAIN, 0);
 
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
     {
       read_original_filename (pfile);
-      fname =
-	ORDINARY_MAP_FILE_NAME
-	((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)));
+      fname = (ORDINARY_MAP_FILE_NAME
+	       ((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table))));
     }
   return fname;
 }
