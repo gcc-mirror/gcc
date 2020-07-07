@@ -3160,3 +3160,38 @@ index 823eb539993..4ec22162c12 100644
 -- 
 2.27.0
 
+=== 0001-Check-for-more-missing-math-decls-on-vxworks.patch ===
+From 0edfc1fd22405ee8e946101e44cd8edc0ee12047 Mon Sep 17 00:00:00 2001
+From: Douglas B Rupp <douglas.b.rupp@gmail.com>
+Date: Sun, 31 May 2020 13:25:28 -0700
+Subject: [PATCH] Check for more missing math decls on vxworks.
+
+Use the GLIBCXX_CHECK_MATH_DECL macro to check for the full list of
+vxworks math decls.
+
+for libstdc++-v3/ChangeLog:
+
+	* crossconfig.m4 <*-vxworks>: Check for more math decls.
+	* configure [FAKEPATCH]: Rebuild.
+---
+ libstdc++-v3/configure      | 255 ++++++++++++++++++++++++++++++++++++++++++++
+ libstdc++-v3/crossconfig.m4 |   3 +-
+ 2 files changed, 257 insertions(+), 1 deletion(-)
+
+diff --git a/libstdc++-v3/configure b/libstdc++-v3/configure
+index b5beb45..4ef678e 100755
+--- a/libstdc++-v3/configure
++++ b/libstdc++-v3/configure
+@@ -1 +1,2 @@
+ 
++
+diff --git a/libstdc++-v3/crossconfig.m4 b/libstdc++-v3/crossconfig.m4
+index fe18288..313f84d 100644
+--- a/libstdc++-v3/crossconfig.m4
++++ b/libstdc++-v3/crossconfig.m4
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.7.4
+
