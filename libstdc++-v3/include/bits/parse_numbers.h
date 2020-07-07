@@ -36,7 +36,7 @@
 
 #if __cplusplus >= 201402L
 
-#include <bits/int_limits.h>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -265,7 +265,7 @@ namespace __select_int
 
   template<unsigned long long _Val, typename _IntType, typename... _Ints>
     struct _Select_int_base<_Val, _IntType, _Ints...>
-    : conditional_t<(_Val <= __detail::__int_limits<_IntType>::max()),
+    : conditional_t<(_Val <= __gnu_cxx::__int_traits<_IntType>::__max),
 		    integral_constant<_IntType, _Val>,
 		    _Select_int_base<_Val, _Ints...>>
     { };

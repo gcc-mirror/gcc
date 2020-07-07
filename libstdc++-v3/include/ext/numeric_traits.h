@@ -54,6 +54,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Value>
     struct __numeric_traits_integer
     {
+#if __cplusplus >= 201103L
+      static_assert(std::__is_integer<_Value>::__value,
+		    "invalid specialization");
+#endif
+
       // Only integers for initialization of member constant.
       static const _Value __min = __glibcxx_min(_Value);
       static const _Value __max = __glibcxx_max(_Value);
@@ -75,6 +80,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Value>
     const int __numeric_traits_integer<_Value>::__digits;
+
+#if __cplusplus >= 201103L
+  template<typename _Tp>
+    using __int_traits = __numeric_traits_integer<_Tp>;
+#endif
 
 #undef __glibcxx_signed
 #undef __glibcxx_digits
