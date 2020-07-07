@@ -1,3 +1,19 @@
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* match.c (copy_ts_from_selector_to_associate, build_class_sym):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+	* resolve.c (resolve_select_type):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* resolve.c (gfc_resolve_code): Check for valid arguments to
+	assigned GOTO.
+
 2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/27318

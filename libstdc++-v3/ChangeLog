@@ -1,3 +1,43 @@
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (_Optional_payload_base, _Optional_base)
+	(optional, __optional_hash_call_base): Adjust whitespace and
+	other formatting. Remove redundant && tokens on template
+	arguments to type traits.
+
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (make_optional): Add enable_if
+	constraints and noexcept-specifier to each overload.
+	* testsuite/20_util/optional/make_optional-2.cc: New test.
+
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96036
+	* include/std/optional (optional): Add noexcept-specifier to
+	every constructor, assignment operator, emplace function and
+	dereference operator.
+	* testsuite/20_util/optional/assignment/noexcept.cc: New test.
+	* testsuite/20_util/optional/cons/noexcept.cc: New test.
+
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_dir.h: Use consistent tag in class-head.
+	* include/bits/localefwd.h: Likwise.
+	* include/bits/regex.h: Likwise.
+	* include/bits/stl_map.h: Likwise.
+	* include/bits/stl_multimap.h: Likwise.
+	* include/bits/stl_multiset.h: Likwise.
+	* include/bits/stl_set.h: Likwise.
+	* include/std/complex: Likwise.
+	* include/std/functional: Likwise.
+	* include/std/future: Likwise.
+	* include/std/system_error: Likwise.
+	* include/std/thread: Likwise.
+	* include/std/tuple: Likwise.
+	* include/std/type_traits: Likwise.
+	* include/std/valarray: Likwise.
+
 2020-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/basic_ios/conv/voidptr.cc: Add c++98_only

@@ -1,3 +1,48 @@
+2020-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95984
+	* g++.dg/warn/Wnonnull6.C: New test.
+
+2020-07-06  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/eh/builtin10.C: Adjust expected errors.
+	* g++.dg/eh/builtin11.C: Likewise.
+	* g++.dg/eh/builtin5.C: Likewise.
+	* g++.dg/eh/builtin6.C: Likewise.
+	* g++.dg/eh/builtin7.C: Likewise.
+	* g++.dg/eh/builtin9.C: Likewise.
+	* g++.dg/parse/crash55.C: Likewise.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* gfortran.dg/pr95980.f90: New file.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* gfortran.dg/pr95709.f90: New file.
+
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.old-deja/g++.bugs/900404_04.C: Add c++98_only selector to
+	dg-error for extra ';'.
+	* g++.old-deja/g++.law/missed-error2.C: Likewise.
+
+2020-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96075
+	* gcc.dg/vect/slp-46.c: New testcase.
+
+2020-07-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/vadd_add.c: New test.
+	* gcc.target/nvptx/vsub_add.c: New test.
+
+2020-07-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-movulsr.c: New test.
+
 2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/pr93372-39.c: New test.
