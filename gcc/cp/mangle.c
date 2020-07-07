@@ -2850,6 +2850,60 @@ write_member_name (tree member)
     write_expression (member);
 }
 
+/* EXPR is a base COMPONENT_REF; write the minimized base conversion path for
+   converting to BASE, or just the conversion of EXPR if BASE is null.
+
+   "Given a fully explicit base path P := C_n -> ... -> C_0, the minimized base
+   path Min(P) is defined as follows: let C_i be the last element for which the
+   conversion to C_0 is unambiguous; if that element is C_n, the minimized path
+   is C_n -> C_0; otherwise, the minimized path is Min(C_n -> ... -> C_i) ->
+   C_0."
+
+   We mangle the conversion to C_i if it's different from C_n.  */
+
+static bool
+write_base_ref (tree expr, tree base = NULL_TREE)
+{
+  if (TREE_CODE (expr) != COMPONENT_REF)
+    return false;
+
+  tree field = TREE_OPERAND (expr, 1);
+
+  if (TREE_CODE (field) != FIELD_DECL || !DECL_FIELD_IS_BASE (field))
+    return false;
+
+  tree object = TREE_OPERAND (expr, 0);
+
+  tree binfo = NULL_TREE;
+  if (base)
+    {
+      tree cur = TREE_TYPE (object);
+      binfo = lookup_base (cur, base, ba_unique, NULL, tf_none);
+    }
+  else
+    /* We're at the end of the base conversion chain, so it can't be
+       ambiguous.  */
+    base = TREE_TYPE (field);
+
+  if (binfo == error_mark_node)
+    {
+      /* cur->base is ambiguous, so make the conversion to
+	 last explicit, expressed as a cast (last&)object.  */
+      tree last = TREE_TYPE (expr);
+      write_string (OVL_OP_INFO (false, CAST_EXPR)->mangled_name);
+      write_type (build_reference_type (last));
+      write_expression (object);
+    }
+  else if (write_base_ref (object, base))
+    /* cur->base is unambiguous, but we had another base conversion
+       underneath and wrote it out.  */;
+  else
+    /* No more base conversions, just write out the object.  */
+    write_expression (object);
+
+  return true;
+}
+
 /* <expression> ::= <unary operator-name> <expression>
 		::= <binary operator-name> <expression> <expression>
 		::= <expr-primary>
@@ -3268,6 +3322,8 @@ write_expression (tree expr)
 	      ob = TREE_OPERAND (ob, 0);
 	      write_expression (ob);
 	    }
+	  else if (write_base_ref (expr))
+	    return;
 	  else if (!is_dummy_object (ob))
 	    {
 	      write_string ("dt");
