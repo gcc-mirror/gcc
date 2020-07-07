@@ -31443,25 +31443,26 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
   /* Issue a warning for the first mismatched declaration.
      Avoid using "%#qT" since the class-key for the same type will
      be the same regardless of which one was used in the declaraion.  */
-  warning_at (loc, OPT_Wmismatched_tags,
-	      "%qT declared with a mismatched class-key %qs",
-	      type_decl, xmatchkstr);
+  if (warning_at (loc, OPT_Wmismatched_tags,
+		  "%qT declared with a mismatched class-key %qs",
+		  type_decl, xmatchkstr))
+    {
+      /* Suggest how to avoid the warning for each instance since
+	 the guidance may be different depending on context.  */
+      inform (loc,
+	      (key_redundant_p
+	       ? G_("remove the class-key or replace it with %qs")
+	       : G_("replace the class-key with %qs")),
+	      xpectkstr);
 
-  /* Suggest how to avoid the warning for each instance since
-     the guidance may be different depending on context.  */
-  inform (loc,
-	  (key_redundant_p
-	   ? G_("remove the class-key or replace it with %qs")
-	   : G_("replace the class-key with %qs")),
-	  xpectkstr);
-
-  /* Also point to the first declaration or definition that guided
-     the decision to issue the warning above.  */
-  inform (cdlguide->location (idxguide),
-	  (def_p
-	   ? G_("%qT defined as %qs here")
-	   : G_("%qT first declared as %qs here")),
-	  type_decl, xpectkstr);
+      /* Also point to the first declaration or definition that guided
+	 the decision to issue the warning above.  */
+      inform (cdlguide->location (idxguide),
+	      (def_p
+	       ? G_("%qT defined as %qs here")
+	       : G_("%qT first declared as %qs here")),
+	      type_decl, xpectkstr);
+    }
 
   /* Issue warnings for the remaining inconsistent declarations.  */
   for (unsigned i = idx + 1; i != ndecls; ++i)
@@ -31476,16 +31477,16 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
       key_redundant_p = key_redundant (i);
       /* Set the function declaration to print in diagnostic context.  */
       current_function_decl = function (i);
-      warning_at (loc, OPT_Wmismatched_tags,
-		  "%qT declared with a mismatched class-key %qs",
-		  type_decl, xmatchkstr);
-      /* Suggest how to avoid the warning for each instance since
-	 the guidance may be different depending on context.  */
-      inform (loc,
-	      (key_redundant_p
-	       ? G_("remove the class-key or replace it with %qs")
-	       : G_("replace the class-key with %qs")),
-	      xpectkstr);
+      if (warning_at (loc, OPT_Wmismatched_tags,
+		      "%qT declared with a mismatched class-key %qs",
+		      type_decl, xmatchkstr))
+	/* Suggest how to avoid the warning for each instance since
+	   the guidance may be different depending on context.  */
+	inform (loc,
+		(key_redundant_p
+		 ? G_("remove the class-key or replace it with %qs")
+		 : G_("replace the class-key with %qs")),
+		xpectkstr);
     }
 
   /* Restore the current function in case it was replaced above.  */
