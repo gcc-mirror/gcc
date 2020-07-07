@@ -1,3 +1,10 @@
+2020-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95984
+	* c-common.c (check_function_nonnull): Avoid checking syntesized calls
+	to stub lambda objects with null this pointer.
+	(check_nonnull_arg): Handle C++ nullptr.
+
 2020-07-02  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
