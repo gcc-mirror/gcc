@@ -3074,13 +3074,15 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      if (!DR_IS_READ (dra) && init_b - init_prev != type_size_a)
 		break;
 
-	      /* If the step (if not zero or non-constant) is greater than the
+	      /* If the step (if not zero or non-constant) is smaller than the
 		 difference between data-refs' inits this splits groups into
 		 suitable sizes.  */
 	      if (tree_fits_shwi_p (DR_STEP (dra)))
 		{
-		  HOST_WIDE_INT step = tree_to_shwi (DR_STEP (dra));
-		  if (step != 0 && step <= (init_b - init_a))
+		  unsigned HOST_WIDE_INT step
+		    = absu_hwi (tree_to_shwi (DR_STEP (dra)));
+		  if (step != 0
+		      && step <= (unsigned HOST_WIDE_INT)(init_b - init_a))
 		    break;
 		}
 	    }
