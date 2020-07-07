@@ -39,7 +39,7 @@
 #include <cstddef>			// size_t, max_align_t, byte
 #include <shared_mutex>			// shared_mutex
 #include <bits/functexcept.h>
-#include <bits/int_limits.h>
+#include <ext/numeric_traits.h>
 #include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -168,7 +168,7 @@ namespace pmr
       allocate(size_t __n)
       __attribute__((__returns_nonnull__))
       {
-	if (__n > (__detail::__int_limits<size_t>::max() / sizeof(_Tp)))
+	if (__n > (__gnu_cxx::__int_traits<size_t>::__max / sizeof(_Tp)))
 	  _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
 	return static_cast<_Tp*>(_M_resource->allocate(__n * sizeof(_Tp),
 						       alignof(_Tp)));
@@ -194,7 +194,7 @@ namespace pmr
 	[[nodiscard]] _Up*
 	allocate_object(size_t __n = 1)
 	{
-	  if ((__detail::__int_limits<size_t>::max() / sizeof(_Up)) < __n)
+	  if ((__gnu_cxx::__int_traits<size_t>::__max / sizeof(_Up)) < __n)
 	    _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
 	  return static_cast<_Up*>(allocate_bytes(__n * sizeof(_Up),
 						  alignof(_Up)));
