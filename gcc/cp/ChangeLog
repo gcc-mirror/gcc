@@ -1,3 +1,22 @@
+2020-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95984
+	* call.c (build_over_call): Check calls only when tf_warning is set.
+
+2020-07-06  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (push_library_fn): Return the decl pushdecl_toplevel returns.
+	* except.c (verify_library_fn): Replace with ...
+	(declare_library_fn_1): ... this fn.  Always push the fn.
+	(declare_library_fn): Call it.
+	(build_throw): Call declare_library_fn_1.
+
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/96068
+	* parser.c (cp_parser_toplevel_declaration): Only do pedwarn for
+	empty-declaration in C++98.
+
 2020-07-02  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -2150,8 +2150,15 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	    }
 	  int cmp = compare_step_with_zero (vinfo, stmt_info);
 	  if (cmp < 0)
-	    *memory_access_type = get_negative_load_store_type
-	      (vinfo, stmt_info, vectype, vls_type, 1);
+	    {
+	      if (single_element_p)
+		/* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
+		   only correct for single element "interleaving" SLP.  */
+		*memory_access_type = get_negative_load_store_type
+				       (vinfo, stmt_info, vectype, vls_type, 1);
+	      else
+		*memory_access_type = VMAT_STRIDED_SLP;
+	    }
 	  else
 	    {
 	      gcc_assert (!loop_vinfo || cmp > 0);

@@ -915,12 +915,12 @@ package body Sem_Ch9 is
          end loop;
       end;
 
-      if Ekind (E) = E_Entry_Family then
+      if Ekind (Entry_Nam) = E_Entry_Family then
          if No (Index) then
             Error_Msg_N ("missing entry index in accept for entry family", N);
          else
-            Analyze_And_Resolve (Index, Entry_Index_Type (E));
-            Apply_Range_Check (Index, Entry_Index_Type (E));
+            Analyze_And_Resolve (Index, Entry_Index_Type (Entry_Nam));
+            Apply_Scalar_Range_Check (Index, Entry_Index_Type (Entry_Nam));
          end if;
 
       elsif Present (Index) then

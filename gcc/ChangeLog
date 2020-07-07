@@ -1,3 +1,24 @@
+2020-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96075
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use
+	TYPE_SIZE_UNIT of the vector component type instead of DR_STEP
+	for the misalignment calculation for negative step.
+
+2020-07-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (*vadd_addsi4): New instruction.
+	(*vsub_addsi4): New instruction.
+
+2020-07-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md (movulsr): New peephole2.
+
+2020-07-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/sync.md ("cris_atomic_fetch_<atomic_op_name><mode>_1"):
+	Correct gcc_assert of overlapping operands.
+
 2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_select_cc_mode): Always return

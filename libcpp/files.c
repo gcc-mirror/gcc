@@ -947,7 +947,11 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
     pfile->line_table->highest_location--;
 
   /* Add line map and do callbacks.  */
-  _cpp_do_file_change (pfile, LC_ENTER, file->path, 1, sysp);
+  _cpp_do_file_change (pfile, LC_ENTER, file->path,
+		       /* With preamble injection, start on line zero, so
+			  the preamble doesn't appear to have been
+			  included from line 1.  */
+		       type == IT_MAIN_INJECT ? 0 : 1, sysp);
 
   return true;
 }
@@ -1475,7 +1479,8 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
 bool
 cpp_push_include (cpp_reader *pfile, const char *fname)
 {
-  return _cpp_stack_include (pfile, fname, false, IT_CMDLINE, 0);
+  return _cpp_stack_include (pfile, fname, false, IT_CMDLINE,
+			     pfile->line_table->highest_line);
 }
 
 /* Pushes the given file, implicitly included at the start of a
@@ -1484,7 +1489,8 @@ cpp_push_include (cpp_reader *pfile, const char *fname)
 bool
 cpp_push_default_include (cpp_reader *pfile, const char *fname)
 {
-  return _cpp_stack_include (pfile, fname, true, IT_DEFAULT, 0);
+  return _cpp_stack_include (pfile, fname, true, IT_DEFAULT,
+			     pfile->line_table->highest_line);
 }
 
 /* Do appropriate cleanup when a file INC's buffer is popped off the

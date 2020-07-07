@@ -653,7 +653,9 @@ package body Contracts is
                      Freeze_Expr_Types
                        (Def_Id => Subp_Id,
                         Typ    => Standard_Boolean,
-                        Expr   => Expression (Corresponding_Aspect (Prag)),
+                        Expr   =>
+                          Expression
+                            (First (Pragma_Argument_Associations (Prag))),
                         N      => Bod);
                   end if;
 
@@ -1864,13 +1866,15 @@ package body Contracts is
             Add_Invariant_Access_Checks (Result);
          end if;
 
-         --  Add invariant and predicates for all formals that qualify
+         --  Add invariant checks for all formals that qualify (see AI05-0289
+         --  and AI12-0044).
 
          Formal := First_Formal (Subp_Id);
          while Present (Formal) loop
             Typ := Etype (Formal);
 
             if Ekind (Formal) /= E_In_Parameter
+              or else Ekind (Subp_Id) = E_Procedure
               or else Is_Access_Type (Typ)
             then
                if Invariant_Checks_OK (Typ) then
@@ -2601,7 +2605,9 @@ package body Contracts is
                         Freeze_Expr_Types
                           (Def_Id => Subp_Id,
                            Typ    => Standard_Boolean,
-                           Expr   => Expression (Corresponding_Aspect (Prag)),
+                           Expr   =>
+                             Expression
+                               (First (Pragma_Argument_Associations (Prag))),
                            N      => Body_Decl);
                      end if;
 

@@ -2660,15 +2660,13 @@ package body Sem_Aggr is
    -----------------------------------
 
    procedure Resolve_Delta_Array_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Deltas : constant List_Id := Component_Associations (N);
+      Deltas     : constant List_Id   := Component_Associations (N);
+      Index_Type : constant Entity_Id := Etype (First_Index (Typ));
 
-      Assoc      : Node_Id;
-      Choice     : Node_Id;
-      Index_Type : Entity_Id;
+      Assoc  : Node_Id;
+      Choice : Node_Id;
 
    begin
-      Index_Type := Etype (First_Index (Typ));
-
       Assoc := First (Deltas);
       while Present (Assoc) loop
          if Nkind (Assoc) = N_Iterated_Component_Association then

@@ -9246,6 +9246,7 @@ package body Sem_Elab is
          Target_Decl : Node_Id;
          Target_Body : Node_Id) return Boolean
       is
+         Spec : Node_Id;
       begin
          --  Avoid cascaded errors if there were previous serious infractions.
          --  As a result the scenario will not be treated as a guaranteed ABE.
@@ -9266,12 +9267,20 @@ package body Sem_Elab is
                return Earlier_In_Extended_Unit (N, Target_Body);
 
             --  Otherwise the body has not been encountered yet. The scenario
-            --  is a guaranteed ABE since the body will appear later. It is
-            --  assumed that the caller has already ensured that the scenario
-            --  is ABE-safe because optional bodies are not considered here.
+            --  is a guaranteed ABE since the body will appear later, unless
+            --  this is a null specification, which can occur if expansion is
+            --  disabled (e.g. -gnatc or GNATprove mode). It is assumed that
+            --  the caller has already ensured that the scenario is ABE-safe
+            --  because optional bodies are not considered here.
 
             else
-               return True;
+               Spec := Specification (Target_Decl);
+
+               if Nkind (Spec) /= N_Procedure_Specification
+                 or else not Null_Present (Spec)
+               then
+                  return True;
+               end if;
             end if;
          end if;
 
@@ -9574,7 +9583,7 @@ package body Sem_Elab is
                Error_Msg_N ("\Program_Error will be raised at run time", Call);
             end if;
 
-            --  Mark the call as a guarnateed ABE
+            --  Mark the call as a guaranteed ABE
 
             Set_Is_Known_Guaranteed_ABE (Call);
 

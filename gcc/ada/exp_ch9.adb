@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -588,6 +589,14 @@ package body Exp_Ch9 is
 
       if Present (Index) then
          S := Entry_Index_Type (Ent);
+
+         --  First make sure the index is in range if requested. The index type
+         --  has been directly set on the prefix, see Resolve_Entry.
+
+         if Do_Range_Check (Index) then
+            Generate_Range_Check
+              (Index, Etype (Prefix (Parent (Index))), CE_Range_Check_Failed);
+         end if;
 
          Expr :=
            Make_Op_Add (Sloc,
@@ -5623,6 +5632,13 @@ package body Exp_Ch9 is
 
       if Present (Index) then
          S := Entry_Index_Type (Ent);
+
+         --  First make sure the index is in range if requested. The index type
+         --  is the pristine Entry_Index_Type of the entry.
+
+         if Do_Range_Check (Index) then
+            Generate_Range_Check (Index, S, CE_Range_Check_Failed);
+         end if;
 
          Expr :=
            Make_Op_Add (Sloc,

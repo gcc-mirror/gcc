@@ -512,6 +512,7 @@ package Rtsfind is
      RE_Check_Interface_Conversion,      -- Ada.Tags
      RE_Check_TSD,                       -- Ada.Tags
      RE_Cstring_Ptr,                     -- Ada.Tags
+     RE_CW_Membership,                   -- Ada.Tags
      RE_Descendant_Tag,                  -- Ada.Tags
      RE_Dispatch_Table,                  -- Ada.Tags
      RE_Dispatch_Table_Wrapper,          -- Ada.Tags
@@ -1798,6 +1799,7 @@ package Rtsfind is
      RE_Check_Interface_Conversion       => Ada_Tags,
      RE_Check_TSD                        => Ada_Tags,
      RE_Cstring_Ptr                      => Ada_Tags,
+     RE_CW_Membership                    => Ada_Tags,
      RE_Descendant_Tag                   => Ada_Tags,
      RE_Dispatch_Table                   => Ada_Tags,
      RE_Dispatch_Table_Wrapper           => Ada_Tags,

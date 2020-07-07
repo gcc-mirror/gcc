@@ -2226,7 +2226,9 @@ proc check_power10_hw_available { } {
 		/* Set e first and use +r to check if pli actually works.  */
 		long e = -1;
 		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
-		return (e == 0x12345);
+		if (e == 0x12345)
+		  return 0;
+		return 1;
 	    }
 	} "-mcpu=power10"
     }]

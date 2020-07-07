@@ -467,6 +467,22 @@ package body Layout is
                end if;
             end;
          end if;
+
+         --  For non-packed arrays set the alignment of the array to the
+         --  alignment of the component type if it is unknown. Skip this
+         --  in atomic/VFA case since a larger alignment may be needed.
+
+         if Is_Array_Type (E)
+           and then not Is_Packed (E)
+           and then Unknown_Alignment (E)
+           and then Known_Alignment (Component_Type (E))
+           and then Known_Static_Component_Size (E)
+           and then Known_Static_Esize (Component_Type (E))
+           and then Component_Size (E) = Esize (Component_Type (E))
+           and then not Is_Atomic_Or_VFA (E)
+         then
+            Set_Alignment (E, Alignment (Component_Type (E)));
+         end if;
       end if;
 
       --  Even if the backend performs the layout, we still do a little in

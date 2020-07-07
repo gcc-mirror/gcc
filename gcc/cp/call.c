@@ -8842,15 +8842,16 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   gcc_assert (j <= nargs);
   nargs = j;
 
-  /* Avoid to do argument-transformation, if warnings for format, and for
-     nonnull are disabled.  Just in case that at least one of them is active
+  /* Avoid performing argument transformation if warnings are disabled.
+     When tf_warning is set and at least one of the warnings is active
      the check_function_arguments function might warn about something.  */
 
   bool warned_p = false;
-  if (warn_nonnull
-      || warn_format
-      || warn_suggest_attribute_format
-      || warn_restrict)
+  if ((complain & tf_warning)
+      && (warn_nonnull
+	  || warn_format
+	  || warn_suggest_attribute_format
+	  || warn_restrict))
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));

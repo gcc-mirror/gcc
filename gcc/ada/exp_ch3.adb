@@ -528,7 +528,8 @@ package body Exp_Ch3 is
       Type_Def  : constant Node_Id    := Type_Definition (Decl);
       Type_Id   : constant Entity_Id  := Defining_Identifier (Decl);
       Spec_Node : constant Node_Id    :=
-                    New_Copy_Tree (Specification (New_Decl));
+                    Copy_Subprogram_Spec (Specification (New_Decl));
+      --  This copy creates new identifiers for formals and subprogram.
 
       Act       : Node_Id;
       Body_Node : Node_Id;
@@ -540,12 +541,8 @@ package body Exp_Ch3 is
          return;
       end if;
 
-      Set_Defining_Unit_Name (Spec_Node,
-        Make_Defining_Identifier
-          (Loc, Chars (Defining_Unit_Name (Spec_Node))));
-
       --  Create List of actuals for indirect call. The last parameter of the
-      --  subprogram is the access value itself.
+      --  subprogram declaration is the access value for the indirect call.
 
       Act := First (Parameter_Specifications (Spec_Node));
 
@@ -558,7 +555,7 @@ package body Exp_Ch3 is
 
       Ptr :=
         Defining_Identifier
-          (Last (Parameter_Specifications (Spec_Node)));
+          (Last (Parameter_Specifications (Specification (New_Decl))));
 
       if Nkind (Type_Def) = N_Access_Procedure_Definition then
          Call_Stmt := Make_Procedure_Call_Statement (Loc,

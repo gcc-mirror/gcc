@@ -6313,7 +6313,7 @@ package body Sem_Ch10 is
          if Is_Subprogram (E) and then Has_Pragma_Inline (E) then
             return True;
 
-         elsif Ekind_In (E, E_Generic_Function, E_Generic_Procedure) then
+         elsif Is_Generic_Subprogram (E) then
 
             --  A generic subprogram always requires the presence of its
             --  body because an instantiation needs both templates. The only

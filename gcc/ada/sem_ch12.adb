@@ -5664,8 +5664,7 @@ package body Sem_Ch12 is
          --  If renaming, get original unit
 
          if Present (Renamed_Object (Gen_Unit))
-           and then Ekind_In (Renamed_Object (Gen_Unit), E_Generic_Procedure,
-                                                         E_Generic_Function)
+           and then Is_Generic_Subprogram (Renamed_Object (Gen_Unit))
          then
             Gen_Unit := Renamed_Object (Gen_Unit);
             Set_Is_Instantiated (Gen_Unit);
@@ -11339,9 +11338,8 @@ package body Sem_Ch12 is
             --  access type.
 
             if Ada_Version < Ada_2005
-              or else Ekind (Base_Type (Ftyp)) not in Anonymous_Access_Kind
-              or else Ekind (Base_Type (Etype (Actual)))
-                        not in Anonymous_Access_Kind
+              or else not Is_Anonymous_Access_Type (Base_Type (Ftyp))
+              or else not Is_Anonymous_Access_Type (Base_Type (Etype (Actual)))
             then
                Error_Msg_NE
                  ("type of actual does not match type of&", Actual, Gen_Obj);

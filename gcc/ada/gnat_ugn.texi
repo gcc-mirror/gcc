@@ -13161,7 +13161,7 @@ to the default checks required by Ada as described above.
 
 All validity checks are turned on.
 That is, @code{-gnatVa} is
-equivalent to @code{gnatVcdfimorst}.
+equivalent to @code{gnatVcdfimoprst}.
 @end table
 
 @geindex -gnatVc (gcc)
@@ -16141,6 +16141,14 @@ Override default wide character encoding for standard Text_IO files.
 @item @code{-x}
 
 Exclude source files (check object consistency only).
+
+@geindex -xdr (gnatbind)
+
+@item @code{-xdr}
+
+Use the target-independent XDR protocol for stream oriented attributes
+instead of the default implementation which is based on direct binary
+representations and is therefore target-and endianness-dependent.
 
 @geindex -Xnnn (gnatbind)
 

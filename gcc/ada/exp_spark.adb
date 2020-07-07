@@ -258,25 +258,91 @@ package body Exp_SPARK is
 
             Assoc     : Node_Id;
             Comp      : Node_Id;
-            Comp_Type : Node_Id;
+            Comp_Type : Entity_Id;
             Expr      : Node_Id;
+            Index     : Node_Id;
+            Index_Typ : Entity_Id;
 
          begin
             --  Apply scalar range checks on the updated components, if needed
 
             if Is_Array_Type (Typ) then
-               Assoc := First (Component_Associations (Aggr));
 
-               while Present (Assoc) loop
-                  Expr      := Expression (Assoc);
-                  Comp_Type := Component_Type (Typ);
+               --  Multi-dimensional array
 
-                  if Is_Scalar_Type (Comp_Type) then
-                     Apply_Scalar_Range_Check (Expr, Comp_Type);
-                  end if;
+               if Present (Next_Index (First_Index (Typ))) then
+                  Assoc := First (Component_Associations (Aggr));
 
-                  Next (Assoc);
-               end loop;
+                  while Present (Assoc) loop
+                     Expr      := Expression (Assoc);
+                     Comp_Type := Component_Type (Typ);
+
+                     if Is_Scalar_Type (Comp_Type) then
+                        Apply_Scalar_Range_Check (Expr, Comp_Type);
+                     end if;
+
+                     --  The current association contains a sequence of indexes
+                     --  denoting an element of a multidimensional array:
+                     --
+                     --    (Index_1, ..., Index_N)
+
+                     Expr := First (Choices (Assoc));
+
+                     pragma Assert (Nkind (Aggr) = N_Aggregate);
+
+                     while Present (Expr) loop
+                        Index     := First (Expressions (Expr));
+                        Index_Typ := First_Index (Typ);
+
+                        while Present (Index_Typ) loop
+                           Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
+                           Next (Index);
+                           Next_Index (Index_Typ);
+                        end loop;
+
+                        Next (Expr);
+                     end loop;
+
+                     Next (Assoc);
+                  end loop;
+
+               --  One-dimensional array
+
+               else
+                  Assoc := First (Component_Associations (Aggr));
+
+                  while Present (Assoc) loop
+                     Expr      := Expression (Assoc);
+                     Comp_Type := Component_Type (Typ);
+
+                     if Is_Scalar_Type (Comp_Type) then
+                        Apply_Scalar_Range_Check (Expr, Comp_Type);
+                     end if;
+
+                     Index     := First (Choices (Assoc));
+                     Index_Typ := First_Index (Typ);
+
+                     while Present (Index) loop
+                        --  The index denotes a range of elements
+
+                        if Nkind (Index) = N_Range then
+                           Apply_Scalar_Range_Check
+                             (Low_Bound  (Index), Etype (Index_Typ));
+                           Apply_Scalar_Range_Check
+                             (High_Bound (Index), Etype (Index_Typ));
+
+                        --  Otherwise the index denotes a single element
+
+                        else
+                           Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
+                        end if;
+
+                        Next (Index);
+                     end loop;
+
+                     Next (Assoc);
+                  end loop;
+               end if;
 
             else pragma Assert (Is_Record_Type (Typ));
 

@@ -2276,7 +2276,7 @@ package body Sem_Ch13 is
 
                --  Annotation of a subprogram; aspect expression is required
 
-               elsif Is_Subprogram (E) then
+               elsif Is_Subprogram_Or_Entry (E) then
                   if Present (Expr) then
 
                      --  If we analyze subprogram body that acts as its own
@@ -5642,6 +5642,13 @@ package body Sem_Ch13 is
       end if;
 
       Check_Restriction_No_Use_Of_Attribute (N);
+
+      if Get_Aspect_Id (Chars (N)) /= No_Aspect then
+         --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
+         --    no aspect_specification, attribute_definition_clause, or pragma
+         --    is given.
+         Check_Restriction_No_Specification_Of_Aspect (N);
+      end if;
 
       --  Ignore some selected attributes in CodePeer mode since they are not
       --  relevant in this context.

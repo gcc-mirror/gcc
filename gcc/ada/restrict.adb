@@ -626,7 +626,14 @@ package body Restrict is
          return;
       end if;
 
-      Id := Identifier (N);
+      if Nkind (N) = N_Pragma then
+         Id := Pragma_Identifier (N);
+      elsif Nkind (N) = N_Attribute_Definition_Clause then
+         Id := N;
+      else
+         Id := Identifier (N);
+      end if;
+
       A_Id := Get_Aspect_Id (Chars (Id));
       pragma Assert (A_Id /= No_Aspect);
 

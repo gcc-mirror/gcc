@@ -6764,30 +6764,10 @@ package body Sem_Attr is
                      Analyze_And_Resolve (Low,  Etype (Index_Typ));
                      Analyze_And_Resolve (High, Etype (Index_Typ));
 
-                     --  Add a range check to ensure that the bounds of the
-                     --  range are within the index type when this cannot be
-                     --  determined statically.
-
-                     if not Is_OK_Static_Expression (Low) then
-                        Set_Do_Range_Check (Low);
-                     end if;
-
-                     if not Is_OK_Static_Expression (High) then
-                        Set_Do_Range_Check (High);
-                     end if;
-
                   --  Otherwise the index denotes a single element
 
                   else
                      Analyze_And_Resolve (Index, Etype (Index_Typ));
-
-                     --  Add a range check to ensure that the index is within
-                     --  the index type when it is not possible to determine
-                     --  this statically.
-
-                     if not Is_OK_Static_Expression (Index) then
-                        Set_Do_Range_Check (Index);
-                     end if;
                   end if;
 
                   Next (Index);
@@ -8147,14 +8127,24 @@ package body Sem_Attr is
       --  for a size from an attribute definition clause). At this stage, this
       --  can happen only for types (e.g. record types) for which the size is
       --  always non-static. We exclude generic types from consideration (since
-      --  they have bogus sizes set within templates).
+      --  they have bogus sizes set within templates). We can also fold
+      --  Max_Size_In_Storage_Elements in the same cases.
 
-      elsif Id = Attribute_Size
+      elsif (Id = Attribute_Size or
+             Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
         and then (not Is_Generic_Type (P_Entity))
         and then Known_Static_RM_Size (P_Entity)
       then
-         Compile_Time_Known_Attribute (N, RM_Size (P_Entity));
+         declare
+            Attr_Value : Uint := RM_Size (P_Entity);
+         begin
+            if Id = Attribute_Max_Size_In_Storage_Elements then
+               Attr_Value := (Attr_Value + System_Storage_Unit - 1)
+                             / System_Storage_Unit;
+            end if;
+            Compile_Time_Known_Attribute (N, Attr_Value);
+         end;
          return;
 
       --  We can fold 'Alignment applied to a type if the alignment is known
@@ -11718,7 +11708,7 @@ package body Sem_Attr is
                   Fam  : constant Entity_Id := Entity (Prefix (P));
                begin
                   Resolve (Indx, Entry_Index_Type (Fam));
-                  Apply_Range_Check (Indx, Entry_Index_Type (Fam));
+                  Apply_Scalar_Range_Check (Indx, Entry_Index_Type (Fam));
                end;
             end if;
 
@@ -12019,15 +12009,10 @@ package body Sem_Attr is
 
                         if Nkind (C) /= N_Aggregate then
                            Analyze_And_Resolve (C, Etype (Indx));
-                           Apply_Constraint_Check (C, Etype (Indx));
-                           Check_Non_Static_Context (C);
-
                         else
                            C_E := First (Expressions (C));
                            while Present (C_E) loop
                               Analyze_And_Resolve (C_E, Etype (Indx));
-                              Apply_Constraint_Check (C_E, Etype (Indx));
-                              Check_Non_Static_Context (C_E);
 
                               Next (C_E);
                               Next_Index (Indx);

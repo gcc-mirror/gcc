@@ -7836,7 +7836,7 @@ package body Sem_Res is
          --  to the discriminant of the same name in the target task. If the
          --  entry name is the target of a requeue statement and the entry is
          --  in the current protected object, the bound to be used is the
-         --  discriminal of the object (see Apply_Range_Checks for details of
+         --  discriminal of the object (see Apply_Range_Check for details of
          --  the transformation).
 
          -----------------------------
@@ -8002,6 +8002,17 @@ package body Sem_Res is
          Nam := Entity (Selector_Name (Prefix (Entry_Name)));
          Resolve (Prefix (Prefix (Entry_Name)));
          Resolve_Implicit_Dereference (Prefix (Prefix (Entry_Name)));
+
+         --  We do not resolve the prefix because an Entry_Family has no type,
+         --  although it has the semantics of an array since it can be indexed.
+         --  In order to perform the associated range check, we would need to
+         --  build an array type on the fly and set it on the prefix, but this
+         --  would be wasteful since only the index type matters. Therefore we
+         --  attach this index type directly, so that Actual_Index_Expression
+         --  can pick it up later in order to generate the range check.
+
+         Set_Etype (Prefix (Entry_Name), Actual_Index_Type (Nam));
+
          Index := First (Expressions (Entry_Name));
          Resolve (Index, Entry_Index_Type (Nam));
 
@@ -8017,7 +8028,7 @@ package body Sem_Res is
          if Nkind (Index) = N_Parameter_Association then
             Error_Msg_N ("expect expression for entry index", Index);
          else
-            Apply_Range_Check (Index, Actual_Index_Type (Nam));
+            Apply_Scalar_Range_Check (Index, Etype (Prefix (Entry_Name)));
          end if;
       end if;
    end Resolve_Entry;
@@ -9071,15 +9082,11 @@ package body Sem_Res is
          Resolve (Expr, Standard_Positive);
 
       else
-         while Present (Index) and Present (Expr) loop
+         while Present (Index) and then Present (Expr) loop
             Resolve (Expr, Etype (Index));
             Check_Unset_Reference (Expr);
 
-            if Is_Scalar_Type (Etype (Expr)) then
-               Apply_Scalar_Range_Check (Expr, Etype (Index));
-            else
-               Apply_Range_Check (Expr, Get_Actual_Subtype (Index));
-            end if;
+            Apply_Scalar_Range_Check (Expr, Etype (Index));
 
             Next_Index (Index);
             Next (Expr);

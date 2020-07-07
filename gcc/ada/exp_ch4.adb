@@ -6827,18 +6827,7 @@ package body Exp_Ch4 is
                      --  If the designated type is tagged, do tagged membership
                      --  operation.
 
-                     --  *** NOTE: we have to check not null before doing the
-                     --  tagged membership test (but maybe that can be done
-                     --  inside Tagged_Membership?).
-
                      if Is_Tagged_Type (Typ) then
-                        Rewrite (N,
-                          Make_And_Then (Loc,
-                            Left_Opnd  => Relocate_Node (N),
-                            Right_Opnd =>
-                              Make_Op_Ne (Loc,
-                                Left_Opnd  => Obj,
-                                Right_Opnd => Make_Null (Loc))));
 
                         --  No expansion will be performed for VM targets, as
                         --  the VM back ends will handle the membership tests
@@ -14969,6 +14958,9 @@ package body Exp_Ch4 is
    --  usually implemented by looking in the ancestor tables contained in the
    --  dispatch table pointed by Left_Expr.Tag for Typ'Tag
 
+   --  In both cases if Left_Expr is an access type, we first check whether it
+   --  is null.
+
    --  Ada 2005 (AI-251): If it is a class-wide interface type we use the RT
    --  function IW_Membership which is usually implemented by looking in the
    --  table of abstract interface types plus the ancestor table contained in
@@ -14983,19 +14975,17 @@ package body Exp_Ch4 is
       Right : constant Node_Id    := Right_Opnd (N);
       Loc   : constant Source_Ptr := Sloc (N);
 
-      Full_R_Typ : Entity_Id;
-      Left_Type  : Entity_Id;
-      New_Node   : Node_Id;
-      Right_Type : Entity_Id;
-      Obj_Tag    : Node_Id;
+      --  Handle entities from the limited view
+
+      Orig_Right_Type : constant Entity_Id := Available_View (Etype (Right));
+
+      Full_R_Typ   : Entity_Id;
+      Left_Type    : Entity_Id := Available_View (Etype (Left));
+      Right_Type   : Entity_Id := Orig_Right_Type;
+      Obj_Tag      : Node_Id;
 
    begin
       SCIL_Node := Empty;
-
-      --  Handle entities from the limited view
-
-      Left_Type  := Available_View (Etype (Left));
-      Right_Type := Available_View (Etype (Right));
 
       --  In the case where the type is an access type, the test is applied
       --  using the designated types (needed in Ada 2012 for implicit anonymous
@@ -15069,7 +15059,7 @@ package body Exp_Ch4 is
            or else Is_Interface (Left_Type)
          then
             --  Issue error if IW_Membership operation not available in a
-            --  configurable run time setting.
+            --  configurable run-time setting.
 
             if not RTE_Available (RE_IW_Membership) then
                Error_Msg_CRT
@@ -15092,25 +15082,32 @@ package body Exp_Ch4 is
          --  Ada 95: Normal case
 
          else
-            Build_CW_Membership (Loc,
-              Obj_Tag_Node => Obj_Tag,
-              Typ_Tag_Node =>
-                 New_Occurrence_Of (
-                   Node (First_Elmt (Access_Disp_Table (Full_R_Typ))),  Loc),
-              Related_Nod => N,
-              New_Node    => New_Node);
+            --  Issue error if CW_Membership operation not available in a
+            --  configurable run-time setting.
+
+            if not RTE_Available (RE_CW_Membership) then
+               Error_Msg_CRT
+                 ("dynamic membership test on tagged types", N);
+               Result := Empty;
+               return;
+            end if;
+
+            Result :=
+              Make_Function_Call (Loc,
+                 Name => New_Occurrence_Of (RTE (RE_CW_Membership), Loc),
+                 Parameter_Associations => New_List (
+                   Obj_Tag,
+                   New_Occurrence_Of (
+                     Node (First_Elmt (Access_Disp_Table (Full_R_Typ))),
+                     Loc)));
 
             --  Generate the SCIL node for this class-wide membership test.
-            --  Done here because the previous call to Build_CW_Membership
-            --  relocates Obj_Tag.
 
             if Generate_SCIL then
                SCIL_Node := Make_SCIL_Membership_Test (Sloc (N));
                Set_SCIL_Entity (SCIL_Node, Etype (Right_Type));
                Set_SCIL_Tag_Value (SCIL_Node, Obj_Tag);
             end if;
-
-            Result := New_Node;
          end if;
 
       --  Right_Type is not a class-wide type
@@ -15128,6 +15125,29 @@ package body Exp_Ch4 is
                 Right_Opnd =>
                   New_Occurrence_Of
                     (Node (First_Elmt (Access_Disp_Table (Full_R_Typ))), Loc));
+         end if;
+      end if;
+
+      --  if Left is an access object then generate test of the form:
+      --    * if Right_Type excludes null: Left /= null and then ...
+      --    * if Right_Type includes null: Left = null or else ...
+
+      if Is_Access_Type (Orig_Right_Type) then
+         if Can_Never_Be_Null (Orig_Right_Type) then
+            Result := Make_And_Then (Loc,
+              Left_Opnd  =>
+                Make_Op_Ne (Loc,
+                  Left_Opnd  => Left,
+                  Right_Opnd => Make_Null (Loc)),
+              Right_Opnd => Result);
+
+         else
+            Result := Make_Or_Else (Loc,
+              Left_Opnd  =>
+                Make_Op_Eq (Loc,
+                  Left_Opnd  => Left,
+                  Right_Opnd => Make_Null (Loc)),
+              Right_Opnd => Result);
          end if;
       end if;
    end Tagged_Membership;

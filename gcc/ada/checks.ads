@@ -674,13 +674,13 @@ package Checks is
    -- Expander Routines --
    -----------------------
 
-   --  Some of the earlier processing for checks results in temporarily setting
-   --  the Do_Range_Check flag rather than actually generating checks. Probably
-   --  we could eliminate the Do_Range_Check flag entirely and generate checks
-   --  earlier, but this is a delicate area and it seems safer to implement the
-   --  following routines, which are called later on in the expansion process.
-   --  They check the Do_Range_Check flag and if it is set, generate the actual
-   --  checks and reset the flag.
+   --  In most cases, the processing for range checks done by semantic analysis
+   --  only results in setting the Do_Range_Check flag, rather than actually
+   --  generating checks. The following routines must be called later on in the
+   --  expansion process upon seeing the Do_Range_Check flag; they generate the
+   --  actual checks and reset the flag. The remaining cases where range checks
+   --  are still directly generated during semantic analysis occur as part of
+   --  the processing of constraints in (sub)type and object declarations.
 
    procedure Generate_Range_Check
      (N           : Node_Id;
@@ -694,11 +694,11 @@ package Checks is
    --  if raised.
    --
    --  Note: if the expander is not active, or if we are in GNATprove mode,
-   --  then we do not generate explicit range code. Instead we just turn the
+   --  then we do not generate explicit range checks. Instead we just turn the
    --  Do_Range_Check flag on, since in these cases that's what we want to see
    --  in the tree (GNATprove in particular depends on this flag being set). If
-   --  we generate the actual range check, then we make sure the flag is off,
-   --  since the code we generate takes complete care of the check.
+   --  we generate the actual range checks, then we make sure the flag is off
+   --  afterward, since the code we generate takes complete care of the checks.
    --
    --  Historical note: We used to just pass on the Do_Range_Check flag to the
    --  back end to generate the check, but now in code-generation mode we never
