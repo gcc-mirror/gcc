@@ -66,13 +66,11 @@ __gthread_cond_wait (__gthread_cond_t *cond,
   if (!mutex)
     return ERROR;
 
-  __RETURN_ERRNO_IF_NOT_OK (semGive (*mutex));
-
-  __RETURN_ERRNO_IF_NOT_OK (semTake (*cond, WAIT_FOREVER));
+  int ret = __CHECK_RESULT (semExchange (*mutex, *cond, WAIT_FOREVER));
 
   __RETURN_ERRNO_IF_NOT_OK (semTake (*mutex, WAIT_FOREVER));
 
-  return OK;
+  return ret;
 }
 
 int
