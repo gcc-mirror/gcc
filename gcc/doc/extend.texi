@@ -13787,6 +13787,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
 * PowerPC Matrix-Multiply Assist Built-in Functions::
+* RISC-V Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -20961,6 +20962,16 @@ void __builtin_mma_disassemble_pair (void *, __vector_pair *);
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
 vec_t __builtin_vsx_xvcvbf16spn (vec_t);
 @end smallexample
+
+@node RISC-V Built-in Functions
+@subsection RISC-V Built-in Functions
+
+These built-in functions are available for the RISC-V family of
+processors.
+
+@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+Returns the value that is currently set in the @samp{tp} register.
+@end deftypefn
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions

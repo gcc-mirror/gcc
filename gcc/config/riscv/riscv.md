@@ -70,6 +70,7 @@
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
    (GP_REGNUM 			3)
+   (TP_REGNUM			4)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
    (S0_REGNUM			8)
@@ -2492,6 +2493,13 @@
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
   DONE;
 })
+
+;; Named pattern for expanding thread pointer reference.
+(define_expand "get_thread_pointer<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(reg:P TP_REGNUM))]
+  ""
+{})
 
 (include "sync.md")
 (include "peephole.md")
