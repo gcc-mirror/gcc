@@ -6194,7 +6194,7 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	  c_parser_while_statement (parser, false, 0, if_p);
 	  break;
 	case RID_DO:
-	  c_parser_do_statement (parser, 0, false);
+	  c_parser_do_statement (parser, false, 0);
 	  break;
 	case RID_FOR:
 	  c_parser_for_statement (parser, false, 0, if_p);
