@@ -9612,6 +9612,24 @@ make_anon_name ()
   return id;
 }
 
+/* Filter the input name removing characters that may confuse the linker.  */
+
+static void
+filter_name (char *name)
+{
+  char *p = name;
+
+  while (*p != '\0')
+    {
+      switch (*p)
+	{
+	  case '*':
+	    *p = '_';
+	}
+      p++;
+    }
+}
+
 /* Generate a name for a special-purpose function.
    The generated name may need to be unique across the whole link.
    Changes to this function may also require corresponding changes to
@@ -9683,6 +9701,7 @@ get_file_function_name (const char *type)
      the program) rather than the file name (which imposes extra
      constraints).  */
   sprintf (buf, FILE_FUNCTION_FORMAT, type, p);
+  filter_name (buf);
 
   return get_identifier (buf);
 }

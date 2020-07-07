@@ -4089,7 +4089,8 @@ public:
     {
       /* TODO: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
-      return (flag_ipa_sra && optimize);
+     /* FIXME: Fix this optimization when split_outputs is enabled.  */
+      return (flag_ipa_sra && optimize && !split_outputs);
     }
 
   virtual unsigned int execute (function *) { return ipa_sra_analysis (); }

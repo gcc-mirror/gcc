@@ -1,4 +1,23 @@
-2020-07-02  Giuliano Belinass  <giuliano.belinassi@usp.br>
+2020-07-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Quick switch between promote statics
+	and balance.
+	* ipa-sra.c (gate): Disable it for split_outputs.
+	* ipa.c (remove_unreachable_nodes): Force output vnodes are
+	obviously needed.
+	* lto-cgraph.c (lto_apply_partition_mask): use aux2 instead of aux,
+	and mark nodes in the boundary to not be removed.
+	* lto-partition.c (merge_comdat_nodes): Handle references.
+	(balance_partitions): Avoid generating several small partitions.
+	(merge_contained_symbols): New function.
+	(lto_merge_comdat_map): Handle contained symbols.
+	(lto_promote_cross_file_statics): Set promoted nodes to be
+	non-local.
+	* tree.c (filter_name): New function.
+	(get_file_function_name): Filter buf so that it do not confuse ld.
+
+
+2020-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (ipa_passes): Update ipa_passes.
 	* lto-partition.c (balance_partitions): New function.

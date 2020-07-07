@@ -2073,10 +2073,13 @@ lto_apply_partition_mask (ltrans_partition partition)
   auto_vec<symtab_node *, 16> force_output_enabled;
   unsigned int i;
 
+  FOR_EACH_SYMBOL (node)
+    node->aux2 = 0;
+
   for (i = 0; i < nodes.length (); i++)
     {
       symtab_node *node = nodes[i].node;
-      node->aux = (void *) 1;
+      node->aux2 = 1;
 
       if (!nodes[i].in_partition)
 	{
@@ -2120,25 +2123,23 @@ lto_apply_partition_mask (ltrans_partition partition)
   for (i = 0; i < nodes.length (); i++)
     {
       symtab_node *node = nodes[i].node;
-      
+
+      /* Temporarly set force output to avoid incorrect removal of node.  */
+      if (node->force_output)
+	force_output_enabled.safe_push (node);
+      else
+	node->force_output = true;
+
       /* Handle Schrondiger nodes that are and are not in the partition.  */
       if (nodes[i].in_partition)
-	{
-	  node->in_other_partition = false;
-
-	  /* Temporarly set force output to avoid incorrect removal of node.  */
-	  if (node->force_output)
-	    force_output_enabled.safe_push (node);
-	  else
-	    node->force_output = true;
-	}
+	node->in_other_partition = false;
     }
 
   FOR_EACH_SYMBOL (node)
-    if (!node->aux)
+    if (node->aux2 == 0)
       mark_to_remove.safe_push (node);
     else
-      node->aux = NULL;
+      node->aux2 = 0;
 
   for (i = 0; i < mark_to_remove.length (); i++)
     {

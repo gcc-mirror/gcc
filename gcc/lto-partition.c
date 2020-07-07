@@ -636,19 +636,20 @@ balance_partitions (union_find *ds, int n)
   i = 0;
   FOR_EACH_SYMBOL (node)
     {
-      cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
-      if (!cnode)
-	{
-	  i++;
-	  continue;
-	}
+      int root = ds->find (i);
 
-      ipa_size_summary *summary = ipa_size_summaries->get (cnode);
-      if (summary)
+      if (cgraph_node *cnode = dyn_cast<cgraph_node *> (node))
 	{
-	  int root = ds->find (i);
-	  sizes[root] += summary->size;
+	  ipa_size_summary *summary = ipa_size_summaries->get (cnode);
+	  if (summary)
+	    sizes[root] += summary->size;
+	  else
+	    sizes[root] += 10;
 	}
+      else
+	sizes[root] += 10;
+
+
       i++;
     }
 
@@ -663,7 +664,7 @@ balance_partitions (union_find *ds, int n)
   if (total_size < param_min_partition_size)
     return false;
 
-  target_size = total_size / 8;
+  target_size = total_size / 3;
 
   /* Unite small partitions.  */
   for (i = 0, j = 0; j < n; ++j)
@@ -930,17 +931,14 @@ merge_comdat_nodes (symtab_node *node, int set)
      nodes in the frontier are exported.  */
   if (node->same_comdat_group || c == SYMBOL_DUPLICATE)
     {
+      int i;
+      struct ipa_ref *ref = NULL;
+
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	{
 	  /* Add all inline clones and callees that are duplicated.  */
 	  for (e = cnode->callers; e; e = e->next_caller)
-	    if (!e->inline_failed)
-	      {
-		ds->unite (set, e->caller->aux2);
-		merge_comdat_nodes (e->caller, set);
-		ret = true;
-	      }
-	    else if (c == SYMBOL_DUPLICATE)
+	    if (!e->inline_failed || c == SYMBOL_DUPLICATE)
 	      {
 		ds->unite (set, e->caller->aux2);
 		merge_comdat_nodes (e->caller, set);
@@ -955,6 +953,16 @@ merge_comdat_nodes (symtab_node *node, int set)
 		merge_comdat_nodes (e->callee, set);
 		ret = true;
 	      }
+	}
+
+      for (i = 0; node->iterate_referring (i, ref); i++)
+	{
+	  symtab_node *node1 = ref->referring;
+	  ds->unite (node1->aux2, set);
+	  ret = true;
+
+	  if (node1->get_partitioning_class () == SYMBOL_DUPLICATE)
+	    merge_comdat_nodes (node1, set);
 	}
     }
 
@@ -1008,6 +1016,22 @@ merge_static_calls (symtab_node *node, int set)
   return ret;
 }
 
+static bool
+merge_contained_symbols (symtab_node *node, int set)
+{
+  bool ret = false;
+  symtab_node *node1;
+
+  while ((node1 = contained_in_symbol (node)) != node)
+    {
+      node = node1;
+      ds->unite (node->aux2, set);
+      ret = true;
+    }
+
+  return ret;
+}
+
 /* Partition the program into several partitions with a restriction that
    COMDATS are partitioned together with all nodes requiring them.  If
    promote_statics is false, we also partition together static functions
@@ -1029,14 +1053,20 @@ lto_merge_comdat_map (bool balance, bool promote_statics)
 
   /* First look at COMDATs.  */
   FOR_EACH_SYMBOL (node)
-    if (node->same_comdat_group)
-      merge_comdat_nodes (node, node->aux2);
+    {
+      if (node->same_comdat_group)
+	merge_comdat_nodes (node, node->aux2);
+      merge_contained_symbols (node, node->aux2);
+    }
 
   /* Then look at STATICs, if needed.  */
   if (!promote_statics)
     FOR_EACH_SYMBOL (node)
       if (!TREE_PUBLIC (node->decl))
 	merge_static_calls (node, node->aux2);
+
+  FOR_EACH_SYMBOL (node)
+    node->aux = NULL;
 
   if (balance)
     if (!balance_partitions (&disjoint_sets, n))
@@ -1834,10 +1864,17 @@ lto_promote_cross_file_statics (bool promote)
 	   lsei_next (&lsei))
         {
           symtab_node *node = lsei_node (lsei);
+	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 
 	  /* If symbol is static, rename it if its assembler name
 	     clashes with anything else in this unit.  */
 	  rename_statics (encoder, node);
+	  if (cnode)
+	    {
+	      bool in_partition = lsei.encoder->nodes[lsei.index].in_partition;
+	      if (!in_partition)
+		cnode->local = false;
+	    }
 
 	  /* No need to promote if symbol already is externally visible ... */
 	  if (node->externally_visible
@@ -1851,7 +1888,11 @@ lto_promote_cross_file_statics (bool promote)
 	      continue;
 	    }
 	  if (promote)
-	    promote_symbol (node);
+	    {
+	      promote_symbol (node);
+	      if (cnode && split_outputs)
+		cnode->local = false;
+	    }
         }
     }
   delete lto_clone_numbers;
