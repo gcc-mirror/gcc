@@ -979,7 +979,8 @@ extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
-extern const char *cpp_read_main_file (cpp_reader *, const char *);
+extern const char *cpp_read_main_file (cpp_reader *, const char *,
+				       bool injecting = false);
 
 /* Set up built-ins with special behavior.  Use cpp_init_builtins()
    instead unless your know what you are doing.  */

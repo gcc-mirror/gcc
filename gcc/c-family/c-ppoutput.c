@@ -560,26 +560,23 @@ print_line_1 (location_t src_loc, const char *special_flags, FILE *stream)
   if (src_loc != UNKNOWN_LOCATION && !flag_no_line_commands)
     {
       const char *file_path = LOCATION_FILE (src_loc);
-      int sysp;
       size_t to_file_len = strlen (file_path);
       unsigned char *to_file_quoted =
          (unsigned char *) alloca (to_file_len * 4 + 1);
-      unsigned char *p;
 
       print.src_line = LOCATION_LINE (src_loc);
       print.src_file = file_path;
 
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */
-      p = cpp_quote_string (to_file_quoted,
-			    (const unsigned char *) file_path,
-			    to_file_len);
+      unsigned char *p = cpp_quote_string (to_file_quoted,
+					   (const unsigned char *) file_path,
+					   to_file_len);
       *p = '\0';
       fprintf (stream, "# %u \"%s\"%s",
-	       print.src_line == 0 ? 1 : print.src_line,
-	       to_file_quoted, special_flags);
+	       print.src_line, to_file_quoted, special_flags);
 
-      sysp = in_system_header_at (src_loc);
+      int sysp = in_system_header_at (src_loc);
       if (sysp == 2)
 	fputs (" 3 4", stream);
       else if (sysp == 1)
@@ -677,8 +674,7 @@ cb_define (cpp_reader *pfile, location_t line, cpp_hashnode *node)
   linemap_resolve_location (line_table, line,
 			    LRK_MACRO_DEFINITION_LOCATION,
 			    &map);
-  if (LINEMAP_LINE (map) != 0)
-    print.src_line++;
+  print.src_line++;
 }
 
 static void
