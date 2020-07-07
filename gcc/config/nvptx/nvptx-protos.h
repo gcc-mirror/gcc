@@ -43,6 +43,9 @@ extern void nvptx_output_ascii (FILE *, const char *, unsigned HOST_WIDE_INT);
 extern void nvptx_register_pragmas (void);
 extern unsigned int nvptx_data_alignment (const_tree, unsigned int);
 
+/* Routines implemented in nvptx-rust.c  */
+extern void nvptx_rust_target_cpu_info (void);
+
 #ifdef RTX_CODE
 extern void nvptx_expand_oacc_fork (unsigned);
 extern void nvptx_expand_oacc_join (unsigned);

@@ -46,6 +46,8 @@
         builtin_define ("__nvptx_unisimt__");	\
     } while (0)
 
+#define TARGET_RUST_CPU_INFO nvptx_rust_target_cpu_info
+
 /* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
    supported for nvptx.  */
 #define GOMP_SELF_SPECS ""

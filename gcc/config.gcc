@@ -526,6 +526,7 @@ nios2-*-*)
 	;;
 nvptx-*-*)
 	cpu_type=nvptx
+	rust_target_objs="nvptx-rust.o"
 	;;
 or1k*-*-*)
 	cpu_type=or1k
