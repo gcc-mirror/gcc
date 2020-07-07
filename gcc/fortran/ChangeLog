@@ -1,3 +1,11 @@
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93337
+	* class.c (gfc_find_derived_vtab): Punt if name is not set.
+
 2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:
