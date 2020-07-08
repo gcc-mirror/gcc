@@ -28357,8 +28357,13 @@ collect_ctor_idx_types (tree ctor, tree list, tree elt = NULL_TREE)
       if (TREE_CODE (ftype) == ARRAY_TYPE
 	  && (BRACE_ENCLOSED_INITIALIZER_P (val)
 	      || TREE_CODE (val) == STRING_CST))
-	ftype = (cp_build_reference_type
-		 (ftype, BRACE_ENCLOSED_INITIALIZER_P (val)));
+	{
+	  if (TREE_CODE (val) == STRING_CST)
+	    ftype = cp_build_qualified_type
+	      (ftype, cp_type_quals (ftype) | TYPE_QUAL_CONST);
+	  ftype = (cp_build_reference_type
+		   (ftype, BRACE_ENCLOSED_INITIALIZER_P (val)));
+	}
       list = tree_cons (arg, ftype, list);
     }
 
