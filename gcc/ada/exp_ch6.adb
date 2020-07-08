@@ -2943,7 +2943,12 @@ package body Exp_Ch6 is
             Par_Typ := Base_Type (Etype (Curr_Typ));
          end loop;
 
-         if not Is_Empty_List (Inv_Checks) then
+         --  If the node is a function call the generated tests have been
+         --  already handled in Insert_Post_Call_Actions.
+
+         if not Is_Empty_List (Inv_Checks)
+           and then Nkind (Call_Node) = N_Procedure_Call_Statement
+         then
             Insert_Actions_After (Call_Node, Inv_Checks);
          end if;
       end Add_View_Conversion_Invariants;
@@ -8388,6 +8393,7 @@ package body Exp_Ch6 is
       --  The only exception is when the function call acts as an actual in a
       --  procedure call. In this case the function call is in a list, but the
       --  post-call actions must be inserted after the procedure call.
+      --  What if the function call is an aggregate component ???
 
       elsif Nkind (Context) = N_Procedure_Call_Statement then
          Insert_Actions_After (Context, Post_Call);
