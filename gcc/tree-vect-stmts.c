@@ -2058,9 +2058,10 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
 
 static bool
 get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
-			   tree vectype, bool slp,
+			   tree vectype, slp_tree slp_node,
 			   bool masked_p, vec_load_store_type vls_type,
 			   vect_memory_access_type *memory_access_type,
+			   dr_alignment_support *alignment_support_scheme,
 			   gather_scatter_info *gs_info)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -2089,10 +2090,15 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
   gcc_assert (!STMT_VINFO_STRIDED_P (first_stmt_info) || gap == 0);
 
   /* Stores can't yet have gaps.  */
-  gcc_assert (slp || vls_type == VLS_LOAD || gap == 0);
+  gcc_assert (slp_node || vls_type == VLS_LOAD || gap == 0);
 
-  if (slp)
+  if (slp_node)
     {
+      /* For SLP vectorization we directly vectorize a subchain
+	 without permutation.  */
+      if (! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+	first_dr_info
+	  = STMT_VINFO_DR_INFO (SLP_TREE_SCALAR_STMTS (slp_node)[0]);
       if (STMT_VINFO_STRIDED_P (first_stmt_info))
 	{
 	  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
@@ -2232,6 +2238,13 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	*memory_access_type = VMAT_GATHER_SCATTER;
     }
 
+  if (*memory_access_type == VMAT_GATHER_SCATTER
+      || *memory_access_type == VMAT_ELEMENTWISE)
+    *alignment_support_scheme = dr_unaligned_supported;
+  else
+    *alignment_support_scheme
+      = vect_supportable_dr_alignment (vinfo, first_dr_info, false);
+
   if (vls_type != VLS_LOAD && first_stmt_info == stmt_info)
     {
       /* STMT is the leader of the group. Check the operands of all the
@@ -2268,7 +2281,9 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 /* Analyze load or store statement STMT_INFO of type VLS_TYPE.  Return true
    if there is a memory access type that the vectorized form can use,
    storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
-   or scatters, fill in GS_INFO accordingly.
+   or scatters, fill in GS_INFO accordingly.  In addition
+   *ALIGNMENT_SUPPORT_SCHEME is filled out and false is returned if
+   the target does not support the alignment scheme.
 
    SLP says whether we're performing SLP rather than loop vectorization.
    MASKED_P is true if the statement is conditional on a vectorized mask.
@@ -2277,10 +2292,11 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 
 static bool
 get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
-		     tree vectype, bool slp,
+		     tree vectype, slp_tree slp_node,
 		     bool masked_p, vec_load_store_type vls_type,
 		     unsigned int ncopies,
 		     vect_memory_access_type *memory_access_type,
+		     dr_alignment_support *alignment_support_scheme,
 		     gather_scatter_info *gs_info)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -2300,22 +2316,29 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 			     vls_type == VLS_LOAD ? "gather" : "scatter");
 	  return false;
 	}
+      /* Gather-scatter accesses perform only component accesses, alignment
+	 is irrelevant for them.  */
+      *alignment_support_scheme = dr_unaligned_supported;
     }
   else if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
-      if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp, masked_p,
-				      vls_type, memory_access_type, gs_info))
+      if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
+				      masked_p,
+				      vls_type, memory_access_type,
+				      alignment_support_scheme, gs_info))
 	return false;
     }
   else if (STMT_VINFO_STRIDED_P (stmt_info))
     {
-      gcc_assert (!slp);
+      gcc_assert (!slp_node);
       if (loop_vinfo
 	  && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
 						 masked_p, gs_info))
 	*memory_access_type = VMAT_GATHER_SCATTER;
       else
 	*memory_access_type = VMAT_ELEMENTWISE;
+      /* Alignment is irrelevant here.  */
+      *alignment_support_scheme = dr_unaligned_supported;
     }
   else
     {
@@ -2330,6 +2353,9 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	}
       else
 	*memory_access_type = VMAT_CONTIGUOUS;
+      *alignment_support_scheme
+	= vect_supportable_dr_alignment (vinfo,
+					 STMT_VINFO_DR_INFO (stmt_info), false);
     }
 
   if ((*memory_access_type == VMAT_ELEMENTWISE
@@ -2340,6 +2366,14 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "Not using elementwise accesses due to variable "
 			 "vectorization factor.\n");
+      return false;
+    }
+
+  if (*alignment_support_scheme == dr_unaligned_unsupported)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unsupported unaligned access\n");
       return false;
     }
 
@@ -6956,7 +6990,6 @@ vectorizable_store (vec_info *vinfo,
   class loop *loop = NULL;
   machine_mode vec_mode;
   tree dummy;
-  enum dr_alignment_support alignment_support_scheme;
   enum vect_def_type rhs_dt = vect_unknown_def_type;
   enum vect_def_type mask_dt = vect_unknown_def_type;
   tree dataref_ptr = NULL_TREE;
@@ -7080,8 +7113,10 @@ vectorizable_store (vec_info *vinfo,
     return false;
 
   vect_memory_access_type memory_access_type;
-  if (!get_load_store_type (vinfo, stmt_info, vectype, slp, mask, vls_type,
-			    ncopies, &memory_access_type, &gs_info))
+  enum dr_alignment_support alignment_support_scheme;
+  if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, vls_type,
+			    ncopies, &memory_access_type,
+			    &alignment_support_scheme, &gs_info))
     return false;
 
   if (mask)
@@ -8176,7 +8211,6 @@ vectorizable_load (vec_info *vinfo,
   tree new_temp;
   machine_mode mode;
   tree dummy;
-  enum dr_alignment_support alignment_support_scheme;
   tree dataref_ptr = NULL_TREE;
   tree dataref_offset = NULL_TREE;
   gimple *ptr_incr = NULL;
@@ -8404,8 +8438,10 @@ vectorizable_load (vec_info *vinfo,
     group_size = 1;
 
   vect_memory_access_type memory_access_type;
-  if (!get_load_store_type (vinfo, stmt_info, vectype, slp, mask, VLS_LOAD,
-			    ncopies, &memory_access_type, &gs_info))
+  enum dr_alignment_support alignment_support_scheme;
+  if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
+			    ncopies, &memory_access_type,
+			    &alignment_support_scheme, &gs_info))
     return false;
 
   if (mask)
@@ -8803,14 +8839,6 @@ vectorizable_load (vec_info *vinfo,
       group_gap_adj = 0;
       ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
     }
-
-  /* Gather-scatter accesses perform only component accesses, alignment
-     is irrelevant for them.  */
-  if (memory_access_type == VMAT_GATHER_SCATTER)
-    alignment_support_scheme = dr_unaligned_supported;
-  else
-    alignment_support_scheme
-      = vect_supportable_dr_alignment (vinfo, first_dr_info, false);
 
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
