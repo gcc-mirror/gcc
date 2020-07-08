@@ -35,6 +35,8 @@
     }						\
   while (0)
 
+#define TARGET_RUST_CPU_INFO or1k_rust_target_cpu_info
+
 /* Storage layout.  */
 
 #define DEFAULT_SIGNED_CHAR 1

@@ -530,6 +530,7 @@ nvptx-*-*)
 	;;
 or1k*-*-*)
 	cpu_type=or1k
+	rust_target_objs="or1k-rust.o"
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
