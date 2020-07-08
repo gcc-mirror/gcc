@@ -3289,7 +3289,7 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
      dependence in the SLP instances.  */
   for (i = 0; BB_VINFO_SLP_INSTANCES (bb_vinfo).iterate (i, &instance); )
     {
-      if (! vect_slp_analyze_and_verify_instance_alignment (bb_vinfo, instance)
+      if (! vect_slp_analyze_instance_alignment (bb_vinfo, instance)
 	  || ! vect_slp_analyze_instance_dependence (bb_vinfo, instance))
 	{
 	  slp_tree node = SLP_INSTANCE_TREE (instance);

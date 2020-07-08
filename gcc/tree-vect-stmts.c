@@ -7190,6 +7190,13 @@ vectorizable_store (vec_info *vinfo,
 	  return false;
 	}
 
+      if (dump_enabled_p ()
+	  && memory_access_type != VMAT_ELEMENTWISE
+	  && memory_access_type != VMAT_GATHER_SCATTER
+	  && alignment_support_scheme != dr_aligned)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Vectorizing an unaligned access.\n");
+
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       vect_model_store_cost (vinfo, stmt_info, ncopies,
 			     memory_access_type, vls_type, slp_node, cost_vec);
@@ -8474,6 +8481,13 @@ vectorizable_load (vec_info *vinfo,
 	check_load_store_for_partial_vectors (loop_vinfo, vectype, VLS_LOAD,
 					      group_size, memory_access_type,
 					      &gs_info, mask);
+
+      if (dump_enabled_p ()
+	  && memory_access_type != VMAT_ELEMENTWISE
+	  && memory_access_type != VMAT_GATHER_SCATTER
+	  && alignment_support_scheme != dr_aligned)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Vectorizing an unaligned access.\n");
 
       STMT_VINFO_TYPE (orig_stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,

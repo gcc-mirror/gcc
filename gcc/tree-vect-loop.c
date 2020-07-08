@@ -2136,8 +2136,6 @@ start_over:
     /* This pass will decide on using loop versioning and/or loop peeling in
        order to enhance the alignment of data references in the loop.  */
     ok = vect_enhance_data_refs_alignment (loop_vinfo);
-  else
-    ok = vect_verify_datarefs_alignment (loop_vinfo);
   if (!ok)
     return ok;
 

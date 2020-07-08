@@ -1214,56 +1214,6 @@ vect_relevant_for_alignment_p (dr_vec_info *dr_info)
   return true;
 }
 
-/* Function verify_data_ref_alignment
-
-   Return TRUE if DR_INFO can be handled with respect to alignment.  */
-
-static opt_result
-verify_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
-{
-  enum dr_alignment_support supportable_dr_alignment
-    = vect_supportable_dr_alignment (vinfo, dr_info, false);
-  if (!supportable_dr_alignment)
-    return opt_result::failure_at
-      (dr_info->stmt->stmt,
-       DR_IS_READ (dr_info->dr)
-	? "not vectorized: unsupported unaligned load: %T\n"
-	: "not vectorized: unsupported unaligned store: %T\n",
-       DR_REF (dr_info->dr));
-
-  if (supportable_dr_alignment != dr_aligned && dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "Vectorizing an unaligned access.\n");
-
-  return opt_result::success ();
-}
-
-/* Function vect_verify_datarefs_alignment
-
-   Return TRUE if all data references in the loop can be
-   handled with respect to alignment.  */
-
-opt_result
-vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
-{
-  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  struct data_reference *dr;
-  unsigned int i;
-
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
-    {
-      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      if (!vect_relevant_for_alignment_p (dr_info))
-	continue;
-
-      opt_result res = verify_data_ref_alignment (loop_vinfo, dr_info);
-      if (!res)
-	return res;
-    }
-
-  return opt_result::success ();
-}
-
 /* Given an memory reference EXP return whether its alignment is less
    than its size.  */
 
@@ -2091,13 +2041,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       /* Check if all datarefs are supportable and log.  */
       if (do_peeling && known_alignment_for_access_p (dr0_info) && npeel == 0)
-        {
-          opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
-          if (!stat)
-            do_peeling = false;
-          else
-	    return stat;
-        }
+	return opt_result::success ();
 
       /* Cost model #1 - honor --param vect-max-peeling-for-alignment.  */
       if (do_peeling)
@@ -2186,9 +2130,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  /* The inside-loop cost will be accounted for in vectorizable_load
 	     and vectorizable_store correctly with adjusted alignments.
 	     Drop the body_cst_vec on the floor here.  */
-	  opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
-	  gcc_assert (stat);
-          return stat;
+	  return opt_result::success ();
         }
     }
 
@@ -2318,16 +2260,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       /* Peeling and versioning can't be done together at this time.  */
       gcc_assert (! (do_peeling && do_versioning));
 
-      opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
-      gcc_assert (stat);
-      return stat;
+      return opt_result::success ();
     }
 
   /* This point is reached if neither peeling nor versioning is being done.  */
   gcc_assert (! (do_peeling || do_versioning));
 
-  opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
-  return stat;
+  return opt_result::success ();
 }
 
 
@@ -2431,7 +2370,7 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 /* Analyze alignment of DRs of stmts in NODE.  */
 
 static bool
-vect_slp_analyze_and_verify_node_alignment (vec_info *vinfo, slp_tree node)
+vect_slp_analyze_node_alignment (vec_info *vinfo, slp_tree node)
 {
   /* We vectorize from the first scalar stmt in the node unless
      the node is permuted in which case we start from the first
@@ -2457,15 +2396,6 @@ vect_slp_analyze_and_verify_node_alignment (vec_info *vinfo, slp_tree node)
 	vect_compute_data_ref_alignment (vinfo, first_dr_info);
     }
 
-  if (! verify_data_ref_alignment (vinfo, dr_info))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: bad data alignment in basic "
-			 "block.\n");
-      return false;
-    }
-
   return true;
 }
 
@@ -2475,20 +2405,20 @@ vect_slp_analyze_and_verify_node_alignment (vec_info *vinfo, slp_tree node)
    Return FALSE if a data reference is found that cannot be vectorized.  */
 
 bool
-vect_slp_analyze_and_verify_instance_alignment (vec_info *vinfo,
+vect_slp_analyze_instance_alignment (vec_info *vinfo,
 						slp_instance instance)
 {
-  DUMP_VECT_SCOPE ("vect_slp_analyze_and_verify_instance_alignment");
+  DUMP_VECT_SCOPE ("vect_slp_analyze_instance_alignment");
 
   slp_tree node;
   unsigned i;
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, node)
-    if (! vect_slp_analyze_and_verify_node_alignment (vinfo, node))
+    if (! vect_slp_analyze_node_alignment (vinfo, node))
       return false;
 
   node = SLP_INSTANCE_TREE (instance);
   if (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))
-      && ! vect_slp_analyze_and_verify_node_alignment
+      && ! vect_slp_analyze_node_alignment
 	     (vinfo, SLP_INSTANCE_TREE (instance)))
     return false;
 
