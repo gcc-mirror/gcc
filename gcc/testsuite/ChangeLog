@@ -1,3 +1,41 @@
+2020-07-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92427
+	* g++.dg/ext/flexary37.C: New test.
+
+2020-07-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95303
+	* g++.dg/concepts/diagnostic14.C: New test.
+
+2020-07-07  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (check_power10_hw_available):
+	Return 0 for passing test.
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/pragma-eof.c: New
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/line-2.c: New.
+	* c-c++-common/cpp/line-2.h: New.
+	* c-c++-common/cpp/line-3.c: New.
+	* c-c++-common/cpp/line-4.c: New.
+	* c-c++-common/cpp/line-4.h: New.
+
+2020-07-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96063
+	* g++.dg/warn/Wmismatched-tags-7.C: New test.
+	* g++.dg/warn/Wmismatched-tags-8.C: New test.
+
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-47.c: New testcase.
+	* gcc.dg/vect/slp-48.c: Likewise.
+
 2020-07-06  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/95984

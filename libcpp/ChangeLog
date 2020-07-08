@@ -1,3 +1,14 @@
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* directives.c (do_linemarker): Optimize rewinding to line zero.
+	* files.c (_cpp_stack_file): Start on line zero when about to inject
+	headers.
+	(cpp_push_include, cpp_push_default_include): Use highest_line as
+	the location.
+	* include/cpplib.h (cpp_read_main_file): Add injecting parm.
+	* init.c (cpp_read_main_file): Likewise, inform _cpp_stack_file.
+	* internal.h (enum include_type): Add IT_MAIN_INJECT.
+
 2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/95413

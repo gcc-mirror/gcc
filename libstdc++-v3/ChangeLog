@@ -1,3 +1,34 @@
+2020-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/limits: Whitespace changes.
+
+2020-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Remove bits/int_limits.h.
+	* include/Makefile.in: Regenerate.
+	* include/bits/int_limits.h: Removed.
+	* include/bits/parse_numbers.h (_Select_int_base): Replace
+	__int_limits with __int_traits.
+	* include/bits/range_access.h (_SSize::operator()): Likewise.
+	* include/ext/numeric_traits.h (__numeric_traits_integer): Add
+	static assertion.
+	(__int_traits): New alias template.
+	* include/std/bit (__rotl, __rotr, __countl_zero, __countl_one)
+	(__countr_zero, __countr_one, __popcount, __bit_ceil)
+	(__bit_floor, __bit_width) Replace __int_limits with
+	__int_traits.
+	* include/std/charconv (__to_chars_8, __from_chars_binary)
+	(__from_chars_alpha_to_num, from_chars): Likewise.
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Likewise.
+	* include/std/string_view (basic_string_view::_S_compare):
+	Likewise.
+	* include/std/utility (cmp_equal, cmp_less, in_range): Likewise.
+
+2020-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/limits: Whitespace changes.
+
 2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/optional (_Optional_payload_base, _Optional_base)
