@@ -122,8 +122,6 @@ package body Exp_Ch2 is
       Val : Node_Id;
       Op  : Node_Kind;
 
-   --  Start of processing for Expand_Current_Value
-
    begin
       if True
 

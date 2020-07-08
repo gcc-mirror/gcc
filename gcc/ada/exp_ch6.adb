@@ -306,6 +306,10 @@ package body Exp_Ch6 is
    --  out of. This ensures that the secondary stack is not released; otherwise
    --  the function result would be reclaimed before returning to the caller.
 
+   procedure Warn_BIP (Func_Call : Node_Id);
+   --  Give a warning on a build-in-place function call if the -gnatd_B switch
+   --  was given.
+
    ----------------------------------------------
    -- Add_Access_Actual_To_Build_In_Place_Call --
    ----------------------------------------------
@@ -7356,33 +7360,9 @@ package body Exp_Ch6 is
                  Reason => PE_Accessibility_Check_Failed));
       end Check_Against_Result_Level;
 
-      --  Local Data
-
-      New_Copy_Of_Exp : Node_Id := Empty;
-
    --  Start of processing for Expand_Simple_Function_Return
 
    begin
-      --  For static expression functions, the expression of the function
-      --  needs to be available in a form that can be replicated later for
-      --  calls, but rewriting of the return expression in the body created
-      --  for expression functions will cause the original expression to no
-      --  longer be properly copyable via New_Copy_Tree, because the Parent
-      --  fields of the nodes will now point to nodes in the rewritten tree,
-      --  and New_Copy_Tree won't copy the deeper nodes of the original tree.
-      --  So we work around that by making a copy of the expression tree
-      --  before any rewriting occurs, and replacing the original expression
-      --  tree with this copy (see the end of this procedure). We also reset
-      --  the Analyzed flags on the nodes in the tree copy to ensure that
-      --  later copies of the tree will be fully reanalyzed. This copying
-      --  is of course rather inelegant, to say the least, and it would be
-      --  nice if there were a way to avoid it. ???
-
-      if Is_Static_Expression_Function (Scope_Id) then
-         New_Copy_Of_Exp := New_Copy_Tree (Exp);
-         Reset_Analyzed_Flags (New_Copy_Of_Exp);
-      end if;
-
       if Is_Class_Wide_Type (R_Type)
         and then not Is_Class_Wide_Type (Exp_Typ)
         and then Nkind (Exp) /= N_Type_Conversion
@@ -8094,21 +8074,6 @@ package body Exp_Ch6 is
          Analyze_And_Resolve (Exp);
       end if;
 
-      --  If a new copy of a static expression function's expression was made
-      --  (see the beginning of this procedure's statement part), then we now
-      --  replace the original expression tree with the copy and also change
-      --  the Original_Node field of the rewritten expression to point to that
-      --  copy. It would be nice to find a way to avoid this???
-
-      if Present (New_Copy_Of_Exp) then
-         Set_Expression
-           (Original_Node (Subprogram_Spec (Scope_Id)), New_Copy_Of_Exp);
-
-         if Exp /= Original_Node (Exp) then
-            Set_Original_Node (Exp, New_Copy_Of_Exp);
-         end if;
-      end if;
-
       --  Ada 2020 (AI12-0279)
 
       if Has_Yield_Aspect (Scope_Id)
@@ -8778,6 +8743,8 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      Warn_BIP (Func_Call);
+
       Result_Subt := Available_View (Etype (Function_Id));
 
       --  Create a temp for the function result. In the caller-allocates case,
@@ -9034,6 +9001,8 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      Warn_BIP (Func_Call);
+
       Result_Subt := Etype (Function_Id);
 
       --  If the build-in-place function returns a controlled object, then the
@@ -9181,6 +9150,8 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
+      Warn_BIP (Func_Call);
+
       Result_Subt := Etype (Func_Id);
 
       --  When the result subtype is unconstrained, an additional actual must
@@ -9324,6 +9295,8 @@ package body Exp_Ch6 is
       --  Mark the call as processed as a build-in-place call
 
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
+
+      Warn_BIP (Func_Call);
 
       --  Create an access type designating the function's result subtype.
       --  We use the type of the original call because it may be a call to an
@@ -10368,5 +10341,16 @@ package body Exp_Ch6 is
 
       return Unqual_BIP_Function_Call (Expr);
    end Unqual_BIP_Iface_Function_Call;
+
+   --------------
+   -- Warn_BIP --
+   --------------
+
+   procedure Warn_BIP (Func_Call : Node_Id) is
+   begin
+      if Debug_Flag_Underscore_BB then
+         Error_Msg_N ("build-in-place function call?", Func_Call);
+      end if;
+   end Warn_BIP;
 
 end Exp_Ch6;

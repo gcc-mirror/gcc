@@ -1,3 +1,10 @@
+2020-07-07  Alexandre Oliva  <oliva@adacore.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support CASE and COND.
+	* gcc-changelog/test_patches.txt: Add test.
+	* gcc-changelog/test_email.py: Add test.
+
 2020-06-30  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_repository.py: Support older releases of

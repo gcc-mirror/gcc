@@ -14894,11 +14894,11 @@ cp_parser_decltype_expr (cp_parser *parser,
   return expr;
 }
 
-/* Parse a `decltype' type. Returns the type.
+/* Parse a `decltype' type.  Returns the type.
 
-   simple-type-specifier:
+   decltype-specifier:
      decltype ( expression )
-   C++14 proposal:
+   C++14:
      decltype ( auto )  */
 
 static tree
@@ -14938,10 +14938,19 @@ cp_parser_decltype (cp_parser *parser)
 
   tree expr = NULL_TREE;
 
-  if (cxx_dialect >= cxx14
-      && cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
-    /* decltype (auto) */
-    cp_lexer_consume_token (parser->lexer);
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_CLOSE_PAREN))
+    {
+      /* decltype (auto) */
+      cp_lexer_consume_token (parser->lexer);
+      if (cxx_dialect < cxx14)
+	{
+	  error_at (start_token->location,
+		    "%<decltype(auto)%> type specifier only available with "
+		    "%<-std=c++14%> or %<-std=gnu++14%>");
+	  expr = error_mark_node;
+	}
+    }
   else
     {
       /* decltype (expression)  */

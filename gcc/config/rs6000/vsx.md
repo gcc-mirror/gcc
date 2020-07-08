@@ -5100,6 +5100,34 @@
   operands[3] = gen_reg_rtx (DImode);
 })
 
+;; Define optab for vector access with length vectorization exploitation.
+(define_expand "len_load_v16qi"
+  [(match_operand:V16QI 0 "vlogical_operand")
+   (match_operand:V16QI 1 "memory_operand")
+   (match_operand:QI 2 "gpc_reg_operand")]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+{
+  rtx mem = XEXP (operands[1], 0);
+  mem = force_reg (DImode, mem);
+  rtx len = gen_lowpart (DImode, operands[2]);
+  emit_insn (gen_lxvl (operands[0], mem, len));
+  DONE;
+})
+
+(define_expand "len_store_v16qi"
+  [(match_operand:V16QI 0 "memory_operand")
+   (match_operand:V16QI 1 "vlogical_operand")
+   (match_operand:QI 2 "gpc_reg_operand")
+  ]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+{
+  rtx mem = XEXP (operands[0], 0);
+  mem = force_reg (DImode, mem);
+  rtx len = gen_lowpart (DImode, operands[2]);
+  emit_insn (gen_stxvl (operands[1], mem, len));
+  DONE;
+})
+
 (define_insn "*stxvl"
   [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
 	(unspec:V16QI

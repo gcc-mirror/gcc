@@ -1037,7 +1037,7 @@ package body Bindo.Writers is
       --  output.
 
       procedure Write_Components (G : Library_Graph);
-      pragma Inline (Write_Component);
+      pragma Inline (Write_Components);
       --  Write all components of library graph G to standard output
 
       procedure Write_Edges_To_Successors

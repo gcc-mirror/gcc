@@ -1376,12 +1376,12 @@ package body Exp_Ch7 is
    ---------------------
 
    procedure Build_Finalizer
-     (N           : Node_Id;
-      Clean_Stmts : List_Id;
-      Mark_Id     : Entity_Id;
-      Top_Decls   : List_Id;
-      Defer_Abort : Boolean;
-      Fin_Id      : out Entity_Id)
+     (N                 : Node_Id;
+      Clean_Stmts       : List_Id;
+      Mark_Id           : Entity_Id;
+      Top_Decls         : List_Id;
+      Defer_Abort       : Boolean;
+      Fin_Id            : out Entity_Id)
    is
       Acts_As_Clean    : constant Boolean :=
                            Present (Mark_Id)
@@ -2155,7 +2155,6 @@ package body Exp_Ch7 is
 
          Decl := Last_Non_Pragma (Decls);
          while Present (Decl) loop
-
             --  Library-level tagged types
 
             if Nkind (Decl) = N_Full_Type_Declaration then
@@ -3510,7 +3509,7 @@ package body Exp_Ch7 is
 
       --  Step 3: Finalizer creation
 
-      if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
+      if Acts_As_Clean or else Has_Ctrl_Objs or else Has_Tagged_Types then
          Create_Finalizer;
       end if;
    end Build_Finalizer;

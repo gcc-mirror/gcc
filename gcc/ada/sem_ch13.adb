@@ -2276,7 +2276,9 @@ package body Sem_Ch13 is
 
                --  Annotation of a subprogram; aspect expression is required
 
-               elsif Is_Subprogram_Or_Entry (E) then
+               elsif Is_Subprogram_Or_Entry (E)
+                 or else Is_Generic_Subprogram (E)
+               then
                   if Present (Expr) then
 
                      --  If we analyze subprogram body that acts as its own
@@ -2291,11 +2293,13 @@ package body Sem_Ch13 is
                         Restore_Scope := True;
                         Push_Scope (E);
 
-                        if Is_Generic_Subprogram (E) then
-                           Install_Generic_Formals (E);
-                        else
-                           Install_Formals (E);
-                        end if;
+                        --  Only formals of the subprogram itself can appear
+                        --  in Relaxed_Initialization aspect expression, not
+                        --  formals of the enclosing generic unit. (This is
+                        --  different than in Precondition or Depends aspects,
+                        --  where both kinds of formals are allowed.)
+
+                        Install_Formals (E);
                      end if;
 
                      --  Aspect expression is either an aggregate with list of
@@ -2304,12 +2308,48 @@ package body Sem_Ch13 is
 
                      if Nkind (Expr) = N_Aggregate then
 
-                        --  Component associations are not allowed in the
-                        --  aspect expression aggregate.
+                        --  Component associations in the aggregate must be a
+                        --  parameter name followed by a static boolean
+                        --  expression.
 
                         if Present (Component_Associations (Expr)) then
-                           Error_Msg_N ("illegal aspect % expression", Expr);
-                        else
+                           declare
+                              Assoc : Node_Id :=
+                                First (Component_Associations (Expr));
+                           begin
+                              while Present (Assoc) loop
+                                 if List_Length (Choices (Assoc)) = 1 then
+                                    Analyze_Relaxed_Parameter
+                                      (E, First (Choices (Assoc)), Seen);
+
+                                    if Inside_A_Generic then
+                                       Preanalyze_And_Resolve
+                                         (Expression (Assoc), Any_Boolean);
+                                    else
+                                       Analyze_And_Resolve
+                                         (Expression (Assoc), Any_Boolean);
+                                    end if;
+
+                                    if not Is_OK_Static_Expression
+                                      (Expression (Assoc))
+                                    then
+                                       Error_Msg_N
+                                         ("expression of aspect %" &
+                                          "must be static", Aspect);
+                                    end if;
+
+                                 else
+                                    Error_Msg_N
+                                      ("illegal aspect % expression", Expr);
+                                 end if;
+                                 Next (Assoc);
+                              end loop;
+                           end;
+                        end if;
+
+                        --  Expressions of the aggregate are parameter names
+
+                        if Present (Expressions (Expr)) then
                            declare
                               Param : Node_Id := First (Expressions (Expr));
 
@@ -2527,22 +2567,6 @@ package body Sem_Ch13 is
                end if;
 
                if Expr_Value then
-
-                  --  Adding minimum decoration to generic subprograms to set
-                  --  the Yield attribute (since at this stage it may not be
-                  --  set; see Analyze_Generic_Subprogram_Declaration).
-
-                  if Nkind (N) in N_Generic_Subprogram_Declaration
-                    and then Ekind (E) = E_Void
-                  then
-                     if Nkind (Specification (N)) = N_Function_Specification
-                     then
-                        Set_Ekind (E, E_Function);
-                     else
-                        Set_Ekind (E, E_Procedure);
-                     end if;
-                  end if;
-
                   Set_Has_Yield_Aspect (E);
                end if;
 
@@ -3051,6 +3075,21 @@ package body Sem_Ch13 is
 
                      Set_Has_Delayed_Aspects (Full_View (E));
                      Ensure_Freeze_Node (Full_View (E));
+
+                     --  If there is an Underlying_Full_View, also create a
+                     --  freeze node for that one.
+
+                     if Is_Private_Type (Full_View (E)) then
+                        declare
+                           U_Full : constant Entity_Id :=
+                             Underlying_Full_View (Full_View (E));
+                        begin
+                           if Present (U_Full) then
+                              Set_Has_Delayed_Aspects (U_Full);
+                              Ensure_Freeze_Node (U_Full);
+                           end if;
+                        end;
+                     end if;
                   end if;
 
                --  Predicate_Failure
@@ -3069,6 +3108,12 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("predicate cannot apply to incomplete view", Aspect);
                      goto Continue;
+
+                  elsif not Has_Predicates (E) then
+                     Error_Msg_N
+                       ("Predicate_Failure requires previous predicate" &
+                        " specification", Aspect);
+                     goto Continue;
                   end if;
 
                   --  Construct the pragma
@@ -3080,16 +3125,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name => Name_Predicate_Failure);
-
-                  --  If the type is private, indicate that its completion
-                  --  has a freeze node, because that is the one that will
-                  --  be visible at freeze time.
-
-                  if Is_Private_Type (E) and then Present (Full_View (E)) then
-                     Set_Has_Predicates (Full_View (E));
-                     Set_Has_Delayed_Aspects (Full_View (E));
-                     Ensure_Freeze_Node (Full_View (E));
-                  end if;
 
                --  Case 2b: Aspects corresponding to pragmas with two
                --  arguments, where the second argument is a local name
@@ -8054,8 +8089,10 @@ package body Sem_Ch13 is
                      if Has_Size_Clause (Rectype)
                        and then RM_Size (Rectype) <= Lbit
                      then
-                        Error_Msg_N
-                          ("bit number out of range of specified size",
+                        Error_Msg_Uint_1 := RM_Size (Rectype);
+                        Error_Msg_Uint_2 := Lbit + 1;
+                        Error_Msg_N ("bit number out of range of specified "
+                           & "size (expected ^, got ^)",
                            Last_Bit (CC));
                      else
                         Set_Component_Clause     (Comp, CC);
@@ -11501,8 +11538,10 @@ package body Sem_Ch13 is
             if Has_Size_Clause (Rectype)
               and then RM_Size (Rectype) <= Lbit
             then
-               Error_Msg_N
-                 ("bit number out of range of specified size",
+               Error_Msg_Uint_1 := RM_Size (Rectype);
+               Error_Msg_Uint_2 := Lbit + 1;
+               Error_Msg_N ("bit number out of range of specified "
+                  & "size (expected ^, got ^)",
                   Last_Bit (CC));
 
                --  Check for overlap with tag or parent component

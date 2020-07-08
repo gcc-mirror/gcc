@@ -1510,17 +1510,38 @@ package body Sem_Util is
       Loc        : constant Source_Ptr := Sloc (Bod);
       Clone_Id   : constant Entity_Id  := Class_Wide_Clone (Spec_Id);
       Clone_Body : Node_Id;
+      Assoc_List : constant Elist_Id := New_Elmt_List;
 
    begin
       --  The declaration of the class-wide clone was created when the
       --  corresponding class-wide condition was analyzed.
+
+      --  The body of the original condition may contain references to
+      --  the formals of Spec_Id. In the body of the class-wide clone,
+      --  these must be replaced with the corresponding formals of
+      --  the clone.
+
+      declare
+         Spec_Formal_Id  : Entity_Id := First_Formal (Spec_Id);
+         Clone_Formal_Id : Entity_Id := First_Formal (Clone_Id);
+      begin
+         while Present (Spec_Formal_Id) loop
+            Append_Elmt (Spec_Formal_Id,  Assoc_List);
+            Append_Elmt (Clone_Formal_Id, Assoc_List);
+
+            Next_Formal (Spec_Formal_Id);
+            Next_Formal (Clone_Formal_Id);
+         end loop;
+      end;
 
       Clone_Body :=
         Make_Subprogram_Body (Loc,
           Specification              =>
             Copy_Subprogram_Spec (Parent (Clone_Id)),
           Declarations               => Declarations (Bod),
-          Handled_Statement_Sequence => Handled_Statement_Sequence (Bod));
+          Handled_Statement_Sequence =>
+            New_Copy_Tree (Handled_Statement_Sequence (Bod),
+              Map => Assoc_List));
 
       --  The new operation is internal and overriding indicators do not apply
       --  (the original primitive may have carried one).
@@ -12525,6 +12546,7 @@ package body Sem_Util is
                Subp_Id     : Entity_Id;
                Aspect_Expr : Node_Id;
                Param_Expr  : Node_Id;
+               Assoc       : Node_Id;
 
             begin
                if Is_Formal (E) then
@@ -12538,12 +12560,29 @@ package body Sem_Util is
                     Find_Value_Of_Aspect
                       (Subp_Id, Aspect_Relaxed_Initialization);
 
-                  --  Aspect expression is either an aggregate, e.g.:
+                  --  Aspect expression is either an aggregate with an optional
+                  --  Boolean expression (which defaults to True), e.g.:
                   --
                   --    function F (X : Integer) return Integer
-                  --      with Relaxed_Initialization => (X, F'Result);
+                  --      with Relaxed_Initialization => (X => True, F'Result);
 
                   if Nkind (Aspect_Expr) = N_Aggregate then
+
+                     if Present (Component_Associations (Aspect_Expr)) then
+                        Assoc := First (Component_Associations (Aspect_Expr));
+
+                        while Present (Assoc) loop
+                           if Denotes_Relaxed_Parameter
+                             (First (Choices (Assoc)), E)
+                           then
+                              return
+                                Is_True
+                                  (Static_Boolean (Expression (Assoc)));
+                           end if;
+
+                           Next (Assoc);
+                        end loop;
+                     end if;
 
                      Param_Expr := First (Expressions (Aspect_Expr));
 
@@ -14437,6 +14476,16 @@ package body Sem_Util is
    begin
       return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
    end Is_Atomic_Or_VFA_Object;
+
+   -----------------------------
+   -- Is_Attribute_Loop_Entry --
+   -----------------------------
+
+   function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Loop_Entry;
+   end Is_Attribute_Loop_Entry;
 
    ----------------------
    -- Is_Attribute_Old --
@@ -21358,7 +21407,7 @@ package body Sem_Util is
       --  New_Id is the corresponding new entity generated during Phase 1.
 
       procedure Add_Pending_Itype (Assoc_Nod : Node_Id; Itype : Entity_Id);
-      pragma Inline (Add_New_Entity);
+      pragma Inline (Add_Pending_Itype);
       --  Add an entry in the NCT_Pending_Itypes which maps key Assoc_Nod to
       --  value Itype. Assoc_Nod is the associated node of an itype. Itype is
       --  an itype.
@@ -25700,23 +25749,25 @@ package body Sem_Util is
    is
    begin
       --  The only entities for which we track constant values are variables
-      --  which are not renamings, constants, out parameters, and in out
-      --  parameters, so check if we have this case.
+      --  which are not renamings, constants and formal parameters, so check
+      --  if we have this case.
 
       --  Note: it may seem odd to track constant values for constants, but in
       --  fact this routine is used for other purposes than simply capturing
-      --  the value. In particular, the setting of Known[_Non]_Null.
+      --  the value. In particular, the setting of Known[_Non]_Null and
+      --  Is_Known_Valid.
 
       if (Ekind (Ent) = E_Variable and then No (Renamed_Object (Ent)))
-            or else
-          Ekind_In (Ent, E_Constant, E_Out_Parameter, E_In_Out_Parameter)
+           or else
+         Ekind (Ent) = E_Constant
+           or else
+         Is_Formal (Ent)
       then
          null;
 
-      --  For conditionals, we also allow loop parameters and all formals,
-      --  including in parameters.
+      --  For conditionals, we also allow loop parameters
 
-      elsif Cond and then Ekind_In (Ent, E_Loop_Parameter, E_In_Parameter) then
+      elsif Cond and then Ekind (Ent) = E_Loop_Parameter then
          null;
 
       --  For all other cases, not just unsafe, but impossible to capture
