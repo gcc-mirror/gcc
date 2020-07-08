@@ -182,6 +182,8 @@ do {								\
        builtin_define("__SIZEOF_FLOAT128__=16");		\
 } while (0)
 
+#define TARGET_RUST_CPU_INFO pa_rust_target_cpu_info
+
 /* An old set of OS defines for various BSD-like systems.  */
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
