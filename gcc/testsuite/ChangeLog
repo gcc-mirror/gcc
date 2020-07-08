@@ -1,3 +1,138 @@
+2020-07-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92427
+	* g++.dg/ext/flexary37.C: New test.
+
+2020-07-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95303
+	* g++.dg/concepts/diagnostic14.C: New test.
+
+2020-07-07  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (check_power10_hw_available):
+	Return 0 for passing test.
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/pragma-eof.c: New
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/line-2.c: New.
+	* c-c++-common/cpp/line-2.h: New.
+	* c-c++-common/cpp/line-3.c: New.
+	* c-c++-common/cpp/line-4.c: New.
+	* c-c++-common/cpp/line-4.h: New.
+
+2020-07-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96063
+	* g++.dg/warn/Wmismatched-tags-7.C: New test.
+	* g++.dg/warn/Wmismatched-tags-8.C: New test.
+
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-47.c: New testcase.
+	* gcc.dg/vect/slp-48.c: Likewise.
+
+2020-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95984
+	* g++.dg/warn/Wnonnull6.C: New test.
+
+2020-07-06  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/eh/builtin10.C: Adjust expected errors.
+	* g++.dg/eh/builtin11.C: Likewise.
+	* g++.dg/eh/builtin5.C: Likewise.
+	* g++.dg/eh/builtin6.C: Likewise.
+	* g++.dg/eh/builtin7.C: Likewise.
+	* g++.dg/eh/builtin9.C: Likewise.
+	* g++.dg/parse/crash55.C: Likewise.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* gfortran.dg/pr95980.f90: New file.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* gfortran.dg/pr95709.f90: New file.
+
+2020-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.old-deja/g++.bugs/900404_04.C: Add c++98_only selector to
+	dg-error for extra ';'.
+	* g++.old-deja/g++.law/missed-error2.C: Likewise.
+
+2020-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96075
+	* gcc.dg/vect/slp-46.c: New testcase.
+
+2020-07-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/vadd_add.c: New test.
+	* gcc.target/nvptx/vsub_add.c: New test.
+
+2020-07-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-movulsr.c: New test.
+
+2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-39.c: New test.
+
+2020-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-36.c, gcc.target/cris/pr93372-37.c,
+	gcc.target/cris/pr93372-38.c: New tests.
+
+2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/27318
+	* gfortran.dg/error_recovery_1.f90: Adjust test case.
+	* gfortran.dg/use_15.f90: Likewise.
+	* gfortran.dg/interface_47.f90: New test.
+
+2020-07-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/pr9xxxx-mismatched-traits-and-promise-prev.C: Moved to...
+	* g++.dg/coroutines/pr94760-mismatched-traits-and-promise-prev.C: ...here.
+
+2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/opt87.adb: New test.
+	* gnat.dg/opt87_pkg.ads: New helper.
+	* gnat.dg/opt87_pkg.adb: Likewise.
+
+2020-07-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96040
+	* gcc.dg/ipa/pr96040.c: New test.
+
+2020-07-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/popc-1.c: New test.
+	* gcc.target/nvptx/popc-2.c: New test.
+	* gcc.target/nvptx/popc-3.c: New test.
+	* gcc.target/nvptx/mul-wide.c: New test.
+	* gcc.target/nvptx/umul-wide.c: New test.
+
+2020-07-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp-2.c: New
+	testcase.
+
+2020-07-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/fixits-pr84852-1.c: Enclose negative line number in braces.
+	* gcc.dg/fixits-pr84852-2.c: Same.
+	* gcc.dg/pr89410-1.c: Same.
+	* gcc.dg/pr89410-2.c: Same.
+
 2020-07-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/pr95690.f90: Solaris error appears on line 5.

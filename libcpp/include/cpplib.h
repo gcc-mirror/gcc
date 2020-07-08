@@ -1008,7 +1008,7 @@ extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *,
-				       bool has_preamble = false);
+				       bool injecting = false);
 
 /* Adjust for the main file to be an include.  */
 extern void cpp_retrofit_as_include (cpp_reader *);

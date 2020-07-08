@@ -635,7 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_t._M_reinsert_node_hint_unique(__hint, std::move(__nh)); }
 
       template<typename, typename>
-	friend class std::_Rb_tree_merge_helper;
+	friend struct std::_Rb_tree_merge_helper;
 
       template<typename _Cmp2>
 	void

@@ -76,7 +76,7 @@
 #include <initializer_list>
 
 #if __cplusplus > 201703L
-#include <bits/int_limits.h>
+#include <ext/numeric_traits.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -456,16 +456,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(__is_standard_integer<_Up>::value);
       static_assert(__is_standard_integer<_Tp>::value);
-      using std::__detail::__int_limits;
+      using __gnu_cxx::__int_traits;
 
       if constexpr (is_signed_v<_Tp> == is_signed_v<_Up>)
-	return __int_limits<_Up>::min() <= __t
-	  && __t <= __int_limits<_Up>::max();
+	return __int_traits<_Up>::__min <= __t
+	  && __t <= __int_traits<_Up>::__max;
       else if constexpr (is_signed_v<_Tp>)
 	return __t >= 0
-	  && make_unsigned_t<_Tp>(__t) <= __int_limits<_Up>::max();
+	  && make_unsigned_t<_Tp>(__t) <= __int_traits<_Up>::__max;
       else
-	return __t <= make_unsigned_t<_Up>(__int_limits<_Up>::max());
+	return __t <= make_unsigned_t<_Up>(__int_traits<_Up>::__max);
     }
 #endif // C++20
 #endif // C++17

@@ -989,7 +989,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 			 /* With a preamble, start on line zero, so
 	  	  	    the preamble doesn't appear to have been
 	  	  	    included from line 1.  */
-			 type == IT_MAIN_PREAMBLE ? 0 : 1, sysp);
+			 type == IT_MAIN_INJECT ? 0 : 1, sysp);
   else if (decrement)
     {
       /* Adjust the line back one so we appear on the #include line itself.  */

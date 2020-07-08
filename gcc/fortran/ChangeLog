@@ -1,3 +1,31 @@
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* match.c (copy_ts_from_selector_to_associate, build_class_sym):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+	* resolve.c (resolve_select_type):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* resolve.c (gfc_resolve_code): Check for valid arguments to
+	assigned GOTO.
+
+2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/27318
+	* frontend-passes.c (check_against_globals): New function.
+	(gfc_check_externals): Split; also invoke check_against_globals
+	via gfc_traverse_ns.
+	(gfc_check_externals0): Recursive part formerly in
+	gfc_check_externals.
+	* resolve.c (resolve_global_procedure): Set sym->error on
+	interface mismatch.
+	* symbol.c (ambiguous_symbol): Check for, and set sym->error.
+
 2020-07-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93423

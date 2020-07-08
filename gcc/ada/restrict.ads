@@ -283,9 +283,10 @@ package Restrict is
    --  the node to which an error will be attached if necessary.
 
    procedure Check_Restriction_No_Specification_Of_Aspect (N : Node_Id);
-   --  N is the node id for an N_Aspect_Specification. An error message
-   --  (warning) will be issued if a restriction (warning) was previously set
-   --  for this aspect using Set_No_Specification_Of_Aspect.
+   --  N is the node id for an N_Aspect_Specification, an N_Pragma, or an
+   --  N_Attribute_Definition_Clause. An error message (warning) will be issued
+   --  if a restriction (warning) was previously set for this aspect using
+   --  Set_No_Specification_Of_Aspect.
 
    procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
    --  N denotes an attribute definition clause or an attribute reference. An

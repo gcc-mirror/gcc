@@ -32,7 +32,7 @@
 
 --    Analysis     implements the bulk of semantic analysis such as
 --                 name analysis and type resolution for declarations,
---                 instructions and expressions.  The main routine
+--                 instructions and expressions. The main routine
 --                 driving this process is procedure Analyze given below.
 --                 This analysis phase is really a bottom up pass that is
 --                 achieved during the recursive traversal performed by the
@@ -51,7 +51,7 @@
 --                 recursive calls to itself to resolve operands.
 
 --    Expansion    if we are not generating code this phase is a no-op.
---                 otherwise this phase expands, i.e. transforms, original
+--                 Otherwise this phase expands, i.e. transforms, original
 --                 declaration, expressions or instructions into simpler
 --                 structures that can be handled by the back-end. This
 --                 phase is also in charge of generating code which is
@@ -72,7 +72,7 @@
 --  up. For instructions and declarations, before the call to the Analyze
 --  routine completes we perform expansion since at that point we have all
 --  semantic information needed. For expression nodes, after the call to
---  Analysis terminates we invoke the Resolve routine to transmit top-down
+--  Analyze terminates we invoke the Resolve routine to transmit top-down
 --  the type that was gathered by Analyze which will resolve possible
 --  ambiguities in the expression. Just before the call to Resolve
 --  terminates, the expression can be expanded since all the semantic
@@ -178,7 +178,7 @@
 --  needs to be called 100 times.)
 
 --  The reason this mechanism does not work is that the expanded code for the
---  children is typically inserted above the parent and thus when the father
+--  children is typically inserted above the parent and thus when the parent
 --  gets expanded no re-evaluation takes place. For instance in the case of
 --  aggregates if "new Thing (Function_Call)" is expanded before the aggregate
 --  the expanded code will be placed outside of the aggregate and when

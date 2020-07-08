@@ -1109,7 +1109,7 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
   if (tree_int_cst_sgn (drb->step) < 0)
     /* PLUS because STEP is negative.  */
     misalignment += ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
-		     * TREE_INT_CST_LOW (drb->step));
+		     * -TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
 
   unsigned int const_misalignment;
   if (!known_misalignment (misalignment, vect_align_c, &const_misalignment))
@@ -3074,13 +3074,15 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      if (!DR_IS_READ (dra) && init_b - init_prev != type_size_a)
 		break;
 
-	      /* If the step (if not zero or non-constant) is greater than the
+	      /* If the step (if not zero or non-constant) is smaller than the
 		 difference between data-refs' inits this splits groups into
 		 suitable sizes.  */
 	      if (tree_fits_shwi_p (DR_STEP (dra)))
 		{
-		  HOST_WIDE_INT step = tree_to_shwi (DR_STEP (dra));
-		  if (step != 0 && step <= (init_b - init_a))
+		  unsigned HOST_WIDE_INT step
+		    = absu_hwi (tree_to_shwi (DR_STEP (dra)));
+		  if (step != 0
+		      && step <= (unsigned HOST_WIDE_INT)(init_b - init_a))
 		    break;
 		}
 	    }

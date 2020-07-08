@@ -128,7 +128,11 @@
   "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   /* Can't be too sure; better ICE if this happens.  */
-  gcc_assert (!reg_overlap_mentioned_p (operands[2], operands[1]));
+  gcc_assert (!reg_overlap_mentioned_p (operands[0], operands[1])
+	      && !reg_overlap_mentioned_p (operands[0], operands[2])
+	      && !reg_overlap_mentioned_p (operands[0], operands[3])
+	      && !reg_overlap_mentioned_p (operands[1], operands[3])
+	      && !reg_overlap_mentioned_p (operands[2], operands[3]));
 
   if (cris_cpu_version == 10)
     return

@@ -1133,6 +1133,7 @@ c_common_post_options (const char **pfilename)
 			  /* We'll inject preamble pieces if this is
 			     not preprocessed.  */
 			  !cpp_opts->preprocessed);
+
   /* Don't do any compilation or preprocessing if there is no input file.  */
   if (this_input_filename == NULL)
     {

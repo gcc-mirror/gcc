@@ -12066,7 +12066,8 @@ package body Sem_Util is
 
          when N_Parameter_Specification =>
             if Nkind (Parameter_Type (N)) = N_Access_Definition then
-               return Null_Exclusion_Present (Parameter_Type (N));
+               return Null_Exclusion_Present (Parameter_Type (N))
+                 or else Null_Exclusion_Present (N);
             else
                return Null_Exclusion_Present (N);
             end if;
@@ -15029,6 +15030,59 @@ package body Sem_Util is
       return False;
    end Is_Current_Instance;
 
+   --------------------------------------------------
+   -- Is_Current_Instance_Reference_In_Type_Aspect --
+   --------------------------------------------------
+
+   function Is_Current_Instance_Reference_In_Type_Aspect
+     (N : Node_Id) return Boolean
+   is
+   begin
+      --  When a current_instance is referenced within an aspect_specification
+      --  of a type or subtype, it will show up as a reference to the formal
+      --  parameter of the aspect's associated subprogram rather than as a
+      --  reference to the type or subtype itself (in fact, the original name
+      --  is never even analyzed). We check for predicate, invariant, and
+      --  Default_Initial_Condition subprograms (in theory there could be
+      --  other cases added, in which case this function will need updating).
+
+      if Is_Entity_Name (N) then
+         return Present (Entity (N))
+           and then Ekind (Entity (N)) = E_In_Parameter
+           and then Ekind_In (Scope (Entity (N)), E_Function, E_Procedure)
+           and then
+             (Is_Predicate_Function (Scope (Entity (N)))
+               or else Is_Predicate_Function_M (Scope (Entity (N)))
+               or else Is_Invariant_Procedure (Scope (Entity (N)))
+               or else Is_Partial_Invariant_Procedure (Scope (Entity (N)))
+               or else Is_DIC_Procedure (Scope (Entity (N))));
+
+      else
+         case Nkind (N) is
+            when N_Indexed_Component
+               | N_Slice
+            =>
+               return
+                 Is_Current_Instance_Reference_In_Type_Aspect (Prefix (N));
+
+            when N_Selected_Component =>
+               return
+                 Is_Current_Instance_Reference_In_Type_Aspect (Prefix (N));
+
+            when N_Type_Conversion =>
+               return Is_Current_Instance_Reference_In_Type_Aspect
+                        (Expression (N));
+
+            when N_Qualified_Expression =>
+               return Is_Current_Instance_Reference_In_Type_Aspect
+                        (Expression (N));
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Is_Current_Instance_Reference_In_Type_Aspect;
+
    --------------------
    -- Is_Declaration --
    --------------------
@@ -16983,8 +17037,13 @@ package body Sem_Util is
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
    begin
+      --  AI12-0068: Note that a current instance reference in a type or
+      --  subtype's aspect_specification is considered a value, not an object
+      --  (see RM 8.6(18/5)).
+
       if Is_Entity_Name (N) then
-         return Present (Entity (N)) and then Is_Object (Entity (N));
+         return Present (Entity (N)) and then Is_Object (Entity (N))
+           and then not Is_Current_Instance_Reference_In_Type_Aspect (N);
 
       else
          case Nkind (N) is
@@ -17636,8 +17695,80 @@ package body Sem_Util is
    --------------------------------
 
    function Is_Potentially_Unevaluated (N : Node_Id) return Boolean is
+      function Has_Null_Others_Choice (Aggr : Node_Id) return Boolean;
+      --  Aggr is an array aggregate with static bounds and an others clause;
+      --  return True if the others choice of the given array aggregate does
+      --  not cover any component (i.e. is null).
+
+      function Non_Static_Or_Null_Range (N : Node_Id) return Boolean;
+      --  Return True if the given range is nonstatic or null
+
+      ----------------------------
+      -- Has_Null_Others_Choice --
+      ----------------------------
+
+      function Has_Null_Others_Choice (Aggr : Node_Id) return Boolean is
+         Idx : constant Node_Id := First_Index (Etype (Aggr));
+         Hiv : constant Uint := Expr_Value (Type_High_Bound (Etype (Idx)));
+         Lov : constant Uint := Expr_Value (Type_Low_Bound (Etype (Idx)));
+
+      begin
+         declare
+            Intervals : constant Interval_Lists.Discrete_Interval_List :=
+              Interval_Lists.Aggregate_Intervals (Aggr);
+
+         begin
+            --  The others choice is null if, after normalization, we
+            --  have a single interval covering the whole aggregate.
+
+            return Intervals'Length = 1
+              and then
+                Intervals (Intervals'First).Low = Lov
+              and then
+                Intervals (Intervals'First).High = Hiv;
+         end;
+
+      --  If the aggregate is malformed (that is, indexes are not disjoint)
+      --  then no action is needed at this stage; the error will be reported
+      --  later by the frontend.
+
+      exception
+         when Interval_Lists.Intervals_Error =>
+            return False;
+      end Has_Null_Others_Choice;
+
+      ------------------------------
+      -- Non_Static_Or_Null_Range --
+      ------------------------------
+
+      function Non_Static_Or_Null_Range (N : Node_Id) return Boolean is
+         Low, High : Node_Id;
+
+      begin
+         Get_Index_Bounds (N, Low, High);
+
+         --  Check static bounds
+
+         if not Compile_Time_Known_Value (Low)
+           or else not Compile_Time_Known_Value (High)
+         then
+            return True;
+
+         --  Check null range
+
+         elsif Expr_Value (High) < Expr_Value (Low) then
+            return True;
+         end if;
+
+         return False;
+      end Non_Static_Or_Null_Range;
+
+      --  Local variables
+
       Par  : Node_Id;
       Expr : Node_Id;
+
+   --  Start of processing for Is_Potentially_Unevaluated
 
    begin
       Expr := N;
@@ -17674,6 +17805,9 @@ package body Sem_Util is
                                N_Not_In,
                                N_Or_Else,
                                N_Quantified_Expression)
+        and then not (Nkind (Par) = N_Aggregate
+                        and then Etype (Par) /= Any_Composite
+                        and then Is_Array_Type (Etype (Par)))
       loop
          Expr := Par;
          Par  := Parent (Par);
@@ -17717,6 +17851,56 @@ package body Sem_Util is
 
       elsif Nkind (Par) = N_Quantified_Expression then
          return Expr = Condition (Par);
+
+      elsif Nkind (Par) = N_Aggregate
+        and then Etype (Par) /= Any_Composite
+        and then Is_Array_Type (Etype (Par))
+        and then Nkind (Expr) = N_Component_Association
+      then
+         declare
+            Choice           : Node_Id;
+            In_Others_Choice : Boolean := False;
+
+         begin
+            --  The expression of an array_component_association is potentially
+            --  unevaluated if the associated choice is a subtype_indication or
+            --  range that defines a nonstatic or null range.
+
+            Choice := First (Choices (Expr));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Range
+                 and then Non_Static_Or_Null_Range (Choice)
+               then
+                  return True;
+
+               elsif Nkind (Choice) = N_Identifier
+                 and then Present (Scalar_Range (Etype (Choice)))
+                 and then
+                   Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
+               then
+                  return True;
+
+               elsif Nkind (Choice) = N_Others_Choice then
+                  In_Others_Choice := True;
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            --  It is also potentially unevaluated if the associated choice
+            --  is an others choice and the applicable index constraint is
+            --  nonstatic or null.
+
+            if In_Others_Choice then
+               if not Compile_Time_Known_Bounds (Etype (Par)) then
+                  return True;
+               else
+                  return Has_Null_Others_Choice (Par);
+               end if;
+            end if;
+         end;
+
+         return False;
 
       else
          return False;
@@ -28712,26 +28896,113 @@ package body Sem_Util is
 
    package body Interval_Lists is
 
-      function In_Interval
-        (Value : Uint; Interval : Discrete_Interval) return Boolean;
-      --  Does the given value lie within the given interval?
-
-      -----------------
-      -- In_Interval --
-      -----------------
-      function In_Interval
-        (Value : Uint; Interval : Discrete_Interval) return Boolean is
-      begin
-         return Value >= Interval.Low and then Value <= Interval.High;
-      end In_Interval;
-
       procedure Check_Consistency (Intervals : Discrete_Interval_List);
       --  Check that list is sorted, lacks null intervals, and has gaps
       --  between intervals.
 
+      function Chosen_Interval (Choice : Node_Id) return Discrete_Interval;
+      --  Given an element of a Discrete_Choices list, a
+      --  Static_Discrete_Predicate list, or an Others_Discrete_Choices
+      --  list (but not an N_Others_Choice node) return the corresponding
+      --  interval. If an element that does not represent a single
+      --  contiguous interval due to a static predicate (or which
+      --  represents a single contiguous interval whose bounds depend on
+      --  a static predicate) is encountered, then that is an error on the
+      --  part of whoever built the list in question.
+
+      function In_Interval
+        (Value : Uint; Interval : Discrete_Interval) return Boolean;
+      --  Does the given value lie within the given interval?
+
+      procedure Normalize_Interval_List
+         (List : in out Discrete_Interval_List; Last : out Nat);
+      --  Perform sorting and merging as required by Check_Consistency.
+
+      -------------------------
+      -- Aggregate_Intervals --
+      -------------------------
+
+      function Aggregate_Intervals (N : Node_Id) return Discrete_Interval_List
+      is
+         pragma Assert (Nkind (N) = N_Aggregate
+           and then Is_Array_Type (Etype (N)));
+
+         function Unmerged_Intervals_Count return Nat;
+         --  Count the number of intervals given in the aggregate N; the others
+         --  choice (if present) is not taken into account.
+
+         function Unmerged_Intervals_Count return Nat is
+            Count  : Nat := 0;
+            Choice : Node_Id;
+            Comp   : Node_Id;
+         begin
+            Comp := First (Component_Associations (N));
+            while Present (Comp) loop
+               Choice := First (Choices (Comp));
+
+               while Present (Choice) loop
+                  if Nkind (Choice) /= N_Others_Choice then
+                     Count := Count + 1;
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               Next (Comp);
+            end loop;
+
+            return Count;
+         end Unmerged_Intervals_Count;
+
+         --  Local variables
+
+         Comp      : Node_Id;
+         Max_I     : constant Nat := Unmerged_Intervals_Count;
+         Intervals : Discrete_Interval_List (1 .. Max_I);
+         Num_I     : Nat := 0;
+
+      --  Start of processing for Aggregate_Intervals
+
+      begin
+         --  No action needed if there are no intervals
+
+         if Max_I = 0 then
+            return Intervals;
+         end if;
+
+         --  Internally store all the unsorted intervals
+
+         Comp := First (Component_Associations (N));
+         while Present (Comp) loop
+            declare
+               Choice_Intervals : constant Discrete_Interval_List
+                 := Choice_List_Intervals (Choices (Comp));
+            begin
+               for J in Choice_Intervals'Range loop
+                  Num_I := Num_I + 1;
+                  Intervals (Num_I) := Choice_Intervals (J);
+               end loop;
+            end;
+
+            Next (Comp);
+         end loop;
+
+         --  Normalize the lists sorting and merging the intervals
+
+         declare
+            Aggr_Intervals : Discrete_Interval_List (1 .. Num_I)
+                               := Intervals (1 .. Num_I);
+         begin
+            Normalize_Interval_List (Aggr_Intervals, Num_I);
+            Check_Consistency (Aggr_Intervals (1 .. Num_I));
+            return Aggr_Intervals (1 .. Num_I);
+         end;
+      end Aggregate_Intervals;
+
       ------------------------
       --  Check_Consistency --
       ------------------------
+
       procedure Check_Consistency (Intervals : Discrete_Interval_List) is
       begin
          if Serious_Errors_Detected > 0 then
@@ -28752,19 +29023,79 @@ package body Sem_Util is
          end loop;
       end Check_Consistency;
 
-      function Chosen_Interval (Choice : Node_Id) return Discrete_Interval;
-      --  Given an element of a Discrete_Choices list, a
-      --  Static_Discrete_Predicate list, or an Others_Discrete_Choices
-      --  list (but not an N_Others_Choice node) return the corresponding
-      --  interval. If an element that does not represent a single
-      --  contiguous interval due to a static predicate (or which
-      --  represents a single contiguous interval whose bounds depend on
-      --  a static predicate) is encountered, then that is an error on the
-      --  part of whoever built the list in question.
+      ---------------------------
+      -- Choice_List_Intervals --
+      ---------------------------
+
+      function Choice_List_Intervals
+        (Discrete_Choices : List_Id) return Discrete_Interval_List
+      is
+         function Unmerged_Choice_Count return Nat;
+         --  The number of intervals before adjacent intervals are merged.
+
+         ---------------------------
+         -- Unmerged_Choice_Count --
+         ---------------------------
+
+         function Unmerged_Choice_Count return Nat is
+            Choice : Node_Id := First (Discrete_Choices);
+            Count  : Nat := 0;
+         begin
+            while Present (Choice) loop
+               --  Non-contiguous choices involving static predicates
+               --  have already been normalized away.
+
+               if Nkind (Choice) = N_Others_Choice then
+                  Count :=
+                    Count + List_Length (Others_Discrete_Choices (Choice));
+               else
+                  Count := Count + 1;  -- an ordinary expression or range
+               end if;
+
+               Next (Choice);
+            end loop;
+            return Count;
+         end Unmerged_Choice_Count;
+
+         --  Local variables
+
+         Choice : Node_Id := First (Discrete_Choices);
+         Result : Discrete_Interval_List (1 .. Unmerged_Choice_Count);
+         Count  : Nat := 0;
+
+      --  Start of processing for Choice_List_Intervals
+
+      begin
+         while Present (Choice) loop
+            if Nkind (Choice) = N_Others_Choice then
+               declare
+                  Others_Choice : Node_Id
+                    := First (Others_Discrete_Choices (Choice));
+               begin
+                  while Present (Others_Choice) loop
+                     Count := Count + 1;
+                     Result (Count) := Chosen_Interval (Others_Choice);
+                     Next (Others_Choice);
+                  end loop;
+               end;
+            else
+               Count := Count + 1;
+               Result (Count) := Chosen_Interval (Choice);
+            end if;
+
+            Next (Choice);
+         end loop;
+
+         pragma Assert (Count = Result'Last);
+         Normalize_Interval_List (Result, Count);
+         Check_Consistency (Result (1 .. Count));
+         return Result (1 .. Count);
+      end Choice_List_Intervals;
 
       ---------------------
       -- Chosen_Interval --
       ---------------------
+
       function Chosen_Interval (Choice : Node_Id) return Discrete_Interval is
       begin
          case Nkind (Choice) is
@@ -28797,11 +29128,222 @@ package body Sem_Util is
          end case;
       end Chosen_Interval;
 
+      -----------------
+      -- In_Interval --
+      -----------------
+
+      function In_Interval
+        (Value : Uint; Interval : Discrete_Interval) return Boolean is
+      begin
+         return Value >= Interval.Low and then Value <= Interval.High;
+      end In_Interval;
+
+      ---------------
+      -- Is_Subset --
+      ---------------
+
+      function Is_Subset
+        (Subset, Of_Set : Discrete_Interval_List) return Boolean
+      is
+         --  Returns True iff for each interval of Subset we can find
+         --  a single interval of Of_Set which contains the Subset interval.
+      begin
+         if Of_Set'Length = 0 then
+            return Subset'Length = 0;
+         end if;
+
+         declare
+            Set_Index : Pos range Of_Set'Range := Of_Set'First;
+
+         begin
+            for Ss_Idx in Subset'Range loop
+               while not In_Interval
+                 (Value    => Subset (Ss_Idx).Low,
+                  Interval => Of_Set (Set_Index))
+               loop
+                  if Set_Index = Of_Set'Last then
+                     return False;
+                  end if;
+
+                  Set_Index := Set_Index + 1;
+               end loop;
+
+               if not In_Interval
+                 (Value    => Subset (Ss_Idx).High,
+                  Interval => Of_Set (Set_Index))
+               then
+                  return False;
+               end if;
+            end loop;
+         end;
+
+         return True;
+      end Is_Subset;
+
+      -----------------------------
+      -- Normalize_Interval_List --
+      -----------------------------
+
+      procedure Normalize_Interval_List
+        (List : in out Discrete_Interval_List; Last : out Nat)
+      is
+         Temp_0 : Discrete_Interval := (others => Uint_0);
+         --  Cope with Heap_Sort_G idiosyncrasies.
+
+         function Is_Null (Idx : Pos) return Boolean;
+         --  True iff List (Idx) defines a null range
+
+         function Lt_Interval (Idx1, Idx2 : Natural) return Boolean;
+         --  Compare two list elements
+
+         procedure Merge_Intervals (Null_Interval_Count : out Nat);
+         --  Merge contiguous ranges by replacing one with merged range and
+         --  the other with a null value. Return a count of the null intervals,
+         --  both preexisting and those introduced by merging.
+
+         procedure Move_Interval (From, To : Natural);
+         --  Copy interval from one location to another
+
+         function Read_Interval (From : Natural) return Discrete_Interval;
+         --  Normal array indexing unless From = 0
+
+         ----------------------
+         -- Interval_Sorting --
+         ----------------------
+
+         package Interval_Sorting is
+           new Gnat.Heap_Sort_G (Move_Interval, Lt_Interval);
+
+         -------------
+         -- Is_Null --
+         -------------
+
+         function Is_Null (Idx : Pos) return Boolean is
+         begin
+            return List (Idx).Low > List (Idx).High;
+         end Is_Null;
+
+         -----------------
+         -- Lt_Interval --
+         -----------------
+
+         function Lt_Interval (Idx1, Idx2 : Natural) return Boolean is
+            Elem1  : constant Discrete_Interval := Read_Interval (Idx1);
+            Elem2  : constant Discrete_Interval := Read_Interval (Idx2);
+            Null_1 : constant Boolean := Elem1.Low > Elem1.High;
+            Null_2 : constant Boolean := Elem2.Low > Elem2.High;
+         begin
+            if Null_1 /= Null_2 then
+               --  So that sorting moves null intervals to high end
+               return Null_2;
+
+            elsif Elem1.Low /= Elem2.Low then
+               return Elem1.Low < Elem2.Low;
+
+            else
+               return Elem1.High < Elem2.High;
+            end if;
+         end Lt_Interval;
+
+         ---------------------
+         -- Merge_Intervals --
+         ---------------------
+
+         procedure Merge_Intervals (Null_Interval_Count : out Nat) is
+            Not_Null : Pos range List'Range;
+            --  Index of the most recently examined non-null interval
+
+            Null_Interval : constant Discrete_Interval
+              := (Low => Uint_1, High => Uint_0); -- any null range ok here
+         begin
+            if List'Length = 0 or else Is_Null (List'First) then
+               Null_Interval_Count := List'Length;
+               --  no non-null elements, so no merge candidates
+               return;
+            end if;
+
+            Null_Interval_Count := 0;
+            Not_Null := List'First;
+
+            for Idx in List'First + 1 .. List'Last loop
+               if Is_Null (Idx) then
+
+                  --  all remaining elements are null
+
+                  Null_Interval_Count :=
+                    Null_Interval_Count + List (Idx .. List'Last)'Length;
+                  return;
+
+               elsif List (Idx).Low = List (Not_Null).High + 1 then
+
+                  --  Merge the two intervals into one; discard the other
+
+                  List (Not_Null).High := List (Idx).High;
+                  List (Idx) := Null_Interval;
+                  Null_Interval_Count := Null_Interval_Count + 1;
+
+               else
+                  if List (Idx).Low <= List (Not_Null).High then
+                     raise Intervals_Error;
+                  end if;
+
+                  pragma Assert (List (Idx).Low > List (Not_Null).High);
+                  Not_Null := Idx;
+               end if;
+            end loop;
+         end Merge_Intervals;
+
+         -------------------
+         -- Move_Interval --
+         -------------------
+
+         procedure Move_Interval (From, To : Natural) is
+            Rhs : constant Discrete_Interval := Read_Interval (From);
+         begin
+            if To = 0 then
+               Temp_0 := Rhs;
+            else
+               List (Pos (To)) := Rhs;
+            end if;
+         end Move_Interval;
+
+         -------------------
+         -- Read_Interval --
+         -------------------
+
+         function Read_Interval (From : Natural) return Discrete_Interval is
+         begin
+            if From = 0 then
+               return Temp_0;
+            else
+               return List (Pos (From));
+            end if;
+         end Read_Interval;
+
+      --  Start of processing for Normalize_Interval_Lists
+
+      begin
+         Interval_Sorting.Sort (Natural (List'Last));
+
+         declare
+            Null_Interval_Count : Nat;
+
+         begin
+            Merge_Intervals (Null_Interval_Count);
+            Last := List'Last - Null_Interval_Count;
+
+            if Null_Interval_Count /= 0 then
+               --  Move null intervals introduced during merging to high end
+               Interval_Sorting.Sort (Natural (List'Last));
+            end if;
+         end;
+      end Normalize_Interval_List;
+
       --------------------
       -- Type_Intervals --
       --------------------
-      function Type_Intervals
-        (Typ : Entity_Id) return Discrete_Interval_List
+
+      function Type_Intervals (Typ : Entity_Id) return Discrete_Interval_List
       is
       begin
          if Has_Static_Predicate (Typ) then
@@ -28809,13 +29351,14 @@ package body Sem_Util is
                --  No sorting or merging needed
                SDP_List : constant List_Id := Static_Discrete_Predicate (Typ);
                Range_Or_Expr : Node_Id := First (SDP_List);
-               Result :
-                 Discrete_Interval_List (1 .. List_Length (SDP_List));
+               Result : Discrete_Interval_List (1 .. List_Length (SDP_List));
+
             begin
                for Idx in Result'Range loop
                   Result (Idx) := Chosen_Interval (Range_Or_Expr);
                   Next (Range_Or_Expr);
                end loop;
+
                pragma Assert (not Present (Range_Or_Expr));
                Check_Consistency (Result);
                return Result;
@@ -28837,237 +29380,6 @@ package body Sem_Util is
             end;
          end if;
       end Type_Intervals;
-
-      procedure Normalize_Interval_List
-         (List : in out Discrete_Interval_List; Last : out Nat);
-      --  Perform sorting and merging as required by Check_Consistency.
-
-      -----------------------------
-      -- Normalize_Interval_List --
-      -----------------------------
-      procedure Normalize_Interval_List
-        (List : in out Discrete_Interval_List; Last : out Nat) is
-
-         procedure Move_Interval (From, To : Natural);
-         --  Copy interval from one location to another
-
-         function Lt_Interval (Idx1, Idx2 : Natural) return Boolean;
-         --  Compare two list elements
-
-         Temp_0 : Discrete_Interval := (others => Uint_0);
-         --  cope with Heap_Sort_G idiosyncrasies.
-
-         function Read_Interval (From : Natural) return Discrete_Interval;
-         --  Normal array indexing unless From = 0
-
-         -------------------
-         -- Read_Interval --
-         -------------------
-         function Read_Interval (From : Natural) return Discrete_Interval is
-         begin
-            if From = 0 then
-               return Temp_0;
-            else
-               return List (Pos (From));
-            end if;
-         end Read_Interval;
-
-         -------------------
-         -- Move_Interval --
-         -------------------
-         procedure Move_Interval (From, To : Natural) is
-            Rhs : constant Discrete_Interval := Read_Interval (From);
-         begin
-            if To = 0 then
-               Temp_0 := Rhs;
-            else
-               List (Pos (To)) := Rhs;
-            end if;
-         end Move_Interval;
-
-         -----------------
-         -- Lt_Interval --
-         -----------------
-         function Lt_Interval (Idx1, Idx2 : Natural) return Boolean is
-            Elem1  : constant Discrete_Interval := Read_Interval (Idx1);
-            Elem2  : constant Discrete_Interval := Read_Interval (Idx2);
-            Null_1 : constant Boolean := Elem1.Low > Elem1.High;
-            Null_2 : constant Boolean := Elem2.Low > Elem2.High;
-         begin
-            if Null_1 /= Null_2 then
-               --  So that sorting moves null intervals to high end
-               return Null_2;
-            elsif Elem1.Low /= Elem2.Low then
-               return Elem1.Low < Elem2.Low;
-            else
-               return Elem1.High < Elem2.High;
-            end if;
-         end Lt_Interval;
-
-         package Interval_Sorting is
-           new Gnat.Heap_Sort_G (Move_Interval, Lt_Interval);
-
-         function Is_Null (Idx : Pos) return Boolean;
-         --  True iff List (Idx) defines a null range
-
-         function Is_Null (Idx : Pos) return Boolean is
-         begin
-            return List (Idx).Low > List (Idx).High;
-         end Is_Null;
-
-         procedure Merge_Intervals (Null_Interval_Count : out Nat);
-         --  Merge contiguous ranges by replacing one with merged range
-         --  and the other with a null value. Return a count of the
-         --  null intervals, both preexisting and those introduced by
-         --  merging.
-
-         ---------------------
-         -- Merge_Intervals --
-         ---------------------
-         procedure Merge_Intervals (Null_Interval_Count : out Nat) is
-            Not_Null : Pos range List'Range;
-            --  Index of the most recently examined non-null interval
-
-            Null_Interval : constant Discrete_Interval
-              := (Low => Uint_1, High => Uint_0); -- any null range ok here
-         begin
-            if List'Length = 0 or else Is_Null (List'First) then
-               Null_Interval_Count := List'Length;
-               --  no non-null elements, so no merge candidates
-               return;
-            end if;
-
-            Null_Interval_Count := 0;
-            Not_Null := List'First;
-            for Idx in List'First + 1 .. List'Last loop
-               if Is_Null (Idx) then
-                  --  all remaining elements are null
-                  Null_Interval_Count :=
-                    Null_Interval_Count + List (Idx .. List'Last)'Length;
-                  return;
-               elsif List (Idx).Low = List (Not_Null).High + 1 then
-                  --  Merge the two intervals into one; discard the other
-                  List (Not_Null).High := List (Idx).High;
-                  List (Idx) := Null_Interval;
-                  Null_Interval_Count := Null_Interval_Count + 1;
-               else
-                  pragma Assert (List (Idx).Low > List (Not_Null).High);
-                  Not_Null := Idx;
-               end if;
-            end loop;
-         end Merge_Intervals;
-      begin
-         Interval_Sorting.Sort (Natural (List'Last));
-         declare
-            Null_Interval_Count : Nat;
-         begin
-            Merge_Intervals (Null_Interval_Count);
-            Last := List'Last - Null_Interval_Count;
-            if Null_Interval_Count /= 0 then
-               --  Move null intervals introduced during merging to high end
-               Interval_Sorting.Sort (Natural (List'Last));
-            end if;
-         end;
-      end Normalize_Interval_List;
-
-      ---------------------------
-      -- Choice_List_Intervals --
-      ---------------------------
-      function Choice_List_Intervals
-        (Discrete_Choices : List_Id) return Discrete_Interval_List
-      is
-         function Unmerged_Choice_Count return Nat;
-         --  The number of intervals before adjacent intervals are merged.
-
-         ---------------------------
-         -- Unmerged_Choice_Count --
-         ---------------------------
-         function Unmerged_Choice_Count return Nat is
-            Choice : Node_Id := First (Discrete_Choices);
-            Count  : Nat := 0;
-         begin
-            while Present (Choice) loop
-               --  Non-contiguous choices involving static predicates
-               --  have already been normalized away.
-
-               if Nkind (Choice) = N_Others_Choice then
-                  Count :=
-                    Count + List_Length (Others_Discrete_Choices (Choice));
-               else
-                  Count := Count + 1;  -- an ordinary expression or range
-               end if;
-
-               Next (Choice);
-            end loop;
-            return Count;
-         end Unmerged_Choice_Count;
-
-         Choice : Node_Id := First (Discrete_Choices);
-         Result : Discrete_Interval_List (1 .. Unmerged_Choice_Count);
-         Count  : Nat := 0;
-      begin
-         while Present (Choice) loop
-            if Nkind (Choice) = N_Others_Choice then
-               declare
-                  Others_Choice : Node_Id
-                    := First (Others_Discrete_Choices (Choice));
-               begin
-                  while Present (Others_Choice) loop
-                     Count := Count + 1;
-                     Result (Count) := Chosen_Interval (Others_Choice);
-                     Next (Others_Choice);
-                  end loop;
-               end;
-            else
-               Count := Count + 1;
-               Result (Count) := Chosen_Interval (Choice);
-            end if;
-            Next (Choice);
-         end loop;
-         pragma Assert (Count = Result'Last);
-         Normalize_Interval_List (Result, Count);
-         Check_Consistency (Result (1 .. Count));
-         return Result (1 .. Count);
-      end Choice_List_Intervals;
-
-      ---------------
-      -- Is_Subset --
-      ---------------
-      function Is_Subset
-        (Subset, Of_Set : Discrete_Interval_List) return Boolean
-      is
-         --  Returns True iff for each interval of Subset we can find
-         --  a single interval of Of_Set which contains the Subset interval.
-      begin
-         if Of_Set'Length = 0 then
-            return Subset'Length = 0;
-         end if;
-
-         declare
-            Set_Index : Pos range Of_Set'Range := Of_Set'First;
-         begin
-            for Ss_Idx in Subset'Range loop
-               while not In_Interval
-                 (Value    => Subset (Ss_Idx).Low,
-                  Interval => Of_Set (Set_Index))
-               loop
-                  if Set_Index = Of_Set'Last then
-                     return False;
-                  end if;
-                  Set_Index := Set_Index + 1;
-               end loop;
-
-               if not In_Interval
-                 (Value    => Subset (Ss_Idx).High,
-                  Interval => Of_Set (Set_Index))
-               then
-                  return False;
-               end if;
-            end loop;
-         end;
-
-         return True;
-      end Is_Subset;
 
    end Interval_Lists;
 

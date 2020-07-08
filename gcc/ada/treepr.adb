@@ -1006,6 +1006,15 @@ package body Treepr is
          return;
       end if;
 
+      --  Similarly, if N points to an extension, avoid crashing
+
+      if Atree_Private_Part.Nodes.Table (N).Is_Extension then
+         Print_Int (Int (N));
+         Print_Str (" is an extension, not a node");
+         Print_Eol;
+         return;
+      end if;
+
       Prefix_Str_Char (Prefix_Str'Range)    := Prefix_Str;
       Prefix_Str_Char (Prefix_Str'Last + 1) := Prefix_Char;
 

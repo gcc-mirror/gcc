@@ -982,9 +982,9 @@ with a first parameter of True is to warn a client about use of a package,
 for example that it is not fully implemented.
 
 In previous versions of the compiler, combining *-gnatwe* with
-Compile_Time_Warning resulted in an fatal error. Now the compiler will always
-emit a warning. You can use :ref:`Compile_Time_Error` to force the generation
-of an error.
+Compile_Time_Warning resulted in a fatal error. Now the compiler always emits
+a warning. You can use :ref:`Compile_Time_Error` to force the generation of
+an error.
 
 Pragma Compiler_Unit
 ====================

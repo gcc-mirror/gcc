@@ -133,8 +133,11 @@ build_exc_ptr (void)
 		       1, integer_zero_node);
 }
 
-/* I don't know why this complexity.  why not just push a new decl and
-   let the matching machinery deal with it?  */
+/* Declare an exception ABI entry point called NAME.
+   ECF are the library flags, RTYPE the return type and ARGS[NARGS]
+   the parameter types.  We return the DECL -- which might be one
+   found via the symbol table pushing, if the user already declared
+   it.  If we pushed a new decl, the user will see it.  */
 
 static tree
 declare_library_fn_1 (const char *name, int ecf,

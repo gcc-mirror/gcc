@@ -454,7 +454,7 @@ package Aspects is
       Aspect_Contract_Cases               => False,
       Aspect_Convention                   => True,
       Aspect_CPU                          => False,
-      Aspect_Default_Component_Value      => False,
+      Aspect_Default_Component_Value      => True,
       Aspect_Default_Initial_Condition    => False,
       Aspect_Default_Iterator             => False,
       Aspect_Default_Storage_Pool         => True,

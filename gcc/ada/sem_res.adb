@@ -178,6 +178,7 @@ package body Sem_Res is
    procedure Resolve_Case_Expression           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Character_Literal         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Comparison_Op             (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Declare_Expression        (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Entity_Name               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Equality_Op               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Explicit_Dereference      (N : Node_Id; Typ : Entity_Id);
@@ -2285,10 +2286,18 @@ package body Sem_Res is
       Check_Parameterless_Call (N);
 
       --  The resolution of an Expression_With_Actions is determined by
-      --  its Expression.
+      --  its Expression, but if the node comes from source it is a
+      --  Declare_Expression and requires scope management.
 
       if Nkind (N) = N_Expression_With_Actions then
-         Resolve (Expression (N), Typ);
+         if Comes_From_Source (N)
+            and then N = Original_Node (N)
+         then
+            Resolve_Declare_Expression (N, Typ);
+
+         else
+            Resolve (Expression (N), Typ);
+         end if;
 
          Found := True;
          Expr_Type := Etype (Expression (N));
@@ -7399,6 +7408,49 @@ package body Sem_Res is
       end if;
    end Resolve_Comparison_Op;
 
+   --------------------------------
+   -- Resolve_Declare_Expression --
+   --------------------------------
+
+   procedure Resolve_Declare_Expression
+     (N   : Node_Id;
+      Typ : Entity_Id)
+   is
+      Decl : Node_Id;
+   begin
+      --  Install the scope created for local declarations, if
+      --  any. The syntax allows a Declare_Expression with no
+      --  declarations, in analogy with block statements.
+
+      Decl := First (Actions (N));
+
+      while Present (Decl) loop
+         exit when Nkind (Decl) = N_Object_Declaration;
+         Next (Decl);
+      end loop;
+
+      if Present (Decl) then
+         Push_Scope (Scope (Defining_Identifier (Decl)));
+
+         declare
+            E : Entity_Id := First_Entity (Current_Scope);
+
+         begin
+            while Present (E) loop
+               Set_Current_Entity (E);
+               Set_Is_Immediately_Visible (E);
+               Next_Entity (E);
+            end loop;
+         end;
+
+         Resolve (Expression (N), Typ);
+         End_Scope;
+
+      else
+         Resolve (Expression (N), Typ);
+      end if;
+   end Resolve_Declare_Expression;
+
    -----------------------------------------
    -- Resolve_Discrete_Subtype_Indication --
    -----------------------------------------
@@ -7784,7 +7836,7 @@ package body Sem_Res is
          --  to the discriminant of the same name in the target task. If the
          --  entry name is the target of a requeue statement and the entry is
          --  in the current protected object, the bound to be used is the
-         --  discriminal of the object (see Apply_Range_Checks for details of
+         --  discriminal of the object (see Apply_Range_Check for details of
          --  the transformation).
 
          -----------------------------
@@ -7950,6 +8002,17 @@ package body Sem_Res is
          Nam := Entity (Selector_Name (Prefix (Entry_Name)));
          Resolve (Prefix (Prefix (Entry_Name)));
          Resolve_Implicit_Dereference (Prefix (Prefix (Entry_Name)));
+
+         --  We do not resolve the prefix because an Entry_Family has no type,
+         --  although it has the semantics of an array since it can be indexed.
+         --  In order to perform the associated range check, we would need to
+         --  build an array type on the fly and set it on the prefix, but this
+         --  would be wasteful since only the index type matters. Therefore we
+         --  attach this index type directly, so that Actual_Index_Expression
+         --  can pick it up later in order to generate the range check.
+
+         Set_Etype (Prefix (Entry_Name), Actual_Index_Type (Nam));
+
          Index := First (Expressions (Entry_Name));
          Resolve (Index, Entry_Index_Type (Nam));
 
@@ -7965,7 +8028,7 @@ package body Sem_Res is
          if Nkind (Index) = N_Parameter_Association then
             Error_Msg_N ("expect expression for entry index", Index);
          else
-            Apply_Range_Check (Index, Actual_Index_Type (Nam));
+            Apply_Scalar_Range_Check (Index, Etype (Prefix (Entry_Name)));
          end if;
       end if;
    end Resolve_Entry;
@@ -9019,15 +9082,11 @@ package body Sem_Res is
          Resolve (Expr, Standard_Positive);
 
       else
-         while Present (Index) and Present (Expr) loop
+         while Present (Index) and then Present (Expr) loop
             Resolve (Expr, Etype (Index));
             Check_Unset_Reference (Expr);
 
-            if Is_Scalar_Type (Etype (Expr)) then
-               Apply_Scalar_Range_Check (Expr, Etype (Index));
-            else
-               Apply_Range_Check (Expr, Get_Actual_Subtype (Index));
-            end if;
+            Apply_Scalar_Range_Check (Expr, Etype (Index));
 
             Next_Index (Index);
             Next (Expr);
@@ -10257,13 +10316,8 @@ package body Sem_Res is
    begin
       Set_Etype (N, Typ);
 
-      --  The lower bound should be in Typ. The higher bound can be in Typ's
-      --  base type if the range is null. It may still be invalid if it is
-      --  higher than the lower bound. This is checked later in the context in
-      --  which the range appears.
-
       Resolve (L, Typ);
-      Resolve (H, Base_Type (Typ));
+      Resolve (H, Typ);
 
       --  Reanalyze the lower bound after both bounds have been analyzed, so
       --  that the range is known to be static or not by now. This may trigger

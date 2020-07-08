@@ -525,7 +525,7 @@ package body Sem_Attr is
 
                --  Object or label reference
 
-               elsif Is_Object (Ent) or else Ekind (Ent) = E_Label then
+               elsif Is_Object_Reference (P) or else Ekind (Ent) = E_Label then
                   Set_Address_Taken (Ent);
 
                   --  Deal with No_Implicit_Aliasing restriction
@@ -3486,11 +3486,25 @@ package body Sem_Attr is
                return;
             end if;
 
-         --  Normal (non-obsolescent case) of application to object of
+         --  Normal (non-obsolescent case) of application to object or value of
          --  a discriminated type.
 
          else
-            Check_Object_Reference (P);
+            --  AI12-0068: In a type or subtype aspect, a prefix denoting the
+            --  current instance of the (sub)type is defined to be a value,
+            --  not an object, so the Constrained attribute is always True
+            --  (see RM 8.6(18/5) and RM 3.7.2(3/5)). We issue a warning about
+            --  this unintuitive result, to help avoid confusion.
+
+            if Is_Current_Instance_Reference_In_Type_Aspect (P) then
+               Error_Msg_Name_1 := Aname;
+               Error_Msg_N
+                 ("current instance attribute % in subtype aspect always " &
+                  "true??", N);
+
+            else
+               Check_Object_Reference (P);
+            end if;
 
             --  If N does not come from source, then we allow the
             --  the attribute prefix to be of a private type whose
@@ -4169,11 +4183,13 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
 
-            --  A similar attribute Valid_Scalars can be prefixed with
-            --  references to both functions and objects, but this attribute
-            --  can be only prefixed with references to objects.
+            --  This attribute be prefixed with references to objects or
+            --  values (such as a current instance value given within a type
+            --  or subtype aspect).
 
-            if not Is_Object_Reference (P) then
+            if not Is_Object_Reference (P)
+              and then not Is_Current_Instance_Reference_In_Type_Aspect (P)
+            then
                Error_Attr_P ("prefix of % attribute must be object");
             end if;
          end if;
@@ -6748,30 +6764,10 @@ package body Sem_Attr is
                      Analyze_And_Resolve (Low,  Etype (Index_Typ));
                      Analyze_And_Resolve (High, Etype (Index_Typ));
 
-                     --  Add a range check to ensure that the bounds of the
-                     --  range are within the index type when this cannot be
-                     --  determined statically.
-
-                     if not Is_OK_Static_Expression (Low) then
-                        Set_Do_Range_Check (Low);
-                     end if;
-
-                     if not Is_OK_Static_Expression (High) then
-                        Set_Do_Range_Check (High);
-                     end if;
-
                   --  Otherwise the index denotes a single element
 
                   else
                      Analyze_And_Resolve (Index, Etype (Index_Typ));
-
-                     --  Add a range check to ensure that the index is within
-                     --  the index type when it is not possible to determine
-                     --  this statically.
-
-                     if not Is_OK_Static_Expression (Index) then
-                        Set_Do_Range_Check (Index);
-                     end if;
                   end if;
 
                   Next (Index);
@@ -7245,22 +7241,17 @@ package body Sem_Attr is
       --  See SPARK RM 9(18) for the relevant rule.
 
       if GNATprove_Mode then
-         declare
-            Unused : Entity_Id;
+         case Attr_Id is
+            when Attribute_Callable
+               | Attribute_Caller
+               | Attribute_Count
+               | Attribute_Terminated
+            =>
+               SPARK_Implicit_Load (RE_Tasking_State);
 
-         begin
-            case Attr_Id is
-               when Attribute_Callable
-                  | Attribute_Caller
-                  | Attribute_Count
-                  | Attribute_Terminated
-               =>
-                  Unused := RTE (RE_Tasking_State);
-
-               when others =>
-                  null;
-            end case;
-         end;
+            when others =>
+               null;
+         end case;
       end if;
 
    --  All errors raise Bad_Attribute, so that we get out before any further
@@ -7750,11 +7741,13 @@ package body Sem_Attr is
          return;
       end if;
 
-      --  Special processing for cases where the prefix is an object. For this
-      --  purpose, a string literal counts as an object (attributes of string
-      --  literals can only appear in generated code).
+      --  Special processing for cases where the prefix is an object or value,
+      --  including string literals (attributes of string literals can only
+      --  appear in generated code) and current instance prefixes in type or
+      --  subtype aspects.
 
       if Is_Object_Reference (P)
+        or else Is_Current_Instance_Reference_In_Type_Aspect (P)
         or else Nkind (P) = N_String_Literal
         or else (Is_Entity_Name (P)
                  and then Ekind (Entity (P)) = E_Enumeration_Literal)
@@ -7821,6 +7814,8 @@ package body Sem_Attr is
                        (Ekind (Entity (Enum_Expr)) = E_Constant
                           and then Nkind (Parent (Entity (Enum_Expr))) =
                                      N_Object_Declaration
+                          and then Present
+                                     (Expression (Parent (Entity (P))))
                           and then Compile_Time_Known_Value
                                      (Expression (Parent (Entity (P))))))
                   then
@@ -8132,14 +8127,24 @@ package body Sem_Attr is
       --  for a size from an attribute definition clause). At this stage, this
       --  can happen only for types (e.g. record types) for which the size is
       --  always non-static. We exclude generic types from consideration (since
-      --  they have bogus sizes set within templates).
+      --  they have bogus sizes set within templates). We can also fold
+      --  Max_Size_In_Storage_Elements in the same cases.
 
-      elsif Id = Attribute_Size
+      elsif (Id = Attribute_Size or
+             Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
         and then (not Is_Generic_Type (P_Entity))
         and then Known_Static_RM_Size (P_Entity)
       then
-         Compile_Time_Known_Attribute (N, RM_Size (P_Entity));
+         declare
+            Attr_Value : Uint := RM_Size (P_Entity);
+         begin
+            if Id = Attribute_Max_Size_In_Storage_Elements then
+               Attr_Value := (Attr_Value + System_Storage_Unit - 1)
+                             / System_Storage_Unit;
+            end if;
+            Compile_Time_Known_Attribute (N, Attr_Value);
+         end;
          return;
 
       --  We can fold 'Alignment applied to a type if the alignment is known
@@ -8354,16 +8359,6 @@ package body Sem_Attr is
             if not Compile_Time_Known_Value (E)
               or else not Is_Scalar_Type (Etype (E))
             then
-               --  An odd special case, if this is a Pos attribute, this
-               --  is where we need to apply a range check since it does
-               --  not get done anywhere else.
-
-               if Id = Attribute_Pos then
-                  if Is_Integer_Type (Etype (E)) then
-                     Apply_Range_Check (E, Etype (N));
-                  end if;
-               end if;
-
                Check_Expressions;
                return;
 
@@ -11713,7 +11708,7 @@ package body Sem_Attr is
                   Fam  : constant Entity_Id := Entity (Prefix (P));
                begin
                   Resolve (Indx, Entry_Index_Type (Fam));
-                  Apply_Range_Check (Indx, Entry_Index_Type (Fam));
+                  Apply_Scalar_Range_Check (Indx, Entry_Index_Type (Fam));
                end;
             end if;
 
@@ -11992,26 +11987,6 @@ package body Sem_Attr is
                   Expr := Expression (Assoc);
                   Resolve (Expr, Component_Type (Typ));
 
-                  --  For scalar array components set Do_Range_Check when
-                  --  needed. Constraint checking on non-scalar components
-                  --  is done in Aggregate_Constraint_Checks, but only if
-                  --  full analysis is enabled. These flags are not set in
-                  --  the front-end in GnatProve mode.
-
-                  if Is_Scalar_Type (Component_Type (Typ))
-                    and then not Is_OK_Static_Expression (Expr)
-                    and then not Range_Checks_Suppressed (Component_Type (Typ))
-                  then
-                     if Is_Entity_Name (Expr)
-                       and then Etype (Expr) = Component_Type (Typ)
-                     then
-                        null;
-
-                     else
-                        Set_Do_Range_Check (Expr);
-                     end if;
-                  end if;
-
                   --  The choices in the association are static constants,
                   --  or static aggregates each of whose components belongs
                   --  to the proper index type. However, they must also
@@ -12034,15 +12009,10 @@ package body Sem_Attr is
 
                         if Nkind (C) /= N_Aggregate then
                            Analyze_And_Resolve (C, Etype (Indx));
-                           Apply_Constraint_Check (C, Etype (Indx));
-                           Check_Non_Static_Context (C);
-
                         else
                            C_E := First (Expressions (C));
                            while Present (C_E) loop
                               Analyze_And_Resolve (C_E, Etype (Indx));
-                              Apply_Constraint_Check (C_E, Etype (Indx));
-                              Check_Non_Static_Context (C_E);
 
                               Next (C_E);
                               Next_Index (Indx);
@@ -12069,14 +12039,6 @@ package body Sem_Attr is
                     and then not Error_Posted (Comp)
                   then
                      Resolve (Expr, Etype (Entity (Comp)));
-
-                     if Is_Scalar_Type (Etype (Entity (Comp)))
-                       and then not Is_OK_Static_Expression (Expr)
-                       and then not Range_Checks_Suppressed
-                                      (Etype (Entity (Comp)))
-                     then
-                        Set_Do_Range_Check (Expr);
-                     end if;
                   end if;
 
                   Next (Assoc);

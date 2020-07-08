@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     tolower(_CharT, const locale&);
 
   // 22.2.1 and 22.2.1.3 ctype
-  class ctype_base;
+  struct ctype_base;
   template<typename _CharT>
     class ctype;
   template<> class ctype<char>;
@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_CXX11
 
   // 22.2.7 message retrieval
-  class messages_base;
+  struct messages_base;
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _CharT>
     class messages;

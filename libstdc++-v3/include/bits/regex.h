@@ -77,12 +77,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    * satisfies the requirements of such a traits class.
    */
   template<typename _Ch_type>
-    struct regex_traits
+    class regex_traits
     {
     public:
       typedef _Ch_type				char_type;
       typedef std::basic_string<char_type>	string_type;
       typedef std::locale			locale_type;
+
     private:
       struct _RegexMask
 	{

@@ -11477,6 +11477,13 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
+      if Get_Aspect_Id (Chars (Pragma_Identifier (N))) /= No_Aspect then
+         --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
+         --    no aspect_specification, attribute_definition_clause, or pragma
+         --    is given.
+         Check_Restriction_No_Specification_Of_Aspect (N);
+      end if;
+
       --  Ignore pragma if Ignore_Pragma applies. Also ignore pragma
       --  Default_Scalar_Storage_Order if the -gnatI switch was given.
 

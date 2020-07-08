@@ -373,6 +373,22 @@
   ""
   "%.\\tadd%t0\\t%0, %1, %2;")
 
+(define_insn "*vadd_addsi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (plus:SI (plus:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+			  (match_operand:SI 2 "nvptx_register_operand" "R"))
+		 (match_operand:SI 3 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tvadd%t0%t1%t2.add\\t%0, %1, %2, %3;")
+
+(define_insn "*vsub_addsi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (plus:SI (minus:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+			   (match_operand:SI 2 "nvptx_register_operand" "R"))
+		 (match_operand:SI 3 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tvsub%t0%t1%t2.add\\t%0, %1, %2, %3;")
+
 (define_insn "sub<mode>3"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
 	(minus:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")

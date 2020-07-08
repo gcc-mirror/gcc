@@ -4564,16 +4564,26 @@ package body Sem_Ch3 is
                   Set_Ekind (Id, E_Variable);
                end if;
 
-               Rewrite (N,
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Id,
-                   Subtype_Mark        => New_Occurrence_Of (T, Loc),
-                   Name                => E));
+               --  If the expression is an aggregate it contains the required
+               --  discriminant values but it has not been resolved yet, so do
+               --  it now, and treat it as the initial expression of an object
+               --  declaration, rather than a renaming.
 
-               Set_Renamed_Object (Id, E);
-               Freeze_Before (N, T);
-               Set_Is_Frozen (Id);
-               goto Leave;
+               if Nkind (E) = N_Aggregate then
+                  Analyze_And_Resolve (E, T);
+
+               else
+                  Rewrite (N,
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier => Id,
+                      Subtype_Mark        => New_Occurrence_Of (T, Loc),
+                      Name                => E));
+
+                  Set_Renamed_Object (Id, E);
+                  Freeze_Before (N, T);
+                  Set_Is_Frozen (Id);
+                  goto Leave;
+               end if;
 
             else
                --  Ensure that the generated subtype has a unique external name

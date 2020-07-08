@@ -1,3 +1,486 @@
+2020-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): Use Ctyp more consistently.
+	Move code setting the alignment in the non-packed case to...
+	* layout.adb (Layout_Type): ...here.
+
+2020-07-07  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (Print_Node): Add code to test Is_Extension.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): Add ??? comment. Protect
+	against malformed tree in case of errors.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb, sem_ch10.adb, sem_ch12.adb, sem_ch8.adb: Use
+	Is_Generic_Subprogram.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Package): Replace low-level,
+	error-prone Ekind_In tests with high-level Is_Generic_Subprogram
+	and Is_Subprogram.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Check_Formal_Subprogram_Conformance): New
+	subprogram to handle checking without systematically emitting an
+	error.
+	(Check_Conformance): Update call to
+	Check_Formal_Subprogram_Conformance and fix handling of Conforms
+	and Errmsg parameters.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Tagged_Membership): Generate a call to
+	CW_Membership instead of using Build_CW_Membership.
+	(Expand_N_In): Remove wrong handling of null access types and
+	corresponding comment.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Generate a
+	call to CW_Membership instead of using Build_CW_Membership.
+	* rtsfind.ads: Add CW_Membership.
+	* exp_atag.ads, exp_atag.adb (Build_CW_Membership): Removed.
+	* einfo.ads: Fix typo.
+	* libgnat/a-tags.ads, libgnat/a-tags.adb (CW_Membership): Moved
+	back to spec.
+
+2020-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Access_Subprogram_Wrapper_Body): Create
+	proper subprogram specification for body, using names in the
+	subprogram declaration but distinct entities.
+	* exp_ch6.adb (Expand_Call): If this is an indirect call
+	involving a subprogram wrapper, insert pointer parameter in list
+	of actuals with a parameter association, not as a positional
+	parameter.
+
+2020-07-07  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Branch): Verify the original node is a
+	conditional expression before recursing further.
+	(Insert_Level_Assign): Transform assertion into an explicit
+	raise.
+
+2020-07-07  Steve Baird  <baird@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Generalize static evaluation of
+	Size attribute references to also handle
+	Max_Size_In_Storage_Elements references.
+
+2020-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Code cleanup.
+
+2020-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Expander Routines): Update the description of the
+	Do_Range_Check mechanism.
+	* checks.adb (Selected_Range_Checks): Fix typo.
+	* exp_ch9.adb: Add with and use clause for Checks.
+	(Actual_Index_Expression): Generate a range check if requested.
+	(Entry_Index_Expression): Likewise.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Count>: Call
+	Apply_Scalar_Range_Check instead of Apply_Range_Check.
+	* sem_ch9.adb (Analyze_Accept_Statement): Likewise.
+	* sem_res.adb (Resolve_Entry): Likewise, after having set the
+	actual index type on the prefix of the indexed component.
+	(Resolve_Indexed_Component): Remove useless conditional construct.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract,
+	Process_Preconditions_For): Freeze expression that has been
+	relocated to pragma Precondition, not the expression which is
+	still in the aspect.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Remove unnecessary (and
+	wrong) code.
+	* sem_ch8.adb (Check_Null_Exclusion): Post error at proper
+	location.  Introduce new helper Null_Exclusion_Mismatch and fix
+	implementation wrt formal subprograms used in generic bodies.
+	(Analyze_Subprogram_Renaming): Fix missing setting of
+	Error_Msg_Sloc.
+	(Analyze_Object_Renaming): Replace "in Anonymous_Access_Kind" by
+	Is_Anonymous_Access_Type.
+	* sem_util.adb (Has_Null_Exclusion): Fix handling of
+	N_Parameter_Specification.
+	* sem_ch12.adb (Instantiate_Object): Replace "in
+	Anonymous_Access_Kind" by Is_Anonymous_Access_Type.
+
+2020-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Expr_Types): Freeze the designated type of
+	the explicit dereference.
+
+2020-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Protect reading
+	attribute Etype.
+
+2020-07-07  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.adb (Value, Parse_ISO_8601): Unsuppress
+	checks, and don't rely on 'Valid.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl: Remove dead code.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document gnatbind -xdr switch.
+	* gnat_ugn.texi: Regenerate.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Validity Checking): Add "p" to the list of switches enabled by
+	-gnatVa.
+	* gnat_ugn.texi: Regenerate.
+
+2020-07-07  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Add call
+	to Check_Restriction_No_Specification_Of_Aspect.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	* restrict.ads (Check_Restriction_No_Specification_Of_Aspect):
+	Mention possible new node kinds in documentation.
+	* restrict.adb (Check_Restriction_No_Specification_Of_Aspect):
+	Retrieve aspect id from different fields if given node is an
+	N_Pragma or an N_Attribute_Definition_Clause.
+
+2020-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* contracts.adb (Add_Invariant_And_Predicate_Checks): Relax the
+	condition for doing invariant checks so that in-mode parameters
+	of procedures are also checked (required by AI05-0289, and
+	restricted to procedures by AI12-0044). This is done in a
+	procedure's nested postconditions procedure.
+	* exp_ch6.adb (Expand_Actuals): Also perform postcall invariant
+	checks for in parameters of procedures (but not functions).
+	Moved invariant-checking code to end of Expand_Actuals
+	(including the nested function Is_Public_Subp).
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Array_Aggregate): Make Index_Type
+	a constant.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Delta_Aggregate): Use type of the delta
+	base expression for the anonymous object of the delta aggregate.
+
+2020-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads (Interval_Lists): Reordering routine.
+	* sem_util.adb (Interval_Lists): Reordering routines to keep
+	them alphabetically ordered.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Do not call
+	Check_Non_Static_Context.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_elab.adb (Is_Guaranteed_ABE): Take into account null
+	procedures.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Reuse Is_Assignable.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Add scalar
+	range checks for 'Update on arrays just like for 'Update on
+	records.
+	* sem_attr.adb (Analyze_Array_Component_Update): Do not set
+	range checks for single-dimensional arrays.
+	(Resolve_Attribute): Do not set range checks for both single-
+	and multi- dimensional arrays.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem.ads (Sem): Fix description.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Relaxed_Parameter): Fix for protected
+	entries.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Use Is_RTE.
+
+2020-07-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.ads: Document newly supported format.  Add
+	ISO_Time constant, for convenience.
+	* libgnat/g-catiio.adb (Image_Helper): New helper function to do
+	all the formatting work, called by the two exported Image
+	functions.  Add support for "%:::z" here. Add a Time_Zone
+	parameter used by the "%:::z" processing. This parameter is not
+	used for the actual time zone computations; local time is always
+	used for that, for ease of implementation reasons.  It would
+	make sense to use Append throughout this function, but that's a
+	cleanup for another day.
+	(Image): Modify these to pass the local time zone, or the
+	specified time zone, as appropriate.
+
+2020-07-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.ads: Change the regular expression that
+	documents the allowed format to match what ISO-8601 allows.
+	* libgnat/g-catiio.adb (Scan_Subsecond): Rewrite so it doesn't
+	assume the subsecond comes last.
+	(Parse_ISO_8601): Parse an optional subsecond, followed by an
+	optional time zone, rather than making these alternatives to
+	each other.
+
+2020-07-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.adb (Parse_ISO_8601): Minor cleanups:
+	Give some objects clearer names.
+	Make some objects more local to where they are used.
+	Remove some validity checks that can't fail, because some of
+	the variables tested have been moved so they're not visible here.
+	Anyway, Wrong_Syntax is about errors in the input, not data
+	validity.
+	Use Time_Zone_Seen instead of Local_Sign = ' ' to determine
+	that a time zone indication was seen.
+	We don't need to distinguish two different kinds of
+	syntax error (End_Of_Source_Reached and Wrong_Syntax),
+	so use Wrong_Syntax always.
+	Remove comment, "Certain scanning scenarios may handle
+	this exception on their own."; there are no such scenarios.
+
+2020-07-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.ads, libgnat/g-catiio.adb (Image): New
+	function. It might seem like the local-time Image should be
+	implemented in terms of the Time_Zone Image, but that would be
+	far harder to implement, so we do it the other way around.
+
+2020-07-06  Thomas Quinot  <quinot@adacore.com>
+
+	* libgnat/g-sechas.ads, libgnat/g-sechas.adb: Refactor to use
+	Stream_Element_Array as the internal buffer type.
+	* libgnat/g-shshco.adb: Adjust to use Stream_Element_Offset
+	instead of Integer as the index in the internal state buffer.
+
+2020-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst, errout.ads,
+	erroutc.adb, exp_ch4.adb, exp_ch6.adb, freeze.adb: Comment
+	rewording/reformatting/typo fixes.  Replace "ie." with "that is"
+	in comment; "can not" -> "cannot", and remove an extraneous
+	underscore in another comment.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2020-07-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads (Interval_Lists.Aggregate_Intervals): New
+	subprogram.
+	* sem_util.adb (Has_Null_Others_Choice,
+	Non_Static_Or_Null_Range, Interval_Lists.Aggregate_Intervals):
+	New subprograms.
+	(Is_Potentially_Unevaluated): Adding support to detect
+	potentially unevaluated components of array aggregates.
+
+2020-07-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.adb (Parse_ISO_8601): New name for
+	Parse_ISO_8861_UTC.  8601 is the correct ISO standard number.
+	Also, "UTC" was confusing. All Time values are represented in
+	UTC, but the ISO 8601 date strings include a time zone.
+	If a time zone was specified, call
+	Ada.Calendar.Formatting.Time_Of instead of
+	GNAT.Calendar.Time_Of, because the latter adjusts to the current
+	time zone, whereas we want to use (just) the time zone specified
+	in the ISO string.  This allows us to pass Time_Zone instead to
+	Time_Of, instead of adjusting by Local_Disp by hand.
+	If no time zone was specified, call GNAT.Calendar.Time_Of as
+	before.
+	Use expanded names to clarify which Time_Of is being called.
+	Remove redundant comment, and move nonredundant part of the
+	commment to the spec.
+	(Value): Minor: use "not in" instead of "or else".
+	* libgnat/g-catiio.ads: Comment moved here. Correct the ISO
+	standard number.
+	* libgnat/g-calend.adb: Add ??? comments.
+	* libgnat/a-calend.ads, libgnat/a-calend.adb: Update obsolete
+	comments regarding the representation of type Time. Move the
+	information about the epoch (year 2150) to the spec, and avoid
+	uttering "2150" more than once.
+	* libgnat/a-catizo.ads (Time_Offset): Add comment.
+
+2020-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Find_Component): If the target type is a derived
+	record type and the required component is a discriminant that is
+	renamed in the derived type declaration, use the name of the
+	original discriminant to locate the intended target component.
+
+2020-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): Add check for errors on
+	the generic formal before continuing with instantiation.
+
+2020-07-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbin.ads, libgnat/a-nbnbin.adb,
+	libgnat/a-nbnbin__gmp.adb: Use more Valid_Big_Integer.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.ads (Get_Index_Subtype): Fix duplicate "Last".
+
+2020-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads: Indicate that Field 1 of an N_Delta_Aggregate is
+	unused. Previously it was erroneously labelled as holding an
+	Expressions list, in analogy with other aggregate constructs,
+	but there are no Expressions attached to this node syntactically
+	or semantically.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Check if constant has an
+	initialization expression.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Apply
+	scalar range checks.
+	* sem_attr.adb (Resolve_Attribute): Do not set scalar range
+	checks when resolving attribute Update.
+
+2020-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, Attribute_Constrained): Issue
+	a warning if the attribute prefix is a current instance
+	reference within an aspect of a type or subtype.
+	(Address_Checks): Replace test of Is_Object (Ent) with
+	Is_Object_Reference (P) so that testing for current instances
+	will be done.
+	(Eval_Attribute): Add test for current instance reference, to
+	ensure that we still fold array attributes when current
+	instances are involved, since value prefixes are allowed for
+	array attributes, and will now be excluded by
+	Is_Object_Reference.
+	* sem_util.ads (Is_Current_Instance_Reference_In_Type_Aspect):
+	New exported query function.
+	* sem_util.adb (Is_Object_Reference): Return False for the case
+	where N is a current instance reference within an
+	aspect_specification of a type or subtype (basically if the
+	reference occurs within a predicate, invariant, or DIC aspect
+	expression).
+	(Is_Current_Instance_Reference_In_Type_Aspect): New function
+	that tests whether a node is a reference to a current instance
+	formal of a predicate, invariant, or
+	Default_Initial_Condition (DIC) subprogram.
+
+2020-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Declare_Expression): New subprogram, to
+	install the scope holding local declarations of the expression,
+	before completing its resolution.
+	(Resolve): For an Expression_With_Actions that comes from a
+	source occurrence of a Declare_Expression, call new subprogram.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Reuse SPARK_Implicit_Load.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Propagate
+	exception when switch -gnatdk is used and no previous errors are
+	present.
+	* sem_eval.adb (Compile_Time_Known_Value, Is_In_Range):
+	Likewise.
+	* sem_warn.adb (Operand_Has_Warnings_Suppressed): Likewise.
+
+2020-07-06  Richard Kenner  <kenner@adacore.com>
+
+	* exp_unst.adb (Needs_Fat_Pointer): Don't check for formal.
+	(Unnest_Subprogram): Use 'Unchecked_Access instead of 'Access
+	when populating activation record.
+
+2020-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): Rename parameter
+	from Bit_Packed_Array to Force.
+	(Expand_Actuals): Do not apply BIP processing if the subprogram
+	is intrinsic.  Adjust calls to Add_Simple_Call_By_Copy_Code and
+	add one for In parameters whose actual is a CPP constructor call.
+
+2020-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Do not apply range checks in
+	the case of 'Pos applied to an integer type here.
+
+2020-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If the type is an
+	Unchecked_Union, and the expression is an aggregate. complete
+	the analysis and resolution of the aggregate, and treat like a
+	regular object declaration, instead of as a renaming
+	declarattion.
+
+2020-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Is_Potentially_Large_Family): Add documentation.
+	(Actual_Index_Expression): Use Entry_Index_Type.
+	(Build_Entry_Count_Expression): Likewise.
+	(Build_Find_Body_Index): Likewise.
+	(Collect_Entry_Families): Likewise. Use directly the bounds of
+	the index type to find out whether the family is large.
+	(Entry_Index_Expression): Likewise.
+
+2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Range): Resolve both low and high bounds
+	with the range type.
+
+2020-07-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.ads (Is_Representation_Aspect):
+	Default_Component_Value is a representation aspect.
+	* sem_ch13.adb (Check_Aspect_Too_Late, Rep_Item_Too_Late): Relax
+	RM 13.1(10) rule wrt primitive operations for Ada 202x.
+
+2020-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Move to library
+	level and use a new predicate Is_OK_Aggregate to recognize the
+	aggregates suitable for direct assignment by the back-end.
+	(Convert_Array_Aggr_In_Allocator): If neither in CodePeer mode nor
+	generating C code, generate a direct assignment instead of further
+	expanding if Aggr_Assignment_OK_For_Backend returns true.
+
+2020-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aux.adb: Add a with clause for Nlists.
+	(Nearest_Ancestor): Test for the case of concurrent
+	types (testing for both Is_Concurrent_Type and
+	Is_Concurrent_Record_Type), and return the first ancestor in the
+	Interfaces list if present (otherwise will return Empty if no
+	interfaces).
+	* sem_ch13.adb (Build_Predicate_Functions): Add a ??? comment
+	about missing handling for adding predicates when they can be
+	inherited from multiple progenitors.
+
+2020-07-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch6.adb (P_Return_Object_Declaration): Set
+	Has_Init_Expression flag.
+
 2020-07-02  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* debug.adb (d.K): Document new usage.

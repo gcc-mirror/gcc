@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , May 05, 2020
+GNAT User's Guide for Native Platforms , Jul 01, 2020
 
 AdaCore
 
@@ -4144,10 +4144,9 @@ to be a consideration.
 @geindex Run-Time Library
 @geindex rebuilding
 
-It may be useful to recompile the GNAT library in various contexts, the
-most important one being the use of partition-wide configuration pragmas
-such as @code{Normalize_Scalars}. A special Makefile called
-@code{Makefile.adalib} is provided to that effect and can be found in
+It may be useful to recompile the GNAT library in various debugging or
+experimentation contexts. A project file called
+@code{libada.gpr} is provided to that effect and can be found in
 the directory containing the GNAT library. The location of this
 directory depends on the way the GNAT environment has been installed and can
 be determined by means of the command:
@@ -4156,10 +4155,13 @@ be determined by means of the command:
 $ gnatls -v
 @end example
 
-The last entry in the object search path usually contains the
-gnat library. This Makefile contains its own documentation and in
-particular the set of instructions needed to rebuild a new library and
-to use it.
+The last entry in the source search path usually contains the
+gnat library (the @code{adainclude} directory). This project file contains its
+own documentation and in particular the set of instructions needed to rebuild a
+new library and to use it.
+
+Note that rebuilding the GNAT Run-Time is only recommended for temporary
+experiments or debugging, and is not supported.
 
 @geindex Conditional compilation
 
@@ -13159,7 +13161,7 @@ to the default checks required by Ada as described above.
 
 All validity checks are turned on.
 That is, @code{-gnatVa} is
-equivalent to @code{gnatVcdfimorst}.
+equivalent to @code{gnatVcdfimoprst}.
 @end table
 
 @geindex -gnatVc (gcc)
@@ -16139,6 +16141,14 @@ Override default wide character encoding for standard Text_IO files.
 @item @code{-x}
 
 Exclude source files (check object consistency only).
+
+@geindex -xdr (gnatbind)
+
+@item @code{-xdr}
+
+Use the target-independent XDR protocol for stream oriented attributes
+instead of the default implementation which is based on direct binary
+representations and is therefore target-and endianness-dependent.
 
 @geindex -Xnnn (gnatbind)
 

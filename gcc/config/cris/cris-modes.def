@@ -25,9 +25,10 @@ along with GCC; see the file COPYING3.  If not see
    have ordinary compares and incidental condition-code settings from
    preceding instructions, setting a subset of N, Z, V and C to usable
    values, from the perspective of comparing the result against zero
-   (fpcraz).  The two subsets meaningful to gcc are all of N, Z, V, C
-   versus just N, Z; some CC-users care only about N and/or Z and some
-   that care about at least one of those flags together with V and/or C.
+   (referred to below as "fpcraz").  The two subsets meaningful to gcc are
+   all of N, Z, V, C versus just N, Z; some CC-users care only about N
+   and/or Z and some that care about at least one of those flags together
+   with V and/or C.
 
    The plain "CC_MODE (CC)" (which is always present in gcc), is used to
    reflect the "unoptimized" state, where the CC-setter is a compare
@@ -37,9 +38,13 @@ along with GCC; see the file COPYING3.  If not see
    or if optimization of CC-setter and CC-users, when CCmode setters can
    be changed or replaced by either CC_NZmode or CC_NZVCmode.  To wit, all
    users that require CC_NZVCmode must match only that mode at any time.
-   All other users must match all CCmodes.  All setters that set only
-   CC_NZmode must set only that mode.  All other setters must match
-   setting all CCmodes.  */
+   All other users must match all of CCmode, CC_NZmode, and CC_NZVCmode.
+   All setters that set only CC_NZmode must match setting only that mode.
+   All other setters must match setting all of CCmode, CC_NZmode, and
+   CC_NZVCmode.
+
+   There's also other modes (i.e. CC_ZnNmode) with a separate set of
+   setters and users not matched by the others. */
 
 /* Z and N flags only.  For a condition-code setter: only the Z and N
    flags are set to usable values, fpcraz.  For a condition-code user: the

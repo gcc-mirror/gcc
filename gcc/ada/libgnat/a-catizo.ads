@@ -21,6 +21,7 @@ package Ada.Calendar.Time_Zones is
    --  Time zone manipulation
 
    type Time_Offset is range -(28 * 60) .. 28 * 60;
+   --  Offset in minutes
 
    Unknown_Zone_Error : exception;
 

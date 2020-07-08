@@ -1469,11 +1469,16 @@ package body Exp_Ch6 is
       --  also takes care of any constraint checks required for the type
       --  conversion case (on both the way in and the way out).
 
-      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean);
+      procedure Add_Simple_Call_By_Copy_Code (Force : Boolean);
       --  This is similar to the above, but is used in cases where we know
       --  that all that is needed is to simply create a temporary and copy
-      --  the value in and out of the temporary. If Bit_Packed_Array is True,
-      --  the procedure is called for a bit-packed array actual.
+      --  the value in and out of the temporary. If Force is True, then the
+      --  procedure may disregard legality considerations.
+
+      --  ??? We need to do the copy for a bit-packed array because this is
+      --  where the rewriting into a mask-and-shift sequence is done. But of
+      --  course this may break the program if it expects bits to be really
+      --  passed by reference. That's what we have done historically though.
 
       procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
       --  Perform copy-back for actual parameter Act which denotes a validation
@@ -1851,7 +1856,7 @@ package body Exp_Ch6 is
       -- Add_Simple_Call_By_Copy_Code --
       ----------------------------------
 
-      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean) is
+      procedure Add_Simple_Call_By_Copy_Code (Force : Boolean) is
          Decl   : Node_Id;
          F_Typ  : Entity_Id := Etype (Formal);
          Incod  : Node_Id;
@@ -1862,12 +1867,9 @@ package body Exp_Ch6 is
          Temp   : Entity_Id;
 
       begin
-         --  ??? We need to do the copy for a bit-packed array because this is
-         --  where the rewriting into a mask-and-shift sequence is done. But of
-         --  course this may break the program if it expects bits to be really
-         --  passed by reference. That's what we have done historically though.
+         --  Unless forced not to, check the legality of the copy operation
 
-         if not Bit_Packed_Array and then not Is_Legal_Copy then
+         if not Force and then not Is_Legal_Copy then
             return;
          end if;
 
@@ -2272,7 +2274,13 @@ package body Exp_Ch6 is
             --  functions that are treated as build-in-place to include other
             --  composite result types.
 
-            if Is_Build_In_Place_Function_Call (Actual) then
+            --  But do not do it here for intrinsic subprograms since this will
+            --  be done properly after the subprogram is expanded.
+
+            if Is_Intrinsic_Subprogram (Subp) then
+               null;
+
+            elsif Is_Build_In_Place_Function_Call (Actual) then
                Build_Activation_Chain_Entity (N);
                Build_Master_Entity (Etype (Actual));
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
@@ -2366,7 +2374,7 @@ package body Exp_Ch6 is
             --  [in] out parameters.
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
+               Add_Simple_Call_By_Copy_Code (Force => True);
 
             --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
@@ -2382,7 +2390,7 @@ package body Exp_Ch6 is
                 Component_May_Be_Bit_Aligned (Entity (Selector_Name (Actual)))
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
+               Add_Simple_Call_By_Copy_Code (Force => False);
 
             --  References to slices of bit-packed arrays are expanded
 
@@ -2453,46 +2461,6 @@ package body Exp_Ch6 is
                Aund : constant Entity_Id := Underlying_Type (E_Actual);
                Atyp : Entity_Id;
 
-               function Is_Public_Subp return Boolean;
-               --  Check whether the subprogram being called is a visible
-               --  operation of the type of the actual. Used to determine
-               --  whether an invariant check must be generated on the
-               --  caller side.
-
-               ---------------------
-               --  Is_Public_Subp --
-               ---------------------
-
-               function Is_Public_Subp return Boolean is
-                  Pack      : constant Entity_Id := Scope (Subp);
-                  Subp_Decl : Node_Id;
-
-               begin
-                  if not Is_Subprogram (Subp) then
-                     return False;
-
-                  --  The operation may be inherited, or a primitive of the
-                  --  root type.
-
-                  elsif
-                    Nkind_In (Parent (Subp), N_Private_Extension_Declaration,
-                                             N_Full_Type_Declaration)
-                  then
-                     Subp_Decl := Parent (Subp);
-
-                  else
-                     Subp_Decl := Unit_Declaration_Node (Subp);
-                  end if;
-
-                  return Ekind (Pack) = E_Package
-                    and then
-                      List_Containing (Subp_Decl) =
-                        Visible_Declarations
-                          (Specification (Unit_Declaration_Node (Pack)));
-               end Is_Public_Subp;
-
-            --  Start of processing for By_Ref_Predicate_Check
-
             begin
                if No (Aund) then
                   Atyp := E_Actual;
@@ -2509,33 +2477,6 @@ package body Exp_Ch6 is
                then
                   Append_To (Post_Call,
                     Make_Predicate_Check (Atyp, Actual));
-               end if;
-
-               --  We generated caller-side invariant checks in two cases:
-
-               --  a) when calling an inherited operation, where there is an
-               --  implicit view conversion of the actual to the parent type.
-
-               --  b) When the conversion is explicit
-
-               --  We treat these cases separately because the required
-               --  conversion for a) is added later when expanding the call.
-
-               if Has_Invariants (Etype (Actual))
-                  and then
-                    Nkind (Parent (Subp)) = N_Private_Extension_Declaration
-               then
-                  if Comes_From_Source (N) and then Is_Public_Subp then
-                     Append_To (Post_Call, Make_Invariant_Call (Actual));
-                  end if;
-
-               elsif Nkind (Actual) = N_Type_Conversion
-                 and then Has_Invariants (Etype (Expression (Actual)))
-               then
-                  if Comes_From_Source (N) and then Is_Public_Subp then
-                     Append_To (Post_Call,
-                       Make_Invariant_Call (Expression (Actual)));
-                  end if;
                end if;
             end By_Ref_Predicate_Check;
 
@@ -2568,14 +2509,19 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
+               Add_Simple_Call_By_Copy_Code (Force => True);
+
+            --  If we have a C++ constructor call, we need to create the object
+
+            elsif Is_CPP_Constructor_Call (Actual) then
+               Add_Simple_Call_By_Copy_Code (Force => True);
 
             --  If a nonscalar actual is possibly unaligned, we need a copy
 
             elsif Is_Possibly_Unaligned_Object (Actual)
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
+               Add_Simple_Call_By_Copy_Code (Force => False);
 
             --  Similarly, we have to expand slices of packed arrays here
             --  because the result must be byte aligned.
@@ -2614,6 +2560,85 @@ package body Exp_Ch6 is
                   raise Program_Error;
                end if;
             end if;
+         end if;
+
+         --  Type-invariant checks for in-out and out parameters, as well as
+         --  for in parameters of procedures (AI05-0289 and AI12-0044).
+
+         if Ekind (Formal) /= E_In_Parameter
+           or else Ekind (Subp) = E_Procedure
+         then
+            Caller_Side_Invariant_Checks : declare
+
+               function Is_Public_Subp return Boolean;
+               --  Check whether the subprogram being called is a visible
+               --  operation of the type of the actual. Used to determine
+               --  whether an invariant check must be generated on the
+               --  caller side.
+
+               ---------------------
+               --  Is_Public_Subp --
+               ---------------------
+
+               function Is_Public_Subp return Boolean is
+                  Pack      : constant Entity_Id := Scope (Subp);
+                  Subp_Decl : Node_Id;
+
+               begin
+                  if not Is_Subprogram (Subp) then
+                     return False;
+
+                  --  The operation may be inherited, or a primitive of the
+                  --  root type.
+
+                  elsif
+                    Nkind_In (Parent (Subp), N_Private_Extension_Declaration,
+                                             N_Full_Type_Declaration)
+                  then
+                     Subp_Decl := Parent (Subp);
+
+                  else
+                     Subp_Decl := Unit_Declaration_Node (Subp);
+                  end if;
+
+                  return Ekind (Pack) = E_Package
+                    and then
+                      List_Containing (Subp_Decl) =
+                        Visible_Declarations
+                          (Specification (Unit_Declaration_Node (Pack)));
+               end Is_Public_Subp;
+
+            --  Start of processing for Caller_Side_Invariant_Checks
+
+            begin
+               --  We generate caller-side invariant checks in two cases:
+
+               --  a) when calling an inherited operation, where there is an
+               --  implicit view conversion of the actual to the parent type.
+
+               --  b) When the conversion is explicit
+
+               --  We treat these cases separately because the required
+               --  conversion for a) is added later when expanding the call.
+
+               if Has_Invariants (Etype (Actual))
+                  and then
+                    Nkind (Parent (Etype (Actual)))
+                      = N_Private_Extension_Declaration
+               then
+                  if Comes_From_Source (N) and then Is_Public_Subp then
+                     Append_To (Post_Call, Make_Invariant_Call (Actual));
+                  end if;
+
+               elsif Nkind (Actual) = N_Type_Conversion
+                 and then Has_Invariants (Etype (Expression (Actual)))
+               then
+                  if Comes_From_Source (N) and then Is_Public_Subp then
+                     Append_To
+                       (Post_Call, Make_Invariant_Call (Expression (Actual)));
+                  end if;
+               end if;
+            end Caller_Side_Invariant_Checks;
          end if;
 
          Next_Formal (Formal);
@@ -2661,24 +2686,34 @@ package body Exp_Ch6 is
             Parms    : constant List_Id   := Parameter_Associations (N);
             Typ      : constant Entity_Id := Etype (N);
             New_N    : Node_Id;
+            Ptr_Act  : Node_Id;
 
          begin
             --  The last actual in the call is the pointer itself.
             --  If the aspect is inherited, convert the pointer to the
             --  parent type that specifies the contract.
+            --  If the original access_to_subprogram has defaults for
+            --  in_parameters, the call may include named associations, so
+            --  we create one for the pointer as well.
 
             if Is_Derived_Type (Ptr_Type)
               and then Ptr_Type /= Etype (Last_Formal (Wrapper))
             then
-               Append
-                (Make_Type_Conversion (Loc,
-                   New_Occurrence_Of
-                    (Etype (Last_Formal (Wrapper)), Loc), Ptr),
-                   Parms);
+               Ptr_Act :=
+                Make_Type_Conversion (Loc,
+                  New_Occurrence_Of
+                    (Etype (Last_Formal (Wrapper)), Loc), Ptr);
 
             else
-               Append (Ptr, Parms);
+               Ptr_Act := Ptr;
             end if;
+
+            Append
+             (Make_Parameter_Association (Loc,
+                Selector_Name => Make_Identifier (Loc,
+                   Chars (Last_Formal (Wrapper))),
+                 Explicit_Actual_Parameter => Ptr_Act),
+              Parms);
 
             if Nkind (N) = N_Procedure_Call_Statement then
                New_N := Make_Procedure_Call_Statement (Loc,
@@ -3922,6 +3957,11 @@ package body Exp_Ch6 is
 
                                  if Nkind (Expression (Assn)) =
                                       N_Expression_With_Actions
+                                   and then
+                                     Nkind_In
+                                       (Original_Node (Expression (Assn)),
+                                         N_Case_Expression,
+                                         N_If_Expression)
                                  then
                                     Insert_Level_Assign (Expression (Assn));
 
@@ -3958,7 +3998,10 @@ package body Exp_Ch6 is
                                                            N_If_Statement);
 
                                  Next (Cond);
-                                 pragma Assert (Present (Cond));
+
+                                 if No (Cond) then
+                                    raise Program_Error;
+                                 end if;
                               end loop;
 
                               --  Iterate through if expression branches
@@ -9969,8 +10012,8 @@ package body Exp_Ch6 is
       --  to ensure that if Func_Id is frozen then the computed result matches
       --  with the availability of the task master extra formal; unfortunately
       --  this is not feasible because we may be precisely freezing this entity
-      --  (ie. Is_Frozen has been set by Freeze_Entity but it has not completed
-      --  its work).
+      --  (that is, Is_Frozen has been set by Freeze_Entity but it has not
+      --  completed its work).
 
       if Has_Task (Func_Typ) then
          return True;
@@ -9979,9 +10022,9 @@ package body Exp_Ch6 is
          return Might_Have_Tasks (Func_Typ);
 
       --  Handle subprogram type internally generated for dispatching call. We
-      --  can not rely on the return type of the subprogram type of dispatching
+      --  cannot rely on the return type of the subprogram type of dispatching
       --  calls since it is always a class-wide type (cf. Expand_Dispatching_
-      --  _Call).
+      --  Call).
 
       elsif Ekind (Func_Id) = E_Subprogram_Type then
          if Is_Dispatch_Table_Entity (Func_Id) then
