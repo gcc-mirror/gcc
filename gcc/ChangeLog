@@ -1,3 +1,23 @@
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96075
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use
+	TYPE_SIZE_UNIT of the vector component type instead of DR_STEP
+	for the misalignment calculation for negative step.
+
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.c (cmp_symbol_files): Use the computed
+	order map to sort symbols from the same sub-file together.
+	(lto_output): Compute a map of sub-file to an order number
+	it appears in the symbol output array.
+
 2020-07-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_pack_to_short_fp32): Update.

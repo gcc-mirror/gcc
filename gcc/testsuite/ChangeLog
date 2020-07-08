@@ -1,3 +1,11 @@
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96075
+	* gcc.dg/vect/slp-46.c: New testcase.
+
 2020-07-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-1-p9-runnable.c: Update.
