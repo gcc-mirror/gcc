@@ -740,15 +740,24 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
     }
   else
     {
-      tree srctype, desttype, destvar, srcvar, srcoff;
+      /* We cannot (easily) change the type of the copy if it is a storage
+	 order barrier, i.e. is equivalent to a VIEW_CONVERT_EXPR that can
+	 modify the storage order of objects (see storage_order_barrier_p).  */
+      tree srctype
+	= POINTER_TYPE_P (TREE_TYPE (src))
+	  ? TREE_TYPE (TREE_TYPE (src)) : NULL_TREE;
+      tree desttype
+	= POINTER_TYPE_P (TREE_TYPE (dest))
+	  ? TREE_TYPE (TREE_TYPE (dest)) : NULL_TREE;
+      tree destvar, srcvar, srcoff;
       unsigned int src_align, dest_align;
-      tree off0;
-      const char *tmp_str;
       unsigned HOST_WIDE_INT tmp_len;
+      const char *tmp_str;
 
       /* Build accesses at offset zero with a ref-all character type.  */
-      off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
-							 ptr_mode, true), 0);
+      tree off0
+	= build_int_cst (build_pointer_type_for_mode (char_type_node,
+						      ptr_mode, true), 0);
 
       /* If we can perform the copy efficiently with first doing all loads
          and then all stores inline it that way.  Currently efficiently
@@ -766,7 +775,13 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	     hack can be removed.  */
 	  && !c_strlen (src, 1)
 	  && !((tmp_str = c_getstr (src, &tmp_len)) != NULL
-	       && memchr (tmp_str, 0, tmp_len) == NULL))
+	       && memchr (tmp_str, 0, tmp_len) == NULL)
+	  && !(srctype
+	       && AGGREGATE_TYPE_P (srctype)
+	       && TYPE_REVERSE_STORAGE_ORDER (srctype))
+	  && !(desttype
+	       && AGGREGATE_TYPE_P (desttype)
+	       && TYPE_REVERSE_STORAGE_ORDER (desttype)))
 	{
 	  unsigned ilen = tree_to_uhwi (len);
 	  if (pow2p_hwi (ilen))
@@ -946,8 +961,13 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 
       if (!tree_fits_shwi_p (len))
 	return false;
-      if (!POINTER_TYPE_P (TREE_TYPE (src))
-	  || !POINTER_TYPE_P (TREE_TYPE (dest)))
+      if (!srctype
+	  || (AGGREGATE_TYPE_P (srctype)
+	      && TYPE_REVERSE_STORAGE_ORDER (srctype)))
+	return false;
+      if (!desttype
+	  || (AGGREGATE_TYPE_P (desttype)
+	      && TYPE_REVERSE_STORAGE_ORDER (desttype)))
 	return false;
       /* In the following try to find a type that is most natural to be
 	 used for the memcpy source and destination and that allows
@@ -955,11 +975,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	 using that type.  In theory we could always use a char[len] type
 	 but that only gains us that the destination and source possibly
 	 no longer will have their address taken.  */
-      srctype = TREE_TYPE (TREE_TYPE (src));
       if (TREE_CODE (srctype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
 	srctype = TREE_TYPE (srctype);
-      desttype = TREE_TYPE (TREE_TYPE (dest));
       if (TREE_CODE (desttype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
 	desttype = TREE_TYPE (desttype);

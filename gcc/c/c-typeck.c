@@ -7151,6 +7151,41 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  }
 	}
 
+      /* See if the pointers point to incompatible scalar storage orders.  */
+      if (warn_scalar_storage_order
+	  && (AGGREGATE_TYPE_P (ttl) && TYPE_REVERSE_STORAGE_ORDER (ttl))
+	     != (AGGREGATE_TYPE_P (ttr) && TYPE_REVERSE_STORAGE_ORDER (ttr)))
+	{
+	  switch (errtype)
+	  {
+	  case ic_argpass:
+	    /* Do not warn for built-in functions, for example memcpy, since we
+	       control how they behave and they can be useful in this area.  */
+	    if (TREE_CODE (rname) != FUNCTION_DECL || !DECL_IS_BUILTIN (rname))
+	      warning_at (location, OPT_Wscalar_storage_order,
+			  "passing argument %d of %qE from incompatible "
+			  "scalar storage order", parmnum, rname);
+	    break;
+	  case ic_assign:
+	    warning_at (location, OPT_Wscalar_storage_order,
+			"assignment to %qT from pointer type %qT with "
+			"incompatible scalar storage order", type, rhstype);
+	    break;
+	  case ic_init:
+	    warning_at (location, OPT_Wscalar_storage_order,
+			"initialization of %qT from pointer type %qT with "
+			"incompatible scalar storage order", type, rhstype);
+	    break;
+	  case ic_return:
+	    warning_at (location, OPT_Wscalar_storage_order,
+			"returning %qT from pointer type with incompatible "
+			"scalar storage order %qT", rhstype, type);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	}
+
       /* Any non-function converts to a [const][volatile] void *
 	 and vice versa; otherwise, targets must be the same.
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
