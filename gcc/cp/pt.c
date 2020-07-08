@@ -28993,6 +28993,12 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	    error ("%qT as type rather than plain %<decltype(auto)%>", type);
 	  return error_mark_node;
 	}
+      else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+	{
+	  if (complain & tf_error)
+	    error ("%<decltype(auto)%> cannot be cv-qualified");
+	  return error_mark_node;
+	}
     }
   else
     {
