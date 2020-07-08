@@ -978,14 +978,19 @@ static bool
 merge_static_calls (symtab_node *node, int set)
 {
   bool ret = false;
+  enum symbol_partitioning_class c = node->get_partitioning_class ();
 
   if (node->aux)
     return false;
 
   node->aux = (void *) 1;
 
-  if (!TREE_PUBLIC (node->decl))
+
+  if (!TREE_PUBLIC (node->decl) || c == SYMBOL_DUPLICATE)
     {
+      int i;
+      struct ipa_ref *ref = NULL;
+
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	{
 	  for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
@@ -999,17 +1004,13 @@ merge_static_calls (symtab_node *node, int set)
 	    }
 
 	}
-      else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
-	{
-	  int i;
-	  struct ipa_ref *ref = NULL;
-	  for (i = 0; vnode->iterate_referring (i, ref); ++i)
-	    {
-	      symtab_node *node1 = ref->referring;
-	      ds->unite (node1->aux2, set);
-	      ret = true;
-	    }
 
+      for (i = 0; node->iterate_referring (i, ref); ++i)
+	{
+	  symtab_node *node1 = ref->referring;
+	  ds->unite (node1->aux2, set);
+	  merge_static_calls (node1, set);
+	  ret = true;
 	}
     }
 
@@ -1058,6 +1059,9 @@ lto_merge_comdat_map (bool balance, bool promote_statics)
 	merge_comdat_nodes (node, node->aux2);
       merge_contained_symbols (node, node->aux2);
     }
+
+  FOR_EACH_SYMBOL (node)
+    node->aux = NULL;
 
   /* Then look at STATICs, if needed.  */
   if (!promote_statics)

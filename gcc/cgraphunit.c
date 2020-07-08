@@ -2656,16 +2656,17 @@ ipa_passes (void)
 
       if (split_outputs)
 	{
-	  bool promote_statics = true;
-	  bool balance = true;
+	  bool promote_statics = param_promote_statics;
+	  bool balance = param_balance_partitions;
 
 	  /* Trick the compiler to think that we are in WPA.  */
 	  flag_wpa = "";
 	  symtab_node::checking_verify_symtab_nodes ();
 
-	  /* Map with a restriction of varpool nodes be in the same partition
-	     if functions that have references to them.  */
-	  //lto_max_no_alonevap_map ();
+	  /* Partition the program so that COMDATs get mapped to the same
+	     partition. If promote_statics is true, it also maps statics
+	     to the same partition. If balance is true, try to balance the
+	     partitions for compilation performance.  */
 	  lto_merge_comdat_map (balance, promote_statics);
 
 	  /* AUX pointers are used by partitioning code to bookkeep number of
