@@ -1,5 +1,13 @@
 2020-07-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
+	* ipa-cp.c (initialize_node_lattices): Uncoment `gcc_unreachable'.
+	* ipa-profile.c (ipa_propagate_frequency): Uncoment assert.
+	* lto-cgraph.c (handle_node_in_boundary): New function.
+	* (lto_apply_partition_mask): Remove call to remove_unreachable_nodes,
+	and expand LTRANS boundary based on partitioned nodes.
+
+2020-07-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
 	* cgraphunit.c (ipa_passes): Quick switch between promote statics
 	and balance.
 	* ipa-sra.c (gate): Disable it for split_outputs.
@@ -15,7 +23,6 @@
 	non-local.
 	* tree.c (filter_name): New function.
 	(get_file_function_name): Filter buf so that it do not confuse ld.
-
 
 2020-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 

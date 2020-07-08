@@ -2061,6 +2061,48 @@ input_cgraph_opt_summary (vec<symtab_node *> nodes)
     }
 }
 
+/* Handle node that are in the LTRANS boundary, releasing its body and
+   other informations.  */
+
+static void
+handle_node_in_boundary (symtab_node *node)
+{
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  varpool_node *vnode = dyn_cast <varpool_node *> (node);
+  if (cnode)
+    {
+      cnode->maybe_release_dominators ();
+
+      if (cnode->clone_of)
+	cnode->remove_from_clone_tree ();
+
+      if (cnode->has_gimple_body_p ())
+	{
+	  cnode->remove_callees ();
+	  cnode->remove_all_references ();
+	  cnode->release_body ();
+	  cnode->body_removed = true;
+	  cnode->analyzed = false;
+	  cnode->definition = false;
+	  cnode->cpp_implicit_alias = false;
+	  cnode->alias = false;
+	  cnode->transparent_alias = false;
+	  cnode->thunk.thunk_p = false;
+	  cnode->weakref = false;
+	  /* After early inlining we drop always_inline attributes on
+	     bodies of functions that are still referenced (have their
+	     address taken).  */
+	  DECL_ATTRIBUTES (cnode->decl)
+	    = remove_attribute ("always_inline",
+				DECL_ATTRIBUTES (node->decl));
+
+	  cnode->in_other_partition = true;
+	}
+    }
+  else if (vnode && !DECL_EXTERNAL (vnode->decl))
+    vnode->in_other_partition = true;
+}
+
 /* Replace the partition in the symbol table, removing every node which is not
    in partition.  */
 
@@ -2070,7 +2112,6 @@ lto_apply_partition_mask (ltrans_partition partition)
   vec<lto_encoder_entry> &nodes = partition->encoder->nodes;
   symtab_node *node;
   auto_vec<symtab_node *, 16> mark_to_remove;
-  auto_vec<symtab_node *, 16> force_output_enabled;
   unsigned int i;
 
   FOR_EACH_SYMBOL (node)
@@ -2082,57 +2123,36 @@ lto_apply_partition_mask (ltrans_partition partition)
       node->aux2 = 1;
 
       if (!nodes[i].in_partition)
-	{
-	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
-	  varpool_node *vnode = dyn_cast <varpool_node *> (node);
-	  if (cnode)
-	    {
-	      cnode->maybe_release_dominators ();
-
-	      if (cnode->clone_of)
-		cnode->remove_from_clone_tree ();
-
-	      if (cnode->has_gimple_body_p ())
-		{
-		  cnode->remove_callees ();
-		  cnode->remove_all_references ();
-		  cnode->release_body ();
-		  cnode->body_removed = true;
-		  cnode->analyzed = false;
-		  cnode->definition = false;
-		  cnode->cpp_implicit_alias = false;
-		  cnode->alias = false;
-		  cnode->transparent_alias = false;
-		  cnode->thunk.thunk_p = false;
-		  cnode->weakref = false;
-		  /* After early inlining we drop always_inline attributes on
-		     bodies of functions that are still referenced (have their
-		     address taken).  */
-		  DECL_ATTRIBUTES (cnode->decl)
-		    = remove_attribute ("always_inline",
-					DECL_ATTRIBUTES (node->decl));
-
-		  cnode->in_other_partition = true;
-		}
-	    }
-	  else if (vnode && !DECL_EXTERNAL (vnode->decl))
-	    vnode->in_other_partition = true;
-	}
+	handle_node_in_boundary (node);
     }
 
   for (i = 0; i < nodes.length (); i++)
     {
       symtab_node *node = nodes[i].node;
+      bool in_partition = nodes[i].in_partition;
 
-      /* Temporarly set force output to avoid incorrect removal of node.  */
-      if (node->force_output)
-	force_output_enabled.safe_push (node);
-      else
-	node->force_output = true;
+      /* Expand boundary a little more to avoid issues with ipa-cp.  */
+      if (in_partition)
+	{
+	  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	    if (cnode->local)
+	      for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
+		{
+		  if (e->caller->get_partitioning_class () == SYMBOL_PARTITION)
+		    {
+		      if (e->caller->aux2 == 0 && e->caller->has_gimple_body_p ())
+			{
+			  bool in_other_partition = node->in_other_partition;
+			  handle_node_in_boundary (node);
+			  node->in_other_partition = in_other_partition;
+			}
+		    }
+		  e->caller->aux2 = 1;
+		}
 
-      /* Handle Schrondiger nodes that are and are not in the partition.  */
-      if (nodes[i].in_partition)
-	node->in_other_partition = false;
+	  /* Handle Schrondiger nodes that are and are not in the partition.  */
+	  node->in_other_partition = false;
+	}
     }
 
   FOR_EACH_SYMBOL (node)
@@ -2148,16 +2168,5 @@ lto_apply_partition_mask (ltrans_partition partition)
 	dyn_cast <cgraph_node *> (node)->maybe_release_dominators ();
 
       node->remove ();
-    }
-
-  symtab->remove_unreachable_nodes (NULL);
-
-  FOR_EACH_SYMBOL (node)
-    node->force_output = false;
-
-  for (i = 0; i < force_output_enabled.length (); ++i)
-    {
-      symtab_node *node = force_output_enabled[i];
-      node->force_output = true;
     }
 }

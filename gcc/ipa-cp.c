@@ -1195,7 +1195,7 @@ initialize_node_lattices (struct cgraph_node *node)
       int caller_count = 0;
       node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
 						true);
-      //gcc_checking_assert (caller_count > 0);
+      gcc_checking_assert (caller_count > 0);
       if (caller_count == 1)
 	node->call_for_symbol_thunks_and_aliases (set_single_call_flag,
 						  NULL, true);
@@ -1733,7 +1733,7 @@ ipcp_verify_propagated_values (void)
 		  print_all_lattices (dump_file, true, false);
 		}
 
-	      //gcc_unreachable ();
+	      gcc_unreachable ();
 	    }
 	}
     }
