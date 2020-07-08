@@ -83,7 +83,9 @@ proc dg-module-cmi { args } {
 	    }
 	    set path [file split $cmi]
 	    # subst /../ -> /,,/
-	    set rplac [lmap elt $path {expr {$elt == ".." ? ",," : $elt}}]
+	    # sadly tcl 8.5 does not have lmap
+	    set rplac {}
+	    foreach elt $path {lappend rplac [expr {$elt == ".." ? ",," : $elt}]}
 	    set cmi [file join {*}$rplac]
 	} else {
 	    set cmi "[regsub : $name -].gcm"
