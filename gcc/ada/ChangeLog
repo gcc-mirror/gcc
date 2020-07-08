@@ -1,3 +1,218 @@
+2020-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): Use Ctyp more consistently.
+	Move code setting the alignment in the non-packed case to...
+	* layout.adb (Layout_Type): ...here.
+
+2020-07-07  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (Print_Node): Add code to test Is_Extension.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): Add ??? comment. Protect
+	against malformed tree in case of errors.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb, sem_ch10.adb, sem_ch12.adb, sem_ch8.adb: Use
+	Is_Generic_Subprogram.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Package): Replace low-level,
+	error-prone Ekind_In tests with high-level Is_Generic_Subprogram
+	and Is_Subprogram.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Check_Formal_Subprogram_Conformance): New
+	subprogram to handle checking without systematically emitting an
+	error.
+	(Check_Conformance): Update call to
+	Check_Formal_Subprogram_Conformance and fix handling of Conforms
+	and Errmsg parameters.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Tagged_Membership): Generate a call to
+	CW_Membership instead of using Build_CW_Membership.
+	(Expand_N_In): Remove wrong handling of null access types and
+	corresponding comment.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Generate a
+	call to CW_Membership instead of using Build_CW_Membership.
+	* rtsfind.ads: Add CW_Membership.
+	* exp_atag.ads, exp_atag.adb (Build_CW_Membership): Removed.
+	* einfo.ads: Fix typo.
+	* libgnat/a-tags.ads, libgnat/a-tags.adb (CW_Membership): Moved
+	back to spec.
+
+2020-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Access_Subprogram_Wrapper_Body): Create
+	proper subprogram specification for body, using names in the
+	subprogram declaration but distinct entities.
+	* exp_ch6.adb (Expand_Call): If this is an indirect call
+	involving a subprogram wrapper, insert pointer parameter in list
+	of actuals with a parameter association, not as a positional
+	parameter.
+
+2020-07-07  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Branch): Verify the original node is a
+	conditional expression before recursing further.
+	(Insert_Level_Assign): Transform assertion into an explicit
+	raise.
+
+2020-07-07  Steve Baird  <baird@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Generalize static evaluation of
+	Size attribute references to also handle
+	Max_Size_In_Storage_Elements references.
+
+2020-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Code cleanup.
+
+2020-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Expander Routines): Update the description of the
+	Do_Range_Check mechanism.
+	* checks.adb (Selected_Range_Checks): Fix typo.
+	* exp_ch9.adb: Add with and use clause for Checks.
+	(Actual_Index_Expression): Generate a range check if requested.
+	(Entry_Index_Expression): Likewise.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Count>: Call
+	Apply_Scalar_Range_Check instead of Apply_Range_Check.
+	* sem_ch9.adb (Analyze_Accept_Statement): Likewise.
+	* sem_res.adb (Resolve_Entry): Likewise, after having set the
+	actual index type on the prefix of the indexed component.
+	(Resolve_Indexed_Component): Remove useless conditional construct.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract,
+	Process_Preconditions_For): Freeze expression that has been
+	relocated to pragma Precondition, not the expression which is
+	still in the aspect.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Remove unnecessary (and
+	wrong) code.
+	* sem_ch8.adb (Check_Null_Exclusion): Post error at proper
+	location.  Introduce new helper Null_Exclusion_Mismatch and fix
+	implementation wrt formal subprograms used in generic bodies.
+	(Analyze_Subprogram_Renaming): Fix missing setting of
+	Error_Msg_Sloc.
+	(Analyze_Object_Renaming): Replace "in Anonymous_Access_Kind" by
+	Is_Anonymous_Access_Type.
+	* sem_util.adb (Has_Null_Exclusion): Fix handling of
+	N_Parameter_Specification.
+	* sem_ch12.adb (Instantiate_Object): Replace "in
+	Anonymous_Access_Kind" by Is_Anonymous_Access_Type.
+
+2020-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Expr_Types): Freeze the designated type of
+	the explicit dereference.
+
+2020-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Protect reading
+	attribute Etype.
+
+2020-07-07  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-catiio.adb (Value, Parse_ISO_8601): Unsuppress
+	checks, and don't rely on 'Valid.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl: Remove dead code.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document gnatbind -xdr switch.
+	* gnat_ugn.texi: Regenerate.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Validity Checking): Add "p" to the list of switches enabled by
+	-gnatVa.
+	* gnat_ugn.texi: Regenerate.
+
+2020-07-07  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Add call
+	to Check_Restriction_No_Specification_Of_Aspect.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	* restrict.ads (Check_Restriction_No_Specification_Of_Aspect):
+	Mention possible new node kinds in documentation.
+	* restrict.adb (Check_Restriction_No_Specification_Of_Aspect):
+	Retrieve aspect id from different fields if given node is an
+	N_Pragma or an N_Attribute_Definition_Clause.
+
+2020-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* contracts.adb (Add_Invariant_And_Predicate_Checks): Relax the
+	condition for doing invariant checks so that in-mode parameters
+	of procedures are also checked (required by AI05-0289, and
+	restricted to procedures by AI12-0044). This is done in a
+	procedure's nested postconditions procedure.
+	* exp_ch6.adb (Expand_Actuals): Also perform postcall invariant
+	checks for in parameters of procedures (but not functions).
+	Moved invariant-checking code to end of Expand_Actuals
+	(including the nested function Is_Public_Subp).
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Array_Aggregate): Make Index_Type
+	a constant.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Delta_Aggregate): Use type of the delta
+	base expression for the anonymous object of the delta aggregate.
+
+2020-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads (Interval_Lists): Reordering routine.
+	* sem_util.adb (Interval_Lists): Reordering routines to keep
+	them alphabetically ordered.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Do not call
+	Check_Non_Static_Context.
+
+2020-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_elab.adb (Is_Guaranteed_ABE): Take into account null
+	procedures.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Reuse Is_Assignable.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Add scalar
+	range checks for 'Update on arrays just like for 'Update on
+	records.
+	* sem_attr.adb (Analyze_Array_Component_Update): Do not set
+	range checks for single-dimensional arrays.
+	(Resolve_Attribute): Do not set range checks for both single-
+	and multi- dimensional arrays.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem.ads (Sem): Fix description.
+
+2020-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Relaxed_Parameter): Fix for protected
+	entries.
+
 2020-07-06  Piotr Trojanek  <trojanek@adacore.com>
 
 	* checks.adb (Apply_Scalar_Range_Check): Use Is_RTE.

@@ -1,3 +1,27 @@
+2020-07-07  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
+
+	* config/aarch64/aarch64.c (thunderx2t99_regmove_cost,
+	thunderx2t99_vector_cost): Likewise.
+
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Fix
+	group overlap condition to allow negative step DR groups.
+	* tree-vect-stmts.c (get_group_load_store_type): For
+	multi element SLP groups force VMAT_STRIDED_SLP when the step
+	is negative.
+
+2020-07-07  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* doc/generic.texi: Fix typo.
+
+2020-07-07  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.c (cmp_symbol_files): Use the computed
+	order map to sort symbols from the same sub-file together.
+	(lto_output): Compute a map of sub-file to an order number
+	it appears in the symbol output array.
+
 2020-07-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/96075

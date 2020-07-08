@@ -1,3 +1,16 @@
+2020-07-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95303
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Check
+	PRIMARY_TEMPLATE_P before printing the innermost template
+	arguments.
+
+2020-07-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96063
+	* parser.c (class_decl_loc_t::diag_mismatched_tags): Print notes only
+	if warning_at returns nonzero.
+
 2020-07-06  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/95984
