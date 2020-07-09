@@ -79,6 +79,13 @@ struct omp_for_data
   unsigned char sched_modifiers;
   enum omp_clause_schedule_kind sched_kind;
   struct omp_for_data_loop *loops;
+  /* The following are relevant only for non-rectangular loops
+     where only a single loop depends on an outer loop iterator.  */
+  tree min_inner_iterations; /* Number of iterations of the inner
+				loop with either the first or last
+				outer iterator, depending on which
+				results in fewer iterations.  */
+  tree factor; /* (m2 - m1) * outer_step / inner_step.  */
 };
 
 #define OACC_FN_ATTRIB "oacc function"

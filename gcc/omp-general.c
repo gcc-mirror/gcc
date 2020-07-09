@@ -212,6 +212,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
   fd->simd_schedule = false;
+  fd->min_inner_iterations = NULL_TREE;
+  fd->factor = NULL_TREE;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -653,6 +655,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		  else
 		    t2 = fold_build2 (TRUNC_DIV_EXPR, itype, t2, step);
 		  t2 = fold_convert (llutype, t2);
+		  fd->min_inner_iterations = t;
+		  fd->factor = t2;
 		  t = fold_build2 (MULT_EXPR, llutype, t,
 				   single_nonrect_count);
 		  tree t3 = fold_build2 (MINUS_EXPR, llutype,
@@ -707,7 +711,17 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   if (collapse_count && *collapse_count == NULL)
     {
       if (count)
-	*collapse_count = fold_convert_loc (loc, iter_type, count);
+	{
+	  *collapse_count = fold_convert_loc (loc, iter_type, count);
+	  if (fd->min_inner_iterations && fd->factor)
+	    {
+	      t = make_tree_vec (3);
+	      TREE_VEC_ELT (t, 0) = *collapse_count;
+	      TREE_VEC_ELT (t, 1) = fd->min_inner_iterations;
+	      TREE_VEC_ELT (t, 2) = fd->factor;
+	      *collapse_count = t;
+	    }
+	}
       else
 	*collapse_count = create_tmp_var (iter_type, ".count");
     }
@@ -717,6 +731,13 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       fd->loop.v = *collapse_iter;
       fd->loop.n1 = build_int_cst (TREE_TYPE (fd->loop.v), 0);
       fd->loop.n2 = *collapse_count;
+      if (TREE_CODE (fd->loop.n2) == TREE_VEC)
+	{
+	  gcc_assert (fd->non_rect);
+	  fd->min_inner_iterations = TREE_VEC_ELT (fd->loop.n2, 1);
+	  fd->factor = TREE_VEC_ELT (fd->loop.n2, 2);
+	  fd->loop.n2 = TREE_VEC_ELT (fd->loop.n2, 0);
+	}
       fd->loop.step = build_int_cst (TREE_TYPE (fd->loop.v), 1);
       fd->loop.m1 = NULL_TREE;
       fd->loop.m2 = NULL_TREE;

@@ -1,6 +1,22 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data): Add min_inner_iterations
+	and factor members.
+	* omp-general.c (omp_extract_for_data): Initialize them and remember
+	them in OMP_CLAUSE_COLLAPSE_COUNT if needed and restore from there.
+	* omp-expand.c (expand_omp_for_init_counts): Fix up computation of
+	counts[fd->last_nonrect] if fd->loop.n2 is INTEGER_CST.
+	(expand_omp_for_init_vars): For
+	fd->first_nonrect + 1 == fd->last_nonrect loops with for now
+	INTEGER_CST fd->loop.n2 find quadratic equation roots instead of
+	using fallback method when possible.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-expand.c (expand_omp_for): Diagnose non-rectangular loops with
