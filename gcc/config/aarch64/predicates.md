@@ -32,7 +32,8 @@
 
 (define_predicate "aarch64_general_reg"
   (and (match_operand 0 "register_operand")
-       (match_test "REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS")))
+       (match_test "REGNO_REG_CLASS (REGNO (op)) == STUB_REGS
+		    || REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS")))
 
 ;; Return true if OP a (const_int 0) operand.
 (define_predicate "const0_operand"

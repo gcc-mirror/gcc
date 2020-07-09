@@ -659,6 +659,7 @@ extern const atomic_ool_names aarch64_ool_ldclr_names;
 extern const atomic_ool_names aarch64_ool_ldeor_names;
 
 const char *aarch64_sls_barrier (int);
+const char *aarch64_indirect_call_asm (rtx);
 extern bool aarch64_harden_sls_retbr_p (void);
 extern bool aarch64_harden_sls_blr_p (void);
 
