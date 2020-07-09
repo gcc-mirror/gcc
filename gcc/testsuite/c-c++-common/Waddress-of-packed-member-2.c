@@ -15,6 +15,7 @@ struct s {
 struct t {
   char c;
   struct r p __attribute__((packed));
+  /* { dg-warning "attribute ignored" "" { target default_packed } .-1 } */
   struct r u;
 };
 

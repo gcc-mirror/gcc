@@ -21,7 +21,8 @@ Assert (__alignof (struct PackedA) == __alignof (struct PackedB));
 struct PackedMember
 {
   char c;
-  ATTR ((copy ((struct PackedB*)0))) double packed_mem;
+  ATTR ((copy ((struct PackedB*)0))) double packed_mem; 
+  /* { dg-warning "attribute ignored" "" { target default_packed } .-1 } */
 };
 
 Assert (__alignof (struct PackedMember) == 1);
