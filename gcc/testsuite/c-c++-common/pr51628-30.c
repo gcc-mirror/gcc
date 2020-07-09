@@ -12,12 +12,12 @@ int*
 foo1 (void)
 {
   return &__real(p->b.a.i);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }
 
 int*
 foo2 (void)
 {
   return &__imag(p->b.a.i);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }

@@ -16,4 +16,4 @@ struct B
 struct B b;
 
 int *p = &b.ar[1].i;
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
