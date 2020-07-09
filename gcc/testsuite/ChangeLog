@@ -1,3 +1,34 @@
+2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc.dg/sso-11.c: New test.
+	* gcc.dg/sso/sso.exp: Pass -Wno-scalar-storage-order.
+	* gcc.dg/sso/memcpy-1.c: New test.
+
+2020-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96085
+	* gfortran.dg/pr96085.f90: New file.
+
+2020-07-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95497
+	* g++.dg/cpp2a/concepts-pr95497.C: New test.
+
+2020-07-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-msum-runnable.c: New test.
+	* gcc.target/powerpc/vsx-builtin-msum.c: New test.
+
+2020-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95694
+	* gcc.dg/pr95694.c: New test.
+
+2020-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96103
+	* g++.dg/cpp0x/decltype77.C: New test.
+
 2020-07-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92427

@@ -1,3 +1,16 @@
+2020-07-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95497
+	* constexpr.c (potential_constant_expression_1) <case PARM_DECL>:
+	When processing_template_decl, check COMPLETE_TYPE_P before
+	calling is_really_empty_class.  Don't check dependent_type_p.
+
+2020-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96103
+	* parser.c (cp_parser_decltype): Print error about using decltype(auto)
+	in C++11.  Check that the token following "auto" is ")".
+
 2020-07-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95303
