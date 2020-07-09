@@ -5,5 +5,5 @@
 
 #include "clastb_2.c"
 
-/* { dg-final { scan-tree-dump "using a fully-masked loop." "vect" } } */
+/* { dg-final { scan-tree-dump "operating on partial vectors." "vect" } } */
 /* { dg-final { scan-assembler {\tclastb\tb[0-9]+, p[0-7], b[0-9]+, z[0-9]+\.b} } } */
