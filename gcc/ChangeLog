@@ -1,3 +1,72 @@
+2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Do not fold if
+	either type has reverse scalar storage order.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Do not propagate through
+	a memory copy if either type has reverse scalar storage order.
+
+2020-07-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.c (compile_native, main): Pass -fPIC/-fpic
+	on to the native compiler, if used.
+	* config/nvptx/mkoffload.c (compile_native, main): Likewise.
+
+2020-07-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_vmsumudm): New define.
+	* config/rs6000/altivec.md (UNSPEC_VMSUMUDM): New unspec.
+	  (altivec_vmsumudm): New define_insn.
+	* config/rs6000/rs6000-builtin.def (altivec_vmsumudm): New BU_ALTIVEC_3
+	  entry. (vmsumudm): New BU_ALTIVEC_OVERLOAD_3 entry.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Add entries for
+	  ALTIVEC_BUILTIN_VMSUMUDM variants of vec_msum.
+	* doc/extend.texi: Add document for vmsumudm behind vmsum.
+
+2020-07-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (get_group_load_store_type): Pass
+	in the SLP node and the alignment support scheme output.
+	Set that.
+	(get_load_store_type): Likewise.
+	(vectorizable_store): Adjust.
+	(vectorizable_load): Likewise.
+
+2020-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95694
+	* expr.c (expand_expr_real_2): Get the mode from the type rather
+	than the rtx, and assert that it is consistent with the mode of
+	the rtx (where known).  Optimize all constant integers, not just
+	those that can be represented in poly_int64.
+
+2020-07-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/vsx.md (len_load_v16qi): New define_expand.
+	(len_store_v16qi): Likewise.
+
+2020-07-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/md.texi (len_load_@var{m}): Document.
+	(len_store_@var{m}): Likewise.
+	* internal-fn.c (len_load_direct): New macro.
+	(len_store_direct): Likewise.
+	(expand_len_load_optab_fn): Likewise.
+	(expand_len_store_optab_fn): Likewise.
+	(direct_len_load_optab_supported_p): Likewise.
+	(direct_len_store_optab_supported_p): Likewise.
+	(expand_mask_load_optab_fn): New macro.  Original renamed to ...
+	(expand_partial_load_optab_fn): ... here.  Add handlings for
+	len_load_optab.
+	(expand_mask_store_optab_fn): New macro.  Original renamed to ...
+	(expand_partial_store_optab_fn): ... here. Add handlings for
+	len_store_optab.
+	(internal_load_fn_p): Handle IFN_LEN_LOAD.
+	(internal_store_fn_p): Handle IFN_LEN_STORE.
+	(internal_fn_stored_value_index): Handle IFN_LEN_STORE.
+	* internal-fn.def (LEN_LOAD): New internal function.
+	(LEN_STORE): Likewise.
+	* optabs.def (len_load_optab, len_store_optab): New optab.
+
 2020-07-07  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
 
 	* config/aarch64/aarch64.c (thunderx2t99_regmove_cost,

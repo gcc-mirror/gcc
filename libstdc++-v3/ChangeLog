@@ -1,3 +1,15 @@
+2020-07-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h (_Rb_tree_impl(_Rb_tree_impl&&)): Add noexcept
+	qualification based only on _Compare one.
+	* testsuite/23_containers/map/cons/noexcept_move_construct.cc: Add
+	static asserts.
+	* testsuite/23_containers/multimap/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/23_containers/set/cons/noexcept_move_construct.cc: Likewise.
+
 2020-07-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/limits: Whitespace changes.
