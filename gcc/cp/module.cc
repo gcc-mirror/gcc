@@ -8578,8 +8578,8 @@ trees_out::type_node (tree type)
     case VECTOR_TYPE:
       if (streaming_p ())
 	{
-	  gcc_checking_assert(NUM_POLY_INT_COEFFS == 1);
 	  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
+	  /* to_constant asserts that only coeff[0] is of interest.  */
 	  wu (static_cast<unsigned HOST_WIDE_INT> (nunits.to_constant ()));
 	}
       break;

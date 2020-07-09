@@ -1,5 +1,9 @@
 2020-07-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* modules.cc (trees_out::type_node [VECTOR_TYPE]): poly_int's
+	to_constant already does the checking we need.
+
 	gcc/testsuite/
 	* g++.dg/modules/sym-subst-3_a.C: Adjust scan for other ABIs
 
