@@ -15540,7 +15540,10 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
   /* e0 = x0 * a */
   emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, a)));
 
-  if (TARGET_FMA || TARGET_AVX512F)
+  unsigned vector_size = GET_MODE_SIZE (mode);
+  if (TARGET_FMA
+      || (TARGET_AVX512F && vector_size == 64)
+      || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     emit_insn (gen_rtx_SET (e2,
 			    gen_rtx_FMA (mode, e0, x0, mthree)));
   else
