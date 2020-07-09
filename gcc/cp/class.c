@@ -3719,7 +3719,8 @@ check_field_decls (tree t, tree *access_decls,
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
-      else if (field_poverlapping_p (field) && is_empty_class (type))
+      else if (field_poverlapping_p (field)
+	       && is_empty_class (TREE_TYPE (field)))
 	/* Empty data members also don't make a class non-empty.  */
 	CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
       else
@@ -4386,15 +4387,20 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
 
   /* This routine should only be used for empty classes.  */
   gcc_assert (is_empty_class (type));
-  alignment = size_int (CLASSTYPE_ALIGN_UNIT (type));
+
+  if (decl && DECL_USER_ALIGN (decl))
+    alignment = size_int (DECL_ALIGN_UNIT (decl));
+  else
+    alignment = size_int (CLASSTYPE_ALIGN_UNIT (type));
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
   tree offset = size_zero_node;
-  if (layout_conflict_p (type,
-			 offset,
-			 offsets,
-			 /*vbases_p=*/0))
+  if (TREE_CODE (rli->t) != UNION_TYPE
+      && layout_conflict_p (type,
+			    offset,
+			    offsets,
+			    /*vbases_p=*/0))
     {
       /* That didn't work.  Now, we move forward from the next
 	 available spot in the class.  */
@@ -4414,7 +4420,14 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
 	}
     }
 
-  if (CLASSTYPE_USER_ALIGN (type))
+  if (decl && DECL_USER_ALIGN (decl))
+    {
+      rli->record_align = MAX (rli->record_align, DECL_ALIGN (decl));
+      if (warn_packed)
+	rli->unpacked_align = MAX (rli->unpacked_align, DECL_ALIGN (decl));
+      TYPE_USER_ALIGN (rli->t) = 1;
+    }
+  else if (CLASSTYPE_USER_ALIGN (type))
     {
       rli->record_align = MAX (rli->record_align, CLASSTYPE_ALIGN (type));
       if (warn_packed)
