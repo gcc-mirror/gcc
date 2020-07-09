@@ -760,7 +760,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   machine_mode optab_op2_mode;
   machine_mode vec_mode;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
-  bool load_p = false;
+  bool first_stmt_load_p = false, load_p = false;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -850,6 +850,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	{
 	  *node_vectype = vectype;
 	  first_stmt_code = rhs_code;
+	  first_stmt_load_p = load_p;
 
 	  /* Shift arguments should be equal in all the packed stmts for a
 	     vector shift with scalar shift operand.  */
@@ -931,24 +932,25 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  if (first_stmt_code != rhs_code
 	      && alt_stmt_code == ERROR_MARK)
 	    alt_stmt_code = rhs_code;
-	  if (first_stmt_code != rhs_code
-	      && (first_stmt_code != IMAGPART_EXPR
-		  || rhs_code != REALPART_EXPR)
-	      && (first_stmt_code != REALPART_EXPR
-		  || rhs_code != IMAGPART_EXPR)
-	      /* Handle mismatches in plus/minus by computing both
-		 and merging the results.  */
-	      && !((first_stmt_code == PLUS_EXPR
-		    || first_stmt_code == MINUS_EXPR)
-		   && (alt_stmt_code == PLUS_EXPR
-		       || alt_stmt_code == MINUS_EXPR)
-		   && rhs_code == alt_stmt_code)
-	      && !(STMT_VINFO_GROUPED_ACCESS (stmt_info)
-                   && (first_stmt_code == ARRAY_REF
-                       || first_stmt_code == BIT_FIELD_REF
-                       || first_stmt_code == INDIRECT_REF
-                       || first_stmt_code == COMPONENT_REF
-                       || first_stmt_code == MEM_REF)))
+	  if ((first_stmt_code != rhs_code
+	       && (first_stmt_code != IMAGPART_EXPR
+		   || rhs_code != REALPART_EXPR)
+	       && (first_stmt_code != REALPART_EXPR
+		   || rhs_code != IMAGPART_EXPR)
+	       /* Handle mismatches in plus/minus by computing both
+		  and merging the results.  */
+	       && !((first_stmt_code == PLUS_EXPR
+		     || first_stmt_code == MINUS_EXPR)
+		    && (alt_stmt_code == PLUS_EXPR
+			|| alt_stmt_code == MINUS_EXPR)
+		    && rhs_code == alt_stmt_code)
+	       && !(STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		    && (first_stmt_code == ARRAY_REF
+			|| first_stmt_code == BIT_FIELD_REF
+			|| first_stmt_code == INDIRECT_REF
+			|| first_stmt_code == COMPONENT_REF
+			|| first_stmt_code == MEM_REF)))
+	      || first_stmt_load_p != load_p)
 	    {
 	      if (dump_enabled_p ())
 		{
