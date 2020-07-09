@@ -2509,10 +2509,25 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	    }
 	}
       /* Restore the postorder information if it's corrupted in finding SCC
-	 with alias dependence edges skipped.  */
+	 with alias dependence edges skipped.  If reduction partition's SCC is
+	 broken by runtime alias checks, we force a negative post order to it
+	 making sure it will be scheduled in the last.  */
       if (num_sccs_no_alias > 0)
-	for (i = 0; i < pg->n_vertices; ++i)
-	  pg->vertices[i].post = cbdata.vertices_post[i];
+	{
+	  j = -1;
+	  for (i = 0; i < pg->n_vertices; ++i)
+	    {
+	      pg->vertices[i].post = cbdata.vertices_post[i];
+	      struct pg_vdata *data = (struct pg_vdata *)pg->vertices[i].data;
+	      if (data->partition && partition_reduction_p (data->partition))
+		{
+		  gcc_assert (j == -1);
+		  j = i;
+		}
+	    }
+	  if (j >= 0)
+	    pg->vertices[j].post = -1;
+	}
 
       free (cbdata.vertices_component);
       free (cbdata.vertices_post);
