@@ -9118,10 +9118,27 @@ package body Sem_Ch6 is
               ("equality operator appears too late (Ada 2012)?y?", Eq_Op);
          end if;
 
-      --  No error detected
+      --  Finally check for AI12-0352: declaration of a user-defined primitive
+      --  equality operation for a record type T is illegal if it occurs after
+      --  a type has been derived from T.
 
       else
-         return;
+         Obj_Decl := Next (Parent (Typ));
+
+         while Present (Obj_Decl) and then Obj_Decl /= Decl loop
+            if Nkind (Obj_Decl) = N_Full_Type_Declaration
+              and then Etype (Defining_Identifier (Obj_Decl)) = Typ
+            then
+               Error_Msg_N
+                 ("equality operator cannot appear after derivation", Eq_Op);
+               Error_Msg_NE
+                 ("an equality operator for& cannot be declared after "
+                  & "this point??",
+                  Obj_Decl, Typ);
+            end if;
+
+            Next (Obj_Decl);
+         end loop;
       end if;
    end Check_Untagged_Equality;
 
