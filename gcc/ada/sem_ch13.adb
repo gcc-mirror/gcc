@@ -9583,8 +9583,8 @@ package body Sem_Ch13 is
       --  Predicate_Function of the parent type, using Add_Call above.
 
       procedure Add_Call (T : Entity_Id);
-      --  Includes a call to the predicate function for type T in Expr if T
-      --  has predicates and Predicate_Function (T) is non-empty.
+      --  Includes a call to the predicate function for type T in Expr if
+      --  Predicate_Function (T) is non-empty.
 
       function Process_RE (N : Node_Id) return Traverse_Result;
       --  Used in Process REs, tests if node N is a raise expression, and if
@@ -9608,8 +9608,8 @@ package body Sem_Ch13 is
          Exp : Node_Id;
 
       begin
-         if Present (T) and then Present (Predicate_Function (T)) then
-            Set_Has_Predicates (Typ);
+         if Present (Predicate_Function (T)) then
+            pragma Assert (Has_Predicates (Typ));
 
             --  Build the call to the predicate function of T. The type may be
             --  derived, so use an unchecked conversion for the actual.
