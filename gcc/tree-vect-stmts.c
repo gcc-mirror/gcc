@@ -9876,11 +9876,22 @@ vectorizable_condition (vec_info *vinfo,
 	  return false;
 	}
 
-      if (loop_vinfo
-	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-	  && reduction_type == EXTRACT_LAST_REDUCTION)
-	vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
-			       ncopies * vec_num, vectype, NULL);
+      if (loop_vinfo && for_reduction
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	{
+	  if (reduction_type == EXTRACT_LAST_REDUCTION)
+	    vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
+				   ncopies * vec_num, vectype, NULL);
+	  /* Extra inactive lanes should be safe for vect_nested_cycle.  */
+	  else if (STMT_VINFO_DEF_TYPE (reduc_info) != vect_nested_cycle)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "conditional reduction prevents the use"
+				 " of partial vectors.\n");
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	    }
+	}
 
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
       vect_model_simple_cost (vinfo, stmt_info, ncopies, dts, ndts, slp_node,
