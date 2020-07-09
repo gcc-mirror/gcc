@@ -4220,6 +4220,7 @@ package body Sem_Ch4 is
 
       if Warn_On_Suspicious_Contract
         and then not Referenced (Loop_Id, Cond)
+        and then not Is_Internal_Name (Chars (Loop_Id))
       then
          --  Generating C, this check causes spurious warnings on inlined
          --  postconditions; we can safely disable it because this check
