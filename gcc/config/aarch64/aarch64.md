@@ -1022,16 +1022,15 @@
 )
 
 (define_insn "*call_insn"
-  [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "r, Usf"))
+  [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "Ucr, Usf"))
 	 (match_operand 1 "" ""))
    (unspec:DI [(match_operand:DI 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
   "@
-  blr\\t%0
+  * return aarch64_indirect_call_asm (operands[0]);
   bl\\t%c0"
-  [(set_attr "type" "call, call")]
-)
+  [(set_attr "type" "call, call")])
 
 (define_expand "call_value"
   [(parallel
@@ -1050,13 +1049,13 @@
 
 (define_insn "*call_value_insn"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "aarch64_call_insn_operand" "r, Usf"))
+	(call (mem:DI (match_operand:DI 1 "aarch64_call_insn_operand" "Ucr, Usf"))
 		      (match_operand 2 "" "")))
    (unspec:DI [(match_operand:DI 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
   "@
-  blr\\t%1
+  * return aarch64_indirect_call_asm (operands[1]);
   bl\\t%c1"
   [(set_attr "type" "call, call")]
 )
