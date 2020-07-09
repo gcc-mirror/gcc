@@ -689,9 +689,16 @@ package body Erroutc is
          Txt := Text;
       end if;
 
+      --  If -gnatdF is used, continuation messages follow the main message
+      --  with only an indentation of two space characters, without repeating
+      --  any prefix.
+
+      if Debug_Flag_FF and then E_Msg.Msg_Cont then
+         null;
+
       --  For info messages, prefix message with "info: "
 
-      if E_Msg.Info then
+      elsif E_Msg.Info then
          Txt := new String'("info: " & Txt.all);
 
       --  Warning treated as error
