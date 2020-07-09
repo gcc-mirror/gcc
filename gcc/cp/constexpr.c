@@ -7444,6 +7444,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	{
 	  tree type = TREE_TYPE (t);
 	  if ((processing_template_decl && !COMPLETE_TYPE_P (type))
+	      || dependent_type_p (type)
 	      || is_really_empty_class (type, /*ignore_vptr*/false))
 	    /* An empty class has no data to read.  */
 	    return true;
