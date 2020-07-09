@@ -71,6 +71,10 @@ mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses only the general registers.
 
+mharden-sls=
+Target RejectNegative Joined Var(aarch64_harden_sls_string)
+Generate code to mitigate against straight line speculation.
+
 mfix-cortex-a53-835769
 Target Report Var(aarch64_fix_a53_err835769) Init(2) Save
 Workaround for ARM Cortex-A53 Erratum number 835769.
