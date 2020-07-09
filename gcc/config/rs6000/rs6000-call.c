@@ -12572,7 +12572,7 @@ rs6000_init_builtins (void)
     ieee128_float_type_node = ibm128_float_type_node = long_double_type_node;
 
   /* Vector pair and vector quad support.  */
-  if (TARGET_MMA)
+  if (TARGET_EXTRA_BUILTINS)
     {
       tree oi_uns_type = make_unsigned_type (256);
       vector_pair_type_node = build_distinct_type_copy (oi_uns_type);
@@ -12648,13 +12648,14 @@ rs6000_init_builtins (void)
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
-  /* Create Altivec and VSX builtins on machines with at least the
+  /* Create Altivec, VSX and MMA builtins on machines with at least the
      general purpose extensions (970 and newer) to allow the use of
      the target attribute.  */
   if (TARGET_EXTRA_BUILTINS)
-    altivec_init_builtins ();
-  if (TARGET_MMA)
-    mma_init_builtins ();
+    {
+      altivec_init_builtins ();
+      mma_init_builtins ();
+    }
   if (TARGET_HTM)
     htm_init_builtins ();
 
@@ -13388,19 +13389,11 @@ mma_init_builtins (void)
   for (unsigned i = 0; i < ARRAY_SIZE (bdesc_mma); i++, d++)
     {
       tree op[MAX_MMA_OPERANDS], type;
-      HOST_WIDE_INT mask = d->mask;
       unsigned icode = (unsigned) d->icode;
       unsigned attr = rs6000_builtin_info[d->code].attr;
       int attr_args = (attr & RS6000_BTC_OPND_MASK);
       bool gimple_func = (attr & RS6000_BTC_GIMPLE);
       unsigned nopnds = 0;
-
-      if ((mask & rs6000_builtin_mask) != mask)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "mma_builtin, skip binary %s\n", d->name);
-	  continue;
-	}
 
       if (d->name == 0)
 	{
