@@ -34,7 +34,7 @@ export inline int count (int a, ...)
 // { dg-final { scan-lang-dump {Writing:-[0-9]*'s named merge key \(decl\) type_decl:'::__builtin_va_list'} module { target { i?86-*-* x86_64-*-* } } } }
 
 // { dg-final { scan-lang-dump {Wrote fixed:[0-9]* record_type:'__va_list'} module { target { aarch64*-*-* } } } }
-// { dg-final { scan-lang-dump {Wrote fixed:[0-9]* pointer_type:'::__gnuc_va_list'} module { target { powerpc*-*-* } } } }
+// { dg-final { scan-lang-dump {Wrote fixed:[0-9]* pointer_type:'::__builtin_va_list'} module { target { powerpc*-*-* } } } }
 
 // { dg-final { scan-lang-dump-not { Cluster members:\n  \[0\]=decl declaration '::va_list'\n  \[1\]=binding '::va_list'\n} module } }
 // { dg-final { scan-lang-dump {Wrote GMF:-[0-9]* type_decl:'::va_list'@builtins} module } }

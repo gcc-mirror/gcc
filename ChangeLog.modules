@@ -1,5 +1,8 @@
 2020-07-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-3_a.C: Adjust scan for other ABIs
+
 	gcc/testuite/
 	* g++.dg/modules/builtin-3_[ab].C: Add va_list scans for
 	aarch64 and ppowerpc ABIs.
