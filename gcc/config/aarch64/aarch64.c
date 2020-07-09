@@ -14489,6 +14489,79 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
   return false;
 }
 
+/* Straight line speculation indicators.  */
+enum aarch64_sls_hardening_type
+{
+  SLS_NONE = 0,
+  SLS_RETBR = 1,
+  SLS_BLR = 2,
+  SLS_ALL = 3,
+};
+static enum aarch64_sls_hardening_type aarch64_sls_hardening;
+
+/* Return whether we should mitigatate Straight Line Speculation for the RET
+   and BR instructions.  */
+bool
+aarch64_harden_sls_retbr_p (void)
+{
+  return aarch64_sls_hardening & SLS_RETBR;
+}
+
+/* Return whether we should mitigatate Straight Line Speculation for the BLR
+   instruction.  */
+bool
+aarch64_harden_sls_blr_p (void)
+{
+  return aarch64_sls_hardening & SLS_BLR;
+}
+
+/* As of yet we only allow setting these options globally, in the future we may
+   allow setting them per function.  */
+static void
+aarch64_validate_sls_mitigation (const char *const_str)
+{
+  char *token_save = NULL;
+  char *str = NULL;
+
+  if (strcmp (const_str, "none") == 0)
+    {
+      aarch64_sls_hardening = SLS_NONE;
+      return;
+    }
+  if (strcmp (const_str, "all") == 0)
+    {
+      aarch64_sls_hardening = SLS_ALL;
+      return;
+    }
+
+  char *str_root = xstrdup (const_str);
+  str = strtok_r (str_root, ",", &token_save);
+  if (!str)
+    error ("invalid argument given to %<-mharden-sls=%>");
+
+  int temp = SLS_NONE;
+  while (str)
+    {
+      if (strcmp (str, "blr") == 0)
+	temp |= SLS_BLR;
+      else if (strcmp (str, "retbr") == 0)
+	temp |= SLS_RETBR;
+      else if (strcmp (str, "none") == 0 || strcmp (str, "all") == 0)
+	{
+	  error ("%<%s%> must be by itself for %<-mharden-sls=%>", str);
+	  break;
+	}
+      else
+	{
+	  error ("invalid argument %<%s%> for %<-mharden-sls=%>", str);
+	  break;
+	}
+      str = strtok_r (NULL, ",", &token_save);
+    }
+  aarch64_sls_hardening = (aarch64_sls_hardening_type) temp;
+  free (str_root);
+}
+
 /* Parses CONST_STR for branch protection features specified in
    aarch64_branch_protect_types, and set any global variables required.  Returns
    the parsing result and assigns LAST_STR to the last processed token from
@@ -14732,6 +14805,9 @@ aarch64_override_options (void)
   selected_cpu = NULL;
   selected_arch = NULL;
   selected_tune = NULL;
+
+  if (aarch64_harden_sls_string)
+    aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
     aarch64_validate_mbranch_protection (aarch64_branch_protection_string);
