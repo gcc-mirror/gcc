@@ -130,7 +130,7 @@ struct PackedMember
   char c;
   short s;
   int i;
-  ATTR (packed) int a[2];
+  ATTR (packed) int a[2]; /* { dg-warning "attribute ignored" "" { target default_packed } } */
 } gpak[2];
 
 void test_packed (struct PackedMember *p)

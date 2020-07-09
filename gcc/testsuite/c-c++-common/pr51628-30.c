@@ -5,6 +5,7 @@
 struct A { __complex int i; };
 struct B { struct A a; };
 struct C { struct B b __attribute__ ((packed)); };
+/* { dg-warning "attribute ignored" "" { target default_packed } .-1 } */
 
 extern struct C *p;
 

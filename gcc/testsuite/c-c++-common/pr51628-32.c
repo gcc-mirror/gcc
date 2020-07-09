@@ -11,6 +11,7 @@ struct B
 {
    char c;
    __attribute ((packed)) struct A ar[4];
+   /* { dg-warning "attribute ignored" "" { target default_packed } .-1 } */
 };
 
 struct B b;
