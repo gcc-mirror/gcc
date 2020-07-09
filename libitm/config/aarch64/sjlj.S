@@ -24,6 +24,8 @@
 
 #include "asmcfi.h"
 
+#define BTI_C	hint	34
+
 	.text
 	.align	2
 	.global	_ITM_beginTransaction
@@ -31,6 +33,7 @@
 
 _ITM_beginTransaction:
 	cfi_startproc
+	BTI_C
 	mov	x1, sp
 	stp	x29, x30, [sp, -11*16]!
 	cfi_adjust_cfa_offset(11*16)
@@ -70,6 +73,7 @@ GTM_longjmp:
 	/* The first parameter becomes the return value (x0).
 	   The third parameter is ignored for now.  */
 	cfi_startproc
+	BTI_C
 	ldp	x19, x20, [x1, 1*16]
 	ldp	x21, x22, [x1, 2*16]
 	ldp	x23, x24, [x1, 3*16]
@@ -87,6 +91,29 @@ GTM_longjmp:
 	cfi_endproc
 	.size	GTM_longjmp, . - GTM_longjmp
 
-#ifdef __linux__
+/* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
+#define FEATURE_1_AND 0xc0000000
+#define FEATURE_1_BTI 1
+#define FEATURE_1_PAC 2
+
+/* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
+#define GNU_PROPERTY(type, value)	\
+  .section .note.gnu.property, "a";	\
+  .p2align 3;				\
+  .word 4;				\
+  .word 16;				\
+  .word 5;				\
+  .asciz "GNU";				\
+  .word type;				\
+  .word 4;				\
+  .word value;				\
+  .word 0;
+
+#if defined(__linux__) || defined(__FreeBSD__)
 .section .note.GNU-stack, "", %progbits
+
+/* Add GNU property note if built with branch protection.  */
+# ifdef __ARM_FEATURE_BTI_DEFAULT
+GNU_PROPERTY (FEATURE_1_AND, FEATURE_1_BTI)
+# endif
 #endif

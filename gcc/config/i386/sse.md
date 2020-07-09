@@ -326,6 +326,12 @@
   [V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
+;; AVX512VL SF/DF plus 128- and 256-bit SF vector modes
+(define_mode_iterator VF_AVX512VL_VF1_128_256
+  [(V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX512VL")
+   (V2DF "TARGET_AVX512VL")])
+
 (define_mode_iterator VF2_AVX512VL
   [V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
@@ -2070,23 +2076,13 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_expand "rsqrt<mode>2"
-  [(set (match_operand:VF1_128_256 0 "register_operand")
-	(unspec:VF1_128_256
-	  [(match_operand:VF1_128_256 1 "vector_operand")] UNSPEC_RSQRT))]
+  [(set (match_operand:VF_AVX512VL_VF1_128_256 0 "register_operand")
+	(unspec:VF_AVX512VL_VF1_128_256
+	  [(match_operand:VF_AVX512VL_VF1_128_256 1 "vector_operand")]
+	  UNSPEC_RSQRT))]
   "TARGET_SSE && TARGET_SSE_MATH"
 {
   ix86_emit_swsqrtsf (operands[0], operands[1], <MODE>mode, true);
-  DONE;
-})
-
-(define_expand "rsqrtv16sf2"
-  [(set (match_operand:V16SF 0 "register_operand")
-	(unspec:V16SF
-	  [(match_operand:V16SF 1 "vector_operand")]
-	  UNSPEC_RSQRT28))]
-  "TARGET_AVX512ER && TARGET_SSE_MATH"
-{
-  ix86_emit_swsqrtsf (operands[0], operands[1], V16SFmode, true);
   DONE;
 })
 

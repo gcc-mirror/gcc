@@ -1,3 +1,278 @@
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tracebak.c [generic implementation]: Add pragma GCC diagnostic
+	to disable warning about __builtin_frame_address.
+
+2020-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* socket.c [_WIN32] (__gnat_minus_500ms): Parentheses around &&
+	operations.  Remove notes about TN in comment.
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.h (__gnat_expect_portable_execvp): Fix prototype.
+	(__gnat_expect_poll): Likewise.
+	* expect.c [_WIN32]: Include adaint.h file.
+	(__gnat_waitpid): Remove useless variable.
+	(__gnat_expect_portable_execvp): Add ATTRIBUTE_UNUSED on parameter.
+	* raise-gcc.c [SEH] (__gnat_personality_v0): Add ATTRIBUTE_UNUSED.
+	* socket.c [_WIN32] (__gnat_getservbyport): Add ATTRIBUTE_UNUSED on
+	a couple of parameters.
+	(__gnat_gethostbyname): Likewise.
+	(__gnat_gethostbyaddr): Likewise.
+	(__gnat_getservbyname): Likewise.
+	(__gnat_last_socket_in_set): Use variables local to loops.
+	(__gnat_socket_ioctl): Cast 3rd parameter to proper type if _WIN32.
+	(__gnat_inet_pton): Cast 2nd parameter to proper type if _WIN32.
+	* sysdep.c (__gnat_localtime_tzoff): Remove superfluous test.
+	* terminals.c [_WIN32]: Include io.h file.
+	(is_gui_app): Remove useless variables and fix unsigned comparison.
+	(nt_spawnve): Add ATTRIBUTE_UNUSED on first parameter.  Initialize a
+	local variable and remove others that are useless.  Add missing cast
+	(__gnat_setup_child_communication): Remove useless variable and call
+	Use proper formatting string in call to sprintf.
+	(__gnat_setup_parent_communication): Cast to proper type.
+	(find_child_console): Fix prototype and remove useless variable.
+	(find_process_handle): Likewise.
+	(_gnat_interrupt_process): Move to after __gnat_interrupt_pid.
+	(__gnat_reset_tty): Add ATTRIBUTE_UNUSED on parameter, remove return
+	(__gnat_setup_winsize): Add ATTRIBUTE_UNUSED on all parameters.
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): In the subtype mark case, do
+	not apply constraint checks if the No_Initialization flag is set.
+
+2020-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb
+	(Build_Class_Wide_Master): Insert the declaration of _Master
+	before its use; required to avoid assertion failure in the
+	backend.
+
+2020-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/i-cexten.ads (long_long, unsigned_long_long): Now
+	subtypes of Interfaces.C types.
+	* libgnat/a-calcon.ads, libgnat/a-calcon.adb
+	(To_Unix_Nano_Time): Use Interfaces.C.long_long instead of
+	Interfaces.C.Extensions.long_long.
+
+2020-07-08  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* debug.adb: Document new switch.
+	* exp_ch6.adb (Warn_BIP): New function that warns if the switch
+	is on.  Call it from Make_Build_In_Place_* functions.  Warn_BIP
+	is not needed in Make_Build_In_Place_Iface_*, because those call
+	Make_Build_In_Place_Call_In_Object_Declaration or similar.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* erroutc.adb (Matches): Fix comments.
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Has_Decl_In_List): New predicate to check that an
+	entity is declared in a list of nodes.
+	(Freeze_Expression): Use it to deal with Expression_With_Actions,
+	short-circuit expression, if- and case-expression and ensure that
+	the freeze node is put onto their Actions list if the entity is
+	declared locally.
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (In_Expanded_Body): Return true for the body of a
+	generated predicate function.
+
+2020-07-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb: Remove hyphens in comments, plus minor code
+	reformatting.
+	* sem_ch13.adb: Fix typo (that => than).
+	* sem_util.adb: Add hyphen in comment ("class-wide").
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): Add comment on implementation
+	choice for byte-packed array types.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Correct prefix of 'Result
+	this prefix is a generic function but the enclosing aspect or
+	pragma is attached to its instance.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Analyze
+	generic subprogram formal parameters (including the implicit
+	result of a generic function) and only then analyse its aspects,
+	because with Relaxed_Initialization the aspect expression might
+	refer to those formal parameters.
+	* sem_ch13.adb (Analyze_Aspect_Relaxed_Initialization): Accept
+	aspect on generic subprograms; install formal parameters of a
+	generic subprogram but not formal parameters of the generic unit
+	itself (the previous code was inspired by aspects Post and
+	Depends, where both kinds of formals are allowed).
+	* sem_util.ads (Enter_Name): Fix name of a subprogram referenced
+	in comment.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Call
+	Analyze_Aspect_Specifications after setting Ekind of the
+	analyzed entity.
+	* sem_ch13.adb (Analyze_Aspect_Yield): Remove minimal decoration
+	of generic subprograms.
+
+2020-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Process_Inline): Check for duplicate
+	pragma+aspect Inline. Minor code cleanup.
+	(Check_Duplicate_Pragma): Add warning for duplicate
+	pragma [No_]Inline under -gnatwr.
+	* sinfo.ads, sinfo.adb (Next_Rep_Item): Allow N_Null_Statement
+	which can appear when a pragma is rewritten.
+	* sem_util.ads, sem_util.adb, bindo-writers.adb: Fix bad
+	copy/paste now flagged.
+	* libgnat/s-mmap.ads: Remove redundant pragma Inline.
+
+2020-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Class_Wide_Clone_Body): Update entities to
+	refer to the right spec.
+
+2020-07-08  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Predicate_Failure): Check that the type has
+	predicates.  Remove the setting of Has_Delayed_Aspects and
+	Freeze_Node, because (if the code is legal) it should have
+	already been done by the predicate aspect.
+
+2020-07-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): Typo
+	corrections.
+
+2020-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* par.adb (P_Iterator_Specification): Make public for use in
+	other parser subprograms.
+	* par-ch4.adb (P_Iterated_Component_Association): In Ada_2020,
+	recognize use of Iterator_Specification in an element iterator.
+	To simplify disambiguation between the two iterator forms, mark
+	the component association as carrying an Iterator_Specification
+	only when the element iterator (using "OF") is used.
+	* par-ch5.adb (P_Loop_Parameter_Specification): In Ada_2020,
+	parse iterator filter when present.
+	(P_Iterator_Specification): Ditto.  Remove declaration of
+	P_Iterator_Specification, now in parent unit.
+	* exp_ch5.adb (Expand_N_Loop_Statement): Apply Iterator filter
+	when present.
+	(Expand_Iterator_Loop_Over_Array): Ditto.
+	(Expand_Iterator_Loop_Over_Container): Ditto.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Emit error nessage if
+	an iterated component association includes a iterator
+	specificcation with an element iterator, i.e. one that uses the
+	OF keyword.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Analyze Iterator
+	filter when present.
+	(Analyze_Loop_Parameter_Specification): Ditto.
+	* sinfo.adb: Suprogram bodies for new syntactic element
+	Iterator_Filter.
+	* sinfo.ads: Add Iterator_Filter to relevant nodes.  Structure
+	of Component_Association and Iteroted_Component_Association
+	nodes is modified to take into account the possible  presence of
+	an iterator specification in the latter.
+
+2020-07-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Attribute_Loop_Entry): New
+	function for GNATProve.
+
+2020-07-08  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch13.adb (Analyze_Record_Representation_Clause,
+	Check_Record_Representation_Clause): Add expected and actual
+	size to error message.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Safe_To_Capture_Value): Return
+	True for in-parameters.
+
+2020-07-08  Justin Squirek  <squirek@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute): Set
+	Stores_Attribute_Old_Prefix to generated renamings of 'Old
+	constants for later use in generating finalization routines.
+	* exp_ch7.adb (Build_Finalizer): Minor reformatting. Use "or
+	else" operators.
+
+2020-07-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Remove ugly code
+	that was copying the return expression, resetting Analyzed
+	flags, etc. for the return expression of static expression
+	functions.
+	* inline.adb (Inline_Static_Expression_Function_Call): Set the
+	Parent of the copied expression to that of the call. This avoids
+	a blowup in Insert_Actions when GNATprove_Mode is set and there
+	are nested SEF calls. Add ??? comment.
+	* sem_ch6.adb (Analyze_Expression_Function): In the case of a
+	static expression function, create a new copy of the expression
+	and replace the function's expression with the copy; the
+	original expression is used in the expression function's body
+	and will be analyzed and rewritten, and we need to save a clean
+	copy for later use in processing static calls to the function.
+	This allows removing the kludgy code that was in
+	Expand_Simple_Function_Return.
+	* sem_eval.adb (Eval_Qualified_Expression): Return immediately
+	if any errors have been posted on the qualified expression, to
+	avoid blowups when GNATprove_Mode is enabled (or with -gnatd.F),
+	since illegal static expressions are handled differently in that
+	case and attempting to fold such expressions would fail.
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (Compute_Max_Length): Skip hidden discriminants.
+	(List_Record_Layout): Likewise.
+	(List_Structural_Record_Layout): Use First_Discriminant instead
+	of First_Stored_Discriminant and Next_Discriminant instead of
+	Next_Stored_Discriminant to walk the list of discriminants.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Relaxed_Initialization): Analyze
+	optional boolean expressions.
+	* sem_util.ads, sem_util.adb (Has_Relaxed_Initialization): Adapt
+	query; update comment.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Current_Value): Fix typo in comment.
+	* exp_ch2.adb (Expand_Current_Value): Remove unnecessary "Start
+	of processing ..." comment.
+	* exp_util.adb (Set_Entity_Current_Value): Fix unbalanced paren
+	in comment.
+	(Get_Current_Value_Condition): Fix layout in comment.
+	* sem_ch5.adb (Analyze_Cond_Then): Replace commented condition
+	with pragma Assert.
+
+2020-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch5.adb (Expand_N_If_Statement): Detect True/False
+	prefixed with Standard.
+
+2020-07-08  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add freeze node
+	for the Underlying_Full_View if it exists. The freeze node is
+	what triggers the generation of the predicate function.
+	* freeze.adb: Minor reformatting.
+
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Narrow_Large_Operation): Use the base type instead
+	of the first subtype of standard integer types as narrower type.
+
 2020-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Freeze_Array_Type): Use Ctyp more consistently.

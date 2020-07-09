@@ -21,5 +21,5 @@ condition_reduction (TYPE *a, TYPE min_v)
   return last;
 }
 
-/* { dg-final { scan-tree-dump "using a fully-masked loop." "vect" } } */
+/* { dg-final { scan-tree-dump "operating on partial vectors." "vect" } } */
 /* { dg-final { scan-assembler {\tclastb\ts[0-9]+, p[0-7], s[0-9]+, z[0-9]+\.s} } } */

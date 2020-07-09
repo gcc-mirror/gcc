@@ -1892,9 +1892,7 @@ extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int
 extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);
 extern opt_result vect_enhance_data_refs_alignment (loop_vec_info);
 extern opt_result vect_analyze_data_refs_alignment (loop_vec_info);
-extern opt_result vect_verify_datarefs_alignment (loop_vec_info);
-extern bool vect_slp_analyze_and_verify_instance_alignment (vec_info *,
-							    slp_instance);
+extern bool vect_slp_analyze_instance_alignment (vec_info *, slp_instance);
 extern opt_result vect_analyze_data_ref_accesses (vec_info *);
 extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,

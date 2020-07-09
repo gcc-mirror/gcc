@@ -7190,6 +7190,13 @@ vectorizable_store (vec_info *vinfo,
 	  return false;
 	}
 
+      if (dump_enabled_p ()
+	  && memory_access_type != VMAT_ELEMENTWISE
+	  && memory_access_type != VMAT_GATHER_SCATTER
+	  && alignment_support_scheme != dr_aligned)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Vectorizing an unaligned access.\n");
+
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       vect_model_store_cost (vinfo, stmt_info, ncopies,
 			     memory_access_type, vls_type, slp_node, cost_vec);
@@ -8474,6 +8481,13 @@ vectorizable_load (vec_info *vinfo,
 	check_load_store_for_partial_vectors (loop_vinfo, vectype, VLS_LOAD,
 					      group_size, memory_access_type,
 					      &gs_info, mask);
+
+      if (dump_enabled_p ()
+	  && memory_access_type != VMAT_ELEMENTWISE
+	  && memory_access_type != VMAT_GATHER_SCATTER
+	  && alignment_support_scheme != dr_aligned)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Vectorizing an unaligned access.\n");
 
       STMT_VINFO_TYPE (orig_stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
@@ -9876,11 +9890,22 @@ vectorizable_condition (vec_info *vinfo,
 	  return false;
 	}
 
-      if (loop_vinfo
-	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-	  && reduction_type == EXTRACT_LAST_REDUCTION)
-	vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
-			       ncopies * vec_num, vectype, NULL);
+      if (loop_vinfo && for_reduction
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	{
+	  if (reduction_type == EXTRACT_LAST_REDUCTION)
+	    vect_record_loop_mask (loop_vinfo, &LOOP_VINFO_MASKS (loop_vinfo),
+				   ncopies * vec_num, vectype, NULL);
+	  /* Extra inactive lanes should be safe for vect_nested_cycle.  */
+	  else if (STMT_VINFO_DEF_TYPE (reduc_info) != vect_nested_cycle)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "conditional reduction prevents the use"
+				 " of partial vectors.\n");
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	    }
+	}
 
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
       vect_model_simple_cost (vinfo, stmt_info, ncopies, dts, ndts, slp_node,

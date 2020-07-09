@@ -49,6 +49,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "bad data alignment in basic block" "slp2" { target { ! vect_element_align } } } } */
+/* { dg-final { scan-tree-dump "unsupported unaligned access" "slp2" { target { ! vect_element_align } } } } */
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target vect_element_align } } } */
   

@@ -11900,6 +11900,7 @@ start:
 		  || code->expr1->symtree->n.sym->ts.type != BT_INTEGER
 		  || code->expr1->symtree->n.sym->ts.kind
 		     != gfc_default_integer_kind
+		  || code->expr1->symtree->n.sym->attr.flavor == FL_PARAMETER
 		  || code->expr1->symtree->n.sym->as != NULL))
 	    gfc_error ("ASSIGN statement at %L requires a scalar "
 		       "default INTEGER variable", &code->expr1->where);

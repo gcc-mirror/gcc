@@ -2136,8 +2136,6 @@ start_over:
     /* This pass will decide on using loop versioning and/or loop peeling in
        order to enhance the alignment of data references in the loop.  */
     ok = vect_enhance_data_refs_alignment (loop_vinfo);
-  else
-    ok = vect_verify_datarefs_alignment (loop_vinfo);
   if (!ok)
     return ok;
 
@@ -2177,12 +2175,12 @@ start_over:
        && vect_verify_full_masking (loop_vinfo));
   if (dump_enabled_p ())
     {
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "using a fully-masked loop.\n");
+			 "operating on partial vectors.\n");
       else
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "not using a fully-masked loop.\n");
+			 "operating only on full vectors.\n");
     }
 
   /* If epilog loop is required because of data accesses with gaps,

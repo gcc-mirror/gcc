@@ -3224,8 +3224,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       return NULL;
     }
 
-  /* 6) For memcpy copies translate the reference through them if
-     the copy kills ref.  */
+  /* 6) For memcpy copies translate the reference through them if the copy
+     kills ref.  But we cannot (easily) do this translation if the memcpy is
+     a storage order barrier, i.e. is equivalent to a VIEW_CONVERT_EXPR that
+     can modify the storage order of objects (see storage_order_barrier_p).  */
   else if (data->vn_walk_kind == VN_WALKREWRITE
 	   && is_gimple_reg_type (vr->type)
 	   /* ???  Handle BCOPY as well.  */
@@ -3275,6 +3277,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	}
       if (TREE_CODE (lhs) == ADDR_EXPR)
 	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (lhs)))
+	      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_TYPE (lhs))))
+	    return (void *)-1;
 	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (lhs, 0),
 						    &lhs_offset);
 	  if (!tem)
@@ -3303,6 +3308,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	rhs = vn_valueize (rhs);
       if (TREE_CODE (rhs) == ADDR_EXPR)
 	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (rhs)))
+	      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_TYPE (rhs))))
+	    return (void *)-1;
 	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs, 0),
 						    &rhs_offset);
 	  if (!tem)
