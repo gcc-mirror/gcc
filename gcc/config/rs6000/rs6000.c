@@ -4264,8 +4264,12 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
 
+  /* Enable -mmma by default on power10 systems.  */
+  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_MMA) == 0)
+    rs6000_isa_flags |= OPTION_MASK_MMA;
+
   /* Turn off vector pair/mma options on non-power10 systems.  */
-  if (!TARGET_POWER10 && TARGET_MMA)
+  else if (!TARGET_POWER10 && TARGET_MMA)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_MMA) != 0)
 	error ("%qs requires %qs", "-mmma", "-mcpu=power10");
