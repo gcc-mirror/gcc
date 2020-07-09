@@ -136,12 +136,13 @@ typedef enum omp_alloctrait_key_t
 
 typedef enum omp_alloctrait_value_t
 {
+  omp_atv_default = (__UINTPTR_TYPE__) -1,
   omp_atv_false = 0,
   omp_atv_true = 1,
-  omp_atv_default = 2,
   omp_atv_contended = 3,
   omp_atv_uncontended = 4,
-  omp_atv_sequential = 5,
+  omp_atv_serialized = 5,
+  omp_atv_sequential = omp_atv_serialized,
   omp_atv_private = 6,
   omp_atv_all = 7,
   omp_atv_thread = 8,
@@ -154,8 +155,7 @@ typedef enum omp_alloctrait_value_t
   omp_atv_environment = 15,
   omp_atv_nearest = 16,
   omp_atv_blocked = 17,
-  omp_atv_interleaved = 18,
-  __omp_alloctrait_value_max__ = __UINTPTR_MAX__
+  omp_atv_interleaved = 18
 } omp_alloctrait_value_t;
 
 typedef struct omp_alloctrait_t
