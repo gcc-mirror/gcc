@@ -1,3 +1,12 @@
+2020-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* resolve.c (gfc_resolve_code): Check for valid arguments to
+	assigned GOTO.
+
 2020-07-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
