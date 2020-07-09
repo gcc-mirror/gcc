@@ -698,6 +698,7 @@ Objective-C and Objective-C++ Dialects}.
 -msign-return-address=@var{scope} @gol
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
 +@var{b-key}]|@var{bti} @gol
+-mharden-sls=@var{opts} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
@@ -17366,6 +17367,17 @@ argument @samp{leaf} can be used to extend the signing to include leaf
 functions.  The optional argument @samp{b-key} can be used to sign the functions
 with the B-key instead of the A-key.
 @samp{bti} turns on branch target identification mechanism.
+
+@item -mharden-sls=@var{opts}
+@opindex mharden-sls
+Enable compiler hardening against straight line speculation (SLS).
+@var{opts} is a comma-separated list of the following options:
+@table @samp
+@item retbr
+@item blr
+@end table
+In addition, @samp{-mharden-sls=all} enables all SLS hardening while
+@samp{-mharden-sls=none} disables all SLS hardening.
 
 @item -msve-vector-bits=@var{bits}
 @opindex msve-vector-bits

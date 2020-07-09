@@ -780,4 +780,7 @@ extern const atomic_ool_names aarch64_ool_ldeor_names;
 
 tree aarch64_resolve_overloaded_builtin_general (location_t, tree, void *);
 
+extern bool aarch64_harden_sls_retbr_p (void);
+extern bool aarch64_harden_sls_blr_p (void);
+
 #endif /* GCC_AARCH64_PROTOS_H */
