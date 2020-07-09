@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
+#define TARGET_RUST_CPU_INFO pdp11_rust_target_cpu_info
 
 /* Generate DBX debugging information.  */
 

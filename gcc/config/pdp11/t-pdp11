@@ -29,3 +29,7 @@ CRTSTUFF_T_CFLAGS = -Os
 # We could say "-Werror -Wno-error=type-limits", alas, not all supported
 # gcc bootstrap compilers support the latter option.
 dwarf2out.o-warn = -Wno-error
+
+pdp11-rust.o: $(srcdir)/config/pdp11/pdp11-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

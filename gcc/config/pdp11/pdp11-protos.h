@@ -55,3 +55,6 @@ extern void pdp11_gen_int_label (char *, const char *, int);
 extern void pdp11_output_labelref (FILE *, const char *);
 extern void pdp11_output_def (FILE *, const char *, const char *);
 extern void pdp11_output_addr_vec_elt (FILE *, int);
+
+/* Routines implemented in pdp11-rust.c  */
+extern void pdp11_rust_target_cpu_info (void);

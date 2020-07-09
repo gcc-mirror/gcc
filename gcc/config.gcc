@@ -2855,6 +2855,7 @@ or1k*-*-*)
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
+	rust_target_objs="pdp11-rust.o"
 	;;
 # port not yet contributed
 #powerpc-*-openbsd*)
