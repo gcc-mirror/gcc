@@ -3524,12 +3524,13 @@ package body Exp_Ch4 is
          --  Note that we have arranged that the result will not be treated as
          --  a static constant, so we won't get an illegality during this
          --  insertion.
+         --  We also enable checks (in particular range checks) in case the
+         --  bounds of Subtyp_Ind are out of range.
 
          Insert_Action (Cnode,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Ent,
-             Object_Definition   => Subtyp_Ind),
-           Suppress => All_Checks);
+             Object_Definition   => Subtyp_Ind));
       end if;
 
       --  If the result of the concatenation appears as the initializing
