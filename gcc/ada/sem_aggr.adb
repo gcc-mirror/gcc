@@ -48,6 +48,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
@@ -2646,11 +2647,12 @@ package body Sem_Aggr is
    ---------------------------------
 
    procedure Resolve_Container_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      procedure Resolve_Iterated_Component_Association
+      procedure Resolve_Iterated_Association
        (Comp      : Node_Id;
         Key_Type  : Entity_Id;
         Elmt_Type : Entity_Id);
-      --  Resolve choices and expression in an iterated component association.
+      --  Resolve choices and expression in an iterated component association
+      --  or an iterated element association, which has a key_expression.
       --  This is similar but not identical to the handling of this construct
       --  in an array aggregate.
       --  For a named container, the type of each choice must be compatible
@@ -2666,25 +2668,54 @@ package body Sem_Aggr is
       New_Indexed_Subp    : Node_Id := Empty;
       Assign_Indexed_Subp : Node_Id := Empty;
 
-      --------------------------------------------
-      -- Resolve_Iterated_Component_Association --
-      --------------------------------------------
+      ----------------------------------
+      -- Resolve_Iterated_Association --
+      ----------------------------------
 
-      procedure Resolve_Iterated_Component_Association
+      procedure Resolve_Iterated_Association
        (Comp      : Node_Id;
         Key_Type  : Entity_Id;
         Elmt_Type : Entity_Id)
       is
-         Choice : Node_Id;
-         Ent    : Entity_Id;
-         Expr   : Node_Id;
-         Id     : Entity_Id;
-         Iter   : Node_Id;
-         Typ    : Entity_Id := Empty;
+         Choice   : Node_Id;
+         Ent      : Entity_Id;
+         Expr     : Node_Id;
+         Key_Expr : Node_Id;
+         Id       : Entity_Id;
+         Id_Name  : Name_Id;
+         Iter     : Node_Id;
+         Typ      : Entity_Id := Empty;
 
       begin
-         if Present (Iterator_Specification (Comp)) then
-            Iter := Copy_Separate_Tree (Iterator_Specification (Comp));
+         --  If this is an Iterated_Element_Association then either a
+         --  an Iterator_Specification or a Loop_Parameter specification
+         --  is present. In both cases a Key_Expression is present.
+
+         if Nkind (Comp) = N_Iterated_Element_Association then
+            if Present (Loop_Parameter_Specification (Comp)) then
+               Analyze_Loop_Parameter_Specification
+                  (Loop_Parameter_Specification (Comp));
+               Id_Name := Chars (Defining_Identifier
+                            (Loop_Parameter_Specification (Comp)));
+            else
+               Iter := Copy_Separate_Tree (Iterator_Specification (Comp));
+               Analyze (Iter);
+               Typ := Etype (Defining_Identifier (Iter));
+               Id_Name := Chars (Defining_Identifier
+                            (Iterator_Specification (Comp)));
+            end if;
+
+            --  Key expression must have the type of the key. We analyze
+            --  a copy of the original expression, because it will be
+            --  reanalyzed and copied as needed during expansion of the
+            --  corresponding loop.
+
+            Key_Expr := Key_Expression (Comp);
+            Analyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+
+         elsif Present (Iterator_Specification (Comp)) then
+            Iter    := Copy_Separate_Tree (Iterator_Specification (Comp));
+            Id_Name := Chars (Defining_Identifier (Comp));
             Analyze (Iter);
             Typ := Etype (Defining_Identifier (Iter));
 
@@ -2711,19 +2742,19 @@ package body Sem_Aggr is
 
                Next (Choice);
             end loop;
+
+            Id_Name := Chars (Defining_Identifier (Comp));
          end if;
 
          --  Create a scope in which to introduce an index, which is usually
          --  visible in the expression for the component, and needed for its
          --  analysis.
 
+         Id := Make_Defining_Identifier (Sloc (Comp), Id_Name);
          Ent := New_Internal_Entity (E_Loop, Current_Scope, Sloc (Comp), 'L');
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (Comp));
          Push_Scope (Ent);
-         Id :=
-           Make_Defining_Identifier (Sloc (Comp),
-             Chars => Chars (Defining_Identifier (Comp)));
 
          --  Insert and decorate the loop variable in the current scope.
          --  The expression has to be analyzed once the loop variable is
@@ -2752,7 +2783,8 @@ package body Sem_Aggr is
          Expr := New_Copy_Tree (Expression (Comp));
          Preanalyze_And_Resolve (Expr, Elmt_Type);
          End_Scope;
-      end Resolve_Iterated_Component_Association;
+
+      end Resolve_Iterated_Association;
 
    begin
       pragma Assert (Nkind (Asp) = N_Aggregate);
@@ -2797,7 +2829,7 @@ package body Sem_Aggr is
                           & "for unnamed container aggregate", Comp);
                         return;
                      else
-                        Resolve_Iterated_Component_Association
+                        Resolve_Iterated_Association
                           (Comp, Empty, Elmt_Type);
                      end if;
 
@@ -2837,8 +2869,11 @@ package body Sem_Aggr is
 
                   Analyze_And_Resolve (Expression (Comp), Elmt_Type);
 
-               elsif Nkind (Comp) = N_Iterated_Component_Association then
-                  Resolve_Iterated_Component_Association
+               elsif Nkind (Comp) in
+                 N_Iterated_Component_Association |
+                 N_Iterated_Element_Association
+               then
+                  Resolve_Iterated_Association
                     (Comp, Key_Type, Elmt_Type);
                end if;
 
@@ -2883,8 +2918,11 @@ package body Sem_Aggr is
 
                      Analyze_And_Resolve (Expression (Comp), Comp_Type);
 
-                  elsif Nkind (Comp) = N_Iterated_Component_Association then
-                     Resolve_Iterated_Component_Association
+                  elsif Nkind (Comp) in
+                    N_Iterated_Component_Association |
+                    N_Iterated_Element_Association
+                  then
+                     Resolve_Iterated_Association
                        (Comp, Index_Type, Comp_Type);
                   end if;
 
