@@ -2258,15 +2258,22 @@ remove_partial_avx_dependency (void)
 
 	  rtx zero;
 	  machine_mode dest_vecmode;
-	  if (dest_mode == E_SFmode)
+	  switch (dest_mode)
 	    {
+	    case E_HFmode:
+	      dest_vecmode = V8HFmode;
+	      zero = gen_rtx_SUBREG (V8HFmode, v4sf_const0, 0);
+	      break;
+	    case E_SFmode:
 	      dest_vecmode = V4SFmode;
 	      zero = v4sf_const0;
-	    }
-	  else
-	    {
+	      break;
+	    case E_DFmode:
 	      dest_vecmode = V2DFmode;
 	      zero = gen_rtx_SUBREG (V2DFmode, v4sf_const0, 0);
+	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
 
 	  /* Change source to vector mode.  */
