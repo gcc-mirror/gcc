@@ -1,3 +1,32 @@
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/save-restore-9.c: New.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/frflags.C: New.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/95683
+	* gcc.target/riscv/pr95683.c: New.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr95252.c: New.
+
 2020-07-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

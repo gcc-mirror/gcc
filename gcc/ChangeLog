@@ -1,3 +1,84 @@
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-sr.c (riscv_remove_unneeded_save_restore_calls):
+	Abort if any arguments on stack.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-builtins.c (RISCV_FTYPE_NAME0): New.
+	(RISCV_FTYPE_ATYPES0): New.
+	(riscv_builtins): Using RISCV_USI_FTYPE for frflags.
+	* config/riscv/riscv-ftypes.def: Remove VOID argument.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/95683
+	* config/riscv/riscv.c (riscv_gpr_save_operation_p): Remove
+	assertion and turn it into a early exit check.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_gen_gpr_save_insn): Change type to
+	unsigned for i.
+	(riscv_gpr_save_operation_p): Change type to unsigned for i and
+	len.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_output_gpr_save): Remove.
+	* config/riscv/riscv-sr.c (riscv_sr_match_prologue): Update
+	value.
+	* config/riscv/riscv.c (riscv_output_gpr_save): Remove.
+	* config/riscv/riscv.md (gpr_save): Update output asm pattern.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-06-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/predicates.md (gpr_save_operation): New.
+	* config/riscv/riscv-protos.h (riscv_gen_gpr_save_insn): New.
+	(riscv_gpr_save_operation_p): Ditto.
+	* config/riscv/riscv-sr.c (riscv_remove_unneeded_save_restore_calls):
+	Ignore USEs for gpr_save patter.
+	* config/riscv/riscv.c (gpr_save_reg_order): New.
+	(riscv_expand_prologue): Use riscv_gen_gpr_save_insn to gen gpr_save.
+	(riscv_gen_gpr_save_insn): New.
+	(riscv_gpr_save_operation_p): Ditto.
+	* config/riscv/riscv.md (S3_REGNUM): New.
+	(S4_REGNUM): Ditto.
+	(S5_REGNUM): Ditto.
+	(S6_REGNUM): Ditto.
+	(S7_REGNUM): Ditto.
+	(S8_REGNUM): Ditto.
+	(S9_REGNUM): Ditto.
+	(S10_REGNUM): Ditto.
+	(S11_REGNUM): Ditto.
+	(gpr_save): Model USEs correctly.
+
+2020-07-09  Keith Packard  <keithp@keithp.com>
+
+	Backported from master:
+	2020-05-12  Keith Packard  <keithp@keithp.com>
+
+	* config/riscv/riscv.c (riscv_unique_section): New.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
 2020-07-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/95105
