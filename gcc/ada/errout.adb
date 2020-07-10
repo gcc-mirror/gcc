@@ -1119,6 +1119,8 @@ package body Errout is
           Prev                => No_Error_Msg,
           Sptr                => Sptr,
           Optr                => Optr,
+          Insertion_Sloc      => (if Has_Insertion_Line then Error_Msg_Sloc
+                                  else No_Location),
           Sfile               => Get_Source_File_Index (Sptr),
           Line                => Get_Physical_Line_Number (Sptr),
           Col                 => Get_Column_Number (Sptr),
@@ -1823,8 +1825,8 @@ package body Errout is
    ---------------------
 
    procedure Output_Messages is
-      E        : Error_Msg_Id;
-      Err_Flag : Boolean;
+
+      --  Local subprograms
 
       procedure Write_Error_Summary;
       --  Write error summary
@@ -1834,6 +1836,15 @@ package body Errout is
 
       procedure Write_Max_Errors;
       --  Write message if max errors reached
+
+      procedure Write_Source_Code_Line (Loc : Source_Ptr);
+      --  Write the source code line corresponding to Loc, as follows:
+      --
+      --       |
+      --  line |  actual code line here with Loc somewhere
+      --       |                             ^ here
+      --
+      --  where the carret on the last line points to location Loc.
 
       -------------------------
       -- Write_Error_Summary --
@@ -2025,6 +2036,59 @@ package body Errout is
          end if;
       end Write_Max_Errors;
 
+      ----------------------------
+      -- Write_Source_Code_Line --
+      ----------------------------
+
+      procedure Write_Source_Code_Line (Loc : Source_Ptr) is
+         Line    : constant Pos := Pos (Get_Physical_Line_Number (Loc));
+         Col     : constant Natural := Natural (Get_Column_Number (Loc));
+         Padding : constant String (1 .. Int'Image (Line)'Length) :=
+                              (others => ' ');
+
+         Buf     : Source_Buffer_Ptr;
+         Cur_Loc : Source_Ptr := Loc;
+      begin
+         if Loc >= First_Source_Ptr then
+            Buf := Source_Text (Get_Source_File_Index (Loc));
+
+            --  First line
+
+            Write_Str (Padding);
+            Write_Char ('|');
+            Write_Eol;
+
+            --  Second line with the actual source code line
+
+            Write_Int (Line);
+            Write_Str (" |");
+            Write_Str (String (Buf (Loc - Source_Ptr (Col) + 1  .. Loc - 1)));
+
+            while Cur_Loc <= Buf'Last
+              and then Buf (Cur_Loc) /= ASCII.LF
+            loop
+               Write_Char (Buf (Cur_Loc));
+               Cur_Loc := Cur_Loc + 1;
+            end loop;
+
+            Write_Eol;
+
+            --  Third line with carret sign pointing to location Loc
+
+            Write_Str (Padding);
+            Write_Char ('|');
+            Write_Str (String'(1 .. Col - 1 => ' '));
+            Write_Str ("^ here");
+            Write_Eol;
+         end if;
+      end Write_Source_Code_Line;
+
+      --  Local variables
+
+      E          : Error_Msg_Id;
+      Err_Flag   : Boolean;
+      Use_Prefix : Boolean;
+
    --  Start of processing for Output_Messages
 
    begin
@@ -2051,12 +2115,16 @@ package body Errout is
 
          E := First_Error_Msg;
          while E /= No_Error_Msg loop
-            if not Errors.Table (E).Deleted and then not Debug_Flag_KK then
 
-               --  If -gnatdF is used, separate main messages from previous
-               --  messages with a newline and make continuation messages
-               --  follow the main message with only an indentation of two
-               --  space characters, without repeating file:line:col: prefix.
+            --  If -gnatdF is used, separate main messages from previous
+            --  messages with a newline and make continuation messages
+            --  follow the main message with only an indentation of two
+            --  space characters, without repeating file:line:col: prefix.
+
+            Use_Prefix :=
+              not (Debug_Flag_FF and then Errors.Table (E).Msg_Cont);
+
+            if not Errors.Table (E).Deleted and then not Debug_Flag_KK then
 
                if Debug_Flag_FF then
                   if Errors.Table (E).Msg_Cont then
@@ -2066,7 +2134,7 @@ package body Errout is
                   end if;
                end if;
 
-               if not (Debug_Flag_FF and then Errors.Table (E).Msg_Cont) then
+               if Use_Prefix then
                   if Full_Path_Name_For_Brief_Errors then
                      Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
                   else
@@ -2089,6 +2157,22 @@ package body Errout is
 
                Output_Msg_Text (E);
                Write_Eol;
+
+               if Debug_Flag_FF then
+                  if Errors.Table (E).Msg_Cont then
+                     declare
+                        Loc : constant Source_Ptr :=
+                          Errors.Table (E).Insertion_Sloc;
+                     begin
+                        if Loc /= No_Location then
+                           Write_Source_Code_Line (Loc);
+                        end if;
+                     end;
+
+                  else
+                     Write_Source_Code_Line (Errors.Table (E).Sptr);
+                  end if;
+               end if;
             end if;
 
             E := Errors.Table (E).Next;

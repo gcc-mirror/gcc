@@ -51,6 +51,10 @@ package Erroutc is
    --  Set true to indicate that the current message contains the insertion
    --  sequence !! (force warnings even in non-main unit source files).
 
+   Has_Insertion_Line : Boolean := False;
+   --  Set True to indicate that the current message contains the insertion
+   --  character # (insert line number reference).
+
    Is_Compile_Time_Msg : Boolean := False;
    --  Set true to indicate that the current message originates from a
    --  Compile_Time_Warning or Compile_Time_Error pragma.
@@ -208,6 +212,9 @@ package Erroutc is
       --  template location (more accurately to the template copy in the
       --  instantiation copy corresponding to the instantiation referenced by
       --  Sptr).
+
+      Insertion_Sloc : Source_Ptr;
+      --  Location in message for insertion character # when used
 
       Line : Physical_Line_Number;
       --  Line number for error message
@@ -470,11 +477,15 @@ package Erroutc is
    --    Has_Double_Exclam is set True if the message contains the sequence !!
    --    and is otherwise set False.
    --
+   --    Has_Insertion_Line is set True if the message contains the character #
+   --    and is otherwise set False.
+   --
    --  We need to know right away these aspects of a message, since we will
    --  test these values before doing the full error scan.
    --
    --  Note that the call has no effect for continuation messages (those whose
-   --  first character is '\'), and all variables are left unchanged.
+   --  first character is '\'), and all variables are left unchanged, unless
+   --  -gnatdF is set.
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
    --  All error messages whose location is in the range From .. To (not

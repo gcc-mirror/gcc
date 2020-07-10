@@ -814,9 +814,9 @@ package body Erroutc is
       J : Natural;
 
    begin
-      --  Nothing to do for continuation line
+      --  Nothing to do for continuation line, unless -gnatdF is set
 
-      if Msg (Msg'First) = '\' then
+      if not Debug_Flag_FF and then Msg (Msg'First) = '\' then
          return;
       end if;
 
@@ -826,6 +826,7 @@ package body Erroutc is
       Is_Unconditional_Msg := False;
       Is_Warning_Msg       := False;
       Has_Double_Exclam    := False;
+      Has_Insertion_Line   := False;
 
       --  Check style message
 
@@ -902,6 +903,12 @@ package body Erroutc is
                Has_Double_Exclam := True;
                J := J + 1;
             end if;
+
+         --  Insertion line (# insertion)
+
+         elsif Msg (J) = '#' then
+            Has_Insertion_Line := True;
+            J := J + 1;
 
          --  Non-serious error (| insertion)
 
