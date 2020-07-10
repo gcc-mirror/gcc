@@ -9012,7 +9012,9 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  if (as->corank != 0)
 	    sym->attr.codimension = 1;
 	}
-      else if (sym->ts.type == BT_CLASS && (!CLASS_DATA (sym)->as || sym->assoc->rankguessed))
+      else if (sym->ts.type == BT_CLASS
+	       && CLASS_DATA (sym)
+	       && (!CLASS_DATA (sym)->as || sym->assoc->rankguessed))
 	{
 	  if (!CLASS_DATA (sym)->as)
 	    CLASS_DATA (sym)->as = gfc_get_array_spec ();

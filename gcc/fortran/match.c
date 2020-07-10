@@ -6647,7 +6647,8 @@ gfc_match_select_rank (void)
       if (expr2->symtree)
 	{
 	  sym2 = expr2->symtree->n.sym;
-	  as = sym2->ts.type == BT_CLASS ? CLASS_DATA (sym2)->as : sym2->as;
+	  as = (sym2->ts.type == BT_CLASS
+		&& CLASS_DATA (sym2)) ? CLASS_DATA (sym2)->as : sym2->as;
 	}
 
       if (expr2->expr_type != EXPR_VARIABLE
@@ -6659,7 +6660,7 @@ gfc_match_select_rank (void)
 	  goto cleanup;
 	}
 
-      if (expr2->ts.type == BT_CLASS)
+      if (expr2->ts.type == BT_CLASS && CLASS_DATA (sym2))
 	{
 	  copy_ts_from_selector_to_associate (expr1, expr2);
 
