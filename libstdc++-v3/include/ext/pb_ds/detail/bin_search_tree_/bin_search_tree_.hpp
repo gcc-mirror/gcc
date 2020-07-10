@@ -305,6 +305,9 @@ namespace __gnu_pbds
       rotate_parent(node_pointer);
 
       inline void
+      update_subtree_size(node_pointer);
+
+      inline void
       apply_update(node_pointer, null_node_update_pointer);
 
       template<typename Node_Update_>

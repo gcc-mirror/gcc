@@ -58,6 +58,9 @@ namespace __gnu_pbds
       typedef typename rebind_traits<_Alloc, rb_tree_node_>::pointer
 	node_pointer;
 
+      typedef typename rebind_traits<_Alloc, rb_tree_node_>::size_type
+	size_type;
+
       typedef typename rebind_traits<_Alloc, metadata_type>::reference
 	metadata_reference;
 
@@ -88,6 +91,7 @@ namespace __gnu_pbds
       node_pointer 	m_p_left;
       node_pointer 	m_p_right;
       node_pointer 	m_p_parent;
+      size_type 	m_subtree_size;
       value_type 	m_value;
       bool 		m_red;
       metadata_type 	m_metadata;
@@ -99,6 +103,9 @@ namespace __gnu_pbds
     public:
       typedef Value_Type 		value_type;
       typedef null_type 	metadata_type;
+
+      typedef typename rebind_traits<_Alloc, rb_tree_node_>::size_type
+	size_type;
 
       typedef typename rebind_traits<_Alloc, rb_tree_node_>::pointer
 	node_pointer;
@@ -116,6 +123,7 @@ namespace __gnu_pbds
       node_pointer 	m_p_left;
       node_pointer 	m_p_right;
       node_pointer 	m_p_parent;
+      size_type 	m_subtree_size;
       value_type 	m_value;
       bool 		m_red;
     };

@@ -122,8 +122,23 @@ rotate_parent(node_pointer p_nd)
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-apply_update(node_pointer /*p_nd*/, null_node_update_pointer /*p_update*/)
-{ }
+update_subtree_size(node_pointer p_nd)
+{
+  size_type size = 1;
+  if (p_nd->m_p_left)
+    size += p_nd->m_p_left->m_subtree_size;
+  if (p_nd->m_p_right)
+    size += p_nd->m_p_right->m_subtree_size;
+  p_nd->m_subtree_size = size;
+}
+
+PB_DS_CLASS_T_DEC
+inline void
+PB_DS_CLASS_C_DEC::
+apply_update(node_pointer p_nd, null_node_update_pointer /*p_update*/)
+{
+  update_subtree_size(p_nd);
+}
 
 PB_DS_CLASS_T_DEC
 template<typename Node_Update_>
@@ -131,6 +146,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 apply_update(node_pointer p_nd, Node_Update_*  /*p_update*/)
 {
+  update_subtree_size(p_nd);
   node_update::operator()(node_iterator(p_nd),
 			  node_const_iterator(static_cast<node_pointer>(0)));
 }
@@ -152,7 +168,14 @@ update_to_top(node_pointer p_nd, Node_Update_* p_update)
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-update_to_top(node_pointer /*p_nd*/, null_node_update_pointer /*p_update*/)
-{ }
+update_to_top(node_pointer p_nd, null_node_update_pointer /*p_update */)
+{
+  while (p_nd != m_p_head)
+    {
+      update_subtree_size(p_nd);
+
+      p_nd = p_nd->m_p_parent;
+    }
+}
 
 #endif
