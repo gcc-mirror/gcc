@@ -19412,7 +19412,12 @@ cp_parser_enum_specifier (cp_parser* parser)
 		     "ISO C++ forbids empty unnamed enum");
 	}
       else
-	cp_parser_enumerator_list (parser, type);
+	{
+	  /* We've seen a '{' so we know we're in an enum-specifier.
+	     Commit to any tentative parse to get syntax errors.  */
+	  cp_parser_commit_to_tentative_parse (parser);
+	  cp_parser_enumerator_list (parser, type);
+	}
 
       /* Consume the final '}'.  */
       braces.require_close (parser);
