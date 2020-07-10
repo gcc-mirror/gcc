@@ -1,3 +1,167 @@
+2020-07-09  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96125
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Define the MMA
+	specific types __vector_quad and __vector_pair, and initialize the
+	MMA built-ins if TARGET_EXTRA_BUILTINS is set.
+	(mma_init_builtins): Don't test for mask set in rs6000_builtin_mask.
+	Remove now unneeded mask variable.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add the
+	OPTION_MASK_MMA flag for power10 if not already set.
+
+2020-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96133
+	* tree-vect-slp.c (vect_build_slp_tree_1): Compare load_p
+	status between stmts.
+
+2020-07-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/88713
+	* config/i386/i386-expand.c (ix86_emit_swsqrtsf): Enable FMA.
+	* config/i386/sse.md (VF_AVX512VL_VF1_128_256): New.
+	(rsqrt<mode>2): Replace VF1_128_256 with VF_AVX512VL_VF1_128_256.
+	(rsqrtv16sf2): Removed.
+
+2020-07-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_verify_datarefs_alignment): Remove.
+	(vect_slp_analyze_and_verify_instance_alignment): Rename to ...
+	(vect_slp_analyze_instance_alignment): ... this.
+	* tree-vect-data-refs.c (verify_data_ref_alignment): Remove.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_enhance_data_refs_alignment): Do not call
+	vect_verify_datarefs_alignment.
+	(vect_slp_analyze_node_alignment): Rename from
+	vect_slp_analyze_and_verify_node_alignment and do not
+	call verify_data_ref_alignment.
+	(vect_slp_analyze_instance_alignment): Rename from
+	vect_slp_analyze_and_verify_instance_alignment.
+	* tree-vect-stmts.c (vectorizable_store): Dump when
+	we vectorize an unaligned access.
+	(vectorizable_load): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_2): Do not call
+	vect_verify_datarefs_alignment.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Adjust.
+
+2020-07-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95804
+	* tree-loop-distribution.c (break_alias_scc_partitions): Force
+	negative post order to reduction partition.
+
+2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data): Add min_inner_iterations
+	and factor members.
+	* omp-general.c (omp_extract_for_data): Initialize them and remember
+	them in OMP_CLAUSE_COLLAPSE_COUNT if needed and restore from there.
+	* omp-expand.c (expand_omp_for_init_counts): Fix up computation of
+	counts[fd->last_nonrect] if fd->loop.n2 is INTEGER_CST.
+	(expand_omp_for_init_vars): For
+	fd->first_nonrect + 1 == fd->last_nonrect loops with for now
+	INTEGER_CST fd->loop.n2 find quadratic equation roots instead of
+	using fallback method when possible.
+
+2020-07-09  Omar Tahir  <omar.tahir@arm.com>
+
+	* ira.c (move_unallocated_pseudos): Zero first_moveable_pseudo and
+	last_moveable_pseudo before returning.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
+	__ARM_FEATURE_BTI_DEFAULT support.
+
+2020-07-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_indirect_call_asm):
+	New declaration.
+	* config/aarch64/aarch64.c (aarch64_regno_regclass): Handle new
+	stub registers class.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_sls_shared_thunks): Global array to store stub labels.
+	(aarch64_sls_emit_function_stub): New.
+	(aarch64_create_blr_label): New.
+	(aarch64_sls_emit_blr_function_thunks): New.
+	(aarch64_sls_emit_shared_blr_thunks): New.
+	(aarch64_asm_file_end): New.
+	(aarch64_indirect_call_asm): New.
+	(TARGET_ASM_FILE_END): Use aarch64_asm_file_end.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Use
+	aarch64_sls_emit_blr_function_thunks.
+	* config/aarch64/aarch64.h (STB_REGNUM_P): New.
+	(enum reg_class): Add STUB_REGS class.
+	(machine_function): Introduce `call_via` array for
+	function-local stub labels.
+	* config/aarch64/aarch64.md (*call_insn, *call_value_insn): Use
+	aarch64_indirect_call_asm to emit code when hardening BLR
+	instructions.
+	* config/aarch64/constraints.md (Ucr): New constraint
+	representing registers for indirect calls.  Is GENERAL_REGS
+	usually, and STUB_REGS when hardening BLR instruction against
+	SLS.
+	* config/aarch64/predicates.md (aarch64_general_reg): STUB_REGS class
+	is also a general register.
+
+2020-07-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sls_barrier): New.
+	* config/aarch64/aarch64.c (aarch64_output_casesi): Emit
+	speculation barrier after BR instruction if needs be.
+	(aarch64_trampoline_init): Handle ptr_mode value & adjust size
+	of code copied.
+	(aarch64_sls_barrier): New.
+	(aarch64_asm_trampoline_template): Add needed barriers.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SB): New.
+	(TARGET_SB): New.
+	(TRAMPOLINE_SIZE): Account for barrier.
+	* config/aarch64/aarch64.md (indirect_jump, *casesi_dispatch,
+	simple_return, *do_return, *sibcall_insn, *sibcall_value_insn):
+	Emit barrier if needs be, also account for possible barrier using
+	"sls_length" attribute.
+	(sls_length): New attribute.
+	(length): Determine default using any non-default sls_length
+	value.
+
+2020-07-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_harden_sls_retbr_p):
+	New.
+	(aarch64_harden_sls_blr_p): New.
+	* config/aarch64/aarch64.c (enum aarch64_sls_hardening_type):
+	New.
+	(aarch64_harden_sls_retbr_p): New.
+	(aarch64_harden_sls_blr_p): New.
+	(aarch64_validate_sls_mitigation): New.
+	(aarch64_override_options): Parse options for SLS mitigation.
+	* config/aarch64/aarch64.opt (-mharden-sls): New option.
+	* doc/invoke.texi: Document new option.
+
+2020-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.c (vectorizable_condition): Prohibit vectorization
+	with partial vectors explicitly excepting for EXTRACT_LAST_REDUCTION
+	or nested-cycle reduction.
+
+2020-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Update dumping string
+	for fully masking to be more common.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md (get_thread_pointer<mode>): New.
+	(TP_REGNUM): Ditto.
+	* doc/extend.texi (Target Builtins): Add RISC-V built-in section.
+	Document __builtin_thread_pointer.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-sr.c (riscv_remove_unneeded_save_restore_calls):
+	Abort if any arguments on stack.
+
 2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Do not fold if
