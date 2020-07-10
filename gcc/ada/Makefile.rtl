@@ -2112,7 +2112,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
     s-taprop.adb<libgnarl/s-taprop__linux.adb \
     s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
     s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
-    s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads
+    s-taspri.ads<libgnarl/s-taspri__posix.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
