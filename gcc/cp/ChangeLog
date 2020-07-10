@@ -1,3 +1,16 @@
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* semantics.c (finish_omp_clauses): Likewise.
+
+2020-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96132
+	* constexpr.c (potential_constant_expression_1) <case PARM_DECL>:
+	Restore dependent_type_p check that guarded the call to
+	is_really_empty_class.
+
 2020-07-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95497

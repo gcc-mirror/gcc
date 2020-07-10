@@ -1,3 +1,8 @@
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Use 'inner' not 'decl' for
+	derived type members which themselves have derived types.
+
 2020-07-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/96085

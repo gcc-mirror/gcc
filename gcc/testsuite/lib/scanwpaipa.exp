@@ -60,11 +60,11 @@ proc scan-pgo-wpa-ipa-dump { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump "pgo-wpa-ipa" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".x02.wpa" \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa" \
 		  [lindex $args 2]
     } else {
 	scan-dump "pgo-wpa-ipa" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".x02.wpa"
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ".wpa"
     }
 }
 

@@ -9681,10 +9681,9 @@ package body Exp_Util is
          return Make_Null_Statement (Loc);
       end if;
 
-      --  Do not generate a check within an internal subprogram (stream
-      --  functions and the like, including predicate functions).
+      --  Do not generate a check within stream functions and the like.
 
-      if Within_Internal_Subprogram then
+      if not Predicate_Check_In_Scope (Expr) then
          return Make_Null_Statement (Loc);
       end if;
 
@@ -13715,11 +13714,11 @@ package body Exp_Util is
       return False;
    end Within_Case_Or_If_Expression;
 
-   --------------------------------
-   -- Within_Internal_Subprogram --
-   --------------------------------
+   ------------------------------
+   -- Predicate_Check_In_Scope --
+   ------------------------------
 
-   function Within_Internal_Subprogram return Boolean is
+   function Predicate_Check_In_Scope (N : Node_Id) return Boolean is
       S : Entity_Id;
 
    begin
@@ -13728,10 +13727,23 @@ package body Exp_Util is
          S := Scope (S);
       end loop;
 
-      return Present (S)
-        and then Get_TSS_Name (S) /= TSS_Null
-        and then not Is_Predicate_Function (S)
-        and then not Is_Predicate_Function_M (S);
-   end Within_Internal_Subprogram;
+      if Present (S) then
+
+         --  Predicate checks should only be enabled in init procs for
+         --  expressions coming from source.
+
+         if Is_Init_Proc (S) then
+            return Comes_From_Source (N);
+
+         elsif Get_TSS_Name (S) /= TSS_Null
+           and then not Is_Predicate_Function (S)
+           and then not Is_Predicate_Function_M (S)
+         then
+            return False;
+         end if;
+      end if;
+
+      return True;
+   end Predicate_Check_In_Scope;
 
 end Exp_Util;

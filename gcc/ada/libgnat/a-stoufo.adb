@@ -38,10 +38,10 @@ package body Ada.Strings.Text_Output.Formatting is
 
    procedure Put
      (S : in out Sink'Class; T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "")
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : UTF_8_Lines := "")
    is
       J : Positive := T'First;
-      Used : array (1 .. 6) of Boolean := (others => False);
+      Used : array (1 .. 9) of Boolean := (others => False);
    begin
       while J <= T'Last loop
          if T (J) = '\' then
@@ -78,6 +78,15 @@ package body Ada.Strings.Text_Output.Formatting is
                when '6' =>
                   Used (6) := True;
                   Put_UTF_8_Lines (S, X6);
+               when '7' =>
+                  Used (7) := True;
+                  Put_UTF_8_Lines (S, X7);
+               when '8' =>
+                  Used (8) := True;
+                  Put_UTF_8_Lines (S, X8);
+               when '9' =>
+                  Used (9) := True;
+                  Put_UTF_8_Lines (S, X9);
 
                when others =>
                   raise Program_Error;
@@ -107,32 +116,41 @@ package body Ada.Strings.Text_Output.Formatting is
       if not Used (6) then
          pragma Assert (X6 = "");
       end if;
+      if not Used (7) then
+         pragma Assert (X7 = "");
+      end if;
+      if not Used (8) then
+         pragma Assert (X8 = "");
+      end if;
+      if not Used (9) then
+         pragma Assert (X9 = "");
+      end if;
 
       Flush (S);
    end Put;
 
    procedure Put
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "") is
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : UTF_8_Lines := "") is
    begin
-      Put (Files.Standard_Output.all, T, X1, X2, X3, X4, X5, X6);
+      Put (Files.Standard_Output.all, T, X1, X2, X3, X4, X5, X6, X7, X8, X9);
    end Put;
 
    procedure Err
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "") is
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : UTF_8_Lines := "") is
    begin
-      Put (Files.Standard_Error.all, T, X1, X2, X3, X4, X5, X6);
+      Put (Files.Standard_Error.all, T, X1, X2, X3, X4, X5, X6, X7, X8, X9);
    end Err;
 
    function Format
      (T : Template;
-      X1, X2, X3, X4, X5, X6 : UTF_8_Lines := "")
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : UTF_8_Lines := "")
      return UTF_8_Lines
    is
       Buf : Buffer := New_Buffer;
    begin
-      Put (Buf, T, X1, X2, X3, X4, X5, X6);
+      Put (Buf, T, X1, X2, X3, X4, X5, X6, X7, X8, X9);
       return Get_UTF_8 (Buf);
    end Format;
 

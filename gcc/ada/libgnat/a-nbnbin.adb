@@ -37,14 +37,42 @@ with Ada.Strings.Text_Output.Utils;
 with Interfaces; use Interfaces;
 
 with System.Generic_Bignums;
+with System.Shared_Bignums; use System.Shared_Bignums;
 
 package body Ada.Numerics.Big_Numbers.Big_Integers is
 
-   package Bignums is new
-     System.Generic_Bignums (Use_Secondary_Stack => False);
-   use Bignums, System;
+   function Allocate_Bignum (D : Digit_Vector; Neg : Boolean) return Bignum;
+   --  Allocate Bignum value with the given contents
+
+   procedure Free_Bignum (X : in out Bignum);
+   --  Free memory associated with X
+
+   function To_Bignum (X : aliased in out Bignum) return Bignum is (X);
 
    procedure Free is new Ada.Unchecked_Deallocation (Bignum_Data, Bignum);
+
+   ---------------------
+   -- Allocate_Bignum --
+   ---------------------
+
+   function Allocate_Bignum (D : Digit_Vector; Neg : Boolean) return Bignum is
+   begin
+      return new Bignum_Data'(D'Length, Neg, D);
+   end Allocate_Bignum;
+
+   -----------------
+   -- Free_Bignum --
+   -----------------
+
+   procedure Free_Bignum (X : in out Bignum) is
+   begin
+      Free (X);
+   end Free_Bignum;
+
+   package Bignums is new System.Generic_Bignums
+     (Bignum, Allocate_Bignum, Free_Bignum, To_Bignum);
+
+   use Bignums, System;
 
    function Get_Bignum (Arg : Big_Integer) return Bignum is
      (if Arg.Value.C = System.Null_Address
@@ -198,82 +226,11 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- To_String --
    ---------------
 
-   Hex_Chars : constant array (0 .. 15) of Character := "0123456789ABCDEF";
-
    function To_String
      (Arg : Valid_Big_Integer; Width : Field := 0; Base : Number_Base := 10)
-      return String
-   is
-      Big_Base : constant Big_Integer := To_Big_Integer (Integer (Base));
-
-      function Add_Base (S : String) return String;
-      --  Add base information if Base /= 10
-
-      function Leading_Padding
-        (Str        : String;
-         Min_Length : Field;
-         Char       : Character := ' ') return String;
-      --  Return padding of Char concatenated with Str so that the resulting
-      --  string is at least Min_Length long.
-
-      function Image (Arg : Big_Integer) return String;
-      --  Return image of Arg, assuming Arg is positive.
-
-      function Image (N : Natural) return String;
-      --  Return image of N, with no leading space.
-
-      --------------
-      -- Add_Base --
-      --------------
-
-      function Add_Base (S : String) return String is
-      begin
-         if Base = 10 then
-            return S;
-         else
-            return Image (Base) & "#" & S & "#";
-         end if;
-      end Add_Base;
-
-      -----------
-      -- Image --
-      -----------
-
-      function Image (N : Natural) return String is
-         S : constant String := Natural'Image (N);
-      begin
-         return S (2 .. S'Last);
-      end Image;
-
-      function Image (Arg : Big_Integer) return String is
-      begin
-         if Arg < Big_Base then
-            return (1 => Hex_Chars (To_Integer (Arg)));
-         else
-            return Image (Arg / Big_Base)
-              & Hex_Chars (To_Integer (Arg rem Big_Base));
-         end if;
-      end Image;
-
-      ---------------------
-      -- Leading_Padding --
-      ---------------------
-
-      function Leading_Padding
-        (Str        : String;
-         Min_Length : Field;
-         Char       : Character := ' ') return String is
-      begin
-         return (1 .. Integer'Max (Integer (Min_Length) - Str'Length, 0)
-                        => Char) & Str;
-      end Leading_Padding;
-
+      return String is
    begin
-      if Arg < To_Big_Integer (0) then
-         return Leading_Padding ("-" & Add_Base (Image (-Arg)), Width);
-      else
-         return Leading_Padding (" " & Add_Base (Image (Arg)), Width);
-      end if;
+      return To_String (Get_Bignum (Arg), Natural (Width), Positive (Base));
    end To_String;
 
    -----------------

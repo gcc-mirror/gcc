@@ -69,7 +69,7 @@ package body Debug is
    --  dC   Output debugging information on check suppression
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
-   --  dF   Perform the new SPARK checking rules for pointer aliasing
+   --  dF
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
@@ -601,12 +601,6 @@ package body Debug is
 
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
-
-   --  dF   Disable the new SPARK checking rules for pointer aliasing. This is
-   --       only activated as part of GNATprove mode and on SPARK code. Now
-   --       that pointer support is part of the official SPARK language, this
-   --       switch allows reverting to the previous version of GNATprove
-   --       rejecting pointers.
 
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also

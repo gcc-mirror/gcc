@@ -8664,7 +8664,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
   reduce_bit_field = (INTEGRAL_TYPE_P (type)
 		      && !type_has_mode_precision_p (type));
 
-  if (reduce_bit_field && modifier == EXPAND_STACK_PARM)
+  if (reduce_bit_field
+      && (modifier == EXPAND_STACK_PARM
+	  || (target && GET_MODE (target) != mode)))
     target = 0;
 
   /* Use subtarget as the target for operand 0 of a binary operation.  */
@@ -11527,9 +11529,8 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
 {
   scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
   HOST_WIDE_INT prec = TYPE_PRECISION (type);
-  gcc_assert (GET_MODE (exp) == VOIDmode || GET_MODE (exp) == mode);
-  if (target && GET_MODE (target) != mode)
-    target = 0;
+  gcc_assert ((GET_MODE (exp) == VOIDmode || GET_MODE (exp) == mode)
+	      && (!target || GET_MODE (target) == mode));
 
   /* For constant values, reduce using wide_int_to_tree. */
   if (poly_int_rtx_p (exp))

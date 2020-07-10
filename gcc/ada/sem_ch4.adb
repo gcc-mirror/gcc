@@ -2217,8 +2217,6 @@ package body Sem_Ch4 is
    -- Analyze_Expression_With_Actions --
    -------------------------------------
 
-   --  Start of processing for Analyze_Quantified_Expression
-
    procedure Analyze_Expression_With_Actions (N : Node_Id) is
 
       procedure Check_Action_OK (A : Node_Id);

@@ -1,3 +1,78 @@
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* c-c++-common/goacc/mdc-1.c: Update expected dump output for zero
+	bias.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/mapping-tests-3.f90: New test.
+	* gfortran.dg/goacc/mapping-tests-4.f90: New test.
+
+2020-07-09  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96125
+	* gcc.target/powerpc/pr96125.c: New test.
+
+2020-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96132
+	* g++.dg/template/incomplete12.C: New test.
+
+2020-07-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/88713
+	* gcc.target/i386/pr88713-1.c: New test.
+	* gcc.target/i386/pr88713-2.c: Likewise.
+
+2020-07-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-10.c: Adjust.
+	* gcc.dg/vect/slp-45.c: Likewise.
+	* gcc.dg/vect/vect-109.c: Likewise.
+
+2020-07-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95804
+	* gcc.dg/tree-ssa/pr95804.c: New test.
+
+2020-07-09  Omar Tahir  <omar.tahir@arm.com>
+
+	* gcc.target/aarch64/nospill.c: New test.
+
+2020-07-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sls-mitigation/sls-miti-blr-bti.c: New test.
+	* gcc.target/aarch64/sls-mitigation/sls-miti-blr.c: New test.
+
+2020-07-09  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sls-mitigation/sls-miti-retbr.c: New test.
+	* gcc.target/aarch64/sls-mitigation/sls-miti-retbr-pacret.c:
+	New test.
+	* gcc.target/aarch64/sls-mitigation/sls-mitigation.exp: New file.
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_sb_ok):
+	New proc.
+
+2020-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/aarch64/sve/clastb_1.c: Update dumping string.
+	* gcc.target/aarch64/sve/clastb_2.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_3.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_4.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_5.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_6.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_7.c: Likewise.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/read-thread-pointer.c: New.
+
+2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/save-restore-9.c: New.
+
 2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gcc.dg/sso-11.c: New test.

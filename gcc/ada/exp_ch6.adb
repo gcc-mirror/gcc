@@ -2472,8 +2472,7 @@ package body Exp_Ch6 is
                   Atyp := Aund;
                end if;
 
-               if Has_Predicates (Atyp)
-                 and then Present (Predicate_Function (Atyp))
+               if Predicate_Enabled (Atyp)
 
                  --  Skip predicate checks for special cases
 
@@ -2687,9 +2686,10 @@ package body Exp_Ch6 is
               Access_Subprogram_Wrapper (Etype (Name (N)));
             Ptr      : constant Node_Id   := Prefix (Name (N));
             Ptr_Type : constant Entity_Id := Etype (Ptr);
-            Parms    : constant List_Id   := Parameter_Associations (N);
             Typ      : constant Entity_Id := Etype (N);
+
             New_N    : Node_Id;
+            Parms    : List_Id   := Parameter_Associations (N);
             Ptr_Act  : Node_Id;
 
          begin
@@ -2710,6 +2710,12 @@ package body Exp_Ch6 is
 
             else
                Ptr_Act := Ptr;
+            end if;
+
+            --  Handle parameterless subprogram.
+
+            if No (Parms) then
+               Parms := New_List;
             end if;
 
             Append
@@ -3927,6 +3933,8 @@ package body Exp_Ch6 is
                      then
                         declare
                            Decl : Node_Id;
+                           pragma Warnings (Off, Decl);
+                           --  Suppress warning for the final removal loop
                            Lvl  : Entity_Id;
                            Res  : Entity_Id;
                            Temp : Node_Id;
@@ -4045,8 +4053,7 @@ package body Exp_Ch6 is
                            --  expansion if we are dealing with a function
                            --  call.
 
-                           if Nkind (Call_Node) =
-                                N_Procedure_Call_Statement
+                           if Nkind (Call_Node) = N_Procedure_Call_Statement
                            then
                               --  Generate:
                               --    Lvl : Natural;
@@ -4109,7 +4116,13 @@ package body Exp_Ch6 is
 
                               Set_Expression (Call_Node, Relocate_Node (Temp));
                               Call_Node := Expression (Call_Node);
-                              Remove (Next (Decl));
+
+                              --  Remove the declaration of the dummy and the
+                              --  subsequent actions its analysis has created.
+
+                              while Present (Remove_Next (Decl)) loop
+                                 null;
+                              end loop;
                            end if;
 
                            --  Decorate the conditional expression with
@@ -9702,7 +9715,8 @@ package body Exp_Ch6 is
       --  declaration.
 
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Function_Call);
-      Set_Directly_Designated_Type (Anon_Type, Etype (BIP_Func_Call));
+      Set_Directly_Designated_Type (Anon_Type,
+        Designated_Type (Etype (Allocator)));
       Set_Etype (Anon_Type, Anon_Type);
       Build_Class_Wide_Master (Anon_Type);
 

@@ -547,10 +547,10 @@ package body Exp_Ch3 is
       Act := First (Parameter_Specifications (Spec_Node));
 
       while Present (Act) loop
+         exit when Act = Last (Parameter_Specifications (Spec_Node));
          Append_To (Actuals,
            Make_Identifier (Loc, Chars (Defining_Identifier (Act))));
          Next (Act);
-         exit when Act = Last (Parameter_Specifications (Spec_Node));
       end loop;
 
       Ptr :=
@@ -2061,25 +2061,9 @@ package body Exp_Ch3 is
          --  which provides for a better error message.
 
          if Comes_From_Source (Exp)
-           and then Has_Predicates (Typ)
-           and then not Predicate_Checks_Suppressed (Empty)
-           and then not Predicates_Ignored (Typ)
+           and then Predicate_Enabled (Typ)
          then
             Append (Make_Predicate_Check (Typ, Exp), Res);
-         end if;
-
-         if Nkind (Exp) = N_Allocator
-            and then Nkind (Expression (Exp)) = N_Qualified_Expression
-         then
-            declare
-               Subtype_Entity : constant Entity_Id
-                  := Entity (Subtype_Mark (Expression (Exp)));
-            begin
-               if Has_Predicates (Subtype_Entity) then
-                  Append (Make_Predicate_Check
-                     (Subtype_Entity, Expression (Expression (Exp))), Res);
-               end if;
-            end;
          end if;
 
          return Res;
@@ -8350,7 +8334,7 @@ package body Exp_Ch3 is
       --  subtypes to which these checks do not apply.
 
       elsif Has_Invariants (Def_Id) then
-         if Within_Internal_Subprogram
+         if not Predicate_Check_In_Scope (Def_Id)
            or else (Ekind (Current_Scope) = E_Function
                      and then Is_Predicate_Function (Current_Scope))
          then

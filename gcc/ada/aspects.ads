@@ -76,6 +76,7 @@ package Aspects is
      (No_Aspect,                            -- Dummy entry for no aspect
       Aspect_Abstract_State,                -- GNAT
       Aspect_Address,
+      Aspect_Aggregate,
       Aspect_Alignment,
       Aspect_Annotate,                      -- GNAT
       Aspect_Async_Readers,                 -- GNAT
@@ -300,6 +301,7 @@ package Aspects is
       Aspect_Iterator_Element           => True,
       Aspect_Iterable                   => True,
       Aspect_Variable_Indexing          => True,
+      Aspect_Aggregate                  => True,
       others                            => False);
 
    --  The following array indicates aspects for which multiple occurrences of
@@ -345,6 +347,7 @@ package Aspects is
      (No_Aspect                         => Optional_Expression,
       Aspect_Abstract_State             => Expression,
       Aspect_Address                    => Expression,
+      Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
       Aspect_Annotate                   => Expression,
       Aspect_Async_Readers              => Optional_Expression,
@@ -442,6 +445,7 @@ package Aspects is
      (No_Aspect                           => False,
       Aspect_Abstract_State               => False,
       Aspect_Address                      => True,
+      Aspect_Aggregate                    => False,
       Aspect_Alignment                    => True,
       Aspect_Annotate                     => False,
       Aspect_Async_Readers                => False,
@@ -580,6 +584,7 @@ package Aspects is
      (No_Aspect                           => No_Name,
       Aspect_Abstract_State               => Name_Abstract_State,
       Aspect_Address                      => Name_Address,
+      Aspect_Aggregate                    => Name_Aggregate,
       Aspect_Alignment                    => Name_Alignment,
       Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
       Aspect_Annotate                     => Name_Annotate,
@@ -828,6 +833,7 @@ package Aspects is
    Aspect_Delay : constant array (Aspect_Id) of Delay_Type :=
      (No_Aspect                           => Always_Delay,
       Aspect_Address                      => Always_Delay,
+      Aspect_Aggregate                    => Always_Delay,
       Aspect_All_Calls_Remote             => Always_Delay,
       Aspect_Asynchronous                 => Always_Delay,
       Aspect_Attach_Handler               => Always_Delay,
