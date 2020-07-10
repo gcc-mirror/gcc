@@ -8615,9 +8615,15 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			     LOOP_VINFO_INT_NITERS (loop_vinfo) / lowest_vf);
 	  step_vector = build_one_cst (TREE_TYPE (niters));
 	}
-      else
+      else if (vect_use_loop_mask_for_alignment_p (loop_vinfo))
 	vect_gen_vector_loop_niters (loop_vinfo, niters, &niters_vector,
 				     &step_vector, niters_no_overflow);
+      else
+	/* vect_do_peeling subtracted the number of peeled prologue
+	   iterations from LOOP_VINFO_NITERS.  */
+	vect_gen_vector_loop_niters (loop_vinfo, LOOP_VINFO_NITERS (loop_vinfo),
+				     &niters_vector, &step_vector,
+				     niters_no_overflow);
     }
 
   /* 1) Make sure the loop header has exactly two entries
