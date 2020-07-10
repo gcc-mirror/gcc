@@ -20465,7 +20465,7 @@ rs6000_xcoff_select_section (tree decl, int reloc,
 {
   /* Place variables with alignment stricter than BIGGEST_ALIGNMENT into
      named section.  */
-  if (align > BIGGEST_ALIGNMENT)
+  if (align > BIGGEST_ALIGNMENT && VAR_OR_FUNCTION_DECL_P (decl))
     {
       resolve_unique_section (decl, reloc, true);
       if (IN_NAMED_SECTION (decl))
