@@ -1,3 +1,14 @@
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* gomp-constants.h (gomp_map_kind): Expand comment for attach/detach
+	mapping kinds.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Update comment for GOMP_MAP_TO_PSET.
+
 2020-06-26  Nick Clifton  <nickc@redhat.com>
 
 	* libiberty.h (bsearch_r): Remove use of the register keyword from

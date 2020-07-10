@@ -1,3 +1,29 @@
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-2.c: New test.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (find_group_last): Group data-movement clauses
+	(GOMP_MAP_TO_PSET, GOMP_MAP_TO, etc.) together with a subsequent
+	GOMP_MAP_ATTACH.  Allow standalone GOMP_MAP_ATTACH also.
+
+2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-19.c: New test.
+	* testsuite/libgomp.c/loop-20.c: New test.
+
+2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_alloctrait_value_t): Change omp_atv_default from
+	2 to -1.  Add omp_atv_serialized and define omp_atv_sequential using
+	it.  Remove __omp_alloctrait_value_max__.
+	* allocator.c (omp_init_allocator): Handle omp_atv_default for
+	omp_atk_alignment and omp_atk_pool_size.
+
 2020-07-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-mem.c (goacc_exit_data_internal): Revert always-copyfrom

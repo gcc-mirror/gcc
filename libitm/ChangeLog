@@ -1,3 +1,12 @@
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/sjlj.S: Add BTI marking and related definitions,
+	and add BTI c to function entries.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/sjlj.S: Add stack note if __FreeBSD__ is defined.
+
 2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/95413

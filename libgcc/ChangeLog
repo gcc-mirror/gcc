@@ -1,3 +1,13 @@
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/96001
+	* config/aarch64/lse.S: Add BTI marking and related definitions,
+	and add BTI c to function entries.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/lse.S: Add stack note.
+
 2020-07-02  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/95348
