@@ -7480,6 +7480,20 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
      t.  */
   result = perform_direct_initialization_if_possible (type, expr,
 						      c_cast_p, complain);
+  /* P1975 allows static_cast<Aggr>(42), as well as static_cast<T[5]>(42),
+     which initialize the first element of the aggregate.  We need to handle
+     the array case specifically.  */
+  if (result == NULL_TREE
+      && cxx_dialect >= cxx20
+      && TREE_CODE (type) == ARRAY_TYPE)
+    {
+      /* Create { EXPR } and perform direct-initialization from it.  */
+      tree e = build_constructor_single (init_list_type_node, NULL_TREE, expr);
+      CONSTRUCTOR_IS_DIRECT_INIT (e) = true;
+      CONSTRUCTOR_IS_PAREN_INIT (e) = true;
+      result = perform_direct_initialization_if_possible (type, e, c_cast_p,
+							  complain);
+    }
   if (result)
     {
       if (processing_template_decl)
