@@ -12563,6 +12563,10 @@ altivec_init_builtins (void)
     = build_function_type_list (opaque_V4SI_type_node,
 				long_integer_type_node, pcvoid_type_node,
 				NULL_TREE);
+  tree v16qi_ftype_pcvoid
+    = build_function_type_list (V16QI_type_node,
+				pcvoid_type_node,
+				NULL_TREE);
   tree v16qi_ftype_long_pcvoid
     = build_function_type_list (V16QI_type_node,
 				long_integer_type_node, pcvoid_type_node,
@@ -12965,7 +12969,7 @@ altivec_init_builtins (void)
      targetm.vectorize.builtin_mask_for_load.  */
 
   decl = add_builtin_function ("__builtin_altivec_mask_for_load",
-			       v16qi_ftype_long_pcvoid,
+			       v16qi_ftype_pcvoid,
 			       ALTIVEC_BUILTIN_MASK_FOR_LOAD,
 			       BUILT_IN_MD, NULL, NULL_TREE);
   TREE_READONLY (decl) = 1;
