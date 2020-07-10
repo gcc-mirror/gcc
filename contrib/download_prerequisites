@@ -222,7 +222,7 @@ for ar in $(echo_archives)
 do
     if [ ${force} -gt 0 ]; then rm -f "${directory}/${ar}"; fi
     [ -e "${directory}/${ar}" ]                                               \
-        || ${fetch} --no-verbose -O "${directory}/${ar}" "${base_url}${ar}"       \
+        || ( cd "${directory}" && ${fetch} --no-verbose "${base_url}${ar}" )  \
         || die "Cannot download ${ar} from ${base_url}"
 done
 unset ar
