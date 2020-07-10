@@ -9538,9 +9538,15 @@ package body Exp_Ch6 is
 
       --  Finally, create an access object initialized to a reference to the
       --  function call. We know this access value cannot be null, so mark the
-      --  entity accordingly to suppress the access check.
+      --  entity accordingly to suppress the access check. We need to suppress
+      --  warnings, because this can be part of the expansion of "for ... of"
+      --  and similar constructs that generate finalization actions. Such
+      --  finalization actions are safe, because they check a count that
+      --  indicates which objects should be finalized, but the back end
+      --  nonetheless warns about uninitialized objects.
 
       Def_Id := Make_Temporary (Loc, 'R', Func_Call);
+      Set_Warnings_Off (Def_Id);
       Set_Etype (Def_Id, Ptr_Typ);
       Set_Is_Known_Non_Null (Def_Id);
 
