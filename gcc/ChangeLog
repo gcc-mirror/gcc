@@ -1,3 +1,176 @@
+2020-07-10  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_select_section): Only
+	create named section for VAR_DECL or FUNCTION_DECL.
+
+2020-07-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* glimits.h [__STDC_VERSION__ > 201710L] (BOOL_MAX, BOOL_WIDTH):
+	New macros.
+
+2020-07-10  Alexander Popov  <alex.popov@linux.com>
+
+	* shrink-wrap.c (try_shrink_wrapping): Improve debug output.
+
+2020-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/96151
+	* expr.c (expand_expr_real_2): When reducing bit fields,
+	clear the target if it has a different mode from the expression.
+	(reduce_to_bit_field_precision): Don't do that here.  Instead
+	assert that the target already has the correct mode.
+
+2020-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/92789
+	PR target/95726
+	* config/arm/arm.c (arm_attribute_table): Add
+	"Advanced SIMD type".
+	(arm_comp_type_attributes): Check that the "Advanced SIMD type"
+	attributes are equal.
+	* config/arm/arm-builtins.c: Include stringpool.h and
+	attribs.h.
+	(arm_mangle_builtin_vector_type): Use the mangling recorded
+	in the "Advanced SIMD type" attribute.
+	(arm_init_simd_builtin_types): Add an "Advanced SIMD type"
+	attribute to each Advanced SIMD type, using the mangled type
+	as the attribute's single argument.
+
+2020-07-10  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md  (VSX_MM): New define_mode_iterator.
+	(VSX_MM4): New define_mode_iterator.
+	(vec_mtvsrbmi): New define_insn.
+	(vec_mtvsr_<mode>): New define_insn.
+	(vec_cntmb_<mode>): New define_insn.
+	(vec_extract_<mode>): New define_insn.
+	(vec_expand_<mode>): New define_insn.
+	(define_c_enum unspec): Add entries UNSPEC_MTVSBM, UNSPEC_VCNTMB,
+	UNSPEC_VEXTRACT, UNSPEC_VEXPAND.
+	* config/rs6000/altivec.h ( vec_genbm, vec_genhm, vec_genwm,
+	vec_gendm, vec_genqm, vec_cntm, vec_expandm, vec_extractm): Add
+	defines.
+	* config/rs6000/rs6000-builtin.def: Add defines BU_P10_2, BU_P10_1.
+	(BU_P10_1): Add definitions for mtvsrbm, mtvsrhm, mtvsrwm,
+	mtvsrdm, mtvsrqm, vexpandmb, vexpandmh, vexpandmw, vexpandmd,
+	vexpandmq, vextractmb, vextractmh, vextractmw, vextractmd, vextractmq.
+	(BU_P10_2): Add definitions for cntmbb, cntmbh, cntmbw, cntmbd.
+	(BU_P10_OVERLOAD_1): Add definitions for mtvsrbm, mtvsrhm,
+	mtvsrwm, mtvsrdm, mtvsrqm, vexpandm, vextractm.
+	(BU_P10_OVERLOAD_2): Add defition for cntm.
+	* config/rs6000/rs6000-call.c (rs6000_expand_binop_builtin): Add
+	checks for CODE_FOR_vec_cntmbb_v16qi, CODE_FOR_vec_cntmb_v8hi,
+	CODE_FOR_vec_cntmb_v4si, CODE_FOR_vec_cntmb_v2di.
+	(altivec_overloaded_builtins): Add overloaded argument entries for
+	P10_BUILTIN_VEC_MTVSRBM, P10_BUILTIN_VEC_MTVSRHM,
+	P10_BUILTIN_VEC_MTVSRWM, P10_BUILTIN_VEC_MTVSRDM,
+	P10_BUILTIN_VEC_MTVSRQM, P10_BUILTIN_VEC_VCNTMBB,
+	P10_BUILTIN_VCNTMBB, P10_BUILTIN_VCNTMBH,
+	P10_BUILTIN_VCNTMBW, P10_BUILTIN_VCNTMBD,
+	P10_BUILTIN_VEXPANDMB, P10_BUILTIN_VEXPANDMH,
+	P10_BUILTIN_VEXPANDMW, P10_BUILTIN_VEXPANDMD,
+	P10_BUILTIN_VEXPANDMQ, P10_BUILTIN_VEXTRACTMB,
+	P10_BUILTIN_VEXTRACTMH, P10_BUILTIN_VEXTRACTMW,
+	P10_BUILTIN_VEXTRACTMD, P10_BUILTIN_VEXTRACTMQ.
+	(builtin_function_type): Add case entries for P10_BUILTIN_MTVSRBM,
+	P10_BUILTIN_MTVSRHM, P10_BUILTIN_MTVSRWM, P10_BUILTIN_MTVSRDM,
+	P10_BUILTIN_MTVSRQM, P10_BUILTIN_VCNTMBB, P10_BUILTIN_VCNTMBH,
+	P10_BUILTIN_VCNTMBW, P10_BUILTIN_VCNTMBD,
+	P10_BUILTIN_VEXPANDMB, P10_BUILTIN_VEXPANDMH,
+	P10_BUILTIN_VEXPANDMW, P10_BUILTIN_VEXPANDMD,
+	P10_BUILTIN_VEXPANDMQ.
+	* config/rs6000/rs6000-builtin.def (altivec_overloaded_builtins): Add
+	entries	for MTVSRBM, MTVSRHM, MTVSRWM, MTVSRDM, MTVSRQM, VCNTM,
+	VEXPANDM, VEXTRACTM.
+
+2020-07-10  Bill Seurer, 507-253-3502, seurer@us.ibm.com  <(no_default)>
+
+	PR target/95581
+	* config/rs6000/rs6000-call.c: Add new type v16qi_ftype_pcvoid.
+	(altivec_init_builtins) Change __builtin_altivec_mask_for_load to use
+	v16qi_ftype_pcvoid with correct number of parameters.
+
+2020-07-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96144
+	* config/i386/i386-expand.c (ix86_emit_swsqrtsf): Check
+	TARGET_AVX512VL when enabling FMA.
+
+2020-07-10  Andrea Corallo  <andrea.corallo@arm.com>
+	    Mihail-Calin Ionescu  <mihail.ionescu@arm.com>
+	    Iain Apreotesei  <iain.apreotesei@arm.com>
+
+	* config/arm/arm-protos.h (arm_target_insn_ok_for_lob): New
+	prototype.
+	* config/arm/arm.c (TARGET_INVALID_WITHIN_DOLOOP): Define.
+	(arm_invalid_within_doloop): Implement invalid_within_doloop hook.
+	(arm_target_insn_ok_for_lob): New function.
+	* config/arm/arm.h (TARGET_HAVE_LOB): Define macro.
+	* config/arm/thumb2.md (*doloop_end_internal, doloop_begin)
+	(dls_insn): Add new patterns.
+	(doloop_end): Modify to select LR when LOB is available.
+	* config/arm/unspecs.md: Add new unspec.
+	* doc/sourcebuild.texi (arm_v8_1_lob_ok)
+	(arm_thumb2_ok_no_arm_v8_1_lob): Document new target supports
+	options.
+
+2020-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96133
+	* gimple-fold.c (fold_array_ctor_reference): Do not
+	recurse to folding a CTOR that does not fully cover the
+	asked for object.
+
+2020-07-10  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle sapphirerapids.
+	* common/config/i386/i386-common.c
+	(processor_names): Add sapphirerapids and alderlake.
+	(processor_alias_table): Add sapphirerapids and alderlake.
+	* common/config/i386/i386-cpuinfo.h
+	(processor_subtypes): Add INTEL_COREI7_ALDERLAKE and
+	INTEL_COREI7_ALDERLAKE.
+	* config.gcc: Add -march=sapphirerapids and alderlake.
+	* config/i386/driver-i386.c
+	(host_detect_local_cpu) Handle sapphirerapids and alderlake.
+	* config/i386/i386-c.c
+	(ix86_target_macros_internal): Handle sapphirerapids and alderlake.
+	* config/i386/i386-options.c
+	(m_SAPPHIRERAPIDS) : Define.
+	(m_ALDERLAKE): Ditto.
+	(m_CORE_AVX512) : Add m_SAPPHIRERAPIDS.
+	(processor_cost_table): Add sapphirerapids and alderlake.
+	(ix86_option_override_internal) Handle PTA_WAITPKG, PTA_ENQCMD,
+	PTA_CLDEMOTE, PTA_SERIALIZE, PTA_TSXLDTRK.
+	* config/i386/i386.h
+	(ix86_size_cost) : Define SAPPHIRERAPIDS and ALDERLAKE.
+	(processor_type) : Add PROCESSOR_SAPPHIRERAPIDS and
+	PROCESSOR_ALDERLAKE.
+	(PTA_ENQCMD): New.
+	(PTA_CLDEMOTE): Ditto.
+	(PTA_SERIALIZE): Ditto.
+	(PTA_TSXLDTRK): New.
+	(PTA_SAPPHIRERAPIDS): Ditto.
+	(PTA_ALDERLAKE): Ditto.
+	(processor_type) : Add PROCESSOR_SAPPHIRERAPIDS and
+	PROCESSOR_ALDERLAKE.
+	* doc/extend.texi: Add sapphirerapids and alderlake.
+	* doc/invoke.texi: Add sapphirerapids and alderlake.
+
+2020-07-10  Martin Liska  <mliska@suse.cz>
+
+	* dumpfile.c [profile-report]: Add new profile dump.
+	* dumpfile.h (enum tree_dump_index): Ad TDI_profile_report.
+	* passes.c (pass_manager::dump_profile_report): Change stderr
+	to dump_file.
+
+2020-07-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Use LOOP_VINFO_NITERS which
+	is adjusted by considering peeled prologue for non
+	vect_use_loop_mask_for_alignment_p cases.
+
 2020-07-09  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/96125

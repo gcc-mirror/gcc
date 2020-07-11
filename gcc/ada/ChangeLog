@@ -1,3 +1,282 @@
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): Fix code to match the comment.
+
+2020-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Address>:
+	Issue an unconditional warning for an overlay that changes the
+	scalar storage order.
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (Is_Actual_Parameter): Fix processing when parent
+	is a procedure call statement; extend comment.
+
+2020-07-10  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Expression_With_Actions): Check the rules
+	of AI12-0368, and mark the declare expression as static or known
+	at compile time as appropriate.
+	* sem_ch4.adb: Minor reformatting.
+	* libgnat/a-stoufo.ads, libgnat/a-stoufo.adb: Allow up to 9
+	replacement parameters. I'm planning to use this in the test
+	case for this ticket.
+
+2020-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Access_Subprogram_Wrapper_Body): Create a
+	proper signature when the access type denotes a parameterless
+	subprogram.
+	* exp_ch6.adb (Expand_Call): Handle properly a  parameterless
+	indirect call when the corresponding access type has contracts.
+
+2020-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb
+	(Convert_To_Positional): Add Dims local variable
+	and pass it in calls to Is_Flat and Flatten.
+	(Check_Static_Components): Pass Dims in call to
+	Is_Static_Element.
+	(Nonflattenable_Next_Aggr): New predicate.
+	(Flatten): Add Dims parameter and Expr local variable.  Call
+	Nonflattenable_Next_Aggr in a couple of places.  In the case
+	when an Others choice is present, check that the element is
+	either static or a nested aggregate that can be flattened,
+	before disregarding the replication limit for elaboration
+	purposes.  Check that a nested array is flattenable in the case
+	of a multidimensional array in any position.  Remove redundant
+	check in the Others case and pass Dims in call to
+	Is_Static_Element.  Use Expr variable.
+	(Is_Flat): Change type of Dims parameter from Int to Nat.
+	(Is_Static_Element): Add Dims parameter.  Replace tests on
+	literals with call to Compile_Time_Known_Value.  If everything
+	else failed and the dimension is 1, preanalyze the expression
+	before calling again Compile_Time_Known_Value on it.  Return
+	true for null.
+	(Late_Expansion): Do not expand further if the assignment to the
+	target can be done directly by the back end.
+
+2020-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint-c.adb (Set_File_Name): Preserve casing of file.
+	* osint.adb (File_Names_Equal): New.
+	(Executable_Name): Use File_Equal instead of
+	Canonical_Case_File_Name.
+
+2020-07-10  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-socket.adb (Wait_On_Socket): Fix memory leaks and
+	file descriptor leaks.  A memory leak was created each time the
+	routine was called without a selector (Selector = Null). Also,
+	in case of exception in the routine a memory leak and descriptor
+	leak was created as the created file selector was not closed.
+
+2020-07-10  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-socket.adb: Minor style fixes.
+
+2020-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb
+	(Immediate_Context_Implies_Is_Potentially_Unevaluated): New
+	subprogram.
+	(Is_Potentially_Unevaluated): Do not stop climbing the tree on
+	the first candidate subexpression; required to handle nested
+	expressions.
+
+2020-07-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb, exp_spark.adb, sem_ch13.ads, sem_ch13.adb,
+	snames.ads-tmpl: Minor reformatting and typo fixes.
+
+2020-07-10  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Has_Enabled_Property): Add handling of
+	non-variable objects.
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Check_Completion): Refactor chained
+	if-then-elsif-...  statement to be more like a case
+	statement (note: we can't simply use case statement because of
+	Is_Intrinsic_Subprogram in the first condition).
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (E_Protected_Object): Enumeration literal removed.
+	* lib-xref.ads (Xref_Entity_Letters): Remove reference to
+	removed literal.
+	* sem_ch3.adb (Check_Completion): Likewise.
+	* sem_util.adb (Has_Enabled_Property): Likewise.
+
+2020-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Max_Aggregate_Size): Use small limit for
+	aggregate inside subprograms.
+	* sprint.adb (Sprint_Node_Actual [N_Object_Declaration]): Do not
+	print the initialization expression if the No_Initialization
+	flag is set.
+	* sem_util.ads, sem_util.adb (Predicate_Enabled): New.
+	* exp_ch4.adb (Expand_N_Type_Conversion): Code cleanup and apply
+	predicate check consistently.
+	* exp_ch6.adb (Expand_Actuals.By_Ref_Predicate_Check): Ditto.
+	* sem_ch3.adb (Analyze_Object_Declaration): Ditto.
+	* exp_ch3.adb (Build_Assignment): Revert handling of predicate
+	check for allocators with qualified expressions, now handled in
+	Freeze_Expression directly.
+	* sem_aggr.adb: Fix typos.
+	* checks.adb: Code refactoring: use Predicate_Enabled.
+	(Apply_Predicate_Check): Code cleanup.
+	* freeze.adb (Freeze_Expression): Freeze the subtype mark before
+	a qualified expression on an allocator.
+	* exp_util.ads, exp_util.adb (Within_Internal_Subprogram):
+	Renamed Predicate_Check_In_Scope to clarify usage, refine
+	handling of predicates within init procs which should be enabled
+	when the node comes from source.
+	* sem_ch13.adb (Freeze_Entity_Checks): Update call to
+	Predicate_Check_In_Scope.
+
+2020-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Array_Comparison): Reformat.
+	(Expand_Concatenate): Use standard size values directly and use
+	Standard_Long_Long_Unsigned instead of RE_Long_Long_Unsigned.
+	(Expand_Modular_Op): Use Standard_Long_Long_Integer in case the
+	modulus is larger than Integer.
+	(Expand_N_Op_Expon): Use standard size value directly.
+	(Narrow_Large_Operation): Use Uint instead of Nat for sizes and
+	use a local variable for the size of the type.
+	(Get_Size_For_Range): Return Uint instead of Nat.
+	(Is_OK_For_Range): Take Uint instead of Nat.
+
+2020-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Iface_Call_In_Allocator):
+	Build the internal anonymous access type using as a reference
+	the designated type imposed by the context (instead of using the
+	return type of the called function).
+
+2020-07-10  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Protect call to
+	Is_Valued_Procedure.
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): Revert recent change to
+	location of Set_Ekind; detect effectively volatile discriminants
+	by their type only.
+
+2020-07-10  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-nbnbin.ads, libgnat/a-nbnbre.ads: Add global
+	contract (Global => null) to all functions.
+
+2020-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads: Add Aspect_Aggregate.
+	* exp_aggr.adb (Expand_Container_Aggregate): Expand positional
+	container aggregates into separate initialization and insertion
+	operations.
+	* sem_aggr.ads (Resolve_Container_Aggregate): New subprogram.
+	* sem_aggr.adb (Resolve_Container_Aggregate): Parse aspect
+	aggregate, establish element types and key types if present, and
+	resolve aggregate components.
+	* sem_ch13.ads (Parse_Aspect_Aggregate): Public subprogram used
+	in validation, resolution and expansion of container aggregates
+	* sem_ch13.adb
+	(Parse_Aspect_Aggregate): Retrieve names of primitives specified
+	in aspect specification.
+	(Validate_Aspect_Aggregate): Check legality of specified
+	operations given in aspect specification, before nane
+	resolution.
+	(Resolve_Aspect_Aggregate): At freeze point resolve operations
+	and verify that given operations have the required profile.
+	* sem_res.adb (Resolve): Call Resolve_Aspect_Aggregate if aspect
+	is present for type.
+	* snames.ads-tmpl: Add names used in aspect Aggregate: Empty,
+	Add_Named, Add_Unnamed, New_Indexed, Assign_Indexed.
+
+2020-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-shabig.o.
+	* libgnat/s-shabig.ads: New file to share definitions.
+	* libgnat/s-genbig.ads, libgnat/s-genbig.adb: Reorganized to
+	make it more generic and flexible in terms of memory allocation
+	and data structure returned.
+	(To_String): Moved to System.Generic_Bignums to allow sharing
+	this code.
+	(Big_And, Big_Or, Big_Shift_Left, Big_Shift_Right): New.
+	* libgnat/s-bignum.adb, libgnat/s-bignum.ads: Adapt to new
+	System.Generic_Bignums spec.
+	* libgnat/a-nbnbin.adb: Likewise.
+	(To_String): Moved to System.Generic_Bignums to allow sharing
+	this code.
+	* libgnat/a-nbnbre.adb (Normalize): Fix handling of Num = 0
+	leading to an exception.
+
+2020-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expr_Types): Replace call to Find_Aspect
+	with call to Find_Value_Of_Aspect and adjust accordingly.
+
+2020-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.adb (Write_Field24_Name): Handle E_Loop_Parameter.
+	* freeze.adb (Freeze_Expr_Types): Freeze the iterator type used as
+	Default_Iterator of the name of an N_Iterator_Specification node.
+
+2020-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Determine_Range): Deal with Min and Max attributes.
+	* exp_ch6.adb (Expand_Call_Helper): When generating code to pass
+	the accessibility level to the caller in the case of an actual
+	which is an if-expression, also remove the nodes created after
+	the declaration of the dummy temporary.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Use Natural as
+	the type of the minimum accessibility level object.
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): Set Ekind of the
+	processed discriminant entity before passing to
+	Is_Effectively_Volatile, which was crashing on a failed
+	assertion.
+	* sem_prag.adb (Analyze_External_Property_In_Decl_Part): Prevent
+	call to No_Caching_Enabled with entities other than variables,
+	which was crashing on a failed assertion.
+	(Analyze_Pragma): Style cleanups.
+	* sem_util.adb (Is_Effectively_Volatile): Enforce comment with
+	an assertion; prevent call to No_Caching_Enabled with entities
+	other than variables.
+	(Is_Effectively_Volatile_Object): Only call
+	Is_Effectively_Volatile on objects, not on types.
+	(No_Caching_Enabled): Enforce comment with an assertion.
+
+2020-07-10  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Update comments to free usage of -gnatdF.
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Delta_Or_Update): Refactored from
+	Expand_SPARK_N_Attribute_Reference; rewrite into N_Aggregate or
+	N_Delta_Aggregate depending on what is being rewritten.
+	(Expand_SPARK_N_Delta_Aggregate): New routine to expand
+	delta_aggregate.
+	(Expand_SPARK_N_Attribute_Reference): Call the refactored
+	routine.
+
+2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Fix
+	expansion of attribute Update.
+
+2020-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Fix handling of Ghost units.
+
 2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tracebak.c [generic implementation]: Add pragma GCC diagnostic

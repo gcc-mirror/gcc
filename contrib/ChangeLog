@@ -1,3 +1,7 @@
+2020-07-10  Mike Nolta  <mike@nolta.net>
+
+	* download_prerequisites: Don't pass wget options to curl.
+
 2020-07-07  Alexandre Oliva  <oliva@adacore.com>
 	    Martin Liska  <mliska@suse.cz>
 
