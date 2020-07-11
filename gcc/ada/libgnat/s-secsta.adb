@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -564,7 +564,7 @@ package body System.Secondary_Stack is
       --------------
 
       function Round_Up (Size : Storage_Count) return Memory_Size is
-         Algn_MS : constant Memory_Size := Standard'Maximum_Alignment;
+         Algn_MS : constant Memory_Size := Memory_Alignment;
          Size_MS : constant Memory_Size := Memory_Size (Size);
 
       begin
@@ -573,7 +573,7 @@ package body System.Secondary_Stack is
          --  Treat this case as secondary-stack depletion.
 
          if Memory_Size'Last - Algn_MS < Size_MS then
-            raise Storage_Error with "secondary stack exhaused";
+            raise Storage_Error with "secondary stack exhausted";
          end if;
 
          return ((Size_MS + Algn_MS - 1) / Algn_MS) * Algn_MS;

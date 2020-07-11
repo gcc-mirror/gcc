@@ -1,5 +1,5 @@
 // PR c++/90572
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct X { X(int); };
 

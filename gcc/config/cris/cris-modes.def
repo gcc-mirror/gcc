@@ -1,0 +1,61 @@
+/* Definitions of target machine for GNU compiler, for CRIS.
+   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Node: Condition Code */
+
+/* The mode used for condition-codes depends on both the way the
+   condition-codes are generated (the CC-setter, typically the compare
+   instruction), and used (the CC-user, typically a branch).  For CRIS, we
+   have ordinary compares and incidental condition-code settings from
+   preceding instructions, setting a subset of N, Z, V and C to usable
+   values, from the perspective of comparing the result against zero
+   (referred to below as "fpcraz").  The two subsets meaningful to gcc are
+   all of N, Z, V, C versus just N, Z; some CC-users care only about N
+   and/or Z and some that care about at least one of those flags together
+   with V and/or C.
+
+   The plain "CC_MODE (CC)" (which is always present in gcc), is used to
+   reflect the "unoptimized" state, where the CC-setter is a compare
+   against zero and the CC-user is any branch or s<condition> instruction,
+   before reload.  After reload, a need for C or V is reflected as
+   CC_NZVCmode in both setters and users, and others remain CCmode, until
+   or if optimization of CC-setter and CC-users, when CCmode setters can
+   be changed or replaced by either CC_NZmode or CC_NZVCmode.  To wit, all
+   users that require CC_NZVCmode must match only that mode at any time.
+   All other users must match all of CCmode, CC_NZmode, and CC_NZVCmode.
+   All setters that set only CC_NZmode must match setting only that mode.
+   All other setters must match setting all of CCmode, CC_NZmode, and
+   CC_NZVCmode.
+
+   There's also other modes (i.e. CC_ZnNmode) with a separate set of
+   setters and users not matched by the others. */
+
+/* Z and N flags only.  For a condition-code setter: only the Z and N
+   flags are set to usable values, fpcraz.  For a condition-code user: the
+   operation using the condition codes only care about the Z and N flags.  */
+CC_MODE (CC_NZ);
+
+/* Z and N *and* V and C flags.  For a condition-code setter: all flags
+   are set to usable values, fpcraz.  For a condition-code user: at least
+   one of V and C are used and possibly N and Z too.  */
+CC_MODE (CC_NZVC);
+
+/* The result of a btst / btstq instruction for extracting a single bit
+   goes negated into the N flag, or in olde cc0-parlance, CC_Z_IN_NOT_N.  */
+CC_MODE (CC_ZnN);

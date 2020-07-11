@@ -25,21 +25,21 @@ struct longdouble
 {
 public:
   /* Return the hidden real_value from the longdouble type.  */
-  const real_value& rv (void) const
+  const real_value &rv (void) const
   { return *(const real_value *) this; }
 
-  real_value& rv (void)
+  real_value &rv (void)
   { return *(real_value *) this; }
 
   /* Normalize the value to be the precision supported by target.  */
   longdouble normalize (void);
 
   /* No constructor to be able to use this class in a union.  */
-  template<typename T> longdouble& operator = (T x)
+  template <typename T> longdouble &operator = (T x)
   { set (x); return *this; }
 
   /* Lvalue operators.  */
-  void set (real_value& d);
+  void set (real_value &d);
   void set (int32_t d);
   void set (int64_t d);
   void set (uint32_t d);
@@ -67,51 +67,51 @@ public:
   { return this->to_bool (); }
 
   /* Arithmetic operators.  */
-  longdouble add (const longdouble& r) const;
-  longdouble sub (const longdouble& r) const;
-  longdouble mul (const longdouble& r) const;
-  longdouble div (const longdouble& r) const;
-  longdouble mod (const longdouble& r) const;
+  longdouble add (const longdouble &r) const;
+  longdouble sub (const longdouble &r) const;
+  longdouble mul (const longdouble &r) const;
+  longdouble div (const longdouble &r) const;
+  longdouble mod (const longdouble &r) const;
   longdouble neg () const;
 
-  longdouble operator + (const longdouble& r)
+  longdouble operator + (const longdouble &r)
   { return this->add (r); }
 
-  longdouble operator - (const longdouble& r)
+  longdouble operator - (const longdouble &r)
   { return this->sub (r); }
 
-  longdouble operator * (const longdouble& r)
+  longdouble operator * (const longdouble &r)
   { return this->mul (r); }
 
-  longdouble operator / (const longdouble& r)
+  longdouble operator / (const longdouble &r)
   { return this->div (r); }
 
-  longdouble operator % (const longdouble& r)
+  longdouble operator % (const longdouble &r)
   { return this->mod (r); }
 
-  longdouble operator -()
+  longdouble operator - (void)
   { return this->neg (); }
 
   /* Comparison operators.  */
-  int cmp (const longdouble& t) const;
-  int equals (const longdouble& t) const;
+  int cmp (const longdouble &t) const;
+  int equals (const longdouble &t) const;
 
-  bool operator < (const longdouble& r)
+  bool operator < (const longdouble &r)
   { return this->cmp (r) < 0; }
 
-  bool operator <= (const longdouble& r)
+  bool operator <= (const longdouble &r)
   { return this->cmp (r) <= 0; }
 
-  bool operator > (const longdouble& r)
+  bool operator > (const longdouble &r)
   { return this->cmp (r) > 0; }
 
-  bool operator >= (const longdouble& r)
+  bool operator >= (const longdouble &r)
   { return this->cmp (r) >= 0; }
 
-  bool operator == (const longdouble& r)
+  bool operator == (const longdouble &r)
   { return this->equals (r); }
 
-  bool operator != (const longdouble& r)
+  bool operator != (const longdouble &r)
   { return !this->equals (r); }
 
 private:
@@ -124,7 +124,7 @@ private:
 typedef longdouble volatile_longdouble;
 
 /* Use ldouble() to explicitly create a longdouble value.  */
-template<typename T>
+template <typename T>
 inline longdouble
 ldouble (T x)
 {

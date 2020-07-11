@@ -988,14 +988,14 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx17)
 	{
-	  /* Set feature test macros for C++2a.  */
+	  /* Set feature test macros for C++20.  */
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
 	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
 	  cpp_define (pfile, "__cpp_constexpr=201907L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
-	  /* cpp_define (pfile, "__cpp_consteval=201811L"); */
+	  cpp_define (pfile, "__cpp_consteval=201811L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
 	  cpp_define (pfile, "__cpp_deduction_guides=201907L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");
@@ -1006,13 +1006,13 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (flag_concepts)
         {
-          if (cxx_dialect >= cxx2a)
+	  if (cxx_dialect >= cxx20)
             cpp_define (pfile, "__cpp_concepts=201907L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");
         }
       if (flag_coroutines)
-	cpp_define (pfile, "__cpp_coroutines=201902L"); /* n4835, C++20 CD */
+	cpp_define (pfile, "__cpp_impl_coroutine=201902L"); /* n4861, DIS */
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */

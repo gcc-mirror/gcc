@@ -2695,7 +2695,10 @@ cselib_record_sp_cfa_base_equiv (HOST_WIDE_INT offset, rtx_insn *insn)
     = cselib_lookup_from_insn (plus_constant (Pmode, sp_derived_value, offset),
 			       Pmode, 1, VOIDmode, insn);
   if (val != NULL)
-    cselib_record_set (stack_pointer_rtx, val, NULL);
+    {
+      PRESERVED_VALUE_P (val->val_rtx) = 1;
+      cselib_record_set (stack_pointer_rtx, val, NULL);
+    }
 }
 
 /* Return true if V is SP_DERIVED_VALUE_P (or SP_DERIVED_VALUE_P + CONST_INT)

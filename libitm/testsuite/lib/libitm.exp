@@ -175,6 +175,8 @@ proc libitm_init { args } {
 
     # Turn on transactional memory support.
     lappend ALWAYS_CFLAGS "additional_flags=-fgnu-tm"
+
+    lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
 }
 
 #

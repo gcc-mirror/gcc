@@ -50,6 +50,7 @@
 
 // Feature test macro for parallel algorithms
 # define __cpp_lib_parallel_algorithm 201603L
+# define __cpp_lib_execution 201902L
 
 #endif // C++17
 

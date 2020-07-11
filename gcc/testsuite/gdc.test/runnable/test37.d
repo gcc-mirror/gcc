@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -Jrunnable/extra-files
 // EXTRA_FILES: extra-files/foo37.txt extra-files/std14198/uni.d

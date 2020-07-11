@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Output;  use Output;
-with Tree_IO; use Tree_IO;
+with Output; use Output;
 
 with GNAT.HTable; use GNAT.HTable;
 
@@ -716,58 +715,6 @@ package body Uintp is
       end if;
    end Release_And_Save;
 
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Uints.Tree_Read;
-      Udigits.Tree_Read;
-
-      Tree_Read_Int (Int (Uint_Int_First));
-      Tree_Read_Int (Int (Uint_Int_Last));
-      Tree_Read_Int (UI_Power_2_Set);
-      Tree_Read_Int (UI_Power_10_Set);
-      Tree_Read_Int (Int (Uints_Min));
-      Tree_Read_Int (Udigits_Min);
-
-      for J in 0 .. UI_Power_2_Set loop
-         Tree_Read_Int (Int (UI_Power_2 (J)));
-      end loop;
-
-      for J in 0 .. UI_Power_10_Set loop
-         Tree_Read_Int (Int (UI_Power_10 (J)));
-      end loop;
-
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Uints.Tree_Write;
-      Udigits.Tree_Write;
-
-      Tree_Write_Int (Int (Uint_Int_First));
-      Tree_Write_Int (Int (Uint_Int_Last));
-      Tree_Write_Int (UI_Power_2_Set);
-      Tree_Write_Int (UI_Power_10_Set);
-      Tree_Write_Int (Int (Uints_Min));
-      Tree_Write_Int (Udigits_Min);
-
-      for J in 0 .. UI_Power_2_Set loop
-         Tree_Write_Int (Int (UI_Power_2 (J)));
-      end loop;
-
-      for J in 0 .. UI_Power_10_Set loop
-         Tree_Write_Int (Int (UI_Power_10 (J)));
-      end loop;
-
-   end Tree_Write;
-
    -------------
    -- UI_Abs --
    -------------
@@ -1294,6 +1241,7 @@ package body Uintp is
                   Discard_Int : Int;
                   pragma Warnings (Off, Discard_Int);
                begin
+                  pragma Assert (D /= Int'(0));
                   UI_Div_Vector
                     (Dividend (Dividend'Last - R_Length + 1 .. Dividend'Last),
                      D,

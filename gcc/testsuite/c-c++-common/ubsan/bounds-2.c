@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=bounds -Wall -Wextra -Wno-unused -Wno-array-bounds -Wno-uninitialized" } */
+/* { dg-options "-fsanitize=bounds -Wall -Wextra -Wno-unused -Wno-array-bounds -Wno-uninitialized -Wno-volatile" { target c++ } } */
 
 /* Test runtime errors.  */
 

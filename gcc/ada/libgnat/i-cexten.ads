@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,8 +61,8 @@ package Interfaces.C.Extensions is
 
    --  64-bit integer types
 
-   subtype long_long is Long_Long_Integer;
-   type unsigned_long_long is mod 2 ** 64;
+   subtype long_long is Interfaces.C.long_long;
+   subtype unsigned_long_long is Interfaces.C.unsigned_long_long;
 
    --  128-bit integer type available on 64-bit platforms:
    --  typedef int signed_128 __attribute__ ((mode (TI)));

@@ -20,6 +20,12 @@
 
 #include <array>
 
+#ifndef __cpp_lib_array_constexpr
+# error "Feature test macro for array constexpr is missing in <array>"
+#elif __cpp_lib_array_constexpr < 201806L
+# error "Feature test macro for array constexpr has wrong value in <array>"
+#endif
+
 constexpr std::array<int, 3> a1{{1, 2, 3}};
 constexpr std::array<int, 3> a2{{4, 5, 6}};
 constexpr std::array<int, 3> a3{{1, 2, 4}};

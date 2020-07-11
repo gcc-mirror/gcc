@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "selftest.h"
 #include "tree-into-ssa.h"
+#include "ipa-inline.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -914,6 +915,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
+  if (callee)
+    caller->calls_declare_variant_alt |= callee->declare_variant_alt;
 
   if (callee && symtab->state != LTO_STREAMING
       && edge->callee->comdat_local_p ())
@@ -1469,6 +1472,16 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
   if (e->indirect_unknown_callee
       || decl == e->callee->decl)
     return e->call_stmt;
+
+  if (decl && ipa_saved_clone_sources)
+    {
+      tree *p = ipa_saved_clone_sources->get (e->callee);
+      if (p && decl == *p)
+	{
+	  gimple_call_set_fndecl (e->call_stmt, e->callee->decl);
+	  return e->call_stmt;
+	}
+    }
 
   if (flag_checking && decl)
     {
@@ -3093,15 +3106,17 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 	return false;
       /* In case of instrumented expanded thunks, which can have multiple calls
 	 in them, we do not know how to continue and just have to be
-	 optimistic.  */
-      if (node->callees->next_callee)
+	 optimistic.  The same applies if all calls have already been inlined
+	 into the thunk.  */
+      if (!node->callees || node->callees->next_callee)
 	return true;
       node = node->callees->callee->ultimate_alias_target ();
 
       if (!node2->clone.param_adjustments
 	  || node2->clone.param_adjustments->first_param_intact_p ())
 	return false;
-      if (node2->former_clone_of == node->decl)
+      if (node2->former_clone_of == node->decl
+	  || node2->former_clone_of == node->former_clone_of)
 	return true;
 
       cgraph_node *n2 = node2;

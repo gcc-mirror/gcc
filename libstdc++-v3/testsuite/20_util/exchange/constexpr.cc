@@ -20,12 +20,6 @@
 
 #include <utility>
 
-#ifndef __cpp_lib_constexpr_algorithms
-# error "Feature-test macro for constexpr algorithms missing"
-#elif __cpp_lib_constexpr_algorithms < 201806L
-# error "Feature-test macro for constexpr algorithms has wrong value"
-#endif
-
 constexpr bool
 test()
 {

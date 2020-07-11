@@ -29,7 +29,7 @@ proc brig_target_compile { source dest type options } {
 	# We cannot assume all inputs are .hsail as the dg machinery
 	# calls this for a some c files to check linker plugin support or
 	# similar.
-	set brig_source ${tmpdir}/[file tail ${source}].brig
+	set brig_source ${tmpdir}/[file rootname [file tail ${source}]].brig
 	exec HSAILasm $source -o ${brig_source}
 	set source ${brig_source}
 	# Change the testname the .brig.

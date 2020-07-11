@@ -190,6 +190,9 @@ define feature quirk_armv6kz
 # Cortex-M3 LDRD quirk.
 define feature quirk_cm3_ldrd
 
+# Don't use .cpu assembly directive
+define feature quirk_no_asmcpu
+
 # (Very) slow multiply operations.  Should probably be a tuning bit.
 define feature smallmul
 
@@ -311,7 +314,7 @@ define fgroup DOTPROD	NEON dotprod
 # architectures.
 # xscale isn't really a 'quirk', but it isn't an architecture either and we
 # need to ignore it for matching purposes.
-define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale quirk_no_asmcpu
 
 # Architecture entries
 # format:
@@ -1500,6 +1503,15 @@ begin cpu cortex-m35p
  option nodsp remove armv7em
  costs v7m
 end cpu cortex-m35p
+
+begin cpu cortex-m55
+ cname cortexm55
+ tune flags LDSCHED
+ architecture armv8.1-m.main+mve.fp+fp.dp
+ isa quirk_no_asmcpu
+ costs v7m
+ vendor 41
+end cpu cortex-m55
 
 # V8 R-profile implementations.
 begin cpu cortex-r52

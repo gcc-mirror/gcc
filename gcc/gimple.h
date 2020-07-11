@@ -3472,6 +3472,13 @@ gimple_call_alloca_for_var_p (gcall *s)
   return (s->subcode & GF_CALL_ALLOCA_FOR_VAR) != 0;
 }
 
+static inline bool
+gimple_call_alloca_for_var_p (gimple *s)
+{
+  const gcall *gc = GIMPLE_CHECK2<gcall *> (s);
+  return (gc->subcode & GF_CALL_ALLOCA_FOR_VAR) != 0;
+}
+
 /* If BY_DESCRIPTOR_P is true, GIMPLE_CALL S is an indirect call for which
    pointers to nested function are descriptors instead of trampolines.  */
 

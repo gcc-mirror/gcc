@@ -114,6 +114,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator<(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 
+#if __cpp_lib_three_way_comparison
+      template<typename _Tp1, three_way_comparable _Seq1>
+	friend compare_three_way_result_t<_Seq1>
+	operator<=>(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
+#endif
+
 #if __cplusplus >= 201103L
       template<typename _Alloc>
 	using _Uses = typename
@@ -379,6 +385,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>=(const queue<_Tp, _Seq>& __x, const queue<_Tp, _Seq>& __y)
     { return !(__x < __y); }
+
+#if __cpp_lib_three_way_comparison
+  template<typename _Tp, three_way_comparable _Seq>
+    inline compare_three_way_result_t<_Seq>
+    operator<=>(const queue<_Tp, _Seq>& __x, const queue<_Tp, _Seq>& __y)
+    { return __x.c <=> __y.c; }
+#endif
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Seq>

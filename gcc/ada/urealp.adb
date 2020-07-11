@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,8 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Output;  use Output;
+with Output; use Output;
 with Table;
-with Tree_IO; use Tree_IO;
 
 package body Urealp is
 
@@ -57,7 +56,7 @@ package body Urealp is
 
    --  The following representation clause ensures that the above record
    --  has no holes. We do this so that when instances of this record are
-   --  written by Tree_Gen, we do not write uninitialized values to the file.
+   --  written, we do not write uninitialized values to the file.
 
    for Ureal_Entry use record
       Num      at  0 range 0 .. 31;
@@ -95,10 +94,6 @@ package body Urealp is
    UR_2_M_128 : Ureal;
    UR_2_M_80  : Ureal;
 
-   Num_Ureal_Constants : constant := 10;
-   --  This is used for an assertion check in Tree_Read and Tree_Write to
-   --  help remember to add values to these routines when we add to the list.
-
    Normalized_Real : Ureal := No_Ureal;
    --  Used to memoize Norm_Num and Norm_Den, if either of these functions
    --  is called, this value is set and Normalized_Entry contains the result
@@ -114,13 +109,13 @@ package body Urealp is
 
    function Decimal_Exponent_Hi (V : Ureal) return Int;
    --  Returns an estimate of the exponent of Val represented as a normalized
-   --  decimal number (non-zero digit before decimal point), The estimate is
+   --  decimal number (non-zero digit before decimal point), the estimate is
    --  either correct, or high, but never low. The accuracy of the estimate
    --  affects only the efficiency of the comparison routines.
 
    function Decimal_Exponent_Lo (V : Ureal) return Int;
    --  Returns an estimate of the exponent of Val represented as a normalized
-   --  decimal number (non-zero digit before decimal point), The estimate is
+   --  decimal number (non-zero digit before decimal point), the estimate is
    --  either correct, or low, but never high. The accuracy of the estimate
    --  affects only the efficiency of the comparison routines.
 
@@ -487,52 +482,6 @@ package body Urealp is
       return Store_Ureal (Normalize (Val));
    end Store_Ureal_Normalized;
 
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      pragma Assert (Num_Ureal_Constants = 10);
-
-      Ureals.Tree_Read;
-      Tree_Read_Int (Int (UR_0));
-      Tree_Read_Int (Int (UR_M_0));
-      Tree_Read_Int (Int (UR_Tenth));
-      Tree_Read_Int (Int (UR_Half));
-      Tree_Read_Int (Int (UR_1));
-      Tree_Read_Int (Int (UR_2));
-      Tree_Read_Int (Int (UR_10));
-      Tree_Read_Int (Int (UR_100));
-      Tree_Read_Int (Int (UR_2_128));
-      Tree_Read_Int (Int (UR_2_M_128));
-
-      --  Clear the normalization cache
-
-      Normalized_Real := No_Ureal;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      pragma Assert (Num_Ureal_Constants = 10);
-
-      Ureals.Tree_Write;
-      Tree_Write_Int (Int (UR_0));
-      Tree_Write_Int (Int (UR_M_0));
-      Tree_Write_Int (Int (UR_Tenth));
-      Tree_Write_Int (Int (UR_Half));
-      Tree_Write_Int (Int (UR_1));
-      Tree_Write_Int (Int (UR_2));
-      Tree_Write_Int (Int (UR_10));
-      Tree_Write_Int (Int (UR_100));
-      Tree_Write_Int (Int (UR_2_128));
-      Tree_Write_Int (Int (UR_2_M_128));
-   end Tree_Write;
-
    ------------
    -- UR_Abs --
    ------------
@@ -568,6 +517,9 @@ package body Urealp is
       Num  : Uint;
 
    begin
+      pragma Annotate (CodePeer, Modified, Lval);
+      pragma Annotate (CodePeer, Modified, Rval);
+
       --  Note, in the temporary Ureal_Entry values used in this procedure,
       --  we store the sign as the sign of the numerator (i.e. xxx.Num may
       --  be negative, even though in stored entries this can never be so)
@@ -685,6 +637,8 @@ package body Urealp is
       Rneg : constant Boolean     := Rval.Negative xor Lval.Negative;
 
    begin
+      pragma Annotate (CodePeer, Modified, Lval);
+      pragma Annotate (CodePeer, Modified, Rval);
       pragma Assert (Rval.Num /= Uint_0);
 
       if Lval.Rbase = 0 then

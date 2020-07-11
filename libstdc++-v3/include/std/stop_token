@@ -34,7 +34,7 @@
 #include <atomic>
 
 #ifdef _GLIBCXX_HAS_GTHREADS
-# define __cpp_lib_jthread 201907L
+# define __cpp_lib_jthread 201911L
 # include <bits/gthr.h>
 # if __has_include(<semaphore>)
 #  include <semaphore>

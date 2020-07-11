@@ -277,7 +277,7 @@ do {						\
 /* If GAS supports weak, we can support weak when we have working linker
    support for secondary definitions and are generating code for GAS.
    This is primarily for one-only support as SOM doesn't allow undefined
-   weak symbols.  */
+   weak symbols or weak aliases.  */
 #ifdef HAVE_GAS_WEAK
 #define TARGET_SUPPORTS_WEAK (TARGET_SOM_SDEF && TARGET_GAS)
 #else
@@ -328,12 +328,43 @@ do {						\
    be used to remove dead procedures.  Thus, support for named sections
    is not needed and in previous testing caused problems with various
    HP tools.  */
-#define ASM_WEAKEN_LABEL(FILE,NAME) \
-  do { fputs ("\t.weak\t", FILE);				\
-       assemble_name (FILE, NAME);				\
-       fputc ('\n', FILE);					\
-       targetm.asm_out.globalize_label (FILE, NAME);		\
-  } while (0)
+#if defined HAVE_GAS_WEAK
+#define ASM_WEAKEN_DECL(FILE,DECL,NAME,VALUE) \
+  do									\
+    {									\
+      if ((VALUE) != NULL)						\
+	error_at (DECL_SOURCE_LOCATION (DECL),				\
+		  "weak aliases are not supported");			\
+      fputs ("\t.weak\t", FILE);					\
+      assemble_name (FILE, NAME);					\
+      fputc ('\n', FILE);						\
+									\
+      /* Import external objects.  */					\
+      if (DECL_EXTERNAL (DECL))						\
+	{								\
+	  fputs ("\t.IMPORT ", FILE);					\
+	  assemble_name (FILE, NAME);					\
+	  if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+	    fputs (",CODE\n", FILE);					\
+	  else								\
+	    fputs (",DATA\n", FILE);					\
+	}								\
+      /* Functions are globalized by ASM_DECLARE_FUNCTION_NAME.  */	\
+      else if (TREE_CODE (DECL) != FUNCTION_DECL)			\
+	{								\
+	  fputs ("\t.EXPORT ", FILE);					\
+	  assemble_name (FILE, NAME);					\
+	  fputs (",DATA\n", FILE);					\
+	}								\
+    }									\
+  while (0)
+#endif
+
+/* Although gas accepts .weakref, it doesn't provide the correct symbol
+   type for function references.  For now, we use ASM_WEAKEN_DECL instead.
+   We have to undefine HAVE_GAS_WEAKREF to prevent default.h from defining
+   ASM_OUTPUT_WEAKREF.  */
+#undef HAVE_GAS_WEAKREF
 
 /* We can't handle weak aliases, and therefore can't support pragma weak.
    Suppress the use of pragma weak in gthr-dce.h and gthr-posix.h.  */

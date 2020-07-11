@@ -6233,6 +6233,7 @@
 	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,r"))]
   "TARGET_32BIT
    && !(TARGET_HARD_FLOAT)
+   && !(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
    && !TARGET_IWMMXT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"

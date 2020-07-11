@@ -35,6 +35,7 @@
 #include <bits/move.h>
 
 #if __cplusplus > 201703L
+#define __cpp_lib_constexpr_memory 201811L
 namespace __gnu_debug { struct _Safe_iterator_base; }
 #endif
 
@@ -179,6 +180,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	return std::__to_address(__ptr.operator->());
     }
+
+#define __cpp_lib_to_address 201711L
 
   /**
    * @brief Obtain address referenced by a pointer to an object

@@ -1,3 +1,4 @@
+// { dg-options "-O0" }
 // { dg-shouldfail "segv or bus error" }
 import core.thread;
 import core.sys.posix.sys.mman;
@@ -17,7 +18,7 @@ void stackMethod()
 
 void main()
 {
-    auto test_fiber = new Fiber(&stackMethod, stackSize);
+    auto test_fiber = new Fiber(&stackMethod, stackSize, stackSize);
 
     // allocate a page below (above) the fiber's stack to make stack overflows possible (w/o segfaulting)
     version (StackGrowsDown)

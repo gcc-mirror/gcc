@@ -3501,6 +3501,13 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
   if (as_note)
     fixup_args_size_notes (before_try, last, get_args_size (as_note));
 
+  /* Scan the new insns for embedded side effects and add appropriate
+     REG_INC notes.  */
+  if (AUTO_INC_DEC)
+    for (x = last; x != before_try; x = PREV_INSN (x))
+      if (NONDEBUG_INSN_P (x))
+	add_auto_inc_notes (x, PATTERN (x));
+
   /* If we generated a jump instruction, it won't have
      JUMP_LABEL set.  Recompute after we're done.  */
   for (x = last; x != before_try; x = PREV_INSN (x))

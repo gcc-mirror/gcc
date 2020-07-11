@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Opt;     use Opt;
-with Tree_IO; use Tree_IO;
+with Opt; use Opt;
 
 package body Osint.C is
 
@@ -413,22 +412,23 @@ package body Osint.C is
          --  Remove extension preparing to replace it
 
          declare
-            Name  : String  := Name_Buffer (1 .. Dot_Index);
-            First : Positive;
+            Name   : String  := Name_Buffer (1 .. Dot_Index);
+            Output : String  := Output_Object_File_Name.all;
+            First  : Positive;
 
          begin
-            Name_Buffer (1 .. Output_Object_File_Name'Length) :=
-              Output_Object_File_Name.all;
+            Name_Buffer (1 .. Output_Object_File_Name'Length) := Output;
 
             --  Put two names in canonical case, to allow object file names
             --  with upper-case letters on Windows.
+            --  Do it with a copy (Output) and keep Name_Buffer as is since we
+            --  want to preserve the original casing.
 
             Canonical_Case_File_Name (Name);
-            Canonical_Case_File_Name
-              (Name_Buffer (1 .. Output_Object_File_Name'Length));
+            Canonical_Case_File_Name (Output);
 
             Dot_Index := 0;
-            for J in reverse Output_Object_File_Name'Range loop
+            for J in reverse Output'Range loop
                if Name_Buffer (J) = '.' then
                   Dot_Index := J;
                   exit;
@@ -452,7 +452,7 @@ package body Osint.C is
 
             --  Check name of object file is what we expect
 
-            if Name /= Name_Buffer (First .. Dot_Index) then
+            if Name /= Output (First .. Dot_Index) then
                Fail ("incorrect object file name");
             end if;
          end;
@@ -489,69 +489,6 @@ package body Osint.C is
 
       Output_Object_File_Name := new String'(Name);
    end Set_Output_Object_File_Name;
-
-   ----------------
-   -- Tree_Close --
-   ----------------
-
-   procedure Tree_Close is
-      Status : Boolean;
-   begin
-      Tree_Write_Terminate;
-      Close (Output_FD, Status);
-
-      if not Status then
-         Fail
-           ("error while closing tree file "
-            & Get_Name_String (Output_File_Name));
-      end if;
-   end Tree_Close;
-
-   -----------------
-   -- Tree_Create --
-   -----------------
-
-   procedure Tree_Create is
-      Dot_Index : Natural;
-
-   begin
-      Get_Name_String (Current_Main);
-
-      --  If an object file has been specified, then the ALI file
-      --  will be in the same directory as the object file;
-      --  so, we put the tree file in this same directory,
-      --  even though no object file needs to be generated.
-
-      if Output_Object_File_Name /= null then
-         Name_Len := Output_Object_File_Name'Length;
-         Name_Buffer (1 .. Name_Len) := Output_Object_File_Name.all;
-      end if;
-
-      Dot_Index := Name_Len + 1;
-
-      for J in reverse 1 .. Name_Len loop
-         if Name_Buffer (J) = '.' then
-            Dot_Index := J;
-            exit;
-         end if;
-      end loop;
-
-      --  Should be impossible to not have an extension
-
-      pragma Assert (Dot_Index /= 0);
-
-      --  Change extension to adt
-
-      Name_Buffer (Dot_Index) := '.';
-      Name_Buffer (Dot_Index + 1) := 'a';
-      Name_Buffer (Dot_Index + 2) := 'd';
-      Name_Buffer (Dot_Index + 3) := 't';
-      Name_Buffer (Dot_Index + 4) := ASCII.NUL;
-      Name_Len := Dot_Index + 3;
-      Create_File_And_Check (Output_FD, Binary);
-
-      Tree_Write_Initialize (Output_FD);
-   end Tree_Create;
 
    -----------------------
    -- Write_Debug_Info --

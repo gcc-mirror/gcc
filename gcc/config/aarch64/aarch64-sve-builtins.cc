@@ -558,6 +558,10 @@ static hash_table<registered_function_hasher> *function_table;
    when the required extension is disabled.  */
 static bool reported_missing_extension_p;
 
+/* True if we've already complained about attempts to use functions
+   which require registers that are missing.  */
+static bool reported_missing_registers_p;
+
 /* Record that TYPE is an ABI-defined SVE type that contains NUM_ZR SVE vectors
    and NUM_PR SVE predicates.  MANGLED_NAME, if nonnull, is the ABI-defined
    mangling of the type.  */
@@ -657,6 +661,29 @@ report_missing_extension (location_t location, tree fndecl,
   reported_missing_extension_p = true;
 }
 
+/* Check whether the registers required by SVE function fndecl are available.
+   Report an error against LOCATION and return false if not.  */
+static bool
+check_required_registers (location_t location, tree fndecl)
+{
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_missing_registers_p)
+    return false;
+
+  if (TARGET_GENERAL_REGS_ONLY)
+    {
+      /* SVE registers are not usable when -mgeneral-regs-only option
+	 is specified.  */
+      error_at (location,
+		"ACLE function %qD is incompatible with the use of %qs",
+		fndecl, "-mgeneral-regs-only");
+      reported_missing_registers_p = true;
+      return false;
+    }
+
+  return true;
+}
+
 /* Check whether all the AARCH64_FL_* values in REQUIRED_EXTENSIONS are
    enabled, given that those extensions are required for function FNDECL.
    Report an error against LOCATION if not.  */
@@ -666,7 +693,7 @@ check_required_extensions (location_t location, tree fndecl,
 {
   uint64_t missing_extensions = required_extensions & ~aarch64_isa_flags;
   if (missing_extensions == 0)
-    return true;
+    return check_required_registers (location, fndecl);
 
   static const struct { uint64_t flag; const char *name; } extensions[] = {
 #define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
@@ -851,6 +878,12 @@ sve_switcher::sve_switcher ()
   aarch64_isa_flags = (AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16
 		       | AARCH64_FL_SVE);
 
+  m_old_maximum_field_alignment = maximum_field_alignment;
+  maximum_field_alignment = 0;
+
+  m_old_general_regs_only = TARGET_GENERAL_REGS_ONLY;
+  global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+
   memcpy (m_old_have_regs_of_mode, have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
   for (int i = 0; i < NUM_MACHINE_MODES; ++i)
@@ -862,7 +895,10 @@ sve_switcher::~sve_switcher ()
 {
   memcpy (have_regs_of_mode, m_old_have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
+  if (m_old_general_regs_only)
+    global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
   aarch64_isa_flags = m_old_isa_flags;
+  maximum_field_alignment = m_old_maximum_field_alignment;
 }
 
 function_builder::function_builder ()
@@ -3644,24 +3680,39 @@ handle_arm_sve_vector_bits_attribute (tree *node, tree, tree args, int,
      svbool_t and its fixed-length variants.  Using a type variant
      avoids that but means that we treat some ambiguous combinations
      as valid.  */
+  tree new_type;
+  tree base_type = TYPE_MAIN_VARIANT (type);
   if (lang_GNU_C () && VECTOR_BOOLEAN_TYPE_P (type))
-    type = build_variant_type_copy (type);
+    new_type = build_variant_type_copy (base_type);
   else
-    type = build_distinct_type_copy (type);
-
-  /* The new type is a normal sized type; it doesn't have the same
-     restrictions as sizeless types.  */
-  TYPE_ATTRIBUTES (type)
-    = remove_attribute ("SVE sizeless type",
-			copy_list (TYPE_ATTRIBUTES (type)));
+    new_type = build_distinct_type_copy (base_type);
 
   /* Allow the GNU vector extensions to be applied to vectors.
      The extensions aren't yet defined for packed predicates,
      so continue to treat them as abstract entities for now.  */
-  if (!VECTOR_BOOLEAN_TYPE_P (type))
-    TYPE_INDIVISIBLE_P (type) = 0;
+  if (!VECTOR_BOOLEAN_TYPE_P (new_type))
+    TYPE_INDIVISIBLE_P (new_type) = 0;
 
-  *node = type;
+  /* The new type is a normal sized type; it doesn't have the same
+     restrictions as sizeless types.  */
+  TYPE_ATTRIBUTES (new_type)
+    = remove_attribute ("SVE sizeless type",
+			copy_list (TYPE_ATTRIBUTES (new_type)));
+
+  /* Apply the relevant attributes, qualifiers and alignment of TYPE,
+     if they differ from the original (sizeless) BASE_TYPE.  */
+  if (TYPE_ATTRIBUTES (base_type) != TYPE_ATTRIBUTES (type)
+      || TYPE_QUALS (base_type) != TYPE_QUALS (type))
+    {
+      tree attrs = remove_attribute ("SVE sizeless type",
+				     copy_list (TYPE_ATTRIBUTES (type)));
+      new_type = build_type_attribute_qual_variant (new_type, attrs,
+						    TYPE_QUALS (type));
+    }
+  if (TYPE_ALIGN (base_type) != TYPE_ALIGN (type))
+    new_type = build_aligned_type (new_type, TYPE_ALIGN (type));
+
+  *node = new_type;
   return NULL_TREE;
 }
 

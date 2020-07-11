@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -100,12 +100,12 @@ public:
     Modules aimports;             // all imported modules
 
     unsigned debuglevel;        // debug level
-    Strings *debugids;      // debug identifiers
-    Strings *debugidsNot;       // forward referenced debug identifiers
+    Identifiers *debugids;      // debug identifiers
+    Identifiers *debugidsNot;       // forward referenced debug identifiers
 
     unsigned versionlevel;      // version level
-    Strings *versionids;    // version identifiers
-    Strings *versionidsNot;     // forward referenced version identifiers
+    Identifiers *versionids;    // version identifiers
+    Identifiers *versionidsNot;     // forward referenced version identifiers
 
     Macro *macrotable;          // document comment macros
     Escape *escapetable;        // document comment escapes

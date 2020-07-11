@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,9 +73,9 @@
 --  For nodes other than subexpressions, it is not necessary to preserve the
 --  original tree in the Expand routines, unlike the case for modifications
 --  to the tree made in the semantic analyzer. This is because anyone who is
---  interested in working with the original tree (like ASIS) is required to
---  compile in semantics checks only mode. Thus Replace may be freely used
---  in such instances.
+--  interested in working with the original tree is required to compile in
+--  semantics checks only mode. Thus Replace may be freely used in such
+--  instances.
 
 --  For subexpressions, preservation of the original tree is required because
 --  of the need for conformance checking of default expressions, which occurs
@@ -150,20 +150,17 @@ package Expander is
    --  Saves the current setting of the Expander_Active flag on an internal
    --  stack and then sets the flag to the given value.
    --
-   --  Note: this routine has no effect in ASIS and GNATprove modes. In ASIS
-   --  mode, all expansion activity is always off, since we want the original
-   --  semantic tree for ASIS purposes without any expansion. In GNATprove
-   --  mode, a very light expansion is performed on specific nodes. Both are
-   --  achieved by setting Expander_Active False in ASIS and GNATprove modes.
+   --  Note: this routine has no effect in GNATprove mode. In this mode,
+   --  a very light expansion is performed on specific nodes and
+   --  Expander_Active is set to False.
    --  In situations such as the call to Instantiate_Bodies in Frontend,
    --  Expander_Mode_Save_And_Set may be called to temporarily turn the
-   --  expander on, but this will have no effect in ASIS and GNATprove modes.
+   --  expander on, but this will have no effect in GNATprove mode.
 
    procedure Expander_Mode_Restore;
    --  Restores the setting of the Expander_Active flag using the top entry
    --  pushed onto the stack by Expander_Mode_Save_And_Reset, popping the
    --  stack, except that if any errors have been detected, then the state of
-   --  the flag is left set to False. Disabled for ASIS and GNATprove modes
-   --  (see above).
+   --  the flag is left set to False. Disabled for GNATprove mode (see above).
 
 end Expander;

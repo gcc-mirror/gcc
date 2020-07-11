@@ -1,4 +1,4 @@
-//  { dg-additional-options "-fsyntax-only -w" }
+//  { dg-additional-options "-w" }
 
 #include "coro.h"
 

@@ -1,0 +1,77 @@
+-- This is a project file used to rebuild the GNAT run-time for debug
+-- or instrumentation purposes.
+--
+-- Here is how to use this project file:
+--
+-- 1. Create a new directory (e.g. "rts-debug"), then copy the adainclude
+--    directory from the reference runtime that you want to rebuild.
+--    You can find the relevant adainclude directory by running the command
+--    gprls [--target=<target>] [--RTS=<runtime>] and using the adainclude
+--    directory listed. For example:
+--     $ cd <reference directory>
+--     $ mkdir rts-debug
+--     $ cd rts-debug
+--     $ cp -a `gprls -v | grep adainclude` .
+--     $ cd adainclude
+--
+--    or under Windows:
+--
+--     $ mkdir adainclude
+--     $ xcopy /s /path/to/adainclude adainclude
+--     $ cd adainclude
+--
+-- 2. If needed (e.g for pragma Normalize_Scalars), create a file called
+--    gnat.adc in the adainclude directory containing the configuration pragmas
+--    you want to use to build the library, e.g.
+--
+--     $ echo "pragma Normalize_Scalars;" > gnat.adc
+--
+--    Note that this step is usually not needed, and most pragmas are not
+--    relevant to the GNAT run time.
+--
+-- 3. Determine the values of the following variables
+--    CFLAGS (back end compilation flags such as -g -O2)
+--    ADAFLAGS (front end compilation flags such as -gnatn)
+--
+-- 4. Run gprbuild on libada.gpr, e.g:
+--    $ gprbuild -p -Plibada -j0 -XCFLAGS="-O2 -g" -XADAFLAGS="-gnatn"
+--
+--    or for a cross target:
+--
+--    $ gprbuild --target=powerpc-elf -p -Plibada -j0 [...]
+--
+--    if you created a gnat.adc file at step 2, add "-XCONFIG_FILE=gnat.adc" to
+--    the gprbuild switches.
+--
+--    The above command will build libgnat.a and libgnarl.a with the given
+--    switches.
+--
+-- 4b. In order to generate shared libraries instead, add
+--    "-XLIBRARY_KIND=dynamic" to the gprbuild switches, and if you want to
+--    build both shared and static libraries, you can run gprbuild twice in
+--    a row, e.g:
+--
+--    $ gprbuild -p -Plibada -j0 -XLIBRARY_KIND=dynamic [...]
+--    $ gprbuild -p -Plibada -j0 -XLIBRARY_KIND=static [...]
+--
+-- 5. Once the above gprbuild command is successful, you can use this new
+--    runtime directory by specifying it either via the --RTS= switch on the
+--    command line or via the attribute Runtime ("Ada") in the main project
+--    file:
+--     $ gprbuild --RTS=.../rts-debug ...
+--    or
+--       for Runtime ("Ada") use ".../rts-debug";
+
+aggregate project Libada is
+   for Project_Files use ("libgnat.gpr", "libgnarl.gpr");
+
+   Config_File := External ("CONFIG_FILE", "");
+
+   package Builder is
+      case Config_File is
+         when ""     => null;
+         when others => for Global_Configuration_Pragmas use Config_File;
+      end case;
+   end Builder;
+
+end Libada;

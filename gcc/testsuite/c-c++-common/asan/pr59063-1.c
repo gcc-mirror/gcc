@@ -1,4 +1,4 @@
-/* { dg-do run { target { *-*-linux* } } } */
+/* { dg-do run { target { *-*-linux* *-*-freebsd* } } } */
 
 #include <time.h>
 static int weak_gettime (clockid_t clk_id, struct timespec *tp)

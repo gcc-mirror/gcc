@@ -252,6 +252,10 @@ struct lang_hooks_for_decls
      predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
   enum omp_clause_default_kind (*omp_predetermined_sharing) (tree);
 
+  /* Return mapping kind if OpenMP mapping attribute of DECL is
+     predetermined, OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED otherwise.  */
+  enum omp_clause_defaultmap_kind (*omp_predetermined_mapping) (tree);
+
   /* Return decl that should be reported for DEFAULT(NONE) failure
      diagnostics.  Usually the DECL passed in.  */
   tree (*omp_report_decl) (tree);

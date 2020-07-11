@@ -2822,11 +2822,11 @@
 
 ;; Unpredicated integer unary arithmetic.
 (define_expand "<optab><mode>2"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
 	  [(match_dup 2)
-	   (SVE_INT_UNARY:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 1 "register_operand"))]
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 1 "register_operand"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {
@@ -2836,11 +2836,11 @@
 
 ;; Integer unary arithmetic predicated with a PTRUE.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (SVE_INT_UNARY:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 2 "register_operand" "w"))]
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "w"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   "<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
@@ -4211,10 +4211,10 @@
 
 ;; Unpredicated integer binary logical operations.
 (define_insn "<optab><mode>3"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?w, w")
-	(LOGICAL:SVE_FULL_I
-	  (match_operand:SVE_FULL_I 1 "register_operand" "%0, w, w")
-	  (match_operand:SVE_FULL_I 2 "aarch64_sve_logical_operand" "vsl, vsl, w")))]
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?w, w")
+	(LOGICAL:SVE_I
+	  (match_operand:SVE_I 1 "register_operand" "%0, w, w")
+	  (match_operand:SVE_I 2 "aarch64_sve_logical_operand" "vsl, vsl, w")))]
   "TARGET_SVE"
   "@
    <logical>\t%0.<Vetype>, %0.<Vetype>, #%C2
@@ -4234,13 +4234,13 @@
 
 ;; Unpredicated BIC.
 (define_expand "@aarch64_bic<mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand")
-	(and:SVE_FULL_I
-	  (unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(and:SVE_I
+	  (unspec:SVE_I
 	    [(match_dup 3)
-	     (not:SVE_FULL_I (match_operand:SVE_FULL_I 2 "register_operand"))]
+	     (not:SVE_I (match_operand:SVE_I 2 "register_operand"))]
 	    UNSPEC_PRED_X)
-	  (match_operand:SVE_FULL_I 1 "register_operand")))]
+	  (match_operand:SVE_I 1 "register_operand")))]
   "TARGET_SVE"
   {
     operands[3] = CONSTM1_RTX (<VPRED>mode);
@@ -4249,14 +4249,14 @@
 
 ;; Predicated BIC.
 (define_insn_and_rewrite "*bic<mode>3"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w")
-	(and:SVE_FULL_I
-	  (unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(and:SVE_I
+	  (unspec:SVE_I
 	    [(match_operand 3)
-	     (not:SVE_FULL_I
-	       (match_operand:SVE_FULL_I 2 "register_operand" "w"))]
+	     (not:SVE_I
+	       (match_operand:SVE_I 2 "register_operand" "w"))]
 	    UNSPEC_PRED_X)
-	  (match_operand:SVE_FULL_I 1 "register_operand" "w")))]
+	  (match_operand:SVE_I 1 "register_operand" "w")))]
   "TARGET_SVE"
   "bic\t%0.d, %1.d, %2.d"
   "&& !CONSTANT_P (operands[3])"

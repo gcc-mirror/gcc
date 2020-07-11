@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fshow-column" }"
+// { dg-options "-fshow-column" }
 // Origin: Giovanni Bajo <giovannibajo at gcc dot gnu dot org>
 // Try to find out when the digraph '<:' is used as a mistake, and parse it
 //  correctly to avoid cascaded errors.
@@ -50,12 +50,16 @@ void func(void)
   //  the special error message.
   Foo<: :B> k2;     // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" }
   Foo[:B> k1;       // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" } 
-// { dg-error "6:missing template arguments before" "template" { target *-*-* } 51 }
-// { dg-error "9:expected primary-expression before ':' token" "primary" { target *-*-* } 51 }
-// { dg-error "8:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
-// { dg-error "6:missing template arguments before" "template" { target *-*-* } 52 }
-// { dg-error "7:expected primary-expression before ':' token" "primary" { target *-*-* } 52 }
-// { dg-error "7:expected '\]' before ':' token" "backslash" { target *-*-* } 52 }
+// { dg-error "6:missing template arguments before" "template" { target c++14_down } .-2 }
+// { dg-error "9:expected primary-expression before ':' token" "primary" { target c++14_down } .-3 }
+// { dg-error "8:expected '\]' before ':' token" "backslash" { target c++14_down } .-4 }
+// { dg-error "6:missing template arguments before" "template" { target c++14_down } .-4 }
+// { dg-error "7:expected primary-expression before ':' token" "primary" { target c++14_down } .-5 }
+// { dg-error "7:expected '\]' before ':' token" "backslash" { target c++14_down } .-6 }
+// { dg-error "9:expected identifier" "" { target c++17 } .-8 }
+// { dg-error "8:expected" "" { target c++17 } .-9 }
+// { dg-error "7:expected identifier" "" { target c++17 } .-9 }
+// { dg-error "7:expected" "" { target c++17 } .-10 }
 //
   int Foo[2];
   Foo[::value] = 0;

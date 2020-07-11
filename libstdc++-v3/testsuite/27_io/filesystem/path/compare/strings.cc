@@ -18,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.8 path compare [path.compare]
+// C++17 30.10.8.4.8 path compare [fs.path.compare]
 
 #include <filesystem>
 #include <testsuite_hooks.h>

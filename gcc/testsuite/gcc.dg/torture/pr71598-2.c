@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-prune-output "use of enum values across objects may fail" } */
 /* { dg-additional-options "-fshort-enums" } */
+/* { dg-skip-if "" short_eq_int } */
 
 enum e1 { c1 = -__INT_MAX__ };
 

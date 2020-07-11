@@ -7,5 +7,5 @@ program test
    character(:), pointer :: b => a
 end program
 
-! { dg-error "must be of INTEGER type" " " { target *-*-* } 6 }
-! { dg-error "does not have the TARGET attribute" " " { target *-*-* } 7 }
+! { dg-error "Scalar INTEGER expression expected" " " { target *-*-* } 6 }
+! { dg-error "Different types in pointer assignment" " " { target *-*-* } 7 }

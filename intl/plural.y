@@ -1,6 +1,6 @@
 %{
 /* Expression parsing for plural form selection.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@cygnus.com>, 2000.
 
    This program is free software; you can redistribute it and/or modify it
@@ -40,10 +40,15 @@
 # define __gettextparse PLURAL_PARSE
 #endif
 
+#ifndef USE_BISON3
 #define YYLEX_PARAM	&((struct parse_args *) arg)->cp
 #define YYPARSE_PARAM	arg
+#endif
 %}
 %pure_parser
+/* BISON3 %parse-param {struct parse_args *arg} */
+/* BISON3 %lex-param {struct parse_args *arg} */
+/* BISON3 %define api.pure full */
 %expect 7
 
 %union {
@@ -66,8 +71,13 @@ static inline struct expression *new_exp_3 PARAMS ((enum operator op,
 						   struct expression *bexp,
 						   struct expression *tbranch,
 						   struct expression *fbranch));
+#ifdef USE_BISON3
+static int yylex PARAMS ((YYSTYPE *lval, struct parse_args *arg));
+static void yyerror PARAMS ((struct parse_args *arg, const char *str));
+#else
 static int yylex PARAMS ((YYSTYPE *lval, const char **pexp));
 static void yyerror PARAMS ((const char *str));
+#endif
 
 /* Allocation of expressions.  */
 
@@ -256,11 +266,20 @@ FREE_EXPRESSION (exp)
 }
 
 
+#ifdef USE_BISON3
+static int
+yylex (lval, arg)
+     YYSTYPE *lval;
+     struct parse_args *arg;
+{
+  const char **pexp = &arg->cp;
+#else
 static int
 yylex (lval, pexp)
      YYSTYPE *lval;
      const char **pexp;
 {
+#endif
   const char *exp = *pexp;
   int result;
 
@@ -401,8 +420,14 @@ yylex (lval, pexp)
 }
 
 
+#ifdef USE_BISON3
+static void
+yyerror (arg, str)
+     struct parse_args *arg;
+#else
 static void
 yyerror (str)
+#endif
      const char *str;
 {
   /* Do nothing.  We don't print error messages here.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,6 +139,10 @@ package Tbuild is
    --  No_Implicit_Loops and No_Implicit_Conditionals (the first applying in
    --  all cases, and the second only for while loops), and if one of these
    --  restrictions is being violated, an error message is posted on Node.
+
+   function Make_Increment
+     (Loc : Source_Ptr; Index : Entity_Id; Typ : Entity_Id) return Node_Id;
+   --  Return an assignment statement of the form "Index := Typ'Succ (Index);"
 
    function Make_Integer_Literal
      (Loc    : Source_Ptr;

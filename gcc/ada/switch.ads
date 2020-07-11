@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,7 +77,7 @@ package Switch is
 
    function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents an internal GCC switch to be
-   --  followed by a single argument, such as -dumpbase, --param or -auxbase.
+   --  followed by a single argument, such as -dumpbase, or --param.
    --  Even though passed by the "gcc" driver, these need not be stored in ALI
    --  files and may safely be ignored by non GCC back-ends.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1505,7 +1505,7 @@ package body Exp_Ch11 is
              Actions     => New_List (
                Make_Simple_Return_Statement (Loc,
                  Expression => New_Occurrence_Of (Standard_False, Loc))),
-              Expression => RCE));
+               Expression => RCE));
 
       else
          Rewrite (N,
@@ -1514,7 +1514,7 @@ package body Exp_Ch11 is
                Make_Raise_Statement (Loc,
                  Name       => Name (N),
                  Expression => Expression (N))),
-              Expression => RCE));
+               Expression => RCE));
       end if;
 
       Analyze_And_Resolve (N, Typ);

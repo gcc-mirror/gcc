@@ -20,11 +20,17 @@
 
 #include <string_view>
 
+#ifndef __cpp_lib_constexpr_string_view
+# error "Feature test macro for constexpr copy is missing in <string_view>"
+#elif __cpp_lib_constexpr_iterator < 201811L
+# error "Feature test macro for constexpr copy has wrong value in <string_view>"
+#endif
+
 constexpr bool
 test01()
 {
   std::string_view s = "Everything changes and nothing stands still.";
-  char buf[7];
+  char buf[7]{};
   auto n = s.copy(buf, 7, 11);
   return std::string_view(buf, n) == "changes";
 }

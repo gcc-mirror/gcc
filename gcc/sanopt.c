@@ -1158,6 +1158,7 @@ sanitize_rewrite_addressable_params (function *fun)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  TREE_ADDRESSABLE (arg) = 0;
+	  DECL_NOT_GIMPLE_REG_P (arg) = 0;
 	  /* The parameter is no longer addressable.  */
 	  has_any_addressable_param = true;
 
@@ -1189,7 +1190,6 @@ sanitize_rewrite_addressable_params (function *fun)
 	    {
 	      /* We need to create a SSA name that will be used for the
 		 assignment.  */
-	      DECL_GIMPLE_REG_P (arg) = 1;
 	      tree tmp = get_or_create_ssa_default_def (cfun, arg);
 	      g = gimple_build_assign (var, tmp);
 	      gimple_set_location (g, DECL_SOURCE_LOCATION (arg));

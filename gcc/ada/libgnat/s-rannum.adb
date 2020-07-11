@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,6 +295,7 @@ is
             K      : Bit_Count;       --  Next decrement to exponent
 
          begin
+            K := 0;
             Mantissa := Random (Gen) / 2**Extra_Bits;
             R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
             R_Bits := Extra_Bits;
@@ -401,12 +402,12 @@ is
       elsif Max < Min then
          raise Constraint_Error;
 
+      --  In the 64-bit case, we have to be careful since not all 64-bit
+      --  unsigned values are representable in GNAT's universal integer.
+
       elsif Result_Subtype'Base'Size > 32 then
          declare
-            --  In the 64-bit case, we have to be careful, since not all 64-bit
-            --  unsigned values are representable in GNAT's root_integer type.
-            --  Ignore different-size warnings here since GNAT's handling
-            --  is correct.
+            --  Ignore unequal-size warnings since GNAT's handling is correct.
 
             pragma Warnings ("Z");
             function Conv_To_Unsigned is
@@ -436,11 +437,14 @@ is
             end if;
          end;
 
-      elsif Result_Subtype'Pos (Max) - Result_Subtype'Pos (Min) =
-                                                         2 ** 32 - 1
+      --  In the 32-bit case, we need to handle both integer and enumeration
+      --  types and, therefore, rely on 'Pos and 'Val in the computation.
+
+      elsif Result_Subtype'Pos (Max) - Result_Subtype'Pos (Min) = 2 ** 32 - 1
       then
          return Result_Subtype'Val
            (Result_Subtype'Pos (Min) + Unsigned_32'Pos (Random (Gen)));
+
       else
          declare
             N    : constant Unsigned_32 :=

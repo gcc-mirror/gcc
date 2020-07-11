@@ -47,10 +47,10 @@ void f(char *dst, char *src, unsigned long n, unsigned c)
   }
 }
 
-/* { dg-final { scan-tree-dump-times "vec_unpack_lo" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\(vector\\(16\\) short unsigned int\\)" 3 "optimized" } } */
 /* We're missing an opportunity to, after later optimizations, combine
-   a uniform CTOR with a vec_unpack_lo_expr to a CTOR on a converted
+   a uniform CTOR with a vector promotion to a CTOR on a promoted
    element.  */
-/* { dg-final { scan-tree-dump-times "vec_unpack_lo" 2 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "\\(vector\\(16\\) short unsigned int\\)" 2 "optimized" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "VEC_PACK_TRUNC" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 2 "optimized" } } */

@@ -138,8 +138,8 @@ else version (CRuntime_Musl)
 {
     struct iovec
     {
-        void* iov_base;
-        uint  iov_len;
+        void*  iov_base;
+        size_t iov_len;
     }
 
     ssize_t readv(int, in iovec*, int);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
-with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -442,7 +441,7 @@ package body Exp_Ch5 is
       --  respect to the right-hand side as given, not a possible underlying
       --  renamed object, since this would generate incorrect extra checks.
 
-      Apply_Length_Check (Rhs, L_Type);
+      Apply_Length_Check_On_Assignment (Rhs, L_Type, Lhs);
 
       --  We start by assuming that the move can be done in either direction,
       --  i.e. that the two sides are completely disjoint.
@@ -1595,6 +1594,18 @@ package body Exp_Ch5 is
             while Present (C) loop
                if Chars (C) = Chars (Comp) then
                   return C;
+
+               --  The component may be a renamed discriminant, in
+               --  which case check against the name of the original
+               --  discriminant of the parent type.
+
+               elsif Is_Derived_Type (Scope (Comp))
+                 and then Ekind (Comp) = E_Discriminant
+                 and then Present (Corresponding_Discriminant (Comp))
+                 and then
+                   Chars (C) = Chars (Corresponding_Discriminant (Comp))
+               then
+                  return C;
                end if;
 
                Next_Entity (C);
@@ -2448,38 +2459,7 @@ package body Exp_Ch5 is
             if Is_Constrained (Etype (Lhs)) then
                Apply_Length_Check (Rhs, Etype (Lhs));
             end if;
-
-            if Nkind (Rhs) = N_Allocator then
-               declare
-                  Target_Typ : constant Entity_Id := Etype (Expression (Rhs));
-                  C_Es       : Check_Result;
-
-               begin
-                  C_Es :=
-                    Get_Range_Checks
-                      (Lhs,
-                       Target_Typ,
-                       Etype (Designated_Type (Etype (Lhs))));
-
-                  Insert_Range_Checks
-                    (C_Es,
-                     N,
-                     Target_Typ,
-                     Sloc (Lhs),
-                     Lhs);
-               end;
-            end if;
          end if;
-
-      --  Apply range check for access type case
-
-      elsif Is_Access_Type (Etype (Lhs))
-        and then Nkind (Rhs) = N_Allocator
-        and then Nkind (Expression (Rhs)) = N_Qualified_Expression
-      then
-         Analyze_And_Resolve (Expression (Rhs));
-         Apply_Range_Check
-           (Expression (Rhs), Designated_Type (Etype (Lhs)));
       end if;
 
       --  Ada 2005 (AI-231): Generate the run-time check
@@ -2665,25 +2645,13 @@ package body Exp_Ch5 is
                          and then
                            not Restriction_Active (No_Dispatching_Calls))
             then
+               --  We should normally not encounter any limited type here,
+               --  except in the corner case where an assignment was not
+               --  intended like the pathological case of a raise expression
+               --  within a return statement.
+
                if Is_Limited_Type (Typ) then
-
-                  --  This can happen in an instance when the formal is an
-                  --  extension of a limited interface, and the actual is
-                  --  limited. This is an error according to AI05-0087, but
-                  --  is not caught at the point of instantiation in earlier
-                  --  versions. We also must verify that the limited type does
-                  --  not come from source as corner cases may exist where
-                  --  an assignment was not intended like the pathological case
-                  --  of a raise expression within a return statement.
-
-                  --  This is wrong, error messages cannot be issued during
-                  --  expansion, since they would be missed in -gnatc mode ???
-
-                  if Comes_From_Source (N) then
-                     Error_Msg_N
-                       ("assignment not available on limited type", N);
-                  end if;
-
+                  pragma Assert (not Comes_From_Source (N));
                   return;
                end if;
 
@@ -3755,7 +3723,7 @@ package body Exp_Ch5 is
                --  specific to pure if statements, however (see
                --  Sem_Ch5.Analyze_If_Statement).
 
-               Set_Comes_From_Source (New_If, Comes_From_Source (N));
+               Preserve_Comes_From_Source (New_If, N);
                return;
 
             --  No special processing for that elsif part, move to next
@@ -3775,9 +3743,9 @@ package body Exp_Ch5 is
       --  Another optimization, special cases that can be simplified
 
       --     if expression then
-      --        return true;
+      --        return [standard.]true;
       --     else
-      --        return false;
+      --        return [standard.]false;
       --     end if;
 
       --  can be changed to:
@@ -3787,9 +3755,9 @@ package body Exp_Ch5 is
       --  and
 
       --     if expression then
-      --        return false;
+      --        return [standard.]false;
       --     else
-      --        return true;
+      --        return [standard.]true;
       --     end if;
 
       --  can be changed to:
@@ -3822,9 +3790,9 @@ package body Exp_Ch5 is
                      Else_Expr : constant Node_Id := Expression (Else_Stm);
 
                   begin
-                     if Nkind (Then_Expr) = N_Identifier
+                     if Nkind_In (Then_Expr, N_Expanded_Name, N_Identifier)
                           and then
-                        Nkind (Else_Expr) = N_Identifier
+                        Nkind_In (Else_Expr, N_Expanded_Name, N_Identifier)
                      then
                         if Entity (Then_Expr) = Standard_True
                           and then Entity (Else_Expr) = Standard_False
@@ -3900,15 +3868,20 @@ package body Exp_Ch5 is
       Array_Dim  : constant Pos        := Number_Dimensions (Array_Typ);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc        : constant Source_Ptr := Sloc (Isc);
-      Stats      : constant List_Id    := Statements (N);
+      Stats      : List_Id    := Statements (N);
       Core_Loop  : Node_Id;
       Dim1       : Int;
       Ind_Comp   : Node_Id;
       Iterator   : Entity_Id;
 
-   --  Start of processing for Expand_Iterator_Loop_Over_Array
-
    begin
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2020);
+         Stats := New_List (Make_If_Statement (Loc,
+            Condition => Iterator_Filter (I_Spec),
+            Then_Statements => Stats));
+      end if;
+
       --  for Element of Array loop
 
       --  It requires an internally generated cursor to iterate over the array
@@ -4179,7 +4152,9 @@ package body Exp_Ch5 is
       Elem_Typ : constant Entity_Id   := Etype (Id);
       Id_Kind  : constant Entity_Kind := Ekind (Id);
       Loc      : constant Source_Ptr  := Sloc (N);
-      Stats    : constant List_Id     := Statements (N);
+
+      Stats    : List_Id     := Statements (N);
+      --  Maybe wrapped in a conditional if a filter is present
 
       Cursor    : Entity_Id;
       Decl      : Node_Id;
@@ -4201,6 +4176,13 @@ package body Exp_Ch5 is
       --  The package in which the container type is declared
 
    begin
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2020);
+         Stats := New_List (Make_If_Statement (Loc,
+            Condition => Iterator_Filter (I_Spec),
+            Then_Statements => Stats));
+      end if;
+
       --  Determine the advancement and initialization steps for the cursor.
       --  Analysis of the expanded loop will verify that the container has a
       --  reverse iterator.
@@ -4674,11 +4656,20 @@ package body Exp_Ch5 is
             Loop_Id : constant Entity_Id := Defining_Identifier (LPS);
             Ltype   : constant Entity_Id := Etype (Loop_Id);
             Btype   : constant Entity_Id := Base_Type (Ltype);
+            Stats   : constant List_Id   := Statements (N);
             Expr    : Node_Id;
             Decls   : List_Id;
             New_Id  : Entity_Id;
 
          begin
+            if Present (Iterator_Filter (LPS)) then
+               pragma Assert (Ada_Version >= Ada_2020);
+               Set_Statements (N,
+                  New_List (Make_If_Statement (Loc,
+                    Condition => Iterator_Filter (LPS),
+                    Then_Statements => Stats)));
+            end if;
+
             --  Deal with loop over predicates
 
             if Is_Discrete_Type (Ltype)
@@ -4795,7 +4786,7 @@ package body Exp_Ch5 is
                        Declarations => Decls,
                        Handled_Statement_Sequence =>
                          Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => Statements (N)))),
+                           Statements => Stats))),
 
                    End_Label => End_Label (N)));
 
@@ -4897,7 +4888,7 @@ package body Exp_Ch5 is
          end if;
       end if;
 
-      --  When the iteration scheme mentiones attribute 'Loop_Entry, the loop
+      --  When the iteration scheme mentions attribute 'Loop_Entry, the loop
       --  is transformed into a conditional block where the original loop is
       --  the sole statement. Inspect the statements of the nested loop for
       --  controlled objects.
@@ -4921,13 +4912,14 @@ package body Exp_Ch5 is
    --  mode, the semantic analyzer may disallow one or both forms.
 
    procedure Expand_Predicated_Loop (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Isc     : constant Node_Id    := Iteration_Scheme (N);
-      LPS     : constant Node_Id    := Loop_Parameter_Specification (Isc);
-      Loop_Id : constant Entity_Id  := Defining_Identifier (LPS);
-      Ltype   : constant Entity_Id  := Etype (Loop_Id);
-      Stat    : constant List_Id    := Static_Discrete_Predicate (Ltype);
-      Stmts   : constant List_Id    := Statements (N);
+      Orig_Loop_Id :          Node_Id    := Empty;
+      Loc          : constant Source_Ptr := Sloc (N);
+      Isc          : constant Node_Id    := Iteration_Scheme (N);
+      LPS          : constant Node_Id    := Loop_Parameter_Specification (Isc);
+      Loop_Id      : constant Entity_Id  := Defining_Identifier (LPS);
+      Ltype        : constant Entity_Id  := Etype (Loop_Id);
+      Stat         : constant List_Id    := Static_Discrete_Predicate (Ltype);
+      Stmts        : constant List_Id    := Statements (N);
 
    begin
       --  Case of iteration over non-static predicate, should not be possible
@@ -5206,7 +5198,13 @@ package body Exp_Ch5 is
                 Alternatives => Alts);
             Append_To (Stmts, Cstm);
 
-            --  Rewrite the loop
+            --  Rewrite the loop preserving the loop identifier in case there
+            --  are exit statements referencing it.
+
+            if Present (Identifier (N)) then
+               Orig_Loop_Id := New_Occurrence_Of
+                                 (Entity (Identifier (N)), Loc);
+            end if;
 
             Set_Suppress_Assignment_Checks (D);
 
@@ -5218,6 +5216,7 @@ package body Exp_Ch5 is
                     Statements => New_List (
                       Make_Loop_Statement (Loc,
                         Statements => Stmts,
+                        Identifier => Orig_Loop_Id,
                         End_Label  => Empty)))));
 
             Analyze (N);

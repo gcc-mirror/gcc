@@ -2004,9 +2004,12 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 	gfc_error ("Symbol %qs at %L conflicts with symbol from module %qs, "
 		   "use-associated at %L", sym->name, where, sym->module,
 		   &sym->declared_at);
+      else if (sym->attr.function && sym->attr.result)
+	gfc_error ("Symbol %qs at %L already has basic type of %s",
+		   sym->ns->proc_name->name, where, gfc_basic_typename (type));
       else
 	gfc_error ("Symbol %qs at %L already has basic type of %s", sym->name,
-		 where, gfc_basic_typename (type));
+		   where, gfc_basic_typename (type));
       return false;
     }
 
@@ -2024,7 +2027,9 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
       || flavor == FL_DERIVED || flavor == FL_NAMELIST)
     {
-      gfc_error ("Symbol %qs at %L cannot have a type", sym->name, where);
+      gfc_error ("Symbol %qs at %L cannot have a type",
+		 sym->ns->proc_name ? sym->ns->proc_name->name : sym->name,
+		 where);
       return false;
     }
 
@@ -3140,11 +3145,15 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
 }
 
 
-/* Generate an error if a symbol is ambiguous.  */
+/* Generate an error if a symbol is ambiguous, and set the error flag
+   on it.  */
 
 static void
 ambiguous_symbol (const char *name, gfc_symtree *st)
 {
+
+  if (st->n.sym->error)
+    return;
 
   if (st->n.sym->module)
     gfc_error ("Name %qs at %C is an ambiguous reference to %qs "
@@ -3152,6 +3161,8 @@ ambiguous_symbol (const char *name, gfc_symtree *st)
   else
     gfc_error ("Name %qs at %C is an ambiguous reference to %qs "
 	       "from current program unit", name, st->n.sym->name);
+
+  st->n.sym->error = 1;
 }
 
 
@@ -4014,6 +4025,7 @@ gfc_free_namespace (gfc_namespace *ns)
 {
   gfc_namespace *p, *q;
   int i;
+  gfc_was_finalized *f;
 
   if (ns == NULL)
     return;
@@ -4046,6 +4058,17 @@ gfc_free_namespace (gfc_namespace *ns)
     gfc_free_interface (ns->op[i]);
 
   gfc_free_data (ns->data);
+
+  /* Free all the expr + component combinations that have been
+     finalized.  */
+  f = ns->was_finalized;
+  while (f)
+    {
+      gfc_was_finalized* current = f;
+      f = f->next;
+      free (current);
+    }
+
   p = ns->contained;
   free (ns);
 

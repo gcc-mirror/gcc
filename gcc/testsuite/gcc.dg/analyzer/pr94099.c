@@ -21,7 +21,7 @@ pl (void)
   for (sc = 0; sc < 1; ++sc)
     {
       th.gk.hk = 0;
-      th.gk.bg[sc] = 0; /* { dg-warning "uninitialized" } */
+      th.gk.bg[sc] = 0; /* { dg-warning "uninitialized" "uninit-warning-removed" { xfail *-*-* } } */
       l3 (&th);
     }
 }

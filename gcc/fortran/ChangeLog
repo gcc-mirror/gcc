@@ -1,3 +1,729 @@
+2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* class.c (gfc_add_component_ref, gfc_build_class_symbol):
+	Add checks for NULL pointer dereference.
+	* primary.c (gfc_variable_attr): Likewise.
+	* resolve.c (resolve_variable, resolve_assoc_var)
+	(resolve_fl_var_and_proc, resolve_fl_variable_derived)
+	(resolve_symbol): Likewise.
+
+2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96086
+	* match.c (gfc_match_select_rank): Catch NULL pointer
+	dereference.
+	* resolve.c (resolve_assoc_var): Catch NULL pointer dereference
+	that may occur after an illegal declaration.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Use 'inner' not 'decl' for
+	derived type members which themselves have derived types.
+
+2020-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96085
+	* resolve.c (gfc_resolve_code): Check whether assign target is a
+	parameter.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* match.c (copy_ts_from_selector_to_associate, build_class_sym):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+	* resolve.c (resolve_select_type):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* resolve.c (gfc_resolve_code): Check for valid arguments to
+	assigned GOTO.
+
+2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/27318
+	* frontend-passes.c (check_against_globals): New function.
+	(gfc_check_externals): Split; also invoke check_against_globals
+	via gfc_traverse_ns.
+	(gfc_check_externals0): Recursive part formerly in
+	gfc_check_externals.
+	* resolve.c (resolve_global_procedure): Set sym->error on
+	interface mismatch.
+	* symbol.c (ambiguous_symbol): Check for, and set sym->error.
+
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93423
+	* resolve.c (resolve_symbol): Avoid NULL pointer dereference.
+
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93337
+	* class.c (gfc_find_derived_vtab): Punt if name is not set.
+
+2020-07-02  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/52279
+	* check.c (gfc_invalid_boz):  Change array declaration for
+	hint into a pointer.
+
+2020-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95584
+	* interface.c (generic_correspondence): Only use the pointer
+	to a symbol if exists.
+
+2020-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* check.c (gfc_invalid_boz): Fix bootstrap. Revert
+	Mark hint for translation using _().
+
+2020-07-01  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/52279
+	* arith.c (reduce_binary_aa): Mark for translation the string
+	parameter to gfc_check_conformance with G_().
+	* check.c (gfc_invalid_boz): Mark hint for translation using
+	_().  (gfc_check_achar): Mark for translation the message
+	parameter to gfc_invalid_boz using G_().  (gfc_check_char):
+	Mark for translation the message parameter to gfc_invalid_boz
+	using G_().  (gfc_check_complex): Mark for translation the
+	message parameter to gfc_invalid_boz using G_().
+	(gfc_check_float): Mark for translation the message
+	parameter to gfc_invalid_boz using G_().  (check_rest): Mark
+	for translation the string parameter to gfc_check_conformance
+	with _().  (gfc_check_minloc_maxloc): Mark for translation
+	the string parameter to gfc_check_conformance with _().
+	(gfc_check_findloc): Mark for translation the string parameter
+	to gfc_check_conformance with _().  (check_reduction): Mark
+	for translation the string parameter to gfc_check_conformance
+	with _().  (gfc_check_pack): Mark for translation the string
+	parameter to gfc_check_conformance with _().
+	* decl.c (match_old_style_init): Mark for translation the
+	message parameter to gfc_invalid_boz using G_().
+	* expr.c (gfc_check_assign): Mark for translation the string
+	parameter to gfc_check_conformance with _().
+	* intrinsic.c (check_specific): Mark for translation the string
+	parameter to gfc_check_conformance with _().
+	(gfc_check_intrinsic_standard): Mark symstd_msg strings for
+	translation using G_(). No need to mark symstd_msg for
+	translation in call to gfc_warning or when setting symstd.
+	* io.c (check_open_constraints):  Mark strings for translation
+	using G_() in all calls to warn_or_error.  (match_io_element):
+	Mark for translation the message parameter to gfc_invalid_boz
+	using G_().
+	* primary.c (match_boz_constant): Mark for translation the
+	message parameter to gfc_invalid_boz using G_().
+	* resolve.c (resolve_elemental_actual):  Mark for translation
+	the string parameter to gfc_check_conformance with _().
+	(resolve_operator):  Mark for translation the string parameter
+	to gfc_check_conformance with _().  Mark translation strings
+	assigned to msg using G_() for use in a call to cfg_warning.
+
+2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95446
+	* resolve.c (resolve_elemental_actual): Add code to check for
+	non-optional argument of the same rank.  Revise warning message
+	to refer to the Fortran 2018 standard.
+
+2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95829
+	* decl.c (gfc_match_decl_type_spec): Compare with "* ) " instead
+	of "*)".
+
+2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88379
+	* resolve.c (resolve_assoc_var): Avoid NULL pointer dereference.
+
+2020-06-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95355
+	* gfortran.h (gfc_typename): Add optional argument for_hash.
+	* misc.c (gfc_typename): When for_hash is true, just retur
+	  CHARACTER(kind).
+	* class.c (gfc_intrinsic_hash_value): Call gfc_typename with
+	  for_hash = true.
+
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95978
+	* decl.c (gfc_match_data): Avoid NULL pointer dereference.
+
+2020-06-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95743
+	* trans-decl.c (gfc_generate_function_code): Do not generate
+	recursion check for compiler-generated procedures.
+
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71706
+	* trans-stmt.c (gfc_trans_sync): Do proper kind conversion in
+	bounds-checking code.
+
+2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95340
+	* match.c (gfc_match_select_rank): Do not dereference NULL pointer.
+
+2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95880
+	* symbol.c (gfc_add_type): If sym->ns->proc_name is set, use it,
+	otherwise fall back to sym->name.
+
+2020-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95881
+	* resolve.c (resolve_symbol): Avoid NULL pointer dereference.
+
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95828
+	* match.c (select_rank_set_tmp): Enlarge internal buffer used in
+	generating a mangled name.
+	* resolve.c (resolve_select_rank): Likewise.
+
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95826
+	* decl.c (gfc_match_decl_type_spec): Replace a fixed size
+	buffer by a pointer and reallocate if necessary.
+
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95837
+	* resolve.c (gfc_resolve_substring_charlen): Remove
+	bogus ts.kind setting for the expression.
+
+2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourery.com>
+
+	PR fortran/95869
+	* trans-openmp.c (gfc_trans_omp_target): Use correct scoping block.
+
+2020-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-openmp.c (gfc_split_omp_clauses): Add if clause
+	to target and simd sub-constructs.
+
+2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95827
+	* iresolve.c (gfc_get_string): Enlarge internal buffer used in
+	generating the mangled name.
+
+2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95812
+	* dependency.c (ref_same_as_full_array): Handle case of AR_FULL
+	vs. AR_FULL.
+
+2020-06-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95586
+	* decl.c (gfc_match_implicit): Only perform else branch if
+	the type spect is not BT_DERIVED.
+
+2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95708
+	* intrinsic.c (add_functions): Replace CLASS_INQUIRY with
+	CLASS_TRANSFORMATIONAL for intrinsic num_images.
+	(make_generic): Replace ACTUAL_NO with ACTUAL_YES for
+	intrinsic team_number.
+	* resolve.c (resolve_fl_procedure): Check pointer ts.u.derived
+	exists before using it.
+
+2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95585
+	* check.c (gfc_check_reshape): Add check for a value when
+	the symbol has an attribute flavor FL_PARAMETER.
+
+2020-06-22  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/42693
+	* arith.c (gfc_arith_error): Enclose strings in G_() instead
+	of _().
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95707
+	* gfortran.h (gfc_common_head): Enlarge buffer.
+	* trans-common.c (gfc_sym_mangled_common_id): Enlarge temporary
+	buffers, and add check on length on mangled name to prevent
+	overflow.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95688
+	* iresolve.c (gfc_get_string): Enlarge static buffer size.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95687
+	* class.c (get_unique_type_string): Return a string with dynamic
+	length.
+	(get_unique_hashed_string, gfc_hash_value): Use dynamic result
+	from get_unique_type_string instead of static buffer.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* interface.c (check_sym_interfaces): Enlarge temporary buffer,
+	and add check on length on mangled name to prevent overflow.
+
+2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95587
+	* match.c (gfc_match_equivalence): Check constraints on
+	EQUIVALENCE objects also for CLASS variables.
+
+2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Reject vars with
+	allocatable components in OpenMP map clauses.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_oacc_directive): Permit 'acc routine' also
+	inside pure procedures.
+	* openmp.c (gfc_match_oacc_routine): Inside pure procedures
+	do not permit gang, worker or vector clauses.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Remove "or ELEMENTAL"
+	from "in PURE" error message also for -fopenmp-simd.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Remove "or ELEMENTAL"
+	from "in PURE" error message.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/42122
+	* dump-parse-tree.c (gfc_dump_global_symbols):  If the symroot is
+	empty, just output "empty".
+
+2020-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95088
+	* class.c (get_unique_type_string): Replace use of fixed size
+	buffer by internally passing a pointer to strings.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.c (gfc_check_random_seed): Always use locations
+	from get and put arguments for error messages.
+
+2020-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94109
+	* class.c (finalize_component): Return early if finalization has
+	already happened for expression and component within namespace.
+	* gfortran.h (gfc_was_finalized): New type.
+	(gfc_namespace): Add member was_finalzed.
+	(gfc_expr): Remove finalized.
+	* symbol.c (gfc_free_namespace): Free was_finalized.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	PR fortran/95611
+	* decl.c (access_attr_decl): Use correct symbol in error message.
+
+2020-06-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95544
+	* check.c (invalid_null_arg): Rename to gfc_invalid_null_arg.
+	(gfc_check_associated, gfc_check_kind, gfc_check_merge)
+	(gfc_check_shape, gfc_check_size, gfc_check_spread)
+	(gfc_check_transfer): Adjust.
+	(gfc_check_len_lentrim, gfc_check_trim): Check for NULL() argument.
+	* gfortran.h: Declare gfc_invalid_null_arg ().
+	* intrinsic.c (check_arglist): Check for NULL() argument.
+
+2020-06-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95503
+	* expr.c (gfc_check_pointer_assign): Skip contiguity check of rhs
+	of pointer assignment if lhs cannot be simply contiguous.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95331
+	* trans-array.c (gfc_conv_array_ref): For class array dummy
+	arguments use the transformed descriptor in sym->backend_decl
+	instead of the original descriptor.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/52351
+	PR fortran/85868
+	* trans-array.c (gfc_conv_expr_descriptor): Enable the
+	creation of a new descriptor with the correct one based
+	indexing for array sections.  Rework array descriptor
+	indexing offset calculation.
+
+2020-06-11  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94022
+	* trans-expr.c (gfc_conv_procedure_call): In the case of
+	assumed-size arrays ensure that the reference is to a full array.
+
+2020-06-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* class.c (gfc_hash_value): Add cast.
+
+2020-06-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95091
+	* class.c (get_unique_type_string, gfc_hash_value): Enlarge
+	buffers, and check whether the strings returned by
+	get_unique_type_string() fit.
+
+2020-06-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95530
+	PR fortran/95537
+	* decl.c (gfc_match_decl_type_spec): Enlarge buffer, and enhance
+	string copy to detect buffer overflow.
+	* gfortran.h (gfc_common_head): Enlarge buffer.
+	* trans-common.c (finish_equivalences): Enhance string copy to
+	detect buffer overflow.
+
+2020-06-05  Tom Tromey  <tromey@adacore.com>
+
+	PR fortran/95509
+	* misc.c (gfc_closest_fuzzy_match): Update cutoff value
+	computation.
+
+2020-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95500
+	* trans-expr.c (gfc_conv_expr_reference): Do not dereference NULL
+	pointer.
+
+2020-06-03  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95214
+	PR fortran/66833
+	PR fortran/67938
+	* trans-expr.c (gfc_maybe_dereference_var): Add assumed-rank to
+	character dummy arguments list of possible attributes.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+	* trans-openmp.c (gfc_omp_predetermined_mapping): New.
+	* trans.h (gfc_omp_predetermined_mapping): Declare.
+
+2020-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94361
+	* class.c (finalize_component): Use expr->finalized instead of
+	comp->finalized.
+	* gfortran.h (gfc_component): Remove finalized member.
+	(gfc_expr): Add it here instead.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Move validity check of inquiry
+	references against selected Fortran standard from here...
+	(gfc_match_varspec) ...to here.
+
+2020-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Use buffer overrun check.
+
+2020-05-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* class.c (get_unique_type_string): Enlarge temporary for
+	name-mangling.  Use strncpy to prevent buffer overrun.
+	(get_unique_hashed_string): Enlarge temporary.
+	(gfc_hash_value): Enlarge temporary for name-mangling.
+
+2020-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95373
+	* primary.c (is_inquiry_ref): Check validity of inquiry
+	references against selected Fortran standard.
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/94397
+	* match.c (gfc_match_type_spec): New variable ok initialised
+	to true. Set ok with the return value of gfc_reduce_init_expr
+	called only if the expression is not EXPR_CONSTANT and is not
+	EXPR_VARIABLE. Add !ok to the check for type not being integer
+	or the rank being greater than zero.
+
+2020-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95090
+	* iresolve.c (gfc_get_string): Enlarge temporary for
+	name-mangling.
+
+2020-05-27  Tobias Burnus  <tobias@codesourcery.com>
+	    Mark Eggleston  <markeggleston@gnu.gcc.org>
+
+	PR fortran/50392
+	* trans-decl.c (gfc_get_symbol_decl): Remove unnecessary block
+	delimiters.  Add auxiliary variables if a label is assigned to
+	a return variable. (gfc_gat_fake_result): If the symbol has an
+	assign attribute set declaration from the symbol's backend
+	declaration.
+
+2020-05-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95089
+	* trans-types.c (gfc_get_derived_type): Enlarge temporary to hold
+	mangled name "_caf_symbol".
+
+2020-05-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* options.c (gfc_get_option_string): Drop auxbase, add
+	dumpbase_ext.
+
+2020-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95106
+	* trans-common.c (gfc_sym_mangled_common_id): Enlarge temporaries
+	for name-mangling.
+
+2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* libgfortran.h (libgfortran_error_codes): Add
+	LIBERROR_BAD_WAIT_ID.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/39695
+	* resolve.c (resolve_fl_procedure): Set name depending on
+	whether the result attribute is set.  For PROCEDURE/RESULT
+	conflict use the name in sym->ns->proc_name->name.
+	* symbol.c (gfc_add_type): Add check for function and result
+	attributes use sym->ns->proc_name->name if both are set.
+	Where the symbol cannot have a type use the name in
+	sym->ns->proc_name->name.
+
+2020-05-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* arith.c (gfc_divide): Revert hunk introduced by patch for
+	PR93499.
+	* decl.c (variable_decl): Generate error for array shape not being
+	an INTEGER constant.
+	(gfc_get_pdt_instance): Generate error if KIND or LEN expressions
+	in declaration of a PDT instance do not simplify to INTEGER
+	constants.
+
+2020-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94690
+	* openmp.c (resolve_omp_do): Permit more clauses for SIMD
+	iteration variables.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c: Include function.h.
+	(gfc_trans_omp_target): Set cfun->has_omp_target.
+
+2020-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93497
+	* decl.c (char_len_param_value): Check whether character
+	length expression is of type EXPR_OP and if so simplify it.
+	* resolve.c (resolve_charlen): Reject length if it has a
+	rank.
+
+2020-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94690
+	* openmp.c (OMP_DISTRIBUTE_CLAUSES): Add OMP_CLAUSE_LASTPRIVATE.
+	(gfc_resolve_do_iterator): Skip the private handling for SIMD as
+	that is handled by ME code.
+	* trans-openmp.c (gfc_trans_omp_do): Don't add private/lastprivate
+	for dovar_found == 0, unless !simple.
+
+2020-05-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95053
+	* arith.c (gfc_divide): Do not error out if operand 2 is
+	non-numeric.  Defer checks to later stage.
+
+2020-05-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* trans.h (gfc_conv_expr_present): Add use_saved_decl=false argument.
+	* trans-expr.c (gfc_conv_expr_present): Likewise; use DECL directly
+	and only if use_saved_decl is true, use the actual PARAM_DECL arg (saved
+	descriptor).
+	* trans-array.c (gfc_trans_dummy_array_bias): Set local 'arg.0'
+	variable to NULL if 'arg' is not present.
+	* trans-openmp.c (gfc_omp_check_optional_argument): Simplify by checking
+	'arg.0' instead of the true PARM_DECL.
+	(gfc_omp_finish_clause): Remove setting 'arg.0' to NULL.
+
+2020-05-11  Janus Weil  <janus@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/59107
+	* gfortran.h: Rename field resolved as resolve_symbol_called
+	and assign two 2 bits instead of 1.
+	* interface.c (check_dtio_interface1): Use new field name.
+	(gfc_find_typebound_dtio_proc): Use new field name.
+	* resolve.c (gfc_resolve_intrinsic): Replace check of the formal
+	field with resolve_symbol_called is at least 2, if it is not
+	set the field to 2.  (resolve_typebound_procedure): Use new field
+	name.  (resolve_symbol): Use new field name and check whether it
+	is at least 1, if it is not set the field to 1.
+
+2020-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93499
+	* arith.c (gfc_divide): Catch division by zero.
+	(eval_intrinsic_f3): Safeguard for NULL operands.
+
+2020-05-05  Steve Kargl  <kargl@gcc.gnu.org>
+	Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93366
+	* check.c (gfc_check_associated, invalid_null_arg): Factorize
+	check for presence of invalid NULL() argument.
+	(gfc_check_kind, gfc_check_merge, gfc_check_shape)
+	(gfc_check_sizeof, gfc_check_spread, gfc_check_transfer): Use this
+	check for presence of invalid NULL() arguments.
+
+2020-04-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR fortran/94769
+	* io.c (check_io_constraints): Initialize local variable num to
+	-1 and assert that it receives a meaningful value by function
+	compare_to_allowed_values.
+
+2020-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	PR fortran/94788
+	* expr.c (gfc_check_pointer_assign): Revert patch for PR 93956.
+	* interface.c: Likewise.
+
+2020-04-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94578
+	* trans-expr.c (arrayfunc_assign_needs_temporary): If the
+	LHS is a subref pointer, we also need a temporary.
+
+2020-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93956
+	* expr.c (gfc_check_pointer_assign): Also set subref_array_pointer
+	when a function returns a pointer.
+	* interface.c (gfc_set_subref_array_pointer_arg): New function.
+	(gfc_procedure_use): Call it.
+
+2020-04-22  Fritz Reese  <foreese@gcc.gnu.org>
+
+	* trigd_fe.inc: Use mpfr to compute cosd(30) rather than a host-
+	precision floating point literal based on an invalid macro.
+
+2020-04-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/90350
+	* simplify.c (simplify_bound): In the case of assumed-size arrays
+	check if the reference is to a full array.
+
+2020-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94709
+	* scanner.c (load_line): In fixed form, also treat 'C' as comment and
+	'D'/'d' only with -fd-lines-as-comments. Treat '!$' with -fopenmp,
+	'!$acc' with -fopenacc and '!GCC$' as non-comment to permit <tab>
+	and truncation warnings.
+
+2020-04-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_attr): Add numerous flags, some cleanup.
+
+2020-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93364
+	* array.c (gfc_set_array_spec): Check for sum of rank and corank
+	not exceeding GFC_MAX_DIMENSIONS.
+
+2020-04-20  Steve Kargl  <kargl@gcc.gnu.org>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91800
+	* decl.c (variable_decl): Reject Hollerith constants as type
+	initializer.
+
+2020-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/93500
+	* resolve.c (resolve_operator): If both operands are
+	NULL, return false.
+	* simplify.c (simplify_bound): If a division by zero
+	was seen during bound simplification, free the
+	corresponcing expression and return &gfc_bad_expr.
+
+2020-04-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/94090
+	* gfortran.dg (gfc_compare_interfaces): Add
+	optional argument bad_result_characteristics.
+	* interface.c (gfc_check_result_characteristics): Fix
+	whitespace.
+	(gfc_compare_interfaces): Handle new argument; return
+	true if function return values are wrong.
+	* resolve.c (resolve_global_procedure): Hard error if
+	the return value of a function is wrong.
+
+2020-04-15  Fritz Reese  <foreese@gcc.gnu.org>
+	Linus Koenig <link@sig-st.de>
+
+	PR fortran/94192
+	* simplify.c (simplify_bound): Simplify condition for error check.
+
+2020-04-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* module.c (gfc_match_use): Fix name-conflict check for use-associating
+	the same symbol again in a submodule.
+
+2020-04-13  Linus Koenig <link@sig-st.de>
+
+	PR fortran/94192
+	* resolve.c (resolve_fl_var_and_proc): Set flag "error" to 1 if
+	pointer is found to not have an assumed rank or a deferred shape.
+	* simplify.c (simplify_bound): If an error has been issued for a
+	given pointer, one should not attempt to find its bounds.
+
 2020-04-09  Fritz Reese  <foreese@gcc.gnu.org>
 
 	PR fortran/87923

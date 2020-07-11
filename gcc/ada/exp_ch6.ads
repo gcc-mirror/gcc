@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,6 +102,9 @@ package Exp_Ch6 is
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names
    --  for build-in-place formal parameters of the given kind.
 
+   function BIP_Suffix_Kind (E : Entity_Id) return BIP_Formal_Kind;
+   --  Ada 2005 (AI-318-02): Returns the kind of the given BIP extra formal.
+
    function Build_In_Place_Formal
      (Func : Entity_Id;
       Kind : BIP_Formal_Kind) return Entity_Id;
@@ -116,6 +119,9 @@ package Exp_Ch6 is
    --  Func_Body is the root of the body of the function before its analysis.
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
+
+   function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 
    function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if functions returning the type use
@@ -234,6 +240,10 @@ package Exp_Ch6 is
    --  the constructor, and the allocator is rewritten to refer to that access
    --  object. Function_Call must denote a call to a CPP_Constructor function.
 
+   function Might_Have_Tasks (Typ : Entity_Id) return Boolean;
+   --  Return True if Typ is a limited class-wide type (or subtype), since it
+   --  might have task components.
+
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
@@ -246,12 +256,6 @@ package Exp_Ch6 is
 
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean;
    --  Return True if the function returns an object of a type that has tasks.
-
-   function Needs_Result_Accessibility_Level
-     (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
-   --  parameter to identify the accessibility level of the function result
-   --  "determined by the point of call".
 
    function Unqual_BIP_Iface_Function_Call (Expr : Node_Id) return Node_Id;
    --  Return the inner BIP function call removing any qualification from Expr

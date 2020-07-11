@@ -10,6 +10,9 @@
    */
 #undef HAVE_AS_CFI_SECTIONS
 
+/* Define to 1 if the assembler supports LSE. */
+#undef HAVE_AS_LSE
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 

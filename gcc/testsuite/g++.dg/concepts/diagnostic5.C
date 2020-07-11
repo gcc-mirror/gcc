@@ -9,7 +9,7 @@ template<typename T>
 template<typename T>
   concept c2 = requires (T x) { *x; };
 // { dg-message "satisfaction of .c2<T>. .with T = char." "" { target *-*-* } .-1 }
-// { dg-message "in requirements with .char x." "" { target *-*-* } .-2 }
+// { dg-message "in requirements with .T x. .with T = char." "" { target *-*-* } .-2 }
 // { dg-message "required expression .* is invalid" "" { target *-*-* } .-3 }
 
 template<typename T>
@@ -25,7 +25,7 @@ template<typename T>
 template<typename T>
   concept c5 = requires (T x) { { &x } -> c1; };
 // { dg-message "satisfaction of .c5<T>. .with T = char." "" { target *-*-* } .-1 }
-// { dg-message "in requirements with .char x." "" { target *-*-* } .-2 }
+// { dg-message "in requirements with .T x. .with T = char." "" { target *-*-* } .-2 }
 
 template<typename T>
   requires (c1<T> || c2<T>) || (c3<T> || c4<T>) || c5<T> // { dg-message "49: no operand" }

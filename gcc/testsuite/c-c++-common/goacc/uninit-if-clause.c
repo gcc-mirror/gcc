@@ -11,28 +11,28 @@ main (void)
   bool b, b2, b3, b4;
   int i, i2;
 
-  #pragma acc parallel if(l) /* { dg-warning "is used uninitialized in this function" } */
+  #pragma acc parallel if(l) /* { dg-warning "is used uninitialized" } */
   ;
 
-  #pragma acc parallel if(b) /* { dg-warning "is used uninitialized in this function" "" { xfail c++ } } */
+  #pragma acc parallel if(b) /* { dg-warning "is used uninitialized" "" { xfail c++ } } */
   ;
 
-  #pragma acc kernels if(l2) /* { dg-warning "is used uninitialized in this function" } */
+  #pragma acc kernels if(l2) /* { dg-warning "is used uninitialized" } */
   ;
 
-  #pragma acc kernels if(b2) /* { dg-warning "is used uninitialized in this function" "" { xfail c++ } } */
+  #pragma acc kernels if(b2) /* { dg-warning "is used uninitialized" "" { xfail c++ } } */
   ;
 
-  #pragma acc data if(l3) /* { dg-warning "is used uninitialized in this function" } */
+  #pragma acc data if(l3) /* { dg-warning "is used uninitialized" } */
   ;
 
-  #pragma acc data if(b3) /* { dg-warning "is used uninitialized in this function" "" { xfail c++ } } */
+  #pragma acc data if(b3) /* { dg-warning "is used uninitialized" "" { xfail c++ } } */
   ;
 
-  #pragma acc update if(l4) self(i) /* { dg-warning "is used uninitialized in this function" } */
+  #pragma acc update if(l4) self(i) /* { dg-warning "is used uninitialized" } */
   ;
 
-  #pragma acc update if(b4) self(i2) /* { dg-warning "is used uninitialized in this function" "" { xfail c++ } } */
+  #pragma acc update if(b4) self(i2) /* { dg-warning "is used uninitialized" "" { xfail c++ } } */
   ;
 
 }

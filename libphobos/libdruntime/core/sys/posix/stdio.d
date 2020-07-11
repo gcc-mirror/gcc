@@ -180,6 +180,37 @@ else version (CRuntime_UClibc)
         FILE* tmpfile();
     }
 }
+else version (CRuntime_Musl)
+{
+    static if ( __USE_FILE_OFFSET64 )
+    {
+        int   fgetpos64(FILE*, fpos_t *);
+        alias fgetpos64 fgetpos;
+
+        FILE* fopen64(in char*, in char*);
+        alias fopen64 fopen;
+
+        FILE* freopen64(in char*, in char*, FILE*);
+        alias freopen64 freopen;
+
+        int   fseek(FILE*, c_long, int);
+
+        int   fsetpos64(FILE*, in fpos_t*);
+        alias fsetpos64 fsetpos;
+
+        FILE* tmpfile64();
+        alias tmpfile64 tmpfile;
+    }
+    else
+    {
+        int   fgetpos(FILE*, fpos_t *);
+        FILE* fopen(in char*, in char*);
+        FILE* freopen(in char*, in char*, FILE*);
+        int   fseek(FILE*, c_long, int);
+        int   fsetpos(FILE*, in fpos_t*);
+        FILE* tmpfile();
+    }
+}
 else version (Solaris)
 {
     static if (__USE_FILE_OFFSET64 && __WORDSIZE != 64)
@@ -277,6 +308,30 @@ else version (CRuntime_UClibc)
     off_t ftello(FILE*);
   }
 }
+else version (CRuntime_Musl)
+{
+    enum L_ctermid = 20;
+
+    static if ( __USE_FILE_OFFSET64 )
+    {
+        int   fseeko64(FILE*, off_t, int);
+        alias fseeko64 fseeko;
+    }
+    else
+    {
+        int   fseeko(FILE*, off_t, int);
+    }
+
+    static if ( __USE_FILE_OFFSET64 )
+    {
+        off_t ftello64(FILE*);
+        alias ftello64 ftello;
+    }
+    else
+    {
+        off_t ftello(FILE*);
+    }
+}
 else version (Solaris)
 {
     enum L_ctermid = 9;
@@ -330,6 +385,9 @@ else version (DragonFlyBSD)                 // for DragonFlyBSD
 else version (OpenBSD)                      // as of OpenBSD 5.4
     version = HaveMemstream;
 else version (CRuntime_UClibc)
+    version = HaveMemstream;
+// http://git.musl-libc.org/cgit/musl/commit/src/stdio/open_memstream.c?id=b158b32a44d56ef20407d4285b58180447ffff1f
+else version (CRuntime_Musl)
     version = HaveMemstream;
 
 version (HaveMemstream)

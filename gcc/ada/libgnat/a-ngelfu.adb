@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -680,6 +680,8 @@ is
       Z := G * G;
       P := G * ((P2 * Z + P1) * Z + P0);
       Q := ((Q3 * Z + Q2) * Z + Q1) * Z + Q0;
+
+      pragma Assert (Q /= P);
       R := 0.5 + P / (Q - P);
 
       R := Float_Type'Base'Scaling (R, Integer (XN) + 1);

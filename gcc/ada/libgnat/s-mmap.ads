@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2019, AdaCore                     --
+--                     Copyright (C) 2007-2020, AdaCore                     --
 --                                                                          --
 -- This library is free software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -223,13 +223,11 @@ package System.Mmap is
    --  (File); such accesses may cause Storage_Error to be raised.
 
    function Data (Region : Mapped_Region) return Str_Access;
-   pragma Inline (Data);
    --  The data mapped in Region as requested. The result is an unconstrained
    --  string, so you cannot use the usual 'First and 'Last attributes.
    --  Instead, these are respectively 1 and Size.
 
    function Data (File : Mapped_File) return Str_Access;
-   pragma Inline (Data);
    --  Likewise for the region contained in File
 
    function Is_Mutable (Region : Mapped_Region) return Boolean;

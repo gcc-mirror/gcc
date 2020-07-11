@@ -111,6 +111,9 @@ ipa_dump_adjusted_parameters (FILE *f,
   unsigned i, len = vec_safe_length (adj_params);
   bool first = true;
 
+  if (!len)
+    return;
+
   fprintf (f, "    IPA adjusted parameters: ");
   for (i = 0; i < len; i++)
     {
@@ -787,7 +790,11 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 	  if (!is_gimple_reg (old_parm) || kept[i])
 	    continue;
 	  tree origin = DECL_ORIGIN (old_parm);
-	  tree arg = gimple_call_arg (stmt, i);
+	  tree arg;
+	  if (transitive_remapping)
+	    arg = gimple_call_arg (stmt, index_map[i]);
+	  else
+	    arg = gimple_call_arg (stmt, i);
 
 	  if (!useless_type_conversion_p (TREE_TYPE (origin), TREE_TYPE (arg)))
 	    {
@@ -899,7 +906,7 @@ ipa_param_adjustments::dump (FILE *f)
   fprintf (f, "    m_always_copy_start: %i\n", m_always_copy_start);
   ipa_dump_adjusted_parameters (f, m_adj_params);
   if (m_skip_return)
-    fprintf (f, "     Will SKIP return.\n");
+    fprintf (f, "    Will SKIP return.\n");
 }
 
 /* Dump information contained in the object in textual form to stderr.  */
@@ -1028,10 +1035,6 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	  DECL_CONTEXT (new_parm) = m_fndecl;
 	  TREE_USED (new_parm) = 1;
 	  DECL_IGNORED_P (new_parm) = 1;
-	  /* We assume all newly created arguments are not addressable.  */
-	  if (TREE_CODE (new_type) == COMPLEX_TYPE
-	      || TREE_CODE (new_type) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (new_parm) = 1;
 	  layout_decl (new_parm, 0);
 	  m_new_decls.quick_push (new_parm);
 
@@ -1888,7 +1891,7 @@ ipa_param_body_adjustments::reset_debug_stmts ()
 	  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
 	  TREE_READONLY (copy) = TREE_READONLY (decl);
 	  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
-	  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (decl);
+	  DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (decl);
 	  DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (decl);
 	  DECL_IGNORED_P (copy) = DECL_IGNORED_P (decl);
 	  DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);

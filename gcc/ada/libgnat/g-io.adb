@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2019, AdaCore                     --
+--                     Copyright (C) 1995-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,10 +47,10 @@ package body GNAT.IO is
    end Get;
 
    procedure Get (C : out Character) is
-      function Get_Char return Character;
+      function Get_Char return Integer;
       pragma Import (C, Get_Char, "get_char");
    begin
-      C := Get_Char;
+      C := Character'Val (Get_Char);
    end Get;
 
    --------------
@@ -121,16 +121,16 @@ package body GNAT.IO is
    end Put;
 
    procedure Put (File : File_Type; C : Character) is
-      procedure Put_Char (C : Character);
+      procedure Put_Char (C : Integer);
       pragma Import (C, Put_Char, "put_char");
 
-      procedure Put_Char_Stderr (C : Character);
+      procedure Put_Char_Stderr (C : Integer);
       pragma Import (C, Put_Char_Stderr, "put_char_stderr");
 
    begin
       case File is
-         when Stdout => Put_Char (C);
-         when Stderr => Put_Char_Stderr (C);
+         when Stdout => Put_Char (Character'Pos (C));
+         when Stderr => Put_Char_Stderr (Character'Pos (C));
       end case;
    end Put;
 

@@ -1416,12 +1416,12 @@ unittest
     struct A { ulong length; }
     struct B { @property uint length() { return 0; } }
 
-    version (X86)
+    static if (is(size_t == uint))
     {
         static assert(!hasLength!(A));
         static assert(hasLength!(B));
     }
-    else version(X86_64)
+    else static if (is(size_t == ulong))
     {
         static assert(hasLength!(A));
         static assert(!hasLength!(B));

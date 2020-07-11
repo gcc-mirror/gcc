@@ -72,6 +72,7 @@ fixincludes/configure: fixincludes/configure.ac fixincludes/aclocal.m4
 fixincludes/config.h.in: fixincludes/configure.ac fixincludes/aclocal.m4
 # intl library
 intl/plural.c: intl/plural.y
+intl/plural-config.h: intl/plural.y
 intl/configure: intl/configure.ac intl/aclocal.m4
 intl/config.h.in: intl/configure.ac intl/aclocal.m4
 # Now, proceed to gcc automatically generated files

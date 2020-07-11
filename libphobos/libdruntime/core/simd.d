@@ -10,9 +10,6 @@
  * Authors:   $(WEB digitalmars.com, Walter Bright),
  */
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module core.simd;
 
 pure:
@@ -42,6 +39,7 @@ template Vector(T)
 /* Handy aliases
  */
 static if (is(Vector!(void[8])))    alias Vector!(void[8])  void8;          ///
+static if (is(Vector!(double[1])))  alias Vector!(double[1]) double1;       ///
 static if (is(Vector!(float[2])))   alias Vector!(float[2])  float2;        ///
 static if (is(Vector!(byte[8])))    alias Vector!(byte[8])  byte8;          ///
 static if (is(Vector!(ubyte[8])))   alias Vector!(ubyte[8]) ubyte8;         ///
@@ -49,6 +47,8 @@ static if (is(Vector!(short[4])))   alias Vector!(short[4])  short4;        ///
 static if (is(Vector!(ushort[4])))  alias Vector!(ushort[4]) ushort4;       ///
 static if (is(Vector!(int[2])))     alias Vector!(int[2])    int2;          ///
 static if (is(Vector!(uint[2])))    alias Vector!(uint[2])   uint2;         ///
+static if (is(Vector!(long[1])))    alias Vector!(long[1])   long1;         ///
+static if (is(Vector!(ulong[1])))   alias Vector!(ulong[1])  ulong1;        ///
 
 static if (is(Vector!(void[16])))   alias Vector!(void[16])  void16;        ///
 static if (is(Vector!(double[2])))  alias Vector!(double[2]) double2;       ///

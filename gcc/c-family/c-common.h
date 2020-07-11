@@ -720,8 +720,8 @@ enum cxx_dialect {
   cxx14,
   /* C++17 */
   cxx17,
-  /* C++2a (C++20?) */
-  cxx2a
+  /* C++20 */
+  cxx20
 };
 
 /* The C++ dialect being used. C++98 is the default.  */
@@ -1196,7 +1196,7 @@ extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
-extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
+extern bool c_omp_check_loop_iv_exprs (location_t, tree, int, tree, tree, tree,
 				       walk_tree_lh);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *, bool);
@@ -1206,6 +1206,7 @@ extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
 extern bool c_omp_predefined_variable (tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
+extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern const char *c_omp_map_clause_name (tree, bool);

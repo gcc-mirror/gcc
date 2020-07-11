@@ -14,5 +14,5 @@ void f(typename A<T>::size_type, T);
 
 int main()
 {
-  f(1,2);			// { dg-error "ambiguous" }
+  f(1,2);
 }

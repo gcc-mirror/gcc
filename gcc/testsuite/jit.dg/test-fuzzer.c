@@ -96,7 +96,6 @@ fuzzer_init (fuzzer *f, gcc_jit_context *ctxt, unsigned int seed)
   for (i = 0; i < num_types; i++)
     {
       gcc_jit_type *type = make_random_type (f);
-      assert (type);
       f->types[f->num_types++] = type;
     }
 
@@ -188,7 +187,6 @@ get_random_type (fuzzer *f)
   if (i < NUM_TYPES)
     return gcc_jit_context_get_type (f->ctxt, types[i]);
   assert ((i - NUM_TYPES) < f->num_types);
-  assert (f->types[i - NUM_TYPES]);
   return f->types[i - NUM_TYPES];
 }
 

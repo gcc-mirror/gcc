@@ -130,7 +130,7 @@ select an extended version of the C language explicitly with
 extensions).  
 
 The default, if no C language dialect options are given,
-is @option{-std=gnu11}.  
+is @option{-std=gnu17}.
 
 The ISO C standard defines (in clause 4) two classes of conforming
 implementation.  A @dfn{conforming hosted implementation} supports the
@@ -246,7 +246,7 @@ select an extended version of the C++ language explicitly with
 @option{-std=gnu++17} (for C++17 with GNU extensions).  
 
 The default, if
-no C++ language dialect options are given, is @option{-std=gnu++14}.
+no C++ language dialect options are given, is @option{-std=gnu++17}.
 
 @section Objective-C and Objective-C++ Languages
 @cindex Objective-C

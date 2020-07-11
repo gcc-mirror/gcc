@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
-/* { dg-additional-options "-Wno-return-type" } */
+/* { dg-options "-O2 -Wno-return-type" } */
 
 namespace std
 {
@@ -30,7 +29,7 @@ namespace std
     static const bool is_integer = true;
   };
 };
-typedef unsigned int uint32_t;
+typedef unsigned uint32_t __attribute__ ((__mode__ (__SI__)));
 namespace std
 {
   template < typename _Alloc > class allocator;
@@ -70,8 +69,8 @@ namespace boost
     {
     };
   }
-  template <> class integer_traits < int >:public std::numeric_limits < int >,
-    public detail::integer_traits_base < int, (-2147483647 - 1), 2147483647 >
+  template <> class integer_traits < int32_t >:public std::numeric_limits < int32_t >,
+    public detail::integer_traits_base < int32_t, (-2147483647 - 1), 2147483647 >
   {
   };
   namespace random
@@ -192,11 +191,11 @@ namespace boost
       private:UniformRandomNumberGenerator _rng;
       };
     }
-    template < class RealType, int w, unsigned int p,
-      unsigned int q > class lagged_fibonacci_01
+    template < class RealType, int32_t w, uint32_t p,
+      uint32_t q > class lagged_fibonacci_01
     {
     public:typedef RealType result_type;
-      static const unsigned int long_lag = p;
+      static const uint32_t long_lag = p;
         lagged_fibonacci_01 ()
       {
 	seed ();
@@ -211,7 +210,7 @@ namespace boost
 	typedef detail::pass_through_engine < Generator & >ref_gen;
 	uniform_01 < ref_gen, RealType > gen01 =
 	  uniform_01 < ref_gen, RealType > (ref_gen (gen));
-	for (unsigned int j = 0; j < long_lag; ++j)
+	for (uint32_t j = 0; j < long_lag; ++j)
 	  x[j] = gen01 ();
       }
       RealType x[long_lag];

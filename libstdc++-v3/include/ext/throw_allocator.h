@@ -895,11 +895,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const throw_allocator_base<_Tp, _Cond>&)
     { return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp, typename _Cond>
     inline bool
     operator!=(const throw_allocator_base<_Tp, _Cond>&,
 	       const throw_allocator_base<_Tp, _Cond>&)
     { return false; }
+#endif
 
   /// Allocator throwing via limit condition.
   template<typename _Tp>

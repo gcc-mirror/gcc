@@ -1224,8 +1224,8 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
      address with &OBJ.  */
-  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (op->op0, 0),
-					     &addr_offset);
+  addr_base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (op->op0, 0),
+					       &addr_offset, vn_valueize);
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
@@ -1282,8 +1282,9 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  poly_int64 addr_offset;
 
 	  addr = gimple_assign_rhs1 (def_stmt);
-	  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
-						     &addr_offset);
+	  addr_base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (addr, 0),
+						       &addr_offset,
+						       vn_valueize);
 	  /* If that didn't work because the address isn't invariant propagate
 	     the reference tree from the address operation in case the current
 	     dereference isn't offsetted.  */
@@ -2419,7 +2420,7 @@ public:
 };
 
 /* Global RPO state for access from hooks.  */
-static rpo_elim *rpo_avail;
+static eliminate_dom_walker *rpo_avail;
 basic_block vn_context_bb;
 
 /* Return true if BASE1 and BASE2 can be adjusted so they have the
@@ -2527,7 +2528,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 and return the found value.  */
       if (is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
-	  && ref->ref)
+	  && (ref->ref || data->orig_ref.ref))
 	{
 	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;
 	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
@@ -2552,7 +2553,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		     -fno-strict-aliasing.  So simply resort to alignment to
 		     rule out overlaps.  Do this check last because it is
 		     quite expensive compared to the hash-lookup above.  */
-		  && multiple_p (get_object_alignment (ref->ref), ref->size)
+		  && multiple_p (get_object_alignment
+				   (ref->ref ? ref->ref : data->orig_ref.ref),
+				 ref->size)
 		  && multiple_p (get_object_alignment (lhs), ref->size))
 		return res;
 	    }
@@ -3221,8 +3224,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       return NULL;
     }
 
-  /* 6) For memcpy copies translate the reference through them if
-     the copy kills ref.  */
+  /* 6) For memcpy copies translate the reference through them if the copy
+     kills ref.  But we cannot (easily) do this translation if the memcpy is
+     a storage order barrier, i.e. is equivalent to a VIEW_CONVERT_EXPR that
+     can modify the storage order of objects (see storage_order_barrier_p).  */
   else if (data->vn_walk_kind == VN_WALKREWRITE
 	   && is_gimple_reg_type (vr->type)
 	   /* ???  Handle BCOPY as well.  */
@@ -3272,6 +3277,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	}
       if (TREE_CODE (lhs) == ADDR_EXPR)
 	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (lhs)))
+	      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_TYPE (lhs))))
+	    return (void *)-1;
 	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (lhs, 0),
 						    &lhs_offset);
 	  if (!tem)
@@ -3300,6 +3308,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	rhs = vn_valueize (rhs);
       if (TREE_CODE (rhs) == ADDR_EXPR)
 	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (rhs)))
+	      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_TYPE (rhs))))
+	    return (void *)-1;
 	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs, 0),
 						    &rhs_offset);
 	  if (!tem)
@@ -3446,7 +3457,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
     = valueize_refs (shared_lookup_references);
   vr1.type = type;
   vr1.set = set;
-  vr1.set = base_set;
+  vr1.base_set = base_set;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
@@ -4469,6 +4480,8 @@ set_ssa_val_to (tree from, tree to)
   vn_ssa_aux_t from_info = VN_INFO (from);
   tree currval = from_info->valnum; // SSA_VAL (from)
   poly_int64 toff, coff;
+  bool curr_undefined = false;
+  bool curr_invariant = false;
 
   /* The only thing we allow as value numbers are ssa_names
      and invariants.  So assert that here.  We don't allow VN_TOP
@@ -4511,9 +4524,9 @@ set_ssa_val_to (tree from, tree to)
 	    }
 	  return false;
 	}
-      bool curr_invariant = is_gimple_min_invariant (currval);
-      bool curr_undefined = (TREE_CODE (currval) == SSA_NAME
-			     && ssa_undefined_value_p (currval, false));
+      curr_invariant = is_gimple_min_invariant (currval);
+      curr_undefined = (TREE_CODE (currval) == SSA_NAME
+			&& ssa_undefined_value_p (currval, false));
       if (currval != VN_TOP
 	  && !curr_invariant
 	  && !curr_undefined
@@ -4568,9 +4581,8 @@ set_and_exit:
       && !operand_equal_p (currval, to, 0)
       /* Different undefined SSA names are not actually different.  See
          PR82320 for a testcase were we'd otherwise not terminate iteration.  */
-      && !(TREE_CODE (currval) == SSA_NAME
+      && !(curr_undefined
 	   && TREE_CODE (to) == SSA_NAME
-	   && ssa_undefined_value_p (currval, false)
 	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
@@ -4582,6 +4594,22 @@ set_and_exit:
 	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
 	   && known_eq (coff, toff)))
     {
+      if (to != from
+	  && currval != VN_TOP
+	  && !curr_undefined
+	  /* We do not want to allow lattice transitions from one value
+	     to another since that may lead to not terminating iteration
+	     (see PR95049).  Since there's no convenient way to check
+	     for the allowed transition of VAL -> PHI (loop entry value,
+	     same on two PHIs, to same PHI result) we restrict the check
+	     to invariants.  */
+	  && curr_invariant
+	  && is_gimple_min_invariant (to))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " forced VARYING");
+	  to = from;
+	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " (changed)\n");
       from_info->valnum = to;
@@ -6557,7 +6585,11 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
 {
   eliminate_dom_walker walker (CDI_DOMINATORS, inserted_exprs);
 
+  eliminate_dom_walker *saved_rpo_avail = rpo_avail;
+  rpo_avail = &walker;
   walker.walk (cfun->cfg->x_entry_block_ptr);
+  rpo_avail = saved_rpo_avail;
+
   return walker.eliminate_cleanup ();
 }
 

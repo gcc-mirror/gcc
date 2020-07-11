@@ -6041,10 +6041,7 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 						     &right_nc, location,
 						     &result))
 	      return this;
-	    return Expression::make_cast(Type::make_boolean_type(),
-					 Expression::make_boolean(result,
-								  location),
-					 location);
+	    return Expression::make_boolean(result, location);
 	  }
 	else
 	  {

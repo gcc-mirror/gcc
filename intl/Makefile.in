@@ -57,6 +57,7 @@ HEADERS = \
   gettextP.h \
   hash-string.h \
   loadinfo.h \
+  plural-config.h \
   plural-exp.h \
   eval-plural.h \
   localcharset.h \
@@ -133,7 +134,13 @@ libintl.h: $(srcdir)/libgnuintl.h
 	$(COMPILE) $<
 
 .y.c:
-	$(YACC) $(YFLAGS) --output $@ $<
+@BISON3_YES@	echo '#define USE_BISON3' > $(patsubst %.c,%-config.h,$@)
+@BISON3_YES@	sed 's,%pure_parser,,;s,^/\* BISON3 \(.*\) \*/$$,\1,' $< > $@.y
+@BISON3_YES@	$(YACC) $(YFLAGS) --output $@.c $@.y
+@BISON3_YES@	sed 's/\.c\.y"/.y"/' $@.c > $@
+@BISON3_YES@	rm -f $@.c $@.y $@.h
+@BISON3_NO@	echo '/* #define USE_BISON3 */' > $(patsubst %.c,%-config.h,$@)
+@BISON3_NO@	$(YACC) $(YFLAGS) --output $@ $<
 	rm -f $*.h
 
 INCLUDES = -I. -I$(srcdir)
@@ -161,7 +168,7 @@ dngettext.o finddomain.o gettext.o intl-compat.o loadmsgcat.o \
 localealias.o ngettext.o textdomain.o: gettextP.h gmo.h loadinfo.h
 dcigettext.o loadmsgcat.o: hash-string.h
 explodename.o l10nflist.o: loadinfo.h
-dcigettext.o loadmsgcat.o plural.o plural-exp.o: plural-exp.h
+dcigettext.o loadmsgcat.o plural.o plural-exp.o: plural-exp.h plural-config.h
 dcigettext.o: eval-plural.h
 localcharset.o: localcharset.h
 localealias.o localcharset.o relocatable.o: relocatable.h
@@ -237,6 +244,8 @@ $(srcdir)/aclocal.m4: @MAINT@ $(aclocal_deps)
 
 config.h: stamp-h1
 	test -f config.h || (rm -f stamp-h1 && $(MAKE) stamp-h1)
+
+plural-config.h: plural.c
 
 stamp-h1: $(srcdir)/config.h.in config.status
 	-rm -f stamp-h1

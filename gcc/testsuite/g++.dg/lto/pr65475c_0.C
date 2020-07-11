@@ -24,7 +24,9 @@ namespace std
 {
 class locale
 {
+public:
     class facet;
+private:
     class _Impl;
     _Impl *_M_impl;
 };
@@ -70,6 +72,7 @@ class ios_base
     int _M_word_size;
     _Words *_M_word;
     locale _M_ios_locale;
+protected:
     virtual ~ ios_base ();
 };
 template < typename, typename > class istreambuf_iterator

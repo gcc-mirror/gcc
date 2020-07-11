@@ -34,4 +34,13 @@ static const struct default_options gcn_option_optimization_table[] =
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE gcn_option_optimization_table
 
+static enum unwind_info_type
+gcn_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+  return UI_NONE;
+}
+
+#undef  TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO gcn_except_unwind_info
+
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

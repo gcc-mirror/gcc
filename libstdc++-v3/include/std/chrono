@@ -43,6 +43,7 @@
 #include <bits/parse_numbers.h> // for literals support.
 #if __cplusplus > 201703L
 # include <concepts>
+# include <compare>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -668,12 +669,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __ct(__lhs).count() < __ct(__rhs).count();
       }
 
+#if __cpp_lib_three_way_comparison
+    template<typename _Rep1, typename _Period1,
+	     typename _Rep2, typename _Period2>
+      requires three_way_comparable<common_type_t<_Rep1, _Rep2>>
+      constexpr auto
+      operator<=>(const duration<_Rep1, _Period1>& __lhs,
+		  const duration<_Rep2, _Period2>& __rhs)
+      {
+	using __ct = common_type_t<duration<_Rep1, _Period1>,
+				   duration<_Rep2, _Period2>>;
+	return __ct(__lhs).count() <=> __ct(__rhs).count();
+      }
+#else
     template<typename _Rep1, typename _Period1,
 	     typename _Rep2, typename _Period2>
       constexpr bool
       operator!=(const duration<_Rep1, _Period1>& __lhs,
 		 const duration<_Rep2, _Period2>& __rhs)
       { return !(__lhs == __rhs); }
+#endif
 
     template<typename _Rep1, typename _Period1,
 	     typename _Rep2, typename _Period2>
@@ -903,11 +918,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const time_point<_Clock, _Dur2>& __rhs)
       { return __lhs.time_since_epoch() == __rhs.time_since_epoch(); }
 
+#if __cpp_lib_three_way_comparison
+    template<typename _Clock, typename _Dur1,
+	     three_way_comparable_with<_Dur1> _Dur2>
+      constexpr auto
+      operator<=>(const time_point<_Clock, _Dur1>& __lhs,
+		  const time_point<_Clock, _Dur2>& __rhs)
+      { return __lhs.time_since_epoch() <=> __rhs.time_since_epoch(); }
+#else
     template<typename _Clock, typename _Dur1, typename _Dur2>
       constexpr bool
       operator!=(const time_point<_Clock, _Dur1>& __lhs,
 		 const time_point<_Clock, _Dur2>& __rhs)
       { return !(__lhs == __rhs); }
+#endif
 
     template<typename _Clock, typename _Dur1, typename _Dur2>
       constexpr bool

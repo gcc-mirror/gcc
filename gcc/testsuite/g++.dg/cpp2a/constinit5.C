@@ -1,5 +1,5 @@
 // PR c++/91360 - Implement C++20 P1143R2: constinit
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // Check that we preserve DECL_DECLARED_CONSTINIT_P in duplicate_decls.
 
 int gl = 42;

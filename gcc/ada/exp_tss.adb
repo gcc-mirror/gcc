@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,27 +147,29 @@ package body Exp_Tss is
      (Typ : Entity_Id;
       Nam : TSS_Name_Type) return Entity_Id
    is
-      Btyp : Entity_Id := Typ;
+      Btyp : Entity_Id;
       Proc : Entity_Id;
 
    begin
-      loop
-         Btyp := Base_Type (Btyp);
-         Proc := TSS (Btyp, Nam);
+      --  If Typ is a private type, look at the full view
 
-         exit when Present (Proc)
-           or else not Is_Derived_Type (Btyp);
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         Btyp := Base_Type (Full_View (Typ));
+      else
+         Btyp := Base_Type (Typ);
+      end if;
 
-         --  If Typ is a derived type, it may inherit attributes from some
-         --  ancestor.
+      Proc := TSS (Btyp, Nam);
 
-         Btyp := Etype (Btyp);
-      end loop;
+      --  If Typ is a derived type, it may inherit attributes from an ancestor
+
+      if No (Proc) and then Is_Derived_Type (Btyp) then
+         Proc := Find_Inherited_TSS (Etype (Btyp), Nam);
+      end if;
+
+      --  If nothing else, use the TSS of the root type
 
       if No (Proc) then
-
-         --  If nothing else, use the TSS of the root type
-
          Proc := TSS (Base_Type (Underlying_Type (Typ)), Nam);
       end if;
 

@@ -33,9 +33,4 @@ extern void __gcov_reset (void);
 
 extern void __gcov_dump (void);
 
-/* Write profile information to a file and reset counters to zero.
-   The function does operations under a mutex.  */
-
-extern void __gcov_flush (void);
-
 #endif /* GCC_GCOV_H */

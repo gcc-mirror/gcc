@@ -17,7 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
-// { dg-error "not a function pointer" "" { target *-*-* } 157 }
+// { dg-error "not a function pointer" "" { target *-*-* } 158 }
 
 #include <memory>
 

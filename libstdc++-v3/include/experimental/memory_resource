@@ -413,7 +413,7 @@ namespace pmr {
       do_allocate(size_t __bytes, size_t __alignment) override
       {
 	// Cannot use max_align_t on 32-bit Solaris x86, see PR libstdc++/77691
-#if ! (defined __sun__ && defined __i386__)
+#if ! ((defined __sun__ || defined __VXWORKS__) && defined __i386__)
 	if (__alignment == alignof(max_align_t))
 	  return _M_allocate<alignof(max_align_t)>(__bytes);
 #endif
@@ -439,7 +439,7 @@ namespace pmr {
       do_deallocate(void* __ptr, size_t __bytes, size_t __alignment) noexcept
       override
       {
-#if ! (defined __sun__ && defined __i386__)
+#if ! ((defined __sun__ || defined __VXWORKS__) && defined __i386__)
 	if (__alignment == alignof(max_align_t))
 	  return (void) _M_deallocate<alignof(max_align_t)>(__ptr, __bytes);
 #endif

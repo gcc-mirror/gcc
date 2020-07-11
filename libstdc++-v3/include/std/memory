@@ -180,6 +180,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 // @}
 
 #if __cplusplus > 201703L
+#define __cpp_lib_assume_aligned 201811L
   /** @brief Inform the compiler that a pointer is aligned.
    *
    *  @tparam _Align An alignment value (i.e. a power of two)

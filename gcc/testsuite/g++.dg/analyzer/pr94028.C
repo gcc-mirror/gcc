@@ -12,7 +12,7 @@ enum e {} i;
 
 struct j
 {
-  void *operator new (__SIZE_TYPE__ b)
+  void *operator new (__SIZE_TYPE__ b) throw()
   {
     return calloc (b, sizeof (int)); // { dg-warning "leak" }
   }

@@ -125,7 +125,8 @@
    1      r1		  Caller Saved.  Also used as a temporary by function.
 			  profiler and function prologue/epilogue.
    2      r2       sp	  Stack Pointer.
-   3*     r3.w0    ra	  Return Address (16-bit).
+   3*     r3.w0		  Caller saved.
+   3*     r3.w2    ra	  Return Address (16-bit).
    4      r4       fp	  Frame Pointer, also called Argument Pointer in ABI.
    5-13   r5-r13	  Callee Saved Registers.
    14-29  r14-r29	  Register Arguments.  Caller Saved Registers.
@@ -152,7 +153,7 @@
 
 #define FIXED_REGISTERS				\
   {						\
-/*   0 */  0,0,0,0, 0,0,0,0, 1,1,1,1, 1,1,1,1,	\
+/*   0 */  0,0,0,0, 0,0,0,0, 1,1,1,1, 0,0,1,1,	\
 /*   4 */  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,	\
 /*   8 */  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,	\
 /*  12 */  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,	\
@@ -178,10 +179,13 @@
   }
 
 #define PRU_SEQ_R(X)  (X) * 4 + 0, (X) * 4 + 1, (X) * 4 + 2, (X) * 4 + 3
+#define PRU_SEQ_R_W0(X)  (X) * 4 + 0, (X) * 4 + 1
+#define PRU_SEQ_R_W2(X)  (X) * 4 + 2, (X) * 4 + 3
 #define REG_ALLOC_ORDER							    \
   {									    \
     /* Call-clobbered, yet not used for parameters.  */			    \
     PRU_SEQ_R (0),  PRU_SEQ_R ( 1),					    \
+    PRU_SEQ_R_W0 (3),							    \
 									    \
     PRU_SEQ_R (14), PRU_SEQ_R (15), PRU_SEQ_R (16), PRU_SEQ_R (17),	    \
     PRU_SEQ_R (18), PRU_SEQ_R (19), PRU_SEQ_R (20), PRU_SEQ_R (21),	    \
@@ -193,7 +197,8 @@
     PRU_SEQ_R (13),							    \
 									    \
     PRU_SEQ_R ( 4),							    \
-    PRU_SEQ_R ( 2), PRU_SEQ_R ( 3),					    \
+    PRU_SEQ_R ( 2),							    \
+    PRU_SEQ_R_W2 (3),							    \
 									    \
     /* I/O and virtual registers.  */					    \
     PRU_SEQ_R (30), PRU_SEQ_R (31), PRU_SEQ_R (32), PRU_SEQ_R (33),	    \

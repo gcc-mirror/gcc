@@ -822,7 +822,7 @@ void cpuidX86()
         {
             asm pure nothrow @nogc {
                 "cpuid" : "=a" (pnb[0]), "=b" (pnb[1]), "=c" (pnb[ 2]), "=d" (pnb[ 3]) : "a" (0x8000_0002);
-                "cpuid" : "=a" (pnb[4]), "=b" (pnb[5]), "=c" (pnb[ 6]), "=d" (pnb[ 7]) : "a" (0x8000_0003);               
+                "cpuid" : "=a" (pnb[4]), "=b" (pnb[5]), "=c" (pnb[ 6]), "=d" (pnb[ 7]) : "a" (0x8000_0003);
                 "cpuid" : "=a" (pnb[8]), "=b" (pnb[9]), "=c" (pnb[10]), "=d" (pnb[11]) : "a" (0x8000_0004);
             }
         }
@@ -941,13 +941,27 @@ void cpuidX86()
             datacache[0].lineSize = 32;
         }
     }
-    if (max_cpuid >= 0x0B) {
+    if (cf.probablyIntel && max_cpuid >= 0x0B) {
         // For Intel i7 and later, use function 0x0B to determine
         // cores and hyperthreads.
         getCpuInfo0B();
     } else {
         if (hyperThreadingBit) cf.maxThreads = (apic>>>16) & 0xFF;
         else cf.maxThreads = cf.maxCores;
+
+        if (cf.probablyAMD && max_extended_cpuid >= 0x8000_001E) {
+            version (GNU) asm pure nothrow @nogc {
+                "cpuid" : "=a" (a), "=b" (b) : "a" (0x8000_001E) : "ecx", "edx";
+            } else {
+                asm pure nothrow @nogc {
+                    mov EAX, 0x8000_001e;
+                    cpuid;
+                    mov b, EBX;
+                }
+            }
+            ubyte coresPerComputeUnit = ((b >> 8) & 3) + 1;
+            cf.maxCores = cf.maxThreads / coresPerComputeUnit;
+        }
     }
 }
 
@@ -975,7 +989,7 @@ bool hasCPUID()
                 xor {(%%esp), %%eax|eax, [esp]}
                                            # eax = whichever bits were changed
                 popf{l|d}                  # Restore original EFLAGS
-                " : "=a" flags;
+                " : "=a" (flags);
             }
         }
         else version (D_InlineAsm_X86)

@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // EXECUTE_ARGS: runnable/wc2.d
 

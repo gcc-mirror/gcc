@@ -29,10 +29,10 @@ EnumValue
 Enum(gpu_type) String(fiji) Value(PROCESSOR_FIJI)
 
 EnumValue
-Enum(gpu_type) String(gfx900) Value(PROCESSOR_VEGA)
+Enum(gpu_type) String(gfx900) Value(PROCESSOR_VEGA10)
 
 EnumValue
-Enum(gpu_type) String(gfx906) Value(PROCESSOR_VEGA)
+Enum(gpu_type) String(gfx906) Value(PROCESSOR_VEGA20)
 
 march=
 Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
@@ -69,9 +69,6 @@ int stack_size_opt = -1
 mstack-size=
 Target Report RejectNegative Joined UInteger Var(stack_size_opt) Init(-1)
 -mstack-size=<number>	Set the private segment size per wave-front, in bytes.
-
-mlocal-symbol-id=
-Target RejectNegative Report JoinedOrMissing Var(local_symbol_id) Init(0)
 
 Wopenacc-dims
 Target Var(warn_openacc_dims) Warning

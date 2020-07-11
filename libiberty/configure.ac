@@ -243,6 +243,9 @@ case " ${CFLAGS} " in
 esac
 AC_SUBST(NOASANFLAG)
 
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+AC_SUBST(CET_HOST_FLAGS)
+
 echo "# Warning: this fragment is automatically generated" > temp-frag
 
 if [[ -n "${frag}" ]] && [[ -f "${frag}" ]]; then

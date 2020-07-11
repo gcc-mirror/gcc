@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0
@@ -242,7 +242,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
         void visit(TupleExp *e)
         {
             expOptimize(e->e0, WANTvalue);
-            for (size_t i = 0; i < e->exps->dim; i++)
+            for (size_t i = 0; i < e->exps->length; i++)
             {
                 expOptimize((*e->exps)[i], WANTvalue);
             }
@@ -253,7 +253,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             if (e->elements)
             {
                 expOptimize(e->basis, result & WANTexpand);
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     expOptimize((*e->elements)[i], result & WANTexpand);
                 }
@@ -262,8 +262,8 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
 
         void visit(AssocArrayLiteralExp *e)
         {
-            assert(e->keys->dim == e->values->dim);
-            for (size_t i = 0; i < e->keys->dim; i++)
+            assert(e->keys->length == e->values->length);
+            for (size_t i = 0; i < e->keys->length; i++)
             {
                 expOptimize((*e->keys)[i], result & WANTexpand);
                 expOptimize((*e->values)[i], result & WANTexpand);
@@ -277,7 +277,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             e->stageflags |= stageOptimize;
             if (e->elements)
             {
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     expOptimize((*e->elements)[i], result & WANTexpand);
                 }
@@ -501,7 +501,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             // Optimize parameters
             if (e->newargs)
             {
-                for (size_t i = 0; i < e->newargs->dim; i++)
+                for (size_t i = 0; i < e->newargs->length; i++)
                 {
                     expOptimize((*e->newargs)[i], WANTvalue);
                 }
@@ -509,7 +509,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
 
             if (e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     expOptimize((*e->arguments)[i], WANTvalue);
                 }
@@ -529,9 +529,9 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
                 if (t1->ty == Tdelegate) t1 = t1->nextOf();
                 assert(t1->ty == Tfunction);
                 TypeFunction *tf = (TypeFunction *)t1;
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
-                    Parameter *p = Parameter::getNth(tf->parameters, i);
+                    Parameter *p = tf->parameterList[i];
                     bool keep = p && (p->storageClass & (STCref | STCout)) != 0;
                     expOptimize((*e->arguments)[i], WANTvalue, keep);
                 }
@@ -1017,7 +1017,7 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             if (arr->op == TOKstring)
                 len = ((StringExp *)arr)->len;
             else if (arr->op == TOKarrayliteral)
-                len = ((ArrayLiteralExp *)arr)->elements->dim;
+                len = ((ArrayLiteralExp *)arr)->elements->length;
             else
             {
                 Type *t = arr->type->toBasetype();
@@ -1095,22 +1095,23 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
             //printf("-SliceExp::optimize() %s\n", ret->toChars());
         }
 
-        void visit(AndAndExp *e)
+        void visit(LogicalExp *e)
         {
-            //printf("AndAndExp::optimize(%d) %s\n", result, e->toChars());
+            //printf("LogicalExp::optimize(%d) %s\n", result, e->toChars());
             if (expOptimize(e->e1, WANTvalue))
                 return;
-
-            if (e->e1->isBool(false))
+            const bool oror = e->op == TOKoror;
+            if (e->e1->isBool(oror))
             {
-                // Replace with (e1, false)
-                ret = new IntegerExp(e->loc, 0, Type::tbool);
+                // Replace with (e1, oror)
+                ret = new IntegerExp(e->loc, oror, Type::tbool);
                 ret = Expression::combine(e->e1, ret);
                 if (e->type->toBasetype()->ty == Tvoid)
                 {
                     ret = new CastExp(e->loc, ret, Type::tvoid);
                     ret->type = e->type;
                 }
+                ret = ret->optimize(result);
                 return;
             }
 
@@ -1123,52 +1124,9 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
                 {
                     bool n1 = e->e1->isBool(true);
                     bool n2 = e->e2->isBool(true);
-                    ret = new IntegerExp(e->loc, n1 && n2, e->type);
+                    ret = new IntegerExp(e->loc, oror ? (n1 || n2) : (n1 && n2), e->type);
                 }
-                else if (e->e1->isBool(true))
-                {
-                    if (e->type->toBasetype()->ty == Tvoid)
-                        ret = e->e2;
-                    else
-                    {
-                        ret = new CastExp(e->loc, e->e2, e->type);
-                        ret->type = e->type;
-                    }
-                }
-            }
-        }
-
-        void visit(OrOrExp *e)
-        {
-            //printf("OrOrExp::optimize(%d) %s\n", result, e->toChars());
-            if (expOptimize(e->e1, WANTvalue))
-                return;
-
-            if (e->e1->isBool(true))
-            {
-                // Replace with (e1, true)
-                ret = new IntegerExp(e->loc, 1, Type::tbool);
-                ret = Expression::combine(e->e1, ret);
-                if (e->type->toBasetype()->ty == Tvoid)
-                {
-                    ret = new CastExp(e->loc, ret, Type::tvoid);
-                    ret->type = e->type;
-                }
-                return;
-            }
-
-            if (expOptimize(e->e2, WANTvalue))
-                return;
-
-            if (e->e1->isConst())
-            {
-                if (e->e2->isConst())
-                {
-                    bool n1 = e->e1->isBool(true);
-                    bool n2 = e->e2->isBool(true);
-                    ret = new IntegerExp(e->loc, n1 || n2, e->type);
-                }
-                else if (e->e1->isBool(false))
+                else if (e->e1->isBool(!oror))
                 {
                     if (e->type->toBasetype()->ty == Tvoid)
                         ret = e->e2;

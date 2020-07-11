@@ -1,3 +1,475 @@
+2020-07-10  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_key_s): Change virtual_refcount to
+	dynamic_refcount.
+	(struct gomp_device_descr): Remove GOMP_MAP_VARS_OPENACC_ENTER_DATA.
+	* oacc-mem.c (acc_map_data): Substitute virtual_refcount for
+	dynamic_refcount.
+	(acc_unmap_data): Update comment.
+	(goacc_map_var_existing, goacc_enter_datum): Adjust for
+	dynamic_refcount semantics.
+	(goacc_exit_datum_1, goacc_exit_datum): Re-add some error checking.
+	Adjust for dynamic_refcount semantics.
+	(goacc_enter_data_internal): Implement "present" case of dynamic
+	memory-map handling here.  Update "non-present" case for
+	dynamic_refcount semantics.
+	(goacc_exit_data_internal): Use goacc_exit_datum_1.
+	* target.c (gomp_map_vars_internal): Remove
+	GOMP_MAP_VARS_OPENACC_ENTER_DATA handling.  Update for dynamic_refcount
+	handling.
+	(gomp_unmap_vars_internal): Remove virtual_refcount handling.
+	(gomp_load_image_to_device): Substitute dynamic_refcount for
+	virtual_refcount.
+	* testsuite/libgomp.oacc-c-c++-common/pr92843-1.c: Remove XFAILs.
+	* testsuite/libgomp.oacc-c-c++-common/refcounting-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/refcounting-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/struct-3-1-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Remove XFAILs and
+	trace output.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: Remove
+	trace output.
+	* testsuite/libgomp.oacc-fortran/dynamic-incr-structural-1.f90: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-4.c:
+	Remove stale comment.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Remove XFAILs.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-2.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Adjust XFAIL.
+
+2020-07-10  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_map_var_existing): New function.
+	(goacc_enter_datum): Use above function.
+	(goacc_exit_datum_1): New function.
+	(goacc_exit_datum): Use above function.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-2.c: New test.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (find_group_last): Group data-movement clauses
+	(GOMP_MAP_TO_PSET, GOMP_MAP_TO, etc.) together with a subsequent
+	GOMP_MAP_ATTACH.  Allow standalone GOMP_MAP_ATTACH also.
+
+2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-19.c: New test.
+	* testsuite/libgomp.c/loop-20.c: New test.
+
+2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_alloctrait_value_t): Change omp_atv_default from
+	2 to -1.  Add omp_atv_serialized and define omp_atv_sequential using
+	it.  Remove __omp_alloctrait_value_max__.
+	* allocator.c (omp_init_allocator): Handle omp_atv_default for
+	omp_atk_alignment and omp_atk_pool_size.
+
+2020-07-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal): Revert always-copyfrom
+	behavior for 'GOMP_MAP_FORCE_FROM'.
+	* testsuite/libgomp.oacc-c-c++-common/pr92843-1.c: Adjust XFAIL.
+
+2020-07-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal): Remove
+	'GOMP_MAP_ALWAYS_FROM' handling.
+
+2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: Replace fragile
+	'scan-assembler' with 'scan-offload-rtl'.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381.c: Likewise.
+
+2020-06-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Assert 'kind !=
+	GOMP_MAP_ATTACH'.
+	(gomp_map_vars_internal): Clean up.
+
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-17.c: New test.
+	* testsuite/libgomp.c/loop-18.c: New test.
+
+2020-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/libgomp.c++/atomic-3.C: Use -std=gnu++14.
+
+2020-06-23  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/lib/libgomp.exp: Load gcc lib scanoffload.exp.
+	* testsuite/lib/libgomp-dg.exp: Drop now-obsolete -save-temps.
+
+2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am: Use -include.
+	* Makefile.in: Regenerate.
+
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.am (tmake_file): Build and install AIX-style FAT libraries.
+	* Makefile.in: Regenerate
+	* configure.ac (tmake_file): Substitute.
+	* configure: Regenerate.
+	* configure.tgt (powerpc-ibm-aix*): Define tmake_file.
+	* config/t-aix: New file.
+
+2020-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR lto/94848
+	* testsuite/libgomp.fortran/use_device_ptr-optional-3.f90: Add
+	'dg-do run'.
+
+2020-06-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (init_environment_variables): Use ".so.1"
+	variant for HSA_RUNTIME_LIB name.
+	(find_executable_symbol_1): Delete.
+	(find_executable_symbol): Delete.
+	(init_kernel_properties): Add ".kd" suffix to symbol names.
+	(find_load_offset): Delete.
+	(create_and_finalize_hsa_program): Remove relocation handling.
+
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/routine-10.f90: New test.
+
+2020-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/94848
+	PR middle-end/95551
+	* testsuite/libgomp.fortran/target-var.f90: New test.
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>: Explain
+	special handling.
+
+2020-06-05  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
+	Simplify.
+
+2020-06-05  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-2.c: New test.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
+	Evaluate 'copyfrom' individually for each entry.
+	* testsuite/libgomp.oacc-c-c++-common/struct-1.c: Update.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal) <GOMP_MAP_STRUCT>:
+	Evaluate 'finalize' individually for each entry.
+	* testsuite/libgomp.oacc-c-c++-common/struct-1.c: New file.
+	* testsuite/libgomp.oacc-c-c++-common/struct-refcount-1.c: Remove
+	file.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-7.c: Fix 'sizeof'
+	usage.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_datum): Repair 'is_tgt_unmapped'
+	checking.
+	(acc_unmap_data, goacc_exit_data_internal): Restore
+	'is_tgt_unmapped' checking.
+	* testsuite/libgomp.oacc-c-c++-common/struct-refcount-1.c: New
+	file.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (acc_unmap_data): Don't open-code 'gomp_remove_var'.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/92854
+	* oacc-mem.c (acc_unmap_data): Remove 'tgt' reference counting.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/92854
+	* testsuite/libgomp.oacc-c-c++-common/pr92854-1.c: Extend some
+	more.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (goacc_enter_datum): Use 'tgt' returned from
+	'gomp_map_vars'.
+	 (acc_map_data): Clean up accordingly.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: XFAIL behavior
+	of over-eager 'finalize' clause.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: New
+	file.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-2.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-2.f90: Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_exit_data_internal): Unlock on error path.
+
+2020-06-04  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (acc_attach_async): Add missing gomp_mutex_unlock on
+	error path.
+	(goacc_detach_internal): Likewise.
+
+2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Initialize before
+	the checkpoint.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
+2020-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_free): Fix up build if HAVE_SYNC_BUILTINS is not
+	defined.
+
+2020-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/alloc-4.c: New test.
+
+2020-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_alloc): For size == 0, return NULL early.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95191
+	* testsuite/libgomp.fortran/async_io_9.f90: New test.
+
+2020-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_uintptr_t): New typedef.
+	(__GOMP_UINTPTR_T_ENUM): Define.
+	(omp_memspace_handle_t, omp_allocator_handle_t, omp_alloctrait_key_t,
+	omp_alloctrait_value_t, omp_alloctrait_t): New typedefs.
+	(__GOMP_DEFAULT_NULL_ALLOCATOR): Define.
+	(omp_init_allocator, omp_destroy_allocator, omp_set_default_allocator,
+	omp_get_default_allocator, omp_alloc, omp_free): Declare.
+	* libgomp.h (struct gomp_team_state): Add def_allocator field.
+	(gomp_def_allocator): Declare.
+	* libgomp.map (OMP_5.0.1): Export omp_set_default_allocator,
+	omp_get_default_allocator, omp_init_allocator, omp_destroy_allocator,
+	omp_alloc and omp_free.
+	* team.c (gomp_team_start): Copy over ts.def_allocator.
+	* env.c (gomp_def_allocator): New variable.
+	(parse_wait_policy): Adjust function comment.
+	(parse_allocator): New function.
+	(handle_omp_display_env): Print OMP_ALLOCATOR.
+	(initialize_env): Call parse_allocator.
+	* Makefile.am (libgomp_la_SOURCES): Add allocator.c.
+	* allocator.c: New file.
+	* icv.c (omp_set_default_allocator, omp_get_default_allocator): New
+	functions.
+	* testsuite/libgomp.c-c++-common/alloc-1.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-2.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-3.c: New test.
+	* Makefile.in: Regenerated.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/95119
+	* testsuite/libgomp.fortran/close_errors_1.f90: New test.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/target-40.c: New test.
+
+2020-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94690
+	* testsuite/libgomp.fortran/pr66199-3.f90: New.
+	* testsuite/libgomp.fortran/pr66199-4.f90: New.
+	* testsuite/libgomp.fortran/pr66199-5.f90: New.
+	* testsuite/libgomp.fortran/pr66199-6.f90: New.
+	* testsuite/libgomp.fortran/pr66199-7.f90: New.
+	* testsuite/libgomp.fortran/pr66199-8.f90: New.
+	* testsuite/libgomp.fortran/pr66199-9.f90: New.
+
+2020-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-39.c: New test.
+
+2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/accel/openacc.f90 (acc_device_current): Set to '-1'.
+	* openacc.f90 (acc_device_current): Likewise.
+	* openacc.h (acc_device_current): Likewise.
+	* openacc_lib.h (acc_device_current): Likewise.
+
+	PR target/94282
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Remove
+	'dg-allow-blank-lines-in-output'.
+
+	* oacc-init.c (get_openacc_name): Handle 'gcn'.
+	* testsuite/lib/libgomp.exp
+	(offload_target_to_openacc_device_type) [amdgcn*]: Return
+	'radeon'.  Adjust all users.
+	(check_effective_target_openacc_amdgcn_accel_present): Rename
+	to...
+	(check_effective_target_openacc_radeon_accel_present): ... this.
+	Adjust all users.
+	(check_effective_target_openacc_amdgcn_accel_selected): Rename to...
+	(check_effective_target_openacc_radeon_accel_selected): ... this.
+	Adjust all users.
+
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Add
+	'dg-do run'.
+
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR other/94629
+
+	* plugin/plugin-gcn.c (init_hsa_context): Check return value from
+	hsa_iterate_agents.
+	(GOMP_OFFLOAD_init_device): Check return values from both calls to
+	hsa_agent_iterate_regions.
+
+2020-04-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/94635
+	* testsuite/libgomp.fortran/target-enter-data-2.F90: Add 'dg-do
+	run'.
+
+2020-04-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94120
+	* testsuite/libgomp.oacc-c++/declare-pr94120.C: Fix 'declare copy(out)'
+	test case.
+
+2020-04-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94635
+	* testsuite/libgomp.fortran/target-enter-data-2.F90: New.
+
+2020-04-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/92843
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-1-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-1-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-1.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-1.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-2-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-2-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-2.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-2.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-3-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-3-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-3.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-3.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-4-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-4-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-4.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-4.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-5-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-5-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-5.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-5.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-6-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-6-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-6.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-6.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-7-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-7-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-7.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-7.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-8-lib.c:
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-8-lib.c:
+	... this.
+	* testsuite/libgomp.oacc-c-c++-common/static-dynamic-lifetimes-8.c::
+	Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-8.c:
+	... this.
+
 2020-04-10  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

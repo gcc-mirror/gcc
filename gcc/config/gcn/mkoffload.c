@@ -41,6 +41,7 @@ static const char *gcn_s1_name;
 static const char *gcn_s2_name;
 static const char *gcn_o_name;
 static const char *gcn_cfile_name;
+static const char *gcn_dumpbase;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 
@@ -482,7 +483,8 @@ process_obj (FILE *in, FILE *cfile)
 /* Compile a C file using the host compiler.  */
 
 static void
-compile_native (const char *infile, const char *outfile, const char *compiler)
+compile_native (const char *infile, const char *outfile, const char *compiler,
+		bool fPIC, bool fpic)
 {
   const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
@@ -492,10 +494,20 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, compiler);
+  if (fPIC)
+    obstack_ptr_grow (&argv_obstack, "-fPIC");
+  if (fpic)
+    obstack_ptr_grow (&argv_obstack, "-fpic");
   if (save_temps)
     obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&argv_obstack, "");
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, gcn_dumpbase);
+  obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&argv_obstack, ".c");
   switch (offload_abi)
     {
     case OFFLOAD_ABI_LP64:
@@ -524,7 +536,7 @@ main (int argc, char **argv)
   FILE *in = stdin;
   FILE *out = stdout;
   FILE *cfile = stdout;
-  const char *outname = 0, *offloadsrc = 0;
+  const char *outname = 0;
 
   progname = "mkoffload";
   diagnostic_initialize (global_dc, 0);
@@ -589,6 +601,8 @@ main (int argc, char **argv)
   /* Scan the argument vector.  */
   bool fopenmp = false;
   bool fopenacc = false;
+  bool fPIC = false;
+  bool fpic = false;
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
@@ -607,10 +621,17 @@ main (int argc, char **argv)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)
 	fopenacc = true;
+      else if (strcmp (argv[i], "-fPIC") == 0)
+	fPIC = true;
+      else if (strcmp (argv[i], "-fpic") == 0)
+	fpic = true;
       else if (strcmp (argv[i], "-save-temps") == 0)
 	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
+      else if (strcmp (argv[i], "-dumpbase") == 0
+	       && i + 1 < argc)
+	dumppfx = argv[++i];
     }
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
@@ -627,11 +648,6 @@ main (int argc, char **argv)
     default:
       gcc_unreachable ();
     }
-
-  gcn_s1_name = make_temp_file (".mkoffload.1.s");
-  gcn_s2_name = make_temp_file (".mkoffload.2.s");
-  gcn_o_name = make_temp_file (".mkoffload.hsaco");
-  gcn_cfile_name = make_temp_file (".c");
 
   /* Build arguments for compiler pass.  */
   struct obstack cc_argv_obstack;
@@ -653,18 +669,40 @@ main (int argc, char **argv)
       if (!strcmp (argv[ix], "-o") && ix + 1 != argc)
 	outname = argv[++ix];
       else
-	{
-	  obstack_ptr_grow (&cc_argv_obstack, argv[ix]);
-
-	  if (argv[ix][0] != '-')
-	    offloadsrc = argv[ix];
-	}
+	obstack_ptr_grow (&cc_argv_obstack, argv[ix]);
     }
+
+  if (!dumppfx)
+    dumppfx = outname;
+
+  const char *mko_dumpbase = concat (dumppfx, ".mkoffload", NULL);
+  const char *hsaco_dumpbase = concat (dumppfx, ".mkoffload.hsaco", NULL);
+  gcn_dumpbase = concat (dumppfx, ".c", NULL);
+
+  if (save_temps)
+    {
+      gcn_s1_name = concat (mko_dumpbase, ".1.s", NULL);
+      gcn_s2_name = concat (mko_dumpbase, ".2.s", NULL);
+      gcn_o_name = hsaco_dumpbase;
+      gcn_cfile_name = gcn_dumpbase;
+    }
+  else
+    {
+      gcn_s1_name = make_temp_file (".mkoffload.1.s");
+      gcn_s2_name = make_temp_file (".mkoffload.2.s");
+      gcn_o_name = make_temp_file (".mkoffload.hsaco");
+      gcn_cfile_name = make_temp_file (".c");
+    }
+
+  obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&cc_argv_obstack, "");
+  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&cc_argv_obstack, mko_dumpbase);
+  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&cc_argv_obstack, "");
 
   obstack_ptr_grow (&cc_argv_obstack, "-o");
   obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
-  obstack_ptr_grow (&cc_argv_obstack,
-		    concat ("-mlocal-symbol-id=", offloadsrc, NULL));
   obstack_ptr_grow (&cc_argv_obstack, NULL);
   const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
 
@@ -680,6 +718,13 @@ main (int argc, char **argv)
 	|| strncmp (argv[i], "-Wl", 3) == 0
 	|| strncmp (argv[i], "-march", 6) == 0)
       obstack_ptr_grow (&ld_argv_obstack, argv[i]);
+
+  obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&cc_argv_obstack, "");
+  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&cc_argv_obstack, hsaco_dumpbase);
+  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&cc_argv_obstack, "");
 
   obstack_ptr_grow (&ld_argv_obstack, "-o");
   obstack_ptr_grow (&ld_argv_obstack, gcn_o_name);
@@ -732,7 +777,7 @@ main (int argc, char **argv)
   xputenv (concat ("COMPILER_PATH=", cpath, NULL));
   xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
 
-  compile_native (gcn_cfile_name, outname, collect_gcc);
+  compile_native (gcn_cfile_name, outname, collect_gcc, fPIC, fpic);
 
   return 0;
 }

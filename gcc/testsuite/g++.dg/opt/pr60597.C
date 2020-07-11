@@ -2,44 +2,46 @@
 // { dg-do compile }
 // { dg-options "-O2 -g" }
 
+typedef int int32_t __attribute__((mode (__SI__)));
+
 struct A
 {
-  int foo () const;
-  int bar () const;
-  int a;
+  int32_t foo () const;
+  int32_t bar () const;
+  int32_t a;
 };
 
 struct B
 {
-  int foo ();
-  int bar ();
+  int32_t foo ();
+  int32_t bar ();
 };
 
-int *c, d;
+int32_t *c, d;
 
-int
+int32_t
 A::foo () const
 {
-  int b = a >> 16;
+  int32_t b = a >> 16;
   return b;
 }
 
-int
+int32_t
 A::bar () const
 {
-  int b = a;
+  int32_t b = a;
   return b;
 }
 
 void
-baz (A &x, B h, int i, int j)
+baz (A &x, B h, int32_t i, int32_t j)
 {
   for (; i < h.bar (); ++i)
     for (; h.foo (); ++j)
       {
-	int g = x.foo ();
-	int f = x.bar ();
-	int e = c[0] & 1;
+	int32_t g = x.foo ();
+	int32_t f = x.bar ();
+	int32_t e = c[0] & 1;
 	d = (e << 1) | (g << 16) | (f & 1);
 	c[j] = 0;
       }

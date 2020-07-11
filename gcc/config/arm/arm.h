@@ -621,6 +621,9 @@ extern const int arm_arch_cde_coproc_bits[];
 
 /* Target machine storage Layout.  */
 
+/* Nonzero if this chip provides Armv8.1-M Mainline
+   LOB (low overhead branch features) extension instructions.  */
+#define TARGET_HAVE_LOB (arm_arch8_1m_main)
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
@@ -1292,11 +1295,13 @@ extern const char *fp_sysreg_names[NB_FP_SYSREGS];
 
 /* For the Thumb the high registers cannot be used as base registers
    when addressing quantities in QI or HI mode; if we don't know the
-   mode, then we must be conservative.  */
+   mode, then we must be conservative. For MVE we need to load from
+   memory to low regs based on given modes i.e [Rn], Rn <= LO_REGS.  */
 #define MODE_BASE_REG_CLASS(MODE)				\
-  (TARGET_32BIT ? CORE_REGS					\
+   (TARGET_HAVE_MVE ? arm_mode_base_reg_class (MODE)		\
+   :(TARGET_32BIT ? CORE_REGS					\
    : GET_MODE_SIZE (MODE) >= 4 ? BASE_REGS			\
-   : LO_REGS)
+   : LO_REGS))
 
 /* For Thumb we cannot support SP+reg addressing, so we return LO_REGS
    instead of BASE_REGS.  */

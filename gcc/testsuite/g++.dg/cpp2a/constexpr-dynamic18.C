@@ -1,5 +1,5 @@
 // PR c++/93414 - poor diagnostic for dynamic_cast in constexpr context.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // Here 'b' doesn't point/refer to a public base of Derived.
 
 struct Base {

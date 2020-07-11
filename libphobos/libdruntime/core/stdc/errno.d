@@ -211,6 +211,50 @@ version (Windows)
     enum ENOTEMPTY          = 41;       /// Directory not empty
     enum EILSEQ             = 42;       /// Illegal byte sequence
     enum EDEADLOCK          = EDEADLK;  /// Resource deadlock would occur
+
+    // POSIX compatibility
+    // See_Also: https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-constants
+    enum EADDRINUSE         = 100;
+    enum EADDRNOTAVAIL      = 101;
+    enum EAFNOSUPPORT       = 102;
+    enum EALREADY           = 103;
+    enum EBADMSG            = 104;
+    enum ECANCELED          = 105;
+    enum ECONNABORTED       = 106;
+    enum ECONNREFUSED       = 107;
+    enum ECONNRESET         = 108;
+    enum EDESTADDRREQ       = 109;
+    enum EHOSTUNREACH       = 110;
+    enum EIDRM              = 111;
+    enum EINPROGRESS        = 112;
+    enum EISCONN            = 113;
+    enum ELOOP              = 114;
+    enum EMSGSIZE           = 115;
+    enum ENETDOWN           = 116;
+    enum ENETRESET          = 117;
+    enum ENETUNREACH        = 118;
+    enum ENOBUFS            = 119;
+    enum ENODATA            = 120;
+    enum ENOLINK            = 121;
+    enum ENOMSG             = 122;
+    enum ENOPROTOOPT        = 123;
+    enum ENOSR              = 124;
+    enum ENOSTR             = 125;
+    enum ENOTCONN           = 126;
+    enum ENOTRECOVERABLE    = 127;
+    enum ENOTSOCK           = 128;
+    enum ENOTSUP            = 129;
+    enum EOPNOTSUPP         = 130;
+    enum EOTHER             = 131;
+    enum EOVERFLOW          = 132;
+    enum EOWNERDEAD         = 133;
+    enum EPROTO             = 134;
+    enum EPROTONOSUPPORT    = 135;
+    enum EPROTOTYPE         = 136;
+    enum ETIME              = 137;
+    enum ETIMEDOUT          = 138;
+    enum ETXTBSY            = 139;
+    enum EWOULDBLOCK        = 140;
 }
 else version (linux)
 {

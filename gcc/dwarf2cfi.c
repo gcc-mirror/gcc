@@ -71,6 +71,9 @@ struct GTY(()) dw_cfi_row
 
   /* True if the register window is saved.  */
   bool window_save;
+
+  /* True if the return address is in a mangled state.  */
+  bool ra_mangled;
 };
 
 /* The caller's ORIG_REG is saved in SAVED_IN_REG.  */
@@ -772,6 +775,9 @@ cfi_row_equal_p (dw_cfi_row *a, dw_cfi_row *b)
   if (a->window_save != b->window_save)
     return false;
 
+  if (a->ra_mangled != b->ra_mangled)
+    return false;
+
   return true;
 }
 
@@ -1370,20 +1376,33 @@ dwarf2out_frame_debug_cfa_restore (rtx reg)
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_WINDOW_SAVE.
-   FAKE is true if this is not really a window save but something else.
 
    ??? Perhaps we should note in the CIE where windows are saved (instead
    of assuming 0(cfa)) and what registers are in the window.  */
 
 static void
-dwarf2out_frame_debug_cfa_window_save (bool fake)
+dwarf2out_frame_debug_cfa_window_save (void)
 {
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
   add_cfi (cfi);
-  if (!fake)
-    cur_row->window_save = true;
+  cur_row->window_save = true;
+}
+
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_TOGGLE_RA_MANGLE.
+   Note: DW_CFA_GNU_window_save dwarf opcode is reused for toggling RA mangle
+   state, this is a target specific operation on AArch64 and can only be used
+   on other targets if they don't use the window save operation otherwise.  */
+
+static void
+dwarf2out_frame_debug_cfa_toggle_ra_mangle (void)
+{
+  dw_cfi_ref cfi = new_cfi ();
+
+  cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+  add_cfi (cfi);
+  cur_row->ra_mangled = !cur_row->ra_mangled;
 }
 
 /* Record call frame debugging information for an expression EXPR,
@@ -2143,13 +2162,12 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	break;
 
       case REG_CFA_TOGGLE_RA_MANGLE:
-	/* This uses the same DWARF opcode as the next operation.  */
-	dwarf2out_frame_debug_cfa_window_save (true);
+	dwarf2out_frame_debug_cfa_toggle_ra_mangle ();
 	handled_one = true;
 	break;
 
       case REG_CFA_WINDOW_SAVE:
-	dwarf2out_frame_debug_cfa_window_save (false);
+	dwarf2out_frame_debug_cfa_window_save ();
 	handled_one = true;
 	break;
 
@@ -2218,6 +2236,17 @@ change_cfi_row (dw_cfi_row *old_row, dw_cfi_row *new_row)
     {
       dw_cfi_ref cfi = new_cfi ();
 
+      gcc_assert (!old_row->ra_mangled && !new_row->ra_mangled);
+      cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+      add_cfi (cfi);
+    }
+
+  if (old_row->ra_mangled != new_row->ra_mangled)
+    {
+      dw_cfi_ref cfi = new_cfi ();
+
+      gcc_assert (!old_row->window_save && !new_row->window_save);
+      /* DW_CFA_GNU_window_save is reused for toggling RA mangle state.  */
       cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
       add_cfi (cfi);
     }

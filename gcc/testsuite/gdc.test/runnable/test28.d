@@ -1,3 +1,4 @@
+// RUNNABLE_PHOBOS_TEST
 module test;
 
 import core.vararg;

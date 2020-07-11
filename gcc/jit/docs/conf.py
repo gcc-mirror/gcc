@@ -244,7 +244,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'libgccjit', u'libgccjit Documentation',
-   u'David Malcolm', 'libgccjit', 'One line description of project.',
+   u'David Malcolm', 'libgccjit', 'GCC-based Just In Time compiler library.',
    'Miscellaneous'),
 ]
 

@@ -806,23 +806,25 @@ get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
 	    if (valueize
 		&& TREE_CODE (index) == SSA_NAME)
 	      index = (*valueize) (index);
+	    if (!poly_int_tree_p (index))
+	      return NULL_TREE;
+	    low_bound = array_ref_low_bound (exp);
+	    if (valueize
+		&& TREE_CODE (low_bound) == SSA_NAME)
+	      low_bound = (*valueize) (low_bound);
+	    if (!poly_int_tree_p (low_bound))
+	      return NULL_TREE;
+	    unit_size = array_ref_element_size (exp);
+	    if (TREE_CODE (unit_size) != INTEGER_CST)
+	      return NULL_TREE;
 
 	    /* If the resulting bit-offset is constant, track it.  */
-	    if (poly_int_tree_p (index)
-		&& (low_bound = array_ref_low_bound (exp),
-		    poly_int_tree_p (low_bound))
-		&& (unit_size = array_ref_element_size (exp),
-		    TREE_CODE (unit_size) == INTEGER_CST))
-	      {
-		poly_offset_int woffset
-		  = wi::sext (wi::to_poly_offset (index)
-			      - wi::to_poly_offset (low_bound),
-			      TYPE_PRECISION (TREE_TYPE (index)));
-		woffset *= wi::to_offset (unit_size);
-		byte_offset += woffset.force_shwi ();
-	      }
-	    else
-	      return NULL_TREE;
+	    poly_offset_int woffset
+		= wi::sext (wi::to_poly_offset (index)
+			    - wi::to_poly_offset (low_bound),
+			    TYPE_PRECISION (TREE_TYPE (index)));
+	    woffset *= wi::to_offset (unit_size);
+	    byte_offset += woffset.force_shwi ();
 	  }
 	  break;
 

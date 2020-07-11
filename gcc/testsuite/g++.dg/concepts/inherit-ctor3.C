@@ -12,12 +12,12 @@ template<typename T>
 
 template<typename T>
   struct S2 : S1<T> { // { dg-error "no matching function" }
-    using S1<T>::S1; // { dg-error "no matching function" }
+    using S1<T>::S1;
   };
 
 struct X { } x;
 
 int main() {
-  S2<X> s1(0); // { dg-error "use of deleted function" }
+  S2<X> s1(0); // { dg-error "no matching function" }
   S2<X> s2; // { dg-error "use of deleted function" }
 }

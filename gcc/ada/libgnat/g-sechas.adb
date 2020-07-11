@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,25 +40,25 @@ package body GNAT.Secure_Hashes is
    type Fill_Buffer_Access is
      access procedure
        (M     : in out Message_State;
-        S     : String;
-        First : Natural;
-        Last  : out Natural);
-   --  A procedure to transfer data from S, starting at First, into M's block
+        SEA   : Stream_Element_Array;
+        First : Stream_Element_Offset;
+        Last  : out Stream_Element_Offset);
+   --  A procedure to transfer data from SEA, starting at First, into M's block
    --  buffer until either the block buffer is full or all data from S has been
    --  consumed.
 
    procedure Fill_Buffer_Copy
      (M     : in out Message_State;
-      S     : String;
-      First : Natural;
-      Last  : out Natural);
+      SEA   : Stream_Element_Array;
+      First : Stream_Element_Offset;
+      Last  : out Stream_Element_Offset);
    --  Transfer procedure which just copies data from S to M
 
    procedure Fill_Buffer_Swap
      (M     : in out Message_State;
-      S     : String;
-      First : Natural;
-      Last  : out Natural);
+      SEA   : Stream_Element_Array;
+      First : Stream_Element_Offset;
+      Last  : out Stream_Element_Offset);
    --  Transfer procedure which swaps bytes from S when copying into M. S must
    --  have even length. Note that the swapping is performed considering pairs
    --  starting at S'First, even if S'First /= First (that is, if
@@ -75,22 +75,23 @@ package body GNAT.Secure_Hashes is
 
    procedure Fill_Buffer_Copy
      (M     : in out Message_State;
-      S     : String;
-      First : Natural;
-      Last  : out Natural)
+      SEA   : Stream_Element_Array;
+      First : Stream_Element_Offset;
+      Last  : out Stream_Element_Offset)
    is
-      Buf_String : String (M.Buffer'Range);
-      for Buf_String'Address use M.Buffer'Address;
-      pragma Import (Ada, Buf_String);
+      Buf_SEA : Stream_Element_Array (M.Buffer'Range);
+      for Buf_SEA'Address use M.Buffer'Address;
+      pragma Import (Ada, Buf_SEA);
 
-      Length : constant Natural :=
-                 Natural'Min (M.Block_Length - M.Last, S'Last - First + 1);
+      Length : constant Stream_Element_Offset :=
+                 Stream_Element_Offset'Min
+                    (M.Block_Length - M.Last, SEA'Last - First + 1);
 
    begin
       pragma Assert (Length > 0);
 
-      Buf_String (M.Last + 1 .. M.Last + Length) :=
-        S (First .. First + Length - 1);
+      Buf_SEA (M.Last + 1 .. M.Last + Length) :=
+        SEA (First .. First + Length - 1);
       M.Last := M.Last + Length;
       Last := First + Length - 1;
    end Fill_Buffer_Copy;
@@ -101,20 +102,21 @@ package body GNAT.Secure_Hashes is
 
    procedure Fill_Buffer_Swap
      (M     : in out Message_State;
-      S     : String;
-      First : Natural;
-      Last  : out Natural)
+      SEA   : Stream_Element_Array;
+      First : Stream_Element_Offset;
+      Last  : out Stream_Element_Offset)
    is
-      pragma Assert (S'Length mod 2 = 0);
-      Length : constant Natural :=
-                  Natural'Min (M.Block_Length - M.Last, S'Last - First + 1);
+      pragma Assert (SEA'Length mod 2 = 0);
+      Length : constant Stream_Element_Offset :=
+                  Stream_Element_Offset'Min
+                     (M.Block_Length - M.Last, SEA'Last - First + 1);
    begin
       Last := First;
       while Last - First < Length loop
          M.Buffer (M.Last + 1 + Last - First) :=
-           (if (Last - S'First) mod 2 = 0
-            then S (Last + 1)
-            else S (Last - 1));
+           (if (Last - SEA'First) mod 2 = 0
+            then SEA (Last + 1)
+            else SEA (Last - 1));
          Last := Last + 1;
       end loop;
       M.Last := M.Last + Length;
@@ -146,7 +148,7 @@ package body GNAT.Secure_Hashes is
 
       procedure Update
         (C           : in out Context;
-         S           : String;
+         SEA         : Stream_Element_Array;
          Fill_Buffer : Fill_Buffer_Access);
       --  Internal common routine for all Update procedures
 
@@ -161,8 +163,7 @@ package body GNAT.Secure_Hashes is
       ------------
 
       function Digest (C : Context) return Message_Digest is
-         Hash_Bits : Stream_Element_Array
-                       (1 .. Stream_Element_Offset (Hash_Length));
+         Hash_Bits : Stream_Element_Array (1 .. Hash_Length);
       begin
          Final (C, Hash_Bits);
          return MD : Message_Digest do
@@ -185,8 +186,7 @@ package body GNAT.Secure_Hashes is
       end Digest;
 
       function Digest (C : Context) return Binary_Message_Digest is
-         Hash_Bits : Stream_Element_Array
-                       (1 .. Stream_Element_Offset (Hash_Length));
+         Hash_Bits : Stream_Element_Array (1 .. Hash_Length);
       begin
          Final (C, Hash_Bits);
          return Hash_Bits;
@@ -223,13 +223,13 @@ package body GNAT.Secure_Hashes is
       is
          FC : Context := C;
 
-         Zeroes : Natural;
+         Zeroes : Stream_Element_Count;
          --  Number of 0 bytes in padding
 
          Message_Length : Unsigned_64 := FC.M_State.Length;
          --  Message length in bytes
 
-         Size_Length : constant Natural :=
+         Size_Length : constant Stream_Element_Count :=
                          2 * Hash_State.Word'Size / 8;
          --  Length in bytes of the size representation
 
@@ -237,11 +237,11 @@ package body GNAT.Secure_Hashes is
          Zeroes := (Block_Length - 1 - Size_Length - FC.M_State.Last)
                      mod FC.M_State.Block_Length;
          declare
-            Pad : String (1 .. 1 + Zeroes + Size_Length) :=
-                    (1 => Character'Val (128), others => ASCII.NUL);
+            Pad : Stream_Element_Array (1 .. 1 + Zeroes + Size_Length) :=
+                    (1 => 128, others => 0);
 
-            Index       : Natural;
-            First_Index : Natural;
+            Index       : Stream_Element_Offset;
+            First_Index : Stream_Element_Offset;
 
          begin
             First_Index := (if Hash_Bit_Order = Low_Order_First
@@ -255,12 +255,12 @@ package body GNAT.Secure_Hashes is
                   --  Message_Length is in bytes, but we need to store it as
                   --  a bit count.
 
-                  Pad (Index) := Character'Val
+                  Pad (Index) := Stream_Element
                                    (Shift_Left (Message_Length and 16#1f#, 3));
                   Message_Length := Shift_Right (Message_Length, 5);
 
                else
-                  Pad (Index) := Character'Val (Message_Length and 16#ff#);
+                  Pad (Index) := Stream_Element (Message_Length and 16#ff#);
                   Message_Length := Shift_Right (Message_Length, 8);
                end if;
 
@@ -308,7 +308,7 @@ package body GNAT.Secure_Hashes is
 
          return C : Context (KL => (if Key'Length <= Key_Length'Last
                                     then Key'Length
-                                    else Stream_Element_Offset (Hash_Length)))
+                                    else Hash_Length))
          do
             --  Set Key (if longer than block length, first hash it)
 
@@ -361,22 +361,29 @@ package body GNAT.Secure_Hashes is
 
       procedure Update
         (C           : in out Context;
-         S           : String;
+         SEA         : Stream_Element_Array;
          Fill_Buffer : Fill_Buffer_Access)
       is
-         Last : Natural;
+         First, Last : Stream_Element_Offset;
 
       begin
-         C.M_State.Length := C.M_State.Length + S'Length;
+         if SEA'Length = 0 then
+            return;
+         end if;
 
-         Last := S'First - 1;
-         while Last < S'Last loop
-            Fill_Buffer (C.M_State, S, Last + 1, Last);
+         C.M_State.Length := C.M_State.Length + SEA'Length;
+
+         First := SEA'First;
+         loop
+            Fill_Buffer (C.M_State, SEA, First, Last);
 
             if C.M_State.Last = Block_Length then
                Transform (C.H_State, C.M_State);
                C.M_State.Last := 0;
             end if;
+
+            exit when Last = SEA'Last;
+            First := Last + 1;
          end loop;
       end Update;
 
@@ -384,7 +391,7 @@ package body GNAT.Secure_Hashes is
       -- Update --
       ------------
 
-      procedure Update (C : in out Context; Input : String) is
+      procedure Update (C : in out Context; Input : Stream_Element_Array) is
       begin
          Update (C, Input, Fill_Buffer_Copy'Access);
       end Update;
@@ -393,12 +400,13 @@ package body GNAT.Secure_Hashes is
       -- Update --
       ------------
 
-      procedure Update (C : in out Context; Input : Stream_Element_Array) is
-         S : String (1 .. Input'Length);
-         for S'Address use Input'Address;
-         pragma Import (Ada, S);
+      procedure Update (C : in out Context; Input : String) is
+         pragma Assert (Input'Length <= Stream_Element_Offset'Last);
+         SEA : Stream_Element_Array (1 .. Input'Length);
+         for SEA'Address use Input'Address;
+         pragma Import (Ada, SEA);
       begin
-         Update (C, S, Fill_Buffer_Copy'Access);
+         Update (C, SEA, Fill_Buffer_Copy'Access);
       end Update;
 
       -----------------
@@ -406,12 +414,12 @@ package body GNAT.Secure_Hashes is
       -----------------
 
       procedure Wide_Update (C : in out Context; Input : Wide_String) is
-         S : String (1 .. 2 * Input'Length);
-         for S'Address use Input'Address;
-         pragma Import (Ada, S);
+         SEA : Stream_Element_Array (1 .. 2 * Input'Length);
+         for SEA'Address use Input'Address;
+         pragma Import (Ada, SEA);
       begin
          Update
-           (C, S,
+           (C, SEA,
             (if System.Default_Bit_Order /= Low_Order_First
              then Fill_Buffer_Swap'Access
              else Fill_Buffer_Copy'Access));
@@ -460,7 +468,7 @@ package body GNAT.Secure_Hashes is
       -------------
 
       procedure To_Hash (H : State; H_Bits : out Stream_Element_Array) is
-         Hash_Words : constant Natural := H'Size / Word'Size;
+         Hash_Words : constant Stream_Element_Offset := H'Size / Word'Size;
          Result     : State (1 .. Hash_Words) :=
                         H (H'Last - Hash_Words + 1 .. H'Last);
 

@@ -1,5 +1,5 @@
 // This should continue to work.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<class T>
 struct A {

@@ -643,6 +643,7 @@ glibcxx_toolexecdir
 gxx_include_dir
 glibcxx_prefixdir
 EXTRA_CFLAGS
+tmake_file
 CPU_OPT_BITS_RANDOM
 CPU_OPT_EXT_RANDOM
 ERROR_CONSTANTS_SRCDIR
@@ -1643,7 +1644,7 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
-  --enable-cet            enable Intel CET in target libraries [default=no]
+  --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -12059,7 +12060,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12062 "configure"
+#line 12063 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12165,7 +12166,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12168 "configure"
+#line 12169 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15857,7 +15858,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15860 "configure"
+#line 15861 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15892,7 +15893,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15895 "configure"
+#line 15896 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15927,7 +15928,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15930 "configure"
+#line 15931 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15963,7 +15964,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15966 "configure"
+#line 15967 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16116,7 +16117,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16119 "configure"
+#line 16120 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16158,7 +16159,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16161 "configure"
+#line 16162 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16192,7 +16193,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16195 "configure"
+#line 16196 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -74116,6 +74117,261 @@ _ACEOF
 
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hypotl declaration" >&5
+$as_echo_n "checking for hypotl declaration... " >&6; }
+if ${glibcxx_cv_func_hypotl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef hypotl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))hypotl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_hypotl_use=yes
+
+else
+  glibcxx_cv_func_hypotl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_hypotl_use" >&5
+$as_echo "$glibcxx_cv_func_hypotl_use" >&6; }
+  if test "x$glibcxx_cv_func_hypotl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOTL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ldexpf declaration" >&5
+$as_echo_n "checking for ldexpf declaration... " >&6; }
+if ${glibcxx_cv_func_ldexpf_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef ldexpf
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))ldexpf;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_ldexpf_use=yes
+
+else
+  glibcxx_cv_func_ldexpf_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_ldexpf_use" >&5
+$as_echo "$glibcxx_cv_func_ldexpf_use" >&6; }
+  if test "x$glibcxx_cv_func_ldexpf_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_LDEXPF 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for modff declaration" >&5
+$as_echo_n "checking for modff declaration... " >&6; }
+if ${glibcxx_cv_func_modff_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef modff
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))modff;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_modff_use=yes
+
+else
+  glibcxx_cv_func_modff_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_modff_use" >&5
+$as_echo "$glibcxx_cv_func_modff_use" >&6; }
+  if test "x$glibcxx_cv_func_modff_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_MODFF 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hypotf declaration" >&5
+$as_echo_n "checking for hypotf declaration... " >&6; }
+if ${glibcxx_cv_func_hypotf_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef hypotf
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))hypotf;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_hypotf_use=yes
+
+else
+  glibcxx_cv_func_hypotf_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_hypotf_use" >&5
+$as_echo "$glibcxx_cv_func_hypotf_use" >&6; }
+  if test "x$glibcxx_cv_func_hypotf_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOTF 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for frexpf declaration" >&5
+$as_echo_n "checking for frexpf declaration... " >&6; }
+if ${glibcxx_cv_func_frexpf_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef frexpf
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))frexpf;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_frexpf_use=yes
+
+else
+  glibcxx_cv_func_frexpf_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_frexpf_use" >&5
+$as_echo "$glibcxx_cv_func_frexpf_use" >&6; }
+  if test "x$glibcxx_cv_func_frexpf_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_FREXPF 1
+_ACEOF
+
+  fi
+
+
+
     ;;
   *)
     as_fn_error $? "No support for this host/target combination." "$LINENO" 5
@@ -77464,6 +77720,17 @@ CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 
 
 
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+
 
 # Add CET specific flags if Intel CET is enabled.
  # Check whether --enable-cet was given.
@@ -77475,19 +77742,22 @@ if test "${enable_cet+set}" = set; then :
                           esac
 
 else
-  enable_cet=no
+  enable_cet=auto
 fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
 $as_echo_n "checking for CET support... " >&6; }
 
+# NB: Avoid nested save_CFLAGS and save_LDFLAGS.
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
+	cet_save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -77511,6 +77781,7 @@ else
   enable_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	CFLAGS="$cet_save_CFLAGS"
 	;;
       yes)
 	# Check if assembler supports CET.

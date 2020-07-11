@@ -1,3 +1,39 @@
+2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Do not compare TYPE_VALUES.
+
+2020-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (lto_read_decls): Do not skip stray refs.
+
+2020-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Sanity check that we never
+	read TRANSLATION_UNIT_DECL.
+	(process_dref): Break out from ...
+	(unify_scc): ... here.
+	(process_new_tree): Break out from ...
+	(lto_read_decls): ... here; handle streaming of singleton trees.
+	(print_lto_report_1): Update statistics.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* lto-common.c (compare_tree_sccs_1): Compare
+	DECL_NOT_GIMPLE_REG_P.
+
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* lto-common.c (compare_tree_sccs_1): Handle DECL_FIELD_ABI_IGNORED.
+
+2020-04-17  Martin Liska  <mliska@suse.cz>
+
+	PR lto/94612
+	* lto-common.c: Initialize file_data->lto_section_header
+	before lto_mode_identity_table call.  It is needed because
+	it decompresses a LTO section.
+
 2020-04-08  Martin Liska  <mliska@suse.cz>
 
 	PR c++/94314

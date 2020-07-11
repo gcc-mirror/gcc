@@ -198,6 +198,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(sizeof(_Tp) > 0,
 		    "Incomplete or zero-sized types are not supported");
 
+#if __cplusplus > 201703L
+      static_assert(is_copy_constructible_v<_Tp>);
+      static_assert(is_move_constructible_v<_Tp>);
+      static_assert(is_copy_assignable_v<_Tp>);
+      static_assert(is_move_assignable_v<_Tp>);
+#endif
+
     public:
       atomic() = default;
       ~atomic() noexcept = default;
@@ -1477,6 +1484,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
 #if __cplusplus > 201703L
+#define __cpp_lib_atomic_float 201711L
   template<>
     struct atomic<float> : __atomic_float<float>
     {

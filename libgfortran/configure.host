@@ -15,6 +15,9 @@
 # It sets the following shell variables:
 #
 #   fpu_host            FPU-specific code file, defaults to fpu-generic.
+#   tmake_file		A list of machine-description-specific
+#			makefile fragments.
+
 
 
 # DEFAULTS
@@ -57,3 +60,18 @@ case "${host_cpu}" in
   sh*)
     ieee_flags="-mieee" ;;
 esac
+
+tmake_file=
+# Other system configury
+case "${target}" in
+
+  *-*-aix*)
+	# Create AIX-style "FAT" libraries.
+	tmake_file="t-aix"
+	;;
+
+  *)
+	;;
+
+esac
+

@@ -1850,10 +1850,15 @@ pass_manager::dump_profile_report () const
 
   if (!profile_record)
     return;
-  fprintf (stderr, "\nProfile consistency report:\n\n");
-  fprintf (stderr, "                                 |mismatch     |mismatch     |                     |\n");
-  fprintf (stderr, "Pass name                        |IN    |IN    |OUT   |OUT   |overall              |\n");
-  fprintf (stderr, "                                 |freq  |count |freq  |count |size      |time      |\n");
+
+  FILE *dump_file = dump_begin (TDI_profile_report, NULL);
+  if (dump_file == NULL)
+    dump_file = stderr;
+
+  fprintf (dump_file, "Profile consistency report:\n\n");
+  fprintf (dump_file, "                                 |mismatch     |mismatch     |                     |\n");
+  fprintf (dump_file, "Pass name                        |IN    |IN    |OUT   |OUT   |overall              |\n");
+  fprintf (dump_file, "                                 |freq  |count |freq  |count |size      |time      |\n");
 	   
   for (int i = 1; i < passes_by_id_size; i++)
     if (profile_record[i].run)
@@ -1876,47 +1881,47 @@ pass_manager::dump_profile_report () const
 	    || rel_time_change || rel_size_change)
 	  {
 	    last_reported = i;
-	    fprintf (stderr, "%-33s", passes_by_id[i]->name);
+	    fprintf (dump_file, "%-33s", passes_by_id[i]->name);
 	    if (profile_record[i].num_mismatched_freq_in != last_freq_in)
-	      fprintf (stderr, "| %+5i",
+	      fprintf (dump_file, "| %+5i",
 		       profile_record[i].num_mismatched_freq_in
 		       - last_freq_in);
 	    else
-	      fprintf (stderr, "|      ");
+	      fprintf (dump_file, "|      ");
 	    if (profile_record[i].num_mismatched_count_in != last_count_in)
-	      fprintf (stderr, "| %+5i",
+	      fprintf (dump_file, "| %+5i",
 		       profile_record[i].num_mismatched_count_in
 		       - last_count_in);
 	    else
-	      fprintf (stderr, "|      ");
+	      fprintf (dump_file, "|      ");
 	    if (profile_record[i].num_mismatched_freq_out != last_freq_out)
-	      fprintf (stderr, "| %+5i",
+	      fprintf (dump_file, "| %+5i",
 		       profile_record[i].num_mismatched_freq_out
 		       - last_freq_out);
 	    else
-	      fprintf (stderr, "|      ");
+	      fprintf (dump_file, "|      ");
 	    if (profile_record[i].num_mismatched_count_out != last_count_out)
-	      fprintf (stderr, "| %+5i",
+	      fprintf (dump_file, "| %+5i",
 		       profile_record[i].num_mismatched_count_out
 		       - last_count_out);
 	    else
-	      fprintf (stderr, "|      ");
+	      fprintf (dump_file, "|      ");
 
 	    /* Size/time units change across gimple and RTL.  */
 	    if (i == pass_expand_1->static_pass_number)
-	      fprintf (stderr, "|----------|----------");
+	      fprintf (dump_file, "|----------|----------");
 	    else
 	      {
 		if (rel_size_change)
-		  fprintf (stderr, "| %+8.1f%%", rel_size_change);
+		  fprintf (dump_file, "| %+8.1f%%", rel_size_change);
 		else
-		  fprintf (stderr, "|          ");
+		  fprintf (dump_file, "|          ");
 		if (rel_time_change)
-		  fprintf (stderr, "| %+8.1f%%", rel_time_change);
+		  fprintf (dump_file, "| %+8.1f%%", rel_time_change);
 		else
-		  fprintf (stderr, "|          ");
+		  fprintf (dump_file, "|          ");
 	      }
-	    fprintf (stderr, "|\n");
+	    fprintf (dump_file, "|\n");
 	    last_freq_in = profile_record[i].num_mismatched_freq_in;
 	    last_freq_out = profile_record[i].num_mismatched_freq_out;
 	    last_count_in = profile_record[i].num_mismatched_count_in;
@@ -1925,12 +1930,14 @@ pass_manager::dump_profile_report () const
 	else if (last_reported != i)
 	  {
 	    last_reported = i;
-	    fprintf (stderr, "%-20s ------------|      |      |      |      |          |          |\n",
+	    fprintf (dump_file, "%-20s ------------|      |      |      |      |          |          |\n",
 		     passes_by_id[i]->name);
 	  }
 	last_time = profile_record[i].time;
 	last_size = profile_record[i].size;
       }
+
+  dump_end (TDI_profile_report, dump_file);
 }
 
 /* Perform all TODO actions that ought to be done on each function.  */

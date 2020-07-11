@@ -1,5 +1,5 @@
 // P0784R7
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S
 {

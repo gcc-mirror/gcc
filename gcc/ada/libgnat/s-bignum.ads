@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2012-2019, Free Software Foundation, Inc.       --
+--            Copyright (C) 2012-2020, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,10 +36,12 @@
 --  Note that we cannot use a straight instantiation of System.Generic_Bignums
 --  because the rtsfind mechanism is not ready to handle instantiations.
 
+with System.Shared_Bignums;
+
 package System.Bignums is
    pragma Preelaborate;
 
-   type Bignum is private;
+   subtype Bignum is System.Shared_Bignums.Bignum;
 
    function Big_Add (X, Y : Bignum) return Bignum;  --  "+"
    function Big_Sub (X, Y : Bignum) return Bignum;  --  "-"
@@ -76,8 +78,6 @@ package System.Bignums is
    --  appropriate message if value is out of range of Long_Long_Integer.
 
 private
-
-   type Bignum is new System.Address;
 
    pragma Inline (Big_Add);
    pragma Inline (Big_Sub);

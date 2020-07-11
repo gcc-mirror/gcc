@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# Copyright (C) 2020 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+# We might be on a branch before the file was added.
+if ! [ -x contrib/mklog.py ]; then exit 0; fi
+
+# Can't do anything if $COMMIT_MSG_FILE isn't a file.
+if ! [ -f "$COMMIT_MSG_FILE" ]; then exit 0; fi
+
+# Don't do anything unless requested to.
+if [ -z "$GCC_FORCE_MKLOG" ]; then exit 0; fi
+
+if [ -z "$COMMIT_SOURCE" ] || [ $COMMIT_SOURCE = template ]; then
+    # No source or "template" means new commit.
+    cmd="diff --cached"
+
+elif [ $COMMIT_SOURCE = message ]; then
+    # "message" means -m; assume a new commit if there are any changes staged.
+    if ! git diff --cached --quiet; then
+	cmd="diff --cached"
+    else
+	cmd="diff --cached HEAD^"
+    fi
+
+elif [ $COMMIT_SOURCE = commit ]; then
+    # The message of an existing commit.  If it's HEAD, assume --amend;
+    # otherwise, assume a new commit with -C.
+    if [ $SHA1 = HEAD ]; then
+	cmd="diff --cached HEAD^"
+	if [ "$(git config gcc-config.mklog-hook-type)" = "smart-amend" ]; then
+	    # Check if the existing message still describes the staged changes.
+	    f=$(mktemp /tmp/git-commit.XXXXXX) || exit 1
+	    git log -1 --pretty=email HEAD > $f
+	    printf '\n---\n\n' >> $f
+	    git $cmd >> $f
+	    if contrib/gcc-changelog/git_email.py "$f" >/dev/null 2>&1; then
+		# Existing commit message is still OK for amended commit.
+		rm $f
+		exit 0
+	    fi
+	    rm $f
+	fi
+    else
+	cmd="diff --cached"
+    fi
+else
+    # Do nothing for merge or squash.
+    exit 0
+fi
+
+# Save diff to a file if requested.
+DIFF_FILE=$(git config gcc-config.diff-file)
+if ! [ -z "$DIFF_FILE" ]; then
+    tee="tee $DIFF_FILE"
+else
+    tee="cat"
+fi
+
+git $cmd | $tee | git gcc-mklog -c "$COMMIT_MSG_FILE"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2019, AdaCore                     --
+--                     Copyright (C) 2002-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,7 +95,7 @@ package GNAT.Sockets.Thin is
 
    function C_Gethostname
      (Name    : System.Address;
-      Namelen : C.int) return C.int;
+      Namelen : C.size_t) return C.int;
 
    function C_Getpeername
      (S       : C.int;
@@ -126,13 +126,13 @@ package GNAT.Sockets.Thin is
    function C_Recv
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
+      Len   : C.size_t;
       Flags : C.int) return C.int;
 
    function C_Recvfrom
      (S       : C.int;
       Msg     : System.Address;
-      Len     : C.int;
+      Len     : C.size_t;
       Flags   : C.int;
       From    : System.Address;
       Fromlen : not null access C.int) return C.int;
@@ -157,7 +157,7 @@ package GNAT.Sockets.Thin is
    function C_Sendto
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
+      Len   : C.size_t;
       Flags : C.int;
       To    : System.Address;
       Tolen : C.int) return C.int;

@@ -116,4 +116,4 @@ contains
                                                ! (iii) mci_template
 end program main_ut
 ! { dg-final { scan-tree-dump-times "__builtin_malloc" 17 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_free" 19 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 20 "original" } }

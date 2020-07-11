@@ -146,14 +146,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	void
 	construct(_Up* __p, _Args&&... __args)
-	noexcept(noexcept(::new((void *)__p)
-			    _Up(std::forward<_Args>(__args)...)))
+	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
       template<typename _Up>
 	void
 	destroy(_Up* __p)
-	noexcept(noexcept( __p->~_Up()))
+	noexcept(std::is_nothrow_destructible<_Up>::value)
 	{ __p->~_Up(); }
 #else
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -173,11 +172,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_NOTHROW
 	{ return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       template<typename _Up>
 	friend _GLIBCXX20_CONSTEXPR bool
 	operator!=(const new_allocator&, const new_allocator<_Up>&)
 	_GLIBCXX_NOTHROW
 	{ return false; }
+#endif
 
     private:
       _GLIBCXX_CONSTEXPR size_type

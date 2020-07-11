@@ -1,6 +1,6 @@
 /* I accidentally broke this while developing a patch for PR 13000,
    and didn't notice since the testsuite didn't catch it -- ian  */
-/* { dg-do-compile } */
+/* { dg-do compile } */
 
 void foo()
 {

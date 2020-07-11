@@ -268,6 +268,19 @@ AC_SUBST(XLDFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(SIZES)
 
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+AC_SUBST(tmake_file)
+
+
 AM_CONDITIONAL(HAVE_IFUNC, test x$libat_cv_have_ifunc = xyes)
 AM_CONDITIONAL(ARCH_AARCH64_LINUX,
 	       [expr "$config_path" : ".* linux/aarch64 .*" > /dev/null])

@@ -1,7 +1,6 @@
 /* Verify that 'acc_copyout' etc. is a no-op if there's still a structured
    reference count.  */
 
-/* { dg-xfail-run-if "TODO PR92843" { *-*-* } } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } } */
 
 #include <assert.h>

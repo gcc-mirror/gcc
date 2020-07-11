@@ -10,7 +10,7 @@
 inline int
 foo (int i)
 {
-  if (i) /* { dg-warning "used uninitialized in this function" "" } */
+  if (i) /* { dg-warning "used uninitialized" } */
     return 1;
   return 0;
 }

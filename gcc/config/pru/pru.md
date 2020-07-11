@@ -887,7 +887,7 @@
 ;; This insn is volatile because we'd like it to stay in its original
 ;; position, just before the loop header.  If it stays there, we might
 ;; be able to convert it into a "loop" insn.
-(define_insn "doloop_begin_internal<mode>"
+(define_insn "@doloop_begin_internal<mode>"
   [(set (match_operand:HISI 0 "register_operand" "=r")
 	(unspec_volatile:HISI
 	 [(match_operand:HISI 1 "reg_or_ubyte_operand" "rI")
@@ -909,7 +909,7 @@
 ; Note: "JUMP_INSNs and CALL_INSNs are not allowed to have any output
 ; reloads;".  Hence this insn must be prepared for a counter that is
 ; not a register.
-(define_insn "doloop_end_internal<mode>"
+(define_insn "@doloop_end_internal<mode>"
   [(set (pc)
 	(if_then_else (ne (match_operand:HISI 0 "nonimmediate_operand" "+r,*m")
 			  (const_int 1))
@@ -951,7 +951,7 @@
   DONE;
 })
 
-(define_insn "pruloop<mode>"
+(define_insn "@pruloop<mode>"
   [(set (reg:HISI LOOPCNTR_REGNUM)
 	(unspec:HISI [(match_operand:HISI 0 "reg_or_ubyte_operand" "rI")
 		    (label_ref (match_operand 1))]

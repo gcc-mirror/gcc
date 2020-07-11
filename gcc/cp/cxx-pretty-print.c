@@ -173,12 +173,13 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (t))
-	{
-	  pp_cxx_begin_template_argument_list (pp);
-	  tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
-	  pp_cxx_template_argument_list (pp, args);
-	  pp_cxx_end_template_argument_list (pp);
-	}
+	if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (ti)))
+	  {
+	    pp_cxx_begin_template_argument_list (pp);
+	    tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
+	    pp_cxx_template_argument_list (pp, args);
+	    pp_cxx_end_template_argument_list (pp);
+	  }
       break;
 
     case BIT_NOT_EXPR:
@@ -1325,6 +1326,7 @@ cxx_pretty_printer::declaration_specifiers (tree t)
 /* simple-type-specifier:
       ::(opt) nested-name-specifier(opt) type-name
       ::(opt) nested-name-specifier(opt) template(opt) template-id
+      decltype-specifier
       char
       wchar_t
       bool
@@ -1363,6 +1365,13 @@ cxx_pretty_printer::simple_type_specifier (tree t)
       pp_cxx_unqualified_id (this, TYPENAME_TYPE_FULLNAME (t));
       break;
 
+    case DECLTYPE_TYPE:
+      pp_cxx_ws_string (this, "decltype");
+      pp_cxx_left_paren (this);
+      this->expression (DECLTYPE_TYPE_EXPR (t));
+      pp_cxx_right_paren (this);
+      break;
+
     default:
       c_pretty_printer::simple_type_specifier (t);
       break;
@@ -1389,6 +1398,7 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
     case TEMPLATE_TEMPLATE_PARM:
     case TYPE_DECL:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
+    case DECLTYPE_TYPE:
       pp_cxx_cv_qualifier_seq (pp, t);
       pp->simple_type_specifier (t);
       break;
@@ -1397,13 +1407,6 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
       pp_cxx_type_specifier_seq (pp, TREE_TYPE (t));
       pp_cxx_space_for_pointer_operator (pp, TREE_TYPE (t));
       pp_cxx_nested_name_specifier (pp, TYPE_METHOD_BASETYPE (t));
-      break;
-
-    case DECLTYPE_TYPE:
-      pp_cxx_ws_string (pp, "decltype");
-      pp_cxx_left_paren (pp);
-      pp->expression (DECLTYPE_TYPE_EXPR (t));
-      pp_cxx_right_paren (pp);
       break;
 
     case RECORD_TYPE:
@@ -1532,7 +1535,7 @@ pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
     }
   bool first = true;
 
-  /* Skip artificial parameter for nonstatic member functions.  */
+  /* Skip artificial parameter for non-static member functions.  */
   if (TREE_CODE (t) == METHOD_TYPE)
     types = TREE_CHAIN (types);
 
@@ -1799,6 +1802,7 @@ cxx_pretty_printer::direct_abstract_declarator (tree t)
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case UNBOUND_CLASS_TEMPLATE:
+    case DECLTYPE_TYPE:
       break;
 
     default:

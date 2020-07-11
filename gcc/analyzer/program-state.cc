@@ -1449,23 +1449,21 @@ test_program_state_dumping ()
   ASSERT_DUMP_EQ
     (s, ext_state, false,
      "rmodel: r0: {kind: `root', parent: null, sval: null}\n"
-     "|-heap: r1: {kind: `heap', parent: r0, sval: sv0}\n"
-     "|  |: sval: sv0: {poisoned: uninit}\n"
+     "|-heap: r1: {kind: `heap', parent: r0, sval: null}\n"
      "|  `-r2: {kind: `symbolic', parent: r1, sval: null, possibly_null: true}\n"
      "`-globals: r3: {kind: `globals', parent: r0, sval: null, map: {`p': r4}}\n"
-     "  `-`p': r4: {kind: `primitive', parent: r3, sval: sv1, type: `void *'}\n"
-     "    |: sval: sv1: {type: `void *', &r2}\n"
+     "  `-`p': r4: {kind: `primitive', parent: r3, sval: sv0, type: `void *'}\n"
+     "    |: sval: sv0: {type: `void *', &r2}\n"
      "    |: type: `void *'\n"
      "svalues:\n"
-     "  sv0: {poisoned: uninit}\n"
-     "  sv1: {type: `void *', &r2}\n"
+     "  sv0: {type: `void *', &r2}\n"
      "constraint manager:\n"
      "  equiv classes:\n"
      "  constraints:\n"
-     "malloc: {sv1: unchecked (`p')}\n");
+     "malloc: {sv0: unchecked (`p')}\n");
 
   ASSERT_DUMP_EQ (s, ext_state, true,
-		  "rmodel: p: &r2 malloc: {sv1: unchecked (`p')}");
+		  "rmodel: p: &r2 malloc: {sv0: unchecked (`p')}");
 }
 
 /* Verify that program_state::dump_to_pp works for string literals.  */

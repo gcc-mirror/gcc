@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 // missing #include <compare>
 template <class T, T x = (T() <=> T()) == 0>

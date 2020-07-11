@@ -36,7 +36,14 @@ foo (T *p)
   i = v;
   #pragma omp atomic hint(1),update,release
   f = f + 2.0;
-  #pragma omp requires atomic_default_mem_order (acq_rel)
+}
+
+#pragma omp requires atomic_default_mem_order (acq_rel)
+
+template <int N, int M, typename T>
+void
+baz (T *p)
+{
   #pragma omp atomic hint (M - 1) update
   *p += 1;
   #pragma omp atomic capture, hint (M)
@@ -47,4 +54,5 @@ void
 bar ()
 {
   foo <0, 1, int> (&i);
+  baz <0, 1, int> (&i);
 }

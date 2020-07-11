@@ -329,7 +329,7 @@ void OffloadDescriptor::merge_var_descs(
                 }
             }
             // instead of m_vars[i].type.dst we will use m_vars_extra[i].type_dst
-            if (m_vars[i].type.dst == c_extended_type && i < vars_total) {
+            if (i < vars_total && m_vars[i].type.dst == c_extended_type) {
                 VarDescExtendedType *etype =
                     reinterpret_cast<VarDescExtendedType*>(vars[i].into);
                 m_vars_extra[i].type_dst = etype->extended_type;

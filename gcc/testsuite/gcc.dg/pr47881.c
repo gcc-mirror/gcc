@@ -1,7 +1,6 @@
 /* PR debug/47881 */
 /* { dg-do compile } */
 /* { dg-options "-O -fcompare-debug -fno-dce -funroll-loops -fno-web" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 extern int data[];
 

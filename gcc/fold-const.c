@@ -5770,8 +5770,22 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       case LT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
 	  break;
-	tem = fold_build1_loc (loc, ABS_EXPR, TREE_TYPE (arg1), arg1);
-	return negate_expr (fold_convert_loc (loc, type, tem));
+	if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+	  {
+	    /* A <= 0 ? A : -A for A INT_MIN is valid, but -abs(INT_MIN)
+	       is not, invokes UB both in abs and in the negation of it.
+	       So, use ABSU_EXPR instead.  */
+	    tree utype = unsigned_type_for (TREE_TYPE (arg1));
+	    tem = fold_build1_loc (loc, ABSU_EXPR, utype, arg1);
+	    tem = negate_expr (tem);
+	    return fold_convert_loc (loc, type, tem);
+	  }
+	else
+	  {
+	    tem = fold_build1_loc (loc, ABS_EXPR, TREE_TYPE (arg1), arg1);
+	    return negate_expr (fold_convert_loc (loc, type, tem));
+	  }
       default:
 	gcc_assert (TREE_CODE_CLASS (comp_code) == tcc_comparison);
 	break;
@@ -11631,50 +11645,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	  return omit_one_operand_loc (loc, type, res, arg0);
 	}
 
-      /* Fold (X & C) op (Y & C) as (X ^ Y) & C op 0", and symmetries.  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && TREE_CODE (arg1) == BIT_AND_EXPR)
-	{
-	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  tree arg01 = TREE_OPERAND (arg0, 1);
-	  tree arg10 = TREE_OPERAND (arg1, 0);
-	  tree arg11 = TREE_OPERAND (arg1, 1);
-	  tree itype = TREE_TYPE (arg0);
-
-	  if (operand_equal_p (arg01, arg11, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg10);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg01);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	  if (operand_equal_p (arg01, arg10, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg11);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg01);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	  if (operand_equal_p (arg00, arg11, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg10);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg00);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	  if (operand_equal_p (arg00, arg10, 0))
-	    {
-	      tem = fold_convert_loc (loc, itype, arg11);
-	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01, tem);
-	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg00);
-	      return fold_build2_loc (loc, code, type, tem,
-				      build_zero_cst (itype));
-	    }
-	}
-
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && TREE_CODE (arg1) == BIT_XOR_EXPR)
 	{
@@ -13838,8 +13808,10 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_POPCOUNT:
     CASE_CFN_CLZ:
     CASE_CFN_CLRSB:
+    case CFN_BUILT_IN_BSWAP16:
     case CFN_BUILT_IN_BSWAP32:
     case CFN_BUILT_IN_BSWAP64:
+    case CFN_BUILT_IN_BSWAP128:
       /* Always true.  */
       return true;
 

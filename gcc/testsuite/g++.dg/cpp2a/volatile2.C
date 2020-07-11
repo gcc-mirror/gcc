@@ -1,5 +1,5 @@
 // PR c++/91361 - P1152R4: Deprecating some uses of volatile.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-options "-Wno-volatile" }
 
 #define ACCESS_ONCE(x) (*(volatile __typeof(x) *)&(x))

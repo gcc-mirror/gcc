@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -197,6 +197,8 @@ package System.Aux_DEC is
 
    type Unsigned_Quadword_Array is
       array (Integer range <>) of Unsigned_Quadword;
+
+   subtype Address_Int is Integer;
 
    function To_Address (X : Integer) return Address;
    pragma Pure_Function (To_Address);

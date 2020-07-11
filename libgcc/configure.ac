@@ -515,14 +515,12 @@ AC_SUBST(solaris_ld_v2_maps)
 # This is after config.host so we can augment tmake_file.
 case ${host} in
 xtensa*-*)
-  cat > conftest.c <<EOF
-	#ifdef __XTENSA_CALL0_ABI__
-	#error
-	#endif
-EOF
-  if AC_TRY_COMMAND(${CC-cc} -E -o conftest.i conftest.c 1>&AS_MESSAGE_LOG_FD); then
-      tmake_file="${tmake_file} xtensa/t-windowed"
-  fi
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+		     [#ifdef __XTENSA_CALL0_ABI__
+		      #error
+		      #endif
+		      ])],
+		      [tmake_file="${tmake_file} xtensa/t-windowed"])
   ;;
 esac
 
@@ -598,6 +596,25 @@ i[[34567]]86-*-* | x86_64-*-*)
   ;;
 esac])
 LIBGCC_CHECK_AS_AVX
+
+dnl Check if as supports LSE instructions.
+AC_DEFUN([LIBGCC_CHECK_AS_LSE], [
+case "${target}" in
+aarch64*-*-*)
+  AC_CACHE_CHECK([if the assembler supports LSE], libgcc_cv_as_lse, [
+    AC_TRY_COMPILE([],
+changequote(,)dnl
+			asm(".arch armv8-a+lse\n\tcas w0, w1, [x2]");
+changequote([,])dnl
+		       ,
+		   [libgcc_cv_as_lse=yes], [libgcc_cv_as_lse=no])
+  ])
+  if test x$libgcc_cv_as_lse = xyes; then
+    AC_DEFINE(HAVE_AS_LSE, 1, [Define to 1 if the assembler supports LSE.])
+  fi
+  ;;
+esac])
+LIBGCC_CHECK_AS_LSE
 
 dnl Check if as supports RTM instructions.
 AC_CACHE_CHECK(for init priority support, libgcc_cv_init_priority, [

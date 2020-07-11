@@ -35,8 +35,14 @@ int fn9 (void) { return 9; }
   s##n.x = v;							\
   a##n[2].x = w;						\
   ++j;
+#ifdef CXX14_VS_CXX17
+struct empty_base {};
+#define EMPTY_BASE : public empty_base
+#else
+#define EMPTY_BASE
+#endif
 #define TX(n, type, attrs, fields, ops) 			\
-type S##n { fields } attrs;					\
+type S##n EMPTY_BASE { fields } attrs;				\
 type S##n s##n;							\
 extern type S##n a##n[5];					\
 extern type S##n check##n (type S##n, type S##n *,		\

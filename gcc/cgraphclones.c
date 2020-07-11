@@ -165,6 +165,7 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_STATIC_DESTRUCTOR (new_node->decl) = 0;
   DECL_SET_IS_OPERATOR_NEW (new_node->decl, 0);
   DECL_SET_IS_OPERATOR_DELETE (new_node->decl, 0);
+  DECL_IS_REPLACEABLE_OPERATOR (new_node->decl) = 0;
 
   new_node->externally_visible = 0;
   new_node->local = 1;
@@ -403,7 +404,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->tp_first_run = tp_first_run;
   new_node->tm_clone = tm_clone;
   new_node->icf_merged = icf_merged;
-  new_node->merged_comdat = merged_comdat;
   new_node->thunk = thunk;
   new_node->unit_id = unit_id;
   new_node->merged_comdat = merged_comdat;
@@ -1030,6 +1030,7 @@ cgraph_node::create_version_clone_with_body
   DECL_STATIC_DESTRUCTOR (new_decl) = 0;
   DECL_SET_IS_OPERATOR_NEW (new_decl, 0);
   DECL_SET_IS_OPERATOR_DELETE (new_decl, 0);
+  DECL_IS_REPLACEABLE_OPERATOR (new_decl) = 0;
 
   /* Create the new version's call-graph node.
      and update the edges of the new node. */
@@ -1159,15 +1160,15 @@ symbol_table::materialize_all_clones (void)
 		      if (node->clone.tree_map)
 		        {
 			  unsigned int i;
-			  fprintf (symtab->dump_file, "   replace map: ");
+			  fprintf (symtab->dump_file, "    replace map:");
 			  for (i = 0;
 			       i < vec_safe_length (node->clone.tree_map);
 			       i++)
 			    {
 			      ipa_replace_map *replace_info;
 			      replace_info = (*node->clone.tree_map)[i];
-			      fprintf (symtab->dump_file, "%i -> ",
-				       (*node->clone.tree_map)[i]->parm_num);
+			      fprintf (symtab->dump_file, "%s %i -> ",
+				       i ? "," : "", replace_info->parm_num);
 			      print_generic_expr (symtab->dump_file,
 						  replace_info->new_tree);
 			    }

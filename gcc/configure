@@ -631,6 +631,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+CET_HOST_FLAGS
 NO_PIE_FLAG
 NO_PIE_CFLAGS
 enable_default_pie
@@ -786,6 +787,8 @@ LTLIBICONV
 LIBICONV
 ZSTD_LIB
 ZSTD_INCLUDE
+ZSTD_LDFLAGS
+ZSTD_CPPFLAGS
 DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
@@ -819,7 +822,6 @@ accel_dir_suffix
 real_target_noncanonical
 enable_as_accelerator
 gnat_install_lib
-DOCUMENTATION_ROOT_URL
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -967,6 +969,7 @@ with_specs
 with_pkgversion
 with_bugurl
 with_documentation_root_url
+with_changes_root_url
 enable_languages
 with_multilib_list
 with_zstd
@@ -1017,6 +1020,7 @@ with_linker_hash_style
 with_diagnostics_color
 with_diagnostics_urls
 enable_default_pie
+enable_cet
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1771,6 +1775,7 @@ Optional Features:
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
   --enable-default-pie    enable Position Independent Executable as default
+  --enable-cet            enable Intel CET in host libraries [default=auto]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1803,6 +1808,8 @@ Optional Packages:
   --with-bugurl=URL       Direct users to URL to report a bug
   --with-documentation-root-url=URL
                           Root for documentation URLs
+  --with-changes-root-url=URL
+                          Root for GCC changes URLs
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
@@ -5703,6 +5710,7 @@ $as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
   $as_echo "#define _TANDEM_SOURCE 1" >>confdefs.h
 
 
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -7847,14 +7855,39 @@ if test "${with_documentation_root_url+set}" = set; then :
   withval=$with_documentation_root_url; case "$withval" in
       yes) as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
       no)  as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
-      *)   DOCUMENTATION_ROOT_URL="$withval"
-	   ;;
+      */)  DOCUMENTATION_ROOT_URL="$withval" ;;
+      *)   as_fn_error $? "documentation root URL does not end with /" "$LINENO" 5 ;;
      esac
 else
-  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
 
 fi
 
+
+cat >>confdefs.h <<_ACEOF
+#define DOCUMENTATION_ROOT_URL "$DOCUMENTATION_ROOT_URL"
+_ACEOF
+
+
+# Allow overriding the default URL for GCC changes
+
+# Check whether --with-changes-root-url was given.
+if test "${with_changes_root_url+set}" = set; then :
+  withval=$with_changes_root_url; case "$withval" in
+      yes) as_fn_error $? "changes root URL not specified" "$LINENO" 5 ;;
+      no)  as_fn_error $? "changes root URL not specified" "$LINENO" 5 ;;
+      */)  CHANGES_ROOT_URL="$withval" ;;
+      *)   as_fn_error $? "changes root URL does not end with /" "$LINENO" 5 ;;
+     esac
+else
+  CHANGES_ROOT_URL="https://gcc.gnu.org/"
+
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define CHANGES_ROOT_URL "$CHANGES_ROOT_URL"
+_ACEOF
 
 
 # Sanity check enable_languages in case someone does not run the toplevel
@@ -7920,17 +7953,20 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   else
     enable_offloading=1
     case "$tgt" in
-      *-intelmicemul-*)
+      *-intelmic-* | *-intelmicemul-*)
 	omp_device_property=omp-device-properties-i386
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
 	;;
-      gcn*-*)
+      amdgcn*)
 	omp_device_property=omp-device-properties-gcn
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
 	;;
-      nvptx*-*)
+      nvptx*)
 	omp_device_property=omp-device-properties-nvptx
 	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+	;;
+      *)
+	as_fn_error $? "unknown offload target specified" "$LINENO" 5
 	;;
     esac
     omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
@@ -18985,7 +19021,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18988 "configure"
+#line 19022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19091,7 +19127,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19094 "configure"
+#line 19128 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24749,6 +24785,11 @@ $as_echo "#define TLS_SECTION_ASM_FLAG 't'" >>confdefs.h
     fi
     case "$target" in
       i[34567]86-*-*)
+	if test x$on_solaris = xyes; then
+	  case $gas_flag in
+	    yes) tls_as_opt="$tls_as_opt --32" ;;
+	  esac
+	fi
 	conftest_s="$conftest_s
 foo:	.long	25
 	.text
@@ -28202,6 +28243,37 @@ $as_echo "#define HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS 1" >>confdefs.h
 
 fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for vector load/store alignment hints on z13" >&5
+$as_echo_n "checking assembler for vector load/store alignment hints on z13... " >&6; }
+if ${gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '	vl %v24,0(%r15),3 ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mzarch -march=z13 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13" >&5
+$as_echo "$gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13" >&6; }
+if test $gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13 = yes; then
+
+$as_echo "#define HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13 1" >>confdefs.h
+
+fi
+
 
     ;;
 esac
@@ -30693,6 +30765,187 @@ $as_echo "$gcc_cv_no_pie" >&6; }
 if test "$gcc_cv_no_pie" = "yes"; then
   NO_PIE_FLAG="-no-pie"
 fi
+
+
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error $? "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=auto
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    may_have_cet=yes
+    cet_save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -fcf-protection"
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+else
+  as_fn_error $? "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    CFLAGS="$cet_save_CFLAGS"
+    ;;
+  *)
+    may_have_cet=no
+    enable_cet=no
+    ;;
+esac
+
+cet_save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fcf-protection=none"
+cet_save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,-z,ibt,-z,shstk"
+if test x$may_have_cet = xyes; then
+  # Check whether -fcf-protection=none -Wl,-z,ibt,-z,shstk work.
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  may_have_cet=yes
+else
+  may_have_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+if test x$may_have_cet = xyes; then
+  if test x$cross_compiling = xno; then
+    if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+static void
+foo (void)
+{
+}
+
+static void
+__attribute__ ((noinline, noclone))
+xxx (void (*f) (void))
+{
+  f ();
+}
+
+static void
+__attribute__ ((noinline, noclone))
+bar (void)
+{
+  xxx (foo);
+}
+
+int
+main ()
+{
+  bar ();
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_run "$LINENO"; then :
+  have_cet=no
+else
+  have_cet=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    if test x$enable_cet = xno -a x$have_cet = xyes; then
+      as_fn_error $? "Intel CET must be enabled on Intel CET enabled host" "$LINENO" 5
+    fi
+  fi
+else
+  # Enable CET in cross compiler if possible so that it will run on both
+  # CET and non-CET hosts.
+  have_cet=yes
+fi
+if test x$enable_cet = xyes; then
+  CET_HOST_FLAGS="-fcf-protection"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+CFLAGS="$cet_save_CFLAGS"
+LDFLAGS="$cet_save_LDFLAGS"
+
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
 
 
 # Check linker supports '-z bndplt'

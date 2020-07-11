@@ -381,11 +381,20 @@
 /* Define to 1 if you have the `floorl' function. */
 #undef HAVE_FLOORL
 
+/* Define to 1 if you have the `fma' function. */
+#undef HAVE_FMA
+
 /* Define if FMA3 instructions can be compiled. */
 #undef HAVE_FMA3
 
 /* Define if FMA4 instructions can be compiled. */
 #undef HAVE_FMA4
+
+/* Define to 1 if you have the `fmaf' function. */
+#undef HAVE_FMAF
+
+/* Define to 1 if you have the `fmal' function. */
+#undef HAVE_FMAL
 
 /* Define to 1 if you have the `fmod' function. */
 #undef HAVE_FMOD
@@ -503,6 +512,18 @@
 
 /* Define to 1 if you have the <ieeefp.h> header file. */
 #undef HAVE_IEEEFP_H
+
+/* Define to 1 if `__builtin_copysign' is expanded inline. */
+#undef HAVE_INLINE_BUILTIN_COPYSIGN
+
+/* Define to 1 if `__builtin_copysignl' is expanded inline. */
+#undef HAVE_INLINE_BUILTIN_COPYSIGNL
+
+/* Define to 1 if `__builtin_fabs' is expanded inline. */
+#undef HAVE_INLINE_BUILTIN_FABS
+
+/* Define to 1 if `__builtin_fabsl' is expanded inline. */
+#undef HAVE_INLINE_BUILTIN_FABSL
 
 /* Define to 1 if the system has the type `intptr_t'. */
 #undef HAVE_INTPTR_T

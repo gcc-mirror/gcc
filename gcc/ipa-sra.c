@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfganal.h"
 #include "tree-streamer.h"
-
+#include "internal-fn.h"
 
 /* Bits used to track size of an aggregate in bytes interprocedurally.  */
 #define ISRA_ARG_SIZE_LIMIT_BITS 16
@@ -795,17 +795,17 @@ get_single_param_flow_source (const isra_param_flow *param_flow)
 }
 
 /* Inspect all uses of NAME and simple arithmetic calculations involving NAME
-   in NODE and return a negative number if any of them is used for something
-   else than either an actual call argument, simple arithmetic operation or
-   debug statement.  If there are no such uses, return the number of actual
-   arguments that this parameter eventually feeds to (or zero if there is none).
-   For any such parameter, mark PARM_NUM as one of its sources.  ANALYZED is a
-   bitmap that tracks which SSA names we have already started
-   investigating.  */
+   in FUN represented with NODE and return a negative number if any of them is
+   used for something else than either an actual call argument, simple
+   arithmetic operation or debug statement.  If there are no such uses, return
+   the number of actual arguments that this parameter eventually feeds to (or
+   zero if there is none).  For any such parameter, mark PARM_NUM as one of its
+   sources.  ANALYZED is a bitmap that tracks which SSA names we have already
+   started investigating.  */
 
 static int
-isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
-			      bitmap analyzed)
+isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
+			      int parm_num, bitmap analyzed)
 {
   int res = 0;
   imm_use_iterator imm_iter;
@@ -859,8 +859,9 @@ isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
 	    }
 	  res += all_uses;
 	}
-      else if ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
-	       || gimple_code (stmt) == GIMPLE_PHI)
+      else if (!stmt_unremovable_because_of_non_call_eh_p (fun, stmt)
+	       && ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
+		   || gimple_code (stmt) == GIMPLE_PHI))
 	{
 	  tree lhs;
 	  if (gimple_code (stmt) == GIMPLE_PHI)
@@ -876,7 +877,7 @@ isra_track_scalar_value_uses (cgraph_node *node, tree name, int parm_num,
 	  gcc_assert (!gimple_vdef (stmt));
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs)))
 	    {
-	      int tmp = isra_track_scalar_value_uses (node, lhs, parm_num,
+	      int tmp = isra_track_scalar_value_uses (fun, node, lhs, parm_num,
 						      analyzed);
 	      if (tmp < 0)
 		{
@@ -927,7 +928,8 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
     return true;
 
   bitmap analyzed = BITMAP_ALLOC (NULL);
-  int call_uses = isra_track_scalar_value_uses (node, name, parm_num, analyzed);
+  int call_uses = isra_track_scalar_value_uses (fun, node, name, parm_num,
+						analyzed);
   BITMAP_FREE (analyzed);
   if (call_uses < 0)
     return true;
@@ -1281,7 +1283,9 @@ allocate_access (gensum_param_desc *desc,
 }
 
 /* In what context scan_expr_access has been called, whether it deals with a
-   load, a function argument, or a store.  */
+   load, a function argument, or a store.  Please note that in rare
+   circumstances when it is not clear if the access is a load or store,
+   ISRA_CTX_STORE is used too.  */
 
 enum isra_scan_context {ISRA_CTX_LOAD, ISRA_CTX_ARG, ISRA_CTX_STORE};
 
@@ -1870,15 +1874,27 @@ scan_function (cgraph_node *node, struct function *fun)
 	    case GIMPLE_CALL:
 	      {
 		unsigned argument_count = gimple_call_num_args (stmt);
-		scan_call_info call_info;
-		call_info.cs = node->get_edge (stmt);
-		call_info.argument_count = argument_count;
+		isra_scan_context ctx = ISRA_CTX_ARG;
+		scan_call_info call_info, *call_info_p = &call_info;
+		if (gimple_call_internal_p (stmt))
+		  {
+		    call_info_p = NULL;
+		    ctx = ISRA_CTX_LOAD;
+		    internal_fn ifn = gimple_call_internal_fn (stmt);
+		    if (internal_store_fn_p (ifn))
+		      ctx = ISRA_CTX_STORE;
+		  }
+		else
+		  {
+		    call_info.cs = node->get_edge (stmt);
+		    call_info.argument_count = argument_count;
+		  }
 
 		for (unsigned i = 0; i < argument_count; i++)
 		  {
 		    call_info.arg_idx = i;
 		    scan_expr_access (gimple_call_arg (stmt, i), stmt,
-				      ISRA_CTX_ARG, bb, &call_info);
+				      ctx, bb, call_info_p);
 		  }
 
 		tree lhs = gimple_call_lhs (stmt);
@@ -3255,7 +3271,9 @@ all_callee_accesses_present_p (isra_param_desc *param_desc,
 	continue;
       param_access *pacc = find_param_access (param_desc, argacc->unit_offset,
 					      argacc->unit_size);
-      if (!pacc || !pacc->certain)
+      if (!pacc
+	  || !pacc->certain
+	  || !types_compatible_p (argacc->type, pacc->type))
 	return false;
     }
   return true;

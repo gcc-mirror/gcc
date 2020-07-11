@@ -19,6 +19,11 @@ if { ![isnative] || ![is-effective-target shared] } {
     return
 }
 
+# Skip running test if phobos was not built on the target.
+if { ![is-effective-target d_runtime_has_std_library] } {
+    return
+}
+
 # Gather a list of all tests.
 set tests [lsort [filter_libphobos_unittests [find $srcdir/../src "*.d"]]]
 

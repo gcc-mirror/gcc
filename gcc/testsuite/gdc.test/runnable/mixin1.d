@@ -1,4 +1,4 @@
-
+// RUNNABLE_PHOBOS_TEST
 module mixin1;
 
 import std.stdio;

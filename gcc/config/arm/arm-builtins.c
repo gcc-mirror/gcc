@@ -43,6 +43,8 @@
 #include "sbitmap.h"
 #include "stringpool.h"
 #include "arm-builtins.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 7
 
@@ -1457,18 +1459,12 @@ arm_mangle_builtin_scalar_type (const_tree type)
 static const char *
 arm_mangle_builtin_vector_type (const_tree type)
 {
-  int i;
-  int nelts = sizeof (arm_simd_types) / sizeof (arm_simd_types[0]);
-
-  for (i = 0; i < nelts; i++)
-    if (arm_simd_types[i].mode ==  TYPE_MODE (type)
-	&& TYPE_NAME (type)
-	&& TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	&& DECL_NAME (TYPE_NAME (type))
-	&& !strcmp
-	     (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
-	      arm_simd_types[i].name))
-      return arm_simd_types[i].mangle;
+  tree attrs = TYPE_ATTRIBUTES (type);
+  if (tree attr = lookup_attribute ("Advanced SIMD type", attrs))
+    {
+      tree mangled_name = TREE_VALUE (TREE_VALUE (attr));
+      return IDENTIFIER_POINTER (mangled_name);
+    }
 
   return NULL;
 }
@@ -1642,9 +1638,18 @@ arm_init_simd_builtin_types (void)
       if (eltype == NULL)
 	continue;
       if (arm_simd_types[i].itype == NULL)
-	arm_simd_types[i].itype =
-	  build_distinct_type_copy
-	    (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+	{
+	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+	  type = build_distinct_type_copy (type);
+	  SET_TYPE_STRUCTURAL_EQUALITY (type);
+
+	  tree mangled_name = get_identifier (arm_simd_types[i].mangle);
+	  tree value = tree_cons (NULL_TREE, mangled_name, NULL_TREE);
+	  TYPE_ATTRIBUTES (type)
+	    = tree_cons (get_identifier ("Advanced SIMD type"), value,
+			 TYPE_ATTRIBUTES (type));
+	  arm_simd_types[i].itype = type;
+	}
 
       tdecl = add_builtin_type (arm_simd_types[i].name,
 				arm_simd_types[i].itype);
@@ -3081,7 +3086,8 @@ constant_arg:
 		    {
 		      if (argc == 0)
 			{
-			  unsigned int cp_bit = UINTVAL (op[argc]);
+			  unsigned int cp_bit = (CONST_INT_P (op[argc])
+						 ? UINTVAL (op[argc]) : -1);
 			  if (IN_RANGE (cp_bit, 0, ARM_CDE_CONST_COPROC))
 			    error ("%Kcoprocessor %d is not enabled "
 				   "with +cdecp%d", exp, cp_bit, cp_bit);
@@ -4166,8 +4172,9 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   mask = build_int_cst (unsigned_type_node,
 			~((ARM_FE_ALL_EXCEPT << ARM_FE_EXCEPT_SHIFT)
 			  | ARM_FE_ALL_EXCEPT));
-  ld_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
-		    fenv_var, build_call_expr (get_fpscr, 0));
+  ld_fenv = build4 (TARGET_EXPR, unsigned_type_node,
+		    fenv_var, build_call_expr (get_fpscr, 0),
+		    NULL_TREE, NULL_TREE);
   masked_fenv = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var, mask);
   hold_fnclex = build_call_expr (set_fpscr, 1, masked_fenv);
   *hold = build2 (COMPOUND_EXPR, void_type_node,
@@ -4188,8 +4195,8 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __atomic_feraiseexcept (new_fenv_var);  */
 
   new_fenv_var = create_tmp_var_raw (unsigned_type_node);
-  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node, new_fenv_var,
-			build_call_expr (get_fpscr, 0));
+  reload_fenv = build4 (TARGET_EXPR, unsigned_type_node, new_fenv_var,
+			build_call_expr (get_fpscr, 0), NULL_TREE, NULL_TREE);
   restore_fnenv = build_call_expr (set_fpscr, 1, fenv_var);
   atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
   update_call = build_call_expr (atomic_feraiseexcept, 1,

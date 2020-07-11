@@ -2859,9 +2859,18 @@ if (isDynamicArray!A)
     }
 
     /**
+     * Use opSlice() from now on.
      * Returns: The managed array.
      */
     @property inout(ElementEncodingType!A)[] data() inout @trusted pure nothrow
+    {
+        return this[];
+    }
+
+    /**
+     * Returns: The managed array.
+     */
+    @property inout(ElementEncodingType!A)[] opSlice() inout @trusted pure nothrow
     {
         /* @trusted operation:
          * casting Unqual!T[] to inout(T)[]
@@ -3117,13 +3126,13 @@ if (isDynamicArray!A)
     string b = "abcdefg";
     foreach (char c; b)
         app.put(c);
-    assert(app.data == "abcdefg");
+    assert(app[] == "abcdefg");
 
     int[] a = [ 1, 2 ];
     auto app2 = appender(a);
     app2.put(3);
     app2.put([ 4, 5, 6 ]);
-    assert(app2.data == [ 1, 2, 3, 4, 5, 6 ]);
+    assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
 }
 
 @safe unittest
@@ -3214,7 +3223,7 @@ if (isDynamicArray!A)
     if (__traits(compiles, (Appender!A a) => mixin("a." ~ fn ~ "(args)")))
     {
         // we do it this way because we can't cache a void return
-        scope(exit) *this.arr = impl.data;
+        scope(exit) *this.arr = impl[];
         mixin("return impl." ~ fn ~ "(args);");
     }
 
@@ -3226,7 +3235,7 @@ if (isDynamicArray!A)
     void opOpAssign(string op : "~", U)(U rhs)
     if (__traits(compiles, (Appender!A a){ a.put(rhs); }))
     {
-        scope(exit) *this.arr = impl.data;
+        scope(exit) *this.arr = impl[];
         impl.put(rhs);
     }
 
@@ -3240,12 +3249,20 @@ if (isDynamicArray!A)
         return impl.capacity;
     }
 
-    /**
-     * Returns the managed array.
+    /* Use opSlice() instead.
+     * Returns: the managed array.
      */
     @property inout(ElementEncodingType!A)[] data() inout
     {
-        return impl.data;
+        return impl[];
+    }
+
+    /**
+     * Returns: the managed array.
+     */
+    @property inout(ElementEncodingType!A)[] opSlice() inout
+    {
+        return impl[];
     }
 }
 
@@ -3255,11 +3272,11 @@ unittest
 {
     int[] a = [1, 2];
     auto app2 = appender(&a);
-    assert(app2.data == [1, 2]);
+    assert(app2[] == [1, 2]);
     assert(a == [1, 2]);
     app2 ~= 3;
     app2 ~= [4, 5, 6];
-    assert(app2.data == [1, 2, 3, 4, 5, 6]);
+    assert(app2[] == [1, 2, 3, 4, 5, 6]);
     assert(a == [1, 2, 3, 4, 5, 6]);
 
     app2.reserve(5);
@@ -3291,33 +3308,33 @@ Appender!(E[]) appender(A : E[], E)(auto ref A array)
         auto app = appender!(char[])();
         string b = "abcdefg";
         foreach (char c; b) app.put(c);
-        assert(app.data == "abcdefg");
+        assert(app[] == "abcdefg");
     }
     {
         auto app = appender!(char[])();
         string b = "abcdefg";
         foreach (char c; b) app ~= c;
-        assert(app.data == "abcdefg");
+        assert(app[] == "abcdefg");
     }
     {
         int[] a = [ 1, 2 ];
         auto app2 = appender(a);
-        assert(app2.data == [ 1, 2 ]);
+        assert(app2[] == [ 1, 2 ]);
         app2.put(3);
         app2.put([ 4, 5, 6 ][]);
-        assert(app2.data == [ 1, 2, 3, 4, 5, 6 ]);
+        assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
         app2.put([ 7 ]);
-        assert(app2.data == [ 1, 2, 3, 4, 5, 6, 7 ]);
+        assert(app2[] == [ 1, 2, 3, 4, 5, 6, 7 ]);
     }
 
     int[] a = [ 1, 2 ];
     auto app2 = appender(a);
-    assert(app2.data == [ 1, 2 ]);
+    assert(app2[] == [ 1, 2 ]);
     app2 ~= 3;
     app2 ~= [ 4, 5, 6 ][];
-    assert(app2.data == [ 1, 2, 3, 4, 5, 6 ]);
+    assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
     app2 ~= [ 7 ];
-    assert(app2.data == [ 1, 2, 3, 4, 5, 6, 7 ]);
+    assert(app2[] == [ 1, 2, 3, 4, 5, 6, 7 ]);
 
     app2.reserve(5);
     assert(app2.capacity >= 5);
@@ -3327,12 +3344,12 @@ Appender!(E[]) appender(A : E[], E)(auto ref A array)
         app2.shrinkTo(3);
     }
     catch (Exception) assert(0);
-    assert(app2.data == [ 1, 2, 3 ]);
+    assert(app2[] == [ 1, 2, 3 ]);
     assertThrown(app2.shrinkTo(5));
 
     const app3 = app2;
     assert(app3.capacity >= 3);
-    assert(app3.data == [1, 2, 3]);
+    assert(app3[] == [1, 2, 3]);
 
     auto app4 = appender([]);
     try // shrinkTo may throw
@@ -3347,29 +3364,29 @@ Appender!(E[]) appender(A : E[], E)(auto ref A array)
         {
             Appender!S app5663i;
             assertNotThrown(app5663i.put("\xE3"));
-            assert(app5663i.data == "\xE3");
+            assert(app5663i[] == "\xE3");
 
             Appender!S app5663c;
             assertNotThrown(app5663c.put(cast(const(char)[])"\xE3"));
-            assert(app5663c.data == "\xE3");
+            assert(app5663c[] == "\xE3");
 
             Appender!S app5663m;
             assertNotThrown(app5663m.put("\xE3".dup));
-            assert(app5663m.data == "\xE3");
+            assert(app5663m[] == "\xE3");
         }
         // ditto for ~=
         {
             Appender!S app5663i;
             assertNotThrown(app5663i ~= "\xE3");
-            assert(app5663i.data == "\xE3");
+            assert(app5663i[] == "\xE3");
 
             Appender!S app5663c;
             assertNotThrown(app5663c ~= cast(const(char)[])"\xE3");
-            assert(app5663c.data == "\xE3");
+            assert(app5663c[] == "\xE3");
 
             Appender!S app5663m;
             assertNotThrown(app5663m ~= "\xE3".dup);
-            assert(app5663m.data == "\xE3");
+            assert(app5663m[] == "\xE3");
         }
     }
 
@@ -3384,7 +3401,7 @@ Appender!(E[]) appender(A : E[], E)(auto ref A array)
     {
         auto w = appender!(S10122[])();
         w.put(S10122(1));
-        assert(w.data.length == 1 && w.data[0].val == 1);
+        assert(w[].length == 1 && w[][0].val == 1);
     });
 }
 
@@ -3404,7 +3421,7 @@ unittest
     w ~= 'd';
     w ~= "ef";
 
-    assert(w.data == "abcdef");
+    assert(w[] == "abcdef");
 }
 
 @safe pure nothrow unittest
@@ -3413,7 +3430,7 @@ unittest
         auto w = appender!string();
         w.reserve(4);
         cast(void) w.capacity;
-        cast(void) w.data;
+        cast(void) w[];
         try
         {
             wchar wc = 'a';
@@ -3427,7 +3444,7 @@ unittest
         auto w = appender!(int[])();
         w.reserve(4);
         cast(void) w.capacity;
-        cast(void) w.data;
+        cast(void) w[];
         w.put(10);
         w.put([10]);
         w.clear();
@@ -3528,7 +3545,7 @@ unittest
             auto app = appender!(const(E)[])();
             foreach (i, e; src)
                     app.put(e);
-            return app.data;
+            return app[];
     }
 
     class C {}
@@ -3554,6 +3571,8 @@ unittest
 
 @safe unittest
 {
+    import std.algorithm.comparison : equal;
+
     //New appender signature tests
     alias mutARR = int[];
     alias conARR = const(int)[];
@@ -3563,27 +3582,40 @@ unittest
     conARR con;
     immARR imm;
 
-    {auto app = Appender!mutARR(mut);}                //Always worked. Should work. Should not create a warning.
+    auto app1 = Appender!mutARR(mut);                //Always worked. Should work. Should not create a warning.
+    app1.put(7);
+    assert(equal(app1[], [7]));
     static assert(!is(typeof(Appender!mutARR(con)))); //Never worked.  Should not work.
     static assert(!is(typeof(Appender!mutARR(imm)))); //Never worked.  Should not work.
 
-    {auto app = Appender!conARR(mut);} //Always worked. Should work. Should not create a warning.
-    {auto app = Appender!conARR(con);} //Didn't work.   Now works.   Should not create a warning.
-    {auto app = Appender!conARR(imm);} //Didn't work.   Now works.   Should not create a warning.
+    auto app2 = Appender!conARR(mut); //Always worked. Should work. Should not create a warning.
+    app2.put(7);
+    assert(equal(app2[], [7]));
+    auto app3 = Appender!conARR(con); //Didn't work.   Now works.   Should not create a warning.
+    app3.put(7);
+    assert(equal(app3[], [7]));
+    auto app4 = Appender!conARR(imm); //Didn't work.   Now works.   Should not create a warning.
+    app4.put(7);
+    assert(equal(app4[], [7]));
 
     //{auto app = Appender!immARR(mut);}                //Worked. Will cease to work. Creates warning.
     //static assert(!is(typeof(Appender!immARR(mut)))); //Worked. Will cease to work. Uncomment me after full deprecation.
     static assert(!is(typeof(Appender!immARR(con))));   //Never worked. Should not work.
-    {auto app = Appender!immARR(imm);}                  //Didn't work.  Now works. Should not create a warning.
+    auto app5 = Appender!immARR(imm);                  //Didn't work.  Now works. Should not create a warning.
+    app5.put(7);
+    assert(equal(app5[], [7]));
 
     //Deprecated. Please uncomment and make sure this doesn't work:
     //char[] cc;
     //static assert(!is(typeof(Appender!string(cc))));
 
     //This should always work:
-    {auto app = appender!string(null);}
-    {auto app = appender!(const(char)[])(null);}
-    {auto app = appender!(char[])(null);}
+    auto app6 = appender!string(null);
+    assert(app6[] == null);
+    auto app7 = appender!(const(char)[])(null);
+    assert(app7[] == null);
+    auto app8 = appender!(char[])(null);
+    assert(app8[] == null);
 }
 
 @safe unittest //Test large allocations (for GC.extend)
@@ -3594,7 +3626,7 @@ unittest
     app.reserve(1); //cover reserve on non-initialized
     foreach (_; 0 .. 100_000)
         app.put('a');
-    assert(equal(app.data, 'a'.repeat(100_000)));
+    assert(equal(app[], 'a'.repeat(100_000)));
 }
 
 @safe unittest
@@ -3610,7 +3642,9 @@ unittest
 @safe unittest // clear method is supported only for mutable element types
 {
     Appender!string app;
+    app.put("foo");
     static assert(!__traits(compiles, app.clear()));
+    assert(app[] == "foo");
 }
 
 @safe unittest
@@ -3676,11 +3710,11 @@ unittest
 {
     int[] a = [1, 2];
     auto app2 = appender(&a);
-    assert(app2.data == [1, 2]);
+    assert(app2[] == [1, 2]);
     assert(a == [1, 2]);
     app2 ~= 3;
     app2 ~= [4, 5, 6];
-    assert(app2.data == [1, 2, 3, 4, 5, 6]);
+    assert(app2[] == [1, 2, 3, 4, 5, 6]);
     assert(a == [1, 2, 3, 4, 5, 6]);
 
     app2.reserve(5);
@@ -3695,7 +3729,7 @@ unittest
         auto app = appender(&arr);
         string b = "abcdefg";
         foreach (char c; b) app.put(c);
-        assert(app.data == "abcdefg");
+        assert(app[] == "abcdefg");
         assert(arr == "abcdefg");
     }
     {
@@ -3703,27 +3737,27 @@ unittest
         auto app = appender(&arr);
         string b = "abcdefg";
         foreach (char c; b) app ~= c;
-        assert(app.data == "abcdefg");
+        assert(app[] == "abcdefg");
         assert(arr == "abcdefg");
     }
     {
         int[] a = [ 1, 2 ];
         auto app2 = appender(&a);
-        assert(app2.data == [ 1, 2 ]);
+        assert(app2[] == [ 1, 2 ]);
         assert(a == [ 1, 2 ]);
         app2.put(3);
         app2.put([ 4, 5, 6 ][]);
-        assert(app2.data == [ 1, 2, 3, 4, 5, 6 ]);
+        assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
         assert(a == [ 1, 2, 3, 4, 5, 6 ]);
     }
 
     int[] a = [ 1, 2 ];
     auto app2 = appender(&a);
-    assert(app2.data == [ 1, 2 ]);
+    assert(app2[] == [ 1, 2 ]);
     assert(a == [ 1, 2 ]);
     app2 ~= 3;
     app2 ~= [ 4, 5, 6 ][];
-    assert(app2.data == [ 1, 2, 3, 4, 5, 6 ]);
+    assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
     assert(a == [ 1, 2, 3, 4, 5, 6 ]);
 
     app2.reserve(5);
@@ -3734,12 +3768,12 @@ unittest
         app2.shrinkTo(3);
     }
     catch (Exception) assert(0);
-    assert(app2.data == [ 1, 2, 3 ]);
+    assert(app2[] == [ 1, 2, 3 ]);
     assertThrown(app2.shrinkTo(5));
 
     const app3 = app2;
     assert(app3.capacity >= 3);
-    assert(app3.data == [1, 2, 3]);
+    assert(app3[] == [1, 2, 3]);
 }
 
 @safe unittest // issue 14605
@@ -3753,7 +3787,7 @@ unittest
     Appender!(int[]) app;
     short[] range = [1, 2, 3];
     app.put(range);
-    assert(app.data == [1, 2, 3]);
+    assert(app[] == [1, 2, 3]);
 }
 
 @safe unittest
@@ -3766,6 +3800,6 @@ unittest
     put(appA, 'w');
     s ~= 'a'; //Clobbers here?
     a ~= 'a'; //Clobbers here?
-    assert(appS.data == "hellow");
-    assert(appA.data == "hellow");
+    assert(appS[] == "hellow");
+    assert(appA[] == "hellow");
 }

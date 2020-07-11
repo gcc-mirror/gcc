@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { target c++17 } }
 //
 // Check if default return_void is insert at correct position.
 #include <cassert>

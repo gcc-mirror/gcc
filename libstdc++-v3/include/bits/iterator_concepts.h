@@ -90,6 +90,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       private:
 	template<typename _Tp>
+	  struct __result
+	  { using type = iter_reference_t<_Tp>; };
+
+	template<typename _Tp>
+	  requires __adl_imove<_Tp>
+	  struct __result<_Tp>
+	  { using type = decltype(iter_move(std::declval<_Tp>())); };
+
+	template<typename _Tp>
+	  requires (!__adl_imove<_Tp>)
+	  && is_lvalue_reference_v<iter_reference_t<_Tp>>
+	  struct __result<_Tp>
+	  { using type = remove_reference_t<iter_reference_t<_Tp>>&&; };
+
+	template<typename _Tp>
 	  static constexpr bool
 	  _S_noexcept()
 	  {
@@ -100,16 +115,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
       public:
-	template<typename _Tp>
-	  requires __adl_imove<_Tp> || requires(_Tp& __e) { *__e; }
-	  constexpr decltype(auto)
+	// The result type of iter_move(std::declval<_Tp>())
+	template<std::__detail::__dereferenceable _Tp>
+	  using __type = typename __result<_Tp>::type;
+
+	template<std::__detail::__dereferenceable _Tp>
+	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
 	  noexcept(_S_noexcept<_Tp>())
 	  {
 	    if constexpr (__adl_imove<_Tp>)
 	      return iter_move(static_cast<_Tp&&>(__e));
-	    else if constexpr (is_reference_v<iter_reference_t<_Tp>>)
-	      return std::move(*__e);
+	    else if constexpr (is_lvalue_reference_v<iter_reference_t<_Tp>>)
+	      return static_cast<__type<_Tp>>(*__e);
 	    else
 	      return *__e;
 	  }
@@ -123,10 +141,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace ranges
 
   template<__detail::__dereferenceable _Tp>
-    requires requires(_Tp& __t)
-    { { ranges::iter_move(__t) } -> __detail::__can_reference; }
+    requires __detail::
+      __can_reference<ranges::__cust_imove::_IMove::__type<_Tp&>>
     using iter_rvalue_reference_t
-      = decltype(ranges::iter_move(std::declval<_Tp&>()));
+      = ranges::__cust_imove::_IMove::__type<_Tp&>;
 
   template<typename> struct incrementable_traits { };
 
@@ -231,14 +249,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3420. cpp17-iterator should check [type] looks like an iterator first
     template<typename _Iter>
-      concept __cpp17_iterator = copyable<_Iter>
-	&& requires(_Iter __it)
+      concept __cpp17_iterator = requires(_Iter __it)
 	{
 	  { *__it } -> __can_reference;
 	  { ++__it } -> same_as<_Iter&>;
 	  { *__it++ } -> __can_reference;
-	};
+	} && copyable<_Iter>;
 
     template<typename _Iter>
       concept __cpp17_input_iterator = __cpp17_iterator<_Iter>
@@ -251,7 +270,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   typename indirectly_readable_traits<_Iter>::value_type&>;
 	  typename common_reference_t<decltype(*__it++)&&,
 		   typename indirectly_readable_traits<_Iter>::value_type&>;
-	  requires signed_integral<typename incrementable_traits<_Iter>::difference_type>;
+	  requires signed_integral<
+	    typename incrementable_traits<_Iter>::difference_type>;
 	};
 
     template<typename _Iter>
@@ -300,84 +320,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Iter>
       concept __iter_without_nested_types = !__iter_with_nested_types<_Iter>;
-
-    // FIXME: These have to be at namespace-scope because of PR 92103.
-    template<typename _Iter, bool __use_arrow = false>
-      struct __ptr
-      { using type = void; };
-
-    template<typename _Iter> requires requires { typename _Iter::pointer; }
-      struct __ptr<_Iter, true>
-      { using type = typename _Iter::pointer; };
-
-    template<typename _Iter> requires requires { typename _Iter::pointer; }
-      struct __ptr<_Iter, false>
-      { using type = typename _Iter::pointer; };
-
-    template<typename _Iter>
-      requires (!requires { typename _Iter::pointer; }
-	  && requires(_Iter& __it) { __it.operator->(); })
-      struct __ptr<_Iter, true>
-      { using type = decltype(std::declval<_Iter&>().operator->()); };
-
-    template<typename _Iter>
-      struct __ref
-      { using type = iter_reference_t<_Iter>; };
-
-    template<typename _Iter> requires requires { typename _Iter::reference; }
-      struct __ref<_Iter>
-      { using type = typename _Iter::reference; };
-
-    template<typename _Iter>
-      struct __cat
-      { using type = input_iterator_tag; };
-
-    template<typename _Iter>
-      requires requires { typename _Iter::iterator_category; }
-      struct __cat<_Iter>
-      { using type = typename _Iter::iterator_category; };
-
-    template<typename _Iter>
-      requires (!requires { typename _Iter::iterator_category; }
-		&& __detail::__cpp17_randacc_iterator<_Iter>)
-      struct __cat<_Iter>
-      { using type = random_access_iterator_tag; };
-
-    template<typename _Iter>
-      requires (!requires { typename _Iter::iterator_category; }
-		&& __detail::__cpp17_bidi_iterator<_Iter>)
-      struct __cat<_Iter>
-      { using type = bidirectional_iterator_tag; };
-
-    template<typename _Iter>
-      requires (!requires { typename _Iter::iterator_category; }
-		&& __detail::__cpp17_fwd_iterator<_Iter>)
-      struct __cat<_Iter>
-      { using type = forward_iterator_tag; };
-
-    template<typename _Iter>
-      struct __diff
-      { using type = void; };
-
-    template<typename _Iter>
-      requires requires {
-	typename incrementable_traits<_Iter>::difference_type;
-      }
-      struct __diff<_Iter>
-      {
-	using type = typename incrementable_traits<_Iter>::difference_type;
-      };
-
   } // namespace __detail
 
   template<typename _Iterator>
     requires __detail::__iter_with_nested_types<_Iterator>
     struct __iterator_traits<_Iterator, void>
     {
+    private:
+      template<typename _Iter>
+	struct __ptr
+	{ using type = void; };
+
+      template<typename _Iter> requires requires { typename _Iter::pointer; }
+	struct __ptr<_Iter>
+	{ using type = typename _Iter::pointer; };
+
+    public:
       using iterator_category = typename _Iterator::iterator_category;
       using value_type	      = typename _Iterator::value_type;
       using difference_type   = typename _Iterator::difference_type;
-      using pointer	      = typename __detail::__ptr<_Iterator>::type;
+      using pointer	      = typename __ptr<_Iterator>::type;
       using reference	      = typename _Iterator::reference;
     };
 
@@ -386,13 +348,64 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && __detail::__cpp17_input_iterator<_Iterator>
     struct __iterator_traits<_Iterator, void>
     {
-      using iterator_category = typename __detail::__cat<_Iterator>::type;
+    private:
+      template<typename _Iter>
+	struct __cat
+	{ using type = input_iterator_tag; };
+
+      template<typename _Iter>
+	requires requires { typename _Iter::iterator_category; }
+	struct __cat<_Iter>
+	{ using type = typename _Iter::iterator_category; };
+
+      template<typename _Iter>
+	requires (!requires { typename _Iter::iterator_category; }
+		  && __detail::__cpp17_randacc_iterator<_Iter>)
+	struct __cat<_Iter>
+	{ using type = random_access_iterator_tag; };
+
+      template<typename _Iter>
+	requires (!requires { typename _Iter::iterator_category; }
+		  && __detail::__cpp17_bidi_iterator<_Iter>)
+	struct __cat<_Iter>
+	{ using type = bidirectional_iterator_tag; };
+
+      template<typename _Iter>
+	requires (!requires { typename _Iter::iterator_category; }
+		  && __detail::__cpp17_fwd_iterator<_Iter>)
+	struct __cat<_Iter>
+	{ using type = forward_iterator_tag; };
+
+      template<typename _Iter>
+	struct __ptr
+	{ using type = void; };
+
+      template<typename _Iter> requires requires { typename _Iter::pointer; }
+	struct __ptr<_Iter>
+	{ using type = typename _Iter::pointer; };
+
+      template<typename _Iter>
+	requires (!requires { typename _Iter::pointer; }
+	    && requires(_Iter& __it) { __it.operator->(); })
+	struct __ptr<_Iter>
+	{ using type = decltype(std::declval<_Iter&>().operator->()); };
+
+      template<typename _Iter>
+	struct __ref
+	{ using type = iter_reference_t<_Iter>; };
+
+      template<typename _Iter> requires requires { typename _Iter::reference; }
+	struct __ref<_Iter>
+	{ using type = typename _Iter::reference; };
+
+    public:
+      using iterator_category = typename __cat<_Iterator>::type;
       using value_type
 	= typename indirectly_readable_traits<_Iterator>::value_type;
       using difference_type
 	= typename incrementable_traits<_Iterator>::difference_type;
-      using pointer	      = typename __detail::__ptr<_Iterator, true>::type;
-      using reference	      = typename __detail::__ref<_Iterator>::type;
+      using pointer	      = typename __ptr<_Iterator>::type;
+      using reference	      = typename __ref<_Iterator>::type;
     };
 
   template<typename _Iterator>
@@ -400,9 +413,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && __detail::__cpp17_iterator<_Iterator>
     struct __iterator_traits<_Iterator, void>
     {
+    private:
+      template<typename _Iter>
+	struct __diff
+	{ using type = void; };
+
+      template<typename _Iter>
+	requires requires
+	{ typename incrementable_traits<_Iter>::difference_type; }
+	struct __diff<_Iter>
+	{
+	  using type = typename incrementable_traits<_Iter>::difference_type;
+	};
+
+    public:
       using iterator_category = output_iterator_tag;
       using value_type	      = void;
-      using difference_type   = typename __detail::__diff<_Iterator>::type;
+      using difference_type   = typename __diff<_Iterator>::type;
       using pointer	      = void;
       using reference	      = void;
     };
@@ -443,13 +470,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __iter_concept = typename __iter_concept_impl<_Iter>::type;
 
   template<typename _In>
-    concept __indirectly_readable_impl = requires(const _In __in)
+    concept __indirectly_readable_impl = requires
       {
 	typename iter_value_t<_In>;
 	typename iter_reference_t<_In>;
 	typename iter_rvalue_reference_t<_In>;
-	{ *__in } -> same_as<iter_reference_t<_In>>;
-	{ ranges::iter_move(__in) } -> same_as<iter_rvalue_reference_t<_In>>;
+	requires same_as<iter_reference_t<const _In>,
+			 iter_reference_t<_In>>;
+	requires same_as<iter_rvalue_reference_t<const _In>,
+			 iter_rvalue_reference_t<_In>>;
       }
       && common_reference_with<iter_reference_t<_In>&&, iter_value_t<_In>&>
       && common_reference_with<iter_reference_t<_In>&&,

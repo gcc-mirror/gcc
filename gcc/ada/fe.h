@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -59,9 +59,11 @@ extern int Compiler_Abort (String_Pointer, String_Pointer, Boolean) ATTRIBUTE_NO
 
 /* debug: */
 
+#define Debug_Flag_Dot_KK	debug__debug_flag_dot_kk
 #define Debug_Flag_Dot_R	debug__debug_flag_dot_r
 #define Debug_Flag_NN		debug__debug_flag_nn
 
+extern Boolean Debug_Flag_Dot_KK;
 extern Boolean Debug_Flag_Dot_R;
 extern Boolean Debug_Flag_NN;
 
@@ -253,9 +255,9 @@ extern Boolean No_Exception_Handlers_Set	(void);
 
 /* sem_aggr:  */
 
-#define Is_Others_Aggregate	sem_aggr__is_others_aggregate
+#define Is_Single_Aggregate	sem_aggr__is_single_aggregate
 
-extern Boolean Is_Others_Aggregate	(Node_Id);
+extern Boolean Is_Single_Aggregate	(Node_Id);
 
 /* sem_aux:  */
 

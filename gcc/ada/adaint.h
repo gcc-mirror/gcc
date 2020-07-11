@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -282,9 +282,10 @@ extern char  *mktemp				   (char *);
 extern void   __gnat_set_exit_status		   (int);
 
 extern int    __gnat_expect_fork		   (void);
-extern void   __gnat_expect_portable_execvp	   (char *, char *[]);
+extern void   __gnat_expect_portable_execvp	   (int *, char *, char *[]);
 extern int    __gnat_pipe			   (int *);
-extern int    __gnat_expect_poll		   (int *, int, int, int *);
+extern int    __gnat_expect_poll		   (int *, int, int, int *,
+						    int *);
 extern void   __gnat_set_binary_mode		   (int);
 extern void   __gnat_set_text_mode		   (int);
 extern void   __gnat_set_mode			   (int,int);

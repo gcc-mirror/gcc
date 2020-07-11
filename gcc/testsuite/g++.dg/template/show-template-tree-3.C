@@ -8,8 +8,7 @@
    (again, with the "double" and "float" highlighted, though we can't test
    for that in this case).  */
 
-// { dg-options "-fdiagnostics-show-template-tree" }
-// { dg-additional-options "-Wno-return-type" }
+// { dg-options "-fdiagnostics-show-template-tree -Wno-return-type" }
 
 #include <map>
 #include <vector>

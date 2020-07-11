@@ -19,32 +19,9 @@
 // { dg-do preprocess { target c++17 } }
 
 #include <algorithm>
+
 #ifndef __cpp_lib_parallel_algorithm
-# error "Feature-test macro for parallel algorithms missing"
+# error "Feature-test macro for parallel algorithms missing in <algorithm>"
 #elif __cpp_lib_parallel_algorithm != 201603L
 # error "Feature-test macro for parallel algorithms has wrong value in <algorithm>"
-#endif
-
-#include <numeric>
-#if __cpp_lib_parallel_algorithm != 201603L
-# error "Feature-test macro for parallel algorithms has wrong value in <numeric>"
-#endif
-
-#include <version>
-#if __cpp_lib_parallel_algorithm != 201603L
-# error "Feature-test macro for parallel algorithms has wrong value in <version>"
-#endif
-
-// The N4810 draft does not require the macro to be defined in <execution>.
-#include <memory>
-#if __cpp_lib_parallel_algorithm != 201603L
-# error "Feature-test macro for parallel algorithms has wrong value in <memory>"
-#endif
-
-// The N4810 draft does not require the macro to be defined in <execution>.
-// Include this last, because it will trigger the inclusion of TBB headers,
-// which then include <memory>, so we need to have already checked <memory>.
-#include <execution>
-#if __cpp_lib_parallel_algorithm != 201603L
-# error "Feature-test macro for parallel algorithms has wrong value in <execution>"
 #endif

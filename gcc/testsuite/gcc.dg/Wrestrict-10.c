@@ -63,7 +63,7 @@ test_arr_strcpy_1 (void)
 void __attribute__ ((noclone, noinline))
 test_arr_strcpy_2 (void)
 {
-  strcpy (b.a, &b.a[i]);
+  strcpy (b.a, &b.a[i]);            /* { dg-warning "\\\[-Wrestrict" } */
 }
 
 

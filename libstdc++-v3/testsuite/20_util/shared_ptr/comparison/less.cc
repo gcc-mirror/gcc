@@ -46,7 +46,11 @@ test01()
   std::shared_ptr<A> p1;
   std::shared_ptr<A> p2;
   VERIFY( !less(p1, p2) && !less(p2, p1) );
+#ifndef __cpp_lib_three_way_comparison
+// In C++20 std::less<std::shared_ptr<A>> uses the operator< synthesized
+// from operator<=>, which uses std::compare_three_way not std::less<A*>.
   VERIFY( std::less<A*>::count == 2 );
+#endif
   return 0;
 }
 
@@ -86,7 +90,7 @@ test03()
 
   return 0;
 }
-int 
+int
 main()
 {
   test01();

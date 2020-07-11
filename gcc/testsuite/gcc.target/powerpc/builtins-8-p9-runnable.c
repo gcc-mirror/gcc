@@ -1,4 +1,5 @@
-/* { dg-do run { target { powerpc*-*-* &&  p9vector_hw } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
 #include <stdint.h>
@@ -103,6 +104,31 @@ int main() {
      The element index in natural element order is returned for the
      first match or the number of elements if there is no match.  */
   /* char */
+  char_src1 = (vector signed char) { 0x40, 0, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40 };
+				    
+  char_src2 = (vector signed char) {0, 0, 0, 0, 0, 0, 0, 0,
+				    0, 0, 0, 0, 0, 0, 0, 0};
+  expected_result = 1;
+
+  result = vec_first_match_index (char_src1, char_src2);
+
+#ifdef DEBUG2
+  print_signed_char("src1", char_src1);
+  print_signed_char("src2", char_src2);
+  printf(" vec_first_match_index = %d\n\n", result);
+#endif
+
+  if (result != expected_result)
+#ifdef DEBUG
+    printf("Error: char first match result (%d) does not match expected result (%d)\n",
+	   result, expected_result);
+#else
+    abort();
+#endif
+
   char_src1 = (vector signed char) {-1, 2, 3, 4, -5, 6, 7, 8,
 				    9, 10, 11, 12, 13, 14, 15, 16};
   char_src2 = (vector signed char) {-1, 2, 3, 20, -5, 6, 7, 8,
@@ -367,6 +393,50 @@ int main() {
      The element index in BE order is returned for the first mismatch
      or the number of elements if there is no match.   */
   /* char */
+  char_src1 = (vector signed char) {1, 2, 0, 4, -5, 6, 7, 8,
+				    9, 10, 11, 12, 13, 14, 15, 16};
+  char_src2 = (vector signed char) {1, 2, 0, 20, -5, 6, 7, 8,
+				    9, 10, 11, 12, 13, 14, 15, 16};
+  expected_result = 3;
+
+  result = vec_first_mismatch_index (char_src1, char_src2);
+
+#ifdef DEBUG2
+  print_signed_char("src1", char_src1);
+  print_signed_char("src2", char_src2);
+  printf("vec_first_mismatch_index = %d\n\n", result);
+#endif
+
+  if (result != expected_result)
+#ifdef DEBUG
+    printf("Error: char first mismatch result (%d) does not match expected result (%d)\n",
+	   result, expected_result);
+#else
+    abort();
+#endif
+
+  char_src1 = (vector signed char) {0, 2, 3, 4, -5, 6, 7, 8,
+				    9, 10, 11, 12, 13, 14, 15, 16};
+  char_src2 = (vector signed char) {0, 2, 3, 20, -5, 6, 7, 8,
+				    9, 10, 11, 12, 13, 14, 15, 16};
+  expected_result = 3;
+
+  result = vec_first_mismatch_index (char_src1, char_src2);
+
+#ifdef DEBUG2
+  print_signed_char("src1", char_src1);
+  print_signed_char("src2", char_src2);
+  printf("vec_first_mismatch_index = %d\n\n", result);
+#endif
+
+  if (result != expected_result)
+#ifdef DEBUG
+    printf("Error: char first mismatch result (%d) does not match expected result (%d)\n",
+	   result, expected_result);
+#else
+    abort();
+#endif
+
   char_src1 = (vector signed char) {-1, 2, 3, 4, -5, 6, 7, 8,
 				    9, 10, 11, 12, 13, 14, 15, 16};
   char_src2 = (vector signed char) {-1, 2, 3, 20, -5, 6, 7, 8,
@@ -673,6 +743,33 @@ int main() {
      The element index in BE order is returned for the first match
      or the number of elements if there is no match.  */
   /* char */
+  char_src1 = (vector signed char) { 0x40, 0, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40 };
+				    
+  char_src2 = (vector signed char) { 0x41, 0, 0x43, 0x44,
+				     0x45, 0x46, 0x47, 0x40,
+				     0x40, 0x40, 0x40, 0x40,
+				     0x40, 0x40, 0x40, 0x40 };
+  expected_result = 1;
+
+  result = vec_first_match_or_eos_index (char_src1, char_src2);
+
+#ifdef DEBUG2
+  print_signed_char("src1", char_src1);
+  print_signed_char("src2", char_src2);
+  printf("vec_first_match_or_eos_index = %d\n\n", result);
+#endif
+
+  if (result != expected_result)
+#ifdef DEBUG
+    printf("Error: char first match result (%d) does not match expected result (%d)\n",
+	   result, expected_result);
+#else
+    abort();
+#endif
+
   char_src1 = (vector signed char) {-1, 2, 3, 4, -5, 6, 7, 8,
 				    9, 10, 11, 12, 13, 14, 15, 16};
   char_src2 = (vector signed char) {-1, 2, 3, 20, -5, 6, 7, 8,
@@ -1065,6 +1162,28 @@ int main() {
      The element index in BE order is returned for the first mismatch
      or the number of elements if there is no match.   */
   /* char */
+  char_src1 = (vector signed char) {1, 2, 0, 4, -5, 6, 7, 8,
+				    9, 10, 11, 12, 13, 14, 15, 16};
+  char_src2 = (vector signed char) {1, 2, 0, 20, -5, 6, 7, 8,
+				    9, 10, 11, 12, 13, 14, 15, 16};
+  expected_result = 2;
+
+  result = vec_first_mismatch_or_eos_index (char_src1, char_src2);
+
+#ifdef DEBUG2
+  print_signed_char("src1", char_src1);
+  print_signed_char("src2", char_src2);
+  printf("vec_first_mismatch_or_eos_index = %d\n\n", result);
+#endif
+
+  if (result != expected_result)
+#ifdef DEBUG
+    printf("Error: char first mismatch or EOS result (%d) does not match expected result (%d)\n",
+	   result, expected_result);
+#else
+    abort();
+#endif
+
   char_src1 = (vector signed char) {-1, 2, 3, 4, -5, 6, 7, 8,
 				    9, 10, 11, 12, 13, 14, 15, 16};
   char_src2 = (vector signed char) {-1, 2, 3, 20, -5, 6, 7, 8,

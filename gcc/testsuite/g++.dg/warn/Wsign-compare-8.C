@@ -5,4 +5,4 @@ bool foo (char c)
 {
   const int i = 0 = 0; // { dg-error "lvalue" }
   return c = i;
-} // { dg-warning "control reaches" }
+}

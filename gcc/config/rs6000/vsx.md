@@ -217,6 +217,7 @@
 ;; done on ISA 2.07 and not just ISA 3.0.
 (define_mode_iterator VSX_EXTRACT_I  [V16QI V8HI V4SI])
 (define_mode_iterator VSX_EXTRACT_I2 [V16QI V8HI])
+(define_mode_iterator VSX_EXTRACT_I4 [V16QI V8HI V4SI V2DI])
 
 (define_mode_attr VSX_EXTRACT_WIDTH [(V16QI "b")
 		  		     (V8HI "h")
@@ -262,6 +263,10 @@
 ;; Mode attribute to give the suffix for the splat instruction
 (define_mode_attr VSX_SPLAT_SUFFIX [(V16QI "b") (V8HI "h")])
 
+;; Iterator for the move to mask instructions
+(define_mode_iterator VSX_MM [V16QI V8HI V4SI V2DI V1TI])
+(define_mode_iterator VSX_MM4 [V16QI V8HI V4SI V2DI])
+
 ;; Constants for creating unspecs
 (define_c_enum "unspec"
   [UNSPEC_VSX_CONCAT
@@ -295,7 +300,10 @@
    UNSPEC_VSX_DIVUD
    UNSPEC_VSX_MULSD
    UNSPEC_VSX_SIGN_EXTEND
+   UNSPEC_VSX_XVCVBF16SP
+   UNSPEC_VSX_XVCVSPBF16
    UNSPEC_VSX_XVCVSPSXDS
+   UNSPEC_VSX_XVCVSPHP
    UNSPEC_VSX_VSLO
    UNSPEC_VSX_EXTRACT
    UNSPEC_VSX_SXEXPDP
@@ -342,7 +350,18 @@
    UNSPEC_VSX_FIRST_MATCH_EOS_INDEX
    UNSPEC_VSX_FIRST_MISMATCH_INDEX
    UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX
+   UNSPEC_XXGENPCV
+   UNSPEC_MTVSBM
+   UNSPEC_VCNTMB
+   UNSPEC_VEXPAND
+   UNSPEC_VEXTRACT
   ])
+
+(define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
+				 UNSPEC_VSX_XVCVBF16SP])
+
+(define_int_attr xvcvbf16       [(UNSPEC_VSX_XVCVSPBF16 "xvcvspbf16")
+				 (UNSPEC_VSX_XVCVBF16SP "xvcvbf16sp")])
 
 ;; VSX moves
 
@@ -2177,6 +2196,15 @@
   "xvcvhpsp %x0,%x1"
   [(set_attr "type" "vecfloat")])
 
+;; Generate xvcvsphp
+(define_insn "vsx_xvcvsphp"
+  [(set (match_operand:V4SI 0 "register_operand" "=wa")
+	(unspec:V4SI [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
+		     UNSPEC_VSX_XVCVSPHP))]
+  "TARGET_P9_VECTOR"
+  "xvcvsphp %x0,%x1"
+[(set_attr "type" "vecfloat")])
+
 ;; xscvdpsp used for splat'ing a scalar to V4SF, knowing that the internal SF
 ;; format of scalars is actually DF.
 (define_insn "vsx_xscvdpsp_scalar"
@@ -2997,6 +3025,36 @@
 ;; mnemonic xxpermdi instead.
   "xxpermdi %x0,%x1,%x1,2"
   [(set_attr "type" "vecperm")])
+
+(define_insn "xxgenpcvm_<mode>_internal"
+  [(set (match_operand:VSX_EXTRACT_I4 0 "altivec_register_operand" "=wa")
+	(unspec:VSX_EXTRACT_I4
+	 [(match_operand:VSX_EXTRACT_I4 1 "altivec_register_operand" "v")
+	  (match_operand:QI 2 "const_0_to_3_operand" "n")]
+	 UNSPEC_XXGENPCV))]
+    "TARGET_POWER10 && TARGET_64BIT"
+    "xxgenpcv<wd>m %x0,%1,%2"
+    [(set_attr "type" "vecsimple")])
+
+(define_expand "xxgenpcvm_<mode>"
+  [(use (match_operand:VSX_EXTRACT_I4 0 "register_operand"))
+   (use (match_operand:VSX_EXTRACT_I4 1 "register_operand"))
+   (use (match_operand:QI 2 "immediate_operand"))]
+  "TARGET_POWER10"
+{
+  if (!BYTES_BIG_ENDIAN)
+    {
+      /* gen_xxgenpcvm assumes Big Endian order.  If LE,
+	 change swap upper and lower double words.  */
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+
+      emit_insn (gen_xxswapd_<mode> (tmp, operands[1]));
+      operands[1] = tmp;
+    }
+    emit_insn (gen_xxgenpcvm_<mode>_internal (operands[0], operands[1],
+					      operands[2]));
+  DONE;
+})
 
 ;; lxvd2x for little endian loads.  We need several of
 ;; these since the form of the PARALLEL differs by mode.
@@ -4803,8 +4861,8 @@
   rtx cmp_result = gen_reg_rtx (<MODE>mode);
   rtx not_result = gen_reg_rtx (<MODE>mode);
 
-  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
-					     operands[2]));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
+					    operands[2]));
   emit_insn (gen_one_cmpl<mode>2 (not_result, cmp_result));
 
   sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
@@ -5048,6 +5106,34 @@
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
   operands[3] = gen_reg_rtx (DImode);
+})
+
+;; Define optab for vector access with length vectorization exploitation.
+(define_expand "len_load_v16qi"
+  [(match_operand:V16QI 0 "vlogical_operand")
+   (match_operand:V16QI 1 "memory_operand")
+   (match_operand:QI 2 "gpc_reg_operand")]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+{
+  rtx mem = XEXP (operands[1], 0);
+  mem = force_reg (DImode, mem);
+  rtx len = gen_lowpart (DImode, operands[2]);
+  emit_insn (gen_lxvl (operands[0], mem, len));
+  DONE;
+})
+
+(define_expand "len_store_v16qi"
+  [(match_operand:V16QI 0 "memory_operand")
+   (match_operand:V16QI 1 "vlogical_operand")
+   (match_operand:QI 2 "gpc_reg_operand")
+  ]
+  "TARGET_P9_VECTOR && TARGET_64BIT"
+{
+  rtx mem = XEXP (operands[0], 0);
+  mem = force_reg (DImode, mem);
+  rtx len = gen_lowpart (DImode, operands[2]);
+  emit_insn (gen_stxvl (operands[1], mem, len));
+  DONE;
 })
 
 (define_insn "*stxvl"
@@ -5644,3 +5730,51 @@
   DONE;
 })
 
+(define_insn "vsx_<xvcvbf16>"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI [(match_operand:V16QI 1 "vsx_register_operand" "wa")]
+		      XVCVBF16))]
+  "TARGET_POWER10"
+  "<xvcvbf16> %x0,%x1"
+  [(set_attr "type" "vecfloat")])
+
+(define_insn "vec_mtvsrbmi"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+        (unspec:V16QI [(match_operand:QI 1 "u6bit_cint_operand" "n")]
+        UNSPEC_MTVSBM))]
+  "TARGET_POWER10"
+  "mtvsrbmi %0,%1"
+)
+
+(define_insn "vec_mtvsr_<mode>"
+  [(set (match_operand:VSX_MM 0 "altivec_register_operand" "=v")
+        (unspec:VSX_MM [(match_operand:DI 1 "gpc_reg_operand" "r")]
+        UNSPEC_MTVSBM))]
+  "TARGET_POWER10"
+  "mtvsr<wd>m %0,%1";
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "vec_cntmb_<mode>"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
+        (unspec:DI [(match_operand:VSX_MM4 1 "altivec_register_operand" "v")
+                    (match_operand:QI 2 "const_0_to_1_operand" "n")]
+        UNSPEC_VCNTMB))]
+  "TARGET_POWER10"
+  "vcntmb<VSX_MM_SUFFIX> %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "vec_extract_<mode>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:VSX_MM 1 "altivec_register_operand" "v")]
+	UNSPEC_VEXTRACT))]
+  "TARGET_POWER10"
+  "vextract<VSX_MM_SUFFIX>m %0,%1"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "vec_expand_<mode>"
+  [(set (match_operand:VSX_MM 0 "vsx_register_operand" "=v")
+        (unspec:VSX_MM [(match_operand:VSX_MM 1 "vsx_register_operand" "v")]
+        UNSPEC_VEXPAND))]
+  "TARGET_POWER10"
+  "vexpand<VSX_MM_SUFFIX>m %0,%1"
+  [(set_attr "type" "vecsimple")])

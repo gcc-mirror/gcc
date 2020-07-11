@@ -882,13 +882,13 @@ get_symbol_for_decl (tree decl)
 
 	 Iterate elements whether a symbol is already in m_global_symbols
 	 of not.  */
-        if (is_in_global_vars && !sym->m_emitted_to_brig)
-	  {
-	    for (unsigned i = 0; i < hsa_cfun->m_global_symbols.length (); i++)
-	      if (hsa_cfun->m_global_symbols[i] == sym)
-		return *slot;
-	    hsa_cfun->m_global_symbols.safe_push (sym);
-	  }
+      if (is_in_global_vars && !sym->m_emitted_to_brig)
+	{
+	  for (unsigned i = 0; i < hsa_cfun->m_global_symbols.length (); i++)
+	    if (hsa_cfun->m_global_symbols[i] == sym)
+	      return *slot;
+	  hsa_cfun->m_global_symbols.safe_push (sym);
+	}
 
       return *slot;
     }
@@ -5299,10 +5299,6 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
   if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {
       tree function_decl = gimple_call_fndecl (stmt);
-      /* Prefetch pass can create type-mismatching prefetch builtin calls which
-	 fail the gimple_call_builtin_p test above.  Handle them here.  */
-      if (fndecl_built_in_p (function_decl, BUILT_IN_PREFETCH))
-	return;
 
       if (function_decl == NULL_TREE)
 	{
@@ -5310,6 +5306,11 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 			"support for HSA does not implement indirect calls");
 	  return;
 	}
+
+      /* Prefetch pass can create type-mismatching prefetch builtin calls which
+	 fail the gimple_call_builtin_p test above.  Handle them here.  */
+      if (fndecl_built_in_p (function_decl, BUILT_IN_PREFETCH))
+	return;
 
       if (hsa_callable_function_p (function_decl))
 	gen_hsa_insns_for_direct_call (stmt, hbb);

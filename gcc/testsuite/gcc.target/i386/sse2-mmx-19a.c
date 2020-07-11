@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -msse2 -mno-mmx -mno-avx -mtune=intel" } */
+/* { dg-options "-O2 -msse2 -mno-mmx -mtune=intel" } */
 /* { dg-final { scan-assembler-times "pshuflw" 1 } } */
 /* { dg-final { scan-assembler-times "movd" 1 } } */
 /* { dg-final { scan-assembler-not "movl" } } */

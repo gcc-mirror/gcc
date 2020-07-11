@@ -11,7 +11,7 @@
 // On zEC12, we generally prefer RISBGN.
 i64 f1 (i64 v_a, i64 v_b)
 {
-/* { dg-final { scan-assembler "f1:\n\trisbgn\t%r2,%r3,60,60\\\+3-1,128-60-3-1" { target { lp64 } } } } */
+/* { dg-final { scan-assembler "f1:\n\trisbgn\t%r2,%r3,60,62,0" { target { lp64 } } } } */
 /* { dg-final { scan-assembler "f1:\n\trisbgn\t%r3,%r2,0,0\\\+32-1,64-0-32\n\trisbgn\t%r3,%r5,60,62,0\n" { target { ! lp64 } } } } */
   i64 v_anda = v_a & -15;
   i64 v_andb = v_b & 14;

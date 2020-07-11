@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "auto-profile.h"
 #include "profile.h"
+#include "diagnostic.h"
 
 #include "gcov-io.c"
 
@@ -244,7 +245,9 @@ read_counts_file (void)
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
 	  counts_entry **slot, *entry, elt;
-	  unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
+	  int read_length = (int)length;
+	  length = read_length > 0 ? read_length : 0;
+	  unsigned n_counts = GCOV_TAG_COUNTER_NUM (abs (read_length));
 	  unsigned ix;
 
 	  elt.ident = fn_ident;
@@ -273,8 +276,9 @@ read_counts_file (void)
 	      counts_hash = NULL;
 	      break;
 	    }
-	  for (ix = 0; ix != n_counts; ix++)
-	    entry->counts[ix] += gcov_read_counter ();
+	  if (read_length > 0)
+	    for (ix = 0; ix != n_counts; ix++)
+	      entry->counts[ix] = gcov_read_counter ();
 	}
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))
@@ -344,8 +348,11 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	 can do about it.  */
       return NULL;
     }
-  
-  if (entry->cfg_checksum != cfg_checksum || entry->n_counts != n_counts)
+
+  if (entry->cfg_checksum != cfg_checksum
+      || (counter != GCOV_COUNTER_V_INDIR
+	  && counter != GCOV_COUNTER_V_TOPN
+	  && entry->n_counts != n_counts))
     {
       static int warned = 0;
       bool warning_printed = false;
@@ -1199,6 +1206,11 @@ coverage_obj_finish (vec<constructor_elt, va_gc> *ctor)
 void
 coverage_init (const char *filename)
 {
+#if HAVE_DOS_BASED_FILE_SYSTEM
+  const char *separator = "\\";
+#else
+  const char *separator = "/";
+#endif
   int len = strlen (filename);
   int prefix_len = 0;
 
@@ -1215,12 +1227,20 @@ coverage_init (const char *filename)
 	 of filename in order to prevent file path clashing.  */
       if (profile_data_prefix)
 	{
-#if HAVE_DOS_BASED_FILE_SYSTEM
-	  const char *separator = "\\";
-#else
-	  const char *separator = "/";
-#endif
 	  filename = concat (getpwd (), separator, filename, NULL);
+	  if (profile_prefix_path)
+	    {
+	      if (!strncmp (filename, profile_prefix_path,
+			    strlen (profile_prefix_path)))
+		{
+		  filename += strlen (profile_prefix_path);
+		  while (*filename == *separator)
+		    filename++;
+		}
+	      else
+		warning (0, "filename %qs does not start with profile "
+			 "prefix %qs", filename, profile_prefix_path);
+	    }
 	  filename = mangle_path (filename);
 	  len = strlen (filename);
 	}
@@ -1238,7 +1258,7 @@ coverage_init (const char *filename)
   if (profile_data_prefix)
     {
       memcpy (da_file_name, profile_data_prefix, prefix_len);
-      da_file_name[prefix_len++] = '/';
+      da_file_name[prefix_len++] = *separator;
     }
   memcpy (da_file_name + prefix_len, filename, len);
   strcpy (da_file_name + prefix_len + len, GCOV_DATA_SUFFIX);

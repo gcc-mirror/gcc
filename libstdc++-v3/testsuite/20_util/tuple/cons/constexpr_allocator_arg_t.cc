@@ -18,8 +18,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
 #include <tuple>
+
+#ifndef __cpp_lib_constexpr_tuple
+# error "Feature test macro for constexpr allocator constructors is missing in <tuple>"
+#elif __cpp_lib_constexpr_tuple < 201811L
+# error "Feature test macro for constexpr allocator constructors has wrong value in <tuple>"
+#endif
+
+#include <memory>
 
 const std::allocator<int> alloc{};
 

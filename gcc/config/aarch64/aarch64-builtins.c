@@ -43,6 +43,8 @@
 #include "gimple-iterator.h"
 #include "case-cfn-macros.h"
 #include "emit-rtl.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
@@ -448,6 +450,11 @@ enum aarch64_builtins
   AARCH64_BUILTIN_GET_FPSR,
   AARCH64_BUILTIN_SET_FPSR,
 
+  AARCH64_BUILTIN_GET_FPCR64,
+  AARCH64_BUILTIN_SET_FPCR64,
+  AARCH64_BUILTIN_GET_FPSR64,
+  AARCH64_BUILTIN_SET_FPSR64,
+
   AARCH64_BUILTIN_RSQRT_DF,
   AARCH64_BUILTIN_RSQRT_SF,
   AARCH64_BUILTIN_RSQRT_V2DF,
@@ -639,18 +646,12 @@ aarch64_mangle_builtin_scalar_type (const_tree type)
 static const char *
 aarch64_mangle_builtin_vector_type (const_tree type)
 {
-  int i;
-  int nelts = sizeof (aarch64_simd_types) / sizeof (aarch64_simd_types[0]);
-
-  for (i = 0; i < nelts; i++)
-    if (aarch64_simd_types[i].mode ==  TYPE_MODE (type)
-	&& TYPE_NAME (type)
-	&& TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	&& DECL_NAME (TYPE_NAME (type))
-	&& !strcmp
-	     (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
-	      aarch64_simd_types[i].name))
-      return aarch64_simd_types[i].mangle;
+  tree attrs = TYPE_ATTRIBUTES (type);
+  if (tree attr = lookup_attribute ("Advanced SIMD type", attrs))
+    {
+      tree mangled_name = TREE_VALUE (TREE_VALUE (attr));
+      return IDENTIFIER_POINTER (mangled_name);
+    }
 
   return NULL;
 }
@@ -802,10 +803,16 @@ aarch64_init_simd_builtin_types (void)
 
       if (aarch64_simd_types[i].itype == NULL)
 	{
-	  aarch64_simd_types[i].itype
-	    = build_distinct_type_copy
-	      (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
-	  SET_TYPE_STRUCTURAL_EQUALITY (aarch64_simd_types[i].itype);
+	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+	  type = build_distinct_type_copy (type);
+	  SET_TYPE_STRUCTURAL_EQUALITY (type);
+
+	  tree mangled_name = get_identifier (aarch64_simd_types[i].mangle);
+	  tree value = tree_cons (NULL_TREE, mangled_name, NULL_TREE);
+	  TYPE_ATTRIBUTES (type)
+	    = tree_cons (get_identifier ("Advanced SIMD type"), value,
+			 TYPE_ATTRIBUTES (type));
+	  aarch64_simd_types[i].itype = type;
 	}
 
       tdecl = add_builtin_type (aarch64_simd_types[i].name,
@@ -1245,32 +1252,63 @@ aarch64_init_memtag_builtins (void)
 #undef AARCH64_INIT_MEMTAG_BUILTINS_DECL
 }
 
+/* Initialize fpsr fpcr getters and setters.  */
+
+static void
+aarch64_init_fpsr_fpcr_builtins (void)
+{
+  tree ftype_set
+    = build_function_type_list (void_type_node, unsigned_type_node, NULL);
+  tree ftype_get
+    = build_function_type_list (unsigned_type_node, NULL);
+
+  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpcr",
+				   ftype_get,
+				   AARCH64_BUILTIN_GET_FPCR);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpcr",
+				   ftype_set,
+				   AARCH64_BUILTIN_SET_FPCR);
+  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPSR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpsr",
+				   ftype_get,
+				   AARCH64_BUILTIN_GET_FPSR);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpsr",
+				   ftype_set,
+				   AARCH64_BUILTIN_SET_FPSR);
+
+  ftype_set
+    = build_function_type_list (void_type_node, long_long_unsigned_type_node,
+				NULL);
+  ftype_get
+    = build_function_type_list (long_long_unsigned_type_node, NULL);
+
+  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR64]
+    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpcr64",
+				   ftype_get,
+				   AARCH64_BUILTIN_GET_FPCR64);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR64]
+    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpcr64",
+				   ftype_set,
+				   AARCH64_BUILTIN_SET_FPCR64);
+  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPSR64]
+    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpsr64",
+				   ftype_get,
+				   AARCH64_BUILTIN_GET_FPSR64);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR64]
+    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpsr64",
+				   ftype_set,
+				   AARCH64_BUILTIN_SET_FPSR64);
+}
+
 /* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
 
 void
 aarch64_general_init_builtins (void)
 {
-  tree ftype_set_fpr
-    = build_function_type_list (void_type_node, unsigned_type_node, NULL);
-  tree ftype_get_fpr
-    = build_function_type_list (unsigned_type_node, NULL);
-
-  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR]
-    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpcr",
-				   ftype_get_fpr,
-				   AARCH64_BUILTIN_GET_FPCR);
-  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR]
-    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpcr",
-				   ftype_set_fpr,
-				   AARCH64_BUILTIN_SET_FPCR);
-  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPSR]
-    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpsr",
-				   ftype_get_fpr,
-				   AARCH64_BUILTIN_GET_FPSR);
-  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR]
-    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpsr",
-				   ftype_set_fpr,
-				   AARCH64_BUILTIN_SET_FPSR);
+  aarch64_init_fpsr_fpcr_builtins ();
 
   aarch64_init_fp16_types ();
 
@@ -1876,6 +1914,16 @@ aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
   return target;
 }
 
+/* Expand an expression EXP as fpsr or cpsr setter (depending on
+   UNSPEC) using MODE.  */
+static void
+aarch64_expand_fpsr_fpcr_setter (int unspec, machine_mode mode, tree exp)
+{
+  tree arg = CALL_EXPR_ARG (exp, 0);
+  rtx op = force_reg (mode, expand_normal (arg));
+  emit_insn (gen_aarch64_set (unspec, mode, op));
+}
+
 /* Expand an expression EXP that calls built-in function FCODE,
    with result going to TARGET if that's convenient.  IGNORE is true
    if the result of the builtin is ignored.  */
@@ -1884,35 +1932,35 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
 				int ignore)
 {
   int icode;
-  rtx pat, op0;
+  rtx op0;
   tree arg0;
 
   switch (fcode)
     {
     case AARCH64_BUILTIN_GET_FPCR:
-    case AARCH64_BUILTIN_SET_FPCR:
-    case AARCH64_BUILTIN_GET_FPSR:
-    case AARCH64_BUILTIN_SET_FPSR:
-      if ((fcode == AARCH64_BUILTIN_GET_FPCR)
-	  || (fcode == AARCH64_BUILTIN_GET_FPSR))
-	{
-	  icode = (fcode == AARCH64_BUILTIN_GET_FPSR) ?
-	    CODE_FOR_get_fpsr : CODE_FOR_get_fpcr;
-	  target = gen_reg_rtx (SImode);
-	  pat = GEN_FCN (icode) (target);
-	}
-      else
-	{
-	  target = NULL_RTX;
-	  icode = (fcode == AARCH64_BUILTIN_SET_FPSR) ?
-	    CODE_FOR_set_fpsr : CODE_FOR_set_fpcr;
-	  arg0 = CALL_EXPR_ARG (exp, 0);
-	  op0 = force_reg (SImode, expand_normal (arg0));
-	  pat = GEN_FCN (icode) (op0);
-	}
-      emit_insn (pat);
+      emit_insn (gen_aarch64_get (UNSPECV_GET_FPCR, SImode, target));
       return target;
-
+    case AARCH64_BUILTIN_SET_FPCR:
+      aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPCR, SImode, exp);
+      return target;
+    case AARCH64_BUILTIN_GET_FPSR:
+      emit_insn (gen_aarch64_get (UNSPECV_GET_FPSR, SImode, target));
+      return target;
+    case AARCH64_BUILTIN_SET_FPSR:
+      aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPSR, SImode, exp);
+      return target;
+    case AARCH64_BUILTIN_GET_FPCR64:
+      emit_insn (gen_aarch64_get (UNSPECV_GET_FPCR, DImode, target));
+      return target;
+    case AARCH64_BUILTIN_SET_FPCR64:
+      aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPCR, DImode, exp);
+      return target;
+    case AARCH64_BUILTIN_GET_FPSR64:
+      emit_insn (gen_aarch64_get (UNSPECV_GET_FPSR, DImode, target));
+      return target;
+    case AARCH64_BUILTIN_SET_FPSR64:
+      aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPSR, DImode, exp);
+      return target;
     case AARCH64_PAUTH_BUILTIN_AUTIA1716:
     case AARCH64_PAUTH_BUILTIN_PACIA1716:
     case AARCH64_PAUTH_BUILTIN_AUTIB1716:
@@ -2313,10 +2361,12 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   mask_sr = build_int_cst (unsigned_type_node,
 			   ~(AARCH64_FE_ALL_EXCEPT));
 
-  ld_fenv_cr = build2 (MODIFY_EXPR, unsigned_type_node,
-		       fenv_cr, build_call_expr (get_fpcr, 0));
-  ld_fenv_sr = build2 (MODIFY_EXPR, unsigned_type_node,
-		       fenv_sr, build_call_expr (get_fpsr, 0));
+  ld_fenv_cr = build4 (TARGET_EXPR, unsigned_type_node,
+		       fenv_cr, build_call_expr (get_fpcr, 0),
+		       NULL_TREE, NULL_TREE);
+  ld_fenv_sr = build4 (TARGET_EXPR, unsigned_type_node,
+		       fenv_sr, build_call_expr (get_fpsr, 0),
+		       NULL_TREE, NULL_TREE);
 
   masked_fenv_cr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_cr, mask_cr);
   masked_fenv_sr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_sr, mask_sr);
@@ -2348,8 +2398,9 @@ aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
        __atomic_feraiseexcept (new_fenv_var);  */
 
   new_fenv_var = create_tmp_var_raw (unsigned_type_node);
-  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
-			new_fenv_var, build_call_expr (get_fpsr, 0));
+  reload_fenv = build4 (TARGET_EXPR, unsigned_type_node,
+			new_fenv_var, build_call_expr (get_fpsr, 0),
+			NULL_TREE, NULL_TREE);
   restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);
   atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
   update_call = build_call_expr (atomic_feraiseexcept, 1,

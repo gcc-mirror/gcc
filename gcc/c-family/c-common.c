@@ -324,7 +324,7 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
    C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
    C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
-   C++ --std=c++2a: D_CONLY | D_OBJC
+   C++ --std=c++20: D_CONLY | D_OBJC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If
@@ -3141,7 +3141,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
       /* If the constant is unsigned, and smaller than the pointer size,
 	 then we must skip this optimization.  This is because it could cause
 	 an overflow error if the constant is negative but INTOP is not.  */
-      && (!TYPE_UNSIGNED (TREE_TYPE (intop))
+      && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (intop))
 	  || (TYPE_PRECISION (TREE_TYPE (intop))
 	      == TYPE_PRECISION (TREE_TYPE (ptrop)))))
     {
@@ -5288,26 +5288,53 @@ c_determine_visibility (tree decl)
 
 struct nonnull_arg_ctx
 {
+  /* Location of the call.  */
   location_t loc;
+  /* The function whose arguments are being checked and its type (used
+     for calls through function pointers).  */
+  const_tree fndecl, fntype;
+  /* True if a warning has been issued.  */
   bool warned_p;
 };
 
-/* Check the argument list of a function call for null in argument slots
-   that are marked as requiring a non-null pointer argument.  The NARGS
-   arguments are passed in the array ARGARRAY.  Return true if we have
-   warned.  */
+/* Check the argument list of a function call to CTX.FNDECL of CTX.FNTYPE
+   for null in argument slots that are marked as requiring a non-null
+   pointer argument.  The NARGS arguments are passed in the array ARGARRAY.
+   Return true if we have warned.  */
 
 static bool
-check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
+check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 {
-  tree a;
-  int i;
+  int firstarg = 0;
+  if (TREE_CODE (ctx.fntype) == METHOD_TYPE)
+    {
+      bool closure = false;
+      if (ctx.fndecl)
+	{
+	  /* For certain lambda expressions the C++ front end emits calls
+	     that pass a null this pointer as an argument named __closure
+	     to the member operator() of empty function.  Detect those
+	     and avoid checking them, but proceed to check the remaining
+	     arguments.  */
+	  tree arg0 = DECL_ARGUMENTS (ctx.fndecl);
+	  if (tree arg0name = DECL_NAME (arg0))
+	    closure = id_equal (arg0name, "__closure");
+	}
 
-  attrs = lookup_attribute ("nonnull", attrs);
+      /* In calls to C++ non-static member functions check the this
+	 pointer regardless of whether the function is declared with
+	 attribute nonnull.  */
+      firstarg = 1;
+      if (!closure)
+	check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[0],
+					  firstarg);
+    }
+
+  tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
   if (attrs == NULL_TREE)
-    return false;
+    return ctx.warned_p;
 
-  a = attrs;
+  tree a = attrs;
   /* See if any of the nonnull attributes has no arguments.  If so,
      then every pointer argument is checked (in which case the check
      for pointer type is done in check_nonnull_arg).  */
@@ -5316,16 +5343,15 @@ check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
       a = lookup_attribute ("nonnull", TREE_CHAIN (a));
     while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE);
 
-  struct nonnull_arg_ctx ctx = { loc, false };
   if (a != NULL_TREE)
-    for (i = 0; i < nargs; i++)
+    for (int i = firstarg; i < nargs; i++)
       check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
 					i + 1);
   else
     {
       /* Walk the argument list.  If we encounter an argument number we
 	 should check for non-null, do it.  */
-      for (i = 0; i < nargs; i++)
+      for (int i = firstarg; i < nargs; i++)
 	{
 	  for (a = attrs; ; a = TREE_CHAIN (a))
 	    {
@@ -5491,16 +5517,45 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
      happen if the "nonnull" attribute was given without an operand
      list (which means to check every pointer argument).  */
 
-  if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
+  tree paramtype = TREE_TYPE (param);
+  if (TREE_CODE (paramtype) != POINTER_TYPE
+      && TREE_CODE (paramtype) != NULLPTR_TYPE)
     return;
 
   /* Diagnose the simple cases of null arguments.  */
-  if (integer_zerop (fold_for_warn (param)))
+  if (!integer_zerop (fold_for_warn (param)))
+    return;
+
+  auto_diagnostic_group adg;
+
+  const location_t loc = EXPR_LOC_OR_LOC (param, pctx->loc);
+
+  if (TREE_CODE (pctx->fntype) == METHOD_TYPE)
+    --param_num;
+
+  bool warned;
+  if (param_num == 0)
     {
-      warning_at (pctx->loc, OPT_Wnonnull, "null argument where non-null "
-		  "required (argument %lu)", (unsigned long) param_num);
-      pctx->warned_p = true;
+      warned = warning_at (loc, OPT_Wnonnull,
+			   "%qs pointer null", "this");
+      if (pctx->fndecl)
+	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
+		"in a call to non-static member function %qD",
+		pctx->fndecl);
     }
+  else
+    {
+      warned = warning_at (loc, OPT_Wnonnull,
+			   "argument %u null where non-null expected",
+			   (unsigned) param_num);
+      if (pctx->fndecl)
+	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
+		"in a call to function %qD declared %qs",
+		pctx->fndecl, "nonnull");
+    }
+
+  if (warned)
+    pctx->warned_p = true;
 }
 
 /* Helper for attribute handling; fetch the operand number from
@@ -5717,11 +5772,13 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   bool warned_p = false;
 
   /* Check for null being passed in a pointer argument that must be
-     non-null.  We also need to do this if format checking is enabled.  */
-
+     non-null.  In C++, this includes the this pointer.  We also need
+     to do this if format checking is enabled.  */
   if (warn_nonnull)
-    warned_p = check_function_nonnull (loc, TYPE_ATTRIBUTES (fntype),
-				       nargs, argarray);
+    {
+      nonnull_arg_ctx ctx = { loc, fndecl, fntype, false };
+      warned_p = check_function_nonnull (ctx, nargs, argarray);
+    }
 
   /* Check for errors in format strings.  */
 
@@ -5774,7 +5831,7 @@ check_function_arguments_recurse (void (*callback)
       return;
     }
 
-  if (TREE_CODE (param) == CALL_EXPR)
+  if (TREE_CODE (param) == CALL_EXPR && CALL_EXPR_FN (param))
     {
       tree type = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (param)));
       tree attrs;
@@ -6716,6 +6773,8 @@ speculation_safe_value_resolve_params (location_t loc, tree orig_function,
       tree val2 = (*params)[1];
       if (TREE_CODE (TREE_TYPE (val2)) == ARRAY_TYPE)
 	val2 = default_conversion (val2);
+      if (error_operand_p (val2))
+	return false;
       if (!(TREE_TYPE (val) == TREE_TYPE (val2)
 	    || useless_type_conversion_p (TREE_TYPE (val), TREE_TYPE (val2))))
 	{
@@ -6901,6 +6960,7 @@ get_atomic_generic_size (location_t loc, tree function,
 {
   unsigned int n_param;
   unsigned int n_model;
+  unsigned int outputs = 0; // bitset of output parameters
   unsigned int x;
   int size_0;
   tree type_0;
@@ -6911,15 +6971,22 @@ get_atomic_generic_size (location_t loc, tree function,
     case BUILT_IN_ATOMIC_EXCHANGE:
       n_param = 4;
       n_model = 1;
+      outputs = 5;
       break;
     case BUILT_IN_ATOMIC_LOAD:
+      n_param = 3;
+      n_model = 1;
+      outputs = 2;
+      break;
     case BUILT_IN_ATOMIC_STORE:
       n_param = 3;
       n_model = 1;
+      outputs = 1;
       break;
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
       n_param = 6;
       n_model = 2;
+      outputs = 3;
       break;
     default:
       gcc_unreachable ();
@@ -7008,6 +7075,39 @@ get_atomic_generic_size (location_t loc, tree function,
 		    function);
 	  return 0;
 	}
+
+      {
+	auto_diagnostic_group d;
+	int quals = TYPE_QUALS (TREE_TYPE (type));
+	/* Must not write to an argument of a const-qualified type.  */
+	if (outputs & (1 << x) && quals & TYPE_QUAL_CONST)
+	  {
+	    if (c_dialect_cxx ())
+	      {
+		error_at (loc, "argument %d of %qE must not be a pointer to "
+			  "a %<const%> type", x + 1, function);
+		return 0;
+	      }
+	    else
+	      pedwarn (loc, OPT_Wincompatible_pointer_types, "argument %d "
+		       "of %qE discards %<const%> qualifier", x + 1,
+		       function);
+	  }
+	/* Only the first argument is allowed to be volatile.  */
+	if (x > 0 && quals & TYPE_QUAL_VOLATILE)
+	  {
+	    if (c_dialect_cxx ())
+	      {
+		error_at (loc, "argument %d of %qE must not be a pointer to "
+			  "a %<volatile%> type", x + 1, function);
+		return 0;
+	      }
+	    else
+	      pedwarn (loc, OPT_Wincompatible_pointer_types, "argument %d "
+		       "of %qE discards %<volatile%> qualifier", x + 1,
+		       function);
+	  }
+      }
     }
 
   /* Check memory model parameters for validity.  */
@@ -7400,11 +7500,13 @@ resolve_overloaded_builtin (location_t loc, tree function,
       {
 	tree new_function, first_param, result;
 	enum built_in_function fncode
-	  = speculation_safe_value_resolve_call (function, params);;
+	  = speculation_safe_value_resolve_call (function, params);
+
+	if (fncode == BUILT_IN_NONE)
+	  return error_mark_node;
 
 	first_param = (*params)[0];
-	if (fncode == BUILT_IN_NONE
-	    || !speculation_safe_value_resolve_params (loc, function, params))
+	if (!speculation_safe_value_resolve_params (loc, function, params))
 	  return error_mark_node;
 
 	if (targetm.have_speculation_safe_value (true))

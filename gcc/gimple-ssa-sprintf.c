@@ -4120,7 +4120,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
   bool removed = false;
 
   /* The minimum and maximum return value.  */
-  unsigned HOST_WIDE_INT retval[2];
+  unsigned HOST_WIDE_INT retval[2] = {0};
   bool safe = is_call_safe (info, res, true, retval);
 
   if (safe

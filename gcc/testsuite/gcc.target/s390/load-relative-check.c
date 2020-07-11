@@ -1,6 +1,6 @@
 /* Check if load-relative instructions are created */
 /* { dg-do compile { target { s390*-*-* } } } */
-/* { dg-options "-O2 -march=z10 -mzarch" } */
+/* { dg-options "-O2 -march=z10 -mzarch -fno-section-anchors" } */
 
 /* { dg-final { scan-assembler "lgfrl\t%r.?,b.4" { target { lp64 } } } } */
 /* { dg-final { scan-assembler "lgfrl\t%r.?,s.12" { target { lp64 } } } } */

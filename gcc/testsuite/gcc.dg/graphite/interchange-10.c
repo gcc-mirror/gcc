@@ -45,5 +45,3 @@ main (void)
 
   return 0;
 }
-
-/* { dg-final { scan-tree-dump "tiled" "graphite" } } */

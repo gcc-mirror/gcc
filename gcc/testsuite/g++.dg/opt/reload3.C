@@ -4,6 +4,8 @@
 
 #include <cstdlib>
 
+typedef unsigned uint32_t __attribute__((mode (__SI__)));
+
 class QTime
 {
 public:
@@ -15,7 +17,7 @@ private:
     unsigned ds;
 };
 
-static const unsigned MSECS_PER_DAY = 86400000;
+static const uint32_t MSECS_PER_DAY = 86400000;
 
 QTime QTime::addMSecs(int ms) const
 {

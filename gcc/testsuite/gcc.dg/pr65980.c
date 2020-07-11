@@ -1,7 +1,6 @@
 /* PR rtl-optimization/65980 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 typedef struct { int b; } A;
 void (*a) (int);

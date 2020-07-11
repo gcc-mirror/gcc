@@ -20,7 +20,14 @@
 #include <type_traits>
 
 struct A { };
-struct B : A { };
+struct B : A {
+#if __cpp_aggregate_bases && __cpp_aggregate_paren_init
+  // A user-declared constructor prevents B from being an aggregate.
+  // Otherwise 'B&& b{A{}};' becomes valid in C++17 (__cpp_aggregate_bases),
+  // and 'B&& b(A{});' becomes valid in C++17 (__cpp_aggregate_paren_init).
+  B();
+#endif
+};
 
 // libstdc++/51185
 void f()

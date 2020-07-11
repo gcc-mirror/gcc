@@ -19,7 +19,7 @@
 #line 1 "plural.y"
 
 /* Expression parsing for plural form selection.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000-2020 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@cygnus.com>, 2000.
 
    This program is free software; you can redistribute it and/or modify it
@@ -59,10 +59,12 @@
 # define __gettextparse PLURAL_PARSE
 #endif
 
+#ifndef USE_BISON3
 #define YYLEX_PARAM	&((struct parse_args *) arg)->cp
 #define YYPARSE_PARAM	arg
+#endif
 
-#line 49 "plural.y"
+#line 54 "plural.y"
 #ifndef YYSTYPE
 typedef union {
   unsigned long int num;
@@ -72,7 +74,7 @@ typedef union {
 # define YYSTYPE yystype
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
-#line 55 "plural.y"
+#line 60 "plural.y"
 
 /* Prototypes for local functions.  */
 static struct expression *new_exp PARAMS ((int nargs, enum operator op,
@@ -87,8 +89,13 @@ static inline struct expression *new_exp_3 PARAMS ((enum operator op,
 						   struct expression *bexp,
 						   struct expression *tbranch,
 						   struct expression *fbranch));
+#ifdef USE_BISON3
+static int yylex PARAMS ((YYSTYPE *lval, struct parse_args *arg));
+static void yyerror PARAMS ((struct parse_args *arg, const char *str));
+#else
 static int yylex PARAMS ((YYSTYPE *lval, const char **pexp));
 static void yyerror PARAMS ((const char *str));
+#endif
 
 /* Allocation of expressions.  */
 
@@ -236,8 +243,8 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   174,   182,   186,   190,   194,   198,   202,   206,   210,
-     214,   218,   223
+       0,   184,   192,   196,   200,   204,   208,   212,   216,   220,
+     224,   228,   233
 };
 #endif
 
@@ -339,8 +346,8 @@ static const short yycheck[] =
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street - Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -1027,7 +1034,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 175 "plural.y"
+#line 185 "plural.y"
 {
 	    if (yyvsp[0].exp == NULL)
 	      YYABORT;
@@ -1035,68 +1042,68 @@ case 1:
 	  }
     break;
 case 2:
-#line 183 "plural.y"
+#line 193 "plural.y"
 {
 	    yyval.exp = new_exp_3 (qmop, yyvsp[-4].exp, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 3:
-#line 187 "plural.y"
+#line 197 "plural.y"
 {
 	    yyval.exp = new_exp_2 (lor, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 4:
-#line 191 "plural.y"
+#line 201 "plural.y"
 {
 	    yyval.exp = new_exp_2 (land, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 5:
-#line 195 "plural.y"
+#line 205 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 6:
-#line 199 "plural.y"
+#line 209 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 7:
-#line 203 "plural.y"
+#line 213 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 8:
-#line 207 "plural.y"
+#line 217 "plural.y"
 {
 	    yyval.exp = new_exp_2 (yyvsp[-1].op, yyvsp[-2].exp, yyvsp[0].exp);
 	  }
     break;
 case 9:
-#line 211 "plural.y"
+#line 221 "plural.y"
 {
 	    yyval.exp = new_exp_1 (lnot, yyvsp[0].exp);
 	  }
     break;
 case 10:
-#line 215 "plural.y"
+#line 225 "plural.y"
 {
 	    yyval.exp = new_exp_0 (var);
 	  }
     break;
 case 11:
-#line 219 "plural.y"
+#line 229 "plural.y"
 {
 	    if ((yyval.exp = new_exp_0 (num)) != NULL)
 	      yyval.exp->val.num = yyvsp[0].num;
 	  }
     break;
 case 12:
-#line 224 "plural.y"
+#line 234 "plural.y"
 {
 	    yyval.exp = yyvsp[-1].exp;
 	  }
@@ -1334,7 +1341,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 229 "plural.y"
+#line 239 "plural.y"
 
 
 void
@@ -1365,11 +1372,20 @@ FREE_EXPRESSION (exp)
 }
 
 
+#ifdef USE_BISON3
+static int
+yylex (lval, arg)
+     YYSTYPE *lval;
+     struct parse_args *arg;
+{
+  const char **pexp = &arg->cp;
+#else
 static int
 yylex (lval, pexp)
      YYSTYPE *lval;
      const char **pexp;
 {
+#endif
   const char *exp = *pexp;
   int result;
 
@@ -1510,8 +1526,14 @@ yylex (lval, pexp)
 }
 
 
+#ifdef USE_BISON3
+static void
+yyerror (arg, str)
+     struct parse_args *arg;
+#else
 static void
 yyerror (str)
+#endif
      const char *str;
 {
   /* Do nothing.  We don't print error messages here.  */

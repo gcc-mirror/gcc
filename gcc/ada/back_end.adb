@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -384,9 +384,6 @@ package body Back_End is
 
             elsif Is_Front_End_Switch (Argv) then
                Scan_Front_End_Switches (Argv, Args, Next_Arg);
-
-            elsif Argv (Argv'First + 1 .. Argv'Last) = "fopenacc" then
-               Opt.OpenAcc_Enabled := True;
 
             --  All non-front-end switches are back-end switches
 

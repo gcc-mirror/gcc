@@ -33,10 +33,7 @@ libgfortran, these should be overridden using macros which will use native
 operations conforming to the same API. From the FE, the GMP/MPFR functions can
 be used as-is.
 
-The following macros and GMP/FMPR functions are used and must be defined.
-
-
-Types and names:
+The following macros are used and must be defined, unless listed as [optional]:
 
 FTYPE
     Type name for the real-valued parameter.
@@ -56,32 +53,45 @@ ITYPE
 SIND, COSD, TRIGD
     Names for the degree-valued trig functions defined by this module.
 
+ENABLE_SIND, ENABLE_COSD, ENABLE_TAND
+    Whether the degree-valued trig functions can be enabled.
 
-Literal values:
+ERROR_RETURN(f, k, x)
+    If ENABLE_<xxx>D is not defined, this is substituted to assert an
+    error condition for function f, kind k, and parameter x.
+    The function argument is one of {sind, cosd, tand}.
 
-TINY [optional]
-    Value subtracted from 1 to cause rase INEXACT for COSD(x)
-    for x << 1. If not set, COSD(x) for x <= COSD_SMALL simply returns 1.
+ISFINITE(x)
+    Whether x is a regular number or zero (not inf or NaN).
 
-COSD_SMALL [optional]
-    Value such that x <= COSD_SMALL implies COSD(x) = 1 to within the
+D2R(x)
+    Convert x from radians to degrees.
+
+SET_COSD30(x)
+    Set x to COSD(30), or equivalently, SIND(60).
+
+TINY_LITERAL [optional]
+    Value subtracted from 1 to cause raise INEXACT for COSD(x) for x << 1.
+    If not set, COSD(x) for x <= COSD_SMALL_LITERAL simply returns 1.
+
+COSD_SMALL_LITERAL [optional]
+    Value such that x <= COSD_SMALL_LITERAL implies COSD(x) = 1 to within the
     precision of FTYPE. If not set, this condition is not checked.
 
-SIND_SMALL [optional]
-    Value such that x <= SIND_SMALL implies SIND(x) = D2R(x) to within
+SIND_SMALL_LITERAL [optional]
+    Value such that x <= SIND_SMALL_LITERAL implies SIND(x) = D2R(x) to within
     the precision of FTYPE. If not set, this condition is not checked.
-
-COSD30
-    Value of SIND(60) and COSD(30).
 
 */
 
 
+#ifdef SIND
 /* Compute sind(x) = sin(x * pi / 180). */
 
 RETTYPE
 SIND (FTYPE x)
 {
+#ifdef ENABLE_SIND
   if (ISFINITE (x))
     {
       FTYPE s, one;
@@ -92,12 +102,12 @@ SIND (FTYPE x)
       mpfr_copysign (s, one, x, GFC_RND_MODE);
       mpfr_clear (one);
 
-#ifdef SIND_SMALL
+#ifdef SIND_SMALL_LITERAL
       /* sin(x) = x as x -> 0; but only for some precisions. */
       FTYPE ax;
       mpfr_init (ax);
       mpfr_abs (ax, x, GFC_RND_MODE);
-      if (mpfr_cmp_ld (ax, SIND_SMALL) < 0)
+      if (mpfr_cmp_ld (ax, SIND_SMALL_LITERAL) < 0)
 	{
 	  D2R (x);
 	  mpfr_clear (ax);
@@ -109,7 +119,7 @@ SIND (FTYPE x)
 
 #else
       mpfr_abs (x, x, GFC_RND_MODE);
-#endif /* SIND_SMALL */
+#endif /* SIND_SMALL_LITERAL */
 
       /* Reduce angle to x in [0,360].  */
       FTYPE period;
@@ -213,30 +223,37 @@ SIND (FTYPE x)
     mpfr_sub (x, x, x, GFC_RND_MODE);
 
   RETURN (x);
+
+#else
+  ERROR_RETURN(sind, KIND, x);
+#endif // ENABLE_SIND
 }
+#endif // SIND
 
 
+#ifdef COSD
 /* Compute cosd(x) = cos(x * pi / 180).  */
 
 RETTYPE
 COSD (FTYPE x)
 {
-#if defined(TINY) && defined(COSD_SMALL)
-  static const volatile FTYPE tiny = TINY;
+#ifdef ENABLE_COSD
+#if defined(TINY_LITERAL) && defined(COSD_SMALL_LITERAL)
+  static const volatile FTYPE tiny = TINY_LITERAL;
 #endif
 
   if (ISFINITE (x))
     {
-#ifdef COSD_SMALL
+#ifdef COSD_SMALL_LITERAL
       FTYPE ax;
       mpfr_init (ax);
 
       mpfr_abs (ax, x, GFC_RND_MODE);
       /* No spurious underflows!.  In radians, cos(x) = 1-x*x/2 as x -> 0.  */
-      if (mpfr_cmp_ld (ax, COSD_SMALL) <= 0)
+      if (mpfr_cmp_ld (ax, COSD_SMALL_LITERAL) <= 0)
 	{
 	  mpfr_set_ui (x, 1, GFC_RND_MODE);
-#ifdef TINY
+#ifdef TINY_LITERAL
 	  /* Cause INEXACT.  */
 	  if (!mpfr_zero_p (ax))
 	    mpfr_sub_d (x, x, tiny, GFC_RND_MODE);
@@ -250,7 +267,7 @@ COSD (FTYPE x)
       mpfr_clear (ax);
 #else
       mpfr_abs (x, x, GFC_RND_MODE);
-#endif /* COSD_SMALL */
+#endif /* COSD_SMALL_LITERAL */
 
       /* Reduce angle to ax in [0,360].  */
       FTYPE period;
@@ -354,14 +371,21 @@ COSD (FTYPE x)
     mpfr_sub (x, x, x, GFC_RND_MODE);
 
   RETURN (x);
+
+#else
+  ERROR_RETURN(cosd, KIND, x);
+#endif // ENABLE_COSD
 }
+#endif // COSD
 
 
+#ifdef TAND
 /* Compute tand(x) = tan(x * pi / 180).  */
 
 RETTYPE
 TAND (FTYPE x)
 {
+#ifdef ENABLE_TAND
   if (ISFINITE (x))
     {
       FTYPE s, one;
@@ -372,12 +396,12 @@ TAND (FTYPE x)
       mpfr_copysign (s, one, x, GFC_RND_MODE);
       mpfr_clear (one);
 
-#ifdef SIND_SMALL
+#ifdef SIND_SMALL_LITERAL
       /* tan(x) = x as x -> 0; but only for some precisions. */
       FTYPE ax;
       mpfr_init (ax);
       mpfr_abs (ax, x, GFC_RND_MODE);
-      if (mpfr_cmp_ld (ax, SIND_SMALL) < 0)
+      if (mpfr_cmp_ld (ax, SIND_SMALL_LITERAL) < 0)
 	{
 	  D2R (x);
 	  mpfr_clear (ax);
@@ -389,7 +413,7 @@ TAND (FTYPE x)
 
 #else
       mpfr_abs (x, x, GFC_RND_MODE);
-#endif /* SIND_SMALL */
+#endif /* SIND_SMALL_LITERAL */
 
       /* Reduce angle to x in [0,360].  */
       FTYPE period;
@@ -459,6 +483,11 @@ TAND (FTYPE x)
     mpfr_sub (x, x, x, GFC_RND_MODE);
 
   RETURN (x);
+
+#else
+  ERROR_RETURN(tand, KIND, x);
+#endif // ENABLE_TAND
 }
+#endif // TAND
 
 /* vim: set ft=c: */

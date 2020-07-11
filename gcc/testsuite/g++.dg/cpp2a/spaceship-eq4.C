@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A {
   int operator==(const A&) const = default; // { dg-error "return .bool" }

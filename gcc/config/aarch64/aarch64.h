@@ -105,6 +105,11 @@
    port.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
+
+/* Emit calls to libgcc helpers for atomic operations for runtime detection
+   of LSE instructions.  */
+#define TARGET_OUTLINE_ATOMICS (aarch64_flag_outline_atomics)
+
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the
@@ -276,6 +281,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F32MM	   (aarch64_isa_flags & AARCH64_FL_F32MM)
 #define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
+#define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -309,22 +315,22 @@ extern unsigned aarch64_architecture_version;
 #define TARGET_DOTPROD (TARGET_SIMD && AARCH64_ISA_DOTPROD)
 
 /* SVE instructions, enabled through +sve.  */
-#define TARGET_SVE (AARCH64_ISA_SVE)
+#define TARGET_SVE (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_SVE)
 
 /* SVE2 instructions, enabled through +sve2.  */
-#define TARGET_SVE2 (AARCH64_ISA_SVE2)
+#define TARGET_SVE2 (TARGET_SVE && AARCH64_ISA_SVE2)
 
 /* SVE2 AES instructions, enabled through +sve2-aes.  */
-#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES)
+#define TARGET_SVE2_AES (TARGET_SVE2 && AARCH64_ISA_SVE2_AES)
 
 /* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
-#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM)
+#define TARGET_SVE2_BITPERM (TARGET_SVE2 && AARCH64_ISA_SVE2_BITPERM)
 
 /* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
-#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3)
+#define TARGET_SVE2_SHA3 (TARGET_SVE2 && AARCH64_ISA_SVE2_SHA3)
 
 /* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
-#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4)
+#define TARGET_SVE2_SM4 (TARGET_SVE2 && AARCH64_ISA_SVE2_SM4)
 
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
@@ -372,6 +378,9 @@ extern unsigned aarch64_architecture_version;
 #undef TARGET_FIX_ERR_A53_835769_DEFAULT
 #define TARGET_FIX_ERR_A53_835769_DEFAULT 1
 #endif
+
+/* SB instruction is enabled through +sb.  */
+#define TARGET_SB (AARCH64_ISA_SB)
 
 /* Apply the workaround for Cortex-A53 erratum 835769.  */
 #define TARGET_FIX_ERR_A53_835769	\
@@ -634,6 +643,16 @@ extern unsigned aarch64_architecture_version;
 #define GP_REGNUM_P(REGNO)						\
   (((unsigned) (REGNO - R0_REGNUM)) <= (R30_REGNUM - R0_REGNUM))
 
+/* Registers known to be preserved over a BL instruction.  This consists of the
+   GENERAL_REGS without x16, x17, and x30.  The x30 register is changed by the
+   BL instruction itself, while the x16 and x17 registers may be used by
+   veneers which can be inserted by the linker.  */
+#define STUB_REGNUM_P(REGNO) \
+  (GP_REGNUM_P (REGNO) \
+   && (REGNO) != R16_REGNUM \
+   && (REGNO) != R17_REGNUM \
+   && (REGNO) != R30_REGNUM) \
+
 #define FP_REGNUM_P(REGNO)			\
   (((unsigned) (REGNO - V0_REGNUM)) <= (V31_REGNUM - V0_REGNUM))
 
@@ -658,6 +677,7 @@ enum reg_class
 {
   NO_REGS,
   TAILCALL_ADDR_REGS,
+  STUB_REGS,
   GENERAL_REGS,
   STACK_REG,
   POINTER_REGS,
@@ -680,6 +700,7 @@ enum reg_class
 {						\
   "NO_REGS",					\
   "TAILCALL_ADDR_REGS",				\
+  "STUB_REGS",					\
   "GENERAL_REGS",				\
   "STACK_REG",					\
   "POINTER_REGS",				\
@@ -699,6 +720,7 @@ enum reg_class
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
   { 0x00030000, 0x00000000, 0x00000000 },	/* TAILCALL_ADDR_REGS */\
+  { 0x3ffcffff, 0x00000000, 0x00000000 },	/* STUB_REGS */		\
   { 0x7fffffff, 0x00000000, 0x00000003 },	/* GENERAL_REGS */	\
   { 0x80000000, 0x00000000, 0x00000000 },	/* STACK_REG */		\
   { 0xffffffff, 0x00000000, 0x00000003 },	/* POINTER_REGS */	\
@@ -837,6 +859,23 @@ struct GTY (()) aarch64_frame
   /* Store FP,LR and setup a frame pointer.  */
   bool emit_frame_chain;
 
+  /* In each frame, we can associate up to two register saves with the
+     initial stack allocation.  This happens in one of two ways:
+
+     (1) Using an STR or STP with writeback to perform the initial
+	 stack allocation.  When EMIT_FRAME_CHAIN, the registers will
+	 be those needed to create a frame chain.
+
+	 Indicated by CALLEE_ADJUST != 0.
+
+     (2) Using a separate STP to set up the frame record, after the
+	 initial stack allocation but before setting up the frame pointer.
+	 This is used if the offset is too large to use writeback.
+
+	 Indicated by CALLEE_ADJUST == 0 && EMIT_FRAME_CHAIN.
+
+     These fields indicate which registers we've decided to handle using
+     (1) or (2), or INVALID_REGNUM if none.  */
   unsigned wb_candidate1;
   unsigned wb_candidate2;
 
@@ -853,6 +892,8 @@ typedef struct GTY (()) machine_function
   struct aarch64_frame frame;
   /* One entry for each hard register.  */
   bool reg_is_wrapped_separately[LAST_SAVED_REGNUM];
+  /* One entry for each general purpose register.  */
+  rtx call_via[SP_REGNUM];
   bool label_is_assembled;
 } machine_function;
 #endif
@@ -1053,8 +1094,10 @@ typedef struct
 
 #define RETURN_ADDR_RTX aarch64_return_addr
 
-/* BTI c + 3 insns + 2 pointer-sized entries.  */
-#define TRAMPOLINE_SIZE	(TARGET_ILP32 ? 24 : 32)
+/* BTI c + 3 insns
+   + sls barrier of DSB + ISB.
+   + 2 pointer-sized entries.  */
+#define TRAMPOLINE_SIZE	(24 + (TARGET_ILP32 ? 8 : 16))
 
 /* Trampolines contain dwords, so must be dword aligned.  */
 #define TRAMPOLINE_ALIGNMENT 64

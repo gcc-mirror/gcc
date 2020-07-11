@@ -1,4 +1,4 @@
-/* { dg-do compile { target cris-*-* crisv32-*-* } } */
+/* { dg-do compile { target cris-*-* } } */
 /* { dg-skip-if "" { cris*-*-* } { "-march*" } { "" } } */
 /* { dg-options "-O2 -march=v10" } */
 /* { dg-final { scan-assembler "in-asm: .mof" } } */

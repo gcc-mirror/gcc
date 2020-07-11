@@ -45,6 +45,9 @@ if test "$GXX" = yes; then
 fi
 AC_SUBST(visibility)
 
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+AC_SUBST(CET_HOST_FLAGS)
+
 AC_CHECK_DECLS([basename])
 
 GCC_BASE_VER

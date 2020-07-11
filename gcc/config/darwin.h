@@ -808,6 +808,12 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
   do {							\
     if (strcmp ("LC", PREFIX) == 0)			\
       sprintf (LABEL, "*%s%ld", "lC", (long)(NUM));	\
+    else if (strcmp ("Lubsan_data", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lubsan_data", (long)(NUM));\
+    else if (strcmp ("Lubsan_type", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lubsan_type", (long)(NUM));\
+    else if (strcmp ("LASAN", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lASAN", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
   } while (0)

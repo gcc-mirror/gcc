@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2019, AdaCore                     --
+--                     Copyright (C) 2001-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -189,7 +189,6 @@ package body Adabkend is
          elsif Switch_Chars (First .. Last) = "fno-inline" then
             Lib.Store_Compilation_Switch (Switch_Chars);
             Opt.Disable_FE_Inline := True;
-            Opt.Disable_FE_Inline_Always := True;
             return;
 
          --  Similar processing for -fpreserve-control-flow

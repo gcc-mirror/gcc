@@ -55,7 +55,7 @@
 #include "hsa.h"
 
 #ifndef HSA_RUNTIME_LIB
-#define HSA_RUNTIME_LIB "libhsa-runtime64.so"
+#define HSA_RUNTIME_LIB "libhsa-runtime64.so.1"
 #endif
 
 #ifndef VERSION_STRING
@@ -429,20 +429,6 @@ load_image (const char *filename)
 					  &executable),
 	"Initialize GCN executable");
 
-  /* Hide relocations from the HSA runtime loader.
-     Keep a copy of the unmodified section headers to use later.  */
-  Elf64_Shdr *image_sections =
-    (Elf64_Shdr *) ((char *) image + image->e_shoff);
-  Elf64_Shdr *sections = malloc (sizeof (Elf64_Shdr) * image->e_shnum);
-  memcpy (sections, image_sections, sizeof (Elf64_Shdr) * image->e_shnum);
-  for (int i = image->e_shnum - 1; i >= 0; i--)
-    {
-      if (image_sections[i].sh_type == SHT_RELA
-	  || image_sections[i].sh_type == SHT_REL)
-	/* Change section type to something harmless.  */
-	image_sections[i].sh_type = SHT_NOTE;
-    }
-
   /* Add the HSACO to the executable.  */
   hsa_code_object_t co = { 0 };
   XHSA (hsa_fns.hsa_code_object_deserialize_fn (image, image_size, NULL, &co),
@@ -457,23 +443,27 @@ load_image (const char *filename)
 
   /* Locate the "_init_array" function, and read the kernel's properties.  */
   hsa_executable_symbol_t symbol;
-  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "_init_array",
-					      device, 0, &symbol),
+  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, 
+					      "_init_array.kd", device, 0,
+					      &symbol),
 	"Find '_init_array' function");
   XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
-	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &init_array_kernel),
+	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT,
+	     &init_array_kernel),
 	"Extract '_init_array' kernel object kernel object");
 
   /* Locate the "_fini_array" function, and read the kernel's properties.  */
-  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "_fini_array",
-					      device, 0, &symbol),
+  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL,
+					      "_fini_array.kd", device, 0,
+					      &symbol),
 	"Find '_fini_array' function");
   XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
-	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &fini_array_kernel),
+	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT,
+	     &fini_array_kernel),
 	"Extract '_fini_array' kernel object kernel object");
 
   /* Locate the "main" function, and read the kernel's properties.  */
-  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "main",
+  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, "main.kd",
 					      device, 0, &symbol),
 	"Find 'main' function");
   XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
@@ -491,126 +481,6 @@ load_image (const char *filename)
 	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_PRIVATE_SEGMENT_SIZE,
 	     &private_segment_size),
 	"Extract private segment size");
-
-  /* Find main function in ELF, and calculate actual load offset.  */
-  Elf64_Addr load_offset;
-  XHSA (hsa_fns.hsa_executable_symbol_get_info_fn
-	    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
-	     &load_offset),
-	"Extract 'main' symbol address");
-  for (int i = 0; i < image->e_shnum; i++)
-    if (sections[i].sh_type == SHT_SYMTAB)
-      {
-	Elf64_Shdr *strtab = &sections[sections[i].sh_link];
-	char *strings = (char *) image + strtab->sh_offset;
-
-	for (size_t offset = 0;
-	     offset < sections[i].sh_size;
-	     offset += sections[i].sh_entsize)
-	  {
-	    Elf64_Sym *sym = (Elf64_Sym *) ((char *) image
-					    + sections[i].sh_offset + offset);
-	    if (strcmp ("main", strings + sym->st_name) == 0)
-	      {
-		load_offset -= sym->st_value;
-		goto found_main;
-	      }
-	  }
-      }
-  /* We only get here when main was not found.
-     This should never happen.  */
-  fprintf (stderr, "Error: main function not found.\n");
-  abort ();
-found_main:;
-
-  /* Find dynamic symbol table.  */
-  Elf64_Shdr *dynsym = NULL;
-  for (int i = 0; i < image->e_shnum; i++)
-    if (sections[i].sh_type == SHT_DYNSYM)
-      {
-	dynsym = &sections[i];
-	break;
-      }
-
-  /* Fix up relocations.  */
-  for (int i = 0; i < image->e_shnum; i++)
-    {
-      if (sections[i].sh_type == SHT_RELA)
-	for (size_t offset = 0;
-	     offset < sections[i].sh_size;
-	     offset += sections[i].sh_entsize)
-	  {
-	    Elf64_Rela *reloc = (Elf64_Rela *) ((char *) image
-						+ sections[i].sh_offset
-						+ offset);
-	    Elf64_Sym *sym =
-	      (dynsym
-	       ? (Elf64_Sym *) ((char *) image
-				+ dynsym->sh_offset
-				+ (dynsym->sh_entsize
-				   * ELF64_R_SYM (reloc->r_info))) : NULL);
-
-	    int64_t S = (sym ? sym->st_value : 0);
-	    int64_t P = reloc->r_offset + load_offset;
-	    int64_t A = reloc->r_addend;
-	    int64_t B = load_offset;
-	    int64_t V, size;
-	    switch (ELF64_R_TYPE (reloc->r_info))
-	      {
-	      case R_AMDGPU_ABS32_LO:
-		V = (S + A) & 0xFFFFFFFF;
-		size = 4;
-		break;
-	      case R_AMDGPU_ABS32_HI:
-		V = (S + A) >> 32;
-		size = 4;
-		break;
-	      case R_AMDGPU_ABS64:
-		V = S + A;
-		size = 8;
-		break;
-	      case R_AMDGPU_REL32:
-		V = S + A - P;
-		size = 4;
-		break;
-	      case R_AMDGPU_REL64:
-		/* FIXME
-		   LLD seems to emit REL64 where the assembler has ABS64.
-		   This is clearly wrong because it's not what the compiler
-		   is expecting.  Let's assume, for now, that it's a bug.
-		   In any case, GCN kernels are always self contained and
-		   therefore relative relocations will have been resolved
-		   already, so this should be a safe workaround.  */
-		V = S + A /* - P */ ;
-		size = 8;
-		break;
-	      case R_AMDGPU_ABS32:
-		V = S + A;
-		size = 4;
-		break;
-	      /* TODO R_AMDGPU_GOTPCREL */
-	      /* TODO R_AMDGPU_GOTPCREL32_LO */
-	      /* TODO R_AMDGPU_GOTPCREL32_HI */
-	      case R_AMDGPU_REL32_LO:
-		V = (S + A - P) & 0xFFFFFFFF;
-		size = 4;
-		break;
-	      case R_AMDGPU_REL32_HI:
-		V = (S + A - P) >> 32;
-		size = 4;
-		break;
-	      case R_AMDGPU_RELATIVE64:
-		V = B + A;
-		size = 8;
-		break;
-	      default:
-		fprintf (stderr, "Error: unsupported relocation type.\n");
-		exit (1);
-	      }
-	    XHSA (hsa_fns.hsa_memory_copy_fn ((void *) P, &V, size),
-		  "Fix up relocation");
-	  }
-    }
 }
 
 /* Allocate some device memory from the kernargs region.

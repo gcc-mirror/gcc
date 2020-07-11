@@ -126,8 +126,10 @@ for (i = 0; i < n_opts; i++) {
 			else if (otype ~ "^signed +char *$")
 				var_opt_range[name] = "-128, 127"
 		}
-		else if (otype ~ "^const char \\**$")
+		else if (otype ~ "^const char \\**$") {
 			var_opt_string[n_opt_string++] = name;
+			string_options_names[name]++
+		}
 		else
 			var_opt_other[n_opt_other++] = name;
 	}
@@ -382,8 +384,10 @@ if (have_save) {
 				if (otype == var_type(flags[i]))
 					var_target_range[name] = ""
 			}
-			else if (otype ~ "^const char \\**$")
+			else if (otype ~ "^const char \\**$") {
 				var_target_string[n_target_string++] = name;
+				string_options_names[name]++
+			}
 			else
 				var_target_other[n_target_other++] = name;
 		}
@@ -945,5 +949,42 @@ for (i = 0; i < n_opt_val; i++) {
 	      print "    free (const_cast <char *>(ptr->" name"));";
 	}
 }
+print "}";
+
+print "void";
+print "cl_optimization_compare (gcc_options *ptr1, gcc_options *ptr2)"
+print "{"
+
+# all these options are mentioned in PR92860
+checked_options["flag_merge_constants"]++
+checked_options["param_max_fields_for_field_sensitive"]++
+checked_options["flag_omit_frame_pointer"]++
+checked_options["unroll_only_small_loops"]++
+# arc exceptions
+checked_options["TARGET_ALIGN_CALL"]++
+checked_options["TARGET_CASE_VECTOR_PC_RELATIVE"]++
+checked_options["arc_size_opt_level"]++
+
+for (i = 0; i < n_opts; i++) {
+	name = var_name(flags[i]);
+	if (name == "")
+		continue;
+
+	if (name in checked_options)
+		continue;
+	checked_options[name]++
+
+	if (name in string_options_names) {
+	  print "  if (ptr1->x_" name " != ptr2->x_" name "";
+	  print "      && (!ptr1->x_" name" || !ptr2->x_" name
+	  print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
+	  print "    internal_error (\"%<global_options%> are modified in local context\");";
+	}
+	else {
+	  print "  if (ptr1->x_" name " != ptr2->x_" name ")"
+	  print "    internal_error (\"%<global_options%> are modified in local context\");";
+	}
+}
+
 print "}";
 }

@@ -527,6 +527,8 @@ gcc_jit_context_new_array_type (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (element_type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (num_elements >= 0, ctxt, NULL, "negative size");
+  RETURN_NULL_IF_FAIL (!element_type->is_void (), ctxt, loc,
+		       "void type for elements");
 
   return (gcc_jit_type *)ctxt->new_array_type (loc,
 					       element_type,
@@ -556,6 +558,11 @@ gcc_jit_context_new_field (gcc_jit_context *ctxt,
     "unknown size for field \"%s\" (type: %s)",
     name,
     type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    !type->is_void (),
+    ctxt, loc,
+    "void type for field \"%s\"",
+    name);
 
   return (gcc_jit_field *)ctxt->new_field (loc, type, name);
 }
@@ -786,10 +793,15 @@ gcc_jit_context_new_function_ptr_type (gcc_jit_context *ctxt,
     ctxt, loc,
     "NULL param_types creating function pointer type");
   for (int i = 0; i < num_params; i++)
-    RETURN_NULL_IF_FAIL_PRINTF1 (
-      param_types[i],
-      ctxt, loc,
-      "NULL parameter type %i creating function pointer type", i);
+    {
+      RETURN_NULL_IF_FAIL_PRINTF1 (param_types[i],
+				   ctxt, loc,
+				   "NULL parameter type %i"
+				   " creating function pointer type", i);
+      RETURN_NULL_IF_FAIL_PRINTF1 (!param_types[i]->is_void (),
+				   ctxt, loc,
+				   "void type for param %i", i);
+    }
 
   return (gcc_jit_type*)
     ctxt->new_function_ptr_type (loc, return_type,
@@ -816,6 +828,9 @@ gcc_jit_context_new_param (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
+  RETURN_NULL_IF_FAIL_PRINTF1 (!type->is_void (),
+			       ctxt, loc,
+			       "void type for param \"%s\"", name);
 
   return (gcc_jit_param *)ctxt->new_param (loc, type, name);
 }
@@ -1093,6 +1108,11 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
     "unknown size for global \"%s\" (type: %s)",
     name,
     type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    !type->is_void (),
+    ctxt, loc,
+    "void type for global \"%s\"",
+    name);
 
   return (gcc_jit_lvalue *)ctxt->new_global (loc, kind, type, name);
 }
@@ -1911,6 +1931,11 @@ gcc_jit_function_new_local (gcc_jit_function *func,
     "unknown size for local \"%s\" (type: %s)",
     name,
     type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    !type->is_void (),
+    ctxt, loc,
+    "void type for local \"%s\"",
+    name);
 
   return (gcc_jit_lvalue *)func->new_local (loc, type, name);
 }
@@ -3068,6 +3093,7 @@ gcc_jit_type_get_aligned (gcc_jit_type *type,
     (pow2_or_zerop (alignment_in_bytes), ctxt, NULL,
      "alignment not a power of two: %zi",
      alignment_in_bytes);
+  RETURN_NULL_IF_FAIL (!type->is_void (), ctxt, NULL, "void type");
 
   return (gcc_jit_type *)type->get_aligned (alignment_in_bytes);
 }

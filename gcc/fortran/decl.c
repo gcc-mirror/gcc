@@ -576,16 +576,16 @@ match_old_style_init (const char *name)
   for (nd = newdata; nd; nd = nd->next)
     {
       if (nd->value->expr->ts.type == BT_BOZ
-	  && gfc_invalid_boz ("BOZ at %L cannot appear in an old-style "
-			      "initialization", &nd->value->expr->where))
+	  && gfc_invalid_boz (G_("BOZ at %L cannot appear in an old-style "
+			      "initialization"), &nd->value->expr->where))
 	return MATCH_ERROR;
 
       if (nd->var->expr->ts.type != BT_INTEGER
 	  && nd->var->expr->ts.type != BT_REAL
 	  && nd->value->expr->ts.type == BT_BOZ)
 	{
-	  gfc_error ("BOZ literal constant near %L cannot be assigned to "
-		     "a %qs variable in an old-style initialization",
+	  gfc_error (G_("BOZ literal constant near %L cannot be assigned to "
+		     "a %qs variable in an old-style initialization"),
 		     &nd->value->expr->where,
 		     gfc_typename (&nd->value->expr->ts));
 	  return MATCH_ERROR;
@@ -728,7 +728,7 @@ gfc_match_data (void)
 	  gfc_constructor *c;
 	  c = gfc_constructor_first (new_data->value->expr->value.constructor);
 	  for (; c; c = gfc_constructor_next (c))
-	    if (c->expr->ts.type == BT_BOZ)
+	    if (c->expr && c->expr->ts.type == BT_BOZ)
 	      {
 		gfc_error ("BOZ literal constant at %L cannot appear in a "
 			   "structure constructor", &c->expr->where);
@@ -1076,6 +1076,11 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
+
+  /* If gfortran gets an EXPR_OP, try to simplifiy it.  This catches things
+     like CHARACTER(([1])).   */
+  if ((*expr)->expr_type == EXPR_OP)
+    gfc_simplify_expr (*expr, 1);
 
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {
@@ -2602,6 +2607,14 @@ variable_decl (int elem)
 	      gfc_free_expr (e);
 	    }
 
+	  if (not_constant && e->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("Explicit array shape at %C must be constant of "
+			 "INTEGER type and not %s type",
+			 gfc_basic_typename (e->ts.type));
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 	  if (not_constant)
 	    {
 	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
@@ -2899,6 +2912,15 @@ variable_decl (int elem)
     {
       gfc_error ("Initialization of allocatable component at %C is not "
 		 "allowed");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  if (gfc_current_state () == COMP_DERIVED
+      && initializer && initializer->ts.type == BT_HOLLERITH)
+    {
+      gfc_error ("Initialization of structure component with a HOLLERITH "
+		 "constant at %L is not allowed", &initializer->where);
       m = MATCH_ERROR;
       goto cleanup;
     }
@@ -3727,8 +3749,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (kind_expr)
 	{
 	  /* Try simplification even for LEN expressions.  */
+	  bool ok;
 	  gfc_resolve_expr (kind_expr);
-	  gfc_simplify_expr (kind_expr, 1);
+	  ok = gfc_simplify_expr (kind_expr, 1);
 	  /* Variable expressions seem to default to BT_PROCEDURE.
 	     TODO find out why this is and fix it.  */
 	  if (kind_expr->ts.type != BT_INTEGER
@@ -3737,6 +3760,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_error ("The parameter expression at %C must be of "
 		         "INTEGER type and not %s type",
 			 gfc_basic_typename (kind_expr->ts.type));
+	      goto error_return;
+	    }
+	  if (kind_expr->ts.type == BT_INTEGER && !ok)
+	    {
+	      gfc_error ("The parameter expression at %C does not "
+			 "simplify to an INTEGER constant");
 	      goto error_return;
 	    }
 
@@ -4065,7 +4094,8 @@ match_byte_typespec (gfc_typespec *ts)
 match
 gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "pdtsymbol".  */
+  char *name = XALLOCAVEC (char, GFC_MAX_SYMBOL_LEN + 1);
   gfc_symbol *sym, *dt_sym;
   match m;
   char c;
@@ -4098,7 +4128,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       gfc_gobble_whitespace ();
       if (gfc_peek_ascii_char () == '*')
 	{
-	  if ((m = gfc_match ("*)")) != MATCH_YES)
+	  if ((m = gfc_match ("* ) ")) != MATCH_YES)
 	    return m;
 	  if (gfc_comp_struct (gfc_current_state ()))
 	    {
@@ -4255,7 +4285,13 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	    return m;
 	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
 	  ts->u.derived = sym;
-	  strcpy (name, gfc_dt_lower_string (sym->name));
+	  const char* lower = gfc_dt_lower_string (sym->name);
+	  size_t len = strlen (lower);
+	  /* Reallocate with sufficient size.  */
+	  if (len > GFC_MAX_SYMBOL_LEN)
+	    name = XALLOCAVEC (char, len + 1);
+	  memcpy (name, lower, len);
+	  name[len] = '\0';
 	}
 
       if (sym && sym->attr.flavor == FL_STRUCT)
@@ -4793,7 +4829,7 @@ gfc_match_implicit (void)
       /* Last chance -- check <TYPE> <SELECTOR> (<RANGE>).  */
       if (ts.type == BT_CHARACTER)
 	m = gfc_match_char_spec (&ts);
-      else
+      else if (ts.type != BT_DERIVED)
 	{
 	  m = gfc_match_kind_spec (&ts, false);
 	  if (m == MATCH_NO)
@@ -9039,7 +9075,7 @@ access_attr_decl (gfc_statement st)
 	  else
 	    {
 	      gfc_error ("Access specification of the .%s. operator at %C "
-			 "has already been specified", sym->name);
+			 "has already been specified", uop->name);
 	      goto done;
 	    }
 

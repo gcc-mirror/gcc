@@ -1048,7 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __future_base::_State_base 	_State;
       typedef __future_base::_Result<_Res>	_Res_type;
       typedef __future_base::_Ptr<_Res_type>	_Ptr_type;
-      template<typename, typename> friend class _State::_Setter;
+      template<typename, typename> friend struct _State::_Setter;
       friend _State;
 
       shared_ptr<_State>                        _M_future;
@@ -1159,7 +1159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __future_base::_State_base	_State;
       typedef __future_base::_Result<_Res&>	_Res_type;
       typedef __future_base::_Ptr<_Res_type> 	_Ptr_type;
-      template<typename, typename> friend class _State::_Setter;
+      template<typename, typename> friend struct _State::_Setter;
       friend _State;
 
       shared_ptr<_State>                        _M_future;
@@ -1249,7 +1249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __future_base::_State_base	_State;
       typedef __future_base::_Result<void>	_Res_type;
       typedef __future_base::_Ptr<_Res_type> 	_Ptr_type;
-      template<typename, typename> friend class _State::_Setter;
+      template<typename, typename> friend struct _State::_Setter;
       friend _State;
 
       shared_ptr<_State>                        _M_future;

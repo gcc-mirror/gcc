@@ -21,6 +21,15 @@ foo (int a)
     gl += bar (i);
 }
 
+void __attribute__((noinline,noclone))
+baz (int a)
+{
+  int i;
+
+  for (i = 0; i < a; i++)
+    gl += bar (i);
+}
+
 int
 main ()
 {
@@ -31,13 +40,13 @@ main ()
   return 0;
 }
 
-/* 1 x foo, 1 x main
-/* { dg-final { scan-assembler-times "jg\t__s390_indirect_jump" 2 } } */
+/* 1 x foo, 1 x baz, 1 x main */
+/* { dg-final { scan-assembler-times "jg\t__s390_indirect_jump" 3 } } */
 
-/* 1 x foo, conditional return, shrink wrapped
+/* 1 x foo, conditional return, shrink wrapped */
 /* { dg-final { scan-assembler "jge\t__s390_indirect_jump" } } */
 
-/* 1 x foo, conditional return, shrink wrapped
+/* 1 x baz, conditional return, shrink wrapped */
 /* { dg-final { scan-assembler "jgle\t__s390_indirect_jump" } } */
 
 /* { dg-final { scan-assembler "ex\t" } } */

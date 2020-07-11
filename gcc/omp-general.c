@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hsa-common.h"
 #include "tree-pass.h"
 #include "omp-device-properties.h"
+#include "tree-iterator.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -200,14 +201,19 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->have_pointer_condtemp = false;
   fd->have_scantemp = false;
   fd->have_nonctrl_scantemp = false;
+  fd->non_rect = false;
   fd->lastprivate_conditional = 0;
   fd->tiling = NULL_TREE;
   fd->collapse = 1;
   fd->ordered = 0;
+  fd->first_nonrect = -1;
+  fd->last_nonrect = -1;
   fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
   fd->simd_schedule = false;
+  fd->min_inner_iterations = NULL_TREE;
+  fd->factor = NULL_TREE;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -311,6 +317,44 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
     }
 
   int cnt = fd->ordered ? fd->ordered : fd->collapse;
+  int single_nonrect = -1;
+  tree single_nonrect_count = NULL_TREE;
+  enum tree_code single_nonrect_cond_code = ERROR_MARK;
+  for (i = 1; i < cnt; i++)
+    {
+      tree n1 = gimple_omp_for_initial (for_stmt, i);
+      tree n2 = gimple_omp_for_final (for_stmt, i);
+      if (TREE_CODE (n1) == TREE_VEC)
+	{
+	  if (fd->non_rect)
+	    {
+	      single_nonrect = -1;
+	      break;
+	    }
+	  for (int j = i - 1; j >= 0; j--)
+	    if (TREE_VEC_ELT (n1, 0) == gimple_omp_for_index (for_stmt, j))
+	      {
+		single_nonrect = j;
+		break;
+	      }
+	  fd->non_rect = true;
+	}
+      else if (TREE_CODE (n2) == TREE_VEC)
+	{
+	  if (fd->non_rect)
+	    {
+	      single_nonrect = -1;
+	      break;
+	    }
+	  for (int j = i - 1; j >= 0; j--)
+	    if (TREE_VEC_ELT (n2, 0) == gimple_omp_for_index (for_stmt, j))
+	      {
+		single_nonrect = j;
+		break;
+	      }
+	  fd->non_rect = true;
+	}
+    }
   for (i = 0; i < cnt; i++)
     {
       if (i == 0
@@ -329,12 +373,56 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		  || TREE_CODE (TREE_TYPE (loop->v)) == POINTER_TYPE);
       var = TREE_CODE (loop->v) == SSA_NAME ? SSA_NAME_VAR (loop->v) : loop->v;
       loop->n1 = gimple_omp_for_initial (for_stmt, i);
+      loop->m1 = NULL_TREE;
+      loop->m2 = NULL_TREE;
+      loop->outer = 0;
+      loop->non_rect_referenced = false;
+      if (TREE_CODE (loop->n1) == TREE_VEC)
+	{
+	  for (int j = i - 1; j >= 0; j--)
+	    if (TREE_VEC_ELT (loop->n1, 0) == gimple_omp_for_index (for_stmt, j))
+	      {
+		loop->outer = i - j;
+		if (loops != NULL)
+		  loops[j].non_rect_referenced = true;
+		if (fd->first_nonrect == -1 || fd->first_nonrect > j)
+		  fd->first_nonrect = j;
+		break;
+	      }
+	  gcc_assert (loop->outer);
+	  loop->m1 = TREE_VEC_ELT (loop->n1, 1);
+	  loop->n1 = TREE_VEC_ELT (loop->n1, 2);
+	  fd->non_rect = true;
+	  fd->last_nonrect = i;
+	}
 
       loop->cond_code = gimple_omp_for_cond (for_stmt, i);
       loop->n2 = gimple_omp_for_final (for_stmt, i);
       gcc_assert (loop->cond_code != NE_EXPR
 		  || (gimple_omp_for_kind (for_stmt)
 		      != GF_OMP_FOR_KIND_OACC_LOOP));
+      if (TREE_CODE (loop->n2) == TREE_VEC)
+	{
+	  if (loop->outer)
+	    gcc_assert (TREE_VEC_ELT (loop->n2, 0)
+			== gimple_omp_for_index (for_stmt, i - loop->outer));
+	  else
+	    for (int j = i - 1; j >= 0; j--)
+	      if (TREE_VEC_ELT (loop->n2, 0) == gimple_omp_for_index (for_stmt, j))
+		{
+		  loop->outer = i - j;
+		  if (loops != NULL)
+		    loops[j].non_rect_referenced = true;
+		  if (fd->first_nonrect == -1 || fd->first_nonrect > j)
+		    fd->first_nonrect = j;
+		  break;
+		}
+	  gcc_assert (loop->outer);
+	  loop->m2 = TREE_VEC_ELT (loop->n2, 1);
+	  loop->n2 = TREE_VEC_ELT (loop->n2, 2);
+	  fd->non_rect = true;
+	  fd->last_nonrect = i;
+	}
 
       t = gimple_omp_for_incr (for_stmt, i);
       gcc_assert (TREE_OPERAND (t, 0) == var);
@@ -356,6 +444,10 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      = build_nonstandard_integer_type
 		  (TYPE_PRECISION (TREE_TYPE (loop->v)), 1);
 	}
+      else if (loop->m1 || loop->m2)
+	/* Non-rectangular loops should use static schedule and no
+	   ordered clause.  */
+	gcc_unreachable ();
       else if (iter_type != long_long_unsigned_type_node)
 	{
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->v)))
@@ -405,9 +497,94 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 
       if (collapse_count && *collapse_count == NULL)
 	{
-	  t = fold_binary (loop->cond_code, boolean_type_node,
-			   fold_convert (TREE_TYPE (loop->v), loop->n1),
-			   fold_convert (TREE_TYPE (loop->v), loop->n2));
+	  if (count && integer_zerop (count))
+	    continue;
+	  tree n1first = NULL_TREE, n2first = NULL_TREE;
+	  tree n1last = NULL_TREE, n2last = NULL_TREE;
+	  tree ostep = NULL_TREE;
+	  if (loop->m1 || loop->m2)
+	    {
+	      if (count == NULL_TREE)
+		continue;
+	      if (single_nonrect == -1
+		  || (loop->m1 && TREE_CODE (loop->m1) != INTEGER_CST)
+		  || (loop->m2 && TREE_CODE (loop->m2) != INTEGER_CST))
+		{
+		  count = NULL_TREE;
+		  continue;
+		}
+	      tree var = gimple_omp_for_initial (for_stmt, single_nonrect);
+	      tree itype = TREE_TYPE (var);
+	      tree first = gimple_omp_for_initial (for_stmt, single_nonrect);
+	      t = gimple_omp_for_incr (for_stmt, single_nonrect);
+	      ostep = omp_get_for_step_from_incr (loc, t);
+	      t = fold_binary (MINUS_EXPR, long_long_unsigned_type_node,
+			       single_nonrect_count,
+			       build_one_cst (long_long_unsigned_type_node));
+	      t = fold_convert (itype, t);
+	      first = fold_convert (itype, first);
+	      ostep = fold_convert (itype, ostep);
+	      tree last = fold_binary (PLUS_EXPR, itype, first,
+				       fold_binary (MULT_EXPR, itype, t,
+						    ostep));
+	      if (TREE_CODE (first) != INTEGER_CST
+		  || TREE_CODE (last) != INTEGER_CST)
+		{
+		  count = NULL_TREE;
+		  continue;
+		}
+	      if (loop->m1)
+		{
+		  tree m1 = fold_convert (itype, loop->m1);
+		  tree n1 = fold_convert (itype, loop->n1);
+		  n1first = fold_binary (PLUS_EXPR, itype,
+					 fold_binary (MULT_EXPR, itype,
+						      first, m1), n1);
+		  n1last = fold_binary (PLUS_EXPR, itype,
+					fold_binary (MULT_EXPR, itype,
+						     last, m1), n1);
+		}
+	      else
+		n1first = n1last = loop->n1;
+	      if (loop->m2)
+		{
+		  tree n2 = fold_convert (itype, loop->n2);
+		  tree m2 = fold_convert (itype, loop->m2);
+		  n2first = fold_binary (PLUS_EXPR, itype,
+					 fold_binary (MULT_EXPR, itype,
+						      first, m2), n2);
+		  n2last = fold_binary (PLUS_EXPR, itype,
+					fold_binary (MULT_EXPR, itype,
+						     last, m2), n2);
+		}
+	      else
+		n2first = n2last = loop->n2;
+	      n1first = fold_convert (TREE_TYPE (loop->v), n1first);
+	      n2first = fold_convert (TREE_TYPE (loop->v), n2first);
+	      n1last = fold_convert (TREE_TYPE (loop->v), n1last);
+	      n2last = fold_convert (TREE_TYPE (loop->v), n2last);
+	      t = fold_binary (loop->cond_code, boolean_type_node,
+			       n1first, n2first);
+	      tree t2 = fold_binary (loop->cond_code, boolean_type_node,
+				     n1last, n2last);
+	      if (t && t2 && integer_nonzerop (t) && integer_nonzerop (t2))
+		/* All outer loop iterators have at least one inner loop
+		   iteration.  Try to compute the count at compile time.  */
+		t = NULL_TREE;
+	      else if (t && t2 && integer_zerop (t) && integer_zerop (t2))
+		/* No iterations of the inner loop.  count will be set to
+		   zero cst below.  */;
+	      else
+		{
+		  /* Punt (for now).  */
+		  count = NULL_TREE;
+		  continue;
+		}
+	    }
+	  else
+	    t = fold_binary (loop->cond_code, boolean_type_node,
+			     fold_convert (TREE_TYPE (loop->v), loop->n1),
+			     fold_convert (TREE_TYPE (loop->v), loop->n2));
 	  if (t && integer_zerop (t))
 	    count = build_zero_cst (long_long_unsigned_type_node);
 	  else if ((i == 0 || count != NULL_TREE)
@@ -421,31 +598,91 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      if (POINTER_TYPE_P (itype))
 		itype = signed_type_for (itype);
 	      t = build_int_cst (itype, (loop->cond_code == LT_EXPR ? -1 : 1));
-	      t = fold_build2_loc (loc, PLUS_EXPR, itype,
-				   fold_convert_loc (loc, itype, loop->step),
-				   t);
-	      t = fold_build2_loc (loc, PLUS_EXPR, itype, t,
-				   fold_convert_loc (loc, itype, loop->n2));
-	      t = fold_build2_loc (loc, MINUS_EXPR, itype, t,
-				   fold_convert_loc (loc, itype, loop->n1));
-	      if (TYPE_UNSIGNED (itype) && loop->cond_code == GT_EXPR)
+	      t = fold_build2 (PLUS_EXPR, itype,
+			       fold_convert (itype, loop->step), t);
+	      tree n1 = loop->n1;
+	      tree n2 = loop->n2;
+	      if (loop->m1 || loop->m2)
 		{
-		  tree step = fold_convert_loc (loc, itype, loop->step);
-		  t = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype,
-				       fold_build1_loc (loc, NEGATE_EXPR,
-							itype, t),
-				       fold_build1_loc (loc, NEGATE_EXPR,
-							itype, step));
+		  gcc_assert (single_nonrect != -1);
+		  if (single_nonrect_cond_code == LT_EXPR)
+		    {
+		      n1 = n1first;
+		      n2 = n2first;
+		    }
+		  else
+		    {
+		      n1 = n1last;
+		      n2 = n2last;
+		    }
 		}
+	      t = fold_build2 (PLUS_EXPR, itype, t, fold_convert (itype, n2));
+	      t = fold_build2 (MINUS_EXPR, itype, t, fold_convert (itype, n1));
+	      tree step = fold_convert_loc (loc, itype, loop->step);
+	      if (TYPE_UNSIGNED (itype) && loop->cond_code == GT_EXPR)
+		t = fold_build2 (TRUNC_DIV_EXPR, itype,
+				 fold_build1 (NEGATE_EXPR, itype, t),
+				 fold_build1 (NEGATE_EXPR, itype, step));
 	      else
-		t = fold_build2_loc (loc, TRUNC_DIV_EXPR, itype, t,
-				     fold_convert_loc (loc, itype,
-						       loop->step));
-	      t = fold_convert_loc (loc, long_long_unsigned_type_node, t);
-	      if (count != NULL_TREE)
-		count = fold_build2_loc (loc, MULT_EXPR,
-					 long_long_unsigned_type_node,
-					 count, t);
+		t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+	      tree llutype = long_long_unsigned_type_node;
+	      t = fold_convert (llutype, t);
+	      if (loop->m1 || loop->m2)
+		{
+		  /* t is number of iterations of inner loop at either first
+		     or last value of the outer iterator (the one with fewer
+		     iterations).
+		     Compute t2 = ((m2 - m1) * ostep) / step
+		     (for single_nonrect_cond_code GT_EXPR
+		      t2 = ((m1 - m2) * ostep) / step instead)
+		     and niters = outer_count * t
+				  + t2 * ((outer_count - 1) * outer_count / 2)
+		   */
+		  tree m1 = loop->m1 ? loop->m1 : integer_zero_node;
+		  tree m2 = loop->m2 ? loop->m2 : integer_zero_node;
+		  m1 = fold_convert (itype, m1);
+		  m2 = fold_convert (itype, m2);
+		  tree t2;
+		  if (single_nonrect_cond_code == LT_EXPR)
+		    t2 = fold_build2 (MINUS_EXPR, itype, m2, m1);
+		  else
+		    t2 = fold_build2 (MINUS_EXPR, itype, m1, m2);
+		  t2 = fold_build2 (MULT_EXPR, itype, t2, ostep);
+		  if (TYPE_UNSIGNED (itype) && loop->cond_code == GT_EXPR)
+		    t2 = fold_build2 (TRUNC_DIV_EXPR, itype,
+				      fold_build1 (NEGATE_EXPR, itype, t2),
+				      fold_build1 (NEGATE_EXPR, itype, step));
+		  else
+		    t2 = fold_build2 (TRUNC_DIV_EXPR, itype, t2, step);
+		  t2 = fold_convert (llutype, t2);
+		  fd->min_inner_iterations = t;
+		  fd->factor = t2;
+		  t = fold_build2 (MULT_EXPR, llutype, t,
+				   single_nonrect_count);
+		  tree t3 = fold_build2 (MINUS_EXPR, llutype,
+					 single_nonrect_count,
+					 build_one_cst (llutype));
+		  t3 = fold_build2 (MULT_EXPR, llutype, t3,
+				    single_nonrect_count);
+		  t3 = fold_build2 (TRUNC_DIV_EXPR, llutype, t3,
+				    build_int_cst (llutype, 2));
+		  t2 = fold_build2 (MULT_EXPR, llutype, t2, t3);
+		  t = fold_build2 (PLUS_EXPR, llutype, t, t2);
+		}
+	      if (i == single_nonrect)
+		{
+		  if (integer_zerop (t) || TREE_CODE (t) != INTEGER_CST)
+		    count = t;
+		  else
+		    {
+		      single_nonrect_count = t;
+		      single_nonrect_cond_code = loop->cond_code;
+		      if (count == NULL_TREE)
+			count = build_one_cst (llutype);
+		    }
+		}
+	      else if (count != NULL_TREE)
+		count = fold_build2 (MULT_EXPR, llutype, count, t);
 	      else
 		count = t;
 	      if (TREE_CODE (count) != INTEGER_CST)
@@ -474,7 +711,17 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   if (collapse_count && *collapse_count == NULL)
     {
       if (count)
-	*collapse_count = fold_convert_loc (loc, iter_type, count);
+	{
+	  *collapse_count = fold_convert_loc (loc, iter_type, count);
+	  if (fd->min_inner_iterations && fd->factor)
+	    {
+	      t = make_tree_vec (3);
+	      TREE_VEC_ELT (t, 0) = *collapse_count;
+	      TREE_VEC_ELT (t, 1) = fd->min_inner_iterations;
+	      TREE_VEC_ELT (t, 2) = fd->factor;
+	      *collapse_count = t;
+	    }
+	}
       else
 	*collapse_count = create_tmp_var (iter_type, ".count");
     }
@@ -484,7 +731,17 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       fd->loop.v = *collapse_iter;
       fd->loop.n1 = build_int_cst (TREE_TYPE (fd->loop.v), 0);
       fd->loop.n2 = *collapse_count;
+      if (TREE_CODE (fd->loop.n2) == TREE_VEC)
+	{
+	  gcc_assert (fd->non_rect);
+	  fd->min_inner_iterations = TREE_VEC_ELT (fd->loop.n2, 1);
+	  fd->factor = TREE_VEC_ELT (fd->loop.n2, 2);
+	  fd->loop.n2 = TREE_VEC_ELT (fd->loop.n2, 0);
+	}
       fd->loop.step = build_int_cst (TREE_TYPE (fd->loop.v), 1);
+      fd->loop.m1 = NULL_TREE;
+      fd->loop.m2 = NULL_TREE;
+      fd->loop.outer = 0;
       fd->loop.cond_code = LT_EXPR;
     }
   else if (loops)
@@ -502,6 +759,61 @@ omp_build_barrier (tree lhs)
   if (lhs)
     gimple_call_set_lhs (g, lhs);
   return g;
+}
+
+/* Find OMP_FOR resp. OMP_SIMD with non-NULL OMP_FOR_INIT.  Also, fill in pdata
+   array, pdata[0] non-NULL if there is anything non-trivial in between,
+   pdata[1] is address of OMP_PARALLEL in between if any, pdata[2] is address
+   of OMP_FOR in between if any and pdata[3] is address of the inner
+   OMP_FOR/OMP_SIMD.  */
+
+tree
+find_combined_omp_for (tree *tp, int *walk_subtrees, void *data)
+{
+  tree **pdata = (tree **) data;
+  *walk_subtrees = 0;
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_FOR:
+      if (OMP_FOR_INIT (*tp) != NULL_TREE)
+	{
+	  pdata[3] = tp;
+	  return *tp;
+	}
+      pdata[2] = tp;
+      *walk_subtrees = 1;
+      break;
+    case OMP_SIMD:
+      if (OMP_FOR_INIT (*tp) != NULL_TREE)
+	{
+	  pdata[3] = tp;
+	  return *tp;
+	}
+      break;
+    case BIND_EXPR:
+      if (BIND_EXPR_VARS (*tp)
+	  || (BIND_EXPR_BLOCK (*tp)
+	      && BLOCK_VARS (BIND_EXPR_BLOCK (*tp))))
+	pdata[0] = tp;
+      *walk_subtrees = 1;
+      break;
+    case STATEMENT_LIST:
+      if (!tsi_one_before_end_p (tsi_start (*tp)))
+	pdata[0] = tp;
+      *walk_subtrees = 1;
+      break;
+    case TRY_FINALLY_EXPR:
+      pdata[0] = tp;
+      *walk_subtrees = 1;
+      break;
+    case OMP_PARALLEL:
+      pdata[1] = tp;
+      *walk_subtrees = 1;
+      break;
+    default:
+      break;
+    }
+  return NULL_TREE;
 }
 
 /* Return maximum possible vectorization factor for the target.  */
@@ -642,6 +954,8 @@ omp_maybe_offloaded (void)
   if (symtab->state == PARSING)
     /* Maybe.  */
     return true;
+  if (cfun && cfun->after_inlining)
+    return false;
   if (current_function_decl
       && lookup_attribute ("omp declare target",
 			   DECL_ATTRIBUTES (current_function_decl)))
@@ -694,8 +1008,7 @@ omp_context_selector_matches (tree ctx)
 	     (so in most of the cases), and we'd need to maintain set of
 	     surrounding OpenMP constructs, which is better handled during
 	     gimplification.  */
-	  if (symtab->state == PARSING
-	      || (cfun->curr_properties & PROP_gimple_any) != 0)
+	  if (symtab->state == PARSING)
 	    {
 	      ret = -1;
 	      continue;
@@ -704,6 +1017,28 @@ omp_context_selector_matches (tree ctx)
 	  enum tree_code constructs[5];
 	  int nconstructs
 	    = omp_constructor_traits_to_codes (TREE_VALUE (t1), constructs);
+
+	  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+	    {
+	      if (!cfun->after_inlining)
+		{
+		  ret = -1;
+		  continue;
+		}
+	      int i;
+	      for (i = 0; i < nconstructs; ++i)
+		if (constructs[i] == OMP_SIMD)
+		  break;
+	      if (i < nconstructs)
+		{
+		  ret = -1;
+		  continue;
+		}
+	      /* If there is no simd, assume it is ok after IPA,
+		 constructs should have been checked before.  */
+	      continue;
+	    }
+
 	  int r = omp_construct_selector_matches (constructs, nconstructs,
 						  NULL);
 	  if (r == 0)
@@ -738,6 +1073,9 @@ omp_context_selector_matches (tree ctx)
 	    case 'a':
 	      if (set == 'i' && !strcmp (sel, "atomic_default_mem_order"))
 		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
 		  enum omp_memory_order omo
 		    = ((enum omp_memory_order)
 		       (omp_requires_mask
@@ -816,6 +1154,9 @@ omp_context_selector_matches (tree ctx)
 	    case 'u':
 	      if (set == 'i' && !strcmp (sel, "unified_address"))
 		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
 		  if ((omp_requires_mask & OMP_REQUIRES_UNIFIED_ADDRESS) == 0)
 		    {
 		      if (symtab->state == PARSING)
@@ -827,6 +1168,9 @@ omp_context_selector_matches (tree ctx)
 		}
 	      if (set == 'i' && !strcmp (sel, "unified_shared_memory"))
 		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
 		  if ((omp_requires_mask
 		       & OMP_REQUIRES_UNIFIED_SHARED_MEMORY) == 0)
 		    {
@@ -841,6 +1185,9 @@ omp_context_selector_matches (tree ctx)
 	    case 'd':
 	      if (set == 'i' && !strcmp (sel, "dynamic_allocators"))
 		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
 		  if ((omp_requires_mask
 		       & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
 		    {
@@ -855,6 +1202,9 @@ omp_context_selector_matches (tree ctx)
 	    case 'r':
 	      if (set == 'i' && !strcmp (sel, "reverse_offload"))
 		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
 		  if ((omp_requires_mask & OMP_REQUIRES_REVERSE_OFFLOAD) == 0)
 		    {
 		      if (symtab->state == PARSING)
@@ -944,7 +1294,8 @@ omp_context_selector_matches (tree ctx)
 			   #pragma omp declare simd on it, some simd clones
 			   might have the isa added later on.  */
 			if (r == -1
-			    && targetm.simd_clone.compute_vecsize_and_simdlen)
+			    && targetm.simd_clone.compute_vecsize_and_simdlen
+			    && (cfun == NULL || !cfun->after_inlining))
 			  {
 			    tree attrs
 			      = DECL_ATTRIBUTES (current_function_decl);
@@ -1415,6 +1766,213 @@ omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
   return ret;
 }
 
+/* Class describing a single variant.  */
+struct GTY(()) omp_declare_variant_entry {
+  /* NODE of the variant.  */
+  cgraph_node *variant;
+  /* Score if not in declare simd clone.  */
+  widest_int score;
+  /* Score if in declare simd clone.  */
+  widest_int score_in_declare_simd_clone;
+  /* Context selector for the variant.  */
+  tree ctx;
+  /* True if the context selector is known to match already.  */
+  bool matches;
+};
+
+/* Class describing a function with variants.  */
+struct GTY((for_user)) omp_declare_variant_base_entry {
+  /* NODE of the base function.  */
+  cgraph_node *base;
+  /* NODE of the artificial function created for the deferred variant
+     resolution.  */
+  cgraph_node *node;
+  /* Vector of the variants.  */
+  vec<omp_declare_variant_entry, va_gc> *variants;
+};
+
+struct omp_declare_variant_hasher
+  : ggc_ptr_hash<omp_declare_variant_base_entry> {
+  static hashval_t hash (omp_declare_variant_base_entry *);
+  static bool equal (omp_declare_variant_base_entry *,
+		     omp_declare_variant_base_entry *);
+};
+
+hashval_t
+omp_declare_variant_hasher::hash (omp_declare_variant_base_entry *x)
+{
+  inchash::hash hstate;
+  hstate.add_int (DECL_UID (x->base->decl));
+  hstate.add_int (x->variants->length ());
+  omp_declare_variant_entry *variant;
+  unsigned int i;
+  FOR_EACH_VEC_SAFE_ELT (x->variants, i, variant)
+    {
+      hstate.add_int (DECL_UID (variant->variant->decl));
+      hstate.add_wide_int (variant->score);
+      hstate.add_wide_int (variant->score_in_declare_simd_clone);
+      hstate.add_ptr (variant->ctx);
+      hstate.add_int (variant->matches);
+    }
+  return hstate.end ();
+}
+
+bool
+omp_declare_variant_hasher::equal (omp_declare_variant_base_entry *x,
+				   omp_declare_variant_base_entry *y)
+{
+  if (x->base != y->base
+      || x->variants->length () != y->variants->length ())
+    return false;
+  omp_declare_variant_entry *variant;
+  unsigned int i;
+  FOR_EACH_VEC_SAFE_ELT (x->variants, i, variant)
+    if (variant->variant != (*y->variants)[i].variant
+	|| variant->score != (*y->variants)[i].score
+	|| (variant->score_in_declare_simd_clone
+	    != (*y->variants)[i].score_in_declare_simd_clone)
+	|| variant->ctx != (*y->variants)[i].ctx
+	|| variant->matches != (*y->variants)[i].matches)
+      return false;
+  return true;
+}
+
+static GTY(()) hash_table<omp_declare_variant_hasher> *omp_declare_variants;
+
+struct omp_declare_variant_alt_hasher
+  : ggc_ptr_hash<omp_declare_variant_base_entry> {
+  static hashval_t hash (omp_declare_variant_base_entry *);
+  static bool equal (omp_declare_variant_base_entry *,
+		     omp_declare_variant_base_entry *);
+};
+
+hashval_t
+omp_declare_variant_alt_hasher::hash (omp_declare_variant_base_entry *x)
+{
+  return DECL_UID (x->node->decl);
+}
+
+bool
+omp_declare_variant_alt_hasher::equal (omp_declare_variant_base_entry *x,
+				       omp_declare_variant_base_entry *y)
+{
+  return x->node == y->node;
+}
+
+static GTY(()) hash_table<omp_declare_variant_alt_hasher>
+  *omp_declare_variant_alt;
+
+/* Try to resolve declare variant after gimplification.  */
+
+static tree
+omp_resolve_late_declare_variant (tree alt)
+{
+  cgraph_node *node = cgraph_node::get (alt);
+  cgraph_node *cur_node = cgraph_node::get (cfun->decl);
+  if (node == NULL
+      || !node->declare_variant_alt
+      || !cfun->after_inlining)
+    return alt;
+
+  omp_declare_variant_base_entry entry;
+  entry.base = NULL;
+  entry.node = node;
+  entry.variants = NULL;
+  omp_declare_variant_base_entry *entryp
+    = omp_declare_variant_alt->find_with_hash (&entry, DECL_UID (alt));
+
+  unsigned int i, j;
+  omp_declare_variant_entry *varentry1, *varentry2;
+  auto_vec <bool, 16> matches;
+  unsigned int nmatches = 0;
+  FOR_EACH_VEC_SAFE_ELT (entryp->variants, i, varentry1)
+    {
+      if (varentry1->matches)
+	{
+	  /* This has been checked to be ok already.  */
+	  matches.safe_push (true);
+	  nmatches++;
+	  continue;
+	}
+      switch (omp_context_selector_matches (varentry1->ctx))
+	{
+	case 0:
+          matches.safe_push (false);
+	  break;
+	case -1:
+	  return alt;
+	default:
+	  matches.safe_push (true);
+	  nmatches++;
+	  break;
+	}
+    }
+
+  if (nmatches == 0)
+    return entryp->base->decl;
+
+  /* A context selector that is a strict subset of another context selector
+     has a score of zero.  */
+  FOR_EACH_VEC_SAFE_ELT (entryp->variants, i, varentry1)
+    if (matches[i])
+      {
+        for (j = i + 1;
+	     vec_safe_iterate (entryp->variants, j, &varentry2); ++j)
+	  if (matches[j])
+	    {
+	      int r = omp_context_selector_compare (varentry1->ctx,
+						    varentry2->ctx);
+	      if (r == -1)
+		{
+		  /* ctx1 is a strict subset of ctx2, ignore ctx1.  */
+		  matches[i] = false;
+		  break;
+		}
+	      else if (r == 1)
+		/* ctx2 is a strict subset of ctx1, remove ctx2.  */
+		matches[j] = false;
+	    }
+      }
+
+  widest_int max_score = -1;
+  varentry2 = NULL;
+  FOR_EACH_VEC_SAFE_ELT (entryp->variants, i, varentry1)
+    if (matches[i])
+      {
+	widest_int score
+	  = (cur_node->simdclone ? varentry1->score_in_declare_simd_clone
+	     : varentry1->score);
+	if (score > max_score)
+	  {
+	    max_score = score;
+	    varentry2 = varentry1;
+	  }
+      }
+  return varentry2->variant->decl;
+}
+
+/* Hook to adjust hash tables on cgraph_node removal.  */
+
+static void
+omp_declare_variant_remove_hook (struct cgraph_node *node, void *)
+{
+  if (!node->declare_variant_alt)
+    return;
+
+  /* Drop this hash table completely.  */
+  omp_declare_variants = NULL;
+  /* And remove node from the other hash table.  */
+  if (omp_declare_variant_alt)
+    {
+      omp_declare_variant_base_entry entry;
+      entry.base = NULL;
+      entry.node = node;
+      entry.variants = NULL;
+      omp_declare_variant_alt->remove_elt_with_hash (&entry,
+						     DECL_UID (node->decl));
+    }
+}
+
 /* Try to resolve declare variant, return the variant decl if it should
    be used instead of base, or base otherwise.  */
 
@@ -1422,6 +1980,9 @@ tree
 omp_resolve_declare_variant (tree base)
 {
   tree variant1 = NULL_TREE, variant2 = NULL_TREE;
+  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+    return omp_resolve_late_declare_variant (base);
+
   auto_vec <tree, 16> variants;
   auto_vec <bool, 16> defer;
   bool any_deferred = false;
@@ -1432,6 +1993,11 @@ omp_resolve_declare_variant (tree base)
 	break;
       if (TREE_CODE (TREE_PURPOSE (TREE_VALUE (attr))) != FUNCTION_DECL)
 	continue;
+      cgraph_node *node = cgraph_node::get (base);
+      /* If this is already a magic decl created by this function,
+	 don't process it again.  */
+      if (node && node->declare_variant_alt)
+	return base;
       switch (omp_context_selector_matches (TREE_VALUE (TREE_VALUE (attr))))
 	{
 	case 0:
@@ -1459,6 +2025,10 @@ omp_resolve_declare_variant (tree base)
       bool first = true;
       unsigned int i;
       tree attr1, attr2;
+      omp_declare_variant_base_entry entry;
+      entry.base = cgraph_node::get_create (base);
+      entry.node = NULL;
+      vec_alloc (entry.variants, variants.length ());
       FOR_EACH_VEC_ELT (variants, i, attr1)
 	{
 	  widest_int score1;
@@ -1498,6 +2068,14 @@ omp_resolve_declare_variant (tree base)
 		  variant2 = defer[i] ? NULL_TREE : attr1;
 		}
 	    }
+	  omp_declare_variant_entry varentry;
+	  varentry.variant
+	    = cgraph_node::get_create (TREE_PURPOSE (TREE_VALUE (attr1)));
+	  varentry.score = score1;
+	  varentry.score_in_declare_simd_clone = score2;
+	  varentry.ctx = ctx;
+	  varentry.matches = !defer[i];
+	  entry.variants->quick_push (varentry);
 	}
 
       /* If there is a clear winner variant with the score which is not
@@ -1522,17 +2100,73 @@ omp_resolve_declare_variant (tree base)
 		}
 	    }
 	  if (variant1)
-	    return TREE_PURPOSE (TREE_VALUE (variant1));
+	    {
+	      vec_free (entry.variants);
+	      return TREE_PURPOSE (TREE_VALUE (variant1));
+	    }
 	}
 
-      return base;
+      static struct cgraph_node_hook_list *node_removal_hook_holder;
+      if (!node_removal_hook_holder)
+	node_removal_hook_holder
+	  = symtab->add_cgraph_removal_hook (omp_declare_variant_remove_hook,
+					     NULL);
+
+      if (omp_declare_variants == NULL)
+	omp_declare_variants
+	  = hash_table<omp_declare_variant_hasher>::create_ggc (64);
+      omp_declare_variant_base_entry **slot
+	= omp_declare_variants->find_slot (&entry, INSERT);
+      if (*slot != NULL)
+	{
+	  vec_free (entry.variants);
+	  return (*slot)->node->decl;
+	}
+
+      *slot = ggc_cleared_alloc<omp_declare_variant_base_entry> ();
+      (*slot)->base = entry.base;
+      (*slot)->node = entry.base;
+      (*slot)->variants = entry.variants;
+      tree alt = build_decl (DECL_SOURCE_LOCATION (base), FUNCTION_DECL,
+			     DECL_NAME (base), TREE_TYPE (base));
+      DECL_ARTIFICIAL (alt) = 1;
+      DECL_IGNORED_P (alt) = 1;
+      TREE_STATIC (alt) = 1;
+      tree attributes = DECL_ATTRIBUTES (base);
+      if (lookup_attribute ("noipa", attributes) == NULL)
+	{
+	  attributes = tree_cons (get_identifier ("noipa"), NULL, attributes);
+	  if (lookup_attribute ("noinline", attributes) == NULL)
+	    attributes = tree_cons (get_identifier ("noinline"), NULL,
+				    attributes);
+	  if (lookup_attribute ("noclone", attributes) == NULL)
+	    attributes = tree_cons (get_identifier ("noclone"), NULL,
+				    attributes);
+	  if (lookup_attribute ("no_icf", attributes) == NULL)
+	    attributes = tree_cons (get_identifier ("no_icf"), NULL,
+				    attributes);
+	}
+      DECL_ATTRIBUTES (alt) = attributes;
+      DECL_INITIAL (alt) = error_mark_node;
+      (*slot)->node = cgraph_node::create (alt);
+      (*slot)->node->declare_variant_alt = 1;
+      (*slot)->node->create_reference (entry.base, IPA_REF_ADDR);
+      omp_declare_variant_entry *varentry;
+      FOR_EACH_VEC_SAFE_ELT (entry.variants, i, varentry)
+	(*slot)->node->create_reference (varentry->variant, IPA_REF_ADDR);
+      if (omp_declare_variant_alt == NULL)
+	omp_declare_variant_alt
+	  = hash_table<omp_declare_variant_alt_hasher>::create_ggc (64);
+      *omp_declare_variant_alt->find_slot_with_hash (*slot, DECL_UID (alt),
+						     INSERT) = *slot;
+      return alt;
     }
 
   if (variants.length () == 1)
     return TREE_PURPOSE (TREE_VALUE (variants[0]));
 
-  /* A context selector that is a strict subset of another context selector has a score
-     of zero.  */
+  /* A context selector that is a strict subset of another context selector
+     has a score of zero.  */
   tree attr1, attr2;
   unsigned int i, j;
   FOR_EACH_VEC_ELT (variants, i, attr1)
@@ -1948,3 +2582,5 @@ oacc_get_ifn_dim_arg (const gimple *stmt)
   gcc_checking_assert (axis >= 0 && axis < GOMP_DIM_MAX);
   return (int) axis;
 }
+
+#include "gt-omp-general.h"

@@ -373,6 +373,22 @@
   ""
   "%.\\tadd%t0\\t%0, %1, %2;")
 
+(define_insn "*vadd_addsi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (plus:SI (plus:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+			  (match_operand:SI 2 "nvptx_register_operand" "R"))
+		 (match_operand:SI 3 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tvadd%t0%t1%t2.add\\t%0, %1, %2, %3;")
+
+(define_insn "*vsub_addsi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (plus:SI (minus:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+			   (match_operand:SI 2 "nvptx_register_operand" "R"))
+		 (match_operand:SI 3 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tvsub%t0%t1%t2.add\\t%0, %1, %2, %3;")
+
 (define_insn "sub<mode>3"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
 	(minus:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
@@ -492,6 +508,50 @@
   emit_insn (gen_clz<mode>2 (operands[0], tmpreg));
   DONE;
 })
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(popcount:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tpopc.b%T1\\t%0, %1;")
+
+;; Multiplication variants
+
+(define_insn "mulhisi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "nvptx_register_operand" "R"))
+		 (sign_extend:SI
+		  (match_operand:HI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.s16\\t%0, %1, %2;")
+
+(define_insn "mulsidi3"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(mult:DI (sign_extend:DI
+		  (match_operand:SI 1 "nvptx_register_operand" "R"))
+		 (sign_extend:DI
+		  (match_operand:SI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.s32\\t%0, %1, %2;")
+
+(define_insn "umulhisi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "nvptx_register_operand" "R"))
+		 (zero_extend:SI
+		  (match_operand:HI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.u16\\t%0, %1, %2;")
+
+(define_insn "umulsidi3"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(mult:DI (zero_extend:DI
+		  (match_operand:SI 1 "nvptx_register_operand" "R"))
+		 (zero_extend:DI
+		  (match_operand:SI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.u32\\t%0, %1, %2;")
 
 ;; Shifts
 

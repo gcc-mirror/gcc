@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -320,6 +320,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position  : in out Cursor)
    is
    begin
+      TC_Check (Container.HT.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
@@ -332,8 +334,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       then
          raise Program_Error with "Position cursor designates wrong set";
       end if;
-
-      TC_Check (Container.HT.TC);
 
       pragma Assert (Vet (Position), "Position cursor is bad");
 
@@ -1321,12 +1321,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       pragma Warnings (Off, X);
 
    begin
+      TE_Check (Container.HT.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.HT.TC);
 
       X := Node.Element;
 
@@ -2227,7 +2227,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                           Control =>
                             (Controlled with
                               HT.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                               Index     => HT_Ops.Index (HT, Position.Node),
                               Old_Pos   => Position,
                               Old_Hash  => Hash (Key (Position))))
@@ -2261,7 +2261,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                           Control =>
                             (Controlled with
                               HT.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                               Index     => HT_Ops.Index (HT, P.Node),
                               Old_Pos   => P,
                               Old_Hash  => Hash (Key)))

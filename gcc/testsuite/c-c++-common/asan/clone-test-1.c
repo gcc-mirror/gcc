@@ -1,7 +1,7 @@
 /* Regression test for:
    http://code.google.com/p/address-sanitizer/issues/detail?id=37 */
 
-/* { dg-do run { target { *-*-linux* } } } */
+/* { dg-do run { target { *-*-linux* x86_64-*-freebsd* } } } */
 /* { dg-require-effective-target clone } */
 /* { dg-require-effective-target hw } */
 /* { dg-options "-D_GNU_SOURCE" } */

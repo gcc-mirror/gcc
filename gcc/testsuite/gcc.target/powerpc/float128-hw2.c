@@ -1,5 +1,6 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target float128 } */
 /* { dg-options "-mpower9-vector -O2 -ffast-math -std=gnu11" } */
 
 /* Test to make sure the compiler handles the standard _Float128 functions that

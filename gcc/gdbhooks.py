@@ -154,6 +154,7 @@ tree_code_dict = gdb.types.make_enum_dict(gdb.lookup_type('enum tree_code'))
 # ...and look up specific values for use later:
 IDENTIFIER_NODE = tree_code_dict['IDENTIFIER_NODE']
 TYPE_DECL = tree_code_dict['TYPE_DECL']
+SSA_NAME = tree_code_dict['SSA_NAME']
 
 # Similarly for "enum tree_code_class" (tree.h):
 tree_code_class_dict = gdb.types.make_enum_dict(gdb.lookup_type('enum tree_code_class'))
@@ -252,6 +253,8 @@ class TreePrinter:
                         result += ' %s' % tree_TYPE_NAME.DECL_NAME().IDENTIFIER_POINTER()
         if self.node.TREE_CODE() == IDENTIFIER_NODE:
             result += ' %s' % self.node.IDENTIFIER_POINTER()
+        elif self.node.TREE_CODE() == SSA_NAME:
+            result += ' %u' % self.gdbval['base']['u']['version']
         # etc
         result += '>'
         return result

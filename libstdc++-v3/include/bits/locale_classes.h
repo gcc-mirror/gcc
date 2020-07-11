@@ -254,6 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     operator==(const locale& __other) const throw();
 
+#if __cpp_impl_three_way_comparison < 201907L
     /**
      *  @brief  Locale inequality.
      *
@@ -263,6 +264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     operator!=(const locale& __other) const throw()
     { return !(this->operator==(__other)); }
+#endif
 
     /**
      *  @brief  Compare two strings according to collate.

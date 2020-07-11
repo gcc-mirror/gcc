@@ -1,5 +1,5 @@
 // PR c++/91364 - Implement P0388R4: Permit conversions to arrays of unknown bound.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-options "-Wpedantic" }
 
 int arr[1] = { 42 };

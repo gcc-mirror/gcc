@@ -300,7 +300,6 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_address = std::__addressof(__it);
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(_Iterator);
 	  _M_variant._M_iterator._M_constness =
-	  _M_variant._M_iterator._M_constness =
 	    __it._S_constant() ? __const_iterator : __mutable_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
 	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_Sequence);

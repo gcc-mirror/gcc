@@ -963,6 +963,7 @@ do {									\
 do {									\
   if ((PART) == 0)							\
     {									\
+      assemble_external (DECL);						\
       if (TARGET_ILP32)							\
         fputs ("\tdata8.ua @iplt(", FILE);				\
       else								\

@@ -110,7 +110,7 @@ static void decode_addr_const (tree, class addr_const *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
 static void output_constant_def_contents (rtx);
-static void output_addressed_constants (tree);
+static void output_addressed_constants (tree, int);
 static unsigned HOST_WIDE_INT output_constant (tree, unsigned HOST_WIDE_INT,
 					       unsigned int, bool, bool);
 static void globalize_decl (tree);
@@ -1857,34 +1857,8 @@ assemble_start_function (tree decl, const char *fnname)
   if (DECL_PRESERVE_P (decl))
     targetm.asm_out.mark_decl_preserved (fnname);
 
-  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
-  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
-
-  tree patchable_function_entry_attr
-    = lookup_attribute ("patchable_function_entry", DECL_ATTRIBUTES (decl));
-  if (patchable_function_entry_attr)
-    {
-      tree pp_val = TREE_VALUE (patchable_function_entry_attr);
-      tree patchable_function_entry_value1 = TREE_VALUE (pp_val);
-
-      patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
-      patch_area_entry = 0;
-      if (TREE_CHAIN (pp_val) != NULL_TREE)
-	{
-	  tree patchable_function_entry_value2
-	    = TREE_VALUE (TREE_CHAIN (pp_val));
-	  patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
-	}
-    }
-
-  if (patch_area_entry > patch_area_size)
-    {
-      if (patch_area_size > 0)
-	warning (OPT_Wattributes,
-		 "patchable function entry %wu exceeds size %wu",
-		 patch_area_entry, patch_area_size);
-      patch_area_entry = 0;
-    }
+  unsigned short patch_area_size = crtl->patch_area_size;
+  unsigned short patch_area_entry = crtl->patch_area_entry;
 
   /* Emit the patching area before the entry label, if any.  */
   if (patch_area_entry > 0)
@@ -2298,7 +2272,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   /* Output any data that we will need to use the address of.  */
   if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
-    output_addressed_constants (DECL_INITIAL (decl));
+    output_addressed_constants (DECL_INITIAL (decl), 0);
 
   /* dbxout.c needs to know this.  */
   if (sect && (sect->common.flags & SECTION_CODE) != 0)
@@ -3425,7 +3399,6 @@ build_constant_desc (tree exp)
   TREE_CONSTANT_POOL_ADDRESS_P (symbol) = 1;
 
   rtl = gen_const_mem (TYPE_MODE (TREE_TYPE (exp)), symbol);
-  set_mem_attributes (rtl, exp, 1);
   set_mem_alias_set (rtl, 0);
 
   /* Putting EXP into the literal pool might have imposed a different
@@ -3453,11 +3426,11 @@ build_constant_desc (tree exp)
    already have labels.  */
 
 static constant_descriptor_tree *
-add_constant_to_table (tree exp)
+add_constant_to_table (tree exp, int defer)
 {
   /* The hash table methods may call output_constant_def for addressed
      constants, so handle them first.  */
-  output_addressed_constants (exp);
+  output_addressed_constants (exp, defer);
 
   /* Sanity check to catch recursive insertion.  */
   static bool inserting;
@@ -3501,7 +3474,7 @@ add_constant_to_table (tree exp)
 rtx
 output_constant_def (tree exp, int defer)
 {
-  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp, defer);
   maybe_output_constant_def_contents (desc, defer);
   return desc->rtl;
 }
@@ -3571,7 +3544,7 @@ output_constant_def_contents (rtx symbol)
 
   /* Make sure any other constants whose addresses appear in EXP
      are assigned label numbers.  */
-  output_addressed_constants (exp);
+  output_addressed_constants (exp, 0);
 
   /* We are no longer deferring this constant.  */
   TREE_ASM_WRITTEN (decl) = TREE_ASM_WRITTEN (exp) = 1;
@@ -3635,7 +3608,7 @@ lookup_constant_def (tree exp)
 tree
 tree_output_constant_def (tree exp)
 {
-  struct constant_descriptor_tree *desc = add_constant_to_table (exp);
+  struct constant_descriptor_tree *desc = add_constant_to_table (exp, 1);
   tree decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
   varpool_node::finalize_decl (decl);
   return decl;
@@ -4354,7 +4327,7 @@ compute_reloc_for_constant (tree exp)
    Indicate whether an ADDR_EXPR has been encountered.  */
 
 static void
-output_addressed_constants (tree exp)
+output_addressed_constants (tree exp, int defer)
 {
   tree tem;
 
@@ -4374,21 +4347,21 @@ output_addressed_constants (tree exp)
 	tem = DECL_INITIAL (tem);
 
       if (CONSTANT_CLASS_P (tem) || TREE_CODE (tem) == CONSTRUCTOR)
-	output_constant_def (tem, 0);
+	output_constant_def (tem, defer);
 
       if (TREE_CODE (tem) == MEM_REF)
-	output_addressed_constants (TREE_OPERAND (tem, 0));
+	output_addressed_constants (TREE_OPERAND (tem, 0), defer);
       break;
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
-      output_addressed_constants (TREE_OPERAND (exp, 1));
+      output_addressed_constants (TREE_OPERAND (exp, 1), defer);
       gcc_fallthrough ();
 
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
-      output_addressed_constants (TREE_OPERAND (exp, 0));
+      output_addressed_constants (TREE_OPERAND (exp, 0), defer);
       break;
 
     case CONSTRUCTOR:
@@ -4396,7 +4369,7 @@ output_addressed_constants (tree exp)
 	unsigned HOST_WIDE_INT idx;
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, tem)
 	  if (tem != 0)
-	    output_addressed_constants (tem);
+	    output_addressed_constants (tem, defer);
       }
       break;
 

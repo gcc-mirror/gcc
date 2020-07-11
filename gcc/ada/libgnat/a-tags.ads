@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -501,6 +501,10 @@ private
    --  dispatch table, return the tagged kind of a type in the context of
    --  concurrency and limitedness.
 
+   function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean;
+   --  Given the tag of an object and the tag associated to a type, return
+   --  true if Obj is in Typ'Class.
+
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
    --  Ada 2005 (AI-251): General routine that checks if a given object
    --  implements a tagged type. Its common usage is to check if Obj is in
@@ -588,7 +592,7 @@ private
    procedure Unregister_Tag (T : Tag);
    --  Remove a particular tag from the external tag hash table
 
-   Max_Predef_Prims : constant Positive := 15;
+   Max_Predef_Prims : constant Positive := 16;
    --  Number of reserved slots for the following predefined ada primitives:
    --
    --    1. Size
@@ -600,12 +604,13 @@ private
    --    7. assignment
    --    8. deep adjust
    --    9. deep finalize
-   --   10. async select
-   --   11. conditional select
-   --   12. prim_op kind
-   --   13. task_id
-   --   14. dispatching requeue
-   --   15. timed select
+   --   10. Put_Image
+   --   11. async select
+   --   12. conditional select
+   --   13. prim_op kind
+   --   14. task_id
+   --   15. dispatching requeue
+   --   16. timed select
    --
    --  The compiler checks that the value here is correct
 

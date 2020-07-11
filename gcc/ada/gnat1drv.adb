@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,6 @@ with Stringt;
 with Stylesw;   use Stylesw;
 with Targparm;  use Targparm;
 with Tbuild;
-with Tree_Gen;
 with Treepr;    use Treepr;
 with Ttypes;
 with Types;     use Types;
@@ -214,32 +213,6 @@ procedure Gnat1drv is
       --  expansion.
 
       if Operating_Mode = Check_Syntax then
-         CodePeer_Mode := False;
-      end if;
-
-      --  Set ASIS mode if -gnatt and -gnatc are set
-
-      if Operating_Mode = Check_Semantics and then Tree_Output then
-         ASIS_Mode := True;
-
-         --  Set ASIS GNSA mode if -gnatd.H is set
-
-         if Debug_Flag_Dot_HH then
-            ASIS_GNSA_Mode := True;
-         end if;
-
-         --  Turn off inlining in ASIS mode, since ASIS cannot handle the extra
-         --  information in the trees caused by inlining being active.
-
-         --  More specifically, the tree seems to be malformed from the ASIS
-         --  point of view if -gnatc and -gnatn appear together???
-
-         Inline_Active := False;
-
-         --  Turn off SCIL generation and CodePeer mode in semantics mode,
-         --  since SCIL requires front-end expansion.
-
-         Generate_SCIL := False;
          CodePeer_Mode := False;
       end if;
 
@@ -406,7 +379,7 @@ procedure Gnat1drv is
          --  Always perform semantics and generate ali files in CodePeer mode,
          --  so that a gnatmake -c -k will proceed further when possible.
 
-         Force_ALI_Tree_File := True;
+         Force_ALI_File := True;
          Try_Semantics := True;
 
          --  Make the Ada front end more liberal so that the compiler will
@@ -655,11 +628,11 @@ procedure Gnat1drv is
 
       --  Set and check exception mechanism. This is only meaningful when
       --  compiling, and in particular not meaningful for special modes used
-      --  for program analysis rather than compilation: ASIS mode, CodePeer
-      --  mode and GNATprove mode.
+      --  for program analysis rather than compilation: CodePeer mode and
+      --  GNATprove mode.
 
       if Operating_Mode = Generate_Code
-        and then not (ASIS_Mode or CodePeer_Mode or GNATprove_Mode)
+        and then not (CodePeer_Mode or GNATprove_Mode)
       then
          case Targparm.Frontend_Exceptions_On_Target is
             when True =>
@@ -802,10 +775,6 @@ procedure Gnat1drv is
         --  No back-end inlining available on C generation
 
         not Generate_C_Code
-
-        --  No back-end inlining available in ASIS mode
-
-        and then not ASIS_Mode
 
         --  No back-end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
@@ -1301,9 +1270,8 @@ begin
 
          --  Generate ALI file if specially requested
 
-         if Opt.Force_ALI_Tree_File then
+         if Opt.Force_ALI_File then
             Write_ALI (Object => False);
-            Tree_Gen;
          end if;
 
          Exit_Program (E_Errors);
@@ -1338,7 +1306,6 @@ begin
          Treepr.Tree_Dump;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
-         Tree_Gen;
          Namet.Finalize;
          Check_Rep_Info;
 
@@ -1491,7 +1458,7 @@ begin
 
                --  Force generation of ALI file, for backward compatibility
 
-               Opt.Force_ALI_Tree_File := True;
+               Opt.Force_ALI_File := True;
 
             elsif Main_Unit_Kind = N_Subunit then
                Write_Str (" (subunit)");
@@ -1513,7 +1480,7 @@ begin
 
                --  Force generation of ALI file, for backward compatibility
 
-               Opt.Force_ALI_Tree_File := True;
+               Opt.Force_ALI_File := True;
 
             --  Only other case is a package spec
 
@@ -1529,7 +1496,6 @@ begin
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Treepr.Tree_Dump;
-         Tree_Gen;
 
          --  Generate ALI file if specially requested, or for missing subunits,
          --  subunits or predefined generic. For ignored ghost code, the object
@@ -1538,7 +1504,7 @@ begin
          --  an object file without an ALI file.
 
          if Is_Ignored_Ghost_Unit (Main_Unit_Node)
-           or else Opt.Force_ALI_Tree_File
+           or else Opt.Force_ALI_File
          then
             Write_ALI (Object => Is_Ignored_Ghost_Unit (Main_Unit_Node));
          end if;
@@ -1553,8 +1519,8 @@ begin
          Exit_Program (Ecode);
       end if;
 
-      --  In -gnatc mode we only do annotation if -gnatt or -gnatR is also set,
-      --  or if -gnatwz is enabled (default setting) and there is an unchecked
+      --  In -gnatc mode we only do annotation if -gnatR is also set, or if
+      --  -gnatwz is enabled (default setting) and there is an unchecked
       --  conversion that involves a type whose size is not statically known,
       --  as indicated by Back_Annotate_Rep_Info being set to True.
 
@@ -1564,25 +1530,19 @@ begin
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
-      --  The back end is not invoked in ASIS mode with GNSA because all type
-      --  representation information will be provided by the GNSA back end, not
-      --  gigi.
-
       --  A special back end is always called in CodePeer and GNATprove modes,
       --  unless this is a subunit.
 
       if Back_End_Mode = Declarations_Only
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
-            or else Main_Unit_Kind = N_Subunit
-            or else ASIS_GNSA_Mode)
+            or else Main_Unit_Kind = N_Subunit)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Write_ALI (Object => False);
          Tree_Dump;
-         Tree_Gen;
          Namet.Finalize;
 
          if not (Generate_SCIL or GNATprove_Mode) then
@@ -1701,13 +1661,12 @@ begin
          Back_End.Gen_Or_Update_Object_File;
       end if;
 
-      --  Generate ASIS tree after writing the ALI file, since in ASIS mode,
-      --  Write_ALI may in fact result in further tree decoration from the
-      --  original tree file. Note that we dump the tree just before generating
-      --  it, so that the dump will exactly reflect what is written out.
+      --  Generate tree after writing the ALI file, since Write_ALI may in
+      --  fact result in further tree decoration from the original tree file.
+      --  Note that we dump the tree just before generating it, so that the
+      --  dump will exactly reflect what is written out.
 
       Treepr.Tree_Dump;
-      Tree_Gen;
 
       --  Finalize name table and we are all done
 

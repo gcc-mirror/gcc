@@ -1,4 +1,4 @@
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 // { dg-additional-sources "lambda-uneval9.cc" }
 
 #include "lambda-uneval9.h"

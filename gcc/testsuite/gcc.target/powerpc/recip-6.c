@@ -1,6 +1,5 @@
 /* { dg-do run { target { powerpc*-*-linux* powerpc*-ibm-aix* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-skip-if "" { powerpc*-*-*spe* } } */
 /* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-mdejagnu-cpu=power7 -O3 -ftree-vectorize -ffast-math -mrecip=all -mrecip-precision" } */
 

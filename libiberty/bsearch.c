@@ -69,13 +69,13 @@ is respectively less than, matching, or greater than the array member.
  * look at item 3.
  */
 void *
-bsearch (register const void *key, const void *base0,
-         size_t nmemb, register size_t size,
-         register int (*compar)(const void *, const void *))
+bsearch (const void *key, const void *base0,
+         size_t nmemb, size_t size,
+         int (*compar)(const void *, const void *))
 {
-	register const char *base = (const char *) base0;
-	register int lim, cmp;
-	register const void *p;
+	const char *base = (const char *) base0;
+	int lim, cmp;
+	const void *p;
 
 	for (lim = nmemb; lim != 0; lim >>= 1) {
 		p = base + (lim >> 1) * size;

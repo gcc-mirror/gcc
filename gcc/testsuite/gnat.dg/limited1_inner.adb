@@ -1,7 +1,7 @@
 package body Limited1_Inner is
    overriding procedure Finalize (X : in out Limited_Type) is
    begin
-      if X.Self /= X'Unchecked_Access then
+      if X.Self /= X'Unrestricted_Access then
          raise Program_Error with "Copied!";
       end if;
    end;

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -mcmodel=large -fno-builtin" }  */
 /* { dg-skip-if "-mcmodel=large -fPIC not currently supported" { aarch64-*-* }  { "-fPIC" } { "" } } */
 

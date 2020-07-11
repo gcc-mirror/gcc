@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,23 +57,13 @@ package Elists is
 
    procedure Initialize;
    --  Initialize allocation of element list tables. Called at the start of
-   --  compiling each new main source file. Note that Initialize must not be
-   --  called if Tree_Read is used.
+   --  compiling each new main source file.
 
    procedure Lock;
    --  Lock tables used for element lists before calling backend
 
    procedure Unlock;
    --  Unlock list tables, in cases where the back end needs to modify them
-
-   procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines. Note that Initialize should not be called if
-   --  Tree_Read is used. Tree_Read includes all necessary initialization.
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
 
    function Last_Elist_Id return Elist_Id;
    --  Returns Id of last allocated element list header

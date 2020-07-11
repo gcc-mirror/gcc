@@ -1,4 +1,4 @@
-
+// RUNNABLE_PHOBOS_TEST
 import core.stdc.stdio;
 import std.stdio;
 

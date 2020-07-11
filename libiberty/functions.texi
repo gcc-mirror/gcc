@@ -84,6 +84,23 @@ is respectively less than, matching, or greater than the array member.
 
 @end deftypefn
 
+@c bsearch_r.c:33
+@deftypefn Supplemental void* bsearch_r (const void *@var{key}, @
+  const void *@var{base}, size_t @var{nmemb}, size_t @var{size}, @
+  int (*@var{compar})(const void *, const void *, void *), void *@var{arg})
+
+Performs a search over an array of @var{nmemb} elements pointed to by
+@var{base} for a member that matches the object pointed to by @var{key}.
+The size of each member is specified by @var{size}.  The array contents
+should be sorted in ascending order according to the @var{compar}
+comparison function.  This routine should take three arguments: the first
+two point to the @var{key} and to an array member, and the last is passed
+down unchanged from @code{bsearch_r}'s last argument.  It should return an
+integer less than, equal to, or greater than zero if the @var{key} object
+is respectively less than, matching, or greater than the array member.
+
+@end deftypefn
+
 @c argv.c:138
 @deftypefn Extension char** buildargv (char *@var{sp})
 
@@ -175,7 +192,7 @@ Concatenate zero or more of strings and return the result in freshly
 
 @end deftypefn
 
-@c argv.c:487
+@c argv.c:495
 @deftypefn Extension int countargv (char * const *@var{argv})
 
 Return the number of elements in @var{argv}.
@@ -240,7 +257,7 @@ symbolic name or message.
 
 @end deftypefn
 
-@c argv.c:344
+@c argv.c:352
 @deftypefn Extension void expandargv (int *@var{argcp}, char ***@var{argvp})
 
 The @var{argcp} and @code{argvp} arguments are pointers to the usual

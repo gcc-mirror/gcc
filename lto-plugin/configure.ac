@@ -27,6 +27,9 @@ if test "x$have_static_libgcc" = xyes; then
 fi
 AC_SUBST(ac_lto_plugin_ldflags)
 
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+AC_SUBST(CET_HOST_FLAGS)
+
 if test x"$host_subdir" = x.; then
    gcc_build_dir=../gcc
 else

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -37,7 +37,7 @@ EnumDeclaration::EnumDeclaration(Loc loc, Identifier *id, Type *memtype)
     defaultval = NULL;
     sinit = NULL;
     isdeprecated = false;
-    protection = Prot(PROTundefined);
+    protection = Prot(Prot::undefined);
     parent = NULL;
     added = false;
     inuse = 0;
@@ -74,7 +74,7 @@ void EnumDeclaration::addMember(Scope *sc, ScopeDsymbol *sds)
 
     if (members)
     {
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             EnumMember *em = (*members)[i]->isEnumMember();
             em->ed = this;
@@ -172,7 +172,7 @@ void EnumDeclaration::semantic(Scope *sc)
             errors = true;
             if (members)
             {
-                for (size_t i = 0; i < members->dim; i++)
+                for (size_t i = 0; i < members->length; i++)
                 {
                     Dsymbol *s = (*members)[i];
                     s->errors = true;               // poison all the members
@@ -188,7 +188,7 @@ void EnumDeclaration::semantic(Scope *sc)
     if (!members)               // enum ident : memtype;
         return;
 
-    if (members->dim == 0)
+    if (members->length == 0)
     {
         error("enum %s must have at least one member", toChars());
         errors = true;
@@ -210,7 +210,7 @@ void EnumDeclaration::semantic(Scope *sc)
 
     /* Each enum member gets the sce scope
      */
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         EnumMember *em = (*members)[i]->isEnumMember();
         if (em)
@@ -246,7 +246,7 @@ void EnumDeclaration::semantic(Scope *sc)
             scopesym = this;
         }
 
-        for (size_t i = 0; i < members->dim; i++)
+        for (size_t i = 0; i < members->length; i++)
         {
             EnumMember *em = (*members)[i]->isEnumMember();
             if (em)
@@ -257,7 +257,7 @@ void EnumDeclaration::semantic(Scope *sc)
         }
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         EnumMember *em = (*members)[i]->isEnumMember();
         if (em)
@@ -314,7 +314,7 @@ Expression *EnumDeclaration::getMaxMinValue(Loc loc, Identifier *id)
         goto Lerrors;
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         EnumMember *em = (*members)[i]->isEnumMember();
         if (!em)
@@ -402,7 +402,7 @@ Expression *EnumDeclaration::getDefaultValue(Loc loc)
         goto Lerrors;
     }
 
-    for (size_t i = 0; i < members->dim; i++)
+    for (size_t i = 0; i < members->length; i++)
     {
         EnumMember *em = (*members)[i]->isEnumMember();
         if (em)
@@ -550,7 +550,7 @@ void EnumMember::semantic(Scope *sc)
 
     semanticRun = PASSsemantic;
 
-    protection = ed->isAnonymous() ? ed->protection : Prot(PROTpublic);
+    protection = ed->isAnonymous() ? ed->protection : Prot(Prot::public_);
     linkage = LINKd;
     storage_class = STCmanifest;
     userAttribDecl = ed->isAnonymous() ? ed->userAttribDecl : NULL;
@@ -588,7 +588,7 @@ void EnumMember::semantic(Scope *sc)
                  * with the first member. If the following members were referenced
                  * during the first member semantic, their types should be unified.
                  */
-                for (size_t i = 0; i < ed->members->dim; i++)
+                for (size_t i = 0; i < ed->members->length; i++)
                 {
                     EnumMember *em = (*ed->members)[i]->isEnumMember();
                     if (!em || em == this || em->semanticRun < PASSsemanticdone || em->origType)
@@ -667,7 +667,7 @@ void EnumMember::semantic(Scope *sc)
          * and set this to be the previous value + 1
          */
         EnumMember *emprev = NULL;
-        for (size_t i = 0; i < ed->members->dim; i++)
+        for (size_t i = 0; i < ed->members->length; i++)
         {
             EnumMember *em = (*ed->members)[i]->isEnumMember();
             if (em)

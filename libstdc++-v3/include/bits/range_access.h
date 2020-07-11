@@ -35,7 +35,7 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <bits/iterator_concepts.h>
-#include <bits/int_limits.h>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -322,6 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
 
 #if __cplusplus > 201703L
+#define __cpp_lib_ssize 201902L
   template<typename _Container>
     constexpr auto
     ssize(const _Container& __cont)
@@ -726,12 +727,12 @@ namespace ranges
 	{
 	  using __iter_type = decltype(_Begin{}(std::forward<_Tp>(__e)));
 	  using __diff_type = iter_difference_t<__iter_type>;
-	  using std::__detail::__int_limits;
+	  using __gnu_cxx::__int_traits;
 	  auto __size = _Size{}(std::forward<_Tp>(__e));
 	  if constexpr (integral<__diff_type>)
 	    {
-	      if constexpr (__int_limits<__diff_type>::digits
-			    < __int_limits<ptrdiff_t>::digits)
+	      if constexpr (__int_traits<__diff_type>::__digits
+			    < __int_traits<ptrdiff_t>::__digits)
 		return static_cast<ptrdiff_t>(__size);
 	    }
 	  return static_cast<__diff_type>(__size);

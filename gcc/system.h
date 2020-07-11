@@ -736,6 +736,27 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 #endif
 
+#ifdef INCLUDE_ISL
+#ifdef HAVE_isl
+#include <isl/options.h>
+#include <isl/ctx.h>
+#include <isl/val.h>
+#include <isl/set.h>
+#include <isl/union_set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/aff.h>
+#include <isl/constraint.h>
+#include <isl/flow.h>
+#include <isl/ilp.h>
+#include <isl/schedule.h>
+#include <isl/ast_build.h>
+#include <isl/schedule_node.h>
+#include <isl/id.h>
+#include <isl/space.h>
+#endif
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *)
@@ -866,12 +887,10 @@ extern void fancy_abort (const char *, int, const char *)
    etc don't spuriously fail.  */
 #ifdef IN_GCC
 
-#ifndef USES_ISL
 #undef calloc
 #undef strdup
 #undef strndup
  #pragma GCC poison calloc strdup strndup
-#endif
 
 #if !defined(FLEX_SCANNER) && !defined(YYBISON)
 #undef malloc
@@ -1243,5 +1262,15 @@ void gcc_stablesort (void *, size_t, size_t,
 /* Format string particle for printing a SIZE_AMOUNT with N being the width
    of the number.  */
 #define PRsa(n) "%" #n PRIu64 "%c"
+
+/* System headers may define NULL to be an integer (e.g. 0L), which cannot be
+   used safely in certain contexts (e.g. as sentinels).  Redefine NULL to
+   nullptr in order to make it safer.  Note that this might confuse system
+   headers, however, by convention they must not be included after this point.
+*/
+#ifdef __cplusplus
+#undef NULL
+#define NULL nullptr
+#endif
 
 #endif /* ! GCC_SYSTEM_H */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -157,16 +157,20 @@ private
    -- Implementation of Time --
    ----------------------------
 
-   --  Time is represented as a signed 64 bit integer count of nanoseconds
-   --  since the start of Ada time (1901-01-01 00:00:00.0 UTC). Time values
-   --  produced by Time_Of are internally normalized to UTC regardless of their
-   --  local time zone. This representation ensures correct handling of leap
-   --  seconds as well as performing arithmetic. In Ada 95, Split and Time_Of
-   --  will treat a time value as being in the local time zone, in Ada 2005,
-   --  Split and Time_Of will treat a time value as being in the designated
-   --  time zone by the formal parameter or in UTC by default. The size of the
-   --  type is large enough to cover the Ada 2005 range of time (1901-01-01
-   --  00:00:00.0 UTC - 2399-12-31-23:59:59.999999999 UTC).
+   --  Time is represented as a signed 64 bit signed integer count of
+   --  nanoseconds since the "epoch" 2150-01-01 00:00:00 UTC. Thus a value of 0
+   --  represents the epoch.  As of this writing, the epoch is in the future,
+   --  so Time values returned by Clock will be negative.
+   --
+   --  Time values produced by Time_Of are internally normalized to UTC
+   --  regardless of their local time zone. This representation ensures correct
+   --  handling of leap seconds as well as performing arithmetic. In Ada 95,
+   --  Split and Time_Of will treat a time value as being in the local time
+   --  zone, in Ada 2005, Split and Time_Of will treat a time value as being in
+   --  the designated time zone by the formal parameter or in UTC by
+   --  default. The size of the type is large enough to cover the Ada
+   --  range of time (1901-01-01T00:00:00.0 UTC - 2399-12-31T23:59:59.999999999
+   --  UTC).
 
    ------------------
    -- Leap Seconds --
@@ -234,8 +238,8 @@ private
 
    function Epoch_Offset return Time_Rep;
    pragma Inline (Epoch_Offset);
-   --  Return the difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
-   --  nanoseconds. Note that year 2100 is non-leap.
+   --  Return the difference between our epoch and 1970-1-1 UTC (the Unix
+   --  epoch) expressed in nanoseconds. Note that year 2100 is non-leap.
 
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);

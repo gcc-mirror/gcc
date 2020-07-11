@@ -7853,15 +7853,13 @@ print_operand (FILE *file, rtx x, int code)
   switch (code)
     {
     case 'A':
-#ifdef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS
-      if (TARGET_Z14 && MEM_P (x))
+      if (TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS && MEM_P (x))
 	{
 	  if (MEM_ALIGN (x) >= 128)
 	    fprintf (file, ",4");
 	  else if (MEM_ALIGN (x) == 64)
 	    fprintf (file, ",3");
 	}
-#endif
       return;
     case 'C':
       fprintf (file, s390_branch_condition_mnemonic (x, FALSE));
@@ -10946,10 +10944,9 @@ s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p
 static void
 s390_emit_stack_probe (rtx addr)
 {
-  rtx tmp = gen_rtx_MEM (Pmode, addr);
-  MEM_VOLATILE_P (tmp) = 1;
-  s390_emit_compare (EQ, gen_rtx_REG (Pmode, 0), tmp);
-  emit_insn (gen_blockage ());
+  rtx mem = gen_rtx_MEM (Pmode, addr);
+  MEM_VOLATILE_P (mem) = 1;
+  emit_insn (gen_probe_stack (mem));
 }
 
 /* Use a runtime loop if we have to emit more probes than this.  */
@@ -10996,6 +10993,8 @@ allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
 						       stack_pointer_rtx,
 						       offset));
 		}
+	      if (num_probes > 0)
+		last_probe_offset = INTVAL (offset);
 	      dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
 	    }
 	  else
@@ -11029,6 +11028,7 @@ allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
 	      s390_prologue_plus_offset (stack_pointer_rtx, temp_reg,
 					 const0_rtx, true);
 	      temp_reg_clobbered_p = true;
+	      last_probe_offset = INTVAL (offset);
 	      dump_stack_clash_frame_info (PROBE_LOOP, residual != 0);
 	    }
 
@@ -11911,6 +11911,8 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
+  int empty_base_seen = 0;
+  const_tree orig_type = type;
   while (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field, single = NULL_TREE;
@@ -11919,6 +11921,16 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+
+	  if (DECL_FIELD_ABI_IGNORED (field))
+	    {
+	      if (lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field)))
+		empty_base_seen |= 2;
+	      else
+		empty_base_seen |= 1;
+	      continue;
+	    }
 
 	  if (single == NULL_TREE)
 	    single = TREE_TYPE (field);
@@ -11939,7 +11951,30 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	}
     }
 
-  return VECTOR_TYPE_P (type);
+  if (!VECTOR_TYPE_P (type))
+    return false;
+
+  if (warn_psabi && empty_base_seen)
+    {
+      static unsigned last_reported_type_uid;
+      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
+      if (uid != last_reported_type_uid)
+	{
+	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	  last_reported_type_uid = uid;
+	  if (empty_base_seen & 1)
+	    inform (input_location,
+		    "parameter passing for argument of type %qT when C++17 "
+		    "is enabled changed to match C++14 %{in GCC 10.1%}",
+		    orig_type, url);
+	  else
+	    inform (input_location,
+		    "parameter passing for argument of type %qT with "
+		    "%<[[no_unique_address]]%> members changed "
+		    "%{in GCC 10.1%}", orig_type, url);
+	}
+    }
+  return true;
 }
 
 /* Return true if a function argument of type TYPE and mode MODE
@@ -11961,6 +11996,8 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 
   /* The ABI says that record types with a single member are treated
      just like that member would be.  */
+  int empty_base_seen = 0;
+  const_tree orig_type = type;
   while (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field, single = NULL_TREE;
@@ -11969,6 +12006,15 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+	  if (DECL_FIELD_ABI_IGNORED (field))
+	    {
+	      if (lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field)))
+		empty_base_seen |= 2;
+	      else
+		empty_base_seen |= 1;
+	      continue;
+	    }
 
 	  if (single == NULL_TREE)
 	    single = TREE_TYPE (field);
@@ -11982,7 +12028,31 @@ s390_function_arg_float (machine_mode mode, const_tree type)
 	type = single;
     }
 
-  return TREE_CODE (type) == REAL_TYPE;
+  if (TREE_CODE (type) != REAL_TYPE)
+    return false;
+
+  if (warn_psabi && empty_base_seen)
+    {
+      static unsigned last_reported_type_uid;
+      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
+      if (uid != last_reported_type_uid)
+	{
+	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	  last_reported_type_uid = uid;
+	  if (empty_base_seen & 1)
+	    inform (input_location,
+		    "parameter passing for argument of type %qT when C++17 "
+		    "is enabled changed to match C++14 %{in GCC 10.1%}",
+		    orig_type, url);
+	  else
+	    inform (input_location,
+		    "parameter passing for argument of type %qT with "
+		    "%<[[no_unique_address]]%> members changed "
+		    "%{in GCC 10.1%}", orig_type, url);
+	}
+    }
+
+  return true;
 }
 
 /* Return true if a function argument of type TYPE and mode MODE
@@ -13887,8 +13957,13 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
   int distance;
 
   /* This will exclude branch on count and branch on index patterns
-     since these are correctly statically predicted.  */
-  if (!set
+     since these are correctly statically predicted.
+
+     The additional check for a PARALLEL is required here since
+     single_set might be != NULL for PARALLELs where the set of the
+     iteration variable is dead.  */
+  if (GET_CODE (PATTERN (insn)) == PARALLEL
+      || !set
       || SET_DEST (set) != pc_rtx
       || GET_CODE (SET_SRC(set)) != IF_THEN_ELSE)
     return false;

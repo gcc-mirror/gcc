@@ -3,7 +3,7 @@
    pointer being correct.  */
 
 /* { dg-do run } */
-/* { dg-options "" } */
+/* { dg-options "-O2 -fsplit-stack" } */
 
 #include <stdlib.h>
 

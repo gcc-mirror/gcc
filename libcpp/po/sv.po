@@ -11,9 +11,9 @@ msgstr ""
 "Project-Id-Version: cpplib 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-02-07 22:33+0000\n"
-"PO-Revision-Date: 2020-02-16 13:12+0100\n"
+"PO-Revision-Date: 2020-05-15 15:50+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
-"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language-Team: Swedish <tp-sv-list@lists.sourceforge.net>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -796,7 +796,7 @@ msgstr "”(” saknas före operanden till ”%s”"
 #: macro.c:389
 #, c-format
 msgid "operator \"%s\" requires a header-name"
-msgstr "operatorn ”%s” måste ha en huvudnamn"
+msgstr "operatorn ”%s” måste ha ett huvudnamn"
 
 #: macro.c:406
 #, c-format

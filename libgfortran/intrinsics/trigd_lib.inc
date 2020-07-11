@@ -29,18 +29,65 @@ This replaces all GMP/MPFR functions used by trigd.inc with native versions.
 The precision is defined by FTYPE defined before including this file.
 The module which includes this file must define the following:
 
-FTYPE             -- floating point type
-SIND, COSD, TAND  -- names of the functions to define
-SUFFIX(x)         -- add a literal suffix for floating point constants (f, ...)
+KIND               -- floating point kind (4, 8, 10, 16)
+HAVE_INFINITY_KIND -- defined iff the platform has GFC_REAL_<KIND>_INFINITY
 
-COSD_SMALL [optional] -- for x <= COSD_SMALL, COSD(x) = 1 if set
 TINY       [optional] -- subtract from 1 under the above condition if set
+COSD_SMALL [optional] -- for x <= COSD_SMALL, COSD(x) = 1 if set
 SIND_SMALL [optional] -- for x <= SIND_SMALL, SIND(x) = D2R(x) if set
 COSD30                -- literal value of COSD(30) to the precision of FTYPE
 PIO180H               -- upper bits of pi/180 for FMA
 PIO180L               -- lower bits of pi/180 for FMA
 
  */
+
+/* FTYPE := GFC_REAL_<K> */
+#define FTYPE CONCAT_EXPAND(GFC_REAL_,KIND)
+
+/* LITERAL_SUFFIX := GFC_REAL_<K>_LITERAL_SUFFIX */
+#define LITERAL_SUFFIX CONCAT_EXPAND(FTYPE,_LITERAL_SUFFIX)
+
+/* LITERAL(X) := GFC_REAL_<K>_LITERAL(X) */
+#define LITERAL(x) CONCAT_EXPAND(x,LITERAL_SUFFIX)
+
+#define SIND CONCAT_EXPAND(sind_r, KIND)
+#define COSD CONCAT_EXPAND(cosd_r, KIND)
+#define TAND CONCAT_EXPAND(tand_r, KIND)
+
+#ifdef HAVE_INFINITY_KIND
+/* GFC_REAL_X_INFINITY */
+#define INFINITY_KIND CONCAT_EXPAND(FTYPE, _INFINITY)
+#else
+/* GFC_REAL_X_HUGE */
+#define INFINITY_KIND CONCAT_EXPAND(FTYPE, _HUGE)
+#endif
+
+#define CONCAT(x,y) x ## y
+#define CONCAT_EXPAND(x,y) CONCAT(x,y)
+
+#define COPYSIGN LITERAL(copysign)
+#define FMOD LITERAL(fmod)
+#define FABS LITERAL(fabs)
+#define FMA LITERAL(fma)
+#define SIN LITERAL(sin)
+#define COS LITERAL(cos)
+#define TAN LITERAL(tan)
+
+#ifdef TINY
+#define TINY_LITERAL LITERAL(TINY)
+#endif
+
+#ifdef COSD_SMALL
+#define COSD_SMALL_LITERAL LITERAL(COSD_SMALL)
+#endif
+
+#ifdef SIND_SMALL
+#define SIND_SMALL_LITERAL LITERAL(SIND_SMALL)
+#endif
+
+#define COSD30_LITERAL LITERAL(COSD30)
+#define PIO180H_LITERAL LITERAL(PIO180H)
+#define PIO180L_LITERAL LITERAL(PIO180L)
 
 #define ITYPE int
 #define GFC_RND_MODE 0
@@ -52,15 +99,15 @@ PIO180L               -- lower bits of pi/180 for FMA
 #define mpfr_init_set_ui(x, v, rnd) (x = (v))
 #define mpfr_clear(x) do { } while (0)
 #define mpfr_swap(x, y) do { FTYPE z = y; y = x; x = z; } while (0)
-#define mpfr_copysign(rop, op1, op2, rnd) rop = SUFFIX(copysign)((op1), (op2))
-#define mpfr_fmod(rop, x, d, rnd) (rop = SUFFIX(fmod)((x), (d)))
-#define mpfr_abs(rop, op, rnd) (rop = SUFFIX(fabs)(op))
+#define mpfr_copysign(rop, op1, op2, rnd) rop = COPYSIGN((op1), (op2))
+#define mpfr_fmod(rop, x, d, rnd) (rop = FMOD((x), (d)))
+#define mpfr_abs(rop, op, rnd) (rop = FABS(op))
 #define mpfr_cmp_ld(x, y) ((x) - (y))
 #define mpfr_cmp_ui(x, n) ((x) - (n))
 #define mpfr_zero_p(x) ((x) == 0)
 #define mpfr_set(rop, x, rnd) (rop = (x))
-#define mpfr_set_zero(rop, s) (rop = SUFFIX(copysign)(0, (s)))
-#define mpfr_set_inf(rop, s) (rop = ((s)*-2 + 1) * INFINITY)
+#define mpfr_set_zero(rop, s) (rop = COPYSIGN(0, (s)))
+#define mpfr_set_inf(rop, s) (rop = ((s)*-2 + 1) * INFINITY_KIND)
 #define mpfr_set_ui(rop, n, rnd) (rop = (n))
 #define mpfr_set_si(rop, n, rnd) (rop = (n))
 #define mpfr_set_ld(rop, x, rnd) (rop = (x))
@@ -72,31 +119,62 @@ PIO180L               -- lower bits of pi/180 for FMA
 #define mpfr_sub(rop, op1, op2, rnd)    (rop = ((op1) - (op2)))
 #define mpfr_ui_sub(rop, op1, op2, rnd) (rop = ((op1) - (op2)))
 #define mpfr_neg(rop, op, rnd) (rop = -(op))
-#define mpfr_sin(rop, x, rnd) (rop = SUFFIX(sin)(x))
-#define mpfr_cos(rop, x, rnd) (rop = SUFFIX(cos)(x))
-#define mpfr_tan(rop, x, rnd) (rop = SUFFIX(tan)(x))
+#define mpfr_sin(rop, x, rnd) (rop = SIN(x))
+#define mpfr_cos(rop, x, rnd) (rop = COS(x))
+#define mpfr_tan(rop, x, rnd) (rop = TAN(x))
 
 #define mpz_init(n) do { } while (0)
 #define mpz_clear(x) do { } while (0)
 #define mpz_cmp_ui(x, y) ((x) - (y))
 #define mpz_divisible_ui_p(n, d) ((n) % (d) == 0)
 
-#define FMA(x,y,z)  SUFFIX(fma)((x), (y), (z))
-#define D2R(x) (x = FMA((x), PIO180H, (x) * PIO180L))
+#define D2R(x) (x = FMA((x), PIO180H_LITERAL, (x) * PIO180L_LITERAL))
 
-#define SET_COSD30(x) (x = COSD30)
+#define SET_COSD30(x) (x = COSD30_LITERAL)
 
-
+#ifdef SIND
 extern FTYPE SIND (FTYPE);
 export_proto (SIND);
+#endif
 
+#ifdef COSD
 extern FTYPE COSD (FTYPE);
 export_proto (COSD);
+#endif
 
+#ifdef TAND
 extern FTYPE TAND (FTYPE);
 export_proto (TAND);
+#endif
 
 #include "trigd.inc"
+
+#undef FTYPE
+#undef LITERAL_SUFFIX
+#undef LITERAL
+#undef CONCAT3
+#undef CONCAT3_EXPAND
+#undef CONCAT
+#undef CONCAT_EXPAND
+#undef SIND
+#undef COSD
+#undef TAND
+#undef INFINITY_KIND
+
+#undef COPYSIGN
+#undef FMOD
+#undef FABS
+#undef FMA
+#undef SIN
+#undef COS
+#undef TAN
+
+#undef TINY_LITERAL
+#undef COSD_SMALL_LITERAL
+#undef SIND_SMALL_LITERAL
+#undef COSD30_LITERAL
+#undef PIO180H_LITERAL
+#undef PIO180L_LITERAL
 
 #undef ITYPE
 #undef GFC_RND_MODE

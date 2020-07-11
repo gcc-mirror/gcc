@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-ipa-sra -fdump-tree-optimized-slim"  } */
+/* { dg-options "-O3 -fno-ipa-sra -fdump-ipa-cp"  } */
 /* { dg-add-options bind_pic_locally } */
 
 struct S
@@ -48,4 +48,5 @@ entry (int c)
       foo (4, i, &s);
     }
 }
-/* { dg-final { scan-tree-dump "->b;" "optimized" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 1\\\[32]=64, 1\\\[64]=32" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 1\\\[32]=0" "cp" } } */

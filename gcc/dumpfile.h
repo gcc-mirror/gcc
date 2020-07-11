@@ -48,6 +48,7 @@ enum tree_dump_index
   TDI_gimple,			/* dump each function after gimplifying it */
   TDI_nested,			/* dump each function after unnesting it */
   TDI_lto_stream_out,		/* dump information about lto streaming */
+  TDI_profile_report,		/* dump information about profile quality */
 
   TDI_lang_all,			/* enable all the language dumps.  */
   TDI_tree_all,			/* enable all the GENERIC/GIMPLE dumps.  */
@@ -691,7 +692,7 @@ public:
   char *
   get_dump_file_name (struct dump_file_info *dfi, int part = -1) const;
 
-  int
+  void
   dump_switch_p (const char *arg);
 
   /* Start a dump for PHASE. Store user-supplied dump flags in

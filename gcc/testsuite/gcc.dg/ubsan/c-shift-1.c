@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-fsanitize=shift -w" } */
 /* { dg-shouldfail "ubsan" } */
 

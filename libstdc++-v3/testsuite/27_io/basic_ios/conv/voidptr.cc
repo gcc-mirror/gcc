@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++98" }
+// { dg-do run { target c++98_only } }
 
 #include <ios>
 #include <testsuite_hooks.h>

@@ -6,7 +6,11 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                 Copyright (C) 2019, Free Software Foundation, Inc.       --
+--                 Copyright (C) 2019-2020, Free Software Foundation, Inc.  --
+--                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +35,6 @@
 
 package System.Atomic_Operations.Test_And_Set
   with Pure
---  Nonblocking
 is
    type Test_And_Set_Flag is mod 2 ** 8
      with Atomic, Default_Value => 0, Size => 8;

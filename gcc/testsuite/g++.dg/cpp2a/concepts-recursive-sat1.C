@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<int N, typename T>
 concept Foo = requires(T t) { foo<N + 1>(t); }; // { dg-error "template instantiation depth" }

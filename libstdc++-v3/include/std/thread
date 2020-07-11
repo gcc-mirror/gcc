@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend class thread;
-      friend class hash<id>;
+      friend struct hash<id>;
 
       friend bool
       operator==(id __x, id __y) noexcept;

@@ -65,9 +65,9 @@
  * std::destroy_n, and the C++20 function std::construct_at.
  * It also provides std::_Construct, std::_Destroy,and std::_Destroy_n functions
  * which are defined in all standard modes and so can be used in C++98-14 code.
- * The _Construct and _Destroy functions will dispatch to construct_at and
- * destroy_at during constant evaluation, because calls to those functions are
- * intercepted by the compiler to allow use in constant expressions.
+ * The _Destroy functions will dispatch to destroy_at during constant
+ * evaluation, because calls to that function are intercepted by the compiler
+ * to allow use in constant expressions.
  */
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -104,23 +104,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 #if __cplusplus >= 201103L
   template<typename _Tp, typename... _Args>
-    constexpr _Tp*
+    inline void
     _Construct(_Tp* __p, _Args&&... __args)
-    {
-#if __cplusplus > 201703L
-      return std::construct_at(__p, std::forward<_Args>(__args)...);
-#else
-      return ::new(static_cast<void*>(__p)) _Tp(std::forward<_Args>(__args)...);
-#endif
-    }
+    { ::new(static_cast<void*>(__p)) _Tp(std::forward<_Args>(__args)...); }
 #else
   template<typename _T1, typename _T2>
-    inline _T1*
+    inline void
     _Construct(_T1* __p, const _T2& __value)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_]allocator::construct
-      return ::new(static_cast<void*>(__p)) _T1(__value);
+      ::new(static_cast<void*>(__p)) _T1(__value);
     }
 #endif
 

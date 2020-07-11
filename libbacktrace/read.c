@@ -50,7 +50,8 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
 		    backtrace_error_callback error_callback,
 		    void *data, struct backtrace_view *view)
 {
-  ssize_t got;
+  uint64_t got;
+  ssize_t r;
 
   if ((uint64_t) (size_t) size != size)
     {
@@ -70,15 +71,22 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
   view->data = view->base;
   view->len = size;
 
-  got = read (descriptor, view->base, size);
-  if (got < 0)
+  got = 0;
+  while (got < size)
     {
-      error_callback (data, "read", errno);
-      free (view->base);
-      return 0;
+      r = read (descriptor, view->base, size - got);
+      if (r < 0)
+	{
+	  error_callback (data, "read", errno);
+	  free (view->base);
+	  return 0;
+	}
+      if (r == 0)
+	break;
+      got += (uint64_t) r;
     }
 
-  if ((size_t) got < size)
+  if (got < size)
     {
       error_callback (data, "file too short", 0);
       free (view->base);

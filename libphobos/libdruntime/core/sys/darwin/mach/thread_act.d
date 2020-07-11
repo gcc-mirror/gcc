@@ -34,6 +34,11 @@ version (X86)
     version = i386;
 version (X86_64)
     version = i386;
+version (AArch64)
+    version = AnyARM;
+version (ARM)
+    version = AnyARM;
+
 version (i386)
 {
     alias mach_port_t thread_act_t;
@@ -129,6 +134,101 @@ version (i386)
 
     alias x86_THREAD_STATE          MACHINE_THREAD_STATE;
     alias x86_THREAD_STATE_COUNT    MACHINE_THREAD_STATE_COUNT;
+
+    mach_port_t   mach_thread_self();
+    kern_return_t thread_suspend(thread_act_t);
+    kern_return_t thread_resume(thread_act_t);
+    kern_return_t thread_get_state(thread_act_t, thread_state_flavor_t, thread_state_t*, mach_msg_type_number_t*);
+}
+// https://github.com/apple/darwin-xnu/blob/master/osfmk/mach/arm/_structs.h
+// https://github.com/apple/darwin-xnu/blob/master/osfmk/mach/arm/thread_status.h
+else version (AnyARM)
+{
+    alias thread_act_t = mach_port_t;
+    alias thread_state_t = void;
+    alias thread_state_flavor_t = int;
+    alias mach_msg_type_number_t = natural_t;
+
+    enum
+    {
+        ARM_THREAD_STATE = 1,
+        ARM_UNIFIED_THREAD_STATE = ARM_THREAD_STATE,
+        ARM_VFP_STATE = 2,
+        ARM_EXCEPTION_STATE = 3,
+        ARM_DEBUG_STATE = 4, /* pre-armv8 */
+        THREAD_STATE_NONE = 5,
+        ARM_THREAD_STATE64 = 6,
+        ARM_EXCEPTION_STATE64 = 7,
+        // ARM_THREAD_STATE_LAST = 8, /* legacy */
+        ARM_THREAD_STATE32 = 9
+    }
+
+    enum
+    {
+        ARM_DEBUG_STATE32 = 14,
+        ARM_DEBUG_STATE64 = 15,
+        ARM_NEON_STATE = 16,
+        ARM_NEON_STATE64 = 17,
+        ARM_CPMU_STATE64 = 18
+    }
+
+    enum
+    {
+        ARM_AMX_STATE = 24,
+        ARM_AMX_STATE_V1 = 25
+    }
+
+    struct arm_thread_state_t
+    {
+        uint[13] r; /// General purpose register r0-r12
+        uint sp;    /// Stack pointer r13
+        uint lr;    /// Link register r14
+        uint pc;    /// Program counter r15
+        uint cpsr;  /// Current program status register
+    }
+
+    alias arm_thread_state32_t = arm_thread_state_t;
+
+    struct arm_thread_state64_t
+    {
+        ulong[29] x; /// General purpose registers x0-x28
+        ulong fp; /// Frame pointer x29
+        ulong lr; /// Link register x30
+        ulong sp; /// Stack pointer x31
+        ulong pc; /// Program counter
+        ulong cpsr; /// Current program status register
+        ulong pad; /// Same size for 32-bit or 64-bit clients
+    }
+
+    struct arm_state_hdr_t
+    {
+        uint flavor;
+        uint count;
+    }
+
+    struct arm_unified_thread_state_t
+    {
+        arm_state_hdr_t ash;
+
+        union _uts
+        {
+            arm_thread_state32_t ts_32;
+            arm_thread_state64_t ts_64;
+        }
+
+        _uts uts;
+    }
+
+    enum : mach_msg_type_number_t
+    {
+        ARM_THREAD_STATE_COUNT = cast(mach_msg_type_number_t) (arm_thread_state_t.sizeof / uint.sizeof),
+        ARM_THREAD_STATE32_COUNT = cast(mach_msg_type_number_t) (arm_thread_state32_t.sizeof / uint.sizeof),
+        ARM_THREAD_STATE64_COUNT = cast(mach_msg_type_number_t) (arm_thread_state64_t.sizeof / uint.sizeof),
+        ARM_UNIFIED_THREAD_STATE_COUNT = cast(mach_msg_type_number_t) (arm_unified_thread_state_t.sizeof / uint.sizeof)
+    }
+
+    alias MACHINE_THREAD_STATE = ARM_THREAD_STATE;
+    alias MACHINE_THREAD_STATE_COUNT = ARM_UNIFIED_THREAD_STATE_COUNT;
 
     mach_port_t   mach_thread_self();
     kern_return_t thread_suspend(thread_act_t);

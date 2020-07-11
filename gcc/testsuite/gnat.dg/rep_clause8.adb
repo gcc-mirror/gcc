@@ -9,8 +9,8 @@ procedure Rep_Clause8 is
    generic
       type Formal_Root is new Root with private;
    package Gen_Derived is
-      type Deriv is new Formal_Root with null record
-        with Size => 300; --  { dg-error "representation item not allowed for generic type" }
+      type Deriv is new Formal_Root with null record --  { dg-error "representation item not allowed for generic type" }
+        with Size => 300;
    end Gen_Derived;
 
    package Inst_Derived is new Gen_Derived (Root);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -461,6 +461,8 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position.Node = 0 then
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
@@ -469,8 +471,6 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       then
          raise Program_Error with "Position cursor designates wrong set";
       end if;
-
-      TC_Check (Container.TC);
 
       pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Delete");
@@ -933,7 +933,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
                           Control =>
                             (Controlled with
                               Container.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                               Pos       => Position,
                               Old_Key   => new Key_Type'(Key (Position))))
             do
@@ -961,7 +961,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
                           Control =>
                             (Controlled with
                               Container.TC'Unrestricted_Access,
-                              Container => Container'Access,
+                              Container => Container'Unchecked_Access,
                                Pos      => Find (Container, Key),
                                Old_Key  => new Key_Type'(Key)))
             do
@@ -1682,12 +1682,12 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       Node : constant Count_Type := Element_Keys.Find (Container, New_Item);
 
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Node = 0 then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.TC);
 
       Container.Nodes (Node).Element := New_Item;
    end Replace;

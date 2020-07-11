@@ -21,6 +21,12 @@
 #include <string>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_erase_if
+# error "Feature-test macro for erase_if missing in <string>"
+#elif __cpp_lib_erase_if < 202002
+# error "Feature-test macro for erase_if has wrong value in <string>"
+#endif
+
 void
 test01()
 {

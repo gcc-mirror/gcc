@@ -1257,7 +1257,7 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 
   while (f1)
     {
-      if (f1->sym->attr.optional)
+      if (!f1->sym || f1->sym->attr.optional)
 	goto next;
 
       if (p1 && strcmp (f1->sym->name, p1) == 0)
@@ -1343,7 +1343,8 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     }
 
   /* Check INTENT.  */
-  if (s1->attr.intent != s2->attr.intent)
+  if (s1->attr.intent != s2->attr.intent && !s1->attr.artificial
+      && !s2->attr.artificial)
     {
       snprintf (errmsg, err_len, "INTENT mismatch in argument '%s'",
 		s1->name);
@@ -1529,7 +1530,7 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 bool
 gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
-			      char *errmsg, int err_len)
+				  char *errmsg, int err_len)
 {
   gfc_symbol *r1, *r2;
 
@@ -1695,11 +1696,15 @@ bool
 gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			int generic_flag, int strict_flag,
 			char *errmsg, int err_len,
-			const char *p1, const char *p2)
+			const char *p1, const char *p2,
+			bool *bad_result_characteristics)
 {
   gfc_formal_arglist *f1, *f2;
 
   gcc_assert (name2 != NULL);
+
+  if (bad_result_characteristics)
+    *bad_result_characteristics = false;
 
   if (s1->attr.function && (s2->attr.subroutine
       || (!s2->attr.function && s2->ts.type == BT_UNKNOWN
@@ -1726,7 +1731,11 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  /* If both are functions, check result characteristics.  */
 	  if (!gfc_check_result_characteristics (s1, s2, errmsg, err_len)
 	      || !gfc_check_result_characteristics (s2, s1, errmsg, err_len))
-	    return false;
+	    {
+	      if (bad_result_characteristics)
+		*bad_result_characteristics = true;
+	      return false;
+	    }
 	}
 
       if (s1->attr.pure && !s2->attr.pure)
@@ -1973,7 +1982,8 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 static void
 check_sym_interfaces (gfc_symbol *sym)
 {
-  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("generic interface ''")];
+  /* Provide sufficient space to hold "generic interface 'symbol.symbol'".  */
+  char interface_name[2*GFC_MAX_SYMBOL_LEN+2 + sizeof("generic interface ''")];
   gfc_interface *p;
 
   if (sym->ns != gfc_current_ns)
@@ -1981,6 +1991,8 @@ check_sym_interfaces (gfc_symbol *sym)
 
   if (sym->generic != NULL)
     {
+      size_t len = strlen (sym->name) + sizeof("generic interface ''");
+      gcc_assert (len < sizeof (interface_name));
       sprintf (interface_name, "generic interface '%s'", sym->name);
       if (check_interface0 (sym->generic, interface_name))
 	return;
@@ -5007,7 +5019,7 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
     gfc_error ("DTIO procedure %qs at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
 
-  if (!dtio_sub->resolved)
+  if (!dtio_sub->resolve_symbol_called)
     gfc_resolve_formal_arglist (dtio_sub);
 
   arg_num = 0;
@@ -5141,7 +5153,8 @@ gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_symtree *tb_io_st = NULL;
   bool t = false;
 
-  if (!derived || !derived->resolved || derived->attr.flavor != FL_DERIVED)
+  if (!derived || !derived->resolve_symbol_called
+      || derived->attr.flavor != FL_DERIVED)
     return NULL;
 
   /* Try to find a typebound DTIO binding.  */
@@ -5317,7 +5330,6 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	      s->ts.is_iso_c = 0;
 	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
-	      s->attr.artificial = 1;
 	      if (a->expr->rank > 0)
 		{
 		  s->attr.dimension = 1;
@@ -5332,6 +5344,7 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 		s->maybe_array = maybe_dummy_array_arg (a->expr);
 	    }
 	  s->attr.dummy = 1;
+	  s->attr.artificial = 1;
 	  s->declared_at = a->expr->where;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;

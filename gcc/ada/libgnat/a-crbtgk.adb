@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,11 +422,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Z      : out Node_Access)
    is
    begin
+      TC_Check (Tree.TC);
+
       if Checks and then Tree.Length = Count_Type'Last then
          raise Constraint_Error with "too many elements";
       end if;
-
-      TC_Check (Tree.TC);
 
       Z := New_Node;
       pragma Assert (Z /= null);

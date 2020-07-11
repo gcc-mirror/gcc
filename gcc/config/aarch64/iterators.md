@@ -1932,6 +1932,9 @@
 ;; Operation names for negate and bitwise complement.
 (define_code_attr neg_not_op [(neg "neg") (not "not")])
 
+;; csinv, csneg insn suffixes.
+(define_code_attr neg_not_cs [(neg "neg") (not "inv")])
+
 ;; Similar, but when the second operand is inverted.
 (define_code_attr nlogical [(and "bic") (ior "orn") (xor "eon")])
 
@@ -3450,3 +3453,17 @@
 
 (define_int_attr unspec [(UNSPEC_WHILERW "UNSPEC_WHILERW")
 			 (UNSPEC_WHILEWR "UNSPEC_WHILEWR")])
+
+;; Iterators and attributes for fpcr fpsr getter setters
+
+(define_int_iterator GET_FPSCR
+  [UNSPECV_GET_FPSR UNSPECV_GET_FPCR])
+
+(define_int_iterator SET_FPSCR
+  [UNSPECV_SET_FPSR UNSPECV_SET_FPCR])
+
+(define_int_attr fpscr_name
+  [(UNSPECV_GET_FPSR "fpsr")
+   (UNSPECV_SET_FPSR "fpsr")
+   (UNSPECV_GET_FPCR "fpcr")
+   (UNSPECV_SET_FPCR "fpcr")])

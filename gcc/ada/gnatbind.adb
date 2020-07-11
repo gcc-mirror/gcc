@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,6 +220,9 @@ procedure Gnatbind is
 
          No_Use_Of_Pragma                => False,
          --  Requires a parameter value, not a count
+
+         SPARK_05                        => False,
+         --  Obsolete restriction
 
          others                          => True);
 
@@ -495,6 +498,11 @@ procedure Gnatbind is
 
             Opt.Bind_Alternate_Main_Name := True;
             Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
+
+         --  -xdr
+
+         elsif Argv (2 .. Argv'Last) = "xdr" then
+            Opt.XDR_Stream := True;
 
          --  All other options are single character and are handled by
          --  Scan_Binder_Switches.

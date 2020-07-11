@@ -296,30 +296,17 @@
          the negative case.  */
       if (value < 0)
 	value = -value;
-      if (TARGET_H8300H || TARGET_H8300S)
-	{
-	  /* A constant addition/subtraction takes 2 states in QImode,
-	     4 states in HImode, and 6 states in SImode.  Thus, the
-	     only case we can win is when SImode is used, in which
-	     case, two adds/subs are used, taking 4 states.  */
-	  if (mode == SImode
-	      && (value == 2 + 1
-		  || value == 4 + 1
-		  || value == 4 + 2
-		  || value == 4 + 4))
-	    return 1;
-	}
-      else
-	{
-	  /* We do not profit directly by splitting addition or
-	     subtraction of 3 and 4.  However, since these are
-	     implemented as a sequence of adds or subs, they do not
-	     clobber (cc0) unlike a sequence of add.b and add.x.  */
-	  if (mode == HImode
-	      && (value == 2 + 1
-		  || value == 2 + 2))
-	    return 1;
-	}
+
+      /* A constant addition/subtraction takes 2 states in QImode,
+	 4 states in HImode, and 6 states in SImode.  Thus, the
+	 only case we can win is when SImode is used, in which
+	 case, two adds/subs are used, taking 4 states.  */
+      if (mode == SImode
+	  && (value == 2 + 1
+	      || value == 4 + 1
+	      || value == 4 + 2
+	      || value == 4 + 4))
+	return 1;
     }
 
   return 0;
@@ -508,3 +495,9 @@
 
   return (code == IOR || code == XOR);
 })
+
+;; Used to detect valid targets for conditional branches
+;; Used to detect (pc) or (label_ref) in some jumping patterns
+(define_predicate "pc_or_label_operand"
+  (match_code "pc,label_ref"))
+

@@ -20,6 +20,12 @@
 
 #include <array>
 
+#ifndef __cpp_lib_array_constexpr
+# error "Feature test macro for array constexpr is missing in <array>"
+#elif __cpp_lib_array_constexpr < 201811L
+# error "Feature test macro for array constexpr has wrong value in <array>"
+#endif
+
 constexpr bool
 test_array()
 {

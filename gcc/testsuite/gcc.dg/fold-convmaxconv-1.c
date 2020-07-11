@@ -1,9 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-optimized" } */
 
-int foo (short a[], int x)
+typedef int int32_t __attribute__((mode (__SI__)));
+typedef unsigned uint32_t __attribute__((mode (__SI__)));
+
+int32_t foo (short a[], int32_t x)
 {
-  unsigned int i;
+  uint32_t i;
   for (i = 0; i < 1000; i++)
     {
       x = a[i];

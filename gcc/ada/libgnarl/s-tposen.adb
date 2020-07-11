@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---         Copyright (C) 1998-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,13 +62,10 @@ pragma Suppress (All_Checks);
 with Ada.Exceptions;
 
 with System.Task_Primitives.Operations;
-with System.Parameters;
 
 package body System.Tasking.Protected_Objects.Single_Entry is
 
    package STPO renames System.Task_Primitives.Operations;
-
-   use Parameters;
 
    -----------------------
    -- Local Subprograms --
@@ -143,18 +140,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    begin
       Entry_Call.Exception_To_Raise := Program_Error'Identity;
-
-      if Single_Lock then
-         STPO.Lock_RTS;
-      end if;
-
       STPO.Write_Lock (Caller);
       Wakeup_Entry_Caller (Entry_Call);
       STPO.Unlock (Caller);
-
-      if Single_Lock then
-         STPO.Unlock_RTS;
-      end if;
    end Send_Program_Error;
 
    -------------------------
@@ -286,17 +274,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
            (Object.Compiler_Info, Entry_Call.Uninterpreted_Data, 1);
          Object.Call_In_Progress := null;
 
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
-
          STPO.Write_Lock (Entry_Call.Self);
          Wakeup_Entry_Caller (Entry_Call);
          STPO.Unlock (Entry_Call.Self);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
 
       else
          pragma Assert (Entry_Call.Mode = Simple_Call);
@@ -370,17 +350,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       pragma Assert (Entry_Call.State /= Cancelled);
 
       if Entry_Call.State /= Done then
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
-
          STPO.Write_Lock (Self_Id);
          Wait_For_Completion (Entry_Call'Access);
          STPO.Unlock (Self_Id);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
       end if;
 
       Check_Exception (Self_Id, Entry_Call'Access);
@@ -427,17 +399,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
          Caller := Entry_Call.Self;
          Unlock_Entry (Object);
 
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
-
          STPO.Write_Lock (Caller);
          Wakeup_Entry_Caller (Entry_Call);
          STPO.Unlock (Caller);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
 
       else
          --  Just unlock the entry

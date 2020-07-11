@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "file-prefix-map.h"
 #include "cgraph.h"
+#include "omp-general.h"
 
 /* Forward declarations.  */
 
@@ -852,6 +853,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       ret = GS_OK;
       if (flag_strong_eval_order == 2
 	  && CALL_EXPR_FN (*expr_p)
+	  && !CALL_EXPR_OPERATOR_SYNTAX (*expr_p)
 	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
 	{
 	  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
@@ -1183,14 +1185,17 @@ static tree genericize_spaceship (tree expr)
 
 /* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
    to trigger gimplify_type_sizes; otherwise a cast to pointer-to-VLA confuses
-   the middle-end (c++/88256).  */
+   the middle-end (c++/88256).  If EXPR is a DECL, use add_stmt and return
+   NULL_TREE; otherwise return a COMPOUND_STMT of the DECL_EXPR and EXPR.  */
 
-static tree
+tree
 predeclare_vla (tree expr)
 {
   tree type = TREE_TYPE (expr);
   if (type == error_mark_node)
     return expr;
+  if (is_typedef_decl (expr))
+    type = DECL_ORIGINAL_TYPE (expr);
 
   /* We need to strip pointers for gimplify_type_sizes.  */
   tree vla = type;
@@ -1200,15 +1205,24 @@ predeclare_vla (tree expr)
 	return expr;
       vla = TREE_TYPE (vla);
     }
-  if (TYPE_NAME (vla) || !variably_modified_type_p (vla, NULL_TREE))
+  if (vla == type || TYPE_NAME (vla)
+      || !variably_modified_type_p (vla, NULL_TREE))
     return expr;
 
   tree decl = build_decl (input_location, TYPE_DECL, NULL_TREE, vla);
   DECL_ARTIFICIAL (decl) = 1;
   TYPE_NAME (vla) = decl;
   tree dexp = build_stmt (input_location, DECL_EXPR, decl);
-  expr = build2 (COMPOUND_EXPR, type, dexp, expr);
-  return expr;
+  if (DECL_P (expr))
+    {
+      add_stmt (dexp);
+      return NULL_TREE;
+    }
+  else
+    {
+      expr = build2 (COMPOUND_EXPR, type, dexp, expr);
+      return expr;
+    }
 }
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -1558,6 +1572,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       }
       break;
 
+    case OMP_TARGET:
+      cfun->has_omp_target = true;
+      break;
+
     case TRY_BLOCK:
       {
         *walk_subtrees = 0;
@@ -1645,9 +1663,70 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = genericize_spaceship (*stmt_p);
       break;
 
+    case OMP_DISTRIBUTE:
+      /* Need to explicitly instantiate copy ctors on class iterators of
+	 composite distribute parallel for.  */
+      if (OMP_FOR_INIT (*stmt_p) == NULL_TREE)
+	{
+	  tree *data[4] = { NULL, NULL, NULL, NULL };
+	  tree inner = walk_tree (&OMP_FOR_BODY (*stmt_p),
+				  find_combined_omp_for, data, NULL);
+	  if (inner != NULL_TREE
+	      && TREE_CODE (inner) == OMP_FOR)
+	    {
+	      for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (inner)); i++)
+		if (OMP_FOR_ORIG_DECLS (inner)
+		    && TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner),
+				  i)) == TREE_LIST
+		    && TREE_PURPOSE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner),
+				     i)))
+		  {
+		    tree orig = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner), i);
+		    /* Class iterators aren't allowed on OMP_SIMD, so the only
+		       case we need to solve is distribute parallel for.  */
+		    gcc_assert (TREE_CODE (inner) == OMP_FOR
+				&& data[1]);
+		    tree orig_decl = TREE_PURPOSE (orig);
+		    tree c, cl = NULL_TREE;
+		    for (c = OMP_FOR_CLAUSES (inner);
+			 c; c = OMP_CLAUSE_CHAIN (c))
+		      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+			   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+			  && OMP_CLAUSE_DECL (c) == orig_decl)
+			{
+			  cl = c;
+			  break;
+			}
+		    if (cl == NULL_TREE)
+		      {
+			for (c = OMP_PARALLEL_CLAUSES (*data[1]);
+			     c; c = OMP_CLAUSE_CHAIN (c))
+			  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+			      && OMP_CLAUSE_DECL (c) == orig_decl)
+			    {
+			      cl = c;
+			      break;
+			    }
+		      }
+		    if (cl)
+		      {
+			orig_decl = require_complete_type (orig_decl);
+			tree inner_type = TREE_TYPE (orig_decl);
+			if (orig_decl == error_mark_node)
+			  continue;
+			if (TYPE_REF_P (TREE_TYPE (orig_decl)))
+			  inner_type = TREE_TYPE (inner_type);
+
+			while (TREE_CODE (inner_type) == ARRAY_TYPE)
+			  inner_type = TREE_TYPE (inner_type);
+			get_copy_ctor (inner_type, tf_warning_or_error);
+		      }
+		}
+	    }
+	}
+      /* FALLTHRU */
     case OMP_FOR:
     case OMP_SIMD:
-    case OMP_DISTRIBUTE:
     case OMP_LOOP:
     case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
@@ -2200,7 +2279,8 @@ cxx_omp_const_qual_no_mutable (tree decl)
   return false;
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
+/* OMP_CLAUSE_DEFAULT_UNSPECIFIED unless OpenMP sharing attribute
+   of DECL is predetermined.  */
 
 enum omp_clause_default_kind
 cxx_omp_predetermined_sharing_1 (tree decl)
@@ -2252,6 +2332,25 @@ cxx_omp_predetermined_sharing (tree decl)
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+enum omp_clause_defaultmap_kind
+cxx_omp_predetermined_mapping (tree decl)
+{
+  /* Predetermine artificial variables holding integral values, those
+     are usually result of gimplify_one_sizepos or SAVE_EXPR
+     gimplification.  */
+  if (VAR_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && INTEGRAL_TYPE_P (TREE_TYPE (decl))
+      && !(DECL_LANG_SPECIFIC (decl)
+	   && DECL_OMP_PRIVATIZED_MEMBER (decl)))
+    return OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+
+  if (c_omp_predefined_variable (decl))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
 /* Finalize an implicitly determined clause.  */
@@ -2442,6 +2541,8 @@ cp_fold (tree x)
 
   if (tree *cached = fold_cache->get (x))
     return *cached;
+
+  uid_sensitive_constexpr_evaluation_checker c;
 
   code = TREE_CODE (x);
   switch (code)
@@ -2675,8 +2776,6 @@ cp_fold (tree x)
 	  else
 	    x = org_x;
 	}
-      if (code == MODIFY_EXPR && TREE_CODE (x) == MODIFY_EXPR)
-	TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
 
       break;
 
@@ -2744,7 +2843,7 @@ cp_fold (tree x)
 
     case CALL_EXPR:
       {
-	int i, m, sv = optimize, nw = sv, changed = 0;
+	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
 
 	/* Some built-in function calls will be evaluated at compile-time in
@@ -2770,10 +2869,9 @@ cp_fold (tree x)
 	    break;
 	  }
 
-	x = copy_node (x);
-
-	m = call_expr_nargs (x);
-	for (i = 0; i < m; i++)
+	bool changed = false;
+	int m = call_expr_nargs (x);
+	for (int i = 0; i < m; i++)
 	  {
 	    r = cp_fold (CALL_EXPR_ARG (x, i));
 	    if (r != CALL_EXPR_ARG (x, i))
@@ -2783,9 +2881,11 @@ cp_fold (tree x)
 		    x = error_mark_node;
 		    break;
 		  }
-		changed = 1;
+		if (!changed)
+		  x = copy_node (x);
+		CALL_EXPR_ARG (x, i) = r;
+		changed = true;
 	      }
-	    CALL_EXPR_ARG (x, i) = r;
 	  }
 	if (x == error_mark_node)
 	  break;
@@ -2825,8 +2925,6 @@ cp_fold (tree x)
 	    break;
 	  }
 
-	if (!changed)
-	  x = org_x;
 	break;
       }
 
@@ -2865,24 +2963,18 @@ cp_fold (tree x)
     case TREE_VEC:
       {
 	bool changed = false;
-	releasing_vec vec;
-	int i, n = TREE_VEC_LENGTH (x);
-	vec_safe_reserve (vec, n);
+	int n = TREE_VEC_LENGTH (x);
 
-	for (i = 0; i < n; i++)
+	for (int i = 0; i < n; i++)
 	  {
 	    tree op = cp_fold (TREE_VEC_ELT (x, i));
-	    vec->quick_push (op);
 	    if (op != TREE_VEC_ELT (x, i))
-	      changed = true;
-	  }
-
-	if (changed)
-	  {
-	    r = copy_node (x);
-	    for (i = 0; i < n; i++)
-	      TREE_VEC_ELT (r, i) = (*vec)[i];
-	    x = r;
+	      {
+		if (!changed)
+		  x = copy_node (x);
+		TREE_VEC_ELT (x, i) = op;
+		changed = true;
+	      }
 	  }
       }
 
@@ -2932,10 +3024,19 @@ cp_fold (tree x)
       return org_x;
     }
 
-  fold_cache->put (org_x, x);
-  /* Prevent that we try to fold an already folded result again.  */
-  if (x != org_x)
-    fold_cache->put (x, x);
+  if (EXPR_P (x) && TREE_CODE (x) == code)
+    {
+      TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+      TREE_NO_WARNING (x) = TREE_NO_WARNING (org_x);
+    }
+
+  if (!c.evaluation_restricted_p ())
+    {
+      fold_cache->put (org_x, x);
+      /* Prevent that we try to fold an already folded result again.  */
+      if (x != org_x)
+	fold_cache->put (x, x);
+    }
 
   return x;
 }

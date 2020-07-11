@@ -1,5 +1,5 @@
 // Test for reversed candidates.
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 #include <compare>
 

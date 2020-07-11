@@ -22,6 +22,6 @@
 
 #ifndef __cpp_lib_concepts
 # error "Feature test macro for concepts is missing in <version>"
-#elif __cpp_lib_concepts < 201806L
+#elif __cpp_lib_concepts < 202002L
 # error "Feature test macro for concepts has wrong value in <version>"
 #endif

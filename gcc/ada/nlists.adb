@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,8 +141,7 @@ package body Nlists is
       Next_Node.Set_Last (N);
       Prev_Node.Set_Last (N);
 
-      --  Make sure we have no uninitialized junk in any new entires added.
-      --  This ensures that Tree_Gen will not write out any uninitialized junk.
+      --  Make sure we have no uninitialized junk in any new entries added.
 
       for J in Old_Last + 1 .. N loop
          Next_Node.Table (J) := Empty;
@@ -244,7 +243,7 @@ package body Nlists is
             N := F;
             loop
                Set_List_Link (N, To);
-               N := Next (N);
+               Next (N);
                exit when No (N);
             end loop;
 
@@ -531,7 +530,7 @@ package body Nlists is
             loop
                Set_List_Link (N, LC);
                exit when N = L;
-               N := Next (N);
+               Next (N);
             end loop;
 
             if Present (Before) then
@@ -598,7 +597,7 @@ package body Nlists is
             loop
                Set_List_Link (N, LC);
                exit when N = L;
-               N := Next (N);
+               Next (N);
             end loop;
 
             if Present (After) then
@@ -700,7 +699,7 @@ package body Nlists is
       Node := First (List);
       while Present (Node) loop
          Result := Result + 1;
-         Node := Next (Node);
+         Next (Node);
       end loop;
 
       return Result;
@@ -757,7 +756,7 @@ package body Nlists is
 
          while Present (E) loop
             Append (New_Copy (E), NL);
-            E := Next (E);
+            Next (E);
          end loop;
 
          return NL;
@@ -785,7 +784,7 @@ package body Nlists is
                Append (New_Copy (E), NL);
             end if;
 
-            E := Next (E);
+            Next (E);
          end loop;
 
          return NL;
@@ -991,7 +990,7 @@ package body Nlists is
    begin
       N := Node;
       loop
-         N := Next (N);
+         Next (N);
          exit when not Nkind_In (N, N_Pragma, N_Null_Statement);
       end loop;
 
@@ -1041,7 +1040,7 @@ package body Nlists is
    begin
       Elmt := First (List);
       for J in 1 .. Index - 1 loop
-         Elmt := Next (Elmt);
+         Next (Elmt);
       end loop;
 
       return Elmt;
@@ -1469,29 +1468,6 @@ package body Nlists is
       pragma Assert (not Locked);
       Prev_Node.Table (Node) := To;
    end Set_Prev;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      pragma Assert (not Locked);
-      Lists.Tree_Read;
-      Next_Node.Tree_Read;
-      Prev_Node.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Lists.Tree_Write;
-      Next_Node.Tree_Write;
-      Prev_Node.Tree_Write;
-   end Tree_Write;
 
    ------------
    -- Unlock --

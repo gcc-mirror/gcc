@@ -353,6 +353,10 @@ proc profopt-execute { src } {
 
     set count 0
     foreach option $prof_option_list {
+	# We pass -dumpbase-ext ${execext}[123] to the compile&link
+	# commands so as to avoid the combination of the executable
+	# with the source name in the aux outputs.
+	set execext ".x${count}"
 	set execname1 "${executable}${count}1"
 	set execname2 "${executable}${count}2"
 	set execname3 "${executable}${count}3"
@@ -402,7 +406,7 @@ proc profopt-execute { src } {
 	# Compile for profiling.
 
 	set options "$extra_options"
-	lappend options "additional_flags=$option $extra_flags $profile_option"
+	lappend options "additional_flags=$option $extra_flags $profile_option -dumpbase-ext ${execext}1"
 	set optstr "$option $profile_option"
 	set comp_output [${tool}_target_compile "$src" "$execname1" executable $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname1 $comp_output] {
@@ -491,7 +495,7 @@ proc profopt-execute { src } {
 	# Compile with feedback-directed optimizations.
 
 	set options "$extra_options"
-	lappend options "additional_flags=$option $extra_flags $feedback_option"
+	lappend options "additional_flags=$option $extra_flags $feedback_option -dumpbase-ext ${execext}2"
 	set optstr "$option $feedback_option"
 	if { [string first "-fauto-profile" $options] >= 0} {
 	    set options [regsub -- "-fauto-profile" $options "-fauto-profile=$tmpdir/$bprefix$base.$ext"]
@@ -548,7 +552,7 @@ proc profopt-execute { src } {
 	# Compile with normal optimizations.
 
 	set options "$extra_options"
-	lappend options "additional_flags=$option"
+	lappend options "additional_flags=$option -dumpbase-ext ${execext}3"
 	set optstr "$option"
 	set comp_output [${tool}_target_compile "$src" "$execname3" "executable" $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname3 $comp_output] {

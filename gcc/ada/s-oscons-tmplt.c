@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -261,7 +261,7 @@ main (void) {
 TXT("--  This is the version for " TARGET)
 TXT("")
 TXT("with Interfaces.C;")
-#if defined (__MINGW32__)
+#if defined (__MINGW32__) || defined (__CYGWIN__)
 # define TARGET_OS "Windows"
 # define Serial_Port_Descriptor "System.Win32.HANDLE"
 TXT("with System.Win32;")

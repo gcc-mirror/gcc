@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts-ts" }
 
 template<typename T, int N, typename... Xs> concept bool C1 = true;
@@ -25,6 +25,8 @@ void driver1() {
 
   f<X>();
   f<int>(); // { dg-error "no matching function for call" }
+  // { dg-error "type/value mismatch at argument 1" "" { target *-*-* } .-1 }
+  // { dg-message "expected a class template, got .int." "" { target *-*-* } .-2 }
 
   S2<int> s2a;
   S2<char, signed char, unsigned char> s2b;

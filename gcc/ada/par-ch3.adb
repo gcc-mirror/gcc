@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,18 +78,24 @@ package body Ch3 is
    --  it very unlikely that this will ever arise in practice.
 
    procedure P_Declarative_Items
-     (Decls   : List_Id;
-      Done    : out Boolean;
-      In_Spec : Boolean);
+     (Decls              : List_Id;
+      Done               : out Boolean;
+      Declare_Expression : Boolean;
+      In_Spec            : Boolean);
    --  Scans out a single declarative item, or, in the case of a declaration
    --  with a list of identifiers, a list of declarations, one for each of the
    --  identifiers in the list. The declaration or declarations scanned are
    --  appended to the given list. Done indicates whether or not there may be
    --  additional declarative items to scan. If Done is True, then a decision
    --  has been made that there are no more items to scan. If Done is False,
-   --  then there may be additional declarations to scan. In_Spec is true if
-   --  we are scanning a package declaration, and is used to generate an
-   --  appropriate message if a statement is encountered in such a context.
+   --  then there may be additional declarations to scan.
+   --
+   --  Declare_Expression is true if we are parsing a declare_expression, in
+   --  which case we want to suppress certain style checking.
+   --
+   --  In_Spec is true if we are scanning a package declaration, and is used to
+   --  generate an appropriate message if a statement is encountered in such a
+   --  context.
 
    procedure P_Identifier_Declarations
      (Decls   : List_Id;
@@ -1478,6 +1484,32 @@ package body Ch3 is
          Restore_Scan_State (Scan_State);
          Append_To (Decls, P_Type_Declaration);
          Done := False;
+         return;
+
+      --  AI12-0275: Object renaming declaration without subtype_mark or
+      --  access_definition
+
+      elsif Token = Tok_Renames then
+         if Ada_Version < Ada_2020 then
+            Error_Msg_SC
+              ("object renaming without subtype is an Ada 202x feature");
+            Error_Msg_SC ("\compile with -gnat2020");
+         end if;
+
+         Scan; -- past renames
+
+         Decl_Node :=
+           New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+         Set_Name (Decl_Node, P_Name);
+         Set_Defining_Identifier (Decl_Node, Idents (1));
+
+         P_Aspect_Specifications (Decl_Node, Semicolon => False);
+
+         T_Semicolon;
+
+         Append (Decl_Node, Decls);
+         Done := False;
+
          return;
 
       --  Otherwise we have an error situation
@@ -4284,7 +4316,8 @@ package body Ch3 is
       --  Loop to scan out the declarations
 
       loop
-         P_Declarative_Items (Decls, Done, In_Spec => False);
+         P_Declarative_Items
+           (Decls, Done, Declare_Expression => False, In_Spec => False);
          exit when Done;
       end loop;
 
@@ -4311,16 +4344,20 @@ package body Ch3 is
    --  then the scan is set past the next semicolon and Error is returned.
 
    procedure P_Declarative_Items
-     (Decls   : List_Id;
-      Done    : out Boolean;
-      In_Spec : Boolean)
+     (Decls              : List_Id;
+      Done               : out Boolean;
+      Declare_Expression : Boolean;
+      In_Spec            : Boolean)
    is
       Scan_State : Saved_Scan_State;
 
    begin
       Done := False;
 
-      if Style_Check then
+      --  In -gnatg mode, we don't want a "bad indentation" error inside a
+      --  declare_expression.
+
+      if Style_Check and not Declare_Expression then
          Style.Check_Indentation;
       end if;
 
@@ -4676,7 +4713,9 @@ package body Ch3 is
    --  the scan pointer is repositioned past the next semicolon, and the scan
    --  for declarative items continues.
 
-   function P_Basic_Declarative_Items return List_Id is
+   function P_Basic_Declarative_Items
+     (Declare_Expression : Boolean) return List_Id
+   is
       Decl  : Node_Id;
       Decls : List_Id;
       Kind  : Node_Kind;
@@ -4699,7 +4738,8 @@ package body Ch3 is
       Decls := New_List;
 
       loop
-         P_Declarative_Items (Decls, Done, In_Spec => True);
+         P_Declarative_Items
+           (Decls, Done, Declare_Expression, In_Spec => True);
          exit when Done;
       end loop;
 
@@ -4724,7 +4764,15 @@ package body Ch3 is
             Kind = N_Task_Body       or else
             Kind = N_Protected_Body
          then
-            Error_Msg ("proper body not allowed in package spec", Sloc (Decl));
+            if Declare_Expression then
+               Error_Msg
+                 ("proper body not allowed in declare_expression",
+                  Sloc (Decl));
+            else
+               Error_Msg
+                 ("proper body not allowed in package spec",
+                  Sloc (Decl));
+            end if;
 
             --  Complete declaration of mangled subprogram body, for better
             --  recovery if analysis is attempted.
@@ -4791,7 +4839,8 @@ package body Ch3 is
       Dummy_Done : Boolean;
       pragma Warnings (Off, Dummy_Done);
    begin
-      P_Declarative_Items (S, Dummy_Done, False);
+      P_Declarative_Items
+        (S, Dummy_Done, Declare_Expression => False, In_Spec => False);
    end Skip_Declaration;
 
    -----------------------------------------

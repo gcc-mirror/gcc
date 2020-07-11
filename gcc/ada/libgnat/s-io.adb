@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,16 +65,16 @@ package body System.IO is
    end Put;
 
    procedure Put (C : Character) is
-      procedure Put_Char (C : Character);
+      procedure Put_Char (C : Integer);
       pragma Import (C, Put_Char, "put_char");
 
-      procedure Put_Char_Stderr (C : Character);
+      procedure Put_Char_Stderr (C : Integer);
       pragma Import (C, Put_Char_Stderr, "put_char_stderr");
 
    begin
       case Current_Out is
-         when Stdout => Put_Char (C);
-         when Stderr => Put_Char_Stderr (C);
+         when Stdout => Put_Char (Character'Pos (C));
+         when Stderr => Put_Char_Stderr (Character'Pos (C));
       end case;
    end Put;
 

@@ -4,7 +4,7 @@
 // Origin: Hans-Peter Nilsson <hp@axis.com>
 // See <URL:http://gcc.gnu.org/ml/gcc-patches/2000-06/msg00310.html>
 
-typedef unsigned int    udword;
+typedef unsigned udword __attribute__((mode (__SI__)));
 extern "C" {
 void __assert (const char *, int, const char *);
 }

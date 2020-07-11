@@ -17,10 +17,8 @@ AC_DEFUN([DRUNTIME_CPU_SOURCES],
                ;;
       mips*)   druntime_target_cpu_parsed="mips"
                ;;
-      powerpc) druntime_target_cpu_parsed="powerpc"
-               ;;
-      powerpc64)
-               druntime_target_cpu_parsed="powerpc64"
+      powerpc*)
+               druntime_target_cpu_parsed="powerpc"
                ;;
       i[[34567]]86|x86_64)
                druntime_target_cpu_parsed="x86"
@@ -40,8 +38,6 @@ AC_DEFUN([DRUNTIME_CPU_SOURCES],
                  [test "$druntime_target_cpu_parsed" = "mips"])
   AM_CONDITIONAL([DRUNTIME_CPU_POWERPC],
                  [test "$druntime_target_cpu_parsed" = "powerpc"])
-  AM_CONDITIONAL([DRUNTIME_CPU_POWERPC64],
-                 [test "$druntime_target_cpu_parsed" = "powerpc64"])
   AM_CONDITIONAL([DRUNTIME_CPU_X86],
                  [test "$druntime_target_cpu_parsed" = "x86"])
   AM_CONDITIONAL([DRUNTIME_CPU_SYSTEMZ],

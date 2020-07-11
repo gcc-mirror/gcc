@@ -28,7 +28,37 @@ test()
 
   const auto outd = std::fill_n(ma0.begin(), 6, 77);
 
-  return outd == ma0.begin() + 6;
+  return outd == ma0.begin() + 6 && ma0[5] == 77 && ma0[6] == 0;
 }
 
 static_assert(test());
+
+constexpr bool
+test_byte()
+{
+  // PR libstdc++/94933
+  std::array<char, 12> ma0{};
+
+  const auto outd = std::fill_n(ma0.begin(), 6, 77);
+
+  return outd == ma0.begin() + 6 && ma0[5] == 77 && ma0[6] == 0;
+}
+
+static_assert( test_byte() );
+
+struct S
+{
+  int i = 0;
+};
+
+constexpr bool
+test_nonscalar()
+{
+  std::array<S, 12> ma0{};
+
+  const auto outd = std::fill_n(ma0.begin(), 6, S{77});
+
+  return outd == ma0.begin() + 6 && ma0[5].i == 77 && ma0[6].i == 0;
+}
+
+static_assert( test_nonscalar() );

@@ -38,6 +38,8 @@ else
             asm nothrow @trusted { mov p[EBP], EBP; }
         else version (D_InlineAsm_X86_64)
             asm nothrow @trusted { mov p[RBP], RBP; }
+        else version (AArch64)
+            asm nothrow @trusted { "str x29, %0" : "=m" (p); }
         else
             static assert(false, "Architecture not supported.");
 

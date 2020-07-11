@@ -1,8 +1,7 @@
 // PR c++/57102
-// { dg-options "-O2 -fno-inline -fdump-final-insns" }
+// { dg-options "-O2 -fno-inline -fdump-final-insns -Wno-return-type" }
 // { dg-do compile { target c++11 } }
 // { dg-final cleanup-final-insns-dump }
-// { dg-additional-options "-Wno-return-type" }
 
 namespace std
 {
@@ -312,7 +311,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
     typename __add_ref<
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
-    get(tuple<_Elements...>& __t) noexcept; // { dg-warning "used but never defined" }
+    get(tuple<_Elements...>& __t) noexcept;
   template<std::size_t... _Indexes>
     struct _Index_tuple
     {};
@@ -387,7 +386,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
     };
   template<typename _Callable, typename... _Args>
     typename _Bind_simple_helper<_Callable, _Args...>::__type
-    __bind_simple(_Callable&& __callable, _Args&&... __args)  // { dg-warning "used but never defined" }
+    __bind_simple(_Callable&& __callable, _Args&&... __args) 
   ;
   union _Any_data
   ;
@@ -397,14 +396,14 @@ namespace std __attribute__ ((__visibility__ ("default")))
     ;
   template<typename _Signature>
     class function;
-  class _Function_base
+  struct _Function_base
   {
     template<typename _Functor>
       class _Base_manager
       {
       protected:
  static _Functor*
- _M_get_pointer(const _Any_data& __source)  // { dg-warning "used but never defined" }
+ _M_get_pointer(const _Any_data& __source)
  ;
       };
   };
@@ -511,7 +510,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
         _S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
  { ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
       static pointer
-      allocate(_Alloc& __a, size_type __n)  // { dg-warning "used but never defined" }
+      allocate(_Alloc& __a, size_type __n) 
       ;
       template<typename _Tp, typename... _Args>
  static auto construct(_Alloc& __a, _Tp* __p, _Args&&... __args)

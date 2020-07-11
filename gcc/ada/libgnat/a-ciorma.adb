@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1435,11 +1435,11 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       E : Element_Access;
 
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with "key not in map";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       K := Node.Key;
       E := Node.Element;
@@ -1476,6 +1476,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Position.Node = null then
          raise Constraint_Error with
            "Position cursor of Replace_Element equals No_Element";
@@ -1493,8 +1495,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          raise Program_Error with
            "Position cursor of Replace_Element designates wrong map";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       pragma Assert (Vet (Container.Tree, Position.Node),
                      "Position cursor of Replace_Element is bad");

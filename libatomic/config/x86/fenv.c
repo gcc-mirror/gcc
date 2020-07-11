@@ -45,7 +45,15 @@ struct fenv
   unsigned int __data_offset;
   unsigned short int __data_selector;
   unsigned short int __unused5;
-};
+} __attribute__ ((gcc_struct));
+
+#ifdef __SSE_MATH__
+# define __math_force_eval_div(x, y) \
+  do { asm ("" : "+x" (x)); asm volatile ("" : : "x" (x / y)); } while (0)
+#else
+# define __math_force_eval_div(x, y) \
+  do { asm ("" : "+t" (x)); asm volatile ("" : : "f" (x / y)); } while (0)
+#endif
 
 /* Raise the supported floating-point exceptions from EXCEPTS.  Other
    bits in EXCEPTS are ignored.  */
@@ -53,21 +61,15 @@ struct fenv
 void
 __atomic_feraiseexcept (int excepts)
 {
+  struct fenv temp;
+
   if (excepts & FE_INVALID)
     {
       float f = 0.0f;
-#ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
-      asm volatile ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
-      r = f; /* Needed to trigger exception.   */
-#else
-      asm volatile ("fdiv\t{%y0, %0|%0, %y0}" : "+t" (f));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval_div (f, f);
     }
   if (excepts & FE_DENORM)
     {
-      struct fenv temp;
       asm volatile ("fnstenv\t%0" : "=m" (temp));
       temp.__status_word |= FE_DENORM;
       asm volatile ("fldenv\t%0" : : "m" (temp));
@@ -76,18 +78,10 @@ __atomic_feraiseexcept (int excepts)
   if (excepts & FE_DIVBYZERO)
     {
       float f = 1.0f, g = 0.0f;
-#ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
-      asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-      r = f; /* Needed to trigger exception.   */
-#else
-      asm volatile ("fdivs\t%1" : "+t" (f) : "m" (g));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval_div (f, g);
     }
   if (excepts & FE_OVERFLOW)
     {
-      struct fenv temp;
       asm volatile ("fnstenv\t%0" : "=m" (temp));
       temp.__status_word |= FE_OVERFLOW;
       asm volatile ("fldenv\t%0" : : "m" (temp));
@@ -95,7 +89,6 @@ __atomic_feraiseexcept (int excepts)
     }
   if (excepts & FE_UNDERFLOW)
     {
-      struct fenv temp;
       asm volatile ("fnstenv\t%0" : "=m" (temp));
       temp.__status_word |= FE_UNDERFLOW;
       asm volatile ("fldenv\t%0" : : "m" (temp));
@@ -104,13 +97,6 @@ __atomic_feraiseexcept (int excepts)
   if (excepts & FE_INEXACT)
     {
       float f = 1.0f, g = 3.0f;
-#ifdef __SSE_MATH__
-      volatile float r __attribute__ ((unused));
-      asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
-      r = f; /* Needed to trigger exception.   */
-#else
-      asm volatile ("fdivs\t%1" : "+t" (f) : "m" (g));
-      /* No need for fwait, exception is triggered by emitted fstp.  */
-#endif
+      __math_force_eval_div (f, g);
     }
 }

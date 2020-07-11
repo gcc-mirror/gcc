@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,7 +196,7 @@ package Sem_Type is
    --  a compatible one.
 
    function Hides_Op (F : Entity_Id; Op : Entity_Id) return Boolean;
-   --  A user-defined function hides a predefined operator if it is matches the
+   --  A user-defined function hides a predefined operator if it matches the
    --  signature of the operator, and is declared in an open scope, or in the
    --  scope of the result type.
 

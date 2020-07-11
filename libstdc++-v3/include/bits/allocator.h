@@ -50,9 +50,6 @@
 #endif
 
 #define __cpp_lib_incomplete_container_elements 201505
-#if __cplusplus >= 201103L
-# define __cpp_lib_allocator_is_always_equal 201411
-#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -96,14 +93,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	void
 	construct(_Up* __p, _Args&&... __args)
-	noexcept(noexcept(::new((void *)__p)
-			    _Up(std::forward<_Args>(__args)...)))
+	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
       template<typename _Up>
 	void
 	destroy(_Up* __p)
-	noexcept(noexcept(__p->~_Up()))
+	noexcept(std::is_nothrow_destructible<_Up>::value)
 	{ __p->~_Up(); }
 #endif // C++11 to C++17
     };
@@ -196,9 +192,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       friend _GLIBCXX20_CONSTEXPR bool
       operator!=(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return false; }
+#endif
 
       // Inherit everything else.
     };
@@ -209,11 +207,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOTHROW
     { return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _T1, typename _T2>
     inline _GLIBCXX20_CONSTEXPR bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
     _GLIBCXX_NOTHROW
     { return false; }
+#endif
 
   // Invalid allocator<cv T> partial specializations.
   // allocator_traits::rebind_alloc can be used to form a valid allocator type.

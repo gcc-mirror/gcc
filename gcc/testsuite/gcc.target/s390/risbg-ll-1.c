@@ -214,14 +214,11 @@ i64 f18 (i64 v_foo)
 }
 
 // Test an arithmetic shift right in which some of the sign bits are kept.
-// This needs a separate shift and mask.
+// This needs a separate shift and mask on 31 bit.
 i32 f19 (i32 v_foo)
 {
-  /* Should be
-     { dg-final { scan-assembler "f19:\n\tsra\t%r2,28\n\tnilf\t%r2,30" { xfail { lp64 } } } }
-     but because a zeroextend is merged into the pattern it is actually
-     { dg-final { scan-assembler "f19:\n\tsra\t%r2,28\n\trisbg\t%r2,%r2,59,128\\\+62,0" { target { lp64 } } } }
-     { dg-final { scan-assembler "f19:\n\tsra\t%r2,28\n\tnilf\t%r2,30" { target { ! lp64 } } } } */
+  /* { dg-final { scan-assembler "f19:\n\trisbg\t%r2,%r2,59,128\\+62,64-28" { target { lp64 } } } } */
+  /* { dg-final { scan-assembler "f19:\n\tsra\t%r2,28\n\tnilf\t%r2,30" { target { ! lp64 } } } } */
   i32 v_shr = v_foo >> 28;
   i32 v_and = v_shr & 30;
   return v_and;
@@ -273,7 +270,7 @@ i64 f23 (i64 v_foo)
 // mask and rotate.
 i32 f24 (i32 v_foo)
 {
-  /* { dg-final { scan-assembler "f24:\n\tnilf\t%r2,254\n\trll\t%r2,%r2,29" } } */
+  /* { dg-final { scan-assembler "f24:\n\tnilf\t%r2,254\n\trll\t%r2,%r2,29\n" } } */
   i32 v_and = v_foo & 254;
   i32 v_parta = ((ui32)v_and) >> 3;
   i32 v_partb = v_and << 29;
@@ -478,7 +475,7 @@ i64 f42 (t42 v_x)
 // Check that we get the case where a 64-bit shift is used by a 32-bit and.
 i32 f43 (i64 v_x)
 {
-  /* { dg-final { scan-assembler "f43:\n\trisbg\t%r2,%r2,32,128\\\+61,64-12" { target { lp64 } } } } */
+  /* { dg-final { scan-assembler "f43:\n\trisbg\t%r2,%r2,32,128\\+61,32\\+20\n\tlgfr\t%r2,%r2" { target { lp64 } } } } */
   /* { dg-final { scan-assembler "f43:\n\trisbg\t%r3,%r2,0,0\\\+32-1,64-0-32\n\trisbg\t%r2,%r3,32,128\\\+61,64-12" { target { ! lp64 } } } } */
   i64 v_shr3 = ((ui64)v_x) >> 12;
   i32 v_shr3_tr = (ui32)v_shr3;

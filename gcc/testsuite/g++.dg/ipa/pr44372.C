@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fipa-cp -fipa-cp-clone" } */
-/* { dg-additional-options "-Wno-return-type" } */
+/* { dg-options "-O -fipa-cp -fipa-cp-clone -Wno-return-type" } */
 
 template < typename > class S3;
 

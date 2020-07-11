@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,16 @@ package Exp_Ch3 is
 
    procedure Expand_Record_Extension (T : Entity_Id; Def : Node_Id);
    --  Add a field _parent in the extension part of the record
+
+   procedure Build_Access_Subprogram_Wrapper_Body
+     (Decl     : Node_Id;
+      New_Decl : Node_Id);
+   --  Build the wrapper body, which holds the indirect call through an access-
+   --  to-subprogram, and whose expansion incorporates the contracts of the
+   --  access type declaration. Called from Build_Access_Subprogram_Wrapper.
+   --  Building the wrapper is done during analysis to perform proper semantic
+   --  checks on the relevant aspects. The wrapper body could be simplified to
+   --  a null body when expansion is disabled ???
 
    procedure Build_Discr_Checking_Funcs (N : Node_Id);
    --  Builds function which checks whether the component name is consistent
@@ -90,6 +100,13 @@ package Exp_Ch3 is
       Param_Specs : List_Id) return Node_Id;
    --  Build the body of the equality function Body_Id for the untagged variant
    --  record Typ with the given parameters specification list.
+
+   procedure Ensure_Activation_Chain_And_Master (Obj_Decl : Node_Id);
+   --  If tasks are being declared (or might be declared) by the given object
+   --  declaration then ensure to have an activation chain defined for the
+   --  tasks (has no effect if we already have one), and also that a Master
+   --  variable is established (and that the appropriate enclosing construct
+   --  is established as a task master).
 
    function Freeze_Type (N : Node_Id) return Boolean;
    --  This function executes the freezing actions associated with the given

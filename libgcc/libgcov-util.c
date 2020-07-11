@@ -57,12 +57,12 @@ void gcov_set_verbose (void)
 #include <ftw.h>
 #endif
 
-static void tag_function (unsigned, unsigned);
-static void tag_blocks (unsigned, unsigned);
-static void tag_arcs (unsigned, unsigned);
-static void tag_lines (unsigned, unsigned);
-static void tag_counters (unsigned, unsigned);
-static void tag_summary (unsigned, unsigned);
+static void tag_function (unsigned, int);
+static void tag_blocks (unsigned, int);
+static void tag_arcs (unsigned, int);
+static void tag_lines (unsigned, int);
+static void tag_counters (unsigned, int);
+static void tag_summary (unsigned, int);
 
 /* The gcov_info for the first module.  */
 static struct gcov_info *curr_gcov_info;
@@ -80,8 +80,6 @@ static int k_ctrs_mask[GCOV_COUNTERS];
 static struct gcov_ctr_info k_ctrs[GCOV_COUNTERS];
 /* Number of kind of counters that have been seen.  */
 static int k_ctrs_types;
-/* The object summary being processed.  */
-static struct gcov_summary *curr_object_summary;
 
 /* Merge functions for counters.  */
 #define DEF_GCOV_COUNTER(COUNTER, NAME, FN_TYPE) __gcov_merge ## FN_TYPE,
@@ -119,7 +117,7 @@ typedef struct tag_format
 {
     unsigned tag;
     char const *name;
-    void (*proc) (unsigned, unsigned);
+    void (*proc) (unsigned, int);
 } tag_format_t;
 
 /* Handler table for various Tags.  */
@@ -140,7 +138,7 @@ static const tag_format_t tag_table[] =
 /* Handler for reading function tag.  */
 
 static void
-tag_function (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_function (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   int i;
 
@@ -173,7 +171,7 @@ tag_function (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading block tag.  */
 
 static void
-tag_blocks (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_blocks (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   /* TBD: gcov-tool currently does not handle gcno files. Assert here.  */
   gcc_unreachable ();
@@ -182,7 +180,7 @@ tag_blocks (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading flow arc tag.  */
 
 static void
-tag_arcs (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_arcs (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   /* TBD: gcov-tool currently does not handle gcno files. Assert here.  */
   gcc_unreachable ();
@@ -191,7 +189,7 @@ tag_arcs (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading line tag.  */
 
 static void
-tag_lines (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_lines (unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED)
 {
   /* TBD: gcov-tool currently does not handle gcno files. Assert here.  */
   gcc_unreachable ();
@@ -200,9 +198,9 @@ tag_lines (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 /* Handler for reading counters array tag with value as TAG and length of LENGTH.  */
 
 static void
-tag_counters (unsigned tag, unsigned length)
+tag_counters (unsigned tag, int length)
 {
-  unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
+  unsigned n_counts = GCOV_TAG_COUNTER_NUM (abs (length));
   gcov_type *values;
   unsigned ix;
   unsigned tag_ix;
@@ -213,20 +211,21 @@ tag_counters (unsigned tag, unsigned length)
   gcc_assert (k_ctrs[tag_ix].num == 0);
   k_ctrs[tag_ix].num = n_counts;
 
-  k_ctrs[tag_ix].values = values = (gcov_type *) xmalloc (n_counts * sizeof (gcov_type));
+  k_ctrs[tag_ix].values = values = (gcov_type *) xcalloc (sizeof (gcov_type),
+							  n_counts);
   gcc_assert (values);
 
-  for (ix = 0; ix != n_counts; ix++)
-    values[ix] = gcov_read_counter ();
+  if (length > 0)
+    for (ix = 0; ix != n_counts; ix++)
+      values[ix] = gcov_read_counter ();
 }
 
 /* Handler for reading summary tag.  */
 
 static void
-tag_summary (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
+tag_summary (unsigned tag ATTRIBUTE_UNUSED, int ATTRIBUTE_UNUSED)
 {
-  curr_object_summary = (gcov_summary *) xcalloc (sizeof (gcov_summary), 1);
-  gcov_read_summary (curr_object_summary);
+  gcov_read_summary (&curr_gcov_info->summary);
 }
 
 /* This function is called at the end of reading a gcda file.
@@ -243,7 +242,7 @@ read_gcda_finalize (struct gcov_info *obj_info)
   /* We set the following fields: merge, n_functions, functions
      and summary.  */
   obj_info->n_functions = num_fn_info;
-  obj_info->functions = (const struct gcov_fn_info**) obstack_finish (&fn_info);
+  obj_info->functions = (struct gcov_fn_info**) obstack_finish (&fn_info);
 
   /* wrap all the counter array.  */
   for (i=0; i< GCOV_COUNTERS; i++)
@@ -261,7 +260,7 @@ read_gcda_file (const char *filename)
 {
   unsigned tags[4];
   unsigned depth = 0;
-  unsigned magic, version;
+  unsigned version;
   struct gcov_info *obj_info;
   int i;
 
@@ -276,8 +275,7 @@ read_gcda_file (const char *filename)
     }
 
   /* Read magic.  */
-  magic = gcov_read_unsigned ();
-  if (magic != GCOV_DATA_MAGIC)
+  if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov data file\n", filename);
       gcov_close ();
@@ -301,7 +299,6 @@ read_gcda_file (const char *filename)
   obstack_init (&fn_info);
   num_fn_info = 0;
   curr_fn_info = 0;
-  curr_object_summary = NULL;
   {
     size_t len = strlen (filename) + 1;
     char *str_dup = (char*) xmalloc (len);
@@ -325,7 +322,8 @@ read_gcda_file (const char *filename)
       tag = gcov_read_unsigned ();
       if (!tag)
         break;
-      length = gcov_read_unsigned ();
+      int read_length = (int)gcov_read_unsigned ();
+      length = read_length > 0 ? read_length : 0;
       base = gcov_position ();
       mask = GCOV_TAG_MASK (tag) >> 1;
       for (tag_depth = 4; mask; mask >>= 8)
@@ -358,7 +356,7 @@ read_gcda_file (const char *filename)
         {
           unsigned long actual_length;
 
-          (*format->proc) (tag, length);
+	  (*format->proc) (tag, read_length);
 
           actual_length = gcov_position () - base;
           if (actual_length > length)
@@ -507,14 +505,58 @@ gcov_get_merge_weight (void)
    value buffer and weights and then calls the merge function.  */
 
 static void
-merge_wrapper (gcov_merge_fn f, gcov_type *v1, gcov_unsigned_t n,
-               gcov_type *v2, unsigned w)
+merge_wrapper (gcov_merge_fn f, gcov_type *v1, gcov_unsigned_t n1,
+	       gcov_type *v2, gcov_unsigned_t n2, unsigned w)
 {
   gcov_value_buf = v2;
   gcov_value_buf_pos = 0;
-  gcov_value_buf_size = n;
+  gcov_value_buf_size = n2;
   gcov_merge_weight = w;
-  (*f) (v1, n);
+  (*f) (v1, n1);
+}
+
+/* Convert on disk representation of a TOPN counter to in memory representation
+   that is expected from __gcov_merge_topn function.  */
+
+static void
+topn_to_memory_representation (struct gcov_ctr_info *info)
+{
+  auto_vec<gcov_type> output;
+  gcov_type *values = info->values;
+  int count = info->num;
+
+  while (count > 0)
+    {
+      output.safe_push (values[0]);
+      gcov_type n = values[1];
+      output.safe_push (n);
+      if (n > 0)
+	{
+	  struct gcov_kvp *tuples
+	    = (struct gcov_kvp *)xcalloc (sizeof (struct gcov_kvp), n);
+	  for (unsigned i = 0; i < n - 1; i++)
+	    tuples[i].next = &tuples[i + 1];
+	  for (unsigned i = 0; i < n; i++)
+	    {
+	      tuples[i].value = values[2 + 2 * i];
+	      tuples[i].count = values[2 + 2 * i + 1];
+	    }
+	  output.safe_push ((intptr_t)&tuples[0]);
+	}
+      else
+	output.safe_push (0);
+
+      unsigned len = 2 * n + 2;
+      values += len;
+      count -= len;
+    }
+  gcc_assert (count == 0);
+
+  /* Allocate new buffer and copy it there.  */
+  info->num = output.length ();
+  info->values = (gcov_type *)xmalloc (sizeof (gcov_type) * info->num);
+  for (unsigned i = 0; i < info->num; i++)
+    info->values[i] = output[i];
 }
 
 /* Offline tool to manipulate profile data.
@@ -541,12 +583,17 @@ gcov_merge (struct gcov_info *info1, struct gcov_info *info2, int w)
   int has_mismatch = 0;
 
   gcc_assert (info2->n_functions == n_functions);
+
+  /* Merge summary.  */
+  info1->summary.runs += info2->summary.runs;
+  info1->summary.sum_max += info2->summary.sum_max;
+
   for (f_ix = 0; f_ix < n_functions; f_ix++)
     {
       unsigned t_ix;
-      const struct gcov_fn_info *gfi_ptr1 = info1->functions[f_ix];
-      const struct gcov_fn_info *gfi_ptr2 = info2->functions[f_ix];
-      const struct gcov_ctr_info *ci_ptr1, *ci_ptr2;
+      struct gcov_fn_info *gfi_ptr1 = info1->functions[f_ix];
+      struct gcov_fn_info *gfi_ptr2 = info2->functions[f_ix];
+      struct gcov_ctr_info *ci_ptr1, *ci_ptr2;
 
       if (!gfi_ptr1 || gfi_ptr1->key != info1)
         continue;
@@ -570,8 +617,14 @@ gcov_merge (struct gcov_info *info1, struct gcov_info *info2, int w)
           gcc_assert (merge1 == merge2);
           if (!merge1)
             continue;
-          gcc_assert (ci_ptr1->num == ci_ptr2->num);
-          merge_wrapper (merge1, ci_ptr1->values, ci_ptr1->num, ci_ptr2->values, w);
+
+	  if (merge1 == __gcov_merge_topn)
+	    topn_to_memory_representation (ci_ptr1);
+	  else
+	    gcc_assert (ci_ptr1->num == ci_ptr2->num);
+
+	  merge_wrapper (merge1, ci_ptr1->values, ci_ptr1->num,
+			 ci_ptr2->values, ci_ptr2->num, w);
           ci_ptr1++;
           ci_ptr2++;
         }

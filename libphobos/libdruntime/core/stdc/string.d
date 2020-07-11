@@ -23,6 +23,12 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+// Those libs don't expose the mandated C interface
+version (CRuntime_Glibc)
+    version = ReturnStrerrorR;
+else version (CRuntime_UClibc)
+    version = ReturnStrerrorR;
+
 extern (C):
 @system:
 nothrow:
@@ -76,49 +82,16 @@ pure inout(char)*  strstr(return inout(char)* s1, scope const char* s2);
 char*  strtok(return char* s1, scope const char* s2);
 ///
 char*  strerror(int errnum);
-version (CRuntime_Glibc)
+// This `strerror_r` definition is not following the POSIX standard
+version (ReturnStrerrorR)
 {
     ///
     const(char)* strerror_r(int errnum, return char* buf, size_t buflen);
 }
-else version (Darwin)
+// This one is
+else
 {
     int strerror_r(int errnum, scope char* buf, size_t buflen);
-}
-else version (FreeBSD)
-{
-    int strerror_r(int errnum, scope char* buf, size_t buflen);
-}
-else version (NetBSD)
-{
-    int strerror_r(int errnum, char* buf, size_t buflen);
-}
-else version (OpenBSD)
-{
-    int strerror_r(int errnum, scope char* buf, size_t buflen);
-}
-else version (DragonFlyBSD)
-{
-    int strerror_r(int errnum, scope char* buf, size_t buflen);
-}
-else version (Solaris)
-{
-    int strerror_r(int errnum, scope char* buf, size_t buflen);
-}
-else version (CRuntime_Bionic)
-{
-    ///
-    int strerror_r(int errnum, scope char* buf, size_t buflen);
-}
-else version (CRuntime_Musl)
-{
-    ///
-    int strerror_r(int errnum, scope char *buf, size_t buflen);
-}
-else version (CRuntime_UClibc)
-{
-    ///
-    const(char)* strerror_r(int errnum, return char* buf, size_t buflen);
 }
 ///
 pure size_t strlen(scope const char* s);

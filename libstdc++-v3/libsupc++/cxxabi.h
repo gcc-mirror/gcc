@@ -127,7 +127,7 @@ namespace __cxxabiv1
   int
   __cxa_atexit(void (*)(void*), void*, void*) _GLIBCXX_NOTHROW;
 
-  int
+  void
   __cxa_finalize(void*);
 
   // TLS destruction.

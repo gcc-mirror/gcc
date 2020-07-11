@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,9 +36,9 @@
 with Ada.Finalization;
 with System.Storage_Elements;
 
-package System.Storage_Pools is
-   pragma Preelaborate;
-
+package System.Storage_Pools
+  with Pure
+is
    type Root_Storage_Pool is abstract
      new Ada.Finalization.Limited_Controlled with private;
    pragma Preelaborable_Initialization (Root_Storage_Pool);

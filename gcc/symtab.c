@@ -800,11 +800,10 @@ symtab_node::dump_references (FILE *file)
   int i;
   for (i = 0; iterate_reference (i, ref); i++)
     {
-      fprintf (file, "%s (%s)",
-	       ref->referred->dump_asm_name (),
-	       ipa_ref_use_name [ref->use]);
+      fprintf (file, "%s (%s) ", ref->referred->dump_asm_name (),
+	       ipa_ref_use_name[ref->use]);
       if (ref->speculative)
-	fprintf (file, " (speculative)");
+	fprintf (file, "(speculative) ");
     }
   fprintf (file, "\n");
 }
@@ -818,11 +817,10 @@ symtab_node::dump_referring (FILE *file)
   int i;
   for (i = 0; iterate_referring(i, ref); i++)
     {
-      fprintf (file, "%s (%s)",
-	       ref->referring->dump_asm_name (),
-	       ipa_ref_use_name [ref->use]);
+      fprintf (file, "%s (%s) ", ref->referring->dump_asm_name (),
+	       ipa_ref_use_name[ref->use]);
       if (ref->speculative)
-	fprintf (file, " (speculative)");
+	fprintf (file, "(speculative) ");
     }
   fprintf (file, "\n");
 }

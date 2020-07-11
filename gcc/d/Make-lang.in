@@ -59,7 +59,6 @@ D_FRONTEND_OBJS = \
 	d/access.o \
 	d/aliasthis.o \
 	d/apply.o \
-	d/argtypes.o \
 	d/arrayop.o \
 	d/attrib.o \
 	d/blockexit.o \
@@ -134,10 +133,28 @@ D_GENERATED_OBJS = d/id.o d/impcnvtab.o
 
 # Language-specific object files for D.
 D_OBJS = \
-	d/d-attribs.o d/d-builtins.o d/d-codegen.o d/d-convert.o \
-	d/d-diagnostic.o d/d-frontend.o d/d-incpath.o d/d-lang.o \
-	d/d-longdouble.o d/d-target.o d/decl.o d/expr.o d/imports.o \
-	d/intrinsics.o d/modules.o d/runtime.o d/toir.o d/typeinfo.o d/types.o
+	d/d-attribs.o \
+	d/d-builtins.o \
+	d/d-codegen.o \
+	d/d-compiler.o \
+	d/d-convert.o \
+	d/d-ctfloat.o \
+	d/d-diagnostic.o \
+	d/d-frontend.o \
+	d/d-incpath.o \
+	d/d-lang.o \
+	d/d-longdouble.o \
+	d/d-port.o \
+	d/d-target.o \
+	d/decl.o \
+	d/expr.o \
+	d/imports.o \
+	d/intrinsics.o \
+	d/modules.o \
+	d/runtime.o \
+	d/toir.o \
+	d/typeinfo.o \
+	d/types.o
 
 # All language-specific object files for D.
 D_ALL_OBJS = $(D_FRONTEND_OBJS) $(D_GENERATED_OBJS) $(D_OBJS) $(D_TARGET_OBJS)

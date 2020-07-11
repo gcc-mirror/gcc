@@ -47,7 +47,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_concepts 201806L
+#define __cpp_lib_concepts 202002L
 
   // [concepts.lang], language-related concepts
 

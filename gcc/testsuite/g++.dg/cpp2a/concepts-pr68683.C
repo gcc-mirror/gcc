@@ -1,5 +1,5 @@
 // PR c++/68683
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <typename, typename>
 struct is_same {

@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++98" }
-// { dg-do compile }
+// { dg-do compile { target c++98_only } }
 // { dg-excess-errors "" { target uclibc } }
 
 #include <cmath>
@@ -55,7 +55,7 @@ template <typename _Tp>
     fp_type f1 = 1.0;
     fp_type f2 = 3.0;
     int res = 0;
-    
+
     res = std::fpclassify(f1);
     res = std::isfinite(f2);
     res = std::isinf(f1);

@@ -25,9 +25,11 @@ test01(const char* first, const char* last)
 {
 #if _GLIBCXX_USE_WCHAR_T
   wchar_t wc;
+#else
+  enum W { } wc;
+#endif
   std::from_chars(first, last, wc); // { dg-error "no matching" }
   std::from_chars(first, last, wc, 10); // { dg-error "no matching" }
-#endif
 
   char16_t c16;
   std::from_chars(first, last, c16); // { dg-error "no matching" }
@@ -35,6 +37,10 @@ test01(const char* first, const char* last)
   char32_t c32;
   std::from_chars(first, last, c32); // { dg-error "no matching" }
   std::from_chars(first, last, c32, 10); // { dg-error "no matching" }
+
+  enum E { } e;
+  std::from_chars(first, last, e); // { dg-error "no matching" }
+  std::from_chars(first, last, e, 10); // { dg-error "no matching" }
 }
 
 // { dg-prune-output "enable_if" }

@@ -19,6 +19,13 @@
 // { dg-do compile { target c++2a } }
 
 #include <functional>
+
+#ifndef __cpp_lib_constexpr_functional
+# error "Feature test macro for constexpr searcher is missing in <functional>"
+#elif __cpp_lib_constexpr_functional < 201811L
+# error "Feature test macro for constexpr searcher has wrong value in <functional>"
+#endif
+
 #include <string_view>
 
 const std::string_view

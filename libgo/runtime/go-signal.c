@@ -179,6 +179,18 @@ setSigactionHandler(struct sigaction* sa, uintptr handler)
 // C code to fetch values from the siginfo_t and ucontext_t pointers
 // passed to a signal handler.
 
+uintptr getSiginfoCode(siginfo_t *)
+	__attribute__ ((no_split_stack));
+
+uintptr getSiginfoCode(siginfo_t *)
+	__asm__ (GOSYM_PREFIX "runtime.getSiginfoCode");
+
+uintptr
+getSiginfoCode(siginfo_t *info)
+{
+	return (uintptr)(info->si_code);
+}
+
 struct getSiginfoRet {
 	uintptr sigaddr;
 	uintptr sigpc;

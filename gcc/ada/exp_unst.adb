@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -251,18 +251,14 @@ package body Exp_Unst is
    -----------------------
 
    function Needs_Fat_Pointer (E : Entity_Id) return Boolean is
-      Typ : Entity_Id;
-   begin
-      if Is_Formal (E) then
-         Typ := Etype (E);
-         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-            Typ := Full_View (Typ);
-         end if;
+      Typ : Entity_Id := Etype (E);
 
-         return Is_Array_Type (Typ) and then not Is_Constrained (Typ);
-      else
-         return False;
+   begin
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         Typ := Full_View (Typ);
       end if;
+
+      return Is_Array_Type (Typ) and then not Is_Constrained (Typ);
    end Needs_Fat_Pointer;
 
    ----------------
@@ -282,7 +278,7 @@ package body Exp_Unst is
          --  has been scanned at this point, and thus has an entry in the
          --  subprogram table.
 
-         if E = Sub and then Convention (E) = Convention_Protected then
+         if E = Sub and then Present (Protected_Body_Subprogram (E)) then
             E := Protected_Body_Subprogram (E);
          end if;
 
@@ -841,9 +837,13 @@ package body Exp_Unst is
 
                --  If we marked this reachable because it's in a synchronized
                --  unit, we have to mark all enclosing subprograms as reachable
-               --  as well.
+               --  as well. We do the same for subprograms with Address_Taken,
+               --  because otherwise we can run into problems with looking at
+               --  enclosing subprograms in Subps.Table due to their being
+               --  unreachable (the Subp_Index of unreachable subps is later
+               --  set to zero and their entry in Subps.Table is removed).
 
-               if In_Synchronized_Unit (E) then
+               if In_Synchronized_Unit (E) or else Address_Taken (E) then
                   declare
                      S : Entity_Id := E;
 
@@ -1042,18 +1042,30 @@ package body Exp_Unst is
                            --  handled during full traversal. Note that if the
                            --  nominal subtype of the prefix is unconstrained,
                            --  the bound must be obtained from the object, not
-                           --  from the (possibly) uplevel reference.
+                           --  from the (possibly) uplevel reference. We call
+                           --  Get_Referenced_Object to deal with prefixes that
+                           --  are object renamings (prefixes that are types
+                           --  can be passed and will simply be returned).  But
+                           --  it's also legal to get the bounds from the type
+                           --  of the prefix, so we have to handle both cases.
 
-                           if Is_Constrained (Etype (Prefix (N))) then
-                              declare
-                                 DT : Boolean := False;
-                              begin
+                           declare
+                              DT : Boolean := False;
+
+                           begin
+                              if Is_Constrained
+                                (Etype (Get_Referenced_Object (Prefix (N))))
+                              then
+                                 Check_Static_Type
+                                   (Etype (Get_Referenced_Object (Prefix (N))),
+                                    Empty, DT);
+                              end if;
+
+                              if Is_Constrained (Etype (Prefix (N))) then
                                  Check_Static_Type
                                    (Etype (Prefix (N)), Empty, DT);
-                              end;
-
-                              return OK;
-                           end if;
+                              end if;
+                           end;
 
                         when others =>
                            null;
@@ -2068,7 +2080,7 @@ package body Exp_Unst is
                                  --  or else 'Access for unconstrained array
 
                                  if Needs_Fat_Pointer (Ent) then
-                                    Attr := Name_Access;
+                                    Attr := Name_Unchecked_Access;
                                  else
                                     Attr := Name_Address;
                                  end if;
@@ -2093,7 +2105,7 @@ package body Exp_Unst is
 
                                     Comp := First_Component (STJ.ARECnT);
                                     while Chars (Comp) /= Chars (Ent) loop
-                                       Comp := Next_Component (Comp);
+                                       Next_Component (Comp);
                                     end loop;
 
                                     Rhs :=

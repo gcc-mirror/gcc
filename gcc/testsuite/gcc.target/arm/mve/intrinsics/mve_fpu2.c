@@ -1,6 +1,7 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
-/* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=soft" } {""} } */
-/* { dg-additional-options "-march=armv8.1-m.main+mve -mfloat-abi=softfp -mthumb -mfpu=auto --save-temps" } */
+/* { dg-require-effective-target arm_softfp_ok } */
+/* { dg-add-options arm_v8_1m_mve } */
+/* { dg-additional-options "-mfloat-abi=softfp" } */
 
 #include "arm_mve.h"
 

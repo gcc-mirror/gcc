@@ -122,6 +122,7 @@
   [(set_attr "type" "isync")
    (set_attr "length" "12")])
 
+;; If TARGET_PREFIXED, always use plq rather than lq.
 (define_insn "load_quadpti"
   [(set (match_operand:PTI 0 "quad_int_reg_operand" "=&r")
 	(unspec:PTI
@@ -129,8 +130,18 @@
   "TARGET_SYNC_TI
    && !reg_mentioned_p (operands[0], operands[1])"
   "lq %0,%1"
-  [(set_attr "type" "load")])
+  [(set_attr "type" "load")
+   (set (attr "prefixed") (if_then_else (match_test "TARGET_PREFIXED")
+					(const_string "yes")
+					(const_string "no")))])
 
+;; Pattern load_quadpti will always use plq for atomic TImode if
+;; TARGET_PREFIXED.  It has the correct doubleword ordering on either LE
+;; or BE, so we can just move the result into the output register and
+;; do not need to do the doubleword swap for LE.  Also this avoids any
+;; confusion about whether the lq vs plq might be used based on whether
+;; op1 has PC-relative addressing.  We could potentially allow BE to
+;; use lq because it doesn't have the doubleword ordering problem.
 (define_expand "atomic_load<mode>"
   [(set (match_operand:AINT 0 "register_operand")		;; output
 	(match_operand:AINT 1 "memory_operand"))		;; memory
@@ -162,7 +173,7 @@
 
       emit_insn (gen_load_quadpti (pti_reg, op1));
 
-      if (WORDS_BIG_ENDIAN)
+      if (WORDS_BIG_ENDIAN || TARGET_PREFIXED)
 	emit_move_insn (op0, gen_lowpart (TImode, pti_reg));
       else
 	{
@@ -186,14 +197,20 @@
   DONE;
 })
 
+;; If TARGET_PREFIXED, always use pstq rather than stq.
 (define_insn "store_quadpti"
   [(set (match_operand:PTI 0 "quad_memory_operand" "=wQ")
 	(unspec:PTI
 	 [(match_operand:PTI 1 "quad_int_reg_operand" "r")] UNSPEC_LSQ))]
   "TARGET_SYNC_TI"
   "stq %1,%0"
-  [(set_attr "type" "store")])
+  [(set_attr "type" "store")
+   (set (attr "prefixed") (if_then_else (match_test "TARGET_PREFIXED")
+					(const_string "yes")
+					(const_string "no")))])
 
+;; Pattern store_quadpti will always use pstq if TARGET_PREFIXED,
+;; so the doubleword swap is never needed in that case.
 (define_expand "atomic_store<mode>"
   [(set (match_operand:AINT 0 "memory_operand")		;; memory
 	(match_operand:AINT 1 "register_operand"))	;; input
@@ -232,7 +249,7 @@
 	  operands[0] = op0 = replace_equiv_address (op0, new_addr);
 	}
 
-      if (WORDS_BIG_ENDIAN)
+      if (WORDS_BIG_ENDIAN || TARGET_PREFIXED)
 	emit_move_insn (pti_reg, gen_lowpart (PTImode, op1));
       else
 	{

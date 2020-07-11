@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -58,8 +58,8 @@ bool checkUnsafeAccess(Scope *sc, Expression *e, bool readonly, bool printmsg)
 
         if (v->type->hasPointers() && v->type->toBasetype()->ty != Tstruct)
         {
-            if ((ad->type->alignment() < (unsigned)Target::ptrsize ||
-                 (v->offset & (Target::ptrsize - 1))) &&
+            if ((ad->type->alignment() < target.ptrsize ||
+                 (v->offset & (target.ptrsize - 1))) &&
                 sc->func->setUnsafe())
             {
                 if (printmsg)

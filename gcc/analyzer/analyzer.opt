@@ -98,10 +98,6 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
-Wanalyzer-use-of-uninitialized-value
-Common Var(warn_analyzer_use_of_uninitialized_value) Init(1) Warning
-Warn about code paths in which an uninitialized value is used.
-
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
 Warn if the code is too complicated for the analyzer to fully explore.

@@ -29,17 +29,20 @@ along with GCC; see the file COPYING3.  If not see
 #define ISFINITE(x) mpfr_number_p(x)
 #define D2R(x) deg2rad(x)
 
+#define ENABLE_SIND
+#define ENABLE_COSD
+#define ENABLE_TAND
+
 #define SIND simplify_sind
 #define COSD simplify_cosd
 #define TAND simplify_tand
 
-#ifdef HAVE_GFC_REAL_16
-#define COSD30 8.66025403784438646763723170752936183e-01Q
-#else
-#define COSD30 8.66025403784438646763723170752936183e-01L
-#endif
-
-#define SET_COSD30(x) mpfr_set_ld((x), COSD30, GFC_RND_MODE)
+/* cosd(30) === sqrt(3) / 2.  */
+#define SET_COSD30(x) do { \
+    mpfr_set_ui (x, 3, GFC_RND_MODE); \
+    mpfr_sqrt (x, x, GFC_RND_MODE); \
+    mpfr_div_ui (x, x, 2, GFC_RND_MODE); \
+  } while (0)
 
 static RETTYPE SIND (FTYPE);
 static RETTYPE COSD (FTYPE);

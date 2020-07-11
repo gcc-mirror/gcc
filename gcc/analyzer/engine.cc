@@ -699,7 +699,7 @@ impl_region_model_context::on_unexpected_tree_code (tree t,
   logger * const logger = get_logger ();
   if (logger)
     logger->log ("unhandled tree code: %qs in %qs at %s:%i",
-		 get_tree_code_name (TREE_CODE (t)),
+		 t ? get_tree_code_name (TREE_CODE (t)) : "(null)",
 		 loc.get_impl_location ().m_function,
 		 loc.get_impl_location ().m_file,
 		 loc.get_impl_location ().m_line);

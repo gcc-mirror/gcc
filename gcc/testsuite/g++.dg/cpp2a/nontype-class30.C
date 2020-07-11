@@ -1,5 +1,5 @@
 // PR c++/91754 - Fix template arguments comparison with class NTTP.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S {};
 

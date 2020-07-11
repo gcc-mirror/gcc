@@ -2401,6 +2401,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	      && (dblvectype
 		  = build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])),
 				       nelts * 2))
+	      /* Only use it for vector modes or for vector booleans
+		 represented as scalar bitmasks.  See PR95528.  */
+	      && (VECTOR_MODE_P (TYPE_MODE (dblvectype))
+		  || VECTOR_BOOLEAN_TYPE_P (dblvectype))
 	      && (optab = optab_for_tree_code (FLOAT_TYPE_P (TREE_TYPE (type))
 					       ? VEC_UNPACK_FLOAT_LO_EXPR
 					       : VEC_UNPACK_LO_EXPR,
@@ -2442,6 +2446,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		   && (halfvectype
 		         = build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])),
 					      nelts / 2))
+		   /* Only use it for vector modes or for vector booleans
+		      represented as scalar bitmasks.  See PR95528.  */
+		   && (VECTOR_MODE_P (TYPE_MODE (halfvectype))
+		       || VECTOR_BOOLEAN_TYPE_P (halfvectype))
 		   && (optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
 						    halfvectype,
 						    optab_default))
@@ -2475,7 +2483,21 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  orig[0] = gimple_assign_lhs (lowpart);
 	}
       if (conv_code == ERROR_MARK)
-	gimple_assign_set_rhs_from_tree (gsi, orig[0]);
+	{
+	  tree src_type = TREE_TYPE (orig[0]);
+	  if (!useless_type_conversion_p (type, src_type))
+	    {
+	      gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type),
+				    TYPE_VECTOR_SUBPARTS (src_type))
+			  && useless_type_conversion_p (TREE_TYPE (type),
+							TREE_TYPE (src_type)));
+	      tree rhs = build1 (VIEW_CONVERT_EXPR, type, orig[0]);
+	      orig[0] = make_ssa_name (type);
+	      gassign *assign = gimple_build_assign (orig[0], rhs);
+	      gsi_insert_before (gsi, assign, GSI_SAME_STMT);
+	    }
+	  gimple_assign_set_rhs_from_tree (gsi, orig[0]);
+	}
       else
 	gimple_assign_set_rhs_with_ops (gsi, conv_code, orig[0],
 					NULL_TREE, NULL_TREE);
@@ -2598,6 +2620,14 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			    res, TYPE_SIZE (type), bitsize_zero_node);
       if (conv_code != ERROR_MARK)
 	res = gimple_build (&stmts, conv_code, type, res);
+      else if (!useless_type_conversion_p (type, TREE_TYPE (res)))
+	{
+	  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type),
+				TYPE_VECTOR_SUBPARTS (perm_type))
+		      && useless_type_conversion_p (TREE_TYPE (type),
+						    TREE_TYPE (perm_type)));
+	  res = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, res);
+	}
       /* Blend in the actual constant.  */
       if (converted_orig1)
 	res = gimple_build (&stmts, VEC_PERM_EXPR, type,
@@ -2741,18 +2771,18 @@ pass_forwprop::execute (function *fun)
 
 	  /* If this statement sets an SSA_NAME to an address,
 	     try to propagate the address into the uses of the SSA_NAME.  */
-	  if (code == ADDR_EXPR
-	      /* Handle pointer conversions on invariant addresses
-		 as well, as this is valid gimple.  */
-	      || (CONVERT_EXPR_CODE_P (code)
-		  && TREE_CODE (rhs) == ADDR_EXPR
-		  && POINTER_TYPE_P (TREE_TYPE (lhs))))
+	  if ((code == ADDR_EXPR
+	       /* Handle pointer conversions on invariant addresses
+		  as well, as this is valid gimple.  */
+	       || (CONVERT_EXPR_CODE_P (code)
+		   && TREE_CODE (rhs) == ADDR_EXPR
+		   && POINTER_TYPE_P (TREE_TYPE (lhs))))
+	      && TREE_CODE (TREE_OPERAND (rhs, 0)) != TARGET_MEM_REF)
 	    {
 	      tree base = get_base_address (TREE_OPERAND (rhs, 0));
 	      if ((!base
 		   || !DECL_P (base)
 		   || decl_address_invariant_p (base))
-		  && TREE_CODE (base) != TARGET_MEM_REF
 		  && !stmt_references_abnormal_ssa_name (stmt)
 		  && forward_propagate_addr_expr (lhs, rhs, true))
 		{
@@ -2940,6 +2970,8 @@ pass_forwprop::execute (function *fun)
 		      != TARGET_MEM_REF))
 		{
 		  tree use_lhs = gimple_assign_lhs (use_stmt);
+		  if (auto_var_p (use_lhs))
+		    DECL_NOT_GIMPLE_REG_P (use_lhs) = 1;
 		  tree new_lhs = build1 (REALPART_EXPR,
 					 TREE_TYPE (TREE_TYPE (use_lhs)),
 					 unshare_expr (use_lhs));
@@ -2991,6 +3023,9 @@ pass_forwprop::execute (function *fun)
 		    = tree_to_uhwi (TYPE_SIZE (elt_t));
 		  unsigned HOST_WIDE_INT n
 		    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs)));
+		  tree use_lhs = gimple_assign_lhs (use_stmt);
+		  if (auto_var_p (use_lhs))
+		    DECL_NOT_GIMPLE_REG_P (use_lhs) = 1;
 		  for (unsigned HOST_WIDE_INT bi = 0; bi < n; bi += elt_w)
 		    {
 		      unsigned HOST_WIDE_INT ci = bi / elt_w;
@@ -2999,7 +3034,6 @@ pass_forwprop::execute (function *fun)
 			new_rhs = CONSTRUCTOR_ELT (rhs, ci)->value;
 		      else
 			new_rhs = build_zero_cst (elt_t);
-		      tree use_lhs = gimple_assign_lhs (use_stmt);
 		      tree new_lhs = build3 (BIT_FIELD_REF,
 					     elt_t,
 					     unshare_expr (use_lhs),
@@ -3096,8 +3130,7 @@ pass_forwprop::execute (function *fun)
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
 
-		    if (code == COND_EXPR
-			|| code == VEC_COND_EXPR)
+		    if (code == COND_EXPR)
 		      {
 			/* In this case the entire COND_EXPR is in rhs1. */
 			if (forward_propagate_into_cond (&gsi))

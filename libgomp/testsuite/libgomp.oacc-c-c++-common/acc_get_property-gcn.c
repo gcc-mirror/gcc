@@ -3,7 +3,7 @@
    those obtained through the HSA API. */
 /* { dg-additional-sources acc_get_property-aux.c } */
 /* { dg-additional-options "-ldl" } */
-/* { dg-do run { target openacc_amdgcn_accel_selected } } */
+/* { dg-do run { target openacc_radeon_accel_selected } } */
 
 #include <dlfcn.h>
 #include <stdint.h>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1652,7 +1652,7 @@ package body Lib.Xref is
       begin
          --  Generate language name from convention
 
-         if Conv  = Convention_C then
+         if Conv = Convention_C or else Conv in Convention_C_Variadic then
             Language_Name := Name_C;
 
          elsif Conv = Convention_CPP then

@@ -10,4 +10,6 @@ foo (uint16_t const * base, mve_pred16_t p)
   return vldrhq_z_u32 (base, p);
 }
 
-/* { dg-final { scan-assembler "vldrht.u32"  }  } */
+/* { dg-final { scan-assembler-times "vpst" 1 }  } */
+/* { dg-final { scan-assembler-times "vldrht.u32" 1 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

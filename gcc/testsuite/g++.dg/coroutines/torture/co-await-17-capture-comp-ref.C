@@ -1,4 +1,4 @@
-//  { dg-do run }
+//  { dg-do run { target c++17 } }
 
 #include "../coro.h"
 

@@ -77,12 +77,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    * satisfies the requirements of such a traits class.
    */
   template<typename _Ch_type>
-    struct regex_traits
+    class regex_traits
     {
     public:
       typedef _Ch_type				char_type;
       typedef std::basic_string<char_type>	string_type;
       typedef std::locale			locale_type;
+
     private:
       struct _RegexMask
 	{
@@ -142,11 +143,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		     && _M_base == __other._M_base;
 	  }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	  constexpr bool
 	  operator!=(_RegexMask __other) const
 	  { return !((*this) == __other); }
-
+#endif
 	};
+
     public:
       typedef _RegexMask char_class_type;
 
@@ -1033,6 +1036,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator==(const sub_match<_BiIter>& __lhs, const sub_match<_BiIter>& __rhs)
     { return __lhs.compare(__rhs) == 0; }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   * @brief Three-way comparison of two regular expression submatches.
+   * @param __lhs First regular expression submatch.
+   * @param __rhs Second regular expression submatch.
+   * @returns A value indicating whether `__lhs` is less than, equal to,
+   *	      greater than, or incomparable with `__rhs`.
+   */
+  template<typename _BiIter>
+    inline auto
+    operator<=>(const sub_match<_BiIter>& __lhs,
+		const sub_match<_BiIter>& __rhs)
+    noexcept(__detail::__is_contiguous_iter<_BiIter>::value)
+    {
+      using _Tr = char_traits<typename iterator_traits<_BiIter>::value_type>;
+      return __detail::__char_traits_cmp_cat<_Tr>(__lhs.compare(__rhs));
+    }
+#else
   /**
    * @brief Tests the inequivalence of two regular expression submatches.
    * @param __lhs First regular expression submatch.
@@ -1087,6 +1108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     inline bool
     operator>(const sub_match<_BiIter>& __lhs, const sub_match<_BiIter>& __rhs)
     { return __lhs.compare(__rhs) > 0; }
+#endif // three-way comparison
 
   /// @cond undocumented
 
@@ -1097,6 +1119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			      _Ch_traits, _Ch_alloc>;
   /// @endcond
 
+#if ! __cpp_lib_three_way_comparison
   /**
    * @brief Tests the equivalence of a string and a regular expression
    *        submatch.
@@ -1170,6 +1193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator<=(const __sub_match_string<_Bi_iter, _Ch_traits, _Ch_alloc>& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
     { return !(__rhs < __lhs); }
+#endif // three-way comparison
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1184,6 +1208,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       const __sub_match_string<_Bi_iter, _Ch_traits, _Ch_alloc>& __rhs)
     { return __lhs._M_compare(__rhs.data(), __rhs.size()) == 0; }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   * @brief Three-way comparison of a regular expression submatch and a string.
+   * @param __lhs A regular expression submatch.
+   * @param __rhs A string.
+   * @returns A value indicating whether `__lhs` is less than, equal to,
+   *	      greater than, or incomparable with `__rhs`.
+   */
+  template<typename _Bi_iter, typename _Ch_traits, typename _Alloc>
+    inline auto
+    operator<=>(const sub_match<_Bi_iter>& __lhs,
+		const __sub_match_string<_Bi_iter, _Ch_traits, _Alloc>& __rhs)
+    noexcept(__detail::__is_contiguous_iter<_Bi_iter>::value)
+    {
+      return __detail::__char_traits_cmp_cat<_Ch_traits>(
+	  __lhs._M_compare(__rhs.data(), __rhs.size()));
+    }
+#else
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
    *        string.
@@ -1318,6 +1360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator<=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
     { return !(__rhs < __lhs); }
+#endif // three-way comparison
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a C
@@ -1332,6 +1375,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
     { return __lhs.compare(__rhs) == 0; }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   * @brief Three-way comparison of a regular expression submatch and a C
+   *	    string.
+   * @param __lhs A regular expression submatch.
+   * @param __rhs A null-terminated string.
+   * @returns A value indicating whether `__lhs` is less than, equal to,
+   *	      greater than, or incomparable with `__rhs`.
+   */
+  template<typename _Bi_iter>
+    inline auto
+    operator<=>(const sub_match<_Bi_iter>& __lhs,
+		typename iterator_traits<_Bi_iter>::value_type const* __rhs)
+    noexcept(__detail::__is_contiguous_iter<_Bi_iter>::value)
+    {
+      using _Tr = char_traits<typename iterator_traits<_Bi_iter>::value_type>;
+      return __detail::__char_traits_cmp_cat<_Tr>(__lhs.compare(__rhs));
+    }
+#else
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
    *        string.
@@ -1470,6 +1532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator<=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
     { return !(__rhs < __lhs); }
+#endif // three-way comparison
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1484,6 +1547,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
     { return __lhs._M_compare(std::__addressof(__rhs), 1) == 0; }
 
+#if __cpp_lib_three_way_comparison
+  /**
+   * @brief Three-way comparison of a regular expression submatch and a
+   *	    character.
+   * @param __lhs A regular expression submatch.
+   * @param __rhs A character.
+   * @returns A value indicating whether `__lhs` is less than, equal to,
+   *	      greater than, or incomparable with `__rhs`.
+   */
+
+  template<typename _Bi_iter>
+    inline auto
+    operator<=>(const sub_match<_Bi_iter>& __lhs,
+		typename iterator_traits<_Bi_iter>::value_type const& __rhs)
+    noexcept(__detail::__is_contiguous_iter<_Bi_iter>::value)
+    {
+      using _Tr = char_traits<typename iterator_traits<_Bi_iter>::value_type>;
+      return __detail::__char_traits_cmp_cat<_Tr>(
+	  __lhs._M_compare(std::__addressof(__rhs), 1));
+    }
+#else
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
    *        character.
@@ -1548,6 +1632,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator<=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
     { return !(__rhs < __lhs); }
+#endif // three-way comparison
 
   /**
    * @brief Inserts a matched string into an output stream.
@@ -2015,7 +2100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, typename _Alloc>
     inline bool
     operator==(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
+	       const match_results<_Bi_iter, _Alloc>& __m2)
     {
       if (__m1.ready() != __m2.ready())
 	return false;
@@ -2031,6 +2116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	&& __m1.suffix() == __m2.suffix();
     }
 
+#if ! __cpp_lib_three_way_comparison
   /**
    * @brief Compares two match_results for inequality.
    * @returns true if the two objects do not refer to the same match,
@@ -2039,8 +2125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, class _Alloc>
     inline bool
     operator!=(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
+	       const match_results<_Bi_iter, _Alloc>& __m2)
     { return !(__m1 == __m2); }
+#endif
 
   // [7.10.6] match_results swap
   /**

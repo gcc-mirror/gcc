@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,8 +49,8 @@ package Warnsw is
    --  extensions.
 
    Warn_On_Unknown_Compile_Time_Warning : Boolean := True;
-   --  Warn on a pragma Compile_Time_Warning or Compile_Time_Error whose
-   --  condition has a value that is not known at compile time.
+   --  Warn on a pragma Compile_Time_Warning whose condition has a value that
+   --  is not known at compile time.
 
    Warn_On_Overridden_Size : Boolean := False;
    --  Warn when explicit record component clause or array component_size

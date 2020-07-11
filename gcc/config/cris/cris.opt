@@ -196,7 +196,3 @@ Mask(SVINTO)
 ; TARGET_ALIGN_BY_32: Say that all alignment specifications say
 ; to prefer 32 rather than 16 bits.
 Mask(ALIGN_BY_32)
-
-; TARGET_AVOID_GOTPLT is referred to in the .c and the .md so we
-; need to allocate the flag and macros here.
-Mask(AVOID_GOTPLT)

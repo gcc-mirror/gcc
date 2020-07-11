@@ -2,19 +2,11 @@
 
 #include <coroutine>
 
-#  if __clang__
-#    include <utility>
-#  endif
-
 namespace coro = std;
 
 #elif __has_include(<experimental/coroutine>)
 
 #include <experimental/coroutine>
-
-#  if __clang__
-#    include <utility>
-#  endif
 
 namespace coro = std::experimental;
 
@@ -29,10 +21,10 @@ namespace coro = std::experimental;
 // Fragments (with short-cuts) to mimic enough of the library header to
 // make some progress.
 
-#  if __cpp_coroutines
+#  if __cpp_impl_coroutine
 
 namespace std {
-inline namespace __n4835 {
+inline namespace __n4861 {
 
 // 21.11.1 coroutine traits
 template<typename _R, typename...> struct coroutine_traits {
@@ -125,7 +117,7 @@ struct suspend_never {
   void await_resume() {}
 };
 
-} // namespace __n4835
+} // namespace __n4861
 } // namespace std
 
 namespace coro = std;
@@ -142,6 +134,8 @@ extern "C" int puts (const char *);
 extern "C" int printf (const char *, ...);
 
 #include <cstdlib> /* for abort () */
+
+#include <utility> /* for std::forward */
 
 #ifndef OUTPUT
 #  define PRINT(X)

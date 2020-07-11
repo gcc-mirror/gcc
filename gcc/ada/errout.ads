@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -699,6 +699,14 @@ package Errout is
    --  Output a message at specified location. Can be called from the parser
    --  or the semantic analyzer. If N is set, points to the relevant node for
    --  this message.
+
+   procedure Error_Msg
+     (Msg                    : String;
+      Flag_Location          : Source_Ptr;
+      Is_Compile_Time_Pragma : Boolean);
+   --  Same as Error_Msg (String, Source_Ptr) except Is_Compile_Time_Pragma
+   --  lets the caller specify whether this is a Compile_Time_Warning or
+   --  Compile_Time_Error pragma.
 
    procedure Error_Msg_S (Msg : String);
    --  Output a message at current scan pointer location. This routine can be

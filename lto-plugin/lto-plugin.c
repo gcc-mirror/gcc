@@ -32,6 +32,9 @@ along with this program; see the file COPYING3.  If not see
    -nop: Instead of running lto-wrapper, pass the original to the plugin. This
    only works if the input files are hybrid. 
    -linker-output-known: Do not determine linker output
+   -linker-output-auto-notlo-rel: Switch from rel to nolto-rel mode without
+   warning.  This is used on systems like VxWorks (kernel) where the link is
+   always partial and repeated incremental linking is generally not used.
    -sym-style={none,win32,underscore|uscore}
    -pass-through  */
 
@@ -195,9 +198,14 @@ static bool verbose;
 static char nop;
 static char *resolution_file = NULL;
 static enum ld_plugin_output_file_type linker_output;
-static int linker_output_set;
-static int linker_output_known;
+static bool linker_output_set;
+static bool linker_output_known;
+static bool linker_output_auto_nolto_rel;
 static const char *link_output_name = NULL;
+
+/* This indicates link_output_name already contains the dot of the
+   suffix, so we can skip it in extensions.  */
+static int skip_in_suffix = 0;
 
 /* The version of gold being used, or -1 if not gold.  The number is
    MAJOR * 100 + MINOR.  */
@@ -617,14 +625,11 @@ exec_lto_wrapper (char *argv[])
   /* Write argv to a file to avoid a command line that is too long
      Save the file locally on save-temps.  */
   if (save_temps && link_output_name)
-    {
-      arguments_file_name = (char *) xmalloc (strlen (link_output_name)
-				  + sizeof (".lto_wrapper_args") + 1);
-      strcpy (arguments_file_name, link_output_name);
-      strcat (arguments_file_name, ".lto_wrapper_args");
-    }
+    arguments_file_name = concat (link_output_name,
+				  ".lto_wrapper_args"
+				  + skip_in_suffix, NULL);
   else
-     arguments_file_name = make_temp_file (".lto_wrapper_args");
+    arguments_file_name = make_temp_file (".lto_wrapper_args");
   check (arguments_file_name, LDPL_FATAL,
          "Failed to generate a temorary file name");
 
@@ -709,9 +714,10 @@ use_original_files (void)
 static enum ld_plugin_status
 all_symbols_read_handler (void)
 {
+  const unsigned num_lto_args
+    = num_claimed_files + lto_wrapper_num_args + 2
+      + !linker_output_known + !linker_output_auto_nolto_rel;
   unsigned i;
-  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 2
-    	   + !linker_output_known;
   char **lto_argv;
   const char *linker_output_str = NULL;
   const char **lto_arg_ptr;
@@ -743,9 +749,10 @@ all_symbols_read_handler (void)
 	case LDPO_REL:
 	  if (non_claimed_files)
 	    {
-	      message (LDPL_WARNING, "incremental linking of LTO and non-LTO "
-		       "objects; using -flinker-output=nolto-rel which will "
-		       "bypass whole program optimization");
+	      if (!linker_output_auto_nolto_rel)
+		message (LDPL_WARNING, "incremental linking of LTO and non-LTO"
+			 " objects; using -flinker-output=nolto-rel which will"
+			 " bypass whole program optimization");
 	      linker_output_str = "-flinker-output=nolto-rel";
 	    }
 	  else
@@ -1291,8 +1298,10 @@ static void
 process_option (const char *option)
 {
   if (strcmp (option, "-linker-output-known") == 0)
-    linker_output_known = 1;
-  if (strcmp (option, "-debug") == 0)
+    linker_output_known = true;
+  else if (strcmp (option, "-linker-output-auto-notlo-rel") == 0)
+    linker_output_auto_nolto_rel = true;
+  else if (strcmp (option, "-debug") == 0)
     debug = true;
   else if ((strcmp (option, "-v") == 0)
            || (strcmp (option, "--verbose") == 0))
@@ -1390,7 +1399,7 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_LINKER_OUTPUT:
 	  linker_output = (enum ld_plugin_output_file_type) p->tv_u.tv_val;
-	  linker_output_set = 1;
+	  linker_output_set = true;
 	  break;
 	case LDPT_OUTPUT_NAME:
 	  /* We only use this to make user-friendly temp file names.  */
@@ -1431,12 +1440,82 @@ onload (struct ld_plugin_tv *tv)
       if (strstr (collect_gcc_options, "'-fno-use-linker-plugin'"))
 	return LDPS_ERR;
 
-      if ( strstr (collect_gcc_options, "'-save-temps'"))
+      if (strstr (collect_gcc_options, "'-save-temps'"))
 	save_temps = true;
 
       if (strstr (collect_gcc_options, "'-v'")
           || strstr (collect_gcc_options, "'--verbose'"))
 	verbose = true;
+
+      const char *p;
+      if ((p = strstr (collect_gcc_options, "'-dumpdir'")))
+	{
+	  p += sizeof ("'-dumpdir'");
+	  while (*p == ' ')
+	    p++;
+	  const char *start = p;
+	  int ticks = 0, escapes = 0;
+	  /* Count ticks (') and escaped (\.) characters.  Stop at the
+	     end of the options or at a blank after an even number of
+	     ticks (not counting escaped ones.  */
+	  for (p = start; *p; p++)
+	    {
+	      if (*p == '\'')
+		{
+		  ticks++;
+		  continue;
+		}
+	      else if ((ticks % 2) != 0)
+		{
+		  if (*p == ' ')
+		    break;
+		  if (*p == '\\')
+		    {
+		      if (*++p)
+			escapes++;
+		      else
+			p--;
+		    }
+		}
+	    }
+
+	  /* Now allocate a new link_output_name and decode dumpdir
+	     into it.  The loop uses the same logic, except it counts
+	     ticks and escapes backwards (so ticks is adjusted if we
+	     find an odd number of them), and it copies characters
+	     that are escaped or not otherwise skipped.  */
+	  int len = p - start - ticks - escapes + 1;
+	  char *q = xmalloc (len);
+	  link_output_name = q;
+	  int oddticks = (ticks % 2);
+	  ticks += oddticks;
+	  for (p = start; *p; p++)
+	    {
+	      if (*p == '\'')
+		{
+		  ticks--;
+		  continue;
+		}
+	      else if ((ticks % 2) != 0)
+		{
+		  if (*p == ' ')
+		    break;
+		  if (*p == '\\')
+		    {
+		      if (*++p)
+			escapes--;
+		      else
+			p--;
+		    }
+		}
+	      *q++ = *p;
+	    }
+	  *q = '\0';
+	  assert (escapes == 0);
+	  assert (ticks == oddticks);
+	  assert (q - link_output_name == len - 1);
+	  skip_in_suffix = 1;
+	}
     }
 
   return LDPS_OK;

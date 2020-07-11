@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -724,6 +724,10 @@ package Exp_Util is
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
 
+   function Get_Index_Subtype (N : Node_Id) return Entity_Id;
+   --  Used for First, Last, and Length, when the prefix is an array type.
+   --  Obtains the corresponding index subtype.
+
    function Get_Stream_Size (E : Entity_Id) return Uint;
    --  Return the stream size value of the subtype E
 
@@ -1191,12 +1195,10 @@ package Exp_Util is
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
 
-   function Within_Internal_Subprogram return Boolean;
-   --  Indicates that some expansion is taking place within the body of a
-   --  predefined primitive operation. Some expansion activity (e.g. predicate
-   --  checks) is disabled in such. Because we want to detect invalid uses
-   --  of function calls within predicates (which lead to infinite recursion)
-   --  predicate functions themselves are not considered internal here.
+   function Predicate_Check_In_Scope (N : Node_Id) return Boolean;
+   --  Return True if predicate checks should be generated in the current
+   --  scope on the given node. Will return False for example when the current
+   --  scope is a predefined primitive operation.
 
 private
    pragma Inline (Duplicate_Subexpr);

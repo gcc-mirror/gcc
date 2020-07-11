@@ -1,3 +1,12 @@
+2020-04-15  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/94607
+	* go-gcc.cc (class Gcc_backend): Define builtin_const,
+	builtin_noreturn, builtin_novops.
+	(Gcc_backend::define_builtin): Change const_p and noreturn_p
+	parameters to a single flags parameter.  Change all callers.
+	(Gcc_backend::Gcc_backend): Pass novops for prefetch.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

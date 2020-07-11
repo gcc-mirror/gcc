@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++17" }
+// { dg-do run { target c++17 } }
 
 // Copyright (C) 2013-2020 Free Software Foundation, Inc.
 //
@@ -17,97 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// basic_string_view non-member functions
-
-// operator==
-/*
-template<class charT, class traits, class Allocator>
-  bool operator==(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator==(const charT* lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator==(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const charT* rhs);
-*/
-
-// operator!=
-/*
-template<class charT, class traits, class Allocator>
-  bool operator!=(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator!=(const charT* lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator!=(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const charT* rhs);
-*/
-
-// operator<
-/*
-template<class charT, class traits, class Allocator>
-  bool operator< (const basic_string_view<charT,traits,Allocator>& lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator< (const basic_string_view<charT,traits,Allocator>& lhs,
-                  const charT* rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator< (const charT* lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-*/
-
-// operator>
-/*
-template<class charT, class traits, class Allocator>
-  bool operator> (const basic_string_view<charT,traits,Allocator>& lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator> (const basic_string_view<charT,traits,Allocator>& lhs,
-                  const charT* rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator> (const charT* lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-*/
-
-// operator<=
-/*
-template<class charT, class traits, class Allocator>
-  bool operator<=(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator<=(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const charT* rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator<=(const charT* lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-*/
-
-// operator>=
-/*
-template<class charT, class traits, class Allocator>
-  bool operator>=(const basic_string_view<charT,traits,Allocator>& lhs,
-                const basic_string_view<charT,traits,Allocator>& rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator>=(const basic_string_view<charT,traits,Allocator>& lhs,
-                  const charT* rhs);
-
-template<class charT, class traits, class Allocator>
-  bool operator>=(const charT* lhs,
-                  const basic_string_view<charT,traits,Allocator>& rhs);
-*/
+// C++17 24.4.3 Non-member comparison functions [string.view.comparison]
 
 #include <string_view>
 #include <testsuite_hooks.h>

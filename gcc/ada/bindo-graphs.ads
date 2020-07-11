@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,478 +198,6 @@ package Bindo.Graphs is
       "="          => "=",
       Hash         => Hash_Library_Graph_Vertex);
 
-   -----------------------
-   -- Invocation_Graphs --
-   -----------------------
-
-   package Invocation_Graphs is
-
-      -----------
-      -- Graph --
-      -----------
-
-      --  The following type denotes an invocation graph handle. Each instance
-      --  must be created using routine Create.
-
-      type Invocation_Graph is private;
-      Nil : constant Invocation_Graph;
-
-      ----------------------
-      -- Graph operations --
-      ----------------------
-
-      procedure Add_Edge
-        (G      : Invocation_Graph;
-         Source : Invocation_Graph_Vertex_Id;
-         Target : Invocation_Graph_Vertex_Id;
-         IR_Id  : Invocation_Relation_Id);
-      pragma Inline (Add_Edge);
-      --  Create a new edge in invocation graph G with source vertex Source and
-      --  destination vertex Target. IR_Id is the invocation relation the edge
-      --  describes.
-
-      procedure Add_Vertex
-        (G           : Invocation_Graph;
-         IC_Id       : Invocation_Construct_Id;
-         Body_Vertex : Library_Graph_Vertex_Id;
-         Spec_Vertex : Library_Graph_Vertex_Id);
-      pragma Inline (Add_Vertex);
-      --  Create a new vertex in invocation graph G. IC_Id is the invocation
-      --  construct the vertex describes. Body_Vertex denotes the library graph
-      --  vertex where the invocation construct's body is declared. Spec_Vertex
-      --  is the library graph vertex where the invocation construct's spec is
-      --  declared.
-
-      function Create
-        (Initial_Vertices : Positive;
-         Initial_Edges    : Positive) return Invocation_Graph;
-      pragma Inline (Create);
-      --  Create a new empty graph with vertex capacity Initial_Vertices and
-      --  edge capacity Initial_Edges.
-
-      procedure Destroy (G : in out Invocation_Graph);
-      pragma Inline (Destroy);
-      --  Destroy the contents of invocation graph G, rendering it unusable
-
-      function Present (G : Invocation_Graph) return Boolean;
-      pragma Inline (Present);
-      --  Determine whether invocation graph G exists
-
-      -----------------------
-      -- Vertex attributes --
-      -----------------------
-
-      function Body_Vertex
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id;
-      pragma Inline (Body_Vertex);
-      --  Obtain the library graph vertex where the body of the invocation
-      --  construct represented by vertex Vertex of invocation graph G is
-      --  declared.
-
-      function Column
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Nat;
-      pragma Inline (Column);
-      --  Obtain the column number where the invocation construct vertex Vertex
-      --  of invocation graph G describes.
-
-      function Construct
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Invocation_Construct_Id;
-      pragma Inline (Construct);
-      --  Obtain the invocation construct vertex Vertex of invocation graph G
-      --  describes.
-
-      function Corresponding_Vertex
-        (G     : Invocation_Graph;
-         IS_Id : Invocation_Signature_Id) return Invocation_Graph_Vertex_Id;
-      pragma Inline (Corresponding_Vertex);
-      --  Obtain the vertex of invocation graph G that corresponds to signature
-      --  IS_Id.
-
-      function Line
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Nat;
-      pragma Inline (Line);
-      --  Obtain the line number where the invocation construct vertex Vertex
-      --  of invocation graph G describes.
-
-      function Name
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Name_Id;
-      pragma Inline (Name);
-      --  Obtain the name of the construct vertex Vertex of invocation graph G
-      --  describes.
-
-      function Spec_Vertex
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id;
-      pragma Inline (Spec_Vertex);
-      --  Obtain the library graph vertex where the spec of the invocation
-      --  construct represented by vertex Vertex of invocation graph G is
-      --  declared.
-
-      ---------------------
-      -- Edge attributes --
-      ---------------------
-
-      function Extra
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Name_Id;
-      pragma Inline (Extra);
-      --  Obtain the extra name used in error diagnostics of edge Edge of
-      --  invocation graph G.
-
-      function Kind
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Invocation_Kind;
-      pragma Inline (Kind);
-      --  Obtain the nature of edge Edge of invocation graph G
-
-      function Relation
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Invocation_Relation_Id;
-      pragma Inline (Relation);
-      --  Obtain the relation edge Edge of invocation graph G describes
-
-      function Target
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Invocation_Graph_Vertex_Id;
-      pragma Inline (Target);
-      --  Obtain the target vertex edge Edge of invocation graph G designates
-
-      ----------------
-      -- Statistics --
-      ----------------
-
-      function Invocation_Graph_Edge_Count
-        (G    : Invocation_Graph;
-         Kind : Invocation_Kind) return Natural;
-      pragma Inline (Invocation_Graph_Edge_Count);
-      --  Obtain the total number of edges of kind Kind in invocation graph G
-
-      function Number_Of_Edges (G : Invocation_Graph) return Natural;
-      pragma Inline (Number_Of_Edges);
-      --  Obtain the total number of edges in invocation graph G
-
-      function Number_Of_Edges_To_Targets
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Natural;
-      pragma Inline (Number_Of_Edges_To_Targets);
-      --  Obtain the total number of edges to targets vertex Vertex of
-      --  invocation graph G has.
-
-      function Number_Of_Elaboration_Roots
-        (G : Invocation_Graph) return Natural;
-      pragma Inline (Number_Of_Elaboration_Roots);
-      --  Obtain the total number of elaboration roots in invocation graph G
-
-      function Number_Of_Vertices (G : Invocation_Graph) return Natural;
-      pragma Inline (Number_Of_Vertices);
-      --  Obtain the total number of vertices in invocation graph G
-
-      ---------------
-      -- Iterators --
-      ---------------
-
-      --  The following type represents an iterator over all edges of an
-      --  invocation graph.
-
-      type All_Edge_Iterator is private;
-
-      function Has_Next (Iter : All_Edge_Iterator) return Boolean;
-      pragma Inline (Has_Next);
-      --  Determine whether iterator Iter has more edges to examine
-
-      function Iterate_All_Edges
-        (G : Invocation_Graph) return All_Edge_Iterator;
-      pragma Inline (Iterate_All_Edges);
-      --  Obtain an iterator over all edges of invocation graph G
-
-      procedure Next
-        (Iter : in out All_Edge_Iterator;
-         Edge : out Invocation_Graph_Edge_Id);
-      pragma Inline (Next);
-      --  Return the current edge referenced by iterator Iter and advance to
-      --  the next available edge.
-
-      --  The following type represents an iterator over all vertices of an
-      --  invocation graph.
-
-      type All_Vertex_Iterator is private;
-
-      function Has_Next (Iter : All_Vertex_Iterator) return Boolean;
-      pragma Inline (Has_Next);
-      --  Determine whether iterator Iter has more vertices to examine
-
-      function Iterate_All_Vertices
-        (G : Invocation_Graph) return All_Vertex_Iterator;
-      pragma Inline (Iterate_All_Vertices);
-      --  Obtain an iterator over all vertices of invocation graph G
-
-      procedure Next
-        (Iter   : in out All_Vertex_Iterator;
-         Vertex : out Invocation_Graph_Vertex_Id);
-      pragma Inline (Next);
-      --  Return the current vertex referenced by iterator Iter and advance
-      --  to the next available vertex.
-
-      --  The following type represents an iterator over all edges that reach
-      --  targets starting from a particular source vertex.
-
-      type Edges_To_Targets_Iterator is private;
-
-      function Has_Next (Iter : Edges_To_Targets_Iterator) return Boolean;
-      pragma Inline (Has_Next);
-      --  Determine whether iterator Iter has more edges to examine
-
-      function Iterate_Edges_To_Targets
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Edges_To_Targets_Iterator;
-      pragma Inline (Iterate_Edges_To_Targets);
-      --  Obtain an iterator over all edges to targets with source vertex
-      --  Vertex of invocation graph G.
-
-      procedure Next
-        (Iter : in out Edges_To_Targets_Iterator;
-         Edge : out Invocation_Graph_Edge_Id);
-      pragma Inline (Next);
-      --  Return the current edge referenced by iterator Iter and advance to
-      --  the next available edge.
-
-      --  The following type represents an iterator over all vertices of an
-      --  invocation graph that denote the elaboration procedure or a spec or
-      --  a body, referred to as elaboration root.
-
-      type Elaboration_Root_Iterator is private;
-
-      function Has_Next (Iter : Elaboration_Root_Iterator) return Boolean;
-      pragma Inline (Has_Next);
-      --  Determine whether iterator Iter has more elaboration roots to examine
-
-      function Iterate_Elaboration_Roots
-        (G : Invocation_Graph) return Elaboration_Root_Iterator;
-      pragma Inline (Iterate_Elaboration_Roots);
-      --  Obtain an iterator over all elaboration roots of invocation graph G
-
-      procedure Next
-        (Iter : in out Elaboration_Root_Iterator;
-         Root : out Invocation_Graph_Vertex_Id);
-      pragma Inline (Next);
-      --  Return the current elaboration root referenced by iterator Iter and
-      --  advance to the next available elaboration root.
-
-   private
-
-      --------------
-      -- Vertices --
-      --------------
-
-      procedure Destroy_Invocation_Graph_Vertex
-        (Vertex : in out Invocation_Graph_Vertex_Id);
-      pragma Inline (Destroy_Invocation_Graph_Vertex);
-      --  Destroy invocation graph vertex Vertex
-
-      --  The following type represents the attributes of an invocation graph
-      --  vertex.
-
-      type Invocation_Graph_Vertex_Attributes is record
-         Body_Vertex : Library_Graph_Vertex_Id := No_Library_Graph_Vertex;
-         --  Reference to the library graph vertex where the body of this
-         --  vertex resides.
-
-         Construct : Invocation_Construct_Id := No_Invocation_Construct;
-         --  Reference to the invocation construct this vertex represents
-
-         Spec_Vertex : Library_Graph_Vertex_Id := No_Library_Graph_Vertex;
-         --  Reference to the library graph vertex where the spec of this
-         --  vertex resides.
-      end record;
-
-      No_Invocation_Graph_Vertex_Attributes :
-        constant Invocation_Graph_Vertex_Attributes :=
-          (Body_Vertex => No_Library_Graph_Vertex,
-           Construct   => No_Invocation_Construct,
-           Spec_Vertex => No_Library_Graph_Vertex);
-
-      procedure Destroy_Invocation_Graph_Vertex_Attributes
-        (Attrs : in out Invocation_Graph_Vertex_Attributes);
-      pragma Inline (Destroy_Invocation_Graph_Vertex_Attributes);
-      --  Destroy the contents of attributes Attrs
-
-      package IGV_Tables is new Dynamic_Hash_Tables
-        (Key_Type              => Invocation_Graph_Vertex_Id,
-         Value_Type            => Invocation_Graph_Vertex_Attributes,
-         No_Value              => No_Invocation_Graph_Vertex_Attributes,
-         Expansion_Threshold   => 1.5,
-         Expansion_Factor      => 2,
-         Compression_Threshold => 0.3,
-         Compression_Factor    => 2,
-         "="                   => "=",
-         Destroy_Value         => Destroy_Invocation_Graph_Vertex_Attributes,
-         Hash                  => Hash_Invocation_Graph_Vertex);
-
-      -----------
-      -- Edges --
-      -----------
-
-      procedure Destroy_Invocation_Graph_Edge
-        (Edge : in out Invocation_Graph_Edge_Id);
-      pragma Inline (Destroy_Invocation_Graph_Edge);
-      --  Destroy invocation graph edge Edge
-
-      --  The following type represents the attributes of an invocation graph
-      --  edge.
-
-      type Invocation_Graph_Edge_Attributes is record
-         Relation : Invocation_Relation_Id := No_Invocation_Relation;
-         --  Reference to the invocation relation this edge represents
-      end record;
-
-      No_Invocation_Graph_Edge_Attributes :
-        constant Invocation_Graph_Edge_Attributes :=
-          (Relation => No_Invocation_Relation);
-
-      procedure Destroy_Invocation_Graph_Edge_Attributes
-        (Attrs : in out Invocation_Graph_Edge_Attributes);
-      pragma Inline (Destroy_Invocation_Graph_Edge_Attributes);
-      --  Destroy the contents of attributes Attrs
-
-      package IGE_Tables is new Dynamic_Hash_Tables
-        (Key_Type              => Invocation_Graph_Edge_Id,
-         Value_Type            => Invocation_Graph_Edge_Attributes,
-         No_Value              => No_Invocation_Graph_Edge_Attributes,
-         Expansion_Threshold   => 1.5,
-         Expansion_Factor      => 2,
-         Compression_Threshold => 0.3,
-         Compression_Factor    => 2,
-         "="                   => "=",
-         Destroy_Value         => Destroy_Invocation_Graph_Edge_Attributes,
-         Hash                  => Hash_Invocation_Graph_Edge);
-
-      ---------------
-      -- Relations --
-      ---------------
-
-      --  The following type represents a relation between a source and target
-      --  vertices.
-
-      type Source_Target_Relation is record
-         Source : Invocation_Graph_Vertex_Id := No_Invocation_Graph_Vertex;
-         --  The source vertex
-
-         Target : Invocation_Graph_Vertex_Id := No_Invocation_Graph_Vertex;
-         --  The destination vertex
-      end record;
-
-      No_Source_Target_Relation :
-        constant Source_Target_Relation :=
-          (Source => No_Invocation_Graph_Vertex,
-           Target => No_Invocation_Graph_Vertex);
-
-      function Hash_Source_Target_Relation
-        (Rel : Source_Target_Relation) return Bucket_Range_Type;
-      pragma Inline (Hash_Source_Target_Relation);
-      --  Obtain the hash value of key Rel
-
-      package Relation_Sets is new Membership_Sets
-        (Element_Type => Source_Target_Relation,
-         "="          => "=",
-         Hash         => Hash_Source_Target_Relation);
-
-      ----------------
-      -- Statistics --
-      ----------------
-
-      type Invocation_Graph_Edge_Counts is array (Invocation_Kind) of Natural;
-
-      ----------------
-      -- Signatures --
-      ----------------
-
-      function Hash_Invocation_Signature
-        (IS_Id : Invocation_Signature_Id) return Bucket_Range_Type;
-      pragma Inline (Hash_Invocation_Signature);
-      --  Obtain the hash value of key IS_Id
-
-      package Signature_Tables is new Dynamic_Hash_Tables
-        (Key_Type              => Invocation_Signature_Id,
-         Value_Type            => Invocation_Graph_Vertex_Id,
-         No_Value              => No_Invocation_Graph_Vertex,
-         Expansion_Threshold   => 1.5,
-         Expansion_Factor      => 2,
-         Compression_Threshold => 0.3,
-         Compression_Factor    => 2,
-         "="                   => "=",
-         Destroy_Value         => Destroy_Invocation_Graph_Vertex,
-         Hash                  => Hash_Invocation_Signature);
-
-      -----------------------
-      -- Elaboration roots --
-      -----------------------
-
-      package IGV_Sets is new Membership_Sets
-        (Element_Type => Invocation_Graph_Vertex_Id,
-         "="          => "=",
-         Hash         => Hash_Invocation_Graph_Vertex);
-
-      -----------
-      -- Graph --
-      -----------
-
-      package DG is new Directed_Graphs
-        (Vertex_Id   => Invocation_Graph_Vertex_Id,
-         No_Vertex   => No_Invocation_Graph_Vertex,
-         Hash_Vertex => Hash_Invocation_Graph_Vertex,
-         Same_Vertex => "=",
-         Edge_id     => Invocation_Graph_Edge_Id,
-         No_Edge     => No_Invocation_Graph_Edge,
-         Hash_Edge   => Hash_Invocation_Graph_Edge,
-         Same_Edge   => "=");
-
-      --  The following type represents the attributes of an invocation graph
-
-      type Invocation_Graph_Attributes is record
-         Counts : Invocation_Graph_Edge_Counts := (others => 0);
-         --  Edge statistics
-
-         Edge_Attributes : IGE_Tables.Dynamic_Hash_Table := IGE_Tables.Nil;
-         --  The map of edge -> edge attributes for all edges in the graph
-
-         Graph : DG.Directed_Graph := DG.Nil;
-         --  The underlying graph describing the relations between edges and
-         --  vertices.
-
-         Relations : Relation_Sets.Membership_Set := Relation_Sets.Nil;
-         --  The set of relations between source and targets, used to prevent
-         --  duplicate edges in the graph.
-
-         Roots : IGV_Sets.Membership_Set := IGV_Sets.Nil;
-         --  The set of elaboration root vertices
-
-         Signature_To_Vertex : Signature_Tables.Dynamic_Hash_Table :=
-                                 Signature_Tables.Nil;
-         --  The map of signature -> vertex
-
-         Vertex_Attributes : IGV_Tables.Dynamic_Hash_Table := IGV_Tables.Nil;
-         --  The map of vertex -> vertex attributes for all vertices in the
-         --  graph.
-      end record;
-
-      type Invocation_Graph is access Invocation_Graph_Attributes;
-      Nil : constant Invocation_Graph := null;
-
-      ---------------
-      -- Iterators --
-      ---------------
-
-      type All_Edge_Iterator         is new DG.All_Edge_Iterator;
-      type All_Vertex_Iterator       is new DG.All_Vertex_Iterator;
-      type Edges_To_Targets_Iterator is new DG.Outgoing_Edge_Iterator;
-      type Elaboration_Root_Iterator is new IGV_Sets.Iterator;
-   end Invocation_Graphs;
-
    --------------------
    -- Library_Graphs --
    --------------------
@@ -702,19 +230,27 @@ package Bindo.Graphs is
 
          No_Cycle_Kind);
 
-      --  The following type represents the various kinds of library edges
+      --  The following type represents the various kinds of library edges. The
+      --  order is important here, and corresponds to the order in which edges
+      --  are added to the graph. See Add_Edge_Kind_Check for details. If
+      --  changes are made such that new edge kinds are added or similar, we
+      --  need to make sure this type matches the code in Add_Edge_Kind_Check,
+      --  and Add_Edge_Kind_Check matches the order of edge adding. Likewise,
+      --  if the edge-adding order changes, we need consistency between this
+      --  enumeration type, the edge-adding order, and Add_Edge_Kind_Check.
 
       type Library_Graph_Edge_Kind is
-        (Body_Before_Spec_Edge,
-         --  Successor denotes spec, Predecessor denotes a body. This is a
-         --  special edge kind used only during the discovery of components.
-         --  Note that a body can never be elaborated before its spec.
+        (Spec_Before_Body_Edge,
+         --  Successor denotes a body, Predecessor denotes a spec
 
          Elaborate_Edge,
          --  Successor withs Predecessor, and has pragma Elaborate for it
 
          Elaborate_All_Edge,
          --  Successor withs Predecessor, and has pragma Elaborate_All for it
+
+         With_Edge,
+         --  Successor withs Predecessor
 
          Forced_Edge,
          --  Successor is forced to with Predecessor by virtue of an existing
@@ -724,11 +260,10 @@ package Bindo.Graphs is
          --  An invocation construct in unit Successor invokes a target in unit
          --  Predecessor.
 
-         Spec_Before_Body_Edge,
-         --  Successor denotes a body, Predecessor denotes a spec
-
-         With_Edge,
-         --  Successor withs Predecessor
+         Body_Before_Spec_Edge,
+         --  Successor denotes spec, Predecessor denotes a body. This is a
+         --  special edge kind used only during the discovery of components.
+         --  Note that a body can never be elaborated before its spec.
 
          No_Edge);
 
@@ -1723,5 +1258,487 @@ package Bindo.Graphs is
       type Edges_Of_Cycle_Iterator      is new LGE_Lists.Iterator;
       type Edges_To_Successors_Iterator is new DG.Outgoing_Edge_Iterator;
    end Library_Graphs;
+
+   -----------------------
+   -- Invocation_Graphs --
+   -----------------------
+
+   package Invocation_Graphs is
+
+      -----------
+      -- Graph --
+      -----------
+
+      --  The following type denotes an invocation graph handle. Each instance
+      --  must be created using routine Create.
+
+      type Invocation_Graph is private;
+      Nil : constant Invocation_Graph;
+
+      ----------------------
+      -- Graph operations --
+      ----------------------
+
+      procedure Add_Edge
+        (G      : Invocation_Graph;
+         Source : Invocation_Graph_Vertex_Id;
+         Target : Invocation_Graph_Vertex_Id;
+         IR_Id  : Invocation_Relation_Id);
+      pragma Inline (Add_Edge);
+      --  Create a new edge in invocation graph G with source vertex Source and
+      --  destination vertex Target. IR_Id is the invocation relation the edge
+      --  describes.
+
+      procedure Add_Vertex
+        (G           : Invocation_Graph;
+         IC_Id       : Invocation_Construct_Id;
+         Body_Vertex : Library_Graph_Vertex_Id;
+         Spec_Vertex : Library_Graph_Vertex_Id);
+      pragma Inline (Add_Vertex);
+      --  Create a new vertex in invocation graph G. IC_Id is the invocation
+      --  construct the vertex describes. Body_Vertex denotes the library graph
+      --  vertex where the invocation construct's body is declared. Spec_Vertex
+      --  is the library graph vertex where the invocation construct's spec is
+      --  declared.
+
+      function Create
+        (Initial_Vertices : Positive;
+         Initial_Edges    : Positive;
+         Lib_Graph        : Library_Graphs.Library_Graph)
+        return Invocation_Graph;
+      pragma Inline (Create);
+      --  Create a new empty graph with vertex capacity Initial_Vertices
+      --  and edge capacity Initial_Edges. Lib_Graph is the library graph
+      --  corresponding to this invocation graph.
+
+      function Get_Lib_Graph
+        (G : Invocation_Graph) return Library_Graphs.Library_Graph;
+      pragma Inline (Get_Lib_Graph);
+      --  Return the library graph corresponding to this invocation graph
+
+      procedure Destroy (G : in out Invocation_Graph);
+      pragma Inline (Destroy);
+      --  Destroy the contents of invocation graph G, rendering it unusable
+
+      function Present (G : Invocation_Graph) return Boolean;
+      pragma Inline (Present);
+      --  Determine whether invocation graph G exists
+
+      -----------------------
+      -- Vertex attributes --
+      -----------------------
+
+      function Body_Vertex
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id;
+      pragma Inline (Body_Vertex);
+      --  Obtain the library graph vertex where the body of the invocation
+      --  construct represented by vertex Vertex of invocation graph G is
+      --  declared.
+
+      function Column
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Nat;
+      pragma Inline (Column);
+      --  Obtain the column number where the invocation construct vertex Vertex
+      --  of invocation graph G describes.
+
+      function Construct
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Invocation_Construct_Id;
+      pragma Inline (Construct);
+      --  Obtain the invocation construct vertex Vertex of invocation graph G
+      --  describes.
+
+      function Corresponding_Vertex
+        (G     : Invocation_Graph;
+         IS_Id : Invocation_Signature_Id) return Invocation_Graph_Vertex_Id;
+      pragma Inline (Corresponding_Vertex);
+      --  Obtain the vertex of invocation graph G that corresponds to signature
+      --  IS_Id.
+
+      function Line
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Nat;
+      pragma Inline (Line);
+      --  Obtain the line number where the invocation construct vertex Vertex
+      --  of invocation graph G describes.
+
+      function Name
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Name_Id;
+      pragma Inline (Name);
+      --  Obtain the name of the construct vertex Vertex of invocation graph G
+      --  describes.
+
+      function Spec_Vertex
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id;
+      pragma Inline (Spec_Vertex);
+      --  Obtain the library graph vertex where the spec of the invocation
+      --  construct represented by vertex Vertex of invocation graph G is
+      --  declared.
+
+      ---------------------
+      -- Edge attributes --
+      ---------------------
+
+      function Extra
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Name_Id;
+      pragma Inline (Extra);
+      --  Obtain the extra name used in error diagnostics of edge Edge of
+      --  invocation graph G.
+
+      function Kind
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Kind;
+      pragma Inline (Kind);
+      --  Obtain the nature of edge Edge of invocation graph G
+
+      function Relation
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Relation_Id;
+      pragma Inline (Relation);
+      --  Obtain the relation edge Edge of invocation graph G describes
+
+      function Target
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Graph_Vertex_Id;
+      pragma Inline (Target);
+      --  Obtain the target vertex edge Edge of invocation graph G designates
+
+      ----------------
+      -- Statistics --
+      ----------------
+
+      function Invocation_Graph_Edge_Count
+        (G    : Invocation_Graph;
+         Kind : Invocation_Kind) return Natural;
+      pragma Inline (Invocation_Graph_Edge_Count);
+      --  Obtain the total number of edges of kind Kind in invocation graph G
+
+      function Number_Of_Edges (G : Invocation_Graph) return Natural;
+      pragma Inline (Number_Of_Edges);
+      --  Obtain the total number of edges in invocation graph G
+
+      function Number_Of_Edges_To_Targets
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Natural;
+      pragma Inline (Number_Of_Edges_To_Targets);
+      --  Obtain the total number of edges to targets vertex Vertex of
+      --  invocation graph G has.
+
+      function Number_Of_Elaboration_Roots
+        (G : Invocation_Graph) return Natural;
+      pragma Inline (Number_Of_Elaboration_Roots);
+      --  Obtain the total number of elaboration roots in invocation graph G
+
+      function Number_Of_Vertices (G : Invocation_Graph) return Natural;
+      pragma Inline (Number_Of_Vertices);
+      --  Obtain the total number of vertices in invocation graph G
+
+      ---------------
+      -- Iterators --
+      ---------------
+
+      --  The following type represents an iterator over all edges of an
+      --  invocation graph.
+
+      type All_Edge_Iterator is private;
+
+      function Has_Next (Iter : All_Edge_Iterator) return Boolean;
+      pragma Inline (Has_Next);
+      --  Determine whether iterator Iter has more edges to examine
+
+      function Iterate_All_Edges
+        (G : Invocation_Graph) return All_Edge_Iterator;
+      pragma Inline (Iterate_All_Edges);
+      --  Obtain an iterator over all edges of invocation graph G
+
+      procedure Next
+        (Iter : in out All_Edge_Iterator;
+         Edge : out Invocation_Graph_Edge_Id);
+      pragma Inline (Next);
+      --  Return the current edge referenced by iterator Iter and advance to
+      --  the next available edge.
+
+      --  The following type represents an iterator over all vertices of an
+      --  invocation graph.
+
+      type All_Vertex_Iterator is private;
+
+      function Has_Next (Iter : All_Vertex_Iterator) return Boolean;
+      pragma Inline (Has_Next);
+      --  Determine whether iterator Iter has more vertices to examine
+
+      function Iterate_All_Vertices
+        (G : Invocation_Graph) return All_Vertex_Iterator;
+      pragma Inline (Iterate_All_Vertices);
+      --  Obtain an iterator over all vertices of invocation graph G
+
+      procedure Next
+        (Iter   : in out All_Vertex_Iterator;
+         Vertex : out Invocation_Graph_Vertex_Id);
+      pragma Inline (Next);
+      --  Return the current vertex referenced by iterator Iter and advance
+      --  to the next available vertex.
+
+      --  The following type represents an iterator over all edges that reach
+      --  targets starting from a particular source vertex.
+
+      type Edges_To_Targets_Iterator is private;
+
+      function Has_Next (Iter : Edges_To_Targets_Iterator) return Boolean;
+      pragma Inline (Has_Next);
+      --  Determine whether iterator Iter has more edges to examine
+
+      function Iterate_Edges_To_Targets
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Edges_To_Targets_Iterator;
+      pragma Inline (Iterate_Edges_To_Targets);
+      --  Obtain an iterator over all edges to targets with source vertex
+      --  Vertex of invocation graph G.
+
+      procedure Next
+        (Iter : in out Edges_To_Targets_Iterator;
+         Edge : out Invocation_Graph_Edge_Id);
+      pragma Inline (Next);
+      --  Return the current edge referenced by iterator Iter and advance to
+      --  the next available edge.
+
+      --  The following type represents an iterator over all vertices of an
+      --  invocation graph that denote the elaboration procedure or a spec or
+      --  a body, referred to as elaboration root.
+
+      type Elaboration_Root_Iterator is private;
+
+      function Has_Next (Iter : Elaboration_Root_Iterator) return Boolean;
+      pragma Inline (Has_Next);
+      --  Determine whether iterator Iter has more elaboration roots to examine
+
+      function Iterate_Elaboration_Roots
+        (G : Invocation_Graph) return Elaboration_Root_Iterator;
+      pragma Inline (Iterate_Elaboration_Roots);
+      --  Obtain an iterator over all elaboration roots of invocation graph G
+
+      procedure Next
+        (Iter : in out Elaboration_Root_Iterator;
+         Root : out Invocation_Graph_Vertex_Id);
+      pragma Inline (Next);
+      --  Return the current elaboration root referenced by iterator Iter and
+      --  advance to the next available elaboration root.
+
+   private
+
+      --------------
+      -- Vertices --
+      --------------
+
+      procedure Destroy_Invocation_Graph_Vertex
+        (Vertex : in out Invocation_Graph_Vertex_Id);
+      pragma Inline (Destroy_Invocation_Graph_Vertex);
+      --  Destroy invocation graph vertex Vertex
+
+      --  The following type represents the attributes of an invocation graph
+      --  vertex.
+
+      type Invocation_Graph_Vertex_Attributes is record
+         Body_Vertex : Library_Graph_Vertex_Id := No_Library_Graph_Vertex;
+         --  Reference to the library graph vertex where the body of this
+         --  vertex resides.
+
+         Construct : Invocation_Construct_Id := No_Invocation_Construct;
+         --  Reference to the invocation construct this vertex represents
+
+         Spec_Vertex : Library_Graph_Vertex_Id := No_Library_Graph_Vertex;
+         --  Reference to the library graph vertex where the spec of this
+         --  vertex resides.
+      end record;
+
+      No_Invocation_Graph_Vertex_Attributes :
+        constant Invocation_Graph_Vertex_Attributes :=
+          (Body_Vertex => No_Library_Graph_Vertex,
+           Construct   => No_Invocation_Construct,
+           Spec_Vertex => No_Library_Graph_Vertex);
+
+      procedure Destroy_Invocation_Graph_Vertex_Attributes
+        (Attrs : in out Invocation_Graph_Vertex_Attributes);
+      pragma Inline (Destroy_Invocation_Graph_Vertex_Attributes);
+      --  Destroy the contents of attributes Attrs
+
+      package IGV_Tables is new Dynamic_Hash_Tables
+        (Key_Type              => Invocation_Graph_Vertex_Id,
+         Value_Type            => Invocation_Graph_Vertex_Attributes,
+         No_Value              => No_Invocation_Graph_Vertex_Attributes,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy_Invocation_Graph_Vertex_Attributes,
+         Hash                  => Hash_Invocation_Graph_Vertex);
+
+      -----------
+      -- Edges --
+      -----------
+
+      procedure Destroy_Invocation_Graph_Edge
+        (Edge : in out Invocation_Graph_Edge_Id);
+      pragma Inline (Destroy_Invocation_Graph_Edge);
+      --  Destroy invocation graph edge Edge
+
+      --  The following type represents the attributes of an invocation graph
+      --  edge.
+
+      type Invocation_Graph_Edge_Attributes is record
+         Relation : Invocation_Relation_Id := No_Invocation_Relation;
+         --  Reference to the invocation relation this edge represents
+      end record;
+
+      No_Invocation_Graph_Edge_Attributes :
+        constant Invocation_Graph_Edge_Attributes :=
+          (Relation => No_Invocation_Relation);
+
+      procedure Destroy_Invocation_Graph_Edge_Attributes
+        (Attrs : in out Invocation_Graph_Edge_Attributes);
+      pragma Inline (Destroy_Invocation_Graph_Edge_Attributes);
+      --  Destroy the contents of attributes Attrs
+
+      package IGE_Tables is new Dynamic_Hash_Tables
+        (Key_Type              => Invocation_Graph_Edge_Id,
+         Value_Type            => Invocation_Graph_Edge_Attributes,
+         No_Value              => No_Invocation_Graph_Edge_Attributes,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy_Invocation_Graph_Edge_Attributes,
+         Hash                  => Hash_Invocation_Graph_Edge);
+
+      ---------------
+      -- Relations --
+      ---------------
+
+      --  The following type represents a relation between a source and target
+      --  vertices.
+
+      type Source_Target_Relation is record
+         Source : Invocation_Graph_Vertex_Id := No_Invocation_Graph_Vertex;
+         --  The source vertex
+
+         Target : Invocation_Graph_Vertex_Id := No_Invocation_Graph_Vertex;
+         --  The destination vertex
+      end record;
+
+      No_Source_Target_Relation :
+        constant Source_Target_Relation :=
+          (Source => No_Invocation_Graph_Vertex,
+           Target => No_Invocation_Graph_Vertex);
+
+      function Hash_Source_Target_Relation
+        (Rel : Source_Target_Relation) return Bucket_Range_Type;
+      pragma Inline (Hash_Source_Target_Relation);
+      --  Obtain the hash value of key Rel
+
+      package Relation_Sets is new Membership_Sets
+        (Element_Type => Source_Target_Relation,
+         "="          => "=",
+         Hash         => Hash_Source_Target_Relation);
+
+      ----------------
+      -- Statistics --
+      ----------------
+
+      type Invocation_Graph_Edge_Counts is array (Invocation_Kind) of Natural;
+
+      ----------------
+      -- Signatures --
+      ----------------
+
+      function Hash_Invocation_Signature
+        (IS_Id : Invocation_Signature_Id) return Bucket_Range_Type;
+      pragma Inline (Hash_Invocation_Signature);
+      --  Obtain the hash value of key IS_Id
+
+      package Signature_Tables is new Dynamic_Hash_Tables
+        (Key_Type              => Invocation_Signature_Id,
+         Value_Type            => Invocation_Graph_Vertex_Id,
+         No_Value              => No_Invocation_Graph_Vertex,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy_Invocation_Graph_Vertex,
+         Hash                  => Hash_Invocation_Signature);
+
+      -----------------------
+      -- Elaboration roots --
+      -----------------------
+
+      package IGV_Sets is new Membership_Sets
+        (Element_Type => Invocation_Graph_Vertex_Id,
+         "="          => "=",
+         Hash         => Hash_Invocation_Graph_Vertex);
+
+      -----------
+      -- Graph --
+      -----------
+
+      package DG is new Directed_Graphs
+        (Vertex_Id   => Invocation_Graph_Vertex_Id,
+         No_Vertex   => No_Invocation_Graph_Vertex,
+         Hash_Vertex => Hash_Invocation_Graph_Vertex,
+         Same_Vertex => "=",
+         Edge_id     => Invocation_Graph_Edge_Id,
+         No_Edge     => No_Invocation_Graph_Edge,
+         Hash_Edge   => Hash_Invocation_Graph_Edge,
+         Same_Edge   => "=");
+
+      --  The following type represents the attributes of an invocation graph
+
+      type Invocation_Graph_Attributes is record
+         Counts : Invocation_Graph_Edge_Counts := (others => 0);
+         --  Edge statistics
+
+         Edge_Attributes : IGE_Tables.Dynamic_Hash_Table := IGE_Tables.Nil;
+         --  The map of edge -> edge attributes for all edges in the graph
+
+         Graph : DG.Directed_Graph := DG.Nil;
+         --  The underlying graph describing the relations between edges and
+         --  vertices.
+
+         Relations : Relation_Sets.Membership_Set := Relation_Sets.Nil;
+         --  The set of relations between source and targets, used to prevent
+         --  duplicate edges in the graph.
+
+         Roots : IGV_Sets.Membership_Set := IGV_Sets.Nil;
+         --  The set of elaboration root vertices
+
+         Signature_To_Vertex : Signature_Tables.Dynamic_Hash_Table :=
+                                 Signature_Tables.Nil;
+         --  The map of signature -> vertex
+
+         Vertex_Attributes : IGV_Tables.Dynamic_Hash_Table := IGV_Tables.Nil;
+         --  The map of vertex -> vertex attributes for all vertices in the
+         --  graph.
+
+         Lib_Graph : Library_Graphs.Library_Graph;
+      end record;
+
+      type Invocation_Graph is access Invocation_Graph_Attributes;
+      Nil : constant Invocation_Graph := null;
+
+      ---------------
+      -- Iterators --
+      ---------------
+
+      type All_Edge_Iterator         is new DG.All_Edge_Iterator;
+      type All_Vertex_Iterator       is new DG.All_Vertex_Iterator;
+      type Edges_To_Targets_Iterator is new DG.Outgoing_Edge_Iterator;
+      type Elaboration_Root_Iterator is new IGV_Sets.Iterator;
+   end Invocation_Graphs;
 
 end Bindo.Graphs;

@@ -1,3 +1,238 @@
+2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* c.opt (Wscalar-storage-order): Add explicit variable.
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_common_post_options): Add 'injecting' arg to
+	cpp_read_main_file.
+	(c_finish_options): Add linemap_line_start calls for builtin and cmd
+	maps.  Force token position to line_table's highest line.
+	* c-ppoutput.c (print_line_1): Refactor, print line zero.
+	(cb_define): Always increment source line.
+
+2020-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95984
+	* c-common.c (check_function_nonnull): Avoid checking syntesized calls
+	to stub lambda objects with null this pointer.
+	(check_nonnull_arg): Handle C++ nullptr.
+
+2020-07-02  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_consteval.
+
+2020-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95963
+	* c-common.c (check_function_arguments_recurse): Don't crash on
+	calls to internal functions.
+
+2020-06-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86568
+	* c-common.c (struct nonnull_arg_ctx): Add members.
+	(check_function_nonnull): Use nonnull_arg_ctx as argument.  Handle
+	C++ member functions specially.  Consider the this pointer implicitly
+	nonnull.
+	(check_nonnull_arg): Use location of argument when available.
+	(check_function_arguments): Use nonnull_arg_ctx as argument.
+
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95903
+	* c-common.c (pointer_int_sum): Use TYPE_OVERFLOW_UNDEFINED instead of
+	!TYPE_UNSIGNED check to see if we can apply distributive law and handle
+	smaller precision intop operands separately.
+
+2020-06-26  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (c_common_init_options): Default to gnu++17.
+
+2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/95378
+	* c-common.c (get_atomic_generic_size): Check cv-qualifiers in
+	pointer arguments.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_check_loop_iv_exprs): Add an int argument.
+	* c-omp.c (struct c_omp_check_loop_iv_data): Add maybe_nonrect and
+	idx members.
+	(c_omp_is_loop_iterator): New function.
+	(c_omp_check_loop_iv_r): Use it.  Add support for silent scanning
+	if outer loop iterator is present.  Perform duplicate checking through
+	hash_set in the function rather than expecting caller to do that.
+	Pass NULL instead of d->ppset to walk_tree_1.
+	(c_omp_check_nonrect_loop_iv): New function.
+	(c_omp_check_loop_iv): Use it.  Fill in new members, allow
+	non-rectangular loop forms, diagnose multiple associated loops with
+	the same iterator.  Pass NULL instead of &pset to walk_tree_1.
+	(c_omp_check_loop_iv_exprs): Likewise.
+
+2020-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	* c-attribs.c (handle_optimize_attribute):
+	Save global options and compare it after parsing of function
+	attribute.
+	* c-pragma.c (opt_stack::saved_global_options): New field.
+	(handle_pragma_push_options): Save global_options.
+	(handle_pragma_pop_options): Compare them after pop.
+
+2020-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/95580
+	* c-pretty-print.c (c_pretty_printer::unary_expression): Handle the
+	case when MEM_REF's first argument has type pointer to incomplete type.
+
+2020-06-05  Jason Merrill  <jason@redhat.com>
+
+	* c-pretty-print.c (pp_c_additive_expression): Handle negative
+	operand to POINTER_PLUS_EXPR.
+
+2020-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/10138
+	PR middle-end/95136
+	* c-attribs.c (append_access_attrs): Handle attr_access::none.
+	(handle_access_attribute): Same.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_cp_stdlib_header_for_string_macro_name):
+	New function.
+	* known-headers.h (get_cp_stdlib_header_for_string_macro_name):
+	New function declaration.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_string_macro_hint): New function.
+	(get_stdlib_header_for_name): Use get_string_macro_hint.
+	(get_c_stdlib_header_for_string_macro_name): New function.
+	* known-headers.h (get_c_stdlib_header_for_string_macro_name):
+	New function declaration.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-common.h (c_omp_predetermined_mapping): Declare.
+	* c-omp.c (c_omp_predetermined_mapping): New.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add a new
+	stdlib_hint array for stdbool and stdint.
+
+2020-05-22  Mark Wielaard  <mark@klomp.org>
+
+	* known-headers.cc (get_stdlib_header_for_name): Return
+	"<stdbool.h>" for "bool", "true" or "false" when STDLIB_C and
+	flag_isoc99.
+
+2020-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (try_to_locate_new_include_insertion_point): Revert change.
+
+	* c-common.c (try_to_locate_new_include_insertion_point): Use
+	strcmp to compare filenames.
+	* c-lex.c (init_c_lex): Move declaration to initialization.
+	* c-opts.c (handle_deferred_opts): Move cpp_get_deps call into
+	deferred count loop.
+
+2020-05-15  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (set_std_cxx20): Set flag_coroutines.
+
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (std=c++20): Make c++2a the alias.
+	(std=gnu++20): Likewise.
+	* c-common.h (cxx_dialect): Change cxx2a to cxx20.
+	* c-opts.c: Adjust.
+	* c-cppbuiltin.c: Adjust.
+	* c-ubsan.c: Adjust.
+	* c-warn.c: Adjust.
+
+2020-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ads): Output pragma Warnings ("U"); on entry.
+
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement directives only processing.
+	* c-ppoutput.c (token_streamer): Ne.
+	(directives_only_cb): New.  Swallow ...
+	(print_lines_directives_only): ... this.
+	(scan_translation_unit_directives_only): Reimplment using the
+	published interface.
+
+2020-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-format.c (badwords): Add "nonstatic".
+
+202-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94968
+	* c-common.c (speculation_safe_value_resolve_params): Return false if
+	error_operand_p (val2).
+	(resolve_overloaded_builtin) <case BUILT_IN_SPECULATION_SAFE_VALUE_N>:
+	Remove extraneous semicolon.
+
+2020-05-06  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/94230
+	* c-indentation.c (get_visual_column): Add a hint to use the new
+	-flarge-source-files option.
+
+2020-05-05  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* c-attribs.c (handle_vector_size_attribute): Add attribute
+	nonnull for argument args in order to silence warning of
+	uninitialized variable usage.  Since this is local to the
+	compilation unit and thus cannot be checked at call sides by the
+	compiler, added an assert statement in order to verify this.
+
+2020-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/93492
+	* c-attribs.c (handle_patchable_function_entry_attribute): Limit
+	value to USHRT_MAX (65535).
+
+2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-format.c (PP_FORMAT_CHAR_TABLE): Add %{ and %}.
+
+2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94755
+	* c-common.c (resolve_overloaded_builtin): Return error_mark_node for
+	fncode == BUILT_IN_NONE before initialization of first_param.
+
+2020-04-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94733
+	* c-attribs.c (find_tm_attribute): Use get_attribute_name instead of
+	TREE_PURPOSE.
+
+2020-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/85278
+	* c-pretty-print.c (pp_c_pointer) <case REFERENCE_TYPE>: Print a double
+	ampersand if it's an rvalue reference type.
+
+2020-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/92326
+	* c-pretty-print.c (c_pretty_printer::direct_abstract_declarator): Avoid
+	printing array bound for flexible array members.
+
+2020-04-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update coroutines builtin
+	define, per n4861.
+
 2020-04-02  Richard Biener  <rguenther@suse.de>
 
 	PR c/94392

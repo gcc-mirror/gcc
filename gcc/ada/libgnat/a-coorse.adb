@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -899,7 +899,7 @@ package body Ada.Containers.Ordered_Sets is
                  Control =>
                    (Controlled with
                      Tree.TC'Unrestricted_Access,
-                     Container => Container'Access,
+                     Container => Container'Unchecked_Access,
                      Pos       => Position,
                      Old_Key   => new Key_Type'(Key (Position))))
             do
@@ -927,7 +927,7 @@ package body Ada.Containers.Ordered_Sets is
                  Control =>
                    (Controlled with
                      Tree.TC'Unrestricted_Access,
-                     Container => Container'Access,
+                     Container => Container'Unchecked_Access,
                      Pos       => Find (Container, Key),
                      Old_Key   => new Key_Type'(Key)))
             do
@@ -1641,12 +1641,12 @@ package body Ada.Containers.Ordered_Sets is
         Element_Keys.Find (Container.Tree, New_Item);
 
    begin
+      TE_Check (Container.Tree.TC);
+
       if Checks and then Node = null then
          raise Constraint_Error with
            "attempt to replace element not in set";
       end if;
-
-      TE_Check (Container.Tree.TC);
 
       Node.Element := New_Item;
    end Replace;

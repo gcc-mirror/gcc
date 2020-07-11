@@ -25,7 +25,7 @@ srcdir = @srcdir@
 top_builddir = .
 VPATH = @srcdir@
 INSTALL = @INSTALL@
-AR = ar
+AR = @AR@
 ARFLAGS = cru
 ACLOCAL = @ACLOCAL@
 AUTOCONF = @AUTOCONF@
@@ -41,6 +41,7 @@ LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
 PACKAGE = @PACKAGE@
 PICFLAG = @PICFLAG@
+CET_HOST_FLAGS = @CET_HOST_FLAGS@
 RANLIB = @RANLIB@
 SHELL = @SHELL@
 objext = @OBJEXT@
@@ -60,7 +61,7 @@ enable_decimal_float= @enable_decimal_float@
 INCLUDES = -I$(srcdir) -I.
 
 ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(NOLTO_FLAGS) $(INCLUDES) $(CPPFLAGS) \
-	     $(PICFLAG)
+	     $(PICFLAG) $(CET_HOST_FLAGS)
 
 bid_OBJS = bid2dpd_dpd2bid.$(objext) host-ieee32.$(objext) \
 	host-ieee64.$(objext) host-ieee128.$(objext)

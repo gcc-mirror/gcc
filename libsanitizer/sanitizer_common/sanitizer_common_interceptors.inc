@@ -79,13 +79,15 @@
 #define devname __devname50
 #define fgetpos __fgetpos50
 #define fsetpos __fsetpos50
+#define fstatvfs __fstatvfs90
+#define fstatvfs1 __fstatvfs190
 #define fts_children __fts_children60
 #define fts_close __fts_close60
 #define fts_open __fts_open60
 #define fts_read __fts_read60
 #define fts_set __fts_set60
 #define getitimer __getitimer50
-#define getmntinfo __getmntinfo13
+#define getmntinfo __getmntinfo90
 #define getpwent __getpwent50
 #define getpwnam __getpwnam50
 #define getpwnam_r __getpwnam_r50
@@ -95,6 +97,7 @@
 #define getutxent __getutxent50
 #define getutxid __getutxid50
 #define getutxline __getutxline50
+#define getvfsstat __getvfsstat90
 #define pututxline __pututxline50
 #define glob __glob30
 #define gmtime __gmtime50
@@ -110,12 +113,15 @@
 #define setitimer __setitimer50
 #define setlocale __setlocale50
 #define shmctl __shmctl50
+#define sigaltstack __sigaltstack14
 #define sigemptyset __sigemptyset14
 #define sigfillset __sigfillset14
 #define sigpending __sigpending14
 #define sigprocmask __sigprocmask14
 #define sigtimedwait __sigtimedwait50
 #define stat __stat50
+#define statvfs __statvfs90
+#define statvfs1 __statvfs190
 #define time __time50
 #define times __times13
 #define unvis __unvis50
@@ -128,11 +134,7 @@ extern const short *_tolower_tab_;
 
 // Platform-specific options.
 #if SANITIZER_MAC
-namespace __sanitizer {
-bool PlatformHasDifferentMemcpyAndMemmove();
-}
-#define PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE \
-  (__sanitizer::PlatformHasDifferentMemcpyAndMemmove())
+#define PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE false
 #elif SANITIZER_WINDOWS64
 #define PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE false
 #else
@@ -4177,11 +4179,27 @@ INTERCEPTOR(int, pthread_mutex_unlock, void *m) {
 
 #if SANITIZER_INTERCEPT___PTHREAD_MUTEX
 INTERCEPTOR(int, __pthread_mutex_lock, void *m) {
-  return WRAP(pthread_mutex_lock)(m);
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, __pthread_mutex_lock, m);
+  COMMON_INTERCEPTOR_MUTEX_PRE_LOCK(ctx, m);
+  int res = REAL(__pthread_mutex_lock)(m);
+  if (res == errno_EOWNERDEAD)
+    COMMON_INTERCEPTOR_MUTEX_REPAIR(ctx, m);
+  if (res == 0 || res == errno_EOWNERDEAD)
+    COMMON_INTERCEPTOR_MUTEX_POST_LOCK(ctx, m);
+  if (res == errno_EINVAL)
+    COMMON_INTERCEPTOR_MUTEX_INVALID(ctx, m);
+  return res;
 }
 
 INTERCEPTOR(int, __pthread_mutex_unlock, void *m) {
-  return WRAP(pthread_mutex_unlock)(m);
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, __pthread_mutex_unlock, m);
+  COMMON_INTERCEPTOR_MUTEX_UNLOCK(ctx, m);
+  int res = REAL(__pthread_mutex_unlock)(m);
+  if (res == errno_EINVAL)
+    COMMON_INTERCEPTOR_MUTEX_INVALID(ctx, m);
+  return res;
 }
 
 #define INIT___PTHREAD_MUTEX_LOCK \
@@ -6411,12 +6429,11 @@ INTERCEPTOR(SSIZE_T, recvfrom, int fd, void *buf, SIZE_T len, int flags,
   if (srcaddr) srcaddr_sz = *addrlen;
   (void)srcaddr_sz;  // prevent "set but not used" warning
   SSIZE_T res = REAL(recvfrom)(fd, buf, len, flags, srcaddr, addrlen);
-  if (res > 0) {
+  if (res > 0)
     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, buf, Min((SIZE_T)res, len));
-    if (srcaddr)
-      COMMON_INTERCEPTOR_INITIALIZE_RANGE(srcaddr,
-                                          Min((SIZE_T)*addrlen, srcaddr_sz));
-  }
+  if (res >= 0 && srcaddr)
+    COMMON_INTERCEPTOR_INITIALIZE_RANGE(srcaddr,
+                                        Min((SIZE_T)*addrlen, srcaddr_sz));
   return res;
 }
 #define INIT_RECV_RECVFROM          \
@@ -9623,6 +9640,148 @@ INTERCEPTOR(int, getentropy, void *buf, SIZE_T buflen) {
 #define INIT_GETENTROPY
 #endif
 
+#if SANITIZER_INTERCEPT_QSORT
+// Glibc qsort uses a temporary buffer allocated either on stack or on heap.
+// Poisoned memory from there may get copied into the comparator arguments,
+// where it needs to be dealt with. But even that is not enough - the results of
+// the sort may be copied into the input/output array based on the results of
+// the comparator calls, but directly from the temp memory, bypassing the
+// unpoisoning done in wrapped_qsort_compar. We deal with this by, again,
+// unpoisoning the entire array after the sort is done.
+//
+// We can not check that the entire array is initialized at the beginning. IMHO,
+// it's fine for parts of the sorted objects to contain uninitialized memory,
+// ex. as padding in structs.
+typedef int (*qsort_compar_f)(const void *, const void *);
+static THREADLOCAL qsort_compar_f qsort_compar;
+static THREADLOCAL SIZE_T qsort_size;
+int wrapped_qsort_compar(const void *a, const void *b) {
+  COMMON_INTERCEPTOR_UNPOISON_PARAM(2);
+  COMMON_INTERCEPTOR_INITIALIZE_RANGE(a, qsort_size);
+  COMMON_INTERCEPTOR_INITIALIZE_RANGE(b, qsort_size);
+  return qsort_compar(a, b);
+}
+
+INTERCEPTOR(void, qsort, void *base, SIZE_T nmemb, SIZE_T size,
+            qsort_compar_f compar) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, qsort, base, nmemb, size, compar);
+  // Run the comparator over all array elements to detect any memory issues.
+  if (nmemb > 1) {
+    for (SIZE_T i = 0; i < nmemb - 1; ++i) {
+      void *p = (void *)((char *)base + i * size);
+      void *q = (void *)((char *)base + (i + 1) * size);
+      COMMON_INTERCEPTOR_UNPOISON_PARAM(2);
+      compar(p, q);
+    }
+  }
+  qsort_compar_f old_compar = qsort_compar;
+  qsort_compar = compar;
+  SIZE_T old_size = qsort_size;
+  qsort_size = size;
+  REAL(qsort)(base, nmemb, size, wrapped_qsort_compar);
+  qsort_compar = old_compar;
+  qsort_size = old_size;
+  COMMON_INTERCEPTOR_WRITE_RANGE(ctx, base, nmemb * size);
+}
+#define INIT_QSORT COMMON_INTERCEPT_FUNCTION(qsort)
+#else
+#define INIT_QSORT
+#endif
+
+#if SANITIZER_INTERCEPT_QSORT_R
+typedef int (*qsort_r_compar_f)(const void *, const void *, void *);
+static THREADLOCAL qsort_r_compar_f qsort_r_compar;
+static THREADLOCAL SIZE_T qsort_r_size;
+int wrapped_qsort_r_compar(const void *a, const void *b, void *arg) {
+  COMMON_INTERCEPTOR_UNPOISON_PARAM(3);
+  COMMON_INTERCEPTOR_INITIALIZE_RANGE(a, qsort_r_size);
+  COMMON_INTERCEPTOR_INITIALIZE_RANGE(b, qsort_r_size);
+  return qsort_r_compar(a, b, arg);
+}
+
+INTERCEPTOR(void, qsort_r, void *base, SIZE_T nmemb, SIZE_T size,
+            qsort_r_compar_f compar, void *arg) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, qsort_r, base, nmemb, size, compar, arg);
+  // Run the comparator over all array elements to detect any memory issues.
+  if (nmemb > 1) {
+    for (SIZE_T i = 0; i < nmemb - 1; ++i) {
+      void *p = (void *)((char *)base + i * size);
+      void *q = (void *)((char *)base + (i + 1) * size);
+      COMMON_INTERCEPTOR_UNPOISON_PARAM(3);
+      compar(p, q, arg);
+    }
+  }
+  qsort_r_compar_f old_compar = qsort_r_compar;
+  qsort_r_compar = compar;
+  SIZE_T old_size = qsort_r_size;
+  qsort_r_size = size;
+  REAL(qsort_r)(base, nmemb, size, wrapped_qsort_r_compar, arg);
+  qsort_r_compar = old_compar;
+  qsort_r_size = old_size;
+  COMMON_INTERCEPTOR_WRITE_RANGE(ctx, base, nmemb * size);
+}
+#define INIT_QSORT_R COMMON_INTERCEPT_FUNCTION(qsort_r)
+#else
+#define INIT_QSORT_R
+#endif
+
+#if SANITIZER_INTERCEPT_SIGALTSTACK
+INTERCEPTOR(int, sigaltstack, void *ss, void *oss) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, sigaltstack, ss, oss);
+  int r = REAL(sigaltstack)(ss, oss);
+  if (r == 0 && oss != nullptr) {
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, oss, struct_stack_t_sz);
+  }
+  return r;
+}
+#define INIT_SIGALTSTACK COMMON_INTERCEPT_FUNCTION(sigaltstack)
+#else
+#define INIT_SIGALTSTACK
+#endif
+
+#if SANITIZER_INTERCEPT_UNAME
+INTERCEPTOR(int, uname, struct utsname *utsname) {
+#if SANITIZER_LINUX
+  if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
+    return internal_uname(utsname);
+#endif
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, uname, utsname);
+  int res = REAL(uname)(utsname);
+  if (!res)
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, utsname,
+                                   __sanitizer::struct_utsname_sz);
+  return res;
+}
+#define INIT_UNAME COMMON_INTERCEPT_FUNCTION(uname)
+#else
+#define INIT_UNAME
+#endif
+
+#if SANITIZER_INTERCEPT___XUNAME
+// FreeBSD's <sys/utsname.h> define uname() as
+// static __inline int uname(struct utsname *name) {
+//   return __xuname(SYS_NMLN, (void*)name);
+// }
+INTERCEPTOR(int, __xuname, int size, void *utsname) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, __xuname, size, utsname);
+  int res = REAL(__xuname)(size, utsname);
+  if (!res)
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, utsname,
+                                   __sanitizer::struct_utsname_sz);
+  return res;
+}
+#define INIT___XUNAME COMMON_INTERCEPT_FUNCTION(__xuname)
+#else
+#define INIT___XUNAME
+#endif
+
+#include "sanitizer_common_interceptors_netbsd_compat.inc"
+
 static void InitializeCommonInterceptors() {
 #if SI_POSIX
   static u64 metadata_mem[sizeof(MetadataHashMap) / sizeof(u64) + 1];
@@ -9924,6 +10083,11 @@ static void InitializeCommonInterceptors() {
   INIT_CRYPT;
   INIT_CRYPT_R;
   INIT_GETENTROPY;
+  INIT_QSORT;
+  INIT_QSORT_R;
+  INIT_SIGALTSTACK;
+  INIT_UNAME;
+  INIT___XUNAME;
 
   INIT___PRINTF_CHK;
 }

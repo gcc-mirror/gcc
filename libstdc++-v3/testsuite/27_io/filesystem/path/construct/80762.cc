@@ -37,3 +37,9 @@ static_assert( !std::is_constructible_v<path, const volatile void*> );
 static_assert( !std::is_constructible_v<path, void*&> );
 static_assert( !std::is_constructible_v<path, void* const&> );
 static_assert( !std::is_constructible_v<path, const void* const&> );
+
+static_assert( !std::is_constructible_v<path, void, void> );
+static_assert( !std::is_constructible_v<path, void*, void*> );
+static_assert( !std::is_constructible_v<path, const void*, void*> );
+static_assert( !std::is_constructible_v<path, volatile void*, void*> );
+static_assert( !std::is_constructible_v<path, const volatile void*, void*> );

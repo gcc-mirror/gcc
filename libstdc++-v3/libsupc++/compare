@@ -39,7 +39,7 @@
 #include <concepts>
 
 #if __cpp_lib_concepts
-# define __cpp_lib_three_way_comparison 201711L
+# define __cpp_lib_three_way_comparison 201907L
 #endif
 
 namespace std
@@ -56,7 +56,7 @@ namespace std
 
     struct __unspec
     {
-      constexpr __unspec(__unspec*) { }
+      constexpr __unspec(__unspec*) noexcept { }
     };
   }
 
@@ -481,13 +481,14 @@ namespace std
     // BUILTIN-PTR-THREE-WAY(T, U)
     template<typename _Tp, typename _Up>
       concept __3way_builtin_ptr_cmp
-	= three_way_comparable_with<_Tp, _Up>
+	= requires(_Tp&& __t, _Up&& __u)
+	  { static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u); }
 	  && convertible_to<_Tp, const volatile void*>
 	  && convertible_to<_Up, const volatile void*>
 	  && ! requires(_Tp&& __t, _Up&& __u)
-	     { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
+	  { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
 	  && ! requires(_Tp&& __t, _Up&& __u)
-	     { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
+	  { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
   } // namespace __detail
 
   // [cmp.object], typename compare_three_way
@@ -495,6 +496,7 @@ namespace std
   {
     template<typename _Tp, typename _Up>
       requires three_way_comparable_with<_Tp, _Up>
+      || __detail::__3way_builtin_ptr_cmp<_Tp, _Up>
       constexpr auto
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Tp>() <=> std::declval<_Up>()))
@@ -864,12 +866,23 @@ namespace std
 
   namespace __detail
   {
-    // [expos.only.func]
+    // [expos.only.func] synth-three-way
     inline constexpr struct _Synth3way
     {
       template<typename _Tp, typename _Up>
+	static constexpr bool
+	_S_noexcept(const _Tp* __t = nullptr, const _Up* __u = nullptr)
+	{
+	  if constexpr (three_way_comparable_with<_Tp, _Up>)
+	    return noexcept(*__t <=> *__u);
+	  else
+	    return noexcept(*__t < *__u) && noexcept(*__u < *__t);
+	}
+
+      template<typename _Tp, typename _Up>
 	constexpr auto
 	operator()(const _Tp& __t, const _Up& __u) const
+	noexcept(_S_noexcept<_Tp, _Up>())
 	requires requires
 	{
 	  { __t < __u } -> __boolean_testable;
@@ -890,6 +903,7 @@ namespace std
 	}
     } __synth3way = {};
 
+    // [expos.only.func] synth-three-way-result
     template<typename _Tp, typename _Up = _Tp>
       using __synth3way_t
 	= decltype(__detail::__synth3way(std::declval<_Tp&>(),

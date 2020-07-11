@@ -3,16 +3,18 @@
 /* { dg-require-effective-target size20plus } */
 /* { dg-skip-if "too big data segment" { visium-*-* } } */
 
+typedef int int32_t __attribute__((mode (__SI__)));
+
 #define M 256
 int a[M][M], b[M][M];
-int __attribute__((noinline))
+int32_t __attribute__((noinline))
 double_reduc (int n)
 {
-  int sum = 0;
+  int32_t sum = 0;
   for (int j = 0; j < n; j++)
     {
       for (int i = 0; i < n; i++)
-	sum = sum + a[i][j]*b[i][j];
+	sum = sum + (int32_t)a[i][j]*(int32_t)b[i][j];
     }
   return sum;
 }
@@ -34,7 +36,7 @@ int main (void)
   for (int i = 0; i < M; ++i)
     init (i);
 
-  int sum = double_reduc (M);
+  int32_t sum = double_reduc (M);
 
   if (sum != 1065369600)
     abort ();

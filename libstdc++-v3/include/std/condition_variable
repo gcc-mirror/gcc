@@ -47,8 +47,7 @@
 #include <bits/cxxabi_forced.h>
 
 #if __cplusplus > 201703L
-#define __cpp_lib_jthread 201907L
-#include <stop_token>
+# include <stop_token>
 #endif
 
 #if defined(_GLIBCXX_HAS_GTHREADS)

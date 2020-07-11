@@ -2033,7 +2033,8 @@ _mm_min_epu8 (__m128i __A, __m128i __B)
 #ifdef _ARCH_PWR8
 /* Intrinsic functions that require PowerISA 2.07 minimum.  */
 
-/* Creates a 4-bit mask from the most significant bits of the SPFP values.  */
+/* Return a mask created from the most significant bit of each 8-bit
+   element in A.  */
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_epi8 (__m128i __A)
 {

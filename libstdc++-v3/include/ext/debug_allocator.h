@@ -179,11 +179,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   const debug_allocator<_Alloc2>& __rhs) _GLIBCXX_NOTHROW
 	{ return __lhs._M_allocator == debug_allocator(__rhs)._M_allocator; }
 
+#if __cpp_impl_three_way_comparison < 201907L
       template<typename _Alloc2>
 	friend bool
 	operator!=(const debug_allocator& __lhs,
 		   const debug_allocator<_Alloc2>& __rhs) _GLIBCXX_NOTHROW
 	{ return !(__lhs == __rhs); }
+#endif
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION

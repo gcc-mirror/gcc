@@ -2,7 +2,7 @@
 template <class... Types> class A
 {
 public:
-  template <Types... Values> class X { /* ... */ }; // { dg-error "not a valid type for a template non-type parameter" }
+  template <Types... Values> class X { /* ... */ }; // { dg-error "not a valid type for a template non-type parameter" "" { target c++17_down } }
 };
 
 template<class... Types> class B

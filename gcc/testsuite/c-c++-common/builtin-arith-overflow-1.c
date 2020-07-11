@@ -43,10 +43,10 @@ generic_2 (int a, int b)
   int x = __builtin_add_overflow (a, b);/* { dg-error "too few arguments to function" } */
   x += __builtin_sub_overflow (a, b);	/* { dg-error "too few arguments to function" } */
   x += __builtin_mul_overflow (a, b);	/* { dg-error "too few arguments to function" } */
-  x += __builtin_add_overflow (a, 1);   /* { dg-error "too few arguments to function" } */
+  x += __builtin_add_overflow (a, 1);	/* { dg-error "too few arguments to function" } */
   x += __builtin_sub_overflow (a, 2);	/* { dg-error "too few arguments to function" } */
   x += __builtin_mul_overflow (a, 3);	/* { dg-error "too few arguments to function" } */
-  x += __builtin_add_overflow (4, b);   /* { dg-error "too few arguments to function" } */
+  x += __builtin_add_overflow (4, b);	/* { dg-error "too few arguments to function" } */
   x += __builtin_sub_overflow (5, b);	/* { dg-error "too few arguments to function" } */
   x += __builtin_mul_overflow (6, b);	/* { dg-error "too few arguments to function" } */
   return x;
@@ -79,23 +79,22 @@ generic_3 (int a, int b, int c)
     x += __builtin_add_overflow (0, 0, (bool *)0);
 
     enum E { e0 };
-    x += __builtin_add_overflow (0, 0, (enum E *)0);
-  */
+    x += __builtin_add_overflow (0, 0, (enum E *)0);  */
 
-  x += __builtin_sub_overflow (0, 0, (char *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_add_overflow (0, 0, (short *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_add_overflow (a, b, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_sub_overflow (a, b, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_mul_overflow (a, b, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_add_overflow (a, 1, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_sub_overflow (a, 2, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_mul_overflow (a, 3, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_add_overflow (4, b, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_sub_overflow (5, b, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_mul_overflow (6, b, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_add_overflow (7, 8, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_sub_overflow (9, 10, (int *)0);   /* { dg-warning "null argument" } */
-  x += __builtin_mul_overflow (11, 12, (int *)0);   /* { dg-warning "null argument" } */
+  x += __builtin_sub_overflow (0, 0, (char *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_add_overflow (0, 0, (short *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_add_overflow (a, b, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_sub_overflow (a, b, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_mul_overflow (a, b, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_add_overflow (a, 1, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_sub_overflow (a, 2, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_mul_overflow (a, 3, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_add_overflow (4, b, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_sub_overflow (5, b, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_mul_overflow (6, b, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_add_overflow (7, 8, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_sub_overflow (9, 10, (int *)0);   /* { dg-warning "argument 3 null" } */
+  x += __builtin_mul_overflow (11, 12, (int *)0);   /* { dg-warning "argument 3 null" } */
 
   return x;
 }
@@ -167,34 +166,34 @@ typed_3_null (int a, int b)
 {
   int x = 0;
 
-  x += __builtin_sadd_overflow (a, b, (int *)0); /* { dg-warning "null argument" } */
-  x += __builtin_uadd_overflow (a, b, (unsigned *)0); /* { dg-warning "null argument" } */
+  x += __builtin_sadd_overflow (a, b, (int *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_uadd_overflow (a, b, (unsigned *)0); /* { dg-warning "argument 3 null" } */
 
-  x += __builtin_saddl_overflow (a, b, (long *)0); /* { dg-warning "null argument" } */
-  x += __builtin_uaddl_overflow (a, b, (unsigned long *)0); /* { dg-warning "null argument" } */
+  x += __builtin_saddl_overflow (a, b, (long *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_uaddl_overflow (a, b, (unsigned long *)0); /* { dg-warning "argument 3 null" } */
 
-  x += __builtin_saddll_overflow (a, b, (long long *)0); /* { dg-warning "null argument" } */
-  x += __builtin_uaddll_overflow (a, b, (unsigned long long *)0); /* { dg-warning "null argument" } */
-
-
-  x += __builtin_ssub_overflow (a, b, (int *)0); /* { dg-warning "null argument" } */
-  x += __builtin_usub_overflow (a, b, (unsigned *)0); /* { dg-warning "null argument" } */
-
-  x += __builtin_ssubl_overflow (a, b, (long *)0); /* { dg-warning "null argument" } */
-  x += __builtin_usubl_overflow (a, b, (unsigned long *)0); /* { dg-warning "null argument" } */
-
-  x += __builtin_ssubll_overflow (a, b, (long long *)0); /* { dg-warning "null argument" } */
-  x += __builtin_usubll_overflow (a, b, (unsigned long long *)0); /* { dg-warning "null argument" } */
+  x += __builtin_saddll_overflow (a, b, (long long *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_uaddll_overflow (a, b, (unsigned long long *)0); /* { dg-warning "argument 3 null" } */
 
 
-  x += __builtin_smul_overflow (a, b, (int *)0); /* { dg-warning "null argument" } */
-  x += __builtin_umul_overflow (a, b, (unsigned *)0); /* { dg-warning "null argument" } */
+  x += __builtin_ssub_overflow (a, b, (int *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_usub_overflow (a, b, (unsigned *)0); /* { dg-warning "argument 3 null" } */
 
-  x += __builtin_smull_overflow (a, b, (long *)0); /* { dg-warning "null argument" } */
-  x += __builtin_umull_overflow (a, b, (unsigned long *)0); /* { dg-warning "null argument" } */
+  x += __builtin_ssubl_overflow (a, b, (long *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_usubl_overflow (a, b, (unsigned long *)0); /* { dg-warning "argument 3 null" } */
 
-  x += __builtin_smulll_overflow (a, b, (long long *)0); /* { dg-warning "null argument" } */
-  x += __builtin_umulll_overflow (a, b, (unsigned long long *)0); /* { dg-warning "null argument" } */
+  x += __builtin_ssubll_overflow (a, b, (long long *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_usubll_overflow (a, b, (unsigned long long *)0); /* { dg-warning "argument 3 null" } */
+
+
+  x += __builtin_smul_overflow (a, b, (int *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_umul_overflow (a, b, (unsigned *)0); /* { dg-warning "argument 3 null" } */
+
+  x += __builtin_smull_overflow (a, b, (long *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_umull_overflow (a, b, (unsigned long *)0); /* { dg-warning "argument 3 null" } */
+
+  x += __builtin_smulll_overflow (a, b, (long long *)0); /* { dg-warning "argument 3 null" } */
+  x += __builtin_umulll_overflow (a, b, (unsigned long long *)0); /* { dg-warning "argument 3 null" } */
 
   return x;
 }

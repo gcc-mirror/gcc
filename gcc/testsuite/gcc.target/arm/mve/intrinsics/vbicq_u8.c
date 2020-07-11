@@ -19,3 +19,4 @@ foo1 (uint8x16_t a, uint8x16_t b)
 }
 
 /* { dg-final { scan-assembler "vbic"  }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

@@ -392,6 +392,9 @@ GCC_CHECK_MATH_FUNC([cabsl])
 GCC_CHECK_MATH_FUNC([floorf])
 GCC_CHECK_MATH_FUNC([floor])
 GCC_CHECK_MATH_FUNC([floorl])
+GCC_CHECK_MATH_FUNC([fmaf])
+GCC_CHECK_MATH_FUNC([fma])
+GCC_CHECK_MATH_FUNC([fmal])
 GCC_CHECK_MATH_FUNC([fmodf])
 GCC_CHECK_MATH_FUNC([fmod])
 GCC_CHECK_MATH_FUNC([fmodl])
@@ -516,6 +519,11 @@ GCC_CHECK_MATH_FUNC([catanl])
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
 
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysign], [double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysignl], [long double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabs], [double])
+GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabsl], [long double])
+
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT
 
@@ -592,6 +600,18 @@ AC_SUBST(IEEE_SUPPORT)
 # Some targets require additional compiler options for IEEE compatibility.
 IEEE_FLAGS="${ieee_flags}"
 AC_SUBST(IEEE_FLAGS)
+
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+AC_SUBST(tmake_file)
 
 
 # Check for POSIX getpwuid_r 

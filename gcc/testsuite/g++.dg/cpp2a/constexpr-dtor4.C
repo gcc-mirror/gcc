@@ -1,5 +1,5 @@
 // PR c++/92414
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A { virtual void foo (); };
 

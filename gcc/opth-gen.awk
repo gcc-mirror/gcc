@@ -318,6 +318,9 @@ print "";
 print "/* Free heap memory used by optimization options.  */";
 print "extern void cl_optimization_option_free (cl_optimization *ptr1);"
 print "";
+print "/* Compare and report difference for a part of cl_optimization options.  */";
+print "extern void cl_optimization_compare (gcc_options *ptr1, gcc_options *ptr2);";
+print "";
 print "/* Generator files may not have access to location_t, and don't need these.  */"
 print "#if defined(UNKNOWN_LOCATION)"
 print "bool                                                                  "

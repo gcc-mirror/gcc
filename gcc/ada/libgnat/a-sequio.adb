@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,7 @@ package body Ada.Sequential_IO is
    procedure Byte_Swap (Siz : in out size_t) is
       use System.Byte_Swapping;
    begin
-      case Siz'Size is
+      case size_t'Size is
          when 32     => Siz := size_t (Bswap_32 (U32 (Siz)));
          when 64     => Siz := size_t (Bswap_64 (U64 (Siz)));
          when others => raise Program_Error;

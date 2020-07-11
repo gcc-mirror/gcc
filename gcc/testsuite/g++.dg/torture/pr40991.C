@@ -1,5 +1,4 @@
-/* { dg-options "-std=gnu++0x" } */
-/* { dg-additional-options "-Wno-return-type" } */
+/* { dg-options "-std=gnu++0x -Wno-return-type" } */
 
 typedef __SIZE_TYPE__ size_t;
 namespace std __attribute__ ((__visibility__ ("default"))) {

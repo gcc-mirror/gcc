@@ -5102,9 +5102,22 @@ static const struct attribute_spec nvptx_attribute_table[] =
 static HOST_WIDE_INT
 nvptx_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
+  unsigned HOST_WIDE_INT align;
+  tree size = TYPE_SIZE (type);
 
-  return MIN (align, BIGGEST_ALIGNMENT);
+  /* Ensure align is not bigger than BIGGEST_ALIGNMENT.  */
+  if (tree_fits_uhwi_p (size))
+    {
+      align = tree_to_uhwi (size);
+      align = MIN (align, BIGGEST_ALIGNMENT);
+    }
+  else
+    align = BIGGEST_ALIGNMENT;
+
+  /* Ensure align is not smaller than mode alignment.  */
+  align = MAX (align, GET_MODE_ALIGNMENT (TYPE_MODE (type)));
+
+  return align;
 }
 
 /* Indicate that INSN cannot be duplicated.   */

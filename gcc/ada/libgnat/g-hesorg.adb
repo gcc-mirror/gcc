@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2019, AdaCore                     --
+--                     Copyright (C) 1995-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,8 @@ package body GNAT.Heap_Sort_G is
    --  from 2NlogN to NlogN.
 
    procedure Sort (N : Natural) is
+      pragma Annotate (CodePeer, Skip_Analysis);
+      --  CodePeer is sometimes getting confused on this procedure
 
       Max : Natural := N;
       --  Current Max index in tree being sifted

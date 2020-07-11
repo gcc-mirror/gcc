@@ -208,6 +208,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __atomic_test_and_set (&_M_i, int(__m));
     }
 
+#if __cplusplus > 201703L
+#define __cpp_lib_atomic_flag_test 201907L
+
+    _GLIBCXX_ALWAYS_INLINE bool
+    test(memory_order __m = memory_order_seq_cst) const noexcept
+    {
+      __atomic_flag_data_type __v;
+      __atomic_load(&_M_i, &__v, int(__m));
+      return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
+    }
+
+    _GLIBCXX_ALWAYS_INLINE bool
+    test(memory_order __m = memory_order_seq_cst) const volatile noexcept
+    {
+      __atomic_flag_data_type __v;
+      __atomic_load(&_M_i, &__v, int(__m));
+      return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
+    }
+#endif // C++20
+
     _GLIBCXX_ALWAYS_INLINE void
     clear(memory_order __m = memory_order_seq_cst) noexcept
     {
@@ -850,21 +870,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __atomic_store(__ptr, std::__addressof(__t), int(__m)); }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp
-      load(_Tp* __ptr, memory_order __m) noexcept
+      _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
+      load(const _Tp* __ptr, memory_order __m) noexcept
       {
 	alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
-	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
+	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
 	__atomic_load(__ptr, __dest, int(__m));
 	return *__dest;
       }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp
+      _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
       exchange(_Tp* __ptr, _Val<_Tp> __desired, memory_order __m) noexcept
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
-	_Tp* __dest = reinterpret_cast<_Tp*>(__buf);
+	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
 	__atomic_exchange(__ptr, std::__addressof(__desired), __dest, int(__m));
 	return *__dest;
       }

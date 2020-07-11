@@ -71,6 +71,9 @@ int in_sizeof;
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
+/* True when parsing OpenMP loop expressions.  */
+bool c_in_omp_for;
+
 /* The argument of last parsed sizeof expression, only to be tested
    if expr.original_code == SIZEOF_EXPR.  */
 tree c_last_sizeof_arg;
@@ -6209,15 +6212,20 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (!(is_atomic_op && modifycode != NOP_EXPR))
     {
       tree rhs_semantic_type = NULL_TREE;
-      if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+      if (!c_in_omp_for)
 	{
-	  rhs_semantic_type = TREE_TYPE (newrhs);
-	  newrhs = TREE_OPERAND (newrhs, 0);
+	  if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+	    {
+	      rhs_semantic_type = TREE_TYPE (newrhs);
+	      newrhs = TREE_OPERAND (newrhs, 0);
+	    }
+	  npc = null_pointer_constant_p (newrhs);
+	  newrhs = c_fully_fold (newrhs, false, NULL);
+	  if (rhs_semantic_type)
+	    newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
 	}
-      npc = null_pointer_constant_p (newrhs);
-      newrhs = c_fully_fold (newrhs, false, NULL);
-      if (rhs_semantic_type)
-	newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
+      else
+	npc = null_pointer_constant_p (newrhs);
       newrhs = convert_for_assignment (location, rhs_loc, lhstype, newrhs,
 				       rhs_origtype, ic_assign, npc,
 				       NULL_TREE, NULL_TREE, 0);
@@ -7143,6 +7151,41 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  }
 	}
 
+      /* See if the pointers point to incompatible scalar storage orders.  */
+      if (warn_scalar_storage_order
+	  && (AGGREGATE_TYPE_P (ttl) && TYPE_REVERSE_STORAGE_ORDER (ttl))
+	     != (AGGREGATE_TYPE_P (ttr) && TYPE_REVERSE_STORAGE_ORDER (ttr)))
+	{
+	  switch (errtype)
+	  {
+	  case ic_argpass:
+	    /* Do not warn for built-in functions, for example memcpy, since we
+	       control how they behave and they can be useful in this area.  */
+	    if (TREE_CODE (rname) != FUNCTION_DECL || !DECL_IS_BUILTIN (rname))
+	      warning_at (location, OPT_Wscalar_storage_order,
+			  "passing argument %d of %qE from incompatible "
+			  "scalar storage order", parmnum, rname);
+	    break;
+	  case ic_assign:
+	    warning_at (location, OPT_Wscalar_storage_order,
+			"assignment to %qT from pointer type %qT with "
+			"incompatible scalar storage order", type, rhstype);
+	    break;
+	  case ic_init:
+	    warning_at (location, OPT_Wscalar_storage_order,
+			"initialization of %qT from pointer type %qT with "
+			"incompatible scalar storage order", type, rhstype);
+	    break;
+	  case ic_return:
+	    warning_at (location, OPT_Wscalar_storage_order,
+			"returning %qT from pointer type with incompatible "
+			"scalar storage order %qT", rhstype, type);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	}
+
       /* Any non-function converts to a [const][volatile] void *
 	 and vice versa; otherwise, targets must be the same.
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
@@ -7745,12 +7788,15 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   STRIP_TYPE_NOPS (inside_init);
 
-  if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+  if (!c_in_omp_for)
     {
-      semantic_type = TREE_TYPE (inside_init);
-      inside_init = TREE_OPERAND (inside_init, 0);
+      if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+	{
+	  semantic_type = TREE_TYPE (inside_init);
+	  inside_init = TREE_OPERAND (inside_init, 0);
+	}
+      inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
     }
-  inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
 
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
@@ -12475,7 +12521,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if (c_inhibit_evaluation_warnings == 0)
+	  if (c_inhibit_evaluation_warnings == 0 && !c_in_omp_for)
 	    {
 	      bool op0_maybe_const = true;
 	      bool op1_maybe_const = true;
@@ -14533,6 +14579,15 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      if (c_oacc_check_attachments (c))
 		remove = true;
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH))
+		/* In this case, we have a single array element which is a
+		   pointer, and we already set OMP_CLAUSE_SIZE in
+		   handle_omp_array_sections above.  For attach/detach clauses,
+		   reset the OMP_CLAUSE_SIZE (representing a bias) to zero
+		   here.  */
+		OMP_CLAUSE_SIZE (c) = size_zero_node;
 	      break;
 	    }
 	  if (t == error_mark_node)
@@ -14546,6 +14601,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	      break;
 	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH))
+	    /* For attach/detach clauses, set OMP_CLAUSE_SIZE (representing a
+	       bias) to zero here, so it is not set erroneously to the pointer
+	       size later on in gimplify.c.  */
+	    OMP_CLAUSE_SIZE (c) = size_zero_node;
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE__CACHE_)
 	    {

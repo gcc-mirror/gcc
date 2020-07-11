@@ -37,75 +37,143 @@ private ubyte[] ctfe_alloc()(size_t n)
 const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqual!T == double) || is(Unqual!T == real) ||
                                         is(Unqual!T == ifloat) || is(Unqual!T == idouble) || is(Unqual!T == ireal))
 {
-    static const(ubyte)[] reverse_(const(ubyte)[] arr)
-    {
-        ubyte[] buff = ctfe_alloc(arr.length);
-        foreach (k, v; arr)
-        {
-            buff[$-k-1] = v;
-        }
-        return buff;
-    }
     if (__ctfe)
     {
-        auto parsed = parse(val);
-
-        ulong mantissa = parsed.mantissa;
-        uint exp = parsed.exponent;
-        uint sign = parsed.sign;
-
-        ubyte[] buff = ctfe_alloc(T.sizeof);
-        size_t off_bytes = 0;
-        size_t off_bits  = 0;
-        // Quadruples won't fit in one ulong, so check for that.
-        enum mantissaMax = FloatTraits!T.MANTISSA < ulong.sizeof*8 ?
-                           FloatTraits!T.MANTISSA : ulong.sizeof*8;
-
-        for (; off_bytes < mantissaMax/8; ++off_bytes)
+        static if (T.mant_dig == float.mant_dig || T.mant_dig == double.mant_dig)
         {
-            buff[off_bytes] = cast(ubyte)mantissa;
-            mantissa >>= 8;
-        }
-
-        static if (floatFormat!T == FloatFormat.Quadruple)
-        {
-            ulong mantissa2 = parsed.mantissa2;
-            off_bytes--; // go back one, since mantissa only stored data in 56
-                         // bits, ie 7 bytes
-            for (; off_bytes < FloatTraits!T.MANTISSA/8; ++off_bytes)
+            static if (is(T : ireal)) // https://issues.dlang.org/show_bug.cgi?id=19932
+                const f = val.im;
+            else
+                alias f = val;
+            static if (T.sizeof == uint.sizeof)
+                uint bits = *cast(const uint*) &f;
+            else static if (T.sizeof == ulong.sizeof)
+                ulong bits = *cast(const ulong*) &f;
+            ubyte[] result = ctfe_alloc(T.sizeof);
+            version (BigEndian)
             {
-                buff[off_bytes] = cast(ubyte)mantissa2;
-                mantissa2 >>= 8;
+                foreach_reverse (ref b; result)
+                {
+                    b = cast(ubyte) bits;
+                    bits >>= 8;
+                }
             }
+            else
+            {
+                foreach (ref b; result)
+                {
+                    b = cast(ubyte) bits;
+                    bits >>= 8;
+                }
+            }
+            return result;
         }
-        else
+        else static if (floatFormat!T == FloatFormat.DoubleDouble)
         {
-            off_bits = FloatTraits!T.MANTISSA%8;
-            buff[off_bytes] = cast(ubyte)mantissa;
-        }
+            // Parse DoubleDoubles as a pair of doubles.
+            // The layout of the type is:
+            //
+            //   [1|    11    |       52      ][1|    11    |       52       ]
+            //   [S| Exponent | Fraction (hi) ][S| Exponent | Fraction (low) ]
+            //
+            // We can get the least significant bits by subtracting the IEEE
+            // double precision portion from the real value.
 
-        for (size_t i=0; i<FloatTraits!T.EXPONENT/8; ++i)
-        {
-            ubyte cur_exp = cast(ubyte)exp;
-            exp >>= 8;
-            buff[off_bytes] |= (cur_exp << off_bits);
-            ++off_bytes;
-            buff[off_bytes] |= cur_exp >> 8 - off_bits;
-        }
+            import core.math : toPrec;
 
+            ubyte[] buff = ctfe_alloc(T.sizeof);
+            enum msbSize = double.sizeof;
 
-        exp <<= 8 - FloatTraits!T.EXPONENT%8 - 1;
-        buff[off_bytes] |= exp;
-        sign <<= 7;
-        buff[off_bytes] |= sign;
+            static if (is(Unqual!T == ireal))
+                double hi = toPrec!double(val.im);
+            else
+                double hi = toPrec!double(val);
+            buff[0 .. msbSize] = toUbyte(hi)[];
 
-        version (LittleEndian)
-        {
+            if (val is cast(T)0.0 || val is cast(T)-0.0 ||
+                val is T.nan || val is -T.nan ||
+                val is T.infinity || val > T.max ||
+                val is -T.infinity || val < -T.max)
+            {
+                // Zero, NaN, and Inf are all representable as doubles, so the
+                // least significant part can be 0.0.
+                buff[msbSize .. $] = 0;
+            }
+            else
+            {
+                static if (is(Unqual!T == ireal))
+                    double low = toPrec!double(val.im - hi);
+                else
+                    double low = toPrec!double(val - hi);
+                buff[msbSize .. $] = toUbyte(low)[];
+            }
+
+            // Arrays don't index differently between little and big-endian targets.
             return buff;
         }
         else
         {
-            return reverse_(buff);
+            auto parsed = parse(val);
+
+            ulong mantissa = parsed.mantissa;
+            uint exp = parsed.exponent;
+            uint sign = parsed.sign;
+
+            ubyte[] buff = ctfe_alloc(T.sizeof);
+            size_t off_bytes = 0;
+            size_t off_bits  = 0;
+            // Quadruples won't fit in one ulong, so check for that.
+            enum mantissaMax = FloatTraits!T.MANTISSA < ulong.sizeof*8 ?
+                               FloatTraits!T.MANTISSA : ulong.sizeof*8;
+
+            for (; off_bytes < mantissaMax/8; ++off_bytes)
+            {
+                buff[off_bytes] = cast(ubyte)mantissa;
+                mantissa >>= 8;
+            }
+
+            static if (floatFormat!T == FloatFormat.Quadruple)
+            {
+                ulong mantissa2 = parsed.mantissa2;
+                off_bytes--; // go back one, since mantissa only stored data in 56
+                             // bits, ie 7 bytes
+                for (; off_bytes < FloatTraits!T.MANTISSA/8; ++off_bytes)
+                {
+                    buff[off_bytes] = cast(ubyte)mantissa2;
+                    mantissa2 >>= 8;
+                }
+            }
+            else
+            {
+                off_bits = FloatTraits!T.MANTISSA%8;
+                buff[off_bytes] = cast(ubyte)mantissa;
+            }
+
+            for (size_t i=0; i<FloatTraits!T.EXPONENT/8; ++i)
+            {
+                ubyte cur_exp = cast(ubyte)exp;
+                exp >>= 8;
+                buff[off_bytes] |= (cur_exp << off_bits);
+                ++off_bytes;
+                buff[off_bytes] |= cur_exp >> 8 - off_bits;
+            }
+
+
+            exp <<= 8 - FloatTraits!T.EXPONENT%8 - 1;
+            buff[off_bytes] |= exp;
+            sign <<= 7;
+            buff[off_bytes] |= sign;
+
+            version (BigEndian)
+            {
+                for (size_t left = 0, right = buff.length - 1; left < right; left++, right--)
+                {
+                    const swap = buff[left];
+                    buff[left] = buff[right];
+                    buff[right] = swap;
+                }
+            }
+            return buff;
         }
     }
     else

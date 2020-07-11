@@ -24,7 +24,7 @@ constexpr bool
 test01()
 {
   std::wstring_view s = L"Everything changes and nothing stands still.";
-  wchar_t buf[7];
+  wchar_t buf[7]{};
   auto n = s.copy(buf, 7, 11);
   return std::wstring_view(buf, n) == L"changes";
 }

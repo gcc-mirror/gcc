@@ -234,12 +234,20 @@ proc gfortran_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_GFORTRANFLAGS
     global GFORTRAN_UNDER_TEST
+    global TEST_ALWAYS_FLAGS
     global flags_to_postpone
     global board_info
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=${wrap_flags}"
+    }
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set options [concat "{additional_flags=$TEST_ALWAYS_FLAGS}" $options]
     }
 
     # bind_pic_locally adds -fpie/-fPIE flags to flags_to_postpone and it is

@@ -21,7 +21,7 @@ foo (struct S * x, int y, int z, int w)
     }
   if (y != 0 || z != 0)
     {
-      double g = x->b + (double) e * (double) y; /* { dg-warning "may be used uninitialized in this function" } */
+      double g = x->b + (double) e * (double) y; /* { dg-warning "may be used uninitialized" } */
       bar (g * g);
     }
 }

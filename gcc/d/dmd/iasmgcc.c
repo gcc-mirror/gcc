@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2018-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2018-2020 by The D Language Foundation, All Rights Reserved
  * written by Iain Buclaw
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -333,7 +333,7 @@ Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc)
     // Analyse all input and output operands.
     if (s->args)
     {
-        for (size_t i = 0; i < s->args->dim; i++)
+        for (size_t i = 0; i < s->args->length; i++)
         {
             Expression *e = (*s->args)[i];
             e = semantic(e, sc);
@@ -354,7 +354,7 @@ Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc)
     // Analyse all clobbers.
     if (s->clobbers)
     {
-        for (size_t i = 0; i < s->clobbers->dim; i++)
+        for (size_t i = 0; i < s->clobbers->length; i++)
         {
             Expression *e = (*s->clobbers)[i];
             e = semantic(e, sc);
@@ -366,7 +366,7 @@ Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc)
     // Analyse all goto labels.
     if (s->labels)
     {
-        for (size_t i = 0; i < s->labels->dim; i++)
+        for (size_t i = 0; i < s->labels->length; i++)
         {
             Identifier *ident = (*s->labels)[i];
             GotoStatement *gs = new GotoStatement(s->loc, ident);

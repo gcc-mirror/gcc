@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,14 +108,11 @@ package Exp_Strm is
      (Loc            : Source_Ptr;
       Typ            : Entity_Id;
       Decl           : out Node_Id;
-      Fnam           : out Entity_Id;
-      Use_Underlying : Boolean := True);
+      Fnam           : out Entity_Id);
    --  Build function for Input attribute for record type or for an elementary
    --  type (the latter is used only in the case where a user-defined Read
    --  routine is defined, since, in other cases, Input calls the appropriate
-   --  runtime library routine directly). The flag Use_Underlying controls
-   --  whether the base type or the underlying type of the base type of Typ is
-   --  used during construction.
+   --  runtime library routine directly).
 
    procedure Build_Record_Or_Elementary_Output_Procedure
      (Loc  : Source_Ptr;

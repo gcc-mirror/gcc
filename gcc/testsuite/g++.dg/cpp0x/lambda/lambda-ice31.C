@@ -4,5 +4,5 @@
 template<typename T> void foo()
 {
   T x[=];  // { dg-error "expected" }
-  [&x]{};
+  [&x]{};  // { dg-prune-output "not declared" }
 }

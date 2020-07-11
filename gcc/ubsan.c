@@ -229,6 +229,7 @@ ubsan_get_type_descriptor_type (void)
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = type_decl;
   TYPE_STUB_DECL (ret) = type_decl;
+  TYPE_ARTIFICIAL (ret) = 1;
   layout_type (ret);
   ubsan_type_descriptor_type = ret;
   return ret;
@@ -277,6 +278,7 @@ ubsan_get_source_location_type (void)
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = type_decl;
   TYPE_STUB_DECL (ret) = type_decl;
+  TYPE_ARTIFICIAL (ret) = 1;
   layout_type (ret);
   ubsan_source_location_type = ret;
   return ret;
@@ -593,6 +595,7 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
   TYPE_FIELDS (ret) = fields[0];
   TYPE_NAME (ret) = type_decl;
   TYPE_STUB_DECL (ret) = type_decl;
+  TYPE_ARTIFICIAL (ret) = 1;
   layout_type (ret);
 
   /* Now, fill in the type.  */

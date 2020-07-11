@@ -10,11 +10,20 @@ import core.sys.posix.sys.ioccom;
 import core.sys.posix.termios;
 import core.sys.posix.sys.time;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 version (Posix):
 
 nothrow @nogc:
 
-version (OSX)
+version (Darwin)
 {
     struct winsize {
         ushort  ws_row;     // rows, in characters

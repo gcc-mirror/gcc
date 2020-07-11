@@ -1,5 +1,8 @@
 // Test with only spaceship defaulted.
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
+
+// Add this warning to test PR c++/95242
+// { dg-additional-options -Wzero-as-null-pointer-constant }
 
 #include <compare>
 

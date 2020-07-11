@@ -278,7 +278,11 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       if (TREE_CODE (t) == POINTER_TYPE)
 	pp_c_star (pp);
       else
-	pp_c_ampersand (pp);
+	{
+	  pp_c_ampersand (pp);
+	  if (TYPE_REF_IS_RVALUE (t))
+	    pp_c_ampersand (pp);
+	}
       pp_c_type_qualifier_list (pp, t);
       break;
 
@@ -593,7 +597,9 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 		expression (fold_build2 (PLUS_EXPR, type, maxval,
 					 build_int_cst (type, 1)));
 	    }
-	  else
+	  else if (TYPE_SIZE (t))
+	    /* Print zero for zero-length arrays but not for flexible
+	       array members whose TYPE_SIZE is null.  */
 	    pp_string (this, "0");
 	}
       pp_c_right_bracket (this);
@@ -1783,8 +1789,9 @@ c_pretty_printer::unary_expression (tree e)
 	  if (!integer_zerop (TREE_OPERAND (e, 1)))
 	    {
 	      pp_c_left_paren (this);
-	      if (!integer_onep (TYPE_SIZE_UNIT
-				 (TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0))))))
+	      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0)));
+	      if (TYPE_SIZE_UNIT (type) == NULL_TREE
+		  || !integer_onep (TYPE_SIZE_UNIT (type)))
 		pp_c_type_cast (this, ptr_type_node);
 	    }
 	  pp_c_cast_expression (this, TREE_OPERAND (e, 0));
@@ -1892,7 +1899,16 @@ pp_c_additive_expression (c_pretty_printer *pp, tree e)
       else
 	pp_minus (pp);
       pp_c_whitespace (pp);
-      pp->multiplicative_expression (TREE_OPERAND (e, 1));
+      {
+	tree op1 = TREE_OPERAND (e, 1);
+	if (code == POINTER_PLUS_EXPR
+	    && TREE_CODE (op1) == INTEGER_CST
+	    && tree_int_cst_sign_bit (op1))
+	  /* A pointer minus an integer is represented internally as plus a very
+	     large number, don't expose that to users.  */
+	  op1 = convert (ssizetype, op1);
+	pp->multiplicative_expression (op1);
+      }
       break;
 
     default:

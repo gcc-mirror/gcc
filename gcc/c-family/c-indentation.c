@@ -67,6 +67,11 @@ get_visual_column (expanded_location exploc, location_t loc,
 		  "%<-Wmisleading-indentation%> is disabled from this point"
 		  " onwards, since column-tracking was disabled due to"
 		  " the size of the code/headers");
+	  if (!flag_large_source_files)
+	    inform (loc,
+		    "adding %<-flarge-source-files%> will allow for more" 
+		    " column-tracking support, at the expense of compilation"
+		    " time and memory");
 	}
       return false;
     }

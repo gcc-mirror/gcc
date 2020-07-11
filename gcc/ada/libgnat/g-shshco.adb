@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2009-2019, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2020, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,7 +108,8 @@ package body GNAT.Secure_Hashes.SHA2_Common is
       --  3. Perform transformation rounds
 
       for T in 0 .. Rounds - 1 loop
-         T1 := H + Sigma1 (E) + Ch (E, F, G) + K (T) + W (T);
+         T1 := H + Sigma1 (E) + Ch (E, F, G)
+             + K (Stream_Element_Offset (T)) + W (T);
          T2 := Sigma0 (A) + Maj (A, B, C);
          H := G;
          G := F;

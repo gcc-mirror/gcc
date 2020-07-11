@@ -66,6 +66,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     uintmax_t capacity;
     uintmax_t free;
     uintmax_t available;
+
+#if __cpp_impl_three_way_comparison >= 201907L
+    friend bool operator==(const space_info&, const space_info&) = default;
+#endif
   };
 
   enum class file_type : signed char {

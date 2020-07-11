@@ -107,6 +107,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING c_omp_predetermined_sharing
 
+#undef LANG_HOOKS_OMP_PREDETERMINED_MAPPING
+#define LANG_HOOKS_OMP_PREDETERMINED_MAPPING c_omp_predetermined_mapping
+
 #undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR
 #define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR c_omp_clause_copy_ctor
 

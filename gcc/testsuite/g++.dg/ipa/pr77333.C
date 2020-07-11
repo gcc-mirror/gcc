@@ -1,6 +1,8 @@
 // { dg-do run }
 // { dg-options "-O2 -fno-ipa-sra" }
 
+typedef int int32_t __attribute__((mode (__SI__)));
+
 volatile int global;
 int __attribute__((noinline, noclone))
 get_data (int i)
@@ -18,7 +20,7 @@ char buf[512];
 class A
 {
 public:
-  int field;
+  int32_t field;
   char *s;
 
   A() : field(223344)

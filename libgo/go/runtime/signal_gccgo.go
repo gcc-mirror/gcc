@@ -60,7 +60,7 @@ type sigctxt struct {
 }
 
 func (c *sigctxt) sigcode() uint64 {
-	return uint64(c.info.si_code)
+	return uint64(getSiginfoCode(c.info))
 }
 
 //go:nosplit

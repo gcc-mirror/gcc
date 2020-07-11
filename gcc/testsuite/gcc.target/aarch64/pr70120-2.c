@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-Og -freorder-functions -g3 -mcmodel=large" } */
 
 typedef short v32u16 __attribute__ ((vector_size (32)));

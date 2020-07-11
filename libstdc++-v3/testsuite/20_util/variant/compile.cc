@@ -84,6 +84,10 @@ struct nonliteral
   bool operator>(const nonliteral&) const;
 };
 
+struct virtual_default_dtor {
+   virtual ~virtual_default_dtor() = default;
+};
+
 void default_ctor()
 {
   static_assert(is_default_constructible_v<variant<int, string>>);
@@ -95,6 +99,9 @@ void default_ctor()
   static_assert(noexcept(variant<int>()));
   static_assert(!noexcept(variant<Empty>()));
   static_assert(noexcept(variant<DefaultNoexcept>()));
+  {
+    variant<virtual_default_dtor> a;
+  }
 }
 
 void copy_ctor()
@@ -155,6 +162,14 @@ void arbitrary_ctor()
   static_assert(!is_constructible_v<variant<int>, unsigned>);
   static_assert(!is_constructible_v<variant<bool>, int>);
   static_assert(!is_constructible_v<variant<bool>, void*>);
+
+  // P1957R2 Converting from T* to bool should be considered narrowing
+  struct ConvertibleToBool
+  {
+    operator bool() const { return true; }
+  };
+  static_assert(is_constructible_v<variant<bool>, ConvertibleToBool>);
+  static_assert(is_constructible_v<variant<bool, int>, ConvertibleToBool>);
 }
 
 struct none { none() = delete; };
