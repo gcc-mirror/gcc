@@ -1,5 +1,6 @@
 2020-07-10  David Edelsohn  <dje.gcc@gmail.com>
 
+	PR target/77373
 	* config/rs6000/rs6000.c (rs6000_xcoff_select_section): Only
 	create named section for VAR_DECL or FUNCTION_DECL.
 
