@@ -1,3 +1,21 @@
+2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* class.c (gfc_add_component_ref, gfc_build_class_symbol):
+	Add checks for NULL pointer dereference.
+	* primary.c (gfc_variable_attr): Likewise.
+	* resolve.c (resolve_variable, resolve_assoc_var)
+	(resolve_fl_var_and_proc, resolve_fl_variable_derived)
+	(resolve_symbol): Likewise.
+
+2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96086
+	* match.c (gfc_match_select_rank): Catch NULL pointer
+	dereference.
+	* resolve.c (resolve_assoc_var): Catch NULL pointer dereference
+	that may occur after an illegal declaration.
+
 2020-07-09  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.c (gfc_trans_omp_clauses): Use 'inner' not 'decl' for
