@@ -1,3 +1,71 @@
+2020-07-10  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2020-07-10  Rajalakshmi Srinivasaraghavan  <rajis@linux.vnet.ibm.com>
+		    Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/p10-identify.c: New file.
+	* gcc.target/powerpc/p10-arch31.c: New file.
+	* gcc.target/powerpc/mma-single-test.c: New file.
+	* gcc.target/powerpc/mma-double-test.c: New file.
+
+2020-07-10  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2020-07-07  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (check_power10_hw_available):
+	Return 0 for passing test.
+
+2020-07-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-07-09  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96125
+	* gcc.target/powerpc/pr96125.c: New test.
+
+2020-07-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backported from master:
+	2020-07-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-msum-runnable.c: New test.
+	* gcc.target/powerpc/vsx-builtin-msum.c: New test.
+
+2020-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96105
+	PR c++/96052
+	PR c++/95976
+	* g++.dg/cpp2a/no_unique_address4.C: New test.
+	* g++.dg/cpp2a/no_unique_address5.C: New test.
+	* g++.dg/cpp2a/no_unique_address6.C: New test.
+
+2020-07-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96133
+	* gcc.dg/torture/pr96133.c: New testcase.
+
+2020-07-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backported from master:
+	2020-07-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95804
+	* gcc.dg/tree-ssa/pr95804.c: New test.
+
+2020-07-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backported from master:
+	2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95638
+	* g++.dg/tree-ssa/pr95638.C: New test.
+
 2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
 
 	Backported from master:

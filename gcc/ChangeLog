@@ -1,3 +1,75 @@
+2020-07-10  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	Backported from master:
+	2020-07-10  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR target/95581
+	* config/rs6000/rs6000-call.c: Add new type v16qi_ftype_pcvoid.
+	(altivec_init_builtins) Change __builtin_altivec_mask_for_load to use
+	v16qi_ftype_pcvoid with correct number of parameters.
+
+2020-07-10  Anton Youdkevitch  <anton.youdkevitch@bell-sw.com>
+
+	* config/aarch64/aarch64.c (thunderx2t99_regmove_cost,
+	thunderx2t99_vector_cost): Likewise.
+
+2020-07-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-07-09  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96125
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Define the MMA
+	specific types __vector_quad and __vector_pair, and initialize the
+	MMA built-ins if TARGET_EXTRA_BUILTINS is set.
+	(mma_init_builtins): Don't test for mask set in rs6000_builtin_mask.
+	Remove now unneeded mask variable.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add the
+	OPTION_MASK_MMA flag for power10 if not already set.
+
+2020-07-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backported from master:
+	2020-07-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_vmsumudm): New define.
+	* config/rs6000/altivec.md (UNSPEC_VMSUMUDM): New unspec.
+	  (altivec_vmsumudm): New define_insn.
+	* config/rs6000/rs6000-builtin.def (altivec_vmsumudm): New BU_ALTIVEC_3
+	  entry. (vmsumudm): New BU_ALTIVEC_OVERLOAD_3 entry.
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Add entries for
+	  ALTIVEC_BUILTIN_VMSUMUDM variants of vec_msum.
+	* doc/extend.texi: Add document for vmsumudm behind vmsum.
+
+2020-07-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96133
+	* gimple-fold.c (fold_array_ctor_reference): Do not
+	recurse to folding a CTOR that does not fully cover the
+	asked for object.
+
+2020-07-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backported from master:
+	2020-07-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95804
+	* tree-loop-distribution.c (break_alias_scc_partitions): Force
+	negative post order to reduction partition.
+
+2020-07-10  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backported from master:
+	2020-06-20  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/95638
+	* tree-loop-distribution.c (pg_edge_callback_data): New field.
+	(loop_distribution::break_alias_scc_partitions): Record and restore
+	postorder information.  Fix memory leak.
+
 2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
 
 	Backported from master:
