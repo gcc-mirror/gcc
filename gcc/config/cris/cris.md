@@ -275,7 +275,7 @@
   "reload_completed"
   [(set (reg:CC_NZ CRIS_CC0_REGNUM)
 	(compare:CC_NZ (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "setnzvc" "setnzvc_subst" "" "_setnzvc")
 (define_subst_attr "ccnzvc" "setnzvc_subst" "" "_enabled")
@@ -288,7 +288,7 @@
   "reload_completed"
   [(set (reg:CC_NZVC CRIS_CC0_REGNUM)
 	(compare:CC_NZVC (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "setcc" "setcc_subst" "" "_setcc")
 (define_subst_attr "cccc" "setcc_subst" "" "_enabled")
@@ -301,7 +301,7 @@
   "reload_completed"
   [(set (reg:CC CRIS_CC0_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 ;; Operand and operator predicates.
 
