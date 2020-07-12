@@ -1,3 +1,16 @@
+2020-07-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* internal-fn.c (expand_mul_overflow): When checking for signed
+	overflow from a widening multiplication, we access the truncated
+	lowpart RES twice, so keep this value in a pseudo register.
+
+2020-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96146
+	* value-range.cc (value_range::set): Only decompose POLY_INT_CST
+	bounds to integers for VR_RANGE.  Decay to VR_VARYING for anti-ranges
+	involving POLY_INT_CSTs.
+
 2020-07-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/77373

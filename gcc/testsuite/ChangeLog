@@ -1,3 +1,18 @@
+2020-07-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96073
+	* gfortran.dg/interface_48.f90: New test.
+
+2020-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96146
+	* gcc.target/aarch64/sve/acle/general/pr96146.c: New test.
+
+2020-07-11  Simon Cook  <simon.cook@embecosm.com>
+
+	* gcc.target/riscv/read-thread-pointer.c: Fix escaping on
+	regular expression.
+
 2020-07-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-bool-limits-1.c, gcc.dg/c2x-bool-limits-1.c: New
