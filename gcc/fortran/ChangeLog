@@ -1,3 +1,11 @@
+2020-07-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96073
+	* frontend-passes.c (check_externals_procedure):  Add locus
+	information for new_sym.
+	* interface.c (gfc_check_dummy_characteristics): Do not warn
+	about INTENT for artificially generated variables.
+
 2020-07-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95980
