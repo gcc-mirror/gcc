@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+#include "cfgrtl.h"
+#include "tree-pass.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -128,6 +130,8 @@ static void cris_asm_output_mi_thunk
 
 static void cris_file_start (void);
 static void cris_init_libfuncs (void);
+
+static unsigned int cris_postdbr_cmpelim (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
@@ -297,6 +301,204 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_CONSTANT_ALIGNMENT cris_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+namespace {
+
+const pass_data pass_data_cris_postdbr_cmpelim =
+{
+  RTL_PASS, /* type */
+  "mach2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_cris_postdbr_cmpelim : public rtl_opt_pass
+{
+public:
+  pass_cris_postdbr_cmpelim (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_cris_postdbr_cmpelim, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *)
+    {
+      return cris_postdbr_cmpelim ();
+    }
+
+  /* No use running this if reorg and cmpelim aren't both run.  */
+  virtual bool gate (function *)
+    {
+      return
+	optimize > 0
+	&& flag_delayed_branch
+	&& flag_compare_elim_after_reload;
+    }
+};
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_cris_postdbr_cmpelim (gcc::context *ctxt)
+{
+  return new pass_cris_postdbr_cmpelim (ctxt);
+}
+
+/* "Cheap version" of cmpelim, making use of the opportunities opened up
+   by reorg.
+
+   Go through the insns of a function and look at each actual compare
+   insn; considering only those that compare a register to 0.  If the
+   previous CC-affecting insn sets the compared register or if a move
+   reads from it, try to change that into a CC-setting move and try to
+   have it recognized.  Bail at labels or non-matching insns that
+   clobber the compared register.  If successful, delete the compare.
+
+   Also, reorg isn't up to date regarding data-flow handling, so we
+   can't go beyond classic RTL scanning.  */
+
+static unsigned int
+cris_postdbr_cmpelim ()
+{
+  rtx_insn *insn;
+  rtx_insn *next;
+  rtx_insn *prev_cc_setter = 0;
+  rtx_insn *prev_cc_outer = 0;
+  rtx dccr = gen_rtx_REG (CCmode, CRIS_CC0_REGNUM);
+
+  /* Now look for compares in the insn stream.  */
+  for (insn = get_insns (); insn; insn = next)
+    {
+      rtx_insn *outer_insn = insn;
+      rtx pat = PATTERN (insn);
+
+      next = NEXT_INSN (outer_insn);
+
+      /* Forget previous state when we see a label; we can't track or
+	 merge its state.  */
+      if (LABEL_P (insn))
+	{
+	  prev_cc_setter = 0;
+	  continue;
+	}
+
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      /* Consider filled delay slots; there might be a comparison there.
+	 It's only the second insn in a sequence that is interesting.  */
+      if (GET_CODE (pat) == SEQUENCE)
+	insn = as_a <rtx_insn *> XVECEXP (pat, 0, 1);
+      /* The "else" eliminates temptations to consider an insn in a
+	 delay slot for elimination; it can only be a prev_cc_setter.  */
+      else if (prev_cc_setter != 0 && GET_CODE (pat) == SET)
+	{
+	  rtx dest = SET_DEST (pat);
+	  rtx src = SET_SRC (pat);
+	  rtx prev_set;
+
+	  if (REG_P (dest)
+	      && REGNO (dest) == CRIS_CC0_REGNUM
+	      && GET_CODE (src) == COMPARE
+	      && REG_P (XEXP (src, 0))
+	      && XEXP (src, 1) == const0_rtx
+	      && (prev_set = single_set (prev_cc_setter)) != 0)
+	    {
+	      /* We have a candidate, and a prev_cc_setter to inspect.  */
+	      rtx reg = XEXP (src, 0);
+	      rtx prev_dest = SET_DEST (prev_set);
+	      rtx prev_src = SET_SRC (prev_set);
+	      bool src_same = rtx_equal_p (prev_src, reg);
+
+	      /* If the prev_cc_setter isn't a simple SET, or if the
+		 compared register is modified in prev_cc_setter without
+		 being the destination, or if it's modified between
+		 prev_cc_setter (equal to or contained in prev_cc_outer)
+		 and this insn, then we can't use the flags result.  And
+		 of course, the SET_DEST of prev_cc_setter (the main
+		 interest, not dccr) has to be the same register and
+		 mode we're interested in - or the SET_SRC.  We've
+		 already checked that the compared register isn't
+		 changed in-between.  */
+	      if (REG_P (prev_dest)
+		  && ! reg_set_p (reg, prev_src)
+		  && ! reg_set_between_p (reg, prev_cc_outer, outer_insn)
+		  && (src_same || rtx_equal_p (prev_dest, reg)))
+		{
+		  machine_mode ccmode = GET_MODE (src);
+		  rtx modeadjusted_dccr
+		    = (ccmode == CCmode ? dccr
+		       : gen_rtx_REG (CCmode, CRIS_CC0_REGNUM));
+		  rtx compare
+		    /* We don't need to copy_rtx pat: we're going to
+		       delete that insn. */
+		    = (src_same ? pat
+		       : gen_rtx_SET (modeadjusted_dccr,
+				      gen_rtx_COMPARE (ccmode,
+						       copy_rtx (prev_src),
+						       const0_rtx)));
+
+		  /* Replace tentatively, the prev_set combo that is
+		     ((set d s) (clobber dccr)) with
+		     ((cmp s 0) (set d s)) where (cmp s 0) is the
+		     compare we're looking at, and validate it or fail
+		     the whole thing.  First replace the ((set d s) ...)
+		     with ((cmp s 0) ...)).  */
+		  validate_change (prev_cc_setter,
+				   &XVECEXP (PATTERN (prev_cc_setter),
+					     0, 0), compare, true);
+
+		  /* Then the clobber with the (set d s).  */
+		  validate_change (prev_cc_setter,
+				   &XVECEXP (PATTERN (prev_cc_setter),
+					     0, 1), prev_set, true);
+
+		  if (apply_change_group ())
+		    {
+		      delete_insn (insn);
+
+		      /* We eliminated the compare.  Then we must go to
+			 the next insn: we can't consider the eliminated
+			 insn for the next prev_cc_setter.
+
+			 FIXME: if later insns still match, we could do
+			 the delete_insn part only, for them.  But, it
+			 seems rare that reorg would manage to move a
+			 second CC-clobber to another delay-slot,
+			 leaving two identical compares (and presumably
+			 users).  */
+		      prev_cc_setter = 0;
+		      continue;
+		    }
+		}
+	      }
+	}
+
+      if (reg_set_p (dccr, insn))
+	{
+	  rtx pat = PATTERN (insn);
+
+	  prev_cc_setter = 0;
+
+	  /* Make sure we can use it later on, otherwise forget it.
+	     Don't look too close, we're going to pass a lot of these.
+	     Just make sure the structure is that we can work with. */
+	  if (GET_CODE (pat) == PARALLEL
+	      && XVECLEN (pat, 0) == 2
+	      && GET_CODE (XVECEXP (pat, 0, 1)) == CLOBBER)
+	    {
+	      prev_cc_setter = insn;
+	      prev_cc_outer = outer_insn;
+	    }
+	}
+    }
+
+  return 0;
+}
 
 /* Helper for cris_load_multiple_op and cris_ret_movem_op.  */
 
