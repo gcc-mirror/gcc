@@ -26729,8 +26729,7 @@ type_dependent_expression_p (tree expression)
     return true;
 
   /* Some expression forms are never type-dependent.  */
-  if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
-      || TREE_CODE (expression) == SIZEOF_EXPR
+  if (TREE_CODE (expression) == SIZEOF_EXPR
       || TREE_CODE (expression) == ALIGNOF_EXPR
       || TREE_CODE (expression) == AT_ENCODE_EXPR
       || TREE_CODE (expression) == NOEXCEPT_EXPR
