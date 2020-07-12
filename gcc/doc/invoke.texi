@@ -17189,24 +17189,6 @@ and from what offset from that base register. There is no default
 register or offset as this is entirely for use within the Linux
 kernel.
 
-@item -mstack-protector-guard=@var{guard}
-@itemx -mstack-protector-guard-reg=@var{reg}
-@itemx -mstack-protector-guard-offset=@var{offset}
-@opindex mstack-protector-guard
-@opindex mstack-protector-guard-reg
-@opindex mstack-protector-guard-offset
-Generate stack protection code using canary at @var{guard}.  Supported
-locations are @samp{global} for a global canary or @samp{sysreg} for a
-canary in an appropriate system register.
-
-With the latter choice the options
-@option{-mstack-protector-guard-reg=@var{reg}} and
-@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
-which system register to use as base register for reading the canary,
-and from what offset from that base register. There is no default
-register or offset as this is entirely for use within the Linux
-kernel.
-
 @item -mtls-dialect=desc
 @opindex mtls-dialect=desc
 Use TLS descriptors as the thread-local storage mechanism for dynamic accesses
