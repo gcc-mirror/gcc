@@ -3501,7 +3501,6 @@ distclean: clean lang.distclean
 	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.c
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
-	-rm -f cxxmain.c
 	-rm -f .gdbinit configargs.h
 	-rm -f gcov.pod
 # Delete po/*.gmo only if we are not building in the source directory.
