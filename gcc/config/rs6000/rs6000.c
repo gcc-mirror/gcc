@@ -18017,6 +18017,22 @@ altivec_init_builtins (void)
 	mode1 = VOIDmode;
       else
 	{
+	  /* PR95952:  Gracefully skip builtins that do not have the icode properly
+	  set, but do have the builtin mask set.  This has occurred in older gcc
+	  builds with older binutils support when binutils refuses code generation
+	  for instructions that it does not support.  This was exposed by changes
+	  allowing all builtins being initialized for better #pragma support.  */
+	  if (d->icode == CODE_FOR_nothing && d->mask)
+	    {
+	      HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
+	      if (TARGET_DEBUG_BUILTIN)
+		{
+		  fprintf (stderr, "altivec predicate builtin %s skipped", d->name);
+		  fprintf (stderr, " (icode:%d, mask:%lx, builtin_mask:0x%lx\n",
+			   d->icode, d->mask, builtin_mask);
+		}
+	      continue;
+	    }
 	  /* Cannot define builtin if the instruction is disabled.  */
 	  gcc_assert (d->icode != CODE_FOR_nothing);
 	  mode1 = insn_data[d->icode].operand[1].mode;
