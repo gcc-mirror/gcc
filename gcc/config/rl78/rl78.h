@@ -49,6 +49,30 @@
     }                                           \
   while (0)
 
+#define TARGET_RUST_CPU_INFO()		    \
+  do {		    \
+    rust_add_target_info("target_arch", "rl78"); 	\
+    if (RL78_MUL_NONE)				\
+      rust_add_target_info("target_feature", "mul-g10"); 	\
+    else if (RL78_MUL_G13)				\
+      rust_add_target_info("target_feature", "mul-g13"); 	\
+    else if (RL78_MUL_G14)				\
+      rust_add_target_info("target_feature", "mul-g14"); 	\
+    if (TARGET_ALLREGS)				\
+      rust_add_target_info("target_feature", "allregs"); 	\
+    if (TARGET_G10)				\
+      rust_add_target_info("target_feature", "cpu-g10"); 	\
+    else if (TARGET_G13)				\
+      rust_add_target_info("target_feature", "cpu-g13"); 	\
+    else if (TARGET_G14)				\
+      rust_add_target_info("target_feature", "cpu-g14"); 	\
+    if (TARGET_ES0)				\
+      rust_add_target_info("target_feature", "es0"); 	\
+    if (TARGET_SAVE_MDUC_REGISTERS)				\
+      rust_add_target_info("target_feature", "save-mduc-in-interrupts"); 	\
+    /*TODO: find way of getting sim, relax info?*/ 	\
+  } while (0)
+
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s} crtbegin.o%s"
 
