@@ -2148,6 +2148,7 @@ package Sem_Util is
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
+   --    Subprogram_Variant
    --    Test_Case
 
    function Is_Subprogram_Stub_Without_Prior_Declaration
@@ -2823,6 +2824,12 @@ package Sem_Util is
    --  of True is decisively correct. A result of False does not necessarily
    --  mean that different objects are designated, just that this could not
    --  be reliably determined at compile time.
+
+   function Same_Or_Aliased_Subprograms
+     (S : Entity_Id;
+      E : Entity_Id) return Boolean;
+   --  Returns True if the subprogram entity S is the same as E or else S is an
+   --  alias of E.
 
    function Same_Type (T1, T2 : Entity_Id) return Boolean;
    --  Determines if T1 and T2 represent exactly the same type. Two types

@@ -9930,6 +9930,24 @@ package body Exp_Util is
               Constraints => List_Constr));
    end Make_Subtype_From_Expr;
 
+   -----------------------------
+   -- Make_Variant_Comparison --
+   -----------------------------
+
+   function Make_Variant_Comparison
+     (Loc      : Source_Ptr;
+      Mode     : Name_Id;
+      Curr_Val : Node_Id;
+      Old_Val  : Node_Id) return Node_Id
+   is
+   begin
+      if Mode = Name_Increases then
+         return Make_Op_Gt (Loc, Curr_Val, Old_Val);
+      else pragma Assert (Mode = Name_Decreases);
+         return Make_Op_Lt (Loc, Curr_Val, Old_Val);
+      end if;
+   end Make_Variant_Comparison;
+
    ---------------
    -- Map_Types --
    ---------------

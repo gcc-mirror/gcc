@@ -69,8 +69,8 @@ package body Contracts is
    procedure Expand_Subprogram_Contract (Body_Id : Entity_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
-   --  well as Contract_Cases, invariants and predicates. Body_Id denotes the
-   --  entity of the subprogram body.
+   --  well as Contract_Cases, Subprogram_Variant, invariants and predicates.
+   --  Body_Id denotes the entity of the subprogram body.
 
    -----------------------
    -- Add_Contract_Item --
@@ -200,7 +200,10 @@ package body Contracts is
          then
             Add_Classification;
 
-         elsif Prag_Nam in Name_Contract_Cases | Name_Test_Case then
+         elsif Prag_Nam in Name_Contract_Cases
+                         | Name_Subprogram_Variant
+                         | Name_Test_Case
+         then
             Add_Contract_Test_Case;
 
          elsif Prag_Nam in Name_Postcondition | Name_Precondition then
@@ -550,8 +553,8 @@ package body Contracts is
       end if;
 
       --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  invariants and predicates associated with body and its spec. Do not
-      --  expand the contract of subprogram body stubs.
+      --  Subprogram_Variant, invariants and predicates associated with body
+      --  and its spec. Do not expand the contract of subprogram body stubs.
 
       if Nkind (Body_Decl) = N_Subprogram_Body then
          Expand_Subprogram_Contract (Body_Id);
@@ -686,6 +689,10 @@ package body Contracts is
                else
                   Analyze_Contract_Cases_In_Decl_Part (Prag, Freeze_Id);
                end if;
+
+            elsif Prag_Nam = Name_Subprogram_Variant then
+               Analyze_Subprogram_Variant_In_Decl_Part (Prag);
+
             else
                pragma Assert (Prag_Nam = Name_Test_Case);
                Analyze_Test_Case_In_Decl_Part (Prag);
@@ -1941,57 +1948,12 @@ package body Contracts is
          Stmts   : List_Id;
          Result  : Entity_Id)
       is
-         procedure Insert_Before_First_Source_Declaration (Stmt : Node_Id);
-         --  Insert node Stmt before the first source declaration of the
-         --  related subprogram's body. If no such declaration exists, Stmt
-         --  becomes the last declaration.
-
-         --------------------------------------------
-         -- Insert_Before_First_Source_Declaration --
-         --------------------------------------------
-
-         procedure Insert_Before_First_Source_Declaration (Stmt : Node_Id) is
-            Decls : constant List_Id := Declarations (Body_Decl);
-            Decl  : Node_Id;
-
-         begin
-            --  Inspect the declarations of the related subprogram body looking
-            --  for the first source declaration.
-
-            if Present (Decls) then
-               Decl := First (Decls);
-               while Present (Decl) loop
-                  if Comes_From_Source (Decl) then
-                     Insert_Before (Decl, Stmt);
-                     return;
-                  end if;
-
-                  Next (Decl);
-               end loop;
-
-               --  If we get there, then the subprogram body lacks any source
-               --  declarations. The body of _Postconditions now acts as the
-               --  last declaration.
-
-               Append (Stmt, Decls);
-
-            --  Ensure that the body has a declaration list
-
-            else
-               Set_Declarations (Body_Decl, New_List (Stmt));
-            end if;
-         end Insert_Before_First_Source_Declaration;
-
-         --  Local variables
-
          Loc       : constant Source_Ptr := Sloc (Body_Decl);
          Params    : List_Id := No_List;
          Proc_Bod  : Node_Id;
          Proc_Decl : Node_Id;
          Proc_Id   : Entity_Id;
          Proc_Spec : Node_Id;
-
-      --  Start of processing for Build_Postconditions_Procedure
 
       begin
          --  Nothing to do if there are no actions to check on exit
@@ -2051,7 +2013,8 @@ package body Contracts is
          --  order reference. The body of _Postconditions must be placed after
          --  the declaration of Temp to preserve correct visibility.
 
-         Insert_Before_First_Source_Declaration (Proc_Decl);
+         Insert_Before_First_Source_Declaration
+           (Proc_Decl, Declarations (Body_Decl));
          Analyze (Proc_Decl);
 
          --  Set an explicit End_Label to override the sloc of the implicit
@@ -2092,14 +2055,20 @@ package body Contracts is
             if Present (Items) then
                Prag := Contract_Test_Cases (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Contract_Cases
-                    and then Is_Checked (Prag)
-                  then
-                     Expand_Pragma_Contract_Cases
-                       (CCs     => Prag,
-                        Subp_Id => Subp_Id,
-                        Decls   => Declarations (Body_Decl),
-                        Stmts   => Stmts);
+                  if Is_Checked (Prag) then
+                     if Pragma_Name (Prag) = Name_Contract_Cases then
+                        Expand_Pragma_Contract_Cases
+                          (CCs     => Prag,
+                           Subp_Id => Subp_Id,
+                           Decls   => Declarations (Body_Decl),
+                           Stmts   => Stmts);
+
+                     elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
+                        Expand_Pragma_Subprogram_Variant
+                          (Prag       => Prag,
+                           Subp_Id    => Subp_Id,
+                           Body_Decls => Declarations (Body_Decl));
+                     end if;
                   end if;
 
                   Prag := Next_Pragma (Prag);

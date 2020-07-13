@@ -317,6 +317,7 @@ package body Inline is
    --    Refined_Global
    --    Refined_Depends
    --    Refined_Post
+   --    Subprogram_Variant
    --    Test_Case
    --    Unmodified
    --    Unreferenced
@@ -5119,6 +5120,7 @@ package body Inline is
                                         | Name_Refined_Global
                                         | Name_Refined_Depends
                                         | Name_Refined_Post
+                                        | Name_Subprogram_Variant
                                         | Name_Test_Case
                                         | Name_Unmodified
                                         | Name_Unreferenced

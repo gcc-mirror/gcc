@@ -7660,10 +7660,11 @@ package body Einfo is
                  Id = Pragma_Refined_State              or else
                  Id = Pragma_Volatile_Function;
 
-      --  Contract / test case pragmas
+      --  Contract / subprogram variant / test case pragmas
 
       Is_CTC : constant Boolean :=
                   Id = Pragma_Contract_Cases            or else
+                  Id = Pragma_Subprogram_Variant        or else
                   Id = Pragma_Test_Case;
 
       --  Pre / postcondition pragmas

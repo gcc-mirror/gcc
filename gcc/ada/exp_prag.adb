@@ -2321,32 +2321,6 @@ package body Exp_Prag is
       ---------------------
 
       procedure Process_Variant (Variant : Node_Id; Is_Last : Boolean) is
-         function Make_Op
-           (Loc      : Source_Ptr;
-            Curr_Val : Node_Id;
-            Old_Val  : Node_Id) return Node_Id;
-         --  Generate a comparison between Curr_Val and Old_Val depending on
-         --  the change mode (Increases / Decreases) of the variant.
-
-         -------------
-         -- Make_Op --
-         -------------
-
-         function Make_Op
-           (Loc      : Source_Ptr;
-            Curr_Val : Node_Id;
-            Old_Val  : Node_Id) return Node_Id
-         is
-         begin
-            if Chars (Variant) = Name_Increases then
-               return Make_Op_Gt (Loc, Curr_Val, Old_Val);
-            else pragma Assert (Chars (Variant) = Name_Decreases);
-               return Make_Op_Lt (Loc, Curr_Val, Old_Val);
-            end if;
-         end Make_Op;
-
-         --  Local variables
-
          Expr     : constant Node_Id    := Expression (Variant);
          Expr_Typ : constant Entity_Id  := Etype (Expr);
          Loc      : constant Source_Ptr := Sloc (Expr);
@@ -2354,8 +2328,6 @@ package body Exp_Prag is
          Curr_Id  : Entity_Id;
          Old_Id   : Entity_Id;
          Prag     : Node_Id;
-
-      --  Start of processing for Process_Variant
 
       begin
          --  All temporaries generated in this routine must be inserted before
@@ -2467,7 +2439,8 @@ package body Exp_Prag is
                  Expression => Make_Identifier (Loc, Name_Loop_Variant)),
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
-                   Make_Op (Loc,
+                   Make_Variant_Comparison (Loc,
+                     Mode     => Chars (Variant),
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
@@ -2649,6 +2622,338 @@ package body Exp_Prag is
          Analyze (N);
       end if;
    end Expand_Pragma_Relative_Deadline;
+
+   --------------------------------------
+   -- Expand_Pragma_Subprogram_Variant --
+   --------------------------------------
+
+   --  Aspect Subprogram_Variant is expanded in the following manner:
+
+   --  Original code
+
+   --     procedure Proc (Param : T) with
+   --        with Variant (Increases => Incr_Expr,
+   --                      Decreases => Decr_Expr)
+   --        <declarations>
+   --     is
+   --        <source statements>
+   --        Proc (New_Param_Value);
+   --     end Proc;
+
+   --  Expanded code
+
+   --     procedure Proc (Param : T) is
+   --        Old_Incr : constant <type of Incr_Expr> := <Incr_Expr>;
+   --        Old_Decr : constant <type of Decr_Expr> := <Decr_Expr> ;
+   --
+   --        procedure Variants (Param : T);
+   --
+   --        procedure Variants (Param : T) is
+   --           Curr_Incr : constant <type of Incr_Expr> := <Incr_Expr>;
+   --           Curr_Decr : constant <type of Decr_Expr> := <Decr_Expr>;
+   --        begin
+   --           if Curr_Incr /= Old_Incr then
+   --              pragma Check (Variant, Curr_Incr > Old_Incr);
+   --           else
+   --              pragma Check (Variant, Curr_Decr < Old_Decr);
+   --           end if;
+   --        end Variants;
+   --
+   --        <declarations>
+   --     begin
+   --        <source statements>
+   --        Variants (New_Param_Value);
+   --        Proc (New_Param_Value);
+   --     end Proc;
+
+   procedure Expand_Pragma_Subprogram_Variant
+     (Prag       : Node_Id;
+      Subp_Id    : Node_Id;
+      Body_Decls : List_Id)
+   is
+      Curr_Decls : List_Id;
+      If_Stmt    : Node_Id := Empty;
+
+      function Formal_Param_Map
+        (Old_Subp : Entity_Id;
+         New_Subp : Entity_Id) return Elist_Id;
+      --  Given two subprogram entities Old_Subp and New_Subp with the same
+      --  number of formal parameters return a list of the form:
+      --
+      --    old formal 1
+      --    new formal 1
+      --    old formal 2
+      --    new formal 2
+      --    ...
+      --
+      --  as required by New_Copy_Tree to replace references to formal
+      --  parameters of Old_Subp with references to formal parameters of
+      --  New_Subp.
+
+      procedure Process_Variant
+        (Variant    : Node_Id;
+         Formal_Map : Elist_Id;
+         Prev_Decl  : in out Node_Id;
+         Is_Last    : Boolean);
+      --  Process a single increasing / decreasing termination variant given by
+      --  a component association Variant. Formal_Map is a list of formal
+      --  parameters of the annotated subprogram and of the internal procedure
+      --  that verifies the variant in the format required by New_Copy_Tree.
+      --  The Old_... object created by this routine will be appended after
+      --  Prev_Decl and is stored in this parameter for a next call to this
+      --  routine. Is_Last is True when there are no more variants to process.
+
+      ----------------------
+      -- Formal_Param_Map --
+      ----------------------
+
+      function Formal_Param_Map
+        (Old_Subp : Entity_Id;
+         New_Subp : Entity_Id) return Elist_Id
+      is
+         Old_Formal : Entity_Id := First_Formal (Old_Subp);
+         New_Formal : Entity_Id := First_Formal (New_Subp);
+
+         Param_Map : Elist_Id;
+      begin
+         if Present (Old_Formal) then
+            Param_Map := New_Elmt_List;
+            while Present (Old_Formal) and then Present (New_Formal) loop
+               Append_Elmt (Old_Formal,  Param_Map);
+               Append_Elmt (New_Formal, Param_Map);
+
+               Next_Formal (Old_Formal);
+               Next_Formal (New_Formal);
+            end loop;
+
+            return Param_Map;
+         else
+            return No_Elist;
+         end if;
+      end Formal_Param_Map;
+
+      ---------------------
+      -- Process_Variant --
+      ---------------------
+
+      procedure Process_Variant
+        (Variant    : Node_Id;
+         Formal_Map : Elist_Id;
+         Prev_Decl  : in out Node_Id;
+         Is_Last    : Boolean)
+      is
+         Expr     : constant Node_Id    := Expression (Variant);
+         Expr_Typ : constant Entity_Id  := Etype (Expr);
+         Loc      : constant Source_Ptr := Sloc (Expr);
+
+         Old_Id    : Entity_Id;
+         Old_Decl  : Node_Id;
+         Curr_Id   : Entity_Id;
+         Curr_Decl : Node_Id;
+         Prag      : Node_Id;
+
+      begin
+         --  Create temporaries that store the old values of the associated
+         --  expression.
+
+         --  Generate:
+         --    Old : constant <type of Expr> := <Expr>;
+
+         Old_Id := Make_Temporary (Loc, 'P');
+
+         Old_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Old_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Expr_Typ, Loc),
+             Expression          => New_Copy_Tree (Expr));
+
+         Insert_After_And_Analyze (Prev_Decl, Old_Decl);
+
+         Prev_Decl := Old_Decl;
+
+         --  Generate:
+         --    Curr : constant <type of Expr> := <Expr>;
+
+         Curr_Id := Make_Temporary (Loc, 'C');
+
+         Curr_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Curr_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Expr_Typ, Loc),
+             Expression          =>
+               New_Copy_Tree (Expr, Map => Formal_Map));
+
+         Append (Curr_Decl, Curr_Decls);
+
+         --  Generate:
+         --    pragma Check (Variant, Curr <|> Old);
+
+         Prag :=
+           Make_Pragma (Loc,
+             Chars                        => Name_Check,
+             Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Expression =>
+                   Make_Identifier (Loc,
+                     Name_Subprogram_Variant)),
+               Make_Pragma_Argument_Association (Loc,
+                 Expression =>
+                   Make_Variant_Comparison (Loc,
+                     Mode     => Chars (First (Choices (Variant))),
+                     Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
+                     Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
+
+         --  Generate:
+         --    if Curr /= Old then
+         --       <Prag>;
+
+         if No (If_Stmt) then
+
+            --  When there is just one termination variant, do not compare
+            --  the old and current value for equality, just check the
+            --  pragma.
+
+            if Is_Last then
+               If_Stmt := Prag;
+            else
+               If_Stmt :=
+                 Make_If_Statement (Loc,
+                   Condition       =>
+                     Make_Op_Ne (Loc,
+                       Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
+                       Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
+                   Then_Statements => New_List (Prag));
+            end if;
+
+            --  Generate:
+            --    else
+            --       <Prag>;
+            --    end if;
+
+         elsif Is_Last then
+            Set_Else_Statements (If_Stmt, New_List (Prag));
+
+            --  Generate:
+            --    elsif Curr /= Old then
+            --       <Prag>;
+
+         else
+            if Elsif_Parts (If_Stmt) = No_List then
+               Set_Elsif_Parts (If_Stmt, New_List);
+            end if;
+
+            Append_To (Elsif_Parts (If_Stmt),
+              Make_Elsif_Part (Loc,
+              Condition       =>
+              Make_Op_Ne (Loc,
+                Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
+                Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
+              Then_Statements => New_List (Prag)));
+         end if;
+      end Process_Variant;
+
+      --  Local variables
+
+      Loc : constant Source_Ptr := Sloc (Prag);
+
+      Aggr         : Node_Id;
+      Formal_Map   : Elist_Id;
+      Last         : Node_Id;
+      Last_Variant : Node_Id;
+      Proc_Bod     : Node_Id;
+      Proc_Decl    : Node_Id;
+      Proc_Id      : Entity_Id;
+      Proc_Spec    : Node_Id;
+      Variant      : Node_Id;
+
+   begin
+      --  Do nothing if pragma is not present or is disabled
+
+      if Is_Ignored (Prag) then
+         return;
+      end if;
+
+      Aggr := Expression (First (Pragma_Argument_Associations (Prag)));
+
+      --  The expansion of Subprogram Variant is quite distributed as it
+      --  produces various statements to capture and compare the arguments.
+      --  To preserve the original context, set the Is_Assertion_Expr flag.
+      --  This aids the Ghost legality checks when verifying the placement
+      --  of a reference to a Ghost entity.
+
+      In_Assertion_Expr := In_Assertion_Expr + 1;
+
+      --  Create declaration of the procedure that compares values of the
+      --  variant expressions captured at the start of subprogram with their
+      --  values at the recursive call of the subprogram.
+
+      Proc_Id := Make_Defining_Identifier (Loc, Name_uVariants);
+
+      Proc_Spec :=
+        Make_Procedure_Specification
+          (Loc,
+           Defining_Unit_Name       => Proc_Id,
+           Parameter_Specifications => Copy_Parameter_List (Subp_Id));
+
+      Proc_Decl :=
+        Make_Subprogram_Declaration (Loc, Proc_Spec);
+
+      Insert_Before_First_Source_Declaration (Proc_Decl, Body_Decls);
+      Analyze (Proc_Decl);
+
+      --  Create a mapping between formals of the annotated subprogram (which
+      --  are used to compute values of the variant expression at the start of
+      --  subprogram) and formals of the internal procedure (which are used to
+      --  compute values of of the variant expression at the recursive call).
+
+      Formal_Map :=
+        Formal_Param_Map (Old_Subp => Subp_Id, New_Subp => Proc_Id);
+
+      --  Process invidual increasing / decreasing variants
+
+      Last         := Proc_Decl;
+      Curr_Decls   := New_List;
+      Last_Variant := Nlists.Last (Component_Associations (Aggr));
+
+      Variant := First (Component_Associations (Aggr));
+      while Present (Variant) loop
+         Process_Variant
+           (Variant    => Variant,
+            Formal_Map => Formal_Map,
+            Prev_Decl  => Last,
+            Is_Last    => Variant = Last_Variant);
+         Next (Variant);
+      end loop;
+
+      --  Create a subprogram body with declarations of objects that capture
+      --  the current values of variant expressions at a recursive call and an
+      --  if-then-else statement that compares current with old values.
+
+      Proc_Bod :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Copy_Subprogram_Spec (Proc_Spec),
+          Declarations               => Curr_Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (If_Stmt),
+              End_Label  => Make_Identifier (Loc, Chars (Proc_Id))));
+
+      Insert_After_And_Analyze (Last, Proc_Bod);
+
+      --  Restore assertion context
+
+      In_Assertion_Expr := In_Assertion_Expr - 1;
+
+      --  Rewrite the aspect expression, which is no longer needed, with
+      --  a reference to the procedure that has just been created. We will
+      --  generate a call to this procedure at each recursive call of the
+      --  subprogram that has been annotated with Subprogram_Variant.
+
+      Rewrite (Aggr, New_Occurrence_Of (Proc_Id, Loc));
+   end Expand_Pragma_Subprogram_Variant;
 
    -------------------------------------------
    -- Expand_Pragma_Suppress_Initialization --

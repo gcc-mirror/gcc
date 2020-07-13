@@ -270,6 +270,7 @@ package body Sem_Ch12 is
    --                                Refined_Depends
    --                                Refined_Global
    --                                Refined_Post
+   --                                Subprogram_Variant
    --                                Test_Case
 
    --  Most package contract annotations utilize forward references to classify

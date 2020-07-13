@@ -1544,6 +1544,7 @@ package body Sem_Ch13 is
       --    Refined_Global
       --    Refined_State
       --    SPARK_Mode
+      --    Subprogram_Variant
       --    Warnings
       --  Insert pragma Prag such that it mimics the placement of a source
       --  pragma of the same kind. Flag Is_Generic should be set when the
@@ -1764,10 +1765,10 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases aspects. In these cases, we do not have to worry
-      --  about delay issues, since the pragmas themselves deal with delay
-      --  of visibility for the expression analysis. Thus, we just insert
-      --  the pragma after the node N.
+      --  Contract_Cases and Subprogram_Variant aspects. In these cases, we do
+      --  not have to worry about delay issues, since the pragmas themselves
+      --  deal with delay of visibility for the expression analysis. Thus, we
+      --  just insert the pragma after the node N.
 
       --  Loop through aspects
 
@@ -4192,8 +4193,8 @@ package body Sem_Ch13 is
 
                --  Case 4: Aspects requiring special handling
 
-               --  Pre/Post/Test_Case/Contract_Cases whose corresponding
-               --  pragmas take care of the delay.
+               --  Pre/Post/Test_Case/Contract_Cases/Subprogram_Variant whose
+               --  corresponding pragmas take care of the delay.
 
                --  Pre/Post
 
@@ -4392,6 +4393,19 @@ package body Sem_Ch13 is
                --  Contract_Cases
 
                when Aspect_Contract_Cases =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Nam);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Subprogram_Variant
+
+               when Aspect_Subprogram_Variant =>
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -10855,6 +10869,7 @@ package body Sem_Ch13 is
             | Aspect_Refined_State
             | Aspect_Relaxed_Initialization
             | Aspect_SPARK_Mode
+            | Aspect_Subprogram_Variant
             | Aspect_Test_Case
             | Aspect_Unimplemented
             | Aspect_Volatile_Function

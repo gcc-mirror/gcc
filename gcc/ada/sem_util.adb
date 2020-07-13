@@ -19037,6 +19037,7 @@ package body Sem_Util is
         or else Nam = Name_Refined_Depends
         or else Nam = Name_Refined_Global
         or else Nam = Name_Refined_Post
+        or else Nam = Name_Subprogram_Variant
         or else Nam = Name_Test_Case;
    end Is_Subprogram_Contract_Annotation;
 
@@ -26241,6 +26242,19 @@ package body Sem_Util is
          return False;
       end if;
    end Same_Object;
+
+   ---------------------------------
+   -- Same_Or_Aliased_Subprograms --
+   ---------------------------------
+
+   function Same_Or_Aliased_Subprograms
+     (S : Entity_Id;
+      E : Entity_Id) return Boolean
+   is
+      Subp_Alias : constant Entity_Id := Alias (S);
+   begin
+      return S = E or else (Present (Subp_Alias) and then Subp_Alias = E);
+   end Same_Or_Aliased_Subprograms;
 
    ---------------
    -- Same_Type --
