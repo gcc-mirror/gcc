@@ -3272,7 +3272,6 @@ In addition, these warning options have meanings only for C++ programs:
 @table @gcctabopt
 @item -Wabi-tag @r{(C++ and Objective-C++ only)}
 @opindex Wabi-tag
-@opindex Wabi-tag
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
 about ABI tags.
