@@ -538,11 +538,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    break;
 		}
 
-	      if (__large_ignore)
-		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
+	      if (__n == __gnu_cxx::__numeric_traits<streamsize>::__max)
+		{
+		  if (__large_ignore)
+		    _M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
-	      if (traits_type::eq_int_type(__c, __eof))
-                __err |= ios_base::eofbit;
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		}
+	      else if (_M_gcount < __n)
+		{
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		}
             }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
@@ -596,15 +604,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    break;
 		}
 
-	      if (__large_ignore)
-		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
-
-              if (traits_type::eq_int_type(__c, __eof))
-                __err |= ios_base::eofbit;
-	      else if (_M_gcount < __n) // implies __c == __delim
+	      if (__n == __gnu_cxx::__numeric_traits<streamsize>::__max)
 		{
-		  ++_M_gcount;
-		  __sb->sbumpc();
+		  if (__large_ignore)
+		    _M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
+
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		  else
+		    {
+		      if (_M_gcount != __n)
+			++_M_gcount;
+		      __sb->sbumpc();
+		    }
+		}
+	      else if (_M_gcount < __n) // implies __c == __delim or EOF
+		{
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		  else
+		    {
+		      ++_M_gcount;
+		      __sb->sbumpc();
+		    }
 		}
             }
 	  __catch(__cxxabiv1::__forced_unwind&)
