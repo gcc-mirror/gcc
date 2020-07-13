@@ -6037,11 +6037,11 @@ package body Exp_Attr is
       when Attribute_Scaling =>
          Expand_Fpt_Attribute_RI (N);
 
-      -------------------------
-      -- Simple_Storage_Pool --
-      -------------------------
+      ----------------------------------------
+      -- Simple_Storage_Pool & Storage_Pool --
+      ----------------------------------------
 
-      when Attribute_Simple_Storage_Pool =>
+      when Attribute_Simple_Storage_Pool | Attribute_Storage_Pool =>
          Rewrite (N,
            Make_Type_Conversion (Loc,
              Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
@@ -6176,17 +6176,6 @@ package body Exp_Attr is
 
             Expand_Size_Attribute (N);
          end Size;
-
-      ------------------
-      -- Storage_Pool --
-      ------------------
-
-      when Attribute_Storage_Pool =>
-         Rewrite (N,
-           Make_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
-             Expression   => New_Occurrence_Of (Entity (N), Loc)));
-         Analyze_And_Resolve (N, Typ);
 
       ------------------
       -- Storage_Size --
