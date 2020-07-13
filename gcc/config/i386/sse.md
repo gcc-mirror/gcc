@@ -21472,14 +21472,14 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*sse4_1_round<ssescalarmodesuffix>"
-  [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
-	(vec_merge:VF_128
-	  (vec_duplicate:VF_128
+  [(set (match_operand:VFH_128 0 "register_operand" "=Yr,*x,x,v")
+	(vec_merge:VFH_128
+	  (vec_duplicate:VFH_128
 	    (unspec:<ssescalarmode>
 	      [(match_operand:<ssescalarmode> 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
 	       (match_operand:SI 3 "const_0_to_15_operand" "n,n,n,n")]
 	      UNSPEC_ROUND))
-	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
+	  (match_operand:VFH_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
   "@
