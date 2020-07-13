@@ -1,3 +1,12 @@
+2020-07-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/93492
+	* gcc.target/i386/pr93492-1.c: Require Linux target.
+	* gcc.target/i386/pr93492-2.c: Likewise.
+	* gcc.target/i386/pr93492-3.c: Likewise.
+	* gcc.target/i386/pr93492-4.c: Likewise.
+	* gcc.target/i386/pr93492-5.c: Likewise.
+
 2020-07-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/96073
