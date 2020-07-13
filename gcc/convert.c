@@ -836,16 +836,10 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 		  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg1, 0))))
 		break;
 
-	      if (outprec >= BITS_PER_WORD
-		  || targetm.truly_noop_truncation (outprec, inprec)
-		  || inprec > TYPE_PRECISION (TREE_TYPE (arg0))
-		  || inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
-		{
-		  tree tem = do_narrow (loc, ex_form, type, arg0, arg1,
-					expr, inprec, outprec, dofold);
-		  if (tem)
-		    return tem;
-		}
+	      tree tem = do_narrow (loc, ex_form, type, arg0, arg1,
+				    expr, inprec, outprec, dofold);
+	      if (tem)
+		return tem;
 	    }
 	    break;
 
