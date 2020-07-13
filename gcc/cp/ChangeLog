@@ -1,3 +1,24 @@
+2020-07-10  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (structural_type_p): Allow unions.
+	* mangle.c (write_expression): Express unions with a designator.
+
+2020-07-10  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (convert_nontype_argument): Handle REAL_TYPE.
+	(invalid_nontype_parm_type_p): Allow all structural types.
+	* tree.c (structural_type_p): Use SCALAR_TYPE_P.
+
+2020-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96105
+	PR c++/96052
+	PR c++/95976
+	* class.c (check_field_decls): An array of empty classes is not an
+	empty data member.
+	(layout_empty_base_or_field): Handle explicit alignment.
+	Fix union handling.
+
 2020-07-09  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

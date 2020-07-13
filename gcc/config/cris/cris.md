@@ -275,7 +275,7 @@
   "reload_completed"
   [(set (reg:CC_NZ CRIS_CC0_REGNUM)
 	(compare:CC_NZ (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "setnzvc" "setnzvc_subst" "" "_setnzvc")
 (define_subst_attr "ccnzvc" "setnzvc_subst" "" "_enabled")
@@ -288,7 +288,7 @@
   "reload_completed"
   [(set (reg:CC_NZVC CRIS_CC0_REGNUM)
 	(compare:CC_NZVC (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "setcc" "setcc_subst" "" "_setcc")
 (define_subst_attr "cccc" "setcc_subst" "" "_enabled")
@@ -301,7 +301,7 @@
   "reload_completed"
   [(set (reg:CC CRIS_CC0_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 ;; Operand and operator predicates.
 
@@ -973,7 +973,6 @@
 ;; The last constraint is due to that after reload, the '%' is not
 ;; honored, and canonicalization doesn't care about keeping the same
 ;; register as in destination.  This will happen after insn splitting.
-;; gcc <= 2.7.2.  FIXME: Check for gcc-2.9x
 
  ""
 {
@@ -1290,6 +1289,45 @@
   "addi %2%T3,%0"
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
+
+;; This pattern is usually generated after reload, so a '%' is
+;; ineffective; use explicit combinations.
+(define_insn "*addi_b_<mode>"
+  [(set (match_operand:BWD 0 "register_operand" "=r,r")
+	(plus:BWD
+	 (match_operand:BWD 1 "register_operand" "0,r")
+	 (match_operand:BWD 2 "register_operand" "r,0")))]
+  ""
+  "@
+   addi %2.b,%0
+   addi %1.b,%0"
+  [(set_attr "slottable" "yes")])
+
+;; Strip the dccr clobber from addM3 with register operands, if the
+;; next instruction isn't using it.
+;; Not clobbering dccr may let cmpelim match a later compare with a
+;; previous operation of interest.  This has to run before cmpelim so it
+;; can't be a peephole2.  See gcc.target/cris/pr93372-45.c for a
+;; test-case.
+(define_split ;; "*add<mode>3_addi"
+  [(parallel
+    [(set (match_operand:BWD 0 "register_operand")
+	  (plus:BWD
+	   (match_operand:BWD 1 "register_operand")
+	   (match_operand:BWD 2 "register_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "reload_completed"
+  [(set (match_dup 0) (plus:BWD (match_dup 1) (match_dup 2)))]
+{
+  rtx reg = operands[0];
+  rtx_insn *i = next_nonnote_nondebug_insn_bb (curr_insn);
+
+  while (i != NULL_RTX && (!INSN_P (i) || DEBUG_INSN_P (i)))
+    i = next_nonnote_nondebug_insn_bb (i);
+
+  if (i == NULL_RTX || reg_mentioned_p (reg, i) || BARRIER_P (i))
+    FAIL;
+})
 
 (define_insn "<u>mul<s><mode>3"
   [(set (match_operand:WD 0 "register_operand" "=r")

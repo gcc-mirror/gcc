@@ -118,7 +118,6 @@
 #include "function-abi.h"
 
 typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
-typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -7078,6 +7077,7 @@ vt_find_locations (void)
   int htabsz = 0;
   int htabmax = param_max_vartrack_size;
   bool success = true;
+  unsigned int n_blocks_processed = 0;
 
   timevar_push (TV_VAR_TRACKING_DATAFLOW);
   /* Compute reverse completion order of depth first search of the CFG
@@ -7089,7 +7089,6 @@ vt_find_locations (void)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 
-  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
@@ -7103,153 +7102,149 @@ vt_find_locations (void)
       std::swap (worklist, pending);
       std::swap (in_worklist, in_pending);
 
-      bitmap_clear (visited);
-
       while (!worklist->empty ())
 	{
+	  bool changed;
+	  edge_iterator ei;
+	  int oldinsz, oldoutsz;
+
 	  bb = worklist->extract_min ();
 	  bitmap_clear_bit (in_worklist, bb->index);
-	  gcc_assert (!bitmap_bit_p (visited, bb->index));
-	  if (!bitmap_bit_p (visited, bb->index))
+
+	  if (VTI (bb)->in.vars)
 	    {
-	      bool changed;
-	      edge_iterator ei;
-	      int oldinsz, oldoutsz;
+	      htabsz -= (shared_hash_htab (VTI (bb)->in.vars)->size ()
+			 + shared_hash_htab (VTI (bb)->out.vars)->size ());
+	      oldinsz = shared_hash_htab (VTI (bb)->in.vars)->elements ();
+	      oldoutsz = shared_hash_htab (VTI (bb)->out.vars)->elements ();
+	    }
+	  else
+	    oldinsz = oldoutsz = 0;
 
-	      bitmap_set_bit (visited, bb->index);
+	  if (MAY_HAVE_DEBUG_BIND_INSNS)
+	    {
+	      dataflow_set *in = &VTI (bb)->in, *first_out = NULL;
+	      bool first = true, adjust = false;
 
-	      if (VTI (bb)->in.vars)
+	      /* Calculate the IN set as the intersection of
+		 predecessor OUT sets.  */
+
+	      dataflow_set_clear (in);
+	      dst_can_be_shared = true;
+
+	      FOR_EACH_EDGE (e, ei, bb->preds)
+		if (!VTI (e->src)->flooded)
+		  gcc_assert (bb_order[bb->index]
+			      <= bb_order[e->src->index]);
+		else if (first)
+		  {
+		    dataflow_set_copy (in, &VTI (e->src)->out);
+		    first_out = &VTI (e->src)->out;
+		    first = false;
+		  }
+		else
+		  {
+		    dataflow_set_merge (in, &VTI (e->src)->out);
+		    adjust = true;
+		  }
+
+	      if (adjust)
 		{
-		  htabsz
-		    -= shared_hash_htab (VTI (bb)->in.vars)->size ()
-			+ shared_hash_htab (VTI (bb)->out.vars)->size ();
-		  oldinsz = shared_hash_htab (VTI (bb)->in.vars)->elements ();
-		  oldoutsz
-		    = shared_hash_htab (VTI (bb)->out.vars)->elements ();
-		}
-	      else
-		oldinsz = oldoutsz = 0;
+		  dataflow_post_merge_adjust (in, &VTI (bb)->permp);
 
+		  if (flag_checking)
+		    /* Merge and merge_adjust should keep entries in
+		       canonical order.  */
+		    shared_hash_htab (in->vars)
+		      ->traverse <dataflow_set *,
+				  canonicalize_loc_order_check> (in);
+
+		  if (dst_can_be_shared)
+		    {
+		      shared_hash_destroy (in->vars);
+		      in->vars = shared_hash_copy (first_out->vars);
+		    }
+		}
+
+	      VTI (bb)->flooded = true;
+	    }
+	  else
+	    {
+	      /* Calculate the IN set as union of predecessor OUT sets.  */
+	      dataflow_set_clear (&VTI (bb)->in);
+	      FOR_EACH_EDGE (e, ei, bb->preds)
+		dataflow_set_union (&VTI (bb)->in, &VTI (e->src)->out);
+	    }
+
+	  changed = compute_bb_dataflow (bb);
+	  n_blocks_processed++;
+	  htabsz += (shared_hash_htab (VTI (bb)->in.vars)->size ()
+		     + shared_hash_htab (VTI (bb)->out.vars)->size ());
+
+	  if (htabmax && htabsz > htabmax)
+	    {
 	      if (MAY_HAVE_DEBUG_BIND_INSNS)
-		{
-		  dataflow_set *in = &VTI (bb)->in, *first_out = NULL;
-		  bool first = true, adjust = false;
-
-		  /* Calculate the IN set as the intersection of
-		     predecessor OUT sets.  */
-
-		  dataflow_set_clear (in);
-		  dst_can_be_shared = true;
-
-		  FOR_EACH_EDGE (e, ei, bb->preds)
-		    if (!VTI (e->src)->flooded)
-		      gcc_assert (bb_order[bb->index]
-				  <= bb_order[e->src->index]);
-		    else if (first)
-		      {
-			dataflow_set_copy (in, &VTI (e->src)->out);
-			first_out = &VTI (e->src)->out;
-			first = false;
-		      }
-		    else
-		      {
-			dataflow_set_merge (in, &VTI (e->src)->out);
-			adjust = true;
-		      }
-
-		  if (adjust)
-		    {
-		      dataflow_post_merge_adjust (in, &VTI (bb)->permp);
-
-		      if (flag_checking)
-			/* Merge and merge_adjust should keep entries in
-			   canonical order.  */
-			shared_hash_htab (in->vars)
-			  ->traverse <dataflow_set *,
-				      canonicalize_loc_order_check> (in);
-
-		      if (dst_can_be_shared)
-			{
-			  shared_hash_destroy (in->vars);
-			  in->vars = shared_hash_copy (first_out->vars);
-			}
-		    }
-
-		  VTI (bb)->flooded = true;
-		}
+		inform (DECL_SOURCE_LOCATION (cfun->decl),
+			"variable tracking size limit exceeded with "
+			"%<-fvar-tracking-assignments%>, retrying without");
 	      else
-		{
-		  /* Calculate the IN set as union of predecessor OUT sets.  */
-		  dataflow_set_clear (&VTI (bb)->in);
-		  FOR_EACH_EDGE (e, ei, bb->preds)
-		    dataflow_set_union (&VTI (bb)->in, &VTI (e->src)->out);
-		}
+		inform (DECL_SOURCE_LOCATION (cfun->decl),
+			"variable tracking size limit exceeded");
+	      success = false;
+	      break;
+	    }
 
-	      changed = compute_bb_dataflow (bb);
-	      htabsz += shared_hash_htab (VTI (bb)->in.vars)->size ()
-			 + shared_hash_htab (VTI (bb)->out.vars)->size ();
-
-	      if (htabmax && htabsz > htabmax)
+	  if (changed)
+	    {
+	      FOR_EACH_EDGE (e, ei, bb->succs)
 		{
-		  if (MAY_HAVE_DEBUG_BIND_INSNS)
-		    inform (DECL_SOURCE_LOCATION (cfun->decl),
-			    "variable tracking size limit exceeded with "
-			    "%<-fvar-tracking-assignments%>, retrying without");
-		  else
-		    inform (DECL_SOURCE_LOCATION (cfun->decl),
-			    "variable tracking size limit exceeded");
-		  success = false;
-		  break;
-		}
+		  if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+		    continue;
 
-	      if (changed)
-		{
-		  FOR_EACH_EDGE (e, ei, bb->succs)
+		  /* Iterate to an earlier block in RPO in the next
+		     round, iterate to the same block immediately.  */
+		  if (bb_order[e->dest->index] < bb_order[bb->index])
 		    {
-		      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
-			continue;
-
-		      if (bitmap_bit_p (visited, e->dest->index))
+		      if (!bitmap_bit_p (in_pending, e->dest->index))
 			{
-			  if (!bitmap_bit_p (in_pending, e->dest->index))
-			    {
-			      /* Send E->DEST to next round.  */
-			      bitmap_set_bit (in_pending, e->dest->index);
-			      pending->insert (bb_order[e->dest->index],
-					       e->dest);
-			    }
-			}
-		      else if (!bitmap_bit_p (in_worklist, e->dest->index))
-			{
-			  /* Add E->DEST to current round.  */
-			  bitmap_set_bit (in_worklist, e->dest->index);
-			  worklist->insert (bb_order[e->dest->index],
-					    e->dest);
+			  /* Send E->DEST to next round.  */
+			  bitmap_set_bit (in_pending, e->dest->index);
+			  pending->insert (bb_order[e->dest->index],
+					   e->dest);
 			}
 		    }
+		  else if (!bitmap_bit_p (in_worklist, e->dest->index))
+		    {
+		      /* Add E->DEST to current round.  */
+		      bitmap_set_bit (in_worklist, e->dest->index);
+		      worklist->insert (bb_order[e->dest->index],
+					e->dest);
+		    }
 		}
+	    }
 
-	      if (dump_file)
-		fprintf (dump_file,
-			 "BB %i: in %i (was %i), out %i (was %i), rem %i + %i, tsz %i\n",
-			 bb->index,
-			 (int)shared_hash_htab (VTI (bb)->in.vars)->size (),
-			 oldinsz,
-			 (int)shared_hash_htab (VTI (bb)->out.vars)->size (),
-			 oldoutsz,
-			 (int)worklist->nodes (), (int)pending->nodes (),
-			 htabsz);
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "BB %i: in %i (was %i), out %i (was %i), rem %i + %i, tsz %i\n",
+		     bb->index,
+		     (int)shared_hash_htab (VTI (bb)->in.vars)->size (),
+		     oldinsz,
+		     (int)shared_hash_htab (VTI (bb)->out.vars)->size (),
+		     oldoutsz,
+		     (int)worklist->nodes (), (int)pending->nodes (), htabsz);
 
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "BB %i IN:\n", bb->index);
-		  dump_dataflow_set (&VTI (bb)->in);
-		  fprintf (dump_file, "BB %i OUT:\n", bb->index);
-		  dump_dataflow_set (&VTI (bb)->out);
-		}
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "BB %i IN:\n", bb->index);
+	      dump_dataflow_set (&VTI (bb)->in);
+	      fprintf (dump_file, "BB %i OUT:\n", bb->index);
+	      dump_dataflow_set (&VTI (bb)->out);
 	    }
 	}
     }
+
+  statistics_counter_event (cfun, "compute_bb_dataflow times",
+			    n_blocks_processed);
 
   if (success && MAY_HAVE_DEBUG_BIND_INSNS)
     FOR_EACH_BB_FN (bb, cfun)

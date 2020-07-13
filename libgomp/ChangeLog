@@ -1,3 +1,53 @@
+2020-07-10  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_key_s): Change virtual_refcount to
+	dynamic_refcount.
+	(struct gomp_device_descr): Remove GOMP_MAP_VARS_OPENACC_ENTER_DATA.
+	* oacc-mem.c (acc_map_data): Substitute virtual_refcount for
+	dynamic_refcount.
+	(acc_unmap_data): Update comment.
+	(goacc_map_var_existing, goacc_enter_datum): Adjust for
+	dynamic_refcount semantics.
+	(goacc_exit_datum_1, goacc_exit_datum): Re-add some error checking.
+	Adjust for dynamic_refcount semantics.
+	(goacc_enter_data_internal): Implement "present" case of dynamic
+	memory-map handling here.  Update "non-present" case for
+	dynamic_refcount semantics.
+	(goacc_exit_data_internal): Use goacc_exit_datum_1.
+	* target.c (gomp_map_vars_internal): Remove
+	GOMP_MAP_VARS_OPENACC_ENTER_DATA handling.  Update for dynamic_refcount
+	handling.
+	(gomp_unmap_vars_internal): Remove virtual_refcount handling.
+	(gomp_load_image_to_device): Substitute dynamic_refcount for
+	virtual_refcount.
+	* testsuite/libgomp.oacc-c-c++-common/pr92843-1.c: Remove XFAILs.
+	* testsuite/libgomp.oacc-c-c++-common/refcounting-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/refcounting-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/struct-3-1-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Remove XFAILs and
+	trace output.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: Remove
+	trace output.
+	* testsuite/libgomp.oacc-fortran/dynamic-incr-structural-1.f90: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-4.c:
+	Remove stale comment.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Remove XFAILs.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-2.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Adjust XFAIL.
+
+2020-07-10  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_map_var_existing): New function.
+	(goacc_enter_datum): Use above function.
+	(goacc_exit_datum_1): New function.
+	(goacc_exit_datum): Use above function.
+
 2020-07-09  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

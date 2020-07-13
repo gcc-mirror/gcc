@@ -5441,6 +5441,7 @@ check_externals_procedure (gfc_symbol *sym, locus *loc,
   gfc_current_ns = gsym->ns;
 
   gfc_get_formal_from_actual_arglist (new_sym, actual);
+  new_sym->declared_at = *loc;
   gfc_current_ns = save_ns;
 
   return 0;

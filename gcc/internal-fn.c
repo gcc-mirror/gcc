@@ -1629,6 +1629,9 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 				     profile_probability::very_likely ());
 	  else
 	    {
+	      /* RES is used more than once, place it in a pseudo.  */
+	      res = force_reg (mode, res);
+
 	      rtx signbit = expand_shift (RSHIFT_EXPR, mode, res, prec - 1,
 					  NULL_RTX, 0);
 	      /* RES is low half of the double width result, HIPART

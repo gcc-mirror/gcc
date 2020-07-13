@@ -6957,6 +6957,17 @@ aarch64_return_address_signing_enabled (void)
   /* This function should only be called after frame laid out.   */
   gcc_assert (cfun->machine->frame.laid_out);
 
+  /* Turn return address signing off in any function that uses
+     __builtin_eh_return.  The address passed to __builtin_eh_return
+     is not signed so either it has to be signed (with original sp)
+     or the code path that uses it has to avoid authenticating it.
+     Currently eh return introduces a return to anywhere gadget, no
+     matter what we do here since it uses ret with user provided
+     address. An ideal fix for that is to use indirect branch which
+     can be protected with BTI j (to some extent).  */
+  if (crtl->calls_eh_return)
+    return false;
+
   /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
      if its LR is pushed onto stack.  */
   return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
@@ -10825,6 +10836,24 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
   return cfun->machine->frame.frame_size;
 }
 
+
+/* Get return address without mangling.  */
+
+rtx
+aarch64_return_addr_rtx (void)
+{
+  rtx val = get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  /* Note: aarch64_return_address_signing_enabled only
+     works after cfun->machine->frame.laid_out is set,
+     so here we don't know if the return address will
+     be signed or not.  */
+  rtx lr = gen_rtx_REG (Pmode, LR_REGNUM);
+  emit_move_insn (lr, val);
+  emit_insn (GEN_FCN (CODE_FOR_xpaclri) ());
+  return lr;
+}
+
+
 /* Implement RETURN_ADDR_RTX.  We do not support moving back to a
    previous frame.  */
 
@@ -10833,7 +10862,7 @@ aarch64_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 {
   if (count != 0)
     return const0_rtx;
-  return get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  return aarch64_return_addr_rtx ();
 }
 
 static void
