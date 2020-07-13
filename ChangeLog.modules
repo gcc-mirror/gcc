@@ -1,5 +1,9 @@
 2020-07-13  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* lib/scanlang.exp (scan-lang-dump-not): Fix 3-arg case.
+	* g++.dg/modules/builtin-3_a.C: Remove unnecessary bracing.
+
 	Merge trunk a1faa8e2470.
 
 	Fix polymorphic type info emission and key-function confusion
