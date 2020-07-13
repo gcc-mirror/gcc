@@ -31,14 +31,12 @@
 
 --  This package provides arbitrary precision signed integer arithmetic.
 
-with System;                  use System;
-with System.Secondary_Stack;  use System.Secondary_Stack;
-with System.Storage_Elements; use System.Storage_Elements;
-
 package body System.Generic_Bignums is
 
    use Interfaces;
    --  So that operations on Unsigned_32/Unsigned_64 are available
+
+   use Shared_Bignums;
 
    type DD is mod Base ** 2;
    --  Double length digit used for intermediate computations
@@ -65,17 +63,12 @@ package body System.Generic_Bignums is
    function Add
      (X, Y  : Digit_Vector;
       X_Neg : Boolean;
-      Y_Neg : Boolean) return Bignum
+      Y_Neg : Boolean) return Big_Integer
    with
      Pre => X'First = 1 and then Y'First = 1;
    --  This procedure adds two signed numbers returning the Sum, it is used
    --  for both addition and subtraction. The value computed is X + Y, with
    --  X_Neg and Y_Neg giving the signs of the operands.
-
-   function Allocate_Bignum (Len : Length) return Bignum with
-     Post => Allocate_Bignum'Result.Len = Len;
-   --  Allocate Bignum value of indicated length on secondary stack. On return
-   --  the Neg and D fields are left uninitialized.
 
    type Compare_Result is (LT, EQ, GT);
    --  Indicates result of comparison in following call
@@ -90,8 +83,8 @@ package body System.Generic_Bignums is
 
    procedure Div_Rem
      (X, Y              : Bignum;
-      Quotient          : out Bignum;
-      Remainder         : out Bignum;
+      Quotient          : out Big_Integer;
+      Remainder         : out Big_Integer;
       Discard_Quotient  : Boolean := False;
       Discard_Remainder : Boolean := False);
    --  Returns the Quotient and Remainder from dividing abs (X) by abs (Y). The
@@ -99,18 +92,15 @@ package body System.Generic_Bignums is
    --  Quotient is undefined on return, and if Discard_Remainder is True, then
    --  Remainder is undefined on return. Service routine for Big_Div/Rem/Mod.
 
-   procedure Free_Bignum (X : Bignum) is null;
-   --  Called to free a Bignum value used in intermediate computations. In
-   --  this implementation using the secondary stack, it does nothing at all,
-   --  because we rely on Mark/Release, but it may be of use for some
-   --  alternative implementation.
-
    function Normalize
      (X   : Digit_Vector;
-      Neg : Boolean := False) return Bignum;
-   --  Given a digit vector and sign, allocate and construct a Bignum value.
-   --  Note that X may have leading zeroes which must be removed, and if the
-   --  result is zero, the sign is forced positive.
+      Neg : Boolean := False) return Big_Integer;
+   --  Given a digit vector and sign, allocate and construct a big integer
+   --  value. Note that X may have leading zeroes which must be removed, and if
+   --  the result is zero, the sign is forced positive.
+
+   function "**" (X : Bignum; Y : SD) return Big_Integer;
+   --  Exponentiation routine where we know right operand is one word
 
    ---------
    -- Add --
@@ -119,7 +109,7 @@ package body System.Generic_Bignums is
    function Add
      (X, Y  : Digit_Vector;
       X_Neg : Boolean;
-      Y_Neg : Boolean) return Bignum
+      Y_Neg : Boolean) return Big_Integer
    is
    begin
       --  If signs are the same, we are doing an addition, it is convenient to
@@ -202,73 +192,11 @@ package body System.Generic_Bignums is
       end if;
    end Add;
 
-   ---------------------
-   -- Allocate_Bignum --
-   ---------------------
-
-   function Allocate_Bignum (Len : Length) return Bignum is
-      Addr : Address;
-
-   begin
-      --  Allocation on the heap
-
-      if not Use_Secondary_Stack then
-         declare
-            B : Bignum;
-         begin
-            B := new Bignum_Data'(Len, False, (others => 0));
-            return B;
-         end;
-
-      --  Allocation on the secondary stack
-
-      else
-         --  Note: The approach used here is designed to avoid strict aliasing
-         --  warnings that appeared previously using unchecked conversion.
-
-         SS_Allocate (Addr, Storage_Offset (4 + 4 * Len));
-
-         declare
-            B : Bignum;
-            for B'Address use Addr'Address;
-            pragma Import (Ada, B);
-
-            BD : Bignum_Data (Len);
-            for BD'Address use Addr;
-            pragma Import (Ada, BD);
-
-            --  Expose a writable view of discriminant BD.Len so that we can
-            --  initialize it. We need to use the exact layout of the record
-            --  to ensure that the Length field has 24 bits as expected.
-
-            type Bignum_Data_Header is record
-               Len : Length;
-               Neg : Boolean;
-            end record;
-
-            for Bignum_Data_Header use record
-               Len at 0 range 0 .. 23;
-               Neg at 3 range 0 .. 7;
-            end record;
-
-            BDH : Bignum_Data_Header;
-            for BDH'Address use BD'Address;
-            pragma Import (Ada, BDH);
-
-            pragma Assert (BDH.Len'Size = BD.Len'Size);
-
-         begin
-            BDH.Len := Len;
-            return B;
-         end;
-      end if;
-   end Allocate_Bignum;
-
    -------------
    -- Big_Abs --
    -------------
 
-   function Big_Abs (X : Bignum) return Bignum is
+   function Big_Abs (X : Bignum) return Big_Integer is
    begin
       return Normalize (X.D);
    end Big_Abs;
@@ -277,7 +205,7 @@ package body System.Generic_Bignums is
    -- Big_Add --
    -------------
 
-   function Big_Add  (X, Y : Bignum) return Bignum is
+   function Big_Add  (X, Y : Bignum) return Big_Integer is
    begin
       return Add (X.D, Y.D, X.Neg, Y.Neg);
    end Big_Add;
@@ -305,85 +233,83 @@ package body System.Generic_Bignums is
    --   13    -5   -2      -13   -5     2
    --   14    -5   -2      -14   -5     2
 
-   function Big_Div  (X, Y : Bignum) return Bignum is
-      Q, R : Bignum;
+   function Big_Div  (X, Y : Bignum) return Big_Integer is
+      Q, R : aliased Big_Integer;
    begin
       Div_Rem (X, Y, Q, R, Discard_Remainder => True);
-      Q.Neg := Q.Len > 0 and then (X.Neg xor Y.Neg);
+      To_Bignum (Q).Neg := To_Bignum (Q).Len > 0 and then (X.Neg xor Y.Neg);
       return Q;
    end Big_Div;
+
+   ----------
+   -- "**" --
+   ----------
+
+   function "**" (X : Bignum; Y : SD) return Big_Integer is
+   begin
+      case Y is
+
+         --  X ** 0 is 1
+
+         when 0 =>
+            return Normalize (One_Data);
+
+         --  X ** 1 is X
+
+         when 1 =>
+            return Normalize (X.D);
+
+         --  X ** 2 is X * X
+
+         when 2 =>
+            return Big_Mul (X, X);
+
+         --  For X greater than 2, use the recursion
+
+         --  X even, X ** Y = (X ** (Y/2)) ** 2;
+         --  X odd,  X ** Y = (X ** (Y/2)) ** 2 * X;
+
+         when others =>
+            declare
+               XY2  : aliased Big_Integer := X ** (Y / 2);
+               XY2S : aliased Big_Integer :=
+                 Big_Mul (To_Bignum (XY2), To_Bignum (XY2));
+               Res  : Big_Integer;
+
+            begin
+               Free_Big_Integer (XY2);
+
+               --  Raise storage error if intermediate value is getting too
+               --  large, which we arbitrarily define as 200 words for now.
+               --  ??? Consider putting a limit instead in a wrapper of
+               --  Allocate_Big_Integer and update all calls to
+               --  Allocate_Big_Integer to call this wrapper, to catch all such
+               --  cases.
+
+               if To_Bignum (XY2S).Len > 200 then
+                  Free_Big_Integer (XY2S);
+                  raise Storage_Error with
+                    "exponentiation result is too large";
+               end if;
+
+               --  Otherwise take care of even/odd cases
+
+               if (Y and 1) = 0 then
+                  return XY2S;
+               else
+                  Res := Big_Mul (To_Bignum (XY2S), X);
+                  Free_Big_Integer (XY2S);
+                  return Res;
+               end if;
+            end;
+      end case;
+   end "**";
 
    -------------
    -- Big_Exp --
    -------------
 
-   function Big_Exp  (X, Y : Bignum) return Bignum is
-
-      function "**" (X : Bignum; Y : SD) return Bignum;
-      --  Internal routine where we know right operand is one word
-
-      ----------
-      -- "**" --
-      ----------
-
-      function "**" (X : Bignum; Y : SD) return Bignum is
-      begin
-         case Y is
-
-            --  X ** 0 is 1
-
-            when 0 =>
-               return Normalize (One_Data);
-
-            --  X ** 1 is X
-
-            when 1 =>
-               return Normalize (X.D);
-
-            --  X ** 2 is X * X
-
-            when 2 =>
-               return Big_Mul (X, X);
-
-            --  For X greater than 2, use the recursion
-
-            --  X even, X ** Y = (X ** (Y/2)) ** 2;
-            --  X odd,  X ** Y = (X ** (Y/2)) ** 2 * X;
-
-            when others =>
-               declare
-                  XY2  : constant Bignum := X ** (Y / 2);
-                  XY2S : constant Bignum := Big_Mul (XY2, XY2);
-                  Res  : Bignum;
-
-               begin
-                  Free_Bignum (XY2);
-
-                  --  Raise storage error if intermediate value is getting too
-                  --  large, which we arbitrarily define as 200 words for now.
-
-                  if XY2S.Len > 200 then
-                     Free_Bignum (XY2S);
-                     raise Storage_Error with
-                       "exponentiation result is too large";
-                  end if;
-
-                  --  Otherwise take care of even/odd cases
-
-                  if (Y and 1) = 0 then
-                     return XY2S;
-
-                  else
-                     Res := Big_Mul (XY2S, X);
-                     Free_Bignum (XY2S);
-                     return Res;
-                  end if;
-               end;
-         end case;
-      end "**";
-
-   --  Start of processing for Big_Exp
-
+   function Big_Exp  (X, Y : Bignum) return Big_Integer is
    begin
       --  Error if right operand negative
 
@@ -430,6 +356,127 @@ package body System.Generic_Bignums is
          return X ** Y.D (1);
       end if;
    end Big_Exp;
+
+   -------------
+   -- Big_And --
+   -------------
+
+   function Big_And (X, Y : Bignum) return Big_Integer is
+   begin
+      if X.Len > Y.Len then
+         return Big_And (X => Y, Y => X);
+      end if;
+
+      --  X is the smallest integer
+
+      declare
+         Result : Digit_Vector (1 .. X.Len);
+         Diff   : constant Length := Y.Len - X.Len;
+      begin
+         for J in 1 .. X.Len loop
+            Result (J) := X.D (J) and Y.D (J + Diff);
+         end loop;
+
+         return Normalize (Result, X.Neg and Y.Neg);
+      end;
+   end Big_And;
+
+   ------------
+   -- Big_Or --
+   ------------
+
+   function Big_Or  (X, Y : Bignum) return Big_Integer is
+   begin
+      if X.Len < Y.Len then
+         return Big_Or (X => Y, Y => X);
+      end if;
+
+      --  X is the largest integer
+
+      declare
+         Result : Digit_Vector (1 .. X.Len);
+         Index  : Length;
+         Diff   : constant Length := X.Len - Y.Len;
+
+      begin
+         Index := 1;
+
+         while Index <= Diff loop
+            Result (Index) := X.D (Index);
+            Index := Index + 1;
+         end loop;
+
+         for J in 1 .. Y.Len loop
+            Result (Index) := X.D (Index) or Y.D (J);
+            Index := Index + 1;
+         end loop;
+
+         return Normalize (Result, X.Neg or Y.Neg);
+      end;
+   end Big_Or;
+
+   --------------------
+   -- Big_Shift_Left --
+   --------------------
+
+   function Big_Shift_Left (X : Bignum; Amount : Natural) return Big_Integer is
+   begin
+      if X.Neg then
+         raise Constraint_Error;
+      elsif Amount = 0 then
+         return Allocate_Big_Integer (X.D, False);
+      end if;
+
+      declare
+         Shift  : constant Natural := Amount rem SD'Size;
+         Result : Digit_Vector (0 .. X.Len + Amount / SD'Size);
+         Carry  : SD := 0;
+
+      begin
+         for J in X.Len + 1 .. Result'Last loop
+            Result (J) := 0;
+         end loop;
+
+         for J in reverse 1 .. X.Len loop
+            Result (J) := Shift_Left (X.D (J), Shift) or Carry;
+            Carry := Shift_Right (X.D (J), SD'Size - Shift);
+         end loop;
+
+         Result (0) := Carry;
+         return Normalize (Result, False);
+      end;
+   end Big_Shift_Left;
+
+   ---------------------
+   -- Big_Shift_Right --
+   ---------------------
+
+   function Big_Shift_Right
+     (X : Bignum; Amount : Natural) return Big_Integer is
+   begin
+      if X.Neg then
+         raise Constraint_Error;
+      elsif Amount = 0 then
+         return Allocate_Big_Integer (X.D, False);
+      end if;
+
+      declare
+         Shift  : constant Natural := Amount rem SD'Size;
+         Result : Digit_Vector (1 .. X.Len - Amount / SD'Size);
+         Carry  : SD := 0;
+
+      begin
+         for J in 1 .. Result'Last - 1 loop
+            Result (J) := Shift_Right (X.D (J), Shift) or Carry;
+            Carry := Shift_Left (X.D (J), SD'Size - Shift);
+         end loop;
+
+         Result (Result'Last) :=
+           Shift_Right (X.D (Result'Last), Shift) or Carry;
+
+         return Normalize (Result, False);
+      end;
+   end Big_Shift_Right;
 
    ------------
    -- Big_EQ --
@@ -499,8 +546,8 @@ package body System.Generic_Bignums is
    --   13    -5      -2        3       -13   -5      -3       -3
    --   14    -5      -1        4       -14   -5      -4       -4
 
-   function Big_Mod (X, Y : Bignum) return Bignum is
-      Q, R : Bignum;
+   function Big_Mod (X, Y : Bignum) return Big_Integer is
+      Q, R : aliased Big_Integer;
 
    begin
       --  If signs are same, result is same as Rem
@@ -517,17 +564,17 @@ package body System.Generic_Bignums is
 
          --  Zero result is unchanged
 
-         if R.Len = 0 then
+         if To_Bignum (R).Len = 0 then
             return R;
 
          --  Otherwise adjust result
 
          else
             declare
-               T1 : constant Bignum := Big_Sub (Y, R);
+               T1 : aliased Big_Integer := Big_Sub (Y, To_Bignum (R));
             begin
-               T1.Neg := Y.Neg;
-               Free_Bignum (R);
+               To_Bignum (T1).Neg := Y.Neg;
+               Free_Big_Integer (R);
                return T1;
             end;
          end if;
@@ -538,7 +585,7 @@ package body System.Generic_Bignums is
    -- Big_Mul --
    -------------
 
-   function Big_Mul (X, Y : Bignum) return Bignum is
+   function Big_Mul (X, Y : Bignum) return Big_Integer is
       Result : Digit_Vector (1 .. X.Len + Y.Len) := (others => 0);
       --  Accumulate result (max length of result is sum of operand lengths)
 
@@ -589,7 +636,7 @@ package body System.Generic_Bignums is
    -- Big_Neg --
    -------------
 
-   function Big_Neg (X : Bignum) return Bignum is
+   function Big_Neg (X : Bignum) return Big_Integer is
    begin
       return Normalize (X.D, not X.Neg);
    end Big_Neg;
@@ -617,11 +664,11 @@ package body System.Generic_Bignums is
    --   13    -5     3      -13   -5     -3
    --   14    -5     4      -14   -5     -4
 
-   function Big_Rem (X, Y : Bignum) return Bignum is
-      Q, R : Bignum;
+   function Big_Rem (X, Y : Bignum) return Big_Integer is
+      Q, R : aliased Big_Integer;
    begin
       Div_Rem (X, Y, Q, R, Discard_Quotient => True);
-      R.Neg := R.Len > 0 and then X.Neg;
+      To_Bignum (R).Neg := To_Bignum (R).Len > 0 and then X.Neg;
       return R;
    end Big_Rem;
 
@@ -629,7 +676,7 @@ package body System.Generic_Bignums is
    -- Big_Sub --
    -------------
 
-   function Big_Sub (X, Y : Bignum) return Bignum is
+   function Big_Sub (X, Y : Bignum) return Big_Integer is
    begin
       --  If right operand zero, return left operand (avoiding sharing)
 
@@ -681,11 +728,10 @@ package body System.Generic_Bignums is
 
    procedure Div_Rem
      (X, Y              : Bignum;
-      Quotient          : out Bignum;
-      Remainder         : out Bignum;
+      Quotient          : out Big_Integer;
+      Remainder         : out Big_Integer;
       Discard_Quotient  : Boolean := False;
-      Discard_Remainder : Boolean := False)
-   is
+      Discard_Remainder : Boolean := False) is
    begin
       --  Error if division by zero
 
@@ -698,8 +744,14 @@ package body System.Generic_Bignums is
       --  If X < Y then quotient is zero and remainder is X
 
       if Compare (X.D, Y.D, False, False) = LT then
-         Remainder := Normalize (X.D);
-         Quotient  := Normalize (Zero_Data);
+         if not Discard_Quotient then
+            Quotient := Normalize (Zero_Data);
+         end if;
+
+         if not Discard_Remainder then
+            Remainder := Normalize (X.D);
+         end if;
+
          return;
 
       --  If both X and Y are less than 2**63-1, we can use Long_Long_Integer
@@ -714,8 +766,14 @@ package body System.Generic_Bignums is
             A : constant LLI := abs (From_Bignum (X));
             B : constant LLI := abs (From_Bignum (Y));
          begin
-            Quotient  := To_Bignum (A / B);
-            Remainder := To_Bignum (A rem B);
+            if not Discard_Quotient then
+               Quotient := To_Bignum (A / B);
+            end if;
+
+            if not Discard_Remainder then
+               Remainder := To_Bignum (A rem B);
+            end if;
+
             return;
          end;
 
@@ -738,9 +796,15 @@ package body System.Generic_Bignums is
                ND := ND rem Div;
             end loop;
 
-            Quotient  := Normalize (Result);
-            Remdr (1) := SD (ND);
-            Remainder := Normalize (Remdr);
+            if not Discard_Quotient then
+               Quotient  := Normalize (Result);
+            end if;
+
+            if not Discard_Remainder then
+               Remdr (1) := SD (ND);
+               Remainder := Normalize (Remdr);
+            end if;
+
             return;
          end;
       end if;
@@ -969,9 +1033,9 @@ package body System.Generic_Bignums is
          if not Discard_Remainder then
             declare
                Remdr : DD;
-
             begin
                Remdr := 0;
+
                for K in 1 .. n loop
                   Remdr := Base * Remdr + DD (u (m + K));
                   r (K) := SD (Remdr / d);
@@ -1046,9 +1110,8 @@ package body System.Generic_Bignums is
 
    function Normalize
      (X   : Digit_Vector;
-      Neg : Boolean := False) return Bignum
+      Neg : Boolean := False) return Big_Integer
    is
-      B : Bignum;
       J : Length;
 
    begin
@@ -1057,72 +1120,158 @@ package body System.Generic_Bignums is
          J := J + 1;
       end loop;
 
-      B := Allocate_Bignum (X'Last - J + 1);
-      B.Neg := B.Len > 0 and then Neg;
-      B.D := X (J .. X'Last);
-      return B;
+      return Allocate_Big_Integer (X (J .. X'Last), J <= X'Last and then Neg);
    end Normalize;
 
    ---------------
    -- To_Bignum --
    ---------------
 
-   function To_Bignum (X : Long_Long_Integer) return Bignum is
-      R : Bignum;
-
+   function To_Bignum (X : Long_Long_Integer) return Big_Integer is
    begin
       if X = 0 then
-         R := Allocate_Bignum (0);
+         return Allocate_Big_Integer ((1 .. 0 => <>), False);
 
       --  One word result
 
       elsif X in -(2 ** 32 - 1) .. +(2 ** 32 - 1) then
-         R := Allocate_Bignum (1);
-         R.D (1) := SD (abs (X));
+         return Allocate_Big_Integer ((1 => SD (abs X)), X < 0);
 
       --  Largest negative number annoyance
 
       elsif X = Long_Long_Integer'First then
-         R := Allocate_Bignum (2);
-         R.D (1) := 2 ** 31;
-         R.D (2) := 0;
+         return Allocate_Big_Integer ((2 ** 31, 0), True);
 
-      --  Normal two word case
+      --  Other negative numbers
 
+      elsif X < 0 then
+         return Allocate_Big_Integer
+                  ((SD ((-X) / Base), SD ((-X) mod Base)), True);
+
+      --  Positive numbers
       else
-         R := Allocate_Bignum (2);
-         R.D (2) := SD (abs (X) mod Base);
-         R.D (1) := SD (abs (X) / Base);
+         return Allocate_Big_Integer ((SD (X / Base), SD (X mod Base)), False);
       end if;
-
-      R.Neg := X < 0;
-      return R;
    end To_Bignum;
 
-   function To_Bignum (X : Unsigned_64) return Bignum is
-      R : Bignum;
-
+   function To_Bignum (X : Unsigned_64) return Big_Integer is
    begin
       if X = 0 then
-         R := Allocate_Bignum (0);
+         return Allocate_Big_Integer ((1 .. 0 => <>), False);
 
       --  One word result
 
       elsif X < 2 ** 32 then
-         R := Allocate_Bignum (1);
-         R.D (1) := SD (X);
+         return Allocate_Big_Integer ((1 => SD (X)), False);
 
       --  Two word result
 
       else
-         R := Allocate_Bignum (2);
-         R.D (2) := SD (X mod Base);
-         R.D (1) := SD (X / Base);
+         return Allocate_Big_Integer ((SD (X / Base), SD (X mod Base)), False);
       end if;
-
-      R.Neg := False;
-      return R;
    end To_Bignum;
+
+   ---------------
+   -- To_String --
+   ---------------
+
+   Hex_Chars : constant array (0 .. 15) of Character := "0123456789ABCDEF";
+
+   function To_String
+     (X : Bignum; Width : Natural := 0; Base : Positive := 10) return String
+   is
+      Big_Base : aliased Bignum_Data := (1, False, (1 => SD (Base)));
+
+      function Add_Base (S : String) return String;
+      --  Add base information if Base /= 10
+
+      function Leading_Padding
+        (Str        : String;
+         Min_Length : Natural;
+         Char       : Character := ' ') return String;
+      --  Return padding of Char concatenated with Str so that the resulting
+      --  string is at least Min_Length long.
+
+      function Image (Arg : Bignum) return String;
+      --  Return image of Arg, assuming Arg is positive.
+
+      function Image (N : Natural) return String;
+      --  Return image of N, with no leading space.
+
+      --------------
+      -- Add_Base --
+      --------------
+
+      function Add_Base (S : String) return String is
+      begin
+         if Base = 10 then
+            return S;
+         else
+            return Image (Base) & "#" & S & "#";
+         end if;
+      end Add_Base;
+
+      -----------
+      -- Image --
+      -----------
+
+      function Image (N : Natural) return String is
+         S : constant String := Natural'Image (N);
+      begin
+         return S (2 .. S'Last);
+      end Image;
+
+      function Image (Arg : Bignum) return String is
+      begin
+         if Big_LT (Arg, Big_Base'Unchecked_Access) then
+            return (1 => Hex_Chars (Natural (From_Bignum (Arg))));
+         else
+            declare
+               Div    : aliased Big_Integer;
+               Remain : aliased Big_Integer;
+               R      : Natural;
+
+            begin
+               Div_Rem (Arg, Big_Base'Unchecked_Access, Div, Remain);
+               R := Natural (From_Bignum (To_Bignum (Remain)));
+               Free_Big_Integer (Remain);
+
+               return S : constant String :=
+                 Image (To_Bignum (Div)) & Hex_Chars (R)
+               do
+                  Free_Big_Integer (Div);
+               end return;
+            end;
+         end if;
+      end Image;
+
+      ---------------------
+      -- Leading_Padding --
+      ---------------------
+
+      function Leading_Padding
+        (Str        : String;
+         Min_Length : Natural;
+         Char       : Character := ' ') return String is
+      begin
+         return (1 .. Integer'Max (Integer (Min_Length) - Str'Length, 0)
+                        => Char) & Str;
+      end Leading_Padding;
+
+      Zero : aliased Bignum_Data := (0, False, D => Zero_Data);
+
+   begin
+      if Big_LT (X, Zero'Unchecked_Access) then
+         declare
+            X_Pos : aliased Bignum_Data := (X.Len, not X.Neg, X.D);
+         begin
+            return Leading_Padding
+                     ("-" & Add_Base (Image (X_Pos'Unchecked_Access)), Width);
+         end;
+      else
+         return Leading_Padding (" " & Add_Base (Image (X)), Width);
+      end if;
+   end To_String;
 
    -------------
    -- Is_Zero --

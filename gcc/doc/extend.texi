@@ -11159,18 +11159,31 @@ The @var{level} argument must be a constant integer.
 
 On some machines it may be impossible to determine the return address of
 any function other than the current one; in such cases, or when the top
-of the stack has been reached, this function returns @code{0} or a
-random value.  In addition, @code{__builtin_frame_address} may be used
+of the stack has been reached, this function returns an unspecified
+value.  In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
 Additional post-processing of the returned value may be needed, see
 @code{__builtin_extract_return_addr}.
+
+The stored representation of the return address in memory may be different
+from the address returned by @code{__builtin_return_address}.  For example,
+on AArch64 the stored address may be mangled with return address signing
+whereas the address returned by @code{__builtin_return_address} is not.
 
 Calling this function with a nonzero argument can have unpredictable
 effects, including crashing the calling program.  As a result, calls
 that are considered unsafe are diagnosed when the @option{-Wframe-address}
 option is in effect.  Such calls should only be made in debugging
 situations.
+
+On targets where code addresses are representable as @code{void *},
+@smallexample
+void *addr = __builtin_extract_return_addr (__builtin_return_address (0));
+@end smallexample
+gives the code address where the current function would return.  For example,
+such an address may be used with @code{dladdr} or other interfaces that work
+with code addresses.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
@@ -13859,6 +13872,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
 * PowerPC Matrix-Multiply Assist Built-in Functions::
+* RISC-V Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -20218,6 +20232,13 @@ bool scalar_test_data_class (__ieee128 source, const int condition);
 bool scalar_test_neg (float source);
 bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
+
+vector _uint128_t vec_msum (vector unsigned long long,
+			    vector unsigned long long,
+			    vector _uint128_t);
+vector _int128_t vec_msum (vector signed long long,
+			   vector signed long long,
+			   vector _int128_t);
 @end smallexample
 
 The @code{scalar_extract_exp} and @code{scalar_extract_sig}
@@ -20237,6 +20258,9 @@ Note that the sign of the significand is not represented in the result
 returned from the @code{scalar_extract_sig} function.  Use the
 @code{scalar_test_neg} function to test the sign of its @code{double}
 argument.
+The @code{vec_msum} functions perform a vector multiply-sum, returning
+the result of arg1*arg2+arg3.  ISA 3.0 adds support for vec_msum returning
+a vector int128 result.
 
 The @code{scalar_insert_exp}
 functions require a 64-bit environment supporting ISA 3.0 or later.
@@ -21461,6 +21485,16 @@ vec_t __builtin_vsx_xvcvspbf16 (vec_t);
 vec_t __builtin_vsx_xvcvbf16sp (vec_t);
 @end smallexample
 
+@node RISC-V Built-in Functions
+@subsection RISC-V Built-in Functions
+
+These built-in functions are available for the RISC-V family of
+processors.
+
+@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+Returns the value that is currently set in the @samp{tp} register.
+@end deftypefn
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
@@ -22234,6 +22268,12 @@ Intel Core i7 Tigerlake CPU.
 
 @item cooperlake
 Intel Core i7 Cooperlake CPU.
+
+@item sapphirerapids
+Intel Core i7 sapphirerapids CPU.
+
+@item alderlake
+Intel Core i7 Alderlake CPU.
 
 @item bonnell
 Intel Atom Bonnell CPU.

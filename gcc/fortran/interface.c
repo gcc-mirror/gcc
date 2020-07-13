@@ -1343,7 +1343,8 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     }
 
   /* Check INTENT.  */
-  if (s1->attr.intent != s2->attr.intent)
+  if (s1->attr.intent != s2->attr.intent && !s1->attr.artificial
+      && !s2->attr.artificial)
     {
       snprintf (errmsg, err_len, "INTENT mismatch in argument '%s'",
 		s1->name);

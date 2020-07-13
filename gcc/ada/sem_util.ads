@@ -741,7 +741,7 @@ package Sem_Util is
    --  Insert new name in symbol table of current scope with check for
    --  duplications (error message is issued if a conflict is found).
    --  Note: Enter_Name is not used for overloadable entities, instead these
-   --  are entered using Sem_Ch6.Enter_Overloadable_Entity.
+   --  are entered using Sem_Ch6.Enter_Overloaded_Entity.
 
    function Entity_Of (N : Node_Id) return Entity_Id;
    --  Obtain the entity of arbitrary node N. If N is a renaming, return the
@@ -1383,9 +1383,9 @@ package Sem_Util is
 
    function Has_Relaxed_Initialization (E : Entity_Id) return Boolean;
    --  Returns True iff entity E is subject to the Relaxed_Initialization
-   --  aspect. Entity E can be either type, variable, constant, function,
-   --  or abstract state. For private types and deferred constants E should
-   --  be the private view, because aspect can only be attached there.
+   --  aspect. Entity E can be either type, variable, constant, subprogram,
+   --  entry or an abstract state. For private types and deferred constants
+   --  E should be the private view, because aspect can only be attached there.
 
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
@@ -1620,6 +1620,9 @@ package Sem_Util is
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object
    --  which is either atomic or Volatile_Full_Access.
+
+   function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Loop_Entry
 
    function Is_Attribute_Old (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Old
@@ -2509,7 +2512,7 @@ package Sem_Util is
    --  with the same mode.
 
    procedure Next_Global (Node : in out Node_Id);
-   pragma Inline (Next_Actual);
+   pragma Inline (Next_Global);
    --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
    --  inline this procedural form, but not the functional form above.
 
@@ -2597,6 +2600,11 @@ package Sem_Util is
    function Policy_In_Effect (Policy : Name_Id) return Name_Id;
    --  Given a policy, return the policy identifier associated with it. If no
    --  such policy is in effect, the value returned is No_Name.
+
+   function Predicate_Enabled (Typ : Entity_Id) return Boolean;
+   --  Return True if a predicate check should be emitted for the given type
+   --  Typ, taking into account Predicates_Ignored and
+   --  Predicate_Checks_Suppressed.
 
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
@@ -2743,13 +2751,14 @@ package Sem_Util is
      (N    : Node_Id;
       Ent  : Entity_Id;
       Cond : Boolean := False) return Boolean;
-   --  The caller is interested in capturing a value (either the current value,
-   --  or an indication that the value is non-null) for the given entity Ent.
-   --  This value can only be captured if sequential execution semantics can be
-   --  properly guaranteed so that a subsequent reference will indeed be sure
-   --  that this current value indication is correct. The node N is the
-   --  construct which resulted in the possible capture of the value (this
-   --  is used to check if we are in a conditional).
+   --  The caller is interested in capturing a value (either the current
+   --  value, an indication that the value is [non-]null or an indication that
+   --  the value is valid) for the given entity Ent. This value can only be
+   --  captured if sequential execution semantics can be properly guaranteed so
+   --  that a subsequent reference will indeed be sure that this current value
+   --  indication is correct. The node N is the construct which resulted in
+   --  the possible capture of the value (this is used to check if we are in
+   --  a conditional).
    --
    --  Cond is used to skip the test for being inside a conditional. It is used
    --  in the case of capturing values from if/while tests, which already do a

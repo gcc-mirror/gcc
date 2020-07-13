@@ -33,6 +33,7 @@ package Sem_Aggr is
    procedure Resolve_Delta_Aggregate     (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Aggregate           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Extension_Aggregate (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Container_Aggregate (N : Node_Id; Typ : Entity_Id);
 
    function Is_Others_Aggregate (Aggr : Node_Id) return Boolean;
    --  Returns True is aggregate Aggr consists of a single OTHERS choice

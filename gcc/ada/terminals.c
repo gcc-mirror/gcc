@@ -153,6 +153,7 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 
 #include <windows.h>
 #include <winternl.h>
+#include <io.h>
 
 #define MAXPATHLEN 1024
 
@@ -194,9 +195,6 @@ is_gui_app (char *exe)
 {
   HANDLE hImage;
 
-  DWORD  bytes;
-  DWORD  iSection;
-  DWORD  SectionOffset;
   DWORD  CoffHeaderOffset;
   DWORD  MoreDosHeader[16];
   CHAR   *file;
@@ -207,7 +205,6 @@ is_gui_app (char *exe)
   IMAGE_DOS_HEADER      image_dos_header;
   IMAGE_FILE_HEADER     image_file_header;
   IMAGE_OPTIONAL_HEADER image_optional_header;
-  IMAGE_SECTION_HEADER  image_section_header;
 
   /*
    *  Open the reference file.
@@ -264,7 +261,7 @@ is_gui_app (char *exe)
    */
   CoffHeaderOffset = AbsoluteSeek(hImage, image_dos_header.e_lfanew) +
                      sizeof(ULONG);
-  if (CoffHeaderOffset < 0) {
+  if (CoffHeaderOffset == (DWORD) -1) {
     CloseHandle (hImage);
     return -1;
   }
@@ -277,9 +274,6 @@ is_gui_app (char *exe)
       CloseHandle (hImage);
       return -1;
     }
-
-  SectionOffset = CoffHeaderOffset + IMAGE_SIZEOF_FILE_HEADER +
-    IMAGE_SIZEOF_NT_OPTIONAL_HEADER;
 
   ReadBytes(hImage, &image_file_header, IMAGE_SIZEOF_FILE_HEADER);
 
@@ -351,18 +345,18 @@ ReadBytes (HANDLE hFile, LPVOID buffer, DWORD size)
 }
 
 static int
-nt_spawnve (char *exe, char **argv, char *env, struct TTY_Process *process)
+nt_spawnve (char *exe ATTRIBUTE_UNUSED, char **argv, char *env,
+            struct TTY_Process *process)
 {
   STARTUPINFO start;
   SECURITY_ATTRIBUTES sec_attrs;
   SECURITY_DESCRIPTOR sec_desc;
   DWORD flags;
-  char dir[ MAXPATHLEN ];
   int pid;
   int is_gui, use_cmd;
   char *cmdline, *parg, **targ;
   int do_quoting = 0;
-  char escape_char;
+  char escape_char = 0;
   int arglen;
 
   /* we have to do some conjuring here to put argv and envp into the
@@ -483,12 +477,8 @@ nt_spawnve (char *exe, char **argv, char *env, struct TTY_Process *process)
       if (need_quotes)
 	{
 	  int escape_char_run = 0;
-	  char * first;
-	  char * last;
 
 	  p = *targ;
-	  first = p;
-	  last = p + strlen (p) - 1;
 	  *parg++ = '"';
 	  for ( ; *p; p++)
 	    {
@@ -572,8 +562,8 @@ nt_spawnve (char *exe, char **argv, char *env, struct TTY_Process *process)
 		      flags, env, NULL, &start, &process->procinfo))
     goto EH_Fail;
 
-  pid = (int) process->procinfo.hProcess;
-  process->pid=pid;
+  pid = (int) (intptr_t) process->procinfo.hProcess;
+  process->pid = pid;
 
   return pid;
 
@@ -635,7 +625,6 @@ __gnat_setup_child_communication
    int Use_Pipes)
 {
   int cpid;
-  HANDLE parent;
   SECURITY_ATTRIBUTES sec_attrs;
   char slavePath [MAX_PATH];
   char **nargv;
@@ -643,8 +632,6 @@ __gnat_setup_child_communication
   int i;
   char pipeNameIn[100];
   HANDLE hSlaveInDrv = NULL; /* Handle to communicate with slave driver */
-
-  parent = GetCurrentProcess ();
 
   /* Set inheritance for the pipe handles */
   sec_attrs.nLength = sizeof (SECURITY_ATTRIBUTES);
@@ -674,7 +661,7 @@ __gnat_setup_child_communication
     /* We create a named pipe for Input, as we handle input by sending special
        commands to the explaunch process, that uses it to feed the actual input
        of the process */
-    sprintf(pipeNameIn, "%sIn%08x_%08x", EXP_PIPE_BASENAME,
+    sprintf(pipeNameIn, "%sIn%08lx_%08x", EXP_PIPE_BASENAME,
 	    GetCurrentProcessId(), pipeNameId);
     pipeNameId++;
 
@@ -765,8 +752,8 @@ __gnat_setup_parent_communication
    int* err,
    int* pid)
 {
-  *in = _open_osfhandle ((long) process->w_infd, 0);
-  *out = _open_osfhandle ((long) process->w_outfd, 0);
+  *in = _open_osfhandle ((intptr_t) process->w_infd, 0);
+  *out = _open_osfhandle ((intptr_t) process->w_outfd, 0);
   /* child's stderr is always redirected to outfd */
   *err = *out;
   *pid = process->pid;
@@ -811,13 +798,13 @@ cache_system_info (void)
     os_subtype = OS_NT;
 }
 
-static BOOL CALLBACK
-find_child_console (HWND hwnd, child_process * cp)
+static WINBOOL CALLBACK
+find_child_console (HWND hwnd, LPARAM param)
 {
-  DWORD thread_id;
+  child_process *cp = (child_process *) param;
   DWORD process_id;
 
-  thread_id = GetWindowThreadProcessId (hwnd, &process_id);
+  (void) GetWindowThreadProcessId (hwnd, &process_id);
   if (process_id == cp->procinfo->dwProcessId)
     {
       char window_class[32];
@@ -834,27 +821,6 @@ find_child_console (HWND hwnd, child_process * cp)
     }
   /* keep looking */
   return TRUE;
-}
-
-int
-__gnat_interrupt_process (struct TTY_Process* p)
-{
-  char buf[2];
-  DWORD written;
-  BOOL bret;
-
-  if (p->usePipe == TRUE) {
-    bret = FALSE;
-  } else {
-    buf[0] = EXP_SLAVE_KILL;
-    buf[1] = EXP_KILL_CTRL_C;
-    bret = WriteFile (p->w_infd, buf, 2, &written, NULL);
-  }
-
-  if (bret == FALSE) {
-    return __gnat_interrupt_pid (p->procinfo.dwProcessId);
-  }
-  return 0;
 }
 
 int
@@ -943,6 +909,27 @@ __gnat_interrupt_pid (int pid)
   return rc;
 }
 
+int
+__gnat_interrupt_process (struct TTY_Process* p)
+{
+  char buf[2];
+  DWORD written;
+  BOOL bret;
+
+  if (p->usePipe == TRUE) {
+    bret = FALSE;
+  } else {
+    buf[0] = EXP_SLAVE_KILL;
+    buf[1] = EXP_KILL_CTRL_C;
+    bret = WriteFile (p->w_infd, buf, 2, &written, NULL);
+  }
+
+  if (bret == FALSE) {
+    return __gnat_interrupt_pid (p->procinfo.dwProcessId);
+  }
+  return 0;
+}
+
 /* kill a process, as this implementation use CreateProcess on Win32 we need
    to use Win32 TerminateProcess API */
 int
@@ -974,13 +961,13 @@ typedef struct {
   HANDLE hwnd;
 } pid_struct;
 
-static BOOL CALLBACK
-find_process_handle (HWND hwnd, pid_struct * ps)
+static WINBOOL CALLBACK
+find_process_handle (HWND hwnd, LPARAM param)
 {
-  DWORD thread_id;
+  pid_struct *ps = (pid_struct *) param;
   DWORD process_id;
 
-  thread_id = GetWindowThreadProcessId (hwnd, &process_id);
+  (void) GetWindowThreadProcessId (hwnd, &process_id);
   if (process_id == ps->dwProcessId)
     {
       ps->hwnd = hwnd;
@@ -1085,9 +1072,8 @@ __gnat_new_tty (void)
 }
 
 void
-__gnat_reset_tty (TTY_Handle* t)
+__gnat_reset_tty (TTY_Handle* t ATTRIBUTE_UNUSED)
 {
-  return;
 }
 
 void
@@ -1097,7 +1083,8 @@ __gnat_close_tty (TTY_Handle* t)
 }
 
 void
-__gnat_setup_winsize (void *desc, int rows, int columns)
+__gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
+  int rows ATTRIBUTE_UNUSED, int columns ATTRIBUTE_UNUSED)
 {
 }
 

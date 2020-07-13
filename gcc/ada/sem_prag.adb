@@ -2122,7 +2122,9 @@ package body Sem_Prag is
       if Prag_Id /= Pragma_No_Caching
         and then not Is_Effectively_Volatile (Obj_Id)
       then
-         if No_Caching_Enabled (Obj_Id) then
+         if Ekind (Obj_Id) = E_Variable
+           and then No_Caching_Enabled (Obj_Id)
+         then
             SPARK_Msg_N
               ("illegal combination of external property % and property "
                & """No_Caching"" (SPARK RM 7.1.2(6))", N);
@@ -5905,7 +5907,18 @@ package body Sem_Prag is
             then
                Error_Msg_NE ("aspect% for & previously given#", N, Id);
             else
-               Error_Msg_NE ("pragma% for & duplicates pragma#", N, Id);
+               --  If -gnatwr is set, warn in case of a duplicate pragma
+               --  [No_]Inline which is suspicious but not an error, generate
+               --  an error for other pragmas.
+
+               if Nam_In (Pragma_Name (N), Name_Inline, Name_No_Inline) then
+                  if Warn_On_Redundant_Constructs then
+                     Error_Msg_NE
+                       ("?r?pragma% for & duplicates pragma#", N, Id);
+                  end if;
+               else
+                  Error_Msg_NE ("pragma% for & duplicates pragma#", N, Id);
+               end if;
             end if;
 
             raise Pragma_Exit;
@@ -10127,6 +10140,18 @@ package body Sem_Prag is
                   Applies := True;
 
                else
+                  --  Check for RM 13.1(9.2/4): If a [...] aspect_specification
+                  --  is given that directly specifies an aspect of an entity,
+                  --  then it is illegal to give another [...]
+                  --  aspect_specification that directly specifies the same
+                  --  aspect of the entity.
+                  --  We only check Subp directly as per "directly specifies"
+                  --  above and because the case of pragma Inline is really
+                  --  special given its pre aspect usage.
+
+                  Check_Duplicate_Pragma (Subp);
+                  Record_Rep_Item (Subp, N);
+
                   Make_Inline (Subp);
 
                   --  For the pragma case, climb homonym chain. This is
@@ -10138,8 +10163,8 @@ package body Sem_Prag is
                      while Present (Homonym (Subp))
                        and then Scope (Homonym (Subp)) = Current_Scope
                      loop
-                        Make_Inline (Homonym (Subp));
                         Subp := Homonym (Subp);
+                        Make_Inline (Subp);
                      end loop;
                   end if;
                end if;
@@ -13340,7 +13365,7 @@ package body Sem_Prag is
             --  respective root types.
 
             if Nkind (Obj_Or_Type_Decl) /= N_Object_Declaration then
-               if (Prag_Id = Pragma_No_Caching)
+               if Prag_Id = Pragma_No_Caching
                   or not Nkind_In (Original_Node (Obj_Or_Type_Decl),
                                    N_Full_Type_Declaration,
                                    N_Private_Type_Declaration,
@@ -13360,7 +13385,8 @@ package body Sem_Prag is
             --  will be done at the end of the declarative region that
             --  contains the pragma.
 
-            if Ekind (Obj_Or_Type_Id) = E_Variable or Is_Type (Obj_Or_Type_Id)
+            if Ekind (Obj_Or_Type_Id) = E_Variable
+              or else Is_Type (Obj_Or_Type_Id)
             then
 
                --  In the case of a type, pragma is a type-related

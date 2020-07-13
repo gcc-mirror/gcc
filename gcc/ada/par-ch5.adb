@@ -62,11 +62,6 @@ package body Ch5 is
    --  the N_Identifier node for the label on the loop. If Loop_Name is
    --  Empty on entry (the default), then the for statement is unlabeled.
 
-   function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id;
-   --  Parse an iterator specification. The defining identifier has already
-   --  been scanned, as it is the common prefix between loop and iterator
-   --  specification.
-
    function P_Loop_Statement (Loop_Name : Node_Id := Empty) return Node_Id;
    --  Parse loop statement. If Loop_Name is non-Empty on entry, it is
    --  the N_Identifier node for the label on the loop. If Loop_Name is
@@ -1660,6 +1655,7 @@ package body Ch5 is
 
    --  LOOP_PARAMETER_SPECIFICATION ::=
    --    DEFINING_IDENTIFIER in [reverse] DISCRETE_SUBTYPE_DEFINITION
+   --    [Iterator_Filter]
 
    --  Error recovery: cannot raise Error_Resync
 
@@ -1715,6 +1711,15 @@ package body Ch5 is
 
       Set_Discrete_Subtype_Definition
         (Loop_Param_Specification_Node, P_Discrete_Subtype_Definition);
+
+      if Ada_Version >= Ada_2020
+         and then Token = Tok_When
+      then
+         Scan; -- past WHEN
+         Set_Iterator_Filter
+           (Loop_Param_Specification_Node, P_Condition);
+      end if;
+
       return Loop_Param_Specification_Node;
 
    exception
@@ -1767,6 +1772,15 @@ package body Ch5 is
       end if;
 
       Set_Name (Node1, P_Name);
+
+      if Ada_Version >= Ada_2020
+         and then Token = Tok_When
+      then
+         Scan; -- past WHEN
+         Set_Iterator_Filter
+           (Node1, P_Condition);
+      end if;
+
       return Node1;
    end P_Iterator_Specification;
 

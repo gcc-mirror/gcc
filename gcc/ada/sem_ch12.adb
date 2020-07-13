@@ -3860,13 +3860,6 @@ package body Sem_Ch12 is
       Enter_Name (Id);
       Set_Scope_Depth_Value (Id, Scope_Depth (Current_Scope) + 1);
 
-      --  Analyze the aspects of the generic copy to ensure that all generated
-      --  pragmas (if any) perform their semantic effects.
-
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
-
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
       Set_Inner_Instances (Id, New_Elmt_List);
@@ -3949,6 +3942,13 @@ package body Sem_Ch12 is
 
       else
          Set_Etype (Id, Standard_Void_Type);
+      end if;
+
+      --  Analyze the aspects of the generic copy to ensure that all generated
+      --  pragmas (if any) perform their semantic effects.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
       end if;
 
       --  For a library unit, we have reconstructed the entity for the unit,

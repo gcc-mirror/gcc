@@ -1499,7 +1499,7 @@ package body Sem_Aggr is
 
          --  If an aggregate component has a type with predicates, an explicit
          --  predicate check must be applied, as for an assignment statement,
-         --  because the aggegate might not be expanded into individual
+         --  because the aggregate might not be expanded into individual
          --  component assignments. If the expression covers several components
          --  the analysis and the predicate check take place later.
 
@@ -1545,6 +1545,18 @@ package body Sem_Aggr is
          Id     : Entity_Id;
 
       begin
+         --  An element iterator specification cannot appear in
+         --  an array aggregate because it does not provide index
+         --  values for the association. This must be a semantic
+         --  check because the parser cannot tell whether this is
+         --  an array aggregate or a container aggregate.
+
+         if Present (Iterator_Specification (N)) then
+            Error_Msg_N ("container element Iterator cannot appear "
+              & "in an array aggregate", N);
+            return;
+         end if;
+
          Choice := First (Discrete_Choices (N));
 
          while Present (Choice) loop
@@ -2626,6 +2638,57 @@ package body Sem_Aggr is
 
       return Success;
    end Resolve_Array_Aggregate;
+
+   ---------------------------------
+   -- Resolve_Container_Aggregate --
+   ---------------------------------
+
+   procedure Resolve_Container_Aggregate (N : Node_Id; Typ : Entity_Id) is
+      Asp   : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
+
+      Empty_Subp          : Node_Id := Empty;
+      Add_Named_Subp      : Node_Id := Empty;
+      Add_Unnamed_Subp    : Node_Id := Empty;
+      New_Indexed_Subp    : Node_Id := Empty;
+      Assign_Indexed_Subp : Node_Id := Empty;
+
+   begin
+      if Nkind (Asp) /= N_Aggregate then
+         pragma Assert (False);
+         return;
+      else
+         Set_Etype (N, Typ);
+         Parse_Aspect_Aggregate (Asp,
+           Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
+           New_Indexed_Subp, Assign_Indexed_Subp);
+
+         if Present (Add_Unnamed_Subp) then
+            declare
+               Elmt_Type : constant Entity_Id :=
+                 Etype (Next_Formal
+                   (First_Formal (Entity (Add_Unnamed_Subp))));
+               Comp : Node_Id;
+            begin
+               if Present (Expressions (N)) then
+                  --  positional aggregate
+
+                  Comp := First (Expressions (N));
+                  while Present (Comp) loop
+                     Analyze_And_Resolve (Comp, Elmt_Type);
+                     Next (Comp);
+                  end loop;
+               else
+
+                  --  Empty aggregate, to be replaced by Empty during
+                  --  expansion.
+                  null;
+               end if;
+            end;
+         else
+            Error_Msg_N ("indexed aggregates are forthcoming", N);
+         end if;
+      end if;
+   end Resolve_Container_Aggregate;
 
    -----------------------------
    -- Resolve_Delta_Aggregate --
@@ -4042,7 +4105,7 @@ package body Sem_Aggr is
 
          --  If an aggregate component has a type with predicates, an explicit
          --  predicate check must be applied, as for an assignment statement,
-         --  because the aggegate might not be expanded into individual
+         --  because the aggregate might not be expanded into individual
          --  component assignments.
 
          if Has_Predicates (Expr_Type)

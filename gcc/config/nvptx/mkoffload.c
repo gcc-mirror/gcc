@@ -356,7 +356,8 @@ process (FILE *in, FILE *out)
 }
 
 static void
-compile_native (const char *infile, const char *outfile, const char *compiler)
+compile_native (const char *infile, const char *outfile, const char *compiler,
+		bool fPIC, bool fpic)
 {
   const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
@@ -366,6 +367,10 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
   obstack_ptr_grow (&argv_obstack, compiler);
+  if (fPIC)
+    obstack_ptr_grow (&argv_obstack, "-fPIC");
+  if (fpic)
+    obstack_ptr_grow (&argv_obstack, "-fpic");
   if (save_temps)
     obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
@@ -471,6 +476,8 @@ main (int argc, char **argv)
   /* Scan the argument vector.  */
   bool fopenmp = false;
   bool fopenacc = false;
+  bool fPIC = false;
+  bool fpic = false;
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
@@ -489,6 +496,10 @@ main (int argc, char **argv)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)
 	fopenacc = true;
+      else if (strcmp (argv[i], "-fPIC") == 0)
+	fPIC = true;
+      else if (strcmp (argv[i], "-fpic") == 0)
+	fpic = true;
       else if (strcmp (argv[i], "-save-temps") == 0)
 	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
@@ -587,7 +598,7 @@ main (int argc, char **argv)
 
   fclose (out);
 
-  compile_native (ptx_cfile_name, outname, collect_gcc);
+  compile_native (ptx_cfile_name, outname, collect_gcc, fPIC, fpic);
 
   return 0;
 }

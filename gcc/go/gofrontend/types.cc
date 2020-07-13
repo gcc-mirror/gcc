@@ -9208,6 +9208,7 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
   if (this->all_methods_ == NULL)
     return true;
 
+  t = t->unalias();
   bool is_pointer = false;
   const Named_type* nt = t->named_type();
   const Struct_type* st = t->struct_type();
@@ -9220,6 +9221,7 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	{
 	  // If T is a pointer to a named type, then we need to look at
 	  // the type to which it points.
+	  pt = pt->unalias();
 	  is_pointer = true;
 	  nt = pt->named_type();
 	  st = pt->struct_type();
@@ -10408,19 +10410,24 @@ Named_type::interface_method_table(Interface_type* interface, bool is_pointer)
     return Expression::make_error(this->location_);
   if (this->is_alias_)
     {
-      if (this->type_->named_type() != NULL)
+      Type* t = this->type_;
+      if (!is_pointer && t->points_to() != NULL)
+	{
+	  t = t->points_to();
+	  is_pointer = true;
+	}
+      if (t->named_type() != NULL)
 	{
 	  if (this->seen_alias_)
 	    return Expression::make_error(this->location_);
 	  this->seen_alias_ = true;
-	  Named_type* nt = this->type_->named_type();
+	  Named_type* nt = t->named_type();
 	  Expression* ret = nt->interface_method_table(interface, is_pointer);
 	  this->seen_alias_ = false;
 	  return ret;
 	}
-      if (this->type_->struct_type() != NULL)
-	return this->type_->struct_type()->interface_method_table(interface,
-								  is_pointer);
+      if (t->struct_type() != NULL)
+	return t->struct_type()->interface_method_table(interface, is_pointer);
       go_unreachable();
     }
   return Type::interface_method_table(this, interface, is_pointer,

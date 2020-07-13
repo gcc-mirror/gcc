@@ -1,3 +1,11 @@
+2020-07-10  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_operators): Add di, dx, dX.
+	(d_expression_1): Handle di and dX.
+	(is_designated_init, d_maybe_print_designated_init): New.
+	(d_print_comp_inner): Use d_maybe_print_designated_init.
+	* testsuite/demangle-expected: Add designator tests.
+
 2020-06-26  Nick Clifton  <nickc@redhat.com>
 
 	* bsearch.c (bsearch): Remove use of register keyword.

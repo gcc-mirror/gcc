@@ -2136,8 +2136,6 @@ start_over:
     /* This pass will decide on using loop versioning and/or loop peeling in
        order to enhance the alignment of data references in the loop.  */
     ok = vect_enhance_data_refs_alignment (loop_vinfo);
-  else
-    ok = vect_verify_datarefs_alignment (loop_vinfo);
   if (!ok)
     return ok;
 
@@ -2177,12 +2175,12 @@ start_over:
        && vect_verify_full_masking (loop_vinfo));
   if (dump_enabled_p ())
     {
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "using a fully-masked loop.\n");
+			 "operating on partial vectors.\n");
       else
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "not using a fully-masked loop.\n");
+			 "operating only on full vectors.\n");
     }
 
   /* If epilog loop is required because of data accesses with gaps,
@@ -8617,9 +8615,15 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			     LOOP_VINFO_INT_NITERS (loop_vinfo) / lowest_vf);
 	  step_vector = build_one_cst (TREE_TYPE (niters));
 	}
-      else
+      else if (vect_use_loop_mask_for_alignment_p (loop_vinfo))
 	vect_gen_vector_loop_niters (loop_vinfo, niters, &niters_vector,
 				     &step_vector, niters_no_overflow);
+      else
+	/* vect_do_peeling subtracted the number of peeled prologue
+	   iterations from LOOP_VINFO_NITERS.  */
+	vect_gen_vector_loop_niters (loop_vinfo, LOOP_VINFO_NITERS (loop_vinfo),
+				     &niters_vector, &step_vector,
+				     niters_no_overflow);
     }
 
   /* 1) Make sure the loop header has exactly two entries

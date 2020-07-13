@@ -1,0 +1,73 @@
+#  Regression driver for SLS mitigation on AArch64.
+#  Copyright (C) 2020 Free Software Foundation, Inc.
+#  Contributed by ARM Ltd.
+#
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3, or (at your option)
+#  any later version.
+#
+#  GCC is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.  */
+
+# Exit immediately if this isn't an AArch64 target.
+if {![istarget aarch64*-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+load_lib torture-options.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " "
+}
+
+# Initialize `dg'.
+dg-init
+torture-init
+
+# Use different architectures as well as the normal optimisation options.
+# (i.e. use both SB and DSB+ISB barriers).
+
+set save-dg-do-what-default ${dg-do-what-default}
+# Main loop.
+# Run with torture tests (i.e. a bunch of different optimisation levels) just
+# to increase test coverage.
+set dg-do-what-default assemble
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+	"-save-temps" $DEFAULT_CFLAGS
+
+# Run the same tests but this time with SB extension.
+# Since not all supported assemblers will support that extension we decide
+# whether to assemble or just compile based on whether the extension is
+# supported for the available assembler.
+
+set templist {}
+foreach x $DG_TORTURE_OPTIONS {
+  lappend templist "$x -march=armv8.3-a+sb "
+  lappend templist "$x -march=armv8-a+sb "
+}
+set-torture-options $templist
+if { [check_effective_target_aarch64_asm_sb_ok] } {
+    set dg-do-what-default assemble
+} else {
+    set dg-do-what-default compile
+}
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+	"-save-temps" $DEFAULT_CFLAGS
+set dg-do-what-default ${save-dg-do-what-default}
+
+# All done.
+torture-finish
+dg-finish

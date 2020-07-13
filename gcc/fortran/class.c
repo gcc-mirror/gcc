@@ -228,7 +228,7 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 	break;
       tail = &((*tail)->next);
     }
-  if (derived->components && derived->components->next &&
+  if (derived && derived->components && derived->components->next &&
       derived->components->next->ts.type == BT_DERIVED &&
       derived->components->next->ts.u.derived == NULL)
     {
@@ -663,6 +663,10 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
   /* Determine the name of the encapsulating type.  */
   rank = !(*as) || (*as)->rank == -1 ? GFC_MAX_DIMENSIONS : (*as)->rank;
+
+  if (!ts->u.derived)
+    return false;
+
   get_unique_hashed_string (tname, ts->u.derived);
   if ((*as) && attr->allocatable)
     name = xasprintf ("__class_%s_%d_%da", tname, rank, (*as)->corank);

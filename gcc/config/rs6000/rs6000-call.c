@@ -3089,6 +3089,12 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V4SI },
   { ALTIVEC_BUILTIN_VEC_MSUM, ALTIVEC_BUILTIN_VMSUMSHM,
     RS6000_BTI_V4SI, RS6000_BTI_V8HI, RS6000_BTI_V8HI, RS6000_BTI_V4SI },
+
+  { ALTIVEC_BUILTIN_VEC_MSUM, ALTIVEC_BUILTIN_VMSUMUDM,
+    RS6000_BTI_V1TI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V1TI },
+  { ALTIVEC_BUILTIN_VEC_MSUM, ALTIVEC_BUILTIN_VMSUMUDM,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V1TI },
+
   { ALTIVEC_BUILTIN_VEC_VMSUMSHM, ALTIVEC_BUILTIN_VMSUMSHM,
     RS6000_BTI_V4SI, RS6000_BTI_V8HI, RS6000_BTI_V8HI, RS6000_BTI_V4SI },
   { ALTIVEC_BUILTIN_VEC_VMSUMUHM, ALTIVEC_BUILTIN_VMSUMUHM,
@@ -5628,6 +5634,52 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_INTSI, RS6000_BTI_unsigned_V8HI, 0, 0 },
   { P10_BUILTIN_VEC_VSTRIR_P, P10_BUILTIN_VSTRIHR_P,
     RS6000_BTI_INTSI, RS6000_BTI_V8HI, 0, 0 },
+
+  { P10_BUILTIN_VEC_MTVSRBM, P10_BUILTIN_MTVSRBM,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_UINTDI, 0, 0 },
+  { P10_BUILTIN_VEC_MTVSRHM, P10_BUILTIN_MTVSRHM,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_UINTDI, 0, 0 },
+  { P10_BUILTIN_VEC_MTVSRWM, P10_BUILTIN_MTVSRWM,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_UINTDI, 0, 0 },
+  { P10_BUILTIN_VEC_MTVSRDM, P10_BUILTIN_MTVSRDM,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_UINTDI, 0, 0 },
+  { P10_BUILTIN_VEC_MTVSRQM, P10_BUILTIN_MTVSRQM,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_UINTDI, 0, 0 },
+
+  { P10_BUILTIN_VEC_VCNTM, P10_BUILTIN_VCNTMBB,
+    RS6000_BTI_unsigned_long_long,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_UINTQI, 0 },
+  { P10_BUILTIN_VEC_VCNTM, P10_BUILTIN_VCNTMBH,
+    RS6000_BTI_unsigned_long_long,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_UINTQI, 0 },
+  { P10_BUILTIN_VEC_VCNTM, P10_BUILTIN_VCNTMBW,
+    RS6000_BTI_unsigned_long_long,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_UINTQI, 0 },
+  { P10_BUILTIN_VEC_VCNTM, P10_BUILTIN_VCNTMBD,
+    RS6000_BTI_unsigned_long_long,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_UINTQI, 0 },
+
+  { P10_BUILTIN_VEC_VEXPANDM, P10_BUILTIN_VEXPANDMB,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXPANDM, P10_BUILTIN_VEXPANDMH,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXPANDM, P10_BUILTIN_VEXPANDMW,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXPANDM, P10_BUILTIN_VEXPANDMD,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXPANDM, P10_BUILTIN_VEXPANDMQ,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_unsigned_V1TI, 0, 0 },
+
+  { P10_BUILTIN_VEC_VEXTRACTM, P10_BUILTIN_VEXTRACTMB,
+    RS6000_BTI_INTSI, RS6000_BTI_unsigned_V16QI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXTRACTM, P10_BUILTIN_VEXTRACTMH,
+    RS6000_BTI_INTSI, RS6000_BTI_unsigned_V8HI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXTRACTM, P10_BUILTIN_VEXTRACTMW,
+    RS6000_BTI_INTSI, RS6000_BTI_unsigned_V4SI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXTRACTM, P10_BUILTIN_VEXTRACTMD,
+    RS6000_BTI_INTSI, RS6000_BTI_unsigned_V2DI, 0, 0 },
+  { P10_BUILTIN_VEC_VEXTRACTM, P10_BUILTIN_VEXTRACTMQ,
+    RS6000_BTI_INTSI, RS6000_BTI_unsigned_V1TI, 0, 0 },
 
   { RS6000_BUILTIN_NONE, RS6000_BUILTIN_NONE, 0, 0, 0, 0 }
 };
@@ -9034,7 +9086,11 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	   || icode == CODE_FOR_unpackkf
 	   || icode == CODE_FOR_unpacktf
 	   || icode == CODE_FOR_unpackif
-	   || icode == CODE_FOR_unpacktd)
+	   || icode == CODE_FOR_unpacktd
+	   || icode == CODE_FOR_vec_cntmb_v16qi
+	   || icode == CODE_FOR_vec_cntmb_v8hi
+	   || icode == CODE_FOR_vec_cntmb_v4si
+	   || icode == CODE_FOR_vec_cntmb_v2di)
     {
       /* Only allow 1-bit unsigned literals. */
       STRIP_NOPS (arg1);
@@ -12566,7 +12622,7 @@ rs6000_init_builtins (void)
     ieee128_float_type_node = ibm128_float_type_node = long_double_type_node;
 
   /* Vector pair and vector quad support.  */
-  if (TARGET_MMA)
+  if (TARGET_EXTRA_BUILTINS)
     {
       tree oi_uns_type = make_unsigned_type (256);
       vector_pair_type_node = build_distinct_type_copy (oi_uns_type);
@@ -12642,13 +12698,14 @@ rs6000_init_builtins (void)
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
 
-  /* Create Altivec and VSX builtins on machines with at least the
+  /* Create Altivec, VSX and MMA builtins on machines with at least the
      general purpose extensions (970 and newer) to allow the use of
      the target attribute.  */
   if (TARGET_EXTRA_BUILTINS)
-    altivec_init_builtins ();
-  if (TARGET_MMA)
-    mma_init_builtins ();
+    {
+      altivec_init_builtins ();
+      mma_init_builtins ();
+    }
   if (TARGET_HTM)
     htm_init_builtins ();
 
@@ -12835,6 +12892,10 @@ altivec_init_builtins (void)
   tree opaque_ftype_long_pcvoid
     = build_function_type_list (opaque_V4SI_type_node,
 				long_integer_type_node, pcvoid_type_node,
+				NULL_TREE);
+  tree v16qi_ftype_pcvoid
+    = build_function_type_list (V16QI_type_node,
+				pcvoid_type_node,
 				NULL_TREE);
   tree v16qi_ftype_long_pcvoid
     = build_function_type_list (V16QI_type_node,
@@ -13238,7 +13299,7 @@ altivec_init_builtins (void)
      targetm.vectorize.builtin_mask_for_load.  */
 
   decl = add_builtin_function ("__builtin_altivec_mask_for_load",
-			       v16qi_ftype_long_pcvoid,
+			       v16qi_ftype_pcvoid,
 			       ALTIVEC_BUILTIN_MASK_FOR_LOAD,
 			       BUILT_IN_MD, NULL, NULL_TREE);
   TREE_READONLY (decl) = 1;
@@ -13382,19 +13443,11 @@ mma_init_builtins (void)
   for (unsigned i = 0; i < ARRAY_SIZE (bdesc_mma); i++, d++)
     {
       tree op[MAX_MMA_OPERANDS], type;
-      HOST_WIDE_INT mask = d->mask;
       unsigned icode = (unsigned) d->icode;
       unsigned attr = rs6000_builtin_info[d->code].attr;
       int attr_args = (attr & RS6000_BTC_OPND_MASK);
       bool gimple_func = (attr & RS6000_BTC_GIMPLE);
       unsigned nopnds = 0;
-
-      if ((mask & rs6000_builtin_mask) != mask)
-	{
-	  if (TARGET_DEBUG_BUILTIN)
-	    fprintf (stderr, "mma_builtin, skip binary %s\n", d->name);
-	  continue;
-	}
 
       if (d->name == 0)
 	{
@@ -13669,6 +13722,20 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case MISC_BUILTIN_CBCDTD:
     case VSX_BUILTIN_XVCVSPBF16:
     case VSX_BUILTIN_XVCVBF16SP:
+    case P10_BUILTIN_MTVSRBM:
+    case P10_BUILTIN_MTVSRHM:
+    case P10_BUILTIN_MTVSRWM:
+    case P10_BUILTIN_MTVSRDM:
+    case P10_BUILTIN_MTVSRQM:
+    case P10_BUILTIN_VCNTMBB:
+    case P10_BUILTIN_VCNTMBH:
+    case P10_BUILTIN_VCNTMBW:
+    case P10_BUILTIN_VCNTMBD:
+    case P10_BUILTIN_VEXPANDMB:
+    case P10_BUILTIN_VEXPANDMH:
+    case P10_BUILTIN_VEXPANDMW:
+    case P10_BUILTIN_VEXPANDMD:
+    case P10_BUILTIN_VEXPANDMQ:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       break;

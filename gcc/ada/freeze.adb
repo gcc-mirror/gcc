@@ -2928,7 +2928,10 @@ package body Freeze is
 
                      --  Bit packing is not needed for multiples of the storage
                      --  unit if the type is composite because the back end can
-                     --  byte pack composite types.
+                     --  byte pack composite types efficiently. That's not true
+                     --  for discrete types because every read would generate a
+                     --  lot of instructions, so we keep using the manipulation
+                     --  routines of the runtime for them.
 
                      elsif Csiz mod System_Storage_Unit = 0
                        and then Is_Composite_Type (Ctyp)
@@ -6175,8 +6178,7 @@ package body Freeze is
 
                         if Present (F_Node) then
                            Inherit_Freeze_Node
-                             (Fnod => F_Node,
-                              Typ  => Full_View (E));
+                             (Fnod => F_Node, Typ => Full_View (E));
                         else
                            Set_Has_Delayed_Freeze (Full_View (E), False);
                            Set_Freeze_Node (Full_View (E), Empty);
@@ -6187,9 +6189,7 @@ package body Freeze is
                         F_Node := Freeze_Node (Full_View (E));
 
                         if Present (F_Node) then
-                           Inherit_Freeze_Node
-                             (Fnod => F_Node,
-                              Typ  => E);
+                           Inherit_Freeze_Node (Fnod => F_Node, Typ => E);
                         else
                            --  {Incomplete,Private}_Subtypes with Full_Views
                            --  constrained by discriminants.
@@ -7054,11 +7054,18 @@ package body Freeze is
       --  as well.
 
       function In_Expanded_Body (N : Node_Id) return Boolean;
-      --  Given an N_Handled_Sequence_Of_Statements node N, determines whether
-      --  it is the handled statement sequence of an expander-generated
-      --  subprogram: init proc, stream subprogram, renaming as body, or body
-      --  created for an expression function. If so, this is not a freezing
-      --  context and the entity will be frozen at a later point.
+      --  Given an N_Handled_Sequence_Of_Statements node, determines whether it
+      --  is the statement sequence of an expander-generated subprogram: body
+      --  created for an expression function, for a predicate function, an init
+      --  proc, a stream subprogram, or a renaming as body. If so, this is not
+      --  a freezing context and the entity will be frozen at a later point.
+
+      function Has_Decl_In_List
+        (E : Entity_Id;
+         N : Node_Id;
+         L : List_Id) return Boolean;
+      --  Determines whether an entity E referenced in node N is declared in
+      --  the list L.
 
       -----------------------------------------
       -- Find_Aggregate_Component_Desig_Type --
@@ -7112,6 +7119,13 @@ package body Freeze is
          elsif Was_Expression_Function (P) then
             return not Comes_From_Source (P);
 
+         --  This is the body of a generated predicate function
+
+         elsif Present (Corresponding_Spec (P))
+           and then Is_Predicate_Function (Corresponding_Spec (P))
+         then
+            return True;
+
          else
             Id := Defining_Unit_Name (Specification (P));
 
@@ -7134,6 +7148,30 @@ package body Freeze is
          end if;
       end In_Expanded_Body;
 
+      ----------------------
+      -- Has_Decl_In_List --
+      ----------------------
+
+      function Has_Decl_In_List
+        (E : Entity_Id;
+         N : Node_Id;
+         L : List_Id) return Boolean
+      is
+         Decl_Node : Node_Id;
+
+      begin
+         --  If E is an itype, pretend that it is declared in N
+
+         if Is_Itype (E) then
+            Decl_Node := N;
+         else
+            Decl_Node := Declaration_Node (E);
+         end if;
+
+         return Is_List_Member (Decl_Node)
+           and then List_Containing (Decl_Node) = L;
+      end Has_Decl_In_List;
+
       --  Local variables
 
       In_Spec_Exp : constant Boolean := In_Spec_Expression;
@@ -7143,6 +7181,8 @@ package body Freeze is
       P         : Node_Id;
       Parent_P  : Node_Id;
       Typ       : Entity_Id;
+
+      Allocator_Typ : Entity_Id := Empty;
 
       Freeze_Outside : Boolean := False;
       --  This flag is set true if the entity must be frozen outside the
@@ -7254,6 +7294,10 @@ package body Freeze is
          when N_Allocator =>
             Desig_Typ := Designated_Type (Etype (N));
 
+            if Nkind (Expression (N)) = N_Qualified_Expression then
+               Allocator_Typ := Entity (Subtype_Mark (Expression (N)));
+            end if;
+
          when N_Aggregate =>
             if Is_Array_Type (Etype (N))
               and then Is_Access_Type (Component_Type (Etype (N)))
@@ -7296,6 +7340,7 @@ package body Freeze is
       if No (Typ)
         and then No (Nam)
         and then No (Desig_Typ)
+        and then No (Allocator_Typ)
       then
          return;
       end if;
@@ -7585,7 +7630,6 @@ package body Freeze is
 
                when N_Abortable_Part
                   | N_Accept_Alternative
-                  | N_And_Then
                   | N_Case_Statement_Alternative
                   | N_Compilation_Unit_Aux
                   | N_Conditional_Entry_Call
@@ -7596,21 +7640,50 @@ package body Freeze is
                   | N_Extended_Return_Statement
                   | N_Freeze_Entity
                   | N_If_Statement
-                  | N_Or_Else
                   | N_Selective_Accept
                   | N_Triggering_Alternative
                =>
                   exit when Is_List_Member (P);
 
-               --  Freeze nodes produced by an expression coming from the
-               --  Actions list of a N_Expression_With_Actions node must remain
-               --  within the Actions list. Inserting the freeze nodes further
-               --  up the tree may lead to use before declaration issues in the
-               --  case of array types.
+               --  The freeze nodes produced by an expression coming from the
+               --  Actions list of an N_Expression_With_Actions, short-circuit
+               --  expression or N_Case_Expression_Alternative node must remain
+               --  within the Actions list if they freeze an entity declared in
+               --  this list, as inserting the freeze nodes further up the tree
+               --  may lead to use before declaration issues for the entity.
 
-               when N_Expression_With_Actions =>
-                  exit when Is_List_Member (P)
-                    and then List_Containing (P) = Actions (Parent_P);
+               when N_Case_Expression_Alternative
+                  | N_Expression_With_Actions
+                  | N_Short_Circuit
+               =>
+                  exit when (Present (Nam)
+                              and then
+                             Has_Decl_In_List (Nam, P, Actions (Parent_P)))
+                    or else (Present (Typ)
+                              and then
+                             Has_Decl_In_List (Typ, P, Actions (Parent_P)));
+
+               --  Likewise for an N_If_Expression and its two Actions list
+
+               when N_If_Expression =>
+                  declare
+                     L1 : constant List_Id := Then_Actions (Parent_P);
+                     L2 : constant List_Id := Else_Actions (Parent_P);
+
+                  begin
+                     exit when (Present (Nam)
+                                 and then
+                                Has_Decl_In_List (Nam, P, L1))
+                       or else (Present (Typ)
+                                 and then
+                                Has_Decl_In_List (Typ, P, L1))
+                       or else (Present (Nam)
+                                 and then
+                                Has_Decl_In_List (Nam, P, L2))
+                       or else (Present (Typ)
+                                 and then
+                                Has_Decl_In_List (Typ, P, L2));
+                  end;
 
                --  N_Loop_Statement is a special case: a type that appears in
                --  the source can never be frozen in a loop (this occurs only
@@ -7618,13 +7691,9 @@ package body Freeze is
                --  going. Otherwise we terminate the search. Same is true of
                --  any entity which comes from source (if it has a predefined
                --  type, this type does not appear to come from source, but the
-               --  entity should not be frozen here). The reasoning can also be
-               --  applied to if-expressions and case-expressions.
+               --  entity should not be frozen here).
 
-               when N_Loop_Statement
-                  | N_If_Expression
-                  | N_Case_Expression
-               =>
+               when N_Loop_Statement =>
                   exit when not Comes_From_Source (Etype (N))
                     and then (No (Nam) or else not Comes_From_Source (Nam));
 
@@ -7740,6 +7809,14 @@ package body Freeze is
       --  This also means they get properly analyzed and expanded.
 
       In_Spec_Expression := False;
+
+      --  Freeze the subtype mark before a qualified expression on an
+      --  allocator as per AARM 13.14(4.a). This is needed in particular to
+      --  generate predicate functions.
+
+      if Present (Allocator_Typ) then
+         Freeze_Before (P, Allocator_Typ);
+      end if;
 
       --  Freeze the designated type of an allocator (RM 13.14(13))
 
@@ -7928,6 +8005,23 @@ package body Freeze is
            and then Nkind (Parent (Node)) = N_Explicit_Dereference
          then
             Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+
+         --  An iterator specification freezes the iterator type, even though
+         --  that type is not attached to an entity in the construct.
+
+         elsif Nkind (Node) in N_Has_Etype
+           and then Nkind (Parent (Node)) = N_Iterator_Specification
+           and then Node = Name (Parent (Node))
+         then
+            declare
+               Iter : constant Node_Id :=
+                 Find_Value_Of_Aspect (Etype (Node), Aspect_Default_Iterator);
+
+            begin
+               if Present (Iter) then
+                  Check_And_Freeze_Type (Etype (Iter));
+               end if;
+            end;
          end if;
 
          --  No point in posting several errors on the same expression

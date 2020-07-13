@@ -690,6 +690,9 @@ __gnat_backtrace (void ** traceback __attribute__((unused)),
 
 #elif defined (USE_GENERIC_UNWINDER)
 
+/* No warning since the cases where FRAME_LEVEL > 0 are known to work.  */
+#pragma GCC diagnostic ignored "-Wframe-address"
+
 #ifndef CURRENT_STACK_FRAME
 # define CURRENT_STACK_FRAME  ({ char __csf; &__csf; })
 #endif

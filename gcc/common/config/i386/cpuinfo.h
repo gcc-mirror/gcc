@@ -456,6 +456,14 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
       break;
+    case 0x8f:
+      /* Sapphire Rapids.  */
+      cpu = "sapphirerapids";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("sapphirerapids");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_SAPPHIRERAPIDS;
+      break;
     case 0x17:
     case 0x1d:
       /* Penryn.  */

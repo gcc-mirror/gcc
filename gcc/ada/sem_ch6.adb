@@ -598,6 +598,19 @@ package body Sem_Ch6 is
                         Set_Checking_Potentially_Static_Expression (False);
                      end;
                   end if;
+
+                  --  We also make an additional copy of the expression and
+                  --  replace the expression of the expression function with
+                  --  this copy, because the currently present expression is
+                  --  now associated with the body created for the static
+                  --  expression function, which will later be analyzed and
+                  --  possibly rewritten, and we need to have the separate
+                  --  unanalyzed copy available for use with later static
+                  --  calls.
+
+                  Set_Expression
+                    (Original_Node (Subprogram_Spec (Def_Id)),
+                     New_Copy_Tree (Expr));
                end if;
             end if;
          end;
@@ -4671,7 +4684,7 @@ package body Sem_Ch6 is
                   then
                      --  Generate the minimum accessibility level object
 
-                     --    A60b : integer := integer'min(2, paramL);
+                     --    A60b : natural := natural'min(1, paramL);
 
                      declare
                         Loc      : constant Source_Ptr := Sloc (Body_Nod);
@@ -4681,11 +4694,11 @@ package body Sem_Ch6 is
                               Make_Temporary
                                 (Loc, 'A', Extra_Accessibility (Form)),
                             Object_Definition   => New_Occurrence_Of
-                                                     (Standard_Integer, Loc),
+                                                     (Standard_Natural, Loc),
                             Expression          =>
                               Make_Attribute_Reference (Loc,
                                 Prefix         => New_Occurrence_Of
-                                                    (Standard_Integer, Loc),
+                                                    (Standard_Natural, Loc),
                                 Attribute_Name => Name_Min,
                                 Expressions    => New_List (
                                   Make_Integer_Literal (Loc,

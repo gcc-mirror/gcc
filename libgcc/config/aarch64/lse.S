@@ -136,6 +136,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define tmp1	17
 #define tmp2	15
 
+#define BTI_C	hint	34
+
 /* Start and end a function.  */
 .macro	STARTFN name
 	.text
@@ -145,6 +147,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.type	\name, %function
 	.cfi_startproc
 \name:
+	BTI_C
 .endm
 
 .macro	ENDFN name
@@ -273,4 +276,31 @@ STARTFN	NAME(LDNM)
 	ret
 
 ENDFN	NAME(LDNM)
+#endif
+
+/* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
+#define FEATURE_1_AND 0xc0000000
+#define FEATURE_1_BTI 1
+#define FEATURE_1_PAC 2
+
+/* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
+#define GNU_PROPERTY(type, value)	\
+  .section .note.gnu.property, "a";	\
+  .p2align 3;				\
+  .word 4;				\
+  .word 16;				\
+  .word 5;				\
+  .asciz "GNU";				\
+  .word type;				\
+  .word 4;				\
+  .word value;				\
+  .word 0;
+
+#if defined(__linux__) || defined(__FreeBSD__)
+.section .note.GNU-stack, "", %progbits
+
+/* Add GNU property note if built with branch protection.  */
+# ifdef __ARM_FEATURE_BTI_DEFAULT
+GNU_PROPERTY (FEATURE_1_AND, FEATURE_1_BTI)
+# endif
 #endif

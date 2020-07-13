@@ -1510,17 +1510,38 @@ package body Sem_Util is
       Loc        : constant Source_Ptr := Sloc (Bod);
       Clone_Id   : constant Entity_Id  := Class_Wide_Clone (Spec_Id);
       Clone_Body : Node_Id;
+      Assoc_List : constant Elist_Id := New_Elmt_List;
 
    begin
       --  The declaration of the class-wide clone was created when the
       --  corresponding class-wide condition was analyzed.
+
+      --  The body of the original condition may contain references to
+      --  the formals of Spec_Id. In the body of the class-wide clone,
+      --  these must be replaced with the corresponding formals of
+      --  the clone.
+
+      declare
+         Spec_Formal_Id  : Entity_Id := First_Formal (Spec_Id);
+         Clone_Formal_Id : Entity_Id := First_Formal (Clone_Id);
+      begin
+         while Present (Spec_Formal_Id) loop
+            Append_Elmt (Spec_Formal_Id,  Assoc_List);
+            Append_Elmt (Clone_Formal_Id, Assoc_List);
+
+            Next_Formal (Spec_Formal_Id);
+            Next_Formal (Clone_Formal_Id);
+         end loop;
+      end;
 
       Clone_Body :=
         Make_Subprogram_Body (Loc,
           Specification              =>
             Copy_Subprogram_Spec (Parent (Clone_Id)),
           Declarations               => Declarations (Bod),
-          Handled_Statement_Sequence => Handled_Statement_Sequence (Bod));
+          Handled_Statement_Sequence =>
+            New_Copy_Tree (Handled_Statement_Sequence (Bod),
+              Map => Assoc_List));
 
       --  The new operation is internal and overriding indicators do not apply
       --  (the original primitive may have carried one).
@@ -11516,17 +11537,17 @@ package body Sem_Util is
       elsif Ekind (Item_Id) = E_Variable then
          return Type_Or_Variable_Has_Enabled_Property (Item_Id);
 
+      --  Other objects can only inherit properties through their type. We
+      --  cannot call directly Type_Or_Variable_Has_Enabled_Property on
+      --  these as they don't have contracts attached, which is expected by
+      --  this function.
+
+      elsif Is_Object (Item_Id) then
+         return Type_Or_Variable_Has_Enabled_Property (Etype (Item_Id));
+
       elsif Is_Type (Item_Id) then
          return Type_Or_Variable_Has_Enabled_Property
            (Item_Id => First_Subtype (Item_Id));
-
-      --  By default, protected objects only have the properties Async_Readers
-      --  and Async_Writers. If they have Part_Of components, they also inherit
-      --  their properties Effective_Reads and Effective_Writes
-      --  (SPARK RM 7.1.2(16)).
-
-      elsif Ekind (Item_Id) = E_Protected_Object then
-         return Protected_Type_Or_Variable_Has_Enabled_Property;
 
       --  Otherwise a property is enabled when the related item is effectively
       --  volatile.
@@ -12525,6 +12546,7 @@ package body Sem_Util is
                Subp_Id     : Entity_Id;
                Aspect_Expr : Node_Id;
                Param_Expr  : Node_Id;
+               Assoc       : Node_Id;
 
             begin
                if Is_Formal (E) then
@@ -12538,12 +12560,29 @@ package body Sem_Util is
                     Find_Value_Of_Aspect
                       (Subp_Id, Aspect_Relaxed_Initialization);
 
-                  --  Aspect expression is either an aggregate, e.g.:
+                  --  Aspect expression is either an aggregate with an optional
+                  --  Boolean expression (which defaults to True), e.g.:
                   --
                   --    function F (X : Integer) return Integer
-                  --      with Relaxed_Initialization => (X, F'Result);
+                  --      with Relaxed_Initialization => (X => True, F'Result);
 
                   if Nkind (Aspect_Expr) = N_Aggregate then
+
+                     if Present (Component_Associations (Aspect_Expr)) then
+                        Assoc := First (Component_Associations (Aspect_Expr));
+
+                        while Present (Assoc) loop
+                           if Denotes_Relaxed_Parameter
+                             (First (Choices (Assoc)), E)
+                           then
+                              return
+                                Is_True
+                                  (Static_Boolean (Expression (Assoc)));
+                           end if;
+
+                           Next (Assoc);
+                        end loop;
+                     end if;
 
                      Param_Expr := First (Expressions (Aspect_Expr));
 
@@ -14438,6 +14477,16 @@ package body Sem_Util is
       return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
    end Is_Atomic_Or_VFA_Object;
 
+   -----------------------------
+   -- Is_Attribute_Loop_Entry --
+   -----------------------------
+
+   function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Loop_Entry;
+   end Is_Attribute_Loop_Entry;
+
    ----------------------
    -- Is_Attribute_Old --
    ----------------------
@@ -15602,12 +15651,14 @@ package body Sem_Util is
 
       --  Otherwise Id denotes an object
 
-      else
+      else pragma Assert (Is_Object (Id));
          --  A volatile object for which No_Caching is enabled is not
          --  effectively volatile.
 
          return
-           (Is_Volatile (Id) and then not No_Caching_Enabled (Id))
+           (Is_Volatile (Id)
+            and then not
+              (Ekind (Id) = E_Variable and then No_Caching_Enabled (Id)))
              or else Has_Volatile_Components (Id)
              or else Is_Effectively_Volatile (Etype (Id));
       end if;
@@ -15620,7 +15671,8 @@ package body Sem_Util is
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
    begin
       if Is_Entity_Name (N) then
-         return Is_Effectively_Volatile (Entity (N));
+         return Is_Object (Entity (N))
+           and then Is_Effectively_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Indexed_Component then
          return Is_Effectively_Volatile_Object (Prefix (N));
@@ -17700,6 +17752,13 @@ package body Sem_Util is
       --  return True if the others choice of the given array aggregate does
       --  not cover any component (i.e. is null).
 
+      function Immediate_Context_Implies_Is_Potentially_Unevaluated
+        (Expr : Node_Id) return Boolean;
+      --  Return True if the *immediate* context of this expression tells us
+      --  that it is potentially unevaluated; return False if the *immediate*
+      --  context doesn't provide an answer to this question and we need to
+      --  keep looking.
+
       function Non_Static_Or_Null_Range (N : Node_Id) return Boolean;
       --  Return True if the given range is nonstatic or null
 
@@ -17736,6 +17795,99 @@ package body Sem_Util is
          when Interval_Lists.Intervals_Error =>
             return False;
       end Has_Null_Others_Choice;
+
+      ----------------------------------------------------------
+      -- Immediate_Context_Implies_Is_Potentially_Unevaluated --
+      ----------------------------------------------------------
+
+      function Immediate_Context_Implies_Is_Potentially_Unevaluated
+        (Expr : Node_Id) return Boolean
+      is
+         Par : constant Node_Id := Parent (Expr);
+
+      begin
+         if Nkind (Par) = N_If_Expression then
+            return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
+
+         elsif Nkind (Par) = N_Case_Expression then
+            return Expr /= Expression (Par);
+
+         elsif Nkind_In (Par, N_And_Then, N_Or_Else) then
+            return Expr = Right_Opnd (Par);
+
+         elsif Nkind_In (Par, N_In, N_Not_In) then
+
+            --  If the membership includes several alternatives, only the first
+            --  is definitely evaluated.
+
+            if Present (Alternatives (Par)) then
+               return Expr /= First (Alternatives (Par));
+
+            --  If this is a range membership both bounds are evaluated
+
+            else
+               return False;
+            end if;
+
+         elsif Nkind (Par) = N_Quantified_Expression then
+            return Expr = Condition (Par);
+
+         elsif Nkind (Par) = N_Aggregate
+           and then Present (Etype (Par))
+           and then Etype (Par) /= Any_Composite
+           and then Is_Array_Type (Etype (Par))
+           and then Nkind (Expr) = N_Component_Association
+         then
+            declare
+               Choice           : Node_Id;
+               In_Others_Choice : Boolean := False;
+
+            begin
+               --  The expression of an array_component_association is
+               --  potentially unevaluated if the associated choice is a
+               --  subtype_indication or range that defines a nonstatic or
+               --  null range.
+
+               Choice := First (Choices (Expr));
+               while Present (Choice) loop
+                  if Nkind (Choice) = N_Range
+                    and then Non_Static_Or_Null_Range (Choice)
+                  then
+                     return True;
+
+                  elsif Nkind (Choice) = N_Identifier
+                    and then Present (Scalar_Range (Etype (Choice)))
+                    and then
+                      Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
+                  then
+                     return True;
+
+                  elsif Nkind (Choice) = N_Others_Choice then
+                     In_Others_Choice := True;
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               --  It is also potentially unevaluated if the associated choice
+               --  is an others choice and the applicable index constraint is
+               --  nonstatic or null.
+
+               if In_Others_Choice then
+                  if not Compile_Time_Known_Bounds (Etype (Par)) then
+                     return True;
+                  else
+                     return Has_Null_Others_Choice (Par);
+                  end if;
+               end if;
+            end;
+
+            return False;
+
+         else
+            return False;
+         end if;
+      end Immediate_Context_Implies_Is_Potentially_Unevaluated;
 
       ------------------------------
       -- Non_Static_Or_Null_Range --
@@ -17798,25 +17950,27 @@ package body Sem_Util is
       --  conjunct in a postcondition) with a potentially unevaluated operand.
 
       Par := Parent (Expr);
-      while not Nkind_In (Par, N_And_Then,
-                               N_Case_Expression,
-                               N_If_Expression,
-                               N_In,
-                               N_Not_In,
-                               N_Or_Else,
-                               N_Quantified_Expression)
-        and then not (Nkind (Par) = N_Aggregate
-                        and then Etype (Par) /= Any_Composite
-                        and then Is_Array_Type (Etype (Par)))
+
+      while Present (Par)
+        and then Nkind (Par) /= N_Pragma_Argument_Association
       loop
-         Expr := Par;
-         Par  := Parent (Par);
+         if Comes_From_Source (Par)
+           and then
+             Immediate_Context_Implies_Is_Potentially_Unevaluated (Expr)
+         then
+            return True;
+
+         --  For component associations continue climbing; it may be part of
+         --  an array aggregate.
+
+         elsif Nkind (Par) = N_Component_Association then
+            null;
 
          --  If the context is not an expression, or if is the result of
          --  expansion of an enclosing construct (such as another attribute)
          --  the predicate does not apply.
 
-         if Nkind (Par) = N_Case_Expression_Alternative then
+         elsif Nkind (Par) = N_Case_Expression_Alternative then
             null;
 
          elsif Nkind (Par) not in N_Subexpr
@@ -17824,87 +17978,12 @@ package body Sem_Util is
          then
             return False;
          end if;
+
+         Expr := Par;
+         Par  := Parent (Par);
       end loop;
 
-      if Nkind (Par) = N_If_Expression then
-         return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
-
-      elsif Nkind (Par) = N_Case_Expression then
-         return Expr /= Expression (Par);
-
-      elsif Nkind_In (Par, N_And_Then, N_Or_Else) then
-         return Expr = Right_Opnd (Par);
-
-      elsif Nkind_In (Par, N_In, N_Not_In) then
-
-         --  If the membership includes several alternatives, only the first is
-         --  definitely evaluated.
-
-         if Present (Alternatives (Par)) then
-            return Expr /= First (Alternatives (Par));
-
-         --  If this is a range membership both bounds are evaluated
-
-         else
-            return False;
-         end if;
-
-      elsif Nkind (Par) = N_Quantified_Expression then
-         return Expr = Condition (Par);
-
-      elsif Nkind (Par) = N_Aggregate
-        and then Etype (Par) /= Any_Composite
-        and then Is_Array_Type (Etype (Par))
-        and then Nkind (Expr) = N_Component_Association
-      then
-         declare
-            Choice           : Node_Id;
-            In_Others_Choice : Boolean := False;
-
-         begin
-            --  The expression of an array_component_association is potentially
-            --  unevaluated if the associated choice is a subtype_indication or
-            --  range that defines a nonstatic or null range.
-
-            Choice := First (Choices (Expr));
-            while Present (Choice) loop
-               if Nkind (Choice) = N_Range
-                 and then Non_Static_Or_Null_Range (Choice)
-               then
-                  return True;
-
-               elsif Nkind (Choice) = N_Identifier
-                 and then Present (Scalar_Range (Etype (Choice)))
-                 and then
-                   Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
-               then
-                  return True;
-
-               elsif Nkind (Choice) = N_Others_Choice then
-                  In_Others_Choice := True;
-               end if;
-
-               Next (Choice);
-            end loop;
-
-            --  It is also potentially unevaluated if the associated choice
-            --  is an others choice and the applicable index constraint is
-            --  nonstatic or null.
-
-            if In_Others_Choice then
-               if not Compile_Time_Known_Bounds (Etype (Par)) then
-                  return True;
-               else
-                  return Has_Null_Others_Choice (Par);
-               end if;
-            end if;
-         end;
-
-         return False;
-
-      else
-         return False;
-      end if;
+      return False;
    end Is_Potentially_Unevaluated;
 
    -----------------------------------------
@@ -21358,7 +21437,7 @@ package body Sem_Util is
       --  New_Id is the corresponding new entity generated during Phase 1.
 
       procedure Add_Pending_Itype (Assoc_Nod : Node_Id; Itype : Entity_Id);
-      pragma Inline (Add_New_Entity);
+      pragma Inline (Add_Pending_Itype);
       --  Add an entry in the NCT_Pending_Itypes which maps key Assoc_Nod to
       --  value Itype. Assoc_Nod is the associated node of an itype. Itype is
       --  an itype.
@@ -23240,6 +23319,7 @@ package body Sem_Util is
    ------------------------
 
    function No_Caching_Enabled (Id : Entity_Id) return Boolean is
+      pragma Assert (Ekind (Id) = E_Variable);
       Prag : constant Node_Id := Get_Pragma (Id, Pragma_No_Caching);
       Arg1 : Node_Id;
 
@@ -24754,6 +24834,17 @@ package body Sem_Util is
       return Kind;
    end Policy_In_Effect;
 
+   -----------------------
+   -- Predicate_Enabled --
+   -----------------------
+
+   function Predicate_Enabled (Typ : Entity_Id) return Boolean is
+   begin
+      return Present (Predicate_Function (Typ))
+        and then not Predicates_Ignored (Typ)
+        and then not Predicate_Checks_Suppressed (Empty);
+   end Predicate_Enabled;
+
    ----------------------------------
    -- Predicate_Tests_On_Arguments --
    ----------------------------------
@@ -25700,23 +25791,25 @@ package body Sem_Util is
    is
    begin
       --  The only entities for which we track constant values are variables
-      --  which are not renamings, constants, out parameters, and in out
-      --  parameters, so check if we have this case.
+      --  which are not renamings, constants and formal parameters, so check
+      --  if we have this case.
 
       --  Note: it may seem odd to track constant values for constants, but in
       --  fact this routine is used for other purposes than simply capturing
-      --  the value. In particular, the setting of Known[_Non]_Null.
+      --  the value. In particular, the setting of Known[_Non]_Null and
+      --  Is_Known_Valid.
 
       if (Ekind (Ent) = E_Variable and then No (Renamed_Object (Ent)))
-            or else
-          Ekind_In (Ent, E_Constant, E_Out_Parameter, E_In_Out_Parameter)
+           or else
+         Ekind (Ent) = E_Constant
+           or else
+         Is_Formal (Ent)
       then
          null;
 
-      --  For conditionals, we also allow loop parameters and all formals,
-      --  including in parameters.
+      --  For conditionals, we also allow loop parameters
 
-      elsif Cond and then Ekind_In (Ent, E_Loop_Parameter, E_In_Parameter) then
+      elsif Cond and then Ekind (Ent) = E_Loop_Parameter then
          null;
 
       --  For all other cases, not just unsafe, but impossible to capture

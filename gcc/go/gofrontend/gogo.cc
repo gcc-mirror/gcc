@@ -3309,7 +3309,11 @@ Remove_deadcode::expression(Expression** pexpr)
       && be->boolean_constant_value(&bval)
       && (be->op() == OPERATOR_ANDAND
           || be->op() == OPERATOR_OROR))
-    *pexpr = Expression::make_boolean(bval, be->location());
+    {
+      *pexpr = Expression::make_boolean(bval, be->location());
+      Type_context context(NULL, false);
+      (*pexpr)->determine_type(&context);
+    }
   return TRAVERSE_CONTINUE;
 }
 

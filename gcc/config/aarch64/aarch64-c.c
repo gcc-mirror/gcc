@@ -178,6 +178,22 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
   aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
+  aarch64_def_or_undef (aarch64_bti_enabled (),
+			"__ARM_FEATURE_BTI_DEFAULT", pfile);
+
+  cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
+  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+    {
+      int v = 0;
+      if (aarch64_ra_sign_key == AARCH64_KEY_A)
+	v |= 1;
+      if (aarch64_ra_sign_key == AARCH64_KEY_B)
+	v |= 2;
+      if (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL)
+	v |= 4;
+      builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", v);
+    }
+
   aarch64_def_or_undef (TARGET_I8MM, "__ARM_FEATURE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_BF16_SIMD,
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);

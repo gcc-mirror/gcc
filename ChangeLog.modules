@@ -1,5 +1,7 @@
 2020-07-13  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk a1faa8e2470.
+
 	Fix polymorphic type info emission and key-function confusion
 	gcc/cp/
 	* module.cc (trees_out::core_bools): Calculate externalness from
@@ -25,7 +27,7 @@
 
 	gcc/testuite/
 	* g++.dg/modules/builtin-3_[ab].C: Add va_list scans for
-	aarch64 and ppowerpc ABIs.
+	aarch64 and powerpc ABIs.
 
 2020-07-08  Nathan Sidwell  <nathan@acm.org>
 

@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -52,6 +53,7 @@ with Sem;      use Sem;
 with Sem_Aggr; use Sem_Aggr;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
@@ -86,6 +88,7 @@ package body Exp_Aggr is
 
    procedure Expand_Delta_Array_Aggregate  (N : Node_Id; Deltas : List_Id);
    procedure Expand_Delta_Record_Aggregate (N : Node_Id; Deltas : List_Id);
+   procedure Expand_Container_Aggregate (N : Node_Id);
 
    function Get_Base_Object (N : Node_Id) return Entity_Id;
    --  Return the base object, i.e. the outermost prefix object, that N refers
@@ -4951,6 +4954,7 @@ package body Exp_Aggr is
       Handle_Bit_Packed : Boolean := False)
    is
       Typ                  : constant Entity_Id := Etype (N);
+      Dims                 : constant Nat := Number_Dimensions (Typ);
       Max_Others_Replicate : constant Nat := Max_Aggregate_Size (Typ);
 
       Static_Components : Boolean := True;
@@ -4961,18 +4965,19 @@ package body Exp_Aggr is
       --  expansion.
 
       function Flatten
-        (N   : Node_Id;
-         Ix  : Node_Id;
-         Ixb : Node_Id) return Boolean;
+        (N    : Node_Id;
+         Dims : Nat;
+         Ix   : Node_Id;
+         Ixb  : Node_Id) return Boolean;
       --  Convert the aggregate into a purely positional form if possible. On
       --  entry the bounds of all dimensions are known to be static, and the
       --  total number of components is safe enough to expand.
 
-      function Is_Flat (N : Node_Id; Dims : Int) return Boolean;
-      --  Return True iff the array N is flat (which is not trivial in the case
-      --  of multidimensional aggregates).
+      function Is_Flat (N : Node_Id; Dims : Nat) return Boolean;
+      --  Return True if the aggregate N is flat (which is not trivial in the
+      --  case of multidimensional aggregates).
 
-      function Is_Static_Element (N : Node_Id) return Boolean;
+      function Is_Static_Element (N : Node_Id; Dims : Nat) return Boolean;
       --  Return True if N, an element of a component association list, i.e.
       --  N_Component_Association or N_Iterated_Component_Association, has a
       --  compile-time known value and can be passed as is to the back-end
@@ -5016,7 +5021,7 @@ package body Exp_Aggr is
          then
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
-               if not Is_Static_Element (Assoc) then
+               if not Is_Static_Element (Assoc, Dims) then
                   Static_Components := False;
                   exit;
                end if;
@@ -5031,18 +5036,39 @@ package body Exp_Aggr is
       -------------
 
       function Flatten
-        (N   : Node_Id;
-         Ix  : Node_Id;
-         Ixb : Node_Id) return Boolean
+        (N    : Node_Id;
+         Dims : Nat;
+         Ix   : Node_Id;
+         Ixb  : Node_Id) return Boolean
       is
          Loc : constant Source_Ptr := Sloc (N);
          Blo : constant Node_Id    := Type_Low_Bound (Etype (Ixb));
          Lo  : constant Node_Id    := Type_Low_Bound (Etype (Ix));
          Hi  : constant Node_Id    := Type_High_Bound (Etype (Ix));
-         Lov : Uint;
-         Hiv : Uint;
 
-         Others_Present : Boolean := False;
+         function Cannot_Flatten_Next_Aggr (Expr : Node_Id) return Boolean;
+         --  Return true if Expr is an aggregate for the next dimension that
+         --  cannot be recursively flattened.
+
+         ------------------------------
+         -- Cannot_Flatten_Next_Aggr --
+         ------------------------------
+
+         function Cannot_Flatten_Next_Aggr (Expr : Node_Id) return Boolean is
+         begin
+            return Nkind (Expr) = N_Aggregate
+              and then Present (Next_Index (Ix))
+              and then not
+                Flatten (Expr, Dims - 1, Next_Index (Ix), Next_Index (Ixb));
+         end Cannot_Flatten_Next_Aggr;
+
+         --  Local variables
+
+         Lov            : Uint;
+         Hiv            : Uint;
+         Others_Present : Boolean;
+
+      --  Start of processing for Flatten
 
       begin
          if Nkind (Original_Node (N)) = N_String_Literal then
@@ -5059,6 +5085,8 @@ package body Exp_Aggr is
          Hiv := Expr_Value (Hi);
 
          --  Check if there is an others choice
+
+         Others_Present := False;
 
          if Present (Component_Associations (N)) then
             declare
@@ -5120,6 +5148,7 @@ package body Exp_Aggr is
             --  Used to validate Max_Others_Replicate limit
 
             Elmt         : Node_Id;
+            Expr         : Node_Id;
             Num          : Int := UI_To_Int (Lov);
             Choice_Index : Int;
             Choice       : Node_Id;
@@ -5129,11 +5158,10 @@ package body Exp_Aggr is
             if Present (Expressions (N)) then
                Elmt := First (Expressions (N));
                while Present (Elmt) loop
-                  if Nkind (Elmt) = N_Aggregate
-                    and then Present (Next_Index (Ix))
-                    and then
-                      not Flatten (Elmt, Next_Index (Ix), Next_Index (Ixb))
-                  then
+                  --  In the case of a multidimensional array, check that the
+                  --  aggregate can be recursively flattened.
+
+                  if Cannot_Flatten_Next_Aggr (Elmt) then
                      return False;
                   end if;
 
@@ -5152,17 +5180,16 @@ package body Exp_Aggr is
 
             Elmt := First (Component_Associations (N));
 
-            if Nkind (Expression (Elmt)) = N_Aggregate then
-               if Present (Next_Index (Ix))
-                 and then
-                   not Flatten
-                         (Expression (Elmt), Next_Index (Ix), Next_Index (Ixb))
-               then
+            Component_Loop : while Present (Elmt) loop
+               Expr := Expression (Elmt);
+
+               --  In the case of a multidimensional array, check that the
+               --  aggregate can be recursively flattened.
+
+               if Cannot_Flatten_Next_Aggr (Expr) then
                   return False;
                end if;
-            end if;
 
-            Component_Loop : while Present (Elmt) loop
                Choice := First (Choice_List (Elmt));
                Choice_Loop : while Present (Choice) loop
 
@@ -5176,19 +5203,18 @@ package body Exp_Aggr is
                      --  a loop, we must generate individual assignments and
                      --  no flattening is possible.
 
-                     if Nkind (Expression (Elmt)) = N_Quantified_Expression
-                     then
+                     if Nkind (Expr) = N_Quantified_Expression then
                         return False;
                      end if;
 
                      for J in Vals'Range loop
                         if No (Vals (J)) then
-                           Vals (J)  := New_Copy_Tree (Expression (Elmt));
+                           Vals (J)  := New_Copy_Tree (Expr);
                            Rep_Count := Rep_Count + 1;
 
                            --  Check for maximum others replication. Note that
                            --  we skip this test if either of the restrictions
-                           --  No_Elaboration_Code or No_Implicit_Loops is
+                           --  No_Implicit_Loops or No_Elaboration_Code is
                            --  active, if this is a preelaborable unit or
                            --  a predefined unit, or if the unit must be
                            --  placed in data memory. This also ensures that
@@ -5204,37 +5230,39 @@ package body Exp_Aggr is
                               --  Check if duplication is always OK and, if so,
                               --  continue processing.
 
-                              if Restriction_Active (No_Elaboration_Code)
-                                or else Restriction_Active (No_Implicit_Loops)
+                              if Restriction_Active (No_Implicit_Loops) then
+                                 null;
+
+                              --  If duplication is not always OK, continue
+                              --  only if either the element is static or is
+                              --  an aggregate (we already know it is OK).
+
+                              elsif not Is_Static_Element (Elmt, Dims)
+                                and then Nkind (Expr) /= N_Aggregate
+                              then
+                                 return False;
+
+                              --  Check if duplication is OK for elaboration
+                              --  purposes and, if so, continue processing.
+
+                              elsif Restriction_Active (No_Elaboration_Code)
                                 or else
                                   (Ekind (Current_Scope) = E_Package
-                                    and then Static_Elaboration_Desired
-                                               (Current_Scope))
+                                    and then
+                                   Static_Elaboration_Desired (Current_Scope))
                                 or else Is_Preelaborated (P)
                                 or else (Ekind (P) = E_Package_Body
                                           and then
-                                            Is_Preelaborated (Spec_Entity (P)))
+                                         Is_Preelaborated (Spec_Entity (P)))
                                 or else
                                   Is_Predefined_Unit (Get_Source_Unit (P))
                               then
                                  null;
 
-                              --  If duplication is not always OK, continue
-                              --  only if either the element is static or is
-                              --  an aggregate which can itself be flattened,
-                              --  and the replication count is not too high.
+                              --  Otherwise, check that the replication count
+                              --  is not too high.
 
-                              elsif (Is_Static_Element (Elmt)
-                                       or else
-                                     (Nkind (Expression (Elmt)) = N_Aggregate
-                                       and then Present (Next_Index (Ix))))
-                                and then Rep_Count <= Max_Others_Replicate
-                              then
-                                 null;
-
-                              --  Return False in all the other cases
-
-                              else
+                              elsif Rep_Count > Max_Others_Replicate then
                                  return False;
                               end if;
                            end;
@@ -5279,8 +5307,7 @@ package body Exp_Aggr is
                         Choice_Index := UI_To_Int (Expr_Value (Choice));
 
                         if Choice_Index in Vals'Range then
-                           Vals (Choice_Index) :=
-                             New_Copy_Tree (Expression (Elmt));
+                           Vals (Choice_Index) := New_Copy_Tree (Expr);
                            goto Continue;
 
                         --  Choice is statically out-of-range, will be
@@ -5304,7 +5331,7 @@ package body Exp_Aggr is
                      for J in UI_To_Int (Expr_Value (Lo)) ..
                               UI_To_Int (Expr_Value (Hi))
                      loop
-                        Vals (J) := New_Copy_Tree (Expression (Elmt));
+                        Vals (J) := New_Copy_Tree (Expr);
                      end loop;
                   end if;
 
@@ -5332,7 +5359,7 @@ package body Exp_Aggr is
       -- Is_Flat --
       -------------
 
-      function Is_Flat (N : Node_Id; Dims : Int) return Boolean is
+      function Is_Flat (N : Node_Id; Dims : Nat) return Boolean is
          Elmt : Node_Id;
 
       begin
@@ -5364,17 +5391,13 @@ package body Exp_Aggr is
       --  Is_Static_Element  --
       -------------------------
 
-      function Is_Static_Element (N : Node_Id) return Boolean is
+      function Is_Static_Element (N : Node_Id; Dims : Nat) return Boolean is
          Expr : constant Node_Id := Expression (N);
 
       begin
-         if Nkind_In (Expr, N_Integer_Literal, N_Real_Literal) then
-            return True;
+         --  In most cases the interesting expressions are unambiguously static
 
-         elsif Is_Entity_Name (Expr)
-           and then Present (Entity (Expr))
-           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
-         then
+         if Compile_Time_Known_Value (Expr) then
             return True;
 
          elsif Nkind (N) = N_Iterated_Component_Association then
@@ -5385,6 +5408,14 @@ package body Exp_Aggr is
            and then not Expansion_Delayed (Expr)
          then
             return True;
+
+         --  However, one may write static expressions that are syntactically
+         --  ambiguous, so preanalyze the expression before checking it again,
+         --  but only at the innermost level for a multidimensional array.
+
+         elsif Dims = 1 then
+            Preanalyze_And_Resolve (Expr, Component_Type (Typ));
+            return Compile_Time_Known_Value (Expr);
 
          else
             return False;
@@ -5415,7 +5446,7 @@ package body Exp_Aggr is
       --  elaboration code, so that the aggregate can be used as the
       --  initial value of a thread-local variable.
 
-      if Is_Flat (N, Number_Dimensions (Typ)) then
+      if Is_Flat (N, Dims) then
          if Static_Array_Aggregate (N) then
             Set_Compile_Time_Known_Aggregate (N);
          end if;
@@ -5450,7 +5481,8 @@ package body Exp_Aggr is
       --  it will eventually be able to treat such aggregates statically???
 
       if Aggr_Size_OK (N, Typ)
-        and then Flatten (N, First_Index (Typ), First_Index (Base_Type (Typ)))
+        and then
+          Flatten (N, Dims, First_Index (Typ), First_Index (Base_Type (Typ)))
       then
          if Static_Components then
             Set_Compile_Time_Known_Aggregate (N);
@@ -6740,6 +6772,9 @@ package body Exp_Aggr is
       if Is_Record_Type (Etype (N)) then
          Expand_Record_Aggregate (N);
 
+      elsif Has_Aspect (Etype (N), Aspect_Aggregate) then
+         Expand_Container_Aggregate (N);
+
       --  Array aggregate case
 
       else
@@ -6838,6 +6873,74 @@ package body Exp_Aggr is
       when RE_Not_Available =>
          return;
    end Expand_N_Aggregate;
+
+   --------------------------------
+   -- Expand_Container_Aggregate --
+   --------------------------------
+
+   procedure Expand_Container_Aggregate (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id := Etype (N);
+      Asp : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
+
+      Empty_Subp          : Node_Id := Empty;
+      Add_Named_Subp      : Node_Id := Empty;
+      Add_Unnamed_Subp    : Node_Id := Empty;
+      New_Indexed_Subp    : Node_Id := Empty;
+      Assign_Indexed_Subp : Node_Id := Empty;
+
+      Aggr_Code : constant List_Id   := New_List;
+      Temp      : constant Entity_Id := Make_Temporary (Loc, 'C', N);
+
+      Decl      : Node_Id;
+      Init_Stat : Node_Id;
+
+   begin
+      Parse_Aspect_Aggregate (Asp,
+        Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
+        New_Indexed_Subp, Assign_Indexed_Subp);
+      Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Temp,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+      Insert_Action (N, Decl);
+      if Ekind (Entity (Empty_Subp)) = E_Constant then
+         Init_Stat := Make_Assignment_Statement (Loc,
+           Name => New_Occurrence_Of (Temp, Loc),
+           Expression => Make_Function_Call (Loc,
+             Name => New_Occurrence_Of (Entity (Empty_Subp), Loc)));
+      else
+         Init_Stat := Make_Assignment_Statement (Loc,
+           Name => New_Occurrence_Of (Temp, Loc),
+           Expression => New_Occurrence_Of (Entity (Empty_Subp), Loc));
+      end if;
+      Append (Init_Stat, Aggr_Code);
+
+      --  First case: positional aggregate
+
+      if Present (Expressions (N)) then
+         declare
+            Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
+            Comp   : Node_Id;
+            Stat   : Node_Id;
+         begin
+            Comp := First (Expressions (N));
+            while Present (Comp) loop
+               Stat := Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (Insert, Loc),
+                 Parameter_Associations =>
+                   New_List (New_Occurrence_Of (Temp, Loc),
+                     New_Copy_Tree (Comp)));
+               Append (Stat, Aggr_Code);
+               Next (Comp);
+            end loop;
+         end;
+      end if;
+      Insert_Actions (N, Aggr_Code);
+      Rewrite (N, New_Occurrence_Of (Temp, Loc));
+      Analyze_And_Resolve (N, Typ);
+   end Expand_Container_Aggregate;
 
    ------------------------------
    -- Expand_N_Delta_Aggregate --
@@ -8038,17 +8141,40 @@ package body Exp_Aggr is
       Target : Node_Id) return List_Id
    is
       Aggr_Code : List_Id;
+      New_Aggr  : Node_Id;
 
    begin
-      if Is_Array_Type (Etype (N)) then
-         Aggr_Code :=
-           Build_Array_Aggr_Code
-             (N           => N,
-              Ctype       => Component_Type (Etype (N)),
-              Index       => First_Index (Typ),
-              Into        => Target,
-              Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)),
-              Indexes     => No_List);
+      if Is_Array_Type (Typ) then
+         --  If the assignment can be done directly by the back end, then
+         --  reset Set_Expansion_Delayed and do not expand further.
+
+         if not CodePeer_Mode
+           and then not Modify_Tree_For_C
+           and then not Possible_Bit_Aligned_Component (Target)
+           and then not Is_Possibly_Unaligned_Slice (Target)
+           and then Aggr_Assignment_OK_For_Backend (N)
+         then
+            New_Aggr := New_Copy_Tree (N);
+            Set_Expansion_Delayed (New_Aggr, False);
+
+            Aggr_Code :=
+              New_List (
+                Make_OK_Assignment_Statement (Sloc (New_Aggr),
+                  Name       => Target,
+                  Expression => New_Aggr));
+
+         --  Or else, generate component assignments to it
+
+         else
+            Aggr_Code :=
+              Build_Array_Aggr_Code
+                (N           => N,
+                 Ctype       => Component_Type (Typ),
+                 Index       => First_Index (Typ),
+                 Into        => Target,
+                 Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)),
+                 Indexes     => No_List);
+         end if;
 
       --  Directly or indirectly (e.g. access protected procedure) a record
 
@@ -8108,6 +8234,10 @@ package body Exp_Aggr is
       --  if components are static it is much more efficient to construct a
       --  one-dimensional equivalent array with static components.
 
+      --  Finally we also use a small limit when we're within a subprogram
+      --  since we want to favor loops (potentially transformed to memset
+      --  calls) in this context.
+
       if CodePeer_Mode then
          return 100;
       elsif Restriction_Active (No_Elaboration_Code)
@@ -8117,6 +8247,8 @@ package body Exp_Aggr is
                    and then Static_Elaboration_Desired (Current_Scope))
       then
          return 2 ** 24;
+      elsif Ekind (Current_Scope) in Subprogram_Kind then
+         return 64;
       else
          return Default_Size;
       end if;

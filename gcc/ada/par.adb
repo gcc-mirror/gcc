@@ -842,6 +842,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  conditional expression and passes it as an argument. This form of
       --  the call does not check for a following right parenthesis.
 
+      function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id;
+      --  Parse an iterator specification. The defining identifier has already
+      --  been scanned, as it is the common prefix between loop and iterator
+      --  specification.
+
       function P_Loop_Parameter_Specification return Node_Id;
       --  Used in loop constructs and quantified expressions.
 

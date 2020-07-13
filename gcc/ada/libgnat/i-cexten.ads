@@ -61,8 +61,8 @@ package Interfaces.C.Extensions is
 
    --  64-bit integer types
 
-   subtype long_long is Long_Long_Integer;
-   type unsigned_long_long is mod 2 ** 64;
+   subtype long_long is Interfaces.C.long_long;
+   subtype unsigned_long_long is Interfaces.C.unsigned_long_long;
 
    --  128-bit integer type available on 64-bit platforms:
    --  typedef int signed_128 __attribute__ ((mode (TI)));

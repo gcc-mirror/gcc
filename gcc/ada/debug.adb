@@ -69,7 +69,7 @@ package body Debug is
    --  dC   Output debugging information on check suppression
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
-   --  dF   Perform the new SPARK checking rules for pointer aliasing
+   --  dF
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
@@ -173,7 +173,7 @@ package body Debug is
    --  d_z  Enable Put_Image on tagged types
 
    --  d_A  Stop generation of ALI file
-   --  d_B
+   --  d_B  Warn on build-in-place function calls
    --  d_C
    --  d_D
    --  d_E
@@ -602,12 +602,6 @@ package body Debug is
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
 
-   --  dF   Disable the new SPARK checking rules for pointer aliasing. This is
-   --       only activated as part of GNATprove mode and on SPARK code. Now
-   --       that pointer support is part of the official SPARK language, this
-   --       switch allows reverting to the previous version of GNATprove
-   --       rejecting pointers.
-
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also
    --       suppresses warnings on instantiations in the main extended
@@ -1002,6 +996,10 @@ package body Debug is
    --       predefined.
 
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
+
+   --  d_B  Warn on build-in-place function calls. This allows users to
+   --       inspect their code in case it triggers compiler bugs related
+   --       to build-in-place calls. See known-problem entries for details.
 
    --  d_F  The compiler encodes the full path from an invocation construct to
    --       an external target, offering additional information to GNATBIND for
