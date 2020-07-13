@@ -6498,29 +6498,48 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	}
       else
 	{
-	  rtx dbl_even = gen_reg_rtx (V2DFmode);
-	  rtx dbl_odd  = gen_reg_rtx (V2DFmode);
-	  rtx flt_even = gen_reg_rtx (V4SFmode);
-	  rtx flt_odd  = gen_reg_rtx (V4SFmode);
-	  rtx op0 = force_reg (SFmode, XVECEXP (vals, 0, 0));
-	  rtx op1 = force_reg (SFmode, XVECEXP (vals, 0, 1));
-	  rtx op2 = force_reg (SFmode, XVECEXP (vals, 0, 2));
-	  rtx op3 = force_reg (SFmode, XVECEXP (vals, 0, 3));
-
-	  /* Use VMRGEW if we can instead of doing a permute.  */
 	  if (TARGET_P8_VECTOR)
 	    {
-	      emit_insn (gen_vsx_concat_v2sf (dbl_even, op0, op2));
-	      emit_insn (gen_vsx_concat_v2sf (dbl_odd, op1, op3));
-	      emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
-	      emit_insn (gen_vsx_xvcvdpsp (flt_odd, dbl_odd));
-	      if (BYTES_BIG_ENDIAN)
-		emit_insn (gen_p8_vmrgew_v4sf_direct (target, flt_even, flt_odd));
-	      else
-		emit_insn (gen_p8_vmrgew_v4sf_direct (target, flt_odd, flt_even));
+	      rtx tmp_sf[4];
+	      rtx tmp_si[4];
+	      rtx tmp_di[4];
+	      rtx mrg_di[4];
+	      for (i = 0; i < 4; i++)
+		{
+		  tmp_si[i] = gen_reg_rtx (SImode);
+		  tmp_di[i] = gen_reg_rtx (DImode);
+		  mrg_di[i] = gen_reg_rtx (DImode);
+		  tmp_sf[i] = force_reg (SFmode, XVECEXP (vals, 0, i));
+		  emit_insn (gen_movsi_from_sf (tmp_si[i], tmp_sf[i]));
+		  emit_insn (gen_zero_extendsidi2 (tmp_di[i], tmp_si[i]));
+		}
+
+	      if (!BYTES_BIG_ENDIAN)
+		{
+		  std::swap (tmp_di[0], tmp_di[1]);
+		  std::swap (tmp_di[2], tmp_di[3]);
+		}
+
+	      emit_insn (gen_ashldi3 (mrg_di[0], tmp_di[0], GEN_INT (32)));
+	      emit_insn (gen_iordi3 (mrg_di[1], mrg_di[0], tmp_di[1]));
+	      emit_insn (gen_ashldi3 (mrg_di[2], tmp_di[2], GEN_INT (32)));
+	      emit_insn (gen_iordi3 (mrg_di[3], mrg_di[2], tmp_di[3]));
+
+	      rtx tmp_v2di = gen_reg_rtx (V2DImode);
+	      emit_insn (gen_vsx_concat_v2di (tmp_v2di, mrg_di[1], mrg_di[3]));
+	      emit_move_insn (target, gen_lowpart (V4SFmode, tmp_v2di));
 	    }
 	  else
 	    {
+	      rtx dbl_even = gen_reg_rtx (V2DFmode);
+	      rtx dbl_odd  = gen_reg_rtx (V2DFmode);
+	      rtx flt_even = gen_reg_rtx (V4SFmode);
+	      rtx flt_odd  = gen_reg_rtx (V4SFmode);
+	      rtx op0 = force_reg (SFmode, XVECEXP (vals, 0, 0));
+	      rtx op1 = force_reg (SFmode, XVECEXP (vals, 0, 1));
+	      rtx op2 = force_reg (SFmode, XVECEXP (vals, 0, 2));
+	      rtx op3 = force_reg (SFmode, XVECEXP (vals, 0, 3));
+
 	      emit_insn (gen_vsx_concat_v2sf (dbl_even, op0, op1));
 	      emit_insn (gen_vsx_concat_v2sf (dbl_odd, op2, op3));
 	      emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
