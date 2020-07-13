@@ -30,6 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS riscv_d_target_versions
 
+/* Target CPU info for Rust.  */
+#define TARGET_RUST_CPU_INFO riscv_rust_target_cpu_info
+
 /* Default target_flags if no switches are specified  */
 
 #ifndef TARGET_DEFAULT
