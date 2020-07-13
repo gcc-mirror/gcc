@@ -1,5 +1,14 @@
 2020-07-13  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state::read_cluster): Add FIXME about
+	unnecessary deduping.
+	* name-lookup.c (name_lookup::process_module_binding): Remove
+	FIXME.
+	(name_lookup::adl_namespace_fns): Likewise.
+	(name_lookup::search_adl): Likewise.
+	(do_push_nested_namespace): Likewise.
+
 	gcc/testsuite/
 	* lib/scanlang.exp (scan-lang-dump-not): Fix 3-arg case.
 	* g++.dg/modules/builtin-3_a.C: Remove unnecessary bracing.

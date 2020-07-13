@@ -14203,6 +14203,13 @@ module_state::read_cluster (unsigned snum)
 	    tree decls = NULL_TREE;
 	    tree visible = NULL_TREE;
 	    tree type = NULL_TREE;
+
+	    // FIXME: It would be better to mark the vector containing
+	    // this binding as containing actual duplicates in the
+	    // MODULE_SLOT_GLOBAL or MODULE_SLOT_PARTITION overloads.
+	    // Then deduping only need be engaged when duplicates are
+	    // in play, rather than when just looking at a global or
+	    // partition slot.
 	    bool dedup = (TREE_PUBLIC (ns)
 			  && (is_module ()
 			      || is_partition ()

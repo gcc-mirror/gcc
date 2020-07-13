@@ -767,8 +767,7 @@ name_lookup::process_binding (tree new_val, tree new_type)
 /* If we're importing a module containing this binding, add it to the
    lookup set.  The trickiness is with namespaces, we only want to
    find it once.  */
-// FIXME: For global module slots we'll need to invoke deduping on the
-// 2nd one.  Likewise partitions
+
 unsigned
 name_lookup::process_module_binding (tree new_val, tree new_type,
 				     unsigned marker)
@@ -1141,8 +1140,6 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap /*inst_path*/
 		else
 		  bind = ovl_skip_hidden (bind);
 
-		// FIXME: Turn on deduping if this is a global module
-		// entity, (or a partition of us, or our primary interface?)
 		add_fns (bind);
 	      }
 	}
@@ -1492,11 +1489,6 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
       for (unsigned ix = scopes->length (); ix--;)
 	{
 	  tree scope = (*scopes)[ix];
-	  // FIXME: There are cases where we'll need to turn on
-	  // deduping inside here -- eg, global module fns,
-	  // Also check we see module-linkage fns from ourselves (if
-	  // we're an implementation unit and they're declared in an
-	  // interface).
 	  if (TREE_CODE (scope) == NAMESPACE_DECL)
 	    adl_namespace_fns (scope, visible, inst_path);
 	  else
@@ -8494,9 +8486,6 @@ do_push_nested_namespace (tree ns)
   else
     {
       do_push_nested_namespace (CP_DECL_CONTEXT (ns));
-      // FIXME This assert is only true in the correct module context
-      // gcc_checking_assert
-      //(find_namespace_value (current_namespace, DECL_NAME (ns)) == ns);
       resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
     }
