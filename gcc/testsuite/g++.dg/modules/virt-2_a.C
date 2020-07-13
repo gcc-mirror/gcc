@@ -8,9 +8,10 @@ export struct Visitor
   virtual int Visit ();
 };
 
-// Key function explicitly not in line (regardless of p1779's state)
+// Key function explicitly inline (regardless of p1779's state)
 // We emit vtables & rtti only in this TU
-int Visitor::Visit ()
+inline // Yoink!
+  int Visitor::Visit ()
 {
   return 0;
 }
@@ -20,6 +21,7 @@ export int Visit (Visitor *v)
   return v->Visit ();
 }
 
+// Emit here
 // { dg-final { scan-assembler {_ZTV7Visitor:} } }
 // { dg-final { scan-assembler {_ZTI7Visitor:} } }
 // { dg-final { scan-assembler {_ZTS7Visitor:} } }

@@ -1,3 +1,19 @@
+2020-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	Fix polymorphic type info emission and key-function confusion
+	gcc/cp/
+	* module.cc (trees_out::core_bools): Calculate externalness from
+	POV of importer.
+	(trees_{in,out{::lang_decl_bools): Do not stream
+	not_really_extern.
+	(trees_in::read_{var,function}_def): Recalculate
+	not_really_extern.
+	(trees_in::read_class_def): The key_method might become non-key.
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-3_a.C: Adjust regexp.
+	* g++.dg/modules/virt-1_[ab].C: Adjust.
+	* g++.dg/modules/virt-2_[abc].C: New.
+
 2020-07-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

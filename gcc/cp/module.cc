@@ -5228,13 +5228,33 @@ trees_out::core_bools (tree t)
       WB (t->decl_common.lang_flag_8);
       WB (t->decl_common.decl_flag_0);
 
-      // FIXME: This heuristic is not correct.  We should be fiddling
-      // with this during the dependency walk
-      /* static variables become external.  */
-      WB (t->decl_common.decl_flag_1
-	  || (code == VAR_DECL && TREE_STATIC (t)
-	      && !header_module_p ()
-	      && !DECL_WEAK (t) && !DECL_VTABLE_OR_VTT_P (t)));
+      {
+	bool is_external = t->decl_common.decl_flag_1;
+	if (!is_external)
+	  /* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
+	     well be external from the POV of an importer.  */
+	  // FIXME: p1815? static variables become external.
+	  // We might need to know if this is a TEMPLATE_RESULT -- a
+	  // flag from the caller?
+	  switch (code)
+	    {
+	    default:
+	      break;
+
+	    case VAR_DECL:
+	      if (TREE_STATIC (t)
+		  && !header_module_p ()
+		  && !DECL_VAR_DECLARED_INLINE_P (t))
+		is_external = true;
+	      break;
+
+	    case FUNCTION_DECL:
+	      if (!DECL_DECLARED_INLINE_P (t))
+		is_external = true;
+	      break;
+	    }
+	WB (is_external);
+      }
 
       WB (t->decl_common.decl_flag_2);
       WB (t->decl_common.decl_flag_3);
@@ -5450,10 +5470,8 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.language == lang_cplusplus);
   WB ((lang->u.base.use_template >> 0) & 1);
   WB ((lang->u.base.use_template >> 1) & 1);
-  /* Vars stop being not really extern */
-  WB (lang->u.base.not_really_extern
-      && (TREE_CODE (t) != VAR_DECL
-	  || DECL_VTABLE_OR_VTT_P (t) || DECL_WEAK (t)));
+  /* Do not write u.base.not_really_extern, importer will set when
+     reading the definition (if any).  */
   WB (lang->u.base.initialized_in_class);
   WB (lang->u.base.threadprivate_or_deleted_p);
   WB (lang->u.base.anticipated_p);
@@ -5522,7 +5540,7 @@ trees_in::lang_decl_bools (tree t)
   v = b () << 0;
   v |= b () << 1;
   lang->u.base.use_template = v;
-  RB (lang->u.base.not_really_extern);
+  /* lang->u.base.not_really_extern is not streamed.  */
   RB (lang->u.base.initialized_in_class);
   RB (lang->u.base.threadprivate_or_deleted_p);
   RB (lang->u.base.anticipated_p);
@@ -5604,6 +5622,7 @@ trees_out::lang_type_bools (tree t)
   WB ((lang->gets_delete >> 0) & 1);
   WB ((lang->gets_delete >> 1) & 1);
   // Interfaceness is recalculated upon reading.  May have to revisit?
+  // How do dllexport and dllimport interact across a module?
   // lang->interface_only
   // lang->interface_unknown
   WB (lang->contains_empty_class_p);
@@ -11071,6 +11090,8 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 
   if (installing)
     {
+      if (DECL_EXTERNAL (decl))
+	DECL_NOT_REALLY_EXTERN (decl) = true;
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
@@ -11117,6 +11138,8 @@ trees_in::read_var_def (tree decl, tree maybe_template)
   bool installing = maybe_dup && !DECL_INITIAL (decl);
   if (installing)
     {
+      if (DECL_EXTERNAL (decl))
+	DECL_NOT_REALLY_EXTERN (decl) = true;
       DECL_INITIAL (decl) = init;
     }
   else if (maybe_dup)
@@ -11542,7 +11565,10 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
 	  if (vtables)
 	    {
-	      if (!CLASSTYPE_KEY_METHOD (type))
+	      if (!CLASSTYPE_KEY_METHOD (type)
+		  /* Sneaky user may have defined it inline
+		     out-of-class.  */
+		  || DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type)))
 		vec_safe_push (keyed_classes, type);
 	      unsigned len = vtables->length ();
 	      tree *chain = &CLASSTYPE_VTABLES (type);
