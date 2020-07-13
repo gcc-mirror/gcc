@@ -5713,6 +5713,16 @@ package body Sem_Ch3 is
       then
          Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
 
+         --  If the current declaration created both a private and a full view,
+         --  then propagate Predicate_Function to the latter as well.
+
+         if Present (Full_View (Id))
+           and then No (Predicate_Function (Full_View (Id)))
+         then
+            Set_Subprograms_For_Type
+              (Full_View (Id), Subprograms_For_Type (Id));
+         end if;
+
          if Has_Static_Predicate (T) then
             Set_Has_Static_Predicate (Id);
             Set_Static_Discrete_Predicate (Id, Static_Discrete_Predicate (T));
