@@ -598,9 +598,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 /* Language-specific tree checkers.  */
 
-#define DECL_CHECK(NODE) \
-  TREE_CLASS_CHECK (NODE,tcc_declaration)
-
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK2(NODE,VAR_DECL,FUNCTION_DECL)
 

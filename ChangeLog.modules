@@ -1,5 +1,14 @@
 2020-07-13  Nathan Sidwell  <nathan@acm.org>
 
+	Delete now-unused new pieces.
+	gcc/
+	* toplev.h (original_argc, original_argv): Delete.
+	* toplev.c (original_argc, original_argv): Delete.
+	gcc/cp/
+	* cp-tree.h (DECL_CHECK): Delete.
+	gcc/c-family
+	* c-pragma.h (C_LEX_STRING_IS_HEADER): Delete.
+
 	gcc/cp/
 	* module.cc (module_state::set_filename): New.
 	(module_state::do_import): Drop fname arg.
