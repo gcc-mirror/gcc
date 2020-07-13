@@ -776,8 +776,9 @@ package body Sem_Ch8 is
       ------------------------------
 
       procedure Check_Constrained_Object is
-         Typ  : constant Entity_Id := Etype (Nam);
-         Subt : Entity_Id;
+         Typ         : constant Entity_Id := Etype (Nam);
+         Subt        : Entity_Id;
+         Loop_Scheme : Node_Id;
 
       begin
          if Nkind (Nam) in N_Function_Call | N_Explicit_Dereference
@@ -820,6 +821,29 @@ package body Sem_Ch8 is
                      Make_Subtype_From_Expr (Nam, Typ)));
                Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
                Set_Etype (Nam, Subt);
+
+               --  Suppress discriminant checks on this subtype if the original
+               --  type has defaulted discriminants and Id is a "for of" loop
+               --  iterator.
+
+               if Has_Defaulted_Discriminants (Typ)
+                 and then Nkind (Original_Node (Parent (N))) = N_Loop_Statement
+               then
+                  Loop_Scheme := Iteration_Scheme (Original_Node (Parent (N)));
+
+                  if Present (Loop_Scheme)
+                    and then Present (Iterator_Specification (Loop_Scheme))
+                    and then
+                      Defining_Identifier
+                        (Iterator_Specification (Loop_Scheme)) = Id
+                  then
+                     Set_Checks_May_Be_Suppressed (Subt);
+                     Push_Local_Suppress_Stack_Entry
+                       (Entity   => Subt,
+                        Check    => Discriminant_Check,
+                        Suppress => True);
+                  end if;
+               end if;
 
                --  Freeze subtype at once, to prevent order of elaboration
                --  issues in the backend. The renamed object exists, so its
