@@ -90,7 +90,7 @@ AR_FLAGS_FOR_TARGET = -X32_64
 
 # Build and install AIX-style FAT libraries
 ifeq ($(MULTIBUILDTOP),)
-BITS=$(shell if test -z "`ar -X64 t libgcc_s.a`" ; then \
+BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
     echo '64'; else echo '32'; fi)
 all: all-multi
 ifeq ($(enable_shared),yes)
