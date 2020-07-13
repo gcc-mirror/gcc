@@ -6905,6 +6905,7 @@ package body Exp_Aggr is
          L_Range            : Node_Id;
          L_Iteration_Scheme : Node_Id;
          Loop_Stat          : Node_Id;
+         Params             : List_Id;
          Stats              : List_Id;
 
       begin
@@ -6936,31 +6937,39 @@ package body Exp_Aggr is
                    Loop_Parameter_Specification =>
                      Loop_Parameter_Specification (Comp));
                Loop_Id :=
-                  Make_Defining_Identifier (Loc,
-                    Chars => Chars (Defining_Identifier
-                               (Loop_Parameter_Specification (Comp))));
+                 Make_Defining_Identifier (Loc,
+                   Chars => Chars (Defining_Identifier
+                              (Loop_Parameter_Specification (Comp))));
                Set_Defining_Identifier
-                  (Loop_Parameter_Specification
-                     (L_Iteration_Scheme), Loop_Id);
+                 (Loop_Parameter_Specification
+                    (L_Iteration_Scheme), Loop_Id);
             end if;
-
-         elsif Present (Iterator_Specification (Comp)) then
-            L_Iteration_Scheme :=
-              Make_Iteration_Scheme (Loc,
-                Iterator_Specification => Iterator_Specification (Comp));
-
          else
-            L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
+
+            --  Iterated_Component_Association.
+
             Loop_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => Chars (Defining_Identifier (Comp)));
 
-            L_Iteration_Scheme :=
-              Make_Iteration_Scheme (Loc,
-                Loop_Parameter_Specification =>
-                  Make_Loop_Parameter_Specification (Loc,
-                    Defining_Identifier => Loop_Id,
-                    Discrete_Subtype_Definition => L_Range));
+            if Present (Iterator_Specification (Comp)) then
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Iterator_Specification => Iterator_Specification (Comp));
+
+            else
+               --  Loop_Parameter_Specifcation is parsed with a choice list.
+               --  where the range is the first (and only) choice.
+
+               L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
+
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Loop_Parameter_Specification =>
+                     Make_Loop_Parameter_Specification (Loc,
+                       Defining_Identifier => Loop_Id,
+                       Discrete_Subtype_Definition => L_Range));
+            end if;
          end if;
 
          --  Build insertion statement. For a positional aggregate, only the
@@ -6983,23 +6992,19 @@ package body Exp_Aggr is
             --  possibly with a specified key_expression.
 
             if Present (Key_Expr) then
-               Stats := New_List
-                 (Make_Procedure_Call_Statement (Loc,
-                    Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
-                    Parameter_Associations =>
-                      New_List (New_Occurrence_Of (Temp, Loc),
-                        New_Copy_Tree (Key_Expr),
-                        New_Copy_Tree (Expr))));
-
+               Params := New_List (New_Occurrence_Of (Temp, Loc),
+                            New_Copy_Tree (Key_Expr),
+                            New_Copy_Tree (Expr));
             else
-               Stats := New_List
-                 (Make_Procedure_Call_Statement (Loc,
-                    Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
-                    Parameter_Associations =>
-                      New_List (New_Occurrence_Of (Temp, Loc),
-                        New_Occurrence_Of (Loop_Id, Loc),
-                        New_Copy_Tree (Expr))));
+               Params := New_List (New_Occurrence_Of (Temp, Loc),
+                            New_Occurrence_Of (Loop_Id, Loc),
+                            New_Copy_Tree (Expr));
             end if;
+
+            Stats := New_List
+              (Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
+                 Parameter_Associations => Params));
          end if;
 
          Loop_Stat :=  Make_Implicit_Loop_Statement
