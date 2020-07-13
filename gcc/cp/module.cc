@@ -3658,7 +3658,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   location_t imported_from () const;
 
  public:
-  bool do_import (const char *filename, cpp_reader *, bool outermost);
+  void set_filename (const Cody::Packet &);
+  bool do_import (cpp_reader *, bool outermost);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -13692,13 +13693,13 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
 	      unsigned n = dump.push (imp);
 
-	      if (imp->filename)
-		fname = NULL;
+	      if (!imp->filename && fname)
+		imp->filename = xstrdup (fname);
 
 	      if (imp->is_partition ())
 		dump () && dump ("Importing elided partition %M", imp);
 
-	      if (!imp->do_import (fname, reader, false))
+	      if (!imp->do_import (reader, false))
 		imp = NULL;
 	      dump.pop (n);
 	      if (!imp)
@@ -14977,7 +14978,8 @@ void
 module_state::write_location (bytes_out &sec, location_t loc)
 {
   if (!sec.streaming_p ())
-    // FIXME: Implement location pruning optimization
+    /* This is where we should note we use this location.  See comment
+       about write_ordinary_maps.  */
     return;
 
   if (IS_ADHOC_LOC (loc))
@@ -16222,10 +16224,6 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   return count;
 }
 
-// FIXME: Once we have importing phases done, we probably don't need
-// this so early.  Remember, with mmap, all this is doing is setting
-// pointers.
-
 bool
 module_state::read_macros ()
 {
@@ -17107,7 +17105,6 @@ module_state::read_initial (cpp_reader *reader)
     }
 
   /* Read the elided partition table, if we're the primary partition.  */
-  // FIXME: Likewise as with imports
   if (ok && config.num_partitions && is_module ()
       && !read_partitions (config.num_partitions))
     ok = false;
@@ -17835,11 +17832,10 @@ module_state::set_flatname ()
     flatname = IDENTIFIER_POINTER (name);
 }
 
-/* Read the CMI file for a module.  FNAME, if not NULL, is the name we
-   know it as.  */
+/* Read the CMI file for a module.  */
 
 bool
-module_state::do_import (char const *fname, cpp_reader *reader, bool outermost)
+module_state::do_import (cpp_reader *reader, bool outermost)
 {
   gcc_assert (global_namespace == current_scope () && loadedness == ML_NONE);
 
@@ -17847,12 +17843,6 @@ module_state::do_import (char const *fname, cpp_reader *reader, bool outermost)
 
   if (lazy_open >= lazy_limit)
     freeze_an_elf ();
-
-  if (fname)
-    {
-      gcc_assert (!filename);
-      filename = xstrdup (fname);
-    }
 
   int fd = -1;
   int e = ENOENT;
@@ -18106,7 +18096,7 @@ direct_import (module_state *import, cpp_reader *reader)
 
   gcc_checking_assert (import->is_direct () && import->is_rooted ());
   if (import->loadedness == ML_NONE)
-    if (!import->do_import (NULL, reader, true))
+    if (!import->do_import (reader, true))
       gcc_unreachable ();
 
   if (import->loadedness < ML_LANGUAGE)
@@ -18205,7 +18195,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
 
       /* Copy the importing information we may have already done.  */
       // FIXME: We have to separate out the imports that only happen
-      // in the GMF
+      // in the GMF.  Unless 2191 succeeds (which it better)
       module->imports = current->imports;
 
       module->mod = 0;
@@ -18372,6 +18362,22 @@ canonicalize_header_name (cpp_reader *reader, location_t loc, bool unquoted,
   return str;
 }
 
+/* Set the CMI name from a cody packet.  Issue an error if
+   ill-formed.  */
+
+void module_state::set_filename (const Cody::Packet &packet)
+{
+  gcc_checking_assert (!filename);
+  if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
+    filename = xstrdup (packet.GetString ().c_str ());
+  else
+    {
+      gcc_checking_assert (packet.GetCode () == Cody::Client::PC_ERROR);
+      error_at (loc, "unknown Compiled Module Interface: %s",
+		packet.GetString ().c_str ());
+    }
+}
+
 /* Figure out whether to treat HEADER as an include or an import.  */
 
 bool
@@ -18398,12 +18404,21 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   path = canonicalize_header_name (NULL, loc, true, path, len);
   auto packet = mapper->IncludeTranslate (path, len);
   int res = false;
-  if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
-    res = true;
-  else if (packet.GetCode () == Cody::Client::PC_INCLUDE_TRANSLATE)
+  if (packet.GetCode () == Cody::Client::PC_INCLUDE_TRANSLATE)
     res = packet.GetInteger ();
+  else if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
+    {
+      /* Record the CMI name for when we do the import.  */
+      module_state *import = get_module (build_string (len, path));
+      import->set_filename (packet);
+      res = true;
+    }
   else
-    {} // FIXME: ERROR
+    {
+      gcc_checking_assert (packet.GetCode () == Cody::Client::PC_ERROR);
+      error_at (loc, "cannot determine %<#include%> translation of %s: %s",
+		path, packet.GetString ().c_str ());
+    }
 
   bool note = false;
   if (note_include_translate < 0)
@@ -18562,12 +18577,13 @@ preprocess_module (module_state *module, location_t from_loc,
 	     our module state flags are inadequate.  */
 	  spans.close ();
 
-	  auto *mapper = get_mapper (main_source_loc);
-	  auto packet = mapper->ModuleImport (module->get_flatname ());
-	  if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
-	    module->do_import (packet.GetString ().c_str (), reader, true);
-	  else
-	    {} // FIXME: Error
+	  if (!module->filename)
+	    {
+	      auto *mapper = get_mapper (main_source_loc);
+	      auto packet = mapper->ModuleImport (module->get_flatname ());
+	      module->set_filename (packet);
+	    }
+	  module->do_import (reader, true);
 
 	  /* Restore the line-map state.  */
 	  linemap_module_restore (line_table, pre_hwm);
@@ -18633,10 +18649,7 @@ preprocessed_module (cpp_reader *reader)
 	  Cody::Packet const &p = *r_iter;
 	  ++r_iter;
 
-	  if (p.GetCode () == Cody::Client::PC_MODULE_CMI)
-	    module->filename = xstrdup (p.GetString ().c_str ());
-	  else
-	    {} // FIXME:ERROR
+	  module->set_filename (p);
 	}
     }
 
@@ -18764,10 +18777,14 @@ init_modules (cpp_reader *reader)
 
 	bool system = hdr[0] == '<';
 	bool user = hdr[0] == '"';
-	// FIXME: Check terminator matches
+	bool delimed = system || user;
 
-	hdr = canonicalize_header_name (system || user ? reader : NULL,
-					0, !(system || user), hdr, len);
+	if (len <= (delimed ? 2 : 0)
+	    || (delimed && hdr[len-1] != (system ? '>' : '"')))
+	  error ("invalid header name %qs", hdr);
+
+	hdr = canonicalize_header_name (delimed ? reader : NULL,
+					0, !delimed, hdr, len);
 	char *path = XNEWVEC (char, len + 1);
 	memcpy (path, hdr, len);
 	path[len+1] = 0;

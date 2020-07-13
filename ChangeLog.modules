@@ -1,6 +1,17 @@
 2020-07-13  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::set_filename): New.
+	(module_state::do_import): Drop fname arg.
+	(module_state::read_imports): Set filename here.
+	(module_state::write_locations): Drop duplicate FIXME.
+	(module_state::read_macros): Drop out of date FIXME.
+	(direct_import): Adjust.
+	(module_translate): Set filename if we're told it.
+	(preprocess_module): Copy if filename already known.
+	(preprocessed_module, init_modules): Adjust.
+
+	gcc/cp/
 	* module.cc (module_state::read_cluster): Add FIXME about
 	unnecessary deduping.
 	* name-lookup.c (name_lookup::process_module_binding): Remove
