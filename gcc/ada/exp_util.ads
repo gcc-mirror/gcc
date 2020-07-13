@@ -982,6 +982,11 @@ package Exp_Util is
    --  If so, returns the value K, otherwise returns zero. The caller checks
    --  that N is of an integer type.
 
+   function Predicate_Check_In_Scope (N : Node_Id) return Boolean;
+   --  Return True if predicate checks should be generated in the current
+   --  scope on the given node. Will return False for example when the current
+   --  scope is a predefined primitive operation.
+
    procedure Process_Statements_For_Controlled_Objects (N : Node_Id);
    --  N is a node which contains a non-handled statement list. Inspect the
    --  statements looking for declarations of controlled objects. If at least
@@ -1198,11 +1203,6 @@ package Exp_Util is
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
-
-   function Predicate_Check_In_Scope (N : Node_Id) return Boolean;
-   --  Return True if predicate checks should be generated in the current
-   --  scope on the given node. Will return False for example when the current
-   --  scope is a predefined primitive operation.
 
 private
    pragma Inline (Duplicate_Subexpr);
