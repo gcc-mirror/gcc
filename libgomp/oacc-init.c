@@ -40,6 +40,11 @@
 
 static gomp_mutex_t acc_device_lock;
 
+static gomp_mutex_t acc_init_state_lock;
+static enum { uninitialized, initializing, initialized } acc_init_state
+  = uninitialized;
+static pthread_t acc_init_thread;
+
 /* A cached version of the dispatcher for the global "current" accelerator type,
    e.g. used as the default when creating new host threads.  This is the
    device-type equivalent of goacc_device_num (which specifies which device to
@@ -228,6 +233,11 @@ acc_dev_num_out_of_range (acc_device_t d, int ord, int ndevs)
 static struct gomp_device_descr *
 acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
 {
+  gomp_mutex_lock (&acc_init_state_lock);
+  acc_init_state = initializing;
+  acc_init_thread = pthread_self ();
+  gomp_mutex_unlock (&acc_init_state_lock);
+
   bool check_not_nested_p;
   if (implicit)
     {
@@ -316,6 +326,14 @@ acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
       goacc_profiling_dispatch (&prof_info, &device_init_event_info,
 				&api_info);
     }
+
+  /* We're setting 'initialized' *after* 'goacc_profiling_dispatch', so that a
+     nested 'acc_get_device_type' called from a profiling callback still sees
+     'initializing', so that we don't deadlock when it then again tries to lock
+     'goacc_prof_lock'.  See also the discussion in 'acc_get_device_type'.  */
+  gomp_mutex_lock (&acc_init_state_lock);
+  acc_init_state = initialized;
+  gomp_mutex_unlock (&acc_init_state_lock);
 
   return base_dev;
 }
@@ -643,6 +661,17 @@ acc_set_device_type (acc_device_t d)
 
 ialias (acc_set_device_type)
 
+static bool
+self_initializing_p (void)
+{
+  bool res;
+  gomp_mutex_lock (&acc_init_state_lock);
+  res = (acc_init_state == initializing
+	 && pthread_equal (acc_init_thread, pthread_self ()));
+  gomp_mutex_unlock (&acc_init_state_lock);
+  return res;
+}
+
 acc_device_t
 acc_get_device_type (void)
 {
@@ -652,6 +681,15 @@ acc_get_device_type (void)
 
   if (thr && thr->base_dev)
     res = acc_device_type (thr->base_dev->type);
+  else if (self_initializing_p ())
+    /* The Cuda libaccinj64.so version 9.0+ calls acc_get_device_type during the
+       acc_ev_device_init_start event callback, which is dispatched during
+       acc_init_1.  Trying to lock acc_device_lock during such a call (as we do
+       in the else clause below), will result in deadlock, since the lock has
+       already been taken by the acc_init_1 caller.  We work around this problem
+       by using the acc_get_device_type property "If the device type has not yet
+       been selected, the value acc_device_none may be returned".  */
+    ;
   else
     {
       acc_prof_info prof_info;
