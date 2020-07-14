@@ -1464,7 +1464,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      head = NULL;
 	      if (gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
 					       false, NULL, &head,
-					       true) == MATCH_YES)
+					       true, true) == MATCH_YES)
 		{
 		  gfc_omp_namelist *n;
 		  for (n = *head; n; n = n->next)
@@ -4553,7 +4553,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 		    /* Look through component refs to find last array
 		       reference.  */
-		    if (openacc && resolved)
+		    if (resolved)
 		      {
 			/* The "!$acc cache" directive allows rectangular
 			   subarrays to be specified, with some restrictions
@@ -4563,6 +4563,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			   arr(-n:n,-n:n) could be contiguous even if it looks
 			   like it may not be.  */
 			if (list != OMP_LIST_CACHE
+			    && list != OMP_LIST_DEPEND
 			    && !gfc_is_simply_contiguous (n->expr, false, true)
 			    && gfc_is_not_contiguous (n->expr))
 			  gfc_error ("Array is not contiguous at %L",
