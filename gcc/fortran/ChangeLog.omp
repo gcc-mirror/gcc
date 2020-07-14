@@ -3,6 +3,20 @@
 	Backport from mainline
 	2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
 
+	* openmp.c (gfc_match_omp_clauses): Match also derived-type
+	component refs in OMP_CLAUSE_MAP.
+	(resolve_omp_clauses): Resolve those.
+	* trans-openmp.c (gfc_trans_omp_array_section, gfc_trans_omp_clauses):
+	Handle OpenMP structure-element mapping.
+	(gfc_trans_oacc_construct, gfc_trans_oacc_executable_directive,
+	(gfc_trans_oacc_combined_directive, gfc_trans_oacc_declare): Update
+	add openacc=true in gfc_trans_omp_clauses call.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/67311
 	* trans-openmp.c (gfc_has_alloc_comps): Return false also for
 	pointers to arrays.

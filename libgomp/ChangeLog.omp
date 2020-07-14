@@ -3,6 +3,13 @@
 	Backport from mainline
 	2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: New test.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR fortran/67311
 	* testsuite/libgomp.fortran/target-map-1.f90: New test.
 
