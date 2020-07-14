@@ -2296,7 +2296,7 @@ ovl_skip_hidden (tree ovl)
   return ovl;
 }
 
-/* NODE is an OVL_HIDDEN_P node which is now revealed.  */
+/* NODE is an OVL_HIDDEN_P node that is now revealed.  */
 
 tree
 ovl_iterator::reveal_node (tree overload, tree node)

@@ -4708,6 +4708,10 @@ check_methods (tree t)
     }
 }
 
+/* FN is constructor, destructor or operator function.  Clone the
+   declaration to create a NAME'd variant.  NEED_VTT_PARM_P and
+   OMIT_INHERITED_PARMS_P are relevant if it's a cdtor.  */
+
 static tree
 copy_fndecl_with_name (tree fn, tree name, tree_code code,
 		       bool need_vtt_parm_p, bool omit_inherited_parms_p)
@@ -6091,10 +6095,8 @@ check_bases_and_members (tree t)
       }
 
   if (LAMBDA_TYPE_P (t))
-    {
-      /* "This class type is not an aggregate."  */
-      CLASSTYPE_NON_AGGREGATE (t) = 1;
-    }
+    /* "This class type is not an aggregate."  */
+    CLASSTYPE_NON_AGGREGATE (t) = 1;
 
   /* Compute the 'literal type' property before we
      do anything with non-static member functions.  */
@@ -6717,6 +6719,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	 indicates the total number of bits used.  Therefore,
 	 rli_size_so_far, rather than rli_size_unit_so_far, is
 	 used to compute TYPE_SIZE_UNIT.  */
+
+      /* Set the size and alignment for the new type.  */
       tree eoc = end_of_class (t, /*include_virtuals_p=*/0);
       TYPE_SIZE_UNIT (base_t)
 	= size_binop (MAX_EXPR,

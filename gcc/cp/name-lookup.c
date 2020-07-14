@@ -124,13 +124,11 @@ add_decl_to_level (cp_binding_level *b, tree decl)
   TREE_CHAIN (decl) = b->names;
   b->names = decl;
 
-  /* If appropriate, add decl to separate list of statics.  We
-     include extern variables because they might turn out to be
-     static later.  It's OK for this list to contain a few false
-     positives.  */
+  /* If appropriate, add decl to separate list of statics.  We include
+     extern variables because they might turn out to be static later.
+     It's OK for this list to contain a few false positives.  */
   if (b->kind == sk_namespace
-      && ((VAR_P (decl)
-	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+      && ((VAR_P (decl) && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	  || (TREE_CODE (decl) == FUNCTION_DECL
 	      && (!TREE_PUBLIC (decl)
 		  || decl_anon_ns_mem_p (decl)
@@ -727,6 +725,7 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 	break;
     }
 
+  /* Restore to incoming length.  */
   vec_safe_truncate (queue, length);
 
   return found;
@@ -1670,7 +1669,7 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
    no existing MEMBER_VEC and fewer than 8 fields, do nothing.  We
    know there must be at least 1 field -- the self-reference
    TYPE_DECL, except for anon aggregates, which will have at least
-   one field.  */
+   one field anyway.  */
 
 void 
 set_class_bindings (tree klass, unsigned extra)
@@ -3692,7 +3691,6 @@ debug (cp_binding_level *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
-
 static void
 print_other_binding_stack (cp_binding_level *stack)
 {
@@ -3704,7 +3702,7 @@ print_other_binding_stack (cp_binding_level *stack)
     }
 }
 
-void
+DEBUG_FUNCTION void
 print_binding_stack (void)
 {
   cp_binding_level *b;
@@ -5273,7 +5271,6 @@ using_directives_contain_std_p (vec<tree, va_gc> *usings)
 static bool
 has_using_namespace_std_directive_p ()
 {
-  /* Look at local using-directives.  */
   for (cp_binding_level *level = current_binding_level;
        level;
        level = level->level_chain)

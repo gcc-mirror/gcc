@@ -942,8 +942,11 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
   tree reqs2 = get_trailing_function_requirements (oldfn);
   if ((reqs1 != NULL_TREE) != (reqs2 != NULL_TREE))
     return false;
+
+  /* Substitution is needed when friends are involved.  */
   reqs1 = maybe_substitute_reqs_for (reqs1, newfn);
   reqs2 = maybe_substitute_reqs_for (reqs2, oldfn);
+
   return cp_tree_equal (reqs1, reqs2);
 }
 
@@ -2527,7 +2530,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
       /* Merge parameter attributes. */
       tree oldarg, newarg;
-      for (oldarg = DECL_ARGUMENTS(olddecl),  newarg = DECL_ARGUMENTS(newdecl);
+      for (oldarg = DECL_ARGUMENTS(olddecl), newarg = DECL_ARGUMENTS(newdecl);
            oldarg && newarg;
            oldarg = DECL_CHAIN(oldarg), newarg = DECL_CHAIN(newarg))
 	{
@@ -2737,6 +2740,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
+
   if (VAR_P (newdecl))
     {
       if (DECL_READ_P (olddecl))
@@ -2744,6 +2748,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else if (DECL_READ_P (newdecl))
 	DECL_READ_P (olddecl) = 1;
     }
+
   if (DECL_PRESERVE_P (olddecl))
     DECL_PRESERVE_P (newdecl) = 1;
   else if (DECL_PRESERVE_P (newdecl))
@@ -4683,9 +4688,9 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   return decl;
 }
 
-/* Install DECL as a builtin function at current (global) scope.
-   Return the new decl (if we found an existing version).  Also
-   installs it into ::std, if it's not '_*'.  */
+/* Install DECL as a builtin function at current global scope.  Return
+   the new decl (if we found an existing version).  Also installs it
+   into ::std, if it's not '_*'.  */
 
 tree
 cxx_builtin_function (tree decl)
@@ -13423,6 +13428,7 @@ grokdeclarator (const cp_declarator *declarator,
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
+
 		if (template_class_depth (current_class_type) == 0)
 		  {
 		    decl = check_explicit_specialization
