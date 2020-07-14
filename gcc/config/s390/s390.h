@@ -232,6 +232,9 @@ enum processor_flags
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS s390_d_target_versions
 
+/* Target CPU info for Rust.  */
+#define TARGET_RUST_CPU_INFO s390_rust_target_cpu_info
+
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
 			    | MASK_OPT_HTM | MASK_OPT_VX)

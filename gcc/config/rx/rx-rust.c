@@ -31,7 +31,7 @@ void rx_rust_target_cpu_info(void) {
     // llvm appears to have no (current or historical) support, so names made up by me
     if (TARGET_64BIT_DOUBLES) 
         rust_add_target_info("target_feature", "64bit-doubles");
-    if (NO_USE_FPU)
+    if (TARGET_NO_USE_FPU)
         rust_add_target_info("target_feature", "nofpu");
     // TODO: ensure below switch and variable works
     switch (rx_cpu_type) {

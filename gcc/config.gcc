@@ -575,6 +575,7 @@ sparc*-*-*)
 s390*-*-*)
 	cpu_type=s390
 	d_target_objs="s390-d.o"
+	rust_target_objs="s390-rust.o"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="s390intrin.h htmintrin.h htmxlintrin.h vecintrin.h"
 	;;
