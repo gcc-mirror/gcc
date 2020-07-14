@@ -1,3 +1,100 @@
+2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (is-effective-target):
+	Reorder to put powerpc stuff together.
+	(is-effective-target-keyword): Add power10_hw.
+
+2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (check_ppc_mma_hw_available):
+	New function.
+	(is-effective-target): Add ppc_mma_hw.
+	(is-effective-target-keyword): Add ppc_mma_hw.
+	* gcc.target/powerpc/mma-supported.c: New file.
+	* gcc.target/powerpc/mma-single-test.c: Require ppc_mma_hw.
+	* gcc.target/powerpc/mma-double-test.c: Require ppc_mma_hw.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* gcc.target/aarch64/return_address_sign_1.c: Update test.
+	* gcc.target/aarch64/return_address_sign_b_1.c: Likewise.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-13  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Update expected dump output.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* c-c++-common/goacc/mdc-1.c: Update expected dump output for zero
+	bias.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/mapping-tests-3.f90: New test.
+	* gfortran.dg/goacc/mapping-tests-4.f90: New test.
+
+2020-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/96130
+	* gcc.dg/torture/pr96130.c: New test.
+
+2020-07-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96063
+	* g++.dg/warn/Wmismatched-tags-7.C: New test.
+	* g++.dg/warn/Wmismatched-tags-8.C: New test.
+
+2020-07-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96077
+	* g++.dg/parse/enum14.C: New test.
+
+2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96180
+	* gcc.dg/torture/pr96133.c: Align global variable.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	Backported from master:
+	2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/94600
+	* gcc.dg/pr94600-1.c, gcc.dg/pr94600-2.c, gcc.dg/pr94600-3.c,
+	gcc.dg/pr94600-4.c, gcc.dg/pr94600-5.c, gcc.dg/pr94600-6.c,
+	gcc.dg/pr94600-7.c, gcc.dg/pr94600-8.c: New tests.
+
 2020-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
