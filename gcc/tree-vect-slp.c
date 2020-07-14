@@ -4404,18 +4404,26 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	else
 	  {
 	    /* For externals we have to look at all defs since their
-	       insertion place is decided per vector.  */
-	    unsigned j;
-	    tree vdef;
-	    FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (child), j, vdef)
-	      if (TREE_CODE (vdef) == SSA_NAME
-		  && !SSA_NAME_IS_DEFAULT_DEF (vdef))
-		{
-		  gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
-		  if (!last_stmt
-		      || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
-		    last_stmt = vstmt;
-		}
+	       insertion place is decided per vector.  But beware
+	       of pre-existing vectors where we need to make sure
+	       we do not insert before the region boundary.  */
+	    if (SLP_TREE_SCALAR_OPS (child).is_empty ()
+		&& !vinfo->lookup_def (SLP_TREE_VEC_DEFS (child)[0]))
+	      last_stmt = gsi_stmt (as_a <bb_vec_info> (vinfo)->region_begin);
+	    else
+	      {
+		unsigned j;
+		tree vdef;
+		FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (child), j, vdef)
+		  if (TREE_CODE (vdef) == SSA_NAME
+		      && !SSA_NAME_IS_DEFAULT_DEF (vdef))
+		    {
+		      gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
+		      if (!last_stmt
+			  || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+			last_stmt = vstmt;
+		    }
+	      }
 	  }
       /* This can happen when all children are pre-existing vectors or
 	 constants.  */

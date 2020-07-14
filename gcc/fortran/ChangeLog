@@ -1,3 +1,16 @@
+2020-07-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/45337
+	* resolve.c (resolve_fl_variable): Remove type and intent
+	checks from the check for dummy.
+
+2020-07-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95981
+	* check.c (dim_rank_check): Allow NULL references in call to
+	gfc_find_array_ref and return false if no reference is found.
+
 2020-07-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/96073

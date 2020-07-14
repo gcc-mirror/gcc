@@ -13263,7 +13263,7 @@ get_tree_code_name (enum tree_code code)
 {
   const char *invalid = "<invalid tree code>";
 
-  /* The tree_code enum promotes to signed, bit we could be getting
+  /* The tree_code enum promotes to signed, but we could be getting
      invalid values, so force an unsigned comparison.  */
   if (unsigned (code) >= MAX_TREE_CODES)
     {
