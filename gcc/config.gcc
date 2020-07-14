@@ -3135,10 +3135,12 @@ rx-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} rx/t-rx"
 	extra_options="${extra_options} rx/elf.opt"
+	rust_target_objs="rx-rust.o"
 	;;
 rx-*-linux*)
 	tm_file="elfos.h linux.h glibc-stdint.h rx/linux.h ../../libgcc/config/rx/rx-abi.h"
 	tmake_file="${tmake_file} rx/t-linux"
+	rust_target_objs="rx-rust.o"
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"

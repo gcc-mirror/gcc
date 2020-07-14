@@ -35,3 +35,7 @@ MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200  nofpu=mcpu?rx100
 
 MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS = 
+
+rx-rust.o: $(srcdir)/config/rx/rx-rust.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
