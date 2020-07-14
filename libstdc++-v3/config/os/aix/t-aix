@@ -1,5 +1,5 @@
 ifeq ($(MULTIBUILDTOP),)
-BITS=$(shell if test -z "`ar -X64 t src/.libs/$(PACKAGE).a`" ; then \
+BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
     echo '64'; else echo '32'; fi)
 MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
 all-local:

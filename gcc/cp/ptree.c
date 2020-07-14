@@ -41,6 +41,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
   if (!CODE_CONTAINS_STRUCT (TREE_CODE (node), TS_DECL_COMMON)
       || !DECL_LANG_SPECIFIC (node))
     return;
+
   if (TREE_CODE (node) == FUNCTION_DECL)
     {
       int flags = TFF_DECL_SPECIFIERS|TFF_RETURN_TYPE
@@ -103,6 +104,16 @@ cxx_print_type (FILE *file, tree node, int indent)
     case TYPENAME_TYPE:
       print_node (file, "fullname", TYPENAME_TYPE_FULLNAME (node),
 		  indent + 4);
+      return;
+
+    case TYPEOF_TYPE:
+      print_node (file, "expr", TYPEOF_TYPE_EXPR (node), indent + 4);
+      return;
+
+    case BASES:
+      if (BASES_DIRECT (node))
+	fputs (" direct", file);
+      print_node (file, "type", BASES_TYPE (node), indent + 4);
       return;
 
     case TYPE_PACK_EXPANSION:
@@ -218,8 +229,8 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "optype", BASELINK_OPTYPE (node), indent + 4);
       break;
     case OVERLOAD:
-      print_node (file, "function", OVL_FUNCTION (node), indent+4);
-      print_node (file, "next", OVL_CHAIN (node), indent+4);
+      print_node (file, "function", OVL_FUNCTION (node), indent + 4);
+      print_node (file, "next", OVL_CHAIN (node), indent + 4);
       break;
     case TEMPLATE_PARM_INDEX:
       print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);

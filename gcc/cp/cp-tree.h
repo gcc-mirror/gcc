@@ -1,4 +1,4 @@
-/* Definitions for C++ parsing and type checking.
+/* Definitions for -*- C++ -*- parsing and type checking.
    Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -391,7 +391,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF, SCOPE_REF)
-      PAREN_STRING_LITERAL (in STRING_CST)
+      PAREN_STRING_LITERAL_P (in STRING_CST)
       CP_DECL_THREAD_LOCAL_P (in VAR_DECL)
       KOENIG_LOOKUP_P (in CALL_EXPR)
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
@@ -486,7 +486,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
    6: TYPE_MARKED_P (in _TYPE)
-      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
+      DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
       CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_IS_DESIGNATED_INIT (in CONSTRUCTOR)
@@ -515,7 +515,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_VLA_CAPTURE_P (in FIELD_DECL)
       DECL_ARRAY_PARAMETER_P (in PARM_DECL)
       LABEL_DECL_CONTINUE (in LABEL_DECL)
-   2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
+   2: DECL_THIS_EXTERN (in VAR_DECL, FUNCTION_DECL or PARM_DECL)
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
       DECL_CONSTRAINT_VAR_P (in a PARM_DECL)
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
@@ -527,7 +527,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
       DECL_INVALID_OVERRIDER_P (in a FUNCTION_DECL)
    5: DECL_INTERFACE_KNOWN.
-   6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
+   6: DECL_THIS_STATIC (in VAR_DECL, FUNCTION_DECL or PARM_DECL)
       DECL_FIELD_IS_BASE (in FIELD_DECL)
       TYPE_DECL_ALIAS_P (in TYPE_DECL)
    7: DECL_THUNK_P (in a member FUNCTION_DECL)
@@ -783,8 +783,7 @@ struct GTY(()) tree_overload {
 /* Iterator for a 1 dimensional overload.  Permits iterating over the
    outer level of a 2-d overload when explicitly enabled.  */
 
-class ovl_iterator
-{
+class ovl_iterator {
   tree ovl;
   const bool allow_inner; /* Only used when checking.  */
 
@@ -872,8 +871,7 @@ class ovl_iterator
 /* Iterator over a (potentially) 2 dimensional overload, which is
    produced by name lookup.  */
 
-class lkp_iterator : public ovl_iterator
-{
+class lkp_iterator : public ovl_iterator {
   typedef ovl_iterator parent;
 
   tree outer;
@@ -905,8 +903,7 @@ class lkp_iterator : public ovl_iterator
 /* hash traits for declarations.  Hashes potential overload sets via
    DECL_NAME.  */
 
-struct named_decl_hash : ggc_remove <tree>
-{
+struct named_decl_hash : ggc_remove <tree> {
   typedef tree value_type; /* A DECL or OVERLOAD  */
   typedef tree compare_type; /* An identifier.  */
 
@@ -1356,8 +1353,8 @@ struct GTY (()) tree_trait_expr {
   (IDENTIFIER_NODE_CHECK(NODE)->base.protected_flag)
 
 /* Based off of TYPE_UNNAMED_P.  */
-#define LAMBDA_TYPE_P(NODE)			\
-  (TREE_CODE (NODE) == RECORD_TYPE		\
+#define LAMBDA_TYPE_P(NODE)					\
+  (TREE_CODE (NODE) == RECORD_TYPE				\
    && TYPE_LINKAGE_IDENTIFIER (NODE)				\
    && IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
@@ -2674,7 +2671,7 @@ struct GTY(()) lang_decl_base {
 /* DECL_LANG_SPECIFIC for the above codes.  */
 
 struct GTY(()) lang_decl_min {
-  struct lang_decl_base base;
+  struct lang_decl_base base; /* 32-bits.  */
 
   /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
      THUNK_ALIAS.
@@ -2737,8 +2734,7 @@ struct GTY(()) lang_decl_fn {
 
   union lang_decl_u5
   {
-    /* In a non-thunk FUNCTION_DECL or TEMPLATE_DECL, this is
-       DECL_CLONED_FUNCTION.  */
+    /* In a non-thunk FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
     tree GTY ((tag ("0"))) cloned_function;
 
     /* In a FUNCTION_DECL for which THUNK_P holds this is the
@@ -2757,10 +2753,10 @@ struct GTY(()) lang_decl_fn {
 /* DECL_LANG_SPECIFIC for namespaces.  */
 
 struct GTY(()) lang_decl_ns {
-  struct lang_decl_base base;
+  struct lang_decl_base base; /* 32 bits.  */
   cp_binding_level *level;
 
-  /* Inline children.  These need to be va_gc, because of PCH.  */
+  /* Inline children.  Needs to be va_gc, because of PCH.  */
   vec<tree, va_gc> *inlinees;
 
   /* Hash table of bound decls. It'd be nice to have this inline, but
@@ -2772,7 +2768,7 @@ struct GTY(()) lang_decl_ns {
 /* DECL_LANG_SPECIFIC for parameters.  */
 
 struct GTY(()) lang_decl_parm {
-  struct lang_decl_base base;
+  struct lang_decl_base base; /* 32 bits.  */
   int level;
   int index;
 };
@@ -3436,7 +3432,10 @@ struct GTY(()) lang_decl {
    an instantiation of a template -- but, from the point of view of
    the language, each instantiation of S results in a wholly unrelated
    global function f.  In this case, DECL_TEMPLATE_INFO for S<int>::f
-   will be non-NULL, but DECL_USE_TEMPLATE will be zero.  */
+   will be non-NULL, but DECL_USE_TEMPLATE will be zero.
+
+   In a friend declaration, TI_TEMPLATE can be an overload set, or
+   identifier.  */
 #define DECL_TEMPLATE_INFO(NODE) \
   (DECL_LANG_SPECIFIC (TEMPLATE_INFO_DECL_CHECK (NODE)) \
    ->u.min.template_info)
@@ -4669,6 +4668,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    template parameters at each level.  Each element in the vector is a
    TREE_LIST, whose TREE_VALUE is a PARM_DECL (if the parameter is a
    non-type parameter), or a TYPE_DECL (if the parameter is a type
+   parameter) or a TEMPLATE_DECL (if the parameter is a template
    parameter).  The TREE_PURPOSE is the default value, if any.  The
    TEMPLATE_PARM_INDEX for the parameter is available as the
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
@@ -5356,8 +5356,9 @@ extern GTY(()) tree integer_two_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
-/* Nonzero if we are inside eq_specializations, which affects comparison of
-   PARM_DECLs in cp_tree_equal.  */
+/* Nonzero if we are inside eq_specializations, which affects
+   comparison of PARM_DECLs in cp_tree_equal and alias specializations
+   in structrual_comptypes.  */
 extern int comparing_specializations;
 
 /* In parser.c.  */
@@ -5812,28 +5813,26 @@ const unsigned int STF_STRIP_DEPENDENT = 1U << 1;
 extern void init_reswords (void);
 
 /* Various flags for the overloaded operator information.  */
-enum ovl_op_flags
-  {
-    OVL_OP_FLAG_NONE = 0,	/* Don't care.  */
-    OVL_OP_FLAG_UNARY = 1,	/* Is unary.  */
-    OVL_OP_FLAG_BINARY = 2,	/* Is binary.  */
-    OVL_OP_FLAG_AMBIARY = 3,	/* May be unary or binary.  */
-    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete.  */
-    OVL_OP_FLAG_DELETE = 1,	/* operator delete.  */
-    OVL_OP_FLAG_VEC = 2		/* vector new or delete.  */
-  };
+enum ovl_op_flags {
+  OVL_OP_FLAG_NONE = 0,	/* Don't care.  */
+  OVL_OP_FLAG_UNARY = 1,	/* Is unary.  */
+  OVL_OP_FLAG_BINARY = 2,	/* Is binary.  */
+  OVL_OP_FLAG_AMBIARY = 3,	/* May be unary or binary.  */
+  OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete.  */
+  OVL_OP_FLAG_DELETE = 1,	/* operator delete.  */
+  OVL_OP_FLAG_VEC = 2		/* vector new or delete.  */
+};
 
 /* Compressed operator codes.  Order is determined by operators.def
    and does not match that of tree_codes.  */
-enum ovl_op_code
-  {
-    OVL_OP_ERROR_MARK,
-    OVL_OP_NOP_EXPR,
+enum ovl_op_code {
+  OVL_OP_ERROR_MARK,
+  OVL_OP_NOP_EXPR,
 #define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) OVL_OP_##CODE,
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
 #include "operators.def"
-    OVL_OP_MAX
-  };
+  OVL_OP_MAX
+};
 
 struct GTY(()) ovl_op_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
@@ -6771,8 +6770,6 @@ extern bool maybe_reject_flexarray_init		(tree, tree);
 
 /* in lex.c */
 extern void cxx_dup_lang_specific_decl		(tree);
-extern void yyungetc				(int, int);
-
 extern tree unqualified_name_lookup_error	(tree,
 						 location_t = UNKNOWN_LOCATION);
 extern tree unqualified_fn_lookup_error		(cp_expr);
@@ -7729,7 +7726,7 @@ extern tree mangle_tls_wrapper_fn		(tree);
 extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
 extern tree mangle_template_parm_object		(tree);
-extern char * get_mangled_vtable_map_var_name   (tree);
+extern char *get_mangled_vtable_map_var_name    (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
 
@@ -7983,7 +7980,7 @@ extern tree coro_validate_builtin_call		(tree,
 extern bool morph_fn_to_coro			(tree, tree *, tree *);
 
 /* Inline bodies.  */
-
+  
 inline tree
 ovl_first (tree node)
 {

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target power10_hw } */
+/* { dg-require-effective-target ppc_mma_hw } */
 /* { dg-options "-mdejagnu-cpu=power10 -O2" } */
 
 #include <stdio.h>

@@ -62,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Auxiliary data we hold for each type_info derived object we need.  */
 struct GTY (()) tinfo_s {
-  tree type;  /* The RECORD_TYPE for this type_info object */
+  tree type;  /* The (const-qualified) RECORD_TYPE for this type_info object */
 
   tree vtable; /* The VAR_DECL of the vtable.  Only filled at end of
 		  translation.  */
@@ -458,6 +458,7 @@ get_tinfo_decl (tree type)
       DECL_IGNORED_P (d) = 1;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
+
       /* Mark the variable as undefined -- but remember that we can
 	 define it later if we need to do so.  */
       DECL_EXTERNAL (d) = 1;
