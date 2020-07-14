@@ -8,6 +8,13 @@
 	(find_load_offset): Delete.
 	(create_and_finalize_hsa_program): Remove relocation handling.
 
+2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/routine-10.f90: New test.
+
 2020-06-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c (DoWorkVec):
