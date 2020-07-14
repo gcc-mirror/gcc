@@ -106,6 +106,16 @@ cxx_print_type (FILE *file, tree node, int indent)
 		  indent + 4);
       return;
 
+    case TYPEOF_TYPE:
+      print_node (file, "expr", TYPEOF_TYPE_EXPR (node), indent + 4);
+      return;
+
+    case BASES:
+      if (BASES_DIRECT (node))
+	fputs (" direct", file);
+      print_node (file, "type", BASES_TYPE (node), indent + 4);
+      return;
+
     case TYPE_PACK_EXPANSION:
       print_node (file, "args", PACK_EXPANSION_EXTRA_ARGS (node), indent + 4);
       return;
