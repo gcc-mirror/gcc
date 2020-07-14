@@ -330,6 +330,11 @@ gfc_has_alloc_comps (tree type, tree decl)
 	return false;
     }
 
+  if (GFC_DESCRIPTOR_TYPE_P (type)
+      && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT))
+    return false;
+
   if (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type))
     type = gfc_get_element_type (type);
 
