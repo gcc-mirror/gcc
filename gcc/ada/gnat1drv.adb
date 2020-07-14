@@ -1067,8 +1067,12 @@ begin
       --  Initialize all packages. For the most part, these initialization
       --  calls can be made in any order. Exceptions are as follows:
 
-      --  Lib.Initialize need to be called before Scan_Compiler_Arguments,
+      --  Lib.Initialize needs to be called before Scan_Compiler_Arguments,
       --  because it initializes a table filled by Scan_Compiler_Arguments.
+
+      --  Atree.Initialize needs to be called after Scan_Compiler_Arguments,
+      --  because the value specified by the -gnaten switch is used by
+      --  Atree.Initialize.
 
       Osint.Initialize;
       Fmap.Reset_Tables;
@@ -1692,7 +1696,10 @@ begin
    end;
 
    <<End_Of_Program>>
-   null;
+
+   if Debug_Flag_Dot_AA then
+      Atree.Print_Statistics;
+   end if;
 
 --  The outer exception handler handles an unrecoverable error
 

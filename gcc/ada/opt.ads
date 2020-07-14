@@ -1199,6 +1199,12 @@ package Opt is
    --  If a pragma No_Tagged_Streams is active for the current scope, this
    --  points to the corresponding pragma.
 
+   Nodes_Size_In_Meg : Nat := 0;
+   --  GNAT
+   --  Amount of memory to allocate for all nodes, in units of 2**20 bytes.
+   --  Set by the -gnaten switch; 0 means -gnaten was not given, and a default
+   --  value should be used.
+
    Normalize_Scalars : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if a pragma Normalize_Scalars applies to the current unit.

@@ -6499,8 +6499,8 @@ be presented in subsequent sections.
   limitations:
 
   * Starting the program's execution in the debugger will cause it to
-    stop at the start of the ``main`` function instead of the main subprogram. 
-    This can be worked around by manually inserting a breakpoint on that 
+    stop at the start of the ``main`` function instead of the main subprogram.
+    This can be worked around by manually inserting a breakpoint on that
     subprogram and resuming the program's execution until reaching that breakpoint.
   * Programs using GNAT.Compiler_Version will not link.
 

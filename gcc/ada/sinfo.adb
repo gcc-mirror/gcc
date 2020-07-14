@@ -29,9 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Style_Checks (All_Checks);
---  No subprogram ordering check, due to logical grouping
-
 with Atree; use Atree;
 
 package body Sinfo is

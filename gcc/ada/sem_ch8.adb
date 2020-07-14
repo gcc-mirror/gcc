@@ -5553,11 +5553,6 @@ package body Sem_Ch8 is
             declare
                E      : Entity_Id;
                Ematch : Entity_Id := Empty;
-
-               Last_Name_Id : constant Name_Id :=
-                                Name_Id (Nat (First_Name_Id) +
-                                           Name_Entries_Count - 1);
-
             begin
                for Nam in First_Name_Id .. Last_Name_Id loop
                   E := Get_Name_Entity_Id (Nam);

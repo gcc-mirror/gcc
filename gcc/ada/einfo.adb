@@ -29,9 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Style_Checks (All_Checks);
---  Turn off subprogram ordering, not used for this unit
-
 with Atree;   use Atree;
 with Elists;  use Elists;
 with Namet;   use Namet;

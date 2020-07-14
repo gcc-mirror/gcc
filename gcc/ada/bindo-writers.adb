@@ -1561,7 +1561,7 @@ package body Bindo.Writers is
       begin
          pragma Assert (Present (Nam));
 
-         return Bucket_Range_Type (Nam);
+         return Bucket_Range_Type (abs Nam);
       end Hash_File_Name;
 
       ---------------------
