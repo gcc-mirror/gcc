@@ -86,6 +86,8 @@ struct omp_for_data
 				outer iterator, depending on which
 				results in fewer iterations.  */
   tree factor; /* (m2 - m1) * outer_step / inner_step.  */
+  /* Adjusted n1 of the outer loop in such loop nests (if needed).  */
+  tree adjn1;
 };
 
 #define OACC_FN_ATTRIB "oacc function"

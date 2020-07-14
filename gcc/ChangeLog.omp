@@ -1,6 +1,20 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data): Add adjn1 member.
+	* omp-general.c (omp_extract_for_data): For non-rect loop, punt on
+	count computing if n1, n2 or step are not INTEGER_CST earlier.
+	Narrow the outer iterator range if needed so that non-rect loop
+	has at least one iteration for each outer range iteration.  Compute
+	adjn1.
+	* omp-expand.c (expand_omp_for_init_vars): Use adjn1 if non-NULL
+	instead of the outer loop's n1.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-general.h (struct omp_for_data): Add min_inner_iterations

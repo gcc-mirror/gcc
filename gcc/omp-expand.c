@@ -2276,6 +2276,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      && (optab_handler (sqrt_optab, TYPE_MODE (double_type_node))
 		  != CODE_FOR_nothing))
 	    {
+	      tree outer_n1 = fd->adjn1 ? fd->adjn1 : fd->loops[i - 1].n1;
 	      tree itype = TREE_TYPE (fd->loops[i].v);
 	      tree min_inner_iterations = fd->min_inner_iterations;
 	      tree factor = fd->factor;
@@ -2398,7 +2399,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      *gsi = gsi_after_labels (e->dest);
 	      t = fold_convert (itype, c);
 	      t = fold_build2 (MULT_EXPR, itype, t, fd->loops[i - 1].step);
-	      t = fold_build2 (PLUS_EXPR, itype, fd->loops[i - 1].n1, t);
+	      t = fold_build2 (PLUS_EXPR, itype, outer_n1, t);
 	      t = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, false,
 					    GSI_CONTINUE_LINKING);
 	      expand_omp_build_assign (gsi, fd->loops[i - 1].v, t, true);
