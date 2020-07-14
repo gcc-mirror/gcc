@@ -212,7 +212,7 @@ static int cp_lexer_saving_tokens
 static cp_token *cp_lexer_token_at
   (cp_lexer *, cp_token_position);
 static void cp_lexer_get_preprocessor_token
-  (cp_lexer *, cp_token *);
+  (unsigned, cp_token *);
 static inline cp_token *cp_lexer_peek_token
   (cp_lexer *);
 static cp_token *cp_lexer_peek_nth_token
@@ -613,12 +613,8 @@ debug (cp_parser *ptr)
 static cp_lexer *
 cp_lexer_alloc (void)
 {
-  cp_lexer *lexer;
-
-  c_common_no_more_pch ();
-
   /* Allocate the memory.  */
-  lexer = ggc_cleared_alloc<cp_lexer> ();
+  cp_lexer *lexer = ggc_cleared_alloc<cp_lexer> ();
 
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
@@ -631,31 +627,30 @@ cp_lexer_alloc (void)
   return lexer;
 }
 
-
 /* Create a new main C++ lexer, the lexer that gets tokens from the
    preprocessor.  */
 
 static cp_lexer *
 cp_lexer_new_main (void)
 {
-  cp_lexer *lexer;
   cp_token token;
 
   /* It's possible that parsing the first pragma will load a PCH file,
      which is a GC collection point.  So we have to do that before
      allocating any memory.  */
+  cp_lexer_get_preprocessor_token (0, &token);
   cp_parser_initial_pragma (&token);
+  c_common_no_more_pch ();
 
-  lexer = cp_lexer_alloc ();
-
+  cp_lexer *lexer = cp_lexer_alloc ();
   /* Put the first token in the buffer.  */
-  lexer->buffer->quick_push (token);
+  cp_token *tok = lexer->buffer->quick_push (token);
 
   /* Get the remaining tokens from the preprocessor.  */
-  while (token.type != CPP_EOF)
+  while (tok->type != CPP_EOF)
     {
-      cp_lexer_get_preprocessor_token (lexer, &token);
-      vec_safe_push (lexer->buffer, token);
+      tok = vec_safe_push (lexer->buffer, cp_token ());
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
 
   lexer->next_token = lexer->buffer->address ();
@@ -698,7 +693,8 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
 
-  gcc_assert (!lexer->next_token->purged_p);
+  gcc_assert (!lexer->next_token->purged_p
+	      && !lexer->last_token->purged_p);
   return lexer;
 }
 
@@ -815,14 +811,14 @@ cp_lexer_saving_tokens (const cp_lexer* lexer)
    processed strings.  */
 
 static void
-cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
+cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
 {
   static int is_extern_c = 0;
 
    /* Get a new token from the preprocessor.  */
   token->type
     = c_lex_with_flags (&token->u.value, &token->location, &token->flags,
-			lexer == NULL ? 0 : C_LEX_STRING_NO_JOIN);
+			flags);
   token->keyword = RID_MAX;
   token->purged_p = false;
   token->error_reported = false;
@@ -2029,7 +2025,7 @@ pop_unparsed_function_queues (cp_parser *parser)
 /* Constructors and destructors.  */
 
 static cp_parser *cp_parser_new
-  (void);
+  (cp_lexer *);
 
 /* Routines to parse various constructs.
 
@@ -3997,22 +3993,14 @@ cp_parser_make_indirect_declarator (enum tree_code code, tree class_type,
 /* Create a new C++ parser.  */
 
 static cp_parser *
-cp_parser_new (void)
+cp_parser_new (cp_lexer *lexer)
 {
-  cp_parser *parser;
-  cp_lexer *lexer;
-  unsigned i;
-
-  /* cp_lexer_new_main is called before doing GC allocation because
-     cp_lexer_new_main might load a PCH file.  */
-  lexer = cp_lexer_new_main ();
-
   /* Initialize the binops_by_token so that we can get the tree
      directly from the token.  */
-  for (i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
+  for (unsigned i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
     binops_by_token[binops[i].token_type] = binops[i];
 
-  parser = ggc_cleared_alloc<cp_parser> ();
+  cp_parser *parser = ggc_cleared_alloc<cp_parser> ();
   parser->lexer = lexer;
   parser->context = cp_parser_context_new (NULL);
 
@@ -4728,14 +4716,19 @@ cp_parser_translation_unit (cp_parser* parser)
   /* Remember where the base of the declarator obstack lies.  */
   void *declarator_obstack_base = obstack_next_free (&declarator_obstack);
 
+  push_deferring_access_checks (flag_access_control
+				? dk_no_deferred : dk_no_check);
+
   bool implicit_extern_c = false;
 
+  /* Parse until EOF.  */
   for (;;)
     {
       cp_token *token = cp_lexer_peek_token (parser->lexer);
 
       /* If we're entering or exiting a region that's implicitly
-	 extern "C", modify the lang context appropriately.  */
+	 extern "C", modify the lang context appropriately.  This is
+	 so horrible.  Please die.   */
       if (implicit_extern_c
 	  != cp_lexer_peek_token (parser->lexer)->implicit_extern_c)
 	{
@@ -43592,31 +43585,28 @@ static GTY (()) cp_parser *the_parser;
 static void
 cp_parser_initial_pragma (cp_token *first_token)
 {
-  tree name = NULL;
-
-  cp_lexer_get_preprocessor_token (NULL, first_token);
   if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
-    {
-      c_common_no_more_pch ();
-      return;
-    }
+    return;
 
-  cp_lexer_get_preprocessor_token (NULL, first_token);
+  cp_lexer_get_preprocessor_token (0, first_token);
+
+  tree name = NULL;
   if (first_token->type == CPP_STRING)
     {
       name = first_token->u.value;
 
-      cp_lexer_get_preprocessor_token (NULL, first_token);
-      if (first_token->type != CPP_PRAGMA_EOL)
-	error_at (first_token->location,
-		  "junk at end of %<#pragma GCC pch_preprocess%>");
+      cp_lexer_get_preprocessor_token (0, first_token);
     }
-  else
-    error_at (first_token->location, "expected string literal");
 
   /* Skip to the end of the pragma.  */
-  while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
-    cp_lexer_get_preprocessor_token (NULL, first_token);
+  if (first_token->type != CPP_PRAGMA_EOL)
+    {
+      error_at (first_token->location,
+		"malformed %<#pragma GCC pch_preprocess%>");
+      do
+	cp_lexer_get_preprocessor_token (0, first_token);
+      while (first_token->type != CPP_PRAGMA_EOL);
+    }
 
   /* Now actually load the PCH file.  */
   if (name)
@@ -43625,7 +43615,7 @@ cp_parser_initial_pragma (cp_token *first_token)
   /* Read one more token to return to our caller.  We have to do this
      after reading the PCH file in, since its pointers have to be
      live.  */
-  cp_lexer_get_preprocessor_token (NULL, first_token);
+  cp_lexer_get_preprocessor_token (0, first_token);
 }
 
 /* Parse a pragma GCC ivdep.  */
@@ -44050,12 +44040,15 @@ c_parse_file (void)
 
   if (already_called)
     fatal_error (input_location,
-		 "inter-module optimizations not implemented for C++");
+		 "multi-source compilation not implemented for C++");
   already_called = true;
 
-  the_parser = cp_parser_new ();
-  push_deferring_access_checks (flag_access_control
-				? dk_no_deferred : dk_no_check);
+  /* cp_lexer_new_main is called before doing any GC allocation
+     because tokenization might load a PCH file.  */
+  cp_lexer *lexer = cp_lexer_new_main ();
+
+  the_parser = cp_parser_new (lexer);
+
   cp_parser_translation_unit (the_parser);
   class_decl_loc_t::diag_mismatched_tags ();
 
