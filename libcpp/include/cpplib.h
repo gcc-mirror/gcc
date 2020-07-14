@@ -312,9 +312,6 @@ enum cpp_normalize_level {
    carries all the options visible to the command line.  */
 struct cpp_options
 {
-  /* Characters between tab stops.  */
-  unsigned int tabstop;
-
   /* The language we're preprocessing.  */
   enum c_lang lang;
 
@@ -1335,14 +1332,43 @@ extern const char * cpp_get_userdef_suffix
   (const cpp_token *);
 
 /* In charset.c */
+
+/* A class to manage the state while converting a UTF-8 sequence to cppchar_t
+   and computing the display width one character at a time.  */
+class cpp_display_width_computation {
+ public:
+  cpp_display_width_computation (const char *data, int data_length,
+				 int tabstop);
+  const char *next_byte () const { return m_next; }
+  int bytes_processed () const { return m_next - m_begin; }
+  int bytes_left () const { return m_bytes_left; }
+  bool done () const { return !bytes_left (); }
+  int display_cols_processed () const { return m_display_cols; }
+
+  int process_next_codepoint ();
+  int advance_display_cols (int n);
+
+ private:
+  const char *const m_begin;
+  const char *m_next;
+  size_t m_bytes_left;
+  const int m_tabstop;
+  int m_display_cols;
+};
+
+/* Convenience functions that are simple use cases for class
+   cpp_display_width_computation.  Tab characters will be expanded to spaces
+   as determined by TABSTOP.  */
 int cpp_byte_column_to_display_column (const char *data, int data_length,
-				       int column);
-inline int cpp_display_width (const char *data, int data_length)
+				       int column, int tabstop);
+inline int cpp_display_width (const char *data, int data_length,
+			      int tabstop)
 {
-    return cpp_byte_column_to_display_column (data, data_length, data_length);
+  return cpp_byte_column_to_display_column (data, data_length, data_length,
+					    tabstop);
 }
 int cpp_display_column_to_byte_column (const char *data, int data_length,
-				       int display_col);
+				       int display_col, int tabstop);
 int cpp_wcwidth (cppchar_t c);
 
 #endif /* ! LIBCPP_CPPLIB_H */

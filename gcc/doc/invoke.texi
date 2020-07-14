@@ -292,7 +292,9 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-template-tree  -fno-elide-type @gol
 -fdiagnostics-path-format=@r{[}none@r{|}separate-events@r{|}inline-events@r{]} @gol
 -fdiagnostics-show-path-depths @gol
--fno-show-column}
+-fno-show-column @gol
+-fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]} @gol
+-fdiagnostics-column-origin=@var{origin}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -4730,6 +4732,31 @@ Do not print column numbers in diagnostics.  This may be necessary if
 diagnostics are being scanned by a program that does not understand the
 column numbers, such as @command{dejagnu}.
 
+@item -fdiagnostics-column-unit=@var{UNIT}
+@opindex fdiagnostics-column-unit
+Select the units for the column number.  This affects traditional diagnostics
+(in the absence of @option{-fno-show-column}), as well as JSON format
+diagnostics if requested.
+
+The default @var{UNIT}, @samp{display}, considers the number of display
+columns occupied by each character.  This may be larger than the number
+of bytes required to encode the character, in the case of tab
+characters, or it may be smaller, in the case of multibyte characters.
+For example, the character ``GREEK SMALL LETTER PI (U+03C0)'' occupies one
+display column, and its UTF-8 encoding requires two bytes; the character
+``SLIGHTLY SMILING FACE (U+1F642)'' occupies two display columns, and
+its UTF-8 encoding requires four bytes.
+
+Setting @var{UNIT} to @samp{byte} changes the column number to the raw byte
+count in all cases, as was traditionally output by GCC prior to version 11.1.0.
+
+@item -fdiagnostics-column-origin=@var{ORIGIN}
+@opindex fdiagnostics-column-origin
+Select the origin for column numbers, i.e. the column number assigned to the
+first column.  The default value of 1 corresponds to traditional GCC
+behavior and to the GNU style guide.  Some utilities may perform better with an
+origin of 0; any non-negative value may be specified.
+
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
@@ -4765,11 +4792,15 @@ might be printed in JSON form (after formatting) like this:
         "locations": [
             @{
                 "caret": @{
+		    "display-column": 3,
+		    "byte-column": 3,
                     "column": 3,
                     "file": "misleading-indentation.c",
                     "line": 15
                 @},
                 "finish": @{
+		    "display-column": 4,
+		    "byte-column": 4,
                     "column": 4,
                     "file": "misleading-indentation.c",
                     "line": 15
@@ -4785,6 +4816,8 @@ might be printed in JSON form (after formatting) like this:
                 "locations": [
                     @{
                         "caret": @{
+			    "display-column": 5,
+			    "byte-column": 5,
                             "column": 5,
                             "file": "misleading-indentation.c",
                             "line": 17
@@ -4794,6 +4827,7 @@ might be printed in JSON form (after formatting) like this:
                 "message": "...this statement, but the latter is @dots{}"
             @}
         ]
+	"column-origin": 1,
     @},
     @dots{}
 ]
@@ -4806,10 +4840,34 @@ A diagnostic has a @code{kind}.  If this is @code{warning}, then there is
 an @code{option} key describing the command-line option controlling the
 warning.
 
-A diagnostic can contain zero or more locations.  Each location has up
-to three positions within it: a @code{caret} position and optional
-@code{start} and @code{finish} positions.  A location can also have
-an optional @code{label} string.  For example, this error:
+A diagnostic can contain zero or more locations.  Each location has an
+optional @code{label} string and up to three positions within it: a
+@code{caret} position and optional @code{start} and @code{finish} positions.
+A position is described by a @code{file} name, a @code{line} number, and
+three numbers indicating a column position:
+@itemize @bullet
+
+@item
+@code{display-column} counts display columns, accounting for tabs and
+multibyte characters.
+
+@item
+@code{byte-column} counts raw bytes.
+
+@item
+@code{column} is equal to one of
+the previous two, as dictated by the @option{-fdiagnostics-column-unit}
+option.
+
+@end itemize
+All three columns are relative to the origin specified by
+@option{-fdiagnostics-column-origin}, which is typically equal to 1 but may
+be set, for instance, to 0 for compatibility with other utilities that
+number columns from 0.  The column origin is recorded in the JSON output in
+the @code{column-origin} tag.  In the remaining examples below, the extra
+column number outputs have been omitted for brevity.
+
+For example, this error:
 
 @smallexample
 bad-binary-ops.c:64:23: error: invalid operands to binary + (have 'S' @{aka

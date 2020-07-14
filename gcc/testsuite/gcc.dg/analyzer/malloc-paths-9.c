@@ -288,7 +288,7 @@ int test_3 (int x, int y)
     |      |     ~~~~~~~~~~
     |      |     |
     |      |     (4) ...to here
-    |   NN |      to dereference it above
+    |   NN |                    to dereference it above
     |   NN |   return *ptr;
     |      |          ~~~~
     |      |          |

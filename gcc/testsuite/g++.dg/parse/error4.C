@@ -7,4 +7,4 @@ struct X {
 		 int);
 };
 
-// { dg-error "4:'itn' has not been declared" "" { target *-*-* } 6 }
+// { dg-error "18:'itn' has not been declared" "" { target *-*-* } 6 }

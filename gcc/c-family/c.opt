@@ -1876,10 +1876,6 @@ Enum(strong_eval_order) String(some) Value(1)
 EnumValue
 Enum(strong_eval_order) String(all) Value(2)
 
-ftabstop=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger
--ftabstop=<number>	Distance between tab stops for column reporting.
-
 ftemplate-backtrace-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(template_backtrace_limit) Init(10)
 Set the maximum number of template instantiation notes for a single warning or error.

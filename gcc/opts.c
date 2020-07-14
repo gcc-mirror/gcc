@@ -2404,6 +2404,14 @@ common_handle_option (struct gcc_options *opts,
       dc->parseable_fixits_p = value;
       break;
 
+    case OPT_fdiagnostics_column_unit_:
+      dc->column_unit = (enum diagnostics_column_unit)value;
+      break;
+
+    case OPT_fdiagnostics_column_origin_:
+      dc->column_origin = value;
+      break;
+
     case OPT_fdiagnostics_show_cwe:
       dc->show_cwe = value;
       break;
@@ -2790,6 +2798,12 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_falign_functions_:
       check_alignment_argument (loc, arg, "functions");
+      break;
+
+    case OPT_ftabstop_:
+      /* It is documented that we silently ignore silly values.  */
+      if (value >= 1 && value <= 100)
+	dc->tabstop = value;
       break;
 
     default:
