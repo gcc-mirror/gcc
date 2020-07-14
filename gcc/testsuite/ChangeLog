@@ -1,3 +1,10 @@
+2020-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-msum-runnable.c: New test.
+	* gcc.target/powerpc/vsx-builtin-msum.c: New test.
+	Modified from ...
+	(cherry picked from commit c1a57681a64150d2fc336ba8e055c5f82e3737e8)
+
 2020-07-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-1-p9-runnable.c: Update.
