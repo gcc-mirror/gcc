@@ -1072,9 +1072,8 @@ lto_merge_comdat_map (bool balance, bool promote_statics)
   FOR_EACH_SYMBOL (node)
     node->aux = NULL;
 
-  if (balance)
-    if (!balance_partitions (&disjoint_sets, n))
-      return;
+  if (balance && !balance_partitions (&disjoint_sets, n))
+    return;
 
   build_ltrans_partitions (&disjoint_sets, n);
 }

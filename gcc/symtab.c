@@ -965,6 +965,8 @@ symtab_node::dump_base (FILE *f)
   if (lto_file_data)
     fprintf (f, "  Read from file: %s\n",
 	     lto_file_data->file_name);
+
+  fprintf(f, "  AUX2: %d\n", aux2);
 }
 
 /* Dump symtab node to F.  */

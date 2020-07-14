@@ -2639,10 +2639,6 @@ ipa_passes (void)
 
   if (!in_lto_p)
     {
-      struct symtab_node *node;
-      int partitions, i;
-      int *pids;
-
       /* Generate coverage variables and constructors.  */
       coverage_finish ();
 
@@ -2654,96 +2650,7 @@ ipa_passes (void)
       execute_ipa_summary_passes
 	((ipa_opt_pass_d *) passes->all_regular_ipa_passes);
 
-      if (split_outputs)
-	{
-	  bool promote_statics = param_promote_statics;
-	  bool balance = param_balance_partitions;
-
-	  /* Trick the compiler to think that we are in WPA.  */
-	  flag_wpa = "";
-	  symtab_node::checking_verify_symtab_nodes ();
-
-	  /* Partition the program so that COMDATs get mapped to the same
-	     partition. If promote_statics is true, it also maps statics
-	     to the same partition. If balance is true, try to balance the
-	     partitions for compilation performance.  */
-	  lto_merge_comdat_map (balance, promote_statics);
-
-	  /* AUX pointers are used by partitioning code to bookkeep number of
-	     partitions symbol is in.  This is no longer needed.  */
-	  FOR_EACH_SYMBOL (node)
-	    node->aux = NULL;
-
-	  /* We decided that partitioning is a bad idea. In this case, just
-	     proceed with the default compilation method.  */
-	  if (ltrans_partitions.length () <= 1)
-	    {
-	      flag_wpa = NULL;
-	      goto continue_compilation;
-	    }
-
-	  /* Find out statics that need to be promoted
-	     to globals with hidden visibility because they are accessed from
-	     multiple partitions.  */
-	  lto_promote_cross_file_statics (promote_statics);
-
-	  /* Check if we have variables being referenced across partitions.  */
-	  lto_check_usage_from_other_partitions ();
-
-	  /* Trick the compiler to think we are not in WPA anymore.  */
-	  flag_wpa = NULL;
-
-	  partitions = ltrans_partitions.length ();
-	  pids = (int *) alloca (partitions * sizeof (*pids));
-
-	  /* Trick the compiler to think we are in LTRANS mode.  */
-	  flag_ltrans = true;
-
-	  init_additional_asm_names_file ();
-
-	  /* Flush asm file, so we don't get repeated output as we fork.  */
-	  fflush (asm_out_file);
-
-	  /* Run serially for now.  */
-	  for (i = 0; i < partitions; ++i)
-	    {
-	      gcc_assert (ltrans_partitions[i]->symbols > 0);
-
-	      pids[i] = fork ();
-	      if (pids[i] == 0)
-		{
-		  lto_apply_partition_mask (ltrans_partitions[i]);
-
-		  goto continue_compilation;
-		}
-	      else
-		{
-		  int wstatus;
-		  waitpid (pids[i], &wstatus, 0);
-
-		  if (WIFEXITED (wstatus))
-		    {
-		      if (WEXITSTATUS (wstatus) == 0)
-			continue;
-		      else
-			{
-			  fprintf (stderr, "Child %d exited with error\n", i);
-			  internal_error ("Child exited with error");
-			}
-
-		    }
-		  else if (WIFSIGNALED (wstatus))
-		    {
-		      fprintf (stderr, "Child %d aborted due to signal\n", i);
-		      internal_error ("Child aborted with error");
-		    }
-		}
-	    }
-	  exit (0);
-	}
     }
-
-  continue_compilation:
 
   /* Some targets need to handle LTO assembler output specially.  */
   if (flag_generate_lto || flag_generate_offload)
@@ -2772,10 +2679,17 @@ ipa_passes (void)
   if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_end ();
 
+  if (split_outputs)
+    flag_ltrans = true;
+
   if ((!flag_ltrans || split_outputs)
       && ((in_lto_p && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	  || !flag_lto || flag_fat_lto_objects))
     execute_ipa_pass_list (passes->all_regular_ipa_passes);
+
+  if (split_outputs)
+    flag_ltrans = false;
+
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
   bitmap_obstack_release (NULL);
@@ -2853,6 +2767,102 @@ symbol_table::compile (const char *name)
   {
     timevar_start (TV_CGRAPH_IPA_PASSES);
     ipa_passes ();
+
+    if (split_outputs)
+      {
+	struct symtab_node *node;
+	int partitions, i;
+	int *pids;
+
+	bool promote_statics = param_promote_statics;
+	bool balance = param_balance_partitions;
+
+	/* Trick the compiler to think that we are in WPA.  */
+	flag_wpa = "";
+	symtab_node::checking_verify_symtab_nodes ();
+
+	/* Partition the program so that COMDATs get mapped to the same
+	   partition. If promote_statics is true, it also maps statics
+	   to the same partition. If balance is true, try to balance the
+	   partitions for compilation performance.  */
+	lto_merge_comdat_map (balance, promote_statics);
+
+	/* AUX pointers are used by partitioning code to bookkeep number of
+	   partitions symbol is in.  This is no longer needed.  */
+	FOR_EACH_SYMBOL (node)
+	  node->aux = NULL;
+
+	/* We decided that partitioning is a bad idea. In this case, just
+	   proceed with the default compilation method.  */
+	if (ltrans_partitions.length () <= 1)
+	  {
+	    flag_wpa = NULL;
+	    goto continue_compilation;
+	  }
+
+	/* Find out statics that need to be promoted
+	   to globals with hidden visibility because they are accessed from
+	   multiple partitions.  */
+	lto_promote_cross_file_statics (promote_statics);
+
+	/* Check if we have variables being referenced across partitions.  */
+	lto_check_usage_from_other_partitions ();
+
+	/* Trick the compiler to think we are not in WPA anymore.  */
+	flag_wpa = NULL;
+
+	partitions = ltrans_partitions.length ();
+	pids = (int *) alloca (partitions * sizeof (*pids));
+
+	/* Trick the compiler to think we are in LTRANS mode.  */
+	flag_ltrans = true;
+
+	init_additional_asm_names_file ();
+
+	/* Flush asm file, so we don't get repeated output as we fork.  */
+	fflush (asm_out_file);
+
+	symtab_node::checking_verify_symtab_nodes ();
+
+	/* Run serially for now.  */
+	for (i = 0; i < partitions; ++i)
+	  {
+	    gcc_assert (ltrans_partitions[i]->symbols > 0);
+
+	    pids[i] = fork ();
+	    if (pids[i] == 0)
+	      {
+		lto_apply_partition_mask (ltrans_partitions[i]);
+
+		goto continue_compilation;
+	      }
+	    else
+	      {
+		int wstatus;
+		waitpid (pids[i], &wstatus, 0);
+
+		if (WIFEXITED (wstatus))
+		  {
+		    if (WEXITSTATUS (wstatus) == 0)
+		      continue;
+		    else
+		      {
+			fprintf (stderr, "Child %d exited with error\n", i);
+			internal_error ("Child exited with error");
+		      }
+
+		  }
+		else if (WIFSIGNALED (wstatus))
+		  {
+		    fprintf (stderr, "Child %d aborted due to signal\n", i);
+		    internal_error ("Child aborted with error");
+		  }
+	      }
+	  }
+	exit (0);
+      }
+
+continue_compilation:
     timevar_stop (TV_CGRAPH_IPA_PASSES);
   }
   /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */

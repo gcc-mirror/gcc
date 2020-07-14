@@ -1,3 +1,21 @@
+2020-07-14  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Move split_outputs to.
+	(symbol_table::compile): Here. Also make sure it runs after the IPA
+	transformation stage.
+	* ipa-fnsummary.c (gate): Make sure it runs once in split_outputs.
+	* lto-cgraph.c (handle_node_in_boundary): Implemement case where
+	body should not be removed.
+	(compute_boundary): New function.
+	* symtab.c: Show aux2 variable on dump.
+
+2020-07-08  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (ipa_passes): Use params instead of literals.
+	* lto-partition.c (merge_static_calls): Be careful with
+	SYMBOL_DUPLICATE.
+	* params.def: New params promote-statics and balance-partitions.
+
 2020-07-07  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* ipa-cp.c (initialize_node_lattices): Uncoment `gcc_unreachable'.
