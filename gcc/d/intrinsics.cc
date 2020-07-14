@@ -40,8 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 
 struct intrinsic_decl
 {
-  /* The DECL_FUNCTION_CODE of this decl.  */
+  /* The DECL_INTRINSIC_CODE of this decl.  */
   intrinsic_code code;
+
+  /* The DECL_FUNCTION_CODE of this decl, if it directly maps to any.  */
+  built_in_function built_in;
 
   /* The name of the intrinsic.  */
   const char *name;
@@ -58,8 +61,8 @@ struct intrinsic_decl
 
 static const intrinsic_decl intrinsic_decls[] =
 {
-#define DEF_D_INTRINSIC(CODE, ALIAS, NAME, MODULE, DECO, CTFE) \
-    { INTRINSIC_ ## ALIAS, NAME, MODULE, DECO, CTFE },
+#define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE) \
+    { INTRINSIC_ ## CODE, BUILT_IN_ ## BUILTIN, NAME, MODULE, DECO, CTFE },
 
 #include "intrinsics.def"
 
@@ -144,11 +147,28 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    case INTRINSIC_C_VA_ARG:
 	    case INTRINSIC_VASTART:
 	    case INTRINSIC_ADDS:
+	    case INTRINSIC_ADDSL:
+	    case INTRINSIC_ADDU:
+	    case INTRINSIC_ADDUL:
 	    case INTRINSIC_SUBS:
+	    case INTRINSIC_SUBSL:
+	    case INTRINSIC_SUBU:
+	    case INTRINSIC_SUBUL:
 	    case INTRINSIC_MULS:
+	    case INTRINSIC_MULSL:
+	    case INTRINSIC_MULU:
+	    case INTRINSIC_MULUI:
+	    case INTRINSIC_MULUL:
 	    case INTRINSIC_NEGS:
-	    case INTRINSIC_VLOAD:
-	    case INTRINSIC_VSTORE:
+	    case INTRINSIC_NEGSL:
+	    case INTRINSIC_VLOAD8:
+	    case INTRINSIC_VLOAD16:
+	    case INTRINSIC_VLOAD32:
+	    case INTRINSIC_VLOAD64:
+	    case INTRINSIC_VSTORE8:
+	    case INTRINSIC_VSTORE16:
+	    case INTRINSIC_VSTORE32:
+	    case INTRINSIC_VSTORE64:
 	      break;
 
 	    case INTRINSIC_POW:
@@ -302,14 +322,33 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
 			 integer_minus_one_node, integer_zero_node);
 
   /* Update the bit as needed, only testing the bit for bt().  */
-  if (intrinsic == INTRINSIC_BT)
-    return cond;
+  tree_code code;
 
-  tree_code code = (intrinsic == INTRINSIC_BTC) ? BIT_XOR_EXPR
-    : (intrinsic == INTRINSIC_BTR) ? BIT_AND_EXPR
-    : (intrinsic == INTRINSIC_BTS) ? BIT_IOR_EXPR
-    : ERROR_MARK;
-  gcc_assert (code != ERROR_MARK);
+  switch (intrinsic)
+    {
+    case INTRINSIC_BT:
+    case INTRINSIC_BT64:
+      return cond;
+
+    case INTRINSIC_BTC:
+    case INTRINSIC_BTC64:
+      code = BIT_XOR_EXPR;
+      break;
+
+    case INTRINSIC_BTR:
+    case INTRINSIC_BTR64:
+      bitnum = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (bitnum), bitnum);
+      code = BIT_AND_EXPR;
+      break;
+
+    case INTRINSIC_BTS:
+    case INTRINSIC_BTS64:
+      code = BIT_IOR_EXPR;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   /* ptr[bitnum / size] op= mask;  */
   if (intrinsic == INTRINSIC_BTR)
@@ -323,31 +362,6 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
   cond = modify_expr (tmp, cond);
 
   return compound_expr (cond, compound_expr (ptr, tmp));
-}
-
-/* Expand a front-end intrinsic call to bswap().  This takes one argument, the
-   signature to which can be either:
-
-	int bswap (uint arg);
-	int bswap (ulong arg);
-
-   This swaps all bytes in an N byte type end-to-end.  The original call
-   expression is held in CALLEXP.  */
-
-static tree
-expand_intrinsic_bswap (tree callexp)
-{
-  tree arg = CALL_EXPR_ARG (callexp, 0);
-  int argsize = TYPE_PRECISION (TREE_TYPE (arg));
-
-  /* Which variant of __builtin_bswap* should we call?  */
-  built_in_function code = (argsize == 32) ? BUILT_IN_BSWAP32
-    : (argsize == 64) ? BUILT_IN_BSWAP64
-    : END_BUILTINS;
-
-  gcc_assert (code != END_BUILTINS);
-
-  return call_builtin_fn (callexp, code, 1, arg);
 }
 
 /* Expand a front-end intrinsic call to popcnt().  This takes one argument, the
@@ -373,32 +387,6 @@ expand_intrinsic_popcnt (tree callexp)
 
   gcc_assert (code != END_BUILTINS);
 
-  return call_builtin_fn (callexp, code, 1, arg);
-}
-
-/* Expand a front-end intrinsic call to INTRINSIC, which is either a call to
-   sqrt(), sqrtf(), sqrtl().  These intrinsics expect to take one argument,
-   the signature to which can be either:
-
-	float sqrt (float arg);
-	double sqrt (double arg);
-	real sqrt (real arg);
-
-   This computes the square root of the given argument.  The original call
-   expression is held in CALLEXP.  */
-
-static tree
-expand_intrinsic_sqrt (intrinsic_code intrinsic, tree callexp)
-{
-  tree arg = CALL_EXPR_ARG (callexp, 0);
-
-  /* Which variant of __builtin_sqrt* should we call?  */
-  built_in_function code = (intrinsic == INTRINSIC_SQRT) ? BUILT_IN_SQRT
-    : (intrinsic == INTRINSIC_SQRTF) ? BUILT_IN_SQRTF
-    : (intrinsic == INTRINSIC_SQRTL) ? BUILT_IN_SQRTL
-    : END_BUILTINS;
-
-  gcc_assert (code != END_BUILTINS);
   return call_builtin_fn (callexp, code, 1, arg);
 }
 
@@ -575,28 +563,54 @@ expand_intrinsic_checkedint (intrinsic_code intrinsic, tree callexp)
   tree x;
   tree y;
   tree overflow;
+  internal_fn icode;
 
-  /* The negs() intrinsic gets turned into SUB_OVERFLOW (0, y).  */
-  if (intrinsic == INTRINSIC_NEGS)
+  /* Which variant of *_OVERFLOW should we generate?  */
+  switch (intrinsic)
     {
-      x = fold_convert (type, integer_zero_node);
-      y = CALL_EXPR_ARG (callexp, 0);
-      overflow = CALL_EXPR_ARG (callexp, 1);
-    }
-  else
-    {
+    case INTRINSIC_ADDS:
+    case INTRINSIC_ADDSL:
+    case INTRINSIC_ADDU:
+    case INTRINSIC_ADDUL:
       x = CALL_EXPR_ARG (callexp, 0);
       y = CALL_EXPR_ARG (callexp, 1);
       overflow = CALL_EXPR_ARG (callexp, 2);
-    }
+      icode = IFN_ADD_OVERFLOW;
+      break;
 
-  /* Which variant of *_OVERFLOW should we generate?  */
-  internal_fn icode = (intrinsic == INTRINSIC_ADDS) ? IFN_ADD_OVERFLOW
-    : (intrinsic == INTRINSIC_SUBS) ? IFN_SUB_OVERFLOW
-    : (intrinsic == INTRINSIC_MULS) ? IFN_MUL_OVERFLOW
-    : (intrinsic == INTRINSIC_NEGS) ? IFN_SUB_OVERFLOW
-    : IFN_LAST;
-  gcc_assert (icode != IFN_LAST);
+    case INTRINSIC_SUBS:
+    case INTRINSIC_SUBSL:
+    case INTRINSIC_SUBU:
+    case INTRINSIC_SUBUL:
+      x = CALL_EXPR_ARG (callexp, 0);
+      y = CALL_EXPR_ARG (callexp, 1);
+      overflow = CALL_EXPR_ARG (callexp, 2);
+      icode = IFN_SUB_OVERFLOW;
+      break;
+
+    case INTRINSIC_MULS:
+    case INTRINSIC_MULSL:
+    case INTRINSIC_MULU:
+    case INTRINSIC_MULUI:
+    case INTRINSIC_MULUL:
+      x = CALL_EXPR_ARG (callexp, 0);
+      y = CALL_EXPR_ARG (callexp, 1);
+      overflow = CALL_EXPR_ARG (callexp, 2);
+      icode = IFN_MUL_OVERFLOW;
+      break;
+
+    case INTRINSIC_NEGS:
+    case INTRINSIC_NEGSL:
+      /* The negs() intrinsic gets turned into SUB_OVERFLOW (0, y).  */
+      x = fold_convert (type, integer_zero_node);
+      y = CALL_EXPR_ARG (callexp, 0);
+      overflow = CALL_EXPR_ARG (callexp, 1);
+      icode = IFN_SUB_OVERFLOW;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   tree result
     = build_call_expr_internal_loc (EXPR_LOCATION (callexp), icode,
@@ -702,142 +716,87 @@ maybe_expand_intrinsic (tree callexp)
       return callexp;
 
     case INTRINSIC_BSF:
+    case INTRINSIC_BSF64:
       return expand_intrinsic_bsf (callexp);
 
     case INTRINSIC_BSR:
+    case INTRINSIC_BSR64:
       return expand_intrinsic_bsr (callexp);
 
     case INTRINSIC_BT:
+    case INTRINSIC_BT64:
     case INTRINSIC_BTC:
+    case INTRINSIC_BTC64:
     case INTRINSIC_BTR:
+    case INTRINSIC_BTR64:
     case INTRINSIC_BTS:
+    case INTRINSIC_BTS64:
       return expand_intrinsic_bt (intrinsic, callexp);
 
-    case INTRINSIC_BSWAP:
-      return expand_intrinsic_bswap (callexp);
-
-    case INTRINSIC_POPCNT:
+    case INTRINSIC_POPCNT32:
+    case INTRINSIC_POPCNT64:
       return expand_intrinsic_popcnt (callexp);
 
-    case INTRINSIC_COS:
-      return call_builtin_fn (callexp, BUILT_IN_COSL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_SIN:
-      return call_builtin_fn (callexp, BUILT_IN_SINL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_RNDTOL:
-      /* Not sure if llroundl stands as a good replacement for the
-	 expected behavior of rndtol.  */
-      return call_builtin_fn (callexp, BUILT_IN_LLROUNDL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
+    case INTRINSIC_BSWAP32:
+    case INTRINSIC_BSWAP64:
+    case INTRINSIC_CEIL:
+    case INTRINSIC_CEILF:
+    case INTRINSIC_CEILL:
+    case INTRINSIC_COSL:
+    case INTRINSIC_EXP:
+    case INTRINSIC_EXP2:
+    case INTRINSIC_EXPM1:
+    case INTRINSIC_FABSL:
+    case INTRINSIC_FLOOR:
+    case INTRINSIC_FLOORF:
+    case INTRINSIC_FLOORL:
+    case INTRINSIC_ISFINITE:
+    case INTRINSIC_ISINFINITY:
+    case INTRINSIC_ISNAN:
+    case INTRINSIC_LOG:
+    case INTRINSIC_LOG10:
+    case INTRINSIC_LOG2:
+    case INTRINSIC_RINTL:
+    case INTRINSIC_RNDTOLL:
+    case INTRINSIC_ROUND:
+    case INTRINSIC_SINL:
     case INTRINSIC_SQRT:
     case INTRINSIC_SQRTF:
     case INTRINSIC_SQRTL:
-      return expand_intrinsic_sqrt (intrinsic, callexp);
-
-    case INTRINSIC_LDEXP:
-      return call_builtin_fn (callexp, BUILT_IN_LDEXPL, 2,
-			      CALL_EXPR_ARG (callexp, 0),
-			      CALL_EXPR_ARG (callexp, 1));
-
-    case INTRINSIC_FABS:
-      return call_builtin_fn (callexp, BUILT_IN_FABSL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_RINT:
-      return call_builtin_fn (callexp, BUILT_IN_RINTL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
     case INTRINSIC_TAN:
-      return call_builtin_fn (callexp, BUILT_IN_TANL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_ISNAN:
-      return call_builtin_fn (callexp, BUILT_IN_ISNAN, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_ISINFINITY:
-      return call_builtin_fn (callexp, BUILT_IN_ISINF, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_ISFINITE:
-      return call_builtin_fn (callexp, BUILT_IN_ISFINITE, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_EXP:
-      return call_builtin_fn (callexp, BUILT_IN_EXPL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_EXPM1:
-      return call_builtin_fn (callexp, BUILT_IN_EXPM1L, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_EXP2:
-      return call_builtin_fn (callexp, BUILT_IN_EXP2L, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_LOG:
-      return call_builtin_fn (callexp, BUILT_IN_LOGL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_LOG2:
-      return call_builtin_fn (callexp, BUILT_IN_LOG2L, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_LOG10:
-      return call_builtin_fn (callexp, BUILT_IN_LOG10L, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_ROUND:
-      return call_builtin_fn (callexp, BUILT_IN_ROUNDL, 1,
-			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_FLOORF:
-    case INTRINSIC_FLOOR:
-    case INTRINSIC_FLOORL:
-      code = (intrinsic == INTRINSIC_FLOOR) ? BUILT_IN_FLOOR
-	: (intrinsic == INTRINSIC_FLOORF) ? BUILT_IN_FLOORF
-	: BUILT_IN_FLOORL;
-      return call_builtin_fn (callexp, code, 1, CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_CEILF:
-    case INTRINSIC_CEIL:
-    case INTRINSIC_CEILL:
-      code = (intrinsic == INTRINSIC_CEIL) ? BUILT_IN_CEIL
-	: (intrinsic == INTRINSIC_CEILF) ? BUILT_IN_CEILF
-	: BUILT_IN_CEILL;
-      return call_builtin_fn (callexp, code, 1, CALL_EXPR_ARG (callexp, 0));
-
     case INTRINSIC_TRUNC:
-      return call_builtin_fn (callexp, BUILT_IN_TRUNCL, 1,
+      code = intrinsic_decls[intrinsic].built_in;
+      gcc_assert (code != BUILT_IN_NONE);
+      return call_builtin_fn (callexp, code, 1,
 			      CALL_EXPR_ARG (callexp, 0));
-
-    case INTRINSIC_FMIN:
-      return call_builtin_fn (callexp, BUILT_IN_FMINL, 2,
-			      CALL_EXPR_ARG (callexp, 0),
-			      CALL_EXPR_ARG (callexp, 1));
 
     case INTRINSIC_FMAX:
-      return call_builtin_fn (callexp, BUILT_IN_FMAXL, 2,
+    case INTRINSIC_FMIN:
+    case INTRINSIC_LDEXPL:
+      code = intrinsic_decls[intrinsic].built_in;
+      gcc_assert (code != BUILT_IN_NONE);
+      return call_builtin_fn (callexp, code, 2,
 			      CALL_EXPR_ARG (callexp, 0),
 			      CALL_EXPR_ARG (callexp, 1));
 
+    case INTRINSIC_FMA:
+      code = intrinsic_decls[intrinsic].built_in;
+      gcc_assert (code != BUILT_IN_NONE);
+      return call_builtin_fn (callexp, code, 3,
+			      CALL_EXPR_ARG (callexp, 0),
+			      CALL_EXPR_ARG (callexp, 1),
+			      CALL_EXPR_ARG (callexp, 2));
+
     case INTRINSIC_COPYSIGN:
+    case INTRINSIC_COPYSIGNI:
       return expand_intrinsic_copysign (callexp);
 
     case INTRINSIC_POW:
       return expand_intrinsic_pow (callexp);
 
-    case INTRINSIC_FMA:
-      return call_builtin_fn (callexp, BUILT_IN_FMAL, 3,
-			      CALL_EXPR_ARG (callexp, 0),
-			      CALL_EXPR_ARG (callexp, 1),
-			      CALL_EXPR_ARG (callexp, 2));
-
     case INTRINSIC_TOPREC:
+    case INTRINSIC_TOPRECF:
+    case INTRINSIC_TOPRECL:
       return expand_intrinsic_toprec (callexp);
 
     case INTRINSIC_VA_ARG:
@@ -848,15 +807,32 @@ maybe_expand_intrinsic (tree callexp)
       return expand_intrinsic_vastart (callexp);
 
     case INTRINSIC_ADDS:
+    case INTRINSIC_ADDSL:
+    case INTRINSIC_ADDU:
+    case INTRINSIC_ADDUL:
     case INTRINSIC_SUBS:
+    case INTRINSIC_SUBSL:
+    case INTRINSIC_SUBU:
+    case INTRINSIC_SUBUL:
     case INTRINSIC_MULS:
+    case INTRINSIC_MULSL:
+    case INTRINSIC_MULU:
+    case INTRINSIC_MULUI:
+    case INTRINSIC_MULUL:
     case INTRINSIC_NEGS:
+    case INTRINSIC_NEGSL:
       return expand_intrinsic_checkedint (intrinsic, callexp);
 
-    case INTRINSIC_VLOAD:
+    case INTRINSIC_VLOAD8:
+    case INTRINSIC_VLOAD16:
+    case INTRINSIC_VLOAD32:
+    case INTRINSIC_VLOAD64:
       return expand_volatile_load (callexp);
 
-    case INTRINSIC_VSTORE:
+    case INTRINSIC_VSTORE8:
+    case INTRINSIC_VSTORE16:
+    case INTRINSIC_VSTORE32:
+    case INTRINSIC_VSTORE64:
       return expand_volatile_store (callexp);
 
     default:
