@@ -15,5 +15,5 @@ int f(...);
 
 int main()
 {
-  f<int>();
+  f<int>();			// { dg-error "ambiguous" }
 }

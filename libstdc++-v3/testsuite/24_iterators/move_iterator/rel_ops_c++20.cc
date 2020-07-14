@@ -142,22 +142,3 @@ static_assert( cend > beg );
 static_assert( beg <= cend );
 static_assert( cend >= beg );
 static_assert( std::is_lt(beg <=> cend) );
-
-#include <testsuite_greedy_ops.h>
-
-void test01()
-{
-  typedef std::move_iterator<greedy_ops::X*> iterator_type;
-
-  iterator_type it(nullptr);
-
-  it == it;
-  it != it;
-  it < it;
-  it <= it;
-  it > it;
-  it >= it;
-  // it - it;  // See PR libstdc++/71771
-  1 + it;
-  it + 1;
-}

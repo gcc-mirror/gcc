@@ -2435,10 +2435,12 @@ produce_lto_section ()
 /* Compare symbols to get them sorted by filename (to optimize streaming)  */
 
 static int
-cmp_symbol_files (const void *pn1, const void *pn2)
+cmp_symbol_files (const void *pn1, const void *pn2, void *id_map_)
 {
   const symtab_node *n1 = *(const symtab_node * const *)pn1;
   const symtab_node *n2 = *(const symtab_node * const *)pn2;
+  hash_map<lto_file_decl_data *, int> *id_map
+    = (hash_map<lto_file_decl_data *, int> *)id_map_;
 
   int file_order1 = n1->lto_file_data ? n1->lto_file_data->order : -1;
   int file_order2 = n2->lto_file_data ? n2->lto_file_data->order : -1;
@@ -2450,12 +2452,7 @@ cmp_symbol_files (const void *pn1, const void *pn2)
 
   /* Order within static library.  */
   if (n1->lto_file_data && n1->lto_file_data->id != n2->lto_file_data->id)
-    {
-      if (n1->lto_file_data->id > n2->lto_file_data->id)
-	return 1;
-      if (n1->lto_file_data->id < n2->lto_file_data->id)
-	return -1;
-    }
+    return *id_map->get (n1->lto_file_data) - *id_map->get (n2->lto_file_data);
 
   /* And finaly order by the definition order.  */
   return n1->order - n2->order;
@@ -2511,7 +2508,23 @@ lto_output (void)
 	    symbols_to_copy.safe_push (node);
 	}
     }
-  symbols_to_copy.qsort (cmp_symbol_files);
+  /* Map the section hash to an order it appears in symbols_to_copy
+     since we want to sort same ID symbols next to each other but need
+     to avoid making overall order depend on the actual hash value.  */
+  int order = 0;
+  hash_map<lto_file_decl_data *, int> id_map;
+  for (i = 0; i < symbols_to_copy.length (); ++i)
+    {
+      symtab_node *snode = symbols_to_copy[i];
+      if (snode->lto_file_data)
+	{
+	  bool existed_p = false;
+	  int &ord = id_map.get_or_insert (snode->lto_file_data, &existed_p);
+	  if (!existed_p)
+	    ord = order++;
+	}
+    }
+  symbols_to_copy.sort (cmp_symbol_files, (void *)&id_map);
   for (i = 0; i < symbols_to_copy.length (); i++)
     {
       symtab_node *snode = symbols_to_copy[i];

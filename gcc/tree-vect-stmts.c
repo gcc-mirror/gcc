@@ -7643,8 +7643,12 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      op = vec_oprnd0 = vect_get_vec_def_for_operand (gs_info.offset,
 							      stmt_info);
 	      if (mask)
-		mask_op = vec_mask = vect_get_vec_def_for_operand (mask,
-								   stmt_info);
+		{
+		  tree mask_vectype = truth_type_for (vectype);
+		  mask_op = vec_mask
+		    = vect_get_vec_def_for_operand (mask,
+						    stmt_info, mask_vectype);
+		}
 	    }
 	  else if (modifier != NONE && (j & 1))
 	    {

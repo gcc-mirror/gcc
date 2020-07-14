@@ -104,6 +104,7 @@
    to the assembler if -mpower9-vector was also used.  */
 #define ASM_CPU_SPEC \
 "%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power10: -mpower10; \
   mcpu=power9: -mpower9; \
   mcpu=power8|mcpu=powerpc64le: %{mpower9-vector: -mpower9;: -mpower8}; \
   mcpu=power7: -mpower7; \
@@ -159,7 +160,6 @@
   mcpu=e5500: -me5500; \
   mcpu=e6500: -me6500; \
   mcpu=titan: -mtitan; \
-  mcpu=future: -mfuture; \
   !mcpu*: %{mpower9-vector: -mpower9; \
 	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
 	    mvsx: -mpower7; \
@@ -522,6 +522,7 @@ extern int rs6000_vector_align[];
 #define MASK_HTM			OPTION_MASK_HTM
 #define MASK_ISEL			OPTION_MASK_ISEL
 #define MASK_MFCRF			OPTION_MASK_MFCRF
+#define MASK_MMA			OPTION_MASK_MMA
 #define MASK_MULHW			OPTION_MASK_MULHW
 #define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
 #define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
@@ -537,7 +538,7 @@ extern int rs6000_vector_align[];
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
-#define MASK_FUTURE			OPTION_MASK_FUTURE
+#define MASK_POWER10			OPTION_MASK_POWER10
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
@@ -776,7 +777,7 @@ extern unsigned rs6000_pointer_size;
 #define FUNCTION_BOUNDARY 32
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 128
+#define BIGGEST_ALIGNMENT (TARGET_MMA ? 512 : 128)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -1035,16 +1036,17 @@ enum data_align { align_abi, align_opt, align_both };
 	 ((MODE) == V4SFmode		\
 	  || (MODE) == V2DFmode)	\
 
-/* Note KFmode and possibly TFmode (i.e. IEEE 128-bit floating point) are not
-   really a vector, but we want to treat it as a vector for moves, and
-   such.  */
+/* Modes that are not vectors, but require vector alignment.  Treat these like
+   vectors in terms of loads and stores.  */
+#define VECTOR_ALIGNMENT_P(MODE)					\
+  (FLOAT128_VECTOR_P (MODE) || (MODE) == POImode || (MODE) == PXImode)
 
 #define ALTIVEC_VECTOR_MODE(MODE)					\
   ((MODE) == V16QImode							\
    || (MODE) == V8HImode						\
    || (MODE) == V4SFmode						\
    || (MODE) == V4SImode						\
-   || FLOAT128_VECTOR_P (MODE))
+   || VECTOR_ALIGNMENT_P (MODE))
 
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
@@ -2249,15 +2251,24 @@ extern int frame_pointer_needed;
    flags macros, but we've run out of bits, so we now map the options into new
    settings used here.  */
 
-/* Builtin attributes.  */
-#define RS6000_BTC_SPECIAL	0x00000000	/* Special function.  */
+/* Builtin operand count.  */
 #define RS6000_BTC_UNARY	0x00000001	/* normal unary function.  */
 #define RS6000_BTC_BINARY	0x00000002	/* normal binary function.  */
 #define RS6000_BTC_TERNARY	0x00000003	/* normal ternary function.  */
-#define RS6000_BTC_PREDICATE	0x00000004	/* predicate function.  */
-#define RS6000_BTC_ABS		0x00000005	/* Altivec/VSX ABS function.  */
-#define RS6000_BTC_DST		0x00000007	/* Altivec DST function.  */
-#define RS6000_BTC_TYPE_MASK	0x0000000f	/* Mask to isolate types */
+#define RS6000_BTC_QUATERNARY	0x00000004	/* normal quaternary
+						   function. */
+#define RS6000_BTC_QUINARY	0x00000005	/* normal quinary function.  */
+#define RS6000_BTC_SENARY	0x00000006	/* normal senary function.  */
+#define RS6000_BTC_OPND_MASK	0x00000007	/* Mask to isolate operands. */
+
+/* Builtin attributes.  */
+#define RS6000_BTC_SPECIAL	0x00000000	/* Special function.  */
+#define RS6000_BTC_PREDICATE	0x00000008	/* predicate function.  */
+#define RS6000_BTC_ABS		0x00000010	/* Altivec/VSX ABS
+						   function.  */
+#define RS6000_BTC_DST		0x00000020	/* Altivec DST function.  */
+
+#define RS6000_BTC_TYPE_MASK	0x0000003f	/* Mask to isolate types */
 
 #define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
 #define RS6000_BTC_CONST	0x00000100	/* Neither uses, nor
@@ -2266,13 +2277,18 @@ extern int frame_pointer_needed;
 						   state/mem and does
 						   not modify global state.  */
 #define RS6000_BTC_FP		0x00000400	/* depends on rounding mode.  */
-#define RS6000_BTC_ATTR_MASK	0x00000700	/* Mask of the attributes.  */
+#define RS6000_BTC_QUAD		0x00000800	/* Uses a register quad.  */
+#define RS6000_BTC_PAIR		0x00001000	/* Uses a register pair.  */
+#define RS6000_BTC_QUADPAIR	0x00001800	/* Uses a quad and a pair.  */
+#define RS6000_BTC_ATTR_MASK	0x00001f00	/* Mask of the attributes.  */
 
 /* Miscellaneous information.  */
 #define RS6000_BTC_SPR		0x01000000	/* function references SPRs.  */
 #define RS6000_BTC_VOID		0x02000000	/* function has no return value.  */
 #define RS6000_BTC_CR		0x04000000	/* function references a CR.  */
 #define RS6000_BTC_OVERLOADED	0x08000000	/* function is overloaded.  */
+#define RS6000_BTC_GIMPLE	0x10000000	/* function should be expanded
+						   into gimple.  */
 #define RS6000_BTC_MISC_MASK	0x1f000000	/* Mask of the misc info.  */
 
 /* Convenience macros to document the instruction type.  */
@@ -2304,6 +2320,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
+#define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
+#define RS6000_BTM_P10		MASK_POWER10
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2324,7 +2342,9 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_LDBL128			\
 				 | RS6000_BTM_POWERPC64			\
 				 | RS6000_BTM_FLOAT128			\
-				 | RS6000_BTM_FLOAT128_HW)
+				 | RS6000_BTM_FLOAT128_HW		\
+				 | RS6000_BTM_MMA			\
+				 | RS6000_BTM_P10)
 
 /* Define builtin enum index.  */
 
@@ -2335,6 +2355,7 @@ extern int frame_pointer_needed;
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
+#undef RS6000_BUILTIN_M
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
 
@@ -2345,6 +2366,7 @@ extern int frame_pointer_needed;
 #define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
+#define RS6000_BUILTIN_M(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 
@@ -2362,6 +2384,7 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_A
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
+#undef RS6000_BUILTIN_M
 #undef RS6000_BUILTIN_P
 #undef RS6000_BUILTIN_X
 
@@ -2433,6 +2456,8 @@ enum rs6000_builtin_type_index
   RS6000_BTI_ieee128_float,	 /* ieee 128-bit floating point */
   RS6000_BTI_ibm128_float,	 /* IBM 128-bit floating point */
   RS6000_BTI_const_str,		 /* pointer to const char * */
+  RS6000_BTI_vector_pair,	 /* unsigned 256-bit types (vector pair).  */
+  RS6000_BTI_vector_quad,	 /* unsigned 512-bit types (vector quad).  */
   RS6000_BTI_MAX
 };
 
@@ -2485,6 +2510,8 @@ enum rs6000_builtin_type_index
 #define ieee128_float_type_node		 (rs6000_builtin_types[RS6000_BTI_ieee128_float])
 #define ibm128_float_type_node		 (rs6000_builtin_types[RS6000_BTI_ibm128_float])
 #define const_str_type_node		 (rs6000_builtin_types[RS6000_BTI_const_str])
+#define vector_pair_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_pair])
+#define vector_quad_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_quad])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];

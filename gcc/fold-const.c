@@ -5770,8 +5770,22 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       case LT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
 	  break;
-	tem = fold_build1_loc (loc, ABS_EXPR, TREE_TYPE (arg1), arg1);
-	return negate_expr (fold_convert_loc (loc, type, tem));
+	if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+	  {
+	    /* A <= 0 ? A : -A for A INT_MIN is valid, but -abs(INT_MIN)
+	       is not, invokes UB both in abs and in the negation of it.
+	       So, use ABSU_EXPR instead.  */
+	    tree utype = unsigned_type_for (TREE_TYPE (arg1));
+	    tem = fold_build1_loc (loc, ABSU_EXPR, utype, arg1);
+	    tem = negate_expr (tem);
+	    return fold_convert_loc (loc, type, tem);
+	  }
+	else
+	  {
+	    tem = fold_build1_loc (loc, ABS_EXPR, TREE_TYPE (arg1), arg1);
+	    return negate_expr (fold_convert_loc (loc, type, tem));
+	  }
       default:
 	gcc_assert (TREE_CODE_CLASS (comp_code) == tcc_comparison);
 	break;

@@ -1056,7 +1056,7 @@ vect_compute_data_ref_alignment (dr_vec_info *dr_info)
   if (tree_int_cst_sgn (drb->step) < 0)
     /* PLUS because STEP is negative.  */
     misalignment += ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
-		     * TREE_INT_CST_LOW (drb->step));
+		     * -TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
 
   unsigned int const_misalignment;
   if (!known_misalignment (misalignment, vect_align_c, &const_misalignment))

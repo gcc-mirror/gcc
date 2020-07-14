@@ -535,9 +535,9 @@ static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
 {
   1, /* GP2GP  */
   /* Avoid the use of int<->fp moves for spilling.  */
-  8, /* GP2FP  */
-  8, /* FP2GP  */
-  4  /* FP2FP  */
+  5, /* GP2FP  */
+  6, /* FP2GP  */
+  3, /* FP2FP  */
 };
 
 static const struct cpu_regmove_cost thunderx3t110_regmove_cost =
@@ -704,15 +704,15 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
   6, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  5, /* vec_int_stmt_cost  */
-  6, /* vec_fp_stmt_cost  */
+  4, /* vec_int_stmt_cost  */
+  5, /* vec_fp_stmt_cost  */
   10, /* vec_permute_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
-  8, /* vec_align_load_cost  */
-  8, /* vec_unalign_load_cost  */
-  4, /* vec_unalign_store_cost  */
-  4, /* vec_store_cost  */
+  4, /* vec_align_load_cost  */
+  4, /* vec_unalign_load_cost  */
+  1, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
   2, /* cond_taken_branch_cost  */
   1  /* cond_not_taken_branch_cost  */
 };

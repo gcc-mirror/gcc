@@ -2733,8 +2733,8 @@ add_functions (void)
 
   make_generic ("null", GFC_ISYM_NULL, GFC_STD_F95);
 
-  add_sym_2 ("num_images", GFC_ISYM_NUM_IMAGES, CLASS_INQUIRY, ACTUAL_NO,
-	     BT_INTEGER, di, GFC_STD_F2008,
+  add_sym_2 ("num_images", GFC_ISYM_NUM_IMAGES, CLASS_TRANSFORMATIONAL,
+	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,
 	     gfc_check_num_images, gfc_simplify_num_images, NULL,
 	     dist, BT_INTEGER, di, OPTIONAL,
 	     failed, BT_LOGICAL, dl, OPTIONAL);
@@ -3174,7 +3174,7 @@ add_functions (void)
   make_generic ("tanh", GFC_ISYM_TANH, GFC_STD_F77);
 
   add_sym_1 ("team_number", GFC_ISYM_TEAM_NUMBER, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_YES, BT_INTEGER, di, GFC_STD_F2018,
+	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2018,
 	     gfc_check_team_number, NULL, gfc_resolve_team_number,
 	     team, BT_DERIVED, di, OPTIONAL);
 

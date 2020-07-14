@@ -66,7 +66,10 @@ enum gomp_map_kind
     /* Also internal, behaves like GOMP_MAP_TO, but additionally any
        GOMP_MAP_POINTER records consecutive after it which have addresses
        falling into that range will not be ignored if GOMP_MAP_TO_PSET wasn't
-       mapped already.  */
+       mapped already.
+       For OpenACC attach operations (e.g. copyin of struct members),
+       GOMP_MAP_TO_PSET is followed by a single GOMP_MAP_ATTACH mapping
+       instead.  */
     GOMP_MAP_TO_PSET =			(GOMP_MAP_FLAG_SPECIAL_0 | 1),
     /* Must already be present.  */
     GOMP_MAP_FORCE_PRESENT =		(GOMP_MAP_FLAG_SPECIAL_0 | 2),
@@ -142,7 +145,12 @@ enum gomp_map_kind
 					 | GOMP_MAP_FORCE_TO),
     GOMP_MAP_DECLARE_DEALLOCATE =	(GOMP_MAP_FLAG_SPECIAL_4
 					 | GOMP_MAP_FORCE_FROM),
-    /* In OpenACC, attach a pointer to a mapped struct field.  */
+    /* The attach/detach mappings below use the OMP_CLAUSE_SIZE field as a
+       bias.  This will typically be zero, except when mapping an array slice
+       with a non-zero base.  In that case the bias will indicate the
+       (positive) difference between the start of the actual mapped data and
+       the "virtual" origin of the array.
+       In OpenACC, attach a pointer to a mapped struct field.  */
     GOMP_MAP_ATTACH =			(GOMP_MAP_DEEP_COPY | 0),
     /* In OpenACC, detach a pointer to a mapped struct field.  */
     GOMP_MAP_DETACH =			(GOMP_MAP_DEEP_COPY | 1),

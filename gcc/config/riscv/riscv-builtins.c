@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 
 /* Macros to create an enumeration identifier for a function prototype.  */
+#define RISCV_FTYPE_NAME0(A) RISCV_##A##_FTYPE
 #define RISCV_FTYPE_NAME1(A, B) RISCV_##A##_FTYPE_##B
 
 /* Classifies the prototype of a built-in function.  */
@@ -121,11 +122,13 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
 
 /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
    their associated RISCV_ATYPEs.  */
+#define RISCV_FTYPE_ATYPES0(A) \
+  RISCV_ATYPE_##A
 #define RISCV_FTYPE_ATYPES1(A, B) \
   RISCV_ATYPE_##A, RISCV_ATYPE_##B
 
 static const struct riscv_builtin_description riscv_builtins[] = {
-  DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE_VOID, hard_float),
+  DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float)
 };
 

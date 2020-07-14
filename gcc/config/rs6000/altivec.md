@@ -21,6 +21,7 @@
 (define_c_enum "unspec"
   [UNSPEC_VCMPBFP
    UNSPEC_VMSUMU
+   UNSPEC_VMSUMUDM
    UNSPEC_VMSUMM
    UNSPEC_VMSUMSHM
    UNSPEC_VMSUMUHS
@@ -80,6 +81,7 @@
    UNSPEC_VUPKHPX
    UNSPEC_VUPKLPX
    UNSPEC_CONVERT_4F32_8I16
+   UNSPEC_CONVERT_4F32_8F16
    UNSPEC_DST
    UNSPEC_DSTT
    UNSPEC_DSTST
@@ -793,6 +795,16 @@
 		     UNSPEC_VMSUMU))]
   "TARGET_ALTIVEC"
   "vmsumu<VI_char>m %0,%1,%2,%3"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "altivec_vmsumudm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V2DI 1 "register_operand" "v")
+		      (match_operand:V2DI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VMSUMUDM))]
+  "TARGET_P8_VECTOR"
+  "vmsumudm %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
 
 (define_insn "altivec_vmsumm<VI_char>m"
@@ -3038,6 +3050,37 @@
   emit_insn (gen_altivec_vctuxs (rtx_tmp_hi, operands[1], const0_rtx));
   emit_insn (gen_altivec_vctuxs (rtx_tmp_lo, operands[2], const0_rtx));
   emit_insn (gen_altivec_vpkswss (operands[0], rtx_tmp_hi, rtx_tmp_lo));
+  DONE;
+})
+
+;; Convert two vector F32 to packed vector F16.
+;; This builtin packs 32-bit floating-point values into a packed
+;; 16-bit floating point values (stored in 16bit integer type).
+;; (vector unsigned short r = vec_pack_to_short_fp32 (a, b);
+;; The expected codegen for this builtin is
+;;    xvcvsphp t, a
+;;    xvcvsphp u, b
+;;    if (little endian)
+;;      vpkuwum r, t, u
+;;    else
+;;      vpkuwum r, u, t
+
+(define_expand "convert_4f32_8f16"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(unspec:V8HI [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_operand:V4SF 2 "register_operand" "v")]
+		     UNSPEC_CONVERT_4F32_8F16))]
+  "TARGET_P9_VECTOR"
+{
+  rtx rtx_tmp_hi = gen_reg_rtx (V4SImode);
+  rtx rtx_tmp_lo = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vsx_xvcvsphp (rtx_tmp_hi, operands[1]));
+  emit_insn (gen_vsx_xvcvsphp (rtx_tmp_lo, operands[2]));
+  if (!BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_hi, rtx_tmp_lo));
+  else
+    emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_lo, rtx_tmp_hi));
   DONE;
 })
 

@@ -2766,7 +2766,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  edge ex;
 	  unsigned int j;
 	  class tree_niter_desc niter_desc;
-	  bb_predicate = *(predicate *) loop->header->aux;
+	  if (loop->header->aux)
+	    bb_predicate = *(predicate *) loop->header->aux;
+	  else
+	    bb_predicate = false;
 
 	  exits = get_loop_exit_edges (loop);
 	  FOR_EACH_VEC_ELT (exits, j, ex)
@@ -2799,7 +2802,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  for (unsigned i = 0; i < loop->num_nodes; i++)
 	    {
 	      gimple_stmt_iterator gsi;
-	      bb_predicate = *(predicate *) body[i]->aux;
+	      if (body[i]->aux)
+		bb_predicate = *(predicate *) body[i]->aux;
+	      else
+		bb_predicate = false;
 	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{

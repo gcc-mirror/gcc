@@ -1,3 +1,13 @@
+2020-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95903
+	* c-common.c (pointer_int_sum): Use TYPE_OVERFLOW_UNDEFINED instead of
+	!TYPE_UNSIGNED check to see if we can apply distributive law and handle
+	smaller precision intop operands separately.
+
 2020-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/95580

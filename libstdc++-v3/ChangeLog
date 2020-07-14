@@ -1,3 +1,159 @@
+2020-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (operator<<): Define for C++20.
+	* testsuite/20_util/unique_ptr/io/lwg2948.cc: New test.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+
+2020-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95322
+	* include/std/ranges (transform_view::_Sentinel): Allow hidden
+	friends to work with _Iterator<true> and _Iterator<false>.
+	(join_view::_Sentinel): Likewise.
+	* testsuite/std/ranges/adaptors/95322.cc: New test.
+
+2020-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94936
+	* src/c++17/memory_resource.cc (synchronized_pool_resource::_TPools):
+	Add comment about single-threaded behaviour.
+	(synchronized_pool_resource::_TPools::move_nonempty_chunks()): Hoist
+	class member access out of loop.
+	(synchronized_pool_resource::synchronized_pool_resource())
+	(synchronized_pool_resource::~synchronized_pool_resource())
+	(synchronized_pool_resource::release()): Check __gthread_active_p
+	before creating and/or deleting the thread-specific data key.
+	(synchronized_pool_resource::_M_thread_specific_pools()): Adjust
+	assertions.
+	(synchronized_pool_resource::do_allocate(size_t, size_t)): Add fast
+	path for single-threaded case.
+	(synchronized_pool_resource::do_deallocate(void*, size_t, size_t)):
+	Likewise. Return if unable to find a pool that owns the allocation.
+	* testsuite/20_util/synchronized_pool_resource/allocate_single.cc:
+	New test.
+	* testsuite/20_util/synchronized_pool_resource/cons_single.cc: New
+	test.
+	* testsuite/20_util/synchronized_pool_resource/release_single.cc: New
+	test.
+
+2020-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94087
+	* src/c++11/random.cc (__x86_rdseed): Allow fallback function to be
+	passed in.
+	(__x86_rdseed_rdrand): New function that uses rdseed with rdrand
+	fallback.
+	(random_device::_M_init): Use __x86_rdseed_rdrand when both
+	instructions are available.
+	* testsuite/26_numerics/random/random_device/94087.cc: New test.
+
+2020-07-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backported from master:
+	2020-07-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/91807
+	* include/std/variant
+	(_Copy_assign_base::operator=(const _Copy_assign_base&):
+	Do the move-assignment from a temporary so that the temporary
+	is constructed with an explicit index.
+	* testsuite/20_util/variant/91807.cc: New.
+
+2020-07-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	Backported from master:
+	2020-07-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/91153
+	PR target/93224
+	* testsuite/29_atomics/atomic_float/1.cc: Use different values
+	for tests.
+	* testsuite/29_atomics/atomic_ref/float.cc: Likewise.
+
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95282
+	* include/bits/atomic_base.h (__atomic_impl::load): Add
+	const-qualifier to parameter so that _Tp is deduced as the
+	non-const type, and use _Val to get the unqualified type.
+	(__atomic_impl::exchange): Use the _Val alias to remove
+	volatile from the reinterpret_cast result type.
+	* testsuite/29_atomics/atomic_float/95282.cc: New test.
+
+2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94627
+	* include/bits/regex.h (operator==, operator!=): Remove noexcept
+	equality comparisons for match_results.
+	* testsuite/28_regex/match_results/94627.cc: New test.
+
+2020-06-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backported from master:
+	2020-06-28  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/95915
+	* include/std/variant (_Uninitialized):
+	Adjust the condition and the comment.
+	* testsuite/20_util/variant/95915.cc: New.
+	* testsuite/20_util/variant/compile.cc: Add new test.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_binary): Ignore leading zeros.
+	* testsuite/20_util/from_chars/1.cc: Check "0x1" for all bases,
+	not just 10 and 16.
+	* testsuite/20_util/from_chars/3.cc: New test.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__find_if): Add FALLTHRU markers.
+	* include/std/charconv (__detail::__to_chars): Avoid
+	-Wsign-compare warning.
+
+2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95851
+	* include/std/charconv (__to_chars_i): Check for zero-sized
+	buffer unconditionally.
+	* testsuite/20_util/to_chars/95851.cc: New test.
+
+2020-06-22  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc:
+	Remove greedy_ops tests.
+	* testsuite/24_iterators/reverse_iterator/rel_ops_c++20.cc:
+	Remove greedy_ops tests.
+
 2020-06-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/95578

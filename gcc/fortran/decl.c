@@ -728,7 +728,7 @@ gfc_match_data (void)
 	  gfc_constructor *c;
 	  c = gfc_constructor_first (new_data->value->expr->value.constructor);
 	  for (; c; c = gfc_constructor_next (c))
-	    if (c->expr->ts.type == BT_BOZ)
+	    if (c->expr && c->expr->ts.type == BT_BOZ)
 	      {
 		gfc_error ("BOZ literal constant at %L cannot appear in a "
 			   "structure constructor", &c->expr->where);
@@ -4080,7 +4080,7 @@ match
 gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 {
   /* Provide sufficient space to hold "pdtsymbol".  */
-  char name[GFC_MAX_SYMBOL_LEN + 1 + 3];
+  char *name = XALLOCAVEC (char, GFC_MAX_SYMBOL_LEN + 1);
   gfc_symbol *sym, *dt_sym;
   match m;
   char c;
@@ -4113,7 +4113,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       gfc_gobble_whitespace ();
       if (gfc_peek_ascii_char () == '*')
 	{
-	  if ((m = gfc_match ("*)")) != MATCH_YES)
+	  if ((m = gfc_match ("* ) ")) != MATCH_YES)
 	    return m;
 	  if (gfc_comp_struct (gfc_current_state ()))
 	    {
@@ -4271,8 +4271,10 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
 	  ts->u.derived = sym;
 	  const char* lower = gfc_dt_lower_string (sym->name);
-	  size_t len = strnlen (lower, sizeof (name));
-	  gcc_assert (len < sizeof (name));
+	  size_t len = strlen (lower);
+	  /* Reallocate with sufficient size.  */
+	  if (len > GFC_MAX_SYMBOL_LEN)
+	    name = XALLOCAVEC (char, len + 1);
 	  memcpy (name, lower, len);
 	  name[len] = '\0';
 	}

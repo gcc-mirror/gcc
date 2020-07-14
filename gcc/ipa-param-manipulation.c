@@ -787,7 +787,11 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 	  if (!is_gimple_reg (old_parm) || kept[i])
 	    continue;
 	  tree origin = DECL_ORIGIN (old_parm);
-	  tree arg = gimple_call_arg (stmt, i);
+	  tree arg;
+	  if (transitive_remapping)
+	    arg = gimple_call_arg (stmt, index_map[i]);
+	  else
+	    arg = gimple_call_arg (stmt, i);
 
 	  if (!useless_type_conversion_p (TREE_TYPE (origin), TREE_TYPE (arg)))
 	    {

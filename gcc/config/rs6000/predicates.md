@@ -234,6 +234,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 127)")))
 
+;; Return 1 if op is an unsigned 8-bit constant integer.
+(define_predicate "u8bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 255)")))
+
 ;; Return 1 if op is a signed 8-bit constant integer.
 ;; Integer multiplication complete more quickly
 (define_predicate "s8bit_cint_operand"
@@ -1113,6 +1118,11 @@
     }
   return gpc_reg_operand (op, mode);
 })
+
+;; Return 1 if this operand is valid for a MMA assemble accumulator insn.
+(define_special_predicate "mma_assemble_input_operand"
+  (match_test "(mode == V16QImode
+		&& (vsx_register_operand (op, mode) || MEM_P (op)))"))
 
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"

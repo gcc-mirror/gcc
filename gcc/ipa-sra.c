@@ -3271,7 +3271,9 @@ all_callee_accesses_present_p (isra_param_desc *param_desc,
 	continue;
       param_access *pacc = find_param_access (param_desc, argacc->unit_offset,
 					      argacc->unit_size);
-      if (!pacc || !pacc->certain)
+      if (!pacc
+	  || !pacc->certain
+	  || !types_compatible_p (argacc->type, pacc->type))
 	return false;
     }
   return true;

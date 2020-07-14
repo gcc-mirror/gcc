@@ -19355,7 +19355,12 @@ cp_parser_enum_specifier (cp_parser* parser)
 		     "ISO C++ forbids empty unnamed enum");
 	}
       else
-	cp_parser_enumerator_list (parser, type);
+	{
+	  /* We've seen a '{' so we know we're in an enum-specifier.
+	     Commit to any tentative parse to get syntax errors.  */
+	  cp_parser_commit_to_tentative_parse (parser);
+	  cp_parser_enumerator_list (parser, type);
+	}
 
       /* Consume the final '}'.  */
       braces.require_close (parser);
@@ -31399,25 +31404,26 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
   /* Issue a warning for the first mismatched declaration.
      Avoid using "%#qT" since the class-key for the same type will
      be the same regardless of which one was used in the declaraion.  */
-  warning_at (loc, OPT_Wmismatched_tags,
-	      "%qT declared with a mismatched class-key %qs",
-	      type_decl, xmatchkstr);
+  if (warning_at (loc, OPT_Wmismatched_tags,
+		  "%qT declared with a mismatched class-key %qs",
+		  type_decl, xmatchkstr))
+    {
+      /* Suggest how to avoid the warning for each instance since
+	 the guidance may be different depending on context.  */
+      inform (loc,
+	      (key_redundant_p
+	       ? G_("remove the class-key or replace it with %qs")
+	       : G_("replace the class-key with %qs")),
+	      xpectkstr);
 
-  /* Suggest how to avoid the warning for each instance since
-     the guidance may be different depending on context.  */
-  inform (loc,
-	  (key_redundant_p
-	   ? G_("remove the class-key or replace it with %qs")
-	   : G_("replace the class-key with %qs")),
-	  xpectkstr);
-
-  /* Also point to the first declaration or definition that guided
-     the decision to issue the warning above.  */
-  inform (cdlguide->location (idxguide),
-	  (def_p
-	   ? G_("%qT defined as %qs here")
-	   : G_("%qT first declared as %qs here")),
-	  type_decl, xpectkstr);
+      /* Also point to the first declaration or definition that guided
+	 the decision to issue the warning above.  */
+      inform (cdlguide->location (idxguide),
+	      (def_p
+	       ? G_("%qT defined as %qs here")
+	       : G_("%qT first declared as %qs here")),
+	      type_decl, xpectkstr);
+    }
 
   /* Issue warnings for the remaining inconsistent declarations.  */
   for (unsigned i = idx + 1; i != ndecls; ++i)
@@ -31432,16 +31438,16 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
       key_redundant_p = key_redundant (i);
       /* Set the function declaration to print in diagnostic context.  */
       current_function_decl = function (i);
-      warning_at (loc, OPT_Wmismatched_tags,
-		  "%qT declared with a mismatched class-key %qs",
-		  type_decl, xmatchkstr);
-      /* Suggest how to avoid the warning for each instance since
-	 the guidance may be different depending on context.  */
-      inform (loc,
-	      (key_redundant_p
-	       ? G_("remove the class-key or replace it with %qs")
-	       : G_("replace the class-key with %qs")),
-	      xpectkstr);
+      if (warning_at (loc, OPT_Wmismatched_tags,
+		      "%qT declared with a mismatched class-key %qs",
+		      type_decl, xmatchkstr))
+	/* Suggest how to avoid the warning for each instance since
+	   the guidance may be different depending on context.  */
+	inform (loc,
+		(key_redundant_p
+		 ? G_("remove the class-key or replace it with %qs")
+		 : G_("replace the class-key with %qs")),
+		xpectkstr);
     }
 
   /* Restore the current function in case it was replaced above.  */

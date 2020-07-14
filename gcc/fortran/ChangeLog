@@ -1,3 +1,200 @@
+2020-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95709
+	* resolve.c (gfc_resolve_code): Check for valid arguments to
+	assigned GOTO.
+
+2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93337
+	* class.c (gfc_find_derived_vtab): Punt if name is not set.
+
+2020-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95366
+	* gfortran.h (gfc_typename): Add optional argument for_hash.
+	* misc.c (gfc_typename): When for_hash is true, just retur
+	  CHARACTER(kind).
+	* class.c (gfc_intrinsic_hash_value): Call gfc_typename with
+	  for_hash = true.
+
+2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88379
+	* resolve.c (resolve_assoc_var): Avoid NULL pointer dereference.
+
+2020-07-01  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95829
+	* decl.c (gfc_match_decl_type_spec): Compare with "* ) " instead
+	of "*)".
+
+2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95978
+	* decl.c (gfc_match_data): Avoid NULL pointer dereference.
+
+2020-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71706
+	* trans-stmt.c (gfc_trans_sync): Do proper kind conversion in
+	bounds-checking code.
+
+2020-06-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95743
+	* trans-decl.c (gfc_generate_function_code): Do not generate
+	recursion check for compiler-generated procedures.
+
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95340
+	* match.c (gfc_match_select_rank): Do not dereference NULL pointer.
+
+2020-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95880
+	* symbol.c (gfc_add_type): If sym->ns->proc_name is set, use it,
+	otherwise fall back to sym->name.
+
+2020-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95881
+	* resolve.c (resolve_symbol): Avoid NULL pointer dereference.
+
+2020-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95826
+	* decl.c (gfc_match_decl_type_spec): Replace a fixed size
+	buffer by a pointer and reallocate if necessary.
+
+2020-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95828
+	* match.c (select_rank_set_tmp): Enlarge internal buffer used in
+	generating a mangled name.
+	* resolve.c (resolve_select_rank): Likewise.
+
+2020-06-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95827
+	* iresolve.c (gfc_get_string): Enlarge internal buffer used in
+	generating the mangled name.
+
+2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/95812
+	* dependency.c (ref_same_as_full_array): Handle case of AR_FULL
+	vs. AR_FULL.
+
+2020-06-23  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95708
+	* intrinsic.c (add_functions): Replace CLASS_INQUIRY with
+	CLASS_TRANSFORMATIONAL for intrinsic num_images.
+	(make_generic): Replace ACTUAL_NO with ACTUAL_YES for
+	intrinsic team_number.
+	* resolve.c (resolve_fl_procedure): Check pointer ts.u.derived
+	exists before using it.
+
+2020-06-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95707
+	* gfortran.h (gfc_common_head): Enlarge buffer.
+	* trans-common.c (gfc_sym_mangled_common_id): Enlarge temporary
+	buffers, and add check on length on mangled name to prevent
+	overflow.
+
+2020-06-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95688
+	* iresolve.c (gfc_get_string): Enlarge static buffer size.
+
+2020-06-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95687
+	* class.c (get_unique_type_string): Return a string with dynamic
+	length.
+	(get_unique_hashed_string, gfc_hash_value): Use dynamic result
+	from get_unique_type_string instead of static buffer.
+
+2020-06-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95689
+	* interface.c (check_sym_interfaces): Enlarge temporary buffer,
+	and add check on length on mangled name to prevent overflow.
+
+2020-06-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-06-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95587
+	* match.c (gfc_match_equivalence): Check constraints on
+	EQUIVALENCE objects also for CLASS variables.
+
 2020-06-17  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

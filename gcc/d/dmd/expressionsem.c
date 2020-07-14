@@ -6887,6 +6887,7 @@ public:
         if (Expression *ex = binSemanticProp(exp, sc))
         {
             result = ex;
+            return;
         }
         Expression *e = exp->op_overload(sc);
         if (e)

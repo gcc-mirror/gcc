@@ -92,13 +92,24 @@ static void lowerArrayAggregate(StaticForeach *sfe, Scope *sc)
     el = el->ctfeInterpret();
     if (el->op == TOKint64)
     {
-        dinteger_t length = el->toInteger();
-        Expressions *es = new Expressions();
-        for (size_t i = 0; i < length; i++)
+        Expressions *es;
+        if (aggr->op == TOKarrayliteral)
         {
-            IntegerExp *index = new IntegerExp(sfe->loc, i, Type::tsize_t);
-            Expression *value = new IndexExp(aggr->loc, aggr, index);
-            es->push(value);
+            // Directly use the elements of the array for the TupleExp creation
+            ArrayLiteralExp *ale = (ArrayLiteralExp *)aggr;
+            es = ale->elements;
+        }
+        else
+        {
+            size_t length = (size_t)el->toInteger();
+            es = new Expressions();
+            es->setDim(length);
+            for (size_t i = 0; i < length; i++)
+            {
+                IntegerExp *index = new IntegerExp(sfe->loc, i, Type::tsize_t);
+                Expression *value = new IndexExp(aggr->loc, aggr, index);
+                (*es)[i] = value;
+            }
         }
         sfe->aggrfe->aggr = new TupleExp(aggr->loc, es);
         sfe->aggrfe->aggr = semantic(sfe->aggrfe->aggr, sc);
@@ -307,13 +318,50 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
     Expression *catass = new CatAssignExp(aloc, new IdentifierExp(aloc, idres), res[1]);
     s2->push(createForeach(sfe, aloc, pparams[1], new ExpStatement(aloc, catass)));
     s2->push(new ReturnStatement(aloc, new IdentifierExp(aloc, idres)));
-    Expression *aggr = wrapAndCall(aloc, new CompoundStatement(aloc, s2));
-    sc = sc->startCTFE();
-    aggr = semantic(aggr, sc);
-    aggr = resolveProperties(sc, aggr);
-    sc = sc->endCTFE();
-    aggr = aggr->optimize(WANTvalue);
-    aggr = aggr->ctfeInterpret();
+
+    Expression *aggr;
+    Type *indexty;
+
+    if (sfe->rangefe && (indexty = ety->semantic(aloc, sc))->isintegral())
+    {
+        sfe->rangefe->lwr->type = indexty;
+        sfe->rangefe->upr->type = indexty;
+        IntRange lwrRange = getIntRange(sfe->rangefe->lwr);
+        IntRange uprRange = getIntRange(sfe->rangefe->upr);
+
+        const dinteger_t lwr = sfe->rangefe->lwr->toInteger();
+        dinteger_t upr = sfe->rangefe->upr->toInteger();
+        size_t length = 0;
+
+        if (lwrRange.imin <= uprRange.imax)
+            length = (size_t)(upr - lwr);
+
+        Expressions *exps = new Expressions();
+        exps->setDim(length);
+
+        if (sfe->rangefe->op == TOKforeach)
+        {
+            for (size_t i = 0; i < length; i++)
+                (*exps)[i] = new IntegerExp(aloc, lwr + i, indexty);
+        }
+        else
+        {
+            --upr;
+            for (size_t i = 0; i < length; i++)
+                (*exps)[i] = new IntegerExp(aloc, upr - i, indexty);
+        }
+        aggr = new ArrayLiteralExp(aloc, indexty->arrayOf(), exps);
+    }
+    else
+    {
+        aggr = wrapAndCall(aloc, new CompoundStatement(aloc, s2));
+        sc = sc->startCTFE();
+        aggr = semantic(aggr, sc);
+        aggr = resolveProperties(sc, aggr);
+        sc = sc->endCTFE();
+        aggr = aggr->optimize(WANTvalue);
+        aggr = aggr->ctfeInterpret();
+    }
 
     assert(!!sfe->aggrfe ^ !!sfe->rangefe);
     sfe->aggrfe = new ForeachStatement(sfe->loc, TOKforeach, pparams[2], aggr,

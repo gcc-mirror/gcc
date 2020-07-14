@@ -453,27 +453,28 @@ test03()
     ok = a1.compare_exchange_strong(expected, 3.2l, mo);
     VERIFY( !ok && a1.load() == 2.56l && expected == 2.56l );
 
-    f0 = a0.fetch_add(1.2l);
-    VERIFY( f0 == 12.8l );
-    VERIFY( a0 == 14.0l );
-    f1 = a1.fetch_add(2.4l, mo);
-    VERIFY( f1 == 2.56l );
-    VERIFY( a1 == 4.96l );
+    a1 = a0 = 0.5l;
+    f0 = a0.fetch_add(0.25l);
+    VERIFY( f0 == 0.5l );
+    VERIFY( a0 == 0.75l );
+    f1 = a1.fetch_add(0.25l, mo);
+    VERIFY( f1 == 0.5l );
+    VERIFY( a1 == 0.75l );
 
-    f0 = a0.fetch_sub(1.2l);
-    VERIFY( f0 == 14.0l );
-    VERIFY( a0 == 12.8l );
-    f1 = a1.fetch_sub(3.5l, mo);
-    VERIFY( f1 == 4.96l );
-    VERIFY( a1 == 1.46l );
+    f0 = a0.fetch_sub(0.5l);
+    VERIFY( f0 == 0.75l );
+    VERIFY( a0 == 0.25l );
+    f1 = a1.fetch_sub(0.5l, mo);
+    VERIFY( f1 == 0.75l );
+    VERIFY( a1 == 0.25l );
 
-    f0 = a0 += 1.2l;
-    VERIFY( f0 == 14.0l );
-    VERIFY( a0 == 14.0l );
+    f0 = a0 += 0.75l;
+    VERIFY( f0 == 1.0l );
+    VERIFY( a0 == 1.0l );
 
-    f0 = a0 -= 0.8l;
-    VERIFY( f0 == 13.2l );
-    VERIFY( a0 == 13.2l );
+    f0 = a0 -= 0.5l;
+    VERIFY( f0 == 0.5l );
+    VERIFY( a0 == 0.5l );
   }
 
   // Repeat for volatile std::atomic<long double>
@@ -540,27 +541,28 @@ test03()
     ok = a1.compare_exchange_strong(expected, 3.2l, mo);
     VERIFY( !ok && a1.load() == 2.56l && expected == 2.56l );
 
-    f0 = a0.fetch_add(1.2l);
-    VERIFY( f0 == 12.8l );
-    VERIFY( a0 == 14.0l );
-    f1 = a1.fetch_add(2.4l, mo);
-    VERIFY( f1 == 2.56l );
-    VERIFY( a1 == 4.96l );
+    a1 = a0 = 0.5l;
+    f0 = a0.fetch_add(0.25l);
+    VERIFY( f0 == 0.5l );
+    VERIFY( a0 == 0.75l );
+    f1 = a1.fetch_add(0.25l, mo);
+    VERIFY( f1 == 0.5l );
+    VERIFY( a1 == 0.75l );
 
-    f0 = a0.fetch_sub(1.2l);
-    VERIFY( f0 == 14.0l );
-    VERIFY( a0 == 12.8l );
-    f1 = a1.fetch_sub(3.5l, mo);
-    VERIFY( f1 == 4.96l );
-    VERIFY( a1 == 1.46l );
+    f0 = a0.fetch_sub(0.5l);
+    VERIFY( f0 == 0.75l );
+    VERIFY( a0 == 0.25l );
+    f1 = a1.fetch_sub(0.5l, mo);
+    VERIFY( f1 == 0.75l );
+    VERIFY( a1 == 0.25l );
 
-    f0 = a0 += 1.2l;
-    VERIFY( f0 == 14.0l );
-    VERIFY( a0 == 14.0l );
+    f0 = a0 += 0.75l;
+    VERIFY( f0 == 1.0l );
+    VERIFY( a0 == 1.0l );
 
-    f0 = a0 -= 0.8l;
-    VERIFY( f0 == 13.2l );
-    VERIFY( a0 == 13.2l );
+    f0 = a0 -= 0.5l;
+    VERIFY( f0 == 0.5l );
+    VERIFY( a0 == 0.5l );
   }
 }
 

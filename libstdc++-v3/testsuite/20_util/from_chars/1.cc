@@ -31,7 +31,8 @@ check_from_chars(I expected, std::string s, int base = 0, char term = '\0')
   std::from_chars_result r = base == 0
     ? std::from_chars(begin, end, val)
     : std::from_chars(begin, end, val, base);
-  return r.ec == std::errc{} && (r.ptr == end || *r.ptr == term) && val == expected;
+  return r.ec == std::errc{} && (r.ptr == end || *r.ptr == term)
+    && val == expected;
 }
 
 #include <climits>
@@ -52,10 +53,18 @@ void
 test02()
 {
   // "0x" parsed as "0" not as hex prefix:
-  VERIFY( check_from_chars(0, "0x1", 10, 'x') );
-  VERIFY( check_from_chars(0, "0X1", 10, 'X') );
-  VERIFY( check_from_chars(0, "0x1", 16, 'x') );
-  VERIFY( check_from_chars(0, "0X1", 16, 'X') );
+  for (int base = 2; base < 34; ++base)
+  {
+    VERIFY( check_from_chars(0, "0x1", base, 'x') );
+    VERIFY( check_from_chars(0, "0X1", base, 'X') );
+  }
+
+  VERIFY( check_from_chars(1123, "0x1", 34) );
+  VERIFY( check_from_chars(1123, "0X1", 34) );
+  VERIFY( check_from_chars(1156, "0x1", 35) );
+  VERIFY( check_from_chars(1156, "0X1", 35) );
+  VERIFY( check_from_chars(1189, "0x1", 36) );
+  VERIFY( check_from_chars(1189, "0X1", 36) );
 
   VERIFY( check_from_chars(1155, "xx", 34) );
   VERIFY( check_from_chars(1155, "XX", 34) );

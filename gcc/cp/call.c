@@ -6307,7 +6307,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      result = build_over_call (cand, LOOKUP_NORMAL, ocomplain);
 	    }
 
-	  if (trivial_fn_p (cand->fn))
+	  if (trivial_fn_p (cand->fn) || DECL_IMMEDIATE_FUNCTION_P (cand->fn))
 	    /* There won't be a CALL_EXPR.  */;
 	  else if (result && result != error_mark_node)
 	    {
@@ -8696,7 +8696,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
 	  && resolves_to_fixed_type_p (arg))
 	{
-	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), cand->conversion_path);
+	  tree binfo = cand->conversion_path;
+	  if (BINFO_TYPE (binfo) != DECL_CONTEXT (fn))
+	    binfo = lookup_base (binfo, DECL_CONTEXT (fn), ba_unique,
+				 NULL, complain);
+	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), binfo);
 	  flags |= LOOKUP_NONVIRTUAL;
 	}
 
@@ -11440,12 +11444,13 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	return winner;
     }
 
-  /* Concepts: ... or, if not that, F1 is more constrained than F2.
+  /* Concepts: F1 and F2 are non-template functions with the same
+     parameter-type-lists, and F1 is more constrained than F2 according to the
+     partial ordering of constraints described in 13.5.4.  */
 
-     FIXME: For function templates with no winner, this subsumption may
-     be computed a separate time.  This needs to be validated, and if
-     so, the redundant check removed.  */
-  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn))
+  if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn)
+      && !cand1->template_decl && !cand2->template_decl
+      && cand_parms_match (cand1, cand2))
     {
       winner = more_constrained (cand1->fn, cand2->fn);
       if (winner)

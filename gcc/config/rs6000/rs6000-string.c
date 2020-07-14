@@ -963,7 +963,7 @@ expand_compare_loop (rtx operands[])
 	  max_bytes = 64;
       break;
     case PROCESSOR_POWER9:
-    case PROCESSOR_FUTURE:
+    case PROCESSOR_POWER10:
       if (bytes_is_const)
 	max_bytes = 191;
       else

@@ -1,3 +1,30 @@
+2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/cond.c (lowerArrayAggregate): Directly use the elements of the
+	array for TupleExp creation.
+	(lowerNonArrayAggregate): Inline creation of foreach range indexes.
+
+2020-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95250
+	* dmd/expressionsem.c (class ExpressionSemanticVisitor): Return early
+	if error occurred during semantic of DivExp.
+
+2020-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95173
+	* d-attribs.cc (uda_attribute_p): Don't search target attribute table
+	if NULL.
+
 2020-06-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-builtins.cc (build_frontend_type): Handle struct fields with NULL

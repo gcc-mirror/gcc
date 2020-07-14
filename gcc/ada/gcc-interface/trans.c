@@ -7748,9 +7748,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Allocator:
       {
-	tree gnu_init = NULL_TREE;
-	tree gnu_type;
-	bool ignore_init_type = false;
+	tree gnu_type, gnu_init;
+	bool ignore_init_type;
 
 	gnat_temp = Expression (gnat_node);
 
@@ -7759,15 +7758,22 @@ gnat_to_gnu (Node_Id gnat_node)
 	   contains both the type and an initial value for the object.  */
 	if (Nkind (gnat_temp) == N_Identifier
 	    || Nkind (gnat_temp) == N_Expanded_Name)
-	  gnu_type = gnat_to_gnu_type (Entity (gnat_temp));
+	  {
+	    ignore_init_type = false;
+	    gnu_init = NULL_TREE;
+	    gnu_type = gnat_to_gnu_type (Entity (gnat_temp));
+	  }
+
 	else if (Nkind (gnat_temp) == N_Qualified_Expression)
 	  {
 	    Entity_Id gnat_desig_type
 	      = Designated_Type (Underlying_Type (Etype (gnat_node)));
 
-	    ignore_init_type = Has_Constrained_Partial_View (gnat_desig_type);
-	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
+	    /* The flag is effectively only set on the base types.  */
+	    ignore_init_type
+	      = Has_Constrained_Partial_View (Base_Type (gnat_desig_type));
 
+	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
 	    gnu_init = maybe_unconstrained_array (gnu_init);
 
 	    gigi_checking_assert (!Do_Range_Check (Expression (gnat_temp)));

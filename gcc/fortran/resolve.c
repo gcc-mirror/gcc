@@ -9048,7 +9048,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  as = NULL;
 	  sym->ts = *ts;
 	  sym->ts.type = BT_CLASS;
-	  attr = CLASS_DATA (sym)->attr;
+	  attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
 	  attr.class_ok = 0;
 	  attr.associate_var = 1;
 	  attr.dimension = attr.codimension = 0;
@@ -9638,7 +9638,7 @@ resolve_select_rank (gfc_code *code, gfc_namespace *old_ns)
   gfc_namespace *ns;
   gfc_code *body, *new_st, *tail;
   gfc_case *c;
-  char tname[GFC_MAX_SYMBOL_LEN];
+  char tname[GFC_MAX_SYMBOL_LEN + 7];
   char name[2 * GFC_MAX_SYMBOL_LEN];
   gfc_symtree *st;
   gfc_expr *selector_expr = NULL;
@@ -11801,10 +11801,18 @@ start:
 	case EXEC_GOTO:
 	  if (code->expr1 != NULL)
 	    {
-	      if (code->expr1->ts.type != BT_INTEGER)
-		gfc_error ("ASSIGNED GOTO statement at %L requires an "
-			   "INTEGER variable", &code->expr1->where);
-	      else if (code->expr1->symtree->n.sym->attr.assign != 1)
+	      if (code->expr1->expr_type != EXPR_VARIABLE
+		  || code->expr1->ts.type != BT_INTEGER
+		  || (code->expr1->ref
+		      && code->expr1->ref->type == REF_ARRAY)
+		  || code->expr1->symtree == NULL
+		  || (code->expr1->symtree->n.sym
+		      && (code->expr1->symtree->n.sym->attr.flavor
+			  == FL_PARAMETER)))
+		gfc_error ("ASSIGNED GOTO statement at %L requires a "
+			   "scalar INTEGER variable", &code->expr1->where);
+	      else if (code->expr1->symtree->n.sym
+		       && code->expr1->symtree->n.sym->attr.assign != 1)
 		gfc_error ("Variable %qs has not been assigned a target "
 			   "label at %L", code->expr1->symtree->n.sym->name,
 			   &code->expr1->where);
@@ -12999,6 +13007,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	{
 	  if (arg->sym
 	      && arg->sym->ts.type == BT_DERIVED
+	      && arg->sym->ts.u.derived
 	      && !arg->sym->ts.u.derived->attr.use_assoc
 	      && !gfc_check_symbol_access (arg->sym->ts.u.derived)
 	      && !gfc_notify_std (GFC_STD_F2003, "%qs is of a PRIVATE type "
@@ -15172,6 +15181,7 @@ resolve_symbol (gfc_symbol *sym)
   if (flag_coarray == GFC_FCOARRAY_LIB && sym->ts.type == BT_CLASS
       && sym->ts.u.derived && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.codimension
+      && CLASS_DATA (sym)->ts.u.derived
       && (CLASS_DATA (sym)->ts.u.derived->attr.alloc_comp
 	  || CLASS_DATA (sym)->ts.u.derived->attr.pointer_comp))
     {

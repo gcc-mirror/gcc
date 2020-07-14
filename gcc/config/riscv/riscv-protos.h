@@ -53,7 +53,6 @@ extern rtx riscv_subword (rtx, bool);
 extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
-extern const char *riscv_output_gpr_save (unsigned);
 extern const char *riscv_output_return ();
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
@@ -73,6 +72,8 @@ extern bool riscv_can_use_return_insn (void);
 extern rtx riscv_function_value (const_tree, const_tree, enum machine_mode);
 extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
+extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
+extern bool riscv_gpr_save_operation_p (rtx);
 
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);

@@ -73,7 +73,7 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/power7.md \
 	$(srcdir)/config/rs6000/power8.md \
 	$(srcdir)/config/rs6000/power9.md \
-	$(srcdir)/config/rs6000/future.md \
+	$(srcdir)/config/rs6000/power10.md \
 	$(srcdir)/config/rs6000/cell.md \
 	$(srcdir)/config/rs6000/a2.md \
 	$(srcdir)/config/rs6000/predicates.md \
@@ -83,6 +83,7 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/vector.md \
 	$(srcdir)/config/rs6000/vsx.md \
 	$(srcdir)/config/rs6000/altivec.md \
+	$(srcdir)/config/rs6000/mma.md \
 	$(srcdir)/config/rs6000/crypto.md \
 	$(srcdir)/config/rs6000/htm.md \
 	$(srcdir)/config/rs6000/dfp.md

@@ -13754,6 +13754,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
+* PowerPC Matrix-Multiply Assist Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -17017,6 +17018,8 @@ issues a warning.
 The following CPU names can be detected:
 
 @table @samp
+@item power10
+IBM POWER10 Server CPU.
 @item power9
 IBM POWER9 Server CPU.
 @item power8
@@ -17093,6 +17096,8 @@ CPU supports ISA 2.06 (eg, POWER7)
 CPU supports ISA 2.07 (eg, POWER8)
 @item arch_3_00
 CPU supports ISA 3.0 (eg, POWER9)
+@item arch_3_1
+CPU supports ISA 3.1 (eg, POWER10)
 @item archpmu
 CPU supports the set of compatible performance monitoring events.
 @item booke
@@ -17126,6 +17131,8 @@ CPU supports icache snooping capabilities.
 CPU supports 128-bit IEEE binary floating point instructions.
 @item isel
 CPU supports the integer select instruction.
+@item mma
+CPU supports the matrix-multiply assist instructions.
 @item mmu
 CPU has a memory management unit.
 @item notb
@@ -20049,6 +20056,13 @@ bool scalar_test_data_class (__ieee128 source, const int condition);
 bool scalar_test_neg (float source);
 bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
+
+vector _uint128_t vec_msum (vector unsigned long long,
+			    vector unsigned long long,
+			    vector _uint128_t);
+vector _int128_t vec_msum (vector signed long long,
+			   vector signed long long,
+			   vector _int128_t);
 @end smallexample
 
 The @code{scalar_extract_exp} and @code{scalar_extract_sig}
@@ -20068,6 +20082,9 @@ Note that the sign of the significand is not represented in the result
 returned from the @code{scalar_extract_sig} function.  Use the
 @code{scalar_test_neg} function to test the sign of its @code{double}
 argument.
+The @code{vec_msum} functions perform a vector multiply-sum, returning
+the result of arg1*arg2+arg3.  ISA 3.0 adds support for vec_msum returning
+a vector int128 result.
 
 The @code{scalar_insert_exp}
 functions require a 64-bit environment supporting ISA 3.0 or later.
@@ -20969,6 +20986,100 @@ void amo_stdat_umin (uint64_t *, uint64_t);
 void amo_stdat_sadd (int64_t *, int64_t);
 void amo_stdat_smax (int64_t *, int64_t);
 void amo_stdat_smin (int64_t *, int64_t);
+@end smallexample
+
+@node PowerPC Matrix-Multiply Assist Built-in Functions
+@subsection PowerPC Matrix-Multiply Assist Built-in Functions
+ISA 3.1 of the PowerPC added new Matrix-Multiply Assist (MMA) instructions.
+GCC provides support for these instructions through the following built-in
+functions which are enabled with the @code{-mmma} option.  The vec_t type
+below is defined to be a normal vector unsigned char type.  The uint2, uint4
+and uint8 parameters are 2-bit, 4-bit and 8-bit unsigned integer constants
+respectively.  The compiler will verify that they are constants and that
+their values are within range. 
+
+The built-in functions supported are:
+
+@smallexample
+void __builtin_mma_xvi4ger8 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi8ger4 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2s (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32ger (__vector_quad *, vec_t, vec_t);
+
+void __builtin_mma_xvi4ger8pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi8ger4pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi8ger4spp(__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2spp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2pn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2np (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2nn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2pn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2np (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2nn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gerpp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gerpn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gernp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gernn (__vector_quad *, vec_t, vec_t);
+
+void __builtin_mma_pmxvi4ger8 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint8);
+void __builtin_mma_pmxvi4ger8pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint8);
+
+void __builtin_mma_pmxvi8ger4 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint4);
+void __builtin_mma_pmxvi8ger4pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint4);
+void __builtin_mma_pmxvi8ger4spp(__vector_quad *, vec_t, vec_t, uint4, uint4, uint4);
+
+void __builtin_mma_pmxvi16ger2 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvi16ger2s (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+
+void __builtin_mma_pmxvi16ger2pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvi16ger2spp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2pn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2np (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2nn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2pn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2np (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2nn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+
+void __builtin_mma_pmxvf32ger (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gerpp (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gerpn (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gernp (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gernn (__vector_quad *, vec_t, vec_t, uint4, uint4);
+
+void __builtin_mma_xvf64ger (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gerpp (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gerpn (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gernp (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gernn (__vector_quad *, __vector_pair, vec_t);
+
+void __builtin_mma_pmxvf64ger (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gerpp (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gerpn (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gernp (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gernn (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+
+void __builtin_mma_xxmtacc (__vector_quad *);
+void __builtin_mma_xxmfacc (__vector_quad *);
+void __builtin_mma_xxsetaccz (__vector_quad *);
+
+void __builtin_mma_assemble_acc (__vector_quad *, vec_t, vec_t, vec_t, vec_t);
+void __builtin_mma_disassemble_acc (void *, __vector_quad *);
+
+void __builtin_mma_assemble_pair (__vector_pair *, vec_t, vec_t);
+void __builtin_mma_disassemble_pair (void *, __vector_pair *);
+
+vec_t __builtin_vsx_xvcvspbf16 (vec_t);
+vec_t __builtin_vsx_xvcvbf16sp (vec_t);
 @end smallexample
 
 @node RX Built-in Functions

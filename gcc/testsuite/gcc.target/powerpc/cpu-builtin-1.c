@@ -24,6 +24,7 @@ use_cpu_is_builtins (unsigned int *p)
   p[12] = __builtin_cpu_is ("ppc440");
   p[13] = __builtin_cpu_is ("ppc405");
   p[14] = __builtin_cpu_is ("ppc-cell-be");
+  p[15] = __builtin_cpu_is ("power10");
 #else
   p[0] = 0;
 #endif
@@ -74,6 +75,8 @@ use_cpu_supports_builtins (unsigned int *p)
   p[38] = __builtin_cpu_supports ("darn");
   p[39] = __builtin_cpu_supports ("scv");
   p[40] = __builtin_cpu_supports ("htm-no-suspend");
+  p[41] = __builtin_cpu_supports ("arch_3_1");
+  p[42] = __builtin_cpu_supports ("mma");
 #else
   p[0] = 0;
 #endif

@@ -1506,9 +1506,10 @@ create_preheader (class loop *loop, int flags)
       else
         {
           /* If we want simple preheaders, also force the preheader to have
-             just a single successor.  */
+	     just a single successor and a normal edge.  */
           if ((flags & CP_SIMPLE_PREHEADERS)
-              && !single_succ_p (single_entry->src))
+	      && ((single_entry->flags & EDGE_COMPLEX)
+		  || !single_succ_p (single_entry->src)))
             need_forwarder_block = true;
           /* If we want fallthru preheaders, also create forwarder block when
              preheader ends with a jump or has predecessors from loop.  */
