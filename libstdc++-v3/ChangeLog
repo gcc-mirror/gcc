@@ -1,3 +1,25 @@
+2020-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94749
+	PR libstdc++/96161
+	* include/bits/istream.tcc (basic_istream::ignore(streamsize))
+	[n == max]: Check overflow conditions on _M_gcount. Rely on
+	the fact that either EOF or the delimiter was reached.
+	[n < max]: Check _M_gcount < n before checking for EOF or
+	delimiter.
+	(basic_istream::ignore(streamsize, char_type): Likewise.
+	* src/c++98/compatibility.cc (istream::ignore(streamsize))
+	(wistream::ignore(streamsize)): Likewise.
+	* src/c++98/istream.cc (istream::ignore(streamsize, char_type))
+	(wistream::ignore(streamsize, char_type)): Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/94749.cc: Check that
+	delimiter is discarded if the number of characters ignored
+	doesn't fit in streamsize.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/94749.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/96161.cc: New test.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/96161.cc: New test.
+
 2020-07-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_tree.h (_Rb_tree_impl(_Rb_tree_impl&&)): Add noexcept

@@ -1,3 +1,129 @@
+2020-07-13  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (sibcall_local): Merge sibcall_local32
+	and sibcall_local64.
+	(sibcall_value_local): Similarly.
+
+2020-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (distclean): Remove long gone cxxmain.c
+
+2020-07-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95443
+	* config/i386/i386.md (cmpstrnsi): Pass a copy of the string
+	length to cmpstrnqi patterns.
+
+2020-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/96130
+	* ipa-fnsummary.c (analyze_function_body): Treat NULL bb->aux
+	as false predicate.
+
+2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96163
+	* tree-vect-slp.c (vect_schedule_slp_instance): Put new stmts
+	at least after region begin.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
+	__ARM_FEATURE_PAC_DEFAULT support.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* doc/extend.texi: Update the text for  __builtin_return_address.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* config/aarch64/aarch64.c (aarch64_return_address_signing_enabled):
+	Disable return address signing if __builtin_eh_return is used.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	PR target/94791
+	* config/aarch64/aarch64-protos.h (aarch64_return_addr_rtx): Declare.
+	* config/aarch64/aarch64.c (aarch64_return_addr_rtx): New.
+	(aarch64_return_addr): Use aarch64_return_addr_rtx.
+	* config/aarch64/aarch64.h (PROFILE_HOOK): Likewise.
+
+2020-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* tree.h (virtual_method_call_p): Add a default-false parameter
+	that indicates whether the function is being called from dump
+	routines.
+	(obj_type_ref_class): Likewise.
+	* tree.c (virtual_method_call_p): Likewise.
+	* ipa-devirt.c (obj_type_ref_class): Likewise.  Lazily add ODR
+	type information for the type when the parameter is false.
+	* tree-pretty-print.c (dump_generic_node): Update calls to
+	virtual_method_call_p and obj_type_ref_class accordingly.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Do not strip
+	GOMP_MAP_TO_PSET/GOMP_MAP_POINTER for OpenACC enter/exit data
+	directives (see also PR92929).
+
+2020-07-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* convert.c (convert_to_integer_1): Narrow integer operations
+	even on targets that require explicit truncation instructions.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/93372
+	* config/cris/cris-passes.def: New file.
+	* config/cris/t-cris (PASSES_EXTRA): Add cris-passes.def.
+	* config/cris/cris.c: Add infrastructure bits and pass execute
+	function cris_postdbr_cmpelim.
+	* config/cris/cris-protos.h (make_pass_cris_postdbr_cmpelim): Declare.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/t-cris: Remove gt-cris.h-related excessive cargo.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/93372
+	* config/cris/cris.md ("*add<mode>3_addi"): New splitter.
+	("*addi_b_<mode>"): New pattern.
+	("*addsi3<setnz>"): Remove stale %-related comment.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("setnz_subst", "setnz_subst", "setcc_subst"):
+	Use match_dup in output template, not match_operand.
+
+2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	* var-tracking.c (bb_heap_node_t): Remove unused typedef.
+	(vt_find_locations): Eliminate visited bitmap in favor of
+	RPO order check.  Dump statistics about the number of
+	local BB dataflow computes.
+
+2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94600
+	* expr.c (expand_constructor): Make a temporary also if we're
+	storing to volatile memory.
+
+2020-07-13  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (rotl_unspec): New
+	define_insn_and_split.
+
+2020-07-13  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init):
+	Move V4SF to V4SI, init vector like V4SI and move to V4SF back.
+
 2020-07-11  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* internal-fn.c (expand_mul_overflow): When checking for signed
