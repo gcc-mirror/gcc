@@ -214,6 +214,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->simd_schedule = false;
   fd->min_inner_iterations = NULL_TREE;
   fd->factor = NULL_TREE;
+  fd->adjn1 = NULL_TREE;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -508,7 +509,10 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		continue;
 	      if (single_nonrect == -1
 		  || (loop->m1 && TREE_CODE (loop->m1) != INTEGER_CST)
-		  || (loop->m2 && TREE_CODE (loop->m2) != INTEGER_CST))
+		  || (loop->m2 && TREE_CODE (loop->m2) != INTEGER_CST)
+		  || TREE_CODE (loop->n1) != INTEGER_CST
+		  || TREE_CODE (loop->n2) != INTEGER_CST
+		  || TREE_CODE (loop->step) != INTEGER_CST)
 		{
 		  count = NULL_TREE;
 		  continue;
@@ -574,11 +578,128 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      else if (t && t2 && integer_zerop (t) && integer_zerop (t2))
 		/* No iterations of the inner loop.  count will be set to
 		   zero cst below.  */;
-	      else
+	      else if (TYPE_UNSIGNED (itype)
+		       || t == NULL_TREE
+		       || t2 == NULL_TREE
+		       || TREE_CODE (t) != INTEGER_CST
+		       || TREE_CODE (t2) != INTEGER_CST)
 		{
 		  /* Punt (for now).  */
 		  count = NULL_TREE;
 		  continue;
+		}
+	      else
+		{
+		  /* Some iterations of the outer loop have zero iterations
+		     of the inner loop, while others have at least one.
+		     In this case, we need to adjust one of those outer
+		     loop bounds.  If ADJ_FIRST, we need to adjust outer n1
+		     (first), otherwise outer n2 (last).  */
+		  bool adj_first = integer_zerop (t);
+		  tree n1 = fold_convert (itype, loop->n1);
+		  tree n2 = fold_convert (itype, loop->n2);
+		  tree m1 = loop->m1 ? fold_convert (itype, loop->m1)
+				     : build_zero_cst (itype);
+		  tree m2 = loop->m2 ? fold_convert (itype, loop->m2)
+				     : build_zero_cst (itype);
+		  t = fold_binary (MINUS_EXPR, itype, n1, n2);
+		  t2 = fold_binary (MINUS_EXPR, itype, m2, m1);
+		  t = fold_binary (TRUNC_DIV_EXPR, itype, t, t2);
+		  t2 = fold_binary (MINUS_EXPR, itype, t, first);
+		  t2 = fold_binary (TRUNC_MOD_EXPR, itype, t2, ostep);
+		  t = fold_binary (MINUS_EXPR, itype, t, t2);
+		  tree n1cur
+		    = fold_binary (PLUS_EXPR, itype, n1,
+				   fold_binary (MULT_EXPR, itype, m1, t));
+		  tree n2cur
+		    = fold_binary (PLUS_EXPR, itype, n2,
+				   fold_binary (MULT_EXPR, itype, m2, t));
+		  t2 = fold_binary (loop->cond_code, boolean_type_node,
+				    n1cur, n2cur);
+		  tree t3 = fold_binary (MULT_EXPR, itype, m1, ostep);
+		  tree t4 = fold_binary (MULT_EXPR, itype, m2, ostep);
+		  tree diff;
+		  if (adj_first)
+		    {
+		      tree new_first;
+		      if (integer_nonzerop (t2))
+			{
+			  new_first = t;
+			  n1first = n1cur;
+			  n2first = n2cur;
+			  if (flag_checking)
+			    {
+			      t3 = fold_binary (MINUS_EXPR, itype, n1cur, t3);
+			      t4 = fold_binary (MINUS_EXPR, itype, n2cur, t4);
+			      t3 = fold_binary (loop->cond_code,
+						boolean_type_node, t3, t4);
+			      gcc_assert (integer_zerop (t3));
+			    }
+			}
+		      else
+			{
+			  t3 = fold_binary (PLUS_EXPR, itype, n1cur, t3);
+			  t4 = fold_binary (PLUS_EXPR, itype, n2cur, t4);
+			  new_first = fold_binary (PLUS_EXPR, itype, t, ostep);
+			  n1first = t3;
+			  n2first = t4;
+			  if (flag_checking)
+			    {
+			      t3 = fold_binary (loop->cond_code,
+						boolean_type_node, t3, t4);
+			      gcc_assert (integer_nonzerop (t3));
+			    }
+			}
+		      diff = fold_binary (MINUS_EXPR, itype, new_first, first);
+		      first = new_first;
+		      fd->adjn1 = first;
+		    }
+		  else
+		    {
+		      tree new_last;
+		      if (integer_zerop (t2))
+			{
+			  t3 = fold_binary (MINUS_EXPR, itype, n1cur, t3);
+			  t4 = fold_binary (MINUS_EXPR, itype, n2cur, t4);
+			  new_last = fold_binary (MINUS_EXPR, itype, t, ostep);
+			  n1last = t3;
+			  n2last = t4;
+			  if (flag_checking)
+			    {
+			      t3 = fold_binary (loop->cond_code,
+						boolean_type_node, t3, t4);
+			      gcc_assert (integer_nonzerop (t3));
+			    }
+			}
+		      else
+			{
+			  new_last = t;
+			  n1last = n1cur;
+			  n2last = n2cur;
+			  if (flag_checking)
+			    {
+			      t3 = fold_binary (PLUS_EXPR, itype, n1cur, t3);
+			      t4 = fold_binary (PLUS_EXPR, itype, n2cur, t4);
+			      t3 = fold_binary (loop->cond_code,
+						boolean_type_node, t3, t4);
+			      gcc_assert (integer_zerop (t3));
+			    }
+			}
+		      diff = fold_binary (MINUS_EXPR, itype, last, new_last);
+		    }
+		  if (TYPE_UNSIGNED (itype)
+		      && single_nonrect_cond_code == GT_EXPR)
+		    diff = fold_binary (TRUNC_DIV_EXPR, itype,
+					fold_unary (NEGATE_EXPR, itype, diff),
+					fold_unary (NEGATE_EXPR, itype,
+						    ostep));
+		  else
+		    diff = fold_binary (TRUNC_DIV_EXPR, itype, diff, ostep);
+		  diff = fold_convert (long_long_unsigned_type_node, diff);
+		  single_nonrect_count
+		    = fold_binary (MINUS_EXPR, long_long_unsigned_type_node,
+				   single_nonrect_count, diff);
+		  t = NULL_TREE;
 		}
 	    }
 	  else
@@ -715,10 +836,11 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	  *collapse_count = fold_convert_loc (loc, iter_type, count);
 	  if (fd->min_inner_iterations && fd->factor)
 	    {
-	      t = make_tree_vec (3);
+	      t = make_tree_vec (4);
 	      TREE_VEC_ELT (t, 0) = *collapse_count;
 	      TREE_VEC_ELT (t, 1) = fd->min_inner_iterations;
 	      TREE_VEC_ELT (t, 2) = fd->factor;
+	      TREE_VEC_ELT (t, 3) = fd->adjn1;
 	      *collapse_count = t;
 	    }
 	}
@@ -736,6 +858,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	  gcc_assert (fd->non_rect);
 	  fd->min_inner_iterations = TREE_VEC_ELT (fd->loop.n2, 1);
 	  fd->factor = TREE_VEC_ELT (fd->loop.n2, 2);
+	  fd->adjn1 = TREE_VEC_ELT (fd->loop.n2, 3);
 	  fd->loop.n2 = TREE_VEC_ELT (fd->loop.n2, 0);
 	}
       fd->loop.step = build_int_cst (TREE_TYPE (fd->loop.v), 1);
