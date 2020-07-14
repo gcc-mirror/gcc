@@ -33,10 +33,10 @@ int test_2 (void)
            ~~~~~~~~~~~~~~~~
                          |
                          s
-    + some_other_function ());
-    ^ ~~~~~~~~~~~~~~~~~~~~~~
-                          |
-                          t
+           + some_other_function ());
+           ^ ~~~~~~~~~~~~~~~~~~~~~~
+                                 |
+                                 t
    { dg-end-multiline-output "" } */
 }
 

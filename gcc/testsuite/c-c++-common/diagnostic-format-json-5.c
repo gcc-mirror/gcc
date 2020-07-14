@@ -13,6 +13,7 @@ int test (struct s *ptr)
    We can't rely on any ordering of the keys.  */
 
 /* { dg-regexp "\"kind\": \"error\"" } */
+/* { dg-regexp "\"column-origin\": 1" } */
 /* { dg-regexp "\"message\": \".*\"" } */
 
 /* Verify fix-it hints.  */
@@ -23,11 +24,15 @@ int test (struct s *ptr)
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-5.c\"" } */
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 15" } */
+/* { dg-regexp "\"display-column\": 15" } */
+/* { dg-regexp "\"byte-column\": 15" } */
 
 /* { dg-regexp "\"next\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-5.c\"" } */
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 21" } */
+/* { dg-regexp "\"display-column\": 21" } */
+/* { dg-regexp "\"byte-column\": 21" } */
 
 /* { dg-regexp "\"fixits\": \[\[\{\}, \]*\]" } */
 
@@ -35,11 +40,15 @@ int test (struct s *ptr)
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-5.c\"" } */
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 15" } */
+/* { dg-regexp "\"display-column\": 15" } */
+/* { dg-regexp "\"byte-column\": 15" } */
 
 /* { dg-regexp "\"finish\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-5.c\"" } */
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 20" } */
+/* { dg-regexp "\"display-column\": 20" } */
+/* { dg-regexp "\"byte-column\": 20" } */
 
 /* { dg-regexp "\"locations\": \[\[\{\}, \]*\]" } */
 /* { dg-regexp "\"children\": \[\[\]\[\]\]" } */
