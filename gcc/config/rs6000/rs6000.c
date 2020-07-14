@@ -6498,7 +6498,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	}
       else
 	{
-	  if (TARGET_P8_VECTOR)
+	  if (TARGET_P8_VECTOR && TARGET_POWERPC64)
 	    {
 	      rtx tmp_sf[4];
 	      rtx tmp_si[4];
