@@ -8382,7 +8382,9 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
       || GET_CODE (target) == PARALLEL || modifier == EXPAND_STACK_PARM
       /* Also make a temporary if the store is to volatile memory, to
 	 avoid individual accesses to aggregate members.  */
-      || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
+      || (GET_CODE (target) == MEM
+	  && MEM_VOLATILE_P (target)
+	  && !TREE_ADDRESSABLE (TREE_TYPE (exp))))
     {
       if (avoid_temp_mem)
 	return NULL_RTX;
