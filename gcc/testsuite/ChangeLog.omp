@@ -3,6 +3,14 @@
 	Backport from mainline
 	2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/goacc/finalize-1.f: Relax scan-tree-dump-times
+	pattern to work on 32bit-pointer systems.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/goacc/finalize-1.f: Update dump scan pattern.
 	* gfortran.dg/gomp/map-1.f90: Update dg-error.
 	* gfortran.dg/gomp/map-2.f90: New test.
