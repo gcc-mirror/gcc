@@ -5986,7 +5986,6 @@ push_template_decl_real (tree decl, bool is_friend)
 
   gcc_checking_assert (DECL_TEMPLATE_RESULT (tmpl) == decl);
 
-
   if (new_template_p)
     {
       /* Push template declarations for global functions and types.

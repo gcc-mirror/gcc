@@ -2215,6 +2215,7 @@ decl_needed_p (tree decl)
      emitted; they may be referred to from other object files.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_REALLY_EXTERN (decl))
     return true;
+
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
   if (flag_keep_inline_dllexport
@@ -2725,8 +2726,7 @@ determine_visibility (tree decl)
     determine_visibility_from_class (decl, class_type);
 
   if (decl_anon_ns_mem_p (decl))
-    /* Names in an anonymous namespace get internal linkage.
-       This might change once we implement export.  */
+    /* Names in an anonymous namespace get internal linkage.  */
     constrain_visibility (decl, VISIBILITY_ANON, false);
   else if (TREE_CODE (decl) != TYPE_DECL)
     {
@@ -4492,11 +4492,13 @@ no_linkage_error (tree decl)
 	      && TREE_NO_WARNING (decl))))
     /* In C++11 it's ok if the decl is defined.  */
     return;
+
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
   if (t == NULL_TREE)
     /* The type that got us on no_linkage_decls must have gotten a name for
        linkage purposes.  */;
   else if (CLASS_TYPE_P (t) && TYPE_BEING_DEFINED (t))
+    // FIXME: This is now invalid, as a DR to c++98
     /* The type might end up having a typedef name for linkage purposes.  */
     vec_safe_push (no_linkage_decls, decl);
   else if (TYPE_UNNAMED_P (t))
