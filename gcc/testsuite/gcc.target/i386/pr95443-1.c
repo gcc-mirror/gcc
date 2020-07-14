@@ -49,7 +49,7 @@ simple_strstr (const char *haystack, const char *needle)
 
   while (1)
     {
-      if (__glibc_unlikely (hs > end))
+      if (__builtin_expect (hs > end, 0))
 	{
 	  end += strnlen ((const char*)end + m1 + 1, 2048);
 	  if (hs > end)
