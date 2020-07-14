@@ -1,3 +1,106 @@
+2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (is-effective-target):
+	Reorder to put powerpc stuff together.
+	(is-effective-target-keyword): Add power10_hw.
+
+2020-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/scanlang.exp (scan-lang-dump): Fix breakage.
+	(scan-lang-dump-times, scan-lang-dump-not): New.
+
+2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* lib/target-supports.exp (check_ppc_mma_hw_available):
+	New function.
+	(is-effective-target): Add ppc_mma_hw.
+	(is-effective-target-keyword): Add ppc_mma_hw.
+	* gcc.target/powerpc/mma-supported.c: New file.
+	* gcc.target/powerpc/mma-single-test.c: Require ppc_mma_hw.
+	* gcc.target/powerpc/mma-double-test.c: Require ppc_mma_hw.
+
+2020-07-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95443
+	* gcc.target/i386/pr95443-1.c: New test.
+	* gcc.target/i386/pr95443-2.c: Likewise.
+
+2020-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95288
+	* g++.dg/diagnostic/enum2.C: New test.
+
+2020-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/96130
+	* gcc.dg/torture/pr96130.c: New test.
+
+2020-07-13  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/45337
+	* gfortran.dg/pr45337_1.f90: New test.
+	* gfortran.dg/pr45337_2.f90: New test.
+
+2020-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96077
+	* g++.dg/parse/enum14.C: New test.
+
+2020-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/scanlang.exp (scan-lang-dump-not): Fix 3-arg case.
+
+2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96163
+	* g++.dg/vect/pr96163.cc: New testcase.
+
+2020-07-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95981
+	* gfortran.dg/pr95981.f90: New test.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* gcc.target/aarch64/return_address_sign_1.c: Update test.
+	* gcc.target/aarch64/return_address_sign_b_1.c: Likewise.
+
+2020-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* g++.target/aarch64/pr95114.C: New test.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Update expected dump output.
+
+2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96180
+	* gcc.dg/torture/pr96133.c: Align global variable.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-44.c, gcc.target/cris/pr93372-46.c: New.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/93372
+	* gcc.target/cris/pr93372-45.c: New test.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/94600
+	* gcc.dg/pr94600-1.c, gcc.dg/pr94600-2.c, gcc.dg/pr94600-3.c,
+	gcc.dg/pr94600-4.c, gcc.dg/pr94600-5.c, gcc.dg/pr94600-6.c,
+	gcc.dg/pr94600-7.c, gcc.dg/pr94600-8.c: New tests.
+
+2020-07-13  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/vector_float.c: New test.
+
 2020-07-12  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/93492
