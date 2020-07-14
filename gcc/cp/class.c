@@ -4456,9 +4456,10 @@ build_base_field_1 (tree t, tree binfo, tree access, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
   tree basetype = BINFO_TYPE (binfo);
-  gcc_assert (CLASSTYPE_AS_BASE (basetype));
-  tree decl = build_decl (input_location,
-			  FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
+  tree as_base = CLASSTYPE_AS_BASE (basetype);
+  gcc_assert (as_base);
+  tree decl = build_decl (input_location, FIELD_DECL, NULL_TREE, as_base);
+
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
@@ -8678,20 +8679,20 @@ void
 build_self_reference (void)
 {
   tree name = DECL_NAME (TYPE_NAME (current_class_type));
-  tree value = build_lang_decl (TYPE_DECL, name, current_class_type);
+  tree decl = build_lang_decl (TYPE_DECL, name, current_class_type);
 
-  DECL_NONLOCAL (value) = 1;
-  DECL_CONTEXT (value) = current_class_type;
-  DECL_ARTIFICIAL (value) = 1;
-  SET_DECL_SELF_REFERENCE_P (value);
-  set_underlying_type (value);
+  DECL_NONLOCAL (decl) = 1;
+  DECL_CONTEXT (decl) = current_class_type;
+  DECL_ARTIFICIAL (decl) = 1;
+  SET_DECL_SELF_REFERENCE_P (decl);
+  set_underlying_type (decl);
 
   if (processing_template_decl)
-    value = push_template_decl (value);
+    decl = push_template_decl (decl);
 
   tree saved_cas = current_access_specifier;
   current_access_specifier = access_public_node;
-  finish_member_declaration (value);
+  finish_member_declaration (decl);
   current_access_specifier = saved_cas;
 }
 
@@ -9006,11 +9007,11 @@ dump_class_hierarchy_1 (FILE *stream, dump_flags_t flags, tree t)
   fprintf (stream, "   size=%lu align=%lu\n",
 	   (unsigned long)(tree_to_shwi (TYPE_SIZE (t)) / BITS_PER_UNIT),
 	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
-  fprintf (stream, "   base size=%lu base align=%lu\n",
-	   (unsigned long)(tree_to_shwi (TYPE_SIZE (CLASSTYPE_AS_BASE (t)))
-			   / BITS_PER_UNIT),
-	   (unsigned long)(TYPE_ALIGN (CLASSTYPE_AS_BASE (t))
-			   / BITS_PER_UNIT));
+  if (tree as_base = CLASSTYPE_AS_BASE (t))
+    fprintf (stream, "   base size=%lu base align=%lu\n",
+	     (unsigned long)(tree_to_shwi (TYPE_SIZE (as_base))
+			     / BITS_PER_UNIT),
+	     (unsigned long)(TYPE_ALIGN (as_base) / BITS_PER_UNIT));
   dump_class_hierarchy_r (stream, flags, TYPE_BINFO (t), TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
 }
