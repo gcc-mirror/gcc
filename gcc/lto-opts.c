@@ -94,21 +94,6 @@ lto_write_options (void)
 				      : "-fno-pie");
     }
 
-  if (!global_options_set.x_flag_cf_protection)
-    {
-      append_to_collect_gcc_options (
-	&temporary_obstack, &first_p,
-	global_options.x_flag_cf_protection == CF_NONE
-	? "-fcf-protection=none"
-	: global_options.x_flag_cf_protection == CF_FULL
-	? "-fcf-protection=full"
-	: global_options.x_flag_cf_protection == CF_BRANCH
-	? "-fcf-protection=branch"
-	: global_options.x_flag_cf_protection == CF_RETURN
-	? "-fcf-protection=return"
-	: "");
-    }
-
   /* If debug info is enabled append -g.  */
   if (debug_info_level > DINFO_LEVEL_NONE)
     append_to_collect_gcc_options (&temporary_obstack, &first_p, "-g");
