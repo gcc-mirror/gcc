@@ -785,10 +785,10 @@ manext
 LIBICONV_DEP
 LTLIBICONV
 LIBICONV
-ZSTD_LIB
-ZSTD_INCLUDE
 ZSTD_LDFLAGS
 ZSTD_CPPFLAGS
+ZSTD_LIB
+ZSTD_INCLUDE
 DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
@@ -9978,6 +9978,8 @@ ZSTD_LIB=
 ZSTD_CPPFLAGS=
 ZSTD_LDFLAGS=
 
+
+
 # Check whether --with-zstd was given.
 if test "${with_zstd+set}" = set; then :
   withval=$with_zstd;
@@ -19021,7 +19023,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19022 "configure"
+#line 19026 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19127,7 +19129,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19128 "configure"
+#line 19132 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -30786,7 +30788,7 @@ case "$host" in
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
-	# and if assembler supports CET insn.
+	# and if compiler and assembler support CET.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -30812,7 +30814,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	;;
       yes)
-	# Check if assembler supports CET.
+	# Check if compiler and assembler support CET.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -30825,11 +30827,24 @@ asm ("setssbsy");
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-
+  support_cet=yes
 else
-  as_fn_error $? "assembler with CET support is required for --enable-cet" "$LINENO" 5
+  support_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	if test $support_cet = "no"; then
+	  if test x$enable_bootstrap != xno \
+	     && test -z "${with_build_subdir}" \
+	     && (test ! -f ../stage_current \
+	         || test `cat ../stage_current` != "stage1"); then
+	    # Require CET support only for the final GCC build.
+	    as_fn_error $? "compiler and assembler with CET support are required for --enable-cet" "$LINENO" 5
+	  else
+	    # Don't enable CET without CET support for non-bootstrap
+	    # build, in stage1 nor for build support.
+	    enable_cet=no
+	  fi
+	fi
 	;;
     esac
     CFLAGS="$cet_save_CFLAGS"
