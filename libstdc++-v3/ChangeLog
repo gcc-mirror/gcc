@@ -1,3 +1,7 @@
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/os/aix/t-aix: Set BITS from compiler cpp macro.
+
 2020-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94749

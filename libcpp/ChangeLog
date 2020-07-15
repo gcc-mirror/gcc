@@ -1,3 +1,26 @@
+2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	PR other/86904
+	* include/cpplib.h (struct cpp_options):  Removed support for -ftabstop,
+	which is now handled by diagnostic_context.
+	(class cpp_display_width_computation): New class.
+	(cpp_byte_column_to_display_column): Add optional tabstop argument.
+	(cpp_display_width): Likewise.
+	(cpp_display_column_to_byte_column): Likewise.
+	* charset.c
+	(cpp_display_width_computation::cpp_display_width_computation): New
+	function.
+	(cpp_display_width_computation::advance_display_cols): Likewise.
+	(compute_next_display_width): Removed and implemented this
+	functionality in a new function...
+	(cpp_display_width_computation::process_next_codepoint): ...here.
+	(cpp_byte_column_to_display_column): Added tabstop argument.
+	Reimplemented in terms of class cpp_display_width_computation.
+	(cpp_display_column_to_byte_column): Likewise.
+	* init.c (cpp_create_reader): Remove handling of -ftabstop, which is now
+	handled by diagnostic_context.
+
 2020-07-07  Nathan Sidwell  <nathan@acm.org>
 
 	* directives.c (do_linemarker): Optimize rewinding to line zero.
