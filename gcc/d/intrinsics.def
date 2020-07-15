@@ -59,6 +59,11 @@ DEF_D_BUILTIN (BSWAP64, BSWAP64, "bswap", "core.bitop", "FNaNbNiNfmZm")
 DEF_D_BUILTIN (POPCNT32, NONE, "popcnt", "core.bitop", "FNaNbNiNfkZi")
 DEF_D_BUILTIN (POPCNT64, NONE, "popcnt", "core.bitop", "FNaNbNiNfmZi")
 
+DEF_D_BUILTIN (ROL, NONE, "rol", "core.bitop", "FNaI1TkZI1T")
+DEF_D_BUILTIN (ROL_TIARG, NONE, "rol", "core.bitop", "FNaI1TZI1T")
+DEF_D_BUILTIN (ROR, NONE, "ror", "core.bitop", "FNaI1TkZI1T")
+DEF_D_BUILTIN (ROR_TIARG, NONE, "ror", "core.bitop", "FNaI1TZI1T")
+
 DEF_D_BUILTIN (VLOAD8, NONE, "volatileLoad", "core.bitop", "FNbNiNfPhZh")
 DEF_D_BUILTIN (VLOAD16, NONE, "volatileLoad", "core.bitop", "FNbNiNfPtZt")
 DEF_D_BUILTIN (VLOAD32, NONE, "volatileLoad", "core.bitop", "FNbNiNfPkZk")
