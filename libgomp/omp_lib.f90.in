@@ -24,13 +24,19 @@
 !  <http://www.gnu.org/licenses/>.
 
       module omp_lib_kinds
+        use iso_c_binding, only: c_int, c_intptr_t
         implicit none
+        private :: c_int, c_intptr_t
         integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
         integer, parameter :: omp_sched_kind = 4
         integer, parameter :: omp_proc_bind_kind = 4
         integer, parameter :: omp_lock_hint_kind = 4
         integer, parameter :: omp_pause_resource_kind = 4
+        integer, parameter :: omp_allocator_handle_kind = c_intptr_t
+        integer, parameter :: omp_alloctrait_key_kind = c_int
+        integer, parameter :: omp_alloctrait_val_kind = c_intptr_t
+        integer, parameter :: omp_memspace_handle_kind = c_intptr_t
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
         integer (omp_sched_kind), parameter :: omp_sched_guided = 3
@@ -59,6 +65,95 @@
                  parameter :: omp_pause_soft = 1
         integer (kind=omp_pause_resource_kind), &
                  parameter :: omp_pause_hard = 2
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_sync_hint = 1
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_alignment = 2
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_access = 3
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_pool_size = 4
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_fallback = 5
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_fb_data = 6
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_pinned = 7
+        integer (kind=omp_alloctrait_key_kind), &
+                 parameter :: omp_atk_partition = 8
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_default = -1
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_false = 0
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_true = 1
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_contended = 3
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_uncontended = 4
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_serialized = 5
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_sequential = omp_atv_serialized
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_private = 6
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_all = 7
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_thread = 8
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_pteam = 9
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_cgroup = 10
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_default_mem_fb = 11
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_null_fb = 12
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_abort_fb = 13
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_allocator_fb = 14
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_environment = 15
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_nearest = 16
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_blocked = 17
+        integer (kind=omp_alloctrait_val_kind), &
+                 parameter :: omp_atv_interleaved = 18
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_null_allocator = 0
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_default_mem_alloc = 1
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_large_cap_mem_alloc = 2
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_const_mem_alloc = 3
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_high_bw_mem_alloc = 4
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_low_lat_mem_alloc = 5
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_cgroup_mem_alloc = 6
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_pteam_mem_alloc = 7
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: omp_thread_mem_alloc = 8
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_default_mem_space = 0
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_large_cap_mem_space = 1
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_const_mem_space = 2
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_high_bw_mem_space = 3
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_low_lat_mem_space = 4
+
+        type omp_alloctrait
+          integer (kind=omp_alloctrait_key_kind) key
+          integer (kind=omp_alloctrait_val_kind) value
+        end type omp_alloctrait
       end module
 
       module omp_lib
@@ -481,6 +576,49 @@
             integer (4) :: omp_pause_resource_all
             integer (kind=omp_pause_resource_kind), &
               intent(in) :: kind
+          end function
+        end interface
+
+        interface omp_init_allocator
+          function omp_init_allocator (memspace, ntraits, traits)
+            use omp_lib_kinds
+            integer (kind=omp_allocator_handle_kind) omp_init_allocator
+            integer (kind=omp_memspace_handle_kind), &
+              intent(in) :: memspace
+            integer (4), intent(in) :: ntraits
+            type (omp_alloctrait), intent(in) :: traits(*)
+          end function
+          function omp_init_allocator_8 (memspace, ntraits, traits)
+            use omp_lib_kinds
+            integer (kind=omp_allocator_handle_kind) omp_init_allocator_8
+            integer (kind=omp_memspace_handle_kind), &
+              intent(in) :: memspace
+            integer (8), intent(in) :: ntraits
+            type (omp_alloctrait), intent(in) :: traits(*)
+          end function
+        end interface
+
+        interface
+          subroutine omp_destroy_allocator (allocator)
+            use omp_lib_kinds
+            integer (kind=omp_allocator_handle_kind), &
+              intent(in) :: allocator
+          end subroutine
+        end interface
+
+        interface
+          subroutine omp_set_default_allocator (allocator)
+            use omp_lib_kinds
+            integer (kind=omp_allocator_handle_kind), &
+              intent(in) :: allocator
+          end subroutine
+        end interface
+
+        interface
+          function omp_get_default_allocator ()
+            use omp_lib_kinds
+            integer (kind=omp_allocator_handle_kind) &
+               omp_get_default_allocator
           end function
         end interface
 
