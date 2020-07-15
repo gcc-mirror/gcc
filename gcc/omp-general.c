@@ -212,7 +212,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
   fd->simd_schedule = false;
-  fd->min_inner_iterations = NULL_TREE;
+  fd->first_inner_iterations = NULL_TREE;
   fd->factor = NULL_TREE;
   fd->adjn1 = NULL_TREE;
   collapse_iter = NULL;
@@ -726,16 +726,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	      if (loop->m1 || loop->m2)
 		{
 		  gcc_assert (single_nonrect != -1);
-		  if (single_nonrect_cond_code == LT_EXPR)
-		    {
-		      n1 = n1first;
-		      n2 = n2first;
-		    }
-		  else
-		    {
-		      n1 = n1last;
-		      n2 = n2last;
-		    }
+		  n1 = n1first;
+		  n2 = n2first;
 		}
 	      t = fold_build2 (PLUS_EXPR, itype, t, fold_convert (itype, n2));
 	      t = fold_build2 (MINUS_EXPR, itype, t, fold_convert (itype, n1));
@@ -754,8 +746,6 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		     or last value of the outer iterator (the one with fewer
 		     iterations).
 		     Compute t2 = ((m2 - m1) * ostep) / step
-		     (for single_nonrect_cond_code GT_EXPR
-		      t2 = ((m1 - m2) * ostep) / step instead)
 		     and niters = outer_count * t
 				  + t2 * ((outer_count - 1) * outer_count / 2)
 		   */
@@ -763,11 +753,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		  tree m2 = loop->m2 ? loop->m2 : integer_zero_node;
 		  m1 = fold_convert (itype, m1);
 		  m2 = fold_convert (itype, m2);
-		  tree t2;
-		  if (single_nonrect_cond_code == LT_EXPR)
-		    t2 = fold_build2 (MINUS_EXPR, itype, m2, m1);
-		  else
-		    t2 = fold_build2 (MINUS_EXPR, itype, m1, m2);
+		  tree t2 = fold_build2 (MINUS_EXPR, itype, m2, m1);
 		  t2 = fold_build2 (MULT_EXPR, itype, t2, ostep);
 		  if (TYPE_UNSIGNED (itype) && loop->cond_code == GT_EXPR)
 		    t2 = fold_build2 (TRUNC_DIV_EXPR, itype,
@@ -776,7 +762,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 		  else
 		    t2 = fold_build2 (TRUNC_DIV_EXPR, itype, t2, step);
 		  t2 = fold_convert (llutype, t2);
-		  fd->min_inner_iterations = t;
+		  fd->first_inner_iterations = t;
 		  fd->factor = t2;
 		  t = fold_build2 (MULT_EXPR, llutype, t,
 				   single_nonrect_count);
@@ -834,11 +820,11 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       if (count)
 	{
 	  *collapse_count = fold_convert_loc (loc, iter_type, count);
-	  if (fd->min_inner_iterations && fd->factor)
+	  if (fd->first_inner_iterations && fd->factor)
 	    {
 	      t = make_tree_vec (4);
 	      TREE_VEC_ELT (t, 0) = *collapse_count;
-	      TREE_VEC_ELT (t, 1) = fd->min_inner_iterations;
+	      TREE_VEC_ELT (t, 1) = fd->first_inner_iterations;
 	      TREE_VEC_ELT (t, 2) = fd->factor;
 	      TREE_VEC_ELT (t, 3) = fd->adjn1;
 	      *collapse_count = t;
@@ -856,7 +842,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       if (TREE_CODE (fd->loop.n2) == TREE_VEC)
 	{
 	  gcc_assert (fd->non_rect);
-	  fd->min_inner_iterations = TREE_VEC_ELT (fd->loop.n2, 1);
+	  fd->first_inner_iterations = TREE_VEC_ELT (fd->loop.n2, 1);
 	  fd->factor = TREE_VEC_ELT (fd->loop.n2, 2);
 	  fd->adjn1 = TREE_VEC_ELT (fd->loop.n2, 3);
 	  fd->loop.n2 = TREE_VEC_ELT (fd->loop.n2, 0);
