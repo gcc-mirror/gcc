@@ -594,6 +594,41 @@
   "TARGET_CMPXCHG"
   "lock{%;} %K4cmpxchg{<imodesuffix>}\t{%3, %1|%1, %3}")
 
+(define_peephole2
+  [(set (match_operand:SWI 0 "register_operand")
+	(match_operand:SWI 1 "general_operand"))
+   (parallel [(set (match_dup 0)
+		   (unspec_volatile:SWI
+		     [(match_operand:SWI 2 "memory_operand")
+		      (match_dup 0)
+		      (match_operand:SWI 3 "register_operand")
+		      (match_operand:SI 4 "const_int_operand")]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 2)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])
+   (set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (match_operand:SWI 5 "register_operand")
+		     (match_operand:SWI 6 "general_operand")))]
+  "(rtx_equal_p (operands[0], operands[5])
+    && rtx_equal_p (operands[1], operands[6]))
+   || (rtx_equal_p (operands[0], operands[6])
+       && rtx_equal_p (operands[1], operands[5]))"
+  [(set (match_dup 0)
+	(match_dup 1))
+   (parallel [(set (match_dup 0)
+		   (unspec_volatile:SWI
+		     [(match_dup 2)
+		      (match_dup 0)
+		      (match_dup 3)
+		      (match_dup 4)]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 2)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])])
+
 ;; For operand 2 nonmemory_operand predicate is used instead of
 ;; register_operand to allow combiner to better optimize atomic
 ;; additions of constants.
