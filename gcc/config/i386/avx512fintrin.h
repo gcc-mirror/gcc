@@ -15126,6 +15126,88 @@ _mm512_mask_cmp_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y, const int __P)
 
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_sd_mask (__m128d __X, __m128d __Y, const int __P)
+{
+  return (__mmask8) __builtin_ia32_cmpsd_mask ((__v2df) __X,
+					       (__v2df) __Y, __P,
+					       (__mmask8) -1,
+					       _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cmp_sd_mask (__mmask8 __M, __m128d __X, __m128d __Y, const int __P)
+{
+  return (__mmask8) __builtin_ia32_cmpsd_mask ((__v2df) __X,
+					       (__v2df) __Y, __P,
+					       (__mmask8) __M,
+					       _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_ss_mask (__m128 __X, __m128 __Y, const int __P)
+{
+  return (__mmask8) __builtin_ia32_cmpss_mask ((__v4sf) __X,
+					       (__v4sf) __Y, __P,
+					       (__mmask8) -1,
+					       _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cmp_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y, const int __P)
+{
+  return (__mmask8) __builtin_ia32_cmpss_mask ((__v4sf) __X,
+					       (__v4sf) __Y, __P,
+					       (__mmask8) __M,
+					       _MM_FROUND_CUR_DIRECTION);
+}
+
+#else
+#define _mm512_cmp_pd_mask(X, Y, P)					\
+  ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
+					    (__v8df)(__m512d)(Y), (int)(P),\
+					    (__mmask8)-1,_MM_FROUND_CUR_DIRECTION))
+
+#define _mm512_cmp_ps_mask(X, Y, P)					\
+  ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
+					     (__v16sf)(__m512)(Y), (int)(P),\
+					     (__mmask16)-1,_MM_FROUND_CUR_DIRECTION))
+
+#define _mm512_mask_cmp_pd_mask(M, X, Y, P)					\
+  ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
+					    (__v8df)(__m512d)(Y), (int)(P),\
+					    (__mmask8)(M), _MM_FROUND_CUR_DIRECTION))
+
+#define _mm512_mask_cmp_ps_mask(M, X, Y, P)					\
+  ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
+					     (__v16sf)(__m512)(Y), (int)(P),\
+					     (__mmask16)(M),_MM_FROUND_CUR_DIRECTION))
+
+#define _mm_cmp_sd_mask(X, Y, P)					\
+  ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
+					 (__v2df)(__m128d)(Y), (int)(P),\
+					 (__mmask8)-1,_MM_FROUND_CUR_DIRECTION))
+
+#define _mm_mask_cmp_sd_mask(M, X, Y, P)					\
+  ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
+					 (__v2df)(__m128d)(Y), (int)(P),\
+					 M,_MM_FROUND_CUR_DIRECTION))
+
+#define _mm_cmp_ss_mask(X, Y, P)					\
+  ((__mmask8) __builtin_ia32_cmpss_mask ((__v4sf)(__m128)(X),		\
+					 (__v4sf)(__m128)(Y), (int)(P), \
+					 (__mmask8)-1,_MM_FROUND_CUR_DIRECTION))
+
+#define _mm_mask_cmp_ss_mask(M, X, Y, P)					\
+  ((__mmask8) __builtin_ia32_cmpss_mask ((__v4sf)(__m128)(X),		\
+					 (__v4sf)(__m128)(Y), (int)(P), \
+					 M,_MM_FROUND_CUR_DIRECTION))
+#endif
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_cmpeq_pd_mask (__m512d __X, __m512d __Y)
 {
   return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
@@ -15443,88 +15525,6 @@ _mm512_mask_cmpord_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
 						   (__mmask16) __U,
 						   _MM_FROUND_CUR_DIRECTION);
 }
-
-extern __inline __mmask8
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cmp_sd_mask (__m128d __X, __m128d __Y, const int __P)
-{
-  return (__mmask8) __builtin_ia32_cmpsd_mask ((__v2df) __X,
-					       (__v2df) __Y, __P,
-					       (__mmask8) -1,
-					       _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __mmask8
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cmp_sd_mask (__mmask8 __M, __m128d __X, __m128d __Y, const int __P)
-{
-  return (__mmask8) __builtin_ia32_cmpsd_mask ((__v2df) __X,
-					       (__v2df) __Y, __P,
-					       (__mmask8) __M,
-					       _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __mmask8
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cmp_ss_mask (__m128 __X, __m128 __Y, const int __P)
-{
-  return (__mmask8) __builtin_ia32_cmpss_mask ((__v4sf) __X,
-					       (__v4sf) __Y, __P,
-					       (__mmask8) -1,
-					       _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __mmask8
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cmp_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y, const int __P)
-{
-  return (__mmask8) __builtin_ia32_cmpss_mask ((__v4sf) __X,
-					       (__v4sf) __Y, __P,
-					       (__mmask8) __M,
-					       _MM_FROUND_CUR_DIRECTION);
-}
-
-#else
-#define _mm512_cmp_pd_mask(X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
-					    (__v8df)(__m512d)(Y), (int)(P),\
-					    (__mmask8)-1,_MM_FROUND_CUR_DIRECTION))
-
-#define _mm512_cmp_ps_mask(X, Y, P)					\
-  ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
-					     (__v16sf)(__m512)(Y), (int)(P),\
-					     (__mmask16)-1,_MM_FROUND_CUR_DIRECTION))
-
-#define _mm512_mask_cmp_pd_mask(M, X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmppd512_mask ((__v8df)(__m512d)(X),	\
-					    (__v8df)(__m512d)(Y), (int)(P),\
-					    (__mmask8)(M), _MM_FROUND_CUR_DIRECTION))
-
-#define _mm512_mask_cmp_ps_mask(M, X, Y, P)					\
-  ((__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf)(__m512)(X),	\
-					     (__v16sf)(__m512)(Y), (int)(P),\
-					     (__mmask16)(M),_MM_FROUND_CUR_DIRECTION))
-
-#define _mm_cmp_sd_mask(X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
-					 (__v2df)(__m128d)(Y), (int)(P),\
-					 (__mmask8)-1,_MM_FROUND_CUR_DIRECTION))
-
-#define _mm_mask_cmp_sd_mask(M, X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmpsd_mask ((__v2df)(__m128d)(X),		\
-					 (__v2df)(__m128d)(Y), (int)(P),\
-					 M,_MM_FROUND_CUR_DIRECTION))
-
-#define _mm_cmp_ss_mask(X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmpss_mask ((__v4sf)(__m128)(X),		\
-					 (__v4sf)(__m128)(Y), (int)(P), \
-					 (__mmask8)-1,_MM_FROUND_CUR_DIRECTION))
-
-#define _mm_mask_cmp_ss_mask(M, X, Y, P)					\
-  ((__mmask8) __builtin_ia32_cmpss_mask ((__v4sf)(__m128)(X),		\
-					 (__v4sf)(__m128)(Y), (int)(P), \
-					 M,_MM_FROUND_CUR_DIRECTION))
-#endif
 
 extern __inline __mmask16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
