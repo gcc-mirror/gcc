@@ -66,6 +66,102 @@
       parameter (omp_pause_soft = 1)
       parameter (omp_pause_hard = 2)
 
+      integer omp_allocator_handle_kind, omp_alloctrait_key_kind
+      integer omp_alloctrait_val_kind, omp_memspace_handle_kind
+      parameter (omp_allocator_handle_kind = @INTPTR_T_KIND@)
+      parameter (omp_alloctrait_key_kind = @INTPTR_T_KIND@)
+      parameter (omp_alloctrait_val_kind = @INTPTR_T_KIND@)
+      parameter (omp_memspace_handle_kind = @INTPTR_T_KIND@)
+      integer (omp_alloctrait_key_kind) omp_atk_sync_hint
+      integer (omp_alloctrait_key_kind) omp_atk_alignment
+      integer (omp_alloctrait_key_kind) omp_atk_access
+      integer (omp_alloctrait_key_kind) omp_atk_pool_size
+      integer (omp_alloctrait_key_kind) omp_atk_fallback
+      integer (omp_alloctrait_key_kind) omp_atk_fb_data
+      integer (omp_alloctrait_key_kind) omp_atk_pinned
+      integer (omp_alloctrait_key_kind) omp_atk_partition
+      parameter (omp_atk_sync_hint = 1)
+      parameter (omp_atk_alignment = 2)
+      parameter (omp_atk_access = 3)
+      parameter (omp_atk_pool_size = 4)
+      parameter (omp_atk_fallback = 5)
+      parameter (omp_atk_fb_data = 6)
+      parameter (omp_atk_pinned = 7)
+      parameter (omp_atk_partition = 8)
+      integer (omp_alloctrait_val_kind) omp_atv_false
+      integer (omp_alloctrait_val_kind) omp_atv_true
+      integer (omp_alloctrait_val_kind) omp_atv_default
+      integer (omp_alloctrait_val_kind) omp_atv_contended
+      integer (omp_alloctrait_val_kind) omp_atv_uncontended
+      integer (omp_alloctrait_val_kind) omp_atv_serialized
+      integer (omp_alloctrait_val_kind) omp_atv_sequential
+      integer (omp_alloctrait_val_kind) omp_atv_private
+      integer (omp_alloctrait_val_kind) omp_atv_all
+      integer (omp_alloctrait_val_kind) omp_atv_thread
+      integer (omp_alloctrait_val_kind) omp_atv_pteam
+      integer (omp_alloctrait_val_kind) omp_atv_cgroup
+      integer (omp_alloctrait_val_kind) omp_atv_default_mem_fb
+      integer (omp_alloctrait_val_kind) omp_atv_null_fb
+      integer (omp_alloctrait_val_kind) omp_atv_abort_fb
+      integer (omp_alloctrait_val_kind) omp_atv_allocator_fb
+      integer (omp_alloctrait_val_kind) omp_atv_environment
+      integer (omp_alloctrait_val_kind) omp_atv_nearest
+      integer (omp_alloctrait_val_kind) omp_atv_blocked
+      integer (omp_alloctrait_val_kind) omp_atv_interleaved
+      parameter (omp_atv_default = -1)
+      parameter (omp_atv_false = 0)
+      parameter (omp_atv_true = 1)
+      parameter (omp_atv_contended = 3)
+      parameter (omp_atv_uncontended = 4)
+      parameter (omp_atv_serialized = 5)
+      parameter (omp_atv_sequential = omp_atv_serialized)
+      parameter (omp_atv_private = 6)
+      parameter (omp_atv_all = 7)
+      parameter (omp_atv_thread = 8)
+      parameter (omp_atv_pteam = 9)
+      parameter (omp_atv_cgroup = 10)
+      parameter (omp_atv_default_mem_fb = 11)
+      parameter (omp_atv_null_fb = 12)
+      parameter (omp_atv_abort_fb = 13)
+      parameter (omp_atv_allocator_fb = 14)
+      parameter (omp_atv_environment = 15)
+      parameter (omp_atv_nearest = 16)
+      parameter (omp_atv_blocked = 17)
+      parameter (omp_atv_interleaved = 18)
+      integer (omp_allocator_handle_kind) omp_null_allocator
+      integer (omp_allocator_handle_kind) omp_default_mem_alloc
+      integer (omp_allocator_handle_kind) omp_large_cap_mem_alloc
+      integer (omp_allocator_handle_kind) omp_const_mem_alloc
+      integer (omp_allocator_handle_kind) omp_high_bw_mem_alloc
+      integer (omp_allocator_handle_kind) omp_low_lat_mem_alloc
+      integer (omp_allocator_handle_kind) omp_cgroup_mem_alloc
+      integer (omp_allocator_handle_kind) omp_pteam_mem_alloc
+      integer (omp_allocator_handle_kind) omp_thread_mem_alloc
+      parameter (omp_null_allocator = 0)
+      parameter (omp_default_mem_alloc = 1)
+      parameter (omp_large_cap_mem_alloc = 2)
+      parameter (omp_const_mem_alloc = 3)
+      parameter (omp_high_bw_mem_alloc = 4)
+      parameter (omp_low_lat_mem_alloc = 5)
+      parameter (omp_cgroup_mem_alloc = 6)
+      parameter (omp_pteam_mem_alloc = 7)
+      parameter (omp_thread_mem_alloc = 8)
+      integer (omp_memspace_handle_kind) omp_default_mem_space
+      integer (omp_memspace_handle_kind) omp_large_cap_mem_space
+      integer (omp_memspace_handle_kind) omp_const_mem_space
+      integer (omp_memspace_handle_kind) omp_high_bw_mem_space
+      integer (omp_memspace_handle_kind) omp_low_lat_mem_space
+      parameter (omp_default_mem_space = 0)
+      parameter (omp_large_cap_mem_space = 1)
+      parameter (omp_const_mem_space = 2)
+      parameter (omp_high_bw_mem_space = 3)
+      parameter (omp_low_lat_mem_space = 4)
+
+      type omp_alloctrait
+        integer (omp_alloctrait_key_kind) key
+        integer (omp_alloctrait_val_kind) value
+      end type omp_alloctrait
+
       external omp_init_lock, omp_init_nest_lock
       external omp_init_lock_with_hint
       external omp_init_nest_lock_with_hint
@@ -141,3 +237,10 @@
       external omp_pause_resource, omp_pause_resource_all
       integer(4) omp_pause_resource
       integer(4) omp_pause_resource_all
+
+      external omp_init_allocator
+      integer (omp_allocator_handle_kind) omp_init_allocator
+      external omp_destroy_allocator
+      external omp_set_default_allocator
+      external omp_get_default_allocator
+      integer (omp_allocator_handle_kind) omp_get_default_allocator

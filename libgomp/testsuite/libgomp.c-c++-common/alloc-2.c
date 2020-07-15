@@ -23,7 +23,7 @@ main ()
     if (p == NULL)
       abort ();
     p[0] = 1.0;
-    p[1695 / sizeof (double *)] = 2.0;
+    p[1695 / sizeof (double)] = 2.0;
     #pragma omp barrier
     omp_set_default_allocator ((n & 1) ? omp_default_mem_alloc : a);
     q = (double *) omp_alloc (1696, omp_null_allocator);
@@ -32,7 +32,7 @@ main ()
 	if (q == NULL)
 	  abort ();
 	q[0] = 3.0;
-	q[1695 / sizeof (double *)] = 4.0;
+	q[1695 / sizeof (double)] = 4.0;
       }
     else if (q != NULL)
       abort ();

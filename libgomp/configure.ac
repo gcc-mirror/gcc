@@ -395,6 +395,7 @@ for i in $config_path; do
   fi
 done
 
+_AC_COMPUTE_INT([sizeof (__INTPTR_TYPE__)], [INTPTR_T_KIND])
 _AC_COMPUTE_INT([sizeof (omp_lock_t)], [OMP_LOCK_SIZE],,
   [AC_MSG_ERROR([unsupported system, cannot find sizeof (omp_lock_t)])])
 _AC_COMPUTE_INT([__alignof (omp_lock_t)], [OMP_LOCK_ALIGN])
@@ -428,6 +429,7 @@ if test $OMP_NEST_LOCK_25_SIZE -gt 8 || test $OMP_NEST_LOCK_25_ALIGN -gt $OMP_NE
   OMP_NEST_LOCK_25_KIND=8
 fi
 
+AC_SUBST(INTPTR_T_KIND)
 AC_SUBST(OMP_LOCK_SIZE)
 AC_SUBST(OMP_LOCK_ALIGN)
 AC_SUBST(OMP_NEST_LOCK_SIZE)
