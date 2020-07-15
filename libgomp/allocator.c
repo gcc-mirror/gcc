@@ -202,6 +202,9 @@ omp_destroy_allocator (omp_allocator_handle_t allocator)
     }
 }
 
+ialias (omp_init_allocator)
+ialias (omp_destroy_allocator)
+
 void *
 omp_alloc (size_t size, omp_allocator_handle_t allocator)
 {
