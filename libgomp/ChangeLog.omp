@@ -1,6 +1,14 @@
 2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_free): Fix up build if HAVE_SYNC_BUILTINS is not
+	defined.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* allocator.c (omp_alloc): For size == 0, return NULL early.
