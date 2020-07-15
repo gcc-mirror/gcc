@@ -1,6 +1,17 @@
 2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_alloctrait_value_t): Change omp_atv_default from
+	2 to -1.  Add omp_atv_serialized and define omp_atv_sequential using
+	it.  Remove __omp_alloctrait_value_max__.
+	* allocator.c (omp_init_allocator): Handle omp_atv_default for
+	omp_atk_alignment and omp_atk_pool_size.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* allocator.c (omp_free): Fix up build if HAVE_SYNC_BUILTINS is not

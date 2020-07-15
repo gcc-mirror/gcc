@@ -90,6 +90,11 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
 	  }
 	break;
       case omp_atk_alignment:
+        if (traits[i].value == omp_atv_default)
+	  {
+	    data.alignment = 1;
+	    break;
+	  }
 	if ((traits[i].value & (traits[i].value - 1)) != 0
 	    || !traits[i].value)
 	  return omp_null_allocator;
@@ -112,7 +117,10 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
 	  }
 	break;
       case omp_atk_pool_size:
-	data.pool_size = traits[i].value;
+	if (traits[i].value == omp_atv_default)
+	  data.pool_size = ~(uintptr_t) 0;
+	else
+	  data.pool_size = traits[i].value;
 	break;
       case omp_atk_fallback:
 	switch (traits[i].value)
