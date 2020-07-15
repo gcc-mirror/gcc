@@ -197,6 +197,25 @@ omp_get_partition_place_nums (int *place_nums)
     *place_nums++ = thr->ts.place_partition_off + i;
 }
 
+void
+omp_set_default_allocator (omp_allocator_handle_t allocator)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  if (allocator == omp_null_allocator)
+    allocator = omp_default_mem_alloc;
+  thr->ts.def_allocator = (uintptr_t) allocator;
+}
+
+omp_allocator_handle_t
+omp_get_default_allocator (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  if (thr->ts.def_allocator == omp_null_allocator)
+    return (omp_allocator_handle_t) gomp_def_allocator;
+  else
+    return (omp_allocator_handle_t) thr->ts.def_allocator;
+}
+
 ialias (omp_set_dynamic)
 ialias (omp_set_nested)
 ialias (omp_set_num_threads)

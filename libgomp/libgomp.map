@@ -180,6 +180,16 @@ OMP_5.0 {
 	omp_pause_resource_all_;
 } OMP_4.5;
 
+OMP_5.0.1 {
+  global:
+	omp_set_default_allocator;
+	omp_get_default_allocator;
+	omp_init_allocator;
+	omp_destroy_allocator;
+	omp_alloc;
+	omp_free;
+} OMP_5.0;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
