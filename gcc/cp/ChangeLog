@@ -1,3 +1,14 @@
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95789
+	PR c++/96104
+	PR c++/96179
+	* call.c (convert_like_real_1): Renamed from convert_like_real.
+	(convert_like_real): New wrapper for convert_like_real_1.
+
 2020-07-13  Julian Brown  <julian@codesourcery.com>
 
 	Backported from master:

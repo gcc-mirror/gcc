@@ -1,3 +1,33 @@
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95789
+	PR c++/96104
+	PR c++/96179
+	* g++.dg/conversion/ref4.C: New test.
+	* g++.dg/conversion/ref5.C: New test.
+	* g++.dg/conversion/ref6.C: New test.
+
+2020-07-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* g++.target/aarch64/pr95114.C: New test.
+
+2020-07-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96146
+	* gcc.target/aarch64/sve/acle/general/pr96146.c: New test.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96194
+	* g++.dg/opt/pr96194.C: New test.
+
 2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	Backported from master:

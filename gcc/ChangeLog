@@ -1,3 +1,46 @@
+2020-07-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* tree.h (virtual_method_call_p): Add a default-false parameter
+	that indicates whether the function is being called from dump
+	routines.
+	(obj_type_ref_class): Likewise.
+	* tree.c (virtual_method_call_p): Likewise.
+	* ipa-devirt.c (obj_type_ref_class): Likewise.  Lazily add ODR
+	type information for the type when the parameter is false.
+	* tree-pretty-print.c (dump_generic_node): Update calls to
+	virtual_method_call_p and obj_type_ref_class accordingly.
+
+2020-07-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96146
+	* value-range.cc (value_range::set): Only decompose POLY_INT_CST
+	bounds to integers for VR_RANGE.  Decay to VR_VARYING for anti-ranges
+	involving POLY_INT_CSTs.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96194
+	* expr.c (expand_constructor): Don't create temporary for store to
+	volatile MEM if exp has an addressable type.
+
+2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from master:
+	2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	PR lto/95604
+	* lto-wrapper.c (merge_and_complain): Add decoded options as parameter,
+	error on different values for -fcf-protection.
+	(append_compiler_options): Pass -fcf-protection option.
+	(find_and_merge_options): Add decoded options as parameter,
+	pass decoded_options to merge_and_complain.
+	(run_gcc): Pass decoded options to find_and_merge_options.
+	* lto-opts.c (lto_write_options): Pass -fcf-protection option.
+
 2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backported from master:
