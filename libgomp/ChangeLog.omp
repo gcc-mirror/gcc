@@ -1,6 +1,15 @@
 2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/alloc-1.F90: Use c_size_t to
+	avoid conversion on 32bit systems from 32bit to 64bit due
+	to -fdefault-integer-8.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (omp_alloctrait_value_t): Change omp_atv_default from
