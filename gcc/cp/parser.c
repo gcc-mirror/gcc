@@ -13402,11 +13402,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 static void
 cp_parser_declaration (cp_parser* parser)
 {
-  cp_token token1;
-  cp_token token2;
   int saved_pedantic;
-  void *p;
-  tree attributes = NULL_TREE;
 
   /* Check for the `__extension__' keyword.  */
   if (cp_parser_extension_opt (parser, &saved_pedantic))
@@ -13420,35 +13416,33 @@ cp_parser_declaration (cp_parser* parser)
     }
 
   /* Try to figure out what kind of declaration is present.  */
-  token1 = *cp_lexer_peek_token (parser->lexer);
+  cp_token *token1 = cp_lexer_peek_token (parser->lexer);
+  cp_token *token2 = NULL;
 
-  if (token1.type != CPP_EOF)
-    token2 = *cp_lexer_peek_nth_token (parser->lexer, 2);
-  else
-    {
-      token2.type = CPP_EOF;
-      token2.keyword = RID_MAX;
-    }
+  if (token1->type != CPP_EOF)
+    token2 = cp_lexer_peek_nth_token (parser->lexer, 2);
 
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
-  p = obstack_alloc (&declarator_obstack, 0);
+  void *p = obstack_alloc (&declarator_obstack, 0);
+
+  tree attributes = NULL_TREE;
 
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
-  if (token1.keyword == RID_EXTERN
-      && cp_parser_is_pure_string_literal (&token2))
+  if (token1->keyword == RID_EXTERN
+      && cp_parser_is_pure_string_literal (token2))
     cp_parser_linkage_specification (parser);
   /* If the next token is `template', then we have either a template
      declaration, an explicit instantiation, or an explicit
      specialization.  */
-  else if (token1.keyword == RID_TEMPLATE)
+  else if (token1->keyword == RID_TEMPLATE)
     {
       /* `template <>' indicates a template specialization.  */
-      if (token2.type == CPP_LESS
+      if (token2->type == CPP_LESS
 	  && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_GREATER)
 	cp_parser_explicit_specialization (parser);
       /* `template <' indicates a template declaration.  */
-      else if (token2.type == CPP_LESS)
+      else if (token2->type == CPP_LESS)
 	cp_parser_template_declaration (parser, /*member_p=*/false);
       /* Anything else must be an explicit instantiation.  */
       else
@@ -13456,40 +13450,40 @@ cp_parser_declaration (cp_parser* parser)
     }
   /* If the next token is `export', then we have a template
      declaration.  */
-  else if (token1.keyword == RID_EXPORT)
+  else if (token1->keyword == RID_EXPORT)
     cp_parser_template_declaration (parser, /*member_p=*/false);
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit
      instantiation directive.  */
   else if (cp_parser_allow_gnu_extensions_p (parser)
-	   && (token1.keyword == RID_EXTERN
-	       || token1.keyword == RID_STATIC
-	       || token1.keyword == RID_INLINE)
-	   && token2.keyword == RID_TEMPLATE)
+	   && token2->keyword == RID_TEMPLATE
+	   && (token1->keyword == RID_EXTERN
+	       || token1->keyword == RID_STATIC
+	       || token1->keyword == RID_INLINE))
     cp_parser_explicit_instantiation (parser);
   /* If the next token is `namespace', check for a named or unnamed
      namespace definition.  */
-  else if (token1.keyword == RID_NAMESPACE
+  else if (token1->keyword == RID_NAMESPACE
 	   && (/* A named namespace definition.  */
-	       (token2.type == CPP_NAME
+	       (token2->type == CPP_NAME
 		&& (cp_lexer_peek_nth_token (parser->lexer, 3)->type
 		    != CPP_EQ))
-               || (token2.type == CPP_OPEN_SQUARE
+               || (token2->type == CPP_OPEN_SQUARE
                    && cp_lexer_peek_nth_token (parser->lexer, 3)->type
                    == CPP_OPEN_SQUARE)
 	       /* An unnamed namespace definition.  */
-	       || token2.type == CPP_OPEN_BRACE
-	       || token2.keyword == RID_ATTRIBUTE))
+	       || token2->type == CPP_OPEN_BRACE
+	       || token2->keyword == RID_ATTRIBUTE))
     cp_parser_namespace_definition (parser);
   /* An inline (associated) namespace definition.  */
-  else if (token1.keyword == RID_INLINE
-	   && token2.keyword == RID_NAMESPACE)
+  else if (token2->keyword == RID_NAMESPACE
+	   && token1->keyword == RID_INLINE)
     cp_parser_namespace_definition (parser);
   /* Objective-C++ declaration/definition.  */
-  else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1.keyword))
+  else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1->keyword))
     cp_parser_objc_declaration (parser, NULL_TREE);
   else if (c_dialect_objc ()
-	   && token1.keyword == RID_ATTRIBUTE
+	   && token1->keyword == RID_ATTRIBUTE
 	   && cp_parser_objc_valid_prefix_attributes (parser, &attributes))
     cp_parser_objc_declaration (parser, attributes);
   /* At this point we may have a template declared by a concept
@@ -13558,7 +13552,6 @@ static void
 cp_parser_block_declaration (cp_parser *parser,
 			     bool      statement_p)
 {
-  cp_token *token1;
   int saved_pedantic;
 
   /* Check for the `__extension__' keyword.  */
@@ -13574,7 +13567,7 @@ cp_parser_block_declaration (cp_parser *parser,
 
   /* Peek at the next token to figure out which kind of declaration is
      present.  */
-  token1 = cp_lexer_peek_token (parser->lexer);
+  cp_token *token1 = cp_lexer_peek_token (parser->lexer);
 
   /* If the next keyword is `asm', we have an asm-definition.  */
   if (token1->keyword == RID_ASM)
