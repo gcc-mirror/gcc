@@ -1,6 +1,13 @@
 2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (omp_alloc): For size == 0, return NULL early.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (omp_uintptr_t): New typedef.
