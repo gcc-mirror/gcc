@@ -1,3 +1,97 @@
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59978
+	* g++.dg/cpp0x/vt-59978.C: New test.
+
+2020-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95443
+	* gcc.target/i386/pr95443-1.c (simple_strstr): Replace
+	__glibc_unlikely with __builtin_expect.
+
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95789
+	PR c++/96104
+	PR c++/96179
+	* g++.dg/conversion/ref4.C: New test.
+	* g++.dg/conversion/ref5.C: New test.
+	* g++.dg/conversion/ref6.C: New test.
+
+2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	PR other/86904
+	* c-c++-common/Wmisleading-indentation-3.c: Adjust expected output
+	for new defaults.
+	* c-c++-common/Wmisleading-indentation.c: Likewise.
+	* c-c++-common/diagnostic-format-json-1.c: Likewise.
+	* c-c++-common/diagnostic-format-json-2.c: Likewise.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* c-c++-common/diagnostic-format-json-4.c: Likewise.
+	* c-c++-common/diagnostic-format-json-5.c: Likewise.
+	* c-c++-common/missing-close-symbol.c: Likewise.
+	* g++.dg/diagnostic/bad-binary-ops.C: Likewise.
+	* g++.dg/parse/error4.C: Likewise.
+	* g++.old-deja/g++.brendan/crash11.C: Likewise.
+	* g++.old-deja/g++.pt/overload2.C: Likewise.
+	* g++.old-deja/g++.robertl/eb109.C: Likewise.
+	* gcc.dg/analyzer/malloc-paths-9.c: Likewise.
+	* gcc.dg/bad-binary-ops.c: Likewise.
+	* gcc.dg/format/branch-1.c: Likewise.
+	* gcc.dg/format/pr79210.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: Likewise.
+	* gcc.dg/redecl-4.c: Likewise.
+	* gfortran.dg/diagnostic-format-json-1.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-2.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-3.F90: Likewise.
+	* go.dg/arrayclear.go: Add a comment explaining why adding a
+	comment was necessary to work around a dejagnu bug.
+	* c-c++-common/diagnostic-units-1.c: New test.
+	* c-c++-common/diagnostic-units-2.c: New test.
+	* c-c++-common/diagnostic-units-3.c: New test.
+	* c-c++-common/diagnostic-units-4.c: New test.
+	* c-c++-common/diagnostic-units-5.c: New test.
+	* c-c++-common/diagnostic-units-6.c: New test.
+	* c-c++-common/diagnostic-units-7.c: New test.
+	* c-c++-common/diagnostic-units-8.c: New test.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Relax scan-tree-dump-times
+	pattern to work on 32bit-pointer systems.
+
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ipa/pr83667.C: Allow 0 or more dots between THUNK and 0.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96194
+	* g++.dg/opt/pr96194.C: New test.
+
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95820
+	* g++.dg/cpp1y/auto-fn58.C: New test.
+
+2020-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95612
+	* gfortran.dg/pr95612.f90: New test.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Update dump scan pattern.
+	* gfortran.dg/gomp/map-1.f90: Update dg-error.
+	* gfortran.dg/gomp/map-2.f90: New test.
+
+2020-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/96038
+	* gfortran.dg/pr96038.f90: New test.
+
 2020-07-13  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* lib/target-supports.exp (is-effective-target):
