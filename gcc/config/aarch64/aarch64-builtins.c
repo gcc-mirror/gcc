@@ -43,6 +43,8 @@
 #include "gimple-iterator.h"
 #include "case-cfn-macros.h"
 #include "emit-rtl.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
@@ -802,10 +804,14 @@ aarch64_init_simd_builtin_types (void)
 
       if (aarch64_simd_types[i].itype == NULL)
 	{
-	  aarch64_simd_types[i].itype
-	    = build_distinct_type_copy
-	      (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
-	  SET_TYPE_STRUCTURAL_EQUALITY (aarch64_simd_types[i].itype);
+	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+	  type = build_distinct_type_copy (type);
+	  SET_TYPE_STRUCTURAL_EQUALITY (type);
+
+	  TYPE_ATTRIBUTES (type)
+	    = tree_cons (get_identifier ("Advanced SIMD type"),
+			 NULL_TREE, TYPE_ATTRIBUTES (type));
+	  aarch64_simd_types[i].itype = type;
 	}
 
       tdecl = add_builtin_type (aarch64_simd_types[i].name,
