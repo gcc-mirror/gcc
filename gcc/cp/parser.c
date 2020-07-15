@@ -3689,6 +3689,11 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 	    condop_depth--;
 	  break;
 
+	case CPP_PRAGMA:
+	  /* We fell into a pragma.  Skip it, and continue. */
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  continue;
+
 	default:
 	  break;
 	}
@@ -3780,6 +3785,13 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  ++nesting_depth;
 	  break;
 
+	case CPP_PRAGMA:
+	  /* We fell into a pragma.  Skip it, and continue or return. */
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  if (!nesting_depth)
+	    return;
+	  continue;
+
 	default:
 	  break;
 	}
@@ -3855,6 +3867,13 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  nesting_depth++;
 	  break;
 
+	case CPP_PRAGMA:
+	  /* Skip it, and continue or return. */
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  if (!nesting_depth)
+	    return;
+	  continue;
+
 	default:
 	  break;
 	}
@@ -3921,8 +3940,15 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
   parser->lexer->in_pragma = false;
 
   do
-    token = cp_lexer_consume_token (parser->lexer);
-  while (token->type != CPP_PRAGMA_EOL && token->type != CPP_EOF);
+    {
+      /* The preprocessor makes sure that a PRAGMA_EOL token appears
+         before an EOF token, even when the EOF is on the pragma line.
+         We should never get here without being inside a deferred
+         pragma.  */
+      gcc_checking_assert (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF));
+      token = cp_lexer_consume_token (parser->lexer);
+    }
+  while (token->type != CPP_PRAGMA_EOL);
 
   /* Ensure that the pragma is not parsed again.  */
   cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
@@ -41470,11 +41496,8 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
     }
 
   /* Store away all pragma tokens.  */
-  while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
-	 && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
+  while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     cp_lexer_consume_token (parser->lexer);
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
-    parser->omp_declare_simd->error_seen = true;
   cp_parser_require_pragma_eol (parser, pragma_tok);
   struct cp_token_cache *cp
     = cp_token_cache_new (pragma_tok, cp_lexer_peek_token (parser->lexer));
@@ -42534,11 +42557,8 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	{
 	  if (cp == NULL)
 	    {
-	      while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
-		     && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
+	      while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
 		cp_lexer_consume_token (parser->lexer);
-	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
-		goto fail;
 	      cp = cp_token_cache_new (first_token,
 				       cp_lexer_peek_nth_token (parser->lexer,
 								2));
@@ -43017,11 +43037,8 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
   else /* No optional '( name )'.  */
     {
       /* Store away all pragma tokens.  */
-      while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
-	     && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
+      while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
 	cp_lexer_consume_token (parser->lexer);
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
-	parser->oacc_routine->error_seen = true;
       cp_parser_require_pragma_eol (parser, pragma_tok);
       struct cp_token_cache *cp
 	= cp_token_cache_new (pragma_tok, cp_lexer_peek_token (parser->lexer));
@@ -44014,7 +44031,7 @@ pragma_lex (tree *value, location_t *loc)
   if (loc)
     *loc = tok->location;
 
-  if (ret == CPP_PRAGMA_EOL || ret == CPP_EOF)
+  if (ret == CPP_PRAGMA_EOL)
     ret = CPP_EOF;
   else if (ret == CPP_STRING)
     *value = cp_parser_string_literal (the_parser, false, false);
