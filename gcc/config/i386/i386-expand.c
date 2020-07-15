@@ -7679,7 +7679,13 @@ bool
 ix86_expand_cmpstrn_or_cmpmem (rtx result, rtx src1, rtx src2,
 			       rtx length, rtx align, bool is_cmpstrn)
 {
-  if (optimize_insn_for_size_p () && !TARGET_INLINE_ALL_STRINGOPS)
+  /* Expand strncmp and memcmp only with -minline-all-stringops since
+     "repz cmpsb" can be much slower than strncmp and memcmp functions
+     implemented with vector instructions, see
+
+     https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43052
+   */
+  if (!TARGET_INLINE_ALL_STRINGOPS)
     return false;
 
   /* Can't use this if the user has appropriated ecx, esi or edi.  */
@@ -7704,17 +7710,6 @@ ix86_expand_cmpstrn_or_cmpmem (rtx result, rtx src1, rtx src2,
 		&& TREE_CODE (TREE_OPERAND (t2, 0)) == ADDR_EXPR
 		&& (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t2, 0), 0))
 		    == STRING_CST))))
-	return false;
-    }
-  else
-    {
-      /* Expand memcmp to "repz cmpsb" only for -minline-all-stringops
-	 since "repz cmpsb" can be much slower than memcmp function
-	 implemented with vector instructions, see
-
-	 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43052
-       */
-      if (!TARGET_INLINE_ALL_STRINGOPS)
 	return false;
     }
 
