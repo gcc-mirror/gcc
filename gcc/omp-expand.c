@@ -2278,7 +2278,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	    {
 	      tree outer_n1 = fd->adjn1 ? fd->adjn1 : fd->loops[i - 1].n1;
 	      tree itype = TREE_TYPE (fd->loops[i].v);
-	      tree min_inner_iterations = fd->min_inner_iterations;
+	      tree first_inner_iterations = fd->first_inner_iterations;
 	      tree factor = fd->factor;
 	      gcond *cond_stmt
 		= gimple_build_cond (NE_EXPR, factor,
@@ -2296,21 +2296,21 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      stopvalull
 		= force_gimple_operand_gsi (gsi, stopvalull, true, NULL_TREE,
 					    false, GSI_CONTINUE_LINKING);
-	      min_inner_iterations
-		= fold_convert (slltype, min_inner_iterations);
-	      min_inner_iterations
-		= force_gimple_operand_gsi (gsi, min_inner_iterations, true,
+	      first_inner_iterations
+		= fold_convert (slltype, first_inner_iterations);
+	      first_inner_iterations
+		= force_gimple_operand_gsi (gsi, first_inner_iterations, true,
 					    NULL_TREE, false,
 					    GSI_CONTINUE_LINKING);
 	      factor = fold_convert (slltype, factor);
 	      factor
 		= force_gimple_operand_gsi (gsi, factor, true, NULL_TREE,
 					    false, GSI_CONTINUE_LINKING);
-	      tree min_inner_iterationsd
+	      tree first_inner_iterationsd
 		= fold_build1 (FLOAT_EXPR, double_type_node,
-			       min_inner_iterations);
-	      min_inner_iterationsd
-		= force_gimple_operand_gsi (gsi, min_inner_iterationsd, true,
+			       first_inner_iterations);
+	      first_inner_iterationsd
+		= force_gimple_operand_gsi (gsi, first_inner_iterationsd, true,
 					    NULL_TREE, false,
 					    GSI_CONTINUE_LINKING);
 	      tree factord = fold_build1 (FLOAT_EXPR, double_type_node,
@@ -2332,7 +2332,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      t = fold_build2 (RDIV_EXPR, double_type_node, factord,
 			       build_real (double_type_node, dconst2));
 	      tree t3 = fold_build2 (MINUS_EXPR, double_type_node,
-				     min_inner_iterationsd, t);
+				     first_inner_iterationsd, t);
 	      t3 = force_gimple_operand_gsi (gsi, t3, true, NULL_TREE, false,
 					     GSI_CONTINUE_LINKING);
 	      t = fold_build2 (MULT_EXPR, double_type_node, factord,
@@ -2370,12 +2370,12 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      t = fold_build2 (RSHIFT_EXPR, ulltype, t, integer_one_node);
 	      t = fold_build2 (MULT_EXPR, ulltype, fd->factor, t);
 	      tree t2 = fold_build2 (MULT_EXPR, ulltype, c,
-				     fd->min_inner_iterations);
+				     fd->first_inner_iterations);
 	      t = fold_build2 (PLUS_EXPR, ulltype, t, t2);
 	      expand_omp_build_assign (gsi, d, t, true);
 	      t = fold_build2 (MULT_EXPR, ulltype, fd->factor, c);
 	      t = fold_build2 (PLUS_EXPR, ulltype,
-			       t, fd->min_inner_iterations);
+			       t, fd->first_inner_iterations);
 	      t2 = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, false,
 					     GSI_CONTINUE_LINKING);
 	      cond_stmt = gimple_build_cond (GE_EXPR, stopvalull, d,

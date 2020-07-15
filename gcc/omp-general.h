@@ -81,10 +81,9 @@ struct omp_for_data
   struct omp_for_data_loop *loops;
   /* The following are relevant only for non-rectangular loops
      where only a single loop depends on an outer loop iterator.  */
-  tree min_inner_iterations; /* Number of iterations of the inner
-				loop with either the first or last
-				outer iterator, depending on which
-				results in fewer iterations.  */
+  tree first_inner_iterations; /* Number of iterations of the inner
+				  loop with the first outer iterator
+				  (or adjn1, if that is non-NULL).  */
   tree factor; /* (m2 - m1) * outer_step / inner_step.  */
   /* Adjusted n1 of the outer loop in such loop nests (if needed).  */
   tree adjn1;

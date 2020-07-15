@@ -1,6 +1,23 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/96198
+	* omp-general.h (struct omp_for_data): Rename min_inner_iterations
+	member to first_inner_iterations, adjust comment.
+	* omp-general.c (omp_extract_for_data): Adjust for the above change.
+	Always use n1first and n2first to compute it, rather than depending
+	on single_nonrect_cond_code.  Similarly, always compute factor
+	as (m2 - m1) * outer_step / inner_step rather than sometimes m1 - m2
+	depending on single_nonrect_cond_code.
+	* omp-expand.c (expand_omp_for_init_vars): Rename min_inner_iterations
+	to first_inner_iterations and min_inner_iterationsd to
+	first_inner_iterationsd.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-general.h (struct omp_for_data): Add adjn1 member.
