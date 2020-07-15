@@ -1,3 +1,37 @@
+2020-07-14  Tom de Vries  <tom@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* oacc-init.c (acc_init_state_lock, acc_init_state, acc_init_thread):
+	New variable.
+	(acc_init_1): Set acc_init_thread to pthread_self ().  Set
+	acc_init_state to initializing at the start, and to initialized at the
+	end.
+	(self_initializing_p): New function.
+	(acc_get_device_type): Return acc_device_none if called by thread that
+	is currently executing acc_init_1.
+	* libgomp.texi (acc_get_device_type): Update documentation.
+	(Implementation Status and Implementation-Defined Behavior): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-2.c: New.
+
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/t-aix: Set BITS from compiler cpp macro.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: New test.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/67311
+	* testsuite/libgomp.fortran/target-map-1.f90: New test.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-21.c: New test.
+
 2020-07-13  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

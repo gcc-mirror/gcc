@@ -73,6 +73,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "tree-dfa.h"
+#include "gimple-ssa.h"
+#include "tree-ssa-live.h"
+#include "tree-outof-ssa.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -6670,6 +6673,27 @@ expand_expr_force_mode (tree exp, machine_mode mode)
 {
   rtx val;
   machine_mode old_mode;
+
+  if (TREE_CODE (exp) == SSA_NAME
+      && TYPE_MODE (TREE_TYPE (exp)) != mode)
+    {
+      /* Undo argument promotion if possible, as combine might not
+	 be able to do it later due to MEM_VOLATILE_P uses in the
+	 patterns.  */
+      gimple *g = get_gimple_for_ssa_name (exp);
+      if (g && gimple_assign_cast_p (g))
+	{
+	  tree rhs = gimple_assign_rhs1 (g);
+	  tree_code code = gimple_assign_rhs_code (g);
+	  if (CONVERT_EXPR_CODE_P (code)
+	      && TYPE_MODE (TREE_TYPE (rhs)) == mode
+	      && INTEGRAL_TYPE_P (TREE_TYPE (exp))
+	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+	      && (TYPE_PRECISION (TREE_TYPE (exp))
+		  > TYPE_PRECISION (TREE_TYPE (rhs))))
+	    exp = rhs;
+	}
+    }
 
   val = expand_expr (exp, NULL_RTX, mode, EXPAND_NORMAL);
   /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care

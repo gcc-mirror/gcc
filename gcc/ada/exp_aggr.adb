@@ -4969,9 +4969,8 @@ package body Exp_Aggr is
          Dims : Nat;
          Ix   : Node_Id;
          Ixb  : Node_Id) return Boolean;
-      --  Convert the aggregate into a purely positional form if possible. On
-      --  entry the bounds of all dimensions are known to be static, and the
-      --  total number of components is safe enough to expand.
+      --  Convert the aggregate into a purely positional form if possible after
+      --  checking that the bounds of all dimensions are known to be static.
 
       function Is_Flat (N : Node_Id; Dims : Nat) return Boolean;
       --  Return True if the aggregate N is flat (which is not trivial in the
@@ -5476,10 +5475,6 @@ package body Exp_Aggr is
       --  compatible with the upper bound of the type, and therefore it is
       --  worth flattening such aggregates as well.
 
-      --  For now the back-end expands these aggregates into individual
-      --  assignments to the target anyway, but it is conceivable that
-      --  it will eventually be able to treat such aggregates statically???
-
       if Aggr_Size_OK (N, Typ)
         and then
           Flatten (N, Dims, First_Index (Typ), First_Index (Base_Type (Typ)))
@@ -5506,14 +5501,7 @@ package body Exp_Aggr is
             if Nkind (N) = N_Aggregate and then Present (Expressions (N)) then
                Expr := First (Expressions (N));
                while Present (Expr) loop
-                  if Nkind_In (Expr, N_Integer_Literal, N_Real_Literal)
-                    or else
-                      (Is_Entity_Name (Expr)
-                        and then Ekind (Entity (Expr)) = E_Enumeration_Literal)
-                  then
-                     null;
-
-                  else
+                  if not Compile_Time_Known_Value (Expr) then
                      Error_Msg_N
                        ("non-static object requires elaboration code??", N);
                      exit;
@@ -6889,11 +6877,75 @@ package body Exp_Aggr is
       New_Indexed_Subp    : Node_Id := Empty;
       Assign_Indexed_Subp : Node_Id := Empty;
 
+      procedure Expand_Iterated_Component (Comp : Node_Id);
+
       Aggr_Code : constant List_Id   := New_List;
       Temp      : constant Entity_Id := Make_Temporary (Loc, 'C', N);
 
+      Comp      : Node_Id;
       Decl      : Node_Id;
       Init_Stat : Node_Id;
+
+      -------------------------------
+      -- Expand_Iterated_Component --
+      -------------------------------
+
+      procedure Expand_Iterated_Component (Comp : Node_Id) is
+         Expr    : constant Node_Id := Expression (Comp);
+         Loop_Id : constant Entity_Id :=
+            Make_Defining_Identifier (Loc,
+              Chars => Chars (Defining_Identifier (Comp)));
+
+         L_Range            : Node_Id;
+         L_Iteration_Scheme : Node_Id;
+         Loop_Stat          : Node_Id;
+         Stats              : List_Id;
+
+      begin
+         if Present (Iterator_Specification (Comp)) then
+            L_Iteration_Scheme :=
+              Make_Iteration_Scheme (Loc,
+                Iterator_Specification => Iterator_Specification (Comp));
+
+         else
+            L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
+            L_Iteration_Scheme :=
+              Make_Iteration_Scheme (Loc,
+                Loop_Parameter_Specification =>
+                  Make_Loop_Parameter_Specification (Loc,
+                    Defining_Identifier => Loop_Id,
+                    Discrete_Subtype_Definition => L_Range));
+         end if;
+
+         --  Build insertion statement. For a positional aggregate, only the
+         --  expression is needed. For a named aggregate, the loop variable,
+         --  whose type is that of the key, is an additional parameter for
+         --  the insertion operation.
+
+         if Present (Add_Unnamed_Subp) then
+            Stats := New_List
+              (Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (Entity (Add_Unnamed_Subp), Loc),
+                 Parameter_Associations =>
+                   New_List (New_Occurrence_Of (Temp, Loc),
+                     New_Copy_Tree (Expr))));
+         else
+            Stats := New_List
+              (Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
+                 Parameter_Associations =>
+                   New_List (New_Occurrence_Of (Temp, Loc),
+                     New_Occurrence_Of (Loop_Id, Loc),
+                     New_Copy_Tree (Expr))));
+         end if;
+
+         Loop_Stat :=  Make_Implicit_Loop_Statement
+                         (Node             => N,
+                          Identifier       => Empty,
+                          Iteration_Scheme => L_Iteration_Scheme,
+                          Statements       => Stats);
+         Append (Loop_Stat, Aggr_Code);
+      end Expand_Iterated_Component;
 
    begin
       Parse_Aspect_Aggregate (Asp,
@@ -6905,7 +6957,7 @@ package body Exp_Aggr is
           Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
       Insert_Action (N, Decl);
-      if Ekind (Entity (Empty_Subp)) = E_Constant then
+      if Ekind (Entity (Empty_Subp)) = E_Function then
          Init_Stat := Make_Assignment_Statement (Loc,
            Name => New_Occurrence_Of (Temp, Loc),
            Expression => Make_Function_Call (Loc,
@@ -6919,24 +6971,70 @@ package body Exp_Aggr is
 
       --  First case: positional aggregate
 
-      if Present (Expressions (N)) then
+      if Present (Add_Unnamed_Subp) then
+         if Present (Expressions (N)) then
+            declare
+               Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
+               Comp   : Node_Id;
+               Stat   : Node_Id;
+
+            begin
+               Comp := First (Expressions (N));
+               while Present (Comp) loop
+                  Stat := Make_Procedure_Call_Statement (Loc,
+                    Name => New_Occurrence_Of (Insert, Loc),
+                    Parameter_Associations =>
+                      New_List (New_Occurrence_Of (Temp, Loc),
+                        New_Copy_Tree (Comp)));
+                  Append (Stat, Aggr_Code);
+                  Next (Comp);
+               end loop;
+            end;
+         end if;
+
+         --  iterated component associations may be present.
+
+         Comp := First (Component_Associations (N));
+         while Present (Comp) loop
+            Expand_Iterated_Component (Comp);
+            Next (Comp);
+         end loop;
+
+      elsif Present (Add_Named_Subp) then
          declare
-            Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
-            Comp   : Node_Id;
+            Insert : constant Entity_Id := Entity (Add_Named_Subp);
             Stat   : Node_Id;
+            Key    : Node_Id;
          begin
-            Comp := First (Expressions (N));
+            Comp := First (Component_Associations (N));
+
+            --  Each component association may contain several choices;
+            --  generate an insertion statement for each.
+
             while Present (Comp) loop
-               Stat := Make_Procedure_Call_Statement (Loc,
-                 Name => New_Occurrence_Of (Insert, Loc),
-                 Parameter_Associations =>
-                   New_List (New_Occurrence_Of (Temp, Loc),
-                     New_Copy_Tree (Comp)));
-               Append (Stat, Aggr_Code);
+               if Nkind (Comp) = N_Iterated_Component_Association then
+                  Expand_Iterated_Component (Comp);
+               else
+                  Key := First (Choices (Comp));
+
+                  while Present (Key) loop
+                     Stat := Make_Procedure_Call_Statement (Loc,
+                       Name => New_Occurrence_Of (Insert, Loc),
+                       Parameter_Associations =>
+                         New_List (New_Occurrence_Of (Temp, Loc),
+                           New_Copy_Tree (Key),
+                           New_Copy_Tree (Expression (Comp))));
+                     Append (Stat, Aggr_Code);
+
+                     Next (Key);
+                  end loop;
+               end if;
+
                Next (Comp);
             end loop;
          end;
       end if;
+
       Insert_Actions (N, Aggr_Code);
       Rewrite (N, New_Occurrence_Of (Temp, Loc));
       Analyze_And_Resolve (N, Typ);

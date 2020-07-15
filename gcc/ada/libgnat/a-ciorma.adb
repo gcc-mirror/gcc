@@ -39,7 +39,9 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Keys);
 
 with System; use type System.Address;
 
-package body Ada.Containers.Indefinite_Ordered_Maps is
+package body Ada.Containers.Indefinite_Ordered_Maps with
+  SPARK_Mode => Off
+is
    pragma Suppress (All_Checks);
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");

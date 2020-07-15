@@ -1328,6 +1328,14 @@ Enum(diagnostic_url_rule) String(always) Value(DIAGNOSTICS_URL_YES)
 EnumValue
 Enum(diagnostic_url_rule) String(auto) Value(DIAGNOSTICS_URL_AUTO)
 
+fdiagnostics-column-unit=
+Common Joined RejectNegative Enum(diagnostics_column_unit)
+-fdiagnostics-column-unit=[display|byte]	Select whether column numbers are output as display columns (default) or raw bytes.
+
+fdiagnostics-column-origin=
+Common Joined RejectNegative UInteger
+-fdiagnostics-column-origin=<number>	Set the number of the first column.  The default is 1-based as per GNU style, but some utilities may expect 0-based, for example.
+
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|json]	Select output format.
@@ -1335,6 +1343,15 @@ Common Joined RejectNegative Enum(diagnostics_output_format)
 ; Required for these enum values.
 SourceInclude
 diagnostic.h
+
+Enum
+Name(diagnostics_column_unit) Type(int)
+
+EnumValue
+Enum(diagnostics_column_unit) String(display) Value(DIAGNOSTICS_COLUMN_UNIT_DISPLAY)
+
+EnumValue
+Enum(diagnostics_column_unit) String(byte) Value(DIAGNOSTICS_COLUMN_UNIT_BYTE)
 
 Enum
 Name(diagnostics_output_format) Type(int)
@@ -1364,6 +1381,10 @@ Print CWE identifiers for diagnostic messages, where available.
 fdiagnostics-path-format=
 Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
 Specify how to print any control-flow path associated with a diagnostic.
+
+ftabstop=
+Common Joined RejectNegative UInteger
+-ftabstop=<number>      Distance between tab stops for column reporting.
 
 Enum
 Name(diagnostic_path_format) Type(int)

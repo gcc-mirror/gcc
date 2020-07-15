@@ -647,6 +647,7 @@ OMP_NEST_LOCK_ALIGN
 OMP_NEST_LOCK_SIZE
 OMP_LOCK_ALIGN
 OMP_LOCK_SIZE
+INTPTR_T_KIND
 USE_FORTRAN_FALSE
 USE_FORTRAN_TRUE
 link_gomp
@@ -11433,7 +11434,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11436 "configure"
+#line 11437 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11539,7 +11540,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11542 "configure"
+#line 11543 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16962,6 +16963,11 @@ for i in $config_path; do
   fi
 done
 
+if ac_fn_c_compute_int "$LINENO" "sizeof (__INTPTR_TYPE__)" "INTPTR_T_KIND"        ""; then :
+
+fi
+
+
 if ac_fn_c_compute_int "$LINENO" "sizeof (omp_lock_t)" "OMP_LOCK_SIZE"        ""; then :
 
 else
@@ -17028,6 +17034,7 @@ fi
 if test $OMP_NEST_LOCK_25_SIZE -gt 8 || test $OMP_NEST_LOCK_25_ALIGN -gt $OMP_NEST_LOCK_25_SIZE; then
   OMP_NEST_LOCK_25_KIND=8
 fi
+
 
 
 

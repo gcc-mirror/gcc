@@ -264,7 +264,7 @@ private
    Memory_Alignment : constant := Standard'Maximum_Alignment * 2;
    --  The memory alignment we will want to honor on every allocation.
    --
-   --  At this stage, gigi assumes we can accomodate any alignment requirement
+   --  At this stage, gigi assumes we can accommodate any alignment requirement
    --  there might be on the data type for which the memory gets allocated (see
    --  build_call_alloc_dealloc).
    --

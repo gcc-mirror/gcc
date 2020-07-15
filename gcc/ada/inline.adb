@@ -4632,13 +4632,11 @@ package body Inline is
       Backend_Not_Inlined_Subps := No_Elist;
    end Initialize;
 
-   --------------------------------------------
-   -- Inline_Static_Expression_Function_Call --
-   --------------------------------------------
+   ---------------------------------
+   -- Inline_Static_Function_Call --
+   ---------------------------------
 
-   procedure Inline_Static_Expression_Function_Call
-     (N : Node_Id; Subp : Entity_Id)
-   is
+   procedure Inline_Static_Function_Call (N : Node_Id; Subp : Entity_Id) is
 
       function Replace_Formal (N : Node_Id) return Traverse_Result;
       --  Replace each occurrence of a formal with the corresponding actual,
@@ -4697,10 +4695,10 @@ package body Inline is
 
       procedure Reset_Slocs is new Traverse_Proc (Reset_Sloc);
 
-   --  Start of processing for Inline_Static_Expression_Function_Call
+   --  Start of processing for Inline_Static_Function_Call
 
    begin
-      pragma Assert (Is_Static_Expression_Function_Call (N));
+      pragma Assert (Is_Static_Function_Call (N));
 
       declare
          Decls     : constant List_Id := New_List;
@@ -4759,7 +4757,7 @@ package body Inline is
 
          Reset_Actual_Mapping_For_Inlined_Call (Subp);
       end;
-   end Inline_Static_Expression_Function_Call;
+   end Inline_Static_Function_Call;
 
    ------------------------
    -- Instantiate_Bodies --

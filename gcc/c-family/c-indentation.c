@@ -24,8 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "c-indentation.h"
 #include "selftest.h"
-
-extern cpp_options *cpp_opts;
+#include "diagnostic.h"
 
 /* Round up VIS_COLUMN to nearest tab stop. */
 
@@ -299,7 +298,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   expanded_location next_stmt_exploc = expand_location (next_stmt_loc);
   expanded_location guard_exploc = expand_location (guard_loc);
 
-  const unsigned int tab_width = cpp_opts->tabstop;
+  const unsigned int tab_width = global_dc->tabstop;
 
   /* They must be in the same file.  */
   if (next_stmt_exploc.file != body_exploc.file)

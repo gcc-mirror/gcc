@@ -70,7 +70,9 @@ generic
    --  number of calls of this generic formal function by the functions defined
    --  to use it are unspecified.
 
-package Ada.Containers.Vectors is
+package Ada.Containers.Vectors with
+  SPARK_Mode => Off
+is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;

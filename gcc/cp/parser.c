@@ -201,6 +201,8 @@ public:
 
 /* Prototypes.  */
 
+static cp_lexer *cp_lexer_new_main
+  (void);
 static cp_lexer *cp_lexer_new_from_tokens
   (cp_token_cache *tokens);
 static void cp_lexer_destroy
@@ -251,6 +253,7 @@ static void noexcept_override_late_checks
 
 static void cp_parser_initial_pragma
   (cp_token *);
+
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
 static void cp_finalize_oacc_routine
@@ -2199,7 +2202,8 @@ static void cp_parser_import_declaration
 
 /* Declarations [gram.dcl.dcl] */
 
-static void cp_parser_declaration_seq_opt (cp_parser *);
+static void cp_parser_declaration_seq_opt
+  (cp_parser *);
 static void cp_parser_declaration
   (cp_parser *);
 static void cp_parser_toplevel_declaration
@@ -3735,7 +3739,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 	case CPP_PRAGMA:
 	  /* We fell into a pragma.  Skip it, and continue. */
 	  cp_parser_skip_to_pragma_eol (parser, token);
-	  break;
+	  continue;
 
 	default:
 	  break;
@@ -3836,7 +3840,7 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  /* FALLTHROUGH  */
 
 	case CPP_PRAGMA:
-	  /* We fell into a pragma.  Skip it, and continue. */
+	  /* We fell into a pragma.  Skip it, and continue or return. */
 	  cp_parser_skip_to_pragma_eol (parser, token);
 	  if (!nesting_depth)
 	    return;
@@ -3998,8 +4002,11 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
 
   do
     {
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
-	break;
+      /* The preprocessor makes sure that a PRAGMA_EOL token appears
+         before an EOF token, even when the EOF is on the pragma line.
+         We should never get here without being inside a deferred
+         pragma.  */
+      gcc_checking_assert (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF));
       token = cp_lexer_consume_token (parser->lexer);
     }
   while (token->type != CPP_PRAGMA_EOL);
@@ -13677,7 +13684,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 
       if (token->type == CPP_CLOSE_BRACE
 	  || token->type == CPP_EOF)
- 	break;
+	break;
       else
 	cp_parser_toplevel_declaration (parser);
     }
@@ -44378,6 +44385,7 @@ pragma_lex (tree *value, location_t *loc)
   return ret;
 }
 
+
 /* External interface.  */
 
 /* Parse one entire translation unit.  */
