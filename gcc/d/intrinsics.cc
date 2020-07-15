@@ -390,6 +390,56 @@ expand_intrinsic_popcnt (tree callexp)
   return call_builtin_fn (callexp, code, 1, arg);
 }
 
+/* Expand a front-end intrinsic call to INTRINSIC, which is either a call to
+   rol() or ror().  These intrinsics expect to take one or two arguments,
+   the signature to which can be either:
+
+	T rol(T) (const T value, const uint count);
+	T rol(uint count, T) (const T value);
+	T ror(T) (const T value, const uint count);
+	T ror(uint count, T) (const T value);
+
+   This bitwise rotates VALUE left or right by COUNT bit positions.  */
+
+static tree
+expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
+{
+  tree type = TREE_TYPE (callexp);
+  tree value = CALL_EXPR_ARG (callexp, 0);
+  tree count;
+  tree_code code;
+
+  /* Get the equivalent tree code for the intrinsic.  */
+  if (intrinsic == INTRINSIC_ROL || intrinsic == INTRINSIC_ROL_TIARG)
+    code = LROTATE_EXPR;
+  else if (intrinsic == INTRINSIC_ROR || intrinsic == INTRINSIC_ROR_TIARG)
+    code = RROTATE_EXPR;
+  else
+    gcc_unreachable ();
+
+  /* Get the COUNT parameter.  Either from the call expression arguments or the
+     template instantiation arguments.  */
+  if (intrinsic == INTRINSIC_ROL || intrinsic == INTRINSIC_ROR)
+    count = CALL_EXPR_ARG (callexp, 1);
+  else
+    {
+      tree callee = CALL_EXPR_FN (callexp);
+
+      if (TREE_CODE (callee) == ADDR_EXPR)
+	callee = TREE_OPERAND (callee, 0);
+
+      /* Retrieve from the encoded template instantation.  */
+      TemplateInstance *ti = DECL_LANG_FRONTEND (callee)->isInstantiated ();
+      gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
+
+      Expression *e = isExpression ((*ti->tiargs)[0]);
+      gcc_assert (e && e->op == TOKint64);
+      count = build_expr (e, true);
+    }
+
+  return fold_build2 (code, type, value, count);
+}
+
 /* Expand a front-end intrinsic call to copysign().  This takes two arguments,
    the signature to which can be either:
 
@@ -736,6 +786,12 @@ maybe_expand_intrinsic (tree callexp)
     case INTRINSIC_POPCNT32:
     case INTRINSIC_POPCNT64:
       return expand_intrinsic_popcnt (callexp);
+
+    case INTRINSIC_ROL:
+    case INTRINSIC_ROL_TIARG:
+    case INTRINSIC_ROR:
+    case INTRINSIC_ROR_TIARG:
+      return expand_intrinsic_rotate (intrinsic, callexp);
 
     case INTRINSIC_BSWAP32:
     case INTRINSIC_BSWAP64:

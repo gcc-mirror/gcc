@@ -38,6 +38,12 @@ void test_volatileStore(ubyte *a, ubyte b) { return volatileStore(a, b); }
 void test_volatileStore(ushort *a, ushort b) { return volatileStore(a, b); }
 void test_volatileStore(uint *a, uint b) { return volatileStore(a, b); }
 void test_volatileStore(ulong *a, ulong b) { return volatileStore(a, b); }
+// { dg-final { scan-tree-dump-not " rol " "original" } }
+ubyte test_rol(ubyte a, uint b) { return rol!ubyte(a, b); }
+uint test_rol(uint a) { return rol!(1, uint)(a); }
+// { dg-final { scan-tree-dump-not " ror " "original" } }
+ushort test_ror(ushort a, uint b) { return ror!ushort(a, b); }
+ulong test_ror(ulong a) { return ror!(1, ulong)(a); }
 
 //////////////////////////////////////////////////////
 // core.checkedint
