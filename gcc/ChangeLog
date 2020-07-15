@@ -1,3 +1,130 @@
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (rotldi3_insert_sf): Add TARGET_POWERPC64
+	condition.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Add
+	TARGET_POWERPC64 requirement to TARGET_P8_VECTOR case.
+
+2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	PR other/86904
+	* common.opt: Handle -ftabstop here instead of in c-family
+	options.  Add -fdiagnostics-column-unit= and
+	-fdiagnostics-column-origin= options.
+	* opts.c (common_handle_option): Handle the new options.
+	* diagnostic-format-json.cc (json_from_expanded_location): Add
+	diagnostic_context argument.  Use it to convert column numbers as per
+	the new options.
+	(json_from_location_range): Likewise.
+	(json_from_fixit_hint): Likewise.
+	(json_end_diagnostic): Pass the new context argument to helper
+	functions above.  Add "column-origin" field to the output.
+	(test_unknown_location): Add the new context argument to calls to
+	helper functions.
+	(test_bad_endpoints): Likewise.
+	* diagnostic-show-locus.c
+	(exploc_with_display_col::exploc_with_display_col): Support
+	tabstop parameter.
+	(layout_point::layout_point): Make use of class
+	exploc_with_display_col.
+	(layout_range::layout_range): Likewise.
+	(struct line_bounds): Clarify that the units are now always
+	display columns.  Rename members accordingly.  Add constructor.
+	(layout::print_source_line): Add support for tab expansion.
+	(make_range): Adapt to class layout_range changes.
+	(layout::maybe_add_location_range): Likewise.
+	(layout::layout): Adapt to class exploc_with_display_col changes.
+	(layout::calculate_x_offset_display): Support tabstop parameter.
+	(layout::print_annotation_line): Adapt to struct line_bounds changes.
+	(layout::print_line): Likewise.
+	(line_label::line_label): Add diagnostic_context argument.
+	(get_affected_range): Likewise.
+	(get_printed_columns): Likewise.
+	(layout::print_any_labels): Adapt to struct line_label changes.
+	(class correction): Add m_tabstop member.
+	(correction::correction): Add tabstop argument.
+	(correction::compute_display_cols): Use m_tabstop.
+	(class line_corrections): Add m_context member.
+	(line_corrections::line_corrections): Add diagnostic_context argument.
+	(line_corrections::add_hint): Use m_context to handle tabstops.
+	(layout::print_trailing_fixits): Adapt to class line_corrections
+	changes.
+	(test_layout_x_offset_display_utf8): Support tabstop parameter.
+	(test_layout_x_offset_display_tab): New selftest.
+	(test_one_liner_colorized_utf8): Likewise.
+	(test_tab_expansion): Likewise.
+	(test_diagnostic_show_locus_one_liner_utf8): Call the new tests.
+	(diagnostic_show_locus_c_tests): Likewise.
+	(test_overlapped_fixit_printing): Adapt to helper class and
+	function changes.
+	(test_overlapped_fixit_printing_utf8): Likewise.
+	(test_overlapped_fixit_printing_2): Likewise.
+	* diagnostic.h (enum diagnostics_column_unit): New enum.
+	(struct diagnostic_context): Add members for the new options.
+	(diagnostic_converted_column): Declare.
+	(json_from_expanded_location): Add new context argument.
+	* diagnostic.c (diagnostic_initialize): Initialize new members.
+	(diagnostic_converted_column): New function.
+	(maybe_line_and_column): Be willing to output a column of 0.
+	(diagnostic_get_location_text): Convert column number as per the new
+	options.
+	(diagnostic_report_current_module): Likewise.
+	(assert_location_text): Add origin and column_unit arguments for
+	testing the new functionality.
+	(test_diagnostic_get_location_text): Test the new functionality.
+	* doc/invoke.texi: Document the new options and behavior.
+	* input.h (location_compute_display_column): Add tabstop argument.
+	* input.c (location_compute_display_column): Likewise.
+	(test_cpp_utf8): Add selftests for tab expansion.
+	* tree-diagnostic-path.cc (default_tree_make_json_for_path): Pass the
+	new context argument to json_from_expanded_location().
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96194
+	* expr.c (expand_constructor): Don't create temporary for store to
+	volatile MEM if exp has an addressable type.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* hash-map.h (hash_map::get): Note it is a pointer to value.
+	* incpath.h (incpath_kind): Align comments.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-core.h (tree_decl_with_vis, tree_function_decl):
+	Note additional padding on 64-bits
+	* tree.c (cache_integer_cst): Note why no caching of enum literals.
+	(get_tree_code_name): Robustify error case.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/gty.texi: Fic gt_cleare_cache name.
+	* doc/invoke.texi: Remove duplicate opindex Wabi-tag.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-general.h (struct omp_for_data): Add adjn1 member.
+	* omp-general.c (omp_extract_for_data): For non-rect loop, punt on
+	count computing if n1, n2 or step are not INTEGER_CST earlier.
+	Narrow the outer iterator range if needed so that non-rect loop
+	has at least one iteration for each outer range iteration.  Compute
+	adjn1.
+	* omp-expand.c (expand_omp_for_init_vars): Use adjn1 if non-NULL
+	instead of the outer loop's n1.
+
+2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	PR lto/95604
+	* lto-wrapper.c (merge_and_complain): Add decoded options as parameter,
+	error on different values for -fcf-protection.
+	(append_compiler_options): Pass -fcf-protection option.
+	(find_and_merge_options): Add decoded options as parameter,
+	pass decoded_options to merge_and_complain.
+	(run_gcc): Pass decoded options to find_and_merge_options.
+	* lto-opts.c (lto_write_options): Pass -fcf-protection option.
+
 2020-07-13  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.md (sibcall_local): Merge sibcall_local32

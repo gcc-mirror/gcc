@@ -670,6 +670,9 @@ package body Sem is
          when N_Iterated_Component_Association =>
             Diagnose_Iterated_Component_Association (N);
 
+         when N_Iterated_Element_Association =>
+            null;   --  May require a more precise error if misplaced.
+
          --  For the remaining node types, we generate compiler abort, because
          --  these nodes are always analyzed within the Sem_Chn routines and
          --  there should never be a case of making a call to the main Analyze

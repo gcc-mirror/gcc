@@ -7346,6 +7346,7 @@ package body Exp_Util is
 
             when N_Component_Association
                | N_Iterated_Component_Association
+               | N_Iterated_Element_Association
             =>
                if Nkind (Parent (P)) = N_Aggregate
                  and then Present (Loop_Actions (P))

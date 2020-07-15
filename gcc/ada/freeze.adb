@@ -3431,7 +3431,7 @@ package body Freeze is
          Check_Address_Clause (E);
 
          --  Similar processing is needed for aspects that may affect object
-         --  layout, like Alignment, if there is an initialization expression.
+         --  layout, like Address, if there is an initialization expression.
          --  We don't do this if there is a pragma Linker_Section, because it
          --  would prevent the back end from statically initializing the
          --  object; we don't want elaboration code in that case.
@@ -3439,11 +3439,11 @@ package body Freeze is
          if Has_Delayed_Aspects (E)
            and then Expander_Active
            and then Is_Array_Type (Typ)
-           and then Present (Expression (Parent (E)))
+           and then Present (Expression (Declaration_Node (E)))
            and then No (Linker_Section_Pragma (E))
          then
             declare
-               Decl : constant Node_Id := Parent (E);
+               Decl : constant Node_Id := Declaration_Node (E);
                Lhs  : constant Node_Id := New_Occurrence_Of (E, Loc);
 
             begin

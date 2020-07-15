@@ -6422,8 +6422,28 @@ package body Sem_Util is
 
       function Is_Renaming (N : Node_Id) return Boolean is
       begin
-         return
-           Is_Entity_Name (N) and then Present (Renamed_Entity (Entity (N)));
+         if not Is_Entity_Name (N) then
+            return False;
+         end if;
+
+         case Ekind (Entity (N)) is
+            when E_Variable | E_Constant =>
+               return Present (Renamed_Object (Entity (N)));
+
+            when E_Exception
+               | E_Function
+               | E_Generic_Function
+               | E_Generic_Package
+               | E_Generic_Procedure
+               | E_Operator
+               | E_Package
+               | E_Procedure
+            =>
+               return Present (Renamed_Entity (Entity (N)));
+
+            when others =>
+               return False;
+         end case;
       end Is_Renaming;
 
       -----------------------
@@ -8671,7 +8691,7 @@ package body Sem_Util is
                Expr := Prefix (Expr);
                exit;
 
-               --  Check for Const where Const is a constant entity
+            --  Check for Const where Const is a constant entity
 
             elsif Is_Entity_Name (Expr)
               and then Ekind (Entity (Expr)) = E_Constant
@@ -15615,22 +15635,24 @@ package body Sem_Util is
          --  effectively volatile.
 
          elsif Is_Array_Type (Id) then
-            declare
-               Anc : Entity_Id := Base_Type (Id);
-            begin
-               if Is_Private_Type (Anc) then
-                  Anc := Full_View (Anc);
-               end if;
+            if Has_Volatile_Components (Id) then
+               return True;
+            else
+               declare
+                  Anc : Entity_Id := Base_Type (Id);
+               begin
+                  if Is_Private_Type (Anc) then
+                     Anc := Full_View (Anc);
+                  end if;
 
-               --  Test for presence of ancestor, as the full view of a private
-               --  type may be missing in case of error.
+                  --  Test for presence of ancestor, as the full view of a
+                  --  private type may be missing in case of error.
 
-               return
-                 Has_Volatile_Components (Id)
-                   or else
-                 (Present (Anc)
-                   and then Is_Effectively_Volatile (Component_Type (Anc)));
-            end;
+                  return
+                    Present (Anc)
+                      and then Is_Effectively_Volatile (Component_Type (Anc));
+               end;
+            end if;
 
          --  A protected type is always volatile
 
@@ -15674,7 +15696,7 @@ package body Sem_Util is
          return Is_Object (Entity (N))
            and then Is_Effectively_Volatile (Entity (N));
 
-      elsif Nkind (N) = N_Indexed_Component then
+      elsif Nkind_In (N, N_Indexed_Component, N_Slice) then
          return Is_Effectively_Volatile_Object (Prefix (N));
 
       elsif Nkind (N) = N_Selected_Component then
@@ -15682,6 +15704,12 @@ package body Sem_Util is
            Is_Effectively_Volatile_Object (Prefix (N))
              or else
            Is_Effectively_Volatile_Object (Selector_Name (N));
+
+      elsif Nkind_In (N, N_Qualified_Expression,
+                         N_Unchecked_Type_Conversion,
+                         N_Type_Conversion)
+      then
+         return Is_Effectively_Volatile_Object (Expression (N));
 
       else
          return False;
@@ -17189,6 +17217,11 @@ package body Sem_Util is
                return Is_Rewrite_Substitution (N)
                  and then Is_Object_Reference (Original_Node (N));
 
+            --  AI12-0125: Target name represents a constant object
+
+            when N_Target_Name =>
+               return True;
+
             when others =>
                return False;
          end case;
@@ -17495,7 +17528,8 @@ package body Sem_Util is
       --  The volatile object appears as the expression of a type conversion
       --  occurring in a non-interfering context.
 
-      elsif Nkind_In (Context, N_Type_Conversion,
+      elsif Nkind_In (Context, N_Qualified_Expression,
+                               N_Type_Conversion,
                                N_Unchecked_Type_Conversion)
         and then Expression (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
@@ -18729,29 +18763,30 @@ package body Sem_Util is
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
 
-   ------------------------------------
-   --  Is_Static_Expression_Function --
-   ------------------------------------
+   ------------------------
+   -- Is_Static_Function --
+   ------------------------
 
-   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean is
+   function Is_Static_Function (Subp : Entity_Id) return Boolean is
    begin
-      return Is_Expression_Function (Subp)
-        and then Has_Aspect (Subp, Aspect_Static)
+      return Has_Aspect (Subp, Aspect_Static)
         and then
           (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
             or else Is_True (Static_Boolean
                                (Find_Value_Of_Aspect (Subp, Aspect_Static))));
-   end Is_Static_Expression_Function;
+   end Is_Static_Function;
 
-   -----------------------------------------
-   --  Is_Static_Expression_Function_Call --
-   -----------------------------------------
+   ------------------------------
+   --  Is_Static_Function_Call --
+   ------------------------------
 
-   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean
-   is
-
+   function Is_Static_Function_Call (Call : Node_Id) return Boolean is
       function Has_All_Static_Actuals (Call : Node_Id) return Boolean;
       --  Return whether all actual parameters of Call are static expressions
+
+      ----------------------------
+      -- Has_All_Static_Actuals --
+      ----------------------------
 
       function Has_All_Static_Actuals (Call : Node_Id) return Boolean is
          Actual        : Node_Id := First_Actual (Call);
@@ -18765,12 +18800,12 @@ package body Sem_Util is
                --  ??? In the string-returning case we want to avoid a call
                --  being made to Establish_Transient_Scope in Resolve_Call,
                --  but at the point where that's tested for (which now includes
-               --  a call to test Is_Static_Expression_Function_Call), the
-               --  actuals of the call haven't been resolved, so expressions
-               --  of the actuals may not have been marked Is_Static_Expression
-               --  yet, so we force them to be resolved here, so we can tell if
-               --  they're static. Calling Resolve here is admittedly a kludge,
-               --  and we limit this call to string-returning cases. ???
+               --  a call to test Is_Static_Function_Call), the actuals of the
+               --  call haven't been resolved, so expressions of the actuals
+               --  may not have been marked Is_Static_Expression yet, so we
+               --  force them to be resolved here, so we can tell if they're
+               --  static. Calling Resolve here is admittedly a kludge, and we
+               --  limit this call to string-returning cases.
 
                if String_Result then
                   Resolve (Actual);
@@ -18792,9 +18827,9 @@ package body Sem_Util is
    begin
       return Nkind (Call) = N_Function_Call
         and then Is_Entity_Name (Name (Call))
-        and then Is_Static_Expression_Function (Entity (Name (Call)))
+        and then Is_Static_Function (Entity (Name (Call)))
         and then Has_All_Static_Actuals (Call);
-   end Is_Static_Expression_Function_Call;
+   end Is_Static_Function_Call;
 
    ----------------------------------------
    --  Is_Subcomponent_Of_Atomic_Object  --
@@ -23806,7 +23841,7 @@ package body Sem_Util is
 
                --  Follow renaming chain
 
-               if (Ekind (Ent) = E_Variable or else Ekind (Ent) = E_Constant)
+               if Ekind_In (Ent, E_Variable, E_Constant)
                  and then Present (Renamed_Object (Ent))
                then
                   Exp := Renamed_Object (Ent);
@@ -28595,12 +28630,12 @@ package body Sem_Util is
       then
          return;
 
-      --  In  an instance, there is an ongoing problem with completion of
+      --  In an instance, there is an ongoing problem with completion of
       --  types derived from private types. Their structure is what Gigi
-      --  expects, but the  Etype is the parent type rather than the
-      --  derived private type itself. Do not flag error in this case. The
-      --  private completion is an entity without a parent, like an Itype.
-      --  Similarly, full and partial views may be incorrect in the instance.
+      --  expects, but the Etype is the parent type rather than the derived
+      --  private type itself. Do not flag error in this case. The private
+      --  completion is an entity without a parent, like an Itype. Similarly,
+      --  full and partial views may be incorrect in the instance.
       --  There is no simple way to insure that it is consistent ???
 
       --  A similar view discrepancy can happen in an inlined body, for the

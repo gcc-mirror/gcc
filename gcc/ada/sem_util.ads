@@ -2081,13 +2081,13 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
-   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean;
-   --  Determine whether subprogram Subp denotes a static expression function,
-   --  which is an expression function with the aspect Static with value True.
+   function Is_Static_Function (Subp : Entity_Id) return Boolean;
+   --  Determine whether subprogram Subp denotes a static function,
+   --  which is a function with the aspect Static with value True.
 
-   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean;
-   --  Determine whether Call is a static call to a static expression function,
-   --  meaning that the name of the call denotes a static expression function
+   function Is_Static_Function_Call (Call : Node_Id) return Boolean;
+   --  Determine whether Call is a static call to a static function,
+   --  meaning that the name of the call denotes a static function
    --  and all of the call's actual parameters are given by static expressions.
 
    function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;

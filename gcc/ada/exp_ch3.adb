@@ -8148,61 +8148,44 @@ package body Exp_Ch3 is
 
             elsif Ada_Version >= Ada_2012
               and then Present (Associated_Storage_Pool (Def_Id))
-
-              --  Omit this check for the case of a configurable run-time that
-              --  does not provide package System.Storage_Pools.Subpools.
-
-              and then RTE_Available (RE_Root_Storage_Pool_With_Subpools)
+              and then RTU_Loaded (System_Storage_Pools_Subpools)
             then
                declare
                   Loc   : constant Source_Ptr := Sloc (Def_Id);
                   Pool  : constant Entity_Id :=
                             Associated_Storage_Pool (Def_Id);
-                  RSPWS : constant Entity_Id :=
-                            RTE (RE_Root_Storage_Pool_With_Subpools);
 
                begin
                   --  It is known that the accessibility level of the access
                   --  type is deeper than that of the pool.
 
                   if Type_Access_Level (Def_Id) > Object_Access_Level (Pool)
+                    and then Is_Class_Wide_Type (Etype (Pool))
                     and then not Accessibility_Checks_Suppressed (Def_Id)
                     and then not Accessibility_Checks_Suppressed (Pool)
                   then
-                     --  Static case: the pool is known to be a descendant of
-                     --  Root_Storage_Pool_With_Subpools.
-
-                     if Is_Ancestor (RSPWS, Etype (Pool)) then
-                        Error_Msg_N
-                          ("??subpool access type has deeper accessibility "
-                           & "level than pool", Def_Id);
-
-                        Append_Freeze_Action (Def_Id,
-                          Make_Raise_Program_Error (Loc,
-                            Reason => PE_Accessibility_Check_Failed));
-
-                     --  Dynamic case: when the pool is of a class-wide type,
-                     --  it may or may not support subpools depending on the
-                     --  path of derivation. Generate:
+                     --  When the pool is of a class-wide type, it may or may
+                     --  not support subpools depending on the path of
+                     --  derivation. Generate:
 
                      --    if Def_Id in RSPWS'Class then
                      --       raise Program_Error;
                      --    end if;
 
-                     elsif Is_Class_Wide_Type (Etype (Pool)) then
-                        Append_Freeze_Action (Def_Id,
-                          Make_If_Statement (Loc,
-                            Condition       =>
-                              Make_In (Loc,
-                                Left_Opnd  => New_Occurrence_Of (Pool, Loc),
-                                Right_Opnd =>
-                                  New_Occurrence_Of
-                                    (Class_Wide_Type (RSPWS), Loc)),
-
-                            Then_Statements => New_List (
-                              Make_Raise_Program_Error (Loc,
-                                Reason => PE_Accessibility_Check_Failed))));
-                     end if;
+                     Append_Freeze_Action (Def_Id,
+                       Make_If_Statement (Loc,
+                         Condition       =>
+                           Make_In (Loc,
+                             Left_Opnd  => New_Occurrence_Of (Pool, Loc),
+                             Right_Opnd =>
+                               New_Occurrence_Of
+                                 (Class_Wide_Type
+                                   (RTE
+                                     (RE_Root_Storage_Pool_With_Subpools)),
+                                  Loc)),
+                         Then_Statements => New_List (
+                           Make_Raise_Program_Error (Loc,
+                             Reason => PE_Accessibility_Check_Failed))));
                   end if;
                end;
             end if;

@@ -43,7 +43,9 @@ generic
    with function "=" (Left, Right : Element_Type)
       return Boolean is <>;
 
-package Ada.Containers.Bounded_Doubly_Linked_Lists is
+package Ada.Containers.Bounded_Doubly_Linked_Lists with
+  SPARK_Mode => Off
+is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Pure;
    pragma Remote_Types;

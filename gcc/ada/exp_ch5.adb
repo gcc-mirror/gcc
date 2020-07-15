@@ -1521,7 +1521,7 @@ package body Exp_Ch5 is
       --  be assigned.
 
       elsif Possible_Bit_Aligned_Component (Lhs)
-              or
+              or else
             Possible_Bit_Aligned_Component (Rhs)
       then
          null;

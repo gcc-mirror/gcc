@@ -2196,6 +2196,13 @@ package body Exp_Ch6 is
             return False;
          end if;
 
+         --  There is no requirement inside initialization procedures and this
+         --  would generate copies for atomic or volatile composite components.
+
+         if Inside_Init_Proc then
+            return False;
+         end if;
+
          --  Check for atomicity mismatch
 
          if Is_Atomic_Object (Actual) and then not Is_Atomic (E_Formal)
@@ -9731,6 +9738,12 @@ package body Exp_Ch6 is
                   Subtype_Mark =>
                     New_Occurrence_Of (Etype (BIP_Func_Call), Loc),
                   Expression   => New_Copy_Tree (BIP_Func_Call))));
+
+      --  Manually set the associated node for the anonymous access type to
+      --  be its local declaration, to avoid confusing and complicating
+      --  the accessibility machinery.
+
+      Set_Associated_Node_For_Itype (Anon_Type, Tmp_Decl);
 
       Expander_Mode_Save_And_Set (False);
       Insert_Action (Allocator, Tmp_Decl);

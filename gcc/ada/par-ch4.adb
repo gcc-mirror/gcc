@@ -3407,6 +3407,8 @@ package body Ch4 is
    function P_Iterated_Component_Association return Node_Id is
       Assoc_Node : Node_Id;
       Id         : Node_Id;
+      Iter_Spec  : Node_Id;
+      Loop_Spec  : Node_Id;
       State      : Saved_Scan_State;
 
    --  Start of processing for P_Iterated_Component_Association
@@ -3423,6 +3425,9 @@ package body Ch4 is
       --  if E is a subtype indication this is a loop parameter spec,
       --  while if E a name it is an iterator_specification, and the
       --  disambiguation takes place during semantic analysis.
+      --  In addition, if "use" is present after the specification,
+      --  this is an Iterated_Element_Association that carries a
+      --  key_expression, and we generate the appropriate node.
 
       Id := P_Defining_Identifier;
       Assoc_Node :=
@@ -3432,6 +3437,22 @@ package body Ch4 is
          Set_Defining_Identifier (Assoc_Node, Id);
          T_In;
          Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
+
+         if Token = Tok_Use then
+
+            --  Key-expression is present, rewrite node as an
+            --  iterated_Element_Awwoiation.
+
+            Scan;  --  past USE
+            Loop_Spec :=
+              New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
+            Set_Defining_Identifier (Loop_Spec, Id);
+            Set_Discrete_Subtype_Definition (Loop_Spec,
+               First (Discrete_Choices (Assoc_Node)));
+            Set_Loop_Parameter_Specification (Assoc_Node, Loop_Spec);
+            Set_Key_Expression (Assoc_Node, P_Expression);
+         end if;
+
          TF_Arrow;
          Set_Expression (Assoc_Node, P_Expression);
 
@@ -3441,8 +3462,19 @@ package body Ch4 is
          Restore_Scan_State (State);
          Scan;  -- past OF
          Set_Defining_Identifier (Assoc_Node, Id);
-         Set_Iterator_Specification
-           (Assoc_Node, P_Iterator_Specification (Id));
+         Iter_Spec := P_Iterator_Specification (Id);
+         Set_Iterator_Specification (Assoc_Node, Iter_Spec);
+
+         if Token = Tok_Use then
+            Scan;  -- past USE
+            --  This is an iterated_elenent_qssociation.
+
+            Assoc_Node :=
+              New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
+            Set_Iterator_Specification (Assoc_Node, Iter_Spec);
+            Set_Key_Expression (Assoc_Node, P_Expression);
+         end if;
+
          TF_Arrow;
          Set_Expression (Assoc_Node, P_Expression);
       end if;

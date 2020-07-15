@@ -352,6 +352,7 @@ package body Tbuild is
       Check_Restriction (No_Implicit_Loops, Node);
 
       if Present (Iteration_Scheme)
+        and then Nkind (Iteration_Scheme) /= N_Iterator_Specification
         and then Present (Condition (Iteration_Scheme))
       then
          Check_Restriction (No_Implicit_Conditionals, Node);

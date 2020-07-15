@@ -1,3 +1,12 @@
+2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/86904
+	* c-indentation.c (should_warn_for_misleading_indentation): Get
+	global tabstop from the new source.
+	* c-opts.c (c_common_handle_option): Remove handling of -ftabstop, which
+	is now a common option.
+	* c.opt: Likewise.
+
 2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* c.opt (Wscalar-storage-order): Add explicit variable.

@@ -1034,7 +1034,8 @@ package body Sem_Ch13 is
               and then Has_Primitive_Operations (Parent_Type)
             then
                Error_Msg_N
-                 ("|representation aspect not permitted before Ada 202x!", N);
+                 ("|representation aspect not permitted before Ada 202x: " &
+                  "use -gnat2020!", N);
                Error_Msg_NE
                  ("\parent type & has primitive operations!", N, Parent_Type);
 
@@ -2405,6 +2406,35 @@ package body Sem_Ch13 is
             ---------------------------
 
             procedure Analyze_Aspect_Static is
+               function Has_Convention_Intrinsic (L : List_Id) return Boolean;
+               --  Return True if L contains a pragma argument association
+               --  node representing a convention Intrinsic.
+
+               ------------------------------
+               -- Has_Convention_Intrinsic --
+               ------------------------------
+
+               function Has_Convention_Intrinsic
+                 (L : List_Id) return Boolean
+               is
+                  Arg : Node_Id := First (L);
+               begin
+                  while Present (Arg) loop
+                     if Nkind (Arg) = N_Pragma_Argument_Association
+                       and then Chars (Arg) = Name_Convention
+                       and then Chars (Expression (Arg)) = Name_Intrinsic
+                     then
+                        return True;
+                     end if;
+
+                     Next (Arg);
+                  end loop;
+
+                  return False;
+               end Has_Convention_Intrinsic;
+
+               Is_Imported_Intrinsic : Boolean;
+
             begin
                if Ada_Version < Ada_2020 then
                   Error_Msg_N
@@ -2412,21 +2442,44 @@ package body Sem_Ch13 is
                   Error_Msg_N ("\compile with -gnat2020", Aspect);
 
                   return;
+               end if;
+
+               Is_Imported_Intrinsic := Is_Imported (E)
+                 and then
+                   Has_Convention_Intrinsic
+                     (Pragma_Argument_Associations (Import_Pragma (E)));
 
                --  The aspect applies only to expression functions that
                --  statisfy the requirements for a static expression function
-               --  (such as having an expression that is predicate-static).
+               --  (such as having an expression that is predicate-static) as
+               --  well as Intrinsic imported functions as a -gnatX extension.
 
-               elsif not Is_Expression_Function (E) then
-                  Error_Msg_N
-                    ("aspect % requires expression function", Aspect);
+               if not Is_Expression_Function (E)
+                 and then
+                   not (Extensions_Allowed and then Is_Imported_Intrinsic)
+               then
+                  if Extensions_Allowed then
+                     Error_Msg_N
+                       ("aspect % requires intrinsic or expression function",
+                        Aspect);
+
+                  elsif Is_Imported_Intrinsic then
+                     Error_Msg_N
+                       ("aspect % on intrinsic function is an extension: " &
+                        "use -gnatX",
+                        Aspect);
+
+                  else
+                     Error_Msg_N
+                       ("aspect % requires expression function", Aspect);
+                  end if;
 
                   return;
 
                --  Ada 202x (AI12-0075): Check that the function satisfies
-               --  several requirements of static expression functions as
-               --  specified in RM 6.8(5.1-5.8). Note that some of the
-               --  requirements given there are checked elsewhere.
+               --  several requirements of static functions as specified in
+               --  RM 6.8(5.1-5.8). Note that some of the requirements given
+               --  there are checked elsewhere.
 
                else
                   --  The expression of the expression function must be a
@@ -2809,14 +2862,27 @@ package body Sem_Ch13 is
                   if A_Id in Boolean_Aspects and then No (Expr) then
                      Delay_Required := False;
 
-                  --  For non-Boolean aspects, don't delay if integer literal,
-                  --  unless the aspect is Alignment, which affects the
-                  --  freezing of an initialized object.
+                  --  For non-Boolean aspects, don't delay if integer literal
 
                   elsif A_Id not in Boolean_Aspects
-                    and then A_Id /= Aspect_Alignment
                     and then Present (Expr)
                     and then Nkind (Expr) = N_Integer_Literal
+                  then
+                     Delay_Required := False;
+
+                  --  For Alignment and various Size aspects, don't delay for
+                  --  an attribute reference whose prefix is Standard, for
+                  --  example Standard'Maximum_Alignment or Standard'Word_Size.
+
+                  elsif (A_Id = Aspect_Alignment
+                          or else A_Id = Aspect_Component_Size
+                          or else A_Id = Aspect_Object_Size
+                          or else A_Id = Aspect_Size
+                          or else A_Id = Aspect_Value_Size)
+                    and then Present (Expr)
+                    and then Nkind (Expr) = N_Attribute_Reference
+                    and then Nkind (Prefix (Expr)) = N_Identifier
+                    and then Chars (Prefix (Expr)) = Name_Standard
                   then
                      Delay_Required := False;
 
@@ -6992,6 +7058,121 @@ package body Sem_Ch13 is
             Pool : Entity_Id;
             T    : Entity_Id;
 
+            procedure Associate_Storage_Pool
+              (Ent : Entity_Id; Pool : Entity_Id);
+            --  Associate Pool to Ent and perform legality checks on subpools
+
+            ----------------------------
+            -- Associate_Storage_Pool --
+            ----------------------------
+
+            procedure Associate_Storage_Pool
+              (Ent : Entity_Id; Pool : Entity_Id)
+            is
+               function Object_From (Pool : Entity_Id) return Entity_Id;
+               --  Return the entity of which Pool is a part of
+
+               -----------------
+               -- Object_From --
+               -----------------
+
+               function Object_From
+                 (Pool : Entity_Id) return Entity_Id
+               is
+                  N : Node_Id := Pool;
+               begin
+                  if Present (Renamed_Object (Pool)) then
+                     N := Renamed_Object (Pool);
+                  end if;
+
+                  while Present (N) loop
+                     case Nkind (N) is
+                        when N_Defining_Identifier =>
+                           return N;
+
+                        when N_Identifier | N_Expanded_Name =>
+                           return Entity (N);
+
+                        when N_Indexed_Component | N_Selected_Component |
+                             N_Explicit_Dereference
+                        =>
+                           N := Prefix (N);
+
+                        when N_Type_Conversion =>
+                           N := Expression (N);
+
+                        when others =>
+                           --  ??? we probably should handle more cases but
+                           --  this is good enough in practice for this check
+                           --  on a corner case.
+
+                           return Empty;
+                     end case;
+                  end loop;
+
+                  return Empty;
+               end Object_From;
+
+               Obj : Entity_Id;
+
+            begin
+               Set_Associated_Storage_Pool (Ent, Pool);
+
+               --  Check RM 13.11.4(22-23/3): a specification of a storage pool
+               --  is illegal if the storage pool supports subpools and:
+               --  (A) The access type is a general access type.
+               --  (B) The access type is statically deeper than the storage
+               --      pool object;
+               --  (C) The storage pool object is a part of a formal parameter;
+               --  (D) The storage pool object is a part of the dereference of
+               --      a non-library level general access type;
+
+               if Ada_Version >= Ada_2012
+                 and then RTU_Loaded (System_Storage_Pools_Subpools)
+                 and then
+                   Is_Ancestor (RTE (RE_Root_Storage_Pool_With_Subpools),
+                                Etype (Pool))
+               then
+                  --  check (A)
+
+                  if Ekind (Etype (Ent)) = E_General_Access_Type then
+                     Error_Msg_N
+                       ("subpool cannot be used on general access type", Ent);
+                  end if;
+
+                  --  check (B)
+
+                  if Type_Access_Level (Ent) > Object_Access_Level (Pool) then
+                     Error_Msg_N
+                       ("subpool access type has deeper accessibility "
+                        & "level than pool", Ent);
+                     return;
+                  end if;
+
+                  Obj := Object_From (Pool);
+
+                  --  check (C)
+
+                  if Present (Obj) and then Ekind (Obj) in Formal_Kind then
+                     Error_Msg_N
+                       ("subpool cannot be part of a parameter", Ent);
+                     return;
+                  end if;
+
+                  --  check (D)
+
+                  if Present (Obj)
+                    and then Ekind (Etype (Obj)) = E_General_Access_Type
+                    and then not Is_Library_Level_Entity (Etype (Obj))
+                  then
+                     Error_Msg_N
+                       ("subpool cannot be part of the dereference of a " &
+                        "nested general access type", Ent);
+                     return;
+                  end if;
+               end if;
+            end Associate_Storage_Pool;
+
          begin
             if Ekind (U_Ent) = E_Access_Subprogram_Type then
                Error_Msg_N
@@ -7115,7 +7296,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Analyze (Rnode);
-                  Set_Associated_Storage_Pool (U_Ent, Pool);
+                  Associate_Storage_Pool (U_Ent, Pool);
                end;
 
             elsif Is_Entity_Name (Expr) then
@@ -7137,14 +7318,14 @@ package body Sem_Ch13 is
                   Pool := Entity (Expression (Renamed_Object (Pool)));
                end if;
 
-               Set_Associated_Storage_Pool (U_Ent, Pool);
+               Associate_Storage_Pool (U_Ent, Pool);
 
             elsif Nkind (Expr) = N_Type_Conversion
               and then Is_Entity_Name (Expression (Expr))
               and then Nkind (Original_Node (Expr)) = N_Attribute_Reference
             then
                Pool := Entity (Expression (Expr));
-               Set_Associated_Storage_Pool (U_Ent, Pool);
+               Associate_Storage_Pool (U_Ent, Pool);
 
             else
                Error_Msg_N ("incorrect reference to a Storage Pool", Expr);
@@ -10338,6 +10519,8 @@ package body Sem_Ch13 is
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
             Pop_Type (Ent);
 
+         elsif A_Id = Aspect_Predicate_Failure then
+            Preanalyze_Spec_Expression (End_Decl_Expr, Standard_String);
          else
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;

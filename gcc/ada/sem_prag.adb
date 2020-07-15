@@ -13626,9 +13626,7 @@ package body Sem_Prag is
             if (Nkind (D) = N_Full_Type_Declaration and then Is_Array_Type (E))
               or else
                 (Nkind (D) = N_Object_Declaration
-                   and then (Ekind (E) = E_Constant
-                              or else
-                             Ekind (E) = E_Variable)
+                   and then Ekind_In (E, E_Constant, E_Variable)
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
               or else
@@ -14258,7 +14256,7 @@ package body Sem_Prag is
          --  pragma Complex_Representation ([Entity =>] LOCAL_NAME);
 
          when Pragma_Complex_Representation => Complex_Representation : declare
-            E_Id : Entity_Id;
+            E_Id : Node_Id;
             E    : Entity_Id;
             Ent  : Entity_Id;
 

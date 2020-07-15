@@ -1,3 +1,67 @@
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95789
+	PR c++/96104
+	PR c++/96179
+	* call.c (convert_like_real_1): Renamed from convert_like_real.
+	(convert_like_real): New wrapper for convert_like_real_1.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_lexer_alloc): Do not deal with PCH here.
+	(cp_lexer_new_main): Deal with PCH here.  Store the tokens directly
+	into the buffer.
+	(cp_lexer_new_from_tokens): Assert last token isn't purged either.
+	(cp_lexer_get_preprocessor_token): Change first arg to flags, adjust.
+	(cp_parser_new): Pass the lexer in, don't create it here.
+	(cp_parser_translation_unit): Initialize access checks here.
+	(cp_parser_initial_pragma): First token is provided by caller,
+	don't deal with PCH stopping here.  Adjust error message.
+	(c_parse_file): Adjust, change error message to avoid C++20 module
+	confusion.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* ptree.c (cxx_print_type): Add TYPEOF_TYPE and BASES.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (build_base_field_1): Cache CLASSTYPE_AS_BASE.
+	(build_self_reference): Rename value -> decl.
+	(dump_class_hierarchy_1): Cache CLASSTYPE_AS_BASE.
+
+2020-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95820
+	* decl.c (grokdeclarator) <case cdk_function>: Check also
+	pointers/references/... to functions.
+
+2020-07-14  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h: Correct some tree lang flag comments,
+	reformat some structure definitions.  Note some structure
+	sizes.  Clarify some comments.
+	(yyungetc): Delete.  Not been a thing for some time.
+	* class.c (copy_fndecl_with_name): Comment.
+	(check_bases_and_members): Unnecessary {}.
+	(layout_class_type): Comment.
+	* cp-tree.def (UNBOUND_CLASS_TEMPLATE): Adjust comment.
+	* decl.c:  Fix some formatting & whitespace issues.
+	(function_requirements_equivalent_p): Note why
+	substitutions are needed.
+	* decl2.c (no_linkage_error): Note that heroics about
+	'typedef struct { ... };' are no longer needed.
+	* method.c: Whitespace.
+	* name-lookup.c: Whitespace.
+	(add_decl_to_level): Reformat a line.
+	(print_binding_stack): Mark as DEBUG_FUNCTION.
+	(has_using_namespace_std_directive_p): Delete comment.
+	* pt.c: Whitespace
+	* ptree.c: Whitespace.
+	* rtti.c: Whitespace & comment.
+	* tree.c: Comment.
+	* typeck.c (structural_comptypes): Add comment.
+
 2020-07-13  Nathan Sidwell  <nathan@acm.org>
 
 	* Make-lang.in (c++.disclean): Likewise.

@@ -5212,13 +5212,14 @@ rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 {
    if (unroll_only_small_loops)
     {
-      /* TODO: This is hardcoded to 10 right now.  It can be refined, for
-	 example we may want to unroll very small loops more times (4 perhaps).
-	 We also should use a PARAM for this.  */
+      /* TODO: These are hardcoded values right now.  We probably should use
+	 a PARAM here.  */
+      if (loop->ninsns <= 6)
+	return MIN (4, nunroll);
       if (loop->ninsns <= 10)
 	return MIN (2, nunroll);
-      else
-	return 0;
+
+      return 0;
     }
 
   return nunroll;
@@ -6498,7 +6499,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	}
       else
 	{
-	  if (TARGET_P8_VECTOR)
+	  if (TARGET_P8_VECTOR && TARGET_POWERPC64)
 	    {
 	      rtx tmp_sf[4];
 	      rtx tmp_si[4];
