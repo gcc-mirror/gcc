@@ -390,7 +390,7 @@ private
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
    type Vector (Capacity : Count_Type) is tagged record
-      Elements : Elements_Array (1 .. Capacity) := (others => <>);
+      Elements : Elements_Array (1 .. Capacity);
       Last     : Extended_Index := No_Index;
       TC       : aliased Tamper_Counts;
    end record with Put_Image => Put_Image;

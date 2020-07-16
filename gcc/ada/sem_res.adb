@@ -4143,11 +4143,11 @@ package body Sem_Res is
                         --  types.
 
                         if Is_By_Reference_Type (Etype (F))
-                           or else Is_By_Reference_Type (Expr_Typ)
+                          or else Is_By_Reference_Type (Expr_Typ)
                         then
                            Error_Msg_N
                              ("view conversion between unrelated by reference "
-                              & "array types not allowed (\'A'I-00246)", A);
+                              & "array types not allowed ('A'I-00246)", A);
 
                         --  In Ada 2005 mode, check view conversion component
                         --  type cannot be private, tagged, or volatile. Note

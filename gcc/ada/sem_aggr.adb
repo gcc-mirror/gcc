@@ -791,6 +791,31 @@ package body Sem_Aggr is
       --  The actual aggregate subtype. This is not necessarily the same as Typ
       --  which is the subtype of the context in which the aggregate was found.
 
+      Others_Box : Boolean := False;
+      --  Set to True if N represents a simple aggregate with only
+      --  (others => <>), not nested as part of another aggregate.
+
+      function Within_Aggregate (N : Node_Id) return Boolean;
+      --  Return True if N is part of an N_Aggregate
+
+      ----------------------
+      -- Within_Aggregate --
+      ----------------------
+
+      function Within_Aggregate (N : Node_Id) return Boolean is
+         P : Node_Id := Parent (N);
+      begin
+         while Present (P) loop
+            if Nkind (P) = N_Aggregate then
+               return True;
+            end if;
+
+            P := Parent (P);
+         end loop;
+
+         return False;
+      end Within_Aggregate;
+
    begin
       --  Ignore junk empty aggregate resulting from parser error
 
@@ -811,16 +836,26 @@ package body Sem_Aggr is
         and then Present (Component_Associations (N))
       then
          declare
-            Comp : Node_Id;
+            Comp       : Node_Id;
+            First_Comp : Boolean := True;
 
          begin
             Comp := First (Component_Associations (N));
             while Present (Comp) loop
                if Box_Present (Comp) then
+                  if First_Comp
+                    and then No (Expressions (N))
+                    and then Nkind (First (Choices (Comp))) = N_Others_Choice
+                    and then not Within_Aggregate (N)
+                  then
+                     Others_Box := True;
+                  end if;
+
                   Insert_Actions (N, Freeze_Entity (Typ, N));
                   exit;
                end if;
 
+               First_Comp := False;
                Next (Comp);
             end loop;
          end;
@@ -1043,6 +1078,13 @@ package body Sem_Aggr is
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Aggr_Subtyp);
          Set_Analyzed (N);
+      end if;
+
+      if Warn_On_No_Value_Assigned
+        and then Others_Box
+        and then not Is_Fully_Initialized_Type (Etype (N))
+      then
+         Error_Msg_N ("?v?aggregate not fully initialized", N);
       end if;
 
       Check_Function_Writable_Actuals (N);

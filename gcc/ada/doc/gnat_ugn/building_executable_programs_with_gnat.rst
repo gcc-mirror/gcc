@@ -3865,8 +3865,14 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch activates warnings for access to variables which
   may not be properly initialized. The default is that
-  such warnings are generated.
+  such warnings are generated. This switch will also be emitted when
+  initializing an array or record object via the following aggregate:
 
+  .. code-block:: ada
+
+       Array_Or_Record : XXX := (others => <>);
+
+  unless the relevant type fully initializes all components.
 
 .. index:: -gnatwV  (gcc)
 
@@ -3875,17 +3881,6 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch suppresses warnings for access to variables which
   may not be properly initialized.
-  For variables of a composite type, the warning can also be suppressed in
-  Ada 2005 by using a default initialization with a box. For example, if
-  Table is an array of records whose components are only partially uninitialized,
-  then the following code:
-
-  .. code-block:: ada
-
-       Tab : Table := (others => <>);
-
-  will suppress warnings on subsequent statements that access components
-  of variable Tab.
 
 
 .. index:: -gnatw.v  (gcc)

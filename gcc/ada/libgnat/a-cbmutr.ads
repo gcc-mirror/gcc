@@ -303,8 +303,8 @@ private
    type Element_Array is array (Count_Type range <>) of aliased Element_Type;
 
    type Tree (Capacity : Count_Type) is tagged record
-      Nodes    : Tree_Node_Array (0 .. Capacity) := (others => <>);
-      Elements : Element_Array (1 .. Capacity) := (others => <>);
+      Nodes    : Tree_Node_Array (0 .. Capacity);
+      Elements : Element_Array (1 .. Capacity);
       Free     : Count_Type'Base := No_Node;
       TC       : aliased Tamper_Counts;
       Count    : Count_Type := 0;
