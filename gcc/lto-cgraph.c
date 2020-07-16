@@ -2126,7 +2126,10 @@ handle_node_in_boundary (symtab_node *node, bool keep_body)
 	}
     }
   else if (is_a <varpool_node *> (node) && !DECL_EXTERNAL (node->decl))
-    node->in_other_partition = true;
+    {
+      DECL_EXTERNAL (node->decl) = true;
+      node->in_other_partition = true;
+    }
 }
 
 /* Check the boundary and expands it if necessary, including more nodes or

@@ -463,6 +463,15 @@ public:
      Return NULL if there's no such node.  */
   static symtab_node *get_for_asmname (const_tree asmname);
 
+  /* Get symtab node by order.  */
+  static symtab_node *find_by_order (int order);
+
+  /* Get symtab_node by its name.  */
+  static symtab_node *find_by_name (const char *);
+
+  /* Get symtab_node by its ASM name.  */
+  static symtab_node *find_by_asm_name (const char *);
+
   /* Verify symbol table for internal consistency.  */
   static DEBUG_FUNCTION void verify_symtab_nodes (void);
 

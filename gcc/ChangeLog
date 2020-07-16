@@ -1,5 +1,13 @@
 2020-07-14  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
+	* symtab.c (find_by_order): New function.
+	(find_by_name): New function.
+	(find_by_asm_naem): New function.
+	* lto-cgraph.c (handle_node_in_boundary): Promote varnode in boundary
+	to be external.
+
+2020-07-14  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
 	* cgraphunit.c (ipa_passes): Move split_outputs to.
 	(symbol_table::compile): Here. Also make sure it runs after the IPA
 	transformation stage.

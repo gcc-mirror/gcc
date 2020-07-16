@@ -2493,3 +2493,37 @@ symtab_node::output_to_lto_symbol_table_p (void)
     }
   return true;
 }
+
+DEBUG_FUNCTION symtab_node *
+symtab_node::find_by_order (int order)
+{
+  symtab_node *node;
+  FOR_EACH_SYMBOL (node)
+    if (node->order == order)
+      return node;
+
+  return NULL;
+}
+
+DEBUG_FUNCTION symtab_node *
+symtab_node::find_by_name (const char * name)
+{
+  symtab_node *node;
+  FOR_EACH_SYMBOL (node)
+    if (!strcmp (node->name (), name))
+      return node;
+
+  return NULL;
+}
+
+DEBUG_FUNCTION symtab_node *
+symtab_node::find_by_asm_name (const char *asm_name)
+{
+  symtab_node *node;
+  FOR_EACH_SYMBOL (node)
+    if (!strcmp (node->asm_name (), asm_name))
+      return node;
+
+  return NULL;
+
+}
