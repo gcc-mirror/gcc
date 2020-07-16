@@ -2333,7 +2333,7 @@ package body Contracts is
                   --  A renamed private component is just a component of
                   --  _object, with an arbitrary name.
 
-                  elsif Ekind (Obj) = E_Variable
+                  elsif Ekind (Obj) in E_Variable | E_Constant
                     and then Nkind (Pref) = N_Identifier
                     and then Chars (Pref) = Name_uObject
                     and then Nkind (Sel) = N_Identifier
