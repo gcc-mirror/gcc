@@ -3,19 +3,22 @@
 ! { dg-do run }
 
 program test
+  use iso_fortran_env, only: integer_kinds
   implicit none
 
   integer (kind=1)  :: i1i, i1o
   integer (kind=2)  :: i2i, i2o
   integer (kind=4)  :: i4i, i4o
   integer (kind=8)  :: i8i, i8o
-  integer (kind=16) :: i16i, i16o
+! Use highest-precision integer, which might be less than '16'
+! assume integer_kinds == logical_kinds
+  integer (kind=maxval(integer_kinds)) :: i16i, i16o
 
   logical (kind=1)  :: l1i, l1o
   logical (kind=2)  :: l2i, l2o
   logical (kind=4)  :: l4i, l4o
   logical (kind=8)  :: l8i, l8o
-  logical (kind=16) :: l16i, l16o
+  logical (kind=maxval(integer_kinds)) :: l16i, l16o
 
   real (kind=4)  :: r4i, r4o
   real (kind=8)  :: r8i, r8o
@@ -108,19 +111,20 @@ subroutine subtest(i1i, i2i, i4i, i8i, i16i, i1o, i2o, i4o, i8o, i16o, &
                    l1i, l2i, l4i, l8i, l16i, l1o, l2o, l4o, l8o, l16o, &
                    r4i, r8i, r4o, r8o, c4i, c8i, c4o, c8o, &
                    ch1i, ch4i, ch1o, ch4o)
+  use iso_fortran_env, only: integer_kinds
   implicit none
 
   integer (kind=1)  :: i1i, i1o
   integer (kind=2)  :: i2i, i2o
   integer (kind=4)  :: i4i, i4o
   integer (kind=8)  :: i8i, i8o
-  integer (kind=16) :: i16i, i16o
+  integer (kind=maxval(integer_kinds)) :: i16i, i16o
 
   logical (kind=1)  :: l1i, l1o
   logical (kind=2)  :: l2i, l2o
   logical (kind=4)  :: l4i, l4o
   logical (kind=8)  :: l8i, l8o
-  logical (kind=16) :: l16i, l16o
+  logical (kind=maxval(integer_kinds)) :: l16i, l16o
 
   real (kind=4)  :: r4i, r4o
   real (kind=8)  :: r8i, r8o
