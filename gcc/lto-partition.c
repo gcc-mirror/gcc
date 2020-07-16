@@ -995,12 +995,11 @@ merge_static_calls (symtab_node *node, int set)
 	{
 	  for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
 	    {
-	      if (e->inline_failed)
-		{
-		  ds->unite (node->aux2, e->caller->aux2);
-		  merge_static_calls (e->caller, set);
-		  ret = true;
-		}
+	      /* FIXME: In theory, inlined functions should be a criteria to not
+		 merge partitions.  */
+	      ds->unite (node->aux2, e->caller->aux2);
+	      merge_static_calls (e->caller, set);
+	      ret = true;
 	    }
 
 	}

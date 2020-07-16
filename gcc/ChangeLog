@@ -1,3 +1,8 @@
+2020-07-16  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* ipa-sra.c (gate): Enable when split_outputs.
+	* lto-partition.c (merge_static_calls): Also merge inlined functions.
+
 2020-07-14  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* symtab.c (find_by_order): New function.
