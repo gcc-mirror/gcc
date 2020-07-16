@@ -361,7 +361,7 @@ struct lang_hooks
 				const line_map_ordinary *);
 
   /* Translate include hook hook.  */
-  bool (*preprocess_translate_include)
+  char *(*preprocess_translate_include)
     (cpp_reader *, line_maps *, location_t, const char *path);
 
   /* Undefining a macro.  */

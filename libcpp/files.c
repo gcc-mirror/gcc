@@ -894,9 +894,9 @@ has_unique_contents (cpp_reader *pfile, _cpp_file *file, bool import,
 }
 
 /* Place the file referenced by FILE into a new buffer on the buffer
-   stack if possible.  IMPORT is true if this stacking attempt is
-   because of a #import directive.  Returns true if a buffer is
-   stacked.  Use LOC for any diagnostics.  */
+   stack if possible.  Returns true if a buffer is stacked.  Use LOC
+   for any diagnostics.  */
+
 bool
 _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 		 location_t loc)
@@ -905,21 +905,26 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
     return false;
 
   int sysp = 0;
+  char *buf = nullptr;
 
   /* Check C++ module include translation.  */
-  if (!file->header_unit
-      && type < IT_HEADER_HWM
-      && pfile->cb.translate_include
-      && pfile->cb.translate_include (pfile, pfile->line_table, loc, file->path))
+  if (!file->header_unit && type < IT_HEADER_HWM && pfile->cb.translate_include)
+    buf = (pfile->cb.translate_include
+	   (pfile, pfile->line_table, loc, file->path));
+
+  if (buf)
     {
-      // FIXME: should we have just returned the buffer to stack?
-      /* The hook has stacked a buffer containing replacement text
-	 ending in two \n's.  The last \n in the new buffer doesn't
-	 cause a line increment, which is why we wanted 2 of them.
-	 That's much simpler than trying to slide an obstack allocate
-	 fixed buffer under TOS.  */
-      cpp_buffer *buffer = CPP_BUFFER (pfile);
-      gcc_assert (buffer->rlimit[-1] == '\n' && buffer->rlimit[-2] == '\n');
+      /* We don't increment the line number at the end of a buffer,
+	 because we don't usually need that location (we're popping an
+	 include file).  However in this case we do want to do the
+	 increment.  So push a writable buffer of two newlines to acheive
+	 that.  */
+      static uchar newlines[] = "\n\n";
+      cpp_push_buffer (pfile, newlines, 2, true);
+
+      cpp_buffer *buffer
+	= cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
+			   strlen (buf), true);
       buffer->to_free = buffer->buf;
 
       file->header_unit = +1;

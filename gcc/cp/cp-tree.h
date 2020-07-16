@@ -7079,8 +7079,8 @@ extern bitmap get_import_bitmap ();
 extern bitmap module_visible_instantiation_path (bitmap *);
 extern void module_begin_main_file (cpp_reader *, line_maps *,
 				    const line_map_ordinary *);
-extern bool module_translate_include (cpp_reader *, line_maps *,
-				      location_t, const char *);
+extern char *module_translate_include (cpp_reader *, line_maps *,
+				       location_t, const char *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */

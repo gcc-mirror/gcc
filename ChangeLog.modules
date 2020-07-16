@@ -1,6 +1,19 @@
 2020-07-16  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* include/cpplib.h (struct cpp_callbacks): Adjust
+	translate_include's return type.
+	* files.c (_cpp_stack_file): Push the buffer returned by the hook.
+	* lex.c (_cpp_clean_line): Fix buffer overrun.
+	gcc/
+	* langhooks.h (struct lang_hooks): Change
+	preprocess_translate_include's return type.
+	gcc/cp/
+	* cp-tree.h (module_translate_include): Change return type.
+	* module.cc (module_translate_include): Return a buffer, don't
+	push it.
+
+	libcpp/
 	* include/cpplib.h (enum cpp_main_search): New.
 	(struct cpp_options): Adjust.
 	* init.c (cpp_read_main_file): Adjust.

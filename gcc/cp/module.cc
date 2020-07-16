@@ -18380,7 +18380,7 @@ void module_state::set_filename (const Cody::Packet &packet)
 
 /* Figure out whether to treat HEADER as an include or an import.  */
 
-bool
+char *
 module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 			  const char *path)
 {
@@ -18388,12 +18388,12 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     {
       /* Turn off.  */
       cpp_get_callbacks (reader)->translate_include = NULL;
-      return false;
+      return nullptr;
     }
 
   if (!spans.init_p ())
     /* Before the main file, don't divert.  */
-    return false;
+    return nullptr;
 
   dump.push (NULL);
 
@@ -18403,15 +18403,15 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   size_t len = strlen (path);
   path = canonicalize_header_name (NULL, loc, true, path, len);
   auto packet = mapper->IncludeTranslate (path, len);
-  int res = false;
+  int xlate = false;
   if (packet.GetCode () == Cody::Client::PC_INCLUDE_TRANSLATE)
-    res = packet.GetInteger ();
+    xlate = packet.GetInteger ();
   else if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
     {
       /* Record the CMI name for when we do the import.  */
       module_state *import = get_module (build_string (len, path));
       import->set_filename (packet);
-      res = true;
+      xlate = true;
     }
   else
     {
@@ -18423,7 +18423,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   bool note = false;
   if (note_include_translate < 0)
     note = true;
-  else if (note_include_translate > 0 && res)
+  else if (note_include_translate > 0 && xlate)
     note = true;
   else if (note_includes)
     {
@@ -18438,46 +18438,42 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     }
 
   if (note)
-    inform (loc, res
+    inform (loc, xlate
 	    ? G_("include %qs translated to import")
 	    : G_("include %qs processed textually") , path);
 
-  dump () && dump (res ? "Translating include to import"
+  dump () && dump (xlate ? "Translating include to import"
 		   : "Keeping include as include");
-
-  if (res)
-    {
-      /* Push the translation text.  */
-      loc = ordinary_loc_of (lmaps, loc);
-      const line_map_ordinary *map
-	= linemap_check_ordinary (linemap_lookup (lmaps, loc));
-      unsigned col = SOURCE_COLUMN (map, loc);
-      col -= (col != 0); /* Columns are 1-based.  */
-
-      unsigned len = strlen (path);
-      unsigned alloc = len + col + 60;
-      char *res = XNEWVEC (char, alloc);
-
-      strcpy (res, "__import");
-      unsigned actual = 8;
-      if (col > actual)
-	{
-	  memset (res + actual, ' ', col - actual);
-	  actual = col;
-	}
-      /* No need to encode characters, that's not how header names are
-	 handled.  */
-      actual += snprintf (res + actual, alloc - actual,
-			  "\"%.*s\" [[__translated]];\n\n",
-			  len, path);
-      gcc_checking_assert (actual < alloc);
-
-      /* cpplib will delete the buffer.  */
-      cpp_push_buffer (reader, reinterpret_cast<unsigned char *> (res),
-		       actual, false);
-    }
   dump.pop (0);
 
+  if (!xlate)
+    return nullptr;
+  
+  /* Create the translation text.  */
+  loc = ordinary_loc_of (lmaps, loc);
+  const line_map_ordinary *map
+    = linemap_check_ordinary (linemap_lookup (lmaps, loc));
+  unsigned col = SOURCE_COLUMN (map, loc);
+  col -= (col != 0); /* Columns are 1-based.  */
+
+  unsigned alloc = len + col + 60;
+  char *res = XNEWVEC (char, alloc);
+
+  strcpy (res, "__import");
+  unsigned actual = 8;
+  if (col > actual)
+    {
+      /* Pad out so the filename appears at the same position.  */
+      memset (res + actual, ' ', col - actual);
+      actual = col;
+    }
+  /* No need to encode characters, that's not how header names are
+     handled.  */
+  actual += snprintf (res + actual, alloc - actual,
+		      "\"%s\" [[__translated]];\n", path);
+  gcc_checking_assert (actual < alloc);
+
+  /* cpplib will delete the buffer.  */
   return res;
 }
 

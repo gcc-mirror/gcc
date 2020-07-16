@@ -717,11 +717,10 @@ struct cpp_callbacks
      expansions.  */
   const char *(*remap_filename) (const char*);
 
-  /* Maybe translate a #include into something else.  Push a
-     cpp_buffer containing the translation and return true if
-     translating.  */
-  bool (*translate_include) (cpp_reader *, line_maps *, location_t,
-			     const char *path);
+  /* Maybe translate a #include into something else.  Return a
+     cpp_buffer containing the translation if translating.  */
+  char *(*translate_include) (cpp_reader *, line_maps *, location_t,
+			      const char *path);
 };
 
 #ifdef VMS

@@ -1062,7 +1062,7 @@ _cpp_clean_line (cpp_reader *pfile)
       d = (uchar *) s;
 
       /* Handle DOS line endings.  */
-      if (*s == '\r' && s != buffer->rlimit && s[1] == '\n')
+      if (*s == '\r' && s + 1 != buffer->rlimit && s[1] == '\n')
 	s++;
     }
 
