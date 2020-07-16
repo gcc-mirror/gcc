@@ -17651,9 +17651,18 @@ module_may_redeclare (tree decl)
     }
 
   if (them->is_header ())
-    /* If it came from a header, it's in the global module.  */
-    return (me->is_header ()
-	    || !module_purview_p ());
+    {
+      if (!header_module_p ())
+	return !module_purview_p ();
+
+      if (DECL_SOURCE_LOCATION (decl) == BUILTINS_LOCATION)
+	/* This is a builtin, being declared in header-unit.  We
+	   now need to mark it as an export.  */
+	DECL_MODULE_EXPORT_P (decl) = true;
+
+      /* If it came from a header, it's in the global module.  */
+      return true;
+    }
 
   if (me == them)
     return ((DECL_LANG_SPECIFIC (decl) && DECL_MODULE_PURVIEW_P (decl))

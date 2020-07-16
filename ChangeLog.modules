@@ -1,5 +1,10 @@
 2020-07-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_may_redeclare): Deal with declaring a builtin
+	in a header unit.
+	* rtti.c (init_rtti_processing): The type is not exported.
+
 	libcpp/
 	* directives.c (do_include_common): Drop FIXME question.
 	* lex.c (cpp_maybe_module_directive): C++ keywords are not a thing
