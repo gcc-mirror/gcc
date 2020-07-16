@@ -733,6 +733,7 @@ SED
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
+AIX_DEFAULT_ARCH
 am__fastdepCCAS_FALSE
 am__fastdepCCAS_TRUE
 CCASDEPMODE
@@ -4713,6 +4714,14 @@ case ${host} in
     # static hash tables crashes on AIX when libgo is built with O2
     CFLAGS="$CFLAGS -fno-section-anchors"
     GOCFLAGS="$GOCFLAGS -fno-section-anchors"
+
+    # Check default architecture for FAT library creation
+    if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
+        AIX_DEFAULT_ARCH='64'
+    else
+        AIX_DEFAULT_ARCH='32'
+    fi
+
     ;;
 esac
 
@@ -11492,7 +11501,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11495 "configure"
+#line 11602 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11598,7 +11607,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11601 "configure"
+#line 11708 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
