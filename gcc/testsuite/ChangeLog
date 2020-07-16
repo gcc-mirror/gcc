@@ -1,6 +1,6 @@
 2020-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
-	PR target/95355
+	PR target/96189
 	* gcc.target/i386/pr96189.c: New test.
 
 2020-07-15  Nathan Sidwell  <nathan@acm.org>

@@ -1,6 +1,6 @@
 2020-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
-	PR target/95355
+	PR target/96189
 	* config/i386/sync.md
 	(peephole2 to remove unneded compare after CMPXCHG): New pattern.
 
