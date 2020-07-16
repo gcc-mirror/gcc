@@ -1,3 +1,40 @@
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/alloc-1.F90: Use c_size_t to
+	avoid conversion on 32bit systems from 32bit to 64bit due
+	to -fdefault-integer-8.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Remove unused
+	variables; add character(kind=4) tests; update TODO comment.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c: Add ialias for omp_init_allocator and
+	omp_destroy_allocator.
+	* configure.ac: Set INTPTR_T_KIND.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* fortran.c (omp_init_allocator_, omp_destroy_allocator_,
+	omp_set_default_allocator_, omp_get_default_allocator_): New
+	functions and ialias_redirect.
+	* icv.c: Add ialias for omp_set_default_allocator and
+	omp_get_default_allocator.
+	* libgomp.map (OMP_5.0.1): Add omp_init_allocator_,
+	omp_destroy_allocator_, omp_set_default_allocator_ and
+	omp_get_default_allocator_.
+	* omp_lib.f90.in: Add allocator traits parameters, declare
+	allocator routines and add related kind parameters.
+	* omp_lib.h.in: Likewise.
+	* testsuite/libgomp.c-c++-common/alloc-2.c: Fix sizeof.
+	* testsuite/libgomp.fortran/alloc-1.F90: New test.
+	* testsuite/libgomp.fortran/alloc-2.F90: New test.
+	* testsuite/libgomp.fortran/alloc-3.F: New test.
+	* testsuite/libgomp.fortran/alloc-4.f90: New test.
+	* testsuite/libgomp.fortran/alloc-5.f90: New test.
+
 2020-07-14  Tom de Vries  <tom@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>

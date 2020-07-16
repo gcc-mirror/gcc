@@ -1,3 +1,23 @@
+2020-07-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* gcc.target/i386/pr96189.c: New test.
+
+2020-07-15  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/pragma-recovery.C: New.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96174
+	* gcc.target/i386/avx512f-vcmppd-3.c: New test.
+	* gcc.target/i386/avx512f-vcmpps-3.c: New test.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96176
+	* gcc.target/i386/pr96176.c: New test.
+
 2020-07-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/59978
