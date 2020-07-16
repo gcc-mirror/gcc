@@ -19138,9 +19138,9 @@ handle_module_option (unsigned code, const char *str, int)
 	/* Look away.  Look away now.  */
 	extern cpp_options *cpp_opts;
 	if (!strcmp (str, "user"))
-	  cpp_opts->main_search = 1;
+	  cpp_opts->main_search = CMS_user;
 	else if (!strcmp (str, "system"))
-	  cpp_opts->main_search = 2;
+	  cpp_opts->main_search = CMS_system;
 	else
 	  error ("unknown header kind %qs", str);
       }

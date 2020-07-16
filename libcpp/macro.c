@@ -2959,7 +2959,6 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
       bool need_search = !pfile->state.directive_file_token;
       pfile->state.directive_file_token = false;
 
-      // FIXME: Perhaps move out to files.c into cpp_find_header_unit?
       bool angle = result->type != CPP_STRING;
       if (result->type == CPP_HEADER_NAME
 	  || (result->type == CPP_STRING && result->val.str.text[0] != 'R'))

@@ -308,6 +308,13 @@ enum cpp_normalize_level {
   normalized_none
 };
 
+enum cpp_main_search 
+{
+  CMS_none,
+  CMS_user,
+  CMS_system
+};
+
 /* This structure is nested inside struct cpp_reader, and
    carries all the options visible to the command line.  */
 struct cpp_options
@@ -567,7 +574,7 @@ struct cpp_options
   /* The maximum depth of the nested #include.  */
   unsigned int max_include_depth;
 
-  unsigned char main_search;
+  cpp_main_search main_search : 8;
 };
 
 /* Diagnostic levels.  To get a diagnostic without associating a

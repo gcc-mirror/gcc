@@ -1,5 +1,13 @@
 2020-07-16  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (enum cpp_main_search): New.
+	(struct cpp_options): Adjust.
+	* init.c (cpp_read_main_file): Adjust.
+	* macro.c (cpp_get_token_1): Remove FIXME.
+	gcc/cp/
+	* module.cc (handle_module_option): Adjust.
+
 	gcc/cp/
 	* pt.c (tsubst_expr): Do not process using decls again.
 	gcc/testsuite/

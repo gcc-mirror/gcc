@@ -667,13 +667,11 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 
   pfile->main_file
     = _cpp_find_file (pfile, fname,
-		      // FIXME: We should expose an enum
-		      CPP_OPTION (pfile, preprocessed)
-		      || CPP_OPTION (pfile, main_search) == 0
-		      ? &pfile->no_search_path
-		      : CPP_OPTION (pfile, main_search) == 1
+		      CPP_OPTION (pfile, preprocessed) ? &pfile->no_search_path
+		      : CPP_OPTION (pfile, main_search) == CMS_user
 		      ? pfile->quote_include
-		      : pfile->bracket_include,
+		      : CPP_OPTION (pfile, main_search) == CMS_system
+		      ? pfile->bracket_include : &pfile->no_search_path,
 		      /*angle=*/0, _cpp_FFK_NORMAL, 0);
 
   const char *found_name = _cpp_found_name (pfile->main_file);
