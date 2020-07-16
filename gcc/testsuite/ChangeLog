@@ -1,3 +1,18 @@
+2020-07-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/95726
+	* g++.target/aarch64/pr95726.C: New test.
+	* g++.target/arm/pr95726.C: Likewise.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96174
+	* gcc.target/i386/avx512f-vcmppd-3.c: New test.
+	* gcc.target/i386/avx512f-vcmpps-3.c: New test.
+
 2020-07-14  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
