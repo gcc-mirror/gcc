@@ -845,7 +845,6 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       /* Get out of macro context, if we are.  */
       skip_rest_of_line (pfile);
 
-      // FIXME: why here, not when we do the stacking?
       if (pfile->cb.include)
 	pfile->cb.include (pfile, pfile->directive_line,
 			   pfile->directive->name, fname, angle_brackets,

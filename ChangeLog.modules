@@ -1,6 +1,12 @@
 2020-07-16  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* directives.c (do_include_common): Drop FIXME question.
+	* lex.c (cpp_maybe_module_directive): C++ keywords are not a thing
+	here.
+	(cpp_directive_only_process): Add assert.
+
+	libcpp/
 	* include/cpplib.h (struct cpp_callbacks): Adjust
 	translate_include's return type.
 	* files.c (_cpp_stack_file): Push the buffer returned by the hook.

@@ -2671,10 +2671,8 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 
   /* ... import followed by identifier, ':', '<' or
      header-name preprocessing tokens, or module
-     followed by identifier, ':' or ';' preprocessing
-     tokens.  */
-  // FIXME: should I be rejecting identifiers that are keywords?  I
-  // don't know that at this point?
+     followed by cpp-identifier, ':' or ';' preprocessing
+     tokens.  C++ keywords are not yet relevant.  */
   if (peek->type == CPP_NAME
       || peek->type == CPP_COLON
       ||  (header_count
@@ -4704,20 +4702,16 @@ cpp_directive_only_process (cpp_reader *pfile,
 		      const cpp_token *tok
 			= cpp_get_token_with_location (pfile, &spelling);
 
-		      if (pfile->state.in_deferred_pragma
-			  || tok->type == CPP_PRAGMA_EOL)
-			cb (pfile, CPP_DO_token, data, tok, spelling);
-		      else
-			{
-			  /* Something wrong.  */
-			  // FIXME: don't explode!
-			  gcc_assert (false);
-			}
+		      gcc_assert (pfile->state.in_deferred_pragma
+				  || tok->type == CPP_PRAGMA_EOL);
+		      cb (pfile, CPP_DO_token, data, tok, spelling);
 		    }
 		  while (pfile->state.in_deferred_pragma);
+
 		  if (pfile->buffer->next_line < pfile->buffer->rlimit)
 		    cb (pfile, CPP_DO_location, data,
 			pfile->line_table->highest_line);
+
 		  pfile->mi_valid = false;
 		  goto restart;
 		}
