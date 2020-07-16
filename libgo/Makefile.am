@@ -1228,3 +1228,17 @@ distclean-local:
 	find . -name '*.lo.dep' -print | xargs rm -f
 
 include $(top_srcdir)/../multilib.am
+
+if LIBGO_IS_AIX
+ALL_LOCAL_DEPS = add-aix-fat-library
+else
+ALL_LOCAL_DEPS =
+endif
+all-local: $(ALL_LOCAL_DEPS)
+
+MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
+add-aix-fat-library: all-multi
+    @if test "$(MULTIBUILDTOP)" = ""; then \
+        ${AR} -X$(AIX_DEFAULT_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+        ${AR} -X$(AIX_DEFAULT_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+    fi
