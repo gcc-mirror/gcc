@@ -511,8 +511,17 @@ expand_intrinsic_vaarg (tree callexp)
     {
       parmn = CALL_EXPR_ARG (callexp, 1);
       STRIP_NOPS (parmn);
-      gcc_assert (TREE_CODE (parmn) == ADDR_EXPR);
-      parmn = TREE_OPERAND (parmn, 0);
+
+      /* The `ref' argument to va_arg is either an address or reference,
+	 get the value of it.  */
+      if (TREE_CODE (parmn) == PARM_DECL && POINTER_TYPE_P (TREE_TYPE (parmn)))
+	parmn = build_deref (parmn);
+      else
+	{
+	  gcc_assert (TREE_CODE (parmn) == ADDR_EXPR);
+	  parmn = TREE_OPERAND (parmn, 0);
+	}
+
       type = TREE_TYPE (parmn);
     }
 
@@ -546,10 +555,16 @@ expand_intrinsic_vastart (tree callexp)
   /* The va_list argument should already have its address taken.  The second
      argument, however, is inout and that needs to be fixed to prevent a
      warning.  Could be casting, so need to check type too?  */
-  gcc_assert (TREE_CODE (ap) == ADDR_EXPR && TREE_CODE (parmn) == ADDR_EXPR);
+  gcc_assert (TREE_CODE (ap) == ADDR_EXPR
+	      || (TREE_CODE (ap) == PARM_DECL
+		  && POINTER_TYPE_P (TREE_TYPE (ap))));
 
   /* Assuming nobody tries to change the return type.  */
-  parmn = TREE_OPERAND (parmn, 0);
+  if (TREE_CODE (parmn) != PARM_DECL)
+    {
+      gcc_assert (TREE_CODE (parmn) == ADDR_EXPR);
+      parmn = TREE_OPERAND (parmn, 0);
+    }
 
   return call_builtin_fn (callexp, BUILT_IN_VA_START, 2, ap, parmn);
 }
