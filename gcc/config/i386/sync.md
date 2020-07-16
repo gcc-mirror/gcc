@@ -629,6 +629,40 @@
 	      (set (reg:CCZ FLAGS_REG)
 		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])])
 
+(define_peephole2
+  [(parallel [(set (match_operand:SWI48 0 "register_operand")
+		   (match_operand:SWI48 1 "const_int_operand"))
+	      (clobber (reg:CC FLAGS_REG))])
+   (parallel [(set (match_operand:SWI 2 "register_operand")
+		   (unspec_volatile:SWI
+		     [(match_operand:SWI 3 "memory_operand")
+		      (match_dup 2)
+		      (match_operand:SWI 4 "register_operand")
+		      (match_operand:SI 5 "const_int_operand")]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 3)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])
+   (set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (match_dup 2)
+		     (match_dup 1)))]
+  "REGNO (operands[0]) == REGNO (operands[2])"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (clobber (reg:CC FLAGS_REG))])
+   (parallel [(set (match_dup 2)
+		   (unspec_volatile:SWI
+		     [(match_dup 3)
+		      (match_dup 2)
+		      (match_dup 4)
+		      (match_dup 5)]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 3)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])])
+
 ;; For operand 2 nonmemory_operand predicate is used instead of
 ;; register_operand to allow combiner to better optimize atomic
 ;; additions of constants.
