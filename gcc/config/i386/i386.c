@@ -6169,10 +6169,7 @@ ix86_compute_frame_layout (void)
     }
 
   frame->save_regs_using_mov
-    = (TARGET_PROLOGUE_USING_MOVE && m->use_fast_prologue_epilogue
-       /* If static stack checking is enabled and done with probes,
-	  the registers need to be saved before allocating the frame.  */
-       && flag_stack_check != STATIC_BUILTIN_STACK_CHECK);
+    = TARGET_PROLOGUE_USING_MOVE && m->use_fast_prologue_epilogue;
 
   /* Skip return address and error code in exception handler.  */
   offset = INCOMING_FRAME_SP_OFFSET;
@@ -6329,6 +6326,9 @@ ix86_compute_frame_layout (void)
 
   if ((!to_allocate && frame->nregs <= 1)
       || (TARGET_64BIT && to_allocate >= HOST_WIDE_INT_C (0x80000000))
+       /* If static stack checking is enabled and done with probes,
+	  the registers need to be saved before allocating the frame.  */
+      || flag_stack_check == STATIC_BUILTIN_STACK_CHECK
       /* If stack clash probing needs a loop, then it needs a
 	 scratch register.  But the returned register is only guaranteed
 	 to be safe to use after register saves are complete.  So if
@@ -7122,17 +7122,20 @@ release_scratch_register_on_entry (struct scratch_reg *sr, HOST_WIDE_INT offset,
 
 /* Emit code to adjust the stack pointer by SIZE bytes while probing it.
 
-   This differs from the next routine in that it tries hard to prevent
-   attacks that jump the stack guard.  Thus it is never allowed to allocate
-   more than PROBE_INTERVAL bytes of stack space without a suitable
-   probe.
+   If INT_REGISTERS_SAVED is true, then integer registers have already been
+   pushed on the stack.
 
-   INT_REGISTERS_SAVED is true if integer registers have already been
-   pushed on the stack.  */
+   If PROTECTION AREA is true, then probe PROBE_INTERVAL plus a small dope
+   beyond SIZE bytes.
+
+   This assumes no knowledge of the current probing state, i.e. it is never
+   allowed to allocate more than PROBE_INTERVAL bytes of stack space without
+   a suitable probe.  */
 
 static void
-ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
-					 const bool int_registers_saved)
+ix86_adjust_stack_and_probe (HOST_WIDE_INT size,
+			     const bool int_registers_saved,
+			     const bool protection_area)
 {
   struct machine_function *m = cfun->machine;
 
@@ -7194,10 +7197,17 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
       emit_insn (gen_blockage ());
     }
 
+  const HOST_WIDE_INT probe_interval = get_probe_interval ();
+  const int dope = 4 * UNITS_PER_WORD;
+
+  /* If there is protection area, take it into account in the size.  */
+  if (protection_area)
+    size += probe_interval + dope;
+
   /* If we allocate less than the size of the guard statically,
      then no probing is necessary, but we do need to allocate
      the stack.  */
-  if (size < (1 << param_stack_clash_protection_guard_size))
+  else if (size < (1 << param_stack_clash_protection_guard_size))
     {
       pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 			         GEN_INT (-size), -1,
@@ -7209,7 +7219,6 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
   /* We're allocating a large enough stack frame that we need to
      emit probes.  Either emit them inline or in a loop depending
      on the size.  */
-  HOST_WIDE_INT probe_interval = get_probe_interval ();
   if (size <= 4 * probe_interval)
     {
       HOST_WIDE_INT i;
@@ -7228,12 +7237,19 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
 	}
 
       /* We need to allocate space for the residual, but we do not need
-	 to probe the residual.  */
+	 to probe the residual...  */
       HOST_WIDE_INT residual = (i - probe_interval - size);
       if (residual)
-	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				   GEN_INT (residual), -1,
-				   m->fs.cfa_reg == stack_pointer_rtx);
+	{
+	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				     GEN_INT (residual), -1,
+				     m->fs.cfa_reg == stack_pointer_rtx);
+
+	  /* ...except if there is a protection area to maintain.  */
+	  if (protection_area)
+	    emit_stack_probe (stack_pointer_rtx);
+	}
+
       dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
     }
   else
@@ -7296,9 +7312,15 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
 	 is equal to ROUNDED_SIZE.  */
 
       if (size != rounded_size)
-	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				   GEN_INT (rounded_size - size), -1,
-				   m->fs.cfa_reg == stack_pointer_rtx);
+	{
+	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				     GEN_INT (rounded_size - size), -1,
+				     m->fs.cfa_reg == stack_pointer_rtx);
+
+	  if (protection_area)
+	    emit_stack_probe (stack_pointer_rtx);
+	}
+
       dump_stack_clash_frame_info (PROBE_LOOP, size != rounded_size);
 
       /* This does not deallocate the space reserved for the scratch
@@ -7306,176 +7328,11 @@ ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
       release_scratch_register_on_entry (&sr, size, false);
     }
 
-  /* Make sure nothing is scheduled before we are done.  */
-  emit_insn (gen_blockage ());
-}
-
-/* Emit code to adjust the stack pointer by SIZE bytes while probing it.
-
-   INT_REGISTERS_SAVED is true if integer registers have already been
-   pushed on the stack.  */
-
-static void
-ix86_adjust_stack_and_probe (HOST_WIDE_INT size,
-			     const bool int_registers_saved)
-{
-  /* We skip the probe for the first interval + a small dope of 4 words and
-     probe that many bytes past the specified size to maintain a protection
-     area at the botton of the stack.  */
-  const int dope = 4 * UNITS_PER_WORD;
-  rtx size_rtx = GEN_INT (size), last;
-
-  /* See if we have a constant small number of probes to generate.  If so,
-     that's the easy case.  The run-time loop is made up of 9 insns in the
-     generic case while the compile-time loop is made up of 3+2*(n-1) insns
-     for n # of intervals.  */
-  if (size <= 4 * get_probe_interval ())
-    {
-      HOST_WIDE_INT i, adjust;
-      bool first_probe = true;
-
-      /* Adjust SP and probe at PROBE_INTERVAL + N * PROBE_INTERVAL for
-	 values of N from 1 until it exceeds SIZE.  If only one probe is
-	 needed, this will not generate any code.  Then adjust and probe
-	 to PROBE_INTERVAL + SIZE.  */
-      for (i = get_probe_interval (); i < size; i += get_probe_interval ())
-	{
-	  if (first_probe)
-	    {
-	      adjust = 2 * get_probe_interval () + dope;
-	      first_probe = false;
-	    }
-	  else
-	    adjust = get_probe_interval ();
-
-	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				  plus_constant (Pmode, stack_pointer_rtx,
-						 -adjust)));
-	  emit_stack_probe (stack_pointer_rtx);
-	}
-
-      if (first_probe)
-	adjust = size + get_probe_interval () + dope;
-      else
-        adjust = size + get_probe_interval () - i;
-
-      emit_insn (gen_rtx_SET (stack_pointer_rtx,
-			      plus_constant (Pmode, stack_pointer_rtx,
-					     -adjust)));
-      emit_stack_probe (stack_pointer_rtx);
-
-      /* Adjust back to account for the additional first interval.  */
-      last = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (Pmode, stack_pointer_rtx,
-						    (get_probe_interval ()
-						     + dope))));
-    }
-
-  /* Otherwise, do the same as above, but in a loop.  Note that we must be
-     extra careful with variables wrapping around because we might be at
-     the very top (or the very bottom) of the address space and we have
-     to be able to handle this case properly; in particular, we use an
-     equality test for the loop condition.  */
-  else
-    {
-      /* We expect the GP registers to be saved when probes are used
-	 as the probing sequences might need a scratch register and
-	 the routine to allocate one assumes the integer registers
-	 have already been saved.  */
-      gcc_assert (int_registers_saved);
-
-      HOST_WIDE_INT rounded_size;
-      struct scratch_reg sr;
-
-      get_scratch_register_on_entry (&sr);
-
-      /* If we needed to save a register, then account for any space
-	 that was pushed (we are not going to pop the register when
-	 we do the restore).  */
-      if (sr.saved)
-	size -= UNITS_PER_WORD;
-
-      /* Step 1: round SIZE to the previous multiple of the interval.  */
-
-      rounded_size = ROUND_DOWN (size, get_probe_interval ());
-
-
-      /* Step 2: compute initial and final value of the loop counter.  */
-
-      /* SP = SP_0 + PROBE_INTERVAL.  */
-      emit_insn (gen_rtx_SET (stack_pointer_rtx,
-			      plus_constant (Pmode, stack_pointer_rtx,
-					     - (get_probe_interval () + dope))));
-
-      /* LAST_ADDR = SP_0 + PROBE_INTERVAL + ROUNDED_SIZE.  */
-      if (rounded_size <= (HOST_WIDE_INT_1 << 31))
-	emit_insn (gen_rtx_SET (sr.reg,
-				plus_constant (Pmode, stack_pointer_rtx,
-					       -rounded_size)));
-      else
-	{
-	  emit_move_insn (sr.reg, GEN_INT (-rounded_size));
-	  emit_insn (gen_rtx_SET (sr.reg,
-				  gen_rtx_PLUS (Pmode, sr.reg,
-						stack_pointer_rtx)));
-	}
-
-
-      /* Step 3: the loop
-
-	 do
-	   {
-	     SP = SP + PROBE_INTERVAL
-	     probe at SP
-	   }
-	 while (SP != LAST_ADDR)
-
-	 adjusts SP and probes to PROBE_INTERVAL + N * PROBE_INTERVAL for
-	 values of N from 1 until it is equal to ROUNDED_SIZE.  */
-
-      emit_insn (gen_adjust_stack_and_probe (Pmode, sr.reg, sr.reg, size_rtx));
-
-
-      /* Step 4: adjust SP and probe at PROBE_INTERVAL + SIZE if we cannot
-	 assert at compile-time that SIZE is equal to ROUNDED_SIZE.  */
-
-      if (size != rounded_size)
-	{
-	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
-			          plus_constant (Pmode, stack_pointer_rtx,
-						 rounded_size - size)));
-	  emit_stack_probe (stack_pointer_rtx);
-	}
-
-      /* Adjust back to account for the additional first interval.  */
-      last = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-				     plus_constant (Pmode, stack_pointer_rtx,
-						    (get_probe_interval ()
-						     + dope))));
-
-      /* This does not deallocate the space reserved for the scratch
-	 register.  That will be deallocated in the epilogue.  */
-      release_scratch_register_on_entry (&sr, size, false);
-    }
-
-  /* Even if the stack pointer isn't the CFA register, we need to correctly
-     describe the adjustments made to it, in particular differentiate the
-     frame-related ones from the frame-unrelated ones.  */
-  if (size > 0)
-    {
-      rtx expr = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
-      XVECEXP (expr, 0, 0)
-	= gen_rtx_SET (stack_pointer_rtx,
-		       plus_constant (Pmode, stack_pointer_rtx, -size));
-      XVECEXP (expr, 0, 1)
-	= gen_rtx_SET (stack_pointer_rtx,
-		       plus_constant (Pmode, stack_pointer_rtx,
-				      get_probe_interval () + dope + size));
-      add_reg_note (last, REG_FRAME_RELATED_EXPR, expr);
-      RTX_FRAME_RELATED_P (last) = 1;
-
-      cfun->machine->fs.sp_offset += size;
-    }
+  /* Adjust back to account for the protection area.  */
+  if (protection_area)
+    pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+			       GEN_INT (probe_interval + dope), -1,
+			       m->fs.cfa_reg == stack_pointer_rtx);
 
   /* Make sure nothing is scheduled before we are done.  */
   emit_insn (gen_blockage ());
@@ -7527,18 +7384,20 @@ static void
 ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
 			     const bool int_registers_saved)
 {
+  const HOST_WIDE_INT probe_interval = get_probe_interval ();
+
   /* See if we have a constant small number of probes to generate.  If so,
      that's the easy case.  The run-time loop is made up of 6 insns in the
      generic case while the compile-time loop is made up of n insns for n #
      of intervals.  */
-  if (size <= 6 * get_probe_interval ())
+  if (size <= 6 * probe_interval)
     {
       HOST_WIDE_INT i;
 
       /* Probe at FIRST + N * PROBE_INTERVAL for values of N from 1 until
 	 it exceeds SIZE.  If only one probe is needed, this will not
 	 generate any code.  Then probe at FIRST + SIZE.  */
-      for (i = get_probe_interval (); i < size; i += get_probe_interval ())
+      for (i = probe_interval; i < size; i += probe_interval)
 	emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
 					 -(first + i)));
 
@@ -7567,7 +7426,7 @@ ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
-      rounded_size = ROUND_DOWN (size, get_probe_interval ());
+      rounded_size = ROUND_DOWN (size, probe_interval);
 
 
       /* Step 2: compute initial and final value of the loop counter.  */
@@ -8324,27 +8183,33 @@ ix86_expand_prologue (void)
       sse_registers_saved = true;
     }
 
+  /* If stack clash protection is requested, then probe the stack.  */
+  if (allocate >= 0 && flag_stack_clash_protection)
+    {
+      ix86_adjust_stack_and_probe (allocate, int_registers_saved, false);
+      allocate = 0;
+    }
+
   /* The stack has already been decremented by the instruction calling us
      so probe if the size is non-negative to preserve the protection area.  */
-  if (allocate >= 0
-      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
-	  || flag_stack_clash_protection))
+  else if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     {
-      if (flag_stack_clash_protection)
+      const HOST_WIDE_INT probe_interval = get_probe_interval ();
+
+      if (STACK_CHECK_MOVING_SP)
 	{
-	  ix86_adjust_stack_and_probe_stack_clash (allocate,
-						   int_registers_saved);
-	  allocate = 0;
-	}
-      else if (STACK_CHECK_MOVING_SP)
-	{
-	  if (!(crtl->is_leaf && !cfun->calls_alloca
-		&& allocate <= get_probe_interval ()))
+	  if (crtl->is_leaf
+	      && !cfun->calls_alloca
+	      && allocate <= probe_interval)
+	    ;
+
+	  else
 	    {
-	      ix86_adjust_stack_and_probe (allocate, int_registers_saved);
+	      ix86_adjust_stack_and_probe (allocate, int_registers_saved, true);
 	      allocate = 0;
 	    }
 	}
+
       else
 	{
 	  HOST_WIDE_INT size = allocate;
@@ -8356,7 +8221,7 @@ ix86_expand_prologue (void)
 	    {
 	      if (crtl->is_leaf && !cfun->calls_alloca)
 		{
-		  if (size > get_probe_interval ())
+		  if (size > probe_interval)
 		    ix86_emit_probe_stack_range (0, size, int_registers_saved);
 		}
 	      else
@@ -8368,7 +8233,7 @@ ix86_expand_prologue (void)
 	    {
 	      if (crtl->is_leaf && !cfun->calls_alloca)
 		{
-		  if (size > get_probe_interval ()
+		  if (size > probe_interval
 		      && size > get_stack_check_protect ())
 		    ix86_emit_probe_stack_range (get_stack_check_protect (),
 						 (size
