@@ -5482,14 +5482,15 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
 		       /* Don't complain about an enclosing partial
 			  specialization.  */
 		       && parm_level == parms
-		       && TREE_CODE (decl) == TYPE_DECL
+		       && (TREE_CODE (decl) == TYPE_DECL || VAR_P (decl))
 		       && i < ntparms - 1
 		       && template_parameter_pack_p (TREE_VALUE (parm))
 		       /* A fixed parameter pack will be partially
 			  instantiated into a fixed length list.  */
 		       && !fixed_parameter_pack_p (TREE_VALUE (parm)))
 		{
-		  /* A primary class template can only have one
+		  /* A primary class template, primary variable template
+		     (DR 2032), or alias template can only have one
 		     parameter pack, at the end of the template
 		     parameter list.  */
 
