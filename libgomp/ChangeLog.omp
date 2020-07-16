@@ -1,3 +1,8 @@
+2020-07-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/firstprivate-int.f90: Use
+	highest available integer kind instead of assuming that kind=16 exists.
+
 2020-03-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/data-firstprivate-1.c: XFAIL
