@@ -110,7 +110,7 @@ struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
 
 static GTY (()) hash_table<coroutine_info_hasher> *coroutine_info_table;
 
-/* We will initialise state lazily.  */
+/* We will initialize state lazily.  */
 static bool coro_initialized = false;
 
 /* Return a hash value for the entry pointed to by INFO.
@@ -261,7 +261,7 @@ static GTY(()) tree void_coro_handle_type;
 static tree
 find_coro_traits_template_decl (location_t kw)
 {
-  /* If we are missing fundmental information, such as the traits, (or the
+  /* If we are missing fundamental information, such as the traits, (or the
      declaration found is not a type template), then don't emit an error for
      every keyword in a TU, just do it once.  */
   static bool traits_error_emitted = false;
@@ -1102,7 +1102,7 @@ finish_co_yield_expr (location_t kw, tree expr)
   return op;
 }
 
-/* Check and build a co_return statememt.
+/* Check and build a co_return statement.
    First that it's valid to have a co_return keyword here.
    If it is, then check and build the p.return_{void(),value(expr)}.
    These are built against a proxy for the promise, which will be filled
@@ -1519,7 +1519,7 @@ struct coro_aw_data
   unsigned index;  /* This is our current resume index.  */
 };
 
-/* Lighweight search for the first await expression in tree-walk order.
+/* Lightweight search for the first await expression in tree-walk order.
    returns:
      The first await expression found in STMT.
      NULL_TREE if there are none.
@@ -1538,13 +1538,13 @@ co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   return NULL_TREE;
 }
 
-/* Starting with a statment:
+/* Starting with a statement:
 
    stmt => some tree containing one or more await expressions.
 
    We replace the statement with:
    <STATEMENT_LIST> {
-      initialise awaitable
+      initialize awaitable
       if (!ready)
 	{
 	  suspension context.
@@ -1731,7 +1731,7 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
 
   *await_expr = resume_call; /* Replace the co_await expr with its result.  */
   append_to_statement_list_force (saved_statement, &stmt_list);
-  /* Get a pointer to the revised statment.  */
+  /* Get a pointer to the revised statement.  */
   tree *revised = tsi_stmt_ptr (tsi_last (stmt_list));
   if (needs_dtor)
     {
@@ -2161,7 +2161,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	  bool existed;
 	  param_info &parm = param_uses->get_or_insert (arg, &existed);
 	  if (!parm.body_uses)
-	    continue; /* Wasn't used in the orignal function body.  */
+	    continue; /* Wasn't used in the original function body.  */
 
 	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
 					/*protect=*/1, /*want_type=*/0,
@@ -3231,7 +3231,7 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 	       if (cond) then stmt1 else stmt2.  */
 	    tree if_stmt = *stmt;
 	    /* We treat the condition as if it was a stand-alone statement,
-	       to see if there are any await expressions which will be analysed
+	       to see if there are any await expressions which will be analyzed
 	       and registered.  */
 	    if ((res = cp_walk_tree (&IF_COND (if_stmt),
 		analyze_expression_awaits, d, &visited)))
@@ -3885,7 +3885,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   (void) coro_make_frame_entry (&field_list, "__self_h", handle_type, fn_start);
 
   /* Now add in fields for function params (if there are any).
-     We do not attempt elision of copies at this stage, we do analyse the
+     We do not attempt elision of copies at this stage, we do analyze the
      uses and build worklists to replace those when the state machine is
      lowered.  */
 
@@ -4018,7 +4018,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   add_decl_expr (coro_fp);
 
   /* The CO_FRAME internal function is a mechanism to allow the middle end
-     to adjust the allocation in response to optimisations.  We provide the
+     to adjust the allocation in response to optimizations.  We provide the
      current conservative estimate of the frame size (as per the current)
      computed layout.  */
   tree frame_size = TYPE_SIZE_UNIT (coro_frame_type);
