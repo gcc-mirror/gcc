@@ -3148,7 +3148,9 @@ DEFHOOK
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is\n\
 smaller than @var{inprec}) by merely operating on it as if it had only\n\
 @var{outprec} bits.  The default returns true unconditionally, which\n\
-is correct for most machines.\n\
+is correct for most machines.  When @code{TARGET_TRULY_NOOP_TRUNCATION}\n\
+returns false, the machine description should provide a @code{trunc}\n\
+optab to specify the RTL that performs the required truncation.\n\
 \n\
 If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
 suboptimal code can result if this hook returns true for the corresponding\n\

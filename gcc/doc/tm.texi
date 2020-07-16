@@ -11122,7 +11122,9 @@ This hook returns true if it is safe to ``convert'' a value of
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is
 smaller than @var{inprec}) by merely operating on it as if it had only
 @var{outprec} bits.  The default returns true unconditionally, which
-is correct for most machines.
+is correct for most machines.  When @code{TARGET_TRULY_NOOP_TRUNCATION}
+returns false, the machine description should provide a @code{trunc}
+optab to specify the RTL that performs the required truncation.
 
 If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,
 suboptimal code can result if this hook returns true for the corresponding
