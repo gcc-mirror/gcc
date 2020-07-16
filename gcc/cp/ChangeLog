@@ -1,3 +1,19 @@
+2020-07-15  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_declaration): Avoid copying tokens.
+	(cp_parser_block_declaration): RAII token pointer.
+
+2020-07-15  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_skip_to_closing_parenthesis_1): Deal with
+	meeting a deferred pragma.
+	(cp_parser_skip_to_end_of_statement): Likewise.
+	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+	(cp_parser_skip_to_pragma_eol): We should never meet EOF.
+	(cp_parser_omp_declare_simd): Likewise.
+	(cp_parser_omp_declare_reduction, cp_parser_oacc_routine)
+	(pragma_lex): Likewise.
+
 2020-07-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95789

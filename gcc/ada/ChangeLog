@@ -1,3 +1,261 @@
+2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Find_Overlaid_Entity): Fix style in comment.
+	(Note_Possible_Modification): Simplify repeated calls to Ekind.
+
+2020-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Flatten): Adjust description.
+	(Convert_To_Positional): Remove obsolete ??? comment and use
+	Compile_Time_Known_Value in the final test.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): Extended to
+	recognzize the similar Iterated_Element_Association. This node
+	is only generated when an explicit Key_Expression is given.
+	Otherwise the distinction between the two iterated forms is done
+	during semantic analysis.
+	* sinfo.ads: New node N_Iterated_Element_Association, for
+	Ada202x container aggregates.  New field Key_Expression.
+	* sinfo.adb: Subprograms for new node and newn field.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Handle
+	the case where the Iteration_Scheme is an
+	Iterator_Specification.
+	* exp_aggr.adb (Wxpand_Iterated_Component): Handle a component
+	with an Iterated_Component_Association, generate proper loop
+	using given Iterator_Specification.
+	* exp_util.adb (Insert_Axtions): Handle new node as other
+	aggregate components.
+	* sem.adb, sprint.adb: Handle new node.
+	* tbuild.adb (Make_Implicit_Loop_Statement): Handle properly a
+	loop with an Iterator_ specification.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-stposu.adb (Allocate_Any_Controlled): Fix logic in
+	lock/unlock.
+
+2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): Return True on
+	N_Target_Name.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Add proper
+	handling of Aspect_Predicate_Failure, consistent with
+	Check_Aspect_At_Freeze_Point.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_Too_Late): Mention -gnat2020 switch
+	in error message.
+
+2020-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Delayed Freezing and Elaboration): Adjust description.
+	* freeze.adb (Freeze_Object_Declaration): Likewise.
+	* sem_ch3.adb (Delayed_Aspect_Present): Likewise.  Do not return
+	true for Alignment.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Do not always delay
+	for Alignment.  Moreover, for Alignment and various Size aspects,
+	do not delay if the expression is an attribute whose prefix is the
+	Standard package.
+
+2020-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Requires_Atomic_Or_Volatile_Copy): Return false
+	inside an initialization procedure.
+
+2020-07-15  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_util.adb (Is_Renaming): Add ekind checks.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Remove doc on obsolete
+	tools.
+	* gnat_ugn.texi: Regenerate.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Protect against null
+	entity.  Add proper tag for -gnatwr warning.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Analyze_Procedure_Call): Detect use of operators
+	in a procedure call.
+	* sem_util.adb: Minor edit.
+
+2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Delta_Or_Update): Apply scalar
+	range checks against the base type of an index type, not against
+	the index type itself.
+
+2020-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Delayed Freezing and Elaboration): Minor tweaks.
+	Document the discrepancy between the aspect and the non-aspect
+	cases for alignment settings in object declarations.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Remove warning in expander,
+	replaced by a corresponding error in sem_ch13.adb. Replace
+	RTE_Available by RTU_Loaded to avoid adding unnecessary
+	dependencies.
+	* sem_ch13.adb (Associate_Storage_Pool): New procedure.
+	(Analyze_Attribute_Definition_Clause
+	[Attribute_Simple_Storage_Pool| Attribute_Storage_Pool]): Call
+	Associate_Storage_Pool to add proper legality checks on
+	subpools.
+
+2020-07-15  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-cbdlli.adb, libgnat/a-cbdlli.ads,
+	libgnat/a-cbhama.adb, libgnat/a-cbhama.ads,
+	libgnat/a-cbhase.adb, libgnat/a-cbhase.ads,
+	libgnat/a-cbmutr.adb, libgnat/a-cbmutr.ads,
+	libgnat/a-cborma.adb, libgnat/a-cborma.ads,
+	libgnat/a-cborse.adb, libgnat/a-cborse.ads,
+	libgnat/a-cbprqu.adb, libgnat/a-cbprqu.ads,
+	libgnat/a-cbsyqu.adb, libgnat/a-cbsyqu.ads,
+	libgnat/a-cdlili.adb, libgnat/a-cdlili.ads,
+	libgnat/a-cidlli.adb, libgnat/a-cidlli.ads,
+	libgnat/a-cihama.adb, libgnat/a-cihama.ads,
+	libgnat/a-cihase.adb, libgnat/a-cihase.ads,
+	libgnat/a-cimutr.adb, libgnat/a-cimutr.ads,
+	libgnat/a-ciorma.adb, libgnat/a-ciorma.ads,
+	libgnat/a-ciormu.adb, libgnat/a-ciormu.ads,
+	libgnat/a-ciorse.adb, libgnat/a-ciorse.ads,
+	libgnat/a-cohama.adb, libgnat/a-cohama.ads,
+	libgnat/a-cohase.adb, libgnat/a-cohase.ads,
+	libgnat/a-coinve.adb, libgnat/a-coinve.ads,
+	libgnat/a-comutr.adb, libgnat/a-comutr.ads,
+	libgnat/a-convec.adb, libgnat/a-convec.ads,
+	libgnat/a-coorma.adb, libgnat/a-coorma.ads,
+	libgnat/a-coormu.adb, libgnat/a-coormu.ads,
+	libgnat/a-coorse.adb, libgnat/a-coorse.ads: Add SPARK_Mode =>
+	Off.
+
+2020-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Delayed_Aspect_Present): Fix oversight in loop.
+	* freeze.adb (Freeze_Object_Declaration): Use Declaration_Node
+	instead of Parent for the sake of consistency.
+
+2020-07-15  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Resolve overloaded
+	N_Selected_Component prefix of 'Access. Required to handle
+	overloaded prefixed view of protected subprograms.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/about_this_guide.rst: Remove old section and
+	update for Ada 202x.
+	* doc/gnat_ugn/getting_started_with_gnat.rst: Add a system
+	requirements section. Remove obsolete section and minimal
+	rewording on the getting started section.
+	* gnat_ugn.texi: Regenerate.
+
+2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Use short-circuit operator
+	(style).
+	* sem_res.adb (Resolve_Indexed_Component): Fix style in comment.
+	* sem_util.adb (Is_Effectively_Volatile_Object): Handle slices
+	just like indexed components; handle qualified expressions and
+	type conversions lie in Is_OK_Volatile_Context.
+	(Is_OK_Volatile_Context): Handle qualified expressions just like
+	type conversions.
+
+2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Atomic_Components): Simplify with Ekind_In.
+	(Complex_Representation): Fix type of E_Id, which just like when
+	for pragma Atomic_Components will hold an N_Identifier node, not
+	an entity.
+	* sem_util.adb (Is_Effectively_Volatile): Refactor to avoid
+	unnecessary computation.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* inline.adb, inline.ads
+	(Inline_Static_Expression_Function_Call): Renamed
+	Inline_Static_Function_Call.
+	* sem_ch13.adb (Analyze_Aspect_Static): Allow static intrinsic
+	imported functions under -gnatX.
+	* sem_util.ads, sem_util.adb (Is_Static_Expression_Function):
+	Renamed Is_Static_Function.
+	(Is_Static_Expression_Function_Call): Renamed
+	Is_Static_Function_Call.
+	* sem_ch6.adb, sem_elab.adb, sem_res.adb: Update calls to
+	Is_Static_Function*.
+	* sem_eval.adb (Fold_Dummy, Eval_Intrinsic_Call, Fold_Shift):
+	New.
+	(Eval_Call): Add support for intrinsic calls, code refactoring.
+	(Eval_Entity_Name): Code refactoring.
+	(Eval_Logical_Op): Update comment.
+	(Eval_Shift): Call Fold_Shift. Update comments.
+	* par-prag.adb (Par [Pragma_Extensions_Allowed]): Set
+	Ada_Version to Ada_Version_Type'Last to handle
+	Extensions_Allowed (On) consistently.
+	* opt.ads (Extensions_Allowed): Update documentation.
+	* sem_attr.adb: Update comment.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update
+	documentation of Extensions_Allowed.
+	* gnat_rm.texi: Regenerate.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Ensure
+	Typ is never accessed uninitialized.
+
+2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Fix typo.
+	* gnat_rm.texi: Regenerate.
+	* libgnat/s-secsta.ads (Memory_Alignment): Likewise.
+
+2020-07-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb: Add a comma and fix a typo (machinary =>
+	machinery) in comment.
+	* exp_aggr.adb: Reformat, fix capitalization, and add a couple
+	of commas in a comment. Adjust columns in several code
+	fragments.
+	* sem_aggr.adb: Reformat and add a comma in a comment.
+
+2020-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): Use the Sloc of
+	the delay statement in the expansion.
+
+2020-07-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): New
+	procedure, internal to Resolve_Container_Aggregate, to complete
+	semantic analysis of Iterated_Component_Associations.
+	* exp_aggr.adb (Expand_Iterated_Component): New procedure,
+	internal to Expand_Container_Aggregate, to expand the construct
+	into an implicit loop that performs individual insertions into
+	the target aggregate.
+
+2020-07-15  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_Allocator): Normalize
+	the associated node for internally generated objects to be like
+	their SOAAT counter-parts.
+
+2020-07-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/g-socket.adb (Wait_On_Socket): Fix potentially
+	uninitialized variable.
+
 2020-07-10  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch8.adb (Find_Direct_Name): Fix code to match the comment.

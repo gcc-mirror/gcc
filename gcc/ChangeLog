@@ -1,3 +1,58 @@
+2020-07-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95355
+	* config/i386/sync.md
+	(peephole2 to remove unneded compare after CMPXCHG): New pattern.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/96198
+	* omp-general.h (struct omp_for_data): Rename min_inner_iterations
+	member to first_inner_iterations, adjust comment.
+	* omp-general.c (omp_extract_for_data): Adjust for the above change.
+	Always use n1first and n2first to compute it, rather than depending
+	on single_nonrect_cond_code.  Similarly, always compute factor
+	as (m2 - m1) * outer_step / inner_step rather than sometimes m1 - m2
+	depending on single_nonrect_cond_code.
+	* omp-expand.c (expand_omp_for_init_vars): Rename min_inner_iterations
+	to first_inner_iterations and min_inner_iterationsd to
+	first_inner_iterationsd.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96174
+	* config/i386/avx512fintrin.h (_mm512_cmpeq_pd_mask,
+	_mm512_mask_cmpeq_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_mask_cmplt_pd_mask, _mm512_cmple_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_cmpunord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask, _mm512_cmpneq_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_cmpnlt_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_mask_cmpnle_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_mask_cmpord_pd_mask, _mm512_cmpeq_ps_mask,
+	_mm512_mask_cmpeq_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_mask_cmplt_ps_mask, _mm512_cmple_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_cmpunord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask, _mm512_cmpneq_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_cmpnlt_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_mask_cmpnle_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_mask_cmpord_ps_mask): Move outside of __OPTIMIZE__ guarded
+	section.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96176
+	* builtins.c: Include gimple-ssa.h, tree-ssa-live.h and
+	tree-outof-ssa.h.
+	(expand_expr_force_mode): If exp is a SSA_NAME with different mode
+	from MODE and get_gimple_for_ssa_name is a cast from MODE, use the
+	cast's rhs.
+
+2020-07-15  Jiufu Guo   <guojiufu@cn.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_loop_unroll_adjust): Refine hook.
+
 2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (rotldi3_insert_sf): Add TARGET_POWERPC64
