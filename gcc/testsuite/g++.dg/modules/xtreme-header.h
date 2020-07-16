@@ -1,8 +1,9 @@
 // All the headers!
 
 #if __cplusplus > 201703L
-// FIXME: ranges uses 'inline auto foo = []{};', which we don't cope
-// with see g++.dg/modules/lambda-2
+// FIXME: if we include everything, something goes wrong with location
+// information.  We used to not handle lambdas attached to global
+// vars, and this is a convienient flag to stop including everything.
 #define NO_ASSOCIATED_LAMBDA 1
 #endif
 
