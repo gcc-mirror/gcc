@@ -650,7 +650,8 @@ package body Sem_Attr is
             --  tracked value. If the scope is a loop or block, indicate that
             --  value tracking is disabled for the enclosing subprogram.
 
-            function Get_Kind (E : Entity_Id) return Entity_Kind;
+            function Get_Convention (E : Entity_Id) return Convention_Id;
+            function Get_Kind       (E : Entity_Id) return Entity_Kind;
             --  Distinguish between access to regular/protected subprograms
 
             ------------------------
@@ -666,13 +667,33 @@ package body Sem_Attr is
                end if;
             end Check_Local_Access;
 
+            --------------------
+            -- Get_Convention --
+            --------------------
+
+            function Get_Convention (E : Entity_Id) return Convention_Id is
+            begin
+               --  Restrict handling by_protected_procedure access subprograms
+               --  to source entities; required to avoid building access to
+               --  subprogram types with convention protected when building
+               --  dispatch tables.
+
+               if Comes_From_Source (P)
+                 and then Is_By_Protected_Procedure (E)
+               then
+                  return Convention_Protected;
+               else
+                  return Convention (E);
+               end if;
+            end Get_Convention;
+
             --------------
             -- Get_Kind --
             --------------
 
             function Get_Kind (E : Entity_Id) return Entity_Kind is
             begin
-               if Convention (E) = Convention_Protected then
+               if Get_Convention (E) = Convention_Protected then
                   return E_Access_Protected_Subprogram_Type;
                else
                   return E_Access_Subprogram_Type;
@@ -717,7 +738,7 @@ package body Sem_Attr is
                   Acc_Type := Create_Itype (Get_Kind (Entity (P)), N);
                   Set_Is_Public (Acc_Type, False);
                   Set_Etype (Acc_Type, Acc_Type);
-                  Set_Convention (Acc_Type, Convention (Entity (P)));
+                  Set_Convention (Acc_Type, Get_Convention (Entity (P)));
                   Set_Directly_Designated_Type (Acc_Type, Entity (P));
                   Set_Etype (N, Acc_Type);
                   Freeze_Before (N, Acc_Type);
@@ -732,7 +753,7 @@ package body Sem_Attr is
                      Acc_Type := Create_Itype (Get_Kind (It.Nam), N);
                      Set_Is_Public (Acc_Type, False);
                      Set_Etype (Acc_Type, Acc_Type);
-                     Set_Convention (Acc_Type, Convention (It.Nam));
+                     Set_Convention (Acc_Type, Get_Convention (It.Nam));
                      Set_Directly_Designated_Type (Acc_Type, It.Nam);
                      Add_One_Interp (N, Acc_Type, Acc_Type);
                      Freeze_Before (N, Acc_Type);

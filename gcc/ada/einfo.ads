@@ -7624,6 +7624,7 @@ package Einfo is
    function Is_Integer_Type                     (Id : E) return B;
    function Is_Limited_Record                   (Id : E) return B;
    function Is_Modular_Integer_Type             (Id : E) return B;
+   function Is_Named_Access_Type                (Id : E) return B;
    function Is_Named_Number                     (Id : E) return B;
    function Is_Numeric_Type                     (Id : E) return B;
    function Is_Object                           (Id : E) return B;

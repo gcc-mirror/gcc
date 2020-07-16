@@ -335,6 +335,11 @@ package Tbuild is
    --  fixed-point small is called typ_SMALL where typ is the name of the
    --  fixed-point type (as passed in Related_Id), and Suffix is "SMALL".
 
+   function Sel_Comp (Pre, Sel : String; Loc : Source_Ptr) return Node_Id;
+   function Sel_Comp (Pre : Node_Id; Sel : String) return Node_Id;
+   --  Create a selected component of the form Pre.Sel; that is, Pre is the
+   --  prefix, and Sel is the selector name.
+
    function OK_Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
    --  Like Convert_To, except that a conversion node is always generated, and
    --  the Conversion_OK flag is set on this conversion node.

@@ -33,31 +33,53 @@
 #include <libgen.h>
 #include "collect-utils.h"
 #include "gomp-constants.h"
+#include "simple-object.h"
+#include "elf.h"
+
+/* These probably won't be in elf.h for a while.  */
+#ifndef EM_AMDGPU
+#define EM_AMDGPU		0xe0;
+
+#define ELFOSABI_AMDGPU_HSA	 64
+#define ELFABIVERSION_AMDGPU_HSA 1
+
+#define EF_AMDGPU_MACH_AMDGCN_GFX803 0x2a
+#define EF_AMDGPU_MACH_AMDGCN_GFX900 0x2c
+#define EF_AMDGPU_MACH_AMDGCN_GFX906 0x2f
+
+#define R_AMDGPU_NONE		0
+#define R_AMDGPU_ABS32_LO	1	/* (S + A) & 0xFFFFFFFF  */
+#define R_AMDGPU_ABS32_HI	2	/* (S + A) >> 32  */
+#define R_AMDGPU_ABS64		3	/* S + A  */
+#define R_AMDGPU_REL32		4	/* S + A - P  */
+#define R_AMDGPU_REL64		5	/* S + A - P  */
+#define R_AMDGPU_ABS32		6	/* S + A  */
+#define R_AMDGPU_GOTPCREL	7	/* G + GOT + A - P  */
+#define R_AMDGPU_GOTPCREL32_LO	8	/* (G + GOT + A - P) & 0xFFFFFFFF  */
+#define R_AMDGPU_GOTPCREL32_HI	9	/* (G + GOT + A - P) >> 32  */
+#define R_AMDGPU_REL32_LO	10	/* (S + A - P) & 0xFFFFFFFF  */
+#define R_AMDGPU_REL32_HI	11	/* (S + A - P) >> 32  */
+#define reserved		12
+#define R_AMDGPU_RELATIVE64	13	/* B + A  */
+#endif
 
 const char tool_name[] = "gcn mkoffload";
 
-/* Files to unlink.  */
-static const char *gcn_s1_name;
-static const char *gcn_s2_name;
-static const char *gcn_o_name;
-static const char *gcn_cfile_name;
 static const char *gcn_dumpbase;
+static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
+uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
 
 /* Delete tempfiles.  */
 
 void
 tool_cleanup (bool from_signal ATTRIBUTE_UNUSED)
 {
-  if (gcn_cfile_name)
-    maybe_unlink (gcn_cfile_name);
-  if (gcn_s1_name)
-    maybe_unlink (gcn_s1_name);
-  if (gcn_s2_name)
-    maybe_unlink (gcn_s2_name);
-  if (gcn_o_name)
-    maybe_unlink (gcn_o_name);
+  obstack_ptr_grow (&files_to_cleanup, NULL);
+  const char **files = XOBFINISH (&files_to_cleanup, const char **);
+  for (int i = 0; files[i]; i++)
+    maybe_unlink (files[i]);
 }
 
 static void
@@ -202,6 +224,180 @@ access_check (const char *name, int mode)
     }
 
   return access (name, mode);
+}
+
+/* Copy the early-debug-info from the incoming LTO object to a new object
+   that will be linked into the output HSACO file.  The host relocations
+   must be translated into GCN relocations, and any global undefined symbols
+   must be weakened (so as not to have the debug info try to pull in host
+   junk).
+
+   Returns true if the file was created, false otherwise.  */
+
+static bool
+copy_early_debug_info (const char *infile, const char *outfile)
+{
+  const char *errmsg;
+  int err;
+
+  /* The simple_object code can handle extracting the debug sections.
+     This code is based on that in lto-wrapper.c.  */
+  int infd = open (infile, O_RDONLY | O_BINARY);
+  if (infd == -1)
+    return false;
+  simple_object_read *inobj = simple_object_start_read (infd, 0,
+							"__GNU_LTO",
+							&errmsg, &err);
+  if (!inobj)
+    return false;
+
+  off_t off, len;
+  if (simple_object_find_section (inobj, ".gnu.debuglto_.debug_info",
+				  &off, &len, &errmsg, &err) != 1)
+    {
+      simple_object_release_read (inobj);
+      close (infd);
+      return false;
+    }
+
+  errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, true);
+  if (errmsg)
+    {
+      unlink_if_ordinary (outfile);
+      return false;
+    }
+
+  simple_object_release_read (inobj);
+  close (infd);
+
+  /* Open the file we just created for some adjustments.
+     The simple_object code can't do this, so we do it manually.  */
+  FILE *outfd = fopen (outfile, "r+b");
+  if (!outfd)
+    return false;
+
+  Elf64_Ehdr ehdr;
+  if (fread (&ehdr, sizeof (ehdr), 1, outfd) != 1)
+    {
+      fclose (outfd);
+      return true;
+    }
+
+  /* We only support host relocations of x86_64, for now.  */
+  gcc_assert (ehdr.e_machine == EM_X86_64);
+
+  /* Patch the correct elf architecture flag into the file.  */
+  ehdr.e_ident[7] = ELFOSABI_AMDGPU_HSA;
+  ehdr.e_ident[8] = ELFABIVERSION_AMDGPU_HSA;
+  ehdr.e_type = ET_REL;
+  ehdr.e_machine = EM_AMDGPU;
+  ehdr.e_flags = elf_arch;
+
+  /* Load the section headers so we can walk them later.  */
+  Elf64_Shdr *sections = (Elf64_Shdr *)xmalloc (sizeof (Elf64_Shdr)
+						* ehdr.e_shnum);
+  if (fseek (outfd, ehdr.e_shoff, SEEK_SET) == -1
+      || fread (sections, sizeof (Elf64_Shdr), ehdr.e_shnum,
+		outfd) != ehdr.e_shnum)
+    {
+      free (sections);
+      fclose (outfd);
+      return true;
+    }
+
+  /* Convert the host relocations to target relocations.  */
+  for (int i = 0; i < ehdr.e_shnum; i++)
+    {
+      if (sections[i].sh_type != SHT_RELA)
+	continue;
+
+      char *data = (char *)xmalloc (sections[i].sh_size);
+      if (fseek (outfd, sections[i].sh_offset, SEEK_SET) == -1
+	  || fread (data, sections[i].sh_size, 1, outfd) != 1)
+	{
+	  free (data);
+	  continue;
+	}
+
+      for (size_t offset = 0;
+	   offset < sections[i].sh_size;
+	   offset += sections[i].sh_entsize)
+	{
+	  Elf64_Rela *reloc = (Elf64_Rela *) (data + offset);
+
+	  /* Map the host relocations to GCN relocations.
+	     Only relocations that can appear in DWARF need be handled.  */
+	  switch (ELF64_R_TYPE (reloc->r_info))
+	    {
+	    case R_X86_64_32:
+	    case R_X86_64_32S:
+	      reloc->r_info = R_AMDGPU_ABS32;
+	      break;
+	    case R_X86_64_PC32:
+	      reloc->r_info = R_AMDGPU_REL32;
+	      break;
+	    case R_X86_64_PC64:
+	      reloc->r_info = R_AMDGPU_REL64;
+	      break;
+	    case R_X86_64_64:
+	      reloc->r_info = R_AMDGPU_ABS64;
+	      break;
+	    case R_X86_64_RELATIVE:
+	      reloc->r_info = R_AMDGPU_RELATIVE64;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+
+      /* Write back our relocation changes.  */
+      if (fseek (outfd, sections[i].sh_offset, SEEK_SET) != -1)
+	fwrite (data, sections[i].sh_size, 1, outfd);
+
+      free (data);
+    }
+
+  /* Weaken any global undefined symbols that would pull in unwanted
+     objects.  */
+  for (int i = 0; i < ehdr.e_shnum; i++)
+    {
+      if (sections[i].sh_type != SHT_SYMTAB)
+	continue;
+
+      char *data = (char *)xmalloc (sections[i].sh_size);
+      if (fseek (outfd, sections[i].sh_offset, SEEK_SET) == -1
+	  || fread (data, sections[i].sh_size, 1, outfd) != 1)
+	{
+	  free (data);
+	  continue;
+	}
+
+      for (size_t offset = 0;
+	   offset < sections[i].sh_size;
+	   offset += sections[i].sh_entsize)
+	{
+	  Elf64_Sym *sym = (Elf64_Sym *) (data + offset);
+	  int type = ELF64_ST_TYPE (sym->st_info);
+	  int bind = ELF64_ST_BIND (sym->st_info);
+
+	  if (bind == STB_GLOBAL && sym->st_shndx == 0)
+	    sym->st_info = ELF64_ST_INFO (STB_WEAK, type);
+	}
+
+      /* Write back our symbol changes.  */
+      if (fseek (outfd, sections[i].sh_offset, SEEK_SET) != -1)
+	fwrite (data, sections[i].sh_size, 1, outfd);
+
+      free (data);
+    }
+  free (sections);
+
+  /* Write back our header changes.  */
+  rewind (outfd);
+  fwrite (&ehdr, sizeof (ehdr), 1, outfd);
+
+  fclose (outfd);
+  return true;
 }
 
 /* Parse an input assembler file, extract the offload tables etc.,
@@ -538,9 +734,15 @@ main (int argc, char **argv)
   FILE *cfile = stdout;
   const char *outname = 0;
 
+  const char *gcn_s1_name;
+  const char *gcn_s2_name;
+  const char *gcn_o_name;
+  const char *gcn_cfile_name;
+
   progname = "mkoffload";
   diagnostic_initialize (global_dc, 0);
 
+  obstack_init (&files_to_cleanup);
   if (atexit (mkoffload_cleanup) != 0)
     fatal_error (input_location, "atexit failed");
 
@@ -632,7 +834,14 @@ main (int argc, char **argv)
       else if (strcmp (argv[i], "-dumpbase") == 0
 	       && i + 1 < argc)
 	dumppfx = argv[++i];
+      else if (strcmp (argv[i], "-march=fiji") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;
+      else if (strcmp (argv[i], "-march=gfx900") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;
+      else if (strcmp (argv[i], "-march=gfx906") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX906;
     }
+
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
 
@@ -693,6 +902,10 @@ main (int argc, char **argv)
       gcn_o_name = make_temp_file (".mkoffload.hsaco");
       gcn_cfile_name = make_temp_file (".c");
     }
+  obstack_ptr_grow (&files_to_cleanup, gcn_s1_name);
+  obstack_ptr_grow (&files_to_cleanup, gcn_s2_name);
+  obstack_ptr_grow (&files_to_cleanup, gcn_o_name);
+  obstack_ptr_grow (&files_to_cleanup, gcn_cfile_name);
 
   obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
   obstack_ptr_grow (&cc_argv_obstack, "");
@@ -710,6 +923,39 @@ main (int argc, char **argv)
   struct obstack ld_argv_obstack;
   obstack_init (&ld_argv_obstack);
   obstack_ptr_grow (&ld_argv_obstack, driver);
+
+  /* Extract early-debug information from the input objects.
+     This loop finds all the inputs that end ".o" and aren't the output.  */
+  int dbgcount = 0;
+  for (int ix = 1; ix != argc; ix++)
+    {
+      if (!strcmp (argv[ix], "-o") && ix + 1 != argc)
+	++ix;
+      else
+	{
+	  if (strcmp (argv[ix] + strlen(argv[ix]) - 2, ".o") == 0)
+	    {
+	      char *dbgobj;
+	      if (save_temps)
+		{
+		  char buf[10];
+		  sprintf (buf, "%d", dbgcount++);
+		  dbgobj = concat (dumppfx, ".mkoffload.dbg", buf, ".o", NULL);
+		}
+	      else
+		dbgobj = make_temp_file (".mkoffload.dbg.o");
+
+	      /* If the copy fails then just ignore it.  */
+	      if (copy_early_debug_info (argv[ix], dbgobj))
+		{
+		  obstack_ptr_grow (&ld_argv_obstack, dbgobj);
+		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
+		}
+	      else
+		free (dbgobj);
+	    }
+	}
+    }
   obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
   obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
 

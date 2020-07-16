@@ -11305,6 +11305,11 @@ package body Exp_Ch4 is
       --  True iff Present (Effective_Extra_Accessibility (Id)) successfully
       --  evaluates to True.
 
+      function Statically_Deeper_Relation_Applies (Targ_Typ : Entity_Id)
+        return Boolean;
+      --  Given a target type for a conversion, determine whether the
+      --  statically deeper accessibility rules apply to it.
+
       --------------------------
       -- Discrete_Range_Check --
       --------------------------
@@ -11887,6 +11892,25 @@ package body Exp_Ch4 is
          end if;
       end Has_Extra_Accessibility;
 
+      ----------------------------------------
+      -- Statically_Deeper_Relation_Applies --
+      ----------------------------------------
+
+      function Statically_Deeper_Relation_Applies (Targ_Typ : Entity_Id)
+        return Boolean
+      is
+      begin
+         --  The case where the target type is an anonymous access type is
+         --  ignored since they have different semantics and get covered by
+         --  various runtime checks depending on context.
+
+         --  Note, the current implementation of this predicate is incomplete
+         --  and doesn't fully reflect the rules given in RM 3.10.2 (19) and
+         --  (19.1) ???
+
+         return Ekind (Targ_Typ) /= E_Anonymous_Access_Type;
+      end Statically_Deeper_Relation_Applies;
+
    --  Start of processing for Expand_N_Type_Conversion
 
    begin
@@ -11951,6 +11975,39 @@ package body Exp_Ch4 is
          Remove_Side_Effects (N);
          Insert_Action (N, Make_Invariant_Call (Duplicate_Subexpr (N)));
          goto Done;
+
+      --  AI12-0042: For a view conversion to a class-wide type occurring
+      --  within the immediate scope of T, from a specific type that is
+      --  a descendant of T (including T itself), an invariant check is
+      --  performed on the part of the object that is of type T. (We don't
+      --  need to explicitly check for the operand type being a descendant,
+      --  just that it's a specific type, because the conversion would be
+      --  illegal if it's specific and not a descendant -- downward conversion
+      --  is not allowed).
+
+      elsif Is_Class_Wide_Type (Target_Type)
+        and then not Is_Class_Wide_Type (Etype (Expression (N)))
+        and then Present (Invariant_Procedure (Root_Type (Target_Type)))
+        and then Comes_From_Source (N)
+        and then Within_Scope (Find_Enclosing_Scope (N), Scope (Target_Type))
+      then
+         Remove_Side_Effects (N);
+
+         --  Perform the invariant check on a conversion to the class-wide
+         --  type's root type.
+
+         declare
+            Root_Conv : constant Node_Id :=
+              Make_Type_Conversion (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of (Root_Type (Target_Type), Loc),
+                Expression   => Duplicate_Subexpr (Expression (N)));
+         begin
+            Set_Etype (Root_Conv, Root_Type (Target_Type));
+
+            Insert_Action (N, Make_Invariant_Call (Root_Conv));
+            goto Done;
+         end;
       end if;
 
       --  Here if we may need to expand conversion
@@ -12100,21 +12157,7 @@ package body Exp_Ch4 is
          --  Note: warnings are issued by the analyzer for the instance cases
 
          elsif In_Instance_Body
-
-           --  The case where the target type is an anonymous access type of
-           --  a discriminant is excluded, because the level of such a type
-           --  depends on the context and currently the level returned for such
-           --  types is zero, resulting in warnings about check failures
-           --  in certain legal cases involving class-wide interfaces as the
-           --  designated type (some cases, such as return statements, are
-           --  checked at run time, but not clear if these are handled right
-           --  in general, see 3.10.2(12/2-12.5/3) ???).
-
-           and then
-             not (Ekind (Target_Type) = E_Anonymous_Access_Type
-                   and then Present (Associated_Node_For_Itype (Target_Type))
-                   and then Nkind (Associated_Node_For_Itype (Target_Type)) =
-                                                  N_Discriminant_Specification)
+           and then Statically_Deeper_Relation_Applies (Target_Type)
            and then
              Type_Access_Level (Operand_Type) > Type_Access_Level (Target_Type)
          then

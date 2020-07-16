@@ -62,10 +62,10 @@
 --  then the binder could fail to recognize the R (restrictions line) in the
 --  ali file, leading to bind errors when restrictions were added or removed.
 
---  The latest implementation avoids both this problem by using a named
---  scheme for recording restrictions, rather than a positional scheme which
---  fails completely if restrictions are added or subtracted. Now the worst
---  that happens at bind time in inconsistent builds is that unrecognized
+--  The latest implementation avoids this problem by using a named scheme
+--  for recording restrictions, rather than a positional scheme that fails
+--  completely if restrictions are added or subtracted. Now the worst that
+--  happens at bind time in inconsistent builds is that unrecognized
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
 
@@ -104,6 +104,7 @@ package System.Rident is
       No_Dispatch,                               -- (RM H.4(19))
       No_Dispatching_Calls,                      -- GNAT
       No_Dynamic_Attachment,                     -- Ada 2012 (RM E.7(10/3))
+      No_Dynamic_CPU_Assignment,                 -- Ada 202x (RM D.7(10/3))
       No_Dynamic_Priorities,                     -- (RM D.9(9))
       No_Enumeration_Maps,                       -- GNAT
       No_Entry_Calls_In_Elaboration_Code,        -- GNAT
@@ -147,6 +148,7 @@ package System.Rident is
       No_Task_At_Interrupt_Priority,             -- GNAT
       No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
       No_Task_Termination,                       -- GNAT (Ravenscar)
+      No_Tasks_Unassigned_To_CPU,                -- Ada 202x (D.7(10.10/4))
       No_Tasking,                                -- GNAT
       No_Terminate_Alternatives,                 -- (RM D.7(6))
       No_Unchecked_Access,                       -- (RM H.4(18))
@@ -438,6 +440,7 @@ package System.Rident is
                           (No_Abort_Statements             => True,
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
+                           No_Dynamic_CPU_Assignment       => True,
                            No_Dynamic_Priorities           => True,
                            No_Local_Protected_Objects      => True,
                            No_Protected_Type_Allocators    => True,
@@ -469,6 +472,7 @@ package System.Rident is
                           (No_Abort_Statements             => True,
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
+                           No_Dynamic_CPU_Assignment       => True,
                            No_Dynamic_Priorities           => True,
                            No_Entry_Queue                  => True,
                            No_Local_Protected_Objects      => True,
@@ -511,6 +515,7 @@ package System.Rident is
                           (No_Abort_Statements             => True,
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
+                           No_Dynamic_CPU_Assignment       => True,
                            No_Dynamic_Priorities           => True,
                            No_Entry_Queue                  => True,
                            No_Local_Protected_Objects      => True,
@@ -578,6 +583,7 @@ package System.Rident is
                           (No_Abort_Statements             => True,
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
+                           No_Dynamic_CPU_Assignment       => True,
                            No_Dynamic_Priorities           => True,
                            No_Local_Protected_Objects      => True,
                            No_Protected_Type_Allocators    => True,
@@ -616,6 +622,7 @@ package System.Rident is
                           (No_Abort_Statements             => True,
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
+                           No_Dynamic_CPU_Assignment       => True,
                            No_Dynamic_Priorities           => True,
                            No_Local_Protected_Objects      => True,
                            No_Protected_Type_Allocators    => True,
@@ -666,6 +673,7 @@ package System.Rident is
                           (No_Abort_Statements             => True,
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
+                           No_Dynamic_CPU_Assignment       => True,
                            No_Dynamic_Priorities           => True,
                            No_Entry_Queue                  => True,
                            No_Local_Protected_Objects      => True,

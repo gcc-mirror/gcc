@@ -280,10 +280,8 @@ extern Boolean Is_Derived_Type			(Entity_Id);
 /* sem_eval: */
 
 #define Compile_Time_Known_Value	sem_eval__compile_time_known_value
-#define Is_OK_Static_Expression		sem_eval__is_ok_static_expression
 
 extern Boolean Compile_Time_Known_Value	(Node_Id);
-extern Boolean Is_OK_Static_Expression	(Node_Id);
 
 /* sem_util: */
 
