@@ -1,3 +1,36 @@
+2020-07-16  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/attach-descriptor.f90: New test.
+
+2020-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95591
+	PR c++/95599
+	PR c++/95823
+	PR c++/95824
+	PR c++/95895
+	* g++.dg/coroutines/pr95591.C: New test.
+	* g++.dg/coroutines/pr95599.C: New test.
+	* g++.dg/coroutines/pr95823.C: New test.
+	* g++.dg/coroutines/pr95824.C: New test.
+
+2020-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/96014
+	* g++.dg/analyzer/pr94028.C: Replace dynamic exception
+	specification with noexcept-specifier for C++11 and later.
+
+2020-07-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96189
+	* gcc.target/i386/pr96189-1.c: New test.
+
+2020-07-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 188
+	* g++.dg/DRs/dr188.C: New test.
+
 2020-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96189

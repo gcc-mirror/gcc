@@ -1,3 +1,9 @@
+2020-07-16  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Rework OpenACC
+	attach/detach handling for arrays with descriptors.
+
 2020-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mark Eggleston  <markeggleston@gcc.gnu.org>
 
