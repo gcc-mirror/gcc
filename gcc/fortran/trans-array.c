@@ -10800,7 +10800,8 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
       if (ref->type == REF_SUBSTRING)
 	{
 	  ss = gfc_get_scalar_ss (ss, ref->u.ss.start);
-	  ss = gfc_get_scalar_ss (ss, ref->u.ss.end);
+	  if (ref->u.ss.end)
+	    ss = gfc_get_scalar_ss (ss, ref->u.ss.end);
 	}
 
       /* We're only interested in array sections from now on.  */
