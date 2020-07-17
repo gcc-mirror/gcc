@@ -20020,6 +20020,8 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+static bool aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d);
+
 /* Generate a variable permutation.  */
 
 static void
@@ -20203,6 +20205,59 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
   emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
 				      odd ? UNSPEC_TRN2 : UNSPEC_TRN1));
   return true;
+}
+
+/* Try to re-encode the PERM constant so it combines odd and even elements.
+   This rewrites constants such as {0, 1, 4, 5}/V4SF to {0, 2}/V2DI.
+   We retry with this new constant with the full suite of patterns.  */
+static bool
+aarch64_evpc_reencode (struct expand_vec_perm_d *d)
+{
+  expand_vec_perm_d newd;
+  unsigned HOST_WIDE_INT nelt;
+
+  if (d->vec_flags != VEC_ADVSIMD)
+    return false;
+
+  /* Get the new mode.  Always twice the size of the inner
+     and half the elements.  */
+  poly_uint64 vec_bits = GET_MODE_BITSIZE (d->vmode);
+  unsigned int new_elt_bits = GET_MODE_UNIT_BITSIZE (d->vmode) * 2;
+  auto new_elt_mode = int_mode_for_size (new_elt_bits, false).require ();
+  machine_mode new_mode = aarch64_simd_container_mode (new_elt_mode, vec_bits);
+
+  if (new_mode == word_mode)
+    return false;
+
+  /* to_constant is safe since this routine is specific to Advanced SIMD
+     vectors.  */
+  nelt = d->perm.length ().to_constant ();
+
+  vec_perm_builder newpermconst;
+  newpermconst.new_vector (nelt / 2, nelt / 2, 1);
+
+  /* Convert the perm constant if we can.  Require even, odd as the pairs.  */
+  for (unsigned int i = 0; i < nelt; i += 2)
+    {
+      poly_int64 elt0 = d->perm[i];
+      poly_int64 elt1 = d->perm[i + 1];
+      poly_int64 newelt;
+      if (!multiple_p (elt0, 2, &newelt) || maybe_ne (elt0 + 1, elt1))
+	return false;
+      newpermconst.quick_push (newelt.to_constant ());
+    }
+  newpermconst.finalize ();
+
+  newd.vmode = new_mode;
+  newd.vec_flags = VEC_ADVSIMD;
+  newd.target = d->target ? gen_lowpart (new_mode, d->target) : NULL;
+  newd.op0 = d->op0 ? gen_lowpart (new_mode, d->op0) : NULL;
+  newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
+  newd.testing_p = d->testing_p;
+  newd.one_vector_p = d->one_vector_p;
+
+  newd.perm.new_vector (newpermconst, newd.one_vector_p ? 1 : 2, nelt / 2);
+  return aarch64_expand_vec_perm_const_1 (&newd);
 }
 
 /* Recognize patterns suitable for the UZP instructions.  */
@@ -20601,6 +20656,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       else if (aarch64_evpc_trn (d))
 	return true;
       else if (aarch64_evpc_sel (d))
+	return true;
+      else if (aarch64_evpc_reencode (d))
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);
