@@ -21,6 +21,7 @@
 
 #include "config.h"
 #define INCLUDE_STRING
+#define INCLUDE_SET
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -116,14 +117,90 @@ valid_bL_core_p (unsigned int *core, unsigned int bL_core)
 /* Returns the hex integer that is after ':' for the FIELD.
    Returns -1 is returned if there was problem parsing the integer. */
 static unsigned
-parse_field (const char *field)
+parse_field (const std::string &field)
 {
-  const char *rest = strchr (field, ':');
+  const char *rest = strchr (field.c_str (), ':');
+
+  /* The line must be in the format of <name>:<value>, if it's not
+     then we have a weird format.  */
+  if (rest == NULL)
+    return -1;
+
   char *after;
   unsigned fint = strtol (rest + 1, &after, 16);
   if (after == rest + 1)
     return -1;
   return fint;
+}
+
+/* Returns the index of the ':' inside the FIELD which must be found
+   after the value of KEY.  Returns string::npos if line does not contain
+   a field.  */
+
+static size_t
+find_field (const std::string &field, const std::string &key)
+{
+  size_t key_pos, sep_pos;
+  key_pos = field.find (key);
+  if (key_pos == std::string::npos)
+    return std::string::npos;
+
+  sep_pos = field.find (":", key_pos + 1);
+  if (sep_pos == std::string::npos)
+    return std::string::npos;
+
+  return sep_pos;
+}
+
+/* Splits and returns a string based on whitespace and return it as
+   part of a set. Empty strings are ignored.  */
+
+static void
+split_words (const std::string &val, std::set<std::string> &result)
+{
+  size_t cur, prev = 0;
+  std::string word;
+  while ((cur = val.find_first_of (" \n", prev)) != std::string::npos)
+    {
+      word = val.substr (prev, cur - prev);
+      /* Skip adding empty words.  */
+      if (!word.empty ())
+	result.insert (word);
+      prev = cur + 1;
+    }
+
+  if (prev != cur)
+    result.insert (val.substr (prev));
+}
+
+/* Read an entire line from F until '\n' or EOF.  */
+
+static std::string
+readline (FILE *f)
+{
+  char *buf = NULL;
+  int size = 0;
+  int last = 0;
+  const int buf_size = 128;
+
+  if (feof (f))
+    return std::string ();
+
+  do
+    {
+      size += buf_size;
+      buf = (char*) xrealloc (buf, size);
+      gcc_assert (buf);
+      fgets (buf + last, buf_size, f);
+      /* If we're not at the end of the line then override the
+	 \0 added by fgets.  */
+      last = strlen (buf) - 1;
+    }
+  while (!feof (f) && buf[last] != '\n');
+
+  std::string result (buf);
+  free (buf);
+  return result;
 }
 
 /*  Return true iff ARR contains CORE, in either of the two elements. */
@@ -164,7 +241,6 @@ host_detect_local_cpu (int argc, const char **argv)
 {
   const char *res = NULL;
   static const int num_exts = ARRAY_SIZE (aarch64_extensions);
-  char buf[128];
   FILE *f = NULL;
   bool arch = false;
   bool tune = false;
@@ -178,6 +254,8 @@ host_detect_local_cpu (int argc, const char **argv)
   bool processed_exts = false;
   uint64_t extension_flags = 0;
   uint64_t default_flags = 0;
+  std::string buf;
+  size_t sep_pos = -1;
 
   gcc_assert (argc);
 
@@ -202,9 +280,9 @@ host_detect_local_cpu (int argc, const char **argv)
 
   /* Look through /proc/cpuinfo to determine the implementer
      and then the part number that identifies a particular core.  */
-  while (fgets (buf, sizeof (buf), f) != NULL)
+  while (!(buf = readline (f)).empty ())
     {
-      if (strstr (buf, "implementer") != NULL)
+      if (find_field (buf, "implementer") != std::string::npos)
 	{
 	  unsigned cimp = parse_field (buf);
 	  if (cimp == INVALID_IMP)
@@ -216,8 +294,7 @@ host_detect_local_cpu (int argc, const char **argv)
 	  else if (imp != cimp)
 	    goto not_found;
 	}
-
-      if (strstr (buf, "variant") != NULL)
+      else if (find_field (buf, "variant") != std::string::npos)
 	{
 	  unsigned cvariant = parse_field (buf);
 	  if (!contains_core_p (variants, cvariant))
@@ -229,8 +306,7 @@ host_detect_local_cpu (int argc, const char **argv)
 	    }
           continue;
         }
-
-      if (strstr (buf, "part") != NULL)
+      else if (find_field (buf, "part") != std::string::npos)
 	{
 	  unsigned ccore = parse_field (buf);
 	  if (!contains_core_p (cores, ccore))
@@ -242,39 +318,36 @@ host_detect_local_cpu (int argc, const char **argv)
 	    }
 	  continue;
 	}
-      if (!tune && !processed_exts && strstr (buf, "Features") != NULL)
+      else if (!tune && !processed_exts
+	       && (sep_pos = find_field (buf, "Features")) != std::string::npos)
 	{
+	  /* First create the list of features in the buffer.  */
+	  std::set<std::string> features;
+	  /* Drop everything till the :.  */
+	  buf = buf.substr (sep_pos + 1);
+	  split_words (buf, features);
+
 	  for (i = 0; i < num_exts; i++)
 	    {
-	      const char *p = aarch64_extensions[i].feat_string;
+	      const std::string val (aarch64_extensions[i].feat_string);
 
 	      /* If the feature contains no HWCAPS string then ignore it for the
 		 auto detection.  */
-	      if (*p == '\0')
+	      if (val.empty ())
 		continue;
 
 	      bool enabled = true;
 
 	      /* This may be a multi-token feature string.  We need
 		 to match all parts, which could be in any order.  */
-	      size_t len = strlen (buf);
-	      do
-		{
-		  const char *end = strchr (p, ' ');
-		  if (end == NULL)
-		    end = strchr (p, '\0');
-		  if (memmem (buf, len, p, end - p) == NULL)
-		    {
-		      /* Failed to match this token.  Turn off the
-			 features we'd otherwise enable.  */
-		      enabled = false;
-		      break;
-		    }
-		  if (*end == '\0')
-		    break;
-		  p = end + 1;
-		}
-	      while (1);
+	      std::set<std::string> tokens;
+	      split_words (val, tokens);
+	      std::set<std::string>::iterator it;
+
+	      /* Iterate till the first feature isn't found or all of them
+		 are found.  */
+	      for (it = tokens.begin (); enabled && it != tokens.end (); ++it)
+		enabled = enabled && features.count (*it);
 
 	      if (enabled)
 		extension_flags |= aarch64_extensions[i].flag;
