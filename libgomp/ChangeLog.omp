@@ -1,3 +1,12 @@
+2020-07-17  Thomas Schwinge  <thomas@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* oacc-init.c (acc_init_1): Move setting of acc_init_state to initializing
+	to the beginning of the function.
+	* libgomp.texi (acc_get_device_type): Update documentation.
+	(Implementation Status and Implementation-Defined Behavior): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-2.c: New.
+
 2020-07-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/firstprivate-int.f90: Use
