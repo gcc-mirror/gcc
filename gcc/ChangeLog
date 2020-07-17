@@ -1,3 +1,17 @@
+2020-07-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2020-06-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config.in: Regenerate.
+	* config/s390/s390.c (print_operand): Emit vector alignment hints
+	for target z13, if AS accepts them.  For other targets the logic
+	stays the same.
+	* config/s390/s390.h (TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS): Define
+	macro.
+	* configure: Regenerate.
+	* configure.ac: Check HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13.
+
 2020-07-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/95726
