@@ -1,3 +1,15 @@
+2020-07-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline (42b47dae498):
+
+	* config/gcn/mkoffload.c (EM_AMDGPU): Undefine before defining.
+	(ELFOSABI_AMDGPU_HSA): Likewise.
+	(ELFABIVERSION_AMDGPU_HSA): Likewise.
+	(EF_AMDGPU_MACH_AMDGCN_GFX803): Likewise.
+	(EF_AMDGPU_MACH_AMDGCN_GFX900): Likewise.
+	(EF_AMDGPU_MACH_AMDGCN_GFX906): Likewise.
+	(reserved): Delete.
+
 2020-07-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline (a4f49061b6d):

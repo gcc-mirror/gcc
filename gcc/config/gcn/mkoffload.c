@@ -36,17 +36,23 @@
 #include "simple-object.h"
 #include "elf.h"
 
-/* These probably won't be in elf.h for a while.  */
-#ifndef EM_AMDGPU
+/* These probably won't (all) be in elf.h for a while.  */
+#undef  EM_AMDGPU
 #define EM_AMDGPU		0xe0;
 
+#undef  ELFOSABI_AMDGPU_HSA
 #define ELFOSABI_AMDGPU_HSA	 64
+#undef  ELFABIVERSION_AMDGPU_HSA
 #define ELFABIVERSION_AMDGPU_HSA 1
 
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX803
 #define EF_AMDGPU_MACH_AMDGCN_GFX803 0x2a
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX900
 #define EF_AMDGPU_MACH_AMDGCN_GFX900 0x2c
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX906
 #define EF_AMDGPU_MACH_AMDGCN_GFX906 0x2f
 
+#ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
 #define R_AMDGPU_ABS32_LO	1	/* (S + A) & 0xFFFFFFFF  */
 #define R_AMDGPU_ABS32_HI	2	/* (S + A) >> 32  */
@@ -59,7 +65,6 @@
 #define R_AMDGPU_GOTPCREL32_HI	9	/* (G + GOT + A - P) >> 32  */
 #define R_AMDGPU_REL32_LO	10	/* (S + A - P) & 0xFFFFFFFF  */
 #define R_AMDGPU_REL32_HI	11	/* (S + A - P) >> 32  */
-#define reserved		12
 #define R_AMDGPU_RELATIVE64	13	/* B + A  */
 #endif
 
