@@ -20623,6 +20623,81 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns suitable for the INS instructions.  */
+static bool
+aarch64_evpc_ins (struct expand_vec_perm_d *d)
+{
+  machine_mode mode = d->vmode;
+  unsigned HOST_WIDE_INT nelt;
+
+  if (d->vec_flags != VEC_ADVSIMD)
+    return false;
+
+  /* to_constant is safe since this routine is specific to Advanced SIMD
+     vectors.  */
+  nelt = d->perm.length ().to_constant ();
+  rtx insv = d->op0;
+
+  HOST_WIDE_INT idx = -1;
+
+  for (unsigned HOST_WIDE_INT i = 0; i < nelt; i++)
+    {
+      HOST_WIDE_INT elt;
+      if (!d->perm[i].is_constant (&elt))
+	return false;
+      if (elt == (HOST_WIDE_INT) i)
+	continue;
+      if (idx != -1)
+	{
+	  idx = -1;
+	  break;
+	}
+      idx = i;
+    }
+
+  if (idx == -1)
+    {
+      insv = d->op1;
+      for (unsigned HOST_WIDE_INT i = 0; i < nelt; i++)
+	{
+	  if (d->perm[i].to_constant () == (HOST_WIDE_INT) (i + nelt))
+	    continue;
+	  if (idx != -1)
+	    return false;
+	  idx = i;
+	}
+
+      if (idx == -1)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  gcc_assert (idx != -1);
+
+  unsigned extractindex = d->perm[idx].to_constant ();
+  rtx extractv = d->op0;
+  if (extractindex >= nelt)
+    {
+      extractv = d->op1;
+      extractindex -= nelt;
+    }
+  gcc_assert (extractindex < nelt);
+
+  emit_move_insn (d->target, insv);
+  insn_code icode = code_for_aarch64_simd_vec_copy_lane (mode);
+  expand_operand ops[5];
+  create_output_operand (&ops[0], d->target, mode);
+  create_input_operand (&ops[1], d->target, mode);
+  create_integer_operand (&ops[2], 1 << idx);
+  create_input_operand (&ops[3], extractv, mode);
+  create_integer_operand (&ops[4], extractindex);
+  expand_insn (icode, 5, ops);
+
+  return true;
+}
+
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -20656,6 +20731,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       else if (aarch64_evpc_trn (d))
 	return true;
       else if (aarch64_evpc_sel (d))
+	return true;
+      else if (aarch64_evpc_ins (d))
 	return true;
       else if (aarch64_evpc_reencode (d))
 	return true;
