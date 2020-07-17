@@ -1,3 +1,18 @@
+2020-07-17  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* files.c (_cpp_stack_file): Remove FIXME.
+	* include/cpplib.h (cpp_main_loc): Declare.
+	* init.c (cpp_read_main_file): Set main loc.
+	(cpp_main_loc): New.
+	* internal.h (struct cpp_reader): Add main_loc.
+	gcc/cp/
+	* module.cc (main_source_loc): Delete.
+	(module_translate_include): Use cpp_main_loc.
+	(begin_header_unit, preprocess_module, preprocessed_module)
+	(init_modules, finish_module_processing): Likewise.
+	(fini_modules): Adjust.
+
 2020-07-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

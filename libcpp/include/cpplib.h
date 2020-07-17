@@ -1012,6 +1012,7 @@ extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *,
 				       bool injecting = false);
+extern location_t cpp_main_loc (const cpp_reader *);
 
 /* Adjust for the main file to be an include.  */
 extern void cpp_retrofit_as_include (cpp_reader *);

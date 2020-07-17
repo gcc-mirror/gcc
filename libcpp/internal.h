@@ -595,6 +595,10 @@ struct cpp_reader
   /* If non-zero, the lexer will use this location for the next token
      instead of getting a location from the linemap.  */
   location_t forced_token_location;
+
+  /* Location identifying the main source file -- intended to be line
+     zero of said file.  */
+  location_t main_loc;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.

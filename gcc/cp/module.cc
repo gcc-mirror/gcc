@@ -3779,9 +3779,6 @@ module_state_hash::equal (const value_type existing,
 /********************************************************************/
 /* Global state */
 
-// FIXME: Put in header somewhere, and maybe verify value
-static const location_t main_source_loc = 32;
-
 /* Mapper name.  */
 static const char *module_mapper_name;
 
@@ -18407,7 +18404,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   dump.push (NULL);
 
   dump () && dump ("Checking include translation '%s'", path);
-  auto *mapper = get_mapper (main_source_loc);
+  auto *mapper = get_mapper (cpp_main_loc (reader));
 
   size_t len = strlen (path);
   path = canonicalize_header_name (NULL, loc, true, path, len);
@@ -18495,7 +18492,7 @@ begin_header_unit (cpp_reader *reader)
   main = canonicalize_header_name (NULL, 0, true, main, len);
   module_state *module = get_module (build_string (len, main));
 
-  preprocess_module (module, main_source_loc, false, false, true, reader);
+  preprocess_module (module, cpp_main_loc (reader), false, false, true, reader);
 }
 
 /* We've just properly entered the main source file.  I.e. after the
@@ -18526,6 +18523,9 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
    the module as a direct import, and possibly load up its macro
    state.  Returns the primary module, if this is a module
    declaration.  */
+/* Perhaps we should offer a preprocessing mode where we read the
+   directives from the header unit, rather than require the header's
+   CMI.  */
 
 module_state *
 preprocess_module (module_state *module, location_t from_loc,
@@ -18584,7 +18584,7 @@ preprocess_module (module_state *module, location_t from_loc,
 
 	  if (!module->filename)
 	    {
-	      auto *mapper = get_mapper (main_source_loc);
+	      auto *mapper = get_mapper (cpp_main_loc (reader));
 	      auto packet = mapper->ModuleImport (module->get_flatname ());
 	      module->set_filename (packet);
 	    }
@@ -18612,7 +18612,7 @@ preprocess_module (module_state *module, location_t from_loc,
 void
 preprocessed_module (cpp_reader *reader)
 {
-  auto *mapper = get_mapper (main_source_loc);
+  auto *mapper = get_mapper (cpp_main_loc (reader));
 
   spans.close ();
 
@@ -18690,7 +18690,7 @@ preprocessed_module (cpp_reader *reader)
 	  module_state *module = *iter;
 	  if (module->is_module ())
 	    {
-	      declare_module (module, main_source_loc, true, NULL, reader);
+	      declare_module (module, cpp_main_loc (reader), true, NULL, reader);
 	      break;
 	    }
 	}
@@ -18893,7 +18893,7 @@ init_modules (cpp_reader *reader)
 
   if (!flag_module_lazy)
     /* Get the mapper now, if we're not being lazy.  */
-    get_mapper (main_source_loc);
+    get_mapper (cpp_main_loc (reader));
 
   if (!flag_preprocess_only)
     {
@@ -19018,7 +19018,7 @@ finish_module_processing (cpp_reader *reader)
 
       if (!errorcount)
 	{
-	  auto *mapper = get_mapper (main_source_loc);
+	  auto *mapper = get_mapper (cpp_main_loc (reader));
 
 	  mapper->ModuleCompiled (state->get_flatname ());
 	}
@@ -19090,7 +19090,7 @@ fini_modules ()
   if (mapper)
     {
       timevar_start (TV_MODULE_MAPPER);
-      module_client::close_module_client (main_source_loc, mapper);
+      module_client::close_module_client (0, mapper);
       mapper = nullptr;
       timevar_stop (TV_MODULE_MAPPER);
     }

@@ -689,13 +689,18 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
-    {
-      read_original_filename (pfile);
-      found_name = (ORDINARY_MAP_FILE_NAME
-		    (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)));
-    }
+    read_original_filename (pfile);
 
-  return found_name;
+  auto *map = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
+  pfile->main_loc = MAP_START_LOCATION (map);
+
+  return ORDINARY_MAP_FILE_NAME (map);
+}
+
+location_t
+cpp_main_loc (const cpp_reader *pfile)
+{
+  return pfile->main_loc;
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.
