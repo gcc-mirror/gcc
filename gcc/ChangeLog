@@ -1,3 +1,82 @@
+2020-07-16  Hans-Peter Nilsson  <hp@axis.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/93372
+	* combine.c (is_just_move): Take an rtx_insn* as argument.  Use
+	single_set on it.
+
+2020-07-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96189
+	* config/i386/sync.md
+	(peephole2 to remove unneded compare after CMPXCHG):
+	New pattern, also handle XOR zeroing and load of -1 by OR.
+
+2020-07-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* config/i386/i386.c (ix86_compute_frame_layout): Minor tweak.
+	(ix86_adjust_stack_and_probe): Delete.
+	(ix86_adjust_stack_and_probe_stack_clash): Rename to above and add
+	PROTECTION_AREA parameter.  If it is true, probe PROBE_INTERVAL plus
+	a small dope beyond SIZE bytes.
+	(ix86_emit_probe_stack_range): Use local variable.
+	(ix86_expand_prologue): Adjust calls to ix86_adjust_stack_and_probe
+	and tidy up the stack checking code.
+	* explow.c (get_stack_check_protect): Fix head comment.
+	(anti_adjust_stack_and_probe_stack_clash): Likewise.
+	(allocate_dynamic_stack_space): Add comment.
+	* tree-nested.c (lookup_field_for_decl): Set the DECL_IGNORED_P and
+	TREE_NO_WARNING but not TREE_ADDRESSABLE flags on the field.
+
+2020-07-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.c: Include simple-object.h and elf.h.
+	(EM_AMDGPU): New macro.
+	(ELFOSABI_AMDGPU_HSA): New macro.
+	(ELFABIVERSION_AMDGPU_HSA): New macro.
+	(EF_AMDGPU_MACH_AMDGCN_GFX803): New macro.
+	(EF_AMDGPU_MACH_AMDGCN_GFX900): New macro.
+	(EF_AMDGPU_MACH_AMDGCN_GFX906): New macro.
+	(R_AMDGPU_NONE): New macro.
+	(R_AMDGPU_ABS32_LO): New macro.
+	(R_AMDGPU_ABS32_HI): New macro.
+	(R_AMDGPU_ABS64): New macro.
+	(R_AMDGPU_REL32): New macro.
+	(R_AMDGPU_REL64): New macro.
+	(R_AMDGPU_ABS32): New macro.
+	(R_AMDGPU_GOTPCREL): New macro.
+	(R_AMDGPU_GOTPCREL32_LO): New macro.
+	(R_AMDGPU_GOTPCREL32_HI): New macro.
+	(R_AMDGPU_REL32_LO): New macro.
+	(R_AMDGPU_REL32_HI): New macro.
+	(reserved): New macro.
+	(R_AMDGPU_RELATIVE64): New macro.
+	(gcn_s1_name): Delete global variable.
+	(gcn_s2_name): Delete global variable.
+	(gcn_o_name): Delete global variable.
+	(gcn_cfile_name): Delete global variable.
+	(files_to_cleanup): New global variable.
+	(offload_abi): New global variable.
+	(tool_cleanup): Use files_to_cleanup, not explicit list.
+	(copy_early_debug_info): New function.
+	(main): New local variables gcn_s1_name, gcn_s2_name, gcn_o_name,
+	gcn_cfile_name.
+	Create files_to_cleanup obstack.
+	Recognize -march options.
+	Copy early debug info from input .o files.
+
+2020-07-16  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* Makefile.in (TAGS): Remove 'params.def'.
+
+2020-07-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* target.def (TARGET_TRULY_NOOP_TRUNCATION): Clarify that
+	targets that return false, indicating SUBREGs shouldn't be
+	used, also need to provide a trunc?i?i2 optab that performs this
+	truncation.
+	* doc/tm.texi: Regenerate.
+
 2020-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96189

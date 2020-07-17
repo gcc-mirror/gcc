@@ -12250,11 +12250,20 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* Only plain decltype(auto) is allowed.  */
 	    if (tree a = type_uses_auto (type))
 	      {
-		if (AUTO_IS_DECLTYPE (a) && a != type)
+		if (AUTO_IS_DECLTYPE (a))
 		  {
-		    error_at (typespec_loc, "%qT as type rather than "
-			      "plain %<decltype(auto)%>", type);
-		    return error_mark_node;
+		    if (a != type)
+		      {
+			error_at (typespec_loc, "%qT as type rather than "
+				  "plain %<decltype(auto)%>", type);
+			return error_mark_node;
+		      }
+		    else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+		      {
+			error_at (typespec_loc, "%<decltype(auto)%> cannot be "
+				  "cv-qualified");
+			return error_mark_node;
+		      }
 		  }
 	      }
 
