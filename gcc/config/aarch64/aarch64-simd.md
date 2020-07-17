@@ -958,7 +958,7 @@
   [(set_attr "type" "neon_ins<q>, neon_from_gp<q>, neon_load1_one_lane<q>")]
 )
 
-(define_insn "*aarch64_simd_vec_copy_lane<mode>"
+(define_insn "@aarch64_simd_vec_copy_lane<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(vec_merge:VALL_F16
 	    (vec_duplicate:VALL_F16
