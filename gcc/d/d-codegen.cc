@@ -794,6 +794,41 @@ d_mark_read (tree exp)
   return exp;
 }
 
+/* Build a call to memcmp(), compares the first NUM bytes of PTR1 with PTR2.  */
+
+tree
+build_memcmp_call (tree ptr1, tree ptr2, tree num)
+{
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP), 3,
+			  ptr1, ptr2, num);
+}
+
+/* Build a call to memcpy(), copies the first NUM bytes of SRC into DST.  */
+
+tree
+build_memcpy_call (tree dst, tree src, tree num)
+{
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
+			  dst, src, num);
+}
+
+/* Build a call to memset(), fills the first NUM bytes of PTR with zeros.
+   If NUM is NULL, then we expect PTR to be object that requires filling.  */
+
+tree
+build_memset_call (tree ptr, tree num)
+{
+  if (num == NULL_TREE)
+    {
+      gcc_assert (TREE_CODE (ptr) != ADDR_EXPR);
+      num = TYPE_SIZE_UNIT (TREE_TYPE (ptr));
+      ptr = build_address (ptr);
+    }
+
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_MEMSET), 3,
+			  ptr, integer_zero_node, num);
+}
+
 /* Return TRUE if the struct SD is suitable for comparison using memcmp.
    This is because we don't guarantee that padding is zero-initialized for
    a stack variable, so we can't use memcmp to compare struct values.  */
@@ -846,11 +881,9 @@ identity_compare_p (StructDeclaration *sd)
 tree
 build_float_identity (tree_code code, tree t1, tree t2)
 {
-  tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
   tree size = size_int (TYPE_PRECISION (TREE_TYPE (t1)) / BITS_PER_UNIT);
-
-  tree result = build_call_expr (tmemcmp, 3, build_address (t1),
-				 build_address (t2), size);
+  tree result = build_memcmp_call (build_address (t1),
+				   build_address (t2), size);
   return build_boolop (code, result, integer_zero_node);
 }
 
@@ -879,10 +912,8 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
   /* Let back-end take care of union comparisons.  */
   if (sd->isUnionDeclaration ())
     {
-      tmemcmp = build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP), 3,
-				 build_address (t1), build_address (t2),
-				 size_int (sd->structsize));
-
+      tmemcmp = build_memcmp_call (build_address (t1), build_address (t2),
+				   size_int (sd->structsize));
       return build_boolop (code, tmemcmp, integer_zero_node);
     }
 
@@ -943,11 +974,9 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	  else
 	    {
 	      /* Simple memcmp between types.  */
-	      tcmp = build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP),
-				      3, build_address (t1ref),
-				      build_address (t2ref),
-				      TYPE_SIZE_UNIT (stype));
-
+	      tcmp = build_memcmp_call (build_address (t1ref),
+					build_address (t2ref),
+					TYPE_SIZE_UNIT (stype));
 	      tcmp = build_boolop (code, tcmp, integer_zero_node);
 	    }
 	}
@@ -995,11 +1024,8 @@ build_struct_comparison (tree_code code, StructDeclaration *sd,
   else
     {
       /* Do bit compare of structs.  */
-      tree size = size_int (sd->structsize);
-      tree tmemcmp = build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP),
-				      3, build_address (t1),
-				      build_address (t2), size);
-
+      tree tmemcmp = build_memcmp_call (build_address (t1), build_address (t2),
+					size_int (sd->structsize));
       result = build_boolop (code, tmemcmp, integer_zero_node);
     }
 

@@ -378,9 +378,8 @@ public:
 		|| identity_compare_p (t1elem->isTypeStruct ()->sym))
 	      {
 		tree size = size_mult_expr (t1len, size_int (t1elem->size ()));
-		tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
 
-		result = build_call_expr (tmemcmp, 3, t1ptr, t2ptr, size);
+		result = build_memcmp_call (t1ptr, t2ptr, size);
 		result = build_boolop (code, result, integer_zero_node);
 	      }
 	    else
@@ -948,12 +947,9 @@ public:
 
 	    if (integer_zerop (t2))
 	      {
-		tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
 		tree size = size_mult_expr (d_array_length (t1),
 					    size_int (etype->size ()));
-
-		result = build_call_expr (tmemset, 3, d_array_ptr (t1),
-					  integer_zero_node, size);
+		result = build_memset_call (d_array_ptr (t1), size);
 	      }
 	    else
 	      result = build_array_set (d_array_ptr (t1),
@@ -970,12 +966,10 @@ public:
 	      {
 		tree t1 = d_save_expr (d_array_convert (e->e1));
 		tree t2 = d_array_convert (e->e2);
-		tree tmemcpy = builtin_decl_explicit (BUILT_IN_MEMCPY);
 		tree size = size_mult_expr (d_array_length (t1),
 					    size_int (etype->size ()));
-
-		tree result = build_call_expr (tmemcpy, 3, d_array_ptr (t1),
-					       d_array_ptr (t2), size);
+		tree result = build_memcpy_call (d_array_ptr (t1),
+						 d_array_ptr (t2), size);
 		this->result_ = compound_expr (result, t1);
 	      }
 	    else if ((postblit || destructor) && e->op != TOKblit)
@@ -1042,9 +1036,7 @@ public:
 	  {
 	    /* Use memset to fill struct.  */
 	    gcc_assert (e->op == TOKblit);
-	    tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-	    tree result = build_call_expr (tmemset, 3, build_address (t1),
-					   t2, size_int (sd->structsize));
+	    tree result = build_memset_call (t1);
 
 	    /* Maybe set-up hidden pointer to outer scope context.  */
 	    if (sd->isNested ())
@@ -1065,12 +1057,7 @@ public:
 
 	    /* Fill any alignment holes in the struct using memset.  */
 	    if (e->op == TOKconstruct && !identity_compare_p (sd))
-	      {
-		tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-		init = build_call_expr (tmemset, 3, build_address (t1),
-					integer_zero_node,
-					size_int (sd->structsize));
-	      }
+	      init = build_memset_call (t1);
 
 	    tree result = build_assign (modifycode, t1, t2);
 	    this->result_ = compound_expr (init, result);
@@ -1087,15 +1074,7 @@ public:
 	  {
 	    /* Use memset to fill the array.  */
 	    gcc_assert (e->op == TOKblit);
-
-	    tree t1 = build_expr (e->e1);
-	    tree t2 = convert_for_assignment (build_expr (e->e2),
-					      e->e2->type, e->e1->type);
-	    tree size = size_int (e->e1->type->size ());
-
-	    tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-	    this->result_ = build_call_expr (tmemset, 3, build_address (t1),
-					     t2, size);
+	    this->result_ = build_memset_call (build_expr (e->e1));
 	    return;
 	  }
 
@@ -2753,12 +2732,10 @@ public:
 	mem = d_save_expr (mem);
 
 	/* Now copy the constructor into memory.  */
-	tree tmemcpy = builtin_decl_explicit (BUILT_IN_MEMCPY);
 	tree size = size_mult_expr (size_int (e->elements->length),
 				    size_int (tb->nextOf ()->size ()));
 
-	tree result = build_call_expr (tmemcpy, 3, mem,
-				       build_address (ctor), size);
+	tree result = build_memcpy_call (mem, build_address (ctor), size);
 
 	/* Return the array pointed to by MEM.  */
 	result = compound_expr (result, mem);
@@ -2935,10 +2912,7 @@ public:
       {
 	/* For unions, use memset to fill holes in the object.  */
 	tree var = build_local_temp (TREE_TYPE (ctor));
-	tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-	tree init = build_call_expr (tmemset, 3, build_address (var),
-				     size_zero_node,
-				     size_int (e->sd->structsize));
+	tree init = build_memset_call (var);
 
 	init = compound_expr (init, saved_elems);
 	init = compound_expr (init, modify_expr (var, ctor));
