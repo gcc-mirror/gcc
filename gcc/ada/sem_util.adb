@@ -116,7 +116,7 @@ package body Sem_Util is
      (Item_Id  : Entity_Id;
       Property : Name_Id) return Boolean;
    --  Subsidiary to routines Async_xxx_Enabled and Effective_xxx_Enabled.
-   --  Determine whether the state abstraction, variable, or type denoted by
+   --  Determine whether the state abstraction, object, or type denoted by
    --  entity Item_Id has enabled property Property.
 
    function Has_Null_Extension (T : Entity_Id) return Boolean;

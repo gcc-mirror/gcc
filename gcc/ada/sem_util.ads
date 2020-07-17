@@ -157,11 +157,11 @@ package Sem_Util is
    --  force an error).
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
-   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Id should be the entity of a state abstraction, an object, or a type.
    --  Returns True iff Id is subject to external property Async_Readers.
 
    function Async_Writers_Enabled (Id : Entity_Id) return Boolean;
-   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Id should be the entity of a state abstraction, an object, or a type.
    --  Returns True iff Id is subject to external property Async_Writers.
 
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
@@ -676,11 +676,11 @@ package Sem_Util is
    --  are looked through.
 
    function Effective_Reads_Enabled (Id : Entity_Id) return Boolean;
-   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Id should be the entity of a state abstraction, an object, or a type.
    --  Returns True iff Id is subject to external property Effective_Reads.
 
    function Effective_Writes_Enabled (Id : Entity_Id) return Boolean;
-   --  Id should be the entity of a state abstraction, a variable, or a type.
+   --  Id should be the entity of a state abstraction, an object, or a type.
    --  Returns True iff Id is subject to external property Effective_Writes.
 
    function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
