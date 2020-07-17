@@ -117,6 +117,18 @@ enum aarch64_type_qualifiers
   qualifier_lane_quadtup_index = 0x1000,
 };
 
+/* Flags that describe what a function might do.  */
+const unsigned int FLAG_NONE = 0U;
+const unsigned int FLAG_READ_FPCR = 1U << 0;
+const unsigned int FLAG_RAISE_FP_EXCEPTIONS = 1U << 1;
+const unsigned int FLAG_READ_MEMORY = 1U << 2;
+const unsigned int FLAG_PREFETCH_MEMORY = 1U << 3;
+const unsigned int FLAG_WRITE_MEMORY = 1U << 4;
+
+const unsigned int FLAG_FP = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS;
+const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
+  | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
+
 typedef struct
 {
   const char *name;
@@ -124,6 +136,7 @@ typedef struct
   const enum insn_code code;
   unsigned int fcode;
   enum aarch64_type_qualifiers *qualifiers;
+  unsigned int flags;
 } aarch64_simd_builtin_datum;
 
 static enum aarch64_type_qualifiers
@@ -336,53 +349,53 @@ aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define CF4(N, X) CODE_FOR_##N##X##4
 #define CF10(N, X) CODE_FOR_##N##X
 
-#define VAR1(T, N, MAP, A) \
-  {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T},
-#define VAR2(T, N, MAP, A, B) \
-  VAR1 (T, N, MAP, A) \
-  VAR1 (T, N, MAP, B)
-#define VAR3(T, N, MAP, A, B, C) \
-  VAR2 (T, N, MAP, A, B) \
-  VAR1 (T, N, MAP, C)
-#define VAR4(T, N, MAP, A, B, C, D) \
-  VAR3 (T, N, MAP, A, B, C) \
-  VAR1 (T, N, MAP, D)
-#define VAR5(T, N, MAP, A, B, C, D, E) \
-  VAR4 (T, N, MAP, A, B, C, D) \
-  VAR1 (T, N, MAP, E)
-#define VAR6(T, N, MAP, A, B, C, D, E, F) \
-  VAR5 (T, N, MAP, A, B, C, D, E) \
-  VAR1 (T, N, MAP, F)
-#define VAR7(T, N, MAP, A, B, C, D, E, F, G) \
-  VAR6 (T, N, MAP, A, B, C, D, E, F) \
-  VAR1 (T, N, MAP, G)
-#define VAR8(T, N, MAP, A, B, C, D, E, F, G, H) \
-  VAR7 (T, N, MAP, A, B, C, D, E, F, G) \
-  VAR1 (T, N, MAP, H)
-#define VAR9(T, N, MAP, A, B, C, D, E, F, G, H, I) \
-  VAR8 (T, N, MAP, A, B, C, D, E, F, G, H) \
-  VAR1 (T, N, MAP, I)
-#define VAR10(T, N, MAP, A, B, C, D, E, F, G, H, I, J) \
-  VAR9 (T, N, MAP, A, B, C, D, E, F, G, H, I) \
-  VAR1 (T, N, MAP, J)
-#define VAR11(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K) \
-  VAR10 (T, N, MAP, A, B, C, D, E, F, G, H, I, J) \
-  VAR1 (T, N, MAP, K)
-#define VAR12(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L) \
-  VAR11 (T, N, MAP, A, B, C, D, E, F, G, H, I, J, K) \
-  VAR1 (T, N, MAP, L)
-#define VAR13(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M) \
-  VAR12 (T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L) \
-  VAR1 (T, N, MAP, M)
-#define VAR14(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
-  VAR13 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M) \
-  VAR1 (T, X, MAP, N)
-#define VAR15(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) \
-  VAR14 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
-  VAR1 (T, X, MAP, O)
-#define VAR16(T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) \
-  VAR15 (T, X, MAP, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) \
-  VAR1 (T, X, MAP, P)
+#define VAR1(T, N, MAP, FLAG, A) \
+  {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T, FLAG_##FLAG},
+#define VAR2(T, N, MAP, FLAG, A, B) \
+  VAR1 (T, N, MAP, FLAG, A) \
+  VAR1 (T, N, MAP, FLAG, B)
+#define VAR3(T, N, MAP, FLAG, A, B, C) \
+  VAR2 (T, N, MAP, FLAG, A, B) \
+  VAR1 (T, N, MAP, FLAG, C)
+#define VAR4(T, N, MAP, FLAG, A, B, C, D) \
+  VAR3 (T, N, MAP, FLAG, A, B, C) \
+  VAR1 (T, N, MAP, FLAG, D)
+#define VAR5(T, N, MAP, FLAG, A, B, C, D, E) \
+  VAR4 (T, N, MAP, FLAG, A, B, C, D) \
+  VAR1 (T, N, MAP, FLAG, E)
+#define VAR6(T, N, MAP, FLAG, A, B, C, D, E, F) \
+  VAR5 (T, N, MAP, FLAG, A, B, C, D, E) \
+  VAR1 (T, N, MAP, FLAG, F)
+#define VAR7(T, N, MAP, FLAG, A, B, C, D, E, F, G) \
+  VAR6 (T, N, MAP, FLAG, A, B, C, D, E, F) \
+  VAR1 (T, N, MAP, FLAG, G)
+#define VAR8(T, N, MAP, FLAG, A, B, C, D, E, F, G, H) \
+  VAR7 (T, N, MAP, FLAG, A, B, C, D, E, F, G) \
+  VAR1 (T, N, MAP, FLAG, H)
+#define VAR9(T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I) \
+  VAR8 (T, N, MAP, FLAG, A, B, C, D, E, F, G, H) \
+  VAR1 (T, N, MAP, FLAG, I)
+#define VAR10(T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J) \
+  VAR9 (T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I) \
+  VAR1 (T, N, MAP, FLAG, J)
+#define VAR11(T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR10 (T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J) \
+  VAR1 (T, N, MAP, FLAG, K)
+#define VAR12(T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L) \
+  VAR11 (T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR1 (T, N, MAP, FLAG, L)
+#define VAR13(T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M) \
+  VAR12 (T, N, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L) \
+  VAR1 (T, N, MAP, FLAG, M)
+#define VAR14(T, X, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
+  VAR13 (T, X, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M) \
+  VAR1 (T, X, MAP, FLAG, N)
+#define VAR15(T, X, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) \
+  VAR14 (T, X, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M, N) \
+  VAR1 (T, X, MAP, FLAG, O)
+#define VAR16(T, X, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) \
+  VAR15 (T, X, MAP, FLAG, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) \
+  VAR1 (T, X, MAP, FLAG, P)
 
 #include "aarch64-builtin-iterators.h"
 
@@ -438,7 +451,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_FCMLA_LANEQ##I##_##M,
 
 #undef VAR1
-#define VAR1(T, N, MAP, A) \
+#define VAR1(T, N, MAP, FLAG, A) \
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 enum aarch64_builtins
@@ -2196,7 +2209,7 @@ aarch64_general_builtin_rsqrt (unsigned int fn)
 }
 
 #undef VAR1
-#define VAR1(T, N, MAP, A) \
+#define VAR1(T, N, MAP, FLAG, A) \
   case AARCH64_SIMD_BUILTIN_##T##_##N##A:
 
 /* Try to fold a call to the built-in function with subcode FCODE.  The
@@ -2209,11 +2222,11 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
 {
   switch (fcode)
     {
-      BUILTIN_VDQF (UNOP, abs, 2)
+      BUILTIN_VDQF (UNOP, abs, 2, ALL)
 	return fold_build1 (ABS_EXPR, type, args[0]);
-      VAR1 (UNOP, floatv2si, 2, v2sf)
-      VAR1 (UNOP, floatv4si, 2, v4sf)
-      VAR1 (UNOP, floatv2di, 2, v2df)
+      VAR1 (UNOP, floatv2si, 2, ALL, v2sf)
+      VAR1 (UNOP, floatv4si, 2, ALL, v4sf)
+      VAR1 (UNOP, floatv2di, 2, ALL, v2df)
 	return fold_build1 (FLOAT_EXPR, type, args[0]);
       default:
 	break;
@@ -2239,24 +2252,24 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
      the arguments to the __builtin.  */
   switch (fcode)
     {
-      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
+      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10, ALL)
 	new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
-      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
-      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
+      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10, ALL)
+      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10, ALL)
 	new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
-      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
-      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
+      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10, ALL)
+      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10, ALL)
 	new_stmt = gimple_build_call_internal (IFN_REDUC_MIN,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
-      BUILTIN_GPF (BINOP, fmulx, 0)
+      BUILTIN_GPF (BINOP, fmulx, 0, ALL)
 	{
 	  gcc_assert (nargs == 2);
 	  bool a0_cst_p = TREE_CODE (args[0]) == REAL_CST;
