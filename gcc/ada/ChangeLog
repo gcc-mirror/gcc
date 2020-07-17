@@ -1,3 +1,254 @@
+2020-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Ensure a _master
+	declaration on limited types that might have tasks.
+	* exp_ch9.adb (Build_Master_Renaming): For private types, if we
+	are processing declarations in the private part, ensure that
+	master is inserted before its full declaration; otherwise the
+	master renaming may be inserted in the public part of the
+	package (and hence before the declaration of its _master
+	variable).
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): A renames-as-body
+	freezes the expression of any expression function that it
+	renames.
+
+2020-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Container_Aggregate): Add semantic
+	checks for indexed aggregates, including component associations
+	and iterated component associations.
+	* exp_aggr.adb (Expand_Iterated_Component): New subprogram,
+	subsidiary of Expand_Container_Aggreggate, used for positional,
+	named, and indexed aggregates.
+	(Aggregate_Size): New subprogram to precompute the size of an
+	indexed aggregate prior to call to allocate it.
+	(Expand_Range_Component): New subprogram so generate loop for a
+	component association given by a range or a subtype name in an
+	indexed aggregate.
+
+2020-07-16  Bob Duff  <duff@adacore.com>
+
+	* bindo-diagnostics.adb (Output_Invocation_Related_Suggestions):
+	Use Cumulative_Restrictions.Set, because Restriction_Active only
+	works at compile time.
+
+2020-07-16  Bob Duff  <duff@adacore.com>
+
+	* gnatbind.adb (Gnatbind): For No_Tasks_Unassigned_To_CPU, check
+	that CPU has been set on the main subprogram.
+	(Restriction_Could_Be_Set): Don't print
+	No_Tasks_Unassigned_To_CPU if it would violate the
+	above-mentioned rule. Up to now, all restrictions were checked
+	by the compiler, with the binder just checking for consistency.
+	But the compiler can't know which subprogram is the main, so
+	it's impossible to check this one at compile time.
+	* restrict.ads, restrict.adb: Misc refactoring. Change Warning
+	to Warn, for consistency, since most already use Warn.
+	(Set_Restriction): New convenience routine.
+	* sem_ch13.adb (Attribute_CPU): Check
+	No_Tasks_Unassigned_To_CPU.
+	* sem_prag.adb (Pragma_CPU): Check No_Tasks_Unassigned_To_CPU.
+	Misc refactoring.
+	* tbuild.ads, tbuild.adb (Sel_Comp): New functions for building
+	selected components.
+
+2020-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* impunit.adb (Non_Imp_File_Names_95): Remove duplicate entry.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl: replace a-numaux__x86.ads by
+	a-numaux__libc-x86.ads and a-numaux__x86.adb by
+	a-numaux__dummy.adb.
+	* libgnat/a-numaux__x86.ads, libgnat/a-numaux__x86.adb: Removed.
+	* libgnat/a-numaux__dummy.adb: New.
+
+2020-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Load_Parent_Of_Generic): If an ancestor is an
+	instance whose source appears within a formal package of the
+	current unit, there is no body of the ancestor needed to
+	complete the current generic compilation.
+
+2020-07-16  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-thread__ae653.adb (taskVarAdd): Defunct, so remove.
+	(Current_ATSD):  Make it a TLS variable.
+	(OK): Move to package scope.
+	(System.Storage_Elements): Import and Use.
+
+2020-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Accept_Statement): Set Parent of the
+	created block entity to the created block statement.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* scng.adb (Scan): Detect wide characters not in NFKC.
+	* libgnat/a-chahan.adb, libgnat/a-chahan.ads,
+	libgnat/a-wichha.adb, libgnat/a-wichha.ads,
+	libgnat/a-wichun.adb, libgnat/a-wichun.ads,
+	libgnat/a-zchhan.adb, libgnat/a-zchhan.ads,
+	libgnat/a-zchuni.adb, libgnat/a-zchuni.ads (Is_NFKC): New.
+	* libgnat/s-utf_32.ads, libgnat/s-utf_32.adb (Is_UTF_32_NFKC):
+	New.
+
+2020-07-16  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-rident.ads (Restriction_Id): Add
+	No_Tasks_Unassigned_To_CPU.
+
+2020-07-16  Bob Duff  <duff@adacore.com>
+
+	* exp_aggr.adb (Max_Aggregate_Size): Use the small size of 64
+	when copying is needed (for example, for the initialization of a
+	local variable, and for assignment statements). Use the larger
+	size when static allocation can be done without copying.
+
+2020-07-16  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-rident.ads (No_Dynamic_CPU_Assignment): New
+	restriction. Add it to all relevant profiles.
+	* sem_ch13.adb (Attribute_CPU): Check No_Dynamic_CPU_Assignment
+	restriction.
+	(Attribute_CPU, Attribute_Dispatching_Domain,
+	Attribute_Interrupt_Priority): Remove error checks -- these are
+	checked in the parser.
+	* sem_prag.adb (Pragma_CPU): Check No_Dynamic_CPU_Assignment
+	restriction.  We've got a little violation of DRY here.
+	* sem.ads, sem_ch3.ads: Minor comment fix.
+
+2020-07-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): When the prefix type is
+	an access type, change it to the designated type, change the
+	prefix to an explicit dereference, and emit a ?d? warning for
+	the implicit dereference. Include a ??? comment questioning
+	whether this is the right context in which to perform the
+	implicit dereferencing.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Validate_Literal_Aspect): Ensure that the
+	parameter is not aliased. Minor reformatting.
+	* sem_util.adb (Statically_Names_Object): Update comment.
+
+2020-07-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_case.adb (Build_Choice): Set Is_Static_Expression flag.
+	(Lit_Of): Update specification to mention Is_Static_Expression
+	flag.
+	* sem_ch13.adb (Membership_Entry): Check for N_Others_Choice.
+
+2020-07-16  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Null_Exclusions_Match): New function to check
+	that the null exclusions match, including in the case addressed
+	by this AI.
+	(Check_Conformance): Remove calls to Comes_From_Source
+	when calling Null_Exclusions_Match. These are not
+	needed, as indicated by an ancient "???" comment.
+
+2020-07-16  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Remove flawed test for
+	whether "statically deeper" accessibility rules apply to a given
+	target type and instead use the new routine
+	Statically_Deeper_Relation_Applies.
+	(Statically_Deeper_Relation_Applies): Created to centralize the
+	calculation of whether a target type within a conversion must
+	have static accessibility checks.
+	* sem_ch13.adb (Check_One_Function): Minor comment revision.
+
+2020-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Is_OK_Static_Expression): Delete.
+	* sem_eval.ads (Is_OK_Static_Expression): Remove WARNING note.
+
+2020-07-16  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.adb, einfo.ads (Is_Named_Access_Type): Created for
+	readability.
+	* sem_ch6.adb (Check_Return_Construct_Accessibility): Add
+	special cases for formals.
+	* sem_util.adb (Object_Access_Level): Add handling of access
+	attributes and named access types in the general case.
+
+2020-07-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_case.adb (Build_Choice): Simplify.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* frontend.adb: Disable Initialize_Scalars on runtime files.
+
+2020-07-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Add
+	Comes_From_Source call.
+
+2020-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_Access_To_Protected_Op): Initialize
+	variable Sub to Empty to avoid false positive reported by
+	Codepeer.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Note_Redundant_Use): Add missing warning tag.
+	Do not check for redundant use clauses in predefined units to avoid
+	misleading warnings that may occur as part of a rtsfind load.
+
+2020-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Has_By_Protected_Procedure_Prefixed_View): New
+	subprogram.
+	(Expand_Access_To_Protected_Op): Adding support for prefixed
+	class-wide view with By_Protected_Procedure convention.
+	* sem_attr.adb (Get_Convention): New subprogram.
+	(Get_Kind): Adapted to use Get_Convention.
+	* sem_ch4.adb (Try_By_Protected_Procedure_Prefixed_View): New
+	subprogram.
+	(Analyze_Selected_Component): Invoke
+	Try_By_Protected_Procedure_Prefixed_View.
+	* sem_util.ads (Is_By_Protected_Procedure): New subprogram.
+	* sem_util.adb (Is_By_Protected_Procedure): New subprogram.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-ststop.ads: Fix typo.
+	* libgnat/s-ststop.adb (Read, Write): Fix block number
+	computation to avoid overflows in case of large strings.
+
+2020-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-genbig.adb ("**"): Remove capacity limit check.
+	Improve code by using an extended return.
+	(Normalize): Perform capacity limit check here instead which is
+	the centralized place where (potentially large) big integers are
+	allocated.
+
+2020-07-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Handle the case of
+	applying an invariant check for a conversion to a class-wide
+	type whose root type has a type invariant, when the conversion
+	appears within the immediate scope of the type and the
+	expression is of a specific tagged type.
+	* sem_ch3.adb (Is_Private_Primitive): New function to determine
+	whether a primitive subprogram is a private operation.
+	(Check_Abstract_Overriding): Enforce the restriction imposed by
+	AI12-0042 of requiring overriding of an inherited nonabstract
+	private operation when the ancestor has a class-wide type
+	invariant and the ancestor's private operation is visible.
+	(Derive_Subprogram): Set Requires_Overriding on a subprogram
+	inherited from a visible private operation of an ancestor to
+	which a Type_Invariant'Class expression applies.
+
 2020-07-15  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Find_Overlaid_Entity): Fix style in comment.
