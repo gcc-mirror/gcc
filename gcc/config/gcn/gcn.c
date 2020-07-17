@@ -2668,6 +2668,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
   rtx as = gen_rtx_CONST_INT (VOIDmode, STACK_ADDR_SPACE);
   HOST_WIDE_INT exec_set = 0;
   int offreg_set = 0;
+  auto_vec<int> saved_sgprs;
 
   start_sequence ();
 
@@ -2684,7 +2685,10 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	int lane = saved_scalars % 64;
 
 	if (prologue)
-	  emit_insn (gen_vec_setv64si (vreg, reg, GEN_INT (lane)));
+	  {
+	    emit_insn (gen_vec_setv64si (vreg, reg, GEN_INT (lane)));
+	    saved_sgprs.safe_push (regno);
+	  }
 	else
 	  emit_insn (gen_vec_extractv64sisi (reg, vreg, GEN_INT (lane)));
 
@@ -2717,7 +2721,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 				  gcn_gen_undef (V64SImode), exec));
 
   /* Move vectors.  */
-  for (regno = FIRST_VGPR_REG, offset = offsets->pretend_size;
+  for (regno = FIRST_VGPR_REG, offset = 0;
        regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| (regno == VGPR_REGNO (6) && saved_scalars > 0)
@@ -2738,8 +2742,67 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	  }
 
 	if (prologue)
-	  emit_insn (gen_scatterv64si_insn_1offset_exec (vsp, const0_rtx, reg,
-							 as, const0_rtx, exec));
+	  {
+	    rtx insn = emit_insn (gen_scatterv64si_insn_1offset_exec
+				  (vsp, const0_rtx, reg, as, const0_rtx,
+				   exec));
+
+	    /* Add CFI metadata.  */
+	    rtx note;
+	    if (regno == VGPR_REGNO (6) || regno == VGPR_REGNO (7))
+	      {
+		int start = (regno == VGPR_REGNO (7) ? 64 : 0);
+		int count = MIN (saved_scalars - start, 64);
+		int add_lr = (regno == VGPR_REGNO (6)
+			      && df_regs_ever_live_p (LINK_REGNUM));
+		int lrdest = -1;
+		rtvec seq = rtvec_alloc (count + add_lr);
+
+		/* Add an REG_FRAME_RELATED_EXPR entry for each scalar
+		   register that was saved in this batch.  */
+		for (int idx = 0; idx < count; idx++)
+		  {
+		    int stackaddr = offset + idx * 4;
+		    rtx dest = gen_rtx_MEM (SImode,
+					    gen_rtx_PLUS
+					    (DImode, sp,
+					     GEN_INT (stackaddr)));
+		    rtx src = gen_rtx_REG (SImode, saved_sgprs[start + idx]);
+		    rtx set = gen_rtx_SET (dest, src);
+		    RTX_FRAME_RELATED_P (set) = 1;
+		    RTVEC_ELT (seq, idx) = set;
+
+		    if (saved_sgprs[start + idx] == LINK_REGNUM)
+		      lrdest = stackaddr;
+		  }
+
+		/* Add an additional expression for DWARF_LINK_REGISTER if
+		   LINK_REGNUM was saved.  */
+		if (lrdest != -1)
+		  {
+		    rtx dest = gen_rtx_MEM (DImode,
+					    gen_rtx_PLUS
+					    (DImode, sp,
+					     GEN_INT (lrdest)));
+		    rtx src = gen_rtx_REG (DImode, DWARF_LINK_REGISTER);
+		    rtx set = gen_rtx_SET (dest, src);
+		    RTX_FRAME_RELATED_P (set) = 1;
+		    RTVEC_ELT (seq, count) = set;
+		  }
+
+		note = gen_rtx_SEQUENCE (VOIDmode, seq);
+	      }
+	    else
+	      {
+		rtx dest = gen_rtx_MEM (V64SImode,
+					gen_rtx_PLUS (DImode, sp,
+						      GEN_INT (offset)));
+		rtx src = gen_rtx_REG (V64SImode, regno);
+		note = gen_rtx_SET (dest, src);
+	      }
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	    add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
+	  }
 	else
 	  emit_insn (gen_gatherv64si_insn_1offset_exec
 		     (reg, vsp, const0_rtx, as, const0_rtx,
@@ -2856,10 +2919,14 @@ gcn_expand_prologue ()
 	  rtx adjustment = gen_int_mode (sp_adjust, SImode);
 	  rtx insn = emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo,
 							 adjustment, scc));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (sp,
-				     gen_rtx_PLUS (DImode, sp, adjustment)));
+	  if (!offsets->need_frame_pointer)
+	    {
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			    gen_rtx_SET (sp,
+					 gen_rtx_PLUS (DImode, sp,
+						       adjustment)));
+	    }
 	  emit_insn (gen_addcsi3_scalar_zero (sp_hi, sp_hi, scc));
 	}
 
@@ -2873,24 +2940,23 @@ gcn_expand_prologue ()
 	  rtx adjustment = gen_int_mode (fp_adjust, SImode);
 	  rtx insn = emit_insn (gen_addsi3_scalar_carry(fp_lo, sp_lo,
 							adjustment, scc));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (fp,
-				     gen_rtx_PLUS (DImode, sp, adjustment)));
 	  emit_insn (gen_addcsi3_scalar (fp_hi, sp_hi,
 					 (fp_adjust < 0 ? GEN_INT (-1)
 					  : const0_rtx),
 					 scc, scc));
+
+	  /* Set the CFA to the entry stack address, as an offset from the
+	     frame pointer.  This is preferred because the frame pointer is
+	     saved in each frame, whereas the stack pointer is not.  */
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			gen_rtx_PLUS (DImode, fp,
+				      GEN_INT (-(offsets->pretend_size
+					         + offsets->callee_saves))));
 	}
 
       rtx_insn *seq = get_insns ();
       end_sequence ();
-
-      /* FIXME: Prologue insns should have this flag set for debug output, etc.
-	 but it causes issues for now.
-      for (insn = seq; insn; insn = NEXT_INSN (insn))
-        if (INSN_P (insn))
-	  RTX_FRAME_RELATED_P (insn) = 1;*/
 
       emit_insn (seq);
     }
@@ -3070,6 +3136,20 @@ gcn_expand_epilogue (void)
   emit_jump_insn (gen_gcn_return ());
 }
 
+/* Implement TARGET_FRAME_POINTER_REQUIRED.
+
+   Return true if the frame pointer should not be eliminated.  */
+
+bool
+gcn_frame_pointer_rqd (void)
+{
+  /* GDB needs the frame pointer in order to unwind properly,
+     but that's not important for the entry point.
+     We should also repect the -fomit-frame-pointer flag.  */
+  return (cfun && cfun->machine && cfun->machine->normal_function
+	  && !flag_omit_frame_pointer);
+}
+
 /* Implement TARGET_CAN_ELIMINATE.
  
    Return true if the compiler is allowed to try to replace register number
@@ -3243,8 +3323,7 @@ gcn_cannot_copy_insn_p (rtx_insn *insn)
 static enum unwind_info_type
 gcn_debug_unwind_info ()
 {
-  /* No support for debug info, yet.  */
-  return UI_NONE;
+  return UI_DWARF2;
 }
 
 /* Determine if there is a suitable hardware conversion instruction.
@@ -6257,6 +6336,8 @@ gcn_dwarf_register_number (unsigned int regno)
     return 768;  */
   else if (regno == SCC_REG)
     return 128;
+  else if (regno == DWARF_LINK_REGISTER)
+    return 16;
   else if (SGPR_REGNO_P (regno))
     {
       if (regno - FIRST_SGPR_REG < 64)
@@ -6286,8 +6367,12 @@ gcn_dwarf_register_span (rtx rtl)
   if (GET_MODE_SIZE (mode) != 8)
     return NULL_RTX;
 
-  rtx p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
   unsigned regno = REGNO (rtl);
+
+  if (regno == DWARF_LINK_REGISTER)
+    return NULL_RTX;
+
+  rtx p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
   XVECEXP (p, 0, 0) = gen_rtx_REG (SImode, regno);
   XVECEXP (p, 0, 1) = gen_rtx_REG (SImode, regno + 1);
 
@@ -6348,6 +6433,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_EMUTLS_VAR_INIT gcn_emutls_var_init
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN gcn_expand_builtin
+#undef  TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED gcn_frame_pointer_rqd
 #undef  TARGET_FUNCTION_ARG
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE gcn_function_arg_advance
