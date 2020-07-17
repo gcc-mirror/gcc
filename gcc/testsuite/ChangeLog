@@ -1,3 +1,21 @@
+2020-07-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2020-06-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/vector/align-1.c: Change target architecture
+	to z13.
+	* gcc.target/s390/vector/align-2.c: Change target architecture
+	to z13.
+
+2020-07-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2018-11-21  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/align-1.c: New test.
+	* gcc.target/s390/vector/align-2.c: New test.
+
 2020-07-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-msum-runnable.c: New test.
