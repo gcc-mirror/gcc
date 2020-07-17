@@ -256,6 +256,7 @@ host_detect_local_cpu (int argc, const char **argv)
   uint64_t default_flags = 0;
   std::string buf;
   size_t sep_pos = -1;
+  char *fcpu_info;
 
   gcc_assert (argc);
 
@@ -273,7 +274,11 @@ host_detect_local_cpu (int argc, const char **argv)
   if (!arch && !tune && !cpu)
     goto not_found;
 
-  f = fopen ("/proc/cpuinfo", "r");
+  fcpu_info = getenv ("GCC_CPUINFO");
+  if (fcpu_info)
+    f = fopen (fcpu_info, "r");
+  else
+    f = fopen ("/proc/cpuinfo", "r");
 
   if (f == NULL)
     goto not_found;
