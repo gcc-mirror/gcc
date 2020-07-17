@@ -609,6 +609,12 @@ package body Sem_Ch6 is
                   Set_Expression
                     (Original_Node (Subprogram_Spec (Def_Id)),
                      New_Copy_Tree (Expr));
+
+                  --  Mark static expression functions as inlined, to ensure
+                  --  that even calls with nonstatic actuals will be inlined.
+
+                  Set_Has_Pragma_Inline (Def_Id);
+                  Set_Is_Inlined (Def_Id);
                end if;
             end if;
          end;
