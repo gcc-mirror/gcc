@@ -1,3 +1,4 @@
+/* { dg-require-effective-target fopenmp } */
 /* { dg-additional-options -fopenmp }  */
 
 /* { dg-error "expected" "" { target *-*-* } 6 } */
