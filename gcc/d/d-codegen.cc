@@ -1722,6 +1722,42 @@ build_array_from_val (Type *type, tree val)
   return build_constructor (build_ctype (type), elms);
 }
 
+/* Build a static array of type TYPE from an array of EXPS.
+   If CONST_P is true, then all elements in EXPS are constants.  */
+
+tree
+build_array_from_exprs (Type *type, Expressions *exps, bool const_p)
+{
+  /* Build a CONSTRUCTOR from all expressions.  */
+  vec <constructor_elt, va_gc> *elms = NULL;
+  vec_safe_reserve (elms, exps->length);
+
+  Type *etype = type->nextOf ();
+  tree satype = make_array_type (etype, exps->length);
+
+  for (size_t i = 0; i < exps->length; i++)
+    {
+      Expression *expr = (*exps)[i];
+      tree t = build_expr (expr, const_p);
+      CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
+			      convert_expr (t, expr->type, etype));
+    }
+
+  /* Create a new temporary to store the array.  */
+  tree var = build_local_temp (satype);
+
+  /* Fill any alignment holes with zeroes.  */
+  TypeStruct *ts = etype->baseElemOf ()->isTypeStruct ();
+  tree init = NULL;
+  if (ts && (!identity_compare_p (ts->sym) || ts->sym->isUnionDeclaration ()))
+    init = build_memset_call (var);
+
+  /* Initialize the temporary.  */
+  tree assign = modify_expr (var, build_constructor (satype, elms));
+  return compound_expr (compound_expr (init, assign), var);
+}
+
+
 /* Implicitly converts void* T to byte* as D allows { void[] a; &a[3]; }  */
 
 tree

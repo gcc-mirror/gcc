@@ -2799,30 +2799,14 @@ public:
 
     /* Build an expression that assigns all expressions in KEYS
        to a constructor.  */
-    vec <constructor_elt, va_gc> *kelts = NULL;
-    vec_safe_reserve (kelts, e->keys->length);
-    for (size_t i = 0; i < e->keys->length; i++)
-      {
-	Expression *key = (*e->keys)[i];
-	tree t = build_expr (key);
-	CONSTRUCTOR_APPEND_ELT (kelts, size_int (i),
-				convert_expr (t, key->type, ta->index));
-      }
-    tree tkeys = make_array_type (ta->index, e->keys->length);
-    tree akeys = build_constructor (tkeys, kelts);
+    tree akeys = build_array_from_exprs (ta->index->sarrayOf (e->keys->length),
+					 e->keys, this->constp_);
+    tree init = stabilize_expr (&akeys);
 
     /* Do the same with all expressions in VALUES.  */
-    vec <constructor_elt, va_gc> *velts = NULL;
-    vec_safe_reserve (velts, e->values->length);
-    for (size_t i = 0; i < e->values->length; i++)
-      {
-	Expression *value = (*e->values)[i];
-	tree t = build_expr (value);
-	CONSTRUCTOR_APPEND_ELT (velts, size_int (i),
-				convert_expr (t, value->type, ta->next));
-      }
-    tree tvals = make_array_type (ta->next, e->values->length);
-    tree avals = build_constructor (tvals, velts);
+    tree avals = build_array_from_exprs (ta->next->sarrayOf (e->values->length),
+					 e->values, this->constp_);
+    init = compound_expr (init, stabilize_expr (&avals));
 
     /* Generate: _d_assocarrayliteralTX (ti, keys, vals);  */
     tree keys = d_array_value (build_ctype (ta->index->arrayOf ()),
@@ -2840,8 +2824,9 @@ public:
     vec <constructor_elt, va_gc> *ce = NULL;
     CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
 
-    this->result_ = build_nop (build_ctype (e->type),
-			       build_constructor (aatype, ce));
+    tree result = build_nop (build_ctype (e->type),
+			     build_constructor (aatype, ce));
+    this->result_ = compound_expr (init, result);
   }
 
   /* Build a struct literal.  */
