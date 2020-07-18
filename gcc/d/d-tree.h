@@ -562,6 +562,7 @@ extern tree build_offset (tree, tree);
 extern tree build_memref (tree, tree, tree);
 extern tree build_array_set (tree, tree, tree);
 extern tree build_array_from_val (Type *, tree);
+extern tree build_array_from_exprs (Type *, Expressions *, bool);
 extern tree void_okay_p (tree);
 extern tree build_array_bounds_call (const Loc &);
 extern tree build_bounds_condition (const Loc &, tree, tree, bool);
