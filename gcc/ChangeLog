@@ -1,3 +1,9 @@
+2020-07-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/95952
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add continue clause to
+	predicate builtin handling.
+
 2020-07-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
