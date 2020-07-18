@@ -1,3 +1,99 @@
+2020-07-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* function.c (assign_parm_setup_block): Use the macro
+	TRULY_NOOP_TRUNCATION_MODES_P instead of calling
+	targetm.truly_noop_truncation directly.
+
+2020-07-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96186
+	PR target/88713
+	* config/i386/sse.md (VF_AVX512VL_VF1_128_256): Renamed to ...
+	(VF1_AVX512ER_128_256): This.  Drop DF vector modes.
+	(rsqrt<mode>2): Replace VF_AVX512VL_VF1_128_256 with
+	VF1_AVX512ER_128_256.
+
+2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/sourcebuild.texi (dg-set-compiler-env-var,
+	dg-set-target-env-var): Document.
+
+2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/driver-arm.c (host_detect_local_cpu): Add GCC_CPUINFO.
+
+2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu):
+	Add GCC_CPUINFO.
+
+2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (INCLUDE_SET): New.
+	(parse_field): Use std::string.
+	(split_words, readline, find_field): New.
+	(host_detect_local_cpu): Fix truncation issues.
+
+2020-07-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.c (EM_AMDGPU): Undefine before defining.
+	(ELFOSABI_AMDGPU_HSA): Likewise.
+	(ELFABIVERSION_AMDGPU_HSA): Likewise.
+	(EF_AMDGPU_MACH_AMDGCN_GFX803): Likewise.
+	(EF_AMDGPU_MACH_AMDGCN_GFX900): Likewise.
+	(EF_AMDGPU_MACH_AMDGCN_GFX906): Likewise.
+	(reserved): Delete.
+
+2020-07-17  Andrew Pinski  <apinksi@marvell.com>
+	    Dmitrij Pochepko  <dmitrij.pochepko@bell-sw.com>
+
+	PR target/93720
+	* config/aarch64/aarch64.c (aarch64_evpc_ins): New function.
+	(aarch64_expand_vec_perm_const_1): Call it.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_copy_lane): Make
+	public, and add a "@" prefix.
+
+2020-07-17  Andrew Pinski  <apinksi@marvell.com>
+	    Dmitrij Pochepko  <dmitrij.pochepko@bell-sw.com>
+
+	PR target/82199
+	* config/aarch64/aarch64.c (aarch64_evpc_reencode): New function.
+	(aarch64_expand_vec_perm_const_1): Call it.
+
+2020-07-17  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_type_qualifiers):
+	Add new field flags.
+	(VAR1): Add new field FLAG in macro.
+	(VAR2): Likewise.
+	(VAR3): Likewise.
+	(VAR4): Likewise.
+	(VAR5): Likewise.
+	(VAR6): Likewise.
+	(VAR7): Likewise.
+	(VAR8): Likewise.
+	(VAR9): Likewise.
+	(VAR10): Likewise.
+	(VAR11): Likewise.
+	(VAR12): Likewise.
+	(VAR13): Likewise.
+	(VAR14): Likewise.
+	(VAR15): Likewise.
+	(VAR16): Likewise.
+	(aarch64_general_fold_builtin): Likewise.
+	(aarch64_general_gimple_fold_builtin): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def: Add default flag for
+	each built-in function.
+	* config/aarch64/geniterators.sh: Add new field in BUILTIN macro.
+
+2020-07-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/96127
+	* config/s390/s390.c (s390_expand_insv): Invoke the movstrict
+	expanders to generate the pattern.
+	* config/s390/s390.md ("*movstricthi", "*movstrictqi"): Remove the
+	'*' to have callable expanders.
+
 2020-07-16  Hans-Peter Nilsson  <hp@axis.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>
 
