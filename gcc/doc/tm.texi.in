@@ -1036,6 +1036,8 @@ On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
 
+@hook TARGET_LOWER_LOCAL_DECL_ALIGNMENT
+
 @hook TARGET_STATIC_RTX_ALIGNMENT
 
 @defmac DATA_ALIGNMENT (@var{type}, @var{basic-align})
