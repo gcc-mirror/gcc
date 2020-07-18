@@ -8012,6 +8012,13 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		       NULL_TREE, DECL_ATTRIBUTES (decl));
     }
 
+  /* This is the last point we can lower alignment so give the target the
+     chance to do so.  */
+  if (VAR_P (decl)
+      && !is_global_var (decl)
+      && !DECL_HARD_REGISTER (decl))
+    targetm.lower_local_decl_alignment (decl);
+
   invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
 }
 

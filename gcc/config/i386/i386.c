@@ -16633,6 +16633,16 @@ ix86_data_alignment (tree type, unsigned int align, bool opt)
   return align;
 }
 
+/* Implememnt TARGET_LOWER_LOCAL_DECL_ALIGNMENT.  */
+static void
+ix86_lower_local_decl_alignment (tree decl)
+{
+  unsigned int new_align = ix86_local_alignment (decl, VOIDmode,
+						 DECL_ALIGN (decl), true);
+  if (new_align < DECL_ALIGN (decl))
+    SET_DECL_ALIGN (decl, new_align);
+}
+
 /* Compute the alignment for a local variable or a stack slot.  EXP is
    the data type or decl itself, MODE is the widest mode available and
    ALIGN is the alignment that the object would ordinarily have.  The
@@ -16641,7 +16651,7 @@ ix86_data_alignment (tree type, unsigned int align, bool opt)
 
 unsigned int
 ix86_local_alignment (tree exp, machine_mode mode,
-		      unsigned int align)
+		      unsigned int align, bool may_lower)
 {
   tree type, decl;
 
@@ -16658,7 +16668,8 @@ ix86_local_alignment (tree exp, machine_mode mode,
 
   /* Don't do dynamic stack realignment for long long objects with
      -mpreferred-stack-boundary=2.  */
-  if (!TARGET_64BIT
+  if (may_lower
+      && !TARGET_64BIT
       && align == 64
       && ix86_preferred_stack_boundary < 64
       && (mode == DImode || (type && TYPE_MODE (type) == DImode))
@@ -23385,6 +23396,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
+
+#undef TARGET_LOWER_LOCAL_DECL_ALIGNMENT
+#define TARGET_LOWER_LOCAL_DECL_ALIGNMENT ix86_lower_local_decl_alignment
 
 #undef TARGET_STATIC_RTX_ALIGNMENT
 #define TARGET_STATIC_RTX_ALIGNMENT ix86_static_rtx_alignment
