@@ -1,3 +1,11 @@
+2020-07-17  Romain Naour  <romain.naour@gmail.com>
+
+	Backported from master:
+	2020-06-03  Romain Naour  <romain.naour@gmail.com>
+
+	* Makefile.in (SELFTEST_DEPS): Move before including language makefile
+	fragments.
+
 2020-07-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
