@@ -1,3 +1,25 @@
+2020-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/pragma-eof.c: Use .+3 instead of 6 in
+	dg-error.
+
+2020-07-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Adjust regex for 32 bits.
+
+2020-07-18  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/cpp/pragma-eof.c: Require fopenmp.
+
+2020-07-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/92488
+	* gcc.target/powerpc/convert-fp-128.c (bl, drsp, drdpq): Update counts.
+	(__dpd_trunctdsd2): Make conditional on !hard_dfp.
+	(__dpd_extendsddd2, __dpd_extendsdtd2, __dpd_truncddsd2,
+	__dpd_extendddtd2, __dpd_trunctddd2): Use !hard_dfp.
+	* gcc.target/powerpc/pr92488.c: New test.
+
 2020-07-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79815
