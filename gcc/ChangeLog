@@ -1,3 +1,15 @@
+2020-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95620
+	* config/i386/x86-64.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): New.
+
+2020-07-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/92488
+	* config/rs6000/dfp.md (trunctdsd2): New define_insn.
+	* config/rs6000/rs6000.md (define_attr "isa"): Add p9.
+	(define_attr "enabled"): Handle p9.
+
 2020-07-17  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* function.c (assign_parm_setup_block): Use the macro
