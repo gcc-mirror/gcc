@@ -962,14 +962,47 @@ public:
 	    /* Perform a memcpy operation.  */
 	    gcc_assert (e->e2->type->ty != Tpointer);
 
-	    if (!postblit && !destructor && !array_bounds_check ())
+	    if (!postblit && !destructor)
 	      {
 		tree t1 = d_save_expr (d_array_convert (e->e1));
-		tree t2 = d_array_convert (e->e2);
-		tree size = size_mult_expr (d_array_length (t1),
-					    size_int (etype->size ()));
-		tree result = build_memcpy_call (d_array_ptr (t1),
-						 d_array_ptr (t2), size);
+		tree t2 = d_save_expr (d_array_convert (e->e2));
+
+		/* References to array data.  */
+		tree t1ptr = d_array_ptr (t1);
+		tree t1len = d_array_length (t1);
+		tree t2ptr = d_array_ptr (t2);
+
+		/* Generate: memcpy(to, from, size)  */
+		tree size = size_mult_expr (t1len, size_int (etype->size ()));
+		tree result = build_memcpy_call (t1ptr, t2ptr, size);
+
+		/* Insert check that array lengths match and do not overlap.  */
+		if (array_bounds_check ())
+		  {
+		    /* tlencmp = (t1len == t2len)  */
+		    tree t2len = d_array_length (t2);
+		    tree tlencmp = build_boolop (EQ_EXPR, t1len, t2len);
+
+		    /* toverlap = (t1ptr + size <= t2ptr
+				   || t2ptr + size <= t1ptr)  */
+		    tree t1ptrcmp = build_boolop (LE_EXPR,
+						  build_offset (t1ptr, size),
+						  t2ptr);
+		    tree t2ptrcmp = build_boolop (LE_EXPR,
+						  build_offset (t2ptr, size),
+						  t1ptr);
+		    tree toverlap = build_boolop (TRUTH_ORIF_EXPR, t1ptrcmp,
+						  t2ptrcmp);
+
+		    /* (tlencmp && toverlap) ? memcpy() : _d_arraybounds()  */
+		    tree tassert = build_array_bounds_call (e->loc);
+		    tree tboundscheck = build_boolop (TRUTH_ANDIF_EXPR,
+						      tlencmp, toverlap);
+
+		    result = build_condition (void_type_node, tboundscheck,
+					      result, tassert);
+		  }
+
 		this->result_ = compound_expr (result, t1);
 	      }
 	    else if ((postblit || destructor) && e->op != TOKblit)
