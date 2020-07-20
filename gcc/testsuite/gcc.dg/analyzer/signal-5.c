@@ -1,4 +1,5 @@
 /* Example of other bad calls within a signal handler.  */
+/* { dg-require-effective-target signal } */
 
 #include <stdlib.h>
 #include <signal.h>
