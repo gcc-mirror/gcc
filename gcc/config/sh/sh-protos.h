@@ -313,6 +313,9 @@ sh_cbranch_distance (rtx_insn* cbranch_insn,
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);
 
+/* Routines implemented in sh-rust.c  */
+extern void sh_rust_target_cpu_info (void);
+
 extern const char *output_jump_label_table (void);
 extern rtx get_t_reg_rtx (void);
 extern void sh_expand_prologue (void);

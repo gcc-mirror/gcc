@@ -582,6 +582,7 @@ s390*-*-*)
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
 sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
+	rust_target_objs="sh-rust.o"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_objs="${extra_objs} sh_treg_combine.o sh-mem.o sh_optimize_sett_clrt.o"
 	;;
