@@ -22661,6 +22661,19 @@ fi
 done
 
 
+for ac_header in xlocale.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "xlocale.h" "ac_cv_header_xlocale_h" "$ac_includes_default"
+if test "x$ac_cv_header_xlocale_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_XLOCALE_H 1
+_ACEOF
+
+fi
+
+done
+
+
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
 
@@ -28984,6 +28997,19 @@ do :
 if test "x$ac_cv_func_sockatmark" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_SOCKATMARK 1
+_ACEOF
+
+fi
+done
+
+
+  # Non-standard functions used by C++17 std::from_chars
+  for ac_func in uselocale
+do :
+  ac_fn_c_check_func "$LINENO" "uselocale" "ac_cv_func_uselocale"
+if test "x$ac_cv_func_uselocale" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_USELOCALE 1
 _ACEOF
 
 fi
@@ -41997,6 +42023,9 @@ _ACEOF
 
   fi
 
+
+    $as_echo "#define HAVE_USELOCALE 1" >>confdefs.h
+
     ;;
 
   *-darwin*)
@@ -47770,6 +47799,18 @@ done
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 
+
+    for ac_func in uselocale
+do :
+  ac_fn_c_check_func "$LINENO" "uselocale" "ac_cv_func_uselocale"
+if test "x$ac_cv_func_uselocale" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_USELOCALE 1
+_ACEOF
+
+fi
+done
+
     ;;
 
   *djgpp)
@@ -48039,6 +48080,17 @@ do :
 if test "x$ac_cv_func_sockatmark" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_SOCKATMARK 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in uselocale
+do :
+  ac_fn_c_check_func "$LINENO" "uselocale" "ac_cv_func_uselocale"
+if test "x$ac_cv_func_uselocale" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_USELOCALE 1
 _ACEOF
 
 fi
@@ -54677,6 +54729,17 @@ do :
 if test "x$ac_cv_func_sockatmark" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_SOCKATMARK 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in uselocale
+do :
+  ac_fn_c_check_func "$LINENO" "uselocale" "ac_cv_func_uselocale"
+if test "x$ac_cv_func_uselocale" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_USELOCALE 1
 _ACEOF
 
 fi
@@ -75231,7 +75294,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:28:0
+libtool_VERSION=6:29:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in

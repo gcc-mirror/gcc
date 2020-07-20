@@ -688,6 +688,20 @@ namespace __detail
   operator^=(chars_format& __lhs, chars_format __rhs) noexcept
   { return __lhs = __lhs ^ __rhs; }
 
+#if _GLIBCXX_HAVE_USELOCALE
+  from_chars_result
+  from_chars(const char* __first, const char* __last, float& __value,
+	     chars_format __fmt = chars_format::general);
+
+  from_chars_result
+  from_chars(const char* __first, const char* __last, double& __value,
+	     chars_format __fmt = chars_format::general);
+
+  from_chars_result
+  from_chars(const char* __first, const char* __last, long double& __value,
+	     chars_format __fmt = chars_format::general);
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++14
