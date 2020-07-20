@@ -3,6 +3,7 @@
 /* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -fdump-tree-optimized" } */
 /* { dg-final { scan-tree-dump "cdce3.c:10: \[^\n\r]* function call is shrink-wrapped into error conditions\." "cdce" } } */
 /* { dg-final { scan-tree-dump "sqrtf \\(\[^\n\r]*\\); \\\[tail call\\\]" "optimized" } } */
+/* { dg-skip-if "doesn't have a sqrtf insn" { mmix-*-* } } */
 
 float sqrtf (float);
 float foo (float x)
