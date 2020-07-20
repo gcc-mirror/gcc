@@ -1,12 +1,12 @@
 /* PR target/92865 */
 /* { dg-do compile } */
-/* { dg-options "-Ofast -mavx512f -mavx512bw -mxop" } */
+/* { dg-options "-Ofast -mavx512bw -mxop" } */
 /* { dg-final { scan-assembler-times "vpcmp\[bwdq\]\[\t ]" 4 } } */
 /* { dg-final { scan-assembler-times "vpcmpu\[bwdq\]\[\t ]" 4 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]8\[\t ]" 4 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]16\[\t ]" 4 } } *
-/* { dg-final { scan-assembler-times "vmovdq\[au\]32\[\t ]" 4 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]64\[\t ]" 4 } } */
+/* { dg-final { scan-assembler-times "vmovdq\[au\]8\[\t ]" 6 } } */
+/* { dg-final { scan-assembler-times "vmovdq\[au\]16\[\t ]" 6 } } *
+/* { dg-final { scan-assembler-times "vmovdq\[au\]32\[\t ]" 6 } } */
+/* { dg-final { scan-assembler-times "vmovdq\[au\]64\[\t ]" 6 } } */
 
 extern char arraysb[64];
 extern short arraysw[32];
