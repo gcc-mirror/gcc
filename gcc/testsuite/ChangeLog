@@ -1,3 +1,23 @@
+2020-07-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95973
+	PR target/96238
+	* gcc.target/i386/pr95973.c: New test.
+
+2020-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96018
+	* gfortran.dg/implicit_pure_5.c: New file.
+	* gfortran.dg/implicit_pure_5.f90: New file.
+
+2020-07-19  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/attr-copy-6.c: Require visibility.
+
+2020-07-19  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/Wno-frame-address.c: Skip for cris and mmix.
+
 2020-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/cpp/pragma-eof.c: Use .+3 instead of 6 in

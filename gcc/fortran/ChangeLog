@@ -1,3 +1,19 @@
+2020-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96220
+	* dump-parse-tree.c (get_c_type_name): Always use the entries from
+	c_interop_kinds_table to find the correct C type.
+
+2020-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96018
+	* frontend-passes.c (gfc_check_externals): Adjust formatting.
+	(implicit_pure_call): New function.
+	(implicit_pure_expr): New function.
+	(gfc_fix_implicit_pure): New function.
+	* gfortran.h (gfc_fix_implicit_pure): New prototype.
+	* parse.c (translate_all_program_units): Call gfc_fix_implicit_pure.
+
 2020-07-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* check.c (gfc_invalid_boz): Mark hint for translation using _().
