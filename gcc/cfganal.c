@@ -1079,13 +1079,12 @@ rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
      a need to re-allocate.  */
   auto_vec<edge, 20> stack (2 * n_basic_blocks_for_fn (fn));
 
-  int *pre = XNEWVEC (int, 2 * last_basic_block_for_fn (fn));
-  int *post = pre + last_basic_block_for_fn (fn);
+  int *pre = XNEWVEC (int, last_basic_block_for_fn (fn));
 
   /* BB flag to track nodes that have been visited.  */
   auto_bb_flag visited (fn);
-  /* BB flag to track which nodes have post[] assigned to avoid
-     zeroing post.  */
+  /* BB flag to track which nodes have postorder visting completed.  Used
+     for backedge marking.  */
   auto_bb_flag post_assigned (fn);
 
   /* Push the first edge on to the stack.  */
@@ -1133,7 +1132,6 @@ rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
 	    {
 	      /* There are no successors for the DEST node so assign
 		 its reverse completion number.  */
-	      post[dest->index] = rev_post_order_num;
 	      dest->flags |= post_assigned;
 	      rev_post_order[rev_post_order_num] = dest->index;
 	      rev_post_order_num++;
@@ -1142,16 +1140,15 @@ rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
       else
 	{
 	  if (dest->flags & visited
+	      && !(dest->flags & post_assigned)
 	      && src != entry->src
-	      && pre[src->index] >= pre[dest->index]
-	      && !(dest->flags & post_assigned))
+	      && pre[src->index] >= pre[dest->index])
 	    e->flags |= EDGE_DFS_BACK;
 
 	  if (idx != 0 && stack[idx - 1]->src != src)
 	    {
 	      /* There are no more successors for the SRC node
 		 so assign its reverse completion number.  */
-	      post[src->index] = rev_post_order_num;
 	      src->flags |= post_assigned;
 	      rev_post_order[rev_post_order_num] = src->index;
 	      rev_post_order_num++;
