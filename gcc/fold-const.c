@@ -8047,6 +8047,7 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      tree field = ce->index;
 	      tree val = ce->value;
 	      HOST_WIDE_INT pos, fieldsize;
+	      unsigned HOST_WIDE_INT bpos = 0, epos = 0;
 
 	      if (field == NULL_TREE)
 		return 0;
@@ -8066,14 +8067,121 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (fieldsize == 0)
 		continue;
 
+	      if (DECL_BIT_FIELD (field))
+		{
+		  if (!tree_fits_uhwi_p (DECL_FIELD_BIT_OFFSET (field)))
+		    return 0;
+		  fieldsize = TYPE_PRECISION (TREE_TYPE (field));
+		  bpos = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
+		  if (bpos % BITS_PER_UNIT)
+		    bpos %= BITS_PER_UNIT;
+		  else
+		    bpos = 0;
+		  fieldsize += bpos;
+		  epos = fieldsize % BITS_PER_UNIT;
+		  fieldsize += BITS_PER_UNIT - 1;
+		  fieldsize /= BITS_PER_UNIT;
+		}
+
 	      if (off != -1 && pos + fieldsize <= off)
 		continue;
 
-	      if (DECL_BIT_FIELD (field))
-		return 0;
-
 	      if (val == NULL_TREE)
 		continue;
+
+	      if (DECL_BIT_FIELD (field))
+		{
+		  /* FIXME: Handle PDP endian.  */
+		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+		    return 0;
+
+		  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+		  if (repr == NULL_TREE
+		      || TREE_CODE (val) != INTEGER_CST
+		      || !INTEGRAL_TYPE_P (TREE_TYPE (repr)))
+		    return 0;
+
+		  HOST_WIDE_INT rpos = int_byte_position (repr);
+		  if (rpos > pos)
+		    return 0;
+		  wide_int w = wi::to_wide (val,
+					    TYPE_PRECISION (TREE_TYPE (repr)));
+		  int diff = (TYPE_PRECISION (TREE_TYPE (repr))
+			      - TYPE_PRECISION (TREE_TYPE (field)));
+		  HOST_WIDE_INT bitoff = (pos - rpos) * BITS_PER_UNIT + bpos;
+		  if (!BYTES_BIG_ENDIAN)
+		    w = wi::lshift (w, bitoff);
+		  else
+		    w = wi::lshift (w, diff - bitoff);
+		  val = wide_int_to_tree (TREE_TYPE (repr), w);
+
+		  unsigned char buf[MAX_BITSIZE_MODE_ANY_INT
+				    / BITS_PER_UNIT + 1];
+		  int l = native_encode_int (val, buf, sizeof buf, 0);
+		  if (l * BITS_PER_UNIT != TYPE_PRECISION (TREE_TYPE (repr)))
+		    return 0;
+
+		  if (ptr == NULL)
+		    continue;
+
+		  /* If the bitfield does not start at byte boundary, handle
+		     the partial byte at the start.  */
+		  if (bpos
+		      && (off == -1 || (pos >= off && len >= 1)))
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			{
+			  int mask = (1 << bpos) - 1;
+			  buf[pos - rpos] &= ~mask;
+			  buf[pos - rpos] |= ptr[pos - o] & mask;
+			}
+		      else
+			{
+			  int mask = (1 << (BITS_PER_UNIT - bpos)) - 1;
+			  buf[pos - rpos] &= mask;
+			  buf[pos - rpos] |= ptr[pos - o] & ~mask;
+			}
+		    }
+		  /* If the bitfield does not end at byte boundary, handle
+		     the partial byte at the end.  */
+		  if (epos
+		      && (off == -1
+			  || pos + fieldsize <= (HOST_WIDE_INT) off + len))
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			{
+			  int mask = (1 << epos) - 1;
+			  buf[pos - rpos + fieldsize - 1] &= mask;
+			  buf[pos - rpos + fieldsize - 1]
+			    |= ptr[pos + fieldsize - 1 - o] & ~mask;
+			}
+		       else
+			{
+			  int mask = (1 << (BITS_PER_UNIT - epos)) - 1;
+			  buf[pos - rpos + fieldsize - 1] &= ~mask;
+			  buf[pos - rpos + fieldsize - 1]
+			    |= ptr[pos + fieldsize - 1 - o] & mask;
+			}
+		    }
+		  if (off == -1
+		      || (pos >= off
+			  && (pos + fieldsize <= (HOST_WIDE_INT) off + len)))
+		    memcpy (ptr + pos - o, buf + (pos - rpos), fieldsize);
+		  else
+		    {
+		      /* Partial overlap.  */
+		      HOST_WIDE_INT fsz = fieldsize;
+		      if (pos < off)
+			{
+			  fsz -= (off - pos);
+			  pos = off;
+			}
+		      if (pos + fsz > (HOST_WIDE_INT) off + len)
+			fsz = (HOST_WIDE_INT) off + len - pos;
+		      memcpy (ptr + pos - off, buf + (pos - rpos), fsz);
+		    }
+		  continue;
+		}
 
 	      if (off == -1
 		  || (pos >= off
