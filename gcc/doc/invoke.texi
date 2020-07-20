@@ -13448,6 +13448,15 @@ by the copy loop headers pass.
 @item vect-epilogues-nomask
 Enable loop epilogue vectorization using smaller vector size.
 
+@item vect-partial-vector-usage
+Controls when the loop vectorizer considers using partial vector loads
+and stores as an alternative to falling back to scalar code.  0 stops
+the vectorizer from ever using partial vector loads and stores.  1 allows
+partial vector loads and stores if vectorization removes the need for the
+code to iterate.  2 allows partial vector loads and stores in all loops.
+The parameter only has an effect on targets that support partial
+vector loads and stores.
+
 @item slp-max-insns-in-bb
 Maximum number of instructions in basic block to be
 considered for SLP vectorization.
