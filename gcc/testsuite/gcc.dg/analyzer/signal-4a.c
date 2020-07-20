@@ -2,6 +2,7 @@
 
 /* { dg-options "-fanalyzer -fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
+/* { dg-require-effective-target signal } */
 
 #include <stdio.h>
 #include <signal.h>
