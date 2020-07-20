@@ -6700,9 +6700,16 @@ oacc_is_serial (gfc_code *code)
 }
 
 static bool
-oacc_is_parallel_or_serial (gfc_code *code)
+oacc_is_kernels (gfc_code *code)
 {
-  return oacc_is_parallel (code) || oacc_is_serial (code);
+  return code->op == EXEC_OACC_KERNELS || code->op == EXEC_OACC_KERNELS_LOOP;
+}
+
+static bool
+oacc_is_compute_construct (gfc_code *code)
+{
+  return oacc_is_parallel (code) || oacc_is_serial (code)
+    || oacc_is_kernels (code);
 }
 
 static gfc_statement
@@ -6978,7 +6985,7 @@ resolve_oacc_loop_blocks (gfc_code *code)
       for (c = omp_current_ctx; c; c = c->previous)
 	if (!oacc_is_loop (c->code))
 	  break;
-      if (c == NULL || !oacc_is_parallel_or_serial (c->code))
+      if (c == NULL || !oacc_is_compute_construct (c->code))
 	gfc_error ("gang reduction on an orphan loop at %L", &code->loc);
     }
 

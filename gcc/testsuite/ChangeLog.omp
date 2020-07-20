@@ -1,3 +1,10 @@
+2020-07-20  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gfortran.dg/goacc/orphan-reductions-2.f90: New test
+	verifying that the "gang reduction on an orphan loop" error message
+	is not emitted for non-orphaned loops.
+	* c-c++-common/goacc/orphan-reductions-2.c: Likewise for C and C++.
+
 2020-06-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/noncontig_array-1.c: Dump Gimple pass.
