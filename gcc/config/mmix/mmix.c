@@ -2014,6 +2014,7 @@ mmix_expand_prologue (void)
        + crtl->args.pretend_args_size
        + locals_size + 7) & ~7;
   HOST_WIDE_INT offset = -8;
+  HOST_WIDE_INT total_allocated_stack_space = 0;
 
   /* Add room needed to save global non-register-stack registers.  */
   for (regno = 255;
@@ -2063,6 +2064,8 @@ mmix_expand_prologue (void)
 		? (256 - 8) : stack_space_to_allocate;
 
 	      mmix_emit_sp_add (-stack_chunk);
+	      total_allocated_stack_space += stack_chunk;
+
 	      offset += stack_chunk;
 	      stack_space_to_allocate -= stack_chunk;
 	    }
@@ -2091,6 +2094,7 @@ mmix_expand_prologue (void)
 	    ? (256 - 8 - 8) : stack_space_to_allocate;
 
 	  mmix_emit_sp_add (-stack_chunk);
+	  total_allocated_stack_space += stack_chunk;
 
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -2126,6 +2130,7 @@ mmix_expand_prologue (void)
 	    ? (256 - 8 - 8) : stack_space_to_allocate;
 
 	  mmix_emit_sp_add (-stack_chunk);
+	  total_allocated_stack_space += stack_chunk;
 
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -2170,6 +2175,7 @@ mmix_expand_prologue (void)
 	    ? (256 - 8 - 8) : stack_space_to_allocate;
 
 	  mmix_emit_sp_add (-stack_chunk);
+	  total_allocated_stack_space += stack_chunk;
 
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -2220,6 +2226,8 @@ mmix_expand_prologue (void)
 		 ? (256 - offset - 8) : stack_space_to_allocate);
 
 	    mmix_emit_sp_add (-stack_chunk);
+	    total_allocated_stack_space += stack_chunk;
+
 	    offset += stack_chunk;
 	    stack_space_to_allocate -= stack_chunk;
 	  }
@@ -2237,6 +2245,14 @@ mmix_expand_prologue (void)
      wasn't allocated above.  */
   if (stack_space_to_allocate)
     mmix_emit_sp_add (-stack_space_to_allocate);
+  total_allocated_stack_space += stack_space_to_allocate;
+
+  /* Let's assume that reporting the usage of the regular stack on its
+     own, is more useful than either not supporting -fstack-usage or
+     reporting the sum of the usages of the regular stack and the
+     register stack.  */
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = total_allocated_stack_space;
 }
 
 /* Expands the function epilogue into RTX.  */
