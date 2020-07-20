@@ -3480,6 +3480,13 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
       || (op_false && reg_overlap_mentioned_p (dest, op_false)))
     dest = gen_reg_rtx (maskcmp ? cmp_mode : mode);
 
+  if (maskcmp)
+    {
+      bool ok = ix86_expand_mask_vec_cmp (dest, code, cmp_op0, cmp_op1);
+      gcc_assert (ok);
+      return dest;
+    }
+
   x = gen_rtx_fmt_ee (code, cmp_mode, cmp_op0, cmp_op1);
 
   if (cmp_mode != mode && !maskcmp)
@@ -3915,11 +3922,10 @@ ix86_cmp_code_to_pcmp_immediate (enum rtx_code code, machine_mode mode)
 /* Expand AVX-512 vector comparison.  */
 
 bool
-ix86_expand_mask_vec_cmp (rtx operands[])
+ix86_expand_mask_vec_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1)
 {
-  machine_mode mask_mode = GET_MODE (operands[0]);
-  machine_mode cmp_mode = GET_MODE (operands[2]);
-  enum rtx_code code = GET_CODE (operands[1]);
+  machine_mode mask_mode = GET_MODE (dest);
+  machine_mode cmp_mode = GET_MODE (cmp_op0);
   rtx imm = GEN_INT (ix86_cmp_code_to_pcmp_immediate (code, cmp_mode));
   int unspec_code;
   rtx unspec;
@@ -3937,10 +3943,9 @@ ix86_expand_mask_vec_cmp (rtx operands[])
       unspec_code = UNSPEC_PCMP;
     }
 
-  unspec = gen_rtx_UNSPEC (mask_mode, gen_rtvec (3, operands[2],
-						 operands[3], imm),
+  unspec = gen_rtx_UNSPEC (mask_mode, gen_rtvec (3, cmp_op0, cmp_op1, imm),
 			   unspec_code);
-  emit_insn (gen_rtx_SET (operands[0], unspec));
+  emit_insn (gen_rtx_SET (dest, unspec));
 
   return true;
 }
