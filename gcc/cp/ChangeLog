@@ -1,3 +1,9 @@
+2020-07-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79815
+	* decl.c (grokdeclarator): Detect cv-qual decltype(auto).
+	* pt.c (do_auto_deduction): Likewise.
+
 2020-07-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95591

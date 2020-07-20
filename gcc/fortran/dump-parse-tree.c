@@ -3257,45 +3257,28 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
   if (ts->type == BT_REAL || ts->type == BT_INTEGER || ts->type == BT_COMPLEX)
     {
       if (ts->is_c_interop && ts->interop_kind)
-	{
-	  *type_name = ts->interop_kind->name + 2;
-	  if (strcmp (*type_name, "signed_char") == 0)
-	    *type_name = "signed char";
-	  else if (strcmp (*type_name, "size_t") == 0)
-	    *type_name = "ssize_t";
-	  else if (strcmp (*type_name, "float_complex") == 0)
-	    *type_name = "__GFORTRAN_FLOAT_COMPLEX";
-	  else if (strcmp (*type_name, "double_complex") == 0)
-	    *type_name = "__GFORTRAN_DOUBLE_COMPLEX";
-	  else if (strcmp (*type_name, "long_double_complex") == 0)
-	    *type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
-
-	  ret = T_OK;
-	}
+	ret = T_OK;
       else
-	{
-	  /* The user did not specify a C interop type.  Let's look through
-	     the available table and use the first one, but warn.  */
-	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
-	    {
-	      if (c_interop_kinds_table[i].f90_type == ts->type
-		  && c_interop_kinds_table[i].value == ts->kind)
-		{
-		  *type_name = c_interop_kinds_table[i].name + 2;
-		  if (strcmp (*type_name, "signed_char") == 0)
-		    *type_name = "signed char";
-		  else if (strcmp (*type_name, "size_t") == 0)
-		    *type_name = "ssize_t";
-		  else if (strcmp (*type_name, "float_complex") == 0)
-		    *type_name = "__GFORTRAN_FLOAT_COMPLEX";
-		  else if (strcmp (*type_name, "double_complex") == 0)
-		    *type_name = "__GFORTRAN_DOUBLE_COMPLEX";
-		  else if (strcmp (*type_name, "long_double_complex") == 0)
-		    *type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
+	ret = T_WARN;
 
-		  ret = T_WARN;
-		  break;
-		}
+      for (int i = 0; i < ISOCBINDING_NUMBER; i++)
+	{
+	  if (c_interop_kinds_table[i].f90_type == ts->type
+	      && c_interop_kinds_table[i].value == ts->kind)
+	    {
+	      *type_name = c_interop_kinds_table[i].name + 2;
+	      if (strcmp (*type_name, "signed_char") == 0)
+		*type_name = "signed char";
+	      else if (strcmp (*type_name, "size_t") == 0)
+		*type_name = "ssize_t";
+	      else if (strcmp (*type_name, "float_complex") == 0)
+		*type_name = "__GFORTRAN_FLOAT_COMPLEX";
+	      else if (strcmp (*type_name, "double_complex") == 0)
+		*type_name = "__GFORTRAN_DOUBLE_COMPLEX";
+	      else if (strcmp (*type_name, "long_double_complex") == 0)
+		*type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
+
+	      break;
 	    }
 	}
     }

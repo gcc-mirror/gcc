@@ -1,3 +1,8 @@
+2020-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95620
+	* testsuite/libgomp.c/pr95620.c: New test.
+
 2020-07-16  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

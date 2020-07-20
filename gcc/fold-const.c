@@ -8047,6 +8047,7 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      tree field = ce->index;
 	      tree val = ce->value;
 	      HOST_WIDE_INT pos, fieldsize;
+	      unsigned HOST_WIDE_INT bpos = 0, epos = 0;
 
 	      if (field == NULL_TREE)
 		return 0;
@@ -8066,14 +8067,121 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (fieldsize == 0)
 		continue;
 
+	      if (DECL_BIT_FIELD (field))
+		{
+		  if (!tree_fits_uhwi_p (DECL_FIELD_BIT_OFFSET (field)))
+		    return 0;
+		  fieldsize = TYPE_PRECISION (TREE_TYPE (field));
+		  bpos = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
+		  if (bpos % BITS_PER_UNIT)
+		    bpos %= BITS_PER_UNIT;
+		  else
+		    bpos = 0;
+		  fieldsize += bpos;
+		  epos = fieldsize % BITS_PER_UNIT;
+		  fieldsize += BITS_PER_UNIT - 1;
+		  fieldsize /= BITS_PER_UNIT;
+		}
+
 	      if (off != -1 && pos + fieldsize <= off)
 		continue;
 
-	      if (DECL_BIT_FIELD (field))
-		return 0;
-
 	      if (val == NULL_TREE)
 		continue;
+
+	      if (DECL_BIT_FIELD (field))
+		{
+		  /* FIXME: Handle PDP endian.  */
+		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+		    return 0;
+
+		  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+		  if (repr == NULL_TREE
+		      || TREE_CODE (val) != INTEGER_CST
+		      || !INTEGRAL_TYPE_P (TREE_TYPE (repr)))
+		    return 0;
+
+		  HOST_WIDE_INT rpos = int_byte_position (repr);
+		  if (rpos > pos)
+		    return 0;
+		  wide_int w = wi::to_wide (val,
+					    TYPE_PRECISION (TREE_TYPE (repr)));
+		  int diff = (TYPE_PRECISION (TREE_TYPE (repr))
+			      - TYPE_PRECISION (TREE_TYPE (field)));
+		  HOST_WIDE_INT bitoff = (pos - rpos) * BITS_PER_UNIT + bpos;
+		  if (!BYTES_BIG_ENDIAN)
+		    w = wi::lshift (w, bitoff);
+		  else
+		    w = wi::lshift (w, diff - bitoff);
+		  val = wide_int_to_tree (TREE_TYPE (repr), w);
+
+		  unsigned char buf[MAX_BITSIZE_MODE_ANY_INT
+				    / BITS_PER_UNIT + 1];
+		  int l = native_encode_int (val, buf, sizeof buf, 0);
+		  if (l * BITS_PER_UNIT != TYPE_PRECISION (TREE_TYPE (repr)))
+		    return 0;
+
+		  if (ptr == NULL)
+		    continue;
+
+		  /* If the bitfield does not start at byte boundary, handle
+		     the partial byte at the start.  */
+		  if (bpos
+		      && (off == -1 || (pos >= off && len >= 1)))
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			{
+			  int mask = (1 << bpos) - 1;
+			  buf[pos - rpos] &= ~mask;
+			  buf[pos - rpos] |= ptr[pos - o] & mask;
+			}
+		      else
+			{
+			  int mask = (1 << (BITS_PER_UNIT - bpos)) - 1;
+			  buf[pos - rpos] &= mask;
+			  buf[pos - rpos] |= ptr[pos - o] & ~mask;
+			}
+		    }
+		  /* If the bitfield does not end at byte boundary, handle
+		     the partial byte at the end.  */
+		  if (epos
+		      && (off == -1
+			  || pos + fieldsize <= (HOST_WIDE_INT) off + len))
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			{
+			  int mask = (1 << epos) - 1;
+			  buf[pos - rpos + fieldsize - 1] &= mask;
+			  buf[pos - rpos + fieldsize - 1]
+			    |= ptr[pos + fieldsize - 1 - o] & ~mask;
+			}
+		       else
+			{
+			  int mask = (1 << (BITS_PER_UNIT - epos)) - 1;
+			  buf[pos - rpos + fieldsize - 1] &= ~mask;
+			  buf[pos - rpos + fieldsize - 1]
+			    |= ptr[pos + fieldsize - 1 - o] & mask;
+			}
+		    }
+		  if (off == -1
+		      || (pos >= off
+			  && (pos + fieldsize <= (HOST_WIDE_INT) off + len)))
+		    memcpy (ptr + pos - o, buf + (pos - rpos), fieldsize);
+		  else
+		    {
+		      /* Partial overlap.  */
+		      HOST_WIDE_INT fsz = fieldsize;
+		      if (pos < off)
+			{
+			  fsz -= (off - pos);
+			  pos = off;
+			}
+		      if (pos + fsz > (HOST_WIDE_INT) off + len)
+			fsz = (HOST_WIDE_INT) off + len - pos;
+		      memcpy (ptr + pos - off, buf + (pos - rpos), fsz);
+		    }
+		  continue;
+		}
 
 	      if (off == -1
 		  || (pos >= off
@@ -15379,24 +15487,29 @@ fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
 			  ptr, size_int (off));
 }
 
-/* Return a pointer P to a NUL-terminated string representing the sequence
-   of constant characters referred to by SRC (or a subsequence of such
-   characters within it if SRC is a reference to a string plus some
-   constant offset).  If STRLEN is non-null, store the number of bytes
-   in the string constant including the terminating NUL char.  *STRLEN is
-   typically strlen(P) + 1 in the absence of embedded NUL characters.  */
+/* Return a pointer P to a NUL-terminated string containing the sequence
+   of bytes corresponding to the representation of the object referred to
+   by SRC (or a subsequence of such bytes within it if SRC is a reference
+   to an initialized constant array plus some constant offset).
+   If STRSIZE is non-null, store the number of bytes in the constant
+   sequence including the terminating NUL byte.  *STRSIZE is equal to
+   sizeof(A) - OFFSET where A is the array that stores the constant
+   sequence that SRC points to and OFFSET is the byte offset of SRC from
+   the beginning of A.  SRC need not point to a string or even an array
+   of characters but may point to an object of any type.  */
 
 const char *
-c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
+c_getstr (tree src, unsigned HOST_WIDE_INT *strsize /* = NULL */)
 {
+  /* The offset into the array A storing the string, and A's byte size.  */
   tree offset_node;
   tree mem_size;
 
-  if (strlen)
-    *strlen = 0;
+  if (strsize)
+    *strsize = 0;
 
   src = string_constant (src, &offset_node, &mem_size, NULL);
-  if (src == 0)
+  if (!src)
     return NULL;
 
   unsigned HOST_WIDE_INT offset = 0;
@@ -15411,34 +15524,44 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
   if (!tree_fits_uhwi_p (mem_size))
     return NULL;
 
-  /* STRING_LENGTH is the size of the string literal, including any
-     embedded NULs.  STRING_SIZE is the size of the array the string
-     literal is stored in.  */
-  unsigned HOST_WIDE_INT string_length = TREE_STRING_LENGTH (src);
-  unsigned HOST_WIDE_INT string_size = tree_to_uhwi (mem_size);
+  /* ARRAY_SIZE is the byte size of the array the constant sequence
+     is stored in and equal to sizeof A.  INIT_BYTES is the number
+     of bytes in the constant sequence used to initialize the array,
+     including any embedded NULs as well as the terminating NUL (for
+     strings), but not including any trailing zeros/NULs past
+     the terminating one appended implicitly to a string literal to
+     zero out the remainder of the array it's stored in.  For example,
+     given:
+       const char a[7] = "abc\0d";
+       n = strlen (a + 1);
+     ARRAY_SIZE is 7, INIT_BYTES is 6, and OFFSET is 1.  For a valid
+     (i.e., nul-terminated) string with no embedded nuls, INIT_BYTES
+     is equal to strlen (A) + 1.  */
+  const unsigned HOST_WIDE_INT array_size = tree_to_uhwi (mem_size);
+  unsigned HOST_WIDE_INT init_bytes = TREE_STRING_LENGTH (src);
 
   /* Ideally this would turn into a gcc_checking_assert over time.  */
-  if (string_length > string_size)
-    string_length = string_size;
+  if (init_bytes > array_size)
+    init_bytes = array_size;
 
   const char *string = TREE_STRING_POINTER (src);
 
   /* Ideally this would turn into a gcc_checking_assert over time.  */
-  if (string_length > string_size)
-    string_length = string_size;
+  if (init_bytes > array_size)
+    init_bytes = array_size;
 
-  if (string_length == 0
-      || offset >= string_size)
+  if (init_bytes == 0 || offset >= array_size)
     return NULL;
 
-  if (strlen)
+  if (strsize)
     {
-      /* Compute and store the length of the substring at OFFSET.
-	 All offsets past the initial length refer to null strings.  */
-      if (offset < string_length)
-	*strlen = string_length - offset;
+      /* Compute and store the number of characters from the beginning
+	 of the substring at OFFSET to the end, including the terminating
+	 nul.  Offsets past the initial length refer to null strings.  */
+      if (offset < init_bytes)
+	*strsize = init_bytes - offset;
       else
-	*strlen = 1;
+	*strsize = 1;
     }
   else
     {
@@ -15446,11 +15569,11 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
       /* Support only properly NUL-terminated single byte strings.  */
       if (tree_to_uhwi (TYPE_SIZE_UNIT (eltype)) != 1)
 	return NULL;
-      if (string[string_length - 1] != '\0')
+      if (string[init_bytes - 1] != '\0')
 	return NULL;
     }
 
-  return offset < string_length ? string + offset : "";
+  return offset < init_bytes ? string + offset : "";
 }
 
 /* Given a tree T, compute which bits in T may be nonzero.  */

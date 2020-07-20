@@ -1248,7 +1248,6 @@ C ObjC C++ LTO ObjC++ Var(warn_vla_limit) Warning Joined Host_Wide_Int ByteSize 
 -Wvla-larger-than=<number>	Warn on unbounded uses of variable-length
 arrays, and on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
-<number> bytes.
 
 Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning

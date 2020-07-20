@@ -1,3 +1,8 @@
+2020-07-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/std/coroutine: Mark the methods of the
+	trivial awaitables as constexpr.
+
 2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/os/aix/t-aix: Set BITS from compiler cpp macro.
