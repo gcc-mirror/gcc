@@ -202,37 +202,37 @@ proc fixed_host_execute {args} {
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tNOTE:${text}*" {
+	-re "^$prefix\tNOTE:\[^\r\n\]+\r\n" {
 	    regsub "\[\n\r\t\]*NOTE: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 6 end]
+	    set output [string range $output 6 end-2]
 	    verbose "$output" 2
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tPASSED:${text}*" {
+	-re "^$prefix\tPASSED:\[^\r\n\]+\r\n" {
 	    regsub "\[\n\r\t\]*PASSED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end]
+	    set output [string range $output 8 end-2]
 	    pass "$output"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tFAILED:${text}*" {
+	-re "^$prefix\tFAILED:\[^\r\n\]+\r\n" {
 	    regsub "\[\n\r\t\]*FAILED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end]
+	    set output [string range $output 8 end-2]
 	    fail "$output"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tUNTESTED:${text}*" {
+	-re "^$prefix\tUNTESTED:\[^\r\n\]+\r\n" {
 	    regsub "\[\n\r\t\]*TESTED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end]
+	    set output [string range $output 8 end-2]
 	    untested "$output"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tUNRESOLVED:${text}*" {
+	-re "^$prefix\tUNRESOLVED:\[^\r\n\]+\r\n" {
 	    regsub "\[\n\r\t\]*UNRESOLVED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end]
+	    set output [string range $output 8 end-2]
 	    unresolved "$output"
 	    set timetol 0
 	    exp_continue
