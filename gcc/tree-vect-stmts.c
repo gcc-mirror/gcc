@@ -4137,7 +4137,20 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 						  vec_oprnd0);
 			}
 		      if (k == 1)
-			vargs.safe_push (vec_oprnd0);
+			if (!useless_type_conversion_p (TREE_TYPE (vec_oprnd0),
+						       atype))
+			  {
+			    vec_oprnd0
+			      = build1 (VIEW_CONVERT_EXPR, atype, vec_oprnd0);
+			    gassign *new_stmt
+			      = gimple_build_assign (make_ssa_name (atype),
+						     vec_oprnd0);
+			    vect_finish_stmt_generation (vinfo, stmt_info,
+							 new_stmt, gsi);
+			    vargs.safe_push (gimple_assign_lhs (new_stmt));
+			  }
+			else
+			  vargs.safe_push (vec_oprnd0);
 		      else
 			{
 			  vec_oprnd0 = build_constructor (atype, ctor_elts);
@@ -4233,8 +4246,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  gcc_assert (ratype || simd_clone_subparts (rtype) == nunits);
 	  if (ratype)
 	    new_temp = create_tmp_var (ratype);
-	  else if (simd_clone_subparts (vectype)
-		   == simd_clone_subparts (rtype))
+	  else if (useless_type_conversion_p (vectype, rtype))
 	    new_temp = make_ssa_name (vec_dest, new_call);
 	  else
 	    new_temp = make_ssa_name (rtype, new_call);
@@ -4321,6 +4333,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	      new_stmt = gimple_build_assign (make_ssa_name (vec_dest), t);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      vect_clobber_variable (vinfo, stmt_info, gsi, new_temp);
+	    }
+	  else if (!useless_type_conversion_p (vectype, rtype))
+	    {
+	      vec_oprnd0 = build1 (VIEW_CONVERT_EXPR, vectype, new_temp);
+	      new_stmt
+		= gimple_build_assign (make_ssa_name (vec_dest), vec_oprnd0);
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    }
 	}
 
