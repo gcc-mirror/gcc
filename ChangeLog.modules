@@ -1,5 +1,8 @@
 2020-07-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* rtti.c (init_rtti_processing): Unbreak bootstrap.
+
 	Merge trunk a926eeedf43.
 
 2020-07-17  Nathan Sidwell  <nathan@acm.org>
