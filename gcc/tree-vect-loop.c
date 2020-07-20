@@ -816,6 +816,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vectorizable (false),
     can_use_partial_vectors_p (true),
     using_partial_vectors_p (false),
+    epil_using_partial_vectors_p (false),
     peeling_for_gaps (false),
     peeling_for_niter (false),
     no_data_dependencies (false),
@@ -898,6 +899,7 @@ _loop_vec_info::~_loop_vec_info ()
   free (bbs);
 
   release_vec_loop_controls (&masks);
+  release_vec_loop_controls (&lens);
   delete ivexpr_map;
   delete scan_map;
   epilogue_vinfos.release ();
@@ -1069,6 +1071,81 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
 
   LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo) = cmp_type;
   LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo) = iv_type;
+  return true;
+}
+
+/* Check whether we can use vector access with length based on precison
+   comparison.  So far, to keep it simple, we only allow the case that the
+   precision of the target supported length is larger than the precision
+   required by loop niters.  */
+
+static bool
+vect_verify_loop_lens (loop_vec_info loop_vinfo)
+{
+  if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
+    return false;
+
+  unsigned int max_nitems_per_iter = 1;
+  unsigned int i;
+  rgroup_controls *rgl;
+  /* Find the maximum number of items per iteration for every rgroup.  */
+  FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), i, rgl)
+    {
+      unsigned nitems_per_iter = rgl->max_nscalars_per_iter * rgl->factor;
+      max_nitems_per_iter = MAX (max_nitems_per_iter, nitems_per_iter);
+    }
+
+  /* Work out how many bits we need to represent the length limit.  */
+  unsigned int min_ni_prec
+    = vect_min_prec_for_max_niters (loop_vinfo, max_nitems_per_iter);
+
+  /* Now use the maximum of below precisions for one suitable IV type:
+     - the IV's natural precision
+     - the precision needed to hold: the maximum number of scalar
+       iterations multiplied by the scale factor (min_ni_prec above)
+     - the Pmode precision
+
+     If min_ni_prec is less than the precision of the current niters,
+     we perfer to still use the niters type.  Prefer to use Pmode and
+     wider IV to avoid narrow conversions.  */
+
+  unsigned int ni_prec
+    = TYPE_PRECISION (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)));
+  min_ni_prec = MAX (min_ni_prec, ni_prec);
+  min_ni_prec = MAX (min_ni_prec, GET_MODE_BITSIZE (Pmode));
+
+  tree iv_type = NULL_TREE;
+  opt_scalar_int_mode tmode_iter;
+  FOR_EACH_MODE_IN_CLASS (tmode_iter, MODE_INT)
+    {
+      scalar_mode tmode = tmode_iter.require ();
+      unsigned int tbits = GET_MODE_BITSIZE (tmode);
+
+      /* ??? Do we really want to construct one IV whose precision exceeds
+	 BITS_PER_WORD?  */
+      if (tbits > BITS_PER_WORD)
+	break;
+
+      /* Find the first available standard integral type.  */
+      if (tbits >= min_ni_prec && targetm.scalar_mode_supported_p (tmode))
+	{
+	  iv_type = build_nonstandard_integer_type (tbits, true);
+	  break;
+	}
+    }
+
+  if (!iv_type)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't vectorize with length-based partial vectors"
+			 " because there is no suitable iv type.\n");
+      return false;
+    }
+
+  LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo) = iv_type;
+  LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo) = iv_type;
+
   return true;
 }
 
@@ -2168,11 +2245,48 @@ start_over:
       return ok;
     }
 
-  /* Decide whether to use a fully-masked loop for this vectorization
-     factor.  */
-  LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
-    = (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-       && vect_verify_full_masking (loop_vinfo));
+  /* For now, we don't expect to mix both masking and length approaches for one
+     loop, disable it if both are recorded.  */
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && !LOOP_VINFO_MASKS (loop_vinfo).is_empty ()
+      && !LOOP_VINFO_LENS (loop_vinfo).is_empty ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't vectorize a loop with partial vectors"
+			 " because we don't expect to mix different"
+			 " approaches with partial vectors for the"
+			 " same loop.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+
+  /* Decide whether to vectorize a loop with partial vectors for
+     this vectorization factor.  */
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+    {
+      if (param_vect_partial_vector_usage == 0)
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+      else if (vect_verify_full_masking (loop_vinfo)
+	       || vect_verify_loop_lens (loop_vinfo))
+	{
+	  /* The epilogue and other known niters less than VF
+	    cases can still use vector access with length fully.  */
+	  if (param_vect_partial_vector_usage == 1
+	      && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	      && !vect_known_niters_smaller_than_vf (loop_vinfo))
+	    {
+	      LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	    }
+	  else
+	    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	}
+      else
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+  else
+    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+
   if (dump_enabled_p ())
     {
       if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
@@ -2404,6 +2518,7 @@ again:
     = init_cost (LOOP_VINFO_LOOP (loop_vinfo));
   /* Reset accumulated rgroup information.  */
   release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo));
+  release_vec_loop_controls (&LOOP_VINFO_LENS (loop_vinfo));
   /* Reset assorted flags.  */
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
   LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = false;
@@ -2690,7 +2805,10 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 		lowest_th = ordered_min (lowest_th, th);
 	    }
 	  else
-	    delete loop_vinfo;
+	    {
+	      delete loop_vinfo;
+	      loop_vinfo = opt_loop_vec_info::success (NULL);
+	    }
 
 	  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is
 	     enabled, SIMDUID is not set, it is the innermost loop and we have
@@ -2715,11 +2833,29 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
       else
 	{
 	  delete loop_vinfo;
+	  loop_vinfo = opt_loop_vec_info::success (NULL);
 	  if (fatal)
 	    {
 	      gcc_checking_assert (first_loop_vinfo == NULL);
 	      break;
 	    }
+	}
+
+      /* Handle the case that the original loop can use partial
+	 vectorization, but want to only adopt it for the epilogue.
+	 The retry should be in the same mode as original.  */
+      if (vect_epilogues
+	  && loop_vinfo
+	  && LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo))
+	{
+	  gcc_assert (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+		      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo));
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Re-trying analysis with same vector mode"
+			     " %s for epilogue with partial vectors.\n",
+			     GET_MODE_NAME (loop_vinfo->vector_mode));
+	  continue;
 	}
 
       if (mode_i < vector_modes.length ()
@@ -3561,6 +3697,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       (void) add_stmt_cost (loop_vinfo,
 			    target_cost_data, num_masks - 1, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_body);
+    }
+  else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+    {
+      peel_iters_prologue = 0;
+      peel_iters_epilogue = 0;
     }
   else if (npeel < 0)
     {
@@ -8194,6 +8335,7 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
     {
       rgm->max_nscalars_per_iter = nscalars_per_iter;
       rgm->type = truth_type_for (vectype);
+      rgm->factor = 1;
     }
 }
 
@@ -8244,6 +8386,69 @@ vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
 	gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
     }
   return mask;
+}
+
+/* Record that LOOP_VINFO would need LENS to contain a sequence of NVECTORS
+   lengths for controlling an operation on VECTYPE.  The operation splits
+   each element of VECTYPE into FACTOR separate subelements, measuring the
+   length as a number of these subelements.  */
+
+void
+vect_record_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
+		      unsigned int nvectors, tree vectype, unsigned int factor)
+{
+  gcc_assert (nvectors != 0);
+  if (lens->length () < nvectors)
+    lens->safe_grow_cleared (nvectors);
+  rgroup_controls *rgl = &(*lens)[nvectors - 1];
+
+  /* The number of scalars per iteration, scalar occupied bytes and
+     the number of vectors are both compile-time constants.  */
+  unsigned int nscalars_per_iter
+    = exact_div (nvectors * TYPE_VECTOR_SUBPARTS (vectype),
+		 LOOP_VINFO_VECT_FACTOR (loop_vinfo)).to_constant ();
+
+  if (rgl->max_nscalars_per_iter < nscalars_per_iter)
+    {
+      /* For now, we only support cases in which all loads and stores fall back
+	 to VnQI or none do.  */
+      gcc_assert (!rgl->max_nscalars_per_iter
+		  || (rgl->factor == 1 && factor == 1)
+		  || (rgl->max_nscalars_per_iter * rgl->factor
+		      == nscalars_per_iter * factor));
+      rgl->max_nscalars_per_iter = nscalars_per_iter;
+      rgl->type = vectype;
+      rgl->factor = factor;
+    }
+}
+
+/* Given a complete set of length LENS, extract length number INDEX for an
+   rgroup that operates on NVECTORS vectors, where 0 <= INDEX < NVECTORS.  */
+
+tree
+vect_get_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
+		   unsigned int nvectors, unsigned int index)
+{
+  rgroup_controls *rgl = &(*lens)[nvectors - 1];
+
+  /* Populate the rgroup's len array, if this is the first time we've
+     used it.  */
+  if (rgl->controls.is_empty ())
+    {
+      rgl->controls.safe_grow_cleared (nvectors);
+      for (unsigned int i = 0; i < nvectors; ++i)
+	{
+	  tree len_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
+	  gcc_assert (len_type != NULL_TREE);
+	  tree len = make_temp_ssa_name (len_type, NULL, "loop_len");
+
+	  /* Provide a dummy definition until the real one is available.  */
+	  SSA_NAME_DEF_STMT (len) = gimple_build_nop ();
+	  rgl->controls[i] = len;
+	}
+    }
+
+  return rgl->controls[index];
 }
 
 /* Scale profiling counters by estimation for LOOP which is vectorized
