@@ -1713,29 +1713,58 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       return;
     }
 
-  machine_mode mask_mode;
-  if (!VECTOR_MODE_P (vecmode)
-      || !targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
-      || !can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
+  if (!VECTOR_MODE_P (vecmode))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "can't use a fully-masked loop because the target"
-			 " doesn't have the appropriate masked load or"
-			 " store.\n");
+			 "can't operate on partial vectors when emulating"
+			 " vector operations.\n");
       LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
       return;
     }
+
   /* We might load more scalars than we need for permuting SLP loads.
      We checked in get_group_load_store_type that the extra elements
      don't leak into a new vector.  */
+  auto get_valid_nvectors = [] (poly_uint64 size, poly_uint64 nunits)
+  {
+    unsigned int nvectors;
+    if (can_div_away_from_zero_p (size, nunits, &nvectors))
+      return nvectors;
+    gcc_unreachable ();
+  };
+
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  unsigned int nvectors;
-  if (can_div_away_from_zero_p (group_size * vf, nunits, &nvectors))
-    vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
-  else
-    gcc_unreachable ();
+  machine_mode mask_mode;
+  bool using_partial_vectors_p = false;
+  if (targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
+      && can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
+    {
+      unsigned int nvectors = get_valid_nvectors (group_size * vf, nunits);
+      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
+      using_partial_vectors_p = true;
+    }
+
+  machine_mode vmode;
+  if (get_len_load_store_mode (vecmode, is_load).exists (&vmode))
+    {
+      unsigned int nvectors = get_valid_nvectors (group_size * vf, nunits);
+      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
+      unsigned factor = (vecmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vecmode);
+      vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, factor);
+      using_partial_vectors_p = true;
+    }
+
+  if (!using_partial_vectors_p)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't operate on partial vectors because the"
+			 " target doesn't have the appropriate partial"
+			 " vectorization load or store.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
 }
 
 /* Return the mask input to a masked load or store.  VEC_MASK is the vectorized
@@ -7694,6 +7723,14 @@ vectorizable_store (vec_info *vinfo,
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
        ? &LOOP_VINFO_MASKS (loop_vinfo)
        : NULL);
+  vec_loop_lens *loop_lens
+    = (loop_vinfo && LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)
+       ? &LOOP_VINFO_LENS (loop_vinfo)
+       : NULL);
+
+  /* Shouldn't go with length-based approach if fully masked.  */
+  gcc_assert (!loop_lens || !loop_masks);
+
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
      dr_aligned or dr_unaligned_supported for masked operations.  */
@@ -8029,6 +8066,41 @@ vectorizable_store (vec_info *vinfo,
 		    = gimple_build_call_internal (IFN_MASK_STORE, 4,
 						  dataref_ptr, ptr,
 						  final_mask, vec_oprnd);
+		  gimple_call_set_nothrow (call, true);
+		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
+		  new_stmt = call;
+		}
+	      else if (loop_lens)
+		{
+		  tree final_len
+		    = vect_get_loop_len (loop_vinfo, loop_lens,
+					 vec_num * ncopies, vec_num * j + i);
+		  align = least_bit_hwi (misalign | align);
+		  tree ptr = build_int_cst (ref_type, align);
+		  machine_mode vmode = TYPE_MODE (vectype);
+		  opt_machine_mode new_ovmode
+		    = get_len_load_store_mode (vmode, false);
+		  machine_mode new_vmode = new_ovmode.require ();
+		  /* Need conversion if it's wrapped with VnQI.  */
+		  if (vmode != new_vmode)
+		    {
+		      tree new_vtype
+			= build_vector_type_for_mode (unsigned_intQI_type_node,
+						      new_vmode);
+		      tree var
+			= vect_get_new_ssa_name (new_vtype, vect_simple_var);
+		      vec_oprnd
+			= build1 (VIEW_CONVERT_EXPR, new_vtype, vec_oprnd);
+		      gassign *new_stmt
+			= gimple_build_assign (var, VIEW_CONVERT_EXPR,
+					       vec_oprnd);
+		      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
+						   gsi);
+		      vec_oprnd = var;
+		    }
+		  gcall *call
+		    = gimple_build_call_internal (IFN_LEN_STORE, 4, dataref_ptr,
+						  ptr, final_len, vec_oprnd);
 		  gimple_call_set_nothrow (call, true);
 		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
 		  new_stmt = call;
@@ -8577,7 +8649,7 @@ vectorizable_load (vec_info *vinfo,
       unsigned HOST_WIDE_INT cst_offset = 0;
       tree dr_offset;
 
-      gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
+      gcc_assert (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop);
 
       if (grouped_load)
@@ -8859,6 +8931,14 @@ vectorizable_load (vec_info *vinfo,
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
        ? &LOOP_VINFO_MASKS (loop_vinfo)
        : NULL);
+  vec_loop_lens *loop_lens
+    = (loop_vinfo && LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)
+       ? &LOOP_VINFO_LENS (loop_vinfo)
+       : NULL);
+
+  /* Shouldn't go with length-based approach if fully masked.  */
+  gcc_assert (!loop_lens || !loop_masks);
+
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
      dr_aligned or dr_unaligned_supported for masked operations.  */
@@ -9246,6 +9326,43 @@ vectorizable_load (vec_info *vinfo,
 			gimple_call_set_nothrow (call, true);
 			new_stmt = call;
 			data_ref = NULL_TREE;
+		      }
+		    else if (loop_lens && memory_access_type != VMAT_INVARIANT)
+		      {
+			tree final_len
+			  = vect_get_loop_len (loop_vinfo, loop_lens,
+					       vec_num * ncopies,
+					       vec_num * j + i);
+			align = least_bit_hwi (misalign | align);
+			tree ptr = build_int_cst (ref_type, align);
+			gcall *call
+			  = gimple_build_call_internal (IFN_LEN_LOAD, 3,
+							dataref_ptr, ptr,
+							final_len);
+			gimple_call_set_nothrow (call, true);
+			new_stmt = call;
+			data_ref = NULL_TREE;
+
+			/* Need conversion if it's wrapped with VnQI.  */
+			machine_mode vmode = TYPE_MODE (vectype);
+			opt_machine_mode new_ovmode
+			  = get_len_load_store_mode (vmode, true);
+			machine_mode new_vmode = new_ovmode.require ();
+			if (vmode != new_vmode)
+			  {
+			    tree qi_type = unsigned_intQI_type_node;
+			    tree new_vtype
+			      = build_vector_type_for_mode (qi_type, new_vmode);
+			    tree var = vect_get_new_ssa_name (new_vtype,
+							      vect_simple_var);
+			    gimple_set_lhs (call, var);
+			    vect_finish_stmt_generation (vinfo, stmt_info, call,
+							 gsi);
+			    tree op = build1 (VIEW_CONVERT_EXPR, vectype, var);
+			    new_stmt
+			      = gimple_build_assign (vec_dest,
+						     VIEW_CONVERT_EXPR, op);
+			  }
 		      }
 		    else
 		      {
@@ -11967,3 +12084,27 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
   *nunits_vectype_out = nunits_vectype;
   return opt_result::success ();
 }
+
+/* Generate and return statement sequence that sets vector length LEN that is:
+
+   min_of_start_and_end = min (START_INDEX, END_INDEX);
+   left_len = END_INDEX - min_of_start_and_end;
+   rhs = min (left_len, LEN_LIMIT);
+   LEN = rhs;  */
+
+gimple_seq
+vect_gen_len (tree len, tree start_index, tree end_index, tree len_limit)
+{
+  gimple_seq stmts = NULL;
+  tree len_type = TREE_TYPE (len);
+  gcc_assert (TREE_TYPE (start_index) == len_type);
+
+  tree min = gimple_build (&stmts, MIN_EXPR, len_type, start_index, end_index);
+  tree left_len = gimple_build (&stmts, MINUS_EXPR, len_type, end_index, min);
+  tree rhs = gimple_build (&stmts, MIN_EXPR, len_type, left_len, len_limit);
+  gimple* stmt = gimple_build_assign (len, rhs);
+  gimple_seq_add_stmt (&stmts, stmt);
+
+  return stmts;
+}
+

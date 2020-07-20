@@ -797,6 +797,23 @@ package body Tbuild is
       return Result;
    end OK_Convert_To;
 
+   --------------
+   -- Sel_Comp --
+   --------------
+
+   function Sel_Comp (Pre : Node_Id; Sel : String) return Node_Id is
+   begin
+      return Make_Selected_Component
+        (Sloc          => Sloc (Pre),
+         Prefix        => Pre,
+         Selector_Name => Make_Identifier (Sloc (Pre), Name_Find (Sel)));
+   end Sel_Comp;
+
+   function Sel_Comp (Pre, Sel : String; Loc : Source_Ptr) return Node_Id is
+   begin
+      return Sel_Comp (Make_Identifier (Loc, Name_Find (Pre)), Sel);
+   end Sel_Comp;
+
    -------------
    -- Set_NOD --
    -------------

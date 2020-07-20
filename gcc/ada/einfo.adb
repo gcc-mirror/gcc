@@ -3797,6 +3797,12 @@ package body Einfo is
       return Ekind (Id) in Modular_Integer_Kind;
    end Is_Modular_Integer_Type;
 
+   function Is_Named_Access_Type                (Id : E) return B is
+   begin
+      return Ekind (Id) in E_Access_Type ..
+                             E_Access_Protected_Subprogram_Type;
+   end Is_Named_Access_Type;
+
    function Is_Named_Number                     (Id : E) return B is
    begin
       return Ekind (Id) in Named_Kind;

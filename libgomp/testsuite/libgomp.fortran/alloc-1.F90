@@ -1,8 +1,8 @@
 ! { dg-additional-options "-Wall -Wextra -Wno-maybe-uninitialized" }
 #ifdef DEFAULT_INTEGER_8
-#define ONEoFIVE 105_c_size_t*8
+#define ONEoFIVE 105_c_size_t*8_c_size_t
 #else
-#define ONEoFIVE 105_c_size_t*4
+#define ONEoFIVE 105_c_size_t*4_c_size_t
 #endif
       program main
         use iso_c_binding
@@ -58,7 +58,8 @@
         integer, pointer, volatile :: p(:), p0, q(:), r(:)
         integer (omp_allocator_handle_kind) :: a, a2
 
-        cp = omp_alloc (3 * c_sizeof (i), omp_default_mem_alloc)
+        cp = omp_alloc (3_c_size_t * c_sizeof (i),                      &
+     &                  omp_default_mem_alloc)
         if (mod (transfer (cp, intptr), 4_c_intptr_t) /= 0) stop 1
         call c_f_pointer (cp, p, [3])
         p(1) = 1
@@ -66,7 +67,8 @@
         p(3) = 3
         call omp_free (cp, omp_default_mem_alloc)
 
-        cp = omp_alloc (2 * c_sizeof (i), omp_default_mem_alloc)
+        cp = omp_alloc (2_c_size_t * c_sizeof (i),                      &
+     &                  omp_default_mem_alloc)
         if (mod (transfer (cp, intptr), 4_c_intptr_t) /= 0) stop 2
         call c_f_pointer (cp, p, [2])
         p(1) = 1
@@ -121,7 +123,8 @@
         if (a2 == omp_null_allocator) stop 10
         cp = omp_alloc (ONEoFIVE, a2)
         if (mod (transfer (cp, intptr), 32_c_intptr_t) /= 0) stop 11
-        call c_f_pointer (cp, p, [ONEoFIVE / c_sizeof (i)])
+        call c_f_pointer (cp, p, [ONEoFIVE                              &
+     &                            / c_sizeof (i)])
         p(1) = 5
         p(ONEoFIVE / c_sizeof (i)) = 6
         cq = omp_alloc (768_c_size_t, a2)
@@ -149,9 +152,11 @@
      &                           size (traits5), traits5)
         if (a2 == omp_null_allocator) stop 16
         call omp_set_default_allocator (a2)
-        cp = omp_alloc (ONEoFIVE, omp_null_allocator)
+        cp = omp_alloc (ONEoFIVE,                                       &
+     &                  omp_null_allocator)
         if (mod (transfer (cp, intptr), 32_c_intptr_t) /= 0) stop 17
-        call c_f_pointer (cq, q, [ONEoFIVE / c_sizeof (i)])
+        call c_f_pointer (cq, q, [ONEoFIVE                              &
+     &                            / c_sizeof (i)])
         p(1) = 5
         p(ONEoFIVE / c_sizeof (i)) = 6
         cq = omp_alloc (768_c_size_t, omp_null_allocator)

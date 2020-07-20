@@ -2760,7 +2760,9 @@ package body Sem_Aggr is
         Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
         New_Indexed_Subp, Assign_Indexed_Subp);
 
-      if Present (Add_Unnamed_Subp) then
+      if Present (Add_Unnamed_Subp)
+        and then No (New_Indexed_Subp)
+      then
          declare
             Elmt_Type : constant Entity_Id :=
               Etype (Next_Formal
@@ -2824,6 +2826,10 @@ package body Sem_Aggr is
 
                   while Present (Choice) loop
                      Analyze_And_Resolve (Choice, Key_Type);
+                     if not Is_Static_Expression (Choice) then
+                        Error_Msg_N ("Choice must be static", Choice);
+                     end if;
+
                      Next (Choice);
                   end loop;
 
@@ -2837,8 +2843,53 @@ package body Sem_Aggr is
                Next (Comp);
             end loop;
          end;
+
       else
-         Error_Msg_N ("indexed aggregates are forthcoming", N);
+         --  Indexed Aggregate. Both positional and indexed component
+         --  can be present. Choices must be static values or ranges
+         --  with static bounds.
+
+         declare
+            Container : constant Entity_Id :=
+              First_Formal (Entity (Assign_Indexed_Subp));
+            Index_Type : constant Entity_Id := Etype (Next_Formal (Container));
+            Comp_Type  : constant Entity_Id :=
+                                 Etype (Next_Formal (Next_Formal (Container)));
+            Comp   : Node_Id;
+            Choice : Node_Id;
+
+         begin
+            if Present (Expressions (N)) then
+               Comp := First (Expressions (N));
+               while Present (Comp) loop
+                  Analyze_And_Resolve (Comp, Comp_Type);
+                  Next (Comp);
+               end loop;
+            end if;
+
+            if Present (Component_Associations (N)) then
+               Comp := First (Expressions (N));
+
+               while Present (Comp) loop
+                  if Nkind (Comp) = N_Component_Association then
+                     Choice := First (Choices (Comp));
+
+                     while Present (Choice) loop
+                        Analyze_And_Resolve (Choice, Index_Type);
+                        Next (Choice);
+                     end loop;
+
+                     Analyze_And_Resolve (Expression (Comp), Comp_Type);
+
+                  elsif Nkind (Comp) = N_Iterated_Component_Association then
+                     Resolve_Iterated_Component_Association
+                       (Comp, Index_Type, Comp_Type);
+                  end if;
+
+                  Next (Comp);
+               end loop;
+            end if;
+         end;
       end if;
    end Resolve_Container_Aggregate;
 

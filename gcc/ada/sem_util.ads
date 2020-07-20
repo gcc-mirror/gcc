@@ -1640,6 +1640,10 @@ package Sem_Util is
    --  True if T is a bounded string type. Used to make sure "=" composes
    --  properly for bounded string types.
 
+   function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id denotes a procedure with synchronization
+   --  kind By_Protected_Procedure.
+
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the
    --  bound is a compile-time known value, or a constant entity, or an

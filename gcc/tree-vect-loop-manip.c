@@ -399,19 +399,20 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_controls *dest_rgm,
 
    It is known that:
 
-     NITERS * RGC->max_nscalars_per_iter
+     NITERS * RGC->max_nscalars_per_iter * RGC->factor
 
    does not overflow.  However, MIGHT_WRAP_P says whether an induction
    variable that starts at 0 and has step:
 
-     VF * RGC->max_nscalars_per_iter
+     VF * RGC->max_nscalars_per_iter * RGC->factor
 
    might overflow before hitting a value above:
 
-     (NITERS + NITERS_SKIP) * RGC->max_nscalars_per_iter
+     (NITERS + NITERS_SKIP) * RGC->max_nscalars_per_iter * RGC->factor
 
    This means that we cannot guarantee that such an induction variable
-   would ever hit a value that produces a set of all-false masks for RGC.  */
+   would ever hit a value that produces a set of all-false masks or zero
+   lengths for RGC.  */
 
 static tree
 vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
@@ -422,40 +423,46 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 {
   tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
   tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
-  tree ctrl_type = rgc->type;
-  unsigned int nscalars_per_iter = rgc->max_nscalars_per_iter;
-  poly_uint64 nscalars_per_ctrl = TYPE_VECTOR_SUBPARTS (ctrl_type);
-  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  bool use_masks_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
 
-  /* Calculate the maximum number of scalar values that the rgroup
+  tree ctrl_type = rgc->type;
+  unsigned int nitems_per_iter = rgc->max_nscalars_per_iter * rgc->factor;
+  poly_uint64 nitems_per_ctrl = TYPE_VECTOR_SUBPARTS (ctrl_type) * rgc->factor;
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  tree length_limit = NULL_TREE;
+  /* For length, we need length_limit to ensure length in range.  */
+  if (!use_masks_p)
+    length_limit = build_int_cst (compare_type, nitems_per_ctrl);
+
+  /* Calculate the maximum number of item values that the rgroup
      handles in total, the number that it handles for each iteration
      of the vector loop, and the number that it should skip during the
      first iteration of the vector loop.  */
-  tree nscalars_total = niters;
-  tree nscalars_step = build_int_cst (iv_type, vf);
-  tree nscalars_skip = niters_skip;
-  if (nscalars_per_iter != 1)
+  tree nitems_total = niters;
+  tree nitems_step = build_int_cst (iv_type, vf);
+  tree nitems_skip = niters_skip;
+  if (nitems_per_iter != 1)
     {
       /* We checked before setting LOOP_VINFO_USING_PARTIAL_VECTORS_P that
 	 these multiplications don't overflow.  */
-      tree compare_factor = build_int_cst (compare_type, nscalars_per_iter);
-      tree iv_factor = build_int_cst (iv_type, nscalars_per_iter);
-      nscalars_total = gimple_build (preheader_seq, MULT_EXPR, compare_type,
-				     nscalars_total, compare_factor);
-      nscalars_step = gimple_build (preheader_seq, MULT_EXPR, iv_type,
-				    nscalars_step, iv_factor);
-      if (nscalars_skip)
-	nscalars_skip = gimple_build (preheader_seq, MULT_EXPR, compare_type,
-				      nscalars_skip, compare_factor);
+      tree compare_factor = build_int_cst (compare_type, nitems_per_iter);
+      tree iv_factor = build_int_cst (iv_type, nitems_per_iter);
+      nitems_total = gimple_build (preheader_seq, MULT_EXPR, compare_type,
+				   nitems_total, compare_factor);
+      nitems_step = gimple_build (preheader_seq, MULT_EXPR, iv_type,
+				  nitems_step, iv_factor);
+      if (nitems_skip)
+	nitems_skip = gimple_build (preheader_seq, MULT_EXPR, compare_type,
+				    nitems_skip, compare_factor);
     }
 
-  /* Create an induction variable that counts the number of scalars
+  /* Create an induction variable that counts the number of items
      processed.  */
   tree index_before_incr, index_after_incr;
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-  create_iv (build_int_cst (iv_type, 0), nscalars_step, NULL_TREE, loop,
+  create_iv (build_int_cst (iv_type, 0), nitems_step, NULL_TREE, loop,
 	     &incr_gsi, insert_after, &index_before_incr, &index_after_incr);
 
   tree zero_index = build_int_cst (compare_type, 0);
@@ -466,70 +473,70 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
       /* In principle the loop should stop iterating once the incremented
 	 IV reaches a value greater than or equal to:
 
-	   NSCALARS_TOTAL +[infinite-prec] NSCALARS_SKIP
+	   NITEMS_TOTAL +[infinite-prec] NITEMS_SKIP
 
 	 However, there's no guarantee that this addition doesn't overflow
 	 the comparison type, or that the IV hits a value above it before
 	 wrapping around.  We therefore adjust the limit down by one
 	 IV step:
 
-	   (NSCALARS_TOTAL +[infinite-prec] NSCALARS_SKIP)
-	   -[infinite-prec] NSCALARS_STEP
+	   (NITEMS_TOTAL +[infinite-prec] NITEMS_SKIP)
+	   -[infinite-prec] NITEMS_STEP
 
 	 and compare the IV against this limit _before_ incrementing it.
 	 Since the comparison type is unsigned, we actually want the
 	 subtraction to saturate at zero:
 
-	   (NSCALARS_TOTAL +[infinite-prec] NSCALARS_SKIP)
-	   -[sat] NSCALARS_STEP
+	   (NITEMS_TOTAL +[infinite-prec] NITEMS_SKIP)
+	   -[sat] NITEMS_STEP
 
-	 And since NSCALARS_SKIP < NSCALARS_STEP, we can reassociate this as:
+	 And since NITEMS_SKIP < NITEMS_STEP, we can reassociate this as:
 
-	   NSCALARS_TOTAL -[sat] (NSCALARS_STEP - NSCALARS_SKIP)
+	   NITEMS_TOTAL -[sat] (NITEMS_STEP - NITEMS_SKIP)
 
 	 where the rightmost subtraction can be done directly in
 	 COMPARE_TYPE.  */
       test_index = index_before_incr;
       tree adjust = gimple_convert (preheader_seq, compare_type,
-				    nscalars_step);
-      if (nscalars_skip)
+				    nitems_step);
+      if (nitems_skip)
 	adjust = gimple_build (preheader_seq, MINUS_EXPR, compare_type,
-			       adjust, nscalars_skip);
+			       adjust, nitems_skip);
       test_limit = gimple_build (preheader_seq, MAX_EXPR, compare_type,
-				 nscalars_total, adjust);
+				 nitems_total, adjust);
       test_limit = gimple_build (preheader_seq, MINUS_EXPR, compare_type,
 				 test_limit, adjust);
       test_gsi = &incr_gsi;
 
       /* Get a safe limit for the first iteration.  */
-      if (nscalars_skip)
+      if (nitems_skip)
 	{
-	  /* The first vector iteration can handle at most NSCALARS_STEP
-	     scalars.  NSCALARS_STEP <= CONST_LIMIT, and adding
-	     NSCALARS_SKIP to that cannot overflow.  */
+	  /* The first vector iteration can handle at most NITEMS_STEP
+	     items.  NITEMS_STEP <= CONST_LIMIT, and adding
+	     NITEMS_SKIP to that cannot overflow.  */
 	  tree const_limit = build_int_cst (compare_type,
 					    LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-					    * nscalars_per_iter);
+					    * nitems_per_iter);
 	  first_limit = gimple_build (preheader_seq, MIN_EXPR, compare_type,
-				      nscalars_total, const_limit);
+				      nitems_total, const_limit);
 	  first_limit = gimple_build (preheader_seq, PLUS_EXPR, compare_type,
-				      first_limit, nscalars_skip);
+				      first_limit, nitems_skip);
 	}
       else
 	/* For the first iteration it doesn't matter whether the IV hits
-	   a value above NSCALARS_TOTAL.  That only matters for the latch
+	   a value above NITEMS_TOTAL.  That only matters for the latch
 	   condition.  */
-	first_limit = nscalars_total;
+	first_limit = nitems_total;
     }
   else
     {
       /* Test the incremented IV, which will always hit a value above
 	 the bound before wrapping.  */
       test_index = index_after_incr;
-      test_limit = nscalars_total;
-      if (nscalars_skip)
+      test_limit = nitems_total;
+      if (nitems_skip)
 	test_limit = gimple_build (preheader_seq, PLUS_EXPR, compare_type,
-				   test_limit, nscalars_skip);
+				   test_limit, nitems_skip);
       test_gsi = &loop_cond_gsi;
 
       first_limit = test_limit;
@@ -547,18 +554,17 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
   unsigned int i;
   FOR_EACH_VEC_ELT_REVERSE (rgc->controls, i, ctrl)
     {
-      /* Previous controls will cover BIAS scalars.  This control covers the
+      /* Previous controls will cover BIAS items.  This control covers the
 	 next batch.  */
-      poly_uint64 bias = nscalars_per_ctrl * i;
+      poly_uint64 bias = nitems_per_ctrl * i;
       tree bias_tree = build_int_cst (compare_type, bias);
-      gimple *tmp_stmt;
 
       /* See whether the first iteration of the vector loop is known
 	 to have a full control.  */
       poly_uint64 const_limit;
       bool first_iteration_full
 	= (poly_int_tree_p (first_limit, &const_limit)
-	   && known_ge (const_limit, (i + 1) * nscalars_per_ctrl));
+	   && known_ge (const_limit, (i + 1) * nitems_per_ctrl));
 
       /* Rather than have a new IV that starts at BIAS and goes up to
 	 TEST_LIMIT, prefer to use the same 0-based IV for each control
@@ -574,7 +580,7 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 					  bias_tree);
 	}
 
-      /* Create the initial control.  First include all scalars that
+      /* Create the initial control.  First include all items that
 	 are within the loop limit.  */
       tree init_ctrl = NULL_TREE;
       if (!first_iteration_full)
@@ -591,27 +597,38 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	    }
 	  else
 	    {
-	      /* FIRST_LIMIT is the maximum number of scalars handled by the
+	      /* FIRST_LIMIT is the maximum number of items handled by the
 		 first iteration of the vector loop.  Test the portion
 		 associated with this control.  */
 	      start = bias_tree;
 	      end = first_limit;
 	    }
 
-	  init_ctrl = make_temp_ssa_name (ctrl_type, NULL, "max_mask");
-	  tmp_stmt = vect_gen_while (init_ctrl, start, end);
-	  gimple_seq_add_stmt (preheader_seq, tmp_stmt);
+	  if (use_masks_p)
+	    {
+	      init_ctrl = make_temp_ssa_name (ctrl_type, NULL, "max_mask");
+	      gimple *tmp_stmt = vect_gen_while (init_ctrl, start, end);
+	      gimple_seq_add_stmt (preheader_seq, tmp_stmt);
+	    }
+	  else
+	    {
+	      init_ctrl = make_temp_ssa_name (compare_type, NULL, "max_len");
+	      gimple_seq seq = vect_gen_len (init_ctrl, start,
+					     end, length_limit);
+	      gimple_seq_add_seq (preheader_seq, seq);
+	    }
 	}
 
       /* Now AND out the bits that are within the number of skipped
-	 scalars.  */
+	 items.  */
       poly_uint64 const_skip;
-      if (nscalars_skip
-	  && !(poly_int_tree_p (nscalars_skip, &const_skip)
+      if (nitems_skip
+	  && !(poly_int_tree_p (nitems_skip, &const_skip)
 	       && known_le (const_skip, bias)))
 	{
+	  gcc_assert (use_masks_p);
 	  tree unskipped_mask = vect_gen_while_not (preheader_seq, ctrl_type,
-						    bias_tree, nscalars_skip);
+						    bias_tree, nitems_skip);
 	  if (init_ctrl)
 	    init_ctrl = gimple_build (preheader_seq, BIT_AND_EXPR, ctrl_type,
 				      init_ctrl, unskipped_mask);
@@ -620,13 +637,28 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	}
 
       if (!init_ctrl)
-	/* First iteration is full.  */
-	init_ctrl = build_minus_one_cst (ctrl_type);
+	{
+	  /* First iteration is full.  */
+	  if (use_masks_p)
+	    init_ctrl = build_minus_one_cst (ctrl_type);
+	  else
+	    init_ctrl = length_limit;
+	}
 
       /* Get the control value for the next iteration of the loop.  */
-      next_ctrl = make_temp_ssa_name (ctrl_type, NULL, "next_mask");
-      gcall *call = vect_gen_while (next_ctrl, test_index, this_test_limit);
-      gsi_insert_before (test_gsi, call, GSI_SAME_STMT);
+      if (use_masks_p)
+	{
+	  next_ctrl = make_temp_ssa_name (ctrl_type, NULL, "next_mask");
+	  gcall *call = vect_gen_while (next_ctrl, test_index, this_test_limit);
+	  gsi_insert_before (test_gsi, call, GSI_SAME_STMT);
+	}
+      else
+	{
+	  next_ctrl = make_temp_ssa_name (compare_type, NULL, "next_len");
+	  gimple_seq seq = vect_gen_len (next_ctrl, test_index, this_test_limit,
+					 length_limit);
+	  gsi_insert_seq_before (test_gsi, seq, GSI_SAME_STMT);
+	}
 
       vect_set_loop_control (loop, ctrl, init_ctrl, next_ctrl);
     }
@@ -652,6 +684,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
   gimple_seq preheader_seq = NULL;
   gimple_seq header_seq = NULL;
 
+  bool use_masks_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
   tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
   unsigned int compare_precision = TYPE_PRECISION (compare_type);
   tree orig_niters = niters;
@@ -686,28 +719,30 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
   tree test_ctrl = NULL_TREE;
   rgroup_controls *rgc;
   unsigned int i;
-  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
-  FOR_EACH_VEC_ELT (*masks, i, rgc)
+  auto_vec<rgroup_controls> *controls = use_masks_p
+					  ? &LOOP_VINFO_MASKS (loop_vinfo)
+					  : &LOOP_VINFO_LENS (loop_vinfo);
+  FOR_EACH_VEC_ELT (*controls, i, rgc)
     if (!rgc->controls.is_empty ())
       {
 	/* First try using permutes.  This adds a single vector
 	   instruction to the loop for each mask, but needs no extra
 	   loop invariants or IVs.  */
 	unsigned int nmasks = i + 1;
-	if ((nmasks & 1) == 0)
+	if (use_masks_p && (nmasks & 1) == 0)
 	  {
-	    rgroup_controls *half_rgc = &(*masks)[nmasks / 2 - 1];
+	    rgroup_controls *half_rgc = &(*controls)[nmasks / 2 - 1];
 	    if (!half_rgc->controls.is_empty ()
 		&& vect_maybe_permute_loop_masks (&header_seq, rgc, half_rgc))
 	      continue;
 	  }
 
 	/* See whether zero-based IV would ever generate all-false masks
-	   before wrapping around.  */
+	   or zero length before wrapping around.  */
+	unsigned nitems_per_iter = rgc->max_nscalars_per_iter * rgc->factor;
 	bool might_wrap_p
 	  = (iv_limit == -1
-	     || (wi::min_precision (iv_limit * rgc->max_nscalars_per_iter,
-				    UNSIGNED)
+	     || (wi::min_precision (iv_limit * nitems_per_iter, UNSIGNED)
 		 > compare_precision));
 
 	/* Set up all controls for this group.  */
@@ -2568,7 +2603,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (vect_epilogues
       && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && prolog_peeling >= 0
-      && known_eq (vf, lowest_vf))
+      && known_eq (vf, lowest_vf)
+      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (epilogue_vinfo))
     {
       unsigned HOST_WIDE_INT eiters
 	= (LOOP_VINFO_INT_NITERS (loop_vinfo)

@@ -14565,6 +14565,17 @@ package body Sem_Util is
                   Is_RTE (Root_Type (Under), RO_WW_Super_String));
    end Is_Bounded_String;
 
+   -------------------------------
+   -- Is_By_Protected_Procedure --
+   -------------------------------
+
+   function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean is
+   begin
+      return Ekind (Id) = E_Procedure
+        and then Present (Get_Rep_Pragma (Id, Name_Implemented))
+        and then Implementation_Kind (Id) = Name_By_Protected_Procedure;
+   end Is_By_Protected_Procedure;
+
    ---------------------
    -- Is_CCT_Instance --
    ---------------------
@@ -24319,7 +24330,7 @@ package body Sem_Util is
          --  than the level of any visible named access type (see 3.10.2(21)).
 
          if Is_Type (E) then
-            return Type_Access_Level (E) +  1;
+            return Type_Access_Level (E) + 1;
 
          elsif Present (Renamed_Object (E)) then
             return Object_Access_Level (Renamed_Object (E));
@@ -24335,6 +24346,12 @@ package body Sem_Util is
            and then Comes_From_Source (Scope (E))
          then
             return Type_Access_Level (Scope (E)) + 1;
+
+         --  An object of a named access type gets its level from its
+         --  associated type.
+
+         elsif Is_Named_Access_Type (Etype (E)) then
+            return Type_Access_Level (Etype (E));
 
          else
             return Scope_Depth (Enclosing_Dynamic_Scope (E));
@@ -24547,6 +24564,15 @@ package body Sem_Util is
                          Name_Loop_Entry)
       then
          return Object_Access_Level (Current_Scope);
+
+      --  Move up the attribute reference when we encounter a 'Access variation
+
+      elsif Nkind (Orig_Obj) = N_Attribute_Reference
+        and then Nam_In (Attribute_Name (Orig_Obj), Name_Access,
+                                                    Name_Unchecked_Access,
+                                                    Name_Unrestricted_Access)
+      then
+         return Object_Access_Level (Prefix (Orig_Obj));
 
       --  Otherwise return the scope level of Standard. (If there are cases
       --  that fall through to this point they will be treated as having
@@ -27028,6 +27054,7 @@ package body Sem_Util is
    -----------------------------
    -- Statically_Names_Object --
    -----------------------------
+
    function Statically_Names_Object (N : Node_Id) return Boolean is
    begin
       if Statically_Denotes_Object (N) then
@@ -27100,28 +27127,16 @@ package body Sem_Util is
             then
                return False;
             end if;
+
             declare
                Comp : constant Entity_Id :=
                  Original_Record_Component (Entity (Selector_Name (N)));
             begin
-              --  In not calling Has_Discriminant_Dependent_Constraint here,
-              --  we are anticipating a language definition fixup. The
-              --  current definition of "statically names" includes the
-              --  wording "the selector_name names a component that does
-              --  not depend on a discriminant", which suggests that this
-              --  call should not be commented out. But it appears likely
-              --  that this wording will be updated to only apply to a
-              --  component declared in a variant part. There is no need
-              --  to disallow something like
-              --    with Post => ... and then
-              --       Some_Record.Some_Discrim_Dep_Array_Component'Old (I)
-              --  since the evaluation of the 'Old prefix cannot raise an
-              --  exception. If the language is not updated, then the call
-              --  below to H_D_C_C will need to be uncommented.
+              --  AI12-0373 confirms that we should not call
+              --  Has_Discriminant_Dependent_Constraint here which would be
+              --  too strong.
 
-               if Is_Declared_Within_Variant (Comp)
-                  --  or else Has_Discriminant_Dependent_Constraint (Comp)
-               then
+               if Is_Declared_Within_Variant (Comp) then
                   return False;
                end if;
             end;

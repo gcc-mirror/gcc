@@ -2624,15 +2624,16 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
   return true;
 }
 
-/* Return whether X is just a single set, with the source
+/* Return whether X is just a single_set, with the source
    a general_operand.  */
 static bool
-is_just_move (rtx x)
+is_just_move (rtx_insn *x)
 {
-  if (INSN_P (x))
-    x = PATTERN (x);
+  rtx set = single_set (x);
+  if (!set)
+    return false;
 
-  return (GET_CODE (x) == SET && general_operand (SET_SRC (x), VOIDmode));
+  return general_operand (SET_SRC (set), VOIDmode);
 }
 
 /* Callback function to count autoincs.  */

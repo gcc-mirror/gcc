@@ -7189,8 +7189,64 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (maybe_lt (offset, 0))
 	return NULL_TREE;
 
-      return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size,
-				  base);
+      tem = fold_ctor_reference (TREE_TYPE (t), ctor, offset, size, base);
+      if (tem)
+	return tem;
+
+      /* For bit field reads try to read the representative and
+	 adjust.  */
+      if (TREE_CODE (t) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (t, 1))
+	  && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)))
+	{
+	  HOST_WIDE_INT csize, coffset;
+	  tree field = TREE_OPERAND (t, 1);
+	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (repr))
+	      && size.is_constant (&csize)
+	      && offset.is_constant (&coffset)
+	      && (coffset % BITS_PER_UNIT != 0
+		  || csize % BITS_PER_UNIT != 0)
+	      && !reverse
+	      && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
+	    {
+	      poly_int64 bitoffset;
+	      poly_uint64 field_offset, repr_offset;
+	      if (poly_int_tree_p (DECL_FIELD_OFFSET (field), &field_offset)
+		  && poly_int_tree_p (DECL_FIELD_OFFSET (repr), &repr_offset))
+		bitoffset = (field_offset - repr_offset) * BITS_PER_UNIT;
+	      else
+		bitoffset = 0;
+	      bitoffset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
+			    - tree_to_uhwi (DECL_FIELD_BIT_OFFSET (repr)));
+	      HOST_WIDE_INT bitoff;
+	      int diff = (TYPE_PRECISION (TREE_TYPE (repr))
+			  - TYPE_PRECISION (TREE_TYPE (field)));
+	      if (bitoffset.is_constant (&bitoff)
+		  && bitoff >= 0
+		  && bitoff <= diff)
+		{
+		  offset -= bitoff;
+		  size = tree_to_uhwi (DECL_SIZE (repr));
+
+		  tem = fold_ctor_reference (TREE_TYPE (repr), ctor, offset,
+					     size, base);
+		  if (tem && TREE_CODE (tem) == INTEGER_CST)
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			tem = wide_int_to_tree (TREE_TYPE (field),
+						wi::lrshift (wi::to_wide (tem),
+							     bitoff));
+		      else
+			tem = wide_int_to_tree (TREE_TYPE (field),
+						wi::lrshift (wi::to_wide (tem),
+							     diff - bitoff));
+		      return tem;
+		    }
+		}
+	    }
+	}
+      break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:

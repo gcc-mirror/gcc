@@ -5488,7 +5488,7 @@ package body Sem_Ch13 is
                end if;
             end if;
 
-            --  All checks succeeded.
+            --  All checks succeeded
 
             Indexing_Found := True;
          end Check_One_Function;
@@ -6442,37 +6442,48 @@ package body Sem_Ch13 is
          ---------
 
          when Attribute_CPU =>
+            pragma Assert (From_Aspect_Specification (N));
+            --  The parser forbids this clause in source code, so it must have
+            --  come from an aspect specification.
 
-            --  CPU attribute definition clause not allowed except from aspect
-            --  specification.
+            if not Is_Task_Type (U_Ent) then
+               Error_Msg_N ("CPU can only be defined for task", Nam);
 
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N ("CPU can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the components must be established
-                  --  and restored before and after analysis.
-
-                  Push_Type (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
-                  Pop_Type (U_Ent);
-
-                  if not Is_OK_Static_Expression (Expr) then
-                     Check_Restriction (Static_Priorities, Expr);
-                  end if;
-               end if;
+            elsif Duplicate_Clause then
+               null;
 
             else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               --  The visibility to the components must be established
+               --  and restored before and after analysis.
+
+               Push_Type (U_Ent);
+               Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
+               Pop_Type (U_Ent);
+
+               --  AI12-0117-1, "Restriction No_Tasks_Unassigned_To_CPU":
+               --  If the expression is static, and its value is
+               --  System.Multiprocessors.Not_A_Specific_CPU (i.e. zero) then
+               --  that's a violation of No_Tasks_Unassigned_To_CPU. It might
+               --  seem better to refer to Not_A_Specific_CPU here, but that
+               --  involves a lot of horsing around with Rtsfind, and this
+               --  value is not going to change, so it's better to hardwire
+               --  Uint_0.
+               --
+               --  AI12-0055-1, "All properties of a usage profile are defined
+               --  by pragmas": If the expression is nonstatic, that's a
+               --  violation of No_Dynamic_CPU_Assignment.
+
+               if Is_OK_Static_Expression (Expr) then
+                  if Expr_Value (Expr) = Uint_0 then
+                     Check_Restriction (No_Tasks_Unassigned_To_CPU, Expr);
+                  end if;
+               else
+                  Check_Restriction (No_Dynamic_CPU_Assignment, Expr);
+               end if;
             end if;
 
          ----------------------
@@ -6536,36 +6547,30 @@ package body Sem_Ch13 is
          ------------------------
 
          when Attribute_Dispatching_Domain =>
+            pragma Assert (From_Aspect_Specification (N));
+            --  The parser forbids this clause in source code, so it must have
+            --  come from an aspect specification.
 
-            --  Dispatching_Domain attribute definition clause not allowed
-            --  except from aspect specification.
+            if not Is_Task_Type (U_Ent) then
+               Error_Msg_N
+                 ("Dispatching_Domain can only be defined for task", Nam);
 
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Dispatching_Domain can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the components must be restored
-
-                  Push_Type (U_Ent);
-
-                  Preanalyze_Spec_Expression
-                    (Expr, RTE (RE_Dispatching_Domain));
-
-                  Pop_Type (U_Ent);
-               end if;
+            elsif Duplicate_Clause then
+               null;
 
             else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               --  The visibility to the components must be restored
+
+               Push_Type (U_Ent);
+
+               Preanalyze_Spec_Expression
+                 (Expr, RTE (RE_Dispatching_Domain));
+
+               Pop_Type (U_Ent);
             end if;
 
          ------------------
@@ -6623,43 +6628,37 @@ package body Sem_Ch13 is
          ------------------------
 
          when Attribute_Interrupt_Priority =>
+            pragma Assert (From_Aspect_Specification (N));
+            --  The parser forbids this clause in source code, so it must have
+            --  come from an aspect specification.
 
-            --  Interrupt_Priority attribute definition clause not allowed
-            --  except from aspect specification.
+            if not Is_Concurrent_Type (U_Ent) then
+               Error_Msg_N
+                 ("Interrupt_Priority can only be defined for task and "
+                  & "protected object", Nam);
 
-            if From_Aspect_Specification (N) then
-               if not Is_Concurrent_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Interrupt_Priority can only be defined for task and "
-                     & "protected object", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the components must be restored
-
-                  Push_Type (U_Ent);
-
-                  Preanalyze_Spec_Expression
-                    (Expr, RTE (RE_Interrupt_Priority));
-
-                  Pop_Type (U_Ent);
-
-                  --  Check the No_Task_At_Interrupt_Priority restriction
-
-                  if Is_Task_Type (U_Ent) then
-                     Check_Restriction (No_Task_At_Interrupt_Priority, N);
-                  end if;
-               end if;
+            elsif Duplicate_Clause then
+               null;
 
             else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               --  The visibility to the components must be restored
+
+               Push_Type (U_Ent);
+
+               Preanalyze_Spec_Expression
+                 (Expr, RTE (RE_Interrupt_Priority));
+
+               Pop_Type (U_Ent);
+
+               --  Check the No_Task_At_Interrupt_Priority restriction
+
+               if Is_Task_Type (U_Ent) then
+                  Check_Restriction (No_Task_At_Interrupt_Priority, N);
+               end if;
             end if;
 
          --------------
@@ -9111,6 +9110,25 @@ package body Sem_Ch13 is
                SHi := Expr_Value (High_Bound (N));
                return RList'(1 => REnt'(SLo, SHi));
             end if;
+
+         --  Others case
+
+         elsif Nkind (N) = N_Others_Choice then
+            declare
+               Choices    : constant List_Id := Others_Discrete_Choices (N);
+               Choice     : Node_Id;
+               Range_List : RList (1 .. List_Length (Choices));
+
+            begin
+               Choice := First (Choices);
+
+               for J in Range_List'Range loop
+                  Range_List (J) := REnt'(Lo_Val (Choice), Hi_Val (Choice));
+                  Next (Choice);
+               end loop;
+
+               return Range_List;
+            end;
 
          --  Static expression case
 
@@ -15997,10 +16015,12 @@ package body Sem_Ch13 is
       Match_Found : Boolean := False;
       Is_Match    : Boolean;
       Match       : Interp;
+
    begin
       if not Is_Type (Typ) then
          Error_Msg_N ("aspect can only be specified for a type", ASN);
          return;
+
       elsif not Is_First_Subtype (Typ) then
          Error_Msg_N ("aspect cannot be specified for a subtype", ASN);
          return;
@@ -16011,12 +16031,15 @@ package body Sem_Ch13 is
             Error_Msg_N ("aspect cannot be specified for a string type", ASN);
             return;
          end if;
+
          Param_Type := Standard_Wide_Wide_String;
+
       else
          if Is_Numeric_Type (Typ) then
             Error_Msg_N ("aspect cannot be specified for a numeric type", ASN);
             return;
          end if;
+
          Param_Type := Standard_String;
       end if;
 
@@ -16040,17 +16063,21 @@ package body Sem_Ch13 is
            and then Base_Type (Etype (It.Nam)) = Typ
          then
             declare
-               Params : constant List_Id :=
+               Params     : constant List_Id :=
                  Parameter_Specifications (Parent (It.Nam));
                Param_Spec : Node_Id;
                Param_Id   : Entity_Id;
+
             begin
                if List_Length (Params) = 1 then
                   Param_Spec := First (Params);
+
                   if not More_Ids (Param_Spec) then
                      Param_Id := Defining_Identifier (Param_Spec);
+
                      if Base_Type (Etype (Param_Id)) = Param_Type
-                        and then Ekind (Param_Id) = E_In_Parameter
+                       and then Ekind (Param_Id) = E_In_Parameter
+                       and then not Is_Aliased (Param_Id)
                      then
                         Is_Match := True;
                      end if;
@@ -16064,6 +16091,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("aspect specification is ambiguous", ASN);
                return;
             end if;
+
             Match_Found := True;
             Match := It;
          end if;

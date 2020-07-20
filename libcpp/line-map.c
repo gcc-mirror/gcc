@@ -1020,19 +1020,16 @@ linemap_lookup (const line_maps *set, location_t line)
 static const line_map_ordinary *
 linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 {
-  unsigned int md, mn, mx;
-  const line_map_ordinary *cached, *result;
-
   if (IS_ADHOC_LOC (line))
     line = get_location_from_adhoc_loc (set, line);
 
   if (set ==  NULL || line < RESERVED_LOCATION_COUNT)
     return NULL;
 
-  mn = LINEMAPS_ORDINARY_CACHE (set);
-  mx = LINEMAPS_ORDINARY_USED (set);
+  unsigned mn = LINEMAPS_ORDINARY_CACHE (set);
+  unsigned mx = LINEMAPS_ORDINARY_USED (set);
 
-  cached = LINEMAPS_ORDINARY_MAP_AT (set, mn);
+  const line_map_ordinary *cached = LINEMAPS_ORDINARY_MAP_AT (set, mn);
   /* We should get a segfault if no line_maps have been added yet.  */
   if (line >= MAP_START_LOCATION (cached))
     {
@@ -1047,7 +1044,7 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 
   while (mx - mn > 1)
     {
-      md = (mn + mx) / 2;
+      unsigned md = (mn + mx) / 2;
       if (MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (set, md)) > line)
 	mx = md;
       else
@@ -1055,7 +1052,7 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
     }
 
   LINEMAPS_ORDINARY_CACHE (set) = mn;
-  result = LINEMAPS_ORDINARY_MAP_AT (set, mn);
+  const line_map_ordinary *result = LINEMAPS_ORDINARY_MAP_AT (set, mn);
   linemap_assert (line >= MAP_START_LOCATION (result));
   return result;
 }
