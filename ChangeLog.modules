@@ -1,3 +1,9 @@
+2020-07-21  Nathan Sidwell  <nathan@acm.org>
+
+	Sadly Ada still broken :(
+	gcc/c-family/
+	* c-ada-spec.c (decl_sloc): Actually return the field's loc.
+
 2020-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

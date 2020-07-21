@@ -647,11 +647,13 @@ decl_sloc (const_tree decl, bool last)
       while (field && DECL_IS_BUILTIN (field))
 	field = DECL_CHAIN (field);
 
-      if (field && last)
-	while (DECL_CHAIN (field))
-	  field = DECL_CHAIN (field);
       if (field)
-	DECL_SOURCE_LOCATION (field);
+	{
+	  if (last)
+	    while (DECL_CHAIN (field))
+	      field = DECL_CHAIN (field);
+	  return DECL_SOURCE_LOCATION (field);
+	}
     }
 
   return DECL_SOURCE_LOCATION (decl);
