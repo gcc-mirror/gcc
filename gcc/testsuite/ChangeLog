@@ -1,3 +1,66 @@
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/opt/flifetime-dse7.C: New test.
+
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1z/nontype2.C: No error in C++20.
+	* g++.dg/template/nontype25.C: No error in C++20.
+	* g++.dg/template/nontype8.C: No error in C++20.
+	* g++.dg/cpp2a/nontype-subob1.C: New test.
+	* g++.dg/cpp2a/nontype-subob2.C: New test.
+	* g++.dg/cpp1z/nontype3.C: Now C++17-only.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust expected value.
+
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/class-deduction-aggr7.C: New test.
+
+2020-07-20  Yang Yang  <yangyang305@huawei.com>
+
+	* gcc.target/aarch64/sve/pr96195.c: New test.
+
+2020-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95750
+	* gcc.target/i386/pr95750.c: New test.
+
+2020-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95189
+	PR middle-end/95886
+	* gcc.dg/memcmp-pr95189.c: New test.
+	* gcc.dg/strncmp-3.c: New test.
+	* gcc.target/i386/memcpy-pr95886.c: New test.
+
+2020-07-20  Alex Coplan  <alex.coplan@arm.com>
+
+	PR jit/69435
+	* jit.dg/jit.exp (fixed_host_execute): Fix regex patterns to
+	always explicitly match newlines.
+
+2020-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* gcc.dg/tree-ssa/pr93121-2.c: New test.
+
+2020-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* gcc.dg/tree-ssa/pr93121-1.c: New test.
+
+2020-07-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/const-uniq-1.c: Adjust scanned pattern for mmix.
+
+2020-07-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/cdce3.c: Skip for mmix.
+
+2020-07-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/pr87485.c: Require scheduling.
+
 2020-07-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95973

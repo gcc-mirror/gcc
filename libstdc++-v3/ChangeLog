@@ -1,3 +1,36 @@
+2020-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (libtool_VERSION): Bump version.
+	* config.h.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add GLIBCXX_3.4.29 version and new
+	exports.
+	* config/os/gnu-linux/ldbl-extra.ver: Add _GLIBCXX_LDBL_3.4.29
+	version and new export.
+	* configure: Regenerate.
+	* configure.ac: Check for <xlocale.h> and uselocale.
+	* crossconfig.m4: Add macro or checks for uselocale.
+	* include/std/charconv (from_chars): Declare overloads for
+	float, double, and long double.
+	* src/c++17/Makefile.am: Add new file.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/floating_from_chars.cc: New file.
+	(from_chars): Define for float, double, and long double.
+	* testsuite/20_util/from_chars/1_c++20_neg.cc: Prune extra
+	diagnostics caused by new overloads.
+	* testsuite/20_util/from_chars/1_neg.cc: Likewise.
+	* testsuite/20_util/from_chars/2.cc: Check leading '+'.
+	* testsuite/20_util/from_chars/4.cc: New test.
+	* testsuite/20_util/from_chars/5.cc: New test.
+	* testsuite/util/testsuite_abi.cc: Add new symbol versions.
+
+2020-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/istream.tcc
+	(basic_istream::get(__streambuf_type&, char_type): Use unsigned
+	long long for counter and check if it would overflow _M_gcount.
+	* testsuite/27_io/basic_istream/get/char/lwg3464.cc: New test.
+	* testsuite/27_io/basic_istream/get/wchar_t/lwg3464.cc: New test.
+
 2020-07-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/std/coroutine: Mark the methods of the
