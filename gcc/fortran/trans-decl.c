@@ -2090,11 +2090,16 @@ gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
       if (gsym && !gsym->bind_c)
 	gsym = NULL;
     }
-  else
+  else if (sym->module == NULL)
     {
       gsym = gfc_find_gsymbol (gfc_gsym_root, sym->name);
       if (gsym && gsym->bind_c)
 	gsym = NULL;
+    }
+  else
+    {
+      /* Procedure from a different module.  */
+      gsym = NULL;
     }
 
   if (gsym && !gsym->defined)
