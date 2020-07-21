@@ -18531,6 +18531,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  stmt = pop_stmt_list (stmt);
 	}
 
+      if (TREE_CODE (t) == OMP_CRITICAL
+	  && tmp != NULL_TREE
+	  && integer_nonzerop (OMP_CLAUSE_HINT_EXPR (tmp)))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (tmp),
+		    "%<#pragma omp critical%> with %<hint%> clause requires "
+		    "a name, except when %<omp_sync_hint_none%> is used");
+	  RETURN (error_mark_node);
+	}
       t = copy_node (t);
       OMP_BODY (t) = stmt;
       OMP_CLAUSES (t) = tmp;

@@ -46,17 +46,29 @@
       parameter (omp_proc_bind_master = 2)
       parameter (omp_proc_bind_close = 3)
       parameter (omp_proc_bind_spread = 4)
+      integer omp_sync_hint_kind
       integer omp_lock_hint_kind
-      parameter (omp_lock_hint_kind = 4)
+      parameter (omp_sync_hint_kind = 4)
+      parameter (omp_lock_hint_kind = omp_sync_hint_kind)
+      integer (omp_sync_hint_kind) omp_sync_hint_none
       integer (omp_lock_hint_kind) omp_lock_hint_none
+      integer (omp_sync_hint_kind) omp_sync_hint_uncontended
       integer (omp_lock_hint_kind) omp_lock_hint_uncontended
-      integer (omp_lock_hint_kind) omp_lock_hint_contended
+      integer (omp_sync_hint_kind) omp_sync_hint_contended
+      integer (omp_sync_hint_kind) omp_lock_hint_contended
+      integer (omp_lock_hint_kind) omp_sync_hint_nonspeculative
       integer (omp_lock_hint_kind) omp_lock_hint_nonspeculative
+      integer (omp_sync_hint_kind) omp_sync_hint_speculative
       integer (omp_lock_hint_kind) omp_lock_hint_speculative
+      parameter (omp_sync_hint_none = 0)
       parameter (omp_lock_hint_none = 0)
+      parameter (omp_sync_hint_uncontended = 1)
       parameter (omp_lock_hint_uncontended = 1)
+      parameter (omp_sync_hint_contended = 2)
       parameter (omp_lock_hint_contended = 2)
+      parameter (omp_sync_hint_nonspeculative = 4)
       parameter (omp_lock_hint_nonspeculative = 4)
+      parameter (omp_sync_hint_speculative = 8)
       parameter (omp_lock_hint_speculative = 8)
       parameter (openmp_version = 201511)
       integer omp_pause_resource_kind

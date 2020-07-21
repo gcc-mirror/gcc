@@ -4242,12 +4242,20 @@ gfc_trans_omp_cancellation_point (gfc_code *code)
 static tree
 gfc_trans_omp_critical (gfc_code *code)
 {
-  tree name = NULL_TREE, stmt;
-  if (code->ext.omp_clauses != NULL)
+  stmtblock_t block;
+  tree stmt, name = NULL_TREE;
+  if (code->ext.omp_clauses->critical_name != NULL)
     name = get_identifier (code->ext.omp_clauses->critical_name);
-  stmt = gfc_trans_code (code->block->next);
-  return build3_loc (input_location, OMP_CRITICAL, void_type_node, stmt,
-		     NULL_TREE, name);
+  gfc_start_block (&block);
+  stmt = make_node (OMP_CRITICAL);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_CRITICAL_BODY (stmt) = gfc_trans_code (code->block->next);
+  OMP_CRITICAL_NAME (stmt) = name;
+  OMP_CRITICAL_CLAUSES (stmt) = gfc_trans_omp_clauses (&block,
+						       code->ext.omp_clauses,
+						       code->loc);
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
 }
 
 typedef struct dovar_init_d {
