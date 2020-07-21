@@ -1822,6 +1822,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
       /* Nor the reverse.  */
       if (!is_lvalue && !TYPE_REF_IS_RVALUE (rto)
+	  /* Unless it's really an lvalue.  */
+	  && !(cxx_dialect >= cxx20
+	       && (gl_kind & clk_implicit_rval))
 	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
 	      || (flags & LOOKUP_NO_RVAL_BIND))
 	  && TREE_CODE (to) != FUNCTION_TYPE)
@@ -8678,7 +8681,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  parm = TREE_CHAIN (parm);
 	}
 
-      if (cand->flags & LOOKUP_PREFER_RVALUE)
+      if (cxx_dialect < cxx20
+	  && (cand->flags & LOOKUP_PREFER_RVALUE))
 	{
 	  /* The implicit move specified in 15.8.3/3 fails "...if the type of
 	     the first parameter of the selected constructor is not an rvalue
