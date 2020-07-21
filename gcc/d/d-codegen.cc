@@ -2127,6 +2127,17 @@ build_vthis_function (tree basetype, tree type)
   return fntype;
 }
 
+/* Raise an error at that the context pointer of the function or object SYM is
+   not accessible from the current scope.  */
+
+tree
+error_no_frame_access (Dsymbol *sym)
+{
+  error_at (input_location, "cannot get frame pointer to %qs",
+	    sym->toPrettyChars ());
+  return null_pointer_node;
+}
+
 /* If SYM is a nested function, return the static chain to be
    used when calling that function from the current function.
 
@@ -2191,7 +2202,7 @@ get_frame_for_symbol (Dsymbol *sym)
 	{
 	  error_at (make_location_t (sym->loc),
 		    "%qs is a nested function and cannot be accessed from %qs",
-		    fd->toPrettyChars (), thisfd->toPrettyChars ());
+		    fdparent->toPrettyChars (), thisfd->toPrettyChars ());
 	  return null_pointer_node;
 	}
 
@@ -2202,39 +2213,35 @@ get_frame_for_symbol (Dsymbol *sym)
       while (fd != dsym)
 	{
 	  /* Check if enclosing function is a function.  */
-	  FuncDeclaration *fd = dsym->isFuncDeclaration ();
+	  FuncDeclaration *fdp = dsym->isFuncDeclaration ();
+	  Dsymbol *parent = dsym->toParent2 ();
 
-	  if (fd != NULL)
+	  if (fdp != NULL)
 	    {
-	      if (fdparent == fd->toParent2 ())
+	      if (fdparent == parent)
 		break;
 
-	      gcc_assert (fd->isNested () || fd->vthis);
-	      dsym = dsym->toParent2 ();
+	      gcc_assert (fdp->isNested () || fdp->vthis);
+	      dsym = parent;
 	      continue;
 	    }
 
 	  /* Check if enclosed by an aggregate.  That means the current
 	     function must be a member function of that aggregate.  */
-	  AggregateDeclaration *ad = dsym->isAggregateDeclaration ();
+	  AggregateDeclaration *adp = dsym->isAggregateDeclaration ();
 
-	  if (ad == NULL)
-	    goto Lnoframe;
-	  if (ad->isClassDeclaration () && fdparent == ad->toParent2 ())
-	    break;
-	  if (ad->isStructDeclaration () && fdparent == ad->toParent2 ())
-	    break;
-
-	  if (!ad->isNested () || !ad->vthis)
+	  if (adp != NULL)
 	    {
-	    Lnoframe:
-	      error_at (make_location_t (thisfd->loc),
-			"cannot get frame pointer to %qs",
-			sym->toPrettyChars ());
-	      return null_pointer_node;
+	      if ((adp->isClassDeclaration () || adp->isStructDeclaration ())
+		  && fdparent == parent)
+		break;
 	    }
 
-	  dsym = dsym->toParent2 ();
+	  /* No frame to outer function found.  */
+	  if (!adp || !adp->isNested () || !adp->vthis)
+	    return error_no_frame_access (sym);
+
+	  dsym = parent;
 	}
     }
 
@@ -2724,8 +2731,10 @@ get_framedecl (FuncDeclaration *inner, FuncDeclaration *outer)
 	break;
     }
 
+  if (fd != outer)
+    return error_no_frame_access (outer);
+
   /* Go get our frame record.  */
-  gcc_assert (fd == outer);
   tree frame_type = FRAMEINFO_TYPE (get_frameinfo (outer));
 
   if (frame_type != NULL_TREE)
