@@ -5384,7 +5384,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
       break;
     case EXEC_OMP_END_CRITICAL:
-      if (((cp->ext.omp_clauses == NULL) ^ (new_st.ext.omp_name == NULL))
+      if (((cp->ext.omp_clauses->critical_name == NULL)
+	    ^ (new_st.ext.omp_name == NULL))
 	  || (new_st.ext.omp_name != NULL
 	      && strcmp (cp->ext.omp_clauses->critical_name,
 			 new_st.ext.omp_name) != 0))

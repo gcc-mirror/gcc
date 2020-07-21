@@ -31,7 +31,8 @@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
         integer, parameter :: omp_sched_kind = 4
         integer, parameter :: omp_proc_bind_kind = 4
-        integer, parameter :: omp_lock_hint_kind = 4
+        integer, parameter :: omp_sync_hint_kind = 4
+        integer, parameter :: omp_lock_hint_kind = omp_sync_hint_kind
         integer, parameter :: omp_pause_resource_kind = 4
         integer, parameter :: omp_allocator_handle_kind = c_intptr_t
         integer, parameter :: omp_alloctrait_key_kind = c_int
@@ -52,15 +53,29 @@
         integer (omp_proc_bind_kind), &
                  parameter :: omp_proc_bind_spread = 4
         integer (omp_lock_hint_kind), &
-                 parameter :: omp_lock_hint_none = 0
+                 parameter :: omp_sync_hint_none = 0
         integer (omp_lock_hint_kind), &
-                 parameter :: omp_lock_hint_uncontended = 1
+                 parameter :: omp_lock_hint_none = omp_sync_hint_none
         integer (omp_lock_hint_kind), &
-                 parameter :: omp_lock_hint_contended = 2
+                 parameter :: omp_sync_hint_uncontended = 1
         integer (omp_lock_hint_kind), &
-                 parameter :: omp_lock_hint_nonspeculative = 4
+                 parameter :: omp_lock_hint_uncontended &
+                 = omp_sync_hint_uncontended
         integer (omp_lock_hint_kind), &
-                 parameter :: omp_lock_hint_speculative = 8
+                 parameter :: omp_sync_hint_contended = 2
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_contended &
+                 = omp_sync_hint_contended
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_sync_hint_nonspeculative = 4
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_nonspeculative &
+                 = omp_sync_hint_nonspeculative
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_sync_hint_speculative = 8
+        integer (omp_lock_hint_kind), &
+                 parameter :: omp_lock_hint_speculative &
+                 = omp_sync_hint_speculative
         integer (kind=omp_pause_resource_kind), &
                  parameter :: omp_pause_soft = 1
         integer (kind=omp_pause_resource_kind), &

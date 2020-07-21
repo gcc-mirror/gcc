@@ -2631,15 +2631,10 @@ gfc_match_omp_critical (void)
   gfc_omp_clauses *c = NULL;
 
   if (gfc_match (" ( %n )", n) != MATCH_YES)
-    {
-      n[0] = '\0';
-      if (gfc_match_omp_eos () != MATCH_YES)
-	{
-	  gfc_error ("Unexpected junk after $OMP CRITICAL statement at %C");
-	  return MATCH_ERROR;
-	}
-    }
-  else if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_HINT)) != MATCH_YES)
+    n[0] = '\0';
+
+  if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_HINT),
+			     /* first = */ n[0] == '\0') != MATCH_YES)
     return MATCH_ERROR;
 
   new_st.op = EXEC_OMP_CRITICAL;
@@ -5000,7 +4995,14 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->device)
     resolve_nonnegative_int_expr (omp_clauses->device, "DEVICE");
   if (omp_clauses->hint)
-    resolve_scalar_int_expr (omp_clauses->hint, "HINT");
+    {
+      resolve_scalar_int_expr (omp_clauses->hint, "HINT");
+    if (omp_clauses->hint->ts.type != BT_INTEGER
+	|| omp_clauses->hint->expr_type != EXPR_CONSTANT
+	|| mpz_sgn (omp_clauses->hint->value.integer) < 0)
+      gfc_error ("Value of HINT clause at %L shall be a valid "
+		 "constant hint expression", &omp_clauses->hint->where);
+    }
   if (omp_clauses->priority)
     resolve_nonnegative_int_expr (omp_clauses->priority, "PRIORITY");
   if (omp_clauses->dist_chunk_size)
@@ -6514,6 +6516,17 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
       break;
     case EXEC_OMP_ATOMIC:
       resolve_omp_atomic (code);
+      break;
+    case EXEC_OMP_CRITICAL:
+      if (code->ext.omp_clauses)
+	resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
+      if (!code->ext.omp_clauses->critical_name
+	  && code->ext.omp_clauses->hint
+	  && code->ext.omp_clauses->hint->ts.type == BT_INTEGER
+	  && code->ext.omp_clauses->hint->expr_type == EXPR_CONSTANT
+	  && mpz_sgn (code->ext.omp_clauses->hint->value.integer) != 0)
+	gfc_error ("OMP CRITICAL at %L with HINT clause requires a NAME, "
+		   "except when omp_sync_hint_none is used", &code->loc);
       break;
     default:
       break;
