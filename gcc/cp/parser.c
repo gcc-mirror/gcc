@@ -1121,8 +1121,6 @@ cp_lexer_consume_token (cp_lexer* lexer)
 {
   cp_token *token = lexer->next_token;
 
-  gcc_assert (!lexer->in_pragma || token->type != CPP_PRAGMA_EOL);
-
   do
     {
       gcc_assert (token->type != CPP_EOF);
@@ -3691,7 +3689,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 
 	case CPP_PRAGMA:
 	  /* We fell into a pragma.  Skip it, and continue. */
-	  cp_parser_skip_to_pragma_eol (parser, token);
+	  cp_parser_skip_to_pragma_eol (parser, recovering ? token : nullptr);
 	  continue;
 
 	default:
@@ -3930,14 +3928,13 @@ cp_parser_skip_to_closing_brace (cp_parser *parser)
 
 /* Consume tokens until we reach the end of the pragma.  The PRAGMA_TOK
    parameter is the PRAGMA token, allowing us to purge the entire pragma
-   sequence.  */
+   sequence.  PRAGMA_TOK can be NULL, if we're speculatively scanning
+   forwards (not error recovery).  */
 
 static void
 cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
 {
   cp_token *token;
-
-  parser->lexer->in_pragma = false;
 
   do
     {
@@ -3950,8 +3947,12 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
     }
   while (token->type != CPP_PRAGMA_EOL);
 
-  /* Ensure that the pragma is not parsed again.  */
-  cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
+  if (pragma_tok)
+    {
+      /* Ensure that the pragma is not parsed again.  */
+      cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
+      parser->lexer->in_pragma = false;
+    }
 }
 
 /* Require pragma end of line, resyncing with it as necessary.  The
