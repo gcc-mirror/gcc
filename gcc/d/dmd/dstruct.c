@@ -1206,6 +1206,13 @@ void StructDeclaration::semantic(Scope *sc)
         }
     }
 
+    if (type->ty == Tstruct && ((TypeStruct *)type)->sym != this)
+    {
+        // https://issues.dlang.org/show_bug.cgi?id=19024
+        StructDeclaration *sd = ((TypeStruct *)type)->sym;
+        error("already exists at %s. Perhaps in another function with the same name?", sd->loc.toChars());
+    }
+
     if (global.errors != errors)
     {
         // The type is no good.
@@ -1220,8 +1227,6 @@ void StructDeclaration::semantic(Scope *sc)
         deferred->semantic2(sc);
         deferred->semantic3(sc);
     }
-
-    assert(type->ty != Tstruct || ((TypeStruct *)type)->sym == this);
 }
 
 Dsymbol *StructDeclaration::search(const Loc &loc, Identifier *ident, int flags)
