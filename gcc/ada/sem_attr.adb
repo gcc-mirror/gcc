@@ -6899,6 +6899,11 @@ package body Sem_Attr is
       --  Start of processing for Update
 
       begin
+         if Warn_On_Obsolescent_Feature then
+            Error_Msg_N ("?j?attribute Update is an obsolescent feature", N);
+            Error_Msg_N ("\?j?use a delta aggregate instead", N);
+         end if;
+
          Check_E1;
 
          if not Is_Object_Reference (P) then
