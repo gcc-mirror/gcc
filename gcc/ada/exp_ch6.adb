@@ -4014,20 +4014,23 @@ package body Exp_Ch6 is
                               --  Find the relevant statement in the actions
 
                               Cond := First (Actions (Branch));
-                              loop
+                              while Present (Cond) loop
                                  exit when Nkind (Cond) in
                                              N_Case_Statement | N_If_Statement;
 
                                  Next (Cond);
-
-                                 if No (Cond) then
-                                    raise Program_Error;
-                                 end if;
                               end loop;
+
+                              --  The conditional expression may have been
+                              --  optimized away, so examine the actions in
+                              --  the branch.
+
+                              if No (Cond) then
+                                 Expand_Branch (Last (Actions (Branch)));
 
                               --  Iterate through if expression branches
 
-                              if Nkind (Cond) = N_If_Statement then
+                              elsif Nkind (Cond) = N_If_Statement then
                                  Expand_Branch (Last (Then_Statements (Cond)));
                                  Expand_Branch (Last (Else_Statements (Cond)));
 
