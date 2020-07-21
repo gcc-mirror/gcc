@@ -171,7 +171,7 @@ is
       elsif Capacity >= LS then
          C := Capacity;
       else
-         raise Capacity_Error;
+         raise Capacity_Error with "Capacity too small";
       end if;
 
       return Target : Vector (C) do
@@ -956,6 +956,12 @@ is
 
       if New_Length > Max_Length then
          raise Constraint_Error with "Count is out of range";
+
+      --  Raise Capacity_Error if the new length exceeds the container's
+      --  capacity.
+
+      elsif New_Length > Container.Capacity then
+         raise Capacity_Error with "New length is larger than capacity";
       end if;
 
       J := To_Array_Index (Before);
@@ -1104,7 +1110,7 @@ is
    is
    begin
       if Capacity > Container.Capacity then
-         raise Constraint_Error with "Capacity is out of range";
+         raise Capacity_Error with "Capacity is out of range";
       end if;
    end Reserve_Capacity;
 
