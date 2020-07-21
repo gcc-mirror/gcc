@@ -1,16 +1,6 @@
-// { dg-do link { target d_runtime_has_std_library } }
-
-/******************************************/
-
-class C1()
-{
-    static struct S1 { A1 a; }
-}
-
-enum E1 = is(C1!());
-
-/******************************************/
 // https://bugzilla.gdcproject.org/show_bug.cgi?id=300
+// { dg-additional-options "-fmain" }
+// { dg-do link { target d_runtime_has_std_library } }
 
 struct S300(Range)
 {
@@ -33,7 +23,3 @@ void link300()
     auto sample = link300a(I());
     sample.test(5);
 }
-
-/******************************************/
-
-void main() {}
