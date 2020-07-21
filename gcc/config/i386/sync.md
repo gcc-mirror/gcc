@@ -89,8 +89,7 @@
 (define_insn "mfence_sse2"
   [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))]
-  "(TARGET_64BIT || TARGET_SSE2)
-   && !TARGET_AVOID_MFENCE"
+  "TARGET_64BIT || TARGET_SSE2"
   "mfence"
   [(set_attr "type" "sse")
    (set_attr "length_address" "0")
@@ -101,8 +100,7 @@
   [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))
    (clobber (reg:CC FLAGS_REG))]
-  "!(TARGET_64BIT || TARGET_SSE2)
-   || TARGET_AVOID_MFENCE"
+  ""
 {
   rtx mem = gen_rtx_MEM (word_mode, stack_pointer_rtx);
 
