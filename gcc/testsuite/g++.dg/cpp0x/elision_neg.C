@@ -30,7 +30,7 @@ test1()
 move_only
 test2(move_only&& x)
 {
-    return x;  //  { dg-error "within this context" }
+    return x;  //  { dg-error "within this context" "" { target c++17_down } }
 }
 
 int main()

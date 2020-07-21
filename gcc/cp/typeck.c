@@ -9719,19 +9719,62 @@ can_do_nrvo_p (tree retval, tree functype)
 	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
 }
 
-/* Returns true if we should treat RETVAL, an expression being returned,
-   as if it were designated by an rvalue.  See [class.copy.elision].
-   PARM_P is true if a function parameter is OK in this context.  */
+/* If we should treat RETVAL, an expression being returned, as if it were
+   designated by an rvalue, returns it adjusted accordingly; otherwise, returns
+   NULL_TREE.  See [class.copy.elision].  RETURN_P is true if this is a return
+   context (rather than throw).  */
 
-bool
-treat_lvalue_as_rvalue_p (tree retval, bool parm_ok)
+tree
+treat_lvalue_as_rvalue_p (tree expr, bool return_p)
 {
+  if (cxx_dialect == cxx98)
+    return NULL_TREE;
+
+  tree retval = expr;
   STRIP_ANY_LOCATION_WRAPPER (retval);
-  return ((cxx_dialect != cxx98)
-	  && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
-	      || (parm_ok && TREE_CODE (retval) == PARM_DECL))
-	  && DECL_CONTEXT (retval) == current_function_decl
-	  && !TREE_STATIC (retval));
+  if (REFERENCE_REF_P (retval))
+    retval = TREE_OPERAND (retval, 0);
+
+  /* An implicitly movable entity is a variable of automatic storage duration
+     that is either a non-volatile object or (C++20) an rvalue reference to a
+     non-volatile object type.  */
+  if (!(((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
+	 || TREE_CODE (retval) == PARM_DECL)
+	&& !TREE_STATIC (retval)
+	&& !CP_TYPE_VOLATILE_P (non_reference (TREE_TYPE (retval)))
+	&& (TREE_CODE (TREE_TYPE (retval)) != REFERENCE_TYPE
+	    || (cxx_dialect >= cxx20
+		&& TYPE_REF_IS_RVALUE (TREE_TYPE (retval))))))
+    return NULL_TREE;
+
+  /* If the expression in a return or co_return statement is a (possibly
+     parenthesized) id-expression that names an implicitly movable entity
+     declared in the body or parameter-declaration-clause of the innermost
+     enclosing function or lambda-expression, */
+  if (DECL_CONTEXT (retval) != current_function_decl)
+    return NULL_TREE;
+  if (return_p)
+    return set_implicit_rvalue_p (move (expr));
+
+  /* if the operand of a throw-expression is a (possibly parenthesized)
+     id-expression that names an implicitly movable entity whose scope does not
+     extend beyond the compound-statement of the innermost try-block or
+     function-try-block (if any) whose compound-statement or ctor-initializer
+     encloses the throw-expression, */
+
+  /* C++20 added move on throw of parms.  */
+  if (TREE_CODE (retval) == PARM_DECL && cxx_dialect < cxx20)
+    return NULL_TREE;
+
+  for (cp_binding_level *b = current_binding_level;
+       ; b = b->level_chain)
+    {
+      for (tree decl = b->names; decl; decl = TREE_CHAIN (decl))
+	if (decl == retval)
+	  return set_implicit_rvalue_p (move (expr));
+      if (b->kind == sk_function_parms || b->kind == sk_try)
+	return NULL_TREE;
+    }
 }
 
 /* Warn about wrong usage of std::move in a return statement.  RETVAL
@@ -9767,6 +9810,7 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
       if (is_std_move_p (fn))
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
+	  tree moved;
 	  if (TREE_CODE (arg) != NOP_EXPR)
 	    return;
 	  arg = TREE_OPERAND (arg, 0);
@@ -9786,12 +9830,12 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	  /* Warn if the move is redundant.  It is redundant when we would
 	     do maybe-rvalue overload resolution even without std::move.  */
 	  else if (warn_redundant_move
-		   && treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
+		   && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
 	    {
 	      /* Make sure that the overload resolution would actually succeed
 		 if we removed the std::move call.  */
 	      tree t = convert_for_initialization (NULL_TREE, functype,
-						   move (arg),
+						   moved,
 						   (LOOKUP_NORMAL
 						    | LOOKUP_ONLYCONVERTING
 						    | LOOKUP_PREFER_RVALUE),
@@ -10089,19 +10133,26 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       bool converted = false;
-      if (treat_lvalue_as_rvalue_p (retval, /*parm_ok*/true)
-	  /* This is only interesting for class type.  */
-	  && CLASS_TYPE_P (functype))
+      tree moved;
+      /* This is only interesting for class type.  */
+      if (CLASS_TYPE_P (functype)
+	  && (moved = treat_lvalue_as_rvalue_p (retval, /*return*/true)))
 	{
-	  tree moved = move (retval);
-	  moved = convert_for_initialization
-	    (NULL_TREE, functype, moved, flags|LOOKUP_PREFER_RVALUE,
-	     ICR_RETURN, NULL_TREE, 0, tf_none);
-	  if (moved != error_mark_node)
+	  if (cxx_dialect < cxx20)
 	    {
-	      retval = moved;
-	      converted = true;
+	      moved = convert_for_initialization
+		(NULL_TREE, functype, moved, flags|LOOKUP_PREFER_RVALUE,
+		 ICR_RETURN, NULL_TREE, 0, tf_none);
+	      if (moved != error_mark_node)
+		{
+		  retval = moved;
+		  converted = true;
+		}
 	    }
+	  else
+	    /* In C++20 we just treat the return value as an rvalue that
+	       can bind to lvalue refs.  */
+	    retval = moved;
 	}
 
       /* The call in a (lambda) thunk needs no conversions.  */

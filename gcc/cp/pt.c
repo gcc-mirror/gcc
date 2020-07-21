@@ -19411,6 +19411,8 @@ tsubst_copy_and_build (tree t,
 	    break;
 	  case STATIC_CAST_EXPR:
 	    r = build_static_cast (input_location, type, op, complain);
+	    if (IMPLICIT_RVALUE_P (t))
+	      set_implicit_rvalue_p (r);
 	    break;
 	  default:
 	    gcc_unreachable ();
