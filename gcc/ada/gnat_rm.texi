@@ -9923,9 +9923,11 @@ This boolean aspect is equivalent to @ref{10b,,pragma Unmodified}.
 
 @geindex Unreferenced
 
-This boolean aspect is equivalent to @ref{10c,,pragma Unreferenced}. Note that
-in the case of formal parameters, it is not permitted to have aspects for
-a formal parameter, so in this case the pragma form must be used.
+This boolean aspect is equivalent to @ref{10c,,pragma Unreferenced}.
+
+When using the @code{-gnatX} switch, this aspect is also supported on formal
+parameters, which is in particular the only form possible for expression
+functions.
 
 @node Aspect Unreferenced_Objects,Aspect Value_Size,Aspect Unreferenced,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-unreferenced-objects}@anchor{15e}

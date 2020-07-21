@@ -995,10 +995,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       procedure P_Aspect_Specifications
         (Decl      : Node_Id;
          Semicolon : Boolean := True);
-      --  This procedure scans out a series of aspect spefications. If argument
-      --  Semicolon is True, a terminating semicolon is also scanned. If this
-      --  argument is False, the scan pointer is left pointing past the aspects
-      --  and the caller must check for a proper terminator.
+      --  This procedure scans out a series of aspect specifications. If
+      --  argument Semicolon is True, a terminating semicolon is also scanned.
+      --  If this argument is False, the scan pointer is left pointing past the
+      --  aspects and the caller must check for a proper terminator.
       --
       --  P_Aspect_Specifications is called with the current token pointing
       --  to either a WITH keyword starting an aspect specification, or an

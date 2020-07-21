@@ -5414,9 +5414,9 @@ package Sinfo is
 
       --  PARAMETER_SPECIFICATION ::=
       --    DEFINING_IDENTIFIER_LIST : [ALIASED] MODE [NULL_EXCLUSION]
-      --      SUBTYPE_MARK [:= DEFAULT_EXPRESSION]
+      --      SUBTYPE_MARK [:= DEFAULT_EXPRESSION] [ASPECT_SPECIFICATIONS]
       --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
-      --      [:= DEFAULT_EXPRESSION]
+      --      [:= DEFAULT_EXPRESSION] [ASPECT_SPECIFICATIONS]
 
       --  Although the syntax allows multiple identifiers in the list, the
       --  semantics is as though successive specifications were given with

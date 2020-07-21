@@ -672,9 +672,9 @@ package body Sem_Ch6 is
       end if;
    end Analyze_Expression_Function;
 
-   ----------------------------------------
-   -- Analyze_Extended_Return_Statement  --
-   ----------------------------------------
+   ---------------------------------------
+   -- Analyze_Extended_Return_Statement --
+   ---------------------------------------
 
    procedure Analyze_Extended_Return_Statement (N : Node_Id) is
    begin
@@ -12280,6 +12280,27 @@ package body Sem_Ch6 is
                Error_Msg_N
                  ("formal parameter of mode `IN` cannot be volatile", Formal);
             end if;
+         end if;
+
+         --  Deal with aspects on formal parameters. Only Unreferenced is
+         --  supported for the time being.
+
+         if Has_Aspects (Param_Spec) then
+            declare
+               Aspect : Node_Id := First (Aspect_Specifications (Param_Spec));
+            begin
+               while Present (Aspect) loop
+                  if Chars (Identifier (Aspect)) = Name_Unreferenced then
+                     Set_Has_Pragma_Unreferenced (Formal);
+                  else
+                     Error_Msg_NE
+                       ("unsupported aspect& on parameter",
+                        Aspect, Identifier (Aspect));
+                  end if;
+
+                  Next (Aspect);
+               end loop;
+            end;
          end if;
 
       <<Continue>>
