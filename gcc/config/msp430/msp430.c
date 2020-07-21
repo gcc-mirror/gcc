@@ -2161,19 +2161,6 @@ msp430_file_end (void)
 #endif
 }
 
-bool
-msp430_do_not_relax_short_jumps (void)
-{
-  /* When placing code into "either" low or high memory we do not want the
-     linker to grow the size of sections, which it can do if it is encounters a
-     branch to a label that is too far away.  So we tell the cbranch patterns to
-     avoid using short jumps when there is a chance that the instructions will
-     end up in a low section.  */
-  return
-    msp430_code_region == MSP430_REGION_EITHER
-    || has_attr (ATTR_EITHER, current_function_decl);
-}
-
 enum msp430_builtin
 {
   MSP430_BUILTIN_BIC_SR,
