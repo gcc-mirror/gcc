@@ -257,6 +257,11 @@ extern const char *msp430_get_linker_devices_include_path (int, const char **);
   msp430_return_addr_rtx (COUNT)
 
 #define SLOW_BYTE_ACCESS		0
+
+/* Calling a constant function address costs the same number of clock
+   cycles as calling an address stored in a register. However, in terms of
+   instruction length, calling a constant address is more expensive.  */
+#define NO_FUNCTION_CSE (optimize >= 2 && !optimize_size)
 
 
 /* Register Usage */
