@@ -19,6 +19,7 @@ public:
     fndecls.Push ();
     vars.Push ();
     types.Push ();
+    structDecls.Push ();
   }
 
   void Pop ()
@@ -26,6 +27,7 @@ public:
     fndecls.Pop ();
     vars.Pop ();
     types.Pop ();
+    structDecls.Pop ();
   }
 
   void PushCurrentFunction (std::string name, Bfunction *fn, Btype *retType,
@@ -85,6 +87,16 @@ public:
 
   void AddStatement (Bstatement *stmt) { context.back ().push_back (stmt); }
 
+  void InsertStructDecl (std::string name, AST::StructStruct *decl)
+  {
+    structDecls.Insert (name, decl);
+  }
+
+  bool LookupStructDecl (std::string name, AST::StructStruct **decl)
+  {
+    return structDecls.Lookup (name, decl);
+  }
+
   void InsertFunction (std::string name, Bfunction *fn, Btype *retType)
   {
     fndecls.Insert (name, fn);
@@ -123,6 +135,7 @@ private:
   Analysis::Scope<Bfunction *> fndecls;
   Analysis::Scope<Bvariable *> vars;
   Analysis::Scope<Btype *> types;
+  Analysis::Scope<AST::StructStruct *> structDecls;
 };
 
 } // namespace Compile

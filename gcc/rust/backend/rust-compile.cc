@@ -529,15 +529,95 @@ Compilation::visit (AST::StructExprStruct &expr)
 void
 Compilation::visit (AST::StructExprFieldIdentifier &field)
 {}
+
 void
 Compilation::visit (AST::StructExprFieldIdentifierValue &field)
-{}
+{
+  AST::StructStruct *decl = structBuffer.back ();
+  size_t index = 0;
+  bool found = false;
+  for (auto &df : decl->fields)
+    {
+      if (field.field_name.compare (df.field_name) == 0)
+	{
+	  found = true;
+	  break;
+	}
+    }
+  if (!found)
+    {
+      rust_fatal_error (field.value->get_locus_slow (),
+			"failed to lookup field index");
+      return;
+    }
+
+  Bexpression *value = NULL;
+  VISIT_POP (field.value->get_locus_slow (), field.value.get (), value, exprs);
+  if (value == NULL)
+    {
+      rust_fatal_error (field.value->get_locus_slow (),
+			"failed to compile value to struct");
+      return;
+    }
+  exprs.push_back (value);
+}
+
 void
 Compilation::visit (AST::StructExprFieldIndexValue &field)
-{}
+{
+  Bexpression *value = NULL;
+  VISIT_POP (field.value->get_locus_slow (), field.value.get (), value, exprs);
+  if (value == NULL)
+    {
+      rust_fatal_error (field.value->get_locus_slow (),
+			"failed to compile value to struct");
+      return;
+    }
+  exprs.push_back (value);
+}
+
 void
 Compilation::visit (AST::StructExprStructFields &expr)
-{}
+{
+  AST::StructStruct *decl = NULL;
+  if (!scope.LookupStructDecl (expr.get_struct_name ().as_string (), &decl))
+    {
+      rust_error_at (expr.get_locus_slow (), "unknown type");
+      return;
+    }
+
+  Btype *structType = NULL;
+  if (!scope.LookupType (expr.get_struct_name ().as_string (), &structType))
+    {
+      rust_fatal_error (expr.get_locus_slow (), "unknown type");
+      return;
+    }
+
+  structBuffer.push_back (decl);
+  std::vector<Bexpression *> constructor;
+
+  // FIXME type resolution pass should ensures these are in correct order
+  // and have defaults if required
+  for (auto &field : expr.fields)
+    {
+      Bexpression *value = NULL;
+      VISIT_POP (expr.get_locus_slow (), field, value, exprs);
+      if (value == NULL)
+	{
+	  rust_fatal_error (expr.get_locus_slow (),
+			    "failed to compile value to struct");
+	  return;
+	}
+
+      constructor.push_back (value);
+    }
+
+  structBuffer.pop_back ();
+  auto cons = backend->constructor_expression (structType, constructor,
+					       expr.get_locus_slow ());
+  exprs.push_back (cons);
+}
+
 void
 Compilation::visit (AST::StructExprStructBase &expr)
 {}
@@ -1038,6 +1118,7 @@ Compilation::visit (AST::StructStruct &struct_item)
 
   type_decls.push_back (compiledStruct);
   scope.InsertType (struct_item.struct_name, compiledStruct);
+  scope.InsertStructDecl (struct_item.struct_name, &struct_item);
 }
 
 void
@@ -1217,15 +1298,6 @@ Compilation::visit (AST::LetStmt &stmt)
   if (!stmt.has_init_expr ())
     return;
 
-  Bexpression *init = NULL;
-  VISIT_POP (stmt.init_expr->get_locus_slow (), stmt.init_expr, init, exprs);
-  if (init == NULL)
-    {
-      rust_error_at (stmt.init_expr->get_locus_slow (),
-		     "failed to compile init statement");
-      return;
-    }
-
   stmt.variables_pattern->accept_vis (*this);
   for (auto &pattern : patternBuffer)
     {
@@ -1237,8 +1309,22 @@ Compilation::visit (AST::LetStmt &stmt)
 	  return;
 	}
 
+      varBuffer.push_back (var);
+
+      Bexpression *init = NULL;
+      VISIT_POP (stmt.init_expr->get_locus_slow (), stmt.init_expr, init,
+		 exprs);
+      if (init == NULL)
+	{
+	  rust_error_at (stmt.init_expr->get_locus_slow (),
+			 "failed to compile init statement");
+	  return;
+	}
+
       auto s = backend->init_statement (scope.GetCurrentFndecl (), var, init);
       scope.AddStatement (s);
+
+      varBuffer.pop_back ();
     }
   patternBuffer.clear ();
 }

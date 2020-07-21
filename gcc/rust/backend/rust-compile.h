@@ -242,6 +242,8 @@ private:
   std::vector<AST::IdentifierPattern> patternBuffer;
   std::vector< ::Bexpression *> exprs;
   std::vector< ::Bstatement *> stmts;
+  std::vector< ::Bvariable *> varBuffer;
+  std::vector<AST::StructStruct*> structBuffer;
 
   // careful these are the vectors we pass into the GCC middle-end
   std::vector< ::Btype *> type_decls;
