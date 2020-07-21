@@ -2299,6 +2299,13 @@ GLIBCXX_3.4.28 {
 
 } GLIBCXX_3.4.27;
 
+GLIBCXX_3.4.29 {
+
+    # std::from_chars
+    _ZSt10from_charsPKcS0_R[def]St12chars_format;
+
+} GLIBCXX_3.4.28;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

@@ -21,7 +21,6 @@
 #ifndef GCC_MSP430_PROTOS_H
 #define GCC_MSP430_PROTOS_H
 
-bool	msp430_do_not_relax_short_jumps (void);
 rtx	msp430_eh_return_stackadj_rtx (void);
 void	msp430_expand_eh_return (rtx);
 void	msp430_expand_epilogue (int);

@@ -1,3 +1,133 @@
+2020-07-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_expand_prologue): Calculate the total
+	allocated size and set current_function_static_stack_size, if
+	flag_stack_usage_info.
+
+2020-07-20  Sergei Trofimovich  <siarheit@google.com>
+
+	PR target/96190
+	* config/sparc/linux.h (ENDFILE_SPEC): Use GNU_USER_TARGET_ENDFILE_SPEC
+	to get crtendS.o for !no-pie mode.
+	* config/sparc/linux64.h (ENDFILE_SPEC): Ditto.
+
+2020-07-20  Yang Yang  <yangyang305@huawei.com>
+
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Add
+	VIEW_CONVERT_EXPRs if the arguments types and return type
+	of simd clone function are distinct with the vectype of stmt.
+
+2020-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95750
+	* config/i386/i386.h (TARGET_AVOID_MFENCE):
+	Rename from TARGET_USE_XCHG_FOR_ATOMIC_STORE.
+	* config/i386/sync.md (mfence_sse2): Disable for TARGET_AVOID_MFENCE.
+	(mfence_nosse): Enable also for TARGET_AVOID_MFENCE. Emit stack
+	referred memory in word_mode.
+	(mem_thread_fence): Do not generate mfence_sse2 pattern when
+	TARGET_AVOID_MFENCE is true.
+	(atomic_store<mode>): Update for rename.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_MFENCE):
+	Rename from X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE.
+
+2020-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95189
+	PR middle-end/95886
+	* builtins.c (inline_expand_builtin_string_cmp): Rename...
+	(inline_expand_builtin_bytecmp): ...to this.
+	(builtin_memcpy_read_str): Don't expect data to be nul-terminated.
+	(expand_builtin_memory_copy_args): Handle object representations
+	with embedded nul bytes.
+	(expand_builtin_memcmp): Same.
+	(expand_builtin_strcmp): Adjust call to naming change.
+	(expand_builtin_strncmp): Same.
+	* expr.c (string_constant): Create empty strings with nonzero size.
+	* fold-const.c (c_getstr): Rename locals and update comments.
+	* tree.c (build_string): Accept null pointer argument.
+	(build_string_literal): Same.
+	* tree.h (build_string): Provide a default.
+	(build_string_literal): Same.
+
+2020-07-20  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.c (rev_post_order_and_mark_dfs_back_seme): Remove
+	write-only post array.
+
+2020-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* gimple-fold.c (fold_const_aggregate_ref_1): For COMPONENT_REF
+	of a bitfield not aligned on byte boundaries try to
+	fold_ctor_reference DECL_BIT_FIELD_REPRESENTATIVE if any and
+	adjust it depending on endianity.
+
+2020-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* fold-const.c (native_encode_initializer): Handle bit-fields.
+
+2020-07-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Set param_vect_partial_vector_usage to 0 explicitly.
+	* doc/invoke.texi (vect-partial-vector-usage): Document new option.
+	* optabs-query.c (get_len_load_store_mode): New function.
+	* optabs-query.h (get_len_load_store_mode): New declare.
+	* params.opt (vect-partial-vector-usage): New.
+	* tree-vect-loop-manip.c (vect_set_loop_controls_directly): Add the
+	handlings for vectorization using length-based partial vectors, call
+	vect_gen_len for length generation, and rename some variables with
+	items instead of scalars.
+	(vect_set_loop_condition_partial_vectors): Add the handlings for
+	vectorization using length-based partial vectors.
+	(vect_do_peeling): Allow remaining eiters less than epilogue vf for
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Init
+	epil_using_partial_vectors_p.
+	(_loop_vec_info::~_loop_vec_info): Call release_vec_loop_controls
+	for lengths destruction.
+	(vect_verify_loop_lens): New function.
+	(vect_analyze_loop): Add handlings for epilogue of loop when it's
+	marked to use vectorization using partial vectors.
+	(vect_analyze_loop_2): Add the check to allow only one vectorization
+	approach using partial vectorization at the same time.  Check param
+	vect-partial-vector-usage for partial vectors decision.  Mark
+	LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P if the epilogue is
+	considerable to use partial vectors.  Call release_vec_loop_controls
+	for lengths destruction.
+	(vect_estimate_min_profitable_iters): Adjust for loop vectorization
+	using length-based partial vectors.
+	(vect_record_loop_mask): Init factor to 1 for vectorization using
+	mask-based partial vectors.
+	(vect_record_loop_len): New function.
+	(vect_get_loop_len): Likewise.
+	* tree-vect-stmts.c (check_load_store_for_partial_vectors): Add
+	checks for vectorization using length-based partial vectors.  Factor
+	some code to lambda function get_valid_nvectors.
+	(vectorizable_store): Add handlings when using length-based partial
+	vectors.
+	(vectorizable_load): Likewise.
+	(vect_gen_len): New function.
+	* tree-vectorizer.h (struct rgroup_controls): Add field factor
+	mainly for length-based partial vectors.
+	(vec_loop_lens): New typedef.
+	(_loop_vec_info): Add lens and epil_using_partial_vectors_p.
+	(LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P): New macro.
+	(LOOP_VINFO_LENS): Likewise.
+	(LOOP_VINFO_FULLY_WITH_LENGTH_P): Likewise.
+	(vect_record_loop_len): New declare.
+	(vect_get_loop_len): Likewise.
+	(vect_gen_len): Likewise.
+
+2020-07-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_option_override): Reinstate default
+	integer-emitting targetm.asm_out pseudos when dumping detailed
+	assembly-code.
+	(mmix_assemble_integer): Update comment.
+
 2020-07-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95973
