@@ -1,3 +1,23 @@
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (type_dependent_expression_p): A pseudo-dtor can be
+	dependent.
+	* semantics.c (finish_call_expr): Use build_trivial_dtor_call for
+	pseudo-destructor.
+	(finish_pseudo_destructor_expr): Leave type NULL for dependent arg.
+
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_base_ref): New.
+	(write_expression): Use it for base field COMPONENT_REFs.
+	* pt.c (invalid_tparm_referent_p): Canonicalize the type
+	of array offsets.  Allow subobjects.
+
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (collect_ctor_idx_types): Add 'const' when deducing from
+	a string constant.
+
 2020-07-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79815
