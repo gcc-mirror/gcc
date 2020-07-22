@@ -570,6 +570,7 @@ sparc*-*-*)
 	c_target_objs="sparc-c.o"
 	cxx_target_objs="sparc-c.o"
 	d_target_objs="sparc-d.o"
+	rust_target_objs="sparc-rust.o"
 	extra_headers="visintrin.h"
 	;;
 s390*-*-*)
