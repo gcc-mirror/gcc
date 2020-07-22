@@ -696,12 +696,12 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
     return x;
 
   if (CONST_SCALAR_INT_P (x)
-      && is_int_mode (mode, &int_mode))
+      && is_a <scalar_int_mode> (mode, &int_mode))
     {
       /* If the caller did not tell us the old mode, then there is not
 	 much to do with respect to canonicalization.  We have to
 	 assume that all the bits are significant.  */
-      if (GET_MODE_CLASS (oldmode) != MODE_INT)
+      if (!is_a <scalar_int_mode> (oldmode))
 	oldmode = MAX_MODE_INT;
       wide_int w = wide_int::from (rtx_mode_t (x, oldmode),
 				   GET_MODE_PRECISION (int_mode),
