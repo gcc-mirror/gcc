@@ -1827,11 +1827,31 @@ process_options (void)
   /* Address Sanitizer needs porting to each target architecture.  */
 
   if ((flag_sanitize & SANITIZE_ADDRESS)
-      && (!FRAME_GROWS_DOWNWARD || targetm.asan_shadow_offset == NULL))
+      && !FRAME_GROWS_DOWNWARD)
     {
       warning_at (UNKNOWN_LOCATION, 0,
 		  "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> "
 		  "are not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_USER_ADDRESS)
+      && targetm.asan_shadow_offset == NULL)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fsanitize=address%> not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_KERNEL_ADDRESS)
+      && (targetm.asan_shadow_offset == NULL
+	  && param_asan_stack
+	  && !asan_shadow_offset_set_p ()))
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fsanitize=kernel-address%> with stack protection "
+		  "is not supported without %<-fasan-shadow-offset=%> "
+		  "for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
