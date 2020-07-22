@@ -1,3 +1,5 @@
+/* { dg-do compile } */
+
 #include <omp.h>
 
 void
