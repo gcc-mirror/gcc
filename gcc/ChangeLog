@@ -1,3 +1,50 @@
+2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95237
+	* config/i386/i386-protos.h (ix86_local_alignment): Add
+	another function parameter may_lower alignment. Default is
+	false.
+	* config/i386/i386.c (ix86_lower_local_decl_alignment): New
+	function.
+	(ix86_local_alignment): Amend ix86_local_alignment to accept
+	another parameter may_lower. If may_lower is true, new align
+	may be lower than incoming alignment. If may_lower is false,
+	new align will be greater or equal to incoming alignment.
+	(TARGET_LOWER_LOCAL_DECL_ALIGNMENT): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_LOWER_LOCAL_DECL_ALIGNMENT): New
+	hook.
+	* target.def (lower_local_decl_alignment): New hook.
+
+2020-07-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95750
+	* config/i386/sync.md (mfence_sse2): Enable for
+	TARGET_64BIT and TARGET_SSE2.
+	(mfence_nosse): Always enable.
+
+2020-07-21  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430_do_not_relax_short_jumps):
+	Remove.
+	* config/msp430/msp430.c (msp430_do_not_relax_short_jumps): Likewise.
+	* config/msp430/msp430.md (cbranchhi4_real): Remove special case for
+	msp430_do_not_relax_short_jumps.
+
+2020-07-21  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md: New "extendqipsi2" define_insn.
+
+2020-07-21  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.h (NO_FUNCTION_CSE): Set to true at -O2 and
+	above.
+
+2020-07-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/89310
+	* config/rs6000/rs6000.md (movsf_from_si2): New define_insn_and_split.
+
 2020-07-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_expand_prologue): Calculate the total
