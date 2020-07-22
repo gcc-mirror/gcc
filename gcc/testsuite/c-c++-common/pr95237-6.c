@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-O2" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-do run { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2" } */
 #include <stddef.h>
 #ifdef  __x86_64__
 # define EXP_ALIGN 8
