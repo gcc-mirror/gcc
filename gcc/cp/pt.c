@@ -6930,7 +6930,9 @@ template_parm_object_p (const_tree t)
 }
 
 /* Subroutine of convert_nontype_argument, to check whether EXPR, as an
-   argument for TYPE, points to an unsuitable object.  */
+   argument for TYPE, points to an unsuitable object.
+
+   Also adjust the type of the index in C++20 array subobject references.  */
 
 static bool
 invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
@@ -6957,6 +6959,19 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
     case ADDR_EXPR:
       {
 	tree decl = TREE_OPERAND (expr, 0);
+
+	if (cxx_dialect >= cxx20)
+	  while (TREE_CODE (decl) == COMPONENT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    {
+	      tree &op = TREE_OPERAND (decl, 1);
+	      if (TREE_CODE (decl) == ARRAY_REF
+		  && TREE_CODE (op) == INTEGER_CST)
+		/* Canonicalize array offsets to ptrdiff_t; how they were
+		   written doesn't matter for subobject identity.  */
+		op = fold_convert (ptrdiff_type_node, op);
+	      decl = TREE_OPERAND (decl, 0);
+	    }
 
 	if (!VAR_P (decl))
 	  {
@@ -6999,9 +7014,10 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 		     decl);
 	    return true;
 	  }
-	else if (!same_type_ignoring_top_level_qualifiers_p
-		 (strip_array_types (TREE_TYPE (type)),
-		  strip_array_types (TREE_TYPE (decl))))
+	else if (cxx_dialect < cxx20
+		 && !(same_type_ignoring_top_level_qualifiers_p
+		      (strip_array_types (TREE_TYPE (type)),
+		       strip_array_types (TREE_TYPE (decl)))))
 	  {
 	    if (complain & tf_error)
 	      error ("the address of the %qT subobject of %qD is not a "
@@ -18607,6 +18623,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  stmt = pop_stmt_list (stmt);
 	}
 
+      if (TREE_CODE (t) == OMP_CRITICAL
+	  && tmp != NULL_TREE
+	  && integer_nonzerop (OMP_CLAUSE_HINT_EXPR (tmp)))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (tmp),
+		    "%<#pragma omp critical%> with %<hint%> clause requires "
+		    "a name, except when %<omp_sync_hint_none%> is used");
+	  RETURN (error_mark_node);
+	}
       t = copy_node (t);
       OMP_BODY (t) = stmt;
       OMP_CLAUSES (t) = tmp;
@@ -26816,8 +26841,7 @@ type_dependent_expression_p (tree expression)
     return true;
 
   /* Some expression forms are never type-dependent.  */
-  if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
-      || TREE_CODE (expression) == SIZEOF_EXPR
+  if (TREE_CODE (expression) == SIZEOF_EXPR
       || TREE_CODE (expression) == ALIGNOF_EXPR
       || TREE_CODE (expression) == AT_ENCODE_EXPR
       || TREE_CODE (expression) == NOEXCEPT_EXPR
@@ -28462,8 +28486,13 @@ collect_ctor_idx_types (tree ctor, tree list, tree elt = NULL_TREE)
       if (TREE_CODE (ftype) == ARRAY_TYPE
 	  && (BRACE_ENCLOSED_INITIALIZER_P (val)
 	      || TREE_CODE (val) == STRING_CST))
-	ftype = (cp_build_reference_type
-		 (ftype, BRACE_ENCLOSED_INITIALIZER_P (val)));
+	{
+	  if (TREE_CODE (val) == STRING_CST)
+	    ftype = cp_build_qualified_type
+	      (ftype, cp_type_quals (ftype) | TYPE_QUAL_CONST);
+	  ftype = (cp_build_reference_type
+		   (ftype, BRACE_ENCLOSED_INITIALIZER_P (val)));
+	}
       list = tree_cons (arg, ftype, list);
     }
 

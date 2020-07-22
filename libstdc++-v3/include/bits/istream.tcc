@@ -375,17 +375,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __streambuf_type* __this_sb = this->rdbuf();
 	      int_type __c = __this_sb->sgetc();
 	      char_type __c2 = traits_type::to_char_type(__c);
+	      unsigned long long __gcount = 0;
 
 	      while (!traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim)
 		     && !traits_type::eq_int_type(__sb.sputc(__c2), __eof))
 		{
-		  ++_M_gcount;
+		  ++__gcount;
 		  __c = __this_sb->snextc();
 		  __c2 = traits_type::to_char_type(__c);
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 3464. istream::gcount() can overflow
+	      if (__gcount <= __gnu_cxx::__numeric_traits<streamsize>::__max)
+		_M_gcount = __gcount;
+	      else
+		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
 	    }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {

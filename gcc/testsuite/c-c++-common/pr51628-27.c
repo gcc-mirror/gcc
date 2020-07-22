@@ -9,4 +9,4 @@ struct C { struct B b; };
 extern struct C *p;
 
 int* g8 (void) { return &p->b.a.i; }
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */

@@ -3351,6 +3351,13 @@ HOOK_VECTOR_END (addr_space)
 #define HOOK_PREFIX "TARGET_"
 
 DEFHOOK
+(lower_local_decl_alignment,
+ "Define this hook to lower alignment of local, parm or result\n\
+decl @samp{(@var{decl})}.",
+ void, (tree decl),
+ hook_void_tree)
+
+DEFHOOK
 (static_rtx_alignment,
  "This hook returns the preferred alignment in bits for a\n\
 statically-allocated rtx, such as a constant pool entry.  @var{mode}\n\

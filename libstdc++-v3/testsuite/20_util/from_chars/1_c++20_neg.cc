@@ -41,3 +41,4 @@ test01(const char* first, const char* last)
 }
 
 // { dg-prune-output "enable_if" }
+// { dg-prune-output "cannot bind non-const lvalue reference" }

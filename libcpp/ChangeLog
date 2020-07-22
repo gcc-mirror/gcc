@@ -1,3 +1,10 @@
+2020-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	* line-map.c (linemap_add): Simplify column overflow calculation.
+	Add comment about range and column bit init.
+	(linemap_ordinary_map_lookup): Refactor for RAII
+	(linemap_macro_map_lookup): Likewise.
+
 2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/49973

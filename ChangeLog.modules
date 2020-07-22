@@ -1,5 +1,7 @@
 2020-07-22  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 6e1e0decc9e.
+
 	Unbreak Ada
 	gcc/
 	* gcc.c (execute): Disable argv[0] munging.
