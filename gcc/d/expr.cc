@@ -223,12 +223,14 @@ class ExprVisitor : public Visitor
 
   tree result_;
   bool constp_;
+  bool literalp_;
 
 public:
-  ExprVisitor (bool constp)
+  ExprVisitor (bool constp, bool literalp)
   {
     this->result_ = NULL_TREE;
     this->constp_ = constp;
+    this->literalp_ = literalp;
   }
 
   tree result (void)
@@ -1072,7 +1074,7 @@ public:
     if (tb1->ty == Tstruct)
       {
 	tree t1 = build_expr (e->e1);
-	tree t2 = convert_for_assignment (build_expr (e->e2),
+	tree t2 = convert_for_assignment (build_expr (e->e2, false, true),
 					  e->e2->type, e->e1->type);
 	StructDeclaration *sd = tb1->isTypeStruct ()->sym;
 
@@ -1101,11 +1103,22 @@ public:
 	    tree init = NULL_TREE;
 
 	    /* Fill any alignment holes in the struct using memset.  */
-	    if (e->op == TOKconstruct && !identity_compare_p (sd))
-	      init = build_memset_call (t1);
+	    if ((e->op == TOKconstruct
+		 || (e->e2->op == TOKstructliteral && e->op == TOKblit))
+		&& (sd->isUnionDeclaration () || !identity_compare_p (sd)))
+	      {
+		t1 = stabilize_reference (t1);
+		init = build_memset_call (t1);
+	      }
 
-	    tree result = build_assign (modifycode, t1, t2);
-	    this->result_ = compound_expr (init, result);
+	    /* Elide generating assignment if init is all zeroes.  */
+	    if (init != NULL_TREE && initializer_zerop (t2))
+	      this->result_ = compound_expr (init, t1);
+	    else
+	      {
+		tree result = build_assign (modifycode, t1, t2);
+		this->result_ = compound_expr (init, result);
+	      }
 	  }
 
 	return;
@@ -1135,6 +1148,7 @@ public:
 	   to call postblits, this assignment should call dtors on old
 	   assigned elements.  */
 	if ((!postblit && !destructor)
+	    || (e->op == TOKconstruct && e->e2->op == TOKarrayliteral)
 	    || (e->op == TOKconstruct && !lvalue && postblit)
 	    || (e->op == TOKblit || e->e1->type->size () == 0))
 	  {
@@ -1452,7 +1466,7 @@ public:
   {
     Type *ebtype = e->e1->type->toBasetype ();
     Type *tbtype = e->to->toBasetype ();
-    tree result = build_expr (e->e1, this->constp_);
+    tree result = build_expr (e->e1, this->constp_, this->literalp_);
 
     /* Just evaluate e1 if it has any side effects.  */
     if (tbtype->ty == Tvoid)
@@ -1702,7 +1716,7 @@ public:
 	exp = sle->sym;
       }
     else
-      exp = build_expr (e->e1, this->constp_);
+      exp = build_expr (e->e1, this->constp_, this->literalp_);
 
     TREE_CONSTANT (exp) = 0;
     this->result_ = d_convert (type, build_address (exp));
@@ -2663,12 +2677,12 @@ public:
     tree result = NULL_TREE;
 
     if (e->e0)
-      result = build_expr (e->e0);
+      result = build_expr (e->e0, this->constp_, true);
 
     for (size_t i = 0; i < e->exps->length; ++i)
       {
 	Expression *exp = (*e->exps)[i];
-	result = compound_expr (result, build_expr (exp));
+	result = compound_expr (result, build_expr (exp, this->constp_, true));
       }
 
     if (result == NULL_TREE)
@@ -2717,7 +2731,7 @@ public:
     for (size_t i = 0; i < e->elements->length; i++)
       {
 	Expression *expr = e->getElement (i);
-	tree value = build_expr (expr, this->constp_);
+	tree value = build_expr (expr, this->constp_, true);
 
 	/* Only append nonzero values, the backend will zero out the rest
 	   of the constructor as we don't set CONSTRUCTOR_NO_CLEARING.  */
@@ -2764,6 +2778,22 @@ public:
 	  TREE_CONSTANT (ctor) = 1;
 	if (constant_p && initializer_constant_valid_p (ctor, TREE_TYPE (ctor)))
 	  TREE_STATIC (ctor) = 1;
+
+	/* Use memset to fill any alignment holes in the array.  */
+	if (!this->constp_ && !this->literalp_)
+	  {
+	    TypeStruct *ts = etype->baseElemOf ()->isTypeStruct ();
+
+	    if (ts != NULL && (!identity_compare_p (ts->sym)
+			       || ts->sym->isUnionDeclaration ()))
+	      {
+		tree var = build_local_temp (TREE_TYPE (ctor));
+		tree init = build_memset_call (var);
+		/* Evaluate memset() first, then any saved elements.  */
+		saved_elems = compound_expr (init, saved_elems);
+		ctor = compound_expr (modify_expr (var, ctor), var);
+	      }
+	  }
 
 	this->result_ = compound_expr (saved_elems, d_convert (type, ctor));
       }
@@ -2885,7 +2915,8 @@ public:
 	if (ftype->ty == Tsarray && !same_type_p (type, ftype))
 	  {
 	    /* Initialize a static array with a single element.  */
-	    tree elem = build_expr (exp, this->constp_);
+	    tree elem = build_expr (exp, this->constp_, true);
+	    saved_elems = compound_expr (saved_elems, stabilize_expr (&elem));
 	    elem = d_save_expr (elem);
 
 	    if (initializer_zerop (elem))
@@ -2895,14 +2926,12 @@ public:
 	  }
 	else
 	  {
-	    value = convert_expr (build_expr (exp, this->constp_),
+	    value = convert_expr (build_expr (exp, this->constp_, true),
 				  exp->type, field->type);
 	  }
 
 	/* Split construction of values out of the constructor.  */
-	tree init = stabilize_expr (&value);
-	if (init != NULL_TREE)
-	  saved_elems = compound_expr (saved_elems, init);
+	saved_elems = compound_expr (saved_elems, stabilize_expr (&value));
 
 	CONSTRUCTOR_APPEND_ELT (ve, get_symbol_decl (field), value);
       }
@@ -2932,24 +2961,27 @@ public:
 	return;
       }
 
+    /* Construct the struct literal for run-time.  */
     if (e->sym != NULL)
       {
+	/* Store the result in a symbol to initialize the literal.  */
 	tree var = build_deref (e->sym);
 	ctor = compound_expr (modify_expr (var, ctor), var);
-	this->result_ = compound_expr (saved_elems, ctor);
       }
-    else if (e->sd->isUnionDeclaration ())
+    else if (!this->literalp_)
       {
-	/* For unions, use memset to fill holes in the object.  */
-	tree var = build_local_temp (TREE_TYPE (ctor));
-	tree init = build_memset_call (var);
-
-	init = compound_expr (init, saved_elems);
-	init = compound_expr (init, modify_expr (var, ctor));
-	this->result_  = compound_expr (init, var);
+	/* Use memset to fill any alignment holes in the object.  */
+	if (!identity_compare_p (e->sd) || e->sd->isUnionDeclaration ())
+	  {
+	    tree var = build_local_temp (TREE_TYPE (ctor));
+	    tree init = build_memset_call (var);
+	    /* Evaluate memset() first, then any saved element constructors.  */
+	    saved_elems = compound_expr (init, saved_elems);
+	    ctor = compound_expr (modify_expr (var, ctor), var);
+	  }
       }
-    else
-      this->result_ = compound_expr (saved_elems, ctor);
+
+    this->result_ = compound_expr (saved_elems, ctor);
   }
 
   /* Build a null literal.  */
@@ -2964,7 +2996,6 @@ public:
   void visit (VectorExp *e)
   {
     tree type = build_ctype (e->type);
-    tree etype = TREE_TYPE (type);
 
     /* First handle array literal expressions.  */
     if (e->e1->op == TOKarrayliteral)
@@ -2977,7 +3008,8 @@ public:
 	for (size_t i = 0; i < ale->elements->length; i++)
 	  {
 	    Expression *expr = ale->getElement (i);
-	    tree value = d_convert (etype, build_expr (expr, this->constp_));
+	    tree value = d_convert (TREE_TYPE (type),
+				    build_expr (expr, this->constp_, true));
 	    if (!CONSTANT_CLASS_P (value))
 	      constant_p = false;
 
@@ -2993,8 +3025,9 @@ public:
     else
       {
 	/* Build constructor from single value.  */
-	tree val = d_convert (etype, build_expr (e->e1, this->constp_));
-	this->result_ = build_vector_from_val (type, val);
+	tree value = d_convert (TREE_TYPE (type),
+				build_expr (e->e1, this->constp_, true));
+	this->result_ = build_vector_from_val (type, value);
       }
   }
 
@@ -3002,7 +3035,7 @@ public:
 
   void visit (VectorArrayExp *e)
   {
-    this->result_ = convert_expr (build_expr (e->e1, this->constp_),
+    this->result_ = convert_expr (build_expr (e->e1, this->constp_, true),
 				  e->e1->type, e->type);
   }
 
@@ -3057,12 +3090,13 @@ public:
 
 /* Main entry point for ExprVisitor interface to generate code for
    the Expression AST class E.  If CONST_P is true, then E is a
-   constant expression.  */
+   constant expression.  If LITERAL_P is true, then E is a value used
+   in the initialization of another literal.  */
 
 tree
-build_expr (Expression *e, bool const_p)
+build_expr (Expression *e, bool const_p, bool literal_p)
 {
-  ExprVisitor v = ExprVisitor (const_p);
+  ExprVisitor v = ExprVisitor (const_p, literal_p);
   location_t saved_location = input_location;
 
   input_location = make_location_t (e->loc);
