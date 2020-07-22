@@ -3294,11 +3294,8 @@ copy_linkage (tree guard, tree decl)
 tree
 get_guard (tree decl)
 {
-  tree sname;
-  tree guard;
-
-  sname = mangle_guard_variable (decl);
-  guard = get_global_binding (sname);
+  tree sname = mangle_guard_variable (decl);
+  tree guard = get_global_binding (sname);
   if (! guard)
     {
       tree guard_type;
@@ -5536,10 +5533,11 @@ mark_used (tree decl, tsubst_flags_t complain)
     return true;
 
   /* Set TREE_USED for the benefit of -Wunused.  */
-  TREE_USED (decl) = 1;
+  TREE_USED (decl) = true;
+
   /* And for structured bindings also the underlying decl.  */
   if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
-    TREE_USED (DECL_DECOMP_BASE (decl)) = 1;
+    TREE_USED (DECL_DECOMP_BASE (decl)) = true;
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     return true;

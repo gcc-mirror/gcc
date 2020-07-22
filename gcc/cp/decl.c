@@ -974,12 +974,6 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      tree f1 = TREE_TYPE (newdecl);
-      tree f2 = TREE_TYPE (olddecl);
-      tree p1 = TYPE_ARG_TYPES (f1);
-      tree p2 = TYPE_ARG_TYPES (f2);
-      tree r2;
-
       /* Specializations of different templates are different functions
 	 even if they have the same type.  */
       tree t1 = (DECL_USE_TEMPLATE (newdecl)
@@ -1002,14 +996,20 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 	  && DECL_EXTERN_C_P (olddecl) && !DECL_EXTERN_C_P (newdecl))
 	return 0;
 
+      tree f1 = TREE_TYPE (newdecl);
+      tree f2 = TREE_TYPE (olddecl);
       if (TREE_CODE (f1) != TREE_CODE (f2))
 	return 0;
 
       /* A declaration with deduced return type should use its pre-deduction
 	 type for declaration matching.  */
-      r2 = fndecl_declared_return_type (olddecl);
+      tree r2 = fndecl_declared_return_type (olddecl);
+      tree r1 = fndecl_declared_return_type (newdecl);
 
-      if (same_type_p (TREE_TYPE (f1), r2))
+      tree p1 = TYPE_ARG_TYPES (f1);
+      tree p2 = TYPE_ARG_TYPES (f2);
+
+      if (same_type_p (r1, r2))
 	{
 	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
 	      && fndecl_built_in_p (olddecl))
@@ -2457,14 +2457,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      || (TREE_CODE (olddecl) == TEMPLATE_DECL
 		  && (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl))
 		      == FUNCTION_DECL))))
-	{
-	  tree fn = olddecl;
-
-	  if (TREE_CODE (fn) == TEMPLATE_DECL)
-	    fn = DECL_TEMPLATE_RESULT (olddecl);
-
-	  new_redefines_gnu_inline = GNU_INLINE_P (fn) && DECL_INITIAL (fn);
-	}
+	new_redefines_gnu_inline = GNU_INLINE_P (STRIP_TEMPLATE (olddecl));
 
       if (!new_redefines_gnu_inline)
 	{
@@ -3852,11 +3845,7 @@ tree
 build_typename_type (tree context, tree name, tree fullname,
 		     enum tag_types tag_type)
 {
-  tree t;
-  tree d;
   typename_info ti;
-  tree *e;
-  hashval_t hash;
 
   if (typename_htab == NULL)
     typename_htab = hash_table<typename_hasher>::create_ggc (61);
@@ -3868,11 +3857,12 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.class_p = (tag_type == class_type
 		|| tag_type == record_type
 		|| tag_type == union_type);
-  hash =  (htab_hash_pointer (ti.scope)
-	   ^ htab_hash_pointer (ti.name));
+  hashval_t hash =  (htab_hash_pointer (ti.scope)
+		     ^ htab_hash_pointer (ti.name));
 
   /* See if we already have this type.  */
-  e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
+  tree *e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
+  tree t = *e;
   if (*e)
     t = *e;
   else
@@ -3885,10 +3875,10 @@ build_typename_type (tree context, tree name, tree fullname,
       TYPENAME_IS_CLASS_P (t) = ti.class_p;
 
       /* Build the corresponding TYPE_DECL.  */
-      d = build_decl (input_location, TYPE_DECL, name, t);
-      TYPE_NAME (TREE_TYPE (d)) = d;
-      TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-      DECL_CONTEXT (d) = FROB_CONTEXT (context);
+      tree d = build_decl (input_location, TYPE_DECL, name, t);
+      TYPE_NAME (t) = d;
+      TYPE_STUB_DECL (t) = d;
+      DECL_CONTEXT (d) = ti.scope;
       DECL_ARTIFICIAL (d) = 1;
 
       /* Store it in the hash table.  */
@@ -4061,9 +4051,6 @@ tree
 make_unbound_class_template (tree context, tree name, tree parm_list,
 			     tsubst_flags_t complain)
 {
-  tree t;
-  tree d;
-
   if (TYPE_P (name))
     name = TYPE_IDENTIFIER (name);
   else if (DECL_P (name))
@@ -4108,16 +4095,16 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
     }
 
   /* Build the UNBOUND_CLASS_TEMPLATE.  */
-  t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
+  tree t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TREE_TYPE (t) = NULL_TREE;
   SET_TYPE_STRUCTURAL_EQUALITY (t);
 
   /* Build the corresponding TEMPLATE_DECL.  */
-  d = build_decl (input_location, TEMPLATE_DECL, name, t);
-  TYPE_NAME (TREE_TYPE (d)) = d;
-  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+  tree d = build_decl (input_location, TEMPLATE_DECL, name, t);
+  TYPE_NAME (t) = d;
+  TYPE_STUB_DECL (t) = d;
+  DECL_CONTEXT (d) = TYPE_CONTEXT (t);
   DECL_ARTIFICIAL (d) = 1;
   DECL_TEMPLATE_PARMS (d) = parm_list;
 
@@ -16819,8 +16806,6 @@ finish_destructor_body (void)
 tree
 begin_function_body (void)
 {
-  tree stmt;
-
   if (! FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
     return NULL_TREE;
 
@@ -16832,7 +16817,7 @@ begin_function_body (void)
        operation of dwarfout.c.  */
     keep_next_level (true);
 
-  stmt = begin_compound_stmt (BCS_FN_BODY);
+  tree stmt = begin_compound_stmt (BCS_FN_BODY);
 
   if (processing_template_decl)
     /* Do nothing now.  */;
