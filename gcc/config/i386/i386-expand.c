@@ -19604,7 +19604,7 @@ bool
 ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 {
   machine_mode qimode, himode;
-  unsigned int and_constant, xor_constant;
+  HOST_WIDE_INT and_constant, xor_constant;
   HOST_WIDE_INT shift_amount;
   rtx vec_const_and, vec_const_xor;
   rtx tmp, op1_subreg;
@@ -19679,7 +19679,7 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx 
   emit_move_insn (dest, simplify_gen_subreg (qimode, tmp, himode, 0));
   emit_move_insn (vec_const_and,
 		  ix86_build_const_vector (qimode, true,
-					   GEN_INT (and_constant)));
+					   gen_int_mode (and_constant, QImode)));
   emit_insn (gen_and (dest, dest, vec_const_and));
 
   /* For ASHIFTRT, perform extra operation like
@@ -19690,7 +19690,7 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx 
       vec_const_xor = gen_reg_rtx (qimode);
       emit_move_insn (vec_const_xor,
 		      ix86_build_const_vector (qimode, true,
-					       GEN_INT (xor_constant)));
+					       gen_int_mode (xor_constant, QImode)));
       emit_insn (gen_xor (dest, dest, vec_const_xor));
       emit_insn (gen_sub (dest, dest, vec_const_xor));
     }
