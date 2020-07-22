@@ -1320,7 +1320,9 @@ enum gfc_omp_cancel_kind
 
 enum gfc_omp_if_kind
 {
+  OMP_IF_CANCEL,
   OMP_IF_PARALLEL,
+  OMP_IF_SIMD,
   OMP_IF_TASK,
   OMP_IF_TASKLOOP,
   OMP_IF_TARGET,
