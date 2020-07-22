@@ -3249,7 +3249,7 @@ execute (void)
       int err;
       const char *string = commands[i].argv[0];
 
-      if (commands[i].argv == argbuf.address ())
+      if (false && commands[i].argv == argbuf.address ())
 	{
 	  /* Munge argv[0], the one given to the exec'd command, to
 	     include information about from whence it was spawned.  We

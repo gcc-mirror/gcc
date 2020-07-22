@@ -1,3 +1,9 @@
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	Unbreak Ada
+	gcc/
+	* gcc.c (execute): Disable argv[0] munging.
+
 2020-07-21  Nathan Sidwell  <nathan@acm.org>
 
 	Sadly Ada still broken :(
