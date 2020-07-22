@@ -634,26 +634,20 @@ static const char *current_source_file;
 static location_t
 decl_sloc (const_tree decl, bool last)
 {
+  tree field;
+
   /* Compare the declaration of struct-like types based on the sloc of their
      last field (if LAST is true), so that more nested types collate before
      less nested ones.  */
   if (TREE_CODE (decl) == TYPE_DECL
       && !DECL_ORIGINAL_TYPE (decl)
-      && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+      && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+      && (field = TYPE_FIELDS (TREE_TYPE (decl))))
     {
-      tree field = TYPE_FIELDS (TREE_TYPE (decl));
-
-      /* Skip any builtin fields we added.  */
-      while (field && DECL_IS_BUILTIN (field))
-	field = DECL_CHAIN (field);
-
-      if (field)
-	{
-	  if (last)
-	    while (DECL_CHAIN (field))
-	      field = DECL_CHAIN (field);
-	  return DECL_SOURCE_LOCATION (field);
-	}
+      if (last)
+	while (DECL_CHAIN (field))
+	  field = DECL_CHAIN (field);
+      return DECL_SOURCE_LOCATION (field);
     }
 
   return DECL_SOURCE_LOCATION (decl);

@@ -1,5 +1,8 @@
 2020-07-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c-ada-spec.c (decl_sloc): Revert to trunk.
+
 	Merge trunk 6e1e0decc9e.
 
 	Unbreak Ada
