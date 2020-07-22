@@ -1800,7 +1800,7 @@ parse_dump_option (const char *option_value, const char **pos_p)
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
-      if (eq_ptr && !end_ptr)
+      if (eq_ptr && (!end_ptr || end_ptr > eq_ptr))
 	end_ptr = eq_ptr;
 
       if (!end_ptr)

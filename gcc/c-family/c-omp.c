@@ -106,6 +106,17 @@ c_finish_omp_taskgroup (location_t loc, tree body, tree clauses)
 tree
 c_finish_omp_critical (location_t loc, tree body, tree name, tree clauses)
 {
+  gcc_assert (!clauses || OMP_CLAUSE_CODE (clauses) == OMP_CLAUSE_HINT);
+  if (name == NULL_TREE
+      && clauses != NULL_TREE
+      && integer_nonzerop (OMP_CLAUSE_HINT_EXPR (clauses)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (clauses),
+		"%<#pragma omp critical%> with %<hint%> clause requires "
+		"a name, except when %<omp_sync_hint_none%> is used");
+      return error_mark_node;
+    }
+
   tree stmt = make_node (OMP_CRITICAL);
   TREE_TYPE (stmt) = void_type_node;
   OMP_CRITICAL_BODY (stmt) = body;

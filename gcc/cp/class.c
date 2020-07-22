@@ -3049,11 +3049,14 @@ finish_struct_anon (tree t)
 void
 maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 {
-  /* Save some memory by not creating TREE_LIST if TYPE is not template.  */
-  if (CLASSTYPE_TEMPLATE_INFO (type))
-    CLASSTYPE_DECL_LIST (type)
-      = tree_cons (friend_p ? NULL_TREE : type,
-		   t, CLASSTYPE_DECL_LIST (type));
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && TREE_CODE (t) != CONST_DECL)
+    {
+      tree purpose = friend_p ? NULL_TREE : type;
+
+      CLASSTYPE_DECL_LIST (type)
+	= tree_cons (purpose, t, CLASSTYPE_DECL_LIST (type));
+    }
 }
 
 /* This function is called from declare_virt_assop_and_dtor via

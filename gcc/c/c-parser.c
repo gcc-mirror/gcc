@@ -13901,16 +13901,15 @@ c_parser_omp_clause_hint (c_parser *parser, tree list)
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
-
-      parens.skip_until_found_close (parser);
-
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-	  || TREE_CODE (t) != INTEGER_CST)
+	  || TREE_CODE (t) != INTEGER_CST
+	  || tree_int_cst_sgn (t) == -1)
 	{
-	  c_parser_error (parser, "expected constant integer expression");
+	  c_parser_error (parser, "expected constant integer expression "
+				  "with valid sync-hint value");
 	  return list;
 	}
-
+      parens.skip_until_found_close (parser);
       check_no_duplicate_clause (list, OMP_CLAUSE_HINT, "hint");
 
       c = build_omp_clause (hint_loc, OMP_CLAUSE_HINT);
@@ -17795,18 +17794,9 @@ c_parser_omp_critical (location_t loc, c_parser *parser, bool *if_p)
       if (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
-
-      clauses = c_parser_omp_all_clauses (parser,
-					  OMP_CRITICAL_CLAUSE_MASK,
-					  "#pragma omp critical");
     }
-  else
-    {
-      if (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
-	c_parser_error (parser, "expected %<(%> or end of line");
-      c_parser_skip_to_pragma_eol (parser);
-    }
-
+  clauses = c_parser_omp_all_clauses (parser, OMP_CRITICAL_CLAUSE_MASK,
+				      "#pragma omp critical");
   stmt = c_parser_omp_structured_block (parser, if_p);
   return c_finish_omp_critical (loc, stmt, name, clauses);
 }
@@ -21537,7 +21527,7 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       gcc_unreachable ();
     }
 
-  if (stmt)
+  if (stmt && stmt != error_mark_node)
     gcc_assert (EXPR_LOCATION (stmt) != UNKNOWN_LOCATION);
 }
 

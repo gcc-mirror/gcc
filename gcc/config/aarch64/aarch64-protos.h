@@ -682,7 +682,7 @@ void aarch64_split_compare_and_swap (rtx op[]);
 
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
-bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
+bool aarch64_gen_adjusted_ldpstp (rtx *, bool, machine_mode, RTX_CODE);
 
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
@@ -733,7 +733,7 @@ int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
-bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, scalar_mode);
+bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 void aarch64_swap_ldrstr_operands (rtx *, bool);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,

@@ -35,7 +35,7 @@ conv2
 /* { dg-final { scan-assembler-times {\mbl\M} 24 { target { ! hard_dfp } } } } */
 /* { dg-final { scan-assembler-times {\mbl\M} 19 { target { hard_dfp && { ! ppc_float128 } } } } } */
 /* { dg-final { scan-assembler-times {\mbl\M} 30 { target { hard_dfp && { ppc_float128 && { ! ppc_float128_insns } } } } } } */
-/* { dg-final { scan-assembler-times {\mbl\M} 27 { target { hard_dfp && { ppc_float128 && { ppc_float128_insns } } } } } } */
+/* { dg-final { scan-assembler-times {\mbl\M} 26 { target { hard_dfp && { ppc_float128 && { ppc_float128_insns } } } } } } */
 
 
 /* { dg-final { scan-assembler-times {\mbl __extendsfkf2\M} 1 { target { ppc_float128 && { ! ppc_float128_insns } } } } } */

@@ -1121,8 +1121,6 @@ cp_lexer_consume_token (cp_lexer* lexer)
 {
   cp_token *token = lexer->next_token;
 
-  gcc_assert (!lexer->in_pragma || token->type != CPP_PRAGMA_EOL);
-
   do
     {
       gcc_assert (token->type != CPP_EOF);
@@ -3691,7 +3689,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 
 	case CPP_PRAGMA:
 	  /* We fell into a pragma.  Skip it, and continue. */
-	  cp_parser_skip_to_pragma_eol (parser, token);
+	  cp_parser_skip_to_pragma_eol (parser, recovering ? token : nullptr);
 	  continue;
 
 	default:
@@ -3930,14 +3928,13 @@ cp_parser_skip_to_closing_brace (cp_parser *parser)
 
 /* Consume tokens until we reach the end of the pragma.  The PRAGMA_TOK
    parameter is the PRAGMA token, allowing us to purge the entire pragma
-   sequence.  */
+   sequence.  PRAGMA_TOK can be NULL, if we're speculatively scanning
+   forwards (not error recovery).  */
 
 static void
 cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
 {
   cp_token *token;
-
-  parser->lexer->in_pragma = false;
 
   do
     {
@@ -3950,8 +3947,12 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
     }
   while (token->type != CPP_PRAGMA_EOL);
 
-  /* Ensure that the pragma is not parsed again.  */
-  cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
+  if (pragma_tok)
+    {
+      /* Ensure that the pragma is not parsed again.  */
+      cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
+      parser->lexer->in_pragma = false;
+    }
 }
 
 /* Require pragma end of line, resyncing with it as necessary.  The
@@ -35382,12 +35383,21 @@ cp_parser_omp_clause_hint (cp_parser *parser, tree list, location_t location)
 
   t = cp_parser_assignment_expression (parser);
 
+  if (t != error_mark_node)
+    {
+      t = fold_non_dependent_expr (t);
+      if (!value_dependent_expression_p (t)
+	  && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      || !tree_fits_shwi_p (t)
+	      || tree_int_cst_sgn (t) == -1))
+	error_at (location, "expected constant integer expression with "
+			    "valid sync-hint value");
+    }
   if (t == error_mark_node
       || !parens.require_close (parser))
     cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					   /*or_comma=*/false,
 					   /*consume_paren=*/true);
-
   check_no_duplicate_clause (list, OMP_CLAUSE_HINT, "hint", location);
 
   c = build_omp_clause (location, OMP_CLAUSE_HINT);
@@ -38209,13 +38219,10 @@ cp_parser_omp_critical (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
 	cp_lexer_consume_token (parser->lexer);
-
-      clauses = cp_parser_omp_all_clauses (parser,
-					   OMP_CRITICAL_CLAUSE_MASK,
-					   "#pragma omp critical", pragma_tok);
     }
-  else
-    cp_parser_require_pragma_eol (parser, pragma_tok);
+
+  clauses = cp_parser_omp_all_clauses (parser, OMP_CRITICAL_CLAUSE_MASK,
+				       "#pragma omp critical", pragma_tok);
 
   stmt = cp_parser_omp_structured_block (parser, if_p);
   return c_finish_omp_critical (input_location, stmt, name, clauses);

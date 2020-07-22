@@ -223,7 +223,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 #ifdef TREE_CODE
 extern int ix86_data_alignment (tree, unsigned int, bool);
 extern unsigned int ix86_local_alignment (tree, machine_mode,
-					  unsigned int);
+					  unsigned int, bool = false);
 extern unsigned int ix86_minimum_alignment (tree, machine_mode,
 					    unsigned int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);

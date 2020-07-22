@@ -1,3 +1,9 @@
+2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95237
+	* c-decl.c (finish_decl): Call target hook
+	lower_local_decl_alignment to lower local decl alignment.
+
 2020-07-09  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

@@ -1,3 +1,180 @@
+2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95237
+	* c-c++-common/pr95237-1.c: New test.
+	* c-c++-common/pr95237-2.c: New test.
+	* c-c++-common/pr95237-3.c: New test.
+	* c-c++-common/pr95237-4.c: New test.
+	* c-c++-common/pr95237-5.c: New test.
+	* c-c++-common/pr95237-6.c: New test.
+	* c-c++-common/pr95237-7.c: New test.
+	* c-c++-common/pr95237-8.c: New test.
+	* c-c++-common/pr95237-9.c: New test.
+
+2020-07-21  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/92488
+	* gcc.target/powerpc/convert-fp-128.c (bl): Update POWER9 count.
+
+2020-07-21  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/pr96257.C: New.
+
+2020-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89574
+	* gfortran.dg/pr89574.f90: New file.
+
+2020-07-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/profopt.exp (auto-profopt-execute): Pass -DFOR_AUTOFDO_TESTING
+	on command line for both compiles.
+	* gcc.dg/tree-prof/cold_partition_label.c: Scale down for
+	non-FDO testing.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c: Likewise.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c: Likewise.
+	* gcc.dg/tree-prof/indir-call-prof-topn.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-1.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
+2020-07-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/attr-copy-4.c: Unpacked may still have alignment of 1
+	on targets with default_packed.
+	* gcc.dg/c11-align-9.c: Remove AVR target filter and replace
+	with default_packed filter.
+
+2020-07-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/pr53037-1.c: Relax warning pattern.
+
+2020-07-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* c-c++-common/Waddress-of-packed-member-2.c: Add dg-warning for
+	ignored attribute if target is default_packed.
+	* c-c++-common/Wattributes.c: Ditto.
+	* c-c++-common/attr-copy.c: Ditto.
+	* c-c++-common/builtin-has-attribute-4.c: Ditto.
+	* c-c++-common/pr51628-29.c: Ditto.
+	* c-c++-common/pr51628-30.c: Ditto.
+	* c-c++-common/pr51628-32.c: Ditto.
+	* gcc.dg/Wattributes-6.c: Ditto.
+	* gcc.dg/attr-copy-4.c: Ditto.
+	* gcc.dg/attr-copy-8.c: Ditto.
+
+2020-07-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* c-c++-common/Waddress-of-packed-member-1.c: Filter dg-warning
+	for targets who pack by default.
+	* c-c++-common/Waddress-of-packed-member-2.c: Ditto.
+	* c-c++-common/pr51628-13.c: Ditto.
+	* c-c++-common/pr51628-15.c: Ditto.
+	* c-c++-common/pr51628-16.c: Ditto.
+	* c-c++-common/pr51628-26.c: Ditto.
+	* c-c++-common/pr51628-27.c: Ditto.
+	* c-c++-common/pr51628-28.c: Ditto.
+	* c-c++-common/pr51628-29.c: Ditto.
+	* c-c++-common/pr51628-3.c: Ditto.
+	* c-c++-common/pr51628-30.c: Ditto.
+	* c-c++-common/pr51628-31.c: Ditto.
+	* c-c++-common/pr51628-32.c: Ditto.
+	* c-c++-common/pr51628-33.c: Ditto.
+	* c-c++-common/pr51628-35.c: Ditto.
+	* c-c++-common/pr51628-4.c: Ditto.
+	* c-c++-common/pr51628-5.c: Ditto.
+	* c-c++-common/pr51628-6.c: Ditto.
+	* c-c++-common/pr51628-8.c: Ditto.
+	* c-c++-common/pr51628-9.c: Ditto.
+	* c-c++-common/pr88664-2.c: Ditto.
+	* gcc.dg/pr51628-17.c: Ditto.
+	* gcc.dg/pr51628-19.c: Ditto.
+	* gcc.dg/pr51628-20.c: Ditto.
+	* gcc.dg/pr51628-21.c: Ditto.
+	* gcc.dg/pr51628-22.c: Ditto.
+	* gcc.dg/pr51628-24.c: Ditto.
+	* gcc.dg/pr51628-25.c: Ditto.
+	* gcc.dg/pr51628-34.c: Ditto.
+	* gcc.dg/pr88928.c: Ditto.
+
+2020-07-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.dg/analyzer/signal-1.c: Add dg-require-effective-target
+	signal.
+	* gcc.dg/analyzer/signal-2.c: Ditto.
+	* gcc.dg/analyzer/signal-3.c: Ditto.
+	* gcc.dg/analyzer/signal-4a.c: Ditto.
+	* gcc.dg/analyzer/signal-4b.c: Ditto.
+	* gcc.dg/analyzer/signal-5.c: Ditto.
+	* gcc.dg/analyzer/signal-6.c: Ditto.
+	* gcc.dg/analyzer/signal-exit.c: Ditto.
+
+2020-07-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/89310
+	* gcc.target/powerpc/pr89310.c: New test.
+
+2020-07-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/p9-vec-length-1.h: New test.
+	* gcc.target/powerpc/p9-vec-length-2.h: New test.
+	* gcc.target/powerpc/p9-vec-length-3.h: New test.
+	* gcc.target/powerpc/p9-vec-length-4.h: New test.
+	* gcc.target/powerpc/p9-vec-length-5.h: New test.
+	* gcc.target/powerpc/p9-vec-length-6.h: New test.
+	* gcc.target/powerpc/p9-vec-length-7.h: New test.
+	* gcc.target/powerpc/p9-vec-length-8.h: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-2.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-3.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-4.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-5.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-6.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-7.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-1.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-2.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-3.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-4.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-5.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-6.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-7.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-run-8.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-1.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-2.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-3.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-4.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-5.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-6.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-7.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-8.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-1.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-2.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-3.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-4.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-5.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-6.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-7.c: New test.
+	* gcc.target/powerpc/p9-vec-length-full-run-8.c: New test.
+	* gcc.target/powerpc/p9-vec-length-run-1.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-2.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-3.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-4.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-5.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-6.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-7.h: New test.
+	* gcc.target/powerpc/p9-vec-length-run-8.h: New test.
+	* gcc.target/powerpc/p9-vec-length.h: New test.
+
+2020-07-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/independent-cloneids-1.c: Skip for mmix.
+	flag_stack_usage_info.
+
+2020-07-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/cdce3.c: Update matched line-number.
+
 2020-07-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/opt/flifetime-dse7.C: New test.
