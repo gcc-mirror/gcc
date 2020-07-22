@@ -22158,7 +22158,7 @@ aarch64_ldrstr_offset_compare (const void *x, const void *y)
 
 bool
 aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
-				       scalar_mode mode)
+				       machine_mode mode)
 {
   const int num_insns = 4;
   enum reg_class rclass;
@@ -22235,7 +22235,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
   for (int i = 0; i < num_insns; i++)
     offvals[i] = INTVAL (offset[i]);
 
-  msize = GET_MODE_SIZE (mode);
+  msize = GET_MODE_SIZE (mode).to_constant ();
 
   /* Check if the offsets can be put in the right order to do a ldp/stp.  */
   qsort (offvals, num_insns, sizeof (HOST_WIDE_INT),
@@ -22275,7 +22275,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 
 bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
-			     scalar_mode mode, RTX_CODE code)
+			     machine_mode mode, RTX_CODE code)
 {
   rtx base, offset_1, offset_3, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;
@@ -22314,7 +22314,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 	      && offset_3 != NULL_RTX);
 
   /* Adjust offset so it can fit in LDP/STP instruction.  */
-  msize = GET_MODE_SIZE (mode);
+  msize = GET_MODE_SIZE (mode).to_constant();
   stp_off_upper_limit = msize * (0x40 - 1);
   stp_off_lower_limit = - msize * 0x40;
 

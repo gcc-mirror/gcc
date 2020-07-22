@@ -98,6 +98,9 @@
 ;; Copy of the above.
 (define_mode_iterator DREG2 [V8QI V4HI V4HF V2SI V2SF DF])
 
+;; All modes suitable to store/load pair (2 elements) using STP/LDP.
+(define_mode_iterator VP_2E [V2SI V2SF V2DI V2DF])
+
 ;; Advanced SIMD, 64-bit container, all integer modes.
 (define_mode_iterator VD_BHSI [V8QI V4HI V2SI])
 
