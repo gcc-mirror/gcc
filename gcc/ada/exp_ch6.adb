@@ -3961,42 +3961,47 @@ package body Exp_Ch6 is
 
                            procedure Insert_Level_Assign (Branch : Node_Id) is
 
-                              procedure Expand_Branch (Assn : Node_Id);
+                              procedure Expand_Branch (Res_Assn : Node_Id);
                               --  Perform expansion or iterate further within
-                              --  nested conditionals.
+                              --  nested conditionals given the object
+                              --  declaration or assignment to result object
+                              --  created during expansion which represents
+                              --  a branch of the conditional expression.
 
                               -------------------
                               -- Expand_Branch --
                               -------------------
 
-                              procedure Expand_Branch (Assn : Node_Id) is
+                              procedure Expand_Branch (Res_Assn : Node_Id) is
                               begin
-                                 pragma Assert (Nkind (Assn) =
-                                                 N_Assignment_Statement);
+                                 pragma Assert (Nkind (Res_Assn) in
+                                                 N_Assignment_Statement |
+                                                 N_Object_Declaration);
 
                                  --  There are more nested conditional
                                  --  expressions so we must go deeper.
 
-                                 if Nkind (Expression (Assn)) =
+                                 if Nkind (Expression (Res_Assn)) =
                                       N_Expression_With_Actions
                                    and then
                                      Nkind
-                                       (Original_Node (Expression (Assn))) in
-                                         N_Case_Expression | N_If_Expression
+                                       (Original_Node (Expression (Res_Assn)))
+                                         in N_Case_Expression | N_If_Expression
                                  then
-                                    Insert_Level_Assign (Expression (Assn));
+                                    Insert_Level_Assign
+                                      (Expression (Res_Assn));
 
                                  --  Add the level assignment
 
                                  else
-                                    Insert_Before_And_Analyze (Assn,
+                                    Insert_Before_And_Analyze (Res_Assn,
                                       Make_Assignment_Statement (Loc,
                                         Name       =>
                                           New_Occurrence_Of
                                             (Lvl, Loc),
                                         Expression =>
                                           Dynamic_Accessibility_Level
-                                            (Expression (Assn))));
+                                            (Expression (Res_Assn))));
                                  end if;
                               end Expand_Branch;
 
