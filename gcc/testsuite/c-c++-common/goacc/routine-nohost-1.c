@@ -1,7 +1,7 @@
 /* Test the nohost clause for OpenACC routine directive.  Exercising different
    variants for declaring routines.  */
 
-/* { dg-additional-options "-fdump-tree-oaccdevlow" } */
+/* { dg-additional-options "-fdump-tree-oaccloops" } */
 
 #pragma acc routine nohost
 int THREE(void)
@@ -25,4 +25,4 @@ float ADD(float x, float y)
   return x + y;
 }
 
-/* { dg-final { scan-tree-dump-times "Discarding function" 3 "oaccdevlow" } } */
+/* { dg-final { scan-tree-dump-times "Discarding function" 3 "oaccloops" } } */
