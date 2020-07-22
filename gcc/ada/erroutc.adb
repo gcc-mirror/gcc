@@ -818,34 +818,45 @@ package body Erroutc is
 
       if not Debug_Flag_FF and then Msg (Msg'First) = '\' then
          return;
+
+      --  Some global variables are not set for continuation messages, as they
+      --  only make sense for the initial mesage.
+
+      elsif Msg (Msg'First) /= '\' then
+
+         --  Set initial values of globals (may be changed during scan)
+
+         Is_Serious_Error     := True;
+         Is_Unconditional_Msg := False;
+         Is_Warning_Msg       := False;
+
+         --  Check style message
+
+         Is_Style_Msg :=
+           Msg'Length > 7
+             and then Msg (Msg'First .. Msg'First + 6) = "(style)";
+
+         --  Check info message
+
+         Is_Info_Msg :=
+           Msg'Length > 6
+             and then Msg (Msg'First .. Msg'First + 5) = "info: ";
+
+         --  Check check message
+
+         Is_Check_Msg :=
+           (Msg'Length > 8
+             and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
+           or else
+           (Msg'Length > 6
+             and then Msg (Msg'First .. Msg'First + 5) = "high: ")
+           or else
+           (Msg'Length > 5
+             and then Msg (Msg'First .. Msg'First + 4) = "low: ");
       end if;
 
-      --  Set initial values of globals (may be changed during scan)
-
-      Is_Serious_Error     := True;
-      Is_Unconditional_Msg := False;
-      Is_Warning_Msg       := False;
-      Has_Double_Exclam    := False;
-      Has_Insertion_Line   := False;
-
-      --  Check style message
-
-      Is_Style_Msg :=
-        Msg'Length > 7 and then Msg (Msg'First .. Msg'First + 6) = "(style)";
-
-      --  Check info message
-
-      Is_Info_Msg :=
-        Msg'Length > 6 and then Msg (Msg'First .. Msg'First + 5) = "info: ";
-
-      --  Check check message
-
-      Is_Check_Msg :=
-        (Msg'Length > 8 and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
-        or else
-          (Msg'Length > 6 and then Msg (Msg'First .. Msg'First + 5) = "high: ")
-        or else
-          (Msg'Length > 5 and then Msg (Msg'First .. Msg'First + 4) = "low: ");
+      Has_Double_Exclam  := False;
+      Has_Insertion_Line := False;
 
       --  Loop through message looking for relevant insertion sequences
 

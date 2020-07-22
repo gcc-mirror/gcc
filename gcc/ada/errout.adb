@@ -1840,7 +1840,6 @@ package body Errout is
       procedure Write_Source_Code_Line (Loc : Source_Ptr);
       --  Write the source code line corresponding to Loc, as follows:
       --
-      --       |
       --  line |  actual code line here with Loc somewhere
       --       |                             ^ here
       --
@@ -2041,26 +2040,50 @@ package body Errout is
       ----------------------------
 
       procedure Write_Source_Code_Line (Loc : Source_Ptr) is
-         Line    : constant Pos := Pos (Get_Physical_Line_Number (Loc));
+
+         function Image (X : Positive; Width : Positive) return String;
+         --  Output number X over Width characters, with whitespace padding.
+         --  Only output the low-order Width digits of X, if X is larger than
+         --  Width digits.
+
+         -----------
+         -- Image --
+         -----------
+
+         function Image (X : Positive; Width : Positive) return String is
+            Str  : String (1 .. Width);
+            Curr : Natural := X;
+         begin
+            for J in reverse 1 .. Width loop
+               if Curr > 0 then
+                  Str (J) := Character'Val (Character'Pos ('0') + Curr mod 10);
+                  Curr := Curr / 10;
+               else
+                  Str (J) := ' ';
+               end if;
+            end loop;
+
+            return Str;
+         end Image;
+
+         --  Local variables
+
+         Line    : constant Pos     := Pos (Get_Physical_Line_Number (Loc));
          Col     : constant Natural := Natural (Get_Column_Number (Loc));
-         Padding : constant String (1 .. Int'Image (Line)'Length) :=
-                              (others => ' ');
+         Width   : constant         := 5;
 
          Buf     : Source_Buffer_Ptr;
          Cur_Loc : Source_Ptr := Loc;
+
+      --  Start of processing for Write_Source_Code_Line
+
       begin
          if Loc >= First_Source_Ptr then
             Buf := Source_Text (Get_Source_File_Index (Loc));
 
-            --  First line
+            --  First line with the actual source code line
 
-            Write_Str (Padding);
-            Write_Char ('|');
-            Write_Eol;
-
-            --  Second line with the actual source code line
-
-            Write_Int (Line);
+            Write_Str (Image (Positive (Line), Width => Width));
             Write_Str (" |");
             Write_Str (String (Buf (Loc - Source_Ptr (Col) + 1  .. Loc - 1)));
 
@@ -2073,10 +2096,10 @@ package body Errout is
 
             Write_Eol;
 
-            --  Third line with carret sign pointing to location Loc
+            --  Second line with carret sign pointing to location Loc
 
-            Write_Str (Padding);
-            Write_Char ('|');
+            Write_Str (String'(1 .. Width => ' '));
+            Write_Str (" |");
             Write_Str (String'(1 .. Col - 1 => ' '));
             Write_Str ("^ here");
             Write_Eol;
@@ -2117,9 +2140,10 @@ package body Errout is
          while E /= No_Error_Msg loop
 
             --  If -gnatdF is used, separate main messages from previous
-            --  messages with a newline and make continuation messages
-            --  follow the main message with only an indentation of two
-            --  space characters, without repeating file:line:col: prefix.
+            --  messages with a newline (unless it is an info message) and
+            --  make continuation messages follow the main message with only
+            --  an indentation of two space characters, without repeating
+            --  file:line:col: prefix.
 
             Use_Prefix :=
               not (Debug_Flag_FF and then Errors.Table (E).Msg_Cont);
@@ -2129,7 +2153,7 @@ package body Errout is
                if Debug_Flag_FF then
                   if Errors.Table (E).Msg_Cont then
                      Write_Str ("  ");
-                  else
+                  elsif not Errors.Table (E).Info then
                      Write_Eol;
                   end if;
                end if;
@@ -2158,7 +2182,14 @@ package body Errout is
                Output_Msg_Text (E);
                Write_Eol;
 
-               if Debug_Flag_FF then
+               --  If -gnatdF is used, write the source code line corresponding
+               --  to the location of the main message (unless it is an info
+               --  message). Also write the source code line corresponding to
+               --  an insertion location inside continuation messages.
+
+               if Debug_Flag_FF
+                 and then not Errors.Table (E).Info
+               then
                   if Errors.Table (E).Msg_Cont then
                      declare
                         Loc : constant Source_Ptr :=
