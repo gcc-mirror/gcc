@@ -21,7 +21,7 @@ GCC, has several advantages:
 target machines already present in GCC@.
 @item GCC front ends benefit from all the optimizations in GCC@.  Some
 of these, such as alias analysis, may work better when GCC is
-compiling directly from source code then when it is compiling from
+compiling directly from source code than when it is compiling from
 generated C code.
 @item Better debugging information is generated when compiling
 directly from source code than when going via intermediate generated C
