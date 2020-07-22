@@ -1,3 +1,5 @@
+! { dg-do compile }
+
 subroutine example_criticial ()
   use omp_lib
   implicit none
