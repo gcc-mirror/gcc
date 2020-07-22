@@ -1303,7 +1303,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  /* This should match the enum gfc_omp_if_kind order.  */
 		  static const char *ifs[OMP_IF_LAST] = {
+		    " cancel : %e )",
 		    " parallel : %e )",
+		    " simd : %e )",
 		    " task : %e )",
 		    " taskloop : %e )",
 		    " target : %e )",
@@ -2568,7 +2570,8 @@ cleanup:
 #define OMP_SIMD_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
-   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN)
+   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN	\
+   | OMP_CLAUSE_IF)
 #define OMP_TASK_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
@@ -4133,16 +4136,30 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	else
 	  switch (code->op)
 	    {
+	    case EXEC_OMP_CANCEL:
+	      ok = ifc == OMP_IF_CANCEL;
+	      break;
+
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
-	    case EXEC_OMP_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
-	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
-	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	      ok = ifc == OMP_IF_PARALLEL;
+	      break;
+
+	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	      ok = ifc == OMP_IF_PARALLEL || ifc == OMP_IF_SIMD;
+	      break;
+
+	    case EXEC_OMP_SIMD:
+	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	      ok = ifc == OMP_IF_SIMD;
 	      break;
 
 	    case EXEC_OMP_TASK:
@@ -4150,16 +4167,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 
 	    case EXEC_OMP_TASKLOOP:
-	    case EXEC_OMP_TASKLOOP_SIMD:
 	      ok = ifc == OMP_IF_TASKLOOP;
+	      break;
+
+	    case EXEC_OMP_TASKLOOP_SIMD:
+	      ok = ifc == OMP_IF_TASKLOOP || ifc == OMP_IF_SIMD;
 	      break;
 
 	    case EXEC_OMP_TARGET:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+	      ok = ifc == OMP_IF_TARGET;
+	      break;
+
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_TARGET_SIMD:
-	      ok = ifc == OMP_IF_TARGET;
+	      ok = ifc == OMP_IF_TARGET || ifc == OMP_IF_SIMD;
 	      break;
 
 	    case EXEC_OMP_TARGET_DATA:
@@ -4179,11 +4202,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
-	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
-	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
 	      ok = ifc == OMP_IF_TARGET || ifc == OMP_IF_PARALLEL;
+	      break;
+
+	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	      ok = (ifc == OMP_IF_TARGET
+		    || ifc == OMP_IF_PARALLEL
+		    || ifc == OMP_IF_SIMD);
 	      break;
 
 	    default:
@@ -4193,7 +4221,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	if (!ok)
 	  {
 	    static const char *ifs[] = {
+	      "CANCEL",
 	      "PARALLEL",
+	      "SIMD",
 	      "TASK",
 	      "TASKLOOP",
 	      "TARGET",

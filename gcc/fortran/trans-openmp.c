@@ -3201,8 +3201,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_IF);
 	switch (ifc)
 	  {
+	  case OMP_IF_CANCEL:
+	    OMP_CLAUSE_IF_MODIFIER (c) = VOID_CST;
+	    break;
 	  case OMP_IF_PARALLEL:
 	    OMP_CLAUSE_IF_MODIFIER (c) = OMP_PARALLEL;
+	    break;
+	  case OMP_IF_SIMD:
+	    OMP_CLAUSE_IF_MODIFIER (c) = OMP_SIMD;
 	    break;
 	  case OMP_IF_TASK:
 	    OMP_CLAUSE_IF_MODIFIER (c) = OMP_TASK;
@@ -4197,13 +4203,18 @@ gfc_trans_omp_cancel (gfc_code *code)
     default: gcc_unreachable ();
     }
   gfc_start_block (&block);
-  if (code->ext.omp_clauses->if_expr)
+  if (code->ext.omp_clauses->if_expr
+      || code->ext.omp_clauses->if_exprs[OMP_IF_CANCEL])
     {
       gfc_se se;
       tree if_var;
 
+      gcc_assert ((code->ext.omp_clauses->if_expr == NULL)
+		  ^ (code->ext.omp_clauses->if_exprs[OMP_IF_CANCEL] == NULL));
       gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, code->ext.omp_clauses->if_expr);
+      gfc_conv_expr (&se, code->ext.omp_clauses->if_expr != NULL
+			  ? code->ext.omp_clauses->if_expr
+			  : code->ext.omp_clauses->if_exprs[OMP_IF_CANCEL]);
       gfc_add_block_to_block (&block, &se.pre);
       if_var = gfc_evaluate_now (se.expr, &block);
       gfc_add_block_to_block (&block, &se.post);
@@ -4997,6 +5008,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Duplicate collapse.  */
 	  clausesa[GFC_OMP_SPLIT_SIMD].collapse
 	    = code->ext.omp_clauses->collapse;
+	  clausesa[GFC_OMP_SPLIT_SIMD].if_exprs[OMP_IF_SIMD]
+	    = code->ext.omp_clauses->if_exprs[OMP_IF_SIMD];
 	  /* And this is copied to all.  */
 	  clausesa[GFC_OMP_SPLIT_SIMD].if_expr
 	    = code->ext.omp_clauses->if_expr;
