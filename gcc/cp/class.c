@@ -6715,6 +6715,10 @@ layout_class_type (tree t, tree *virtuals_p)
       /* T needs a different layout as a base (eliding virtual bases
 	 or whatever).  Create that version.  */
       tree base_t = make_node (TREE_CODE (t));
+      tree base_d = create_implicit_typedef (as_base_identifier, base_t);
+
+      TYPE_CONTEXT (base_t) = t;
+      DECL_CONTEXT (base_d) = t;
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte
@@ -6751,6 +6755,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    *next_field = copy_node (field);
+	    /* Zap any NSDMI, it's not needed and might be a deferred
+	       parse.  */
+	    DECL_INITIAL (*next_field) = NULL_TREE;
 	    DECL_CONTEXT (*next_field) = base_t;
 	    next_field = &DECL_CHAIN (*next_field);
 	  }
@@ -6759,8 +6766,6 @@ layout_class_type (tree t, tree *virtuals_p)
       /* We use the base type for trivial assignments, and hence it
 	 needs a mode.  */
       compute_record_mode (base_t);
-
-      TYPE_CONTEXT (base_t) = t;
 
       /* Record the base version of the type.  */
       CLASSTYPE_AS_BASE (t) = base_t;
