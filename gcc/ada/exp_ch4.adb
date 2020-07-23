@@ -11436,7 +11436,7 @@ package body Exp_Ch4 is
       begin
          --  Nothing else to do if no change of representation
 
-         if Same_Representation (Operand_Type, Target_Type) then
+         if Has_Compatible_Representation (Target_Type, Operand_Type) then
             return;
 
          --  The real change of representation work is done by the assignment
@@ -12454,7 +12454,7 @@ package body Exp_Ch4 is
          --  Special processing is required if there is a change of
          --  representation (from enumeration representation clauses).
 
-         if not Same_Representation (Target_Type, Operand_Type)
+         if not Has_Compatible_Representation (Target_Type, Operand_Type)
            and then not Conversion_OK (N)
          then
 
