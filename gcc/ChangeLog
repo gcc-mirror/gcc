@@ -71,9 +71,9 @@
 	_mm512_mask_cmpord_ps_mask): Move outside of __OPTIMIZE__ guarded
 	section.
 
-2020-07-14  Matthias Klose  <doko@ubuntu.com>
+2020-07-15  Richard Biener  <rguenther@suse.de>
 
-	Backported from master:
+	Revert:
 	2020-07-14  Matthias Klose  <doko@ubuntu.com>
 
 	PR lto/95604
