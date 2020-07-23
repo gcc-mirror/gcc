@@ -15291,12 +15291,12 @@ with the following options: @code{-fno-unsafe-math-optimizations
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
-OpenMP Application Program Interface v4.5
+OpenMP Application Program Interface v4.5 and
+OpenMP Application Program Interface v5.0 (partially supported).
 @end table
 
-
 The OpenMP Fortran runtime library routines are provided both in
-a form of two Fortran 90 modules, named @code{OMP_LIB} and 
+a form of two Fortran modules, named @code{OMP_LIB} and
 @code{OMP_LIB_KINDS}, and in a form of a Fortran @code{include} file named
 @file{omp_lib.h}. The procedures provided by @code{OMP_LIB} can be found
 in the @ref{Top,,Introduction,libgomp,GNU Offloading and Multi
@@ -15306,25 +15306,37 @@ below.
 
 For details refer to the actual
 @uref{http://www.openmp.org/wp-content/uploads/openmp-4.5.pdf,
-OpenMP Application Program Interface v4.5}.
-And for the @code{pause}-related constants to the OpenMP 5.0 specification.
+OpenMP Application Program Interface v4.5} and
+@uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5.0.pdf,
+OpenMP Application Program Interface v5.0}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
 
 @table @asis
+@item @code{omp_allocator_handle_kind}
+@item @code{omp_alloctrait_key_kind}
+@item @code{omp_alloctrait_val_kind}
 @item @code{omp_lock_kind}
 @item @code{omp_lock_hint_kind}
 @item @code{omp_nest_lock_kind}
 @item @code{omp_pause_resource_kind}
+@item @code{omp_memspace_handle_kind}
 @item @code{omp_proc_bind_kind}
 @item @code{omp_sched_kind}
+@item @code{omp_sync_hint_kind}
 @end table
 
 @code{OMP_LIB} provides the scalar default-integer
 named constant @code{openmp_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
 of the OpenMP version; for OpenMP v4.5 the value is @code{201511}.
+
+The following derived type:
+
+@table @asis
+@item @code{omp_alloctrait}
+@end table
 
 The following scalar integer named constants of the
 kind @code{omp_sched_kind}:
@@ -15336,7 +15348,7 @@ kind @code{omp_sched_kind}:
 @item @code{omp_sched_auto}
 @end table
 
-And the following scalar integer named constants of the 
+And the following scalar integer named constants of the
 kind @code{omp_proc_bind_kind}:
 
 @table @asis
@@ -15356,6 +15368,11 @@ kind @code{omp_lock_hint_kind}:
 @item @code{omp_lock_hint_contended}
 @item @code{omp_lock_hint_nonspeculative}
 @item @code{omp_lock_hint_speculative}
+@item @code{omp_sync_hint_none}
+@item @code{omp_sync_hint_uncontended}
+@item @code{omp_sync_hint_contended}
+@item @code{omp_sync_hint_nonspeculative}
+@item @code{omp_sync_hint_speculative}
 @end table
 
 And the following two scalar integer named constants are of the
@@ -15365,6 +15382,73 @@ kind @code{omp_pause_resource_kind}:
 @item @code{omp_pause_soft}
 @item @code{omp_pause_hard}
 @end table
+
+The following scalar integer named constants are of the kind
+@code{omp_alloctrait_key_kind}:
+
+@table @asis
+@item @code{omp_atk_sync_hint}
+@item @code{omp_atk_alignment}
+@item @code{omp_atk_access}
+@item @code{omp_atk_pool_size}
+@item @code{omp_atk_fallback}
+@item @code{omp_atk_fb_data}
+@item @code{omp_atk_pinned}
+@item @code{omp_atk_partition}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_alloctrait_val_kind}:
+
+@table @asis
+@code{omp_alloctrait_key_kind}:
+@item @code{omp_atv_default}
+@item @code{omp_atv_false}
+@item @code{omp_atv_true}
+@item @code{omp_atv_contended}
+@item @code{omp_atv_uncontended}
+@item @code{omp_atv_serialized}
+@item @code{omp_atv_sequential}
+@item @code{omp_atv_private}
+@item @code{omp_atv_all}
+@item @code{omp_atv_thread}
+@item @code{omp_atv_pteam}
+@item @code{omp_atv_cgroup}
+@item @code{omp_atv_default_mem_fb}
+@item @code{omp_atv_null_fb}
+@item @code{omp_atv_abort_fb}
+@item @code{omp_atv_allocator_fb}
+@item @code{omp_atv_environment}
+@item @code{omp_atv_nearest}
+@item @code{omp_atv_blocked}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_allocator_handle_kind}:
+
+@table @asis
+@item @code{omp_null_allocator}
+@item @code{omp_default_mem_alloc}
+@item @code{omp_large_cap_mem_alloc}
+@item @code{omp_const_mem_alloc}
+@item @code{omp_high_bw_mem_alloc}
+@item @code{omp_low_lat_mem_alloc}
+@item @code{omp_cgroup_mem_alloc}
+@item @code{omp_pteam_mem_alloc}
+@item @code{omp_thread_mem_alloc}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_memspace_handle_kind}:
+
+@table @asis
+@item @code{omp_default_mem_space}
+@item @code{omp_large_cap_mem_space}
+@item @code{omp_const_mem_space}
+@item @code{omp_high_bw_mem_space}
+@item @code{omp_low_lat_mem_space}
+@end table
+
 
 
 @node OpenACC Module OPENACC
