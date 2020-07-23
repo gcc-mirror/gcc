@@ -613,10 +613,21 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
   tree type = TREE_TYPE (decl), size, ptr, cond, then_b, else_b;
   stmtblock_t block, cond_block;
 
-  gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_PRIVATE
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LASTPRIVATE
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION);
+  switch (OMP_CLAUSE_CODE (clause))
+    {
+    case OMP_CLAUSE__LOOPTEMP_:
+    case OMP_CLAUSE__REDUCTEMP_:
+    case OMP_CLAUSE__CONDTEMP_:
+    case OMP_CLAUSE__SCANTEMP_:
+      return NULL;
+    case OMP_CLAUSE_PRIVATE:
+    case OMP_CLAUSE_LASTPRIVATE:
+    case OMP_CLAUSE_LINEAR:
+    case OMP_CLAUSE_REDUCTION:
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
@@ -1678,6 +1689,10 @@ gfc_trans_omp_variable_list (enum omp_clause_code code,
 	    tree node = build_omp_clause (input_location, code);
 	    OMP_CLAUSE_DECL (node) = t;
 	    list = gfc_trans_add_clause (node, list);
+
+	    if (code == OMP_CLAUSE_LASTPRIVATE
+		&& namelist->u.lastprivate_conditional)
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (node) = 1;
 	  }
       }
   return list;
