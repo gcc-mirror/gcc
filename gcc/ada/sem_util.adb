@@ -9568,7 +9568,7 @@ package body Sem_Util is
    -- Get_Accessibility --
    -----------------------
 
-   function Get_Accessibility (E : Entity_Id) return Node_Id is
+   function Get_Accessibility (E : Entity_Id) return Entity_Id is
    begin
       --  When minimum accessibility is set for E then we utilize it - except
       --  in a few edge cases like the expansion of select statements where
