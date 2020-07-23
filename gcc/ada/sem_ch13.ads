@@ -128,6 +128,14 @@ package Sem_Ch13 is
    --  If the size is too small, and an error message is given, then both
    --  Esize and RM_Size are reset to the allowed minimum value in T.
 
+   function Has_Compatible_Representation
+     (Target_Type, Operand_Type : Entity_Id) return Boolean;
+   --  Given two types, where the two types are related by possible derivation,
+   --  determines if the two types have compatible representation, or different
+   --  representations, requiring the special processing for representation
+   --  change. A False result is possible only for array, enumeration or
+   --  record types.
+
    procedure Parse_Aspect_Aggregate
      (N                   : Node_Id;
       Empty_Subp          : in out Node_Id;
@@ -195,13 +203,6 @@ package Sem_Ch13 is
    --  definition clauses which have From_Aspect_Specification set. This is
    --  because such clauses are linked on to the Rep_Item chain in procedure
    --  Sem_Ch13.Analyze_Aspect_Specifications. See that procedure for details.
-
-   function Same_Representation (Typ1, Typ2 : Entity_Id) return Boolean;
-   --  Given two types, where the two types are related by possible derivation,
-   --  determines if the two types have the same representation, or different
-   --  representations, requiring the special processing for representation
-   --  change. A False result is possible only for array, enumeration or
-   --  record types.
 
    procedure Validate_Unchecked_Conversion
      (N        : Node_Id;

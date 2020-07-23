@@ -10556,6 +10556,13 @@ package body Sem_Attr is
       --  Returns True if Declared_Entity is declared within the declarative
       --  region of Generic_Unit; otherwise returns False.
 
+      function Prefix_With_Safe_Accessibility_Level return Boolean;
+      --  Return True if the prefix does not have a value conversion of an
+      --  array because a value conversion is like an aggregate with respect
+      --  to determining accessibility level (RM 3.10.2); even if evaluation
+      --  of a value conversion is guaranteed to not create a new object,
+      --  accessibility rules are defined as if it might.
+
       ---------------------------
       -- Accessibility_Message --
       ---------------------------
@@ -10631,6 +10638,73 @@ package body Sem_Attr is
 
          return False;
       end Declared_Within_Generic_Unit;
+
+      ------------------------------------------
+      -- Prefix_With_Safe_Accessibility_Level --
+      ------------------------------------------
+
+      function Prefix_With_Safe_Accessibility_Level return Boolean is
+         function Safe_Value_Conversions return Boolean;
+         --  Return False if the prefix has a value conversion of an array type
+
+         ----------------------------
+         -- Safe_Value_Conversions --
+         ----------------------------
+
+         function Safe_Value_Conversions return Boolean is
+            PP : Node_Id := P;
+
+         begin
+            loop
+               if Nkind_In (PP, N_Selected_Component,
+                                N_Indexed_Component)
+               then
+                  PP := Prefix (PP);
+
+               elsif Comes_From_Source (PP)
+                 and then Nkind_In (PP, N_Type_Conversion,
+                                        N_Unchecked_Type_Conversion)
+                 and then Is_Array_Type (Etype (PP))
+               then
+                  return False;
+
+               elsif Comes_From_Source (PP)
+                 and then Nkind (PP) = N_Qualified_Expression
+                 and then Is_Array_Type (Etype (PP))
+                 and then Nkind_In (Original_Node (Expression (PP)),
+                             N_Aggregate,
+                             N_Extension_Aggregate)
+               then
+                  return False;
+
+               else
+                  exit;
+               end if;
+            end loop;
+
+            return True;
+         end Safe_Value_Conversions;
+
+      --  Start of processing for Prefix_With_Safe_Accessibility_Level
+
+      begin
+         --  No check required for unchecked and unrestricted access
+
+         if Attr_Id = Attribute_Unchecked_Access
+           or else Attr_Id = Attribute_Unrestricted_Access
+         then
+            return True;
+
+         --  Check value conversions
+
+         elsif Ekind (Btyp) = E_General_Access_Type
+           and then not Safe_Value_Conversions
+         then
+            return False;
+         end if;
+
+         return True;
+      end Prefix_With_Safe_Accessibility_Level;
 
    --  Start of processing for Resolve_Attribute
 
@@ -11471,6 +11545,15 @@ package body Sem_Attr is
                      end if;
                   end;
                end if;
+            end if;
+
+            --  Check that the prefix does not have a value conversion of an
+            --  array type since a value conversion is like an aggregate with
+            --  respect to determining accessibility level (RM 3.10.2).
+
+            if not Prefix_With_Safe_Accessibility_Level then
+               Accessibility_Message;
+               return;
             end if;
 
             --  Mark that address of entity is taken in case of

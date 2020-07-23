@@ -4118,25 +4118,9 @@ package body Sem_Res is
                   if Ekind (F) = E_In_Out_Parameter
                     and then Is_Array_Type (Etype (F))
                   then
-                     --  In a view conversion, the conversion must be legal in
-                     --  both directions, and thus both component types must be
-                     --  aliased, or neither (4.6 (8)).
-
-                     --  The extra rule in 4.6 (24.9.2) seems unduly
-                     --  restrictive: the privacy requirement should not apply
-                     --  to generic types, and should be checked in an
-                     --  instance. ARG query is in order ???
-
-                     if Has_Aliased_Components (Expr_Typ) /=
-                        Has_Aliased_Components (Etype (F))
-                     then
-                        Error_Msg_N
-                          ("both component types in a view conversion must be"
-                            & " aliased, or neither", A);
-
                      --  Comment here??? what set of cases???
 
-                     elsif not Same_Ancestor (Etype (F), Expr_Typ) then
+                     if not Same_Ancestor (Etype (F), Expr_Typ) then
                         --  Check view conv between unrelated by ref array
                         --  types.
 
