@@ -6446,6 +6446,11 @@ loop:
 
   gfc_resolve (gfc_current_ns);
 
+  /* Fix the implicit_pure attribute for those procedures who should
+     not have it.  */
+  while (gfc_fix_implicit_pure (gfc_current_ns))
+    ;
+
   /* Dump the parse tree if requested.  */
   if (flag_dump_fortran_original)
     gfc_dump_parse_tree (gfc_current_ns, stdout);
@@ -6491,6 +6496,23 @@ done:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
+  /* Go through all top-level namespaces and unset the implicit_pure
+     attribute for any procedures that call something not pure or
+     implicit_pure.  Because the a procedure marked as not implicit_pure
+     in one sweep may be called by another routine, we repeat this
+     process until there are no more changes.  */
+  bool changed;
+  do
+    {
+      changed = false;
+      for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+	   gfc_current_ns = gfc_current_ns->sibling)
+	{
+	  if (gfc_fix_implicit_pure (gfc_current_ns))
+	    changed = true;
+	}
+    }
+  while (changed);
 
   /* Fixup for external procedures.  */
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
