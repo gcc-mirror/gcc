@@ -35,7 +35,7 @@ void sparc_rust_target_cpu_info(void) {
     /* TODO: try to isolate soft-mul-div feature (software emulation for integer multiply and divide) 
      * if doable? does gcc even support this? */
     if (!(TARGET_FSMULD))
-        rust_add_target_info("target_arch", "no-fsmuld");
+        rust_add_target_info("target_feature", "no-fsmuld");
     // TODO: add "no-fmuls" (fmuls instruction) option if can find in gcc
     if (TARGET_V9)
         rust_add_target_info("target_feature", "v9");

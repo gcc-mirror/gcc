@@ -589,6 +589,7 @@ sh[123456789lbe]*-*-* | sh-*-*)
 	;;
 v850*-*-*)
 	cpu_type=v850
+	rust_target_objs="v850-rust.o"
 	;;
 tic6x-*-*)
 	cpu_type=c6x
