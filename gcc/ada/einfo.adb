@@ -423,6 +423,7 @@ package body Einfo is
    --    Never_Set_In_Source             Flag115
    --    Is_Visible_Lib_Unit             Flag116
    --    Is_Unchecked_Union              Flag117
+   --    Is_CUDA_Kernel                  Flag118
    --    Has_Convention_Pragma           Flag119
    --    Has_Primitive_Operations        Flag120
 
@@ -2234,6 +2235,12 @@ package body Einfo is
    begin
       return Flag74 (Id);
    end Is_CPP_Class;
+
+   function Is_CUDA_Kernel (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
+      return Flag118 (Id);
+   end Is_CUDA_Kernel;
 
    function Is_DIC_Procedure (Id : E) return B is
    begin
@@ -5476,6 +5483,12 @@ package body Einfo is
    begin
       Set_Flag74 (Id, V);
    end Set_Is_CPP_Class;
+
+   procedure Set_Is_CUDA_Kernel (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
+      Set_Flag118 (Id, V);
+   end Set_Is_CUDA_Kernel;
 
    procedure Set_Is_DIC_Procedure (Id : E; V : B := True) is
    begin
@@ -9848,6 +9861,7 @@ package body Einfo is
       W ("Is_Atomic",                       Flag85  (Id));
       W ("Is_Bit_Packed_Array",             Flag122 (Id));
       W ("Is_CPP_Class",                    Flag74  (Id));
+      W ("Is_CUDA_Kernel",                  Flag118  (Id));
       W ("Is_Called",                       Flag102 (Id));
       W ("Is_Character_Type",               Flag63  (Id));
       W ("Is_Checked_Ghost_Entity",         Flag277 (Id));

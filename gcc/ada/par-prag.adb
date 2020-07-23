@@ -1311,43 +1311,45 @@ begin
       when Pragma_Abort_Defer
          | Pragma_Abstract_State
          | Pragma_Aggregate_Individually_Assign
-         | Pragma_Async_Readers
-         | Pragma_Async_Writers
-         | Pragma_Assertion_Policy
-         | Pragma_Assume
-         | Pragma_Assume_No_Invalid_Values
          | Pragma_All_Calls_Remote
          | Pragma_Allow_Integer_Address
          | Pragma_Annotate
          | Pragma_Assert
          | Pragma_Assert_And_Cut
+         | Pragma_Assertion_Policy
+         | Pragma_Assume
+         | Pragma_Assume_No_Invalid_Values
+         | Pragma_Async_Readers
+         | Pragma_Async_Writers
          | Pragma_Asynchronous
          | Pragma_Atomic
          | Pragma_Atomic_Components
          | Pragma_Attach_Handler
          | Pragma_Attribute_Definition
-         | Pragma_Check
-         | Pragma_Check_Float_Overflow
-         | Pragma_Check_Name
-         | Pragma_Check_Policy
-         | Pragma_Compile_Time_Error
-         | Pragma_Compile_Time_Warning
-         | Pragma_Constant_After_Elaboration
-         | Pragma_Contract_Cases
-         | Pragma_Convention_Identifier
          | Pragma_CPP_Class
          | Pragma_CPP_Constructor
          | Pragma_CPP_Virtual
          | Pragma_CPP_Vtable
          | Pragma_CPU
+         | Pragma_CUDA_Execute
+         | Pragma_CUDA_Global
          | Pragma_C_Pass_By_Copy
+         | Pragma_Check
+         | Pragma_Check_Float_Overflow
+         | Pragma_Check_Name
+         | Pragma_Check_Policy
          | Pragma_Comment
          | Pragma_Common_Object
+         | Pragma_Compile_Time_Error
+         | Pragma_Compile_Time_Warning
          | Pragma_Complete_Representation
          | Pragma_Complex_Representation
          | Pragma_Component_Alignment
+         | Pragma_Constant_After_Elaboration
+         | Pragma_Contract_Cases
          | Pragma_Controlled
          | Pragma_Convention
+         | Pragma_Convention_Identifier
          | Pragma_Deadline_Floor
          | Pragma_Debug_Policy
          | Pragma_Default_Initial_Condition
@@ -1446,19 +1448,19 @@ begin
          | Pragma_Part_Of
          | Pragma_Partition_Elaboration_Policy
          | Pragma_Passive
-         | Pragma_Preelaborable_Initialization
-         | Pragma_Polling
-         | Pragma_Prefix_Exception_Messages
          | Pragma_Persistent_BSS
+         | Pragma_Polling
          | Pragma_Post
-         | Pragma_Postcondition
          | Pragma_Post_Class
+         | Pragma_Postcondition
          | Pragma_Pre
+         | Pragma_Pre_Class
          | Pragma_Precondition
          | Pragma_Predicate
          | Pragma_Predicate_Failure
+         | Pragma_Preelaborable_Initialization
          | Pragma_Preelaborate
-         | Pragma_Pre_Class
+         | Pragma_Prefix_Exception_Messages
          | Pragma_Priority
          | Pragma_Priority_Specific_Dispatching
          | Pragma_Profile
@@ -1482,6 +1484,7 @@ begin
          | Pragma_Rename_Pragma
          | Pragma_Restricted_Run_Time
          | Pragma_Reviewable
+         | Pragma_SPARK_Mode
          | Pragma_Secondary_Stack_Size
          | Pragma_Share_Generic
          | Pragma_Shared
@@ -1489,7 +1492,6 @@ begin
          | Pragma_Short_Circuit_And_Or
          | Pragma_Short_Descriptors
          | Pragma_Simple_Storage_Pool_Type
-         | Pragma_SPARK_Mode
          | Pragma_Static_Elaboration_Desired
          | Pragma_Storage_Size
          | Pragma_Storage_Unit

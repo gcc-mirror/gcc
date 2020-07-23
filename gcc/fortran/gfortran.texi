@@ -541,8 +541,8 @@ can be found in the @ref{Fortran 2003 status}, @ref{Fortran 2008
 status} and @ref{Fortran 2018 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
-(version 4.0 and most of the features of the 4.5 version,
-@url{http://openmp.org/@/wp/@/openmp-specifications/}).
+(version 4.5 and partial support of the features of the 5.0 version,
+@url{http://openmp.org/@/openmp-specifications/}).
 There also is support for the OpenACC specification (targeting
 version 2.6, @uref{http://www.openacc.org/}).  See
 @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.

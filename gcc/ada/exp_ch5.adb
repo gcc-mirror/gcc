@@ -278,8 +278,9 @@ package body Exp_Ch5 is
    begin
       return
         Nkind (Rhs) = N_Type_Conversion
-          and then
-            not Same_Representation (Etype (Rhs), Etype (Expression (Rhs)));
+          and then not Has_Compatible_Representation
+                         (Target_Type  => Etype (Rhs),
+                          Operand_Type => Etype (Expression (Rhs)));
    end Change_Of_Representation;
 
    ------------------------------

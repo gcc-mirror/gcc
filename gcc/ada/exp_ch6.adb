@@ -1571,8 +1571,9 @@ package body Exp_Ch6 is
 
             Var := Make_Var (Expression (Actual));
 
-            Crep := not Same_Representation
-                          (F_Typ, Etype (Expression (Actual)));
+            Crep := not Has_Compatible_Representation
+                          (Target_Type  => F_Typ,
+                           Operand_Type => Etype (Expression (Actual)));
 
          else
             V_Typ := Etype (Actual);
@@ -2373,9 +2374,9 @@ package body Exp_Ch6 is
 
                   --  Also pass by copy if change of representation
 
-                  or else not Same_Representation
-                                (Etype (Formal),
-                                 Etype (Expression (Actual))))
+                  or else not Has_Compatible_Representation
+                                (Target_Type  => Etype (Formal),
+                                 Operand_Type => Etype (Expression (Actual))))
             then
                Add_Call_By_Copy_Code;
 
@@ -4801,7 +4802,10 @@ package body Exp_Ch6 is
                   --  If there is a change of representation, then generate a
                   --  warning, and do the change of representation.
 
-                  elsif not Same_Representation (Formal_Typ, Parent_Typ) then
+                  elsif not Has_Compatible_Representation
+                              (Target_Type  => Formal_Typ,
+                               Operand_Type => Parent_Typ)
+                  then
                      Error_Msg_N
                        ("??change of representation required", Actual);
                      Convert (Actual, Parent_Typ);

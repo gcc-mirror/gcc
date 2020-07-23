@@ -12792,6 +12792,234 @@ package body Sem_Ch13 is
       end if;
    end Get_Alignment_Value;
 
+   -----------------------------------
+   -- Has_Compatible_Representation --
+   -----------------------------------
+
+   function Has_Compatible_Representation
+     (Target_Type, Operand_Type : Entity_Id) return Boolean
+   is
+      T1 : constant Entity_Id := Underlying_Type (Target_Type);
+      T2 : constant Entity_Id := Underlying_Type (Operand_Type);
+
+   begin
+      --  A quick check, if base types are the same, then we definitely have
+      --  the same representation, because the subtype specific representation
+      --  attributes (Size and Alignment) do not affect representation from
+      --  the point of view of this test.
+
+      if Base_Type (T1) = Base_Type (T2) then
+         return True;
+
+      elsif Is_Private_Type (Base_Type (T2))
+        and then Base_Type (T1) = Full_View (Base_Type (T2))
+      then
+         return True;
+
+      --  If T2 is a generic actual it is declared as a subtype, so
+      --  check against its base type.
+
+      elsif Is_Generic_Actual_Type (T1)
+        and then Has_Compatible_Representation (Base_Type (T1), T2)
+      then
+         return True;
+      end if;
+
+      --  Tagged types always have the same representation, because it is not
+      --  possible to specify different representations for common fields.
+
+      if Is_Tagged_Type (T1) then
+         return True;
+      end if;
+
+      --  Representations are definitely different if conventions differ
+
+      if Convention (T1) /= Convention (T2) then
+         return False;
+      end if;
+
+      --  Representations are different if component alignments or scalar
+      --  storage orders differ.
+
+      if (Is_Record_Type (T1) or else Is_Array_Type (T1))
+            and then
+         (Is_Record_Type (T2) or else Is_Array_Type (T2))
+        and then
+         (Component_Alignment (T1) /= Component_Alignment (T2)
+           or else Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
+      then
+         return False;
+      end if;
+
+      --  For arrays, the only real issue is component size. If we know the
+      --  component size for both arrays, and it is the same, then that's
+      --  good enough to know we don't have a change of representation.
+
+      if Is_Array_Type (T1) then
+
+         --  In a view conversion, if the target type is an array type having
+         --  aliased components and the operand type is an array type having
+         --  unaliased components, then a new object is created (4.6(58.3/4)).
+
+         if Has_Aliased_Components (T1)
+           and then not Has_Aliased_Components (T2)
+         then
+            return False;
+         end if;
+
+         if Known_Component_Size (T1)
+           and then Known_Component_Size (T2)
+           and then Component_Size (T1) = Component_Size (T2)
+         then
+            return True;
+         end if;
+      end if;
+
+      --  For records, representations are different if reorderings differ
+
+      if Is_Record_Type (T1)
+        and then Is_Record_Type (T2)
+        and then No_Reordering (T1) /= No_Reordering (T2)
+      then
+         return False;
+      end if;
+
+      --  Types definitely have same representation if neither has non-standard
+      --  representation since default representations are always consistent.
+      --  If only one has non-standard representation, and the other does not,
+      --  then we consider that they do not have the same representation. They
+      --  might, but there is no way of telling early enough.
+
+      if Has_Non_Standard_Rep (T1) then
+         if not Has_Non_Standard_Rep (T2) then
+            return False;
+         end if;
+      else
+         return not Has_Non_Standard_Rep (T2);
+      end if;
+
+      --  Here the two types both have non-standard representation, and we need
+      --  to determine if they have the same non-standard representation.
+
+      --  For arrays, we simply need to test if the component sizes are the
+      --  same. Pragma Pack is reflected in modified component sizes, so this
+      --  check also deals with pragma Pack.
+
+      if Is_Array_Type (T1) then
+         return Component_Size (T1) = Component_Size (T2);
+
+      --  Case of record types
+
+      elsif Is_Record_Type (T1) then
+
+         --  Packed status must conform
+
+         if Is_Packed (T1) /= Is_Packed (T2) then
+            return False;
+
+         --  Otherwise we must check components. Typ2 maybe a constrained
+         --  subtype with fewer components, so we compare the components
+         --  of the base types.
+
+         else
+            Record_Case : declare
+               CD1, CD2 : Entity_Id;
+
+               function Same_Rep return Boolean;
+               --  CD1 and CD2 are either components or discriminants. This
+               --  function tests whether they have the same representation.
+
+               --------------
+               -- Same_Rep --
+               --------------
+
+               function Same_Rep return Boolean is
+               begin
+                  if No (Component_Clause (CD1)) then
+                     return No (Component_Clause (CD2));
+                  else
+                     --  Note: at this point, component clauses have been
+                     --  normalized to the default bit order, so that the
+                     --  comparison of Component_Bit_Offsets is meaningful.
+
+                     return
+                        Present (Component_Clause (CD2))
+                          and then
+                        Component_Bit_Offset (CD1) = Component_Bit_Offset (CD2)
+                          and then
+                        Esize (CD1) = Esize (CD2);
+                  end if;
+               end Same_Rep;
+
+            --  Start of processing for Record_Case
+
+            begin
+               if Has_Discriminants (T1) then
+
+                  --  The number of discriminants may be different if the
+                  --  derived type has fewer (constrained by values). The
+                  --  invisible discriminants retain the representation of
+                  --  the original, so the discrepancy does not per se
+                  --  indicate a different representation.
+
+                  CD1 := First_Discriminant (T1);
+                  CD2 := First_Discriminant (T2);
+                  while Present (CD1) and then Present (CD2) loop
+                     if not Same_Rep then
+                        return False;
+                     else
+                        Next_Discriminant (CD1);
+                        Next_Discriminant (CD2);
+                     end if;
+                  end loop;
+               end if;
+
+               CD1 := First_Component (Underlying_Type (Base_Type (T1)));
+               CD2 := First_Component (Underlying_Type (Base_Type (T2)));
+               while Present (CD1) loop
+                  if not Same_Rep then
+                     return False;
+                  else
+                     Next_Component (CD1);
+                     Next_Component (CD2);
+                  end if;
+               end loop;
+
+               return True;
+            end Record_Case;
+         end if;
+
+      --  For enumeration types, we must check each literal to see if the
+      --  representation is the same. Note that we do not permit enumeration
+      --  representation clauses for Character and Wide_Character, so these
+      --  cases were already dealt with.
+
+      elsif Is_Enumeration_Type (T1) then
+         Enumeration_Case : declare
+            L1, L2 : Entity_Id;
+
+         begin
+            L1 := First_Literal (T1);
+            L2 := First_Literal (T2);
+            while Present (L1) loop
+               if Enumeration_Rep (L1) /= Enumeration_Rep (L2) then
+                  return False;
+               else
+                  Next_Literal (L1);
+                  Next_Literal (L2);
+               end if;
+            end loop;
+
+            return True;
+         end Enumeration_Case;
+
+      --  Any other types have the same representation for these purposes
+
+      else
+         return True;
+      end if;
+   end Has_Compatible_Representation;
+
    -------------------------------------
    -- Inherit_Aspects_At_Freeze_Point --
    -------------------------------------
@@ -14656,221 +14884,6 @@ package body Sem_Ch13 is
          Next_Rep_Item (ASN);
       end loop;
    end Resolve_Aspect_Expressions;
-
-   -------------------------
-   -- Same_Representation --
-   -------------------------
-
-   function Same_Representation (Typ1, Typ2 : Entity_Id) return Boolean is
-      T1 : constant Entity_Id := Underlying_Type (Typ1);
-      T2 : constant Entity_Id := Underlying_Type (Typ2);
-
-   begin
-      --  A quick check, if base types are the same, then we definitely have
-      --  the same representation, because the subtype specific representation
-      --  attributes (Size and Alignment) do not affect representation from
-      --  the point of view of this test.
-
-      if Base_Type (T1) = Base_Type (T2) then
-         return True;
-
-      elsif Is_Private_Type (Base_Type (T2))
-        and then Base_Type (T1) = Full_View (Base_Type (T2))
-      then
-         return True;
-
-      --  If T2 is a generic actual it is declared as a subtype, so
-      --  check against its base type.
-
-      elsif Is_Generic_Actual_Type (T1)
-        and then Same_Representation (Base_Type (T1), T2)
-      then
-         return True;
-      end if;
-
-      --  Tagged types always have the same representation, because it is not
-      --  possible to specify different representations for common fields.
-
-      if Is_Tagged_Type (T1) then
-         return True;
-      end if;
-
-      --  Representations are definitely different if conventions differ
-
-      if Convention (T1) /= Convention (T2) then
-         return False;
-      end if;
-
-      --  Representations are different if component alignments or scalar
-      --  storage orders differ.
-
-      if (Is_Record_Type (T1) or else Is_Array_Type (T1))
-            and then
-         (Is_Record_Type (T2) or else Is_Array_Type (T2))
-        and then
-         (Component_Alignment (T1) /= Component_Alignment (T2)
-           or else Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
-      then
-         return False;
-      end if;
-
-      --  For arrays, the only real issue is component size. If we know the
-      --  component size for both arrays, and it is the same, then that's
-      --  good enough to know we don't have a change of representation.
-
-      if Is_Array_Type (T1) then
-         if Known_Component_Size (T1)
-           and then Known_Component_Size (T2)
-           and then Component_Size (T1) = Component_Size (T2)
-         then
-            return True;
-         end if;
-      end if;
-
-      --  For records, representations are different if reorderings differ
-
-      if Is_Record_Type (T1)
-        and then Is_Record_Type (T2)
-        and then No_Reordering (T1) /= No_Reordering (T2)
-      then
-         return False;
-      end if;
-
-      --  Types definitely have same representation if neither has non-standard
-      --  representation since default representations are always consistent.
-      --  If only one has non-standard representation, and the other does not,
-      --  then we consider that they do not have the same representation. They
-      --  might, but there is no way of telling early enough.
-
-      if Has_Non_Standard_Rep (T1) then
-         if not Has_Non_Standard_Rep (T2) then
-            return False;
-         end if;
-      else
-         return not Has_Non_Standard_Rep (T2);
-      end if;
-
-      --  Here the two types both have non-standard representation, and we need
-      --  to determine if they have the same non-standard representation.
-
-      --  For arrays, we simply need to test if the component sizes are the
-      --  same. Pragma Pack is reflected in modified component sizes, so this
-      --  check also deals with pragma Pack.
-
-      if Is_Array_Type (T1) then
-         return Component_Size (T1) = Component_Size (T2);
-
-      --  Case of record types
-
-      elsif Is_Record_Type (T1) then
-
-         --  Packed status must conform
-
-         if Is_Packed (T1) /= Is_Packed (T2) then
-            return False;
-
-         --  Otherwise we must check components. Typ2 maybe a constrained
-         --  subtype with fewer components, so we compare the components
-         --  of the base types.
-
-         else
-            Record_Case : declare
-               CD1, CD2 : Entity_Id;
-
-               function Same_Rep return Boolean;
-               --  CD1 and CD2 are either components or discriminants. This
-               --  function tests whether they have the same representation.
-
-               --------------
-               -- Same_Rep --
-               --------------
-
-               function Same_Rep return Boolean is
-               begin
-                  if No (Component_Clause (CD1)) then
-                     return No (Component_Clause (CD2));
-                  else
-                     --  Note: at this point, component clauses have been
-                     --  normalized to the default bit order, so that the
-                     --  comparison of Component_Bit_Offsets is meaningful.
-
-                     return
-                        Present (Component_Clause (CD2))
-                          and then
-                        Component_Bit_Offset (CD1) = Component_Bit_Offset (CD2)
-                          and then
-                        Esize (CD1) = Esize (CD2);
-                  end if;
-               end Same_Rep;
-
-            --  Start of processing for Record_Case
-
-            begin
-               if Has_Discriminants (T1) then
-
-                  --  The number of discriminants may be different if the
-                  --  derived type has fewer (constrained by values). The
-                  --  invisible discriminants retain the representation of
-                  --  the original, so the discrepancy does not per se
-                  --  indicate a different representation.
-
-                  CD1 := First_Discriminant (T1);
-                  CD2 := First_Discriminant (T2);
-                  while Present (CD1) and then Present (CD2) loop
-                     if not Same_Rep then
-                        return False;
-                     else
-                        Next_Discriminant (CD1);
-                        Next_Discriminant (CD2);
-                     end if;
-                  end loop;
-               end if;
-
-               CD1 := First_Component (Underlying_Type (Base_Type (T1)));
-               CD2 := First_Component (Underlying_Type (Base_Type (T2)));
-               while Present (CD1) loop
-                  if not Same_Rep then
-                     return False;
-                  else
-                     Next_Component (CD1);
-                     Next_Component (CD2);
-                  end if;
-               end loop;
-
-               return True;
-            end Record_Case;
-         end if;
-
-      --  For enumeration types, we must check each literal to see if the
-      --  representation is the same. Note that we do not permit enumeration
-      --  representation clauses for Character and Wide_Character, so these
-      --  cases were already dealt with.
-
-      elsif Is_Enumeration_Type (T1) then
-         Enumeration_Case : declare
-            L1, L2 : Entity_Id;
-
-         begin
-            L1 := First_Literal (T1);
-            L2 := First_Literal (T2);
-            while Present (L1) loop
-               if Enumeration_Rep (L1) /= Enumeration_Rep (L2) then
-                  return False;
-               else
-                  Next_Literal (L1);
-                  Next_Literal (L2);
-               end if;
-            end loop;
-
-            return True;
-         end Enumeration_Case;
-
-      --  Any other types have the same representation for these purposes
-
-      else
-         return True;
-      end if;
-   end Same_Representation;
 
    ----------------------------
    -- Parse_Aspect_Aggregate --

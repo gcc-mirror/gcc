@@ -1242,6 +1242,7 @@ typedef struct gfc_omp_namelist
       gfc_omp_map_op map_op;
       gfc_omp_linear_op linear_op;
       struct gfc_common_head *common;
+      bool lastprivate_conditional;
     } u;
   struct gfc_omp_namelist_udr *udr;
   struct gfc_omp_namelist *next;
@@ -1320,7 +1321,9 @@ enum gfc_omp_cancel_kind
 
 enum gfc_omp_if_kind
 {
+  OMP_IF_CANCEL,
   OMP_IF_PARALLEL,
+  OMP_IF_SIMD,
   OMP_IF_TASK,
   OMP_IF_TASKLOOP,
   OMP_IF_TARGET,
