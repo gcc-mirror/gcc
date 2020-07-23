@@ -9578,7 +9578,7 @@ package body Sem_Util is
       --  To avoid these situations where expansion may get complex we verify
       --  that the minimum accessibility object is within scope.
 
-      if Ekind (E) in Formal_Kind
+      if Is_Formal (E)
         and then Present (Minimum_Accessibility (E))
         and then In_Open_Scopes (Scope (Minimum_Accessibility (E)))
       then

@@ -7205,7 +7205,7 @@ package body Sem_Ch13 is
 
                   --  check (C)
 
-                  if Present (Obj) and then Ekind (Obj) in Formal_Kind then
+                  if Present (Obj) and then Is_Formal (Obj) then
                      Error_Msg_N
                        ("subpool cannot be part of a parameter", Ent);
                      return;

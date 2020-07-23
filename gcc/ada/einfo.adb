@@ -2864,7 +2864,7 @@ package body Einfo is
 
    function Minimum_Accessibility (Id : E) return E is
    begin
-      pragma Assert (Ekind (Id) in Formal_Kind);
+      pragma Assert (Is_Formal (Id));
       return Node24 (Id);
    end Minimum_Accessibility;
 
@@ -6130,7 +6130,7 @@ package body Einfo is
 
    procedure Set_Minimum_Accessibility (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) in Formal_Kind);
+      pragma Assert (Is_Formal (Id));
       Set_Node24 (Id, V);
    end Set_Minimum_Accessibility;
 
