@@ -38,6 +38,7 @@
         integer, parameter :: omp_alloctrait_key_kind = c_int
         integer, parameter :: omp_alloctrait_val_kind = c_intptr_t
         integer, parameter :: omp_memspace_handle_kind = c_intptr_t
+        integer, parameter :: omp_depend_kind = @OMP_DEPEND_KIND@
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
         integer (omp_sched_kind), parameter :: omp_sched_guided = 3

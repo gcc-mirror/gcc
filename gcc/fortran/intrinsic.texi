@@ -15317,6 +15317,7 @@ named constants:
 @item @code{omp_allocator_handle_kind}
 @item @code{omp_alloctrait_key_kind}
 @item @code{omp_alloctrait_val_kind}
+@item @code{omp_depend_kind}
 @item @code{omp_lock_kind}
 @item @code{omp_lock_hint_kind}
 @item @code{omp_nest_lock_kind}
