@@ -1,3 +1,9 @@
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_hint): Require nonnegative hint clause.
+	(c_parser_omp_critical): Permit hint(0) clause without named critical.
+	(c_parser_omp_construct): Don't assert if error_mark_node is returned.
+
 2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
 
 	PR target/95237

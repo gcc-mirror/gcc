@@ -1,3 +1,45 @@
+2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96236
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Handle
+	little-endian memory ordering.
+
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* dumpfile.c (parse_dump_option): Deal with filenames
+	containing '-'
+
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* incpath.c (add_path): Avoid multiple strlen calls.
+
+2020-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* expmed.c (expand_sdiv_pow2): Check return value from emit_store_flag
+	is not NULL_RTX before use.
+
+2020-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* expr.c (convert_modes): Allow a constant integer to be converted to
+	any scalar int mode.
+
+2020-07-22  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-ldpstp.md: Add two peepholes for adjusted vector
+	V2SI, V2SF, V2DI, V2DF load pair and store pair modes.
+	* config/aarch64/aarch64-protos.h (aarch64_gen_adjusted_ldpstp):
+	Change mode parameter to machine_mode.
+	(aarch64_operands_adjust_ok_for_ldpstp): Change mode parameter to
+	machine_mode.
+	* config/aarch64/aarch64.c (aarch64_operands_adjust_ok_for_ldpstp):
+	Change mode parameter to machine_mode.
+	(aarch64_gen_adjusted_ldpstp): Change mode parameter to machine_mode.
+	* config/aarch64/iterators.md (VP_2E): New iterator for 2 element vectors.
+
+2020-07-22  Wei Wentao  <weiwt.fnst@cn.fujitsu.com>
+
+	* doc/languages.texi: Fix “then”/“than” typo.
+
 2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
 
 	PR target/95237
