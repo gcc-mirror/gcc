@@ -2508,6 +2508,10 @@ package Einfo is
 --       Defined in all type entities, set only for tagged types to which a
 --       valid pragma Import (CPP, ...) or pragma CPP_Class has been applied.
 
+--    Is_CUDA_Kernel (Flag118)
+--       Defined in function and procedure entities. Set if the subprogram is a
+--       CUDA kernel.
+
 --    Is_Decimal_Fixed_Point_Type (synthesized)
 --       Applies to all type entities, true for decimal fixed point
 --       types and subtypes.
@@ -6239,6 +6243,7 @@ package Einfo is
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
+   --    Is_CUDA_Kernel                      (Flag118)  (non-generic case only)
    --    Is_DIC_Procedure                    (Flag132)  (non-generic case only)
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
@@ -6566,6 +6571,7 @@ package Einfo is
    --    Is_Asynchronous                     (Flag81)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
+   --    Is_CUDA_Kernel                      (Flag118)
    --    Is_DIC_Procedure                    (Flag132)  (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
    --    Is_Elaboration_Warnings_OK_Id       (Flag304)
@@ -7345,6 +7351,7 @@ package Einfo is
    function Is_Controlled_Active                (Id : E) return B;
    function Is_Controlling_Formal               (Id : E) return B;
    function Is_CPP_Class                        (Id : E) return B;
+   function Is_CUDA_Kernel                      (Id : E) return B;
    function Is_Descendant_Of_Address            (Id : E) return B;
    function Is_DIC_Procedure                    (Id : E) return B;
    function Is_Discrim_SO_Function              (Id : E) return B;
@@ -8060,6 +8067,7 @@ package Einfo is
    procedure Set_Is_Controlled_Active            (Id : E; V : B := True);
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
    procedure Set_Is_CPP_Class                    (Id : E; V : B := True);
+   procedure Set_Is_CUDA_Kernel                  (Id : E; V : B := True);
    procedure Set_Is_Descendant_Of_Address        (Id : E; V : B := True);
    procedure Set_Is_DIC_Procedure                (Id : E; V : B := True);
    procedure Set_Is_Discrim_SO_Function          (Id : E; V : B := True);
@@ -8904,6 +8912,7 @@ package Einfo is
    pragma Inline (Is_Controlled_Active);
    pragma Inline (Is_Controlling_Formal);
    pragma Inline (Is_CPP_Class);
+   pragma Inline (Is_CUDA_Kernel);
    pragma Inline (Is_Decimal_Fixed_Point_Type);
    pragma Inline (Is_Descendant_Of_Address);
    pragma Inline (Is_DIC_Procedure);
@@ -9506,6 +9515,7 @@ package Einfo is
    pragma Inline (Set_Is_Controlled_Active);
    pragma Inline (Set_Is_Controlling_Formal);
    pragma Inline (Set_Is_CPP_Class);
+   pragma Inline (Set_Is_CUDA_Kernel);
    pragma Inline (Set_Is_Descendant_Of_Address);
    pragma Inline (Set_Is_DIC_Procedure);
    pragma Inline (Set_Is_Discrim_SO_Function);

@@ -3789,7 +3789,8 @@ package body Sem_Prag is
       Arg2 : Node_Id;
       Arg3 : Node_Id;
       Arg4 : Node_Id;
-      --  First four pragma arguments (pragma argument association nodes, or
+      Arg5 : Node_Id;
+      --  First five pragma arguments (pragma argument association nodes, or
       --  Empty if the corresponding argument does not exist).
 
       type Name_List is array (Natural range <>) of Name_Id;
@@ -11535,6 +11536,7 @@ package body Sem_Prag is
       Arg2      := Empty;
       Arg3      := Empty;
       Arg4      := Empty;
+      Arg5      := Empty;
 
       if Present (Pragma_Argument_Associations (N)) then
          Arg_Count := List_Length (Pragma_Argument_Associations (N));
@@ -11548,6 +11550,10 @@ package body Sem_Prag is
 
                if Present (Arg3) then
                   Arg4 := Next (Arg3);
+
+                  if Present (Arg4) then
+                     Arg5 := Next (Arg4);
+                  end if;
                end if;
             end if;
          end if;
@@ -14764,6 +14770,140 @@ package body Sem_Prag is
                  ("'G'N'A'T pragma Cpp'_Virtual is now obsolete and has no "
                   & "effect?j?", N);
             end if;
+
+         --------------------
+         -- CUDA_Execute --
+         --------------------
+
+         --    pragma CUDA_Execute (PROCEDURE_CALL_STATEMENT,
+         --                         EXPRESSION,
+         --                         EXPRESSION,
+         --                         [, EXPRESSION
+         --                         [, EXPRESSION]]);
+
+         when Pragma_CUDA_Execute => CUDA_Execute : declare
+
+            function Is_Acceptable_Dim3 (N : Node_Id) return Boolean;
+            --  Returns True if N is an acceptable argument for CUDA_Execute,
+            --  false otherwise.
+
+            ------------------------
+            -- Is_Acceptable_Dim3 --
+            ------------------------
+
+            function Is_Acceptable_Dim3 (N : Node_Id) return Boolean is
+               Tmp : Node_Id;
+            begin
+               if Etype (N) = RTE (RE_Dim3) or else Is_Integer_Type (Etype (N))
+               then
+                  return True;
+               end if;
+
+               if Nkind (N) = N_Aggregate
+                 and then List_Length (Expressions (N)) = 3
+               then
+                  Tmp := First (Expressions (N));
+                  while Present (Tmp) loop
+                     Analyze_And_Resolve (Tmp, Any_Integer);
+                     Tmp := Next (Tmp);
+                  end loop;
+                  return True;
+               end if;
+
+               return False;
+            end Is_Acceptable_Dim3;
+
+            --  Local variables
+
+            Block_Dimensions : constant Node_Id := Get_Pragma_Arg (Arg3);
+            Grid_Dimensions  : constant Node_Id := Get_Pragma_Arg (Arg2);
+            Kernel_Call      : constant Node_Id := Get_Pragma_Arg (Arg1);
+            Shared_Memory    : Node_Id;
+            Stream           : Node_Id;
+
+            --  Start of processing for CUDA_Execute
+
+         begin
+
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (3);
+            Check_At_Most_N_Arguments (5);
+
+            Analyze_And_Resolve (Kernel_Call);
+            if Nkind (Kernel_Call) /= N_Function_Call
+               or else Etype (Kernel_Call) /= Standard_Void_Type
+            then
+               --  In `pragma CUDA_Execute (Kernel_Call (...), ...)`,
+               --  GNAT sees Kernel_Call as an N_Function_Call since
+               --  Kernel_Call "looks" like an expression. However, only
+               --  procedures can be kernels, so to make things easier for the
+               --  user the error message complains about Kernel_Call not being
+               --  a procedure call.
+
+               Error_Msg_N ("first argument of & must be a procedure call", N);
+            end if;
+
+            Analyze (Grid_Dimensions);
+            if not Is_Acceptable_Dim3 (Grid_Dimensions) then
+               Error_Msg_N
+                 ("second argument of & must be an Integer, Dim3 or aggregate "
+                  & "containing 3 Integers", N);
+            end if;
+
+            Analyze (Block_Dimensions);
+            if not Is_Acceptable_Dim3 (Block_Dimensions) then
+               Error_Msg_N
+                 ("third argument of & must be an Integer, Dim3 or aggregate "
+                  & "containing 3 Integers", N);
+            end if;
+
+            if Present (Arg4) then
+               Shared_Memory := Get_Pragma_Arg (Arg4);
+               Analyze_And_Resolve (Shared_Memory, Any_Integer);
+
+               if Present (Arg5) then
+                  Stream := Get_Pragma_Arg (Arg5);
+                  Analyze_And_Resolve (Stream, RTE (RE_Stream_T));
+               end if;
+            end if;
+         end CUDA_Execute;
+
+         -----------------
+         -- CUDA_Global --
+         -----------------
+
+         --  pragma CUDA_Global (IDENTIFIER);
+
+         when Pragma_CUDA_Global => CUDA_Global : declare
+            Arg_Node    : Node_Id;
+            Kernel_Proc : Entity_Id;
+            Pack_Id     : Entity_Id;
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (1);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Arg_Node := Get_Pragma_Arg (Arg1);
+            Analyze (Arg_Node);
+
+            Kernel_Proc := Entity (Arg_Node);
+            Pack_Id := Scope (Kernel_Proc);
+
+            if Ekind (Kernel_Proc) /= E_Procedure then
+               Error_Msg_NE ("& must be a procedure", N, Kernel_Proc);
+
+            elsif Ekind (Pack_Id) /= E_Package
+              or else not Is_Library_Level_Entity (Pack_Id)
+            then
+               Error_Msg_NE
+                  ("& must reside in a library-level package", N, Kernel_Proc);
+
+            else
+               Set_Is_CUDA_Kernel (Kernel_Proc);
+            end if;
+         end CUDA_Global;
 
          ----------------
          -- CPP_Vtable --
@@ -30690,6 +30830,8 @@ package body Sem_Prag is
       Pragma_C_Pass_By_Copy                 =>  0,
       Pragma_Comment                        => -1,
       Pragma_Common_Object                  =>  0,
+      Pragma_CUDA_Execute                   => -1,
+      Pragma_CUDA_Global                    => -1,
       Pragma_Compile_Time_Error             => -1,
       Pragma_Compile_Time_Warning           => -1,
       Pragma_Compiler_Unit                  => -1,
