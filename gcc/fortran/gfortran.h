@@ -1242,6 +1242,7 @@ typedef struct gfc_omp_namelist
       gfc_omp_map_op map_op;
       gfc_omp_linear_op linear_op;
       struct gfc_common_head *common;
+      bool lastprivate_conditional;
     } u;
   struct gfc_omp_namelist_udr *udr;
   struct gfc_omp_namelist *next;

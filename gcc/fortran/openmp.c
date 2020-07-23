@@ -1355,10 +1355,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  break;
 	case 'l':
 	  if ((mask & OMP_CLAUSE_LASTPRIVATE)
-	      && gfc_match_omp_variable_list ("lastprivate (",
-					      &c->lists[OMP_LIST_LASTPRIVATE],
-					      true) == MATCH_YES)
-	    continue;
+	      && gfc_match ("lastprivate ( ") == MATCH_YES)
+	    {
+	      bool conditional = gfc_match ("conditional : ") == MATCH_YES;
+	      head = NULL;
+	      if (gfc_match_omp_variable_list ("",
+					       &c->lists[OMP_LIST_LASTPRIVATE],
+					       false, NULL, &head) == MATCH_YES)
+		{
+		  gfc_omp_namelist *n;
+		  for (n = *head; n; n = n->next)
+		    n->u.lastprivate_conditional = conditional;
+		  continue;
+		}
+	      gfc_current_locus = old_loc;
+	      break;
+	    }
 	  end_colon = false;
 	  head = NULL;
 	  if ((mask & OMP_CLAUSE_LINEAR)
