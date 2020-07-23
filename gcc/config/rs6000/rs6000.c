@@ -5120,8 +5120,8 @@ rs6000_init_cost (struct loop *loop_info)
    compare + branch or compare + isel instructions.  */
 
 static unsigned
-adjust_vectorization_cost (enum vect_cost_for_stmt kind,
-			   struct _stmt_vec_info *stmt_info)
+rs6000_adjust_vect_cost_per_stmt (enum vect_cost_for_stmt kind,
+				  struct _stmt_vec_info *stmt_info)
 {
   if (kind == scalar_stmt && stmt_info && stmt_info->stmt
       && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
@@ -5149,7 +5149,7 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
     {
       int stmt_cost = rs6000_builtin_vectorization_cost (kind, vectype,
 							 misalign);
-      stmt_cost += adjust_vectorization_cost (kind, stmt_info);
+      stmt_cost += rs6000_adjust_vect_cost_per_stmt (kind, stmt_info);
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
