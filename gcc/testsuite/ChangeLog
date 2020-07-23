@@ -1,3 +1,50 @@
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/cancel-2.f90: New test.
+	* gfortran.dg/gomp/cancel-3.f90: New test.
+	* gfortran.dg/gomp/if-1.f90: New test.
+
+2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96236
+	* gcc.target/powerpc/mma-double-test.c: Update storing results for
+	correct little-endian ordering.
+	* gcc.target/powerpc/mma-single-test.c: Likewise.
+
+2020-07-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95237
+	* c-c++-common/pr95237-6.c: Only run for x86 targets.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/critical-hint-1.c: Moved to libgomp/.
+	* c-c++-common/gomp/critical-hint-2.c: Moved to libgomp/.
+	* gfortran.dg/gomp/critical-hint-1.f90: Moved to libgomp/.
+	* gfortran.dg/gomp/critical-hint-2.f90: Moved to libgomp/.
+
+2020-07-22  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* gcc.target/aarch64/ldp_vec_v2sf.c: New test.
+	* gcc.target/aarch64/ldp_vec_v2si.c: New test.
+	* gcc.target/aarch64/stp_vec_v2df.c: New test.
+	* gcc.target/aarch64/stp_vec_v2di.c: New test.
+	* gcc.target/aarch64/stp_vec_v2sf.c: New test.
+	* gcc.target/aarch64/stp_vec_v2si.c: New test.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/gomp/critical-3.C: Add nameless critical with hint testcase.
+	* c-c++-common/gomp/critical-hint-1.c: New test.
+	* c-c++-common/gomp/critical-hint-2.c: New test.
+	* gfortran.dg/gomp/critical-hint-1.f90: New test.
+	* gfortran.dg/gomp/critical-hint-2.f90: New test.
+
+2020-07-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/no_profile_instrument_function-attr-1.c: Adjust scanned
+	regex for NO_DOT_IN_LABEL.
+
 2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
 
 	PR target/95237

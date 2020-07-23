@@ -1,3 +1,24 @@
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_if_kind): Add OMP_IF_CANCEL and OMP_IF_SIMD.
+	* openmp.c (OMP_SIMD_CLAUSES): Add OMP_CLAUSE_IF.
+	(gfc_match_omp_clauses, resolve_omp_clauses): Handle 'if (simd/cancel:'.
+	* dump-parse-tree.c (show_omp_clauses): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_trans_omp_cancel,
+	(gfc_split_omp_clauses): Likewise.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_critical): Fix handling hints; permit
+	hint clause without named critical.
+	(resolve_omp_clauses): Require nonnegative constant integer
+	for the hint clause.
+	(gfc_resolve_omp_directive): Check for no name but
+	nonzero value for hint clause.
+	* parse.c (parse_omp_structured_block): Fix same-name check
+	for critical.
+	* trans-openmp.c (gfc_trans_omp_critical): Handle hint clause properly.
+
 2020-07-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/89574

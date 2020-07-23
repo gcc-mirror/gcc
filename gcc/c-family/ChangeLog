@@ -1,3 +1,8 @@
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_critical): Check for no name but
+	nonzero hint provided.
+
 2020-07-20  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update

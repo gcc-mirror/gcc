@@ -1,3 +1,45 @@
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (maybe_add_class_template_decl_list): Don't add CONST_DECLs.
+
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (structural_comptypes): [DECLTYPE_TYPE] break
+	apart complex if.
+	[UNDERLYING_TYPE]: Use an if.
+	[TYPEOF_TYPE]: New.
+
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (decls_match): Move variables into scopes
+	they're needed in.
+	(duplicate_decls): Use STRIP_TEMPLATE.
+	(build_typename_type): Move var decls to their assignments.
+	(begin_function_body): Likewise.
+	* decl2.c (get_guard): Likewise.
+	(mark_used): Use true for truthiness.
+	* error.c (dump_aggr_type): Hold the decl in a var called
+	'decl', not 'name'.
+
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct tree_lambda_expr): Shrink
+	default_capture_mode & discriminator.
+
+2020-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.c (decl_is_template_id): Rename to ...
+	(maybe_template_info): ... here.  Return the template info,
+	rather than use a pointer.  Adjust all callers.
+	(find_substitution): Use template_args_equal, rather than
+	local check.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_hint): Require nonnegative hint.
+	(cp_parser_omp_critical): Permit hint(0) clause without named critical.
+	* pt.c (tsubst_expr): Re-check the latter for templates.
+
 2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
 
 	PR target/95237

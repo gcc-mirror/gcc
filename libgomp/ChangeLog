@@ -1,3 +1,17 @@
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/critical-hint-1.c: New; moved from
+	gcc/testsuite/c-c++-common/gomp/.
+	* testsuite/libgomp.c-c++-common/critical-hint-2.c: Likewise.
+	* testsuite/libgomp.fortran/critical-hint-1.f90: New; moved
+	from gcc/testsuite/gfortran.dg/gomp/.
+	* testsuite/libgomp.fortran/critical-hint-2.f90: Likewise.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.f90.in: Add omp_sync_hint_* and omp_sync_hint_kind.
+	* omp_lib.h.in: Likewise.
+
 2020-07-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95620
