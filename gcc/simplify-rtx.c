@@ -3372,7 +3372,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* Convert (xor (and A C) (and B C)) into (and (xor A B) C).  */
       if (GET_CODE (op0) == GET_CODE (op1)
 	  && (GET_CODE (op0) == AND
-	      || GET_CODE (op0) == XOR
 	      || GET_CODE (op0) == LSHIFTRT
 	      || GET_CODE (op0) == ASHIFTRT
 	      || GET_CODE (op0) == ASHIFT
