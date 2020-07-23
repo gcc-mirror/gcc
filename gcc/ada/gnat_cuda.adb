@@ -223,7 +223,7 @@ package body GNAT_CUDA is
       --     Kernel : Interfaces.C.Strings.Chars_Ptr :=
       --       Interfaces.C.Strings.New_Char_Array("<Kernel's name>");
 
-      function Build_Register_Function_Call
+      function Build_Register_Procedure_Call
         (Loc         : Source_Ptr;
          Bin         : Entity_Id;
          Kernel      : Entity_Id;
@@ -272,7 +272,7 @@ package body GNAT_CUDA is
             Analyze (New_Stmt);
 
             Append_To (Stmts,
-              Build_Register_Function_Call (Loc,
+              Build_Register_Procedure_Call (Loc,
                 Bin         => Handle_Id,
                 Kernel      => Kernel_Id,
                 Kernel_Name => Defining_Entity (New_Stmt)));
@@ -285,7 +285,7 @@ package body GNAT_CUDA is
          --  won't be registering any other symbol with the current fat binary.
 
          Append_To (Stmts,
-           Make_Function_Call (Loc,
+           Make_Procedure_Call_Statement (Loc,
              Name                   =>
                New_Occurrence_Of (RTE (RE_Register_Fat_Binary_End), Loc),
              Parameter_Associations =>
@@ -440,11 +440,11 @@ package body GNAT_CUDA is
                    Make_String_Literal (Loc, Kernel_Name))));
       end Build_Kernel_Name_Declaration;
 
-      ----------------------------------
-      -- Build_Register_Function_Call --
-      ----------------------------------
+      -----------------------------------
+      -- Build_Register_Procedure_Call --
+      -----------------------------------
 
-      function Build_Register_Function_Call
+      function Build_Register_Procedure_Call
         (Loc         : Source_Ptr;
          Bin         : Entity_Id;
          Kernel      : Entity_Id;
@@ -487,11 +487,11 @@ package body GNAT_CUDA is
          --  list we just built.
 
          return
-           Make_Function_Call (Loc,
+           Make_Procedure_Call_Statement (Loc,
              Name                   =>
                New_Occurrence_Of (RTE (RE_Register_Function), Loc),
              Parameter_Associations => Args);
-      end Build_Register_Function_Call;
+      end Build_Register_Procedure_Call;
 
       --  Local declarations
 
