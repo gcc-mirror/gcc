@@ -364,6 +364,17 @@ is
       return Position.Container.Nodes (Position.Node).Element;
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type) return Map is
+   begin
+      return Result : Map (Capacity, 0) do
+         null;
+      end return;
+   end Empty;
+
    -------------------------
    -- Equivalent_Key_Node --
    -------------------------

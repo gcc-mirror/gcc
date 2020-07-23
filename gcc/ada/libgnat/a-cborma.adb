@@ -573,6 +573,17 @@ is
       return Container.Nodes (Node).Element;
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return Map is
+   begin
+      return Result : Map (Capacity) do
+         null;
+      end return;
+   end Empty;
+
    ---------------------
    -- Equivalent_Keys --
    ---------------------

@@ -59,7 +59,7 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty     => Empty_Map,
+      Aggregate         => (Empty     => Empty,
                             Add_Named => Insert);
 
    pragma Preelaborable_Initialization (Map);
@@ -68,6 +68,8 @@ is
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_Map : constant Map;
+
+   function Empty (Capacity : Count_Type := 10) return Map;
 
    No_Element : constant Cursor;
 

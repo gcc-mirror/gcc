@@ -4251,6 +4251,7 @@ package Sinfo is
       --  Expression (Node3)
       --  Loop_Parameter_Specification (Node4)
       --  Loop_Actions (List5-Sem)
+      --  Box_Present (Flag15)
 
       --  Exactly one of Iterator_Specification or Loop_Parameter_
       --  specification is present. If the Key_Expression is absent,

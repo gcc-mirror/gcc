@@ -368,7 +368,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Formal_Concrete_Subprogram_Declaration
         or else NT (N).Nkind = N_Formal_Package_Declaration
         or else NT (N).Nkind = N_Generic_Association
-        or else NT (N).Nkind = N_Iterated_Component_Association);
+        or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association);
       return Flag15 (N);
    end Box_Present;
 
@@ -3873,7 +3874,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Formal_Concrete_Subprogram_Declaration
         or else NT (N).Nkind = N_Formal_Package_Declaration
         or else NT (N).Nkind = N_Generic_Association
-        or else NT (N).Nkind = N_Iterated_Component_Association);
+        or else NT (N).Nkind = N_Iterated_Component_Association
+        or else NT (N).Nkind = N_Iterated_Element_Association);
       Set_Flag15 (N, Val);
    end Set_Box_Present;
 

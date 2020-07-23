@@ -102,7 +102,7 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty     => Empty_Map,
+      Aggregate         => (Empty     => Empty,
                             Add_Named => Insert);
 
    pragma Preelaborable_Initialization (Map);
@@ -117,6 +117,8 @@ is
    No_Element : constant Cursor;
    --  Cursor objects declared without an initialization expression are
    --  initialized to the value No_Element.
+
+   function Empty (Capacity : Count_Type := 1000) return Map;
 
    function Has_Element (Position : Cursor) return Boolean;
    --  Returns True if Position designates an element, and returns False

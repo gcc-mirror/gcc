@@ -385,6 +385,17 @@ is
       return Position.Node.Element.all;
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 1000) return Map is
+   begin
+      return Result : Map do
+         Reserve_Capacity (Result, Capacity);
+      end return;
+   end Empty;
+
    -------------------------
    -- Equivalent_Key_Node --
    -------------------------

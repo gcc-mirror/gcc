@@ -58,7 +58,7 @@ is
    with Constant_Indexing => Constant_Reference,
         Default_Iterator  => Iterate,
         Iterator_Element  => Element_Type;
-        --  Aggregate         => (Empty       => Empty_Set,
+        --  Aggregate         => (Empty       => Empty,
         --                        Add_Unnamed => Include);
 
    pragma Preelaborable_Initialization (Set);
@@ -69,6 +69,7 @@ is
    function Has_Element (Position : Cursor) return Boolean;
 
    Empty_Set : constant Set;
+   function Empty  return Set;
 
    No_Element : constant Cursor;
 
@@ -434,6 +435,7 @@ private
    --  Returns a pointer to the element designated by Position.
 
    Empty_Set : constant Set := (Controlled with others => <>);
+   function Empty  return Set is (Empty_Set);
 
    No_Element : constant Cursor := Cursor'(null, null);
 

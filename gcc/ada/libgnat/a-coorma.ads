@@ -59,13 +59,14 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty     => Empty_Map,
+      Aggregate         => (Empty     => Empty,
                             Add_Named => Insert);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_Map : constant Map;
+   function Empty return Map;
 
    No_Element : constant Cursor;
 
@@ -373,6 +374,7 @@ private
    --  Returns a pointer to the element designated by Position.
 
    Empty_Map : constant Map := (Controlled with others => <>);
+   function Empty return Map is (Empty_Map);
 
    No_Element : constant Cursor := Cursor'(null, null);
 

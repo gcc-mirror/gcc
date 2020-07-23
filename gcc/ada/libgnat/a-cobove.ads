@@ -60,7 +60,7 @@ package Ada.Containers.Bounded_Vectors is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty          => Empty_Vector,
+      Aggregate         => (Empty          => Empty,
                             Add_Unnamed    => Append_One,
                             New_Indexed    => New_Vector,
                             Assign_Indexed => Replace_Element);
@@ -78,6 +78,8 @@ package Ada.Containers.Bounded_Vectors is
 
    package Vector_Iterator_Interfaces is new
       Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   function Empty (Capacity : Count_Type := 10) return Vector;
 
    overriding function "=" (Left, Right : Vector) return Boolean;
 

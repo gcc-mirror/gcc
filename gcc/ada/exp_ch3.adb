@@ -9471,6 +9471,31 @@ package body Exp_Ch3 is
              (Is_Null_Extension (Etype (Subp))
                and then Etype (Alias (Subp)) /= Etype (Subp))
          then
+            --  If there is a non-overloadable homonym in the current
+            --  scope, the implicit declaration remains invisible.
+            --  We check the current entity with the same name, or its
+            --  homonym in case the derivation takes place after the
+            --  hiding object declaration.
+
+            if Present (Current_Entity (Subp)) then
+               declare
+                  Curr : constant Entity_Id := Current_Entity (Subp);
+                  Prev : constant Entity_Id := Homonym (Curr);
+               begin
+                  if (Comes_From_Source (Curr)
+                    and then Scope (Curr) = Current_Scope
+                    and then not Is_Overloadable (Curr))
+                  or else
+                    (Present (Prev)
+                      and then Comes_From_Source (Prev)
+                      and then Scope (Prev) = Current_Scope
+                      and then not Is_Overloadable (Prev))
+                  then
+                     goto Next_Prim;
+                  end if;
+               end;
+            end if;
+
             Formal_List := No_List;
             Formal := First_Formal (Subp);
 

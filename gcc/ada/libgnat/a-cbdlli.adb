@@ -518,6 +518,17 @@ is
       return Position.Container.Nodes (Position.Node).Element;
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return List is
+   begin
+      return Result : List (Capacity) do
+         null;
+      end return;
+   end Empty;
+
    --------------
    -- Finalize --
    --------------

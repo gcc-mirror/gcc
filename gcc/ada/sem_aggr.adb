@@ -899,6 +899,11 @@ package body Sem_Aggr is
       elsif Is_Array_Type (Typ) and then Null_Record_Present (N) then
          Error_Msg_N ("null record forbidden in array aggregate", N);
 
+      elsif Present (Find_Aspect (Typ, Aspect_Aggregate))
+        and then Ekind (Typ) /= E_Record_Type
+      then
+         Resolve_Container_Aggregate (N, Typ);
+
       elsif Is_Record_Type (Typ) then
          Resolve_Record_Aggregate (N, Typ);
 

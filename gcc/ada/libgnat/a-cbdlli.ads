@@ -56,7 +56,7 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty        => Empty_List,
+      Aggregate         => (Empty        => Empty,
                             Add_Unnamed  => Append_One);
    pragma Preelaborable_Initialization (List);
 
@@ -66,6 +66,8 @@ is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
+   function Empty (Capacity : Count_Type := 10) return List;
 
    function Has_Element (Position : Cursor) return Boolean;
 
