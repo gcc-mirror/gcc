@@ -3564,6 +3564,7 @@ typedef int (*walk_expr_fn_t) (gfc_expr **, int *, void *);
 int gfc_dummy_code_callback (gfc_code **, int *, void *);
 int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
+bool gfc_fix_implicit_pure (gfc_namespace *);
 
 /* simplify.c */
 
