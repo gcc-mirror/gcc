@@ -50,7 +50,7 @@ contains
     end do
   end subroutine w_1
 
-  subroutine g_1
+  subroutine g_1 ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" }
     implicit none
     !$acc routine gang
 
