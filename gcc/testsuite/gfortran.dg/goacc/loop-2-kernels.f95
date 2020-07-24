@@ -35,7 +35,7 @@ program test
       DO j = 1,10
       ENDDO
     ENDDO
-    !$acc loop seq gang ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+    !$acc loop seq gang ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
     DO i = 1,10
     ENDDO
 
@@ -60,7 +60,7 @@ program test
       DO j = 1,10
       ENDDO
     ENDDO
-    !$acc loop seq worker ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+    !$acc loop seq worker ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
     DO i = 1,10
     ENDDO
     !$acc loop gang worker
@@ -88,7 +88,7 @@ program test
       DO j = 1,10
       ENDDO
     ENDDO
-    !$acc loop seq vector ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+    !$acc loop seq vector ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
     DO i = 1,10
     ENDDO
     !$acc loop gang vector
@@ -101,7 +101,7 @@ program test
     !$acc loop auto
     DO i = 1,10
     ENDDO
-    !$acc loop seq auto ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+    !$acc loop seq auto ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
     DO i = 1,10
     ENDDO
     !$acc loop gang auto ! { dg-error "'auto' conflicts with other OpenACC loop specifiers" }
@@ -133,7 +133,7 @@ program test
   !$acc kernels loop gang(static:*)
   DO i = 1,10
   ENDDO
-  !$acc kernels loop seq gang ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+  !$acc kernels loop seq gang ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
   DO i = 1,10
   ENDDO
 
@@ -146,7 +146,7 @@ program test
   !$acc kernels loop worker(num:5)
   DO i = 1,10
   ENDDO
-  !$acc kernels loop seq worker ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+  !$acc kernels loop seq worker ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
   DO i = 1,10
   ENDDO
   !$acc kernels loop gang worker
@@ -162,7 +162,7 @@ program test
   !$acc kernels loop vector(length:5)
   DO i = 1,10
   ENDDO
-  !$acc kernels loop seq vector ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+  !$acc kernels loop seq vector ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
   DO i = 1,10
   ENDDO
   !$acc kernels loop gang vector
@@ -175,7 +175,7 @@ program test
   !$acc kernels loop auto
   DO i = 1,10
   ENDDO
-  !$acc kernels loop seq auto ! { dg-error "'seq' overrides other OpenACC loop specifiers" }
+  !$acc kernels loop seq auto ! { dg-error "'seq' overrides other OpenACC loop specifiers" "TODO" { xfail *-*-* } }
   DO i = 1,10
   ENDDO
   !$acc kernels loop gang auto ! { dg-error "'auto' conflicts with other OpenACC loop specifiers" }

@@ -1,5 +1,9 @@
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* gfortran.dg/goacc/loop-2-kernels.f95: Add XFAILs.
+
+2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c
 	(main): Remove obsolete expected messages.
 
