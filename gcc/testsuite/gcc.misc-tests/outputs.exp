@@ -56,17 +56,9 @@ set link_options ""
 set dest [target_info name]
 foreach i { ldflags libs ldscript } {
     if {[board_info $dest exists $i]} {
-	set skip ""
-	foreach opt [split [board_info $dest $i]] {
-	    if { $opt == "" } then {
-		continue
-	    } elseif { $skip != "" } then {
-		set skip ""
-	    } elseif { $opt == "-Xlinker" } then {
-		set skip $opt
-	    } elseif { ![string match "-*" $opt] && [file isfile $opt] } {
-	    	set opt "-Wl,$opt"
-	    }
+	set opts [board_info $dest $i]
+	set nopts [gcc_adjust_linker_flags_list $opts]
+	foreach opt $nopts {
 	    append link_options " additional_flags=$opt"
 	}
     }
