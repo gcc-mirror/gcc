@@ -1,3 +1,11 @@
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89574
+	* gfortran.dg/pr89574.f90: New file.
+
 2020-07-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
