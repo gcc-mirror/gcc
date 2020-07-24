@@ -10,7 +10,6 @@ use ISO_FORTRAN_ENV
     integer :: n_tst = 0, n_cnt = 0, n_skip = 0
     character(len=20) :: s, s1
 
-    open (unit = 10, file = 'fmt_en.res')
 !   Check that the default rounding mode is to nearest and to even on tie.
     do i=1,size(real_kinds)
       if (i == 1) then
@@ -149,8 +148,7 @@ use ISO_FORTRAN_ENV
 
     ! print *, n_tst, n_cnt, n_skip
     if (n_cnt /= 0) STOP 1
-    if (all(.not. l_skip)) write (10, *) "All kinds rounded to nearest"
-    close (10)
+    if (all(.not. l_skip)) print *, "All kinds rounded to nearest"
 
 contains
     subroutine checkfmt(fmt, x, cmp)
@@ -182,4 +180,4 @@ contains
         
     end subroutine
 end program
-! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail hppa*-*-hpux* } } }
+! { dg-output "All kinds rounded to nearest" { xfail { i?86-*-solaris2.9* hppa*-*-hpux* } } }
