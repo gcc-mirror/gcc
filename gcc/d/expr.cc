@@ -1782,6 +1782,9 @@ public:
 		    thisexp = TREE_OPERAND (thisexp, 1);
 		  }
 
+		if (TREE_CODE (thisexp) == CONSTRUCTOR)
+		  thisexp = force_target_expr (thisexp);
+
 		/* Want reference to `this' object.  */
 		if (!POINTER_TYPE_P (TREE_TYPE (thisexp)))
 		  thisexp = build_address (thisexp);
@@ -2886,7 +2889,16 @@ public:
        processing has complete.  Build the static initializer now.  */
     if (e->useStaticInit && !this->constp_)
       {
-	this->result_ = aggregate_initializer_decl (e->sd);
+	tree init = aggregate_initializer_decl (e->sd);
+
+	/* If initializing a symbol, don't forget to set it.  */
+	if (e->sym != NULL)
+	  {
+	    tree var = build_deref (e->sym);
+	    init = compound_expr (modify_expr (var, init), var);
+	  }
+
+	this->result_ = init;
 	return;
       }
 

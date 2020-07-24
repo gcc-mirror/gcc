@@ -2861,42 +2861,9 @@ public:
                  *    return x; return 3;  // ok, x can be a value
                  */
             }
-
-            // handle NRVO
-            if (fd->nrvo_can && rs->exp->op == TOKvar)
-            {
-                VarExp *ve = (VarExp *)rs->exp;
-                VarDeclaration *v = ve->var->isVarDeclaration();
-
-                if (tf->isref)
-                {
-                    // Function returns a reference
-                    if (!inferRef)
-                        fd->nrvo_can = 0;
-                }
-                else if (!v || v->isOut() || v->isRef())
-                    fd->nrvo_can = 0;
-                else if (fd->nrvo_var == NULL)
-                {
-                    if (!v->isDataseg() && !v->isParameter() && v->toParent2() == fd)
-                    {
-                        //printf("Setting nrvo to %s\n", v->toChars());
-                        fd->nrvo_var = v;
-                    }
-                    else
-                        fd->nrvo_can = 0;
-                }
-                else if (fd->nrvo_var != v)
-                    fd->nrvo_can = 0;
-            }
-            else //if (!exp->isLvalue())    // keep NRVO-ability
-                fd->nrvo_can = 0;
         }
         else
         {
-            // handle NRVO
-            fd->nrvo_can = 0;
-
             // infer return type
             if (fd->inferRetType)
             {

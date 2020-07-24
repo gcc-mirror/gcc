@@ -1015,19 +1015,63 @@ public:
 	&& type->toBasetype ()->ty == Tvoid)
       type = Type::tint32;
 
-    if (this->func_->nrvo_can && this->func_->nrvo_var)
+    if (this->func_->shidden)
       {
-	/* Just refer to the DECL_RESULT; this differs from using
-	   NULL_TREE in that it indicates that we care about the value
-	   of the DECL_RESULT.  */
+	/* Returning by hidden reference, store the result into the retval decl.
+	   The result returned then becomes the retval reference itself.  */
 	tree decl = DECL_RESULT (get_symbol_decl (this->func_));
+	gcc_assert (!tf->isref);
+
+	/* If returning via NRVO, just refer to the DECL_RESULT; this differs
+	   from using NULL_TREE in that it indicates that we care about the
+	   value of the DECL_RESULT.  */
+	if (this->func_->nrvo_can && this->func_->nrvo_var)
+	  {
+	    add_stmt (return_expr (decl));
+	    return;
+	  }
+
+	/* Detect a call to a constructor function, or if returning a struct
+	   literal, write result directly into the return value.  */
+	StructLiteralExp *sle = NULL;
+
+	if (DotVarExp *dve = (s->exp->op == TOKcall
+			      && s->exp->isCallExp ()->e1->op == TOKdotvar
+			      ? s->exp->isCallExp ()->e1->isDotVarExp ()
+			      : NULL))
+	  {
+	    sle = (dve->var->isCtorDeclaration ()
+		   ? dve->e1->isStructLiteralExp () : NULL);
+	  }
+	else
+	  sle = s->exp->isStructLiteralExp ();
+
+	if (sle != NULL)
+	  {
+	    StructDeclaration *sd = type->baseElemOf ()->isTypeStruct ()->sym;
+	    sle->sym = build_address (this->func_->shidden);
+
+	    /* Fill any alignment holes in the return slot using memset.  */
+	    if (!identity_compare_p (sd) || sd->isUnionDeclaration ())
+	      add_stmt (build_memset_call (this->func_->shidden));
+
+	    add_stmt (build_expr_dtor (s->exp));
+	  }
+	else
+	  {
+	    /* Generate: (<retval> = expr, return <retval>);  */
+	    tree expr = build_expr_dtor (s->exp);
+	    tree init = stabilize_expr (&expr);
+	    expr = build_assign (INIT_EXPR, this->func_->shidden, expr);
+	    add_stmt (compound_expr (init, expr));
+	  }
+
 	add_stmt (return_expr (decl));
       }
     else
       {
 	/* Convert for initializing the DECL_RESULT.  */
-	tree expr = build_return_dtor (s->exp, type, tf);
-	add_stmt (expr);
+	add_stmt (build_return_dtor (s->exp, type, tf));
       }
   }
 
