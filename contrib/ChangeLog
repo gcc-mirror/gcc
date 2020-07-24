@@ -1,3 +1,13 @@
+2020-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	* vimrc (SetStyle): Also inspect &filetype to determine whether
+	a file is C-like.
+
+2020-07-23  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: When reverting a backport,
+	we should print only Revert header.
+
 2020-07-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* gcc-changelog/git_update_version.py: Fix typo.
