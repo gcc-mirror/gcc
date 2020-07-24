@@ -981,11 +981,14 @@ public:
       {
 	tree resdecl = DECL_RESULT (fndecl);
 
-	TREE_TYPE (resdecl)
-	  = build_reference_type (TREE_TYPE (resdecl));
-	DECL_BY_REFERENCE (resdecl) = 1;
-	TREE_ADDRESSABLE (resdecl) = 0;
-	relayout_decl (resdecl);
+	/* Return non-trivial structs by invisible reference.  */
+	if (TREE_ADDRESSABLE (TREE_TYPE (resdecl)))
+	  {
+	    TREE_TYPE (resdecl) = build_reference_type (TREE_TYPE (resdecl));
+	    DECL_BY_REFERENCE (resdecl) = 1;
+	    TREE_ADDRESSABLE (resdecl) = 0;
+	    relayout_decl (resdecl);
+	  }
 
 	if (d->nrvo_var)
 	  {
@@ -995,7 +998,9 @@ public:
 	    DECL_NAME (resdecl) = DECL_NAME (var);
 	    /* Don't forget that we take its address.  */
 	    TREE_ADDRESSABLE (var) = 1;
-	    resdecl = build_deref (resdecl);
+
+	    if (DECL_BY_REFERENCE (resdecl))
+	      resdecl = build_deref (resdecl);
 
 	    SET_DECL_VALUE_EXPR (var, resdecl);
 	    DECL_HAS_VALUE_EXPR_P (var) = 1;
