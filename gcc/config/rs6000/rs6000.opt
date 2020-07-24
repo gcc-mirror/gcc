@@ -568,8 +568,7 @@ mspeculate-indirect-jumps
 Target Undocumented Var(rs6000_speculate_indirect_jumps) Init(1) Save
 
 mpower10
-Target Report Mask(POWER10) Var(rs6000_isa_flags)
-Use instructions added in ISA 3.1.
+Target Undocumented Mask(POWER10) Var(rs6000_isa_flags) WarnRemoved
 
 mprefixed
 Target Report Mask(PREFIXED) Var(rs6000_isa_flags)
