@@ -118,6 +118,15 @@ proc prune_file_path { text } {
     return $text
 }
 
+# Prune internal compiler error messages, including the "Please submit..."
+# footnote.
+
+proc prune_ices { text } {
+  regsub -all "(^|\n)\[^\n\]*: internal compiler error:.*for instructions\[^\n\]*" $text "" text
+  regsub -all "(^|\n|')*Internal compiler error:.*for instructions\[^\n\]*" $text "" text
+  return $text
+}
+
 # Provide a definition of this if missing (delete after next dejagnu release).
 
 if { [info procs prune_warnings] == "" } then {

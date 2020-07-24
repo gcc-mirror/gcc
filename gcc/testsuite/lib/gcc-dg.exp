@@ -308,13 +308,27 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     verbose "$target_compile $prog $output_file $compile_type $options" 4
     set comp_output [$target_compile "$prog" "$output_file" "$compile_type" $options]
 
+    global expect_ice
     # Look for an internal compiler error, which sometimes masks the fact
     # that we didn't get an expected error message.  XFAIL an ICE via
     # dg-xfail-if and use { dg-prune-output ".*internal compiler error.*" }
     # to avoid a second failure for excess errors.
-    if [string match "*internal compiler error*" $comp_output] {
+    # "Error reporting routines re-entered" ICE says "Internal" rather than
+    # "internal", so match that too.
+    if [string match {*[Ii]nternal compiler error*} $comp_output] {
 	upvar 2 name name
-	fail "$name (internal compiler error)"
+	if { $expect_ice == 0 } {
+	  fail "$name (internal compiler error)"
+	} else {
+	  # We expected an ICE and we got it.
+	  xfail "$name (internal compiler error)"
+	  # Prune the ICE from the output.
+	  set comp_output [prune_ices $comp_output]
+	}
+    } elseif { $expect_ice == 1 } {
+	upvar 2 name name
+	# We expected an ICE but we didn't get it.
+	xpass "$name (internal compiler error)"
     }
 
     if { $do_what == "repo" } {
@@ -939,6 +953,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global additional_prunes
 	global compiler_conditional_xfail_data
 	global shouldfail
+	global expect_ice
 	global testname_with_flags
 	global set_target_env_var
 	global set_compiler_env_var
@@ -954,6 +969,7 @@ if { [info procs saved-dg-test] == [list] } {
 	set additional_sources_used ""
 	set additional_prunes ""
 	set shouldfail 0
+	set expect_ice 0
 	if [info exists set_target_env_var] {
 	    unset set_target_env_var
 	}

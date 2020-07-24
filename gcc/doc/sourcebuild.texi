@@ -1172,6 +1172,16 @@ Expect the execute step of a test to fail if the conditions (which are
 the same as for @code{dg-skip-if}) are met.
 @end table
 
+@subsubsection Expect the compiler to crash
+
+@table @code
+@item  @{ dg-ice @var{comment} [@{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]]] @}
+Expect the compiler to crash with an internal compiler error and return
+a nonzero exit status if the conditions (which are the same as for
+@code{dg-skip-if}) are met.  Used for tests that test bugs that have not been
+fixed yet.
+@end table
+
 @subsubsection Expect the test executable to fail
 
 @table @code
