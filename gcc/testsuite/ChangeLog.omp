@@ -1,4 +1,8 @@
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-2-kernels.f95: Add XFAILs.
+
+2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
     
 	* gcc.dg/goacc/loop-processing-1.c: Remove erroneous line-break.
 	Specify correct tree pass for output.  Fix expected constant values.
