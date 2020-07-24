@@ -1,4 +1,9 @@
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+    
+	* gcc.dg/goacc/loop-processing-1.c: Remove erroneous line-break.
+	Specify correct tree pass for output.  Fix expected constant values.
+
+2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c
 	(main): Remove obsolete expected messages.
