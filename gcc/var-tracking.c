@@ -7084,164 +7084,191 @@ vt_find_locations (void)
      so that the data-flow runs faster.  */
   rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   bb_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  pre_and_rev_post_order_compute (NULL, rc_order, false);
-  for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
+  auto_bitmap exit_bbs;
+  bitmap_set_bit (exit_bbs, EXIT_BLOCK);
+  auto_vec<std::pair<int, int> > toplevel_scc_extents;
+  int n = rev_post_order_and_mark_dfs_back_seme
+    (cfun, single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)), exit_bbs, true,
+     rc_order, &toplevel_scc_extents);
+  for (i = 0; i < n; i++)
     bb_order[rc_order[i]] = i;
-  free (rc_order);
 
   in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
 
-  FOR_EACH_BB_FN (bb, cfun)
-    pending->insert (bb_order[bb->index], bb);
-  bitmap_ones (in_pending);
-
-  while (success && !pending->empty ())
+  /* We're performing the dataflow iteration independently over the
+     toplevel SCCs plus leading non-cyclic entry blocks and separately
+     over the tail.  That ensures best memory locality and the least
+     number of visited blocks.  */
+  unsigned extent = 0;
+  int curr_start = -1;
+  int curr_end = -1;
+  do
     {
-      std::swap (worklist, pending);
-      std::swap (in_worklist, in_pending);
+      curr_start = curr_end + 1;
+      if (toplevel_scc_extents.length () <= extent)
+	curr_end = n - 1;
+      else
+	curr_end = toplevel_scc_extents[extent++].second;
 
-      while (!worklist->empty ())
+      for (int i = curr_start; i <= curr_end; ++i)
 	{
-	  bool changed;
-	  edge_iterator ei;
-	  int oldinsz, oldoutsz;
+	  pending->insert (i, BASIC_BLOCK_FOR_FN (cfun, rc_order[i]));
+	  bitmap_set_bit (in_pending, rc_order[i]);
+	}
 
-	  bb = worklist->extract_min ();
-	  bitmap_clear_bit (in_worklist, bb->index);
+      while (success && !pending->empty ())
+	{
+	  std::swap (worklist, pending);
+	  std::swap (in_worklist, in_pending);
 
-	  if (VTI (bb)->in.vars)
+	  while (!worklist->empty ())
 	    {
-	      htabsz -= (shared_hash_htab (VTI (bb)->in.vars)->size ()
-			 + shared_hash_htab (VTI (bb)->out.vars)->size ());
-	      oldinsz = shared_hash_htab (VTI (bb)->in.vars)->elements ();
-	      oldoutsz = shared_hash_htab (VTI (bb)->out.vars)->elements ();
-	    }
-	  else
-	    oldinsz = oldoutsz = 0;
+	      bool changed;
+	      edge_iterator ei;
+	      int oldinsz, oldoutsz;
 
-	  if (MAY_HAVE_DEBUG_BIND_INSNS)
-	    {
-	      dataflow_set *in = &VTI (bb)->in, *first_out = NULL;
-	      bool first = true, adjust = false;
+	      bb = worklist->extract_min ();
+	      bitmap_clear_bit (in_worklist, bb->index);
 
-	      /* Calculate the IN set as the intersection of
-		 predecessor OUT sets.  */
-
-	      dataflow_set_clear (in);
-	      dst_can_be_shared = true;
-
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		if (!VTI (e->src)->flooded)
-		  gcc_assert (bb_order[bb->index]
-			      <= bb_order[e->src->index]);
-		else if (first)
-		  {
-		    dataflow_set_copy (in, &VTI (e->src)->out);
-		    first_out = &VTI (e->src)->out;
-		    first = false;
-		  }
-		else
-		  {
-		    dataflow_set_merge (in, &VTI (e->src)->out);
-		    adjust = true;
-		  }
-
-	      if (adjust)
+	      if (VTI (bb)->in.vars)
 		{
-		  dataflow_post_merge_adjust (in, &VTI (bb)->permp);
-
-		  if (flag_checking)
-		    /* Merge and merge_adjust should keep entries in
-		       canonical order.  */
-		    shared_hash_htab (in->vars)
-		      ->traverse <dataflow_set *,
-				  canonicalize_loc_order_check> (in);
-
-		  if (dst_can_be_shared)
-		    {
-		      shared_hash_destroy (in->vars);
-		      in->vars = shared_hash_copy (first_out->vars);
-		    }
+		  htabsz -= (shared_hash_htab (VTI (bb)->in.vars)->size ()
+			     + shared_hash_htab (VTI (bb)->out.vars)->size ());
+		  oldinsz = shared_hash_htab (VTI (bb)->in.vars)->elements ();
+		  oldoutsz = shared_hash_htab (VTI (bb)->out.vars)->elements ();
 		}
-
-	      VTI (bb)->flooded = true;
-	    }
-	  else
-	    {
-	      /* Calculate the IN set as union of predecessor OUT sets.  */
-	      dataflow_set_clear (&VTI (bb)->in);
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		dataflow_set_union (&VTI (bb)->in, &VTI (e->src)->out);
-	    }
-
-	  changed = compute_bb_dataflow (bb);
-	  n_blocks_processed++;
-	  htabsz += (shared_hash_htab (VTI (bb)->in.vars)->size ()
-		     + shared_hash_htab (VTI (bb)->out.vars)->size ());
-
-	  if (htabmax && htabsz > htabmax)
-	    {
-	      if (MAY_HAVE_DEBUG_BIND_INSNS)
-		inform (DECL_SOURCE_LOCATION (cfun->decl),
-			"variable tracking size limit exceeded with "
-			"%<-fvar-tracking-assignments%>, retrying without");
 	      else
-		inform (DECL_SOURCE_LOCATION (cfun->decl),
-			"variable tracking size limit exceeded");
-	      success = false;
-	      break;
-	    }
+		oldinsz = oldoutsz = 0;
 
-	  if (changed)
-	    {
-	      FOR_EACH_EDGE (e, ei, bb->succs)
+	      if (MAY_HAVE_DEBUG_BIND_INSNS)
 		{
-		  if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
-		    continue;
+		  dataflow_set *in = &VTI (bb)->in, *first_out = NULL;
+		  bool first = true, adjust = false;
 
-		  /* Iterate to an earlier block in RPO in the next
-		     round, iterate to the same block immediately.  */
-		  if (bb_order[e->dest->index] < bb_order[bb->index])
+		  /* Calculate the IN set as the intersection of
+		     predecessor OUT sets.  */
+
+		  dataflow_set_clear (in);
+		  dst_can_be_shared = true;
+
+		  FOR_EACH_EDGE (e, ei, bb->preds)
+		    if (!VTI (e->src)->flooded)
+		      gcc_assert (bb_order[bb->index]
+				  <= bb_order[e->src->index]);
+		    else if (first)
+		      {
+			dataflow_set_copy (in, &VTI (e->src)->out);
+			first_out = &VTI (e->src)->out;
+			first = false;
+		      }
+		    else
+		      {
+			dataflow_set_merge (in, &VTI (e->src)->out);
+			adjust = true;
+		      }
+
+		  if (adjust)
 		    {
-		      if (!bitmap_bit_p (in_pending, e->dest->index))
+		      dataflow_post_merge_adjust (in, &VTI (bb)->permp);
+
+		      if (flag_checking)
+			/* Merge and merge_adjust should keep entries in
+			   canonical order.  */
+			shared_hash_htab (in->vars)
+			  ->traverse <dataflow_set *,
+				      canonicalize_loc_order_check> (in);
+
+		      if (dst_can_be_shared)
 			{
-			  /* Send E->DEST to next round.  */
-			  bitmap_set_bit (in_pending, e->dest->index);
-			  pending->insert (bb_order[e->dest->index],
-					   e->dest);
+			  shared_hash_destroy (in->vars);
+			  in->vars = shared_hash_copy (first_out->vars);
 			}
 		    }
-		  else if (!bitmap_bit_p (in_worklist, e->dest->index))
+
+		  VTI (bb)->flooded = true;
+		}
+	      else
+		{
+		  /* Calculate the IN set as union of predecessor OUT sets.  */
+		  dataflow_set_clear (&VTI (bb)->in);
+		  FOR_EACH_EDGE (e, ei, bb->preds)
+		    dataflow_set_union (&VTI (bb)->in, &VTI (e->src)->out);
+		}
+
+	      changed = compute_bb_dataflow (bb);
+	      n_blocks_processed++;
+	      htabsz += (shared_hash_htab (VTI (bb)->in.vars)->size ()
+			 + shared_hash_htab (VTI (bb)->out.vars)->size ());
+
+	      if (htabmax && htabsz > htabmax)
+		{
+		  if (MAY_HAVE_DEBUG_BIND_INSNS)
+		    inform (DECL_SOURCE_LOCATION (cfun->decl),
+			    "variable tracking size limit exceeded with "
+			    "%<-fvar-tracking-assignments%>, retrying without");
+		  else
+		    inform (DECL_SOURCE_LOCATION (cfun->decl),
+			    "variable tracking size limit exceeded");
+		  success = false;
+		  break;
+		}
+
+	      if (changed)
+		{
+		  FOR_EACH_EDGE (e, ei, bb->succs)
 		    {
-		      /* Add E->DEST to current round.  */
-		      bitmap_set_bit (in_worklist, e->dest->index);
-		      worklist->insert (bb_order[e->dest->index],
-					e->dest);
+		      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+			continue;
+
+		      /* Iterate to an earlier block in RPO in the next
+			 round, iterate to the same block immediately.  */
+		      if (bb_order[e->dest->index] < bb_order[bb->index])
+			{
+			  gcc_assert (bb_order[e->dest->index] >= curr_start);
+			  if (!bitmap_bit_p (in_pending, e->dest->index))
+			    {
+			      /* Send E->DEST to next round.  */
+			      bitmap_set_bit (in_pending, e->dest->index);
+			      pending->insert (bb_order[e->dest->index],
+					       e->dest);
+			    }
+			}
+		      else if (bb_order[e->dest->index] <= curr_end
+			       && !bitmap_bit_p (in_worklist, e->dest->index))
+			{
+			  /* Add E->DEST to current round or delay
+			     processing if it is in the next SCC.  */
+			  bitmap_set_bit (in_worklist, e->dest->index);
+			  worklist->insert (bb_order[e->dest->index],
+					    e->dest);
+			}
 		    }
 		}
-	    }
 
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "BB %i: in %i (was %i), out %i (was %i), rem %i + %i, tsz %i\n",
-		     bb->index,
-		     (int)shared_hash_htab (VTI (bb)->in.vars)->size (),
-		     oldinsz,
-		     (int)shared_hash_htab (VTI (bb)->out.vars)->size (),
-		     oldoutsz,
-		     (int)worklist->nodes (), (int)pending->nodes (), htabsz);
+	      if (dump_file)
+		fprintf (dump_file,
+			 "BB %i: in %i (was %i), out %i (was %i), rem %i + %i, "
+			 "tsz %i\n", bb->index,
+			 (int)shared_hash_htab (VTI (bb)->in.vars)->size (),
+			 oldinsz,
+			 (int)shared_hash_htab (VTI (bb)->out.vars)->size (),
+			 oldoutsz,
+			 (int)worklist->nodes (), (int)pending->nodes (),
+			 htabsz);
 
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "BB %i IN:\n", bb->index);
-	      dump_dataflow_set (&VTI (bb)->in);
-	      fprintf (dump_file, "BB %i OUT:\n", bb->index);
-	      dump_dataflow_set (&VTI (bb)->out);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "BB %i IN:\n", bb->index);
+		  dump_dataflow_set (&VTI (bb)->in);
+		  fprintf (dump_file, "BB %i OUT:\n", bb->index);
+		  dump_dataflow_set (&VTI (bb)->out);
+		}
 	    }
 	}
     }
+  while (curr_end != n - 1);
 
   statistics_counter_event (cfun, "compute_bb_dataflow times",
 			    n_blocks_processed);
@@ -7250,6 +7277,7 @@ vt_find_locations (void)
     FOR_EACH_BB_FN (bb, cfun)
       gcc_assert (VTI (bb)->flooded);
 
+  free (rc_order);
   free (bb_order);
   delete worklist;
   delete pending;
