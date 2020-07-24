@@ -399,7 +399,8 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
   updown:
 
   rchar = '0';
-  if (ft != FMT_F && w > 0 && d == 0 && p == 0)
+  /* Do not reset nbefore for FMT_F and FMT_EN.  */
+  if (ft != FMT_F && ft !=FMT_EN && w > 0 && d == 0 && p == 0)
     nbefore = 1;
   /* Scan for trailing zeros to see if we really need to round it.  */
   for(i = nbefore + nafter; i < ndigits; i++)
