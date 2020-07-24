@@ -123,7 +123,8 @@
       rtx mem;
 
       if ((TARGET_64BIT || TARGET_SSE2)
-	  && !TARGET_AVOID_MFENCE)
+	  && (optimize_function_for_size_p (cfun)
+	      || !TARGET_AVOID_MFENCE))
 	mfence_insn = gen_mfence_sse2;
       else
 	mfence_insn = gen_mfence_nosse;

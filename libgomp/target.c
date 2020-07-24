@@ -1437,7 +1437,7 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
       if (k != NULL && tgt->list[i].do_detach)
 	gomp_detach_pointer (devicep, aq, k, tgt->list[i].key->host_start
 					     + tgt->list[i].offset,
-			     k->refcount == 1, NULL);
+			     false, NULL);
     }
 
   for (i = 0; i < tgt->list_count; i++)

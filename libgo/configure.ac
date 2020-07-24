@@ -36,6 +36,14 @@ case ${host} in
     # static hash tables crashes on AIX when libgo is built with O2
     CFLAGS="$CFLAGS -fno-section-anchors"
     GOCFLAGS="$GOCFLAGS -fno-section-anchors"
+
+    # Check default architecture for FAT library creation
+    if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
+        AIX_DEFAULT_ARCH='64'
+    else
+        AIX_DEFAULT_ARCH='32'
+    fi
+    AC_SUBST(AIX_DEFAULT_ARCH)
     ;;
 esac
 

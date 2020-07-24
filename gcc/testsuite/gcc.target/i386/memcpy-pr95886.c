@@ -1,5 +1,5 @@
 /* PR middle-end/95886 - suboptimal memcpy with embedded zero bytes
-   { dg-do compile }
+   { dg-do compile { target { ! ia32 } } }
    { dg-options "-O2 -Wall -fdump-rtl-expand" } */
 
 const char a1234567890[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };

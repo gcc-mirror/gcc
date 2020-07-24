@@ -15005,6 +15005,16 @@ aarch64_override_options_after_change (void)
   aarch64_override_options_after_change_1 (&global_options);
 }
 
+/* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
+static char *
+aarch64_offload_options (void)
+{
+  if (TARGET_ILP32)
+    return xstrdup ("-foffload-abi=ilp32");
+  else
+    return xstrdup ("-foffload-abi=lp64");
+}
+
 static struct machine_function *
 aarch64_init_machine_status (void)
 {
@@ -23579,6 +23589,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE \
   aarch64_override_options_after_change
+
+#undef TARGET_OFFLOAD_OPTIONS
+#define TARGET_OFFLOAD_OPTIONS aarch64_offload_options
 
 #undef TARGET_OPTION_SAVE
 #define TARGET_OPTION_SAVE aarch64_option_save
