@@ -1,3 +1,60 @@
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* gfortran.dg/pr95980_2.f90: New file.
+
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* gfortran.dg/pr95980.f90: New file.
+
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96086
+	* gfortran.dg/pr96086.f90: New file.
+
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89574
+	* gfortran.dg/pr89574.f90: New file.
+
+2020-07-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96236
+	* gcc.target/powerpc/mma-double-test.c: Update storing results for
+	correct little-endian ordering.
+	* gcc.target/powerpc/mma-single-test.c: Likewise.
+
+2020-07-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96018
+	* gfortran.dg/implicit_pure_5.c: New file.
+	* gfortran.dg/implicit_pure_5.f90: New file.
+
+2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96260
+	* gcc.target/riscv/pr91441.c: Update warning message.
+	* gcc.target/riscv/pr96260.c: New.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

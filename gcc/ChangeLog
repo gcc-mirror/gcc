@@ -1,3 +1,34 @@
+2020-07-23  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-07-20  Sergei Trofimovich  <siarheit@google.com>
+
+	PR target/96190
+	* config/sparc/linux.h (ENDFILE_SPEC): Use GNU_USER_TARGET_ENDFILE_SPEC
+	to get crtendS.o for !no-pie mode.
+	* config/sparc/linux64.h (ENDFILE_SPEC): Ditto.
+
+2020-07-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96236
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Handle
+	little-endian memory ordering.
+
+2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96260
+	* asan.c (asan_shadow_offset_set_p): New.
+	* asan.h (asan_shadow_offset_set_p): Ditto.
+	* toplev.c (process_options): Allow -fsanitize=kernel-address
+	even TARGET_ASAN_SHADOW_OFFSET not implemented, only check when
+	asan stack protection is enabled.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

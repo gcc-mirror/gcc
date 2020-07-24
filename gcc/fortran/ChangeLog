@@ -1,3 +1,68 @@
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* class.c (gfc_add_component_ref, gfc_build_class_symbol):
+	Add checks for NULL pointer dereference.
+	* primary.c (gfc_variable_attr): Likewise.
+	* resolve.c (resolve_variable, resolve_assoc_var)
+	(resolve_fl_var_and_proc, resolve_fl_variable_derived)
+	(resolve_symbol): Likewise.
+
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95980
+	* match.c (copy_ts_from_selector_to_associate, build_class_sym):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+	* resolve.c (resolve_select_type):
+	Distinguish between unlimited polymorphic and ordinary variables
+	to avoid NULL pointer dereference.
+
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96086
+	* match.c (gfc_match_select_rank): Catch NULL pointer
+	dereference.
+	* resolve.c (resolve_assoc_var): Catch NULL pointer dereference
+	that may occur after an illegal declaration.
+
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89574
+	* trans-decl.c (gfc_get_extern_function_decl): Check whether a
+	symbol belongs to a different module.
+
+2020-07-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96220
+	* dump-parse-tree.c (get_c_type_name): Always use the entries from
+	c_interop_kinds_table to find the correct C type.
+
+2020-07-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96018
+	* frontend-passes.c (gfc_check_externals): Adjust formatting.
+	(implicit_pure_call): New function.
+	(implicit_pure_expr): New function.
+	(gfc_fix_implicit_pure): New function.
+	* gfortran.h (gfc_fix_implicit_pure): New prototype.
+	* parse.c (translate_all_program_units): Call gfc_fix_implicit_pure.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.
