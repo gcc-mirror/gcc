@@ -441,7 +441,8 @@ package body Sprint is
    procedure po (Arg : Union_Id) is
    begin
       Dump_Generated_Only := False;
-      Dump_Original_Only := True;
+      Dump_Original_Only  := True;
+      Dump_Freeze_Null    := False;
       Current_Source_File := No_Source_File;
 
       if Arg in List_Range then
@@ -473,7 +474,8 @@ package body Sprint is
    procedure ps (Arg : Union_Id) is
    begin
       Dump_Generated_Only := False;
-      Dump_Original_Only := False;
+      Dump_Original_Only  := False;
+      Dump_Freeze_Null    := False;
       Current_Source_File := No_Source_File;
 
       if Arg in List_Range then
