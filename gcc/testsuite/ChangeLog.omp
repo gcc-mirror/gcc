@@ -1,5 +1,10 @@
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* gfortran.dg/goacc/routine-module-mod-1.f90 (g_1): Add
+	expected output.
+
+2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* gfortran.dg/goacc/loop-2-kernels.f95: Add XFAILs.
 
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
