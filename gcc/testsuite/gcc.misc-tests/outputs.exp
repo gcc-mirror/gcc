@@ -137,11 +137,9 @@ proc outest { test sources opts dirs outputs } {
 
 	    if { [string match "\[\$\"\]" [string index $og 0]] } {
 		global aout
-		set og [expr $og]
-		if { "$og" == "" } { continue }
-	    }
-
-	    if { [string index $og 0] == "-" } then {
+		eval set o $og
+		if { "$o" == "" } { continue }
+	    } elseif { [string index $og 0] == "-" } then {
 		if { [string index $og 1] == "-" \
 		     || [string index $og 1] == "." } then {
 		    set o "$b-$b[string range $og 1 end]"
@@ -722,6 +720,21 @@ outest "$b lto st mult namedb" $mult "-o dir/$b.exe -save-temps -O2 -flto -flto-
 
 # !$skip_lto
 }
+
+# PR96230 - -dumpbase "" with -dumpbase-ext, not linking
+outest "$b single  -c  -o -db'' -dbx.c" $sing "-c -o dir/$b.o -dumpbase \"\" -dumpbase-ext .c -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{-0.c.???r.final -0.su !!$gspd -0.dwo !0 .o} {}}
+outest "$b mult  -c  -dd -db'' -dbx.c" $mult "-c -dumpdir dir/ -dumpbase \"\" -dumpbase-ext .c -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{-1.c.???r.final -1.su !!$gspd -1.dwo !0 -2.c.???r.final -2.su !!$gspd -2.dwo} {-1.o -2.o}}
+outest "$b single  -c  -o -db'' -dbx.x" $sing "-c -o dir/$b.o -dumpbase \"\" -dumpbase-ext .x -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{-0.c.???r.final -0.su !!$gspd -0.dwo !0 .o} {}}
+outest "$b mult  -c  -dd -db'' -dbx.x" $mult "-c -dumpdir dir/ -dumpbase \"\" -dumpbase-ext .x -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{-1.c.???r.final -1.su !!$gspd -1.dwo !0 -2.c.???r.final -2.su !!$gspd -2.dwo} {-1.o -2.o}}
+# Test -dumpbase-ext without an explicit -dumpbase too.
+outest "$b single  -c  -o -dbx.c" $sing "-c -o dir/$b.o -dumpbase-ext .c -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{.c.???r.final .su !!$gspd .dwo !0 .o} {}}
+outest "$b mult  -c  -dd -dbx.c" $mult "-c -dumpdir dir/ -dumpbase-ext .c -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{-1.c.???r.final -1.su !!$gspd -1.dwo !0 -2.c.???r.final -2.su !!$gspd -2.dwo} {-1.o -2.o}}
+outest "$b single  -c  -o -dbx.x" $sing "-c -o dir/$b.o -dumpbase-ext .x -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{.c.???r.final .su !!$gspd .dwo !0 .o} {}}
+outest "$b mult  -c  -dd -dbx.x" $mult "-c -dumpdir dir/ -dumpbase-ext .x -fdump-rtl-final -fstack-usage $gsplit_dwarf" {dir/} {{-1.c.???r.final -1.su !!$gspd -1.dwo !0 -2.c.???r.final -2.su !!$gspd -2.dwo} {-1.o -2.o}}
+outest "$b obj compare-debug save-temps -dbx.x" $sing "-c -fcompare-debug -save-temps -fdump-rtl-final -fstack-usage $gsplit_dwarf -fdump-final-insns -dumpbase-ext .x" {} {{-0.c.???r.final -0.su -0.i -0.c.gkd -0.s -0.gk.i -0.gk.c.???r.final -0.gk.c.gkd !!$gspd -0.dwo !0 -0.o}}
+# -dumpbase-ext is dropped if identical to -dumpbase.
+outest "$b asm db=dbext 1" $sing "-S -fdump-rtl-final -fstack-usage $gsplit_dwarf -dumpbase a -dumpbase-ext a" {} {{a.???r.final a.su -0.s}}
+
 
 # Below are examples taken from the documentation.
 # They are likely redundant with earlier test,
