@@ -1,3 +1,31 @@
+2020-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/89574
+	* trans-decl.c (gfc_get_extern_function_decl): Check whether a
+	symbol belongs to a different module.
+
+2020-07-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96018
+	* frontend-passes.c (gfc_check_externals): Adjust formatting.
+	(implicit_pure_call): New function.
+	(implicit_pure_expr): New function.
+	(gfc_fix_implicit_pure): New function.
+	* gfortran.h (gfc_fix_implicit_pure): New prototype.
+	* parse.c (translate_all_program_units): Call gfc_fix_implicit_pure.
+
+2020-07-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96220
+	* dump-parse-tree.c (get_c_type_name): Always use the entries from
+	c_interop_kinds_table to find the correct C type.
+
 2020-07-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
