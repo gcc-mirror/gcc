@@ -1,3 +1,22 @@
+2020-07-23  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_unmap_vars_internal): Remove unnecessary forcing of
+	finalization for detach operation.
+	* testsuite/libgomp.oacc-c-c++-common/structured-detach-underflow.c:
+	New test.
+
+2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac: Add OMP_DEPEND_KIND and OMP_INT128_SIZE.
+	* libgomp_f.h.in (omp_check_defines): Check whether
+	sizeof of determined Fortran kind and C typedef match.
+	* omp_lib.f90.in: Add omp_depened_kind.
+	* omp_lib.h.in: Likewise; fix omp_alloctrait_key_kind.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/critical-hint-1.c: New; moved from

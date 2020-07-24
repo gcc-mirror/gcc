@@ -1,3 +1,26 @@
+2020-07-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/95886
+	* gcc.target/i386/memcpy-pr95886.c: Restrict test to LP64.
+
+2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/lastprivate-conditional-1.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-2.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-3.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-4.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-5.f90: New test.
+
+2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96260
+	* gcc.target/riscv/pr91441.c: Update warning message.
+	* gcc.target/riscv/pr96260.c: New.
+
+2020-07-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/builtin-has-attribute-4.c: Require visibility.
+
 2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/cancel-2.f90: New test.

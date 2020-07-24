@@ -1,3 +1,9 @@
+2020-07-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/96035
+	* libgcov-driver-system.c: Create gcov folders with 0777
+	so that it respects a system umask.
+
 2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/t-slibgcc-aix: Set BITS from compiler cpp macro.

@@ -1,3 +1,52 @@
+2020-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.ads: Declare CUDA_Global as aspect.
+	* einfo.ads: Use Flag118 for the Is_CUDA_Kernel flag.
+	(Set_Is_CUDA_Kernel): New function.
+	(Is_CUDA_Kernel): New function.
+	* einfo.adb (Set_Is_CUDA_Kernel): New function.
+	(Is_CUDA_Kernel): New function.
+	* par-prag.adb (Prag): Ignore Pragma_CUDA_Execute and
+	Pragma_CUDA_global.
+	* rtsfind.ads: Define CUDA.Driver_Types.Stream_T and
+	CUDA.Vector_Types.Dim3 entities
+	* rtsfind.adb: Define CUDA_Descendant subtype.
+	(Get_Unit_Name): Handle CUDA_Descendant packages.
+	* sem_prag.ads: Mark CUDA_Global as aspect-specifying pragma.
+	* sem_prag.adb (Analyze_Pragma): Validate Pragma_CUDA_Execute and
+	Pragma_CUDA_Global.
+	* snames.ads-tmpl: Define Name_CUDA_Execute and Name_CUDA_Global.
+
+2020-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.ads (Same_Representation): Renamed as
+	Has_Compatible_Representation because now the order of the arguments
+	are taken into account; its formals are also renamed as Target_Type
+	and Operand_Type.
+	* sem_ch13.adb (Same_Representation): Renamed and moved to place the
+	routine in alphabetic order.
+	* sem_attr.adb (Prefix_With_Safe_Accessibility_Level): New subprogram.
+	(Resolve_Attribute): Check that the prefix of attribute Access
+	does not have a value conversion of an array type.
+	* sem_res.adb (Resolve_Actuals): Remove restrictive check on view
+	conversions which required matching value of Has_Aliased_Components of
+	formals and actuals.
+	* exp_ch4.adb (Handle_Changed_Representation): Update call to
+	Same_Representation.
+	(Expand_N_Type_Conversion): Update call to Same_Representation.
+	* exp_ch5.adb (Change_Of_Representation): Update call to
+	Same_Representation.
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Update call to
+	Same_Representation.
+	(Expand_Actuals): Update call to Same_Representation.
+	(Expand_Call_Helper): Update call to Same_Representation.
+
+2020-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* output.ads (Push_Output, Pop_Output): New procedures.
+	* output.adb (FD_Array, FD_Stack, FD_Stack_Idx): New type and vars.
+	(Push_Output, Pop_Output): New procedures.
+
 2020-07-16  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Ensure a _master

@@ -1,3 +1,36 @@
+2020-07-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/96298
+	* simplify-rtx.c (simplify_binary_operation_1) [XOR]: Xor doesn't
+	distribute over xor, so (a^b)^(c^b) is not the same as (a^c)^b.
+
+2020-07-23  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/96267
+	* gcov-io.c (gcov_open): enable if IN_GCOV_TOOL.
+
+2020-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (adjust_vectorization_cost): Renamed to ...
+	(rs6000_adjust_vect_cost_per_stmt): ... here.
+	(rs6000_add_stmt_cost): Rename adjust_vectorization_cost to
+	rs6000_adjust_vect_cost_per_stmt.
+
+2020-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-ssa-loop-ivopts.c (get_mem_type_for_internal_fn): Handle
+	IFN_LEN_LOAD and IFN_LEN_STORE.
+	(get_alias_ptr_type_for_ptr_address): Likewise.
+
+2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96260
+	* asan.c (asan_shadow_offset_set_p): New.
+	* asan.h (asan_shadow_offset_set_p): Ditto.
+	* toplev.c (process_options): Allow -fsanitize=kernel-address
+	even TARGET_ASAN_SHADOW_OFFSET not implemented, only check when
+	asan stack protection is enabled.
+
 2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/96236
