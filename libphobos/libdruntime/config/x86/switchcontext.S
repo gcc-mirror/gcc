@@ -28,7 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
     .text
     .globl CSYM(fiber_switchContext)
+#ifndef __MACH__
     .type CSYM(fiber_switchContext), @function
+#endif
     .align 16
 CSYM(fiber_switchContext):
     .cfi_startproc
@@ -56,13 +58,17 @@ CSYM(fiber_switchContext):
     // 'return' to complete switch
     ret
     .cfi_endproc
+#ifndef __MACH__
     .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
+#endif
 
 #elif defined(__x86_64__) && !defined(__ILP32__)
 
     .text
     .globl CSYM(fiber_switchContext)
+#ifndef __MACH__
     .type CSYM(fiber_switchContext), @function
+#endif
     .align 16
 CSYM(fiber_switchContext):
     .cfi_startproc
@@ -91,6 +97,8 @@ CSYM(fiber_switchContext):
     // 'return' to complete switch
     ret
     .cfi_endproc
+#ifndef __MACH__
    .size CSYM(fiber_switchContext),.-CSYM(fiber_switchContext)
+#endif
 
 #endif

@@ -213,7 +213,7 @@ extern (C) void sections_osx_onAddImage(in mach_header* h, intptr_t slide)
         }
         else if (_sections.modules.ptr !is null)
         {
-            fprintf(stderr, "Shared libraries are not yet supported on OSX.\n");
+            //fprintf(stderr, "Shared libraries are not yet supported on OSX.\n");
         }
 
         debug(PRINTF) printf("  minfodata\n");
@@ -282,3 +282,5 @@ ubyte[] getSection(in mach_header* header, intptr_t slide,
         return (cast(ubyte*)sect.addr + slide)[0 .. cast(size_t)sect.size];
     return null;
 }
+
+extern(C) __gshared void _d_dso_registry() {} ///

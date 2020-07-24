@@ -24,16 +24,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 /* Avoid interference with targets without support for named sections.  */
-#ifdef __ELF__
+#if defined(__ELF__) || defined(__MACH__)
 
 #ifdef DRT_BEGIN
 void *__start_minfo[]
+#ifdef __MACH__
+__attribute__((used, section("__TEXT,minfo"), aligned(sizeof(void *)))) = { };
+#else
 __attribute__((used, section("minfo"), aligned(sizeof(void *)))) = { };
+#endif
 #endif
 
 #ifdef DRT_END
 void *__stop_minfo[]
+#ifdef __MACH__
+__attribute__((used, section("__TEXT,minfo"), aligned(sizeof(void *)))) = { };
+#else
 __attribute__((used, section("minfo"), aligned(sizeof(void *)))) = { };
+#endif
 #endif
 
 #endif /* __ELF__ */

@@ -420,7 +420,11 @@ register_moduleinfo (Module *decl, tree minfo)
   DECL_EXTERNAL (mref) = 0;
   DECL_PRESERVE_P (mref) = 1;
 
+#ifdef __MACH__
+  set_decl_section_name (mref, "__DATA,__minfodata");
+#else
   set_decl_section_name (mref, "minfo");
+#endif
   d_pushdecl (mref);
   rest_of_decl_compilation (mref, 1, 0);
 

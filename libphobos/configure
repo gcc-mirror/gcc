@@ -12191,6 +12191,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       # PIC is the default on this platform
       # Common symbols not allowed in MH_DYLIB files
       lt_prog_compiler_pic_D='-fno-common'
+      enable_shared='no' # otherwise core/thread.d fails to compile.
       ;;
 
     haiku*)
