@@ -324,6 +324,10 @@ mblock-move-inline-limit=
 Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
 Max number of bytes to move inline.
 
+mblock-ops-unaligned-vsx
+Target Report Mask(BLOCK_OPS_UNALIGNED_VSX) Var(rs6000_isa_flags)
+Generate unaligned VSX load/store for inline expansion of memcpy/memmove.
+
 mblock-compare-inline-limit=
 Target Report Var(rs6000_block_compare_inline_limit) Init(63) RejectNegative Joined UInteger Save
 Max number of bytes to compare without loops.

@@ -1182,6 +1182,7 @@ See RS/6000 and PowerPC Options.
 -mblock-move-inline-limit=@var{num} @gol
 -mblock-compare-inline-limit=@var{num} @gol
 -mblock-compare-inline-loop-limit=@var{num} @gol
+-mno-block-ops-unaligned-vsx @gol
 -mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -mvrsave  -mno-vrsave @gol
@@ -27023,6 +27024,13 @@ store instructions when the option @option{-mcpu=future} is used.
 @opindex mno-mma
 Generate (do not generate) the MMA instructions when the option
 @option{-mcpu=future} is used.
+
+@item -mblock-ops-unaligned-vsx
+@itemx -mno-block-ops-unaligned-vsx
+@opindex block-ops-unaligned-vsx
+@opindex no-block-ops-unaligned-vsx
+Generate (do not generate) unaligned vsx loads and stores for
+inline expansion of @code{memcpy} and @code{memmove}.
 @end table
 
 @node RX Options
