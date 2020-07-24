@@ -1,6 +1,10 @@
+2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c
+	(main): Remove obsolete expected messages.
+
 2020-07-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
-	gcc/testsuite/
 	* c-c++-common/goacc/routine-nohost-1.c: Change tree dump pass to
 	oaccloops.
 
