@@ -9751,6 +9751,13 @@ package body Sem_Ch3 is
 
       Set_Convention (Derived_Type, Convention (Parent_Base));
 
+      if Is_Tagged_Type (Derived_Type)
+        and then Present (Class_Wide_Type (Derived_Type))
+      then
+         Set_Convention (Class_Wide_Type (Derived_Type),
+           Convention (Class_Wide_Type (Parent_Base)));
+      end if;
+
       --  Set SSO default for record or array type
 
       if (Is_Array_Type (Derived_Type) or else Is_Record_Type (Derived_Type))
