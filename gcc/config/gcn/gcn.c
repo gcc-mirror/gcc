@@ -350,6 +350,19 @@ static const struct attribute_spec gcn_attribute_table[] = {
 /* }}}  */
 /* {{{ Registers and modes.  */
 
+/* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
+
+bool
+gcn_scalar_mode_supported_p (scalar_mode mode)
+{
+  return (mode == BImode
+	  || mode == QImode
+	  || mode == HImode /* || mode == HFmode  */
+	  || mode == SImode || mode == SFmode
+	  || mode == DImode || mode == DFmode
+	  || mode == TImode);
+}
+
 /* Implement TARGET_CLASS_MAX_NREGS.
  
    Return the number of hard registers needed to hold a value of MODE in
@@ -6331,6 +6344,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_SECONDARY_RELOAD gcn_secondary_reload
 #undef  TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS gcn_section_type_flags
+#undef  TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P gcn_scalar_mode_supported_p
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p
