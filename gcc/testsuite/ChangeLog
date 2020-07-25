@@ -1,3 +1,72 @@
+2020-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr95907.c: New.
+
+2020-07-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/pr56493.c: Allow ":" in label, for mmix.
+
+2020-07-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/patchable_function_entry-decl.c,
+	c-c++-common/patchable_function_entry-default.c,
+	c-c++-common/patchable_function_entry-definition.c: Adjust for mmix.
+
+2020-07-24  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/96192
+	* c-c++-common/pr96192-1.c: New test.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/scanoffload.exp (scoff-testname, scoff-adjust): New.
+	(scoff): Call them.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR driver/96230
+	* gcc.misc-tests/outputs.exp: Add tests with -dumpbase-ext,
+	with identical -dumpbase, with -dumpbase "", and without any
+	-dumpbase.
+	(outest): Fix "" expansion in expected outputs, skip
+	adjustments.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/95720
+	* lib/gcc-defs.exp (gcc_adjust_linker_flags_list): Split out of...
+	(gcc_adjust_linker_flags): ... this.  Protect gluefile and
+	wrap_flags.
+	* gcc.misc-tests/outputs.exp: Use gcc_adjust_linker_flags_list.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93567
+	* gfortran.dg/round_3.f08: Add test cases.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93592
+	* gfortran.dg/fmt_en.f90: Adjust test.
+	* gfortran.dg/fmt_en_rd.f90: New test.
+	* gfortran.dg/fmt_en_rn.f90: New test.
+	* gfortran.dg/fmt_en_ru.f90: New test.
+	* gfortran.dg/fmt_en_rz.f90: New test.
+
+2020-07-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/81339
+	* g++.dg/cpp0x/decltype78.C: New test.
+
+2020-07-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scandump.exp (scan-dump-dem-not): Fix TCL syntax error.
+
+2020-07-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/95886
+	* gcc.target/i386/memcpy-pr95886.c: Restrict test to !ia32.
+
 2020-07-23  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/95886

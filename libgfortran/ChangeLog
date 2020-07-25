@@ -1,3 +1,15 @@
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93567
+	* io/write_float.def (determine_en_precision): Fix switch between
+	FMT_E and FMT_F.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93592
+	* io/write_float.def (build_float_string): Do not reset
+	  nbefore for FMT_F and FMT_EN.
+
 2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/t-aix: Set BITS from compiler cpp macro.
