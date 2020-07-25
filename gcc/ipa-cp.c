@@ -5667,8 +5667,9 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
 	  (has_undead_caller_from_outside_scc_p, NULL, true))
       return true;
     else if (!ipa_edge_within_scc (cs)
-	     && !IPA_NODE_REF (cs->caller)->node_dead)
-      return true;
+	     && (!IPA_NODE_REF (cs->caller) /* Unoptimized caller.  */
+		 || !IPA_NODE_REF (cs->caller)->node_dead))
+	  return true;
   return false;
 }
 
