@@ -5538,7 +5538,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     {
       warned = warning_at (loc, OPT_Wnonnull,
 			   "%qs pointer null", "this");
-      if (pctx->fndecl)
+      if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to non-static member function %qD",
 		pctx->fndecl);
@@ -5548,7 +5548,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
       warned = warning_at (loc, OPT_Wnonnull,
 			   "argument %u null where non-null expected",
 			   (unsigned) param_num);
-      if (pctx->fndecl)
+      if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to function %qD declared %qs",
 		pctx->fndecl, "nonnull");
