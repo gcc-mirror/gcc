@@ -1,3 +1,64 @@
+2020-07-24  David Edelsohn  <dje.gcc@gmail.com>
+	    Clement Chigot  <clement.chigot@atos.net>
+
+	* config.gcc (powerpc-ibm-aix7.1): Use t-aix64 and biarch64 for
+	cpu_is_64bit.
+	* config/rs6000/aix71.h (ASM_SPEC): Remove aix64 option.
+	(ASM_SPEC32): New.
+	(ASM_SPEC64): New.
+	(ASM_CPU_SPEC): Remove vsx and altivec options.
+	(CPP_SPEC_COMMON): Rename from CPP_SPEC.
+	(CPP_SPEC32): New.
+	(CPP_SPEC64): New.
+	(CPLUSPLUS_CPP_SPEC): Rename to CPLUSPLUS_CPP_SPEC_COMMON..
+	(TARGET_DEFAULT): Use 64 bit mask if BIARCH.
+	(LIB_SPEC_COMMON): Rename from LIB_SPEC.
+	(LIB_SPEC32): New.
+	(LIB_SPEC64): New.
+	(LINK_SPEC_COMMON): Rename from LINK_SPEC.
+	(LINK_SPEC32): New.
+	(LINK_SPEC64): New.
+	(STARTFILE_SPEC): Add 64 bit version of crtcxa and crtdbase.
+	(ASM_SPEC): Define 32 and 64 bit alternatives using DEFAULT_ARCH64_P.
+	(CPP_SPEC): Same.
+	(CPLUSPLUS_CPP_SPEC): Same.
+	(LIB_SPEC): Same.
+	(LINK_SPEC): Same.
+	(SUBTARGET_EXTRA_SPECS): Add new 32/64 specs.
+	* config/rs6000/aix72.h (TARGET_DEFAULT): Use 64 bit mask if BIARCH.
+	* config/rs6000/defaultaix64.h: Delete.
+
+2020-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.opt: Delete -mpower10.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/intelmic-mkoffload.c
+	(generate_target_descr_file): Use dumppfx for save_temps
+	files.  Pass -dumpbase et al down to the compiler.
+	(generate_target_offloadend_file): Likewise.
+	(generate_host_descr_file): Likewise.
+	(prepare_target_image): Likewise.  Move out_obj_filename
+	setting...
+	(main): ... here.  Detect -dumpbase, set dumppfx too.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR driver/96230
+	* gcc.c (process_command): Adjust and document conditions to
+	reset dumpbase_ext.
+
+2020-07-24  Matthias Klose  <doko@ubuntu.com>
+
+	* config/aarch64/aarch64.c (+aarch64_offload_options,
+	TARGET_OFFLOAD_OPTIONS): New.
+
+2020-07-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95750
+	* config/i386/sync.md (mmem_thread_fence): Emit mfence_sse2 for -Os.
+
 2020-07-23  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR rtl-optimization/96298
