@@ -1,3 +1,13 @@
+2020-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/abi/pure-virtual1.C: Add dynamic_lookup option
+	for Darwin.
+
+2020-07-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96310
+	* g++.dg/warn/Wnonnull8.C: New file.
+
 2020-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/pr95907.c: New.

@@ -1,3 +1,13 @@
+2020-07-25  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (TARGET_ASM_OUTPUT_IDENT): Override the default
+	with default_asm_output_ident_directive.
+
+2020-07-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_scalar_mode_supported_p): New function.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): New define.
+
 2020-07-24  David Edelsohn  <dje.gcc@gmail.com>
 	    Clement Chigot  <clement.chigot@atos.net>
 
