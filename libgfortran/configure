@@ -679,6 +679,8 @@ LD
 FGREP
 SED
 SECTION_FLAGS
+LIBGOMP_CHECKED_REAL_KINDS
+LIBGOMP_CHECKED_INT_KINDS
 LIBGFOR_MINIMAL_FALSE
 LIBGFOR_MINIMAL_TRUE
 LIBGFOR_USE_SYMVER_SUN_FALSE
@@ -6206,6 +6208,19 @@ else
   LIBGFOR_MINIMAL_TRUE='#'
   LIBGFOR_MINIMAL_FALSE=
 fi
+
+
+# Some compiler target support may have limited support for integer
+# or floating point numbers – or may want to reduce the libgfortran size
+# although they do have the support.
+LIBGOMP_CHECKED_INT_KINDS="1 2 4 8 16"
+LIBGOMP_CHECKED_REAL_KINDS="4 8 10 16"
+
+if test "x${target_cpu}" = xamdgcn; then
+  # amdgcn only has limited support for __int128.
+  LIBGOMP_CHECKED_INT_KINDS="1 2 4 8"
+fi
+
 
 
 # Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
@@ -12724,7 +12739,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12727 "configure"
+#line 12742 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12830,7 +12845,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12833 "configure"
+#line 12848 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
