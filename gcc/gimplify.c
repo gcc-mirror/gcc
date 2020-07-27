@@ -13013,8 +13013,13 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DELETE);
 	      have_clause = true;
 	      break;
-	    case GOMP_MAP_POINTER:
 	    case GOMP_MAP_TO_PSET:
+	      /* Fortran arrays with descriptors must map that descriptor when
+		 doing standalone "attach" operations (in OpenACC).  In that
+		 case GOMP_MAP_TO_PSET appears by itself with no preceding
+		 clause (see trans-openmp.c:gfc_trans_omp_clauses).  */
+	      break;
+	    case GOMP_MAP_POINTER:
 	      /* TODO PR92929: we may see these here, but they'll always follow
 		 one of the clauses above, and will be handled by libgomp as
 		 one group, so no handling required here.  */
