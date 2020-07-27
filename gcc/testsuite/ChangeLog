@@ -1,3 +1,20 @@
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/reassoc-20.c: Adjust for mmix.
+
+2020-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79504
+	* g++.dg/cpp0x/decltype79.C: New test.
+
+2020-07-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/forwprop-36.c: Adjust for mmix.
+
+2020-07-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/torture/pr59330.c: Disable for mmix.
+
 2020-07-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/abi/pure-virtual1.C: Add dynamic_lookup option
