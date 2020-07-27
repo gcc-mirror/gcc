@@ -6560,8 +6560,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
       resolve_omp_atomic (code);
       break;
     case EXEC_OMP_CRITICAL:
-      if (code->ext.omp_clauses)
-	resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
+      resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
       if (!code->ext.omp_clauses->critical_name
 	  && code->ext.omp_clauses->hint
 	  && code->ext.omp_clauses->hint->ts.type == BT_INTEGER
