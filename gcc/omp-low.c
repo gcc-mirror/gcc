@@ -10128,7 +10128,9 @@ oacc_record_private_var_clauses (omp_context *ctx, tree clauses)
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE)
       {
 	tree decl = OMP_CLAUSE_DECL (c);
-	if (VAR_P (decl) && TREE_ADDRESSABLE (decl))
+	if (VAR_P (decl) && TREE_ADDRESSABLE (decl)
+	    && !(TREE_READONLY (decl)
+		 && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))))
 	  ctx->oacc_addressable_var_decls->safe_push (decl);
       }
 }
@@ -10143,7 +10145,8 @@ oacc_record_vars_in_bind (omp_context *ctx, tree bindvars)
     return;
 
   for (tree v = bindvars; v; v = DECL_CHAIN (v))
-    if (VAR_P (v) && TREE_ADDRESSABLE (v))
+    if (VAR_P (v) && TREE_ADDRESSABLE (v)
+	&& !(TREE_READONLY (v) && (TREE_STATIC (v) || DECL_EXTERNAL (v))))
       ctx->oacc_addressable_var_decls->safe_push (v);
 }
 
