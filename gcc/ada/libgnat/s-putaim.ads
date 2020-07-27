@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 with Ada.Strings.Text_Output;
 with Ada.Task_Identification;
+
 package System.Put_Task_Images is
 
    --  This package contains subprograms that are called by the generated code

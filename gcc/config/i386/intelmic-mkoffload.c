@@ -245,8 +245,13 @@ compile_for_target (struct obstack *argv_obstack)
 static const char *
 generate_target_descr_file (const char *target_compiler)
 {
-  const char *src_filename = make_temp_file ("_target_descr.c");
-  const char *obj_filename = make_temp_file ("_target_descr.o");
+  char *dump_filename = concat (dumppfx, "_target_descr.c", NULL);
+  const char *src_filename = save_temps
+    ? dump_filename
+    : make_temp_file ("_target_descr.c");
+  const char *obj_filename = save_temps
+    ? concat (dumppfx, "_target_descr.o", NULL)
+    : make_temp_file ("_target_descr.o");
   temp_files[num_temps++] = src_filename;
   temp_files[num_temps++] = obj_filename;
   FILE *src_file = fopen (src_filename, "w");
@@ -293,6 +298,12 @@ generate_target_descr_file (const char *target_compiler)
     obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&argv_obstack, "");
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, dump_filename);
+  obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&argv_obstack, ".c");
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
@@ -309,8 +320,13 @@ generate_target_descr_file (const char *target_compiler)
 static const char *
 generate_target_offloadend_file (const char *target_compiler)
 {
-  const char *src_filename = make_temp_file ("_target_offloadend.c");
-  const char *obj_filename = make_temp_file ("_target_offloadend.o");
+  char *dump_filename = concat (dumppfx, "_target_offloadend.c", NULL);
+  const char *src_filename = save_temps
+    ? dump_filename
+    : make_temp_file ("_target_offloadend.c");
+  const char *obj_filename = save_temps
+    ? concat (dumppfx, "_target_offloadend.o", NULL)
+    : make_temp_file ("_target_offloadend.o");
   temp_files[num_temps++] = src_filename;
   temp_files[num_temps++] = obj_filename;
   FILE *src_file = fopen (src_filename, "w");
@@ -335,6 +351,12 @@ generate_target_offloadend_file (const char *target_compiler)
     obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&argv_obstack, "");
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, dump_filename);
+  obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&argv_obstack, ".c");
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-shared");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
@@ -350,8 +372,13 @@ generate_target_offloadend_file (const char *target_compiler)
 static const char *
 generate_host_descr_file (const char *host_compiler)
 {
-  const char *src_filename = make_temp_file ("_host_descr.c");
-  const char *obj_filename = make_temp_file ("_host_descr.o");
+  char *dump_filename = concat (dumppfx, "_host_descr.c", NULL);
+  const char *src_filename = save_temps
+    ? dump_filename
+    : make_temp_file ("_host_descr.c");
+  const char *obj_filename = save_temps
+    ? concat (dumppfx, "_host_descr.o", NULL)
+    : make_temp_file ("_host_descr.o");
   temp_files[num_temps++] = src_filename;
   temp_files[num_temps++] = obj_filename;
   FILE *src_file = fopen (src_filename, "w");
@@ -402,6 +429,12 @@ generate_host_descr_file (const char *host_compiler)
     obstack_ptr_grow (&argv_obstack, "-save-temps");
   if (verbose)
     obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&argv_obstack, "");
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, dump_filename);
+  obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&argv_obstack, ".c");
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-fPIC");
   obstack_ptr_grow (&argv_obstack, "-shared");
@@ -443,7 +476,10 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   sprintf (opt1, "-Wl,%s", target_descr_filename);
   sprintf (opt2, "-Wl,%s", target_offloadend_filename);
 
-  const char *target_so_filename = make_temp_file ("_offload_intelmic.so");
+  char *dump_filename = concat (dumppfx, ".mkoffload", NULL);
+  const char *target_so_filename = save_temps
+    ? concat (dumppfx, "_offload_intelmic.so", NULL)
+    : make_temp_file ("_offload_intelmic.so");
   temp_files[num_temps++] = target_so_filename;
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
@@ -457,16 +493,20 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   for (int i = 1; i < argc; i++)
     {
       if (!strcmp (argv[i], "-o") && i + 1 != argc)
-	out_obj_filename = argv[++i];
+	++i;
       else
 	obstack_ptr_grow (&argv_obstack, argv[i]);
     }
-  if (!out_obj_filename)
-    fatal_error (input_location, "output file not specified");
   obstack_ptr_grow (&argv_obstack, opt2);
   /* NB: Put -fPIC and -shared the last to create shared library.  */
   obstack_ptr_grow (&argv_obstack, "-fPIC");
   obstack_ptr_grow (&argv_obstack, "-shared");
+  obstack_ptr_grow (&argv_obstack, "-dumpdir");
+  obstack_ptr_grow (&argv_obstack, "");
+  obstack_ptr_grow (&argv_obstack, "-dumpbase");
+  obstack_ptr_grow (&argv_obstack, dump_filename);
+  obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
+  obstack_ptr_grow (&argv_obstack, "");
   obstack_ptr_grow (&argv_obstack, "-o");
   obstack_ptr_grow (&argv_obstack, target_so_filename);
   compile_for_target (&argv_obstack);
@@ -589,7 +629,19 @@ main (int argc, char **argv)
 	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
 	verbose = true;
+      else if (strcmp (argv[i], "-dumpbase") == 0
+	       && i + 1 < argc)
+	dumppfx = argv[++i];
+      else if (strcmp (argv[i], "-o") == 0
+	       && i + 1 < argc)
+	out_obj_filename = argv[++i];
     }
+
+  if (!out_obj_filename)
+    fatal_error (input_location, "output file not specified");
+
+  if (!dumppfx)
+    dumppfx = out_obj_filename;
 
   const char *target_so_filename
     = prepare_target_image (target_compiler, argc, argv);

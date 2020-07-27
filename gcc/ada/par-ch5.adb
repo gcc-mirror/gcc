@@ -1307,9 +1307,9 @@ package body Ch5 is
 
       else
          if Style_Check and then Paren_Count (Cond) > 0 then
-            if not Nkind_In (Cond, N_If_Expression,
-                                   N_Case_Expression,
-                                   N_Quantified_Expression)
+            if Nkind (Cond) not in N_If_Expression
+                                 | N_Case_Expression
+                                 | N_Quantified_Expression
               or else Paren_Count (Cond) > 1
             then
                Style.Check_Xtra_Parens (First_Sloc (Cond));

@@ -532,7 +532,7 @@ package body Sprint is
          --  We do not know the actual end location in the generated code and
          --  it could be much closer than in the source code, so play safe.
 
-         if Nkind_In (Dump_Node, N_Case_Statement, N_If_Statement) then
+         if Nkind (Dump_Node) in N_Case_Statement | N_If_Statement then
             Set_End_Location (Dump_Node, Debug_Sloc + Source_Ptr (Column - 1));
          end if;
 
@@ -3537,8 +3537,8 @@ package body Sprint is
       --  where the aspects are printed inside the package specification.
 
       if Has_Aspects (Node)
-        and then not Nkind_In (Node, N_Generic_Package_Declaration,
-                                     N_Package_Declaration)
+        and then Nkind (Node) not in
+                   N_Generic_Package_Declaration | N_Package_Declaration
         and then not Is_Empty_List (Aspect_Specifications (Node))
       then
          Sprint_Aspect_Specifications (Node, Semicolon => True);
@@ -4745,9 +4745,7 @@ package body Sprint is
 
       --  See if we have extra formals
 
-      if Nkind_In (N, N_Function_Specification,
-                      N_Procedure_Specification)
-      then
+      if Nkind (N) in N_Function_Specification | N_Procedure_Specification then
          Ent := Defining_Entity (N);
 
          --  Loop to write extra formals (if any)

@@ -372,7 +372,7 @@ package body Exp_Smem is
          return False;
 
       else
-         if Ekind_In (Formal, E_Out_Parameter, E_In_Out_Parameter) then
+         if Ekind (Formal) in E_Out_Parameter | E_In_Out_Parameter then
             Insert_Node := Call;
             return True;
          else
@@ -477,7 +477,7 @@ package body Exp_Smem is
             return False;
          end if;
 
-      elsif Nkind_In (P, N_Indexed_Component, N_Selected_Component)
+      elsif Nkind (P) in N_Indexed_Component | N_Selected_Component
         and then N = Prefix (P)
       then
          return On_Lhs_Of_Assignment (P);

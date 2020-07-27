@@ -310,20 +310,45 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	case OPT_fcf_protection_:
 	  /* Default to link-time option, else append or check identical.  */
-	  if (!cf_protection_option)
+	  if (!cf_protection_option
+	      || cf_protection_option->value == CF_CHECK)
 	    {
 	      for (j = 0; j < *decoded_options_count; ++j)
 		if ((*decoded_options)[j].opt_index == foption->opt_index)
 		  break;
 	      if (j == *decoded_options_count)
 		append_option (decoded_options, decoded_options_count, foption);
-	      else if (strcmp ((*decoded_options)[j].arg, foption->arg))
-		fatal_error (input_location,
-			     "option -fcf-protection with mismatching values"
-			     " (%s, %s)",
-			     (*decoded_options)[j].arg, foption->arg);
+	      else if ((*decoded_options)[j].value != foption->value)
+		{
+		  if (cf_protection_option
+		      && cf_protection_option->value == CF_CHECK)
+		    fatal_error (input_location,
+				 "option -fcf-protection with mismatching values"
+				 " (%s, %s)",
+				 (*decoded_options)[j].arg, foption->arg);
+		  else
+		    {
+		      /* Merge and update the -fcf-protection option.  */
+		      (*decoded_options)[j].value &= (foption->value
+						      & CF_FULL);
+		      switch ((*decoded_options)[j].value)
+			{
+			case CF_NONE:
+			  (*decoded_options)[j].arg = "none";
+			  break;
+			case CF_BRANCH:
+			  (*decoded_options)[j].arg = "branch";
+			  break;
+			case CF_RETURN:
+			  (*decoded_options)[j].arg = "return";
+			  break;
+			default:
+			  gcc_unreachable ();
+			}
+		    }
+		}
 	    }
-	    break;
+	  break;
 
 	case OPT_O:
 	case OPT_Ofast:

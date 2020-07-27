@@ -10481,7 +10481,6 @@ variable_tracking_main_1 (void)
       return 0;
     }
 
-  mark_dfs_back_edges ();
   if (!vt_initialize ())
     {
       vt_finalize ();

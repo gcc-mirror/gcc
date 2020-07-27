@@ -1,3 +1,9 @@
+2020-07-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96310
+	* c-common.c (check_nonnull_arg): Print note only when warning was
+	issued.
+
 2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-omp.c (c_finish_omp_critical): Check for no name but

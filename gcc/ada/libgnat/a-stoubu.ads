@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 package Ada.Strings.Text_Output.Buffers is
 
    type Buffer (<>) is new Sink with private;

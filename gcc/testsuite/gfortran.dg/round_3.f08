@@ -110,6 +110,30 @@ program pr48615
     call checkfmt("(RU,E17.1)", nearest(2.0, 1.0),     "          0.3E+01")
     call checkfmt("(RD,E17.1)", nearest(3.0, -1.0),    "          0.2E+01")
 
+    call checkfmt("(G12.2)", 99.0,       "     99.    ")
+    call checkfmt("(G12.2)", 99.5,       "    0.10E+03")
+    call checkfmt("(G12.2)", 100.0,      "    0.10E+03")
+    call checkfmt("(G12.2)", -99.0,      "    -99.    ")
+    call checkfmt("(G12.2)", -99.5,      "   -0.10E+03")
+    call checkfmt("(G12.2)", -100.0,     "   -0.10E+03")
+    call checkfmt("(RU,G12.2)", 99.0,    "     99.    ")    ! pr93567
+    call checkfmt("(RU,G12.2)", 99.01,   "    0.10E+03")
+    call checkfmt("(RU,G12.2)", -99.0,   "    -99.    ")
+    call checkfmt("(RU,G12.2)", -99.01,  "    -99.    ")
+    call checkfmt("(RU,G12.2)", -100.01, "   -0.10E+03")
+    call checkfmt("(RU,G12.4)", 99.0 ,   "   99.00    ")
+    call checkfmt("(RU,G12.4)", 99.01,   "   99.02    ")
+    call checkfmt("(RD,G12.2)", 99.0,    "     99.    ")
+    call checkfmt("(RD,G12.2)", 99.01,   "     99.    ")
+    call checkfmt("(RD,G12.2)", 100.01,  "    0.10E+03")
+    call checkfmt("(RD,G12.2)", -99.0,   "    -99.    ")
+    call checkfmt("(RD,G12.2)", -99.01,  "   -0.10E+03")
+    call checkfmt("(RD,G12.2)", -100.00, "   -0.10E+03")
+    call checkfmt("(Rz,G12.2)", 99.01,   "     99.    ")
+    call checkfmt("(Rz,G12.2)", 100.01,  "    0.10E+03")
+    call checkfmt("(Rz,G12.2)", -99.01,  "    -99.    ")
+    call checkfmt("(Rz,G12.2)", -100.01, "   -0.10E+03")
+
 contains
     subroutine checkfmt(fmt, x, cmp)
         character(len=*), intent(in) :: fmt
@@ -119,6 +143,6 @@ contains
         
         write(s, fmt) x
         if (s /= cmp) STOP 1
-        !if (s /= cmp) print "(a,1x,a,' expected: ',1x)", fmt, s, cmp
+        !if (s /= cmp) print "(a,1x,a,' expected: ',1x,a)", fmt, s, cmp
     end subroutine
 end program

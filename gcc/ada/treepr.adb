@@ -1274,7 +1274,7 @@ package body Treepr is
                --  Special case End_Span = Uint5
 
                when F_Field5 =>
-                  if Nkind_In (N, N_Case_Statement, N_If_Statement) then
+                  if Nkind (N) in N_Case_Statement | N_If_Statement then
                      Print_End_Span (N);
                   else
                      Print_Field (Field5 (N), Fmt);

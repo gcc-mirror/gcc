@@ -287,9 +287,32 @@ proc dg-additional-files { args } {
 
 set gcc_adjusted_linker_flags 0
 
-# Add -Wl, before any file names in ldflags, libs, and ldscript, so
-# that default object files or libraries do not change the names of
-# gcc auxiliary outputs.
+# Add -Wl, before any file names in $opts.  Return the modified list.
+
+proc gcc_adjust_linker_flags_list { args } {
+    set opts [lindex $args 0]
+    set nopts {}
+    set skip ""
+    foreach opt [split $opts " "] {
+	if { $opt == "" } then {
+	    continue
+	} elseif { $skip != "" } then {
+	    set skip ""
+	} elseif { $opt == "-Xlinker" } then {
+	    set skip $opt
+	} elseif { ![string match "-*" $opt] \
+		       && [file isfile $opt] } {
+	    set opt "-Wl,$opt"
+	}
+	lappend nopts $opt
+    }
+    return $nopts
+}
+
+# Add -Wl, before any file names in the target board's ldflags, libs,
+# and ldscript, as well as in global testglue and wrap_flags, so that
+# default object files or libraries do not change the names of gcc
+# auxiliary outputs.
 
 proc gcc_adjust_linker_flags {} {
     global gcc_adjusted_linker_flags
@@ -303,24 +326,20 @@ proc gcc_adjust_linker_flags {} {
 	foreach i { ldflags libs ldscript } {
 	    if {[board_info $dest exists $i]} {
 		set opts [board_info $dest $i]
-		set nopts {}
-		set skip ""
-		foreach opt [split $opts] {
-		    if { $opt == "" } then {
-			continue
-		    } elseif { $skip != "" } then {
-			set skip ""
-		    } elseif { $opt == "-Xlinker" } then {
-			set skip $opt
-		    } elseif { ![string match "-*" $opt] \
-				&& [file isfile $opt] } {
-			set opt "-Wl,$opt"
-		    }
-		    lappend nopts $opt
-		}
+		set nopts [gcc_adjust_linker_flags_list $opts]
 		if { $nopts != $opts } {
 		    unset_currtarget_info $i
 		    set_currtarget_info $i "$nopts"
+		}
+	    }
+	}
+	foreach i { gluefile wrap_flags } {
+	    global $i
+	    if {[info exists $i]} {
+		set opts [set $i]
+		set nopts [gcc_adjust_linker_flags_list $opts]
+		if { $nopts != $opts } {
+		    set $i $nopts
 		}
 	    }
 	}

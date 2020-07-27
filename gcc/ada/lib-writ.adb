@@ -562,7 +562,7 @@ package body Lib.Writ is
          Write_Info_Str (" O");
          Write_Info_Char (OA_Setting (Unit_Num));
 
-         if Ekind_In (Uent, E_Package, E_Package_Body)
+         if Ekind (Uent) in E_Package | E_Package_Body
            and then Present (Finalizer (Uent))
          then
             Write_Info_Str (" PF");
@@ -1220,8 +1220,8 @@ package body Lib.Writ is
             if Nkind (U) = N_Subprogram_Body
               and then Present (Corresponding_Spec (U))
               and then
-                Ekind_In (Corresponding_Spec (U), E_Generic_Procedure,
-                                                  E_Generic_Function)
+                Ekind (Corresponding_Spec (U)) in E_Generic_Procedure
+                                                | E_Generic_Function
             then
                null;
 

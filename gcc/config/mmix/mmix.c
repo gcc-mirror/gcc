@@ -220,6 +220,9 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
 #define TARGET_ASM_OUTPUT_SOURCE_FILENAME mmix_asm_output_source_filename
 
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
+
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS mmix_init_libfuncs
 

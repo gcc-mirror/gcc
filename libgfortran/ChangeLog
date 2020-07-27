@@ -1,3 +1,29 @@
+2020-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/96306
+	* configure.ac: Add LIBGOMP_CHECKED_INT_KINDS and
+	LIBGOMP_CHECKED_REAL_KINDS and use it for to skip
+	integer kind=16 checks for amdgcn.
+	* Makefile.am (kinds.h, selected_int_kind.inc,
+	selected_real_kind.inc): Pass them on.
+	* mk-kinds-h.sh: Takes to-be-check kinds as argument.
+	* mk-sik-inc.sh: Likewise.
+	* mk-srk-inc.sh: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93567
+	* io/write_float.def (determine_en_precision): Fix switch between
+	FMT_E and FMT_F.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93592
+	* io/write_float.def (build_float_string): Do not reset
+	  nbefore for FMT_F and FMT_EN.
+
 2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/t-aix: Set BITS from compiler cpp macro.

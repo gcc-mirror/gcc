@@ -2609,7 +2609,7 @@ package body Sem_Elab is
 
             Par := Parent (Call);
             while Present (Par) loop
-               if Nkind_In (Par, N_Package_Body, N_Package_Declaration) then
+               if Nkind (Par) in N_Package_Body | N_Package_Declaration then
                   return Defining_Entity (Par);
 
                elsif Nkind (Par) = N_Handled_Sequence_Of_Statements then
@@ -2958,11 +2958,10 @@ package body Sem_Elab is
             --  task objects found in the declarations.
 
             else
-               pragma Assert (Nkind_In (Context, N_Block_Statement,
-                                                 N_Entry_Body,
-                                                 N_Protected_Body,
-                                                 N_Subprogram_Body,
-                                                 N_Task_Body));
+               pragma Assert
+                 (Nkind (Context) in
+                    N_Block_Statement | N_Entry_Body | N_Protected_Body |
+                    N_Subprogram_Body | N_Task_Body);
 
                Traverse_List
                  (List      => Declarations (Context),
@@ -2985,10 +2984,9 @@ package body Sem_Elab is
       --  When the name denotes an array or record component, find the whole
       --  object.
 
-      while Nkind_In (Nam, N_Explicit_Dereference,
-                           N_Indexed_Component,
-                           N_Selected_Component,
-                           N_Slice)
+      while Nkind (Nam) in
+        N_Explicit_Dereference | N_Indexed_Component |
+        N_Selected_Component   | N_Slice
       loop
          Nam := Prefix (Nam);
       end loop;
@@ -3298,8 +3296,8 @@ package body Sem_Elab is
             elsif (Debug_Flag_Underscore_A
                     or else Restriction_Active
                               (No_Entry_Calls_In_Elaboration_Code))
-              and then Nkind_In (Original_Node (Scen), N_Accept_Statement,
-                                                       N_Selective_Accept)
+              and then Nkind (Original_Node (Scen)) in
+                         N_Accept_Statement | N_Selective_Accept
             then
                return Abandon;
 
@@ -3333,18 +3331,18 @@ package body Sem_Elab is
             --  until expansion transforms the node and relocates the contents.
             --  Examine these lists in case expansion is disabled.
 
-            elsif Nkind_In (Scen, N_And_Then, N_Or_Else) then
+            elsif Nkind (Scen) in N_And_Then | N_Or_Else then
                Traverse_List (Actions (Scen));
 
-            elsif Nkind_In (Scen, N_Elsif_Part, N_Iteration_Scheme) then
+            elsif Nkind (Scen) in N_Elsif_Part | N_Iteration_Scheme then
                Traverse_List (Condition_Actions (Scen));
 
             elsif Nkind (Scen) = N_If_Expression then
                Traverse_List (Then_Actions (Scen));
                Traverse_List (Else_Actions (Scen));
 
-            elsif Nkind_In (Scen, N_Component_Association,
-                                  N_Iterated_Component_Association)
+            elsif Nkind (Scen) in
+                    N_Component_Association | N_Iterated_Component_Association
             then
                Traverse_List (Loop_Actions (Scen));
 
@@ -3515,8 +3513,7 @@ package body Sem_Elab is
             --  contexts because nested calls has not been relocated to their
             --  final context.
 
-            if Nkind_In (Par, N_Aspect_Specification,
-                              N_Generic_Association)
+            if Nkind (Par) in N_Aspect_Specification | N_Generic_Association
             then
                return True;
 
@@ -3544,9 +3541,9 @@ package body Sem_Elab is
          --  To qualify, the node must appear immediately within a source call
          --  which invokes a source target.
 
-         if Nkind_In (Outer_Call, N_Entry_Call_Statement,
-                                  N_Function_Call,
-                                  N_Procedure_Call_Statement)
+         if Nkind (Outer_Call) in N_Entry_Call_Statement
+                                | N_Function_Call
+                                | N_Procedure_Call_Statement
            and then Comes_From_Source (Outer_Call)
          then
             Outer_Nam := Call_Name (Outer_Call);
@@ -3576,9 +3573,9 @@ package body Sem_Elab is
          return
            Nkind (Subp_Decl) = N_Subprogram_Renaming_Declaration
              and then not Comes_From_Source (Subp_Decl)
-             and then Nkind_In (Context, N_Function_Specification,
-                                         N_Package_Specification,
-                                         N_Procedure_Specification)
+             and then Nkind (Context) in N_Function_Specification
+                                       | N_Package_Specification
+                                       | N_Procedure_Specification
              and then Present (Generic_Parent (Context));
       end Is_Generic_Formal_Subp;
 
@@ -3612,10 +3609,10 @@ package body Sem_Elab is
 
       --  Nothing to do when the input does not denote a call or a requeue
 
-      elsif not Nkind_In (N, N_Entry_Call_Statement,
-                             N_Function_Call,
-                             N_Procedure_Call_Statement,
-                             N_Requeue_Statement)
+      elsif Nkind (N) not in N_Entry_Call_Statement
+                           | N_Function_Call
+                           | N_Procedure_Call_Statement
+                           | N_Requeue_Statement
       then
          return;
 
@@ -3624,7 +3621,7 @@ package body Sem_Elab is
       --  elaboration) is in effect.
 
       elsif Debug_Flag_Underscore_E
-        and then Nkind_In (N, N_Entry_Call_Statement, N_Requeue_Statement)
+        and then Nkind (N) in N_Entry_Call_Statement | N_Requeue_Statement
       then
          return;
 
@@ -3740,8 +3737,9 @@ package body Sem_Elab is
         (Marker, Find_Enclosing_Level (N) = Declaration_Level);
 
       Set_Is_Dispatching_Call
-        (Marker, Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
-                   and then Present (Controlling_Argument (N)));
+        (Marker,
+         Nkind (N) in N_Function_Call | N_Procedure_Call_Statement
+           and then Present (Controlling_Argument (N)));
 
       Set_Is_Elaboration_Checks_OK_Node
         (Marker, Is_Elaboration_Checks_OK_Node (N));
@@ -4537,8 +4535,8 @@ package body Sem_Elab is
       --  statement due to expansion activities.
 
       if Nkind (Comp_Unit) = N_Null_Statement
-        and then Nkind_In (Original_Node (Comp_Unit), N_Protected_Body,
-                                                      N_Task_Body)
+        and then Nkind (Original_Node (Comp_Unit)) in
+                   N_Protected_Body | N_Task_Body
       then
          Comp_Unit := Parent (Comp_Unit);
          pragma Assert (Nkind (Comp_Unit) = N_Subunit);
@@ -4554,9 +4552,8 @@ package body Sem_Elab is
       --  the instantiated subprogram.
 
       if Nkind (Comp_Unit) = N_Package_Specification
-        and then Nkind_In (Original_Node (Parent (Comp_Unit)),
-                           N_Function_Instantiation,
-                           N_Procedure_Instantiation)
+        and then Nkind (Original_Node (Parent (Comp_Unit))) in
+                   N_Function_Instantiation | N_Procedure_Instantiation
       then
          Comp_Unit := Parent (Parent (Comp_Unit));
 
@@ -7031,7 +7028,7 @@ package body Sem_Elab is
                --  Enter encapsulators by inspecting their declarations and/or
                --  statements.
 
-               if Nkind_In (Curr, N_Block_Statement, N_Package_Body) then
+               if Nkind (Curr) in N_Block_Statement | N_Package_Body then
                   Enter_Handled_Body (Curr);
 
                elsif Nkind (Curr) = N_Package_Declaration then
@@ -7062,7 +7059,7 @@ package body Sem_Elab is
                --    amount of work, but has the beneficial effect of computing
                --    the early call regions of all preceding bodies.
 
-               elsif Nkind_In (Curr, N_Entry_Body, N_Subprogram_Body) then
+               elsif Nkind (Curr) in N_Entry_Body | N_Subprogram_Body then
                   Start :=
                     Find_Early_Call_Region
                       (Body_Decl        => Curr,
@@ -7098,9 +7095,9 @@ package body Sem_Elab is
                --    visible declarations -> upper level
                --    visible declarations -> terminate
 
-               if Nkind_In (Context, N_Package_Specification,
-                                     N_Protected_Definition,
-                                     N_Task_Definition)
+               if Nkind (Context) in N_Package_Specification
+                                   | N_Protected_Definition
+                                   | N_Task_Definition
                then
                   Transition_Spec_Declarations (Context, Curr);
 
@@ -7120,12 +7117,12 @@ package body Sem_Elab is
                --    declarations -> corresponding package spec (Elab_Body)
                --    declarations -> terminate
 
-               elsif Nkind_In (Context, N_Block_Statement,
-                                        N_Entry_Body,
-                                        N_Package_Body,
-                                        N_Protected_Body,
-                                        N_Subprogram_Body,
-                                        N_Task_Body)
+               elsif Nkind (Context) in N_Block_Statement
+                                      | N_Entry_Body
+                                      | N_Package_Body
+                                      | N_Protected_Body
+                                      | N_Subprogram_Body
+                                      | N_Task_Body
                then
                   Transition_Body_Declarations (Context, Curr);
 
@@ -7430,12 +7427,14 @@ package body Sem_Elab is
             --  The search must come from the statements of certain bodies or
             --  statements.
 
-            pragma Assert (Nkind_In (Bod, N_Block_Statement,
-                                          N_Entry_Body,
-                                          N_Package_Body,
-                                          N_Protected_Body,
-                                          N_Subprogram_Body,
-                                          N_Task_Body));
+            pragma Assert
+              (Nkind (Bod) in
+                 N_Block_Statement |
+                 N_Entry_Body      |
+                 N_Package_Body    |
+                 N_Protected_Body  |
+                 N_Subprogram_Body |
+                 N_Task_Body);
 
             --  The search must come from the statements of the handled
             --  sequence.
@@ -7831,7 +7830,7 @@ package body Sem_Elab is
          begin
             --  Nothing to do if the pragma is not related to elaboration
 
-            if not Nam_In (Prag_Nam, Name_Elaborate, Name_Elaborate_All) then
+            if Prag_Nam not in Name_Elaborate | Name_Elaborate_All then
                return;
 
             --  Nothing to do when the pragma is illegal
@@ -8006,7 +8005,7 @@ package body Sem_Elab is
          --    body -> spec
 
          if Present (Unit_Id)
-           and then Nkind_In (Unit_Id, N_Package_Body, N_Subprogram_Body)
+           and then Nkind (Unit_Id) in N_Package_Body | N_Subprogram_Body
          then
             Find_Elaboration_Context (Parent (Unit_Id));
 
@@ -8026,10 +8025,10 @@ package body Sem_Elab is
          --    parent spec -> grandparent spec and so on
 
          if Present (Unit_Id)
-           and then Nkind_In (Unit_Id, N_Generic_Package_Declaration,
-                                   N_Generic_Subprogram_Declaration,
-                                   N_Package_Declaration,
-                                   N_Subprogram_Declaration)
+           and then Nkind (Unit_Id) in N_Generic_Package_Declaration
+                                     | N_Generic_Subprogram_Declaration
+                                     | N_Package_Declaration
+                                     | N_Subprogram_Declaration
          then
             Find_Elaboration_Context (Parent (Unit_Id));
 
@@ -8110,7 +8109,7 @@ package body Sem_Elab is
          Prag_Nam : Name_Id;
          In_State : Processing_In_State)
       is
-         pragma Assert (Nam_In (Prag_Nam, Name_Elaborate, Name_Elaborate_All));
+         pragma Assert (Prag_Nam in Name_Elaborate | Name_Elaborate_All);
 
       begin
          --  Nothing to do when the need for prior elaboration came from a
@@ -8581,7 +8580,7 @@ package body Sem_Elab is
          Req_Nam  : Name_Id;
          In_State : Processing_In_State)
       is
-         pragma Assert (Nam_In (Req_Nam, Name_Elaborate, Name_Elaborate_All));
+         pragma Assert (Req_Nam in Name_Elaborate | Name_Elaborate_All);
 
          Main_Id : constant Entity_Id := Main_Unit_Entity;
          Unit_Id : constant Entity_Id := Find_Top_Unit (Targ_Id);
@@ -8777,8 +8776,7 @@ package body Sem_Elab is
             --  requirement.
 
             if Present (Unit_Prag)
-              and then Nam_In (Pragma_Name (Unit_Prag), Name_Elaborate_All,
-                                                        Req_Nam)
+              and then Pragma_Name (Unit_Prag) in Name_Elaborate_All | Req_Nam
             then
                Req_Met := True;
 
@@ -8907,10 +8905,10 @@ package body Sem_Elab is
 
       Par := N;
       while Present (Par) loop
-         if Nkind_In (Par, N_Package_Body,
-                           N_Package_Declaration,
-                           N_Subprogram_Body,
-                           N_Subprogram_Declaration)
+         if Nkind (Par) in N_Package_Body
+                         | N_Package_Declaration
+                         | N_Subprogram_Body
+                         | N_Subprogram_Declaration
            and then Is_Generic_Instance (Unique_Defining_Entity (Par))
          then
             return Par;
@@ -8983,10 +8981,10 @@ package body Sem_Elab is
       --  but are later relocated in a different context retain their original
       --  declaration level.
 
-      if Nkind_In (N, N_Call_Marker,
-                      N_Function_Instantiation,
-                      N_Package_Instantiation,
-                      N_Procedure_Instantiation)
+      if Nkind (N) in N_Call_Marker
+                    | N_Function_Instantiation
+                    | N_Package_Instantiation
+                    | N_Procedure_Instantiation
         and then Is_Declaration_Level_Node (N)
       then
          return Declaration_Level;
@@ -9007,7 +9005,7 @@ package body Sem_Elab is
          --  they are always elaborated when the enclosing context is invoked
          --  or elaborated.
 
-         elsif Nkind_In (Curr, N_Package_Body, N_Package_Declaration) then
+         elsif Nkind (Curr) in N_Package_Body | N_Package_Declaration then
             null;
 
          --  The current construct is a block statement
@@ -9039,9 +9037,8 @@ package body Sem_Elab is
 
          --  The current construct is a declaration-level encapsulator
 
-         elsif Nkind_In (Curr, N_Entry_Body,
-                               N_Subprogram_Body,
-                               N_Task_Body)
+         elsif Nkind (Curr) in
+                 N_Entry_Body | N_Subprogram_Body | N_Task_Body
          then
             --  If the traversal came from the handled sequence of statments,
             --  then the node cannot possibly appear at any level. This is
@@ -9129,8 +9126,8 @@ package body Sem_Elab is
       --  that of the "related instance".
 
       elsif Nkind (N) = N_Package_Declaration
-        and then Nkind_In (Orig_N, N_Function_Instantiation,
-                                   N_Procedure_Instantiation)
+        and then Nkind (Orig_N) in
+                   N_Function_Instantiation | N_Procedure_Instantiation
         and then Nkind (Context) = N_Compilation_Unit
       then
          return Related_Instance (Defining_Entity (N));
@@ -9141,8 +9138,8 @@ package body Sem_Elab is
 
       elsif Nkind (N) = N_Subunit
         and then Nkind (Proper_Body (N)) = N_Null_Statement
-        and then Nkind_In (Original_Node (Proper_Body (N)), N_Protected_Body,
-                                                            N_Task_Body)
+        and then Nkind (Original_Node (Proper_Body (N))) in
+                   N_Protected_Body | N_Task_Body
       then
          return Defining_Entity (Original_Node (Proper_Body (N)));
 
@@ -9168,7 +9165,7 @@ package body Sem_Elab is
          --  Handle various combinations of concurrent and private types
 
          loop
-            if Ekind_In (Typ, E_Protected_Type, E_Task_Type)
+            if Ekind (Typ) in E_Protected_Type | E_Task_Type
               and then Present (Anonymous_Object (Typ))
             then
                Typ := Anonymous_Object (Typ);
@@ -10911,13 +10908,10 @@ package body Sem_Elab is
          elsif Is_Task_Type (Id) then
             Rec := Create_Task_Rep (Id);
 
-         elsif Ekind_In (Id, E_Constant, E_Variable) then
+         elsif Ekind (Id) in E_Constant | E_Variable then
             Rec := Create_Variable_Rep (Id);
 
-         elsif Ekind_In (Id, E_Entry,
-                             E_Function,
-                             E_Operator,
-                             E_Procedure)
+         elsif Ekind (Id) in E_Entry | E_Function | E_Operator | E_Procedure
          then
             Rec := Create_Subprogram_Rep (Id);
 
@@ -12094,14 +12088,13 @@ package body Sem_Elab is
 
                --  The main unit is a body
 
-               if Ekind_In (Main_Unit_Id, E_Package_Body,
-                                          E_Subprogram_Body)
+               if Ekind (Main_Unit_Id) in E_Package_Body | E_Subprogram_Body
                then
                   return In_Body;
 
                --  The main unit is a stand-alone subprogram body
 
-               elsif Ekind_In (Main_Unit_Id, E_Function, E_Procedure)
+               elsif Ekind (Main_Unit_Id) in E_Function | E_Procedure
                  and then Nkind (Unit_Declaration_Node (Main_Unit_Id)) =
                             N_Subprogram_Body
                then
@@ -12116,8 +12109,7 @@ package body Sem_Elab is
             --  Otherwise the node is in the complementary unit of the main
             --  unit. The main unit is a body, the node is in the spec.
 
-            elsif Ekind_In (Main_Unit_Id, E_Package_Body,
-                                          E_Subprogram_Body)
+            elsif Ekind (Main_Unit_Id) in E_Package_Body | E_Subprogram_Body
             then
                return In_Spec;
 
@@ -12342,8 +12334,8 @@ package body Sem_Elab is
 
             --  Protected type
 
-            elsif Nkind_In (Decl, N_Protected_Type_Declaration,
-                                  N_Single_Protected_Declaration)
+            elsif Nkind (Decl) in N_Protected_Type_Declaration
+                                | N_Single_Protected_Declaration
             then
                Process_Protected_Type_Declaration
                  (Prot_Decl => Decl,
@@ -12351,8 +12343,8 @@ package body Sem_Elab is
 
             --  Subprogram or entry
 
-            elsif Nkind_In (Decl, N_Entry_Declaration,
-                                  N_Subprogram_Declaration)
+            elsif Nkind (Decl) in N_Entry_Declaration
+                                | N_Subprogram_Declaration
             then
                Process_Subprogram_Declaration
                  (Subp_Decl => Decl,
@@ -12376,8 +12368,8 @@ package body Sem_Elab is
 
             --  Task type
 
-            elsif Nkind_In (Decl, N_Single_Task_Declaration,
-                                  N_Task_Type_Declaration)
+            elsif Nkind (Decl) in N_Single_Task_Declaration
+                                | N_Task_Type_Declaration
             then
                Process_Task_Type_Declaration
                  (Task_Decl => Decl,
@@ -12497,7 +12489,7 @@ package body Sem_Elab is
          --  Nothing to do for an abstract subprogram because it has no body to
          --  examine.
 
-         elsif Ekind_In (Subp_Id, E_Function, E_Procedure)
+         elsif Ekind (Subp_Id) in E_Function | E_Procedure
            and then Is_Abstract_Subprogram (Subp_Id)
          then
             return;
@@ -12513,7 +12505,7 @@ package body Sem_Elab is
          --  DFS traversal into its barrier function and body.
 
          if In_Extended_Main_Code_Unit (Subp_Id) then
-            if Ekind_In (Subp_Id, E_Entry, E_Entry_Family, E_Procedure) then
+            if Ekind (Subp_Id) in E_Entry | E_Entry_Family | E_Procedure then
                Traverse_Invocation_Body
                  (N        => Barrier_Body_Declaration (Subp_Rep),
                   In_State => In_State);
@@ -12893,8 +12885,8 @@ package body Sem_Elab is
          --  Process the entries of the task type because they represent valid
          --  entry points into the task body.
 
-         if Nkind_In (Task_Decl, N_Single_Task_Declaration,
-                                 N_Task_Type_Declaration)
+         if Nkind (Task_Decl) in N_Single_Task_Declaration
+                               | N_Task_Type_Declaration
          then
             Task_Def := Task_Definition (Task_Decl);
 
@@ -13192,10 +13184,8 @@ package body Sem_Elab is
             --  Entry, operator, or subprogram call. This case must come last
             --  because most invocations above are variations of this case.
 
-            elsif Ekind_In (Targ_Id, E_Entry,
-                                     E_Function,
-                                     E_Operator,
-                                     E_Procedure)
+            elsif Ekind (Targ_Id) in
+                    E_Entry | E_Function | E_Operator | E_Procedure
             then
                Extra := Empty;
                Kind  := Call;
@@ -14460,9 +14450,7 @@ package body Sem_Elab is
       begin
          --  An abstract subprogram does not have a body
 
-         if Ekind_In (Subp_Id, E_Function,
-                               E_Operator,
-                               E_Procedure)
+         if Ekind (Subp_Id) in E_Function | E_Operator | E_Procedure
            and then Is_Abstract_Subprogram (Subp_Id)
          then
             return True;
@@ -14510,9 +14498,8 @@ package body Sem_Elab is
          Formal_Id : Entity_Id;
 
       begin
-         pragma Assert (Nam_In (Subp_Nam, Name_Adjust,
-                                          Name_Finalize,
-                                          Name_Initialize));
+         pragma Assert
+           (Subp_Nam in Name_Adjust | Name_Finalize | Name_Initialize);
 
          --  To qualify, the subprogram must denote a source procedure with
          --  name Adjust, Finalize, or Initialize where the sole formal is
@@ -14700,7 +14687,7 @@ package body Sem_Elab is
          --  protected type.
 
          return
-           Ekind_In (Id, E_Function, E_Procedure)
+           Ekind (Id) in E_Function | E_Procedure
              and then Is_Protected_Type (Non_Private_View (Scope (Id)));
       end Is_Protected_Subp;
 
@@ -14714,7 +14701,7 @@ package body Sem_Elab is
          --  Protected_Subprogram set.
 
          return
-           Ekind_In (Id, E_Function, E_Procedure)
+           Ekind (Id) in E_Function | E_Procedure
              and then Present (Protected_Subprogram (Id));
       end Is_Protected_Body_Subp;
 
@@ -14766,7 +14753,7 @@ package body Sem_Elab is
          --  is hidden within an anonymous package, and is a generic instance.
 
          return
-           Ekind_In (Id, E_Function, E_Procedure)
+           Ekind (Id) in E_Function | E_Procedure
              and then Is_Hidden (Id)
              and then Is_Generic_Instance (Id);
       end Is_Subprogram_Inst;
@@ -14835,7 +14822,7 @@ package body Sem_Elab is
              --  The attribute name must be one of the 'Access forms. Note that
              --  'Unchecked_Access cannot apply to a subprogram.
 
-             and then Nam_In (Nam, Name_Access, Name_Unrestricted_Access);
+             and then Nam in Name_Access | Name_Unrestricted_Access;
       end Is_Suitable_Access_Taken;
 
       ----------------------
@@ -15869,10 +15856,10 @@ package body Sem_Elab is
 
       --  Bodies
 
-      if Nkind_In (N, N_Package_Body,
-                      N_Protected_Body,
-                      N_Subprogram_Body,
-                      N_Task_Body)
+      if Nkind (N) in N_Package_Body
+                    | N_Protected_Body
+                    | N_Subprogram_Body
+                    | N_Task_Body
       then
          Spec_Id := Corresponding_Spec (N);
 
@@ -15892,13 +15879,13 @@ package body Sem_Elab is
 
       --  Declarations
 
-      elsif Nkind_In (N, N_Entry_Declaration,
-                         N_Generic_Package_Declaration,
-                         N_Generic_Subprogram_Declaration,
-                         N_Package_Declaration,
-                         N_Protected_Type_Declaration,
-                         N_Subprogram_Declaration,
-                         N_Task_Type_Declaration)
+      elsif Nkind (N) in N_Entry_Declaration
+                       | N_Generic_Package_Declaration
+                       | N_Generic_Subprogram_Declaration
+                       | N_Package_Declaration
+                       | N_Protected_Type_Declaration
+                       | N_Subprogram_Declaration
+                       | N_Task_Type_Declaration
       then
          Spec_Decl := N;
 
@@ -15972,12 +15959,12 @@ package body Sem_Elab is
 
       begin
          return
-           Nkind_In (Decl, N_Generic_Package_Declaration,
-                           N_Generic_Subprogram_Declaration,
-                           N_Package_Declaration,
-                           N_Protected_Type_Declaration,
-                           N_Subprogram_Declaration,
-                           N_Task_Type_Declaration)
+           Nkind (Decl) in N_Generic_Package_Declaration
+                         | N_Generic_Subprogram_Declaration
+                         | N_Package_Declaration
+                         | N_Protected_Type_Declaration
+                         | N_Subprogram_Declaration
+                         | N_Task_Type_Declaration
              and then Present (Corresponding_Body (Decl))
              and then Nkind (Parent (Unit_Declaration_Node
                         (Corresponding_Body (Decl)))) = N_Subunit;
@@ -16846,8 +16833,8 @@ package body Sem_Elab is
          if Nkind (Decl) = N_Subprogram_Body then
             Body_Acts_As_Spec := True;
 
-         elsif Nkind_In (Decl, N_Subprogram_Declaration,
-                               N_Subprogram_Body_Stub)
+         elsif Nkind (Decl) in
+                 N_Subprogram_Declaration | N_Subprogram_Body_Stub
            or else Inst_Case
          then
             Body_Acts_As_Spec := False;
@@ -17523,8 +17510,7 @@ package body Sem_Elab is
 
       P := Parent (N);
       while Present (P) loop
-         if Nkind_In (P, N_Parameter_Specification,
-                         N_Component_Declaration)
+         if Nkind (P) in N_Parameter_Specification | N_Component_Declaration
          then
             return;
 
@@ -17619,8 +17605,8 @@ package body Sem_Elab is
                   --  Filter out case of default expressions, where we do not
                   --  do the check at this stage.
 
-                  if Nkind_In (P, N_Parameter_Specification,
-                                  N_Component_Declaration)
+                  if Nkind (P) in
+                       N_Parameter_Specification | N_Component_Declaration
                   then
                      return;
                   end if;
@@ -17631,10 +17617,10 @@ package body Sem_Elab is
                   if Nkind (P) = N_Protected_Body then
                      return;
 
-                  elsif Nkind_In (P, N_Subprogram_Body,
-                                     N_Task_Body,
-                                     N_Block_Statement,
-                                     N_Entry_Body)
+                  elsif Nkind (P) in N_Subprogram_Body
+                                   | N_Task_Body
+                                   | N_Block_Statement
+                                   | N_Entry_Body
                   then
                      if L = Declarations (P) then
                         exit;
@@ -17857,10 +17843,7 @@ package body Sem_Elab is
       --  then there is nothing to do (we do not know what is being assigned),
       --  but otherwise this is an assignment to the prefix.
 
-      if Nkind_In (N, N_Indexed_Component,
-                      N_Selected_Component,
-                      N_Slice)
-      then
+      if Nkind (N) in N_Indexed_Component | N_Selected_Component | N_Slice then
          if not Is_Access_Type (Etype (Prefix (N))) then
             Check_Elab_Assign (Prefix (N));
          end if;
@@ -18285,9 +18268,9 @@ package body Sem_Elab is
       --  If not function or procedure call, instantiation, or 'Access, then
       --  ignore call (this happens in some error cases and rewriting cases).
 
-      elsif not Nkind_In (N, N_Attribute_Reference,
-                             N_Function_Call,
-                             N_Procedure_Call_Statement)
+      elsif Nkind (N) not in N_Attribute_Reference
+                           | N_Function_Call
+                           | N_Procedure_Call_Statement
         and then not Inst_Case
       then
          return;
@@ -18387,8 +18370,8 @@ package body Sem_Elab is
          --  code, do not trace past an accept statement, because the rendez-
          --  vous will happen after elaboration.
 
-         if Nkind_In (Original_Node (N), N_Accept_Statement,
-                                         N_Selective_Accept)
+         if Nkind (Original_Node (N)) in
+              N_Accept_Statement | N_Selective_Accept
            and then Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
          then
             return Abandon;
@@ -18421,8 +18404,8 @@ package body Sem_Elab is
 
          elsif not Debug_Flag_Dot_UU
            and then Nkind (N) = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (N), Name_Access,
-                                                Name_Unrestricted_Access)
+           and then
+             Attribute_Name (N) in Name_Access | Name_Unrestricted_Access
            and then Is_Entity_Name (Prefix (N))
            and then Is_Subprogram (Entity (Prefix (N)))
          then
@@ -18503,7 +18486,7 @@ package body Sem_Elab is
 
       Sbody := Unit_Declaration_Node (E);
 
-      if not Nkind_In (Sbody, N_Subprogram_Body, N_Package_Body) then
+      if Nkind (Sbody) not in N_Subprogram_Body | N_Package_Body then
          Ebody := Corresponding_Body (Sbody);
 
          if No (Ebody) then
@@ -18597,7 +18580,7 @@ package body Sem_Elab is
                --  Check we have an If statement or a null statement (happens
                --  when the If has been expanded to be True).
 
-               exit when not Nkind_In (P, N_If_Statement, N_Null_Statement);
+               exit when Nkind (P) not in N_If_Statement | N_Null_Statement;
 
                --  Our special case will be indicated either by the pragma
                --  coming from an aspect ...
@@ -18758,9 +18741,9 @@ package body Sem_Elab is
                --  A rather specific check. For Finalize/Adjust/Initialize, if
                --  the type has Warnings_Off set, suppress the warning.
 
-               if Nam_In (Chars (E), Name_Adjust,
-                                     Name_Finalize,
-                                     Name_Initialize)
+               if Chars (E) in Name_Adjust
+                             | Name_Finalize
+                             | Name_Initialize
                  and then Present (First_Formal (E))
                then
                   declare
@@ -19378,7 +19361,7 @@ package body Sem_Elab is
 
    function Is_Call_Of_Generic_Formal (N : Node_Id) return Boolean is
    begin
-      return Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+      return Nkind (N) in N_Function_Call | N_Procedure_Call_Statement
 
         --  Always return False if debug flag -gnatd.G is set
 
@@ -19545,7 +19528,7 @@ package body Sem_Elab is
       S1 := Scop1;
       while S1 /= Standard_Standard
         and then not Is_Compilation_Unit (S1)
-        and then Ekind_In (S1, E_Package, E_Protected_Type, E_Block)
+        and then Ekind (S1) in E_Package | E_Protected_Type | E_Block
       loop
          S1 := Scope (S1);
       end loop;
@@ -19555,7 +19538,7 @@ package body Sem_Elab is
       S2 := Scop2;
       while S2 /= Standard_Standard
         and then not Is_Compilation_Unit (S2)
-        and then Ekind_In (S2, E_Package, E_Protected_Type, E_Block)
+        and then Ekind (S2) in E_Package | E_Protected_Type | E_Block
       loop
          S2 := Scope (S2);
       end loop;
@@ -19680,7 +19663,7 @@ package body Sem_Elab is
       --  Check for case of body entity
       --  Why is the check for E_Void needed???
 
-      if Ekind_In (E, E_Void, E_Subprogram_Body, E_Package_Body) then
+      if Ekind (E) in E_Void | E_Subprogram_Body | E_Package_Body then
          Decl := E;
 
          loop

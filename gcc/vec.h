@@ -753,6 +753,17 @@ vec_safe_grow_cleared (vec<T, va_heap, vl_ptr> *&v,
   v->safe_grow_cleared (len PASS_MEM_STAT);
 }
 
+/* If V does not have space for NELEMS elements, call
+   V->reserve(NELEMS, EXACT).  */
+
+template<typename T>
+inline bool
+vec_safe_reserve (vec<T, va_heap, vl_ptr> *&v, unsigned nelems, bool exact = false
+		  CXX_MEM_STAT_INFO)
+{
+  return v->reserve (nelems, exact);
+}
+
 
 /* If V is NULL return false, otherwise return V->iterate(IX, PTR).  */
 template<typename T, typename A>
