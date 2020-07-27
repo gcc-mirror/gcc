@@ -117,6 +117,40 @@ struct GTY(()) dw_fde_node {
 };
 
 
+/* This represents a register, in DWARF_FRAME_REGNUM space, for use in CFA
+   definitions and expressions.
+   Most architectures only need a single register number, but some (amdgcn)
+   have pointers that span multiple registers.  DWARF permits arbitrary
+   register sets, using DW_OP_piece, but existing use-cases only require
+   contiguous register sets, as represented here.  */
+struct GTY(()) cfa_reg {
+  unsigned int reg;
+  unsigned int span;
+  poly_uint16_pod span_width;  /* A.K.A. register mode size.  */
+
+  cfa_reg& set_by_dwreg (unsigned int r)
+    {
+      reg = r;
+      span = 1;
+      span_width = 0;  /* Unknown size (permitted when span == 1).  */
+      return *this;
+    }
+
+  bool operator== (const cfa_reg other) const
+    {
+      return (reg == other.reg
+	      && span == other.span
+	      && (known_eq (span_width, other.span_width)
+		  || (span == 1
+		      && (known_eq (span_width, 0)
+			  || known_eq (other.span_width, 0)))));
+    }
+  bool operator!= (const cfa_reg other) const
+    {
+      return !(*this == other);
+    }
+};
+
 /* This is how we define the location of the CFA. We use to handle it
    as REG + OFFSET all the time,  but now it can be more complex.
    It can now be either REG + CFA_OFFSET or *(REG + BASE_OFFSET) + CFA_OFFSET.
@@ -126,7 +160,7 @@ struct GTY(()) dw_cfa_location {
   poly_int64_pod offset;
   poly_int64_pod base_offset;
   /* REG is in DWARF_FRAME_REGNUM space, *not* normal REGNO space.  */
-  unsigned int reg;
+  struct cfa_reg reg;
   BOOL_BITFIELD indirect : 1;  /* 1 if CFA is accessed via a dereference.  */
   BOOL_BITFIELD in_use : 1;    /* 1 if a saved cfa is stored here.  */
 };
@@ -283,6 +317,7 @@ extern struct dw_loc_descr_node *build_cfa_loc
   (dw_cfa_location *, poly_int64);
 extern struct dw_loc_descr_node *build_cfa_aligned_loc
   (dw_cfa_location *, poly_int64, HOST_WIDE_INT);
+extern struct dw_loc_descr_node *build_span_loc (struct cfa_reg);
 extern struct dw_loc_descr_node *mem_loc_descriptor
   (rtx, machine_mode mode, machine_mode mem_mode,
    enum var_init_status);

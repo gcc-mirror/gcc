@@ -2734,6 +2734,34 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
     }
 }
 
+/* Build a dwarf location for a cfa_reg spanning multiple
+   consecutive registers.  */
+
+struct dw_loc_descr_node *
+build_span_loc (struct cfa_reg reg)
+{
+  struct dw_loc_descr_node *head = NULL;
+
+  gcc_assert (known_gt (reg.span_width, 0));
+  for (unsigned int i = 0; i < reg.span; i++)
+    {
+      unsigned int regno = reg.reg + i;
+      if (regno <= 31)
+	add_loc_descr (&head,
+		       new_loc_descr ((enum dwarf_location_atom)
+				      (DW_OP_reg0 + regno),
+				      0, 0));
+      else
+	add_loc_descr (&head, new_loc_descr (DW_OP_regx, regno, 0));
+      add_loc_descr (&head,
+		     new_loc_descr (DW_OP_piece,
+				    reg.span_width.to_constant (),
+				    0));
+    }
+
+  return head;
+}
+
 /* This function builds a dwarf location descriptor sequence from a
    dw_cfa_location, adding the given OFFSET to the result of the
    expression.  */
@@ -2745,9 +2773,20 @@ build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
 
   offset += cfa->offset;
 
-  if (cfa->indirect)
+  if (cfa->reg.span > 1)
     {
-      head = new_reg_loc_descr (cfa->reg, cfa->base_offset);
+      head = build_span_loc (cfa->reg);
+
+      if (maybe_ne (offset, 0))
+	{
+	  add_loc_descr (&head, new_loc_descr (DW_OP_LLVM_piece_end, 0, 0));
+	  add_loc_descr (&head, new_loc_descr (DW_OP_deref, 0, 0));
+	  loc_descr_plus_const (&head, offset);
+	}
+    }
+  else if (cfa->indirect)
+    {
+      head = new_reg_loc_descr (cfa->reg.reg, cfa->base_offset);
       head->dw_loc_oprnd1.val_class = dw_val_class_const;
       head->dw_loc_oprnd1.val_entry = NULL;
       tmp = new_loc_descr (DW_OP_deref, 0, 0);
@@ -2755,7 +2794,7 @@ build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
       loc_descr_plus_const (&head, offset);
     }
   else
-    head = new_reg_loc_descr (cfa->reg, offset);
+    head = new_reg_loc_descr (cfa->reg.reg, offset);
 
   return head;
 }
@@ -2773,7 +2812,7 @@ build_cfa_aligned_loc (dw_cfa_location *cfa,
     = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
 
   /* When CFA is defined as FP+OFFSET, emulate stack alignment.  */
-  if (cfa->reg == HARD_FRAME_POINTER_REGNUM && cfa->indirect == 0)
+  if (cfa->reg.reg == HARD_FRAME_POINTER_REGNUM && cfa->indirect == 0)
     {
       head = new_reg_loc_descr (dwarf_fp, 0);
       add_loc_descr (&head, int_loc_descriptor (alignment));
@@ -20663,7 +20702,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   list = NULL;
 
   memset (&next_cfa, 0, sizeof (next_cfa));
-  next_cfa.reg = INVALID_REGNUM;
+  next_cfa.reg.set_by_dwreg (INVALID_REGNUM);
   remember = next_cfa;
 
   start_label = fde->dw_fde_begin;
