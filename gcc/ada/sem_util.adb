@@ -8435,7 +8435,7 @@ package body Sem_Util is
       if Has_Own_DIC (Typ) then
          DIC_Typ := Typ;
 
-         --  Otherwise the DIC pragma is inherited from a parent type
+      --  Otherwise the DIC pragma is inherited from a parent type
 
       else
          pragma Assert (Has_Inherited_DIC (Typ));
