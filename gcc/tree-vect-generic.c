@@ -419,8 +419,7 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
     return NULL_TREE;
 
   tree t;
-  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type, code)
-      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0), code))
+  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type, code))
     {
       if (VECTOR_BOOLEAN_TYPE_P (type)
 	  && SCALAR_INT_MODE_P (TYPE_MODE (type))
