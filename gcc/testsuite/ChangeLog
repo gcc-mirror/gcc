@@ -1,3 +1,11 @@
+2020-07-26  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-06-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95585
+	* gfortran.dg/pr95585.f90: New test.
+
 2020-07-25  Dominique d'Humieres  <dhumieres.dominique@free.fr>
 
 	Backported from master:
