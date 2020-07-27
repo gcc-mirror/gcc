@@ -47,7 +47,7 @@ DEF_GO_RUNTIME(INTSTRING, "runtime.intstring", P2(POINTER, INT64), R1(STRING))
 
 // Convert a []byte to a string.
 DEF_GO_RUNTIME(SLICEBYTETOSTRING, "runtime.slicebytetostring",
-	       P2(POINTER, SLICE), R1(STRING))
+	       P3(POINTER, POINTER, INT), R1(STRING))
 
 // Convert a []rune to a string.
 DEF_GO_RUNTIME(SLICERUNETOSTRING, "runtime.slicerunetostring",
@@ -249,17 +249,16 @@ DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
 // Copy.
-DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy", P3(SLICE, SLICE, UINTPTR),
-	       R1(INT))
+DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy",
+	       P5(POINTER, INT, POINTER, INT, UINTPTR), R1(INT))
 
 // Copy from string.
-DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy", P2(SLICE, STRING),
-	       R1(INT))
+DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy",
+	       P3(POINTER, INT, STRING), R1(INT))
 
 // Copy of value containing pointers.
 DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
-	       P3(TYPE, SLICE, SLICE), R1(INT))
-
+	       P5(TYPE, POINTER, INT, POINTER, INT), R1(INT))
 
 // Grow a slice for append.
 DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice",
