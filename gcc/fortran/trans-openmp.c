@@ -2718,23 +2718,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
 		      node3 = build_omp_clause (input_location,
 						OMP_CLAUSE_MAP);
-		      if (n->u.map_op == OMP_MAP_ATTACH)
-			{
-			 /* Standalone attach clauses used with arrays with
-			    descriptors must copy the descriptor to the target,
-			    else they won't have anything to perform the
-			    attachment onto (see OpenACC 2.6, "2.6.3. Data
-			    Structures with Pointers").  */
-			  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALLOC);
-			  OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_ATTACH);
-			}
-		      else if (n->u.map_op == OMP_MAP_DETACH)
-			{
-			  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_RELEASE);
-			  OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_DETACH);
-			}
-		      else
-			OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_POINTER);
 		      if (present)
 			{
 			  ptr = gfc_conv_descriptor_data_get (decl);
@@ -2748,6 +2731,33 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			OMP_CLAUSE_DECL (node3)
 			  = gfc_conv_descriptor_data_get (decl);
 		      OMP_CLAUSE_SIZE (node3) = size_int (0);
+		      if (n->u.map_op == OMP_MAP_ATTACH)
+			{
+			  /* Standalone attach clauses used with arrays with
+			     descriptors must copy the descriptor to the target,
+			     else they won't have anything to perform the
+			     attachment onto (see OpenACC 2.6, "2.6.3. Data
+			     Structures with Pointers").  */
+			  OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_ATTACH);
+			  /* We don't want to map PTR at all in this case, so
+			     delete its node and shuffle the others down.  */
+			  node = node2;
+			  node2 = node3;
+			  node3 = NULL;
+			  goto finalize_map_clause;
+			}
+		      else if (n->u.map_op == OMP_MAP_DETACH)
+			{
+			  OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_DETACH);
+			  /* Similarly to above, we don't want to unmap PTR
+			     here.  */
+			  node = node2;
+			  node2 = node3;
+			  node3 = NULL;
+			  goto finalize_map_clause;
+			}
+		      else
+			OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_POINTER);
 
 		      /* We have to check for n->sym->attr.dimension because
 			 of scalar coarrays.  */
