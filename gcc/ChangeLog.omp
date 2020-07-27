@@ -1,3 +1,9 @@
+2020-07-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2cfi.cc (get_cfa_from_loc_descr): Support register spans
+	with DW_OP_piece and DW_OP_LLVM_piece_end.
+	* dwarf2out.cc (build_cfa_loc): Support register spans.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Add a "combined" flag for "acc kernels loop" etc directives.
