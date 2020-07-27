@@ -4157,32 +4157,8 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
       go_assert(e->integer_type() != NULL);
       go_assert(this->expr_->is_variable());
 
-      Runtime::Function code;
-      if (e->integer_type()->is_byte())
-        {
-          if (this->no_copy_)
-            {
-              if (gogo->debug_optimization())
-                go_debug(loc, "no copy string([]byte)");
-              Expression* ptr = Expression::make_slice_info(this->expr_,
-                                                            SLICE_INFO_VALUE_POINTER,
-                                                            loc);
-              Expression* len = Expression::make_slice_info(this->expr_,
-                                                            SLICE_INFO_LENGTH,
-                                                            loc);
-              Expression* str = Expression::make_string_value(ptr, len, loc);
-              return str->get_backend(context);
-            }
-          code = Runtime::SLICEBYTETOSTRING;
-        }
-      else
-        {
-          go_assert(e->integer_type()->is_rune());
-          code = Runtime::SLICERUNETOSTRING;
-        }
-
       Expression* buf;
-      if (this->no_escape_)
+      if (this->no_escape_ && !this->no_copy_)
         {
           Type* byte_type = Type::lookup_integer_type("uint8");
           Expression* buflen =
@@ -4194,8 +4170,30 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
         }
       else
         buf = Expression::make_nil(loc);
-      return Runtime::make_call(code, loc, 2, buf,
-				this->expr_)->get_backend(context);
+
+      if (e->integer_type()->is_byte())
+        {
+	  Expression* ptr =
+	    Expression::make_slice_info(this->expr_, SLICE_INFO_VALUE_POINTER,
+					loc);
+	  Expression* len =
+	    Expression::make_slice_info(this->expr_, SLICE_INFO_LENGTH, loc);
+          if (this->no_copy_)
+            {
+              if (gogo->debug_optimization())
+                go_debug(loc, "no copy string([]byte)");
+              Expression* str = Expression::make_string_value(ptr, len, loc);
+              return str->get_backend(context);
+            }
+	  return Runtime::make_call(Runtime::SLICEBYTETOSTRING, loc, 3, buf,
+				    ptr, len)->get_backend(context);
+        }
+      else
+        {
+          go_assert(e->integer_type()->is_rune());
+	  return Runtime::make_call(Runtime::SLICERUNETOSTRING, loc, 2, buf,
+				    this->expr_)->get_backend(context);
+	}
     }
   else if (type->is_slice_type() && expr_type->is_string_type())
     {
@@ -8397,8 +8395,16 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
         if (et->has_pointer())
           {
             Expression* td = Expression::make_type_descriptor(et, loc);
+	    Expression* pd =
+	      Expression::make_slice_info(arg1, SLICE_INFO_VALUE_POINTER, loc);
+	    Expression* ld =
+	      Expression::make_slice_info(arg1, SLICE_INFO_LENGTH, loc);
+	    Expression* ps =
+	      Expression::make_slice_info(arg2, SLICE_INFO_VALUE_POINTER, loc);
+	    Expression* ls =
+	      Expression::make_slice_info(arg2, SLICE_INFO_LENGTH, loc);
             ret = Runtime::make_call(Runtime::TYPEDSLICECOPY, loc,
-                                     3, td, arg1, arg2);
+                                     5, td, pd, ld, ps, ls);
           }
         else
           {
