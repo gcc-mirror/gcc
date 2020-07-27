@@ -1,3 +1,16 @@
+2020-07-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.ac (out-of-tree linker .hidden support): Don't turn off
+	for mmix-knuth-mmixware.
+	* configure: Regenerate.
+
+2020-07-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Set the default value for -mblock-ops-unaligned-vsx.
+	* config/rs6000/rs6000.opt: Add -mblock-ops-unaligned-vsx.
+	* doc/invoke.texi: Document -mblock-ops-unaligned-vsx.
+
 2020-07-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (TARGET_ASM_OUTPUT_IDENT): Override the default
