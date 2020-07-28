@@ -1,3 +1,22 @@
+2020-07-27  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2020-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config.gcc: Identify power10 as a 64-bit processor and as valid
+	for --with-cpu and --with-tune.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/45375
+	* symbol-summary.h: Call vec_safe_reserve before grow is called
+	in order to grow to a reasonable size.
+	* vec.h (vec_safe_reserve): Add missing function for vl_ptr
+	type.
+
 2020-07-23  Sergei Trofimovich  <siarheit@google.com>
 
 	Backported from master:

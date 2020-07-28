@@ -1,3 +1,14 @@
+2020-07-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95612
+	* expr.c (gfc_check_pointer_assigb): Output an error if
+	rvalue is a zero sized array or output an error if rvalue
+	doesn't have a symbol tree.
+
 2020-07-26  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master:
