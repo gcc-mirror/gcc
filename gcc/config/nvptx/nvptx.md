@@ -319,6 +319,13 @@
    %.\\tld%A1%u1\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
 
+(define_insn "extendqihi2"
+  [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
+	(sign_extend:HI (match_operand:QI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tcvt.s16.s8\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
 (define_insn "extend<mode>si2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R,R")
 	(sign_extend:SI (match_operand:QHIM 1 "nvptx_nonimmediate_operand" "R,m")))]
@@ -556,23 +563,23 @@
 ;; Shifts
 
 (define_insn "ashl<mode>3"
-  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(ashift:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")
-		     (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(ashift:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+		      (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshl.b%T0\\t%0, %1, %2;")
 
 (define_insn "ashr<mode>3"
-  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(ashiftrt:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")
-		       (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(ashiftrt:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+			(match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshr.s%T0\\t%0, %1, %2;")
 
 (define_insn "lshr<mode>3"
-  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(lshiftrt:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")
-		       (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(lshiftrt:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+			(match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshr.u%T0\\t%0, %1, %2;")
 

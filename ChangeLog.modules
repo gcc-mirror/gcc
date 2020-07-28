@@ -1,5 +1,7 @@
 2020-07-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk f3665bd1111.
+
 	gcc/cp/
 	* class.c (layout_class_type): Restore trunk for unnamed classes.
 	* cp-tree.h (lang_tree_node): Retore trunk GTY.
