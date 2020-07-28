@@ -5964,24 +5964,50 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (IFN_FMA @0 @1 @2))))
 
 /* POPCOUNT simplifications.  */
-(for popcount (BUILT_IN_POPCOUNT BUILT_IN_POPCOUNTL BUILT_IN_POPCOUNTLL
-	       BUILT_IN_POPCOUNTIMAX)
-  /* popcount(X&1) is nop_expr(X&1).  */
-  (simplify
-    (popcount @0)
-    (if (tree_nonzero_bits (@0) == 1)
-      (convert @0)))
-  /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
-  (simplify
-    (plus (popcount:s @0) (popcount:s @1))
-    (if (wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
-      (popcount (bit_ior @0 @1))))
-  /* popcount(X) == 0 is X == 0, and related (in)equalities.  */
+/* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
+(simplify
+  (plus (POPCOUNT:s @0) (POPCOUNT:s @1))
+  (if (wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
+    (POPCOUNT (bit_ior @0 @1))))
+
+/* popcount(X) == 0 is X == 0, and related (in)equalities.  */
+(for popcount (POPCOUNT)
   (for cmp (le eq ne gt)
        rep (eq eq ne ne)
     (simplify
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
+/* Canonicalize POPCOUNT(x)&1 as PARITY(X).  */
+(simplify
+  (bit_and (POPCOUNT @0) integer_onep)
+  (PARITY @0))
+
+/* PARITY simplifications.  */
+/* parity(~X) is parity(X).  */
+(simplify
+  (PARITY (bit_not @0))
+  (PARITY @0))
+
+/* parity(X)^parity(Y) is parity(X^Y).  */
+(simplify
+  (bit_xor (PARITY:s @0) (PARITY:s @1))
+  (PARITY (bit_xor @0 @1)))
+
+/* Common POPCOUNT/PARITY simplifications.  */
+/* popcount(X&C1) is (X>>C2)&1 when C1 == 1<<C2.  Same for parity(X&C1).  */
+(for pfun (POPCOUNT PARITY)
+  (simplify
+    (pfun @0)
+    (with { wide_int nz = tree_nonzero_bits (@0); }
+      (switch
+	(if (nz == 1)
+	  (convert @0))
+	(if (wi::popcount (nz) == 1)
+	  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+	    (convert (rshift:utype (convert:utype @0)
+				   { build_int_cst (integer_type_node,
+						    wi::ctz (nz)); }))))))))
 
 #if GIMPLE
 /* 64- and 32-bits branchless implementations of popcount are detected:
