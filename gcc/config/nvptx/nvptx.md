@@ -879,6 +879,15 @@
   ""
   "%.\\tfma%#%t0\\t%0, %1, %2, %3;")
 
+(define_insn "*recip<mode>2"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+	(div:SDFM
+	  (match_operand:SDFM 2 "const_double_operand" "F")
+	  (match_operand:SDFM 1 "nvptx_register_operand" "R")))]
+  "CONST_DOUBLE_P (operands[2])
+   && real_identical (CONST_DOUBLE_REAL_VALUE (operands[2]), &dconst1)"
+  "%.\\trcp%#%t0\\t%0, %1;")
+
 (define_insn "div<mode>3"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
 	(div:SDFM (match_operand:SDFM 1 "nvptx_register_operand" "R")
