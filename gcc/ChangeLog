@@ -1,3 +1,53 @@
+2020-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84079
+	* gimple-array-bounds.cc (array_bounds_checker::check_addr_expr):
+	Only allow just-past-the-end references for the most significant
+	array bound.
+
+2020-07-27  Hu Jiangping  <hujiangping@cn.fujitsu.com>
+
+	PR driver/96247
+	* opts.c (check_alignment_argument): Set the -falign-Name
+	on/off flag on and set the -falign-Name string value null,
+	when the command-line specified argument is zero.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96058
+	* expr.c (string_constant): Build string_constant only
+	for a type that has same precision as char_type_node
+	and is an integral type.
+
+2020-07-27  Richard Biener  <rguenther@suse.de>
+
+	* var-tracking.c (variable_tracking_main_1): Remove call
+	to mark_dfs_back_edges.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96128
+	* tree-vect-generic.c (expand_vector_comparison): Do not expand
+	vector comparison with VEC_COND_EXPR.
+
+2020-07-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96203
+	* common.opt: Add -fcf-protection=check.
+	* flag-types.h (cf_protection_level): Add CF_CHECK.
+	* lto-wrapper.c (merge_and_complain): Issue an error for
+	mismatching -fcf-protection values with -fcf-protection=check.
+	Otherwise, merge -fcf-protection values.
+	* doc/invoke.texi: Document -fcf-protection=check.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/45375
+	* symbol-summary.h: Call vec_safe_reserve before grow is called
+	in order to grow to a reasonable size.
+	* vec.h (vec_safe_reserve): Add missing function for vl_ptr
+	type.
+
 2020-07-26  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.ac (out-of-tree linker .hidden support): Don't turn off
