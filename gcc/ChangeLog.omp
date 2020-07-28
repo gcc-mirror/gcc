@@ -1,5 +1,14 @@
 2020-07-30  Julian Brown  <julian@codesourcery.com>
 
+	* config/gcn/gcn-tree.c (gcn_goacc_get_worker_red_decl): Do not
+	cache/share decls for reduction temporaries between invocations.
+	(gcn_goacc_reduction_teardown): Unshare VAR on second use.
+	* config/gcn/gcn.c (gcn_init_machine_status): Do not initialise
+	reduc_decls.
+	* config/gcn/gcn.h (machine_function): Remove reduc_decls cache.
+
+2020-07-30  Julian Brown  <julian@codesourcery.com>
+
 	* config/gcn/gcn-tree.c (gcn_goacc_reduction_teardown): Remove useless
 	temporary variable "decl".
 
