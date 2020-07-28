@@ -683,12 +683,9 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
-    {
-      read_original_filename (pfile);
-      fname = (ORDINARY_MAP_FILE_NAME
-	       ((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table))));
-    }
-  return fname;
+    read_original_filename (pfile);
+
+  return ORDINARY_MAP_FILE_NAME (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table));
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.
