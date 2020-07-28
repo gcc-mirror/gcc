@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dump-context.h"
 #include "print-tree.h"
 #include "optinfo-emit-json.h"
+#include "jobserver.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -2480,6 +2481,12 @@ toplev::main (int argc, char **argv)
   diagnostic_finish (global_dc);
 
   finalize_plugins ();
+
+  if (jobserver_initialized)
+    {
+      jobserver_return_token (JOBSERVER_NULL_TOKEN);
+      jobserver_finalize ();
+    }
 
   after_memory_report = true;
 

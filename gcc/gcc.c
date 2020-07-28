@@ -3877,7 +3877,7 @@ execute (void)
   /* Parse the argbuf into several commands.  */
   commands = parse_argbuf (&argbuf, &n_commands);
 
-  if (!have_S && !have_E)
+  if (!have_S && !have_E && flag_parallel_jobs)
     append_split_outputs (&storer, &additional_ld, &commands, &n_commands);
 
   if (!wrapper_string)

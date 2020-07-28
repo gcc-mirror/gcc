@@ -1429,6 +1429,7 @@ OBJS = \
 	ira-color.o \
 	ira-emit.o \
 	ira-lives.o \
+	jobserver.o \
 	jump.o \
 	langhooks.o \
 	lcm.o \

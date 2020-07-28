@@ -230,6 +230,14 @@ bool flag_disable_hsa = false
 Variable
 const char *split_outputs = NULL
 
+; Set to compile in parallel with N jobs, or Jobserver.
+Variable
+const char *flag_parallel_jobs = NULL
+
+fparallel-jobs=
+Common Driver RejectNegative Joined Var(flag_parallel_jobs)
+Compiles in parallel with a number of parallel jobs, or jobserver.
+
 ###
 Driver
 

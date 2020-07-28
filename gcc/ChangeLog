@@ -1,3 +1,15 @@
+2020-07-27  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* Makefile.in: Mark jobserver.cc to be compiled.
+	* jobserver.cc: New file.
+	* cgraphunit.c (is_number): New function.
+	* (compile): Move parallelization logic to...
+	* (maybe_compile_in_parallel): Here.
+	* common.opt: New flag.
+	* gcc.c (execute): Check for fparallel-jobs before calling
+	append_split_outputs.
+	* toplev.c (main): Finalize jobserver before exit.
+
 2020-07-16  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* ipa-sra.c (gate): Enable when split_outputs.
