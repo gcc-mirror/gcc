@@ -451,14 +451,23 @@ func TestTransportReadToEndReusesConn(t *testing.T) {
 
 func TestTransportMaxPerHostIdleConns(t *testing.T) {
 	defer afterTest(t)
+	stop := make(chan struct{}) // stop marks the exit of main Test goroutine
+	defer close(stop)
+
 	resch := make(chan string)
 	gotReq := make(chan bool)
 	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		gotReq <- true
-		msg := <-resch
+		var msg string
+		select {
+		case <-stop:
+			return
+		case msg = <-resch:
+		}
 		_, err := w.Write([]byte(msg))
 		if err != nil {
-			t.Fatalf("Write: %v", err)
+			t.Errorf("Write: %v", err)
+			return
 		}
 	}))
 	defer ts.Close()
@@ -472,6 +481,13 @@ func TestTransportMaxPerHostIdleConns(t *testing.T) {
 	// Their responses will hang until we write to resch, though.
 	donech := make(chan bool)
 	doReq := func() {
+		defer func() {
+			select {
+			case <-stop:
+				return
+			case donech <- t.Failed():
+			}
+		}()
 		resp, err := c.Get(ts.URL)
 		if err != nil {
 			t.Error(err)
@@ -481,7 +497,6 @@ func TestTransportMaxPerHostIdleConns(t *testing.T) {
 			t.Errorf("ReadAll: %v", err)
 			return
 		}
-		donech <- true
 	}
 	go doReq()
 	<-gotReq
@@ -842,7 +857,9 @@ func TestStressSurpriseServerCloses(t *testing.T) {
 					// where we won the race.
 					res.Body.Close()
 				}
-				activityc <- true
+				if !<-activityc { // Receives false when close(activityc) is executed
+					return
+				}
 			}
 		}()
 	}
@@ -850,8 +867,9 @@ func TestStressSurpriseServerCloses(t *testing.T) {
 	// Make sure all the request come back, one way or another.
 	for i := 0; i < numClients*reqsPerClient; i++ {
 		select {
-		case <-activityc:
+		case activityc <- true:
 		case <-time.After(5 * time.Second):
+			close(activityc)
 			t.Fatalf("presumed deadlock; no HTTP client activity seen in awhile")
 		}
 	}
@@ -2365,7 +2383,9 @@ func TestTransportCancelRequestInDial(t *testing.T) {
 	tr := &Transport{
 		Dial: func(network, addr string) (net.Conn, error) {
 			eventLog.Println("dial: blocking")
-			inDial <- true
+			if !<-inDial {
+				return nil, errors.New("main Test goroutine exited")
+			}
 			<-unblockDial
 			return nil, errors.New("nope")
 		},
@@ -2380,8 +2400,9 @@ func TestTransportCancelRequestInDial(t *testing.T) {
 	}()
 
 	select {
-	case <-inDial:
+	case inDial <- true:
 	case <-time.After(5 * time.Second):
+		close(inDial)
 		t.Fatal("timeout; never saw blocking dial")
 	}
 
@@ -3494,7 +3515,8 @@ func TestRetryRequestsOnError(t *testing.T) {
 
 			for i := 0; i < 3; i++ {
 				t0 := time.Now()
-				res, err := c.Do(tc.req())
+				req := tc.req()
+				res, err := c.Do(req)
 				if err != nil {
 					if time.Since(t0) < MaxWriteWaitBeforeConnReuse/2 {
 						mu.Lock()
@@ -3505,6 +3527,9 @@ func TestRetryRequestsOnError(t *testing.T) {
 					t.Skipf("connection likely wasn't recycled within %d, interfering with actual test; skipping", MaxWriteWaitBeforeConnReuse)
 				}
 				res.Body.Close()
+				if res.Request != req {
+					t.Errorf("Response.Request != original request; want identical Request")
+				}
 			}
 
 			mu.Lock()
@@ -6177,5 +6202,50 @@ func (timeoutProto) RoundTrip(req *Request) (*Response, error) {
 		return nil, timeoutProtoErr
 	case <-time.After(5 * time.Second):
 		return nil, errors.New("request was not canceled")
+	}
+}
+
+type roundTripFunc func(r *Request) (*Response, error)
+
+func (f roundTripFunc) RoundTrip(r *Request) (*Response, error) { return f(r) }
+
+// Issue 32441: body is not reset after ErrSkipAltProtocol
+func TestIssue32441(t *testing.T) {
+	defer afterTest(t)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if n, _ := io.Copy(ioutil.Discard, r.Body); n == 0 {
+			t.Error("body length is zero")
+		}
+	}))
+	defer ts.Close()
+	c := ts.Client()
+	c.Transport.(*Transport).RegisterProtocol("http", roundTripFunc(func(r *Request) (*Response, error) {
+		// Draining body to trigger failure condition on actual request to server.
+		if n, _ := io.Copy(ioutil.Discard, r.Body); n == 0 {
+			t.Error("body length is zero during round trip")
+		}
+		return nil, ErrSkipAltProtocol
+	}))
+	if _, err := c.Post(ts.URL, "application/octet-stream", bytes.NewBufferString("data")); err != nil {
+		t.Error(err)
+	}
+}
+
+// Issue 39017. Ensure that HTTP/1 transports reject Content-Length headers
+// that contain a sign (eg. "+3"), per RFC 2616, Section 14.13.
+func TestTransportRejectsSignInContentLength(t *testing.T) {
+	cst := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		w.Header().Set("Content-Length", "+3")
+		w.Write([]byte("abc"))
+	}))
+	defer cst.Close()
+
+	c := cst.Client()
+	res, err := c.Get(cst.URL)
+	if err == nil || res != nil {
+		t.Fatal("Expected a non-nil error and a nil http.Response")
+	}
+	if got, want := err.Error(), `bad Content-Length "+3"`; !strings.Contains(got, want) {
+		t.Fatalf("Error mismatch\nGot: %q\nWanted substring: %q", got, want)
 	}
 }

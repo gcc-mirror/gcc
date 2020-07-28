@@ -191,6 +191,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgotestinginternaldir)" \
 	"$(DESTDIR)$(toolexeclibgotextdir)" \
 	"$(DESTDIR)$(toolexeclibgotexttemplatedir)" \
+	"$(DESTDIR)$(toolexeclibgotimedir)" \
 	"$(DESTDIR)$(toolexeclibgounicodedir)"
 LIBRARIES = $(noinst_LIBRARIES) $(toolexeclib_LIBRARIES)
 ARFLAGS = cru
@@ -218,7 +219,8 @@ am_libgotool_a_OBJECTS =
 libgotool_a_OBJECTS = $(am_libgotool_a_OBJECTS)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @LIBGO_IS_LINUX_TRUE@am__DEPENDENCIES_1 = syscall/clone_linux.lo
-@LIBGO_IS_X86_TRUE@am__DEPENDENCIES_2 = golang.org/x/sys/cpu_gccgo.lo
+@LIBGO_IS_X86_TRUE@am__DEPENDENCIES_2 =  \
+@LIBGO_IS_X86_TRUE@	golang.org/x/sys/cpu_gccgo_x86.lo
 am__DEPENDENCIES_3 = $(addsuffix .lo,$(PACKAGES)) \
 	internal/bytealg/bytealg.lo reflect/makefunc_ffi_c.lo \
 	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
@@ -345,7 +347,8 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
 	$(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
-	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
+	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgotime_DATA) \
+	$(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -856,6 +859,10 @@ toolexeclibgotexttemplatedir = $(toolexeclibgotextdir)/template
 toolexeclibgotexttemplate_DATA = \
 	text/template/parse.gox
 
+toolexeclibgotimedir = $(toolexeclibgodir)/time
+toolexeclibgotime_DATA = \
+	time/tzdata.gox
+
 toolexeclibgounicodedir = $(toolexeclibgodir)/unicode
 toolexeclibgounicode_DATA = \
 	unicode/utf16.gox \
@@ -865,16 +872,17 @@ toolexeclibgounicode_DATA = \
 # Some internal packages are needed to bootstrap the gc toolchain.
 toolexeclibgointernaldir = $(toolexeclibgodir)/internal
 toolexeclibgointernal_DATA = \
-	internal/reflectlite.gox
+	internal/reflectlite.gox \
+	internal/unsafeheader.gox
 
 
 # Some packages are only needed for tests, so unlike the other
 # internal packages nothing will explicitly depend on them.
 # Force them to be built.
 noinst_DATA = golang.org/x/net/nettest.gox internal/cfg.gox \
-	internal/obscuretestdata.gox internal/testenv.gox \
-	internal/trace.gox net/internal/socktest.gox \
-	os/signal/internal/pty.gox runtime/pprof/internal/profile.gox \
+	internal/obscuretestdata.gox internal/profile.gox \
+	internal/testenv.gox internal/trace.gox \
+	net/internal/socktest.gox os/signal/internal/pty.gox \
 	zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -923,8 +931,8 @@ SYSINFO_FLAGS = \
 
 @LIBGO_IS_LINUX_FALSE@syscall_lib_clone_lo = 
 @LIBGO_IS_LINUX_TRUE@syscall_lib_clone_lo = syscall/clone_linux.lo
-@LIBGO_IS_X86_FALSE@golangorg_x_sys_cpu_gccgo_lo = 
-@LIBGO_IS_X86_TRUE@golangorg_x_sys_cpu_gccgo_lo = golang.org/x/sys/cpu_gccgo.lo
+@LIBGO_IS_X86_FALSE@golangorg_x_sys_cpu_gccgo_x86_lo = 
+@LIBGO_IS_X86_TRUE@golangorg_x_sys_cpu_gccgo_x86_lo = golang.org/x/sys/cpu_gccgo_x86.lo
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
@@ -941,7 +949,7 @@ libgo_go_objs = \
 	runtime/internal/atomic_c.lo \
 	sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo \
-	$(golangorg_x_sys_cpu_gccgo_lo)
+	$(golangorg_x_sys_cpu_gccgo_x86_lo)
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
@@ -1130,6 +1138,7 @@ extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_test = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
@@ -2223,6 +2232,27 @@ uninstall-toolexeclibgotexttemplateDATA:
 	@list='$(toolexeclibgotexttemplate_DATA)'; test -n "$(toolexeclibgotexttemplatedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgotexttemplatedir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibgotimeDATA: $(toolexeclibgotime_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclibgotime_DATA)'; test -n "$(toolexeclibgotimedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgotimedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgotimedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgotimedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgotimedir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgotimeDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgotime_DATA)'; test -n "$(toolexeclibgotimedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibgotimedir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgounicodeDATA: $(toolexeclibgounicode_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgounicode_DATA)'; test -n "$(toolexeclibgounicodedir)" || list=; \
@@ -2356,7 +2386,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(DATA) config.h \
 		all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgotimedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2450,7 +2480,7 @@ install-exec-am: install-exec-local install-toolexeclibLIBRARIES \
 	install-toolexeclibgotestinginternalDATA \
 	install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
-	install-toolexeclibgounicodeDATA
+	install-toolexeclibgotimeDATA install-toolexeclibgounicodeDATA
 
 install-html: install-html-recursive
 
@@ -2523,6 +2553,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgotestinginternalDATA \
 	uninstall-toolexeclibgotextDATA \
 	uninstall-toolexeclibgotexttemplateDATA \
+	uninstall-toolexeclibgotimeDATA \
 	uninstall-toolexeclibgounicodeDATA
 
 .MAKE: $(am__recursive_targets) all install-am install-strip
@@ -2564,12 +2595,13 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgotestinginternalDATA \
 	install-toolexeclibgotextDATA \
 	install-toolexeclibgotexttemplateDATA \
-	install-toolexeclibgounicodeDATA installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-local mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-local pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-toolexeclibLIBRARIES \
+	install-toolexeclibgotimeDATA install-toolexeclibgounicodeDATA \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-local mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-local pdf \
+	pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibgoDATA \
 	uninstall-toolexeclibgoarchiveDATA \
 	uninstall-toolexeclibgocompressDATA \
@@ -2599,6 +2631,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgotestinginternalDATA \
 	uninstall-toolexeclibgotextDATA \
 	uninstall-toolexeclibgotexttemplateDATA \
+	uninstall-toolexeclibgotimeDATA \
 	uninstall-toolexeclibgounicodeDATA
 
 .PRECIOUS: Makefile
@@ -2929,9 +2962,9 @@ internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/cpu/cpu_gccgo.c
 
 # Similarly, golang.org/x/sys/cpu needs some C code.
-golang.org/x/sys/cpu_gccgo.lo: go/golang.org/x/sys/cpu/cpu_gccgo.c runtime.inc
+golang.org/x/sys/cpu_gccgo_x86.lo: go/golang.org/x/sys/cpu/cpu_gccgo_x86.c runtime.inc
 	@$(MKDIR_P) golang.org/x/sys
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/golang.org/x/sys/cpu/cpu_gccgo.c
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/golang.org/x/sys/cpu/cpu_gccgo_x86.c
 
 # Build golang.org/x/net/route only on BSD systems.
 
@@ -3087,8 +3120,8 @@ maintainer-clean-local: maintainer-clean-multi
 all-local: $(ALL_LOCAL_DEPS)
 add-aix-fat-library: all-multi
 	@if test "$(MULTIBUILDTOP)" = ""; then \
-		${AR} -X$(AIX_DEFAULT_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
-		${AR} -X$(AIX_DEFAULT_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	  ${AR} -X$(AIX_DEFAULT_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	  ${AR} -X$(AIX_DEFAULT_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
 	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
