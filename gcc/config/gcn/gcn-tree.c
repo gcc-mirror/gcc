@@ -484,9 +484,7 @@ gcn_goacc_reduction_teardown (gcall *call)
 
       /* Read the worker reduction buffer.  */
       tree offset = gimple_call_arg (call, 5);
-      tree decl
-	= gcn_goacc_get_worker_red_decl (var_type, TREE_INT_CST_LOW (offset));
-      var = decl;
+      var = gcn_goacc_get_worker_red_decl (var_type, TREE_INT_CST_LOW (offset));
     }
 
   if (level != GOMP_DIM_GANG)

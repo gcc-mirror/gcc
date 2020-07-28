@@ -1,3 +1,8 @@
+2020-07-30  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn-tree.c (gcn_goacc_reduction_teardown): Remove useless
+	temporary variable "decl".
+
 2020-07-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Andrew Stubbs   <ams@codesourcery.com>
 
