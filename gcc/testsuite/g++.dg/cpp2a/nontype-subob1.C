@@ -18,7 +18,7 @@ struct B: C
 void f(A<&b.i>) {}
 TEQ(&b.i,&((C*)&b)->i);
 
-// { dg-final { scan-assembler _Z1g1AIXadixdtL_Z1bE1jLl1EEE } }
+// { dg-final { scan-assembler "_Z1g1AIXadixdtL_Z1bE1jL\[silx]1EEE" } }
 void g(A<&b.j[0]+1>) {}
 TEQ(&b.j[1],&b.j[1]);
 TEQ(&b.j[1],&b.j[0]+1);
