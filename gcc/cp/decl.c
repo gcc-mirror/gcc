@@ -4202,6 +4202,7 @@ initialize_predefined_identifiers (void)
     {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
     {"__conv_op ", &conv_op_identifier, cik_conv_op},
     {"__in_chrg", &in_charge_identifier, cik_normal},
+    {"__as_base ", &as_base_identifier, cik_normal},
     {"this", &this_identifier, cik_normal},
     {"__delta", &delta_identifier, cik_normal},
     {"__pfn", &pfn_identifier, cik_normal},
@@ -9559,7 +9560,9 @@ grokfndecl (tree ctype,
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
-  else if (!ctype)
+  else if (ctype)
+    DECL_CONTEXT (decl) = ctype;
+  else
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_decl_namespace ());
 
   /* `main' and builtins have implicit 'C' linkage.  */
@@ -9587,12 +9590,8 @@ grokfndecl (tree ctype,
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;
 
-  if (ctype)
-    {
-      DECL_CONTEXT (decl) = ctype;
-      if (funcdef_flag)
-	check_class_member_definition_namespace (decl);
-    }
+  if (ctype && funcdef_flag)
+    check_class_member_definition_namespace (decl);
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {

@@ -1,3 +1,8 @@
+2020-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_resolve_omp_directive): Remove NULL check
+	for clauses in EXEC_OMP_CRITICAL as it no longer can be NULL.
+
 2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (gfc_omp_namelist): Add lastprivate_conditional.

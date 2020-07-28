@@ -148,6 +148,7 @@ enum cp_tree_index
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_VTT_PARM_IDENTIFIER,
+    CPTI_AS_BASE_IDENTIFIER,
     CPTI_THIS_IDENTIFIER,
     CPTI_PFN_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
@@ -289,6 +290,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of the parameter that contains a pointer to the VTT to use
    for this subobject constructor or destructor.  */
 #define vtt_parm_identifier		cp_global_trees[CPTI_VTT_PARM_IDENTIFIER]
+#define as_base_identifier		cp_global_trees[CPTI_AS_BASE_IDENTIFIER]
 #define this_identifier			cp_global_trees[CPTI_THIS_IDENTIFIER]
 #define pfn_identifier			cp_global_trees[CPTI_PFN_IDENTIFIER]
 #define vptr_identifier			cp_global_trees[CPTI_VPTR_IDENTIFIER]

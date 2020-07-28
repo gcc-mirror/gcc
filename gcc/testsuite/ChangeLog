@@ -1,5 +1,44 @@
 2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* gcc.dg/torture/pr39074-2.c: Adjust for mmix.
+	* gcc.dg/torture/pr39074.c, gcc.dg/torture/pta-callused-1.c: Ditto.
+
+2020-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/missing-std-include-10.h: New.
+	* g++.dg/lookup/missing-std-include-10.C: New.
+	* g++.dg/lookup/missing-std-include-11.C: New.
+
+2020-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84079
+	* gcc.dg/Warray-bounds-62.c: New test.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96128
+	* gcc.target/s390/vector/pr96128.c: New test.
+
+2020-07-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96203
+	* gcc.target/i386/pr96203-1.c: New test.
+	* gcc.target/i386/pr96203-2.c: Likewise.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/vector-4.c: Adjust for mmix.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Adjust for mmix.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: xfail scan for mmix.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
 	* gcc.dg/tree-ssa/reassoc-20.c: Adjust for mmix.
 
 2020-07-26  Patrick Palka  <ppalka@redhat.com>

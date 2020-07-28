@@ -519,14 +519,21 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 void
 array_bounds_checker::check_addr_expr (location_t location, tree t)
 {
+  /* For the most significant subscript only, accept taking the address
+     of the just-past-the-end element.  */
+  bool ignore_off_by_one = true;
+
   /* Check each ARRAY_REF and MEM_REF in the reference chain. */
   do
     {
       bool warned = false;
       if (TREE_CODE (t) == ARRAY_REF)
-	warned = check_array_ref (location, t, true /*ignore_off_by_one*/);
+	{
+	  warned = check_array_ref (location, t, ignore_off_by_one);
+	  ignore_off_by_one = false;
+	}
       else if (TREE_CODE (t) == MEM_REF)
-	warned = check_mem_ref (location, t, true /*ignore_off_by_one*/);
+	warned = check_mem_ref (location, t, ignore_off_by_one);
 
       if (warned)
 	TREE_NO_WARNING (t) = true;
