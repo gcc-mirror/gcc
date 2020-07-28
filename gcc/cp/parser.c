@@ -775,14 +775,25 @@ cp_lexer_previous_token (cp_lexer *lexer)
 
 /* Same as above, but return NULL when the lexer doesn't own the token
    buffer or if the next_token is at the start of the token
-   vector.  */
+   vector or if all previous tokens are purged.  */
 
 static cp_token *
 cp_lexer_safe_previous_token (cp_lexer *lexer)
 {
-  if (lexer->buffer)
-    if (lexer->next_token != lexer->buffer->address ())
-      return cp_lexer_previous_token (lexer);
+  if (lexer->buffer
+      && lexer->next_token != lexer->buffer->address ())
+    {
+      cp_token_position tp = cp_lexer_previous_token_position (lexer);
+
+      /* Skip past purged tokens.  */
+      while (tp->purged_p)
+	{
+	  if (tp == lexer->buffer->address ())
+	    return NULL;
+	  tp--;
+	}
+      return cp_lexer_token_at (lexer, tp);
+    }
 
   return NULL;
 }
@@ -2934,22 +2945,23 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
   bool added_matching_location = false;
 
   if (missing_token_desc != RT_NONE)
-    {
-      /* Potentially supply a fix-it hint, suggesting to add the
-	 missing token immediately after the *previous* token.
-	 This may move the primary location within richloc.  */
-      enum cpp_ttype ttype = get_required_cpp_ttype (missing_token_desc);
-      location_t prev_token_loc
-	= cp_lexer_previous_token (parser->lexer)->location;
-      maybe_suggest_missing_token_insertion (&richloc, ttype, prev_token_loc);
+    if (cp_token *prev_token = cp_lexer_safe_previous_token (parser->lexer))
+      {
+	/* Potentially supply a fix-it hint, suggesting to add the
+	   missing token immediately after the *previous* token.
+	   This may move the primary location within richloc.  */
+	enum cpp_ttype ttype = get_required_cpp_ttype (missing_token_desc);
+	location_t prev_token_loc = prev_token->location;
+	maybe_suggest_missing_token_insertion (&richloc, ttype,
+					       prev_token_loc);
 
-      /* If matching_location != UNKNOWN_LOCATION, highlight it.
-	 Attempt to consolidate diagnostics by printing it as a
-	secondary range within the main diagnostic.  */
-      if (matching_location != UNKNOWN_LOCATION)
-	added_matching_location
-	  = richloc.add_location_if_nearby (matching_location);
-    }
+	/* If matching_location != UNKNOWN_LOCATION, highlight it.
+	   Attempt to consolidate diagnostics by printing it as a
+	   secondary range within the main diagnostic.  */
+	if (matching_location != UNKNOWN_LOCATION)
+	  added_matching_location
+	    = richloc.add_location_if_nearby (matching_location);
+      }
 
   /* If we were parsing a string-literal and there is an unknown name
      token right after, then check to see if that could also have been
@@ -2957,19 +2969,19 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
      standard string literal constants defined in header files. If
      there is one, then add that as an hint to the error message. */
   name_hint h;
-  cp_token *prev_token = cp_lexer_safe_previous_token (parser->lexer);
-  if (prev_token && cp_parser_is_string_literal (prev_token)
-      && token->type == CPP_NAME)
-    {
-      tree name = token->u.value;
-      const char *token_name = IDENTIFIER_POINTER (name);
-      const char *header_hint
-	= get_cp_stdlib_header_for_string_macro_name (token_name);
-      if (header_hint != NULL)
-	h = name_hint (NULL, new suggest_missing_header (token->location,
-							 token_name,
-							 header_hint));
-    }
+  if (token->type == CPP_NAME)
+    if (cp_token *prev_token = cp_lexer_safe_previous_token (parser->lexer))
+      if (cp_parser_is_string_literal (prev_token))
+	{
+	  tree name = token->u.value;
+	  const char *token_name = IDENTIFIER_POINTER (name);
+	  const char *header_hint
+	    = get_cp_stdlib_header_for_string_macro_name (token_name);
+	  if (header_hint != NULL)
+	    h = name_hint (NULL, new suggest_missing_header (token->location,
+							     token_name,
+							     header_hint));
+	}
 
   /* Actually emit the error.  */
   c_parse_error (gmsgid,
