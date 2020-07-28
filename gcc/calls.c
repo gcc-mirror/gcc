@@ -1982,24 +1982,8 @@ append_attrname (const std::pair<int, attr_access> &access,
    in the function call EXP.  */
 
 static void
-maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
+maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 {
-  tree fndecl = NULL_TREE;
-  tree fntype = NULL_TREE;
-  if (tree fnaddr = CALL_EXPR_FN (exp))
-    {
-      if (TREE_CODE (fnaddr) == ADDR_EXPR)
-	{
-	  fndecl = TREE_OPERAND (fnaddr, 0);
-	  fntype = TREE_TYPE (fndecl);
-	}
-      else
-	fntype = TREE_TYPE (TREE_TYPE (fnaddr));
-    }
-
-  if (!fntype)
-    return;
-
   /* A string describing the attributes that the warnings issued by this
      function apply to.  Used to print one informational note per function
      call, rather than one per warning.  That reduces clutter.  */
@@ -2560,7 +2544,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   maybe_warn_nonstring_arg (fndecl, exp);
 
   /* Check read_only, write_only, and read_write arguments.  */
-  maybe_warn_rdwr_sizes (&rdwr_idx, exp);
+  maybe_warn_rdwr_sizes (&rdwr_idx, fndecl, fntype, exp);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.
