@@ -573,7 +573,6 @@ struct GTY(()) machine_function
 
   unsigned HOST_WIDE_INT reduction_base;
   unsigned HOST_WIDE_INT reduction_limit;
-  vec<tree, va_gc> *reduc_decls;
 
   bool use_flat_addressing;
 };

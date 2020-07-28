@@ -310,7 +310,6 @@ static tree
 gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
 {
   machine_function *machfun = cfun->machine;
-  tree existing_decl;
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
@@ -320,29 +319,12 @@ gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
 			    (TYPE_QUALS (type)
 			     | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS)));
 
-  if (machfun->reduc_decls
-      && offset < machfun->reduc_decls->length ()
-      && (existing_decl = (*machfun->reduc_decls)[offset]))
-    {
-      gcc_assert (TREE_TYPE (existing_decl) == var_type);
-      return existing_decl;
-    }
-  else
-    {
-      gcc_assert (offset
-		  < (machfun->reduction_limit - machfun->reduction_base));
-      tree ptr_type = build_pointer_type (var_type);
-      tree addr = build_int_cst (ptr_type, machfun->reduction_base + offset);
+  gcc_assert (offset
+	      < (machfun->reduction_limit - machfun->reduction_base));
+  tree ptr_type = build_pointer_type (var_type);
+  tree addr = build_int_cst (ptr_type, machfun->reduction_base + offset);
 
-      tree decl = build_simple_mem_ref (addr);
-
-      vec_safe_grow_cleared (machfun->reduc_decls, offset + 1, true);
-      (*machfun->reduc_decls)[offset] = decl;
-
-      return decl;
-    }
-
-  return NULL_TREE;
+  return build_simple_mem_ref (addr);
 }
 
 /* Expand IFN_GOACC_REDUCTION_SETUP.  */
@@ -497,7 +479,7 @@ gcn_goacc_reduction_teardown (gcall *call)
     }
 
   if (lhs)
-    gimplify_assign (lhs, var, &seq);
+    gimplify_assign (lhs, unshare_expr (var), &seq);
 
   pop_gimplify_context (NULL);
 

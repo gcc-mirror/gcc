@@ -106,9 +106,6 @@ gcn_init_machine_status (void)
 
   f = ggc_cleared_alloc<machine_function> ();
 
-  /* And LDS temporary decls for worker reductions.  */
-  vec_alloc (f->reduc_decls, 0);
-
   if (TARGET_GCN3)
     f->use_flat_addressing = true;
 
