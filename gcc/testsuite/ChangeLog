@@ -1,3 +1,11 @@
+2020-07-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95612
+	* gfortran.dg/pr95612.f90: New test.
+
 2020-07-26  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master:
