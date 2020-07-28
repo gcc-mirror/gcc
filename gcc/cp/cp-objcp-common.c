@@ -332,11 +332,12 @@ cp_get_global_decls ()
   return NAMESPACE_LEVEL (global_namespace)->names;
 }
 
-/* Push DECL into the current scope.  */
+/* Push DECL into the current (namespace) scope.  */
 
 tree
 cp_pushdecl (tree decl)
 {
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
   return pushdecl (decl);
 }
 
