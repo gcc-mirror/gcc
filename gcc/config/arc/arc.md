@@ -871,6 +871,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 (define_code_iterator SEZ [sign_extend zero_extend])
 (define_code_attr SEZ_prefix [(sign_extend "sex") (zero_extend "ext")])
+; Optab prefix for sign/zero-extending operations
+(define_code_attr su_optab [(sign_extend "") (zero_extend "u")])
 
 (define_insn "*<SEZ_prefix>xt<SQH_postfix>_cmp0_noout"
   [(set (match_operand 0 "cc_set_register" "")
@@ -6289,66 +6291,65 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "no")
    (set_attr "cond" "nocond")])
 
-(define_insn "mpyd_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c"))
-		 (sign_extend:DI (match_operand:SI 2 "register_operand"	 "  c, c"))))
+(define_insn "mpyd<su_optab>_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"	       "=r")
+	(mult:DI (SEZ:DI (match_operand:SI 1 "register_operand" "r"))
+		 (SEZ:DI (match_operand:SI 2 "register_operand" "r"))))
    (set (reg:DI ARCV2_ACC)
 	(mult:DI
-	  (sign_extend:DI (match_dup 1))
-	  (sign_extend:DI (match_dup 2))))]
+	  (SEZ:DI (match_dup 1))
+	  (SEZ:DI (match_dup 2))))]
   "TARGET_PLUS_MACD"
-  "mpyd%? %0,%1,%2"
-  [(set_attr "length" "4,4")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no")
-  (set_attr "cond" "canuse,nocond")])
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")])
 
-(define_insn "mpyd_imm_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r,r,Rcr,	 r")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c,0,  0,	 c"))
-		 (match_operand 2		    "immediate_operand"	 "  L, L,I,Cal,Cal")))
+(define_insn "*pmpyd<su_optab>_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"	     "=r")
+	(mult:DI
+	 (SEZ:DI (match_operand:SI 1 "even_register_operand" "%0"))
+	 (SEZ:DI (match_operand:SI 2 "register_operand"      "r"))))
    (set (reg:DI ARCV2_ACC)
-	(mult:DI (sign_extend:DI (match_dup 1))
+	(mult:DI
+	  (SEZ:DI (match_dup 1))
+	  (SEZ:DI (match_dup 2))))]
+  "TARGET_PLUS_MACD"
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "yes")])
+
+(define_insn "mpyd<su_optab>_imm_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"		"=r,r,  r")
+	(mult:DI (SEZ:DI (match_operand:SI 1 "register_operand"  "r,0,  r"))
+		 (match_operand 2	     "immediate_operand" "L,I,Cal")))
+   (set (reg:DI ARCV2_ACC)
+	(mult:DI (SEZ:DI (match_dup 1))
 		 (match_dup 2)))]
   "TARGET_PLUS_MACD"
-  "mpyd%? %0,%1,%2"
-  [(set_attr "length" "4,4,4,8,8")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no,no,yes,no")
-  (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4,4,8")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")])
 
-(define_insn "mpydu_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c"))
-		 (zero_extend:DI (match_operand:SI 2 "register_operand" "   c, c"))))
+(define_insn "*pmpyd<su_optab>_imm_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"	    "=r,r")
+	(mult:DI
+	 (SEZ:DI (match_operand:SI 1 "even_register_operand" "0,0"))
+	 (match_operand 2	     "immediate_operand"     "L,Cal")))
    (set (reg:DI ARCV2_ACC)
-	(mult:DI (zero_extend:DI (match_dup 1))
-		 (zero_extend:DI (match_dup 2))))]
-  "TARGET_PLUS_MACD"
-  "mpydu%? %0,%1,%2"
-  [(set_attr "length" "4,4")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no")
-  (set_attr "cond" "canuse,nocond")])
-
-(define_insn "mpydu_imm_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r,r,Rcr,	 r")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c,0,  0,	 c"))
-		 (match_operand 2		    "immediate_operand"	 "  L, L,I,Cal,Cal")))
-   (set (reg:DI ARCV2_ACC)
-	(mult:DI (zero_extend:DI (match_dup 1))
+	(mult:DI (SEZ:DI (match_dup 1))
 		 (match_dup 2)))]
   "TARGET_PLUS_MACD"
-  "mpydu%? %0,%1,%2"
-  [(set_attr "length" "4,4,4,8,8")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no,no,yes,no")
-  (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4,8")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "yes")])
 
 (define_insn "*add_shift"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
