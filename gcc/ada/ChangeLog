@@ -1,3 +1,191 @@
+2020-07-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* switch.adb (Is_Internal_GCC_Switch): Revert accidental
+	reintroduction of auxbase and auxbase-strip.
+
+2020-07-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Restrict the check on matching
+	aliased components to view conversions of array types that are
+	not placed in an instance. In such case at runtime an object is
+	created.
+	* sem_util.ads (Is_Actual_In_Out_Parameter, Is_View_Conversion):
+	New subprograms.
+	* sem_util.adb (Is_Actual_In_Out_Parameter, Is_View_Conversion):
+	New subprograms.
+
+2020-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Protect against malformed
+	tree in case of severe errors.
+	* sem_ch8.adb (Add_Implicit_Operator): Ditto.
+
+2020-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads (Ada_Version_Runtime): Set to Ada_2020.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Propagate
+	Is_Independent flag to subtypes.
+	* libgnarl/s-taprop__linux.adb: Adapt to Ada 2020 warning.
+	* libgnat/a-nbnbin.adb, libgnat/a-nbnbin.ads,
+	libgnat/a-nbnbin__gmp.adb, libgnat/a-nbnbre.adb,
+	libgnat/a-nbnbre.ads, libgnat/a-stobbu.adb,
+	libgnat/a-stobbu.ads, libgnat/a-stobfi.adb,
+	libgnat/a-stobfi.ads, libgnat/a-stoubu.adb,
+	libgnat/a-stoubu.ads, libgnat/a-stoufi.adb,
+	libgnat/a-stoufi.ads, libgnat/a-stoufo.adb,
+	libgnat/a-stoufo.ads, libgnat/a-stouut.adb,
+	libgnat/a-stouut.ads, libgnat/a-strsto.ads,
+	libgnat/a-ststbo.adb, libgnat/a-ststbo.ads,
+	libgnat/a-ststun.adb, libgnat/a-ststun.ads,
+	libgnat/a-stteou.ads, libgnat/s-aoinar.ads,
+	libgnat/s-aomoar.ads, libgnat/s-atopex.ads,
+	libgnat/s-putaim.adb, libgnat/s-putaim.ads,
+	libgnat/s-putima.adb, libgnat/s-putima.ads: Remove pragma
+	Ada_2020, now redundant.
+
+2020-07-27  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Modify addition of the extra
+	accessibility parameter to take into account the extra
+	accessibility of formals within the calling subprogram.
+
+2020-07-27  Bob Duff  <duff@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Add Root_Type, so
+	constrained subtypes work.
+
+2020-07-27  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_prag.adb (Arg1, Arg2, Arg3): Removed.
+	(Arg_N): New function.
+
+2020-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Allow values in Ada
+	2020 mode.
+
+2020-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Refine 6.4.1 rules as per
+	AI12-0377.
+
+2020-07-27  Bob Duff  <duff@adacore.com>
+
+	* errout.ads, errout.adb (Error_Msg_Ada_2020_Feature): New
+	procedure analogous to Error_Msg_Ada_2012_Feature.
+	* sem_attr.adb (Analyze_Image_Attribute): Use
+	Error_Msg_Ada_2012_Feature and Error_Msg_Ada_2020_Feature to
+	indicate that Object'Image is allowed in Ada 2012, and that
+	'Image is allowed for any type in Ada 2020.
+
+2020-07-27  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/a-strunb.adb (Sum, Mul, Saturated_Sum, Saturated_Mul):
+	New routines.  Use them when resulting string size more that
+	length of the strings in parameters.
+	(Unbounded_Slice): Use "- 1" instead of "+ 1" in opposite side
+	of condition to avoid overflow.
+	* libgnat/a-strunb__shared.adb (Sum, Mul): New routines.
+	(Allocate): New routine with 2 parameters.  Use routine above
+	when resulting string size more that length of the strings in
+	parameters.
+	(Aligned_Max_Length): Do not try to align to more than Natural'Last.
+	(Unbounded_Slice): Use "- 1" instead of "+ 1" in opposite side
+	of condition to avoid overflow.
+
+2020-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Remove dead code.
+
+2020-07-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.adb, atree.adb, atree.ads, checks.adb, contracts.adb,
+	einfo.adb, errout.adb, exp_aggr.adb, exp_attr.adb, exp_cg.adb,
+	exp_ch11.adb, exp_ch2.adb, exp_ch3.adb, exp_ch4.adb,
+	exp_ch5.adb, exp_ch6.adb, exp_ch7.adb, exp_ch8.adb, exp_ch9.adb,
+	exp_dbug.adb, exp_disp.adb, exp_intr.adb, exp_pakd.adb,
+	exp_prag.adb, exp_put_image.adb, exp_smem.adb, exp_tss.adb,
+	exp_unst.adb, exp_util.adb, freeze.adb, ghost.adb, gnat1drv.adb,
+	inline.adb, lib-writ.adb, lib-xref-spark_specific.adb,
+	lib-xref.adb, namet.adb, namet.ads, nlists.adb, par-ch10.adb,
+	par-ch2.adb, par-ch3.adb, par-ch4.adb, par-ch5.adb, par-ch6.adb,
+	par-prag.adb, par-util.adb, par_sco.adb, pprint.adb,
+	repinfo.adb, restrict.adb, rtsfind.adb, scil_ll.adb, sem.adb,
+	sem_aggr.adb, sem_attr.adb, sem_aux.adb, sem_cat.adb,
+	sem_ch10.adb, sem_ch11.adb, sem_ch12.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb, sem_ch7.adb,
+	sem_ch8.adb, sem_ch9.adb, sem_dim.adb, sem_disp.adb,
+	sem_dist.adb, sem_elab.adb, sem_elim.adb, sem_eval.adb,
+	sem_intr.adb, sem_mech.adb, sem_prag.adb, sem_res.adb,
+	sem_scil.adb, sem_type.adb, sem_util.adb, sem_warn.adb,
+	sinfo.adb, sinfo.ads, sprint.adb, styleg.adb, tbuild.adb,
+	treepr.adb (Nkind_In, Nam_In, Ekind_In): Removed, replaced by
+	membership tests.
+
+2020-07-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, Pragma_Max_Entry_Queue_Length):
+	Refine error message to indicate that the pragma must apply to
+	an entry declaration, not just an entry.
+
+2020-07-27  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Iface_Call_In_Allocator):
+	Revert previous patch, and add a missing type conversion to
+	displace the pointer to the allocated object to reference the
+	target dispatch table.
+
+2020-07-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Restore restrictive check on
+	view conversions which required matching value of
+	Has_Aliased_Components of formals and actuals. Required to avoid
+	the regression of ACATS b460005.
+
+2020-07-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Add commentary for a
+	nesting issue with parent handling and private view switching.
+	(Switch_View): Do not skip specific private-dependent subtypes.
+
+2020-07-27  Patrick Bernardi  <bernardi@adacore.com>
+
+	* Makefile.rtl: Remove X86_TARGET_PAIRS for x86-lynx178elf.
+
+2020-07-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Address_Specification_Clause): Do not
+	emit a warning when a constant declaration in a generic unit
+	overlays a generic In_Parameter.
+
+2020-07-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): Remove Scope
+	comparison test from test related to initial implementation of
+	AI12-0042, plus remove the related ??? comment.
+	(Derive_Subprogram): Add test requiring that the type extension
+	appear in the visible part of its enclosing package when
+	checking the overriding requirement of 7.3.2(6.1/4), as
+	clarified by AI12-0382.
+
+2020-07-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference) Extend
+	existing workaround to 'Pos.
+
+2020-07-27  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-rannum.ads, libgnat/s-rannum.adb: Add Put_Image.
+	This will be inherited by the language-defined packages
+	Ada.Numerics.Discrete_Random and Ada.Numerics.Float_Random.
+	* libgnat/a-convec.ads, libgnat/a-convec.adb: Add Put_Image.
+	* libgnat/s-putima.ads: Add pragma Preelaborate, so this can be
+	imported into containers packages.
+	* libgnat/s-putima.adb: Move Digit to private part; otherwise
+	reference to Base is illegal in Preelaborate generic.
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Use the
+	base type.
+
 2020-07-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* aspects.ads: Declare CUDA_Global as aspect.

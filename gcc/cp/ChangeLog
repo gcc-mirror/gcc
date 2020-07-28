@@ -1,3 +1,12 @@
+2020-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (enum cp_tree_index): Add CPTI_AS_BASE_IDENTIFIER.
+	(as_base_identifier): Define.
+	* decl.c (initialize_predifined_identifiers): Initialize as_base
+	identifier.
+	* class.c (layout_class_type): Name the as-base type.  Zap
+	NSDMI its fields may have.
+
 2020-07-22  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (maybe_add_class_template_decl_list): Don't add CONST_DECLs.

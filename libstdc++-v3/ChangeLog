@@ -1,3 +1,34 @@
+2020-07-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Map_base<>::at): Use
+	_Hashtable<>::find.
+	(_Hashtable_base<>::_Equal_hash_code<>::_S_node_equals):New.
+	(_Hashtable_base<>::_M_node_equals): New, use latter.
+	(_Equality<_Key, _Value, _Alloc, _ExtractKey, _Equal, _H1, _H2, _Hash,
+	_RehashPolicy, false>::_M_equal): Adapt to use latter.
+	* include/bits/hashtable.h (_Hashtable<>::_M_update_bbegin): New.
+	(_Hashtable<>::_M_assign): Use latter.
+	(_Hashtable<>::_M_move_assign): Likewise.
+	(_Hashtable<>(_Hashtable<>&&)): Likewise.
+	(_Hashtable<>(_Hashtable<>&&, const allocator_type&)): Likewise.
+	(_Hashtable<>::swap): Likewise.
+	(_Hashtable<>::find): Build iterator directly from _M_find_node result.
+	(_Hashtable<>::count): Use _Hashtable<>::find.
+	(_Hashtable<>::equal_range): Likewise.
+	(_Hashtable<>::_M_erase(false_type, const key_type&)): Use
+	_M_node_equals.
+
+2020-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Ensure
+	that FE_NEAREST is used.
+	* testsuite/20_util/from_chars/4.cc: Do not use if constexpr in
+	a { target c++14 } test.
+	[!_GLIBCXX_HAVE_USELOCALE]: Disable all tests.
+	* testsuite/20_util/from_chars/5.cc [!_GLIBCXX_HAVE_USELOCALE]:
+	Likewise.
+	* testsuite/20_util/from_chars/6.cc: New test.
+
 2020-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (future, shared_future, promise): Add
