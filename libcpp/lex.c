@@ -1885,7 +1885,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 		 the best failure mode.  */
 	      prefix_len = 0;
 	    }
-	  continue;
+	  if (c != '\n')
+	    continue;
 	}
 
       if (phase != PHASE_NONE)
