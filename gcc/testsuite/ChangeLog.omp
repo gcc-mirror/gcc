@@ -1,3 +1,10 @@
+2020-07-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/routine-4.c (seq, vector, worker, gang): Revert
+	previous changes.  Remove loop reductions.
+	* c-c++-common/goacc/routine-4-extern.c (seq, vector, worker, gang):
+	Likewise.
+
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.dg/goacc/routine-module-mod-1.f90 (g_1): Add
