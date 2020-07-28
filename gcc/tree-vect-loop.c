@@ -3474,42 +3474,56 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   return NULL;
 }
 
-/* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */
-int
-vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
-                             int *peel_iters_epilogue,
-                             stmt_vector_for_cost *scalar_cost_vec,
-			     stmt_vector_for_cost *prologue_cost_vec,
-			     stmt_vector_for_cost *epilogue_cost_vec)
-{
-  int retval = 0;
-  int assumed_vf = vect_vf_for_cost (loop_vinfo);
+/* Estimate the number of peeled epilogue iterations for LOOP_VINFO.
+   PEEL_ITERS_PROLOGUE is the number of peeled prologue iterations,
+   or -1 if not known.  */
 
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+static int
+vect_get_peel_iters_epilogue (loop_vec_info loop_vinfo, int peel_iters_prologue)
+{
+  int assumed_vf = vect_vf_for_cost (loop_vinfo);
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) || peel_iters_prologue == -1)
     {
-      *peel_iters_epilogue = assumed_vf / 2;
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
+	dump_printf_loc (MSG_NOTE, vect_location,
 			 "cost model: epilogue peel iters set to vf/2 "
 			 "because loop iterations are unknown .\n");
-
-      /* If peeled iterations are known but number of scalar loop
-         iterations are unknown, count a taken branch per peeled loop.  */
-      retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken,
-				 NULL, NULL_TREE, 0, vect_prologue);
-      retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken,
-				  NULL, NULL_TREE, 0, vect_epilogue);
+      return assumed_vf / 2;
     }
   else
     {
       int niters = LOOP_VINFO_INT_NITERS (loop_vinfo);
-      peel_iters_prologue = niters < peel_iters_prologue ?
-                            niters : peel_iters_prologue;
-      *peel_iters_epilogue = (niters - peel_iters_prologue) % assumed_vf;
+      peel_iters_prologue = MIN (niters, peel_iters_prologue);
+      int peel_iters_epilogue = (niters - peel_iters_prologue) % assumed_vf;
       /* If we need to peel for gaps, but no peeling is required, we have to
 	 peel VF iterations.  */
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) && !*peel_iters_epilogue)
-	*peel_iters_epilogue = assumed_vf;
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) && !peel_iters_epilogue)
+	peel_iters_epilogue = assumed_vf;
+      return peel_iters_epilogue;
+    }
+}
+
+/* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */
+int
+vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
+			     int *peel_iters_epilogue,
+			     stmt_vector_for_cost *scalar_cost_vec,
+			     stmt_vector_for_cost *prologue_cost_vec,
+			     stmt_vector_for_cost *epilogue_cost_vec)
+{
+  int retval = 0;
+
+  *peel_iters_epilogue
+    = vect_get_peel_iters_epilogue (loop_vinfo, peel_iters_prologue);
+
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      /* If peeled iterations are known but number of scalar loop
+	 iterations are unknown, count a taken branch per peeled loop.  */
+      retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken, NULL,
+				 NULL_TREE, 0, vect_prologue);
+      retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken, NULL,
+				  NULL_TREE, 0, vect_epilogue);
     }
 
   stmt_info_for_cost *si;
@@ -3652,24 +3666,110 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Build an expression that represents peel_iters for prologue and
      epilogue to be used in a run-time test.  */
 
+  bool prologue_need_br_taken_cost = false;
+  bool prologue_need_br_not_taken_cost = false;
+
+  /* Calculate peel_iters_prologue.  */
+  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    peel_iters_prologue = 0;
+  else if (npeel < 0)
+    {
+      peel_iters_prologue = assumed_vf / 2;
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "cost model: "
+		     "prologue peel iters set to vf/2.\n");
+
+      /* If peeled iterations are unknown, count a taken branch and a not taken
+	 branch per peeled loop.  Even if scalar loop iterations are known,
+	 vector iterations are not known since peeled prologue iterations are
+	 not known.  Hence guards remain the same.  */
+      prologue_need_br_taken_cost = true;
+      prologue_need_br_not_taken_cost = true;
+    }
+  else
+    {
+      peel_iters_prologue = npeel;
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+	/* If peeled iterations are known but number of scalar loop
+	   iterations are unknown, count a taken branch per peeled loop.  */
+	prologue_need_br_taken_cost = true;
+    }
+
+  bool epilogue_need_br_taken_cost = false;
+  bool epilogue_need_br_not_taken_cost = false;
+
+  /* Calculate peel_iters_epilogue.  */
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+    /* We need to peel exactly one iteration for gaps.  */
+    peel_iters_epilogue = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) ? 1 : 0;
+  else if (npeel < 0)
+    {
+      /* If peeling for alignment is unknown, loop bound of main loop
+	 becomes unknown.  */
+      peel_iters_epilogue = assumed_vf / 2;
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "cost model: "
+		     "epilogue peel iters set to vf/2 because "
+		     "peeling for alignment is unknown.\n");
+
+      /* See the same reason above in peel_iters_prologue calculation.  */
+      epilogue_need_br_taken_cost = true;
+      epilogue_need_br_not_taken_cost = true;
+    }
+  else
+    {
+      peel_iters_epilogue = vect_get_peel_iters_epilogue (loop_vinfo, npeel);
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+	/* If peeled iterations are known but number of scalar loop
+	   iterations are unknown, count a taken branch per peeled loop.  */
+	epilogue_need_br_taken_cost = true;
+    }
+
+  stmt_info_for_cost *si;
+  int j;
+  /* Add costs associated with peel_iters_prologue.  */
+  if (peel_iters_prologue)
+    FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
+      {
+	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+			      si->count * peel_iters_prologue, si->kind,
+			      si->stmt_info, si->vectype, si->misalign,
+			      vect_prologue);
+      }
+
+  /* Add costs associated with peel_iters_epilogue.  */
+  if (peel_iters_epilogue)
+    FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
+      {
+	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+			      si->count * peel_iters_epilogue, si->kind,
+			      si->stmt_info, si->vectype, si->misalign,
+			      vect_epilogue);
+      }
+
+  /* Add possible cond_branch_taken/cond_branch_not_taken cost.  */
+
+  if (prologue_need_br_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+			  NULL, NULL_TREE, 0, vect_prologue);
+
+  if (prologue_need_br_not_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+			  cond_branch_not_taken, NULL, NULL_TREE, 0,
+			  vect_prologue);
+
+  if (epilogue_need_br_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+			  NULL, NULL_TREE, 0, vect_epilogue);
+
+  if (epilogue_need_br_not_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+			  cond_branch_not_taken, NULL, NULL_TREE, 0,
+			  vect_epilogue);
+
+  /* Take care of special costs for rgroup controls of partial vectors.  */
   if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
     {
-      peel_iters_prologue = 0;
-      peel_iters_epilogue = 0;
-
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-	{
-	  /* We need to peel exactly one iteration.  */
-	  peel_iters_epilogue += 1;
-	  stmt_info_for_cost *si;
-	  int j;
-	  FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-			    j, si)
-	    (void) add_stmt_cost (loop_vinfo, target_cost_data, si->count,
-				  si->kind, si->stmt_info, si->vectype,
-				  si->misalign, vect_epilogue);
-	}
-
       /* Calculate how many masks we need to generate.  */
       unsigned int num_masks = 0;
       rgroup_controls *rgm;
@@ -3691,93 +3791,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	 simpler and safer to use the worst-case cost; if this ends up
 	 being the tie-breaker between vectorizing or not, then it's
 	 probably better not to vectorize.  */
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, num_masks, vector_stmt,
-			    NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, num_masks - 1, vector_stmt,
-			    NULL, NULL_TREE, 0, vect_body);
-    }
-  else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
-    {
-      peel_iters_prologue = 0;
-      peel_iters_epilogue = 0;
-    }
-  else if (npeel < 0)
-    {
-      peel_iters_prologue = assumed_vf / 2;
-      if (dump_enabled_p ())
-	dump_printf (MSG_NOTE, "cost model: "
-		     "prologue peel iters set to vf/2.\n");
-
-      /* If peeling for alignment is unknown, loop bound of main loop becomes
-         unknown.  */
-      peel_iters_epilogue = assumed_vf / 2;
-      if (dump_enabled_p ())
-	dump_printf (MSG_NOTE, "cost model: "
-		     "epilogue peel iters set to vf/2 because "
-		     "peeling for alignment is unknown.\n");
-
-      /* If peeled iterations are unknown, count a taken branch and a not taken
-         branch per peeled loop. Even if scalar loop iterations are known,
-         vector iterations are not known since peeled prologue iterations are
-         not known. Hence guards remain the same.  */
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
-			    NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, 1, cond_branch_not_taken,
-			    NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
-			    NULL, NULL_TREE, 0, vect_epilogue);
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, 1, cond_branch_not_taken,
-			    NULL, NULL_TREE, 0, vect_epilogue);
-      stmt_info_for_cost *si;
-      int j;
-      FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
-	{
-	  (void) add_stmt_cost (loop_vinfo, target_cost_data,
-				si->count * peel_iters_prologue,
-				si->kind, si->stmt_info, si->vectype,
-				si->misalign,
-				vect_prologue);
-	  (void) add_stmt_cost (loop_vinfo, target_cost_data,
-				si->count * peel_iters_epilogue,
-				si->kind, si->stmt_info, si->vectype,
-				si->misalign,
-				vect_epilogue);
-	}
-    }
-  else
-    {
-      stmt_vector_for_cost prologue_cost_vec, epilogue_cost_vec;
-      stmt_info_for_cost *si;
-      int j;
-      void *data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
-
-      prologue_cost_vec.create (2);
-      epilogue_cost_vec.create (2);
-      peel_iters_prologue = npeel;
-
-      (void) vect_get_known_peeling_cost (loop_vinfo, peel_iters_prologue,
-					  &peel_iters_epilogue,
-					  &LOOP_VINFO_SCALAR_ITERATION_COST
-					    (loop_vinfo),
-					  &prologue_cost_vec,
-					  &epilogue_cost_vec);
-
-      FOR_EACH_VEC_ELT (prologue_cost_vec, j, si)
-	(void) add_stmt_cost (loop_vinfo,
-			      data, si->count, si->kind, si->stmt_info,
-			      si->vectype, si->misalign, vect_prologue);
-
-      FOR_EACH_VEC_ELT (epilogue_cost_vec, j, si)
-	(void) add_stmt_cost (loop_vinfo,
-			      data, si->count, si->kind, si->stmt_info,
-			      si->vectype, si->misalign, vect_epilogue);
-
-      prologue_cost_vec.release ();
-      epilogue_cost_vec.release ();
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks,
+			    vector_stmt, NULL, NULL_TREE, 0, vect_prologue);
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks - 1,
+			    vector_stmt, NULL, NULL_TREE, 0, vect_body);
     }
 
   /* FORNOW: The scalar outside cost is incremented in one of the
