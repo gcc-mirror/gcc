@@ -72,7 +72,7 @@ static bool diagnostic_n_impl (rich_location *, const diagnostic_metadata *,
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
-/* Name of program invoked, sans directories  */
+/* Name of program invoked, sans directories.  */
 
 const char *progname;
 

@@ -1770,7 +1770,7 @@ enum cp_tree_node_structure_enum {
 };
 
 /* The resulting tree type.  */
-union GTY((desc ("cp_tree_node_structure (TREE_CODE (&%h.generic))"),
+union GTY((desc ("cp_tree_node_structure (&%h)"),
        chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node {
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
@@ -6647,7 +6647,8 @@ extern tree current_decl_namespace		(void);
 /* decl.c */
 extern tree poplevel				(int, int, int);
 extern void cxx_init_decl_processing		(void);
-enum cp_tree_node_structure_enum cp_tree_node_structure (tree_code);
+enum cp_tree_node_structure_enum cp_tree_node_structure
+						(union lang_tree_node *);
 extern void finish_scope			(void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);

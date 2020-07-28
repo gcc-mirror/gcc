@@ -17710,9 +17710,9 @@ revert_static_member_fn (tree decl)
    one of the language-independent trees.  */
 
 enum cp_tree_node_structure_enum
-cp_tree_node_structure (tree_code code)
+cp_tree_node_structure (union lang_tree_node * t)
 {
-  switch (code)
+  switch (TREE_CODE (&t->generic))
     {
     case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
     case BASELINK:		return TS_CP_BASELINK;

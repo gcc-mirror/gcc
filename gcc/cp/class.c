@@ -6718,9 +6718,7 @@ layout_class_type (tree t, tree *virtuals_p)
      that the type is laid out they are no longer important.  */
   remove_zero_width_bit_fields (t);
 
-  if (TYPE_UNNAMED_P (t))
-    CLASSTYPE_AS_BASE (t) = t;
-  else if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
+  if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
       /* T needs a different layout as a base (eliding virtual bases
 	 or whatever).  Create that version.  */

@@ -1,5 +1,16 @@
 2020-07-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* class.c (layout_class_type): Restore trunk for unnamed classes.
+	* cp-tree.h (lang_tree_node): Retore trunk GTY.
+	(cp_tree_node_structure): Restore trunk API.
+	* decl.c (cp_tree_node_structure): Restore trunk API.
+	* diagnostic.c (progname): Restore trunk comment.
+	gcc/
+	* doc/invoke.texi (Precompiled Headers): Restore trunk index
+	capitalization.
+	(C++ Modules): Adjust to match.
+
 	Merge trunk 134051f16bd.
 
 	libcpp/

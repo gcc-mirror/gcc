@@ -31745,8 +31745,8 @@ preprocessor.
 
 @node Precompiled Headers
 @section Using Precompiled Headers
-@cindex Precompiled Headers
-@cindex Speed of Compilation
+@cindex precompiled headers
+@cindex speed of compilation
 
 Often large projects have many header files that are included in every
 source file.  The time the compiler takes to process these header files
@@ -31880,8 +31880,7 @@ not get debugging information for routines in the precompiled header.
 
 @node C++ Modules
 @section C++ Modules
-@cindex C++ Modules
-@cindex Speed of Compilation
+@cindex speed of compilation
 
 Modules are a C++ 20 language feature.  As the name suggests, it
 provides a modular compilation system, intending to provide both
