@@ -1136,6 +1136,7 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
          preprocessed source.  */
       line_map_ordinary *last = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
       if (!ORDINARY_MAP_STARTING_LINE_NUMBER (last)
+	  && 0 == filename_cmp (to_file, ORDINARY_MAP_FILE_NAME (last))
 	  && SOURCE_LINE (last, pfile->line_table->highest_line) == 2)
 	{
 	  ord_map = last;

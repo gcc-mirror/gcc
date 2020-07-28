@@ -1,3 +1,9 @@
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* directives.c (_cpp_do_file_change): Check we're moving to line
+	zero of the same file.
+
 2020-07-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/
