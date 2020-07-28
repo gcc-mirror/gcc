@@ -6,6 +6,7 @@ package runtime
 
 import (
 	"internal/bytealg"
+	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -93,7 +94,11 @@ func slicebytetostring(buf *tmpBuf, ptr *byte, n int) (str string) {
 		msanread(unsafe.Pointer(ptr), uintptr(n))
 	}
 	if n == 1 {
-		stringStructOf(&str).str = unsafe.Pointer(&staticbytes[*ptr])
+		p := unsafe.Pointer(&staticuint64s[*ptr])
+		if sys.BigEndian {
+			p = add(p, 7)
+		}
+		stringStructOf(&str).str = p
 		stringStructOf(&str).len = 1
 		return
 	}
@@ -228,12 +233,6 @@ func stringStructOf(sp *string) *stringStruct {
 }
 
 func intstring(buf *[4]byte, v int64) (s string) {
-	if v >= 0 && v < runeSelf {
-		stringStructOf(&s).str = unsafe.Pointer(&staticbytes[v])
-		stringStructOf(&s).len = 1
-		return
-	}
-
 	var b []byte
 	if buf != nil {
 		b = buf[:]

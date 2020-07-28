@@ -68,6 +68,8 @@ func testCallers(t *testing.T, pcs []uintptr, pan bool) {
 }
 
 func testCallersEqual(t *testing.T, pcs []uintptr, want []string, ignore map[string]struct{}) {
+	t.Helper()
+
 	got := make([]string, 0, len(want))
 
 	frames := runtime.CallersFrames(pcs)

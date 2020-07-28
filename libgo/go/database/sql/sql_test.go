@@ -823,6 +823,24 @@ func TestQueryRow(t *testing.T) {
 	}
 }
 
+func TestRowErr(t *testing.T) {
+	db := newTestDB(t, "people")
+
+	err := db.QueryRowContext(context.Background(), "SELECT|people|bdate|age=?", 3).Err()
+	if err != nil {
+		t.Errorf("Unexpected err = %v; want %v", err, nil)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err = db.QueryRowContext(ctx, "SELECT|people|bdate|age=?", 3).Err()
+	exp := "context canceled"
+	if err == nil || !strings.Contains(err.Error(), exp) {
+		t.Errorf("Expected err = %v; got %v", exp, err)
+	}
+}
+
 func TestTxRollbackCommitErr(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
@@ -2724,7 +2742,7 @@ func TestManyErrBadConn(t *testing.T) {
 	}
 }
 
-// Issue 34755: Ensure that a Tx cannot commit after a rollback.
+// Issue 34775: Ensure that a Tx cannot commit after a rollback.
 func TestTxCannotCommitAfterRollback(t *testing.T) {
 	db := newTestDB(t, "tx_status")
 	defer closeDB(t, db)
@@ -2766,6 +2784,9 @@ func TestTxCannotCommitAfterRollback(t *testing.T) {
 	// 2. (A) Start a query, (B) begin Tx rollback through a ctx cancel.
 	// 3. Check if 2.A has committed in Tx (pass) or outside of Tx (fail).
 	sendQuery := make(chan struct{})
+	// The Tx status is returned through the row results, ensure
+	// that the rows results are not cancelled.
+	bypassRowsAwaitDone = true
 	hookTxGrabConn = func() {
 		cancel()
 		<-sendQuery
@@ -2776,6 +2797,7 @@ func TestTxCannotCommitAfterRollback(t *testing.T) {
 	defer func() {
 		hookTxGrabConn = nil
 		rollbackHook = nil
+		bypassRowsAwaitDone = false
 	}()
 
 	err = tx.QueryRow("SELECT|tx_status|tx_status|").Scan(&txStatus)
@@ -3809,6 +3831,61 @@ func TestStatsMaxIdleClosedTen(t *testing.T) {
 	t.Logf("MaxIdleClosed: %d", maxIdleClosed)
 	if maxIdleClosed != 10 {
 		t.Fatal("expected 0 max idle closed conns, got: ", maxIdleClosed)
+	}
+}
+
+func TestMaxIdleTime(t *testing.T) {
+	list := []struct {
+		wantMaxIdleTime time.Duration
+		wantIdleClosed  int64
+		timeOffset      time.Duration
+	}{
+		{time.Nanosecond, 1, 10 * time.Millisecond},
+		{time.Hour, 0, 10 * time.Millisecond},
+	}
+	baseTime := time.Unix(0, 0)
+	defer func() {
+		nowFunc = time.Now
+	}()
+	for _, item := range list {
+		nowFunc = func() time.Time {
+			return baseTime
+		}
+		t.Run(fmt.Sprintf("%v", item.wantMaxIdleTime), func(t *testing.T) {
+			db := newTestDB(t, "people")
+			defer closeDB(t, db)
+
+			db.SetMaxOpenConns(1)
+			db.SetMaxIdleConns(1)
+			db.SetConnMaxIdleTime(item.wantMaxIdleTime)
+			db.SetConnMaxLifetime(0)
+
+			preMaxIdleClosed := db.Stats().MaxIdleTimeClosed
+
+			if err := db.Ping(); err != nil {
+				t.Fatal(err)
+			}
+
+			nowFunc = func() time.Time {
+				return baseTime.Add(item.timeOffset)
+			}
+
+			db.mu.Lock()
+			closing := db.connectionCleanerRunLocked()
+			db.mu.Unlock()
+			for _, c := range closing {
+				c.Close()
+			}
+			if g, w := int64(len(closing)), item.wantIdleClosed; g != w {
+				t.Errorf("got: %d; want %d closed conns", g, w)
+			}
+
+			st := db.Stats()
+			maxIdleClosed := st.MaxIdleTimeClosed - preMaxIdleClosed
+			if g, w := maxIdleClosed, item.wantIdleClosed; g != w {
+				t.Errorf(" got: %d; want %d max idle closed conns", g, w)
+			}
+		})
 	}
 }
 

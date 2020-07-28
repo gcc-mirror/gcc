@@ -312,7 +312,9 @@ const (
 	//
 	// On other platforms, the user address space is contiguous
 	// and starts at 0, so no offset is necessary.
-	arenaBaseOffset = sys.GoarchAmd64*(1<<47) + (^0x0a00000000000000+1)&uintptrMask*sys.GoosAix*sys.GoarchPpc64
+	arenaBaseOffset = 0xffff800000000000*sys.GoarchAmd64 + 0x0a00000000000000*sys.GoosAix*sys.GoarchPpc64
+	// A typed version of this constant that will make it into DWARF (for viewcore).
+	arenaBaseOffsetUintptr = uintptr(arenaBaseOffset)
 
 	// Max number of threads to run garbage collection.
 	// 2, 3, and 4 are all plausible maximums depending
@@ -476,11 +478,21 @@ func mallocinit() {
 			physHugePageShift++
 		}
 	}
+	if pagesPerArena%pagesPerSpanRoot != 0 {
+		print("pagesPerArena (", pagesPerArena, ") is not divisible by pagesPerSpanRoot (", pagesPerSpanRoot, ")\n")
+		throw("bad pagesPerSpanRoot")
+	}
+	if pagesPerArena%pagesPerReclaimerChunk != 0 {
+		print("pagesPerArena (", pagesPerArena, ") is not divisible by pagesPerReclaimerChunk (", pagesPerReclaimerChunk, ")\n")
+		throw("bad pagesPerReclaimerChunk")
+	}
 
 	// Initialize the heap.
 	mheap_.init()
-	_g_ := getg()
-	_g_.m.mcache = allocmcache()
+	mcache0 = allocmcache()
+	lockInit(&gcBitsArenas.lock, lockRankGcBitsArenas)
+	lockInit(&proflock, lockRankProf)
+	lockInit(&globalAlloc.mutex, lockRankGlobalAlloc)
 
 	// Create initial arena growth hints.
 	if sys.PtrSize == 8 {
@@ -605,7 +617,7 @@ func mallocinit() {
 			a, size := sysReserveAligned(unsafe.Pointer(p), arenaSize, heapArenaBytes)
 			if a != nil {
 				mheap_.arena.init(uintptr(a), size)
-				p = uintptr(a) + size // For hint below
+				p = mheap_.arena.end // For hint below
 				break
 			}
 		}
@@ -937,7 +949,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 	// but before syscall.CgocallDone. Treat this allocation as a
 	// callback.
 	incallback := false
-	if gomcache() == nil && getg().m.ncgo > 0 {
+	if gp := getg(); gp.m.p == 0 && gp.m.ncgo > 0 {
 		exitsyscall()
 		incallback = true
 	}
@@ -975,7 +987,20 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 
 	shouldhelpgc := false
 	dataSize := size
-	c := gomcache()
+	var c *mcache
+	if mp.p != 0 {
+		c = mp.p.ptr().mcache
+	} else {
+		// We will be called without a P while bootstrapping,
+		// in which case we use mcache0, which is set in mallocinit.
+		// mcache0 is cleared when bootstrapping is complete,
+		// by procresize.
+		c = mcache0
+		if c == nil {
+			throw("malloc called with no P")
+		}
+	}
+	var span *mspan
 	var x unsafe.Pointer
 	noscan := typ == nil || typ.ptrdata == 0
 	if size <= maxSmallSize {
@@ -1031,10 +1056,10 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 				return x
 			}
 			// Allocate a new maxTinySize block.
-			span := c.alloc[tinySpanClass]
+			span = c.alloc[tinySpanClass]
 			v := nextFreeFast(span)
 			if v == 0 {
-				v, _, shouldhelpgc = c.nextFree(tinySpanClass)
+				v, span, shouldhelpgc = c.nextFree(tinySpanClass)
 			}
 			x = unsafe.Pointer(v)
 			(*[2]uint64)(x)[0] = 0
@@ -1049,13 +1074,13 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 		} else {
 			var sizeclass uint8
 			if size <= smallSizeMax-8 {
-				sizeclass = size_to_class8[(size+smallSizeDiv-1)/smallSizeDiv]
+				sizeclass = size_to_class8[divRoundUp(size, smallSizeDiv)]
 			} else {
-				sizeclass = size_to_class128[(size-smallSizeMax+largeSizeDiv-1)/largeSizeDiv]
+				sizeclass = size_to_class128[divRoundUp(size-smallSizeMax, largeSizeDiv)]
 			}
 			size = uintptr(class_to_size[sizeclass])
 			spc := makeSpanClass(sizeclass, noscan)
-			span := c.alloc[spc]
+			span = c.alloc[spc]
 			v := nextFreeFast(span)
 			if v == 0 {
 				v, span, shouldhelpgc = c.nextFree(spc)
@@ -1066,15 +1091,14 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 			}
 		}
 	} else {
-		var s *mspan
 		shouldhelpgc = true
 		systemstack(func() {
-			s = largeAlloc(size, needzero, noscan)
+			span = largeAlloc(size, needzero, noscan)
 		})
-		s.freeindex = 1
-		s.allocCount = 1
-		x = unsafe.Pointer(s.base())
-		size = s.elemsize
+		span.freeindex = 1
+		span.allocCount = 1
+		x = unsafe.Pointer(span.base())
+		size = span.elemsize
 	}
 
 	var scanSize uintptr
@@ -1106,7 +1130,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 	// This may be racing with GC so do it atomically if there can be
 	// a race marking the bit.
 	if gcphase != _GCoff {
-		gcmarknewobject(uintptr(x), size, scanSize)
+		gcmarknewobject(span, uintptr(x), size, scanSize)
 	}
 
 	if raceenabled {
@@ -1174,9 +1198,15 @@ func largeAlloc(size uintptr, needzero bool, noscan bool) *mspan {
 	// pays the debt down to npage pages.
 	deductSweepCredit(npages*_PageSize, npages)
 
-	s := mheap_.alloc(npages, makeSpanClass(0, noscan), needzero)
+	spc := makeSpanClass(0, noscan)
+	s := mheap_.alloc(npages, spc, needzero)
 	if s == nil {
 		throw("out of memory")
+	}
+	if go115NewMCentralImpl {
+		// Put the large span in the mcentral swept list so that it's
+		// visible to the background sweeper.
+		mheap_.central[spc].mcentral.fullSwept(mheap_.sweepgen).push(s)
 	}
 	s.limit = s.base() + size
 	heapBitsForAddr(s.base()).initSpan(s)
@@ -1218,7 +1248,16 @@ func reflect_unsafe_NewArray(typ *_type, n int) unsafe.Pointer {
 }
 
 func profilealloc(mp *m, x unsafe.Pointer, size uintptr) {
-	mp.mcache.next_sample = nextSample()
+	var c *mcache
+	if mp.p != 0 {
+		c = mp.p.ptr().mcache
+	} else {
+		c = mcache0
+		if c == nil {
+			throw("profilealloc called with no P")
+		}
+	}
+	c.next_sample = nextSample()
 	mProf_Malloc(x, size)
 }
 
@@ -1411,6 +1450,13 @@ type linearAlloc struct {
 }
 
 func (l *linearAlloc) init(base, size uintptr) {
+	if base+size < base {
+		// Chop off the last byte. The runtime isn't prepared
+		// to deal with situations where the bounds could overflow.
+		// Leave that memory reserved, though, so we don't map it
+		// later.
+		size -= 1
+	}
 	l.next, l.mapped = base, base
 	l.end = base + size
 }

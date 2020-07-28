@@ -45,7 +45,24 @@ type _type struct {
 }
 
 func (t *_type) string() string {
-	return *t._string
+	// For gccgo, try to strip out quoted strings.
+	s := *t._string
+	q := false
+	started := false
+	var start int
+	var end int
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\t' {
+			q = !q
+		} else if !q {
+			if !started {
+				start = i
+				started = true
+			}
+			end = i
+		}
+	}
+	return s[start : end+1]
 }
 
 // pkgpath returns the path of the package where t was defined, if
