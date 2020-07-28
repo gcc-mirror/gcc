@@ -2,12 +2,15 @@
 LC_ALL=C
 export LC_ALL
 
-compile="$1"
+if test "$#" -ne 3; then
+  echo "Usage $0 int_kinds real_kinds compile"
+  exit 1
+fi
 
-# Possible types must be listed in ascending order
-possible_integer_kinds="1 2 4 8 16"
-possible_real_kinds="4 8 10 16"
-
+# Possible kinds must be listed in ascending order
+possible_integer_kinds="$1"
+possible_real_kinds="$2"
+compile="$3"
 
 largest=""
 smallest=""
@@ -112,7 +115,7 @@ for k in $possible_real_kinds; do
 done
 
 
-# After this, we include a header that can override some of the 
+# After this, we include a header that can override some of the
 # autodetected settings.
 echo '#include "kinds-override.h"'
 

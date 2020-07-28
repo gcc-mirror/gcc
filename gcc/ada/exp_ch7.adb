@@ -1343,8 +1343,8 @@ package body Exp_Ch7 is
             --  Treat use clauses as declarations and insert directly in front
             --  of them.
 
-            if Nkind_In (Insertion_Node, N_Use_Package_Clause,
-                                         N_Use_Type_Clause)
+            if Nkind (Insertion_Node) in
+                 N_Use_Package_Clause | N_Use_Type_Clause
             then
                Insert_List_Before_And_Analyze (Insertion_Node, Actions);
             else
@@ -2050,10 +2050,8 @@ package body Exp_Ch7 is
                --  freeze node, the body must be inserted directly after the
                --  construct.
 
-               if Nkind_In (Last_Top_Level_Ctrl_Construct,
-                              N_Freeze_Entity,
-                              N_Package_Declaration,
-                              N_Package_Body)
+               if Nkind (Last_Top_Level_Ctrl_Construct) in
+                    N_Freeze_Entity | N_Package_Declaration | N_Package_Body
                then
                   Finalizer_Insert_Nod := Last_Top_Level_Ctrl_Construct;
                end if;
@@ -2845,11 +2843,8 @@ package body Exp_Ch7 is
 
                Result := Next (Stmt);
                while Present (Result) loop
-                  if not Nkind_In (Result, N_Call_Marker,
-                                           N_Raise_Program_Error)
-                  then
-                     exit;
-                  end if;
+                  exit when Nkind (Result) not in
+                              N_Call_Marker | N_Raise_Program_Error;
 
                   Next (Result);
                end loop;
@@ -3045,7 +3040,7 @@ package body Exp_Ch7 is
          --  Insert the counter after all initialization has been done. The
          --  place of insertion depends on the context.
 
-         if Ekind_In (Obj_Id, E_Constant, E_Variable) then
+         if Ekind (Obj_Id) in E_Constant | E_Variable then
 
             --  The object is initialized by a build-in-place function call.
             --  The counter insertion point is after the function call.
@@ -3270,7 +3265,7 @@ package body Exp_Ch7 is
                end;
             end if;
 
-            if Ekind_In (Obj_Id, E_Constant, E_Variable)
+            if Ekind (Obj_Id) in E_Constant | E_Variable
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
                --  Temporaries created for the purpose of "exporting" a
@@ -4361,7 +4356,7 @@ package body Exp_Ch7 is
          if Is_Subprogram (E) then
             return True;
 
-         elsif Ekind_In (E, E_Block, E_Loop)
+         elsif Ekind (E) in E_Block | E_Loop
            and then Contains_Subprogram (E)
          then
             return True;
@@ -4393,7 +4388,7 @@ package body Exp_Ch7 is
 
       Ftyp := Etype (Fent);
 
-      if Nkind_In (Arg, N_Type_Conversion, N_Unchecked_Type_Conversion) then
+      if Nkind (Arg) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          Atyp := Entity (Subtype_Mark (Arg));
       else
          Atyp := Etype (Arg);
@@ -4414,7 +4409,7 @@ package body Exp_Ch7 is
       --  Make_Init_Call, set the target type to the type of the formal
       --  directly, to avoid spurious typing problems.
 
-      elsif Nkind_In (Arg, N_Unchecked_Type_Conversion, N_Type_Conversion)
+      elsif Nkind (Arg) in N_Unchecked_Type_Conversion | N_Type_Conversion
         and then not Is_Class_Wide_Type (Atyp)
       then
          Set_Subtype_Mark (Arg, New_Occurrence_Of (Ftyp, Sloc (Arg)));
@@ -4633,12 +4628,12 @@ package body Exp_Ch7 is
 
       function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean is
       begin
-         return Ekind_In (Id, E_Entry,
-                              E_Entry_Family,
-                              E_Function,
-                              E_Package,
-                              E_Procedure,
-                              E_Subprogram_Body);
+         return Ekind (Id) in E_Entry
+                            | E_Entry_Family
+                            | E_Function
+                            | E_Package
+                            | E_Procedure
+                            | E_Subprogram_Body;
       end Is_Package_Or_Subprogram;
 
       --  Local variables
@@ -4711,11 +4706,12 @@ package body Exp_Ch7 is
    ----------------------------
 
    procedure Expand_Cleanup_Actions (N : Node_Id) is
-      pragma Assert (Nkind_In (N, N_Block_Statement,
-                                  N_Entry_Body,
-                                  N_Extended_Return_Statement,
-                                  N_Subprogram_Body,
-                                  N_Task_Body));
+      pragma Assert
+        (Nkind (N) in N_Block_Statement
+                    | N_Entry_Body
+                    | N_Extended_Return_Statement
+                    | N_Subprogram_Body
+                    | N_Task_Body);
 
       Scop : constant Entity_Id := Current_Scope;
 
@@ -5305,9 +5301,8 @@ package body Exp_Ch7 is
                --  of the alternative.
 
                if Nkind (Parent (Curr)) = N_Entry_Call_Alternative
-                 and then Nkind_In (Parent (Parent (Curr)),
-                                    N_Conditional_Entry_Call,
-                                    N_Timed_Entry_Call)
+                 and then Nkind (Parent (Parent (Curr))) in
+                            N_Conditional_Entry_Call | N_Timed_Entry_Call
                then
                   return Parent (Parent (Curr));
 
@@ -5648,7 +5643,7 @@ package body Exp_Ch7 is
                --      <or>
                --    Hook := Obj_Id'Unrestricted_Access;
 
-               if Ekind_In (Obj_Id, E_Constant, E_Variable)
+               if Ekind (Obj_Id) in E_Constant | E_Variable
                  and then Present (Last_Aggregate_Assignment (Obj_Id))
                then
                   Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
@@ -9012,10 +9007,9 @@ package body Exp_Ch7 is
          Par : Node_Id := Parent (N);
 
       begin
-         while not (Nkind_In (Par, N_Handled_Sequence_Of_Statements,
-                                   N_Loop_Statement,
-                                   N_Package_Specification)
-                      or else Nkind (Par) in N_Proper_Body)
+         while Nkind (Par) not in
+           N_Handled_Sequence_Of_Statements | N_Loop_Statement |
+           N_Package_Specification          | N_Proper_Body
          loop
             pragma Assert (Present (Par));
             Par := Parent (Par);
@@ -9102,12 +9096,12 @@ package body Exp_Ch7 is
             --  Prevent the search from going too far because transient blocks
             --  are bounded by packages and subprogram scopes.
 
-            elsif Ekind_In (Scop, E_Entry,
-                                  E_Entry_Family,
-                                  E_Function,
-                                  E_Package,
-                                  E_Procedure,
-                                  E_Subprogram_Body)
+            elsif Ekind (Scop) in E_Entry
+                                | E_Entry_Family
+                                | E_Function
+                                | E_Package
+                                | E_Procedure
+                                | E_Subprogram_Body
             then
                exit;
             end if;
@@ -9398,7 +9392,7 @@ package body Exp_Ch7 is
          Manage_SS =>
            Uses_Sec_Stack (Curr_S)
              and then Nkind (N) = N_Object_Declaration
-             and then Ekind_In (Encl_S, E_Package, E_Package_Body)
+             and then Ekind (Encl_S) in E_Package | E_Package_Body
              and then Is_Library_Level_Entity (Encl_S));
       Pop_Scope;
 

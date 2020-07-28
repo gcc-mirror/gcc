@@ -175,8 +175,8 @@ package body Tbuild is
               Attribute_Name => Attribute_Name);
 
    begin
-      pragma Assert (Nam_In (Attribute_Name, Name_Address,
-                                             Name_Unrestricted_Access));
+      pragma Assert
+        (Attribute_Name in Name_Address | Name_Unrestricted_Access);
       Set_Must_Be_Byte_Aligned (N, True);
       return N;
    end Make_Byte_Aligned_Attribute_Reference;

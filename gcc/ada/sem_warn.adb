@@ -1165,7 +1165,7 @@ package body Sem_Warn is
 
             if Ekind (E1) = E_Variable
               or else
-                (Ekind_In (E1, E_Out_Parameter, E_In_Out_Parameter)
+                (Ekind (E1) in E_Out_Parameter | E_In_Out_Parameter
                   and then not Is_Protected_Type (Current_Scope))
             then
                --  If the formal has a class-wide type, retrieve its type
@@ -1469,9 +1469,9 @@ package body Sem_Warn is
 
                   UR := Original_Node (UR);
                   loop
-                     if Nkind_In (UR, N_Expression_With_Actions,
-                                      N_Qualified_Expression,
-                                      N_Type_Conversion)
+                     if Nkind (UR) in N_Expression_With_Actions
+                                    | N_Qualified_Expression
+                                    | N_Type_Conversion
                      then
                         UR := Expression (UR);
 
@@ -1612,9 +1612,9 @@ package body Sem_Warn is
               and then (Is_Object (E1)
                          or else Is_Type (E1)
                          or else Ekind (E1) = E_Label
-                         or else Ekind_In (E1, E_Exception,
-                                               E_Named_Integer,
-                                               E_Named_Real)
+                         or else Ekind (E1) in E_Exception
+                                             | E_Named_Integer
+                                             | E_Named_Real
                          or else Is_Overloadable (E1)
 
                          --  Package case, if the main unit is a package spec
@@ -1895,7 +1895,7 @@ package body Sem_Warn is
                E : constant Entity_Id := Entity (N);
 
             begin
-               if Ekind_In (E, E_Variable, E_Out_Parameter)
+               if Ekind (E) in E_Variable | E_Out_Parameter
                  and then Never_Set_In_Source_Check_Spec (E)
                  and then not Has_Initial_Value (E)
                  and then (No (Unset_Reference (E))
@@ -1975,10 +1975,11 @@ package body Sem_Warn is
                         Nod := Parent (N);
                         while Present (Nod) loop
                            if Nkind (Nod) = N_Pragma
-                             and then Nam_In (Pragma_Name_Unmapped (Nod),
-                                              Name_Postcondition,
-                                              Name_Refined_Post,
-                                              Name_Contract_Cases)
+                             and then
+                               Pragma_Name_Unmapped (Nod)
+                                in Name_Postcondition
+                                 | Name_Refined_Post
+                                 | Name_Contract_Cases
                            then
                               return True;
 
@@ -2102,7 +2103,7 @@ package body Sem_Warn is
                               P := Parent (P);
                               exit when No (P);
 
-                              if Nkind_In (P, N_If_Statement, N_Elsif_Part)
+                              if Nkind (P) in N_If_Statement | N_Elsif_Part
                                 and then Ref_In (Condition (P))
                               then
                                  return;
@@ -3188,7 +3189,7 @@ package body Sem_Warn is
 
       --  Reference to obsolescent component
 
-      elsif Ekind_In (E, E_Component, E_Discriminant) then
+      elsif Ekind (E) in E_Component | E_Discriminant then
          Error_Msg_NE
            ("??reference to obsolescent component& declared#", N, E);
 
@@ -3567,8 +3568,9 @@ package body Sem_Warn is
             --  node, since assert pragmas get rewritten at analysis time.
 
             elsif Nkind (Original_Node (P)) = N_Pragma
-              and then Nam_In (Pragma_Name_Unmapped (Original_Node (P)),
-                               Name_Assert, Name_Check)
+              and then
+                Pragma_Name_Unmapped (Original_Node (P))
+                  in Name_Assert | Name_Check
             then
                return;
             end if;
@@ -4232,7 +4234,7 @@ package body Sem_Warn is
       --  Only process if warnings activated
 
       if Warn_On_Suspicious_Contract then
-         if Nkind_In (Par, N_Op_Eq, N_Op_Ne) then
+         if Nkind (Par) in N_Op_Eq | N_Op_Ne then
             if N = Left_Opnd (Par) then
                Arg := Right_Opnd (Par);
             else
@@ -4422,10 +4424,10 @@ package body Sem_Warn is
                         B : constant Node_Id := Parent (Parent (Scope (E)));
                         S : Entity_Id := Empty;
                      begin
-                        if Nkind_In (B,
-                                     N_Expression_Function,
-                                     N_Subprogram_Body,
-                                     N_Subprogram_Renaming_Declaration)
+                        if Nkind (B) in
+                             N_Expression_Function |
+                             N_Subprogram_Body     |
+                             N_Subprogram_Renaming_Declaration
                         then
                            S := Corresponding_Spec (B);
                         end if;
@@ -4587,10 +4589,10 @@ package body Sem_Warn is
 
             --  When we hit a package/subprogram body, issue warning and exit
 
-            elsif Nkind_In (P, N_Entry_Body,
-                               N_Package_Body,
-                               N_Subprogram_Body,
-                               N_Task_Body)
+            elsif Nkind (P) in N_Entry_Body
+                             | N_Package_Body
+                             | N_Subprogram_Body
+                             | N_Task_Body
             then
                --  Case of assigned value never referenced
 
@@ -4614,8 +4616,8 @@ package body Sem_Warn is
                         --  Give appropriate message, distinguishing between
                         --  assignment statements and out parameters.
 
-                        if Nkind_In (Parent (LA), N_Parameter_Association,
-                                                  N_Procedure_Call_Statement)
+                        if Nkind (Parent (LA)) in N_Parameter_Association
+                                                | N_Procedure_Call_Statement
                         then
                            Error_Msg_NE
                              ("?m?& modified by call, but value might not be "
@@ -4641,8 +4643,8 @@ package body Sem_Warn is
                      --  Give appropriate message, distinguishing between
                      --  assignment statements and out parameters.
 
-                     if Nkind_In (Parent (LA), N_Procedure_Call_Statement,
-                                               N_Parameter_Association)
+                     if Nkind (Parent (LA)) in N_Procedure_Call_Statement
+                                             | N_Parameter_Association
                      then
                         Error_Msg_NE
                           ("?m?& modified by call, but value overwritten #!",
@@ -4673,10 +4675,10 @@ package body Sem_Warn is
                   --  not generate the warning, since the variable in question
                   --  may be accessed after an exception in the outer block.
 
-                  if not Nkind_In (Parent (P), N_Entry_Body,
-                                               N_Package_Body,
-                                               N_Subprogram_Body,
-                                               N_Task_Body)
+                  if Nkind (Parent (P)) not in N_Entry_Body
+                                             | N_Package_Body
+                                             | N_Subprogram_Body
+                                             | N_Task_Body
                   then
                      Set_Last_Assignment (Ent, Empty);
                      return;

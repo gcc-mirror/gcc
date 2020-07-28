@@ -30,6 +30,7 @@
 #include <charconv>
 #include <string>
 #include <memory_resource>
+#include <cfenv>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -289,6 +290,12 @@ namespace
       {
 	locale_t orig = ::uselocale(loc);
 
+#if _GLIBCXX_USE_C99_FENV_TR1
+	const int rounding = std::fegetround();
+	if (rounding != FE_TONEAREST)
+	  std::fesetround(FE_TONEAREST);
+#endif
+
 	const int save_errno = errno;
 	errno = 0;
 	char* endptr;
@@ -300,6 +307,11 @@ namespace
 	else if constexpr (is_same_v<T, long double>)
 	  tmpval = std::strtold(str, &endptr);
 	const int conv_errno = std::__exchange(errno, save_errno);
+
+#if _GLIBCXX_USE_C99_FENV_TR1
+	if (rounding != FE_TONEAREST)
+	  std::fesetround(rounding);
+#endif
 
 	::uselocale(orig);
 	::freelocale(loc);

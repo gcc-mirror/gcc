@@ -2793,9 +2793,9 @@ package body Inline is
          else
             Decl := Unit_Declaration_Node (Scop);
 
-            if Nkind_In (Decl, N_Subprogram_Declaration,
-                               N_Task_Type_Declaration,
-                               N_Subprogram_Body_Stub)
+            if Nkind (Decl) in N_Subprogram_Declaration
+                             | N_Task_Type_Declaration
+                             | N_Subprogram_Body_Stub
             then
                Decl := Unit_Declaration_Node (Corresponding_Body (Decl));
             end if;
@@ -2968,9 +2968,8 @@ package body Inline is
                and then not GNATprove_Mode)
 
            or else
-             (Nkind_In (A, N_Real_Literal,
-                           N_Integer_Literal,
-                           N_Character_Literal)
+             (Nkind (A) in
+                N_Real_Literal | N_Integer_Literal | N_Character_Literal
                and then not Address_Taken (F))
          then
             if Etype (F) /= Etype (A) then
@@ -3378,10 +3377,10 @@ package body Inline is
                --  and string literals, and attributes that yield a universal
                --  type, because those must be resolved to a specific type.
 
-               if Nkind_In (Expression (N), N_Aggregate,
-                                            N_Character_Literal,
-                                            N_Null,
-                                            N_String_Literal)
+               if Nkind (Expression (N)) in N_Aggregate
+                                          | N_Character_Literal
+                                          | N_Null
+                                          | N_String_Literal
                  or else Yields_Universal_Type (Expression (N))
                then
                   Ret :=
@@ -4234,7 +4233,7 @@ package body Inline is
          then
             Conv := Current_Entity (Id);
 
-         elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
+         elsif Nkind (Id) in N_Selected_Component | N_Expanded_Name
            and then Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
          then
             Conv := Current_Entity (Selector_Name (Id));
@@ -4366,13 +4365,13 @@ package body Inline is
 
       S := First (Stats);
       while Present (S) loop
-         if Nkind_In (S, N_Abort_Statement,
-                         N_Asynchronous_Select,
-                         N_Conditional_Entry_Call,
-                         N_Delay_Relative_Statement,
-                         N_Delay_Until_Statement,
-                         N_Selective_Accept,
-                         N_Timed_Entry_Call)
+         if Nkind (S) in N_Abort_Statement
+                       | N_Asynchronous_Select
+                       | N_Conditional_Entry_Call
+                       | N_Delay_Relative_Statement
+                       | N_Delay_Until_Statement
+                       | N_Selective_Accept
+                       | N_Timed_Entry_Call
          then
             Cannot_Inline
               ("cannot inline & (non-allowed statement)?", S, Subp);
@@ -5112,18 +5111,18 @@ package body Inline is
             end if;
 
             if Present (Item_Id)
-              and then Nam_In (Chars (Item_Id), Name_Contract_Cases,
-                                                Name_Global,
-                                                Name_Depends,
-                                                Name_Postcondition,
-                                                Name_Precondition,
-                                                Name_Refined_Global,
-                                                Name_Refined_Depends,
-                                                Name_Refined_Post,
-                                                Name_Test_Case,
-                                                Name_Unmodified,
-                                                Name_Unreferenced,
-                                                Name_Unused)
+              and then Chars (Item_Id) in Name_Contract_Cases
+                                        | Name_Global
+                                        | Name_Depends
+                                        | Name_Postcondition
+                                        | Name_Precondition
+                                        | Name_Refined_Global
+                                        | Name_Refined_Depends
+                                        | Name_Refined_Post
+                                        | Name_Test_Case
+                                        | Name_Unmodified
+                                        | Name_Unreferenced
+                                        | Name_Unused
             then
                Remove (Item);
             end if;

@@ -1776,7 +1776,7 @@ Common RejectNegative Alias(fcf-protection=,full)
 
 fcf-protection=
 Common Report Joined RejectNegative Enum(cf_protection_level) Var(flag_cf_protection) Init(CF_NONE)
--fcf-protection=[full|branch|return|none]	Instrument functions with checks to verify jump/call/return control-flow transfer
+-fcf-protection=[full|branch|return|none|check]	Instrument functions with checks to verify jump/call/return control-flow transfer
 instructions have valid targets.
 
 Enum
@@ -1790,6 +1790,9 @@ Enum(cf_protection_level) String(branch) Value(CF_BRANCH)
 
 EnumValue
 Enum(cf_protection_level) String(return) Value(CF_RETURN)
+
+EnumValue
+Enum(cf_protection_level) String(check) Value(CF_CHECK)
 
 EnumValue
 Enum(cf_protection_level) String(none) Value(CF_NONE)

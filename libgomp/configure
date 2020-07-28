@@ -635,6 +635,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 get_gcc_base_ver
+OMP_DEPEND_KIND
 OMP_NEST_LOCK_25_KIND
 OMP_LOCK_25_KIND
 OMP_NEST_LOCK_25_ALIGN
@@ -11434,7 +11435,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11437 "configure"
+#line 11438 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11540,7 +11541,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11543 "configure"
+#line 11544 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16968,6 +16969,20 @@ if ac_fn_c_compute_int "$LINENO" "sizeof (__INTPTR_TYPE__)" "INTPTR_T_KIND"     
 fi
 
 
+if ac_fn_c_compute_int "$LINENO" "sizeof (__int128)" "OMP_INT128_SIZE"        ""; then :
+
+else
+  OMP_INT128_SIZE=0
+fi
+
+
+if ac_fn_c_compute_int "$LINENO" "2*sizeof (__INTPTR_TYPE__)" "OMP_DEPEND_KIND"        ""; then :
+
+else
+  OMP_DEPEND_KIND=0
+fi
+
+
 if ac_fn_c_compute_int "$LINENO" "sizeof (omp_lock_t)" "OMP_LOCK_SIZE"        ""; then :
 
 else
@@ -17034,6 +17049,16 @@ fi
 if test $OMP_NEST_LOCK_25_SIZE -gt 8 || test $OMP_NEST_LOCK_25_ALIGN -gt $OMP_NEST_LOCK_25_SIZE; then
   OMP_NEST_LOCK_25_KIND=8
 fi
+if test $OMP_DEPEND_KIND -eq 16; then
+  if test $OMP_INT128_SIZE -ne 16; then
+    as_fn_error $? "unsupported system, cannot find Fortran int kind=16, needed for omp_depend_kind" "$LINENO" 5
+  fi
+else
+  if test $OMP_DEPEND_KIND -ne 8; then
+    as_fn_error $? "unsupported system, cannot find Fortran integer kind for omp_depend_kind" "$LINENO" 5
+  fi
+fi
+
 
 
 

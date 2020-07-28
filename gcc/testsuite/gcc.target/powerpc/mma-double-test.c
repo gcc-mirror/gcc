@@ -12,13 +12,13 @@ typedef double v4sf_t __attribute__ ((vector_size (16)));
 #define SAVE_ACC(ACC, ldc, J)  \
 	  __builtin_mma_disassemble_acc (result, ACC); \
 	  rowC = (v4sf_t *) &CO[0*ldc+J]; \
-          rowC[0] += result[3] ; \
+          rowC[0] += result[0]; \
           rowC = (v4sf_t *) &CO[1*ldc+J]; \
-          rowC[0] += result[2] ; \
+          rowC[0] += result[1]; \
           rowC = (v4sf_t *) &CO[2*ldc+J]; \
-          rowC[0] += result[1] ; \
+          rowC[0] += result[2]; \
           rowC = (v4sf_t *) &CO[3*ldc+J]; \
-	  rowC[0] += result[0] ;
+	  rowC[0] += result[3];
 
 void
 MMA (int m, int n, int k, double *A, double *B, double *C)

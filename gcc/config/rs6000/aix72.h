@@ -131,8 +131,10 @@ do {									\
 #include "rs6000-cpus.def"
 #undef RS6000_CPU
 
-#ifndef RS6000_BI_ARCH
 #undef  TARGET_DEFAULT
+#ifdef RS6000_BI_ARCH
+#define TARGET_DEFAULT (ISA_2_6_MASKS_EMBEDDED | MASK_POWERPC64 | MASK_64BIT)
+#else
 #define TARGET_DEFAULT ISA_2_6_MASKS_EMBEDDED
 #endif
 

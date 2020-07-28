@@ -1,3 +1,208 @@
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/torture/pr39074-2.c: Adjust for mmix.
+	* gcc.dg/torture/pr39074.c, gcc.dg/torture/pta-callused-1.c: Ditto.
+
+2020-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/missing-std-include-10.h: New.
+	* g++.dg/lookup/missing-std-include-10.C: New.
+	* g++.dg/lookup/missing-std-include-11.C: New.
+
+2020-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84079
+	* gcc.dg/Warray-bounds-62.c: New test.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96128
+	* gcc.target/s390/vector/pr96128.c: New test.
+
+2020-07-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96203
+	* gcc.target/i386/pr96203-1.c: New test.
+	* gcc.target/i386/pr96203-2.c: Likewise.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/vector-4.c: Adjust for mmix.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Adjust for mmix.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: xfail scan for mmix.
+
+2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/reassoc-20.c: Adjust for mmix.
+
+2020-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79504
+	* g++.dg/cpp0x/decltype79.C: New test.
+
+2020-07-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/forwprop-36.c: Adjust for mmix.
+
+2020-07-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/torture/pr59330.c: Disable for mmix.
+
+2020-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/abi/pure-virtual1.C: Add dynamic_lookup option
+	for Darwin.
+
+2020-07-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96310
+	* g++.dg/warn/Wnonnull8.C: New file.
+
+2020-07-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr95907.c: New.
+
+2020-07-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/pr56493.c: Allow ":" in label, for mmix.
+
+2020-07-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/patchable_function_entry-decl.c,
+	c-c++-common/patchable_function_entry-default.c,
+	c-c++-common/patchable_function_entry-definition.c: Adjust for mmix.
+
+2020-07-24  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/96192
+	* c-c++-common/pr96192-1.c: New test.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/scanoffload.exp (scoff-testname, scoff-adjust): New.
+	(scoff): Call them.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR driver/96230
+	* gcc.misc-tests/outputs.exp: Add tests with -dumpbase-ext,
+	with identical -dumpbase, with -dumpbase "", and without any
+	-dumpbase.
+	(outest): Fix "" expansion in expected outputs, skip
+	adjustments.
+
+2020-07-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/95720
+	* lib/gcc-defs.exp (gcc_adjust_linker_flags_list): Split out of...
+	(gcc_adjust_linker_flags): ... this.  Protect gluefile and
+	wrap_flags.
+	* gcc.misc-tests/outputs.exp: Use gcc_adjust_linker_flags_list.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93567
+	* gfortran.dg/round_3.f08: Add test cases.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93592
+	* gfortran.dg/fmt_en.f90: Adjust test.
+	* gfortran.dg/fmt_en_rd.f90: New test.
+	* gfortran.dg/fmt_en_rn.f90: New test.
+	* gfortran.dg/fmt_en_ru.f90: New test.
+	* gfortran.dg/fmt_en_rz.f90: New test.
+
+2020-07-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/81339
+	* g++.dg/cpp0x/decltype78.C: New test.
+
+2020-07-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/scandump.exp (scan-dump-dem-not): Fix TCL syntax error.
+
+2020-07-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/95886
+	* gcc.target/i386/memcpy-pr95886.c: Restrict test to !ia32.
+
+2020-07-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/95886
+	* gcc.target/i386/memcpy-pr95886.c: Restrict test to LP64.
+
+2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/lastprivate-conditional-1.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-2.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-3.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-4.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-5.f90: New test.
+
+2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96260
+	* gcc.target/riscv/pr91441.c: Update warning message.
+	* gcc.target/riscv/pr96260.c: New.
+
+2020-07-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-c++-common/builtin-has-attribute-4.c: Require visibility.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/cancel-2.f90: New test.
+	* gfortran.dg/gomp/cancel-3.f90: New test.
+	* gfortran.dg/gomp/if-1.f90: New test.
+
+2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96236
+	* gcc.target/powerpc/mma-double-test.c: Update storing results for
+	correct little-endian ordering.
+	* gcc.target/powerpc/mma-single-test.c: Likewise.
+
+2020-07-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95237
+	* c-c++-common/pr95237-6.c: Only run for x86 targets.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/critical-hint-1.c: Moved to libgomp/.
+	* c-c++-common/gomp/critical-hint-2.c: Moved to libgomp/.
+	* gfortran.dg/gomp/critical-hint-1.f90: Moved to libgomp/.
+	* gfortran.dg/gomp/critical-hint-2.f90: Moved to libgomp/.
+
+2020-07-22  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* gcc.target/aarch64/ldp_vec_v2sf.c: New test.
+	* gcc.target/aarch64/ldp_vec_v2si.c: New test.
+	* gcc.target/aarch64/stp_vec_v2df.c: New test.
+	* gcc.target/aarch64/stp_vec_v2di.c: New test.
+	* gcc.target/aarch64/stp_vec_v2sf.c: New test.
+	* gcc.target/aarch64/stp_vec_v2si.c: New test.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/gomp/critical-3.C: Add nameless critical with hint testcase.
+	* c-c++-common/gomp/critical-hint-1.c: New test.
+	* c-c++-common/gomp/critical-hint-2.c: New test.
+	* gfortran.dg/gomp/critical-hint-1.f90: New test.
+	* gfortran.dg/gomp/critical-hint-2.f90: New test.
+
+2020-07-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/no_profile_instrument_function-attr-1.c: Adjust scanned
+	regex for NO_DOT_IN_LABEL.
+
 2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
 
 	PR target/95237

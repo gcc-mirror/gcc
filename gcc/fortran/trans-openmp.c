@@ -613,10 +613,21 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
   tree type = TREE_TYPE (decl), size, ptr, cond, then_b, else_b;
   stmtblock_t block, cond_block;
 
-  gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_PRIVATE
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LASTPRIVATE
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR
-	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION);
+  switch (OMP_CLAUSE_CODE (clause))
+    {
+    case OMP_CLAUSE__LOOPTEMP_:
+    case OMP_CLAUSE__REDUCTEMP_:
+    case OMP_CLAUSE__CONDTEMP_:
+    case OMP_CLAUSE__SCANTEMP_:
+      return NULL;
+    case OMP_CLAUSE_PRIVATE:
+    case OMP_CLAUSE_LASTPRIVATE:
+    case OMP_CLAUSE_LINEAR:
+    case OMP_CLAUSE_REDUCTION:
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
@@ -1678,6 +1689,10 @@ gfc_trans_omp_variable_list (enum omp_clause_code code,
 	    tree node = build_omp_clause (input_location, code);
 	    OMP_CLAUSE_DECL (node) = t;
 	    list = gfc_trans_add_clause (node, list);
+
+	    if (code == OMP_CLAUSE_LASTPRIVATE
+		&& namelist->u.lastprivate_conditional)
+	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (node) = 1;
 	  }
       }
   return list;
@@ -3201,8 +3216,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_IF);
 	switch (ifc)
 	  {
+	  case OMP_IF_CANCEL:
+	    OMP_CLAUSE_IF_MODIFIER (c) = VOID_CST;
+	    break;
 	  case OMP_IF_PARALLEL:
 	    OMP_CLAUSE_IF_MODIFIER (c) = OMP_PARALLEL;
+	    break;
+	  case OMP_IF_SIMD:
+	    OMP_CLAUSE_IF_MODIFIER (c) = OMP_SIMD;
 	    break;
 	  case OMP_IF_TASK:
 	    OMP_CLAUSE_IF_MODIFIER (c) = OMP_TASK;
@@ -4197,13 +4218,18 @@ gfc_trans_omp_cancel (gfc_code *code)
     default: gcc_unreachable ();
     }
   gfc_start_block (&block);
-  if (code->ext.omp_clauses->if_expr)
+  if (code->ext.omp_clauses->if_expr
+      || code->ext.omp_clauses->if_exprs[OMP_IF_CANCEL])
     {
       gfc_se se;
       tree if_var;
 
+      gcc_assert ((code->ext.omp_clauses->if_expr == NULL)
+		  ^ (code->ext.omp_clauses->if_exprs[OMP_IF_CANCEL] == NULL));
       gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, code->ext.omp_clauses->if_expr);
+      gfc_conv_expr (&se, code->ext.omp_clauses->if_expr != NULL
+			  ? code->ext.omp_clauses->if_expr
+			  : code->ext.omp_clauses->if_exprs[OMP_IF_CANCEL]);
       gfc_add_block_to_block (&block, &se.pre);
       if_var = gfc_evaluate_now (se.expr, &block);
       gfc_add_block_to_block (&block, &se.post);
@@ -4997,6 +5023,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Duplicate collapse.  */
 	  clausesa[GFC_OMP_SPLIT_SIMD].collapse
 	    = code->ext.omp_clauses->collapse;
+	  clausesa[GFC_OMP_SPLIT_SIMD].if_exprs[OMP_IF_SIMD]
+	    = code->ext.omp_clauses->if_exprs[OMP_IF_SIMD];
 	  /* And this is copied to all.  */
 	  clausesa[GFC_OMP_SPLIT_SIMD].if_expr
 	    = code->ext.omp_clauses->if_expr;

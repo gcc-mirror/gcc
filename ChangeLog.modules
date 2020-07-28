@@ -1,5 +1,7 @@
 2020-07-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 134051f16bd.
+
 	libcpp/
 	* directives.c (_cpp_do_file_change): Check we're moving to line
 	zero of the same file.

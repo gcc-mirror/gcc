@@ -1976,8 +1976,8 @@ package body Exp_Ch3 is
          --  traversing the expression. ???
 
          if Kind = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (Default), Name_Unchecked_Access,
-                                                      Name_Unrestricted_Access)
+           and then Attribute_Name (Default) in Name_Unchecked_Access
+                                              | Name_Unrestricted_Access
            and then Is_Entity_Name (Prefix (Default))
            and then Is_Type (Entity (Prefix (Default)))
            and then Entity (Prefix (Default)) = Rec_Type
@@ -2040,7 +2040,7 @@ package body Exp_Ch3 is
          end if;
 
          if Needs_Finalization (Typ)
-           and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
+           and then Kind not in N_Aggregate | N_Extension_Aggregate
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
@@ -3243,10 +3243,10 @@ package body Exp_Ch3 is
 
                elsif Ekind (Scope (Id)) = E_Record_Type
                  and then Present (Corresponding_Concurrent_Type (Scope (Id)))
-                 and then Nam_In (Chars (Id), Name_uCPU,
-                                              Name_uDispatching_Domain,
-                                              Name_uPriority,
-                                              Name_uSecondary_Stack_Size)
+                 and then Chars (Id) in Name_uCPU
+                                      | Name_uDispatching_Domain
+                                      | Name_uPriority
+                                      | Name_uSecondary_Stack_Size
                then
                   declare
                      Exp   : Node_Id;
@@ -6736,9 +6736,9 @@ package body Exp_Ch3 is
         and then Building_Static_Dispatch_Tables
         and then Is_Library_Level_Entity (Def_Id)
         and then Is_Library_Level_Tagged_Type (Base_Typ)
-        and then Ekind_In (Base_Typ, E_Record_Type,
-                                     E_Protected_Type,
-                                     E_Task_Type)
+        and then Ekind (Base_Typ) in E_Record_Type
+                                   | E_Protected_Type
+                                   | E_Task_Type
         and then not Has_Dispatch_Table (Base_Typ)
       then
          declare
@@ -6789,7 +6789,7 @@ package body Exp_Ch3 is
         and then not Restriction_Active (No_Secondary_Stack)
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
-        and then not (Ekind_In (Ekind (Typ), E_Array_Type, E_Array_Subtype)
+        and then not (Ekind (Typ) in E_Array_Type | E_Array_Subtype
                       and then (Has_Init_Expression (N)))
       then
          declare
@@ -7597,9 +7597,9 @@ package body Exp_Ch3 is
 
       --  Do not duplicate the work of Process_Range_Expr_In_Decl in Sem_Ch3
 
-      if Nkind_In (Parent (N), N_Constrained_Array_Definition, N_Slice)
-        and then Nkind (Parent (Parent (N))) /= N_Full_Type_Declaration
-        and then Nkind (Parent (Parent (N))) /= N_Object_Declaration
+      if Nkind (Parent (N)) in N_Constrained_Array_Definition | N_Slice
+        and then Nkind (Parent (Parent (N))) not in
+                   N_Full_Type_Declaration | N_Object_Declaration
       then
          Apply_Range_Check (Ran, Typ);
       end if;
@@ -8032,7 +8032,7 @@ package body Exp_Ch3 is
 
       --  See GNAT Pool packages in the Run-Time for more details
 
-      elsif Ekind_In (Def_Id, E_Access_Type, E_General_Access_Type) then
+      elsif Ekind (Def_Id) in E_Access_Type | E_General_Access_Type then
          declare
             Loc        : constant Source_Ptr := Sloc (N);
             Desig_Type : constant Entity_Id  := Designated_Type (Def_Id);
@@ -8698,7 +8698,7 @@ package body Exp_Ch3 is
          --  If the initial value is null or an aggregate, qualify it with the
          --  underlying type in order to provide a proper context.
 
-         if Nkind_In (Expr, N_Aggregate, N_Null) then
+         if Nkind (Expr) in N_Aggregate | N_Null then
             Expr :=
               Make_Qualified_Expression (Loc,
                 Subtype_Mark => New_Occurrence_Of (Under_Typ, Loc),

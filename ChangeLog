@@ -1,3 +1,7 @@
+2020-07-22  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2020-06-12  Martin Liska  <mliska@suse.cz>
 
 	* .gitignore: Add .clang-tidy.

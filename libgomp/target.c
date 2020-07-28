@@ -362,7 +362,7 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
   tgt_var->key = oldn;
   tgt_var->copy_from = GOMP_MAP_COPY_FROM_P (kind);
   tgt_var->always_copy_from = GOMP_MAP_ALWAYS_FROM_P (kind);
-  tgt_var->do_detach = false;
+  tgt_var->is_attach = false;
   tgt_var->offset = newn->host_start - oldn->host_start;
   tgt_var->length = newn->host_end - newn->host_start;
 
@@ -1093,9 +1093,10 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		      tgt->list[i].length = n->host_end - n->host_start;
 		      tgt->list[i].copy_from = false;
 		      tgt->list[i].always_copy_from = false;
-		      tgt->list[i].do_detach
-			= (pragma_kind != GOMP_MAP_VARS_ENTER_DATA);
-		      n->refcount++;
+		      tgt->list[i].is_attach = true;
+		      /* OpenACC 'attach'/'detach' doesn't affect
+			 structured/dynamic reference counts ('n->refcount',
+			 'n->dynamic_refcount').  */
 		    }
 		  else
 		    {
@@ -1151,7 +1152,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		tgt->list[i].copy_from = GOMP_MAP_COPY_FROM_P (kind & typemask);
 		tgt->list[i].always_copy_from
 		  = GOMP_MAP_ALWAYS_FROM_P (kind & typemask);
-		tgt->list[i].do_detach = false;
+		tgt->list[i].is_attach = false;
 		tgt->list[i].offset = 0;
 		tgt->list[i].length = k->host_end - k->host_start;
 		k->refcount = 1;
@@ -1206,7 +1207,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			  tgt->list[j].key = k;
 			  tgt->list[j].copy_from = false;
 			  tgt->list[j].always_copy_from = false;
-			  tgt->list[j].do_detach = false;
+			  tgt->list[j].is_attach = false;
 			  if (k->refcount != REFCOUNT_INFINITY)
 			    k->refcount++;
 			  gomp_map_pointer (tgt, aq,
@@ -1434,16 +1435,21 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
     {
       splay_tree_key k = tgt->list[i].key;
 
-      if (k != NULL && tgt->list[i].do_detach)
+      if (k != NULL && tgt->list[i].is_attach)
 	gomp_detach_pointer (devicep, aq, k, tgt->list[i].key->host_start
 					     + tgt->list[i].offset,
-			     k->refcount == 1, NULL);
+			     false, NULL);
     }
 
   for (i = 0; i < tgt->list_count; i++)
     {
       splay_tree_key k = tgt->list[i].key;
       if (k == NULL)
+	continue;
+
+      /* OpenACC 'attach'/'detach' doesn't affect structured/dynamic reference
+	 counts ('n->refcount', 'n->dynamic_refcount').  */
+      if (tgt->list[i].is_attach)
 	continue;
 
       bool do_unmap = false;

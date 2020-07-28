@@ -799,7 +799,7 @@ package body Sem is
       --  and because the reference may become overloaded in the instance.
 
       elsif GNATprove_Mode
-        and then Nkind_In (N, N_Expanded_Name, N_Identifier)
+        and then Nkind (N) in N_Expanded_Name | N_Identifier
         and then not Is_Overloaded (N)
         and then not Inside_A_Generic
       then
@@ -1739,7 +1739,7 @@ package body Sem is
       begin
          --  Problem does not arise with main subprograms
 
-         if not Nkind_In (MCU, N_Package_Body, N_Package_Declaration) then
+         if Nkind (MCU) not in N_Package_Body | N_Package_Declaration then
             return False;
          end if;
 
@@ -1854,13 +1854,12 @@ package body Sem is
                      --  N_Null_Statement will happen in case of a ghost unit
                      --  which gets rewritten.
 
-                     if not Nkind_In
-                              (Unit (Withed_Unit),
-                                 N_Generic_Package_Declaration,
-                                 N_Package_Body,
-                                 N_Package_Renaming_Declaration,
-                                 N_Subprogram_Body,
-                                 N_Null_Statement)
+                     if Nkind (Unit (Withed_Unit)) not in
+                          N_Generic_Package_Declaration  |
+                          N_Package_Body                 |
+                          N_Package_Renaming_Declaration |
+                          N_Subprogram_Body              |
+                          N_Null_Statement
                      then
                         Write_Unit_Name
                           (Unit_Name (Get_Cunit_Unit_Number (Withed_Unit)));
@@ -1960,7 +1959,7 @@ package body Sem is
             --  Process the unit if it is a spec or the main unit, if it
             --  has no previous spec or we have done all other units.
 
-            if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
+            if Nkind (Item) not in N_Package_Body | N_Subprogram_Body
               or else Acts_As_Spec (CU)
             then
                if CU = Main_CU and then not Do_Main then

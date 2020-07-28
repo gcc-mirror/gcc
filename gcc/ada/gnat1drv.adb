@@ -1346,8 +1346,7 @@ begin
       --  We can generate code for a package declaration or a subprogram
       --  declaration only if it does not required a body.
 
-      elsif Nkind_In (Main_Unit_Kind, N_Package_Declaration,
-                                      N_Subprogram_Declaration)
+      elsif Main_Unit_Kind in N_Package_Declaration | N_Subprogram_Declaration
         and then
           (not Body_Required (Main_Unit_Node)
              or else Distribution_Stub_Mode = Generate_Caller_Stub_Body)
@@ -1357,8 +1356,8 @@ begin
       --  We can generate code for a generic package declaration of a generic
       --  subprogram declaration only if does not require a body.
 
-      elsif Nkind_In (Main_Unit_Kind, N_Generic_Package_Declaration,
-                                      N_Generic_Subprogram_Declaration)
+      elsif Main_Unit_Kind in
+              N_Generic_Package_Declaration | N_Generic_Subprogram_Declaration
         and then not Body_Required (Main_Unit_Node)
       then
          Back_End_Mode := Generate_Object;
@@ -1366,8 +1365,8 @@ begin
       --  Compilation units that are renamings do not require bodies, so we can
       --  generate code for them.
 
-      elsif Nkind_In (Main_Unit_Kind, N_Package_Renaming_Declaration,
-                                      N_Subprogram_Renaming_Declaration)
+      elsif Main_Unit_Kind in N_Package_Renaming_Declaration |
+                              N_Subprogram_Renaming_Declaration
       then
          Back_End_Mode := Generate_Object;
 

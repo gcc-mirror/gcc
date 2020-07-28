@@ -5544,7 +5544,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     {
       warned = warning_at (loc, OPT_Wnonnull,
 			   "%qs pointer null", "this");
-      if (pctx->fndecl)
+      if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to non-static member function %qD",
 		pctx->fndecl);
@@ -5554,7 +5554,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
       warned = warning_at (loc, OPT_Wnonnull,
 			   "argument %u null where non-null expected",
 			   (unsigned) param_num);
-      if (pctx->fndecl)
+      if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to function %qD declared %qs",
 		pctx->fndecl, "nonnull");
@@ -8770,8 +8770,7 @@ c_family_tests (void)
 #endif /* #if CHECKING_P */
 
 /* Attempt to locate a suitable location within FILE for a
-   #include directive to be inserted before.  FILE should
-   be a string from libcpp (pointer equality is used).
+   #include directive to be inserted before.  
    LOC is the location of the relevant diagnostic.
 
    Attempt to return the location within FILE immediately
@@ -8806,14 +8805,17 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 
       if (const line_map_ordinary *from
 	  = linemap_included_from_linemap (line_table, ord_map))
-	if (from->to_file == file)
+	/* We cannot use pointer equality, because with preprocessed
+	   input all filename strings are unique.  */
+	if (0 == strcmp (from->to_file, file))
 	  {
 	    last_include_ord_map = from;
 	    last_ord_map_after_include = NULL;
 	  }
 
-      if (0 == strcmp (ord_map->to_file, file)
-	  && ord_map->to_line)
+      /* Likewise, use strcmp, and reject any line-zero introductory
+	 map.  */
+      if (ord_map->to_line && 0 == strcmp (ord_map->to_file, file))
 	{
 	  if (!first_ord_map_in_file)
 	    first_ord_map_in_file = ord_map;

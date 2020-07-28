@@ -1589,6 +1589,10 @@ package Sem_Util is
    --  True if E is the constructed wrapper for an access_to_subprogram
    --  type with Pre/Postconditions.
 
+   function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean;
+   --  Determines if N is an actual parameter of in-out mode in a subprogram
+   --  call
+
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
 
@@ -2187,6 +2191,12 @@ package Sem_Util is
    --  Use_Original_Node is used to perform the test on Original_Node (N). By
    --  default is True since this routine is commonly invoked as part of the
    --  semantic analysis and it must not be disturbed by the rewriten nodes.
+
+   function Is_View_Conversion (N : Node_Id) return Boolean;
+   --  Returns True if N is a type_conversion whose operand is the name of an
+   --  object and both its target type and operand type are tagged, or it
+   --  appears in a call as an actual parameter of mode out or in out
+   --  (RM 4.6(5/2)).
 
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true

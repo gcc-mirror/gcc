@@ -560,7 +560,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
--fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{]} @gol
+-fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -1183,6 +1183,7 @@ See RS/6000 and PowerPC Options.
 -mblock-move-inline-limit=@var{num} @gol
 -mblock-compare-inline-limit=@var{num} @gol
 -mblock-compare-inline-loop-limit=@var{num} @gol
+-mno-block-ops-unaligned-vsx @gol
 -mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -mvrsave  -mno-vrsave @gol
@@ -14268,7 +14269,7 @@ operand constant, @code{__sanitizer_cov_trace_cmpf} or
 @code{__sanitizer_cov_trace_cmpd} for float or double comparisons and
 @code{__sanitizer_cov_trace_switch} for switch statements.
 
-@item -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{]}
+@item -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
 @opindex fcf-protection
 Enable code instrumentation of control-flow transfers to increase
 program security by checking that target addresses of control-flow
@@ -14285,6 +14286,11 @@ implements checking of validity at the point of returning from a
 function.  The value @code{full} is an alias for specifying both
 @code{branch} and @code{return}. The value @code{none} turns off
 instrumentation.
+
+The value @code{check} is used for the final link with link-time
+optimization (LTO).  An error is issued if LTO object files are
+compiled with different @option{-fcf-protection} values.  The
+value @code{check} is ignored at the compile time.
 
 The macro @code{__CET__} is defined when @option{-fcf-protection} is
 used.  The first bit of @code{__CET__} is set to 1 for the value
@@ -27094,6 +27100,13 @@ store instructions when the option @option{-mcpu=future} is used.
 @opindex mno-mma
 Generate (do not generate) the MMA instructions when the option
 @option{-mcpu=future} is used.
+
+@item -mblock-ops-unaligned-vsx
+@itemx -mno-block-ops-unaligned-vsx
+@opindex block-ops-unaligned-vsx
+@opindex no-block-ops-unaligned-vsx
+Generate (do not generate) unaligned vsx loads and stores for
+inline expansion of @code{memcpy} and @code{memmove}.
 @end table
 
 @node RX Options

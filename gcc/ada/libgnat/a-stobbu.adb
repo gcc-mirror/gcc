@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 package body Ada.Strings.Text_Output.Bit_Buckets is
 
    type Bit_Bucket_Type is new Sink with null record;

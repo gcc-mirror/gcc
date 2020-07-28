@@ -26,6 +26,8 @@
       integer omp_lock_kind, omp_nest_lock_kind, openmp_version
       parameter (omp_lock_kind = @OMP_LOCK_KIND@)
       parameter (omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@)
+      integer omp_depend_kind
+      parameter (omp_depend_kind = @OMP_DEPEND_KIND@)
       integer omp_sched_kind
       parameter (omp_sched_kind = 4)
       integer (omp_sched_kind) omp_sched_static, omp_sched_dynamic
@@ -81,7 +83,7 @@
       integer omp_allocator_handle_kind, omp_alloctrait_key_kind
       integer omp_alloctrait_val_kind, omp_memspace_handle_kind
       parameter (omp_allocator_handle_kind = @INTPTR_T_KIND@)
-      parameter (omp_alloctrait_key_kind = @INTPTR_T_KIND@)
+      parameter (omp_alloctrait_key_kind = 4)
       parameter (omp_alloctrait_val_kind = @INTPTR_T_KIND@)
       parameter (omp_memspace_handle_kind = @INTPTR_T_KIND@)
       integer (omp_alloctrait_key_kind) omp_atk_sync_hint

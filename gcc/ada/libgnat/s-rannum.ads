@@ -57,6 +57,8 @@
 
 with Interfaces;
 
+private with Ada.Strings.Text_Output;
+
 package System.Random_Numbers with
   SPARK_Mode => Off
 is
@@ -142,7 +144,10 @@ private
    --  Feedback distance from the current position
 
    subtype State_Val is Interfaces.Unsigned_32;
-   type State is array (0 .. N - 1) of State_Val;
+   type State is array (0 .. N - 1) of State_Val with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : State);
 
    type Writable_Access (Self : access Generator) is limited null record;
    --  Auxiliary type to make Generator a self-referential type

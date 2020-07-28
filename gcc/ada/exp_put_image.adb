@@ -520,8 +520,8 @@ package body Exp_Put_Image is
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      pragma Assert (Typ = Base_Type (Typ));
-      pragma Assert (not Is_Unchecked_Union (Typ));
+      Btyp : constant Entity_Id := Base_Type (Typ);
+      pragma Assert (not Is_Unchecked_Union (Btyp));
 
       First_Time : Boolean := True;
 
@@ -645,8 +645,8 @@ package body Exp_Put_Image is
             --  with no components there is no need to handle it.
 
             while Present (Item) loop
-               if Nkind_In (Item, N_Component_Declaration,
-                                  N_Discriminant_Specification)
+               if Nkind (Item) in
+                    N_Component_Declaration | N_Discriminant_Specification
                  and then
                    ((Chars (Defining_Identifier (Item)) = Name_uParent
                        and then not Is_Interface
@@ -694,7 +694,7 @@ package body Exp_Put_Image is
       Stms : constant List_Id := New_List;
       Rdef : Node_Id;
       Type_Decl : constant Node_Id :=
-        Declaration_Node (Base_Type (Underlying_Type (Typ)));
+        Declaration_Node (Base_Type (Underlying_Type (Btyp)));
 
    --  Start of processing for Build_Record_Put_Image_Procedure
 
@@ -732,8 +732,8 @@ package body Exp_Put_Image is
           Parameter_Associations => New_List
             (Make_Identifier (Loc, Name_S))));
 
-      Pnam := Make_Put_Image_Name (Loc, Typ);
-      Build_Put_Image_Proc (Loc, Typ, Decl, Pnam, Stms);
+      Pnam := Make_Put_Image_Name (Loc, Btyp);
+      Build_Put_Image_Proc (Loc, Btyp, Decl, Pnam, Stms);
    end Build_Record_Put_Image_Procedure;
 
    -------------------------------

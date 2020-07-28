@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Ada.Strings.Text_Output.Files;
 with Ada.Strings.Text_Output.Buffers; use Ada.Strings.Text_Output.Buffers;
 with Ada.Strings.Text_Output.Utils; use Ada.Strings.Text_Output.Utils;
