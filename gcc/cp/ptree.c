@@ -57,17 +57,35 @@ cxx_print_decl (FILE *file, tree node, int indent)
 	       decl_as_string (node, TFF_TEMPLATE_HEADER));
     }
 
-  indent_to (file, indent + 3);
+  bool need_indent = true;
+
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
-    fprintf (file, " not-really-extern");
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " not-really-extern");
+      need_indent = false;
+    }
+
   if (TREE_CODE (node) == FUNCTION_DECL
       && DECL_PENDING_INLINE_INFO (node))
-    fprintf (file, " pending-inline-info %p",
-	     (void *) DECL_PENDING_INLINE_INFO (node));
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " pending-inline-info %p",
+	       (void *) DECL_PENDING_INLINE_INFO (node));
+      need_indent = false;
+    }
+  
   if (VAR_OR_FUNCTION_DECL_P (node)
       && DECL_TEMPLATE_INFO (node))
-    fprintf (file, " template-info %p",
-	     (void *) DECL_TEMPLATE_INFO (node));
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " template-info %p",
+	       (void *) DECL_TEMPLATE_INFO (node));
+      need_indent = false;
+    }
 }
 
 void
