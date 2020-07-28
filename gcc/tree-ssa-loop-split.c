@@ -1145,6 +1145,16 @@ stmt_semi_invariant_p_1 (struct loop *loop, gimple *stmt,
 
       if (gimple_bb (stmt) == loop->header)
 	{
+	  /* If the entry value is subject to abnormal coalescing
+	     avoid the transform since we're going to duplicate the
+	     loop header and thus likely introduce overlapping life-ranges
+	     between the PHI def and the entry on the path when the
+	     first loop is skipped.  */
+	  tree entry_def
+	    = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
+	  if (TREE_CODE (entry_def) == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (entry_def))
+	    return false;
 	  invar = loop_iter_phi_semi_invariant_p (loop, phi, skip_head);
 	  return invar;
 	}
