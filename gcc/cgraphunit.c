@@ -2806,6 +2806,9 @@ static bool maybe_compile_in_parallel (void)
       return false;
     }
 
+  if (jobserver)
+    num_jobs = 2;
+
   if (num_jobs == 0)
     {
       inform (UNKNOWN_LOCATION, "-fparallel-jobs=0 makes no sense");

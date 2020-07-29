@@ -1,5 +1,10 @@
 2020-07-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
+	* cgraphunit.c (lto_merge_comdat_map): Avoid crash due to
+	division by zero.
+
+2020-07-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
 	* lto-partition.c (balance_partitions): Accept number of jobs as
 	argument.
 
