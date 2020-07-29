@@ -72,6 +72,13 @@ bool jobserver_initialize ()
   if (!success)
     return false;
 
+  struct stat statbuf;
+  if (fstat (rfd, &statbuf) < 0
+      || (statbuf.st_mode & S_IFMT) != S_IFIFO
+      || fstat (wfd, &statbuf) < 0
+      || (statbuf.st_mode & S_IFMT) != S_IFIFO)
+    return false;
+
   int flags = fcntl (rfd, F_GETFL);
   if (flags < 0)
     return false;
@@ -81,29 +88,6 @@ bool jobserver_initialize ()
     nonblock_mode = true;
 
   return (jobserver_initialized = true);
-
-#if 0
-  /* Test if we can read from the rfd.  */
-  jobserver_token_t token;
-  ssize_t r = read (rfd, &token, sizeof (jobserver_token_t));
-
-  gcc_assert (r == sizeof (jobserver_token_t) || r == 0 || r == -1);
-
-  if (r < 0)
-    {
-      /* Check errno.  We may have no problem at all.  */
-      if (errno != EAGAIN)
-	return false;
-    }
-
-  /* Reading 0 bytes indicate that fd was closed by parent process.  */
-  if (r == 0)
-    return false;
-
-  /* Check if we got a important token that we have to return.  */
-  if (token != JOBSERVER_NULL_TOKEN)
-    jobserver_return_token (token);
-#endif
 }
 
 /* Finalize the jobserver, so this interface could be used again later.  */
@@ -116,6 +100,7 @@ bool jobserver_finalize ()
   close (wfd);
 
   rfd = wfd = -1;
+  nonblock_node = false;
 
   jobserver_initialized = false;
   return true;

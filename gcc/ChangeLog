@@ -1,3 +1,10 @@
+2020-07-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (maybe_compile_in_parallel): Implement automatic
+	jobserver detection flag.
+	* jobserver.cc (jobserver_initialize): Check if Make fds are FIFOs.
+	(jobserver_finalize): Set nonblock_mode back to false.
+
 2020-07-27  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* Makefile.in: Mark jobserver.cc to be compiled.

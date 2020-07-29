@@ -2774,22 +2774,35 @@ static bool maybe_compile_in_parallel (void)
   bool promote_statics = param_promote_statics;
   bool balance = param_balance_partitions;
   bool jobserver = false;
+  bool job_auto = false;
   int num_jobs = -1;
 
   if (!flag_parallel_jobs || !split_outputs)
     return false;
 
-  if (!strcmp (flag_parallel_jobs, "jobserver"))
+  if (!strcmp (flag_parallel_jobs, "auto"))
+    {
+      jobserver = jobserver_initialize ();
+      job_auto = true;
+    }
+  else if (!strcmp (flag_parallel_jobs, "jobserver"))
     jobserver = jobserver_initialize ();
   else if (is_number (flag_parallel_jobs))
     num_jobs = atoi (flag_parallel_jobs);
   else
     gcc_unreachable ();
 
+  if (job_auto && !jobserver)
+    {
+      num_jobs = sysconf (_SC_NPROCESSORS_CONF);
+      if (num_jobs > 2)
+	num_jobs = 2;
+    }
+
   if (num_jobs < 0 && !jobserver)
     {
-      error (UNKNOWN_LOCATION,
-	      "'-fparallel-jobs=jobserver', but no GNU Jobserver found");
+      inform (UNKNOWN_LOCATION,
+	      "-fparallel-jobs=jobserver, but no GNU Jobserver found");
       return false;
     }
 
