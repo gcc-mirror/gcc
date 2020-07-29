@@ -28,7 +28,7 @@ struct S2 : S1 {};
 S1
 f (S2 s)
 {
-  return std::move(s); // { dg-bogus "redundant move in return statement" }
+  return std::move(s); // { dg-warning "redundant move in return statement" "" { target c++20 } }
 }
 
 struct R1 {
@@ -40,7 +40,7 @@ struct R2 : R1 {};
 R1
 f2 (const R2 s)
 {
-  return std::move(s); // { dg-bogus "redundant move in return statement" }
+  return std::move(s); // { dg-warning "redundant move in return statement" "" { target c++20 } }
 }
 
 struct T1 {
@@ -55,5 +55,5 @@ f3 (const T2 s)
 {
   // Without std::move: const T1 &
   // With std::move: const T1 &&
-  return std::move(s); // { dg-bogus "redundant move in return statement" }
+  return std::move(s); // { dg-warning "redundant move in return statement" "" { target c++20 } }
 }

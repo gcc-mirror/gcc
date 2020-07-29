@@ -1189,29 +1189,15 @@ finish_co_return_stmt (location_t kw, tree expr)
 	 treating the object as an rvalue, if that fails, then we fall back
 	 to regular overload resolution.  */
 
-      if (treat_lvalue_as_rvalue_p (expr, /*parm_ok*/true)
-	  && CLASS_TYPE_P (TREE_TYPE (expr))
-	  && !TYPE_VOLATILE (TREE_TYPE (expr)))
-	{
-	  /* It's OK if this fails... */
-	  vec<tree, va_gc> *args = make_tree_vector_single (move (expr));
-	  co_ret_call
-	    = coro_build_promise_expression (current_function_decl, NULL,
-					     coro_return_value_identifier, kw,
-					     &args, /*musthave=*/false);
-	  release_tree_vector (args);
-	}
+      tree arg = expr;
+      if (tree moved = treat_lvalue_as_rvalue_p (expr, /*return*/true))
+	arg = moved;
 
-      if (!co_ret_call || co_ret_call == error_mark_node)
-	{
-	  /* ... but this must succeed if we didn't get the move variant.  */
-	  vec<tree, va_gc> *args = make_tree_vector_single (expr);
-	  co_ret_call
-	    = coro_build_promise_expression (current_function_decl, NULL,
-					     coro_return_value_identifier, kw,
-					     &args, /*musthave=*/true);
-	  release_tree_vector (args);
-	}
+      releasing_vec args = make_tree_vector_single (arg);
+      co_ret_call
+	= coro_build_promise_expression (current_function_decl, NULL,
+					 coro_return_value_identifier, kw,
+					 &args, /*musthave=*/true);
     }
 
   /* Makes no sense for a co-routine really. */

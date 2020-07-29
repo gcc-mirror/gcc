@@ -696,21 +696,25 @@ build_throw (location_t loc, tree exp)
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
 	     treated as an rvalue for the purposes of overload resolution
 	     to favor move constructors over copy constructors.  */
-	  if (treat_lvalue_as_rvalue_p (exp, /*parm_ok*/false)
-	      /* The variable must not have the `volatile' qualifier.  */
-	      && !CP_TYPE_VOLATILE_P (TREE_TYPE (exp)))
+	  if (tree moved = treat_lvalue_as_rvalue_p (exp, /*return*/false))
 	    {
-	      tree moved = move (exp);
-	      releasing_vec exp_vec (make_tree_vector_single (moved));
-	      moved = (build_special_member_call
-		       (object, complete_ctor_identifier, &exp_vec,
-			TREE_TYPE (object), flags|LOOKUP_PREFER_RVALUE,
-			tf_none));
-	      if (moved != error_mark_node)
+	      if (cxx_dialect < cxx20)
 		{
-		  exp = moved;
-		  converted = true;
+		  releasing_vec exp_vec (make_tree_vector_single (moved));
+		  moved = (build_special_member_call
+			   (object, complete_ctor_identifier, &exp_vec,
+			    TREE_TYPE (object), flags|LOOKUP_PREFER_RVALUE,
+			    tf_none));
+		  if (moved != error_mark_node)
+		    {
+		      exp = moved;
+		      converted = true;
+		    }
 		}
+	      else
+		/* In C++20 we just treat the return value as an rvalue that
+		   can bind to lvalue refs.  */
+		exp = moved;
 	    }
 
 	  /* Call the copy constructor.  */

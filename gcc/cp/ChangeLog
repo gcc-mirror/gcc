@@ -1,3 +1,32 @@
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-gimplify.c (cp_genericize_r): Set IMPORTED_DECL's context.
+	* cp-objcp-common.c (cp_pushdecl): Set decl's context.
+	* decl.c (grokfndecl): Make DECL_CONTEXT setting clearer.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (fixup_type_variants): Copy TYPE_SIZE and
+	TYPE_SIZE_UINIT.
+	(finish_struct): Call it.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* ptree.c (cxx_print_decl): Better indentation.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	PR c++/96328
+	* parser.c (cp_lexer_safe_previous_token): Don't call
+	cp_lexer_previous_token, instead inline it by hand and return NULL
+	instead of failing assertion if all previous tokens until the first
+	one are purged.
+	(cp_parser_error_1): Optimize - only call cp_lexer_safe_previous_token
+	if token->type is CPP_NAME.  Use cp_lexer_safe_previous_token instead
+	of cp_lexer_previous_token for the missing_token_desc != RT_NONE
+	case too.
+
 2020-07-27  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (enum cp_tree_index): Add CPTI_AS_BASE_IDENTIFIER.

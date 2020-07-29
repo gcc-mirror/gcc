@@ -1779,7 +1779,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                 {
                   vect_peeling_hash_insert (&peeling_htab, loop_vinfo,
 					    dr_info, npeel_tmp);
-		  npeel_tmp += target_align / dr_size;
+		  npeel_tmp += MAX (1, target_align / dr_size);
                 }
 
 	      one_misalignment_known = true;
