@@ -1,3 +1,52 @@
+2020-07-28  Sergei Trofimovich  <siarheit@google.com>
+
+	PR ipa/96291
+	* gcc.dg/lto/pr96291_0.c: New testcase.
+	* gcc.dg/lto/pr96291_1.c: Support file.
+	* gcc.dg/lto/pr96291_2.c: Likewise.
+	* gcc.dg/lto/pr96291.h: Likewise.
+
+2020-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/fold-popcount-5.c: New test.
+	* gcc.dg/fold-parity-1.c: Likewise.
+	* gcc.dg/fold-parity-2.c: Likewise.
+	* gcc.dg/fold-parity-3.c: Likewise.
+	* gcc.dg/fold-parity-4.c: Likewise.
+	* gcc.dg/fold-parity-5.c: Likewise.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/options.exp: Fix spello
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	PR c++/96328
+	* g++.dg/diagnostic/pr96328.C: New test.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96323
+	* c-c++-common/cpp/pr96323.c: New test.
+
+2020-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/cvt.c: New test.
+	* gcc.target/nvptx/shift16.c: New test.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/nontype-subob1.C: Allow s1, i1 or x1 instead of l1 for
+	targets with short, int or long long ssize_t.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96335
+	* gcc.dg/pr96335.c: New test.
+
 2020-07-27  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/torture/pr39074-2.c: Adjust for mmix.

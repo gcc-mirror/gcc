@@ -1,3 +1,23 @@
+2020-07-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h
+	(_Hashtable<>(_InputIterator, _InputIterator, size_t, const _H1&,
+	const _H2&, const _Hash&, const _Equal&, const _ExtractKey&,
+	const allocator_type&, true_type)): New.
+	(_Hashtable<>(_InputIterator, _InputIterator, size_t, const _H1&,
+	const _H2&, const _Hash&, const _Equal&, const _ExtractKey&,
+	const allocator_type&, false_type)): New.
+	(_Hashtable<>(_InputIterator, _InputIterator, size_t, const _H1&,
+	const _H2&, const _Hash&, const _Equal&, const _ExtractKey&,
+	const allocator_type&)): Delegate to latters.
+	(operator=(initializer_list<value_type>)): Rehash if too small.
+	(_M_insert(_Arg&&, const _NodeGenerator&, true_type)): Remove
+	size_t len parameter.
+	* include/bits/hashtable_policy.h (_Insert_base<>::_M_insert_range):
+	Do not try to get input range distance.
+	* testsuite/23_containers/unordered_set/cons/bucket_hint.cc: New test.
+	* testsuite/23_containers/unordered_set/modifiers/insert.cc: New test.
+
 2020-07-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Map_base<>::at): Use
