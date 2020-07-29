@@ -20,14 +20,8 @@
 # <http://www.gnu.org/licenses/>.
 
 
-# Endiannesses.
-MULTILIB_OPTIONS     = mlittle-endian/mbig-endian
-MULTILIB_DIRNAMES    = little big
-MULTILIB_MATCHES     = mlittle-endian=EL
-MULTILIB_MATCHES     = mbig-endian=EB
-
 MULTILIB_EXCEPTIONS  =
-CSKY_MULTILIB_OSDIRNAMES = mbig-endian=/big mlittle-endian=/. mhard-float=/hard-fp msoft-float=/. mcpu.ck810f=/. mcpu.ck807f=/ck807
+CSKY_MULTILIB_OSDIRNAMES = mhard-float=/hard-fp msoft-float=/. mcpu.ck810f=/. mcpu.ck807f=/ck807
 
 # Arch variants.
 MULTILIB_OPTIONS     += mcpu=ck810f/mcpu=ck807f
