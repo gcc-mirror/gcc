@@ -617,6 +617,11 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN) \
  mmix_asm_output_ascii (STREAM, PTR, LEN)
 
+/* Make output more ELF-like, by emitting .hidden for hidden symbols
+   (which don't really matter for mmix-knuth-mmixware). */
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+ default_elf_asm_output_external (FILE, DECL, NAME)
+
 /* Node: Uninitialized Data */
 
 #define ASM_OUTPUT_ALIGNED_COMMON(ST, N, S, A) \
