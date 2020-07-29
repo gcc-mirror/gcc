@@ -577,6 +577,9 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define SLOW_BYTE_ACCESS 0
 
+/* A PUSHJ doesn't cost more than a PUSHGO, so don't needlessly create
+   the latter.  */
+#define NO_FUNCTION_CSE 1
 
 /* Node: Sections */
 
