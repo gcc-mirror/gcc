@@ -766,6 +766,7 @@ enum omp_mask1
   OMP_CLAUSE_NUM_THREADS,
   OMP_CLAUSE_SCHEDULE,
   OMP_CLAUSE_DEFAULT,
+  OMP_CLAUSE_ORDER,
   OMP_CLAUSE_ORDERED,
   OMP_CLAUSE_COLLAPSE,
   OMP_CLAUSE_UNTIED,
@@ -1549,6 +1550,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  break;
 	case 'o':
+	  if ((mask & OMP_CLAUSE_ORDER)
+	      && !c->order_concurrent
+	      && gfc_match ("order ( concurrent )") == MATCH_YES)
+	    {
+	      c->order_concurrent = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_ORDERED)
 	      && !c->ordered
 	      && gfc_match ("ordered") == MATCH_YES)
@@ -2575,7 +2583,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION			\
    | OMP_CLAUSE_SCHEDULE | OMP_CLAUSE_ORDERED | OMP_CLAUSE_COLLAPSE	\
-   | OMP_CLAUSE_LINEAR)
+   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
@@ -2583,7 +2591,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
    | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN	\
-   | OMP_CLAUSE_IF)
+   | OMP_CLAUSE_IF | OMP_CLAUSE_ORDER)
 #define OMP_TASK_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\

@@ -3371,6 +3371,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->order_concurrent)
+    {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_ORDER);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
   if (clauses->untied)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_UNTIED);
@@ -4970,6 +4976,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Duplicate collapse.  */
 	  clausesa[GFC_OMP_SPLIT_DISTRIBUTE].collapse
 	    = code->ext.omp_clauses->collapse;
+	  clausesa[GFC_OMP_SPLIT_DISTRIBUTE].order_concurrent
+	    = code->ext.omp_clauses->order_concurrent;
 	}
       if (mask & GFC_OMP_MASK_PARALLEL)
 	{
@@ -5015,6 +5023,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Duplicate collapse.  */
 	  clausesa[GFC_OMP_SPLIT_DO].collapse
 	    = code->ext.omp_clauses->collapse;
+	  clausesa[GFC_OMP_SPLIT_DO].order_concurrent
+	    = code->ext.omp_clauses->order_concurrent;
 	}
       if (mask & GFC_OMP_MASK_SIMD)
 	{
@@ -5029,6 +5039,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->collapse;
 	  clausesa[GFC_OMP_SPLIT_SIMD].if_exprs[OMP_IF_SIMD]
 	    = code->ext.omp_clauses->if_exprs[OMP_IF_SIMD];
+	  clausesa[GFC_OMP_SPLIT_SIMD].order_concurrent
+	    = code->ext.omp_clauses->order_concurrent;
 	  /* And this is copied to all.  */
 	  clausesa[GFC_OMP_SPLIT_SIMD].if_expr
 	    = code->ext.omp_clauses->if_expr;
