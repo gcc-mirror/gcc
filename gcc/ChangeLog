@@ -1,3 +1,39 @@
+2020-07-28  Sergei Trofimovich  <siarheit@google.com>
+
+	PR ipa/96291
+	* ipa-cp.c (has_undead_caller_from_outside_scc_p): Consider
+	unoptimized callers as undead.
+
+2020-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* match.pd (popcount(x)&1 -> parity(x)): New simplification.
+	(parity(~x) -> parity(x)): New simplification.
+	(parity(x)^parity(y) -> parity(x^y)): New simplification.
+	(parity(x&1) -> x&1): New simplification.
+	(popcount(x) -> x>>C): New simplification.
+
+2020-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (extendqihi2): New instruction.
+	(ashl<mode>3, ashr<mode>3, lshr<mode>3): Support HImode.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96335
+	* calls.c (maybe_warn_rdwr_sizes): Add FNDECL and FNTYPE arguments,
+	instead of trying to rediscover them in the body.
+	(initialize_argument_information): Adjust caller.
+
+2020-07-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Factor out some code
+	to determine peel_iters_epilogue to...
+	(vect_get_peel_iters_epilogue): ...this new function.
+	(vect_estimate_min_profitable_iters): Refactor cost calculation on
+	peel_iters_prologue and peel_iters_epilogue.
+
 2020-07-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84079
