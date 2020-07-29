@@ -452,6 +452,13 @@
  (and (match_code "mem")
       (match_test "TARGET_32BIT && arm_coproc_mem_operand (op, FALSE)")))
 
+(define_memory_constraint "Uj"
+ "@internal
+  In ARM/Thumb-2 state an VFP load/store address which does not support
+  writeback at all (eg vldr.16)."
+ (and (match_code "mem")
+      (match_test "TARGET_32BIT && arm_coproc_mem_operand_no_writeback (op)")))
+
 (define_memory_constraint "Uy"
  "@internal
   In ARM/Thumb-2 state a valid iWMMX load/store address."
