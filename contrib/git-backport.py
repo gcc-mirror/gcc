@@ -46,7 +46,7 @@ if __name__ == '__main__':
         conflicts = out.strip().split('\n')
         changelogs = [c for c in conflicts if c.endswith('ChangeLog')]
         if changelogs:
-            cmd = 'git checkout --theirs %s' % '\n'.join(changelogs)
+            cmd = 'git checkout --theirs %s' % ' '.join(changelogs)
             subprocess.check_output(cmd, shell=True)
         # 2) remove all ChangeLog files from index
         cmd = 'git diff --name-only --diff-filter=M HEAD'
