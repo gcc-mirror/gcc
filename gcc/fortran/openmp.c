@@ -5330,17 +5330,23 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->depend_source && code->op != EXEC_OMP_ORDERED)
     gfc_error ("SOURCE dependence type only allowed "
 	       "on ORDERED directive at %L", &code->loc);
-  if (!openacc && code && omp_clauses->lists[OMP_LIST_MAP] == NULL)
+  if (!openacc
+      && code
+      && omp_clauses->lists[OMP_LIST_MAP] == NULL
+      && omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR] == NULL
+      && omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR] == NULL)
     {
       const char *p = NULL;
       switch (code->op)
 	{
-	case EXEC_OMP_TARGET_DATA: p = "TARGET DATA"; break;
 	case EXEC_OMP_TARGET_ENTER_DATA: p = "TARGET ENTER DATA"; break;
 	case EXEC_OMP_TARGET_EXIT_DATA: p = "TARGET EXIT DATA"; break;
 	default: break;
 	}
-      if (p)
+      if (code->op == EXEC_OMP_TARGET_DATA)
+	gfc_error ("TARGET DATA must contain at least one MAP, USE_DEVICE_PTR, "
+		   "or USE_DEVICE_ADDR clause at %L", &code->loc);
+      else if (p)
 	gfc_error ("%s must contain at least one MAP clause at %L",
 		   p, &code->loc);
     }
