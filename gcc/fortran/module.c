@@ -2047,7 +2047,11 @@ enum ab_attribute
   AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
   AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
-  AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ
+  AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
+  AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
+  AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
+  AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
+  AB_OMP_REQ_MEM_ORDER_RELAXED
 };
 
 static const mstring attr_bits[] =
@@ -2121,6 +2125,13 @@ static const mstring attr_bits[] =
     minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
     minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
     minit ("OACC_ROUTINE_LOP_SEQ", AB_OACC_ROUTINE_LOP_SEQ),
+    minit ("OMP_REQ_REVERSE_OFFLOAD", AB_OMP_REQ_REVERSE_OFFLOAD),
+    minit ("OMP_REQ_UNIFIED_ADDRESS", AB_OMP_REQ_UNIFIED_ADDRESS),
+    minit ("OMP_REQ_UNIFIED_SHARED_MEMORY", AB_OMP_REQ_UNIFIED_SHARED_MEMORY),
+    minit ("OMP_REQ_DYNAMIC_ALLOCATORS", AB_OMP_REQ_DYNAMIC_ALLOCATORS),
+    minit ("OMP_REQ_MEM_ORDER_SEQ_CST", AB_OMP_REQ_MEM_ORDER_SEQ_CST),
+    minit ("OMP_REQ_MEM_ORDER_ACQ_REL", AB_OMP_REQ_MEM_ORDER_ACQ_REL),
+    minit ("OMP_REQ_MEM_ORDER_RELAXED", AB_OMP_REQ_MEM_ORDER_RELAXED),
     minit (NULL, -1)
 };
 
@@ -2366,8 +2377,27 @@ mio_symbol_attribute (symbol_attribute *attr)
 	  gcc_unreachable ();
 	}
 
+      if (attr->flavor == FL_MODULE && gfc_current_ns->omp_requires)
+	{
+	  if (gfc_current_ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_REVERSE_OFFLOAD, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_UNIFIED_ADDRESS, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_UNIFIED_SHARED_MEMORY, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_DYNAMIC_ALLOCATORS, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_SEQ_CST, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_ACQ_REL, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_RELAXED, attr_bits);
+	}
       mio_rparen ();
-
     }
   else
     {
@@ -2591,6 +2621,45 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_OACC_ROUTINE_LOP_SEQ:
 	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
 	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
+	      break;
+	    case AB_OMP_REQ_REVERSE_OFFLOAD:
+	       gfc_omp_requires_add_clause (OMP_REQ_REVERSE_OFFLOAD,
+					    "reverse_offload",
+					    &gfc_current_locus,
+					    module_name);
+	      break;
+	    case AB_OMP_REQ_UNIFIED_ADDRESS:
+	      gfc_omp_requires_add_clause (OMP_REQ_UNIFIED_ADDRESS,
+					   "unified_address",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_UNIFIED_SHARED_MEMORY:
+	      gfc_omp_requires_add_clause (OMP_REQ_UNIFIED_SHARED_MEMORY,
+					   "unified_shared_memory",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_DYNAMIC_ALLOCATORS:
+	      gfc_omp_requires_add_clause (OMP_REQ_DYNAMIC_ALLOCATORS,
+					   "dynamic_allocators",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_SEQ_CST:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST,
+					   "seq_cst", &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_ACQ_REL:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL,
+					   "acq_rel", &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_RELAXED:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_RELAXED,
+					   "relaxed", &gfc_current_locus,
+					   module_name);
 	      break;
 	    }
 	}

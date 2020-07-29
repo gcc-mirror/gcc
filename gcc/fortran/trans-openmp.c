@@ -3932,9 +3932,13 @@ gfc_trans_omp_atomic (gfc_code *code)
   enum tree_code op = ERROR_MARK;
   enum tree_code aop = OMP_ATOMIC;
   bool var_on_left = false;
-  enum omp_memory_order mo
-    = ((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SEQ_CST)
-       ? OMP_MEMORY_ORDER_SEQ_CST : OMP_MEMORY_ORDER_RELAXED);
+  enum omp_memory_order mo;
+  if (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SEQ_CST)
+    mo = OMP_MEMORY_ORDER_SEQ_CST;
+  else if (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_ACQ_REL)
+    mo = OMP_MEMORY_ORDER_ACQ_REL;
+  else
+    mo = OMP_MEMORY_ORDER_RELAXED;
 
   code = code->block->next;
   gcc_assert (code->op == EXEC_ASSIGN);
