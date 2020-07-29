@@ -2820,7 +2820,7 @@ static bool maybe_compile_in_parallel (void)
      partition. If promote_statics is true, it also maps statics
      to the same partition. If balance is true, try to balance the
      partitions for compilation performance.  */
-  lto_merge_comdat_map (balance, promote_statics);
+  lto_merge_comdat_map (balance, promote_statics, num_jobs);
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */

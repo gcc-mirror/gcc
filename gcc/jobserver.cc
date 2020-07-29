@@ -100,7 +100,7 @@ bool jobserver_finalize ()
   close (wfd);
 
   rfd = wfd = -1;
-  nonblock_node = false;
+  nonblock_mode = false;
 
   jobserver_initialized = false;
   return true;

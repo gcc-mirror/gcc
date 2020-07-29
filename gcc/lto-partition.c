@@ -620,7 +620,7 @@ static void analyse_symbol (symtab_node *node, int set)
    that it is not worth.  */
 
 static bool
-balance_partitions (union_find *ds, int n)
+balance_partitions (union_find *ds, int n, int jobs)
 {
   int *sizes, i, j;
   int total_size = 0, max_size = -1;
@@ -664,7 +664,7 @@ balance_partitions (union_find *ds, int n)
   if (total_size < param_min_partition_size)
     return false;
 
-  target_size = total_size / 3;
+  target_size = total_size / (jobs + 1);
 
   /* Unite small partitions.  */
   for (i = 0, j = 0; j < n; ++j)
@@ -1039,7 +1039,7 @@ merge_contained_symbols (symtab_node *node, int set)
    to globals.  */
 
 void
-lto_merge_comdat_map (bool balance, bool promote_statics)
+lto_merge_comdat_map (bool balance, bool promote_statics, int jobs)
 {
   symtab_node *node;
   int n = 0;
@@ -1071,7 +1071,7 @@ lto_merge_comdat_map (bool balance, bool promote_statics)
   FOR_EACH_SYMBOL (node)
     node->aux = NULL;
 
-  if (balance && !balance_partitions (&disjoint_sets, n))
+  if (balance && !balance_partitions (&disjoint_sets, n, jobs))
     return;
 
   build_ltrans_partitions (&disjoint_sets, n);

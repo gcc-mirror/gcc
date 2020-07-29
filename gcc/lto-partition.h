@@ -41,4 +41,4 @@ void free_ltrans_partitions (void);
 void lto_promote_statics_nonwpa (void);
 void lto_check_usage_from_other_partitions (void);
 void lto_max_no_alonevap_map (void);
-void lto_merge_comdat_map (bool, bool);
+void lto_merge_comdat_map (bool, bool, int);
