@@ -2030,6 +2030,9 @@ whether it does so by default).
 @itemx aarch64_sve2048_hw
 Like @code{aarch64_sve_hw}, but also test for an exact hardware vector length.
 
+@item aarch64_fjcvtzs_hw
+AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
+instruction.
 @end table
 
 @subsubsection MIPS-specific attributes
