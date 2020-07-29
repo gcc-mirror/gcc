@@ -5181,6 +5181,34 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
   return retval;
 }
 
+/* For some target specific vectorization cost which can't be handled per stmt,
+   we check the requisite conditions and adjust the vectorization cost
+   accordingly if satisfied.  One typical example is to model shift cost for
+   vector with length by counting number of required lengths under condition
+   LOOP_VINFO_FULLY_WITH_LENGTH_P.  */
+
+static void
+rs6000_adjust_vect_cost_per_loop (rs6000_cost_data *data)
+{
+  struct loop *loop = data->loop_info;
+  gcc_assert (loop);
+  loop_vec_info loop_vinfo = loop_vec_info_for_loop (loop);
+
+  if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+    {
+      rgroup_controls *rgc;
+      unsigned int num_vectors_m1;
+      unsigned int shift_cnt = 0;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), num_vectors_m1, rgc)
+	if (rgc->type)
+	  /* Each length needs one shift to fill into bits 0-7.  */
+	  shift_cnt += num_vectors_m1 + 1;
+
+      rs6000_add_stmt_cost (loop_vinfo, (void *) data, shift_cnt, scalar_stmt,
+			    NULL, NULL_TREE, 0, vect_body);
+    }
+}
+
 /* Implement targetm.vectorize.finish_cost.  */
 
 static void
@@ -5190,7 +5218,10 @@ rs6000_finish_cost (void *data, unsigned *prologue_cost,
   rs6000_cost_data *cost_data = (rs6000_cost_data*) data;
 
   if (cost_data->loop_info)
-    rs6000_density_test (cost_data);
+    {
+      rs6000_adjust_vect_cost_per_loop (cost_data);
+      rs6000_density_test (cost_data);
+    }
 
   /* Don't vectorize minimum-vectorization-factor, simple copy loops
      that require versioning for any reason.  The vectorization is at
