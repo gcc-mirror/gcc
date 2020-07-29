@@ -2623,10 +2623,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
 	      break;
 	    case AB_OMP_REQ_REVERSE_OFFLOAD:
-	       gfc_omp_requires_add_clause (OMP_REQ_REVERSE_OFFLOAD,
-					    "reverse_offload",
-					    &gfc_current_locus,
-					    module_name);
+	      gfc_omp_requires_add_clause (OMP_REQ_REVERSE_OFFLOAD,
+					   "reverse_offload",
+					   &gfc_current_locus,
+					   module_name);
 	      break;
 	    case AB_OMP_REQ_UNIFIED_ADDRESS:
 	      gfc_omp_requires_add_clause (OMP_REQ_UNIFIED_ADDRESS,
