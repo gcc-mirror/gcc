@@ -1,3 +1,11 @@
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96335
+	* gcc.dg/pr96335.c: New test.
+
 2020-07-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master:

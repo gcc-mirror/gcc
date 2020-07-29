@@ -1,3 +1,23 @@
+2020-07-28  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96058
+	* expr.c (string_constant): Build string_constant only
+	for a type that has same precision as char_type_node
+	and is an integral type.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96335
+	* calls.c (maybe_warn_rdwr_sizes): Add FNDECL and FNTYPE arguments,
+	instead of trying to rediscover them in the body.
+	(initialize_argument_information): Adjust caller.
+
 2020-07-27  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	Backported from master:
