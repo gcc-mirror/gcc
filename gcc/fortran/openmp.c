@@ -3424,6 +3424,230 @@ gfc_match_omp_parallel_workshare (void)
   return match_omp (EXEC_OMP_PARALLEL_WORKSHARE, OMP_PARALLEL_CLAUSES);
 }
 
+void
+gfc_check_omp_requires (gfc_namespace *ns, int ref_omp_requires)
+{
+  if (ns->omp_target_seen
+      && (ns->omp_requires & OMP_REQ_TARGET_MASK)
+	 != (ref_omp_requires & OMP_REQ_TARGET_MASK))
+    {
+      gcc_assert (ns->proc_name);
+      if ((ref_omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+	  && !(ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
+	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
+		   "but does not set !$OMP REQUIRES REVERSE_OFFSET but other "
+		   "program units do", &ns->proc_name->declared_at);
+      if ((ref_omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+	  && !(ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS))
+	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
+		   "but does not set !$OMP REQUIRES UNIFIED_ADDRESS but other "
+		   "program units do", &ns->proc_name->declared_at);
+      if ((ref_omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	  && !(ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY))
+	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
+		   "but does not set !$OMP REQUIRES UNIFIED_SHARED_MEMORY but "
+		   "other program units do", &ns->proc_name->declared_at);
+    }
+}
+
+bool
+gfc_omp_requires_add_clause (gfc_omp_requires_kind clause,
+			     const char *clause_name, locus *loc,
+			     const char *module_name)
+{
+  gfc_namespace *prog_unit = gfc_current_ns;
+  while (prog_unit->parent)
+    {
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state == COMP_INTERFACE)
+	break;
+      prog_unit = prog_unit->parent;
+    }
+
+  /* Requires added after use.  */
+  if (prog_unit->omp_target_seen
+      && (clause & OMP_REQ_TARGET_MASK)
+      && !(prog_unit->omp_requires & clause))
+    {
+      if (module_name)
+	gfc_error ("!$OMP REQUIRES clause %qs specified via module %qs use "
+		   "at %L comes after using a device construct/routine",
+		   clause_name, module_name, loc);
+      else
+	gfc_error ("!$OMP REQUIRES clause %qs specified at %L comes after "
+		   "using a device construct/routine", clause_name, loc);
+      return false;
+    }
+
+  /* Overriding atomic_default_mem_order clause value.  */
+  if ((clause & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+      && (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+      && (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	 != (int) clause)
+    {
+      const char *other;
+      if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST)
+	other = "seq_cst";
+      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
+	other = "acq_rel";
+      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+	other = "relaxed";
+      else
+	gcc_unreachable ();
+
+      if (module_name)
+	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
+		   "specified via module %qs use at %L overrides a previous "
+		   "%<atomic_default_mem_order(%s)%> (which might be through "
+		   "using a module)", clause_name, module_name, loc, other);
+      else
+	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
+		   "specified at %L overrides a previous "
+		   "%<atomic_default_mem_order(%s)%> (which might be through "
+		   "using a module)", clause_name, loc, other);
+      return false;
+    }
+
+  /* Requires via module not at program-unit level and not repeating clause.  */
+  if (prog_unit != gfc_current_ns && !(prog_unit->omp_requires & clause))
+    {
+      if (clause & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
+		   "specified via module %qs use at %L but same clause is "
+		   "not set at for the program unit", clause_name, module_name,
+		   loc);
+      else
+	gfc_error ("!$OMP REQUIRES clause %qs specified via module %qs use at "
+		   "%L but same clause is not set at for the program unit",
+		   clause_name, module_name, loc);
+      return false;
+    }
+
+  if (!gfc_state_stack->previous
+      || gfc_state_stack->previous->state != COMP_INTERFACE)
+    prog_unit->omp_requires |= clause;
+  return true;
+}
+
+match
+gfc_match_omp_requires (void)
+{
+  static const char *clauses[] = {"reverse_offload",
+				  "unified_address",
+				  "unified_shared_memory",
+				  "dynamic_allocators",
+				  "atomic_default"};
+  const char *clause = NULL;
+  int requires_clauses = 0;
+  bool first = true;
+  locus old_loc;
+
+  if (gfc_current_ns->parent
+      && (!gfc_state_stack->previous
+	  || gfc_state_stack->previous->state != COMP_INTERFACE))
+    {
+      gfc_error ("!$OMP REQUIRES at %C must appear in the specification part "
+		 "of a program unit");
+      return MATCH_ERROR;
+    }
+
+  while (true)
+    {
+      old_loc = gfc_current_locus;
+      gfc_omp_requires_kind requires_clause;
+      if ((first || gfc_match_char (',') != MATCH_YES)
+	  && (first && gfc_match_space () != MATCH_YES))
+	goto error;
+      first = false;
+      gfc_gobble_whitespace ();
+      old_loc = gfc_current_locus;
+
+      if (gfc_match_omp_eos () != MATCH_NO)
+	break;
+      if (gfc_match (clauses[0]) == MATCH_YES)
+	{
+	  clause = clauses[0];
+	  requires_clause = OMP_REQ_REVERSE_OFFLOAD;
+	  if (requires_clauses & OMP_REQ_REVERSE_OFFLOAD)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[1]) == MATCH_YES)
+	{
+	  clause = clauses[1];
+	  requires_clause = OMP_REQ_UNIFIED_ADDRESS;
+	  if (requires_clauses & OMP_REQ_UNIFIED_ADDRESS)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[2]) == MATCH_YES)
+	{
+	  clause = clauses[2];
+	  requires_clause = OMP_REQ_UNIFIED_SHARED_MEMORY;
+	  if (requires_clauses & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[3]) == MATCH_YES)
+	{
+	  clause = clauses[3];
+	  requires_clause = OMP_REQ_DYNAMIC_ALLOCATORS;
+	  if (requires_clauses & OMP_REQ_DYNAMIC_ALLOCATORS)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match ("atomic_default_mem_order (") == MATCH_YES)
+	{
+	  clause = clauses[4];
+	  if (requires_clauses & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	    goto duplicate_clause;
+	  if (gfc_match (" seq_cst )") == MATCH_YES)
+	    {
+	      clause = "seq_cst";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST;
+	    }
+	  else if (gfc_match (" acq_rel )") == MATCH_YES)
+	    {
+	      clause = "acq_rel";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL;
+	    }
+	  else if (gfc_match (" relaxed )") == MATCH_YES)
+	    {
+	      clause = "relaxed";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_RELAXED;
+	    }
+	  else
+	    {
+	      gfc_error ("Expected SEQ_CST, ACQ_REL or RELAXED for "
+			 "ATOMIC_DEFAULT_MEM_ORDER clause at %C");
+	      goto error;
+	    }
+	}
+      else
+	goto error;
+
+      if (requires_clause & ~OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	gfc_error_now ("Sorry, %qs clause at %L on REQUIRES directive is not "
+		       "yet supported", clause, &old_loc);
+      if (!gfc_omp_requires_add_clause (requires_clause, clause, &old_loc, NULL))
+	goto error;
+      requires_clauses |= requires_clause;
+    }
+
+  if (requires_clauses == 0)
+    {
+      if (!gfc_error_flag_test ())
+	gfc_error ("Clause expected at %C");
+      goto error;
+    }
+  return MATCH_YES;
+
+duplicate_clause:
+  gfc_error ("%qs clause at %L specified more than once", clause, &old_loc);
+error:
+  if (!gfc_error_flag_test ())
+    gfc_error ("Expected UNIFIED_ADDRESS, UNIFIED_SHARED_MEMORY, "
+	       "DYNAMIC_ALLOCATORS, REVERSE_OFFLOAD, or "
+	       "ATOMIC_DEFAULT_MEM_ORDER clause at %L", &old_loc);
+  return MATCH_ERROR;
+}
+
 
 match
 gfc_match_omp_sections (void)
@@ -3745,6 +3969,26 @@ gfc_match_omp_oacc_atomic (bool omp_p)
   new_st.op = (omp_p ? EXEC_OMP_ATOMIC : EXEC_OACC_ATOMIC);
   if (seq_cst)
     op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
+  else if (omp_p)
+    {
+      gfc_namespace *prog_unit = gfc_current_ns;
+      while (prog_unit->parent)
+	prog_unit = prog_unit->parent;
+      switch (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	{
+	case 0:
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
+	  op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
+	  op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_ACQ_REL);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
   new_st.ext.omp_atomic = op;
   return MATCH_YES;
 }
