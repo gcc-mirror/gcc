@@ -8678,15 +8678,18 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  parm = TREE_CHAIN (parm);
 	}
 
-      if (flags & LOOKUP_PREFER_RVALUE)
+      if (cand->flags & LOOKUP_PREFER_RVALUE)
 	{
 	  /* The implicit move specified in 15.8.3/3 fails "...if the type of
 	     the first parameter of the selected constructor is not an rvalue
 	     reference to the object's type (possibly cv-qualified)...." */
 	  gcc_assert (!(complain & tf_error));
 	  tree ptype = convs[0]->type;
-	  if (!TYPE_REF_P (ptype)
-	      || !TYPE_REF_IS_RVALUE (ptype)
+	  /* Allow calling a by-value converting constructor even though it
+	     isn't permitted by the above, because we've allowed it since GCC 5
+	     (PR58051) and it's allowed in C++20.  But don't call a copy
+	     constructor.  */
+	  if ((TYPE_REF_P (ptype) && !TYPE_REF_IS_RVALUE (ptype))
 	      || CONVERSION_RANK (convs[0]) > cr_exact)
 	    return error_mark_node;
 	}
