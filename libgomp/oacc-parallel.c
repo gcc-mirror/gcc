@@ -747,7 +747,6 @@ GOACC_declare (int flags_m, size_t mapnum,
 	  case GOMP_MAP_FORCE_ALLOC:
 	  case GOMP_MAP_FORCE_FROM:
 	  case GOMP_MAP_FORCE_TO:
-	  case GOMP_MAP_POINTER:
 	  case GOMP_MAP_RELEASE:
 	  case GOMP_MAP_DELETE:
 	    GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
