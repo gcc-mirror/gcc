@@ -2957,7 +2957,7 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 
       tmp->type = CPP_HEADER_NAME;
       bool need_search = !pfile->state.directive_file_token;
-      pfile->state.directive_file_token = false;
+      pfile->state.directive_file_token = 0;
 
       bool angle = result->type != CPP_STRING;
       if (result->type == CPP_HEADER_NAME

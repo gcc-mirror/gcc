@@ -296,9 +296,9 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
 
-  enum {M_EXPORT, M_MODULE, M_IMPORT, M_HWM};
+  enum {M_EXPORT, M_MODULE, M_IMPORT, M__IMPORT, M_HWM};
   
-  /* C++2a modules, only set when module_directives is in effect.
+  /* C++20 modules, only set when module_directives is in effect.
      incoming variants [0], outgoing ones [1] */
   cpp_hashnode *n_modules[M_HWM][2];
 };

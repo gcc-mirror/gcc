@@ -2653,19 +2653,20 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	goto not_module;
     }
 
-  if (__builtin_expect (node == n_modules[spec_nodes::M_IMPORT][1], false))
-    header_count = backup + 2 + 16;  /* __import  */
+  if (__builtin_expect (node == n_modules[spec_nodes::M__IMPORT][0], false))
+    /* __import  */
+    header_count = backup + 2 + 16;
   else if (__builtin_expect (node == n_modules[spec_nodes::M_IMPORT][0], false))
-    header_count = backup + 2;  /* import  */
+    /* import  */
+    header_count = backup + 2 + (CPP_OPTION (pfile, preprocessed) ? 16 : 0);
   else if (__builtin_expect (node == n_modules[spec_nodes::M_MODULE][0], false))
     ; /* module  */
   else
     goto not_module;
 
-  /* We've seen [export] {module|import|__import}.  Check the next
-     token.  */
+  /* We've seen [export] {module|import|__import}.  Check the next token.  */
   if (header_count)
-    /* After 'import' a header name may appear.  */
+    /* After '{,__}import' a header name may appear.  */
     pfile->state.angled_headers = true;
   peek = _cpp_lex_direct (pfile);
   backup++;

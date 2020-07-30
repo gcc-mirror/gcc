@@ -5,4 +5,4 @@
 #include "legacy-6_b.H"
 int i;
 
-// { dg-final { scan-file legacy-6_c.i {__import "[^\n]*legacy-6_a.H" \[\[__translated\]\];\n__import "[^\n]*legacy-6_b.H" \[\[__translated\]\];\nint i;} } }
+// { dg-final { scan-file legacy-6_c.i {import  "[^\n]*legacy-6_a.H" \[\[__translated\]\];\nimport  "[^\n]*legacy-6_b.H" \[\[__translated\]\];\nint i;} } }

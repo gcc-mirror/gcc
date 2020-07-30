@@ -8,9 +8,9 @@
 # 1 "dir-only-3.C"
 // { dg-additional-options {-fmodules-ts -fpreprocessed -fdirectives-only} }
 // { dg-module-cmi foo }
-__module;
+module;
 #define foo baz
-__export __module foo;
+export module foo;
 
 class import {};
 

@@ -838,22 +838,23 @@ post_options (cpp_reader *pfile)
 
   if (CPP_OPTION (pfile, module_directives))
     {
+      /* These unspellable tokens have a leading space.  */
       const char *const inits[spec_nodes::M_HWM]
-	= {"__export", "__module", "__import"};
+	= {"export ", "module ", "import ", "__import"};
 
       for (int ix = 0; ix != spec_nodes::M_HWM; ix++)
 	{
 	  cpp_hashnode *node = cpp_lookup (pfile, UC (inits[ix]),
 					   strlen (inits[ix]));
-	  node->flags |= NODE_MODULE;
+
+	  /* Token we pass to the compiler.  */
 	  pfile->spec_nodes.n_modules[ix][1] = node;
-	  if (!CPP_OPTION (pfile, preprocessed))
-	    {
-	      /* Drop the leading '__'.  */
-	      node = cpp_lookup (pfile, NODE_NAME (node) + 2,
-				 NODE_LEN (node) - 2);
-	      node->flags |= NODE_MODULE;
-	    }
+
+	  if (ix != spec_nodes::M__IMPORT)
+	    /* Token we recognize when lexing, drop the trailing ' '.  */
+	    node = cpp_lookup (pfile, NODE_NAME (node), NODE_LEN (node) - 1);
+
+	  node->flags |= NODE_MODULE;
 	  pfile->spec_nodes.n_modules[ix][0] = node;
 	}
     }
