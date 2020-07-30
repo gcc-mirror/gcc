@@ -2492,7 +2492,6 @@ expand_all_functions (void)
 
 enum cgraph_order_sort_kind
 {
-  ORDER_UNDEFINED = 0,
   ORDER_FUNCTION,
   ORDER_VAR,
   ORDER_VAR_UNDEF,
@@ -2501,6 +2500,30 @@ enum cgraph_order_sort_kind
 
 struct cgraph_order_sort
 {
+  /* Construct from a cgraph_node.  */
+  cgraph_order_sort (cgraph_node *node)
+  : kind (ORDER_FUNCTION), order (node->order)
+  {
+    u.f = node;
+  }
+
+  /* Construct from a varpool_node.  */
+  cgraph_order_sort (varpool_node *node)
+  : kind (node->definition ? ORDER_VAR : ORDER_VAR_UNDEF), order (node->order)
+  {
+    u.v = node;
+  }
+
+  /* Construct from a asm_node.  */
+  cgraph_order_sort (asm_node *node)
+  : kind (ORDER_ASM), order (node->order)
+  {
+    u.a = node;
+  }
+
+  /* Assembly cgraph_order_sort based on its type.  */
+  void process ();
+
   enum cgraph_order_sort_kind kind;
   union
   {
@@ -2508,7 +2531,44 @@ struct cgraph_order_sort
     varpool_node *v;
     asm_node *a;
   } u;
+  int order;
 };
+
+/* Assembly cgraph_order_sort based on its type.  */
+
+void
+cgraph_order_sort::process ()
+{
+  switch (kind)
+    {
+    case ORDER_FUNCTION:
+      u.f->process = 0;
+      u.f->expand ();
+      break;
+    case ORDER_VAR:
+      u.v->assemble_decl ();
+      break;
+    case ORDER_VAR_UNDEF:
+      assemble_undefined_decl (u.v->decl);
+      break;
+    case ORDER_ASM:
+      assemble_asm (u.a->asm_str);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Compare cgraph_order_sort by order.  */
+
+static int
+cgraph_order_cmp (const void *a_p, const void *b_p)
+{
+  const cgraph_order_sort *nodea = (const cgraph_order_sort *)a_p;
+  const cgraph_order_sort *nodeb = (const cgraph_order_sort *)b_p;
+
+  return nodea->order - nodeb->order;
+}
 
 /* Output all functions, variables, and asm statements in the order
    according to their order fields, which is the order in which they
@@ -2519,89 +2579,41 @@ struct cgraph_order_sort
 static void
 output_in_order (void)
 {
-  int max;
-  cgraph_order_sort *nodes;
   int i;
-  cgraph_node *pf;
-  varpool_node *pv;
-  asm_node *pa;
-  max = symtab->order;
-  nodes = XCNEWVEC (cgraph_order_sort, max);
+  cgraph_node *cnode;
+  varpool_node *vnode;
+  asm_node *anode;
+  auto_vec<cgraph_order_sort> nodes;
+  cgraph_order_sort *node;
 
-  FOR_EACH_DEFINED_FUNCTION (pf)
-    {
-      if (pf->process && !pf->thunk.thunk_p && !pf->alias)
-	{
-	  if (!pf->no_reorder)
-	    continue;
-	  i = pf->order;
-	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-	  nodes[i].kind = ORDER_FUNCTION;
-	  nodes[i].u.f = pf;
-	}
-    }
+  FOR_EACH_DEFINED_FUNCTION (cnode)
+    if (cnode->process && !cnode->thunk.thunk_p
+	&& !cnode->alias && cnode->no_reorder)
+      nodes.safe_push (cgraph_order_sort (cnode));
 
   /* There is a similar loop in symbol_table::output_variables.
      Please keep them in sync.  */
-  FOR_EACH_VARIABLE (pv)
-    {
-      if (!pv->no_reorder)
-	continue;
-      if (DECL_HARD_REGISTER (pv->decl)
-	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
-	continue;
-      i = pv->order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = pv->definition ? ORDER_VAR : ORDER_VAR_UNDEF;
-      nodes[i].u.v = pv;
-    }
+  FOR_EACH_VARIABLE (vnode)
+    if (vnode->no_reorder
+	&& !DECL_HARD_REGISTER (vnode->decl)
+	&& !DECL_HAS_VALUE_EXPR_P (vnode->decl))
+      nodes.safe_push (cgraph_order_sort (vnode));
 
-  for (pa = symtab->first_asm_symbol (); pa; pa = pa->next)
-    {
-      i = pa->order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = ORDER_ASM;
-      nodes[i].u.a = pa;
-    }
+  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+    nodes.safe_push (cgraph_order_sort (anode));
+
+  /* Sort nodes by order.  */
+  nodes.qsort (cgraph_order_cmp);
 
   /* In toplevel reorder mode we output all statics; mark them as needed.  */
+  FOR_EACH_VEC_ELT (nodes, i, node)
+    if (node->kind == ORDER_VAR)
+      node->u.v->finalize_named_section_flags ();
 
-  for (i = 0; i < max; ++i)
-    if (nodes[i].kind == ORDER_VAR)
-      nodes[i].u.v->finalize_named_section_flags ();
-
-  for (i = 0; i < max; ++i)
-    {
-      switch (nodes[i].kind)
-	{
-	case ORDER_FUNCTION:
-	  nodes[i].u.f->process = 0;
-	  nodes[i].u.f->expand ();
-	  break;
-
-	case ORDER_VAR:
-	  nodes[i].u.v->assemble_decl ();
-	  break;
-
-	case ORDER_VAR_UNDEF:
-	  assemble_undefined_decl (nodes[i].u.v->decl);
-	  break;
-
-	case ORDER_ASM:
-	  assemble_asm (nodes[i].u.a->asm_str);
-	  break;
-
-	case ORDER_UNDEFINED:
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
+  FOR_EACH_VEC_ELT (nodes, i, node)
+    node->process ();
 
   symtab->clear_asm_symbols ();
-
-  free (nodes);
 }
 
 static void
