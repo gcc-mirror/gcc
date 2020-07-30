@@ -22240,6 +22240,13 @@ resolve_overloaded_unification (tree tparms,
 	      fn = instantiate_template (fn, subargs, tf_none);
 	      if (!constraints_satisfied_p (fn))
 		continue;
+	      if (undeduced_auto_decl (fn))
+		{
+		  /* Instantiate the function to deduce its return type.  */
+		  ++function_depth;
+		  instantiate_decl (fn, /*defer*/false, /*class*/false);
+		  --function_depth;
+		}
 
 	      elem = TREE_TYPE (fn);
 	      if (try_one_overload (tparms, targs, tempargs, parm,
