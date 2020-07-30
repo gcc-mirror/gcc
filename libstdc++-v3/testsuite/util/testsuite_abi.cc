@@ -362,14 +362,9 @@ get_symbol(const string& name, const symbols& s)
 void
 examine_symbol(const char* name, const char* file)
 {
-  try
-    {
-      symbols s = create_symbols(file);
-      const symbol& sym = get_symbol(name, s);
-      sym.print();
-    }
-  catch(...)
-    { __throw_exception_again; }
+    symbols s = create_symbols(file);
+    const symbol& sym = get_symbol(name, s);
+    sym.print();
 }
 
 int
