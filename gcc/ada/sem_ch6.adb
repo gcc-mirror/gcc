@@ -4699,7 +4699,7 @@ package body Sem_Ch6 is
                   then
                      --  Generate the minimum accessibility level object
 
-                     --    A60b : natural := natural'min(1, paramL);
+                     --    A60b : constant natural := natural'min(1, paramL);
 
                      declare
                         Loc      : constant Source_Ptr := Sloc (Body_Nod);
@@ -4708,6 +4708,7 @@ package body Sem_Ch6 is
                             Defining_Identifier =>
                               Make_Temporary
                                 (Loc, 'A', Extra_Accessibility (Form)),
+                            Constant_Present    => True,
                             Object_Definition   => New_Occurrence_Of
                                                      (Standard_Natural, Loc),
                             Expression          =>
