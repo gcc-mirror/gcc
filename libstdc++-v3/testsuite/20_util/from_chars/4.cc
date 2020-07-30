@@ -17,6 +17,7 @@
 
 // <charconv> is supported in C++14 as a GNU extension
 // { dg-do run { target c++14 } }
+// { dg-add-options ieee }
 
 #include <charconv>
 #include <string>
