@@ -1,3 +1,8 @@
+2020-07-30  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Fix for GCN
+	num_workers > 1.
+
 2020-07-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/firstprivate-int.f90: Use
