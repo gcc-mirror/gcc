@@ -62,7 +62,7 @@ template<typename _Tp>
   };
 
 using type4 = std::unordered_multiset<int, std::hash<int>, std::equal_to<int>,
-				      not_noexcept_dflt_cons_alloc<std::pair<const int, int>>>;
+				      not_noexcept_dflt_cons_alloc<int>>;
 
 static_assert(!std::is_nothrow_default_constructible<type4>::value,
 	      "not noexcept default constructible");
