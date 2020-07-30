@@ -1,3 +1,71 @@
+2020-07-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/recip-1.c: New test.
+
+2020-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91427
+	* g++.dg/coroutines/co-return-syntax-10-movable.C: Extend.
+	* g++.dg/cpp0x/Wredundant-move1.C: Adjust for C++20.
+	* g++.dg/cpp0x/Wredundant-move7.C: Adjust for C++20.
+	* g++.dg/cpp0x/Wredundant-move9.C: Adjust for C++20.
+	* g++.dg/cpp0x/elision_neg.C: Adjust for C++20.
+	* g++.dg/cpp0x/move-return2.C: Adjust for C++20.
+	* g++.dg/cpp0x/ref-qual20.C: Adjust for C++20.
+	* g++.dg/cpp2a/implicit-move1.C: New test.
+	* g++.dg/cpp2a/implicit-move2.C: New test.
+	* g++.dg/cpp2a/implicit-move3.C: New test.
+
+2020-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91212
+	* g++.dg/cpp0x/move-return3.C: New test.
+
+2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/order-3.f90: New test.
+	* gfortran.dg/gomp/order-4.f90: New test.
+
+2020-07-29  Tiziano Müller  <tiziano.mueller@chem.uzh.ch>
+
+	* c-c++-common/cpp/has-include-1-traditional.c: New.
+
+2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/map-3.f90: New test.
+	* gfortran.dg/gomp/map-4.f90: New test.
+
+2020-07-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve-vldstr16-no-writeback.c: New file.
+
+2020-07-29  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96319
+	* gfortran.dg/pr96319.f90: New test.
+
+2020-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96349
+	* gcc.dg/torture/pr96349.c: New testcase.
+
+2020-07-29  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/53298
+	* gfortran.dg/pr53298.f90: New test.
+
+2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-1.f90: New test.
+	* gfortran.dg/gomp/requires-2.f90: New test.
+	* gfortran.dg/gomp/requires-3.f90: New test.
+	* gfortran.dg/gomp/requires-4.f90: New test.
+	* gfortran.dg/gomp/requires-5.f90: New test.
+	* gfortran.dg/gomp/requires-6.f90: New test.
+	* gfortran.dg/gomp/requires-7.f90: New test.
+	* gfortran.dg/gomp/requires-8.f90: New test.
+	* gfortran.dg/gomp/requires-9.f90: New test.
+
 2020-07-28  Sergei Trofimovich  <siarheit@google.com>
 
 	PR ipa/96291

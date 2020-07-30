@@ -1,3 +1,7 @@
+2020-07-29  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: fix how are ChangeLog paths combined.
+
 2020-07-23  Patrick Palka  <ppalka@redhat.com>
 
 	* vimrc (SetStyle): Also inspect &filetype to determine whether
