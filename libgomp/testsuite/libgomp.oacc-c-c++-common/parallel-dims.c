@@ -288,9 +288,8 @@ int main ()
 	}
       else if (acc_on_device (acc_device_radeon))
 	{
-	  /* The GCC GCN back end is limited to num_workers (16).
-	     Temporarily set this to 1 until multiple workers are permitted. */
-	  workers_actual = 1; // 16;
+	  /* The GCC GCN back end is limited to num_workers (16).  */
+	  workers_actual = 16;
 	}
       else
 	__builtin_abort ();
@@ -491,8 +490,6 @@ int main ()
 	}
       else if (acc_on_device (acc_device_radeon))
 	{
-	  /* Temporary setting, until multiple workers are permitted.  */
-	  workers_actual = 1;
 	  /* See above comments about GCN vectors_actual.  */
 	  vectors_actual = 1;
 	}
@@ -618,10 +615,10 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc serial copy (vectors_actual) \
   copy (gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max)
-  /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 619 } */
-  /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } 619 } */
-  /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } 619 } */
-  /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } 619 } */
+  /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 616 } */
+  /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } 616 } */
+  /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } 616 } */
+  /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } 616 } */
     {
       if (acc_on_device (acc_device_nvidia))
 	{
