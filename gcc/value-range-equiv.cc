@@ -90,13 +90,13 @@ value_range_equiv::update (tree min, tree max, value_range_kind kind)
 void
 value_range_equiv::deep_copy (const value_range_equiv *from)
 {
-  set (from->min (), from->max (), from->m_equiv, from->m_kind);
+  set (from->min (), from->max (), from->m_equiv, from->kind ());
 }
 
 void
 value_range_equiv::move (value_range_equiv *from)
 {
-  set (from->min (), from->max (), NULL, from->m_kind);
+  set (from->min (), from->max (), NULL, from->kind ());
   m_equiv = from->m_equiv;
   from->m_equiv = NULL;
 }
@@ -127,8 +127,8 @@ value_range_equiv::set_equiv (bitmap equiv)
 void
 value_range_equiv::check ()
 {
-  value_range::check ();
-  switch (m_kind)
+  value_range::verify_range ();
+  switch (kind ())
     {
     case VR_UNDEFINED:
     case VR_VARYING:
@@ -206,8 +206,9 @@ value_range_equiv::intersect (const value_range_equiv *other)
     this->deep_copy (other);
   else
     {
-      value_range tem = intersect_helper (this, other);
-      this->update (tem.min (), tem.max (), tem.kind ());
+      legacy_intersect (this, other);
+      if (varying_p () || undefined_p ())
+	equiv_clear ();
 
       /* If the result is VR_UNDEFINED there is no need to mess with
 	 equivalencies.  */
@@ -254,8 +255,9 @@ value_range_equiv::union_ (const value_range_equiv *other)
     this->deep_copy (other);
   else
     {
-      value_range tem = union_helper (this, other);
-      this->update (tem.min (), tem.max (), tem.kind ());
+      legacy_union (this, other);
+      if (varying_p () || undefined_p ())
+	equiv_clear ();
 
       /* The resulting set of equivalences is always the intersection of
 	 the two sets.  */
@@ -277,7 +279,7 @@ void
 value_range_equiv::dump (FILE *file) const
 {
   value_range::dump (file);
-  if ((m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
+  if ((kind () == VR_RANGE || kind () == VR_ANTI_RANGE)
       && m_equiv)
     {
       bitmap_iterator bi;

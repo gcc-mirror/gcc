@@ -92,7 +92,8 @@ vr_values::get_lattice_entry (const_tree var)
     return vr;
 
   /* Create a default value range.  */
-  vr_value[ver] = vr = vrp_value_range_pool.allocate ();
+  vr = new (vrp_value_range_pool.allocate ()) value_range_equiv;
+  vr_value[ver] = vr;
 
   /* After propagation finished return varying.  */
   if (values_propagated)

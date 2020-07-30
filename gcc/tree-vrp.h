@@ -62,5 +62,7 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
+extern wide_int masked_increment (const wide_int &val_in, const wide_int &mask,
+				  const wide_int &sgnbit, unsigned int prec);
 
 #endif /* GCC_TREE_VRP_H */
