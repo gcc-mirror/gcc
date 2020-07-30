@@ -4888,8 +4888,9 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-unsigned
-build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
+void
+build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p,
+		    bool update_methods, bool via_using)
 {
   unsigned count = 0;
 
@@ -4925,7 +4926,16 @@ build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
       count += 2;
     }
 
-  return count;
+  /* The original is now an abstract function that is never
+     emitted.  */
+  DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, via_using);
+      }
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
@@ -4949,17 +4959,7 @@ clone_cdtor (tree fn, bool update_methods, bool via_using)
      from a virtual nase ctor.  */
   bool omit_inherited = ctor_omit_inherited_parms (fn, false);
 
-  unsigned count = build_cdtor_clones (fn, vtt, omit_inherited);
-
-  /* Note that this is an abstract function that is never emitted.  */
-  DECL_ABSTRACT_P (fn) = true;
-
-  if (update_methods)
-    for (tree clone = fn; count--;)
-      {
-	clone = DECL_CHAIN (clone);
-	add_method (DECL_CONTEXT (clone), clone, via_using);
-      }
+  build_cdtor_clones (fn, vtt, omit_inherited, update_methods, via_using);
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
@@ -5048,6 +5048,7 @@ clone_constructors_and_destructors (tree t)
 {
   /* Because we can lazily declare functions, we need to propagate
      the usingness of the source function.  */
+  // FIXME: why?
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     clone_cdtor (*iter, /*update_methods=*/true, iter.using_p ());
 

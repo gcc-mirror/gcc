@@ -1,3 +1,15 @@
+2020-07-30  Nathan Sidwell  <nathan@acm.org>
+
+	Fix implicit fns from modules.
+	gcc/cp/
+	* cp-tree.h (build_cdtor_clones): Add parms.
+	* class.c (build_cdtor_clones): Swallow clone_cdtor's member insertion.
+	(clone_cdtor): Move member insertion to build_cdtor_clones.
+	* module.cc (trees_in::decl_value): Insert clones, if there's
+	already a member vec.
+	gcc/testsuite/
+	* g++.dg/modules/sv-1{.h,_[ab].C}: New.
+
 2020-07-28  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk f3665bd1111.

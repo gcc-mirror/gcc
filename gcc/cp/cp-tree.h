@@ -6603,7 +6603,7 @@ extern void check_abi_tags			(tree);
 extern tree missing_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
-extern unsigned build_cdtor_clones 		(tree, bool, bool);
+extern void build_cdtor_clones 			(tree, bool, bool, bool, bool);
 extern void clone_cdtor				(tree, bool, bool = false);
 extern tree copy_operator_fn			(tree, tree_code code);
 extern void adjust_clone_args			(tree);
