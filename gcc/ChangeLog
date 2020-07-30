@@ -1,3 +1,73 @@
+2020-07-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (recip<mode>2): New instruction.
+
+2020-07-29  Fangrui Song  <maskray@google.com>
+
+	PR debug/95096
+	* opts.c (common_handle_option): Don't make -gsplit-dwarf imply -g.
+	* doc/invoke.texi (-gsplit-dwarf): Update documentation.
+
+2020-07-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* config/arm/arm-protos.h (arm_coproc_mem_operand_no_writeback):
+	Declare prototype.
+	(arm_mve_mode_and_operands_type_check): Declare prototype.
+	* config/arm/arm.c (arm_coproc_mem_operand): Refactor to use
+	_arm_coproc_mem_operand.
+	(arm_coproc_mem_operand_wb): New function to cover full, limited
+	and no writeback.
+	(arm_coproc_mem_operand_no_writeback): New constraint for memory
+	operand with no writeback.
+	(arm_print_operand): Extend 'E' specifier for memory operand
+	that does not support writeback.
+	(arm_mve_mode_and_operands_type_check): New constraint check for
+	MVE memory operands.
+	* config/arm/constraints.md: Add Uj constraint for VFP vldr.16
+	and vstr.16.
+	* config/arm/vfp.md (*mov_load_vfp_hf16): New pattern for
+	vldr.16.
+	(*mov_store_vfp_hf16): New pattern for vstr.16.
+	(*mov<mode>_vfp_<mode>16): Remove MVE moves.
+
+2020-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96349
+	* tree-ssa-loop-split.c (stmt_semi_invariant_p_1): When the
+	condition runs into a loop PHI with an abnormal entry value give up.
+
+2020-07-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.c (vectorize_loops): Reset the SCEV
+	cache if we removed any SIMD UID SSA defs.
+	* gimple-loop-interchange.cc (pass_linterchange::execute):
+	Reset the scev cache if we interchanged a loop.
+
+2020-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95679
+	* tree-ssa-propagate.h
+	(substitute_and_fold_engine::propagate_into_phi_args): Return
+	whether anything changed.
+	* tree-ssa-propagate.c
+	(substitute_and_fold_engine::propagate_into_phi_args): Likewise.
+	(substitute_and_fold_dom_walker::before_dom_children): Update
+	something_changed.
+
+2020-07-29  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Ensure that loop variable npeel_tmp advances in each iteration.
+
+2020-07-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (NO_FUNCTION_CSE): Define to 1.
+
+2020-07-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (ASM_OUTPUT_EXTERNAL): Define to
+	default_elf_asm_output_external.
+
 2020-07-28  Sergei Trofimovich  <siarheit@google.com>
 
 	PR ipa/96291

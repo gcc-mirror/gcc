@@ -1,3 +1,26 @@
+2020-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91427
+	* cp-tree.h (IMPLICIT_RVALUE_P): New.
+	(enum cp_lvalue_kind_flags): Add clk_implicit_rval.
+	(implicit_rvalue_p, set_implicit_rvalue_p): New.
+	* call.c (reference_binding): Check clk_implicit_rval.
+	(build_over_call): Adjust C++20 implicit move.
+	* coroutines.cc (finish_co_return_stmt): Simplify implicit move.
+	* except.c (build_throw): Adjust C++20 implicit move.
+	* pt.c (tsubst_copy_and_build) [STATIC_CAST_EXPR]: Propagate
+	IMPLICIT_RVALUE_P.
+	* tree.c (lvalue_kind): Set clk_implicit_rval.
+	* typeck.c (treat_lvalue_as_rvalue_p): Overhaul.
+	(maybe_warn_pessimizing_move): Adjust.
+	(check_return_expr): Adjust C++20 implicit move.
+
+2020-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91212
+	* call.c (build_over_call): Don't call a const ref
+	overload for implicit move.
+
 2020-07-28  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-gimplify.c (cp_genericize_r): Set IMPORTED_DECL's context.
