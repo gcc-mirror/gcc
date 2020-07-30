@@ -1,3 +1,79 @@
+2020-07-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Node_iterator_base()): New.
+	(operator==(const _Node_iterator_base&, const _Node_iterator_base&)):
+	Make hidden friend.
+	(operator!=(const _Node_iterator_base&, const _Node_iterator_base&)):
+	Make hidden friend.
+	(_Local_iterator_base<>): Inherits _Node_iterator_base.
+	(_Local_iterator_base<>::_M_cur): Remove.
+	(_Local_iterator_base<>::_M_curr()): Remove.
+	(operator==(const _Local_iterator_base&, const _Local_iterator_base&)):
+	Remove.
+	(operator!=(const _Local_iterator_base&, const _Local_iterator_base&)):
+	Remove.
+	* include/debug/unordered_map (unordered_map<>::_M_invalidate): Adapt.
+	(unordered_multimap<>::_M_invalidate): Adapt.
+	* include/debug/unordered_set (unordered_set<>::_M_invalidate): Adapt.
+	(unordered_multiset<>::_M_invalidate): Adapt.
+
+2020-07-29  David Edelsohn  <dje.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/dg-options.exp (add_options_for_libatomic): Add
+	target powerpc-ibm-aix* and powerpc*-*-darwin*.
+	* testsuite/29_atomics/atomic_float/value_init.cc: Add options
+	for libatomic.
+
+2020-07-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h
+	(_Hashtable(_Hashtable&& __ht, __node_alloc_type&& __a, true_type)):
+	Add noexcept qualification.
+	(_Hashtable(_Hashtable&&)): Fix noexcept qualification.
+	(_Hashtable(_Hashtable&&, const allocator_type&)): Add noexcept
+	qualification.
+	* include/bits/unordered_map.h
+	(unordered_map(unordered_map&&, const allocator_type&)): Add noexcept
+	qualification.
+	(unordered_multimap(unordered_multimap&&, const allocator_type&)):
+	Likewise.
+	* include/bits/unordered_set.h
+	(unordered_set(unordered_set&&, const allocator_type&)): Likewise.
+	(unordered_multiset(unordered_multiset&&, const allocator_type&)):
+	Likewise.
+	* include/debug/unordered_map
+	(unordered_map(unordered_map&&, const allocator_type&)): Likewise.
+	(unordered_multimap(unordered_multimap&&, const allocator_type&)):
+	Likewise.
+	* include/debug/unordered_set
+	(unordered_set(unordered_set&&, const allocator_type&)): Likewise.
+	(unordered_multiset(unordered_multiset&&, const allocator_type&)):
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/default_init.cc:
+	New test.
+	* testsuite/23_containers/unordered_map/cons/noexcept_default_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_map/cons/noexcept_move_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_map/modifiers/move_assign.cc:
+	New test.
+	* testsuite/23_containers/unordered_multimap/cons/noexcept_default_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_multimap/cons/noexcept_move_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_multiset/cons/noexcept_default_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_multiset/cons/noexcept_move_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/allocator/default_init.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/cons/noexcept_default_construct.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/cons/noexcept_move_construct.cc:
+	New test.
+
 2020-07-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable.h

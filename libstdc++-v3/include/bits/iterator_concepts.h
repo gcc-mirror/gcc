@@ -520,7 +520,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     template<typename _Tp>
-      concept __is_integer_like = integral<_Tp>
+      concept __cv_bool = same_as<const volatile _Tp, const volatile bool>;
+
+    template<typename _Tp>
+      concept __integral_nonbool = integral<_Tp> && !__cv_bool<_Tp>;
+
+    template<typename _Tp>
+      concept __is_integer_like = __integral_nonbool<_Tp>
 	|| same_as<_Tp, __max_diff_type> || same_as<_Tp, __max_size_type>;
 
     template<typename _Tp>

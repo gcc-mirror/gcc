@@ -1985,6 +1985,45 @@
   "xvcmpgt<sd>p. %x0,%x1,%x2"
   [(set_attr "type" "<VStype_simple>")])
 
+;; xvtlsbb BF,XB
+;; Set the CR field BF to indicate if the lowest bit (bit 7) of every byte
+;; element in VSR[XB] is equal to 1 (ALL_TRUE) or equal to 0 (ALL_FALSE).
+(define_insn "*xvtlsbb_internal"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+	(unspec:CC [(match_operand:V16QI 1 "vsx_register_operand" "wa")]
+	 UNSPEC_XVTLSBB))]
+  "TARGET_POWER10"
+  "xvtlsbb %0,%x1"
+  [(set_attr "type" "logical")])
+
+;; Vector Test Least Significant Bit by Byte
+;; for the implementation of the builtin
+;;     __builtin_vec_test_lsbb_all_ones
+;;     int vec_test_lsbb_all_ones (vector unsigned char);
+;; and
+;;     __builtin_vec_test_lsbb_all_zeros
+;;     int vec_test_lsbb_all_zeros (vector unsigned char);
+(define_expand "xvtlsbbo"
+  [(set (match_dup 2)
+	(unspec:CC [(match_operand:V16QI 1 "vsx_register_operand" "v")]
+	 UNSPEC_XVTLSBB))
+   (set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	(lt:SI (match_dup 2) (const_int 0)))]
+  "TARGET_POWER10"
+{
+   operands[2] = gen_reg_rtx (CCmode);
+})
+(define_expand "xvtlsbbz"
+  [(set (match_dup 2)
+	(unspec:CC [(match_operand:V16QI 1 "vsx_register_operand" "v")]
+	 UNSPEC_XVTLSBB))
+   (set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	(eq:SI (match_dup 2) (const_int 0)))]
+  "TARGET_POWER10"
+{
+   operands[2] = gen_reg_rtx (CCmode);
+})
+
 (define_insn "*vsx_ge_<mode>_p"
   [(set (reg:CC CR6_REGNO)
 	(unspec:CC

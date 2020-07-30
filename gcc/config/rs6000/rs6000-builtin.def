@@ -1062,6 +1062,14 @@
 		     | RS6000_BTC_QUATERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_P10_VSX_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P10_OVERLOAD_1(ENUM, NAME)					\
   RS6000_BUILTIN_1 (P10_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
 		    "__builtin_vec_" NAME,		/* NAME */	\
@@ -2736,6 +2744,9 @@ BU_P10V_1 (VSTRIHR_P, "vstrihr_p", CONST, vstrir_p_v8hi)
 BU_P10V_1 (VSTRIBL_P, "vstribl_p", CONST, vstril_p_v16qi)
 BU_P10V_1 (VSTRIHL_P, "vstrihl_p", CONST, vstril_p_v8hi)
 
+BU_P10_VSX_1 (XVTLSBB_ZEROS, "xvtlsbb_all_zeros", CONST, xvtlsbbz)
+BU_P10_VSX_1 (XVTLSBB_ONES, "xvtlsbb_all_ones", CONST, xvtlsbbo)
+
 BU_P10V_1 (MTVSRBM, "mtvsrbm", CONST, vec_mtvsr_v16qi)
 BU_P10V_1 (MTVSRHM, "mtvsrhm", CONST, vec_mtvsr_v8hi)
 BU_P10V_1 (MTVSRWM, "mtvsrwm", CONST, vec_mtvsr_v4si)
@@ -2771,6 +2782,10 @@ BU_P10_OVERLOAD_1 (VSTRIL, "stril")
 
 BU_P10_OVERLOAD_1 (VSTRIR_P, "strir_p")
 BU_P10_OVERLOAD_1 (VSTRIL_P, "stril_p")
+
+BU_P10_OVERLOAD_1 (XVTLSBB_ZEROS, "xvtlsbb_all_zeros")
+BU_P10_OVERLOAD_1 (XVTLSBB_ONES, "xvtlsbb_all_ones")
+
 
 BU_P10_OVERLOAD_1 (MTVSRBM, "mtvsrbm")
 BU_P10_OVERLOAD_1 (MTVSRHM, "mtvsrhm")

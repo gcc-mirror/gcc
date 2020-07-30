@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,32 +15,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-require-effective-target exceptions_enabled }
+// { dg-options "-std=gnu++2a" }
+// { dg-do compile { target c++2a } }
 
-#include <vector>
-#include <ext/throw_allocator.h>
-#include <testsuite_hooks.h>
+// LWG 3467. bool can't be an integer-like type
 
-// PR libstdc++/72847
-void
-test01()
+#include <ranges>
+
+struct R
 {
-  typedef bool value_type;
-  typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
-  typedef std::vector<value_type, allocator_type> test_type;
-  test_type v1(1, false);
-  test_type v2(v1.capacity()+1, false);
-  allocator_type::set_limit(0);
-  try {
-    v1 = v2;
-  } catch (const __gnu_cxx::forced_error&) {
-  }
-  // throw_allocator will throw if double-free happens
-}
+  bool size() const;
+};
 
-// Container requirement testing, exceptional behavior
-int main()
-{
-  test01();
-  return 0;
-}
+template<typename T>
+concept sized = requires(T t) { std::ranges::size(t); };
+
+static_assert( !sized<R> );

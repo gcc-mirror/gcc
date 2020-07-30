@@ -17,6 +17,7 @@
 
 // <charconv> is supported in C++14 as a GNU extension
 // { dg-do run { target c++14 } }
+// { dg-add-options ieee }
 
 #include <charconv>
 #include <string>
@@ -337,7 +338,7 @@ test_max_mantissa()
 	VERIFY( flt == val );
 
 	std::string s2 = s.substr(0, len - 5);
-	s2.insert(s2.cbegin() + orig_len - 1, '.');
+	s2.insert(s2.begin() + orig_len - 1, '.');
 	s2 += "e000000000001";
 	res = std::from_chars(s.data(), s.data() + len, flt, fmt);
 	VERIFY( res.ec == std::errc{} );
