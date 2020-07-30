@@ -1,3 +1,43 @@
+2020-07-29  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-27  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct target_var_desc): Rename do_detach field to
+	is_attach.
+	* oacc-mem.c (goacc_exit_datum_1): Add assert.  Don't set finalize for
+	GOMP_MAP_FORCE_DETACH. Update checking to use is_attach field.
+	(goacc_enter_data_internal): Don't affect reference counts
+	for attach mappings.
+	(goacc_exit_data_internal): Don't affect reference counts for detach
+	mappings.
+	* target.c (gomp_map_vars_existing): Don't affect reference counts for
+	attach mappings.
+	(gomp_map_vars_internal): Set renamed is_attach flag unconditionally to
+	mark attach mappings.
+	(gomp_unmap_vars_internal): Use is_attach flag to prevent affecting
+	reference count for attach mappings.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-2.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: Mark
+	test as shouldfail.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Adjust to fail
+	gracefully in no-finalize mode.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-3.c: New file.
+
+2020-07-29  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-23  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_unmap_vars_internal): Remove unnecessary forcing of
+	finalization for detach operation.
+	* testsuite/libgomp.oacc-c-c++-common/structured-detach-underflow.c:
+	New test.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

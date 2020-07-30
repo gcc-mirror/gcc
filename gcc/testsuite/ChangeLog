@@ -1,3 +1,30 @@
+2020-07-29  Tiziano Müller  <tiziano.mueller@chem.uzh.ch>
+
+	* c-c++-common/cpp/has-include-1-traditional.c: New.
+
+2020-07-29  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-29  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96319
+	* gfortran.dg/pr96319.f90: New test.
+
+2020-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95591
+	PR c++/95599
+	PR c++/95823
+	PR c++/95824
+	PR c++/95895
+	* g++.dg/coroutines/pr95591.C: New test.
+	* g++.dg/coroutines/pr95599.C: New test.
+	* g++.dg/coroutines/pr95823.C: New test.
+	* g++.dg/coroutines/pr95824.C: New test.
+
 2020-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

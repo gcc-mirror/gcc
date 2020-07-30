@@ -1,3 +1,8 @@
+2020-07-29  Tiziano Müller  <tiziano.mueller@chem.uzh.ch>
+
+	* init.c (builtin_array): Add xref comment.
+	* traditional.c (fun_like_macro): Add HAS_INCLUDE codes.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

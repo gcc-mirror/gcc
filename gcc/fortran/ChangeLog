@@ -1,3 +1,12 @@
+2020-07-29  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-07-29  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96319
+	* intrinsic.c (gfc_convert_type_warn):  Add check for
+	LOGICAL type so that warnings are not output.
+
 2020-07-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master:

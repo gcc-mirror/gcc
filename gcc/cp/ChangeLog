@@ -1,3 +1,57 @@
+2020-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95591
+	PR c++/95599
+	PR c++/95823
+	PR c++/95824
+	PR c++/95895
+	* coroutines.cc (struct coro_ret_data): Delete.
+	(coro_maybe_expand_co_return): Delete.
+	(co_return_expander): Delete.
+	(expand_co_returns): Delete.
+	(co_await_find_in_subtree): Remove unused name.
+	(build_actor_fn): Remove unused parm, remove handling
+	for co_return expansion.
+	(register_await_info): Demote duplicate info message to a
+	warning.
+	(coro_make_frame_entry): Move closer to use site.
+	(struct susp_frame_data): Add fields for final suspend label
+	and a flag to indicate await expressions with initializers.
+	(captures_temporary): Delete.
+	(register_awaits): Remove unused code, update comments.
+	(find_any_await): New.
+	(tmp_target_expr_p): New.
+	(struct interesting): New.
+	(find_interesting_subtree): New.
+	(struct var_nest_node): New.
+	(flatten_await_stmt): New.
+	(handle_nested_conditionals): New.
+	(process_conditional): New.
+	(replace_statement_captures): Rename to...
+	(maybe_promote_temps): ... this.
+	(maybe_promote_captured_temps): Delete.
+	(analyze_expression_awaits): Check for await expressions with
+	initializers.  Simplify handling for truth-and/or-if.
+	(expand_one_truth_if): Simplify (map cases that need expansion
+	to COND_EXPR).
+	(await_statement_walker): Handle CO_RETURN_EXPR. Simplify the
+	handling for truth-and/or-if expressions.
+	(register_local_var_uses): Ensure that we create names in the
+	implementation namespace.
+	(morph_fn_to_coro): Add final suspend label to suspend frame
+	callback data and remove it from the build_actor_fn call.
+
+2020-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cp-tree.def (CO_RETURN_EXPR): Correct the class
+	to use tcc_statement.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.
