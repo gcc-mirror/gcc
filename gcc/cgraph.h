@@ -2165,8 +2165,6 @@ private:
 /* Every top level asm statement is put into a asm_node.  */
 
 struct GTY(()) asm_node {
-
-
   /* Next asm node.  */
   asm_node *next;
   /* String for this asm node.  */
