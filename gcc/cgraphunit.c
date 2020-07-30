@@ -2998,11 +2998,9 @@ symbol_table::finalize_compilation_unit (void)
 
   if (!seen_error ())
     {
-      /* Emit early debug for reachable functions, and by consequence,
-	 locally scoped symbols.  */
-      struct cgraph_node *cnode;
-      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
-	(*debug_hooks->early_global_decl) (cnode->decl);
+      /* Give the frontends the chance to emit early debug based on
+	 what is still reachable in the TU.  */
+      (*lang_hooks.finalize_early_debug) ();
 
       /* Clean up anything that needs cleaning up after initial debug
 	 generation.  */
