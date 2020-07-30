@@ -6463,6 +6463,14 @@ nvptx_can_change_mode_class (machine_mode, machine_mode, reg_class_t)
   return false;
 }
 
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+nvptx_truly_noop_truncation (poly_uint64, poly_uint64)
+{
+  return false;
+}
+
 static GTY(()) tree nvptx_previous_fndecl;
 
 static void
@@ -6611,6 +6619,9 @@ nvptx_set_current_function (tree fndecl)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS nvptx_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION nvptx_truly_noop_truncation
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
