@@ -3658,7 +3658,7 @@ package body Exp_Ch6 is
 
          --  Create possible extra actual for accessibility level
 
-         if Present (Get_Accessibility (Formal)) then
+         if Present (Extra_Accessibility (Formal)) then
 
             --  Ada 2005 (AI-252): If the actual was rewritten as an Access
             --  attribute, then the original actual may be an aliased object
@@ -3748,7 +3748,7 @@ package body Exp_Ch6 is
                   Add_Extra_Actual
                     (Expr =>
                        New_Occurrence_Of (Get_Accessibility (Parm_Ent), Loc),
-                     EF   => Get_Accessibility (Formal));
+                     EF   => Extra_Accessibility (Formal));
                end;
 
             elsif Is_Entity_Name (Prev_Orig) then
@@ -3782,7 +3782,7 @@ package body Exp_Ch6 is
                           (Expr =>
                              New_Occurrence_Of
                                (Get_Accessibility (Parm_Ent), Loc),
-                           EF   => Get_Accessibility (Formal));
+                           EF   => Extra_Accessibility (Formal));
 
                      --  If the actual access parameter does not have an
                      --  associated extra formal providing its scope level,
@@ -3794,7 +3794,7 @@ package body Exp_Ch6 is
                           (Expr =>
                              Make_Integer_Literal (Loc,
                                Intval => Scope_Depth (Standard_Standard)),
-                           EF   => Get_Accessibility (Formal));
+                           EF   => Extra_Accessibility (Formal));
                      end if;
                   end;
 
@@ -3804,7 +3804,7 @@ package body Exp_Ch6 is
                else
                   Add_Extra_Actual
                     (Expr => Dynamic_Accessibility_Level (Prev_Orig),
-                     EF   => Get_Accessibility (Formal));
+                     EF   => Extra_Accessibility (Formal));
                end if;
 
             --  If the actual is an access discriminant, then pass the level
@@ -3820,7 +3820,7 @@ package body Exp_Ch6 is
                  (Expr =>
                     Make_Integer_Literal (Loc,
                       Intval => Object_Access_Level (Prefix (Prev_Orig))),
-                  EF   => Get_Accessibility (Formal));
+                  EF   => Extra_Accessibility (Formal));
 
             --  All other cases
 
@@ -3878,7 +3878,7 @@ package body Exp_Ch6 is
                                    New_Occurrence_Of
                                      (Get_Accessibility
                                         (Entity (Prev_Ult)), Loc),
-                                 EF   => Get_Accessibility (Formal));
+                                 EF   => Extra_Accessibility (Formal));
 
                            --  Normal case, call Object_Access_Level. Note:
                            --  should be Dynamic_Accessibility_Level ???
@@ -3889,7 +3889,7 @@ package body Exp_Ch6 is
                                    Make_Integer_Literal (Loc,
                                      Intval =>
                                        Object_Access_Level (Prev_Orig)),
-                                 EF   => Get_Accessibility (Formal));
+                                 EF   => Extra_Accessibility (Formal));
                            end if;
 
                         --  Treat the unchecked attributes as library-level
@@ -3901,7 +3901,7 @@ package body Exp_Ch6 is
                              (Expr =>
                                 Make_Integer_Literal (Loc,
                                   Intval => Scope_Depth (Standard_Standard)),
-                              EF   => Get_Accessibility (Formal));
+                              EF   => Extra_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
                         --  values that can be passed to access parameters.
@@ -3923,7 +3923,7 @@ package body Exp_Ch6 is
                        (Expr =>
                           Make_Integer_Literal (Loc,
                             Intval => Scope_Depth (Current_Scope) + 1),
-                        EF   => Get_Accessibility (Formal));
+                        EF   => Extra_Accessibility (Formal));
 
                   --  For most other cases we simply pass the level of the
                   --  actual's access type. The type is retrieved from
@@ -4151,7 +4151,7 @@ package body Exp_Ch6 is
 
                            Add_Extra_Actual
                              (Expr => New_Occurrence_Of (Lvl, Loc),
-                              EF   => Get_Accessibility (Formal));
+                              EF   => Extra_Accessibility (Formal));
                         end;
 
                      --  General case uncomplicated by conditional expressions
@@ -4159,7 +4159,7 @@ package body Exp_Ch6 is
                      else
                         Add_Extra_Actual
                           (Expr => Dynamic_Accessibility_Level (Prev),
-                           EF   => Get_Accessibility (Formal));
+                           EF   => Extra_Accessibility (Formal));
                      end if;
                end case;
             end if;
