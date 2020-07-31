@@ -18561,9 +18561,15 @@ preprocess_module (module_state *module, location_t from_loc,
       module->directness = module_directness (MD_DIRECT + in_purview);
 
       /* Set the location to be most informative for users.  */
-      module->loc = ordinary_loc_of (line_table, from_loc);
-      if (!module->flatname)
-	module->set_flatname ();
+      from_loc = ordinary_loc_of (line_table, from_loc);
+      if (module->loadedness != ML_NONE)
+	linemap_module_reparent (line_table, module->loc, from_loc);
+      else
+	{
+	  module->loc = from_loc;
+	  if (!module->flatname)
+	    module->set_flatname ();
+	}
     }
 
   if (is_import
