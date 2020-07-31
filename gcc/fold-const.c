@@ -5584,6 +5584,13 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
     return 0;
 
   lhs = make_range (op0, &in0_p, &low0, &high0, &strict_overflow_p);
+  /* If op0 is known true or false and this is a short-circuiting
+     operation we must not merge with op1 since that makes side-effects
+     unconditional.  So special-case this.  */
+  if (!lhs
+      && ((code == TRUTH_ORIF_EXPR && in0_p)
+	  || (code == TRUTH_ANDIF_EXPR && !in0_p)))
+    return op0;
   rhs = make_range (op1, &in1_p, &low1, &high1, &strict_overflow_p);
 
   /* If this is an OR operation, invert both sides; we will invert
