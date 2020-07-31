@@ -286,7 +286,7 @@ namespace
   ptrdiff_t
   from_chars_impl(const char* str, T& value, errc& ec) noexcept
   {
-    if (locale_t loc = ::newlocale(LC_ALL, "C", (locale_t)0)) [[likely]]
+    if (locale_t loc = ::newlocale(LC_ALL_MASK, "C", (locale_t)0)) [[likely]]
       {
 	locale_t orig = ::uselocale(loc);
 
