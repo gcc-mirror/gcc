@@ -1,5 +1,11 @@
 2020-07-31  Nathan Sidwell  <nathan@acm.org>
 
+	Fix location of imports of partitions.
+	* module.cc (loc_spans::maybe_propagate): New.
+	(module_state::read_{ordinary,macro}_maps): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/part-hdr-1_[abc].[CH]: New.
+
 	Fix import location reparenting.
 	gcc/cp/
 	* module.cc (preprocess_module): Reparent here, if we're already

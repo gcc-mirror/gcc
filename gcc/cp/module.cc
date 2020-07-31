@@ -3283,6 +3283,10 @@ public:
   void close ();
 
 public:
+  /* Propagate imported linemaps to us, if needed.  */
+  bool maybe_propagate (module_state *import, location_t loc);
+
+public:
   const span *ordinary (location_t);
   const span *macro (location_t);
 };
@@ -13158,6 +13162,21 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
   spans.quick_push (interval);
 }
 
+/* Reopen the span, if we want the about-to-be-inserted set of maps to
+   be propagated in our own location table.  I.e. we are the primary
+   interface and we're importing a partition.  */
+
+bool
+loc_spans::maybe_propagate (module_state *import,
+			    location_t loc = UNKNOWN_LOCATION)
+{
+  bool opened = (module_interface_p () && !module_partition_p ()
+		 && import->is_partition ());
+  if (opened)
+    open (loc);
+  return opened;
+}
+
 /* Open a new linemap interval.  The just-created ordinary map is the
    first map of the interval.  */
 
@@ -15547,10 +15566,7 @@ module_state::read_ordinary_maps ()
     offset += range_mask + 1;
   offset = (offset & ~range_mask);
 
-  /* We need to insert our maps if we're a partition of the primary
-     module interface.  */
-  if (module_interface_p () && !module_partition_p () && is_partition ())
-    spans.open (offset + low_bits);
+  bool propagated = spans.maybe_propagate (this, offset + low_bits);
 
   line_map_ordinary *maps = static_cast<line_map_ordinary *>
     (line_map_new_raw (line_table, false, num_ordinary));
@@ -15599,6 +15615,9 @@ module_state::read_ordinary_maps ()
     sec.set_overrun ();
   dump () && dump ("Ordinary location hwm:%u", ordinary_locs.second);
 
+  if (propagated)
+    spans.close ();
+
   filenames.release ();
   
   dump.outdent ();
@@ -15621,6 +15640,8 @@ module_state::read_macro_maps ()
   unsigned num_macros = sec.u ();
   location_t zero = sec.u ();
   dump () && dump ("Macro maps:%u zero:%u", num_macros, zero);
+
+  bool propagated = spans.maybe_propagate (this);
 
   location_t offset = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
   slurp->loc_deltas.second = zero - offset;
@@ -15672,7 +15693,7 @@ module_state::read_macro_maps ()
 
   dump () && dump ("Macro location lwm:%u", macro_locs.first);
 
-  if (module_interface_p () && !module_partition_p () && is_partition ())
+  if (propagated)
     spans.close ();
 
   dump.outdent ();
