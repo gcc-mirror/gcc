@@ -286,7 +286,7 @@ namespace
   ptrdiff_t
   from_chars_impl(const char* str, T& value, errc& ec) noexcept
   {
-    if (locale_t loc = ::newlocale(LC_ALL, "C", (locale_t)0)) [[likely]]
+    if (locale_t loc = ::newlocale(LC_ALL_MASK, "C", (locale_t)0)) [[likely]]
       {
 	locale_t orig = ::uselocale(loc);
 
@@ -300,12 +300,16 @@ namespace
 	errno = 0;
 	char* endptr;
 	T tmpval;
+#if _GLIBCXX_USE_C99_STDLIB
 	if constexpr (is_same_v<T, float>)
 	  tmpval = std::strtof(str, &endptr);
-	if constexpr (is_same_v<T, double>)
+	else if constexpr (is_same_v<T, double>)
 	  tmpval = std::strtod(str, &endptr);
 	else if constexpr (is_same_v<T, long double>)
 	  tmpval = std::strtold(str, &endptr);
+#else
+	tmpval = std::strtod(str, &endptr);
+#endif
 	const int conv_errno = std::__exchange(errno, save_errno);
 
 #if _GLIBCXX_USE_C99_FENV_TR1
@@ -319,7 +323,7 @@ namespace
 	const ptrdiff_t n = endptr - str;
 	if (conv_errno == ERANGE) [[unlikely]]
 	  {
-	    if (std::isinf(tmpval)) // overflow
+	    if (isinf(tmpval)) // overflow
 	      ec = errc::result_out_of_range;
 	    else // underflow (LWG 3081 wants to set value = tmpval here)
 	      ec = errc::result_out_of_range;

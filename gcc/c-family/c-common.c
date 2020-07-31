@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "c-spellcheck.h"
 #include "selftest.h"
+#include "debug.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -5821,6 +5822,9 @@ check_function_arguments_recurse (void (*callback)
 				  void *ctx, tree param,
 				  unsigned HOST_WIDE_INT param_num)
 {
+  if (TREE_NO_WARNING (param))
+    return;
+
   if (CONVERT_EXPR_P (param)
       && (TYPE_PRECISION (TREE_TYPE (param))
 	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (param, 0)))))
@@ -9084,6 +9088,22 @@ tree
 braced_lists_to_strings (tree type, tree ctor)
 {
   return braced_lists_to_strings (type, ctor, false);
+}
+
+
+/* Emit debug for functions before finalizing early debug.  */
+
+void
+c_common_finalize_early_debug (void)
+{
+  /* Emit early debug for reachable functions, and by consequence,
+     locally scoped symbols.  Also emit debug for extern declared
+     functions that are still reachable at this point.  */
+  struct cgraph_node *cnode;
+  FOR_EACH_FUNCTION (cnode)
+    if (!cnode->alias && !cnode->thunk.thunk_p
+	&& (cnode->has_gimple_body_p () || !DECL_IS_BUILTIN (cnode->decl)))
+      (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
 #include "gt-c-family-c-common.h"

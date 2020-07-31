@@ -1,3 +1,89 @@
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96152
+	* d-codegen.cc (build_array_from_exprs): New function.
+	* d-tree.h (build_array_from_exprs): Declare.
+	* expr.cc (ExprVisitor::visit (AssocArrayLiteralExp *)): Use
+	build_array_from_exprs to generate key and value arrays.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96154
+	* gdc.texi (Warnings): Document -Wvarargs.
+	* lang.opt: Add -Wvarargs
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96140
+	* intrinsics.cc (expand_intrinsic_vaarg): Handle ref parameters as
+	arguments to va_arg().
+	(expand_intrinsic_vastart): Handle ref parameters as arguments to
+	va_start().
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Inline bounds checking
+	for simple array assignments.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_memcmp_call): New function.
+	(build_memcpy_call): New function.
+	(build_memset_call): New function.
+	(build_float_identity): Call build_memcmp_call.
+	(lower_struct_comparison): Likewise.
+	(build_struct_comparison): Likewise.
+	* d-tree.h (build_memcmp_call): Declare.
+	(build_memcpy_call): Declare.
+	(build_memset_call): Declare.
+	* expr.cc (ExprVisitor::visit (EqualExp *)): Call build_memcmp_call.
+	(ExprVisitor::visit (AssignExp *)): Call build_memset_call.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Call build_memcpy_call.
+	(ExprVisitor::visit (StructLiteralExp *)): Call build_memset_call.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (needs_postblit): Move out of ExprVisitor as a static
+	function.  Update all callers.
+	(needs_dtor): Likewise.
+	(lvalue_p): Likewise.
+	(binary_op): Likewise.
+	(binop_assignment): Likewise.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_rotate): Add function.
+	(maybe_expand_intrinsic): Handle rol and ror intrinsics.
+	* intrinsics.def (ROL): Add intrinsic.
+	(ROL_TIARG): Add intrinsic.
+	(ROR): Add intrinsic.
+	(ROR_TIARG): Add intrinsic.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (DEF_D_INTRINSIC): Rename second argument from A to B.
+	* intrinsics.cc (intrinsic_decl): Add built_in field.
+	(DEF_D_INTRINSIC): Rename second argument from ALIAS to BUILTIN.
+	(maybe_set_intrinsic): Handle new intrinsic codes.
+	(expand_intrinsic_bt): Likewise.
+	(expand_intrinsic_checkedint): Likewise.
+	(expand_intrinsic_bswap): Remove.
+	(expand_intrinsic_sqrt): Remove.
+	(maybe_expand_intrinsic): Group together intrinsic cases that map
+	directly to gcc built-ins.
+	* intrinsics.def (DEF_D_BUILTIN): Rename second argument from A to B.
+	Update all callers to pass equivalent DECL_FUNCTION_CODE.
+	(DEF_CTFE_BUILTIN): Likewise.
+	(STD_COS): Remove intrinsic.
+	(STD_FABS): Remove intrinsic.
+	(STD_LDEXP): Remove intrinsic.
+	(STD_RINT): Remove intrinsic.
+	(STD_RNDTOL): Remove intrinsic.
+	(STD_SIN): Remove intrinsic.
+	(STD_SQRTF): Remove intrinsic.
+	(STD_SQRT): Remove intrinsic.
+	(STD_SQRTL): Remove intrinsic.
+
 2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 8508c4e68.

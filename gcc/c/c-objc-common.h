@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
   c_simulate_builtin_function_decl
 #undef LANG_HOOKS_EMITS_BEGIN_STMT
 #define LANG_HOOKS_EMITS_BEGIN_STMT true
+#undef LANG_HOOKS_FINALIZE_EARLY_DEBUG
+#define LANG_HOOKS_FINALIZE_EARLY_DEBUG c_common_finalize_early_debug
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE

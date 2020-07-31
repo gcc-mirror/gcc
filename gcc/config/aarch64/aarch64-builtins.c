@@ -628,14 +628,16 @@ tree aarch64_bf16_type_node = NULL_TREE;
 tree aarch64_bf16_ptr_type_node = NULL_TREE;
 
 /* Wrapper around add_builtin_function.  NAME is the name of the built-in
-   function, TYPE is the function type, and CODE is the function subcode
-   (relative to AARCH64_BUILTIN_GENERAL).  */
+   function, TYPE is the function type, CODE is the function subcode
+   (relative to AARCH64_BUILTIN_GENERAL), and ATTRS is the function
+   attributes.  */
 static tree
-aarch64_general_add_builtin (const char *name, tree type, unsigned int code)
+aarch64_general_add_builtin (const char *name, tree type, unsigned int code,
+			     tree attrs = NULL_TREE)
 {
   code = (code << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_GENERAL;
   return add_builtin_function (name, type, code, BUILT_IN_MD,
-			       NULL, NULL_TREE);
+			       NULL, attrs);
 }
 
 static const char *
@@ -892,6 +894,113 @@ aarch64_init_simd_builtin_scalar_types (void)
 					     "__builtin_aarch64_simd_udi");
 }
 
+/* Return a set of FLAG_* flags that describe what the function could do,
+   taking the command-line flags into account.  */
+static unsigned int
+aarch64_call_properties (aarch64_simd_builtin_datum *d)
+{
+  unsigned int flags = d->flags;
+  switch (d->mode)
+    {
+    /* Floating-point.  */
+    case E_BFmode:
+    case E_V4BFmode:
+    case E_V8BFmode:
+    case E_HFmode:
+    case E_V4HFmode:
+    case E_V8HFmode:
+    case E_SFmode:
+    case E_V2SFmode:
+    case E_V4SFmode:
+    case E_DFmode:
+    case E_V1DFmode:
+    case E_V2DFmode:
+      flags |= FLAG_FP;
+      break;
+
+    default:
+      break;
+    }
+
+  /* -fno-trapping-math means that we can assume any FP exceptions
+     are not user-visible.  */
+  if (!flag_trapping_math)
+    flags &= ~FLAG_RAISE_FP_EXCEPTIONS;
+
+  return flags;
+}
+
+/* Return true if calls to the function could modify some form of
+   global state.  */
+static bool
+aarch64_modifies_global_state_p (aarch64_simd_builtin_datum *d)
+{
+  unsigned int flags = aarch64_call_properties (d);
+
+  if (flags & FLAG_RAISE_FP_EXCEPTIONS)
+    return true;
+
+  if (flags & FLAG_PREFETCH_MEMORY)
+    return true;
+
+  return flags & FLAG_WRITE_MEMORY;
+}
+
+/* Return true if calls to the function could read some form of
+   global state.  */
+static bool
+aarch64_reads_global_state_p (aarch64_simd_builtin_datum *d)
+{
+  unsigned int flags = aarch64_call_properties (d);
+
+  if (flags & FLAG_READ_FPCR)
+    return true;
+
+  return flags & FLAG_READ_MEMORY;
+}
+
+/* Return true if calls to the function could raise a signal.  */
+static bool
+aarch64_could_trap_p (aarch64_simd_builtin_datum *d)
+{
+  unsigned int flags = aarch64_call_properties (d);
+
+  if (flags & FLAG_RAISE_FP_EXCEPTIONS)
+    return true;
+
+  if (flags & (FLAG_READ_MEMORY | FLAG_WRITE_MEMORY))
+    return true;
+
+  return false;
+}
+
+/* Add attribute NAME to ATTRS.  */
+static tree
+aarch64_add_attribute (const char *name, tree attrs)
+{
+  return tree_cons (get_identifier (name), NULL_TREE, attrs);
+}
+
+/* Return the appropriate function attributes.  */
+static tree
+aarch64_get_attributes (aarch64_simd_builtin_datum *d)
+{
+  tree attrs = NULL_TREE;
+
+  if (!aarch64_modifies_global_state_p (d))
+    {
+      if (aarch64_reads_global_state_p (d))
+	attrs = aarch64_add_attribute ("pure", attrs);
+      else
+	attrs = aarch64_add_attribute ("const", attrs);
+    }
+
+  if (!flag_non_call_exceptions || !aarch64_could_trap_p (d))
+    attrs = aarch64_add_attribute ("nothrow", attrs);
+
+  return aarch64_add_attribute ("leaf", attrs);
+}
+
 static bool aarch64_simd_builtins_initialized_p = false;
 
 /* Due to the architecture not providing lane variant of the lane instructions
@@ -1045,7 +1154,9 @@ aarch64_init_simd_builtins (void)
 	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s",
 		  d->name);
 
-      fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode);
+      tree attrs = aarch64_get_attributes (d);
+
+      fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode, attrs);
       aarch64_builtin_decls[fcode] = fndecl;
     }
 

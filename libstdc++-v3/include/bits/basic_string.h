@@ -3147,8 +3147,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       typedef _Traits					    traits_type;
       typedef typename _Traits::char_type		    value_type;
       typedef _Alloc					    allocator_type;
-      typedef typename _CharT_alloc_type::size_type	    size_type;
-      typedef typename _CharT_alloc_type::difference_type   difference_type;
+      typedef typename _CharT_alloc_traits::size_type	    size_type;
+      typedef typename _CharT_alloc_traits::difference_type difference_type;
 #if __cplusplus < 201103L
       typedef typename _CharT_alloc_type::reference	    reference;
       typedef typename _CharT_alloc_type::const_reference   const_reference;

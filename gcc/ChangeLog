@@ -1,3 +1,69 @@
+2020-07-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_test_lsbb_all_ones): New define.
+	(vec_test_lsbb_all_zeros): New define.
+	* config/rs6000/rs6000-builtin.def (BU_P10_VSX_1): New built-in
+	handling macro.
+	(XVTLSBB_ZEROS, XVTLSBB_ONES): New builtin defines.
+	(xvtlsbb_all_zeros, xvtlsbb_all_ones): New builtin overloads.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VEC_XVTLSBB_ZEROS,
+	P10_BUILTIN_VEC_XVTLSBB_ONES): New altivec_builtin_types entries.
+	* config/rs6000/rs6000.md (UNSPEC_XVTLSBB):  New unspec.
+	* config/rs6000/vsx.md (*xvtlsbb_internal): New instruction define.
+	(xvtlsbbo, xvtlsbbz): New instruction expands.
+
+2020-07-30  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/riscv/riscv-opts.h (stack_protector_guard): New enum.
+	* config/riscv/riscv.c (riscv_option_override): Handle
+	the new options.
+	* config/riscv/riscv.md (stack_protect_set): New pattern to handle
+	flexible stack protector guard settings.
+	(stack_protect_set_<mode>): Ditto.
+	(stack_protect_test): Ditto.
+	(stack_protect_test_<mode>): Ditto.
+	* config/riscv/riscv.opt (mstack-protector-guard=,
+	mstack-protector-guard-reg=, mstack-protector-guard-offset=): New
+	options.
+	* doc/invoke.texi (Option Summary) [RISC-V Options]:
+	Add -mstack-protector-guard=, -mstack-protector-guard-reg=, and
+	-mstack-protector-guard-offset=.
+	(RISC-V Options): Ditto.
+
+2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96202
+	* configure: Regenerated.
+
+2020-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96370
+	* tree-ssa-reassoc.c (rewrite_expr_tree): Add operation
+	code parameter and use it instead of picking it up from
+	the stmt that is being rewritten.
+	(reassociate_bb): Pass down the operation code.
+
+2020-07-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (nvptx_vector_index_operand): New predicate.
+	(VECELEM): New mode attribute for a vector's uppercase element mode.
+	(Vecelem): New mode attribute for a vector's lowercase element mode.
+	(*vec_set<mode>_0, *vec_set<mode>_1, *vec_set<mode>_2)
+	(*vec_set<mode>_3): New instructions.
+	(vec_set<mode>): New expander to generate one of the above insns.
+	(vec_extract<mode><Vecelem>): New instruction.
+
+2020-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR target/95435
+	* config/i386/x86-tune-costs.h: Use libcall for large sizes for
+	-m32. Start using libcall from 128+ bytes.
+
+2020-07-30  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/x86-tune-costs.h: Change code formatting.
+
 2020-07-29  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/nvptx/nvptx.md (recip<mode>2): New instruction.

@@ -361,6 +361,21 @@ Usually the types of the generated result expressions are
 determined from the context, but sometimes like in the above case
 it is required that you specify them explicitely.
 
+Another modifier for generated expressions is @code{!} which
+tells the machinery to only consider the simplification in case
+the marked expression simplified to a simple operand.  Consider
+for example
+
+@smallexample
+(simplify
+  (plus (vec_cond:s @@0 @@1 @@2) @@3)
+  (vec_cond @@0 (plus! @@1 @@3) (plus! @@2 @@3)))
+@end smallexample
+
+which moves the outer @code{plus} operation to the inner arms
+of the @code{vec_cond} expression but only if the actual plus
+operations both simplify.
+
 As intermediate conversions are often optional there is a way to
 avoid the need to repeat patterns both with and without such
 conversions.  Namely you can mark a conversion as being optional
