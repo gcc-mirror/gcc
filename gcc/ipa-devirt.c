@@ -1892,10 +1892,11 @@ add_type_duplicate (odr_type val, tree type)
   return build_bases;
 }
 
-/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
+/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.
+   FOR_DUMP_P is true when being called from the dump routines.  */
 
 tree
-obj_type_ref_class (const_tree ref)
+obj_type_ref_class (const_tree ref, bool for_dump_p)
 {
   gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
   ref = TREE_TYPE (ref);
@@ -1911,8 +1912,10 @@ obj_type_ref_class (const_tree ref)
   tree ret = TREE_TYPE (ref);
   if (!in_lto_p && !TYPE_STRUCTURAL_EQUALITY_P (ret))
     ret = TYPE_CANONICAL (ret);
+  else if (odr_type ot = get_odr_type (ret, !for_dump_p))
+    ret = ot->type;
   else
-    ret = get_odr_type (ret)->type;
+    gcc_assert (for_dump_p);
   return ret;
 }
 

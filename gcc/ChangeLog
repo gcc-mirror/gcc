@@ -1,3 +1,292 @@
+2020-07-30  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR target/95435
+	* config/i386/x86-tune-costs.h: Use libcall for large sizes for
+	-m32. Start using libcall from 128+ bytes.
+
+2020-07-30  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-30  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/x86-tune-costs.h: Change code formatting.
+
+2020-07-28  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96058
+	* expr.c (string_constant): Build string_constant only
+	for a type that has same precision as char_type_node
+	and is an integral type.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96335
+	* calls.c (maybe_warn_rdwr_sizes): Add FNDECL and FNTYPE arguments,
+	instead of trying to rediscover them in the body.
+	(initialize_argument_information): Adjust caller.
+
+2020-07-27  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2020-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config.gcc: Identify power10 as a 64-bit processor and as valid
+	for --with-cpu and --with-tune.
+
+2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/45375
+	* symbol-summary.h: Call vec_safe_reserve before grow is called
+	in order to grow to a reasonable size.
+	* vec.h (vec_safe_reserve): Add missing function for vl_ptr
+	type.
+
+2020-07-23  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-07-20  Sergei Trofimovich  <siarheit@google.com>
+
+	PR target/96190
+	* config/sparc/linux.h (ENDFILE_SPEC): Use GNU_USER_TARGET_ENDFILE_SPEC
+	to get crtendS.o for !no-pie mode.
+	* config/sparc/linux64.h (ENDFILE_SPEC): Ditto.
+
+2020-07-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96236
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Handle
+	little-endian memory ordering.
+
+2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96260
+	* asan.c (asan_shadow_offset_set_p): New.
+	* asan.h (asan_shadow_offset_set_p): Ditto.
+	* toplev.c (process_options): Allow -fsanitize=kernel-address
+	even TARGET_ASAN_SHADOW_OFFSET not implemented, only check when
+	asan stack protection is enabled.
+
+2020-07-23  Release Manager
+
+	* GCC 10.2.0 released.
+
+2020-07-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_AVOID_MFENCE):
+	Rename from TARGET_USE_XCHG_FOR_ATOMIC_STORE.
+	* config/i386/sync.md (atomic_store<mode>): Update for rename.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_MFENCE):
+	Rename from X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE.
+
+2020-07-17  Romain Naour  <romain.naour@gmail.com>
+
+	Backported from master:
+	2020-06-03  Romain Naour  <romain.naour@gmail.com>
+
+	* Makefile.in (SELFTEST_DEPS): Move before including language makefile
+	fragments.
+
+2020-07-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2020-06-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config.in: Regenerate.
+	* config/s390/s390.c (print_operand): Emit vector alignment hints
+	for target z13, if AS accepts them.  For other targets the logic
+	stays the same.
+	* config/s390/s390.h (TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS): Define
+	macro.
+	* configure: Regenerate.
+	* configure.ac: Check HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13.
+
+2020-07-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/95726
+	* config/aarch64/aarch64.c (aarch64_attribute_table): Add
+	"Advanced SIMD type".
+	* config/aarch64/aarch64-builtins.c: Include stringpool.h and
+	attribs.h.
+	(aarch64_init_simd_builtin_types): Add an "Advanced SIMD type"
+	attribute to each Advanced SIMD type.
+	* config/arm/arm.c (arm_attribute_table): Add "Advanced SIMD type".
+	* config/arm/arm-builtins.c: Include stringpool.h and attribs.h.
+	(arm_init_simd_builtin_types): Add an "Advanced SIMD type"
+	attribute to each Advanced SIMD type.
+
+2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96174
+	* config/i386/avx512fintrin.h (_mm512_cmpeq_pd_mask,
+	_mm512_mask_cmpeq_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_mask_cmplt_pd_mask, _mm512_cmple_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_cmpunord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask, _mm512_cmpneq_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_cmpnlt_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_mask_cmpnle_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_mask_cmpord_pd_mask, _mm512_cmpeq_ps_mask,
+	_mm512_mask_cmpeq_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_mask_cmplt_ps_mask, _mm512_cmple_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_cmpunord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask, _mm512_cmpneq_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_cmpnlt_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_mask_cmpnle_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_mask_cmpord_ps_mask): Move outside of __OPTIMIZE__ guarded
+	section.
+
+2020-07-15  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	PR lto/95604
+	* lto-wrapper.c (merge_and_complain): Add decoded options as parameter,
+	error on different values for -fcf-protection.
+	(append_compiler_options): Pass -fcf-protection option.
+	(find_and_merge_options): Add decoded options as parameter,
+	pass decoded_options to merge_and_complain.
+	(run_gcc): Pass decoded options to find_and_merge_options.
+	* lto-opts.c (lto_write_options): Pass -fcf-protection option.
+
+2020-07-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* tree.h (virtual_method_call_p): Add a default-false parameter
+	that indicates whether the function is being called from dump
+	routines.
+	(obj_type_ref_class): Likewise.
+	* tree.c (virtual_method_call_p): Likewise.
+	* ipa-devirt.c (obj_type_ref_class): Likewise.  Lazily add ODR
+	type information for the type when the parameter is false.
+	* tree-pretty-print.c (dump_generic_node): Update calls to
+	virtual_method_call_p and obj_type_ref_class accordingly.
+
+2020-07-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96146
+	* value-range.cc (value_range::set): Only decompose POLY_INT_CST
+	bounds to integers for VR_RANGE.  Decay to VR_VARYING for anti-ranges
+	involving POLY_INT_CSTs.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96194
+	* expr.c (expand_constructor): Don't create temporary for store to
+	volatile MEM if exp has an addressable type.
+
+2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from master:
+	2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	PR lto/95604
+	* lto-wrapper.c (merge_and_complain): Add decoded options as parameter,
+	error on different values for -fcf-protection.
+	(append_compiler_options): Pass -fcf-protection option.
+	(find_and_merge_options): Add decoded options as parameter,
+	pass decoded_options to merge_and_complain.
+	(run_gcc): Pass decoded options to find_and_merge_options.
+	* lto-opts.c (lto_write_options): Pass -fcf-protection option.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
+	__ARM_FEATURE_PAC_DEFAULT support.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* doc/extend.texi: Update the text for  __builtin_return_address.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* config/aarch64/aarch64.c (aarch64_return_address_signing_enabled):
+	Disable return address signing if __builtin_eh_return is used.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	PR target/94791
+	* config/aarch64/aarch64-protos.h (aarch64_return_addr_rtx): Declare.
+	* config/aarch64/aarch64.c (aarch64_return_addr_rtx): New.
+	(aarch64_return_addr): Use aarch64_return_addr_rtx.
+	* config/aarch64/aarch64.h (PROFILE_HOOK): Likewise.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
+	__ARM_FEATURE_BTI_DEFAULT support.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-13  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Do not strip
+	GOMP_MAP_TO_PSET/GOMP_MAP_POINTER for OpenACC enter/exit data
+	directives (see also PR92929).
+
+2020-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/96130
+	* ipa-fnsummary.c (analyze_function_body): Treat NULL bb->aux
+	as false predicate.
+
+2020-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	Backported from master:
+	2020-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94600
+	* expr.c (expand_constructor): Make a temporary also if we're
+	storing to volatile memory.
+
 2020-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

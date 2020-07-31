@@ -10834,11 +10834,12 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
       tree src_array = build1 (VIEW_CONVERT_EXPR, array_type, src);
       for (unsigned i = 0; i < 4; i++)
 	{
+	  unsigned index = WORDS_BIG_ENDIAN ? i : 3 - i;
 	  tree ref = build4 (ARRAY_REF, unsigned_V16QI_type_node, src_array,
 			     build_int_cst (size_type_node, i),
 			     NULL_TREE, NULL_TREE);
 	  tree dst = build2 (MEM_REF, unsigned_V16QI_type_node, dst_base,
-			     build_int_cst (dst_type, i * 16));
+			     build_int_cst (dst_type, index * 16));
 	  gimplify_assign (dst, ref, &new_seq);
 	}
       pop_gimplify_context (NULL);

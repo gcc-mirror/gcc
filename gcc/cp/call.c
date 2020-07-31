@@ -171,6 +171,8 @@ static tree build_over_call (struct z_candidate *, int, tsubst_flags_t);
 		     /*c_cast_p=*/false, (COMPLAIN))
 static tree convert_like_real (conversion *, tree, tree, int, bool,
 			       bool, tsubst_flags_t);
+static tree convert_like_real_1 (conversion *, tree, tree, int, bool,
+				 bool, tsubst_flags_t);
 static void op_error (const op_location_t &, enum tree_code, enum tree_code,
 		      tree, tree, tree, bool);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
@@ -7283,6 +7285,39 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
 	     "are only available with %<-std=c++2a%> or %<-std=gnu++2a%>");
 }
 
+/* Wrapper for convert_like_real_1 that handles creating IMPLICIT_CONV_EXPR.  */
+
+static tree
+convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
+		   bool issue_conversion_warnings,
+		   bool c_cast_p, tsubst_flags_t complain)
+{
+  /* Creating &TARGET_EXPR<> in a template breaks when substituting,
+     and creating a CALL_EXPR in a template breaks in finish_call_expr
+     so use an IMPLICIT_CONV_EXPR for this conversion.  We would have
+     created such codes e.g. when calling a user-defined conversion
+     function.  */
+  tree conv_expr = NULL_TREE;
+  if (processing_template_decl
+      && convs->kind != ck_identity
+      && (CLASS_TYPE_P (convs->type) || CLASS_TYPE_P (TREE_TYPE (expr))))
+    {
+      conv_expr = build1 (IMPLICIT_CONV_EXPR, convs->type, expr);
+      if (convs->kind != ck_ref_bind)
+	conv_expr = convert_from_reference (conv_expr);
+      if (!convs->bad_p)
+	return conv_expr;
+      /* Do the normal processing to give the bad_p errors.  But we still
+	 need to return the IMPLICIT_CONV_EXPR, unless we're returning
+	 error_mark_node.  */
+    }
+  expr = convert_like_real_1 (convs, expr, fn, argnum,
+			      issue_conversion_warnings, c_cast_p, complain);
+  if (expr == error_mark_node)
+    return error_mark_node;
+  return conv_expr ? conv_expr : expr;
+}
+
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
    ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is nonzero when
@@ -7294,9 +7329,9 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
    conversions to inaccessible bases are permitted.  */
 
 static tree
-convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
-		   bool issue_conversion_warnings,
-		   bool c_cast_p, tsubst_flags_t complain)
+convert_like_real_1 (conversion *convs, tree expr, tree fn, int argnum,
+		     bool issue_conversion_warnings,
+		     bool c_cast_p, tsubst_flags_t complain)
 {
   tree totype = convs->type;
   diagnostic_t diag_kind;
@@ -7396,19 +7431,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
   if (issue_conversion_warnings && (complain & tf_warning))
     conversion_null_warnings (totype, expr, fn, argnum);
-
-  /* Creating &TARGET_EXPR<> in a template breaks when substituting,
-     and creating a CALL_EXPR in a template breaks in finish_call_expr
-     so use an IMPLICIT_CONV_EXPR for this conversion.  We would have
-     created such codes e.g. when calling a user-defined conversion
-     function.  */
-  if (processing_template_decl
-      && convs->kind != ck_identity
-      && (CLASS_TYPE_P (totype) || CLASS_TYPE_P (TREE_TYPE (expr))))
-    {
-      expr = build1 (IMPLICIT_CONV_EXPR, totype, expr);
-      return convs->kind == ck_ref_bind ? expr : convert_from_reference (expr);
-    }
 
   switch (convs->kind)
     {

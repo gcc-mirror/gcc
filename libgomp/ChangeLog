@@ -1,3 +1,150 @@
+2020-07-29  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-27  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct target_var_desc): Rename do_detach field to
+	is_attach.
+	* oacc-mem.c (goacc_exit_datum_1): Add assert.  Don't set finalize for
+	GOMP_MAP_FORCE_DETACH. Update checking to use is_attach field.
+	(goacc_enter_data_internal): Don't affect reference counts
+	for attach mappings.
+	(goacc_exit_data_internal): Don't affect reference counts for detach
+	mappings.
+	* target.c (gomp_map_vars_existing): Don't affect reference counts for
+	attach mappings.
+	(gomp_map_vars_internal): Set renamed is_attach flag unconditionally to
+	mark attach mappings.
+	(gomp_unmap_vars_internal): Use is_attach flag to prevent affecting
+	reference count for attach mappings.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-2.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: Mark
+	test as shouldfail.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Adjust to fail
+	gracefully in no-finalize mode.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-3.c: New file.
+
+2020-07-29  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-23  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_unmap_vars_internal): Remove unnecessary forcing of
+	finalization for detach operation.
+	* testsuite/libgomp.oacc-c-c++-common/structured-detach-underflow.c:
+	New test.
+
+2020-07-23  Release Manager
+
+	* GCC 10.2.0 released.
+
+2020-07-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backported from master:
+	2020-07-14  Tom de Vries  <tom@codesourcery.com>
+		    Cesar Philippidis  <cesar@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+		    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* oacc-init.c (acc_init_state_lock, acc_init_state, acc_init_thread):
+	New variable.
+	(acc_init_1): Set acc_init_thread to pthread_self ().  Set
+	acc_init_state to initializing at the start, and to initialized at the
+	end.
+	(self_initializing_p): New function.
+	(acc_get_device_type): Return acc_device_none if called by thread that
+	is currently executing acc_init_1.
+	* libgomp.texi (acc_get_device_type): Update documentation.
+	(Implementation Status and Implementation-Defined Behavior): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-2.c: New.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-13  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/dynamic-pointer-1.f90: New test.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-10  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_key_s): Change virtual_refcount to
+	dynamic_refcount.
+	(struct gomp_device_descr): Remove GOMP_MAP_VARS_OPENACC_ENTER_DATA.
+	* oacc-mem.c (acc_map_data): Substitute virtual_refcount for
+	dynamic_refcount.
+	(acc_unmap_data): Update comment.
+	(goacc_map_var_existing, goacc_enter_datum): Adjust for
+	dynamic_refcount semantics.
+	(goacc_exit_datum_1, goacc_exit_datum): Re-add some error checking.
+	Adjust for dynamic_refcount semantics.
+	(goacc_enter_data_internal): Implement "present" case of dynamic
+	memory-map handling here.  Update "non-present" case for
+	dynamic_refcount semantics.
+	(goacc_exit_data_internal): Use goacc_exit_datum_1.
+	* target.c (gomp_map_vars_internal): Remove
+	GOMP_MAP_VARS_OPENACC_ENTER_DATA handling.  Update for dynamic_refcount
+	handling.
+	(gomp_unmap_vars_internal): Remove virtual_refcount handling.
+	(gomp_load_image_to_device): Substitute dynamic_refcount for
+	virtual_refcount.
+	* testsuite/libgomp.oacc-c-c++-common/pr92843-1.c: Remove XFAILs.
+	* testsuite/libgomp.oacc-c-c++-common/refcounting-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/refcounting-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/struct-3-1-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Remove XFAILs and
+	trace output.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: Remove
+	trace output.
+	* testsuite/libgomp.oacc-fortran/dynamic-incr-structural-1.f90: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/structured-dynamic-lifetimes-4.c:
+	Remove stale comment.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-1.f90: Remove XFAILs.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-1-2.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-2-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-3-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/mdc-refcount-1-4-1.f90: Adjust XFAIL.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-10  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-mem.c (goacc_map_var_existing): New function.
+	(goacc_enter_datum): Use above function.
+	(goacc_exit_datum_1): New function.
+	(goacc_exit_datum): Use above function.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-2.c: New test.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-mem.c (find_group_last): Group data-movement clauses
+	(GOMP_MAP_TO_PSET, GOMP_MAP_TO, etc.) together with a subsequent
+	GOMP_MAP_ATTACH.  Allow standalone GOMP_MAP_ATTACH also.
+
 2020-07-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

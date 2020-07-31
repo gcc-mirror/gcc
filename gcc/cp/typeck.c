@@ -1429,6 +1429,48 @@ structural_comptypes (tree t1, tree t2, int strict)
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
 	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
+
+      /* This hack is specific to release branches and fixes PR95726 for
+	 arm and aarch64 targets.  The idea is to treat GNU and Advanced
+	 SIMD types as distinct types for template specialization, but to
+	 treat them as the same type for other purposes.  For example:
+
+	    typedef float vecf __attribute__((vector_size(16)));
+	    template<typename T> struct bar;
+	    template<> struct bar<vecf> { static const int x = 1; };
+	    template<> struct bar<float32x4_t> { static const int x = 2; };
+	    static_assert(bar<vecf>::x + bar<float32x4_t>::x == 3, "boo");
+
+	 is supposed to be valid, and so "vecf" and "float32x4_t" should
+	 be different for at least template specialization.  However,
+	 GCC 10 and earlier also allowed things like:
+
+	    vecf x;
+	    float32x4_t &z = x;
+
+	 and:
+
+	    vecf x;
+	    float32x4_t y;
+	    ... c ? x : y ...
+
+	 both of which require "vecf" and "float32x4_t" to be the same.
+
+	 This was fixed in GCC 11+ by making the types distinct in all
+	 contexts, making the reference binding and ?: expression above
+	 invalid.  However, it would be inappropriate to change the
+	 semantics like that in release branches, so we do this instead.
+	 The space in the attribute name prevents any clash with user-
+	 specified attributes.  */
+      if (comparing_specializations)
+	{
+	  bool asimd1 = lookup_attribute ("Advanced SIMD type",
+					  TYPE_ATTRIBUTES (t1));
+	  bool asimd2 = lookup_attribute ("Advanced SIMD type",
+					  TYPE_ATTRIBUTES (t2));
+	  if (asimd1 != asimd2)
+	    return false;
+	}
       break;
 
     case TYPE_PACK_EXPANSION:

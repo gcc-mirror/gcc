@@ -344,6 +344,13 @@ asan_shadow_offset ()
   return asan_shadow_offset_value;
 }
 
+/* Returns Asan shadow offset has been set.  */
+bool
+asan_shadow_offset_set_p ()
+{
+  return asan_shadow_offset_computed;
+}
+
 alias_set_type asan_shadow_set = -1;
 
 /* Pointer types to 1, 2 or 4 byte integers in shadow memory.  A separate

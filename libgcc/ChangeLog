@@ -1,3 +1,39 @@
+2020-07-23  Release Manager
+
+	* GCC 10.2.0 released.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* config/aarch64/aarch64-unwind.h (MD_POST_EXTRACT_ROOT_ADDR): Remove.
+	(MD_POST_FROB_EH_HANDLER_ADDR): Remove.
+	(MD_POST_EXTRACT_FRAME_ADDR): Rename to ...
+	(MD_DEMANGLE_RETURN_ADDR): This.
+	(aarch64_post_extract_frame_addr): Rename to ...
+	(aarch64_demangle_return_addr): This.
+	(aarch64_post_frob_eh_handler_addr): Remove.
+	* unwind-dw2.c (uw_update_context): Demangle return address.
+	(uw_frob_return_addr): Remove.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/96001
+	* config/aarch64/lse.S: Add BTI marking and related definitions,
+	and add BTI c to function entries.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/lse.S: Add stack note.
+
 2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	Backported from master:

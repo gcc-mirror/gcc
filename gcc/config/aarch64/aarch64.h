@@ -1095,7 +1095,7 @@ typedef struct
 #define PROFILE_HOOK(LABEL)						\
   {									\
     rtx fun, lr;							\
-    lr = get_hard_reg_initial_val (Pmode, LR_REGNUM);			\
+    lr = aarch64_return_addr_rtx ();					\
     fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);			\
     emit_library_call (fun, LCT_NORMAL, VOIDmode, lr, Pmode);		\
   }

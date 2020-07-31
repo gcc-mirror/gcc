@@ -1,3 +1,24 @@
+2020-07-23  Release Manager
+
+	* GCC 10.2.0 released.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* gomp-constants.h (gomp_map_kind): Expand comment for attach/detach
+	mapping kinds.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Update comment for GOMP_MAP_TO_PSET.
+
 2020-05-07  Release Manager
 
 	* GCC 10.1.0 released.

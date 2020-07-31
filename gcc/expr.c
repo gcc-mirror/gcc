@@ -8271,7 +8271,9 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
       || GET_CODE (target) == PARALLEL || modifier == EXPAND_STACK_PARM
       /* Also make a temporary if the store is to volatile memory, to
 	 avoid individual accesses to aggregate members.  */
-      || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
+      || (GET_CODE (target) == MEM
+	  && MEM_VOLATILE_P (target)
+	  && !TREE_ADDRESSABLE (TREE_TYPE (exp))))
     {
       if (avoid_temp_mem)
 	return NULL_RTX;
@@ -11739,15 +11741,19 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	chartype = TREE_TYPE (chartype);
       /* Convert a char array to an empty STRING_CST having an array
 	 of the expected type.  */
-      if (!initsize)
-	  initsize = integer_zero_node;
+      if (INTEGRAL_TYPE_P (chartype)
+	  && TYPE_PRECISION (chartype) == TYPE_PRECISION (char_type_node))
+	{
+	  if (!initsize)
+	    initsize = integer_zero_node;
 
-      unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
-      init = build_string_literal (size ? 1 : 0, "", chartype, size);
-      init = TREE_OPERAND (init, 0);
-      init = TREE_OPERAND (init, 0);
+	  unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
+	  init = build_string_literal (size ? 1 : 0, "", chartype, size);
+	  init = TREE_OPERAND (init, 0);
+	  init = TREE_OPERAND (init, 0);
 
-      *ptr_offset = integer_zero_node;
+	  *ptr_offset = integer_zero_node;
+	}
     }
 
   if (decl)

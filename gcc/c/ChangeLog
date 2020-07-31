@@ -1,3 +1,17 @@
+2020-07-23  Release Manager
+
+	* GCC 10.2.0 released.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2020-07-09  Julian Brown  <julian@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* c-typeck.c (c_finish_omp_clauses): Set OMP_CLAUSE_SIZE (bias) to zero
+	for standalone attach/detach clauses.
+
 2020-06-23  Richard Biener  <rguenther@suse.de>
 
 	PR c/95141

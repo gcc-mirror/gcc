@@ -5516,3 +5516,77 @@ gfc_check_externals (gfc_namespace *ns)
 
   gfc_errors_to_warnings (false);
 }
+
+/* Callback function. If there is a call to a subroutine which is
+   neither pure nor implicit_pure, unset the implicit_pure flag for
+   the caller and return -1.  */
+
+static int
+implicit_pure_call (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		    void *sym_data)
+{
+  gfc_code *co = *c;
+  gfc_symbol *caller_sym;
+  symbol_attribute *a;
+
+  if (co->op != EXEC_CALL || co->resolved_sym == NULL)
+    return 0;
+
+  a = &co->resolved_sym->attr;
+  if (a->intrinsic || a->pure || a->implicit_pure)
+    return 0;
+
+  caller_sym = (gfc_symbol *) sym_data;
+  gfc_unset_implicit_pure (caller_sym);
+  return 1;
+}
+
+/* Callback function. If there is a call to a function which is
+   neither pure nor implicit_pure, unset the implicit_pure flag for
+   the caller and return 1.  */
+
+static int
+implicit_pure_expr (gfc_expr **e, int *walk ATTRIBUTE_UNUSED, void *sym_data)
+{
+  gfc_expr *expr = *e;
+  gfc_symbol *caller_sym;
+  gfc_symbol *sym;
+  symbol_attribute *a;
+
+  if (expr->expr_type != EXPR_FUNCTION || expr->value.function.isym)
+    return 0;
+
+  sym = expr->symtree->n.sym;
+  a = &sym->attr;
+  if (a->pure || a->implicit_pure)
+    return 0;
+
+  caller_sym = (gfc_symbol *) sym_data;
+  gfc_unset_implicit_pure (caller_sym);
+  return 1;
+}
+
+/* Go through all procedures in the namespace and unset the
+   implicit_pure attribute for any procedure that calls something not
+   pure or implicit pure.  */
+
+bool
+gfc_fix_implicit_pure (gfc_namespace *ns)
+{
+  bool changed = false;
+  gfc_symbol *proc = ns->proc_name;
+
+  if (proc && proc->attr.flavor == FL_PROCEDURE && proc->attr.implicit_pure
+      && ns->code
+      && gfc_code_walker (&ns->code, implicit_pure_call, implicit_pure_expr,
+			  (void *) ns->proc_name))
+    changed = true;
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (gfc_fix_implicit_pure (ns))
+	changed = true;
+    }
+
+  return changed;
+}

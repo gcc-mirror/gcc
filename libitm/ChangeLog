@@ -1,3 +1,22 @@
+2020-07-23  Release Manager
+
+	* GCC 10.2.0 released.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/sjlj.S: Add BTI marking and related definitions,
+	and add BTI c to function entries.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/sjlj.S: Add stack note if __FreeBSD__ is defined.
+
 2020-05-07  Release Manager
 
 	* GCC 10.1.0 released.

@@ -2597,7 +2597,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   sym = expr->symtree->n.sym;
   attr = sym->attr;
 
-  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok && sym->ts.u.derived)
     {
       dimension = CLASS_DATA (sym)->attr.dimension;
       codimension = CLASS_DATA (sym)->attr.codimension;

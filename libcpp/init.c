@@ -401,6 +401,9 @@ static const struct builtin_macro builtin_array[] =
   B("__LINE__",		 BT_SPECLINE,      true),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),
   B("__COUNTER__",	 BT_COUNTER,       true),
+  /* Make sure to update the list of built-in
+     function-like macros in traditional.c:
+     fun_like_macro() when adding more following */
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),

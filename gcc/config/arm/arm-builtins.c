@@ -43,6 +43,8 @@
 #include "sbitmap.h"
 #include "stringpool.h"
 #include "arm-builtins.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 7
 
@@ -1642,9 +1644,16 @@ arm_init_simd_builtin_types (void)
       if (eltype == NULL)
 	continue;
       if (arm_simd_types[i].itype == NULL)
-	arm_simd_types[i].itype =
-	  build_distinct_type_copy
-	    (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+	{
+	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+	  type = build_distinct_type_copy (type);
+	  SET_TYPE_STRUCTURAL_EQUALITY (type);
+
+	  TYPE_ATTRIBUTES (type)
+	    = tree_cons (get_identifier ("Advanced SIMD type"),
+			 NULL_TREE, TYPE_ATTRIBUTES (type));
+	  arm_simd_types[i].itype = type;
+	}
 
       tdecl = add_builtin_type (arm_simd_types[i].name,
 				arm_simd_types[i].itype);
