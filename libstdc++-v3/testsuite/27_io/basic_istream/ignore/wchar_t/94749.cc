@@ -165,7 +165,7 @@ test05()
   VERIFY(in.gcount() == std::numeric_limits<std::streamsize>::max());
   VERIFY(in.get() == T::eof());
 
-  delete in.rdbuf(nullptr);
+  delete in.rdbuf(0);
 }
 
 void
@@ -210,7 +210,7 @@ test06()
   VERIFY(in.gcount() == std::numeric_limits<std::streamsize>::max());
   VERIFY(in.get() == T::eof());
 
-  delete in.rdbuf(nullptr);
+  delete in.rdbuf(0);
 }
 
 int
