@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile }
+// { dg-additional-options "-Wno-deprecated" { target c++2a } }
+// { dg-do compile { target c++17 } }
 
 // Copyright (C) 2014-2020 Free Software Foundation, Inc.
 //
@@ -142,6 +143,7 @@ static_assert(is_standard_layout_v<int>
 static_assert(!is_standard_layout_v<NType>
 	      && !is_standard_layout<NType>::value, "");
 
+// Deprecated in C++20
 static_assert(is_pod_v<int>
 	      && is_pod<int>::value, "");
 static_assert(!is_pod_v<NType>
