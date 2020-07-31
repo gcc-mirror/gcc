@@ -1917,14 +1917,15 @@ extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);
 extern opt_result vect_enhance_data_refs_alignment (loop_vec_info);
 extern opt_result vect_analyze_data_refs_alignment (loop_vec_info);
 extern bool vect_slp_analyze_instance_alignment (vec_info *, slp_instance);
-extern opt_result vect_analyze_data_ref_accesses (vec_info *);
+extern opt_result vect_analyze_data_ref_accesses (vec_info *, vec<int> *);
 extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,
 				      tree, int, internal_fn *, tree *);
 extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
 				       gather_scatter_info *);
 extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
-						 vec<data_reference_p> *);
+						 vec<data_reference_p> *,
+						 vec<int> *, int);
 extern opt_result vect_analyze_data_refs (vec_info *, poly_uint64 *, bool *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (vec_info *,
