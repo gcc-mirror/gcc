@@ -47,186 +47,454 @@ ix86_rust_target_cpu_info (void)
         rust_add_target_info("target_arch", "x86");
     }
 
-    // maybe more stuff I don't understand if evidenced by ix86_target_macros in i386-c.c
-
-    // note: options that don't seem to have a target feature in rust are commented out
-
-    // TODO: properly change at some point instead of macro def
-#ifndef isa_flag
-# define isa_flag ix86_isa_flags
-# define isa_flag2 ix86_isa_flags2
-# define fpmath ix86_fpmath
-#else
-# error "isa_flag and isa_flag2 already defined in i386-rust.c - weird things might happen"
-#endif
-
-    // options should be feature complete for rustc atm
-  if (isa_flag2 & OPTION_MASK_ISA2_WBNOINVD)
-    ; //def_or_undef (parse_in, "__WBNOINVD__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX512VP2INTERSECT)
-    ; //def_or_undef (parse_in, "__AVX512VP2INTERSECT__");
-  if (isa_flag & OPTION_MASK_ISA_MMX)
+  // features officially "stabilised" in rustc
+  if (TARGET_ISA_MMX)
     rust_add_target_info("target_feature", "mmx");
-  if (isa_flag & OPTION_MASK_ISA_3DNOW)
-    ; //def_or_undef (parse_in, "__3dNOW__");
-  if (isa_flag & OPTION_MASK_ISA_3DNOW_A)
-    ; //def_or_undef (parse_in, "__3dNOW_A__");
-  if (isa_flag & OPTION_MASK_ISA_SSE)
+  if (TARGET_ISA_SSE)
     rust_add_target_info("target_feature", "sse");
-  if (isa_flag & OPTION_MASK_ISA_SSE2)
+  if (TARGET_ISA_SSE2)
     rust_add_target_info("target_feature", "sse2");
-  if (isa_flag & OPTION_MASK_ISA_SSE3)
+  if (TARGET_ISA_SSE3)
     rust_add_target_info("target_feature", "sse3");
-  if (isa_flag & OPTION_MASK_ISA_SSSE3)
+  if (TARGET_ISA_SSSE3)
     rust_add_target_info("target_feature", "ssse3");
-  if (isa_flag & OPTION_MASK_ISA_SSE4_1)
+  if (TARGET_ISA_SSE4_1)
     rust_add_target_info("target_feature", "sse4.1");
-  if (isa_flag & OPTION_MASK_ISA_SSE4_2)
+  if (TARGET_ISA_SSE4_2)
     rust_add_target_info("target_feature", "sse4.2");
-  if (isa_flag & OPTION_MASK_ISA_AES)
+  if (TARGET_ISA_AES)
     rust_add_target_info("target_feature", "aes");
-  if (isa_flag & OPTION_MASK_ISA_SHA)
+  if (TARGET_ISA_SHA)
     rust_add_target_info("target_feature", "sha");
-  if (isa_flag & OPTION_MASK_ISA_PCLMUL)
-    ; //def_or_undef (parse_in, "__PCLMUL__");
-  if (isa_flag & OPTION_MASK_ISA_AVX)
+  if (TARGET_ISA_AVX)
     rust_add_target_info("target_feature", "avx");
-  if (isa_flag & OPTION_MASK_ISA_AVX2)
+  if (TARGET_ISA_AVX2)
     rust_add_target_info("target_feature", "avx2");
-  if (isa_flag & OPTION_MASK_ISA_AVX512F)
+  if (TARGET_ISA_AVX512F)
     rust_add_target_info("target_feature", "avx512f");
-  if (isa_flag & OPTION_MASK_ISA_AVX512ER)
+  if (TARGET_ISA_AVX512ER)
     rust_add_target_info("target_feature", "avx512er");
-  if (isa_flag & OPTION_MASK_ISA_AVX512CD)
+  if (TARGET_ISA_AVX512CD)
     rust_add_target_info("target_feature", "avx512cd");
-  if (isa_flag & OPTION_MASK_ISA_AVX512PF)
+  if (TARGET_ISA_AVX512PF)
     rust_add_target_info("target_feature", "avx512pf");
-  if (isa_flag & OPTION_MASK_ISA_AVX512DQ)
+  if (TARGET_ISA_AVX512DQ)
     rust_add_target_info("target_feature", "avx512dq");
-  if (isa_flag & OPTION_MASK_ISA_AVX512BW)
+  if (TARGET_ISA_AVX512BW)
     rust_add_target_info("target_feature", "avx512bw");
-  if (isa_flag & OPTION_MASK_ISA_AVX512VL)
+  if (TARGET_ISA_AVX512VL)
     rust_add_target_info("target_feature", "avx512vl");
-  if (isa_flag & OPTION_MASK_ISA_AVX512VBMI)
+  if (TARGET_ISA_AVX512VBMI)
     rust_add_target_info("target_feature", "avx512vbmi");
-  if (isa_flag & OPTION_MASK_ISA_AVX512IFMA)
+  if (TARGET_ISA_AVX512IFMA)
     rust_add_target_info("target_feature", "avx512ifma");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX5124VNNIW)
-    ; //def_or_undef (parse_in, "__AVX5124VNNIW__");
-  if (isa_flag & OPTION_MASK_ISA_AVX512VBMI2)
-    ; //def_or_undef (parse_in, "__AVX512VBMI2__");
-  if (isa_flag & OPTION_MASK_ISA_AVX512VNNI)
-    ; //def_or_undef (parse_in, "__AVX512VNNI__");
-  if (isa_flag2 & OPTION_MASK_ISA2_PCONFIG)
-    ; //def_or_undef (parse_in, "__PCONFIG__");
-  if (isa_flag2 & OPTION_MASK_ISA2_SGX)
-    ; //def_or_undef (parse_in, "__SGX__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX5124FMAPS)
-    ; //def_or_undef (parse_in, "__AVX5124FMAPS__");
-  if (isa_flag & OPTION_MASK_ISA_AVX512BITALG)
-    ; //def_or_undef (parse_in, "__AVX512BITALG__");
-  if (isa_flag & OPTION_MASK_ISA_AVX512VPOPCNTDQ)
+  if (TARGET_ISA_AVX512VPOPCNTDQ)
     rust_add_target_info("target_feature", "avx512vpopcntdq");
-  if (isa_flag & OPTION_MASK_ISA_FMA)
+  if (TARGET_ISA_FMA)
     rust_add_target_info("target_feature", "fma");
-  if (isa_flag & OPTION_MASK_ISA_RTM)
+  if (TARGET_ISA_RTM)
     rust_add_target_info("target_feature", "rtm");
-  if (isa_flag & OPTION_MASK_ISA_SSE4A)
+  if (TARGET_ISA_SSE4A)
     rust_add_target_info("target_feature", "sse4a");
-  if (isa_flag & OPTION_MASK_ISA_FMA4)
-    ; //def_or_undef (parse_in, "__FMA4__");
-  if (isa_flag & OPTION_MASK_ISA_XOP)
-    ; //def_or_undef (parse_in, "__XOP__");
-  if (isa_flag & OPTION_MASK_ISA_LWP)
-    ; //def_or_undef (parse_in, "__LWP__");
-  if (isa_flag & OPTION_MASK_ISA_ABM)
-    ; //def_or_undef (parse_in, "__ABM__");
-  if (isa_flag & OPTION_MASK_ISA_BMI)
+  if (TARGET_ISA_BMI) {
     rust_add_target_info("target_feature", "bmi1");
-  if (isa_flag & OPTION_MASK_ISA_BMI2)
+    rust_add_target_info("target_feature", "bmi");
+  }
+  if (TARGET_ISA_BMI2)
     rust_add_target_info("target_feature", "bmi2");
-  if (isa_flag & OPTION_MASK_ISA_LZCNT)
+  if (TARGET_ISA_LZCNT)
     rust_add_target_info("target_feature", "lzcnt");
-  if (isa_flag & OPTION_MASK_ISA_TBM)
+  if (TARGET_ISA_TBM)
     rust_add_target_info("target_feature", "tbm");
-  if (isa_flag & OPTION_MASK_ISA_POPCNT)
+  if (TARGET_ISA_POPCNT)
     rust_add_target_info("target_feature", "popcnt");
-  if (isa_flag & OPTION_MASK_ISA_FSGSBASE)
-    ; //def_or_undef (parse_in, "__FSGSBASE__");
-  if (isa_flag & OPTION_MASK_ISA_RDRND)
+  if (TARGET_ISA_RDRND) {
     rust_add_target_info("target_feature", "rdrand");
-  if (isa_flag & OPTION_MASK_ISA_F16C)
+    rust_add_target_info("target_feature", "rdrnd");
+  }
+  if (TARGET_ISA_F16C)
     rust_add_target_info("target_feature", "f16c");
-  if (isa_flag & OPTION_MASK_ISA_RDSEED)
+  if (TARGET_ISA_RDSEED)
     rust_add_target_info("target_feature", "rdseed");
-  if (isa_flag & OPTION_MASK_ISA_PRFCHW)
-    ; //def_or_undef (parse_in, "__PRFCHW__");
-  if (isa_flag & OPTION_MASK_ISA_ADX)
+  if (TARGET_ISA_ADX)
     rust_add_target_info("target_feature", "adx");
-  if (isa_flag & OPTION_MASK_ISA_FXSR)
+  if (TARGET_ISA_FXSR)
     rust_add_target_info("target_feature", "fxsr");
-  if (isa_flag & OPTION_MASK_ISA_XSAVE)
+  if (TARGET_ISA_XSAVE)
     rust_add_target_info("target_feature", "xsave");
-  if (isa_flag & OPTION_MASK_ISA_XSAVEOPT)
+  if (TARGET_ISA_XSAVEOPT)
     rust_add_target_info("target_feature", "xsaveopt");
-  if (isa_flag & OPTION_MASK_ISA_PREFETCHWT1)
-    ; //def_or_undef (parse_in, "__PREFETCHWT1__");
-  if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
-    ; //def_or_undef (parse_in, "__SSE_MATH__");
-  if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))
-    ; //def_or_undef (parse_in, "__SSE2_MATH__");
-  if (isa_flag & OPTION_MASK_ISA_CLFLUSHOPT)
-    ; //def_or_undef (parse_in, "__CLFLUSHOPT__");
-  if (isa_flag2 & OPTION_MASK_ISA2_CLZERO)
-    ; //def_or_undef (parse_in, "__CLZERO__");
-  if (isa_flag & OPTION_MASK_ISA_XSAVEC)
+  if (TARGET_ISA_XSAVEC)
     rust_add_target_info("target_feature", "xsavec");
-  if (isa_flag & OPTION_MASK_ISA_XSAVES)
+  if (TARGET_ISA_XSAVES)
     rust_add_target_info("target_feature", "xsaves");
-  if (isa_flag & OPTION_MASK_ISA_CLWB)
-    ; //def_or_undef (parse_in, "__CLWB__");
-  if (isa_flag2 & OPTION_MASK_ISA2_MWAITX)
-    ; //def_or_undef (parse_in, "__MWAITX__");
-  if (isa_flag & OPTION_MASK_ISA_PKU)
-    ; //def_or_undef (parse_in, "__PKU__");
-  if (isa_flag2 & OPTION_MASK_ISA2_RDPID)
-    ; //def_or_undef (parse_in, "__RDPID__");
-  if (isa_flag & OPTION_MASK_ISA_GFNI)
-    ; //def_or_undef (parse_in, "__GFNI__");
-  if ((isa_flag & OPTION_MASK_ISA_SHSTK))
-    ; //def_or_undef (parse_in, "__SHSTK__");
-  if (isa_flag2 & OPTION_MASK_ISA2_VAES)
-    ; //def_or_undef (parse_in, "__VAES__");
-  if (isa_flag & OPTION_MASK_ISA_VPCLMULQDQ)
+  if (TARGET_ISA_VPCLMULQDQ) {
     rust_add_target_info("target_feature", "pclmulqdq");
-  if (isa_flag & OPTION_MASK_ISA_MOVDIRI)
-    ; //def_or_undef (parse_in, "__MOVDIRI__");
-  if (isa_flag2 & OPTION_MASK_ISA2_MOVDIR64B)
-    ; //def_or_undef (parse_in, "__MOVDIR64B__");
-  if (isa_flag2 & OPTION_MASK_ISA2_WAITPKG)
-    ; //def_or_undef (parse_in, "__WAITPKG__");
-  if (isa_flag2 & OPTION_MASK_ISA2_CLDEMOTE)
-    ; //def_or_undef (parse_in, "__CLDEMOTE__");
-  if (isa_flag2 & OPTION_MASK_ISA2_PTWRITE)
-    ; //def_or_undef (parse_in, "__PTWRITE__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX512BF16)
-    ; //def_or_undef (parse_in, "__AVX512BF16__");
-  if (TARGET_MMX_WITH_SSE)
-    ; //def_or_undef (parse_in, "__MMX_WITH_SSE__");
-  if (isa_flag2 & OPTION_MASK_ISA2_ENQCMD)
-    ; //def_or_undef (parse_in, "__ENQCMD__");
-  if (TARGET_IAMCU)
-    {
-      //def_or_undef (parse_in, "__iamcu");
-      //def_or_undef (parse_in, "__iamcu__");
-    }
+    rust_add_target_info("target_feature", "vpclmulqdq");
+  }
   if (TARGET_CMPXCHG16B)
     rust_add_target_info("target_feature", "cmpxchg16b");
   if (TARGET_MOVBE)
     rust_add_target_info("target_feature", "movbe");
 
-#undef isa_flag
-#undef isa_flag2
-#undef fpmath
-}
+  // features derived from llvm not yet in rustc:
+  if (TARGET_ISA_64BIT)
+    rust_add_target_info("target_feature", "64bit-mode");
+  else if (TARGET_CODE16)
+    rust_add_target_info("target_feature", "16bit-mode");
+  else
+    rust_add_target_info("target_feature", "32bit-mode");
+  
+  // TODO: assuming that the TARGET_80387 (which seems to mean "hard float") is also required for x87
+  if (TARGET_80387 && (ix86_fpmath & FPMATH_387) != 0)
+    rust_add_target_info("target_feature", "x87");
 
+  // nopl: hard-coded (as gcc doesn't technically have feature) to return true for cpu arches with it
+  // maybe refactor into switch if multiple options
+  bool hasNOPL = ix86_arch == PROCESSOR_PENTIUMPRO || ix86_arch == PROCESSOR_PENTIUM4 
+    || ix86_arch == PROCESSOR_NOCONA || ix86_arch == PROCESSOR_CORE2 || ix86_arch == PROCESSOR_NEHALEM 
+    || ix86_arch == PROCESSOR_BONNELL || ix86_arch == PROCESSOR_SILVERMONT 
+    || ix86_arch == PROCESSOR_GOLDMONT || ix86_arch == PROCESSOR_GOLDMONT_PLUS 
+    || ix86_arch == PROCESSOR_TREMONT || ix86_arch == PROCESSOR_SANDYBRIDGE 
+    || ix86_arch == PROCESSOR_HASWELL || ix86_arch == PROCESSOR_SKYLAKE 
+    || ix86_arch == PROCESSOR_SKYLAKE_AVX512 || ix86_arch == PROCESSOR_CANNONLAKE 
+    || ix86_arch == PROCESSOR_CASCADELAKE  || ix86_arch == PROCESSOR_COOPERLAKE 
+    || ix86_arch == PROCESSOR_ICELAKE_CLIENT || ix86_arch == PROCESSOR_ICELAKE_SERVER 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_KNL || ix86_arch == PROCESSOR_KNM 
+    || ix86_arch == PROCESSOR_AMDFAM10 || ix86_arch == PROCESSOR_BTVER1 || ix86_arch == PROCESSOR_BTVER2 
+    || ix86_arch == PROCESSOR_BDVER1 || ix86_arch == PROCESSOR_BDVER2 || ix86_arch == PROCESSOR_BDVER3 
+    || ix86_arch == PROCESSOR_BDVER4 || ix86_arch == PROCESSOR_ZNVER1 || ix86_arch == PROCESSOR_ZNVER2 
+    || ix86_arch == PROCESSOR_ATHLON || ix86_arch == PROCESSOR_K8; 
+  // this list should be exhaustive
+  if (hasNOPL)
+    rust_add_target_info("target_feature", "nopl");
+  if (TARGET_CMOVE)
+    rust_add_target_info("target_feature", "cmov");
+  if (TARGET_CMPXCHG8B)
+    rust_add_target_info("target_feature", "cx8");
+  if (TARGET_ISA_3DNOW)
+    rust_add_target_info("target_feature", "3dnow");
+  if (TARGET_ISA_3DNOW_A)
+    rust_add_target_info("target_feature", "3dnowa");
+  if (TARGET_64BIT)
+    rust_add_target_info("target_feature", "64bit");
+  if (TARGET_CMPXCHG16B)
+    rust_add_target_info("target_feature", "cx16");
+
+  bool hasSlowSHLD = ix86_arch == PROCESSOR_AMDFAM10 || ix86_arch == PROCESSOR_BTVER1 
+    || ix86_arch == PROCESSOR_BTVER2 || ix86_arch == PROCESSOR_BDVER1 || ix86_arch == PROCESSOR_BDVER2 
+    || ix86_arch == PROCESSOR_BDVER3 || ix86_arch == PROCESSOR_BDVER4 || ix86_arch == PROCESSOR_ZNVER1 
+    || ix86_arch == PROCESSOR_ZNVER2 || ix86_arch == PROCESSOR_ATHLON || ix86_arch == PROCESSOR_K8; 
+  // TODO: this is not ideal as it marks the baseline x86-64 CPU as having it - only AMD ones do
+  if (hasSlowSHLD)
+    rust_add_target_info("target_feature", "slow-shld");
+  if (ix86_arch == PROCESSOR_SILVERMONT)
+    rust_add_target_info("target_feature", "slow-pmulld");
+  if (ix86_arch == PROCESSOR_KNL || ix86_arch == PROCESSOR_KNM)
+    rust_add_target_info("target_feature", "slow-pmaddwd");
+
+  bool hasSlowUnaligned16 = ix86_arch == PROCESSOR_BONNELL || ix86_arch == PROCESSOR_GENERIC 
+    || ix86_arch == PROCESSOR_I386 || ix86_arch == PROCESSOR_I486 || ix86_arch == PROCESSOR_PENTIUM 
+    || ix86_arch == PROCESSOR_PENTIUMPRO || ix86_arch == PROCESSOR_PENTIUM4 
+    || ix86_arch == PROCESSOR_NOCONA || ix86_arch == PROCESSOR_CORE2 || ix86_arch == PROCESSOR_K6 
+    || ix86_arch == PROCESSOR_ATHLON || ix86_arch == PROCESSOR_K8 || ix86_arch == PROCESSOR_GEODE;
+  if (hasSlowUnaligned16)
+    rust_add_target_info("target_feature", "slow-unaligned-mem-16");
+  if (ix86_arch == PROCESSOR_SANDYBRIDGE)
+    rust_add_target_info("target_feature", "slow-unaligned-mem-32");
+  if (TARGET_ISA_PREFETCHWT1)
+    rust_add_target_info("target_feature", "prefetchwt1");
+  if (TARGET_ISA_AVX512VBMI2)
+    rust_add_target_info("target_feature", "avx512vbmi2");
+  if (TARGET_ISA_PKU)
+    rust_add_target_info("target_feature", "pku");
+  if (TARGET_ISA_AVX512VNNI)
+    rust_add_target_info("target_feature", "avx512vnni");
+  if (TARGET_ISA_AVX512BF16)
+    rust_add_target_info("target_feature", "avx512bf16");
+  if (TARGET_ISA_AVX512BITALG)
+    rust_add_target_info("target_feature", "avx512bitalg");
+  if (TARGET_ISA_AVX512VP2INTERSECT)
+    rust_add_target_info("target_feature", "avx512vp2intersect");
+  if (TARGET_ISA_PCLMUL)
+    rust_add_target_info("target_feature", "pclmul");
+  if (TARGET_ISA_GFNI)
+    rust_add_target_info("target_feature", "gfni");
+  if (TARGET_ISA_FMA4)
+    rust_add_target_info("target_feature", "fma4");
+  if (TARGET_ISA_XOP)
+    rust_add_target_info("target_feature", "xop");
+
+  // this is only enabled by choice in llvm, never by default - TODO determine if gcc enables it
+  // rust_add_target_info("target_feature", "sse-unaligned-mem");
+
+  if (TARGET_ISA_VAES)
+    rust_add_target_info("target_feature", "vaes");
+  if (TARGET_ISA_LWP)
+    rust_add_target_info("target_feature", "lwp");
+  if (TARGET_ISA_FSGSBASE)
+    rust_add_target_info("target_feature", "fsgsbase");
+  if (TARGET_ISA_SHSTK)
+    rust_add_target_info("target_feature", "shstk");
+  if (TARGET_ISA_PRFCHW)
+    rust_add_target_info("target_feature", "prfchw");
+  if (TARGET_ISA_SAHF) // would this be better as TARGET_USE_SAHF?
+    rust_add_target_info("target_feature", "sahf");
+  if (TARGET_ISA_MWAITX)
+    rust_add_target_info("target_feature", "mwaitx");
+  if (TARGET_ISA_CLZERO)
+    rust_add_target_info("target_feature", "clzero");
+  if (TARGET_ISA_CLDEMOTE)
+    rust_add_target_info("target_feature", "cldemote");
+  if (TARGET_ISA_PTWRITE)
+    rust_add_target_info("target_feature", "ptwrite");
+  // TODO: add amx-tile, amx-int8, amx-bf16 features when gcc supports them 
+
+  // TODO: can't find any gcc option relating to using LEA for adjusting stack pointer, so hardcoding
+  if (ix86_arch == PROCESSOR_BONNELL)
+    rust_add_target_info("target_feature", "lea-sp");
+
+  // TODO: confirm that this is what it actually refers to
+  if (TARGET_USE_8BIT_IDIV)
+    rust_add_target_info("target_feature", "idivl-to-divb");
+
+  /* TODO: can't find any gcc option corresponding to idivq-to-divl - does gcc perform this optimisation?
+   * if so, add that feature (use 32-bit divide for positive values less than 2^32) */
+  /* bool llvmHasSlowDivide64 = ix86_arch == PROCESSOR_SANDYBRIDGE || ix86_arch == PROCESSOR_HASWELL 
+    || ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE 
+    || ix86_arch == PROCESSOR_BONNELL || ix86_arch == PROCESSOR_SILVERMONT || ix86_arch == PROCESSOR_KNL 
+    || ix86_arch == PROCESSOR_KNM || ix86_arch == PROCESSOR_K8;*/
+
+  if (TARGET_PAD_SHORT_FUNCTION)
+    rust_add_target_info("target_feature", "pad-short-functions");
+
+  // TODO: gcc seems to not record whether INVPCID exists, so basing it on llvm
+  bool hasINVPCID = ix86_arch == PROCESSOR_HASWELL || ix86_arch == PROCESSOR_SKYLAKE 
+    || ix86_arch == PROCESSOR_SKYLAKE_AVX512 || ix86_arch == PROCESSOR_CANNONLAKE 
+    || ix86_arch == PROCESSOR_ICELAKE_CLIENT || ix86_arch == PROCESSOR_ICELAKE_SERVER 
+    || ix86_arch == PROCESSOR_CASCADELAKE || ix86_arch == PROCESSOR_TIGERLAKE 
+    || ix86_arch == PROCESSOR_COOPERLAKE; 
+  if (hasINVPCID)
+    rust_add_target_info("target_feature", "invpcid");
+  if (TARGET_ISA_SGX)
+    rust_add_target_info("target_feature", "sgx");
+  if (TARGET_ISA_CLFLUSHOPT)
+    rust_add_target_info("target_feature", "clflushopt");
+  if (TARGET_ISA_CLWB)
+    rust_add_target_info("target_feature", "clwb");
+  if (TARGET_ISA_WBNOINVD)
+    rust_add_target_info("target_feature", "wbnoinvd");
+  if (TARGET_ISA_RDPID)
+    rust_add_target_info("target_feature", "rdpid");
+  if (TARGET_ISA_WAITPKG)
+    rust_add_target_info("target_feature", "waitpkg");
+  if (TARGET_ISA_ENQCMD)
+    rust_add_target_info("target_feature", "enqcmd");
+
+  // these are only enabled by choice in llvm, never by default - TODO determine if gcc supports them
+  // rust_add_target_info("target_feature", "serialize");
+  // rust_add_target_info("target_feature", "tsxldtrk");
+
+  // TODO: gcc seems to not record whether to avoid memory operanded instructions, so basing it on llvm
+  bool hasSlowTwoMemOps = ix86_arch == PROCESSOR_BONNELL || ix86_arch == PROCESSOR_SILVERMONT 
+    || ix86_arch == PROCESSOR_GOLDMONT || ix86_arch == PROCESSOR_GOLDMONT_PLUS 
+    || ix86_arch == PROCESSOR_TREMONT || ix86_arch == PROCESSOR_KNL || ix86_arch == PROCESSOR_KNM; 
+  if (hasSlowTwoMemOps)
+    rust_add_target_info("target_feature", "slow-two-mem-ops");
+
+  // TODO: gcc seems to not record whether LEA needs input at AG stage, so basing it on llvm
+  // TODO: maybe something to do with X86_TUNE_OPT_AGU?
+  if (ix86_arch == PROCESSOR_BONNELL)
+    rust_add_target_info("target_feature", "lea-uses-ag");
+
+  // TODO: gcc seems to not record whether LEA with certain arguments is slow, so basing it on llvm
+  // TODO: maybe TARGET_AVOID_LEA_FOR_ADDR has something to do with it?
+  bool hasSlowLEA = ix86_arch == PROCESSOR_SILVERMONT || ix86_arch == PROCESSOR_GOLDMONT 
+    || ix86_arch == PROCESSOR_GOLDMONT_PLUS || ix86_arch == PROCESSOR_TREMONT;
+  if (hasSlowLEA)
+    rust_add_target_info("target_feature", "slow-lea");
+  
+  // TODO: gcc seems to not record whether LEA with 3 ops or certain regs is slow, so basing it on llvm
+  // TODO: maybe TARGET_AVOID_LEA_FOR_ADDR has something to do with it?
+  bool hasSlow3OpsLEA = ix86_arch == PROCESSOR_SANDYBRIDGE || ix86_arch == PROCESSOR_HASWELL 
+    || ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE 
+    || ix86_arch == PROCESSOR_KNL || ix86_arch == PROCESSOR_KNM || ix86_arch == PROCESSOR_K8; 
+  if (hasSlow3OpsLEA)
+    rust_add_target_info("target_feature", "slow-3ops-lea");
+
+  // TODO: assuming that this is equivalent option - it strictly doesn't cover same cpus
+  if (!TARGET_USE_INCDEC)
+    rust_add_target_info("target_feature", "slow-incdec");
+  // TODO: assuming that this mask actually refers to "hard float" and not x87 specifically
+  if (!TARGET_80387)
+    rust_add_target_info("target_feature", "soft-float");
+
+  // TODO: gcc seems to not record if LZCNT/TZCNT has false deps on dest register, so basing it on llvm
+  if (ix86_arch == PROCESSOR_HASWELL)
+    rust_add_target_info("target_feature", "false-deps-lzcnt-tzcnt");
+
+  if (TARGET_ISA_PCONFIG)
+    rust_add_target_info("target_feature", "pconfig");
+
+  // TODO: gcc seems to not record if variable-mask shuffles are fast, so basing it on llvm
+  bool hasFastVariableShuffle = ix86_arch == PROCESSOR_HASWELL || ix86_arch == PROCESSOR_SKYLAKE 
+    || ix86_arch == PROCESSOR_SKYLAKE_AVX512 || ix86_arch == PROCESSOR_CANNONLAKE 
+    || ix86_arch == PROCESSOR_ICELAKE_CLIENT || ix86_arch == PROCESSOR_ICELAKE_SERVER 
+    || ix86_arch == PROCESSOR_CASCADELAKE || ix86_arch == PROCESSOR_TIGERLAKE 
+    || ix86_arch == PROCESSOR_COOPERLAKE; 
+  if (hasFastVariableShuffle)
+    rust_add_target_info("target_feature", "fast-variable-shuffle");
+
+  // TODO: ensure that this actually refers to the right thing - difference in gcc and llvm description
+  if (TARGET_VZEROUPPER)
+    rust_add_target_info("target_feature", "vzeroupper");
+
+  // option based on llvm arch analysis as gcc tuning costs seem to indicate a different result
+  bool hasFastScalarFSQRT = ix86_arch == PROCESSOR_SANDYBRIDGE || ix86_arch == PROCESSOR_HASWELL 
+    || ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE;
+  if (hasFastScalarFSQRT)
+    rust_add_target_info("target_feature", "fast-scalar-fsqrt");
+
+  // option also based on llvm arch analysis 
+  bool hasFastVectorFSQRT = ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE;
+  if (hasFastVectorFSQRT)
+    rust_add_target_info("target_feature", "fast-vector-fsqrt");
+
+  bool hasFastLZCNT = ix86_arch == PROCESSOR_BTVER2 || ix86_arch == PROCESSOR_ZNVER1 
+    || ix86_arch == PROCESSOR_ZNVER2;
+  if (hasFastLZCNT)
+    rust_add_target_info("target_feature", "fast-lzcnt");
+
+  if (ix86_arch == PROCESSOR_SILVERMONT)
+    rust_add_target_info("target_feature", "fast-7bytenop");
+
+  bool hasFast11ByteNOP = ix86_arch == PROCESSOR_BDVER1 || ix86_arch == PROCESSOR_BDVER2 
+    || ix86_arch == PROCESSOR_BDVER3 || ix86_arch == PROCESSOR_BDVER4;
+  if (hasFast11ByteNOP)
+    rust_add_target_info("target_feature", "fast-11bytenop");
+
+  bool hasFast15ByteNOP = ix86_arch == PROCESSOR_SANDYBRIDGE || ix86_arch == PROCESSOR_HASWELL 
+    || ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE 
+    || ix86_arch == PROCESSOR_BTVER1 || ix86_arch == PROCESSOR_BTVER2
+    || ix86_arch == PROCESSOR_ZNVER1 || ix86_arch == PROCESSOR_ZNVER2;
+  if (hasFast15ByteNOP)
+    rust_add_target_info("target_feature", "fast-15bytenop");
+
+  bool hasFastSHLDRotate = ix86_arch == PROCESSOR_SANDYBRIDGE || ix86_arch == PROCESSOR_HASWELL 
+    || ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE;
+  if (hasFastSHLDRotate)
+    rust_add_target_info("target_feature", "fast-shld-rotate");
+
+  bool hasERMSB = ix86_arch == PROCESSOR_HASWELL || ix86_arch == PROCESSOR_SKYLAKE 
+    || ix86_arch == PROCESSOR_SKYLAKE_AVX512 || ix86_arch == PROCESSOR_CANNONLAKE 
+    || ix86_arch == PROCESSOR_ICELAKE_CLIENT || ix86_arch == PROCESSOR_ICELAKE_SERVER 
+    || ix86_arch == PROCESSOR_CASCADELAKE || ix86_arch == PROCESSOR_TIGERLAKE 
+    || ix86_arch == PROCESSOR_COOPERLAKE; 
+  if (hasERMSB)
+    rust_add_target_info("target_feature", "ermsbd");
+
+  // TODO: may exist in gcc as tune macros, but not sure, so based on llvm arches
+  bool hasBranchFusion = ix86_arch == PROCESSOR_BDVER1 || ix86_arch == PROCESSOR_BDVER2 
+    || ix86_arch == PROCESSOR_BDVER3 || ix86_arch == PROCESSOR_BDVER4 || ix86_arch == PROCESSOR_ZNVER1 
+    || ix86_arch == PROCESSOR_ZNVER2;
+  if (hasBranchFusion)
+    rust_add_target_info("target_feature", "branchfusion");
+
+  // TODO: again, may exist as tune macros, but again based on llvm arches
+  bool hasMacroFusion = ix86_arch == PROCESSOR_CORE2 || ix86_arch == PROCESSOR_NEHALEM 
+    || ix86_arch == PROCESSOR_SANDYBRIDGE || ix86_arch == PROCESSOR_HASWELL 
+    || ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_CASCADELAKE 
+    || ix86_arch == PROCESSOR_TIGERLAKE || ix86_arch == PROCESSOR_COOPERLAKE || ix86_arch == PROCESSOR_K8;
+  if (hasMacroFusion)
+    rust_add_target_info("target_feature", "macrofusion");
+
+  // TODO: is this equivalent to TARGET_USE_GATHER?
+  bool hasFastGather = ix86_arch == PROCESSOR_SKYLAKE || ix86_arch == PROCESSOR_SKYLAKE_AVX512 
+    || ix86_arch == PROCESSOR_CASCADELAKE || ix86_arch == PROCESSOR_COOPERLAKE 
+    || ix86_arch == PROCESSOR_CANNONLAKE || ix86_arch == PROCESSOR_ICELAKE_CLIENT 
+    || ix86_arch == PROCESSOR_ICELAKE_SERVER || ix86_arch == PROCESSOR_TIGERLAKE 
+    || ix86_arch == PROCESSOR_KNL || ix86_arch == PROCESSOR_KNM;
+  if (hasFastGather)
+    rust_add_target_info("target_feature", "fast-gather");
+
+  if (TARGET_PREFER_AVX128)
+    rust_add_target_info("target_feature", "prefer-128-bit");
+  if (TARGET_PREFER_AVX256)
+    rust_add_target_info("target_feature", "prefer-256-bit");
+
+  bool preferMaskRegisters = ix86_arch == PROCESSOR_KNL || ix86_arch == PROCESSOR_KNM;
+  if (preferMaskRegisters)
+    rust_add_target_info("target_feature", "prefer-mask-registers");
+
+  /* TODO: add retpoline-indirect-calls, retpoline-indirect-branches, retpoline, retpoline-external-thunk, 
+   * lvi-cfi (LVI control flow integrity), seses (speculative execution side-effect suppression)
+   * lvi-load-hardening if gcc gets support */
+
+  if (TARGET_ISA_MOVDIRI)
+    rust_add_target_info("target_feature", "movdiri");
+  if (TARGET_ISA_MOVDIR64B)
+    rust_add_target_info("target_feature", "movdir64b");
+
+  bool hasFastBEXTR = ix86_arch == PROCESSOR_BTVER2 || ix86_arch == PROCESSOR_BDVER2 
+    || ix86_arch == PROCESSOR_BDVER3 || ix86_arch == PROCESSOR_BDVER4 || ix86_arch == PROCESSOR_ZNVER1 
+    || ix86_arch == PROCESSOR_ZNVER2;
+  if (hasFastBEXTR)
+    rust_add_target_info("target_feature", "fast-bextr");
+
+  if (ix86_arch == PROCESSOR_BTVER2)
+    rust_add_target_info("target_feature", "fast-hops");
+
+  bool hasFastScalarShiftMasks = ix86_arch == PROCESSOR_AMDFAM10 || ix86_arch == PROCESSOR_BTVER1 
+    || ix86_arch == PROCESSOR_BTVER2 || ix86_arch == PROCESSOR_BDVER1 || ix86_arch == PROCESSOR_BDVER2 
+    || ix86_arch == PROCESSOR_BDVER3 || ix86_arch == PROCESSOR_BDVER4 || ix86_arch == PROCESSOR_ZNVER1 
+    || ix86_arch == PROCESSOR_ZNVER2 || ix86_arch == PROCESSOR_K8;
+  if (hasFastScalarShiftMasks)
+    rust_add_target_info("target_feature", "fast-scalar-shift-masks");
+
+  bool hasFastVectorShiftMasks = ix86_arch == PROCESSOR_BTVER1 || ix86_arch == PROCESSOR_BTVER2;
+  if (hasFastVectorShiftMasks)
+    rust_add_target_info("target_feature", "fast-vector-shift-masks");
+
+  bool useGoldmontDivSqrtCosts = ix86_arch == PROCESSOR_GOLDMONT || ix86_arch == PROCESSOR_GOLDMONT_PLUS 
+    || ix86_arch == PROCESSOR_TREMONT;
+  if (useGoldmontDivSqrtCosts)
+    rust_add_target_info("target_feature", "use-glm-div-sqrt-costs");
+  
+  // TODO: determine if gcc supports alias analysis (in which case "use-aa" is defined)
+
+  // features not supported by llvm but important enough for c frontend to define macros for
+  /*if (TARGET_ISA_AVX5124VNNIW)
+    rust_add_target_info("target_feature", "avx5124vnniw");
+  if (TARGET_ISA_AVX5124FMAPS)
+    rust_add_target_info("target_feature", "avx5124fmaps");
+  if (TARGET_ISA_ABM)
+    rust_add_target_info("target_feature", "abm");
+  if ((ix86_fpmath & FPMATH_SSE) && TARGET_ISA_SSE)
+    ; //def_or_undef (parse_in, "__SSE_MATH__");
+  if ((ix86_fpmath & FPMATH_SSE) && TARGET_ISA_SSE2)
+    ; //def_or_undef (parse_in, "__SSE2_MATH__");
+  if (TARGET_MMX_WITH_SSE)
+    ; //def_or_undef (parse_in, "__MMX_WITH_SSE__");
+  if (TARGET_IAMCU)
+    rust_add_target_info("target_feature", "iamcu");*/
+}
