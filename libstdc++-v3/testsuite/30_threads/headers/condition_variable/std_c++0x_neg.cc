@@ -21,6 +21,3 @@
 #include <condition_variable>
 
 // { dg-error "ISO C.. 2011" "" { target *-*-* } 32 }
-
-
-
