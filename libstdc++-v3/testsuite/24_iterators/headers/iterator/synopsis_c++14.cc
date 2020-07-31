@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14_only } }
 // { dg-require-normal-namespace "" }
 
 // Copyright (C) 2016-2020 Free Software Foundation, Inc.
