@@ -1,3 +1,66 @@
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96152
+	* gdc.dg/pr96152.d: New test.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96154
+	* gdc.dg/pr96154a.d: New test.
+	* gdc.dg/pr96154b.d: New test.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96140
+	* gdc.dg/pr96140.d: New test.
+
+2020-07-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/lsbb-runnable.c: New test.
+	* gcc.target/powerpc/lsbb.c: New test.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/array1.d: New test.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/intrinsics.d: Add ror and rol tests.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/intrinsics.d: New test.
+
+2020-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96370
+	* gcc.dg/pr96370.c: New testcase.
+
+2020-07-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/v2si-vec-set-extract.c: New test.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* g++.dg/cpp1y/auto-fn60.C: New test.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95486
+	* g++.dg/cpp2a/class-deduction-alias3.C: New test.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96106
+	* g++.dg/concepts/abbrev7.C: New test.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96164
+	* g++.dg/cpp2a/concepts-explicit-inst5.C: New test.
+
 2020-07-29  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/nvptx/recip-1.c: New test.

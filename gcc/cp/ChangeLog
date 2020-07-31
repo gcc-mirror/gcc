@@ -1,3 +1,31 @@
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* pt.c (resolve_overloaded_unification): If the function
+	template specialization has a placeholder return type,
+	then instantiate it before attempting unification.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95486
+	* pt.c (alias_ctad_tweaks): Call remove_constraints before
+	calling set_constraints.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96106
+	* pt.c (reduce_template_parm_level): Propagate DECL_VIRTUAL_P
+	from the original TEMPLATE_PARM_DECL to the new lowered one.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96164
+	* constraint.cc (constraints_satisfied_p): Return true if
+	!flags_concepts.
+	* pt.c (do_type_instantiation): Update a paragraph taken from
+	[temp.explicit] to reflect the latest specification.  Don't
+	instantiate a member with unsatisfied constraints.
+
 2020-07-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91427
