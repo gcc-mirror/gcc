@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
+// { dg-additional-options "-Wno-deprecated" { target c++2a } }
 // { dg-do compile { target c++17 } }
 
 // PR libstdc++/78939
@@ -36,7 +37,7 @@ int
 test02()
 {
   A a{};
-  volatile auto [i, j] = a;
+  volatile auto [i, j] = a; // deprecated in C++20
   return i + j;
 }
 
@@ -44,6 +45,6 @@ int
 test03()
 {
   A a{};
-  const volatile auto [i, j] = a;
+  const volatile auto [i, j] = a; // deprecated in C++20
   return i + j;
 }
