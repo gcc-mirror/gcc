@@ -6,6 +6,7 @@
 
 2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/96279
 	* src/c++17/floating_from_chars.cc (from_chars_impl): Use
 	isinf unqualified.
 	[!_GLIBCXX_USE_C99_STDLIB]: Use strtod for float and long
