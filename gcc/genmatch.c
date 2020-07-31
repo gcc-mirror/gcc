@@ -697,12 +697,13 @@ public:
   expr (id_base *operation_, location_t loc, bool is_commutative_ = false)
     : operand (OP_EXPR, loc), operation (operation_),
       ops (vNULL), expr_type (NULL), is_commutative (is_commutative_),
-      is_generic (false), force_single_use (false), opt_grp (0) {}
+      is_generic (false), force_single_use (false), force_leaf (false),
+      opt_grp (0) {}
   expr (expr *e)
     : operand (OP_EXPR, e->location), operation (e->operation),
       ops (vNULL), expr_type (e->expr_type), is_commutative (e->is_commutative),
       is_generic (e->is_generic), force_single_use (e->force_single_use),
-      opt_grp (e->opt_grp) {}
+      force_leaf (e->force_leaf), opt_grp (e->opt_grp) {}
   void append_op (operand *op) { ops.safe_push (op); }
   /* The operator and its operands.  */
   id_base *operation;
@@ -717,6 +718,9 @@ public:
   /* Whether pushing any stmt to the sequence should be conditional
      on this expression having a single-use.  */
   bool force_single_use;
+  /* Whether in the result expression this should be a leaf node
+     with any children simplified down to simple operands.  */
+  bool force_leaf;
   /* If non-zero, the group for optional handling.  */
   unsigned char opt_grp;
   virtual void gen_transform (FILE *f, int, const char *, bool, int,
@@ -2520,7 +2524,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       fprintf (f, ");\n");
       fprintf_indent (f, indent, "tem_op.resimplify (lseq, valueize);\n");
       fprintf_indent (f, indent,
-		      "_r%d = maybe_push_res_to_seq (&tem_op, lseq);\n", depth);
+		      "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n", depth,
+		      !force_leaf ? "lseq" : "NULL");
       fprintf_indent (f, indent,
 		      "if (!_r%d) return false;\n",
 		      depth);
@@ -4239,6 +4244,14 @@ parser::parse_expr ()
   bool is_commutative = false;
   bool force_capture = false;
   const char *expr_type = NULL;
+
+  if (!parsing_match_operand
+      && token->type == CPP_NOT
+      && !(token->flags & PREV_WHITE))
+    {
+      eat_token (CPP_NOT);
+      e->force_leaf = true;
+    }
 
   if (token->type == CPP_COLON
       && !(token->flags & PREV_WHITE))
