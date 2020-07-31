@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++17" }
+// { dg-do run { target c++17 } }
 // { dg-require-string-conversions "" }
 
 // Copyright (C) 2013-2020 Free Software Foundation, Inc.

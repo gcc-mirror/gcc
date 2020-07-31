@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target { ilp32 || lp64 } } }
+// { dg-require-effective-target c++17 }
 
 // Copyright (C) 2017-2020 Free Software Foundation, Inc.
 //

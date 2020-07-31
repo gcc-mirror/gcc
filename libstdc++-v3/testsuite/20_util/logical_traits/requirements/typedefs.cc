@@ -22,7 +22,7 @@
 
 #include <type_traits>
 
-// { dg-do compile }
+// { dg-do compile { target c++17 } }
 
 void test01()
 {
