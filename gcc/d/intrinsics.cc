@@ -351,9 +351,6 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
     }
 
   /* ptr[bitnum / size] op= mask;  */
-  if (intrinsic == INTRINSIC_BTR)
-    bitnum = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (bitnum), bitnum);
-
   ptr = modify_expr (ptr, fold_build2 (code, TREE_TYPE (ptr), ptr, bitnum));
 
   /* Store the condition result in a temporary, and return expressions in
