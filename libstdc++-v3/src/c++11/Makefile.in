@@ -634,7 +634,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 .cc.o:
-	$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ $<
+	+$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
 	$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
@@ -834,17 +834,17 @@ vpath % $(top_srcdir)/src/c++11
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
+	+$(CXXCOMPILE) -fimplicit-templates -c $<
 
 # Use special rules for source files that require -fchar8_t.
 codecvt.lo: codecvt.cc
 	$(LTCXXCOMPILE) -fchar8_t -c $<
 codecvt.o: codecvt.cc
-	$(CXXCOMPILE) -fchar8_t -c $<
+	+$(CXXCOMPILE) -fchar8_t -c $<
 limits.lo: limits.cc
 	$(LTCXXCOMPILE) -fchar8_t -c $<
 limits.o: limits.cc
-	$(CXXCOMPILE) -fchar8_t -c $<
+	+$(CXXCOMPILE) -fchar8_t -c $<
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
@@ -852,14 +852,14 @@ limits.o: limits.cc
 @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
 @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.s: cxx11-ios_failure.cc
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -S $< -o tmp-$@
+@ENABLE_DUAL_ABI_TRUE@	+$(CXXCOMPILE) -S $< -o tmp-$@
 @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
 @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.lo: cxx11-ios_failure-lt.s
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -g0 -c $< -o $@
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.o: cxx11-ios_failure.s
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -g0 -c $<
+@ENABLE_DUAL_ABI_TRUE@	+$(CXXCOMPILE) -g0 -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

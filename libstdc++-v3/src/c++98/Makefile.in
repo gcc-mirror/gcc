@@ -638,7 +638,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 .cc.o:
-	$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ $<
+	+$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
 	$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
@@ -869,24 +869,24 @@ vpath % $(top_srcdir)/src/c++98
 c++locale.lo: c++locale.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 c++locale.o: c++locale.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
+	+$(CXXCOMPILE) -fimplicit-templates -c $<
 # Use special rules to compile with the non-default string ABI.
 @ENABLE_DUAL_ABI_TRUE@collate_members_cow.lo: collate_members_cow.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@collate_members_cow.o: collate_members_cow.cc
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@	+$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@messages_members_cow.lo: messages_members_cow.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@messages_members_cow.o: messages_members_cow.cc
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@	+$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@monetary_members_cow.lo: monetary_members_cow.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@monetary_members_cow.o: monetary_members_cow.cc
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@	+$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@numeric_members_cow.lo: numeric_members_cow.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@numeric_members_cow.o: numeric_members_cow.cc
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+@ENABLE_DUAL_ABI_TRUE@	+$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 
 # XXX TODO move locale_init.cc and localename.cc to src/c++11
 locale_init.lo: locale_init.cc
@@ -900,7 +900,7 @@ localename.o: localename.cc
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
+	+$(CXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 
 # Use special rules for the concept-checking instantiations so that all
 # the generated template functions are also instantiated.  Force the checks
@@ -908,11 +908,11 @@ strstream.o: strstream.cc
 concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
-	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
+	+$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
-	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+	+$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

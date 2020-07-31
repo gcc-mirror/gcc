@@ -1114,7 +1114,7 @@ POSTCOMPILE =
 endif
 
 .cc.o .c.o:
-	$(COMPILE) $<
+	+$(COMPILE) $<
 	$(POSTCOMPILE)
 
 #
@@ -2196,7 +2196,7 @@ CFLAGS-c-family/c-pch.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
 default-c.o: config/default-c.c
-	$(COMPILE) $<
+	+$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Files used by all variants of C and some other languages.
@@ -2207,7 +2207,7 @@ prefix.o: $(BASEVER)
 # Files used by the D language front end.
 
 default-d.o: config/default-d.c
-	$(COMPILE) $<
+	+$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Language-independent files.
@@ -2298,11 +2298,11 @@ pass-instances.def: $(srcdir)/passes.def $(PASSES_EXTRA) \
 	  $(srcdir)/passes.def $(PASSES_EXTRA) > pass-instances.def
 
 $(out_object_file): $(out_file)
-	$(COMPILE) $<
+	+$(COMPILE) $<
 	$(POSTCOMPILE)
 
 $(common_out_object_file): $(common_out_file)
-	$(COMPILE) $<
+	+$(COMPILE) $<
 	$(POSTCOMPILE)
 #
 # Generate header and source files from the machine description,

@@ -561,7 +561,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 .cc.o:
-	$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ $<
+	+$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
 	$(AM_V_CXX)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`

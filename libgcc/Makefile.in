@@ -481,14 +481,14 @@ LIB2FUNCS_ST := $(filter-out $(LIB2FUNCS_EXCLUDE),$(LIB2FUNCS_ST))
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
 $(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC) %.vis
-	$(gcc_compile) -DL$* -xassembler-with-cpp -c $< -include $*.vis
+	+$(gcc_compile) -DL$* -xassembler-with-cpp -c $< -include $*.vis
 $(patsubst %,%.vis,$(LIB1ASMFUNCS)): %.vis: %_s$(objext)
 	$(gen-hide-list)
 libgcc-objects += $(lib1asmfuncs-o)
 
 lib1asmfuncs-s-o = $(patsubst %,%_s$(objext),$(LIB1ASMFUNCS))
 $(lib1asmfuncs-s-o): %_s$(objext): $(srcdir)/config/$(LIB1ASMSRC)
-	$(gcc_s_compile) -DL$* -xassembler-with-cpp -c $<
+	+$(gcc_s_compile) -DL$* -xassembler-with-cpp -c $<
 ifeq ($(enable_shared),yes)
 
 libgcc-s-objects += $(lib1asmfuncs-s-o)
@@ -498,7 +498,7 @@ endif
 # Build lib2funcs.  For the static library also include LIB2FUNCS_ST.
 lib2funcs-o = $(patsubst %,%$(objext),$(lib2funcs) $(LIB2FUNCS_ST))
 $(lib2funcs-o): %$(objext): $(srcdir)/libgcc2.c
-	$(gcc_compile) -DL$* -c $< $(vis_hide)
+	+$(gcc_compile) -DL$* -c $< $(vis_hide)
 libgcc-objects += $(lib2funcs-o)
 
 ifeq ($(enable_shared),yes)
@@ -539,7 +539,7 @@ endif
 # Build LIB2_DIVMOD_FUNCS.
 lib2-divmod-o = $(patsubst %,%$(objext),$(LIB2_DIVMOD_FUNCS))
 $(lib2-divmod-o): %$(objext): $(srcdir)/libgcc2.c
-	$(gcc_compile) -DL$* -c $< \
+	+$(gcc_compile) -DL$* -c $< \
 	  $(LIB2_DIVMOD_EXCEPTION_FLAGS) $(vis_hide)
 libgcc-objects += $(lib2-divmod-o)
 
@@ -567,13 +567,13 @@ fpbit-src := $(srcdir)/fp-bit.c
 ifneq ($(FPBIT),)
 fpbit-o = $(patsubst %,%$(objext),$(FPBIT_FUNCS))
 $(fpbit-o): %$(objext): $(fpbit-src)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS) -c $< $(vis_hide)
+	+$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(fpbit-o)
 
 ifeq ($(enable_shared),yes)
 fpbit-s-o = $(patsubst %,%_s$(objext),$(FPBIT_FUNCS))
 $(fpbit-s-o): %_s$(objext): $(fpbit-src)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS)  -c $<
+	+$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS)  -c $<
 libgcc-s-objects += $(fpbit-s-o)
 endif
 endif
@@ -582,13 +582,13 @@ endif
 ifneq ($(DPBIT),)
 dpbit-o = $(patsubst %,%$(objext),$(DPBIT_FUNCS))
 $(dpbit-o): %$(objext): $(fpbit-src)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $< $(vis_hide)
+	+$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(dpbit-o)
 
 ifeq ($(enable_shared),yes)
 dpbit-s-o = $(patsubst %,%_s$(objext),$(DPBIT_FUNCS))
 $(dpbit-s-o): %_s$(objext): $(fpbit-src)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $<
+	+$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $<
 libgcc-s-objects += $(dpbit-s-o)
 endif
 endif
@@ -597,13 +597,13 @@ endif
 ifneq ($(TPBIT),)
 tpbit-o = $(patsubst %,%$(objext),$(TPBIT_FUNCS))
 $(tpbit-o): %$(objext): $(fpbit-src)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $< $(vis_hide)
+	+$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(tpbit-o)
 
 ifeq ($(enable_shared),yes)
 tpbit-s-o = $(patsubst %,%_s$(objext),$(TPBIT_FUNCS))
 $(tpbit-s-o): %_s$(objext): $(fpbit-src)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $<
+	+$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $<
 libgcc-s-objects += $(tpbit-s-o)
 endif
 endif
@@ -643,7 +643,7 @@ $(dfp-objects): %$(objext): $(srcdir)/config/libbid/%.c
 else
 $(dfp-objects): %$(objext): $(srcdir)/../libdecnumber/%.c
 endif
-	$(gcc_compile) -c $<
+	+$(gcc_compile) -c $<
 libgcc-objects += $(dfp-objects)
 
 decbits-filenames =
@@ -667,7 +667,7 @@ $(decbits-objects): %$(objext): $(srcdir)/config/libbid/%.c
 else
 $(decbits-objects): %$(objext): $(srcdir)/../libdecnumber/$(enable_decimal_float)/%.c
 endif
-	$(gcc_compile) -c $<
+	+$(gcc_compile) -c $<
 libgcc-objects += $(decbits-objects)
 
 # Next build individual support functions.
@@ -716,7 +716,7 @@ $(d32pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
 else
 $(d32pbit-o): %$(objext): $(srcdir)/dfp-bit.c
 endif
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=32 -c $<
+	+$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=32 -c $<
 libgcc-objects += $(d32pbit-o)
 endif
 
@@ -727,7 +727,7 @@ $(d64pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
 else
 $(d64pbit-o): %$(objext): $(srcdir)/dfp-bit.c
 endif
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=64 -c $<
+	+$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=64 -c $<
 libgcc-objects += $(d64pbit-o)
 endif
 
@@ -738,7 +738,7 @@ $(d128pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
 else
 $(d128pbit-o): %$(objext): $(srcdir)/dfp-bit.c
 endif
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=128 -c $<
+	+$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=128 -c $<
 libgcc-objects += $(d128pbit-o)
 endif
 
@@ -758,7 +758,7 @@ libgcc-sync-size-funcs := $(foreach prefix, $(libgcc-sync-size-funcs), \
 
 libgcc-sync-size-funcs-o = $(patsubst %,%$(objext),$(libgcc-sync-size-funcs))
 $(libgcc-sync-size-funcs-o): %$(objext): $(srcdir)/sync.c
-	$(gcc_compile) $(SYNC_CFLAGS) \
+	+$(gcc_compile) $(SYNC_CFLAGS) \
 	  -DFN=`echo "$*" | sed 's/_[^_]*$$//'` \
 	  -DSIZE=`echo "$*" | sed 's/.*_//'` \
 	  -c $< $(vis_hide)
@@ -768,7 +768,7 @@ libgcc-sync-funcs := sync_synchronize
 
 libgcc-sync-funcs-o = $(patsubst %,%$(objext),$(libgcc-sync-funcs))
 $(libgcc-sync-funcs-o): %$(objext): $(srcdir)/sync.c
-	$(gcc_compile) $(SYNC_CFLAGS) \
+	+$(gcc_compile) $(SYNC_CFLAGS) \
 	  -DL$* \
 	  -c $< $(vis_hide)
 libgcc-objects += $(libgcc-sync-funcs-o)
@@ -917,14 +917,14 @@ libgcov-objects = $(libgcov-merge-objects) $(libgcov-profiler-objects) \
                  $(libgcov-interface-objects) $(libgcov-driver-objects)
 
 $(libgcov-merge-objects): %$(objext): $(srcdir)/libgcov-merge.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
-	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-merge.c
+	+$(gcc_compile) -DL$* -c $(srcdir)/libgcov-merge.c
 $(libgcov-profiler-objects): %$(objext): $(srcdir)/libgcov-profiler.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
-	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-profiler.c
+	+$(gcc_compile) -DL$* -c $(srcdir)/libgcov-profiler.c
 $(libgcov-interface-objects): %$(objext): $(srcdir)/libgcov-interface.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
-	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-interface.c
+	+$(gcc_compile) -DL$* -c $(srcdir)/libgcov-interface.c
 $(libgcov-driver-objects): %$(objext): $(srcdir)/libgcov-driver.c \
   $(srcdir)/libgcov-driver-system.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
-	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-driver.c
+	+$(gcc_compile) -DL$* -c $(srcdir)/libgcov-driver.c
 
 
 # Static libraries.
