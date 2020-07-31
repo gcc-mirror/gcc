@@ -583,15 +583,6 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
 			       nca_info);
   free (nca_info);
 
-#ifdef RC_CHECKING
-  gomp_mutex_lock (&acc_dev->lock);
-  assert (tgt);
-  dump_tgt (__FUNCTION__, tgt);
-  tgt->prev = thr->mapped_data;
-  gomp_rc_check (acc_dev, tgt);
-  gomp_mutex_unlock (&acc_dev->lock);
-#endif
-
   if (profiling_p)
     {
       prof_info.event_type = acc_ev_enter_data_end;
@@ -680,12 +671,6 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
       thr->prof_info = NULL;
       thr->api_info = NULL;
     }
-
-#ifdef RC_CHECKING
-  gomp_mutex_lock (&acc_dev->lock);
-  gomp_rc_check (acc_dev, thr->mapped_data);
-  gomp_mutex_unlock (&acc_dev->lock);
-#endif
 }
 
 /* Legacy entry point (GCC 5).  Only provide host fallback execution.  */
@@ -801,12 +786,6 @@ GOACC_data_start (int flags_m, size_t mapnum,
       tgt->prev = thr->mapped_data;
       thr->mapped_data = tgt;
 
-#ifdef RC_CHECKING
-      gomp_mutex_lock (&acc_dev->lock);
-      gomp_rc_check (acc_dev, thr->mapped_data);
-      gomp_mutex_unlock (&acc_dev->lock);
-#endif
-
       goto out_prof;
     }
 
@@ -900,12 +879,6 @@ GOACC_data_end (void)
   thr->mapped_data = tgt->prev;
   gomp_unmap_vars (tgt, true);
   gomp_debug (0, "  %s: mappings restored\n", __FUNCTION__);
-
-#ifdef RC_CHECKING
-  gomp_mutex_lock (&thr->dev->lock);
-  gomp_rc_check (thr->dev, thr->mapped_data);
-  gomp_mutex_unlock (&thr->dev->lock);
-#endif
 
   if (profiling_p)
     {
@@ -1086,12 +1059,6 @@ GOACC_update (int flags_m, size_t mapnum,
       thr->prof_info = NULL;
       thr->api_info = NULL;
     }
-
-#ifdef RC_CHECKING
-  gomp_mutex_lock (&acc_dev->lock);
-  gomp_rc_check (acc_dev, thr->mapped_data);
-  gomp_mutex_unlock (&acc_dev->lock);
-#endif
 }
 
 
