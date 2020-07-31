@@ -1,3 +1,54 @@
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (size_type, difference_type):
+	Use allocator_traits to obtain the allocator's size_type and
+	difference_type.
+
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Use
+	isinf unqualified.
+	[!_GLIBCXX_USE_C99_STDLIB]: Use strtod for float and long
+	double.
+
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_multiset/cons/noexcept_default_construct.cc:
+	Use allocator with the correct value type.
+	* testsuite/23_containers/unordered_set/cons/noexcept_default_construct.cc:
+	Likewise.
+
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/4.cc: Pass non-const iterator
+	to string::insert.
+
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__cv_bool): New
+	helper concept.
+	(__detail::__integral_nonbool): Likewise.
+	(__detail::__is_integer_like): Use __integral_nonbool.
+	* testsuite/std/ranges/access/lwg3467.cc: New test.
+
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/4.cc: Use dg-add-options ieee.
+	* testsuite/29_atomics/atomic_float/1.cc: Likewise.
+
+2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/bool/72847.cc: Use the
+	exceptions_enabled effective-target keyword instead of
+	checking for an explicit -fno-exceptions option.
+	* testsuite/util/testsuite_abi.cc (examine_symbol): Remove
+	redundant try-catch.
+	* testsuite/util/testsuite_allocator.h [!__cpp_exceptions]:
+	Do not define check_allocate_max_size and memory_resource.
+	* testsuite/util/testsuite_containers.h: Replace comment with
+	#error if wrong standard dialect used.
+	* testsuite/util/testsuite_shared.cc: Likewise.
+
 2020-07-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Node_iterator_base()): New.
