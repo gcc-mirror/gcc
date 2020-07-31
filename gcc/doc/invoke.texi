@@ -820,6 +820,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
 -mbig-endian  -EB  -mlittle-endian  -EL @gol
 -mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu @gol
+-mfloat-abi=@var{name} @gol
 -melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust @gol
 -mdsp  -medsp  -mvdsp @gol
 -mdiv  -msmart  -mhigh-registers  -manchor @gol
@@ -20645,6 +20646,23 @@ Specify the C-SKY target processor.  Valid values for @var{cpu} are:
 @opindex EL
 
 Select big- or little-endian code.  The default is little-endian.
+
+@item -mfloat-abi=@var{name}
+@opindex mfloat-abi
+Specifies which floating-point ABI to use.  Permissible values
+are: @samp{soft}, @samp{softfp} and @samp{hard}.
+
+Specifying @samp{soft} causes GCC to generate output containing
+library calls for floating-point operations.
+@samp{softfp} allows the generation of code using hardware floating-point
+instructions, but still uses the soft-float calling conventions.
+@samp{hard} allows generation of floating-point instructions
+and uses FPU-specific calling conventions.
+
+The default depends on the specific target configuration.  Note that
+the hard-float and soft-float ABIs are not link-compatible; you must
+compile your entire program with the same ABI, and link with a
+compatible set of libraries.
 
 @item -mhard-float
 @opindex mhard-float
