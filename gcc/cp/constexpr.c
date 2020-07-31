@@ -5678,9 +5678,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  TREE_CONSTANT (r) = true;
 	}
       else if (ctx->strict)
-	r = decl_really_constant_value (t);
+	r = decl_really_constant_value (t, /*unshare_p=*/false);
       else
-	r = decl_constant_value (t);
+	r = decl_constant_value (t, /*unshare_p=*/false);
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);

@@ -6780,7 +6780,8 @@ extern tree build_vec_delete			(location_t, tree, tree,
 extern tree create_temporary_var		(tree);
 extern void initialize_vtbl_ptrs		(tree);
 extern tree scalar_constant_value		(tree);
-extern tree decl_really_constant_value		(tree);
+extern tree decl_constant_value			(tree, bool);
+extern tree decl_really_constant_value		(tree, bool = true);
 extern int diagnose_uninitialized_cst_or_ref_member (tree, bool, bool);
 extern tree build_vtbl_address                  (tree);
 extern bool maybe_reject_flexarray_init		(tree, tree);
