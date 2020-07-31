@@ -65,7 +65,7 @@ validate_macosx_version_min (const char *version_str)
   major = strtoul (version_str, &end, 10);
   version_str = end + ((*end == '.') ? 1 : 0);
 
-  if (major != 10) /* So far .. all MacOS 10 ... */
+  if (major < 10 || major > 11 ) /* MacOS 10 and 11 are known. */
     return NULL;
 
   /* Version string components must be present and numeric.  */
@@ -104,7 +104,7 @@ validate_macosx_version_min (const char *version_str)
   if (need_rewrite)
     {
       char *new_version;
-      asprintf (&new_version, "10.%lu.%lu", minor, tiny);
+      asprintf (&new_version, "%2lu.%lu.%lu", major, minor, tiny);
       return new_version;
     }
 
@@ -114,6 +114,12 @@ validate_macosx_version_min (const char *version_str)
 #ifndef CROSS_DIRECTORY_STRUCTURE
 #include <sys/sysctl.h>
 #include "xregex.h"
+
+/* Determine the version of the running OS.
+   We only look at the first two components (ignoring the patch one) and
+   report NN.MM.0 where NN is currently either 10 or 11 and MM is the OS
+   minor release number.
+   If we can't parse what the kernel gives us, warn the user, and do nothing.  */
 
 static char *
 darwin_find_version_from_kernel (void)
@@ -125,8 +131,6 @@ darwin_find_version_from_kernel (void)
   char * version_p;
   char * new_flag;
 
-  /* Determine the version of the running OS.  If we can't, warn user,
-     and do nothing.  */
   if (sysctl (osversion_name, ARRAY_SIZE (osversion_name), osversion,
 	      &osversion_len, NULL, 0) == -1)
     {
@@ -144,10 +148,11 @@ darwin_find_version_from_kernel (void)
     major_vers = major_vers * 10 + (*version_p++ - '0');
   if (*version_p++ != '.')
     goto parse_failed;
-  
-  /* The major kernel version number is 4 plus the second OS version
-     component.  */
-  if (major_vers - 4 <= 4)
+
+  /* Darwin20 sees a transition to macOS 11.  */
+  if (major_vers >= 20)
+    asprintf (&new_flag, "11.%02d.00", major_vers - 20);
+  else if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
        support three-component system versions.
        FIXME: we should not assume this - a newer linker could be used.  */
