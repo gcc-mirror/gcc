@@ -1,5 +1,15 @@
 2020-07-31  Nathan Sidwell  <nathan@acm.org>
 
+	Preserve reserved locations.
+	gcc/cp/
+	* module.cc (enum loc_kind): Add LK_RESERVED.
+	(module_state::{read,write}_location): Preserve reserved
+	locations.
+	(module_State::{read,write}_macro_maps): Default to
+	UNKNOWN_LOCATION.
+	gcc/testsuite/
+	* g++.dg/modules/part-mac-1_[abc].[CH]: New.
+
 	Fix location of imports of partitions.
 	* module.cc (loc_spans::maybe_propagate): New.
 	(module_state::read_{ordinary,macro}_maps): Use it.

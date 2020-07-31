@@ -14927,9 +14927,10 @@ lazy_specializations_p (unsigned mod, bool header_p, bool partition_p)
 enum loc_kind {
   LK_ORDINARY,
   LK_MACRO,
-  LK_ADHOC,
   LK_IMPORT_ORDINARY,
-  LK_IMPORT_MACRO
+  LK_IMPORT_MACRO,
+  LK_ADHOC,
+  LK_RESERVED,
 };
 
 static const module_state *
@@ -15004,7 +15005,12 @@ module_state::write_location (bytes_out &sec, location_t loc)
        about write_ordinary_maps.  */
     return;
 
-  if (IS_ADHOC_LOC (loc))
+  if (loc < RESERVED_LOCATION_COUNT)
+    {
+      dump (dumper::LOCATION) && dump ("Reserved location %u", unsigned (loc));
+      sec.u (LK_RESERVED + loc);
+    }
+  else if (IS_ADHOC_LOC (loc))
     {
       dump (dumper::LOCATION) && dump ("Adhoc location");
       sec.u (LK_ADHOC);
@@ -15081,7 +15087,14 @@ module_state::read_location (bytes_in &sec) const
   switch (kind)
      {
     default:
-      sec.set_overrun ();
+      {
+	if (kind < LK_RESERVED + RESERVED_LOCATION_COUNT)
+	  locus = location_t (kind - LK_RESERVED);
+	else
+	  sec.set_overrun ();
+	dump (dumper::LOCATION)
+	  && dump ("Reserved location %u", unsigned (locus));
+      }
       break;
 
      case LK_ADHOC:
@@ -15487,7 +15500,7 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
 	  write_location (sec, mmap->expansion);
 	  const location_t *locs = mmap->macro_locations;
 	  /* There are lots of identical runs.  */
-	  location_t prev = 0;
+	  location_t prev = UNKNOWN_LOCATION;
 	  unsigned count = 0;
 	  unsigned runs = 0;
 	  for (unsigned jx = mmap->n_tokens * 2; jx--;)
@@ -15667,7 +15680,7 @@ module_state::read_macro_maps ()
 	break;
 
       location_t *locs = macro->macro_locations;
-      location_t tok_loc = loc;
+      location_t tok_loc = UNKNOWN_LOCATION;
       unsigned count = sec.u ();
       unsigned runs = 0;
       for (unsigned jx = macro->n_tokens * 2; jx-- && !sec.get_overrun ();)
