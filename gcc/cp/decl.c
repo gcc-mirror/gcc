@@ -17112,6 +17112,51 @@ finish_function (bool inline_p)
 				      DECL_ATTRIBUTES (fndecl)))
       omp_declare_variant_finalize (fndecl, attr);
 
+  /* Complain if there's just no return statement.  */
+  if ((warn_return_type
+       || (cxx_dialect >= cxx14
+	   && DECL_DECLARED_CONSTEXPR_P (fndecl)))
+      && !VOID_TYPE_P (TREE_TYPE (fntype))
+      && !dependent_type_p (TREE_TYPE (fntype))
+      && !current_function_returns_value && !current_function_returns_null
+      /* Don't complain if we abort or throw.  */
+      && !current_function_returns_abnormally
+      /* Don't complain if there's an infinite loop.  */
+      && !current_function_infinite_loop
+      /* Don't complain if we are declared noreturn.  */
+      && !TREE_THIS_VOLATILE (fndecl)
+      && !DECL_NAME (DECL_RESULT (fndecl))
+      && !TREE_NO_WARNING (fndecl)
+      /* Structor return values (if any) are set by the compiler.  */
+      && !DECL_CONSTRUCTOR_P (fndecl)
+      && !DECL_DESTRUCTOR_P (fndecl)
+      && targetm.warn_func_return (fndecl))
+    {
+      gcc_rich_location richloc (input_location);
+      /* Potentially add a "return *this;" fix-it hint for
+	 assignment operators.  */
+      if (IDENTIFIER_ASSIGN_OP_P (DECL_NAME (fndecl)))
+	{
+	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
+	  if (TREE_CODE (valtype) == REFERENCE_TYPE
+	      && current_class_ref
+	      && same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
+	      && global_dc->option_enabled (OPT_Wreturn_type,
+					    global_dc->lang_mask,
+					    global_dc->option_state))
+	    add_return_star_this_fixit (&richloc, fndecl);
+	}
+      if (cxx_dialect >= cxx14
+	  && DECL_DECLARED_CONSTEXPR_P (fndecl))
+	error_at (&richloc, "no return statement in %<constexpr%> function "
+			    "returning non-void");
+      else if (warning_at (&richloc, OPT_Wreturn_type,
+			   "no return statement in function returning "
+			   "non-void"))
+	TREE_NO_WARNING (fndecl) = 1;
+    }
+
   /* Lambda closure members are implicitly constexpr if possible.  */
   if (cxx_dialect >= cxx17
       && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fndecl)))
@@ -17162,44 +17207,6 @@ finish_function (bool inline_p)
   /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
-  /* Complain if there's just no return statement.  */
-  if (warn_return_type
-      && !VOID_TYPE_P (TREE_TYPE (fntype))
-      && !dependent_type_p (TREE_TYPE (fntype))
-      && !current_function_returns_value && !current_function_returns_null
-      /* Don't complain if we abort or throw.  */
-      && !current_function_returns_abnormally
-      /* Don't complain if there's an infinite loop.  */
-      && !current_function_infinite_loop
-      /* Don't complain if we are declared noreturn.  */
-      && !TREE_THIS_VOLATILE (fndecl)
-      && !DECL_NAME (DECL_RESULT (fndecl))
-      && !TREE_NO_WARNING (fndecl)
-      /* Structor return values (if any) are set by the compiler.  */
-      && !DECL_CONSTRUCTOR_P (fndecl)
-      && !DECL_DESTRUCTOR_P (fndecl)
-      && targetm.warn_func_return (fndecl))
-    {
-      gcc_rich_location richloc (input_location);
-      /* Potentially add a "return *this;" fix-it hint for
-	 assignment operators.  */
-      if (IDENTIFIER_ASSIGN_OP_P (DECL_NAME (fndecl)))
-	{
-	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
-	  if (TREE_CODE (valtype) == REFERENCE_TYPE
-	      && current_class_ref
-	      && same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
-	      && global_dc->option_enabled (OPT_Wreturn_type,
-					    global_dc->lang_mask,
-					    global_dc->option_state))
-	    add_return_star_this_fixit (&richloc, fndecl);
-	}
-      if (warning_at (&richloc, OPT_Wreturn_type,
-	  "no return statement in function returning non-void"))
-	TREE_NO_WARNING (fndecl) = 1;
-    }
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
