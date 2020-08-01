@@ -1,3 +1,17 @@
+2020-07-31  Maciej W. Rozycki  <macro@wdc.com>
+
+	* config/riscv/save-restore.S [__riscv_xlen == 64]
+	(__riscv_save_10, __riscv_save_8, __riscv_save_6, __riscv_save_4)
+	(__riscv_save_2): Replace negative immediates used for the final
+	stack pointer adjustment with positive ones, right-shifted by 4.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Add __gcov_kvp_pool
+	and __gcov_kvp_pool_index variables.
+	* libgcov.h (allocate_gcov_kvp): New.
+	(gcov_topn_add_value): Use it.
+
 2020-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/lse.S: Add PAC property note.

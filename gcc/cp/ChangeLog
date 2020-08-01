@@ -1,3 +1,43 @@
+2020-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96182
+	* decl.c (finish_function): In constexpr functions use for C++14 and
+	later error instead of warning if no return statement is present and
+	diagnose it regardless of warn_return_type.  Move the warn_return_type
+	diagnostics earlier in the function.
+
+2020-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96003
+	* class.c (build_base_path): Set no-warning bit on the synthesized
+	conditional expression in static_cast.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* cp-objcp-common.h (LANG_HOOKS_FINALIZE_EARLY_DEBUG):
+	Define to c_common_finalize_early_debug.
+
+2020-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96197
+	* constexpr.c (cxx_eval_constant_expression) <case CONST_DECL>:
+	Pass false to decl_constant_value and decl_really_constant_value
+	so that they don't unshare their result.
+	* cp-tree.h (decl_constant_value): New declaration with an added
+	bool parameter.
+	(decl_really_constant_value): Add bool parameter defaulting to
+	true to existing declaration.
+	* init.c (constant_value_1): Add bool parameter which controls
+	whether to unshare the initializer before returning.  Call
+	unshare_expr at most once.
+	(scalar_constant_value): Pass true to constant_value_1's new
+	bool parameter.
+	(decl_really_constant_value): Add bool parameter and forward it
+	to constant_value_1.
+	(decl_constant_value): Likewise, but instead define a new
+	overload with an added bool parameter.
+
 2020-07-30  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/64194

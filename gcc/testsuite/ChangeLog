@@ -1,3 +1,134 @@
+2020-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96182
+	* g++.dg/cpp1y/constexpr-96182.C: New test.
+	* g++.dg/other/error35.C (S<T>::g()): Add return statement.
+	* g++.dg/cpp1y/pr63996.C (foo): Likewise.
+	* g++.dg/cpp1y/constexpr-return2.C (f): Likewise.
+	* g++.dg/cpp1y/var-templ44.C (make_array): Add throw 1.
+
+2020-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/v2si-cvt.c: Simplify source.  Remove
+	scan-assembler directives.  Mention PR96403.
+
+2020-07-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/compilable.d: Removed.
+	* gdc.dg/gdc108.d: New test.
+	* gdc.dg/gdc115.d: New test.
+	* gdc.dg/gdc121.d: New test.
+	* gdc.dg/gdc122.d: New test.
+	* gdc.dg/gdc127.d: New test.
+	* gdc.dg/gdc131.d: New test.
+	* gdc.dg/gdc133.d: New test.
+	* gdc.dg/gdc141.d: New test.
+	* gdc.dg/gdc142.d: New test.
+	* gdc.dg/gdc15.d: New test.
+	* gdc.dg/gdc17.d: New test.
+	* gdc.dg/gdc170.d: New test.
+	* gdc.dg/gdc171.d: New test.
+	* gdc.dg/gdc179.d: New test.
+	* gdc.dg/gdc183.d: New test.
+	* gdc.dg/gdc186.d: New test.
+	* gdc.dg/gdc187.d: New test.
+	* gdc.dg/gdc19.d: New test.
+	* gdc.dg/gdc191.d: New test.
+	* gdc.dg/gdc194.d: New test.
+	* gdc.dg/gdc196.d: New test.
+	* gdc.dg/gdc198.d: New test.
+	* gdc.dg/gdc200.d: New test.
+	* gdc.dg/gdc204.d: New test.
+	* gdc.dg/gdc210.d: New test.
+	* gdc.dg/gdc212.d: New test.
+	* gdc.dg/gdc213.d: New test.
+	* gdc.dg/gdc218.d: New test.
+	* gdc.dg/gdc223.d: New test.
+	* gdc.dg/gdc231.d: New test.
+	* gdc.dg/gdc239.d: New test.
+	* gdc.dg/gdc24.d: New test.
+	* gdc.dg/gdc240.d: New test.
+	* gdc.dg/gdc241.d: New test.
+	* gdc.dg/gdc242a.d: New test.
+	* gdc.dg/gdc242b.d: New test.
+	* gdc.dg/gdc248.d: New test.
+	* gdc.dg/gdc250.d: New test.
+	* gdc.dg/gdc251.d: New test.
+	* gdc.dg/gdc253a.d: New test.
+	* gdc.dg/gdc253b.d: New test.
+	* gdc.dg/gdc255.d: New test.
+	* gdc.dg/gdc256.d: New test.
+	* gdc.dg/gdc261.d: New test.
+	* gdc.dg/gdc27.d: New test.
+	* gdc.dg/gdc273.d: New test.
+	* gdc.dg/gdc280.d: New test.
+	* gdc.dg/gdc284.d: New test.
+	* gdc.dg/gdc285.d: New test.
+	* gdc.dg/gdc286.d: New test.
+	* gdc.dg/gdc300.d: New test.
+	* gdc.dg/gdc309.d: New test.
+	* gdc.dg/gdc31.d: New test.
+	* gdc.dg/gdc35.d: New test.
+	* gdc.dg/gdc36.d: New test.
+	* gdc.dg/gdc37.d: New test.
+	* gdc.dg/gdc4.d: New test.
+	* gdc.dg/gdc43.d: New test.
+	* gdc.dg/gdc47.d: New test.
+	* gdc.dg/gdc51.d: New test.
+	* gdc.dg/gdc57.d: New test.
+	* gdc.dg/gdc66.d: New test.
+	* gdc.dg/gdc67.d: New test.
+	* gdc.dg/gdc71.d: New test.
+	* gdc.dg/gdc77.d: New test.
+	* gdc.dg/imports/gdc239.d: Remove phobos dependency.
+	* gdc.dg/imports/gdc241a.d: Updated imports.
+	* gdc.dg/imports/gdc241b.d: Likewise.
+	* gdc.dg/imports/gdc251a.d: Likewise.
+	* gdc.dg/imports/gdc253.d: Rename to...
+	* gdc.dg/imports/gdc253a.d: ...this.
+	* gdc.dg/imports/gdc253b.d: New.
+	* gdc.dg/imports/gdc36.d: New.
+	* gdc.dg/imports/runnable.d: Removed.
+	* gdc.dg/link.d: Removed.
+	* gdc.dg/runnable.d: Removed.
+	* gdc.dg/runnable2.d: Removed.
+	* gdc.dg/simd.d: Remove phobos dependency.
+
+2020-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96003
+	* g++.dg/warn/Wnonnull7.C: New test.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* gcc.dg/debug/dwarf2/pr96383-1.c: New testcase.
+	* gcc.dg/debug/dwarf2/pr96383-2.c: Likewise.
+
+2020-07-31  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/aarch64/sve/cost_model_2.c: Adjust due to cost model
+	change.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96369
+	* c-c++-common/pr96369.c: New testcase.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/indir-call-prof-malloc.c: New test.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20200727-0.c: New testcase.
+
+2020-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96197
+	* g++.dg/cpp1y/constexpr-array8.C: New test.
+
 2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/96152
