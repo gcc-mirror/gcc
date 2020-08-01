@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define IN_TARGET_CODE 1
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1351,34 +1349,40 @@ darwin_mergeable_constant_section (tree exp,
 				   unsigned HOST_WIDE_INT align,
 				   bool zsize)
 {
-  machine_mode mode = DECL_MODE (exp);
-  unsigned int modesize = GET_MODE_BITSIZE (mode);
-
   if (zsize)
     return darwin_sections[zobj_const_section];
 
-  if (flag_merge_constants
-      && mode != VOIDmode
-      && mode != BLKmode
-      && modesize <= align
-      && align >= 8
-      && align <= 256
-      && (align & (align -1)) == 0)
-    {
-      tree size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
+  machine_mode mode = DECL_MODE (exp);
+  if (!flag_merge_constants
+      || mode == VOIDmode
+      || mode == BLKmode
+      || align < 8
+      || align > 256
+      || (align & (align -1)) != 0)
+    return readonly_data_section;
 
-      if (TREE_CODE (size) == INTEGER_CST)
-	{
-	  if (wi::to_wide (size) == 4)
-	    return darwin_sections[literal4_section];
-	  else if (wi::to_wide (size) == 8)
-	    return darwin_sections[literal8_section];
-	  else if (HAVE_GAS_LITERAL16
-		   && TARGET_64BIT
-		   && wi::to_wide (size) == 16)
-	    return darwin_sections[literal16_section];
-	}
-    }
+  /* This will ICE if the mode is not a constant size, but that is reasonable,
+     since one cannot put a variable-sized thing into a constant section, we
+     shouldn't be trying.  */
+  const unsigned int modesize = GET_MODE_BITSIZE (mode).to_constant ();
+
+  if (modesize > align)
+    return readonly_data_section;
+
+  tree size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    return readonly_data_section;
+
+  unsigned isize = TREE_INT_CST_LOW (size);
+  if (isize == 4)
+    return darwin_sections[literal4_section];
+  else if (isize == 8)
+    return darwin_sections[literal8_section];
+  else if (HAVE_GAS_LITERAL16
+	   && TARGET_64BIT
+	   && isize == 16)
+    return darwin_sections[literal16_section];
 
   return readonly_data_section;
 }
@@ -1747,19 +1751,19 @@ section *
 machopic_select_rtx_section (machine_mode mode, rtx x,
 			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  if (GET_MODE_SIZE (mode) == 8
+  if (known_eq (GET_MODE_SIZE (mode), 8)
       && (GET_CODE (x) == CONST_INT
 	  || GET_CODE (x) == CONST_WIDE_INT
 	  || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal8_section];
-  else if (GET_MODE_SIZE (mode) == 4
+  else if (known_eq (GET_MODE_SIZE (mode), 4)
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_WIDE_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal4_section];
   else if (HAVE_GAS_LITERAL16
 	   && TARGET_64BIT
-	   && GET_MODE_SIZE (mode) == 16
+	   && known_eq (GET_MODE_SIZE (mode), 16)
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_WIDE_INT
 	       || GET_CODE (x) == CONST_DOUBLE
