@@ -2698,14 +2698,14 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
 # How to compile object files to run on the build machine.
 
 build/%.o :  # dependencies provided by explicit rule later
-	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
+	+$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
 		-o $@ $<
 
 ## build/version.o is compiled by the $(COMPILER_FOR_BUILD) but needs
 ## several C macro definitions, just like version.o
 build/version.o:  version.c version.h \
                   $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
-	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
+	+$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
 	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
 	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \

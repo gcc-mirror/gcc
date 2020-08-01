@@ -575,7 +575,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zutil.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	_$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
@@ -596,7 +596,7 @@ distclean-compile:
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
 libz_a-adler32.o: adler32.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-adler32.o -MD -MP -MF $(DEPDIR)/libz_a-adler32.Tpo -c -o libz_a-adler32.o `test -f 'adler32.c' || echo '$(srcdir)/'`adler32.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-adler32.o -MD -MP -MF $(DEPDIR)/libz_a-adler32.Tpo -c -o libz_a-adler32.o `test -f 'adler32.c' || echo '$(srcdir)/'`adler32.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-adler32.Tpo $(DEPDIR)/libz_a-adler32.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='adler32.c' object='libz_a-adler32.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
@@ -610,25 +610,25 @@ libz_a-adler32.obj: adler32.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-adler32.obj `if test -f 'adler32.c'; then $(CYGPATH_W) 'adler32.c'; else $(CYGPATH_W) '$(srcdir)/adler32.c'; fi`
 
 libz_a-compress.o: compress.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-compress.o -MD -MP -MF $(DEPDIR)/libz_a-compress.Tpo -c -o libz_a-compress.o `test -f 'compress.c' || echo '$(srcdir)/'`compress.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-compress.o -MD -MP -MF $(DEPDIR)/libz_a-compress.Tpo -c -o libz_a-compress.o `test -f 'compress.c' || echo '$(srcdir)/'`compress.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-compress.Tpo $(DEPDIR)/libz_a-compress.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='compress.c' object='libz_a-compress.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-compress.o `test -f 'compress.c' || echo '$(srcdir)/'`compress.c
 
 libz_a-compress.obj: compress.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-compress.obj -MD -MP -MF $(DEPDIR)/libz_a-compress.Tpo -c -o libz_a-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-compress.obj -MD -MP -MF $(DEPDIR)/libz_a-compress.Tpo -c -o libz_a-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-compress.Tpo $(DEPDIR)/libz_a-compress.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='compress.c' object='libz_a-compress.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
 
 libz_a-crc32.o: crc32.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-crc32.o -MD -MP -MF $(DEPDIR)/libz_a-crc32.Tpo -c -o libz_a-crc32.o `test -f 'crc32.c' || echo '$(srcdir)/'`crc32.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-crc32.o -MD -MP -MF $(DEPDIR)/libz_a-crc32.Tpo -c -o libz_a-crc32.o `test -f 'crc32.c' || echo '$(srcdir)/'`crc32.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-crc32.Tpo $(DEPDIR)/libz_a-crc32.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='crc32.c' object='libz_a-crc32.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-crc32.o `test -f 'crc32.c' || echo '$(srcdir)/'`crc32.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-crc32.o `test -f 'crc32.c' || echo '$(srcdir)/'`crc32.c
 
 libz_a-crc32.obj: crc32.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-crc32.obj -MD -MP -MF $(DEPDIR)/libz_a-crc32.Tpo -c -o libz_a-crc32.obj `if test -f 'crc32.c'; then $(CYGPATH_W) 'crc32.c'; else $(CYGPATH_W) '$(srcdir)/crc32.c'; fi`
@@ -638,25 +638,25 @@ libz_a-crc32.obj: crc32.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-crc32.obj `if test -f 'crc32.c'; then $(CYGPATH_W) 'crc32.c'; else $(CYGPATH_W) '$(srcdir)/crc32.c'; fi`
 
 libz_a-deflate.o: deflate.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-deflate.o -MD -MP -MF $(DEPDIR)/libz_a-deflate.Tpo -c -o libz_a-deflate.o `test -f 'deflate.c' || echo '$(srcdir)/'`deflate.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-deflate.o -MD -MP -MF $(DEPDIR)/libz_a-deflate.Tpo -c -o libz_a-deflate.o `test -f 'deflate.c' || echo '$(srcdir)/'`deflate.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-deflate.Tpo $(DEPDIR)/libz_a-deflate.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='deflate.c' object='libz_a-deflate.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-deflate.o `test -f 'deflate.c' || echo '$(srcdir)/'`deflate.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-deflate.o `test -f 'deflate.c' || echo '$(srcdir)/'`deflate.c
 
 libz_a-deflate.obj: deflate.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-deflate.obj -MD -MP -MF $(DEPDIR)/libz_a-deflate.Tpo -c -o libz_a-deflate.obj `if test -f 'deflate.c'; then $(CYGPATH_W) 'deflate.c'; else $(CYGPATH_W) '$(srcdir)/deflate.c'; fi`
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-deflate.obj -MD -MP -MF $(DEPDIR)/libz_a-deflate.Tpo -c -o libz_a-deflate.obj `if test -f 'deflate.c'; then $(CYGPATH_W) 'deflate.c'; else $(CYGPATH_W) '$(srcdir)/deflate.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-deflate.Tpo $(DEPDIR)/libz_a-deflate.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='deflate.c' object='libz_a-deflate.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-deflate.obj `if test -f 'deflate.c'; then $(CYGPATH_W) 'deflate.c'; else $(CYGPATH_W) '$(srcdir)/deflate.c'; fi`
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-deflate.obj `if test -f 'deflate.c'; then $(CYGPATH_W) 'deflate.c'; else $(CYGPATH_W) '$(srcdir)/deflate.c'; fi`
 
 libz_a-gzread.o: gzread.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzread.o -MD -MP -MF $(DEPDIR)/libz_a-gzread.Tpo -c -o libz_a-gzread.o `test -f 'gzread.c' || echo '$(srcdir)/'`gzread.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzread.o -MD -MP -MF $(DEPDIR)/libz_a-gzread.Tpo -c -o libz_a-gzread.o `test -f 'gzread.c' || echo '$(srcdir)/'`gzread.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-gzread.Tpo $(DEPDIR)/libz_a-gzread.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gzread.c' object='libz_a-gzread.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzread.o `test -f 'gzread.c' || echo '$(srcdir)/'`gzread.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzread.o `test -f 'gzread.c' || echo '$(srcdir)/'`gzread.c
 
 libz_a-gzread.obj: gzread.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzread.obj -MD -MP -MF $(DEPDIR)/libz_a-gzread.Tpo -c -o libz_a-gzread.obj `if test -f 'gzread.c'; then $(CYGPATH_W) 'gzread.c'; else $(CYGPATH_W) '$(srcdir)/gzread.c'; fi`
@@ -666,11 +666,11 @@ libz_a-gzread.obj: gzread.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzread.obj `if test -f 'gzread.c'; then $(CYGPATH_W) 'gzread.c'; else $(CYGPATH_W) '$(srcdir)/gzread.c'; fi`
 
 libz_a-gzclose.o: gzclose.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzclose.o -MD -MP -MF $(DEPDIR)/libz_a-gzclose.Tpo -c -o libz_a-gzclose.o `test -f 'gzclose.c' || echo '$(srcdir)/'`gzclose.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzclose.o -MD -MP -MF $(DEPDIR)/libz_a-gzclose.Tpo -c -o libz_a-gzclose.o `test -f 'gzclose.c' || echo '$(srcdir)/'`gzclose.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-gzclose.Tpo $(DEPDIR)/libz_a-gzclose.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gzclose.c' object='libz_a-gzclose.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzclose.o `test -f 'gzclose.c' || echo '$(srcdir)/'`gzclose.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzclose.o `test -f 'gzclose.c' || echo '$(srcdir)/'`gzclose.c
 
 libz_a-gzclose.obj: gzclose.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzclose.obj -MD -MP -MF $(DEPDIR)/libz_a-gzclose.Tpo -c -o libz_a-gzclose.obj `if test -f 'gzclose.c'; then $(CYGPATH_W) 'gzclose.c'; else $(CYGPATH_W) '$(srcdir)/gzclose.c'; fi`
@@ -694,11 +694,11 @@ libz_a-gzwrite.obj: gzwrite.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzwrite.obj `if test -f 'gzwrite.c'; then $(CYGPATH_W) 'gzwrite.c'; else $(CYGPATH_W) '$(srcdir)/gzwrite.c'; fi`
 
 libz_a-gzlib.o: gzlib.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzlib.o -MD -MP -MF $(DEPDIR)/libz_a-gzlib.Tpo -c -o libz_a-gzlib.o `test -f 'gzlib.c' || echo '$(srcdir)/'`gzlib.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzlib.o -MD -MP -MF $(DEPDIR)/libz_a-gzlib.Tpo -c -o libz_a-gzlib.o `test -f 'gzlib.c' || echo '$(srcdir)/'`gzlib.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-gzlib.Tpo $(DEPDIR)/libz_a-gzlib.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gzlib.c' object='libz_a-gzlib.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzlib.o `test -f 'gzlib.c' || echo '$(srcdir)/'`gzlib.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzlib.o `test -f 'gzlib.c' || echo '$(srcdir)/'`gzlib.c
 
 libz_a-gzlib.obj: gzlib.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-gzlib.obj -MD -MP -MF $(DEPDIR)/libz_a-gzlib.Tpo -c -o libz_a-gzlib.obj `if test -f 'gzlib.c'; then $(CYGPATH_W) 'gzlib.c'; else $(CYGPATH_W) '$(srcdir)/gzlib.c'; fi`
@@ -708,11 +708,11 @@ libz_a-gzlib.obj: gzlib.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-gzlib.obj `if test -f 'gzlib.c'; then $(CYGPATH_W) 'gzlib.c'; else $(CYGPATH_W) '$(srcdir)/gzlib.c'; fi`
 
 libz_a-infback.o: infback.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-infback.o -MD -MP -MF $(DEPDIR)/libz_a-infback.Tpo -c -o libz_a-infback.o `test -f 'infback.c' || echo '$(srcdir)/'`infback.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-infback.o -MD -MP -MF $(DEPDIR)/libz_a-infback.Tpo -c -o libz_a-infback.o `test -f 'infback.c' || echo '$(srcdir)/'`infback.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-infback.Tpo $(DEPDIR)/libz_a-infback.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='infback.c' object='libz_a-infback.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-infback.o `test -f 'infback.c' || echo '$(srcdir)/'`infback.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-infback.o `test -f 'infback.c' || echo '$(srcdir)/'`infback.c
 
 libz_a-infback.obj: infback.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-infback.obj -MD -MP -MF $(DEPDIR)/libz_a-infback.Tpo -c -o libz_a-infback.obj `if test -f 'infback.c'; then $(CYGPATH_W) 'infback.c'; else $(CYGPATH_W) '$(srcdir)/infback.c'; fi`
@@ -722,11 +722,11 @@ libz_a-infback.obj: infback.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-infback.obj `if test -f 'infback.c'; then $(CYGPATH_W) 'infback.c'; else $(CYGPATH_W) '$(srcdir)/infback.c'; fi`
 
 libz_a-inffast.o: inffast.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inffast.o -MD -MP -MF $(DEPDIR)/libz_a-inffast.Tpo -c -o libz_a-inffast.o `test -f 'inffast.c' || echo '$(srcdir)/'`inffast.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inffast.o -MD -MP -MF $(DEPDIR)/libz_a-inffast.Tpo -c -o libz_a-inffast.o `test -f 'inffast.c' || echo '$(srcdir)/'`inffast.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-inffast.Tpo $(DEPDIR)/libz_a-inffast.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='inffast.c' object='libz_a-inffast.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inffast.o `test -f 'inffast.c' || echo '$(srcdir)/'`inffast.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inffast.o `test -f 'inffast.c' || echo '$(srcdir)/'`inffast.c
 
 libz_a-inffast.obj: inffast.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inffast.obj -MD -MP -MF $(DEPDIR)/libz_a-inffast.Tpo -c -o libz_a-inffast.obj `if test -f 'inffast.c'; then $(CYGPATH_W) 'inffast.c'; else $(CYGPATH_W) '$(srcdir)/inffast.c'; fi`
@@ -736,25 +736,25 @@ libz_a-inffast.obj: inffast.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inffast.obj `if test -f 'inffast.c'; then $(CYGPATH_W) 'inffast.c'; else $(CYGPATH_W) '$(srcdir)/inffast.c'; fi`
 
 libz_a-inflate.o: inflate.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inflate.o -MD -MP -MF $(DEPDIR)/libz_a-inflate.Tpo -c -o libz_a-inflate.o `test -f 'inflate.c' || echo '$(srcdir)/'`inflate.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inflate.o -MD -MP -MF $(DEPDIR)/libz_a-inflate.Tpo -c -o libz_a-inflate.o `test -f 'inflate.c' || echo '$(srcdir)/'`inflate.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-inflate.Tpo $(DEPDIR)/libz_a-inflate.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='inflate.c' object='libz_a-inflate.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inflate.o `test -f 'inflate.c' || echo '$(srcdir)/'`inflate.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inflate.o `test -f 'inflate.c' || echo '$(srcdir)/'`inflate.c
 
 libz_a-inflate.obj: inflate.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inflate.obj -MD -MP -MF $(DEPDIR)/libz_a-inflate.Tpo -c -o libz_a-inflate.obj `if test -f 'inflate.c'; then $(CYGPATH_W) 'inflate.c'; else $(CYGPATH_W) '$(srcdir)/inflate.c'; fi`
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inflate.obj -MD -MP -MF $(DEPDIR)/libz_a-inflate.Tpo -c -o libz_a-inflate.obj `if test -f 'inflate.c'; then $(CYGPATH_W) 'inflate.c'; else $(CYGPATH_W) '$(srcdir)/inflate.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-inflate.Tpo $(DEPDIR)/libz_a-inflate.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='inflate.c' object='libz_a-inflate.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inflate.obj `if test -f 'inflate.c'; then $(CYGPATH_W) 'inflate.c'; else $(CYGPATH_W) '$(srcdir)/inflate.c'; fi`
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inflate.obj `if test -f 'inflate.c'; then $(CYGPATH_W) 'inflate.c'; else $(CYGPATH_W) '$(srcdir)/inflate.c'; fi`
 
 libz_a-inftrees.o: inftrees.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inftrees.o -MD -MP -MF $(DEPDIR)/libz_a-inftrees.Tpo -c -o libz_a-inftrees.o `test -f 'inftrees.c' || echo '$(srcdir)/'`inftrees.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inftrees.o -MD -MP -MF $(DEPDIR)/libz_a-inftrees.Tpo -c -o libz_a-inftrees.o `test -f 'inftrees.c' || echo '$(srcdir)/'`inftrees.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-inftrees.Tpo $(DEPDIR)/libz_a-inftrees.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='inftrees.c' object='libz_a-inftrees.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inftrees.o `test -f 'inftrees.c' || echo '$(srcdir)/'`inftrees.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inftrees.o `test -f 'inftrees.c' || echo '$(srcdir)/'`inftrees.c
 
 libz_a-inftrees.obj: inftrees.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-inftrees.obj -MD -MP -MF $(DEPDIR)/libz_a-inftrees.Tpo -c -o libz_a-inftrees.obj `if test -f 'inftrees.c'; then $(CYGPATH_W) 'inftrees.c'; else $(CYGPATH_W) '$(srcdir)/inftrees.c'; fi`
@@ -764,11 +764,11 @@ libz_a-inftrees.obj: inftrees.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-inftrees.obj `if test -f 'inftrees.c'; then $(CYGPATH_W) 'inftrees.c'; else $(CYGPATH_W) '$(srcdir)/inftrees.c'; fi`
 
 libz_a-trees.o: trees.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-trees.o -MD -MP -MF $(DEPDIR)/libz_a-trees.Tpo -c -o libz_a-trees.o `test -f 'trees.c' || echo '$(srcdir)/'`trees.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-trees.o -MD -MP -MF $(DEPDIR)/libz_a-trees.Tpo -c -o libz_a-trees.o `test -f 'trees.c' || echo '$(srcdir)/'`trees.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-trees.Tpo $(DEPDIR)/libz_a-trees.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='trees.c' object='libz_a-trees.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-trees.o `test -f 'trees.c' || echo '$(srcdir)/'`trees.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-trees.o `test -f 'trees.c' || echo '$(srcdir)/'`trees.c
 
 libz_a-trees.obj: trees.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-trees.obj -MD -MP -MF $(DEPDIR)/libz_a-trees.Tpo -c -o libz_a-trees.obj `if test -f 'trees.c'; then $(CYGPATH_W) 'trees.c'; else $(CYGPATH_W) '$(srcdir)/trees.c'; fi`
@@ -778,11 +778,11 @@ libz_a-trees.obj: trees.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-trees.obj `if test -f 'trees.c'; then $(CYGPATH_W) 'trees.c'; else $(CYGPATH_W) '$(srcdir)/trees.c'; fi`
 
 libz_a-uncompr.o: uncompr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-uncompr.o -MD -MP -MF $(DEPDIR)/libz_a-uncompr.Tpo -c -o libz_a-uncompr.o `test -f 'uncompr.c' || echo '$(srcdir)/'`uncompr.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-uncompr.o -MD -MP -MF $(DEPDIR)/libz_a-uncompr.Tpo -c -o libz_a-uncompr.o `test -f 'uncompr.c' || echo '$(srcdir)/'`uncompr.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-uncompr.Tpo $(DEPDIR)/libz_a-uncompr.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='uncompr.c' object='libz_a-uncompr.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-uncompr.o `test -f 'uncompr.c' || echo '$(srcdir)/'`uncompr.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-uncompr.o `test -f 'uncompr.c' || echo '$(srcdir)/'`uncompr.c
 
 libz_a-uncompr.obj: uncompr.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-uncompr.obj -MD -MP -MF $(DEPDIR)/libz_a-uncompr.Tpo -c -o libz_a-uncompr.obj `if test -f 'uncompr.c'; then $(CYGPATH_W) 'uncompr.c'; else $(CYGPATH_W) '$(srcdir)/uncompr.c'; fi`
@@ -792,11 +792,11 @@ libz_a-uncompr.obj: uncompr.c
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-uncompr.obj `if test -f 'uncompr.c'; then $(CYGPATH_W) 'uncompr.c'; else $(CYGPATH_W) '$(srcdir)/uncompr.c'; fi`
 
 libz_a-zutil.o: zutil.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-zutil.o -MD -MP -MF $(DEPDIR)/libz_a-zutil.Tpo -c -o libz_a-zutil.o `test -f 'zutil.c' || echo '$(srcdir)/'`zutil.c
+@am__fastdepCC_TRUE@	+$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-zutil.o -MD -MP -MF $(DEPDIR)/libz_a-zutil.Tpo -c -o libz_a-zutil.o `test -f 'zutil.c' || echo '$(srcdir)/'`zutil.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libz_a-zutil.Tpo $(DEPDIR)/libz_a-zutil.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='zutil.c' object='libz_a-zutil.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-zutil.o `test -f 'zutil.c' || echo '$(srcdir)/'`zutil.c
+@am__fastdepCC_FALSE@	+$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -c -o libz_a-zutil.o `test -f 'zutil.c' || echo '$(srcdir)/'`zutil.c
 
 libz_a-zutil.obj: zutil.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libz_a_CFLAGS) $(CFLAGS) -MT libz_a-zutil.obj -MD -MP -MF $(DEPDIR)/libz_a-zutil.Tpo -c -o libz_a-zutil.obj `if test -f 'zutil.c'; then $(CYGPATH_W) 'zutil.c'; else $(CYGPATH_W) '$(srcdir)/zutil.c'; fi`

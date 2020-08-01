@@ -131,7 +131,7 @@ libintl.h: $(srcdir)/libgnuintl.h
 .SUFFIXES: .c .y .o
 
 .c.o:
-	$(COMPILE) $<
+	+$(COMPILE) $<
 
 .y.c:
 @BISON3_YES@	echo '#define USE_BISON3' > $(patsubst %.c,%-config.h,$@)

@@ -1,3 +1,7 @@
+2020-07-31  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* Makefile.in: Use `+' on rule calling GCC
+
 2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94739

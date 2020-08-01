@@ -1,3 +1,7 @@
+2020-07-31  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* Makefile.in: Use `+' on rule calling GCC
+
 2020-02-15  Ian Lance Taylor  <iant@golang.org>
 
 	* ztest.c (test_large): Update file to current libgo test file.
