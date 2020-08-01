@@ -1,3 +1,91 @@
+2020-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR target/90928
+	* config/nvptx/nvptx.c (nvptx_truly_noop_truncation): Implement.
+	(TARGET_TRULY_NOOP_TRUNCATION): Define.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* langhooks-def.h (lhd_finalize_early_debug): Declare.
+	(LANG_HOOKS_FINALIZE_EARLY_DEBUG): Define.
+	(LANG_HOOKS_INITIALIZER): Amend.
+	* langhooks.c: Include cgraph.h and debug.h.
+	(lhd_finalize_early_debug): Default implementation from
+	former code in finalize_compilation_unit.
+	* langhooks.h (lang_hooks::finalize_early_debug): Add.
+	* cgraphunit.c (symbol_table::finalize_compilation_unit):
+	Call the finalize_early_debug langhook.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (expr::force_leaf): Add and initialize.
+	(expr::gen_transform): Honor force_leaf by passing
+	NULL as sequence argument to maybe_push_res_to_seq.
+	(parser::parse_expr): Allow ! marker on result expression
+	operations.
+	* doc/match-and-simplify.texi: Amend.
+
+2020-07-31  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Don't consider branch
+	taken costs for prologue and epilogue if they don't exist.
+	(vect_estimate_min_profitable_iters): Likewise.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h: Remove leading empty lines.
+	* cgraphunit.c (enum cgraph_order_sort_kind): Remove
+	ORDER_UNDEFINED.
+	(struct cgraph_order_sort): Add constructors.
+	(cgraph_order_sort::process): New.
+	(cgraph_order_cmp): New.
+	(output_in_order): Simplify and push nodes to vector.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96369
+	* fold-const.c (fold_range_test): Special-case constant
+	LHS for short-circuiting operations.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* gcov-io.h (GCOV_PREALLOCATED_KVP): New.
+
+2020-07-31  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_general_add_builtin):
+	Add new argument ATTRS.
+	(aarch64_call_properties): New function.
+	(aarch64_modifies_global_state_p): Likewise.
+	(aarch64_reads_global_state_p): Likewise.
+	(aarch64_could_trap_p): Likewise.
+	(aarch64_add_attribute): Likewise.
+	(aarch64_get_attributes): Likewise.
+	(aarch64_init_simd_builtins): Add attributes for each built-in function.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/78288
+	* var-tracking.c (vt_find_locations): Use
+	rev_post_order_and_mark_dfs_back_seme and separately iterate
+	over toplevel SCCs.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.h (rev_post_order_and_mark_dfs_back_seme): Adjust
+	prototype.
+	* cfganal.c (rpoamdbs_bb_data): New struct with pre BB data.
+	(tag_header): New helper.
+	(cmp_edge_dest_pre): Likewise.
+	(rev_post_order_and_mark_dfs_back_seme): Compute SCCs,
+	find SCC exits and perform a DFS walk with extra edges to
+	compute a RPO with adjacent SCC members when requesting an
+	iteration optimized order and populate the toplevel SCC array.
+	* tree-ssa-sccvn.c (do_rpo_vn): Remove ad-hoc computation
+	of max_rpo and fill it in from SCC extent info instead.
+
 2020-07-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_test_lsbb_all_ones): New define.

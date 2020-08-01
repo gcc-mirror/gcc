@@ -1,3 +1,492 @@
+2020-07-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2017.xml: ParallelSTL is now part
+	of oneAPI DPC++ Library on Github.
+	* doc/html/manual/status.html: Regenerate.
+
+2020-07-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_bvector.h
+	[_GLIBCXX_INLINE_VERSION](_Bvector_impl_data::_M_start): Define as
+	_Bit_type*.
+	(_Bvector_impl_data(const _Bvector_impl_data&)): Default.
+	(_Bvector_impl_data(_Bvector_impl_data&&)): Delegate to latter.
+	(_Bvector_impl_data::operator=(const _Bvector_impl_data&)): Default.
+	(_Bvector_impl_data::_M_move_data(_Bvector_impl_data&&)): Use latter.
+	(_Bvector_impl_data::_M_reset()): Likewise.
+	(_Bvector_impl_data::_M_swap_data): New.
+	(_Bvector_impl::_Bvector_impl(_Bvector_impl&&)): Implement explicitely.
+	(_Bvector_impl::_Bvector_impl(_Bit_alloc_type&&, _Bvector_impl&&)): New.
+	(_Bvector_base::_Bvector_base(_Bvector_base&&, const allocator_type&)):
+	New, use latter.
+	(vector::vector(vector&&, const allocator_type&, true_type)): New, use
+	latter.
+	(vector::vector(vector&&, const allocator_type&, false_type)): New.
+	(vector::vector(vector&&, const allocator_type&)): Use latters.
+	(vector::vector(const vector&, const allocator_type&)): Adapt.
+	[__cplusplus >= 201103](vector::vector(_InputIt, _InputIt,
+	const allocator_type&)): Use _M_initialize_range.
+	(vector::operator[](size_type)): Use iterator operator[].
+	(vector::operator[](size_type) const): Use const_iterator operator[].
+	(vector::swap(vector&)): Add assertions on allocators. Use _M_swap_data.
+	[__cplusplus >= 201103](vector::insert(const_iterator, _InputIt,
+	_InputIt)): Use _M_insert_range.
+	(vector::_M_initialize(size_type)): Adapt.
+	[__cplusplus >= 201103](vector::_M_initialize_dispatch): Remove.
+	[__cplusplus >= 201103](vector::_M_insert_dispatch): Remove.
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter._iterator): Stop
+	using start _M_offset.
+	(StdVectorPrinter.to_string): Likewise.
+	* testsuite/23_containers/vector/bool/allocator/swap.cc: Adapt.
+	* testsuite/23_containers/vector/bool/cons/noexcept_move_construct.cc:
+	Add check.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istream/ignore/char/94749.cc: Use 0
+	instead of nullptr.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/94749.cc:
+	Likewise.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/sizes.cc:
+	Move struct to namespace scope.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/numbers/float128.cc: Check
+	__STRICT_ANSI__ before using __float128.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/floating_point.cc:
+	Likewise.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/set_terminate.cc: Require C++11 or
+	higher.
+	* testsuite/28_regex/simple_c++11.cc: Likewise.
+	* testsuite/tr1/headers/c++200x/complex.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis.cc:
+	Require C++14 or lower.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/span/back_assert_neg.cc: Split c++2a
+	effective-target from xfail selector.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/first_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_assert_neg.cc: Likewise.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: Likewise.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/reference_wrapper/83427.cc: Adjust
+	effective-target to specific language mode only.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++11.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++14.cc:
+	Likewise.
+	* testsuite/26_numerics/valarray/69116.cc:
+	Likewise.
+	* testsuite/30_threads/headers/condition_variable/std_c++0x_neg.cc:
+	Remove whitespace at end of file.
+	* testsuite/30_threads/headers/future/std_c++0x_neg.cc:
+	Likewise.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Add
+	c++17 effective-target.
+	* testsuite/17_intro/headers/c++2017/all_no_exceptions.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_no_rtti.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/all_pedantic_errors.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/operator_names.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/stdc++.cc: Likewise.
+	* testsuite/17_intro/headers/c++2017/stdc++_multiple_inclusion.cc:
+	Likewise.
+	* testsuite/18_support/uncaught_exceptions/uncaught_exceptions.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_code/is_error_code_v.cc:
+	Likewise.
+	* testsuite/20_util/any/assign/1.cc: Likewise.
+	* testsuite/20_util/any/assign/2.cc: Likewise.
+	* testsuite/20_util/any/assign/emplace.cc: Likewise.
+	* testsuite/20_util/any/assign/exception.cc: Likewise.
+	* testsuite/20_util/any/assign/self.cc: Likewise.
+	* testsuite/20_util/any/cons/1.cc: Likewise.
+	* testsuite/20_util/any/cons/2.cc: Likewise.
+	* testsuite/20_util/any/cons/aligned.cc: Likewise.
+	* testsuite/20_util/any/cons/explicit.cc: Likewise.
+	* testsuite/20_util/any/cons/in_place.cc: Likewise.
+	* testsuite/20_util/any/cons/nontrivial.cc: Likewise.
+	* testsuite/20_util/any/make_any.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast_no_rtti.cc: Likewise.
+	* testsuite/20_util/any/misc/swap.cc: Likewise.
+	* testsuite/20_util/any/modifiers/1.cc: Likewise.
+	* testsuite/20_util/any/observers/type.cc: Likewise.
+	* testsuite/20_util/any/requirements.cc: Likewise.
+	* testsuite/20_util/any/typedefs.cc: Likewise.
+	* testsuite/20_util/as_const/1.cc: Likewise.
+	* testsuite/20_util/as_const/rvalue_neg.cc: Likewise.
+	* testsuite/20_util/bind/is_placeholder_v.cc: Likewise.
+	* testsuite/20_util/bool_constant/requirements.cc: Likewise.
+	* testsuite/20_util/duration/requirements/treat_as_floating_point_v.cc:
+	Likewise.
+	* testsuite/20_util/duration_cast/rounding.cc: Likewise.
+	* testsuite/20_util/enable_shared_from_this/members/weak_from_this.cc:
+	Likewise.
+	* testsuite/20_util/function_objects/invoke/59768.cc: Likewise.
+	* testsuite/20_util/function_objects/not_fn/1.cc: Likewise.
+	* testsuite/20_util/function_objects/searchers.cc: Likewise.
+	* testsuite/20_util/in_place/requirements.cc: Likewise.
+	* testsuite/20_util/is_invocable/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_invocable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_invocable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_invocable/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_invocable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_swappable_with/value.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable/value.cc: Likewise.
+	* testsuite/20_util/is_swappable_with/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable_with/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_swappable_with/value.cc: Likewise.
+	* testsuite/20_util/logical_traits/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/logical_traits/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/logical_traits/value.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/make_optional.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/2.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/3.cc: Likewise.
+	* testsuite/20_util/optional/hash.cc: Likewise.
+	* testsuite/20_util/pair/swap_cxx17.cc: Likewise.
+	* testsuite/20_util/ratio/requirements/ratio_equal_v.cc: Likewise.
+	* testsuite/20_util/shared_ptr/requirements/weak_type.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/1.cc:
+	Likewise.
+	* testsuite/20_util/tuple/apply/1.cc: Likewise.
+	* testsuite/20_util/tuple/make_from_tuple/1.cc: Likewise.
+	* testsuite/20_util/tuple/swap_cxx17.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_size_v.cc: Likewise.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/swap_cxx17.cc:
+	Likewise.
+	* testsuite/20_util/uses_allocator/requirements/uses_allocator_v.cc:
+	Likewise.
+	* testsuite/20_util/variant/any.cc: Likewise.
+	* testsuite/20_util/variant/compile.cc: Likewise.
+	* testsuite/20_util/variant/hash.cc: Likewise.
+	* testsuite/20_util/variant/index_type.cc: Likewise.
+	* testsuite/20_util/variant/run.cc: Likewise.
+	* testsuite/20_util/void_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/79162.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/7.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/7.cc: Likewise.
+	* testsuite/21_strings/basic_string/lwg2758.cc: Likewise.
+	* testsuite/21_strings/basic_string/lwg2946.cc: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/append/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/insert/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/char/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/replace/wchar_t/7.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/data/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/data/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/find/char/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operators/char/5.cc: Likewise.
+	* testsuite/21_strings/basic_string/operators/wchar_t/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/capacity/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/empty.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_back.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/empty.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_back.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/include.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/pod/10081-out.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/types-char8_t.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/types.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/values-char8_t.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/literals/values.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/13650.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/13650.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/data/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/data/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/4.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/string_conversion/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/substr/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char16_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char32_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char8_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/types/1.cc: Likewise.
+	* testsuite/23_containers/array/specialized_algorithms/swap_cxx17.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/insert_or_assign/1.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/merge.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/try_emplace/1.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/merge.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/merge.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/extract.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/merge.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/insert_or_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/merge.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/try_emplace.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/modifiers/merge.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/merge.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/extract.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/merge.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc:
+	Likewise.
+	* testsuite/25_algorithms/clamp/1.cc: Likewise.
+	* testsuite/25_algorithms/clamp/2.cc: Likewise.
+	* testsuite/25_algorithms/clamp/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/clamp/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/25_algorithms/clamp/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++17.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/special_functions_global.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/lwg2221.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/is_always_lock_free.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/is_always_lock_free.cc:
+	Likewise.
+	* testsuite/30_threads/shared_lock/70766.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/30_threads/shared_mutex/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/30_threads/shared_mutex/requirements/standard_layout.cc:
+	Likewise.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/unlock/1.cc: Likewise.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96382
+	* include/bits/stl_iterator.h (reverse_iterator): Friend
+	declaration should not depend on __cplusplus.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/filesystem_error/cons.cc:
+	Remove -std=gnu++17 option.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_aggregate/value.cc: Adjust for changes to
+	definition of aggregates in C++20.
+	* testsuite/20_util/optional/requirements.cc: Adjust for
+	defaulted comparisons in C++20.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/78939.cc: Suppress warnings about
+	deprecation of volatile-qualified structured bindings in C++20.
+	* testsuite/20_util/variable_templates_for_traits.cc: Likewise
+	for deprecation of is_pod in C++20
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/time_point_cast/rounding.cc: Remove
+	duplicate dg-do directive and add c++17 effective target.
+
+2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Use
+	LC_ALL_MASK not LC_ALL.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* testsuite/20_util/assume_aligned/3.cc: Use -g0.
+
 2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (size_type, difference_type):

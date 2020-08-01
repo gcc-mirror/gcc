@@ -1,3 +1,9 @@
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* c-objc-common.h (LANG_HOOKS_FINALIZE_EARLY_DEBUG):
+	Define to c_common_finalize_early_debug.
+
 2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_hint): Require nonnegative hint clause.
