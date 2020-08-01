@@ -1,3 +1,16 @@
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h: Remove leading empty lines.
+	* cgraphunit.c (enum cgraph_order_sort_kind): Remove
+	ORDER_UNDEFINED.
+	(struct cgraph_order_sort): Add constructors.
+	(cgraph_order_sort::process): New.
+	(cgraph_order_cmp): New.
+	(output_in_order): Simplify and push nodes to vector.
+
 2020-07-30  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
