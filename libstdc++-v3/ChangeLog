@@ -1,3 +1,9 @@
+2020-08-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using_exceptions.xml: Move www.stroustrup.com to
+	https.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+
 2020-07-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/status_cxx2017.xml: ParallelSTL is now part

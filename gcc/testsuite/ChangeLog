@@ -1,3 +1,22 @@
+2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/96377
+	* gcc.dg/pr96377-1.c: New test.
+	* gcc.dg/pr96377-2.c: Likewise.
+	* gcc.dg/pr96377-3.c: Likewise.
+	* gcc.dg/pr96377-4.c: Likewise.
+	* gcc.dg/pr96377-5.c: Likewise.
+	* gcc.dg/pr96377-6.c: Likewise.
+	* gcc.target/aarch64/pr96377-1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_4.c: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_3.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_4.C: Likewise.
+
+2020-08-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/loop-8.c: Skip for mmix.
+
 2020-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/96182
