@@ -8980,8 +8980,8 @@ package body Sem_Ch12 is
   is
       Gen_Unit : constant Entity_Id := Get_Generic_Entity (Inst_Node);
       Par      : constant Entity_Id := Scope (Gen_Unit);
-      E_G_Id   : Entity_Id;
       Enc_G    : Entity_Id;
+      Enc_G_F  : Node_Id;
       Enc_I    : Node_Id;
       F_Node   : Node_Id;
 
@@ -9128,14 +9128,6 @@ package body Sem_Ch12 is
         and then Enc_G /= Enc_I
         and then Earlier (Inst_Node, Gen_Body)
       then
-         if Nkind (Enc_G) = N_Package_Body then
-            E_G_Id :=
-              Corresponding_Spec (Enc_G);
-         else pragma Assert (Nkind (Enc_G) = N_Package_Body_Stub);
-            E_G_Id :=
-              Corresponding_Spec (Proper_Body (Unit (Library_Unit (Enc_G))));
-         end if;
-
          --  Freeze package that encloses instance, and place node after the
          --  package that encloses generic. If enclosing package is already
          --  frozen we have to assume it is at the proper place. This may be a
@@ -9163,10 +9155,10 @@ package body Sem_Ch12 is
 
          --  Freeze enclosing subunit before instance
 
-         Ensure_Freeze_Node (E_G_Id);
+         Enc_G_F := Package_Freeze_Node (Enc_G);
 
-         if not Is_List_Member (Freeze_Node (E_G_Id)) then
-            Insert_After (Enc_G, Freeze_Node (E_G_Id));
+         if not Is_List_Member (Enc_G_F) then
+            Insert_After (Enc_G, Enc_G_F);
          end if;
 
          Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
