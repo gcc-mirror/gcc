@@ -4,6 +4,7 @@
 
 package unix
 
-// Linux getrandom system call number.
-// See GetRandom in getrandom_linux.go.
-const randomTrap uintptr = 511
+const (
+	getrandomTrap     uintptr = 315
+	copyFileRangeTrap uintptr = 323
+)
