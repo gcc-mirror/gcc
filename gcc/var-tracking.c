@@ -7096,6 +7096,7 @@ vt_find_locations (void)
   in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
+  bitmap_clear (in_pending);
 
   /* We're performing the dataflow iteration independently over the
      toplevel SCCs plus leading non-cyclic entry blocks and separately
