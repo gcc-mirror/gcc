@@ -10,6 +10,6 @@ program p
       integer :: a
    end type
    type(t) :: x = t(1)
-   call sub (x%a%a)   ! { dg-error "Syntax error in argument list" }
+   call sub (x%a%a)   ! { dg-error "is not an inquiry reference" }
 end
 
