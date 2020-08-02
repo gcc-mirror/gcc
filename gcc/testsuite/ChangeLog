@@ -1,3 +1,9 @@
+2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96325
+	* gfortran.dg/pr96325.f90: New test.
+	* gfortran.dg/pr91589.f90: Update error message.
+
 2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c/96377
@@ -5283,7 +5289,7 @@
 2020-05-06  qing zhao  <qing.zhao@oracle.com>
 
 	PR c/94230
-	* gcc.dg/plugin/location-overflow-test-1.c (fn_1): New message to 
+	* gcc.dg/plugin/location-overflow-test-1.c (fn_1): New message to
 	provide hint to use the new -flarge-source-files option.
 
 2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
@@ -6113,7 +6119,7 @@
 	* g++.dg/coroutines/torture/local-var-4.C: Rename to...
 	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C: this.
 	* g++.dg/coroutines/torture/local-var-5-awaitable.C: Rename to...
-	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this. 
+	* g++.dg/coroutines/torture/local-var-05-awaitable.C: ...this.
 
 2020-04-22 Iain Sandoe <iain@sandoe.co.uk>
 
