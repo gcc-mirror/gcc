@@ -1,3 +1,26 @@
+2020-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.c (symtab_node::verify_base): Verify order.
+	(symtab_node::verify_symtab_nodes): Verify order.
+
+2020-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_bb_frequencies): Cap recursive calls by 90%.
+
+2020-08-01  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config/csky/csky_opts.h (float_abi_type): New.
+	* config/csky/csky.h (TARGET_SOFT_FLOAT): New.
+	(TARGET_HARD_FLOAT): New.
+	(TARGET_HARD_FLOAT_ABI): New.
+	(OPTION_DEFAULT_SPECS): Use mfloat-abi.
+	* config/csky/csky.opt (mfloat-abi): New.
+	* doc/invoke.texi (C-SKY Options): Document -mfloat-abi=.
+
+2020-08-01  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/t-csky-linux: Delete big endian CPUs' multilib.
+
 2020-07-31  Roger Sayle  <roger@nextmovesoftware.com>
 	    Tom de Vries  <tdevries@suse.de>
 

@@ -1,3 +1,11 @@
+2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/96377
+	* c-typeck.c (process_init_element): Split test for whether to
+	recurse into a record, union or array into...
+	(initialize_elementwise_p): ...this new function.  Don't recurse
+	into a vector type if the initialization value is also a vector.
+
 2020-07-31  Richard Biener  <rguenther@suse.de>
 
 	PR debug/96383
