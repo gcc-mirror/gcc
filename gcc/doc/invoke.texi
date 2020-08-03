@@ -2833,7 +2833,7 @@ This flag is enabled by default for @option{-std=c++17}.
 @itemx -fno-char8_t
 @opindex fchar8_t
 @opindex fno-char8_t
-Enable support for @code{char8_t} as adopted for C++2a.  This includes
+Enable support for @code{char8_t} as adopted for C++20.  This includes
 the addition of a new @code{char8_t} fundamental type, changes to the
 types of UTF-8 string and character literals, new signatures for
 user-defined literals, associated standard library updates, and new
@@ -2899,10 +2899,10 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @itemx -fconcepts-ts
 @opindex fconcepts
 @opindex fconcepts-ts
-Below @option{-std=c++2a}, @option{-fconcepts} enables support for the
+Below @option{-std=c++20}, @option{-fconcepts} enables support for the
 C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
 
-With @option{-std=c++2a} and above, Concepts are part of the language
+With @option{-std=c++20} and above, Concepts are part of the language
 standard, so @option{-fconcepts} defaults to on.  But the standard
 specification of Concepts differs significantly from the TS, so some
 constructs that were allowed in the TS but didn't make it into the
@@ -3286,7 +3286,7 @@ about ABI tags.
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 Warn about uses of a comma expression within a subscripting expression.
-This usage was deprecated in C++2a.  However, a comma expression wrapped
+This usage was deprecated in C++20.  However, a comma expression wrapped
 in @code{( )} is not deprecated.  Example:
 
 @smallexample
@@ -3298,7 +3298,7 @@ void f(int *a, int b, int c) @{
 @end group
 @end smallexample
 
-Enabled by default with @option{-std=c++2a}.
+Enabled by default with @option{-std=c++20}.
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
@@ -3819,7 +3819,7 @@ non-class type, @code{volatile}-qualified function return type,
 @code{volatile}-qualified parameter type, and structured bindings of a
 @code{volatile}-qualified type.  This usage was deprecated in C++20.
 
-Enabled by default with @option{-std=c++2a}.
+Enabled by default with @option{-std=c++20}.
 
 @item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
 @opindex Wzero-as-null-pointer-constant
@@ -6273,7 +6273,7 @@ This is the warning level of @option{-Wshift-overflow} and is enabled
 by default in C99 and C++11 modes (and newer).  This warning level does
 not warn about left-shifting 1 into the sign bit.  (However, in C, such
 an overflow is still rejected in contexts where an integer constant expression
-is required.)  No warning is emitted in C++2A mode (and newer), as signed left
+is required.)  No warning is emitted in C++20 mode (and newer), as signed left
 shifts always wrap.
 
 @item -Wshift-overflow=2
