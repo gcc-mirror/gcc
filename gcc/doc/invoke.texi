@@ -17353,7 +17353,7 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
-@samp{octeontx2f95mm}
+@samp{octeontx2f95mm},
 @samp{a64fx},
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
