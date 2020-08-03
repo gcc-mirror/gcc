@@ -1,5 +1,10 @@
 2020-08-03  Nathan Sidwell  <nathan@acm.org>
 
+	Fix save-temps & header-units
+	gcc/cp/
+	* lang-specs.h (@c++-{,system-,user-}header): Directives-only
+	preprocessing for saving temps with modules.
+
 	Merge trunk d1773f58f3a.
 
 	Add c++-user-header c++-system-header languages.
