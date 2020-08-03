@@ -862,7 +862,7 @@ deferred character length left-hand sides are correctly handled but arrays
 are not yet fully implemented.
 
 @item Deferred-length character variables and scalar deferred-length character
-components of derived types are supported. (Note that array-valued compoents
+components of derived types are supported. (Note that array-valued components
 are not yet implemented.)
 
 @item Transferring of allocations via @code{MOVE_ALLOC}.
@@ -4168,7 +4168,7 @@ an array descriptor.  All other arrays pass the address of the
 first element of the array.  With @option{-fcoarray=lib}, the token
 and the offset belonging to nonallocatable coarrays dummy arguments
 are passed as hidden argument along the character length hidden
-arguments.  The token is an oparque pointer identifying the coarray
+arguments.  The token is an opaque pointer identifying the coarray
 and the offset is a passed-by-value integer of kind @code{C_PTRDIFF_T},
 denoting the byte offset between the base address of the coarray and
 the passed scalar or first element of the passed array.
@@ -4362,7 +4362,7 @@ typedef struct caf_reference_t {
 
 The references make up a single linked list of reference operations.  The
 @code{NEXT} member links to the next reference or NULL to indicate the end of
-the chain.  Component and array refs can be arbitrarly mixed as long as they
+the chain.  Component and array refs can be arbitrarily mixed as long as they
 comply to the Fortran standard.
 
 @emph{NOTES}
@@ -4683,7 +4683,7 @@ status. Note that for critical blocks, the locking is only required on one
 image; in the locking statement, the processor shall always pass an
 image index of one for critical-block lock variables
 (@code{CAF_REGTYPE_CRITICAL}). For lock types and critical-block variables,
-the initial value shall be unlocked (or, respecitively, not in critical
+the initial value shall be unlocked (or, respectively, not in critical
 section) such as the value false; for event types, the initial state should
 be no event, e.g. zero.
 @end table
@@ -5134,7 +5134,7 @@ error message why the operation is not permitted.
 @table @asis
 @item @emph{Description}:
 Acquire a lock on the given image on a scalar locking variable or for the
-given array element for an array-valued variable.  If the @var{aquired_lock}
+given array element for an array-valued variable.  If the @var{acquired_lock}
 is @code{NULL}, the function returns after having obtained the lock.  If it is
 non-@code{NULL}, then @var{acquired_lock} is assigned the value true (one) when
 the lock could be obtained and false (zero) otherwise.  Locking a lock variable
@@ -5142,7 +5142,7 @@ which has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
-int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
+int *acquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5151,7 +5151,7 @@ int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
 scalars, it is always 0.
 @item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
 positive number.
-@item @var{aquired_lock} @tab intent(out) If not NULL, it returns whether lock
+@item @var{acquired_lock} @tab intent(out) If not NULL, it returns whether lock
 could be obtained.
 @item @var{stat} @tab intent(out) Stores the STAT=; may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
