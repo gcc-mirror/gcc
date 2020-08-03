@@ -620,6 +620,18 @@ public:
 	break;
 
       case TOKdiv:
+	/* Determine if the div expression is a lowered pointer diff operation.
+	   The front-end rewrites `(p1 - p2)' into `(p1 - p2) / stride'.  */
+	if (MinExp *me = e->e1->isMinExp ())
+	  {
+	    if (me->e1->type->ty == Tpointer && me->e2->type->ty == Tpointer
+		&& e->e2->op == TOKint64)
+	      {
+		code = EXACT_DIV_EXPR;
+		break;
+	      }
+	  }
+
 	code = e->e1->type->isintegral ()
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
