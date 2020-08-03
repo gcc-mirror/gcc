@@ -4896,7 +4896,7 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 
 void
 build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p,
-		    bool update_methods, bool via_using)
+		    bool update_methods)
 {
   unsigned count = 0;
 
@@ -4940,7 +4940,7 @@ build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p,
     for (tree clone = fn; count--;)
       {
 	clone = DECL_CHAIN (clone);
-	add_method (DECL_CONTEXT (clone), clone, via_using);
+	add_method (DECL_CONTEXT (clone), clone, false);
       }
 }
 
@@ -4951,7 +4951,7 @@ build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p,
    ctors).  */
 
 void
-clone_cdtor (tree fn, bool update_methods, bool via_using)
+clone_cdtor (tree fn, bool update_methods)
 {
   /* Avoid inappropriate cloning.  */
   if (DECL_CHAIN (fn)
@@ -4965,7 +4965,7 @@ clone_cdtor (tree fn, bool update_methods, bool via_using)
      from a virtual nase ctor.  */
   bool omit_inherited = ctor_omit_inherited_parms (fn, false);
 
-  build_cdtor_clones (fn, vtt, omit_inherited, update_methods, via_using);
+  build_cdtor_clones (fn, vtt, omit_inherited, update_methods);
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
@@ -5052,11 +5052,10 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  /* Because we can lazily declare functions, we need to propagate
-     the usingness of the source function.  */
-  // FIXME: why?
+  /* We do not need to propagate the usingness to the clone, at this
+     point that is not needed.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    clone_cdtor (*iter, /*update_methods=*/true, iter.using_p ());
+    clone_cdtor (*iter, /*update_methods=*/true);
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
     clone_cdtor (dtor, /*update_methods=*/true);

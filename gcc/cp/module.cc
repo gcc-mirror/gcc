@@ -8009,13 +8009,11 @@ trees_in::decl_value ()
 	  dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
 				       decl, cloned_p ? "" : "not ");
 	  if (cloned_p)
-	    // FIXME: Check whether 'via_using' should always be false
 	    build_cdtor_clones (decl, flags & 2, flags & 4,
 				/* Update the member vec, if there is
 				   one (we're in a different cluster
 				   to the class defn).  */
-				CLASSTYPE_MEMBER_VEC (DECL_CONTEXT (decl)),
-				false);
+				CLASSTYPE_MEMBER_VEC (DECL_CONTEXT (decl)));
 	}
     }
 
