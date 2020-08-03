@@ -145,6 +145,129 @@ riscv_subset_list::~riscv_subset_list ()
     }
 }
 
+/* Get the rank for single-letter subsets, lower value meaning higher
+   priority.  */
+
+static int
+single_letter_subset_rank (char ext)
+{
+  int rank;
+
+  switch (ext)
+    {
+    case 'i':
+      return 0;
+    case 'e':
+      return 1;
+    default:
+      break;
+    }
+
+  const char *all_ext = riscv_supported_std_ext ();
+  const char *ext_pos = strchr (all_ext, ext);
+  if (ext_pos == NULL)
+    /* If got an unknown extension letter, then give it an alphabetical
+       order, but after all known standard extension.  */
+    rank = strlen (all_ext) + ext - 'a';
+  else
+    rank = (int)(ext_pos - all_ext) + 2 /* e and i has higher rank.  */;
+
+  return rank;
+}
+
+/* Get the rank for multi-letter subsets, lower value meaning higher
+   priority.  */
+
+static int
+multi_letter_subset_rank (const std::string &subset)
+{
+  gcc_assert (subset.length () >= 2);
+  int high_order = -1;
+  int low_order = 0;
+  /* The order between multi-char extensions: s -> h -> z -> x.  */
+  char multiletter_class = subset[0];
+  switch (multiletter_class)
+    {
+    case 's':
+      high_order = 0;
+      break;
+    case 'h':
+      high_order = 1;
+      break;
+    case 'z':
+      gcc_assert (subset.length () > 2);
+      high_order = 2;
+      break;
+    case 'x':
+      high_order = 3;
+      break;
+    default:
+      gcc_unreachable ();
+      return -1;
+    }
+
+  if (multiletter_class == 'z')
+    /* Order for z extension on spec: If multiple "Z" extensions are named, they
+       should be ordered first by category, then alphabetically within a
+       category - for example, "Zicsr_Zifencei_Zam". */
+    low_order = single_letter_subset_rank (subset[1]);
+  else
+    low_order = 0;
+
+  return (high_order << 8) + low_order;
+}
+
+/* subset compare
+
+  Returns an integral value indicating the relationship between the subsets:
+  Return value  indicates
+  -1            B has higher order than A.
+  0             A and B are same subset.
+  1             A has higher order than B.
+
+*/
+
+static int
+subset_cmp (const std::string &a, const std::string &b)
+{
+  if (a == b)
+    return 0;
+
+  size_t a_len = a.length ();
+  size_t b_len = b.length ();
+
+  /* Single-letter extension always get higher order than
+     multi-letter extension.  */
+  if (a_len == 1 && b_len != 1)
+    return 1;
+
+  if (a_len != 1 && b_len == 1)
+    return -1;
+
+  if (a_len == 1 && b_len == 1)
+    {
+      int rank_a = single_letter_subset_rank (a[0]);
+      int rank_b = single_letter_subset_rank (b[0]);
+
+      if (rank_a < rank_b)
+	return 1;
+      else
+	return -1;
+    }
+  else
+    {
+      int rank_a = multi_letter_subset_rank(a);
+      int rank_b = multi_letter_subset_rank(b);
+
+      /* Using alphabetical/lexicographical order if they have same rank.  */
+      if (rank_a == rank_b)
+	/* The return value of strcmp has opposite meaning.  */
+	return -strcmp (a.c_str (), b.c_str ());
+      else
+	return (rank_a < rank_b) ? 1 : -1;
+    }
+}
+
 /* Add new subset to list.  */
 
 void
@@ -152,6 +275,7 @@ riscv_subset_list::add (const char *subset, int major_version,
 			int minor_version, bool explicit_version_p)
 {
   riscv_subset_t *s = new riscv_subset_t ();
+  riscv_subset_t *itr;
 
   if (m_head == NULL)
     m_head = s;
@@ -162,9 +286,45 @@ riscv_subset_list::add (const char *subset, int major_version,
   s->explicit_version_p = explicit_version_p;
   s->next = NULL;
 
-  if (m_tail != NULL)
-    m_tail->next = s;
+  if (m_tail == NULL)
+    {
+      m_tail = s;
+      return;
+    }
 
+  /* e, i or g should be first subext, never come here.  */
+  gcc_assert (subset[0] != 'e'
+	      && subset[0] != 'i'
+	      && subset[0] != 'g');
+
+  if (m_tail == m_head)
+    {
+      gcc_assert (m_head->next == NULL);
+      m_head->next = s;
+      m_tail = s;
+      return;
+    }
+
+  gcc_assert (m_head->next != NULL);
+
+  /* Subset list must in canonical order, but implied subset won't
+     add in canonical order.  */
+  for (itr = m_head; itr->next != NULL; itr = itr->next)
+    {
+      riscv_subset_t *next = itr->next;
+      int cmp = subset_cmp (s->name, next->name);
+      gcc_assert (cmp != 0);
+
+      if (cmp > 0)
+	{
+	  s->next = next;
+	  itr->next = s;
+	  return;
+	}
+    }
+
+  /* Insert at tail of the list.  */
+  itr->next = s;
   m_tail = s;
 }
 
@@ -441,9 +601,6 @@ riscv_subset_list::parse_std_ext (const char *p)
 
       subset[0] = std_ext;
 
-      handle_implied_ext (subset, major_version,
-			  minor_version, explicit_version_p);
-
       add (subset, major_version, minor_version, explicit_version_p);
     }
   return p;
@@ -553,6 +710,7 @@ riscv_subset_list *
 riscv_subset_list::parse (const char *arch, location_t loc)
 {
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
+  riscv_subset_t *itr;
   const char *p = arch;
   if (strncmp (p, "rv32", 4) == 0)
     {
@@ -606,6 +764,15 @@ riscv_subset_list::parse (const char *arch, location_t loc)
       error_at (loc, "%<-march=%s%>: unexpected ISA string at end: %qs",
                arch, p);
       goto fail;
+    }
+
+  for (itr = subset_list->m_head; itr != NULL; itr = itr->next)
+    {
+      subset_list->handle_implied_ext (
+	itr->name.c_str (),
+	itr->major_version,
+	itr->minor_version,
+	itr->explicit_version_p);
     }
 
   return subset_list;
