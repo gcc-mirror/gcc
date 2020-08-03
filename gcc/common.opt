@@ -232,6 +232,19 @@ bool dump_base_name_prefixed = false
 Variable
 bool flag_disable_hsa = false
 
+; Output file in which name of files containing split partitions of the current CU.
+Variable
+const char *split_outputs = NULL
+
+; Set to compile in parallel with N jobs, or Jobserver.
+Variable
+const char *flag_parallel_jobs = NULL
+
+; Number of jobs to run in parallel (N, jobserver, or auto).
+fparallel-jobs=
+Common Driver RejectNegative Joined Var(flag_parallel_jobs)
+Compiles in parallel with a number of parallel jobs, or jobserver.
+
 ###
 Driver
 
@@ -619,8 +632,8 @@ Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
 
 Whsa
-Common Var(warn_hsa) Init(1) Warning
-Warn when a function cannot be expanded to HSAIL.
+Common Ignore Warning
+Does nothing.  Preserved for backward compatibility.
 
 Wimplicit-fallthrough
 Common Alias(Wimplicit-fallthrough=,3,0) Warning

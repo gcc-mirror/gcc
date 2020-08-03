@@ -9858,14 +9858,6 @@ proc check_effective_target_offload_nvptx { } {
     } "-foffload=nvptx-none" ]
 }
 
-# Return 1 if the compiler has been configured with hsa offloading.
-
-proc check_effective_target_offload_hsa { } {
-    return [check_no_compiler_messages offload_hsa assembly {
-	int main () {return 0;}
-    } "-foffload=hsa" ]
-}
-
 # Return 1 if the compiler has been configured with gcn offloading.
 
 proc check_effective_target_offload_gcn { } {

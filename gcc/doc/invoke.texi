@@ -332,7 +332,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
--Wno-hsa  -Wno-if-not-aligned  -Wno-ignored-attributes @gol
+-Wno-if-not-aligned  -Wno-ignored-attributes @gol
 -Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wno-implicit-function-declaration  -Wno-implicit-int @gol
@@ -8591,12 +8591,6 @@ Suppress warnings when a positional initializer is used to initialize
 a structure that has been marked with the @code{designated_init}
 attribute.
 
-@item -Wno-hsa
-@opindex Whsa
-@opindex Wno-hsa
-Do not warn when HSAIL cannot be emitted for the compiled function or
-OpenMP construct.  These warnings are enabled by default.
-
 @end table
 
 @node Static Analyzer Options
@@ -13392,12 +13386,6 @@ minimum number of iterations of the outermost loop per thread is two.
 Maximum depth of recursion when querying properties of SSA names in things
 like fold routines.  One level of recursion corresponds to following a
 use-def chain.
-
-@item hsa-gen-debug-stores
-Enable emission of special debug stores within HSA kernels which are
-then read and reported by libgomp plugin.  Generation of these stores
-is disabled by default, use @option{--param hsa-gen-debug-stores=1} to
-enable it.
 
 @item max-speculative-devirt-maydefs
 The maximum number of may-defs we analyze when looking for a must-def
