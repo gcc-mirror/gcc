@@ -203,7 +203,7 @@ STARTFN	NAME(cas)
 	cmp		x0, x(tmp0)
 	ccmp		x1, x(tmp1), #0, eq
 	bne		1f
-	STXP		w(tmp2), x(tmp0), x(tmp1), [x4]
+	STXP		w(tmp2), x2, x3, [x4]
 	cbnz		w(tmp2), 0b
 1:	ret
 
