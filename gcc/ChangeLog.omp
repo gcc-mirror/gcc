@@ -1,6 +1,83 @@
 2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
+	2022-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-modes.def (VECTOR_MODE): Add new modes
+	V32QI, V32HI, V32SI, V32DI, V32TI, V32HF, V32SF, V32DF,
+	V16QI, V16HI, V16SI, V16DI, V16TI, V16HF, V16SF, V16DF,
+	V8QI, V8HI, V8SI, V8DI, V8TI, V8HF, V8SF, V8DF,
+	V4QI, V4HI, V4SI, V4DI, V4TI, V4HF, V4SF, V4DF,
+	V2QI, V2HI, V2SI, V2DI, V2TI, V2HF, V2SF, V2DF.
+	(ADJUST_ALIGNMENT): Likewise.
+	* config/gcn/gcn-protos.h (gcn_full_exec): Delete.
+	(gcn_full_exec_reg): Delete.
+	(gcn_scalar_exec): Delete.
+	(gcn_scalar_exec_reg): Delete.
+	(vgpr_1reg_mode_p): Use inner mode to identify vector registers.
+	(vgpr_2reg_mode_p): Likewise.
+	(vgpr_vector_mode_p): Use VECTOR_MODE_P.
+	* config/gcn/gcn-valu.md (V_QI, V_HI, V_HF, V_SI, V_SF, V_DI, V_DF,
+	V_QIHI, V_1REG, V_INT_1REG, V_INT_1REG_ALT, V_FP_1REG, V_2REG, V_noQI,
+	V_noHI, V_INT_noQI, V_INT_noHI, V_ALL, V_ALL_ALT, V_INT, V_FP):
+	Add additional vector modes.
+	(V64_SI, V64_DI, V64_ALL, V64_FP): New iterators.
+	(scalar_mode, SCALAR_MODE, vnsi, VnSI, vndi, VnDI, sdwa):
+	Add additional vector mode mappings.
+	(mov<mode>): Implement vector length conversions.
+	(ldexp<mode>3<exec>): Use VnSI.
+	(frexp<mode>_exp2<exec>): Likewise.
+	(VCVT_MODE, VCVT_FMODE, VCVT_IMODE): Add additional vector modes.
+	(reduc_<reduc_op>_scal_<mode>): Use V64_ALL.
+	(fold_left_plus_<mode>): Use V64_FP.
+	(*<reduc_op>_dpp_shr_<mode>): Use V64_1REG.
+	(*<reduc_op>_dpp_shr_<mode>): Use V64_DI.
+	(*plus_carry_dpp_shr_<mode>): Use V64_INT_1REG.
+	(*plus_carry_in_dpp_shr_<mode>): Use V64_SI.
+	(*plus_carry_dpp_shr_<mode>): Use V64_DI.
+	(mov_from_lane63_<mode>): Use V64_2REG.
+	* config/gcn/gcn.cc (VnMODE): New function.
+	(gcn_can_change_mode_class): Support multiple vector sizes.
+	(gcn_modes_tieable_p): Likewise.
+	(gcn_operand_part): Likewise.
+	(gcn_scalar_exec): Delete function.
+	(gcn_scalar_exec_reg): Delete function.
+	(gcn_full_exec): Delete function.
+	(gcn_full_exec_reg): Delete function.
+	(gcn_inline_fp_constant_p): Support multiple vector sizes.
+	(gcn_fp_constant_p): Likewise.
+	(A): New macro.
+	(GEN_VN_NOEXEC): New macro.
+	(GEN_VNM_NOEXEC): New macro.
+	(GEN_VN): New macro.
+	(GEN_VNM): New macro.
+	(GET_VN_FN): New macro.
+	(CODE_FOR): New macro.
+	(CODE_FOR_OP): New macro.
+	(gen_mov_with_exec): Delete function.
+	(gen_duplicate_load): Delete function.
+	(gcn_expand_vector_init): Support multiple vector sizes.
+	(strided_constant): Likewise.
+	(gcn_addr_space_legitimize_address): Likewise.
+	(gcn_expand_scalar_to_vector_address): Likewise.
+	(gcn_expand_scaled_offsets): Likewise.
+	(gcn_secondary_reload): Likewise.
+	(gcn_valid_cvt_p): Likewise.
+	(gcn_expand_builtin_1): Likewise.
+	(gcn_make_vec_perm_address): Likewise.
+	(gcn_vectorize_vec_perm_const): Likewise.
+	(gcn_vector_mode_supported_p): Likewise.
+	(gcn_autovectorize_vector_modes): New hook.
+	(gcn_related_vector_mode): Support multiple vector sizes.
+	(gcn_expand_dpp_shr_insn): Add FIXME comment.
+	(gcn_md_reorg): Support multiple vector sizes.
+	(print_reg): Likewise.
+	(print_operand): Likewise.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): New hook.
+
+2022-10-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
 	2022-10-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (while_ultsidi): Limit mask length using
