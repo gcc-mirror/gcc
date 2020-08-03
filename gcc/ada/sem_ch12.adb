@@ -11676,6 +11676,7 @@ package body Sem_Ch12 is
       Act_Decl_Id : constant Entity_Id  := Defining_Entity (Act_Decl);
       Act_Spec    : constant Node_Id    := Specification (Act_Decl);
       Ctx_Parents : Elist_Id            := No_Elist;
+      Ctx_Top     : Int                 := 0;
       Inst_Node   : constant Node_Id    := Body_Info.Inst_Node;
       Gen_Id      : constant Node_Id    := Name (Inst_Node);
       Gen_Unit    : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
@@ -11687,22 +11688,15 @@ package body Sem_Ch12 is
       --  appear uninitialized. This is suspicious, unless the actual is a
       --  fully initialized type.
 
-      procedure Install_Parents_Of_Generic_Context (Inst_Scope : Entity_Id);
-      --  Inst_Scope is the scope where the instance appears within; when
-      --  the instance of a generic child package G1 appears within a generic
-      --  child package G2, this routine collects and installs the enclosing
-      --  packages of G2 which are not already installed in the Scopes stack.
-      --  For example, considering the following hierarchy of generic packages:
-      --      G          (library level generic package)
-      --      G.G1       (generic child package of G)
-      --      G.Ga       (generic child package of G)
-      --      G.Ga.Gb    (generic child package of Ga)
-      --      G.Ga.Gb.G2 (generic child package of Gb)
-      --  ... if G2 contains an instance of G1, this routine installs Ga and Gb
-      --  (it does not install G because it was installed previously as part of
-      --  the regular installation of G1 parents done by Install_Parent)
+      procedure Install_Parents_Of_Generic_Context
+        (Inst_Scope  : Entity_Id;
+         Ctx_Parents : out Elist_Id);
+      --  Inst_Scope is the scope where the instance appears within; when it
+      --  appears within a generic child package G, this routine collects and
+      --  installs the enclosing packages of G in the scopes stack; installed
+      --  packages are returned in Ctx_Parents.
 
-      procedure Remove_Parents_Of_Generic_Context;
+      procedure Remove_Parents_Of_Generic_Context (Ctx_Parents : Elist_Id);
       --  Reverse effect after instantiation is complete
 
       -----------------------------
@@ -11772,133 +11766,50 @@ package body Sem_Ch12 is
       -- Install_Parents_Of_Generic_Context --
       ----------------------------------------
 
-      procedure Install_Parents_Of_Generic_Context (Inst_Scope : Entity_Id) is
-         procedure Install_Enclosing_Parent (P : Entity_Id);
-         --  Install public declarations of package P
-
-         function In_Enclosing_Open_Scopes (S : Entity_Id) return Boolean;
-         --  Determine if the scope S is currently open (i.e. it appears
-         --  somewhere in the scope stack) or appears within the compilation
-         --  unit of an open scope.
-
-         ------------------------------
-         -- Install_Enclosing_Parent --
-         ------------------------------
-
-         procedure Install_Enclosing_Parent (P : Entity_Id) is
-            Inst_Par : Entity_Id := P;
-
-         begin
-            --  If this is a nested instance, the parent unit itself resolves
-            --  to a renaming of the parent instance, whose declaration we
-            --  need; in the common case the parent may be a generic (not an
-            --  instance) and appears as a formal package.
-
-            if Present (Renamed_Entity (Inst_Par)) then
-               Inst_Par := Renamed_Entity (Inst_Par);
-            end if;
-
-            Push_Scope (Inst_Par);
-            Set_Is_Immediately_Visible   (Inst_Par);
-            Install_Visible_Declarations (Inst_Par);
-         end Install_Enclosing_Parent;
-
-         ------------------------------
-         -- In_Enclosing_Open_Scopes --
-         ------------------------------
-
-         function In_Enclosing_Open_Scopes (S : Entity_Id) return Boolean is
-            E      : Entity_Id;
-            E_Unit : Entity_Id;
-
-         begin
-            for J in reverse 0 .. Scope_Stack.Last loop
-               E      := Scope_Stack.Table (J).Entity;
-               E_Unit := Cunit_Entity (Get_Source_Unit (E));
-
-               if S = E or else S = E_Unit then
-                  return True;
-               end if;
-
-               --  Check Is_Active_Stack_Base to tell us when to stop, as there
-               --  are cases where Standard_Standard appears in the middle of
-               --  the active set of scopes. This affects the declaration and
-               --  overriding of private inherited operations in instantiations
-               --  of generic child units.
-
-               exit when Scope_Stack.Table (J).Is_Active_Stack_Base;
-            end loop;
-
-            return False;
-         end In_Enclosing_Open_Scopes;
-
-         --  Local variables
-
-         Actuals : constant List_Id := Generic_Associations (Inst_Node);
-         Elmt    : Elmt_Id;
-         S       : Entity_Id;
-
-      --  Start of processing for Install_Parents_Of_Generic_Context
+      procedure Install_Parents_Of_Generic_Context
+        (Inst_Scope  : Entity_Id;
+         Ctx_Parents : out Elist_Id)
+      is
+         Elmt : Elmt_Id;
+         S    : Entity_Id;
 
       begin
-         --  Check cases where no action is required
+         Ctx_Parents := New_Elmt_List;
 
-         if No (Actuals) then
-            return;
-
-         elsif not Is_Child_Unit (Inst_Scope)
-           or else Ekind (Inst_Scope) /= E_Generic_Package
-         then
-            return;
-         end if;
-
-         --  Collect context parents not previously installed
+         --  Collect context parents (ie. parents where the instantiation
+         --  appears within).
 
          S := Inst_Scope;
-         while S /= Standard_Standard
-           and then not In_Enclosing_Open_Scopes (S)
-         loop
-            if No (Ctx_Parents) then
-               Ctx_Parents := New_Elmt_List;
-            end if;
-
+         while S /= Standard_Standard loop
             Prepend_Elmt (S, Ctx_Parents);
             S := Scope (S);
          end loop;
 
          --  Install enclosing parents
 
-         if Present (Ctx_Parents) then
-            Elmt := First_Elmt (Ctx_Parents);
-            while Present (Elmt) loop
-               Install_Enclosing_Parent (Node (Elmt));
-               Next_Elmt (Elmt);
-            end loop;
-         end if;
+         Elmt := First_Elmt (Ctx_Parents);
+         while Present (Elmt) loop
+            Push_Scope (Node (Elmt));
+            Set_Is_Immediately_Visible (Node (Elmt));
+            Next_Elmt (Elmt);
+         end loop;
       end Install_Parents_Of_Generic_Context;
 
       ---------------------------------------
       -- Remove_Parents_Of_Generic_Context --
       ---------------------------------------
 
-      procedure Remove_Parents_Of_Generic_Context is
+      procedure Remove_Parents_Of_Generic_Context (Ctx_Parents : Elist_Id) is
          Elmt : Elmt_Id;
-         Par  : Entity_Id;
 
       begin
-         if No (Ctx_Parents) then
-            return;
-         end if;
-
          --  Traverse Ctx_Parents in LIFO order to check the removed scopes
 
          Elmt := Last_Elmt (Ctx_Parents);
          while Present (Elmt) loop
-            Par := Current_Scope;
-            pragma Assert (Par = Node (Elmt));
-
-            End_Package_Scope (Par);
-            Set_Is_Immediately_Visible (Par, False);
+            pragma Assert (Current_Scope = Node (Elmt));
+            Set_Is_Immediately_Visible (Current_Scope, False);
+            Pop_Scope;
 
             Remove_Last_Elmt (Ctx_Parents);
             Elmt := Last_Elmt (Ctx_Parents);
@@ -12153,6 +12064,31 @@ package body Sem_Ch12 is
          Scope_Check_Id   := Current_Scope;
          Scope_Check_Last := Scope_Stack.Last;
 
+         --  If the instantiation appears within a generic child some actual
+         --  parameter may be the current instance of the enclosing generic
+         --  parent.
+
+         declare
+            Inst_Scope : constant Entity_Id := Scope (Act_Decl_Id);
+
+         begin
+            if Is_Child_Unit (Inst_Scope)
+              and then Ekind (Inst_Scope) = E_Generic_Package
+              and then Present (Generic_Associations (Inst_Node))
+            then
+               Install_Parents_Of_Generic_Context (Inst_Scope, Ctx_Parents);
+
+               --  Hide them from visibility; required to avoid conflicts
+               --  installing the parent instance.
+
+               if Present (Ctx_Parents) then
+                  Push_Scope (Standard_Standard);
+                  Ctx_Top := Scope_Stack.Last;
+                  Scope_Stack.Table (Ctx_Top).Is_Active_Stack_Base := True;
+               end if;
+            end if;
+         end;
+
          --  If it is a child unit, make the parent instance (which is an
          --  instance of the parent of the generic) visible. The parent
          --  instance is the prefix of the name of the generic unit.
@@ -12172,12 +12108,6 @@ package body Sem_Ch12 is
             Par_Installed := True;
          end if;
 
-         --  If the instantiation appears within a generic child some actual
-         --  parameter may be the current instance of the enclosing generic
-         --  parent.
-
-         Install_Parents_Of_Generic_Context (Scope (Act_Decl_Id));
-
          --  If the instantiation is a library unit, and this is the main unit,
          --  then build the resulting compilation unit nodes for the instance.
          --  If this is a compilation unit but it is not the main unit, then it
@@ -12194,7 +12124,18 @@ package body Sem_Ch12 is
 
             Build_Instance_Compilation_Unit_Nodes
               (Inst_Node, Act_Body, Act_Decl);
-            Analyze (Inst_Node);
+
+            --  If the instantiation appears within a generic child package
+            --  enable visibility of current instance of enclosing generic
+            --  parents.
+
+            if Present (Ctx_Parents) then
+               Scope_Stack.Table (Ctx_Top).Is_Active_Stack_Base := False;
+               Analyze (Inst_Node);
+               Scope_Stack.Table (Ctx_Top).Is_Active_Stack_Base := True;
+            else
+               Analyze (Inst_Node);
+            end if;
 
             if Parent (Inst_Node) = Cunit (Main_Unit) then
 
@@ -12218,15 +12159,21 @@ package body Sem_Ch12 is
             --  indicate that the body instance is to be delayed.
 
             Install_Body (Act_Body, Inst_Node, Gen_Body, Gen_Decl);
-            Analyze (Act_Body);
+
+            --  If the instantiation appears within a generic child package
+            --  enable visibility of current instance of enclosing generic
+            --  parents.
+
+            if Present (Ctx_Parents) then
+               Scope_Stack.Table (Ctx_Top).Is_Active_Stack_Base := False;
+               Analyze (Act_Body);
+               Scope_Stack.Table (Ctx_Top).Is_Active_Stack_Base := True;
+            else
+               Analyze (Act_Body);
+            end if;
          end if;
 
          Inherit_Context (Gen_Body, Inst_Node);
-
-         --  Remove the parent instances if they have been placed on the scope
-         --  stack to compile the body.
-
-         Remove_Parents_Of_Generic_Context;
 
          if Par_Installed then
             Remove_Parent (In_Body => True);
@@ -12234,6 +12181,17 @@ package body Sem_Ch12 is
             --  Restore the previous visibility of the parent
 
             Set_Is_Immediately_Visible (Par_Ent, Par_Vis);
+         end if;
+
+         --  Remove the parent instances if they have been placed on the scope
+         --  stack to compile the body.
+
+         if Present (Ctx_Parents) then
+            pragma Assert (Scope_Stack.Last = Ctx_Top
+              and then Current_Scope = Standard_Standard);
+            Pop_Scope;
+
+            Remove_Parents_Of_Generic_Context (Ctx_Parents);
          end if;
 
          pragma Assert (Current_Scope    = Scope_Check_Id);
