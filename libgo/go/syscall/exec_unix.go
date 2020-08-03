@@ -9,6 +9,7 @@
 package syscall
 
 import (
+	errorspkg "errors"
 	"internal/bytealg"
 	"runtime"
 	"sync"
@@ -62,6 +63,9 @@ import (
 
 //sysnb raw_dup2(oldfd int, newfd int) (err Errno)
 //dup2(oldfd _C_int, newfd _C_int) _C_int
+
+//sysnb raw_dup3(oldfd int, newfd int, flags int) (err Errno)
+//dup3(oldfd _C_int, newfd _C_int, flags _C_int) _C_int
 
 //sysnb raw_kill(pid Pid_t, sig Signal) (err Errno)
 //kill(pid Pid_t, sig _C_int) _C_int
@@ -241,6 +245,15 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error) 
 		}
 	}
 
+	// Both Setctty and Foreground use the Ctty field,
+	// but they give it slightly different meanings.
+	if sys.Setctty && sys.Foreground {
+		return 0, errorspkg.New("both Setctty and Foreground set in SysProcAttr")
+	}
+	if sys.Setctty && sys.Ctty >= len(attr.Files) {
+		return 0, errorspkg.New("Setctty set but Ctty not valid in child")
+	}
+
 	// Acquire the fork lock so that no other threads
 	// create new fds that are not yet close-on-exec
 	// before we fork.
@@ -261,7 +274,12 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error) 
 
 	// Read child error status from pipe.
 	Close(p[1])
-	n, err = readlen(p[0], (*byte)(unsafe.Pointer(&err1)), int(unsafe.Sizeof(err1)))
+	for {
+		n, err = readlen(p[0], (*byte)(unsafe.Pointer(&err1)), int(unsafe.Sizeof(err1)))
+		if err != EINTR {
+			break
+		}
+	}
 	Close(p[0])
 	if err != nil || n != 0 {
 		if n == int(unsafe.Sizeof(err1)) {

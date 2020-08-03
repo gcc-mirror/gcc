@@ -405,7 +405,7 @@ class StdVectorPrinter:
             self.bitvec = bitvec
             if bitvec:
                 self.item   = start['_M_p']
-                self.so     = start['_M_offset']
+                self.so     = 0
                 self.finish = finish['_M_p']
                 self.fo     = finish['_M_offset']
                 itype = self.item.dereference().type
@@ -453,12 +453,11 @@ class StdVectorPrinter:
         end = self.val['_M_impl']['_M_end_of_storage']
         if self.is_bool:
             start = self.val['_M_impl']['_M_start']['_M_p']
-            so    = self.val['_M_impl']['_M_start']['_M_offset']
             finish = self.val['_M_impl']['_M_finish']['_M_p']
             fo     = self.val['_M_impl']['_M_finish']['_M_offset']
             itype = start.dereference().type
             bl = 8 * itype.sizeof
-            length   = (bl - so) + bl * ((finish - start) - 1) + fo
+            length   = bl * (finish - start) + fo
             capacity = bl * (end - start)
             return ('%s<bool> of length %d, capacity %d'
                     % (self.typename, int (length), int (capacity)))

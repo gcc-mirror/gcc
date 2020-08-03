@@ -1270,6 +1270,7 @@ initialize_node_lattices (struct cgraph_node *node)
 	  plats->ctxlat.set_to_bottom ();
 	  set_agg_lats_to_bottom (plats);
 	  plats->bits_lattice.set_to_bottom ();
+	  plats->m_value_range.m_vr = value_range ();
 	  plats->m_value_range.set_to_bottom ();
 	}
       else
@@ -3898,8 +3899,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
       {
         class ipa_node_params *info = IPA_NODE_REF (node);
         determine_versionability (node, info);
-	info->lattices = XCNEWVEC (class ipcp_param_lattices,
-				   ipa_get_param_count (info));
+
+	unsigned nlattices = ipa_get_param_count (info);
+	void *chunk = XCNEWVEC (class ipcp_param_lattices, nlattices);
+	info->lattices = new (chunk) ipcp_param_lattices[nlattices];
 	initialize_node_lattices (node);
       }
     ipa_size_summary *s = ipa_size_summaries->get (node);
@@ -5667,8 +5670,9 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
 	  (has_undead_caller_from_outside_scc_p, NULL, true))
       return true;
     else if (!ipa_edge_within_scc (cs)
-	     && !IPA_NODE_REF (cs->caller)->node_dead)
-      return true;
+	     && (!IPA_NODE_REF (cs->caller) /* Unoptimized caller.  */
+		 || !IPA_NODE_REF (cs->caller)->node_dead))
+	  return true;
   return false;
 }
 

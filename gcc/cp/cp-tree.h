@@ -475,7 +475,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
       TINFO_VAR_DECLARED_CONSTINIT (in TEMPLATE_INFO)
       CALL_FROM_NEW_OR_DELETE_P (in CALL_EXPR)
-   3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
+   3: IMPLICIT_RVALUE_P (in NON_LVALUE_EXPR or STATIC_CAST_EXPR)
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
@@ -3949,6 +3949,11 @@ struct GTY(()) lang_decl {
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
    && TYPE_REF_P (TREE_TYPE (TREE_OPERAND ((NODE), 0))))
 
+/* True iff this represents an lvalue being treated as an rvalue during return
+   or throw as per [class.copy.elision].  */
+#define IMPLICIT_RVALUE_P(NODE) \
+  TREE_LANG_FLAG_3 (TREE_CHECK2 ((NODE), NON_LVALUE_EXPR, STATIC_CAST_EXPR))
+
 #define NEW_EXPR_USE_GLOBAL(NODE) \
   TREE_LANG_FLAG_0 (NEW_EXPR_CHECK (NODE))
 #define DELETE_EXPR_USE_GLOBAL(NODE) \
@@ -5330,7 +5335,8 @@ enum cp_lvalue_kind_flags {
   clk_rvalueref = 2,/* An xvalue (rvalue formed using an rvalue reference) */
   clk_class = 4,    /* A prvalue of class or array type.  */
   clk_bitfield = 8, /* An lvalue for a bit-field.  */
-  clk_packed = 16   /* An lvalue for a packed field.  */
+  clk_packed = 16,  /* An lvalue for a packed field.  */
+  clk_implicit_rval = 1<<5 /* An lvalue being treated as an xvalue.  */
 };
 
 /* This type is used for parameters and variables which hold
@@ -5730,6 +5736,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    not found by lookup.)  */
 #define LOOKUP_HIDDEN (LOOKUP_PREFER_NAMESPACES << 1)
 /* We're trying to treat an lvalue as an rvalue.  */
+/* FIXME remove when we extend the P1825 semantics to all standard modes, the
+   C++20 approach uses IMPLICIT_RVALUE_P instead.  */
 #define LOOKUP_PREFER_RVALUE (LOOKUP_HIDDEN << 1)
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
 #define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)
@@ -6926,7 +6934,8 @@ extern tree build_vec_delete			(location_t, tree, tree,
 extern tree create_temporary_var		(tree);
 extern void initialize_vtbl_ptrs		(tree);
 extern tree scalar_constant_value		(tree);
-extern tree decl_really_constant_value		(tree);
+extern tree decl_constant_value			(tree, bool);
+extern tree decl_really_constant_value		(tree, bool = true);
 extern int diagnose_uninitialized_cst_or_ref_member (tree, bool, bool);
 extern tree build_vtbl_address                  (tree);
 extern bool maybe_reject_flexarray_init		(tree, tree);
@@ -7923,7 +7932,7 @@ extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 extern tree finish_left_unary_fold_expr      (tree, int);
 extern tree finish_right_unary_fold_expr     (tree, int);
 extern tree finish_binary_fold_expr          (tree, tree, int);
-extern bool treat_lvalue_as_rvalue_p	     (tree, bool);
+extern tree treat_lvalue_as_rvalue_p	     (tree, bool);
 extern bool decl_in_std_namespace_p	     (tree);
 
 /* in typeck2.c */
@@ -8408,6 +8417,27 @@ concept_check_p (const_tree t)
   if (t && TREE_CODE (t) == TEMPLATE_ID_EXPR)
     return concept_definition_p (TREE_OPERAND (t, 0));
   return false;
+}
+
+/* Helpers for IMPLICIT_RVALUE_P to look through automatic dereference.  */
+
+inline bool
+implicit_rvalue_p (const_tree t)
+{
+  if (REFERENCE_REF_P (t))
+    t = TREE_OPERAND (t, 0);
+  return ((TREE_CODE (t) == NON_LVALUE_EXPR
+	   || TREE_CODE (t) == STATIC_CAST_EXPR)
+	  && IMPLICIT_RVALUE_P (t));
+}
+inline tree
+set_implicit_rvalue_p (tree ot)
+{
+  tree t = ot;
+  if (REFERENCE_REF_P (t))
+    t = TREE_OPERAND (t, 0);
+  IMPLICIT_RVALUE_P (t) = 1;
+  return ot;
 }
 
 /* True if t is a "constrained auto" type-specifier.  */

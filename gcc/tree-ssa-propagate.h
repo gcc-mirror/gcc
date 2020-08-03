@@ -115,7 +115,7 @@ class substitute_and_fold_engine
   virtual void pre_fold_stmt (gimple *) { }
   virtual void post_new_stmt (gimple *) { }
 
-  void propagate_into_phi_args (basic_block);
+  bool propagate_into_phi_args (basic_block);
 
   /* Users like VRP can set this when they want to perform
      folding for every propagation.  */

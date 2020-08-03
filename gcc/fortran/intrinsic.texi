@@ -8325,7 +8325,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A}    @tab Shall be of type @code{INTEGER},
-@code{REAL}, or @code{COMPLEX} or or a boz-literal-constant.
+@code{REAL}, or @code{COMPLEX} or a boz-literal-constant.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
 @end multitable
@@ -10416,7 +10416,7 @@ Transformational function
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
-@item @var{MASK}  @tab (Opional) Shall be an array of type @code{LOGICAL},
+@item @var{MASK}  @tab (Optional) Shall be an array of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
 @end multitable
 

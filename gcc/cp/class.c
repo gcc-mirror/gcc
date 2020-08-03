@@ -516,8 +516,14 @@ build_base_path (enum tree_code code,
 
  out:
   if (null_test)
-    expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test, expr,
-			    build_zero_cst (target_type));
+    {
+      expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test,
+			      expr, build_zero_cst (target_type));
+      /* Avoid warning for the whole conditional expression (in addition
+	 to NULL_TEST itself -- see above) in case the result is used in
+	 a nonnull context that the front end -Wnonnull checks.  */
+      TREE_NO_WARNING (expr) = 1;
+    }
 
   return expr;
 }

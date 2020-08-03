@@ -1,3 +1,24 @@
+2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96202
+	* configure: Regenerated.
+
+2020-07-29  Tiziano Müller  <tiziano.mueller@chem.uzh.ch>
+
+	* init.c (builtin_array): Add xref comment.
+	* traditional.c (fun_like_macro): Add HAS_INCLUDE codes.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96323
+	* lex.c (lex_raw_string): For c == '\n' don't continue after reporting
+	an prefix delimiter error.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (cpp_read_main_file): Always use the last map for
+	the return value.
+
 2020-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	* line-map.c (linemap_add): Simplify column overflow calculation.

@@ -1,5 +1,7 @@
 2020-08-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk d1773f58f3a.
+
 	Add c++-user-header c++-system-header languages.
 	gcc/cp/
 	* lang-specs.h (@c++-header): Map -fmodules-ts to -fmodule-header,

@@ -129,10 +129,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      typename iterator_traits<_Iterator>::pointer,
                       typename iterator_traits<_Iterator>::reference>
     {
-#if __cplusplus >= 201103L
       template<typename _Iter>
 	friend class reverse_iterator;
-#endif
 
 #if __cpp_lib_concepts
       // _GLIBCXX_RESOLVE_LIB_DEFECTS

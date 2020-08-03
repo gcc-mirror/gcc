@@ -28,11 +28,11 @@ func TestCheckPtr(t *testing.T) {
 		cmd  string
 		want string
 	}{
-		{"CheckPtrAlignmentPtr", "fatal error: checkptr: unsafe pointer conversion\n"},
+		{"CheckPtrAlignmentPtr", "fatal error: checkptr: misaligned pointer conversion\n"},
 		{"CheckPtrAlignmentNoPtr", ""},
-		{"CheckPtrArithmetic", "fatal error: checkptr: unsafe pointer arithmetic\n"},
-		{"CheckPtrSize", "fatal error: checkptr: unsafe pointer conversion\n"},
-		{"CheckPtrSmall", "fatal error: checkptr: unsafe pointer arithmetic\n"},
+		{"CheckPtrArithmetic", "fatal error: checkptr: pointer arithmetic result points to invalid allocation\n"},
+		{"CheckPtrSize", "fatal error: checkptr: converted pointer straddles multiple allocations\n"},
+		{"CheckPtrSmall", "fatal error: checkptr: pointer arithmetic computed bad pointer value\n"},
 	}
 
 	for _, tc := range testCases {

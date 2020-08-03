@@ -821,6 +821,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
 -mbig-endian  -EB  -mlittle-endian  -EL @gol
 -mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu @gol
+-mfloat-abi=@var{name} @gol
 -melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust @gol
 -mdsp  -medsp  -mvdsp @gol
 -mdiv  -msmart  -mhigh-registers  -manchor @gol
@@ -1141,7 +1142,9 @@ See RS/6000 and PowerPC Options.
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mrelax  -mno-relax @gol
 -mriscv-attribute  -mmo-riscv-attribute @gol
--malign-data=@var{type}}
+-malign-data=@var{type} @gol
++-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
++-mstack-protector-guard-offset=@var{offset}}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -9225,11 +9228,11 @@ except when selective scheduling is enabled.
 
 @item -gsplit-dwarf
 @opindex gsplit-dwarf
-Separate as much DWARF debugging information as possible into a
-separate output file with the extension @file{.dwo}.  This option allows
-the build system to avoid linking files with debug information.  To
-be useful, this option requires a debugger capable of reading @file{.dwo}
-files.
+If DWARF debugging information is enabled, separate as much debugging
+information as possible into a separate output file with the extension
+@file{.dwo}.  This option allows the build system to avoid linking files with
+debug information.  To be useful, this option requires a debugger capable of
+reading @file{.dwo} files.
 
 @item -gdescribe-dies
 @opindex gdescribe-dies
@@ -17422,7 +17425,8 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
-@samp{octeontx2f95mm}
+@samp{octeontx2f95mm},
+@samp{a64fx},
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
@@ -20715,6 +20719,23 @@ Specify the C-SKY target processor.  Valid values for @var{cpu} are:
 @opindex EL
 
 Select big- or little-endian code.  The default is little-endian.
+
+@item -mfloat-abi=@var{name}
+@opindex mfloat-abi
+Specifies which floating-point ABI to use.  Permissible values
+are: @samp{soft}, @samp{softfp} and @samp{hard}.
+
+Specifying @samp{soft} causes GCC to generate output containing
+library calls for floating-point operations.
+@samp{softfp} allows the generation of code using hardware floating-point
+instructions, but still uses the soft-float calling conventions.
+@samp{hard} allows generation of floating-point instructions
+and uses FPU-specific calling conventions.
+
+The default depends on the specific target configuration.  Note that
+the hard-float and soft-float ABIs are not link-compatible; you must
+compile your entire program with the same ABI, and link with a
+compatible set of libraries.
 
 @item -mhard-float
 @opindex mhard-float
@@ -25867,6 +25888,24 @@ Control how GCC aligns variables and constants of array, structure, or union
 types.  Supported values for @var{type} are @samp{xlen} which uses x register
 width as the alignment value, and @samp{natural} which uses natural alignment.
 @samp{xlen} is the default.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for a global canary or @samp{tls} for per-thread
+canary in the TLS block.
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which register to use as base register for reading the canary,
+and from what offset from that base register. There is no default
+register or offset as this is entirely for use within the Linux
+kernel.
 @end table
 
 @node RL78 Options

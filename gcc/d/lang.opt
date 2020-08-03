@@ -146,6 +146,10 @@ Wunknown-pragmas
 D LangEnabledBy(D, Wall)
 ; Documented in C
 
+Wvarargs
+D
+; Documented in C
+
 X
 D
 Generate JSON file.

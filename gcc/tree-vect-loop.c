@@ -3520,10 +3520,12 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
     {
       /* If peeled iterations are known but number of scalar loop
 	 iterations are unknown, count a taken branch per peeled loop.  */
-      retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken, NULL,
-				 NULL_TREE, 0, vect_prologue);
-      retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken, NULL,
-				  NULL_TREE, 0, vect_epilogue);
+      if (peel_iters_prologue > 0)
+	retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken,
+				   NULL, NULL_TREE, 0, vect_prologue);
+      if (*peel_iters_epilogue > 0)
+	retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken,
+				    NULL, NULL_TREE, 0, vect_epilogue);
     }
 
   stmt_info_for_cost *si;
@@ -3670,7 +3672,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   bool prologue_need_br_not_taken_cost = false;
 
   /* Calculate peel_iters_prologue.  */
-  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  if (vect_use_loop_mask_for_alignment_p (loop_vinfo))
     peel_iters_prologue = 0;
   else if (npeel < 0)
     {
@@ -3689,7 +3691,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   else
     {
       peel_iters_prologue = npeel;
-      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) && peel_iters_prologue > 0)
 	/* If peeled iterations are known but number of scalar loop
 	   iterations are unknown, count a taken branch per peeled loop.  */
 	prologue_need_br_taken_cost = true;
@@ -3719,7 +3721,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   else
     {
       peel_iters_epilogue = vect_get_peel_iters_epilogue (loop_vinfo, npeel);
-      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) && peel_iters_epilogue > 0)
 	/* If peeled iterations are known but number of scalar loop
 	   iterations are unknown, count a taken branch per peeled loop.  */
 	epilogue_need_br_taken_cost = true;

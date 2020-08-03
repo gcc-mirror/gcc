@@ -2,7 +2,6 @@
 // { dg-do run { target hw } }
 import core.simd;
 import core.stdc.string;
-import std.stdio;
 
 alias TypeTuple(T...) = T;
 
@@ -1143,7 +1142,6 @@ float4 foo9304(float4 a)
 void test9304()
 {
     auto a = foo9304([0, 1, 2, 3]);
-    //writeln(a.array);
     assert(a.array == [0,-1,-2,-3]);
 }
 

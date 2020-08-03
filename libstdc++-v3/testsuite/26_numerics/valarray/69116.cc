@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
 // { dg-options "-std=gnu++98" }
+// { dg-do compile { target c++98_only } }
 
 // libstdc++/69116
 

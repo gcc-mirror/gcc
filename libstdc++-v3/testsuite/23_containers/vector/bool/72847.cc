@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-skip-if "" { *-*-* } { "-fno-exceptions" } }
+// { dg-require-effective-target exceptions_enabled }
 
 #include <vector>
 #include <ext/throw_allocator.h>

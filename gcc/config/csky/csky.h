@@ -126,6 +126,13 @@
 #define TARGET_TLS \
   (CSKY_TARGET_ARCH (CK807) || CSKY_TARGET_ARCH (CK810))
 
+/* Run-time Target Specification.  */
+#define TARGET_SOFT_FLOAT       (csky_float_abi == CSKY_FLOAT_ABI_SOFT)
+/* Use hardware floating point instructions. */
+#define TARGET_HARD_FLOAT       (csky_float_abi != CSKY_FLOAT_ABI_SOFT)
+/* Use hardware floating point calling convention.  */
+#define TARGET_HARD_FLOAT_ABI   (csky_float_abi == CSKY_FLOAT_ABI_HARD)
+
 /* Number of loads/stores handled by ldm/stm.  */
 #define CSKY_MIN_MULTIPLE_STLD	3
 #define CSKY_MAX_MULTIPLE_STLD	12
@@ -818,7 +825,7 @@ while (0)
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
   {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"endian", "%{!mbig-endian:%{!mlittle-endian:-m%(VALUE)-endian}}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" },
+  {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" },
 
 
 /******************************************************************

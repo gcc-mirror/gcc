@@ -119,6 +119,9 @@ AARCH64_CORE("octeontx2f95",   octeontx2f95,   cortexa57, 8_2A,  AARCH64_FL_FOR_
 AARCH64_CORE("octeontx2f95n",  octeontx2f95n,  cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b4, -1)
 AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b5, -1)
 
+/* Fujitsu ('F') cores. */
+AARCH64_CORE("a64fx", a64fx, a64fx, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_SVE, a64fx, 0x46, 0x001, -1)
+
 /* HiSilicon ('H') cores. */
 AARCH64_CORE("tsv110",  tsv110, tsv110, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2, tsv110,   0x48, 0xd01, -1)
 

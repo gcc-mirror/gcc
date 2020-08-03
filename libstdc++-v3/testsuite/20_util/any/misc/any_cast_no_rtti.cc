@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++17 -fno-rtti" }
-// { dg-do run }
+// { dg-do run { target c++17 } }
 
 // Copyright (C) 2014-2020 Free Software Foundation, Inc.
 //

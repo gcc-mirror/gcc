@@ -73,7 +73,12 @@ lvalue_kind (const_tree ref)
 	  && TREE_CODE (ref) != COMPONENT_REF
 	  /* Functions are always lvalues.  */
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
-	return clk_rvalueref;
+	{
+	  op1_lvalue_kind = clk_rvalueref;
+	  if (implicit_rvalue_p (ref))
+	    op1_lvalue_kind |= clk_implicit_rval;
+	  return op1_lvalue_kind;
+	}
 
       /* lvalue references and named rvalue references are lvalues.  */
       return clk_ordinary;

@@ -43,6 +43,174 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 
 
+/* Determine if type T is a struct that has a postblit.  */
+
+static bool
+needs_postblit (Type *t)
+{
+  t = t->baseElemOf ();
+
+  if (TypeStruct *ts = t->isTypeStruct ())
+    {
+      if (ts->sym->postblit)
+	return true;
+    }
+
+  return false;
+}
+
+/* Determine if type T is a struct that has a destructor.  */
+
+static bool
+needs_dtor (Type *t)
+{
+  t = t->baseElemOf ();
+
+  if (TypeStruct *ts = t->isTypeStruct ())
+    {
+      if (ts->sym->dtor)
+	return true;
+    }
+
+  return false;
+}
+
+/* Determine if expression E is a suitable lvalue.  */
+
+static bool
+lvalue_p (Expression *e)
+{
+  SliceExp *se = e->isSliceExp ();
+  if (se != NULL && se->e1->isLvalue ())
+    return true;
+
+  CastExp *ce = e->isCastExp ();
+  if (ce != NULL && ce->e1->isLvalue ())
+    return true;
+
+  return (e->op != TOKslice && e->isLvalue ());
+}
+
+/* Build an expression of code CODE, data type TYPE, and operands ARG0 and
+   ARG1.  Perform relevant conversions needed for correct code operations.  */
+
+static tree
+binary_op (tree_code code, tree type, tree arg0, tree arg1)
+{
+  tree t0 = TREE_TYPE (arg0);
+  tree t1 = TREE_TYPE (arg1);
+  tree ret = NULL_TREE;
+
+  bool unsignedp = TYPE_UNSIGNED (t0) || TYPE_UNSIGNED (t1);
+
+  /* Deal with float mod expressions immediately.  */
+  if (code == FLOAT_MOD_EXPR)
+    return build_float_modulus (type, arg0, arg1);
+
+  if (POINTER_TYPE_P (t0) && INTEGRAL_TYPE_P (t1))
+    return build_nop (type, build_offset_op (code, arg0, arg1));
+
+  if (INTEGRAL_TYPE_P (t0) && POINTER_TYPE_P (t1))
+    return build_nop (type, build_offset_op (code, arg1, arg0));
+
+  if (POINTER_TYPE_P (t0) && POINTER_TYPE_P (t1))
+    {
+      gcc_assert (code == MINUS_EXPR);
+      tree ptrtype = lang_hooks.types.type_for_mode (ptr_mode, 0);
+
+      /* POINTER_DIFF_EXPR requires a signed integer type of the same size as
+	 pointers.  If some platform cannot provide that, or has a larger
+	 ptrdiff_type to support differences larger than half the address
+	 space, cast the pointers to some larger integer type and do the
+	 computations in that type.  */
+      if (TYPE_PRECISION (ptrtype) > TYPE_PRECISION (t0))
+	ret = fold_build2 (MINUS_EXPR, ptrtype,
+			   d_convert (ptrtype, arg0),
+			   d_convert (ptrtype, arg1));
+      else
+	ret = fold_build2 (POINTER_DIFF_EXPR, ptrtype, arg0, arg1);
+    }
+  else if (INTEGRAL_TYPE_P (type) && (TYPE_UNSIGNED (type) != unsignedp))
+    {
+      tree inttype = (unsignedp)
+	? d_unsigned_type (type) : d_signed_type (type);
+      ret = fold_build2 (code, inttype, arg0, arg1);
+    }
+  else
+    {
+      /* If the operation needs excess precision.  */
+      tree eptype = excess_precision_type (type);
+      if (eptype != NULL_TREE)
+	{
+	  arg0 = d_convert (eptype, arg0);
+	  arg1 = d_convert (eptype, arg1);
+	}
+      else
+	{
+	  /* Front-end does not do this conversion and GCC does not
+	     always do it right.  */
+	  if (COMPLEX_FLOAT_TYPE_P (t0) && !COMPLEX_FLOAT_TYPE_P (t1))
+	    arg1 = d_convert (t0, arg1);
+	  else if (COMPLEX_FLOAT_TYPE_P (t1) && !COMPLEX_FLOAT_TYPE_P (t0))
+	    arg0 = d_convert (t1, arg0);
+
+	  eptype = type;
+	}
+
+      ret = fold_build2 (code, eptype, arg0, arg1);
+    }
+
+  return d_convert (type, ret);
+}
+
+/* Build a binary expression of code CODE, assigning the result into E1.  */
+
+static tree
+binop_assignment (tree_code code, Expression *e1, Expression *e2)
+{
+  /* Skip casts for lhs assignment.  */
+  Expression *e1b = e1;
+  while (e1b->op == TOKcast)
+    {
+      CastExp *ce = e1b->isCastExp ();
+      gcc_assert (same_type_p (ce->type, ce->to));
+      e1b = ce->e1;
+    }
+
+  /* Stabilize LHS for assignment.  */
+  tree lhs = build_expr (e1b);
+  tree lexpr = stabilize_expr (&lhs);
+
+  /* The LHS expression could be an assignment, to which its operation gets
+     lost during gimplification.  */
+  if (TREE_CODE (lhs) == MODIFY_EXPR)
+    {
+      /* If LHS has side effects, call stabilize_reference on it, so it can
+	 be evaluated multiple times.  */
+      if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
+	lhs = build_assign (MODIFY_EXPR,
+			    stabilize_reference (TREE_OPERAND (lhs, 0)),
+			    TREE_OPERAND (lhs, 1));
+
+      lexpr = compound_expr (lexpr, lhs);
+      lhs = TREE_OPERAND (lhs, 0);
+    }
+
+  lhs = stabilize_reference (lhs);
+
+  /* Save RHS, to ensure that the expression is evaluated before LHS.  */
+  tree rhs = build_expr (e2);
+  tree rexpr = d_save_expr (rhs);
+
+  rhs = binary_op (code, build_ctype (e1->type),
+		   convert_expr (lhs, e1b->type, e1->type), rexpr);
+  if (TREE_SIDE_EFFECTS (rhs))
+    rhs = compound_expr (rexpr, rhs);
+
+  tree expr = modify_expr (lhs, convert_expr (rhs, e1->type, e1b->type));
+  return compound_expr (lexpr, expr);
+}
+
 /* Implements the visitor interface to build the GCC trees of all Expression
    AST classes emitted from the D Front-end.
    All visit methods accept one parameter E, which holds the frontend AST
@@ -55,169 +223,6 @@ class ExprVisitor : public Visitor
 
   tree result_;
   bool constp_;
-
-  /* Determine if type is a struct that has a postblit.  */
-
-  bool needs_postblit (Type *t)
-  {
-    t = t->baseElemOf ();
-
-    if (TypeStruct *ts = t->isTypeStruct ())
-      {
-	if (ts->sym->postblit)
-	  return true;
-      }
-
-    return false;
-  }
-
-  /* Determine if type is a struct that has a destructor.  */
-
-  bool needs_dtor (Type *t)
-  {
-    t = t->baseElemOf ();
-
-    if (TypeStruct *ts = t->isTypeStruct ())
-      {
-	if (ts->sym->dtor)
-	  return true;
-      }
-
-    return false;
-  }
-
-  /* Determine if expression is suitable lvalue.  */
-
-  bool lvalue_p (Expression *e)
-  {
-    SliceExp *se = e->isSliceExp ();
-    if (se != NULL && se->e1->isLvalue ())
-      return true;
-
-    CastExp *ce = e->isCastExp ();
-    if (ce != NULL && ce->e1->isLvalue ())
-      return true;
-
-    return (e->op != TOKslice && e->isLvalue ());
-  }
-
-  /* Build an expression of code CODE, data type TYPE, and operands ARG0 and
-     ARG1.  Perform relevant conversions needed for correct code operations.  */
-
-  tree binary_op (tree_code code, tree type, tree arg0, tree arg1)
-  {
-    tree t0 = TREE_TYPE (arg0);
-    tree t1 = TREE_TYPE (arg1);
-    tree ret = NULL_TREE;
-
-    bool unsignedp = TYPE_UNSIGNED (t0) || TYPE_UNSIGNED (t1);
-
-    /* Deal with float mod expressions immediately.  */
-    if (code == FLOAT_MOD_EXPR)
-      return build_float_modulus (type, arg0, arg1);
-
-    if (POINTER_TYPE_P (t0) && INTEGRAL_TYPE_P (t1))
-      return build_nop (type, build_offset_op (code, arg0, arg1));
-
-    if (INTEGRAL_TYPE_P (t0) && POINTER_TYPE_P (t1))
-      return build_nop (type, build_offset_op (code, arg1, arg0));
-
-    if (POINTER_TYPE_P (t0) && POINTER_TYPE_P (t1))
-      {
-	gcc_assert (code == MINUS_EXPR);
-	tree ptrtype = lang_hooks.types.type_for_mode (ptr_mode, 0);
-
-	/* POINTER_DIFF_EXPR requires a signed integer type of the same size as
-	   pointers.  If some platform cannot provide that, or has a larger
-	   ptrdiff_type to support differences larger than half the address
-	   space, cast the pointers to some larger integer type and do the
-	   computations in that type.  */
-	if (TYPE_PRECISION (ptrtype) > TYPE_PRECISION (t0))
-	  ret = fold_build2 (MINUS_EXPR, ptrtype,
-			     d_convert (ptrtype, arg0),
-			     d_convert (ptrtype, arg1));
-	else
-	  ret = fold_build2 (POINTER_DIFF_EXPR, ptrtype, arg0, arg1);
-      }
-    else if (INTEGRAL_TYPE_P (type) && (TYPE_UNSIGNED (type) != unsignedp))
-      {
-	tree inttype = (unsignedp)
-	  ? d_unsigned_type (type) : d_signed_type (type);
-	ret = fold_build2 (code, inttype, arg0, arg1);
-      }
-    else
-      {
-	/* If the operation needs excess precision.  */
-	tree eptype = excess_precision_type (type);
-	if (eptype != NULL_TREE)
-	  {
-	    arg0 = d_convert (eptype, arg0);
-	    arg1 = d_convert (eptype, arg1);
-	  }
-	else
-	  {
-	    /* Front-end does not do this conversion and GCC does not
-	       always do it right.  */
-	    if (COMPLEX_FLOAT_TYPE_P (t0) && !COMPLEX_FLOAT_TYPE_P (t1))
-	      arg1 = d_convert (t0, arg1);
-	    else if (COMPLEX_FLOAT_TYPE_P (t1) && !COMPLEX_FLOAT_TYPE_P (t0))
-	      arg0 = d_convert (t1, arg0);
-
-	    eptype = type;
-	  }
-
-	ret = fold_build2 (code, eptype, arg0, arg1);
-      }
-
-    return d_convert (type, ret);
-  }
-
-  /* Build a binary expression of code CODE, assigning the result into E1.  */
-
-  tree binop_assignment (tree_code code, Expression *e1, Expression *e2)
-  {
-    /* Skip casts for lhs assignment.  */
-    Expression *e1b = e1;
-    while (e1b->op == TOKcast)
-      {
-	CastExp *ce = e1b->isCastExp ();
-	gcc_assert (same_type_p (ce->type, ce->to));
-	e1b = ce->e1;
-      }
-
-    /* Stabilize LHS for assignment.  */
-    tree lhs = build_expr (e1b);
-    tree lexpr = stabilize_expr (&lhs);
-
-    /* The LHS expression could be an assignment, to which its operation gets
-       lost during gimplification.  */
-    if (TREE_CODE (lhs) == MODIFY_EXPR)
-      {
-	/* If LHS has side effects, call stabilize_reference on it, so it can
-	   be evaluated multiple times.  */
-	if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
-	  lhs = build_assign (MODIFY_EXPR,
-			      stabilize_reference (TREE_OPERAND (lhs, 0)),
-			      TREE_OPERAND (lhs, 1));
-
-	lexpr = compound_expr (lexpr, lhs);
-	lhs = TREE_OPERAND (lhs, 0);
-      }
-
-    lhs = stabilize_reference (lhs);
-
-    /* Save RHS, to ensure that the expression is evaluated before LHS.  */
-    tree rhs = build_expr (e2);
-    tree rexpr = d_save_expr (rhs);
-
-    rhs = this->binary_op (code, build_ctype (e1->type),
-			   convert_expr (lhs, e1b->type, e1->type), rexpr);
-    if (TREE_SIDE_EFFECTS (rhs))
-      rhs = compound_expr (rexpr, rhs);
-
-    tree expr = modify_expr (lhs, convert_expr (rhs, e1->type, e1b->type));
-    return compound_expr (lexpr, expr);
-  }
 
 public:
   ExprVisitor (bool constp)
@@ -373,9 +378,8 @@ public:
 		|| identity_compare_p (t1elem->isTypeStruct ()->sym))
 	      {
 		tree size = size_mult_expr (t1len, size_int (t1elem->size ()));
-		tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
 
-		result = build_call_expr (tmemcmp, 3, t1ptr, t2ptr, size);
+		result = build_memcmp_call (t1ptr, t2ptr, size);
 		result = build_boolop (code, result, integer_zero_node);
 	      }
 	    else
@@ -653,8 +657,8 @@ public:
 	gcc_unreachable ();
       }
 
-    this->result_ = this->binary_op (code, build_ctype (e->type),
-				     build_expr (e->e1), build_expr (e->e2));
+    this->result_ = binary_op (code, build_ctype (e->type),
+			       build_expr (e->e1), build_expr (e->e2));
   }
 
 
@@ -807,7 +811,7 @@ public:
 	gcc_unreachable ();
       }
 
-    tree exp = this->binop_assignment (code, e1b, e->e2);
+    tree exp = binop_assignment (code, e1b, e->e2);
     this->result_ = convert_expr (exp, e1b->type, e->type);
   }
 
@@ -915,8 +919,8 @@ public:
 	Type *etype = stype->nextOf ()->toBasetype ();
 
 	/* Determine if we need to run postblit or dtor.  */
-	bool postblit = this->needs_postblit (etype) && this->lvalue_p (e->e2);
-	bool destructor = this->needs_dtor (etype);
+	bool postblit = needs_postblit (etype) && lvalue_p (e->e2);
+	bool destructor = needs_dtor (etype);
 
 	if (e->memset & blockAssign)
 	  {
@@ -943,12 +947,9 @@ public:
 
 	    if (integer_zerop (t2))
 	      {
-		tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
 		tree size = size_mult_expr (d_array_length (t1),
 					    size_int (etype->size ()));
-
-		result = build_call_expr (tmemset, 3, d_array_ptr (t1),
-					  integer_zero_node, size);
+		result = build_memset_call (d_array_ptr (t1), size);
 	      }
 	    else
 	      result = build_array_set (d_array_ptr (t1),
@@ -961,16 +962,47 @@ public:
 	    /* Perform a memcpy operation.  */
 	    gcc_assert (e->e2->type->ty != Tpointer);
 
-	    if (!postblit && !destructor && !array_bounds_check ())
+	    if (!postblit && !destructor)
 	      {
 		tree t1 = d_save_expr (d_array_convert (e->e1));
-		tree t2 = d_array_convert (e->e2);
-		tree tmemcpy = builtin_decl_explicit (BUILT_IN_MEMCPY);
-		tree size = size_mult_expr (d_array_length (t1),
-					    size_int (etype->size ()));
+		tree t2 = d_save_expr (d_array_convert (e->e2));
 
-		tree result = build_call_expr (tmemcpy, 3, d_array_ptr (t1),
-					       d_array_ptr (t2), size);
+		/* References to array data.  */
+		tree t1ptr = d_array_ptr (t1);
+		tree t1len = d_array_length (t1);
+		tree t2ptr = d_array_ptr (t2);
+
+		/* Generate: memcpy(to, from, size)  */
+		tree size = size_mult_expr (t1len, size_int (etype->size ()));
+		tree result = build_memcpy_call (t1ptr, t2ptr, size);
+
+		/* Insert check that array lengths match and do not overlap.  */
+		if (array_bounds_check ())
+		  {
+		    /* tlencmp = (t1len == t2len)  */
+		    tree t2len = d_array_length (t2);
+		    tree tlencmp = build_boolop (EQ_EXPR, t1len, t2len);
+
+		    /* toverlap = (t1ptr + size <= t2ptr
+				   || t2ptr + size <= t1ptr)  */
+		    tree t1ptrcmp = build_boolop (LE_EXPR,
+						  build_offset (t1ptr, size),
+						  t2ptr);
+		    tree t2ptrcmp = build_boolop (LE_EXPR,
+						  build_offset (t2ptr, size),
+						  t1ptr);
+		    tree toverlap = build_boolop (TRUTH_ORIF_EXPR, t1ptrcmp,
+						  t2ptrcmp);
+
+		    /* (tlencmp && toverlap) ? memcpy() : _d_arraybounds()  */
+		    tree tassert = build_array_bounds_call (e->loc);
+		    tree tboundscheck = build_boolop (TRUTH_ANDIF_EXPR,
+						      tlencmp, toverlap);
+
+		    result = build_condition (void_type_node, tboundscheck,
+					      result, tassert);
+		  }
+
 		this->result_ = compound_expr (result, t1);
 	      }
 	    else if ((postblit || destructor) && e->op != TOKblit)
@@ -1037,9 +1069,7 @@ public:
 	  {
 	    /* Use memset to fill struct.  */
 	    gcc_assert (e->op == TOKblit);
-	    tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-	    tree result = build_call_expr (tmemset, 3, build_address (t1),
-					   t2, size_int (sd->structsize));
+	    tree result = build_memset_call (t1);
 
 	    /* Maybe set-up hidden pointer to outer scope context.  */
 	    if (sd->isNested ())
@@ -1060,12 +1090,7 @@ public:
 
 	    /* Fill any alignment holes in the struct using memset.  */
 	    if (e->op == TOKconstruct && !identity_compare_p (sd))
-	      {
-		tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-		init = build_call_expr (tmemset, 3, build_address (t1),
-					integer_zero_node,
-					size_int (sd->structsize));
-	      }
+	      init = build_memset_call (t1);
 
 	    tree result = build_assign (modifycode, t1, t2);
 	    this->result_ = compound_expr (init, result);
@@ -1082,15 +1107,7 @@ public:
 	  {
 	    /* Use memset to fill the array.  */
 	    gcc_assert (e->op == TOKblit);
-
-	    tree t1 = build_expr (e->e1);
-	    tree t2 = convert_for_assignment (build_expr (e->e2),
-					      e->e2->type, e->e1->type);
-	    tree size = size_int (e->e1->type->size ());
-
-	    tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-	    this->result_ = build_call_expr (tmemset, 3, build_address (t1),
-					     t2, size);
+	    this->result_ = build_memset_call (build_expr (e->e1));
 	    return;
 	  }
 
@@ -1098,15 +1115,15 @@ public:
 	gcc_assert (e->e2->type->toBasetype ()->ty == Tsarray);
 
 	/* Determine if we need to run postblit.  */
-	bool postblit = this->needs_postblit (etype);
-	bool destructor = this->needs_dtor (etype);
-	bool lvalue_p = this->lvalue_p (e->e2);
+	bool postblit = needs_postblit (etype);
+	bool destructor = needs_dtor (etype);
+	bool lvalue = lvalue_p (e->e2);
 
 	/* Even if the elements in rhs are all rvalues and don't have
 	   to call postblits, this assignment should call dtors on old
 	   assigned elements.  */
 	if ((!postblit && !destructor)
-	    || (e->op == TOKconstruct && !lvalue_p && postblit)
+	    || (e->op == TOKconstruct && !lvalue && postblit)
 	    || (e->op == TOKblit || e->e1->type->size () == 0))
 	  {
 	    tree t1 = build_expr (e->e1);
@@ -1132,7 +1149,7 @@ public:
 	  {
 	    /* Generate: _d_arrayassign_l()
 		     or: _d_arrayassign_r()  */
-	    libcall_fn libcall = (lvalue_p)
+	    libcall_fn libcall = (lvalue)
 	      ? LIBCALL_ARRAYASSIGN_L : LIBCALL_ARRAYASSIGN_R;
 	    tree elembuf = build_local_temp (build_ctype (etype));
 
@@ -2748,12 +2765,10 @@ public:
 	mem = d_save_expr (mem);
 
 	/* Now copy the constructor into memory.  */
-	tree tmemcpy = builtin_decl_explicit (BUILT_IN_MEMCPY);
 	tree size = size_mult_expr (size_int (e->elements->length),
 				    size_int (tb->nextOf ()->size ()));
 
-	tree result = build_call_expr (tmemcpy, 3, mem,
-				       build_address (ctor), size);
+	tree result = build_memcpy_call (mem, build_address (ctor), size);
 
 	/* Return the array pointed to by MEM.  */
 	result = compound_expr (result, mem);
@@ -2784,30 +2799,14 @@ public:
 
     /* Build an expression that assigns all expressions in KEYS
        to a constructor.  */
-    vec <constructor_elt, va_gc> *kelts = NULL;
-    vec_safe_reserve (kelts, e->keys->length);
-    for (size_t i = 0; i < e->keys->length; i++)
-      {
-	Expression *key = (*e->keys)[i];
-	tree t = build_expr (key);
-	CONSTRUCTOR_APPEND_ELT (kelts, size_int (i),
-				convert_expr (t, key->type, ta->index));
-      }
-    tree tkeys = make_array_type (ta->index, e->keys->length);
-    tree akeys = build_constructor (tkeys, kelts);
+    tree akeys = build_array_from_exprs (ta->index->sarrayOf (e->keys->length),
+					 e->keys, this->constp_);
+    tree init = stabilize_expr (&akeys);
 
     /* Do the same with all expressions in VALUES.  */
-    vec <constructor_elt, va_gc> *velts = NULL;
-    vec_safe_reserve (velts, e->values->length);
-    for (size_t i = 0; i < e->values->length; i++)
-      {
-	Expression *value = (*e->values)[i];
-	tree t = build_expr (value);
-	CONSTRUCTOR_APPEND_ELT (velts, size_int (i),
-				convert_expr (t, value->type, ta->next));
-      }
-    tree tvals = make_array_type (ta->next, e->values->length);
-    tree avals = build_constructor (tvals, velts);
+    tree avals = build_array_from_exprs (ta->next->sarrayOf (e->values->length),
+					 e->values, this->constp_);
+    init = compound_expr (init, stabilize_expr (&avals));
 
     /* Generate: _d_assocarrayliteralTX (ti, keys, vals);  */
     tree keys = d_array_value (build_ctype (ta->index->arrayOf ()),
@@ -2825,8 +2824,9 @@ public:
     vec <constructor_elt, va_gc> *ce = NULL;
     CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
 
-    this->result_ = build_nop (build_ctype (e->type),
-			       build_constructor (aatype, ce));
+    tree result = build_nop (build_ctype (e->type),
+			     build_constructor (aatype, ce));
+    this->result_ = compound_expr (init, result);
   }
 
   /* Build a struct literal.  */
@@ -2930,10 +2930,7 @@ public:
       {
 	/* For unions, use memset to fill holes in the object.  */
 	tree var = build_local_temp (TREE_TYPE (ctor));
-	tree tmemset = builtin_decl_explicit (BUILT_IN_MEMSET);
-	tree init = build_call_expr (tmemset, 3, build_address (var),
-				     size_zero_node,
-				     size_int (e->sd->structsize));
+	tree init = build_memset_call (var);
 
 	init = compound_expr (init, saved_elems);
 	init = compound_expr (init, modify_expr (var, ctor));

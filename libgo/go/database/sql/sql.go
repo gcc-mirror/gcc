@@ -424,13 +424,15 @@ type DB struct {
 	closed            bool
 	dep               map[finalCloser]depSet
 	lastPut           map[*driverConn]string // stacktrace of last conn's put; debug only
-	maxIdle           int                    // zero means defaultMaxIdleConns; negative means 0
+	maxIdleCount      int                    // zero means defaultMaxIdleConns; negative means 0
 	maxOpen           int                    // <= 0 means unlimited
 	maxLifetime       time.Duration          // maximum amount of time a connection may be reused
+	maxIdleTime       time.Duration          // maximum amount of time a connection may be idle before being closed
 	cleanerCh         chan struct{}
 	waitCount         int64 // Total number of connections waited for.
-	maxIdleClosed     int64 // Total number of connections closed due to idle.
-	maxLifetimeClosed int64 // Total number of connections closed due to max free limit.
+	maxIdleClosed     int64 // Total number of connections closed due to idle count.
+	maxIdleTimeClosed int64 // Total number of connections closed due to idle time.
+	maxLifetimeClosed int64 // Total number of connections closed due to max connection lifetime limit.
 
 	stop func() // stop cancels the connection opener and the session resetter.
 }
@@ -464,8 +466,9 @@ type driverConn struct {
 
 	// guarded by db.mu
 	inUse      bool
-	onPut      []func() // code (with db.mu held) run when conn is next returned
-	dbmuClosed bool     // same as closed, but guarded by db.mu, for removeClosedStmtLocked
+	returnedAt time.Time // Time the connection was created or returned.
+	onPut      []func()  // code (with db.mu held) run when conn is next returned
+	dbmuClosed bool      // same as closed, but guarded by db.mu, for removeClosedStmtLocked
 }
 
 func (dc *driverConn) releaseConn(err error) {
@@ -500,11 +503,6 @@ func (dc *driverConn) resetSession(ctx context.Context) error {
 	return nil
 }
 
-// validator was introduced for Go1.15, but backported to Go1.14.
-type validator interface {
-	IsValid() bool
-}
-
 // validateConnection checks if the connection is valid and can
 // still be used. It also marks the session for reset if required.
 func (dc *driverConn) validateConnection(needsReset bool) bool {
@@ -514,7 +512,7 @@ func (dc *driverConn) validateConnection(needsReset bool) bool {
 	if needsReset {
 		dc.needReset = true
 	}
-	if cv, ok := dc.ci.(validator); ok {
+	if cv, ok := dc.ci.(driver.Validator); ok {
 		return cv.IsValid()
 	}
 	return true
@@ -858,7 +856,7 @@ func (db *DB) Close() error {
 const defaultMaxIdleConns = 2
 
 func (db *DB) maxIdleConnsLocked() int {
-	n := db.maxIdle
+	n := db.maxIdleCount
 	switch {
 	case n == 0:
 		// TODO(bradfitz): ask driver, if supported, for its default preference
@@ -868,6 +866,14 @@ func (db *DB) maxIdleConnsLocked() int {
 	default:
 		return n
 	}
+}
+
+func (db *DB) shortestIdleTimeLocked() time.Duration {
+	min := db.maxIdleTime
+	if min > db.maxLifetime {
+		min = db.maxLifetime
+	}
+	return min
 }
 
 // SetMaxIdleConns sets the maximum number of connections in the idle
@@ -883,14 +889,14 @@ func (db *DB) maxIdleConnsLocked() int {
 func (db *DB) SetMaxIdleConns(n int) {
 	db.mu.Lock()
 	if n > 0 {
-		db.maxIdle = n
+		db.maxIdleCount = n
 	} else {
 		// No idle connections.
-		db.maxIdle = -1
+		db.maxIdleCount = -1
 	}
 	// Make sure maxIdle doesn't exceed maxOpen
 	if db.maxOpen > 0 && db.maxIdleConnsLocked() > db.maxOpen {
-		db.maxIdle = db.maxOpen
+		db.maxIdleCount = db.maxOpen
 	}
 	var closing []*driverConn
 	idleCount := len(db.freeConn)
@@ -931,13 +937,13 @@ func (db *DB) SetMaxOpenConns(n int) {
 //
 // Expired connections may be closed lazily before reuse.
 //
-// If d <= 0, connections are reused forever.
+// If d <= 0, connections are not closed due to a connection's age.
 func (db *DB) SetConnMaxLifetime(d time.Duration) {
 	if d < 0 {
 		d = 0
 	}
 	db.mu.Lock()
-	// wake cleaner up when lifetime is shortened.
+	// Wake cleaner up when lifetime is shortened.
 	if d > 0 && d < db.maxLifetime && db.cleanerCh != nil {
 		select {
 		case db.cleanerCh <- struct{}{}:
@@ -949,11 +955,34 @@ func (db *DB) SetConnMaxLifetime(d time.Duration) {
 	db.mu.Unlock()
 }
 
+// SetConnMaxIdleTime sets the maximum amount of time a connection may be idle.
+//
+// Expired connections may be closed lazily before reuse.
+//
+// If d <= 0, connections are not closed due to a connection's idle time.
+func (db *DB) SetConnMaxIdleTime(d time.Duration) {
+	if d < 0 {
+		d = 0
+	}
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Wake cleaner up when idle time is shortened.
+	if d > 0 && d < db.maxIdleTime && db.cleanerCh != nil {
+		select {
+		case db.cleanerCh <- struct{}{}:
+		default:
+		}
+	}
+	db.maxIdleTime = d
+	db.startCleanerLocked()
+}
+
 // startCleanerLocked starts connectionCleaner if needed.
 func (db *DB) startCleanerLocked() {
-	if db.maxLifetime > 0 && db.numOpen > 0 && db.cleanerCh == nil {
+	if (db.maxLifetime > 0 || db.maxIdleTime > 0) && db.numOpen > 0 && db.cleanerCh == nil {
 		db.cleanerCh = make(chan struct{}, 1)
-		go db.connectionCleaner(db.maxLifetime)
+		go db.connectionCleaner(db.shortestIdleTimeLocked())
 	}
 }
 
@@ -972,15 +1001,30 @@ func (db *DB) connectionCleaner(d time.Duration) {
 		}
 
 		db.mu.Lock()
-		d = db.maxLifetime
+
+		d = db.shortestIdleTimeLocked()
 		if db.closed || db.numOpen == 0 || d <= 0 {
 			db.cleanerCh = nil
 			db.mu.Unlock()
 			return
 		}
 
-		expiredSince := nowFunc().Add(-d)
-		var closing []*driverConn
+		closing := db.connectionCleanerRunLocked()
+		db.mu.Unlock()
+		for _, c := range closing {
+			c.Close()
+		}
+
+		if d < minInterval {
+			d = minInterval
+		}
+		t.Reset(d)
+	}
+}
+
+func (db *DB) connectionCleanerRunLocked() (closing []*driverConn) {
+	if db.maxLifetime > 0 {
+		expiredSince := nowFunc().Add(-db.maxLifetime)
 		for i := 0; i < len(db.freeConn); i++ {
 			c := db.freeConn[i]
 			if c.createdAt.Before(expiredSince) {
@@ -993,17 +1037,26 @@ func (db *DB) connectionCleaner(d time.Duration) {
 			}
 		}
 		db.maxLifetimeClosed += int64(len(closing))
-		db.mu.Unlock()
-
-		for _, c := range closing {
-			c.Close()
-		}
-
-		if d < minInterval {
-			d = minInterval
-		}
-		t.Reset(d)
 	}
+
+	if db.maxIdleTime > 0 {
+		expiredSince := nowFunc().Add(-db.maxIdleTime)
+		var expiredCount int64
+		for i := 0; i < len(db.freeConn); i++ {
+			c := db.freeConn[i]
+			if db.maxIdleTime > 0 && c.returnedAt.Before(expiredSince) {
+				closing = append(closing, c)
+				expiredCount++
+				last := len(db.freeConn) - 1
+				db.freeConn[i] = db.freeConn[last]
+				db.freeConn[last] = nil
+				db.freeConn = db.freeConn[:last]
+				i--
+			}
+		}
+		db.maxIdleTimeClosed += expiredCount
+	}
+	return
 }
 
 // DBStats contains database statistics.
@@ -1019,6 +1072,7 @@ type DBStats struct {
 	WaitCount         int64         // The total number of connections waited for.
 	WaitDuration      time.Duration // The total time blocked waiting for a new connection.
 	MaxIdleClosed     int64         // The total number of connections closed due to SetMaxIdleConns.
+	MaxIdleTimeClosed int64         // The total number of connections closed due to SetConnMaxIdleTime.
 	MaxLifetimeClosed int64         // The total number of connections closed due to SetConnMaxLifetime.
 }
 
@@ -1039,6 +1093,7 @@ func (db *DB) Stats() DBStats {
 		WaitCount:         db.waitCount,
 		WaitDuration:      time.Duration(wait),
 		MaxIdleClosed:     db.maxIdleClosed,
+		MaxIdleTimeClosed: db.maxIdleTimeClosed,
 		MaxLifetimeClosed: db.maxLifetimeClosed,
 	}
 	return stats
@@ -1099,9 +1154,10 @@ func (db *DB) openNewConnection(ctx context.Context) {
 		return
 	}
 	dc := &driverConn{
-		db:        db,
-		createdAt: nowFunc(),
-		ci:        ci,
+		db:         db,
+		createdAt:  nowFunc(),
+		returnedAt: nowFunc(),
+		ci:         ci,
 	}
 	if db.putConnDBLocked(dc, err) {
 		db.addDepLocked(dc, dc)
@@ -1152,11 +1208,13 @@ func (db *DB) conn(ctx context.Context, strategy connReuseStrategy) (*driverConn
 		copy(db.freeConn, db.freeConn[1:])
 		db.freeConn = db.freeConn[:numFree-1]
 		conn.inUse = true
-		db.mu.Unlock()
 		if conn.expired(lifetime) {
+			db.maxLifetimeClosed++
+			db.mu.Unlock()
 			conn.Close()
 			return nil, driver.ErrBadConn
 		}
+		db.mu.Unlock()
 
 		// Reset the session if required.
 		if err := conn.resetSession(ctx); err == driver.ErrBadConn {
@@ -1178,7 +1236,7 @@ func (db *DB) conn(ctx context.Context, strategy connReuseStrategy) (*driverConn
 		db.waitCount++
 		db.mu.Unlock()
 
-		waitStart := time.Now()
+		waitStart := nowFunc()
 
 		// Timeout the connection request with the context.
 		select {
@@ -1212,6 +1270,9 @@ func (db *DB) conn(ctx context.Context, strategy connReuseStrategy) (*driverConn
 			// This prioritizes giving a valid connection to a client over the exact connection
 			// lifetime, which could expire exactly after this point anyway.
 			if strategy == cachedOrNewConn && ret.err == nil && ret.conn.expired(lifetime) {
+				db.mu.Lock()
+				db.maxLifetimeClosed++
+				db.mu.Unlock()
 				ret.conn.Close()
 				return nil, driver.ErrBadConn
 			}
@@ -1240,10 +1301,11 @@ func (db *DB) conn(ctx context.Context, strategy connReuseStrategy) (*driverConn
 	}
 	db.mu.Lock()
 	dc := &driverConn{
-		db:        db,
-		createdAt: nowFunc(),
-		ci:        ci,
-		inUse:     true,
+		db:         db,
+		createdAt:  nowFunc(),
+		returnedAt: nowFunc(),
+		ci:         ci,
+		inUse:      true,
 	}
 	db.addDepLocked(dc, dc)
 	db.mu.Unlock()
@@ -1295,12 +1357,14 @@ func (db *DB) putConn(dc *driverConn, err error, resetSession bool) {
 	}
 
 	if err != driver.ErrBadConn && dc.expired(db.maxLifetime) {
+		db.maxLifetimeClosed++
 		err = driver.ErrBadConn
 	}
 	if debugGetPut {
 		db.lastPut[dc] = stack()
 	}
 	dc.inUse = false
+	dc.returnedAt = nowFunc()
 
 	for _, fn := range dc.onPut {
 		fn()
@@ -1691,7 +1755,7 @@ func (db *DB) beginDC(ctx context.Context, dc *driverConn, release func(error), 
 	keepConnOnRollback := false
 	withLock(dc, func() {
 		_, hasSessionResetter := dc.ci.(driver.SessionResetter)
-		_, hasConnectionValidator := dc.ci.(validator)
+		_, hasConnectionValidator := dc.ci.(driver.Validator)
 		keepConnOnRollback = hasSessionResetter && hasConnectionValidator
 		txi, err = ctxDriverBegin(ctx, opts, dc.ci)
 	})
@@ -2729,8 +2793,15 @@ func (rs *Rows) lasterrOrErrLocked(err error) error {
 	return err
 }
 
+// bypassRowsAwaitDone is only used for testing.
+// If true, it will not close the Rows automatically from the context.
+var bypassRowsAwaitDone = false
+
 func (rs *Rows) initContextClose(ctx, txctx context.Context) {
 	if ctx.Done() == nil && (txctx == nil || txctx.Done() == nil) {
+		return
+	}
+	if bypassRowsAwaitDone {
 		return
 	}
 	ctx, rs.cancel = context.WithCancel(ctx)
@@ -2942,10 +3013,11 @@ func (ci *ColumnType) Nullable() (nullable, ok bool) {
 }
 
 // DatabaseTypeName returns the database system name of the column type. If an empty
-// string is returned the driver type name is not supported.
+// string is returned, then the driver type name is not supported.
 // Consult your driver documentation for a list of driver data types. Length specifiers
 // are not included.
-// Common type include "VARCHAR", "TEXT", "NVARCHAR", "DECIMAL", "BOOL", "INT", "BIGINT".
+// Common type names include "VARCHAR", "TEXT", "NVARCHAR", "DECIMAL", "BOOL",
+// "INT", and "BIGINT".
 func (ci *ColumnType) DatabaseTypeName() string {
 	return ci.databaseType
 }
@@ -3158,6 +3230,14 @@ func (r *Row) Scan(dest ...interface{}) error {
 	}
 	// Make sure the query can be processed to completion with no errors.
 	return r.rows.Close()
+}
+
+// Err provides a way for wrapping packages to check for
+// query errors without calling Scan.
+// Err returns the error, if any, that was encountered while running the query.
+// If this error is not nil, this error will also be returned from Scan.
+func (r *Row) Err() error {
+	return r.err
 }
 
 // A Result summarizes an executed SQL command.

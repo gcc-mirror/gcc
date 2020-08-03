@@ -588,6 +588,12 @@ struct gcov_root __gcov_root;
 struct gcov_master __gcov_master = 
   {GCOV_VERSION, 0};
 
+/* Pool of pre-allocated gcov_kvp strutures.  */
+struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
+
+/* Index to first free gcov_kvp in the pool.  */
+unsigned __gcov_kvp_pool_index;
+
 void
 __gcov_exit (void)
 {

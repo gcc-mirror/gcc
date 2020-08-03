@@ -1,3 +1,123 @@
+2020-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96182
+	* decl.c (finish_function): In constexpr functions use for C++14 and
+	later error instead of warning if no return statement is present and
+	diagnose it regardless of warn_return_type.  Move the warn_return_type
+	diagnostics earlier in the function.
+
+2020-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96003
+	* class.c (build_base_path): Set no-warning bit on the synthesized
+	conditional expression in static_cast.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* cp-objcp-common.h (LANG_HOOKS_FINALIZE_EARLY_DEBUG):
+	Define to c_common_finalize_early_debug.
+
+2020-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96197
+	* constexpr.c (cxx_eval_constant_expression) <case CONST_DECL>:
+	Pass false to decl_constant_value and decl_really_constant_value
+	so that they don't unshare their result.
+	* cp-tree.h (decl_constant_value): New declaration with an added
+	bool parameter.
+	(decl_really_constant_value): Add bool parameter defaulting to
+	true to existing declaration.
+	* init.c (constant_value_1): Add bool parameter which controls
+	whether to unshare the initializer before returning.  Call
+	unshare_expr at most once.
+	(scalar_constant_value): Pass true to constant_value_1's new
+	bool parameter.
+	(decl_really_constant_value): Add bool parameter and forward it
+	to constant_value_1.
+	(decl_constant_value): Likewise, but instead define a new
+	overload with an added bool parameter.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* pt.c (resolve_overloaded_unification): If the function
+	template specialization has a placeholder return type,
+	then instantiate it before attempting unification.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95486
+	* pt.c (alias_ctad_tweaks): Call remove_constraints before
+	calling set_constraints.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96106
+	* pt.c (reduce_template_parm_level): Propagate DECL_VIRTUAL_P
+	from the original TEMPLATE_PARM_DECL to the new lowered one.
+
+2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96164
+	* constraint.cc (constraints_satisfied_p): Return true if
+	!flags_concepts.
+	* pt.c (do_type_instantiation): Update a paragraph taken from
+	[temp.explicit] to reflect the latest specification.  Don't
+	instantiate a member with unsatisfied constraints.
+
+2020-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91427
+	* cp-tree.h (IMPLICIT_RVALUE_P): New.
+	(enum cp_lvalue_kind_flags): Add clk_implicit_rval.
+	(implicit_rvalue_p, set_implicit_rvalue_p): New.
+	* call.c (reference_binding): Check clk_implicit_rval.
+	(build_over_call): Adjust C++20 implicit move.
+	* coroutines.cc (finish_co_return_stmt): Simplify implicit move.
+	* except.c (build_throw): Adjust C++20 implicit move.
+	* pt.c (tsubst_copy_and_build) [STATIC_CAST_EXPR]: Propagate
+	IMPLICIT_RVALUE_P.
+	* tree.c (lvalue_kind): Set clk_implicit_rval.
+	* typeck.c (treat_lvalue_as_rvalue_p): Overhaul.
+	(maybe_warn_pessimizing_move): Adjust.
+	(check_return_expr): Adjust C++20 implicit move.
+
+2020-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91212
+	* call.c (build_over_call): Don't call a const ref
+	overload for implicit move.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-gimplify.c (cp_genericize_r): Set IMPORTED_DECL's context.
+	* cp-objcp-common.c (cp_pushdecl): Set decl's context.
+	* decl.c (grokfndecl): Make DECL_CONTEXT setting clearer.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (fixup_type_variants): Copy TYPE_SIZE and
+	TYPE_SIZE_UINIT.
+	(finish_struct): Call it.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* ptree.c (cxx_print_decl): Better indentation.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	PR c++/96328
+	* parser.c (cp_lexer_safe_previous_token): Don't call
+	cp_lexer_previous_token, instead inline it by hand and return NULL
+	instead of failing assertion if all previous tokens until the first
+	one are purged.
+	(cp_parser_error_1): Optimize - only call cp_lexer_safe_previous_token
+	if token->type is CPP_NAME.  Use cp_lexer_safe_previous_token instead
+	of cp_lexer_previous_token for the missing_token_desc != RT_NONE
+	case too.
+
 2020-07-27  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (enum cp_tree_index): Add CPTI_AS_BASE_IDENTIFIER.

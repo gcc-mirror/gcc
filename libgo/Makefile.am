@@ -391,6 +391,11 @@ toolexeclibgotexttemplatedir = $(toolexeclibgotextdir)/template
 toolexeclibgotexttemplate_DATA = \
 	text/template/parse.gox
 
+toolexeclibgotimedir = $(toolexeclibgodir)/time
+
+toolexeclibgotime_DATA = \
+	time/tzdata.gox
+
 toolexeclibgounicodedir = $(toolexeclibgodir)/unicode
 
 toolexeclibgounicode_DATA = \
@@ -400,7 +405,8 @@ toolexeclibgounicode_DATA = \
 # Some internal packages are needed to bootstrap the gc toolchain.
 toolexeclibgointernaldir = $(toolexeclibgodir)/internal
 toolexeclibgointernal_DATA = \
-	internal/reflectlite.gox
+	internal/reflectlite.gox \
+	internal/unsafeheader.gox
 
 # Some packages are only needed for tests, so unlike the other
 # internal packages nothing will explicitly depend on them.
@@ -409,11 +415,11 @@ noinst_DATA = \
 	golang.org/x/net/nettest.gox \
 	internal/cfg.gox \
 	internal/obscuretestdata.gox \
+	internal/profile.gox \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \
-	os/signal/internal/pty.gox \
-	runtime/pprof/internal/profile.gox
+	os/signal/internal/pty.gox
 
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -706,9 +712,9 @@ syscall_lib_clone_lo =
 endif
 
 if LIBGO_IS_X86
-golangorg_x_sys_cpu_gccgo_lo = golang.org/x/sys/cpu_gccgo.lo
+golangorg_x_sys_cpu_gccgo_x86_lo = golang.org/x/sys/cpu_gccgo_x86.lo
 else
-golangorg_x_sys_cpu_gccgo_lo =
+golangorg_x_sys_cpu_gccgo_x86_lo =
 endif
 
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
@@ -728,7 +734,7 @@ libgo_go_objs = \
 	runtime/internal/atomic_c.lo \
 	sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo \
-	$(golangorg_x_sys_cpu_gccgo_lo)
+	$(golangorg_x_sys_cpu_gccgo_x86_lo)
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
@@ -1008,6 +1014,7 @@ extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_test = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
 
@@ -1060,9 +1067,9 @@ internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/cpu/cpu_gccgo.c
 
 # Similarly, golang.org/x/sys/cpu needs some C code.
-golang.org/x/sys/cpu_gccgo.lo: go/golang.org/x/sys/cpu/cpu_gccgo.c runtime.inc
+golang.org/x/sys/cpu_gccgo_x86.lo: go/golang.org/x/sys/cpu/cpu_gccgo_x86.c runtime.inc
 	@$(MKDIR_P) golang.org/x/sys
-	$(LTCOMPILE) -c -o $@ $(srcdir)/go/golang.org/x/sys/cpu/cpu_gccgo.c
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/golang.org/x/sys/cpu/cpu_gccgo_x86.c
 
 # Solaris 11.4 changed the type of fields in struct stat.
 # Use a build tag, based on a configure check, to cope.
@@ -1238,7 +1245,7 @@ all-local: $(ALL_LOCAL_DEPS)
 
 MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
 add-aix-fat-library: all-multi
-    @if test "$(MULTIBUILDTOP)" = ""; then \
-        ${AR} -X$(AIX_DEFAULT_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
-        ${AR} -X$(AIX_DEFAULT_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
-    fi
+	@if test "$(MULTIBUILDTOP)" = ""; then \
+	  ${AR} -X$(AIX_DEFAULT_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	  ${AR} -X$(AIX_DEFAULT_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	fi

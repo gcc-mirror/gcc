@@ -1,3 +1,17 @@
+2020-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96003
+	* c-common.c (check_function_arguments_recurse): Return early when
+	no-warning bit is set.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* c-common.h (c_common_finalize_early_debug): Declare.
+	* c-common.c: Include debug.h.
+	(c_common_finalize_early_debug): finalize_early_debug langhook
+	implementation generating debug for extern declarations.
+
 2020-07-27  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.c (try_to_locate_new_include_insertion_point): Use
