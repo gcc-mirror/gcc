@@ -17354,6 +17354,7 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
 @samp{octeontx2f95mm}
+@samp{a64fx},
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
