@@ -7661,7 +7661,7 @@ this macro.
 @end defmac
 
 @defmac VECTOR_STORE_FLAG_VALUE (@var{mode})
-A C expression that gives a rtx representing the nonzero true element
+A C expression that gives an rtx representing the nonzero true element
 for vector comparisons.  The returned rtx should be valid for the inner
 mode of @var{mode} which is guaranteed to be a vector mode.  Define
 this macro on machines that have vector comparison operations that
