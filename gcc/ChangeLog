@@ -1,3 +1,9 @@
+2020-08-02  Sergei Trofimovich  <siarheit@google.com>
+
+	PR bootstrap/96404
+	* var-tracking.c (vt_find_locations): Fully initialize
+	all 'in_pending' bits.
+
 2020-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* symtab.c (symtab_node::verify_base): Verify order.
