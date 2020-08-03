@@ -868,6 +868,17 @@ static const cpu_prefetch_tune xgene1_prefetch_tune =
   -1			/* default_opt_level  */
 };
 
+static const cpu_prefetch_tune a64fx_prefetch_tune =
+{
+  8,			/* num_slots  */
+  64,			/* l1_cache_size  */
+  256,			/* l1_cache_line_size  */
+  32768,		/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
+  -1			/* default_opt_level  */
+};
+
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
@@ -1323,6 +1334,32 @@ static const struct tune_params neoversen1_tunings =
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
   &generic_prefetch_tune
+};
+
+static const struct tune_params a64fx_tunings =
+{
+  &generic_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &generic_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_512, /* sve_width  */
+  4, /* memmov_cost  */
+  7, /* issue_rate  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  "32",	/* function_align.  */
+  "16",	/* jump_align.  */
+  "32",	/* loop_align.  */
+  4,	/* int_reassoc_width.  */
+  2,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &a64fx_prefetch_tune
 };
 
 /* Support for fine-grained override of the tuning structures.  */
