@@ -1552,7 +1552,7 @@ name suffix).  This option applies to all following input files until
 the next @option{-x} option.  Possible values for @var{language} are:
 @smallexample
 c  c-header  cpp-output
-c++  c++-header  c++-cpp-output
+c++  c++-header  c++-system-header c++-user-header c++-cpp-output
 objective-c  objective-c-header  objective-c-cpp-output
 objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
@@ -2831,7 +2831,7 @@ This flag is enabled by default for @option{-std=c++17}.
 @itemx -fno-char8_t
 @opindex fchar8_t
 @opindex fno-char8_t
-Enable support for @code{char8_t} as adopted for C++2a.  This includes
+Enable support for @code{char8_t} as adopted for C++20.  This includes
 the addition of a new @code{char8_t} fundamental type, changes to the
 types of UTF-8 string and character literals, new signatures for
 user-defined literals, associated standard library updates, and new
@@ -2897,10 +2897,10 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @itemx -fconcepts-ts
 @opindex fconcepts
 @opindex fconcepts-ts
-Below @option{-std=c++2a}, @option{-fconcepts} enables support for the
+Below @option{-std=c++20}, @option{-fconcepts} enables support for the
 C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
 
-With @option{-std=c++2a} and above, Concepts are part of the language
+With @option{-std=c++20} and above, Concepts are part of the language
 standard, so @option{-fconcepts} defaults to on.  But the standard
 specification of Concepts differs significantly from the TS, so some
 constructs that were allowed in the TS but didn't make it into the
@@ -3026,11 +3026,10 @@ errors if these functions are not inlined everywhere they are called.
 @itemx -fno-modules-ts
 @opindex fmodules-ts
 @opindex fno-modules-ts
-Enable experimental support for n4720:``Working Draft, Extensions to
-C++ for Modules'' via p1103r1 ``Merging Modules''. The
-@option{-fno-modules-ts} is usually not needed, as that is the
-default.  Even though this is adopted for C++2a, it is not currently
-implicitly enabled by selecting that standard version.
+Enable support for C++ 20 modules.  The @option{-fno-modules-ts} is
+usually not needed, as that is the default.  Even though this is a
+C++20 feature, it is not currently implicitly enabled by selecting
+that standard version.
 
 @item -fno-module-lazy
 @opindex fno-module-lazy
@@ -3038,6 +3037,8 @@ implicitly enabled by selecting that standard version.
 Disable lazy module importing and module mapper creation.
 
 @item -fmodule-header
+@itemx -fmodule-header=user
+@itemx -fmodule-header=system
 @opindex fmodule-header
 Compile as a header unit.
 
@@ -3341,7 +3342,7 @@ about ABI tags.
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 Warn about uses of a comma expression within a subscripting expression.
-This usage was deprecated in C++2a.  However, a comma expression wrapped
+This usage was deprecated in C++20.  However, a comma expression wrapped
 in @code{( )} is not deprecated.  Example:
 
 @smallexample
@@ -3353,7 +3354,7 @@ void f(int *a, int b, int c) @{
 @end group
 @end smallexample
 
-Enabled by default with @option{-std=c++2a}.
+Enabled by default with @option{-std=c++20}.
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
@@ -3874,7 +3875,7 @@ non-class type, @code{volatile}-qualified function return type,
 @code{volatile}-qualified parameter type, and structured bindings of a
 @code{volatile}-qualified type.  This usage was deprecated in C++20.
 
-Enabled by default with @option{-std=c++2a}.
+Enabled by default with @option{-std=c++20}.
 
 @item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
 @opindex Wzero-as-null-pointer-constant
@@ -6328,7 +6329,7 @@ This is the warning level of @option{-Wshift-overflow} and is enabled
 by default in C99 and C++11 modes (and newer).  This warning level does
 not warn about left-shifting 1 into the sign bit.  (However, in C, such
 an overflow is still rejected in contexts where an integer constant expression
-is required.)  No warning is emitted in C++2A mode (and newer), as signed left
+is required.)  No warning is emitted in C++20 mode (and newer), as signed left
 shifts always wrap.
 
 @item -Wshift-overflow=2
@@ -31894,7 +31895,7 @@ considered complete (there may be defect reports to come).
 not complete.  Command-line options are not stable.}
 
 Modular compilation is @emph{not} enabled with just the
-@option{-std=c++2a} option.  You must explicitly enable it with the
+@option{-std=c++20} option.  You must explicitly enable it with the
 @option{-fmodules-ts} option.  It is independent of the language
 version selected.
 
@@ -31919,6 +31920,19 @@ the @option{-fmodules-ts} option.  These CMIs are named by the fully
 resolved underlying header file, and thus may be a complete pathname
 containing subdirectories.  If the header file is found at an absolute
 pathname, the CMI location is still relative to a CMI root directory.
+
+As header files often have no suffix, you commonly have to specify a
+@option{-x} option to tell the compiler the source is a header file.
+You may use @option{-x c++-header}, @option{-x c++-user-header} or
+@option{-x c++-system-header}.  When used in conjunction with
+@option{-fmodules-ts}, these all imply an appropriate
+@option{-fmodule-header} option.  The latter two variants will use the
+user or system include path to search for the file specified.  This
+allows you to, for instance, compile standard library header files as
+header units, without needing to know exactly where they are
+installed.  Specifying the language as one of these variants also
+inhibits output of the object file, as header files have no associated
+object file.
 
 When creating an output CMI any missing directory components are
 created in a manner that is safe for concurrent builds creating

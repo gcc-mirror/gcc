@@ -49,7 +49,36 @@ along with GCC; see the file COPYING3.  If not see
       "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
       "  %(cc1_options) %2"
       "  %{!S:-o %g.s%V}"
-      "  %{!fsyntax-only:%{!fmodule-only:%{!fmodule-header*:%{!fdump-ada-spec*:"
+      "  %{fmodules-ts:-fmodule-header}"
+      "  %{!fsyntax-only:%{!fmodule-*:%{!fmodules-*:%{!fdump-ada-spec*:"
+      "	     %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}}}}}}",
+     CPLUSPLUS_CPP_SPEC, 0, 0},
+  {"@c++-system-header",
+      "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}"
+      "%{!E:%{!M:%{!MM:"
+      "  %{save-temps*|no-integrated-cpp:cc1plus -E"
+      "	   %(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}"
+      "  cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
+      " 	   %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
+      "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
+      "  %(cc1_options) %2"
+      "  %{!S:-o %g.s%V}"
+      "  %{fmodules-ts:-fmodule-header=system}"
+      "  %{!fsyntax-only:%{!fmodule-*:%{!fmodules-*:%{!fdump-ada-spec*:"
+      "	     %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}}}}}}",
+     CPLUSPLUS_CPP_SPEC, 0, 0},
+  {"@c++-user-header",
+      "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}"
+      "%{!E:%{!M:%{!MM:"
+      "  %{save-temps*|no-integrated-cpp:cc1plus -E"
+      "	   %(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}"
+      "  cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
+      " 	   %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
+      "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
+      "  %(cc1_options) %2"
+      "  %{!S:-o %g.s%V}"
+      "  %{fmodules-ts:-fmodule-header=user}"
+      "  %{!fsyntax-only:%{!fmodule-*:%{!fmodules-*:%{!fdump-ada-spec*:"
       "	     %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}}}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
