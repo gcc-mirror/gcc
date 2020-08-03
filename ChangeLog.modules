@@ -1,5 +1,13 @@
 2020-08-03  Nathan Sidwell  <nathan@acm.org>
 
+	Add private module fragment parsing (only).
+	gcc/cp/
+	* parser.c (enum module_preamble): Replace with ...
+	(enum module_parse): Update all uses.  Add PMF values.
+	(cp_parser_module_declaration): Add private-module-fragment grammar.
+	gcc/testsuite/
+	* g++.dg/modules/pmp-[123]{,_[ab]}.C: New.
+
 	Fix save-temps & header-units
 	gcc/cp/
 	* lang-specs.h (@c++-{,system-,user-}header): Directives-only

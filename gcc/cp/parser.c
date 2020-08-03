@@ -2192,22 +2192,27 @@ static tree cp_parser_implicitly_scoped_statement
 static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
-// FIXME: Needs a cleanup, both names and semantics
-enum module_preamble
+/* State of module-declaration parsing.  */
+enum module_parse
 {
-  /* Order is important.  */
+  MP_NOT_MODULE,	/* Not a module.  */
+
+  _MP_UNUSED,
+
   MP_FIRST,	/* First declaration of TU.  */
-  MP_PREAMBLE,  /* Preamble of a module.  */
-  MP_NOTHING,	/* Not special in any way.  */
-  MP_POST,	/* After preamble.  */
-  MP_GMF,	/* Global Module Fragment.  */
-  MP_BAD,
+  MP_GLOBAL,	/* Global Module Fragment.  */
+
+  MP_PURVIEW_IMPORTS,   /* Imports of a module.  */
+  MP_PURVIEW,	/* Purview of a named module.  */
+
+  MP_PRIVATE_IMPORTS, /* Imports of a Private Module Fragment.  */
+  MP_PRIVATE,   /* Private Module Fragment.  */
 };
 
-static module_preamble cp_parser_module_declaration
-  (cp_parser *parser, module_preamble, bool exporting);
+static module_parse cp_parser_module_declaration
+  (cp_parser *parser, module_parse, bool exporting);
 static void cp_parser_import_declaration
-  (cp_parser *parser, module_preamble, bool exporting);
+  (cp_parser *parser, module_parse, bool exporting);
 
 /* Declarations [gram.dcl.dcl] */
 
@@ -4819,8 +4824,10 @@ cp_parser_translation_unit (cp_parser* parser)
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
 
-  module_preamble preamble =
-    modules_p () && !module_purview_p () ? MP_FIRST : MP_NOTHING;
+  module_parse mp_state = MP_NOT_MODULE;
+  if (modules_p () && !header_module_p ())
+    mp_state = MP_FIRST;
+
   bool implicit_extern_c = false;
 
   /* Parse until EOF.  */
@@ -4843,11 +4850,12 @@ cp_parser_translation_unit (cp_parser* parser)
 
       if (token->type == CPP_EOF)
 	break;
+
       if (modules_p ())
 	{
 	  /* Top-level module declarations are ok, and change the
 	     portion of file we're in.  Top-level import declarations
-	     are significant for the preamble.  */
+	     are significant for the import portions.  */
 
 	  cp_token *next = token;
 	  bool exporting = token->keyword == RID__EXPORT;
@@ -4858,21 +4866,21 @@ cp_parser_translation_unit (cp_parser* parser)
 	    }
 	  if (next->keyword == RID__MODULE)
 	    {
-	      preamble
-		= cp_parser_module_declaration (parser, preamble, exporting);
+	      mp_state
+		= cp_parser_module_declaration (parser, mp_state, exporting);
 	      continue;
 	    }
 	  else if (next->keyword == RID__IMPORT)
 	    {
-	      if (preamble == MP_FIRST)
-		preamble = MP_NOTHING;
-	      cp_parser_import_declaration (parser, preamble, exporting);
+	      if (mp_state == MP_FIRST)
+		mp_state = MP_NOT_MODULE;
+	      cp_parser_import_declaration (parser, mp_state, exporting);
 	      continue;
 	    }
 	  else
 	    gcc_checking_assert (!exporting);
 
-	  if (preamble == MP_GMF && token->main_source_p)
+	  if (mp_state == MP_GLOBAL && token->main_source_p)
 	    {
 	      static bool warned = false;
 	      if (!warned)
@@ -4885,9 +4893,12 @@ cp_parser_translation_unit (cp_parser* parser)
 	    }
 	}
 
-      /* This relies on the ordering of module_preamble values.  */
-      if (preamble <= MP_PREAMBLE)
-	preamble = module_preamble (preamble + MP_NOTHING);
+      /* This relies on the ordering of module_parse values.  */
+      if (mp_state == MP_PURVIEW_IMPORTS || mp_state == MP_PRIVATE_IMPORTS)
+	/* We're no longer in the import portion of a named module.  */
+	mp_state = module_parse (mp_state + 1);
+      else if (mp_state == MP_FIRST)
+	mp_state = MP_NOT_MODULE;
 
       if (token->type == CPP_CLOSE_BRACE)
 	{
@@ -13530,28 +13541,48 @@ cp_parser_module_name (cp_parser *parser)
 
 /* Named module-declaration
      __module ; PRAGMA_EOL
+     __module private ; PRAGMA_EOL (unimplemented)
      [__export] __module module-name attr-spec-seq-opt ; PRAGMA_EOL
 */
 
-// FIXME: This is untidy due to the 1857 transition in progress
-static module_preamble
-cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
+static module_parse
+cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
 			      bool exporting)
 {
   /* We're a pseudo pragma.  */
   parser->lexer->in_pragma = true;
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
-  if (preamble == MP_FIRST && !exporting
+  if (mp_state == MP_FIRST && !exporting
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
       /* Start global module fragment.  */
       cp_lexer_consume_token (parser->lexer);
       module_kind |= MK_GLOBAL;
-      preamble = MP_GMF;
+      mp_state = MP_GLOBAL;
       cp_parser_require_pragma_eol (parser, token);
     }
-  else if (preamble != MP_FIRST && preamble != MP_GMF)
+  else if (!exporting
+	   && cp_lexer_next_token_is (parser->lexer, CPP_COLON)
+	   && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_PRIVATE)
+	   && cp_lexer_nth_token_is (parser->lexer, 3, CPP_SEMICOLON))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_require_pragma_eol (parser, token);
+
+      if ((mp_state != MP_PURVIEW && mp_state != MP_PURVIEW_IMPORTS)
+	  || !module_interface_p () || module_partition_p ())
+	error_at (token->location,
+		  "private module fragment not permitted here");
+      else
+	{
+	  mp_state = MP_PRIVATE_IMPORTS;
+	  sorry_at (token->location, "private module fragment");
+	}
+    }
+  else if (mp_state != MP_FIRST && mp_state != MP_GLOBAL)
     {
       error_at (token->location, "module-declaration not permitted here");
     skip_eol:
@@ -13562,7 +13593,7 @@ cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
       module_state *mod = cp_parser_module_name (parser);
       tree attrs = cp_parser_attributes_opt (parser);
 
-      preamble = MP_PREAMBLE;
+      mp_state = MP_PURVIEW_IMPORTS;
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
 	goto skip_eol;
 
@@ -13570,22 +13601,24 @@ cp_parser_module_declaration (cp_parser *parser, module_preamble preamble,
       cp_parser_require_pragma_eol (parser, token);
     }
 
-  return preamble;
+  return mp_state;
 }
 
 /* Import-declaration
    [__export] __import module-name attr-spec-seq-opt ; PRAGMA_EOL */
 
 static void
-cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
+cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
 			      bool exporting)
 {
   /* We're a pseudo pragma.  */
   parser->lexer->in_pragma = true;
-
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
-  if (preamble != MP_PREAMBLE && module_purview_p () && !global_purview_p ())
+  if (mp_state != MP_PURVIEW_IMPORTS
+      && mp_state != MP_PRIVATE_IMPORTS
+      && module_purview_p ()
+      && !global_purview_p ())
     {
       error_at (token->location, "post-module-declaration"
 		" imports must be contiguous");
@@ -13596,7 +13629,7 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
     skip_eol:
       cp_parser_skip_to_pragma_eol (parser, token);
     }
-  else if (preamble == MP_BAD || current_scope () != global_namespace)
+  else if (current_scope () != global_namespace)
     {
       error_at (token->location, "import-declaration must be at global scope");
       goto note_lexer;
@@ -13619,13 +13652,14 @@ cp_parser_import_declaration (cp_parser *parser, module_preamble preamble,
 				       strlen ("__translated"), attrs))
 	error_at (token->location, "post-module-declaration imports"
 		  " must not be include-translated");
-      else if (preamble == MP_PREAMBLE && !token->main_source_p)
+      else if ((mp_state == MP_PURVIEW_IMPORTS
+		|| mp_state == MP_PRIVATE_IMPORTS)
+	       && !token->main_source_p)
 	error_at (token->location, "post-module-declaration imports"
 		  " must not be from header inclusion");
 
       import_module (mod, token->location, exporting, attrs, parse_in);
     }
-
 }
 
 /*  export-declaration.
@@ -13797,9 +13831,9 @@ cp_parser_declaration (cp_parser* parser)
       if (exporting)
 	cp_lexer_consume_token (parser->lexer);
       if (next->keyword == RID__MODULE)
-	cp_parser_module_declaration (parser, MP_BAD, exporting);
+	cp_parser_module_declaration (parser, MP_NOT_MODULE, exporting);
       else
-	cp_parser_import_declaration (parser, MP_NOTHING, exporting);
+	cp_parser_import_declaration (parser, MP_NOT_MODULE, exporting);
     }
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit
