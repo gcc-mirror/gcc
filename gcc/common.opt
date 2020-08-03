@@ -228,10 +228,6 @@ unsigned int flag_sanitize_coverage
 Variable
 bool dump_base_name_prefixed = false
 
-; Flag whether HSA generation has been explicitely disabled
-Variable
-bool flag_disable_hsa = false
-
 ###
 Driver
 
@@ -619,8 +615,8 @@ Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
 
 Whsa
-Common Var(warn_hsa) Init(1) Warning
-Warn when a function cannot be expanded to HSAIL.
+Common Ignore Warning
+Does nothing.  Preserved for backward compatibility.
 
 Wimplicit-fallthrough
 Common Alias(Wimplicit-fallthrough=,3,0) Warning

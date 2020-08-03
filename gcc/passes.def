@@ -153,7 +153,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_sra);
   NEXT_PASS (pass_ipa_cdtor_merge);
-  NEXT_PASS (pass_ipa_hsa);
   NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
@@ -402,7 +401,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_gimple_isel);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   NEXT_PASS (pass_warn_function_noreturn);
-  NEXT_PASS (pass_gen_hsail);
 
   NEXT_PASS (pass_expand);
 

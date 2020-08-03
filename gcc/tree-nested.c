@@ -1394,7 +1394,6 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
-	case OMP_CLAUSE__GRIDDIM_:
 	case OMP_CLAUSE__SIMT_:
 	  /* Anything else.  */
 	default:
@@ -2137,7 +2136,6 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
-	case OMP_CLAUSE__GRIDDIM_:
 	case OMP_CLAUSE__SIMT_:
 	  /* Anything else.  */
 	default:
