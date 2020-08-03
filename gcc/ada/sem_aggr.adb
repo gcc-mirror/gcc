@@ -1662,6 +1662,7 @@ package body Sem_Aggr is
          --  as a loop with a new index variable.
 
          Expr := New_Copy_Tree (Expression (N));
+         Set_Parent (Expr, N);
          Dummy := Resolve_Aggr_Expr (Expr, False);
 
          --  An iterated_component_association may appear in a nested
@@ -2057,8 +2058,13 @@ package body Sem_Aggr is
                      return Failure;
                   end if;
 
+               --  ??? Checks for dynamically tagged expressions below will
+               --  be only applied to iterated_component_association after
+               --  expansion; in particular, errors might not be reported when
+               --  -gnatc switch is used.
+
                elsif Nkind (Assoc) = N_Iterated_Component_Association then
-                  null;   --  handled above, in a loop context.
+                  null;   --  handled above, in a loop context
 
                elsif not Resolve_Aggr_Expr
                            (Expression (Assoc), Single_Elmt => Single_Choice)
