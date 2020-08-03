@@ -332,7 +332,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
--Wno-hsa  -Wno-if-not-aligned  -Wno-ignored-attributes @gol
+-Wno-if-not-aligned  -Wno-ignored-attributes @gol
 -Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wno-implicit-function-declaration  -Wno-implicit-int @gol
@@ -820,6 +820,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
 -mbig-endian  -EB  -mlittle-endian  -EL @gol
 -mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu @gol
+-mfloat-abi=@var{name} @gol
 -melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust @gol
 -mdsp  -medsp  -mvdsp @gol
 -mdiv  -msmart  -mhigh-registers  -manchor @gol
@@ -8590,12 +8591,6 @@ Suppress warnings when a positional initializer is used to initialize
 a structure that has been marked with the @code{designated_init}
 attribute.
 
-@item -Wno-hsa
-@opindex Whsa
-@opindex Wno-hsa
-Do not warn when HSAIL cannot be emitted for the compiled function or
-OpenMP construct.  These warnings are enabled by default.
-
 @end table
 
 @node Static Analyzer Options
@@ -13392,12 +13387,6 @@ Maximum depth of recursion when querying properties of SSA names in things
 like fold routines.  One level of recursion corresponds to following a
 use-def chain.
 
-@item hsa-gen-debug-stores
-Enable emission of special debug stores within HSA kernels which are
-then read and reported by libgomp plugin.  Generation of these stores
-is disabled by default, use @option{--param hsa-gen-debug-stores=1} to
-enable it.
-
 @item max-speculative-devirt-maydefs
 The maximum number of may-defs we analyze when looking for a must-def
 specifying the dynamic type of an object that invokes a virtual call
@@ -17352,7 +17341,8 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
-@samp{octeontx2f95mm}
+@samp{octeontx2f95mm},
+@samp{a64fx},
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
@@ -20645,6 +20635,23 @@ Specify the C-SKY target processor.  Valid values for @var{cpu} are:
 @opindex EL
 
 Select big- or little-endian code.  The default is little-endian.
+
+@item -mfloat-abi=@var{name}
+@opindex mfloat-abi
+Specifies which floating-point ABI to use.  Permissible values
+are: @samp{soft}, @samp{softfp} and @samp{hard}.
+
+Specifying @samp{soft} causes GCC to generate output containing
+library calls for floating-point operations.
+@samp{softfp} allows the generation of code using hardware floating-point
+instructions, but still uses the soft-float calling conventions.
+@samp{hard} allows generation of floating-point instructions
+and uses FPU-specific calling conventions.
+
+The default depends on the specific target configuration.  Note that
+the hard-float and soft-float ABIs are not link-compatible; you must
+compile your entire program with the same ABI, and link with a
+compatible set of libraries.
 
 @item -mhard-float
 @opindex mhard-float

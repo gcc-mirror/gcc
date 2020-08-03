@@ -170,10 +170,6 @@ The number of most executed permilles of the profiled execution of the entire pr
 Common Joined UInteger Var(param_hot_bb_frequency_fraction) Init(1000) Param
 The denominator n of fraction 1/n of the execution frequency of the entry block of a function that a basic block of this function needs to at least have in order to be considered hot.
 
--param=hsa-gen-debug-stores=
-Common Joined UInteger Var(param_hsa_gen_debug_stores) IntegerRange(0, 1) Param
-Level of hsa debug stores verbosity.
-
 -param=inline-heuristics-hint-percent=
 Common Joined UInteger Var(param_inline_heuristics_hint_percent) Init(200) Optimization IntegerRange(100, 1000000) Param
 The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable.

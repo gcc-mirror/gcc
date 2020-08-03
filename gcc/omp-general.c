@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
-#include "hsa-common.h"
 #include "tree-pass.h"
 #include "omp-device-properties.h"
 #include "tree-iterator.h"
@@ -1052,14 +1051,12 @@ omp_offload_device_kind_arch_isa (const char *props, const char *prop)
 static bool
 omp_maybe_offloaded (void)
 {
-  if (!hsa_gen_requested_p ())
-    {
-      if (!ENABLE_OFFLOADING)
-	return false;
-      const char *names = getenv ("OFFLOAD_TARGET_NAMES");
-      if (names == NULL || *names == '\0')
-	return false;
-    }
+  if (!ENABLE_OFFLOADING)
+    return false;
+  const char *names = getenv ("OFFLOAD_TARGET_NAMES");
+  if (names == NULL || *names == '\0')
+    return false;
+
   if (symtab->state == PARSING)
     /* Maybe.  */
     return true;
@@ -1234,12 +1231,6 @@ omp_context_selector_matches (tree ctx)
 			   also offloading values.  */
 			if (!omp_maybe_offloaded ())
 			  return 0;
-			if (strcmp (arch, "hsa") == 0
-			    && hsa_gen_requested_p ())
-			  {
-			    ret = -1;
-			    continue;
-			  }
 			if (ENABLE_OFFLOADING)
 			  {
 			    const char *arches = omp_offload_device_arch;
@@ -1360,12 +1351,6 @@ omp_context_selector_matches (tree ctx)
 			   also offloading values.  */
 			if (!omp_maybe_offloaded ())
 			  return 0;
-			if (strcmp (prop, "gpu") == 0
-			    && hsa_gen_requested_p ())
-			  {
-			    ret = -1;
-			    continue;
-			  }
 			if (ENABLE_OFFLOADING)
 			  {
 			    const char *kinds = omp_offload_device_kind;

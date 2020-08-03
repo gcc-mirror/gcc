@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
    For all functions (bounded or not) the pass uses the size of the
    destination object.  That means that it will diagnose calls to
    snprintf not on the basis of the size specified by the function's
-   second argument but rathger on the basis of the size the first
+   second argument but rather on the basis of the size the first
    argument points to (if possible).  For bound-checking built-ins
    like __builtin___snprintf_chk the pass uses the size typically
    determined by __builtin_object_size and passed to the built-in
@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
    including character, integer, floating point, pointer, and strings,
    with the standard C flags, widths, and precisions.  For integers
    and strings it computes the length of output itself.  For floating
-   point it uses MPFR to fornmat known constants with up and down
+   point it uses MPFR to format known constants with up and down
    rounding and uses the resulting range of output lengths.  For
    strings it uses the length of string literals and the sizes of
    character arrays that a character pointer may point to as a bound
@@ -123,7 +123,7 @@ struct result_range
      that result in a range of bytes [MIN, MAX], LIKELY is somewhere
      in that range.  */
   unsigned HOST_WIDE_INT likely;
-  /* In rare cases (e.g., for nultibyte characters) UNLIKELY gives
+  /* In rare cases (e.g., for multibyte characters) UNLIKELY gives
      the worst cases maximum result of a directive.  In most cases
      UNLIKELY == MAX.  UNLIKELY is used to control the return value
      optimization but not in diagnostics.  */
@@ -599,7 +599,7 @@ struct directive
      returns the formatting result.  */
   fmtresult (*fmtfunc) (const directive &, tree, const vr_values *);
 
-  /* Return True when a the format flag CHR has been used.  */
+  /* Return True when the format flag CHR has been used.  */
   bool get_flag (char chr) const
   {
     unsigned char c = chr & 0xff;
@@ -1595,7 +1595,7 @@ format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
   if (MODE_COMPOSITE_P (mode))
     mode = DFmode;
 
-  /* Get the real type format desription for the target.  */
+  /* Get the real type format description for the target.  */
   const real_format *rfmt = REAL_MODE_FORMAT (mode);
   REAL_VALUE_TYPE rv;
 
@@ -1891,7 +1891,7 @@ format_floating (const directive &dir, tree arg, const vr_values *)
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
 
-  /* Get the real type format desription for the target.  */
+  /* Get the real type format description for the target.  */
   const REAL_VALUE_TYPE *rvp = TREE_REAL_CST_PTR (arg);
   const real_format *rfmt = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)));
 
@@ -1948,8 +1948,8 @@ format_floating (const directive &dir, tree arg, const vr_values *)
       {
 	/* Convert the GCC real value representation with the precision
 	   of the real type to the mpfr_t format rounding down in the
-	   first iteration that computes the minimm and up in the second
-	   that computes the maximum.  This order is arbibtrary because
+	   first iteration that computes the minimum and up in the second
+	   that computes the maximum.  This order is arbitrary because
 	   rounding in either direction can result in longer output.  */
 	mpfr_t mpfrval;
 	mpfr_init2 (mpfrval, rfmt->p);
@@ -1982,7 +1982,7 @@ format_floating (const directive &dir, tree arg, const vr_values *)
 
   /* For the same floating point constant, unless width or precision
      is unknown, use the longer output as the likely maximum since
-     with round to nearest either is equally likely.  Otheriwse, when
+     with round to nearest either is equally likely.  Otherwise, when
      precision is unknown, use the greater of the minimum and 3 as
      the likely output (for "0.0" since zero precision is unlikely).  */
   if (res.knownrange)
@@ -2075,7 +2075,7 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
   /* Set the max/likely counters to unbounded when a minimum is known
      but the maximum length isn't bounded.  This implies that STR is
      a conditional expression involving a string of known length and
-     and an expression of unknown/unbounded length.  */
+     an expression of unknown/unbounded length.  */
   if (min
       && (unsigned HOST_WIDE_INT)min < HOST_WIDE_INT_M1U
       && unbounded)
@@ -2183,7 +2183,7 @@ format_character (const directive &dir, tree arg, const vr_values *vr_values)
     }
   else
     {
-      /* A plain '%c' directive.  Its ouput is exactly 1.  */
+      /* A plain '%c' directive.  Its output is exactly 1.  */
       res.range.min = res.range.max = 1;
       res.range.likely = res.range.unlikely = 1;
       res.knownrange = true;
@@ -2536,7 +2536,7 @@ format_string (const directive &dir, tree arg, const vr_values *vr_values)
 	 one of a number of strings of known length or an unknown string)
 	 the minimum number of characters is lesser of PRECISION[0] and
 	 the length of the shortest known string or zero, and the maximum
-	 is the lessser of the length of the longest known string or
+	 is the lesser of the length of the longest known string or
 	 PTRDIFF_MAX and PRECISION[1].  The likely length is either
 	 the minimum at level 1 and the greater of the minimum and 1
 	 at level 2.  This result is adjust upward for width (if it's
@@ -2992,8 +2992,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
 }
 
 /* Given the formatting result described by RES and NAVAIL, the number
-   of available in the destination, return the range of bytes remaining
-   in the destination.  */
+   of available bytes in the destination, return the range of bytes
+   remaining in the destination.  */
 
 static inline result_range
 bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
@@ -3586,7 +3586,7 @@ parse_directive (call_info &info,
       else
 	{
 	  /* The decimal precision or the asterisk are optional.
-	     When neither is dirified it's taken to be zero.  */
+	     When neither is specified it's taken to be zero.  */
 	  precision = 0;
 	}
     }
@@ -3671,7 +3671,7 @@ parse_directive (call_info &info,
 
     case 'p':
       /* The %p output is implementation-defined.  It's possible
-	 to determine this format but due to extensions (edirially
+	 to determine this format but due to extensions (especially
 	 those of the Linux kernel -- see bug 78512) the first %p
 	 in the format string disables any further processing.  */
       return false;

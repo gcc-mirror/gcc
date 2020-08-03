@@ -3803,6 +3803,8 @@ decision_tree::gen (FILE *f, bool gimple)
 
   for (unsigned n = 1; n <= 5; ++n)
     {
+      bool has_kids_p = false;
+
       /* First generate split-out functions.  */
       for (unsigned j = 0; j < root->kids.length (); j++)
 	{
@@ -3841,6 +3843,32 @@ decision_tree::gen (FILE *f, bool gimple)
 	  else
 	    fprintf (f, "  return NULL_TREE;\n");
 	  fprintf (f, "}\n");
+	  has_kids_p = true;
+	}
+
+      /* If this main entry has no children, avoid generating code
+	 with compiler warnings, by generating a simple stub.  */
+      if (! has_kids_p)
+	{
+	  if (gimple)
+	    fprintf (f, "\nstatic bool\n"
+			"gimple_simplify (gimple_match_op*, gimple_seq*,\n"
+			"                 tree (*)(tree), code_helper,\n"
+			"                 const tree");
+	  else
+	    fprintf (f, "\ntree\n"
+			"generic_simplify (location_t, enum tree_code,\n"
+			"                  const tree");
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", tree");
+	  fprintf (f, ")\n");
+	  fprintf (f, "{\n");
+	  if (gimple)
+	    fprintf (f, "  return false;\n");
+	  else
+	    fprintf (f, "  return NULL_TREE;\n");
+	  fprintf (f, "}\n");
+	  continue;
 	}
 
       /* Then generate the main entry with the outermost switch and
@@ -3946,7 +3974,7 @@ write_header (FILE *f, const char *head)
 class parser
 {
 public:
-  parser (cpp_reader *);
+  parser (cpp_reader *, bool gimple);
 
 private:
   const cpp_token *next ();
@@ -3983,6 +4011,7 @@ private:
   void finish_match_operand (operand *);
 
   cpp_reader *r;
+  bool gimple;
   vec<c_expr *> active_ifs;
   vec<vec<user_id *> > active_fors;
   hash_set<user_id *> *oper_lists_set;
@@ -4249,6 +4278,9 @@ parser::parse_expr ()
       && token->type == CPP_NOT
       && !(token->flags & PREV_WHITE))
     {
+      if (!gimple)
+	fatal_at (token, "forcing simplification to a leaf is not supported "
+		  "for GENERIC");
       eat_token (CPP_NOT);
       e->force_leaf = true;
     }
@@ -5042,9 +5074,10 @@ parser::finish_match_operand (operand *op)
 
 /* Main entry of the parser.  Repeatedly parse outer control structures.  */
 
-parser::parser (cpp_reader *r_)
+parser::parser (cpp_reader *r_, bool gimple_)
 {
   r = r_;
+  gimple = gimple_;
   active_ifs = vNULL;
   active_fors = vNULL;
   simplifiers = vNULL;
@@ -5074,7 +5107,7 @@ round_alloc_size (size_t s)
 }
 
 
-/* The genmatch generator progam.  It reads from a pattern description
+/* The genmatch generator program.  It reads from a pattern description
    and outputs GIMPLE or GENERIC IL matching and simplification routines.  */
 
 int
@@ -5151,7 +5184,7 @@ main (int argc, char **argv)
 #include "internal-fn.def"
 
   /* Parse ahead!  */
-  parser p (r);
+  parser p (r, gimple);
 
   if (gimple)
     write_header (stdout, "gimple-match-head.c");

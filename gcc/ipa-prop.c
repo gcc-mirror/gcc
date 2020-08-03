@@ -2059,7 +2059,7 @@ ipa_get_value_range (value_range *tmp)
   if (*slot)
     return *slot;
 
-  value_range *vr = ggc_alloc<value_range> ();
+  value_range *vr = new (ggc_alloc<value_range> ()) value_range;
   *vr = *tmp;
   *slot = vr;
 

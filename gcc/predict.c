@@ -3892,7 +3892,30 @@ estimate_bb_frequencies (bool force)
       cfun->cfg->count_max = profile_count::uninitialized ();
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
-	  sreal tmp = BLOCK_INFO (bb)->frequency * freq_max + sreal (1, -1);
+	  sreal tmp = BLOCK_INFO (bb)->frequency;
+	  if (tmp >= 1)
+	    {
+	      gimple_stmt_iterator gsi;
+	      tree decl;
+
+	      /* Self recursive calls can not have frequency greater than 1
+		 or program will never terminate.  This will result in an
+		 inconsistent bb profile but it is better than greatly confusing
+		 IPA cost metrics.  */
+	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+		if (is_gimple_call (gsi_stmt (gsi))
+		    && (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
+		    && recursive_call_p (current_function_decl, decl))
+		  {
+		    if (dump_file)
+		      fprintf (dump_file, "Dropping frequency of recursive call"
+			       " in bb %i from %f\n", bb->index,
+			       tmp.to_double ());
+		    tmp = (sreal)9 / (sreal)10;
+		    break;
+		  }
+	    }
+	  tmp = tmp * freq_max + sreal (1, -1);
 	  profile_count count = profile_count::from_gcov_type (tmp.to_int ());	
 
 	  /* If we have profile feedback in which this function was never

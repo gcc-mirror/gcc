@@ -41,6 +41,55 @@ func panicmakeslicecap() {
 	panic(errorString("makeslice: cap out of range"))
 }
 
+// makeslicecopy allocates a slice of "tolen" elements of type "et",
+// then copies "fromlen" elements of type "et" into that new allocation from "from".
+func makeslicecopy(et *_type, tolen int, fromlen int, from unsafe.Pointer) unsafe.Pointer {
+	var tomem, copymem uintptr
+	if uintptr(tolen) > uintptr(fromlen) {
+		var overflow bool
+		tomem, overflow = math.MulUintptr(et.size, uintptr(tolen))
+		if overflow || tomem > maxAlloc || tolen < 0 {
+			panicmakeslicelen()
+		}
+		copymem = et.size * uintptr(fromlen)
+	} else {
+		// fromlen is a known good length providing and equal or greater than tolen,
+		// thereby making tolen a good slice length too as from and to slices have the
+		// same element width.
+		tomem = et.size * uintptr(tolen)
+		copymem = tomem
+	}
+
+	var to unsafe.Pointer
+	if et.ptrdata == 0 {
+		to = mallocgc(tomem, nil, false)
+		if copymem < tomem {
+			memclrNoHeapPointers(add(to, copymem), tomem-copymem)
+		}
+	} else {
+		// Note: can't use rawmem (which avoids zeroing of memory), because then GC can scan uninitialized memory.
+		to = mallocgc(tomem, et, true)
+		if copymem > 0 && writeBarrier.enabled {
+			// Only shade the pointers in old.array since we know the destination slice to
+			// only contains nil pointers because it has been cleared during alloc.
+			bulkBarrierPreWriteSrcOnly(uintptr(to), uintptr(from), copymem)
+		}
+	}
+
+	if raceenabled {
+		callerpc := getcallerpc()
+		pc := funcPC(makeslicecopy)
+		racereadrangepc(from, copymem, callerpc, pc)
+	}
+	if msanenabled {
+		msanread(from, copymem)
+	}
+
+	memmove(to, from, copymem)
+
+	return to
+}
+
 func makeslice(et *_type, len, cap int) unsafe.Pointer {
 	mem, overflow := math.MulUintptr(et.size, uintptr(cap))
 	if overflow || mem > maxAlloc || len < 0 || len > cap {
@@ -187,7 +236,7 @@ func growslice(et *_type, oldarray unsafe.Pointer, oldlen, oldcap, cap int) slic
 		if lenmem > 0 && writeBarrier.enabled {
 			// Only shade the pointers in old.array since we know the destination slice p
 			// only contains nil pointers because it has been cleared during alloc.
-			bulkBarrierPreWriteSrcOnly(uintptr(p), uintptr(oldarray), lenmem)
+			bulkBarrierPreWriteSrcOnly(uintptr(p), uintptr(oldarray), lenmem-et.size+et.ptrdata)
 		}
 	}
 	memmove(p, oldarray, lenmem)
@@ -216,12 +265,12 @@ func slicecopy(toPtr unsafe.Pointer, toLen int, fmPtr unsafe.Pointer, fmLen int,
 	if raceenabled {
 		callerpc := getcallerpc()
 		pc := funcPC(slicecopy)
-		racewriterangepc(toPtr, uintptr(n*int(width)), callerpc, pc)
 		racereadrangepc(fmPtr, uintptr(n*int(width)), callerpc, pc)
+		racewriterangepc(toPtr, uintptr(n*int(width)), callerpc, pc)
 	}
 	if msanenabled {
-		msanwrite(toPtr, uintptr(n*int(width)))
 		msanread(fmPtr, uintptr(n*int(width)))
+		msanwrite(toPtr, uintptr(n*int(width)))
 	}
 
 	size := uintptr(n) * width

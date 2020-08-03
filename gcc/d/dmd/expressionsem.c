@@ -812,6 +812,16 @@ public:
         exp->type->resolve(exp->loc, sc, &e, &t, &s, true);
         if (e)
         {
+            // `(Type)` is actually `(var)` so if `(var)` is a member requiring `this`
+            // then rewrite as `(this.var)` in case it would be followed by a DotVar
+            // to fix https://issues.dlang.org/show_bug.cgi?id=9490
+            VarExp *ve = e->isVarExp();
+            if (ve && ve->var && exp->parens && !ve->var->isStatic() && !(sc->stc & STCstatic) &&
+                sc->func && sc->func->needThis() && ve->var->toParent2()->isAggregateDeclaration())
+            {
+                // printf("apply fix for issue 9490: add `this.` to `%s`...\n", e->toChars());
+                e = new DotVarExp(exp->loc, new ThisExp(exp->loc), ve->var, false);
+            }
             //printf("e = %s %s\n", Token::toChars(e->op), e->toChars());
             e = semantic(e, sc);
         }

@@ -222,19 +222,6 @@ along with GCC; see the file COPYING3.  If not see
 		|| flag_tree_parallelize_loops > 1 \
 		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
 
-#undef DEF_HSA_BUILTIN
-#ifdef ENABLE_HSA
-#define DEF_HSA_BUILTIN(ENUM, NAME, TYPE, ATTRS)			\
-  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
-               false, false, true, ATTRS, false, \
-	       (!flag_disable_hsa))
-#else
-#define DEF_HSA_BUILTIN(ENUM, NAME, TYPE, ATTRS)			\
-  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
-               false, false, true, ATTRS, false, \
-	       (false))
-#endif
-
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */
 #undef DEF_TM_BUILTIN
@@ -1062,9 +1049,6 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* Offloading and Multi Processing builtins.  */
 #include "omp-builtins.def"
-
-/* Heterogeneous Systems Architecture.  */
-#include "hsa-builtins.def"
 
 /* GTM builtins. */
 #include "gtm-builtins.def"

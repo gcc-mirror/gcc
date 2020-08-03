@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
-#include "hsa-common.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -484,37 +483,6 @@ gimple_build_cond_empty (tree cond)
   return gimple_build_cond (pred_code, lhs, rhs, NULL_TREE, NULL_TREE);
 }
 
-/* Return true if a parallel REGION is within a declare target function or
-   within a target region and is not a part of a gridified target.  */
-
-static bool
-parallel_needs_hsa_kernel_p (struct omp_region *region)
-{
-  bool indirect = false;
-  for (region = region->outer; region; region = region->outer)
-    {
-      if (region->type == GIMPLE_OMP_PARALLEL)
-	indirect = true;
-      else if (region->type == GIMPLE_OMP_TARGET)
-	{
-	  gomp_target *tgt_stmt
-	    = as_a <gomp_target *> (last_stmt (region->entry));
-
-	  if (omp_find_clause (gimple_omp_target_clauses (tgt_stmt),
-			       OMP_CLAUSE__GRIDDIM_))
-	    return indirect;
-	  else
-	    return true;
-	}
-    }
-
-  if (lookup_attribute ("omp declare target",
-			DECL_ATTRIBUTES (current_function_decl)))
-    return true;
-
-  return false;
-}
-
 /* Change DECL_CONTEXT of CHILD_FNDECL to that of the parent function.
    Add CHILD_FNDECL to decl chain of the supercontext of the block
    ENTRY_BLOCK - this is the block which originally contained the
@@ -772,13 +740,6 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     }
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
-
-  if (hsa_gen_requested_p ()
-      && parallel_needs_hsa_kernel_p (region))
-    {
-      cgraph_node *child_cnode = cgraph_node::get (child_fndecl);
-      hsa_register_kernel (child_cnode);
-    }
 }
 
 /* Build the function call to GOMP_task to actually
@@ -8528,113 +8489,6 @@ mark_loops_in_oacc_kernels_region (basic_block region_entry,
     loop->in_oacc_kernels_region = true;
 }
 
-/* Types used to pass grid and wortkgroup sizes to kernel invocation.  */
-
-struct GTY(()) grid_launch_attributes_trees
-{
-  tree kernel_dim_array_type;
-  tree kernel_lattrs_dimnum_decl;
-  tree kernel_lattrs_grid_decl;
-  tree kernel_lattrs_group_decl;
-  tree kernel_launch_attributes_type;
-};
-
-static GTY(()) struct grid_launch_attributes_trees *grid_attr_trees;
-
-/* Create types used to pass kernel launch attributes to target.  */
-
-static void
-grid_create_kernel_launch_attr_types (void)
-{
-  if (grid_attr_trees)
-    return;
-  grid_attr_trees = ggc_alloc <grid_launch_attributes_trees> ();
-
-  tree dim_arr_index_type
-    = build_index_type (build_int_cst (integer_type_node, 2));
-  grid_attr_trees->kernel_dim_array_type
-    = build_array_type (uint32_type_node, dim_arr_index_type);
-
-  grid_attr_trees->kernel_launch_attributes_type = make_node (RECORD_TYPE);
-  grid_attr_trees->kernel_lattrs_dimnum_decl
-    = build_decl (BUILTINS_LOCATION, FIELD_DECL, get_identifier ("ndim"),
-		  uint32_type_node);
-  DECL_CHAIN (grid_attr_trees->kernel_lattrs_dimnum_decl) = NULL_TREE;
-
-  grid_attr_trees->kernel_lattrs_grid_decl
-    = build_decl (BUILTINS_LOCATION, FIELD_DECL, get_identifier ("grid_size"),
-		  grid_attr_trees->kernel_dim_array_type);
-  DECL_CHAIN (grid_attr_trees->kernel_lattrs_grid_decl)
-    = grid_attr_trees->kernel_lattrs_dimnum_decl;
-  grid_attr_trees->kernel_lattrs_group_decl
-    = build_decl (BUILTINS_LOCATION, FIELD_DECL, get_identifier ("group_size"),
-		  grid_attr_trees->kernel_dim_array_type);
-  DECL_CHAIN (grid_attr_trees->kernel_lattrs_group_decl)
-    = grid_attr_trees->kernel_lattrs_grid_decl;
-  finish_builtin_struct (grid_attr_trees->kernel_launch_attributes_type,
-			 "__gomp_kernel_launch_attributes",
-			 grid_attr_trees->kernel_lattrs_group_decl, NULL_TREE);
-}
-
-/* Insert before the current statement in GSI a store of VALUE to INDEX of
-   array (of type kernel_dim_array_type) FLD_DECL of RANGE_VAR.  VALUE must be
-   of type uint32_type_node.  */
-
-static void
-grid_insert_store_range_dim (gimple_stmt_iterator *gsi, tree range_var,
-			     tree fld_decl, int index, tree value)
-{
-  tree ref = build4 (ARRAY_REF, uint32_type_node,
-		     build3 (COMPONENT_REF,
-			     grid_attr_trees->kernel_dim_array_type,
-			     range_var, fld_decl, NULL_TREE),
-		     build_int_cst (integer_type_node, index),
-		     NULL_TREE, NULL_TREE);
-  gsi_insert_before (gsi, gimple_build_assign (ref, value), GSI_SAME_STMT);
-}
-
-/* Return a tree representation of a pointer to a structure with grid and
-   work-group size information.  Statements filling that information will be
-   inserted before GSI, TGT_STMT is the target statement which has the
-   necessary information in it.  */
-
-static tree
-grid_get_kernel_launch_attributes (gimple_stmt_iterator *gsi,
-				       gomp_target *tgt_stmt)
-{
-  grid_create_kernel_launch_attr_types ();
-  tree lattrs = create_tmp_var (grid_attr_trees->kernel_launch_attributes_type,
-				"__kernel_launch_attrs");
-
-  unsigned max_dim = 0;
-  for (tree clause = gimple_omp_target_clauses (tgt_stmt);
-       clause;
-       clause = OMP_CLAUSE_CHAIN (clause))
-    {
-      if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE__GRIDDIM_)
-	continue;
-
-      unsigned dim = OMP_CLAUSE__GRIDDIM__DIMENSION (clause);
-      max_dim = MAX (dim, max_dim);
-
-      grid_insert_store_range_dim (gsi, lattrs,
-				   grid_attr_trees->kernel_lattrs_grid_decl,
-				   dim, OMP_CLAUSE__GRIDDIM__SIZE (clause));
-      grid_insert_store_range_dim (gsi, lattrs,
-				   grid_attr_trees->kernel_lattrs_group_decl,
-				   dim, OMP_CLAUSE__GRIDDIM__GROUP (clause));
-    }
-
-  tree dimref = build3 (COMPONENT_REF, uint32_type_node, lattrs,
-			grid_attr_trees->kernel_lattrs_dimnum_decl, NULL_TREE);
-  gcc_checking_assert (max_dim <= 2);
-  tree dimensions = build_int_cstu (uint32_type_node, max_dim + 1);
-  gsi_insert_before (gsi, gimple_build_assign (dimref, dimensions),
-		     GSI_SAME_STMT);
-  TREE_ADDRESSABLE (lattrs) = 1;
-  return build_fold_addr_expr (lattrs);
-}
-
 /* Build target argument identifier from the DEVICE identifier, value
    identifier ID and whether the element also has a SUBSEQUENT_PARAM.  */
 
@@ -8724,16 +8578,6 @@ get_target_arguments (gimple_stmt_iterator *gsi, gomp_target *tgt_stmt)
   push_target_argument_according_to_value (gsi, GOMP_TARGET_ARG_DEVICE_ALL,
 					   GOMP_TARGET_ARG_THREAD_LIMIT, t,
 					   &args);
-
-  /* Add HSA-specific grid sizes, if available.  */
-  if (omp_find_clause (gimple_omp_target_clauses (tgt_stmt),
-		       OMP_CLAUSE__GRIDDIM_))
-    {
-      int id = GOMP_TARGET_ARG_HSA_KERNEL_ATTRIBUTES;
-      t = get_target_argument_identifier (GOMP_DEVICE_HSA, true, id);
-      args.quick_push (t);
-      args.quick_push (grid_get_kernel_launch_attributes (gsi, tgt_stmt));
-    }
 
   /* Produce more, perhaps device specific, arguments here.  */
 
@@ -9351,302 +9195,6 @@ expand_omp_target (struct omp_region *region)
     }
 }
 
-/* Expand KFOR loop as a HSA grifidied kernel, i.e. as a body only with
-   iteration variable derived from the thread number.  INTRA_GROUP means this
-   is an expansion of a loop iterating over work-items within a separate
-   iteration over groups.  */
-
-static void
-grid_expand_omp_for_loop (struct omp_region *kfor, bool intra_group)
-{
-  gimple_stmt_iterator gsi;
-  gomp_for *for_stmt = as_a <gomp_for *> (last_stmt (kfor->entry));
-  gcc_checking_assert (gimple_omp_for_kind (for_stmt)
-		       == GF_OMP_FOR_KIND_GRID_LOOP);
-  size_t collapse = gimple_omp_for_collapse (for_stmt);
-  struct omp_for_data_loop *loops
-    = XALLOCAVEC (struct omp_for_data_loop,
-		  gimple_omp_for_collapse (for_stmt));
-  struct omp_for_data fd;
-
-  remove_edge (BRANCH_EDGE (kfor->entry));
-  basic_block body_bb = FALLTHRU_EDGE (kfor->entry)->dest;
-
-  gcc_assert (kfor->cont);
-  omp_extract_for_data (for_stmt, &fd, loops);
-
-  gsi = gsi_start_bb (body_bb);
-
-  for (size_t dim = 0; dim < collapse; dim++)
-    {
-      tree type, itype;
-      itype = type = TREE_TYPE (fd.loops[dim].v);
-      if (POINTER_TYPE_P (type))
-	itype = signed_type_for (type);
-
-      tree n1 = fd.loops[dim].n1;
-      tree step = fd.loops[dim].step;
-      n1 = force_gimple_operand_gsi (&gsi, fold_convert (type, n1),
-				     true, NULL_TREE, true, GSI_SAME_STMT);
-      step = force_gimple_operand_gsi (&gsi, fold_convert (itype, step),
-				       true, NULL_TREE, true, GSI_SAME_STMT);
-      tree threadid;
-      if (gimple_omp_for_grid_group_iter (for_stmt))
-	{
-	  gcc_checking_assert (!intra_group);
-	  threadid = build_call_expr (builtin_decl_explicit
-				      (BUILT_IN_HSA_WORKGROUPID), 1,
-				      build_int_cstu (unsigned_type_node, dim));
-	}
-      else if (intra_group)
-	threadid = build_call_expr (builtin_decl_explicit
-				    (BUILT_IN_HSA_WORKITEMID), 1,
-				    build_int_cstu (unsigned_type_node, dim));
-      else
-	threadid = build_call_expr (builtin_decl_explicit
-				    (BUILT_IN_HSA_WORKITEMABSID), 1,
-				    build_int_cstu (unsigned_type_node, dim));
-      threadid = fold_convert (itype, threadid);
-      threadid = force_gimple_operand_gsi (&gsi, threadid, true, NULL_TREE,
-					   true, GSI_SAME_STMT);
-
-      tree startvar = fd.loops[dim].v;
-      tree t = fold_build2 (MULT_EXPR, itype, threadid, step);
-      if (POINTER_TYPE_P (type))
-	t = fold_build_pointer_plus (n1, t);
-      else
-	t = fold_build2 (PLUS_EXPR, type, t, n1);
-      t = fold_convert (type, t);
-      t = force_gimple_operand_gsi (&gsi, t,
-				    DECL_P (startvar)
-				    && TREE_ADDRESSABLE (startvar),
-				    NULL_TREE, true, GSI_SAME_STMT);
-      gassign *assign_stmt = gimple_build_assign (startvar, t);
-      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-    }
-  /* Remove the omp for statement.  */
-  gsi = gsi_last_nondebug_bb (kfor->entry);
-  gsi_remove (&gsi, true);
-
-  /* Remove the GIMPLE_OMP_CONTINUE statement.  */
-  gsi = gsi_last_nondebug_bb (kfor->cont);
-  gcc_assert (!gsi_end_p (gsi)
-	      && gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_CONTINUE);
-  gsi_remove (&gsi, true);
-
-  /* Replace the GIMPLE_OMP_RETURN with a barrier, if necessary.  */
-  gsi = gsi_last_nondebug_bb (kfor->exit);
-  gcc_assert (!gsi_end_p (gsi)
-	      && gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_RETURN);
-  if (intra_group)
-    gsi_insert_before (&gsi, omp_build_barrier (NULL_TREE), GSI_SAME_STMT);
-  gsi_remove (&gsi, true);
-
-  /* Fixup the much simpler CFG.  */
-  remove_edge (find_edge (kfor->cont, body_bb));
-
-  if (kfor->cont != body_bb)
-    set_immediate_dominator (CDI_DOMINATORS, kfor->cont, body_bb);
-  set_immediate_dominator (CDI_DOMINATORS, kfor->exit, kfor->cont);
-}
-
-/* Structure passed to grid_remap_kernel_arg_accesses so that it can remap
-   argument_decls.  */
-
-struct grid_arg_decl_map
-{
-  tree old_arg;
-  tree new_arg;
-};
-
-/* Invoked through walk_gimple_op, will remap all PARM_DECLs to the ones
-   pertaining to kernel function.  */
-
-static tree
-grid_remap_kernel_arg_accesses (tree *tp, int *walk_subtrees, void *data)
-{
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct grid_arg_decl_map *adm = (struct grid_arg_decl_map *) wi->info;
-  tree t = *tp;
-
-  if (t == adm->old_arg)
-    *tp = adm->new_arg;
-  *walk_subtrees = !TYPE_P (t) && !DECL_P (t);
-  return NULL_TREE;
-}
-
-/* If TARGET region contains a kernel body for loop, remove its region from the
-   TARGET and expand it in HSA gridified kernel fashion.  */
-
-static void
-grid_expand_target_grid_body (struct omp_region *target)
-{
-  if (!hsa_gen_requested_p ())
-    return;
-
-  gomp_target *tgt_stmt = as_a <gomp_target *> (last_stmt (target->entry));
-  struct omp_region **pp;
-
-  for (pp = &target->inner; *pp; pp = &(*pp)->next)
-    if ((*pp)->type == GIMPLE_OMP_GRID_BODY)
-      break;
-
-  struct omp_region *gpukernel = *pp;
-
-  tree orig_child_fndecl = gimple_omp_target_child_fn (tgt_stmt);
-  if (!gpukernel)
-    {
-      /* HSA cannot handle OACC stuff.  */
-      if (gimple_omp_target_kind (tgt_stmt) != GF_OMP_TARGET_KIND_REGION)
-	return;
-      gcc_checking_assert (orig_child_fndecl);
-      gcc_assert (!omp_find_clause (gimple_omp_target_clauses (tgt_stmt),
-				    OMP_CLAUSE__GRIDDIM_));
-      cgraph_node *n = cgraph_node::get (orig_child_fndecl);
-
-      hsa_register_kernel (n);
-      return;
-    }
-
-  gcc_assert (omp_find_clause (gimple_omp_target_clauses (tgt_stmt),
-			       OMP_CLAUSE__GRIDDIM_));
-  tree inside_block
-    = gimple_block (first_stmt (single_succ (gpukernel->entry)));
-  *pp = gpukernel->next;
-  for (pp = &gpukernel->inner; *pp; pp = &(*pp)->next)
-    if ((*pp)->type == GIMPLE_OMP_FOR)
-      break;
-
-  struct omp_region *kfor = *pp;
-  gcc_assert (kfor);
-  gomp_for *for_stmt = as_a <gomp_for *> (last_stmt (kfor->entry));
-  gcc_assert (gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_GRID_LOOP);
-  *pp = kfor->next;
-  if (kfor->inner)
-    {
-      if (gimple_omp_for_grid_group_iter (for_stmt))
-	{
-	  struct omp_region **next_pp;
-	  for (pp = &kfor->inner; *pp; pp = next_pp)
-	    {
-	      next_pp = &(*pp)->next;
-	      if ((*pp)->type != GIMPLE_OMP_FOR)
-		continue;
-	      gomp_for *inner = as_a <gomp_for *> (last_stmt ((*pp)->entry));
-	      gcc_assert (gimple_omp_for_kind (inner)
-			  == GF_OMP_FOR_KIND_GRID_LOOP);
-	      grid_expand_omp_for_loop (*pp, true);
-	      *pp = (*pp)->next;
-	      next_pp = pp;
-	    }
-	}
-      expand_omp (kfor->inner);
-    }
-  if (gpukernel->inner)
-    expand_omp (gpukernel->inner);
-
-  tree kern_fndecl = copy_node (orig_child_fndecl);
-  DECL_NAME (kern_fndecl) = clone_function_name_numbered (kern_fndecl,
-							  "kernel");
-  SET_DECL_ASSEMBLER_NAME (kern_fndecl, DECL_NAME (kern_fndecl));
-  tree tgtblock = gimple_block (tgt_stmt);
-  tree fniniblock = make_node (BLOCK);
-  BLOCK_ABSTRACT_ORIGIN (fniniblock) = BLOCK_ORIGIN (tgtblock);
-  BLOCK_SOURCE_LOCATION (fniniblock) = BLOCK_SOURCE_LOCATION (tgtblock);
-  BLOCK_SOURCE_END_LOCATION (fniniblock) = BLOCK_SOURCE_END_LOCATION (tgtblock);
-  BLOCK_SUPERCONTEXT (fniniblock) = kern_fndecl;
-  DECL_INITIAL (kern_fndecl) = fniniblock;
-  push_struct_function (kern_fndecl);
-  cfun->function_end_locus = gimple_location (tgt_stmt);
-  init_tree_ssa (cfun);
-  pop_cfun ();
-
-  tree old_parm_decl = DECL_ARGUMENTS (kern_fndecl);
-  gcc_assert (!DECL_CHAIN (old_parm_decl));
-  tree new_parm_decl = copy_node (DECL_ARGUMENTS (kern_fndecl));
-  DECL_CONTEXT (new_parm_decl) = kern_fndecl;
-  DECL_ARGUMENTS (kern_fndecl) = new_parm_decl;
-  gcc_assert (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (kern_fndecl))));
-  DECL_RESULT (kern_fndecl) = copy_node (DECL_RESULT (kern_fndecl));
-  DECL_CONTEXT (DECL_RESULT (kern_fndecl)) = kern_fndecl;
-  struct function *kern_cfun = DECL_STRUCT_FUNCTION (kern_fndecl);
-  kern_cfun->curr_properties = cfun->curr_properties;
-
-  grid_expand_omp_for_loop (kfor, false);
-
-  /* Remove the omp for statement.  */
-  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (gpukernel->entry);
-  gsi_remove (&gsi, true);
-  /* Replace the GIMPLE_OMP_RETURN at the end of the kernel region with a real
-     return.  */
-  gsi = gsi_last_nondebug_bb (gpukernel->exit);
-  gcc_assert (!gsi_end_p (gsi)
-	      && gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_RETURN);
-  gimple *ret_stmt = gimple_build_return (NULL);
-  gsi_insert_after (&gsi, ret_stmt, GSI_SAME_STMT);
-  gsi_remove (&gsi, true);
-
-  /* Statements in the first BB in the target construct have been produced by
-     target lowering and must be copied inside the GPUKERNEL, with the two
-     exceptions of the first OMP statement and the OMP_DATA assignment
-     statement.  */
-  gsi = gsi_start_bb (single_succ (gpukernel->entry));
-  tree data_arg = gimple_omp_target_data_arg (tgt_stmt);
-  tree sender = data_arg ? TREE_VEC_ELT (data_arg, 0) : NULL;
-  for (gimple_stmt_iterator tsi = gsi_start_bb (single_succ (target->entry));
-       !gsi_end_p (tsi); gsi_next (&tsi))
-    {
-      gimple *stmt = gsi_stmt (tsi);
-      if (is_gimple_omp (stmt))
-	break;
-      if (sender
-	  && is_gimple_assign (stmt)
-	  && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR
-	  && TREE_OPERAND (gimple_assign_rhs1 (stmt), 0) == sender)
-	continue;
-      gimple *copy = gimple_copy (stmt);
-      gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
-      gimple_set_block (copy, fniniblock);
-    }
-
-  move_sese_region_to_fn (kern_cfun, single_succ (gpukernel->entry),
-			  gpukernel->exit, inside_block);
-
-  cgraph_node *kcn = cgraph_node::get_create (kern_fndecl);
-  kcn->mark_force_output ();
-  cgraph_node *orig_child = cgraph_node::get (orig_child_fndecl);
-
-  hsa_register_kernel (kcn, orig_child);
-
-  cgraph_node::add_new_function (kern_fndecl, true);
-  push_cfun (kern_cfun);
-  cgraph_edge::rebuild_edges ();
-
-  /* Re-map any mention of the PARM_DECL of the original function to the
-     PARM_DECL of the new one.
-
-     TODO: It would be great if lowering produced references into the GPU
-     kernel decl straight away and we did not have to do this.  */
-  struct grid_arg_decl_map adm;
-  adm.old_arg = old_parm_decl;
-  adm.new_arg = new_parm_decl;
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, kern_cfun)
-    {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  struct walk_stmt_info wi;
-	  memset (&wi, 0, sizeof (wi));
-	  wi.info = &adm;
-	  walk_gimple_op (stmt, grid_remap_kernel_arg_accesses, &wi);
-	}
-    }
-  pop_cfun ();
-
-  return;
-}
-
 /* Expand the parallel region tree rooted at REGION.  Expansion
    proceeds in depth-first order.  Innermost regions are expanded
    first.  This way, parallel regions that require a new function to
@@ -9666,8 +9214,6 @@ expand_omp (struct omp_region *region)
 	 region.  */
       if (region->type == GIMPLE_OMP_PARALLEL)
 	determine_parallel_type (region);
-      else if (region->type == GIMPLE_OMP_TARGET)
-	grid_expand_target_grid_body (region);
 
       if (region->type == GIMPLE_OMP_FOR
 	  && gimple_omp_for_combined_p (last_stmt (region->entry)))
@@ -10039,7 +9585,6 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_SECTION:
-    case GIMPLE_OMP_GRID_BODY:
       cur_region = new_omp_region (bb, code, cur_region);
       fallthru = true;
       break;
@@ -10181,5 +9726,3 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 
   return fallthru;
 }
-
-#include "gt-omp-expand.h"

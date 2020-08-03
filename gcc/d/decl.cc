@@ -1480,6 +1480,11 @@ get_decl_tree (Declaration *decl)
       AggregateDeclaration *ad = fd->isThis ();
       gcc_assert (ad != NULL);
 
+      /* The parent function is for the same `this' declaration we are
+	 building a chain to.  Non-local declaration is inaccessible.  */
+      if (fd->vthis == vd)
+	return error_no_frame_access (fd);
+
       t = get_decl_tree (fd->vthis);
       Dsymbol *outer = fd;
 

@@ -65,8 +65,6 @@ extern bool msp430x;
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   /* Tell the assembler if we are building for the LARGE pointer model.  */ \
   "%{mlarge:-ml} " \
-  /* Copy data from ROM to RAM if necessary.  */ \
-  "%{!msim:-md} %{msim:%{mlarge:-md}} " \
   "%{msilicon-errata=*:-msilicon-errata=%*} " \
   "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " \
   /* Create DWARF line number sections for -ffunction-sections.  */ \

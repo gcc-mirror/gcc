@@ -1826,7 +1826,7 @@ The default value for @var{n} is 30.
 
 @item -finline-matmul-limit=@var{n}
 @opindex @code{finline-matmul-limit}
-When front-end optimiztion is active, some calls to the @code{MATMUL}
+When front-end optimization is active, some calls to the @code{MATMUL}
 intrinsic function will be inlined.  This may result in code size
 increase if the size of the matrix cannot be determined at compile
 time, as code for both cases is generated.  Setting

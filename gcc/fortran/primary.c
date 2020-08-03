@@ -2023,7 +2023,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_ref *substring, *tail, *tmp;
-  gfc_component *component;
+  gfc_component *component = NULL;
+  gfc_component *previous = NULL;
   gfc_symbol *sym = primary->symtree->n.sym;
   gfc_expr *tgt_expr = NULL;
   match m;
@@ -2343,15 +2344,19 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  break;
 	}
 
+      previous = component;
+
       if (!inquiry && !intrinsic)
 	component = gfc_find_component (sym, name, false, false, &tmp);
       else
 	component = NULL;
 
-      /* In some cases, returning MATCH_NO gives a better error message. Most
-	 cases return "Unclassifiable statement at..."  */
       if (intrinsic && !inquiry)
-	return MATCH_NO;
+       {
+	  gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
+		     "type component %qs", name, previous->name);
+	  return MATCH_ERROR;
+       }
       else if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 

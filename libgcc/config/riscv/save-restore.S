@@ -45,7 +45,7 @@ FUNC_BEGIN (__riscv_save_10)
   .cfi_restore 27
   addi sp, sp, -112
   .cfi_def_cfa_offset 112
-  li t1, -16
+  li t1, 1
 .Ls10:
   sd s10, 16(sp)
   .cfi_offset 26, -96
@@ -60,7 +60,7 @@ FUNC_BEGIN (__riscv_save_8)
   .cfi_restore 27
   addi sp, sp, -112
   .cfi_def_cfa_offset 112
-  li t1, -32
+  li t1, 2
 .Ls8:
   sd s8, 32(sp)
   .cfi_offset 24, -80
@@ -77,7 +77,7 @@ FUNC_BEGIN (__riscv_save_6)
   .cfi_restore 27
   addi sp, sp, -112
   .cfi_def_cfa_offset 112
-  li t1, -48
+  li t1, 3
 .Ls6:
   sd s6, 48(sp)
   .cfi_offset 22, -64
@@ -99,7 +99,7 @@ FUNC_BEGIN (__riscv_save_4)
   .cfi_restore 27
   addi sp, sp, -112
   .cfi_def_cfa_offset 112
-  li t1, -64
+  li t1, 4
 .Ls4:
   sd s4, 64(sp)
   .cfi_offset 20, -48
@@ -123,7 +123,7 @@ FUNC_BEGIN (__riscv_save_2)
   .cfi_restore 27
   addi sp, sp, -112
   .cfi_def_cfa_offset 112
-  li t1, -80
+  li t1, 5
 .Ls2:
   sd s2, 80(sp)
   .cfi_offset 18, -32
@@ -133,9 +133,10 @@ FUNC_BEGIN (__riscv_save_2)
   .cfi_offset 8, -16
   sd ra, 104(sp)
   .cfi_offset 1, -8
+  slli t1, t1, 4
   # CFA info is not correct in next 2 instruction since t1's
   # value is depend on how may register really save.
-  sub sp, sp, t1
+  add sp, sp, t1
   jr t0
   .cfi_endproc
 FUNC_END (__riscv_save_12)

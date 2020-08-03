@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "omp-offload.h"
-#include "hsa-common.h"
 #include "edit-context.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
@@ -511,8 +510,6 @@ compile_file (void)
 	tsan_finish_file ();
 
       omp_finish_file ();
-
-      hsa_output_brig ();
 
       output_shared_constant_pool ();
       output_object_blocks ();

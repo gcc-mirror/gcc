@@ -575,6 +575,7 @@ extern tree d_build_call (TypeFunction *, tree, tree, Expressions *);
 extern tree d_assert_call (const Loc &, libcall_fn, tree = NULL_TREE);
 extern tree build_float_modulus (tree, tree, tree);
 extern tree build_vthis_function (tree, tree);
+extern tree error_no_frame_access (Dsymbol *);
 extern tree get_frame_for_symbol (Dsymbol *);
 extern tree build_vthis (AggregateDeclaration *);
 extern void build_closure (FuncDeclaration *);
