@@ -5,6 +5,6 @@
 package unix
 
 const (
-	getrandomTrap     uintptr = 315
-	copyFileRangeTrap uintptr = 323
+	getrandomTrap     uintptr = 1339
+	copyFileRangeTrap uintptr = 1347
 )
