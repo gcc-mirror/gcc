@@ -60,6 +60,7 @@
 /* We want to use the POSIX variants of include files.  */
 #define POSIX
 #include "vxWorks.h"
+#include <sys/time.h>
 
 #if defined (__mips_vxworks)
 #include "cacheLib.h"
@@ -1472,6 +1473,74 @@ __gnat_file_time_fd (int fd)
    struct file_attributes attr;
    __gnat_reset_attributes (&attr);
    return __gnat_file_time_fd_attr (fd, &attr);
+}
+
+extern long long __gnat_file_time(char* name)
+{
+  long long result;
+
+  if (name == NULL) {
+    return LLONG_MIN;
+  }
+  /* Number of seconds between <Jan 1st 1970> and <Jan 1st 2150>. */
+  static const long long ada_epoch_offset = (136 * 365 + 44 * 366) * 86400LL;
+#if defined(_WIN32)
+
+  /* Number of 100 nanoseconds between <Jan 1st 1601> and <Jan 1st 2150>. */
+  static const long long w32_epoch_offset =
+  (11644473600LL + ada_epoch_offset) * 1E7;
+
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  union
+  {
+    FILETIME ft_time;
+    long long ll_time;
+  } t_write;
+
+  if (!GetFileAttributesExA(name, GetFileExInfoStandard, &fad)) {
+    return LLONG_MIN;
+  }
+
+  t_write.ft_time = fad.ftLastWriteTime;
+
+  /* Next code similar to (t_write.ll_time - w32_epoch_offset) * 100
+     but on overflow returns LLONG_MIN value. */
+
+  if (__builtin_ssubll_overflow(t_write.ll_time, w32_epoch_offset, &result)) {
+    return LLONG_MIN;
+  }
+
+  if (__builtin_smulll_overflow(result, 100, &result)) {
+    return LLONG_MIN;
+  }
+
+#else
+
+  struct stat sb;
+  if (stat(name, &sb) != 0) {
+    return LLONG_MIN;
+  }
+
+  /* Next code similar to
+     (sb.st_mtime - ada_epoch_offset) * 1E9 + sb.st_mtim.tv_nsec
+     but on overflow returns LLONG_MIN value. */
+
+  if (__builtin_ssubll_overflow(sb.st_mtime, ada_epoch_offset, &result)) {
+    return LLONG_MIN;
+  }
+
+  if (__builtin_smulll_overflow(result, 1E9, &result)) {
+    return LLONG_MIN;
+  }
+
+#if defined(st_mtime)
+  if (__builtin_saddll_overflow(result, sb.st_mtim.tv_nsec, &result)) {
+    return LLONG_MIN;
+  }
+#endif
+
+#endif
+  return result;
 }
 
 /* Set the file time stamp.  */
@@ -3173,21 +3242,44 @@ __gnat_copy_attribs (char *from ATTRIBUTE_UNUSED, char *to ATTRIBUTE_UNUSED,
 
 #else
   GNAT_STRUCT_STAT fbuf;
-  struct utimbuf tbuf;
 
   if (GNAT_STAT (from, &fbuf) == -1) {
      return -1;
   }
 
-  /* Do we need to copy timestamp ? */
-  if (mode != 2) {
-     tbuf.actime = fbuf.st_atime;
-     tbuf.modtime = fbuf.st_mtime;
+#if _POSIX_C_SOURCE >= 200809L
+  struct timespec tbuf[2];
 
-     if (utime (to, &tbuf) == -1) {
+  if (mode != 2) {
+     tbuf[0] = fbuf.st_atim;
+     tbuf[1] = fbuf.st_mtim;
+
+     if (utimensat (AT_FDCWD, to, tbuf, 0) == -1) {
         return -1;
      }
   }
+
+#else
+  struct timeval tbuf[2];
+  /* Do we need to copy timestamp ? */
+
+  if (mode != 2) {
+     tbuf[0].tv_sec  = fbuf.st_atime;
+     tbuf[1].tv_sec  = fbuf.st_mtime;
+
+     #if defined(st_mtime)
+     tbuf[0].tv_usec = fbuf.st_atim.tv_nsec / 1000;
+     tbuf[1].tv_usec = fbuf.st_mtim.tv_nsec / 1000;
+     #else
+     tbuf[0].tv_usec = 0;
+     tbuf[1].tv_usec = 0;
+     #endif
+
+     if (utimes (to, tbuf) == -1) {
+        return -1;
+     }
+  }
+#endif
 
   /* Do we need to copy file permissions ? */
   if (mode != 0 && (chmod (to, fbuf.st_mode) == -1)) {
