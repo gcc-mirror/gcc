@@ -3803,6 +3803,8 @@ decision_tree::gen (FILE *f, bool gimple)
 
   for (unsigned n = 1; n <= 5; ++n)
     {
+      bool has_kids_p = false;
+
       /* First generate split-out functions.  */
       for (unsigned j = 0; j < root->kids.length (); j++)
 	{
@@ -3841,6 +3843,32 @@ decision_tree::gen (FILE *f, bool gimple)
 	  else
 	    fprintf (f, "  return NULL_TREE;\n");
 	  fprintf (f, "}\n");
+	  has_kids_p = true;
+	}
+
+      /* If this main entry has no children, avoid generating code
+	 with compiler warnings, by generating a simple stub.  */
+      if (! has_kids_p)
+	{
+	  if (gimple)
+	    fprintf (f, "\nstatic bool\n"
+			"gimple_simplify (gimple_match_op*, gimple_seq*,\n"
+			"                 tree (*)(tree), code_helper,\n"
+			"                 const tree");
+	  else
+	    fprintf (f, "\ntree\n"
+			"generic_simplify (location_t, enum tree_code,\n"
+			"                  const tree");
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", tree");
+	  fprintf (f, ")\n");
+	  fprintf (f, "{\n");
+	  if (gimple)
+	    fprintf (f, "  return false;\n");
+	  else
+	    fprintf (f, "  return NULL_TREE;\n");
+	  fprintf (f, "}\n");
+	  continue;
 	}
 
       /* Then generate the main entry with the outermost switch and
@@ -5079,7 +5107,7 @@ round_alloc_size (size_t s)
 }
 
 
-/* The genmatch generator progam.  It reads from a pattern description
+/* The genmatch generator program.  It reads from a pattern description
    and outputs GIMPLE or GENERIC IL matching and simplification routines.  */
 
 int
