@@ -1467,6 +1467,11 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 		       && st_shndx < shnum
 		       && pfnret[st_shndx - 1] == -1)
 		discard = 1;
+	      /* We also need to remove global UNDEFs which can
+		 cause link fails later.  */
+	      else if (st_shndx == SHN_UNDEF
+		       && ELF_ST_BIND (*st_info) == STB_GLOBAL)
+		discard = 1;
 
 	      if (discard)
 		{
