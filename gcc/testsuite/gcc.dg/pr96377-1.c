@@ -1,4 +1,4 @@
-/* { dg-options "-fno-lax-vector-conversions" } */
+/* { dg-options "-fno-lax-vector-conversions -Wno-psabi" } */
 /* { dg-message "use '-flax-vector-conversions' to permit conversions" "" { target *-*-* } 0 } */
 
 typedef int v4si __attribute__((vector_size(16)));

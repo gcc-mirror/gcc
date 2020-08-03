@@ -1,4 +1,4 @@
-/* { dg-options "-flax-vector-conversions" } */
+/* { dg-options "-flax-vector-conversions -Wno-psabi" } */
 
 typedef int v4si __attribute__((vector_size(16)));
 typedef short v8hi __attribute__((vector_size(16)));
