@@ -2678,11 +2678,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && !contains_symbolic_reference_p (op1))
 	return simplify_gen_unary (NOT, mode, op1, mode);
 
-      /* Subtracting 0 has no effect unless the mode has signed zeros
-	 and supports rounding towards -infinity.  In such a case,
-	 0 - 0 is -0.  */
+      /* Subtracting 0 has no effect unless the mode has signalling NaNs,
+	 or has signed zeros and supports rounding towards -infinity.
+	 In such a case, 0 - 0 is -0.  */
       if (!(HONOR_SIGNED_ZEROS (mode)
 	    && HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	  && !HONOR_SNANS (mode)
 	  && trueop1 == CONST0_RTX (mode))
 	return op0;
 
