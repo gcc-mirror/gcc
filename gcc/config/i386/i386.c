@@ -10056,6 +10056,9 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
       break;
 
     CASE_CONST_SCALAR_INT:
+      if (ix86_endbr_immediate_operand (x, VOIDmode))
+	return false;
+
       switch (mode)
 	{
 	case E_TImode:
@@ -10449,6 +10452,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
   /* Validate displacement.  */
   if (disp)
     {
+      if (ix86_endbr_immediate_operand (disp, VOIDmode))
+	return false;
+
       if (GET_CODE (disp) == CONST
 	  && GET_CODE (XEXP (disp, 0)) == UNSPEC
 	  && XINT (XEXP (disp, 0), 1) != UNSPEC_MACHOPIC_OFFSET)
