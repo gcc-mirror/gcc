@@ -4570,6 +4570,8 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		  {
 		    tree l = build_omp_clause (input_location,
 					       OMP_CLAUSE_LASTPRIVATE);
+		    if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+		      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (l) = 1;
 		    OMP_CLAUSE_DECL (l) = dovar_decl;
 		    OMP_CLAUSE_CHAIN (l) = omp_clauses;
 		    OMP_CLAUSE_LASTPRIVATE_STMT (l) = tmp;
