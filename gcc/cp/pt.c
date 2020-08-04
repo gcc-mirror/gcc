@@ -26018,6 +26018,9 @@ tsubst_initializer_list (tree t, tree argvec)
           if (decl)
             {
               init = build_tree_list (decl, init);
+	      /* Carry over the dummy TREE_TYPE node containing the source
+		 location.  */
+	      TREE_TYPE (init) = TREE_TYPE (t);
               TREE_CHAIN (init) = inits;
               inits = init;
             }

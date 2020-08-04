@@ -1151,6 +1151,8 @@ sort_mem_initializers (tree t, tree mem_inits)
 
       /* Record the initialization.  */
       TREE_VALUE (subobject_init) = TREE_VALUE (init);
+      /* Carry over the dummy TREE_TYPE node containing the source location.  */
+      TREE_TYPE (subobject_init) = TREE_TYPE (init);
       next_subobject = subobject_init;
     }
 
@@ -1367,6 +1369,10 @@ emit_mem_initializers (tree mem_inits)
   /* Initialize the data members.  */
   while (mem_inits)
     {
+      /* If this initializer was explicitly provided, then the dummy TREE_TYPE
+	 node contains the source location.  */
+      iloc_sentinel ils (EXPR_LOCATION (TREE_TYPE (mem_inits)));
+
       perform_member_init (TREE_PURPOSE (mem_inits),
 			   TREE_VALUE (mem_inits));
       mem_inits = TREE_CHAIN (mem_inits);
