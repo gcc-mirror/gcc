@@ -448,10 +448,11 @@ simplify_using_ranges::op_with_boolean_value_range_p (tree op)
   if (TREE_CODE (op) != SSA_NAME)
     return false;
 
+  /* ?? Errr, this should probably check for [0,0] and [1,1] as well
+     as [0,1].  */
   const value_range *vr = get_value_range (op);
-  return (vr->kind () == VR_RANGE
-	  && integer_zerop (vr->min ())
-	  && integer_onep (vr->max ()));
+  return *vr == value_range (build_zero_cst (TREE_TYPE (op)),
+			     build_one_cst (TREE_TYPE (op)));
 }
 
 /* Extract value range information for VAR when (OP COND_CODE LIMIT) is
