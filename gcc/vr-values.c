@@ -3480,10 +3480,13 @@ test_for_singularity (enum tree_code cond_code, tree op0,
      value range information we have for op0.  */
   if (min && max)
     {
-      if (compare_values (vr->min (), min) == 1)
-	min = vr->min ();
-      if (compare_values (vr->max (), max) == -1)
-	max = vr->max ();
+      tree type = TREE_TYPE (op0);
+      tree tmin = wide_int_to_tree (type, vr->lower_bound ());
+      tree tmax = wide_int_to_tree (type, vr->upper_bound ());
+      if (compare_values (tmin, min) == 1)
+	min = tmin;
+      if (compare_values (tmax, max) == -1)
+	max = tmax;
 
       /* If the new min/max values have converged to a single value,
 	 then there is only one value which can satisfy the condition,
@@ -3594,7 +3597,7 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
 
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
-      if (vr->kind () == VR_RANGE)
+      if (!vr->undefined_p () && !vr->varying_p ())
 	{
 	  tree new_tree = test_for_singularity (cond_code, op0, op1, vr);
 	  if (new_tree)
