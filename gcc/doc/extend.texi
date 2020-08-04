@@ -3715,6 +3715,7 @@ Function Attributes}, @ref{PowerPC Function Attributes},
 for details.
 
 @item symver ("@var{name2}@@@var{nodename}")
+@cindex @code{symver} function attribute
 On ELF targets this attribute creates a symbol version.  The @var{name2} part
 of the parameter is the actual name of the symbol by which it will be
 externally referenced.  The @code{nodename} portion should be the name of a
