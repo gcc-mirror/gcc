@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 !
 ! Test the fix for PR96325 in which the typebound procedure reference
 ! 'foo' was applied to an intrinsic type component without generating
