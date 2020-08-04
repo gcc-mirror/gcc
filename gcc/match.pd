@@ -3779,6 +3779,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (scmp @0 @2)
      (cmp @0 @2))))))
 
+/* For integral types with undefined overflow fold
+   x * C1 == C2 into x == C2 / C1 or false.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+       && wi::to_wide (@1) != 0)
+   (with { widest_int quot; }
+    (if (wi::multiple_of_p (wi::to_widest (@2), wi::to_widest (@1),
+			    TYPE_SIGN (TREE_TYPE (@0)), &quot))
+     (cmp @0 { wide_int_to_tree (TREE_TYPE (@0), quot); })
+     { constant_boolean_node (cmp == NE_EXPR, type); })))))
+
 /* Simplify comparison of something with itself.  For IEEE
    floating-point, we can only do some of these simplifications.  */
 (for cmp (eq ge le)
