@@ -1691,6 +1691,12 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   gimple *g;
   tree lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    {
+      g = gimple_build_nop ();
+      gsi_replace (gsi, g, false);
+      return;
+    }
   tree arg = gimple_call_arg (stmt, 0);
   tree decl = NULL_TREE;
   tree ret_type = TREE_TYPE (lhs);
