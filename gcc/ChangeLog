@@ -1,3 +1,11 @@
+2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Variadic Macros): Use the exact ... token in
+	code examples.
+
 2020-07-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backported from master:
