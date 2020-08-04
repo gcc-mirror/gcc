@@ -36,6 +36,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -50,6 +51,9 @@ package body Exp_SPARK is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Expand_SPARK_N_Aggregate (N : Node_Id);
+   --  Perform aggregate-specific expansion
 
    procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
    --  Perform attribute-reference-specific expansion
@@ -100,6 +104,9 @@ package body Exp_SPARK is
             | N_Task_Type_Declaration
          =>
             Qualify_Entity_Names (N);
+
+         when N_Aggregate =>
+            Expand_SPARK_N_Aggregate (N);
 
          --  Replace occurrences of System'To_Address by calls to
          --  System.Storage_Elements.To_Address.
@@ -215,11 +222,29 @@ package body Exp_SPARK is
                Expr      := Expression (Assoc);
                Comp_Type := Component_Type (Typ);
 
+               --  Analyze expression of the iterated_component_association
+               --  with its index parameter in scope.
+
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  Push_Scope (Scope (Defining_Identifier (Assoc)));
+                  Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+               end if;
+
                if Is_Scalar_Type (Comp_Type) then
                   Apply_Scalar_Range_Check (Expr, Comp_Type);
                end if;
 
-               Index     := First (Choices (Assoc));
+               --  Restore scope of the iterated_component_association
+
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  End_Scope;
+               end if;
+
+               Index :=
+                 First
+                   (if Nkind (Assoc) = N_Iterated_Component_Association
+                    then Discrete_Choices (Assoc)
+                    else Choices (Assoc));
                Index_Typ := First_Index (Typ);
 
                while Present (Index) loop
@@ -339,6 +364,74 @@ package body Exp_SPARK is
          Build_DIC_Procedure_Body (E, For_Freeze => True);
       end if;
    end Expand_SPARK_N_Freeze_Type;
+
+   ------------------------------
+   -- Expand_SPARK_N_Aggregate --
+   ------------------------------
+
+   procedure Expand_SPARK_N_Aggregate (N : Node_Id) is
+      Assoc : Node_Id := First (Component_Associations (N));
+   begin
+      --  For compilation, frontend analyses a copy of the
+      --  iterated_component_association's expression for legality checking;
+      --  (then the expression is copied again when expanding association into
+      --  assignments for the individual choices). For SPARK we analyze the
+      --  original expression and apply range checks, if required.
+
+      while Present (Assoc) loop
+         if Nkind (Assoc) = N_Iterated_Component_Association then
+            declare
+               Typ : constant Entity_Id := Etype (N);
+
+               Comp_Type : constant Entity_Id := Component_Type (Typ);
+               Expr      : constant Node_Id := Expression (Assoc);
+               Index_Typ : constant Entity_Id := First_Index (Typ);
+
+               Index : Node_Id;
+
+            begin
+               --  Analyze expression with index parameter in scope
+
+               Push_Scope (Scope (Defining_Identifier (Assoc)));
+               Enter_Name (Defining_Identifier (Assoc));
+               Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+
+               if Is_Scalar_Type (Comp_Type) then
+                  Apply_Scalar_Range_Check (Expr, Comp_Type);
+               end if;
+
+               End_Scope;
+
+               --  Analyze discrete choices
+
+               Index := First (Discrete_Choices (Assoc));
+
+               while Present (Index) loop
+
+                  --  The index denotes a range of elements where range checks
+                  --  have been already applied.
+
+                  if Nkind (Index) in N_Others_Choice
+                                    | N_Range
+                                    | N_Subtype_Indication
+                  then
+                     null;
+
+                  --  Otherwise the index denotes a single element (or a
+                  --  subtype name which doesn't require range checks).
+
+                  else pragma Assert (Nkind (Index) in N_Subexpr);
+                     Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
+                  end if;
+
+                  Next (Index);
+               end loop;
+            end;
+         end if;
+
+         Next (Assoc);
+      end loop;
+   end Expand_SPARK_N_Aggregate;
 
    ----------------------------------------
    -- Expand_SPARK_N_Attribute_Reference --
