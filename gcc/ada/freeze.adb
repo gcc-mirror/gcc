@@ -1610,7 +1610,10 @@ package body Freeze is
       Comp  : Entity_Id;
 
    begin
-      if Is_By_Reference_Type (E) then
+      --  Bit-packed array types do not require strict alignment, even if they
+      --  are by-reference types, because they are accessed in a special way.
+
+      if Is_By_Reference_Type (E) and then not Is_Bit_Packed_Array (E) then
          Set_Strict_Alignment (E);
 
       elsif Is_Array_Type (E) then
