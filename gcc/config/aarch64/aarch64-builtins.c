@@ -125,6 +125,10 @@ const unsigned int FLAG_READ_MEMORY = 1U << 2;
 const unsigned int FLAG_PREFETCH_MEMORY = 1U << 3;
 const unsigned int FLAG_WRITE_MEMORY = 1U << 4;
 
+/* Not all FP intrinsics raise FP exceptions or read FPCR register,
+   use this flag to suppress it.  */
+const unsigned int FLAG_AUTO_FP = 1U << 5;
+
 const unsigned int FLAG_FP = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS;
 const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
   | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
@@ -900,27 +904,9 @@ static unsigned int
 aarch64_call_properties (aarch64_simd_builtin_datum *d)
 {
   unsigned int flags = d->flags;
-  switch (d->mode)
-    {
-    /* Floating-point.  */
-    case E_BFmode:
-    case E_V4BFmode:
-    case E_V8BFmode:
-    case E_HFmode:
-    case E_V4HFmode:
-    case E_V8HFmode:
-    case E_SFmode:
-    case E_V2SFmode:
-    case E_V4SFmode:
-    case E_DFmode:
-    case E_V1DFmode:
-    case E_V2DFmode:
-      flags |= FLAG_FP;
-      break;
 
-    default:
-      break;
-    }
+  if (!(flags & FLAG_AUTO_FP) && FLOAT_MODE_P (d->mode))
+    flags |= FLAG_FP;
 
   /* -fno-trapping-math means that we can assume any FP exceptions
      are not user-visible.  */
