@@ -11780,8 +11780,6 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 	  if (speed)
 	    {
 	      machine_mode mode = GET_MODE (XEXP (op1, 0));
-	      const struct cpu_cost_table *extra_cost
-		= aarch64_tune_params.insn_extra_cost;
 
 	      if (GET_MODE_CLASS (mode) == MODE_INT)
 		*cost += extra_cost->alu.arith;
