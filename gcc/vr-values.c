@@ -1006,7 +1006,7 @@ vr_values::extract_range_from_comparison (value_range_equiv *vr,
    overflow.  */
 
 static bool
-check_for_binary_op_overflow (vr_values *store,
+check_for_binary_op_overflow (range_query *store,
 			      enum tree_code subcode, tree type,
 			      tree op0, tree op1, bool *ovf)
 {
@@ -1736,42 +1736,40 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
 
   gcc_unreachable ();
 }
-/* Given a range VR, a LOOP and a variable VAR, determine whether it
-   would be profitable to adjust VR using scalar evolution information
-   for VAR.  If so, update VR with the new limits.  */
 
-void
-vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
-				   gimple *stmt, tree var)
+/* Given a VAR in STMT within LOOP, determine the bounds of the
+   variable and store it in MIN/MAX and return TRUE.  If no bounds
+   could be determined, return FALSE.  */
+
+bool
+bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
+		       class loop *loop, gimple *stmt, tree var)
 {
-  tree init, step, chrec, tmin, tmax, min, max, type, tem;
+  tree init, step, chrec, tmin, tmax, type = TREE_TYPE (var);
   enum ev_direction dir;
-
-  /* TODO.  Don't adjust anti-ranges.  An anti-range may provide
-     better opportunities than a regular range, but I'm not sure.  */
-  if (vr->kind () == VR_ANTI_RANGE)
-    return;
 
   chrec = instantiate_parameters (loop, analyze_scalar_evolution (loop, var));
 
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      vr->set (chrec);
-      return;
+      *min = *max = chrec;
+      return true;
     }
 
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    return;
+    return false;
 
   init = initial_condition_in_loop_num (chrec, loop->num);
-  tem = op_with_constant_singleton_value_range (init);
-  if (tem)
-    init = tem;
   step = evolution_part_in_loop_num (chrec, loop->num);
-  tem = op_with_constant_singleton_value_range (step);
-  if (tem)
-    step = tem;
+
+  /* If INIT is an SSA with a singleton range, set INIT to said
+     singleton, otherwise leave INIT alone.  */
+  if (TREE_CODE (init) == SSA_NAME)
+    query->get_value_range (init, stmt)->singleton_p (&init);
+  /* Likewise for step.  */
+  if (TREE_CODE (step) == SSA_NAME)
+    query->get_value_range (step, stmt)->singleton_p (&step);
 
   /* If STEP is symbolic, we can't know whether INIT will be the
      minimum or maximum value in the range.  Also, unless INIT is
@@ -1780,7 +1778,7 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
   if (step == NULL_TREE
       || !is_gimple_min_invariant (step)
       || !valid_value_p (init))
-    return;
+    return false;
 
   dir = scev_direction (chrec);
   if (/* Do not adjust ranges if we do not know whether the iv increases
@@ -1789,9 +1787,8 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
       /* ... or if it may wrap.  */
       || scev_probably_wraps_p (NULL_TREE, init, step, stmt,
 				get_chrec_loop (chrec), true))
-    return;
+    return false;
 
-  type = TREE_TYPE (var);
   if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
     tmin = lower_bound_in_type (type, type);
   else
@@ -1806,7 +1803,7 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
   if (TREE_CODE (step) == INTEGER_CST
       && is_gimple_val (init)
       && (TREE_CODE (init) != SSA_NAME
-	  || get_value_range (init, stmt)->kind () == VR_RANGE))
+	  || query->get_value_range (init, stmt)->kind () == VR_RANGE))
     {
       widest_int nit;
 
@@ -1829,21 +1826,29 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
 	      && (sgn == UNSIGNED
 		  || wi::gts_p (wtmp, 0) == wi::gts_p (wi::to_wide (step), 0)))
 	    {
-	      value_range_equiv maxvr;
-	      tem = wide_int_to_tree (TREE_TYPE (init), wtmp);
-	      extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
-					      TREE_TYPE (init), init, tem);
+	      value_range maxvr, vr0, vr1;
+	      if (TREE_CODE (init) == SSA_NAME)
+		vr0 = *(query->get_value_range (init, stmt));
+	      else if (is_gimple_min_invariant (init))
+		vr0.set (init);
+	      else
+		vr0.set_varying (TREE_TYPE (init));
+	      tree tem = wide_int_to_tree (TREE_TYPE (init), wtmp);
+	      vr1.set (tem, tem);
+	      range_fold_binary_expr (&maxvr, PLUS_EXPR,
+				      TREE_TYPE (init), &vr0, &vr1);
+
 	      /* Likewise if the addition did.  */
 	      if (maxvr.kind () == VR_RANGE)
 		{
 		  value_range initvr;
 
 		  if (TREE_CODE (init) == SSA_NAME)
-		    initvr = *(get_value_range (init, stmt));
+		    initvr = *(query->get_value_range (init, stmt));
 		  else if (is_gimple_min_invariant (init))
 		    initvr.set (init);
 		  else
-		    return;
+		    return false;
 
 		  /* Check if init + nit * step overflows.  Though we checked
 		     scev {init, step}_loop doesn't wrap, it is not enough
@@ -1853,7 +1858,7 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
 		       && compare_values (maxvr.min (), initvr.min ()) != -1)
 		      || (dir == EV_DIR_GROWS
 			  && compare_values (maxvr.max (), initvr.max ()) != 1))
-		    return;
+		    return false;
 
 		  tmin = maxvr.min ();
 		  tmax = maxvr.max ();
@@ -1862,66 +1867,62 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
 	}
     }
 
-  if (vr->varying_p () || vr->undefined_p ())
-    {
-      min = tmin;
-      max = tmax;
-
-      /* For VARYING or UNDEFINED ranges, just about anything we get
-	 from scalar evolutions should be better.  */
-
-      if (dir == EV_DIR_DECREASES)
-	max = init;
-      else
-	min = init;
-    }
-  else if (vr->kind () == VR_RANGE)
-    {
-      min = vr->min ();
-      max = vr->max ();
-
-      if (dir == EV_DIR_DECREASES)
-	{
-	  /* INIT is the maximum value.  If INIT is lower than VR->MAX ()
-	     but no smaller than VR->MIN (), set VR->MAX () to INIT.  */
-	  if (compare_values (init, max) == -1)
-	    max = init;
-
-	  /* According to the loop information, the variable does not
-	     overflow.  */
-	  if (compare_values (min, tmin) == -1)
-	    min = tmin;
-
-	}
-      else
-	{
-	  /* If INIT is bigger than VR->MIN (), set VR->MIN () to INIT.  */
-	  if (compare_values (init, min) == 1)
-	    min = init;
-
-	  if (compare_values (tmax, max) == -1)
-	    max = tmax;
-	}
-    }
+  *min = tmin;
+  *max = tmax;
+  if (dir == EV_DIR_DECREASES)
+    *max = init;
   else
-    return;
-
-  /* If we just created an invalid range with the minimum
-     greater than the maximum, we fail conservatively.
-     This should happen only in unreachable
-     parts of code, or for invalid programs.  */
-  if (compare_values (min, max) == 1)
-    return;
+    *min = init;
 
   /* Even for valid range info, sometimes overflow flag will leak in.
      As GIMPLE IL should have no constants with TREE_OVERFLOW set, we
      drop them.  */
-  if (TREE_OVERFLOW_P (min))
-    min = drop_tree_overflow (min);
-  if (TREE_OVERFLOW_P (max))
-    max = drop_tree_overflow (max);
+  if (TREE_OVERFLOW_P (*min))
+    *min = drop_tree_overflow (*min);
+  if (TREE_OVERFLOW_P (*max))
+    *max = drop_tree_overflow (*max);
 
-  vr->update (min, max);
+  gcc_checking_assert (compare_values (*min, *max) != 1);
+  return true;
+}
+
+/* Given a range VR, a LOOP and a variable VAR, determine whether it
+   would be profitable to adjust VR using scalar evolution information
+   for VAR.  If so, update VR with the new limits.  */
+
+void
+vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
+				   gimple *stmt, tree var)
+{
+  tree min, max;
+  if (bounds_of_var_in_loop (&min, &max, this, loop, stmt, var))
+    {
+      if (vr->undefined_p () || vr->varying_p ())
+	{
+	  /* For VARYING or UNDEFINED ranges, just about anything we get
+	     from scalar evolutions should be better.  */
+	  vr->update (min, max);
+	}
+      else if (vr->kind () == VR_RANGE)
+	{
+	  /* Start with the input range... */
+	  tree vrmin = vr->min ();
+	  tree vrmax = vr->max ();
+
+	  /* ...and narrow it down with what we got from SCEV.  */
+	  if (compare_values (min, vrmin) == 1)
+	    vrmin = min;
+	  if (compare_values (max, vrmax) == -1)
+	    vrmax = max;
+
+	  vr->update (vrmin, vrmax);
+	}
+      else if (vr->kind () == VR_ANTI_RANGE)
+	{
+	  /* ?? As an enhancement, if VR, MIN, and MAX are constants, one
+	     could just intersect VR with a range of [MIN,MAX].  */
+	}
+    }
 }
 
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
@@ -4216,7 +4217,7 @@ simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
   return false;
 }
 
-simplify_using_ranges::simplify_using_ranges (vr_values *store)
+simplify_using_ranges::simplify_using_ranges (range_query *store)
   : store (store)
 {
   to_remove_edges = vNULL;
