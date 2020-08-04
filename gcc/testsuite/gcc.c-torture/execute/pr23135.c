@@ -1,7 +1,7 @@
 /* Based on execute/simd-1.c, modified by joern.rennecke@st.com to
    trigger a reload bug.  Verified for gcc mainline from 20050722 13:00 UTC
    for sh-elf -m4 -O2.  */
-/* { dg-options "-Wno-psabi" } */
+/* { dg-options "-Wno-psabi -fwrapv" } */
 /* { dg-add-options stack_size } */
 
 #ifndef STACK_SIZE

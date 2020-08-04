@@ -1796,6 +1796,44 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 	end_sequence ();
       }
       break;
+    case E_V2SImode:
+      {
+	rtx src0 = gen_rtx_SUBREG (SImode, src, 0);
+	rtx src1 = gen_rtx_SUBREG (SImode, src, 4);
+	rtx dst0 = gen_rtx_SUBREG (SImode, dst, 0);
+	rtx dst1 = gen_rtx_SUBREG (SImode, dst, 4);
+	rtx tmp0 = gen_reg_rtx (SImode);
+	rtx tmp1 = gen_reg_rtx (SImode);
+	start_sequence ();
+	emit_insn (gen_movsi (tmp0, src0));
+	emit_insn (gen_movsi (tmp1, src1));
+	emit_insn (nvptx_gen_shuffle (tmp0, tmp0, idx, kind));
+	emit_insn (nvptx_gen_shuffle (tmp1, tmp1, idx, kind));
+	emit_insn (gen_movsi (dst0, tmp0));
+	emit_insn (gen_movsi (dst1, tmp1));
+	res = get_insns ();
+	end_sequence ();
+      }
+      break;
+    case E_V2DImode:
+      {
+	rtx src0 = gen_rtx_SUBREG (DImode, src, 0);
+	rtx src1 = gen_rtx_SUBREG (DImode, src, 8);
+	rtx dst0 = gen_rtx_SUBREG (DImode, dst, 0);
+	rtx dst1 = gen_rtx_SUBREG (DImode, dst, 8);
+	rtx tmp0 = gen_reg_rtx (DImode);
+	rtx tmp1 = gen_reg_rtx (DImode);
+	start_sequence ();
+	emit_insn (gen_movdi (tmp0, src0));
+	emit_insn (gen_movdi (tmp1, src1));
+	emit_insn (nvptx_gen_shuffle (tmp0, tmp0, idx, kind));
+	emit_insn (nvptx_gen_shuffle (tmp1, tmp1, idx, kind));
+	emit_insn (gen_movdi (dst0, tmp0));
+	emit_insn (gen_movdi (dst1, tmp1));
+	res = get_insns ();
+	end_sequence ();
+      }
+      break;
     case E_BImode:
       {
 	rtx tmp = gen_reg_rtx (SImode);

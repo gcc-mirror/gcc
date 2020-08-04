@@ -15411,7 +15411,20 @@ cp_parser_mem_initializer (cp_parser* parser)
 
   in_base_initializer = 0;
 
-  return member ? build_tree_list (member, expression_list) : error_mark_node;
+  if (!member)
+    return error_mark_node;
+  tree node = build_tree_list (member, expression_list);
+
+  /* We can't attach the source location of this initializer directly to
+     the list node, so we instead attach it to a dummy EMPTY_CLASS_EXPR
+     within the TREE_TYPE of the list node.  */
+  location_t loc
+    = make_location (token->location, token->location, parser->lexer);
+  tree dummy = build0 (EMPTY_CLASS_EXPR, NULL_TREE);
+  SET_EXPR_LOCATION (dummy, loc);
+  TREE_TYPE (node) = dummy;
+
+  return node;
 }
 
 /* Parse a mem-initializer-id.
@@ -17640,7 +17653,6 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 static void
 cp_parser_explicit_specialization (cp_parser* parser)
 {
-  bool need_lang_pop;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   /* Look for the `template' keyword.  */
@@ -17651,52 +17663,54 @@ cp_parser_explicit_specialization (cp_parser* parser)
   cp_parser_require (parser, CPP_GREATER, RT_GREATER);
   /* We have processed another parameter list.  */
   ++parser->num_template_parameter_lists;
+
   /* [temp]
 
      A template ... explicit specialization ... shall not have C
      linkage.  */
-  if (current_lang_name == lang_name_c)
+  bool need_lang_pop = current_lang_name == lang_name_c;
+  if (need_lang_pop)
     {
       error_at (token->location, "template specialization with C linkage");
       maybe_show_extern_c_location ();
+
       /* Give it C++ linkage to avoid confusing other parts of the
 	 front end.  */
       push_lang_context (lang_name_cplusplus);
       need_lang_pop = true;
     }
-  else
-    need_lang_pop = false;
+
   /* Let the front end know that we are beginning a specialization.  */
-  if (!begin_specialization ())
+  if (begin_specialization ())
     {
-      end_specialization ();
-      return;
+      /* If the next keyword is `template', we need to figure out
+	 whether or not we're looking a template-declaration.  */
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
+	{
+	  if (cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_LESS
+	      && cp_lexer_peek_nth_token (parser->lexer, 3)->type != CPP_GREATER)
+	    cp_parser_template_declaration_after_export (parser,
+							 /*member_p=*/false);
+	  else
+	    cp_parser_explicit_specialization (parser);
+	}
+      else
+	/* Parse the dependent declaration.  */
+	cp_parser_single_declaration (parser,
+				      /*checks=*/NULL,
+				      /*member_p=*/false,
+				      /*explicit_specialization_p=*/true,
+				      /*friend_p=*/NULL);
     }
 
-  /* If the next keyword is `template', we need to figure out whether
-     or not we're looking a template-declaration.  */
-  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
-    {
-      if (cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_LESS
-	  && cp_lexer_peek_nth_token (parser->lexer, 3)->type != CPP_GREATER)
-	cp_parser_template_declaration_after_export (parser,
-						     /*member_p=*/false);
-      else
-	cp_parser_explicit_specialization (parser);
-    }
-  else
-    /* Parse the dependent declaration.  */
-    cp_parser_single_declaration (parser,
-				  /*checks=*/NULL,
-				  /*member_p=*/false,
-				  /*explicit_specialization_p=*/true,
-				  /*friend_p=*/NULL);
   /* We're done with the specialization.  */
   end_specialization ();
+
   /* For the erroneous case of a template with C linkage, we pushed an
      implicit C++ linkage scope; exit that scope now.  */
   if (need_lang_pop)
     pop_lang_context ();
+
   /* We're done with this parameter list.  */
   --parser->num_template_parameter_lists;
 }

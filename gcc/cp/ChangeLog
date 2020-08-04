@@ -1,3 +1,14 @@
+2020-08-03  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (after_nsdmi_defaulted_late_checks): Remove.
+
+2020-08-03  Marek Polacek  <polacek@redhat.com>
+
+	DR 2032
+	PR c++/96218
+	* pt.c (check_default_tmpl_args): Also consider variable
+	templates.
+
 2020-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/96182

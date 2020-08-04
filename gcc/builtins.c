@@ -3287,12 +3287,6 @@ determine_block_size (tree len, rtx len_rtx,
 	}
       else if (range_type == VR_ANTI_RANGE)
 	{
-	  /* Anti range 0...N lets us to determine minimal size to N+1.  */
-	  if (min == 0)
-	    {
-	      if (wi::fits_uhwi_p (max) && max.to_uhwi () + 1 != 0)
-		*min_size = max.to_uhwi () + 1;
-	    }
 	  /* Code like
 
 	     int n;
@@ -3302,7 +3296,7 @@ determine_block_size (tree len, rtx len_rtx,
 	     Produce anti range allowing negative values of N.  We still
 	     can use the information and make a guess that N is not negative.
 	     */
-	  else if (!wi::leu_p (max, 1 << 30) && wi::fits_uhwi_p (min))
+	  if (!wi::leu_p (max, 1 << 30) && wi::fits_uhwi_p (min))
 	    *probable_max_size = min.to_uhwi () - 1;
 	}
     }
