@@ -1,3 +1,21 @@
+2020-08-03  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Don't create present/release
+	mappings for array descriptors.
+
+2020-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* f95-lang.c (gfc_init_builtin_functions): Remove processing of
+	hsa-builtins.def.
+
+2020-08-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfc-internals.texi: Fix typos.
+	* gfortran.texi: Likewise.
+	* intrinsic.texi: Likewise.
+	* invoke.texi: Likewise.
+
 2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR target/96320

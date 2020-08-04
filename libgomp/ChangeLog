@@ -1,3 +1,50 @@
+2020-08-03  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: Don't run for
+	shared-memory devices.  Extend with further checking.
+
+2020-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* plugin/Makefrag.am: Remove configuration of HSA plugin.
+	* aclocal.m4: Regenerated.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* plugin/configfrag.ac: Likewise.
+	* plugin/hsa_ext_finalize.h: Removed.
+	* plugin/plugin-hsa.c: Likewise.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/lib/libgomp.exp
+	(offload_target_to_openacc_device_type): Remove hsa case.
+	(check_effective_target_hsa_offloading_selected_nocache): Removed
+	(check_effective_target_hsa_offloading_selected): Likewise.
+	(libgomp_init): Do not add -Wno-hsa to additional_flags.
+	* testsuite/libgomp.hsa.c/alloca-1.c: Removed test.
+	* testsuite/libgomp.hsa.c/bitfield-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/bits-insns.c: Likewise.
+	* testsuite/libgomp.hsa.c/builtins-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/c.exp: Likewise.
+	* testsuite/libgomp.hsa.c/complex-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/complex-align-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/formal-actual-args-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/function-call-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/get-level-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-3.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-4.c: Likewise.
+	* testsuite/libgomp.hsa.c/memory-operations-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/pr69568.c: Likewise.
+	* testsuite/libgomp.hsa.c/pr82416.c: Likewise.
+	* testsuite/libgomp.hsa.c/rotate-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/staticvar.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-branch-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-sbr-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/tiling-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/tiling-2.c: Likewise.
+
 2020-07-27  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
