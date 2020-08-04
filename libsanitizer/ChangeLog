@@ -1,3 +1,8 @@
+2020-08-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_linux.cpp: Cherry-pick llvm-project
+	revision f0e9b76c3500496f8f3ea7abe6f4bf801e3b41e7.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

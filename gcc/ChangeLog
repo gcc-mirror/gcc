@@ -1,3 +1,28 @@
+2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Variadic Macros): Use the exact ... token in
+	code examples.
+
+2020-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Add missing comma after octeontx2f95mm entry.
+
+2020-08-03  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	Backported from master:
+	2020-08-03  Qian jianhua  <qianjh@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (a64fx): New core.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* config/aarch64/aarch64.c (a64fx_prefetch_tune, a64fx_tunings): New.
+	* doc/invoke.texi: Add a64fx to the list.
+
 2020-07-31  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
