@@ -4194,33 +4194,20 @@ simplify_using_ranges::simplify_internal_call_using_ranges
 bool
 simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 {
-  const value_range *vr = get_value_range (var);
-  if (vr->varying_p ()
-      || vr->undefined_p ()
-      || TREE_CODE (vr->min ()) != INTEGER_CST
-      || TREE_CODE (vr->max ()) != INTEGER_CST)
+  value_range vr = *get_value_range (var);
+  vr.normalize_symbolics ();
+  if (vr.varying_p () || vr.undefined_p ())
     return false;
 
-  if (vr->kind () == VR_RANGE
-      && wi::to_wide (vr->max ()) - wi::to_wide (vr->min ()) == 1)
+  if ((vr.num_pairs () == 1 && vr.upper_bound () - vr.lower_bound () == 1)
+      || (vr.num_pairs () == 2
+	  && vr.lower_bound (0) == vr.upper_bound (0)
+	  && vr.lower_bound (1) == vr.upper_bound (1)))
     {
-      *a = vr->min ();
-      *b = vr->max ();
+      *a = wide_int_to_tree (TREE_TYPE (var), vr.lower_bound ());
+      *b = wide_int_to_tree (TREE_TYPE (var), vr.upper_bound ());
       return true;
     }
-
-  /* ~[TYPE_MIN + 1, TYPE_MAX - 1] */
-  if (vr->kind () == VR_ANTI_RANGE
-      && (wi::to_wide (vr->min ())
-	  - wi::to_wide (vrp_val_min (TREE_TYPE (var)))) == 1
-      && (wi::to_wide (vrp_val_max (TREE_TYPE (var)))
-	  - wi::to_wide (vr->max ())) == 1)
-    {
-      *a = vrp_val_min (TREE_TYPE (var));
-      *b = vrp_val_max (TREE_TYPE (var));
-      return true;
-    }
-
   return false;
 }
 
