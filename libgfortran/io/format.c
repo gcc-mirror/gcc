@@ -617,6 +617,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
   int repeat;
   format_data *fmt = dtp->u.p.fmt;
   bool seen_data_desc = false;
+  int standard;
 
   head = tail = NULL;
 
@@ -929,7 +930,14 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       /* Processing for zero width formats.  */
       if (u == FMT_ZERO)
 	{
-	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
+          if (t == FMT_F)
+	    standard = GFC_STD_F95;
+	  else if (t == FMT_G)
+	    standard = GFC_STD_F2008;
+	  else
+	    standard = GFC_STD_F2018;
+
+	  if (notification_std (standard) == NOTIFICATION_ERROR
 	      || dtp->u.p.mode == READING)
 	    {
 	      fmt->error = zero_width;
