@@ -144,6 +144,7 @@ typedef struct vn_reference_s
   tree vuse;
   alias_set_type set;
   tree type;
+  unsigned punned : 1;
   vec<vn_reference_op_s> operands;
   tree result;
   tree result_vdef;
