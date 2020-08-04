@@ -868,7 +868,11 @@ make_pass_dominator (gcc::context *ctxt)
 static class vr_values *x_vr_values;
 
 /* A trivial wrapper so that we can present the generic jump
-   threading code with a simple API for simplifying statements.  */
+   threading code with a simple API for simplifying statements.
+
+   ?? This should be cleaned up.  There's a virtually identical copy
+   of this function in tree-vrp.c.  */
+
 static tree
 simplify_stmt_for_jump_threading (gimple *stmt,
 				  gimple *within_stmt ATTRIBUTE_UNUSED,
@@ -901,55 +905,7 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 	return NULL_TREE;
 
       const value_range_equiv *vr = x_vr_values->get_value_range (op);
-      if (vr->undefined_p ()
-	  || vr->varying_p ()
-	  || vr->symbolic_p ())
-	return NULL_TREE;
-
-      if (vr->kind () == VR_RANGE)
-	{
-	  size_t i, j;
-
-	  find_case_label_range (switch_stmt, vr->min (), vr->max (), &i, &j);
-
-	  /* Is there only one such label?  */
-	  if (i == j)
-	    {
-	      tree label = gimple_switch_label (switch_stmt, i);
-	      tree singleton;
-
-	      /* The i'th label will only be taken if the value range of the
-		 operand is entirely within the bounds of this label.  */
-	      if (CASE_HIGH (label) != NULL_TREE
-		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min ()) <= 0
-		     && tree_int_cst_compare (CASE_HIGH (label), vr->max ()) >= 0)
-		  : (vr->singleton_p (&singleton)
-		     && tree_int_cst_equal (CASE_LOW (label), singleton)))
-		return label;
-	    }
-
-	  /* If there are no such labels, then the default label
-	     will be taken.  */
-	  if (i > j)
-	    return gimple_switch_label (switch_stmt, 0);
-	}
-
-      if (vr->kind () == VR_ANTI_RANGE)
-          {
-            unsigned n = gimple_switch_num_labels (switch_stmt);
-            tree min_label = gimple_switch_label (switch_stmt, 1);
-            tree max_label = gimple_switch_label (switch_stmt, n - 1);
-
-            /* The default label will be taken only if the anti-range of the
-               operand is entirely outside the bounds of all the (non-default)
-               case labels.  */
-            if (tree_int_cst_compare (vr->min (), CASE_LOW (min_label)) <= 0
-                && (CASE_HIGH (max_label) != NULL_TREE
-                    ? tree_int_cst_compare (vr->max (), CASE_HIGH (max_label)) >= 0
-                    : tree_int_cst_compare (vr->max (), CASE_LOW (max_label)) >= 0))
-            return gimple_switch_label (switch_stmt, 0);
-          }
-	return NULL_TREE;
+      return find_case_label_range (switch_stmt, vr);
     }
 
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
