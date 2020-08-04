@@ -3969,11 +3969,14 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   /* Get the value-range of the inner operand.  Use get_range_info in
      case innerop was created during substitute-and-fold.  */
   wide_int imin, imax;
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop))
-      || get_range_info (innerop, &imin, &imax) != VR_RANGE)
+  value_range vr;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
     return false;
-  innermin = widest_int::from (imin, TYPE_SIGN (TREE_TYPE (innerop)));
-  innermax = widest_int::from (imax, TYPE_SIGN (TREE_TYPE (innerop)));
+  get_range_info (innerop, vr);
+  if (vr.undefined_p () || vr.varying_p ())
+    return false;
+  innermin = widest_int::from (vr.lower_bound (), TYPE_SIGN (TREE_TYPE (innerop)));
+  innermax = widest_int::from (vr.upper_bound (), TYPE_SIGN (TREE_TYPE (innerop)));
 
   /* Simulate the conversion chain to check if the result is equal if
      the middle conversion is removed.  */
