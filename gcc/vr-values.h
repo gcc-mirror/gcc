@@ -38,12 +38,13 @@ public:
   // ?? These should be cleaned, merged, and made private.
   tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
   void vrp_visit_cond_stmt (gcond *, edge *);
-  tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
+  tree vrp_evaluate_conditional_warnv_with_ops (gimple *stmt, enum tree_code,
 						tree, tree, bool,
 						bool *, bool *);
 
 private:
-  const value_range_equiv *get_value_range (const_tree op);
+  const value_range_equiv *get_value_range (const_tree op,
+					    gimple *stmt = NULL);
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -101,7 +102,7 @@ class vr_values
   vr_values (void);
   ~vr_values (void);
 
-  const value_range_equiv *get_value_range (const_tree);
+  const value_range_equiv *get_value_range (const_tree, gimple * = NULL);
   void set_vr_value (tree, value_range_equiv *);
   value_range_equiv *swap_vr_value (tree, value_range_equiv *);
 
@@ -140,8 +141,7 @@ class vr_values
   void extract_range_from_unary_expr (value_range_equiv *, enum tree_code,
 				      tree, tree);
   void extract_range_from_cond_expr (value_range_equiv *, gassign *);
-  void extract_range_from_comparison (value_range_equiv *, enum tree_code,
-				      tree, tree, tree);
+  void extract_range_from_comparison (value_range_equiv *, gimple *);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range_equiv *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
 
@@ -167,9 +167,9 @@ class vr_values
 };
 
 inline const value_range_equiv *
-simplify_using_ranges::get_value_range (const_tree op)
+simplify_using_ranges::get_value_range (const_tree op, gimple *stmt)
 {
-  return store->get_value_range (op);
+  return store->get_value_range (op, stmt);
 }
 
 extern tree get_output_for_vrp (gimple *);
