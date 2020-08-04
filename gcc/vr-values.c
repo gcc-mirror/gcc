@@ -2495,11 +2495,7 @@ simplify_using_ranges::vrp_evaluate_conditional (tree_code code, tree op0,
       tree type = TREE_TYPE (op0);
       const value_range_equiv *vr0 = get_value_range (op0);
 
-      if (vr0->kind () == VR_RANGE
-	  && INTEGRAL_TYPE_P (type)
-	  && vrp_val_is_min (vr0->min ())
-	  && vrp_val_is_max (vr0->max ())
-	  && is_gimple_min_invariant (op1))
+      if (vr0->varying_p () && INTEGRAL_TYPE_P (type))
 	{
 	  location_t location;
 
