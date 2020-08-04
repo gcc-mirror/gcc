@@ -441,7 +441,7 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
    in a value_range VR.  Returns the value_range_kind.  */
 
 enum value_range_kind
-get_range_info (const_tree name, value_range &vr)
+get_range_info (const_tree name, irange &vr)
 {
   tree min, max;
   wide_int wmin, wmax;
