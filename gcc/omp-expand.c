@@ -1987,139 +1987,390 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
     {
       gcc_assert (fd->last_nonrect != -1);
 
-      /* Fallback implementation.  Evaluate the loops with m1/m2
-	 non-NULL as well as their outer loops at runtime using temporaries
-	 instead of the original iteration variables, and in the
-	 body just bump the counter.  */
       counts[fd->last_nonrect] = create_tmp_reg (type, ".count");
       expand_omp_build_assign (gsi, counts[fd->last_nonrect],
 			       build_zero_cst (type));
-      gimple_stmt_iterator gsi2 = *gsi;
-      gsi_prev (&gsi2);
-      e = split_block (entry_bb, gsi_stmt (gsi2));
-      e = split_block (e->dest, (gimple *) NULL);
-      basic_block cur_bb = e->src;
-      basic_block next_bb = e->dest;
-      entry_bb = e->dest;
-      *gsi = gsi_after_labels (entry_bb);
-
-      tree *vs = XALLOCAVEC (tree, fd->last_nonrect);
-      memset (vs, 0, fd->last_nonrect * sizeof (tree));
-
-      for (i = 0; i <= fd->last_nonrect; i++)
+      for (i = fd->first_nonrect + 1; i < fd->last_nonrect; i++)
+	if (fd->loops[i].m1
+	    || fd->loops[i].m2
+	    || fd->loops[i].non_rect_referenced)
+	  break;
+      if (i == fd->last_nonrect
+	  && fd->loops[i].outer == fd->last_nonrect - fd->first_nonrect
+	  && !TYPE_UNSIGNED (TREE_TYPE (fd->loops[i].v)))
 	{
-	  if (fd->loops[i].m1 == NULL_TREE
-	      && fd->loops[i].m2 == NULL_TREE
-	      && !fd->loops[i].non_rect_referenced)
-	    continue;
+	  int o = fd->first_nonrect;
+	  tree itype = TREE_TYPE (fd->loops[o].v);
+	  tree n1o = create_tmp_reg (itype, ".n1o");
+	  t = fold_convert (itype, unshare_expr (fd->loops[o].n1));
+	  expand_omp_build_assign (gsi, n1o, t);
+	  tree n2o = create_tmp_reg (itype, ".n2o");
+	  t = fold_convert (itype, unshare_expr (fd->loops[o].n2));
+	  expand_omp_build_assign (gsi, n2o, t);
+	  if (fd->loops[i].m1 && fd->loops[i].m2)
+	    t = fold_build2 (MINUS_EXPR, itype, unshare_expr (fd->loops[i].m2),
+			     unshare_expr (fd->loops[i].m1));
+	  else if (fd->loops[i].m1)
+	    t = fold_unary (NEGATE_EXPR, itype,
+			    unshare_expr (fd->loops[i].m1));
+	  else
+	    t = unshare_expr (fd->loops[i].m2);
+	  tree m2minusm1
+	    = force_gimple_operand_gsi (gsi, t, true, NULL_TREE,
+					true, GSI_SAME_STMT);
 
-	  tree itype = TREE_TYPE (fd->loops[i].v);
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_prev (&gsi2);
+	  e = split_block (entry_bb, gsi_stmt (gsi2));
+	  e = split_block (e->dest, (gimple *) NULL);
+	  basic_block bb1 = e->src;
+	  entry_bb = e->dest;
+	  *gsi = gsi_after_labels (entry_bb);
 
-	  gsi2 = gsi_after_labels (cur_bb);
-	  tree n1, n2;
+	  gsi2 = gsi_after_labels (bb1);
+	  tree ostep = fold_convert (itype, fd->loops[o].step);
+	  t = build_int_cst (itype, (fd->loops[o].cond_code
+				     == LT_EXPR ? -1 : 1));
+	  t = fold_build2 (PLUS_EXPR, itype, ostep, t);
+	  t = fold_build2 (PLUS_EXPR, itype, t, n2o);
+	  t = fold_build2 (MINUS_EXPR, itype, t, n1o);
+	  if (TYPE_UNSIGNED (itype)
+	      && fd->loops[o].cond_code == GT_EXPR)
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype,
+			     fold_build1 (NEGATE_EXPR, itype, t),
+			     fold_build1 (NEGATE_EXPR, itype, ostep));
+	  else
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype, t, ostep);
+	  tree outer_niters
+	    = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+					true, GSI_SAME_STMT);
+	  t = fold_build2 (MINUS_EXPR, itype, outer_niters,
+			   build_one_cst (itype));
+	  t = fold_build2 (MULT_EXPR, itype, t, ostep);
+	  t = fold_build2 (PLUS_EXPR, itype, n1o, t);
+	  tree last = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+						true, GSI_SAME_STMT);
+	  tree n1, n2, n1e, n2e;
 	  t = fold_convert (itype, unshare_expr (fd->loops[i].n1));
 	  if (fd->loops[i].m1)
 	    {
 	      n1 = fold_convert (itype, unshare_expr (fd->loops[i].m1));
-	      n1 = fold_build2 (MULT_EXPR, itype, vs[i - fd->loops[i].outer],
-				n1);
+	      n1 = fold_build2 (MULT_EXPR, itype, n1o, n1);
 	      n1 = fold_build2 (PLUS_EXPR, itype, n1, t);
 	    }
 	  else
 	    n1 = t;
 	  n1 = force_gimple_operand_gsi (&gsi2, n1, true, NULL_TREE,
 					 true, GSI_SAME_STMT);
-	  if (i < fd->last_nonrect)
-	    {
-	      vs[i] = create_tmp_reg (itype, ".it");
-	      expand_omp_build_assign (&gsi2, vs[i], n1);
-	    }
 	  t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
 	  if (fd->loops[i].m2)
 	    {
 	      n2 = fold_convert (itype, unshare_expr (fd->loops[i].m2));
-	      n2 = fold_build2 (MULT_EXPR, itype, vs[i - fd->loops[i].outer],
-				n2);
+	      n2 = fold_build2 (MULT_EXPR, itype, n1o, n2);
 	      n2 = fold_build2 (PLUS_EXPR, itype, n2, t);
 	    }
 	  else
 	    n2 = t;
 	  n2 = force_gimple_operand_gsi (&gsi2, n2, true, NULL_TREE,
 					 true, GSI_SAME_STMT);
-	  if (i == fd->last_nonrect)
+	  t = fold_convert (itype, unshare_expr (fd->loops[i].n1));
+	  if (fd->loops[i].m1)
 	    {
-	      gcond *cond_stmt
-		= gimple_build_cond (fd->loops[i].cond_code, n1, n2,
-				     NULL_TREE, NULL_TREE);
+	      n1e = fold_convert (itype, unshare_expr (fd->loops[i].m1));
+	      n1e = fold_build2 (MULT_EXPR, itype, last, n1e);
+	      n1e = fold_build2 (PLUS_EXPR, itype, n1e, t);
+	    }
+	  else
+	    n1e = t;
+	  n1e = force_gimple_operand_gsi (&gsi2, n1e, true, NULL_TREE,
+					  true, GSI_SAME_STMT);
+	  t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
+	  if (fd->loops[i].m2)
+	    {
+	      n2e = fold_convert (itype, unshare_expr (fd->loops[i].m2));
+	      n2e = fold_build2 (MULT_EXPR, itype, last, n2e);
+	      n2e = fold_build2 (PLUS_EXPR, itype, n2e, t);
+	    }
+	  else
+	    n2e = t;
+	  n2e = force_gimple_operand_gsi (&gsi2, n2e, true, NULL_TREE,
+					  true, GSI_SAME_STMT);
+	  gcond *cond_stmt
+	    = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
+				 NULL_TREE, NULL_TREE);
+	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	  e = split_block (bb1, cond_stmt);
+	  e->flags = EDGE_TRUE_VALUE;
+	  e->probability = profile_probability::likely ().guessed ();
+	  basic_block bb2 = e->dest;
+	  gsi2 = gsi_after_labels (bb2);
+
+	  cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1e, n2e,
+					 NULL_TREE, NULL_TREE);
+	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	  e = split_block (bb2, cond_stmt);
+	  e->flags = EDGE_TRUE_VALUE;
+	  e->probability = profile_probability::likely ().guessed ();
+	  gsi2 = gsi_after_labels (e->dest);
+
+	  tree step = fold_convert (itype, fd->loops[i].step);
+	  t = build_int_cst (itype, (fd->loops[i].cond_code
+				     == LT_EXPR ? -1 : 1));
+	  t = fold_build2 (PLUS_EXPR, itype, step, t);
+	  t = fold_build2 (PLUS_EXPR, itype, t, n2);
+	  t = fold_build2 (MINUS_EXPR, itype, t, n1);
+	  if (TYPE_UNSIGNED (itype)
+	      && fd->loops[i].cond_code == GT_EXPR)
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype,
+			     fold_build1 (NEGATE_EXPR, itype, t),
+			     fold_build1 (NEGATE_EXPR, itype, step));
+	  else
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+	  tree first_inner_iterations
+	    = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+					true, GSI_SAME_STMT);
+	  t = fold_build2 (MULT_EXPR, itype, m2minusm1, ostep);
+	  if (TYPE_UNSIGNED (itype)
+	      && fd->loops[i].cond_code == GT_EXPR)
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype,
+			     fold_build1 (NEGATE_EXPR, itype, t),
+			     fold_build1 (NEGATE_EXPR, itype, step));
+	  else
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+	  tree factor
+	    = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+					true, GSI_SAME_STMT);
+	  t = fold_build2 (MINUS_EXPR, itype, outer_niters,
+			   build_one_cst (itype));
+	  t = fold_build2 (MULT_EXPR, itype, t, outer_niters);
+	  t = fold_build2 (RSHIFT_EXPR, itype, t, integer_one_node);
+	  t = fold_build2 (MULT_EXPR, itype, factor, t);
+	  t = fold_build2 (PLUS_EXPR, itype,
+			   fold_build2 (MULT_EXPR, itype, outer_niters,
+					first_inner_iterations), t);
+	  expand_omp_build_assign (&gsi2, counts[fd->last_nonrect],
+				   fold_convert (type, t));
+
+	  basic_block bb3 = create_empty_bb (bb1);
+	  add_bb_to_loop (bb3, bb1->loop_father);
+
+	  e = make_edge (bb1, bb3, EDGE_FALSE_VALUE);
+	  e->probability = profile_probability::unlikely ().guessed ();
+
+	  gsi2 = gsi_after_labels (bb3);
+	  cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1e, n2e,
+					 NULL_TREE, NULL_TREE);
+	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	  e = split_block (bb3, cond_stmt);
+	  e->flags = EDGE_TRUE_VALUE;
+	  e->probability = profile_probability::likely ().guessed ();
+	  basic_block bb4 = e->dest;
+
+	  ne = make_edge (bb3, entry_bb, EDGE_FALSE_VALUE);
+	  ne->probability = e->probability.invert ();
+
+	  basic_block bb5 = create_empty_bb (bb2);
+	  add_bb_to_loop (bb5, bb2->loop_father);
+
+	  ne = make_edge (bb2, bb5, EDGE_FALSE_VALUE);
+	  ne->probability = profile_probability::unlikely ().guessed ();
+
+	  for (int j = 0; j < 2; j++)
+	    {
+	      gsi2 = gsi_after_labels (j ? bb5 : bb4);
+	      t = fold_build2 (MINUS_EXPR, itype,
+			       unshare_expr (fd->loops[i].n1),
+			       unshare_expr (fd->loops[i].n2));
+	      t = fold_build2 (TRUNC_DIV_EXPR, itype, t, m2minusm1);
+	      tree tem
+		= force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+					    true, GSI_SAME_STMT);
+	      t = fold_build2 (MINUS_EXPR, itype, tem, n1o);
+	      t = fold_build2 (TRUNC_MOD_EXPR, itype, t, ostep);
+	      t = fold_build2 (MINUS_EXPR, itype, tem, t);
+	      tem = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+					      true, GSI_SAME_STMT);
+	      t = fold_convert (itype, unshare_expr (fd->loops[i].n1));
+	      if (fd->loops[i].m1)
+		{
+		  n1 = fold_convert (itype, unshare_expr (fd->loops[i].m1));
+		  n1 = fold_build2 (MULT_EXPR, itype, tem, n1);
+		  n1 = fold_build2 (PLUS_EXPR, itype, n1, t);
+		}
+	      else
+		n1 = t;
+	      n1 = force_gimple_operand_gsi (&gsi2, n1, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
+	      if (fd->loops[i].m2)
+		{
+		  n2 = fold_convert (itype, unshare_expr (fd->loops[i].m2));
+		  n2 = fold_build2 (MULT_EXPR, itype, tem, n2);
+		  n2 = fold_build2 (PLUS_EXPR, itype, n2, t);
+		}
+	      else
+		n2 = t;
+	      n2 = force_gimple_operand_gsi (&gsi2, n2, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      expand_omp_build_assign (&gsi2, j ? n2o : n1o, tem);
+
+	      cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
+					     NULL_TREE, NULL_TREE);
 	      gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
-	      e = split_block (cur_bb, cond_stmt);
-	      e->flags = EDGE_TRUE_VALUE;
-	      ne = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
-	      e->probability = profile_probability::likely ().guessed ();
+	      e = split_block (gsi_bb (gsi2), cond_stmt);
+	      e->flags = j ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE;
+	      e->probability = profile_probability::unlikely ().guessed ();
+	      ne = make_edge (e->src, bb1,
+			      j ? EDGE_FALSE_VALUE : EDGE_TRUE_VALUE);
 	      ne->probability = e->probability.invert ();
 	      gsi2 = gsi_after_labels (e->dest);
 
-	      t = build_int_cst (itype, (fd->loops[i].cond_code == LT_EXPR
-					 ? -1 : 1));
-	      t = fold_build2 (PLUS_EXPR, itype,
-			       fold_convert (itype, fd->loops[i].step), t);
-	      t = fold_build2 (PLUS_EXPR, itype, t, n2);
-	      t = fold_build2 (MINUS_EXPR, itype, t, n1);
-	      tree step = fold_convert (itype, fd->loops[i].step);
-	      if (TYPE_UNSIGNED (itype) && fd->loops[i].cond_code == GT_EXPR)
-		t = fold_build2 (TRUNC_DIV_EXPR, itype,
-				 fold_build1 (NEGATE_EXPR, itype, t),
-				 fold_build1 (NEGATE_EXPR, itype, step));
+	      t = fold_build2 (PLUS_EXPR, itype, tem, ostep);
+	      expand_omp_build_assign (&gsi2, j ? n2o : n1o, t);
+
+	      make_edge (e->dest, bb1, EDGE_FALLTHRU);
+	    }
+
+	  set_immediate_dominator (CDI_DOMINATORS, bb3, bb1);
+	  set_immediate_dominator (CDI_DOMINATORS, bb5, bb2);
+	  set_immediate_dominator (CDI_DOMINATORS, entry_bb, bb1);
+	}
+      else
+	{
+	  /* Fallback implementation.  Evaluate the loops with m1/m2
+	     non-NULL as well as their outer loops at runtime using temporaries
+	     instead of the original iteration variables, and in the
+	     body just bump the counter.  */
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_prev (&gsi2);
+	  e = split_block (entry_bb, gsi_stmt (gsi2));
+	  e = split_block (e->dest, (gimple *) NULL);
+	  basic_block cur_bb = e->src;
+	  basic_block next_bb = e->dest;
+	  entry_bb = e->dest;
+	  *gsi = gsi_after_labels (entry_bb);
+
+	  tree *vs = XALLOCAVEC (tree, fd->last_nonrect);
+	  memset (vs, 0, fd->last_nonrect * sizeof (tree));
+
+	  for (i = 0; i <= fd->last_nonrect; i++)
+	    {
+	      if (fd->loops[i].m1 == NULL_TREE
+		  && fd->loops[i].m2 == NULL_TREE
+		  && !fd->loops[i].non_rect_referenced)
+		continue;
+
+	      tree itype = TREE_TYPE (fd->loops[i].v);
+
+	      gsi2 = gsi_after_labels (cur_bb);
+	      tree n1, n2;
+	      t = fold_convert (itype, unshare_expr (fd->loops[i].n1));
+	      if (fd->loops[i].m1)
+		{
+		  n1 = fold_convert (itype, unshare_expr (fd->loops[i].m1));
+		  n1 = fold_build2 (MULT_EXPR, itype,
+				    vs[i - fd->loops[i].outer], n1);
+		  n1 = fold_build2 (PLUS_EXPR, itype, n1, t);
+		}
 	      else
-		t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
-	      t = fold_convert (type, t);
-	      t = fold_build2 (PLUS_EXPR, type, counts[fd->last_nonrect], t);
+		n1 = t;
+	      n1 = force_gimple_operand_gsi (&gsi2, n1, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      if (i < fd->last_nonrect)
+		{
+		  vs[i] = create_tmp_reg (itype, ".it");
+		  expand_omp_build_assign (&gsi2, vs[i], n1);
+		}
+	      t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
+	      if (fd->loops[i].m2)
+		{
+		  n2 = fold_convert (itype, unshare_expr (fd->loops[i].m2));
+		  n2 = fold_build2 (MULT_EXPR, itype,
+				    vs[i - fd->loops[i].outer], n2);
+		  n2 = fold_build2 (PLUS_EXPR, itype, n2, t);
+		}
+	      else
+		n2 = t;
+	      n2 = force_gimple_operand_gsi (&gsi2, n2, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      if (i == fd->last_nonrect)
+		{
+		  gcond *cond_stmt
+		    = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
+					 NULL_TREE, NULL_TREE);
+		  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+		  e = split_block (cur_bb, cond_stmt);
+		  e->flags = EDGE_TRUE_VALUE;
+		  ne = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
+		  e->probability = profile_probability::likely ().guessed ();
+		  ne->probability = e->probability.invert ();
+		  gsi2 = gsi_after_labels (e->dest);
+
+		  t = build_int_cst (itype, (fd->loops[i].cond_code == LT_EXPR
+					     ? -1 : 1));
+		  t = fold_build2 (PLUS_EXPR, itype,
+				   fold_convert (itype, fd->loops[i].step), t);
+		  t = fold_build2 (PLUS_EXPR, itype, t, n2);
+		  t = fold_build2 (MINUS_EXPR, itype, t, n1);
+		  tree step = fold_convert (itype, fd->loops[i].step);
+		  if (TYPE_UNSIGNED (itype)
+		      && fd->loops[i].cond_code == GT_EXPR)
+		    t = fold_build2 (TRUNC_DIV_EXPR, itype,
+				     fold_build1 (NEGATE_EXPR, itype, t),
+				     fold_build1 (NEGATE_EXPR, itype, step));
+		  else
+		    t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+		  t = fold_convert (type, t);
+		  t = fold_build2 (PLUS_EXPR, type,
+				   counts[fd->last_nonrect], t);
+		  t = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
+						true, GSI_SAME_STMT);
+		  expand_omp_build_assign (&gsi2, counts[fd->last_nonrect], t);
+		  e = make_edge (e->dest, next_bb, EDGE_FALLTHRU);
+		  set_immediate_dominator (CDI_DOMINATORS, next_bb, cur_bb);
+		  break;
+		}
+	      e = split_block (cur_bb, last_stmt (cur_bb));
+
+	      basic_block new_cur_bb = create_empty_bb (cur_bb);
+	      add_bb_to_loop (new_cur_bb, cur_bb->loop_father);
+
+	      gsi2 = gsi_after_labels (e->dest);
+	      tree step = fold_convert (itype,
+					unshare_expr (fd->loops[i].step));
+	      t = fold_build2 (PLUS_EXPR, itype, vs[i], step);
 	      t = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
 					    true, GSI_SAME_STMT);
-	      expand_omp_build_assign (&gsi2, counts[fd->last_nonrect], t);
-	      e = make_edge (e->dest, next_bb, EDGE_FALLTHRU);
-	      set_immediate_dominator (CDI_DOMINATORS, next_bb, cur_bb);
-	      break;
+	      expand_omp_build_assign (&gsi2, vs[i], t);
+
+	      ne = split_block (e->dest, last_stmt (e->dest));
+	      gsi2 = gsi_after_labels (ne->dest);
+
+	      gcond *cond_stmt
+		= gimple_build_cond (fd->loops[i].cond_code, vs[i], n2,
+				     NULL_TREE, NULL_TREE);
+	      gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	      edge e3, e4;
+	      if (next_bb == entry_bb)
+		{
+		  e3 = find_edge (ne->dest, next_bb);
+		  e3->flags = EDGE_FALSE_VALUE;
+		}
+	      else
+		e3 = make_edge (ne->dest, next_bb, EDGE_FALSE_VALUE);
+	      e4 = make_edge (ne->dest, new_cur_bb, EDGE_TRUE_VALUE);
+	      e4->probability = profile_probability::likely ().guessed ();
+	      e3->probability = e4->probability.invert ();
+	      basic_block esrc = e->src;
+	      make_edge (e->src, ne->dest, EDGE_FALLTHRU);
+	      cur_bb = new_cur_bb;
+	      basic_block latch_bb = next_bb;
+	      next_bb = e->dest;
+	      remove_edge (e);
+	      set_immediate_dominator (CDI_DOMINATORS, ne->dest, esrc);
+	      set_immediate_dominator (CDI_DOMINATORS, latch_bb, ne->dest);
+	      set_immediate_dominator (CDI_DOMINATORS, cur_bb, ne->dest);
 	    }
-	  e = split_block (cur_bb, last_stmt (cur_bb));
-
-	  basic_block new_cur_bb = create_empty_bb (cur_bb);
-	  add_bb_to_loop (new_cur_bb, cur_bb->loop_father);
-
-	  gsi2 = gsi_after_labels (e->dest);
-	  tree step = fold_convert (itype, unshare_expr (fd->loops[i].step));
-	  t = fold_build2 (PLUS_EXPR, itype, vs[i], step);
-	  t = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
-					true, GSI_SAME_STMT);
-	  expand_omp_build_assign (&gsi2, vs[i], t);
-
-	  ne = split_block (e->dest, last_stmt (e->dest));
-	  gsi2 = gsi_after_labels (ne->dest);
-
-	  gcond *cond_stmt
-	    = gimple_build_cond (fd->loops[i].cond_code, vs[i], n2,
-				 NULL_TREE, NULL_TREE);
-	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
-	  edge e3, e4;
-	  if (next_bb == entry_bb)
-	    {
-	      e3 = find_edge (ne->dest, next_bb);
-	      e3->flags = EDGE_FALSE_VALUE;
-	    }
-	  else
-	    e3 = make_edge (ne->dest, next_bb, EDGE_FALSE_VALUE);
-	  e4 = make_edge (ne->dest, new_cur_bb, EDGE_TRUE_VALUE);
-	  e4->probability = profile_probability::likely ().guessed ();
-	  e3->probability = e4->probability.invert ();
-	  basic_block esrc = e->src;
-	  make_edge (e->src, ne->dest, EDGE_FALLTHRU);
-	  cur_bb = new_cur_bb;
-	  basic_block latch_bb = next_bb;
-	  next_bb = e->dest;
-	  remove_edge (e);
-	  set_immediate_dominator (CDI_DOMINATORS, ne->dest, esrc);
-	  set_immediate_dominator (CDI_DOMINATORS, latch_bb, ne->dest);
-	  set_immediate_dominator (CDI_DOMINATORS, cur_bb, ne->dest);
 	}
       t = NULL_TREE;
       for (i = fd->first_nonrect; i < fd->last_nonrect; i++)
@@ -2269,7 +2520,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  tree idx = create_tmp_reg (type, ".count");
 	  expand_omp_build_assign (gsi, idx,
 				   build_zero_cst (type), true);
-	  basic_block bb_triang = NULL;
+	  basic_block bb_triang = NULL, bb_triang_dom = NULL;
 	  if (fd->first_nonrect + 1 == fd->last_nonrect
 	      /* For now.  */
 	      && TREE_CODE (fd->loop.n2) == INTEGER_CST
@@ -2289,6 +2540,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      basic_block bb0 = e->src;
 	      e->flags = EDGE_TRUE_VALUE;
 	      e->probability = profile_probability::likely ();
+	      bb_triang_dom = bb0;
 	      *gsi = gsi_after_labels (e->dest);
 	      tree slltype = long_long_integer_type_node;
 	      tree ulltype = long_long_unsigned_type_node;
@@ -2668,6 +2920,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      *gsi = gsi_after_labels (e->dest);
 	      if (!gsi_end_p (*gsi))
 		gsi_insert_before (gsi, gimple_build_nop (), GSI_NEW_STMT);
+	      set_immediate_dominator (CDI_DOMINATORS, e->dest, bb_triang_dom);
 	    }
 	}
       else
@@ -2839,7 +3092,6 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 		      = profile_probability::guessed_always ().apply_scale (7,
 									    8);
 		    set_immediate_dominator (CDI_DOMINATORS, this_bb, prev_bb);
-
 		  }
 		if (l->m1)
 		  {
@@ -2884,7 +3136,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 		e->probability
 		  = profile_probability::guessed_always ().apply_scale (1, 8);
 		if (prev_bb == NULL)
-		  set_immediate_dominator (CDI_DOMINATORS, this_bb, last_bb);
+		  set_immediate_dominator (CDI_DOMINATORS, this_bb, bb);
 		prev_bb = this_bb;
 	      }
 	  e = make_edge (prev_bb, body_bb, EDGE_TRUE_VALUE);
