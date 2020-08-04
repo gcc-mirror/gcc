@@ -1,6 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-skip-if "FIXME:modules" { *-*-* } }
-// FIXME: fix it!
 // PR C++/95263
 // ICE on alias template instantiation
 

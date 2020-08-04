@@ -1,5 +1,12 @@
 2020-08-04  Nathan Sidwell  <nathan@acm.org>
 
+	Fix alias templates.
+	gcc/cp/
+	* pt.c (lookup_template_class_1): Fix alias resetting of
+	ti_template.
+	gcc/testsuite/
+	* g++.dg/template/pr95263.C: Re-enable.
+
 	Merge trunk 1790d13dc8f.
 
 2020-08-03  Nathan Sidwell  <nathan@acm.org>
