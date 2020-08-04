@@ -716,7 +716,7 @@ begin arch armv8-r
 end arch armv8-r
 
 begin arch armv8.1-m.main
- tune for cortex-m7
+ tune for cortex-m55
  tune flags CO_PROC
  base 8M_MAIN
  profile M

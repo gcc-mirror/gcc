@@ -6015,7 +6015,7 @@ trees_out::core_vals (tree t)
       {
 	/* The ompcode is serialized in start.  */
 	if (streaming_p ())
-	  WU (t->omp_clause.subcode.dimension);
+	  WU (t->omp_clause.subcode.map_kind);
 	state->write_location (*this, t->omp_clause.locus);
 
 	unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
@@ -6485,7 +6485,7 @@ trees_in::core_vals (tree t)
 
     case OMP_CLAUSE:
       {
-	RU (t->omp_clause.subcode.dimension);
+	RU (t->omp_clause.subcode.map_kind);
 	t->omp_clause.locus = state->read_location (*this);
 
 	unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];

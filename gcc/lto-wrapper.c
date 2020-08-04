@@ -976,7 +976,6 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
     return;
   unsigned num_targets = parse_env_var (target_names, &names, NULL);
 
-  int next_name_entry = 0;
   const char *compiler_path = getenv ("COMPILER_PATH");
   if (!compiler_path)
     goto out;
@@ -986,19 +985,13 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
   offload_names = XCNEWVEC (char *, num_targets + 1);
   for (unsigned i = 0; i < num_targets; i++)
     {
-      /* HSA does not use LTO-like streaming and a different compiler, skip
-	 it. */
-      if (strcmp (names[i], "hsa") == 0)
-	continue;
-
-      offload_names[next_name_entry]
+      offload_names[i]
 	= compile_offload_image (names[i], compiler_path, in_argc, in_argv,
 				 compiler_opts, compiler_opt_count,
 				 linker_opts, linker_opt_count);
-      if (!offload_names[next_name_entry])
+      if (!offload_names[i])
 	fatal_error (input_location,
 		     "problem with building target image for %s", names[i]);
-      next_name_entry++;
     }
 
  out:

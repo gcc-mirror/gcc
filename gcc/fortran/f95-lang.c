@@ -1238,17 +1238,6 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOMP_BUILTIN
     }
 
-#ifdef ENABLE_HSA
-  if (!flag_disable_hsa)
-    {
-#undef DEF_HSA_BUILTIN
-#define DEF_HSA_BUILTIN(code, name, type, attr) \
-      gfc_define_builtin ("__builtin_" name, builtin_types[type], \
-			  code, name, attr);
-#include "../hsa-builtins.def"
-    }
-#endif
-
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
 		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);
   TREE_THIS_VOLATILE (builtin_decl_explicit (BUILT_IN_TRAP)) = 1;

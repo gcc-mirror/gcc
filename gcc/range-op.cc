@@ -3527,15 +3527,16 @@ operator_tests ()
   }
 
   // signed: ~[-1] = OP1 >> 31
-  {
-    widest_irange lhs (INT (-1), INT (-1), VR_ANTI_RANGE);
-    widest_irange shift (INT (31), INT (31));
-    widest_irange op1;
-    op_rshift.op1_range (op1, integer_type_node, lhs, shift);
-    widest_irange negatives = range_negatives (integer_type_node);
-    negatives.intersect (op1);
-    ASSERT_TRUE (negatives.undefined_p ());
-  }
+  if (TYPE_PRECISION (integer_type_node) > 31)
+    {
+      widest_irange lhs (INT (-1), INT (-1), VR_ANTI_RANGE);
+      widest_irange shift (INT (31), INT (31));
+      widest_irange op1;
+      op_rshift.op1_range (op1, integer_type_node, lhs, shift);
+      widest_irange negatives = range_negatives (integer_type_node);
+      negatives.intersect (op1);
+      ASSERT_TRUE (negatives.undefined_p ());
+    }
 }
 
 // Run all of the selftests within this file.

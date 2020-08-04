@@ -1631,7 +1631,7 @@ a function can.  The syntax for defining the macro is similar to that of
 a function.  Here is an example:
 
 @smallexample
-#define eprintf(@dots{}) fprintf (stderr, __VA_ARGS__)
+#define eprintf(...) fprintf (stderr, __VA_ARGS__)
 @end smallexample
 
 This kind of macro is called @dfn{variadic}.  When the macro is invoked,
@@ -1655,11 +1655,11 @@ below for an important special case for @samp{##}.)
 If your macro is complicated, you may want a more descriptive name for
 the variable argument than @code{@w{__VA_ARGS__}}.  CPP permits
 this, as an extension.  You may write an argument name immediately
-before the @samp{@dots{}}; that name is used for the variable argument.
+before the @samp{...}; that name is used for the variable argument.
 The @code{eprintf} macro above could be written
 
 @smallexample
-#define eprintf(args@dots{}) fprintf (stderr, args)
+#define eprintf(args...) fprintf (stderr, args)
 @end smallexample
 
 @noindent
@@ -1670,7 +1670,7 @@ You can have named arguments as well as variable arguments in a variadic
 macro.  We could define @code{eprintf} like this, instead:
 
 @smallexample
-#define eprintf(format, @dots{}) fprintf (stderr, format, __VA_ARGS__)
+#define eprintf(format, ...) fprintf (stderr, format, __VA_ARGS__)
 @end smallexample
 
 @noindent
@@ -1709,7 +1709,7 @@ invocation expands to its argument; but if the variable argument does
 not have any tokens, the @code{@w{__VA_OPT__}} expands to nothing:
 
 @smallexample
-#define eprintf(format, @dots{}) \
+#define eprintf(format, ...) \
   fprintf (stderr, format __VA_OPT__(,) __VA_ARGS__)
 @end smallexample
 
@@ -1722,7 +1722,7 @@ the introduction of @code{@w{__VA_OPT__}}, this extension remains
 supported in GNU CPP, for backward compatibility.  If you write
 
 @smallexample
-#define eprintf(format, @dots{}) fprintf (stderr, format, ##__VA_ARGS__)
+#define eprintf(format, ...) fprintf (stderr, format, ##__VA_ARGS__)
 @end smallexample
 
 @noindent
@@ -1758,7 +1758,7 @@ replacement list of a variadic macro.
 Variadic macros became a standard part of the C language with C99.  
 GNU CPP previously supported them
 with a named variable argument
-(@samp{args@dots{}}, not @samp{@dots{}} and @code{@w{__VA_ARGS__}}), which
+(@samp{args...}, not @samp{...} and @code{@w{__VA_ARGS__}}), which
 is still supported for backward compatibility.
 
 @node Predefined Macros

@@ -15781,7 +15781,20 @@ cp_parser_mem_initializer (cp_parser* parser)
 
   in_base_initializer = 0;
 
-  return member ? build_tree_list (member, expression_list) : error_mark_node;
+  if (!member)
+    return error_mark_node;
+  tree node = build_tree_list (member, expression_list);
+
+  /* We can't attach the source location of this initializer directly to
+     the list node, so we instead attach it to a dummy EMPTY_CLASS_EXPR
+     within the TREE_TYPE of the list node.  */
+  location_t loc
+    = make_location (token->location, token->location, parser->lexer);
+  tree dummy = build0 (EMPTY_CLASS_EXPR, NULL_TREE);
+  SET_EXPR_LOCATION (dummy, loc);
+  TREE_TYPE (node) = dummy;
+
+  return node;
 }
 
 /* Parse a mem-initializer-id.
@@ -18039,7 +18052,6 @@ cp_parser_explicit_specialization (cp_parser* parser)
       /* Give it C++ linkage to avoid confusing other parts of the
 	 front end.  */
       push_lang_context (lang_name_cplusplus);
-      need_lang_pop = true;
     }
 
   /* Let the front end know that we are beginning a specialization.  */

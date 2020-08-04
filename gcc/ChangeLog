@@ -1,3 +1,461 @@
+2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Variadic Macros): Use the exact ... token in
+	code examples.
+
+2020-08-03  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi: Refer to c++20
+
+2020-08-03  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_target_update): Allow GOMP_MAP_TO_PSET
+	without a preceding data-movement mapping.
+
+2020-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_DECLARE_FUNCTION_NAME): UNDEF before
+	use.
+	(DEF_MIN_OSX_VERSION): Only define if there's no existing
+	def.
+
+2020-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (IN_TARGET_CODE): Remove.
+	(darwin_mergeable_constant_section): Handle poly-int machine modes.
+	(machopic_select_rtx_section): Likewise.
+
+2020-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/96430
+	* range-op.cc (operator_tests): Do not shift by 31 on targets with
+	integer's smaller than 32 bits.
+
+2020-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* hsa-brig-format.h: Moved to brig/brigfrontend.
+	* hsa-brig.c: Removed.
+	* hsa-builtins.def: Likewise.
+	* hsa-common.c: Likewise.
+	* hsa-common.h: Likewise.
+	* hsa-dump.c: Likewise.
+	* hsa-gen.c: Likewise.
+	* hsa-regalloc.c: Likewise.
+	* ipa-hsa.c: Likewise.
+	* omp-grid.c: Likewise.
+	* omp-grid.h: Likewise.
+	* Makefile.in (BUILTINS_DEF): Remove hsa-builtins.def.
+	(OBJS): Remove hsa-common.o, hsa-gen.o, hsa-regalloc.o, hsa-brig.o,
+	hsa-dump.o, ipa-hsa.c and omp-grid.o.
+	(GTFILES): Removed hsa-common.c and omp-expand.c.
+	* builtins.def: Remove processing of hsa-builtins.def.
+	(DEF_HSA_BUILTIN): Remove.
+	* common.opt (flag_disable_hsa): Remove.
+	(-Whsa): Ignore.
+	* config.in (ENABLE_HSA): Removed.
+	* configure.ac: Removed handling configuration for hsa offloading.
+	(ENABLE_HSA): Removed.
+	* configure: Regenerated.
+	* doc/install.texi (--enable-offload-targets): Remove hsa from the
+	example.
+	(--with-hsa-runtime): Reword to reference any HSA run-time, not
+	specifically HSA offloading.
+	* doc/invoke.texi (Option Summary): Remove -Whsa.
+	(Warning Options): Likewise.
+	(Optimize Options): Remove hsa-gen-debug-stores.
+	* doc/passes.texi (Regular IPA passes): Remove section on IPA HSA
+	pass.
+	* gimple-low.c (lower_stmt): Remove GIMPLE_OMP_GRID_BODY case.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Likewise.
+	(dump_gimple_omp_block): Likewise.
+	(pp_gimple_stmt_1): Likewise.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* gimple.c (gimple_build_omp_grid_body): Removed function.
+	(gimple_copy): Remove GIMPLE_OMP_GRID_BODY case.
+	* gimple.def (GIMPLE_OMP_GRID_BODY): Removed.
+	* gimple.h (gf_mask): Removed GF_OMP_PARALLEL_GRID_PHONY,
+	OMP_FOR_KIND_GRID_LOOP, GF_OMP_FOR_GRID_PHONY,
+	GF_OMP_FOR_GRID_INTRA_GROUP, GF_OMP_FOR_GRID_GROUP_ITER and
+	GF_OMP_TEAMS_GRID_PHONY.  Renumbered GF_OMP_FOR_KIND_SIMD and
+	GF_OMP_TEAMS_HOST.
+	(gimple_build_omp_grid_body): Removed declaration.
+	(gimple_has_substatements): Remove GIMPLE_OMP_GRID_BODY case.
+	(gimple_omp_for_grid_phony): Removed.
+	(gimple_omp_for_set_grid_phony): Likewise.
+	(gimple_omp_for_grid_intra_group): Likewise.
+	(gimple_omp_for_grid_intra_group): Likewise.
+	(gimple_omp_for_grid_group_iter): Likewise.
+	(gimple_omp_for_set_grid_group_iter): Likewise.
+	(gimple_omp_parallel_grid_phony): Likewise.
+	(gimple_omp_parallel_set_grid_phony): Likewise.
+	(gimple_omp_teams_grid_phony): Likewise.
+	(gimple_omp_teams_set_grid_phony): Likewise.
+	(CASE_GIMPLE_OMP): Remove GIMPLE_OMP_GRID_BODY case.
+	* lto-section-in.c (lto_section_name): Removed hsa.
+	* lto-streamer.h (lto_section_type): Removed LTO_section_ipa_hsa.
+	* lto-wrapper.c (compile_images_for_offload_targets): Remove special
+	handling of hsa.
+	* omp-expand.c: Do not include hsa-common.h and gt-omp-expand.h.
+	(parallel_needs_hsa_kernel_p): Removed.
+	(grid_launch_attributes_trees): Likewise.
+	(grid_launch_attributes_trees): Likewise.
+	(grid_create_kernel_launch_attr_types): Likewise.
+	(grid_insert_store_range_dim): Likewise.
+	(grid_get_kernel_launch_attributes): Likewise.
+	(get_target_arguments): Remove code passing HSA grid sizes.
+	(grid_expand_omp_for_loop): Remove.
+	(grid_arg_decl_map): Likewise.
+	(grid_remap_kernel_arg_accesses): Likewise.
+	(grid_expand_target_grid_body): Likewise.
+	(expand_omp): Remove call to grid_expand_target_grid_body.
+	(omp_make_gimple_edges): Remove GIMPLE_OMP_GRID_BODY case.
+	* omp-general.c: Do not include hsa-common.h.
+	(omp_maybe_offloaded): Do not check for HSA offloading.
+	(omp_context_selector_matches): Likewise.
+	* omp-low.c: Do not include hsa-common.h and omp-grid.h.
+	(build_outer_var_ref): Remove handling of GIMPLE_OMP_GRID_BODY.
+	(scan_sharing_clauses): Remove handling of OMP_CLAUSE__GRIDDIM_.
+	(scan_omp_parallel): Remove handling of the phoney variant.
+	(check_omp_nesting_restrictions): Remove handling of
+	GIMPLE_OMP_GRID_BODY and GF_OMP_FOR_KIND_GRID_LOOP.
+	(scan_omp_1_stmt): Remove handling of GIMPLE_OMP_GRID_BODY.
+	(lower_omp_for_lastprivate): Remove handling of gridified loops.
+	(lower_omp_for): Remove phony loop handling.
+	(lower_omp_taskreg): Remove phony construct handling.
+	(lower_omp_teams): Likewise.
+	(lower_omp_grid_body): Removed.
+	(lower_omp_1): Remove GIMPLE_OMP_GRID_BODY case.
+	(execute_lower_omp): Do not call omp_grid_gridify_all_targets.
+	* opts.c (common_handle_option): Do not handle hsa when processing
+	OPT_foffload_.
+	* params.opt (hsa-gen-debug-stores): Remove.
+	* passes.def: Remove pass_ipa_hsa and pass_gen_hsail.
+	* timevar.def: Remove TV_IPA_HSA.
+	* toplev.c: Do not include hsa-common.h.
+	(compile_file): Do not call hsa_output_brig.
+	* tree-core.h (enum omp_clause_code): Remove OMP_CLAUSE__GRIDDIM_.
+	(tree_omp_clause): Remove union field dimension.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Remove the
+	OMP_CLAUSE__GRIDDIM_ case.
+	(convert_local_omp_clauses): Likewise.
+	* tree-pass.h (make_pass_gen_hsail): Remove declaration.
+	(make_pass_ipa_hsa): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Remove GIMPLE_OMP_GRID_BODY
+	case.
+	* tree.c (omp_clause_num_ops): Remove the element corresponding to
+	OMP_CLAUSE__GRIDDIM_.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Remove GIMPLE_OMP_GRID_BODY case.
+	* tree.h (OMP_CLAUSE__GRIDDIM__DIMENSION): Remove.
+	(OMP_CLAUSE__GRIDDIM__SIZE): Likewise.
+	(OMP_CLAUSE__GRIDDIM__GROUP): Likewise.
+
+2020-08-03  Bu Le  <bule1@huawei.com>
+
+	* config/aarch64/aarch64-sve.md (sub<mode>3): Add support for
+	unpacked vectors.
+
+2020-08-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.h (ASM_SPEC): Don't pass on "-md" option.
+
+2020-08-03  Yunde Zhong  <zhongyunde@huawei.com>
+
+	PR rtl-optimization/95696
+	* regrename.c (regrename_analyze): New param include_all_block_p
+	with default value TRUE.  If set to false, avoid disrupting SMS
+	schedule.
+	* regrename.h (regrename_analyze): Adjust prototype.
+
+2020-08-03  Wei Wentao  <weiwt.fnst@cn.fujitsu.com>
+
+	* doc/tm.texi.in (VECTOR_STORE_FLAG_VALUE): Fix a typo.
+	* doc/tm.texi: Regenerate.
+
+2020-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Add missing comma after octeontx2f95mm entry.
+
+2020-08-03  Qian jianhua  <qianjh@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (a64fx): New core.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* config/aarch64/aarch64.c (a64fx_prefetch_tune, a64fx_tunings): New.
+	* doc/invoke.texi: Add a64fx to the list.
+
+2020-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/61494
+	* simplify-rtx.c (simplify_binary_operation_1) [MINUS]: Don't
+	simplify x - 0.0 with -fsignaling-nans.
+
+2020-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* genmatch.c (decision_tree::gen): Emit stub functions for
+	tree code operand counts that have no simplifications.
+	(main): Correct comment typo.
+
+2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gimple-ssa-sprintf.c: Fix typos in comments.
+
+2020-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (readline): Check return value fgets.
+
+2020-08-03  Richard Biener  <rguenther@suse.de>
+
+	* doc/match-and-simplify.texi: Amend accordingly.
+
+2020-08-03  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (parser::gimple): New.
+	(parser::parser): Initialize gimple flag member.
+	(parser::parse_expr): Error on ! operator modifier when
+	not targeting GIMPLE.
+	(main): Pass down gimple flag to parser ctor.
+
+2020-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (GTFILES): Move value-range.h up.
+	* gengtype-lex.l: Set yylval to handle GTY markers on templates.
+	* ipa-cp.c (initialize_node_lattices): Call value_range
+	constructor.
+	(ipcp_propagate_stage): Use in-place new so value_range construct
+	is called.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Use std
+	vec instead of GCC's vec<>.
+	(evaluate_properties_for_edge): Adjust for std vec.
+	(ipa_fn_summary_t::duplicate): Same.
+	(estimate_ipcp_clone_size_and_time): Same.
+	* ipa-prop.c (ipa_get_value_range): Use in-place new for
+	value_range.
+	* ipa-prop.h (struct GTY): Remove class keyword for m_vr.
+	* range-op.cc (empty_range_check): Rename to...
+	(empty_range_varying): ...this and adjust for varying.
+	(undefined_shift_range_check): Adjust for irange.
+	(range_operator::wi_fold): Same.
+	(range_operator::fold_range): Adjust for irange.  Special case
+	single pairs for performance.
+	(range_operator::op1_range): Adjust for irange.
+	(range_operator::op2_range): Same.
+	(value_range_from_overflowed_bounds): Same.
+	(value_range_with_overflow): Same.
+	(create_possibly_reversed_range): Same.
+	(range_true): Same.
+	(range_false): Same.
+	(range_true_and_false): Same.
+	(get_bool_state):  Adjust for irange and tweak for performance.
+	(operator_equal::fold_range): Adjust for irange.
+	(operator_equal::op1_range): Same.
+	(operator_equal::op2_range): Same.
+	(operator_not_equal::fold_range): Same.
+	(operator_not_equal::op1_range): Same.
+	(operator_not_equal::op2_range): Same.
+	(build_lt): Same.
+	(build_le): Same.
+	(build_gt): Same.
+	(build_ge): Same.
+	(operator_lt::fold_range): Same.
+	(operator_lt::op1_range): Same.
+	(operator_lt::op2_range): Same.
+	(operator_le::fold_range): Same.
+	(operator_le::op1_range): Same.
+	(operator_le::op2_range): Same.
+	(operator_gt::fold_range): Same.
+	(operator_gt::op1_range): Same.
+	(operator_gt::op2_range): Same.
+	(operator_ge::fold_range): Same.
+	(operator_ge::op1_range): Same.
+	(operator_ge::op2_range): Same.
+	(operator_plus::wi_fold): Same.
+	(operator_plus::op1_range): Same.
+	(operator_plus::op2_range): Same.
+	(operator_minus::wi_fold): Same.
+	(operator_minus::op1_range): Same.
+	(operator_minus::op2_range): Same.
+	(operator_min::wi_fold): Same.
+	(operator_max::wi_fold): Same.
+	(cross_product_operator::wi_cross_product): Same.
+	(operator_mult::op1_range): New.
+	(operator_mult::op2_range): New.
+	(operator_mult::wi_fold): Adjust for irange.
+	(operator_div::wi_fold): Same.
+	(operator_exact_divide::op1_range): Same.
+	(operator_lshift::fold_range): Same.
+	(operator_lshift::wi_fold): Same.
+	(operator_lshift::op1_range): New.
+	(operator_rshift::op1_range): New.
+	(operator_rshift::fold_range): Adjust for irange.
+	(operator_rshift::wi_fold): Same.
+	(operator_cast::truncating_cast_p): Abstract out from
+	operator_cast::fold_range.
+	(operator_cast::fold_range): Adjust for irange and tweak for
+	performance.
+	(operator_cast::inside_domain_p): Abstract out from fold_range.
+	(operator_cast::fold_pair): Same.
+	(operator_cast::op1_range): Use abstracted methods above.  Adjust
+	for irange and tweak for performance.
+	(operator_logical_and::fold_range): Adjust for irange.
+	(operator_logical_and::op1_range): Same.
+	(operator_logical_and::op2_range): Same.
+	(unsigned_singleton_p): New.
+	(operator_bitwise_and::remove_impossible_ranges): New.
+	(operator_bitwise_and::fold_range): New.
+	(wi_optimize_and_or):  Adjust for irange.
+	(operator_bitwise_and::wi_fold): Same.
+	(set_nonzero_range_from_mask): New.
+	(operator_bitwise_and::simple_op1_range_solver): New.
+	(operator_bitwise_and::op1_range): Adjust for irange.
+	(operator_bitwise_and::op2_range): Same.
+	(operator_logical_or::fold_range): Same.
+	(operator_logical_or::op1_range): Same.
+	(operator_logical_or::op2_range): Same.
+	(operator_bitwise_or::wi_fold): Same.
+	(operator_bitwise_or::op1_range): Same.
+	(operator_bitwise_or::op2_range): Same.
+	(operator_bitwise_xor::wi_fold): Same.
+	(operator_bitwise_xor::op1_range): New.
+	(operator_bitwise_xor::op2_range): New.
+	(operator_trunc_mod::wi_fold):  Adjust for irange.
+	(operator_logical_not::fold_range): Same.
+	(operator_logical_not::op1_range): Same.
+	(operator_bitwise_not::fold_range): Same.
+	(operator_bitwise_not::op1_range): Same.
+	(operator_cst::fold_range): Same.
+	(operator_identity::fold_range): Same.
+	(operator_identity::op1_range): Same.
+	(class operator_unknown): New.
+	(operator_unknown::fold_range): New.
+	(class operator_abs): Adjust for irange.
+	(operator_abs::wi_fold): Same.
+	(operator_abs::op1_range): Same.
+	(operator_absu::wi_fold): Same.
+	(class operator_negate): Same.
+	(operator_negate::fold_range): Same.
+	(operator_negate::op1_range): Same.
+	(operator_addr_expr::fold_range): Same.
+	(operator_addr_expr::op1_range): Same.
+	(pointer_plus_operator::wi_fold): Same.
+	(pointer_min_max_operator::wi_fold): Same.
+	(pointer_and_operator::wi_fold): Same.
+	(pointer_or_operator::op1_range): New.
+	(pointer_or_operator::op2_range): New.
+	(pointer_or_operator::wi_fold):  Adjust for irange.
+	(integral_table::integral_table): Add entries for IMAGPART_EXPR
+	and POINTER_DIFF_EXPR.
+	(range_cast):  Adjust for irange.
+	(build_range3): New.
+	(range3_tests): New.
+	(widest_irange_tests): New.
+	(multi_precision_range_tests): New.
+	(operator_tests): New.
+	(range_tests): New.
+	* range-op.h (class range_operator): Adjust for irange.
+	(range_cast): Same.
+	* tree-vrp.c (range_fold_binary_symbolics_p): Adjust for irange and
+	tweak for performance.
+	(range_fold_binary_expr): Same.
+	(masked_increment): Change to extern.
+	* tree-vrp.h (masked_increment): New.
+	* tree.c (cache_wide_int_in_type_cache): New function abstracted
+	out from wide_int_to_tree_1.
+	(wide_int_to_tree_1): Cache 0, 1, and MAX for pointers.
+	* value-range-equiv.cc (value_range_equiv::deep_copy): Use kind
+	method.
+	(value_range_equiv::move): Same.
+	(value_range_equiv::check): Adjust for irange.
+	(value_range_equiv::intersect): Same.
+	(value_range_equiv::union_): Same.
+	(value_range_equiv::dump): Same.
+	* value-range.cc (irange::operator=): Same.
+	(irange::maybe_anti_range): New.
+	(irange::copy_legacy_range): New.
+	(irange::set_undefined): Adjust for irange.
+	(irange::swap_out_of_order_endpoints): Abstract out from set().
+	(irange::set_varying): Adjust for irange.
+	(irange::irange_set): New.
+	(irange::irange_set_anti_range): New.
+	(irange::set): Adjust for irange.
+	(value_range::set_nonzero): Move to header file.
+	(value_range::set_zero): Move to header file.
+	(value_range::check): Rename to...
+	(irange::verify_range): ...this.
+	(value_range::num_pairs): Rename to...
+	(irange::legacy_num_pairs): ...this, and adjust for irange.
+	(value_range::lower_bound): Rename to...
+	(irange::legacy_lower_bound): ...this, and adjust for irange.
+	(value_range::upper_bound): Rename to...
+	(irange::legacy_upper_bound): ...this, and adjust for irange.
+	(value_range::equal_p): Rename to...
+	(irange::legacy_equal_p): ...this.
+	(value_range::operator==): Move to header file.
+	(irange::equal_p): New.
+	(irange::symbolic_p): Adjust for irange.
+	(irange::constant_p): Same.
+	(irange::singleton_p): Same.
+	(irange::value_inside_range): Same.
+	(irange::may_contain_p): Same.
+	(irange::contains_p): Same.
+	(irange::normalize_addresses): Same.
+	(irange::normalize_symbolics): Same.
+	(irange::legacy_intersect): Same.
+	(irange::legacy_union): Same.
+	(irange::union_): Same.
+	(irange::intersect): Same.
+	(irange::irange_union): New.
+	(irange::irange_intersect): New.
+	(subtract_one): New.
+	(irange::invert): Adjust for irange.
+	(dump_bound_with_infinite_markers): New.
+	(irange::dump): Adjust for irange.
+	(debug): Add irange versions.
+	(range_has_numeric_bounds_p): Adjust for irange.
+	(vrp_val_max): Move to header file.
+	(vrp_val_min): Move to header file.
+	(DEFINE_INT_RANGE_GC_STUBS): New.
+	(DEFINE_INT_RANGE_INSTANCE): New.
+	* value-range.h (class irange): New.
+	(class int_range): New.
+	(class value_range): Rename to a instantiation of int_range.
+	(irange::legacy_mode_p): New.
+	(value_range::value_range): Remove.
+	(irange::kind): New.
+	(irange::num_pairs): Adjust for irange.
+	(irange::type): Adjust for irange.
+	(irange::tree_lower_bound): New.
+	(irange::tree_upper_bound): New.
+	(irange::type): Adjust for irange.
+	(irange::min): Same.
+	(irange::max): Same.
+	(irange::varying_p): Same.
+	(irange::undefined_p): Same.
+	(irange::zero_p): Same.
+	(irange::nonzero_p): Same.
+	(irange::supports_type_p): Same.
+	(range_includes_zero_p): Same.
+	(gt_ggc_mx): New.
+	(gt_pch_nx): New.
+	(irange::irange): New.
+	(int_range::int_range): New.
+	(int_range::operator=): New.
+	(irange::set): Moved from value-range.cc and adjusted for irange.
+	(irange::set_undefined): Same.
+	(irange::set_varying): Same.
+	(irange::operator==): Same.
+	(irange::lower_bound): Same.
+	(irange::upper_bound): Same.
+	(irange::union_): Same.
+	(irange::intersect): Same.
+	(irange::set_nonzero): Same.
+	(irange::set_zero): Same.
+	(irange::normalize_min_max): New.
+	(vrp_val_max): Move from value-range.cc.
+	(vrp_val_min): Same.
+	* vr-values.c (vr_values::get_lattice_entry): Call value_range
+	constructor.
+
 2020-08-02  Sergei Trofimovich  <siarheit@google.com>
 
 	PR bootstrap/96404

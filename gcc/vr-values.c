@@ -448,10 +448,11 @@ simplify_using_ranges::op_with_boolean_value_range_p (tree op)
   if (TREE_CODE (op) != SSA_NAME)
     return false;
 
+  /* ?? Errr, this should probably check for [0,0] and [1,1] as well
+     as [0,1].  */
   const value_range *vr = get_value_range (op);
-  return (vr->kind () == VR_RANGE
-	  && integer_zerop (vr->min ())
-	  && integer_onep (vr->max ()));
+  return *vr == value_range (build_zero_cst (TREE_TYPE (op)),
+			     build_one_cst (TREE_TYPE (op)));
 }
 
 /* Extract value range information for VAR when (OP COND_CODE LIMIT) is
@@ -2494,10 +2495,8 @@ simplify_using_ranges::vrp_evaluate_conditional (tree_code code, tree op0,
       tree type = TREE_TYPE (op0);
       const value_range_equiv *vr0 = get_value_range (op0);
 
-      if (vr0->kind () == VR_RANGE
+      if (vr0->varying_p ()
 	  && INTEGRAL_TYPE_P (type)
-	  && vrp_val_is_min (vr0->min ())
-	  && vrp_val_is_max (vr0->max ())
 	  && is_gimple_min_invariant (op1))
 	{
 	  location_t location;
@@ -3483,10 +3482,13 @@ test_for_singularity (enum tree_code cond_code, tree op0,
      value range information we have for op0.  */
   if (min && max)
     {
-      if (compare_values (vr->min (), min) == 1)
-	min = vr->min ();
-      if (compare_values (vr->max (), max) == -1)
-	max = vr->max ();
+      tree type = TREE_TYPE (op0);
+      tree tmin = wide_int_to_tree (type, vr->lower_bound ());
+      tree tmax = wide_int_to_tree (type, vr->upper_bound ());
+      if (compare_values (tmin, min) == 1)
+	min = tmin;
+      if (compare_values (tmax, max) == -1)
+	max = tmax;
 
       /* If the new min/max values have converged to a single value,
 	 then there is only one value which can satisfy the condition,
@@ -3597,7 +3599,7 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
 
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
-      if (vr->kind () == VR_RANGE)
+      if (!vr->undefined_p () && !vr->varying_p ())
 	{
 	  tree new_tree = test_for_singularity (cond_code, op0, op1, vr);
 	  if (new_tree)
@@ -3969,11 +3971,14 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   /* Get the value-range of the inner operand.  Use get_range_info in
      case innerop was created during substitute-and-fold.  */
   wide_int imin, imax;
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop))
-      || get_range_info (innerop, &imin, &imax) != VR_RANGE)
+  value_range vr;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
     return false;
-  innermin = widest_int::from (imin, TYPE_SIGN (TREE_TYPE (innerop)));
-  innermax = widest_int::from (imax, TYPE_SIGN (TREE_TYPE (innerop)));
+  get_range_info (innerop, vr);
+  if (vr.undefined_p () || vr.varying_p ())
+    return false;
+  innermin = widest_int::from (vr.lower_bound (), TYPE_SIGN (TREE_TYPE (innerop)));
+  innermax = widest_int::from (vr.upper_bound (), TYPE_SIGN (TREE_TYPE (innerop)));
 
   /* Simulate the conversion chain to check if the result is equal if
      the middle conversion is removed.  */
@@ -4191,33 +4196,20 @@ simplify_using_ranges::simplify_internal_call_using_ranges
 bool
 simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b)
 {
-  const value_range *vr = get_value_range (var);
-  if (vr->varying_p ()
-      || vr->undefined_p ()
-      || TREE_CODE (vr->min ()) != INTEGER_CST
-      || TREE_CODE (vr->max ()) != INTEGER_CST)
+  value_range vr = *get_value_range (var);
+  vr.normalize_symbolics ();
+  if (vr.varying_p () || vr.undefined_p ())
     return false;
 
-  if (vr->kind () == VR_RANGE
-      && wi::to_wide (vr->max ()) - wi::to_wide (vr->min ()) == 1)
+  if ((vr.num_pairs () == 1 && vr.upper_bound () - vr.lower_bound () == 1)
+      || (vr.num_pairs () == 2
+	  && vr.lower_bound (0) == vr.upper_bound (0)
+	  && vr.lower_bound (1) == vr.upper_bound (1)))
     {
-      *a = vr->min ();
-      *b = vr->max ();
+      *a = wide_int_to_tree (TREE_TYPE (var), vr.lower_bound ());
+      *b = wide_int_to_tree (TREE_TYPE (var), vr.upper_bound ());
       return true;
     }
-
-  /* ~[TYPE_MIN + 1, TYPE_MAX - 1] */
-  if (vr->kind () == VR_ANTI_RANGE
-      && (wi::to_wide (vr->min ())
-	  - wi::to_wide (vrp_val_min (TREE_TYPE (var)))) == 1
-      && (wi::to_wide (vrp_val_max (TREE_TYPE (var)))
-	  - wi::to_wide (vr->max ())) == 1)
-    {
-      *a = vrp_val_min (TREE_TYPE (var));
-      *b = vrp_val_max (TREE_TYPE (var));
-      return true;
-    }
-
   return false;
 }
 

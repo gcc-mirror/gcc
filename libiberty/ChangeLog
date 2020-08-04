@@ -1,3 +1,10 @@
+2020-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96385
+	* simple-object-elf.c
+	(simple_object_elf_copy_lto_debug_sections): Localize global
+	UNDEFs and reuse the prevailing name.
+
 2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/96202

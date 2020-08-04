@@ -1070,7 +1070,7 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, vr_values)->get_value_range (arg);
 
-	  if (range_int_cst_p (vr))
+	  if (!vr->undefined_p () && !vr->varying_p () && !vr->symbolic_p ())
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -1079,8 +1079,11 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 
 	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
 
-	      *pmin = TREE_INT_CST_LOW (vr->min ());
-	      *pmax = TREE_INT_CST_LOW (vr->max ());
+	      tree type = TREE_TYPE (arg);
+	      tree tmin = wide_int_to_tree (type, vr->lower_bound ());
+	      tree tmax = wide_int_to_tree (type, vr->upper_bound ());
+	      *pmin = TREE_INT_CST_LOW (tmin);
+	      *pmax = TREE_INT_CST_LOW (tmax);
 
 	      if (*pmin < *pmax)
 		{
@@ -1372,10 +1375,10 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
       const value_range_equiv *vr
 	= CONST_CAST (class vr_values *, vr_values)->get_value_range (arg);
 
-      if (range_int_cst_p (vr))
+      if (!vr->varying_p () && !vr->undefined_p () && !vr->symbolic_p ())
 	{
-	  argmin = vr->min ();
-	  argmax = vr->max ();
+	  argmin = wide_int_to_tree (TREE_TYPE (arg), vr->lower_bound ());
+	  argmax = wide_int_to_tree (TREE_TYPE (arg), vr->upper_bound ());
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
 	     of the directive's type and neither width nor precision
@@ -1388,11 +1391,7 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
 	  res.argmin = argmin;
 	  res.argmax = argmax;
 	}
-      else if (vr->kind () == VR_ANTI_RANGE)
-	{
-	  /* Handle anti-ranges if/when bug 71690 is resolved.  */
-	}
-      else if (vr->varying_p () || vr->undefined_p ())
+      else
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
@@ -4561,10 +4560,13 @@ handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
 	  const value_range_equiv *vr
 	    = CONST_CAST (class vr_values *, vr_values)->get_value_range (size);
 
-	  if (range_int_cst_p (vr))
+	  if (!vr->undefined_p () && !vr->symbolic_p ())
 	    {
-	      unsigned HOST_WIDE_INT minsize = TREE_INT_CST_LOW (vr->min ());
-	      unsigned HOST_WIDE_INT maxsize = TREE_INT_CST_LOW (vr->max ());
+	      tree type = TREE_TYPE (size);
+	      tree tmin = wide_int_to_tree (type, vr->lower_bound ());
+	      tree tmax = wide_int_to_tree (type, vr->upper_bound ());
+	      unsigned HOST_WIDE_INT minsize = TREE_INT_CST_LOW (tmin);
+	      unsigned HOST_WIDE_INT maxsize = TREE_INT_CST_LOW (tmax);
 	      dstsize = warn_level < 2 ? maxsize : minsize;
 
 	      if (minsize > target_int_max ())
@@ -4577,13 +4579,6 @@ handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
 		 than INT_MAX.  Avoid folding if that's possible.  */
 	      if (maxsize > target_int_max ())
 		posunder4k = false;
-	    }
-	  else if (vr->varying_p ())
-	    {
-	      /* POSIX requires snprintf to fail if DSTSIZE is greater
-		 than INT_MAX.  Since SIZE's range is unknown, avoid
-		 folding.  */
-	      posunder4k = false;
 	    }
 
 	  /* The destination size is not constant.  If the function is

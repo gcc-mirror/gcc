@@ -633,7 +633,7 @@ extern void d_comdat_linkage (tree);
 extern void d_linkonce_linkage (tree);
 
 /* In expr.cc.  */
-extern tree build_expr (Expression *, bool = false);
+extern tree build_expr (Expression *, bool = false, bool = false);
 extern tree build_expr_dtor (Expression *);
 extern tree build_return_dtor (Expression *, Type *, TypeFunction *);
 
