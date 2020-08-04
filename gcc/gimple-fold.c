@@ -4837,7 +4837,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 /* Canonicalize MEM_REFs invariant address operand after propagation.  */
 
 static bool
-maybe_canonicalize_mem_ref_addr (tree *t)
+maybe_canonicalize_mem_ref_addr (tree *t, bool is_debug = false)
 {
   bool res = false;
 
@@ -4900,7 +4900,11 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	  base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
 						&coffset);
 	  if (!base)
-	    gcc_unreachable ();
+	    {
+	      if (is_debug)
+		return false;
+	      gcc_unreachable ();
+	    }
 
 	  TREE_OPERAND (*t, 0) = build_fold_addr_expr (base);
 	  TREE_OPERAND (*t, 1) = int_const_binop (PLUS_EXPR,
@@ -5055,7 +5059,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (*val
 	      && (REFERENCE_CLASS_P (*val)
 		  || TREE_CODE (*val) == ADDR_EXPR)
-	      && maybe_canonicalize_mem_ref_addr (val))
+	      && maybe_canonicalize_mem_ref_addr (val, true))
 	    changed = true;
 	}
       break;
