@@ -6957,6 +6957,9 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
     case E_TFmode:
       return gen_store_pair_dw_tftf (mem1, reg1, mem2, reg2);
 
+    case E_V4SImode:
+      return gen_vec_store_pairv4siv4si (mem1, reg1, mem2, reg2);
+
     default:
       gcc_unreachable ();
     }
@@ -6979,6 +6982,9 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
 
     case E_TFmode:
       return gen_load_pair_dw_tftf (reg1, mem1, reg2, mem2);
+
+    case E_V4SImode:
+      return gen_load_pairv4siv4si (reg1, mem1, reg2, mem2);
 
     default:
       gcc_unreachable ();
@@ -21144,6 +21150,27 @@ static void
 aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 					      machine_mode mode)
 {
+  /* Handle 256-bit memcpy separately.  We do this by making 2 adjacent memory
+     address copies using V4SImode so that we can use Q registers.  */
+  if (known_eq (GET_MODE_BITSIZE (mode), 256))
+    {
+      mode = V4SImode;
+      rtx reg1 = gen_reg_rtx (mode);
+      rtx reg2 = gen_reg_rtx (mode);
+      /* "Cast" the pointers to the correct mode.  */
+      *src = adjust_address (*src, mode, 0);
+      *dst = adjust_address (*dst, mode, 0);
+      /* Emit the memcpy.  */
+      emit_insn (aarch64_gen_load_pair (mode, reg1, *src, reg2,
+					aarch64_progress_pointer (*src)));
+      emit_insn (aarch64_gen_store_pair (mode, *dst, reg1,
+					 aarch64_progress_pointer (*dst), reg2));
+      /* Move the pointers forward.  */
+      *src = aarch64_move_pointer (*src, 32);
+      *dst = aarch64_move_pointer (*dst, 32);
+      return;
+    }
+
   rtx reg = gen_reg_rtx (mode);
 
   /* "Cast" the pointers to the correct mode.  */
@@ -21197,9 +21224,12 @@ aarch64_expand_cpymem (rtx *operands)
   /* Convert n to bits to make the rest of the code simpler.  */
   n = n * BITS_PER_UNIT;
 
-  /* Maximum amount to copy in one go.  The AArch64 back-end has integer modes
-     larger than TImode, but we should not use them for loads/stores here.  */
-  const int copy_limit = GET_MODE_BITSIZE (TImode);
+  /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
+     AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter and TARGET_SIMD.  */
+  const int copy_limit = ((aarch64_tune_params.extra_tuning_flags
+			   & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
+			  || !TARGET_SIMD)
+			 ? GET_MODE_BITSIZE (TImode) : 256;
 
   while (n > 0)
     {
