@@ -2305,6 +2305,212 @@ optimize_minmaxloc (gfc_expr **e)
   mpz_set_ui (a->expr->value.integer, 1);
 }
 
+/* Data package to hand down for DO loop checks in a contained
+   procedure.  */
+typedef struct contained_info
+{
+  gfc_symbol *do_var;
+  gfc_symbol *procedure;
+  locus where_do;
+} contained_info;
+
+static enum gfc_exec_op last_io_op;
+
+/* Callback function to check for INTENT(OUT) and INTENT(INOUT) in a
+   contained function call.  */
+
+static int
+doloop_contained_function_call (gfc_expr **e,
+				int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+{
+  gfc_expr *expr = *e;
+  gfc_formal_arglist *f;
+  gfc_actual_arglist *a;
+  gfc_symbol *sym, *do_var;
+  contained_info *info;
+
+  if (expr->expr_type != EXPR_FUNCTION || expr->value.function.isym)
+    return 0;
+
+  sym = expr->value.function.esym;
+  f = gfc_sym_get_dummy_args (sym);
+  if (f == NULL)
+    return 0;
+
+  info = (contained_info *) data;
+  do_var = info->do_var;
+  a = expr->value.function.actual;
+
+  while (a && f)
+    {
+      if (a->expr && a->expr->symtree && a->expr->symtree->n.sym == do_var)
+	{
+	  if (f->sym->attr.intent == INTENT_OUT)
+	    {
+	      gfc_error_now ("Index variable %qs set to undefined as "
+			     "INTENT(OUT) argument at %L in procedure %qs "
+			     "called from within DO loop at %L", do_var->name,
+			     &a->expr->where, info->procedure->name,
+			     &info->where_do);
+	      return 1;
+	    }
+	  else if (f->sym->attr.intent == INTENT_INOUT)
+	    {
+	      gfc_error_now ("Index variable %qs not definable as "
+			     "INTENT(INOUT) argument at %L in procedure %qs "
+			     "called from within DO loop at %L", do_var->name,
+			     &a->expr->where, info->procedure->name,
+			     &info->where_do);
+	      return 1;
+	    }
+	}
+      a = a->next;
+      f = f->next;
+    }
+  return 0;
+}
+
+/* Callback function that goes through the code in a contained
+   procedure to make sure it does not change a variable in a DO
+   loop.  */
+
+static int
+doloop_contained_procedure_code (gfc_code **c,
+				 int *walk_subtrees ATTRIBUTE_UNUSED,
+				 void *data)
+{
+  gfc_code *co = *c;
+  contained_info *info = (contained_info *) data;
+  gfc_symbol *do_var = info->do_var;
+  const char *errmsg = _("Index variable %qs redefined at %L in procedure %qs "
+			 "called from within DO loop at %L");
+  static enum gfc_exec_op saved_io_op;
+
+  switch (co->op)
+    {
+    case EXEC_ASSIGN:
+      if (co->expr1->symtree->n.sym == do_var)
+	gfc_error_now (errmsg, do_var->name, &co->loc, info->procedure->name,
+		       &info->where_do);
+      break;
+
+    case EXEC_DO:
+      if (co->ext.iterator && co->ext.iterator->var
+	  && co->ext.iterator->var->symtree->n.sym == do_var)
+	gfc_error (errmsg, do_var->name, &co->loc, info->procedure->name,
+		   &info->where_do);
+      break;
+
+    case EXEC_READ:
+    case EXEC_WRITE:
+    case EXEC_INQUIRE:
+      saved_io_op = last_io_op;
+      last_io_op = co->op;
+      break;
+
+    case EXEC_OPEN:
+      if (co->ext.open->iostat
+	  && co->ext.open->iostat->symtree->n.sym == do_var)
+	gfc_error_now (errmsg, do_var->name, &co->ext.open->iostat->where,
+		       info->procedure->name, &info->where_do);
+      break;
+
+    case EXEC_CLOSE:
+      if (co->ext.close->iostat
+	  && co->ext.close->iostat->symtree->n.sym == do_var)
+	gfc_error_now (errmsg, do_var->name, &co->ext.close->iostat->where,
+		       info->procedure->name, &info->where_do);
+      break;
+
+    case EXEC_TRANSFER:
+      switch (last_io_op)
+	{
+
+	case EXEC_INQUIRE:
+#define CHECK_INQ(a) do { if (co->ext.inquire->a &&			\
+			      co->ext.inquire->a->symtree->n.sym == do_var) \
+	      gfc_error_now (errmsg, do_var->name,			\
+			     &co->ext.inquire->a->where,		\
+			     info->procedure->name,			\
+			     &info->where_do);				\
+	  } while (0)
+
+	  CHECK_INQ(iostat);
+	  CHECK_INQ(number);
+	  CHECK_INQ(position);
+	  CHECK_INQ(recl);
+	  CHECK_INQ(position);
+	  CHECK_INQ(iolength);
+	  CHECK_INQ(strm_pos);
+	  break;
+#undef CHECK_INQ
+
+	case EXEC_READ:
+	  if (co->expr1 && co->expr1->symtree->n.sym == do_var)
+	    gfc_error_now (errmsg, do_var->name, &co->expr1->where,
+			   info->procedure->name, &info->where_do);
+
+	  /* Fallthrough.  */
+
+	case EXEC_WRITE:
+	  if (co->ext.dt->iostat
+	      && co->ext.dt->iostat->symtree->n.sym == do_var)
+	    gfc_error_now (errmsg, do_var->name, &co->ext.dt->iostat->where,
+			   info->procedure->name, &info->where_do);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
+    case EXEC_DT_END:
+      last_io_op = saved_io_op;
+      break;
+
+    case EXEC_CALL:
+      gfc_formal_arglist *f;
+      gfc_actual_arglist *a;
+
+      f = gfc_sym_get_dummy_args (co->resolved_sym);
+      if (f == NULL)
+	break;
+      a = co->ext.actual;
+      /* Slightly different error message here. If there is an error,
+	 return 1 to avoid an infinite loop.  */
+      while (a && f)
+	{
+	  if (a->expr && a->expr->symtree && a->expr->symtree->n.sym == do_var)
+	    {
+	      if (f->sym->attr.intent == INTENT_OUT)
+		{
+		  gfc_error_now ("Index variable %qs set to undefined as "
+				 "INTENT(OUT) argument at %L in subroutine %qs "
+				 "called from within DO loop at %L",
+				 do_var->name, &a->expr->where,
+				 info->procedure->name, &info->where_do);
+		  return 1;
+		}
+	      else if (f->sym->attr.intent == INTENT_INOUT)
+		{
+		  gfc_error_now ("Index variable %qs not definable as "
+				 "INTENT(INOUT) argument at %L in subroutine %qs "
+				 "called from within DO loop at %L", do_var->name,
+				 &a->expr->where, info->procedure->name,
+				 &info->where_do);
+		  return 1;
+		}
+	    }
+	  a = a->next;
+	  f = f->next;
+	}
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
 /* Callback function for code checking that we do not pass a DO variable to an
    INTENT(OUT) or INTENT(INOUT) dummy variable.  */
 
@@ -2389,9 +2595,31 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       break;
 
     case EXEC_CALL:
-
       if (co->resolved_sym == NULL)
 	break;
+
+      /* Test if somebody stealthily changes the DO variable from
+	 under us by changing it in a host-associated procedure.  */
+      if (co->resolved_sym->attr.contained)
+	{
+	  FOR_EACH_VEC_ELT (doloop_list, i, lp)
+	    {
+	      gfc_symbol *sym = co->resolved_sym;
+	      contained_info info;
+	      gfc_namespace *ns;
+
+	      cl = lp->c;
+	      info.do_var = cl->ext.iterator->var->symtree->n.sym;
+	      info.procedure = co->resolved_sym;  /* sym? */
+	      info.where_do = co->loc;
+	      /* Look contained procedures under the namespace of the
+		 variable.  */
+	      for (ns = info.do_var->ns->contained; ns; ns = ns->sibling)
+		if (ns->proc_name && ns->proc_name == sym)
+		  gfc_code_walker (&ns->code, doloop_contained_procedure_code,
+				   doloop_contained_function_call, &info);
+	    }
+	}
 
       f = gfc_sym_get_dummy_args (co->resolved_sym);
 
@@ -2436,6 +2664,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  a = a->next;
 	  f = f->next;
 	}
+
       break;
 
     default:
@@ -2737,6 +2966,7 @@ do_intent (gfc_expr **e)
   gfc_code *dl;
   do_t *lp;
   int i;
+  gfc_symbol *sym;
 
   expr = *e;
   if (expr->expr_type != EXPR_FUNCTION)
@@ -2747,7 +2977,31 @@ do_intent (gfc_expr **e)
   if (expr->value.function.isym)
     return 0;
 
-  f = gfc_sym_get_dummy_args (expr->symtree->n.sym);
+  sym = expr->value.function.esym;
+  if (sym == NULL)
+    return 0;
+
+  if (sym->attr.contained)
+    {
+      FOR_EACH_VEC_ELT (doloop_list, i, lp)
+	{
+	  contained_info info;
+	  gfc_namespace *ns;
+
+	  dl = lp->c;
+	  info.do_var = dl->ext.iterator->var->symtree->n.sym;
+	  info.procedure = sym;
+	  info.where_do = expr->where;
+	  /* Look contained procedures under the namespace of the
+		 variable.  */
+	  for (ns = info.do_var->ns->contained; ns; ns = ns->sibling)
+	    if (ns->proc_name && ns->proc_name == sym)
+	      gfc_code_walker (&ns->code, doloop_contained_procedure_code,
+			       dummy_expr_callback, &info);
+	}
+    }
+
+  f = gfc_sym_get_dummy_args (sym);
 
   /* Without a formal arglist, there is only unknown INTENT,
      which we don't check for.  */
