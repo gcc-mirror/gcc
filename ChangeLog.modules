@@ -1,9 +1,17 @@
 2020-08-05  Nathan Sidwell  <nathan@acm.org>
 
+	Note binding slot origin.
+	gcc/cp/
+	* cp-tree.h (MODULE_BINDING_{GLOBAL,PARTITION}_P): New.
+	* module_cc (module_state::read_cluster): Adjust
+	set_module_binding call.
+	* name-lookup.c (set_module_binding): Replace inter_p with
+	mod_glob parm.  Adjust and set origin.
+	* name-lookup.h (set_module_binding): Adjust prototype.
+
 	Note duplicates on symbol vector.
 	gcc/cp/
-	* cp-tree.h (MODULE_VECTOR_GLOBAL_DUPS_P)
-	(MODULE_VECTOR_PARTITION_DUPS_P): New.
+	* cp-tree.h (MODULE_VECTOR_{GLOBAL,PARTITION}_DUPS_P): New.
 	* name-lookup.h (mergeable_namespace_entities): Replace with ...
 	(mergeable_namespace_slots): ... this.
 	* module.cc (trees_in::key_mergeable): Set dups flag when alread

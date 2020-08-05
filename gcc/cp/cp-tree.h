@@ -996,6 +996,9 @@ struct GTY(()) tree_module_vec {
 
 /* tree_module_vec does uses  base.u.dependence_info.base field for
    length.  It does not have lang_flag etc available!  */
+
+/* These two flags note if a module-vector contains deduplicated
+   bindings (i.e. multiple declarations in different imports).  */
 /* This binding contains duplicate references to a global module
    entity.  */
 #define MODULE_VECTOR_GLOBAL_DUPS_P(NODE) \
@@ -1004,6 +1007,17 @@ struct GTY(()) tree_module_vec {
    entity.  */
 #define MODULE_VECTOR_PARTITION_DUPS_P(NODE) \
   (MODULE_VECTOR_CHECK (NODE)->base.volatile_flag)
+
+/* These two flags indicate the provenence of the bindings on this
+   particular vector slot.  We can of course determine this from slot
+   number, but that's a relatively expensive lookup.  This avoids
+   that when iterating.  */
+/* This slot is part of the global module (a header unit).  */
+#define MODULE_BINDING_GLOBAL_P(NODE) \
+  (OVERLOAD_CHECK (NODE)->base.static_flag)
+/* This slot is part of the current module (a partition or primary).  */
+#define MODULE_BINDING_PARTITION_P(NODE)		\
+  (OVERLOAD_CHECK (NODE)->base.volatile_flag)
 
 /* There are specializations of a template keyed to this binding.  */
 #define MODULE_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \

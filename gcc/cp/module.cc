@@ -14314,7 +14314,9 @@ module_state::read_cluster (unsigned snum)
 
 	    dump () && dump ("Binding of %P", ns, name);
 	    if (!set_module_binding (ns, name, mod,
-				     is_module () || is_partition (),
+				     is_header () ? -1
+				     : is_module () || is_partition () ? 1
+				     : 0,
 				     decls, type, visible))
 	      sec.set_overrun ();
 

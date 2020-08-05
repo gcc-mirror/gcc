@@ -386,7 +386,8 @@ extern void add_mergeable_namespace_entity (tree *slot, tree decl);
 extern tree mergeable_class_entities (tree ctx, tree name);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
-extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,
+extern bool set_module_binding (tree ctx, tree name, unsigned mod,
+				int mod_glob_flag,
 				tree value, tree type, tree visible);
 extern void add_module_decl (tree ctx, tree name, tree decl);
 extern tree extract_module_binding (tree &binding, tree ns, bitmap partitions);

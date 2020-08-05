@@ -4071,12 +4071,14 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
   return true;
 }
 
-/* During an import NAME is being bound within namespace NS and
-   MODULE.  There should be no existing binding.  VALUE and TYPE are
-   the value and type bindings.  */
+/* An import of MODULE is binding NS::NAME.  There should be no
+   existing binding for >= MODULE.  MOD_GLOB indicates whether MODULE
+   is a header_unit (-1) or part of the current module (+1).  VALUE
+   and TYPE are the value and type bindings. VISIBLE are the value
+   bindings being exported.  */
 
 bool
-set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
+set_module_binding (tree ns, tree name, unsigned mod, int mod_glob,
 		    tree value, tree type, tree visible)
 {
   if (!value)
@@ -4095,14 +4097,20 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
     return false;
 
   tree bind = value;
-  if (type || visible != bind)
+  if (type || visible != bind || (mod_glob && TREE_CODE (bind) != OVERLOAD))
     {
       bind = stat_hack (bind, type);
       STAT_VISIBLE (bind) = visible;
-      if ((inter_p && TREE_PUBLIC (ns))
+      if ((mod_glob > 0 && TREE_PUBLIC (ns))
 	  || (type && DECL_MODULE_EXPORT_P (type)))
 	STAT_TYPE_VISIBLE_P (bind) = true;
     }
+
+  /* Note if this is this-module or global binding.  */
+  if (mod_glob > 0)
+    MODULE_BINDING_PARTITION_P (bind) = true;
+  else if (mod_glob < 0)
+    MODULE_BINDING_GLOBAL_P (bind) = true;
 
   *mslot = bind;
 
