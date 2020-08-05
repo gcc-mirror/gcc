@@ -1574,8 +1574,8 @@
 				XEXP (operands[1], 0),
 				GET_MODE_SIZE (<SX:MODE>mode)))"
   "@
-   ldp\\t%w0, %w2, %1
-   ldp\\t%s0, %s2, %1"
+   ldp\\t%w0, %w2, %z1
+   ldp\\t%s0, %s2, %z1"
   [(set_attr "type" "load_8,neon_load1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1591,8 +1591,8 @@
 				XEXP (operands[1], 0),
 				GET_MODE_SIZE (<DX:MODE>mode)))"
   "@
-   ldp\\t%x0, %x2, %1
-   ldp\\t%d0, %d2, %1"
+   ldp\\t%x0, %x2, %z1
+   ldp\\t%d0, %d2, %z1"
   [(set_attr "type" "load_16,neon_load1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1607,7 +1607,7 @@
 		    plus_constant (Pmode,
 				   XEXP (operands[1], 0),
 				   GET_MODE_SIZE (TFmode)))"
-  "ldp\\t%q0, %q2, %1"
+  "ldp\\t%q0, %q2, %z1"
   [(set_attr "type" "neon_ldp_q")
    (set_attr "fp" "yes")]
 )
@@ -1624,8 +1624,8 @@
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (<SX:MODE>mode)))"
   "@
-   stp\\t%w1, %w3, %0
-   stp\\t%s1, %s3, %0"
+   stp\\t%w1, %w3, %z0
+   stp\\t%s1, %s3, %z0"
   [(set_attr "type" "store_8,neon_store1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1641,8 +1641,8 @@
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (<DX:MODE>mode)))"
   "@
-   stp\\t%x1, %x3, %0
-   stp\\t%d1, %d3, %0"
+   stp\\t%x1, %x3, %z0
+   stp\\t%d1, %d3, %z0"
   [(set_attr "type" "store_16,neon_store1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1657,7 +1657,7 @@
 		 plus_constant (Pmode,
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (TFmode)))"
-  "stp\\t%q1, %q3, %0"
+  "stp\\t%q1, %q3, %z0"
   [(set_attr "type" "neon_stp_q")
    (set_attr "fp" "yes")]
 )
@@ -1790,7 +1790,7 @@
 		plus_constant (Pmode,
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
-  "ldpsw\\t%0, %2, %1"
+  "ldpsw\\t%0, %2, %z1"
   [(set_attr "type" "load_8")]
 )
 
@@ -1819,8 +1819,8 @@
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
   "@
-   ldp\t%w0, %w2, %1
-   ldp\t%s0, %s2, %1"
+   ldp\t%w0, %w2, %z1
+   ldp\t%s0, %s2, %z1"
   [(set_attr "type" "load_8,neon_load1_2reg")
    (set_attr "arch" "*,fp")]
 )
