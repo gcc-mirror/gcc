@@ -1,3 +1,16 @@
+2020-08-05  Nathan Sidwell  <nathan@acm.org>
+
+	Note duplicates on symbol vector.
+	gcc/cp/
+	* cp-tree.h (MODULE_VECTOR_GLOBAL_DUPS_P)
+	(MODULE_VECTOR_PARTITION_DUPS_P): New.
+	* name-lookup.h (mergeable_namespace_entities): Replace with ...
+	(mergeable_namespace_slots): ... this.
+	* module.cc (trees_in::key_mergeable): Set dups flag when alread
+	existing.
+	* name-lookup.c (mergeable_namespace_entities): Replace with ...
+	(mergeable_namespace_slots): ... this.  Return the vector too.
+
 2020-08-04  Nathan Sidwell  <nathan@acm.org>
 
 	Fix alias templates.

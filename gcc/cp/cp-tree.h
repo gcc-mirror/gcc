@@ -994,13 +994,24 @@ struct GTY(()) tree_module_vec {
 #define MODULE_VECTOR_NAME(NODE) \
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->name)
 
+/* tree_module_vec does uses  base.u.dependence_info.base field for
+   length.  It does not have lang_flag etc available!  */
+/* This binding contains duplicate references to a global module
+   entity.  */
+#define MODULE_VECTOR_GLOBAL_DUPS_P(NODE) \
+  (MODULE_VECTOR_CHECK (NODE)->base.static_flag)
+/* This binding contains duplicate references to a partioned module
+   entity.  */
+#define MODULE_VECTOR_PARTITION_DUPS_P(NODE) \
+  (MODULE_VECTOR_CHECK (NODE)->base.volatile_flag)
+
 /* There are specializations of a template keyed to this binding.  */
 #define MODULE_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
-  TREE_THIS_VOLATILE (MODULE_VECTOR_CHECK (NODE))
+  (MODULE_VECTOR_CHECK (NODE)->base.public_flag)
 /* The key is in a header unit (not a named module partition or
    primary).  */
 #define MODULE_VECTOR_PENDING_IS_HEADER_P(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.public_flag)
+  (MODULE_VECTOR_CHECK (NODE)->base.protected_flag)
 /* The key is in a named module (primary or partition).  */
 #define MODULE_VECTOR_PENDING_IS_PARTITION_P(NODE) \
   (MODULE_VECTOR_CHECK (NODE)->base.private_flag)

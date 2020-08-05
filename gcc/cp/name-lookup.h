@@ -380,7 +380,8 @@ extern void insert_late_enum_def_bindings (tree, tree);
 extern tree lookup_all_conversions (tree);
 
 /* Lower level interface for modules. */
-extern tree *mergeable_namespace_entities (tree ctx, tree name, bool is_global);
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+					tree *mvec);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
 extern tree mergeable_class_entities (tree ctx, tree name);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,

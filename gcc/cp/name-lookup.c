@@ -3865,18 +3865,21 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
-/* A mergeable entity is being loaded into namespace CTX slot
-   NAME.  Create and return the appropriate slot for that.  Either a
+/* A mergeable entity is being loaded into namespace NS slot NAME.
+   Create and return the appropriate vector slot for that.  Either a
    GMF slot or a module-specific one.  */
 
 tree *
-mergeable_namespace_entities (tree ctx, tree name, bool is_global)
+mergeable_namespace_slots (tree ns, tree name, bool is_global, tree *vec)
 {
-  tree *slot = find_namespace_slot (ctx, name, true);
-  tree *gslot = get_fixed_binding_slot
-    (slot, name, is_global ? MODULE_SLOT_GLOBAL : MODULE_SLOT_PARTITION, true);
+  tree *mslot = find_namespace_slot (ns, name, true);
+  tree *vslot = get_fixed_binding_slot
+    (mslot, name, is_global ? MODULE_SLOT_GLOBAL : MODULE_SLOT_PARTITION, true);
 
-  return gslot;
+  gcc_checking_assert (TREE_CODE (*mslot) == MODULE_VECTOR);
+  *vec = *mslot;
+
+  return vslot;
 }
 
 /* DECL is a new mergeable namespace-scope decl.  Add it to the

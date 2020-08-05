@@ -10519,11 +10519,26 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  else
 	    {
 	      gcc_checking_assert (mk == MK_named || mk == MK_enum);
-	      tree *gslot = mergeable_namespace_entities
-		(container, name, !is_mod);
-	      existing = check_mergeable_decl (mk, decl, *gslot, key);
-	      if (!existing && mk == MK_named)
-		add_mergeable_namespace_entity (gslot, decl);
+	      tree mvec;
+	      tree *vslot = mergeable_namespace_slots (container, name, !is_mod,
+						       &mvec);
+	      existing = check_mergeable_decl (mk, decl, *vslot, key);
+	      if (mk == MK_enum)
+		/* We do not need to register enum-keyed types here,
+		as they'll be entered when we deal with the enumerator
+		itself.  */
+		;
+	      else if (!existing)
+		add_mergeable_namespace_entity (vslot, decl);
+	      else
+		{
+		  /* Note that we now have duplicates to deal with in
+		     name lookup.  */
+		  if (is_mod)
+		    MODULE_VECTOR_PARTITION_DUPS_P (mvec) = true;
+		  else
+		    MODULE_VECTOR_GLOBAL_DUPS_P (mvec) = true;
+		}
 	    }
 	  break;
 
