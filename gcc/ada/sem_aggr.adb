@@ -3052,15 +3052,15 @@ package body Sem_Aggr is
             begin
                Set_Etype  (Ent, Standard_Void_Type);
                Set_Parent (Ent, Assoc);
+               Push_Scope (Ent);
 
                if No (Scope (Id)) then
-                  Enter_Name (Id);
                   Set_Etype (Id, Index_Type);
                   Set_Ekind (Id, E_Variable);
                   Set_Scope (Id, Ent);
                end if;
+               Enter_Name (Id);
 
-               Push_Scope (Ent);
                Analyze_And_Resolve
                  (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
                End_Scope;
