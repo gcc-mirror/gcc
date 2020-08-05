@@ -3436,20 +3436,66 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (integer_zerop (@0))
    @2)))
 
-/* Sink unary operations to constant branches, but only if we do fold it to
-   constants.  */
+#if GIMPLE
+/* Sink unary operations to branches, but only if we do fold both.  */
 (for op (negate bit_not abs absu)
  (simplify
-  (op (vec_cond @0 VECTOR_CST@1 VECTOR_CST@2))
-  (with
-   {
-     tree cst1, cst2;
-     cst1 = const_unop (op, type, @1);
-     if (cst1)
-       cst2 = const_unop (op, type, @2);
-   }
-   (if (cst1 && cst2)
-    (vec_cond @0 { cst1; } { cst2; })))))
+  (op (vec_cond:s @0 @1 @2))
+  (vec_cond @0 (op! @1) (op! @2))))
+
+/* Sink binary operation to branches, but only if we can fold it.  */
+(for op (tcc_comparison plus minus mult bit_and bit_ior bit_xor
+	 rdiv trunc_div ceil_div floor_div round_div
+	 trunc_mod ceil_mod floor_mod round_mod min max)
+/* (c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e) */
+ (simplify
+  (op (vec_cond:s @0 @1 @2) (vec_cond:s @0 @3 @4))
+  (vec_cond @0 (op! @1 @3) (op! @2 @4)))
+
+/* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
+ (simplify
+  (op (vec_cond:s @0 @1 @2) @3)
+  (vec_cond @0 (op! @1 @3) (op! @2 @3)))
+ (simplify
+  (op @3 (vec_cond:s @0 @1 @2))
+  (vec_cond @0 (op! @3 @1) (op! @3 @2))))
+#endif
+
+/* (v ? w : 0) ? a : b is just (v & w) ? a : b  */
+(simplify
+ (vec_cond (vec_cond:s @0 @3 integer_zerop) @1 @2)
+ (if (types_match (@0, @3))
+  (vec_cond (bit_and @0 @3) @1 @2)))
+(simplify
+ (vec_cond (vec_cond:s @0 integer_all_onesp @3) @1 @2)
+ (if (types_match (@0, @3))
+  (vec_cond (bit_ior @0 @3) @1 @2)))
+(simplify
+ (vec_cond (vec_cond:s @0 integer_zerop @3) @1 @2)
+ (if (types_match (@0, @3))
+  (vec_cond (bit_ior @0 (bit_not @3)) @2 @1)))
+(simplify
+ (vec_cond (vec_cond:s @0 @3 integer_all_onesp) @1 @2)
+ (if (types_match (@0, @3))
+  (vec_cond (bit_and @0 (bit_not @3)) @2 @1)))
+
+/* c1 ? c2 ? a : b : b  -->  (c1 & c2) ? a : b  */
+(simplify
+ (vec_cond @0 (vec_cond:s @1 @2 @3) @3)
+ (if (types_match (@0, @1))
+  (vec_cond (bit_and @0 @1) @2 @3)))
+(simplify
+ (vec_cond @0 @2 (vec_cond:s @1 @2 @3))
+ (if (types_match (@0, @1))
+  (vec_cond (bit_ior @0 @1) @2 @3)))
+(simplify
+ (vec_cond @0 (vec_cond:s @1 @2 @3) @2)
+ (if (types_match (@0, @1))
+  (vec_cond (bit_ior (bit_not @0) @1) @2 @3)))
+(simplify
+ (vec_cond @0 @3 (vec_cond:s @1 @2 @3))
+ (if (types_match (@0, @1))
+  (vec_cond (bit_and (bit_not @0) @1) @2 @3)))
 
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
    be extended.  */
