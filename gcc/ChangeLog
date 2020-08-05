@@ -1,3 +1,166 @@
+2020-08-04  Jim Wilson  <jimw@sifive.com>
+
+	* doc/invoke.texi (AArch64 Options): Delete duplicate
+	-mstack-protector-guard docs.
+
+2020-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (smulhi3_highpart, smulsi3_highpart)
+	(umulhi3_highpart, umulsi3_highpart): New instructions.
+
+2020-08-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.c (R_AMDGPU_NONE): Delete.
+	(R_AMDGPU_ABS32_LO): Delete.
+	(R_AMDGPU_ABS32_HI): Delete.
+	(R_AMDGPU_ABS64): Delete.
+	(R_AMDGPU_REL32): Delete.
+	(R_AMDGPU_REL64): Delete.
+	(R_AMDGPU_ABS32): Delete.
+	(R_AMDGPU_GOTPCREL): Delete.
+	(R_AMDGPU_GOTPCREL32_LO): Delete.
+	(R_AMDGPU_GOTPCREL32_HI): Delete.
+	(R_AMDGPU_REL32_LO): Delete.
+	(R_AMDGPU_REL32_HI): Delete.
+	(reserved): Delete.
+	(R_AMDGPU_RELATIVE64): Delete.
+
+2020-08-04  Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/arm-cpus.in (armv8.1-m.main): Tune for Cortex-M55.
+
+2020-08-04  Hu Jiangping  <hujiangping@cn.fujitsu.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Delete
+	redundant extra_cost variable.
+
+2020-08-04  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_call_properties):
+	Use FLOAT_MODE_P macro instead of enumerating all floating-point
+	modes and add global flag FLAG_AUTO_FP.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (symver): Add @cindex for symver function attribute.
+
+2020-08-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/95433
+	* match.pd (X * C1 == C2): New transformation.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-sprintf.c (get_int_range): Adjust for irange API.
+	(format_integer): Same.
+	(handle_printf_call): Same.
+
+2020-08-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md ("<expander>ti3"): New.
+
+2020-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88240
+	* tree-ssa-sccvn.h (vn_reference_s::punned): New flag.
+	* tree-ssa-sccvn.c (vn_reference_insert): Initialize punned.
+	(vn_reference_insert_pieces): Likewise.
+	(visit_reference_op_call): Likewise.
+	(visit_reference_op_load): Track whether a ref was punned.
+	* tree-ssa-pre.c (do_hoist_insertion): Refuse to perform hoist
+	insertion on punned floating point loads.
+
+2020-08-04  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_gen_store_pair): Add case
+	for E_V4SImode.
+	(aarch64_gen_load_pair): Likewise.
+	(aarch64_copy_one_block_and_progress_pointers): Handle 256 bit copy.
+	(aarch64_expand_cpymem): Expand copy_limit to 256bits where
+	appropriate.
+
+2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_fjcvtzs): Add missing
+	clobber.
+	* doc/sourcebuild.texi (aarch64_fjcvtzs_hw) Document new
+	target supports option.
+
+2020-08-04  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96428
+	* config/nvptx/nvptx.c (nvptx_gen_shuffle): Handle V2SI/V2DI.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96426
+	* tree-vect-generic.c (expand_vector_conversion): Replace .VEC_CONVERT
+	call with GIMPLE_NOP if there is no lhs.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96354
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Add IS_DEBUG
+	argument.  Return false instead of gcc_unreachable if it is true and
+	get_addr_base_and_unit_offset returns NULL.
+	(fold_stmt_1) <case GIMPLE_DEBUG>: Adjust caller.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (simplify_using_ranges::vrp_evaluate_conditional):
+	Call is_gimple_min_invariant dropped from previous patch.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for_init_counts): For triangular loops
+	compute number of iterations at runtime more efficiently.
+	(expand_omp_for_init_vars): Adjust immediate dominators.
+	(extract_omp_for_update_vars): Likewise.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (simplify_using_ranges::two_valued_val_range_p):
+	Use irange API.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (simplify_conversion_using_ranges): Convert to irange API.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (test_for_singularity): Use irange API.
+	(simplify_using_ranges::simplify_cond_using_ranges_1): Do not
+	special case VR_RANGE.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (simplify_using_ranges::vrp_evaluate_conditional): Adjust
+	for irange API.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (simplify_using_ranges::op_with_boolean_value_range_p): Adjust
+	for irange API.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.c (get_range_info): Use irange instead of value_range.
+	* tree-ssanames.h (get_range_info): Same.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* fold-const.c (expr_not_equal_to): Adjust for irange API.
+
+2020-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.c (determine_block_size): Remove ad-hoc range canonicalization.
+
+2020-08-04  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/71309
+	* dse.c (find_shift_sequence): Use subreg of shifted from high part
+	register to avoid loading from address.
+
 2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/cpp.texi (Variadic Macros): Use the exact ... token in
