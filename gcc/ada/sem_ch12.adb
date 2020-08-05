@@ -9106,12 +9106,7 @@ package body Sem_Ch12 is
         and then Present (Freeze_Node (Par))
         and then Present (Enc_I)
       then
-         if In_Same_Declarative_Part (Parent (Freeze_Node (Par)), Enc_I)
-           or else
-             (Nkind (Enc_I) = N_Package_Body
-               and then In_Same_Declarative_Part
-                          (Parent (Freeze_Node (Par)), Parent (Enc_I)))
-         then
+         if In_Same_Declarative_Part (Parent (Freeze_Node (Par)), Enc_I) then
             --  The enclosing package may contain several instances. Rather
             --  than computing the earliest point at which to insert its freeze
             --  node, we place it at the end of the declarative part of the
