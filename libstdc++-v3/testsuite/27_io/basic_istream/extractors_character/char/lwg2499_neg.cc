@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,48 +15,31 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++2a" }
+// { dg-do compile { target c++2a } }
+
+// LWG 2499
+// operator>>(basic_istream&, CharT*) makes it hard to avoid buffer overflows
 
 #include <istream>
-#include <streambuf>
-#include <testsuite_hooks.h>
 
-struct buf: std::wstreambuf
+void
+test01(std::istream& in, char* pc, signed char* sc, unsigned char* uc)
 {
-  virtual int_type overflow(int_type) 
-  { throw 0; }
-};
-
-template<typename T>
-void testthrow(T arg)
-{
-  buf b;
-  std::wistream is(&b);
-  is.exceptions(std::wios::badbit);
-
-  try 
-    {
-      is >> arg;
-    }
-  catch(int)
-    {
-      // Expected return is zero.
-      VERIFY( is.bad() );
-    }
-  catch(...) 
-    {
-      VERIFY( false );
-    }    
+  in >> pc; // { dg-error "here" }
+  in >> sc; // { dg-error "here" }
+  in >> uc; // { dg-error "here" }
 }
 
-int main()
+struct CT : std::char_traits<char> { };
+
+void
+test02(std::basic_istream<char, CT>& in, char* pc, signed char* sc,
+       unsigned char* uc)
 {
-  wchar_t c = L'a';
-  wchar_t* cp = &c;
-
-  testthrow(c);
-#if __cplusplus <= 201703L
-  testthrow(cp);
-#endif
-
-  return 0;
+  in >> pc; // { dg-error "here" }
+  in >> sc; // { dg-error "here" }
+  in >> uc; // { dg-error "here" }
 }
+
+// { dg-excess-errors "" }
