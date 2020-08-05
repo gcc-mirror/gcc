@@ -1,3 +1,106 @@
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (symver): Add @cindex for symver function attribute.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_indirect_call_asm):
+	New declaration.
+	* config/aarch64/aarch64.c (aarch64_regno_regclass): Handle new
+	stub registers class.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_sls_shared_thunks): Global array to store stub labels.
+	(aarch64_sls_emit_function_stub): New.
+	(aarch64_create_blr_label): New.
+	(aarch64_sls_emit_blr_function_thunks): New.
+	(aarch64_sls_emit_shared_blr_thunks): New.
+	(aarch64_asm_file_end): New.
+	(aarch64_indirect_call_asm): New.
+	(TARGET_ASM_FILE_END): Use aarch64_asm_file_end.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Use
+	aarch64_sls_emit_blr_function_thunks.
+	* config/aarch64/aarch64.h (STB_REGNUM_P): New.
+	(enum reg_class): Add STUB_REGS class.
+	(machine_function): Introduce `call_via` array for
+	function-local stub labels.
+	* config/aarch64/aarch64.md (*call_insn, *call_value_insn): Use
+	aarch64_indirect_call_asm to emit code when hardening BLR
+	instructions.
+	* config/aarch64/constraints.md (Ucr): New constraint
+	representing registers for indirect calls.  Is GENERAL_REGS
+	usually, and STUB_REGS when hardening BLR instruction against
+	SLS.
+	* config/aarch64/predicates.md (aarch64_general_reg): STUB_REGS class
+	is also a general register.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sls_barrier): New.
+	* config/aarch64/aarch64.c (aarch64_output_casesi): Emit
+	speculation barrier after BR instruction if needs be.
+	(aarch64_trampoline_init): Handle ptr_mode value & adjust size
+	of code copied.
+	(aarch64_sls_barrier): New.
+	(aarch64_asm_trampoline_template): Add needed barriers.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SB): New.
+	(TARGET_SB): New.
+	(TRAMPOLINE_SIZE): Account for barrier.
+	* config/aarch64/aarch64.md (indirect_jump, *casesi_dispatch,
+	simple_return, *do_return, *sibcall_insn, *sibcall_value_insn):
+	Emit barrier if needs be, also account for possible barrier using
+	"sls_length" attribute.
+	(sls_length): New attribute.
+	(length): Determine default using any non-default sls_length
+	value.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_harden_sls_retbr_p):
+	New.
+	(aarch64_harden_sls_blr_p): New.
+	* config/aarch64/aarch64.c (enum aarch64_sls_hardening_type):
+	New.
+	(aarch64_harden_sls_retbr_p): New.
+	(aarch64_harden_sls_blr_p): New.
+	(aarch64_validate_sls_mitigation): New.
+	(aarch64_override_options): Parse options for SLS mitigation.
+	* config/aarch64/aarch64.opt (-mharden-sls): New option.
+	* doc/invoke.texi: Document new option.
+
+2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	Backported from master:
+	2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_fjcvtzs): Add missing
+	clobber.
+	* doc/sourcebuild.texi (aarch64_fjcvtzs_hw) Document new
+	target supports option.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96426
+	* tree-vect-generic.c (expand_vector_conversion): Replace .VEC_CONVERT
+	call with GIMPLE_NOP if there is no lhs.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96354
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Add IS_DEBUG
+	argument.  Return false instead of gcc_unreachable if it is true and
+	get_addr_base_and_unit_offset returns NULL.
+	(fold_stmt_1) <case GIMPLE_DEBUG>: Adjust caller.
+
 2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

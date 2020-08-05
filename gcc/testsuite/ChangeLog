@@ -1,3 +1,92 @@
+2020-08-04  Michael Meissner  <meissner@linux.ibm.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/prefix-add.c: Backport from 2020-06-27 and
+	2020-06-26 changes.
+	* gcc.target/powerpc/prefix-di-constant.c: Backport.
+	* gcc.target/powerpc/prefix-ds-dq.c: Backport.
+	* gcc.target/powerpc/prefix-large-dd.c: Backport.
+	* gcc.target/powerpc/prefix-large-df.c: Backport.
+	* gcc.target/powerpc/prefix-large-di.c: Backport.
+	* gcc.target/powerpc/prefix-large-hi.c: Backport.
+	* gcc.target/powerpc/prefix-large-kf.c: Backport.
+	* gcc.target/powerpc/prefix-large-qi.c: Backport.
+	* gcc.target/powerpc/prefix-large-sd.c: Backport.
+	* gcc.target/powerpc/prefix-large-sf.c: Backport.
+	* gcc.target/powerpc/prefix-large-si.c: Backport.
+	* gcc.target/powerpc/prefix-large-udi.c: Backport.
+	* gcc.target/powerpc/prefix-large-uhi.c: Backport.
+	* gcc.target/powerpc/prefix-large-uqi.c: Backport.
+	* gcc.target/powerpc/prefix-large-usi.c: Backport.
+	* gcc.target/powerpc/prefix-large-v2df.c: Backport.
+	* gcc.target/powerpc/prefix-large.h: Backport.
+	* gcc.target/powerpc/prefix-no-update.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-dd.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-df.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-di.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-hi.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-kf.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-qi.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-sd.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-sf.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-si.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-udi.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-uhi.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-uqi.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-usi.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel-v2df.c: Backport.
+	* gcc.target/powerpc/prefix-pcrel.h: Backport.
+	* gcc.target/powerpc/prefix-si-constant.c: Backport.
+	* gcc.target/powerpc/prefix-stack-protect.c: Backport.
+
+2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96082
+	* g++.dg/template/template-keyword3.C: New test.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sls-mitigation/sls-miti-blr-bti.c: New test.
+	* gcc.target/aarch64/sls-mitigation/sls-miti-blr.c: New test.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sls-mitigation/sls-miti-retbr.c: New test.
+	* gcc.target/aarch64/sls-mitigation/sls-miti-retbr-pacret.c:
+	New test.
+	* gcc.target/aarch64/sls-mitigation/sls-mitigation.exp: New file.
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_sb_ok):
+	New proc.
+
+2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	Backported from master:
+	2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/acle/jcvt_2.c: New testcase.
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_fjcvtzs_hw): Add new check for
+	FJCVTZS hw.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96426
+	* gcc.c-torture/compile/pr96426.c: New test.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96354
+	* g++.dg/opt/pr96354.C: New test.
+
 2020-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96082
+	* parser.c (cp_parser_elaborated_type_specifier): Allow
+	'template' following ::.
+
 2020-07-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
