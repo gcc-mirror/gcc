@@ -1,3 +1,12 @@
+2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (resolve_omp_do): Detect not perfectly
+	nested loop with innermost collapse.
+
+2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_do): Fix 'lastprivate(conditional:'.
+
 2020-08-03  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
