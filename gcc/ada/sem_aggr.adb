@@ -1837,7 +1837,7 @@ package body Sem_Aggr is
       if Others_Present and then not Others_Allowed then
          Error_Msg_N
            ("OTHERS choice not allowed here",
-            First (Choices (First (Component_Associations (N)))));
+            First (Choice_List (First (Component_Associations (N)))));
          return Failure;
       end if;
 
