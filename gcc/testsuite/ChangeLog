@@ -1,3 +1,17 @@
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sls-mitigation/sls-miti-blr-bti.c: New test.
+	* gcc.target/aarch64/sls-mitigation/sls-miti-blr.c: New test.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/sls-mitigation/sls-miti-retbr.c: New test.
+	* gcc.target/aarch64/sls-mitigation/sls-miti-retbr-pacret.c:
+	New test.
+	* gcc.target/aarch64/sls-mitigation/sls-mitigation.exp: New file.
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_sb_ok):
+	New proc.
+
 2020-08-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
