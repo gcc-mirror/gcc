@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "cfgloop.h"
-#include "domwalk.h"
 #include "tree-affine.h"
 #include "tree-ssa-propagate.h"
 #include "trans-mem.h"
@@ -970,25 +969,12 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
   return stmt;
 }
 
-/* For each statement determines the outermost loop in that it is invariant,
-   -   statements on whose motion it depends and the cost of the computation.
-   -   This information is stored to the LIM_DATA structure associated with
-   -   each statement.  */
-class invariantness_dom_walker : public dom_walker
-{
-public:
-  invariantness_dom_walker (cdi_direction direction)
-    : dom_walker (direction) {}
-
-  virtual edge before_dom_children (basic_block);
-};
-
 /* Determine the outermost loops in that statements in basic block BB are
-   invariant, and record them to the LIM_DATA associated with the statements.
-   Callback for dom_walker.  */
+   invariant, and record them to the LIM_DATA associated with the
+   statements.  */
 
-edge
-invariantness_dom_walker::before_dom_children (basic_block bb)
+static void
+compute_invariantness (basic_block bb)
 {
   enum move_pos pos;
   gimple_stmt_iterator bsi;
@@ -998,7 +984,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
   struct lim_aux_data *lim_data;
 
   if (!loop_outer (bb->loop_father))
-    return NULL;
+    return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Basic block %d (loop %d -- depth %d):\n\n",
@@ -1122,7 +1108,6 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
       if (lim_data->cost >= LIM_EXPENSIVE)
 	set_profitable_level (stmt);
     }
-  return NULL;
 }
 
 /* Hoist the statements in basic block BB out of the loops prescribed by
@@ -1285,28 +1270,6 @@ move_computations_worker (basic_block bb)
       else
 	gsi_insert_on_edge (e, stmt);
     }
-
-  return todo;
-}
-
-/* Hoist the statements out of the loops prescribed by data stored in
-   LIM_DATA structures associated with each statement.*/
-
-static unsigned int
-move_computations (void)
-{
-  int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  int n = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, false);
-  unsigned todo = 0;
-
-  for (int i = 0; i < n; ++i)
-    todo |= move_computations_worker (BASIC_BLOCK_FOR_FN (cfun, rpo[i]));
-
-  free (rpo);
-
-  gsi_commit_edge_inserts ();
-  if (need_ssa_update_p (cfun))
-    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
   return todo;
 }
@@ -1678,7 +1641,9 @@ analyze_memory_references (void)
 	      bb_loop_postorder);
 
   /* Visit blocks in loop postorder and assign mem-ref IDs in that order.
-     That results in better locality for all the bitmaps.  */
+     That results in better locality for all the bitmaps.  It also
+     automatically sorts the location list of gathered memory references
+     after their loop postorder number allowing to binary-search it.  */
   for (i = 0; i < n; ++i)
     {
       basic_block bb = bbs[i];
@@ -1686,12 +1651,17 @@ analyze_memory_references (void)
         gather_mem_refs_stmt (bb->loop_father, gsi_stmt (bsi));
     }
 
-  /* Sort the location list of gathered memory references after their
+  /* Verify the list of gathered memory references is sorted after their
      loop postorder number.  */
-  im_mem_ref *ref;
-  FOR_EACH_VEC_ELT (memory_accesses.refs_list, i, ref)
-    ref->accesses_in_loop.sort (sort_locs_in_loop_postorder_cmp,
-				bb_loop_postorder);
+  if (flag_checking)
+    {
+      im_mem_ref *ref;
+      FOR_EACH_VEC_ELT (memory_accesses.refs_list, i, ref)
+	for (unsigned j = 1; j < ref->accesses_in_loop.length (); ++j)
+	  gcc_assert (sort_locs_in_loop_postorder_cmp
+			(&ref->accesses_in_loop[j-1], &ref->accesses_in_loop[j],
+			 bb_loop_postorder) <= 0);
+    }
 
   free (bbs);
 
@@ -1865,14 +1835,6 @@ first_mem_ref_loc (class loop *loop, im_mem_ref *ref)
   return locp;
 }
 
-struct prev_flag_edges {
-  /* Edge to insert new flag comparison code.  */
-  edge append_cond_position;
-
-  /* Edge for fall through from previous flag comparison.  */
-  edge last_cond_fallthru;
-};
-
 /* Helper function for execute_sm.  Emit code to store TMP_VAR into
    MEM along edge EX.
 
@@ -1920,14 +1882,14 @@ struct prev_flag_edges {
 
 static void
 execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
-		       edge preheader, hash_set <basic_block> *flag_bbs)
+		       edge preheader, hash_set <basic_block> *flag_bbs,
+		       edge &append_cond_position, edge &last_cond_fallthru)
 {
   basic_block new_bb, then_bb, old_dest;
   bool loop_has_only_one_exit;
-  edge then_old_edge, orig_ex = ex;
+  edge then_old_edge;
   gimple_stmt_iterator gsi;
   gimple *stmt;
-  struct prev_flag_edges *prev_edges = (struct prev_flag_edges *) ex->aux;
   bool irr = ex->flags & EDGE_IRREDUCIBLE_LOOP;
 
   profile_count count_sum = profile_count::zero ();
@@ -1975,8 +1937,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 
   /* ?? Insert store after previous store if applicable.  See note
      below.  */
-  if (prev_edges)
-    ex = prev_edges->append_cond_position;
+  if (append_cond_position)
+    ex = append_cond_position;
 
   loop_has_only_one_exit = single_pred_p (ex->dest);
 
@@ -2033,10 +1995,10 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 
   set_immediate_dominator (CDI_DOMINATORS, then_bb, new_bb);
 
-  if (prev_edges)
+  if (append_cond_position)
     {
-      basic_block prevbb = prev_edges->last_cond_fallthru->src;
-      redirect_edge_succ (prev_edges->last_cond_fallthru, new_bb);
+      basic_block prevbb = last_cond_fallthru->src;
+      redirect_edge_succ (last_cond_fallthru, new_bb);
       set_immediate_dominator (CDI_DOMINATORS, new_bb, prevbb);
       set_immediate_dominator (CDI_DOMINATORS, old_dest,
 			       recompute_dominator (CDI_DOMINATORS, old_dest));
@@ -2046,17 +2008,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
      sequence they originally happened.  Save the position right after
      the (_lsm) store we just created so we can continue appending after
      it and maintain the original order.  */
-  {
-    struct prev_flag_edges *p;
-
-    if (orig_ex->aux)
-      orig_ex->aux = NULL;
-    alloc_aux_for_edge (orig_ex, sizeof (struct prev_flag_edges));
-    p = (struct prev_flag_edges *) orig_ex->aux;
-    p->append_cond_position = then_old_edge;
-    p->last_cond_fallthru = find_edge (new_bb, old_dest);
-    orig_ex->aux = (void *) p;
-  }
+  append_cond_position = then_old_edge;
+  last_cond_fallthru = find_edge (new_bb, old_dest);
 
   if (!loop_has_only_one_exit)
     for (gphi_iterator gpi = gsi_start_phis (old_dest);
@@ -2222,7 +2175,8 @@ struct seq_entry
 
 static void
 execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
-		 hash_map<im_mem_ref *, sm_aux *> &aux_map, sm_kind kind)
+		 hash_map<im_mem_ref *, sm_aux *> &aux_map, sm_kind kind,
+		 edge &append_cond_position, edge &last_cond_fallthru)
 {
   /* Sink the stores to exit from the loop.  */
   for (unsigned i = seq.length (); i > 0; --i)
@@ -2255,7 +2209,8 @@ execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
 	  else
 	    execute_sm_if_changed (ex, ref->mem.ref, aux->tmp_var,
 				   aux->store_flag,
-				   loop_preheader_edge (loop), &aux->flag_bbs);
+				   loop_preheader_edge (loop), &aux->flag_bbs,
+				   append_cond_position, last_cond_fallthru);
 	}
     }
 }
@@ -2647,14 +2602,21 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
   /* Materialize ordered store sequences on exits.  */
   FOR_EACH_VEC_ELT (exits, i, e)
     {
+      edge append_cond_position = NULL;
+      edge last_cond_fallthru = NULL;
       if (i < sms.length ())
 	{
 	  gcc_assert (sms[i].first == e);
-	  execute_sm_exit (loop, e, sms[i].second, aux_map, sm_ord);
+	  execute_sm_exit (loop, e, sms[i].second, aux_map, sm_ord,
+			   append_cond_position, last_cond_fallthru);
 	  sms[i].second.release ();
 	}
       if (!unord_refs.is_empty ())
-	execute_sm_exit (loop, e, unord_refs, aux_map, sm_unord);
+	execute_sm_exit (loop, e, unord_refs, aux_map, sm_unord,
+			 append_cond_position, last_cond_fallthru);
+      /* Commit edge inserts here to preserve the order of stores
+	 when an exit exits multiple loops.  */
+      gsi_commit_one_edge_insert (e, NULL);
     }
 
   for (hash_map<im_mem_ref *, sm_aux *>::iterator iter = aux_map.begin ();
@@ -2912,12 +2874,7 @@ store_motion_loop (class loop *loop, bitmap sm_executed)
     {
       find_refs_for_sm (loop, sm_executed, sm_in_loop);
       if (!bitmap_empty_p (sm_in_loop))
-	{
-	  hoist_memory_references (loop, sm_in_loop, exits);
-	  /* Commit edge inserts here to preserve the order of stores
-	     when an exit exits multiple loops.  */
-	  gsi_commit_edge_inserts ();
-	}
+	hoist_memory_references (loop, sm_in_loop, exits);
     }
   exits.release ();
 
@@ -3064,8 +3021,6 @@ tree_ssa_lim_initialize (void)
   if (flag_tm)
     compute_transaction_bits ();
 
-  alloc_aux_for_edges (0);
-
   memory_accesses.refs = new hash_table<mem_ref_hasher> (100);
   memory_accesses.refs_list.create (100);
   /* Allocate a special, unanalyzable mem-ref with ID zero.  */
@@ -3108,8 +3063,6 @@ tree_ssa_lim_finalize (void)
   unsigned i;
   im_mem_ref *ref;
 
-  free_aux_for_edges ();
-
   FOR_EACH_BB_FN (bb, cfun)
     SET_ALWAYS_EXECUTED_IN (bb, NULL);
 
@@ -3138,9 +3091,9 @@ tree_ssa_lim_finalize (void)
    i.e. those that are likely to be win regardless of the register pressure.  */
 
 static unsigned int
-tree_ssa_lim (void)
+tree_ssa_lim (function *fun)
 {
-  unsigned int todo;
+  unsigned int todo = 0;
 
   tree_ssa_lim_initialize ();
 
@@ -3150,17 +3103,27 @@ tree_ssa_lim (void)
   /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
   fill_always_executed_in ();
 
+  int *rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
-  invariantness_dom_walker (CDI_DOMINATORS)
-    .walk (cfun->cfg->x_entry_block_ptr);
+  for (int i = 0; i < n; ++i)
+    compute_invariantness (BASIC_BLOCK_FOR_FN (fun, rpo[i]));
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */
   do_store_motion ();
 
   /* Move the expressions that are expensive enough.  */
-  todo = move_computations ();
+  for (int i = 0; i < n; ++i)
+    todo |= move_computations_worker (BASIC_BLOCK_FOR_FN (fun, rpo[i]));
+
+  free (rpo);
+
+  gsi_commit_edge_inserts ();
+  if (need_ssa_update_p (fun))
+    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
   tree_ssa_lim_finalize ();
 
@@ -3207,7 +3170,7 @@ pass_lim::execute (function *fun)
 
   if (number_of_loops (fun) <= 1)
     return 0;
-  unsigned int todo = tree_ssa_lim ();
+  unsigned int todo = tree_ssa_lim (fun);
 
   if (!in_loop_pipeline)
     loop_optimizer_finalize ();
