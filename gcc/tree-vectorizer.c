@@ -1066,7 +1066,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
       return ret;
     }
 
-  if (!dbg_cnt (vect_loop))
+  /* Only count the original scalar loops.  */
+  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo) && !dbg_cnt (vect_loop))
     {
       /* Free existing information if loop is analyzed with some
 	 assumptions.  */
