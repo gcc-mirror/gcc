@@ -7734,11 +7734,6 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered)
     {
-      if (fd.non_rect
-	  && (gimple_omp_for_combined_into_p (fd.for_stmt)
-	      || gimple_omp_for_combined_p (fd.for_stmt)))
-	sorry_at (gimple_location (fd.for_stmt),
-		  "non-rectangular OpenMP loops not supported yet");
       if (fd.chunk_size == NULL)
 	expand_omp_for_static_nochunk (region, &fd, inner_stmt);
       else

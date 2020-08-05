@@ -3,6 +3,14 @@
 	Backport from mainline
 	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-expand.c (expand_omp_for): Don't disallow combined non-rectangular
+	loops.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* omp-expand.c (expand_omp_for_init_counts): Remember
 	first_inner_iterations, factor and n1o from the number of iterations
 	computation in *fd.
