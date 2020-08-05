@@ -187,7 +187,7 @@
 		   plus_constant (Pmode,
 				  XEXP (operands[1], 0),
 				  GET_MODE_SIZE (<DREG:MODE>mode)))"
-  "ldp\\t%d0, %d2, %1"
+  "ldp\\t%d0, %d2, %z1"
   [(set_attr "type" "neon_ldp")]
 )
 
@@ -201,7 +201,7 @@
 		   plus_constant (Pmode,
 				  XEXP (operands[0], 0),
 				  GET_MODE_SIZE (<DREG:MODE>mode)))"
-  "stp\\t%d1, %d3, %0"
+  "stp\\t%d1, %d3, %z0"
   [(set_attr "type" "neon_stp")]
 )
 
@@ -215,7 +215,7 @@
 		    plus_constant (Pmode,
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (<VQ:MODE>mode)))"
-  "ldp\\t%q0, %q2, %1"
+  "ldp\\t%q0, %q2, %z1"
   [(set_attr "type" "neon_ldp_q")]
 )
 
@@ -228,7 +228,7 @@
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
 			       GET_MODE_SIZE (<VQ:MODE>mode)))"
-  "stp\\t%q1, %q3, %0"
+  "stp\\t%q1, %q3, %z0"
   [(set_attr "type" "neon_stp_q")]
 )
 

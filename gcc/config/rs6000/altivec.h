@@ -703,6 +703,17 @@ __altivec_scalar_pred(vec_any_nle,
 /* Overloaded built-in functions for ISA 3.1.  */
 #define vec_extractl(a, b, c)	__builtin_vec_extractl (a, b, c)
 #define vec_extracth(a, b, c)	__builtin_vec_extracth (a, b, c)
+#define vec_insertl(a, b, c)   __builtin_vec_insertl (a, b, c)
+#define vec_inserth(a, b, c)   __builtin_vec_inserth (a, b, c)
+#define vec_replace_elt(a, b, c)       __builtin_vec_replace_elt (a, b, c)
+#define vec_replace_unaligned(a, b, c) __builtin_vec_replace_un (a, b, c)
+#define vec_sldb(a, b, c)      __builtin_vec_sldb (a, b, c)
+#define vec_srdb(a, b, c)      __builtin_vec_srdb (a, b, c)
+#define vec_splati(a)  __builtin_vec_xxspltiw (a)
+#define vec_splatid(a) __builtin_vec_xxspltid (a)
+#define vec_splati_ins(a, b, c)        __builtin_vec_xxsplti32dx (a, b, c)
+#define vec_blendv(a, b, c)    __builtin_vec_xxblend (a, b, c)
+#define vec_permx(a, b, c, d)  __builtin_vec_xxpermx (a, b, c, d)
 
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)

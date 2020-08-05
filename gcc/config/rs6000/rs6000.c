@@ -26806,6 +26806,28 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
   return NULL;
 }
 
+long long
+rs6000_const_f32_to_i32 (rtx operand)
+{
+  long long value;
+  const struct real_value *rv = CONST_DOUBLE_REAL_VALUE (operand);
+
+  gcc_assert (GET_MODE (operand) == SFmode);
+  REAL_VALUE_TO_TARGET_SINGLE (*rv, value);
+  return value;
+}
+
+void
+rs6000_emit_xxspltidp_v2df (rtx dst, long value)
+{
+  printf("rs6000_emit_xxspltidp_v2df called %ld\n", value);
+  printf("rs6000_emit_xxspltidp_v2df called 0x%lx\n", value);
+  if (((value & 0x7F800000) == 0) && ((value & 0x7FFFFF) != 0))
+    inform (input_location,
+	    "the result for the xxspltidp instruction is undefined for subnormal input values.\n");
+  emit_insn( gen_xxspltidp_v2df_inst (dst, GEN_INT (value)));
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

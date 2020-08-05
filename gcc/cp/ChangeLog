@@ -1,3 +1,27 @@
+2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96082
+	* parser.c (cp_parser_elaborated_type_specifier): Allow
+	'template' following ::.
+
+2020-08-04  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_explicit_specialization): Refactor
+	to avoid leak of num_template_parameter_lists value.
+
+2020-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94024
+	* init.c (sort_mem_initializers): Preserve TREE_TYPE of the
+	member initializer list node.
+	(emit_mem_initializers): Set input_location when performing each
+	member initialization.
+	* parser.c (cp_parser_mem_initializer): Attach the source
+	location of this initializer to a dummy EMPTY_CLASS_EXPR
+	within the TREE_TYPE of the list node.
+	* pt.c (tsubst_initializer_list): Preserve TREE_TYPE of the
+	member initializer list node.
+
 2020-08-03  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h (after_nsdmi_defaulted_late_checks): Remove.

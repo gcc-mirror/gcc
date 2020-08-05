@@ -11236,7 +11236,7 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple_seq par_rlist = NULL;
   lower_rec_input_clauses (clauses, &par_ilist, &par_olist, ctx, NULL);
   lower_omp (&par_body, ctx);
-  if (gimple_code (stmt) == GIMPLE_OMP_PARALLEL)
+  if (gimple_code (stmt) != GIMPLE_OMP_TASK)
     lower_reduction_clauses (clauses, &par_rlist, NULL, ctx);
 
   /* Declare all the variables created by mapping and the variables

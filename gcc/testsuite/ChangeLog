@@ -1,3 +1,93 @@
+2020-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/mul-hi.c: New test.
+	* gcc.target/nvptx/umul-hi.c: New test.
+
+2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96082
+	* g++.dg/template/template-keyword3.C: New test.
+
+2020-08-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/pr39425.C: Adjust errors, (unbounded
+	template recursion).
+	* g++.old-deja/g++.pt/spec20.C: Remove fallout diagnostics.
+
+2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/collapse1.f90: Add dg-error.
+	* gfortran.dg/gomp/collapse2.f90: New test.
+
+2020-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/60473
+	* gcc.target/i386/pr60473.c: New test.
+
+2020-08-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/95433
+	* gcc.c-torture/execute/pr23135.c: Add -fwrapv to avoid
+	undefined behavior.
+	* gcc.dg/tree-ssa/pr95433.c: New file.
+
+2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96153
+	* gdc.dg/pr96153.d: New test.
+
+2020-08-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94024
+	* g++.dg/diagnostic/mem-init1.C: New test.
+
+2020-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88240
+	* gcc.target/i386/pr88240.c: New testcase.
+
+2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/lastprivate-conditional-3.f90: Enable some
+	previously disabled 'lastprivate(conditional:' dg-warnings.
+
+2020-08-04  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/cpymem-q-reg_1.c: New test.
+	* gcc.target/aarch64/large_struct_copy_2.c: Update for ldp q regs.
+
+2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/acle/jcvt_2.c: New testcase.
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_fjcvtzs_hw): Add new check for
+	FJCVTZS hw.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96426
+	* gcc.c-torture/compile/pr96426.c: New test.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96354
+	* g++.dg/opt/pr96354.C: New test.
+
+2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96429
+	* gdc.dg/pr96429.d: New test.
+
+2020-08-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96325
+	* gfortran.dg/pr96325.f90: Change from run to compile.
+
+2020-08-04  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR rtl-optimization/71309
+	* gcc.target/powerpc/pr71309.c: New test.
+
 2020-08-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/vector_float.c: Skip if not lp64.

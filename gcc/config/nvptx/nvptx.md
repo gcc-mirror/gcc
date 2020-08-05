@@ -568,6 +568,54 @@
   ""
   "%.\\tmul.wide.u32\\t%0, %1, %2;")
 
+(define_insn "smulhi3_highpart"
+  [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
+	(truncate:HI
+	 (lshiftrt:SI
+	  (mult:SI (sign_extend:SI
+		    (match_operand:HI 1 "nvptx_register_operand" "R"))
+		   (sign_extend:SI
+		    (match_operand:HI 2 "nvptx_register_operand" "R")))
+	  (const_int 16))))]
+  ""
+  "%.\\tmul.hi.s16\\t%0, %1, %2;")
+
+(define_insn "smulsi3_highpart"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (sign_extend:DI
+		    (match_operand:SI 1 "nvptx_register_operand" "R"))
+		   (sign_extend:DI
+		    (match_operand:SI 2 "nvptx_register_operand" "R")))
+	  (const_int 32))))]
+  ""
+  "%.\\tmul.hi.s32\\t%0, %1, %2;")
+
+(define_insn "umulhi3_highpart"
+  [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
+	(truncate:HI
+	 (lshiftrt:SI
+	  (mult:SI (zero_extend:SI
+		    (match_operand:HI 1 "nvptx_register_operand" "R"))
+		   (zero_extend:SI
+		    (match_operand:HI 2 "nvptx_register_operand" "R")))
+	  (const_int 16))))]
+  ""
+  "%.\\tmul.hi.u16\\t%0, %1, %2;")
+
+(define_insn "umulsi3_highpart"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (zero_extend:DI
+		    (match_operand:SI 1 "nvptx_register_operand" "R"))
+		   (zero_extend:DI
+		    (match_operand:SI 2 "nvptx_register_operand" "R")))
+	  (const_int 32))))]
+  ""
+  "%.\\tmul.hi.u32\\t%0, %1, %2;")
+
 ;; Shifts
 
 (define_insn "ashl<mode>3"

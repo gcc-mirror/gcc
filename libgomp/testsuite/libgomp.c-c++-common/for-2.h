@@ -14,6 +14,9 @@ noreturn (void)
 #ifndef OMPTGT
 #define OMPTGT
 #endif
+#ifndef OMPTEAMS
+#define OMPTEAMS
+#endif
 #ifndef OMPTO
 #define OMPTO(v) do {} while (0)
 #endif
@@ -214,31 +217,37 @@ N(test) (void)
   for (i = 0; i < 1500; i++)
     a[i] = i - 25;
   OMPTO (a);
+  OMPTEAMS
   N(f0) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 23)
       return 1;
+  OMPTEAMS
   N(f1) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 25)
       return 1;
+  OMPTEAMS
   N(f2) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 29)
       return 1;
+  OMPTEAMS
   N(f3) (1500LL - 1 - 23 - 48, -1LL + 25 - 48, 1LL);
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 22)
       return 1;
+  OMPTEAMS
   N(f3) (1500LL - 1 - 23 - 48, 1500LL - 1, 7LL);
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 22)
       return 1;
+  OMPTEAMS
   N(f4) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
@@ -249,6 +258,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	b[i][j][k] = i - 2.5 + 1.5 * j - 1.5 * k;
   OMPTO (b);
+  OMPTEAMS
   N(f5) (0, 10, 0, 15, 0, 10, 1, 1, 1);
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -256,6 +266,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f5) (0, 10, 30, 15, 0, 10, 4, 5, 6);
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -263,6 +274,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f6) (9, -1, 29, 0, 9, -1, -1, -2, -1);
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -270,6 +282,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i - 4.5 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f7) ();
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -277,6 +290,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f8) ();	  
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -284,9 +298,13 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f9) ();
+  OMPTEAMS
   N(f10) ();
+  OMPTEAMS
   N(f11) (10);
+  OMPTEAMS
   N(f12) (12);
   OMPFROM (a);
   OMPFROM (b);
@@ -298,7 +316,9 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f13) ();
+  OMPTEAMS
   N(f14) ();
   OMPFROM (a);
   OMPFROM (b);
@@ -507,26 +527,31 @@ N(test) (void)
   for (i = 0; i < 1500; i++)
     a[i] = i - 25;
   OMPTO (a);
+  OMPTEAMS
   N(f20) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 23)
       return 1;
+  OMPTEAMS
   N(f21) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 25)
       return 1;
+  OMPTEAMS
   N(f22) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 29)
       return 1;
+  OMPTEAMS
   N(f23) (1500LL - 1 - 23 - 48, -1LL + 25 - 48);
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
     if (a[i] != i - 22)
       return 1;
+  OMPTEAMS
   N(f24) ();
   OMPFROM (a);
   for (i = 0; i < 1500; i++)
@@ -537,6 +562,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	b[i][j][k] = i - 2.5 + 1.5 * j - 1.5 * k;
   OMPTO (b);
+  OMPTEAMS
   N(f25) (0, 10, 0, 15, 0, 10, 1);
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -544,6 +570,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f25) (0, 10, 30, 15, 0, 10, 5);
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -551,6 +578,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f26) (9, -1, 29, 0, 9, -1, -2);
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -558,6 +586,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i - 4.5 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f27) ();
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -565,6 +594,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f28) ();
   OMPFROM (b);
   for (i = 0; i < 10; i++)
@@ -572,9 +602,13 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f29) ();
+  OMPTEAMS
   N(f30) ();
+  OMPTEAMS
   N(f31) (20);
+  OMPTEAMS
   N(f32) (12);
   OMPFROM (a);
   OMPFROM (b);
@@ -586,7 +620,9 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
+  OMPTEAMS
   N(f33) ();
+  OMPTEAMS
   N(f34) ();
   OMPFROM (a);
   OMPFROM (b);
