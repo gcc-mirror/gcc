@@ -1,6 +1,18 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for_init_counts): Remember
+	first_inner_iterations, factor and n1o from the number of iterations
+	computation in *fd.
+	(expand_omp_for_init_vars): Use more efficient logical iteration number
+	to actual iterator values computation even for non-rectangular loops
+	where number of loop iterations could not be computed at compile time.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-expand.c (expand_omp_for_init_counts): For triangular loops

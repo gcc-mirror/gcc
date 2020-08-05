@@ -2234,6 +2234,13 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  set_immediate_dominator (CDI_DOMINATORS, bb3, bb1);
 	  set_immediate_dominator (CDI_DOMINATORS, bb5, bb2);
 	  set_immediate_dominator (CDI_DOMINATORS, entry_bb, bb1);
+
+	  if (fd->first_nonrect + 1 == fd->last_nonrect)
+	    {
+	      fd->first_inner_iterations = first_inner_iterations;
+	      fd->factor = factor;
+	      fd->adjn1 = n1o;
+	    }
 	}
       else
 	{
@@ -2522,8 +2529,11 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 				   build_zero_cst (type), true);
 	  basic_block bb_triang = NULL, bb_triang_dom = NULL;
 	  if (fd->first_nonrect + 1 == fd->last_nonrect
-	      /* For now.  */
-	      && TREE_CODE (fd->loop.n2) == INTEGER_CST
+	      && (TREE_CODE (fd->loop.n2) == INTEGER_CST
+		  || (fd->first_inner_iterations
+		      /* For now.  Later add clauses to propagate the
+			 values.  */
+		      && !gimple_omp_for_combined_into_p (fd->for_stmt)))
 	      && (optab_handler (sqrt_optab, TYPE_MODE (double_type_node))
 		  != CODE_FOR_nothing))
 	    {
@@ -2620,14 +2630,19 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 			       build_one_cst (ulltype));
 	      t = fold_build2 (MULT_EXPR, ulltype, c, t);
 	      t = fold_build2 (RSHIFT_EXPR, ulltype, t, integer_one_node);
-	      t = fold_build2 (MULT_EXPR, ulltype, fd->factor, t);
-	      tree t2 = fold_build2 (MULT_EXPR, ulltype, c,
-				     fd->first_inner_iterations);
+	      t = fold_build2 (MULT_EXPR, ulltype,
+			       fold_convert (ulltype, fd->factor), t);
+	      tree t2
+		= fold_build2 (MULT_EXPR, ulltype, c,
+			       fold_convert (ulltype,
+					     fd->first_inner_iterations));
 	      t = fold_build2 (PLUS_EXPR, ulltype, t, t2);
 	      expand_omp_build_assign (gsi, d, t, true);
-	      t = fold_build2 (MULT_EXPR, ulltype, fd->factor, c);
+	      t = fold_build2 (MULT_EXPR, ulltype,
+			       fold_convert (ulltype, fd->factor), c);
 	      t = fold_build2 (PLUS_EXPR, ulltype,
-			       t, fd->first_inner_iterations);
+			       t, fold_convert (ulltype,
+						fd->first_inner_iterations));
 	      t2 = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, false,
 					     GSI_CONTINUE_LINKING);
 	      cond_stmt = gimple_build_cond (GE_EXPR, stopvalull, d,
