@@ -4960,6 +4960,18 @@ package body Exp_Ch9 is
 
       if No (Chain) or else Is_Ignored_Ghost_Entity (Chain) then
          return;
+
+      --  The availability of the activation chain entity does not ensure
+      --  that we have tasks to activate because it may have been declared
+      --  by the frontend to pass a required extra formal to a build-in-place
+      --  subprogram call. If we are within the scope of a protected type and
+      --  pragma Detect_Blocking is active we can assume that no tasks will be
+      --  activated; if tasks are created in a protected object and this pragma
+      --  is active then the frontend emits a warning and Program_Error is
+      --  raised at runtime.
+
+      elsif Detect_Blocking and then Within_Protected_Type (Current_Scope) then
+         return;
       end if;
 
       --  The location of the activation call must be as close as possible to
