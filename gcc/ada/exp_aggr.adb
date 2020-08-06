@@ -2334,7 +2334,7 @@ package body Exp_Aggr is
             Sort_Case_Table (Table);
          end if;
 
-         --  STEP 1 (b):  take care of the whole set of discrete choices
+         --  STEP 1 (b): take care of the whole set of discrete choices
 
          for J in 1 .. Nb_Choices loop
             Low  := Table (J).Choice_Lo;
@@ -6755,15 +6755,16 @@ package body Exp_Aggr is
    ------------------------
 
    procedure Expand_N_Aggregate (N : Node_Id) is
+      T : constant Entity_Id := Etype (N);
    begin
       --  Record aggregate case
 
-      if Is_Record_Type (Etype (N))
-        and then not Is_Private_Type (Etype (N))
+      if Is_Record_Type (T)
+        and then not Is_Private_Type (T)
       then
          Expand_Record_Aggregate (N);
 
-      elsif Has_Aspect (Etype (N), Aspect_Aggregate) then
+      elsif Has_Aspect (T, Aspect_Aggregate) then
          Expand_Container_Aggregate (N);
 
       --  Array aggregate case
@@ -6811,11 +6812,10 @@ package body Exp_Aggr is
                  and then No (Expressions (N))
                then
                   declare
-                     T  : constant Entity_Id := Etype (N);
-                     X  : constant Node_Id   := First_Index (T);
-                     EC : constant Node_Id   := Expression (CA);
-                     CV : constant Uint      := Char_Literal_Value (EC);
-                     CC : constant Int       := UI_To_Int (CV);
+                     X  : constant Node_Id := First_Index (T);
+                     EC : constant Node_Id := Expression (CA);
+                     CV : constant Uint    := Char_Literal_Value (EC);
+                     CC : constant Int     := UI_To_Int (CV);
 
                   begin
                      if Nkind (X) = N_Range
