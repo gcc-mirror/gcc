@@ -1,3 +1,8 @@
+2020-08-06  Giuliano Belinasssi <giuliano.belinassi@usp.br>
+
+	* symtab.c (change_decl_assembler_name): Remove RTL output if
+	assember name is changed afterward.
+
 2020-07-31  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* Makefile.in: Use `+' on rule calling GCC
