@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *bpf_sock;
   int argval;
   
-  ret = __builtin_bpf_helper_sock_ops_cb_flags_set (bpf_sock,
+  ret = bpf_sock_ops_cb_flags_set (bpf_sock,
 						    argval);
 }
 

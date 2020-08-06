@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *skb;
   uint32_t offset, delta;
   
-  ret = __builtin_bpf_helper_lwt_seg6_adjust_srh (skb, offset,
+  ret = bpf_lwt_seg6_adjust_srh (skb, offset,
 						  delta);
 }
 

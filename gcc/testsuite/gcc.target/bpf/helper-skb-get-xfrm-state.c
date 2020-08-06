@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,8 +12,8 @@ foo ()
   uint32_t index, size;
   uint64_t flags;
 
-  ret = __builtin_bpf_helper_skb_get_xfrm_state (skb, index,
-						 xfrm_state, size, flags);
+  ret = bpf_skb_get_xfrm_state (skb, index,
+				xfrm_state, size, flags);
 }
 
 /* { dg-final { scan-assembler "call\t66" } } */

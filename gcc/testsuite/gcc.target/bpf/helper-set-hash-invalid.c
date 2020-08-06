@@ -1,13 +1,15 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
 {
   void *skb;
 
-  __builtin_bpf_helper_set_hash_invalid (skb);
+  bpf_set_hash_invalid (skb);
 }
 
 /* { dg-final { scan-assembler "call\t41" } } */

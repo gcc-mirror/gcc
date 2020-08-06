@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   void *dst;
   const void *unsafe_ptr;
   
-  ret = __builtin_bpf_helper_probe_read_str (dst, size, unsafe_ptr);
+  ret = bpf_probe_read_str (dst, size, unsafe_ptr);
 }
 
 /* { dg-final { scan-assembler "call\t45" } } */

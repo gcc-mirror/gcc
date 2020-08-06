@@ -1,7 +1,9 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
 #include <stddef.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -12,7 +14,7 @@ foo ()
   uint64_t flags;
   size_t buf_len;
   
-  ret = __builtin_bpf_helper_strtol (buf, buf_len, flags, &res);
+  ret = bpf_strtol (buf, buf_len, flags, &res);
 }
 
 /* { dg-final { scan-assembler "call\t105" } } */

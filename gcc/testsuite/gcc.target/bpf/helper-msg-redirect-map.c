@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   uint64_t key;
   uint64_t flags;
   
-  ret = __builtin_bpf_helper_msg_redirect_map (msg, map, key,
+  ret = bpf_msg_redirect_map (msg, map, key,
 					       flags);
 }
 
