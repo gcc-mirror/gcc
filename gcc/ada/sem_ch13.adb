@@ -4159,7 +4159,7 @@ package body Sem_Ch13 is
                when Aspect_Aggregate =>
                   Validate_Aspect_Aggregate (Expr);
                   Record_Rep_Item (E, Aspect);
-                  return;
+                  goto Continue;
 
                when Aspect_Integer_Literal
                   | Aspect_Real_Literal
@@ -4751,9 +4751,39 @@ package body Sem_Ch13 is
                Insert_After (Ins_Node, Aitem);
                Ins_Node := Aitem;
             end if;
+
+            <<Continue>>
+
+            --  If a nonoverridable aspect is explicitly specified for a
+            --  derived type, then check consistency with the parent type.
+
+            if A_Id in Nonoverridable_Aspect_Id
+              and then Nkind (N) = N_Full_Type_Declaration
+              and then Nkind (Type_Definition (N)) = N_Derived_Type_Definition
+              and then not In_Instance_Body
+            then
+               declare
+                  Parent_Type      : constant Entity_Id := Etype (E);
+                  Inherited_Aspect : constant Node_Id :=
+                    Find_Aspect (Parent_Type, A_Id);
+               begin
+                  if Present (Inherited_Aspect)
+                    and then not Is_Confirming
+                                   (A_Id, Inherited_Aspect, Aspect)
+                  then
+                     Error_Msg_Name_1 := Aspect_Names (A_Id);
+                     Error_Msg_Sloc := Sloc (Inherited_Aspect);
+
+                     Error_Msg
+                       ("overriding aspect specification for "
+                          & "nonoverridable aspect % does not confirm "
+                          & "aspect specification inherited from #",
+                        Sloc (Aspect));
+                  end if;
+               end;
+            end if;
          end Analyze_One_Aspect;
 
-      <<Continue>>
          Next (Aspect);
       end loop Aspect_Loop;
 

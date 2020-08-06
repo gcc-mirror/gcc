@@ -3532,6 +3532,14 @@ package body Sem_Ch9 is
 
             Next (Iface);
          end loop;
+
+         --  Check consistency of any nonoverridable aspects that are
+         --  inherited from multiple sources.
+
+         Check_Inherited_Nonoverridable_Aspects
+           (Inheritor      => N,
+            Interface_List => Interface_List (N),
+            Parent_Type    => Empty);
       end if;
 
       if not Has_Private_Declaration (T) then

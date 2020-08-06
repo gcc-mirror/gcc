@@ -25,7 +25,6 @@
 
 with Treepr; -- ???For debugging code below
 
-with Aspects;  use Aspects;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -53,6 +52,7 @@ with Sem_Attr; use Sem_Attr;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
@@ -4141,6 +4141,132 @@ package body Sem_Util is
          Error_Msg_NE ("\package & has null abstract state", Id, Context);
       end if;
    end Check_No_Hidden_State;
+
+   ---------------------------------------------
+   -- Check_Nonoverridable_Aspect_Consistency --
+   ---------------------------------------------
+
+   procedure Check_Inherited_Nonoverridable_Aspects
+     (Inheritor      : Entity_Id;
+      Interface_List : List_Id;
+      Parent_Type    : Entity_Id) is
+
+      --  array needed for iterating over subtype values
+      Nonoverridable_Aspects : constant array (Positive range <>) of
+        Nonoverridable_Aspect_Id :=
+          (Aspect_Default_Iterator,
+           Aspect_Iterator_Element,
+           Aspect_Implicit_Dereference,
+           Aspect_Constant_Indexing,
+           Aspect_Variable_Indexing,
+           Aspect_Aggregate,
+           Aspect_Max_Entry_Queue_Length
+           --  , Aspect_No_Controlled_Parts
+          );
+
+      --  Note that none of these 8 aspects can be specified (for a type)
+      --  via a pragma. For 7 of them, the corresponding pragma does not
+      --  exist. The Pragma_Id enumeration type does include
+      --  Pragma_Max_Entry_Queue_Length, but that pragma is only use to
+      --  specify the aspect for a protected entry or entry family, not for
+      --  a type, and therefore cannot introduce the sorts of inheritance
+      --  issues that we are concerned with in this procedure.
+
+      type Entity_Array is array (Nat range <>) of Entity_Id;
+
+      function Ancestor_Entities return Entity_Array;
+      --  Returns all progenitors (including parent type, if present)
+
+      procedure Check_Consistency_For_One_Aspect_Of_Two_Ancestors
+        (Aspect        : Nonoverridable_Aspect_Id;
+         Ancestor_1    : Entity_Id;
+         Aspect_Spec_1 : Node_Id;
+         Ancestor_2    : Entity_Id;
+         Aspect_Spec_2 : Node_Id);
+      --  A given aspect has been specified for each of two ancestors;
+      --  check that the two aspect specifications are compatible (see
+      --  RM 13.1.1(18.5) and AI12-0211).
+
+      -----------------------
+      -- Ancestor_Entities --
+      -----------------------
+
+      function Ancestor_Entities return Entity_Array is
+         Ifc_Count : constant Nat := List_Length (Interface_List);
+         Ifc_Ancestors : Entity_Array (1 .. Ifc_Count);
+         Ifc : Node_Id := First (Interface_List);
+      begin
+         for Idx in Ifc_Ancestors'Range loop
+            Ifc_Ancestors (Idx) := Entity (Ifc);
+            pragma Assert (Present (Ifc_Ancestors (Idx)));
+            Ifc := Next (Ifc);
+         end loop;
+         pragma Assert (not Present (Ifc));
+         if Present (Parent_Type) then
+            return Parent_Type & Ifc_Ancestors;
+         else
+            return Ifc_Ancestors;
+         end if;
+      end Ancestor_Entities;
+
+      -------------------------------------------------------
+      -- Check_Consistency_For_One_Aspect_Of_Two_Ancestors --
+      -------------------------------------------------------
+
+      procedure Check_Consistency_For_One_Aspect_Of_Two_Ancestors
+        (Aspect        : Nonoverridable_Aspect_Id;
+         Ancestor_1    : Entity_Id;
+         Aspect_Spec_1 : Node_Id;
+         Ancestor_2    : Entity_Id;
+         Aspect_Spec_2 : Node_Id) is
+      begin
+         if not Is_Confirming (Aspect, Aspect_Spec_1, Aspect_Spec_2) then
+            Error_Msg_Name_1 := Aspect_Names (Aspect);
+            Error_Msg_Name_2 := Chars (Ancestor_1);
+            Error_Msg_Name_3 := Chars (Ancestor_2);
+
+            Error_Msg (
+              "incompatible % aspects inherited from ancestors % and %",
+              Sloc (Inheritor));
+         end if;
+      end Check_Consistency_For_One_Aspect_Of_Two_Ancestors;
+
+      Ancestors : constant Entity_Array := Ancestor_Entities;
+
+      --  start of processing for Check_Inherited_Nonoverridable_Aspects
+   begin
+      --  No Ada_Version check here; AI12-0211 is a binding interpretation.
+
+      if Ancestors'Length < 2 then
+         return; --  Inconsistency impossible; it takes 2 to disagree.
+      elsif In_Instance_Body then
+         return;  -- No legality checking in an instance body.
+      end if;
+
+      for Aspect of Nonoverridable_Aspects loop
+         declare
+            First_Ancestor_With_Aspect : Entity_Id := Empty;
+            First_Aspect_Spec, Current_Aspect_Spec : Node_Id := Empty;
+         begin
+            for Ancestor of Ancestors loop
+               Current_Aspect_Spec := Find_Aspect (Ancestor, Aspect);
+               if Present (Current_Aspect_Spec) then
+                  if Present (First_Ancestor_With_Aspect) then
+                     Check_Consistency_For_One_Aspect_Of_Two_Ancestors
+                       (Aspect        => Aspect,
+                        Ancestor_1    => First_Ancestor_With_Aspect,
+                        Aspect_Spec_1 => First_Aspect_Spec,
+                        Ancestor_2    => Ancestor,
+                        Aspect_Spec_2 => Current_Aspect_Spec);
+                  else
+                     First_Ancestor_With_Aspect := Ancestor;
+                     First_Aspect_Spec := Current_Aspect_Spec;
+                  end if;
+               end if;
+            end loop;
+         end;
+      end loop;
+   end Check_Inherited_Nonoverridable_Aspects;
 
    ----------------------------------------
    -- Check_Nonvolatile_Function_Profile --
@@ -15264,6 +15390,120 @@ package body Sem_Util is
 
       return False;
    end Is_Child_Or_Sibling;
+
+   -------------------
+   -- Is_Confirming --
+   -------------------
+
+   function Is_Confirming (Aspect : Nonoverridable_Aspect_Id;
+                           Aspect_Spec_1, Aspect_Spec_2 : Node_Id)
+                          return Boolean is
+      function Names_Match (Nm1, Nm2 : Node_Id) return Boolean;
+      function Names_Match (Nm1, Nm2 : Node_Id) return Boolean is
+      begin
+         if Nkind (Nm1) /= Nkind (Nm2) then
+            return False;
+         end if;
+         case Nkind (Nm1) is
+            when N_Identifier =>
+               return Name_Equals (Chars (Nm1), Chars (Nm2));
+            when N_Expanded_Name =>
+               return Names_Match (Prefix (Nm1), Prefix (Nm2))
+                 and then Names_Match (Selector_Name (Nm1),
+                                       Selector_Name (Nm2));
+            when N_Empty =>
+               return True; -- needed for Aggregate aspect checking
+
+            when others =>
+               --  e.g., 'Class attribute references
+               if Is_Entity_Name (Nm1) and Is_Entity_Name (Nm2) then
+                  return Entity (Nm1) = Entity (Nm2);
+               end if;
+
+               raise Program_Error;
+         end case;
+      end Names_Match;
+   begin
+      --  allow users to disable "shall be confirming" check, at least for now
+      if Relaxed_RM_Semantics then
+         return True;
+      end if;
+
+      --  ??? Type conversion here (along with "when others =>" below) is a
+      --  workaround for a bootstrapping problem related to casing on a
+      --  static-predicate-bearing subtype.
+
+      case Aspect_Id (Aspect) is
+         --  name-valued aspects; compare text of names, not resolution.
+         when Aspect_Default_Iterator
+            | Aspect_Iterator_Element
+            | Aspect_Constant_Indexing
+            | Aspect_Variable_Indexing
+            | Aspect_Implicit_Dereference =>
+            declare
+               Item_1 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_1);
+               Item_2 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_2);
+            begin
+               if (Nkind (Item_1) /= N_Attribute_Definition_Clause)
+                 or (Nkind (Item_2) /= N_Attribute_Definition_Clause)
+               then
+                  pragma Assert (Serious_Errors_Detected > 0);
+                  return True;
+               end if;
+
+               return Names_Match (Expression (Item_1),
+                                   Expression (Item_2));
+            end;
+
+         --  one of a kind
+         when Aspect_Aggregate =>
+            declare
+               Empty_1,
+               Add_Named_1,
+               Add_Unnamed_1,
+               New_Indexed_1,
+               Assign_Indexed_1,
+               Empty_2,
+               Add_Named_2,
+               Add_Unnamed_2,
+               New_Indexed_2,
+               Assign_Indexed_2 : Node_Id := Empty;
+            begin
+               Parse_Aspect_Aggregate
+                 (N                   => Expression (Aspect_Spec_1),
+                  Empty_Subp          => Empty_1,
+                  Add_Named_Subp      => Add_Named_1,
+                  Add_Unnamed_Subp    => Add_Unnamed_1,
+                  New_Indexed_Subp    => New_Indexed_1,
+                  Assign_Indexed_Subp => Assign_Indexed_1);
+               Parse_Aspect_Aggregate
+                 (N                   => Expression (Aspect_Spec_2),
+                  Empty_Subp          => Empty_2,
+                  Add_Named_Subp      => Add_Named_2,
+                  Add_Unnamed_Subp    => Add_Unnamed_2,
+                  New_Indexed_Subp    => New_Indexed_2,
+                  Assign_Indexed_Subp => Assign_Indexed_2);
+               return
+                 Names_Match (Empty_1, Empty_2) and then
+                 Names_Match (Add_Named_1, Add_Named_2) and then
+                 Names_Match (Add_Unnamed_1, Add_Unnamed_2) and then
+                 Names_Match (New_Indexed_1, New_Indexed_2) and then
+                 Names_Match (Assign_Indexed_1, Assign_Indexed_2);
+            end;
+
+         --  scalar-valued aspects; compare (static) values.
+         when Aspect_Max_Entry_Queue_Length --  | Aspect_No_Controlled_Parts
+              =>
+            --  This should be unreachable. No_Controlled_Parts is
+            --  not yet supported at all in GNAT and Max_Entry_Queue_Length
+            --  is supported only for protected entries, not for types.
+            pragma Assert (Serious_Errors_Detected /= 0);
+            return True;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Is_Confirming;
 
    -----------------------------
    -- Is_Concurrent_Interface --

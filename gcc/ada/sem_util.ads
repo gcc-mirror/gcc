@@ -25,6 +25,7 @@
 
 --  Package containing utility procedures used throughout the semantics
 
+with Aspects; use Aspects;
 with Atree;   use Atree;
 with Einfo;   use Einfo;
 with Exp_Tss; use Exp_Tss;
@@ -412,6 +413,17 @@ package Sem_Util is
    procedure Check_No_Hidden_State (Id : Entity_Id);
    --  Determine whether object or state Id introduces a hidden state. If this
    --  is the case, emit an error.
+
+   procedure Check_Inherited_Nonoverridable_Aspects
+     (Inheritor      : Entity_Id;
+      Interface_List : List_Id;
+      Parent_Type    : Entity_Id);
+   --  Verify consistency of inherited nonoverridable aspects
+   --  when aspects are inherited from more than one source.
+   --  Parent_Type may be void (e.g., for a tagged task/protected type
+   --  whose declaration includes a non-empty interface list).
+   --  In the error case, error message is associate with Inheritor;
+   --  Inheritor parameter is otherwise unused.
 
    procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id);
    --  Verify that the profile of nonvolatile function Func_Id does not contain
@@ -1684,6 +1696,12 @@ package Sem_Util is
    function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes a procedure with synchronization
    --  kind By_Protected_Procedure.
+
+   function Is_Confirming (Aspect : Nonoverridable_Aspect_Id;
+                           Aspect_Spec_1, Aspect_Spec_2 : Node_Id)
+                          return Boolean;
+   --  Returns true if the two specifications of the given
+   --  nonoverridable aspect are compatible.
 
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the

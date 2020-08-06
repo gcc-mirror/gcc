@@ -229,6 +229,16 @@ package Aspects is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
    --  Aspect_Id's excluding No_Aspect
 
+   subtype Nonoverridable_Aspect_Id is Aspect_Id with
+     Static_Predicate => Nonoverridable_Aspect_Id in
+       Aspect_Default_Iterator | Aspect_Iterator_Element |
+       Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
+       Aspect_Variable_Indexing | Aspect_Aggregate |
+       Aspect_Max_Entry_Queue_Length
+       --  | Aspect_No_Controlled_Parts
+       --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
+       ;  --  see RM 13.1.1(18.7)
+
    --  The following array indicates aspects that accept 'Class
 
    Class_Aspect_OK : constant array (Aspect_Id) of Boolean :=
