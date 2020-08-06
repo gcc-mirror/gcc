@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-Os" } */
 
 #define max(a,b) (((a) > (b))? (a) : (b))
