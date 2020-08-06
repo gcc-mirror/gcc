@@ -503,7 +503,8 @@ sink_common_stores_to_bb (basic_block bb)
 	      tree arg = gimple_phi_arg_def (phi, i);
 	      gimple *def = SSA_NAME_DEF_STMT (arg);
 	      if (! is_gimple_assign (def)
-		  || stmt_can_throw_internal (cfun, def))
+		  || stmt_can_throw_internal (cfun, def)
+		  || (gimple_phi_arg_edge (phi, i)->flags & EDGE_ABNORMAL))
 		{
 		  /* ???  We could handle some cascading with the def being
 		     another PHI.  We'd have to insert multiple PHIs for
