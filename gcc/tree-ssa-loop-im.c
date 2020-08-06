@@ -2868,7 +2868,7 @@ loop_suitable_for_sm (class loop *loop ATTRIBUTE_UNUSED,
 static void
 store_motion_loop (class loop *loop, bitmap sm_executed)
 {
-  vec<edge> exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
   class loop *subloop;
   bitmap sm_in_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
 
@@ -2878,7 +2878,6 @@ store_motion_loop (class loop *loop, bitmap sm_executed)
       if (!bitmap_empty_p (sm_in_loop))
 	hoist_memory_references (loop, sm_in_loop, exits);
     }
-  exits.release ();
 
   bitmap_ior_into (sm_executed, sm_in_loop);
   for (subloop = loop->inner; subloop != NULL; subloop = subloop->next)

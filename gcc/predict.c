@@ -1916,7 +1916,6 @@ predict_loops (void)
     {
       basic_block bb, *bbs;
       unsigned j, n_exits = 0;
-      vec<edge> exits;
       class tree_niter_desc niter_desc;
       edge ex;
       class nb_iter_bound *nb_iter;
@@ -1927,15 +1926,12 @@ predict_loops (void)
       gcond *stmt = NULL;
       bool recursion = with_recursion.contains (loop);
 
-      exits = get_loop_exit_edges (loop);
+      auto_vec<edge> exits = get_loop_exit_edges (loop);
       FOR_EACH_VEC_ELT (exits, j, ex)
 	if (!unlikely_executed_edge_p (ex) && !(ex->flags & EDGE_ABNORMAL_CALL))
 	  n_exits ++;
       if (!n_exits)
-	{
-          exits.release ();
-	  continue;
-	}
+	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Predicting loop %i%s with %i exits.\n",
@@ -2049,7 +2045,6 @@ predict_loops (void)
 	  probability = RDIV (REG_BR_PROB_BASE, nitercst);
 	  predict_edge (ex, predictor, probability);
 	}
-      exits.release ();
 
       /* Find information about loop bound variables.  */
       for (nb_iter = loop->bounds; nb_iter;

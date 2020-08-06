@@ -444,7 +444,6 @@ estimated_unrolled_size (struct loop_size *size,
 static edge
 loop_edge_to_cancel (class loop *loop)
 {
-  vec<edge> exits;
   unsigned i;
   edge edge_to_cancel;
   gimple_stmt_iterator gsi;
@@ -453,7 +452,7 @@ loop_edge_to_cancel (class loop *loop)
   if (EDGE_COUNT (loop->latch->preds) > 1)
     return NULL;
 
-  exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
 
   FOR_EACH_VEC_ELT (exits, i, edge_to_cancel)
     {
@@ -477,8 +476,6 @@ loop_edge_to_cancel (class loop *loop)
       if (edge_to_cancel->dest != loop->latch)
         continue;
 
-      exits.release ();
-
       /* Verify that the code in loop latch does nothing that may end program
          execution without really reaching the exit.  This may include
 	 non-pure/const function calls, EH statements, volatile ASMs etc.  */
@@ -487,7 +484,6 @@ loop_edge_to_cancel (class loop *loop)
 	   return NULL;
       return edge_to_cancel;
     }
-  exits.release ();
   return NULL;
 }
 
@@ -1222,10 +1218,9 @@ canonicalize_loop_induction_variables (class loop *loop,
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     {
-      vec<edge> exits = get_loop_exit_edges  (loop);
+      auto_vec<edge> exits = get_loop_exit_edges  (loop);
       record_niter_bound (loop, wi::to_widest (niter),
 			  exit == single_likely_exit (loop, exits), true);
-      exits.release ();
     }
 
   /* Force re-computation of loop bounds so we can remove redundant exits.  */

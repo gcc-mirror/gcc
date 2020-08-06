@@ -737,13 +737,12 @@ static basic_block
 last_always_executed_block (class loop *loop)
 {
   unsigned i;
-  vec<edge> exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
   edge ex;
   basic_block last = loop->latch;
 
   FOR_EACH_VEC_ELT (exits, i, ex)
     last = nearest_common_dominator (CDI_DOMINATORS, last, ex->src);
-  exits.release ();
 
   return last;
 }

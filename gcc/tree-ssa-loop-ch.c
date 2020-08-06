@@ -504,14 +504,13 @@ ch_base::copy_headers (function *fun)
 	{
 	  edge entry = copied[i].first;
 	  loop_p loop = copied[i].second;
-	  vec<edge> exit_edges = get_loop_exit_edges (loop);
+	  auto_vec<edge> exit_edges = get_loop_exit_edges (loop);
 	  bitmap exit_bbs = BITMAP_ALLOC (NULL);
 	  for (unsigned j = 0; j < exit_edges.length (); ++j)
 	    bitmap_set_bit (exit_bbs, exit_edges[j]->dest->index);
 	  bitmap_set_bit (exit_bbs, loop->header->index);
 	  do_rpo_vn (cfun, entry, exit_bbs);
 	  BITMAP_FREE (exit_bbs);
-	  exit_edges.release ();
 	}
     }
   free (bbs);

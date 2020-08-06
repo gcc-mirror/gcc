@@ -2808,7 +2808,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
       scev_initialize ();
       FOR_EACH_LOOP (loop, 0)
 	{
-	  vec<edge> exits;
 	  edge ex;
 	  unsigned int j;
 	  class tree_niter_desc niter_desc;
@@ -2817,7 +2816,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  else
 	    bb_predicate = false;
 
-	  exits = get_loop_exit_edges (loop);
+	  auto_vec<edge> exits = get_loop_exit_edges (loop);
 	  FOR_EACH_VEC_ELT (exits, j, ex)
 	    if (number_of_iterations_exit (loop, ex, &niter_desc, false)
 		&& !is_gimple_min_invariant (niter_desc.niter))
@@ -2835,7 +2834,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		   loop with independent predicate.  */
 		loop_iterations &= will_be_nonconstant;
 	    }
-	  exits.release ();
 	}
 
       /* To avoid quadratic behavior we analyze stride predicates only
