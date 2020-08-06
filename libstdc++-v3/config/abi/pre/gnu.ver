@@ -223,7 +223,10 @@ GLIBCXX_3.4 {
     _ZNSs6assignE[PRcjmvy]*;
     _ZNSs6insertE[PRcjmvy]*;
     _ZNSs6insertEN9__gnu_cxx17__normal_iteratorIPcSsEE[PRcjmvy]*;
-    _ZNSs[67][j-z]*E[PRcjmvy]*;
+    _ZNSs6rbeginEv;
+    _ZNSs6resizeE[jmy]*;
+    _ZNSs7replaceE[jmy]*;
+    _ZNSs7reserveE[jmy];
     _ZNSs7[a-z]*EES2_[NPRjmy]*;
     _ZNSs7[a-z]*EES2_S[12]*;
     _ZNSs12_Alloc_hiderC*;
@@ -290,7 +293,10 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE6assignE[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6insertE[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6insertEN9__gnu_cxx17__normal_iteratorIPwS2_EE[PRwjmvy]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[67][j-z]*E[PRwjmvy]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6rbeginEv;
+    _ZNSbIwSt11char_traitsIwESaIwEE7replaceEmm[PRm]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6resizeEm*;
+    _ZNSbIwSt11char_traitsIwESaIwEE7reserveEm;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_[NPRjmy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_S[56]*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
@@ -1740,7 +1746,7 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6rbegin*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6resize*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7replace*;
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7reserve*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7reserveE[jmy];
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE8pop_back*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE9push_back*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[7-9]_[MS]_*;
@@ -2308,6 +2314,11 @@ GLIBCXX_3.4.29 {
     _ZSt17__istream_extractRSiPc[ilx];
     # std::__istream_extract(wistream&, wchar_t*, streamsize)
     _ZSt17__istream_extractIwSt11char_traitsIwEEvRSt13basic_istreamIT_T0_EPS3_[ilx];
+
+    # basic_string::reserve()
+    _ZNSs7reserveEv;
+    _ZNSbIwSt11char_traitsIwESaIwEE7reserveEv;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7reserveEv;
 
 } GLIBCXX_3.4.28;
 
