@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -8,7 +10,7 @@ foo ()
   int ret;
   void *skb;
 
-  ret = __builtin_bpf_helper_skb_ecn_set_ce (skb);
+  ret = bpf_skb_ecn_set_ce (skb);
 }
 
 /* { dg-final { scan-assembler "call\t97" } } */

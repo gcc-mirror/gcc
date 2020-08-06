@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *skb;
   int ancestor_level;
   
-  ret = __builtin_bpf_helper_skb_ancestor_cgroup_id (skb,
+  ret = bpf_skb_ancestor_cgroup_id (skb,
 						     ancestor_level);
 }
 

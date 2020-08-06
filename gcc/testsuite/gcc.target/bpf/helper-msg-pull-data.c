@@ -1,16 +1,17 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
 {
   int ret;
   void *msg;
-  uint32_t start, end;
-  uint64_t flags;
+  int len;
   
-  ret = __builtin_bpf_helper_msg_pull_data (msg, start, end, flags);
+  ret = bpf_msg_pull_data (msg, len);
 }
 
 /* { dg-final { scan-assembler "call\t63" } } */

@@ -1,12 +1,14 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
 {
   uint64_t ret;
-  ret = __builtin_bpf_helper_ktime_get_ns ();
+  ret = bpf_ktime_get_ns ();
 }
 
 /* { dg-final { scan-assembler "call\t5" } } */
