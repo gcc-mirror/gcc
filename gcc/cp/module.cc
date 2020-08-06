@@ -14239,17 +14239,7 @@ module_state::read_cluster (unsigned snum)
 	    tree decls = NULL_TREE;
 	    tree visible = NULL_TREE;
 	    tree type = NULL_TREE;
-
-	    // FIXME: It would be better to mark the vector containing
-	    // this binding as containing actual duplicates in the
-	    // MODULE_SLOT_GLOBAL or MODULE_SLOT_PARTITION overloads.
-	    // Then deduping only need be engaged when duplicates are
-	    // in play, rather than when just looking at a global or
-	    // partition slot.
-	    bool dedup = (TREE_PUBLIC (ns)
-			  && (is_module ()
-			      || is_partition ()
-			      || is_header ()));
+	    bool dedup = false;
 
 	    /* We rely on the bindings being in the reverse order of
 	       the resulting overload set.  */
@@ -14278,7 +14268,6 @@ module_state::read_cluster (unsigned snum)
 		  {
 		    if (decls
 			|| (flags & (cbf_hidden | cbf_wrapped))
-			|| (dedup && TREE_CODE (decl) == FUNCTION_DECL)
 			|| DECL_FUNCTION_TEMPLATE_P (decl))
 		      {
 			decls = ovl_make (decl, decls);
@@ -14292,7 +14281,7 @@ module_state::read_cluster (unsigned snum)
 
 			if (flags & cbf_hidden)
 			  OVL_HIDDEN_P (decls) = true;
-			else if (false && dedup)
+			else if (dedup)
 			  OVL_DEDUP_P (decls) = true;
 		      }
 		    else

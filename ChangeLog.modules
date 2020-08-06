@@ -1,5 +1,10 @@
 2020-08-06  Nathan Sidwell  <nathan@acm.org>
 
+	Remove now-unneeded dedup bits.
+	gcc/cp/
+	* module.cc (module_state::read_cluster): Don't set dedup for
+	partition or header unit.
+
 	Determine deduplication via slot flags.
 	gcc/cp/
 	* module.cc (module_state::read_cluster): Disable dedup here.
