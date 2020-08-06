@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
    inlined performs analysis via its analyze_function method. */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -82,7 +83,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include <vector>
 #include "tree-into-ssa.h"
 
 /* Summaries.  */
