@@ -38,6 +38,8 @@
    (MMIX_rR_REGNUM 260)
    (MMIX_fp_rO_OFFSET -24)]
 )
+
+(define_mode_iterator MM [QI HI SI DI SF DF])
 
 ;; Operand and operator predicates.
 
@@ -46,10 +48,25 @@
 
 ;; FIXME: Can we remove the reg-to-reg for smaller modes?  Shouldn't they
 ;; be synthesized ok?
-(define_insn "movqi"
+(define_expand "mov<mode>"
+  [(set (match_operand:MM 0 "nonimmediate_operand")
+	(match_operand:MM 1 "general_operand"))]
+  ""
+{
+  /*  Help pre-register-allocation to use at least one register in a move.
+      FIXME: support STCO also for DFmode (storing 0.0).  */
+  if (!REG_P (operands[0]) && !REG_P (operands[1])
+      && (<MODE>mode != DImode
+	  || !memory_operand (operands[0], DImode)
+	  || !satisfies_constraint_I (operands[1])))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+})
+
+(define_insn "*movqi_expanded"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r ,r,x ,r,r,m,??r")
 	(match_operand:QI 1 "general_operand"	    "r,LS,K,rI,x,m,r,n"))]
-  ""
+  "register_operand (operands[0], QImode)
+   || register_operand (operands[1], QImode)"
   "@
    SET %0,%1
    %s1 %0,%v1
@@ -60,10 +77,11 @@
    STBU %1,%0
    %r0%I1")
 
-(define_insn "movhi"
+(define_insn "*movhi_expanded"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r ,r ,x,r,r,m,??r")
 	(match_operand:HI 1 "general_operand"	    "r,LS,K,r,x,m,r,n"))]
-  ""
+  "register_operand (operands[0], HImode)
+   || register_operand (operands[1], HImode)"
   "@
    SET %0,%1
    %s1 %0,%v1
@@ -75,10 +93,11 @@
    %r0%I1")
 
 ;; gcc.c-torture/compile/920428-2.c fails if there's no "n".
-(define_insn "movsi"
+(define_insn "*movsi_expanded"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r ,r,x,r,r,m,??r")
 	(match_operand:SI 1 "general_operand"	    "r,LS,K,r,x,m,r,n"))]
-  ""
+  "register_operand (operands[0], SImode)
+   || register_operand (operands[1], SImode)"
   "@
    SET %0,%1
    %s1 %0,%v1
@@ -90,10 +109,13 @@
    %r0%I1")
 
 ;; We assume all "s" are addresses.  Does that hold?
-(define_insn "movdi"
+(define_insn "*movdi_expanded"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r ,r,x,r,m,r,m,r,r,??r")
 	(match_operand:DI 1 "general_operand"	    "r,LS,K,r,x,I,m,r,R,s,n"))]
-  ""
+  "register_operand (operands[0], DImode)
+   || register_operand (operands[1], DImode)
+   || (memory_operand (operands[0], DImode)
+       && satisfies_constraint_I (operands[1]))"
   "@
    SET %0,%1
    %s1 %0,%v1
@@ -109,10 +131,11 @@
 
 ;; Note that we move around the float as a collection of bits; no
 ;; conversion to double.
-(define_insn "movsf"
+(define_insn "*movsf_expanded"
  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,x,r,r,m,??r")
        (match_operand:SF 1 "general_operand"	   "r,G,r,x,m,r,F"))]
-  ""
+  "register_operand (operands[0], SFmode)
+   || register_operand (operands[1], SFmode)"
   "@
    SET %0,%1
    SETL %0,0
@@ -122,10 +145,11 @@
    STTU %1,%0
    %r0%I1")
 
-(define_insn "movdf"
+(define_insn "*movdf_expanded"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,x,r,r,m,??r")
 	(match_operand:DF 1 "general_operand"	    "r,G,r,x,m,r,F"))]
-  ""
+  "register_operand (operands[0], DFmode)
+   || register_operand (operands[1], DFmode)"
   "@
    SET %0,%1
    SETL %0,0
