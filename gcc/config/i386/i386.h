@@ -1418,6 +1418,7 @@ enum reg_class
   FLOAT_INT_SSE_REGS,
   MASK_REGS,
   ALL_MASK_REGS,
+  INT_MASK_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1477,6 +1478,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_REGS",				\
    "ALL_MASK_REGS",			\
+   "INT_MASK_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1515,6 +1517,7 @@ enum reg_class
  { 0xff9ffff, 0xfffffff0,   0xf },	/* FLOAT_INT_SSE_REGS */	\
        { 0x0,        0x0, 0xfe0 },	/* MASK_REGS */			\
        { 0x0,        0x0, 0xff0 },	/* ALL_MASK_REGS */		\
+   { 0x900ff,      0xff0, 0xff0 },	/* INT_MASK_REGS */	\
 { 0xffffffff, 0xffffffff, 0xfff }	/* ALL_REGS  */			\
 }
 

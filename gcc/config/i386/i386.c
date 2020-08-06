@@ -18971,7 +18971,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if ((mode == P2QImode || mode == P2HImode))
 	return MASK_PAIR_REGNO_P(regno);
 
-      return (VALID_MASK_REG_MODE (mode)
+      return ((TARGET_AVX512F && VALID_MASK_REG_MODE (mode))
 	      || (TARGET_AVX512BW
 		  && VALID_MASK_AVX512BW_MODE (mode)));
     }
