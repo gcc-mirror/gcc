@@ -254,7 +254,6 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       if (tree orig = *slot)
 	{
 	  /* Propagate existing value to current slot.  */
-	  cluster[0].slots[MODULE_SLOT_CURRENT] = orig;
 
 	  /* Propagate global & module entities to the global and
 	     partition slots.  */
@@ -268,6 +267,17 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 		  || DECL_HIDDEN_FRIEND_P (decl))
 		init_global_partition (cluster, decl);
 	    }
+
+	  if (cluster[0].slots[MODULE_SLOT_GLOBAL])
+	    {
+	      /* Note that we had some GMF entries.  */
+	      if (!STAT_HACK_P (orig))
+		orig = stat_hack (orig);
+
+	      MODULE_BINDING_GLOBAL_P (orig) = true;
+	    }
+
+	  cluster[0].slots[MODULE_SLOT_CURRENT] = orig;
 	}
 
       *slot = new_vec;
@@ -807,11 +817,26 @@ name_lookup::search_namespace_only (tree scope)
 	  bitmap imports = get_import_bitmap ();
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
+	  int dup_detect = 0;
 
 	  if (tree bind = cluster->slots[MODULE_SLOT_CURRENT])
-	    marker = process_module_binding (MAYBE_STAT_DECL (bind),
-					     MAYBE_STAT_TYPE (bind),
-					     marker);
+	    {
+	      if (!deduping)
+		{
+		  if (named_module_purview_p ())
+		    {
+		      dup_detect |= 2;
+
+		      if (STAT_HACK_P (bind) && MODULE_BINDING_GLOBAL_P (bind))
+			dup_detect |= 1;
+		    }
+		  else
+		    dup_detect |= 1;
+		}
+	      marker = process_module_binding (MAYBE_STAT_DECL (bind),
+					       MAYBE_STAT_TYPE (bind),
+					       marker);
+	    }
 
 	  /* Scan the imported bindings.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val);
@@ -852,10 +877,31 @@ name_lookup::search_namespace_only (tree scope)
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;
 
-		// If STAT_HACK is false, everything is visible, and
-		// there's no duplication possibilities.
+		/* If STAT_HACK_P is false, everything is visible, and
+		   there's no duplication possibilities.  */
 		if (STAT_HACK_P (bind))
 		  {
+		    if (!deduping)
+		      {
+			/* Do we need to engage deduplication?  */
+			int dup = 0;
+			if (MODULE_BINDING_GLOBAL_P (bind))
+			  dup = 1;
+			else if (MODULE_BINDING_PARTITION_P (bind))
+			  dup = 2;
+			if (unsigned hit = dup_detect & dup)
+			  {
+			    if ((hit & 1 && MODULE_VECTOR_GLOBAL_DUPS_P (val))
+				|| (hit & 2
+				    && MODULE_VECTOR_PARTITION_DUPS_P (val)))
+			      {
+				lookup_mark (value, true);
+				deduping = true;
+			      }
+			  }
+			dup_detect |= dup;
+		      }
+
 		    if (STAT_TYPE_VISIBLE_P (bind))
 		      type = STAT_TYPE (bind);
 		    bind = STAT_VISIBLE (bind);
@@ -1092,11 +1138,28 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports)
 	     the import bitmap.  Hence iterate over the former
 	     checking for bits set in the bitmap.  */
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
+	  int dup_detect = 0;
 
 	  if (tree bind = cluster->slots[MODULE_SLOT_CURRENT])
-	    /* The current TU's bindings must be visible, we don't
-	       need to check the bitmaps.  */
-	    add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (bind)));
+	    {
+	      /* The current TU's bindings must be visible, we don't
+		 need to check the bitmaps.  */
+
+	      if (!deduping)
+		{
+		  if (named_module_purview_p ())
+		    {
+		      dup_detect |= 2;
+
+		      if (STAT_HACK_P (bind) && MODULE_BINDING_GLOBAL_P (bind))
+			dup_detect |= 1;
+		    }
+		  else
+		    dup_detect |= 1;
+		}
+
+	      add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (bind)));
+	    }
 
 	  /* Scan the imported bindings.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val);
@@ -1131,7 +1194,30 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports)
 		  continue;
 
 		if (STAT_HACK_P (bind))
-		  bind = STAT_VISIBLE (bind);
+		  {
+		    if (!deduping)
+		      {
+			/* Do we need to engage deduplication?  */
+			int dup = 0;
+			if (MODULE_BINDING_GLOBAL_P (bind))
+			  dup = 1;
+			else if (MODULE_BINDING_PARTITION_P (bind))
+			  dup = 2;
+			if (unsigned hit = dup_detect & dup)
+			  {
+			    if ((hit & 1 && MODULE_VECTOR_GLOBAL_DUPS_P (val))
+				|| (hit & 2
+				    && MODULE_VECTOR_PARTITION_DUPS_P (val)))
+			      {
+				lookup_mark (value, true);
+				deduping = true;
+			      }
+			  }
+			dup_detect |= dup;
+		      }
+
+		    bind = STAT_VISIBLE (bind);
+		  }
 
 		add_fns (bind);
 	      }
@@ -4090,7 +4176,7 @@ set_module_binding (tree ns, tree name, unsigned mod, int mod_glob,
     return false;
 
   tree bind = value;
-  if (type || visible != bind || (mod_glob && TREE_CODE (bind) != OVERLOAD))
+  if (type || visible != bind || mod_glob)
     {
       bind = stat_hack (bind, type);
       STAT_VISIBLE (bind) = visible;

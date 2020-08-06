@@ -14292,7 +14292,7 @@ module_state::read_cluster (unsigned snum)
 
 			if (flags & cbf_hidden)
 			  OVL_HIDDEN_P (decls) = true;
-			else if (dedup)
+			else if (false && dedup)
 			  OVL_DEDUP_P (decls) = true;
 		      }
 		    else

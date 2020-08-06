@@ -1,5 +1,14 @@
 2020-08-06  Nathan Sidwell  <nathan@acm.org>
 
+	Determine deduplication via slot flags.
+	gcc/cp/
+	* module.cc (module_state::read_cluster): Disable dedup here.
+	* name-lookup.cc (get_fixed_binding_slot): Set
+	MODULE_BINDING_GLOBAL_P if necessary.
+	(name_lookup::search_bitmap_only): Inspect MODULE_BINDING_$foo_P.
+	(name_lookup::adl_namespace_fns): Likewise.
+	(set_module_binding): Always stat hack if mod_glob.
+
 	gcc/cp/
 	* module.cc (module_state::read_cluster): Pay attention to hidden
 	decls even in same module.
