@@ -1518,7 +1518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	      __str.append(__buf, __len);
 
-	      if (_Traits::eq_int_type(__c, __eof))
+	      if (__extracted < __n && _Traits::eq_int_type(__c, __eof))
 		__err |= __ios_base::eofbit;
 	      __in.width(0);
 	    }
