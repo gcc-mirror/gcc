@@ -489,7 +489,7 @@ private:
   void adl_class_only (tree);
   void adl_namespace (tree);
   void adl_class_fns (tree);
-  void adl_namespace_fns (tree, bitmap, bitmap);
+  void adl_namespace_fns (tree, bitmap);
 
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
@@ -852,8 +852,8 @@ name_lookup::search_namespace_only (tree scope)
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;
 
-		// FIXME: Isn't STAT_HACK_P always true?  Or does its
-		// lack imply everything is visible?
+		// If STAT_HACK is false, everything is visible, and
+		// there's no duplication possibilities.
 		if (STAT_HACK_P (bind))
 		  {
 		    if (STAT_TYPE_VISIBLE_P (bind))
@@ -1079,7 +1079,7 @@ name_lookup::add_fns (tree fns)
 /* Add the overloaded fns of SCOPE.  */
 
 void
-name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap /*inst_path*/)
+name_lookup::adl_namespace_fns (tree scope, bitmap imports)
 {
   if (tree *binding = find_namespace_slot (scope, name))
     {
@@ -1130,15 +1130,8 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap /*inst_path*/
 		  /* Load errors could mean there's nothing here.  */
 		  continue;
 
-		// FIXME: See comment in search_namespace_only about
-		// STAT_HACK_P's meaning for an imported slot.
-		// We want module-linkage entities, if this is part of
-		// the same module.  Oh, STAT_VISIBLE will already
-		// tell us?
 		if (STAT_HACK_P (bind))
 		  bind = STAT_VISIBLE (bind);
-		else
-		  bind = ovl_skip_hidden (bind);
 
 		add_fns (bind);
 	      }
@@ -1490,7 +1483,7 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	{
 	  tree scope = (*scopes)[ix];
 	  if (TREE_CODE (scope) == NAMESPACE_DECL)
-	    adl_namespace_fns (scope, visible, inst_path);
+	    adl_namespace_fns (scope, visible);
 	  else
 	    {
 	      if (RECORD_OR_UNION_TYPE_P (scope))

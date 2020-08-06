@@ -14298,7 +14298,9 @@ module_state::read_cluster (unsigned snum)
 		    else
 		      decls = decl;
 
-		    if (flags & cbf_export)
+		    if (flags & cbf_export
+			|| (!(flags & cbf_hidden)
+			    && (is_module () || is_partition ())))
 		      visible = decls;
 		  }
 	      }
@@ -14308,9 +14310,6 @@ module_state::read_cluster (unsigned snum)
 
 	    if (sec.get_overrun ())
 	      break; /* Bail.  */
-
-	    if (is_module () || is_partition ())
-	      visible = decls;
 
 	    dump () && dump ("Binding of %P", ns, name);
 	    if (!set_module_binding (ns, name, mod,

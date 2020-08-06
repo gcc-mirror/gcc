@@ -1,3 +1,10 @@
+2020-08-06  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::read_cluster): Pay attention to hidden
+	decls even in same module.
+	* name-lookup.c (name_lookup:adl_namespace_fns): Drop unused parm.
+
 2020-08-05  Nathan Sidwell  <nathan@acm.org>
 
 	Note binding slot origin.
