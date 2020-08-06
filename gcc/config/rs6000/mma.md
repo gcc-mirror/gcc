@@ -328,11 +328,15 @@
   [(set (match_operand:PXI 0 "nonimmediate_operand" "=d,m,d,d")
 	(match_operand:PXI 1 "input_operand" "m,d,d,O"))]
   "TARGET_MMA
-   && ((gpc_reg_operand (operands[0], PXImode)
-	&& !(CONST_INT_P (operands[1]) && INTVAL (operands[1]) == 0))
+   && (gpc_reg_operand (operands[0], PXImode)
        || gpc_reg_operand (operands[1], PXImode))"
-  "#"
-  "&& reload_completed"
+  "@
+   #
+   #
+   #
+   xxsetaccz %A0"
+  "&& reload_completed
+   && !(fpr_reg_operand (operands[0], PXImode) && operands[1] == const0_rtx)"
   [(const_int 0)]
 {
   rs6000_split_multireg_move (operands[0], operands[1]);
@@ -409,12 +413,14 @@
   "<acc> %A0"
   [(set_attr "type" "mma")])
 
-(define_insn "mma_xxsetaccz"
-  [(set (match_operand:PXI 0 "fpr_reg_operand" "=d")
+(define_expand "mma_xxsetaccz"
+  [(set (match_operand:PXI 0 "fpr_reg_operand")
 	(const_int 0))]
   "TARGET_MMA"
-  "xxsetaccz %A0"
-  [(set_attr "type" "mma")])
+{
+  emit_insn (gen_movpxi (operands[0], const0_rtx));
+  DONE;
+})
 
 (define_insn "mma_<vv>"
   [(set (match_operand:PXI 0 "fpr_reg_operand" "=&d")

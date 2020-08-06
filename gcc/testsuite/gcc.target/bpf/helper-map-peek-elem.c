@@ -1,4 +1,7 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
+
+#include <bpf-helpers.h>
 
 char *map () { return 0; }
 
@@ -8,7 +11,7 @@ foo ()
   int ret;
   char *value = 0;
 
-  ret = __builtin_bpf_helper_map_peek_elem (map (), value);
+  ret = bpf_map_peek_elem (map (), value);
 }
 
 /* { dg-final { scan-assembler "call\t89" } } */

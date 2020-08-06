@@ -1180,6 +1180,12 @@ fs::path fs::read_symlink(const path& p, error_code& ec)
       ec.assign(errno, std::generic_category());
       return result;
     }
+  else if (!fs::is_symlink(make_file_status(st)))
+    {
+      ec.assign(EINVAL, std::generic_category());
+      return result;
+    }
+
   std::string buf(st.st_size ? st.st_size + 1 : 128, '\0');
   do
     {

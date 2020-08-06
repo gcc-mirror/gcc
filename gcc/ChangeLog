@@ -1,3 +1,218 @@
+2020-08-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/95906
+	PR target/70314
+	* match.pd ((c ? a : b) op d, (c ? a : b) op (c ? d : e),
+	(v ? w : 0) ? a : b, c1 ? c2 ? a : b : b): New transformations.
+	(op (c ? a : b)): Update to match the new transformations.
+
+2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/aarch64/aarch64.md (stack_protect_test_<mode>): Set the
+	CC register directly, instead of a GPR.  Replace the original GPR
+	destination with an extra scratch register.  Zero out operand 3
+	after use.
+	(stack_protect_test): Update accordingly.
+
+2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (load_pair_sw_<SX:mode><SX2:mode>)
+	(load_pair_dw_<DX:mode><DX2:mode>, load_pair_dw_tftf)
+	(store_pair_sw_<SX:mode><SX2:mode>)
+	(store_pair_dw_<DX:mode><DX2:mode>, store_pair_dw_tftf)
+	(*load_pair_extendsidi2_aarch64)
+	(*load_pair_zero_extendsidi2_aarch64): Use %z for the memory operand.
+	* config/aarch64/aarch64-simd.md (load_pair<DREG:mode><DREG2:mode>)
+	(vec_store_pair<DREG:mode><DREG2:mode>, load_pair<VQ:mode><VQ2:mode>)
+	(vec_store_pair<VQ:mode><VQ2:mode>): Likewise.
+
+2020-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (invariantness_dom_walker): Remove.
+	(invariantness_dom_walker::before_dom_children): Move to ...
+	(compute_invariantness): ... this function.
+	(move_computations): Inline ...
+	(tree_ssa_lim): ... here, share RPO order and avoid some
+	cfun references.
+	(analyze_memory_references): Remove sorting of location
+	lists, instead assert they are sorted already when checking.
+	(prev_flag_edges): Remove.
+	(execute_sm_if_changed): Pass down and adjust prev edge state.
+	(execute_sm_exit): Likewise.
+	(hoist_memory_references): Likewise.  Commit edge insertions
+	of each processed exit.
+	(store_motion_loop): Do not commit edge insertions on all
+	edges in the function.
+	(tree_ssa_lim_initialize): Do not call alloc_aux_for_edges.
+	(tree_ssa_lim_finalize): Do not call free_aux_for_edges.
+
+2020-08-05  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (fail_label): New global.
+	(expr::gen_transform): Branch to fail_label instead of
+	returning.  Fix indent of call argument checking.
+	(dt_simplify::gen_1): Compute and emit fail_label, branch
+	to it instead of returning early.
+
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for): Don't disallow combined non-rectangular
+	loops.
+
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96459
+	* omp-low.c (lower_omp_taskreg): Call lower_reduction_clauses even in
+	for host teams.
+
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for_init_counts): Remember
+	first_inner_iterations, factor and n1o from the number of iterations
+	computation in *fd.
+	(expand_omp_for_init_vars): Use more efficient logical iteration number
+	to actual iterator values computation even for non-rectangular loops
+	where number of loop iterations could not be computed at compile time.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_blendv, vec_permx): Add define.
+	* config/rs6000/altivec.md (UNSPEC_XXBLEND, UNSPEC_XXPERMX.): New
+	unspecs.
+	(VM3): New define_mode.
+	(VM3_char): New define_attr.
+	(xxblend_<mode> mode VM3): New define_insn.
+	(xxpermx): New define_expand.
+	(xxpermx_inst): New define_insn.
+	* config/rs6000/rs6000-builtin.def (VXXBLEND_V16QI, VXXBLEND_V8HI,
+	VXXBLEND_V4SI, VXXBLEND_V2DI, VXXBLEND_V4SF, VXXBLEND_V2DF): New
+	BU_P10V_3 definitions.
+	(XXBLEND): New BU_P10_OVERLOAD_3 definition.
+	(XXPERMX): New BU_P10_OVERLOAD_4 definition.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	(P10_BUILTIN_VXXPERMX): Add if statement.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VXXBLEND_V16QI,
+	P10_BUILTIN_VXXBLEND_V8HI, P10_BUILTIN_VXXBLEND_V4SI,
+	P10_BUILTIN_VXXBLEND_V2DI, P10_BUILTIN_VXXBLEND_V4SF,
+	P10_BUILTIN_VXXBLEND_V2DF, P10_BUILTIN_VXXPERMX): Define
+	overloaded arguments.
+	(rs6000_expand_quaternop_builtin): Add if case for CODE_FOR_xxpermx.
+	(builtin_quaternary_function_type): Add v16uqi_type and xxpermx_type
+	variables, add case statement for P10_BUILTIN_VXXPERMX.
+	(builtin_function_type): Add case statements for
+	P10_BUILTIN_VXXBLEND_V16QI, P10_BUILTIN_VXXBLEND_V8HI,
+	P10_BUILTIN_VXXBLEND_V4SI, P10_BUILTIN_VXXBLEND_V2DI.
+	* doc/extend.texi: Add documentation for vec_blendv and vec_permx.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_splati, vec_splatid, vec_splati_ins):
+	Add defines.
+	* config/rs6000/altivec.md (UNSPEC_XXSPLTIW, UNSPEC_XXSPLTID,
+	UNSPEC_XXSPLTI32DX): New.
+	(vxxspltiw_v4si, vxxspltiw_v4sf_inst, vxxspltidp_v2df_inst,
+	vxxsplti32dx_v4si_inst, vxxsplti32dx_v4sf_inst): New define_insn.
+	(vxxspltiw_v4sf, vxxspltidp_v2df, vxxsplti32dx_v4si,
+	vxxsplti32dx_v4sf.): New define_expands.
+	* config/rs6000/predicates.md (u1bit_cint_operand,
+	s32bit_cint_operand, c32bit_cint_operand): New predicates.
+	* config/rs6000/rs6000-builtin.def (VXXSPLTIW_V4SI, VXXSPLTIW_V4SF,
+	VXXSPLTID): New definitions.
+	(VXXSPLTI32DX_V4SI, VXXSPLTI32DX_V4SF): New BU_P10V_3
+	definitions.
+	(XXSPLTIW, XXSPLTID): New definitions.
+	(XXSPLTI32DX): Add definitions.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VEC_XXSPLTIW,
+	P10_BUILTIN_VEC_XXSPLTID, P10_BUILTIN_VEC_XXSPLTI32DX):
+	New definitions.
+	* config/rs6000/rs6000-protos.h (rs6000_constF32toI32): New extern
+	declaration.
+	* config/rs6000/rs6000.c (rs6000_constF32toI32): New function.
+	* doc/extend.texi: Add documentation for vec_splati,
+	vec_splatid, and vec_splati_ins.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_sldb, vec_srdb): New defines.
+	* config/rs6000/altivec.md (UNSPEC_SLDB, UNSPEC_SRDB): New.
+	(SLDB_lr): New attribute.
+	(VSHIFT_DBL_LR): New iterator.
+	(vs<SLDB_lr>db_<mode>): New define_insn.
+	* config/rs6000/rs6000-builtin.def (VSLDB_V16QI, VSLDB_V8HI,
+	VSLDB_V4SI, VSLDB_V2DI, VSRDB_V16QI, VSRDB_V8HI, VSRDB_V4SI,
+	VSRDB_V2DI): New BU_P10V_3 definitions.
+	(SLDB, SRDB): New BU_P10_OVERLOAD_3 definitions.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VEC_SLDB,
+	P10_BUILTIN_VEC_SRDB): New definitions.
+	(rs6000_expand_ternop_builtin) [CODE_FOR_vsldb_v16qi,
+	CODE_FOR_vsldb_v8hi, CODE_FOR_vsldb_v4si, CODE_FOR_vsldb_v2di,
+	CODE_FOR_vsrdb_v16qi, CODE_FOR_vsrdb_v8hi, CODE_FOR_vsrdb_v4si,
+	CODE_FOR_vsrdb_v2di]: Add clauses.
+	* doc/extend.texi: Add description for vec_sldb and vec_srdb.
+
+2020-08-05  2020-08-04 Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h: Add define for vec_replace_elt and
+	vec_replace_unaligned.
+	* config/rs6000/vsx.md (UNSPEC_REPLACE_ELT, UNSPEC_REPLACE_UN): New
+	unspecs.
+	(REPLACE_ELT): New mode iterator.
+	(REPLACE_ELT_char, REPLACE_ELT_sh, REPLACE_ELT_max): New mode attributes.
+	(vreplace_un_<mode>, vreplace_elt_<mode>_inst): New.
+	* config/rs6000/rs6000-builtin.def (VREPLACE_ELT_V4SI,
+	VREPLACE_ELT_UV4SI, VREPLACE_ELT_V4SF, VREPLACE_ELT_UV2DI,
+	VREPLACE_ELT_V2DF, VREPLACE_UN_V4SI, VREPLACE_UN_UV4SI,
+	VREPLACE_UN_V4SF, VREPLACE_UN_V2DI, VREPLACE_UN_UV2DI,
+	VREPLACE_UN_V2DF, (REPLACE_ELT, REPLACE_UN, VREPLACE_ELT_V2DI): New builtin
+	entries.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VEC_REPLACE_ELT,
+	P10_BUILTIN_VEC_REPLACE_UN): New builtin argument definitions.
+	(rs6000_expand_quaternop_builtin): Add 3rd argument checks for
+	CODE_FOR_vreplace_elt_v4si, CODE_FOR_vreplace_elt_v4sf,
+	CODE_FOR_vreplace_un_v4si, CODE_FOR_vreplace_un_v4sf.
+	(builtin_function_type) [P10_BUILTIN_VREPLACE_ELT_UV4SI,
+	P10_BUILTIN_VREPLACE_ELT_UV2DI, P10_BUILTIN_VREPLACE_UN_UV4SI,
+	P10_BUILTIN_VREPLACE_UN_UV2DI]: New cases.
+	* doc/extend.texi: Add description for vec_replace_elt and
+	vec_replace_unaligned builtins.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_insertl, vec_inserth): New defines.
+	* config/rs6000/rs6000-builtin.def (VINSERTGPRBL, VINSERTGPRHL,
+	VINSERTGPRWL, VINSERTGPRDL, VINSERTVPRBL, VINSERTVPRHL, VINSERTVPRWL,
+	VINSERTGPRBR, VINSERTGPRHR, VINSERTGPRWR, VINSERTGPRDR, VINSERTVPRBR,
+	VINSERTVPRHR, VINSERTVPRWR): New builtins.
+	(INSERTL, INSERTH): New builtins.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VEC_INSERTL,
+	P10_BUILTIN_VEC_INSERTH): New overloaded definitions.
+	(P10_BUILTIN_VINSERTGPRBL, P10_BUILTIN_VINSERTGPRHL,
+	P10_BUILTIN_VINSERTGPRWL, P10_BUILTIN_VINSERTGPRDL,
+	P10_BUILTIN_VINSERTVPRBL, P10_BUILTIN_VINSERTVPRHL,
+	P10_BUILTIN_VINSERTVPRWL): Add case entries.
+	* config/rs6000/vsx.md (define_c_enum): Add UNSPEC_INSERTL,
+	UNSPEC_INSERTR.
+	(define_expand): Add vinsertvl_<mode>, vinsertvr_<mode>,
+	vinsertgl_<mode>, vinsertgr_<mode>, mode is VI2.
+	(define_ins): vinsertvl_internal_<mode>, vinsertvr_internal_<mode>,
+	vinsertgl_internal_<mode>, vinsertgr_internal_<mode>, mode VEC_I.
+	* doc/extend.texi: Add documentation for vec_insertl, vec_inserth.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md: (UNSPEC_EXTRACTL, UNSPEC_EXTRACTR)
+	(vextractl<mode>, vextractr<mode>)
+	(vextractl<mode>_internal, vextractr<mode>_internal for mode VI2)
+	(VI2): Move to ...
+	* config/rs6000/vsx.md:	(UNSPEC_EXTRACTL, UNSPEC_EXTRACTR)
+	(vextractl<mode>, vextractr<mode>)
+	(vextractl<mode>_internal, vextractr<mode>_internal for mode VI2)
+	(VI2):  ..here.
+	* doc/extend.texi: Update documentation for vec_extractl.
+	Replace builtin name vec_extractr with vec_extracth.  Update
+	description of vec_extracth.
+
 2020-08-04  Jim Wilson  <jimw@sifive.com>
 
 	* doc/invoke.texi (AArch64 Options): Delete duplicate

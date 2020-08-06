@@ -3798,6 +3798,58 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks - 1,
 			    vector_stmt, NULL, NULL_TREE, 0, vect_body);
     }
+  else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+    {
+      /* Referring to the functions vect_set_loop_condition_partial_vectors
+	 and vect_set_loop_controls_directly, we need to generate each
+	 length in the prologue and in the loop body if required. Although
+	 there are some possible optimizations, we consider the worst case
+	 here.  */
+
+      bool niters_known_p = LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo);
+      bool need_iterate_p
+	= (!LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	   && !vect_known_niters_smaller_than_vf (loop_vinfo));
+
+      /* Calculate how many statements to be added.  */
+      unsigned int prologue_stmts = 0;
+      unsigned int body_stmts = 0;
+
+      rgroup_controls *rgc;
+      unsigned int num_vectors_m1;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), num_vectors_m1, rgc)
+	if (rgc->type)
+	  {
+	    /* May need one SHIFT for nitems_total computation.  */
+	    unsigned nitems = rgc->max_nscalars_per_iter * rgc->factor;
+	    if (nitems != 1 && !niters_known_p)
+	      prologue_stmts += 1;
+
+	    /* May need one MAX and one MINUS for wrap around.  */
+	    if (vect_rgroup_iv_might_wrap_p (loop_vinfo, rgc))
+	      prologue_stmts += 2;
+
+	    /* Need one MAX and one MINUS for each batch limit excepting for
+	       the 1st one.  */
+	    prologue_stmts += num_vectors_m1 * 2;
+
+	    unsigned int num_vectors = num_vectors_m1 + 1;
+
+	    /* Need to set up lengths in prologue, only one MIN required
+	       for each since start index is zero.  */
+	    prologue_stmts += num_vectors;
+
+	    /* Each may need two MINs and one MINUS to update lengths in body
+	       for next iteration.  */
+	    if (need_iterate_p)
+	      body_stmts += 3 * num_vectors;
+	  }
+
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, prologue_stmts,
+			    scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, body_stmts,
+			    scalar_stmt, NULL, NULL_TREE, 0, vect_body);
+    }
 
   /* FORNOW: The scalar outside cost is incremented in one of the
      following ways:
@@ -3932,8 +3984,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   /* ??? The "if" arm is written to handle all cases; see below for what
-     we would do for !LOOP_VINFO_FULLY_MASKED_P.  */
-  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+     we would do for !LOOP_VINFO_USING_PARTIAL_VECTORS_P.  */
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       /* Rewriting the condition above in terms of the number of
 	 vector iterations (vniters) rather than the number of
@@ -3960,7 +4012,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	dump_printf (MSG_NOTE, "  Minimum number of vector iterations: %d\n",
 		     min_vec_niters);
 
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  /* Now that we know the minimum number of vector iterations,
 	     find the minimum niters for which the scalar cost is larger:
@@ -4015,6 +4067,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       && min_profitable_iters < (assumed_vf + peel_iters_prologue))
     /* We want the vectorized loop to execute at least once.  */
     min_profitable_iters = assumed_vf + peel_iters_prologue;
+  else if (min_profitable_iters < peel_iters_prologue)
+    /* For LOOP_VINFO_USING_PARTIAL_VECTORS_P, we need to ensure the
+       vectorized loop executes at least once.  */
+    min_profitable_iters = peel_iters_prologue;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -4032,7 +4088,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
   if (vec_outside_cost <= 0)
     min_profitable_estimate = 0;
-  else if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  else if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       /* This is a repeat of the code above, but with + SOC rather
 	 than - SOC.  */
@@ -4044,7 +4100,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       if (outside_overhead > 0)
 	min_vec_niters = outside_overhead / saving_per_viter + 1;
 
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  int threshold = (vec_inside_cost * min_vec_niters
 			   + vec_outside_cost
@@ -9351,3 +9407,25 @@ vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo)
   return iv_limit;
 }
 
+/* For the given rgroup_controls RGC, check whether an induction variable
+   would ever hit a value that produces a set of all-false masks or zero
+   lengths before wrapping around.  Return true if it's possible to wrap
+   around before hitting the desirable value, otherwise return false.  */
+
+bool
+vect_rgroup_iv_might_wrap_p (loop_vec_info loop_vinfo, rgroup_controls *rgc)
+{
+  widest_int iv_limit = vect_iv_limit_for_partial_vectors (loop_vinfo);
+
+  if (iv_limit == -1)
+    return true;
+
+  tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
+  unsigned int compare_precision = TYPE_PRECISION (compare_type);
+  unsigned nitems = rgc->max_nscalars_per_iter * rgc->factor;
+
+  if (wi::min_precision (iv_limit * nitems, UNSIGNED) > compare_precision)
+    return true;
+
+  return false;
+}

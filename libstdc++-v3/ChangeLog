@@ -1,3 +1,64 @@
+2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (atomic<T>::store): Reformat.
+
+2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Replace oneAPI DPC++ link
+	with LLVM repo for PSTL.
+	* doc/html/manual/status.html: Regenerate.
+
+2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Export new symbols.
+	* include/bits/istream.tcc (__istream_extract): New function
+	template implementing both of operator>>(istream&, char*) and
+	operator>>(istream&, char(&)[N]). Add explicit instantiation
+	declaration for it. Remove explicit instantiation declarations
+	for old function templates.
+	* include/std/istream (__istream_extract): Declare.
+	(operator>>(basic_istream<C,T>&, C*)): Define inline and simply
+	call __istream_extract.
+	(operator>>(basic_istream<char,T>&, signed char*)): Likewise.
+	(operator>>(basic_istream<char,T>&, unsigned char*)): Likewise.
+	(operator>>(basic_istream<C,T>&, C(7)[N])): Define for LWG 2499.
+	(operator>>(basic_istream<char,T>&, signed char(&)[N])):
+	Likewise.
+	(operator>>(basic_istream<char,T>&, unsigned char(&)[N])):
+	Likewise.
+	* include/std/streambuf (basic_streambuf): Declare char overload
+	of __istream_extract as a friend.
+	* src/c++11/istream-inst.cc: Add explicit instantiation
+	definition for wchar_t overload of __istream_extract. Remove
+	explicit instantiation definitions of old operator>> overloads
+	for versioned-namespace build.
+	* src/c++98/istream.cc (operator>>(istream&, char*)): Replace
+	with __istream_extract(istream&, char*, streamsize).
+	* testsuite/27_io/basic_istream/extractors_character/char/3.cc:
+	Do not use variable-length array.
+	* testsuite/27_io/basic_istream/extractors_character/char/4.cc:
+	Do not run test for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc:
+	Do not test writing to pointers for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/char/9826.cc:
+	Use array instead of pointer.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/3.cc:
+	Do not use variable-length array.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/4.cc:
+	Do not run test for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/9555-ic.cc:
+	Do not test writing to pointers for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/char/lwg2499.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/char/lwg2499_neg.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/char/overflow.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499_neg.cc:
+	New test.
+
 2020-08-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/using_exceptions.xml: Move www.stroustrup.com to

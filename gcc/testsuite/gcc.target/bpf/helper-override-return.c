@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *regs;
   uint64_t rc;
   
-  ret = __builtin_bpf_helper_override_return (regs, rc);
+  ret = bpf_override_return (regs, rc);
 }
 
 /* { dg-final { scan-assembler "call\t58" } } */

@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   int16_t vlan_proto;
   uint16_t vlan_tci;
 
-  ret = __builtin_bpf_helper_skb_vlan_push (skb, vlan_proto, vlan_tci);
+  ret = bpf_skb_vlan_push (skb, vlan_proto, vlan_tci);
 }
 
 /* { dg-final { scan-assembler "call\t18" } } */

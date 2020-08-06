@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   uint32_t len;
   uint64_t flags;
 
-  ret = __builtin_bpf_helper_skb_change_tail (skb, len, flags);
+  ret = bpf_skb_change_tail (skb, len, flags);
 }
 
 /* { dg-final { scan-assembler "call\t38" } } */

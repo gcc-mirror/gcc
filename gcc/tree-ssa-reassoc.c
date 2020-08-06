@@ -4127,11 +4127,14 @@ final_range_test_p (gimple *stmt)
    of TEST_BB, and *OTHER_BB is either NULL and filled by the routine,
    or compared with to find a common basic block to which all conditions
    branch to if true resp. false.  If BACKWARD is false, TEST_BB should
-   be the only predecessor of BB.  */
+   be the only predecessor of BB.  *TEST_SWAPPED_P is set to true if
+   TEST_BB is a bb ending in condition where the edge to non-*OTHER_BB
+   block points to an empty block that falls through into *OTHER_BB and
+   the phi args match that path.  */
 
 static bool
 suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
-		  bool backward)
+		  bool *test_swapped_p, bool backward)
 {
   edge_iterator ei, ei2;
   edge e, e2;
@@ -4196,6 +4199,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
   /* Now check all PHIs of *OTHER_BB.  */
   e = find_edge (bb, *other_bb);
   e2 = find_edge (test_bb, *other_bb);
+ retry:;
   for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
@@ -4221,11 +4225,52 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
 	  else
 	    {
 	      gimple *test_last = last_stmt (test_bb);
-	      if (gimple_code (test_last) != GIMPLE_COND
-		  && gimple_phi_arg_def (phi, e2->dest_idx)
-		     == gimple_assign_lhs (test_last)
-		  && (integer_zerop (gimple_phi_arg_def (phi, e->dest_idx))
-		      || integer_onep (gimple_phi_arg_def (phi, e->dest_idx))))
+	      if (gimple_code (test_last) == GIMPLE_COND)
+		{
+		  if (backward ? e2->src != test_bb : e->src != bb)
+		    return false;
+
+		  /* For last_bb, handle also:
+		     if (x_3(D) == 3)
+		       goto <bb 6>; [34.00%]
+		     else
+		       goto <bb 7>; [66.00%]
+
+		     <bb 6> [local count: 79512730]:
+
+		     <bb 7> [local count: 1073741824]:
+		     # prephitmp_7 = PHI <1(3), 1(4), 0(5), 1(2), 1(6)>
+		     where bb 7 is *OTHER_BB, but the PHI values from the
+		     earlier bbs match the path through the empty bb
+		     in between.  */
+		  edge e3;
+		  if (backward)
+		    e3 = EDGE_SUCC (test_bb,
+				    e2 == EDGE_SUCC (test_bb, 0) ? 1 : 0);
+		  else
+		    e3 = EDGE_SUCC (bb,
+				    e == EDGE_SUCC (bb, 0) ? 1 : 0);
+		  if (empty_block_p (e3->dest)
+		      && single_succ_p (e3->dest)
+		      && single_succ (e3->dest) == *other_bb
+		      && single_pred_p (e3->dest)
+		      && single_succ_edge (e3->dest)->flags == EDGE_FALLTHRU)
+		    {
+		      if (backward)
+			e2 = single_succ_edge (e3->dest);
+		      else
+			e = single_succ_edge (e3->dest);
+		      if (test_swapped_p)
+			*test_swapped_p = true;
+		      goto retry;
+		    }
+		}
+	      else if (gimple_phi_arg_def (phi, e2->dest_idx)
+		       == gimple_assign_lhs (test_last)
+		       && (integer_zerop (gimple_phi_arg_def (phi,
+							      e->dest_idx))
+			   || integer_onep (gimple_phi_arg_def (phi,
+								e->dest_idx))))
 		continue;
 	    }
 
@@ -4414,7 +4459,7 @@ maybe_optimize_range_tests (gimple *stmt)
   while (single_pred_p (first_bb))
     {
       basic_block pred_bb = single_pred (first_bb);
-      if (!suitable_cond_bb (pred_bb, first_bb, &other_bb, true))
+      if (!suitable_cond_bb (pred_bb, first_bb, &other_bb, NULL, true))
 	break;
       if (!no_side_effect_bb (first_bb))
 	break;
@@ -4444,7 +4489,8 @@ maybe_optimize_range_tests (gimple *stmt)
 		&& gimple_code (stmt) == GIMPLE_COND
 		&& EDGE_COUNT (e->dest->succs) == 2)
 	      {
-		if (suitable_cond_bb (first_bb, e->dest, &other_bb, true))
+		if (suitable_cond_bb (first_bb, e->dest, &other_bb,
+				      NULL, true))
 		  break;
 		else
 		  other_bb = NULL;
@@ -4472,7 +4518,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	break;
       if (!single_pred_p (e->dest))
 	break;
-      if (!suitable_cond_bb (e->dest, last_bb, &other_bb, false))
+      if (!suitable_cond_bb (e->dest, last_bb, &other_bb, NULL, false))
 	break;
       if (!no_side_effect_bb (e->dest))
 	break;
@@ -4582,6 +4628,28 @@ maybe_optimize_range_tests (gimple *stmt)
 	    }
 	  bbinfo.safe_push (bb_ent);
 	  continue;
+	}
+      else if (bb == last_bb)
+	{
+	  /* For last_bb, handle also:
+	     if (x_3(D) == 3)
+	       goto <bb 6>; [34.00%]
+	     else
+	       goto <bb 7>; [66.00%]
+
+	     <bb 6> [local count: 79512730]:
+
+	     <bb 7> [local count: 1073741824]:
+	     # prephitmp_7 = PHI <1(3), 1(4), 0(5), 1(2), 1(6)>
+	     where bb 7 is OTHER_BB, but the PHI values from the
+	     earlier bbs match the path through the empty bb
+	     in between.  */
+	  bool test_swapped_p = false;
+	  bool ok = suitable_cond_bb (single_pred (last_bb), last_bb,
+				      &other_bb, &test_swapped_p, true);
+	  gcc_assert (ok);
+	  if (test_swapped_p)
+	    e = EDGE_SUCC (bb, e == EDGE_SUCC (bb, 0) ? 1 : 0);
 	}
       /* Otherwise stmt is GIMPLE_COND.  */
       code = gimple_cond_code (stmt);
