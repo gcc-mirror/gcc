@@ -2644,6 +2644,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       }
     case STRING_CST:
     case INTEGER_CST:
+    case POLY_INT_CST:
     case COMPLEX_CST:
     case VECTOR_CST:
     case REAL_CST:
