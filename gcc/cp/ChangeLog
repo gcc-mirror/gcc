@@ -1,3 +1,12 @@
+2020-08-05  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/96282
+	* constexpr.c (cxx_eval_vec_init_1): Truncate ctx->ctor and
+	then clear CONSTRUCTOR_NO_CLEARING on each appended element
+	initializer if we're initializing a previously zero-initialized
+	array object.
+
 2020-08-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/96082

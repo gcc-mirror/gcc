@@ -1,3 +1,58 @@
+2020-08-05  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/96282
+	* g++.dg/cpp0x/constexpr-array26.C: New test.
+	* g++.dg/cpp0x/constexpr-array27.C: New test.
+	* g++.dg/cpp2a/constexpr-init18.C: New test.
+
+2020-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96469
+	* gfortran.dg/do_check_14.f90: New test.
+
+2020-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96469
+	* gfortran.dg/do_check_4.f90: Hide change in index variable
+	from compile-time analysis.
+	* gfortran.dg/do_check_13.f90: New test.
+
+2020-08-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/95906
+	PR target/70314
+	* gcc.dg/tree-ssa/andnot-2.c: New file.
+	* gcc.dg/tree-ssa/pr95906.c: Likewise.
+	* gcc.target/i386/pr70314.c: Likewise.
+
+2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* gcc.target/aarch64/stack-protector-1.c: New test.
+	* gcc.target/aarch64/stack-protector-2.c: Likewise.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-blend-runnable.c: New test.
+	* gcc.target/powerpc/vec-permute-ext-runnable.c: New test.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-splati-runnable.c: New test.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-shift-double-runnable.c:  New test file.
+
+2020-08-05  2020-08-04 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-replace-word-runnable.c: New test.
+
+2020-08-05  2020-08-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-insert-word-runnable.c: New test case.
+
 2020-08-04  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/nvptx/mul-hi.c: New test.
