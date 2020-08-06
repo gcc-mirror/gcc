@@ -1,3 +1,19 @@
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-22.c: New test.
+	* testsuite/libgomp.c/loop-23.c: New test.
+
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96459
+	* testsuite/libgomp.c/teams-3.c: New test.
+	* testsuite/libgomp.c-c++-common/for-2.h (OMPTEAMS): Define to nothing
+	if not defined yet.
+	(N(test)): Use it before all N(f*) calls.
+	* testsuite/libgomp.c-c++-common/for-14.c (DO_PRAGMA, OMPTEAMS): Define.
+	(main): Don't call all test_* functions from within
+	#pragma omp teams reduction(|:err), call them directly.
+
 2020-08-04  Tom de Vries  <tdevries@suse.de>
 
 	PR target/96428
