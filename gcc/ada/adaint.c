@@ -1503,6 +1503,9 @@ extern long long __gnat_file_time(char* name)
 
   t_write.ft_time = fad.ftLastWriteTime;
 
+#if defined(__GNUG__) && __GNUG__ <= 4
+  result = (t_write.ll_time - w32_epoch_offset) * 100;
+#else
   /* Next code similar to (t_write.ll_time - w32_epoch_offset) * 100
      but on overflow returns LLONG_MIN value. */
 
@@ -1513,6 +1516,7 @@ extern long long __gnat_file_time(char* name)
   if (__builtin_smulll_overflow(result, 100, &result)) {
     return LLONG_MIN;
   }
+#endif
 
 #else
 
@@ -1521,6 +1525,12 @@ extern long long __gnat_file_time(char* name)
     return LLONG_MIN;
   }
 
+#if defined(__GNUG__) && __GNUG__ <= 4
+    result = (sb.st_mtime - ada_epoch_offset) * 1E9;
+#if defined(st_mtime)
+    result += sb.st_mtim.tv_nsec;
+#endif
+#else
   /* Next code similar to
      (sb.st_mtime - ada_epoch_offset) * 1E9 + sb.st_mtim.tv_nsec
      but on overflow returns LLONG_MIN value. */
@@ -1538,7 +1548,7 @@ extern long long __gnat_file_time(char* name)
     return LLONG_MIN;
   }
 #endif
-
+#endif
 #endif
   return result;
 }
