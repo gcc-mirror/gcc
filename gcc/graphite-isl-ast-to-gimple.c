@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_isl
 
-#define INCLUDE_MAP
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -69,18 +68,14 @@ struct ast_build_info
 /* IVS_PARAMS maps isl's scattering and parameter identifiers
    to corresponding trees.  */
 
-typedef std::map<isl_id *, tree> ivs_params;
+typedef hash_map<isl_id *, tree> ivs_params;
 
 /* Free all memory allocated for isl's identifiers.  */
 
 static void ivs_params_clear (ivs_params &ip)
 {
-  std::map<isl_id *, tree>::iterator it;
-  for (it = ip.begin ();
-       it != ip.end (); it++)
-    {
-      isl_id_free (it->first);
-    }
+  for (auto it = ip.begin (); it != ip.end (); ++it)
+    isl_id_free ((*it).first);
 }
 
 /* Set the "separate" option for the schedule node.  */
@@ -256,13 +251,11 @@ gcc_expression_from_isl_ast_expr_id (tree type,
 {
   gcc_assert (isl_ast_expr_get_type (expr_id) == isl_ast_expr_id);
   isl_id *tmp_isl_id = isl_ast_expr_get_id (expr_id);
-  std::map<isl_id *, tree>::iterator res;
-  res = ip.find (tmp_isl_id);
+  tree *tp = ip.get (tmp_isl_id);
   isl_id_free (tmp_isl_id);
-  gcc_assert (res != ip.end () &&
-	      "Could not map isl_id to tree expression");
+  gcc_assert (tp && "Could not map isl_id to tree expression");
   isl_ast_expr_free (expr_id);
-  tree t = res->second;
+  tree t = *tp;
   if (useless_type_conversion_p (type, TREE_TYPE (t)))
     return t;
   if (POINTER_TYPE_P (TREE_TYPE (t))
@@ -596,11 +589,9 @@ graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
 
   isl_ast_expr *for_iterator = isl_ast_node_for_get_iterator (node_for);
   isl_id *id = isl_ast_expr_get_id (for_iterator);
-  std::map<isl_id *, tree>::iterator res;
-  res = ip.find (id);
-  if (ip.count (id))
-    isl_id_free (res->first);
-  ip[id] = iv;
+  bool existed_p = ip.put (id, iv);
+  if (existed_p)
+    isl_id_free (id);
   isl_ast_expr_free (for_iterator);
   return loop;
 }
@@ -1347,7 +1338,8 @@ add_parameters_to_ivs_params (scop_p scop, ivs_params &ip)
     {
       isl_id *tmp_id = isl_set_get_dim_id (scop->param_context,
 					   isl_dim_param, i);
-      ip[tmp_id] = param;
+      bool existed_p = ip.put (tmp_id, param);
+      gcc_assert (!existed_p);
     }
 }
 
