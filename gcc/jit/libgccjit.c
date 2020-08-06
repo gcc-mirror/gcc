@@ -1188,7 +1188,7 @@ gcc_jit_rvalue_get_type (gcc_jit_rvalue *rvalue)
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
-   gcc::jit::recording::context::new_rvalue_from_int method in
+   gcc::jit::recording::context::new_rvalue_from_const <int> method in
    jit-recording.c.  */
 
 gcc_jit_rvalue *
@@ -1204,7 +1204,11 @@ gcc_jit_context_new_rvalue_from_int (gcc_jit_context *ctxt,
 	  ->new_rvalue_from_const <int> (numeric_type, value));
 }
 
-/* FIXME. */
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_rvalue_from_const <long> method
+   in jit-recording.c.  */
 
 gcc_jit_rvalue *
 gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt,
@@ -1256,7 +1260,7 @@ gcc_jit_context_one (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
-   gcc::jit::recording::context::new_rvalue_from_double method in
+   gcc::jit::recording::context::new_rvalue_from_const <double> method in
    jit-recording.c.  */
 
 gcc_jit_rvalue *
@@ -1275,8 +1279,8 @@ gcc_jit_context_new_rvalue_from_double (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
-   gcc::jit::recording::context::new_rvalue_from_ptr method in
-   jit-recording.c.  */
+   gcc::jit::recording::context::new_rvalue_from_const <void *> method
+   in jit-recording.c.  */
 
 gcc_jit_rvalue *
 gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context *ctxt,
