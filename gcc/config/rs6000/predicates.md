@@ -1051,7 +1051,12 @@
 		    && !((DEFAULT_ABI == ABI_AIX
 			  || DEFAULT_ABI == ABI_ELFv2)
 			 && (SYMBOL_REF_EXTERNAL_P (op)
-			     || SYMBOL_REF_WEAK (op)))")))
+			     || SYMBOL_REF_WEAK (op)))
+		    && !(DEFAULT_ABI == ABI_ELFv2
+			 && SYMBOL_REF_DECL (op) != NULL
+			 && TREE_CODE (SYMBOL_REF_DECL (op)) == FUNCTION_DECL
+			 && (rs6000_fndecl_pcrel_p (SYMBOL_REF_DECL (op))
+			     != rs6000_pcrel_p (cfun)))")))
 
 ;; Return 1 if this operand is a valid input for a move insn.
 (define_predicate "input_operand"
