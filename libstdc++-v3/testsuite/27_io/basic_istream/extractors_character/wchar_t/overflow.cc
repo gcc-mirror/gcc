@@ -30,50 +30,28 @@
 void
 test01()
 {
-  std::istringstream in("foolishly");
-  char pc[5];
+  std::wistringstream in(L"foolishly");
+  wchar_t pc[5];
   in >> pc;
   VERIFY( in.good() );
-  VERIFY( std::string(pc) == "fool" );
+  VERIFY( std::wstring(pc) == L"fool" );
 
 #if __cplusplus <= 201703L
-  char* p = pc + 1;
+  wchar_t* p = pc + 1;
   in >> p;
   VERIFY( in.good() );
-  VERIFY( std::string(pc) == "fish" );
+  VERIFY( std::wstring(pc) == L"fish" );
 
   p = pc + 4;
-  *p = '#';
+  *p = L'#';
   in >> p;
   VERIFY( in.fail() ); // if no characters are extracted, failbit is set
-  VERIFY( *p == '\0' );
+  VERIFY( *p == L'\0' );
 #endif
-}
-
-void
-test02()
-{
-  std::istringstream in("foolish");
-  signed char sc[5];
-  in >> sc;
-  VERIFY( in.good() );
-  VERIFY( std::string((const char*)sc) == "fool" );
-}
-
-void
-test03()
-{
-  std::istringstream in("foolish");
-  unsigned char uc[5];
-  in >> uc;
-  VERIFY( in.good() );
-  VERIFY( std::string((const char*)uc) == "fool" );
 }
 
 int
 main()
 {
   test01();
-  test02();
-  test03();
 }
