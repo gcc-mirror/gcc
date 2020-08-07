@@ -118,15 +118,6 @@ package body Get_Targ is
       return 4;
    end Get_Maximum_Alignment;
 
-   ------------------------------------
-   -- Get_System_Allocator_Alignment --
-   ------------------------------------
-
-   function Get_System_Allocator_Alignment return Nat is
-   begin
-      return 1;
-   end Get_System_Allocator_Alignment;
-
    ------------------------
    -- Get_Float_Words_BE --
    ------------------------
@@ -181,6 +172,15 @@ package body Get_Targ is
       return 1;
    end Get_Strict_Alignment;
 
+   ------------------------------------
+   -- Get_System_Allocator_Alignment --
+   ------------------------------------
+
+   function Get_System_Allocator_Alignment return Nat is
+   begin
+      return 1;
+   end Get_System_Allocator_Alignment;
+
    --------------------------------
    -- Get_Double_Float_Alignment --
    --------------------------------
@@ -199,15 +199,6 @@ package body Get_Targ is
       return 0;
    end Get_Double_Scalar_Alignment;
 
-   -----------------------------
-   -- Get_Max_Unaligned_Field --
-   -----------------------------
-
-   function Get_Max_Unaligned_Field return Pos is
-   begin
-      return 64;  -- Can be different on some targets (e.g., AAMP)
-   end Get_Max_Unaligned_Field;
-
    ----------------------
    -- Digits_From_Size --
    ----------------------
@@ -223,6 +214,15 @@ package body Get_Targ is
          when others => raise Program_Error;
       end case;
    end Digits_From_Size;
+
+   -----------------------------
+   -- Get_Max_Unaligned_Field --
+   -----------------------------
+
+   function Get_Max_Unaligned_Field return Pos is
+   begin
+      return 64;  -- Can be different on some targets (e.g., AAMP)
+   end Get_Max_Unaligned_Field;
 
    -----------------------------
    -- Register_Back_End_Types --
@@ -255,13 +255,14 @@ package body Get_Targ is
    -- Width_From_Size --
    ---------------------
 
-   function Width_From_Size  (Size : Pos) return Pos is
+   function Width_From_Size (Size : Pos) return Pos is
    begin
       case Size is
-         when  8     => return  4;
-         when 16     => return  6;
-         when 32     => return 11;
-         when 64     => return 21;
+         when   8    => return  4;
+         when  16    => return  6;
+         when  32    => return 11;
+         when  64    => return 21;
+         when 128    => return 40;
          when others => raise Program_Error;
       end case;
    end Width_From_Size;
