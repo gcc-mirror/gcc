@@ -1,3 +1,28 @@
+2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96153
+	* d-tree.h (build_expr): Add literalp argument.
+	* expr.cc (ExprVisitor): Add literalp_ field.
+	(ExprVisitor::ExprVisitor): Initialize literalp_.
+	(ExprVisitor::visit (AssignExp *)): Call memset() on blits where RHS
+	is a struct literal.  Elide assignment if initializer is all zeroes.
+	(ExprVisitor::visit (CastExp *)): Forward literalp_ to generation of
+	subexpression.
+	(ExprVisitor::visit (AddrExp *)): Likewise.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Use memset() to pre-fill
+	object with zeroes.  Set literalp in subexpressions.
+	(ExprVisitor::visit (StructLiteralExp *)): Likewise.
+	(ExprVisitor::visit (TupleExp *)): Set literalp in subexpressions.
+	(ExprVisitor::visit (VectorExp *)): Likewise.
+	(ExprVisitor::visit (VectorArrayExp *)): Likewise.
+	(build_expr): Forward literal_p to ExprVisitor.
+
+2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96429
+	* expr.cc (ExprVisitor::visit (BinExp*)): Use EXACT_DIV_EXPR for
+	pointer diff expressions.
+
 2020-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/96254

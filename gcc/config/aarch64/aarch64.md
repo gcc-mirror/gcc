@@ -1574,8 +1574,8 @@
 				XEXP (operands[1], 0),
 				GET_MODE_SIZE (<SX:MODE>mode)))"
   "@
-   ldp\\t%w0, %w2, %1
-   ldp\\t%s0, %s2, %1"
+   ldp\\t%w0, %w2, %z1
+   ldp\\t%s0, %s2, %z1"
   [(set_attr "type" "load_8,neon_load1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1591,8 +1591,8 @@
 				XEXP (operands[1], 0),
 				GET_MODE_SIZE (<DX:MODE>mode)))"
   "@
-   ldp\\t%x0, %x2, %1
-   ldp\\t%d0, %d2, %1"
+   ldp\\t%x0, %x2, %z1
+   ldp\\t%d0, %d2, %z1"
   [(set_attr "type" "load_16,neon_load1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1607,7 +1607,7 @@
 		    plus_constant (Pmode,
 				   XEXP (operands[1], 0),
 				   GET_MODE_SIZE (TFmode)))"
-  "ldp\\t%q0, %q2, %1"
+  "ldp\\t%q0, %q2, %z1"
   [(set_attr "type" "neon_ldp_q")
    (set_attr "fp" "yes")]
 )
@@ -1624,8 +1624,8 @@
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (<SX:MODE>mode)))"
   "@
-   stp\\t%w1, %w3, %0
-   stp\\t%s1, %s3, %0"
+   stp\\t%w1, %w3, %z0
+   stp\\t%s1, %s3, %z0"
   [(set_attr "type" "store_8,neon_store1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1641,8 +1641,8 @@
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (<DX:MODE>mode)))"
   "@
-   stp\\t%x1, %x3, %0
-   stp\\t%d1, %d3, %0"
+   stp\\t%x1, %x3, %z0
+   stp\\t%d1, %d3, %z0"
   [(set_attr "type" "store_16,neon_store1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -1657,7 +1657,7 @@
 		 plus_constant (Pmode,
 				XEXP (operands[0], 0),
 				GET_MODE_SIZE (TFmode)))"
-  "stp\\t%q1, %q3, %0"
+  "stp\\t%q1, %q3, %z0"
   [(set_attr "type" "neon_stp_q")
    (set_attr "fp" "yes")]
 )
@@ -1790,7 +1790,7 @@
 		plus_constant (Pmode,
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
-  "ldpsw\\t%0, %2, %1"
+  "ldpsw\\t%0, %2, %z1"
   [(set_attr "type" "load_8")]
 )
 
@@ -1819,8 +1819,8 @@
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
   "@
-   ldp\t%w0, %w2, %1
-   ldp\t%s0, %s2, %1"
+   ldp\t%w0, %w2, %z1
+   ldp\t%s0, %s2, %z1"
   [(set_attr "type" "load_8,neon_load1_2reg")
    (set_attr "arch" "*,fp")]
 )
@@ -7217,10 +7217,8 @@
    (match_operand 2)]
   ""
 {
-  rtx result;
   machine_mode mode = GET_MODE (operands[0]);
 
-  result = gen_reg_rtx(mode);
   if (aarch64_stack_protector_guard != SSP_GLOBAL)
   {
     /* Generate access through the system register. The
@@ -7245,29 +7243,27 @@
     operands[1] = gen_rtx_MEM (mode, tmp_reg);
   }
   emit_insn ((mode == DImode
-		  ? gen_stack_protect_test_di
-		  : gen_stack_protect_test_si) (result,
-					        operands[0],
-					        operands[1]));
+	     ? gen_stack_protect_test_di
+	     : gen_stack_protect_test_si) (operands[0], operands[1]));
 
-  if (mode == DImode)
-    emit_jump_insn (gen_cbranchdi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
-				    result, const0_rtx, operands[2]));
-  else
-    emit_jump_insn (gen_cbranchsi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
-				    result, const0_rtx, operands[2]));
+  rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
+  emit_jump_insn (gen_condjump (gen_rtx_EQ (VOIDmode, cc_reg, const0_rtx),
+				cc_reg, operands[2]));
   DONE;
 })
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the end of this sequence.
 (define_insn "stack_protect_test_<mode>"
-  [(set (match_operand:PTR 0 "register_operand" "=r")
-	(unspec:PTR [(match_operand:PTR 1 "memory_operand" "m")
-		     (match_operand:PTR 2 "memory_operand" "m")]
-	 UNSPEC_SP_TEST))
+  [(set (reg:CC CC_REGNUM)
+	(unspec:CC [(match_operand:PTR 0 "memory_operand" "m")
+		    (match_operand:PTR 1 "memory_operand" "m")]
+		   UNSPEC_SP_TEST))
+   (clobber (match_scratch:PTR 2 "=&r"))
    (clobber (match_scratch:PTR 3 "=&r"))]
   ""
-  "ldr\t%<w>3, %1\;ldr\t%<w>0, %2\;eor\t%<w>0, %<w>3, %<w>0"
-  [(set_attr "length" "12")
+  "ldr\t%<w>2, %0\;ldr\t%<w>3, %1\;subs\t%<w>2, %<w>2, %<w>3\;mov\t%3, 0"
+  [(set_attr "length" "16")
    (set_attr "type" "multiple")])
 
 ;; Write into the Floating-point Status or Control Register.

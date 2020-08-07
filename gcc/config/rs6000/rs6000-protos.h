@@ -274,6 +274,7 @@ extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);
 extern void rs6000_asm_output_dwarf_datarel (FILE *file, int size,
 					     const char *label);
+extern long long rs6000_const_f32_to_i32 (rtx operand);
 
 /* Declare functions in rs6000-c.c */
 
@@ -309,4 +310,5 @@ extern bool rs6000_quadword_masked_address_p (const_rtx exp);
 extern rtx rs6000_gen_lvx (enum machine_mode, rtx, rtx);
 extern rtx rs6000_gen_stvx (enum machine_mode, rtx, rtx);
 
+extern void rs6000_emit_xxspltidp_v2df (rtx, long value);
 #endif  /* rs6000-protos.h */

@@ -556,7 +556,10 @@ Expression::get_backend(Translate_context* context)
 {
   // The child may have marked this expression as having an error.
   if (this->classification_ == EXPRESSION_ERROR)
-    return context->backend()->error_expression();
+    {
+      go_assert(saw_errors());
+      return context->backend()->error_expression();
+    }
 
   return this->do_get_backend(context);
 }
@@ -6080,6 +6083,8 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
               Type* result_type = (left->type()->named_type() != NULL
                                    ? left->type()
                                    : right->type());
+	      delete left;
+	      delete right;
               return Expression::make_string_typed(left_string + right_string,
                                                    result_type, location);
             }
@@ -6087,6 +6092,8 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	    {
 	      int cmp = left_string.compare(right_string);
 	      bool r = Binary_expression::cmp_to_bool(op, cmp);
+	      delete left;
+	      delete right;
 	      return Expression::make_boolean(r, location);
 	    }
 	}

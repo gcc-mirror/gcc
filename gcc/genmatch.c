@@ -2352,6 +2352,10 @@ capture_info::walk_c_expr (c_expr *e)
 }
 
 
+/* The current label failing the current matched pattern during
+   code generation.  */
+static char *fail_label;
+
 /* Code generation off the decision tree and the refered AST nodes.  */
 
 bool
@@ -2527,8 +2531,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 		      "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n", depth,
 		      !force_leaf ? "lseq" : "NULL");
       fprintf_indent (f, indent,
-		      "if (!_r%d) return false;\n",
-		      depth);
+		      "if (!_r%d) goto %s;\n",
+		      depth, fail_label);
       if (*opr == CONVERT_EXPR)
 	{
 	  indent -= 4;
@@ -2560,7 +2564,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       if (opr->kind != id_base::CODE)
 	{
 	  fprintf_indent (f, indent, "  if (!_r%d)\n", depth);
-	  fprintf_indent (f, indent, "    return NULL_TREE;\n");
+	  fprintf_indent (f, indent, "    goto %s;\n", fail_label);
 	  fprintf_indent (f, indent, "}\n");
 	}
       if (*opr == CONVERT_EXPR)
@@ -3068,12 +3072,12 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	      /* We need to be defensive against bogus prototypes allowing
 		 calls with not enough arguments.  */
 	      fprintf_indent (f, indent,
-			      "  if (gimple_call_num_args (_c%d) == %d)\n"
-			      "    {\n", depth, e->ops.length ());
+			      "  if (gimple_call_num_args (_c%d) == %d)\n",
+			      depth, e->ops.length ());
+	      fprintf_indent (f, indent, "    {\n");
 	      fns[i]->gen (f, indent + 6, true, depth);
-	      fprintf_indent (f, indent,
-			      "    }\n"
-			      "  break;\n");
+	      fprintf_indent (f, indent, "    }\n");
+	      fprintf_indent (f, indent, "  break;\n");
 	    }
 
 	  fprintf_indent (f, indent, "default:;\n");
@@ -3278,6 +3282,11 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	}
     }
 
+  static unsigned fail_label_cnt;
+  char local_fail_label[256];
+  snprintf (local_fail_label, 256, "next_after_fail%u", ++fail_label_cnt);
+  fail_label = local_fail_label;
+
   /* Analyze captures and perform early-outs on the incoming arguments
      that cover cases we cannot handle.  */
   capture_info cinfo (s, result, gimple);
@@ -3289,8 +3298,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	    if (cinfo.force_no_side_effects & (1 << i))
 	      {
 		fprintf_indent (f, indent,
-				"if (TREE_SIDE_EFFECTS (_p%d)) return NULL_TREE;\n",
-				i);
+				"if (TREE_SIDE_EFFECTS (_p%d)) goto %s;\n",
+				i, fail_label);
 		if (verbose >= 1)
 		  warning_at (as_a <expr *> (s->match)->ops[i]->location,
 			      "forcing toplevel operand to have no "
@@ -3305,7 +3314,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	      {
 		fprintf_indent (f, indent,
 				"if (TREE_SIDE_EFFECTS (captures[%d])) "
-				"return NULL_TREE;\n", i);
+				"goto %s;\n", i, fail_label);
 		if (verbose >= 1)
 		  warning_at (cinfo.info[i].c->location,
 			      "forcing captured operand to have no "
@@ -3348,8 +3357,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
     }
 
   if (s->kind == simplify::SIMPLIFY)
-    fprintf_indent (f, indent, "if (__builtin_expect (!dbg_cnt (match), 0)) return %s;\n",
-		    gimple ? "false" : "NULL_TREE");
+    fprintf_indent (f, indent, "if (__builtin_expect (!dbg_cnt (match), 0)) goto %s;\n", fail_label);
 
   fprintf_indent (f, indent, "if (__builtin_expect (dump_file && (dump_flags & TDF_FOLDING), 0)) "
 	   "fprintf (dump_file, \"%s ",
@@ -3361,6 +3369,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 			 true);
   fprintf (f, ", __FILE__, __LINE__);\n");
 
+  fprintf_indent (f, indent, "{\n");
+  indent += 2;
   if (!result)
     {
       /* If there is no result then this is a predicate implementation.  */
@@ -3474,7 +3484,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		    > cinfo.info[i].match_use_count)
 		  fprintf_indent (f, indent,
 				  "if (! tree_invariant_p (captures[%d])) "
-				  "return NULL_TREE;\n", i);
+				  "goto %s;\n", i, fail_label);
 	      }
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {
@@ -3524,7 +3534,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		  if (!is_a <operator_id *> (opr))
 		    {
 		      fprintf_indent (f, indent, "if (!_r)\n");
-		      fprintf_indent (f, indent, "  return NULL_TREE;\n");
+		      fprintf_indent (f, indent, "  goto %s;\n", fail_label);
 		    }
 		}
 	    }
@@ -3563,6 +3573,10 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  fprintf_indent (f, indent, "return _r;\n");
 	}
     }
+  indent -= 2;
+  fprintf_indent (f, indent, "}\n");
+  fprintf (f, "%s:;\n", fail_label);
+  fail_label = NULL;
 }
 
 /* Generate code for the '(if ...)', '(with ..)' and actual transform

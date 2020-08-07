@@ -1,5 +1,7 @@
 2020-08-07  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk d21252de6c8.
+
 	Address 2 FIXMEs.
 	gcc/cp/
 	* name-lookup.c (finish_nonmember_using_decl): Here.
