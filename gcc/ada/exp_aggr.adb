@@ -53,6 +53,7 @@ with Sem;      use Sem;
 with Sem_Aggr; use Sem_Aggr;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -1954,7 +1955,30 @@ package body Exp_Aggr is
                   Expander_Mode_Save_And_Set (False);
                   Tcopy := New_Copy_Tree (Expr);
                   Set_Parent (Tcopy, N);
-                  Analyze_And_Resolve (Tcopy, Component_Type (Etype (N)));
+
+                  --  For iterated_component_association analyze and resolve
+                  --  the expression with name of the index parameter visible.
+                  --  To manipulate scopes, we use entity of the implicit loop.
+
+                  if Is_Iterated_Component then
+                     declare
+                        Index_Parameter : constant Entity_Id :=
+                          Defining_Identifier (Parent (Expr));
+                     begin
+                        Push_Scope (Scope (Index_Parameter));
+                        Enter_Name (Index_Parameter);
+                        Analyze_And_Resolve
+                          (Tcopy, Component_Type (Etype (N)));
+                        End_Scope;
+                     end;
+
+                  --  For ordinary component association, just analyze and
+                  --  resolve the expression.
+
+                  else
+                     Analyze_And_Resolve (Tcopy, Component_Type (Etype (N)));
+                  end if;
+
                   Expander_Mode_Restore;
                end if;
             end if;
