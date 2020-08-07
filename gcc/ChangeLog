@@ -1,3 +1,110 @@
+2020-08-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md (MM): New mode_iterator.
+	("mov<mode>"): New expander to expand for all MM-modes.
+	("*movqi_expanded", "*movhi_expanded", "*movsi_expanded")
+	("*movsf_expanded", "*movdf_expanded"): Rename from the
+	corresponding mov<M> named pattern.  Add to the condition that
+	either operand must be a register_operand.
+	("*movdi_expanded"): Similar, but also allow STCO in the condition.
+
+2020-08-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/arm/arm.md (arm_stack_protect_test_insn): Zero out
+	operand 2 after use.
+	* config/arm/thumb1.md (thumb1_stack_protect_test_insn): Likewise.
+
+2020-08-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96446
+	* config/rs6000/mma.md (*movpxi): Add xxsetaccz generation.
+	Disable split for zero constant source operand.
+	(mma_xxsetaccz): Change to define_expand.  Call gen_movpxi.
+
+2020-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96480
+	* tree-ssa-reassoc.c (suitable_cond_bb): Add TEST_SWAPPED_P argument.
+	If TEST_BB ends in cond and has one edge to *OTHER_BB and another
+	through an empty bb to that block too, if PHI args don't match, retry
+	them through the other path from TEST_BB.
+	(maybe_optimize_range_tests): Adjust callers.  Handle such LAST_BB
+	through inversion of the condition.
+
+2020-08-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf-helpers.h (KERNEL_HELPER): Define.
+	(KERNEL_VERSION): Remove.
+	* config/bpf/bpf-helpers.def: Delete.
+	* config/bpf/bpf.c (bpf_handle_fndecl_attribute): New function.
+	(bpf_attribute_table): Define.
+	(bpf_helper_names): Delete.
+	(bpf_helper_code): Likewise.
+	(enum bpf_builtins): Adjust to new helpers mechanism.
+	(bpf_output_call): Likewise.
+	(bpf_init_builtins): Likewise.
+	(bpf_init_builtins): Likewise.
+	* doc/extend.texi (BPF Function Attributes): New section.
+	(BPF Kernel Helpers): Delete section.
+
+2020-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96491
+	* tree-ssa-sink.c (sink_common_stores_to_bb): Avoid
+	sinking across abnormal edges.
+
+2020-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96483
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Handle
+	POLY_INT_CST.
+
+2020-08-06  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (ivs_params): Use hash_map instead
+	of std::map.
+	(ivs_params_clear): Adjust.
+	(gcc_expression_from_isl_ast_expr_id): Likewise.
+	(graphite_create_new_loop): Likewise.
+	(add_parameters_to_ivs_params): Likewise.
+
+2020-08-06  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (MAXMIN_IMODE): No longer needed.
+	(<maxmin><mode>3):  Support SWI248 and general_operand for
+	second operand, when TARGET_CMOVE.
+	(<maxmin><mode>3_1 splitter): Optimize comparisons against
+	0, 1 and -1 to use "test" instead of "cmp".
+	(*<maxmin>di3_doubleword): Likewise, allow general_operand
+	and enable on TARGET_CMOVE.
+	(peephole2): Convert clearing a register after a flag setting
+	instruction into an xor followed by the original flag setter.
+
+2020-08-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* ipa-fnsummary.c (INCLUDE_VECTOR): Define.
+	Remove direct inclusion of <vector>.
+
+2020-08-06  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_vect_cost_per_loop): New
+	function.
+	(rs6000_finish_cost): Call rs6000_adjust_vect_cost_per_loop.
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Add cost
+	modeling for vector with length.
+	(vect_rgroup_iv_might_wrap_p): New function, factored out from...
+	* tree-vect-loop-manip.c (vect_set_loop_controls_directly): ...this.
+	Update function comment.
+	* tree-vect-stmts.c (vect_gen_len): Update function comment.
+	* tree-vectorizer.h (vect_rgroup_iv_might_wrap_p): New declare.
+
+2020-08-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vectorizer.c (try_vectorize_loop_1): Skip the epilogue loops
+	for dbgcnt check.
+
 2020-08-05  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/95906
