@@ -80,6 +80,16 @@ canonicalize_math_after_vectorization_p ()
   return false;
 }
 
+/* Return true if we can still perform transformations that may introduce
+   vector operations that are not supported by the target. Vector lowering
+   normally handles those, but after that pass, it becomes unsafe.  */
+
+static inline bool
+optimize_vectors_before_lowering_p ()
+{
+  return true;
+}
+
 /* Return true if successive divisions can be optimized.
    Defer to GIMPLE opts.  */
 
