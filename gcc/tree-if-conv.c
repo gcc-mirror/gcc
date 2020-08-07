@@ -1139,6 +1139,11 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
   if (EDGE_COUNT (bb->succs) > 2)
     return false;
 
+  gimple *last = last_stmt (bb);
+  if (gcall *call = safe_dyn_cast <gcall *> (last))
+    if (gimple_call_ctrl_altering_p (call))
+      return false;
+
   if (exit_bb)
     {
       if (bb != loop->latch)
