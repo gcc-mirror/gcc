@@ -1,5 +1,15 @@
 2020-08-07  Nathan Sidwell  <nathan@acm.org>
 
+	Global decls.
+	gcc/cp/
+	* name-lookup.c (get_fixed_binding_slot): Skip internal decls when
+	creating vector.
+	(record_mergeable_decl): Replace with ...
+	(maybe_record_mergeable_decl): Skip internal decls.
+	(do_pushdecl): Adjust.
+	* decl.c (start_decl): Templated vars are not
+	internal. (Incomplete fix of PR 96523)
+
 	Shadowed type.
 	gcc/cp/
 	* name-lookup.c (check_module_override): No need to deal with

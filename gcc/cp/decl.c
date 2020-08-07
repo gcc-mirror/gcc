@@ -5477,7 +5477,9 @@ start_decl (const cp_declarator *declarator,
 
   if (VAR_P (decl)
       && DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl) && !was_public
-      && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl))
+      && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl)
+      /* But not templated variables.  */
+      && !(DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)))
     {
       /* This is a const variable with implicit 'static'.  Set
 	 DECL_THIS_STATIC so we can tell it from variables that are

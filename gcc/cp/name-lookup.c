@@ -263,6 +263,14 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	  for (ovl_iterator iter (MAYBE_STAT_DECL (orig)); iter; ++iter)
 	    {
 	      tree decl = *iter;
+
+	      tree not_tmpl = STRIP_TEMPLATE (decl);
+	      if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
+		   || TREE_CODE (not_tmpl) == VAR_DECL)
+		  && DECL_THIS_STATIC (not_tmpl))
+		/* Internal linkage.  */
+		continue;
+
 	      if (!iter.hidden_p ()
 		  || DECL_HIDDEN_FRIEND_P (decl))
 		init_global_partition (cluster, decl);
@@ -3619,15 +3627,42 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
-/* DECL is a global or module-purview entity.  Record it in the global
-   or partition slot.  We have already checked for duplicates.  */
+/* DECL is a global or module-purview entity.  If it has non-internal
+   linkage, and we have a module vector, record it in the appropriate
+   slot.  We have already checked for duplicates.  */
 
 static void
-record_mergeable_decl (tree *slot, tree name, tree decl)
+maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
 {
+  if (TREE_CODE (*slot) != MODULE_VECTOR)
+    return;
+
+  if (!TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
+    /* Member of internal namespace.  */
+    return;
+
+  tree not_tmpl = STRIP_TEMPLATE (decl);
+  if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
+       || TREE_CODE (not_tmpl) == VAR_DECL)
+      && DECL_THIS_STATIC (not_tmpl))
+    /* Internal linkage.  */
+    return;
+
   bool partition = named_module_p ();
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
+
+  if (!partition)
+    {
+      mc_slot &orig
+	= MODULE_VECTOR_CLUSTER (*gslot, 0).slots[MODULE_SLOT_CURRENT];
+
+      if (!STAT_HACK_P (tree (orig)))
+	orig = stat_hack (tree (orig));
+
+      MODULE_BINDING_GLOBAL_P (tree (orig)) = true;
+    }
+
   add_mergeable_namespace_entity (gslot, decl);
 }
 
@@ -3911,12 +3946,8 @@ do_pushdecl (tree decl, bool is_friend)
 		  && !DECL_MODULE_EXPORT_P (level->this_entity))
 		implicitly_export_namespace (level->this_entity);
 
-	      // FIXME: Can we create this vector lazily?  Also
-	      // TREE_PUBLIC is insufficient, fns->!TREE_THIS_STATIC,
-	      // other's not so much
-	      if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION
-		  && TREE_PUBLIC (decl) && !not_module_p ())
-		record_mergeable_decl (slot, name, decl);
+	      if (!not_module_p ())
+		maybe_record_mergeable_decl (slot, name, decl);
 	    }
 	}
     }
