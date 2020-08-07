@@ -28,11 +28,11 @@ using std::weak_ordering;
 void
 test01()
 {
-  int one = 1, two = 2;
+  const int one = 1, two = 2;
 
-  VERIFY( weak_order(one, two) == weak_ordering::less );
-  VERIFY( weak_order(one, one) == weak_ordering::equivalent );
-  VERIFY( weak_order(two, one) == weak_ordering::greater );
+  static_assert( weak_order(one, two) == weak_ordering::less );
+  static_assert( weak_order(one, one) == weak_ordering::equivalent );
+  static_assert( weak_order(two, one) == weak_ordering::greater );
   static_assert( noexcept(weak_order(1, 1)) );
 }
 
@@ -44,45 +44,46 @@ constexpr weak_ordering different_cv_quals(int i, const int j)
 void
 test02()
 {
-  int fortytwo = 42, nines = 999, lots = 1000;
+  const int fortytwo = 42, nines = 999, lots = 1000;
 
-  VERIFY( different_cv_quals(fortytwo, nines) == weak_ordering::less );
-  VERIFY( different_cv_quals(-nines, -nines) == weak_ordering::equivalent );
-  VERIFY( different_cv_quals(-nines, -lots) == weak_ordering::greater );
+  static_assert( different_cv_quals(fortytwo, nines) == weak_ordering::less );
+  static_assert( different_cv_quals(-nines, -nines) == weak_ordering::equivalent );
+  static_assert( different_cv_quals(-nines, -lots) == weak_ordering::greater );
 }
 
 void
 test03()
 {
-  double zero = 0.0;
-  VERIFY( weak_order(zero, zero) == weak_ordering::equivalent );
-  VERIFY( weak_order(-zero, -zero) == weak_ordering::equivalent );
-  VERIFY( weak_order(-zero, zero) == weak_ordering::equivalent );
-  VERIFY( weak_order(zero, -zero) == weak_ordering::equivalent );
+  constexpr double zero = 0.0;
+  static_assert( weak_order(zero, zero) == weak_ordering::equivalent );
+  static_assert( weak_order(-zero, -zero) == weak_ordering::equivalent );
+  static_assert( weak_order(-zero, zero) == weak_ordering::equivalent );
+  static_assert( weak_order(zero, -zero) == weak_ordering::equivalent );
 
-  double min = std::numeric_limits<double>::lowest();
-  double max = std::numeric_limits<double>::max();
-  double nan = std::numeric_limits<double>::quiet_NaN();
-  double inf = std::numeric_limits<double>::infinity();
-  double denorm = std::numeric_limits<double>::denorm_min();
-  double smallest = std::numeric_limits<double>::min();
-  double epsilon = std::numeric_limits<double>::epsilon();
-  VERIFY( weak_order(denorm, smallest) == weak_ordering::less );
-  VERIFY( weak_order(denorm, 0.0) == weak_ordering::greater );
+  constexpr double min = std::numeric_limits<double>::lowest();
+  constexpr double max = std::numeric_limits<double>::max();
+  constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+  constexpr double inf = std::numeric_limits<double>::infinity();
+  constexpr double denorm = std::numeric_limits<double>::denorm_min();
+  constexpr double smallest = std::numeric_limits<double>::min();
+  constexpr double epsilon = std::numeric_limits<double>::epsilon();
+  static_assert( weak_order(denorm, smallest) == weak_ordering::less );
+  static_assert( weak_order(denorm, 0.0) == weak_ordering::greater );
+  // FIXME: these should all use static_assert
   VERIFY( weak_order(0.0, nan) == weak_ordering::less );
-  VERIFY( weak_order(nan, nan) == weak_ordering::equivalent );
-  VERIFY( weak_order(nan, -nan) == weak_ordering::greater );
-  VERIFY( weak_order(-nan, nan) == weak_ordering::less );
+  static_assert( weak_order(nan, nan) == weak_ordering::equivalent );
+  static_assert( weak_order(nan, -nan) == weak_ordering::greater );
+  static_assert( weak_order(-nan, nan) == weak_ordering::less );
   VERIFY( weak_order(nan, 0.0) == weak_ordering::greater );
   VERIFY( weak_order(-nan, 0.0) == weak_ordering::less );
   VERIFY( weak_order(-nan, min) == weak_ordering::less );
-  VERIFY( weak_order(-inf, min) == weak_ordering::less );
+  static_assert( weak_order(-inf, min) == weak_ordering::less );
   VERIFY( weak_order(-nan, -inf) == weak_ordering::less );
   VERIFY( weak_order(-inf, -nan) == weak_ordering::greater );
-  VERIFY( weak_order(max, inf) == weak_ordering::less );
-  VERIFY( weak_order(inf, max) == weak_ordering::greater );
+  static_assert( weak_order(max, inf) == weak_ordering::less );
+  static_assert( weak_order(inf, max) == weak_ordering::greater );
   VERIFY( weak_order(inf, nan) == weak_ordering::less );
-  VERIFY( weak_order(1.0, 1.0+epsilon) == weak_ordering::less );
+  static_assert( weak_order(1.0, 1.0+epsilon) == weak_ordering::less );
 }
 
 namespace N
@@ -108,6 +109,7 @@ test04()
   X one{1};
   X negone{-1};
 
+  // FIXME: these should all use static_assert
   VERIFY( weak_order(one, X{1}) == weak_ordering::equivalent );
   VERIFY( weak_order(negone, X{-2}) == weak_ordering::equivalent );
   VERIFY( weak_order(one, X{2}) == weak_ordering::greater );

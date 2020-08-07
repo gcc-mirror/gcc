@@ -11,9 +11,8 @@ foo ()
   void *msg, *map;
   uint64_t key;
   uint64_t flags;
-  
-  ret = bpf_msg_redirect_map (msg, map, key,
-					       flags);
+
+  ret = bpf_msg_redirect_map (msg, map, key, flags);
 }
 
 /* { dg-final { scan-assembler "call\t60" } } */

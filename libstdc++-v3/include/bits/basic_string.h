@@ -940,20 +940,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { this->resize(__n, _CharT()); }
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       ///  A non-binding request to reduce capacity() to size().
       void
       shrink_to_fit() noexcept
-      {
-#if __cpp_exceptions
-	if (capacity() > size())
-	  {
-	    try
-	      { reserve(0); }
-	    catch(...)
-	      { }
-	  }
-#endif
-      }
+      { reserve(); }
+#pragma GCC diagnostic pop
 #endif
 
       /**
@@ -985,7 +978,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  data.
        */
       void
-      reserve(size_type __res_arg = 0);
+      reserve(size_type __res_arg);
+
+      /**
+       *  Equivalent to shrink_to_fit().
+       */
+#if __cplusplus > 201703L
+      [[deprecated("use shrink_to_fit() instead")]]
+#endif
+      void
+      reserve();
 
       /**
        *  Erases the string, making it empty.
@@ -3942,20 +3944,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { this->resize(__n, _CharT()); }
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       ///  A non-binding request to reduce capacity() to size().
       void
-      shrink_to_fit() _GLIBCXX_NOEXCEPT
-      {
-#if __cpp_exceptions
-	if (capacity() > size())
-	  {
-	    try
-	      { reserve(0); }
-	    catch(...)
-	      { }
-	  }
-#endif
-      }
+      shrink_to_fit() noexcept
+      { reserve(); }
+#pragma GCC diagnostic pop
 #endif
 
       /**
@@ -3984,7 +3979,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  data.
        */
       void
-      reserve(size_type __res_arg = 0);
+      reserve(size_type __res_arg);
+
+      /// Equivalent to shrink_to_fit().
+#if __cplusplus > 201703L
+      [[deprecated("use shrink_to_fit() instead")]]
+#endif
+      void
+      reserve();
 
       /**
        *  Erases the string, making it empty.

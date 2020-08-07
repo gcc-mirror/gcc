@@ -280,29 +280,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     reserve(size_type __res)
     {
-      // Make sure we don't shrink below the current size.
-      if (__res < length())
-	__res = length();
-
       const size_type __capacity = capacity();
-      if (__res != __capacity)
-	{
-	  if (__res > __capacity
-	      || __res > size_type(_S_local_capacity))
-	    {
-	      pointer __tmp = _M_create(__res, __capacity);
-	      this->_S_copy(__tmp, _M_data(), length() + 1);
-	      _M_dispose();
-	      _M_data(__tmp);
-	      _M_capacity(__res);
-	    }
-	  else if (!_M_is_local())
-	    {
-	      this->_S_copy(_M_local_data(), _M_data(), length() + 1);
-	      _M_destroy(__capacity);
-	      _M_data(_M_local_data());
-	    }
-	}
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2968. Inconsistencies between basic_string reserve and
+      // vector/unordered_map/unordered_set reserve functions
+      // P0966 reserve should not shrink
+      if (__res <= __capacity)
+	return;
+
+      pointer __tmp = _M_create(__res, __capacity);
+      this->_S_copy(__tmp, _M_data(), length() + 1);
+      _M_dispose();
+      _M_data(__tmp);
+      _M_capacity(__res);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -340,6 +330,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->_S_move(_M_data() + __pos, _M_data() + __pos + __n, __how_much);
 
       _M_set_length(length() - __n);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    void
+    basic_string<_CharT, _Traits, _Alloc>::
+    reserve()
+    {
+      if (_M_is_local())
+	return;
+
+      const size_type __length = length();
+      const size_type __capacity = _M_allocated_capacity;
+
+      if (__length <= size_type(_S_local_capacity))
+	{
+	  this->_S_copy(_M_local_data(), _M_data(), __length + 1);
+	  _M_destroy(__capacity);
+	  _M_data(_M_local_data());
+	}
+#if __cpp_exceptions
+      else if (__length < __capacity)
+	try
+	  {
+	    pointer __tmp
+	      = _Alloc_traits::allocate(_M_get_allocator(), __length + 1);
+	    this->_S_copy(__tmp, _M_data(), __length + 1);
+	    _M_dispose();
+	    _M_data(__tmp);
+	    _M_capacity(__length);
+	  }
+	catch (const __cxxabiv1::__forced_unwind&)
+	  { throw; }
+	catch (...)
+	  { /* swallow the exception */ }
+#endif
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -953,16 +978,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     reserve(size_type __res)
     {
-      if (__res != this->capacity() || _M_rep()->_M_is_shared())
-        {
-	  // Make sure we don't shrink below the current size
-	  if (__res < this->size())
-	    __res = this->size();
-	  const allocator_type __a = get_allocator();
-	  _CharT* __tmp = _M_rep()->_M_clone(__a, __res - this->size());
-	  _M_rep()->_M_dispose(__a);
-	  _M_data(__tmp);
-        }
+      const size_type __capacity = capacity();
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2968. Inconsistencies between basic_string reserve and
+      // vector/unordered_map/unordered_set reserve functions
+      // P0966 reserve should not shrink
+      if (__res <= __capacity)
+	{
+	  if (!_M_rep()->_M_is_shared())
+	    return;
+
+	  // unshare, but keep same capacity
+	  __res = __capacity;
+	}
+
+      const allocator_type __a = get_allocator();
+      _CharT* __tmp = _M_rep()->_M_clone(__a, __res - this->size());
+      _M_rep()->_M_dispose(__a);
+      _M_data(__tmp);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -1006,7 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // The standard places no restriction on allocating more memory
       // than is strictly needed within this layer at the moment or as
-      // requested by an explicit application call to reserve().
+      // requested by an explicit application call to reserve(n).
 
       // Many malloc implementations perform quite poorly when an
       // application attempts to allocate memory in a stepwise fashion
@@ -1138,6 +1172,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__n2)
 	_M_copy(_M_data() + __pos1, __s, __n2);
       return *this;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    void
+    basic_string<_CharT, _Traits, _Alloc>::
+    reserve()
+    {
+      if (length() < capacity() || _M_rep()->_M_is_shared())
+	try
+	  {
+	    const allocator_type __a = get_allocator();
+	    _CharT* __tmp = _M_rep()->_M_clone(__a);
+	    _M_rep()->_M_dispose(__a);
+	    _M_data(__tmp);
+	  }
+	catch (const __cxxabiv1::__forced_unwind&)
+	  { throw; }
+	catch (...)
+	  { /* swallow the exception */ }
     }
 
     template<typename _CharT, typename _Traits, typename _Alloc>

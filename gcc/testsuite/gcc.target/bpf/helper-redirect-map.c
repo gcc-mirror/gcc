@@ -11,7 +11,7 @@ foo ()
   void *map;
   uint32_t key;
   uint64_t flags;
-  
+
   ret = bpf_redirect_map (map, key, flags);
 }
 

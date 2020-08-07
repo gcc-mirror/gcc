@@ -10,7 +10,7 @@ foo ()
   int ret;
   void *msg;
   int len;
-  
+
   ret = bpf_msg_pull_data (msg, len);
 }
 

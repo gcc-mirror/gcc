@@ -3461,40 +3461,42 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (vec_cond @0 (op! @3 @1) (op! @3 @2))))
 #endif
 
-/* (v ? w : 0) ? a : b is just (v & w) ? a : b  */
+/* (v ? w : 0) ? a : b is just (v & w) ? a : b
+   Currently disabled after pass lvec because ARM understands
+   VEC_COND_EXPR<v==w,-1,0> but not a plain v==w fed to BIT_IOR_EXPR.  */
 (simplify
  (vec_cond (vec_cond:s @0 @3 integer_zerop) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_and @0 @3) @1 @2)))
 (simplify
  (vec_cond (vec_cond:s @0 integer_all_onesp @3) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_ior @0 @3) @1 @2)))
 (simplify
  (vec_cond (vec_cond:s @0 integer_zerop @3) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_ior @0 (bit_not @3)) @2 @1)))
 (simplify
  (vec_cond (vec_cond:s @0 @3 integer_all_onesp) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_and @0 (bit_not @3)) @2 @1)))
 
 /* c1 ? c2 ? a : b : b  -->  (c1 & c2) ? a : b  */
 (simplify
  (vec_cond @0 (vec_cond:s @1 @2 @3) @3)
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_and @0 @1) @2 @3)))
 (simplify
  (vec_cond @0 @2 (vec_cond:s @1 @2 @3))
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_ior @0 @1) @2 @3)))
 (simplify
  (vec_cond @0 (vec_cond:s @1 @2 @3) @2)
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_ior (bit_not @0) @1) @2 @3)))
 (simplify
  (vec_cond @0 @3 (vec_cond:s @1 @2 @3))
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_and (bit_not @0) @1) @2 @3)))
 
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also

@@ -10,7 +10,7 @@ foo ()
   uint32_t ret;
   void *skb;
   uint32_t hash;
-  
+
   ret = bpf_set_hash (skb, hash);
 }
 

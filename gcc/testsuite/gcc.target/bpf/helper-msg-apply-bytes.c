@@ -10,7 +10,7 @@ foo ()
   int ret;
   void *msg;
   uint32_t bytes;
-  
+
   ret = bpf_msg_apply_bytes (msg, bytes);
 }
 

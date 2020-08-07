@@ -29,4 +29,3 @@
 (define_constraint "S"
   "A constant call address."
   (match_code "const,symbol_ref,label_ref,const_int"))
-
