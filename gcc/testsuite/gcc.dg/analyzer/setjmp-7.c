@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_jumps } */
+
 #include "test-setjmp.h"
 #include <stddef.h>
 #include <stdlib.h>

@@ -1,5 +1,6 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
+/* { dg-require-effective-target indirect_jumps } */
 
 #include "test-setjmp.h"
 #include "analyzer-decls.h"

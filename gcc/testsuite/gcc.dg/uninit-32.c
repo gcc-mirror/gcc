@@ -1,7 +1,8 @@
 /* PR middle-end/10138 - warn for uninitialized arrays passed as const*
    arguments
    { dg-do compile }
-   { dg-options "-O -Wall" } */
+   { dg-options "-O -Wall" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 
