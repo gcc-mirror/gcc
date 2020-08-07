@@ -126,6 +126,18 @@ package body Get_Targ is
       return C_Get_Long_Long_Size;
    end Get_Long_Long_Size;
 
+   -----------------------------
+   -- Get_Long_Long_Long_Size --
+   -----------------------------
+
+   function Get_Long_Long_Long_Size return Pos is
+      function C_Get_Long_Long_Long_Size return Pos;
+      pragma Import (C, C_Get_Long_Long_Long_Size,
+                        "get_target_long_long_long_size");
+   begin
+      return C_Get_Long_Long_Long_Size;
+   end Get_Long_Long_Long_Size;
+
    ----------------------
    -- Get_Pointer_Size --
    ----------------------
@@ -309,10 +321,11 @@ package body Get_Targ is
    function Width_From_Size (Size : Pos) return Pos is
    begin
       case Size is
-         when  8     => return  4;
-         when 16     => return  6;
-         when 32     => return 11;
-         when 64     => return 21;
+         when   8    => return  4;
+         when  16    => return  6;
+         when  32    => return 11;
+         when  64    => return 21;
+         when 128    => return 40;
          when others => raise Program_Error;
       end case;
    end Width_From_Size;

@@ -33,6 +33,8 @@ with Ada.Unchecked_Conversion;
 
 package body System.Scalar_Values is
 
+   use Interfaces;
+
    ----------------
    -- Initialize --
    ----------------

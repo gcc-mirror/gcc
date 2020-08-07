@@ -41,13 +41,14 @@ package System.Unsigned_Types is
    pragma Pure;
    pragma No_Elaboration_Code_All;
 
-   type Short_Short_Unsigned is mod 2 ** Short_Short_Integer'Size;
-   type Short_Unsigned       is mod 2 ** Short_Integer'Size;
-   type Unsigned             is mod 2 ** Integer'Size;
-   type Long_Unsigned        is mod 2 ** Long_Integer'Size;
-   type Long_Long_Unsigned   is mod 2 ** Long_Long_Integer'Size;
+   type Short_Short_Unsigned    is mod 2 ** Short_Short_Integer'Size;
+   type Short_Unsigned          is mod 2 ** Short_Integer'Size;
+   type Unsigned                is mod 2 ** Integer'Size;
+   type Long_Unsigned           is mod 2 ** Long_Integer'Size;
+   type Long_Long_Unsigned      is mod 2 ** Long_Long_Integer'Size;
+   type Long_Long_Long_Unsigned is mod Max_Binary_Modulus;
 
-   type Float_Unsigned       is mod 2 ** Float'Size;
+   type Float_Unsigned          is mod 2 ** Float'Size;
    --  Used in the implementation of Is_Negative intrinsic (see Exp_Intr)
 
    type Packed_Byte is mod 2 ** 8;
@@ -214,6 +215,26 @@ package System.Unsigned_Types is
    function Rotate_Right
      (Value  : Long_Long_Unsigned;
       Amount : Natural) return Long_Long_Unsigned;
+
+   function Shift_Left
+     (Value  : Long_Long_Long_Unsigned;
+      Amount : Natural) return Long_Long_Long_Unsigned;
+
+   function Shift_Right
+     (Value  : Long_Long_Long_Unsigned;
+      Amount : Natural) return Long_Long_Long_Unsigned;
+
+   function Shift_Right_Arithmetic
+     (Value  : Long_Long_Long_Unsigned;
+      Amount : Natural) return Long_Long_Long_Unsigned;
+
+   function Rotate_Left
+     (Value  : Long_Long_Long_Unsigned;
+      Amount : Natural) return Long_Long_Long_Unsigned;
+
+   function Rotate_Right
+     (Value  : Long_Long_Long_Unsigned;
+      Amount : Natural) return Long_Long_Long_Unsigned;
 
    pragma Import (Intrinsic, Shift_Left);
    pragma Import (Intrinsic, Shift_Right);

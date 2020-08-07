@@ -73,6 +73,7 @@ package Uintp is
    Uint_63  : constant Uint;
    Uint_64  : constant Uint;
    Uint_80  : constant Uint;
+   Uint_127 : constant Uint;
    Uint_128 : constant Uint;
 
    Uint_Minus_1   : constant Uint;
@@ -479,6 +480,7 @@ private
    Uint_63  : constant Uint := Uint (Uint_Direct_Bias + 63);
    Uint_64  : constant Uint := Uint (Uint_Direct_Bias + 64);
    Uint_80  : constant Uint := Uint (Uint_Direct_Bias + 80);
+   Uint_127 : constant Uint := Uint (Uint_Direct_Bias + 127);
    Uint_128 : constant Uint := Uint (Uint_Direct_Bias + 128);
 
    Uint_Minus_1   : constant Uint := Uint (Uint_Direct_Bias - 1);

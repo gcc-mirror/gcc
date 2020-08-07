@@ -4586,7 +4586,7 @@ package body Exp_Attr is
          --    b) The integer value is negative. In this case, we know that the
          --    result is modulus + value, where the value might be as small as
          --    -modulus. The trouble is what type do we use to do the subtract.
-         --    No type will do, since modulus can be as big as 2**64, and no
+         --    No type will do, since modulus can be as big as 2**128, and no
          --    integer type accommodates this value. Let's do bit of algebra
 
          --         modulus + value

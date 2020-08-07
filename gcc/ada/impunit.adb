@@ -687,7 +687,7 @@ package body Impunit is
    function Get_Kind_Of_File (File : String) return Kind_Of_Unit is
       pragma Assert (File'First = 1);
 
-      Buffer : String (1 .. 8);
+      Buffer : String (1 .. 9);
 
    begin
       Error_Msg_Strlen := 0;
@@ -701,13 +701,6 @@ package body Impunit is
          return Ada_95_Unit;
       end if;
 
-      --  If length of file name is greater than 12, not predefined. The value
-      --  12 here is an 8 char name with extension .ads.
-
-      if File'Length > 12 then
-         return Not_Predefined_Unit;
-      end if;
-
       --  Not predefined if file name does not start with a- g- s- i-
 
       if File'Length < 3
@@ -717,6 +710,16 @@ package body Impunit is
             and then File (1) /= 'g'
             and then File (1) /= 'i'
             and then File (1) /= 's')
+      then
+         return Not_Predefined_Unit;
+      end if;
+
+      --  If length of file name is greater than 12, not predefined. The value
+      --  12 here is an 8 char name with extension .ads. The exception of 13 is
+      --  for the implementation units of the 128-bit types under System.
+
+      if File'Length > 12
+        and then not (File'Length = 13 and then File (1) = 's')
       then
          return Not_Predefined_Unit;
       end if;
@@ -739,7 +742,7 @@ package body Impunit is
       --  See if name is in 95 list
 
       for J in Non_Imp_File_Names_95'Range loop
-         if Buffer = Non_Imp_File_Names_95 (J).Fname then
+         if Buffer (1 .. 8) = Non_Imp_File_Names_95 (J).Fname then
             return Ada_95_Unit;
          end if;
       end loop;
@@ -747,7 +750,7 @@ package body Impunit is
       --  See if name is in 2005 list
 
       for J in Non_Imp_File_Names_05'Range loop
-         if Buffer = Non_Imp_File_Names_05 (J).Fname then
+         if Buffer (1 .. 8) = Non_Imp_File_Names_05 (J).Fname then
             return Ada_2005_Unit;
          end if;
       end loop;
@@ -755,7 +758,7 @@ package body Impunit is
       --  See if name is in 2012 list
 
       for J in Non_Imp_File_Names_12'Range loop
-         if Buffer = Non_Imp_File_Names_12 (J).Fname then
+         if Buffer (1 .. 8) = Non_Imp_File_Names_12 (J).Fname then
             return Ada_2012_Unit;
          end if;
       end loop;
@@ -763,7 +766,7 @@ package body Impunit is
       --  See if name is in 202X list
 
       for J in Non_Imp_File_Names_2X'Range loop
-         if Buffer = Non_Imp_File_Names_2X (J).Fname then
+         if Buffer (1 .. 8) = Non_Imp_File_Names_2X (J).Fname then
             return Ada_202X_Unit;
          end if;
       end loop;
@@ -927,13 +930,6 @@ package body Impunit is
          return True;
       end if;
 
-      --  If length of file name is greater than 12, then it's a user unit
-      --  and not a GNAT implementation defined unit.
-
-      if Name_Len > 12 then
-         return True;
-      end if;
-
       --  Implementation defined if unit in the gnat hierarchy
 
       if (Name_Len = 8 and then Name_Buffer (1 .. 8) = "gnat.ads")
@@ -951,6 +947,16 @@ package body Impunit is
                  Name_Buffer (1) /= 'i'
                    and then
                  Name_Buffer (1) /= 's')
+      then
+         return True;
+      end if;
+
+      --  If length of file name is greater than 12, not predefined. The value
+      --  12 here is an 8 char name with extension .ads. The exception of 13 is
+      --  for the implementation units of the 128-bit types under System.
+
+      if Name_Len > 12
+        and then not (Name_Len = 13 and then Name_Buffer (1) = 's')
       then
          return True;
       end if;

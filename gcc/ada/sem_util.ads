@@ -80,7 +80,7 @@ package Sem_Util is
    function Addressable (V : Int)  return Boolean;
    pragma Inline (Addressable);
    --  Returns True if the value of V is the word size or an addressable factor
-   --  of the word size (typically 8, 16, 32 or 64).
+   --  or multiple of the word size (typically 8, 16, 32, 64 or 128).
 
    procedure Aggregate_Constraint_Checks
      (Exp       : Node_Id;

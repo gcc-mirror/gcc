@@ -114,6 +114,9 @@
 --  we replace the prefix ada.wide_wide_text_io- by a-zt- and then
 --  the normal crunching rules are applied.
 
+--  The units implementing the support of 128-bit types are crunched to 9 and
+--  System.Compare_Array_* is replaced with System.CA_* before crunching.
+
 --  These are the only irregularity required (so far) to keep the file names
 --  unique in the standard predefined libraries.
 

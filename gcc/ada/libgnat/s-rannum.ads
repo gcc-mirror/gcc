@@ -76,6 +76,7 @@ is
 
    function Random (Gen : Generator) return Interfaces.Unsigned_32;
    function Random (Gen : Generator) return Interfaces.Unsigned_64;
+   function Random (Gen : Generator) return Interfaces.Unsigned_128;
    --  Return pseudo-random numbers uniformly distributed on T'First .. T'Last
    --  for builtin integer types.
 

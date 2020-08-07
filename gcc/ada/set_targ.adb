@@ -55,6 +55,7 @@ package body Set_Targ is
    S_Float_Words_BE             : constant Str := "Float_Words_BE";
    S_Int_Size                   : constant Str := "Int_Size";
    S_Long_Double_Size           : constant Str := "Long_Double_Size";
+   S_Long_Long_Long_Size        : constant Str := "Long_Long_Long_Size";
    S_Long_Long_Size             : constant Str := "Long_Long_Size";
    S_Long_Size                  : constant Str := "Long_Size";
    S_Maximum_Alignment          : constant Str := "Maximum_Alignment";
@@ -83,6 +84,7 @@ package body Set_Targ is
           S_Float_Size                 'Unrestricted_Access,
           S_Float_Words_BE             'Unrestricted_Access,
           S_Int_Size                   'Unrestricted_Access,
+          S_Long_Long_Long_Size        'Unrestricted_Access,
           S_Long_Double_Size           'Unrestricted_Access,
           S_Long_Long_Size             'Unrestricted_Access,
           S_Long_Size                  'Unrestricted_Access,
@@ -111,6 +113,7 @@ package body Set_Targ is
           Float_Words_BE             'Address,
           Int_Size                   'Address,
           Long_Double_Size           'Address,
+          Long_Long_Long_Size        'Address,
           Long_Long_Size             'Address,
           Long_Size                  'Address,
           Maximum_Alignment          'Address,
@@ -934,6 +937,7 @@ begin
             Double_Scalar_Alignment    := Get_Double_Scalar_Alignment;
             Float_Words_BE             := Get_Float_Words_BE;
             Int_Size                   := Get_Int_Size;
+            Long_Long_Long_Size        := Get_Long_Long_Long_Size;
             Long_Long_Size             := Get_Long_Long_Size;
             Long_Size                  := Get_Long_Size;
             Maximum_Alignment          := Get_Maximum_Alignment;

@@ -100,6 +100,15 @@ package body Get_Targ is
       return 64;
    end Get_Long_Long_Size;
 
+   -----------------------------
+   -- Get_Long_Long_Long_Size --
+   -----------------------------
+
+   function Get_Long_Long_Long_Size return Pos is
+   begin
+      return 64;
+   end Get_Long_Long_Long_Size;
+
    ----------------------
    -- Get_Pointer_Size --
    ----------------------

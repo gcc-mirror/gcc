@@ -80,8 +80,8 @@ package body Freeze is
    --  Typ is a type that is being frozen. If no size clause is given,
    --  but a default Esize has been computed, then this default Esize is
    --  adjusted up if necessary to be consistent with a given alignment,
-   --  but never to a value greater than Long_Long_Integer'Size. This
-   --  is used for all discrete types and for fixed-point types.
+   --  but never to a value greater than System_Max_Integer_Size. This is
+   --  used for all discrete types and for fixed-point types.
 
    procedure Build_And_Analyze_Renamed_Body
      (Decl  : Node_Id;
@@ -231,9 +231,7 @@ package body Freeze is
       if Known_Esize (Typ) and then Known_Alignment (Typ) then
          Align := Alignment_In_Bits (Typ);
 
-         if Align > Esize (Typ)
-           and then Align <= Standard_Long_Long_Integer_Size
-         then
+         if Align > Esize (Typ) and then Align <= System_Max_Integer_Size then
             Set_Esize (Typ, Align);
          end if;
       end if;
@@ -2204,7 +2202,7 @@ package body Freeze is
       --  generated a message on the template.
 
       procedure Check_Suspicious_Modulus (Utype : Entity_Id);
-      --  Give warning for modulus of 8, 16, 32, or 64 given as an explicit
+      --  Give warning for modulus of 8, 16, 32, 64 or 128 given as an explicit
       --  integer literal without an explicit corresponding size clause. The
       --  caller has checked that Utype is a modular integer type.
 
@@ -2896,7 +2894,7 @@ package body Freeze is
                         end if;
                      end if;
 
-                     --  Bit packing is never needed for 8, 16, 32, 64
+                     --  Bit packing is never needed for 8, 16, 32, 64 or 128
 
                      if Addressable (Csiz) then
 

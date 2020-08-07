@@ -89,7 +89,20 @@ begin
       Startloc := 3;
       Buffer (2 .. Len - 5) := Buffer (7 .. Len);
       Curlen := Len - 5;
-      Krlen  := 8;
+      if Buffer (Curlen - 2 .. Curlen) = "128"
+        or else Buffer (3 .. 9) = "exn_lll"
+        or else Buffer (3 .. 9) = "exp_lll"
+        or else (Buffer (3 .. 6) = "pack" and then Curlen = 10)
+      then
+         if Buffer (3 .. 15) = "compare_array" then
+            Buffer (3 .. 4) := "ca";
+            Buffer (5 .. Curlen - 11) := Buffer (16 .. Curlen);
+            Curlen := Curlen - 11;
+         end if;
+         Krlen := 9;
+      else
+         Krlen := 8;
+      end if;
 
    elsif Len >= 11 and then Buffer (1 .. 11) = "interfaces-" then
       Startloc := 3;

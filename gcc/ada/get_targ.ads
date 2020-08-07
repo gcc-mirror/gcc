@@ -68,6 +68,9 @@ package Get_Targ is
    function Get_Long_Long_Size             return Pos;
    --  Size of Standard.Long_Long_Integer
 
+   function Get_Long_Long_Long_Size        return Pos;
+   --  Size of Standard.Long_Long_Long_Integer
+
    function Get_Pointer_Size               return Pos;
    --  Size of System.Address
 

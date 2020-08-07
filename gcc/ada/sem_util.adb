@@ -428,14 +428,13 @@ package body Sem_Util is
    -- Addressable --
    -----------------
 
-   --  For now, just 8/16/32/64
-
    function Addressable (V : Uint) return Boolean is
    begin
       return V = Uint_8  or else
              V = Uint_16 or else
              V = Uint_32 or else
-             V = Uint_64;
+             V = Uint_64 or else
+             (V = Uint_128 and then System_Max_Integer_Size = 128);
    end Addressable;
 
    function Addressable (V : Int) return Boolean is
@@ -443,7 +442,8 @@ package body Sem_Util is
       return V = 8  or else
              V = 16 or else
              V = 32 or else
-             V = 64;
+             V = 64 or else
+             V = System_Max_Integer_Size;
    end Addressable;
 
    ---------------------------------
@@ -14281,10 +14281,20 @@ package body Sem_Util is
                Name_Signed_16       => RTE (RE_IS_Is2),
                Name_Signed_32       => RTE (RE_IS_Is4),
                Name_Signed_64       => RTE (RE_IS_Is8),
+               Name_Signed_128      => Empty,
                Name_Unsigned_8      => RTE (RE_IS_Iu1),
                Name_Unsigned_16     => RTE (RE_IS_Iu2),
                Name_Unsigned_32     => RTE (RE_IS_Iu4),
-               Name_Unsigned_64     => RTE (RE_IS_Iu8));
+               Name_Unsigned_64     => RTE (RE_IS_Iu8),
+               Name_Unsigned_128    => Empty);
+
+            if System_Max_Integer_Size < 128 then
+               Invalid_Binder_Values (Name_Signed_128)   := RTE (RE_IS_Is8);
+               Invalid_Binder_Values (Name_Unsigned_128) := RTE (RE_IS_Iu8);
+            else
+               Invalid_Binder_Values (Name_Signed_128)   := RTE (RE_IS_Is16);
+               Invalid_Binder_Values (Name_Unsigned_128) := RTE (RE_IS_Iu16);
+            end if;
          end if;
       end Set_Invalid_Binder_Values;
 

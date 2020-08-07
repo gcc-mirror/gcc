@@ -233,8 +233,11 @@ package body Exp_Pakd is
          elsif T_Size <= 32 then
             Swap_RE := RE_Bswap_32;
 
-         else pragma Assert (T_Size <= 64);
+         elsif T_Size <= 64 then
             Swap_RE := RE_Bswap_64;
+
+         else pragma Assert (T_Size <= 128);
+            Swap_RE := RE_Bswap_128;
          end if;
 
          Swap_F := RTE (Swap_RE);

@@ -3136,7 +3136,7 @@ package body Sem_Ch4 is
    begin
       --  A special warning check, if we have an expression of the form:
       --    expr mod 2 * literal
-      --  where literal is 64 or less, then probably what was meant was
+      --  where literal is 128 or less, then probably what was meant was
       --    expr mod 2 ** literal
       --  so issue an appropriate warning.
 
@@ -3145,7 +3145,7 @@ package body Sem_Ch4 is
         and then Intval (Right_Opnd (N)) = Uint_2
         and then Nkind (Parent (N)) = N_Op_Multiply
         and then Nkind (Right_Opnd (Parent (N))) = N_Integer_Literal
-        and then Intval (Right_Opnd (Parent (N))) <= Uint_64
+        and then Intval (Right_Opnd (Parent (N))) <= Uint_128
       then
          Error_Msg_N
            ("suspicious MOD value, was '*'* intended'??M?", Parent (N));
