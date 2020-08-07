@@ -29,7 +29,6 @@ void epiphany_rust_target_cpu_info(void) {
     rust_add_target_info("target_arch", "epiphany");
 
     // llvm seems to have no support for sky (nor historical support), so names are made up by me
-    // TODO: very subject to change
     // TODO: should the "no" dichotomy be preserved? probably not, but which should be chosen?
     if (TARGET_HALF_REG_FILE)
         rust_add_target_info("target_feature", "half-reg-file");

@@ -29,7 +29,6 @@ void frv_rust_target_cpu_info(void) {
     rust_add_target_info("target_arch", "frv");
 
     // llvm seems to have no support for sky (nor historical support), so names are made up by me
-    // TODO: very subject to change
     // TODO maybe put in sub-arches as features? idk. might be useful in this case 
     if (TARGET_ACC_4)
         rust_add_target_info("target_feature", "acc-4");

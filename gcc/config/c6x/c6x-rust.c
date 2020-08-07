@@ -29,7 +29,6 @@ void c6x_rust_target_cpu_info(void) {
     rust_add_target_info("target_arch", "tic6x");
 
     // llvm seems to have no support for c6x (nor historical support), so names are made up by me
-    // TODO: very subject to change
     // TODO maybe put in sub-arches as features? idk
     if (TARGET_DSBT)
         rust_add_target_info("target_feature", "dsbt");

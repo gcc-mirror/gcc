@@ -468,7 +468,8 @@ do { \
     rust_add_target_info("target_arch", "ft32");  \
     if (TARGET_SIM)   \
       rust_add_target_info("target_feature", "sim");   \
-    /*TODO: figure out how to use lra option*/ \
+    if (ft32_lra_flag)   \
+      rust_add_target_info("target_feature", "lra");   \
     if (TARGET_NODIV)   \
       rust_add_target_info("target_feature", "nodiv");   \
     if (TARGET_FT32B)   \

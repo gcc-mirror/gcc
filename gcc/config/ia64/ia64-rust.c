@@ -95,8 +95,6 @@ void ia64_rust_target_cpu_info(void) {
         rust_add_target_info("target_feature", "early-stop-bits");
     // TODO: do fixed-range somehow (wouldn't work well as define, I don't think), same for tls-size
 
-    /* TODO: ensure that these variables below are actually accessible, and work (i.e. condition test not
-     * wrong way around). */
     if (mflag_sched_br_data_spec)
         rust_add_target_info("target_feature", "sched-br-data-spec");
     if (mflag_sched_ar_data_spec)

@@ -29,7 +29,6 @@ void cr16_rust_target_cpu_info(void) {
     rust_add_target_info("target_arch", "cr16");
 
     // llvm seems to have no support for cr16 (nor historical support), so names are made up by me
-    // TODO: very subject to change
     // TODO maybe put in sub-arches as features? idk
     if (TARGET_BIT_OPS)
         rust_add_target_info("target_feature", "bit-ops");
