@@ -8,7 +8,7 @@ void
 foo ()
 {
   uint64_t ret;
-  
+
   ret = bpf_get_current_cgroup_id ();
 }
 

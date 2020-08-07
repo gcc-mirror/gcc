@@ -9,7 +9,7 @@ foo ()
 {
   uint64_t ret;
   void *skb;
-  
+
   ret = bpf_skb_cgroup_id (skb);
 }
 

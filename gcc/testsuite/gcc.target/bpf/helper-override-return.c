@@ -10,7 +10,7 @@ foo ()
   int ret;
   void *regs;
   uint64_t rc;
-  
+
   ret = bpf_override_return (regs, rc);
 }
 

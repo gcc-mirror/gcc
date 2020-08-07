@@ -9,7 +9,7 @@ foo ()
 {
   void *ret, *map;
   uint64_t flags;
-  
+
   ret = bpf_get_local_storage (map, flags);
 }
 
