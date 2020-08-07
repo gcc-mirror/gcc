@@ -105,6 +105,6 @@ extern void parse_alignment_opts (void);
 extern void initialize_rtl (void);
 
 extern void init_additional_asm_names_file (void);
-extern void handle_additional_asm (bool);
+extern void handle_additional_asm (int);
 
 #endif /* ! GCC_TOPLEV_H */

@@ -1,3 +1,13 @@
+2020-08-07  Giuliano Belinasssi <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (childno): New variable.
+	(maybe_compile_in_parallel): Store current child number.
+	* gcc.c (sort_asm_files): New function.
+	* toplev.c (init_additional_asm_names_file): Output child number.
+	* toplev.h (init_additional_asm_names_file): Update interface.
+	* tree.c (get_file_function_name): Do not use randomness when
+	promoting names.
+
 2020-08-06  Giuliano Belinasssi <giuliano.belinassi@usp.br>
 
 	* symtab.c (change_decl_assembler_name): Remove RTL output if

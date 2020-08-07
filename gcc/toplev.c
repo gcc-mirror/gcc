@@ -915,33 +915,34 @@ init_additional_asm_names_file (void)
 
 /* Reinitialize the assembler file and store it in the additional asm file.  */
 
-void handle_additional_asm (bool child)
+void
+handle_additional_asm (int childno)
 {
   gcc_assert (split_outputs);
 
-  if (child)
-    {
-      const char *temp_asm_name = make_temp_file (".s");
-      asm_file_name = temp_asm_name;
+  if (childno < 0)
+    return;
 
-      if (asm_out_file == stdout)
-	fatal_error (UNKNOWN_LOCATION, "Unexpected asm output to stdout");
+  const char *temp_asm_name = make_temp_file (".s");
+  asm_file_name = temp_asm_name;
 
-      fclose (asm_out_file);
+  if (asm_out_file == stdout)
+    fatal_error (UNKNOWN_LOCATION, "Unexpected asm output to stdout");
 
-      asm_out_file = fopen (temp_asm_name, "w");
-      if (!asm_out_file)
-	fatal_error (UNKNOWN_LOCATION, "Unable to create asm output file.");
-    }
+  fclose (asm_out_file);
 
-    /* Reopen file as append mode. Here we assume that write to append file is
-       atomic, as it is in Linux.  */
-    additional_asm_filenames = fopen (split_outputs, "a");
-    if (!additional_asm_filenames)
-      fatal_error (UNKNOWN_LOCATION, "Unable open the temporary asm files container.");
+  asm_out_file = fopen (temp_asm_name, "w");
+  if (!asm_out_file)
+    fatal_error (UNKNOWN_LOCATION, "Unable to create asm output file");
 
-    fprintf (additional_asm_filenames, "%s\n", asm_file_name);
-    fclose (additional_asm_filenames);
+  /* Reopen file as append mode. Here we assume that write to append file is
+     atomic, as it is in Linux.  */
+  additional_asm_filenames = fopen (split_outputs, "a");
+  if (!additional_asm_filenames)
+    fatal_error (UNKNOWN_LOCATION, "Unable to open the temporary asm files container");
+
+  fprintf (additional_asm_filenames, "%d %s\n", childno, asm_file_name);
+  fclose (additional_asm_filenames);
 }
 
 /* A helper function; used as the reallocator function for cpp's line

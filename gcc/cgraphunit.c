@@ -2765,7 +2765,12 @@ static bool is_number (const char *str)
   return true;
 }
 
-static bool maybe_compile_in_parallel (void)
+/* If forked, which child am I?  */
+
+static int childno = -1;
+
+static bool
+maybe_compile_in_parallel (void)
 {
   struct symtab_node *node;
   int partitions, i, j;
@@ -2901,6 +2906,7 @@ static bool maybe_compile_in_parallel (void)
 	  pids[j] = fork ();
 	  if (pids[j] == 0)
 	    {
+	      childno = j;
 	      lto_apply_partition_mask (ltrans_partitions[j]);
 	      return true;
 	    }
@@ -2966,7 +2972,7 @@ symbol_table::compile (const char *name)
   /* Output everything.  */
   init_asm_output (name);
   if (split_outputs)
-    handle_additional_asm (true);
+    handle_additional_asm (childno);
 
   switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();

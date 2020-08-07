@@ -3311,6 +3311,26 @@ static bool has_hidden_E (int argc, const char *argv[])
   return false;
 }
 
+static void
+sort_asm_files (vec <char *> *_lines)
+{
+  vec <char *> &lines = *_lines;
+  int i, n = lines.length ();
+  char **temp_buf = XALLOCAVEC (char *, n);
+
+  for (i = 0; i < n; i++)
+    temp_buf[i] = lines[i];
+
+  for (i = 0; i < n; i++)
+    {
+      char *no_str = strtok (temp_buf[i], " ");
+      char *name = strtok (NULL, "");
+
+      int pos = atoi (no_str);
+      lines[pos] = name;
+    }
+}
+
 /* Append -fsplit-output=<tempfile> to all calls to compilers. Return true
    if a additional call to LD is required to merge the resulting files.  */
 
@@ -3382,6 +3402,8 @@ static void append_split_outputs (extra_arg_storer *storer,
 	  return; /* File not found.  This means that cc1* decided not to
 		      parallelize.  */
 	}
+
+      sort_asm_files (&additional_asm_files);
 
       if (n_commands != 1)
 	fatal_error (input_location,
