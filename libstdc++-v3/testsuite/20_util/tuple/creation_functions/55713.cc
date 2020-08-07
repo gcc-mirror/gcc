@@ -1,7 +1,4 @@
-// { dg-do run { target c++11 } }
-// { dg-options "-g -O0" }
-
-// Copyright (C) 2011-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,21 +15,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do compile { target c++11 } }
+
 #include <tuple>
-#include <string>
-#include <iostream>
 
-int
-main()
+struct A { };
+
+void f(A);
+
+struct B { B(std::tuple<A>); };
+
+void f(B);
+
+void test01()
 {
-  std::tuple<> t1;
-// { dg-final { note-test t1 {empty std::tuple} } }
-
-  std::tuple<std::string, int, std::tuple<>> t2{ "Johnny", 5, {} };
-// { dg-final { regexp-test t2 {std::tuple containing = {\[1\] = "Johnny", \[2\] = 5, \[3\] = empty std::tuple}} } }
-
-  std::cout << "\n";
-  return 0; // Mark SPOT
+  f(std::make_tuple(A())); // PR libstdc++/55713
 }
-
-// { dg-final { gdb-test SPOT } }
