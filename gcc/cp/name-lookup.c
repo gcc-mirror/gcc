@@ -4008,78 +4008,21 @@ mergeable_class_entities (tree klass, tree name)
 }
 
 /* Given a namespace-level binding BINDING, extract the current
-   module's VALUE and TYPE bindings.  If PARTITIONS is non-NULL, it
-   is a bitmap of the partitions to merge.  */
+   module's VALUE and TYPE bindings.  PARTITIONS tells us there are
+   partitions to consider.  */
 
 tree
-extract_module_binding (tree &binding, tree ns, bitmap partitions)
+extract_module_binding (tree binding, bitmap partitions)
 {
-  auto_vec<tree> ovls (partitions ? bitmap_count_bits (partitions) : 0);
-  tree *slot = NULL;
+  tree current = binding;
 
   if (TREE_CODE (binding) == MODULE_VECTOR)
-    {
-      module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (binding);
+    current = MODULE_VECTOR_CLUSTER (binding, 0).slots[MODULE_SLOT_CURRENT];
 
-      slot = reinterpret_cast <tree *> (&cluster->slots[MODULE_SLOT_CURRENT]);
-      if (partitions)
-	{
-	  // FIXME: Comment out of date, we do stream templates
-	  // correctly now.  Are we still doing the extra deduping
-	  // mentioned?
-	  /* Lazy loading can cause nested lookups due to template
-	     instantiations (this isn't right, but it is what we
-	     currently do).  That means deduping needs nesting.  To
-	     avoid that, do two passes.  When template instantiations
-	     are streamed too, the two-pass nature can go away.  */
-
-	  /* Collect the slots.  */
-	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (binding);
-	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
-	    {
-	      ix--;
-	      cluster++;
-	    }
-
-	  /* Do this in forward order, so we load modules in an order
-	     the user expects.  */
-	  for (; ix--; cluster++)
-	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
-	      {
-		/* Are we importing this module?  */
-		if (unsigned base = cluster->indices[jx].base)
-		  if (unsigned span = cluster->indices[jx].span)
-		    do
-		      if (bitmap_bit_p (partitions, base))
-			goto found;
-		    while (++base, --span);
-		continue;
-
-	      found:;
-		/* Is it loaded?  */
-		// FIXME: module_state::write ensures this before we
-		// get here
-		if (cluster->slots[jx].is_lazy ())
-		  {
-		    gcc_assert (cluster->indices[jx].span == 1);
-		    lazy_load_binding (cluster->indices[jx].base, ns,
-				       MODULE_VECTOR_NAME (binding),
-				       &cluster->slots[jx]);
-		  }
-
-		/* Load errors could mean there's nothing here.  */
-		if (tree bind = cluster->slots[jx])
-		  ovls.quick_push (bind);
-	      }
-	}
-    }
-  else
-    slot = &binding;
-
-  /* This TU's bindings.  */
-  tree type = MAYBE_STAT_TYPE (*slot);
-  slot = &MAYBE_STAT_DECL (*slot);
-  tree value = *slot;
+    /* This TU's bindings.  */
+  tree type = MAYBE_STAT_TYPE (current);
+  current = MAYBE_STAT_DECL (current);
+  tree value = current;
 
   /* Keep implicit typedef in type slot.  */
   if (value && DECL_IMPLICIT_TYPEDEF_P (value))
@@ -4088,43 +4031,81 @@ extract_module_binding (tree &binding, tree ns, bitmap partitions)
       value = NULL_TREE;
     }
 
-  if (unsigned ix = ovls.length ())
+  if (partitions && TREE_CODE (binding) == MODULE_VECTOR)
     {
-      /* Now dedup it all.  */
-
-      /* Dedup: Engage!  */
-      lookup_mark (value, true);
-      do
+      /* Process partition slots.  */
+      module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (binding);
+      unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (binding);
+      if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	{
-	  tree bind = ovls.pop ();
-	  tree btype = MAYBE_STAT_TYPE (bind);
-	  tree bval = MAYBE_STAT_DECL (bind);
-
-	  /* We should never see an anonymous namespace.  */
-	  gcc_assert (!(TREE_CODE (bval) == NAMESPACE_DECL
-			&& !DECL_NAME (bval)));
-
-	  /* As above, keep implicit typedef in btype.  */
-	  if (DECL_IMPLICIT_TYPEDEF_P (bval))
-	    {
-	      btype = bval;
-	      bval = NULL;
-	    }
-
-	  if (btype)
-	    {
-	      /* Types must be the same.  */
-	      gcc_assert (!type || type == btype);
-	      type = btype;
-	    }
-
-	  if (bval)
-	    value = lookup_maybe_add (bval, value, true);
+	  ix--;
+	  cluster++;
 	}
-      while (--ix);
 
-      /* Disengage!  */
-      lookup_mark (value, false);
+      bool deduping = MODULE_VECTOR_PARTITION_DUPS_P (binding);
+      if (deduping)
+	lookup_mark (value, true);
+
+      for (; ix--; cluster++)
+	for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	  if (!cluster->slots[jx].is_lazy ())
+	    /* Load errors could mean there's nothing here.  */
+	    if (tree bind = cluster->slots[jx])
+	      {
+		if (TREE_CODE (bind) == NAMESPACE_DECL
+		    && !DECL_NAMESPACE_ALIAS (bind))
+		  {
+		    if (unsigned base = cluster->indices[jx].base)
+		      if (unsigned span = cluster->indices[jx].span)
+			do
+			  if (bitmap_bit_p (partitions, base))
+			    goto found;
+			while (++base, --span);
+		    /* Not a partition's namespace.  */
+		    continue;
+		  found:
+		    if (!deduping)
+		      {
+			/* Namespaces are always shared, we must turn on
+			   deduping as we do not know otherwise.  */
+			lookup_mark (value, true);
+			deduping = true;
+		      }
+		    value = lookup_maybe_add (bind, value, deduping);
+		  }
+		else if (STAT_HACK_P (bind) && MODULE_BINDING_PARTITION_P (bind))
+		  {
+		    tree btype = STAT_TYPE (bind);
+		    tree bval = STAT_DECL (bind);
+
+		    /* We should never see an anonymous namespace.  */
+		    gcc_assert (!(TREE_CODE (bval) == NAMESPACE_DECL
+				  && !DECL_NAME (bval)));
+
+		    /* As above, keep implicit typedef in btype.  */
+		    if (DECL_IMPLICIT_TYPEDEF_P (bval))
+		      {
+			btype = bval;
+			bval = NULL;
+		      }
+
+		    if (btype)
+		      {
+			/* Types must be the same.  */
+			gcc_assert (!type || type == btype);
+			type = btype;
+		      }
+
+		    if (bval)
+		      // FIXME: Are we losing using and hidden
+		      // declaration information here?  Should we
+		      // propagate it into the overload?
+		      value = lookup_maybe_add (bval, value, deduping);
+		  }
+	      }
+
+      if (deduping)
+	lookup_mark (value, false);
     }
 
   if (type)

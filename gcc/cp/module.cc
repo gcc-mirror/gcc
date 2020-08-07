@@ -12291,7 +12291,7 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
   for (hash_table<named_decl_hash>::iterator iter
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    if (tree value = extract_module_binding (*iter, ns, partitions))
+    if (tree value = extract_module_binding (*iter, partitions))
       bindings.quick_push (value);
 
   /* Sort for reproducibility.  */
