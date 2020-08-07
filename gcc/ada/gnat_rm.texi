@@ -15515,7 +15515,7 @@ further details.
 @end itemize
 
 
-@multitable {xxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@multitable {xxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @headitem
 
 Type
@@ -15530,7 +15530,7 @@ Representation
 
 @tab
 
-8 bit signed
+8-bit signed
 
 @item
 
@@ -15538,7 +15538,7 @@ Representation
 
 @tab
 
-(Short) 16 bit signed
+16-bit signed
 
 @item
 
@@ -15546,7 +15546,7 @@ Representation
 
 @tab
 
-32 bit signed
+32-bit signed
 
 @item
 
@@ -15554,9 +15554,9 @@ Representation
 
 @tab
 
-64 bit signed (on most 64 bit targets,
-depending on the C definition of long).
-32 bit signed (all other targets)
+64-bit signed (on most 64-bit targets,
+depending on the C definition of long)
+32-bit signed (on all other targets)
 
 @item
 
@@ -15564,7 +15564,16 @@ depending on the C definition of long).
 
 @tab
 
-64 bit signed
+64-bit signed
+
+@item
+
+@emph{Long_Long_Long_Integer}
+
+@tab
+
+128-bit signed (on 64-bit targets)
+64-bit signed (on 32-bit targets)
 
 @end multitable
 
