@@ -294,9 +294,9 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE6insertE[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6insertEN9__gnu_cxx17__normal_iteratorIPwS2_EE[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE6rbeginEv;
-    _ZNSbIwSt11char_traitsIwESaIwEE7replaceEmm[PRm]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE6resizeEm*;
-    _ZNSbIwSt11char_traitsIwESaIwEE7reserveEm;
+    _ZNSbIwSt11char_traitsIwESaIwEE7replaceE[jmy][jmy]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6resizeE[jmy]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE7reserveE[jmy];
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_[NPRjmy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_S[56]*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
