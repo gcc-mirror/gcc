@@ -3672,16 +3672,10 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	  /* Errors could cause there to be nothing.  */
 	  continue;
 
-	tree type = NULL_TREE;
 	if (STAT_HACK_P (bind))
-	  {
-	    if (STAT_TYPE_VISIBLE_P (bind))
-	      type = STAT_TYPE (bind);
-	    bind = STAT_VISIBLE (bind);
-	  }
-
-	// FIXME: Deal with shadowed type?
-	gcc_checking_assert (!type);
+	  /* We do not have to check STAT_TYPE here, the xref_tag
+	     machinery deals with that problem. */
+	  bind = STAT_VISIBLE (bind);
 
 	for (ovl_iterator iter (bind); iter; ++iter)
 	  if (iter.using_p ())
@@ -3692,6 +3686,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 		/* The IDENTIFIER will have the type referring to the
 		   now-smashed TYPE_DECL, because ...?  Reset it.  */
 		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
+
 	      return match;
 	    }
       }

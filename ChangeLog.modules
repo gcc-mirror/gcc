@@ -1,5 +1,12 @@
 2020-08-07  Nathan Sidwell  <nathan@acm.org>
 
+	Shadowed type.
+	gcc/cp/
+	* name-lookup.c (check_module_override): No need to deal with
+	shadowed type here.
+	gcc/testsuite/
+	* g++.dg/modules/shadowed-1_[ab].C: New.
+
 	Simplify binding extraction.
 	gcc/cp/
 	* name-lookup.h (extract_module_binding): Drop NS arg.
