@@ -1,3 +1,67 @@
+2020-08-06  Andrew Luo  <andrewluotechnologies@outlook.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Use less greedy
+	patterns for basic_string members.
+	(GLIBCXX_3.4.29): Export new basic_string::reserve symbols.
+	* doc/xml/manual/status_cxx2020.xml: Update P0966 status.
+	* include/bits/basic_string.h (shrink_to_fit()): Call reserve().
+	(reserve(size_type)): Remove default argument.
+	(reserve()): Declare new overload.
+	[!_GLIBCXX_USE_CXX11_ABI] (shrink_to_fit, reserve): Likewise.
+	* include/bits/basic_string.tcc (reserve(size_type)): Remove
+	support for shrinking capacity.
+	(reserve()): Perform shrink-to-fit operation.
+	[!_GLIBCXX_USE_CXX11_ABI] (reserve): Likewise.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Adjust to
+	reflect new behavior.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/18654.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/18654.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/2.cc:
+	Likewise.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc
+	(operator>>(basic_istream&, basic_string&)): Do not set eofbit
+	if extraction stopped after in.width() characters.
+	* src/c++98/istream-string.cc (operator>>(istream&, string&)):
+	Likewise.
+	* include/bits/istream.tcc (__istream_extract): Do not set
+	eofbit if extraction stopped after n-1 characters.
+	* src/c++98/istream.cc (__istream_extract): Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/13.cc: New test.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/13.cc: New test.
+	* testsuite/27_io/basic_istream/extractors_character/char/5.cc: New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/5.cc: New test.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96484
+	* src/c++17/fs_ops.cc (fs::read_symlink): Return an error
+	immediately for non-symlinks.
+	* src/filesystem/ops.cc (fs::read_symlink): Likewise.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (operator>>(istream&, char*)): Add
+	attributes to get warnings for pointers that are null or known
+	to point to the end of a buffer. Request upper bound from
+	__builtin_object_size check and handle zero-sized buffer case.
+	(operator>>(istream&, signed char))
+	(operator>>(istream&, unsigned char*)): Add attributes.
+	* testsuite/27_io/basic_istream/extractors_character/char/overflow.cc:
+	Check extracting into the middle of a buffer.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/overflow.cc: New test.
+
 2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/atomic (atomic<T>::store): Reformat.
