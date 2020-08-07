@@ -9,7 +9,7 @@ foo ()
 {
   int ret;
   void *sock;
-  
+
   ret = bpf_sk_release (sock);
 }
 

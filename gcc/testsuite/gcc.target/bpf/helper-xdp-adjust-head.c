@@ -10,7 +10,7 @@ foo ()
   int ret;
   void *xdp_md;
   int delta;
-  
+
   ret = bpf_xdp_adjust_head (xdp_md, delta);
 }
 

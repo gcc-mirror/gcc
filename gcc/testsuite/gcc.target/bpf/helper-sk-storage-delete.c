@@ -9,7 +9,7 @@ foo ()
 {
   int ret;
   void *map, *sk;
-  
+
   ret = bpf_sk_storage_delete (map, sk);
 }
 

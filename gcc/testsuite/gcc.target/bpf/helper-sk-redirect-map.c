@@ -11,7 +11,7 @@ foo ()
   void *ctx, *map;
   uint32_t key;
   uint64_t flags;
-  
+
   ret = bpf_sk_redirect_map (ctx, map, key, flags);
 }
 

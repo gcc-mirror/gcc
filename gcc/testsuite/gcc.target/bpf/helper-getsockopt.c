@@ -11,7 +11,7 @@ foo ()
   void *bpf_socket;
   int level, optname, optlen;
   char *optval;
-  
+
   ret = bpf_getsockopt (bpf_socket, level,
 			optname, optval, optlen);
 }
