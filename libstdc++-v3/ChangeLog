@@ -1,3 +1,13 @@
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96484
+	* src/c++17/fs_ops.cc (fs::read_symlink): Return an error
+	immediately for non-symlinks.
+	* src/filesystem/ops.cc (fs::read_symlink): Likewise.
+
 2020-07-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backported from master:
