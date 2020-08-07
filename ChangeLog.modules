@@ -1,5 +1,10 @@
 2020-08-07  Nathan Sidwell  <nathan@acm.org>
 
+	Address 2 FIXMEs.
+	gcc/cp/
+	* name-lookup.c (finish_nonmember_using_decl): Here.
+	(lookup_type_scope_1): Here.
+
 	Global decls.
 	gcc/cp/
 	* name-lookup.c (get_fixed_binding_slot): Skip internal decls when

@@ -6392,8 +6392,7 @@ finish_nonmember_using_decl (tree scope, tree name)
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;
 
-		// FIXME: Isn't STAT_HACK_P always true?  Or does its
-		// lack imply everything is visible?
+		/* If no stat hack, everything is visible.  */
 		if (STAT_HACK_P (value))
 		  {
 		    if (STAT_TYPE_VISIBLE_P (value))
@@ -8012,8 +8011,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;
 
-		// FIXME: Isn't STAT_HACK_P always true?  Or does its
-		// lack imply everything is visible?
+		/* If no stat hack, everything is visible.  */
 		if (STAT_HACK_P (bind))
 		  {
 		    if (STAT_TYPE_VISIBLE_P (bind))
