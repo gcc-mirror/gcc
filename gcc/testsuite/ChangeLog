@@ -1,3 +1,44 @@
+2020-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96402
+	* gcc.target/aarch64/pr96402.c: New test.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/stack-protector-1.c: New test.
+	* gcc.target/arm/stack-protector-2.c: Likewise.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* gcc.target/aarch64/stack-protector-1.c: New test.
+	* gcc.target/aarch64/stack-protector-2.c: Likewise.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94605
+	* gcc.target/aarch64/sve/pr94605.c: New test.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* g++.target/aarch64/pr95114.C: New test.
+
 2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.target/aarch64/sls-mitigation/sls-miti-blr-bti.c: New test.

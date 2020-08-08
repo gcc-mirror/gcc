@@ -1,3 +1,60 @@
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/arm/arm.md (arm_stack_protect_test_insn): Zero out
+	operand 2 after use.
+	* config/arm/thumb1.md (thumb1_stack_protect_test_insn): Likewise.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/aarch64/aarch64.md (stack_protect_test_<mode>): Set the
+	CC register directly, instead of a GPR.  Replace the original GPR
+	destination with an extra scratch register.  Zero out operand 3
+	after use.
+	(stack_protect_test): Update accordingly.
+
+2020-08-07  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	Backported from master:
+	2020-08-03  Qian jianhua  <qianjh@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (a64fx): New core.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* config/aarch64/aarch64.c (a64fx_prefetch_tune, a64fx_tunings): New.
+	* doc/invoke.texi: Add a64fx to the list.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/94605
+	* early-remat.c (early_remat::process_block): Handle insns that
+	set multiple candidate registers.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95114
+	* tree.h (virtual_method_call_p): Add a default-false parameter
+	that indicates whether the function is being called from dump
+	routines.
+	(obj_type_ref_class): Likewise.
+	* tree.c (virtual_method_call_p): Likewise.
+	* ipa-devirt.c (obj_type_ref_class): Likewise.  Lazily add ODR
+	type information for the type when the parameter is false.
+	* tree-pretty-print.c (dump_generic_node): Update calls to
+	virtual_method_call_p and obj_type_ref_class accordingly.
+
 2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_indirect_call_asm):
