@@ -1,3 +1,15 @@
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96303
+	* include/debug/bitset (bitset::operator==): Call _M_base() on
+	right operand.
+	(bitset::operator!=): Likewise, but don't define it at all when
+	default comparisons are supported by the compiler.
+	* testsuite/23_containers/bitset/operations/96303.cc: New test.
+
 2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
