@@ -24,7 +24,10 @@
 #include "config/host-darwin.h"
 
 /* Yes, this is really supposed to work.  */
-static char pch_address_space[1024*1024*1024] __attribute__((aligned (4096)));
+/* This allows for a pagesize of 16384, which we have on Darwin20, but should
+   continue to work OK for pagesize 4096 which we have on earlier versions.
+   The size is 1 (binary) Gb.  */
+static char pch_address_space[65536*16384] __attribute__((aligned (16384)));
 
 /* Return the address of the PCH address space, if the PCH will fit in it.  */
 
