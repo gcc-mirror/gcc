@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-eh.h"
 
 /* OMP region information.  Every parallel and workshare
    directive is enclosed between two markers, the OMP_* directive
@@ -2553,10 +2554,23 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      flag_rounding_math = save_flag_rounding_math;
 	      t = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, false,
 					    GSI_CONTINUE_LINKING);
-	      cond_stmt
-		= gimple_build_cond (LT_EXPR, t,
-				     build_zero_cst (double_type_node),
-				     NULL_TREE, NULL_TREE);
+	      if (flag_exceptions
+		  && cfun->can_throw_non_call_exceptions
+		  && operation_could_trap_p (LT_EXPR, true, false, NULL_TREE))
+		{
+		  tree tem = fold_build2 (LT_EXPR, boolean_type_node, t,
+					  build_zero_cst (double_type_node));
+		  tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE,
+						  false, GSI_CONTINUE_LINKING);
+		  cond_stmt = gimple_build_cond (NE_EXPR, tem,
+						 boolean_false_node,
+						 NULL_TREE, NULL_TREE);
+		}
+	      else
+		cond_stmt
+		  = gimple_build_cond (LT_EXPR, t,
+				       build_zero_cst (double_type_node),
+				       NULL_TREE, NULL_TREE);
 	      gsi_insert_after (gsi, cond_stmt, GSI_CONTINUE_LINKING);
 	      e = split_block (gsi_bb (*gsi), cond_stmt);
 	      basic_block bb1 = e->src;
