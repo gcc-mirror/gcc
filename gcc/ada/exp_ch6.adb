@@ -8390,13 +8390,28 @@ package body Exp_Ch6 is
             --  the write back to be skipped completely.
 
             --  To deal with this, we replace the call by
-
+            --
             --    do
             --       Tnnn : constant function-result-type := function-call;
             --       Post_Call actions
             --    in
             --       Tnnn;
             --    end;
+            --
+            --   However, that doesn't work if function-result-type requires
+            --   finalization (because function-call's result never gets
+            --   finalized). So in that case, we instead replace the call by
+            --
+            --    do
+            --       type Ref is access all function-result-type;
+            --       Ptr : constant Ref := function-call'Reference;
+            --       Tnnn : constant function-result-type := Ptr.all;
+            --       Finalize (Ptr.all);
+            --       Post_Call actions
+            --    in
+            --       Tnnn;
+            --    end;
+            --
 
             declare
                Loc   : constant Source_Ptr := Sloc (N);
@@ -8405,12 +8420,63 @@ package body Exp_Ch6 is
                Name  : constant Node_Id   := Relocate_Node (N);
 
             begin
-               Prepend_To (Post_Call,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Tnnn,
-                   Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
-                   Constant_Present    => True,
-                   Expression          => Name));
+               if Needs_Finalization (FRTyp) then
+                  declare
+                     Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
+                     Ptr_Typ_Decl : constant Node_Id :=
+                       Make_Full_Type_Declaration (Loc,
+                         Defining_Identifier => Ptr_Typ,
+                         Type_Definition     =>
+                           Make_Access_To_Object_Definition (Loc,
+                             All_Present        => True,
+                             Subtype_Indication =>
+                               New_Occurrence_Of (FRTyp, Loc)));
+
+                     Ptr_Obj : constant Entity_Id :=
+                       Make_Temporary (Loc, 'P');
+
+                     Ptr_Obj_Decl : constant Node_Id :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Ptr_Obj,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Ptr_Typ, Loc),
+                         Constant_Present    => True,
+                         Expression          =>
+                           Make_Attribute_Reference (Loc,
+                           Prefix         => Name,
+                           Attribute_Name => Name_Unrestricted_Access));
+
+                     function Ptr_Dereference return Node_Id is
+                       (Make_Explicit_Dereference (Loc,
+                          Prefix => New_Occurrence_Of (Ptr_Obj, Loc)));
+
+                     Tnn_Decl : constant Node_Id :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Tnnn,
+                         Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
+                         Constant_Present    => True,
+                         Expression          => Ptr_Dereference);
+
+                     Finalize_Call : constant Node_Id :=
+                       Make_Final_Call
+                         (Obj_Ref => Ptr_Dereference, Typ => FRTyp);
+                  begin
+                     --  Prepend in reverse order
+
+                     Prepend_To (Post_Call, Finalize_Call);
+                     Prepend_To (Post_Call, Tnn_Decl);
+                     Prepend_To (Post_Call, Ptr_Obj_Decl);
+                     Prepend_To (Post_Call, Ptr_Typ_Decl);
+                  end;
+               else
+                  Prepend_To (Post_Call,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Tnnn,
+                      Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
+                      Constant_Present    => True,
+                      Expression          => Name));
+               end if;
 
                Rewrite (N,
                  Make_Expression_With_Actions (Loc,
