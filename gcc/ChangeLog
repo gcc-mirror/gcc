@@ -1,3 +1,36 @@
+2020-08-07  Marc Glisse  <marc.glisse@inria.fr>
+
+	* generic-match-head.c (optimize_vectors_before_lowering_p): New
+	function.
+	* gimple-match-head.c (optimize_vectors_before_lowering_p):
+	Likewise.
+	* match.pd ((v ? w : 0) ? a : b, c1 ? c2 ? a : b : b): Use it.
+
+2020-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96514
+	* tree-if-conv.c (if_convertible_bb_p): If the last stmt
+	is a call that is control-altering, fail.
+
+2020-08-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md: Remove trailing whitespaces.
+	* config/bpf/constraints.md: Likewise.
+	* config/bpf/predicates.md: Likewise.
+
+2020-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (bswaphi2_reg): Add ISA 3.1 support.
+	(bswapsi2_reg): Add ISA 3.1 support.
+	(bswapdi2): Rename bswapdi2_xxbrd to bswapdi2_brd.
+	(bswapdi2_brd,bswapdi2_xxbrd): Rename.  Add ISA 3.1 support.
+
+2020-08-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/96493
+	* config/rs6000/predicates.md (current_file_function_operand): Don't
+	accept functions that differ in r2 usage.
+
 2020-08-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md (MM): New mode_iterator.
