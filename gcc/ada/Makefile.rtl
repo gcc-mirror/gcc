@@ -820,7 +820,7 @@ GNATLIB_SHARED = gnatlib
 # to LIBGNAT_TARGET_PAIRS.
 
 GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
-  g-soliop$(objext) g-sothco$(objext)
+  g-soliop$(objext) g-sothco$(objext) g-socpol$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \
   g-socket.adb<libgnat/g-socket__dummy.adb \
@@ -828,7 +828,9 @@ DUMMY_SOCKETS_TARGET_PAIRS = \
   g-socthi.adb<libgnat/g-socthi__dummy.adb \
   g-socthi.ads<libgnat/g-socthi__dummy.ads \
   g-sothco.adb<libgnat/g-sothco__dummy.adb \
-  g-sothco.ads<libgnat/g-sothco__dummy.ads
+  g-sothco.ads<libgnat/g-sothco__dummy.ads \
+  g-socpol.adb<libgnat/g-socpol__dummy.adb \
+  g-socpol.ads<libgnat/g-socpol__dummy.ads
 
 # On platforms where atomic increment/decrement operations are supported,
 # special version of Ada.Strings.Unbounded package can be used.
@@ -1043,6 +1045,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
   s-vxwork.ads<libgnarl/s-vxwork__ppc.ads \
   g-socthi.ads<libgnat/g-socthi__vxworks.ads \
   g-socthi.adb<libgnat/g-socthi__vxworks.adb \
+  g-sopowa.adb<libgnat/g-sopowa__posix.adb \
   g-stsifd.adb<libgnat/g-stsifd__sockets.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
@@ -1203,6 +1206,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(t
     LIBGNAT_TARGET_PAIRS += \
     g-socthi.ads<libgnat/g-socthi__vxworks.ads \
     g-socthi.adb<libgnat/g-socthi__vxworks.adb \
+    g-sopowa.adb<libgnat/g-sopowa__posix.adb \
     g-stsifd.adb<libgnat/g-stsifd__sockets.adb
   endif
 
@@ -1261,6 +1265,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
     LIBGNAT_TARGET_PAIRS += \
     g-socthi.ads<libgnat/g-socthi__vxworks.ads \
     g-socthi.adb<libgnat/g-socthi__vxworks.adb \
+    g-sopowa.adb<libgnat/g-sopowa__posix.adb \
     g-stsifd.adb<libgnat/g-stsifd__sockets.adb
   endif
 
@@ -1291,6 +1296,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
   s-vxwork.ads<libgnarl/s-vxwork__x86.ads \
   g-socthi.ads<libgnat/g-socthi__vxworks.ads \
   g-socthi.adb<libgnat/g-socthi__vxworks.adb \
+  g-sopowa.adb<libgnat/g-sopowa__posix.adb \
   g-stsifd.adb<libgnat/g-stsifd__sockets.adb \
   $(ATOMICS_TARGET_PAIRS)
 
@@ -1435,6 +1441,7 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
   s-taspri.ads<libgnarl/s-taspri__vxworks.ads \
   g-socthi.ads<libgnat/g-socthi__vxworks.ads \
   g-socthi.adb<libgnat/g-socthi__vxworks.adb \
+  g-sopowa.adb<libgnat/g-sopowa__posix.adb \
   g-stsifd.adb<libgnat/g-stsifd__sockets.adb
 
   ifeq ($(strip $(filter-out aarch64, $(target_cpu))),)
@@ -2166,7 +2173,8 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   else
     LIBGNAT_TARGET_PAIRS = \
     g-socthi.ads<libgnat/g-socthi__mingw.ads \
-    g-socthi.adb<libgnat/g-socthi__mingw.adb
+    g-socthi.adb<libgnat/g-socthi__mingw.adb \
+    g-sopowa.adb<libgnat/g-sopowa__mingw.adb
   endif
   LIBGNAT_TARGET_PAIRS += \
   a-dirval.adb<libgnat/a-dirval__mingw.adb \
