@@ -1,3 +1,11 @@
+2020-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96402
+	* gcc.target/aarch64/pr96402.c: New test.
+
 2020-07-25  Dominique d'Humieres  <dhumieres.dominique@free.fr>
 
 	Backported from master:

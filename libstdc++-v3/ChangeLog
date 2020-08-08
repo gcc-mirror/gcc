@@ -1,3 +1,47 @@
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fixes for
+	filesystems that silently truncate timestamps.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Likewise.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2019-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Fix
+	test failures on targets with 32-bit time_t.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93245
+	* include/experimental/bits/fs_path.h (path::generic_string<C,T,A>()):
+	Return the generic format not the native format.
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Improve test coverage.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94242
+	* include/bits/fs_path.h (path::_S_str_convert): Replace first
+	parameter with basic_string_view so that strings with different
+	allocators can be accepted.
+	(path::generic_string<C,T,A>()): Use basic_string object that uses the
+	right allocator type.
+	* testsuite/27_io/filesystem/path/generic/94242.cc: New test.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Improve
+	test coverage.
+
 2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
