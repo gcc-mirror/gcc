@@ -26803,34 +26803,48 @@ rs6000_cannot_substitute_mem_equiv_p (rtx mem)
 static const char *
 rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 {
-  if (element_mode (fromtype) != element_mode (totype))
+  /* Make sure we're working with the canonical types.  */
+  if (TYPE_CANONICAL (fromtype) != NULL_TREE)
+    fromtype = TYPE_CANONICAL (fromtype);
+  if (TYPE_CANONICAL (totype) != NULL_TREE)
+    totype = TYPE_CANONICAL (totype);
+
+  machine_mode frommode = TYPE_MODE (fromtype);
+  machine_mode tomode = TYPE_MODE (totype);
+
+  if (frommode != tomode)
     {
       /* Do not allow conversions to/from PXImode and POImode types.  */
-      if (TYPE_MODE (fromtype) == PXImode)
+      if (frommode == PXImode)
 	return N_("invalid conversion from type %<__vector_quad%>");
-      if (TYPE_MODE (totype) == PXImode)
+      if (tomode == PXImode)
 	return N_("invalid conversion to type %<__vector_quad%>");
-      if (TYPE_MODE (fromtype) == POImode)
+      if (frommode == POImode)
 	return N_("invalid conversion from type %<__vector_pair%>");
-      if (TYPE_MODE (totype) == POImode)
+      if (tomode == POImode)
 	return N_("invalid conversion to type %<__vector_pair%>");
     }
   else if (POINTER_TYPE_P (fromtype) && POINTER_TYPE_P (totype))
     {
+      /* We really care about the modes of the base types.  */
+      frommode = TYPE_MODE (TREE_TYPE (fromtype));
+      tomode = TYPE_MODE (TREE_TYPE (totype));
+
       /* Do not allow conversions to/from PXImode and POImode pointer
 	 types, except to/from void pointers.  */
-      if (TYPE_MODE (TREE_TYPE (fromtype)) == PXImode
-	  && TYPE_MODE (TREE_TYPE (totype)) != VOIDmode)
-	return N_("invalid conversion from type %<* __vector_quad%>");
-      if (TYPE_MODE (TREE_TYPE (totype)) == PXImode
-	  && TYPE_MODE (TREE_TYPE (fromtype)) != VOIDmode)
-	return N_("invalid conversion to type %<* __vector_quad%>");
-      if (TYPE_MODE (TREE_TYPE (fromtype)) == POImode
-	  && TYPE_MODE (TREE_TYPE (totype)) != VOIDmode)
-	return N_("invalid conversion from type %<* __vector_pair%>");
-      if (TYPE_MODE (TREE_TYPE (totype)) == POImode
-	  && TYPE_MODE (TREE_TYPE (fromtype)) != VOIDmode)
-	return N_("invalid conversion to type %<* __vector_pair%>");
+      if (frommode != tomode
+	  && frommode != VOIDmode
+	  && tomode != VOIDmode)
+	{
+	  if (frommode == PXImode)
+	    return N_("invalid conversion from type %<* __vector_quad%>");
+	  if (tomode == PXImode)
+	    return N_("invalid conversion to type %<* __vector_quad%>");
+	  if (frommode == POImode)
+	    return N_("invalid conversion from type %<* __vector_pair%>");
+	  if (tomode == POImode)
+	    return N_("invalid conversion to type %<* __vector_pair%>");
+	}
     }
 
   /* Conversion allowed.  */
