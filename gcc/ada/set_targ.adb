@@ -84,8 +84,8 @@ package body Set_Targ is
           S_Float_Size                 'Unrestricted_Access,
           S_Float_Words_BE             'Unrestricted_Access,
           S_Int_Size                   'Unrestricted_Access,
-          S_Long_Long_Long_Size        'Unrestricted_Access,
           S_Long_Double_Size           'Unrestricted_Access,
+          S_Long_Long_Long_Size        'Unrestricted_Access,
           S_Long_Long_Size             'Unrestricted_Access,
           S_Long_Size                  'Unrestricted_Access,
           S_Maximum_Alignment          'Unrestricted_Access,
@@ -748,8 +748,15 @@ package body Set_Targ is
 
       for J in DTR'Range loop
          if not DTR (J) then
-            Fail ("missing entry for " & DTN (J).all & " in file "
-                  & File_Name);
+            --  Make an exception for Long_Long_Long_Size???
+
+            if DTN (J) = S_Long_Long_Long_Size'Unrestricted_Access then
+               Long_Long_Long_Size := Long_Long_Size;
+
+            else
+               Fail ("missing entry for " & DTN (J).all & " in file "
+                     & File_Name);
+            end if;
          end if;
       end loop;
 
