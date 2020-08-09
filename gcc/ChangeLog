@@ -1,3 +1,13 @@
+2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96446
+	* config/rs6000/mma.md (*movpxi): Add xxsetaccz generation.
+	Disable split for zero constant source operand.
+	(mma_xxsetaccz): Change to define_expand.  Call gen_movpxi.
+
 2020-08-07  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
