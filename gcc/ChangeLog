@@ -1,3 +1,24 @@
+2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96530
+	* config/rs6000/rs6000.c (rs6000_invalid_conversion): Use canonical
+	types for type comparisons.  Refactor code to simplify it.
+
+2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93553
+	* tree-nested.c (convert_nonlocal_omp_clauses): For
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_LASTPRIVATE and OMP_CLAUSE_LINEAR
+	save info->new_local_var_chain around walks of the clause gimple
+	sequences and declare_vars if needed into the sequence.
+
+2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96424
+	* omp-expand.c: Include tree-eh.h.
+	(expand_omp_for_init_vars): Handle -fexceptions -fnon-call-exceptions
+	by forcing floating point comparison into a bool temporary.
+
 2020-08-07  Marc Glisse  <marc.glisse@inria.fr>
 
 	* generic-match-head.c (optimize_vectors_before_lowering_p): New
