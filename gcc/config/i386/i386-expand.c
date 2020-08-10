@@ -3305,7 +3305,17 @@ ix86_expand_int_movcc (rtx operands[])
 	{
 	  var = operands[2];
 	  if (INTVAL (operands[3]) == 0 && operands[2] != constm1_rtx)
-	    operands[2] = constm1_rtx, op = and_optab;
+	    {
+	      /* For smin (x, 0), expand as "x < 0 ? x : 0" instead of
+		 "x <= 0 ? x : 0" to enable sign_bit_compare_p.  */
+	      if (code == LE && op1 == const0_rtx && rtx_equal_p (op0, var))
+		operands[1] = simplify_gen_relational (LT, VOIDmode,
+						       GET_MODE (op0),
+						       op0, const0_rtx);
+
+	      operands[2] = constm1_rtx;
+	      op = and_optab;
+	    }
 	  else if (INTVAL (operands[3]) == -1 && operands[3] != const0_rtx)
 	    operands[2] = const0_rtx, op = ior_optab;
 	  else
