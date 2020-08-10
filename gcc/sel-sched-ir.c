@@ -4152,14 +4152,14 @@ get_seqno_by_preds (rtx_insn *insn)
 void
 sel_extend_global_bb_info (void)
 {
-  sel_global_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  sel_global_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 }
 
 /* Extend region-scope data structures for basic blocks.  */
 static void
 extend_region_bb_info (void)
 {
-  sel_region_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  sel_region_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 }
 
 /* Extend all data structures to fit for all basic blocks.  */
@@ -4209,7 +4209,7 @@ extend_insn_data (void)
         size = 3 * sched_max_luid / 2;
 
 
-      s_i_d.safe_grow_cleared (size);
+      s_i_d.safe_grow_cleared (size, true);
     }
 }
 

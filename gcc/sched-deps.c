@@ -4072,7 +4072,7 @@ init_deps_data_vector (void)
 {
   int reserve = (sched_max_luid + 1 - h_d_i_d.length ());
   if (reserve > 0 && ! h_d_i_d.space (reserve))
-    h_d_i_d.safe_grow_cleared (3 * sched_max_luid / 2);
+    h_d_i_d.safe_grow_cleared (3 * sched_max_luid / 2, true);
 }
 
 /* If it is profitable to use them, initialize or extend (depending on

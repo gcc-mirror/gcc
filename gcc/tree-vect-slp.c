@@ -2804,7 +2804,7 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
      (need to) ignore child nodes of anything that isn't vect_internal_def.  */
   unsigned int group_size = SLP_TREE_LANES (node);
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
-  SLP_TREE_SCALAR_OPS (node).safe_grow (group_size);
+  SLP_TREE_SCALAR_OPS (node).safe_grow (group_size, true);
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
       tree lhs = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
@@ -3102,7 +3102,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	     confine changes in the callee to the current child/subtree.  */
 	  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
 	    {
-	      subtree_life.safe_grow_cleared (SLP_TREE_LANES (child));
+	      subtree_life.safe_grow_cleared (SLP_TREE_LANES (child), true);
 	      for (unsigned j = 0;
 		   j < SLP_TREE_LANE_PERMUTATION (node).length (); ++j)
 		{
@@ -3141,7 +3141,8 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       auto_vec<bool, 20> life;
-      life.safe_grow_cleared (SLP_TREE_LANES (SLP_INSTANCE_TREE (instance)));
+      life.safe_grow_cleared (SLP_TREE_LANES (SLP_INSTANCE_TREE (instance)),
+			      true);
       vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, visited);
@@ -4127,7 +4128,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   auto_vec<std::pair<std::pair<unsigned, unsigned>, unsigned> > vperm;
   auto_vec<unsigned> active_lane;
   vperm.create (olanes);
-  active_lane.safe_grow_cleared (SLP_TREE_CHILDREN (node).length ());
+  active_lane.safe_grow_cleared (SLP_TREE_CHILDREN (node).length (), true);
   for (unsigned i = 0; i < vf; ++i)
     {
       for (unsigned pi = 0; pi < perm.length (); ++pi)

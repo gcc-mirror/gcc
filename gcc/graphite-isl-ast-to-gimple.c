@@ -808,7 +808,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   const int nb_loops = number_of_loops (cfun);
   vec<tree> iv_map;
   iv_map.create (nb_loops);
-  iv_map.safe_grow_cleared (nb_loops);
+  iv_map.safe_grow_cleared (nb_loops, true);
 
   build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->scop_info->region);
   isl_ast_expr_free (user_expr);

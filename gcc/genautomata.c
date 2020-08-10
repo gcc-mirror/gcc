@@ -7247,7 +7247,7 @@ create_state_ainsn_table (automaton_t automaton)
   tab->check_vect.create (10000);
 
   tab->base_vect.create (0);
-  tab->base_vect.safe_grow (automaton->achieved_states_num);
+  tab->base_vect.safe_grow (automaton->achieved_states_num, true);
 
   full_vect_length = (automaton->insn_equiv_classes_num
                       * automaton->achieved_states_num);
@@ -7339,7 +7339,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
   {
     size_t full_base = tab->automaton->insn_equiv_classes_num * vect_num;
     if (tab->full_vect.length () < full_base + vect_length)
-      tab->full_vect.safe_grow (full_base + vect_length);
+      tab->full_vect.safe_grow (full_base + vect_length, true);
     for (i = 0; i < vect_length; i++)
       tab->full_vect[full_base + i] = vect[i];
   }
@@ -7743,7 +7743,7 @@ output_dead_lock_vect (automaton_t automaton)
   output_states_vect.create (0);
   pass_states (automaton, add_states_vect_el);
 
-  dead_lock_vect.safe_grow (output_states_vect.length ());
+  dead_lock_vect.safe_grow (output_states_vect.length (), true);
   for (i = 0; i < output_states_vect.length (); i++)
     {
       state_t s = output_states_vect[i];

@@ -4564,7 +4564,7 @@ find_moveable_pseudos (void)
 
   first_moveable_pseudo = max_regs;
   pseudo_replaced_reg.release ();
-  pseudo_replaced_reg.safe_grow_cleared (max_regs);
+  pseudo_replaced_reg.safe_grow_cleared (max_regs, true);
 
   df_analyze ();
   calculate_dominance_info (CDI_DOMINATORS);

@@ -632,7 +632,7 @@ function_reader::parse_block ()
 
   size_t new_size = m_highest_bb_idx + 1;
   if (basic_block_info_for_fn (cfun)->length () < new_size)
-    vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
+    vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size, true);
 
   last_basic_block_for_fn (cfun) = new_size;
 

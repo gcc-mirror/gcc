@@ -5482,7 +5482,7 @@ insert_wrapper (const char *wrapper)
     }
   while ((p = strchr (p, ',')) != NULL);
 
-  argbuf.safe_grow (old_length + n);
+  argbuf.safe_grow (old_length + n, true);
   memmove (argbuf.address () + n,
 	   argbuf.address (),
 	   old_length * sizeof (const_char_p));

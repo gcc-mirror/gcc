@@ -637,7 +637,7 @@ static class temp_slot **
 temp_slots_at_level (int level)
 {
   if (level >= (int) vec_safe_length (used_temp_slots))
-    vec_safe_grow_cleared (used_temp_slots, level + 1);
+    vec_safe_grow_cleared (used_temp_slots, level + 1, true);
 
   return &(*used_temp_slots)[level];
 }

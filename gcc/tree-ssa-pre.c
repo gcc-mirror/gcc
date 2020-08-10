@@ -626,7 +626,7 @@ add_to_value (unsigned int v, pre_expr e)
 
   if (v >= value_expressions.length ())
     {
-      value_expressions.safe_grow_cleared (v + 1);
+      value_expressions.safe_grow_cleared (v + 1, true);
     }
 
   set = value_expressions[v];
@@ -1451,7 +1451,8 @@ phi_translate_1 (bitmap_set_t dest,
 	    else
 	      {
 		new_val_id = get_next_value_id ();
-		value_expressions.safe_grow_cleared (get_max_value_id () + 1);
+		value_expressions.safe_grow_cleared (get_max_value_id () + 1,
+						     true);
 		nary = vn_nary_op_insert_pieces (newnary->length,
 						 newnary->opcode,
 						 newnary->type,
@@ -1605,7 +1606,7 @@ phi_translate_1 (bitmap_set_t dest,
 		  {
 		    new_val_id = get_next_value_id ();
 		    value_expressions.safe_grow_cleared
-		      (get_max_value_id () + 1);
+		      (get_max_value_id () + 1, true);
 		  }
 		else
 		  new_val_id = ref->value_id;
@@ -3193,7 +3194,7 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
-  avail.safe_grow (EDGE_COUNT (block->preds));
+  avail.safe_grow (EDGE_COUNT (block->preds), true);
 
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
@@ -3360,7 +3361,7 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
-  avail.safe_grow (EDGE_COUNT (block->preds));
+  avail.safe_grow (EDGE_COUNT (block->preds), true);
 
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
@@ -4099,7 +4100,7 @@ init_pre (void)
   expressions.create (0);
   expressions.safe_push (NULL);
   value_expressions.create (get_max_value_id () + 1);
-  value_expressions.safe_grow_cleared (get_max_value_id () + 1);
+  value_expressions.safe_grow_cleared (get_max_value_id () + 1, true);
   name_to_id.create (0);
 
   inserted_exprs = BITMAP_ALLOC (NULL);

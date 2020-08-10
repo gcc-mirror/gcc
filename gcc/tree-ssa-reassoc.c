@@ -3365,9 +3365,9 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 
       b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 2 + !zero_p;
       if (buckets.length () <= b)
-	buckets.safe_grow_cleared (b + 1);
+	buckets.safe_grow_cleared (b + 1, true);
       if (chains.length () <= (unsigned) i)
-	chains.safe_grow (i + 1);
+	chains.safe_grow (i + 1, true);
       chains[i] = buckets[b];
       buckets[b] = i + 1;
     }

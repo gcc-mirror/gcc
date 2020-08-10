@@ -11639,7 +11639,7 @@ convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
 	      if (unsigned HOST_WIDE_INT size = cur_idx - (last_idx + 1))
 		{
 		  size = size * elsize + bytes->length ();
-		  bytes->safe_grow_cleared (size);
+		  bytes->safe_grow_cleared (size, true);
 		}
 
 	      if (!convert_to_bytes (eltype, val, bytes))
@@ -11658,7 +11658,7 @@ convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
 		 any padding.  */
 	      unsigned HOST_WIDE_INT cur_off = int_byte_position (fld);
 	      if (bytes->length () < cur_off)
-		bytes->safe_grow_cleared (cur_off);
+		bytes->safe_grow_cleared (cur_off, true);
 
 	      if (!convert_to_bytes (TREE_TYPE (val), val, bytes))
 		return false;
@@ -11678,7 +11678,7 @@ convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
       unsigned HOST_WIDE_INT type_size = tree_to_uhwi (size);
       if (ctor_size < type_size)
 	if (unsigned HOST_WIDE_INT size_grow = type_size - ctor_size)
-	  bytes->safe_grow_cleared (bytes->length () + size_grow);
+	  bytes->safe_grow_cleared (bytes->length () + size_grow, true);
 
       return true;
     }
@@ -11699,7 +11699,7 @@ convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
 
   /* Unlike for RECORD_TYPE, there is no need to clear the memory since
      it's completely overwritten by native_encode_expr.  */
-  bytes->safe_grow (bytes_sofar + expr_bytes);
+  bytes->safe_grow (bytes_sofar + expr_bytes, true);
   unsigned char *pnext = bytes->begin () + bytes_sofar;
   int nbytes = native_encode_expr (expr, pnext, expr_bytes, 0);
   /* NBYTES is zero on failure.  Otherwise it should equal EXPR_BYTES.  */

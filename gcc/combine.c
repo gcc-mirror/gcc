@@ -544,7 +544,7 @@ combine_split_insns (rtx pattern, rtx_insn *insn)
   ret = split_insns (pattern, insn);
   nregs = max_reg_num ();
   if (nregs > reg_stat.length ())
-    reg_stat.safe_grow_cleared (nregs);
+    reg_stat.safe_grow_cleared (nregs, true);
   return ret;
 }
 
@@ -1172,7 +1172,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 
   rtl_hooks = combine_rtl_hooks;
 
-  reg_stat.safe_grow_cleared (nregs);
+  reg_stat.safe_grow_cleared (nregs, true);
 
   init_recog_no_volatile ();
 

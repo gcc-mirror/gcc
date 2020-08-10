@@ -216,7 +216,7 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 	= TEMPL_IDX (as, addr->symbol, addr->base, addr->index, st, off);
 
       if (templ_index >= vec_safe_length (mem_addr_template_list))
-	vec_safe_grow_cleared (mem_addr_template_list, templ_index + 1);
+	vec_safe_grow_cleared (mem_addr_template_list, templ_index + 1, true);
 
       /* Reuse the templates for addresses, so that we do not waste memory.  */
       templ = &(*mem_addr_template_list)[templ_index];
@@ -570,7 +570,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, machine_mode mode,
   sbitmap valid_mult;
 
   if (data_index >= valid_mult_list.length ())
-    valid_mult_list.safe_grow_cleared (data_index + 1);
+    valid_mult_list.safe_grow_cleared (data_index + 1, true);
 
   valid_mult = valid_mult_list[data_index];
   if (!valid_mult)

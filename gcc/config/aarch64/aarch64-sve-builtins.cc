@@ -2793,7 +2793,7 @@ function_expander::add_output_operand (insn_code icode)
 {
   unsigned int opno = m_ops.length ();
   machine_mode mode = insn_data[icode].operand[opno].mode;
-  m_ops.safe_grow (opno + 1);
+  m_ops.safe_grow (opno + 1, true);
   create_output_operand (&m_ops.last (), possible_target, mode);
 }
 
@@ -2830,7 +2830,7 @@ function_expander::add_input_operand (insn_code icode, rtx x)
       gcc_assert (GET_MODE (x) == VNx16BImode);
       x = gen_lowpart (mode, x);
     }
-  m_ops.safe_grow (m_ops.length () + 1);
+  m_ops.safe_grow (m_ops.length () + 1, true);
   create_input_operand (&m_ops.last (), x, mode);
 }
 
@@ -2838,7 +2838,7 @@ function_expander::add_input_operand (insn_code icode, rtx x)
 void
 function_expander::add_integer_operand (HOST_WIDE_INT x)
 {
-  m_ops.safe_grow (m_ops.length () + 1);
+  m_ops.safe_grow (m_ops.length () + 1, true);
   create_integer_operand (&m_ops.last (), x);
 }
 
@@ -2862,7 +2862,7 @@ function_expander::add_mem_operand (machine_mode mode, rtx addr)
 void
 function_expander::add_address_operand (rtx x)
 {
-  m_ops.safe_grow (m_ops.length () + 1);
+  m_ops.safe_grow (m_ops.length () + 1, true);
   create_address_operand (&m_ops.last (), x);
 }
 
@@ -2871,7 +2871,7 @@ function_expander::add_address_operand (rtx x)
 void
 function_expander::add_fixed_operand (rtx x)
 {
-  m_ops.safe_grow (m_ops.length () + 1);
+  m_ops.safe_grow (m_ops.length () + 1, true);
   create_fixed_operand (&m_ops.last (), x);
 }
 

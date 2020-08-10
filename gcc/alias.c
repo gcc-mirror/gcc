@@ -3349,7 +3349,8 @@ init_alias_analysis (void)
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
+  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER,
+			 true);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
   bitmap_clear (reg_known_equiv_p);
 
@@ -3360,7 +3361,7 @@ init_alias_analysis (void)
   if (reg_base_value)
     reg_base_value->truncate (0);
 
-  vec_safe_grow_cleared (reg_base_value, maxreg);
+  vec_safe_grow_cleared (reg_base_value, maxreg, true);
 
   new_reg_base_value = XNEWVEC (rtx, maxreg);
   reg_seen = sbitmap_alloc (maxreg);

@@ -555,7 +555,7 @@ streamer_read_tree_bitfields (class lto_input_block *ib,
     {
       unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (&bp);
       if (length > 0)
-	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
+	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length, true);
     }
 
 #ifndef ACCEL_COMPILER

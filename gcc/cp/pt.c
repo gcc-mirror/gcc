@@ -4431,7 +4431,7 @@ canonical_type_parameter (tree type)
   gcc_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM);
 
   if (vec_safe_length (canonical_template_parms) <= (unsigned) idx)
-    vec_safe_grow_cleared (canonical_template_parms, idx + 1);
+    vec_safe_grow_cleared (canonical_template_parms, idx + 1, true);
 
   for (tree list = (*canonical_template_parms)[idx];
        list; list = TREE_CHAIN (list))

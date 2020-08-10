@@ -2099,7 +2099,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      /* Create the new array of arguments.  */
 	      n = nargs + gimple_call_num_args (call_stmt);
 	      argarray.create (n);
-	      argarray.safe_grow_cleared (n);
+	      argarray.safe_grow_cleared (n, true);
 
 	      /* Copy all the arguments before '...'  */
 	      memcpy (argarray.address (),

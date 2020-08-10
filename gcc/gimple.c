@@ -1693,7 +1693,7 @@ gimple_set_bb (gimple *stmt, basic_block bb)
 	      unsigned new_len = 3 * uid / 2 + 1;
 
 	      vec_safe_grow_cleared (label_to_block_map_for_fn (cfun),
-				     new_len);
+				     new_len, true);
 	    }
 	}
 

@@ -4002,7 +4002,7 @@ discover_iteration_bound_by_body_walk (class loop *loop)
 
   /* Start walk in loop header with index set to infinite bound.  */
   queue_index = bounds.length ();
-  queues.safe_grow_cleared (queue_index + 1);
+  queues.safe_grow_cleared (queue_index + 1, true);
   queue.safe_push (loop->header);
   queues[queue_index] = queue;
   block_priority.put (loop->header, queue_index);

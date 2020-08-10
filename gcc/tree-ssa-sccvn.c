@@ -3157,7 +3157,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* We need to pre-pend vr->operands[0..i] to rhs.  */
       vec<vn_reference_op_s> old = vr->operands;
       if (i + 1 + rhs.length () > vr->operands.length ())
-	vr->operands.safe_grow (i + 1 + rhs.length ());
+	vr->operands.safe_grow (i + 1 + rhs.length (), true);
       else
 	vr->operands.truncate (i + 1 + rhs.length ());
       FOR_EACH_VEC_ELT (rhs, j, vro)
@@ -3362,7 +3362,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (vr->operands.length () < 2)
 	{
 	  vec<vn_reference_op_s> old = vr->operands;
-	  vr->operands.safe_grow_cleared (2);
+	  vr->operands.safe_grow_cleared (2, true);
 	  if (old == shared_lookup_references)
 	    shared_lookup_references = vr->operands;
 	}
@@ -3448,7 +3448,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
 
   vr1.vuse = vuse_ssa_val (vuse);
   shared_lookup_references.truncate (0);
-  shared_lookup_references.safe_grow (operands.length ());
+  shared_lookup_references.safe_grow (operands.length (), true);
   memcpy (shared_lookup_references.address (),
 	  operands.address (),
 	  sizeof (vn_reference_op_s)
@@ -5715,7 +5715,7 @@ eliminate_dom_walker::eliminate_push_avail (basic_block, tree op)
   if (TREE_CODE (valnum) == SSA_NAME)
     {
       if (avail.length () <= SSA_NAME_VERSION (valnum))
-	avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1);
+	avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1, true);
       tree pushop = op;
       if (avail[SSA_NAME_VERSION (valnum)])
 	pushop = avail[SSA_NAME_VERSION (valnum)];
