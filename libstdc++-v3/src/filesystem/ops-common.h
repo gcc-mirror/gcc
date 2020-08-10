@@ -71,14 +71,14 @@ namespace __gnu_posix
   inline int close(int fd)
   { return ::_close(fd); }
 
-  typedef struct ::_stat stat_type;
+  typedef struct ::__stat64 stat_type;
 
   inline int stat(const wchar_t* path, stat_type* buffer)
-  { return ::_wstat(path, buffer); }
+  { return ::_wstat64(path, buffer); }
 
   inline int lstat(const wchar_t* path, stat_type* buffer)
   {
-    // TODO symlinks not currently supported
+    // FIXME: symlinks not currently supported
     return stat(path, buffer);
   }
 
