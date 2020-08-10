@@ -53,7 +53,9 @@ namespace std
     {
       unique_ptr(T* p) { _M_t._M_head_impl = p; }
 
-      tuple<T*, D> _M_t;
+      using __tuple_type = tuple<T*, D>;
+
+      __tuple_type _M_t;
     };
 
   // Old representation of std::optional, before GCC 9
