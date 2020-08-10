@@ -1,6 +1,8 @@
-/* { dg-do run } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 /* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target power10_ok } */
 
 /* Test local calls between pcrel and non-pcrel code.
 
