@@ -32,6 +32,7 @@ with Debug;    use Debug;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Erroutc;  use Erroutc;
+with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -95,6 +96,11 @@ package body Sem_Util is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   function Accessibility_Level_Helper
+     (Expr   : Node_Id;
+      Static : Boolean := False) return Node_Id;
+   --  Unified static and dynamic accessibility level calculation subroutine
 
    function Build_Component_Subtype
      (C   : List_Id;
@@ -264,6 +270,503 @@ package body Sem_Util is
 
       return Interface_List (Nod);
    end Abstract_Interface_List;
+
+   --------------------------------
+   -- Accessibility_Level_Helper --
+   --------------------------------
+
+   function Accessibility_Level_Helper
+     (Expr   : Node_Id;
+      Static : Boolean := False) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Expr);
+
+      function Make_Level_Literal (Level : Uint) return Node_Id;
+      --  Construct an integer literal representing an accessibility level
+      --  with its type set to Natural.
+
+      function Innermost_Master_Scope_Depth
+        (N : Node_Id) return Uint;
+      --  Returns the scope depth of the given node's innermost
+      --  enclosing dynamic scope (effectively the accessibility
+      --  level of the innermost enclosing master).
+
+      function Subprogram_Call_Level (Call_Ent : Entity_Id) return Node_Id;
+      --  Centeralized processing of subprogram calls which may appear in
+      --  prefix notation.
+
+      ----------------------------------
+      -- Innermost_Master_Scope_Depth --
+      ----------------------------------
+
+      function Innermost_Master_Scope_Depth
+        (N : Node_Id) return Uint
+      is
+         Encl_Scop : Entity_Id;
+         Node_Par  : Node_Id := Parent (N);
+
+      begin
+         --  Locate the nearest enclosing node (by traversing Parents)
+         --  that Defining_Entity can be applied to, and return the
+         --  depth of that entity's nearest enclosing dynamic scope.
+
+         --  The rules which define what a master are are defined in
+         --  RM 7.6.1 (3), and include statements and conditions for loops
+         --  among other things. These cases are detected properly ???
+
+         while Present (Node_Par) loop
+            if Present (Defining_Entity
+                         (Node_Par, Empty_On_Errors => True))
+            then
+               Encl_Scop := Nearest_Dynamic_Scope
+                              (Defining_Entity (Node_Par));
+
+               --  Ignore transient scopes made during expansion
+
+               if Comes_From_Source (Encl_Scop) then
+                  return Scope_Depth (Encl_Scop);
+               end if;
+
+            --  For a return statement within a function, return
+            --  the depth of the function itself. This is not just
+            --  a small optimization, but matters when analyzing
+            --  the expression in an expression function before
+            --  the body is created.
+
+            elsif Nkind (Node_Par) in N_Extended_Return_Statement
+                                    | N_Simple_Return_Statement
+              and then Ekind (Current_Scope) = E_Function
+            then
+               return Scope_Depth (Current_Scope);
+            end if;
+
+            Node_Par := Parent (Node_Par);
+         end loop;
+
+         pragma Assert (False);
+
+         --  Should never reach the following return
+
+         return Scope_Depth (Current_Scope) + 1;
+      end Innermost_Master_Scope_Depth;
+
+      ------------------------
+      -- Make_Level_Literal --
+      ------------------------
+
+      function Make_Level_Literal (Level : Uint) return Node_Id is
+         Result : constant Node_Id := Make_Integer_Literal (Loc, Level);
+
+      begin
+         Set_Etype (Result, Standard_Natural);
+         return Result;
+      end Make_Level_Literal;
+
+      ---------------------------
+      -- Subprogram_Call_Level --
+      ---------------------------
+
+      function Subprogram_Call_Level (Call_Ent : Entity_Id) return Node_Id is
+      begin
+         --  Results of functions are objects, so we either get the
+         --  accessibility of the function or, in case of a call which is
+         --  indirect, the level of the access to subprogram type.
+
+         --  This code looks wrong ???
+
+         if Ada_Version < Ada_2005 then
+            if Is_Entity_Name (Name (Call_Ent)) then
+               return Make_Level_Literal
+                        (Subprogram_Access_Level (Entity (Name (Call_Ent))));
+            else
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (Prefix (Name (Call_Ent)))));
+            end if;
+         end if;
+
+         --  Named access types have a designated level
+
+         if Is_Named_Access_Type (Etype (Call_Ent)) then
+            return Make_Level_Literal (Type_Access_Level (Etype (Call_Ent)));
+
+         --  Otherwise, the level is that of the innermost master of the call,
+         --  according to RM 3.10.2 (10.6/2).
+
+         --  Note: Expr is used here instead of Call_Ent since expansion may
+         --  have taken place, and we need to ensure we can climb the parent
+         --  chain.
+
+         else
+            return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+         end if;
+      end Subprogram_Call_Level;
+
+      --  Local variables
+
+      E   : Entity_Id := Original_Node (Expr);
+      Par : Node_Id;
+      Pre : Node_Id;
+
+   --  Start of processing for Accessibility_Level_Helper
+
+   begin
+      --  We could be looking at a reference to a formal due to the expansion
+      --  of entries and other cases, so obtain the renaming if necessary.
+
+      if Present (Param_Entity (Expr)) then
+         E := Param_Entity (Expr);
+      end if;
+
+      --  Extract the entity
+
+      if Nkind (E) in N_Has_Entity and then Present (Entity (E)) then
+         E := Entity (E);
+
+         --  Deal with a possible renaming of a private protected component
+
+         if Ekind (E) in E_Constant | E_Variable and then Is_Prival (E) then
+            E := Prival_Link (E);
+         end if;
+      end if;
+
+      --  Perform the processing on the expression
+
+      case Nkind (E) is
+         --  The level of an aggregate is that of the innermost master that
+         --  evaluates it as defined in RM 3.10.2 (10/4).
+
+         when N_Aggregate =>
+            return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+
+         --  The accessibility level is that of the access type, except for an
+         --  anonymous allocators which have special rules defined in RM 3.10.2
+         --  (14/3).
+
+         when N_Allocator =>
+            --  Anonymous allocator
+
+            if Ekind (Etype (Expr)) = E_Anonymous_Access_Type then
+               --  Hop up to find a relevant parent node
+
+               Par := Parent (Expr);
+               while Present (Par) loop
+                  exit when Nkind (Par) in N_Assignment_Statement
+                                         | N_Object_Declaration
+                                         | N_Subprogram_Call;
+                  Par := Parent (Par);
+               end loop;
+
+               --  Handle each of the static cases outlined in RM 3.10.2 (14)
+
+               case Nkind (Par) is
+                  --  For an anonymous allocator whose type is that of a
+                  --  stand-alone object of an anonymous access-to-object
+                  --  type, the accessibility level is that of the
+                  --  declaration of the stand-alone object.
+
+                  when N_Object_Declaration =>
+                     return Make_Level_Literal
+                              (Scope_Depth
+                                (Scope (Defining_Identifier (Parent (Expr)))));
+
+                  --  In an assignment statement the level is that of the
+                  --  object at the left-hand side.
+
+                  when N_Assignment_Statement =>
+                     return Make_Level_Literal
+                              (Scope_Depth
+                                (Scope (Entity (Name (Parent (Expr))))));
+
+                  --  Subprogram calls have a level one deeper than the
+                  --  nearest enclosing scope.
+
+                  when N_Subprogram_Call =>
+                     return Make_Level_Literal
+                              (Innermost_Master_Scope_Depth
+                                (Parent (Expr)) + 1);
+
+                  --  Should never get here
+
+                  when others =>
+                     declare
+                        S : constant String :=
+                              Node_Kind'Image (Nkind (Parent (Expr)));
+                     begin
+                        Error_Msg_Strlen := S'Length;
+                        Error_Msg_String (1 .. Error_Msg_Strlen) := S;
+                        Error_Msg_N
+                          ("unsupported context for anonymous allocator (~)",
+                           Parent (Expr));
+                     end;
+
+                     --  Return standard in case of error
+
+                     return Make_Level_Literal
+                              (Scope_Depth (Standard_Standard));
+               end case;
+
+            --  Normal case of a named access type
+
+            else
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (Expr)));
+            end if;
+
+         --  We could reach this point for two reasons. Either the expression
+         --  applies to a special attribute ('Loop_Entry, 'Result, or 'Old), or
+         --  we are looking at the access attributes directly ('Access,
+         --  'Address, or 'Unchecked_Access).
+
+         when N_Attribute_Reference =>
+            Pre := Original_Node (Prefix (E));
+
+            --  Regular 'Access attribute presence means we have to look at the
+            --  prefix.
+
+            if Attribute_Name (E) = Name_Access then
+               return Accessibility_Level_Helper (Prefix (E), Static);
+
+            --  Unchecked or unrestricted attributes have unlimited depth
+
+            elsif Attribute_Name (E) in Name_Address
+                                      | Name_Unchecked_Access
+                                      | Name_Unrestricted_Access
+            then
+               return Make_Level_Literal (Scope_Depth (Standard_Standard));
+
+            --  'Access can be taken further against other special attributes,
+            --  so handle these cases explicitly.
+
+            elsif Attribute_Name (E)
+                    in Name_Old | Name_Loop_Entry | Name_Result
+            then
+               --  Named access types
+
+               if Is_Named_Access_Type (Etype (Pre)) then
+                  return Make_Level_Literal
+                           (Type_Access_Level (Etype (Pre)));
+
+               --  Anonymous access types
+
+               elsif Nkind (Pre) in N_Has_Entity
+                 and then Present (Get_Accessibility (Entity (Pre)))
+                 and then not Static
+               then
+                  return New_Occurrence_Of
+                           (Get_Accessibility (Entity (Pre)), Loc);
+
+               --  Otherwise the level is treated in a similar way as
+               --  aggregates according to RM 6.1.1 (35.1/4) which concerns
+               --  an implicit constant declaration - in turn defining the
+               --  accessibility level to be that of the implicit constant
+               --  declaration.
+
+               else
+                  return Make_Level_Literal
+                           (Innermost_Master_Scope_Depth (Expr));
+               end if;
+
+            else
+               raise Program_Error;
+            end if;
+
+         --  This is the "base case" for accessibility level calculations which
+         --  means we are near the end of our recursive traversal.
+
+         when N_Defining_Identifier =>
+            --  Stand-alone object of an anonymous access type "SAOAAT"
+
+            if (Is_Formal (E)
+                 or else Ekind (E) in E_Variable
+                                    | E_Constant)
+              and then Present (Get_Accessibility (E))
+              and then not Static
+            then
+               return
+                 New_Occurrence_Of (Get_Accessibility (E), Loc);
+
+            --  Initialization procedures have a special extra accessitility
+            --  parameter associated with the level at which the object
+            --  begin initialized exists
+
+            elsif Ekind (E) = E_Record_Type
+              and then Is_Limited_Record (E)
+              and then Current_Scope = Init_Proc (E)
+              and then Present (Init_Proc_Level_Formal (Current_Scope))
+            then
+               return New_Occurrence_Of
+                        (Init_Proc_Level_Formal (Current_Scope), Loc);
+
+            --  Extra accessibility has not been added yet, but the formal
+            --  needs one. So return Standard_Standard ???
+
+            elsif Ekind (Etype (E)) = E_Anonymous_Access_Type
+              and then Static
+            then
+               return Make_Level_Literal (Scope_Depth (Standard_Standard));
+
+            --  Current instance of the type is deeper than that of the type
+            --  according to RM 3.10.2 (21).
+
+            elsif Is_Type (E) then
+               return Make_Level_Literal
+                        (Type_Access_Level (E) + 1);
+
+            --  Move up the renamed entity if it came from source since
+            --  expansion may have created a dummy renaming under certain
+            --  circumstances.
+
+            elsif Present (Renamed_Object (E))
+              and then Comes_From_Source (Renamed_Object (E))
+            then
+               return Accessibility_Level_Helper
+                        (Renamed_Object (E), Static);
+
+            --  Named access types get their level from their associated type
+
+            elsif Is_Named_Access_Type (Etype (E)) then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (E)));
+
+            --  When E is a component of the current instance of a
+            --  protected type, we assume the level to be deeper than that of
+            --  the type itself.
+
+            elsif not Is_Overloadable (E)
+              and then Ekind (Scope (E)) = E_Protected_Type
+              and then Comes_From_Source (Scope (E))
+            then
+               return Make_Level_Literal
+                        (Scope_Depth (Enclosing_Dynamic_Scope (E)) + 1);
+
+            --  Normal object - get the level of the enclosing scope
+
+            else
+               return Make_Level_Literal
+                        (Scope_Depth (Enclosing_Dynamic_Scope (E)));
+            end if;
+
+         --  Handle indexed and selected components including the special cases
+         --  whereby there is an implicit dereference, a component of a
+         --  composite type, or a function call in prefix notation.
+
+         --  We don't handle function calls in prefix notation correctly ???
+
+         when N_Indexed_Component | N_Selected_Component =>
+            Pre := Original_Node (Prefix (E));
+
+            --  If the prefix is a named access type, then we are dealing
+            --  with an implicit deferences. In that case the level is that
+            --  of the named access type in the prefix.
+
+            if Is_Named_Access_Type (Etype (Pre)) then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (Pre)));
+
+            --  The current expression is a named access type, so there is no
+            --  reason to look at the prefix. Instead obtain the level of E's
+            --  named access type.
+
+            elsif Is_Named_Access_Type (Etype (E)) then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (E)));
+
+            --  A non-discriminant selected component where the component
+            --  is an anonymous access type means that its associated
+            --  level is that of the containing type - see RM 3.10.2 (16).
+
+            elsif Nkind (E) = N_Selected_Component
+              and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
+              and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
+              and then not (Nkind (Selector_Name (E)) in N_Has_Entity
+                             and then Ekind (Entity (Selector_Name (E)))
+                                        = E_Discriminant)
+            then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (Prefix (E))));
+
+            --  Similar to the previous case - arrays featuring components of
+            --  anonymous access components get their corresponding level from
+            --  their containing type's declaration.
+
+            elsif Nkind (E) = N_Indexed_Component
+              and then Ekind (Etype (E)) = E_Anonymous_Access_Type
+              and then Ekind (Etype (Pre)) in Array_Kind
+              and then Ekind (Component_Type (Base_Type (Etype (Pre))))
+                         = E_Anonymous_Access_Type
+            then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (Prefix (E))));
+
+            --  Otherwise, continue recursing over the expression prefixes
+
+            else
+               return Accessibility_Level_Helper (Prefix (E), Static);
+            end if;
+
+         --  Qualified expressions
+
+         when N_Qualified_Expression =>
+            if Is_Named_Access_Type (Etype (E)) then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (E)));
+            else
+               return Accessibility_Level_Helper (Expression (E), Static);
+            end if;
+
+         --  Handle function calls
+
+         when N_Function_Call =>
+            return Subprogram_Call_Level (E);
+
+         --  Explicit dereference accessibility level calculation
+
+         when N_Explicit_Dereference =>
+            Pre := Original_Node (Prefix (E));
+
+            --  The prefix is a named access type so the level is taken from
+            --  its type.
+
+            if Is_Named_Access_Type (Etype (Pre)) then
+               return Make_Level_Literal (Type_Access_Level (Etype (Pre)));
+
+            --  Otherwise, recurse deeper
+
+            else
+               return Accessibility_Level_Helper (Prefix (E), Static);
+            end if;
+
+         --  Type conversions
+
+         when N_Type_Conversion | N_Unchecked_Type_Conversion =>
+            --  View conversions are special in that they require use to
+            --  inspect the expression of the type conversion.
+
+            --  Allocators of anonymous access types are internally generated,
+            --  so recurse deeper in that case as well.
+
+            if Is_View_Conversion (E)
+              or else Ekind (Etype (E)) = E_Anonymous_Access_Type
+            then
+               return Accessibility_Level_Helper (Expression (E), Static);
+
+            --  In section RM 3.10.2 (10/4) the accessibility rules for
+            --  aggregates and value conversions are outlined. Are these
+            --  followed in the case of initialization of an object ???
+
+            --  Should use Innermost_Master_Scope_Depth ???
+
+            else
+               return Accessibility_Level_Helper (Current_Scope, Static);
+            end if;
+
+         --  Default to the type accessibility level for the type of the
+         --  expression's entity.
+
+         when others =>
+            return Make_Level_Literal (Type_Access_Level (Etype (E)));
+      end case;
+   end Accessibility_Level_Helper;
 
    ----------------------------------
    -- Acquire_Warning_Match_String --
@@ -4769,7 +5272,7 @@ package body Sem_Util is
            and then No (Cont_Encl_Typ)
            and then Is_Public_Operation
            and then Scope_Depth (Pref_Encl_Typ) >=
-                                       Object_Access_Level (Context)
+                                       Static_Accessibility_Level (Context)
          then
             Error_Msg_N
               ("??possible unprotected access to protected data", Expr);
@@ -6243,9 +6746,9 @@ package body Sem_Util is
       end if;
    end Current_Subprogram;
 
-   ----------------------------------
+   -------------------------------
    -- Deepest_Type_Access_Level --
-   ----------------------------------
+   -------------------------------
 
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint is
    begin
@@ -6276,7 +6779,10 @@ package body Sem_Util is
    -- Defining_Entity --
    ---------------------
 
-   function Defining_Entity (N : Node_Id) return Entity_Id is
+   function Defining_Entity
+     (N               : Node_Id;
+      Empty_On_Errors : Boolean := False) return Entity_Id
+   is
    begin
       case Nkind (N) is
          when N_Abstract_Subprogram_Declaration
@@ -6375,6 +6881,10 @@ package body Sem_Util is
             return Entity (Identifier (N));
 
          when others =>
+            if Empty_On_Errors then
+               return Empty;
+            end if;
+
             raise Program_Error;
       end case;
    end Defining_Entity;
@@ -6896,197 +7406,9 @@ package body Sem_Util is
    -- Dynamic_Accessibility_Level --
    ---------------------------------
 
-   function Dynamic_Accessibility_Level (N : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (N);
-
-      function Make_Level_Literal (Level : Uint) return Node_Id;
-      --  Construct an integer literal representing an accessibility level
-      --  with its type set to Natural.
-
-      ------------------------
-      -- Make_Level_Literal --
-      ------------------------
-
-      function Make_Level_Literal (Level : Uint) return Node_Id is
-         Result : constant Node_Id := Make_Integer_Literal (Loc, Level);
-
-      begin
-         Set_Etype (Result, Standard_Natural);
-         return Result;
-      end Make_Level_Literal;
-
-      --  Local variables
-
-      Expr : Node_Id := Original_Node (N);
-      --  Expr references the original node because at this stage N may be the
-      --  reference to a variable internally created by the frontend to remove
-      --  side effects of an expression.
-
-      E    : Entity_Id;
-
-   --  Start of processing for Dynamic_Accessibility_Level
-
+   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
    begin
-      if Is_Entity_Name (Expr) then
-         E := Entity (Expr);
-
-         if Present (Renamed_Object (E)) then
-            return Dynamic_Accessibility_Level (Renamed_Object (E));
-         end if;
-
-         if (Is_Formal (E)
-              or else Ekind (E) in E_Variable | E_Constant)
-           and then Present (Get_Accessibility (E))
-         then
-            return New_Occurrence_Of (Get_Accessibility (E), Loc);
-         end if;
-      end if;
-
-      --  Handle a constant-folded conditional expression by avoiding use of
-      --  the original node.
-
-      if Nkind (Expr) in N_Case_Expression | N_If_Expression then
-         Expr := N;
-      end if;
-
-      --  Unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
-
-      case Nkind (Expr) is
-         --  It may be possible that we have an access object denoted by an
-         --  attribute reference for 'Loop_Entry which may, in turn, have an
-         --  indexed component representing a loop identifier.
-
-         --  In this case we must climb up the indexed component and set expr
-         --  to the attribute reference so the rest of the machinery can
-         --  operate as expected.
-
-         when N_Indexed_Component =>
-            if Nkind (Prefix (Expr)) = N_Attribute_Reference
-              and then Get_Attribute_Id (Attribute_Name (Prefix (Expr)))
-                         = Attribute_Loop_Entry
-            then
-               Expr := Prefix (Expr);
-            end if;
-
-         --  For access discriminant, the level of the enclosing object
-
-         when N_Selected_Component =>
-            if Ekind (Entity (Selector_Name (Expr))) = E_Discriminant
-              and then Ekind (Etype (Entity (Selector_Name (Expr)))) =
-                                            E_Anonymous_Access_Type
-            then
-               return Make_Level_Literal (Object_Access_Level (Expr));
-            end if;
-
-         when N_Attribute_Reference =>
-            case Get_Attribute_Id (Attribute_Name (Expr)) is
-
-               --  Ignore 'Loop_Entry, 'Result, and 'Old as they can be used to
-               --  identify access objects and do not have an effect on
-               --  accessibility level.
-
-               when Attribute_Loop_Entry | Attribute_Old | Attribute_Result =>
-                  null;
-
-               --  For X'Access, the level of the prefix X
-
-               when Attribute_Access =>
-                  return Make_Level_Literal
-                           (Object_Access_Level (Prefix (Expr)));
-
-               --  Treat the unchecked attributes as library-level
-
-               when Attribute_Unchecked_Access
-                  | Attribute_Unrestricted_Access
-               =>
-                  return Make_Level_Literal (Scope_Depth (Standard_Standard));
-
-               --  No other access-valued attributes
-
-               when others =>
-                  raise Program_Error;
-            end case;
-
-         when N_Allocator =>
-
-            --  This is not fully implemented since it depends on context (see
-            --  3.10.2(14/3-14.2/3). More work is needed in the following cases
-            --
-            --  1) For an anonymous allocator defining the value of an access
-            --     parameter, the accessibility level is that of the innermost
-            --     master of the call; however currently we pass the level of
-            --     execution of the called subprogram, which is one greater
-            --     than the current scope level (see Expand_Call_Helper).
-            --
-            --     For example, a statement is a master and a declaration is
-            --     not a master; so we should not pass in the same level for
-            --     the following cases:
-            --
-            --         function F (X : access Integer) return T is ... ;
-            --         Decl : T := F (new Integer); -- level is off by one
-            --      begin
-            --         Decl := F (new Integer); -- we get this case right
-            --
-            --  2) For an anonymous allocator that defines the result of a
-            --     function with an access result, the accessibility level is
-            --     determined as though the allocator were in place of the call
-            --     of the function. In the special case of a call that is the
-            --     operand of a type conversion the level is that of the target
-            --     access type of the conversion.
-            --
-            --  3) For an anonymous allocator defining an access discriminant
-            --     the accessibility level is determined as follows:
-            --       * for an allocator used to define the discriminant of an
-            --         object, the level of the object
-            --       * for an allocator used to define the constraint in a
-            --         subtype_indication in any other context, the level of
-            --         the master that elaborates the subtype_indication.
-
-            case Nkind (Parent (N)) is
-               when N_Object_Declaration =>
-
-                  --  For an anonymous allocator whose type is that of a
-                  --  stand-alone object of an anonymous access-to-object type,
-                  --  the accessibility level is that of the declaration of the
-                  --  stand-alone object.
-
-                  return
-                    Make_Level_Literal
-                      (Object_Access_Level
-                         (Defining_Identifier (Parent (N))));
-
-               when N_Assignment_Statement =>
-                  return
-                    Make_Level_Literal
-                      (Object_Access_Level (Name (Parent (N))));
-
-               when others =>
-                  declare
-                     S : constant String :=
-                           Node_Kind'Image (Nkind (Parent (N)));
-                  begin
-                     Error_Msg_Strlen := S'Length;
-                     Error_Msg_String (1 .. Error_Msg_Strlen) := S;
-                     Error_Msg_N
-                       ("unsupported context for anonymous allocator (~)",
-                        Parent (N));
-                  end;
-            end case;
-
-         when N_Type_Conversion =>
-            if not Is_Local_Anonymous_Access (Etype (Expr)) then
-
-               --  Handle type conversions introduced for a rename of an
-               --  Ada 2012 stand-alone object of an anonymous access type.
-
-               return Dynamic_Accessibility_Level (Expression (Expr));
-            end if;
-
-         when others =>
-            null;
-      end case;
-
-      return Make_Level_Literal (Type_Access_Level (Etype (Expr)));
+      return Accessibility_Level_Helper (Expr);
    end Dynamic_Accessibility_Level;
 
    ------------------------
@@ -19670,7 +19992,7 @@ package body Sem_Util is
    function Is_View_Conversion (N : Node_Id) return Boolean is
    begin
       if Nkind (N) = N_Type_Conversion
-        and then Nkind (Unqual_Conv (N)) in N_Expanded_Name | N_Identifier
+        and then Nkind (Unqual_Conv (N)) in N_Has_Etype
       then
          if Is_Tagged_Type (Etype (N))
            and then Is_Tagged_Type (Etype (Unqual_Conv (N)))
@@ -24418,350 +24740,6 @@ package body Sem_Util is
       return Num;
    end Number_Of_Elements_In_Array;
 
-   -------------------------
-   -- Object_Access_Level --
-   -------------------------
-
-   --  Returns the static accessibility level of the view denoted by Obj. Note
-   --  that the value returned is the result of a call to Scope_Depth. Only
-   --  scope depths associated with dynamic scopes can actually be returned.
-   --  Since only relative levels matter for accessibility checking, the fact
-   --  that the distance between successive levels of accessibility is not
-   --  always one is immaterial (invariant: if level(E2) is deeper than
-   --  level(E1), then Scope_Depth(E1) < Scope_Depth(E2)).
-
-   function Object_Access_Level (Obj : Node_Id) return Uint is
-      function Is_Interface_Conversion (N : Node_Id) return Boolean;
-      --  Determine whether N is a construct of the form
-      --    Some_Type (Operand._tag'Address)
-      --  This construct appears in the context of dispatching calls.
-
-      function Reference_To (Obj : Node_Id) return Node_Id;
-      --  An explicit dereference is created when removing side effects from
-      --  expressions for constraint checking purposes. In this case a local
-      --  access type is created for it. The correct access level is that of
-      --  the original source node. We detect this case by noting that the
-      --  prefix of the dereference is created by an object declaration whose
-      --  initial expression is a reference.
-
-      -----------------------------
-      -- Is_Interface_Conversion --
-      -----------------------------
-
-      function Is_Interface_Conversion (N : Node_Id) return Boolean is
-      begin
-         return Nkind (N) = N_Unchecked_Type_Conversion
-           and then Nkind (Expression (N)) = N_Attribute_Reference
-           and then Attribute_Name (Expression (N)) = Name_Address;
-      end Is_Interface_Conversion;
-
-      ------------------
-      -- Reference_To --
-      ------------------
-
-      function Reference_To (Obj : Node_Id) return Node_Id is
-         Pref : constant Node_Id := Prefix (Obj);
-      begin
-         if Is_Entity_Name (Pref)
-           and then Nkind (Parent (Entity (Pref))) = N_Object_Declaration
-           and then Present (Expression (Parent (Entity (Pref))))
-           and then Nkind (Expression (Parent (Entity (Pref)))) = N_Reference
-         then
-            return (Prefix (Expression (Parent (Entity (Pref)))));
-         else
-            return Empty;
-         end if;
-      end Reference_To;
-
-      --  Local variables
-
-      E        : Entity_Id;
-      Orig_Obj : Node_Id := Original_Node (Obj);
-      Orig_Pre : Node_Id;
-
-   --  Start of processing for Object_Access_Level
-
-   begin
-      --  In the case of an expanded implicit dereference we swap the original
-      --  object to be the expanded conversion.
-
-      if Nkind (Obj) = N_Explicit_Dereference
-        and then Nkind (Orig_Obj) /= N_Explicit_Dereference
-      then
-         Orig_Obj := Obj;
-      end if;
-
-      --  Calculate the object node's accessibility level
-
-      if Nkind (Orig_Obj) = N_Defining_Identifier
-        or else Is_Entity_Name (Orig_Obj)
-      then
-         if Nkind (Orig_Obj) = N_Defining_Identifier then
-            E := Orig_Obj;
-         else
-            E := Entity (Orig_Obj);
-         end if;
-
-         if Is_Prival (E) then
-            E := Prival_Link (E);
-         end if;
-
-         --  If E is a type then it denotes a current instance. For this case
-         --  we add one to the normal accessibility level of the type to ensure
-         --  that current instances are treated as always being deeper than
-         --  than the level of any visible named access type (see 3.10.2(21)).
-
-         if Is_Type (E) then
-            return Type_Access_Level (E) + 1;
-
-         elsif Present (Renamed_Object (E)) then
-            return Object_Access_Level (Renamed_Object (E));
-
-         --  Similarly, if E is a component of the current instance of a
-         --  protected type, any instance of it is assumed to be at a deeper
-         --  level than the type. For a protected object (whose type is an
-         --  anonymous protected type) its components are at the same level
-         --  as the type itself.
-
-         elsif not Is_Overloadable (E)
-           and then Ekind (Scope (E)) = E_Protected_Type
-           and then Comes_From_Source (Scope (E))
-         then
-            return Type_Access_Level (Scope (E)) + 1;
-
-         --  An object of a named access type gets its level from its
-         --  associated type.
-
-         elsif Is_Named_Access_Type (Etype (E)) then
-            return Type_Access_Level (Etype (E));
-
-         else
-            return Scope_Depth (Enclosing_Dynamic_Scope (E));
-         end if;
-
-      elsif Nkind (Orig_Obj) in N_Indexed_Component | N_Selected_Component then
-         Orig_Pre := Original_Node (Prefix (Orig_Obj));
-
-         if Is_Access_Type (Etype (Orig_Pre)) then
-            return Type_Access_Level (Etype (Orig_Pre));
-         else
-            return Object_Access_Level (Prefix (Orig_Obj));
-         end if;
-
-      elsif Nkind (Orig_Obj) = N_Explicit_Dereference then
-         Orig_Pre := Original_Node (Prefix (Orig_Obj));
-
-         --  If the prefix is a selected access discriminant then we make a
-         --  recursive call on the prefix, which will in turn check the level
-         --  of the prefix object of the selected discriminant.
-
-         --  In Ada 2012, if the discriminant has implicit dereference and
-         --  the context is a selected component, treat this as an object of
-         --  unknown scope (see below). This is necessary in compile-only mode;
-         --  otherwise expansion will already have transformed the prefix into
-         --  a temporary.
-
-         if Nkind (Orig_Pre) = N_Selected_Component
-           and then Ekind (Etype (Orig_Pre)) = E_Anonymous_Access_Type
-           and then
-             Ekind (Entity (Selector_Name (Orig_Pre))) = E_Discriminant
-           and then
-             (not Has_Implicit_Dereference
-                    (Entity (Selector_Name (Orig_Pre)))
-               or else Nkind (Parent (Obj)) /= N_Selected_Component)
-         then
-            return Object_Access_Level (Prefix (Orig_Obj));
-
-         --  Detect an interface conversion in the context of a dispatching
-         --  call. Use the original form of the conversion to find the access
-         --  level of the operand.
-
-         elsif Is_Interface (Etype (Orig_Obj))
-           and then Is_Interface_Conversion (Orig_Pre)
-           and then Nkind (Orig_Obj) = N_Type_Conversion
-         then
-            return Object_Access_Level (Orig_Obj);
-
-         elsif not Comes_From_Source (Orig_Obj) then
-            declare
-               Ref : constant Node_Id := Reference_To (Orig_Obj);
-            begin
-               if Present (Ref) then
-                  return Object_Access_Level (Ref);
-               else
-                  return Type_Access_Level (Etype (Prefix (Orig_Obj)));
-               end if;
-            end;
-
-         else
-            return Type_Access_Level (Etype (Prefix (Orig_Obj)));
-         end if;
-
-      elsif Nkind (Orig_Obj) in N_Type_Conversion | N_Unchecked_Type_Conversion
-      then
-         return Object_Access_Level (Expression (Orig_Obj));
-
-      elsif Nkind (Orig_Obj) = N_Function_Call then
-
-         --  Function results are objects, so we get either the access level of
-         --  the function or, in the case of an indirect call, the level of the
-         --  access-to-subprogram type. (This code is used for Ada 95, but it
-         --  looks wrong, because it seems that we should be checking the level
-         --  of the call itself, even for Ada 95. However, using the Ada 2005
-         --  version of the code causes regressions in several tests that are
-         --  compiled with -gnat95. ???)
-
-         if Ada_Version < Ada_2005 then
-            if Is_Entity_Name (Name (Orig_Obj)) then
-               return Subprogram_Access_Level (Entity (Name (Orig_Obj)));
-            else
-               return Type_Access_Level (Etype (Prefix (Name (Orig_Obj))));
-            end if;
-
-         --  For Ada 2005, the level of the result object of a function call is
-         --  defined to be the level of the call's innermost enclosing master.
-         --  We determine that by querying the depth of the innermost enclosing
-         --  dynamic scope.
-
-         else
-            Return_Master_Scope_Depth_Of_Call : declare
-               function Innermost_Master_Scope_Depth
-                 (N : Node_Id) return Uint;
-               --  Returns the scope depth of the given node's innermost
-               --  enclosing dynamic scope (effectively the accessibility
-               --  level of the innermost enclosing master).
-
-               ----------------------------------
-               -- Innermost_Master_Scope_Depth --
-               ----------------------------------
-
-               function Innermost_Master_Scope_Depth
-                 (N : Node_Id) return Uint
-               is
-                  Node_Par : Node_Id := Parent (N);
-
-               begin
-                  --  Locate the nearest enclosing node (by traversing Parents)
-                  --  that Defining_Entity can be applied to, and return the
-                  --  depth of that entity's nearest enclosing dynamic scope.
-
-                  while Present (Node_Par) loop
-                     case Nkind (Node_Par) is
-                        when N_Abstract_Subprogram_Declaration
-                           | N_Block_Statement
-                           | N_Body_Stub
-                           | N_Component_Declaration
-                           | N_Entry_Body
-                           | N_Entry_Declaration
-                           | N_Exception_Declaration
-                           | N_Formal_Object_Declaration
-                           | N_Formal_Package_Declaration
-                           | N_Formal_Subprogram_Declaration
-                           | N_Formal_Type_Declaration
-                           | N_Full_Type_Declaration
-                           | N_Function_Specification
-                           | N_Generic_Declaration
-                           | N_Generic_Instantiation
-                           | N_Implicit_Label_Declaration
-                           | N_Incomplete_Type_Declaration
-                           | N_Loop_Parameter_Specification
-                           | N_Number_Declaration
-                           | N_Object_Declaration
-                           | N_Package_Declaration
-                           | N_Package_Specification
-                           | N_Parameter_Specification
-                           | N_Private_Extension_Declaration
-                           | N_Private_Type_Declaration
-                           | N_Procedure_Specification
-                           | N_Proper_Body
-                           | N_Protected_Type_Declaration
-                           | N_Renaming_Declaration
-                           | N_Single_Protected_Declaration
-                           | N_Single_Task_Declaration
-                           | N_Subprogram_Declaration
-                           | N_Subtype_Declaration
-                           | N_Subunit
-                           | N_Task_Type_Declaration
-                        =>
-                           return Scope_Depth
-                                    (Nearest_Dynamic_Scope
-                                       (Defining_Entity (Node_Par)));
-
-                        --  For a return statement within a function, return
-                        --  the depth of the function itself. This is not just
-                        --  a small optimization, but matters when analyzing
-                        --  the expression in an expression function before
-                        --  the body is created.
-
-                        when N_Simple_Return_Statement =>
-                           if Ekind (Current_Scope) = E_Function then
-                              return Scope_Depth (Current_Scope);
-                           end if;
-
-                        when others =>
-                           null;
-                     end case;
-
-                     Node_Par := Parent (Node_Par);
-                  end loop;
-
-                  pragma Assert (False);
-
-                  --  Should never reach the following return
-
-                  return Scope_Depth (Current_Scope) + 1;
-               end Innermost_Master_Scope_Depth;
-
-            --  Start of processing for Return_Master_Scope_Depth_Of_Call
-
-            begin
-               --  Expanded code may have clobbered the scoping data from the
-               --  original object node - so use the expanded one.
-
-               return Innermost_Master_Scope_Depth (Obj);
-            end Return_Master_Scope_Depth_Of_Call;
-         end if;
-
-      --  For convenience we handle qualified expressions, even though they
-      --  aren't technically object names.
-
-      elsif Nkind (Orig_Obj) = N_Qualified_Expression then
-         return Object_Access_Level (Expression (Orig_Obj));
-
-      --  Ditto for aggregates. They have the level of the temporary that
-      --  will hold their value.
-
-      elsif Nkind (Orig_Obj) = N_Aggregate then
-         return Object_Access_Level (Current_Scope);
-
-      --  Treat an Old/Loop_Entry attribute reference like an aggregate.
-      --  AARM 6.1.1(27.d) says "... the implicit constant declaration
-      --  defines the accessibility level of X'Old", so that is what
-      --  we are trying to implement here.
-
-      elsif Nkind (Orig_Obj) = N_Attribute_Reference
-        and then Attribute_Name (Orig_Obj) in Name_Old | Name_Loop_Entry
-      then
-         return Object_Access_Level (Current_Scope);
-
-      --  Move up the attribute reference when we encounter a 'Access variation
-
-      elsif Nkind (Orig_Obj) = N_Attribute_Reference
-        and then Attribute_Name (Orig_Obj) in Name_Access
-                                            | Name_Unchecked_Access
-                                            | Name_Unrestricted_Access
-      then
-         return Object_Access_Level (Prefix (Orig_Obj));
-
-      --  Otherwise return the scope level of Standard. (If there are cases
-      --  that fall through to this point they will be treated as having
-      --  global accessibility for now. ???)
-
-      else
-         return Scope_Depth (Standard_Standard);
-      end if;
-   end Object_Access_Level;
-
    ----------------------------------
    -- Old_Requires_Transient_Scope --
    ----------------------------------
@@ -24987,6 +24965,100 @@ package body Sem_Util is
              Scop   => Scop)));
       Write_Eol;
    end Output_Name;
+
+   ------------------
+   -- Param_Entity --
+   ------------------
+
+   --  This would be trivial, simply a test for an identifier that was a
+   --  reference to a formal, if it were not for the fact that a previous call
+   --  to Expand_Entry_Parameter will have modified the reference to the
+   --  identifier. A formal of a protected entity is rewritten as
+
+   --    typ!(recobj).rec.all'Constrained
+
+   --  where rec is a selector whose Entry_Formal link points to the formal
+
+   --  If the type of the entry parameter has a representation clause, then an
+   --  extra temp is involved (see below).
+
+   --  For a formal of a task entity, the formal is rewritten as a local
+   --  renaming.
+
+   --  In addition, a formal that is marked volatile because it is aliased
+   --  through an address clause is rewritten as dereference as well.
+
+   function Param_Entity (N : Node_Id) return Entity_Id is
+      Renamed_Obj : Node_Id;
+
+   begin
+      --  Simple reference case
+
+      if Nkind (N) in N_Identifier | N_Expanded_Name then
+         if Is_Formal (Entity (N)) then
+            return Entity (N);
+
+         --  Handle renamings of formal parameters and formals of tasks that
+         --  are rewritten as renamings.
+
+         elsif Nkind (Parent (Entity (N))) = N_Object_Renaming_Declaration then
+            Renamed_Obj := Get_Referenced_Object (Renamed_Object (Entity (N)));
+
+            if Is_Entity_Name (Renamed_Obj)
+              and then Is_Formal (Entity (Renamed_Obj))
+            then
+               return Entity (Renamed_Obj);
+
+            elsif
+              Nkind (Parent (Parent (Entity (N)))) = N_Accept_Statement
+            then
+               return Entity (N);
+            end if;
+         end if;
+
+      else
+         if Nkind (N) = N_Explicit_Dereference then
+            declare
+               P    : Node_Id := Prefix (N);
+               S    : Node_Id;
+               E    : Entity_Id;
+               Decl : Node_Id;
+
+            begin
+               --  If the type of an entry parameter has a representation
+               --  clause, then the prefix is not a selected component, but
+               --  instead a reference to a temp pointing at the selected
+               --  component. In this case, set P to be the initial value of
+               --  that temp.
+
+               if Nkind (P) = N_Identifier then
+                  E := Entity (P);
+
+                  if Ekind (E) = E_Constant then
+                     Decl := Parent (E);
+
+                     if Nkind (Decl) = N_Object_Declaration then
+                        P := Expression (Decl);
+                     end if;
+                  end if;
+               end if;
+
+               if Nkind (P) = N_Selected_Component then
+                  S := Selector_Name (P);
+
+                  if Present (Entry_Formal (Entity (S))) then
+                     return Entry_Formal (Entity (S));
+                  end if;
+
+               elsif Nkind (Original_Node (N)) = N_Identifier then
+                  return Param_Entity (Original_Node (N));
+               end if;
+            end;
+         end if;
+      end if;
+
+      return (Empty);
+   end Param_Entity;
 
    ----------------------
    -- Policy_In_Effect --
@@ -27146,6 +27218,15 @@ package body Sem_Util is
    begin
       return Result;
    end Should_Ignore_Pragma_Sem;
+
+   --------------------------------
+   -- Static_Accessibility_Level --
+   --------------------------------
+
+   function Static_Accessibility_Level (Expr : Node_Id) return Uint is
+   begin
+      return Intval (Accessibility_Level_Helper (Expr, Static => True));
+   end Static_Accessibility_Level;
 
    --------------------
    -- Static_Boolean --

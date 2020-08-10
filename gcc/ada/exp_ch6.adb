@@ -34,7 +34,6 @@ with Elists;    use Elists;
 with Expander;  use Expander;
 with Exp_Aggr;  use Exp_Aggr;
 with Exp_Atag;  use Exp_Atag;
-with Exp_Ch2;   use Exp_Ch2;
 with Exp_Ch3;   use Exp_Ch3;
 with Exp_Ch7;   use Exp_Ch7;
 with Exp_Ch9;   use Exp_Ch9;
@@ -1807,13 +1806,7 @@ package body Exp_Ch6 is
 
                   pragma Assert (Ada_Version >= Ada_2012);
 
-                  if Type_Access_Level (E_Formal) >
-                     Object_Access_Level (Lhs)
-                  then
-                     Append_To (Post_Call,
-                       Make_Raise_Program_Error (Loc,
-                         Reason => PE_Accessibility_Check_Failed));
-                  end if;
+                  Apply_Accessibility_Check (Lhs, E_Formal, N);
 
                   Append_To (Post_Call,
                     Make_Assignment_Statement (Loc,
@@ -2782,6 +2775,15 @@ package body Exp_Ch6 is
       --  default parameters and for extra actuals (for Extra_Formals). The
       --  argument is an N_Parameter_Association node.
 
+      procedure Add_Cond_Expression_Extra_Actual (Formal : Entity_Id);
+      --  Adds extra accessibility actuals in the case of a conditional
+      --  expression corresponding to Formal.
+
+      --  Note: Conditional expressions used as actuals for anonymous access
+      --  formals complicate the process of propagating extra accessibility
+      --  actuals and must be handled in a recursive fashion since they can
+      --  be embedded within each other.
+
       procedure Add_Extra_Actual (Expr : Node_Id; EF : Entity_Id);
       --  Adds an extra actual to the list of extra actuals. Expr is the
       --  expression for the value of the actual, EF is the entity for the
@@ -2868,6 +2870,219 @@ package body Exp_Ch6 is
 
          Prev := Actual_Expr;
       end Add_Actual_Parameter;
+
+      --------------------------------------
+      -- Add_Cond_Expression_Extra_Actual --
+      --------------------------------------
+
+      procedure Add_Cond_Expression_Extra_Actual
+        (Formal : Entity_Id)
+      is
+         Decl : Node_Id;
+
+         --  Suppress warning for the final removal loop
+         pragma Warnings (Off, Decl);
+
+         Lvl  : Entity_Id;
+         Res  : Entity_Id;
+         Temp : Node_Id;
+         Typ  : Node_Id;
+
+         procedure Insert_Level_Assign (Branch : Node_Id);
+         --  Recursivly add assignment of the level temporary on each branch
+         --  while moving through nested conditional expressions.
+
+         -------------------------
+         -- Insert_Level_Assign --
+         -------------------------
+
+         procedure Insert_Level_Assign (Branch : Node_Id) is
+
+            procedure Expand_Branch (Res_Assn : Node_Id);
+            --  Perform expansion or iterate further within nested
+            --  conditionals given the object declaration or assignment to
+            --  result object created during expansion which represents a
+            --  branch of the conditional expression.
+
+            -------------------
+            -- Expand_Branch --
+            -------------------
+
+            procedure Expand_Branch (Res_Assn : Node_Id) is
+            begin
+               pragma Assert (Nkind (Res_Assn) in
+                               N_Assignment_Statement |
+                               N_Object_Declaration);
+
+               --  There are more nested conditional expressions so we must go
+               --  deeper.
+
+               if Nkind (Expression (Res_Assn)) =
+                    N_Expression_With_Actions
+                 and then
+                   Nkind
+                     (Original_Node (Expression (Res_Assn)))
+                       in N_Case_Expression | N_If_Expression
+               then
+                  Insert_Level_Assign
+                    (Expression (Res_Assn));
+
+               --  Add the level assignment
+
+               else
+                  Insert_Before_And_Analyze (Res_Assn,
+                    Make_Assignment_Statement (Loc,
+                      Name       =>
+                        New_Occurrence_Of
+                          (Lvl, Loc),
+                      Expression =>
+                        Dynamic_Accessibility_Level
+                          (Expression (Res_Assn))));
+               end if;
+            end Expand_Branch;
+
+            Cond : Node_Id;
+            Alt  : Node_Id;
+
+         --  Start of processing for Insert_Level_Assign
+
+         begin
+            --  Examine further nested condtionals
+
+            pragma Assert (Nkind (Branch) =
+                            N_Expression_With_Actions);
+
+            --  Find the relevant statement in the actions
+
+            Cond := First (Actions (Branch));
+            while Present (Cond) loop
+               exit when Nkind (Cond) in
+                           N_Case_Statement | N_If_Statement;
+
+               Next (Cond);
+            end loop;
+
+            --  The conditional expression may have been optimized away, so
+            --  examine the actions in the branch.
+
+            if No (Cond) then
+               Expand_Branch (Last (Actions (Branch)));
+
+            --  Iterate through if expression branches
+
+            elsif Nkind (Cond) = N_If_Statement then
+               Expand_Branch (Last (Then_Statements (Cond)));
+               Expand_Branch (Last (Else_Statements (Cond)));
+
+            --  Iterate through case alternatives
+
+            elsif Nkind (Cond) = N_Case_Statement then
+
+               Alt := First (Alternatives (Cond));
+               while Present (Alt) loop
+                  Expand_Branch (Last (Statements (Alt)));
+
+                  Next (Alt);
+               end loop;
+            end if;
+         end Insert_Level_Assign;
+
+      --  Start of processing for cond expression case
+
+      begin
+         --  Create declaration of a temporary to store the accessibility
+         --  level of each branch of the conditional expression.
+
+         Lvl  := Make_Temporary (Loc, 'L');
+         Decl := Make_Object_Declaration (Loc,
+                   Defining_Identifier => Lvl,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc));
+
+         --  Install the declaration and perform necessary expansion if we
+         --  are dealing with a function call.
+
+         if Nkind (Call_Node) = N_Procedure_Call_Statement then
+            --  Generate:
+            --    Lvl : Natural;
+            --    Call (
+            --     {do
+            --        If_Exp_Res : Typ;
+            --        if Cond then
+            --           Lvl        := 0; --  Access level
+            --           If_Exp_Res := Exp;
+            --        ...
+            --      in If_Exp_Res end;},
+            --      Lvl,
+            --      ...
+            --    )
+
+            Insert_Before_And_Analyze (Call_Node, Decl);
+
+         --  A function call must be transformed into an expression with
+         --  actions.
+
+         else
+            --  Generate:
+            --    do
+            --      Lvl : Natural;
+            --    in Call (do{
+            --               If_Exp_Res : Typ
+            --               if Cond then
+            --                 Lvl := 0; --  Access level
+            --                 If_Exp_Res := Exp;
+            --               in If_Exp_Res end;},
+            --             Lvl,
+            --             ...
+            --             )
+            --    end;
+
+            Res  := Make_Temporary (Loc, 'R');
+            Typ  := Etype (Call_Node);
+            Temp := Relocate_Node (Call_Node);
+
+            --  Perform the rewrite with the dummy
+
+            Rewrite (Call_Node,
+
+              Make_Expression_With_Actions (Loc,
+                Expression => New_Occurrence_Of (Res, Loc),
+                Actions    => New_List (
+                  Decl,
+
+                  Make_Object_Declaration (Loc,
+                    Defining_Identifier => Res,
+                    Object_Definition   =>
+                      New_Occurrence_Of (Typ, Loc)))));
+
+            --  Analyze the expression with the dummy
+
+            Analyze_And_Resolve (Call_Node, Typ);
+
+            --  Properly set the expression and move our view of the call node
+
+            Set_Expression (Call_Node, Relocate_Node (Temp));
+            Call_Node := Expression (Call_Node);
+
+            --  Remove the declaration of the dummy and the subsequent actions
+            --  its analysis has created.
+
+            while Present (Remove_Next (Decl)) loop
+               null;
+            end loop;
+         end if;
+
+         --  Decorate the conditional expression with assignments to our level
+         --  temporary.
+
+         Insert_Level_Assign (Prev);
+
+         --  Make our level temporary the passed actual
+
+         Add_Extra_Actual
+           (Expr => New_Occurrence_Of (Lvl, Loc),
+            EF   => Extra_Accessibility (Formal));
+      end Add_Cond_Expression_Extra_Actual;
 
       ----------------------
       -- Add_Extra_Actual --
@@ -3300,7 +3515,6 @@ package body Exp_Ch6 is
       Param_Count   : Positive;
       Parent_Formal : Entity_Id;
       Parent_Subp   : Entity_Id;
-      Prev_Ult      : Node_Id;
       Scop          : Entity_Id;
       Subp          : Entity_Id;
 
@@ -3751,417 +3965,20 @@ package body Exp_Ch6 is
                      EF   => Extra_Accessibility (Formal));
                end;
 
-            elsif Is_Entity_Name (Prev_Orig) then
+            --  Conditional expressions
 
-               --  When passing an access parameter, or a renaming of an access
-               --  parameter, as the actual to another access parameter we need
-               --  to pass along the actual's own access level parameter. This
-               --  is done if we are within the scope of the formal access
-               --  parameter (if this is an inlined body the extra formal is
-               --  irrelevant).
-
-               if (Is_Formal (Entity (Prev_Orig))
-                    or else
-                      (Present (Renamed_Object (Entity (Prev_Orig)))
-                        and then
-                          Is_Entity_Name (Renamed_Object (Entity (Prev_Orig)))
-                        and then
-                          Is_Formal
-                            (Entity (Renamed_Object (Entity (Prev_Orig))))))
-                 and then Ekind (Etype (Prev_Orig)) = E_Anonymous_Access_Type
-                 and then In_Open_Scopes (Scope (Entity (Prev_Orig)))
-               then
-                  declare
-                     Parm_Ent : constant Entity_Id := Param_Entity (Prev_Orig);
-
-                  begin
-                     pragma Assert (Present (Parm_Ent));
-
-                     if Present (Get_Accessibility (Parm_Ent)) then
-                        Add_Extra_Actual
-                          (Expr =>
-                             New_Occurrence_Of
-                               (Get_Accessibility (Parm_Ent), Loc),
-                           EF   => Extra_Accessibility (Formal));
-
-                     --  If the actual access parameter does not have an
-                     --  associated extra formal providing its scope level,
-                     --  then treat the actual as having library-level
-                     --  accessibility.
-
-                     else
-                        Add_Extra_Actual
-                          (Expr =>
-                             Make_Integer_Literal (Loc,
-                               Intval => Scope_Depth (Standard_Standard)),
-                           EF   => Extra_Accessibility (Formal));
-                     end if;
-                  end;
-
-               --  The actual is a normal access value, so just pass the level
-               --  of the actual's access type.
-
-               else
-                  Add_Extra_Actual
-                    (Expr => Dynamic_Accessibility_Level (Prev_Orig),
-                     EF   => Extra_Accessibility (Formal));
-               end if;
-
-            --  If the actual is an access discriminant, then pass the level
-            --  of the enclosing object (RM05-3.10.2(12.4/2)).
-
-            elsif Nkind (Prev_Orig) = N_Selected_Component
-              and then Ekind (Entity (Selector_Name (Prev_Orig))) =
-                                                       E_Discriminant
-              and then Ekind (Etype (Entity (Selector_Name (Prev_Orig)))) =
-                                                       E_Anonymous_Access_Type
+            elsif Nkind (Prev) = N_Expression_With_Actions
+                   and then Nkind (Original_Node (Prev)) in
+                              N_If_Expression | N_Case_Expression
             then
-               Add_Extra_Actual
-                 (Expr =>
-                    Make_Integer_Literal (Loc,
-                      Intval => Object_Access_Level (Prefix (Prev_Orig))),
-                  EF   => Extra_Accessibility (Formal));
+               Add_Cond_Expression_Extra_Actual (Formal);
 
-            --  All other cases
+            --  Normal case
 
             else
-               case Nkind (Prev_Orig) is
-                  when N_Attribute_Reference =>
-                     case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
-                        --  Ignore 'Result, 'Loop_Entry, and 'Old as they can
-                        --  be used to identify access objects and do not have
-                        --  an effect on accessibility level.
-
-                        when Attribute_Loop_Entry
-                           | Attribute_Old
-                           | Attribute_Result
-                        =>
-                           null;
-
-                        --  For X'Access, pass on the level of the prefix X
-
-                        when Attribute_Access =>
-
-                           --  Accessibility level of S'Access is that of A
-
-                           Prev_Orig := Prefix (Prev_Orig);
-
-                           --  If the expression is a view conversion, the
-                           --  accessibility level is that of the expression.
-
-                           if Nkind (Original_Node (Prev_Orig)) =
-                                N_Type_Conversion
-                             and then
-                               Nkind (Expression (Original_Node (Prev_Orig))) =
-                                 N_Explicit_Dereference
-                           then
-                              Prev_Orig :=
-                                Expression (Original_Node (Prev_Orig));
-                           end if;
-
-                           --  Obtain the ultimate prefix so we can check for
-                           --  the case where we are taking 'Access of a
-                           --  component of an anonymous access formal - which
-                           --  would mean we need to pass said formal's
-                           --  corresponding extra accessibility formal.
-
-                           Prev_Ult := Ultimate_Prefix (Prev_Orig);
-
-                           if Is_Entity_Name (Prev_Ult)
-                             and then not Is_Type (Entity (Prev_Ult))
-                             and then Present
-                                        (Get_Accessibility
-                                          (Entity (Prev_Ult)))
-                           then
-                              Add_Extra_Actual
-                                (Expr =>
-                                   New_Occurrence_Of
-                                     (Get_Accessibility
-                                        (Entity (Prev_Ult)), Loc),
-                                 EF   => Extra_Accessibility (Formal));
-
-                           --  Normal case, call Object_Access_Level. Note:
-                           --  should be Dynamic_Accessibility_Level ???
-
-                           else
-                              Add_Extra_Actual
-                                (Expr =>
-                                   Make_Integer_Literal (Loc,
-                                     Intval =>
-                                       Object_Access_Level (Prev_Orig)),
-                                 EF   => Extra_Accessibility (Formal));
-                           end if;
-
-                        --  Treat the unchecked attributes as library-level
-
-                        when Attribute_Unchecked_Access
-                           | Attribute_Unrestricted_Access
-                        =>
-                           Add_Extra_Actual
-                             (Expr =>
-                                Make_Integer_Literal (Loc,
-                                  Intval => Scope_Depth (Standard_Standard)),
-                              EF   => Extra_Accessibility (Formal));
-
-                        --  No other cases of attributes returning access
-                        --  values that can be passed to access parameters.
-
-                        when others =>
-                           raise Program_Error;
-
-                     end case;
-
-                  --  For allocators we pass the level of the execution of the
-                  --  called subprogram, which is one greater than the current
-                  --  scope level. However, according to RM 3.10.2(14/3) this
-                  --  is wrong since for an anonymous allocator defining the
-                  --  value of an access parameter, the accessibility level is
-                  --  that of the innermost master of the call???
-
-                  when N_Allocator =>
-                     Add_Extra_Actual
-                       (Expr =>
-                          Make_Integer_Literal (Loc,
-                            Intval => Scope_Depth (Current_Scope) + 1),
-                        EF   => Extra_Accessibility (Formal));
-
-                  --  For most other cases we simply pass the level of the
-                  --  actual's access type. The type is retrieved from
-                  --  Prev rather than Prev_Orig, because in some cases
-                  --  Prev_Orig denotes an original expression that has
-                  --  not been analyzed.
-
-                  --  However, when the actual is wrapped in a conditional
-                  --  expression we must add a local temporary to store the
-                  --  level at each branch, and, possibly, expand the call
-                  --  into an expression with actions.
-
-                  when others =>
-                     if Nkind (Prev) = N_Expression_With_Actions
-                       and then Nkind (Original_Node (Prev)) in
-                                  N_If_Expression | N_Case_Expression
-                     then
-                        declare
-                           Decl : Node_Id;
-                           pragma Warnings (Off, Decl);
-                           --  Suppress warning for the final removal loop
-                           Lvl  : Entity_Id;
-                           Res  : Entity_Id;
-                           Temp : Node_Id;
-                           Typ  : Node_Id;
-
-                           procedure Insert_Level_Assign (Branch : Node_Id);
-                           --  Recursivly add assignment of the level temporary
-                           --  on each branch while moving through nested
-                           --  conditional expressions.
-
-                           -------------------------
-                           -- Insert_Level_Assign --
-                           -------------------------
-
-                           procedure Insert_Level_Assign (Branch : Node_Id) is
-
-                              procedure Expand_Branch (Res_Assn : Node_Id);
-                              --  Perform expansion or iterate further within
-                              --  nested conditionals given the object
-                              --  declaration or assignment to result object
-                              --  created during expansion which represents
-                              --  a branch of the conditional expression.
-
-                              -------------------
-                              -- Expand_Branch --
-                              -------------------
-
-                              procedure Expand_Branch (Res_Assn : Node_Id) is
-                              begin
-                                 pragma Assert (Nkind (Res_Assn) in
-                                                 N_Assignment_Statement |
-                                                 N_Object_Declaration);
-
-                                 --  There are more nested conditional
-                                 --  expressions so we must go deeper.
-
-                                 if Nkind (Expression (Res_Assn)) =
-                                      N_Expression_With_Actions
-                                   and then
-                                     Nkind
-                                       (Original_Node (Expression (Res_Assn)))
-                                         in N_Case_Expression | N_If_Expression
-                                 then
-                                    Insert_Level_Assign
-                                      (Expression (Res_Assn));
-
-                                 --  Add the level assignment
-
-                                 else
-                                    Insert_Before_And_Analyze (Res_Assn,
-                                      Make_Assignment_Statement (Loc,
-                                        Name       =>
-                                          New_Occurrence_Of
-                                            (Lvl, Loc),
-                                        Expression =>
-                                          Dynamic_Accessibility_Level
-                                            (Expression (Res_Assn))));
-                                 end if;
-                              end Expand_Branch;
-
-                              Cond : Node_Id;
-                              Alt  : Node_Id;
-
-                           --  Start of processing for Insert_Level_Assign
-
-                           begin
-                              --  Examine further nested condtionals
-
-                              pragma Assert (Nkind (Branch) =
-                                              N_Expression_With_Actions);
-
-                              --  Find the relevant statement in the actions
-
-                              Cond := First (Actions (Branch));
-                              while Present (Cond) loop
-                                 exit when Nkind (Cond) in
-                                             N_Case_Statement | N_If_Statement;
-
-                                 Next (Cond);
-                              end loop;
-
-                              --  The conditional expression may have been
-                              --  optimized away, so examine the actions in
-                              --  the branch.
-
-                              if No (Cond) then
-                                 Expand_Branch (Last (Actions (Branch)));
-
-                              --  Iterate through if expression branches
-
-                              elsif Nkind (Cond) = N_If_Statement then
-                                 Expand_Branch (Last (Then_Statements (Cond)));
-                                 Expand_Branch (Last (Else_Statements (Cond)));
-
-                              --  Iterate through case alternatives
-
-                              elsif Nkind (Cond) = N_Case_Statement then
-
-                                 Alt := First (Alternatives (Cond));
-                                 while Present (Alt) loop
-                                    Expand_Branch (Last (Statements (Alt)));
-
-                                    Next (Alt);
-                                 end loop;
-                              end if;
-                           end Insert_Level_Assign;
-
-                        --  Start of processing for cond expression case
-
-                        begin
-                           --  Create declaration of a temporary to store the
-                           --  accessibility level of each branch of the
-                           --  conditional expression.
-
-                           Lvl  := Make_Temporary (Loc, 'L');
-                           Decl :=
-                              Make_Object_Declaration (Loc,
-                                Defining_Identifier => Lvl,
-                                Object_Definition   =>
-                                  New_Occurrence_Of (Standard_Natural, Loc));
-
-                           --  Install the declaration and perform necessary
-                           --  expansion if we are dealing with a function
-                           --  call.
-
-                           if Nkind (Call_Node) = N_Procedure_Call_Statement
-                           then
-                              --  Generate:
-                              --    Lvl : Natural;
-                              --    Call (
-                              --     {do
-                              --        If_Exp_Res : Typ;
-                              --        if Cond then
-                              --           Lvl        := 0; --  Access level
-                              --           If_Exp_Res := Exp;
-                              --        ...
-                              --      in If_Exp_Res end;},
-                              --      Lvl,
-                              --      ...
-                              --    )
-
-                              Insert_Before_And_Analyze (Call_Node, Decl);
-
-                           --  A function call must be transformed into an
-                           --  expression with actions.
-
-                           else
-                              --  Generate:
-                              --    do
-                              --      Lvl : Natural;
-                              --    in Call (do{
-                              --               If_Exp_Res : Typ
-                              --               if Cond then
-                              --                 Lvl := 0; --  Access level
-                              --                 If_Exp_Res := Exp;
-                              --               in If_Exp_Res end;},
-                              --             Lvl,
-                              --             ...
-                              --             )
-                              --    end;
-
-                              Res  := Make_Temporary (Loc, 'R');
-                              Typ  := Etype (Call_Node);
-                              Temp := Relocate_Node (Call_Node);
-
-                              --  Perform the rewrite with the dummy
-
-                              Rewrite (Call_Node,
-
-                                Make_Expression_With_Actions (Loc,
-                                  Expression => New_Occurrence_Of (Res, Loc),
-                                  Actions    => New_List (
-                                    Decl,
-
-                                    Make_Object_Declaration (Loc,
-                                      Defining_Identifier => Res,
-                                      Object_Definition   =>
-                                        New_Occurrence_Of (Typ, Loc)))));
-
-                              --  Analyze the expression with the dummy
-
-                              Analyze_And_Resolve (Call_Node, Typ);
-
-                              --  Properly set the expression and move our view
-                              --  of the call node
-
-                              Set_Expression (Call_Node, Relocate_Node (Temp));
-                              Call_Node := Expression (Call_Node);
-
-                              --  Remove the declaration of the dummy and the
-                              --  subsequent actions its analysis has created.
-
-                              while Present (Remove_Next (Decl)) loop
-                                 null;
-                              end loop;
-                           end if;
-
-                           --  Decorate the conditional expression with
-                           --  assignments to our level temporary.
-
-                           Insert_Level_Assign (Prev);
-
-                           --  Make our level temporary the passed actual
-
-                           Add_Extra_Actual
-                             (Expr => New_Occurrence_Of (Lvl, Loc),
-                              EF   => Extra_Accessibility (Formal));
-                        end;
-
-                     --  General case uncomplicated by conditional expressions
-
-                     else
-                        Add_Extra_Actual
-                          (Expr => Dynamic_Accessibility_Level (Prev),
-                           EF   => Extra_Accessibility (Formal));
-                     end if;
-               end case;
+               Add_Extra_Actual
+                 (Expr => Dynamic_Accessibility_Level (Prev),
+                  EF   => Extra_Accessibility (Formal));
             end if;
          end if;
 
@@ -4447,7 +4264,7 @@ package body Exp_Ch6 is
                      else
                         Level :=
                           Make_Integer_Literal (Loc,
-                            Intval => Object_Access_Level (Def_Id));
+                            Intval => Static_Accessibility_Level (Def_Id));
                      end if;
                   end;
 
@@ -7838,190 +7655,8 @@ package body Exp_Ch6 is
       if Is_Special_Aliased_Formal_Access (Exp, Scope_Id) then
          Check_Against_Result_Level
            (Make_Integer_Literal (Loc,
-             Object_Access_Level (Entity (Ultimate_Prefix (Prefix (Exp))))));
-      end if;
-
-      --  AI05-0234: Check unconstrained access discriminants to ensure
-      --  that the result does not outlive an object designated by one
-      --  of its discriminants (RM 6.5(21/3)).
-
-      if Present (Extra_Accessibility_Of_Result (Scope_Id))
-        and then Has_Unconstrained_Access_Discriminants (R_Type)
-      then
-         declare
-            Discrim_Source : Node_Id;
-         begin
-            Discrim_Source := Exp;
-            while Nkind (Discrim_Source) = N_Qualified_Expression loop
-               Discrim_Source := Expression (Discrim_Source);
-            end loop;
-
-            if Nkind (Discrim_Source) = N_Identifier
-              and then Is_Return_Object (Entity (Discrim_Source))
-            then
-               Discrim_Source := Entity (Discrim_Source);
-
-               if Is_Constrained (Etype (Discrim_Source)) then
-                  Discrim_Source := Etype (Discrim_Source);
-               else
-                  Discrim_Source := Expression (Parent (Discrim_Source));
-               end if;
-
-            elsif Nkind (Discrim_Source) = N_Identifier
-              and then Nkind (Original_Node (Discrim_Source)) in
-                         N_Aggregate | N_Extension_Aggregate
-            then
-               Discrim_Source := Original_Node (Discrim_Source);
-
-            elsif Nkind (Discrim_Source) = N_Explicit_Dereference and then
-              Nkind (Original_Node (Discrim_Source)) = N_Function_Call
-            then
-               Discrim_Source := Original_Node (Discrim_Source);
-            end if;
-
-            Discrim_Source := Unqual_Conv (Discrim_Source);
-
-            case Nkind (Discrim_Source) is
-               when N_Defining_Identifier =>
-                  pragma Assert (Is_Composite_Type (Discrim_Source)
-                                  and then Has_Discriminants (Discrim_Source)
-                                  and then Is_Constrained (Discrim_Source));
-
-                  declare
-                     Discrim   : Entity_Id :=
-                                   First_Discriminant (Base_Type (R_Type));
-                     Disc_Elmt : Elmt_Id   :=
-                                   First_Elmt (Discriminant_Constraint
-                                                 (Discrim_Source));
-                  begin
-                     loop
-                        if Ekind (Etype (Discrim)) =
-                             E_Anonymous_Access_Type
-                        then
-                           Check_Against_Result_Level
-                             (Dynamic_Accessibility_Level (Node (Disc_Elmt)));
-                        end if;
-
-                        Next_Elmt (Disc_Elmt);
-                        Next_Discriminant (Discrim);
-                        exit when not Present (Discrim);
-                     end loop;
-                  end;
-
-               when N_Aggregate
-                  | N_Extension_Aggregate
-               =>
-                  --  Unimplemented: extension aggregate case where discrims
-                  --  come from ancestor part, not extension part.
-
-                  declare
-                     Discrim  : Entity_Id :=
-                                  First_Discriminant (Base_Type (R_Type));
-
-                     Disc_Exp : Node_Id   := Empty;
-
-                     Positionals_Exhausted
-                              : Boolean   := not Present (Expressions
-                                                            (Discrim_Source));
-
-                     function Associated_Expr
-                       (Comp_Id : Entity_Id;
-                        Associations : List_Id) return Node_Id;
-
-                     --  Given a component and a component associations list,
-                     --  locate the expression for that component; returns
-                     --  Empty if no such expression is found.
-
-                     ---------------------
-                     -- Associated_Expr --
-                     ---------------------
-
-                     function Associated_Expr
-                       (Comp_Id : Entity_Id;
-                        Associations : List_Id) return Node_Id
-                     is
-                        Assoc  : Node_Id;
-                        Choice : Node_Id;
-
-                     begin
-                        --  Simple linear search seems ok here
-
-                        Assoc := First (Associations);
-                        while Present (Assoc) loop
-                           Choice := First (Choices (Assoc));
-                           while Present (Choice) loop
-                              if (Nkind (Choice) = N_Identifier
-                                   and then Chars (Choice) = Chars (Comp_Id))
-                                or else (Nkind (Choice) = N_Others_Choice)
-                              then
-                                 return Expression (Assoc);
-                              end if;
-
-                              Next (Choice);
-                           end loop;
-
-                           Next (Assoc);
-                        end loop;
-
-                        return Empty;
-                     end Associated_Expr;
-
-                  begin
-                     if not Positionals_Exhausted then
-                        Disc_Exp := First (Expressions (Discrim_Source));
-                     end if;
-
-                     loop
-                        if Positionals_Exhausted then
-                           Disc_Exp :=
-                             Associated_Expr
-                               (Discrim,
-                                Component_Associations (Discrim_Source));
-                        end if;
-
-                        if Ekind (Etype (Discrim)) =
-                             E_Anonymous_Access_Type
-                        then
-                           Check_Against_Result_Level
-                             (Dynamic_Accessibility_Level (Disc_Exp));
-                        end if;
-
-                        Next_Discriminant (Discrim);
-                        exit when not Present (Discrim);
-
-                        if not Positionals_Exhausted then
-                           Next (Disc_Exp);
-                           Positionals_Exhausted := not Present (Disc_Exp);
-                        end if;
-                     end loop;
-                  end;
-
-               when N_Function_Call =>
-
-                  --  No check needed (check performed by callee)
-
-                  null;
-
-               when others =>
-                  declare
-                     Level : constant Node_Id :=
-                               Make_Integer_Literal (Loc,
-                                 Object_Access_Level (Discrim_Source));
-
-                  begin
-                     --  Unimplemented: check for name prefix that includes
-                     --  a dereference of an access value with a dynamic
-                     --  accessibility level (e.g., an access param or a
-                     --  saooaaat) and use dynamic level in that case. For
-                     --  example:
-                     --    return Access_Param.all(Some_Index).Some_Component;
-                     --  ???
-
-                     Set_Etype (Level, Standard_Natural);
-                     Check_Against_Result_Level (Level);
-                  end;
-            end case;
-         end;
+             Static_Accessibility_Level
+               (Entity (Ultimate_Prefix (Prefix (Exp))))));
       end if;
 
       --  If we are returning a nonscalar object that is possibly unaligned,

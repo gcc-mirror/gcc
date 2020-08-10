@@ -7208,7 +7208,9 @@ package body Sem_Ch13 is
 
                   --  check (B)
 
-                  if Type_Access_Level (Ent) > Object_Access_Level (Pool) then
+                  if Type_Access_Level (Ent)
+                       > Static_Accessibility_Level (Pool)
+                  then
                      Error_Msg_N
                        ("subpool access type has deeper accessibility "
                         & "level than pool", Ent);

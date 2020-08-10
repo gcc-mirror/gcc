@@ -11280,7 +11280,8 @@ package body Sem_Attr is
                  and then not Is_Special_Aliased_Formal_Access
                                 (N, Current_Scope)
                  and then
-                   Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
+                   Static_Accessibility_Level (P) >
+                     Deepest_Type_Access_Level (Btyp)
                then
                   --  In an instance, this is a runtime check, but one we know
                   --  will fail, so generate an appropriate warning. As usual,
@@ -11424,7 +11425,8 @@ package body Sem_Attr is
                if Attr_Id /= Attribute_Unchecked_Access
                  and then Ekind (Btyp) = E_General_Access_Type
                  and then
-                   Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
+                   Static_Accessibility_Level (P)
+                     > Deepest_Type_Access_Level (Btyp)
                then
                   Accessibility_Message;
                   return;
@@ -11445,7 +11447,8 @@ package body Sem_Attr is
                --  anonymous_access_to_protected, there are no accessibility
                --  checks either. Omit check entirely for Unrestricted_Access.
 
-               elsif Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
+               elsif Static_Accessibility_Level (P)
+                       > Deepest_Type_Access_Level (Btyp)
                  and then Comes_From_Source (N)
                  and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type
                  and then Attr_Id /= Attribute_Unrestricted_Access
