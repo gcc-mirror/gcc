@@ -1,3 +1,8 @@
+2020-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expmed.c (init_expmed_one_conv): Restore all->reg's mode.
+	(init_expmed_one_mode): Set all->reg to desired mode.
+
 2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/96530
