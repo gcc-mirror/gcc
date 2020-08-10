@@ -76281,22 +76281,21 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
 $as_echo "$enable_libstdcxx_filesystem_ts" >&6; }
 
 
-  if test $enable_libstdcxx_filesystem_ts = yes; then
 
-    ac_ext=cpp
+  ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-    ac_save_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -fno-exceptions"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct dirent.d_type" >&5
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct dirent.d_type" >&5
 $as_echo_n "checking for struct dirent.d_type... " >&6; }
-    if ${glibcxx_cv_dirent_d_type+:} false; then :
+  if ${glibcxx_cv_dirent_d_type+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <dirent.h>
@@ -76304,8 +76303,8 @@ int
 main ()
 {
 
-         struct dirent d;
-         if (sizeof d.d_type) return 0;
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
 
   ;
   return 0;
@@ -76328,8 +76327,8 @@ int
 main ()
 {
 
-         struct dirent d;
-         if (sizeof d.d_type) return 0;
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
 
   ;
   return 0;
@@ -76346,37 +76345,37 @@ fi
 
 fi
 
-    if test $glibcxx_cv_dirent_d_type = yes; then
+  if test $glibcxx_cv_dirent_d_type = yes; then
 
 $as_echo "#define HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
 $as_echo "$glibcxx_cv_dirent_d_type" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for realpath" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for realpath" >&5
 $as_echo_n "checking for realpath... " >&6; }
-    if ${glibcxx_cv_realpath+:} false; then :
+  if ${glibcxx_cv_realpath+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-         #include <limits.h>
-         #include <stdlib.h>
-         #include <unistd.h>
+       #include <limits.h>
+       #include <stdlib.h>
+       #include <unistd.h>
 
 int
 main ()
 {
 
-         #if _XOPEN_VERSION < 500
-         #error
-         #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
-         char *tmp = realpath((const char*)NULL, (char*)NULL);
-         #else
-         #error
-         #endif
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
 
   ;
   return 0;
@@ -76395,21 +76394,21 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-         #include <limits.h>
-         #include <stdlib.h>
-         #include <unistd.h>
+       #include <limits.h>
+       #include <stdlib.h>
+       #include <unistd.h>
 
 int
 main ()
 {
 
-         #if _XOPEN_VERSION < 500
-         #error
-         #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
-         char *tmp = realpath((const char*)NULL, (char*)NULL);
-         #else
-         #error
-         #endif
+       #if _XOPEN_VERSION < 500
+       #error
+       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+       char *tmp = realpath((const char*)NULL, (char*)NULL);
+       #else
+       #error
+       #endif
 
   ;
   return 0;
@@ -76426,31 +76425,31 @@ fi
 
 fi
 
-    if test $glibcxx_cv_realpath = yes; then
+  if test $glibcxx_cv_realpath = yes; then
 
 $as_echo "#define _GLIBCXX_USE_REALPATH 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_realpath" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_realpath" >&5
 $as_echo "$glibcxx_cv_realpath" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utimensat" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utimensat" >&5
 $as_echo_n "checking for utimensat... " >&6; }
-    if ${glibcxx_cv_utimensat+:} false; then :
+  if ${glibcxx_cv_utimensat+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-          #include <fcntl.h>
-          #include <sys/stat.h>
+	#include <fcntl.h>
+	#include <sys/stat.h>
 
 int
 main ()
 {
 
-          struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
-          int i = utimensat(AT_FDCWD, "path", ts, 0);
+	struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+	int i = utimensat(AT_FDCWD, "path", ts, 0);
 
   ;
   return 0;
@@ -76469,15 +76468,15 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-          #include <fcntl.h>
-          #include <sys/stat.h>
+	#include <fcntl.h>
+	#include <sys/stat.h>
 
 int
 main ()
 {
 
-          struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
-          int i = utimensat(AT_FDCWD, "path", ts, 0);
+	struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+	int i = utimensat(AT_FDCWD, "path", ts, 0);
 
   ;
   return 0;
@@ -76494,30 +76493,30 @@ fi
 
 fi
 
-    if test $glibcxx_cv_utimensat = yes; then
+  if test $glibcxx_cv_utimensat = yes; then
 
 $as_echo "#define _GLIBCXX_USE_UTIMENSAT 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utimensat" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utimensat" >&5
 $as_echo "$glibcxx_cv_utimensat" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utime" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utime" >&5
 $as_echo_n "checking for utime... " >&6; }
-    if ${glibcxx_cv_utime+:} false; then :
+  if ${glibcxx_cv_utime+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-          #include <utime.h>
+	#include <utime.h>
 
 int
 main ()
 {
 
-          struct utimbuf t = { 1, 1 };
-          int i = utime("path", &t);
+	struct utimbuf t = { 1, 1 };
+	int i = utime("path", &t);
 
   ;
   return 0;
@@ -76536,14 +76535,14 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-          #include <utime.h>
+	#include <utime.h>
 
 int
 main ()
 {
 
-          struct utimbuf t = { 1, 1 };
-          int i = utime("path", &t);
+	struct utimbuf t = { 1, 1 };
+	int i = utime("path", &t);
 
   ;
   return 0;
@@ -76560,19 +76559,19 @@ fi
 
 fi
 
-    if test $glibcxx_cv_utime = yes; then
+  if test $glibcxx_cv_utime = yes; then
 
 $as_echo "#define _GLIBCXX_USE_UTIME 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utime" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utime" >&5
 $as_echo "$glibcxx_cv_utime" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lstat" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lstat" >&5
 $as_echo_n "checking for lstat... " >&6; }
-    if ${glibcxx_cv_lstat+:} false; then :
+  if ${glibcxx_cv_lstat+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
  #include <sys/stat.h>
@@ -76580,8 +76579,8 @@ int
 main ()
 {
 
-          struct stat st;
-          int i = lstat("path", &st);
+	struct stat st;
+	int i = lstat("path", &st);
 
   ;
   return 0;
@@ -76604,8 +76603,8 @@ int
 main ()
 {
 
-          struct stat st;
-          int i = lstat("path", &st);
+	struct stat st;
+	int i = lstat("path", &st);
 
   ;
   return 0;
@@ -76622,19 +76621,19 @@ fi
 
 fi
 
-    if test $glibcxx_cv_lstat = yes; then
+  if test $glibcxx_cv_lstat = yes; then
 
 $as_echo "#define _GLIBCXX_USE_LSTAT 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_lstat" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_lstat" >&5
 $as_echo "$glibcxx_cv_lstat" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct stat.st_mtim.tv_nsec" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct stat.st_mtim.tv_nsec" >&5
 $as_echo_n "checking for struct stat.st_mtim.tv_nsec... " >&6; }
-    if ${glibcxx_cv_st_mtim+:} false; then :
+  if ${glibcxx_cv_st_mtim+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
  #include <sys/stat.h>
@@ -76642,8 +76641,8 @@ int
 main ()
 {
 
-          struct stat st;
-          return st.st_mtim.tv_nsec;
+	struct stat st;
+	return st.st_mtim.tv_nsec;
 
   ;
   return 0;
@@ -76666,8 +76665,8 @@ int
 main ()
 {
 
-          struct stat st;
-          return st.st_mtim.tv_nsec;
+	struct stat st;
+	return st.st_mtim.tv_nsec;
 
   ;
   return 0;
@@ -76684,19 +76683,19 @@ fi
 
 fi
 
-    if test $glibcxx_cv_st_mtim = yes; then
+  if test $glibcxx_cv_st_mtim = yes; then
 
 $as_echo "#define _GLIBCXX_USE_ST_MTIM 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_st_mtim" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_st_mtim" >&5
 $as_echo "$glibcxx_cv_st_mtim" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmod" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmod" >&5
 $as_echo_n "checking for fchmod... " >&6; }
-    if ${glibcxx_cv_fchmod+:} false; then :
+  if ${glibcxx_cv_fchmod+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/stat.h>
@@ -76740,24 +76739,24 @@ fi
 
 fi
 
-    if test $glibcxx_cv_fchmod = yes; then
+  if test $glibcxx_cv_fchmod = yes; then
 
 $as_echo "#define _GLIBCXX_USE_FCHMOD 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmod" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmod" >&5
 $as_echo "$glibcxx_cv_fchmod" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmodat" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmodat" >&5
 $as_echo_n "checking for fchmodat... " >&6; }
-    if ${glibcxx_cv_fchmodat+:} false; then :
+  if ${glibcxx_cv_fchmodat+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-          #include <fcntl.h>
-          #include <sys/stat.h>
+	#include <fcntl.h>
+	#include <sys/stat.h>
 
 int
 main ()
@@ -76780,8 +76779,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-          #include <fcntl.h>
-          #include <sys/stat.h>
+	#include <fcntl.h>
+	#include <sys/stat.h>
 
 int
 main ()
@@ -76802,21 +76801,21 @@ fi
 
 fi
 
-    if test $glibcxx_cv_fchmodat = yes; then
+  if test $glibcxx_cv_fchmodat = yes; then
 
 $as_echo "#define _GLIBCXX_USE_FCHMODAT 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmodat" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmodat" >&5
 $as_echo "$glibcxx_cv_fchmodat" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sendfile that can copy files" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sendfile that can copy files" >&5
 $as_echo_n "checking for sendfile that can copy files... " >&6; }
-    if ${glibcxx_cv_sendfile+:} false; then :
+  if ${glibcxx_cv_sendfile+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        case "${target_os}" in
-        gnu* | linux* | solaris* | uclinux*)
-          if test x$gcc_no_link = xyes; then
+      case "${target_os}" in
+      gnu* | linux* | solaris* | uclinux*)
+	if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/sendfile.h>
@@ -76857,27 +76856,27 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
-          ;;
-        *)
-          glibcxx_cv_sendfile=no
-          ;;
-      esac
+	;;
+      *)
+	glibcxx_cv_sendfile=no
+	;;
+    esac
 
 fi
 
-    if test $glibcxx_cv_sendfile = yes; then
+  if test $glibcxx_cv_sendfile = yes; then
 
 $as_echo "#define _GLIBCXX_USE_SENDFILE 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sendfile" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sendfile" >&5
 $as_echo "$glibcxx_cv_sendfile" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for link" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for link" >&5
 $as_echo_n "checking for link... " >&6; }
-    if ${glibcxx_cv_link+:} false; then :
+  if ${glibcxx_cv_link+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
@@ -76921,19 +76920,19 @@ fi
 
 fi
 
-    if test $glibcxx_cv_link = yes; then
+  if test $glibcxx_cv_link = yes; then
 
 $as_echo "#define HAVE_LINK 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_link" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_link" >&5
 $as_echo "$glibcxx_cv_link" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for readlink" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for readlink" >&5
 $as_echo_n "checking for readlink... " >&6; }
-    if ${glibcxx_cv_readlink+:} false; then :
+  if ${glibcxx_cv_readlink+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
@@ -76977,19 +76976,19 @@ fi
 
 fi
 
-    if test $glibcxx_cv_readlink = yes; then
+  if test $glibcxx_cv_readlink = yes; then
 
 $as_echo "#define HAVE_READLINK 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_readlink" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_readlink" >&5
 $as_echo "$glibcxx_cv_readlink" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for symlink" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for symlink" >&5
 $as_echo_n "checking for symlink... " >&6; }
-    if ${glibcxx_cv_symlink+:} false; then :
+  if ${glibcxx_cv_symlink+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
@@ -77033,19 +77032,19 @@ fi
 
 fi
 
-    if test $glibcxx_cv_symlink = yes; then
+  if test $glibcxx_cv_symlink = yes; then
 
 $as_echo "#define HAVE_SYMLINK 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_symlink" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_symlink" >&5
 $as_echo "$glibcxx_cv_symlink" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for truncate" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for truncate" >&5
 $as_echo_n "checking for truncate... " >&6; }
-    if ${glibcxx_cv_truncate+:} false; then :
+  if ${glibcxx_cv_truncate+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-        if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
@@ -77089,21 +77088,20 @@ fi
 
 fi
 
-    if test $glibcxx_cv_truncate = yes; then
+  if test $glibcxx_cv_truncate = yes; then
 
 $as_echo "#define HAVE_TRUNCATE 1" >>confdefs.h
 
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_truncate" >&5
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_truncate" >&5
 $as_echo "$glibcxx_cv_truncate" >&6; }
-    CXXFLAGS="$ac_save_CXXFLAGS"
-    ac_ext=c
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-  fi
 
 
 # For Networking TS.
@@ -77818,7 +77816,7 @@ case "$host" in
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
-	# and if assembler supports CET insn.
+	# and if compiler and assembler support CET insn.
 	cet_save_CFLAGS="$CFLAGS"
 	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
