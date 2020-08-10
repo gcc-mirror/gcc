@@ -1,3 +1,24 @@
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96303
+	* include/debug/bitset (bitset::operator==): Call _M_base() on
+	right operand.
+	(bitset::operator!=): Likewise, but don't define it at all when
+	default comparisons are supported by the compiler.
+	* testsuite/23_containers/bitset/operations/96303.cc: New test.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc:
+	Replace VERIFY with static_assert where the compiler now
+	allows it.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc:
+	Likewise.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Fix wildcards for wstring symbols.
+
 2020-08-06  Andrew Luo  <andrewluotechnologies@outlook.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

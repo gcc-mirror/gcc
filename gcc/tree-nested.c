@@ -1419,12 +1419,22 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clause))
 		DECL_CONTEXT (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clause))
 		  = info->context;
+	      tree save_local_var_chain = info->new_local_var_chain;
+	      info->new_local_var_chain = NULL;
+	      gimple_seq *seq = &OMP_CLAUSE_REDUCTION_GIMPLE_INIT (clause);
 	      walk_body (convert_nonlocal_reference_stmt,
-			 convert_nonlocal_reference_op, info,
-			 &OMP_CLAUSE_REDUCTION_GIMPLE_INIT (clause));
+			 convert_nonlocal_reference_op, info, seq);
+	      if (info->new_local_var_chain)
+		declare_vars (info->new_local_var_chain,
+			      gimple_seq_first_stmt (*seq), false);
+	      info->new_local_var_chain = NULL;
+	      seq = &OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (clause);
 	      walk_body (convert_nonlocal_reference_stmt,
-			 convert_nonlocal_reference_op, info,
-			 &OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (clause));
+			 convert_nonlocal_reference_op, info, seq);
+	      if (info->new_local_var_chain)
+		declare_vars (info->new_local_var_chain,
+			      gimple_seq_first_stmt (*seq), false);
+	      info->new_local_var_chain = save_local_var_chain;
 	      DECL_CONTEXT (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 		= old_context;
 	      if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clause))
@@ -1434,15 +1444,31 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  break;
 
 	case OMP_CLAUSE_LASTPRIVATE:
-	  walk_body (convert_nonlocal_reference_stmt,
-		     convert_nonlocal_reference_op, info,
-		     &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause));
+	  {
+	    tree save_local_var_chain = info->new_local_var_chain;
+	    info->new_local_var_chain = NULL;
+	    gimple_seq *seq = &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause);
+	    walk_body (convert_nonlocal_reference_stmt,
+		       convert_nonlocal_reference_op, info, seq);
+	    if (info->new_local_var_chain)
+	      declare_vars (info->new_local_var_chain,
+			    gimple_seq_first_stmt (*seq), false);
+	    info->new_local_var_chain = save_local_var_chain;
+	  }
 	  break;
 
 	case OMP_CLAUSE_LINEAR:
-	  walk_body (convert_nonlocal_reference_stmt,
-		     convert_nonlocal_reference_op, info,
-		     &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause));
+	  {
+	    tree save_local_var_chain = info->new_local_var_chain;
+	    info->new_local_var_chain = NULL;
+	    gimple_seq *seq = &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause);
+	    walk_body (convert_nonlocal_reference_stmt,
+		       convert_nonlocal_reference_op, info, seq);
+	    if (info->new_local_var_chain)
+	      declare_vars (info->new_local_var_chain,
+			    gimple_seq_first_stmt (*seq), false);
+	    info->new_local_var_chain = save_local_var_chain;
+	  }
 	  break;
 
 	default:

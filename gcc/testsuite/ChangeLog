@@ -1,3 +1,101 @@
+2020-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/71321
+	* gcc.target/i386/pr71321.c: Check that the code doesn't use
+	the 4B zero displacement lea, not that it uses lea.
+
+2020-08-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: XFAIL run.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
+2020-08-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/pr44194-1.c: Skip for mmix.
+
+2020-08-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/pr30957-1.c: xfail for mmix.
+
+2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96530
+	* gcc.target/powerpc/pr96530.c: New test.
+
+2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96424
+	* c-c++-common/gomp/pr96424.c: New test.
+
+2020-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96514
+	* gcc.dg/pr96514.c: New testcase.
+
+2020-08-07  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/diag-funargs-2.c: Remove trailing whitespaces.
+	* gcc.target/bpf/skb-ancestor-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-meta.c: Likewise.
+	* gcc.target/bpf/helper-xdp-adjust-head.c: Likewise.
+	* gcc.target/bpf/helper-tcp-check-syncookie.c: Likewise.
+	* gcc.target/bpf/helper-sock-ops-cb-flags-set.c
+	* gcc.target/bpf/helper-sysctl-set-new-value.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-new-value.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-name.c: Likewise.
+	* gcc.target/bpf/helper-sysctl-get-current-value.c: Likewise.
+	* gcc.target/bpf/helper-strtoul.c: Likewise.
+	* gcc.target/bpf/helper-strtol.c: Likewise.
+	* gcc.target/bpf/helper-sock-map-update.c: Likewise.
+	* gcc.target/bpf/helper-sk-storage-get.c: Likewise.
+	* gcc.target/bpf/helper-sk-storage-delete.c: Likewise.
+	* gcc.target/bpf/helper-sk-select-reuseport.c: Likewise.
+	* gcc.target/bpf/helper-sk-release.c: Likewise.
+	* gcc.target/bpf/helper-sk-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-sk-lookup-upd.c: Likewise.
+	* gcc.target/bpf/helper-sk-lookup-tcp.c: Likewise.
+	* gcc.target/bpf/helper-skb-change-head.c: Likewise.
+	* gcc.target/bpf/helper-skb-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-skb-adjust-room.c: Likewise.
+	* gcc.target/bpf/helper-set-hash.c: Likewise.
+	* gcc.target/bpf/helper-setsockopt.c: Likewise.
+	* gcc.target/bpf/helper-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-rc-repeat.c: Likewise.
+	* gcc.target/bpf/helper-rc-keydown.c: Likewise.
+	* gcc.target/bpf/helper-probe-read-str.c: Likewise.
+	* gcc.target/bpf/helper-perf-prog-read-value.c: Likewise.
+	* gcc.target/bpf/helper-perf-event-read-value.c: Likewise.
+	* gcc.target/bpf/helper-override-return.c: Likewise.
+	* gcc.target/bpf/helper-msg-redirect-map.c: Likewise.
+	* gcc.target/bpf/helper-msg-pull-data.c: Likewise.
+	* gcc.target/bpf/helper-msg-cork-bytes.c: Likewise.
+	* gcc.target/bpf/helper-msg-apply-bytes.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-store-bytes.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-adjust-srh.c: Likewise.
+	* gcc.target/bpf/helper-lwt-seg6-action.c: Likewise.
+	* gcc.target/bpf/helper-lwt-push-encap.c: Likewise.
+	* gcc.target/bpf/helper-get-socket-uid.c: Likewise.
+	* gcc.target/bpf/helper-get-socket-cookie.c: Likewise.
+	* gcc.target/bpf/helper-get-local-storage.c: Likewise.
+	* gcc.target/bpf/helper-get-current-cgroup-id.c: Likewise.
+	* gcc.target/bpf/helper-getsockopt.c: Likewise.
+	* gcc.target/bpf/diag-funargs-3.c: Likewise.
+
+2020-08-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/ia64-sync-5.c: New test.
+
+2020-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/bswap-brd.c: New test.
+	* gcc.target/powerpc/bswap-brw.c: New test.
+	* gcc.target/powerpc/bswap-brh.c: New test.
+
+2020-08-07  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr96493.c: New file.
+
 2020-08-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/arm/stack-protector-1.c: New test.
@@ -335,17 +433,6 @@
 2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR target/96320
-	* gfortran.dg/module_procedure_4.f90 : New test.
-
-2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96325
-	* gfortran.dg/pr96325.f90: New test.
-	* gfortran.dg/pr91589.f90: Update error message.
-
-2020-08-01  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96320
 	* gfortran.dg/module_procedure_4.f90 : New test.
 
 2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
