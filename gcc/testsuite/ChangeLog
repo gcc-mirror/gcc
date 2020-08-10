@@ -441,17 +441,6 @@
 	* gfortran.dg/pr96325.f90: New test.
 	* gfortran.dg/pr91589.f90: Update error message.
 
-2020-08-01  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96320
-	* gfortran.dg/module_procedure_4.f90 : New test.
-
-2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96325
-	* gfortran.dg/pr96325.f90: New test.
-	* gfortran.dg/pr91589.f90: Update error message.
-
 2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c/96377
