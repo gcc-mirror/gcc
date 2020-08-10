@@ -51,21 +51,6 @@
 	reference is added to an intrinsic type component, emit the
 	error message in this function.
 
-2020-08-01  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96320
-	* interface.c (gfc_check_dummy_characteristics): If a module
-	procedure arrives with assumed shape in the interface and
-	deferred shape in the procedure itself, update the latter and
-	copy the lower bounds.
-
-2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96325
-	* primary.c (gfc_match_varspec): In the case that a component
-	reference is added to an intrinsic type component, emit the
-	error message in this function.
-
 2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle order(concurrent).
