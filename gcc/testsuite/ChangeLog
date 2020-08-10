@@ -1,3 +1,18 @@
+2020-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/71321
+	* gcc.target/i386/pr71321.c: Check that the code doesn't use
+	the 4B zero displacement lea, not that it uses lea.
+
+2020-08-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: XFAIL run.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
+2020-08-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/pr44194-1.c: Skip for mmix.
+
 2020-08-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/pr30957-1.c: xfail for mmix.
