@@ -1,5 +1,5 @@
 // PR target/86314
-// { dg-do run { target sync_int_long } }
+// { dg-do run { target sync_int_long_stack } }
 // { dg-options "-O2" }
 
 __attribute__((noinline, noclone)) unsigned long
