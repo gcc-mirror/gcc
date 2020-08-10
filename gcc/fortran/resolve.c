@@ -5993,6 +5993,16 @@ check_host_association (gfc_expr *e)
 		if (ref->type == REF_ARRAY && ref->next == NULL)
 		  break;
 
+	      if ((ref == NULL || ref->type != REF_ARRAY)
+		  && sym->attr.proc == PROC_INTERNAL)
+		{
+		  gfc_error ("%qs at %L is host associated at %L into "
+			     "a contained procedure with an internal "
+			     "procedure of the same name", sym->name,
+			      &old_sym->declared_at, &e->where);
+		  return false;
+		}
+
 	      gcc_assert (ref->type == REF_ARRAY);
 
 	      /* Grab the start expressions from the array ref and
