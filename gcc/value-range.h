@@ -343,7 +343,7 @@ range_includes_zero_p (const irange *vr)
 }
 
 template<unsigned N>
-static inline void
+inline void
 gt_ggc_mx (int_range<N> *x)
 {
   for (unsigned i = 0; i < N; ++i)
@@ -354,7 +354,7 @@ gt_ggc_mx (int_range<N> *x)
 }
 
 template<unsigned N>
-static inline void
+inline void
 gt_pch_nx (int_range<N> *x)
 {
   for (unsigned i = 0; i < N; ++i)
@@ -365,7 +365,7 @@ gt_pch_nx (int_range<N> *x)
 }
 
 template<unsigned N>
-static inline void
+inline void
 gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 {
   for (unsigned i = 0; i < N; ++i)
