@@ -1179,6 +1179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     reserve()
     {
+#if __cpp_exceptions
       if (length() < capacity() || _M_rep()->_M_is_shared())
 	try
 	  {
@@ -1191,6 +1192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { throw; }
 	catch (...)
 	  { /* swallow the exception */ }
+#endif
     }
 
     template<typename _CharT, typename _Traits, typename _Alloc>
