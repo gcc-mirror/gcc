@@ -2202,7 +2202,7 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
     /* Neither vector nor complex types can contain the other.  */
     type = TREE_TYPE (type);
 
-  unsigned elt_size = int_size_in_bytes (type);
+  unsigned HOST_WIDE_INT elt_size = int_size_in_bytes (type);
 
   /* Largest mode we're prepared to accept.  For BLKmode types we
      don't know if it'll contain pointer constants, so have to choose
@@ -2232,7 +2232,7 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
   if (size)
     /* We make everything an array, to simplify any initialization
        emission.  */
-    fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC "]", init_frag.remaining);
+    fprintf (file, "[" HOST_WIDE_INT_PRINT_UNSIGNED "]", init_frag.remaining);
   else if (atype)
     fprintf (file, "[]");
 }
