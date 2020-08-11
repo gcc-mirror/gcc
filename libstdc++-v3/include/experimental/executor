@@ -902,7 +902,7 @@ inline namespace v1
 	  {
 	    unique_lock<mutex> __lock(_M_mtx);
 	    _M_cv.wait(__lock,
-		       [this]{ return !_M_stopped && !_M_tasks.empty(); });
+		       [this]{ return _M_stopped || !_M_tasks.empty(); });
 	    if (_M_stopped)
 	      return;
 	    __f = std::move(_M_tasks.front());
