@@ -1,3 +1,5 @@
+/* { dg-require-effective-target alloca } */
+
 #include <alloca.h>
 #include <stdlib.h>
 

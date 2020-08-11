@@ -1,7 +1,7 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-gthreads "" }
+// { dg-do run { target c++11 } }
+// { dg-require-sleep "" }
 
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,14 +18,26 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <chrono>
 #include <thread>
+#include <testsuite_hooks.h>
 
-namespace __gnu_test
+// This tests this_thread::sleep_until without using -pthread
+
+namespace chr = std::chrono;
+
+void
+test01()
 {
-using std::thread;
-using std::is_constructible;
+  chr::system_clock::time_point begin = chr::system_clock::now();
+  chr::microseconds ms(500);
 
-static_assert( !is_constructible<thread, thread&>::value, "" );
-static_assert( !is_constructible<thread, const thread&>::value, "" );
-static_assert( !is_constructible<thread, const thread>::value, "" );
+  std::this_thread::sleep_for(ms);
+
+  VERIFY( (chr::system_clock::now() - begin) >= ms );
+}
+
+int main()
+{
+  test01();
 }

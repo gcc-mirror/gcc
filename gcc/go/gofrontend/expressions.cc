@@ -208,7 +208,7 @@ Expression::is_same_variable(Expression* a, Expression* b)
 // assignment.
 
 Expression*
-Expression::convert_for_assignment(Gogo*, Type* lhs_type,
+Expression::convert_for_assignment(Gogo* gogo, Type* lhs_type,
 				   Expression* rhs, Location location)
 {
   Type* rhs_type = rhs->type();
@@ -229,7 +229,7 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
                                                         location);
     }
   else if (!are_identical && rhs_type->interface_type() != NULL)
-    return Expression::convert_interface_to_type(lhs_type, rhs, location);
+    return Expression::convert_interface_to_type(gogo, lhs_type, rhs, location);
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
     {
       // Assigning nil to a slice.
@@ -498,7 +498,7 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
 // non-interface type.
 
 Expression*
-Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
+Expression::convert_interface_to_type(Gogo* gogo, Type *lhs_type, Expression* rhs,
                                       Location location)
 {
   // We are going to evaluate RHS multiple times.
@@ -507,8 +507,11 @@ Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
   // Build an expression to check that the type is valid.  It will
   // panic with an appropriate runtime type error if the type is not
   // valid.
-  // (lhs_type != rhs_type ? panicdottype(lhs_type, rhs_type, inter_type) :
-  //    nil /*dummy*/)
+  // (lhs_type == rhs_type ? nil /*dummy*/ :
+  //    panicdottype(lhs_type, rhs_type, inter_type))
+  // For some Oses, we need to call runtime.eqtype instead of
+  // lhs_type == rhs_type, as we may have unmerged type descriptors
+  // from shared libraries.
   Expression* lhs_type_expr = Expression::make_type_descriptor(lhs_type,
                                                                 location);
   Expression* rhs_descriptor =
@@ -518,15 +521,23 @@ Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
   Expression* rhs_inter_expr = Expression::make_type_descriptor(rhs_type,
                                                                 location);
 
-  Expression* cond = Expression::make_binary(OPERATOR_NOTEQ, lhs_type_expr,
-                                             rhs_descriptor, location);
+  Expression* cond;
+  if (gogo->need_eqtype()) {
+    cond = Runtime::make_call(Runtime::EQTYPE, location,
+                              2, lhs_type_expr,
+                              rhs_descriptor);
+  } else {
+    cond = Expression::make_binary(OPERATOR_EQEQ, lhs_type_expr,
+                                   rhs_descriptor, location);
+  }
+
   rhs_descriptor = Expression::get_interface_type_descriptor(rhs);
   Expression* panic = Runtime::make_call(Runtime::PANICDOTTYPE, location,
                                          3, lhs_type_expr->copy(),
                                          rhs_descriptor,
                                          rhs_inter_expr);
   Expression* nil = Expression::make_nil(location);
-  Expression* check = Expression::make_conditional(cond, panic, nil,
+  Expression* check = Expression::make_conditional(cond, nil, panic,
                                                    location);
 
   // If the conversion succeeds, pull out the value.

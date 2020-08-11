@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++11 } }
 // { dg-require-time "" }
+// { dg-require-sleep "" }
 
 #include <thread>
 #include <chrono>

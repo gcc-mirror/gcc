@@ -1,3 +1,57 @@
+2020-08-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88003
+	* g++.dg/cpp1y/auto-fn61.C: New test.
+
+2020-08-10  Marek Polacek  <polacek@redhat.com>
+
+	* lib/gcc-dg.exp (gcc-dg-test-1): Handle dg-ice.
+	(cleanup-after-saved-dg-test): Reset expect_ice.
+	* lib/prune.exp (prune_ices): New.
+	* lib/target-supports-dg.exp (dg-ice): New.
+
+2020-08-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/minmax-12.c: New test.
+
+2020-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96556
+	* gfortran.dg/do_check_15.f90: New test.
+
+2020-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96497
+	* g++.dg/cpp2a/spaceship-constexpr3.C: New test.
+
+2020-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-fn5.C: New test.
+	* g++.dg/concepts/fn8.C: Generalize dg-error directive to accept
+	"no matching function ..." diagnostic.
+	* g++.dg/cpp2a/concepts-fn1.C: Likewise.
+	* g++.dg/cpp2a/concepts-ts2.C: Likewise.
+	* g++.dg/cpp2a/concepts-ts3.C: Likewise.
+
+2020-08-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/95433
+	* gcc.dg/tree-ssa/pr95433-2.c: New file.
+
+2020-08-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96312
+	* gfortran.dg/pr96312.f90: New test.
+
+2020-08-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96102
+	* gfortran.dg/pr96102.f90: New test.
+
+2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92865-1.c: Adjust testcase.
+
 2020-08-09  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/71321

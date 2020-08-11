@@ -7017,8 +7017,15 @@ get_atomic_generic_size (location_t loc, tree function,
       return 0;
     }
 
+  if (!COMPLETE_TYPE_P (TREE_TYPE (type_0)))
+    {
+      error_at (loc, "argument 1 of %qE must be a pointer to a complete type",
+		function);
+      return 0;
+    }
+
   /* Types must be compile time constant sizes. */
-  if (TREE_CODE ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))) != INTEGER_CST)
+  if (!tree_fits_uhwi_p ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))))
     {
       error_at (loc, 
 		"argument 1 of %qE must be a pointer to a constant size type",

@@ -1,7 +1,4 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-gthreads "" }
-
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,14 +15,28 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <thread>
+// { dg-do run }
+// { dg-options "-pthread"  }
+// { dg-require-effective-target c++14 }
+// { dg-require-effective-target pthread }
+// { dg-require-gthreads "" }
 
-namespace __gnu_test
+#include <experimental/executor>
+#include <testsuite_hooks.h>
+
+namespace net = std::experimental::net;
+
+void
+test01()
 {
-using std::thread;
-using std::is_constructible;
+  net::system_context& c = net::system_executor{}.context();
+  net::post( [&c] { c.stop(); } );
+  c.join();
+  VERIFY( c.stopped() );
+}
 
-static_assert( !is_constructible<thread, thread&>::value, "" );
-static_assert( !is_constructible<thread, const thread&>::value, "" );
-static_assert( !is_constructible<thread, const thread>::value, "" );
+int
+main()
+{
+  test01();
 }
