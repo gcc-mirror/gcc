@@ -8877,7 +8877,7 @@ get_narrower (tree op, int *unsignedp_ptr)
 	v.safe_push (op);
       FOR_EACH_VEC_ELT_REVERSE (v, i, op)
 	ret = build2_loc (EXPR_LOCATION (op), COMPOUND_EXPR,
-			  TREE_TYPE (win), TREE_OPERAND (op, 0),
+			  TREE_TYPE (ret), TREE_OPERAND (op, 0),
 			  ret);
       return ret;
     }
