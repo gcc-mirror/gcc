@@ -1120,7 +1120,33 @@ package body System.Generic_Bignums is
    -- To_Bignum --
    ---------------
 
-   function To_Bignum (X : Long_Long_Integer) return Big_Integer is
+   function To_Bignum (X : Long_Long_Long_Integer) return Big_Integer is
+
+      function Convert_128
+        (X : Long_Long_Long_Integer; Neg : Boolean) return Big_Integer;
+      --  Convert a 128 bits natural integer to a Big_Integer
+
+      -----------------
+      -- Convert_128 --
+      -----------------
+
+      function Convert_128
+        (X : Long_Long_Long_Integer; Neg : Boolean) return Big_Integer
+      is
+         Vector : Digit_Vector (1 .. 4);
+         High   : constant Unsigned_64 :=
+           Unsigned_64 (Shift_Right (Unsigned_128 (X), 64));
+         Low    : constant Unsigned_64 :=
+           Unsigned_64 (Unsigned_128 (X) and 16#FFFF_FFFF_FFFF_FFFF#);
+
+      begin
+         Vector (1) := SD (High / Base);
+         Vector (2) := SD (High mod Base);
+         Vector (3) := SD (Low / Base);
+         Vector (4) := SD (Low mod Base);
+         return Normalize (Vector, Neg);
+      end Convert_128;
+
    begin
       if X = 0 then
          return Allocate_Big_Integer ((1 .. 0 => <>), False);
@@ -1130,21 +1156,41 @@ package body System.Generic_Bignums is
       elsif X in -(2 ** 32 - 1) .. +(2 ** 32 - 1) then
          return Allocate_Big_Integer ((1 => SD (abs X)), X < 0);
 
-      --  Largest negative number annoyance
+      --  Large negative number annoyance
 
-      elsif X = Long_Long_Integer'First then
+      elsif X = -2 ** 63 then
          return Allocate_Big_Integer ((2 ** 31, 0), True);
+
+      elsif Long_Long_Long_Integer'Size = 128
+        and then X = Long_Long_Long_Integer'First
+      then
+         return Allocate_Big_Integer ((2 ** 31, 0, 0, 0), True);
 
       --  Other negative numbers
 
       elsif X < 0 then
-         return Allocate_Big_Integer
-                  ((SD ((-X) / Base), SD ((-X) mod Base)), True);
+         if Long_Long_Long_Integer'Size = 64 then
+            return Allocate_Big_Integer
+                     ((SD ((-X) / Base), SD ((-X) mod Base)), True);
+         else
+            return Convert_128 (-X, True);
+         end if;
 
       --  Positive numbers
+
       else
-         return Allocate_Big_Integer ((SD (X / Base), SD (X mod Base)), False);
+         if Long_Long_Long_Integer'Size = 64 then
+            return Allocate_Big_Integer
+                     ((SD (X / Base), SD (X mod Base)), False);
+         else
+            return Convert_128 (X, False);
+         end if;
       end if;
+   end To_Bignum;
+
+   function To_Bignum (X : Long_Long_Integer) return Big_Integer is
+   begin
+      return To_Bignum (Long_Long_Long_Integer (X));
    end To_Bignum;
 
    function To_Bignum (X : Unsigned_64) return Big_Integer is

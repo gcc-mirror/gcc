@@ -101,6 +101,10 @@ package System.Generic_Bignums is
    --  Convert Long_Long_Integer to a big integer. No exception can be raised
    --  for any input argument.
 
+   function To_Bignum (X : Long_Long_Long_Integer) return Big_Integer;
+   --  Convert Long_Long_Long_Integer to a big integer. No exception can be
+   --  raised.
+
    function To_Bignum (X : Interfaces.Unsigned_64) return Big_Integer;
    --  Convert Unsigned_64 to a big integer. No exception can be raised for any
    --  input argument.
