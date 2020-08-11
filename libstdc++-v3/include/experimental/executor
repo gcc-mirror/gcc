@@ -884,7 +884,7 @@ inline namespace v1
   private:
     friend system_executor;
 
-    struct __tag { };
+    struct __tag { explicit __tag() = default; };
     system_context(__tag) { }
 
     thread			_M_thread;
