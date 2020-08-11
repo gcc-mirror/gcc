@@ -3122,6 +3122,35 @@ tree_guess_outgoing_edge_probabilities (basic_block bb)
   bb_predictions = NULL;
 }
 
+/* Filter function predicate that returns true for a edge predicate P
+   if its edge is equal to DATA.  */
+
+static bool
+not_loop_guard_equal_edge_p (edge_prediction *p, void *data)
+{
+  return p->ep_edge != (edge)data || p->ep_predictor != PRED_LOOP_GUARD;
+}
+
+/* Predict edge E with PRED unless it is already predicted by some predictor
+   considered equivalent.  */
+
+static void
+maybe_predict_edge (edge e, enum br_predictor pred, enum prediction taken)
+{
+  if (edge_predicted_by_p (e, pred, taken))
+    return;
+  if (pred == PRED_LOOP_GUARD
+      && edge_predicted_by_p (e, PRED_LOOP_GUARD_WITH_RECURSION, taken))
+    return;
+  /* Consider PRED_LOOP_GUARD_WITH_RECURSION superrior to LOOP_GUARD.  */
+  if (pred == PRED_LOOP_GUARD_WITH_RECURSION)
+    {
+      edge_prediction **preds = bb_predictions->get (e->src);
+      if (preds)
+	filter_predictions (preds, not_loop_guard_equal_edge_p, e);
+    }
+  predict_edge_def (e, pred, taken);
+}
 /* Predict edges to successors of CUR whose sources are not postdominated by
    BB by PRED and recurse to all postdominators.  */
 
@@ -3177,10 +3206,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 	 regions that are only reachable by abnormal edges.  We simply
 	 prevent visiting given BB twice.  */
       if (found)
-	{
-	  if (!edge_predicted_by_p (e, pred, taken))
-            predict_edge_def (e, pred, taken);
-	}
+	maybe_predict_edge (e, pred, taken);
       else if (bitmap_set_bit (visited, e->src->index))
 	predict_paths_for_bb (e->src, e->src, pred, taken, visited, in_loop);
     }
@@ -3223,7 +3249,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
   if (!has_nonloop_edge)
     predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
   else
-    predict_edge_def (e, pred, taken);
+    maybe_predict_edge (e, pred, taken);
 }
 
 /* This is used to carry information about basic blocks.  It is
