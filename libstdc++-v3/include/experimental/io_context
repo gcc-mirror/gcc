@@ -40,6 +40,7 @@
 #include <functional>
 #include <system_error>
 #include <thread>
+#include <vector>
 #include <experimental/netfwd>
 #include <experimental/executor>
 #if _GLIBCXX_HAVE_UNISTD_H
@@ -90,10 +91,14 @@ inline namespace v1
 
       bool running_in_this_thread() const noexcept
       {
-	lock_guard<mutex> __lock(_M_ctx->_M_mtx);
+#ifdef _GLIBCXX_HAS_GTHREADS
+	lock_guard<execution_context::mutex_type> __lock(_M_ctx->_M_mtx);
 	auto __end = _M_ctx->_M_call_stack.end();
 	return std::find(_M_ctx->_M_call_stack.begin(), __end,
 			 this_thread::get_id()) != __end;
+#else
+	return _M_ctx->_M_run_count != 0;
+#endif
       }
 
       io_context& context() const noexcept { return *_M_ctx; }
@@ -115,7 +120,7 @@ inline namespace v1
 	void
 	post(_Func&& __f, const _ProtoAllocator& __a) const
 	{
-	  lock_guard<mutex> __lock(_M_ctx->_M_mtx);
+	  lock_guard<execution_context::mutex_type> __lock(_M_ctx->_M_mtx);
 	  // TODO (re-use functionality in system_context)
 	  _M_ctx->_M_reactor._M_notify();
 	}
@@ -217,14 +222,14 @@ inline namespace v1
 
     void stop()
     {
-      lock_guard<mutex> __lock(_M_mtx);
+      lock_guard<execution_context::mutex_type> __lock(_M_mtx);
       _M_stopped = true;
       _M_reactor._M_notify();
     }
 
     bool stopped() const noexcept
     {
-      lock_guard<mutex> __lock(_M_mtx);
+      lock_guard<execution_context::mutex_type> __lock(_M_mtx);
       return _M_stopped;
     }
 
@@ -270,11 +275,11 @@ inline namespace v1
       __timer_queue_base(execution_context& __ctx) : service(__ctx)
       {
 	auto& __ioc = static_cast<io_context&>(__ctx);
-	lock_guard<mutex> __lock(__ioc._M_mtx);
+	lock_guard<execution_context::mutex_type> __lock(__ioc._M_mtx);
 	__ioc._M_timers.push_back(this);
       }
 
-      mutable mutex	_M_qmtx;
+      mutable execution_context::mutex_type _M_qmtx;
     };
 
     template<typename _Timer, typename _Key = typename _Timer::_Key>
@@ -296,7 +301,7 @@ inline namespace v1
 	push(const _Timer& __t, function<void(error_code)> __h)
 	{
 	  context().get_executor().on_work_started();
-	  lock_guard<mutex> __lock(_M_qmtx);
+	  lock_guard<execution_context::mutex_type> __lock(_M_qmtx);
 	  _M_queue.emplace(__t, _M_next_id++, std::move(__h));
 	  // no need to notify reactor unless this timer went to the front?
 	}
@@ -305,7 +310,7 @@ inline namespace v1
 	size_t
 	cancel(const _Timer& __t)
 	{
-	  lock_guard<mutex> __lock(_M_qmtx);
+	  lock_guard<execution_context::mutex_type> __lock(_M_qmtx);
 	  size_t __count = 0;
 	  auto __last = _M_queue.end();
 	  for (auto __it = _M_queue.begin(), __end = __last; __it != __end;
@@ -327,7 +332,7 @@ inline namespace v1
 	bool
 	cancel_one(const _Timer& __t)
 	{
-	  lock_guard<mutex> __lock(_M_qmtx);
+	  lock_guard<execution_context::mutex_type> __lock(_M_qmtx);
 	  const auto __end = _M_queue.end();
 	  auto __oldest = __end;
 	  for (auto __it = _M_queue.begin(); __it != __end; ++__it)
@@ -346,7 +351,7 @@ inline namespace v1
 	{
 	  typename _Timer::time_point __exp;
 	  {
-	    lock_guard<mutex> __lock(_M_qmtx);
+	    lock_guard<execution_context::mutex_type> __lock(_M_qmtx);
 	    if (_M_queue.empty())
 	      return chrono::milliseconds::max();  // no pending timers
 	    if (_M_queue.top()._M_key == nullptr)
@@ -367,7 +372,7 @@ inline namespace v1
 	  function<void(error_code)> __h;
 	  error_code __ec;
 	  {
-	    lock_guard<mutex> __lock(_M_qmtx);
+	    lock_guard<execution_context::mutex_type> __lock(_M_qmtx);
 
 	    if (_M_queue.top()._M_key == nullptr) // cancelled
 	      {
@@ -474,7 +479,7 @@ inline namespace v1
       void
       async_wait(int __fd, int __w, _Op&& __op)
       {
-	lock_guard<mutex> __lock(_M_mtx);
+	lock_guard<execution_context::mutex_type> __lock(_M_mtx);
 	// TODO need push_back, use std::list not std::forward_list
 	auto __tail = _M_ops.before_begin(), __it = _M_ops.begin();
 	while (__it != _M_ops.end())
@@ -493,7 +498,7 @@ inline namespace v1
 
     void cancel(int __fd, error_code&)
     {
-      lock_guard<mutex> __lock(_M_mtx);
+      lock_guard<execution_context::mutex_type> __lock(_M_mtx);
       const auto __end = _M_ops.end();
       auto __it = _M_ops.begin();
       auto __prev = _M_ops.before_begin();
@@ -553,7 +558,7 @@ inline namespace v1
       };
 
     atomic<count_type>		_M_work_count;
-    mutable mutex		_M_mtx;
+    mutable execution_context::mutex_type		_M_mtx;
     queue<function<void()>>	_M_op;
     bool			_M_stopped = false;
 
@@ -561,14 +566,22 @@ inline namespace v1
     {
       __monitor(io_context& __c) : _M_ctx(__c)
       {
-	lock_guard<mutex> __lock(_M_ctx._M_mtx);
+#ifdef _GLIBCXX_HAS_GTHREADS
+	lock_guard<execution_context::mutex_type> __lock(_M_ctx._M_mtx);
 	_M_ctx._M_call_stack.push_back(this_thread::get_id());
+#else
+	_M_ctx._M_run_count++;
+#endif
       }
 
       ~__monitor()
       {
-	lock_guard<mutex> __lock(_M_ctx._M_mtx);
+#ifdef _GLIBCXX_HAS_GTHREADS
+	lock_guard<execution_context::mutex_type> __lock(_M_ctx._M_mtx);
 	_M_ctx._M_call_stack.pop_back();
+#else
+	_M_ctx._M_run_count--;
+#endif
 	if (_M_ctx._M_outstanding_work() == 0)
 	  {
 	    _M_ctx._M_stopped = true;
@@ -613,7 +626,7 @@ inline namespace v1
 	  chrono::milliseconds __ms{0};
 
 	  {
-	    lock_guard<mutex> __lock(_M_mtx);
+	    lock_guard<execution_context::mutex_type> __lock(_M_mtx);
 
 	    if (_M_stopped)
 	      return false;
@@ -677,7 +690,7 @@ inline namespace v1
 	  if (__fds.empty()) // nothing to do
 	    return false;
 
-	  lock_guard<mutex> __lock(_M_mtx);
+	  lock_guard<execution_context::mutex_type> __lock(_M_mtx);
 	  for (auto __it = _M_ops.begin(), __end = _M_ops.end(),
 	      __prev = _M_ops.before_begin(); __it != __end; ++__it, ++__prev)
 	    {
@@ -839,7 +852,11 @@ inline namespace v1
     vector<__timer_queue_base*>			_M_timers;
     forward_list<unique_ptr<__async_operation>>	_M_ops;
 
+#ifdef _GLIBCXX_HAS_GTHREADS
     vector<thread::id>	_M_call_stack;
+#else
+    int _M_run_count = 0;
+#endif
   };
 
   inline bool

@@ -506,7 +506,16 @@ inline namespace v1
       bool _M_active;
     };
 
-    mutable std::mutex _M_mutex;
+#if defined(_GLIBCXX_HAS_GTHREADS)
+    using mutex_type = std::mutex;
+#else
+    struct mutex_type
+    {
+      void lock() const { }
+      void unlock() const { }
+    };
+#endif
+    mutable mutex_type _M_mutex;
 
     // Sorted in order of beginning of service object lifetime.
     std::list<_ServicePtr> _M_services;
@@ -553,7 +562,7 @@ inline namespace v1
       static_assert(is_base_of<_Key, _Service>::value,
 	  "a service type must match or derive from its key_type");
       auto __key = execution_context::_S_key<_Key>();
-      std::lock_guard<std::mutex> __lock(__ctx._M_mutex);
+      lock_guard<execution_context::mutex_type> __lock(__ctx._M_mutex);
       auto& __svc = __ctx._M_keys[__key];
       if (__svc == nullptr)
 	{
@@ -577,7 +586,7 @@ inline namespace v1
       static_assert(is_base_of<_Key, _Service>::value,
 	  "a service type must match or derive from its key_type");
       auto __key = execution_context::_S_key<_Key>();
-      std::lock_guard<std::mutex> __lock(__ctx._M_mutex);
+      lock_guard<execution_context::mutex_type> __lock(__ctx._M_mutex);
       auto& __svc = __ctx._M_keys[__key];
       if (__svc != nullptr)
 	throw service_already_exists();
@@ -599,7 +608,7 @@ inline namespace v1
 	  "a service type must derive from execution_context::service");
       static_assert(is_base_of<_Key, _Service>::value,
 	  "a service type must match or derive from its key_type");
-      std::lock_guard<std::mutex> __lock(__ctx._M_mutex);
+      lock_guard<execution_context::mutex_type> __lock(__ctx._M_mutex);
       return __ctx._M_keys.count(execution_context::_S_key<_Key>());
     }
 
@@ -865,20 +874,21 @@ inline namespace v1
 
     void stop()
     {
-      lock_guard<mutex> __lock(_M_mtx);
+      lock_guard<mutex_type> __lock(_M_mtx);
       _M_stopped = true;
       _M_cv.notify_all();
     }
 
     bool stopped() const noexcept
     {
-      lock_guard<mutex> __lock(_M_mtx);
+      lock_guard<mutex_type> __lock(_M_mtx);
       return _M_stopped;
     }
 
     void join()
     {
-      _M_thread.join();
+      if (_M_thread.joinable())
+	_M_thread.join();
     }
 
   private:
@@ -887,12 +897,25 @@ inline namespace v1
     struct __tag { explicit __tag() = default; };
     system_context(__tag) { }
 
+#ifndef _GLIBCXX_HAS_GTHREADS
+    struct thread
+    {
+      bool joinable() const { return false; }
+      void join() { }
+    };
+    struct condition_variable
+    {
+      void notify_all() { }
+    };
+#endif
+
     thread			_M_thread;
-    mutable mutex		_M_mtx;
+    mutable mutex_type		_M_mtx; // XXX can we reuse base's _M_mutex?
     condition_variable		_M_cv;
     queue<function<void()>>	_M_tasks;
     bool			_M_stopped = false;
 
+#ifdef _GLIBCXX_HAS_GTHREADS
     void
     _M_run()
     {
@@ -900,7 +923,7 @@ inline namespace v1
 	{
 	  function<void()> __f;
 	  {
-	    unique_lock<mutex> __lock(_M_mtx);
+	    unique_lock<mutex_type> __lock(_M_mtx);
 	    _M_cv.wait(__lock,
 		       [this]{ return _M_stopped || !_M_tasks.empty(); });
 	    if (_M_stopped)
@@ -911,17 +934,22 @@ inline namespace v1
 	  __f();
 	}
     }
+#endif
 
     void
-    _M_post(std::function<void()> __f)
+    _M_post(std::function<void()> __f __attribute__((__unused__)))
     {
-      lock_guard<mutex> __lock(_M_mtx);
+      lock_guard<mutex_type> __lock(_M_mtx);
       if (_M_stopped)
 	return;
+#ifdef _GLIBCXX_HAS_GTHREADS
       if (!_M_thread.joinable())
 	_M_thread = std::thread(&system_context::_M_run, this);
       _M_tasks.push(std::move(__f)); // XXX allocator not used
       _M_cv.notify_one();
+#else
+      __throw_system_error(EOPNOTSUPP);
+#endif
     }
 
     static system_context&
@@ -1536,7 +1564,7 @@ inline namespace v1
 
       bool
       running_in_this_thread() const noexcept
-      { return std::this_thread::get_id() == _M_state->_M_running_on; }
+      { return _M_state->running_in_this_thread(); }
 
       execution_context&
       context() const noexcept
@@ -1572,13 +1600,21 @@ inline namespace v1
       // TODO add synchronised queue
       struct _State
       {
+#if defined(_GLIBCXX_HAS_GTHREADS)
+	bool
+	running_in_this_thread() const
+	{ return std::this_thread::get_id() == _M_state->_M_running_on; }
+
 	std::thread::id _M_running_on;
+#else
+	bool running_in_this_thread() const { return true; }
+#endif
       };
       shared_ptr<_State> _M_state;
       _Executor _M_inner_ex;
     };
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#if defined(_GLIBCXX_HAS_GTHREADS)
 
   // Completion token for asynchronous operations initiated with use_future.
   template<typename _Func, typename _Alloc>
@@ -1970,7 +2006,6 @@ inline namespace v1
   // (probably need to move _Type outside of handler_type so we don't have
   // a non-deduced context)
 
-
 #endif
 
   // [async.packaged.task.specializations]
@@ -1994,7 +2029,7 @@ inline namespace v1
       return_type _M_future;
     };
 
-#endif
+#endif // _GLIBCXX_HAS_GTHREADS
 
   /// @}
 
