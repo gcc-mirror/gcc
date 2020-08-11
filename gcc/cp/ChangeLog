@@ -1,3 +1,16 @@
+2020-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96497
+	* constexpr.c (cxx_eval_binary_expression): For SPACESHIP_EXPR, tail
+	call cxx_eval_constant_expression after genericize_spaceship to avoid
+	undesirable further VERIFY_CONSTANT.
+
+2020-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (resolve_overloaded_unification): Drop functions with
+	unsatisfied constraints.
+	(resolve_nondeduced_context): Likewise.
+
 2020-08-05  Patrick Palka  <ppalka@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
