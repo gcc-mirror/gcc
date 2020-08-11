@@ -1,3 +1,43 @@
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* src/c++17/fs_ops.cc (read_symlink): Use posix::lstat instead
+	of calling ::lstat directly.
+	* src/filesystem/ops.cc (read_symlink): Likewise.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Use gdb.Type.strip_typedefs().
+	* testsuite/libstdc++-prettyprinters/compat.cc: Use a typedef in
+	the emulated old type.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Do not depend on
+	$enable_libstdcxx_filesystem_ts.
+	* configure: Regenerate.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (inserter): Do not deduce
+	iterator type (LWG 561).
+	* testsuite/24_iterators/insert_iterator/dr561.cc: New test.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI=0]
+	(basic_string::reserve()): Do nothing if exceptions are not
+	enabled.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95749
+	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(stat_type): Change to __wstat64.
+	(stat): Use _wstat64.
+
 2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/96303

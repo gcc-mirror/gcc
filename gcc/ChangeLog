@@ -1,3 +1,50 @@
+2020-08-10  Marek Polacek  <polacek@redhat.com>
+
+	* doc/sourcebuild.texi: Document dg-ice.
+
+2020-08-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_int_movcc): Expand
+	signed MIN_EXPR against zero as "x < 0 ? x : 0" instead of
+	"x <= 0 ? x : 0" to enable sign_bit_compare_p optimizations.
+
+2020-08-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (gt_ggc_mx): Declare inline.
+	(gt_pch_nx): Same.
+
+2020-08-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/95433
+	* match.pd (X * C1 == C2): Handle wrapping overflow.
+	* expr.c (maybe_optimize_mod_cmp): Qualify call to mod_inv.
+	(mod_inv): Move...
+	* wide-int.cc (mod_inv): ... here.
+	* wide-int.h (mod_inv): Declare it.
+
+2020-08-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (filter_predictions): Document semantics of filter.
+	(equal_edge_p): Rename to ...
+	(not_equal_edge_p): ... this; reverse semantics.
+	(remove_predictions_associated_with_edge): Fix.
+
+2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96243
+	* config/i386/i386-expand.c (ix86_expand_sse_cmp): Refine for
+	maskcmp.
+	(ix86_expand_mask_vec_cmp): Change prototype.
+	* config/i386/i386-protos.h (ix86_expand_mask_vec_cmp): Change prototype.
+	* config/i386/i386.c (ix86_print_operand): Remove operand
+	modifier 'I'.
+	* config/i386/sse.md
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>): Deleted.
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(*<avx512>_ucmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(*<avx512>_ucmp<mode>3<mask_scalar_merge_name>,
+	avx512f_maskcmp<mode>3): Ditto.
+
 2020-08-09  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* expmed.c (init_expmed_one_conv): Restore all->reg's mode.
