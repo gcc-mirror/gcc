@@ -10424,3 +10424,14 @@ proc check_effective_target_msp430_large {} {
 	#endif
     } ""]
 }
+
+# Return 1 if the target has an efficient means to encode large initializers
+# in the assembly.
+
+proc check_effective_target_large_initializer { } {
+    if { [istarget nvptx*-*-*] } {
+	return 0
+    }
+
+    return 1
+}
