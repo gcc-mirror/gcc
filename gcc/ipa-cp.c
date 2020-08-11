@@ -123,6 +123,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "dbgcnt.h"
 
 template <typename valtype> class ipcp_value;
 
@@ -5788,9 +5789,13 @@ ipcp_store_bits_results (void)
 	  ipa_bits *jfbits;
 
 	  if (plats->bits_lattice.constant_p ())
-	    jfbits
-	      = ipa_get_ipa_bits_for_value (plats->bits_lattice.get_value (),
-					    plats->bits_lattice.get_mask ());
+	    {
+	      jfbits
+		= ipa_get_ipa_bits_for_value (plats->bits_lattice.get_value (),
+					      plats->bits_lattice.get_mask ());
+	      if (!dbg_cnt (ipa_cp_bits))
+		jfbits = NULL;
+	    }
 	  else
 	    jfbits = NULL;
 
