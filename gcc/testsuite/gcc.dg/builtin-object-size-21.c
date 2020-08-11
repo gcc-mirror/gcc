@@ -1,7 +1,8 @@
 /* PR middle-end/92815 - spurious -Wstringop-overflow writing into
    a flexible array of an extern struct
    { dg-do compile }
-   { dg-options "-Wall -fdump-tree-optimized" } */
+   { dg-options "-Wall -fdump-tree-optimized" }
+   { dg-require-effective-target large_initializer } */
 
 #define PTRDIFF_MAX __PTRDIFF_MAX__
 
