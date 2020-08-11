@@ -2254,10 +2254,6 @@ package body Sem_Warn is
    ------------------------
 
    procedure Check_Unused_Withs (Spec_Unit : Unit_Number_Type := No_Unit) is
-      Cnode : Node_Id;
-      Item  : Node_Id;
-      Lunit : Node_Id;
-      Ent   : Entity_Id;
 
       Munite : constant Entity_Id := Cunit_Entity (Main_Unit);
       --  This is needed for checking the special renaming case
@@ -2270,8 +2266,9 @@ package body Sem_Warn is
       --------------------
 
       procedure Check_One_Unit (Unit : Unit_Number_Type) is
+         Cnode : constant Node_Id := Cunit (Unit);
+
          Is_Visible_Renaming : Boolean := False;
-         Pack                : Entity_Id;
 
          procedure Check_Inner_Package (Pack : Entity_Id);
          --  Pack is a package local to a unit in a with_clause. Both the unit
@@ -2279,7 +2276,7 @@ package body Sem_Warn is
          --  referenced, then the only occurrence of Pack is in a USE clause
          --  or a pragma, and a warning is worthwhile as well.
 
-         function Check_System_Aux return Boolean;
+         function Check_System_Aux (Lunit : Entity_Id) return Boolean;
          --  Before giving a warning on a with_clause for System, check whether
          --  a system extension is present.
 
@@ -2358,7 +2355,7 @@ package body Sem_Warn is
          -- Check_System_Aux --
          ----------------------
 
-         function Check_System_Aux return Boolean is
+         function Check_System_Aux (Lunit : Entity_Id) return Boolean is
             Ent : Entity_Id;
 
          begin
@@ -2453,11 +2450,16 @@ package body Sem_Warn is
             return False;
          end Has_Visible_Entities;
 
+         --  Local variables
+
+         Ent   : Entity_Id;
+         Item  : Node_Id;
+         Lunit : Entity_Id;
+         Pack  : Entity_Id;
+
       --  Start of processing for Check_One_Unit
 
       begin
-         Cnode := Cunit (Unit);
-
          --  Only do check in units that are part of the extended main unit.
          --  This is actually a necessary restriction, because in the case of
          --  subprogram acting as its own specification, there can be with's in
@@ -2576,7 +2578,7 @@ package body Sem_Warn is
                            if Unit = Spec_Unit then
                               Set_No_Entities_Ref_In_Spec (Item);
 
-                           elsif Check_System_Aux then
+                           elsif Check_System_Aux (Lunit) then
                               null;
 
                            --  Else the warning may be needed
