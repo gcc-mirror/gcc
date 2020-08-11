@@ -1637,6 +1637,12 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
   x = adjust_address (x, BLKmode, 0);
   y = adjust_address (y, BLKmode, 0);
 
+  /* If source and destination are the same, no need to copy anything.  */
+  if (rtx_equal_p (x, y)
+      && !MEM_VOLATILE_P (x)
+      && !MEM_VOLATILE_P (y))
+    return 0;
+
   /* Set MEM_SIZE as appropriate for this block copy.  The main place this
      can be incorrect is coming from __builtin_memcpy.  */
   poly_int64 const_size;
