@@ -1,3 +1,15 @@
+2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92865-1.c: Adjust testcase.
+
+2020-08-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96530
+	* gcc.target/powerpc/pr96530.c: New test.
+
 2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

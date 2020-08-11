@@ -1,3 +1,37 @@
+2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96243
+	* config/i386/i386-expand.c (ix86_expand_sse_cmp): Refine for
+	maskcmp.
+	(ix86_expand_mask_vec_cmp): Change prototype.
+	* config/i386/i386-protos.h (ix86_expand_mask_vec_cmp): Change prototype.
+	* config/i386/i386.c (ix86_print_operand): Remove operand
+	modifier 'I'.
+	* config/i386/sse.md
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>): Deleted.
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(*<avx512>_ucmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(*<avx512>_ucmp<mode>3<mask_scalar_merge_name>,
+	avx512f_maskcmp<mode>3): Ditto.
+
+2020-08-10  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-compress.c (lto_compression_zstd): Fill up
+	num_compressed_il_bytes.
+	(lto_uncompression_zstd): Likewise for num_uncompressed_il_bytes here.
+
+2020-08-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96530
+	* config/rs6000/rs6000.c (rs6000_invalid_conversion): Use canonical
+	types for type comparisons.  Refactor code to simplify it.
+
 2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
