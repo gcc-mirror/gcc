@@ -349,6 +349,13 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
+   procedure Check_Ambiguous_Aggregate (Call : Node_Id);
+   --  Additional information on an ambiguous call in Ada_2020 when a
+   --  subprogram call has an actual that is an aggregate, and the
+   --  presence of container aggregates (or types with the correwponding
+   --  aspect)  provides an additional interpretation. Message indicates
+   --  that an aggregate actual should carry a type qualification.
+
    procedure Check_Dynamically_Tagged_Expression
      (Expr        : Node_Id;
       Typ         : Entity_Id;

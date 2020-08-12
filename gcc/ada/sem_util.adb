@@ -2425,6 +2425,27 @@ package body Sem_Util is
       end if;
    end Cannot_Raise_Constraint_Error;
 
+   -------------------------------
+   -- Check_Ambiguous_Aggregate --
+   -------------------------------
+
+   procedure Check_Ambiguous_Aggregate (Call : Node_Id) is
+      Actual : Node_Id;
+
+   begin
+      if Extensions_Allowed then
+         Actual := First_Actual (Call);
+         while Present (Actual) loop
+            if Nkind (Actual) = N_Aggregate then
+               Error_Msg_N
+                 ("\add type qualification to aggregate actual", Actual);
+               exit;
+            end if;
+            Next_Actual (Actual);
+         end loop;
+      end if;
+   end Check_Ambiguous_Aggregate;
+
    -----------------------------------------
    -- Check_Dynamically_Tagged_Expression --
    -----------------------------------------

@@ -2097,7 +2097,8 @@ package body Sem_Res is
          then
             Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
-            --  Could use comments on what is going on here???
+            --  Examine possible interpretations, and adapt the message
+            --  for inherited subprograms declared by a type derivation.
 
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
@@ -2112,6 +2113,11 @@ package body Sem_Res is
                Get_Next_Interp (I, It);
             end loop;
          end if;
+
+         --  Additional message and hint if the ambiguity involves an Ada2020
+         --  container aggregate.
+
+         Check_Ambiguous_Aggregate (N);
       end Report_Ambiguous_Argument;
 
       -----------------------

@@ -9339,6 +9339,7 @@ package body Sem_Ch4 is
                         Error_Msg_NE ("ambiguous call to&", N, Hom);
                         Report_Ambiguity (Matching_Op);
                         Report_Ambiguity (Hom);
+                        Check_Ambiguous_Aggregate (New_Call_Node);
                         Error := True;
                         return;
                      end if;
@@ -9961,6 +9962,7 @@ package body Sem_Ch4 is
                      Error_Msg_NE ("ambiguous call to&", N, Prim_Op);
                      Report_Ambiguity (Matching_Op);
                      Report_Ambiguity (Prim_Op);
+                     Check_Ambiguous_Aggregate (Call_Node);
                      return True;
                   end if;
                end if;
