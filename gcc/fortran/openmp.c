@@ -794,6 +794,7 @@ enum omp_mask1
   OMP_CLAUSE_IS_DEVICE_PTR,
   OMP_CLAUSE_LINK,
   OMP_CLAUSE_NOGROUP,
+  OMP_CLAUSE_NOTEMPORAL,
   OMP_CLAUSE_NUM_TASKS,
   OMP_CLAUSE_PRIORITY,
   OMP_CLAUSE_SIMD,
@@ -1510,6 +1511,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->nogroup = needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_NOTEMPORAL)
+	      && gfc_match_omp_variable_list ("nontemporal (",
+					      &c->lists[OMP_LIST_NONTEMPORAL],
+					      true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_NOTINBRANCH)
 	      && !c->notinbranch
 	      && !c->inbranch
@@ -2591,7 +2597,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
    | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN	\
-   | OMP_CLAUSE_IF | OMP_CLAUSE_ORDER)
+   | OMP_CLAUSE_IF | OMP_CLAUSE_ORDER | OMP_CLAUSE_NOTEMPORAL)
 #define OMP_TASK_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
