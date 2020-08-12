@@ -343,6 +343,74 @@ static struct obstack obstack;
 
 static struct obstack collect_obstack;
 
+/* This is used to store new argv arrays created dinamically to avoid memory
+   leaks.  */
+
+class extra_arg_storer
+{
+  public:
+
+    /* Initialize the vec with a default size.  */
+
+    extra_arg_storer ()
+      {
+	string_vec.create (8);
+	extra_args.create (64);
+      }
+
+    /* Create new array of strings of size N.  */
+    const char **create_new (size_t n)
+      {
+	const char **ret = XNEWVEC (const char *, n);
+	extra_args.safe_push (ret);
+	return ret;
+      }
+
+    char *create_string (size_t n)
+      {
+	char *ret = XNEWVEC (char, n);
+	string_vec.safe_push (ret);
+	return ret;
+      }
+
+    void store (char *str)
+      {
+	string_vec.safe_push (str);
+      }
+
+    ~extra_arg_storer ()
+      {
+	release_extra_args ();
+	release_string_vec ();
+      }
+
+
+  private:
+
+    /* Release all allocated strings.  */
+    void release_extra_args ()
+      {
+	size_t i;
+
+	for (i = 0; i < extra_args.length (); i++)
+	  free (extra_args[i]);
+	extra_args.release ();
+      }
+
+    void release_string_vec ()
+      {
+	size_t i;
+
+	for (i = 0; i < string_vec.length (); i++)
+	  free (string_vec[i]);
+	string_vec.release ();
+      }
+
+    /* Data structure to hold all arrays.  */
+    vec<const char **> extra_args;
+    vec<char *> string_vec;
+};
+
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 struct prefix_list;
@@ -1993,6 +2061,9 @@ static int have_o = 0;
 /* Was the option -E passed.  */
 static int have_E = 0;
 
+/* Was the option -S passed.  */
+static int have_S = 0;
+
 /* Pointer to output file name passed in with -o. */
 static const char *output_file = 0;
 
@@ -3056,158 +3127,522 @@ add_sysrooted_hdrs_prefix (struct path_prefix *pprefix, const char *prefix,
 	      require_machine_suffix, os_multilib);
 }
 
-
-/* Execute the command specified by the arguments on the current line of spec.
-   When using pipes, this includes several piped-together commands
-   with `|' between them.
+struct command
+{
+  const char *prog;		/* program name.  */
+  const char **argv;		/* vector of args.  */
+};
 
-   Return 0 if successful, -1 if failed.  */
+#define EMPTY_CMD(x) (!((x).prog))  /* Is the provided CMD empty?  */
+
+/* Check if arg is a call to a compiler.  Return false if not, true if yes.  */
+
+static bool
+is_compiler (const char *arg)
+{
+  static const char *const compilers[] = {"cc1", "cc1plus", "f771"};
+  const char* ptr = arg;
+
+  size_t i;
+
+  /* Jump to last '/' of string.  */
+  while (*arg)
+    if (*arg++ == '/')
+      ptr = arg;
+
+  /* Look if current character seems valid.  */
+  gcc_assert (!(*ptr == '\0' ||  *ptr == '/'));
+
+  for (i = 0; i < ARRAY_SIZE (compilers); i++)
+    {
+      if (!strcmp (ptr, compilers[i]))
+	return true;
+    }
+
+  return false;
+}
+
+/* Check if arg is a call to as.  Return false if not, true if yes.  */
+
+static bool
+is_assembler (const char *arg)
+{
+  static const char *const assemblers[] = {"as", "gas"};
+  const char* ptr = arg;
+
+  size_t i;
+
+  /* Jump to last '/' of string.  */
+  while (*arg)
+    if (*arg++ == '/')
+      ptr = arg;
+
+  /* Look if current character seems valid.  */
+  gcc_assert (!(*ptr == '\0' ||  *ptr == '/'));
+
+  for (i = 0; i < ARRAY_SIZE (assemblers); i++)
+    {
+      if (!strcmp (ptr, assemblers[i]))
+	return true;
+    }
+
+  return false;
+}
+
+/* Get argv[] array length.  */
 
 static int
-execute (void)
+get_number_of_args (const char *argv[])
+{
+  int argc;
+
+  for (argc = 0; argv[argc] != NULL; argc++)
+    ;
+
+  return argc;
+}
+
+static const char *fsplit_arg (extra_arg_storer *);
+
+/* Accumulate each line in lines vec.  Return true if file exists, false if
+   not.  */
+
+static bool
+get_file_by_lines (extra_arg_storer *storer, vec<char *> *lines, const char *name)
+{
+  int buf_size = 64, len = 0;
+  char *buf = XNEWVEC (char, buf_size);
+
+
+  FILE *file = fopen (name, "r");
+
+  if (!file)
+    return false;
+
+  while (1)
+    {
+      if (!fgets (buf + len, buf_size, file))
+	{
+	  free (buf); /* Release buffer we created unecessarily.  */
+	  break;
+	}
+
+      len = strlen (buf);
+      if (buf[len - 1] == '\n') /* Check if we indeed read the entire line.  */
+	{
+	  buf[len - 1] = '\0';
+	  /* Yes.  Insert into the lines vector.  */
+	  lines->safe_push (buf);
+	  len = 0;
+
+	  /* Store the created string for future release.  */
+	  storer->store (buf);
+	  buf = XNEWVEC (char, buf_size);
+	}
+      else
+	{
+	  /* No.  Increase the buffer size and read again.  */
+	  buf = XRESIZEVEC (char, buf, buf_size * 2);
+	}
+    }
+
+  if (lines->length () == 0)
+    internal_error ("Empty file: %s", name);
+
+  fclose (file);
+  return true;
+}
+
+static void
+identify_asm_file (int argc, const char *argv[],
+		   int *infile_pos, int *outfile_pos)
 {
   int i;
-  int n_commands;		/* # of command.  */
-  char *string;
-  struct pex_obj *pex;
-  struct command
-  {
-    const char *prog;		/* program name.  */
-    const char **argv;		/* vector of args.  */
-  };
-  const char *arg;
 
-  struct command *commands;	/* each command buffer with above info.  */
+  static const char *asm_extension[] = {"s", "S"};
 
-  gcc_assert (!processing_spec_function);
+  bool infile_found = false;
+  bool outfile_found = false;
 
-  if (wrapper_string)
+  for (i = 0; i < argc; i++)
     {
-      string = find_a_file (&exec_prefixes,
-			    argbuf[0], X_OK, false);
-      if (string)
-	argbuf[0] = string;
-      insert_wrapper (wrapper_string);
+      const char *arg = argv[i];
+      const char *ext = argv[i];
+      unsigned j;
+
+      /* Jump to last '.' of string.  */
+      while (*arg)
+	if (*arg++ == '.')
+	  ext = arg;
+
+      if (!infile_found)
+	for (j = 0; j < ARRAY_SIZE (asm_extension); ++j)
+	    if (!strcmp (ext, asm_extension[j]))
+	      {
+		infile_found = true;
+		*infile_pos = i;
+		break;
+	      }
+
+      if (!outfile_found)
+	if (!strcmp (ext, "-o"))
+	  {
+	    outfile_found = true;
+	    *outfile_pos = i+1;
+	  }
+
+      if (infile_found && outfile_found)
+	return;
     }
 
-  /* Count # of piped commands.  */
-  for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
-    if (strcmp (arg, "|") == 0)
-      n_commands++;
+  gcc_assert (infile_found && outfile_found);
 
-  /* Get storage for each command.  */
-  commands = (struct command *) alloca (n_commands * sizeof (struct command));
+}
 
-  /* Split argbuf into its separate piped processes,
-     and record info about each one.
-     Also search for the programs that are to be run.  */
+/* Language is one of three things:
 
-  argbuf.safe_push (0);
+   1) The name of a real programming language.
+   2) NULL, indicating that no one has figured out
+   what it is yet.
+   3) '*', indicating that the file should be passed
+   to the linker.  */
+struct infile
+{
+  const char *name;
+  const char *language;
+  const char *temp_additional_asm;
+  struct compiler *incompiler;
+  bool compiled;
+  bool preprocessed;
+};
 
-  commands[0].prog = argbuf[0]; /* first command.  */
-  commands[0].argv = argbuf.address ();
+/* Also a vector of input files specified.  */
 
-  if (!wrapper_string)
+static struct infile *infiles;
+static struct infile *current_infile = NULL;
+
+int n_infiles;
+
+static int n_infiles_alloc;
+
+static vec<const char *> temp_object_files;
+
+/* Get path to the configured ld.  */
+
+static const char *
+get_path_to_ld (void)
+{
+  const char *ret = find_a_file (&exec_prefixes, LINKER_NAME, X_OK, false);
+  if (!ret)
+    ret = "ld";
+
+  return ret;
+}
+
+/* Check if a hidden -E was passed as argument to something.  */
+
+static bool
+has_hidden_E (int argc, const char *argv[])
+{
+  int i;
+  for (i = 0; i < argc; ++i)
+    if (!strcmp (argv[i], "-E"))
+      return true;
+
+  return false;
+}
+
+/* Assembler in the container file are inserted as soon as they are ready.
+   Sort them so that builds are reproducible.  */
+
+static void
+sort_asm_files (vec <char *> *_lines)
+{
+  vec <char *> &lines = *_lines;
+  int i, n = lines.length ();
+  char **temp_buf = XALLOCAVEC (char *, n);
+
+  for (i = 0; i < n; i++)
+    temp_buf[i] = lines[i];
+
+  for (i = 0; i < n; i++)
     {
-      string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
-      if (string)
-	commands[0].argv[0] = string;
+      char *no_str = strtok (temp_buf[i], " ");
+      char *name = strtok (NULL, "");
+
+      int pos = atoi (no_str);
+      lines[pos] = name;
+    }
+}
+
+/* Append -fsplit-output=<tempfile> to all calls to compilers.  Return true
+   if a additional call to LD is required to merge the resulting files.  */
+
+static void
+append_split_outputs (extra_arg_storer *storer,
+		      struct command *additional_ld,
+		      struct command **_commands,
+		      int *_n_commands)
+{
+  int i;
+
+  struct command *commands = *_commands;
+  int n_commands = *_n_commands;
+
+  const char **argv;
+  int argc;
+
+  if (is_compiler (commands[0].prog))
+    {
+      argc = get_number_of_args (commands[0].argv);
+      argv = storer->create_new (argc + 4);
+
+      memcpy (argv, commands[0].argv, argc * sizeof (const char *));
+
+      if (!has_hidden_E (argc, commands[0].argv))
+	{
+	  const char *extra_argument = fsplit_arg (storer);
+	  argv[argc++] = extra_argument;
+	}
+
+      if (have_c)
+	{
+	  argv[argc++] = "-fPIE";
+	  argv[argc++] = "-fPIC";
+	}
+
+      argv[argc]   = NULL;
+
+      commands[0].argv = argv;
     }
 
-  for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
-    if (arg && strcmp (arg, "|") == 0)
-      {				/* each command.  */
-#if defined (__MSDOS__) || defined (OS2) || defined (VMS)
-	fatal_error (input_location, "%<-pipe%> not supported");
-#endif
-	argbuf[i] = 0; /* Termination of command args.  */
-	commands[n_commands].prog = argbuf[i + 1];
-	commands[n_commands].argv
-	  = &(argbuf.address ())[i + 1];
-	string = find_a_file (&exec_prefixes, commands[n_commands].prog,
-			      X_OK, false);
-	if (string)
-	  commands[n_commands].argv[0] = string;
-	n_commands++;
-      }
-
-  /* If -v, print what we are about to do, and maybe query.  */
-
-  if (verbose_flag)
+  else if (is_assembler (commands[0].prog))
     {
-      /* For help listings, put a blank line between sub-processes.  */
-      if (print_help_list)
-	fputc ('\n', stderr);
+      vec<char *> additional_asm_files;
 
-      /* Print each piped command as a separate line.  */
+      struct command orig;
+      const char **orig_argv;
+      int orig_argc;
+      const char *orig_obj_file;
+
+      int infile_pos = -1;
+      int outfile_pos = -1;
+
+      static const char *path_to_ld = NULL;
+
+      if (!current_infile->temp_additional_asm)
+	{
+	  /* Return because we did not create a additional-asm file for this
+	     input.  */
+
+	  return;
+	}
+
+      additional_asm_files.create (2);
+
+      if (!get_file_by_lines (storer, &additional_asm_files,
+			      current_infile->temp_additional_asm))
+	{
+	  additional_asm_files.release ();
+	  return; /* File not found.  This means that cc1* decided not to
+		      parallelize.  */
+	}
+
+      sort_asm_files (&additional_asm_files);
+
+      if (n_commands != 1)
+	fatal_error (input_location,
+		     "Auto parallelism is unsupported when piping commands");
+
+      if (!path_to_ld)
+	path_to_ld = get_path_to_ld ();
+
+      /* Get original command.  */
+      orig = commands[0];
+      orig_argv = commands[0].argv;
+      orig_argc = get_number_of_args (orig.argv);
+
+
+      /* Update commands array to include the extra `as' calls.  */
+      *_n_commands = additional_asm_files.length ();
+      n_commands = *_n_commands;
+
+      gcc_assert (n_commands > 0);
+
+      identify_asm_file (orig_argc, orig_argv, &infile_pos, &outfile_pos);
+
+      *_commands = XRESIZEVEC (struct command, *_commands, n_commands);
+      commands = *_commands;
+
       for (i = 0; i < n_commands; i++)
 	{
-	  const char *const *j;
+	  const char **argv = storer->create_new (orig_argc + 1);
+	  const char *temp_obj = make_temp_file ("additional-obj.o");
+	  record_temp_file (temp_obj, true, true);
+	  record_temp_file (additional_asm_files[i], true, true);
 
-	  if (verbose_only_flag)
+	  memcpy (argv, orig_argv, (orig_argc + 1) * sizeof (const char *));
+
+	  orig_obj_file = argv[outfile_pos];
+
+	  argv[infile_pos]  = additional_asm_files[i];
+	  argv[outfile_pos] = temp_obj;
+
+	  commands[i].prog = orig.prog;
+	  commands[i].argv = argv;
+
+	  temp_object_files.safe_push (temp_obj);
+	}
+
+	if (have_c)
+	  {
+	    unsigned int num_temp_objs = temp_object_files.length ();
+	    const char **argv = storer->create_new (num_temp_objs + 5);
+	    unsigned int j;
+
+	    argv[0] = path_to_ld;
+	    argv[1] = "-o";
+	    argv[2] = orig_obj_file;
+	    argv[3] = "-r";
+
+	    for (j = 0; j < num_temp_objs; j++)
+	      argv[j + 4] = temp_object_files[j];
+	    argv[j + 4] = NULL;
+
+	    additional_ld->prog = path_to_ld;
+	    additional_ld->argv = argv;
+
+	    if (!have_o)
+	      temp_object_files.truncate (0);
+	  }
+
+	additional_asm_files.release ();
+    }
+}
+
+DEBUG_FUNCTION void
+print_command (struct command *command)
+{
+  const char **argv;
+
+  for (argv = command->argv; *argv != NULL; argv++)
+    fprintf (stdout, " %s", *argv);
+  fputc ('\n', stdout);
+}
+
+DEBUG_FUNCTION void
+print_commands (int n, struct command *commands)
+{
+  int i;
+
+  for (i = 0; i < n; i++)
+    print_command (&commands[i]);
+}
+
+DEBUG_FUNCTION void
+print_argbuf ()
+{
+  int i;
+  const char *arg;
+
+  for (i = 0; argbuf.iterate (i, &arg); i++)
+    fprintf (stdout, "%s ", arg);
+  fputc ('\n', stdout);
+}
+
+
+/* Print what commands will run.  Return 0 if success, anything else on
+   error.  */
+
+static int
+handle_verbose (int n_commands, struct command commands[])
+{
+  int i;
+
+  /* For help listings, put a blank line between sub-processes.  */
+  if (print_help_list)
+    fputc ('\n', stderr);
+
+  /* Print each piped command as a separate line.  */
+  for (i = 0; i < n_commands; i++)
+    {
+      const char *const *j;
+
+      if (verbose_only_flag)
+	{
+	  for (j = commands[i].argv; *j; j++)
 	    {
-	      for (j = commands[i].argv; *j; j++)
+	      const char *p;
+	      for (p = *j; *p; ++p)
+		if (!ISALNUM ((unsigned char) *p)
+		    && *p != '_' && *p != '/' && *p != '-' && *p != '.')
+		  break;
+	      if (*p || !*j)
 		{
-		  const char *p;
+		  fprintf (stderr, " \"");
 		  for (p = *j; *p; ++p)
-		    if (!ISALNUM ((unsigned char) *p)
-			&& *p != '_' && *p != '/' && *p != '-' && *p != '.')
-		      break;
-		  if (*p || !*j)
 		    {
-		      fprintf (stderr, " \"");
-		      for (p = *j; *p; ++p)
-			{
-			  if (*p == '"' || *p == '\\' || *p == '$')
-			    fputc ('\\', stderr);
-			  fputc (*p, stderr);
-			}
-		      fputc ('"', stderr);
+		      if (*p == '"' || *p == '\\' || *p == '$')
+			fputc ('\\', stderr);
+		      fputc (*p, stderr);
 		    }
-		  /* If it's empty, print "".  */
-		  else if (!**j)
-		    fprintf (stderr, " \"\"");
-		  else
-		    fprintf (stderr, " %s", *j);
+		  fputc ('"', stderr);
 		}
-	    }
-	  else
-	    for (j = commands[i].argv; *j; j++)
 	      /* If it's empty, print "".  */
-	      if (!**j)
+	      else if (!**j)
 		fprintf (stderr, " \"\"");
 	      else
 		fprintf (stderr, " %s", *j);
-
-	  /* Print a pipe symbol after all but the last command.  */
-	  if (i + 1 != n_commands)
-	    fprintf (stderr, " |");
-	  fprintf (stderr, "\n");
+	    }
 	}
-      fflush (stderr);
-      if (verbose_only_flag != 0)
-        {
-	  /* verbose_only_flag should act as if the spec was
-	     executed, so increment execution_count before
-	     returning.  This prevents spurious warnings about
-	     unused linker input files, etc.  */
-	  execution_count++;
-	  return 0;
-        }
-#ifdef DEBUG
-      fnotice (stderr, "\nGo ahead? (y or n) ");
-      fflush (stderr);
-      i = getchar ();
-      if (i != '\n')
-	while (getchar () != '\n')
-	  ;
+      else
+	for (j = commands[i].argv; *j; j++)
+	  /* If it's empty, print "".  */
+	  if (!**j)
+	    fprintf (stderr, " \"\"");
+	  else
+	    fprintf (stderr, " %s", *j);
 
-      if (i != 'y' && i != 'Y')
-	return 0;
-#endif /* DEBUG */
+      /* Print a pipe symbol after all but the last command.  */
+      if (i + 1 != n_commands)
+	fprintf (stderr, " |");
+      fprintf (stderr, "\n");
     }
+  fflush (stderr);
+  if (verbose_only_flag != 0)
+    {
+      /* verbose_only_flag should act as if the spec was
+	 executed, so increment execution_count before
+	 returning.  This prevents spurious warnings about
+	 unused linker input files, etc.  */
+      execution_count++;
+      return 1;
+    }
+#ifdef DEBUG
+  fnotice (stderr, "\nGo ahead? (y or n) ");
+  fflush (stderr);
+  i = getchar ();
+  if (i != '\n')
+    while (getchar () != '\n')
+      ;
+
+  if (i != 'y' && i != 'Y')
+    return 1;
+#endif /* DEBUG */
+
+  return 0;
+}
 
 #ifdef ENABLE_VALGRIND_CHECKING
+
+/* Append valgrind to each program.  */
+
+static void
+append_valgrind (struct obstack *to_be_released,
+		 int n_commands, struct command commands[])
+{
+  int i;
+
   /* Run the each command through valgrind.  To simplify prepending the
      path to valgrind and the option "-q" (for quiet operation unless
      something triggers), we allocate a separate argv array.  */
@@ -3221,7 +3656,7 @@ execute (void)
       for (argc = 0; commands[i].argv[argc] != NULL; argc++)
 	;
 
-      argv = XALLOCAVEC (const char *, argc + 3);
+      argv = obstack_alloc (to_be_released, (argc + 3) * sizeof (const char *));
 
       argv[0] = VALGRIND_PATH;
       argv[1] = "-q";
@@ -3232,15 +3667,16 @@ execute (void)
       commands[i].argv = argv;
       commands[i].prog = argv[0];
     }
+}
 #endif
 
-  /* Run each piped subprocess.  */
+/* Launch a list of commands asynchronously.  */
 
-  pex = pex_init (PEX_USE_PIPES | ((report_times || report_times_to_file)
-				   ? PEX_RECORD_TIMES : 0),
-		  progname, temp_filename);
-  if (pex == NULL)
-    fatal_error (input_location, "%<pex_init%> failed: %m");
+static void
+async_launch_commands (struct pex_obj *pex,
+		       int n_commands, struct command commands[])
+{
+  int i;
 
   for (i = 0; i < n_commands; i++)
     {
@@ -3267,151 +3703,341 @@ execute (void)
     }
 
   execution_count++;
+}
 
-  /* Wait for all the subprocesses to finish.  */
 
-  {
-    int *statuses;
-    struct pex_time *times = NULL;
-    int ret_code = 0;
+/* Wait for all the subprocesses to finish.  Return 0 on success, -1 on
+   failure.  */
 
-    statuses = (int *) alloca (n_commands * sizeof (int));
-    if (!pex_get_status (pex, n_commands, statuses))
-      fatal_error (input_location, "failed to get exit status: %m");
+static int
+await_commands_to_finish (struct pex_obj *pex,
+			  int n_commands, struct command commands[])
+{
 
-    if (report_times || report_times_to_file)
-      {
-	times = (struct pex_time *) alloca (n_commands * sizeof (struct pex_time));
-	if (!pex_get_times (pex, n_commands, times))
-	  fatal_error (input_location, "failed to get process times: %m");
-      }
+  int *statuses;
+  struct pex_time *times = NULL;
+  int ret_code = 0, i;
 
-    pex_free (pex);
+  statuses = (int *) alloca (n_commands * sizeof (int));
+  if (!pex_get_status (pex, n_commands, statuses))
+    fatal_error (input_location, "failed to get exit status: %m");
 
-    for (i = 0; i < n_commands; ++i)
-      {
-	int status = statuses[i];
+  if (report_times || report_times_to_file)
+    {
+      times = (struct pex_time *) alloca (n_commands * sizeof (*times));
+      if (!pex_get_times (pex, n_commands, times))
+	fatal_error (input_location, "failed to get process times: %m");
+    }
 
-	if (WIFSIGNALED (status))
-	  switch (WTERMSIG (status))
-	    {
-	    case SIGINT:
-	    case SIGTERM:
-	      /* SIGQUIT and SIGKILL are not available on MinGW.  */
+  for (i = 0; i < n_commands; ++i)
+    {
+      int status = statuses[i];
+
+      if (WIFSIGNALED (status))
+	switch (WTERMSIG (status))
+	  {
+	  case SIGINT:
+	  case SIGTERM:
+	    /* SIGQUIT and SIGKILL are not available on MinGW.  */
 #ifdef SIGQUIT
-	    case SIGQUIT:
+	  case SIGQUIT:
 #endif
 #ifdef SIGKILL
-	    case SIGKILL:
+	  case SIGKILL:
 #endif
-	      /* The user (or environment) did something to the
-		 inferior.  Making this an ICE confuses the user into
-		 thinking there's a compiler bug.  Much more likely is
-		 the user or OOM killer nuked it.  */
-	      fatal_error (input_location,
-			   "%s signal terminated program %s",
-			   strsignal (WTERMSIG (status)),
-			   commands[i].prog);
-	      break;
+	    /* The user (or environment) did something to the
+	       inferior.  Making this an ICE confuses the user into
+	       thinking there's a compiler bug.  Much more likely is
+	       the user or OOM killer nuked it.  */
+	    fatal_error (input_location,
+			 "%s signal terminated program %s",
+			 strsignal (WTERMSIG (status)),
+			 commands[i].prog);
+	    break;
 
 #ifdef SIGPIPE
-	    case SIGPIPE:
-	      /* SIGPIPE is a special case.  It happens in -pipe mode
-		 when the compiler dies before the preprocessor is
-		 done, or the assembler dies before the compiler is
-		 done.  There's generally been an error already, and
-		 this is just fallout.  So don't generate another
-		 error unless we would otherwise have succeeded.  */
-	      if (signal_count || greatest_status >= MIN_FATAL_STATUS)
-		{
-		  signal_count++;
-		  ret_code = -1;
-		  break;
-		}
-#endif
-	      /* FALLTHROUGH */
-
-	    default:
-	      /* The inferior failed to catch the signal.  */
-	      internal_error_no_backtrace ("%s signal terminated program %s",
-					   strsignal (WTERMSIG (status)),
-					   commands[i].prog);
-	    }
-	else if (WIFEXITED (status)
-		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
-	  {
-	    /* For ICEs in cc1, cc1obj, cc1plus see if it is
-	       reproducible or not.  */
-	    const char *p;
-	    if (flag_report_bug
-		&& WEXITSTATUS (status) == ICE_EXIT_CODE
-		&& i == 0
-		&& (p = strrchr (commands[0].argv[0], DIR_SEPARATOR))
-		&& ! strncmp (p + 1, "cc1", 3))
-	      try_generate_repro (commands[0].argv);
-	    if (WEXITSTATUS (status) > greatest_status)
-	      greatest_status = WEXITSTATUS (status);
-	    ret_code = -1;
-	  }
-
-	if (report_times || report_times_to_file)
-	  {
-	    struct pex_time *pt = &times[i];
-	    double ut, st;
-
-	    ut = ((double) pt->user_seconds
-		  + (double) pt->user_microseconds / 1.0e6);
-	    st = ((double) pt->system_seconds
-		  + (double) pt->system_microseconds / 1.0e6);
-
-	    if (ut + st != 0)
+	  case SIGPIPE:
+	    /* SIGPIPE is a special case.  It happens in -pipe mode
+	       when the compiler dies before the preprocessor is
+	       done, or the assembler dies before the compiler is
+	       done.  There's generally been an error already, and
+	       this is just fallout.  So don't generate another
+	       error unless we would otherwise have succeeded.  */
+	    if (signal_count || greatest_status >= MIN_FATAL_STATUS)
 	      {
-		if (report_times)
-		  fnotice (stderr, "# %s %.2f %.2f\n",
-			   commands[i].prog, ut, st);
-
-		if (report_times_to_file)
-		  {
-		    int c = 0;
-		    const char *const *j;
-
-		    fprintf (report_times_to_file, "%g %g", ut, st);
-
-		    for (j = &commands[i].prog; *j; j = &commands[i].argv[++c])
-		      {
-			const char *p;
-			for (p = *j; *p; ++p)
-			  if (*p == '"' || *p == '\\' || *p == '$'
-			      || ISSPACE (*p))
-			    break;
-
-			if (*p)
-			  {
-			    fprintf (report_times_to_file, " \"");
-			    for (p = *j; *p; ++p)
-			      {
-				if (*p == '"' || *p == '\\' || *p == '$')
-				  fputc ('\\', report_times_to_file);
-				fputc (*p, report_times_to_file);
-			      }
-			    fputc ('"', report_times_to_file);
-			  }
-			else
-			  fprintf (report_times_to_file, " %s", *j);
-		      }
-
-		    fputc ('\n', report_times_to_file);
-		  }
+		signal_count++;
+		ret_code = -1;
+		break;
 	      }
+#endif
+	    /* FALLTHROUGH.  */
+
+	  default:
+	    /* The inferior failed to catch the signal.  */
+	    internal_error_no_backtrace ("%s signal terminated program %s",
+					 strsignal (WTERMSIG (status)),
+					 commands[i].prog);
 	  }
-      }
+      else if (WIFEXITED (status)
+	       && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
+	{
+	  /* For ICEs in cc1, cc1obj, cc1plus see if it is
+	     reproducible or not.  */
+	  const char *p;
+	  if (flag_report_bug
+	      && WEXITSTATUS (status) == ICE_EXIT_CODE
+	      && i == 0
+	      && (p = strrchr (commands[0].argv[0], DIR_SEPARATOR))
+	      && ! strncmp (p + 1, "cc1", 3))
+	    try_generate_repro (commands[0].argv);
+	  if (WEXITSTATUS (status) > greatest_status)
+	    greatest_status = WEXITSTATUS (status);
+	  ret_code = -1;
+	}
 
-   if (commands[0].argv[0] != commands[0].prog)
-     free (CONST_CAST (char *, commands[0].argv[0]));
+      if (report_times || report_times_to_file)
+	{
+	  struct pex_time *pt = &times[i];
+	  double ut, st;
 
-    return ret_code;
-  }
+	  ut = ((double) pt->user_seconds
+		+ (double) pt->user_microseconds / 1.0e6);
+	  st = ((double) pt->system_seconds
+		+ (double) pt->system_microseconds / 1.0e6);
+
+	  if (ut + st != 0)
+	    {
+	      if (report_times)
+		fnotice (stderr, "# %s %.2f %.2f\n",
+			 commands[i].prog, ut, st);
+
+	      if (report_times_to_file)
+		{
+		  int c = 0;
+		  const char *const *j;
+
+		  fprintf (report_times_to_file, "%g %g", ut, st);
+
+		  for (j = &commands[i].prog; *j; j = &commands[i].argv[++c])
+		    {
+		      const char *p;
+		      for (p = *j; *p; ++p)
+			if (*p == '"' || *p == '\\' || *p == '$'
+			    || ISSPACE (*p))
+			  break;
+
+		      if (*p)
+			{
+			  fprintf (report_times_to_file, " \"");
+			  for (p = *j; *p; ++p)
+			    {
+			      if (*p == '"' || *p == '\\' || *p == '$')
+				fputc ('\\', report_times_to_file);
+			      fputc (*p, report_times_to_file);
+			    }
+			  fputc ('"', report_times_to_file);
+			}
+		      else
+			fprintf (report_times_to_file, " %s", *j);
+		    }
+
+		  fputc ('\n', report_times_to_file);
+		}
+	    }
+	}
+    }
+
+  return ret_code;
 }
+
+/* Split a single command with pipes into several commands.  */
+
+static void
+split_commands (vec<const_char_p> *argbuf_p,
+		int n_commands, struct command commands[])
+{
+  int i;
+  const char *arg;
+  vec<const_char_p> &argbuf = *argbuf_p;
+
+  for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
+    if (arg && strcmp (arg, "|") == 0)
+      {				/* each command.  */
+	const char *string;
+#if defined (__MSDOS__) || defined (OS2) || defined (VMS)
+	fatal_error (input_location, "%<-pipe%> not supported");
+#endif
+	argbuf[i] = 0; /* Termination of command args.  */
+	commands[n_commands].prog = argbuf[i + 1];
+	commands[n_commands].argv
+	  = &(argbuf.address ())[i + 1];
+	string = find_a_file (&exec_prefixes, commands[n_commands].prog,
+			      X_OK, false);
+	if (string)
+	  commands[n_commands].argv[0] = string;
+	n_commands++;
+      }
+}
+
+struct command *
+parse_argbuf (vec <const_char_p> *argbuf_p, int *n)
+{
+  int i, n_commands;
+  vec<const_char_p> &argbuf = *argbuf_p;
+  const char *arg;
+  struct command *commands;
+
+  /* Count # of piped commands.  */
+  for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
+    if (strcmp (arg, "|") == 0)
+      n_commands++;
+
+  /* Get storage for each command.  */
+  commands = XNEWVEC (struct command, n_commands);
+
+  /* Split argbuf into its separate piped processes,
+     and record info about each one.
+     Also search for the programs that are to be run.  */
+
+  argbuf.safe_push (0);
+
+  commands[0].prog = argbuf[0]; /* first command.  */
+  commands[0].argv = argbuf.address ();
+
+  split_commands (argbuf_p, n_commands, commands);
+
+  *n = n_commands;
+  return commands;
+}
+
+/* Execute the command specified by the arguments on the current line of spec.
+   When using pipes, this includes several piped-together commands
+   with `|' between them.
+
+   Return 0 if successful, -1 if failed.  */
+
+static int
+execute (void)
+{
+  struct pex_obj *pex;
+  struct command *commands;	 /* each command buffer with program to call
+				    and arguments.  */
+  int n_commands;		 /* # of command.  */
+  int ret = 0;
+
+  struct command additional_ld = {NULL, NULL};
+  extra_arg_storer storer;
+
+  struct command *commands_batch;
+  int n;
+
+  gcc_assert (!processing_spec_function);
+
+  if (wrapper_string)
+    {
+      char *string = find_a_file (&exec_prefixes, argbuf[0], X_OK, false);
+      if (string)
+	argbuf[0] = string;
+      insert_wrapper (wrapper_string);
+    }
+
+  /* Parse the argbuf into several commands.  */
+  commands = parse_argbuf (&argbuf, &n_commands);
+
+  if (!have_S && !have_E && flag_parallel_jobs)
+    append_split_outputs (&storer, &additional_ld, &commands, &n_commands);
+
+  if (!wrapper_string)
+    {
+      char *string = find_a_file (&exec_prefixes, commands[0].prog,
+				  X_OK, false);
+      if (string)
+	commands[0].argv[0] = string;
+    }
+
+  /* If -v, print what we are about to do, and maybe query.  */
+
+  if (verbose_flag)
+    {
+      int ret_verbose = handle_verbose (n_commands, commands);
+      if (ret_verbose > 0)
+	{
+	  ret = 0;
+	  goto cleanup;
+	}
+    }
+
+#ifdef ENABLE_VALGRIND_CHECKING
+  /* Stack of strings to be released on function return.  */
+  struct obstack to_be_released;
+  obstack_init (&to_be_released);
+  append_valgrind (&to_be_released, n_commands, commands);
+#endif
+
+  /* FIXME: Interact with GNU Jobserver if necessary.  */
+
+  commands_batch = commands;
+  n = flag_parallel_jobs? 1: n_commands;
+
+  for (int i = 0; i < n_commands; i += n)
+    {
+      /* Run each piped subprocess.  */
+
+      pex = pex_init (PEX_USE_PIPES | ((report_times || report_times_to_file)
+				       ? PEX_RECORD_TIMES : 0),
+		      progname, temp_filename);
+      if (pex == NULL)
+	fatal_error (input_location, "%<pex_init%> failed: %m");
+
+      /* Lauch the commands.  */
+      async_launch_commands (pex, n, commands_batch);
+
+      /* Await them to be done.  */
+      ret |= await_commands_to_finish (pex, n, commands_batch);
+
+      commands_batch = commands_batch + n;
+
+      /* Cleanup.  */
+      pex_free (pex);
+    }
+
+
+  if (ret != 0)
+    goto cleanup;
+
+  /* Run extra ld call.  */
+  if (!EMPTY_CMD (additional_ld))
+    {
+      /* If we are here, we must be sure that we had at least two object
+	 files to link.  */
+      //gcc_assert (n_commands != 1);
+
+      pex = pex_init (PEX_USE_PIPES | ((report_times || report_times_to_file)
+				       ? PEX_RECORD_TIMES : 0),
+		      progname, temp_filename);
+
+      if (verbose_flag)
+	print_command (&additional_ld);
+
+      async_launch_commands (pex, 1, &additional_ld);
+      ret = await_commands_to_finish (pex, 1, &additional_ld);
+      pex_free (pex);
+    }
+
+
+#ifdef ENABLE_VALGRIND_CHECKING
+  obstack_free (&to_be_released, NULL);
+#endif
+
+cleanup:
+  if (commands[0].argv[0] != commands[0].prog)
+    free (CONST_CAST (char *, commands[0].argv[0]));
+
+  free (commands);
+
+  return ret;
+}
+
 
 /* Find all the switches given to us
    and make a vector describing them.
@@ -3480,29 +4106,33 @@ static int n_switches_alloc_debug_check[2];
 
 static char *debug_check_temp_file[2];
 
-/* Language is one of three things:
-
-   1) The name of a real programming language.
-   2) NULL, indicating that no one has figured out
-   what it is yet.
-   3) '*', indicating that the file should be passed
-   to the linker.  */
-struct infile
+static const char *
+fsplit_arg (extra_arg_storer *storer)
 {
-  const char *name;
-  const char *language;
-  struct compiler *incompiler;
-  bool compiled;
-  bool preprocessed;
-};
+  const char *tempname = make_temp_file ("additional-asm");
+  const char arg[] = "-fsplit-outputs=";
+  char *final;
 
-/* Also a vector of input files specified.  */
+  size_t n = ARRAY_SIZE (arg) + strlen (tempname);
 
-static struct infile *infiles;
+  gcc_assert (current_infile);
 
-int n_infiles;
+  current_infile->temp_additional_asm = tempname;
 
-static int n_infiles_alloc;
+  /* Remove file, once we may not even need it and create it later.  */
+  /* FIXME: This is a little hackish.  */
+  remove (tempname);
+
+  final = storer->create_string (n);
+
+  strcpy (final, arg);
+  strcat (final, tempname);
+
+  record_temp_file (tempname, true, true);
+
+  return final;
+}
+
 
 /* True if undefined environment variables encountered during spec processing
    are ok to ignore, typically when we're running for --help or --version.  */
@@ -3683,6 +4313,8 @@ alloc_infile (void)
     {
       n_infiles_alloc = 16;
       infiles = XNEWVEC (struct infile, n_infiles_alloc);
+      memset (infiles, 0x00, sizeof (*infiles) * n_infiles_alloc);
+
     }
   else if (n_infiles_alloc == n_infiles)
     {
@@ -4648,6 +5280,9 @@ process_command (unsigned int decoded_options_count,
       switch (decoded_options[j].opt_index)
 	{
 	case OPT_S:
+	  have_S = 1;
+	  have_c = 1;
+	  break;
 	case OPT_c:
 	case OPT_E:
 	  have_c = 1;
@@ -6155,11 +6790,14 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  open_at_file ();
 
 		for (i = 0; (int) i < n_infiles; i++)
-		  if (compile_input_file_p (&infiles[i]))
-		    {
-		      store_arg (infiles[i].name, 0, 0);
-		      infiles[i].compiled = true;
-		    }
+		  {
+		    current_infile = &infiles[i];
+		    if (compile_input_file_p (current_infile))
+		      {
+			store_arg (current_infile->name, 0, 0);
+			current_infile->compiled = true;
+		      }
+		  }
 
 		if (at_file_supplied)
 		  close_at_file ();
@@ -6515,7 +7153,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		     "%{foo=*:bar%*}%{foo=*:one%*two}"
 
 		   matches -foo=hello then it will produce:
-		   
+
 		     barhello onehellotwo
 		*/
 		if (*p == 0 || *p == '}')
@@ -8642,6 +9280,7 @@ driver::do_spec_on_infiles () const
   for (i = 0; (int) i < n_infiles; i++)
     {
       int this_file_error = 0;
+      current_infile = &infiles[i];
 
       /* Tell do_spec what to substitute for %i.  */
 
@@ -8761,12 +9400,15 @@ driver::do_spec_on_infiles () const
       int i;
 
       for (i = 0; i < n_infiles ; i++)
-	if (infiles[i].incompiler
-	    || (infiles[i].language && infiles[i].language[0] != '*'))
-	  {
-	    set_input (infiles[i].name);
-	    break;
-	  }
+	{
+	  current_infile = &infiles[i];
+	  if (infiles[i].incompiler
+	      || (infiles[i].language && infiles[i].language[0] != '*'))
+	    {
+	      set_input (infiles[i].name);
+	      break;
+	    }
+	}
     }
 
   if (!seen_error ())
@@ -8788,11 +9430,31 @@ driver::maybe_run_linker (const char *argv0) const
   int linker_was_run = 0;
   int num_linker_inputs;
 
-  /* Determine if there are any linker input files.  */
-  num_linker_inputs = 0;
-  for (i = 0; (int) i < n_infiles; i++)
-    if (explicit_link_files[i] || outfiles[i] != NULL)
-      num_linker_inputs++;
+  /* Set outfiles to be the temporary object vector.  */
+  const char **outfiles_holder = outfiles;
+  int n_infiles_holder = n_infiles;
+  bool outfiles_switched = false;
+  if (temp_object_files.length () > 0)
+    {
+      /* Insert explicit link files into the temp object vector.  */
+
+      for (i = 0; (int) i < n_infiles; i++)
+	if (explicit_link_files[i] && outfiles[i] != NULL)
+	  temp_object_files.safe_push (outfiles[i]);
+
+      num_linker_inputs = n_infiles = temp_object_files.length ();
+      temp_object_files.safe_push (NULL); /* the NULL sentinel.  */
+      outfiles = temp_object_files.address ();
+    }
+  else /* Fall back to the old method.  */
+    {
+
+      /* Determine if there are any linker input files.  */
+      num_linker_inputs = 0;
+      for (i = 0; (int) i < n_infiles; i++)
+	if (explicit_link_files[i] || outfiles[i] != NULL)
+	  num_linker_inputs++;
+    }
 
   /* Arrange for temporary file names created during linking to take
      on names related with the linker output rather than with the
@@ -8897,14 +9559,24 @@ driver::maybe_run_linker (const char *argv0) const
     }
 
   /* If options said don't run linker,
-     complain about input files to be given to the linker.  */
+     complain about input files to be given to the linker.
+     When fsplit-arg is active, the linker will run and this if
+     will not be triggered.  */
 
-  if (! linker_was_run && !seen_error ())
+  if (!outfiles_switched && !linker_was_run && !seen_error ()
+      && temp_object_files.length () == 0)
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i]
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))
 	warning (0, "%s: linker input file unused because linking not done",
 		 outfiles[i]);
+
+  if (outfiles_switched)
+    {
+      /* Undo our changes.  */
+      outfiles = outfiles_holder;
+      n_infiles = n_infiles_holder;
+    }
 }
 
 /* The end of "main".  */
@@ -10808,6 +11480,7 @@ driver::finalize ()
   linker_options.truncate (0);
   assembler_options.truncate (0);
   preprocessor_options.truncate (0);
+  temp_object_files.truncate (0);
 
   path_prefix_reset (&exec_prefixes);
   path_prefix_reset (&startfile_prefixes);

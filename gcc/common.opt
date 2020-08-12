@@ -3465,4 +3465,8 @@ fipa-ra
 Common Report Var(flag_ipa_ra) Optimization
 Use caller save register across calls if possible.
 
+fsplit-outputs=
+Common Joined Var(split_outputs)
+-fsplit-outputs=<tempfile>  Filename in which current Compilation Unit will be split to.
+
 ; This comment is to ensure we retain the blank line above.
