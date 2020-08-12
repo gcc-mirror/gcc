@@ -1,3 +1,27 @@
+2020-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96106
+	* g++.dg/concepts/abbrev7.C: New test.
+
+2020-08-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96312
+	* gfortran.dg/pr96312.f90: New test.
+
+2020-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96164
+	* g++.dg/cpp2a/concepts-explicit-inst5.C: New test.
+
 2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr92865-1.c: Adjust testcase.
