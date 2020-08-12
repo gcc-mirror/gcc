@@ -1493,6 +1493,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE rs6000_promote_function_mode
 
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE rs6000_override_options_after_change
+
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY rs6000_return_in_memory
 
@@ -3420,6 +3423,34 @@ rs6000_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
   return NULL;
 }
 
+/* This target function is similar to the hook TARGET_OPTION_OVERRIDE
+   but is called when the optimize level is changed via an attribute or
+   pragma or when it is reset at the end of the code affected by the
+   attribute or pragma.  It is not called at the beginning of compilation
+   when TARGET_OPTION_OVERRIDE is called so if you want to perform these
+   actions then, you should have TARGET_OPTION_OVERRIDE call
+   TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
+
+static void
+rs6000_override_options_after_change (void)
+{
+  /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
+     turns -frename-registers on.  */
+  if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+       || (global_options_set.x_flag_unroll_all_loops
+	   && flag_unroll_all_loops))
+    {
+      if (!global_options_set.x_unroll_only_small_loops)
+	unroll_only_small_loops = 0;
+      if (!global_options_set.x_flag_rename_registers)
+	flag_rename_registers = 1;
+      if (!global_options_set.x_flag_cunroll_grow_size)
+	flag_cunroll_grow_size = 1;
+    }
+  else if (!global_options_set.x_flag_cunroll_grow_size)
+    flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
+}
+
 /* Override command line options.
 
    Combine build-specific configuration information with options
@@ -4647,29 +4678,14 @@ rs6000_option_override_internal (bool global_init_p)
 			   param_sched_pressure_algorithm,
 			   SCHED_PRESSURE_MODEL);
 
-      /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
-	 turns -frename-registers on.  */
-      if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
-	   || (global_options_set.x_flag_unroll_all_loops
-	       && flag_unroll_all_loops))
-	{
-	  if (!global_options_set.x_unroll_only_small_loops)
-	    unroll_only_small_loops = 0;
-	  if (!global_options_set.x_flag_rename_registers)
-	    flag_rename_registers = 1;
-	  if (!global_options_set.x_flag_cunroll_grow_size)
-	    flag_cunroll_grow_size = 1;
-	}
-      else
-	if (!global_options_set.x_flag_cunroll_grow_size)
-	  flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
-
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
 	 ap = __builtin_next_arg (0).  */
       if (DEFAULT_ABI != ABI_V4)
 	targetm.expand_builtin_va_start = NULL;
     }
+
+  rs6000_override_options_after_change ();
 
   /* If not explicitly specified via option, decide whether to generate indexed
      load/store instructions.  A value of -1 indicates that the
