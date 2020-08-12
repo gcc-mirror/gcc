@@ -11,7 +11,7 @@ foo ()
   void *skb;
   uint32_t len;
   uint64_t flags;
-  
+
   ret = bpf_skb_change_head (skb, len, flags);
 }
 

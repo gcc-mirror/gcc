@@ -10,7 +10,7 @@ foo ()
   int ret;
   void *skb, *param;
   uint32_t action, param_len;
-  
+
   ret = bpf_lwt_seg6_action (skb, action,
 			     param, param_len);
 }

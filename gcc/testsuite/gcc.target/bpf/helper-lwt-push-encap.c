@@ -10,7 +10,7 @@ foo ()
   int ret;
   void *skb, *hdr;
   uint32_t type, len;
-  
+
   ret = bpf_lwt_push_encap (skb, type, hdr, len);
 }
 

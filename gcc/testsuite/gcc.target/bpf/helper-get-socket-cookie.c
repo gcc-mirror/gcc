@@ -9,7 +9,7 @@ foo ()
 {
   uint64_t ret;
   void *skb;
-  
+
   ret = bpf_get_socket_cookie (skb);
 }
 

@@ -11,7 +11,7 @@ foo ()
   int ret;
   void *ctx, *buf;
   size_t buf_len;
-  
+
   ret = bpf_sysctl_set_new_value (ctx, buf, buf_len);
 }
 

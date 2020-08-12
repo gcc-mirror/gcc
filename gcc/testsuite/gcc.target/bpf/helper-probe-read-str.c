@@ -11,7 +11,7 @@ foo ()
   int size;
   void *dst;
   const void *unsafe_ptr;
-  
+
   ret = bpf_probe_read_str (dst, size, unsafe_ptr);
 }
 

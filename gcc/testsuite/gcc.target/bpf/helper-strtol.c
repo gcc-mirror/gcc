@@ -13,7 +13,7 @@ foo ()
   long res;
   uint64_t flags;
   size_t buf_len;
-  
+
   ret = bpf_strtol (buf, buf_len, flags, &res);
 }
 

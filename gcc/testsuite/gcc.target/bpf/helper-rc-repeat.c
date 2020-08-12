@@ -9,7 +9,7 @@ foo ()
 {
   int ret;
   void *ctx;
-  
+
   ret = bpf_rc_repeat (ctx);
 }
 
