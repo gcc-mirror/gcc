@@ -717,10 +717,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 	if (__str._M_is_local())
 	  {
-	    // We've always got room for a short string, just copy it.
-	    if (__str.size())
-	      this->_S_copy(_M_data(), __str._M_data(), __str.size());
-	    _M_set_length(__str.size());
+	    // We've always got room for a short string, just copy it
+	    // (unless this is a self-move, because that would violate the
+	    // char_traits::copy precondition that the ranges don't overlap).
+	    if (__builtin_expect(std::__addressof(__str) != this, true))
+	      {
+		if (__str.size())
+		  this->_S_copy(_M_data(), __str._M_data(), __str.size());
+		_M_set_length(__str.size());
+	      }
 	  }
 	else if (_Alloc_traits::_S_propagate_on_move_assign()
 	    || _Alloc_traits::_S_always_equal()
