@@ -4106,6 +4106,18 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
       /* Accept all non-symbolic constants.  */
       return false;
 
+    case NEG:
+      /* Accept an unary '-' only on scalar numeric constants.  */
+      switch (GET_CODE (XEXP (x, 0)))
+	{
+	case CONST_INT:
+	case CONST_DOUBLE:
+	case CONST_WIDE_INT:
+	  return false;
+	default:
+	  return true;
+	}
+
     case LABEL_REF:
       /* Labels are OK iff we are non-PIC.  */
       return flag_pic != 0;
@@ -5268,6 +5280,7 @@ legitimize_tls_address (rtx addr, rtx reg)
     {
       switch (XINT (XEXP (addr, 0), 1))
 	{
+	case UNSPEC_NTPOFF:
 	case UNSPEC_INDNTPOFF:
 	  new_rtx = addr;
 	  break;
@@ -5287,6 +5300,18 @@ legitimize_tls_address (rtx addr, rtx reg)
       new_rtx = legitimize_tls_address (new_rtx, reg);
       new_rtx = plus_constant (Pmode, new_rtx,
 			       INTVAL (XEXP (XEXP (addr, 0), 1)));
+      new_rtx = force_operand (new_rtx, 0);
+    }
+
+  /* (const (neg (unspec (symbol_ref)))) -> (neg (const (unspec (symbol_ref)))) */
+  else if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == NEG)
+    {
+      new_rtx = XEXP (XEXP (addr, 0), 0);
+      if (GET_CODE (new_rtx) != SYMBOL_REF)
+	new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+
+      new_rtx = legitimize_tls_address (new_rtx, reg);
+      new_rtx = gen_rtx_NEG (Pmode, new_rtx);
       new_rtx = force_operand (new_rtx, 0);
     }
 
