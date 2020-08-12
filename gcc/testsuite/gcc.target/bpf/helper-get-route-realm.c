@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -8,7 +10,7 @@ foo ()
   uint32_t ret;
   void *skb;
 
-  ret = __builtin_bpf_helper_get_route_realm (skb);
+  ret = bpf_get_route_realm (skb);
 }
 
 /* { dg-final { scan-assembler "call\t24" } } */

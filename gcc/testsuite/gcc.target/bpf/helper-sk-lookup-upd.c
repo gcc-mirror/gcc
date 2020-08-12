@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   uint32_t tuple_size;
   uint64_t netns, flags;
   
-  ret = __builtin_bpf_helper_sk_lookup_udp (ctx,
+  ret = bpf_sk_lookup_udp (ctx,
 					    tuple,
 					    tuple_size,
 					    netns, flags);

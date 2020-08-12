@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   uint32_t protocol, toggle;
   uint64_t scancode;
   
-  ret = __builtin_bpf_helper_rc_keydown (ctx, protocol,
+  ret = bpf_rc_keydown (ctx, protocol,
 					 scancode, toggle);
 }
 
