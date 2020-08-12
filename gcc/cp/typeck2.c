@@ -706,7 +706,17 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 				  NULL_TREE);
 
-		  code = build2 (INIT_EXPR, inner_type, sub, value);
+		  if (unsafe_return_slot_p (sub))
+		    {
+		      /* We may need to add a copy constructor call if
+			 the field has [[no_unique_address]].  */
+		      releasing_vec args = make_tree_vector_single (value);
+		      code = build_special_member_call
+			(sub, complete_ctor_identifier, &args, inner_type,
+			 LOOKUP_NORMAL, tf_warning_or_error);
+		    }
+		  else
+		    code = build2 (INIT_EXPR, inner_type, sub, value);
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
