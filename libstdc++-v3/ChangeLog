@@ -104,6 +104,7 @@
 
 2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/93904
 	* include/bits/stl_iterator.h (inserter): Do not deduce
 	iterator type (LWG 561).
 	* testsuite/24_iterators/insert_iterator/dr561.cc: New test.
@@ -118,7 +119,7 @@
 
 	PR libstdc++/95749
 	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
-	(stat_type): Change to __wstat64.
+	(stat_type): Change to __stat64.
 	(stat): Use _wstat64.
 
 2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
