@@ -14,9 +14,9 @@ extern void abort (void);
 extern void *memcpy (void *, const void *, size_t);
 extern int memcmp (const void *, const void *, size_t);
 
-static char AC[4];
-static char init_qi[4] = { -30,-30,-50,-50 };
-static char test_qi[4] = { -115,-115,25,25 };
+static signed char AC[4];
+static signed char init_qi[4] = { -30,-30,-50,-50 };
+static signed char test_qi[4] = { -115,-115,25,25 };
 
 static void
 do_qi (void)
