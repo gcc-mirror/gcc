@@ -34,7 +34,8 @@ asm (
 "	.type	main, %function\n"
 "main:\n"
 "	bl	get_ptr\n"
-"	str	r0, [sp, #-8]!\n"
+"	sub	sp, sp, #8\n"
+"	str	r0, [sp]\n"
 "	bl	f\n"
 "	str	r0, [sp, #4]\n"
 "	ldr     r0, [sp]\n"
@@ -51,7 +52,6 @@ asm (
 	CHECK (r10)
 	CHECK (r11)
 	CHECK (r12)
-	CHECK (r13)
 	CHECK (r14)
 "	ldr	r1, [sp, #4]\n"
 	CHECK (r1)
