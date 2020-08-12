@@ -331,7 +331,7 @@ static void
 evaluate_conditions_for_known_args (struct cgraph_node *node,
 				    bool inline_p,
 				    vec<tree> known_vals,
-				    const std::vector<value_range> &known_value_ranges,
+				    vec<value_range> known_value_ranges,
 				    vec<ipa_agg_value_set> known_aggs,
 				    clause_t *ret_clause,
 				    clause_t *ret_nonspec_clause)
@@ -446,7 +446,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      continue;
 	    }
 	}
-      if (c->operand_num < (int) known_value_ranges.size ()
+      if (c->operand_num < (int) known_value_ranges.length ()
 	  && !c->agg_contents
 	  && !known_value_ranges[c->operand_num].undefined_p ()
 	  && !known_value_ranges[c->operand_num].varying_p ()
@@ -555,7 +555,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 {
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
-  std::vector<value_range> known_value_ranges (32);
+  auto_vec<value_range, 32> known_value_ranges;
   class ipa_edge_args *args;
 
   if (clause_ptr)
@@ -630,11 +630,11 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 								   i));
 		    if (!vr.undefined_p () && !vr.varying_p ())
 		      {
-			if (!known_value_ranges.size ())
+			if (!known_value_ranges.length ())
 			  {
-			    known_value_ranges.resize (count);
+			    known_value_ranges.safe_grow (count);
 			    for (int i = 0; i < count; ++i)
-			      known_value_ranges[i].set_undefined ();
+			      new (&known_value_ranges[i]) value_range ();
 			  }
 			known_value_ranges[i] = vr;
 		      }
@@ -808,7 +808,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	}
       evaluate_conditions_for_known_args (dst, false,
 					  known_vals,
-					  std::vector<value_range> (),
+					  vNULL,
 					  vNULL,
 					  &possible_truths,
 					  /* We are going to specialize,
@@ -3692,8 +3692,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
   clause_t clause, nonspec_clause;
 
   /* TODO: Also pass known value ranges.  */
-  evaluate_conditions_for_known_args (node, false, known_vals,
-				      std::vector<value_range> (),
+  evaluate_conditions_for_known_args (node, false, known_vals, vNULL,
 				      known_aggs, &clause, &nonspec_clause);
   ipa_call_context ctx (node, clause, nonspec_clause,
 		        known_vals, known_contexts,

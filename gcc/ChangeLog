@@ -1,3 +1,28 @@
+2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/96539
+	* expr.c (emit_block_move_hints): Don't copy anything if x and y
+	are the same and neither is MEM_VOLATILE_P.
+
+2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96549
+	* tree.c (get_narrower): Use TREE_TYPE (ret) instead of
+	TREE_TYPE (win) for COMPOUND_EXPRs.
+
+2020-08-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (not_loop_guard_equal_edge_p): New function.
+	(maybe_predict_edge): New function.
+	(predict_paths_for_bb): Use it.
+	(predict_paths_leading_to_edge): Use it.
+
+2020-08-11  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.def (DEBUG_COUNTER): Add ipa_cp_bits.
+	* ipa-cp.c (ipcp_store_bits_results): Use it when we store known
+	bits for parameters.
+
 2020-08-10  Marek Polacek  <polacek@redhat.com>
 
 	* doc/sourcebuild.texi: Document dg-ice.
