@@ -1011,7 +1011,7 @@ ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
 {
   gcc_assert (top_p ());
   m_lattice_val = IPA_BITS_CONSTANT;
-  m_value = value;
+  m_value = wi::bit_and (wi::bit_not (mask), value);
   m_mask = mask;
   return true;
 }
@@ -1048,6 +1048,7 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
 
   widest_int old_mask = m_mask;
   m_mask = (m_mask | mask) | (m_value ^ value);
+  m_value &= value;
 
   if (wi::sext (m_mask, precision) == -1)
     return set_to_bottom ();

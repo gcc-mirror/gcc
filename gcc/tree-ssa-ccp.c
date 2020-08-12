@@ -306,6 +306,9 @@ get_default_value (tree var)
 		{
 		  val.lattice_val = CONSTANT;
 		  val.value = value;
+		  widest_int ipa_value = wi::to_widest (value);
+		  /* Unknown bits from IPA CP must be equal to zero.  */
+		  gcc_assert (wi::bit_and (ipa_value, mask) == 0);
 		  val.mask = mask;
 		  if (nonzero_bits != -1)
 		    val.mask &= extend_mask (nonzero_bits,
