@@ -1,0 +1,4 @@
+2020-08-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/nvptx/atomic.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add atomic.c.
