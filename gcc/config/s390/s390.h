@@ -175,6 +175,11 @@ enum processor_flags
 #define TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS 0
 #endif
 
+/* Evaluate to true if it is ok to emit a non-signaling vector
+   comparison.  */
+#define TARGET_NONSIGNALING_VECTOR_COMPARE_OK \
+  (TARGET_VX && !TARGET_VXE && (flag_finite_math_only || !flag_trapping_math))
+
 #ifdef HAVE_AS_MACHINE_MACHINEMODE
 #define S390_USE_TARGET_ATTRIBUTE 1
 #else

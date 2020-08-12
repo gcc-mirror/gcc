@@ -622,7 +622,7 @@
     case GT:
     case LTGT:
       /* Signaling vector comparisons are supported only on z14+.  */
-      return TARGET_Z14;
+      return TARGET_VXE || TARGET_NONSIGNALING_VECTOR_COMPARE_OK;
     default:
       return true;
     }
@@ -1534,7 +1534,7 @@
   [(set (match_operand:<tointvec>         0 "register_operand" "=v")
 	(gt:<tointvec> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
-  "TARGET_VX && !TARGET_VXE && flag_finite_math_only"
+  "TARGET_NONSIGNALING_VECTOR_COMPARE_OK"
   "<vw>fch<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
@@ -1551,7 +1551,7 @@
   [(set (match_operand:<tointvec>         0 "register_operand" "=v")
 	(ge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
-  "TARGET_VX && !TARGET_VXE && flag_finite_math_only"
+  "TARGET_NONSIGNALING_VECTOR_COMPARE_OK"
   "<vw>fche<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
