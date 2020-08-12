@@ -1296,6 +1296,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_move_assign(_Hashtable&& __ht, true_type)
     {
+      if (__builtin_expect(std::__addressof(__ht) == this, false))
+	return;
+
       this->_M_deallocate_nodes(_M_begin());
       _M_deallocate_buckets();
       __hashtable_base::operator=(std::move(__ht));
