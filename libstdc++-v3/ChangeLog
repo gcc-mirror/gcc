@@ -1,3 +1,36 @@
+2020-08-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	Backported from master:
+	2020-04-02  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* testsuite/experimental/net/execution_context/use_service.cc:
+	Require pthread and gthreads.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89760
+	* testsuite/experimental/net/execution_context/make_service.cc:
+	Add dg-require-gthreads.
+	* testsuite/experimental/net/executor/1.cc: Likewise.
+	* testsuite/experimental/net/headers.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/cons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc:
+	Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
 2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
