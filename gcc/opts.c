@@ -1166,11 +1166,21 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Control IPA optimizations based on different -flive-patching level.  */
   if (opts->x_flag_live_patching)
-    {
-      control_options_for_live_patching (opts, opts_set,
-					 opts->x_flag_live_patching,
-					 loc);
-    }
+    control_options_for_live_patching (opts, opts_set,
+				       opts->x_flag_live_patching,
+				       loc);
+
+  /* Unrolling all loops implies that standard loop unrolling must also
+     be done.  */
+  if (opts->x_flag_unroll_all_loops)
+    opts->x_flag_unroll_loops = 1;
+
+  /* Allow cunroll to grow size accordingly.  */
+  if (!opts_set->x_flag_cunroll_grow_size)
+    opts->x_flag_cunroll_grow_size
+      = (opts->x_flag_unroll_loops
+         || opts->x_flag_peel_loops
+         || opts->x_optimize >= 3);
 }
 
 #define LEFT_COLUMN	27
