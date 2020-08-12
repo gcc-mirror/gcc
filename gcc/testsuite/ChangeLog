@@ -1,3 +1,71 @@
+2020-08-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/opt/flifetime-dse2.C: Remove AIX xfail.
+	* g++.dg/opt/flifetime-dse4.C: Remove AIX xfail.
+
+2020-08-11  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/Warray-bounds-46.c: Add missing require-effective-target
+	directive.
+	* gcc.dg/Warray-bounds-48.c: Same.
+	* gcc.dg/Warray-bounds-50.c: Same.
+	* gcc.dg/Wreturn-local-addr-2.c: Same.
+	* gcc.dg/Wreturn-local-addr-3.c: Same.
+	* gcc.dg/Wreturn-local-addr-4.c: Same.
+	* gcc.dg/Wreturn-local-addr-6.c: Same.
+	* gcc.dg/Wstack-usage.c: Same.
+	* gcc.dg/Wstringop-overflow-15.c: Same.
+	* gcc.dg/Wstringop-overflow-23.c: Same.
+	* gcc.dg/Wstringop-overflow-25.c: Same.
+	* gcc.dg/Wstringop-overflow-27.c: Same.
+	* gcc.dg/Wstringop-overflow-39.c: Same.
+	* gcc.dg/analyzer/alloca-leak.c: Same.
+	* gcc.dg/analyzer/data-model-1.c: Same.
+	* gcc.dg/analyzer/data-model-16.c: Same.
+	* gcc.dg/analyzer/malloc-1.c: Same.
+	* gcc.dg/analyzer/malloc-paths-8.c: Same.
+	* gcc.dg/analyzer/pr93546.c: Same.
+	* gcc.dg/analyzer/setjmp-1.c: Same.
+	* gcc.dg/analyzer/setjmp-2.c: Same.
+	* gcc.dg/analyzer/setjmp-3.c: Same.
+	* gcc.dg/analyzer/setjmp-4.c: Same.
+	* gcc.dg/analyzer/setjmp-5.c: Same.
+	* gcc.dg/analyzer/setjmp-6.c: Same.
+	* gcc.dg/analyzer/setjmp-7.c: Same.
+	* gcc.dg/analyzer/setjmp-7a.c: Same.
+	* gcc.dg/analyzer/setjmp-8.c: Same.
+	* gcc.dg/analyzer/setjmp-9.c: Same.
+	* gcc.dg/analyzer/setjmp-pr93378.c: Same.
+	* gcc.dg/gimplefe-44.c: Same.
+	* gcc.dg/pr84131.c: Same.
+	* gcc.dg/pr93986.c: Same.
+	* gcc.dg/pr95133.c: Same.
+	* gcc.dg/pr95857.c: Same.
+	* gcc.dg/strlenopt-83.c: Same.
+	* gcc.dg/strlenopt-84.c: Same.
+	* gcc.dg/strlenopt-91.c: Same.
+	* gcc.dg/uninit-32.c: Same.
+	* gcc.dg/uninit-36.c: Same.
+
+2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96545
+	* c-c++-common/pr96545.c: New test.
+
+2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/96539
+	* gcc.target/i386/pr96539.c: New test.
+
+2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96549
+	* gcc.c-torture/execute/pr96549.c: New test.
+
+2020-08-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipa-clone-2.c: Lower threshold from 500 to 400.
+
 2020-08-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88003

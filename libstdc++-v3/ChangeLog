@@ -1,3 +1,86 @@
+2020-08-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/91620
+	* include/bits/forward_list.tcc (forward_list<>::remove): Collect nodes
+	to destroy in an intermediate forward_list.
+	(forward_list<>::remove_if, forward_list<>::unique): Likewise.
+	* include/bits/list.tcc (list<>::remove, list<>::unique): Likewise.
+	(list<>::remove_if): Likewise.
+	* include/debug/forward_list (forward_list<>::_M_erase_after): Remove.
+	(forward_list<>::erase_after): Adapt.
+	(forward_list<>::remove, forward_list<>::remove_if): Collect nodes to
+	destroy in an intermediate forward_list.
+	(forward_list<>::unique): Likewise.
+	* include/debug/list (list<>::remove, list<>::unique): Likewise.
+	(list<>::remove_if): Likewise.
+	* testsuite/23_containers/forward_list/operations/91620.cc: New test.
+	* testsuite/23_containers/list/operations/91620.cc: New test.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/cons/84535.cc: Use a custom
+	namespace.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: Likewise.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89760
+	* include/experimental/executor [!_GLIBCXX_HAS_GTHREADS]:
+	(execution_context::mutex_type): Define dummy mutex type.
+	(system_context): Use execution_context::mutex_type.
+	(system_context) [!_GLIBCXX_HAS_GTHREADS]: Define dummy
+	thread and condition variable types.
+	[!_GLIBCXX_HAS_GTHREADS] (system_context::_M_run()): Do not
+	define.
+	(system_context::_M_post) [!_GLIBCXX_HAS_GTHREADS]: Throw
+	an exception when threads aren't available.
+	(strand::running_in_this_thread()): Defer to _M_state.
+	(strand::_State::running_in_this_thread()): New function.
+	(use_future_t): Do not depend on _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/experimental/io_context (io_context): Use the
+	execution_context::mutex_type alias. Replace stack of thread
+	IDs with counter.
+	* testsuite/experimental/net/execution_context/use_service.cc:
+	Enable test for non-pthread targets.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (system_context::a__tag): Make
+	default constructor explicit.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (system_context::_M_run()):
+	Fix predicate.
+	* testsuite/experimental/net/system_context/1.cc: New test.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Check _GLIBCXX_HAS_GTHREADS using
+	#ifdef instead of #if.
+	(stop_token::_S_yield()): Check _GLIBCXX_HAS_GTHREADS before
+	using __gthread_yield.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread [!_GLIBCXX_HAS_GTHREADS] (this_thread::yield)
+	(this_thread::sleep_until): Define.
+	[!_GLIBCXX_HAS_GTHREADS] (this_thread::sleep_for): Define. Replace
+	use of __gthread_time_t typedef with timespec.
+	* src/c++11/thread.cc [!_GLIBCXX_HAS_GTHREADS] (__sleep_for):
+	Likewise.
+	* testsuite/30_threads/this_thread/2.cc: Moved to...
+	* testsuite/30_threads/this_thread/yield.cc: ...here.
+	* testsuite/30_threads/this_thread/3.cc: Moved to...
+	* testsuite/30_threads/this_thread/sleep_for-mt.cc: ...here.
+	* testsuite/30_threads/this_thread/4.cc: Moved to...
+	* testsuite/30_threads/this_thread/sleep_until-mt.cc: ...here.
+	* testsuite/30_threads/this_thread/58038.cc: Add
+	dg-require-sleep.
+	* testsuite/30_threads/this_thread/60421.cc: Likewise.
+	* testsuite/30_threads/this_thread/sleep_for.cc: New test.
+	* testsuite/30_threads/this_thread/sleep_until.cc: New test.
+
 2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/94681
