@@ -1,6 +1,9 @@
 /* PR tree-optimization/82374 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-vect-details" } */
+/* Option -fno-common makes vectorizer able to force alignment and ensures
+   vectorization can succeed even on targets lacking of unaligned vector
+   load/store.  */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-vect-details -fno-common" } */
 /* { dg-additional-options "-mavx -mno-avx2" { target i?86-*-* x86_64-*-* } } */
 /* { dg-additional-options "-mvsx" { target powerpc_vsx_ok } } */
 
