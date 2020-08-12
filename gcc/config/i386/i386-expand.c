@@ -20302,7 +20302,6 @@ ix86_expand_pextr (rtx *operands)
     case E_V4SImode:
     case E_V2DImode:
     case E_V1TImode:
-    case E_TImode:
       {
 	machine_mode srcmode, dstmode;
 	rtx d, pat;
@@ -20398,7 +20397,6 @@ ix86_expand_pinsr (rtx *operands)
     case E_V4SImode:
     case E_V2DImode:
     case E_V1TImode:
-    case E_TImode:
       {
 	machine_mode srcmode, dstmode;
 	rtx (*pinsr)(rtx, rtx, rtx, rtx);
