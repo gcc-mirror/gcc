@@ -1,3 +1,32 @@
+2020-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85828
+	* include/bits/basic_string.h (operator=(basic_string&&)): Check
+	for self-move before copying with char_traits::copy.
+	* include/bits/hashtable.h (operator=(_Hashtable&&)): Check for
+	self-move.
+	* include/bits/stl_deque.h (_M_move_assign1(deque&&, false_type)):
+	Check for equal allocators.
+	* include/bits/stl_list.h (_M_move_assign(list&&, true_type)):
+	Call clear() instead of _M_clear().
+	* include/debug/formatter.h (__msg_self_move_assign): Change
+	comment.
+	* include/debug/macros.h (__glibcxx_check_self_move_assign):
+	(_GLIBCXX_DEBUG_VERIFY): Remove.
+	* include/debug/safe_container.h (operator=(_Safe_container&&)):
+	Remove assertion check for safe move and make it well-defined.
+	* include/debug/safe_iterator.h (operator=(_Safe_iterator&&)):
+	Remove assertion check for self-move.
+	* include/debug/safe_local_iterator.h
+	(operator=(_Safe_local_iterator&&)): Likewise.
+	* testsuite/21_strings/basic_string/cons/char/self_move.cc: New test.
+	* testsuite/23_containers/deque/cons/self_move.cc: New test.
+	* testsuite/23_containers/forward_list/cons/self_move.cc: New test.
+	* testsuite/23_containers/list/cons/self_move.cc: New test.
+	* testsuite/23_containers/set/cons/self_move.cc: New test.
+	* testsuite/23_containers/unordered_set/cons/self_move.cc: New test.
+	* testsuite/23_containers/vector/cons/self_move.cc: New test.
+
 2020-08-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/91620
