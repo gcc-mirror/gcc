@@ -9,7 +9,7 @@ typedef struct {
   unsigned int f1 : 11;
   unsigned int f2 : 10;
   unsigned int f3 : 7;
-} t0;
+} t0 __attribute__((__aligned__(4)));
 
 static t0 a0[] = {
  { .f0 = 7, .f1 = 99, .f3 = 1, },
