@@ -615,6 +615,7 @@ public:
   struct lto_file_decl_data * lto_file_data;
 
   PTR GTY ((skip)) aux;
+  int aux2;
 
   /* Comdat group the symbol is in.  Can be private if GGC allowed that.  */
   tree x_comdat_group;

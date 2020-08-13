@@ -366,6 +366,14 @@ Minimal size of a partition for LTO (in estimated instructions).
 Common Joined UInteger Var(param_lto_partitions) Init(128) IntegerRange(1, 65536) Param
 Number of partitions the program should be split to.
 
+-param=promote-statics=
+Common Joined UInteger Var(param_promote_statics) Init(0) IntegerRange(0, 1) Param
+Allow statics and non-public functions to be promoted as public when compiling in parallel.
+
+-param=balance-partitions=
+Common Joined UInteger Var(param_balance_partitions) Init(1) IntegerRange(0, 1) Param
+When compiling in parallel, try to balance the partitions for compilation performance.
+
 -param=max-average-unrolled-insns=
 Common Joined UInteger Var(param_max_average_unrolled_insns) Init(80) Param Optimization
 The maximum number of instructions to consider to unroll in a loop on average.

@@ -515,7 +515,7 @@ do_whole_program_analysis (void)
   /* Find out statics that need to be promoted
      to globals with hidden visibility because they are accessed from multiple
      partitions.  */
-  lto_promote_cross_file_statics ();
+  lto_promote_cross_file_statics (true);
   if (dump_file)
      dump_end (partition_dump_id, dump_file);
   dump_file = NULL;

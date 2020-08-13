@@ -9595,6 +9595,24 @@ make_anon_name ()
   return id;
 }
 
+/* Filter the input name removing characters that may confuse the linker.  */
+
+static void
+filter_name (char *name)
+{
+  char *p = name;
+
+  while (*p != '\0')
+    {
+      switch (*p)
+	{
+	  case '*':
+	    *p = '_';
+	}
+      p++;
+    }
+}
+
 /* Generate a name for a special-purpose function.
    The generated name may need to be unique across the whole link.
    Changes to this function may also require corresponding changes to
@@ -9651,8 +9669,7 @@ get_file_function_name (const char *type)
       q = (char *) alloca (9 + 19 + len + 1);
       memcpy (q, file, len + 1);
 
-      snprintf (q + len, 9 + 19 + 1, "_%08X_" HOST_WIDE_INT_PRINT_HEX,
-		crc32_string (0, name), get_random_seed (false));
+      snprintf (q + len, 9 + 19 + 1, "_%08X", crc32_string (0, name));
 
       p = q;
     }
@@ -9665,7 +9682,9 @@ get_file_function_name (const char *type)
      Use a global object (which is already required to be unique over
      the program) rather than the file name (which imposes extra
      constraints).  */
+
   sprintf (buf, FILE_FUNCTION_FORMAT, type, p);
+  filter_name (buf);
 
   return get_identifier (buf);
 }

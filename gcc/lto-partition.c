@@ -170,7 +170,11 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
     {
       struct cgraph_edge *e;
       if (!node->alias && c == SYMBOL_PARTITION)
-	part->insns += ipa_size_summaries->get (cnode)->size;
+	{
+	  /* FIXME: Find out why this is being returned NULL in some cases.  */
+	  if (ipa_size_summaries->get (cnode))
+	    part->insns += ipa_size_summaries->get (cnode)->size;
+	}
 
       /* Add all inline clones and callees that are duplicated.  */
       for (e = cnode->callees; e; e = e->next_callee)
@@ -371,6 +375,402 @@ lto_max_map (void)
   if (!npartitions)
     new_partition ("empty");
 }
+
+/* Class implementing a union-find algorithm.  */
+
+class union_find
+{
+public:
+
+  int *parent;
+  int *rank;
+  int n;
+  int successful_unions;
+
+  union_find (int num_nodes)
+    {
+      n = num_nodes;
+      parent = XNEWVEC (int, n);
+      rank   = XNEWVEC (int, n);
+
+      for (int i = 0; i < n; ++i)
+	parent[i] = i;
+
+      memset (rank, 0, n*sizeof(*rank));
+      successful_unions = 0;
+    }
+
+  ~union_find ()
+    {
+      free (parent);
+      free (rank);
+    }
+
+  int find (int x)
+    {
+      while (parent[x] != x)
+	{
+	  parent[x] = parent[parent[x]];
+	  x = parent[x];
+	}
+      return x;
+    }
+
+  void unite (int x, int y)
+    {
+      int x_root = find (x);
+      int y_root = find (y);
+
+      if (x_root == y_root) /* If x and y are in same set.  */
+	return;
+
+      successful_unions++;
+
+      if (rank[x_root] > rank[y_root]) /* Get which ones have greater rank.  */
+	{
+	  x_root ^= y_root; /* Swap.  */
+	  y_root ^= x_root;
+	  x_root ^= y_root;
+	}
+
+      parent[y_root] = x_root;
+      if (rank[x_root] == rank[y_root])
+	rank[x_root]++;
+    }
+
+  void print_roots ()
+    {
+      int i;
+      for (i = 0; i < n; ++i)
+	printf ("%d, ", find (i));
+      printf ("\n");
+    }
+};
+
+static union_find *ds;
+
+DEBUG_FUNCTION void ds_print_roots (void)
+{
+  ds->print_roots ();
+}
+
+static bool
+privatize_symbol_name (symtab_node *);
+
+static void
+promote_symbol (symtab_node *);
+
+/* Quickly balance partitions, trying to reach target_size in each of
+   them.  Returns true if something was done, or false if we decided
+   that it is not worth.  */
+
+static bool
+balance_partitions (union_find *ds, int n, int jobs)
+{
+  int *sizes, i, j;
+  int total_size = 0, max_size = -1;
+  int target_size;
+  const int eps = 0;
+
+  symtab_node *node;
+
+  sizes = (int *) alloca (n * sizeof (*sizes));
+  memset (sizes, 0, n * sizeof (*sizes));
+ 
+  /* Compute costs.  */
+  i = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      int root = ds->find (i);
+
+      if (cgraph_node *cnode = dyn_cast<cgraph_node *> (node))
+	{
+	  ipa_size_summary *summary = ipa_size_summaries->get (cnode);
+	  if (summary)
+	    sizes[root] += summary->size;
+	  else
+	    sizes[root] += 10;
+	}
+      else
+	sizes[root] += 10;
+
+
+      i++;
+    }
+
+  /* Compute the total size and maximum size.  */
+  for (i = 0; i < n; ++i)
+    {
+      total_size += sizes[i];
+      max_size    = MAX (max_size, sizes[i]);
+    }
+
+  /* Quick return if total size is small.  */
+  if (total_size < param_min_partition_size)
+    return false;
+
+  target_size = total_size / (jobs + 1);
+
+  /* Unite small partitions.  */
+  for (i = 0, j = 0; j < n; ++j)
+    {
+      if (sizes[j] == 0)
+	continue;
+
+      if (i == -1)
+	i = j;
+      else
+	{
+	  if (sizes[i] + sizes[j] < target_size + eps)
+	    {
+	      ds->unite (i, j);
+	      sizes[i] += sizes[j];
+	      sizes[j] = 0;
+	    }
+	  else
+	      i = j;
+	}
+    }
+  return true;
+}
+
+/* Builds the LTRANS partitions, or return if not needed.  */
+
+static int
+build_ltrans_partitions (union_find *ds, int n)
+{
+  int i, n_partitions;
+  symtab_node *node;
+
+  int *compression = (int *) alloca (n * sizeof (*compression));
+  for (i = 0; i < n; ++i)
+    compression[i] = -1; /* Invalid value.  */
+
+  i = 0, n_partitions = 0;
+  FOR_EACH_SYMBOL (node)
+    {
+      int root = ds->find (i);
+      node->aux2 = root;
+      node->aux = NULL;
+
+      if (node->get_partitioning_class () == SYMBOL_PARTITION
+	  && compression[root] < 0)
+	compression[root] = n_partitions++;
+      i++;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "n_partitions = %d\n", n_partitions);
+
+  if (n_partitions <= 1)
+    return false;
+
+  /* Create LTRANS partitions.  */
+  ltrans_partitions.create (n_partitions);
+  for (i = 0; i < n_partitions; i++)
+    new_partition ("");
+
+  FOR_EACH_SYMBOL (node)
+    {
+      if (node->get_partitioning_class () != SYMBOL_PARTITION
+	  || symbol_partitioned_p (node))
+	  continue;
+
+      int p = compression[node->aux2];
+      if (dump_file)
+	fprintf (dump_file, "p = %d\t;; %s\n", p, node->dump_name ());
+      add_symbol_to_partition (ltrans_partitions[p], node);
+    }
+
+  return true;
+}
+
+/* Partition COMDAT groups together, and also bring together nodes that
+   requires them. Such nodes that are not in the COMDAT group that have
+   references to COMDAT grouped nodes are called the COMDAT frontier.  */
+
+static bool
+merge_comdat_nodes (symtab_node *node, int set)
+{
+  enum symbol_partitioning_class c = node->get_partitioning_class ();
+  bool ret = false;
+  symtab_node *node1;
+  cgraph_edge *e;
+
+  /* If node is already analysed, quickly return.  */
+  if (node->aux)
+    return false;
+
+  /* Mark as analysed.  */
+  node->aux = (void *) 1;
+
+
+  /* Aglomerate the COMDAT group into the same partition.  */
+  if (node->same_comdat_group)
+    {
+      for (node1 = node->same_comdat_group;
+	   node1 != node; node1 = node1->same_comdat_group)
+	if (!node->alias)
+	  {
+	    ds->unite (node1->aux2, set);
+	    merge_comdat_nodes (node1, set);
+	    ret = true;
+	  }
+    }
+
+  /* Look at nodes that can reach the COMDAT group, and aglomerate to the
+     same partition.  These nodes are called the "COMDAT Frontier".  The
+     idea is that every unpartitioned node that reaches a COMDAT group MUST
+     go through the COMDAT frontier before reaching it.  Therefore, only
+     nodes in the frontier are exported.  */
+  if (node->same_comdat_group || c == SYMBOL_DUPLICATE)
+    {
+      int i;
+      struct ipa_ref *ref = NULL;
+
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	{
+	  /* Add all inline clones and callees that are duplicated.  */
+	  for (e = cnode->callers; e; e = e->next_caller)
+	    if (!e->inline_failed || c == SYMBOL_DUPLICATE)
+	      {
+		ds->unite (set, e->caller->aux2);
+		merge_comdat_nodes (e->caller, set);
+		ret = true;
+	      }
+
+	  /* Add all thunks associated with the function.  */
+	  for (e = cnode->callees; e; e = e->next_callee)
+	    if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
+	      {
+		ds->unite (set, e->callee->aux2);
+		merge_comdat_nodes (e->callee, set);
+		ret = true;
+	      }
+	}
+
+      for (i = 0; node->iterate_referring (i, ref); i++)
+	{
+	  symtab_node *node1 = ref->referring;
+	  ds->unite (node1->aux2, set);
+	  ret = true;
+
+	  if (node1->get_partitioning_class () == SYMBOL_DUPLICATE)
+	    merge_comdat_nodes (node1, set);
+	}
+    }
+
+  return ret;
+}
+
+/* Bring together static nodes that are called by static functions, so 
+   promotion of statics to globals are not required.  This *MIGHT* negatively
+   impact the number of partitions, and even generate very umbalanced
+   partitions that can't be fixed.  */
+
+static bool
+merge_static_calls (symtab_node *node, int set)
+{
+  bool ret = false;
+  enum symbol_partitioning_class c = node->get_partitioning_class ();
+
+  if (node->aux)
+    return false;
+
+  node->aux = (void *) 1;
+
+
+  if (!TREE_PUBLIC (node->decl) || c == SYMBOL_DUPLICATE)
+    {
+      int i;
+      struct ipa_ref *ref = NULL;
+
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	{
+	  for (cgraph_edge *e = cnode->callers; e; e = e->next_caller)
+	    {
+	      /* FIXME: In theory, inlined functions should be a criteria to not
+		 merge partitions.  */
+	      ds->unite (node->aux2, e->caller->aux2);
+	      merge_static_calls (e->caller, set);
+	      ret = true;
+	    }
+
+	}
+
+      for (i = 0; node->iterate_referring (i, ref); ++i)
+	{
+	  symtab_node *node1 = ref->referring;
+	  ds->unite (node1->aux2, set);
+	  merge_static_calls (node1, set);
+	  ret = true;
+	}
+    }
+
+  return ret;
+}
+
+static bool
+merge_contained_symbols (symtab_node *node, int set)
+{
+  bool ret = false;
+  symtab_node *node1;
+
+  while ((node1 = contained_in_symbol (node)) != node)
+    {
+      node = node1;
+      ds->unite (node->aux2, set);
+      ret = true;
+    }
+
+  return ret;
+}
+
+/* Partition the program into several partitions with a restriction that
+   COMDATS are partitioned together with all nodes requiring them.  If
+   promote_statics is false, we also partition together static functions
+   and nodes that call eachother, so non-public functions are not promoted
+   to globals.  */
+
+void
+lto_merge_comdat_map (bool balance, bool promote_statics, int jobs)
+{
+  symtab_node *node;
+  int n = 0;
+
+  /* Initialize each not into its own distinct disjoint sets.  */
+  FOR_EACH_SYMBOL (node)
+    node->aux2 = n++;
+
+  union_find disjoint_sets = union_find (n);
+  ds = &disjoint_sets;
+
+  /* First look at COMDATs.  */
+  FOR_EACH_SYMBOL (node)
+    {
+      if (node->same_comdat_group)
+	merge_comdat_nodes (node, node->aux2);
+      merge_contained_symbols (node, node->aux2);
+    }
+
+  FOR_EACH_SYMBOL (node)
+    node->aux = NULL;
+
+  /* Then look at STATICs, if needed.  */
+  if (!promote_statics)
+    FOR_EACH_SYMBOL (node)
+      if (!TREE_PUBLIC (node->decl))
+	merge_static_calls (node, node->aux2);
+
+  FOR_EACH_SYMBOL (node)
+    node->aux = NULL;
+
+  if (balance && !balance_partitions (&disjoint_sets, n, jobs))
+    return;
+
+  build_ltrans_partitions (&disjoint_sets, n);
+}
+
 
 /* Helper function for qsort; sort nodes by order.  */
 static int
@@ -931,7 +1331,7 @@ static hash_map<const char *, unsigned> *lto_clone_numbers;
    represented by DECL.  */
 
 static bool
-privatize_symbol_name_1 (symtab_node *node, tree decl)
+privatize_symbol_name_1 (symtab_node *node, tree decl, bool wpa)
 {
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
@@ -939,11 +1339,19 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
     return false;
 
   name = maybe_rewrite_identifier (name);
-  unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
-  symtab->change_decl_assembler_name (decl,
-				      clone_function_name (
-					  name, "lto_priv", clone_number));
-  clone_number++;
+  if (wpa)
+    {
+      gcc_assert (lto_clone_numbers);
+
+      unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
+      symtab->change_decl_assembler_name (decl,
+					  clone_function_name (
+					      name, "lto_priv", clone_number));
+      clone_number++;
+    }
+  else
+    symtab->change_decl_assembler_name (decl, get_file_function_name
+					(node->asm_name ()));
 
   if (node->lto_file_data)
     lto_record_renamed_decl (node->lto_file_data, name,
@@ -968,7 +1376,9 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
 static bool
 privatize_symbol_name (symtab_node *node)
 {
-  if (!privatize_symbol_name_1 (node, node->decl))
+  bool wpa = !split_outputs;
+
+  if (!privatize_symbol_name_1 (node, node->decl, wpa))
     return false;
 
   return true;
@@ -1117,7 +1527,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
    all inlinees are added.  */
 
 void
-lto_promote_cross_file_statics (void)
+lto_promote_cross_file_statics (bool promote)
 {
   unsigned i, n_sets;
 
@@ -1147,10 +1557,17 @@ lto_promote_cross_file_statics (void)
 	   lsei_next (&lsei))
         {
           symtab_node *node = lsei_node (lsei);
+	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 
 	  /* If symbol is static, rename it if its assembler name
 	     clashes with anything else in this unit.  */
 	  rename_statics (encoder, node);
+	  if (cnode)
+	    {
+	      bool in_partition = lsei.encoder->nodes[lsei.index].in_partition;
+	      if (!in_partition)
+		cnode->local = false;
+	    }
 
 	  /* No need to promote if symbol already is externally visible ... */
 	  if (node->externally_visible
@@ -1163,8 +1580,12 @@ lto_promote_cross_file_statics (void)
 	      validize_symbol_for_target (node);
 	      continue;
 	    }
-
-          promote_symbol (node);
+	  if (promote)
+	    {
+	      promote_symbol (node);
+	      if (cnode && split_outputs)
+		cnode->local = false;
+	    }
         }
     }
   delete lto_clone_numbers;
@@ -1185,4 +1606,24 @@ lto_promote_statics_nonwpa (void)
       validize_symbol_for_target (node);
     }
   delete lto_clone_numbers;
+}
+
+/* Check if a variable is accessed across partitions.  If yesm then update
+   used_from_other_partition.  */
+
+void
+lto_check_usage_from_other_partitions (void)
+{
+  unsigned int i, j;
+  for (i = 0; i < ltrans_partitions.length (); i++)
+    {
+      vec<lto_encoder_entry> &nodes = (ltrans_partitions[i])->encoder->nodes;
+
+      for (j = 0; j < nodes.length (); j++)
+	{
+	  symtab_node *node = nodes[j].node;
+	  if (node && !nodes[j].in_partition)
+	    node->used_from_other_partition = true;
+	}
+    }
 }
