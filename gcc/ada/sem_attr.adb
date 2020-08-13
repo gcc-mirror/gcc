@@ -7914,7 +7914,7 @@ package body Sem_Attr is
 
                if Known_Static_Component_Bit_Offset (CE) then
                   Compile_Time_Known_Attribute
-                    (N, Component_Bit_Offset (Entity (P)));
+                    (N, Component_Bit_Offset (CE));
                else
                   Check_Expressions;
                end if;
