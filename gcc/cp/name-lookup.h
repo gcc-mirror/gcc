@@ -278,8 +278,33 @@ extern void push_binding_level (cp_binding_level *);
 extern bool handle_namespace_attrs (tree, tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
+
+/* What kind of scopes name lookup looks in.  An enum class so we
+   don't accidentally mix integers.  */
+enum class LOOK_where
+{
+  BLOCK = 1 << 0,  /* Consider block scopes.  */ 
+  CLASS = 1 << 1,  /* Consider class scopes.  */ 
+  NAMESPACE = 1 << 2,  /* Consider namespace scopes.  */ 
+
+  ALL = BLOCK | CLASS | NAMESPACE,
+  BLOCK_NAMESPACE = BLOCK | NAMESPACE,
+  CLASS_NAMESPACE = CLASS | NAMESPACE,
+};
+constexpr LOOK_where operator| (LOOK_where a, LOOK_where b)
+{
+  return LOOK_where (unsigned (a) | unsigned (b));
+}
+constexpr bool operator& (LOOK_where a, LOOK_where b)
+{
+  return 0 != (unsigned (a) & unsigned (b));
+}
+
 extern tree lookup_name_prefer_type (tree, int);
-extern tree lookup_name_real (tree, int, int, bool, int, int);
+
+
+extern tree lookup_name_real (tree, LOOK_where, int prefer_type,
+			      int namespaces_only, int flags);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);

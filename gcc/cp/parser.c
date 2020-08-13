@@ -28459,17 +28459,17 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       if (!decl)
 	/* Look it up in the enclosing context.  DR 141: When looking for a
 	   template-name after -> or ., only consider class templates.  */
-	decl = lookup_name_real (name, prefer_type_arg (tag_type, is_template),
-				 /*nonclass=*/0,
-				 /*block_p=*/true, is_namespace, 0);
+	decl = lookup_name_real (name, LOOK_where::ALL,
+				 prefer_type_arg (tag_type, is_template),
+				 is_namespace, 0);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
     }
   else
     {
-      decl = lookup_name_real (name, prefer_type_arg (tag_type),
-			       /*nonclass=*/0,
-			       /*block_p=*/true, is_namespace, 0);
+      decl = lookup_name_real (name, LOOK_where::ALL,
+			       prefer_type_arg (tag_type),
+			       is_namespace, 0);
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
     }

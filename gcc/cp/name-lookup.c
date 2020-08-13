@@ -3741,7 +3741,7 @@ identifier_type_value_1 (tree id)
     return REAL_IDENTIFIER_TYPE_VALUE (id);
   /* Have to search for it. It must be on the global level, now.
      Ask lookup_name not to return non-types.  */
-  id = lookup_name_real (id, 2, 1, /*block_p=*/true, 0, 0);
+  id = lookup_name_real (id, LOOK_where::BLOCK_NAMESPACE, 2, 0, 0);
   if (id)
     return TREE_TYPE (id);
   return NULL_TREE;
@@ -6413,9 +6413,15 @@ innermost_non_namespace_value (tree name)
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
    such declaration, or return a TREE_LIST with all the overloaded
-   definitions if there are many, or return 0 if it is undefined.
+   definitions if there are many, or return NULL_TREE if it is undefined.
    Hidden name, either friend declaration or built-in function, are
    not ignored.
+
+   WHERE controls which scopes are considered.  It is a bit mask of
+   LOOKUP_where::BLOCK (look in block scope), LOOKUP_where::CLASS
+   (look in class scopes) & LOOKUP_where::NAMESPACE (look in namespace
+   scopes).  It is an error for no bits to be set.  These scopes are
+   searched from innermost to outermost.
 
    If PREFER_TYPE is > 0, we prefer TYPE_DECLs or namespaces.
    If PREFER_TYPE is > 1, we reject non-type decls (e.g. namespaces).
@@ -6425,11 +6431,13 @@ innermost_non_namespace_value (tree name)
    BLOCK_P is false, bindings in block scopes are ignored.  */
 
 static tree
-lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
+lookup_name_real_1 (tree name, LOOK_where where, int prefer_type,
 		    int namespaces_only, int flags)
 {
   cxx_binding *iter;
   tree val = NULL_TREE;
+
+  gcc_checking_assert (unsigned (where) != 0);
 
   query_oracle (name);
 
@@ -6468,17 +6476,19 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* First, look in non-namespace scopes.  */
 
   if (current_class_type == NULL_TREE)
-    nonclass = 1;
+    /* Maybe avoid searching the binding stack at all.  */
+    where = LOOK_where (unsigned (where) & ~unsigned (LOOK_where::CLASS));
 
-  if (block_p || !nonclass)
-    for (iter = outer_binding (name, NULL, !nonclass);
+  if (where & (LOOK_where::BLOCK | LOOK_where::CLASS))
+    for (iter = outer_binding (name, NULL, where & LOOK_where::CLASS);
 	 iter;
-	 iter = outer_binding (name, iter, !nonclass))
+	 iter = outer_binding (name, iter, where & LOOK_where::CLASS))
       {
 	tree binding;
 
 	/* Skip entities we don't want.  */
-	if (LOCAL_BINDING_P (iter) ? !block_p : nonclass)
+	if (!(where & (LOCAL_BINDING_P (iter)
+		       ? LOOK_where::BLOCK : LOOK_where::CLASS)))
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
@@ -6548,7 +6558,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
       }
 
   /* Now lookup in namespace scopes.  */
-  if (!val)
+  if (!val && (where & LOOK_where::NAMESPACE))
     {
       name_lookup lookup (name, flags);
       if (lookup.search_unqualified
@@ -6566,12 +6576,12 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 /* Wrapper for lookup_name_real_1.  */
 
 tree
-lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
+lookup_name_real (tree name, LOOK_where where, int prefer_type,
 		  int namespaces_only, int flags)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_name_real_1 (name, prefer_type, nonclass, block_p,
+  ret = lookup_name_real_1 (name, where, prefer_type,
 			    namespaces_only, flags);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
@@ -6580,19 +6590,20 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 tree
 lookup_name_nonclass (tree name)
 {
-  return lookup_name_real (name, 0, 1, /*block_p=*/true, 0, 0);
+  return lookup_name_real (name, LOOK_where::BLOCK_NAMESPACE,
+			   0, 0, 0);
 }
 
 tree
 lookup_name (tree name)
 {
-  return lookup_name_real (name, 0, 0, /*block_p=*/true, 0, 0);
+  return lookup_name_real (name, LOOK_where::ALL, 0, 0, 0);
 }
 
 tree
 lookup_name_prefer_type (tree name, int prefer_type)
 {
-  return lookup_name_real (name, prefer_type, 0, /*block_p=*/true, 0, 0);
+  return lookup_name_real (name, LOOK_where::ALL, prefer_type, 0, 0);
 }
 
 /* Look up NAME for type used in elaborated name specifier in
