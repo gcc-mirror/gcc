@@ -2930,9 +2930,9 @@ package body Sem_Aggr is
          end;
 
       else
-         --  Indexed Aggregate. Both positional and indexed component
-         --  can be present. Choices must be static values or ranges
-         --  with static bounds.
+         --  Indexed Aggregate. Positional or indexed component
+         --  can be present, but not both. Choices must be static
+         --  values or ranges with static bounds.
 
          declare
             Container : constant Entity_Id :=
@@ -2953,6 +2953,12 @@ package body Sem_Aggr is
             end if;
 
             if Present (Component_Associations (N)) then
+               if Present (Expressions (N)) then
+                  Error_Msg_N ("Container aggregate cannot be "
+                    & "both positional and named", N);
+                  return;
+               end if;
+
                Comp := First (Expressions (N));
 
                while Present (Comp) loop
