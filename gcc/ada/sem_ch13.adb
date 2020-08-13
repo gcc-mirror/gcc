@@ -1813,9 +1813,9 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Static;
             --  Ada 202x (AI12-0075): Perform analysis of aspect Static
 
-            procedure Make_Aitem_Pragma
+            function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
-               Pragma_Name                  : Name_Id);
+               Pragma_Name                  : Name_Id) return Node_Id;
             --  This is a wrapper for Make_Pragma used for converting aspects
             --  to pragmas. It takes care of Sloc (set from Loc) and building
             --  the pragma identifier from the given name. In addition the
@@ -1874,7 +1874,7 @@ package body Sem_Ch13 is
                   --  Generate:
                   --    pragma Convention (<Conv>, <E>);
 
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Name => Name_Convention,
                      Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -2677,12 +2677,12 @@ package body Sem_Ch13 is
             -- Make_Aitem_Pragma --
             -----------------------
 
-            procedure Make_Aitem_Pragma
+            function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
-               Pragma_Name                  : Name_Id)
+               Pragma_Name                  : Name_Id) return Node_Id
             is
-               Args : List_Id := Pragma_Argument_Associations;
-
+               Args  : List_Id := Pragma_Argument_Associations;
+               Aitem : Node_Id;
             begin
                --  We should never get here if aspect was disabled
 
@@ -2715,6 +2715,8 @@ package body Sem_Ch13 is
 
                Set_Corresponding_Aspect (Aitem, Aspect);
                Set_From_Aspect_Specification (Aitem);
+
+               return Aitem;
             end Make_Aitem_Pragma;
 
          --  Start of processing for Analyze_One_Aspect
@@ -3048,13 +3050,10 @@ package body Sem_Ch13 is
                --  referring to the entity, and the second argument is the
                --  aspect definition expression.
 
-               --  Linker_Section/Suppress/Unsuppress
+               --  Linker_Section
 
-               when Aspect_Linker_Section
-                  | Aspect_Suppress
-                  | Aspect_Unsuppress
-               =>
-                  Make_Aitem_Pragma
+               when Aspect_Linker_Section =>
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => New_Occurrence_Of (E, Loc)),
@@ -3069,8 +3068,7 @@ package body Sem_Ch13 is
                   --  code. (This is already done for types with implicit
                   --  initialization, such as protected types.)
 
-                  if A_Id = Aspect_Linker_Section
-                    and then Nkind (N) = N_Object_Declaration
+                  if Nkind (N) = N_Object_Declaration
                     and then Has_Init_Expression (N)
                   then
                      Delay_Required := False;
@@ -3081,7 +3079,7 @@ package body Sem_Ch13 is
                --  Corresponds to pragma Implemented, construct the pragma
 
                when Aspect_Synchronization =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => New_Occurrence_Of (E, Loc)),
@@ -3092,7 +3090,7 @@ package body Sem_Ch13 is
                --  Attach_Handler
 
                when Aspect_Attach_Handler =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Sloc (Ent),
                          Expression => Ent),
@@ -3134,7 +3132,7 @@ package body Sem_Ch13 is
                   --  flags recording whether it is static/dynamic). We also
                   --  set flags recording this in the type itself.
 
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Sloc (Ent),
                          Expression => Ent),
@@ -3219,7 +3217,7 @@ package body Sem_Ch13 is
 
                   --  Construct the pragma
 
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Sloc (Ent),
                          Expression => Ent),
@@ -3375,10 +3373,25 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr));
                   end if;
 
+               --  Suppress/Unsuppress
+
+               when Aspect_Suppress
+                  | Aspect_Unsuppress
+               =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr)),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => New_Occurrence_Of (E, Loc))),
+                     Pragma_Name                  => Chars (Id));
+
+                  Delay_Required := False;
+
                --  Warnings
 
                when Aspect_Warnings =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr)),
@@ -3406,7 +3419,7 @@ package body Sem_Ch13 is
                   --  an invariant must apply to a private type, or appear in
                   --  the private part of a spec and apply to a completion.
 
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Sloc (Ent),
                          Expression => Ent),
@@ -3458,7 +3471,7 @@ package body Sem_Ch13 is
                   if Nkind (Context) in N_Generic_Package_Declaration
                                       | N_Package_Declaration
                   then
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
@@ -3484,7 +3497,7 @@ package body Sem_Ch13 is
                --  related object declaration.
 
                when Aspect_Async_Readers =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3499,7 +3512,7 @@ package body Sem_Ch13 is
                --  related object declaration.
 
                when Aspect_Async_Writers =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3514,7 +3527,7 @@ package body Sem_Ch13 is
                --  related object declaration.
 
                when Aspect_Constant_After_Elaboration =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3534,7 +3547,7 @@ package body Sem_Ch13 is
                --  private type's full view.
 
                when Aspect_Default_Initial_Condition =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3548,7 +3561,7 @@ package body Sem_Ch13 is
                --  Default_Storage_Pool
 
                when Aspect_Default_Storage_Pool =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3569,7 +3582,7 @@ package body Sem_Ch13 is
                --  Analyze_Depends_In_Decl_Part for details.
 
                when Aspect_Depends =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3584,7 +3597,7 @@ package body Sem_Ch13 is
                --  related object declaration.
 
                when Aspect_Effective_Reads =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3599,7 +3612,7 @@ package body Sem_Ch13 is
                --  related object declaration.
 
                when Aspect_Effective_Writes =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3614,7 +3627,7 @@ package body Sem_Ch13 is
                --  related subprogram.
 
                when Aspect_Extensions_Visible =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3630,7 +3643,7 @@ package body Sem_Ch13 is
                --  a type declaration.
 
                when Aspect_Ghost =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3650,7 +3663,7 @@ package body Sem_Ch13 is
                --  Analyze_Global_In_Decl_Part for details.
 
                when Aspect_Global =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3685,7 +3698,7 @@ package body Sem_Ch13 is
                   if Nkind (Context) in N_Generic_Package_Declaration
                                       | N_Package_Declaration
                   then
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
@@ -3733,7 +3746,7 @@ package body Sem_Ch13 is
                   if Nkind (Context) in N_Generic_Package_Declaration
                                       | N_Package_Declaration
                   then
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
@@ -3759,7 +3772,7 @@ package body Sem_Ch13 is
                --  Max_Entry_Queue_Depth
 
                when Aspect_Max_Entry_Queue_Depth =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3772,7 +3785,7 @@ package body Sem_Ch13 is
                --  Max_Entry_Queue_Length
 
                when Aspect_Max_Entry_Queue_Length =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3785,7 +3798,7 @@ package body Sem_Ch13 is
                --  Max_Queue_Length
 
                when Aspect_Max_Queue_Length =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3800,7 +3813,7 @@ package body Sem_Ch13 is
                --  declaration.
 
                when Aspect_No_Caching =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3824,7 +3837,7 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr)));
                   end if;
 
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => Args,
                      Pragma_Name                  => Chars (Id));
                end;
@@ -3836,7 +3849,7 @@ package body Sem_Ch13 is
                                 | N_Package_Instantiation
                     or else Is_Single_Concurrent_Type_Declaration (N)
                   then
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
@@ -3857,7 +3870,7 @@ package body Sem_Ch13 is
                --  SPARK_Mode
 
                when Aspect_SPARK_Mode =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3878,7 +3891,7 @@ package body Sem_Ch13 is
                --  routine Analyze_Refined_Depends_In_Decl_Part.
 
                when Aspect_Refined_Depends =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3899,7 +3912,7 @@ package body Sem_Ch13 is
                --  routine Analyze_Refined_Global_In_Decl_Part.
 
                when Aspect_Refined_Global =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3912,7 +3925,7 @@ package body Sem_Ch13 is
                --  Refined_Post
 
                when Aspect_Refined_Post =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -3932,7 +3945,7 @@ package body Sem_Ch13 is
                   --  the pragma.
 
                   if Nkind (N) = N_Package_Body then
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
@@ -3953,7 +3966,7 @@ package body Sem_Ch13 is
                --  Relative_Deadline
 
                when Aspect_Relative_Deadline =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -4002,7 +4015,7 @@ package body Sem_Ch13 is
                --  attribute does not have visibility on the discriminant.
 
                when Aspect_Secondary_Stack_Size =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -4020,7 +4033,7 @@ package body Sem_Ch13 is
                --  related subprogram.
 
                when Aspect_Volatile_Function =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -4100,7 +4113,7 @@ package body Sem_Ch13 is
                          Chars      => Name_Entity,
                          Expression => Ent));
 
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => Pargs,
                         Pragma_Name                  => Name_Annotate);
                   end;
@@ -4294,7 +4307,7 @@ package body Sem_Ch13 is
                         New_Expr := Relocate_Node (Expr);
                      end if;
 
-                     Make_Aitem_Pragma
+                     Aitem := Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Eloc,
                             Chars      => Name_Check,
@@ -4385,7 +4398,7 @@ package body Sem_Ch13 is
 
                   --  Build the test-case pragma
 
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => Args,
                      Pragma_Name                  => Nam);
                end Test_Case;
@@ -4393,7 +4406,7 @@ package body Sem_Ch13 is
                --  Contract_Cases
 
                when Aspect_Contract_Cases =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -4406,7 +4419,7 @@ package body Sem_Ch13 is
                --  Subprogram_Variant
 
                when Aspect_Subprogram_Variant =>
-                  Make_Aitem_Pragma
+                  Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
@@ -4523,7 +4536,7 @@ package body Sem_Ch13 is
                      if A_Id /= Aspect_Export
                        and then A_Id /= Aspect_Import
                      then
-                        Make_Aitem_Pragma
+                        Aitem := Make_Aitem_Pragma
                           (Pragma_Argument_Associations => New_List (
                              Make_Pragma_Argument_Association (Sloc (Ent),
                                Expression => Ent)),
@@ -4574,7 +4587,7 @@ package body Sem_Ch13 is
                         --  Create a pragma and put it at the start of the task
                         --  definition for the task type declaration.
 
-                        Make_Aitem_Pragma
+                        Aitem := Make_Aitem_Pragma
                           (Pragma_Argument_Associations => New_List (
                              Make_Pragma_Argument_Association (Loc,
                                Expression => Relocate_Node (Expr))),
@@ -4635,7 +4648,7 @@ package body Sem_Ch13 is
 
                   if Is_Boolean_Aspect (Aspect) and then No (Aitem) then
                      if Is_True (Static_Boolean (Expr)) then
-                        Make_Aitem_Pragma
+                        Aitem := Make_Aitem_Pragma
                           (Pragma_Argument_Associations => New_List (
                              Make_Pragma_Argument_Association (Sloc (Ent),
                                Expression => Ent)),
@@ -10753,8 +10766,6 @@ package body Sem_Ch13 is
             | Aspect_Output
             | Aspect_Put_Image
             | Aspect_Read
-            | Aspect_Suppress
-            | Aspect_Unsuppress
             | Aspect_Warnings
             | Aspect_Write
          =>
@@ -10871,8 +10882,10 @@ package body Sem_Ch13 is
             | Aspect_Relaxed_Initialization
             | Aspect_SPARK_Mode
             | Aspect_Subprogram_Variant
+            | Aspect_Suppress
             | Aspect_Test_Case
             | Aspect_Unimplemented
+            | Aspect_Unsuppress
             | Aspect_Volatile_Function
          =>
             raise Program_Error;
