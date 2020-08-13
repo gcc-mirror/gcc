@@ -26872,6 +26872,10 @@ type_dependent_expression_p (tree expression)
 	return dependent_type_p (TREE_VALUE (TREE_PURPOSE (type)))
 	       || value_dependent_expression_p
 		    (TREE_OPERAND (TREE_VALUE (type), 1));
+      /* Array type whose dimension has to be deduced.  */
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       && TREE_OPERAND (expression, 2) == NULL_TREE)
+	return true;
       else
 	return dependent_type_p (type);
     }
