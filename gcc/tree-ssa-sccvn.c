@@ -2791,6 +2791,7 @@ vn_reference_lookup_call (gcall *call, vn_reference_t *vnresult,
   vr->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr->operands = valueize_shared_reference_ops_from_call (call);
   vr->type = gimple_expr_type (call);
+  vr->punned = false;
   vr->set = 0;
   vr->hashcode = vn_reference_compute_hash (vr);
   vn_reference_lookup_1 (vr, vnresult);
@@ -2813,7 +2814,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
   vr1->type = TREE_TYPE (op);
-  vr1->punned = 0;
+  vr1->punned = false;
   vr1->set = get_alias_set (op);
   vr1->hashcode = vn_reference_compute_hash (vr1);
   vr1->result = TREE_CODE (result) == SSA_NAME ? SSA_VAL (result) : result;
@@ -2869,7 +2870,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_refs (operands);
   vr1->type = type;
-  vr1->punned = 0;
+  vr1->punned = false;
   vr1->set = set;
   vr1->hashcode = vn_reference_compute_hash (vr1);
   if (result && TREE_CODE (result) == SSA_NAME)
