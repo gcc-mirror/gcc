@@ -1244,8 +1244,15 @@ endif
 all-local: $(ALL_LOCAL_DEPS)
 
 MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
+
+# If we want to use "AR -r" when creating AIX FAT archives,
+# AR must be stripped of all its -X flags.
+# Otherwize, if AR was defined with -X32_64, the replace option would
+# erase the default .so when adding the extra one. There is no
+# order priority within -X flags.
 add-aix-fat-library: all-multi
 	@if test "$(MULTIBUILDTOP)" = ""; then \
-	  ${AR} -X$(AIX_DEFAULT_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
-	  ${AR} -X$(AIX_DEFAULT_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_DEFAULT_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	  arx=`echo $(AR) | sed -e 's/-X[^ ]*//g'`; \
+	  $${arx} -X$(AIX_EXTRA_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	  $${arx} -X$(AIX_EXTRA_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
 	fi

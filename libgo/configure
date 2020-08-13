@@ -733,7 +733,7 @@ SED
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
-AIX_DEFAULT_ARCH
+AIX_EXTRA_ARCH
 am__fastdepCCAS_FALSE
 am__fastdepCCAS_TRUE
 CCASDEPMODE
@@ -4716,10 +4716,10 @@ case ${host} in
     GOCFLAGS="$GOCFLAGS -fno-section-anchors"
 
     # Check default architecture for FAT library creation
-    if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
-        AIX_DEFAULT_ARCH='64'
+    if test -z "`$CC -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
+        AIX_EXTRA_ARCH='64'
     else
-        AIX_DEFAULT_ARCH='32'
+        AIX_EXTRA_ARCH='32'
     fi
 
     ;;
