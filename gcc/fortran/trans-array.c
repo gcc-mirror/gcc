@@ -8627,14 +8627,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
       vref = gfc_build_array_ref (var, index, NULL);
 
-      if ((purpose == COPY_ALLOC_COMP || purpose == COPY_ONLY_ALLOC_COMP)
-	  && !caf_enabled (caf_mode))
+      if (purpose == COPY_ALLOC_COMP || purpose == COPY_ONLY_ALLOC_COMP)
 	{
 	  tmp = build_fold_indirect_ref_loc (input_location,
 					     gfc_conv_array_data (dest));
 	  dref = gfc_build_array_ref (tmp, index, NULL);
 	  tmp = structure_alloc_comps (der_type, vref, dref, rank,
-				       COPY_ALLOC_COMP, 0, args);
+				       COPY_ALLOC_COMP, caf_mode, args);
 	}
       else
 	tmp = structure_alloc_comps (der_type, vref, NULL_TREE, rank, purpose,
@@ -9375,12 +9374,21 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      else if (flag_coarray == GFC_FCOARRAY_LIB
 		       && caf_in_coarray (caf_mode))
 		{
-		  tree dst_tok = c->as ? gfc_conv_descriptor_token (dcmp)
-				       : fold_build3_loc (input_location,
-							  COMPONENT_REF,
-							  pvoid_type_node, dest,
-							  c->caf_token,
-							  NULL_TREE);
+		  tree dst_tok;
+		  if (c->as)
+		    dst_tok = gfc_conv_descriptor_token (dcmp);
+		  else
+		    {
+		      /* For a scalar allocatable component the caf_token is
+			 the next component.  */
+		      if (!c->caf_token)
+			  c->caf_token = c->next->backend_decl;
+		      dst_tok = fold_build3_loc (input_location,
+						 COMPONENT_REF,
+						 pvoid_type_node, dest,
+						 c->caf_token,
+						 NULL_TREE);
+		    }
 		  tmp = duplicate_allocatable_coarray (dcmp, dst_tok, comp,
 						       ctype, rank);
 		}
