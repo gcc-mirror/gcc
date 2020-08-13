@@ -5554,10 +5554,6 @@ aarch64_function_value (const_tree type, const_tree func,
   if (aarch64_vfp_is_call_or_return_candidate (mode, type, &ag_mode, &count,
 					       NULL, false))
     {
-      /* TYPE passed in fp/simd registers.  */
-      if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (ag_mode);
-
       gcc_assert (!sve_p);
       if (!aarch64_composite_type_p (type, mode))
 	{
