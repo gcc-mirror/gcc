@@ -2652,7 +2652,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
     }
   tree res = identifier;
   if (!scope)
-    res = lookup_name_real (res, 0, 0, true, 0, 0);
+    res = lookup_name_real (res, LOOK_where::BLOCK_NAMESPACE, 0, 0, 0);
   else if (!TYPE_P (scope) || !dependent_scope_p (scope))
     {
       res = lookup_qualified_name (scope, res, false, true);
