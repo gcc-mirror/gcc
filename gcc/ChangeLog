@@ -1,3 +1,71 @@
+2020-08-12  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2020-08-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/96493
+	* config/rs6000/predicates.md (current_file_function_operand): Don't
+	accept functions that differ in r2 usage.
+
+2020-08-12  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-08-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/96482
+	* ipa-cp.c (ipcp_bits_lattice::meet_with_1): Drop value bits
+	for bits that are unknown.
+	(ipcp_bits_lattice::set_to_constant): Likewise.
+	* tree-ssa-ccp.c (get_default_value): Add sanity check that
+	IPA CP bit info has all bits set to zero in bits that
+	are unknown.
+
+2020-08-12  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-07-28  Sergei Trofimovich  <siarheit@google.com>
+
+	PR ipa/96291
+	* ipa-cp.c (has_undead_caller_from_outside_scc_p): Consider
+	unoptimized callers as undead.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md: Remove trailing whitespaces.
+	* config/bpf/constraints.md: Likewise.
+	* config/bpf/predicates.md: Likewise.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf-helpers.h (KERNEL_HELPER): Define.
+	(KERNEL_VERSION): Remove.
+	* config/bpf/bpf-helpers.def: Delete.
+	* config/bpf/bpf.c (bpf_handle_fndecl_attribute): New function.
+	(bpf_attribute_table): Define.
+	(bpf_helper_names): Delete.
+	(bpf_helper_code): Likewise.
+	(enum bpf_builtins): Adjust to new helpers mechanism.
+	(bpf_output_call): Likewise.
+	(bpf_init_builtins): Likewise.
+	(bpf_init_builtins): Likewise.
+	* doc/extend.texi (BPF Function Attributes): New section.
+	(BPF Kernel Helpers): Delete section.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.c (bpf_compute_frame_layout): Include space for
+	callee saved registers only in xBPF.
+	(bpf_expand_prologue): Save callee saved registers only in xBPF.
+	(bpf_expand_epilogue): Likewise for restoring.
+	* doc/invoke.texi (eBPF Options): Document this is activated by
+	-mxbpf.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.opt (mxbpf): New option.
+	* doc/invoke.texi (Option Summary): Add -mxbpf.
+	(eBPF Options): Document -mxbbpf.
+
 2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/96243
