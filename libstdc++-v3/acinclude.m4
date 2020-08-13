@@ -2377,12 +2377,24 @@ dnl
 dnl --enable-cheaders= [does stuff].
 dnl --disable-cheaders [does not do anything, really].
 dnl  +  Usage:  GLIBCXX_ENABLE_CHEADERS[(DEFAULT)]
-dnl       Where DEFAULT is either 'c' or 'c_std' or 'c_global'.
+dnl       Where DEFAULT is either 'c' or 'c_global' or 'c_std'.
+dnl
+dnl To use the obsolete 'c_std' headers use --enable-cheaders-obsolete as
+dnl well as --enable-cheaders=c_std, otherwise configure will fail.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CHEADERS], [
+  GLIBCXX_ENABLE(cheaders-obsolete,no,,
+    [allow use of obsolete "C" headers for g++])
   GLIBCXX_ENABLE(cheaders,$1,[[[=KIND]]],
-    [construct "C" headers for g++], [permit c|c_std|c_global])
+    [construct "C" headers for g++], [permit c|c_global|c_std])
   AC_MSG_NOTICE("C" header strategy set to $enable_cheaders)
+  if test $enable_cheaders = c_std ; then
+    AC_MSG_WARN([the --enable-cheaders=c_std configuration is obsolete, c_global should be used instead])
+    AC_MSG_WARN([if you are unable to use c_global please report a bug or inform libstdc++@gcc.gnu.org])
+    if test $enable_cheaders_obsolete != yes ; then
+      AC_MSG_ERROR(use --enable-cheaders-obsolete to use c_std "C" headers)
+    fi
+  fi
 
   C_INCLUDE_DIR='${glibcxx_srcdir}/include/'$enable_cheaders
 

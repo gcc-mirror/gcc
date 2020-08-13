@@ -915,6 +915,7 @@ enable_cstdio
 enable_clocale
 enable_nls
 enable_libstdcxx_allocator
+enable_cheaders_obsolete
 enable_cheaders
 enable_long_long
 enable_wchar_t
@@ -1606,6 +1607,9 @@ Optional Features:
   --enable-libstdcxx-allocator[=KIND]
                           use KIND for target std::allocator base
                           [default=auto]
+  --enable-cheaders-obsolete
+                          allow use of obsolete "C" headers for g++
+                          [default=no]
   --enable-cheaders[=KIND]
                           construct "C" headers for g++ [default=$c_model]
   --enable-long-long      enable template specializations for 'long long'
@@ -12060,7 +12064,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12063 "configure"
+#line 12067 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12166,7 +12170,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12169 "configure"
+#line 12173 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15858,7 +15862,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15861 "configure"
+#line 15865 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15893,7 +15897,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15896 "configure"
+#line 15900 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15928,7 +15932,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15931 "configure"
+#line 15935 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15964,7 +15968,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15967 "configure"
+#line 15971 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16117,7 +16121,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16120 "configure"
+#line 16124 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16159,7 +16163,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16162 "configure"
+#line 16166 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16193,7 +16197,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16196 "configure"
+#line 16200 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16822,11 +16826,24 @@ $as_echo "$enable_libstdcxx_allocator_flag" >&6; }
 
 
 
+   # Check whether --enable-cheaders-obsolete was given.
+if test "${enable_cheaders_obsolete+set}" = set; then :
+  enableval=$enable_cheaders_obsolete;
+      case "$enableval" in
+       yes|no) ;;
+       *) as_fn_error $? "Argument to enable/disable cheaders-obsolete must be yes or no" "$LINENO" 5 ;;
+      esac
+
+else
+  enable_cheaders_obsolete=no
+fi
+
+
    # Check whether --enable-cheaders was given.
 if test "${enable_cheaders+set}" = set; then :
   enableval=$enable_cheaders;
       case "$enableval" in
-       c|c_std|c_global) ;;
+       c|c_global|c_std) ;;
        *) as_fn_error $? "Unknown argument to enable/disable cheaders" "$LINENO" 5 ;;
 	  	        esac
 
@@ -16837,6 +16854,15 @@ fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: \"C\" header strategy set to $enable_cheaders" >&5
 $as_echo "$as_me: \"C\" header strategy set to $enable_cheaders" >&6;}
+  if test $enable_cheaders = c_std ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: the --enable-cheaders=c_std configuration is obsolete, c_global should be used instead" >&5
+$as_echo "$as_me: WARNING: the --enable-cheaders=c_std configuration is obsolete, c_global should be used instead" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: if you are unable to use c_global please report a bug or inform libstdc++@gcc.gnu.org" >&5
+$as_echo "$as_me: WARNING: if you are unable to use c_global please report a bug or inform libstdc++@gcc.gnu.org" >&2;}
+    if test $enable_cheaders_obsolete != yes ; then
+      as_fn_error $? "use --enable-cheaders-obsolete to use c_std \"C\" headers" "$LINENO" 5
+    fi
+  fi
 
   C_INCLUDE_DIR='${glibcxx_srcdir}/include/'$enable_cheaders
 
