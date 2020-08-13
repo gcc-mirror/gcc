@@ -1,3 +1,8 @@
+2020-08-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/94077
+	* gcc.dg/gomp/pr82374.c: Add option -fno-common.
+
 2020-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
