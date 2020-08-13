@@ -1,6 +1,21 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_taskloop_expr): New function.
+	(gimplify_omp_for): Use it.  For OMP_FOR_NON_RECTANGULAR
+	loops adjust in outer taskloop the var-outer decls.
+	* omp-expand.c (expand_omp_taskloop_for_inner): Handle non-rectangular
+	loops.
+	(expand_omp_for): Don't reject non-rectangular taskloop.
+	* omp-general.c (omp_extract_for_data): Don't assert that
+	non-rectangular loops have static schedule, instead treat loop->m1
+	or loop->m2 as if loop->n1 or loop->n2 is non-constant.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-expand.c (expand_omp_for): Don't disallow combined non-rectangular

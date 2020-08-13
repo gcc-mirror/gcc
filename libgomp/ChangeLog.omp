@@ -1,6 +1,15 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-22.c (main): Add some further tests.
+	* testsuite/libgomp.c/loop-23.c (main): Likewise.
+	* testsuite/libgomp.c/loop-24.c: New test.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/loop-22.c: New test.

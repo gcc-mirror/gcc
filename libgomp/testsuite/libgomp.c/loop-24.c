@@ -19,8 +19,8 @@ main ()
     v[i][j][k][l][m - 7][n][o] = 1;
 
   int niters = 0;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(7) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(7) in_reduction(+:niters)
   for (int i = 0; i < 5; i++)
   for (int j = 0; j < 7; j++)
   for (int k = 0; k < 9; k++)
@@ -47,8 +47,8 @@ main ()
     abort ();
 
   int niters2 = 0;
-  #pragma omp teams reduction(+:niters2)
-  #pragma omp distribute parallel for collapse(7) reduction(+:niters2)
+  #pragma omp parallel master reduction(task, +:niters2)
+  #pragma omp taskloop collapse(7) in_reduction(+:niters2)
   for (int i = zero; i < five; i += one)
   for (int j = seven - one; j >= zero; j -= one)
   for (int k = nine - one; k >= zero; k += -one)
@@ -85,8 +85,8 @@ main ()
       abort ();
 
   int niters3 = 0;
-  #pragma omp teams reduction(+:niters3)
-  #pragma omp distribute parallel for collapse(5) reduction(+:niters3)
+  #pragma omp parallel master reduction(task, +:niters3)
+  #pragma omp taskloop collapse(5) in_reduction(+:niters3)
   for (int i = 4; i >= 0; i--)
   for (int j = 6; j >= 0; --j)
   for (int l = 3 * j - 1; l >= 2 * j; l--)
@@ -109,8 +109,8 @@ main ()
     abort ();
 
   int niters4 = 0;
-  #pragma omp teams reduction(+:niters4)
-  #pragma omp distribute parallel for collapse(5) reduction(+:niters4)
+  #pragma omp parallel master reduction(task, +:niters4)
+  #pragma omp taskloop collapse(5) in_reduction(+:niters4)
   for (int i = zero; i < five; i += one)
   for (int j = zero; j <= seven - one; j += one)
   for (int l = j * two; l < three * j + zero; l += one)
@@ -141,8 +141,8 @@ main ()
       abort ();
 
   int niters5 = 0;
-  #pragma omp teams reduction(+:niters5)
-  #pragma omp distribute parallel for collapse(3) reduction(+:niters5)
+  #pragma omp parallel master reduction(task, +:niters5)
+  #pragma omp taskloop collapse(3) in_reduction(+:niters5)
   for (int j = 6; j >= 0; --j)
   for (int l = 2 * j; l <= 3 * j - 1; l++)
   for (int n = 2 * l + -1; n > l - 1; --n)
@@ -161,8 +161,8 @@ main ()
     abort ();
 
   int niters6 = 0;
-  #pragma omp teams reduction(+:niters6)
-  #pragma omp distribute parallel for collapse(3) reduction(+:niters6)
+  #pragma omp parallel master reduction(task, +:niters6)
+  #pragma omp taskloop collapse(3) in_reduction(+:niters6)
   for (int j = seven - one; j > - one; j -= one)
   for (int l = j * three - one; l >= j * two + zero; l += -one)
   for (int n = two * l - one; n > l - one; n -= one)
@@ -195,8 +195,8 @@ main ()
       w[i + 5][j + 5] = 1;
   a = -4; b = 8; c = 1; d = 3; e = 0; f = 2; g = 0; h = -1;
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = -4; i < 8; i++)
     for (j = 3 * i; j > 2 * i; j--)
       {
@@ -209,8 +209,8 @@ main ()
   if (i != 8 || j != 14 || x != 7183 || niters != 28)
     abort ();
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = a; i < b; i += c)
     for (j = d * i + e; j > g + i * f; j += h)
       {
@@ -233,8 +233,8 @@ main ()
       w[i + 5][j + 5] = 1;
   a = -2; b = 4; c = 1; d = -2; e = 3; f = 0; g = -3; h = -2;
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = -2; i < 4; i++)
     for (j = -2 * i + 3; j > -3; j -= 2)
       {
@@ -247,8 +247,8 @@ main ()
   if (/* i != 4 || j != -3 || */x != 3071 || niters != 15)
     abort ();
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = a; i < b; i += c)
     for (j = d * i + e; j > g + i * f; j += h)
       {
@@ -271,8 +271,8 @@ main ()
       w[i + 5][j + 5] = 1;
   a = 3; b = -3; c = -1; d = -2; e = 7; f = 2; g = 1; h = -1;
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = 3; i > -3; i--)
     for (j = -2 * i + 7; j > 2 * i + 1; j--)
       {
@@ -285,8 +285,8 @@ main ()
   if (i != -3 || j != -3 || x != -1026 || niters != 32)
     abort ();
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = a; i > b; i += c)
     for (j = d * i + e; j > g + i * f; j += h)
       {
@@ -309,8 +309,8 @@ main ()
       w[i + 5][j + 5] = 1;
   a = 3; b = -3; c = -1; d = 2; e = 7; f = -2; g = 1; h = -1;
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = 3; i > -3; i--)
     for (j = 2 * i + 7; j > -2 * i + 1; j--)
       {
@@ -323,8 +323,8 @@ main ()
   if (/*i != -3 || j != 3 || */x != -1020 || niters != 50)
     abort ();
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = a; i > b; i += c)
     for (j = d * i + e; j > g + i * f; j += h)
       {
@@ -347,8 +347,8 @@ main ()
       w[i + 5][j + 5] = 1;
   a = 6; b = -6; c = -1; d = 2; e = 7; f = -2; g = 2; h = 1;
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = 6; i > -6; i--)
     for (j = 2 * i + 7; j <= -2 * i + 1; j++)
       {
@@ -361,8 +361,8 @@ main ()
   if (i != -6 || j != 12 || x != -5109 || niters != 36)
     abort ();
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = a; i > b; i += c)
     for (j = d * i + e; j < g + i * f; j += h)
       {
@@ -385,8 +385,8 @@ main ()
       w[i + 5][j + 5] = 1;
   a = 6; b = -6; c = -2; d = -2; e = 7; f = 2; g = 2; h = 1;
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = 6; i > -6; i -= 2)
     for (j = -2 * i + 7; j <= 2 * i + 1; j++)
       {
@@ -399,8 +399,8 @@ main ()
   if (/*i != -6 || j != 15 || */x != 2053 || niters != 33)
     abort ();
   niters = 0; i = -100; j = -100; x = -100;
-  #pragma omp teams reduction(+:niters)
-  #pragma omp distribute parallel for collapse(2) lastprivate (i, j, x) reduction(+:niters)
+  #pragma omp parallel master reduction(task, +:niters)
+  #pragma omp taskloop collapse(2) lastprivate (i, j, x) in_reduction(+:niters)
   for (i = a; i > b; i += c)
     for (j = d * i + e; j < g + i * f; j += h)
       {

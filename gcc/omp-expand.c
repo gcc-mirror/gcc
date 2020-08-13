@@ -6994,8 +6994,20 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
 	assign_stmt = gimple_build_assign (fd->loop.v, NOP_EXPR, e);
       gsi_insert_after (&gsi, assign_stmt, GSI_CONTINUE_LINKING);
     }
+
+  tree *nonrect_bounds = NULL;
   if (fd->collapse > 1)
-    expand_omp_for_init_vars (fd, &gsi, counts, NULL, inner_stmt, startvar);
+    {
+      if (fd->non_rect)
+	{
+	  nonrect_bounds = XALLOCAVEC (tree, fd->last_nonrect + 1);
+	  memset (nonrect_bounds, 0, sizeof (tree) * (fd->last_nonrect + 1));
+	}
+      gcc_assert (gsi_bb (gsi) == entry_bb);
+      expand_omp_for_init_vars (fd, &gsi, counts, nonrect_bounds, inner_stmt,
+				startvar);
+      entry_bb = gsi_bb (gsi);
+    }
 
   if (!broken_loop)
     {
@@ -7030,7 +7042,8 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
       gsi_remove (&gsi, true);
 
       if (fd->collapse > 1 && !gimple_omp_for_combined_p (fd->for_stmt))
-	collapse_bb = extract_omp_for_update_vars (fd, NULL, cont_bb, body_bb);
+	collapse_bb = extract_omp_for_update_vars (fd, nonrect_bounds,
+						   cont_bb, body_bb);
     }
 
   /* Remove the GIMPLE_OMP_FOR statement.  */
@@ -7723,9 +7736,6 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
     }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_TASKLOOP)
     {
-      if (fd.non_rect)
-	sorry_at (gimple_location (fd.for_stmt),
-		  "non-rectangular %<taskloop%> not supported yet");
       if (gimple_omp_for_combined_into_p (fd.for_stmt))
 	expand_omp_taskloop_for_inner (region, &fd, inner_stmt);
       else
