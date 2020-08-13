@@ -1,3 +1,13 @@
+2020-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h: Add OMP_LIST_NONTEMPORAL.
+	* dump-parse-tree.c (show_omp_clauses): Dump it
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_NOTEMPORAL.
+	(OMP_SIMD_CLAUSES): Add it.
+	(gfc_match_omp_clauses): Match nontemporal clause.
+	* trans-openmp.c (gfc_trans_omp_clauses): Process
+	nontemporal clause.
+
 2020-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/96556
