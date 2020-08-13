@@ -6444,8 +6444,30 @@ machine_mode
 rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 			      machine_mode mode,
 			      int *punsignedp ATTRIBUTE_UNUSED,
-			      const_tree, int)
+			      const_tree, int for_return)
 {
+  /* Warning: this is a static local variable and not always NULL!
+     This function is called multiple times for the same function
+     and return value.  PREV_FUNC is used to keep track of the
+     first time we encounter a function's return value in order
+     to not report an error with that return value multiple times.  */
+  static struct function *prev_func = NULL;
+
+  /* We do not allow MMA types being used as return values.  Only report
+     the invalid return value usage the first time we encounter it.  */
+  if (for_return
+      && prev_func != cfun
+      && (mode == POImode || mode == PXImode))
+    {
+      /* Record we have now handled function CFUN, so the next time we
+	 are called, we do not re-report the same error.  */
+      prev_func = cfun;
+      if (TYPE_CANONICAL (type) != NULL_TREE)
+	type = TYPE_CANONICAL (type);
+      error ("invalid use of MMA type %qs as a function return value",
+	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+    }
+
   PROMOTE_MODE (mode, *punsignedp, type);
 
   return mode;
@@ -7395,6 +7417,16 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   enum rs6000_abi abi = DEFAULT_ABI;
   machine_mode elt_mode;
   int n_elts;
+
+  /* We do not allow MMA types being used as function arguments.  */
+  if (mode == POImode || mode == PXImode)
+    {
+      if (TYPE_CANONICAL (type) != NULL_TREE)
+	type = TYPE_CANONICAL (type);
+      error ("invalid use of MMA operand of type %qs as a function parameter",
+	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+      return NULL_RTX;
+    }
 
   /* Return a marker to indicate whether CR1 needs to set or clear the
      bit that V.4 uses to say fp args were passed in registers.
