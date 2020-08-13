@@ -280,6 +280,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Diagnostic Message Formatting Options
 @xref{Diagnostic Message Formatting Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
+-fdiagnostics-plain-output @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
@@ -4290,6 +4291,19 @@ Note - this option also affects the display of the @samp{#error} and
 @samp{#warning} pre-processor directives, and the @samp{deprecated}
 function/type/variable attribute.  It does not however affect the
 @samp{pragma GCC warning} and @samp{pragma GCC error} pragmas.
+
+@item -fdiagnostics-plain-output
+This option requests that diagnostic output look as plain as possible, which
+may be useful when running @command{dejagnu} or other utilities that need to
+parse diagnostics output and prefer that it remain more stable over time.
+@option{-fdiagnostics-plain-output} is currently equivalent to the following
+options:
+@gccoptlist{-fno-diagnostics-show-caret @gol
+-fno-diagnostics-show-line-numbers @gol
+-fdiagnostics-color=never @gol
+-fdiagnostics-urls=never}
+In the future, if GCC changes the default appearance of its diagnostics, the
+corresponding option to disable the new behavior will be added to this list.
 
 @item -fdiagnostics-show-location=once
 @opindex fdiagnostics-show-location

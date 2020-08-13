@@ -529,7 +529,7 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
    consumed.  */
 
 static unsigned int
-decode_cmdline_option (const char **argv, unsigned int lang_mask,
+decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
 		       struct cl_decoded_option *decoded)
 {
   size_t opt_index;
@@ -944,7 +944,8 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   struct cl_decoded_option *opt_array;
   unsigned int num_decoded_options;
 
-  opt_array = XNEWVEC (struct cl_decoded_option, argc);
+  int opt_array_len = argc;
+  opt_array = XNEWVEC (struct cl_decoded_option, opt_array_len);
 
   opt_array[0].opt_index = OPT_SPECIAL_program_name;
   opt_array[0].warn_message = NULL;
@@ -979,6 +980,40 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  const char *replacement
 	    = opts_concat (needle, "=", argv[i + 1], NULL);
 	  argv[++i] = replacement;
+	}
+
+      /* Expand -fdiagnostics-plain-output to its constituents.  This needs
+	 to happen here so that prune_options can handle -fdiagnostics-color
+	 specially.  */
+      if (!strcmp (opt, "-fdiagnostics-plain-output"))
+	{
+	  /* If you have changed the default diagnostics output, and this new
+	     output is not appropriately "plain" (e.g., the change needs to be
+	     undone in order for the testsuite to work properly), then please do
+	     the following:
+		 1.  Add the necessary option to undo the new behavior to
+		     the array below.
+		 2.  Update the documentation for -fdiagnostics-plain-output
+		     in invoke.texi.  */
+	  const char *const expanded_args[] = {
+	    "-fno-diagnostics-show-caret",
+	    "-fno-diagnostics-show-line-numbers",
+	    "-fdiagnostics-color=never",
+	    "-fdiagnostics-urls=never",
+	  };
+	  const int num_expanded = ARRAY_SIZE (expanded_args);
+	  opt_array_len += num_expanded - 1;
+	  opt_array = XRESIZEVEC (struct cl_decoded_option,
+				  opt_array, opt_array_len);
+	  for (int j = 0, nj; j < num_expanded; j += nj)
+	    {
+	      nj = decode_cmdline_option (expanded_args + j, lang_mask,
+					  &opt_array[num_decoded_options]);
+	      num_decoded_options++;
+	    }
+
+	  n = 1;
+	  continue;
 	}
 
       n = decode_cmdline_option (argv + i, lang_mask,

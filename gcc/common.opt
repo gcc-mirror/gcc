@@ -1378,6 +1378,10 @@ fdiagnostics-path-format=
 Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
 Specify how to print any control-flow path associated with a diagnostic.
 
+fdiagnostics-plain-output
+Driver Common RejectNegative
+Turn off any diagnostics features that complicate the output, such as line numbers, color, and warning URLs.
+
 ftabstop=
 Common Joined RejectNegative UInteger
 -ftabstop=<number>      Distance between tab stops for column reporting.
