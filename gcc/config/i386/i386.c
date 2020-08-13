@@ -18378,13 +18378,15 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
     return INTEGER_CLASS_P (regclass) ? regclass : NO_REGS;
 
   /* QImode constants are easy to load, but non-constant QImode data
-     must go into Q_REGS.  */
+     must go into Q_REGS or ALL_MASK_REGS.  */
   if (GET_MODE (x) == QImode && !CONSTANT_P (x))
     {
       if (Q_CLASS_P (regclass))
 	return regclass;
       else if (reg_class_subset_p (Q_REGS, regclass))
 	return Q_REGS;
+      else if (MASK_CLASS_P (regclass))
+	return regclass;
       else
 	return NO_REGS;
     }
