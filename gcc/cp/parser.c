@@ -28462,7 +28462,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 				    template-name after -> or ., only
 				    consider class templates.  */
 				 : is_template ? LOOK_want::TYPE
-				 : prefer_type_arg (tag_type), 0);
+				 : prefer_type_arg (tag_type));
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
     }
@@ -28470,8 +28470,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     {
       decl = lookup_name_real (name, LOOK_where::ALL,
 			       is_namespace ? LOOK_want::NAMESPACE
-			       : prefer_type_arg (tag_type),
-			       0);
+			       : prefer_type_arg (tag_type));
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
     }

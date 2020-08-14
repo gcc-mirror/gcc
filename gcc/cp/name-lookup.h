@@ -306,6 +306,9 @@ enum class LOOK_want
   TYPE = 1 << 1,  /* We only want TYPE_DECLS.  */
   NAMESPACE = 1 << 2,  /* We only want NAMESPACE_DECLS.  */
 
+  HIDDEN_FRIEND = 1 << 3, /* See hidden friends.  */
+  HIDDEN_LAMBDA = 1 << 4,  /* See lambda-ignored entities.  */
+
   TYPE_NAMESPACE = TYPE | NAMESPACE,  /* Either NAMESPACE or TYPE.  */
 };
 constexpr LOOK_want operator| (LOOK_want a, LOOK_want b)
@@ -317,7 +320,7 @@ constexpr LOOK_want operator& (LOOK_want a, LOOK_want b)
   return LOOK_want (unsigned (a) & unsigned (b));
 }
 
-extern tree lookup_name_real (tree, LOOK_where, LOOK_want, int flags);
+extern tree lookup_name_real (tree, LOOK_where, LOOK_want);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);
@@ -330,10 +333,10 @@ extern tree lookup_name (tree name);
 extern tree lookup_name (tree name, LOOK_want);
 extern tree lookup_qualified_name (tree scope, tree name,
 				   LOOK_want = LOOK_want::NORMAL,
-				   bool = true, /*hidden*/bool = false);
+				   bool = true);
 extern tree lookup_qualified_name (tree scope, const char *name,
 				   LOOK_want = LOOK_want::NORMAL,
-				   bool = true, bool = false);
+				   bool = true);
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
