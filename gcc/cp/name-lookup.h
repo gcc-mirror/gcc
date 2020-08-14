@@ -295,16 +295,29 @@ constexpr LOOK_where operator| (LOOK_where a, LOOK_where b)
 {
   return LOOK_where (unsigned (a) | unsigned (b));
 }
-constexpr bool operator& (LOOK_where a, LOOK_where b)
+constexpr LOOK_where operator& (LOOK_where a, LOOK_where b)
 {
-  return 0 != (unsigned (a) & unsigned (b));
+  return LOOK_where (unsigned (a) & unsigned (b));
 }
 
-extern tree lookup_name_prefer_type (tree, int);
+enum class LOOK_want
+{
+  NORMAL = 0,  /* Normal lookup -- non-types can hide implicit types.  */
+  TYPE = 1 << 1,  /* We only want TYPE_DECLS.  */
+  NAMESPACE = 1 << 2,  /* We only want NAMESPACE_DECLS.  */
 
+  TYPE_NAMESPACE = TYPE | NAMESPACE,  /* Either NAMESPACE or TYPE.  */
+};
+constexpr LOOK_want operator| (LOOK_want a, LOOK_want b)
+{
+  return LOOK_want (unsigned (a) | unsigned (b));
+}
+constexpr LOOK_want operator& (LOOK_want a, LOOK_want b)
+{
+  return LOOK_want (unsigned (a) & unsigned (b));
+}
 
-extern tree lookup_name_real (tree, LOOK_where, int prefer_type,
-			      int namespaces_only, int flags);
+extern tree lookup_name_real (tree, LOOK_where, LOOK_want, int flags);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);
@@ -312,8 +325,15 @@ inline tree get_global_binding (tree id)
 {
   return get_namespace_binding (NULL_TREE, id);
 }
-extern tree lookup_qualified_name (tree, tree, int = 0, bool = true, /*hidden*/bool = false);
-extern tree lookup_qualified_name (tree t, const char *p, int = 0, bool = true, bool = false);
+/* Also declared in c-family/c-common.h.  */
+extern tree lookup_name (tree name);
+extern tree lookup_name (tree name, LOOK_want);
+extern tree lookup_qualified_name (tree scope, tree name,
+				   LOOK_want = LOOK_want::NORMAL,
+				   bool = true, /*hidden*/bool = false);
+extern tree lookup_qualified_name (tree scope, const char *name,
+				   LOOK_want = LOOK_want::NORMAL,
+				   bool = true, bool = false);
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);

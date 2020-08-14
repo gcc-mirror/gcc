@@ -8100,7 +8100,7 @@ get_tuple_size (tree type)
   if (inst == error_mark_node || !COMPLETE_TYPE_P (inst))
     return NULL_TREE;
   tree val = lookup_qualified_name (inst, value_identifier,
-				    /*type*/false, /*complain*/false);
+				    LOOK_want::NORMAL, /*complain*/false);
   if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
     val = maybe_constant_value (val);
   if (TREE_CODE (val) == INTEGER_CST)
@@ -8144,7 +8144,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
     e = move (e);
 
   tree fns = lookup_qualified_name (TREE_TYPE (e), get__identifier,
-				    /*type*/false, /*complain*/false);
+				    LOOK_want::NORMAL, /*complain*/false);
   bool use_member_get = false;
 
   /* To use a member get, member lookup must find at least one
@@ -14834,7 +14834,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
     {
       /* First try ordinary name lookup, ignoring hidden class name
 	 injected via friend declaration.  */
-      decl = lookup_name_prefer_type (name, 2);
+      decl = lookup_name (name, LOOK_want::TYPE);
       decl = strip_using_decl (decl);
       /* If that fails, the name will be placed in the smallest
 	 non-class, non-function-prototype scope according to 3.3.1/5.

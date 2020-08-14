@@ -5567,16 +5567,10 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_DESTRUCTOR (1 << 5)
 /* Do not permit references to bind to temporaries.  */
 #define LOOKUP_NO_TEMP_BIND (1 << 6)
-/* Do not accept objects, and possibly namespaces.  */
-#define LOOKUP_PREFER_TYPES (1 << 7)
-/* Do not accept objects, and possibly types.   */
-#define LOOKUP_PREFER_NAMESPACES (1 << 8)
-/* Accept types or namespaces.  */
-#define LOOKUP_PREFER_BOTH (LOOKUP_PREFER_TYPES | LOOKUP_PREFER_NAMESPACES)
 /* Return friend declarations and un-declared builtin functions.
    (Normally, these entities are registered in the symbol table, but
    not found by lookup.)  */
-#define LOOKUP_HIDDEN (LOOKUP_PREFER_NAMESPACES << 1)
+#define LOOKUP_HIDDEN (1 << 7)
 /* We're trying to treat an lvalue as an rvalue.  */
 /* FIXME remove when we extend the P1825 semantics to all standard modes, the
    C++20 approach uses IMPLICIT_RVALUE_P instead.  */
@@ -5625,13 +5619,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_REVERSED (LOOKUP_REWRITTEN << 1)
 /* We're initializing an aggregate from a parenthesized list of values.  */
 #define LOOKUP_AGGREGATE_PAREN_INIT (LOOKUP_REVERSED << 1)
-
-#define LOOKUP_NAMESPACES_ONLY(F)  \
-  (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
-#define LOOKUP_TYPES_ONLY(F)  \
-  (!((F) & LOOKUP_PREFER_NAMESPACES) && ((F) & LOOKUP_PREFER_TYPES))
-#define LOOKUP_QUALIFIERS_ONLY(F)     ((F) & LOOKUP_PREFER_BOTH)
-
 
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
