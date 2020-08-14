@@ -6,11 +6,8 @@ void test(int c)
   char *buffer = (char*)malloc(256);
 
   for (i=0; i<255; i++) {
-    buffer[i] = c; /* { dg-warning "use after 'free' of 'buffer'" } */
-		   /* BUG: the malloc could have failed
-		      TODO: the checker doesn't yet pick up on this, perhaps
-		      due to the pointer arithmetic not picking up on the
-		      state */
+    buffer[i] = c; /* { dg-warning "use after 'free' of 'buffer'" "use after free" { xfail *-*-* } } */
+                   /* { dg-warning "possibly-NULL 'buffer'" "deref of unchecked" { target *-*-* } .-1 } */
     free(buffer); /* { dg-warning "double-'free' of 'buffer'" } */
   }
 

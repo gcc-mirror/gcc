@@ -18,10 +18,16 @@
 
 load_lib multiline.exp
 
+# Add options to TEST_ALWAYS_FLAGS so that diagnostics have the expected output
+# format.  Note: You should not normally need to add more options here.  If you
+# have made a change to the default diagnostic output format and are wanting to
+# undo that in the testsuite here, then please update the handling of
+# -fdiagnostics-plain-output in opts-common.c instead.
+
 if ![info exists TEST_ALWAYS_FLAGS] {
     set TEST_ALWAYS_FLAGS ""
 }
-set TEST_ALWAYS_FLAGS "-fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-color=never  -fdiagnostics-urls=never $TEST_ALWAYS_FLAGS"
+set TEST_ALWAYS_FLAGS "-fdiagnostics-plain-output $TEST_ALWAYS_FLAGS"
 
 proc prune_gcc_output { text } {
     global srcdir

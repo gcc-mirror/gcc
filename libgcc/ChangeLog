@@ -1,3 +1,8 @@
+2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/nvptx/atomic.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add atomic.c.
+
 2020-08-03  Ian Lance Taylor  <iant@golang.org>
 
 	* config/i386/morestack.S (BACKOFF) [x86_64]: Add 2048 bytes.

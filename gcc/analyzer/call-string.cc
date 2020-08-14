@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+#pragma GCC diagnostic ignored "-Wformat-diag"
+
 /* class call_string.  */
 
 /* call_string's copy ctor.  */

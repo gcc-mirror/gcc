@@ -267,7 +267,7 @@ find_coro_traits_template_decl (location_t kw)
   static bool traits_error_emitted = false;
 
   tree traits_decl = lookup_qualified_name (std_node, coro_traits_identifier,
-					    0,
+					    LOOK_want::NORMAL,
 					    /*complain=*/!traits_error_emitted);
   if (traits_decl == error_mark_node
       || !DECL_TYPE_TEMPLATE_P (traits_decl))
@@ -348,7 +348,8 @@ find_coro_handle_template_decl (location_t kw)
     it once.  */
   static bool coro_handle_error_emitted = false;
   tree handle_decl = lookup_qualified_name (std_node, coro_handle_identifier,
-					    0, !coro_handle_error_emitted);
+					    LOOK_want::NORMAL,
+					    !coro_handle_error_emitted);
   if (handle_decl == error_mark_node
       || !DECL_CLASS_TEMPLATE_P (handle_decl))
     {
@@ -4309,7 +4310,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	   non-throwing noexcept-specification.  So we need std::nothrow.  */
 	  tree std_nt = lookup_qualified_name (std_node,
 					       get_identifier ("nothrow"),
-					       0, /*complain=*/true, false);
+					       LOOK_want::NORMAL,
+					       /*complain=*/true, false);
 	  if (!std_nt || std_nt == error_mark_node)
 	    error_at (fn_start, "%qE is provided by %qT but %<std::nothrow%> "
 		      "cannot be found", grooaf, promise_type);

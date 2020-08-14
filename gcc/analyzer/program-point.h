@@ -72,18 +72,7 @@ public:
   function_point (const supernode *supernode,
 		  const superedge *from_edge,
 		  unsigned stmt_idx,
-		  enum point_kind kind)
-  : m_supernode (supernode), m_from_edge (from_edge),
-    m_stmt_idx (stmt_idx), m_kind (kind)
-  {
-    if (from_edge)
-      {
-	gcc_checking_assert (m_kind == PK_BEFORE_SUPERNODE);
-	gcc_checking_assert (from_edge->get_kind () == SUPEREDGE_CFG_EDGE);
-      }
-    if (stmt_idx)
-      gcc_checking_assert (m_kind == PK_BEFORE_STMT);
-  }
+		  enum point_kind kind);
 
   void print (pretty_printer *pp, const format &f) const;
   void print_source_line (pretty_printer *pp) const;
@@ -101,13 +90,7 @@ public:
   /* Accessors.  */
 
   const supernode *get_supernode () const { return m_supernode; }
-  function *get_function () const
-  {
-    if (m_supernode)
-      return m_supernode->m_fun;
-    else
-      return NULL;
-  }
+  function *get_function () const;
   const gimple *get_stmt () const;
   location_t get_location () const;
   enum point_kind get_kind () const { return m_kind; }
@@ -124,19 +107,10 @@ public:
   /* Factory functions for making various kinds of program_point.  */
 
   static function_point from_function_entry (const supergraph &sg,
-					    function *fun)
-  {
-    return before_supernode (sg.get_node_for_function_entry (fun),
-			     NULL);
-  }
+					     function *fun);
 
   static function_point before_supernode (const supernode *supernode,
-					  const superedge *from_edge)
-  {
-    if (from_edge && from_edge->get_kind () != SUPEREDGE_CFG_EDGE)
-      from_edge = NULL;
-    return function_point (supernode, from_edge, 0, PK_BEFORE_SUPERNODE);
-  }
+					  const superedge *from_edge);
 
   static function_point before_stmt (const supernode *supernode,
 				     unsigned stmt_idx)
@@ -164,6 +138,9 @@ public:
 				     const function_point &point_b);
   static int cmp_within_supernode (const function_point &point_a,
 				   const function_point &point_b);
+
+  /* For before_stmt, go to next stmt.  */
+  void next_stmt ();
 
  private:
   const supernode *m_supernode;
@@ -203,6 +180,10 @@ public:
   {
     return (m_function_point == other.m_function_point
 	    && m_call_string == other.m_call_string);
+  }
+  bool operator!= (const program_point &other) const
+  {
+    return !(*this == other);
   }
 
   /* Accessors.  */
@@ -257,6 +238,12 @@ public:
   }
 
   /* Factory functions for making various kinds of program_point.  */
+  static program_point origin ()
+  {
+    return program_point (function_point (NULL, NULL,
+					  0, PK_ORIGIN),
+			  call_string ());
+  }
 
   static program_point from_function_entry (const supergraph &sg,
 					    function *fun)
@@ -304,8 +291,11 @@ public:
 
   void validate () const;
 
+  /* For before_stmt, go to next stmt.  */
+  void next_stmt () { m_function_point.next_stmt (); }
+
  private:
-  const function_point m_function_point;
+  function_point m_function_point;
   call_string m_call_string;
 };
 

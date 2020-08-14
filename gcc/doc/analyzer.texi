@@ -245,51 +245,34 @@ This is an implementation of the region-based ternary model described in
 (Zhongxing Xu, Ted Kremenek, and Jian Zhang).
 
 A @code{region_model} encapsulates a representation of the state of
-memory, with a tree of @code{region} instances, along with their associated
-values.  The representation is graph-like because values can be pointers
-to regions.  It also stores a constraint_manager, capturing relationships
-between the values.
+memory, with a @code{store} recording a binding between @code{region}
+instances, to @code{svalue} instances.  The bindings are organized into
+clusters, where regions accessible via well-defined pointer arithmetic
+are in the same cluster.  The representation is graph-like because values
+can be pointers to regions.  It also stores a constraint_manager,
+capturing relationships between the values.
 
 Because each node in the @code{exploded_graph} has a @code{region_model},
 and each of the latter is graph-like, the @code{exploded_graph} is in some
 ways a graph of graphs.
 
-Here's an example of printing a @code{region_model}, showing the ASCII-art
-used to visualize the region hierarchy (colorized when printing to stderr):
+Here's an example of printing a @code{program_state}, showing the
+@code{region_model} within it, along with state for the @code{malloc}
+state machine.
 
 @smallexample
 (gdb) call debug (*this)
-r0: @{kind: 'root', parent: null, sval: null@}
-|-stack: r1: @{kind: 'stack', parent: r0, sval: sv1@}
-|  |: sval: sv1: @{poisoned: uninit@}
-|  |-frame for 'test': r2: @{kind: 'frame', parent: r1, sval: null, map: @{'ptr_3': r3@}, function: 'test', depth: 0@}
-|  |  `-'ptr_3': r3: @{kind: 'map', parent: r2, sval: sv3, type: 'void *', map: @{@}@}
-|  |    |: sval: sv3: @{type: 'void *', unknown@}
-|  |    |: type: 'void *'
-|  `-frame for 'calls_malloc': r4: @{kind: 'frame', parent: r1, sval: null, map: @{'result_3': r7, '_4': r8, '<anonymous>': r5@}, function: 'calls_malloc', depth: 1@}
-|    |-'<anonymous>': r5: @{kind: 'map', parent: r4, sval: sv4, type: 'void *', map: @{@}@}
-|    |  |: sval: sv4: @{type: 'void *', &r6@}
-|    |  |: type: 'void *'
-|    |-'result_3': r7: @{kind: 'map', parent: r4, sval: sv4, type: 'void *', map: @{@}@}
-|    |  |: sval: sv4: @{type: 'void *', &r6@}
-|    |  |: type: 'void *'
-|    `-'_4': r8: @{kind: 'map', parent: r4, sval: sv4, type: 'void *', map: @{@}@}
-|      |: sval: sv4: @{type: 'void *', &r6@}
-|      |: type: 'void *'
-`-heap: r9: @{kind: 'heap', parent: r0, sval: sv2@}
-  |: sval: sv2: @{poisoned: uninit@}
-  `-r6: @{kind: 'symbolic', parent: r9, sval: null, map: @{@}@}
-svalues:
-  sv0: @{type: 'size_t', '1024'@}
-  sv1: @{poisoned: uninit@}
-  sv2: @{poisoned: uninit@}
-  sv3: @{type: 'void *', unknown@}
-  sv4: @{type: 'void *', &r6@}
-constraint manager:
+rmodel:
+stack depth: 1
+  frame (index 0): frame: ‘test’@@1
+clusters within frame: ‘test’@@1
+  cluster for: ptr_3: &HEAP_ALLOCATED_REGION(12)
+m_called_unknown_fn: FALSE
+constraint_manager:
   equiv classes:
-    ec0: @{sv0 == '1024'@}
-    ec1: @{sv4@}
   constraints:
+malloc:
+  0x2e89590: &HEAP_ALLOCATED_REGION(12): unchecked ('ptr_3')
 @end smallexample
 
 This is the state at the point of returning from @code{calls_malloc} back
@@ -310,13 +293,12 @@ void test (void)
 @}
 @end smallexample
 
-The ``root'' region (``r0'') has a ``stack'' child (``r1''), with two
-children: a frame for @code{test} (``r2''), and a frame for
-@code{calls_malloc} (``r4'').  These frame regions have child regions for
-storing their local variables.  For example, the return region
-and that of various other regions within the ``calls_malloc'' frame all have
-value ``sv4'', a pointer to a heap-allocated region ``r6''.  Within the parent
-frame, @code{ptr_3} has value ``sv3'', an unknown @code{void *}.
+Within the store, there is the cluster for @code{ptr_3} within the frame
+for @code{test}, where the whole cluster is bound to a pointer value,
+pointing at @code{HEAP_ALLOCATED_REGION(12)}.  Additionally, this pointer
+has the @code{unchecked} state for the @code{malloc} state machine
+indicating it hasn't yet been checked against NULL since the allocation
+call.
 
 @subsection Analyzer Paths
 
@@ -393,21 +375,6 @@ The constraint-handling code assumes reflexivity in some places
 As a simple workaround, constraints on floating-point values are
 currently ignored.
 @item
-The region model code creates lots of little mutable objects at each
-@code{region_model} (and thus per @code{exploded_node}) rather than
-sharing immutable objects and having the mutable state in the
-@code{program_state} or @code{region_model}.  The latter approach might be
-more efficient, and might avoid dealing with IDs rather than pointers
-(which requires us to impose an ordering to get meaningful equality).
-@item
-The region model code doesn't yet support @code{memcpy}.  At the
-gimple-ssa level these have been optimized to statements like this:
-@smallexample
-_10 = MEM <long unsigned int> [(char * @{ref-all@})&c]
-MEM <long unsigned int> [(char * @{ref-all@})&d] = _10;
-@end smallexample
-Perhaps they could be supported via a new @code{compound_svalue} type.
-@item
 There are various other limitations in the region model (grep for TODO/xfail
 in the testsuite).
 @item
@@ -454,6 +421,16 @@ Add:
 to the source being analyzed to trigger a breakpoint in the analyzer when
 that source is reached.  By putting a series of these in the source, it's
 much easier to effectively step through the program state as it's analyzed.
+
+The analyzer handles:
+
+@smallexample
+__analyzer_describe (0, expr);
+@end smallexample
+
+by emitting a warning describing the 2nd argument (which can be of any
+type), at a verbosity level given by the 1st argument.  This is for use when
+debugging, and may be of use in DejaGnu tests.
 
 @smallexample
 __analyzer_dump ();
@@ -508,21 +485,4 @@ truthfulness of the argument.  This is useful for writing DejaGnu tests.
 
 One approach when tracking down where a particular bogus state is
 introduced into the @code{exploded_graph} is to add custom code to
-@code{region_model::validate}.
-
-For example, this custom code (added to @code{region_model::validate})
-breaks with an assertion failure when a variable called @code{ptr}
-acquires a value that's unknown, using
-@code{region_model::get_value_by_name} to locate the variable
-
-@smallexample
-    /* Find a variable matching "ptr".  */
-    svalue_id sid = get_value_by_name ("ptr");
-    if (!sid.null_p ())
-      @{
-	svalue *sval = get_svalue (sid);
-	gcc_assert (sval->get_kind () != SK_UNKNOWN);
-      @}
-@end smallexample
-
-making it easier to investigate further in a debugger when this occurs.
+@code{program_state::validate}.

@@ -1,3 +1,7 @@
+2020-08-13  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_dependent_expr): Likewise.
+
 2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/96202

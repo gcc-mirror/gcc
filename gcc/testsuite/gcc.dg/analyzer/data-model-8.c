@@ -21,6 +21,5 @@ void test (void)
 
   struct base *bp = (struct base *)&s;
 
-  __analyzer_eval (bp->i == 3); /* { dg-warning "TRUE"  "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
+  __analyzer_eval (bp->i == 3); /* { dg-warning "TRUE" } */
 }

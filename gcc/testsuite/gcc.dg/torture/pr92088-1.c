@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target alloca } */
 
 int __attribute__((noipa))
 g (char *p)

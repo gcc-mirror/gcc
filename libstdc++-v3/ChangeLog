@@ -1,3 +1,10 @@
+2020-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CHEADERS): Warn if the c_std
+	option is used and fail unless --enable-cheaders-obsolete is
+	also used.
+	* configure: Regenerate.
+
 2020-08-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85828
