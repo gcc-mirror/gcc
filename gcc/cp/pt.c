@@ -11184,8 +11184,8 @@ tsubst_friend_class (tree friend_tmpl, tree args)
       push_nested_class (context);
     }
 
-  tmpl = lookup_name_real (DECL_NAME (friend_tmpl), LOOK_where::CLASS_NAMESPACE,
-			   LOOK_want::NORMAL | LOOK_want::HIDDEN_FRIEND);
+  tmpl = lookup_name (DECL_NAME (friend_tmpl), LOOK_where::CLASS_NAMESPACE,
+		      LOOK_want::NORMAL | LOOK_want::HIDDEN_FRIEND);
 
   if (tmpl && DECL_CLASS_TEMPLATE_P (tmpl))
     {
@@ -17835,7 +17835,7 @@ lookup_init_capture_pack (tree decl)
   for (int i = 0; i < len; ++i)
     {
       tree ename = vec ? make_ith_pack_parameter_name (cname, i) : cname;
-      tree elt = lookup_name_real (ename, LOOK_where::ALL, LOOK_want::NORMAL);
+      tree elt = lookup_name (ename);
       if (vec)
 	TREE_VEC_ELT (vec, i) = elt;
       else
@@ -17940,9 +17940,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    tree inst;
 	    if (!DECL_PACK_P (decl))
 	      {
-		inst = (lookup_name_real
-			(DECL_NAME (decl), LOOK_where::BLOCK,
-			 LOOK_want::NORMAL | LOOK_want::HIDDEN_LAMBDA));
+		inst = lookup_name (DECL_NAME (decl), LOOK_where::BLOCK,
+				    LOOK_want::HIDDEN_LAMBDA);
 		gcc_assert (inst != decl && is_capture_proxy (inst));
 	      }
 	    else if (is_normal_capture_proxy (decl))

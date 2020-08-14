@@ -28213,7 +28213,7 @@ cp_parser_nested_requirement (cp_parser *parser)
 
 /* Support Functions */
 
-/* Return the appropriate prefer_type argument for lookup_name_real based on
+/* Return the appropriate prefer_type argument for lookup_name based on
    tag_type.  */
 
 static inline LOOK_want
@@ -28455,22 +28455,20 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       if (!decl)
 	/* Look it up in the enclosing context.  DR 141: When looking for a
 	   template-name after -> or ., only consider class templates.  */
-	decl = lookup_name_real (name, LOOK_where::ALL,
-				 is_namespace ? LOOK_want::NAMESPACE
-				 /* DR 141: When looking in the
-				    current enclosing context for a
-				    template-name after -> or ., only
-				    consider class templates.  */
-				 : is_template ? LOOK_want::TYPE
-				 : prefer_type_arg (tag_type));
+	decl = lookup_name (name, is_namespace ? LOOK_want::NAMESPACE
+			    /* DR 141: When looking in the
+			       current enclosing context for a
+			       template-name after -> or ., only
+			       consider class templates.  */
+			    : is_template ? LOOK_want::TYPE
+			    : prefer_type_arg (tag_type));
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
     }
   else
     {
-      decl = lookup_name_real (name, LOOK_where::ALL,
-			       is_namespace ? LOOK_want::NAMESPACE
-			       : prefer_type_arg (tag_type));
+      decl = lookup_name (name, is_namespace ? LOOK_want::NAMESPACE
+			  : prefer_type_arg (tag_type));
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
     }

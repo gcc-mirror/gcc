@@ -320,7 +320,14 @@ constexpr LOOK_want operator& (LOOK_want a, LOOK_want b)
   return LOOK_want (unsigned (a) & unsigned (b));
 }
 
-extern tree lookup_name_real (tree, LOOK_where, LOOK_want);
+extern tree lookup_name (tree, LOOK_where, LOOK_want = LOOK_want::NORMAL);
+/* Also declared in c-family/c-common.h.  */
+extern tree lookup_name (tree name);
+inline tree lookup_name (tree name, LOOK_want want)
+{
+  return lookup_name (name, LOOK_where::ALL, want);
+}
+
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);
@@ -328,16 +335,12 @@ inline tree get_global_binding (tree id)
 {
   return get_namespace_binding (NULL_TREE, id);
 }
-/* Also declared in c-family/c-common.h.  */
-extern tree lookup_name (tree name);
-extern tree lookup_name (tree name, LOOK_want);
 extern tree lookup_qualified_name (tree scope, tree name,
 				   LOOK_want = LOOK_want::NORMAL,
 				   bool = true);
 extern tree lookup_qualified_name (tree scope, const char *name,
 				   LOOK_want = LOOK_want::NORMAL,
 				   bool = true);
-extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
