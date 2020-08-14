@@ -11600,15 +11600,112 @@ is_aligning_offset (const_tree offset, const_tree exp)
   /* This must now be the address of EXP.  */
   return TREE_CODE (offset) == ADDR_EXPR && TREE_OPERAND (offset, 0) == exp;
 }
-
-/* Return the tree node if an ARG corresponds to a string constant or zero
-   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
-   non-constant) offset in bytes within the string that ARG is accessing.
-   If MEM_SIZE is non-zero the storage size of the memory is returned.
-   If DECL is non-zero the constant declaration is returned if available.  */
 
-tree
-string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
+/* If EXPR is a constant initializer (either an expression or CONSTRUCTOR),
+   attempt to obtain its native representation as an array of nonzero BYTES.
+   Return true on success and false on failure (the latter without modifying
+   BYTES).  */
+
+static bool
+convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
+{
+  if (TREE_CODE (expr) == CONSTRUCTOR)
+    {
+      /* Set to the size of the CONSTRUCTOR elements.  */
+      unsigned HOST_WIDE_INT ctor_size = bytes->length ();
+
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree val, idx;
+	  tree eltype = TREE_TYPE (type);
+	  unsigned HOST_WIDE_INT elsize =
+	    tree_to_uhwi (TYPE_SIZE_UNIT (eltype));
+
+	  /* Jump through hoops to determine the lower bound for languages
+	     like Ada that can set it to an (almost) arbitrary value.  */
+	  tree dom = TYPE_DOMAIN (type);
+	  if (!dom)
+	    return false;
+	  tree min = TYPE_MIN_VALUE (dom);
+	  if (!min || !tree_fits_uhwi_p (min))
+	    return false;
+	  unsigned HOST_WIDE_INT i, last_idx = tree_to_uhwi (min) - 1;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, idx, val)
+	    {
+	      /* Append zeros for elements with no initializers.  */
+	      if (!tree_fits_uhwi_p (idx))
+		return false;
+	      unsigned HOST_WIDE_INT cur_idx = tree_to_uhwi (idx);
+	      if (unsigned HOST_WIDE_INT size = cur_idx - (last_idx + 1))
+		{
+		  size = size * elsize + bytes->length ();
+		  bytes->safe_grow_cleared (size);
+		}
+
+	      if (!convert_to_bytes (eltype, val, bytes))
+		return false;
+
+	      last_idx = cur_idx;
+	    }
+	}
+      else if (TREE_CODE (type) == RECORD_TYPE)
+	{
+	  tree val, fld;
+	  unsigned HOST_WIDE_INT i;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, fld, val)
+	    {
+	      /* Append zeros for members with no initializers and
+		 any padding.  */
+	      unsigned HOST_WIDE_INT cur_off = int_byte_position (fld);
+	      if (bytes->length () < cur_off)
+		bytes->safe_grow_cleared (cur_off);
+
+	      if (!convert_to_bytes (TREE_TYPE (val), val, bytes))
+		return false;
+	    }
+	}
+      else
+	return false;
+
+      /* Compute the size of the COSNTRUCTOR elements.  */
+      ctor_size = bytes->length () - ctor_size;
+
+      /* Append zeros to the byte vector to the full size of the type.
+	 The type size can be less than the size of the CONSTRUCTOR
+	 if the latter contains initializers for a flexible array
+	 member.  */
+      tree size = TYPE_SIZE_UNIT (type);
+      unsigned HOST_WIDE_INT type_size = tree_to_uhwi (size);
+      if (ctor_size < type_size)
+	if (unsigned HOST_WIDE_INT size_grow = type_size - ctor_size)
+	  bytes->safe_grow_cleared (bytes->length () + size_grow);
+
+      return true;
+    }
+
+  unsigned char charbuf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+  int len = native_encode_expr (expr, charbuf, sizeof charbuf, 0);
+  if (len <= 0)
+    return false;
+
+  unsigned n = bytes->length ();
+  bytes->safe_grow (n + len);
+  unsigned char *p = bytes->address ();
+  memcpy (p + n, charbuf, len);
+  return true;
+}
+
+/* Return a STRING_CST corresponding to ARG's constant initializer either
+   if it's a string constant, or, when VALREP is set, any other constant,
+   or null otherwise.
+   On success, set *PTR_OFFSET to the (possibly non-constant) byte offset
+   within the byte string that ARG is references.  If nonnull set *MEM_SIZE
+   to the size of the byte string.  If nonnull, set *DECL to the constant
+   declaration ARG refers to.  */
+
+static tree
+constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
+		      bool valrep = false)
 {
   tree dummy = NULL_TREE;;
   if (!mem_size)
@@ -11755,18 +11852,43 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       return array;
     }
 
-  if (!VAR_P (array) && TREE_CODE (array) != CONST_DECL)
-    return NULL_TREE;
-
   tree init = ctor_for_folding (array);
-
-  /* Handle variables initialized with string literals.  */
   if (!init || init == error_mark_node)
     return NULL_TREE;
+
+  if (valrep)
+    {
+      HOST_WIDE_INT cstoff;
+      if (!base_off.is_constant (&cstoff))
+	return NULL_TREE;
+
+      /* If value representation was requested convert the initializer
+	 for the whole array or object into a string of bytes forming
+	 its value representation and return it.  */
+      auto_vec<unsigned char> bytes;
+      if (!convert_to_bytes (TREE_TYPE (init), init, &bytes))
+	return NULL_TREE;
+
+      unsigned n = bytes.length ();
+      const char *p = reinterpret_cast<const char *>(bytes.address ());
+      init = build_string_literal (n, p, char_type_node);
+      init = TREE_OPERAND (init, 0);
+      init = TREE_OPERAND (init, 0);
+
+      *mem_size = size_int (TREE_STRING_LENGTH (init));
+      *ptr_offset = wide_int_to_tree (ssizetype, base_off);
+
+      if (decl)
+	*decl = array;
+
+      return init;
+    }
+
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
       /* Convert the 64-bit constant offset to a wider type to avoid
-	 overflow.  */
+	 overflow and use it to obtain the initializer for the subobject
+	 it points into.  */
       offset_int wioff;
       if (!base_off.is_constant (&wioff))
 	return NULL_TREE;
@@ -11779,6 +11901,9 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       unsigned HOST_WIDE_INT fieldoff = 0;
       init = fold_ctor_reference (TREE_TYPE (arg), init, base_off, 0, array,
 				  &fieldoff);
+      if (!init || init == error_mark_node)
+	return NULL_TREE;
+
       HOST_WIDE_INT cstoff;
       if (!base_off.is_constant (&cstoff))
 	return NULL_TREE;
@@ -11790,9 +11915,6 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       else
 	offset = off;
     }
-
-  if (!init)
-    return NULL_TREE;
 
   *ptr_offset = offset;
 
@@ -11864,7 +11986,29 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
   return init;
 }
-
+
+/* Return STRING_CST if an ARG corresponds to a string constant or zero
+   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
+   non-constant) offset in bytes within the string that ARG is accessing.
+   If MEM_SIZE is non-zero the storage size of the memory is returned.
+   If DECL is non-zero the constant declaration is returned if available.  */
+
+tree
+string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
+{
+  return constant_byte_string (arg, ptr_offset, mem_size, decl, false);
+}
+
+/* Similar to string_constant, return a STRING_CST corresponding
+   to the value representation of the first argument if it's
+   a constant.  */
+
+tree
+byte_representation (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
+{
+  return constant_byte_string (arg, ptr_offset, mem_size, decl, true);
+}
+
 /* Optimize x % C1 == C2 for signed modulo if C1 is a power of two and C2
    is non-zero and C3 ((1<<(prec-1)) | (C1 - 1)):
    for C2 > 0 to x & C3 == C2

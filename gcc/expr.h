@@ -289,9 +289,13 @@ expand_normal (tree exp)
 }
 
 
-/* Return the tree node and offset if a given argument corresponds to
-   a string constant.  */
+/* Return STRING_CST and set offset, size and decl, if the first
+   argument corresponds to a string constant.  */
 extern tree string_constant (tree, tree *, tree *, tree *);
+/* Similar to string_constant, return a STRING_CST corresponding
+   to the value representation of the first argument if it's
+   a constant.  */
+extern tree byte_representation (tree, tree *, tree *, tree *);
 
 extern enum tree_code maybe_optimize_mod_cmp (enum tree_code, tree *, tree *);
 
