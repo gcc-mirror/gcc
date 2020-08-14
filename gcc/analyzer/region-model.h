@@ -1869,6 +1869,8 @@ public:
   tree get_decl () const { return m_decl; }
   int get_stack_depth () const;
 
+  const svalue *maybe_get_constant_value (region_model_manager *mgr) const;
+
 private:
   tree m_decl;
 };

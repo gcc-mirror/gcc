@@ -1192,6 +1192,11 @@ region_model::get_rvalue (tree expr, region_model_context *ctxt)
 const svalue *
 region_model::get_store_value (const region *reg) const
 {
+  /* Special-case: handle var_decls in the constant pool.  */
+  if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
+    if (const svalue *sval = decl_reg->maybe_get_constant_value (m_mgr))
+      return sval;
+
   const svalue *sval
     = m_store.get_any_binding (m_mgr->get_store_manager (), reg);
   if (sval)

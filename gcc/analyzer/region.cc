@@ -874,6 +874,33 @@ decl_region::get_stack_depth () const
   return 0;
 }
 
+/* If the underlying decl is in the global constant pool,
+   return an svalue representing the constant value.
+   Otherwise return NULL.  */
+
+const svalue *
+decl_region::maybe_get_constant_value (region_model_manager *mgr) const
+{
+  if (TREE_CODE (m_decl) == VAR_DECL
+      && DECL_IN_CONSTANT_POOL (m_decl)
+      && DECL_INITIAL (m_decl)
+      && TREE_CODE (DECL_INITIAL (m_decl)) == CONSTRUCTOR)
+    {
+      tree ctor = DECL_INITIAL (m_decl);
+      gcc_assert (!TREE_CLOBBER_P (ctor));
+
+      /* Create a binding map, applying ctor to it, using this
+	 decl_region as the base region when building child regions
+	 for offset calculations.  */
+      binding_map map;
+      map.apply_ctor_to_region (this, ctor, mgr);
+
+      /* Return a compound svalue for the map we built.  */
+      return mgr->get_or_create_compound_svalue (get_type (), map);
+    }
+  return NULL;
+}
+
 /* class field_region : public region.  */
 
 /* Implementation of region::dump_to_pp vfunc for field_region.  */
