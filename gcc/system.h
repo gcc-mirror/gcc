@@ -235,6 +235,7 @@ extern int errno;
 # include <cstring>
 # include <new>
 # include <utility>
+# include <type_traits>
 #endif
 
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather
