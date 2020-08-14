@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dump-context.h"
 #include "print-tree.h"
 #include "optinfo-emit-json.h"
+#include "jobserver.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -104,7 +105,6 @@ static void do_compile ();
 static void process_options (void);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
-static void init_asm_output (const char *);
 static void finalize (bool);
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
@@ -176,6 +176,9 @@ FILE *aux_info_file;
 FILE *callgraph_info_file = NULL;
 static bitmap callgraph_info_external_printed;
 FILE *stack_usage_file = NULL;
+
+/* Output file to write additional asm filenames.  */
+FILE *additional_asm_filenames = NULL;
 
 /* The current working directory of a translation.  It's generally the
    directory from which compilation was initiated, but a preprocessed
@@ -893,6 +896,51 @@ init_asm_output (const char *name)
 	  putc ('\n', asm_out_file);
 	}
     }
+}
+
+void
+init_additional_asm_names_file (void)
+{
+  gcc_assert (split_outputs);
+
+  additional_asm_filenames = fopen (split_outputs, "w");
+  if (!additional_asm_filenames)
+    error ("Unable to create a temporary write-only file.");
+
+  fclose (additional_asm_filenames);
+}
+
+/* Reinitialize the assembler file and store it in the additional asm file.  */
+
+void
+handle_additional_asm (int childno)
+{
+  gcc_assert (split_outputs);
+
+  if (childno < 0)
+    return;
+
+  const char *temp_asm_name = make_temp_file (".s");
+  asm_file_name = temp_asm_name;
+
+  if (asm_out_file == stdout)
+    fatal_error (UNKNOWN_LOCATION, "Unexpected asm output to stdout");
+
+  fclose (asm_out_file);
+
+  asm_out_file = fopen (temp_asm_name, "w");
+  if (!asm_out_file)
+    fatal_error (UNKNOWN_LOCATION, "Unable to create asm output file");
+
+  /* Reopen file as append mode.  Here we assume that write to append file is
+     atomic, as it is in Linux.  */
+  additional_asm_filenames = fopen (split_outputs, "a");
+  if (!additional_asm_filenames)
+    fatal_error (UNKNOWN_LOCATION,
+		 "Unable to open the temporary asm files container");
+
+  fprintf (additional_asm_filenames, "%d %s\n", childno, asm_file_name);
+  fclose (additional_asm_filenames);
 }
 
 /* A helper function; used as the reallocator function for cpp's line
@@ -2311,7 +2359,7 @@ do_compile ()
 
           timevar_stop (TV_PHASE_SETUP);
 
-          compile_file ();
+	  compile_file ();
         }
       else
         {
@@ -2476,6 +2524,12 @@ toplev::main (int argc, char **argv)
   diagnostic_finish (global_dc);
 
   finalize_plugins ();
+
+  if (jobserver_initialized)
+    {
+      jobserver_return_token (JOBSERVER_NULL_TOKEN);
+      jobserver_finalize ();
+    }
 
   after_memory_report = true;
 

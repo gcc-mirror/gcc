@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "lto-partition.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -2063,5 +2064,176 @@ input_cgraph_opt_summary (vec<symtab_node *> nodes)
 					&len);
       if (data)
 	input_cgraph_opt_section (file_data, data, len, nodes);
+    }
+}
+
+/* When analysing function for removal, we have mainly three states, as
+   defined below.  */
+
+enum node_partition_state
+{
+  CAN_REMOVE,		/* This node can be removed, or is still to be
+			   analysed.  */
+  IN_CURRENT_PARTITION, /* This node is in current partition and should not be
+			   touched.  */
+  IN_BOUNDARY,		/* This node is in boundary, therefore being in other
+			   partition or is a external symbol, and its body can
+			   be released.  */
+  IN_BOUNDARY_KEEP_BODY /* This symbol is in other partition but we may need its
+			   body for inlining, for instance.  */
+};
+
+/* Handle node that are in the LTRANS boundary, releasing its body and
+   other informations if necessary.  */
+
+static void
+handle_node_in_boundary (symtab_node *node, bool keep_body)
+{
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+    {
+      if (cnode->inlined_to && cnode->inlined_to->aux2 != IN_CURRENT_PARTITION)
+	{
+	  /* If marked to be inlined into a node not in current partition,
+	     then undo the inline.  */
+
+	  if (cnode->callers) /* This edge could be removed.  */
+	    cnode->callers->inline_failed = CIF_UNSPECIFIED;
+	  cnode->inlined_to = NULL;
+	}
+
+      if (cnode->has_gimple_body_p ())
+	{
+	  if (!keep_body)
+	    {
+	      cnode->maybe_release_dominators ();
+	      cnode->remove_callees ();
+	      cnode->remove_all_references ();
+
+	      /* FIXME: Releasing body of clones can release bodies of functions
+		 in current partition.  */
+
+	      /* cnode->release_body ();  */
+	      cnode->body_removed = true;
+	      cnode->definition = false;
+	      cnode->analyzed = false;
+	    }
+	  cnode->cpp_implicit_alias = false;
+	  cnode->alias = false;
+	  cnode->transparent_alias = false;
+	  cnode->thunk.thunk_p = false;
+	  cnode->weakref = false;
+	  /* After early inlining we drop always_inline attributes on
+	     bodies of functions that are still referenced (have their
+	     address taken).  */
+	  DECL_ATTRIBUTES (cnode->decl)
+	    = remove_attribute ("always_inline",
+				DECL_ATTRIBUTES (node->decl));
+
+	  cnode->in_other_partition = true;
+	}
+    }
+  else if (is_a <varpool_node *> (node) && !DECL_EXTERNAL (node->decl))
+    {
+      DECL_EXTERNAL (node->decl) = true;
+      node->in_other_partition = true;
+    }
+}
+
+/* Check the boundary and expands it if necessary, including more nodes or
+   promoting then to a state where their body is required.  */
+
+static void
+compute_boundary (ltrans_partition partition)
+{
+  vec<lto_encoder_entry> &nodes = partition->encoder->nodes;
+  symtab_node *node;
+  cgraph_node *cnode;
+  auto_vec<symtab_node *, 16> mark_to_remove;
+  unsigned int i;
+
+  FOR_EACH_SYMBOL (node)
+    node->aux2 = CAN_REMOVE;
+
+  /* Lets assign the information that the encoder gave to us.  */
+  for (i = 0; i < nodes.length (); i++)
+    {
+      node = nodes[i].node;
+      if (nodes[i].in_partition)
+	{
+	  node->aux2 = IN_CURRENT_PARTITION;
+	  node->in_other_partition = false;
+	}
+      else if (nodes[i].body)
+	node->aux2 = IN_BOUNDARY_KEEP_BODY;
+      else
+	node->aux2 = IN_BOUNDARY;
+    }
+
+  /* Then look for nodes that was marked to be inlined to.  If it is marked to
+     be inlined into a node that is in current partition, then mark its body to
+     not be removed.  Also expand the boundary for nodes that requires that
+     its body not to be removed.  */
+  for (i = 0; i < nodes.length (); i++)
+    {
+      cnode = dyn_cast <cgraph_node *> (nodes[i].node);
+      if (!cnode)
+	continue;
+
+      /* Promote nodes that will be inlined into a node in current partiton.  */
+      if (cnode->inlined_to && cnode->inlined_to->aux2 == IN_CURRENT_PARTITION
+	  && cnode->aux2 == IN_BOUNDARY)
+	cnode->aux2 = IN_BOUNDARY_KEEP_BODY;
+
+      /* Expand the boundary based on nodes in boundary that requires their
+	 body to be present.  */
+      if (cnode->aux2 == IN_BOUNDARY_KEEP_BODY)
+	for (cgraph_edge *e = cnode->callees; e; e = e->next_callee)
+	  if (e->callee->aux2 == CAN_REMOVE)
+	    e->callee->aux2 = IN_BOUNDARY;
+    }
+}
+
+/* Replace the partition in the symbol table, removing every node which is not
+   in partition.  */
+
+void
+lto_apply_partition_mask (ltrans_partition partition)
+{
+  symtab_node *node;
+  auto_vec<symtab_node *, 16> mark_to_remove;
+  unsigned int i;
+
+  compute_boundary (partition);
+
+  FOR_EACH_SYMBOL (node)
+    switch (node->aux2)
+      {
+	case IN_CURRENT_PARTITION:
+	  continue;
+
+	case CAN_REMOVE:
+	  mark_to_remove.safe_push (node);
+	  break;
+
+	case IN_BOUNDARY:
+	  handle_node_in_boundary (node, false);
+	  break;
+
+	case IN_BOUNDARY_KEEP_BODY:
+	  handle_node_in_boundary (node, true);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+      }
+
+  /* Finally remove queued nodes.  */
+  for (i = 0; i < mark_to_remove.length (); i++)
+    {
+      symtab_node *node = mark_to_remove[i];
+      if (is_a <cgraph_node *> (node))
+	dyn_cast <cgraph_node *> (node)->maybe_release_dominators ();
+
+      node->remove ();
     }
 }

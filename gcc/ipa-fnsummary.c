@@ -4610,7 +4610,7 @@ public:
       gcc_assert (n == 0);
       small_p = param;
     }
-  virtual bool gate (function *) { return true; }
+  virtual bool gate (function *) { return !(flag_ltrans && split_outputs); }
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();

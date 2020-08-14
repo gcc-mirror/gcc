@@ -297,9 +297,13 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
 	unlink_from_assembler_name_hash (node, true);
 
       const char *old_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-	  && DECL_RTL_SET_P (decl))
-	warning (0, "%qD renamed after being referenced in assembly", decl);
+      if (DECL_RTL_SET_P (decl))
+	{
+	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+	      && DECL_RTL_SET_P (decl))
+	    warning (0, "%qD renamed after being referenced in assembly", decl);
+	  SET_DECL_RTL (decl, NULL);
+	}
 
       SET_DECL_ASSEMBLER_NAME (decl, name);
       if (alias)
@@ -965,6 +969,8 @@ symtab_node::dump_base (FILE *f)
   if (lto_file_data)
     fprintf (f, "  Read from file: %s\n",
 	     lto_file_data->file_name);
+
+  fprintf (f, "  AUX2: %d\n", aux2);
 }
 
 /* Dump symtab node to F.  */
@@ -2503,4 +2509,38 @@ symtab_node::output_to_lto_symbol_table_p (void)
       return false;
     }
   return true;
+}
+
+DEBUG_FUNCTION symtab_node *
+symtab_node::find_by_order (int order)
+{
+  symtab_node *node;
+  FOR_EACH_SYMBOL (node)
+    if (node->order == order)
+      return node;
+
+  return NULL;
+}
+
+DEBUG_FUNCTION symtab_node *
+symtab_node::find_by_name (const char * name)
+{
+  symtab_node *node;
+  FOR_EACH_SYMBOL (node)
+    if (!strcmp (node->name (), name))
+      return node;
+
+  return NULL;
+}
+
+DEBUG_FUNCTION symtab_node *
+symtab_node::find_by_asm_name (const char *asm_name)
+{
+  symtab_node *node;
+  FOR_EACH_SYMBOL (node)
+    if (!strcmp (node->asm_name (), asm_name))
+      return node;
+
+  return NULL;
+
 }

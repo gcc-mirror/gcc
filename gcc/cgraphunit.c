@@ -2258,6 +2258,11 @@ cgraph_node::expand (void)
 {
   location_t saved_loc;
 
+  /* FIXME: Find out why body-removed nodes are marked for output.  */
+  if (body_removed)
+    return;
+
+
   /* We ought to not compile any inline clones.  */
   gcc_assert (!inlined_to);
 
@@ -2658,6 +2663,7 @@ ipa_passes (void)
 
       execute_ipa_summary_passes
 	((ipa_opt_pass_d *) passes->all_regular_ipa_passes);
+
     }
 
   /* Some targets need to handle LTO assembler output specially.  */
@@ -2687,10 +2693,17 @@ ipa_passes (void)
   if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_end ();
 
-  if (!flag_ltrans
+  if (split_outputs)
+    flag_ltrans = true;
+
+  if ((!flag_ltrans || split_outputs)
       && ((in_lto_p && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	  || !flag_lto || flag_fat_lto_objects))
     execute_ipa_pass_list (passes->all_regular_ipa_passes);
+
+  if (split_outputs)
+    flag_ltrans = false;
+
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
   bitmap_obstack_release (NULL);
@@ -2742,6 +2755,185 @@ symbol_table::output_weakrefs (void)
       }
 }
 
+static bool is_number (const char *str)
+{
+  while (*str != '\0')
+    switch (*str++)
+      {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	  continue;
+	default:
+	  return false;
+      }
+
+  return true;
+}
+
+/* If forked, which child am I?  */
+
+static int childno = -1;
+
+static bool
+maybe_compile_in_parallel (void)
+{
+  struct symtab_node *node;
+  int partitions, i, j;
+  int *pids;
+
+  bool promote_statics = param_promote_statics;
+  bool balance = param_balance_partitions;
+  bool jobserver = false;
+  bool job_auto = false;
+  int num_jobs = -1;
+
+  if (!flag_parallel_jobs || !split_outputs)
+    return false;
+
+  if (!strcmp (flag_parallel_jobs, "auto"))
+    {
+      jobserver = jobserver_initialize ();
+      job_auto = true;
+    }
+  else if (!strcmp (flag_parallel_jobs, "jobserver"))
+    jobserver = jobserver_initialize ();
+  else if (is_number (flag_parallel_jobs))
+    num_jobs = atoi (flag_parallel_jobs);
+  else
+    gcc_unreachable ();
+
+  if (job_auto && !jobserver)
+    {
+      num_jobs = sysconf (_SC_NPROCESSORS_CONF);
+      if (num_jobs > 2)
+	num_jobs = 2;
+    }
+
+  if (num_jobs < 0 && !jobserver)
+    {
+      inform (UNKNOWN_LOCATION,
+	      "-fparallel-jobs=jobserver, but no GNU Jobserver found");
+      return false;
+    }
+
+  if (jobserver)
+    num_jobs = 2;
+
+  if (num_jobs == 0)
+    {
+      inform (UNKNOWN_LOCATION, "-fparallel-jobs=0 makes no sense");
+      return false;
+    }
+
+  /* Trick the compiler to think that we are in WPA.  */
+  flag_wpa = "";
+  symtab_node::checking_verify_symtab_nodes ();
+
+  /* Partition the program so that COMDATs get mapped to the same
+     partition.  If promote_statics is true, it also maps statics
+     to the same partition.  If balance is true, try to balance the
+     partitions for compilation performance.  */
+  lto_merge_comdat_map (balance, promote_statics, num_jobs);
+
+  /* AUX pointers are used by partitioning code to bookkeep number of
+     partitions symbol is in.  This is no longer needed.  */
+  FOR_EACH_SYMBOL (node)
+    node->aux = NULL;
+
+  /* We decided that partitioning is a bad idea.  In this case, just
+     proceed with the default compilation method.  */
+  if (ltrans_partitions.length () <= 1)
+    {
+      flag_wpa = NULL;
+      jobserver_finalize ();
+      return false;
+    }
+
+  /* Find out statics that need to be promoted
+     to globals with hidden visibility because they are accessed from
+     multiple partitions.  */
+  lto_promote_cross_file_statics (promote_statics);
+
+  /* Check if we have variables being referenced across partitions.  */
+  lto_check_usage_from_other_partitions ();
+
+  /* Trick the compiler to think we are not in WPA anymore.  */
+  flag_wpa = NULL;
+
+  partitions = ltrans_partitions.length ();
+  pids = XALLOCAVEC (pid_t, partitions);
+
+  /* There is no point in launching more jobs than we have partitions.  */
+  if (num_jobs > partitions)
+    num_jobs = partitions;
+
+  /* Trick the compiler to think we are in LTRANS mode.  */
+  flag_ltrans = true;
+
+  init_additional_asm_names_file ();
+
+  /* Flush asm file, so we don't get repeated output as we fork.  */
+  fflush (asm_out_file);
+
+  /* Insert a token for child to consume.  */
+  if (jobserver)
+    {
+      num_jobs = partitions;
+      jobserver_return_token ('p');
+    }
+
+  /* Spawn processes.  Spawn as soon as there is a free slot.  */
+  for (j = 0, i = -num_jobs; i < partitions; i++, j++)
+    {
+      if (i >= 0)
+	{
+	  int wstatus, ret;
+	  ret = waitpid (pids[i], &wstatus, 0);
+
+	  if (ret < 0)
+	    internal_error ("Unable to wait child %d to finish", i);
+	  else if (WIFEXITED (wstatus))
+	    {
+	      if (WEXITSTATUS (wstatus) != 0)
+		error ("Child %d exited with error", i);
+	    }
+	  else if (WIFSIGNALED (wstatus))
+	    error ("Child %d aborted with error", i);
+	}
+
+      if (j < partitions)
+	{
+	  gcc_assert (ltrans_partitions[j]->symbols > 0);
+
+	  if (jobserver)
+	    jobserver_get_token ();
+
+	  pids[j] = fork ();
+	  if (pids[j] == 0)
+	    {
+	      childno = j;
+	      lto_apply_partition_mask (ltrans_partitions[j]);
+	      return true;
+	    }
+	}
+    }
+
+  /* Get the token which parent inserted for the childs, which they returned by
+     now.  */
+  if (jobserver)
+    jobserver_get_token ();
+  exit (0);
+}
+
+
 /* Perform simple optimizations based on callgraph.  */
 
 void
@@ -2768,6 +2960,7 @@ symbol_table::compile (void)
   {
     timevar_start (TV_CGRAPH_IPA_PASSES);
     ipa_passes ();
+    maybe_compile_in_parallel ();
     timevar_stop (TV_CGRAPH_IPA_PASSES);
   }
   /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
@@ -2790,6 +2983,9 @@ symbol_table::compile (void)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
+  if (split_outputs)
+    handle_additional_asm (childno);
+
   switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
   if (!quiet_flag)

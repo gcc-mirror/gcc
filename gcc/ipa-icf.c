@@ -2345,7 +2345,8 @@ sem_item_optimizer::filter_removed_items (void)
         {
 	  cgraph_node *cnode = static_cast <sem_function *>(item)->get_node ();
 
-	  if (in_lto_p && (cnode->alias || cnode->body_removed))
+	  if ((in_lto_p || split_outputs)
+	      && (cnode->alias || cnode->body_removed))
 	    remove_item (item);
 	  else
 	    filtered.safe_push (item);

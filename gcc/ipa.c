@@ -350,7 +350,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 
   /* Mark variables that are obviously needed.  */
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if (!vnode->can_remove_if_no_refs_p()
+    if (!vnode->can_remove_if_no_refs_p ()
 	&& !vnode->in_other_partition)
       {
 	reachable.add (vnode);
@@ -564,7 +564,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	}
       else
 	gcc_assert (node->clone_of || !node->has_gimple_body_p ()
-		    || in_lto_p || DECL_RESULT (node->decl));
+		    || in_lto_p || split_outputs || DECL_RESULT (node->decl));
     }
 
   /* Inline clones might be kept around so their materializing allows further
