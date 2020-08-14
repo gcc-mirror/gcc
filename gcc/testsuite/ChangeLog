@@ -1,3 +1,38 @@
+2020-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-fn5.C: New test.
+	* g++.dg/concepts/fn8.C: Generalize dg-error directive to accept
+	"no matching function ..." diagnostic.
+	* g++.dg/cpp2a/concepts-fn1.C: Likewise.
+	* g++.dg/cpp2a/concepts-ts2.C: Likewise.
+	* g++.dg/cpp2a/concepts-ts3.C: Likewise.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/torture/pr95548.C: New test.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr84805_0.C: Update.
+	Fix typo.
+
+2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/96482
+	* gcc.dg/ipa/pr96482-2.c: New test.
+
 2020-08-12  Alan Modra  <amodra@gmail.com>
 
 	Backported from master:

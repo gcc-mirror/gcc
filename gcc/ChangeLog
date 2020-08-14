@@ -1,3 +1,120 @@
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.h (LTO_minor_version): Bump version.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95548
+	* ipa-devirt.c (struct odr_enum_val): Turn values to wide_int.
+	(ipa_odr_summary_write): Update streaming.
+	(ipa_odr_read_section): Update streaming.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c: Include data-streamer.h, lto-streamer.h and
+	streamer-hooks.h.
+	(odr_enums): New static var.
+	(struct odr_enum_val): New struct.
+	(class odr_enum): New struct.
+	(odr_enum_map): New hashtable.
+	(odr_types_equivalent_p): Drop code testing TYPE_VALUES.
+	(add_type_duplicate): Likewise.
+	(free_odr_warning_data): Do not free TYPE_VALUES.
+	(register_odr_enum): New function.
+	(ipa_odr_summary_write): New function.
+	(ipa_odr_read_section): New function.
+	(ipa_odr_summary_read): New function.
+	(class pass_ipa_odr): New pass.
+	(make_pass_ipa_odr): New function.
+	* ipa-utils.h (register_odr_enum): Declare.
+	* lto-section-in.c: (lto_section_name): Add odr_types section.
+	* lto-streamer.h (enum lto_section_type): Add odr_types section.
+	* passes.def: Add odr_types pass.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	TYPE_VALUES.
+	(hash_tree): Likewise.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+	* timevar.def (TV_IPA_ODR): New timervar.
+	* tree-pass.h (make_pass_ipa_odr): Declare.
+	* tree.c (free_lang_data_in_type): Regiser ODR types.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Add streamer_debugging check.
+	* lto-streamer.h (streamer_debugging): New constant
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Add
+	streamer_debugging check.
+	(streamer_get_pickled_tree): Likewise.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Likewise.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Do not stream final ref if
+	it is not needed.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* tree-streamer.c (record_common_node): Fix hash value of pre-streamed
+	nodes.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_read_tree): Do not stream end markers.
+	(lto_input_scc): Optimize streaming of entry lengths.
+	* lto-streamer-out.c (lto_write_tree): Do not stream end markers
+	(DFS::DFS): Optimize stremaing of entry lengths
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_input_scc): Add SHARED_SCC parameter.
+	(lto_input_tree_1): Strenghten sanity check.
+	(lto_input_tree): Update call of lto_input_scc.
+	* lto-streamer-out.c: Include ipa-utils.h
+	(create_output_block): Initialize local_trees if merigng is going
+	to happen.
+	(destroy_output_block): Destroy local_trees.
+	(DFS): Add max_local_entry.
+	(local_tree_p): New function.
+	(DFS::DFS): Initialize and maintain it.
+	(DFS::DFS_write_tree): Decide on streaming format.
+	(lto_output_tree): Stream inline singleton SCCs
+	* lto-streamer.h (enum LTO_tags): Add LTO_trees.
+	(struct output_block): Add local_trees.
+	(lto_input_scc): Update prototype.
+
+2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/96482
+	* ipa-cp.c (ipcp_bits_lattice::meet_with_1): Mask m_value
+	with m_mask.
+
 2020-08-12  Alan Modra  <amodra@gmail.com>
 
 	Backported from master:
