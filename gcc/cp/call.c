@@ -4704,7 +4704,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
        up in the global scope.
 
      we disregard block-scope declarations of "operator new".  */
-  fns = lookup_name_real (fnname, LOOK_where::NAMESPACE, 0, 0, 0);
+  fns = lookup_name_real (fnname, LOOK_where::NAMESPACE, LOOK_want::NORMAL, 0);
   fns = lookup_arg_dependent (fnname, fns, *args);
 
   if (align_arg)
@@ -5983,7 +5983,7 @@ add_operator_candidates (z_candidate **candidates,
   if (!memonly)
     {
       tree fns = lookup_name_real (fnname, LOOK_where::BLOCK_NAMESPACE,
-				   0, 0, 0);
+				   LOOK_want::NORMAL, 0);
       fns = lookup_arg_dependent (fnname, fns, arglist);
       add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
 		      NULL_TREE, false, NULL_TREE, NULL_TREE,
