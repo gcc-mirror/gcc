@@ -10322,8 +10322,8 @@ static tree
 capture_decltype (tree decl)
 {
   tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
-  tree cap = lookup_name_real (DECL_NAME (decl), LOOK_where::BLOCK,
-			       LOOK_want::NORMAL | LOOK_want::HIDDEN_LAMBDA);
+  tree cap = lookup_name (DECL_NAME (decl), LOOK_where::BLOCK,
+			  LOOK_want::HIDDEN_LAMBDA);
   tree type;
 
   if (cap && is_capture_proxy (cap))

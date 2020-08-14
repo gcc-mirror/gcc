@@ -3743,7 +3743,7 @@ identifier_type_value_1 (tree id)
     return REAL_IDENTIFIER_TYPE_VALUE (id);
   /* Have to search for it. It must be on the global level, now.
      Ask lookup_name not to return non-types.  */
-  id = lookup_name_real (id, LOOK_where::BLOCK_NAMESPACE, LOOK_want::TYPE);
+  id = lookup_name (id, LOOK_where::BLOCK_NAMESPACE, LOOK_want::TYPE);
   if (id)
     return TREE_TYPE (id);
   return NULL_TREE;
@@ -5213,8 +5213,7 @@ cp_namespace_decls (tree ns)
 }
 
 /* Given a lookup that returned VAL, use FLAGS to decide if we want to
-   ignore it or not.  Subroutine of lookup_name_real and
-   lookup_type_scope.  */
+   ignore it or not.  Subroutine of lookup_name_1 and lookup_type_scope.  */
 
 static bool
 qualify_lookup (tree val, LOOK_want want)
@@ -5987,7 +5986,7 @@ suggest_alternative_in_scoped_enum (tree name, tree scoped_enum)
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
    or a class TYPE).
 
-   WANT as for lookup_name_real_1.
+   WANT as for lookup_name_1.
 
    Returns a DECL (or OVERLOAD, or BASELINK) representing the
    declaration found.  If no suitable declaration can be found,
@@ -6420,10 +6419,13 @@ innermost_non_namespace_value (tree name)
    LOOK_want::NORMAL for normal lookup (implicit typedefs can be
    hidden).  LOOK_want::TYPE for only TYPE_DECLS, LOOK_want::NAMESPACE
    for only NAMESPACE_DECLS.  These two can be bit-ored to find
-   namespace or type.  */
+   namespace or type.
+
+   WANT can also have LOOK_want::HIDDEN_FRIEND or
+   LOOK_want::HIDDEN_LAMBDa added to it.  */
 
 static tree
-lookup_name_real_1 (tree name, LOOK_where where, LOOK_want want)
+lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
 {
   tree val = NULL_TREE;
 
@@ -6560,33 +6562,21 @@ lookup_name_real_1 (tree name, LOOK_where where, LOOK_want want)
   return val;
 }
 
-/* Wrapper for lookup_name_real_1.  */
+/* Wrapper for lookup_name_1.  */
 
 tree
-lookup_name_real (tree name, LOOK_where where, LOOK_want want)
+lookup_name (tree name, LOOK_where where, LOOK_want want)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = lookup_name_real_1 (name, where, want);
+  tree ret = lookup_name_1 (name, where, want);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
 tree
-lookup_name_nonclass (tree name)
-{
-  return lookup_name_real (name, LOOK_where::BLOCK_NAMESPACE, LOOK_want::NORMAL);
-}
-
-tree
 lookup_name (tree name)
 {
-  return lookup_name_real (name, LOOK_where::ALL, LOOK_want::NORMAL);
-}
-
-tree
-lookup_name (tree name, LOOK_want want)
-{
-  return lookup_name_real (name, LOOK_where::ALL, want);
+  return lookup_name (name, LOOK_where::ALL, LOOK_want::NORMAL);
 }
 
 /* Look up NAME for type used in elaborated name specifier in
@@ -6595,7 +6585,7 @@ lookup_name (tree name, LOOK_want want)
    name, more scopes are checked if cleanup or template parameter
    scope is encountered.
 
-   Unlike lookup_name_real, we make sure that NAME is actually
+   Unlike lookup_name_1, we make sure that NAME is actually
    declared in the desired scope, not from inheritance, nor using
    directive.  For using declaration, there is DR138 still waiting
    to be resolved.  Hidden name coming from an earlier friend

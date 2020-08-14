@@ -4704,7 +4704,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
        up in the global scope.
 
      we disregard block-scope declarations of "operator new".  */
-  fns = lookup_name_real (fnname, LOOK_where::NAMESPACE, LOOK_want::NORMAL);
+  fns = lookup_name (fnname, LOOK_where::NAMESPACE);
   fns = lookup_arg_dependent (fnname, fns, *args);
 
   if (align_arg)
@@ -5982,8 +5982,7 @@ add_operator_candidates (z_candidate **candidates,
      consider.  */
   if (!memonly)
     {
-      tree fns = lookup_name_real (fnname, LOOK_where::BLOCK_NAMESPACE,
-				   LOOK_want::NORMAL);
+      tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE);
       fns = lookup_arg_dependent (fnname, fns, arglist);
       add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
 		      NULL_TREE, false, NULL_TREE, NULL_TREE,
@@ -6812,7 +6811,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
     fns = NULL_TREE;
 
   if (fns == NULL_TREE)
-    fns = lookup_name_nonclass (fnname);
+    fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE);
 
   /* Strip const and volatile from addr.  */
   tree oaddr = addr;
