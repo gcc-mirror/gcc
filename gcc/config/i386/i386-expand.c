@@ -10665,15 +10665,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
-    case VOID_FTYPE_UINT_UINT_UINT:
-    case VOID_FTYPE_UINT64_UINT_UINT:
-    case UCHAR_FTYPE_UINT_UINT_UINT:
-    case UCHAR_FTYPE_UINT64_UINT_UINT:
-      nargs = 3;
-      klass = load;
-      memory = ARRAY_SIZE (args);
-      last_arg_constant = true;
-      break;
     default:
       gcc_unreachable ();
     }
@@ -10728,13 +10719,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	{
 	  if (!match)
 	    {
-	      if (icode == CODE_FOR_lwp_lwpvalsi3
-		  || icode == CODE_FOR_lwp_lwpinssi3
-		  || icode == CODE_FOR_lwp_lwpvaldi3
-		  || icode == CODE_FOR_lwp_lwpinsdi3)
-		error ("the last argument must be a 32-bit immediate");
-	      else
-		error ("the last argument must be an 8-bit immediate");
+	      error ("the last argument must be an 8-bit immediate");
 	      return const0_rtx;
 	    }
 	}
@@ -11658,19 +11643,69 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_LLWPCB:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
-      icode = CODE_FOR_lwp_llwpcb;
-      if (!insn_data[icode].operand[0].predicate (op0, Pmode))
+
+      if (!register_operand (op0, Pmode))
 	op0 = ix86_zero_extend_to_Pmode (op0);
-      emit_insn (gen_lwp_llwpcb (op0));
+      emit_insn (gen_lwp_llwpcb (Pmode, op0));
       return 0;
 
     case IX86_BUILTIN_SLWPCB:
-      icode = CODE_FOR_lwp_slwpcb;
       if (!target
-	  || !insn_data[icode].operand[0].predicate (target, Pmode))
+	  || !register_operand (target, Pmode))
 	target = gen_reg_rtx (Pmode);
-      emit_insn (gen_lwp_slwpcb (target));
+      emit_insn (gen_lwp_slwpcb (Pmode, target));
       return target;
+
+    case IX86_BUILTIN_LWPVAL32:
+    case IX86_BUILTIN_LWPVAL64:
+    case IX86_BUILTIN_LWPINS32:
+    case IX86_BUILTIN_LWPINS64:
+      mode = ((fcode == IX86_BUILTIN_LWPVAL32
+	       || fcode == IX86_BUILTIN_LWPINS32)
+	      ? SImode : DImode);
+
+      if (fcode == IX86_BUILTIN_LWPVAL32
+	  || fcode == IX86_BUILTIN_LWPVAL64)
+	icode = code_for_lwp_lwpval (mode);
+      else
+	icode = code_for_lwp_lwpins (mode);
+
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+      mode0 = insn_data[icode].operand[0].mode;
+
+      if (!insn_data[icode].operand[0].predicate (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+      if (!insn_data[icode].operand[1].predicate (op1, SImode))
+	op1 = copy_to_mode_reg (SImode, op1);
+
+      if (!CONST_INT_P (op2))
+	{
+	  error ("the last argument must be a 32-bit immediate");
+	  return const0_rtx;
+	}
+
+      emit_insn (GEN_FCN (icode) (op0, op1, op2));
+
+      if (fcode == IX86_BUILTIN_LWPINS32
+	  || fcode == IX86_BUILTIN_LWPINS64)
+	{
+	  if (target == 0
+	      || !nonimmediate_operand (target, QImode))
+	    target = gen_reg_rtx (QImode);
+
+	  pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			    const0_rtx);
+	  emit_insn (gen_rtx_SET (target, pat));
+
+	  return target;
+	}
+      else
+	return 0;
 
     case IX86_BUILTIN_BEXTRI32:
     case IX86_BUILTIN_BEXTRI64:
