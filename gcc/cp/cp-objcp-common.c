@@ -355,7 +355,7 @@ identifier_global_value (tree name)
 tree
 identifier_global_tag (tree name)
 {
-  tree ret = lookup_qualified_name (global_namespace, name, /*prefer_type*/2,
+  tree ret = lookup_qualified_name (global_namespace, name, LOOK_want::TYPE,
 				    /*complain*/false);
   if (ret == error_mark_node)
     return NULL_TREE;

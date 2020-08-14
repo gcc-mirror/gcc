@@ -2998,12 +2998,12 @@ check_explicit_specialization (tree declarator,
 	      /* Find the namespace binding, using the declaration
 		 context.  */
 	      fns = lookup_qualified_name (CP_DECL_CONTEXT (decl), dname,
-					   false, true);
+					   LOOK_want::NORMAL, true);
 	      if (fns == error_mark_node)
 		/* If lookup fails, look for a friend declaration so we can
 		   give a better diagnostic.  */
 		fns = lookup_qualified_name (CP_DECL_CONTEXT (decl), dname,
-					     /*type*/false, /*complain*/true,
+					     LOOK_want::NORMAL, /*complain*/true,
 					     /*hidden*/true);
 
 	      if (fns == error_mark_node || !is_overloaded_fn (fns))
@@ -11243,9 +11243,8 @@ tsubst_friend_class (tree friend_tmpl, tree args)
       push_nested_class (context);
     }
 
-  tmpl = lookup_name_real (DECL_NAME (friend_tmpl), /*prefer_type=*/false,
-			   /*non_class=*/false, /*block_p=*/false,
-			   /*namespaces_only=*/false, LOOKUP_HIDDEN);
+  tmpl = lookup_name_real (DECL_NAME (friend_tmpl), LOOK_where::CLASS_NAMESPACE,
+			   LOOK_want::NORMAL, LOOKUP_HIDDEN);
 
   if (tmpl && DECL_CLASS_TEMPLATE_P (tmpl))
     {
@@ -16275,10 +16274,10 @@ tsubst_qualified_id (tree qualified_id, tree args,
 	    }
 	  else
 	    expr = lookup_qualified_name (scope, complete_dtor_identifier,
-					  /*is_type_p=*/0, false);
+					  LOOK_want::NORMAL, false);
 	}
       else
-	expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
+	expr = lookup_qualified_name (scope, expr, LOOK_want::NORMAL, false);
       if (TREE_CODE (TREE_CODE (expr) == TEMPLATE_DECL
 		     ? DECL_TEMPLATE_RESULT (expr) : expr) == TYPE_DECL)
 	{
@@ -17924,7 +17923,8 @@ lookup_init_capture_pack (tree decl)
   for (int i = 0; i < len; ++i)
     {
       tree ename = vec ? make_ith_pack_parameter_name (cname, i) : cname;
-      tree elt = lookup_name_real (ename, 0, 0, true, 0, LOOKUP_NORMAL);
+      tree elt = lookup_name_real (ename, LOOK_where::ALL, LOOK_want::NORMAL,
+				   LOOKUP_NORMAL);
       if (vec)
 	TREE_VEC_ELT (vec, i) = elt;
       else
@@ -18036,9 +18036,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    tree inst;
 	    if (!DECL_PACK_P (decl))
 	      {
-		inst = lookup_name_real (DECL_NAME (decl), /*prefer_type*/0,
-					 /*nonclass*/1, /*block_p=*/true,
-					 /*ns_only*/0, LOOKUP_HIDDEN);
+		inst = lookup_name_real (DECL_NAME (decl),
+					 LOOK_where::BLOCK_NAMESPACE,
+					 LOOK_want::NORMAL,
+					 LOOKUP_HIDDEN);
 		gcc_assert (inst != decl && is_capture_proxy (inst));
 	      }
 	    else if (is_normal_capture_proxy (decl))
@@ -20318,8 +20319,7 @@ tsubst_copy_and_build (tree t,
 	    tree scope = TREE_OPERAND (member, 0);
 	    tree tmpl = TREE_OPERAND (TREE_OPERAND (member, 1), 0);
 	    tree args = TREE_OPERAND (TREE_OPERAND (member, 1), 1);
-	    member = lookup_qualified_name (scope, tmpl,
-					    /*is_type_p=*/false,
+	    member = lookup_qualified_name (scope, tmpl, LOOK_want::NORMAL,
 					    /*complain=*/false);
 	    if (BASELINK_P (member))
 	      {
@@ -28832,7 +28832,7 @@ deduction_guides_for (tree tmpl, tsubst_flags_t complain)
     {
       guides = lookup_qualified_name (CP_DECL_CONTEXT (tmpl),
 				      dguide_name (tmpl),
-				      /*type*/false, /*complain*/false,
+				      LOOK_want::NORMAL, /*complain*/false,
 				      /*hidden*/false);
       if (guides == error_mark_node)
 	guides = NULL_TREE;

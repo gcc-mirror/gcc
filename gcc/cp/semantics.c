@@ -5536,7 +5536,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 				omp_reduction_id (ERROR_MARK,
 						  TREE_OPERAND (id, 1),
 						  type),
-				false, false);
+				LOOK_want::NORMAL, false);
   tree fns = id;
   id = NULL_TREE;
   if (fns && is_overloaded_fn (fns))
@@ -10336,8 +10336,8 @@ static tree
 capture_decltype (tree decl)
 {
   tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
-  tree cap = lookup_name_real (DECL_NAME (decl), /*type*/0, /*nonclass*/1,
-			       /*block_p=*/true, /*ns*/0, LOOKUP_HIDDEN);
+  tree cap = lookup_name_real (DECL_NAME (decl), LOOK_where::BLOCK_NAMESPACE,
+			       LOOK_want::NORMAL, LOOKUP_HIDDEN);
   tree type;
 
   if (cap && is_capture_proxy (cap))
