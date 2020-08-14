@@ -1118,8 +1118,8 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
     case RESULT_DECL:
     case ARRAY_REF:
       {
-	const region *element_reg = get_lvalue (pv, ctxt);
-	return get_store_value (element_reg);
+	const region *reg = get_lvalue (pv, ctxt);
+	return get_store_value (reg);
       }
 
     case REALPART_EXPR:
