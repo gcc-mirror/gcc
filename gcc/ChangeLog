@@ -1,5 +1,19 @@
 2020-08-13  David Malcolm  <dmalcolm@redhat.com>
 
+	PR analyzer/93032
+	PR analyzer/93938
+	PR analyzer/94011
+	PR analyzer/94099
+	PR analyzer/94399
+	PR analyzer/94458
+	PR analyzer/94503
+	PR analyzer/94640
+	PR analyzer/94688
+	PR analyzer/94689
+	PR analyzer/94839
+	PR analyzer/95026
+	PR analyzer/95042
+	PR analyzer/95240
 	* Makefile.in (ANALYZER_OBJS): Add analyzer/region.o,
 	analyzer/region-model-impl-calls.o,
 	analyzer/region-model-manager.o,
