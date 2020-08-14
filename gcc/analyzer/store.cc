@@ -1691,6 +1691,9 @@ store::mark_as_escaped (const region *base_reg)
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
 
+  if (base_reg->symbolic_for_unknown_ptr_p ())
+    return;
+
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->mark_as_escaped ();
 }
