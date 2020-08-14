@@ -1,3 +1,241 @@
+2020-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96598
+	* gcc.dg/analyzer/pr96598.c: New test.
+
+2020-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93032
+	PR analyzer/93938
+	PR analyzer/94011
+	PR analyzer/94099
+	PR analyzer/94399
+	PR analyzer/94458
+	PR analyzer/94503
+	PR analyzer/94640
+	PR analyzer/94688
+	PR analyzer/94689
+	PR analyzer/94839
+	PR analyzer/95026
+	PR analyzer/95042
+	PR analyzer/95240
+	* g++.dg/analyzer/pr93212.C: Add dg-warning for dangling
+	reference.
+	* g++.dg/analyzer/pr93950.C: Remove xfail.
+	* g++.dg/analyzer/pr94011.C: New test.
+	* g++.dg/analyzer/pr94028.C: Remove leak false positives; mark as
+	failing on C++98.
+	* g++.dg/analyzer/pr94503.C: New test.
+	* g++.dg/analyzer/pr95042.C: New test.
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue-2.c: New test.
+	* gcc.dg/analyzer/CVE-2005-1689-dedupe-issue.c: Add xfail.
+	* gcc.dg/analyzer/CVE-2005-1689-minimal.c:
+	Include "analyzer-decls.h".
+	(test_4, test_5, test_6, test_7, test_8): New tests.
+	* gcc.dg/analyzer/abs-1.c: New test.
+	* gcc.dg/analyzer/aliasing-1.c: New test.
+	* gcc.dg/analyzer/aliasing-2.c: New test.
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_describe): New
+	decl.
+	(__analyzer_dump_num_heap_regions): Remove.
+	* gcc.dg/analyzer/attribute-nonnull.c: Add dg-warnings for cases
+	where NULL is directly used as an argument.
+	* gcc.dg/analyzer/bzero-1.c: New test.
+	* gcc.dg/analyzer/casts-1.c: New test.
+	* gcc.dg/analyzer/casts-2.c: New test.
+	* gcc.dg/analyzer/compound-assignment-1.c
+	(test_4): Remove xfail from leak false positive.
+	(called_by_test_5a): Add "allocated here" expected message.
+	(called_by_test_5b): Make expected leak message more precise.
+	* gcc.dg/analyzer/compound-assignment-3.c: Update expected leak
+	message.
+	* gcc.dg/analyzer/compound-assignment-4.c: New test.
+	* gcc.dg/analyzer/compound-assignment-5.c: New test.
+	* gcc.dg/analyzer/conditionals-notrans.c: Remove xfails.
+	* gcc.dg/analyzer/data-model-1.c (test_12d): Update expected
+	results.
+	(test_13): Remove xfail.
+	(test_14): Remove xfail.
+	(test_15): Remove xfail.
+	(test_16): Remove xfails.  Add out-of-bounds access.
+	(test_16_alt): Remove xfails.
+	(test_23): Remove xfail.
+	(test_24): Remove xfail.
+	(test_25): Remove xfail.
+	(test_26): Update expected result.  Remove xfail.  Add xfail.
+	(test_27): Remove xfails.
+	(test_29): Add __analyzer_eval pointer comparisons.
+	(test_41): Generalize expected output for u.ptr comparison with
+	NULL for targets where this could be known to be false.
+	(test_42): Remove xfail.
+	(test_51): Remove xfails.
+	* gcc.dg/analyzer/data-model-13.c: Update for improvements to
+	source location and wording of leak message.
+	* gcc.dg/analyzer/data-model-14.c: Remove -fanalyzer-fine-grained.
+	(test_1): Update for improvement to expected message.
+	(test_2): Remove xfail.
+	* gcc.dg/analyzer/data-model-18.c: Remove xfail.
+	* gcc.dg/analyzer/data-model-20.c: New test.
+	* gcc.dg/analyzer/data-model-5.c: Add dg-warning for deref of
+	NULL.  Add xfailing false leak.
+	* gcc.dg/analyzer/data-model-5b.c: Add xfailing false leak.
+	* gcc.dg/analyzer/data-model-5c.c: Update xfailing false leak.
+	* gcc.dg/analyzer/data-model-5d.c: Reimplement.
+	* gcc.dg/analyzer/data-model-6.c: Delete test.
+	* gcc.dg/analyzer/data-model-8.c: Remove xfail.
+	* gcc.dg/analyzer/describe-1.c: New test.
+	* gcc.dg/analyzer/dot-output.c: Remove xfail.
+	* gcc.dg/analyzer/explode-1.c: Add expected leak warning.
+	* gcc.dg/analyzer/explode-2.c: Add expected leak warnings.  Mark
+	double-free warnings as xfail for now.
+	* gcc.dg/analyzer/feasibility-1.c: New test.
+	* gcc.dg/analyzer/first-field-1.c: New test.
+	* gcc.dg/analyzer/first-field-2.c: New test.
+	* gcc.dg/analyzer/init.c: New test.
+	* gcc.dg/analyzer/leak-2.c: New test.
+	* gcc.dg/analyzer/loop-0-up-to-n-by-1-with-iter-obj.c: New test.
+	* gcc.dg/analyzer/loop-0-up-to-n-by-1.c: New test.
+	* gcc.dg/analyzer/loop-2a.c: Update expected behavior.
+	* gcc.dg/analyzer/loop-3.c: Mark use-after-free as xfail.  Add
+	expected warning about deref of unchecked pointer.
+	* gcc.dg/analyzer/loop-4.c: Remove -fno-analyzer-state-purge.
+	Update expected behavior.
+	* gcc.dg/analyzer/loop-n-down-to-1-by-1.c: New test.
+	* gcc.dg/analyzer/loop-start-down-to-end-by-1.c: New test.
+	* gcc.dg/analyzer/loop-start-down-to-end-by-step.c: New test.
+	* gcc.dg/analyzer/loop-start-to-end-by-step.c: New test.
+	* gcc.dg/analyzer/loop-start-up-to-end-by-1.c: New test.
+	* gcc.dg/analyzer/loop.c: Remove -fno-analyzer-state-purge.
+	Update expected behavior.
+	* gcc.dg/analyzer/malloc-1.c: Remove xfails from leak false
+	positives.  Update expected wording of global_link.m_ptr leak.
+	(test_49): New test.
+	* gcc.dg/analyzer/malloc-4.c: Remove leak false positive.  Update
+	expected wording of leak warning.
+	* gcc.dg/analyzer/malloc-in-loop.c: New test.
+	* gcc.dg/analyzer/malloc-ipa-8-double-free.c: Update expected path
+	to show call to wrapped_malloc.
+	* gcc.dg/analyzer/malloc-ipa-8-unchecked.c: Remove
+	-fanalyzer-verbose-state-changes.
+	* gcc.dg/analyzer/malloc-paths-9.c: Remove comment about duplicate
+	warnings.  Remove duplicate use-after-free paths.
+	* gcc.dg/analyzer/malloc-vs-local-1a.c: Add dg-warning for deref
+	of unchecked pointer.  Update expected number of enodes.
+	* gcc.dg/analyzer/malloc-vs-local-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-3.c: Add dg-warning for deref of
+	unchecked pointer.  Update expected number of enodes.  Avoid
+	overspecifying the leak message.
+	* gcc.dg/analyzer/memset-1.c: New test.
+	* gcc.dg/analyzer/paths-3.c: Update expected number of enodes.
+	* gcc.dg/analyzer/paths-4.c: Likewise.
+	* gcc.dg/analyzer/paths-6.c: Likewise.
+	* gcc.dg/analyzer/paths-7.c: Likewise.
+	* gcc.dg/analyzer/pr93032-mztools-simplified.c: New test.
+	* gcc.dg/analyzer/pr93032-mztools.c: New test.
+	* gcc.dg/analyzer/pr93382.c: Mark taint tests as failing.
+	* gcc.dg/analyzer/pr93938.c: New test.
+	* gcc.dg/analyzer/pr94099.c: Replace uninit dg-warning with
+	dg-warning for NULL dereference.
+	* gcc.dg/analyzer/pr94399.c: New test.
+	* gcc.dg/analyzer/pr94447.c: Add dg-warning for NULL dereference.
+	* gcc.dg/analyzer/pr94458.c: New test.
+	* gcc.dg/analyzer/pr94640.c: New test.
+	* gcc.dg/analyzer/pr94688.c: New test.
+	* gcc.dg/analyzer/pr94689.c: New test.
+	* gcc.dg/analyzer/pr94839.c: New test.
+	* gcc.dg/analyzer/pr95026.c: New test.
+	* gcc.dg/analyzer/pr95240.c: New test.
+	* gcc.dg/analyzer/refcounting-1.c: New test.
+	* gcc.dg/analyzer/single-field.c: New test.
+	* gcc.dg/analyzer/stale-frame-1.c: New test.
+	* gcc.dg/analyzer/symbolic-1.c: New test.
+	* gcc.dg/analyzer/symbolic-2.c: New test.
+	* gcc.dg/analyzer/symbolic-3.c: New test.
+	* gcc.dg/analyzer/symbolic-4.c: New test.
+	* gcc.dg/analyzer/symbolic-5.c: New test.
+	* gcc.dg/analyzer/symbolic-6.c: New test.
+	* gcc.dg/analyzer/taint-1.c: Mark the "gets unchecked value"
+	events as failing for now.  Update dg-message directives to avoid
+	relying on numbering.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-1.c: New test.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-2.c: New test.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-3.c: New test.
+	* gcc.dg/analyzer/unknown-fns-2.c: New test.
+	* gcc.dg/analyzer/unknown-fns-3.c: New test.
+	* gcc.dg/analyzer/unknown-fns-4.c: New test.
+	* gcc.dg/analyzer/unknown-fns.c: Update dg-warning to reflect fixed
+	source location for leak diagnostic.
+	* gcc.dg/analyzer/use-after-free.c: New test.
+	* gcc.dg/analyzer/vla-1.c: New test.
+	* gcc.dg/analyzer/zlib-4.c: Rewrite to avoid "exit" calls.  Add
+	expected leak warnings.
+	* gfortran.dg/analyzer/pr93993.f90: Remove leak of tm warning,
+	which seems to have been a false positive.
+
+2020-08-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96506
+	* gcc.target/powerpc/pr96506.c: New test.
+
+2020-08-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/93671
+	* gfortran.dg/coarray/pr93671.f90: New test.
+
+2020-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2020-08-13  Peixin Qiao  <qiaopeixin@huawei.com>
+
+	* gcc.target/aarch64/mgeneral-regs_1.c: Add the comment that
+	-mgeneral-regs-only is compatible with the use of vector type
+	used in the test case.
+
+2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gcc.target/nvptx/ia64-sync-5.c: New.
+
+2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/96482
+	* gcc.dg/ipa/pr96482-2.c: New test.
+
+2020-08-13  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-pr96246-1.c: New test.
+	* gcc.target/i386/avx512bw-pr96246-2.c: New test.
+	* gcc.target/i386/avx512vl-pr96246-1.c: New test.
+	* gcc.target/i386/avx512vl-pr96246-2.c: New test.
+	* gcc.target/i386/avx512bw-vmovdqu16-1.c: Adjust test.
+	* gcc.target/i386/avx512bw-vmovdqu8-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovapd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovaps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa64-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-movcc-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr96246-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr96246-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovapd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovaps-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Ditto.
+
+2020-08-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/94600
+	* gcc.dg/pr94600-5.c, gcc.dg/pr94600-6.c, gcc.dg/pr94600-7.c,
+	gcc.dg/pr94600-8.c: Align t0 to 4-byte boundary.
+
+2020-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92812
+	* g++.dg/cpp2a/paren-init27.C: New test.
+	* g++.dg/cpp2a/paren-init28.C: New test.
+	* g++.dg/cpp2a/paren-init29.C: New test.
+	* g++.dg/cpp2a/paren-init30.C: New test.
+	* g++.dg/cpp2a/paren-init31.C: New test.
+	* g++.dg/cpp2a/paren-init32.C: New test.
+
 2020-08-12  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

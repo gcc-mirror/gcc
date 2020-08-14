@@ -1,3 +1,13 @@
+2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/reduction-16.c: New.
+
+2020-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-22.c (main): Add some further tests.
+	* testsuite/libgomp.c/loop-23.c (main): Likewise.
+	* testsuite/libgomp.c/loop-24.c: New test.
+
 2020-08-08  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
