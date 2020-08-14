@@ -8270,8 +8270,13 @@ package body Sem_Prag is
             --  Accept Intrinsic Export on types if Relaxed_RM_Semantics
 
             if not (Is_Type (E) and then Relaxed_RM_Semantics) then
-               Error_Pragma_Arg
-                 ("second argument of pragma% must be a subprogram", Arg2);
+               if From_Aspect_Specification (N) then
+                  Error_Pragma_Arg
+                     ("entity for aspect% must be a subprogram", Arg2);
+               else
+                  Error_Pragma_Arg
+                     ("second argument of pragma% must be a subprogram", Arg2);
+               end if;
             end if;
 
          --  Special checks for C_Variadic_n
@@ -9543,10 +9548,17 @@ package body Sem_Prag is
             Process_Import_Predefined_Type;
 
          else
-            Error_Pragma_Arg
-              ("second argument of pragma% must be object, subprogram "
-               & "or incomplete type",
-               Arg2);
+            if From_Aspect_Specification (N) then
+               Error_Pragma_Arg
+                  ("entity for aspect% must be object, subprogram "
+                     & "or incomplete type",
+                   Arg2);
+            else
+               Error_Pragma_Arg
+                  ("second argument of pragma% must be object, subprogram "
+                     & "or incomplete type",
+                   Arg2);
+            end if;
          end if;
 
          --  If this pragma applies to a compilation unit, then the unit, which
