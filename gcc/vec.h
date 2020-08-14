@@ -1283,9 +1283,11 @@ vec<T, A, vl_embed>::embedded_size (unsigned alloc)
 {
   struct alignas (T) U { char data[sizeof (T)]; };
   typedef vec<U, A, vl_embed> vec_embedded;
-  static_assert (sizeof (vec_embedded) == sizeof(vec), "");
-  static_assert (alignof (vec_embedded) == alignof(vec), "");
-  return offsetof (vec_embedded, m_vecdata) + alloc * sizeof (T);
+  typedef typename std::conditional<std::is_standard_layout<T>::value,
+				    vec, vec_embedded>::type vec_stdlayout;
+  static_assert (sizeof (vec_stdlayout) == sizeof (vec), "");
+  static_assert (alignof (vec_stdlayout) == alignof (vec), "");
+  return offsetof (vec_stdlayout, m_vecdata) + alloc * sizeof (T);
 }
 
 
