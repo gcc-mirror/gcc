@@ -4311,7 +4311,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  tree std_nt = lookup_qualified_name (std_node,
 					       get_identifier ("nothrow"),
 					       LOOK_want::NORMAL,
-					       /*complain=*/true, false);
+					       /*complain=*/true);
 	  if (!std_nt || std_nt == error_mark_node)
 	    error_at (fn_start, "%qE is provided by %qT but %<std::nothrow%> "
 		      "cannot be found", grooaf, promise_type);
