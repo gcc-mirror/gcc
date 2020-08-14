@@ -1,5 +1,45 @@
 2020-08-14  Nathan Sidwell  <nathan@acm.org>
 
+	Cherry pick db1c2a89db0.
+	gcc/cp/
+	* cp-tree.h (LOOKUP_HIDDEN): Delete.
+	(LOOKUP_PREFER_RVALUE): Adjust initializer.
+	* name-lookup.h (enum class LOOK_want): Add HIDDEN_FRIEND and
+	HIDDEN_LAMBDA flags.
+	(lookup_name_real): Drop flags parm.
+	(lookup_qualified_name): Drop find_hidden parm.
+	* name-lookup.c (class name_lookup): Drop hidden field, adjust
+	ctors.
+	(name_lookup::add_overload): Check want for hiddenness.
+	(name_lookup::process_binding): Likewise.
+	(name_lookup::search_unqualified): Likewise.
+	(identifier_type_value_1): Adjust lookup_name_real call.
+	(set_decl_namespace): Adjust name_lookup ctor.
+	(qualify_lookup): Drop flags parm, use want for hiddenness.
+	(lookup_qualified_name): Drop find_hidden parm.
+	(lookup_name_real_1): Drop flags parm, adjust qualify_lookup
+	calls.
+	(lookup_name_real): Drop flags parm.
+	(lookup_name_nonclass, lookup_name): Adjust lookup_name_real
+	calls.
+	(lookup_type_scope_1): Adjust qualify_lookup calls.
+	* call.c (build_operator_new_call): Adjust lookup_name_real call.
+	(add_operator_candidates): Likewise.
+	* coroutines.cc (morph_fn_to_coro): Adjust lookup_qualified_name
+	call.
+	* parser.c (cp_parser_lookup_name): Adjust lookup_name_real calls.
+	* pt.c (check_explicit_specialization): Adjust
+	lookup_qualified_name call.
+	(deduction_guides_for): Likewise.
+	(tsubst_friend_class): Adjust lookup_name_real call.
+	(lookup_init_capture_pack): Likewise.
+	(tsubst_expr): Likewise, don't look in namespaces.
+	* semantics.c (capture_decltype): Adjust lookup_name_real.  Don't
+	look in namespaces.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_dependent_exp): Adjust
+	lookup_name_real call.
+
 	Cherry pick c38f8785205.
 	gcc/cp/
 	* cp-tree.h (LOOKUP_PREFER_TYPES, LOOKUP_PREFER_NAMESPACES)
