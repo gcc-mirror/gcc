@@ -1,3 +1,14 @@
+2020-08-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/93671
+	* trans-array.c (structure_alloc_comps): Keep caf-mode when applying to
+	components; get the caf_token correctly for allocated scalar components.
+
+2020-08-13  Matthew Krupcale  <mkrupcale@matthewkrupcale.com>
+
+	PR fortran/96595
+	* invoke.texi: Fix typos.
+
 2020-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h: Add OMP_LIST_NONTEMPORAL.

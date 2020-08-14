@@ -1,3 +1,28 @@
+2020-08-13  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (enum class LOOK_where): New.
+	(operator|, operator&): Overloads for it.
+	(lookup_name_real): Replace NONCLASS & BLOCK_P parms with WHERE.
+	* name-lookup.c (identifier_type_value_w): Adjust
+	lookup_name_real call.
+	(lookup_name_real_1): Replace NONCLASS and BLOCK_P parameters
+	with WHERE bitmask. Don't search namespaces if not asked to.
+	(lookup_name_real): Adjust lookup_name_real_1 call.
+	(lookup_name_nonclass, lookup_name)
+	(lookup_name_prefer_type): Likewise.
+	* call.c (build_operator_new_call)
+	(add_operator_candidates): Adjust lookup_name_real calls.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	* pt.c (tsubst_friend_class, lookup_init_capture_pack)
+	(tsubst_expr): Likewise.
+	* semantics.c (capture_decltype): Likewise.
+
+2020-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92812
+	* typeck.c (build_static_cast_1): Implement P1975R0 by allowing
+	static_cast to aggregate type.
+
 2020-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/96497
