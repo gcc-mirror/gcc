@@ -13391,7 +13391,7 @@ tsubst_aggr_type (tree t,
 					 complain, in_decl);
 	  if (argvec == error_mark_node)
 	    r = error_mark_node;
-	  else if (cxx_dialect >= cxx20 && dependent_scope_p (context))
+	  else if (cxx_dialect >= cxx17 && dependent_scope_p (context))
 	    {
 	      /* See maybe_dependent_member_ref.  */
 	      tree name = TYPE_IDENTIFIER (t);
@@ -16328,14 +16328,13 @@ tsubst_init (tree init, tree decl, tree args,
    we are trying to refer to that member in a partial instantiation of C,
    return a SCOPE_REF; otherwise, return NULL_TREE.
 
-   This can happen when forming a C++20 alias template deduction guide, as in
-   PR96199.  */
+   This can happen when forming a C++17 deduction guide, as in PR96199.  */
 
 static tree
 maybe_dependent_member_ref (tree t, tree args, tsubst_flags_t complain,
 			    tree in_decl)
 {
-  if (cxx_dialect < cxx20)
+  if (cxx_dialect < cxx17)
     return NULL_TREE;
 
   tree ctx = context_for_name_lookup (t);
@@ -28369,6 +28368,16 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 	  cp_evaluated ev;
 	  fargs = tsubst (fargs, tsubst_args, complain, ctor);
 	  current_template_parms = save_parms;
+	}
+      else
+	{
+	  /* Substitute in the same arguments to rewrite class members into
+	     references to members of an unknown specialization.  */
+	  cp_evaluated ev;
+	  fparms = tsubst_arg_types (fparms, targs, NULL_TREE, complain, ctor);
+	  fargs = tsubst (fargs, targs, complain, ctor);
+	  if (ci)
+	    ci = tsubst_constraint_info (ci, targs, complain, ctor);
 	}
 
       --processing_template_decl;
