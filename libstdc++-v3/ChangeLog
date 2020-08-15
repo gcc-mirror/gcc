@@ -1,3 +1,8 @@
+2020-08-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* testsuite/lib/libstdc++.exp: Use the new option
+	-fdiagnostics-plain-output.
+
 2020-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CHEADERS): Warn if the c_std

@@ -1,3 +1,22 @@
+2020-08-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/96609
+	PR analyzer/96616
+	* region-model.cc (region_model::get_store_value): Call
+	maybe_get_constant_value on decl_regions first.
+	* region-model.h (decl_region::maybe_get_constant_value): New decl.
+	* region.cc (decl_region::get_stack_depth): Likewise.
+	(decl_region::maybe_get_constant_value): New.
+	* store.cc (get_subregion_within_ctor): New.
+	(binding_map::apply_ctor_to_region): New.
+	* store.h (binding_map::apply_ctor_to_region): New decl.
+
+2020-08-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96611
+	* store.cc (store::mark_as_escaped): Reject attempts to
+	get a cluster for an unknown pointer.
+
 2020-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93032

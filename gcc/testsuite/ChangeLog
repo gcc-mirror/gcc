@@ -1,3 +1,37 @@
+2020-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78257
+	* gcc.dg/memchr.c: New test.
+	* gcc.dg/memcmp-2.c: New test.
+	* gcc.dg/memcmp-3.c: New test.
+	* gcc.dg/memcmp-4.c: New test.
+
+2020-08-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96611
+	* gcc.dg/analyzer/pr96611.c: New test.
+
+2020-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90254
+	PR c++/93711
+	* g++.dg/cpp1z/aggr-base10.C: New test.
+	* g++.dg/cpp2a/no_unique_address7.C: New test.
+	* g++.dg/cpp2a/no_unique_address7a.C: New test.
+
+2020-08-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* lib/prune.exp: Change TEST_ALWAYS_FLAGS to use -fdiagnostics-plain-output.
+	* lib/c-compat.exp: Adapt to the prune.exp change.
+
+2020-08-14  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/torture/pr92088-1.c: Add require-effective-target alloca.
+	* gcc.dg/torture/pr92088-2.c: Same.
+	* gcc.dg/torture/pr93124.c: Same.
+	* gcc.dg/torture/pr94479.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-22.c: Same.
+
 2020-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96598
