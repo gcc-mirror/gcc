@@ -1,3 +1,14 @@
+2020-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/95548
+	* g++.dg/torture/pr95548.C: Change from dg-do compile to dg-do link,
+	add return type for main, for __SIZEOF_INT128__ test with __uint128_t
+	enumerator constants and add a test with unsigned long long
+	enumerators for all targets.
+
 2020-08-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
