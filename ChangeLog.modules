@@ -1,5 +1,28 @@
 2020-08-14  Nathan Sidwell  <nathan@acm.org>
 
+	Cherry pick e97201385a9.
+	gcc/cp/
+	* name-lookup.h (lookup_name_real, lookup_name_nonclass): Rename
+	to ...
+	(lookup_name): ... these new overloads.
+	* name-lookup.c (identifier_type_value_1): Rename lookup_name_real
+	call.
+	(lookup_name_real_1): Rename to ...
+	(lookup_name_1): ... here.
+	(lookup_name_real): Rename to ...
+	(lookup_name): ... here.  Rename lookup_name_real_1 call.
+	(lookup_name_nonclass): Delete.
+	* call.c (build_operator_new_call): Rename lookup_name_real call.
+	(add_operator_candidates): Likewise.
+	(build_op_delete_call): Rename lookup_name_nonclass call.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	* pt.c (tsubst_friend_class, lookup_init_capture_pack): Likewise.
+	(tsubst_expr): Likewise.
+	* semantics.c (capture_decltype): Likewise.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_dependent_expr): Rename
+	lookup_name_real call.
+
 	Cherry pick db1c2a89db0.
 	gcc/cp/
 	* cp-tree.h (LOOKUP_HIDDEN): Delete.
