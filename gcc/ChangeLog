@@ -1,3 +1,71 @@
+2020-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/78257
+	* builtins.c (expand_builtin_memory_copy_args): Rename called function.
+	(expand_builtin_stpcpy_1): Remove argument from call.
+	(expand_builtin_memcmp): Rename called function.
+	(inline_expand_builtin_bytecmp): Same.
+	* expr.c (convert_to_bytes): New function.
+	(constant_byte_string): New function (formerly string_constant).
+	(string_constant): Call constant_byte_string.
+	(byte_representation): New function.
+	* expr.h (byte_representation): Declare.
+	* fold-const-call.c (fold_const_call): Rename called function.
+	* fold-const.c (c_getstr): Remove an argument.
+	(getbyterep): Define a new function.
+	* fold-const.h (c_getstr): Remove an argument.
+	(getbyterep): Declare a new function.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Rename callee.
+	(gimple_fold_builtin_string_compare): Same.
+	(gimple_fold_builtin_memchr): Same.
+
+2020-08-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Overview): Add tip about how to get a
+	gimple dump if the analyzer ICEs.
+
+2020-08-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_llwpcb)
+	(__builtin_ia32_slwpcb, __builtin_ia32_lwpval32)
+	(__builtin_ia32_lwpval64, __builtin_ia32_lwpins32)
+	(__builtin_ia32_lwpins64): Use CODE_FOR_nothing.
+	* config/i386/i386.md (@lwp_llwpcb<mode>):
+	Implement as parametrized name pattern.
+	(@lwp_slwpcb<mode>): Ditto.
+	(@lwp_lwpval<mode>): Ditto.
+	(@lwp_lwpins<mode>): Ditto.
+	* config/i386/i386-expand.c (ix86_expand_special_args_builtin)
+	[case VOID_FTYPE_UINT_UINT_UINT, case VOID_FTYPE_UINT64_UINT_UINT]
+	[case UCHAR_FTYPE_UINT_UINT_UINT, case UCHAR_FTYPE_UINT64_UINT_UINT]:
+	Remove.
+	(ix86_expand_builtin)
+	[ case IX86_BUILTIN_LLWPCB, case IX86_BUILTIN_LLWPCB]:
+	Update for parameterized name patterns.
+	[case IX86_BUILTIN_LWPVAL32, case IX86_BUILTIN_LWPVAL64]
+	[case IX86_BUILTIN_LWPINS32, case IX86_BUILTIN_LWPINS64]: Expand here.
+
+2020-08-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* common.opt: Add new option -fdiagnostics-plain-output.
+	* doc/invoke.texi: Document it.
+	* opts-common.c (decode_cmdline_options_to_array): Implement it.
+	(decode_cmdline_option): Add missing const qualifier to argv.
+
+2020-08-14  Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+	    Jonathan Wakely   <jwakely@redhat.com>
+
+	* system.h: Include type_traits.
+	* vec.h (vec<T, A, vl_embed>::embedded_size): Use offsetof and asserts
+	on vec_stdlayout, which is conditionally a vec (for standard layout T)
+	and otherwise vec_embedded.
+
+2020-08-14  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config/csky/csky-elf.h (ASM_SPEC): Use mfloat-abi.
+	* config/csky/csky-linux-elf.h (ASM_SPEC): mfloat-abi.
+
 2020-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93032

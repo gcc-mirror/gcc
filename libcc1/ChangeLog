@@ -1,3 +1,18 @@
+2020-08-14  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_dependent_expr): Rename
+	lookup_name_real call.
+
+2020-08-14  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_dependent_exp): Adjust
+	lookup_name_real call.
+
+2020-08-14  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_dependent_expr): Adjust
+	lookup_name_real & lookup_qualified_name calls.
+
 2020-08-13  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_dependent_expr): Likewise.

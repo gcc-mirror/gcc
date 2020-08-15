@@ -1,3 +1,126 @@
+2020-08-14  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (lookup_name_real, lookup_name_nonclass): Rename
+	to ...
+	(lookup_name): ... these new overloads.
+	* name-lookup.c (identifier_type_value_1): Rename lookup_name_real
+	call.
+	(lookup_name_real_1): Rename to ...
+	(lookup_name_1): ... here.
+	(lookup_name_real): Rename to ...
+	(lookup_name): ... here.  Rename lookup_name_real_1 call.
+	(lookup_name_nonclass): Delete.
+	* call.c (build_operator_new_call): Rename lookup_name_real call.
+	(add_operator_candidates): Likewise.
+	(build_op_delete_call): Rename lookup_name_nonclass call.
+	* parser.c (cp_parser_lookup_name): Likewise.
+	* pt.c (tsubst_friend_class, lookup_init_capture_pack): Likewise.
+	(tsubst_expr): Likewise.
+	* semantics.c (capture_decltype): Likewise.
+
+2020-08-14  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (LOOKUP_HIDDEN): Delete.
+	(LOOKUP_PREFER_RVALUE): Adjust initializer.
+	* name-lookup.h (enum class LOOK_want): Add HIDDEN_FRIEND and
+	HIDDEN_LAMBDA flags.
+	(lookup_name_real): Drop flags parm.
+	(lookup_qualified_name): Drop find_hidden parm.
+	* name-lookup.c (class name_lookup): Drop hidden field, adjust
+	ctors.
+	(name_lookup::add_overload): Check want for hiddenness.
+	(name_lookup::process_binding): Likewise.
+	(name_lookup::search_unqualified): Likewise.
+	(identifier_type_value_1): Adjust lookup_name_real call.
+	(set_decl_namespace): Adjust name_lookup ctor.
+	(qualify_lookup): Drop flags parm, use want for hiddenness.
+	(lookup_qualified_name): Drop find_hidden parm.
+	(lookup_name_real_1): Drop flags parm, adjust qualify_lookup
+	calls.
+	(lookup_name_real): Drop flags parm.
+	(lookup_name_nonclass, lookup_name): Adjust lookup_name_real
+	calls.
+	(lookup_type_scope_1): Adjust qualify_lookup calls.
+	* call.c (build_operator_new_call): Adjust lookup_name_real call.
+	(add_operator_candidates): Likewise.
+	* coroutines.cc (morph_fn_to_coro): Adjust lookup_qualified_name
+	call.
+	* parser.c (cp_parser_lookup_name): Adjust lookup_name_real calls.
+	* pt.c (check_explicit_specialization): Adjust
+	lookup_qualified_name call.
+	(deduction_guides_for): Likewise.
+	(tsubst_friend_class): Adjust lookup_name_real call.
+	(lookup_init_capture_pack): Likewise.
+	(tsubst_expr): Likewise, don't look in namespaces.
+	* semantics.c (capture_decltype): Adjust lookup_name_real.  Don't
+	look in namespaces.
+
+2020-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90254
+	PR c++/93711
+	* cp-tree.h (unsafe_return_slot_p): Declare.
+	* call.c (is_base_field_ref): Rename to unsafe_return_slot_p.
+	(build_over_call): Check unsafe_return_slot_p.
+	(build_special_member_call): Likewise.
+	* init.c (expand_default_init): Likewise.
+	* typeck2.c (split_nonconstant_init_1): Likewise.
+
+2020-08-14  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (LOOKUP_PREFER_TYPES, LOOKUP_PREFER_NAMESPACES)
+	(LOOKUP_NAMESPACES_ONLY, LOOKUP_TYPES_ONLY)
+	(LOOKUP_QUALIFIERS_ONL): Delete.
+	(LOOKUP_HIDDEN): Adjust.
+	* name-lookup.h (enum class LOOK_want): New.
+	(operator|, operator&): Overloads for it.
+	(lookup_name_real): Replace prefer_type & namespaces_only with
+	LOOK_want parm.
+	(lookup_qualified_name): Replace prefer_type with LOOK_want.
+	(lookup_name_prefer_type): Replace with ...
+	(lookup_name): ... this.  New overload with LOOK_want parm.
+	* name-lookup.c (struct name_lookup): Replace flags with want and
+	hidden fields.  Adjust constructors.
+	(name_lookyp::add_overload): Correct hidden stripping test.  Update
+	for new LOOK_want type.
+	(name_lookup::process_binding): Likewise.
+	(name_lookup::search_unqualified): Use hidden flag.
+	(identifier_type_value_1): Adjust lookup_name_real call.
+	(set_decl_namespace): Adjust name_lookup ctor.
+	(lookup_flags): Delete.
+	(qualify_lookup): Add LOOK_want parm, adjust.
+	(lookup_qualified_name): Replace prefer_type parm with LOOK_want.
+	(lookup_name_real_1): Replace prefer_type and namespaces_only with
+	LOOK_want parm.
+	(lookup_name_real): Likewise.
+	(lookup_name_nonclass, lookup_name): Adjust lookup_name_real call.
+	(lookup_name_prefer_type): Rename to ...
+	(lookup_name): ... here.  New overload with LOOK_want parm.
+	(lookup_type_scope_1): Adjust qualify_lookup calls.
+	* call.c (build_operator_new_call)
+	(add_operator_candidates): Adjust lookup_name_real calls.
+	* coroutines.cc (find_coro_traits_template_decl)
+	(find_coro_handle_template_decl, morph_fn_to_coro): Adjust
+	lookup_qualified_name calls.
+	* cp-objcp-common.c (identifier_global_tag): Likewise.
+	* decl.c (get_tuple_size, get_tuple_decomp_init): Likewise.
+	(lookup_and_check_tag): Use lookup_name overload.
+	* parser.c (cp_parser_userdef_numeric_literal): Adjust
+	lookup_qualified_name call.
+	(prefer_arg_type): Drop template_mem_access parm, return LOOK_want
+	value.
+	(cp_parser_lookup_name): Adjust lookup_member, lookup_name_real
+	calls.
+	* pt.c (check_explicit_specialization): Adjust lookup_qualified_name
+	call.
+	(tsubst_copy_and_build, tsubst_qualified_name): Likewise
+	(deduction_guides_for): Likewise.
+	(tsubst_friend_class): Adjust lookup_name_real call.
+	(lookup_init_capture, tsubst_expr): Likewise.
+	* rtti.c (emit_support_tinfos): Adjust lookup_qualified_name call.
+	* semantics.c (omp_reduction_lookup): Likewise.
+	(capture_decltype): Adjust lookup_name_real call.
+
 2020-08-13  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.h (enum class LOOK_where): New.
