@@ -11709,24 +11709,26 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
     case IX86_BUILTIN_BEXTRI32:
     case IX86_BUILTIN_BEXTRI64:
+      mode = (fcode == IX86_BUILTIN_BEXTRI32 ? SImode : DImode);
+
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
-      icode = (fcode == IX86_BUILTIN_BEXTRI32
-	  ? CODE_FOR_tbm_bextri_si
-	  : CODE_FOR_tbm_bextri_di);
+
       if (!CONST_INT_P (op1))
-        {
-          error ("last argument must be an immediate");
-          return const0_rtx;
-        }
+	{
+	  error ("last argument must be an immediate");
+	  return const0_rtx;
+	}
       else
-        {
-          unsigned char length = (INTVAL (op1) >> 8) & 0xFF;
-          unsigned char lsb_index = INTVAL (op1) & 0xFF;
-          op1 = GEN_INT (length);
-          op2 = GEN_INT (lsb_index);
+	{
+	  unsigned char lsb_index = UINTVAL (op1);
+	  unsigned char length = UINTVAL (op1) >> 8;
+
+	  unsigned char bitsize = GET_MODE_BITSIZE (mode);
+
+	  icode = code_for_tbm_bextri (mode);
 
 	  mode1 = insn_data[icode].operand[1].mode;
 	  if (!insn_data[icode].operand[1].predicate (op0, mode1))
@@ -11737,25 +11739,32 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	      || !register_operand (target, mode0))
 	    target = gen_reg_rtx (mode0);
 
-          pat = GEN_FCN (icode) (target, op0, op1, op2);
-          if (pat)
-            emit_insn (pat);
-          return target;
-        }
+	  if (length == 0 || lsb_index >= bitsize)
+	    {
+	      emit_move_insn (target, const0_rtx);
+	      return target;
+	    }
+
+	  if (length + lsb_index > bitsize)
+	    length = bitsize - lsb_index;
+
+	  op1 = GEN_INT (length);
+	  op2 = GEN_INT (lsb_index);
+
+	  emit_insn (GEN_FCN (icode) (target, op0, op1, op2));
+	  return target;
+	}
 
     case IX86_BUILTIN_RDRAND16_STEP:
-      icode = CODE_FOR_rdrandhi_1;
-      mode0 = HImode;
+      mode = HImode;
       goto rdrand_step;
 
     case IX86_BUILTIN_RDRAND32_STEP:
-      icode = CODE_FOR_rdrandsi_1;
-      mode0 = SImode;
+      mode = SImode;
       goto rdrand_step;
 
     case IX86_BUILTIN_RDRAND64_STEP:
-      icode = CODE_FOR_rdranddi_1;
-      mode0 = DImode;
+      mode = DImode;
 
 rdrand_step:
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -11766,16 +11775,15 @@ rdrand_step:
 	  op1 = copy_addr_to_reg (op1);
 	}
 
-      op0 = gen_reg_rtx (mode0);
-      emit_insn (GEN_FCN (icode) (op0));
+      op0 = gen_reg_rtx (mode);
+      emit_insn (gen_rdrand (mode, op0));
 
-      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+      emit_move_insn (gen_rtx_MEM (mode, op1), op0);
 
-      op1 = gen_reg_rtx (SImode);
-      emit_move_insn (op1, CONST1_RTX (SImode));
+      op1 = force_reg (SImode, const1_rtx);
 
       /* Emit SImode conditional move.  */
-      if (mode0 == HImode)
+      if (mode == HImode)
 	{
 	  if (TARGET_ZERO_EXTEND_WITH_AND
 	      && optimize_function_for_speed_p (cfun))
@@ -11792,7 +11800,7 @@ rdrand_step:
 	      emit_insn (gen_zero_extendhisi2 (op2, op0));
 	    }
 	}
-      else if (mode0 == SImode)
+      else if (mode == SImode)
 	op2 = op0;
       else
 	op2 = gen_rtx_SUBREG (SImode, op0, 0);
@@ -11808,18 +11816,15 @@ rdrand_step:
       return target;
 
     case IX86_BUILTIN_RDSEED16_STEP:
-      icode = CODE_FOR_rdseedhi_1;
-      mode0 = HImode;
+      mode = HImode;
       goto rdseed_step;
 
     case IX86_BUILTIN_RDSEED32_STEP:
-      icode = CODE_FOR_rdseedsi_1;
-      mode0 = SImode;
+      mode = SImode;
       goto rdseed_step;
 
     case IX86_BUILTIN_RDSEED64_STEP:
-      icode = CODE_FOR_rdseeddi_1;
-      mode0 = DImode;
+      mode = DImode;
 
 rdseed_step:
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -11830,10 +11835,10 @@ rdseed_step:
 	  op1 = copy_addr_to_reg (op1);
 	}
 
-      op0 = gen_reg_rtx (mode0);
-      emit_insn (GEN_FCN (icode) (op0));
+      op0 = gen_reg_rtx (mode);
+      emit_insn (gen_rdseed (mode, op0));
 
-      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+      emit_move_insn (gen_rtx_MEM (mode, op1), op0);
 
       op2 = gen_reg_rtx (QImode);
 
