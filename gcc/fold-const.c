@@ -15485,19 +15485,19 @@ fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
 			  ptr, size_int (off));
 }
 
-/* Return a pointer P to a NUL-terminated string containing the sequence
+/* Return a pointer to a NUL-terminated string containing the sequence
    of bytes corresponding to the representation of the object referred to
    by SRC (or a subsequence of such bytes within it if SRC is a reference
    to an initialized constant array plus some constant offset).
-   If STRSIZE is non-null, store the number of bytes in the constant
-   sequence including the terminating NUL byte.  *STRSIZE is equal to
-   sizeof(A) - OFFSET where A is the array that stores the constant
-   sequence that SRC points to and OFFSET is the byte offset of SRC from
-   the beginning of A.  SRC need not point to a string or even an array
-   of characters but may point to an object of any type.  */
+   Set *STRSIZE the number of bytes in the constant sequence including
+   the terminating NUL byte.  *STRSIZE is equal to sizeof(A) - OFFSET
+   where A is the array that stores the constant sequence that SRC points
+   to and OFFSET is the byte offset of SRC from the beginning of A.  SRC
+   need not point to a string or even an array of characters but may point
+   to an object of any type.  */
 
 const char *
-c_getstr (tree src, unsigned HOST_WIDE_INT *strsize /* = NULL */)
+getbyterep (tree src, unsigned HOST_WIDE_INT *strsize)
 {
   /* The offset into the array A storing the string, and A's byte size.  */
   tree offset_node;
@@ -15506,7 +15506,10 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strsize /* = NULL */)
   if (strsize)
     *strsize = 0;
 
-  src = string_constant (src, &offset_node, &mem_size, NULL);
+  if (strsize)
+    src = byte_representation (src, &offset_node, &mem_size, NULL);
+  else
+    src = string_constant (src, &offset_node, &mem_size, NULL);
   if (!src)
     return NULL;
 
@@ -15572,6 +15575,18 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strsize /* = NULL */)
     }
 
   return offset < init_bytes ? string + offset : "";
+}
+
+/* Return a pointer to a NUL-terminated string corresponding to
+   the expression STR referencing a constant string, possibly
+   involving a constant offset.  Return null if STR either doesn't
+   reference a constant string or if it involves a nonconstant
+   offset.  */
+
+const char *
+c_getstr (tree str)
+{
+  return getbyterep (str, NULL);
 }
 
 /* Given a tree T, compute which bits in T may be nonzero.  */

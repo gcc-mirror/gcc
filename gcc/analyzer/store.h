@@ -340,6 +340,9 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
+  void apply_ctor_to_region (const region *parent_reg, tree ctor,
+			     region_model_manager *mgr);
+
 private:
   map_t m_map;
 };

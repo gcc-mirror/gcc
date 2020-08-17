@@ -29,6 +29,11 @@ The implementation is read-only: it doesn't attempt to change anything,
 just emit warnings.
 
 The gimple representation can be seen using @option{-fdump-ipa-analyzer}.
+@quotation Tip
+If the analyzer ICEs before this is written out, one workaround is to use
+@option{--param=analyzer-bb-explosion-factor=0} to force the analyzer
+to bail out after analyzing the first basic block.
+@end quotation
 
 First, we build a @code{supergraph} which combines the callgraph and all
 of the CFGs into a single directed graph, with both interprocedural and

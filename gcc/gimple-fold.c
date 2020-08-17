@@ -774,7 +774,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	     strlenopt tests that rely on it for passing are adjusted, this
 	     hack can be removed.  */
 	  && !c_strlen (src, 1)
-	  && !((tmp_str = c_getstr (src, &tmp_len)) != NULL
+	  && !((tmp_str = getbyterep (src, &tmp_len)) != NULL
 	       && memchr (tmp_str, 0, tmp_len) == NULL)
 	  && !(srctype
 	       && AGGREGATE_TYPE_P (srctype)
@@ -2464,8 +2464,8 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
      For nul-terminated strings then adjusted to their length so that
      LENx == NULPOSx holds.  */
   unsigned HOST_WIDE_INT len1 = HOST_WIDE_INT_MAX, len2 = len1;
-  const char *p1 = c_getstr (str1, &len1);
-  const char *p2 = c_getstr (str2, &len2);
+  const char *p1 = getbyterep (str1, &len1);
+  const char *p2 = getbyterep (str2, &len2);
 
   /* The position of the terminating nul character if one exists, otherwise
      a value greater than LENx.  */
@@ -2662,7 +2662,7 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
 
   unsigned HOST_WIDE_INT length = tree_to_uhwi (len);
   unsigned HOST_WIDE_INT string_length;
-  const char *p1 = c_getstr (arg1, &string_length);
+  const char *p1 = getbyterep (arg1, &string_length);
 
   if (p1)
     {

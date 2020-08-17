@@ -1,3 +1,7 @@
+2020-08-16  Sergei Trofimovich  <slyfox@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2020-08-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
 
 	* MAINTAINERS: Update my email address.

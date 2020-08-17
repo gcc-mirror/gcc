@@ -73,6 +73,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   bool = __empty_not_final<_Head>::value>
     struct _Head_base;
 
+#if __has_cpp_attribute(no_unique_address)
+  template<size_t _Idx, typename _Head>
+    struct _Head_base<_Idx, _Head, true>
+    {
+      constexpr _Head_base()
+      : _M_head_impl() { }
+
+      constexpr _Head_base(const _Head& __h)
+      : _M_head_impl(__h) { }
+
+      constexpr _Head_base(const _Head_base&) = default;
+      constexpr _Head_base(_Head_base&&) = default;
+
+      template<typename _UHead>
+	constexpr _Head_base(_UHead&& __h)
+	: _M_head_impl(std::forward<_UHead>(__h)) { }
+
+      _GLIBCXX20_CONSTEXPR
+      _Head_base(allocator_arg_t, __uses_alloc0)
+      : _M_head_impl() { }
+
+      template<typename _Alloc>
+	_Head_base(allocator_arg_t, __uses_alloc1<_Alloc> __a)
+	: _M_head_impl(allocator_arg, *__a._M_a) { }
+
+      template<typename _Alloc>
+	_Head_base(allocator_arg_t, __uses_alloc2<_Alloc> __a)
+	: _M_head_impl(*__a._M_a) { }
+
+      template<typename _UHead>
+	_GLIBCXX20_CONSTEXPR
+	_Head_base(__uses_alloc0, _UHead&& __uhead)
+	: _M_head_impl(std::forward<_UHead>(__uhead)) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Head_base(__uses_alloc1<_Alloc> __a, _UHead&& __uhead)
+	: _M_head_impl(allocator_arg, *__a._M_a, std::forward<_UHead>(__uhead))
+	{ }
+
+      template<typename _Alloc, typename _UHead>
+	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
+	: _M_head_impl(std::forward<_UHead>(__uhead), *__a._M_a) { }
+
+      static constexpr _Head&
+      _M_head(_Head_base& __b) noexcept { return __b._M_head_impl; }
+
+      static constexpr const _Head&
+      _M_head(const _Head_base& __b) noexcept { return __b._M_head_impl; }
+
+      [[no_unique_address]] _Head _M_head_impl;
+    };
+#else
   template<size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, true>
     : public _Head
@@ -119,6 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr const _Head&
       _M_head(const _Head_base& __b) noexcept { return __b; }
     };
+#endif
 
   template<size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, false>

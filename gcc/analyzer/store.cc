@@ -366,6 +366,65 @@ binding_map::dump (bool simple) const
   pp_flush (&pp);
 }
 
+/* Get the child region of PARENT_REG based upon INDEX within a
+   CONSTRUCTOR.   */
+
+static const region *
+get_subregion_within_ctor (const region *parent_reg, tree index,
+			   region_model_manager *mgr)
+{
+  switch (TREE_CODE (index))
+    {
+    default:
+      gcc_unreachable ();
+    case INTEGER_CST:
+      {
+	const svalue *index_sval
+	  = mgr->get_or_create_constant_svalue (index);
+	return mgr->get_element_region (parent_reg,
+					TREE_TYPE (parent_reg->get_type ()),
+					index_sval);
+      }
+      break;
+    case FIELD_DECL:
+      return mgr->get_field_region (parent_reg, index);
+    }
+}
+
+/* Bind values from CONSTRUCTOR to this map, relative to
+   PARENT_REG's relationship to its base region.  */
+
+void
+binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
+				   region_model_manager *mgr)
+{
+  gcc_assert (parent_reg);
+  gcc_assert (TREE_CODE (ctor) == CONSTRUCTOR);
+  gcc_assert (!CONSTRUCTOR_NO_CLEARING (ctor));
+
+  unsigned ix;
+  tree index;
+  tree val;
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), ix, index, val)
+    {
+      if (!index)
+	index = build_int_cst (integer_type_node, ix);
+      const region *child_reg
+	= get_subregion_within_ctor (parent_reg, index, mgr);
+      if (TREE_CODE (val) == CONSTRUCTOR)
+	apply_ctor_to_region (child_reg, val, mgr);
+      else
+	{
+	  gcc_assert (CONSTANT_CLASS_P (val));
+	  const svalue *cst_sval = mgr->get_or_create_constant_svalue (val);
+	  const binding_key *k
+	    = binding_key::make (mgr->get_store_manager (), child_reg,
+				 BK_direct);
+	  put (k, cst_sval);
+	}
+    }
+}
+
 /* class binding_cluster.  */
 
 /* binding_cluster's copy ctor.  */
@@ -1690,6 +1749,9 @@ store::mark_as_escaped (const region *base_reg)
 {
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
+
+  if (base_reg->symbolic_for_unknown_ptr_p ())
+    return;
 
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->mark_as_escaped ();
