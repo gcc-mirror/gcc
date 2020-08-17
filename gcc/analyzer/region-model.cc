@@ -1097,7 +1097,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (pv.m_tree))
     {
     default:
-      gcc_unreachable ();
+      return m_mgr->get_or_create_unknown_svalue (TREE_TYPE (pv.m_tree));
 
     case ADDR_EXPR:
       {
