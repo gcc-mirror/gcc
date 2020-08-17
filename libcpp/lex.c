@@ -2684,6 +2684,8 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	   : peek->type == CPP_SEMICOLON))
     {
       pfile->state.pragma_allow_expansion = !CPP_OPTION (pfile, preprocessed);
+      if (!pfile->state.pragma_allow_expansion)
+	pfile->state.prevent_expansion++;
 
       if (!header_count && linemap_included_from
 	  (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)))

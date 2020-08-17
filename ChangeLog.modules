@@ -1,3 +1,10 @@
+2020-08-18  Nathan Sidwell  <nathan@acm.org>
+
+	Fix -save-temps issue.
+	libcpp/
+	* lex.c (cpp_maybe_module_directive): Increment prevent_expansion
+	if not expanding.
+
 2020-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
