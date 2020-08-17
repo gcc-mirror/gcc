@@ -886,20 +886,53 @@ decl_region::maybe_get_constant_value (region_model_manager *mgr) const
       && DECL_IN_CONSTANT_POOL (m_decl)
       && DECL_INITIAL (m_decl)
       && TREE_CODE (DECL_INITIAL (m_decl)) == CONSTRUCTOR)
-    {
-      tree ctor = DECL_INITIAL (m_decl);
-      gcc_assert (!TREE_CLOBBER_P (ctor));
-
-      /* Create a binding map, applying ctor to it, using this
-	 decl_region as the base region when building child regions
-	 for offset calculations.  */
-      binding_map map;
-      map.apply_ctor_to_region (this, ctor, mgr);
-
-      /* Return a compound svalue for the map we built.  */
-      return mgr->get_or_create_compound_svalue (get_type (), map);
-    }
+    return get_svalue_for_constructor (DECL_INITIAL (m_decl), mgr);
   return NULL;
+}
+
+/* Get an svalue for CTOR, a CONSTRUCTOR for this region's decl.  */
+
+const svalue *
+decl_region::get_svalue_for_constructor (tree ctor,
+					 region_model_manager *mgr) const
+{
+  gcc_assert (!TREE_CLOBBER_P (ctor));
+
+  /* Create a binding map, applying ctor to it, using this
+     decl_region as the base region when building child regions
+     for offset calculations.  */
+  binding_map map;
+  map.apply_ctor_to_region (this, ctor, mgr);
+
+  /* Return a compound svalue for the map we built.  */
+  return mgr->get_or_create_compound_svalue (get_type (), map);
+}
+
+/* For use on decl_regions for global variables.
+
+   Get an svalue for the initial value of this region at entry to
+   "main" (either based on DECL_INITIAL, or implicit initialization to
+   zero.  */
+
+const svalue *
+decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
+{
+  tree init = DECL_INITIAL (m_decl);
+  if (!init)
+    {
+      /* Implicit initialization to zero; use a compound_svalue for it.  */
+      binding_cluster c (this);
+      c.zero_fill_region (mgr->get_store_manager (), this);
+      return mgr->get_or_create_compound_svalue (TREE_TYPE (m_decl),
+						 c.get_map ());
+     }
+
+  if (TREE_CODE (init) == CONSTRUCTOR)
+    return get_svalue_for_constructor (init, mgr);
+
+  /* Reuse the get_rvalue logic from region_model.  */
+  region_model m (mgr);
+  return m.get_rvalue (path_var (init, 0), NULL);
 }
 
 /* class field_region : public region.  */
