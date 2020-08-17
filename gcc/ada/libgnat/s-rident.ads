@@ -551,9 +551,10 @@ package System.Rident is
                            Max_Task_Entries                => 0,
                            others                          => 0)),
 
-                     Jorvik  =>
+                     Jorvik | GNAT_Extended_Ravenscar =>
 
-                     --  Restrictions for Jorvik profile ..
+                     --  Restrictions for Jorvik profile, previously known
+                     --  known as the GNAT_Extended_Ravenscar profile.
 
                      --  Note: the table entries here only represent the
                      --  required restriction profile for Jorvik. The
@@ -567,7 +568,12 @@ package System.Rident is
                      --  as follows:
                      --     1) Ravenscar includes restriction Simple_Barriers;
                      --        Jorvik includes Pure_Barriers instead.
-                     --     2) The following 6 restrictions are included in
+                     --     2) The No_Implicit_Heap_Allocations restriction is
+                     --        lifted and replaced with the following
+                     --        restrictions:
+                     --          No_Implicit_Task_Allocations
+                     --          No_Implicit_Protected_Object_Allocations
+                     --     3) The following 6 restrictions are included in
                      --        Ravenscar but not in Jorvik:
                      --          No_Implicit_Heap_Allocations
                      --          No_Relative_Delay
@@ -578,45 +584,6 @@ package System.Rident is
                      --
                      --  The last of those 7 (i.e., No_Dep => Ada.Synch_Bars)
                      --  is not reflected here (see sem_prag.adb).
-
-                       (Set   =>
-                          (No_Abort_Statements             => True,
-                           No_Asynchronous_Control         => True,
-                           No_Dynamic_Attachment           => True,
-                           No_Dynamic_CPU_Assignment       => True,
-                           No_Dynamic_Priorities           => True,
-                           No_Local_Protected_Objects      => True,
-                           No_Protected_Type_Allocators    => True,
-                           No_Requeue_Statements           => True,
-                           No_Task_Allocators              => True,
-                           No_Task_Attributes_Package      => True,
-                           No_Task_Hierarchy               => True,
-                           No_Terminate_Alternatives       => True,
-                           Max_Asynchronous_Select_Nesting => True,
-                           Max_Select_Alternatives         => True,
-                           Max_Task_Entries                => True,
-
-                           --  plus these additional restrictions:
-
-                           No_Local_Timing_Events           => True,
-                           No_Select_Statements             => True,
-                           No_Specific_Termination_Handlers => True,
-                           No_Task_Termination              => True,
-                           Pure_Barriers                    => True,
-                           others                           => False),
-
-                        --  Value settings for Ravenscar (same as Restricted)
-
-                        Value =>
-                          (Max_Asynchronous_Select_Nesting => 0,
-                           Max_Select_Alternatives         => 0,
-                           Max_Task_Entries                => 0,
-                           others                          => 0)),
-
-                     GNAT_Extended_Ravenscar  =>
-
-                     --  Restrictions for GNAT_Extended_Ravenscar =
-                     --    Restricted profile ..
 
                        (Set   =>
                           (No_Abort_Statements             => True,
