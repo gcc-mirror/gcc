@@ -6,5 +6,6 @@ MAJOR=5
 all-local:
 	ar -X$(BITS) rc .libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
 	ar -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+	ar -X$(BITS) rc .libs/libcaf_single.a ../ppc$(BITS)/$(PACKAGE)/.libs/$(libcaf_single_la_OBJECTS:.lo=.o)
+	ar -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/libcaf_single.a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(libcaf_single_la_OBJECTS:.lo=.o)
 endif
-
