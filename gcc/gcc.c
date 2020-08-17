@@ -8527,6 +8527,10 @@ driver::maybe_print_and_exit () const
 	{
 #if 1
 	  printf ("\nTHIS IS AN IN-DEVELOPMENT COMPILER\n"
+#if !CHECKING_P
+		  "This has been configured with --disable-checking,"
+		  " ARE YOU SURE THAT IS WISE?\n"
+#endif
 		  "For bug reporting, see the UNUSUAL URL:\n");
 #else
 	  printf (_("\nFor bug reporting instructions, please see:\n"));

@@ -4457,11 +4457,15 @@ dumper::operator () (const char *format, ...)
   return true;
 }
 
-#if CHECKING_P
 struct note_def_cache_hasher : ggc_cache_ptr_hash<tree_node>
 {
   static int keep_cache_entry (tree t)
   {
+    if (!CHECKING_P)
+      /* GTY is unfortunately not clever enough to conditionalize
+	 this.  */
+      gcc_unreachable ();
+
     if (ggc_marked_p (t))
       return -1;
 
@@ -4481,7 +4485,6 @@ struct note_def_cache_hasher : ggc_cache_ptr_hash<tree_node>
    get confused if memory is reallocated.  */
 typedef hash_table<note_def_cache_hasher> note_defs_table_t;
 static GTY((cache)) note_defs_table_t *note_defs;
-#endif
 
 void
 trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,

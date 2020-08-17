@@ -1,3 +1,13 @@
+2020-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	Fix disable checking build.
+	gcc/cp
+	* module.cc (note_def_cache_hasher): GTY needs this even when
+	unused.
+	(not_defs_table_t, note_defs): Likewise.
+	gcc/
+	* gcc.c (driver::maybe_print_and_exit): Warn about disable-checking.
+
 2020-08-14  Nathan Sidwell  <nathan@acm.org>
 
 	Cherry pick e97201385a9.
