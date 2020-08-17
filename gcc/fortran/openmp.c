@@ -4371,6 +4371,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"TO", "FROM", "REDUCTION", "DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
 	"NONTEMPORAL" };
+  STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
     return;
@@ -4732,12 +4733,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
-	const char *name;
-
-	if (list < OMP_LIST_NUM)
-	  name = clause_names[list];
-	else
-	  gcc_unreachable ();
+	const char *name = clause_names[list];
 
 	switch (list)
 	  {
