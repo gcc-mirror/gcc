@@ -586,12 +586,22 @@ add_to_template_args (tree args, tree extra_args)
    (EXTRA_ARGS) levels are added.  This function is used to combine
    the template arguments from a partial instantiation with the
    template arguments used to attain the full instantiation from the
-   partial instantiation.  */
+   partial instantiation.
+
+   If ARGS is a TEMPLATE_DECL, use its parameters as args.  */
 
 tree
 add_outermost_template_args (tree args, tree extra_args)
 {
   tree new_args;
+
+  if (!args)
+    return extra_args;
+  if (TREE_CODE (args) == TEMPLATE_DECL)
+    {
+      tree ti = get_template_info (DECL_TEMPLATE_RESULT (args));
+      args = TI_ARGS (ti);
+    }
 
   /* If there are more levels of EXTRA_ARGS than there are ARGS,
      something very fishy is going on.  */
@@ -10772,7 +10782,7 @@ static GTY(()) struct tinst_level *last_error_tinst_level;
 /* We're starting to instantiate D; record the template instantiation context
    at LOC for diagnostics and to restore it later.  */
 
-static bool
+bool
 push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
 {
   struct tinst_level *new_level;
@@ -10826,7 +10836,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
 /* We're starting substitution of TMPL<ARGS>; record the template
    substitution context for diagnostics and to restore it later.  */
 
-static bool
+bool
 push_tinst_level (tree tmpl, tree args)
 {
   return push_tinst_level_loc (tmpl, args, input_location);
@@ -21297,13 +21307,24 @@ fn_type_unification (tree fn,
       goto fail;
     }
 
+ deduced:
+
+  /* CWG2369: Check satisfaction before non-deducible conversions.  */
+  if (!constraints_satisfied_p (fn, targs))
+    {
+      if (explain_p)
+	diagnose_constraints (DECL_SOURCE_LOCATION (fn), fn, targs);
+      goto fail;
+    }
+
   /* DR 1391: All parameters have args, now check non-dependent parms for
-     convertibility.  */
-  if (check_non_deducible_conversions (parms, args, nargs, fn, strict, flags,
-				       convs, explain_p))
+     convertibility.  We don't do this if all args were explicitly specified,
+     as the standard says that we substitute explicit args immediately.  */
+  if (incomplete
+      && check_non_deducible_conversions (parms, args, nargs, fn, strict, flags,
+					  convs, explain_p))
     goto fail;
 
- deduced:
   /* All is well so far.  Now, check:
 
      [temp.deduct]
