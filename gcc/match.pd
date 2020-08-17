@@ -2397,6 +2397,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (plus (convert @0) (op @2 (convert @1))))))
 #endif
 
+/* (T)(A) +- (T)(B) -> (T)(A +- B) only when (A +- B) could be simplified
+   to a simple value.  */
+#if GIMPLE
+  (for op (plus minus)
+   (simplify
+    (op (convert @0) (convert @1))
+     (if (INTEGRAL_TYPE_P (type)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	  && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))
+	  && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+	  && !TYPE_OVERFLOW_TRAPS (type)
+	  && !TYPE_OVERFLOW_SANITIZED (type))
+      (convert (op! @0 @1)))))
+#endif
+
   /* ~A + A -> -1 */
   (simplify
    (plus:c (bit_not @0) @0)
