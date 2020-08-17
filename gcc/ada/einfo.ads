@@ -2655,10 +2655,6 @@ package Einfo is
 --       Used to generate constraint checks on calls to these subprograms, even
 --       within an instance of a predefined run-time unit, in which checks
 --       are otherwise suppressed.
---
---       The flag is also set on the entity of the expression function created
---       within an instance, for a function that has external axiomatization,
---       for use in GNATprove mode.
 
 --    Is_Generic_Actual_Type (Flag94)
 --       Defined in all type and subtype entities. Set in the subtype
