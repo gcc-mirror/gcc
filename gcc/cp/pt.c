@@ -10088,8 +10088,26 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    }
 	}
 
-      // Build template info for the new specialization.
-      SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
+      /* Build template info for the new specialization.  */
+      if (TYPE_ALIAS_P (t))
+	{
+	  /* This is constructed during instantiation of the alias
+	     decl.  But for member templates of template classes, that
+	     is not correct as we need to refer to the partially
+	     instantiated template, not the most general template.
+	     The incorrect knowledge will not have escaped this
+	     instantiation process, so we're good just updating the
+	     template_info we made then.  */
+	  tree ti = DECL_TEMPLATE_INFO (TYPE_NAME (t));
+	  gcc_checking_assert (template_args_equal (TI_ARGS (ti), arglist));
+	  if (TI_TEMPLATE (ti) != found)
+	    {
+	      gcc_checking_assert (DECL_TI_TEMPLATE (found) == TI_TEMPLATE (ti));
+	      TI_TEMPLATE (ti) = found;
+	    }
+	}
+      else
+	SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
       slot = type_specializations->find_slot_with_hash (&elt, hash, INSERT);
