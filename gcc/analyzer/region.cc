@@ -226,7 +226,8 @@ static tree
 get_field_at_bit_offset (tree record_type, bit_offset_t bit_offset)
 {
   gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
-  gcc_assert (bit_offset >= 0);
+  if (bit_offset < 0)
+    return NULL;
 
   /* Find the first field that has an offset > BIT_OFFSET,
      then return the one preceding it.
