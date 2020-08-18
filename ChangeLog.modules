@@ -1,5 +1,8 @@
 2020-08-17  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Module Mapper): Update documentation.
+
 	Fix disable checking build.
 	gcc/cp
 	* module.cc (note_def_cache_hasher): GTY needs this even when
