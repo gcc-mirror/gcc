@@ -1326,7 +1326,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 .c.o:
-	$(AM_V_CC)$(COMPILE) -c -o $@ $<
+	+$(AM_V_CC)$(COMPILE) -c -o $@ $<
 
 .c.obj:
 	$(AM_V_CC)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`

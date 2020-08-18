@@ -223,7 +223,7 @@ endif
 # Implicit rules and I18N
 
 .c.o:
-	$(COMPILE) $<
+	+$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # N.B. We do not attempt to copy these into $(srcdir).
