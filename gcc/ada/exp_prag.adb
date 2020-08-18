@@ -1831,11 +1831,7 @@ package body Exp_Prag is
       --  Raise Assertion_Error when the corresponding consequence of a case
       --  guard that evaluated to True fails.
 
-      if No (Stmts) then
-         Stmts := New_List;
-      end if;
-
-      Append_To (Stmts, Conseq_Checks);
+      Append_New_To (Stmts, Conseq_Checks);
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
    end Expand_Pragma_Contract_Cases;
@@ -2451,28 +2447,20 @@ package body Exp_Prag is
 
          --  Step 3: Store value of the expression from the previous iteration
 
-         if No (Old_Assign) then
-            Old_Assign := New_List;
-         end if;
-
          --  Generate:
          --    Old := Curr;
 
-         Append_To (Old_Assign,
+         Append_New_To (Old_Assign,
            Make_Assignment_Statement (Loc,
              Name       => New_Occurrence_Of (Old_Id, Loc),
              Expression => New_Occurrence_Of (Curr_Id, Loc)));
 
          --  Step 4: Store the current value of the expression
 
-         if No (Curr_Assign) then
-            Curr_Assign := New_List;
-         end if;
-
          --  Generate:
          --    Curr := <Expr>;
 
-         Append_To (Curr_Assign,
+         Append_New_To (Curr_Assign,
            Make_Assignment_Statement (Loc,
              Name       => New_Occurrence_Of (Curr_Id, Loc),
              Expression => Relocate_Node (Expr)));
