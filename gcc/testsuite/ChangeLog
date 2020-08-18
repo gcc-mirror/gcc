@@ -1,3 +1,28 @@
+2020-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96644
+	* gcc.dg/analyzer/pr96644.c: New test.
+
+2020-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96639
+	* gcc.dg/analyzer/pr96639.c: New test.
+
+2020-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96642
+	* gcc.dg/analyzer/pr96642.c: New test.
+
+2020-08-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/rdrand-1.c (dg-final): Update scan string.
+	* gcc.target/i386/rdrand-2.c (dg-final): Ditto.
+	* gcc.target/i386/rdrand-3.c (dg-final): Ditto.
+
+2020-08-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/endbr_immediate.c: New test.
+
 2020-08-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/78257

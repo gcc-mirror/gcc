@@ -1,3 +1,18 @@
+2020-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/55713
+	PR libstdc++/71096
+	PR libstdc++/93147
+	* include/std/tuple [__has_cpp_attribute(no_unique_address)]
+	(_Head_base<Idx, Head, true>): New definition of the partial
+	specialization, using [[no_unique_address]] instead of
+	inheritance.
+	* testsuite/libstdc++-prettyprinters/48362.cc: Adjust expected
+	output.
+	* testsuite/20_util/tuple/comparison_operators/93147.cc: New test.
+	* testsuite/20_util/tuple/creation_functions/55713.cc: New test.
+	* testsuite/20_util/tuple/element_access/71096.cc: New test.
+
 2020-08-14  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* testsuite/lib/libstdc++.exp: Use the new option

@@ -1,3 +1,21 @@
+2020-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96644
+	* region-model-manager.cc (get_region_for_unexpected_tree_code):
+	Handle ctxt being NULL.
+
+2020-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96639
+	* region.cc (region::get_subregions_for_binding): Check for "type"
+	being NULL.
+
+2020-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96642
+	* store.cc (get_svalue_for_ctor_val): New.
+	(binding_map::apply_ctor_to_region): Call it.
+
 2020-08-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/96609

@@ -1,3 +1,53 @@
+2020-08-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_bextri_u32)
+	(__builtin_ia32_bextri_u64): Use CODE_FOR_nothing.
+	* config/i386/i386.md (@tbm_bextri_<mode>):
+	Implement as parametrized name pattern.
+	(@rdrand<mode>): Ditto.
+	(@rdseed<mode>): Ditto.
+	* config/i386/i386-expand.c (ix86_expand_builtin)
+	[case IX86_BUILTIN_BEXTRI32, case IX86_BUILTIN_BEXTRI64]:
+	Update for parameterized name patterns.
+	[case IX86_BUILTIN_RDRAND16_STEP, case IX86_BUILTIN_RDRAND32_STEP]
+	[case IX86_BUILTIN_RDRAND64_STEP]: Ditto.
+	[case IX86_BUILTIN_RDSEED16_STEP, case IX86_BUILTIN_RDSEED32_STEP]
+	[case IX86_BUILTIN_RDSEED64_STEP]: Ditto.
+
+2020-08-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (vr_values::get_value_range): Add stmt param.
+	(vr_values::extract_range_from_comparison): Same.
+	(vr_values::extract_range_from_assignment): Pass stmt to
+	extract_range_from_comparison.
+	(vr_values::adjust_range_with_scev): Pass stmt to get_value_range.
+	(simplify_using_ranges::vrp_evaluate_conditional): Add stmt param.
+	Pass stmt to get_value_range.
+	(simplify_using_ranges::vrp_visit_cond_stmt): Pass stmt to
+	get_value_range.
+	(simplify_using_ranges::simplify_abs_using_ranges): Same.
+	(simplify_using_ranges::simplify_div_or_mod_using_ranges): Same.
+	(simplify_using_ranges::simplify_bit_ops_using_ranges): Same.
+	(simplify_using_ranges::simplify_cond_using_ranges_1): Same.
+	(simplify_using_ranges::simplify_switch_using_ranges): Same.
+	(simplify_using_ranges::simplify_float_conversion_using_ranges): Same.
+	* vr-values.h (class vr_values): Add stmt arg to
+	vrp_evaluate_conditional_warnv_with_ops.
+	Add stmt arg to extract_range_from_comparison and get_value_range.
+	(simplify_using_ranges::get_value_range): Add stmt arg.
+
+2020-08-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96350
+	* config/i386/i386.c (ix86_legitimate_constant_p): Return
+	false for ENDBR immediate.
+	(ix86_legitimate_address_p): Ditto.
+	* config/i386/predicates.md
+	(x86_64_immediate_operand): Exclude ENDBR immediate.
+	(x86_64_zext_immediate_operand): Ditto.
+	(x86_64_dwzext_immediate_operand): Ditto.
+	(ix86_endbr_immediate_operand): New predicate.
+
 2020-08-16  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1) [SIGN_EXTEND]:
