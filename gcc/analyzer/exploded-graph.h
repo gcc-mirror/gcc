@@ -161,6 +161,9 @@ class exploded_node : public dnode<eg_traits>
     /* Node was left unprocessed due to merger; it won't have had
        exploded_graph::process_node called on it.  */
     STATUS_MERGER,
+
+    /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
+    STATUS_BULK_MERGED
   };
 
   exploded_node (const point_and_state &ps, int index);
@@ -730,6 +733,7 @@ public:
 
   void build_initial_worklist ();
   void process_worklist ();
+  bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
 
   exploded_node *get_or_create_node (const program_point &point,
