@@ -1,19 +1,10 @@
 /* PR target/96246 */
 /* { dg-do run } */
 /* { dg-require-effective-target avx512bw } */
-/* { dg-options "-Ofast -mavx512bw" } */
+/* { dg-require-effective-target avx512vl } */
+/* { dg-options "-O2 -std=c++14 -mavx512bw -mavx512vl" } */
 
-#ifndef CHECK
-#define CHECK "avx512f-helper.h"
-#endif
-
-#include CHECK
-
-#ifndef TEST
-#define TEST avx512bw_test
-#endif
-
-#include "avx512bw-pr96246-1.c"
+#include "avx512vl-pr96246-1.C"
 
 #define RUNTIME_TEST(vtype, num)			\
   do							\
@@ -34,14 +25,17 @@
     }							\
   while (0)
 
-static void
-__attribute__ ((optimize (0)))
-TEST (void)
+int
+main (void)
 {
-  RUNTIME_TEST (v64qi, 64);
-  RUNTIME_TEST (v32hi, 32);
-  RUNTIME_TEST (v16si, 16);
-  RUNTIME_TEST (v8di, 8);
-  RUNTIME_TEST (v16sf, 16);
-  RUNTIME_TEST (v8df, 8);
+  RUNTIME_TEST (v16qi, 16);
+  RUNTIME_TEST (v32qi, 32);
+  RUNTIME_TEST (v16hi, 16);
+  RUNTIME_TEST (v4si, 4);
+  RUNTIME_TEST (v8si, 8);
+  RUNTIME_TEST (v4sf, 4);
+  RUNTIME_TEST (v8sf, 8);
+  RUNTIME_TEST (v4di, 4);
+  RUNTIME_TEST (v4df, 4);
+  return 0;
 }
