@@ -14037,7 +14037,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case MISC_BUILTIN_CDTBCD:
     case MISC_BUILTIN_CBCDTD:
     case VSX_BUILTIN_XVCVSPBF16:
-    case VSX_BUILTIN_XVCVBF16SP:
+    case VSX_BUILTIN_XVCVBF16SPN:
     case P10_BUILTIN_MTVSRBM:
     case P10_BUILTIN_MTVSRHM:
     case P10_BUILTIN_MTVSRWM:

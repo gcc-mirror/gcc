@@ -21624,7 +21624,7 @@ void __builtin_mma_assemble_pair (__vector_pair *, vec_t, vec_t);
 void __builtin_mma_disassemble_pair (void *, __vector_pair *);
 
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
-vec_t __builtin_vsx_xvcvbf16sp (vec_t);
+vec_t __builtin_vsx_xvcvbf16spn (vec_t);
 @end smallexample
 
 @node RISC-V Built-in Functions

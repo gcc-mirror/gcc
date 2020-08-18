@@ -2998,7 +2998,7 @@ BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 	      RS6000_BTC_MISC)
 
 /* POWER10 MMA builtins.  */
-BU_VSX_1 (XVCVBF16SP,	    "xvcvbf16sp",	MISC, vsx_xvcvbf16sp)
+BU_VSX_1 (XVCVBF16SPN,	    "xvcvbf16spn",	MISC, vsx_xvcvbf16spn)
 BU_VSX_1 (XVCVSPBF16,	    "xvcvspbf16",	MISC, vsx_xvcvspbf16)
 
 BU_MMA_1 (XXMFACC,	    "xxmfacc",		QUAD, mma_xxmfacc)
