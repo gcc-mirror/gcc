@@ -1,5 +1,11 @@
 2020-08-18  Nathan Sidwell  <nathan@acm.org>
 
+	Cherry pick 634046d1a81.
+	gcc/cp/
+	* name-lookup.c (qualify_lookup): Drop lambda checking here.
+	Reorder namespace & type checking.
+	(lookup_name_1): Do hidden lambda checking here.
+
 	Fix -save-temps issue.
 	libcpp/
 	* lex.c (cpp_maybe_module_directive): Increment prevent_expansion
