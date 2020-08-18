@@ -11683,16 +11683,27 @@ convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
       return true;
     }
 
-  unsigned char charbuf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
-  int len = native_encode_expr (expr, charbuf, sizeof charbuf, 0);
-  if (len <= 0)
+  /* Except for RECORD_TYPE which may have an initialized flexible array
+     member, the size of a type is the same as the size of the initializer
+     (including any implicitly zeroed out members and padding).  Allocate
+     just enough for that many bytes.  */
+  tree expr_size = TYPE_SIZE_UNIT (TREE_TYPE (expr));
+  if (!expr_size || !tree_fits_uhwi_p (expr_size))
+    return false;
+  const unsigned HOST_WIDE_INT expr_bytes = tree_to_uhwi (expr_size);
+  const unsigned bytes_sofar = bytes->length ();
+  /* native_encode_expr can convert at most INT_MAX bytes.  vec is limited
+     to at most UINT_MAX.  */
+  if (bytes_sofar + expr_bytes > INT_MAX)
     return false;
 
-  unsigned n = bytes->length ();
-  bytes->safe_grow (n + len);
-  unsigned char *p = bytes->address ();
-  memcpy (p + n, charbuf, len);
-  return true;
+  /* Unlike for RECORD_TYPE, there is no need to clear the memory since
+     it's completely overwritten by native_encode_expr.  */
+  bytes->safe_grow (bytes_sofar + expr_bytes);
+  unsigned char *pnext = bytes->begin () + bytes_sofar;
+  int nbytes = native_encode_expr (expr, pnext, expr_bytes, 0);
+  /* NBYTES is zero on failure.  Otherwise it should equal EXPR_BYTES.  */
+  return (unsigned HOST_WIDE_INT) nbytes == expr_bytes;
 }
 
 /* Return a STRING_CST corresponding to ARG's constant initializer either
