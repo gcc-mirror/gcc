@@ -1,6 +1,16 @@
 2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/critical-hint-1.c: Moved to libgomp/.
+	* c-c++-common/gomp/critical-hint-2.c: Moved to libgomp/.
+	* gfortran.dg/gomp/critical-hint-1.f90: Moved to libgomp/.
+	* gfortran.dg/gomp/critical-hint-2.f90: Moved to libgomp/.
+
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-07-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* g++.dg/gomp/critical-3.C: Add nameless critical with hint testcase.

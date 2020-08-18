@@ -1,3 +1,4 @@
+! { dg-do compile }
 ! { dg-additional-options "-fdump-tree-original" }
 subroutine example_criticial ()
   use omp_lib
