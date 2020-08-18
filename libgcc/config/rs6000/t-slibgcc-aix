@@ -92,27 +92,28 @@ AR_FLAGS_FOR_TARGET = -X32_64
 ifeq ($(MULTIBUILDTOP),)
 BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
     echo '64'; else echo '32'; fi)
+ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
 all: all-multi
 ifeq ($(enable_shared),yes)
-	ar -X$(BITS) x ../ppc$(BITS)/libgcc/libgcc_s.a shr.o
-	ar -X$(BITS) rc ./libgcc_s.a shr.o
+	$(ARX) -X$(BITS) x ../ppc$(BITS)/libgcc/libgcc_s.a shr.o
+	$(ARX) -X$(BITS) rc ./libgcc_s.a shr.o
 	rm -f shr.o
-	ar -X$(BITS) x ../pthread/ppc$(BITS)/libgcc/libgcc_s.a shr.o
-	ar -X$(BITS) rc ../pthread/libgcc/libgcc_s.a shr.o
+	$(ARX) -X$(BITS) x ../pthread/ppc$(BITS)/libgcc/libgcc_s.a shr.o
+	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcc_s.a shr.o
 	rm -f shr.o
 endif
-	ar -X$(BITS) rc libgcc.a \
+	$(ARX) -X$(BITS) rc libgcc.a \
 	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcc-objects))
-	ar -X$(BITS) rc libgcc_eh.a \
+	$(ARX) -X$(BITS) rc libgcc_eh.a \
 	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcc-eh-objects))
-	ar -X$(BITS) rc ../pthread/libgcc/libgcc.a \
+	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcc.a \
 	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcc-objects))
-	ar -X$(BITS) rc ../pthread/libgcc/libgcc_eh.a \
+	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcc_eh.a \
 	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcc-eh-objects))
 ifeq ($(enable_gcov),yes)
-	ar -X$(BITS) rc libgcov.a \
+	$(ARX) -X$(BITS) rc libgcov.a \
 	    $(addprefix ../ppc$(BITS)/libgcc/,$(libgcov-objects))
-	ar -X$(BITS) rc ../pthread/libgcc/libgcov.a \
+	$(ARX) -X$(BITS) rc ../pthread/libgcc/libgcov.a \
 	    $(addprefix ../pthread/ppc$(BITS)/libgcc/,$(libgcov-objects))
 endif
 	$(MAKE) install-leaf DESTDIR=$(gcc_objdir) \
