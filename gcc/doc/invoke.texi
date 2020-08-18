@@ -504,7 +504,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-sched-spec  -fno-signed-zeros @gol
 -fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-sibling-calls @gol
--fpartial-inlining  -fpeel-loops  -fpredictive-commoning @gol
+-fpartial-inlining  -fparallel-jobs=@var{alg} @gol
+-fpeel-loops  -fpredictive-commoning @gol
 -fprefetch-loop-arrays @gol
 -fprofile-correction @gol
 -fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training @gol
@@ -14510,6 +14511,35 @@ match is done on substrings: if the @var{sym} parameter is a substring
 of the function name, it is considered to be a match.  For C99 and C++
 extended identifiers, the function name must be given in UTF-8, not
 using universal character names.
+
+@item -fparallel-jobs=@var{n}
+@opindex parallel
+This option is experimental.
+
+This option enables parallel compilation of files using a maximum of
+@var{n} parallel jobs.  When invoked, it tries to distribute the symbols
+within the file into multiple partitions and compile them in parallel.
+
+For now, private symbols are paritioned together with public symbols
+if there are references to them to avoid code layout modifications
+when compiling.  This means that compiling a file
+with very few public symbols will not provide noticeable improvements
+in compilation time.  However, you can use
+@option{--param=promote-statics=1} to allow GCC to automatically
+promote a symbol to be globally available, improving compilation
+performance in exchange to changing code layout.
+
+You can also specify @option{-fparallel-jobs=jobserver} to use GNU make's
+job server mode to determine the number of parallel jobs.  This
+is useful when the Makefile calling GCC is already executing in parallel.
+You must prepend a @samp{+} to the command recipe in the parent Makefile
+for this to work.  This option likely only works if @env{MAKE} is
+GNU make.  If you specify @option{-fparallel-jobs=auto}, GCC will try to
+automatically detect a running GNU make's job server.
+
+An extra parameter, @option{--param=balance-partitions=0} can be used to
+avoid balancing created partitions.  This should only be used to debug
+the compiler.
 
 @item -fpatchable-function-entry=@var{N}[,@var{M}]
 @opindex fpatchable-function-entry
