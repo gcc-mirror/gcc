@@ -3693,6 +3693,11 @@ check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 	{
 	  if (x->ts.type == type)
 	    {
+	      if (x->ts.type == BT_CHARACTER)
+		{
+		  gfc_error ("Different character kinds at %L", &x->where);
+		  return false;
+		}
 	      if (!gfc_notify_std (GFC_STD_GNU, "Different type "
 				   "kinds at %L", &x->where))
 		return false;
