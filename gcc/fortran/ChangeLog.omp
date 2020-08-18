@@ -1,6 +1,21 @@
 2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_critical): Fix handling hints; permit
+	hint clause without named critical.
+	(resolve_omp_clauses): Require nonnegative constant integer
+	for the hint clause.
+	(gfc_resolve_omp_directive): Check for no name but
+	nonzero value for hint clause.
+	* parse.c (parse_omp_structured_block): Fix same-name check
+	for critical.
+	* trans-openmp.c (gfc_trans_omp_critical): Handle hint clause properly.
+
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/95837

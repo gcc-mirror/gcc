@@ -1,3 +1,11 @@
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_critical): Check for no name but
+	nonzero hint provided.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-common.h (c_oacc_annotate_loops_in_kernels_regions): Declare.

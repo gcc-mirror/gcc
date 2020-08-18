@@ -1,6 +1,14 @@
 2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.f90.in: Add omp_sync_hint_* and omp_sync_hint_kind.
+	* omp_lib.h.in: Likewise.
+
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Remove unused

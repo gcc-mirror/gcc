@@ -1,3 +1,12 @@
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_hint): Require nonnegative hint clause.
+	(c_parser_omp_critical): Permit hint(0) clause without named critical.
+	(c_parser_omp_construct): Don't assert if error_mark_node is returned.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-decl.c (c_unwrap_for_init): New.

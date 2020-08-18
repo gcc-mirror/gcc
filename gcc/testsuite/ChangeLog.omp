@@ -1,6 +1,17 @@
 2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/gomp/critical-3.C: Add nameless critical with hint testcase.
+	* c-c++-common/gomp/critical-hint-1.c: New test.
+	* c-c++-common/gomp/critical-hint-2.c: New test.
+	* gfortran.dg/gomp/critical-hint-1.f90: New test.
+	* gfortran.dg/gomp/critical-hint-2.f90: New test.
+
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-06-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/95837
