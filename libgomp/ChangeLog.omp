@@ -1,3 +1,11 @@
+2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Remove unused
+	variables; add character(kind=4) tests; update TODO comment.
+
 2020-08-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
