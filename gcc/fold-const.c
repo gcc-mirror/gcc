@@ -7875,11 +7875,12 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 }
 
 
-/* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST,
-   REAL_CST, COMPLEX_CST or VECTOR_CST specified by EXPR into the
-   buffer PTR of length LEN bytes.  If PTR is NULL, don't actually store
-   anything, just do a dry run.  If OFF is not -1 then start
-   the encoding at byte offset OFF and encode at most LEN bytes.
+/* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST, REAL_CST,
+   FIXED_CST, COMPLEX_CST, STRING_CST, or VECTOR_CST specified by EXPR into
+   the buffer PTR of size LEN bytes.  If PTR is NULL, don't actually store
+   anything, just do a dry run.  Fail either if OFF is -1 and LEN isn't
+   sufficient to encode the entire EXPR, or if OFF is out of bounds.
+   Otherwise, start at byte offset OFF and encode at most LEN bytes.
    Return the number of bytes placed in the buffer, or zero upon failure.  */
 
 int

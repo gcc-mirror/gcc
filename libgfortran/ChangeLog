@@ -1,3 +1,8 @@
+2020-08-17  David Edelsohn  <dje.gcc@gmail.com>
+	    Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Add complementary mode object file to libcaf_single.a.
+
 2020-08-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* caf/single.c (_gfortran_caf_lock): Fix typo.

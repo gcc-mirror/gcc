@@ -145,11 +145,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
 	auto __depend = nullptr;
 #endif
-	// A call wrapper holding tuple{DECAY_COPY(__f), DECAY_COPY(__args)...}
-	using _Invoker_type = _Invoker<__decayed_tuple<_Callable, _Args...>>;
-
-	_M_start_thread(_S_make_state<_Invoker_type>(
-	      std::forward<_Callable>(__f), std::forward<_Args>(__args)...),
+	using _Wrapper = _Call_wrapper<_Callable, _Args...>;
+	// Create a call wrapper with DECAY_COPY(__f) as its target object
+	// and DECAY_COPY(__args)... as its bound argument entities.
+	_M_start_thread(_State_ptr(new _State_impl<_Wrapper>(
+	      std::forward<_Callable>(__f), std::forward<_Args>(__args)...)),
 	    __depend);
       }
 
@@ -220,13 +220,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _M_start_thread(_State_ptr, void (*)());
 
-    template<typename _Callable, typename... _Args>
-      static _State_ptr
-      _S_make_state(_Args&&... __args)
-      {
-	using _Impl = _State_impl<_Callable>;
-	return _State_ptr{new _Impl{std::forward<_Args>(__args)...}};
-      }
 #if _GLIBCXX_THREAD_ABI_COMPAT
   public:
     struct _Impl_base;
@@ -274,20 +267,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       };
 
-    template<typename... _Tp>
-      using __decayed_tuple = tuple<typename decay<_Tp>::type...>;
-
   public:
-    // Returns a call wrapper that stores
-    // tuple{DECAY_COPY(__callable), DECAY_COPY(__args)...}.
-    template<typename _Callable, typename... _Args>
-      static _Invoker<__decayed_tuple<_Callable, _Args...>>
-      __make_invoker(_Callable&& __callable, _Args&&... __args)
-      {
-	return { __decayed_tuple<_Callable, _Args...>{
-	    std::forward<_Callable>(__callable), std::forward<_Args>(__args)...
-	} };
-      }
+    template<typename... _Tp>
+      using _Call_wrapper = _Invoker<tuple<typename decay<_Tp>::type...>>;
   };
 
   inline void

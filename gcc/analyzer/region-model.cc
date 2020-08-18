@@ -526,6 +526,22 @@ region_model::get_gassign_result (const gassign *assign,
     case VEC_SERIES_EXPR:
     case VEC_COND_EXPR:
     case VEC_PERM_EXPR:
+    case VEC_WIDEN_MULT_HI_EXPR:
+    case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+    case VEC_WIDEN_MULT_ODD_EXPR:
+    case VEC_UNPACK_HI_EXPR:
+    case VEC_UNPACK_LO_EXPR:
+    case VEC_UNPACK_FLOAT_HI_EXPR:
+    case VEC_UNPACK_FLOAT_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
+    case VEC_PACK_SAT_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
+    case VEC_WIDEN_LSHIFT_HI_EXPR:
+    case VEC_WIDEN_LSHIFT_LO_EXPR:
       return m_mgr->get_or_create_unknown_svalue (TREE_TYPE (lhs));
     }
 }
@@ -555,10 +571,12 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
     {
     default:
       {
-	if (1)
+	if (0)
 	  sorry_at (assign->location, "unhandled assignment op: %qs",
 		    get_tree_code_name (op));
-	gcc_unreachable ();
+	const svalue *unknown_sval
+	  = m_mgr->get_or_create_unknown_svalue (TREE_TYPE (lhs));
+	set_value (lhs_reg, unknown_sval, ctxt);
       }
       break;
 
@@ -1079,7 +1097,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
   switch (TREE_CODE (pv.m_tree))
     {
     default:
-      gcc_unreachable ();
+      return m_mgr->get_or_create_unknown_svalue (TREE_TYPE (pv.m_tree));
 
     case ADDR_EXPR:
       {
@@ -1100,8 +1118,8 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
     case RESULT_DECL:
     case ARRAY_REF:
       {
-	const region *element_reg = get_lvalue (pv, ctxt);
-	return get_store_value (element_reg);
+	const region *reg = get_lvalue (pv, ctxt);
+	return get_store_value (reg);
       }
 
     case REALPART_EXPR:

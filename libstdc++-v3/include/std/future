@@ -605,14 +605,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Fn, typename _Alloc, typename _Signature>
       class _Task_state;
 
-    template<typename _BoundFn>
-      static std::shared_ptr<_State_base>
-      _S_make_deferred_state(_BoundFn&& __fn);
-
-    template<typename _BoundFn>
-      static std::shared_ptr<_State_base>
-      _S_make_async_state(_BoundFn&& __fn);
-
     template<typename _Res_ptr, typename _Fn,
 	     typename _Res = typename _Res_ptr::element_type::result_type>
       struct _Task_setter;
@@ -1614,10 +1606,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __future_base::_State_base
     {
     public:
-      explicit
-      _Deferred_state(_BoundFn&& __fn)
-      : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn))
-      { }
+      template<typename... _Args>
+	explicit
+	_Deferred_state(_Args&&... __args)
+	: _M_result(new _Result<_Res>()),
+	  _M_fn{{std::forward<_Args>(__args)...}}
+	{ }
 
     private:
       typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;
@@ -1679,53 +1673,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __future_base::_Async_state_commonV2
     {
     public:
-      explicit
-      _Async_state_impl(_BoundFn&& __fn)
-      : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn))
-      {
-	_M_thread = std::thread{ [this] {
-	    __try
-	      {
-		_M_set_result(_S_task_setter(_M_result, _M_fn));
-	      }
-	    __catch (const __cxxabiv1::__forced_unwind&)
-	      {
-		// make the shared state ready on thread cancellation
-		if (static_cast<bool>(_M_result))
-		  this->_M_break_promise(std::move(_M_result));
-		__throw_exception_again;
-	      }
-        } };
-      }
+      template<typename... _Args>
+	explicit
+	_Async_state_impl(_Args&&... __args)
+	: _M_result(new _Result<_Res>()),
+	  _M_fn{{std::forward<_Args>(__args)...}}
+	{
+	  _M_thread = std::thread{&_Async_state_impl::_M_run, this};
+	}
 
       // Must not destroy _M_result and _M_fn until the thread finishes.
       // Call join() directly rather than through _M_join() because no other
       // thread can be referring to this state if it is being destroyed.
-      ~_Async_state_impl() { if (_M_thread.joinable()) _M_thread.join(); }
+      ~_Async_state_impl()
+      {
+	if (_M_thread.joinable())
+	  _M_thread.join();
+      }
 
     private:
+      void
+      _M_run()
+      {
+	__try
+	  {
+	    _M_set_result(_S_task_setter(_M_result, _M_fn));
+	  }
+	__catch (const __cxxabiv1::__forced_unwind&)
+	  {
+	    // make the shared state ready on thread cancellation
+	    if (static_cast<bool>(_M_result))
+	      this->_M_break_promise(std::move(_M_result));
+	    __throw_exception_again;
+	  }
+      }
+
       typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;
       _Ptr_type _M_result;
       _BoundFn _M_fn;
     };
-
-  template<typename _BoundFn>
-    inline std::shared_ptr<__future_base::_State_base>
-    __future_base::_S_make_deferred_state(_BoundFn&& __fn)
-    {
-      typedef typename remove_reference<_BoundFn>::type __fn_type;
-      typedef _Deferred_state<__fn_type> __state_type;
-      return std::make_shared<__state_type>(std::move(__fn));
-    }
-
-  template<typename _BoundFn>
-    inline std::shared_ptr<__future_base::_State_base>
-    __future_base::_S_make_async_state(_BoundFn&& __fn)
-    {
-      typedef typename remove_reference<_BoundFn>::type __fn_type;
-      typedef _Async_state_impl<__fn_type> __state_type;
-      return std::make_shared<__state_type>(std::move(__fn));
-    }
 
 
   /// async
@@ -1733,15 +1719,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NODISCARD future<__async_result_of<_Fn, _Args...>>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
     {
+      using _Wr = std::thread::_Call_wrapper<_Fn, _Args...>;
+      using _As = __future_base::_Async_state_impl<_Wr>;
+      using _Ds = __future_base::_Deferred_state<_Wr>;
+
       std::shared_ptr<__future_base::_State_base> __state;
       if ((__policy & launch::async) == launch::async)
 	{
 	  __try
 	    {
-	      __state = __future_base::_S_make_async_state(
-		  std::thread::__make_invoker(std::forward<_Fn>(__fn),
-					      std::forward<_Args>(__args)...)
-		  );
+	      __state = std::make_shared<_As>(std::forward<_Fn>(__fn),
+					      std::forward<_Args>(__args)...);
 	    }
 #if __cpp_exceptions
 	  catch(const system_error& __e)
@@ -1754,11 +1742,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (!__state)
 	{
-	  __state = __future_base::_S_make_deferred_state(
-	      std::thread::__make_invoker(std::forward<_Fn>(__fn),
-					  std::forward<_Args>(__args)...));
+	  __state = std::make_shared<_Ds>(std::forward<_Fn>(__fn),
+					  std::forward<_Args>(__args)...);
 	}
-      return future<__async_result_of<_Fn, _Args...>>(__state);
+      return future<__async_result_of<_Fn, _Args...>>(std::move(__state));
     }
 
   /// async, potential overload

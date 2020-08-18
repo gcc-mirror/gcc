@@ -21,6 +21,7 @@
 // Ensure the library only uses the __name__ form for attributes.
 // Don't test 'const' because it is reserved anyway.
 #define abi_tag 1
+#define cold 1
 #ifndef __APPLE__
 // darwin headers use these, see PR 64883
 # define always_inline 1
@@ -36,6 +37,7 @@
 #endif
 
 #include <bits/extc++.h>
+#include <cxxabi.h>
 
 int
 main()

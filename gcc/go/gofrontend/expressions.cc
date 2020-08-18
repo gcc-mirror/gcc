@@ -1635,15 +1635,14 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
 	      || no->name().find("equal") != std::string::npos))
 	is_exported_runtime = true;
 
-      bool is_referenced_by_inline =
-	no->is_function() && no->func_value()->is_referenced_by_inline();
-
       bool is_hidden = ((no->is_function()
 			 && no->func_value()->enclosing() != NULL)
 			|| (Gogo::is_hidden_name(no->name())
-			    && !is_exported_runtime
-			    && !is_referenced_by_inline)
+			    && !is_exported_runtime)
 			|| Gogo::is_thunk(no));
+
+      if (no->is_function() && no->func_value()->is_referenced_by_inline())
+	is_hidden = false;
 
       bvar = context->backend()->immutable_struct(var_name, asm_name,
                                                   is_hidden, false,

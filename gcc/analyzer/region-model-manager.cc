@@ -927,11 +927,11 @@ get_region_for_unexpected_tree_code (region_model_context *ctxt,
 				     tree t,
 				     const dump_location_t &loc)
 {
-  gcc_assert (ctxt);
   tree type = TYPE_P (t) ? t : TREE_TYPE (t);
   region *new_reg
     = new unknown_region (alloc_region_id (), &m_root_region, type);
-  ctxt->on_unexpected_tree_code (t, loc);
+  if (ctxt)
+    ctxt->on_unexpected_tree_code (t, loc);
   return new_reg;
 }
 

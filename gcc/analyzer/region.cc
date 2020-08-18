@@ -256,7 +256,7 @@ region::get_subregions_for_binding (region_model_manager *mgr,
 				    tree type,
 				    auto_vec <const region *> *out) const
 {
-  if (get_type () == NULL_TREE)
+  if (get_type () == NULL_TREE || type == NULL_TREE)
     return;
   if (relative_bit_offset == 0
       && types_compatible_p (get_type (), type))

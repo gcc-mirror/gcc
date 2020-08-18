@@ -391,6 +391,22 @@ get_subregion_within_ctor (const region *parent_reg, tree index,
     }
 }
 
+/* Get the svalue for VAL, a non-CONSTRUCTOR value within a CONSTRUCTOR.  */
+
+static const svalue *
+get_svalue_for_ctor_val (tree val, region_model_manager *mgr)
+{
+  if (TREE_CODE (val) == ADDR_EXPR)
+    {
+      gcc_assert (TREE_CODE (TREE_OPERAND (val, 0)) == STRING_CST);
+      const string_region *str_reg
+	= mgr->get_region_for_string (TREE_OPERAND (val, 0));
+      return mgr->get_ptr_svalue (TREE_TYPE (val), str_reg);
+    }
+  gcc_assert (CONSTANT_CLASS_P (val));
+  return mgr->get_or_create_constant_svalue (val);
+}
+
 /* Bind values from CONSTRUCTOR to this map, relative to
    PARENT_REG's relationship to its base region.  */
 
@@ -415,12 +431,11 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
 	apply_ctor_to_region (child_reg, val, mgr);
       else
 	{
-	  gcc_assert (CONSTANT_CLASS_P (val));
-	  const svalue *cst_sval = mgr->get_or_create_constant_svalue (val);
+	  const svalue *sval = get_svalue_for_ctor_val (val, mgr);
 	  const binding_key *k
 	    = binding_key::make (mgr->get_store_manager (), child_reg,
 				 BK_direct);
-	  put (k, cst_sval);
+	  put (k, sval);
 	}
     }
 }
