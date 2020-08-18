@@ -5221,24 +5221,16 @@ qualify_lookup (tree val, LOOK_want want)
   if (val == NULL_TREE)
     return false;
 
-  if (bool (want & LOOK_want::NAMESPACE) && TREE_CODE (val) == NAMESPACE_DECL)
-    return true;
-
   if (bool (want & LOOK_want::TYPE))
     {
       tree target_val = strip_using_decl (val);
 
-      if (TREE_CODE (target_val) == TYPE_DECL
-	  || TREE_CODE (target_val) == TEMPLATE_DECL)
+      if (TREE_CODE (STRIP_TEMPLATE (target_val)) == TYPE_DECL)
 	return true;
     }
 
   if (bool (want & LOOK_want::TYPE_NAMESPACE))
-    return false;
-
-  /* Look through lambda things that we shouldn't be able to see.  */
-  if (!bool (want & LOOK_want::HIDDEN_LAMBDA) && is_lambda_ignored_entity (val))
-    return false;
+    return TREE_CODE (val) == NAMESPACE_DECL;
 
   return true;
 }
@@ -6430,7 +6422,10 @@ lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
   tree val = NULL_TREE;
 
   gcc_checking_assert (unsigned (where) != 0);
-
+  /* If we're looking for hidden lambda things, we shouldn't be
+     looking in namespace scope.  */
+  gcc_checking_assert (!bool (want & LOOK_want::HIDDEN_LAMBDA)
+		       || !bool (where & LOOK_where::NAMESPACE));
   query_oracle (name);
 
   /* Conversion operators are handled specially because ordinary
@@ -6481,7 +6476,10 @@ lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if (qualify_lookup (iter->value, want))
+	if (iter->value
+	    && (bool (want & LOOK_want::HIDDEN_LAMBDA)
+		|| !is_lambda_ignored_entity (iter->value))
+	    && qualify_lookup (iter->value, want))
 	  binding = iter->value;
 	else if (bool (want & LOOK_want::TYPE)
 		 && qualify_lookup (iter->type, want))
