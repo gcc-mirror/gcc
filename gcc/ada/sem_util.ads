@@ -665,6 +665,14 @@ package Sem_Util is
    --  indication or a scalar subtype where one of the bounds is a
    --  discriminant.
 
+   function Derivation_Too_Early_To_Inherit
+     (Typ : Entity_Id; Streaming_Op : TSS_Name_Type) return Boolean;
+   --  Returns True if Typ is a derived type, the given Streaming_Op
+   --  (one of Read, Write, Input, or Output) is explicitly specified
+   --  for Typ's parent type, and that attribute specification is *not*
+   --  inherited by Typ because the declaration of Typ precedes that
+   --  of the attribute specification.
+
    function Designate_Same_Unit
      (Name1 : Node_Id;
       Name2 : Node_Id) return  Boolean;

@@ -50,6 +50,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Attr; use Sem_Attr;
+with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
@@ -7287,6 +7288,71 @@ package body Sem_Util is
       Get_Index_Bounds (N, L, H);
       return Denotes_Discriminant (L) or else Denotes_Discriminant (H);
    end Depends_On_Discriminant;
+
+   -------------------------------------
+   -- Derivation_Too_Early_To_Inherit --
+   -------------------------------------
+
+   function Derivation_Too_Early_To_Inherit
+     (Typ : Entity_Id; Streaming_Op : TSS_Name_Type) return Boolean is
+      Btyp        : constant Entity_Id := Implementation_Base_Type (Typ);
+      Parent_Type : Entity_Id;
+   begin
+      if Is_Derived_Type (Btyp) then
+         Parent_Type := Implementation_Base_Type (Etype (Btyp));
+         pragma Assert (Parent_Type /= Btyp);
+         if Has_Stream_Attribute_Definition
+              (Parent_Type, Streaming_Op)
+           and then In_Same_Extended_Unit (Btyp, Parent_Type)
+           and then Instantiation (Get_Source_File_Index (Sloc (Btyp))) =
+                    Instantiation (Get_Source_File_Index (Sloc (Parent_Type)))
+         then
+            declare
+               --  ??? Avoid code duplication here with
+               --  Sem_Cat.Has_Stream_Attribute_Definition by introducing a
+               --  new function to be called from both places?
+
+               Rep_Item : Node_Id := First_Rep_Item (Parent_Type);
+               Real_Rep : Node_Id;
+               Found    : Boolean := False;
+            begin
+               while Present (Rep_Item) loop
+                  Real_Rep := Rep_Item;
+
+                  if Nkind (Rep_Item) = N_Aspect_Specification then
+                     Real_Rep := Aspect_Rep_Item (Rep_Item);
+                  end if;
+
+                  if Nkind (Real_Rep) = N_Attribute_Definition_Clause then
+                     case Chars (Real_Rep) is
+                        when Name_Read =>
+                           Found := Streaming_Op = TSS_Stream_Read;
+
+                        when Name_Write =>
+                           Found := Streaming_Op = TSS_Stream_Write;
+
+                        when Name_Input =>
+                           Found := Streaming_Op = TSS_Stream_Input;
+
+                        when Name_Output =>
+                           Found := Streaming_Op = TSS_Stream_Output;
+
+                        when others =>
+                           null;
+                     end case;
+                  end if;
+
+                  if Found then
+                     return Earlier_In_Extended_Unit (Btyp, Real_Rep);
+                  end if;
+
+                  Next_Rep_Item (Rep_Item);
+               end loop;
+            end;
+         end if;
+      end if;
+      return False;
+   end Derivation_Too_Early_To_Inherit;
 
    -------------------------
    -- Designate_Same_Unit --

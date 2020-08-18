@@ -164,7 +164,13 @@ package body Exp_Tss is
       --  If Typ is a derived type, it may inherit attributes from an ancestor
 
       if No (Proc) and then Is_Derived_Type (Btyp) then
-         Proc := Find_Inherited_TSS (Etype (Btyp), Nam);
+         if not Derivation_Too_Early_To_Inherit (Btyp, Nam) then
+            Proc := Find_Inherited_TSS (Etype (Btyp), Nam);
+         elsif Is_Derived_Type (Etype (Btyp)) then
+            --  Skip one link in the derivation chain
+            Proc := Find_Inherited_TSS
+                      (Etype (Base_Type (Etype (Btyp))), Nam);
+         end if;
       end if;
 
       --  If nothing else, use the TSS of the root type

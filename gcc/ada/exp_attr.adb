@@ -136,6 +136,12 @@ package body Exp_Attr is
    --  special-case code that shuffles partial and full views in the middle
    --  of semantic analysis and expansion.
 
+   function Default_Streaming_Unavailable (Typ : Entity_Id) return Boolean;
+   --
+   --  In most cases, references to unavailable streaming attributes
+   --  are rejected at compile time. In some obscure cases involving
+   --  generics and formal derived types, the problem is dealt with at runtime.
+
    procedure Expand_Access_To_Protected_Op
      (N    : Node_Id;
       Pref : Node_Id;
@@ -925,6 +931,24 @@ package body Exp_Attr is
          End_Package_Scope (Scop);
       end if;
    end Compile_Stream_Body_In_Scope;
+
+   -----------------------------------
+   -- Default_Streaming_Unavailable --
+   -----------------------------------
+
+   function Default_Streaming_Unavailable (Typ : Entity_Id) return Boolean is
+      Btyp : constant Entity_Id := Implementation_Base_Type (Typ);
+   begin
+      if Is_Immutably_Limited_Type (Btyp)
+        and then not Is_Tagged_Type (Btyp)
+        and then not (Ekind (Btyp) = E_Record_Type
+                      and then Present (Corresponding_Concurrent_Type (Btyp)))
+      then
+         pragma Assert (In_Instance_Body);
+         return True;
+      end if;
+      return False;
+   end Default_Streaming_Unavailable;
 
    -----------------------------------
    -- Expand_Access_To_Protected_Op --
@@ -3954,6 +3978,18 @@ package body Exp_Attr is
                Analyze_And_Resolve (N, B_Type);
                return;
 
+            --  Limited types
+
+            elsif Default_Streaming_Unavailable (U_Type) then
+               --  Do the same thing here as is done above in the
+               --  case where a No_Streams restriction is active.
+
+               Rewrite (N,
+                 Make_Raise_Program_Error (Sloc (N),
+                   Reason => PE_Stream_Operation_Not_Allowed));
+               Set_Etype (N, B_Type);
+               return;
+
             --  Elementary types
 
             elsif Is_Elementary_Type (U_Type) then
@@ -5074,6 +5110,18 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
+            --  Limited types
+
+            elsif Default_Streaming_Unavailable (U_Type) then
+               --  Do the same thing here as is done above in the
+               --  case where a No_Streams restriction is active.
+
+               Rewrite (N,
+                 Make_Raise_Program_Error (Sloc (N),
+                   Reason => PE_Stream_Operation_Not_Allowed));
+               Set_Etype (N, Standard_Void_Type);
+               return;
+
             --  For elementary types, we call the W_xxx routine directly. Note
             --  that the effect of Write and Output is identical for the case
             --  of an elementary type (there are no discriminants or bounds).
@@ -5905,6 +5953,18 @@ package body Exp_Attr is
                    Expression => Rhs));
                Set_Assignment_OK (Lhs);
                Analyze (N);
+               return;
+
+            --  Limited types
+
+            elsif Default_Streaming_Unavailable (U_Type) then
+               --  Do the same thing here as is done above in the
+               --  case where a No_Streams restriction is active.
+
+               Rewrite (N,
+                 Make_Raise_Program_Error (Sloc (N),
+                   Reason => PE_Stream_Operation_Not_Allowed));
+               Set_Etype (N, B_Type);
                return;
 
             --  For elementary types, we call the I_xxx routine using the first
@@ -7514,6 +7574,18 @@ package body Exp_Attr is
                            Relocate_Node (Next (First (Exprs)))))))));
 
                Analyze (N);
+               return;
+
+            --  Limited types
+
+            elsif Default_Streaming_Unavailable (U_Type) then
+               --  Do the same thing here as is done above in the
+               --  case where a No_Streams restriction is active.
+
+               Rewrite (N,
+                 Make_Raise_Program_Error (Sloc (N),
+                   Reason => PE_Stream_Operation_Not_Allowed));
+               Set_Etype (N, U_Type);
                return;
 
             --  For elementary types, we call the W_xxx routine directly

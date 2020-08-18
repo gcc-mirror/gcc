@@ -12409,11 +12409,17 @@ package body Sem_Attr is
       --  applies to an ancestor type.
 
       while Etype (Etyp) /= Etyp loop
-         Etyp := Etype (Etyp);
+         declare
+            Derived_Type : constant Entity_Id := Etyp;
+         begin
+            Etyp := Etype (Etyp);
 
-         if Has_Stream_Attribute_Definition (Etyp, Nam) then
-            return True;
-         end if;
+            if Has_Stream_Attribute_Definition (Etyp, Nam) then
+               if not Derivation_Too_Early_To_Inherit (Derived_Type, Nam) then
+                  return True;
+               end if;
+            end if;
+         end;
       end loop;
 
       if Ada_Version < Ada_2005 then
