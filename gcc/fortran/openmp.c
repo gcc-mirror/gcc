@@ -5907,8 +5907,6 @@ resolve_omp_do (gfc_code *code)
 	      do_code2 = do_code2->block->next;
 	    }
 	}
-      if (i == collapse)
-	break;
       for (c = do_code->next; c; c = c->next)
 	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
 	  {
@@ -5916,7 +5914,7 @@ resolve_omp_do (gfc_code *code)
 		       name, &c->loc);
 	    break;
 	  }
-      if (c)
+      if (i == collapse || c)
 	break;
       do_code = do_code->block;
       if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
