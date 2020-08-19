@@ -77,6 +77,7 @@
 // Macros for deprecated attributes.
 //   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
+//   _GLIBCXX_DEPRECATED_SUGGEST
 //   _GLIBCXX17_DEPRECATED
 //   _GLIBCXX20_DEPRECATED( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
@@ -85,8 +86,11 @@
 
 #if defined(__DEPRECATED) && (__cplusplus >= 201103L)
 # define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
+# define _GLIBCXX_DEPRECATED_SUGGEST(ALT) \
+  __attribute__ ((__deprecated__ ("use '" ALT "' instead")))
 #else
 # define _GLIBCXX_DEPRECATED
+# define _GLIBCXX_DEPRECATED_SUGGEST(ALT)
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus >= 201703L)
