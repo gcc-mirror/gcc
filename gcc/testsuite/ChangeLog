@@ -1,3 +1,22 @@
+2020-08-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96199
+	* g++.dg/cpp2a/class-deduction-alias4.C: New test.
+
+2020-08-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96301
+	* gdc.dg/pr96301a.d: New test.
+	* gdc.dg/pr96301b.d: New test.
+	* gdc.dg/pr96301c.d: New test.
+
+2020-08-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr96562-1.c: New test.
+
 2020-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

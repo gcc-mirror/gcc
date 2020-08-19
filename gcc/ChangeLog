@@ -1,3 +1,17 @@
+2020-08-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96536
+	* config/i386/i386.md (restore_stack_nonlocal):
+	Add missing compare RTX.
+
+2020-08-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96562
+	PR target/93897
+	* config/i386/i386-expand.c (ix86_expand_pinsr): Don't use
+	pinsr for TImode.
+	(ix86_expand_pextr): Don't use pextr for TImode.
+
 2020-08-14  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:

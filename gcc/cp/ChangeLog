@@ -1,3 +1,11 @@
+2020-08-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96199
+	* pt.c (maybe_dependent_member_ref): New.
+	(tsubst_copy) [CONST_DECL]: Use it.
+	[VAR_DECL]: Likewise.
+	(tsubst_aggr_type): Handle nested type.
+
 2020-08-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
