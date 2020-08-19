@@ -2149,6 +2149,15 @@ package body Checks is
          Lo_OK := (Lo >= UR_From_Uint (Ifirst));
       end if;
 
+      --  Saturate the lower bound to that of the expression's type, because
+      --  we do not want to create an out-of-range value but we still need to
+      --  do a comparison to catch NaNs.
+
+      if Lo < Expr_Value_R (Type_Low_Bound (Expr_Type)) then
+         Lo := Expr_Value_R (Type_Low_Bound (Expr_Type));
+         Lo_OK := True;
+      end if;
+
       if Lo_OK then
 
          --  Lo_Chk := (X >= Lo)
@@ -2181,6 +2190,15 @@ package body Checks is
       else
          Hi := Machine (Expr_Type, UR_From_Uint (Ilast), Round_Even, Expr);
          Hi_OK := (Hi <= UR_From_Uint (Ilast));
+      end if;
+
+      --  Saturate the higher bound to that of the expression's type, because
+      --  we do not want to create an out-of-range value but we still need to
+      --  do a comparison to catch NaNs.
+
+      if Hi > Expr_Value_R (Type_High_Bound (Expr_Type)) then
+         Hi := Expr_Value_R (Type_High_Bound (Expr_Type));
+         Hi_OK := True;
       end if;
 
       if Hi_OK then
