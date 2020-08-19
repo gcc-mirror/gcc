@@ -83,22 +83,37 @@
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
 
-#if defined(__DEPRECATED) && (__cplusplus >= 201103L)
+#if defined(__DEPRECATED)
 # define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
+# define _GLIBCXX_DEPRECATED_SUGGEST(ALT) \
+  __attribute__ ((__deprecated__ ("use '" ALT "' instead")))
 #else
 # define _GLIBCXX_DEPRECATED
+# define _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 201103L)
+# define _GLIBCXX11_DEPRECATED _GLIBCXX_DEPRECATED
+# define _GLIBCXX11_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#else
+# define _GLIBCXX11_DEPRECATED
+# define _GLIBCXX11_DEPRECATED_SUGGEST(ALT)
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus >= 201703L)
 # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+# define _GLIBCXX17_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
 #else
 # define _GLIBCXX17_DEPRECATED
+# define _GLIBCXX17_DEPRECATED_SUGGEST(ALT)
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus > 201703L)
 # define _GLIBCXX20_DEPRECATED(MSG) [[deprecated(MSG)]]
+# define _GLIBCXX20_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
 #else
 # define _GLIBCXX20_DEPRECATED(MSG)
+# define _GLIBCXX20_DEPRECATED_SUGGEST(ALT)
 #endif
 
 // Macros for ABI tag attributes.
