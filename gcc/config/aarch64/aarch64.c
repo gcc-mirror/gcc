@@ -6017,7 +6017,6 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
 
   if (!silent_p
       && !TARGET_FLOAT
-      && fndecl && TREE_PUBLIC (fndecl)
       && fntype && fntype != error_mark_node)
     {
       const_tree type = TREE_TYPE (fntype);
