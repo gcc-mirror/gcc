@@ -1369,7 +1369,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
   switch (ptr_sval->get_kind ())
     {
     default:
-      gcc_unreachable ();
+      break;
 
     case SK_REGION:
       {
@@ -1395,17 +1395,10 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 	      return m_mgr->get_offset_region (parent_region, type, offset);
 	    }
 	  default:
-	    goto create_symbolic_region;
+	    break;
 	  }
       }
-
-    case SK_CONSTANT:
-    case SK_INITIAL:
-    case SK_UNARYOP:
-    case SK_SUB:
-    case SK_WIDENING:
-    case SK_CONJURED:
-      goto create_symbolic_region;
+      break;
 
     case SK_POISONED:
       {
@@ -1425,20 +1418,11 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind));
 	      }
 	  }
-	goto create_symbolic_region;
       }
-
-    case SK_UNKNOWN:
-      {
-      create_symbolic_region:
-	return m_mgr->get_symbolic_region (ptr_sval);
-      }
-
-    case SK_SETJMP:
-      goto create_symbolic_region;
+      break;
     }
 
-  gcc_unreachable ();
+  return m_mgr->get_symbolic_region (ptr_sval);
 }
 
 /* Set the value of the region given by LHS_REG to the value given
