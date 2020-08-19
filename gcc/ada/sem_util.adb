@@ -134,6 +134,9 @@ package body Sem_Util is
    --  Determine whether arbitrary entity Id denotes an atomic object as per
    --  RM C.6(7).
 
+   function Is_Container_Aggregate (Exp : Node_Id) return Boolean;
+   --  Is the given expression a container aggregate?
+
    generic
       with function Is_Effectively_Volatile_Entity
         (Id : Entity_Id) return Boolean;
@@ -12360,6 +12363,27 @@ package body Sem_Util is
            (Directly_Designated_Type (Etype (Formal))) = E;
    end Is_Access_Subprogram_Wrapper;
 
+   ----------------------------
+   -- Is_Container_Aggregate --
+   ----------------------------
+
+   function Is_Container_Aggregate (Exp : Node_Id) return Boolean is
+
+      function Is_Record_Aggregate return Boolean is (False);
+      --  ??? Unimplemented. Given an aggregate whose type is a
+      --  record type with specified Aggregate aspect, how do we
+      --  determine whether it is a record aggregate or a container
+      --  aggregate? If the code where the aggregate occurs can see only
+      --  a partial view of the aggregate's type then the aggregate
+      --  cannot be a record type; an aggregate of a private type has to
+      --  be a container aggregate.
+
+   begin
+      return Nkind (Exp) = N_Aggregate
+        and then Present (Find_Aspect (Etype (Exp), Aspect_Aggregate))
+        and then not Is_Record_Aggregate;
+   end Is_Container_Aggregate;
+
    ---------------------------------
    -- Side_Effect_Free_Statements --
    ---------------------------------
@@ -18406,6 +18430,7 @@ package body Sem_Util is
       is
          Par : constant Node_Id := Parent (Expr);
 
+         function Aggregate_Type return Node_Id is (Etype (Parent (Par)));
       begin
          if Nkind (Par) = N_If_Expression then
             return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
@@ -18433,55 +18458,69 @@ package body Sem_Util is
          elsif Nkind (Par) = N_Quantified_Expression then
             return Expr = Condition (Par);
 
-         elsif Nkind (Par) = N_Aggregate
-           and then Present (Etype (Par))
-           and then Etype (Par) /= Any_Composite
-           and then Is_Array_Type (Etype (Par))
-           and then Nkind (Expr) = N_Component_Association
+         elsif Nkind (Par) = N_Component_Association
+           and then Expr = Expression (Par)
+           and then Nkind (Parent (Par))
+              in N_Aggregate | N_Delta_Aggregate | N_Extension_Aggregate
+           and then Present (Aggregate_Type)
+           and then Aggregate_Type /= Any_Composite
          then
-            declare
-               Choice           : Node_Id;
-               In_Others_Choice : Boolean := False;
-
-            begin
-               --  The expression of an array_component_association is
-               --  potentially unevaluated if the associated choice is a
-               --  subtype_indication or range that defines a nonstatic or
-               --  null range.
-
-               Choice := First (Choices (Expr));
-               while Present (Choice) loop
-                  if Nkind (Choice) = N_Range
-                    and then Non_Static_Or_Null_Range (Choice)
-                  then
-                     return True;
-
-                  elsif Nkind (Choice) = N_Identifier
-                    and then Present (Scalar_Range (Etype (Choice)))
-                    and then
-                      Non_Static_Or_Null_Range (Scalar_Range (Etype (Choice)))
-                  then
-                     return True;
-
-                  elsif Nkind (Choice) = N_Others_Choice then
-                     In_Others_Choice := True;
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               --  It is also potentially unevaluated if the associated choice
-               --  is an others choice and the applicable index constraint is
-               --  nonstatic or null.
-
-               if In_Others_Choice then
-                  if not Compile_Time_Known_Bounds (Etype (Par)) then
-                     return True;
-                  else
-                     return Has_Null_Others_Choice (Par);
-                  end if;
+            if Is_Array_Type (Aggregate_Type) then
+               if Ada_Version >= Ada_2020 then
+                  --  For Ada_2020, this predicate returns True for
+                  --  any "repeatedly evaluated" expression.
+                  return True;
                end if;
-            end;
+
+               declare
+                  Choice           : Node_Id;
+                  In_Others_Choice : Boolean := False;
+                  Array_Agg        : constant Node_Id := Parent (Par);
+               begin
+                  --  The expression of an array_component_association is
+                  --  potentially unevaluated if the associated choice is a
+                  --  subtype_indication or range that defines a nonstatic or
+                  --  null range.
+
+                  Choice := First (Choices (Par));
+                  while Present (Choice) loop
+                     if Nkind (Choice) = N_Range
+                       and then Non_Static_Or_Null_Range (Choice)
+                     then
+                        return True;
+
+                     elsif Nkind (Choice) = N_Identifier
+                       and then Present (Scalar_Range (Etype (Choice)))
+                       and then
+                         Non_Static_Or_Null_Range
+                           (Scalar_Range (Etype (Choice)))
+                     then
+                        return True;
+
+                     elsif Nkind (Choice) = N_Others_Choice then
+                        In_Others_Choice := True;
+                     end if;
+
+                     Next (Choice);
+                  end loop;
+
+                  --  It is also potentially unevaluated if the associated
+                  --  choice is an others choice and the applicable index
+                  --  constraint is nonstatic or null.
+
+                  if In_Others_Choice then
+                     if not Compile_Time_Known_Bounds (Aggregate_Type) then
+                        return True;
+                     else
+                        return Has_Null_Others_Choice (Array_Agg);
+                     end if;
+                  end if;
+               end;
+
+            elsif Is_Container_Aggregate (Parent (Par)) then
+               --  a component of a container aggregate
+               return True;
+            end if;
 
             return False;
 
@@ -30253,10 +30292,7 @@ package body Sem_Util is
                Trailer : Node_Id := Empty;
 
                --  There are three ways that an expression can be repeatedly
-               --  evaluated. We only test for two of them here because
-               --  container aggregates and the Aggregate aspect are not
-               --  implemented yet. ???
-
+               --  evaluated.
             begin
                --  An aspect_specification is transformed into a pragma, so
                --  reaching a pragma is our termination condition. We want to
@@ -30275,15 +30311,16 @@ package body Sem_Util is
                      return True;
                   end if;
 
-                  --  test for case 2:
+                  --  test for cases 2 and 3:
                   --    A subexpression of the expression of an
-                  --    array_component_association
+                  --    array_component_association or of
+                  --    a container_element_associatiation.
 
                   if Nkind (Par) = N_Component_Association
                     and then Trailer = Expression (Par)
                   then
-
                      --  determine whether Par is part of an array aggregate
+                     --  or a container aggregate
                      declare
                         Rover : Node_Id := Par;
                      begin
@@ -30291,17 +30328,15 @@ package body Sem_Util is
                            pragma Assert (Present (Rover));
                            Rover := Parent (Rover);
                         end loop;
-                        if Present (Etype (Rover))
-                          and then Is_Array_Type (Etype (Rover))
-                        then
-                           return True;
+                        if Present (Etype (Rover)) then
+                           if Is_Array_Type (Etype (Rover))
+                             or else Is_Container_Aggregate (Rover)
+                           then
+                              return True;
+                           end if;
                         end if;
                      end;
                   end if;
-
-                  --  As noted above, there is a case 3 that we don't yet
-                  --  test for. When we do, that test goes here. ???
-                  null;
 
                   Trailer := Par;
                   Par := Parent (Par);
