@@ -2811,13 +2811,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     struct is_swappable_with
     : public __is_swappable_with_impl<_Tp, _Up>::type
-    { };
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
+	"first template argument must be a complete class or an unbounded array");
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Up>{}),
+	"second template argument must be a complete class or an unbounded array");
+    };
 
   /// is_nothrow_swappable_with
   template<typename _Tp, typename _Up>
     struct is_nothrow_swappable_with
     : public __is_nothrow_swappable_with_impl<_Tp, _Up>::type
-    { };
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
+	"first template argument must be a complete class or an unbounded array");
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Up>{}),
+	"second template argument must be a complete class or an unbounded array");
+    };
 
 #if __cplusplus >= 201402L
   /// is_swappable_with_v
@@ -2952,7 +2962,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Functor, typename... _ArgTypes>
     struct invoke_result
     : public __invoke_result<_Functor, _ArgTypes...>
-    { };
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Functor>{}),
+	"_Functor must be a complete class or an unbounded array");
+    };
 
   /// std::invoke_result_t
   template<typename _Fn, typename... _Args>
@@ -3001,7 +3014,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_nothrow_invocable_r
     : __and_<__is_nt_invocable_impl<__invoke_result<_Fn, _ArgTypes...>, _Ret>,
              __call_is_nothrow_<_Fn, _ArgTypes...>>::type
-    { };
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Fn>{}),
+	"_Fn must be a complete class or an unbounded array");
+    };
 
   /// std::is_invocable_v
   template<typename _Fn, typename... _Args>
