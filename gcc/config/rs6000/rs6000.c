@@ -4018,6 +4018,14 @@ rs6000_option_override_internal (bool global_init_p)
 	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX;
     }
 
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_VECTOR_PAIR))
+    {
+      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX)
+	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
+      else
+	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
+    }
+
   /* Use long double size to select the appropriate long double.  We use
      TYPE_PRECISION to differentiate the 3 different long double types.  We map
      128 into the precision used for TFmode.  */
@@ -23222,8 +23230,10 @@ struct rs6000_opt_mask {
 static struct rs6000_opt_mask const rs6000_opt_masks[] =
 {
   { "altivec",			OPTION_MASK_ALTIVEC,		false, true  },
-  { "block-ops-unaligned-vsx",  OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX,
-                                                                false, true  },
+  { "block-ops-unaligned-vsx",	OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX,
+								false, true  },
+  { "block-ops-vector-pair",	OPTION_MASK_BLOCK_OPS_VECTOR_PAIR,
+								false, true  },
   { "cmpb",			OPTION_MASK_CMPB,		false, true  },
   { "crypto",			OPTION_MASK_CRYPTO,		false, true  },
   { "direct-move",		OPTION_MASK_DIRECT_MOVE,	false, true  },

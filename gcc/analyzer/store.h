@@ -451,6 +451,8 @@ public:
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }
 
+  const binding_map &get_map () const { return m_map; }
+
 private:
   const svalue *get_any_value (const binding_key *key) const;
   void get_overlapping_bindings (store_manager *mgr, const region *reg,

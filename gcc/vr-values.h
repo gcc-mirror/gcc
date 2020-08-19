@@ -22,16 +22,26 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "value-range-equiv.h"
 
+// Abstract class to return a range for a given SSA.
+
+class range_query
+{
+public:
+  virtual const value_range_equiv *get_value_range (const_tree,
+						    gimple * = NULL) = 0;
+  virtual ~range_query () { }
+};
+
 // Class to simplify a statement using range information.
 //
 // The constructor takes a full vr_values, but all it needs is
 // get_value_range() from it.  This class could be made to work with
 // any range repository.
 
-class simplify_using_ranges
+class simplify_using_ranges : public range_query
 {
 public:
-  simplify_using_ranges (class vr_values *);
+  simplify_using_ranges (class range_query *);
   ~simplify_using_ranges ();
   bool simplify (gimple_stmt_iterator *);
 
@@ -44,7 +54,7 @@ public:
 
 private:
   const value_range_equiv *get_value_range (const_tree op,
-					    gimple *stmt = NULL);
+					    gimple *stmt = NULL) OVERRIDE;
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -79,7 +89,7 @@ private:
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
-  class vr_values *store;
+  class range_query *store;
 };
 
 /* The VR_VALUES class holds the current view of range information
@@ -96,7 +106,7 @@ private:
    gets attached to an SSA_NAME.  It's unclear how useful that global
    information will be in a world where we can compute context sensitive
    range information fast or perform on-demand queries.  */
-class vr_values
+class vr_values : public range_query
 {
  public:
   vr_values (void);
@@ -176,5 +186,8 @@ extern tree get_output_for_vrp (gimple *);
 
 // FIXME: Move this to tree-vrp.c.
 void simplify_cond_using_ranges_2 (class vr_values *, gcond *);
+
+extern bool bounds_of_var_in_loop (tree *min, tree *max, range_query *,
+				   class loop *loop, gimple *stmt, tree var);
 
 #endif /* GCC_VR_VALUES_H */

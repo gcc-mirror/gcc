@@ -784,9 +784,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  See http://gcc.gnu.org/ml/libstdc++/2002-05/msg00168.html
        */
-#if __cplusplus >= 201103L
-      [[__deprecated__("stossc is deprecated, use sbumpc instead")]]
-#endif
+      _GLIBCXX_DEPRECATED_SUGGEST("std::basic_streambuf::sbumpc")
       void
       stossc()
       {

@@ -11433,24 +11433,24 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	}
       else
 	{
-	  rtx pat;
+	  if (target == 0
+	      || !register_operand (target, SImode))
+	    target = gen_reg_rtx (SImode);
 
-	  target = gen_reg_rtx (SImode);
 	  emit_move_insn (target, const0_rtx);
 	  target = gen_rtx_SUBREG (QImode, target, 0);
 
-	  if (fcode == IX86_BUILTIN_ENQCMD)
-	    pat = gen_enqcmd (UNSPECV_ENQCMD, Pmode, op0, op1);
-	  else
-	    pat = gen_enqcmd (UNSPECV_ENQCMDS, Pmode, op0, op1);
+	  int unspecv = (fcode == IX86_BUILTIN_ENQCMD
+			 ? UNSPECV_ENQCMD
+			 : UNSPECV_ENQCMDS);
+	  icode = code_for_enqcmd (unspecv, Pmode);
+	  emit_insn (GEN_FCN (icode) (op0, op1));
 
-	  emit_insn (pat);
-
-	  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-				  gen_rtx_fmt_ee (EQ, QImode,
-						  SET_DEST (pat),
-						  const0_rtx)));
-
+	  emit_insn
+	    (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+			  gen_rtx_fmt_ee (EQ, QImode,
+					  gen_rtx_REG (CCZmode, FLAGS_REG),
+					  const0_rtx)));
 	  return SUBREG_REG (target);
 	}
 
@@ -12839,10 +12839,12 @@ rdseed_step:
 	}
       op1 = gen_rtx_MEM (mode, op1);
 
-      emit_insn ((fcode == IX86_BUILTIN_WRSSD
-		  || fcode == IX86_BUILTIN_WRSSQ)
-		 ? gen_wrss (mode, op0, op1)
-		 : gen_wruss (mode, op0, op1));
+      icode = ((fcode == IX86_BUILTIN_WRSSD
+		|| fcode == IX86_BUILTIN_WRSSQ)
+	       ? code_for_wrss (mode)
+	       : code_for_wruss (mode));
+      emit_insn (GEN_FCN (icode) (op0, op1));
+
       return 0;
 
     default:

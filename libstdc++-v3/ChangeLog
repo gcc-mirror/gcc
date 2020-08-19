@@ -1,3 +1,44 @@
+2020-08-18  David Edelsohn  <dje.gcc@gmail.com>
+	    Clement Chigot  <clement.chigot@atos.net>
+
+	* config/os/aix/t-aix: Add complementary mode object files to
+	libsupc++.a
+
+2020-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Check
+	"cold" isn't used in the library. Also check <cxxabi.h>.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc:
+	Likewise.
+
+2020-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69724
+	* include/std/future (__future_base::_S_make_deferred_state)
+	(__future_base::_S_make_async_state): Remove.
+	(__future_base::_Deferred_state): Change constructor to accept a
+	parameter pack of arguments and forward them to the call
+	wrapper.
+	(__future_base::_Async_state_impl): Likewise. Replace lambda
+	expression with a named member function.
+	(async): Construct state object directly from the arguments,
+	instead of using thread::__make_invoker, _S_make_deferred_state
+	and _S_make_async_state. Move shared state into the returned
+	future.
+	* include/std/thread (thread::_Call_wrapper): New alias
+	template for use by constructor and std::async.
+	(thread::thread(Callable&&, Args&&...)): Create state object
+	directly instead of using _S_make_state.
+	(thread::__make_invoker, thread::__decayed_tuple)
+	(thread::_S_make_state): Remove.
+	* testsuite/30_threads/async/69724.cc: New test.
+
 2020-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/55713

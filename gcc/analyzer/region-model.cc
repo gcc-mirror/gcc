@@ -1204,6 +1204,76 @@ region_model::get_rvalue (tree expr, region_model_context *ctxt)
   return get_rvalue (path_var (expr, get_stack_depth () - 1), ctxt);
 }
 
+/* Return true if this model is on a path with "main" as the entrypoint
+   (as opposed to one in which we're merely analyzing a subset of the
+   path through the code).  */
+
+bool
+region_model::called_from_main_p () const
+{
+  if (!m_current_frame)
+    return false;
+  /* Determine if the oldest stack frame in this model is for "main".  */
+  const frame_region *frame0 = get_frame_at_index (0);
+  gcc_assert (frame0);
+  return id_equal (DECL_NAME (frame0->get_function ()->decl), "main");
+}
+
+/* Subroutine of region_model::get_store_value for when REG is (or is within)
+   a global variable that hasn't been touched since the start of this path
+   (or was implicitly touched due to a call to an unknown function).  */
+
+const svalue *
+region_model::get_initial_value_for_global (const region *reg) const
+{
+  /* Get the decl that REG is for (or is within).  */
+  const decl_region *base_reg
+    = reg->get_base_region ()->dyn_cast_decl_region ();
+  gcc_assert (base_reg);
+  tree decl = base_reg->get_decl ();
+
+  /* Special-case: to avoid having to explicitly update all previously
+     untracked globals when calling an unknown fn, they implicitly have
+     an unknown value if an unknown call has occurred, unless this is
+     static to-this-TU and hasn't escaped.  Globals that have escaped
+     are explicitly tracked, so we shouldn't hit this case for them.  */
+  if (m_store.called_unknown_fn_p () && TREE_PUBLIC (decl))
+    return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
+
+  /* If we are on a path from the entrypoint from "main" and we have a
+     global decl defined in this TU that hasn't been touched yet, then
+     the initial value of REG can be taken from the initialization value
+     of the decl.  */
+  if (called_from_main_p () && !DECL_EXTERNAL (decl))
+    {
+      /* Get the initializer value for base_reg.  */
+      const svalue *base_reg_init
+	= base_reg->get_svalue_for_initializer (m_mgr);
+      gcc_assert (base_reg_init);
+      if (reg == base_reg)
+	return base_reg_init;
+      else
+	{
+	  /* Get the value for REG within base_reg_init.  */
+	  binding_cluster c (base_reg);
+	  c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
+		  BK_direct);
+	  const svalue *sval
+	    = c.get_any_binding (m_mgr->get_store_manager (), reg);
+	  if (sval)
+	    {
+	      if (reg->get_type ())
+		sval = m_mgr->get_or_create_cast (reg->get_type (),
+						  sval);
+	      return sval;
+	    }
+	}
+    }
+
+  /* Otherwise, return INIT_VAL(REG).  */
+  return m_mgr->get_or_create_initial_value (reg);
+}
+
 /* Get a value for REG, looking it up in the store, or otherwise falling
    back to "initial" or "unknown" values.  */
 
@@ -1256,14 +1326,10 @@ region_model::get_store_value (const region *reg) const
      would have returned UNKNOWN, and we would already have returned
      that above).  */
 
-  /* Special-case: to avoid having to explicitly update all previously
-     untracked globals when calling an unknown fn, we instead change
-     the default here so we implicitly have an unknown value for such
-     regions.  */
-  if (m_store.called_unknown_fn_p ())
-    if (reg->get_base_region ()->get_parent_region ()->get_kind ()
-	== RK_GLOBALS)
-      return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
+  /* Handle globals.  */
+  if (reg->get_base_region ()->get_parent_region ()->get_kind ()
+      == RK_GLOBALS)
+    return get_initial_value_for_global (reg);
 
   return m_mgr->get_or_create_initial_value (reg);
 }

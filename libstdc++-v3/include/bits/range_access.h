@@ -36,6 +36,9 @@
 #include <initializer_list>
 #include <bits/iterator_concepts.h>
 #include <ext/numeric_traits.h>
+#if __cplusplus > 201703L
+#include <bits/max_size_type.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -352,6 +355,14 @@ namespace ranges
 
   namespace __detail
   {
+    constexpr __max_size_type
+    __to_unsigned_like(__max_size_type __t) noexcept
+    { return __t; }
+
+    constexpr __max_size_type
+    __to_unsigned_like(__max_diff_type __t) noexcept
+    { return __max_size_type(__t); }
+
     template<integral _Tp>
       constexpr make_unsigned_t<_Tp>
       __to_unsigned_like(_Tp __t) noexcept

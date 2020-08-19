@@ -396,15 +396,9 @@ get_subregion_within_ctor (const region *parent_reg, tree index,
 static const svalue *
 get_svalue_for_ctor_val (tree val, region_model_manager *mgr)
 {
-  if (TREE_CODE (val) == ADDR_EXPR)
-    {
-      gcc_assert (TREE_CODE (TREE_OPERAND (val, 0)) == STRING_CST);
-      const string_region *str_reg
-	= mgr->get_region_for_string (TREE_OPERAND (val, 0));
-      return mgr->get_ptr_svalue (TREE_TYPE (val), str_reg);
-    }
-  gcc_assert (CONSTANT_CLASS_P (val));
-  return mgr->get_or_create_constant_svalue (val);
+  /* Reuse the get_rvalue logic from region_model.  */
+  region_model m (mgr);
+  return m.get_rvalue (path_var (val, 0), NULL);
 }
 
 /* Bind values from CONSTRUCTOR to this map, relative to

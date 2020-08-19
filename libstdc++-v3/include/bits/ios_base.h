@@ -471,12 +471,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus <= 201402L
     // Annex D.6 (removed in C++17)
-    typedef int io_state;
-    typedef int open_mode;
-    typedef int seek_dir;
+    typedef int io_state
+      _GLIBCXX_DEPRECATED_SUGGEST("std::iostate");
+    typedef int open_mode
+      _GLIBCXX_DEPRECATED_SUGGEST("std::openmode");
+    typedef int seek_dir
+      _GLIBCXX_DEPRECATED_SUGGEST("std::seekdir");
 
-    typedef std::streampos streampos;
-    typedef std::streamoff streamoff;
+    typedef std::streampos streampos
+      _GLIBCXX_DEPRECATED_SUGGEST("std::streampos");
+    typedef std::streamoff streamoff
+      _GLIBCXX_DEPRECATED_SUGGEST("std::streamoff");
 #endif
 
     // Callbacks;

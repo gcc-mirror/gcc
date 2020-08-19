@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename _Operation::result_type
       operator()(typename _Operation::second_argument_type& __x) const
       { return op(value, __x); }
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX11_DEPRECATED_SUGGEST("std::bind");
 
   /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
@@ -162,7 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename _Operation::result_type
       operator()(typename _Operation::first_argument_type& __x) const
       { return op(__x, value); }
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX11_DEPRECATED_SUGGEST("std::bind");
 
   /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>

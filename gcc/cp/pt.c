@@ -10088,8 +10088,26 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    }
 	}
 
-      // Build template info for the new specialization.
-      SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
+      /* Build template info for the new specialization.  */
+      if (TYPE_ALIAS_P (t))
+	{
+	  /* This is constructed during instantiation of the alias
+	     decl.  But for member templates of template classes, that
+	     is not correct as we need to refer to the partially
+	     instantiated template, not the most general template.
+	     The incorrect knowledge will not have escaped this
+	     instantiation process, so we're good just updating the
+	     template_info we made then.  */
+	  tree ti = DECL_TEMPLATE_INFO (TYPE_NAME (t));
+	  gcc_checking_assert (template_args_equal (TI_ARGS (ti), arglist));
+	  if (TI_TEMPLATE (ti) != found)
+	    {
+	      gcc_checking_assert (DECL_TI_TEMPLATE (found) == TI_TEMPLATE (ti));
+	      TI_TEMPLATE (ti) = found;
+	    }
+	}
+      else
+	SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
       slot = type_specializations->find_slot_with_hash (&elt, hash, INSERT);
@@ -13391,6 +13409,17 @@ tsubst_aggr_type (tree t,
 					 complain, in_decl);
 	  if (argvec == error_mark_node)
 	    r = error_mark_node;
+	  else if (cxx_dialect >= cxx17 && dependent_scope_p (context))
+	    {
+	      /* See maybe_dependent_member_ref.  */
+	      tree name = TYPE_IDENTIFIER (t);
+	      tree fullname = name;
+	      if (instantiates_primary_template_p (t))
+		fullname = build_nt (TEMPLATE_ID_EXPR, name,
+				     INNERMOST_TEMPLATE_ARGS (argvec));
+	      return build_typename_type (context, name, fullname,
+					  typename_type);
+	    }
 	  else
 	    {
 	      r = lookup_template_class (t, argvec, in_decl, context,
@@ -16313,6 +16342,31 @@ tsubst_init (tree init, tree decl, tree args,
   return init;
 }
 
+/* If T is a reference to a dependent member of the current instantiation C and
+   we are trying to refer to that member in a partial instantiation of C,
+   return a SCOPE_REF; otherwise, return NULL_TREE.
+
+   This can happen when forming a C++17 deduction guide, as in PR96199.  */
+
+static tree
+maybe_dependent_member_ref (tree t, tree args, tsubst_flags_t complain,
+			    tree in_decl)
+{
+  if (cxx_dialect < cxx17)
+    return NULL_TREE;
+
+  tree ctx = context_for_name_lookup (t);
+  if (!CLASS_TYPE_P (ctx))
+    return NULL_TREE;
+
+  ctx = tsubst (ctx, args, complain, in_decl);
+  if (dependent_scope_p (ctx))
+    return build_qualified_name (NULL_TREE, ctx, DECL_NAME (t),
+				 /*template_p=*/false);
+
+  return NULL_TREE;
+}
+
 /* Like tsubst, but deals with expressions.  This function just replaces
    template parms; to finish processing the resultant expression, use
    tsubst_copy_and_build or tsubst_expr.  */
@@ -16371,6 +16425,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (args == NULL_TREE)
 	  return scalar_constant_value (t);
 
+	if (tree ref = maybe_dependent_member_ref (t, args, complain, in_decl))
+	  return ref;
+
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:
 
@@ -16421,6 +16478,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case VAR_DECL:
+      if (tree ref = maybe_dependent_member_ref (t, args, complain, in_decl))
+	return ref;
+      gcc_fallthrough();
     case FUNCTION_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
 	r = tsubst (t, args, complain, in_decl);
@@ -28326,6 +28386,16 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 	  cp_evaluated ev;
 	  fargs = tsubst (fargs, tsubst_args, complain, ctor);
 	  current_template_parms = save_parms;
+	}
+      else
+	{
+	  /* Substitute in the same arguments to rewrite class members into
+	     references to members of an unknown specialization.  */
+	  cp_evaluated ev;
+	  fparms = tsubst_arg_types (fparms, targs, NULL_TREE, complain, ctor);
+	  fargs = tsubst (fargs, targs, complain, ctor);
+	  if (ci)
+	    ci = tsubst_constraint_info (ci, targs, complain, ctor);
 	}
 
       --processing_template_decl;

@@ -1,3 +1,71 @@
+2020-08-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_VSX_1): Rename xvcvbf16sp to
+	xvcvbf16spn.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Likewise.
+	* config/rs6000/vsx.md: Likewise.
+	* doc/extend.texi: Likewise.
+
+2020-08-18  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (gen_lxvl_stxvl_move):
+	Helper function.
+	(expand_block_move): Add lxvl/stxvl, vector pair, and
+	unaligned VSX.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Default value for -mblock-ops-vector-pair.
+	* config/rs6000/rs6000.opt: Add -mblock-ops-vector-pair.
+
+2020-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (check_for_binary_op_overflow): Change type of store
+	to range_query.
+	(vr_values::adjust_range_with_scev): Abstract most of the code...
+	(range_of_var_in_loop): ...here.  Remove value_range_equiv uses.
+	(simplify_using_ranges::simplify_using_ranges): Change type of store
+	to range_query.
+	* vr-values.h (class range_query): New.
+	(class simplify_using_ranges): Use range_query.
+	(class vr_values): Add OVERRIDE to get_value_range.
+	(range_of_var_in_loop): New.
+
+2020-08-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/96665
+	PR middle-end/78257
+	* expr.c (convert_to_bytes): Replace statically allocated buffer with
+	a dynamically allocated one of sufficient size.
+
+2020-08-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/96670
+	PR middle-end/78257
+	* gimple-fold.c (gimple_fold_builtin_memchr): Call byte_representation
+	to get it, not string_constant.
+
+2020-08-18  Hu Jiangping  <hujiangping@cn.fujitsu.com>
+
+	* doc/gimple.texi (gimple_debug_begin_stmt_p): Add return type.
+	(gimple_debug_inline_entry_p, gimple_debug_nonbind_marker_p): Likewise.
+
+2020-08-18  Martin Sebor  <msebor@redhat.com>
+
+	* fold-const.c (native_encode_expr): Update comment.
+
+2020-08-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96536
+	* config/i386/i386.md (restore_stack_nonlocal): Add missing compare
+	RTX.  Rewrite expander to use high-level functions in RTL construction.
+
+2020-08-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96562
+	PR target/93897
+	* config/i386/i386-expand.c (ix86_expand_pinsr): Don't use
+	pinsr for TImode.
+	(ix86_expand_pextr): Don't use pextr for TImode.
+
 2020-08-17  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-builtin.def (__builtin_ia32_bextri_u32)

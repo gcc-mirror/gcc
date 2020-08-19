@@ -2670,7 +2670,7 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
       if (r == NULL)
 	{
 	  tree mem_size, offset_node;
-	  string_constant (arg1, &offset_node, &mem_size, NULL);
+	  byte_representation (arg1, &offset_node, &mem_size, NULL);
 	  unsigned HOST_WIDE_INT offset = (offset_node == NULL_TREE)
 					  ? 0 : tree_to_uhwi (offset_node);
 	  /* MEM_SIZE is the size of the array the string literal
