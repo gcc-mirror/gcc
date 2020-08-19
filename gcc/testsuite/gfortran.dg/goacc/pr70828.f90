@@ -18,5 +18,5 @@ program test
   !$acc end data
 end program test
 
-! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(tofrom:MEM\\\[\\(c_char \\*\\)\_\[0-9\]+\\\] \\\[len: _\[0-9\]+\\\]\\) map\\(alloc:data \\\[pointer assign, bias: _\[0-9\]+\\\]\\)" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(force_present:MEM\\\[\\(c_char \\*\\)D\\.\[0-9\]+\\\] \\\[len: D\\.\[0-9\]+\\\]\\) map\\(alloc:data \\\[pointer assign, bias: D\\.\[0-9\]+\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(tofrom:data\\\[\_\[0-9\]+\\\] \\\[len: _\[0-9\]+\\\]\\) map\\(alloc:data \\\[pointer assign, bias: _\[0-9\]+\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(force_present:data\\\[D\\.\[0-9\]+\\\] \\\[len: D\\.\[0-9\]+\\\]\\) map\\(alloc:data \\\[pointer assign, bias: D\\.\[0-9\]+\\\]\\)" 1 "gimple" } }

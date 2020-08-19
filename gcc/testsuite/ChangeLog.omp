@@ -1,3 +1,8 @@
+2020-08-19  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/goacc/pr70828.f90: Update expected output in Gimple
+	dump.
+
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.dg/goacc/loop-2-kernels.f95: Add XFAILs.
