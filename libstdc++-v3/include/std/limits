@@ -1477,8 +1477,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        = round_toward_zero;
     };
 
-#if !defined(__STRICT_ANSI__)
-
 #define __INT_N(TYPE, BITSIZE, EXT, UEXT)			\
   template<> 									\
     struct numeric_limits<TYPE> 						\
@@ -1632,6 +1630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __INT_N_U201103(TYPE)
 #endif
 
+#if !defined(__STRICT_ANSI__)
 #ifdef __GLIBCXX_TYPE_INT_N_0
   __INT_N(__GLIBCXX_TYPE_INT_N_0, __GLIBCXX_BITSIZE_INT_N_0,
 	  __INT_N_201103 (__GLIBCXX_TYPE_INT_N_0), __INT_N_U201103 (__GLIBCXX_TYPE_INT_N_0))
@@ -1649,11 +1648,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __INT_N_201103 (__GLIBCXX_TYPE_INT_N_3), __INT_N_U201103 (__GLIBCXX_TYPE_INT_N_3))
 #endif
 
+#elif defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  __INT_N(__int128, 128,
+	  __INT_N_201103 (__int128),
+	  __INT_N_U201103 (__int128))
+#endif
+
 #undef __INT_N
 #undef __INT_N_201103
 #undef __INT_N_U201103
 
-#endif
 
   /// numeric_limits<float> specialization.
   template<>
