@@ -396,6 +396,11 @@ region_model_manager::get_or_create_unaryop (tree type, enum tree_code op,
 const svalue *
 region_model_manager::get_or_create_cast (tree type, const svalue *arg)
 {
+  gcc_assert (type);
+  if (arg->get_type ())
+    if (TREE_CODE (type) == INTEGER_TYPE
+	&& TREE_CODE (arg->get_type ()) == REAL_TYPE)
+      return get_or_create_unaryop (type, FIX_TRUNC_EXPR, arg);
   return get_or_create_unaryop (type, NOP_EXPR, arg);
 }
 
