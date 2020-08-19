@@ -1,3 +1,22 @@
+2020-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::get_rvalue_1): Fix name of local.
+
+2020-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96641
+	* region-model.cc (region_model::get_rvalue_1): Handle
+	unrecognized tree codes by returning "UNKNOWN.
+
+2020-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96640
+	* region-model.cc (region_model::get_gassign_result): Handle various
+	VEC_* tree codes by returning UNKNOWN.
+	(region_model::on_assignment): Handle unrecognized tree codes by
+	setting lhs to an unknown value, rather than issuing a "sorry" and
+	asserting.
+
 2020-08-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96644

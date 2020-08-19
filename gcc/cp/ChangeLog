@@ -1,3 +1,32 @@
+2020-08-18  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (SET_TYPE_TEMPLTE_INFO): Do not deal with ALIAS templates.
+	* pt.c (lookup_template_class_1): Special-case alias template
+	template_info setting.
+
+2020-08-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96199
+	* pt.c (tsubst_aggr_type): Rewrite in C++17, too.
+	(maybe_dependent_member_ref): Likewise.
+	(build_deduction_guide): Re-substitute template parms.
+	* cp-tree.h (struct push_nested_class_guard): New.
+	* constraint.cc (get_normalized_constraints_from_decl): Use it.
+
+2020-08-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96199
+	* pt.c (maybe_dependent_member_ref): New.
+	(tsubst_copy) [CONST_DECL]: Use it.
+	[VAR_DECL]: Likewise.
+	(tsubst_aggr_type): Handle nested type.
+
+2020-08-18  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (qualify_lookup): Drop lambda checking here.
+	Reorder namespace & type checking.
+	(lookup_name_1): Do hidden lambda checking here.
+
 2020-08-14  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.h (lookup_name_real, lookup_name_nonclass): Rename
