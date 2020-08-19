@@ -462,24 +462,23 @@ region_model::get_gassign_result (const gassign *assign,
       {
 	tree rhs2 = gimple_assign_rhs2 (assign);
 
-	// TODO: constraints between svalues
 	const svalue *rhs1_sval = get_rvalue (rhs1, ctxt);
 	const svalue *rhs2_sval = get_rvalue (rhs2, ctxt);
 
-	tristate t = eval_condition (rhs1_sval, op, rhs2_sval);
-	if (t.is_known ())
-	  return get_rvalue (t.is_true ()
-			     ? boolean_true_node
-			     : boolean_false_node,
-			     ctxt);
-	else
+	if (TREE_TYPE (lhs) == boolean_type_node)
 	  {
-	    // TODO: symbolic value for binop
-	    const svalue *sval_binop
-	      = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
-					    rhs1_sval, rhs2_sval);
-	    return sval_binop;
+	    /* Consider constraints between svalues.  */
+	    tristate t = eval_condition (rhs1_sval, op, rhs2_sval);
+	    if (t.is_known ())
+	      return m_mgr->get_or_create_constant_svalue
+		(t.is_true () ? boolean_true_node : boolean_false_node);
 	  }
+
+	/* Otherwise, generate a symbolic binary op.  */
+	const svalue *sval_binop
+	  = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
+					rhs1_sval, rhs2_sval);
+	return sval_binop;
       }
       break;
 
