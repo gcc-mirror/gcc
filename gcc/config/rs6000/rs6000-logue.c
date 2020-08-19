@@ -1080,28 +1080,28 @@ rs6000_decl_ok_for_sibcall (tree decl)
 
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     {
-      /* Under the AIX or ELFv2 ABIs we can't allow calls to non-local
-	 functions, because the callee may have a different TOC pointer to
-	 the caller and there's no way to ensure we restore the TOC when
+      /* A function compiled using the PC-relative addressing model does not
+	 use a TOC pointer; nor is it guaranteed to preserve the value of
+	 r2 for its caller's TOC.  Such a function may make sibcalls to any
+	 function, whether local or external, without restriction based on
+	 TOC-save/restore rules.  */
+      if (rs6000_pcrel_p (cfun))
+	return true;
+
+      /* Otherwise, under the AIX or ELFv2 ABIs we can't allow sibcalls
+	 to non-local functions, because the callee may not preserve the
+	 TOC pointer, and there's no way to ensure we restore the TOC when
 	 we return.  */
       if (!decl || DECL_EXTERNAL (decl) || DECL_WEAK (decl)
 	  || !(*targetm.binds_local_p) (decl))
 	return false;
 
-      /* Similarly, if the caller preserves the TOC pointer and the callee
-	 doesn't (or vice versa), proper TOC setup or restoration will be
-	 missed.  For example, suppose A, B, and C are in the same binary
-	 and A -> B -> C.  A and B preserve the TOC pointer but C does not,
-	 and B -> C is eligible as a sibcall.  A will call B through its
-	 local entry point, so A will not restore its TOC itself.  B calls
-	 C with a sibcall, so it will not restore the TOC.  C does not
-	 preserve the TOC, so it may clobber r2 with impunity.  Returning
-	 from C will result in a corrupted TOC for A.  */
-      else if (rs6000_fndecl_pcrel_p (decl) != rs6000_pcrel_p (cfun))
+      /* A local sibcall from a function that preserves the TOC pointer
+	 to a function that does not is invalid for the same reason.  */
+      if (rs6000_fndecl_pcrel_p (decl))
 	return false;
 
-      else
-	return true;
+      return true;
     }
 
   /*  With the secure-plt SYSV ABI we can't make non-local calls when
