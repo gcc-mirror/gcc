@@ -3006,6 +3006,12 @@ public:
   {
     return find_duplicate (decl) != NULL;
   }
+  tree maybe_duplicate (tree decl)
+  {
+    if (uintptr_t *dup = find_duplicate (decl))
+      return reinterpret_cast<tree> (*dup & ~uintptr_t (1));
+    return decl;
+  }
   tree odr_duplicate (tree decl, bool has_defn);
 
 public:
@@ -3093,7 +3099,7 @@ private:
   walk_kind ref_node (tree);
 public:
   int get_tag (tree);
-  void set_importing (int i)
+  void set_importing (int i ATTRIBUTE_UNUSED)
   {
 #if CHECKING_P
     importedness = i;
@@ -11718,7 +11724,62 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
     }
   else if (maybe_dup)
     {
-      // FIXME: check odr
+      tree known = TYPE_VALUES (type);
+      for (; known && values;
+	   known = TREE_CHAIN (known), values = TREE_CHAIN (values))
+	{
+	  tree known_decl = TREE_VALUE (known);
+	  tree new_decl = TREE_VALUE (values);
+
+	  if (DECL_NAME (known_decl) != DECL_NAME (new_decl))
+	    goto bad;
+	      
+	  new_decl = maybe_duplicate (new_decl);
+
+	  if (!cp_tree_equal (DECL_INITIAL (known_decl),
+			      DECL_INITIAL (new_decl)))
+	    goto bad;
+	}
+
+      if (known || values)
+	goto bad;
+
+      if (!cp_tree_equal (TYPE_MIN_VALUE (type), min)
+	  || !cp_tree_equal (TYPE_MAX_VALUE (type), max))
+	{
+	bad:;
+	  error_at (DECL_SOURCE_LOCATION (maybe_dup),
+		    "definition of %qD does not match", maybe_dup);
+	  inform (DECL_SOURCE_LOCATION (defn),
+		  "existing definition %qD", defn);
+
+	  tree known_decl = NULL_TREE, new_decl = NULL_TREE;
+
+	  if (known)
+	    known_decl = TREE_VALUE (known);
+	  if (values)
+	    new_decl = maybe_duplicate (TREE_VALUE (values));
+
+	  if (known_decl && new_decl)
+	    {
+	      inform (DECL_SOURCE_LOCATION (new_decl),
+		      "... this enumerator %qD", new_decl);
+	      inform (DECL_SOURCE_LOCATION (known_decl),
+		      "enumerator %qD does not match ...", known_decl);
+	    }
+	  else if (known_decl || new_decl)
+	    {
+	      tree extra = known_decl ? known_decl : new_decl;
+	      inform (DECL_SOURCE_LOCATION (extra),
+		      "additional enumerators beginning with %qD", extra);
+	    }
+	  else
+	    inform (DECL_SOURCE_LOCATION (maybe_dup),
+		    "enumeration range differs");
+
+	  /* Mark it bad.  */
+	  unmatched_duplicate (maybe_template);
+	}
     }
 
   return true;
