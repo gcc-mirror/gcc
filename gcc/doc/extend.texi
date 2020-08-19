@@ -21644,10 +21644,10 @@ void amo_stdat_smin (int64_t *, int64_t);
 ISA 3.1 of the PowerPC added new Matrix-Multiply Assist (MMA) instructions.
 GCC provides support for these instructions through the following built-in
 functions which are enabled with the @code{-mmma} option.  The vec_t type
-below is defined to be a normal vector unsigned char type.  The uint2, uint4
+below is defined to be a normal vector unsigned char type.  The uint2, uint4
 and uint8 parameters are 2-bit, 4-bit and 8-bit unsigned integer constants
-respectively.  The compiler will verify that they are constants and that
-their values are within range. 
+respectively.  The compiler will verify that they are constants and that
+their values are within range.
 
 The built-in functions supported are:
 
