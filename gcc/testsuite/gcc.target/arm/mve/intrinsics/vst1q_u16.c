@@ -10,12 +10,16 @@ foo (uint16_t * addr, uint16x8_t value)
   vst1q_u16 (addr, value);
 }
 
-/* { dg-final { scan-assembler "vstrh.16"  }  } */
-
 void
 foo1 (uint16_t * addr, uint16x8_t value)
 {
   vst1q (addr, value);
 }
 
-/* { dg-final { scan-assembler "vstrh.16"  }  } */
+/* { dg-final { scan-assembler-times "vstrh.16" 2 }  } */
+
+void
+foo2 (uint16_t a, uint16x8_t x)
+{
+  vst1q (&a, x);
+}
