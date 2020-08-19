@@ -364,13 +364,23 @@ namespace ranges
     { return __max_size_type(__t); }
 
     template<integral _Tp>
-      constexpr make_unsigned_t<_Tp>
+      constexpr auto
       __to_unsigned_like(_Tp __t) noexcept
-      { return __t; }
+      { return static_cast<make_unsigned_t<_Tp>>(__t); }
 
-    template<typename _Tp, bool _MaxDiff = same_as<_Tp, __max_diff_type>>
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+    constexpr unsigned __int128
+    __to_unsigned_like(__int128 __t) noexcept
+    { return __t; }
+
+    constexpr unsigned __int128
+    __to_unsigned_like(unsigned __int128 __t) noexcept
+    { return __t; }
+#endif
+
+    template<typename _Tp>
       using __make_unsigned_like_t
-	= conditional_t<_MaxDiff, __max_size_type, make_unsigned_t<_Tp>>;
+	= decltype(__detail::__to_unsigned_like(std::declval<_Tp>()));
 
     // Part of the constraints of ranges::borrowed_range
     template<typename _Tp>
