@@ -1151,6 +1151,8 @@ sort_mem_initializers (tree t, tree mem_inits)
 
       /* Record the initialization.  */
       TREE_VALUE (subobject_init) = TREE_VALUE (init);
+      /* Carry over the dummy TREE_TYPE node containing the source location.  */
+      TREE_TYPE (subobject_init) = TREE_TYPE (init);
       next_subobject = subobject_init;
     }
 
@@ -1367,6 +1369,10 @@ emit_mem_initializers (tree mem_inits)
   /* Initialize the data members.  */
   while (mem_inits)
     {
+      /* If this initializer was explicitly provided, then the dummy TREE_TYPE
+	 node contains the source location.  */
+      iloc_sentinel ils (EXPR_LOCATION (TREE_TYPE (mem_inits)));
+
       perform_member_init (TREE_PURPOSE (mem_inits),
 			   TREE_VALUE (mem_inits));
       mem_inits = TREE_CHAIN (mem_inits);
@@ -1889,7 +1895,8 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
     }
 
   if (init && TREE_CODE (init) != TREE_LIST
-      && (flags & LOOKUP_ONLYCONVERTING))
+      && (flags & LOOKUP_ONLYCONVERTING)
+      && !unsafe_return_slot_p (exp))
     {
       /* Base subobjects should only get direct-initialization.  */
       gcc_assert (true_exp == exp);
@@ -2272,10 +2279,12 @@ build_offset_ref (tree type, tree member, bool address_p,
    recursively); otherwise, return DECL.  If STRICT_P, the
    initializer is only returned if DECL is a
    constant-expression.  If RETURN_AGGREGATE_CST_OK_P, it is ok to
-   return an aggregate constant.  */
+   return an aggregate constant.  If UNSHARE_P, return an unshared
+   copy of the initializer.  */
 
 static tree
-constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
+constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
+		  bool unshare_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
 	 || decl_constant_var_p (decl)
@@ -2343,9 +2352,9 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
 	  && DECL_NONTRIVIALLY_INITIALIZED_P (decl))
 	break;
-      decl = unshare_expr (init);
+      decl = init;
     }
-  return decl;
+  return unshare_p ? unshare_expr (decl) : decl;
 }
 
 /* If DECL is a CONST_DECL, or a constant VAR_DECL initialized by constant
@@ -2357,26 +2366,36 @@ tree
 scalar_constant_value (tree decl)
 {
   return constant_value_1 (decl, /*strict_p=*/true,
-			   /*return_aggregate_cst_ok_p=*/false);
+			   /*return_aggregate_cst_ok_p=*/false,
+			   /*unshare_p=*/true);
 }
 
-/* Like scalar_constant_value, but can also return aggregate initializers.  */
+/* Like scalar_constant_value, but can also return aggregate initializers.
+   If UNSHARE_P, return an unshared copy of the initializer.  */
 
 tree
-decl_really_constant_value (tree decl)
+decl_really_constant_value (tree decl, bool unshare_p /*= true*/)
 {
   return constant_value_1 (decl, /*strict_p=*/true,
-			   /*return_aggregate_cst_ok_p=*/true);
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
 }
 
-/* A more relaxed version of scalar_constant_value, used by the
+/* A more relaxed version of decl_really_constant_value, used by the
    common C/C++ code.  */
+
+tree
+decl_constant_value (tree decl, bool unshare_p)
+{
+  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
+}
 
 tree
 decl_constant_value (tree decl)
 {
-  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
-			   /*return_aggregate_cst_ok_p=*/true);
+  return decl_constant_value (decl, /*unshare_p=*/true);
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */

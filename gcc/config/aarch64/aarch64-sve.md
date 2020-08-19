@@ -3644,10 +3644,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "sub<mode>3"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, w, ?&w")
-	(minus:SVE_FULL_I
-	  (match_operand:SVE_FULL_I 1 "aarch64_sve_arith_operand" "w, vsa, vsa")
-	  (match_operand:SVE_FULL_I 2 "register_operand" "w, 0, w")))]
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, ?&w")
+	(minus:SVE_I
+	  (match_operand:SVE_I 1 "aarch64_sve_arith_operand" "w, vsa, vsa")
+	  (match_operand:SVE_I 2 "register_operand" "w, 0, w")))]
   "TARGET_SVE"
   "@
    sub\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>

@@ -382,6 +382,7 @@ static const struct attribute_spec arm_attribute_table[] =
     arm_handle_cmse_nonsecure_entry, NULL },
   { "cmse_nonsecure_call", 0, 0, true, false, false, true,
     arm_handle_cmse_nonsecure_call, NULL },
+  { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -832,6 +833,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
+
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP arm_invalid_within_doloop
 
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
@@ -7257,6 +7261,11 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 		   name);
 	  *no_add_attrs = true;
 	}
+      else if (TARGET_VFP_BASE)
+	{
+	  warning (OPT_Wattributes, "FP registers might be clobbered despite %qE attribute: compile with %<-mgeneral-regs-only%>",
+		   name);
+	}
       /* FIXME: the argument if any is checked for type attributes;
 	 should it be checked for decl ones?  */
     }
@@ -7530,6 +7539,15 @@ static int
 arm_comp_type_attributes (const_tree type1, const_tree type2)
 {
   int l1, l2, s1, s2;
+
+  tree attrs1 = lookup_attribute ("Advanced SIMD type",
+				  TYPE_ATTRIBUTES (type1));
+  tree attrs2 = lookup_attribute ("Advanced SIMD type",
+				  TYPE_ATTRIBUTES (type2));
+  if (bool (attrs1) != bool (attrs2))
+    return 0;
+  if (attrs1 && !attribute_value_equal (attrs1, attrs2))
+    return 0;
 
   /* Check for mismatch of non-default calling convention.  */
   if (TREE_CODE (type1) != FUNCTION_TYPE)
@@ -13217,13 +13235,14 @@ neon_element_bits (machine_mode mode)
 /* Predicates for `match_operand' and `match_operator'.  */
 
 /* Return TRUE if OP is a valid coprocessor memory address pattern.
-   WB is true if full writeback address modes are allowed and is false
+   WB level is 2 if full writeback address modes are allowed, 1
    if limited writeback address modes (POST_INC and PRE_DEC) are
-   allowed.  */
+   allowed and 0 if no writeback at all is supported.  */
 
 int
-arm_coproc_mem_operand (rtx op, bool wb)
+arm_coproc_mem_operand_wb (rtx op, int wb_level)
 {
+  gcc_assert (wb_level == 0 || wb_level == 1 || wb_level == 2);
   rtx ind;
 
   /* Reject eliminable registers.  */
@@ -13256,16 +13275,18 @@ arm_coproc_mem_operand (rtx op, bool wb)
 
   /* Autoincremment addressing modes.  POST_INC and PRE_DEC are
      acceptable in any case (subject to verification by
-     arm_address_register_rtx_p).  We need WB to be true to accept
+     arm_address_register_rtx_p).  We need full writeback to accept
+     PRE_INC and POST_DEC, and at least restricted writeback for
      PRE_INC and POST_DEC.  */
-  if (GET_CODE (ind) == POST_INC
-      || GET_CODE (ind) == PRE_DEC
-      || (wb
-	  && (GET_CODE (ind) == PRE_INC
-	      || GET_CODE (ind) == POST_DEC)))
+  if (wb_level > 0
+      && (GET_CODE (ind) == POST_INC
+	  || GET_CODE (ind) == PRE_DEC
+	  || (wb_level > 1
+	      && (GET_CODE (ind) == PRE_INC
+		  || GET_CODE (ind) == POST_DEC))))
     return arm_address_register_rtx_p (XEXP (ind, 0), 0);
 
-  if (wb
+  if (wb_level > 1
       && (GET_CODE (ind) == POST_MODIFY || GET_CODE (ind) == PRE_MODIFY)
       && arm_address_register_rtx_p (XEXP (ind, 0), 0)
       && GET_CODE (XEXP (ind, 1)) == PLUS
@@ -13285,6 +13306,25 @@ arm_coproc_mem_operand (rtx op, bool wb)
     return TRUE;
 
   return FALSE;
+}
+
+/* Return TRUE if OP is a valid coprocessor memory address pattern.
+   WB is true if full writeback address modes are allowed and is false
+   if limited writeback address modes (POST_INC and PRE_DEC) are
+   allowed.  */
+
+int arm_coproc_mem_operand (rtx op, bool wb)
+{
+  return arm_coproc_mem_operand_wb (op, wb ? 2 : 1);
+}
+
+/* Return TRUE if OP is a valid coprocessor memory address pattern in a
+   context in which no writeback address modes are allowed.  */
+
+int
+arm_coproc_mem_operand_no_writeback (rtx op)
+{
+  return arm_coproc_mem_operand_wb (op, 0);
 }
 
 /* This function returns TRUE on matching mode and op.
@@ -23550,7 +23590,7 @@ arm_print_condition (FILE *stream)
 /* Globally reserved letters: acln
    Puncutation letters currently used: @_|?().!#
    Lower case letters currently used: bcdefhimpqtvwxyz
-   Upper case letters currently used: ABCDFGHJKLMNOPQRSTU
+   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTU
    Letters previously used, but now deprecated/obsolete: sVWXYZ.
 
    Note that the global reservation for 'c' is only for CONSTANT_ADDRESS_P.
@@ -24116,11 +24156,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
       }
       return;
 
-    /* To print the memory operand with "Ux" constraint.  Based on the rtx_code
-       the memory operands output looks like following.
+    /* To print the memory operand with "Ux" or "Uj" constraint.  Based on the
+       rtx_code the memory operands output looks like following.
        1. [Rn], #+/-<imm>
        2. [Rn, #+/-<imm>]!
-       3. [Rn].  */
+       3. [Rn, #+/-<imm>]
+       4. [Rn].  */
     case 'E':
       {
 	rtx addr;
@@ -24154,6 +24195,16 @@ arm_print_operand (FILE *stream, rtx x, int code)
 		else
 		  asm_fprintf (stream, ", #%wd]!",INTVAL (postinc_reg));
 	      }
+	  }
+	else if (code == PLUS)
+	  {
+	    rtx base = XEXP (addr, 0);
+	    rtx index = XEXP (addr, 1);
+
+	    gcc_assert (REG_P (base) && CONST_INT_P (index));
+
+	    HOST_WIDE_INT offset = INTVAL (index);
+	    asm_fprintf (stream, "[%r, #%wd]", REGNO (base), offset);
 	  }
 	else
 	  {
@@ -33303,6 +33354,40 @@ arm_ge_bits_access (void)
   return true;
 }
 
+/* NULL if insn INSN is valid within a low-overhead loop.
+   Otherwise return why doloop cannot be applied.  */
+
+static const char *
+arm_invalid_within_doloop (const rtx_insn *insn)
+{
+  if (!TARGET_HAVE_LOB)
+    return default_invalid_within_doloop (insn);
+
+  if (CALL_P (insn))
+    return "Function call in the loop.";
+
+  if (reg_mentioned_p (gen_rtx_REG (SImode, LR_REGNUM), insn))
+    return "LR is used inside loop.";
+
+  return NULL;
+}
+
+bool
+arm_target_insn_ok_for_lob (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  /* Make sure the basic block of the target insn is a simple latch
+     having as single predecessor and successor the body of the loop
+     itself.  Only simple loops with a single basic block as body are
+     supported for 'low over head loop' making sure that LE target is
+     above LE itself in the generated code.  */
+
+  return single_succ_p (bb)
+    && single_pred_p (bb)
+    && single_succ_edge (bb)->dest == single_pred_edge (bb)->src
+    && contains_no_active_insn_p (bb);
+}
+
 #if CHECKING_P
 namespace selftest {
 
@@ -33495,5 +33580,18 @@ arm_mode_base_reg_class (machine_mode mode)
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+bool
+arm_mve_mode_and_operands_type_check (machine_mode mode, rtx op0, rtx op1)
+{
+  if (!(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT))
+    return true;
+  else if (mode == E_BFmode)
+    return false;
+  else if ((s_register_operand (op0, mode) && MEM_P (op1))
+	   || (s_register_operand (op1, mode) && MEM_P (op0)))
+    return false;
+  return true;
+}
 
 #include "gt-arm.h"

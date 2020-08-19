@@ -982,9 +982,9 @@ with a first parameter of True is to warn a client about use of a package,
 for example that it is not fully implemented.
 
 In previous versions of the compiler, combining *-gnatwe* with
-Compile_Time_Warning resulted in an fatal error. Now the compiler will always
-emit a warning. You can use :ref:`Compile_Time_Error` to force the generation
-of an error.
+Compile_Time_Warning resulted in a fatal error. Now the compiler always emits
+a warning. You can use :ref:`Compile_Time_Error` to force the generation of
+an error.
 
 Pragma Compiler_Unit
 ====================
@@ -2193,15 +2193,31 @@ extension mode (the use of Off as a parameter cancels the effect
 of the *-gnatX* command switch).
 
 In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2012), and in addition a small number
+implemented (currently Ada 202x), and in addition a small number
 of GNAT specific extensions are recognized as follows:
 
+* Constrained attribute for generic objects
 
-
-*Constrained attribute for generic objects*
   The ``Constrained`` attribute is permitted for objects of
   generic types. The result indicates if the corresponding actual
   is constrained.
+
+* ``Static`` aspect on intrinsic functions
+
+  The Ada 202x ``Static`` aspect can be specified on Intrinsic imported
+  functions and the compiler will evaluate some of these intrinsic statically,
+  in particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
+
+* ``'Reduce`` attribute
+
+  This attribute part of the Ada 202x language definition is provided for
+  now under -gnatX to confirm and potentially refine its usage and syntax.
+
+* ``[]`` aggregates
+
+  This new aggregate syntax for arrays and containers is provided under -gnatX
+  to experiment and confirm this new language syntax.
+
 
 .. _Pragma-Extensions_Visible:
 

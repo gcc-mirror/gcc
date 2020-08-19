@@ -278,8 +278,9 @@ package body Exp_Ch5 is
    begin
       return
         Nkind (Rhs) = N_Type_Conversion
-          and then
-            not Same_Representation (Etype (Rhs), Etype (Expression (Rhs)));
+          and then not Has_Compatible_Representation
+                         (Target_Type  => Etype (Rhs),
+                          Operand_Type => Etype (Expression (Rhs)));
    end Change_Of_Representation;
 
    ------------------------------
@@ -1451,17 +1452,14 @@ package body Exp_Ch5 is
       L_Prefix_Comp : constant Boolean :=
         --  True if the left-hand side is a slice of a component or slice
         Nkind (Name (N)) = N_Slice
-        and then Nkind_In (Prefix (Name (N)),
-                           N_Selected_Component,
-                           N_Indexed_Component,
-                           N_Slice);
+          and then Nkind (Prefix (Name (N))) in
+                     N_Selected_Component | N_Indexed_Component | N_Slice;
       R_Prefix_Comp : constant Boolean :=
         --  Likewise for the right-hand side
         Nkind (Expression (N)) = N_Slice
-        and then Nkind_In (Prefix (Expression (N)),
-                           N_Selected_Component,
-                           N_Indexed_Component,
-                           N_Slice);
+          and then Nkind (Prefix (Expression (N))) in
+                     N_Selected_Component | N_Indexed_Component | N_Slice;
+
    begin
       --  Determine whether Copy_Bitfield is appropriate (will work, and will
       --  be more efficient than component-by-component copy). Copy_Bitfield
@@ -1521,7 +1519,7 @@ package body Exp_Ch5 is
       --  be assigned.
 
       elsif Possible_Bit_Aligned_Component (Lhs)
-              or
+              or else
             Possible_Bit_Aligned_Component (Rhs)
       then
          null;
@@ -1593,6 +1591,18 @@ package body Exp_Ch5 is
             C := First_Entity (Utyp);
             while Present (C) loop
                if Chars (C) = Chars (Comp) then
+                  return C;
+
+               --  The component may be a renamed discriminant, in
+               --  which case check against the name of the original
+               --  discriminant of the parent type.
+
+               elsif Is_Derived_Type (Scope (Comp))
+                 and then Ekind (Comp) = E_Discriminant
+                 and then Present (Corresponding_Discriminant (Comp))
+                 and then
+                   Chars (C) = Chars (Corresponding_Discriminant (Comp))
+               then
                   return C;
                end if;
 
@@ -1886,8 +1896,8 @@ package body Exp_Ch5 is
          --  We know the underlying type is a record, but its current view
          --  may be private. We must retrieve the usable record declaration.
 
-         if Nkind_In (Decl, N_Private_Type_Declaration,
-                            N_Private_Extension_Declaration)
+         if Nkind (Decl) in N_Private_Type_Declaration
+                          | N_Private_Extension_Declaration
            and then Present (Full_View (R_Typ))
          then
             RDef := Type_Definition (Declaration_Node (Full_View (R_Typ)));
@@ -2247,7 +2257,7 @@ package body Exp_Ch5 is
       --  Since P is going to be evaluated more than once, any subscripts
       --  in P must have their evaluation forced.
 
-      if Nkind_In (Lhs, N_Indexed_Component, N_Selected_Component)
+      if Nkind (Lhs) in N_Indexed_Component | N_Selected_Component
         and then Is_Ref_To_Bit_Packed_Array (Prefix (Lhs))
       then
          declare
@@ -2283,8 +2293,7 @@ package body Exp_Ch5 is
             loop
                Set_Analyzed (Exp, False);
 
-               if Nkind_In (Exp, N_Indexed_Component,
-                                 N_Selected_Component)
+               if Nkind (Exp) in N_Indexed_Component | N_Selected_Component
                then
                   Exp := Prefix (Exp);
                else
@@ -2852,8 +2861,8 @@ package body Exp_Ch5 is
             Actual_Rhs : Node_Id := Rhs;
 
          begin
-            while Nkind_In (Actual_Rhs, N_Type_Conversion,
-                                        N_Qualified_Expression)
+            while Nkind (Actual_Rhs) in
+                    N_Type_Conversion | N_Qualified_Expression
             loop
                Actual_Rhs := Expression (Actual_Rhs);
             end loop;
@@ -2927,7 +2936,7 @@ package body Exp_Ch5 is
                --  Skip this if left-hand side is an array or record component
                --  and elementary component validity checks are suppressed.
 
-               if Nkind_In (Lhs, N_Selected_Component, N_Indexed_Component)
+               if Nkind (Lhs) in N_Selected_Component | N_Indexed_Component
                  and then not Validity_Check_Components
                then
                   null;
@@ -3731,9 +3740,9 @@ package body Exp_Ch5 is
       --  Another optimization, special cases that can be simplified
 
       --     if expression then
-      --        return true;
+      --        return [standard.]true;
       --     else
-      --        return false;
+      --        return [standard.]false;
       --     end if;
 
       --  can be changed to:
@@ -3743,9 +3752,9 @@ package body Exp_Ch5 is
       --  and
 
       --     if expression then
-      --        return false;
+      --        return [standard.]false;
       --     else
-      --        return true;
+      --        return [standard.]true;
       --     end if;
 
       --  can be changed to:
@@ -3778,9 +3787,9 @@ package body Exp_Ch5 is
                      Else_Expr : constant Node_Id := Expression (Else_Stm);
 
                   begin
-                     if Nkind (Then_Expr) = N_Identifier
+                     if Nkind (Then_Expr) in N_Expanded_Name | N_Identifier
                           and then
-                        Nkind (Else_Expr) = N_Identifier
+                        Nkind (Else_Expr) in N_Expanded_Name | N_Identifier
                      then
                         if Entity (Then_Expr) = Standard_True
                           and then Entity (Else_Expr) = Standard_False
@@ -3856,13 +3865,20 @@ package body Exp_Ch5 is
       Array_Dim  : constant Pos        := Number_Dimensions (Array_Typ);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc        : constant Source_Ptr := Sloc (Isc);
-      Stats      : constant List_Id    := Statements (N);
+      Stats      : List_Id    := Statements (N);
       Core_Loop  : Node_Id;
       Dim1       : Int;
       Ind_Comp   : Node_Id;
       Iterator   : Entity_Id;
 
    begin
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2020);
+         Stats := New_List (Make_If_Statement (Loc,
+            Condition => Iterator_Filter (I_Spec),
+            Then_Statements => Stats));
+      end if;
+
       --  for Element of Array loop
 
       --  It requires an internally generated cursor to iterate over the array
@@ -4133,7 +4149,9 @@ package body Exp_Ch5 is
       Elem_Typ : constant Entity_Id   := Etype (Id);
       Id_Kind  : constant Entity_Kind := Ekind (Id);
       Loc      : constant Source_Ptr  := Sloc (N);
-      Stats    : constant List_Id     := Statements (N);
+
+      Stats    : List_Id     := Statements (N);
+      --  Maybe wrapped in a conditional if a filter is present
 
       Cursor    : Entity_Id;
       Decl      : Node_Id;
@@ -4155,6 +4173,13 @@ package body Exp_Ch5 is
       --  The package in which the container type is declared
 
    begin
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2020);
+         Stats := New_List (Make_If_Statement (Loc,
+            Condition => Iterator_Filter (I_Spec),
+            Then_Statements => Stats));
+      end if;
+
       --  Determine the advancement and initialization steps for the cursor.
       --  Analysis of the expanded loop will verify that the container has a
       --  reverse iterator.
@@ -4628,11 +4653,20 @@ package body Exp_Ch5 is
             Loop_Id : constant Entity_Id := Defining_Identifier (LPS);
             Ltype   : constant Entity_Id := Etype (Loop_Id);
             Btype   : constant Entity_Id := Base_Type (Ltype);
+            Stats   : constant List_Id   := Statements (N);
             Expr    : Node_Id;
             Decls   : List_Id;
             New_Id  : Entity_Id;
 
          begin
+            if Present (Iterator_Filter (LPS)) then
+               pragma Assert (Ada_Version >= Ada_2020);
+               Set_Statements (N,
+                  New_List (Make_If_Statement (Loc,
+                    Condition => Iterator_Filter (LPS),
+                    Then_Statements => Stats)));
+            end if;
+
             --  Deal with loop over predicates
 
             if Is_Discrete_Type (Ltype)
@@ -4749,7 +4783,7 @@ package body Exp_Ch5 is
                        Declarations => Decls,
                        Handled_Statement_Sequence =>
                          Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => Statements (N)))),
+                           Statements => Stats))),
 
                    End_Label => End_Label (N)));
 
@@ -4851,7 +4885,7 @@ package body Exp_Ch5 is
          end if;
       end if;
 
-      --  When the iteration scheme mentiones attribute 'Loop_Entry, the loop
+      --  When the iteration scheme mentions attribute 'Loop_Entry, the loop
       --  is transformed into a conditional block where the original loop is
       --  the sole statement. Inspect the statements of the nested loop for
       --  controlled objects.

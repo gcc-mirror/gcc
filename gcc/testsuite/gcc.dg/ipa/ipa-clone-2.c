@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-ipa-cp-details -fno-early-inlining --param ipa-cp-max-recursive-depth=8" } */
+/* { dg-options "-O3 -fdump-ipa-cp-details -fno-early-inlining --param ipa-cp-max-recursive-depth=8 --param=ipa-cp-eval-threshold=400" } */
 
 int fn();
 

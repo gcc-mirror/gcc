@@ -9320,6 +9320,8 @@
   [(set_attr "arch" "t1,32")]
 )
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the end of this sequence.
 (define_insn "arm_stack_protect_test_insn"
   [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z (unspec:SI [(match_operand:SI 1 "memory_operand" "m,m")
@@ -9329,8 +9331,8 @@
    (clobber (match_operand:SI 0 "register_operand" "=&l,&r"))
    (clobber (match_dup 2))]
   "TARGET_32BIT"
-  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0"
-  [(set_attr "length" "8,12")
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0\;mov\t%2, #0"
+  [(set_attr "length" "12,16")
    (set_attr "conds" "set")
    (set_attr "type" "multiple")
    (set_attr "arch" "t,32")]

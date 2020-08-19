@@ -526,6 +526,9 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the `uselocale' function. */
+#undef HAVE_USELOCALE
+
 /* Defined if usleep exists. */
 #undef HAVE_USLEEP
 
@@ -555,6 +558,9 @@
 
 /* Define if writev is available in <sys/uio.h>. */
 #undef HAVE_WRITEV
+
+/* Define to 1 if you have the <xlocale.h> header file. */
+#undef HAVE_XLOCALE_H
 
 /* Define to 1 if you have the `_acosf' function. */
 #undef HAVE__ACOSF

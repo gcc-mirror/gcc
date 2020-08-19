@@ -695,10 +695,12 @@ merge_chains (du_head_p c1, du_head_p c2)
   c1->cannot_rename |= c2->cannot_rename;
 }
 
-/* Analyze the current function and build chains for renaming.  */
+/* Analyze the current function and build chains for renaming.
+   If INCLUDE_ALL_BLOCKS_P is set to true, process all blocks,
+   ignoring BB_DISABLE_SCHEDULE.  The default value is true.  */
 
 void
-regrename_analyze (bitmap bb_mask)
+regrename_analyze (bitmap bb_mask, bool include_all_block_p)
 {
   class bb_rename_info *rename_info;
   int i;
@@ -747,6 +749,14 @@ regrename_analyze (bitmap bb_mask)
 
       if (dump_file)
 	fprintf (dump_file, "\nprocessing block %d:\n", bb1->index);
+
+      if (!include_all_block_p && (bb1->flags & BB_DISABLE_SCHEDULE) != 0)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "avoid disrupting the sms schedule of bb %d\n",
+		     bb1->index);
+	  continue;
+	}
 
       init_rename_info (this_info, bb1);
 
@@ -1962,7 +1972,7 @@ regrename_optimize (void)
 
   regrename_init (false);
 
-  regrename_analyze (NULL);
+  regrename_analyze (NULL, false);
 
   rename_chains ();
 

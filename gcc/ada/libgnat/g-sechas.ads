@@ -44,7 +44,7 @@ with System;
 
 package GNAT.Secure_Hashes is
 
-   type Buffer_Type is new String;
+   type Buffer_Type is new Stream_Element_Array;
    for Buffer_Type'Alignment use 8;
    --  Secure hash functions use a string buffer that is also accessed as an
    --  array of words, which may require up to 64 bit alignment.
@@ -52,8 +52,8 @@ package GNAT.Secure_Hashes is
    --  The function-independent part of processing state: A buffer of data
    --  being accumulated until a complete block is ready for hashing.
 
-   type Message_State (Block_Length : Natural) is record
-      Last : Natural := 0;
+   type Message_State (Block_Length : Stream_Element_Count) is record
+      Last : Stream_Element_Offset := 0;
       --  Index of last used element in Buffer
 
       Length : Interfaces.Unsigned_64 := 0;
@@ -81,7 +81,7 @@ package GNAT.Secure_Hashes is
 
    package Hash_Function_State is
 
-      type State is array (Natural range <>) of Word;
+      type State is array (Stream_Element_Offset range <>) of Word;
       --  Used to store a hash function's internal state
 
       procedure To_Hash
@@ -97,13 +97,13 @@ package GNAT.Secure_Hashes is
    --  secure hash function is an instance of this generic package.
 
    generic
-      Block_Words : Natural;
+      Block_Words : Stream_Element_Count;
       --  Number of words in each block
 
-      State_Words : Natural;
+      State_Words : Stream_Element_Count;
       --  Number of words in internal state
 
-      Hash_Words : Natural;
+      Hash_Words : Stream_Element_Count;
       --  Number of words in the final hash (must be no greater than
       --  State_Words).
 
@@ -157,11 +157,10 @@ package GNAT.Secure_Hashes is
       --  the Wide_String version, each Wide_Character is processed low order
       --  byte first.
 
-      Word_Length : constant Natural := Hash_State.Word'Size / 8;
-      Hash_Length : constant Natural := Hash_Words * Word_Length;
+      Word_Length : constant Stream_Element_Offset := Hash_State.Word'Size / 8;
+      Hash_Length : constant Stream_Element_Offset := Hash_Words * Word_Length;
 
-      subtype Binary_Message_Digest is
-        Stream_Element_Array (1 .. Stream_Element_Offset (Hash_Length));
+      subtype Binary_Message_Digest is Stream_Element_Array (1 .. Hash_Length);
       --  The fixed-length byte array returned by Digest, providing
       --  the hash in binary representation.
 
@@ -176,7 +175,7 @@ package GNAT.Secure_Hashes is
       --  Wide_Update) on a default initialized Context, followed by Digest
       --  on the resulting Context.
 
-      subtype Message_Digest is String (1 .. 2 * Hash_Length);
+      subtype Message_Digest is String (1 .. 2 * Integer (Hash_Length));
       --  The fixed-length string returned by Digest, providing the hash in
       --  hexadecimal representation.
 
@@ -199,11 +198,12 @@ package GNAT.Secure_Hashes is
 
    private
 
-      Block_Length : constant Natural := Block_Words * Word_Length;
+      Block_Length : constant Stream_Element_Count :=
+         Block_Words * Word_Length;
       --  Length in bytes of a data block
 
       subtype Key_Length is
-        Stream_Element_Offset range 0 .. Stream_Element_Offset (Block_Length);
+        Stream_Element_Offset range 0 .. Block_Length;
 
       --  KL is 0 for a normal hash context, > 0 for HMAC
 

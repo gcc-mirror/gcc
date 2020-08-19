@@ -2020,6 +2020,8 @@
   [(set_attr "type" "mov_reg")]
 )
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the end of this sequence.
 (define_insn "thumb1_stack_protect_test_insn"
   [(set (match_operand:SI 0 "register_operand" "=&l")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")
@@ -2027,9 +2029,9 @@
 	 UNSPEC_SP_TEST))
    (clobber (match_dup 2))]
   "TARGET_THUMB1"
-  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0"
-  [(set_attr "length" "8")
-   (set_attr "conds" "set")
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0\;movs\t%2, #0"
+  [(set_attr "length" "10")
+   (set_attr "conds" "clob")
    (set_attr "type" "multiple")]
 )
 

@@ -173,9 +173,6 @@
 /* Define to 1 if the GCN plugin is built, 0 if not. */
 #undef PLUGIN_GCN
 
-/* Define to 1 if the HSA plugin is built, 0 if not. */
-#undef PLUGIN_HSA
-
 /* Define to 1 if the NVIDIA plugin is built, 0 if not. */
 #undef PLUGIN_NVPTX
 

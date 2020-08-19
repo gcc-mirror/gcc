@@ -13,12 +13,17 @@ enum e {} i;
 struct j
 {
   void *operator new (__SIZE_TYPE__ b)
+#if __cplusplus >= 201103L
+    noexcept
+#else
+    throw()
+#endif
   {
-    return calloc (b, sizeof (int)); // { dg-warning "leak" }
+    return calloc (b, sizeof (int)); // { dg-bogus "leak" "" { xfail c++98_only } }
   }
   j (B *, int)
   {
-  } // { dg-warning "leak" }
+  }
 };
 
 j *

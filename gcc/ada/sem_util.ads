@@ -741,7 +741,7 @@ package Sem_Util is
    --  Insert new name in symbol table of current scope with check for
    --  duplications (error message is issued if a conflict is found).
    --  Note: Enter_Name is not used for overloadable entities, instead these
-   --  are entered using Sem_Ch6.Enter_Overloadable_Entity.
+   --  are entered using Sem_Ch6.Enter_Overloaded_Entity.
 
    function Entity_Of (N : Node_Id) return Entity_Id;
    --  Obtain the entity of arbitrary node N. If N is a renaming, return the
@@ -1383,9 +1383,9 @@ package Sem_Util is
 
    function Has_Relaxed_Initialization (E : Entity_Id) return Boolean;
    --  Returns True iff entity E is subject to the Relaxed_Initialization
-   --  aspect. Entity E can be either type, variable, constant, function,
-   --  or abstract state. For private types and deferred constants E should
-   --  be the private view, because aspect can only be attached there.
+   --  aspect. Entity E can be either type, variable, constant, subprogram,
+   --  entry or an abstract state. For private types and deferred constants
+   --  E should be the private view, because aspect can only be attached there.
 
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
@@ -1589,6 +1589,10 @@ package Sem_Util is
    --  True if E is the constructed wrapper for an access_to_subprogram
    --  type with Pre/Postconditions.
 
+   function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean;
+   --  Determines if N is an actual parameter of in-out mode in a subprogram
+   --  call
+
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
 
@@ -1621,6 +1625,9 @@ package Sem_Util is
    --  Determine whether arbitrary node N denotes a reference to an object
    --  which is either atomic or Volatile_Full_Access.
 
+   function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Loop_Entry
+
    function Is_Attribute_Old (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Old
 
@@ -1636,6 +1643,10 @@ package Sem_Util is
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
    --  properly for bounded string types.
+
+   function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id denotes a procedure with synchronization
+   --  kind By_Protected_Procedure.
 
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the
@@ -1692,6 +1703,13 @@ package Sem_Util is
    --  declaration. Prior to Ada 2012 this covered only synchronized type
    --  declarations. In Ada 2012 it also covers type and subtype declarations
    --  with aspects: Invariant, Predicate, and Default_Initial_Condition.
+
+   function Is_Current_Instance_Reference_In_Type_Aspect
+     (N : Node_Id) return Boolean;
+   --  True if N is a reference to a current instance object that occurs within
+   --  an aspect_specification for a type or subtype. In this case N will be
+   --  a formal parameter of a subprogram created for a predicate, invariant,
+   --  or Default_Initial_Condition aspect.
 
    function Is_Declaration
      (N                : Node_Id;
@@ -2071,13 +2089,13 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
-   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean;
-   --  Determine whether subprogram Subp denotes a static expression function,
-   --  which is an expression function with the aspect Static with value True.
+   function Is_Static_Function (Subp : Entity_Id) return Boolean;
+   --  Determine whether subprogram Subp denotes a static function,
+   --  which is a function with the aspect Static with value True.
 
-   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean;
-   --  Determine whether Call is a static call to a static expression function,
-   --  meaning that the name of the call denotes a static expression function
+   function Is_Static_Function_Call (Call : Node_Id) return Boolean;
+   --  Determine whether Call is a static call to a static function,
+   --  meaning that the name of the call denotes a static function
    --  and all of the call's actual parameters are given by static expressions.
 
    function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
@@ -2173,6 +2191,12 @@ package Sem_Util is
    --  Use_Original_Node is used to perform the test on Original_Node (N). By
    --  default is True since this routine is commonly invoked as part of the
    --  semantic analysis and it must not be disturbed by the rewriten nodes.
+
+   function Is_View_Conversion (N : Node_Id) return Boolean;
+   --  Returns True if N is a type_conversion whose operand is the name of an
+   --  object and both its target type and operand type are tagged, or it
+   --  appears in a call as an actual parameter of mode out or in out
+   --  (RM 4.6(5/2)).
 
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true
@@ -2502,7 +2526,7 @@ package Sem_Util is
    --  with the same mode.
 
    procedure Next_Global (Node : in out Node_Id);
-   pragma Inline (Next_Actual);
+   pragma Inline (Next_Global);
    --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
    --  inline this procedural form, but not the functional form above.
 
@@ -2590,6 +2614,11 @@ package Sem_Util is
    function Policy_In_Effect (Policy : Name_Id) return Name_Id;
    --  Given a policy, return the policy identifier associated with it. If no
    --  such policy is in effect, the value returned is No_Name.
+
+   function Predicate_Enabled (Typ : Entity_Id) return Boolean;
+   --  Return True if a predicate check should be emitted for the given type
+   --  Typ, taking into account Predicates_Ignored and
+   --  Predicate_Checks_Suppressed.
 
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
@@ -2736,13 +2765,14 @@ package Sem_Util is
      (N    : Node_Id;
       Ent  : Entity_Id;
       Cond : Boolean := False) return Boolean;
-   --  The caller is interested in capturing a value (either the current value,
-   --  or an indication that the value is non-null) for the given entity Ent.
-   --  This value can only be captured if sequential execution semantics can be
-   --  properly guaranteed so that a subsequent reference will indeed be sure
-   --  that this current value indication is correct. The node N is the
-   --  construct which resulted in the possible capture of the value (this
-   --  is used to check if we are in a conditional).
+   --  The caller is interested in capturing a value (either the current
+   --  value, an indication that the value is [non-]null or an indication that
+   --  the value is valid) for the given entity Ent. This value can only be
+   --  captured if sequential execution semantics can be properly guaranteed so
+   --  that a subsequent reference will indeed be sure that this current value
+   --  indication is correct. The node N is the construct which resulted in
+   --  the possible capture of the value (this is used to check if we are in
+   --  a conditional).
    --
    --  Cond is used to skip the test for being inside a conditional. It is used
    --  in the case of capturing values from if/while tests, which already do a
@@ -3109,16 +3139,22 @@ package Sem_Util is
       --  successive intervals (i.e., mergeable intervals are merged).
       --  Low bound is one; high bound is nonnegative.
 
+      function Aggregate_Intervals (N : Node_Id) return Discrete_Interval_List;
+      --  Given an array aggregate N, returns the (unique) interval list
+      --  representing the values of the aggregate choices; if all the array
+      --  components are covered by the others choice then the length of the
+      --  result is zero.
+
+      function Choice_List_Intervals
+        (Discrete_Choices : List_Id) return Discrete_Interval_List;
+      --  Given a discrete choice list, returns the (unique) interval
+      --  list representing the chosen values.
+
       function Type_Intervals (Typ : Entity_Id) return Discrete_Interval_List;
       --  Given a static discrete type or subtype, returns the (unique)
       --  interval list representing the values of the type/subtype.
       --  If no static predicates are involved, the length of the result
       --  will be at most one.
-
-      function Choice_List_Intervals (Discrete_Choices : List_Id)
-                                     return Discrete_Interval_List;
-      --  Given a discrete choice list, returns the (unique) interval
-      --  list representing the chosen values.
 
       function Is_Subset (Subset, Of_Set : Discrete_Interval_List)
         return Boolean;
@@ -3131,5 +3167,9 @@ package Sem_Util is
       --  rules that reference "is statically compatible" pertain to
       --  discriminants and therefore do require support for real types;
       --  the exception is 12.5.1(8).
+
+      Intervals_Error : exception;
+      --  Raised when the list of non-empty pair-wise disjoint intervals cannot
+      --  be built.
    end Interval_Lists;
 end Sem_Util;

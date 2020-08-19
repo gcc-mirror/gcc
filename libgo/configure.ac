@@ -10,7 +10,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=16:0:0
+libtool_VERSION=17:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -36,6 +36,14 @@ case ${host} in
     # static hash tables crashes on AIX when libgo is built with O2
     CFLAGS="$CFLAGS -fno-section-anchors"
     GOCFLAGS="$GOCFLAGS -fno-section-anchors"
+
+    # Check default architecture for FAT library creation
+    if test -z "`$CC -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
+        AIX_EXTRA_ARCH='64'
+    else
+        AIX_EXTRA_ARCH='32'
+    fi
+    AC_SUBST(AIX_EXTRA_ARCH)
     ;;
 esac
 

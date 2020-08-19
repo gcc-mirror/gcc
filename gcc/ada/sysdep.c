@@ -703,7 +703,7 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
        to get timezone settings that depend on the year. We cannot use them as
        we still support Windows XP and Windows 2003.  */
 
-    status = (tzi_status >= 0 && tzi_status <= 2)
+    status = tzi_status <= 2
       && FileTimeToSystemTime (&utc_time.ft_time, &utc_sys_time)
       && SystemTimeToTzSpecificLocalTime (&tzi, &utc_sys_time, &local_sys_time)
       && SystemTimeToFileTime (&local_sys_time, &local_time.ft_time);

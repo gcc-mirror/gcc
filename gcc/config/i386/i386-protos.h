@@ -143,7 +143,7 @@ extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_vec_perm (rtx[]);
-extern bool ix86_expand_mask_vec_cmp (rtx[]);
+extern bool ix86_expand_mask_vec_cmp (rtx, enum rtx_code, rtx, rtx);
 extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
 extern void ix86_expand_sse_movcc (rtx, rtx, rtx, rtx);
@@ -223,7 +223,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 #ifdef TREE_CODE
 extern int ix86_data_alignment (tree, unsigned int, bool);
 extern unsigned int ix86_local_alignment (tree, machine_mode,
-					  unsigned int);
+					  unsigned int, bool = false);
 extern unsigned int ix86_minimum_alignment (tree, machine_mode,
 					    unsigned int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);

@@ -2793,9 +2793,9 @@ package body Inline is
          else
             Decl := Unit_Declaration_Node (Scop);
 
-            if Nkind_In (Decl, N_Subprogram_Declaration,
-                               N_Task_Type_Declaration,
-                               N_Subprogram_Body_Stub)
+            if Nkind (Decl) in N_Subprogram_Declaration
+                             | N_Task_Type_Declaration
+                             | N_Subprogram_Body_Stub
             then
                Decl := Unit_Declaration_Node (Corresponding_Body (Decl));
             end if;
@@ -2968,9 +2968,8 @@ package body Inline is
                and then not GNATprove_Mode)
 
            or else
-             (Nkind_In (A, N_Real_Literal,
-                           N_Integer_Literal,
-                           N_Character_Literal)
+             (Nkind (A) in
+                N_Real_Literal | N_Integer_Literal | N_Character_Literal
                and then not Address_Taken (F))
          then
             if Etype (F) /= Etype (A) then
@@ -3378,10 +3377,10 @@ package body Inline is
                --  and string literals, and attributes that yield a universal
                --  type, because those must be resolved to a specific type.
 
-               if Nkind_In (Expression (N), N_Aggregate,
-                                            N_Character_Literal,
-                                            N_Null,
-                                            N_String_Literal)
+               if Nkind (Expression (N)) in N_Aggregate
+                                          | N_Character_Literal
+                                          | N_Null
+                                          | N_String_Literal
                  or else Yields_Universal_Type (Expression (N))
                then
                   Ret :=
@@ -4234,7 +4233,7 @@ package body Inline is
          then
             Conv := Current_Entity (Id);
 
-         elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
+         elsif Nkind (Id) in N_Selected_Component | N_Expanded_Name
            and then Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
          then
             Conv := Current_Entity (Selector_Name (Id));
@@ -4366,13 +4365,13 @@ package body Inline is
 
       S := First (Stats);
       while Present (S) loop
-         if Nkind_In (S, N_Abort_Statement,
-                         N_Asynchronous_Select,
-                         N_Conditional_Entry_Call,
-                         N_Delay_Relative_Statement,
-                         N_Delay_Until_Statement,
-                         N_Selective_Accept,
-                         N_Timed_Entry_Call)
+         if Nkind (S) in N_Abort_Statement
+                       | N_Asynchronous_Select
+                       | N_Conditional_Entry_Call
+                       | N_Delay_Relative_Statement
+                       | N_Delay_Until_Statement
+                       | N_Selective_Accept
+                       | N_Timed_Entry_Call
          then
             Cannot_Inline
               ("cannot inline & (non-allowed statement)?", S, Subp);
@@ -4632,13 +4631,11 @@ package body Inline is
       Backend_Not_Inlined_Subps := No_Elist;
    end Initialize;
 
-   --------------------------------------------
-   -- Inline_Static_Expression_Function_Call --
-   --------------------------------------------
+   ---------------------------------
+   -- Inline_Static_Function_Call --
+   ---------------------------------
 
-   procedure Inline_Static_Expression_Function_Call
-     (N : Node_Id; Subp : Entity_Id)
-   is
+   procedure Inline_Static_Function_Call (N : Node_Id; Subp : Entity_Id) is
 
       function Replace_Formal (N : Node_Id) return Traverse_Result;
       --  Replace each occurrence of a formal with the corresponding actual,
@@ -4697,10 +4694,10 @@ package body Inline is
 
       procedure Reset_Slocs is new Traverse_Proc (Reset_Sloc);
 
-   --  Start of processing for Inline_Static_Expression_Function_Call
+   --  Start of processing for Inline_Static_Function_Call
 
    begin
-      pragma Assert (Is_Static_Expression_Function_Call (N));
+      pragma Assert (Is_Static_Function_Call (N));
 
       declare
          Decls     : constant List_Id := New_List;
@@ -4713,6 +4710,13 @@ package body Inline is
          --  Decls, when needed, to hold the actuals.
 
          Establish_Actual_Mapping_For_Inlined_Call (N, Subp, Decls, Func_Expr);
+
+         --  Ensure that the copy has the same parent as the call (this seems
+         --  to matter when GNATprove_Mode is set and there are nested static
+         --  calls; prevents blowups in Insert_Actions, though it's not clear
+         --  exactly why this is needed???).
+
+         Set_Parent (Expr_Copy, Parent (N));
 
          Insert_Actions (N, Decls);
 
@@ -4752,7 +4756,7 @@ package body Inline is
 
          Reset_Actual_Mapping_For_Inlined_Call (Subp);
       end;
-   end Inline_Static_Expression_Function_Call;
+   end Inline_Static_Function_Call;
 
    ------------------------
    -- Instantiate_Bodies --
@@ -5107,18 +5111,18 @@ package body Inline is
             end if;
 
             if Present (Item_Id)
-              and then Nam_In (Chars (Item_Id), Name_Contract_Cases,
-                                                Name_Global,
-                                                Name_Depends,
-                                                Name_Postcondition,
-                                                Name_Precondition,
-                                                Name_Refined_Global,
-                                                Name_Refined_Depends,
-                                                Name_Refined_Post,
-                                                Name_Test_Case,
-                                                Name_Unmodified,
-                                                Name_Unreferenced,
-                                                Name_Unused)
+              and then Chars (Item_Id) in Name_Contract_Cases
+                                        | Name_Global
+                                        | Name_Depends
+                                        | Name_Postcondition
+                                        | Name_Precondition
+                                        | Name_Refined_Global
+                                        | Name_Refined_Depends
+                                        | Name_Refined_Post
+                                        | Name_Test_Case
+                                        | Name_Unmodified
+                                        | Name_Unreferenced
+                                        | Name_Unused
             then
                Remove (Item);
             end if;

@@ -1172,6 +1172,16 @@ Expect the execute step of a test to fail if the conditions (which are
 the same as for @code{dg-skip-if}) are met.
 @end table
 
+@subsubsection Expect the compiler to crash
+
+@table @code
+@item  @{ dg-ice @var{comment} [@{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]]] @}
+Expect the compiler to crash with an internal compiler error and return
+a nonzero exit status if the conditions (which are the same as for
+@code{dg-skip-if}) are met.  Used for tests that test bugs that have not been
+fixed yet.
+@end table
+
 @subsubsection Expect the test executable to fail
 
 @table @code
@@ -1242,6 +1252,18 @@ Prune messages matching @var{regexp} from the test output.
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
 that the test executable writes to @file{stdout} and @file{stderr}.
+@end table
+
+@subsubsection Specify environment variables for a test
+
+@table @code
+@item @{ dg-set-compiler-env-var @var{var_name} "@var{var_value}" @}
+Specify that the environment variable @var{var_name} needs to be set
+to @var{var_value} before invoking the compiler on the test file.
+
+@item @{ dg-set-target-env-var @var{var_name} "@var{var_value}" @}
+Specify that the environment variable @var{var_name} needs to be set
+to @var{var_value} before execution of the program created by the test.
 @end table
 
 @subsubsection Specify additional files for a test
@@ -2009,6 +2031,17 @@ ARM target supports the @code{-mfloat-abi=softfp} option.
 @anchor{arm_hard_ok}
 ARM target supports the @code{-mfloat-abi=hard} option.
 
+@item arm_v8_1_lob_ok
+@anchor{arm_v8_1_lob_ok}
+ARM Target supports executing the Armv8.1-M Mainline Low Overhead Loop
+instructions @code{DLS} and @code{LE}.
+Some multilibs may be incompatible with these options.
+
+@item arm_thumb2_ok_no_arm_v8_1_lob
+ARM target generates Thumb-2 code for @code{-mthumb} but does not
+support executing the Armv8.1-M Mainline Low Overhead Loop
+instructions @code{DLS} and @code{LE}.
+
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -2040,6 +2073,9 @@ whether it does so by default).
 @itemx aarch64_sve2048_hw
 Like @code{aarch64_sve_hw}, but also test for an exact hardware vector length.
 
+@item aarch64_fjcvtzs_hw
+AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
+instruction.
 @end table
 
 @subsubsection MIPS-specific attributes
@@ -2942,6 +2978,19 @@ suffix @var{suffix}.
 Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
 @end table
+
+The @var{suffix} argument which describes the dump file to be scanned
+may contain a glob pattern that must expand to exactly one file
+name. This is useful if, e.g., different pass instances are executed
+depending on torture testing command-line flags, producing dump files
+whose names differ only in their pass instance number suffix.  For
+example, to scan instances 1, 2, 3 of a tree pass ``mypass'' for
+occurrences of the string ``code has been optimized'', use:
+@smallexample
+/* @{ dg-options "-fdump-tree-mypass" @} */
+/* @{ dg-final @{ scan-tree-dump "code has been optimized" "mypass\[1-3\]" @} @} */
+@end smallexample
+
 
 @subsubsection Check for output files
 

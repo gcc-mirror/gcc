@@ -78,6 +78,7 @@
 #include <process.h>
 #include <signal.h>
 #include <io.h>
+#include "adaint.h"
 #include "mingw32.h"
 
 int
@@ -85,11 +86,10 @@ __gnat_waitpid (int pid)
 {
   HANDLE h = OpenProcess (PROCESS_ALL_ACCESS, FALSE, pid);
   DWORD exitcode = 1;
-  DWORD res;
 
   if (h != NULL)
     {
-      res = WaitForSingleObject (h, INFINITE);
+      (void) WaitForSingleObject (h, INFINITE);
       GetExitCodeProcess (h, &exitcode);
       CloseHandle (h);
     }
@@ -105,7 +105,8 @@ __gnat_expect_fork (void)
 }
 
 void
-__gnat_expect_portable_execvp (int *pid, char *cmd, char *argv[])
+__gnat_expect_portable_execvp (int *pid, char *cmd ATTRIBUTE_UNUSED,
+                               char *argv[])
 {
   *pid = __gnat_portable_no_block_spawn (argv);
 }

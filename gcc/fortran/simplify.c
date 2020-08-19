@@ -4924,6 +4924,8 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
   switch (arg->ts.type)
     {
       case BT_INTEGER:
+	if (extremum->ts.kind < arg->ts.kind)
+	  extremum->ts.kind = arg->ts.kind;
 	ret = mpz_cmp (arg->value.integer,
 		       extremum->value.integer) * sign;
 	if (ret > 0)
@@ -4931,6 +4933,8 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
 	break;
 
       case BT_REAL:
+	if (extremum->ts.kind < arg->ts.kind)
+	  extremum->ts.kind = arg->ts.kind;
 	if (mpfr_nan_p (extremum->value.real))
 	  {
 	    ret = 1;

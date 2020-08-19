@@ -6194,7 +6194,7 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	  c_parser_while_statement (parser, false, 0, if_p);
 	  break;
 	case RID_DO:
-	  c_parser_do_statement (parser, 0, false);
+	  c_parser_do_statement (parser, false, 0);
 	  break;
 	case RID_FOR:
 	  c_parser_for_statement (parser, false, 0, if_p);
@@ -8686,7 +8686,7 @@ c_parser_generic_selection (c_parser *parser)
   struct c_expr selector, error_expr;
   tree selector_type;
   struct c_generic_association matched_assoc;
-  bool match_found = false;
+  int match_found = -1;
   location_t generic_loc, selector_loc;
 
   error_expr.original_code = ERROR_MARK;
@@ -8721,6 +8721,7 @@ c_parser_generic_selection (c_parser *parser)
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
       return selector;
     }
+  mark_exp_read (selector.value);
   selector_type = TREE_TYPE (selector.value);
   /* In ISO C terms, rvalues (including the controlling expression of
      _Generic) do not have qualified types.  */
@@ -8820,18 +8821,18 @@ c_parser_generic_selection (c_parser *parser)
 
       if (assoc.type == NULL_TREE)
 	{
-	  if (!match_found)
+	  if (match_found < 0)
 	    {
 	      matched_assoc = assoc;
-	      match_found = true;
+	      match_found = associations.length ();
 	    }
 	}
       else if (comptypes (assoc.type, selector_type))
 	{
-	  if (!match_found || matched_assoc.type == NULL_TREE)
+	  if (match_found < 0 || matched_assoc.type == NULL_TREE)
 	    {
 	      matched_assoc = assoc;
-	      match_found = true;
+	      match_found = associations.length ();
 	    }
 	  else
 	    {
@@ -8849,13 +8850,19 @@ c_parser_generic_selection (c_parser *parser)
       c_parser_consume_token (parser);
     }
 
+  unsigned int ix;
+  struct c_generic_association *iter;
+  FOR_EACH_VEC_ELT (associations, ix, iter)
+    if (ix != (unsigned) match_found)
+      mark_exp_read (iter->expression.value);
+
   if (!parens.require_close (parser))
     {
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
       return error_expr;
     }
 
-  if (!match_found)
+  if (match_found < 0)
     {
       error_at (selector_loc, "%<_Generic%> selector of type %qT is not "
 		"compatible with any association",
@@ -13901,16 +13908,15 @@ c_parser_omp_clause_hint (c_parser *parser, tree list)
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
-
-      parens.skip_until_found_close (parser);
-
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-	  || TREE_CODE (t) != INTEGER_CST)
+	  || TREE_CODE (t) != INTEGER_CST
+	  || tree_int_cst_sgn (t) == -1)
 	{
-	  c_parser_error (parser, "expected constant integer expression");
+	  c_parser_error (parser, "expected constant integer expression "
+				  "with valid sync-hint value");
 	  return list;
 	}
-
+      parens.skip_until_found_close (parser);
       check_no_duplicate_clause (list, OMP_CLAUSE_HINT, "hint");
 
       c = build_omp_clause (hint_loc, OMP_CLAUSE_HINT);
@@ -17795,18 +17801,9 @@ c_parser_omp_critical (location_t loc, c_parser *parser, bool *if_p)
       if (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
-
-      clauses = c_parser_omp_all_clauses (parser,
-					  OMP_CRITICAL_CLAUSE_MASK,
-					  "#pragma omp critical");
     }
-  else
-    {
-      if (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
-	c_parser_error (parser, "expected %<(%> or end of line");
-      c_parser_skip_to_pragma_eol (parser);
-    }
-
+  clauses = c_parser_omp_all_clauses (parser, OMP_CRITICAL_CLAUSE_MASK,
+				      "#pragma omp critical");
   stmt = c_parser_omp_structured_block (parser, if_p);
   return c_finish_omp_critical (loc, stmt, name, clauses);
 }
@@ -21537,7 +21534,7 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       gcc_unreachable ();
     }
 
-  if (stmt)
+  if (stmt && stmt != error_mark_node)
     gcc_assert (EXPR_LOCATION (stmt) != UNKNOWN_LOCATION);
 }
 

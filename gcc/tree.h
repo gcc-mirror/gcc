@@ -925,7 +925,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a CALL_EXPR, if the function being called is BUILT_IN_ALLOCA, means that
-   it has been built for the declaration of a variable-sized object.  */
+   it has been built for the declaration of a variable-sized object and, if the
+   function being called is BUILT_IN_MEMCPY, means that it has been built for
+   the assignment of a variable-sized object.  */
 #define CALL_ALLOCA_FOR_VAR_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
@@ -1776,14 +1778,6 @@ class auto_suppress_location_wrappers
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 1)
 #define OMP_CLAUSE_TILE_COUNT(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 2)
-
-#define OMP_CLAUSE__GRIDDIM__DIMENSION(NODE) \
-  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_)\
-   ->omp_clause.subcode.dimension)
-#define OMP_CLAUSE__GRIDDIM__SIZE(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 0)
-#define OMP_CLAUSE__GRIDDIM__GROUP(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 1)
 
 /* _CONDTEMP_ holding temporary with iteration count.  */
 #define OMP_CLAUSE__CONDTEMP__ITER(NODE) \
@@ -4423,7 +4417,7 @@ extern tree build_one_cst (tree);
 extern tree build_minus_one_cst (tree);
 extern tree build_all_ones_cst (tree);
 extern tree build_zero_cst (tree);
-extern tree build_string (int, const char *);
+extern tree build_string (unsigned, const char * = NULL);
 extern tree build_poly_int_cst (tree, const poly_wide_int_ref &);
 extern tree build_tree_list (tree, tree CXX_MEM_STAT_INFO);
 extern tree build_tree_list_vec (const vec<tree, va_gc> * CXX_MEM_STAT_INFO);
@@ -4454,7 +4448,8 @@ extern tree build_call_expr_internal_loc_array (location_t, enum internal_fn,
 extern tree maybe_build_call_expr_loc (location_t, combined_fn, tree,
 				       int, ...);
 extern tree build_alloca_call_expr (tree, unsigned int, HOST_WIDE_INT);
-extern tree build_string_literal (int, const char *, tree = char_type_node,
+extern tree build_string_literal (unsigned, const char * = NULL,
+				  tree = char_type_node,
 				  unsigned HOST_WIDE_INT = HOST_WIDE_INT_M1U);
 
 /* Construct various nodes representing data types.  */
@@ -5239,8 +5234,8 @@ extern location_t *block_nonartificial_location (tree);
 extern location_t tree_nonartificial_location (tree);
 extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, poly_int64, tree);
-extern bool virtual_method_call_p (const_tree);
-extern tree obj_type_ref_class (const_tree ref);
+extern bool virtual_method_call_p (const_tree, bool = false);
+extern tree obj_type_ref_class (const_tree ref, bool = false);
 extern bool types_same_for_odr (const_tree type1, const_tree type2);
 extern bool contains_bitfld_component_ref_p (const_tree);
 extern bool block_may_fallthru (const_tree);

@@ -98,6 +98,9 @@
 ;; Copy of the above.
 (define_mode_iterator DREG2 [V8QI V4HI V4HF V2SI V2SF DF])
 
+;; All modes suitable to store/load pair (2 elements) using STP/LDP.
+(define_mode_iterator VP_2E [V2SI V2SF V2DI V2DF])
+
 ;; Advanced SIMD, 64-bit container, all integer modes.
 (define_mode_iterator VD_BHSI [V8QI V4HI V2SI])
 
@@ -3453,3 +3456,17 @@
 
 (define_int_attr unspec [(UNSPEC_WHILERW "UNSPEC_WHILERW")
 			 (UNSPEC_WHILEWR "UNSPEC_WHILEWR")])
+
+;; Iterators and attributes for fpcr fpsr getter setters
+
+(define_int_iterator GET_FPSCR
+  [UNSPECV_GET_FPSR UNSPECV_GET_FPCR])
+
+(define_int_iterator SET_FPSCR
+  [UNSPECV_SET_FPSR UNSPECV_SET_FPCR])
+
+(define_int_attr fpscr_name
+  [(UNSPECV_GET_FPSR "fpsr")
+   (UNSPECV_SET_FPSR "fpsr")
+   (UNSPECV_GET_FPCR "fpcr")
+   (UNSPECV_SET_FPCR "fpcr")])

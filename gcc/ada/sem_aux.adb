@@ -32,6 +32,7 @@
 
 with Atree;  use Atree;
 with Einfo;  use Einfo;
+with Nlists; use Nlists;
 with Snames; use Snames;
 with Stand;  use Stand;
 with Uintp;  use Uintp;
@@ -710,11 +711,11 @@ package body Sem_Aux is
 
    begin
       pragma Assert
-        (Nkind_In (N, N_Aspect_Specification,
-                      N_Attribute_Definition_Clause,
-                      N_Enumeration_Representation_Clause,
-                      N_Pragma,
-                      N_Record_Representation_Clause));
+        (Nkind (N) in N_Aspect_Specification
+                    | N_Attribute_Definition_Clause
+                    | N_Enumeration_Representation_Clause
+                    | N_Pragma
+                    | N_Record_Representation_Clause);
 
       Item := First_Rep_Item (E);
       while Present (Item) loop
@@ -876,13 +877,9 @@ package body Sem_Aux is
 
    function Is_Body (N : Node_Id) return Boolean is
    begin
-      return
-        Nkind (N) in N_Body_Stub
-          or else Nkind_In (N, N_Entry_Body,
-                               N_Package_Body,
-                               N_Protected_Body,
-                               N_Subprogram_Body,
-                               N_Task_Body);
+      return Nkind (N) in
+        N_Body_Stub       | N_Entry_Body | N_Package_Body | N_Protected_Body |
+        N_Subprogram_Body | N_Task_Body;
    end Is_Body;
 
    ---------------------
@@ -1071,8 +1068,7 @@ package body Sem_Aux is
          Kind := Nkind (Original_Node (Parent (E)));
 
          return
-           Nkind_In (Kind, N_Formal_Object_Declaration,
-                           N_Formal_Type_Declaration)
+           Kind in N_Formal_Object_Declaration | N_Formal_Type_Declaration
              or else Is_Formal_Subprogram (E)
              or else
                (Ekind (E) = E_Package
@@ -1374,6 +1370,18 @@ package body Sem_Aux is
                return Entity (Subtype_Mark (SI));
             end if;
          end;
+
+      --  If this is a concurrent declaration with a nonempty interface list,
+      --  get the first progenitor. Account for case of a record type created
+      --  for a concurrent type (which is the only case that seems to occur
+      --  in practice).
+
+      elsif Nkind (D) = N_Full_Type_Declaration
+        and then (Is_Concurrent_Type (Defining_Identifier (D))
+                   or else Is_Concurrent_Record_Type (Defining_Identifier (D)))
+        and then Is_Non_Empty_List (Interface_List (Type_Definition (D)))
+      then
+         return Entity (First (Interface_List (Type_Definition (D))));
 
       --  If derived type and private type, get the full view to find who we
       --  are derived from.

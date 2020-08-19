@@ -1,5 +1,8 @@
 // { dg-do compile }
 // { dg-options "-fgo-debug-optimization" }
+// This comment is necessary to work around a dejagnu bug. Otherwise, the
+// column of the second error message would equal the row of the first one, and
+// since the errors are also identical, dejagnu is not able to distinguish them.
 
 package p
 

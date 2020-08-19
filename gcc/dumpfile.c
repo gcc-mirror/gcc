@@ -103,8 +103,9 @@ static struct dump_file_info dump_files[TDI_end] =
   DUMP_FILE_INFO (".gimple", "tree-gimple", DK_tree, 0),
   DUMP_FILE_INFO (".nested", "tree-nested", DK_tree, 0),
   DUMP_FILE_INFO (".lto-stream-out", "ipa-lto-stream-out", DK_ipa, 0),
+  DUMP_FILE_INFO (".profile-report", "profile-report", DK_ipa, 0),
 #define FIRST_AUTO_NUMBERED_DUMP 1
-#define FIRST_ME_AUTO_NUMBERED_DUMP 4
+#define FIRST_ME_AUTO_NUMBERED_DUMP 5
 
   DUMP_FILE_INFO (NULL, "lang-all", DK_lang, 0),
   DUMP_FILE_INFO (NULL, "tree-all", DK_tree, 0),
@@ -1799,7 +1800,7 @@ parse_dump_option (const char *option_value, const char **pos_p)
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
-      if (eq_ptr && !end_ptr)
+      if (eq_ptr && (!end_ptr || end_ptr > eq_ptr))
 	end_ptr = eq_ptr;
 
       if (!end_ptr)

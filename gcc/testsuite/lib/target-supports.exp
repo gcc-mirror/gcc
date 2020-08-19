@@ -2226,7 +2226,34 @@ proc check_power10_hw_available { } {
 		/* Set e first and use +r to check if pli actually works.  */
 		long e = -1;
 		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
-		return (e == 0x12345);
+		if (e == 0x12345)
+		  return 0;
+		return 1;
+	    }
+	} "-mcpu=power10"
+    }]
+}
+
+# Return 1 if the target supports executing MMA instructions, 0 otherwise.
+# Cache the result.  It is assumed that if a simulator does not support the
+# MMA instructions, that it will generate an error and this test will fail.
+
+proc check_ppc_mma_hw_available { } {
+    return [check_cached_effective_target ppc_mma_hw_available {
+	check_runtime_nocache ppc_mma_hw_available {
+	    #include <altivec.h>
+	    typedef double v4sf_t __attribute__ ((vector_size (16)));
+
+	    int main()
+	    {
+		__vector_quad acc0;
+		v4sf_t result[4];
+		result[0][0] = 1.0;
+		__builtin_mma_xxsetaccz (&acc0);
+		__builtin_mma_disassemble_acc (result, &acc0);
+		if (result[0][0] != 0.0)
+		   return 1;
+		return 0;
 	    }
 	} "-mcpu=power10"
     }]
@@ -4819,6 +4846,27 @@ proc check_effective_target_aarch64_bti_hw { } {
 	  return !((a & 0xf) == 1);
 	}
     } "-O2" ]
+}
+
+# Return 1 if the target supports executing the armv8.3-a FJCVTZS
+# instruction.
+proc check_effective_target_aarch64_fjcvtzs_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_fjcvtzs_hw_available {
+	int
+	main (void)
+	{
+	  double in = 25.1;
+	  int out;
+	  asm volatile ("fjcvtzs %w0, %d1"
+			: "=r" (out)
+			: "w" (in)
+			: /* No clobbers.  */);
+	  return out != 25;
+	}
+    } "-march=armv8.3-a" ]
 }
 
 # Return 1 if GCC was configured with --enable-standard-branch-protection
@@ -7656,7 +7704,19 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
-	     || [check_effective_target_mips_llsc] }}]
+	     || [check_effective_target_mips_llsc]
+	     || [istarget nvptx*-*-*]
+	 }}]
+}
+
+# Return 1 if the target supports atomic operations on "int" and "long" on
+# stack addresses.
+
+proc check_effective_target_sync_int_long_stack { } {
+    return [check_cached_effective_target sync_int_long_stack {
+      expr { ![istarget nvptx*-*-*]
+	     && [check_effective_target_sync_int_long]	     
+	 }}]
 }
 
 # Return 1 if the target supports atomic operations on "char" and "short".
@@ -7824,16 +7884,17 @@ proc is-effective-target { arg } {
 	  "p8vector_hw"    { set selected [check_p8vector_hw_available] }
 	  "p9vector_hw"    { set selected [check_p9vector_hw_available] }
 	  "p9modulo_hw"    { set selected [check_p9modulo_hw_available] }
+	  "power10_hw"     { set selected [check_power10_hw_available] }
 	  "ppc_float128_sw" { set selected [check_ppc_float128_sw_available] }
 	  "ppc_float128_hw" { set selected [check_ppc_float128_hw_available] }
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
 	  "ppc_cpu_supports_hw" { set selected [check_ppc_cpu_supports_hw_available] }
+	  "ppc_mma_hw"     { set selected [check_ppc_mma_hw_available] }
 	  "dfp_hw"         { set selected [check_dfp_hw_available] }
 	  "htm_hw"         { set selected [check_htm_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
-	  "power10_hw" { set selected [check_power10_hw_available] }
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }
@@ -7855,9 +7916,11 @@ proc is-effective-target-keyword { arg } {
 	  "p8vector_hw"    { return 1 }
 	  "p9vector_hw"    { return 1 }
 	  "p9modulo_hw"    { return 1 }
+	  "power10_hw"     { return 1 }
 	  "ppc_float128_sw" { return 1 }
 	  "ppc_float128_hw" { return 1 }
 	  "ppc_recip_hw"   { return 1 }
+	  "ppc_mma_hw"     { return 1 }
 	  "dfp_hw"         { return 1 }
 	  "htm_hw"         { return 1 }
 	  "named_sections" { return 1 }
@@ -9429,7 +9492,7 @@ proc check_effective_target_aarch64_tiny { } {
 # various architecture extensions via the .arch_extension pseudo-op.
 
 foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
-			  "i8mm" "f32mm" "f64mm" "bf16" } {
+			  "i8mm" "f32mm" "f64mm" "bf16" "sb" } {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
@@ -9826,14 +9889,6 @@ proc check_effective_target_offload_nvptx { } {
     return [check_no_compiler_messages offload_nvptx assembly {
 	int main () {return 0;}
     } "-foffload=nvptx-none" ]
-}
-
-# Return 1 if the compiler has been configured with hsa offloading.
-
-proc check_effective_target_offload_hsa { } {
-    return [check_no_compiler_messages offload_hsa assembly {
-	int main () {return 0;}
-    } "-foffload=hsa" ]
 }
 
 # Return 1 if the compiler has been configured with gcn offloading.
@@ -10249,6 +10304,40 @@ proc check_effective_target_arm_v8_3a_bkey_directive { } {
 	}]
 }
 
+# Return 1 if the target supports executing the Armv8.1-M Mainline Low
+# Overhead Loop, 0 otherwise.  The test is valid for ARM.
+
+proc check_effective_target_arm_v8_1_lob_ok { } {
+    if { ![istarget arm*-*-*] } {
+        return 0;
+    } else {
+	return [check_runtime arm_v8_1_lob_hw_available {
+		int
+		main (void)
+	        { int i = 0;
+		  asm  ("movw r3, #10\n\t" /* movs? */
+			"dls lr, r3" : : : "r3", "lr");
+		 loop:
+		  i++;
+		  asm goto ("le lr, %l0" : : : "lr" : loop);
+		  return i != 10;
+		}
+	} "-march=armv8.1-m.main" ]
+    }
+}
+
+# Return 1 is this is an ARM target where -mthumb causes Thumb-2 to be
+# used and the target does not support executing the Armv8.1-M
+# Mainline Low Overhead Loop, 0 otherwise.  The test is valid for ARM.
+
+proc check_effective_target_arm_thumb2_ok_no_arm_v8_1_lob { } {
+    if { [check_effective_target_arm_thumb2_ok]
+	 && ![check_effective_target_arm_v8_1_lob_ok] } {
+	return 1
+    }
+    return 0
+}
+
 # Returns 1 if the target is using glibc, 0 otherwise.
 
 proc check_effective_target_glibc { } {
@@ -10346,4 +10435,15 @@ proc check_effective_target_msp430_large {} {
 	#error __MSP430X_LARGE__
 	#endif
     } ""]
+}
+
+# Return 1 if the target has an efficient means to encode large initializers
+# in the assembly.
+
+proc check_effective_target_large_initializer { } {
+    if { [istarget nvptx*-*-*] } {
+	return 0
+    }
+
+    return 1
 }

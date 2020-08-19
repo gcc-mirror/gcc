@@ -22,4 +22,4 @@ struct c : a, b
 
 c c;
 
-// { dg-final { scan-ipa-dump "summary for void c::\[^\\n\]*THUNK0" "inline" } }
+// { dg-final { scan-ipa-dump "summary for void c::\[^\\n\]*THUNK\\.*0" "inline" } }

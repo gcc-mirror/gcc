@@ -62,6 +62,7 @@ extern void arm_emit_speculation_barrier_function (void);
 extern void arm_decompose_di_binop (rtx, rtx, rtx *, rtx *, rtx *, rtx *);
 extern bool arm_q_bit_access (void);
 extern bool arm_ge_bits_access (void);
+extern bool arm_target_insn_ok_for_lob (rtx);
 
 #ifdef RTX_CODE
 enum reg_class
@@ -115,8 +116,11 @@ extern enum reg_class coproc_secondary_reload_class (machine_mode, rtx,
 extern bool arm_tls_referenced_p (rtx);
 
 extern int arm_coproc_mem_operand (rtx, bool);
+extern int arm_coproc_mem_operand_no_writeback (rtx);
+extern int arm_coproc_mem_operand_wb (rtx, int);
 extern int neon_vector_mem_operand (rtx, int, bool);
 extern int mve_vector_mem_operand (machine_mode, rtx, bool);
+bool arm_mve_mode_and_operands_type_check (machine_mode, rtx, rtx);
 extern int neon_struct_mem_operand (rtx);
 
 extern rtx *neon_vcmla_lane_prepare_operands (rtx *);

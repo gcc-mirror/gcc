@@ -260,7 +260,10 @@ proc add_options_for_net_ts { flags } {
 # Add to FLAGS all the target-specific flags to link to libatomic, if required.
 
 proc add_options_for_libatomic { flags } {
-    if { [istarget hppa*-*-hpux*] || [istarget riscv*-*-*] } {
+    if { [istarget hppa*-*-hpux*]
+	 || [istarget powerpc-ibm-aix*]
+	 || [istarget powerpc*-*-darwin*]
+	 || [istarget riscv*-*-*] } {
 	return "$flags -L../../libatomic/.libs -latomic"
     }
     return $flags

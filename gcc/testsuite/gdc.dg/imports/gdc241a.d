@@ -1,4 +1,6 @@
-import compilable;
+module imports.gdc241a;
+
+import gdc241;
 
 S241 *s241;     // Use indirectly imported struct
 C241 *c241;     // Use indirectly imported class

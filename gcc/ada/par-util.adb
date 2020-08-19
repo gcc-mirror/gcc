@@ -181,7 +181,7 @@ package body Util is
       if Ada_Version = Ada_95
         and then Warn_On_Ada_2005_Compatibility
       then
-         if Nam_In (Token_Name, Name_Overriding, Name_Synchronized)
+         if Token_Name in Name_Overriding | Name_Synchronized
            or else (Token_Name = Name_Interface
                      and then Prev_Token /= Tok_Pragma)
          then

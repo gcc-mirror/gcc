@@ -167,9 +167,9 @@ is
    Secs_In_Non_Leap_Year : constant := 365 * Secs_In_Day;
    Nanos_In_Four_Years   : constant := Secs_In_Four_Years * Nano;
 
-   --  Lower and upper bound of Ada time. The zero (0) value of type Time is
-   --  positioned at year 2150. Note that the lower and upper bound account
-   --  for the non-leap centennial years.
+   --  Lower and upper bound of Ada time. Note that the lower and upper bound
+   --  account for the non-leap centennial years. See "Implementation of Time"
+   --  in the spec for what the zero value represents.
 
    Ada_Low  : constant Time_Rep := -(61 * 366 + 188 * 365) * Nanos_In_Day;
    Ada_High : constant Time_Rep :=  (60 * 366 + 190 * 365) * Nanos_In_Day;

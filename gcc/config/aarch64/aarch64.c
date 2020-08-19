@@ -535,9 +535,9 @@ static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
 {
   1, /* GP2GP  */
   /* Avoid the use of int<->fp moves for spilling.  */
-  8, /* GP2FP  */
-  8, /* FP2GP  */
-  4  /* FP2FP  */
+  5, /* GP2FP  */
+  6, /* FP2GP  */
+  3, /* FP2FP  */
 };
 
 static const struct cpu_regmove_cost thunderx3t110_regmove_cost =
@@ -704,15 +704,15 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
   6, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  5, /* vec_int_stmt_cost  */
-  6, /* vec_fp_stmt_cost  */
+  4, /* vec_int_stmt_cost  */
+  5, /* vec_fp_stmt_cost  */
   10, /* vec_permute_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
-  8, /* vec_align_load_cost  */
-  8, /* vec_unalign_load_cost  */
-  4, /* vec_unalign_store_cost  */
-  4, /* vec_store_cost  */
+  4, /* vec_align_load_cost  */
+  4, /* vec_unalign_load_cost  */
+  1, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
   2, /* cond_taken_branch_cost  */
   1  /* cond_not_taken_branch_cost  */
 };
@@ -865,6 +865,17 @@ static const cpu_prefetch_tune xgene1_prefetch_tune =
   256,			/* l2_cache_size  */
   true,                 /* prefetch_dynamic_strides */
   -1,                   /* minimum_stride */
+  -1			/* default_opt_level  */
+};
+
+static const cpu_prefetch_tune a64fx_prefetch_tune =
+{
+  8,			/* num_slots  */
+  64,			/* l1_cache_size  */
+  256,			/* l1_cache_line_size  */
+  32768,		/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
 
@@ -1325,6 +1336,32 @@ static const struct tune_params neoversen1_tunings =
   &generic_prefetch_tune
 };
 
+static const struct tune_params a64fx_tunings =
+{
+  &generic_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &generic_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_512, /* sve_width  */
+  4, /* memmov_cost  */
+  7, /* issue_rate  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  "32",	/* function_align.  */
+  "16",	/* jump_align.  */
+  "32",	/* loop_align.  */
+  4,	/* int_reassoc_width.  */
+  2,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &a64fx_prefetch_tune
+};
+
 /* Support for fine-grained override of the tuning structures.  */
 struct aarch64_tuning_override_function
 {
@@ -1429,6 +1466,7 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { "arm_sve_vector_bits", 1, 1, false, true,  false, true,
 			  aarch64_sve::handle_arm_sve_vector_bits_attribute,
 			  NULL },
+  { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
@@ -5979,7 +6017,6 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
 
   if (!silent_p
       && !TARGET_FLOAT
-      && fndecl && TREE_PUBLIC (fndecl)
       && fntype && fntype != error_mark_node)
     {
       const_tree type = TREE_TYPE (fntype);
@@ -6919,6 +6956,9 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
     case E_TFmode:
       return gen_store_pair_dw_tftf (mem1, reg1, mem2, reg2);
 
+    case E_V4SImode:
+      return gen_vec_store_pairv4siv4si (mem1, reg1, mem2, reg2);
+
     default:
       gcc_unreachable ();
     }
@@ -6942,6 +6982,9 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
     case E_TFmode:
       return gen_load_pair_dw_tftf (reg1, mem1, reg2, mem2);
 
+    case E_V4SImode:
+      return gen_load_pairv4siv4si (reg1, mem1, reg2, mem2);
+
     default:
       gcc_unreachable ();
     }
@@ -6955,6 +6998,17 @@ aarch64_return_address_signing_enabled (void)
 {
   /* This function should only be called after frame laid out.   */
   gcc_assert (cfun->machine->frame.laid_out);
+
+  /* Turn return address signing off in any function that uses
+     __builtin_eh_return.  The address passed to __builtin_eh_return
+     is not signed so either it has to be signed (with original sp)
+     or the code path that uses it has to avoid authenticating it.
+     Currently eh return introduces a return to anywhere gadget, no
+     matter what we do here since it uses ret with user provided
+     address. An ideal fix for that is to use indirect branch which
+     can be protected with BTI j (to some extent).  */
+  if (crtl->calls_eh_return)
+    return false;
 
   /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
      if its LR is pushed onto stack.  */
@@ -10607,6 +10661,9 @@ aarch64_label_mentioned_p (rtx x)
 enum reg_class
 aarch64_regno_regclass (unsigned regno)
 {
+  if (STUB_REGNUM_P (regno))
+    return STUB_REGS;
+
   if (GP_REGNUM_P (regno))
     return GENERAL_REGS;
 
@@ -10821,6 +10878,24 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
   return cfun->machine->frame.frame_size;
 }
 
+
+/* Get return address without mangling.  */
+
+rtx
+aarch64_return_addr_rtx (void)
+{
+  rtx val = get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  /* Note: aarch64_return_address_signing_enabled only
+     works after cfun->machine->frame.laid_out is set,
+     so here we don't know if the return address will
+     be signed or not.  */
+  rtx lr = gen_rtx_REG (Pmode, LR_REGNUM);
+  emit_move_insn (lr, val);
+  emit_insn (GEN_FCN (CODE_FOR_xpaclri) ());
+  return lr;
+}
+
+
 /* Implement RETURN_ADDR_RTX.  We do not support moving back to a
    previous frame.  */
 
@@ -10829,42 +10904,39 @@ aarch64_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 {
   if (count != 0)
     return const0_rtx;
-  return get_hard_reg_initial_val (Pmode, LR_REGNUM);
+  return aarch64_return_addr_rtx ();
 }
-
 
 static void
 aarch64_asm_trampoline_template (FILE *f)
 {
-  int offset1 = 16;
-  int offset2 = 20;
-
-  if (aarch64_bti_enabled ())
-    {
-      asm_fprintf (f, "\thint\t34 // bti c\n");
-      offset1 -= 4;
-      offset2 -= 4;
-    }
+  /* Even if the current function doesn't have branch protection, some
+     later function might, so since this template is only generated once
+     we have to add a BTI just in case. */
+  asm_fprintf (f, "\thint\t34 // bti c\n");
 
   if (TARGET_ILP32)
     {
-      asm_fprintf (f, "\tldr\tw%d, .+%d\n", IP1_REGNUM - R0_REGNUM, offset1);
-      asm_fprintf (f, "\tldr\tw%d, .+%d\n", STATIC_CHAIN_REGNUM - R0_REGNUM,
-		   offset1);
+      asm_fprintf (f, "\tldr\tw%d, .+20\n", IP1_REGNUM - R0_REGNUM);
+      asm_fprintf (f, "\tldr\tw%d, .+20\n", STATIC_CHAIN_REGNUM - R0_REGNUM);
     }
   else
     {
-      asm_fprintf (f, "\tldr\t%s, .+%d\n", reg_names [IP1_REGNUM], offset1);
-      asm_fprintf (f, "\tldr\t%s, .+%d\n", reg_names [STATIC_CHAIN_REGNUM],
-		   offset2);
+      asm_fprintf (f, "\tldr\t%s, .+20\n", reg_names [IP1_REGNUM]);
+      asm_fprintf (f, "\tldr\t%s, .+24\n", reg_names [STATIC_CHAIN_REGNUM]);
     }
   asm_fprintf (f, "\tbr\t%s\n", reg_names [IP1_REGNUM]);
 
-  /* The trampoline needs an extra padding instruction.  In case if BTI is
-     enabled the padding instruction is replaced by the BTI instruction at
-     the beginning.  */
-  if (!aarch64_bti_enabled ())
-    assemble_aligned_integer (4, const0_rtx);
+  /* We always emit a speculation barrier.
+     This is because the same trampoline template is used for every nested
+     function.  Since nested functions are not particularly common or
+     performant we don't worry too much about the extra instructions to copy
+     around.
+     This is not yet a problem, since we have not yet implemented function
+     specific attributes to choose between hardening against straight line
+     speculation or not, but such function specific attributes are likely to
+     happen in the future.  */
+  asm_fprintf (f, "\tdsb\tsy\n\tisb\n");
 
   assemble_aligned_integer (POINTER_BYTES, const0_rtx);
   assemble_aligned_integer (POINTER_BYTES, const0_rtx);
@@ -10874,10 +10946,14 @@ static void
 aarch64_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
   rtx fnaddr, mem, a_tramp;
-  const int tramp_code_sz = 16;
+  const int tramp_code_sz = 24;
 
   /* Don't need to copy the trailing D-words, we fill those in below.  */
-  emit_block_move (m_tramp, assemble_trampoline_template (),
+  /* We create our own memory address in Pmode so that `emit_block_move` can
+     use parts of the backend which expect Pmode addresses.  */
+  rtx temp = convert_memory_address (Pmode, XEXP (m_tramp, 0));
+  emit_block_move (gen_rtx_MEM (BLKmode, temp),
+		   assemble_trampoline_template (),
 		   GEN_INT (tramp_code_sz), BLOCK_OP_NORMAL);
   mem = adjust_address (m_tramp, ptr_mode, tramp_code_sz);
   fnaddr = XEXP (DECL_RTL (fndecl), 0);
@@ -10908,6 +10984,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
   unsigned int nregs, vec_flags;
   switch (regclass)
     {
+    case STUB_REGS:
     case TAILCALL_ADDR_REGS:
     case POINTER_REGS:
     case GENERAL_REGS:
@@ -11068,6 +11145,8 @@ aarch64_output_casesi (rtx *operands)
   output_asm_insn (buf, operands);
   output_asm_insn (patterns[index][1], operands);
   output_asm_insn ("br\t%3", operands);
+  output_asm_insn (aarch64_sls_barrier (aarch64_harden_sls_retbr_p ()),
+		   operands);
   assemble_label (asm_out_file, label);
   return "";
 }
@@ -11700,8 +11779,6 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 	  if (speed)
 	    {
 	      machine_mode mode = GET_MODE (XEXP (op1, 0));
-	      const struct cpu_cost_table *extra_cost
-		= aarch64_tune_params.insn_extra_cost;
 
 	      if (GET_MODE_CLASS (mode) == MODE_INT)
 		*cost += extra_cost->alu.arith;
@@ -13145,10 +13222,12 @@ aarch64_register_move_cost (machine_mode mode,
     = aarch64_tune_params.regmove_cost;
 
   /* Caller save and pointer regs are equivalent to GENERAL_REGS.  */
-  if (to == TAILCALL_ADDR_REGS || to == POINTER_REGS)
+  if (to == TAILCALL_ADDR_REGS || to == POINTER_REGS
+      || to == STUB_REGS)
     to = GENERAL_REGS;
 
-  if (from == TAILCALL_ADDR_REGS || from == POINTER_REGS)
+  if (from == TAILCALL_ADDR_REGS || from == POINTER_REGS
+      || from == STUB_REGS)
     from = GENERAL_REGS;
 
   /* Make RDFFR very expensive.  In particular, if we know that the FFR
@@ -14502,6 +14581,79 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
   return false;
 }
 
+/* Straight line speculation indicators.  */
+enum aarch64_sls_hardening_type
+{
+  SLS_NONE = 0,
+  SLS_RETBR = 1,
+  SLS_BLR = 2,
+  SLS_ALL = 3,
+};
+static enum aarch64_sls_hardening_type aarch64_sls_hardening;
+
+/* Return whether we should mitigatate Straight Line Speculation for the RET
+   and BR instructions.  */
+bool
+aarch64_harden_sls_retbr_p (void)
+{
+  return aarch64_sls_hardening & SLS_RETBR;
+}
+
+/* Return whether we should mitigatate Straight Line Speculation for the BLR
+   instruction.  */
+bool
+aarch64_harden_sls_blr_p (void)
+{
+  return aarch64_sls_hardening & SLS_BLR;
+}
+
+/* As of yet we only allow setting these options globally, in the future we may
+   allow setting them per function.  */
+static void
+aarch64_validate_sls_mitigation (const char *const_str)
+{
+  char *token_save = NULL;
+  char *str = NULL;
+
+  if (strcmp (const_str, "none") == 0)
+    {
+      aarch64_sls_hardening = SLS_NONE;
+      return;
+    }
+  if (strcmp (const_str, "all") == 0)
+    {
+      aarch64_sls_hardening = SLS_ALL;
+      return;
+    }
+
+  char *str_root = xstrdup (const_str);
+  str = strtok_r (str_root, ",", &token_save);
+  if (!str)
+    error ("invalid argument given to %<-mharden-sls=%>");
+
+  int temp = SLS_NONE;
+  while (str)
+    {
+      if (strcmp (str, "blr") == 0)
+	temp |= SLS_BLR;
+      else if (strcmp (str, "retbr") == 0)
+	temp |= SLS_RETBR;
+      else if (strcmp (str, "none") == 0 || strcmp (str, "all") == 0)
+	{
+	  error ("%<%s%> must be by itself for %<-mharden-sls=%>", str);
+	  break;
+	}
+      else
+	{
+	  error ("invalid argument %<%s%> for %<-mharden-sls=%>", str);
+	  break;
+	}
+      str = strtok_r (NULL, ",", &token_save);
+    }
+  aarch64_sls_hardening = (aarch64_sls_hardening_type) temp;
+  free (str_root);
+}
+
 /* Parses CONST_STR for branch protection features specified in
    aarch64_branch_protect_types, and set any global variables required.  Returns
    the parsing result and assigns LAST_STR to the last processed token from
@@ -14746,6 +14898,9 @@ aarch64_override_options (void)
   selected_arch = NULL;
   selected_tune = NULL;
 
+  if (aarch64_harden_sls_string)
+    aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
+
   if (aarch64_branch_protection_string)
     aarch64_validate_mbranch_protection (aarch64_branch_protection_string);
 
@@ -14888,6 +15043,16 @@ static void
 aarch64_override_options_after_change (void)
 {
   aarch64_override_options_after_change_1 (&global_options);
+}
+
+/* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
+static char *
+aarch64_offload_options (void)
+{
+  if (TARGET_ILP32)
+    return xstrdup ("-foffload-abi=ilp32");
+  else
+    return xstrdup ("-foffload-abi=lp64");
 }
 
 static struct machine_function *
@@ -19905,6 +20070,8 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+static bool aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d);
+
 /* Generate a variable permutation.  */
 
 static void
@@ -20088,6 +20255,59 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
   emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
 				      odd ? UNSPEC_TRN2 : UNSPEC_TRN1));
   return true;
+}
+
+/* Try to re-encode the PERM constant so it combines odd and even elements.
+   This rewrites constants such as {0, 1, 4, 5}/V4SF to {0, 2}/V2DI.
+   We retry with this new constant with the full suite of patterns.  */
+static bool
+aarch64_evpc_reencode (struct expand_vec_perm_d *d)
+{
+  expand_vec_perm_d newd;
+  unsigned HOST_WIDE_INT nelt;
+
+  if (d->vec_flags != VEC_ADVSIMD)
+    return false;
+
+  /* Get the new mode.  Always twice the size of the inner
+     and half the elements.  */
+  poly_uint64 vec_bits = GET_MODE_BITSIZE (d->vmode);
+  unsigned int new_elt_bits = GET_MODE_UNIT_BITSIZE (d->vmode) * 2;
+  auto new_elt_mode = int_mode_for_size (new_elt_bits, false).require ();
+  machine_mode new_mode = aarch64_simd_container_mode (new_elt_mode, vec_bits);
+
+  if (new_mode == word_mode)
+    return false;
+
+  /* to_constant is safe since this routine is specific to Advanced SIMD
+     vectors.  */
+  nelt = d->perm.length ().to_constant ();
+
+  vec_perm_builder newpermconst;
+  newpermconst.new_vector (nelt / 2, nelt / 2, 1);
+
+  /* Convert the perm constant if we can.  Require even, odd as the pairs.  */
+  for (unsigned int i = 0; i < nelt; i += 2)
+    {
+      poly_int64 elt0 = d->perm[i];
+      poly_int64 elt1 = d->perm[i + 1];
+      poly_int64 newelt;
+      if (!multiple_p (elt0, 2, &newelt) || maybe_ne (elt0 + 1, elt1))
+	return false;
+      newpermconst.quick_push (newelt.to_constant ());
+    }
+  newpermconst.finalize ();
+
+  newd.vmode = new_mode;
+  newd.vec_flags = VEC_ADVSIMD;
+  newd.target = d->target ? gen_lowpart (new_mode, d->target) : NULL;
+  newd.op0 = d->op0 ? gen_lowpart (new_mode, d->op0) : NULL;
+  newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
+  newd.testing_p = d->testing_p;
+  newd.one_vector_p = d->one_vector_p;
+
+  newd.perm.new_vector (newpermconst, newd.one_vector_p ? 1 : 2, nelt / 2);
+  return aarch64_expand_vec_perm_const_1 (&newd);
 }
 
 /* Recognize patterns suitable for the UZP instructions.  */
@@ -20453,6 +20673,81 @@ aarch64_evpc_sel (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns suitable for the INS instructions.  */
+static bool
+aarch64_evpc_ins (struct expand_vec_perm_d *d)
+{
+  machine_mode mode = d->vmode;
+  unsigned HOST_WIDE_INT nelt;
+
+  if (d->vec_flags != VEC_ADVSIMD)
+    return false;
+
+  /* to_constant is safe since this routine is specific to Advanced SIMD
+     vectors.  */
+  nelt = d->perm.length ().to_constant ();
+  rtx insv = d->op0;
+
+  HOST_WIDE_INT idx = -1;
+
+  for (unsigned HOST_WIDE_INT i = 0; i < nelt; i++)
+    {
+      HOST_WIDE_INT elt;
+      if (!d->perm[i].is_constant (&elt))
+	return false;
+      if (elt == (HOST_WIDE_INT) i)
+	continue;
+      if (idx != -1)
+	{
+	  idx = -1;
+	  break;
+	}
+      idx = i;
+    }
+
+  if (idx == -1)
+    {
+      insv = d->op1;
+      for (unsigned HOST_WIDE_INT i = 0; i < nelt; i++)
+	{
+	  if (d->perm[i].to_constant () == (HOST_WIDE_INT) (i + nelt))
+	    continue;
+	  if (idx != -1)
+	    return false;
+	  idx = i;
+	}
+
+      if (idx == -1)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  gcc_assert (idx != -1);
+
+  unsigned extractindex = d->perm[idx].to_constant ();
+  rtx extractv = d->op0;
+  if (extractindex >= nelt)
+    {
+      extractv = d->op1;
+      extractindex -= nelt;
+    }
+  gcc_assert (extractindex < nelt);
+
+  emit_move_insn (d->target, insv);
+  insn_code icode = code_for_aarch64_simd_vec_copy_lane (mode);
+  expand_operand ops[5];
+  create_output_operand (&ops[0], d->target, mode);
+  create_input_operand (&ops[1], d->target, mode);
+  create_integer_operand (&ops[2], 1 << idx);
+  create_input_operand (&ops[3], extractv, mode);
+  create_integer_operand (&ops[4], extractindex);
+  expand_insn (icode, 5, ops);
+
+  return true;
+}
+
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -20486,6 +20781,10 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       else if (aarch64_evpc_trn (d))
 	return true;
       else if (aarch64_evpc_sel (d))
+	return true;
+      else if (aarch64_evpc_ins (d))
+	return true;
+      else if (aarch64_evpc_reencode (d))
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);
@@ -20848,6 +21147,27 @@ static void
 aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 					      machine_mode mode)
 {
+  /* Handle 256-bit memcpy separately.  We do this by making 2 adjacent memory
+     address copies using V4SImode so that we can use Q registers.  */
+  if (known_eq (GET_MODE_BITSIZE (mode), 256))
+    {
+      mode = V4SImode;
+      rtx reg1 = gen_reg_rtx (mode);
+      rtx reg2 = gen_reg_rtx (mode);
+      /* "Cast" the pointers to the correct mode.  */
+      *src = adjust_address (*src, mode, 0);
+      *dst = adjust_address (*dst, mode, 0);
+      /* Emit the memcpy.  */
+      emit_insn (aarch64_gen_load_pair (mode, reg1, *src, reg2,
+					aarch64_progress_pointer (*src)));
+      emit_insn (aarch64_gen_store_pair (mode, *dst, reg1,
+					 aarch64_progress_pointer (*dst), reg2));
+      /* Move the pointers forward.  */
+      *src = aarch64_move_pointer (*src, 32);
+      *dst = aarch64_move_pointer (*dst, 32);
+      return;
+    }
+
   rtx reg = gen_reg_rtx (mode);
 
   /* "Cast" the pointers to the correct mode.  */
@@ -20901,9 +21221,12 @@ aarch64_expand_cpymem (rtx *operands)
   /* Convert n to bits to make the rest of the code simpler.  */
   n = n * BITS_PER_UNIT;
 
-  /* Maximum amount to copy in one go.  The AArch64 back-end has integer modes
-     larger than TImode, but we should not use them for loads/stores here.  */
-  const int copy_limit = GET_MODE_BITSIZE (TImode);
+  /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
+     AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter and TARGET_SIMD.  */
+  const int copy_limit = ((aarch64_tune_params.extra_tuning_flags
+			   & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
+			  || !TARGET_SIMD)
+			 ? GET_MODE_BITSIZE (TImode) : 256;
 
   while (n > 0)
     {
@@ -21909,7 +22232,7 @@ aarch64_ldrstr_offset_compare (const void *x, const void *y)
 
 bool
 aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
-				       scalar_mode mode)
+				       machine_mode mode)
 {
   const int num_insns = 4;
   enum reg_class rclass;
@@ -21986,7 +22309,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
   for (int i = 0; i < num_insns; i++)
     offvals[i] = INTVAL (offset[i]);
 
-  msize = GET_MODE_SIZE (mode);
+  msize = GET_MODE_SIZE (mode).to_constant ();
 
   /* Check if the offsets can be put in the right order to do a ldp/stp.  */
   qsort (offvals, num_insns, sizeof (HOST_WIDE_INT),
@@ -22026,7 +22349,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 
 bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
-			     scalar_mode mode, RTX_CODE code)
+			     machine_mode mode, RTX_CODE code)
 {
   rtx base, offset_1, offset_3, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;
@@ -22065,7 +22388,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 	      && offset_3 != NULL_RTX);
 
   /* Adjust offset so it can fit in LDP/STP instruction.  */
-  msize = GET_MODE_SIZE (mode);
+  msize = GET_MODE_SIZE (mode).to_constant();
   stp_off_upper_limit = msize * (0x40 - 1);
   stp_off_lower_limit = - msize * 0x40;
 
@@ -22721,8 +23044,18 @@ aarch64_simd_clone_usable (struct cgraph_node *node)
 static int
 aarch64_comp_type_attributes (const_tree type1, const_tree type2)
 {
-  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type1))
-      != lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (type2)))
+  auto check_attr = [&](const char *name) {
+    tree attr1 = lookup_attribute (name, TYPE_ATTRIBUTES (type1));
+    tree attr2 = lookup_attribute (name, TYPE_ATTRIBUTES (type2));
+    if (!attr1 && !attr2)
+      return true;
+
+    return attr1 && attr2 && attribute_value_equal (attr1, attr2);
+  };
+
+  if (!check_attr ("aarch64_vector_pcs"))
+    return 0;
+  if (!check_attr ("Advanced SIMD type"))
     return 0;
   return 1;
 }
@@ -22857,6 +23190,231 @@ aarch64_file_end_indicate_exec_stack ()
 #undef GNU_PROPERTY_AARCH64_FEATURE_1_PAC
 #undef GNU_PROPERTY_AARCH64_FEATURE_1_BTI
 #undef GNU_PROPERTY_AARCH64_FEATURE_1_AND
+
+/* Helper function for straight line speculation.
+   Return what barrier should be emitted for straight line speculation
+   mitigation.
+   When not mitigating against straight line speculation this function returns
+   an empty string.
+   When mitigating against straight line speculation, use:
+   * SB when the v8.5-A SB extension is enabled.
+   * DSB+ISB otherwise.  */
+const char *
+aarch64_sls_barrier (int mitigation_required)
+{
+  return mitigation_required
+    ? (TARGET_SB ? "sb" : "dsb\tsy\n\tisb")
+    : "";
+}
+
+static GTY (()) tree aarch64_sls_shared_thunks[30];
+static GTY (()) bool aarch64_sls_shared_thunks_needed = false;
+const char *indirect_symbol_names[30] = {
+    "__call_indirect_x0",
+    "__call_indirect_x1",
+    "__call_indirect_x2",
+    "__call_indirect_x3",
+    "__call_indirect_x4",
+    "__call_indirect_x5",
+    "__call_indirect_x6",
+    "__call_indirect_x7",
+    "__call_indirect_x8",
+    "__call_indirect_x9",
+    "__call_indirect_x10",
+    "__call_indirect_x11",
+    "__call_indirect_x12",
+    "__call_indirect_x13",
+    "__call_indirect_x14",
+    "__call_indirect_x15",
+    "", /* "__call_indirect_x16",  */
+    "", /* "__call_indirect_x17",  */
+    "__call_indirect_x18",
+    "__call_indirect_x19",
+    "__call_indirect_x20",
+    "__call_indirect_x21",
+    "__call_indirect_x22",
+    "__call_indirect_x23",
+    "__call_indirect_x24",
+    "__call_indirect_x25",
+    "__call_indirect_x26",
+    "__call_indirect_x27",
+    "__call_indirect_x28",
+    "__call_indirect_x29",
+};
+
+/* Function to create a BLR thunk.  This thunk is used to mitigate straight
+   line speculation.  Instead of a simple BLR that can be speculated past,
+   we emit a BL to this thunk, and this thunk contains a BR to the relevant
+   register.  These thunks have the relevant speculation barries put after
+   their indirect branch so that speculation is blocked.
+
+   We use such a thunk so the speculation barriers are kept off the
+   architecturally executed path in order to reduce the performance overhead.
+
+   When optimizing for size we use stubs shared by the linked object.
+   When optimizing for performance we emit stubs for each function in the hope
+   that the branch predictor can better train on jumps specific for a given
+   function.  */
+rtx
+aarch64_sls_create_blr_label (int regnum)
+{
+  gcc_assert (STUB_REGNUM_P (regnum));
+  if (optimize_function_for_size_p (cfun))
+    {
+      /* For the thunks shared between different functions in this compilation
+	 unit we use a named symbol -- this is just for users to more easily
+	 understand the generated assembly.  */
+      aarch64_sls_shared_thunks_needed = true;
+      const char *thunk_name = indirect_symbol_names[regnum];
+      if (aarch64_sls_shared_thunks[regnum] == NULL)
+	{
+	  /* Build a decl representing this function stub and record it for
+	     later.  We build a decl here so we can use the GCC machinery for
+	     handling sections automatically (through `get_named_section` and
+	     `make_decl_one_only`).  That saves us a lot of trouble handling
+	     the specifics of different output file formats.  */
+	  tree decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+				  get_identifier (thunk_name),
+				  build_function_type_list (void_type_node,
+							    NULL_TREE));
+	  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
+					   NULL_TREE, void_type_node);
+	  TREE_PUBLIC (decl) = 1;
+	  TREE_STATIC (decl) = 1;
+	  DECL_IGNORED_P (decl) = 1;
+	  DECL_ARTIFICIAL (decl) = 1;
+	  make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+	  resolve_unique_section (decl, 0, false);
+	  aarch64_sls_shared_thunks[regnum] = decl;
+	}
+
+      return gen_rtx_SYMBOL_REF (Pmode, thunk_name);
+    }
+
+  if (cfun->machine->call_via[regnum] == NULL)
+    cfun->machine->call_via[regnum]
+      = gen_rtx_LABEL_REF (Pmode, gen_label_rtx ());
+  return cfun->machine->call_via[regnum];
+}
+
+/* Helper function for aarch64_sls_emit_blr_function_thunks and
+   aarch64_sls_emit_shared_blr_thunks below.  */
+static void
+aarch64_sls_emit_function_stub (FILE *out_file, int regnum)
+{
+  /* Save in x16 and branch to that function so this transformation does
+     not prevent jumping to `BTI c` instructions.  */
+  asm_fprintf (out_file, "\tmov\tx16, x%d\n", regnum);
+  asm_fprintf (out_file, "\tbr\tx16\n");
+}
+
+/* Emit all BLR stubs for this particular function.
+   Here we emit all the BLR stubs needed for the current function.  Since we
+   emit these stubs in a consecutive block we know there will be no speculation
+   gadgets between each stub, and hence we only emit a speculation barrier at
+   the end of the stub sequences.
+
+   This is called in the TARGET_ASM_FUNCTION_EPILOGUE hook.  */
+void
+aarch64_sls_emit_blr_function_thunks (FILE *out_file)
+{
+  if (! aarch64_harden_sls_blr_p ())
+    return;
+
+  bool any_functions_emitted = false;
+  /* We must save and restore the current function section since this assembly
+     is emitted at the end of the function.  This means it can be emitted *just
+     after* the cold section of a function.  That cold part would be emitted in
+     a different section.  That switch would trigger a `.cfi_endproc` directive
+     to be emitted in the original section and a `.cfi_startproc` directive to
+     be emitted in the new section.  Switching to the original section without
+     restoring would mean that the `.cfi_endproc` emitted as a function ends
+     would happen in a different section -- leaving an unmatched
+     `.cfi_startproc` in the cold text section and an unmatched `.cfi_endproc`
+     in the standard text section.  */
+  section *save_text_section = in_section;
+  switch_to_section (function_section (current_function_decl));
+  for (int regnum = 0; regnum < 30; ++regnum)
+    {
+      rtx specu_label = cfun->machine->call_via[regnum];
+      if (specu_label == NULL)
+	continue;
+
+      targetm.asm_out.print_operand (out_file, specu_label, 0);
+      asm_fprintf (out_file, ":\n");
+      aarch64_sls_emit_function_stub (out_file, regnum);
+      any_functions_emitted = true;
+    }
+  if (any_functions_emitted)
+    /* Can use the SB if needs be here, since this stub will only be used
+      by the current function, and hence for the current target.  */
+    asm_fprintf (out_file, "\t%s\n", aarch64_sls_barrier (true));
+  switch_to_section (save_text_section);
+}
+
+/* Emit shared BLR stubs for the current compilation unit.
+   Over the course of compiling this unit we may have converted some BLR
+   instructions to a BL to a shared stub function.  This is where we emit those
+   stub functions.
+   This function is for the stubs shared between different functions in this
+   compilation unit.  We share when optimizing for size instead of speed.
+
+   This function is called through the TARGET_ASM_FILE_END hook.  */
+void
+aarch64_sls_emit_shared_blr_thunks (FILE *out_file)
+{
+  if (! aarch64_sls_shared_thunks_needed)
+    return;
+
+  for (int regnum = 0; regnum < 30; ++regnum)
+    {
+      tree decl = aarch64_sls_shared_thunks[regnum];
+      if (!decl)
+	continue;
+
+      const char *name = indirect_symbol_names[regnum];
+      switch_to_section (get_named_section (decl, NULL, 0));
+      ASM_OUTPUT_ALIGN (out_file, 2);
+      targetm.asm_out.globalize_label (out_file, name);
+      /* Only emits if the compiler is configured for an assembler that can
+	 handle visibility directives.  */
+      targetm.asm_out.assemble_visibility (decl, VISIBILITY_HIDDEN);
+      ASM_OUTPUT_TYPE_DIRECTIVE (out_file, name, "function");
+      ASM_OUTPUT_LABEL (out_file, name);
+      aarch64_sls_emit_function_stub (out_file, regnum);
+      /* Use the most conservative target to ensure it can always be used by any
+	 function in the translation unit.  */
+      asm_fprintf (out_file, "\tdsb\tsy\n\tisb\n");
+      ASM_DECLARE_FUNCTION_SIZE (out_file, name, decl);
+    }
+}
+
+/* Implement TARGET_ASM_FILE_END.  */
+void
+aarch64_asm_file_end ()
+{
+  aarch64_sls_emit_shared_blr_thunks (asm_out_file);
+  /* Since this function will be called for the ASM_FILE_END hook, we ensure
+     that what would be called otherwise (e.g. `file_end_indicate_exec_stack`
+     for FreeBSD) still gets called.  */
+#ifdef TARGET_ASM_FILE_END
+  TARGET_ASM_FILE_END ();
+#endif
+}
+
+const char *
+aarch64_indirect_call_asm (rtx addr)
+{
+  gcc_assert (REG_P (addr));
+  if (aarch64_harden_sls_blr_p ())
+    {
+      rtx stub_label = aarch64_sls_create_blr_label (REGNO (addr));
+      output_asm_insn ("bl\t%0", &stub_label);
+    }
+  else
+   output_asm_insn ("blr\t%0", &addr);
+  return "";
+}
 
 /* Target-specific selftests.  */
 
@@ -23095,6 +23653,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE \
   aarch64_override_options_after_change
+
+#undef TARGET_OFFLOAD_OPTIONS
+#define TARGET_OFFLOAD_OPTIONS aarch64_offload_options
 
 #undef TARGET_OPTION_SAVE
 #define TARGET_OPTION_SAVE aarch64_option_save
@@ -23407,6 +23968,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END aarch64_asm_file_end
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE aarch64_sls_emit_blr_function_thunks
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

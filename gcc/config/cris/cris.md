@@ -183,6 +183,25 @@
 (define_code_attr u [(sign_extend "") (zero_extend "u")])
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
+;; For extended-operand variants.
+(define_code_iterator plusminus [plus minus])
+(define_code_attr addsub [(plus "add") (minus "sub")])
+
+;; Similar, other cases also matching bound/umin.
+(define_code_iterator plusminusumin [plus minus umin])
+
+;; Ditto, commutative operators (i.e. not minus).
+(define_code_iterator plusumin [plus umin])
+
+;; The addsubbo and nd code-attributes form a hack.  We need to output
+;; "addu.b", "subu.b" but "bound.b" (no "u"-suffix) which means we'd
+;; need to refer to one iterator from the next.  But, that can't be
+;; done.  Instead output the "u" for unsigned as the "u" in "bound",
+;; i.e. the mnemonic as three parts including the extend-letter, and
+;; with an empty third part for "add" and "sub".
+(define_code_attr addsubbo [(plus "add") (minus "sub") (umin "bo")])
+(define_code_attr nd [(plus "") (minus "") (umin "nd")])
+
 ;; For the shift variants.
 (define_code_iterator shift [ashiftrt lshiftrt ashift])
 (define_code_iterator shiftrt [ashiftrt lshiftrt])
@@ -256,7 +275,7 @@
   "reload_completed"
   [(set (reg:CC_NZ CRIS_CC0_REGNUM)
 	(compare:CC_NZ (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "setnzvc" "setnzvc_subst" "" "_setnzvc")
 (define_subst_attr "ccnzvc" "setnzvc_subst" "" "_enabled")
@@ -269,7 +288,7 @@
   "reload_completed"
   [(set (reg:CC_NZVC CRIS_CC0_REGNUM)
 	(compare:CC_NZVC (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "setcc" "setcc_subst" "" "_setcc")
 (define_subst_attr "cccc" "setcc_subst" "" "_enabled")
@@ -282,7 +301,7 @@
   "reload_completed"
   [(set (reg:CC CRIS_CC0_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))
-   (set (match_operand 0) (match_operand 1))])
+   (set (match_dup 0) (match_dup 1))])
 
 ;; Operand and operator predicates.
 
@@ -954,7 +973,6 @@
 ;; The last constraint is due to that after reload, the '%' is not
 ;; honored, and canonicalization doesn't care about keeping the same
 ;; register as in destination.  This will happen after insn splitting.
-;; gcc <= 2.7.2.  FIXME: Check for gcc-2.9x
 
  ""
 {
@@ -1108,6 +1126,79 @@
   [(set_attr "slottable" "yes,yes,yes,yes,no,no")
    (set_attr "cc<ccnz>" "normal,normal,clobber,clobber,normal,normal")])
 
+;; Extend versions (zero/sign) of normal add/sub (no side-effects).
+
+;; QImode to HImode
+;; FIXME: GCC should widen.
+
+(define_insn "*<addsub><su>qihi"
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
+	(plusminus:HI
+	 (match_operand:HI 1 "register_operand" "0,0,0,r")
+	 (szext:HI (match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To"))))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
+   && (operands[1] != frame_pointer_rtx || <plusminus:CODE> != PLUS)"
+  "@
+   <addsub><su>.b %2,%0
+   <addsub><su>.b %2,%0
+   <addsub><su>.b %2,%0
+   <addsub><su>.b %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")
+   (set_attr "cc" "clobber")])
+
+;; FIXME: bound is actually also <setnzvc>, but is so rarely used in this
+;; form that it's not worthwhile to make that distinction.
+(define_insn "*<addsubbo><su><nd><mode>si<setnz>"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+	(plusminusumin:SI
+	 (match_operand:SI 1 "register_operand" "0,0,0,r")
+	 (szext:SI (match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To"))))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "(<plusminusumin:CODE> != UMIN || <szext:CODE> == ZERO_EXTEND)
+   && (operands[1] != frame_pointer_rtx || <plusminusumin:CODE> != PLUS)"
+  "@
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")])
+
+;; We may have swapped operands for add or bound.
+;; For commutative operands, these are the canonical forms.
+
+;; QImode to HImode
+
+(define_insn "*add<su>qihi_swap"
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
+	(plus:HI
+	 (szext:HI (match_operand:QI 2 "nonimmediate_operand" "r,Q>,m,!To"))
+	 (match_operand:HI 1 "register_operand" "0,0,0,r")))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "operands[1] != frame_pointer_rtx"
+  "@
+   add<su>.b %2,%0
+   add<su>.b %2,%0
+   add<su>.b %2,%0
+   add<su>.b %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*<addsubbo><su><nd><mode>si<setnz>_swap"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+	(plusumin:SI
+	 (szext:SI (match_operand:BW 2 "nonimmediate_operand" "r,Q>,m,!To"))
+	 (match_operand:SI 1 "register_operand" "0,0,0,r")))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "(<plusumin:CODE> != UMIN || <szext:CODE> == ZERO_EXTEND)
+   && operands[1] != frame_pointer_rtx"
+  "@
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%0
+   <addsubbo><su><nd><m> %2,%1,%0"
+  [(set_attr "slottable" "yes,yes,no,no")])
+
 ;; This is the special case when we use what corresponds to the
 ;; instruction above in "casesi".  Do *not* change it to use the generic
 ;; pattern and "REG 15" as pc; I did that and it led to madness and
@@ -1198,6 +1289,45 @@
   "addi %2%T3,%0"
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
+
+;; This pattern is usually generated after reload, so a '%' is
+;; ineffective; use explicit combinations.
+(define_insn "*addi_b_<mode>"
+  [(set (match_operand:BWD 0 "register_operand" "=r,r")
+	(plus:BWD
+	 (match_operand:BWD 1 "register_operand" "0,r")
+	 (match_operand:BWD 2 "register_operand" "r,0")))]
+  ""
+  "@
+   addi %2.b,%0
+   addi %1.b,%0"
+  [(set_attr "slottable" "yes")])
+
+;; Strip the dccr clobber from addM3 with register operands, if the
+;; next instruction isn't using it.
+;; Not clobbering dccr may let cmpelim match a later compare with a
+;; previous operation of interest.  This has to run before cmpelim so it
+;; can't be a peephole2.  See gcc.target/cris/pr93372-45.c for a
+;; test-case.
+(define_split ;; "*add<mode>3_addi"
+  [(parallel
+    [(set (match_operand:BWD 0 "register_operand")
+	  (plus:BWD
+	   (match_operand:BWD 1 "register_operand")
+	   (match_operand:BWD 2 "register_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "reload_completed"
+  [(set (match_dup 0) (plus:BWD (match_dup 1) (match_dup 2)))]
+{
+  rtx reg = operands[0];
+  rtx_insn *i = next_nonnote_nondebug_insn_bb (curr_insn);
+
+  while (i != NULL_RTX && (!INSN_P (i) || DEBUG_INSN_P (i)))
+    i = next_nonnote_nondebug_insn_bb (i);
+
+  if (i == NULL_RTX || reg_mentioned_p (reg, i) || BARRIER_P (i))
+    FAIL;
+})
 
 (define_insn "<u>mul<s><mode>3"
   [(set (match_operand:WD 0 "register_operand" "=r")
@@ -2423,8 +2553,45 @@
 
 ;; We have trouble with and:s and shifts.  Maybe something is broken in
 ;; gcc?  Or it could just be that bit-field insn expansion is a bit
-;; suboptimal when not having extzv insns.
-;; Testcase for the following four peepholes: gcc.dg/cris-peep2-xsrand.c
+;; suboptimal when not having extzv insns.  Or combine being over-eager
+;; to canonicalize to "and", and ignorant on the benefits of the right
+;; mixture of "and" and "zero-extend".
+
+;; Testcase for the following peephole: gcc.target/cris/peep2-movulsr.c
+
+;; Where equivalent and where the "and" argument doesn't fit "andq" but
+;; is 16 bits or smaller, replace the "and" with a zero-extend preceding
+;; the shift.  A zero-extend is shorter and faster than "and" with a
+;; 32-bit argument.
+
+(define_peephole2 ; movulsr
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand")
+	  (lshiftrt:SI (match_dup 0)
+		       (match_operand:SI 1 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 0)
+	  (and:SI (match_dup 0)
+		  (match_operand 2 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "INTVAL (operands[2]) > 31 && INTVAL (operands[2]) <= 0xffff
+   && (((INTVAL (operands[2]) <= 0xff ? 0xff : 0xffff) >> INTVAL (operands[1]))
+       == INTVAL (operands[2]))"
+  [(parallel
+    ;; The zero-extend is expressed as an "and", only because that's easier
+    ;; than messing with zero-extend of a subreg.
+    [(set (match_dup 0) (and:SI (match_dup 0) (match_dup 3)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 1)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+{
+  operands[3]
+    = INTVAL (operands[2]) <= 0xff ? GEN_INT (0xff) :  GEN_INT (0xffff);
+})
+
+;; Testcase for the following four peepholes: gcc.target/cris/peep2-xsrand.c
 
 (define_peephole2 ; asrandb
   [(parallel
@@ -2543,7 +2710,7 @@
 ;;   move.d reg_or_mem,reg_32
 ;;   and.d const_32__65535,reg_32
 ;; Fix it with these two peephole2's.
-;; Testcases: gcc.dg/cris-peep2-andu1.c gcc.dg/cris-peep2-andu2.c
+;; Testcases: gcc.target/cris/peep2-andu1.c gcc.target/cris/peep2-andu2.c
 
 (define_peephole2 ; andu
   [(parallel
@@ -2587,7 +2754,7 @@
 						? QImode : amode)));
 })
 
-;; Since r186861, gcc.dg/cris-peep2-andu2.c trigs this pattern, with which
+;; Since r186861, gcc.target/cris/peep2-andu2.c trigs this pattern, with which
 ;; we fix up e.g.:
 ;;  movu.b 254,$r9.
 ;;  and.d $r10,$r9

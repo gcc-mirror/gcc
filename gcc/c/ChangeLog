@@ -1,3 +1,54 @@
+2020-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96571
+	* c-parser.c (c_parser_generic_selection): Change match_found from bool
+	to int, holding index of the match.  Call mark_exp_read on the selector
+	expression and on expressions other than the selected one.
+
+2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/96377
+	* c-typeck.c (process_init_element): Split test for whether to
+	recurse into a record, union or array into...
+	(initialize_elementwise_p): ...this new function.  Don't recurse
+	into a vector type if the initialization value is also a vector.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* c-objc-common.h (LANG_HOOKS_FINALIZE_EARLY_DEBUG):
+	Define to c_common_finalize_early_debug.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_hint): Require nonnegative hint clause.
+	(c_parser_omp_critical): Permit hint(0) clause without named critical.
+	(c_parser_omp_construct): Don't assert if error_mark_node is returned.
+
+2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95237
+	* c-decl.c (finish_decl): Call target hook
+	lower_local_decl_alignment to lower local decl alignment.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* c-typeck.c (c_finish_omp_clauses): Set OMP_CLAUSE_SIZE (bias) to zero
+	for standalone attach/detach clauses.
+
+2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* c-typeck.c (convert_for_assignment): If -Wscalar-storage-order is
+	set, warn for conversion between pointers that point to incompatible
+	scalar storage orders.
+
+2020-07-07  Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Pass correct
+	parameters to c_parser_do_statement.
+
 2020-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_expr_no_commas): Save, clear and restore

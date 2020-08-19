@@ -36,6 +36,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/function-set.h"
 #include "analyzer/analyzer-selftests.h"
+#include "tristate.h"
+#include "selftest.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
@@ -51,6 +57,17 @@ public:
   fileptr_state_machine (logger *logger);
 
   bool inherited_state_p () const FINAL OVERRIDE { return false; }
+
+  state_machine::state_t
+  get_default_state (const svalue *sval) const FINAL OVERRIDE
+  {
+    if (tree cst = sval->maybe_get_constant ())
+      {
+	if (zerop (cst))
+	  return m_null;
+      }
+    return m_start;
+  }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
@@ -310,10 +327,7 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      {
-		lhs = sm_ctxt->get_readable_tree (lhs);
-		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked);
-	      }
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked);
 	    else
 	      {
 		/* TODO: report leak.  */
@@ -324,7 +338,7 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	if (is_named_call_p (callee_fndecl, "fclose", call, 1))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
-	    arg = sm_ctxt->get_readable_tree (arg);
+	    tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	    sm_ctxt->on_transition (node, stmt, arg, m_start, m_closed);
 
@@ -335,7 +349,7 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	    sm_ctxt->on_transition (node, stmt , arg, m_nonnull, m_closed);
 
 	    sm_ctxt->warn_for_state (node, stmt, arg, m_closed,
-				     new double_fclose (*this, arg));
+				     new double_fclose (*this, diag_arg));
 	    sm_ctxt->on_transition (node, stmt, arg, m_closed, m_stop);
 	    return true;
 	  }

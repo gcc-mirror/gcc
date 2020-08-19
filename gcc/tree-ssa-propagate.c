@@ -1017,11 +1017,13 @@ substitute_and_fold_dom_walker::foreach_new_stmt_in_bb
     }
 }
 
-void
+bool
 substitute_and_fold_engine::propagate_into_phi_args (basic_block bb)
 {
   edge e;
   edge_iterator ei;
+  bool propagated = false;
+
   /* Visit BB successor PHI nodes and replace PHI args.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -1035,11 +1037,16 @@ substitute_and_fold_engine::propagate_into_phi_args (basic_block bb)
 	      || virtual_operand_p (arg))
 	    continue;
 	  tree val = get_value (arg, phi);
-	  if (val && is_gimple_min_invariant (val)
+	  if (val
+	      && is_gimple_min_invariant (val)
 	      && may_propagate_copy (arg, val))
-	    propagate_value (use_p, val);
+	    {
+	      propagate_value (use_p, val);
+	      propagated = true;
+	    }
 	}
     }
+  return propagated;
 }
 
 edge
@@ -1229,7 +1236,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	}
     }
 
-  substitute_and_fold_engine->propagate_into_phi_args (bb);
+  something_changed |= substitute_and_fold_engine->propagate_into_phi_args (bb);
 
   return NULL;
 }

@@ -563,6 +563,7 @@ Vladimir Prus					<vladimir@codesourcery.com>
 Yao Qi						<yao@codesourcery.com>
 Jerry Quinn					<jlquinn@optonline.net>
 Easwaran Raman					<eraman@google.com>
+Joe Ramsay					<joe.ramsay@arm.com>
 Rolf Rasmussen					<rolfwr@gcc.gnu.org>
 Fritz Reese					<fritzoreese@gmail.com>
 Volker Reichelt					<v.reichelt@netcologne.de>
@@ -587,7 +588,7 @@ Stefan Schulze Frielinghaus			<stefansf@linux.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
 Martin Sebor					<msebor@gcc.gnu.org>
 Svein Seldal					<svein@dev.seldal.com>
-Senthil Kumar Selvaraj				<senthil_kumar.selvaraj@atmel.com>
+Senthil Kumar Selvaraj				<saaadhu@gcc.gnu.org>
 Thiemo Seufer					<ths@networkno.de>
 Bill Seurer					<seurer@linux.vnet.ibm.com>
 Tim Shen					<timshen@google.com>
@@ -621,6 +622,7 @@ Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
 Daniel Towner					<dant@picochip.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
+Sergei Trofimovich				<slyfox@gcc.gnu.org>
 Igor Tsimbalist					<igor.v.tsimbalist@intel.com>
 Martin Uecker					<uecker@eecs.berkeley.edu>
 David Ung					<davidu@mips.com>
@@ -645,6 +647,7 @@ Mark Wielaard					<mark@gcc.gnu.org>
 Edmar Wienskoski				<edmar@freescale.com>
 Ollie Wild					<aaw@google.com>
 Kevin Williams					<kevin.williams@inria.fr>
+Przemyslaw Wirkus				<przemyslaw.wirkus@arm.com>
 Carlo Wood					<carlo@alinoe.com>
 Jackson Woodruff				<jackson.woodruff@arm.com>
 Mingjie Xing					<mingjie.xing@gmail.com>

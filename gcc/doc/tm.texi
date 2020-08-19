@@ -1086,6 +1086,11 @@ On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
 
+@deftypefn {Target Hook} void TARGET_LOWER_LOCAL_DECL_ALIGNMENT (tree @var{decl})
+Define this hook to lower alignment of local, parm or result
+decl @samp{(@var{decl})}.
+@end deftypefn
+
 @deftypefn {Target Hook} HOST_WIDE_INT TARGET_STATIC_RTX_ALIGNMENT (machine_mode @var{mode})
 This hook returns the preferred alignment in bits for a
 statically-allocated rtx, such as a constant pool entry.  @var{mode}
@@ -11122,7 +11127,9 @@ This hook returns true if it is safe to ``convert'' a value of
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is
 smaller than @var{inprec}) by merely operating on it as if it had only
 @var{outprec} bits.  The default returns true unconditionally, which
-is correct for most machines.
+is correct for most machines.  When @code{TARGET_TRULY_NOOP_TRUNCATION}
+returns false, the machine description should provide a @code{trunc}
+optab to specify the RTL that performs the required truncation.
 
 If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,
 suboptimal code can result if this hook returns true for the corresponding
@@ -11277,7 +11284,7 @@ this macro.
 @end defmac
 
 @defmac VECTOR_STORE_FLAG_VALUE (@var{mode})
-A C expression that gives a rtx representing the nonzero true element
+A C expression that gives an rtx representing the nonzero true element
 for vector comparisons.  The returned rtx should be valid for the inner
 mode of @var{mode} which is guaranteed to be a vector mode.  Define
 this macro on machines that have vector comparison operations that

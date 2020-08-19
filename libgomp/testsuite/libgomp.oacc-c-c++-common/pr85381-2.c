@@ -1,6 +1,6 @@
-/* { dg-additional-options "-save-temps" } */
 /* { dg-do run { target openacc_nvidia_accel_selected } }
    { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
+/* { dg-additional-options "-foffload=-fdump-rtl-mach" } */
 
 int
 main (void)
@@ -33,4 +33,4 @@ main (void)
 
    so the loop is not recognized as empty loop (which we detect by seeing if
    joining immediately follows forked).  */
-/* { dg-final { scan-assembler-times "bar.sync" 2 } } */
+/* { dg-final { scan-offload-rtl-dump-times "nvptx_barsync" 2 "mach" } } */

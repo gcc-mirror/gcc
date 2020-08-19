@@ -5,4 +5,4 @@ template<void> struct A         // { dg-error "not a valid type" }
   static int i;
 };
 
-A<0> a;                        // { dg-message "non-type" }
+A<0> a;

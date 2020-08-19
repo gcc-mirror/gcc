@@ -697,12 +697,13 @@ public:
   expr (id_base *operation_, location_t loc, bool is_commutative_ = false)
     : operand (OP_EXPR, loc), operation (operation_),
       ops (vNULL), expr_type (NULL), is_commutative (is_commutative_),
-      is_generic (false), force_single_use (false), opt_grp (0) {}
+      is_generic (false), force_single_use (false), force_leaf (false),
+      opt_grp (0) {}
   expr (expr *e)
     : operand (OP_EXPR, e->location), operation (e->operation),
       ops (vNULL), expr_type (e->expr_type), is_commutative (e->is_commutative),
       is_generic (e->is_generic), force_single_use (e->force_single_use),
-      opt_grp (e->opt_grp) {}
+      force_leaf (e->force_leaf), opt_grp (e->opt_grp) {}
   void append_op (operand *op) { ops.safe_push (op); }
   /* The operator and its operands.  */
   id_base *operation;
@@ -717,6 +718,9 @@ public:
   /* Whether pushing any stmt to the sequence should be conditional
      on this expression having a single-use.  */
   bool force_single_use;
+  /* Whether in the result expression this should be a leaf node
+     with any children simplified down to simple operands.  */
+  bool force_leaf;
   /* If non-zero, the group for optional handling.  */
   unsigned char opt_grp;
   virtual void gen_transform (FILE *f, int, const char *, bool, int,
@@ -2348,6 +2352,10 @@ capture_info::walk_c_expr (c_expr *e)
 }
 
 
+/* The current label failing the current matched pattern during
+   code generation.  */
+static char *fail_label;
+
 /* Code generation off the decision tree and the refered AST nodes.  */
 
 bool
@@ -2520,10 +2528,11 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       fprintf (f, ");\n");
       fprintf_indent (f, indent, "tem_op.resimplify (lseq, valueize);\n");
       fprintf_indent (f, indent,
-		      "_r%d = maybe_push_res_to_seq (&tem_op, lseq);\n", depth);
+		      "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n", depth,
+		      !force_leaf ? "lseq" : "NULL");
       fprintf_indent (f, indent,
-		      "if (!_r%d) return false;\n",
-		      depth);
+		      "if (!_r%d) goto %s;\n",
+		      depth, fail_label);
       if (*opr == CONVERT_EXPR)
 	{
 	  indent -= 4;
@@ -2555,7 +2564,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       if (opr->kind != id_base::CODE)
 	{
 	  fprintf_indent (f, indent, "  if (!_r%d)\n", depth);
-	  fprintf_indent (f, indent, "    return NULL_TREE;\n");
+	  fprintf_indent (f, indent, "    goto %s;\n", fail_label);
 	  fprintf_indent (f, indent, "}\n");
 	}
       if (*opr == CONVERT_EXPR)
@@ -3063,12 +3072,12 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	      /* We need to be defensive against bogus prototypes allowing
 		 calls with not enough arguments.  */
 	      fprintf_indent (f, indent,
-			      "  if (gimple_call_num_args (_c%d) == %d)\n"
-			      "    {\n", depth, e->ops.length ());
+			      "  if (gimple_call_num_args (_c%d) == %d)\n",
+			      depth, e->ops.length ());
+	      fprintf_indent (f, indent, "    {\n");
 	      fns[i]->gen (f, indent + 6, true, depth);
-	      fprintf_indent (f, indent,
-			      "    }\n"
-			      "  break;\n");
+	      fprintf_indent (f, indent, "    }\n");
+	      fprintf_indent (f, indent, "  break;\n");
 	    }
 
 	  fprintf_indent (f, indent, "default:;\n");
@@ -3273,6 +3282,11 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	}
     }
 
+  static unsigned fail_label_cnt;
+  char local_fail_label[256];
+  snprintf (local_fail_label, 256, "next_after_fail%u", ++fail_label_cnt);
+  fail_label = local_fail_label;
+
   /* Analyze captures and perform early-outs on the incoming arguments
      that cover cases we cannot handle.  */
   capture_info cinfo (s, result, gimple);
@@ -3284,8 +3298,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	    if (cinfo.force_no_side_effects & (1 << i))
 	      {
 		fprintf_indent (f, indent,
-				"if (TREE_SIDE_EFFECTS (_p%d)) return NULL_TREE;\n",
-				i);
+				"if (TREE_SIDE_EFFECTS (_p%d)) goto %s;\n",
+				i, fail_label);
 		if (verbose >= 1)
 		  warning_at (as_a <expr *> (s->match)->ops[i]->location,
 			      "forcing toplevel operand to have no "
@@ -3300,7 +3314,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	      {
 		fprintf_indent (f, indent,
 				"if (TREE_SIDE_EFFECTS (captures[%d])) "
-				"return NULL_TREE;\n", i);
+				"goto %s;\n", i, fail_label);
 		if (verbose >= 1)
 		  warning_at (cinfo.info[i].c->location,
 			      "forcing captured operand to have no "
@@ -3343,8 +3357,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
     }
 
   if (s->kind == simplify::SIMPLIFY)
-    fprintf_indent (f, indent, "if (__builtin_expect (!dbg_cnt (match), 0)) return %s;\n",
-		    gimple ? "false" : "NULL_TREE");
+    fprintf_indent (f, indent, "if (__builtin_expect (!dbg_cnt (match), 0)) goto %s;\n", fail_label);
 
   fprintf_indent (f, indent, "if (__builtin_expect (dump_file && (dump_flags & TDF_FOLDING), 0)) "
 	   "fprintf (dump_file, \"%s ",
@@ -3356,6 +3369,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 			 true);
   fprintf (f, ", __FILE__, __LINE__);\n");
 
+  fprintf_indent (f, indent, "{\n");
+  indent += 2;
   if (!result)
     {
       /* If there is no result then this is a predicate implementation.  */
@@ -3469,7 +3484,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		    > cinfo.info[i].match_use_count)
 		  fprintf_indent (f, indent,
 				  "if (! tree_invariant_p (captures[%d])) "
-				  "return NULL_TREE;\n", i);
+				  "goto %s;\n", i, fail_label);
 	      }
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {
@@ -3519,7 +3534,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		  if (!is_a <operator_id *> (opr))
 		    {
 		      fprintf_indent (f, indent, "if (!_r)\n");
-		      fprintf_indent (f, indent, "  return NULL_TREE;\n");
+		      fprintf_indent (f, indent, "  goto %s;\n", fail_label);
 		    }
 		}
 	    }
@@ -3558,6 +3573,10 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  fprintf_indent (f, indent, "return _r;\n");
 	}
     }
+  indent -= 2;
+  fprintf_indent (f, indent, "}\n");
+  fprintf (f, "%s:;\n", fail_label);
+  fail_label = NULL;
 }
 
 /* Generate code for the '(if ...)', '(with ..)' and actual transform
@@ -3798,6 +3817,8 @@ decision_tree::gen (FILE *f, bool gimple)
 
   for (unsigned n = 1; n <= 5; ++n)
     {
+      bool has_kids_p = false;
+
       /* First generate split-out functions.  */
       for (unsigned j = 0; j < root->kids.length (); j++)
 	{
@@ -3836,6 +3857,32 @@ decision_tree::gen (FILE *f, bool gimple)
 	  else
 	    fprintf (f, "  return NULL_TREE;\n");
 	  fprintf (f, "}\n");
+	  has_kids_p = true;
+	}
+
+      /* If this main entry has no children, avoid generating code
+	 with compiler warnings, by generating a simple stub.  */
+      if (! has_kids_p)
+	{
+	  if (gimple)
+	    fprintf (f, "\nstatic bool\n"
+			"gimple_simplify (gimple_match_op*, gimple_seq*,\n"
+			"                 tree (*)(tree), code_helper,\n"
+			"                 const tree");
+	  else
+	    fprintf (f, "\ntree\n"
+			"generic_simplify (location_t, enum tree_code,\n"
+			"                  const tree");
+	  for (unsigned i = 0; i < n; ++i)
+	    fprintf (f, ", tree");
+	  fprintf (f, ")\n");
+	  fprintf (f, "{\n");
+	  if (gimple)
+	    fprintf (f, "  return false;\n");
+	  else
+	    fprintf (f, "  return NULL_TREE;\n");
+	  fprintf (f, "}\n");
+	  continue;
 	}
 
       /* Then generate the main entry with the outermost switch and
@@ -3941,7 +3988,7 @@ write_header (FILE *f, const char *head)
 class parser
 {
 public:
-  parser (cpp_reader *);
+  parser (cpp_reader *, bool gimple);
 
 private:
   const cpp_token *next ();
@@ -3978,6 +4025,7 @@ private:
   void finish_match_operand (operand *);
 
   cpp_reader *r;
+  bool gimple;
   vec<c_expr *> active_ifs;
   vec<vec<user_id *> > active_fors;
   hash_set<user_id *> *oper_lists_set;
@@ -4239,6 +4287,17 @@ parser::parse_expr ()
   bool is_commutative = false;
   bool force_capture = false;
   const char *expr_type = NULL;
+
+  if (!parsing_match_operand
+      && token->type == CPP_NOT
+      && !(token->flags & PREV_WHITE))
+    {
+      if (!gimple)
+	fatal_at (token, "forcing simplification to a leaf is not supported "
+		  "for GENERIC");
+      eat_token (CPP_NOT);
+      e->force_leaf = true;
+    }
 
   if (token->type == CPP_COLON
       && !(token->flags & PREV_WHITE))
@@ -5029,9 +5088,10 @@ parser::finish_match_operand (operand *op)
 
 /* Main entry of the parser.  Repeatedly parse outer control structures.  */
 
-parser::parser (cpp_reader *r_)
+parser::parser (cpp_reader *r_, bool gimple_)
 {
   r = r_;
+  gimple = gimple_;
   active_ifs = vNULL;
   active_fors = vNULL;
   simplifiers = vNULL;
@@ -5061,7 +5121,7 @@ round_alloc_size (size_t s)
 }
 
 
-/* The genmatch generator progam.  It reads from a pattern description
+/* The genmatch generator program.  It reads from a pattern description
    and outputs GIMPLE or GENERIC IL matching and simplification routines.  */
 
 int
@@ -5138,7 +5198,7 @@ main (int argc, char **argv)
 #include "internal-fn.def"
 
   /* Parse ahead!  */
-  parser p (r);
+  parser p (r, gimple);
 
   if (gimple)
     write_header (stdout, "gimple-match-head.c");

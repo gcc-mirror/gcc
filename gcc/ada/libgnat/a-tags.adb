@@ -49,10 +49,6 @@ package body Ada.Tags is
    -- Local Subprograms --
    -----------------------
 
-   function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean;
-   --  Given the tag of an object and the tag associated to a type, return
-   --  true if Obj is in Typ'Class.
-
    function Get_External_Tag (T : Tag) return System.Address;
    --  Returns address of a null terminated string containing the external name
 
@@ -82,7 +78,6 @@ package body Ada.Tags is
    --  Ada 2005 (AI-251): Given a pointer T to a dispatch Table, retrieves the
    --  address of the record containing the Select Specific Data in T's TSD.
 
-   pragma Inline_Always (CW_Membership);
    pragma Inline_Always (Get_External_Tag);
    pragma Inline_Always (Is_Primary_DT);
    pragma Inline_Always (OSD);

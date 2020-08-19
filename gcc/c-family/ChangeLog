@@ -1,3 +1,107 @@
+2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96545
+	* c-common.c (get_atomic_generic_size): Require that first argument's
+	type points to a complete type and use tree_fits_uhwi_p instead of
+	just INTEGER_CST TREE_CODE check for the TYPE_SIZE_UNIT.
+
+2020-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96003
+	* c-common.c (check_function_arguments_recurse): Return early when
+	no-warning bit is set.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* c-common.h (c_common_finalize_early_debug): Declare.
+	* c-common.c: Include debug.h.
+	(c_common_finalize_early_debug): finalize_early_debug langhook
+	implementation generating debug for extern declarations.
+
+2020-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (try_to_locate_new_include_insertion_point): Use
+	strcmp, not pointer equality.
+
+2020-07-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96310
+	* c-common.c (check_nonnull_arg): Print note only when warning was
+	issued.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-omp.c (c_finish_omp_critical): Check for no name but
+	nonzero hint provided.
+
+2020-07-20  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update
+	__cpp_nontype_template_args for C++20.
+
+2020-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/96249
+	* c.opt: Remove stray text.
+
+2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/86904
+	* c-indentation.c (should_warn_for_misleading_indentation): Get
+	global tabstop from the new source.
+	* c-opts.c (c_common_handle_option): Remove handling of -ftabstop, which
+	is now a common option.
+	* c.opt: Likewise.
+
+2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* c.opt (Wscalar-storage-order): Add explicit variable.
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_common_post_options): Add 'injecting' arg to
+	cpp_read_main_file.
+	(c_finish_options): Add linemap_line_start calls for builtin and cmd
+	maps.  Force token position to line_table's highest line.
+	* c-ppoutput.c (print_line_1): Refactor, print line zero.
+	(cb_define): Always increment source line.
+
+2020-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95984
+	* c-common.c (check_function_nonnull): Avoid checking syntesized calls
+	to stub lambda objects with null this pointer.
+	(check_nonnull_arg): Handle C++ nullptr.
+
+2020-07-02  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_consteval.
+
+2020-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95963
+	* c-common.c (check_function_arguments_recurse): Don't crash on
+	calls to internal functions.
+
+2020-06-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86568
+	* c-common.c (struct nonnull_arg_ctx): Add members.
+	(check_function_nonnull): Use nonnull_arg_ctx as argument.  Handle
+	C++ member functions specially.  Consider the this pointer implicitly
+	nonnull.
+	(check_nonnull_arg): Use location of argument when available.
+	(check_function_arguments): Use nonnull_arg_ctx as argument.
+
+2020-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95903
+	* c-common.c (pointer_int_sum): Use TYPE_OVERFLOW_UNDEFINED instead of
+	!TYPE_UNSIGNED check to see if we can apply distributive law and handle
+	smaller precision intop operands separately.
+
 2020-06-26  Marek Polacek  <polacek@redhat.com>
 
 	* c-opts.c (c_common_init_options): Default to gnu++17.

@@ -698,7 +698,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  : _Node_allocator(__a), _Base_key_compare(__comp)
 	  { }
 #else
-	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
+	  _Rb_tree_impl(_Rb_tree_impl&&)
+	    noexcept( is_nothrow_move_constructible<_Base_key_compare>::value )
+	  = default;
 
 	  explicit
 	  _Rb_tree_impl(_Node_allocator&& __a)
@@ -1630,22 +1632,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::lexicographical_compare(__x.begin(), __x.end(),
 					    __y.begin(), __y.end());
       }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator!=(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return !(__x == __y); }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator>(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return __y < __x; }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator<=(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return !(__y < __x); }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator>=(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return !(__x < __y); }
 #endif
     };
 

@@ -816,6 +816,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vectorizable (false),
     can_use_partial_vectors_p (true),
     using_partial_vectors_p (false),
+    epil_using_partial_vectors_p (false),
     peeling_for_gaps (false),
     peeling_for_niter (false),
     no_data_dependencies (false),
@@ -898,6 +899,7 @@ _loop_vec_info::~_loop_vec_info ()
   free (bbs);
 
   release_vec_loop_controls (&masks);
+  release_vec_loop_controls (&lens);
   delete ivexpr_map;
   delete scan_map;
   epilogue_vinfos.release ();
@@ -1069,6 +1071,81 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
 
   LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo) = cmp_type;
   LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo) = iv_type;
+  return true;
+}
+
+/* Check whether we can use vector access with length based on precison
+   comparison.  So far, to keep it simple, we only allow the case that the
+   precision of the target supported length is larger than the precision
+   required by loop niters.  */
+
+static bool
+vect_verify_loop_lens (loop_vec_info loop_vinfo)
+{
+  if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
+    return false;
+
+  unsigned int max_nitems_per_iter = 1;
+  unsigned int i;
+  rgroup_controls *rgl;
+  /* Find the maximum number of items per iteration for every rgroup.  */
+  FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), i, rgl)
+    {
+      unsigned nitems_per_iter = rgl->max_nscalars_per_iter * rgl->factor;
+      max_nitems_per_iter = MAX (max_nitems_per_iter, nitems_per_iter);
+    }
+
+  /* Work out how many bits we need to represent the length limit.  */
+  unsigned int min_ni_prec
+    = vect_min_prec_for_max_niters (loop_vinfo, max_nitems_per_iter);
+
+  /* Now use the maximum of below precisions for one suitable IV type:
+     - the IV's natural precision
+     - the precision needed to hold: the maximum number of scalar
+       iterations multiplied by the scale factor (min_ni_prec above)
+     - the Pmode precision
+
+     If min_ni_prec is less than the precision of the current niters,
+     we perfer to still use the niters type.  Prefer to use Pmode and
+     wider IV to avoid narrow conversions.  */
+
+  unsigned int ni_prec
+    = TYPE_PRECISION (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)));
+  min_ni_prec = MAX (min_ni_prec, ni_prec);
+  min_ni_prec = MAX (min_ni_prec, GET_MODE_BITSIZE (Pmode));
+
+  tree iv_type = NULL_TREE;
+  opt_scalar_int_mode tmode_iter;
+  FOR_EACH_MODE_IN_CLASS (tmode_iter, MODE_INT)
+    {
+      scalar_mode tmode = tmode_iter.require ();
+      unsigned int tbits = GET_MODE_BITSIZE (tmode);
+
+      /* ??? Do we really want to construct one IV whose precision exceeds
+	 BITS_PER_WORD?  */
+      if (tbits > BITS_PER_WORD)
+	break;
+
+      /* Find the first available standard integral type.  */
+      if (tbits >= min_ni_prec && targetm.scalar_mode_supported_p (tmode))
+	{
+	  iv_type = build_nonstandard_integer_type (tbits, true);
+	  break;
+	}
+    }
+
+  if (!iv_type)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't vectorize with length-based partial vectors"
+			 " because there is no suitable iv type.\n");
+      return false;
+    }
+
+  LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo) = iv_type;
+  LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo) = iv_type;
+
   return true;
 }
 
@@ -2136,8 +2213,6 @@ start_over:
     /* This pass will decide on using loop versioning and/or loop peeling in
        order to enhance the alignment of data references in the loop.  */
     ok = vect_enhance_data_refs_alignment (loop_vinfo);
-  else
-    ok = vect_verify_datarefs_alignment (loop_vinfo);
   if (!ok)
     return ok;
 
@@ -2170,19 +2245,56 @@ start_over:
       return ok;
     }
 
-  /* Decide whether to use a fully-masked loop for this vectorization
-     factor.  */
-  LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
-    = (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-       && vect_verify_full_masking (loop_vinfo));
+  /* For now, we don't expect to mix both masking and length approaches for one
+     loop, disable it if both are recorded.  */
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && !LOOP_VINFO_MASKS (loop_vinfo).is_empty ()
+      && !LOOP_VINFO_LENS (loop_vinfo).is_empty ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't vectorize a loop with partial vectors"
+			 " because we don't expect to mix different"
+			 " approaches with partial vectors for the"
+			 " same loop.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+
+  /* Decide whether to vectorize a loop with partial vectors for
+     this vectorization factor.  */
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+    {
+      if (param_vect_partial_vector_usage == 0)
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+      else if (vect_verify_full_masking (loop_vinfo)
+	       || vect_verify_loop_lens (loop_vinfo))
+	{
+	  /* The epilogue and other known niters less than VF
+	    cases can still use vector access with length fully.  */
+	  if (param_vect_partial_vector_usage == 1
+	      && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	      && !vect_known_niters_smaller_than_vf (loop_vinfo))
+	    {
+	      LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	    }
+	  else
+	    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	}
+      else
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+  else
+    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+
   if (dump_enabled_p ())
     {
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "using a fully-masked loop.\n");
+			 "operating on partial vectors.\n");
       else
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "not using a fully-masked loop.\n");
+			 "operating only on full vectors.\n");
     }
 
   /* If epilog loop is required because of data accesses with gaps,
@@ -2406,6 +2518,7 @@ again:
     = init_cost (LOOP_VINFO_LOOP (loop_vinfo));
   /* Reset accumulated rgroup information.  */
   release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo));
+  release_vec_loop_controls (&LOOP_VINFO_LENS (loop_vinfo));
   /* Reset assorted flags.  */
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
   LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = false;
@@ -2692,7 +2805,10 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 		lowest_th = ordered_min (lowest_th, th);
 	    }
 	  else
-	    delete loop_vinfo;
+	    {
+	      delete loop_vinfo;
+	      loop_vinfo = opt_loop_vec_info::success (NULL);
+	    }
 
 	  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is
 	     enabled, SIMDUID is not set, it is the innermost loop and we have
@@ -2717,11 +2833,29 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
       else
 	{
 	  delete loop_vinfo;
+	  loop_vinfo = opt_loop_vec_info::success (NULL);
 	  if (fatal)
 	    {
 	      gcc_checking_assert (first_loop_vinfo == NULL);
 	      break;
 	    }
+	}
+
+      /* Handle the case that the original loop can use partial
+	 vectorization, but want to only adopt it for the epilogue.
+	 The retry should be in the same mode as original.  */
+      if (vect_epilogues
+	  && loop_vinfo
+	  && LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo))
+	{
+	  gcc_assert (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+		      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo));
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "***** Re-trying analysis with same vector mode"
+			     " %s for epilogue with partial vectors.\n",
+			     GET_MODE_NAME (loop_vinfo->vector_mode));
+	  continue;
 	}
 
       if (mode_i < vector_modes.length ()
@@ -3340,42 +3474,58 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   return NULL;
 }
 
-/* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */
-int
-vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
-                             int *peel_iters_epilogue,
-                             stmt_vector_for_cost *scalar_cost_vec,
-			     stmt_vector_for_cost *prologue_cost_vec,
-			     stmt_vector_for_cost *epilogue_cost_vec)
-{
-  int retval = 0;
-  int assumed_vf = vect_vf_for_cost (loop_vinfo);
+/* Estimate the number of peeled epilogue iterations for LOOP_VINFO.
+   PEEL_ITERS_PROLOGUE is the number of peeled prologue iterations,
+   or -1 if not known.  */
 
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+static int
+vect_get_peel_iters_epilogue (loop_vec_info loop_vinfo, int peel_iters_prologue)
+{
+  int assumed_vf = vect_vf_for_cost (loop_vinfo);
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) || peel_iters_prologue == -1)
     {
-      *peel_iters_epilogue = assumed_vf / 2;
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
+	dump_printf_loc (MSG_NOTE, vect_location,
 			 "cost model: epilogue peel iters set to vf/2 "
 			 "because loop iterations are unknown .\n");
-
-      /* If peeled iterations are known but number of scalar loop
-         iterations are unknown, count a taken branch per peeled loop.  */
-      retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken,
-				 NULL, NULL_TREE, 0, vect_prologue);
-      retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken,
-				  NULL, NULL_TREE, 0, vect_epilogue);
+      return assumed_vf / 2;
     }
   else
     {
       int niters = LOOP_VINFO_INT_NITERS (loop_vinfo);
-      peel_iters_prologue = niters < peel_iters_prologue ?
-                            niters : peel_iters_prologue;
-      *peel_iters_epilogue = (niters - peel_iters_prologue) % assumed_vf;
+      peel_iters_prologue = MIN (niters, peel_iters_prologue);
+      int peel_iters_epilogue = (niters - peel_iters_prologue) % assumed_vf;
       /* If we need to peel for gaps, but no peeling is required, we have to
 	 peel VF iterations.  */
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) && !*peel_iters_epilogue)
-	*peel_iters_epilogue = assumed_vf;
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) && !peel_iters_epilogue)
+	peel_iters_epilogue = assumed_vf;
+      return peel_iters_epilogue;
+    }
+}
+
+/* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */
+int
+vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
+			     int *peel_iters_epilogue,
+			     stmt_vector_for_cost *scalar_cost_vec,
+			     stmt_vector_for_cost *prologue_cost_vec,
+			     stmt_vector_for_cost *epilogue_cost_vec)
+{
+  int retval = 0;
+
+  *peel_iters_epilogue
+    = vect_get_peel_iters_epilogue (loop_vinfo, peel_iters_prologue);
+
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      /* If peeled iterations are known but number of scalar loop
+	 iterations are unknown, count a taken branch per peeled loop.  */
+      if (peel_iters_prologue > 0)
+	retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken,
+				   NULL, NULL_TREE, 0, vect_prologue);
+      if (*peel_iters_epilogue > 0)
+	retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken,
+				    NULL, NULL_TREE, 0, vect_epilogue);
     }
 
   stmt_info_for_cost *si;
@@ -3518,24 +3668,110 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Build an expression that represents peel_iters for prologue and
      epilogue to be used in a run-time test.  */
 
+  bool prologue_need_br_taken_cost = false;
+  bool prologue_need_br_not_taken_cost = false;
+
+  /* Calculate peel_iters_prologue.  */
+  if (vect_use_loop_mask_for_alignment_p (loop_vinfo))
+    peel_iters_prologue = 0;
+  else if (npeel < 0)
+    {
+      peel_iters_prologue = assumed_vf / 2;
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "cost model: "
+		     "prologue peel iters set to vf/2.\n");
+
+      /* If peeled iterations are unknown, count a taken branch and a not taken
+	 branch per peeled loop.  Even if scalar loop iterations are known,
+	 vector iterations are not known since peeled prologue iterations are
+	 not known.  Hence guards remain the same.  */
+      prologue_need_br_taken_cost = true;
+      prologue_need_br_not_taken_cost = true;
+    }
+  else
+    {
+      peel_iters_prologue = npeel;
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) && peel_iters_prologue > 0)
+	/* If peeled iterations are known but number of scalar loop
+	   iterations are unknown, count a taken branch per peeled loop.  */
+	prologue_need_br_taken_cost = true;
+    }
+
+  bool epilogue_need_br_taken_cost = false;
+  bool epilogue_need_br_not_taken_cost = false;
+
+  /* Calculate peel_iters_epilogue.  */
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+    /* We need to peel exactly one iteration for gaps.  */
+    peel_iters_epilogue = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) ? 1 : 0;
+  else if (npeel < 0)
+    {
+      /* If peeling for alignment is unknown, loop bound of main loop
+	 becomes unknown.  */
+      peel_iters_epilogue = assumed_vf / 2;
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "cost model: "
+		     "epilogue peel iters set to vf/2 because "
+		     "peeling for alignment is unknown.\n");
+
+      /* See the same reason above in peel_iters_prologue calculation.  */
+      epilogue_need_br_taken_cost = true;
+      epilogue_need_br_not_taken_cost = true;
+    }
+  else
+    {
+      peel_iters_epilogue = vect_get_peel_iters_epilogue (loop_vinfo, npeel);
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) && peel_iters_epilogue > 0)
+	/* If peeled iterations are known but number of scalar loop
+	   iterations are unknown, count a taken branch per peeled loop.  */
+	epilogue_need_br_taken_cost = true;
+    }
+
+  stmt_info_for_cost *si;
+  int j;
+  /* Add costs associated with peel_iters_prologue.  */
+  if (peel_iters_prologue)
+    FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
+      {
+	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+			      si->count * peel_iters_prologue, si->kind,
+			      si->stmt_info, si->vectype, si->misalign,
+			      vect_prologue);
+      }
+
+  /* Add costs associated with peel_iters_epilogue.  */
+  if (peel_iters_epilogue)
+    FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
+      {
+	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+			      si->count * peel_iters_epilogue, si->kind,
+			      si->stmt_info, si->vectype, si->misalign,
+			      vect_epilogue);
+      }
+
+  /* Add possible cond_branch_taken/cond_branch_not_taken cost.  */
+
+  if (prologue_need_br_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+			  NULL, NULL_TREE, 0, vect_prologue);
+
+  if (prologue_need_br_not_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+			  cond_branch_not_taken, NULL, NULL_TREE, 0,
+			  vect_prologue);
+
+  if (epilogue_need_br_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+			  NULL, NULL_TREE, 0, vect_epilogue);
+
+  if (epilogue_need_br_not_taken_cost)
+    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+			  cond_branch_not_taken, NULL, NULL_TREE, 0,
+			  vect_epilogue);
+
+  /* Take care of special costs for rgroup controls of partial vectors.  */
   if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
     {
-      peel_iters_prologue = 0;
-      peel_iters_epilogue = 0;
-
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-	{
-	  /* We need to peel exactly one iteration.  */
-	  peel_iters_epilogue += 1;
-	  stmt_info_for_cost *si;
-	  int j;
-	  FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-			    j, si)
-	    (void) add_stmt_cost (loop_vinfo, target_cost_data, si->count,
-				  si->kind, si->stmt_info, si->vectype,
-				  si->misalign, vect_epilogue);
-	}
-
       /* Calculate how many masks we need to generate.  */
       unsigned int num_masks = 0;
       rgroup_controls *rgm;
@@ -3557,88 +3793,62 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	 simpler and safer to use the worst-case cost; if this ends up
 	 being the tie-breaker between vectorizing or not, then it's
 	 probably better not to vectorize.  */
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, num_masks, vector_stmt,
-			    NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, num_masks - 1, vector_stmt,
-			    NULL, NULL_TREE, 0, vect_body);
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks,
+			    vector_stmt, NULL, NULL_TREE, 0, vect_prologue);
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks - 1,
+			    vector_stmt, NULL, NULL_TREE, 0, vect_body);
     }
-  else if (npeel < 0)
+  else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
     {
-      peel_iters_prologue = assumed_vf / 2;
-      if (dump_enabled_p ())
-	dump_printf (MSG_NOTE, "cost model: "
-		     "prologue peel iters set to vf/2.\n");
+      /* Referring to the functions vect_set_loop_condition_partial_vectors
+	 and vect_set_loop_controls_directly, we need to generate each
+	 length in the prologue and in the loop body if required. Although
+	 there are some possible optimizations, we consider the worst case
+	 here.  */
 
-      /* If peeling for alignment is unknown, loop bound of main loop becomes
-         unknown.  */
-      peel_iters_epilogue = assumed_vf / 2;
-      if (dump_enabled_p ())
-	dump_printf (MSG_NOTE, "cost model: "
-		     "epilogue peel iters set to vf/2 because "
-		     "peeling for alignment is unknown.\n");
+      bool niters_known_p = LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo);
+      bool need_iterate_p
+	= (!LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	   && !vect_known_niters_smaller_than_vf (loop_vinfo));
 
-      /* If peeled iterations are unknown, count a taken branch and a not taken
-         branch per peeled loop. Even if scalar loop iterations are known,
-         vector iterations are not known since peeled prologue iterations are
-         not known. Hence guards remain the same.  */
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
-			    NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, 1, cond_branch_not_taken,
-			    NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
-			    NULL, NULL_TREE, 0, vect_epilogue);
-      (void) add_stmt_cost (loop_vinfo,
-			    target_cost_data, 1, cond_branch_not_taken,
-			    NULL, NULL_TREE, 0, vect_epilogue);
-      stmt_info_for_cost *si;
-      int j;
-      FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
-	{
-	  (void) add_stmt_cost (loop_vinfo, target_cost_data,
-				si->count * peel_iters_prologue,
-				si->kind, si->stmt_info, si->vectype,
-				si->misalign,
-				vect_prologue);
-	  (void) add_stmt_cost (loop_vinfo, target_cost_data,
-				si->count * peel_iters_epilogue,
-				si->kind, si->stmt_info, si->vectype,
-				si->misalign,
-				vect_epilogue);
-	}
-    }
-  else
-    {
-      stmt_vector_for_cost prologue_cost_vec, epilogue_cost_vec;
-      stmt_info_for_cost *si;
-      int j;
-      void *data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+      /* Calculate how many statements to be added.  */
+      unsigned int prologue_stmts = 0;
+      unsigned int body_stmts = 0;
 
-      prologue_cost_vec.create (2);
-      epilogue_cost_vec.create (2);
-      peel_iters_prologue = npeel;
+      rgroup_controls *rgc;
+      unsigned int num_vectors_m1;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), num_vectors_m1, rgc)
+	if (rgc->type)
+	  {
+	    /* May need one SHIFT for nitems_total computation.  */
+	    unsigned nitems = rgc->max_nscalars_per_iter * rgc->factor;
+	    if (nitems != 1 && !niters_known_p)
+	      prologue_stmts += 1;
 
-      (void) vect_get_known_peeling_cost (loop_vinfo, peel_iters_prologue,
-					  &peel_iters_epilogue,
-					  &LOOP_VINFO_SCALAR_ITERATION_COST
-					    (loop_vinfo),
-					  &prologue_cost_vec,
-					  &epilogue_cost_vec);
+	    /* May need one MAX and one MINUS for wrap around.  */
+	    if (vect_rgroup_iv_might_wrap_p (loop_vinfo, rgc))
+	      prologue_stmts += 2;
 
-      FOR_EACH_VEC_ELT (prologue_cost_vec, j, si)
-	(void) add_stmt_cost (loop_vinfo,
-			      data, si->count, si->kind, si->stmt_info,
-			      si->vectype, si->misalign, vect_prologue);
+	    /* Need one MAX and one MINUS for each batch limit excepting for
+	       the 1st one.  */
+	    prologue_stmts += num_vectors_m1 * 2;
 
-      FOR_EACH_VEC_ELT (epilogue_cost_vec, j, si)
-	(void) add_stmt_cost (loop_vinfo,
-			      data, si->count, si->kind, si->stmt_info,
-			      si->vectype, si->misalign, vect_epilogue);
+	    unsigned int num_vectors = num_vectors_m1 + 1;
 
-      prologue_cost_vec.release ();
-      epilogue_cost_vec.release ();
+	    /* Need to set up lengths in prologue, only one MIN required
+	       for each since start index is zero.  */
+	    prologue_stmts += num_vectors;
+
+	    /* Each may need two MINs and one MINUS to update lengths in body
+	       for next iteration.  */
+	    if (need_iterate_p)
+	      body_stmts += 3 * num_vectors;
+	  }
+
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, prologue_stmts,
+			    scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
+      (void) add_stmt_cost (loop_vinfo, target_cost_data, body_stmts,
+			    scalar_stmt, NULL, NULL_TREE, 0, vect_body);
     }
 
   /* FORNOW: The scalar outside cost is incremented in one of the
@@ -3774,8 +3984,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   /* ??? The "if" arm is written to handle all cases; see below for what
-     we would do for !LOOP_VINFO_FULLY_MASKED_P.  */
-  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+     we would do for !LOOP_VINFO_USING_PARTIAL_VECTORS_P.  */
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       /* Rewriting the condition above in terms of the number of
 	 vector iterations (vniters) rather than the number of
@@ -3802,7 +4012,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	dump_printf (MSG_NOTE, "  Minimum number of vector iterations: %d\n",
 		     min_vec_niters);
 
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  /* Now that we know the minimum number of vector iterations,
 	     find the minimum niters for which the scalar cost is larger:
@@ -3857,6 +4067,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       && min_profitable_iters < (assumed_vf + peel_iters_prologue))
     /* We want the vectorized loop to execute at least once.  */
     min_profitable_iters = assumed_vf + peel_iters_prologue;
+  else if (min_profitable_iters < peel_iters_prologue)
+    /* For LOOP_VINFO_USING_PARTIAL_VECTORS_P, we need to ensure the
+       vectorized loop executes at least once.  */
+    min_profitable_iters = peel_iters_prologue;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -3874,7 +4088,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
   if (vec_outside_cost <= 0)
     min_profitable_estimate = 0;
-  else if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  else if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       /* This is a repeat of the code above, but with + SOC rather
 	 than - SOC.  */
@@ -3886,7 +4100,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       if (outside_overhead > 0)
 	min_vec_niters = outside_overhead / saving_per_viter + 1;
 
-      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  int threshold = (vec_inside_cost * min_vec_niters
 			   + vec_outside_cost
@@ -8196,6 +8410,7 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
     {
       rgm->max_nscalars_per_iter = nscalars_per_iter;
       rgm->type = truth_type_for (vectype);
+      rgm->factor = 1;
     }
 }
 
@@ -8246,6 +8461,69 @@ vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
 	gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
     }
   return mask;
+}
+
+/* Record that LOOP_VINFO would need LENS to contain a sequence of NVECTORS
+   lengths for controlling an operation on VECTYPE.  The operation splits
+   each element of VECTYPE into FACTOR separate subelements, measuring the
+   length as a number of these subelements.  */
+
+void
+vect_record_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
+		      unsigned int nvectors, tree vectype, unsigned int factor)
+{
+  gcc_assert (nvectors != 0);
+  if (lens->length () < nvectors)
+    lens->safe_grow_cleared (nvectors);
+  rgroup_controls *rgl = &(*lens)[nvectors - 1];
+
+  /* The number of scalars per iteration, scalar occupied bytes and
+     the number of vectors are both compile-time constants.  */
+  unsigned int nscalars_per_iter
+    = exact_div (nvectors * TYPE_VECTOR_SUBPARTS (vectype),
+		 LOOP_VINFO_VECT_FACTOR (loop_vinfo)).to_constant ();
+
+  if (rgl->max_nscalars_per_iter < nscalars_per_iter)
+    {
+      /* For now, we only support cases in which all loads and stores fall back
+	 to VnQI or none do.  */
+      gcc_assert (!rgl->max_nscalars_per_iter
+		  || (rgl->factor == 1 && factor == 1)
+		  || (rgl->max_nscalars_per_iter * rgl->factor
+		      == nscalars_per_iter * factor));
+      rgl->max_nscalars_per_iter = nscalars_per_iter;
+      rgl->type = vectype;
+      rgl->factor = factor;
+    }
+}
+
+/* Given a complete set of length LENS, extract length number INDEX for an
+   rgroup that operates on NVECTORS vectors, where 0 <= INDEX < NVECTORS.  */
+
+tree
+vect_get_loop_len (loop_vec_info loop_vinfo, vec_loop_lens *lens,
+		   unsigned int nvectors, unsigned int index)
+{
+  rgroup_controls *rgl = &(*lens)[nvectors - 1];
+
+  /* Populate the rgroup's len array, if this is the first time we've
+     used it.  */
+  if (rgl->controls.is_empty ())
+    {
+      rgl->controls.safe_grow_cleared (nvectors);
+      for (unsigned int i = 0; i < nvectors; ++i)
+	{
+	  tree len_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
+	  gcc_assert (len_type != NULL_TREE);
+	  tree len = make_temp_ssa_name (len_type, NULL, "loop_len");
+
+	  /* Provide a dummy definition until the real one is available.  */
+	  SSA_NAME_DEF_STMT (len) = gimple_build_nop ();
+	  rgl->controls[i] = len;
+	}
+    }
+
+  return rgl->controls[index];
 }
 
 /* Scale profiling counters by estimation for LOOP which is vectorized
@@ -8617,9 +8895,15 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			     LOOP_VINFO_INT_NITERS (loop_vinfo) / lowest_vf);
 	  step_vector = build_one_cst (TREE_TYPE (niters));
 	}
-      else
+      else if (vect_use_loop_mask_for_alignment_p (loop_vinfo))
 	vect_gen_vector_loop_niters (loop_vinfo, niters, &niters_vector,
 				     &step_vector, niters_no_overflow);
+      else
+	/* vect_do_peeling subtracted the number of peeled prologue
+	   iterations from LOOP_VINFO_NITERS.  */
+	vect_gen_vector_loop_niters (loop_vinfo, LOOP_VINFO_NITERS (loop_vinfo),
+				     &niters_vector, &step_vector,
+				     niters_no_overflow);
     }
 
   /* 1) Make sure the loop header has exactly two entries
@@ -9123,3 +9407,25 @@ vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo)
   return iv_limit;
 }
 
+/* For the given rgroup_controls RGC, check whether an induction variable
+   would ever hit a value that produces a set of all-false masks or zero
+   lengths before wrapping around.  Return true if it's possible to wrap
+   around before hitting the desirable value, otherwise return false.  */
+
+bool
+vect_rgroup_iv_might_wrap_p (loop_vec_info loop_vinfo, rgroup_controls *rgc)
+{
+  widest_int iv_limit = vect_iv_limit_for_partial_vectors (loop_vinfo);
+
+  if (iv_limit == -1)
+    return true;
+
+  tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
+  unsigned int compare_precision = TYPE_PRECISION (compare_type);
+  unsigned nitems = rgc->max_nscalars_per_iter * rgc->factor;
+
+  if (wi::min_precision (iv_limit * nitems, UNSIGNED) > compare_precision)
+    return true;
+
+  return false;
+}

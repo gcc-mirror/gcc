@@ -327,8 +327,14 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
   unsigned i;
   const char *arg;
 
-  FOR_EACH_VEC_ELT (help_option_arguments, i, arg)
-    print_help (opts, lang_mask, arg);
+  if (!help_option_arguments.is_empty ())
+    {
+      /* Make sure --help=* sees the overridden values.  */
+      target_option_override_hook ();
+
+      FOR_EACH_VEC_ELT (help_option_arguments, i, arg)
+	print_help (opts, lang_mask, arg);
+    }
 }
 
 /* Hold command-line options associated with stack limitation.  */

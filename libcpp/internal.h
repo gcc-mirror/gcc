@@ -123,7 +123,9 @@ enum include_type
    /* Non-directive including mechanisms.  */
    IT_CMDLINE,  /* -include */
    IT_DEFAULT,  /* forced header  */
-   IT_MAIN,     /* main  */
+   IT_MAIN,     /* main, start on line 1 */
+   IT_MAIN_INJECT,  /* main, but there will be an injected preamble
+		       before line 1 */
 
    IT_DIRECTIVE_HWM = IT_IMPORT + 1,  /* Directives below this.  */
    IT_HEADER_HWM = IT_DEFAULT + 1     /* Header files below this.  */

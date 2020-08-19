@@ -533,10 +533,7 @@ package body Exp_Attr is
          --  Comes_From_Source is not correct because this will eliminate the
          --  components within the corresponding record of a protected type.
 
-         if Nam_In (Field_Nam, Name_uObject,
-                               Name_uParent,
-                               Name_uTag)
-         then
+         if Field_Nam in Name_uObject | Name_uParent | Name_uTag then
             null;
 
          --  Do not process fields without any scalar components
@@ -941,12 +938,35 @@ package body Exp_Attr is
    is
       --  The value of the attribute_reference is a record containing two
       --  fields: an access to the protected object, and an access to the
-      --  subprogram itself. The prefix is a selected component.
+      --  subprogram itself. The prefix is an identifier or a selected
+      --  component.
+
+      function Has_By_Protected_Procedure_Prefixed_View return Boolean;
+      --  Determine whether Pref denotes the prefixed class-wide interface
+      --  view of a procedure with synchronization kind By_Protected_Procedure.
+
+      ----------------------------------------------
+      -- Has_By_Protected_Procedure_Prefixed_View --
+      ----------------------------------------------
+
+      function Has_By_Protected_Procedure_Prefixed_View return Boolean is
+      begin
+         return Nkind (Pref) = N_Selected_Component
+           and then Nkind (Prefix (Pref)) in N_Has_Entity
+           and then Present (Entity (Prefix (Pref)))
+           and then Is_Class_Wide_Type (Etype (Entity (Prefix (Pref))))
+           and then (Is_Synchronized_Interface (Etype (Entity (Prefix (Pref))))
+                       or else
+                     Is_Protected_Interface (Etype (Entity (Prefix (Pref)))))
+           and then Is_By_Protected_Procedure (Entity (Selector_Name (Pref)));
+      end Has_By_Protected_Procedure_Prefixed_View;
+
+      --  Local variables
 
       Loc     : constant Source_Ptr := Sloc (N);
       Agg     : Node_Id;
       Btyp    : constant Entity_Id := Base_Type (Typ);
-      Sub     : Entity_Id;
+      Sub     : Entity_Id          := Empty;
       Sub_Ref : Node_Id;
       E_T     : constant Entity_Id := Equivalent_Type (Btyp);
       Acc     : constant Entity_Id :=
@@ -1015,6 +1035,23 @@ package body Exp_Attr is
                 Attribute_Name => Name_Address);
          end if;
 
+      elsif Has_By_Protected_Procedure_Prefixed_View then
+         Obj_Ref :=
+           Make_Attribute_Reference (Loc,
+             Prefix => Relocate_Node (Prefix (Pref)),
+               Attribute_Name => Name_Address);
+
+         --  Analyze the object address with expansion disabled. Required
+         --  because its expansion would displace the pointer to the object,
+         --  which is not correct at this stage since the object type is a
+         --  class-wide interface type and we are dispatching a call to a
+         --  thunk (which would erroneously displace the pointer again).
+
+         Expander_Mode_Save_And_Set (False);
+         Analyze (Obj_Ref);
+         Set_Analyzed (Obj_Ref);
+         Expander_Mode_Restore;
+
       --  Case where the prefix is not an entity name. Find the
       --  version of the protected operation to be called from
       --  outside the protected object.
@@ -1031,26 +1068,64 @@ package body Exp_Attr is
                Attribute_Name => Name_Address);
       end if;
 
-      Sub_Ref :=
-        Make_Attribute_Reference (Loc,
-          Prefix         => Sub,
-          Attribute_Name => Name_Access);
+      if Has_By_Protected_Procedure_Prefixed_View then
+         declare
+            Ctrl_Tag  : Node_Id := Duplicate_Subexpr (Prefix (Pref));
+            Prim_Addr : Node_Id;
+            Subp      : constant Entity_Id := Entity (Selector_Name (Pref));
+            Typ       : constant Entity_Id :=
+                          Etype (Etype (Entity (Prefix (Pref))));
+         begin
+            --  The target subprogram is a thunk; retrieve its address from
+            --  its secondary dispatch table slot.
 
-      --  We set the type of the access reference to the already generated
-      --  access_to_subprogram type, and declare the reference analyzed, to
-      --  prevent further expansion when the enclosing aggregate is analyzed.
+            Build_Get_Prim_Op_Address (Loc,
+              Typ      => Typ,
+              Tag_Node => Ctrl_Tag,
+              Position => DT_Position (Subp),
+              New_Node => Prim_Addr);
 
-      Set_Etype (Sub_Ref, Acc);
-      Set_Analyzed (Sub_Ref);
+            --  Mark the access to the target subprogram as an access to the
+            --  dispatch table and perform an unchecked type conversion to such
+            --  access type. This is required to allow the backend to properly
+            --  identify and handle the access to the dispatch table slot on
+            --  targets where the dispatch table contains descriptors (instead
+            --  of pointers).
 
-      Agg :=
-        Make_Aggregate (Loc,
-          Expressions => New_List (Obj_Ref, Sub_Ref));
+            Set_Is_Dispatch_Table_Entity (Acc);
+            Sub_Ref := Unchecked_Convert_To (Acc, Prim_Addr);
+            Analyze (Sub_Ref);
 
-      --  Sub_Ref has been marked as analyzed, but we still need to make sure
-      --  Sub is correctly frozen.
+            Agg :=
+              Make_Aggregate (Loc,
+                Expressions => New_List (Obj_Ref, Sub_Ref));
+         end;
 
-      Freeze_Before (N, Entity (Sub));
+      --  Common case
+
+      else
+         Sub_Ref :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => Sub,
+             Attribute_Name => Name_Access);
+
+         --  We set the type of the access reference to the already generated
+         --  access_to_subprogram type, and declare the reference analyzed,
+         --  to prevent further expansion when the enclosing aggregate is
+         --  analyzed.
+
+         Set_Etype (Sub_Ref, Acc);
+         Set_Analyzed (Sub_Ref);
+
+         Agg :=
+           Make_Aggregate (Loc,
+             Expressions => New_List (Obj_Ref, Sub_Ref));
+
+         --  Sub_Ref has been marked as analyzed, but we still need to make
+         --  sure Sub is correctly frozen.
+
+         Freeze_Before (N, Entity (Sub));
+      end if;
 
       Rewrite (N, Agg);
       Analyze_And_Resolve (N, E_T);
@@ -1952,8 +2027,8 @@ package body Exp_Attr is
 
       if Is_Protected_Self_Reference (Pref)
         and then not
-          (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
-                                 N_Discriminant_Association)
+          (Nkind (Parent (N)) in N_Index_Or_Discriminant_Constraint
+                               | N_Discriminant_Association
             and then Nkind (Parent (Parent (Parent (Parent (N))))) =
                                                       N_Component_Definition)
 
@@ -2022,9 +2097,9 @@ package body Exp_Attr is
 
             begin
                Obj_Name := N;
-               while Nkind_In (Obj_Name, N_Selected_Component,
-                                         N_Indexed_Component,
-                                         N_Slice)
+               while Nkind (Obj_Name) in N_Selected_Component
+                                       | N_Indexed_Component
+                                       | N_Slice
                loop
                   Obj_Name := Prefix (Obj_Name);
                end loop;
@@ -2192,7 +2267,7 @@ package body Exp_Attr is
 
                         begin
                            Subp := Current_Scope;
-                           while Ekind_In (Subp, E_Loop, E_Block) loop
+                           while Ekind (Subp) in E_Loop | E_Block loop
                               Subp := Scope (Subp);
                            end loop;
 
@@ -4705,6 +4780,8 @@ package body Exp_Attr is
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                =>
                   Convert_To (Typ, New_Occurrence_Of (CW_Temp, Loc))));
+
+            Set_Stores_Attribute_Old_Prefix (CW_Temp);
 
          --  Non-tagged case
 
@@ -7586,7 +7663,7 @@ package body Exp_Attr is
          Cnam := Name_Last;
       end if;
 
-      if not Nkind_In (P, N_Assignment_Statement, N_Object_Declaration)
+      if Nkind (P) not in N_Assignment_Statement | N_Object_Declaration
         or else not Suppress_Assignment_Checks (P)
       then
          Insert_Action (N,

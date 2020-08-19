@@ -5,34 +5,33 @@
 #include <stdlib.h>
 #include "analyzer-decls.h"
 
-typedef struct base_obj base_obj;
-typedef struct type_obj type_obj;
-typedef struct string_obj string_obj;
-
-struct base_obj
+typedef struct base_obj
 {
   struct type_obj *ob_type;
   int ob_refcnt;
-};
+} base_obj;
 
-struct type_obj
+typedef struct type_obj
 {
   base_obj tp_base;
-};
+  void (*tp_dealloc) (base_obj *);
+} type_obj;
 
-struct string_obj
+typedef struct boxed_int_obj
 {
-  base_obj str_base;
-  size_t str_len;
-  char str_buf[];
-};
+  base_obj int_base;
+  int int_val;
+} boxed_int_obj;
+
+extern void int_del (base_obj *);
 
 type_obj type_type = {
-  { &type_type, 1},
+  { &type_type, 1}
 };
 
-type_obj str_type = {
-  { &str_type, 1},
+type_obj boxed_int_type = {
+  { &type_type, 1},
+  int_del
 };
 
 base_obj *alloc_obj (type_obj *ob_type, size_t sz)
@@ -45,20 +44,28 @@ base_obj *alloc_obj (type_obj *ob_type, size_t sz)
   return obj;
 }
 
-void unref (base_obj *obj)
+base_obj *new_int_obj (int val)
 {
-  //__analyzer_dump();
-  if (--obj->ob_refcnt == 0)
-    free (obj);
+  boxed_int_obj *int_obj
+    = (boxed_int_obj *)alloc_obj (&boxed_int_type, sizeof (boxed_int_obj));
+  if (!int_obj)
+    return NULL;
+  int_obj->int_val = val;
+  return (base_obj *)int_obj;
 }
 
-void test_1 ()
+void unref (base_obj *obj)
 {
-  base_obj *obj = alloc_obj (&str_type, sizeof (string_obj));
-  if (obj)
-    {
-      __analyzer_dump_num_heap_regions (); /* { dg-warning "num heap regions: '1'" } */
-      unref (obj);
-      __analyzer_dump_num_heap_regions (); /* { dg-warning "num heap regions: '0'" } */
-    }
+  if (--obj->ob_refcnt == 0)
+    obj->ob_type->tp_dealloc (obj);
 }
+
+void test_1 (const char *str)
+{
+  base_obj *obj = new_int_obj (42);
+  if (!obj)
+    return;
+  __analyzer_eval (((boxed_int_obj *)obj)->int_val == 42); /* { dg-warning "TRUE" } */
+  __analyzer_eval (obj->ob_refcnt == 1); /* { dg-warning "TRUE" } */
+  unref (obj);
+} /* { dg-bogus "leak" "" } */

@@ -787,10 +787,10 @@ manext
 LIBICONV_DEP
 LTLIBICONV
 LIBICONV
-ZSTD_LIB
-ZSTD_INCLUDE
 ZSTD_LDFLAGS
 ZSTD_CPPFLAGS
+ZSTD_LIB
+ZSTD_INCLUDE
 DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
@@ -7954,30 +7954,26 @@ fi
 for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   tgt=`echo $tgt | sed 's/=.*//'`
 
-  if echo "$tgt" | grep "^hsa" > /dev/null ; then
-    enable_hsa=1
-  else
-    enable_offloading=1
-    case "$tgt" in
-      *-intelmic-* | *-intelmicemul-*)
-	omp_device_property=omp-device-properties-i386
-	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
-	;;
-      amdgcn*)
-	omp_device_property=omp-device-properties-gcn
-	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
-	;;
-      nvptx*)
-	omp_device_property=omp-device-properties-nvptx
-	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
-	;;
-      *)
-	as_fn_error $? "unknown offload target specified" "$LINENO" 5
-	;;
-    esac
-    omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
-    omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
-  fi
+  enable_offloading=1
+  case "$tgt" in
+    *-intelmic-* | *-intelmicemul-*)
+  	omp_device_property=omp-device-properties-i386
+  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
+  	;;
+    amdgcn*)
+  	omp_device_property=omp-device-properties-gcn
+  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
+  	;;
+    nvptx*)
+  	omp_device_property=omp-device-properties-nvptx
+  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+  	;;
+    *)
+  	as_fn_error $? "unknown offload target specified" "$LINENO" 5
+  	;;
+  esac
+  omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
+  omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
 
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
@@ -8000,12 +7996,6 @@ $as_echo "#define ENABLE_OFFLOADING 1" >>confdefs.h
 else
 
 $as_echo "#define ENABLE_OFFLOADING 0" >>confdefs.h
-
-fi
-
-if test x"$enable_hsa" = x1 ; then
-
-$as_echo "#define ENABLE_HSA 1" >>confdefs.h
 
 fi
 
@@ -9983,6 +9973,8 @@ ZSTD_LIB=
 
 ZSTD_CPPFLAGS=
 ZSTD_LDFLAGS=
+
+
 
 # Check whether --with-zstd was given.
 if test "${with_zstd+set}" = set; then :
@@ -19325,7 +19317,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19022 "configure"
+#line 19016 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19431,7 +19423,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19128 "configure"
+#line 19122 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23775,12 +23767,6 @@ else
   if test x"$ld_is_gold" = xyes; then
     :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
-    case "${target}" in
-      mmix-knuth-mmixware)
-        # The linker emits by default mmo, not ELF, so "no" is appropriate.
-	gcc_cv_ld_hidden=no
-	;;
-    esac
     if test 0"$ld_date" -lt 20020404; then
       if test -n "$ld_date"; then
 	# If there was date string, but was earlier than 2002-04-04, fail
@@ -31096,7 +31082,7 @@ case "$host" in
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
-	# and if assembler supports CET insn.
+	# and if compiler and assembler support CET.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -31122,7 +31108,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	;;
       yes)
-	# Check if assembler supports CET.
+	# Check if compiler and assembler support CET.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -31135,11 +31121,24 @@ asm ("setssbsy");
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-
+  support_cet=yes
 else
-  as_fn_error $? "assembler with CET support is required for --enable-cet" "$LINENO" 5
+  support_cet=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	if test $support_cet = "no"; then
+	  if test x$enable_bootstrap != xno \
+	     && test -z "${with_build_subdir}" \
+	     && (test ! -f ../stage_current \
+	         || test `cat ../stage_current` != "stage1"); then
+	    # Require CET support only for the final GCC build.
+	    as_fn_error $? "compiler and assembler with CET support are required for --enable-cet" "$LINENO" 5
+	  else
+	    # Don't enable CET without CET support for non-bootstrap
+	    # build, in stage1 nor for build support.
+	    enable_cet=no
+	  fi
+	fi
 	;;
     esac
     CFLAGS="$cet_save_CFLAGS"

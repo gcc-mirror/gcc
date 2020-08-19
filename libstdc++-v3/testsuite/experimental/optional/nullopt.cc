@@ -25,7 +25,7 @@ int main()
   // [20.5.6] Disengaged state indicator
   static_assert( std::is_same<decltype(std::experimental::nullopt), const std::experimental::nullopt_t>(), "" );
   static_assert( std::is_empty<std::experimental::nullopt_t>(), "" );
-  static_assert( std::is_literal_type<std::experimental::nullopt_t>(), "" );
+  static_assert( __is_literal_type(std::experimental::nullopt_t), "" );
   static_assert( !std::is_default_constructible<std::experimental::nullopt_t>(), "" );
 
   {

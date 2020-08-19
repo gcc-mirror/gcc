@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -434,6 +435,8 @@ package body Exp_Ch9 is
       Conctyp    : Entity_Id;
       Lo         : Node_Id;
       Hi         : Node_Id) return Boolean;
+   --  Determine whether an entry family is potentially large because one of
+   --  its bounds denotes a discrminant.
 
    function Is_Private_Primitive_Subprogram (Id : Entity_Id) return Boolean;
    --  Determine whether Id is a function or a procedure and is marked as a
@@ -585,7 +588,15 @@ package body Exp_Ch9 is
       --  structure.
 
       if Present (Index) then
-         S := Etype (Discrete_Subtype_Definition (Declaration_Node (Ent)));
+         S := Entry_Index_Type (Ent);
+
+         --  First make sure the index is in range if requested. The index type
+         --  has been directly set on the prefix, see Resolve_Entry.
+
+         if Do_Range_Check (Index) then
+            Generate_Range_Check
+              (Index, Etype (Prefix (Parent (Index))), CE_Range_Check_Failed);
+         end if;
 
          Expr :=
            Make_Op_Add (Sloc,
@@ -612,8 +623,7 @@ package body Exp_Ch9 is
             Set_Intval (Num, Intval (Num) + 1);
 
          elsif Ekind (Prev) = E_Entry_Family then
-            S :=
-              Etype (Discrete_Subtype_Definition (Declaration_Node (Prev)));
+            S := Entry_Index_Type (Prev);
 
             --  The need for the following full view retrieval stems from this
             --  complex case of nested generics and tasking:
@@ -1205,10 +1215,21 @@ package body Exp_Ch9 is
       if not Has_Master_Entity (Master_Scope)
         or else No (Current_Entity_In_Scope (Name_Id))
       then
+         declare
+            Ins_Nod : Node_Id;
+
          begin
             Set_Has_Master_Entity (Master_Scope);
             Master_Decl := Build_Master_Declaration (Loc);
-            Insert_Action (Find_Hook_Context (Related_Node), Master_Decl);
+
+            --  Ensure that the master declaration is placed before its use
+
+            Ins_Nod := Find_Hook_Context (Related_Node);
+            while not Is_List_Member (Ins_Nod) loop
+               Ins_Nod := Parent (Ins_Nod);
+            end loop;
+
+            Insert_Before (First (List_Containing (Ins_Nod)), Master_Decl);
             Analyze (Master_Decl);
 
             --  Mark the containing scope as a task master. Masters associated
@@ -1227,9 +1248,8 @@ package body Exp_Ch9 is
                      --  and the environment task is our effective master,
                      --  so nothing to mark.
 
-                     if Nkind_In (Par, N_Block_Statement,
-                                       N_Subprogram_Body,
-                                       N_Task_Body)
+                     if Nkind (Par) in
+                          N_Block_Statement | N_Subprogram_Body | N_Task_Body
                      then
                         Set_Is_Task_Master (Par);
                         exit;
@@ -1439,8 +1459,8 @@ package body Exp_Ch9 is
 
          Prag := Pre_Post_Conditions (Items);
          while Present (Prag) loop
-            if Nam_In (Pragma_Name_Unmapped (Prag),
-                       Name_Postcondition, Name_Precondition)
+            if Pragma_Name_Unmapped (Prag) in Name_Postcondition
+                                            | Name_Precondition
               and then Is_Checked (Prag)
             then
                Has_Pragma := True;
@@ -1702,7 +1722,7 @@ package body Exp_Ch9 is
                Next (Comp);
             end loop;
 
-            Typ := Etype (Discrete_Subtype_Definition (Parent (Ent)));
+            Typ := Entry_Index_Type (Ent);
             Hi := Type_High_Bound (Typ);
             Lo := Type_Low_Bound  (Typ);
             Large := Is_Potentially_Large_Family
@@ -2761,7 +2781,7 @@ package body Exp_Ch9 is
                Add_If_Clause (Make_Integer_Literal (Loc, 1));
 
             elsif Ekind (Ent) = E_Entry_Family then
-               E_Typ := Etype (Discrete_Subtype_Definition (Parent (Ent)));
+               E_Typ := Entry_Index_Type (Ent);
                Hi := Convert_Discriminant_Ref (Type_High_Bound (E_Typ));
                Lo := Convert_Discriminant_Ref (Type_Low_Bound  (E_Typ));
                Add_If_Clause (Family_Size (Loc, Hi, Lo, Typ, False));
@@ -3164,10 +3184,8 @@ package body Exp_Ch9 is
                  and then ((Nkind (N) = N_Simple_Return_Statement
                              and then N /= Last (Stmts))
                             or else Nkind (N) = N_Extended_Return_Statement
-                            or else (Nkind_In (N, N_Raise_Constraint_Error,
-                                                  N_Raise_Program_Error,
-                                                  N_Raise_Statement,
-                                                  N_Raise_Storage_Error)
+                            or else (Nkind (N) in
+                                       N_Raise_xxx_Error | N_Raise_Statement
                                       and then Comes_From_Source (N)))
                then
                   Wrap_Statement (N);
@@ -3516,9 +3534,8 @@ package body Exp_Ch9 is
       while Present (Context)
         and then Nkind (Context) /= N_Compilation_Unit
       loop
-         if Nkind_In (Context, N_Block_Statement,
-                               N_Subprogram_Body,
-                               N_Task_Body)
+         if Nkind (Context) in
+              N_Block_Statement | N_Subprogram_Body | N_Task_Body
          then
             Set_Is_Task_Master (Context);
             exit;
@@ -3555,8 +3572,40 @@ package body Exp_Ch9 is
 
       if Present (Ins_Nod) then
          Context := Ins_Nod;
+
       elsif Is_Itype (Ptr_Typ) then
          Context := Associated_Node_For_Itype (Ptr_Typ);
+
+         --  When the context references a discriminant or a component of a
+         --  private type and we are processing declarations in the private
+         --  part of the enclosing package, we must insert the master renaming
+         --  before the full declaration of the private type; otherwise the
+         --  master renaming would be inserted in the public part of the
+         --  package (and hence before the declaration of _master).
+
+         if In_Private_Part (Current_Scope) then
+            declare
+               Ctx : Node_Id := Context;
+
+            begin
+               if Nkind (Context) = N_Discriminant_Specification then
+                  Ctx := Parent (Ctx);
+               else
+                  while Nkind (Ctx) in
+                          N_Component_Declaration | N_Component_List
+                  loop
+                     Ctx := Parent (Ctx);
+                  end loop;
+               end if;
+
+               if Nkind (Ctx) in N_Private_Type_Declaration
+                               | N_Private_Extension_Declaration
+               then
+                  Context := Parent (Full_View (Defining_Identifier (Ctx)));
+               end if;
+            end;
+         end if;
+
       else
          Context := Parent (Ptr_Typ);
       end if;
@@ -5189,23 +5238,21 @@ package body Exp_Ch9 is
             Efam_Type := Make_Temporary (Loc, 'F');
 
             declare
-               Bas : Entity_Id :=
-                       Base_Type
-                         (Etype (Discrete_Subtype_Definition (Parent (Efam))));
-
-               Bas_Decl : Node_Id := Empty;
-               Lo, Hi   : Node_Id;
+               Eityp : constant Entity_Id := Entry_Index_Type (Efam);
+               Lo    : constant Node_Id   := Type_Low_Bound  (Eityp);
+               Hi    : constant Node_Id   := Type_High_Bound (Eityp);
+               Bdecl : Node_Id;
+               Bityp : Entity_Id;
 
             begin
-               Get_Index_Bounds
-                 (Discrete_Subtype_Definition (Parent (Efam)), Lo, Hi);
+               Bityp := Base_Type (Eityp);
 
-               if Is_Potentially_Large_Family (Bas, Conctyp, Lo, Hi) then
-                  Bas := Make_Temporary (Loc, 'B');
+               if Is_Potentially_Large_Family (Bityp, Conctyp, Lo, Hi) then
+                  Bityp := Make_Temporary (Loc, 'B');
 
-                  Bas_Decl :=
+                  Bdecl :=
                     Make_Subtype_Declaration (Loc,
-                       Defining_Identifier => Bas,
+                       Defining_Identifier => Bityp,
                        Subtype_Indication  =>
                          Make_Subtype_Indication (Loc,
                            Subtype_Mark =>
@@ -5218,9 +5265,9 @@ package body Exp_Ch9 is
                                  Make_Integer_Literal
                                    (Loc, Entry_Family_Bound - 1)))));
 
-                  Insert_After (Current_Node, Bas_Decl);
-                  Current_Node := Bas_Decl;
-                  Analyze (Bas_Decl);
+                  Insert_After (Current_Node, Bdecl);
+                  Current_Node := Bdecl;
+                  Analyze (Bdecl);
                end if;
 
                Efam_Decl :=
@@ -5229,7 +5276,7 @@ package body Exp_Ch9 is
                    Type_Definition =>
                      Make_Unconstrained_Array_Definition (Loc,
                        Subtype_Marks =>
-                         (New_List (New_Occurrence_Of (Bas, Loc))),
+                         (New_List (New_Occurrence_Of (Bityp, Loc))),
 
                     Component_Definition =>
                       Make_Component_Definition (Loc,
@@ -5258,10 +5305,8 @@ package body Exp_Ch9 is
                         Constraint   =>
                           Make_Index_Or_Discriminant_Constraint (Loc,
                             Constraints => New_List (
-                              New_Occurrence_Of
-                                (Etype (Discrete_Subtype_Definition
-                                          (Parent (Efam))), Loc)))))));
-
+                              New_Occurrence_Of (Entry_Index_Type (Efam),
+                                                 Loc)))))));
          end if;
 
          Next_Entity (Efam);
@@ -5526,7 +5571,7 @@ package body Exp_Ch9 is
          --    _object : prot_typVP := prot_typV (_O);
          --    subtype Jnn is <Type of Index> range Low .. High;
 
-         if Nkind_In (Decl, N_Full_Type_Declaration, N_Object_Declaration) then
+         if Nkind (Decl) in N_Full_Type_Declaration | N_Object_Declaration then
             Set_Debug_Info_Needed (Defining_Identifier (Decl));
 
          --  Declaration for the Protection object, discriminals, privals, and
@@ -5625,7 +5670,14 @@ package body Exp_Ch9 is
       --  using the index subtype which may mention a discriminant.
 
       if Present (Index) then
-         S := Etype (Discrete_Subtype_Definition (Declaration_Node (Ent)));
+         S := Entry_Index_Type (Ent);
+
+         --  First make sure the index is in range if requested. The index type
+         --  is the pristine Entry_Index_Type of the entry.
+
+         if Do_Range_Check (Index) then
+            Generate_Range_Check (Index, S, CE_Range_Check_Failed);
+         end if;
 
          Expr :=
            Make_Op_Add (Sloc,
@@ -5655,7 +5707,7 @@ package body Exp_Ch9 is
             Set_Intval (Num, Intval (Num) + 1);
 
          elsif Ekind (Prev) = E_Entry_Family then
-            S := Etype (Discrete_Subtype_Definition (Declaration_Node (Prev)));
+            S := Entry_Index_Type (Prev);
             Lo := Type_Low_Bound  (S);
             Hi := Type_High_Bound (S);
 
@@ -6132,7 +6184,7 @@ package body Exp_Ch9 is
          if Is_Static_Expression (N) then
             return True;
          elsif Ada_Version >= Ada_2020
-           and then Nkind_In (N, N_Selected_Component, N_Indexed_Component)
+           and then Nkind (N) in N_Selected_Component | N_Indexed_Component
            and then Statically_Names_Object (N)
          then
             --  Restriction relaxed in Ada2020 to allow statically named
@@ -6636,6 +6688,7 @@ package body Exp_Ch9 is
          --  must be properly set.
 
          Set_Parent (Block, Parent (N));
+         Set_Parent (Blkent, Block);
 
          --  Prepend call to Accept_Call to main statement sequence If the
          --  accept has exception handlers, the statement sequence is wrapped
@@ -7073,8 +7126,8 @@ package body Exp_Ch9 is
 
       if Nkind (Ecall) = N_Block_Statement then
          Ecall := First (Statements (Handled_Statement_Sequence (Ecall)));
-         while not Nkind_In (Ecall, N_Procedure_Call_Statement,
-                                    N_Entry_Call_Statement)
+         while Nkind (Ecall) not in
+                 N_Procedure_Call_Statement | N_Entry_Call_Statement
          loop
             Next (Ecall);
          end loop;
@@ -7087,9 +7140,8 @@ package body Exp_Ch9 is
          if Ada_Version >= Ada_2005
            and then
              (No (Original_Node (Ecall))
-               or else not Nkind_In (Original_Node (Ecall),
-                                     N_Delay_Relative_Statement,
-                                     N_Delay_Until_Statement))
+               or else Nkind (Original_Node (Ecall)) not in
+                         N_Delay_Relative_Statement | N_Delay_Until_Statement)
          then
             Extract_Dispatching_Call (Ecall, Call_Ent, Obj, Actuals, Formals);
 
@@ -10051,8 +10103,7 @@ package body Exp_Ch9 is
 
          Acc_Ent := N;
          while Present (Acc_Ent)
-           and then not Nkind_In (Acc_Ent, N_Accept_Statement,
-                                           N_Entry_Body)
+           and then Nkind (Acc_Ent) not in N_Accept_Statement | N_Entry_Body
          loop
             Acc_Ent := Parent (Acc_Ent);
          end loop;
@@ -12466,7 +12517,7 @@ package body Exp_Ch9 is
       begin
          Ent := First_Entity (Tasktyp);
          while Present (Ent) loop
-            if Ekind_In (Ent, E_Entry, E_Entry_Family) then
+            if Ekind (Ent) in E_Entry | E_Entry_Family then
                Build_Contract_Wrapper (Ent, N);
             end if;
 
@@ -12589,8 +12640,6 @@ package body Exp_Ch9 is
    --  global references if within an instantiation.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
       Actuals        : List_Id;
       Blk_Typ        : Entity_Id;
       Call           : Node_Id;
@@ -12613,6 +12662,7 @@ package body Exp_Ch9 is
       Index          : Node_Id;
       Is_Disp_Select : Boolean;
       Lim_Typ_Stmts  : List_Id;
+      Loc            : constant Source_Ptr := Sloc (D_Stat);
       N_Stats        : List_Id;
       Obj            : Entity_Id;
       Param          : Node_Id;
@@ -12657,8 +12707,8 @@ package body Exp_Ch9 is
 
       if Nkind (E_Call) = N_Block_Statement then
          E_Call := First (Statements (Handled_Statement_Sequence (E_Call)));
-         while not Nkind_In (E_Call, N_Procedure_Call_Statement,
-                                     N_Entry_Call_Statement)
+         while Nkind (E_Call) not in
+                 N_Procedure_Call_Statement | N_Entry_Call_Statement
          loop
             Next (E_Call);
          end loop;
@@ -13361,12 +13411,12 @@ package body Exp_Ch9 is
 
       Context := Parent (N);
       while Present (Context) loop
-         if Nkind_In (Context, N_Entry_Body,
-                               N_Extended_Return_Statement,
-                               N_Package_Body,
-                               N_Package_Declaration,
-                               N_Subprogram_Body,
-                               N_Task_Body)
+         if Nkind (Context) in N_Entry_Body
+                             | N_Extended_Return_Statement
+                             | N_Package_Body
+                             | N_Package_Declaration
+                             | N_Subprogram_Body
+                             | N_Task_Body
          then
             exit;
 
@@ -13495,7 +13545,7 @@ package body Exp_Ch9 is
    begin
       First_Op := First (D);
       while Present (First_Op)
-        and then not Nkind_In (First_Op, N_Subprogram_Body, N_Entry_Body)
+        and then Nkind (First_Op) not in N_Subprogram_Body | N_Entry_Body
       loop
          Next (First_Op);
       end loop;
@@ -13973,8 +14023,8 @@ package body Exp_Ch9 is
       --  of this type should have been removed during semantic analysis.
 
       Pdec := Parent (Ptyp);
-      while not Nkind_In (Pdec, N_Protected_Type_Declaration,
-                                N_Single_Protected_Declaration)
+      while Nkind (Pdec) not in
+              N_Protected_Type_Declaration | N_Single_Protected_Declaration
       loop
          Next (Pdec);
       end loop;
@@ -14405,8 +14455,8 @@ package body Exp_Ch9 is
       --  this type should have been removed during semantic analysis.
 
       Tdec := Parent (Ttyp);
-      while not Nkind_In (Tdec, N_Task_Type_Declaration,
-                                N_Single_Task_Declaration)
+      while Nkind (Tdec) not in
+              N_Task_Type_Declaration | N_Single_Task_Declaration
       loop
          Next (Tdec);
       end loop;
@@ -14755,8 +14805,8 @@ package body Exp_Ch9 is
 
       Next_Op := Next (N);
       while Present (Next_Op)
-        and then not Nkind_In (Next_Op,
-           N_Subprogram_Body, N_Entry_Body, N_Expression_Function)
+        and then Nkind (Next_Op) not in
+                   N_Subprogram_Body | N_Entry_Body | N_Expression_Function
       loop
          Next (Next_Op);
       end loop;
@@ -14774,14 +14824,13 @@ package body Exp_Ch9 is
    begin
       Stmt := First (Stats);
       while Nkind (Stmt) /= N_Empty
-        and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
+        and then (Nkind (Stmt) in N_Null_Statement | N_Label
                    or else
                      (Nkind (Stmt) = N_Pragma
                        and then
-                         Nam_In (Pragma_Name_Unmapped (Stmt),
-                                 Name_Unreferenced,
-                                 Name_Unmodified,
-                                 Name_Warnings)))
+                         Pragma_Name_Unmapped (Stmt) in Name_Unreferenced
+                                                      | Name_Unmodified
+                                                      | Name_Warnings))
       loop
          Next (Stmt);
       end loop;

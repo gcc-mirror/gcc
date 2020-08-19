@@ -412,22 +412,23 @@ package body Osint.C is
          --  Remove extension preparing to replace it
 
          declare
-            Name  : String  := Name_Buffer (1 .. Dot_Index);
-            First : Positive;
+            Name   : String  := Name_Buffer (1 .. Dot_Index);
+            Output : String  := Output_Object_File_Name.all;
+            First  : Positive;
 
          begin
-            Name_Buffer (1 .. Output_Object_File_Name'Length) :=
-              Output_Object_File_Name.all;
+            Name_Buffer (1 .. Output_Object_File_Name'Length) := Output;
 
             --  Put two names in canonical case, to allow object file names
             --  with upper-case letters on Windows.
+            --  Do it with a copy (Output) and keep Name_Buffer as is since we
+            --  want to preserve the original casing.
 
             Canonical_Case_File_Name (Name);
-            Canonical_Case_File_Name
-              (Name_Buffer (1 .. Output_Object_File_Name'Length));
+            Canonical_Case_File_Name (Output);
 
             Dot_Index := 0;
-            for J in reverse Output_Object_File_Name'Range loop
+            for J in reverse Output'Range loop
                if Name_Buffer (J) = '.' then
                   Dot_Index := J;
                   exit;
@@ -451,7 +452,7 @@ package body Osint.C is
 
             --  Check name of object file is what we expect
 
-            if Name /= Name_Buffer (First .. Dot_Index) then
+            if Name /= Output (First .. Dot_Index) then
                Fail ("incorrect object file name");
             end if;
          end;

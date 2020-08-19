@@ -313,8 +313,8 @@ DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
 	  m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_CORE_ALL | m_GOLDMONT
 	  | m_GOLDMONT_PLUS | m_TREMONT | m_GENERIC)
 
-/* X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE: Use xchg instead of mov+mfence.  */
-DEF_TUNE (X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE, "use_xchg_for_atomic_store",
+/* X86_TUNE_AVOID_MFENCE: Use lock prefixed instructions instead of mfence.  */
+DEF_TUNE (X86_TUNE_AVOID_MFENCE, "avoid_mfence",
 	 m_CORE_ALL | m_BDVER | m_ZNVER | m_GENERIC)
 
 /* X86_TUNE_EXPAND_ABS: This enables a new abs pattern by

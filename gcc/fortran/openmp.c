@@ -766,6 +766,7 @@ enum omp_mask1
   OMP_CLAUSE_NUM_THREADS,
   OMP_CLAUSE_SCHEDULE,
   OMP_CLAUSE_DEFAULT,
+  OMP_CLAUSE_ORDER,
   OMP_CLAUSE_ORDERED,
   OMP_CLAUSE_COLLAPSE,
   OMP_CLAUSE_UNTIED,
@@ -793,6 +794,7 @@ enum omp_mask1
   OMP_CLAUSE_IS_DEVICE_PTR,
   OMP_CLAUSE_LINK,
   OMP_CLAUSE_NOGROUP,
+  OMP_CLAUSE_NOTEMPORAL,
   OMP_CLAUSE_NUM_TASKS,
   OMP_CLAUSE_PRIORITY,
   OMP_CLAUSE_SIMD,
@@ -1303,7 +1305,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  /* This should match the enum gfc_omp_if_kind order.  */
 		  static const char *ifs[OMP_IF_LAST] = {
+		    " cancel : %e )",
 		    " parallel : %e )",
+		    " simd : %e )",
 		    " task : %e )",
 		    " taskloop : %e )",
 		    " target : %e )",
@@ -1353,10 +1357,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  break;
 	case 'l':
 	  if ((mask & OMP_CLAUSE_LASTPRIVATE)
-	      && gfc_match_omp_variable_list ("lastprivate (",
-					      &c->lists[OMP_LIST_LASTPRIVATE],
-					      true) == MATCH_YES)
-	    continue;
+	      && gfc_match ("lastprivate ( ") == MATCH_YES)
+	    {
+	      bool conditional = gfc_match ("conditional : ") == MATCH_YES;
+	      head = NULL;
+	      if (gfc_match_omp_variable_list ("",
+					       &c->lists[OMP_LIST_LASTPRIVATE],
+					       false, NULL, &head) == MATCH_YES)
+		{
+		  gfc_omp_namelist *n;
+		  for (n = *head; n; n = n->next)
+		    n->u.lastprivate_conditional = conditional;
+		  continue;
+		}
+	      gfc_current_locus = old_loc;
+	      break;
+	    }
 	  end_colon = false;
 	  head = NULL;
 	  if ((mask & OMP_CLAUSE_LINEAR)
@@ -1464,7 +1480,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      head = NULL;
 	      if (gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
 					       false, NULL, &head,
-					       true) == MATCH_YES)
+					       true, true) == MATCH_YES)
 		{
 		  gfc_omp_namelist *n;
 		  for (n = *head; n; n = n->next)
@@ -1495,6 +1511,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->nogroup = needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_NOTEMPORAL)
+	      && gfc_match_omp_variable_list ("nontemporal (",
+					      &c->lists[OMP_LIST_NONTEMPORAL],
+					      true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_NOTINBRANCH)
 	      && !c->notinbranch
 	      && !c->inbranch
@@ -1535,6 +1556,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  break;
 	case 'o':
+	  if ((mask & OMP_CLAUSE_ORDER)
+	      && !c->order_concurrent
+	      && gfc_match ("order ( concurrent )") == MATCH_YES)
+	    {
+	      c->order_concurrent = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_ORDERED)
 	      && !c->ordered
 	      && gfc_match ("ordered") == MATCH_YES)
@@ -2561,14 +2589,15 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION			\
    | OMP_CLAUSE_SCHEDULE | OMP_CLAUSE_ORDERED | OMP_CLAUSE_COLLAPSE	\
-   | OMP_CLAUSE_LINEAR)
+   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
 #define OMP_SIMD_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
-   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN)
+   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN	\
+   | OMP_CLAUSE_IF | OMP_CLAUSE_ORDER | OMP_CLAUSE_NOTEMPORAL)
 #define OMP_TASK_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
@@ -2631,15 +2660,10 @@ gfc_match_omp_critical (void)
   gfc_omp_clauses *c = NULL;
 
   if (gfc_match (" ( %n )", n) != MATCH_YES)
-    {
-      n[0] = '\0';
-      if (gfc_match_omp_eos () != MATCH_YES)
-	{
-	  gfc_error ("Unexpected junk after $OMP CRITICAL statement at %C");
-	  return MATCH_ERROR;
-	}
-    }
-  else if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_HINT)) != MATCH_YES)
+    n[0] = '\0';
+
+  if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_HINT),
+			     /* first = */ n[0] == '\0') != MATCH_YES)
     return MATCH_ERROR;
 
   new_st.op = EXEC_OMP_CRITICAL;
@@ -3414,6 +3438,230 @@ gfc_match_omp_parallel_workshare (void)
   return match_omp (EXEC_OMP_PARALLEL_WORKSHARE, OMP_PARALLEL_CLAUSES);
 }
 
+void
+gfc_check_omp_requires (gfc_namespace *ns, int ref_omp_requires)
+{
+  if (ns->omp_target_seen
+      && (ns->omp_requires & OMP_REQ_TARGET_MASK)
+	 != (ref_omp_requires & OMP_REQ_TARGET_MASK))
+    {
+      gcc_assert (ns->proc_name);
+      if ((ref_omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+	  && !(ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
+	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
+		   "but does not set !$OMP REQUIRES REVERSE_OFFSET but other "
+		   "program units do", &ns->proc_name->declared_at);
+      if ((ref_omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+	  && !(ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS))
+	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
+		   "but does not set !$OMP REQUIRES UNIFIED_ADDRESS but other "
+		   "program units do", &ns->proc_name->declared_at);
+      if ((ref_omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	  && !(ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY))
+	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
+		   "but does not set !$OMP REQUIRES UNIFIED_SHARED_MEMORY but "
+		   "other program units do", &ns->proc_name->declared_at);
+    }
+}
+
+bool
+gfc_omp_requires_add_clause (gfc_omp_requires_kind clause,
+			     const char *clause_name, locus *loc,
+			     const char *module_name)
+{
+  gfc_namespace *prog_unit = gfc_current_ns;
+  while (prog_unit->parent)
+    {
+      if (gfc_state_stack->previous
+	  && gfc_state_stack->previous->state == COMP_INTERFACE)
+	break;
+      prog_unit = prog_unit->parent;
+    }
+
+  /* Requires added after use.  */
+  if (prog_unit->omp_target_seen
+      && (clause & OMP_REQ_TARGET_MASK)
+      && !(prog_unit->omp_requires & clause))
+    {
+      if (module_name)
+	gfc_error ("!$OMP REQUIRES clause %qs specified via module %qs use "
+		   "at %L comes after using a device construct/routine",
+		   clause_name, module_name, loc);
+      else
+	gfc_error ("!$OMP REQUIRES clause %qs specified at %L comes after "
+		   "using a device construct/routine", clause_name, loc);
+      return false;
+    }
+
+  /* Overriding atomic_default_mem_order clause value.  */
+  if ((clause & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+      && (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+      && (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	 != (int) clause)
+    {
+      const char *other;
+      if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST)
+	other = "seq_cst";
+      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
+	other = "acq_rel";
+      else if (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+	other = "relaxed";
+      else
+	gcc_unreachable ();
+
+      if (module_name)
+	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
+		   "specified via module %qs use at %L overrides a previous "
+		   "%<atomic_default_mem_order(%s)%> (which might be through "
+		   "using a module)", clause_name, module_name, loc, other);
+      else
+	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
+		   "specified at %L overrides a previous "
+		   "%<atomic_default_mem_order(%s)%> (which might be through "
+		   "using a module)", clause_name, loc, other);
+      return false;
+    }
+
+  /* Requires via module not at program-unit level and not repeating clause.  */
+  if (prog_unit != gfc_current_ns && !(prog_unit->omp_requires & clause))
+    {
+      if (clause & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
+		   "specified via module %qs use at %L but same clause is "
+		   "not set at for the program unit", clause_name, module_name,
+		   loc);
+      else
+	gfc_error ("!$OMP REQUIRES clause %qs specified via module %qs use at "
+		   "%L but same clause is not set at for the program unit",
+		   clause_name, module_name, loc);
+      return false;
+    }
+
+  if (!gfc_state_stack->previous
+      || gfc_state_stack->previous->state != COMP_INTERFACE)
+    prog_unit->omp_requires |= clause;
+  return true;
+}
+
+match
+gfc_match_omp_requires (void)
+{
+  static const char *clauses[] = {"reverse_offload",
+				  "unified_address",
+				  "unified_shared_memory",
+				  "dynamic_allocators",
+				  "atomic_default"};
+  const char *clause = NULL;
+  int requires_clauses = 0;
+  bool first = true;
+  locus old_loc;
+
+  if (gfc_current_ns->parent
+      && (!gfc_state_stack->previous
+	  || gfc_state_stack->previous->state != COMP_INTERFACE))
+    {
+      gfc_error ("!$OMP REQUIRES at %C must appear in the specification part "
+		 "of a program unit");
+      return MATCH_ERROR;
+    }
+
+  while (true)
+    {
+      old_loc = gfc_current_locus;
+      gfc_omp_requires_kind requires_clause;
+      if ((first || gfc_match_char (',') != MATCH_YES)
+	  && (first && gfc_match_space () != MATCH_YES))
+	goto error;
+      first = false;
+      gfc_gobble_whitespace ();
+      old_loc = gfc_current_locus;
+
+      if (gfc_match_omp_eos () != MATCH_NO)
+	break;
+      if (gfc_match (clauses[0]) == MATCH_YES)
+	{
+	  clause = clauses[0];
+	  requires_clause = OMP_REQ_REVERSE_OFFLOAD;
+	  if (requires_clauses & OMP_REQ_REVERSE_OFFLOAD)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[1]) == MATCH_YES)
+	{
+	  clause = clauses[1];
+	  requires_clause = OMP_REQ_UNIFIED_ADDRESS;
+	  if (requires_clauses & OMP_REQ_UNIFIED_ADDRESS)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[2]) == MATCH_YES)
+	{
+	  clause = clauses[2];
+	  requires_clause = OMP_REQ_UNIFIED_SHARED_MEMORY;
+	  if (requires_clauses & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[3]) == MATCH_YES)
+	{
+	  clause = clauses[3];
+	  requires_clause = OMP_REQ_DYNAMIC_ALLOCATORS;
+	  if (requires_clauses & OMP_REQ_DYNAMIC_ALLOCATORS)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match ("atomic_default_mem_order (") == MATCH_YES)
+	{
+	  clause = clauses[4];
+	  if (requires_clauses & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	    goto duplicate_clause;
+	  if (gfc_match (" seq_cst )") == MATCH_YES)
+	    {
+	      clause = "seq_cst";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST;
+	    }
+	  else if (gfc_match (" acq_rel )") == MATCH_YES)
+	    {
+	      clause = "acq_rel";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL;
+	    }
+	  else if (gfc_match (" relaxed )") == MATCH_YES)
+	    {
+	      clause = "relaxed";
+	      requires_clause = OMP_REQ_ATOMIC_MEM_ORDER_RELAXED;
+	    }
+	  else
+	    {
+	      gfc_error ("Expected SEQ_CST, ACQ_REL or RELAXED for "
+			 "ATOMIC_DEFAULT_MEM_ORDER clause at %C");
+	      goto error;
+	    }
+	}
+      else
+	goto error;
+
+      if (requires_clause & ~OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	gfc_error_now ("Sorry, %qs clause at %L on REQUIRES directive is not "
+		       "yet supported", clause, &old_loc);
+      if (!gfc_omp_requires_add_clause (requires_clause, clause, &old_loc, NULL))
+	goto error;
+      requires_clauses |= requires_clause;
+    }
+
+  if (requires_clauses == 0)
+    {
+      if (!gfc_error_flag_test ())
+	gfc_error ("Clause expected at %C");
+      goto error;
+    }
+  return MATCH_YES;
+
+duplicate_clause:
+  gfc_error ("%qs clause at %L specified more than once", clause, &old_loc);
+error:
+  if (!gfc_error_flag_test ())
+    gfc_error ("Expected UNIFIED_ADDRESS, UNIFIED_SHARED_MEMORY, "
+	       "DYNAMIC_ALLOCATORS, REVERSE_OFFLOAD, or "
+	       "ATOMIC_DEFAULT_MEM_ORDER clause at %L", &old_loc);
+  return MATCH_ERROR;
+}
+
 
 match
 gfc_match_omp_sections (void)
@@ -3735,6 +3983,26 @@ gfc_match_omp_oacc_atomic (bool omp_p)
   new_st.op = (omp_p ? EXEC_OMP_ATOMIC : EXEC_OACC_ATOMIC);
   if (seq_cst)
     op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
+  else if (omp_p)
+    {
+      gfc_namespace *prog_unit = gfc_current_ns;
+      while (prog_unit->parent)
+	prog_unit = prog_unit->parent;
+      switch (prog_unit->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	{
+	case 0:
+	case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
+	  op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
+	  break;
+	case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
+	  op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_ACQ_REL);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
   new_st.ext.omp_atomic = op;
   return MATCH_YES;
 }
@@ -4101,7 +4369,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     = { "PRIVATE", "FIRSTPRIVATE", "LASTPRIVATE", "COPYPRIVATE", "SHARED",
 	"COPYIN", "UNIFORM", "ALIGNED", "LINEAR", "DEPEND", "MAP",
 	"TO", "FROM", "REDUCTION", "DEVICE_RESIDENT", "LINK", "USE_DEVICE",
-	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR" };
+	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
+	"NONTEMPORAL" };
+  STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
     return;
@@ -4138,16 +4408,30 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	else
 	  switch (code->op)
 	    {
+	    case EXEC_OMP_CANCEL:
+	      ok = ifc == OMP_IF_CANCEL;
+	      break;
+
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
-	    case EXEC_OMP_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
-	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
-	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	      ok = ifc == OMP_IF_PARALLEL;
+	      break;
+
+	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	      ok = ifc == OMP_IF_PARALLEL || ifc == OMP_IF_SIMD;
+	      break;
+
+	    case EXEC_OMP_SIMD:
+	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	      ok = ifc == OMP_IF_SIMD;
 	      break;
 
 	    case EXEC_OMP_TASK:
@@ -4155,16 +4439,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 
 	    case EXEC_OMP_TASKLOOP:
-	    case EXEC_OMP_TASKLOOP_SIMD:
 	      ok = ifc == OMP_IF_TASKLOOP;
+	      break;
+
+	    case EXEC_OMP_TASKLOOP_SIMD:
+	      ok = ifc == OMP_IF_TASKLOOP || ifc == OMP_IF_SIMD;
 	      break;
 
 	    case EXEC_OMP_TARGET:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+	      ok = ifc == OMP_IF_TARGET;
+	      break;
+
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_TARGET_SIMD:
-	      ok = ifc == OMP_IF_TARGET;
+	      ok = ifc == OMP_IF_TARGET || ifc == OMP_IF_SIMD;
 	      break;
 
 	    case EXEC_OMP_TARGET_DATA:
@@ -4184,11 +4474,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
-	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
-	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
 	      ok = ifc == OMP_IF_TARGET || ifc == OMP_IF_PARALLEL;
+	      break;
+
+	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	      ok = (ifc == OMP_IF_TARGET
+		    || ifc == OMP_IF_PARALLEL
+		    || ifc == OMP_IF_SIMD);
 	      break;
 
 	    default:
@@ -4198,7 +4493,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	if (!ok)
 	  {
 	    static const char *ifs[] = {
+	      "CANCEL",
 	      "PARALLEL",
+	      "SIMD",
 	      "TASK",
 	      "TASKLOOP",
 	      "TARGET",
@@ -4436,12 +4733,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
-	const char *name;
-
-	if (list < OMP_LIST_NUM)
-	  name = clause_names[list];
-	else
-	  gcc_unreachable ();
+	const char *name = clause_names[list];
 
 	switch (list)
 	  {
@@ -4553,7 +4845,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 		    /* Look through component refs to find last array
 		       reference.  */
-		    if (openacc && resolved)
+		    if (resolved)
 		      {
 			/* The "!$acc cache" directive allows rectangular
 			   subarrays to be specified, with some restrictions
@@ -4563,6 +4855,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			   arr(-n:n,-n:n) could be contiguous even if it looks
 			   like it may not be.  */
 			if (list != OMP_LIST_CACHE
+			    && list != OMP_LIST_DEPEND
 			    && !gfc_is_simply_contiguous (n->expr, false, true)
 			    && gfc_is_not_contiguous (n->expr))
 			  gfc_error ("Array is not contiguous at %L",
@@ -4999,7 +5292,14 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->device)
     resolve_nonnegative_int_expr (omp_clauses->device, "DEVICE");
   if (omp_clauses->hint)
-    resolve_scalar_int_expr (omp_clauses->hint, "HINT");
+    {
+      resolve_scalar_int_expr (omp_clauses->hint, "HINT");
+    if (omp_clauses->hint->ts.type != BT_INTEGER
+	|| omp_clauses->hint->expr_type != EXPR_CONSTANT
+	|| mpz_sgn (omp_clauses->hint->value.integer) < 0)
+      gfc_error ("Value of HINT clause at %L shall be a valid "
+		 "constant hint expression", &omp_clauses->hint->where);
+    }
   if (omp_clauses->priority)
     resolve_nonnegative_int_expr (omp_clauses->priority, "PRIORITY");
   if (omp_clauses->dist_chunk_size)
@@ -5041,17 +5341,23 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->depend_source && code->op != EXEC_OMP_ORDERED)
     gfc_error ("SOURCE dependence type only allowed "
 	       "on ORDERED directive at %L", &code->loc);
-  if (!openacc && code && omp_clauses->lists[OMP_LIST_MAP] == NULL)
+  if (!openacc
+      && code
+      && omp_clauses->lists[OMP_LIST_MAP] == NULL
+      && omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR] == NULL
+      && omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR] == NULL)
     {
       const char *p = NULL;
       switch (code->op)
 	{
-	case EXEC_OMP_TARGET_DATA: p = "TARGET DATA"; break;
 	case EXEC_OMP_TARGET_ENTER_DATA: p = "TARGET ENTER DATA"; break;
 	case EXEC_OMP_TARGET_EXIT_DATA: p = "TARGET EXIT DATA"; break;
 	default: break;
 	}
-      if (p)
+      if (code->op == EXEC_OMP_TARGET_DATA)
+	gfc_error ("TARGET DATA must contain at least one MAP, USE_DEVICE_PTR, "
+		   "or USE_DEVICE_ADDR clause at %L", &code->loc);
+      else if (p)
 	gfc_error ("%s must contain at least one MAP clause at %L",
 		   p, &code->loc);
     }
@@ -5899,8 +6205,6 @@ resolve_omp_do (gfc_code *code)
 	      do_code2 = do_code2->block->next;
 	    }
 	}
-      if (i == collapse)
-	break;
       for (c = do_code->next; c; c = c->next)
 	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
 	  {
@@ -5908,7 +6212,7 @@ resolve_omp_do (gfc_code *code)
 		       name, &c->loc);
 	    break;
 	  }
-      if (c)
+      if (i == collapse || c)
 	break;
       do_code = do_code->block;
       if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
@@ -6513,6 +6817,16 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
       break;
     case EXEC_OMP_ATOMIC:
       resolve_omp_atomic (code);
+      break;
+    case EXEC_OMP_CRITICAL:
+      resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
+      if (!code->ext.omp_clauses->critical_name
+	  && code->ext.omp_clauses->hint
+	  && code->ext.omp_clauses->hint->ts.type == BT_INTEGER
+	  && code->ext.omp_clauses->hint->expr_type == EXPR_CONSTANT
+	  && mpz_sgn (code->ext.omp_clauses->hint->value.integer) != 0)
+	gfc_error ("OMP CRITICAL at %L with HINT clause requires a NAME, "
+		   "except when omp_sync_hint_none is used", &code->loc);
       break;
     default:
       break;

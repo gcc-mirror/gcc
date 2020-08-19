@@ -237,7 +237,7 @@ package body Restrict is
 
       --  For type conversion, check converted expression
 
-      elsif Nkind_In (Obj, N_Unchecked_Type_Conversion, N_Type_Conversion) then
+      elsif Nkind (Obj) in N_Unchecked_Type_Conversion | N_Type_Conversion then
          Check_No_Implicit_Aliasing (Expression (Obj));
          return;
 
@@ -626,7 +626,14 @@ package body Restrict is
          return;
       end if;
 
-      Id := Identifier (N);
+      if Nkind (N) = N_Pragma then
+         Id := Pragma_Identifier (N);
+      elsif Nkind (N) = N_Attribute_Definition_Clause then
+         Id := N;
+      else
+         Id := Identifier (N);
+      end if;
+
       A_Id := Get_Aspect_Id (Chars (Id));
       pragma Assert (A_Id /= No_Aspect);
 
@@ -739,7 +746,7 @@ package body Restrict is
                            and then Chars (Scope (Ent)) = Name_Ada
                            and then Scope (Scope (Ent)) = Standard_Standard)
                then
-                  if Nkind_In (Expr, N_Identifier, N_Operator_Symbol)
+                  if Nkind (Expr) in N_Identifier | N_Operator_Symbol
                     and then Chars (Ent) = Chars (Expr)
                   then
                      Error_Msg_Node_1 := N;
@@ -756,7 +763,7 @@ package body Restrict is
 
                --  Here if at outer level of entity name in table
 
-               elsif Nkind_In (Expr, N_Identifier, N_Operator_Symbol) then
+               elsif Nkind (Expr) in N_Identifier | N_Operator_Symbol then
                   exit;
 
                --  Here if neither at the outer level
@@ -970,7 +977,7 @@ package body Restrict is
              and then
            OK_No_Use_Of_Entity_Name (Selector_Name (N));
 
-      elsif Nkind_In (N, N_Identifier, N_Operator_Symbol) then
+      elsif Nkind (N) in N_Identifier | N_Operator_Symbol then
          return True;
 
       else
@@ -1251,15 +1258,15 @@ package body Restrict is
 
    function Same_Entity (E1, E2 : Node_Id) return Boolean is
    begin
-      if Nkind_In (E1, N_Identifier, N_Operator_Symbol)
+      if Nkind (E1) in N_Identifier | N_Operator_Symbol
            and then
-         Nkind_In (E2, N_Identifier, N_Operator_Symbol)
+         Nkind (E2) in N_Identifier | N_Operator_Symbol
       then
          return Chars (E1) = Chars (E2);
 
-      elsif Nkind_In (E1, N_Selected_Component, N_Expanded_Name)
+      elsif Nkind (E1) in N_Selected_Component | N_Expanded_Name
               and then
-            Nkind_In (E2, N_Selected_Component, N_Expanded_Name)
+            Nkind (E2) in N_Selected_Component | N_Expanded_Name
       then
          return Same_Unit (Prefix (E1), Prefix (E2))
                   and then
@@ -1278,9 +1285,9 @@ package body Restrict is
       if Nkind (U1) = N_Identifier and then Nkind (U2) = N_Identifier then
          return Chars (U1) = Chars (U2);
 
-      elsif Nkind_In (U1, N_Selected_Component, N_Expanded_Name)
+      elsif Nkind (U1) in N_Selected_Component | N_Expanded_Name
               and then
-            Nkind_In (U2, N_Selected_Component, N_Expanded_Name)
+            Nkind (U2) in N_Selected_Component | N_Expanded_Name
       then
          return Same_Unit (Prefix (U1), Prefix (U2))
                   and then
@@ -1347,8 +1354,6 @@ package body Restrict is
    -- Set_Restriction --
    ---------------------
 
-   --  Case of Boolean restriction
-
    procedure Set_Restriction
      (R : All_Boolean_Restrictions;
       N : Node_Id)
@@ -1387,8 +1392,6 @@ package body Restrict is
          end if;
       end if;
    end Set_Restriction;
-
-   --  Case of parameter restriction
 
    procedure Set_Restriction
      (R : All_Parameter_Restrictions;
@@ -1439,6 +1442,29 @@ package body Restrict is
       Restriction_Profile_Name (R) := No_Profile;
    end Set_Restriction;
 
+   procedure Set_Restriction
+     (R    : All_Restrictions;
+      N    : Node_Id;
+      Warn : Boolean;
+      V    : Integer := Integer'First)
+   is
+      Set : Boolean := True;
+   begin
+      if Warn and then Restriction_Active (R) then
+         Set := False;
+      end if;
+
+      if Set then
+         if R in All_Boolean_Restrictions then
+            Set_Restriction (R, N);
+         else
+            Set_Restriction (R, N, V);
+         end if;
+
+         Restriction_Warnings (R) := Warn;
+      end if;
+   end Set_Restriction;
+
    -----------------------------------
    -- Set_Restriction_No_Dependence --
    -----------------------------------
@@ -1478,7 +1504,7 @@ package body Restrict is
 
    procedure Set_Restriction_No_Use_Of_Entity
      (Entity  : Node_Id;
-      Warning : Boolean;
+      Warn    : Boolean;
       Profile : Profile_Name := No_Profile)
    is
       Nam : Node_Id;
@@ -1494,7 +1520,7 @@ package body Restrict is
 
             --  Error has precedence over warning
 
-            if not Warning then
+            if not Warn then
                No_Use_Of_Entity.Table (J).Warn := False;
             end if;
 
@@ -1504,17 +1530,17 @@ package body Restrict is
 
       --  Entry is not currently in table
 
-      No_Use_Of_Entity.Append ((Entity, Warning, Profile));
+      No_Use_Of_Entity.Append ((Entity, Warn, Profile));
 
       --  Now we need to find the direct name and set Boolean2 flag
 
-      if Nkind_In (Entity, N_Identifier, N_Operator_Symbol) then
+      if Nkind (Entity) in N_Identifier | N_Operator_Symbol then
          Nam := Entity;
 
       else
          pragma Assert (Nkind (Entity) = N_Selected_Component);
          Nam := Selector_Name (Entity);
-         pragma Assert (Nkind_In (Nam, N_Identifier, N_Operator_Symbol));
+         pragma Assert (Nkind (Nam) in N_Identifier | N_Operator_Symbol);
       end if;
 
       Set_Name_Table_Boolean2 (Chars (Nam), True);
@@ -1525,15 +1551,15 @@ package body Restrict is
    ------------------------------------------------
 
    procedure Set_Restriction_No_Specification_Of_Aspect
-     (N       : Node_Id;
-      Warning : Boolean)
+     (N    : Node_Id;
+      Warn : Boolean)
    is
       A_Id : constant Aspect_Id_Exclude_No_Aspect := Get_Aspect_Id (Chars (N));
 
    begin
       No_Specification_Of_Aspect_Set := True;
       No_Specification_Of_Aspects (A_Id) := Sloc (N);
-      No_Specification_Of_Aspect_Warning (A_Id) := Warning;
+      No_Specification_Of_Aspect_Warning (A_Id) := Warn;
    end Set_Restriction_No_Specification_Of_Aspect;
 
    procedure Set_Restriction_No_Specification_Of_Aspect (A_Id : Aspect_Id) is
@@ -1548,15 +1574,15 @@ package body Restrict is
    -----------------------------------------
 
    procedure Set_Restriction_No_Use_Of_Attribute
-     (N       : Node_Id;
-      Warning : Boolean)
+     (N    : Node_Id;
+      Warn : Boolean)
    is
       A_Id : constant Attribute_Id := Get_Attribute_Id (Chars (N));
 
    begin
       No_Use_Of_Attribute_Set := True;
       No_Use_Of_Attribute (A_Id) := Sloc (N);
-      No_Use_Of_Attribute_Warning (A_Id) := Warning;
+      No_Use_Of_Attribute_Warning (A_Id) := Warn;
    end Set_Restriction_No_Use_Of_Attribute;
 
    procedure Set_Restriction_No_Use_Of_Attribute (A_Id : Attribute_Id) is
@@ -1571,15 +1597,15 @@ package body Restrict is
    --------------------------------------
 
    procedure Set_Restriction_No_Use_Of_Pragma
-     (N       : Node_Id;
-      Warning : Boolean)
+     (N    : Node_Id;
+      Warn : Boolean)
    is
       A_Id : constant Pragma_Id := Get_Pragma_Id (Chars (N));
 
    begin
       No_Use_Of_Pragma_Set := True;
       No_Use_Of_Pragma (A_Id) := Sloc (N);
-      No_Use_Of_Pragma_Warning (A_Id) := Warning;
+      No_Use_Of_Pragma_Warning (A_Id) := Warn;
    end Set_Restriction_No_Use_Of_Pragma;
 
    procedure Set_Restriction_No_Use_Of_Pragma (A_Id : Pragma_Id) is

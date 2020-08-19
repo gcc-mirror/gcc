@@ -47,6 +47,8 @@
   %{mcpu=*:-mcpu=%*}		\
   %{march=*:-march=%*}		\
   %{mhard-float:-mhard-float}	\
+  %{mfloat-abi=softfp:-mhard-float} \
+  %{mfloat-abi=hard:-mhard-float}   \
   %{melrw:-melrw}		\
   %{mno-elrw:-mno-elrw}		\
   %{mistack:-mistack}		\

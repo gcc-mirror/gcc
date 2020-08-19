@@ -31,8 +31,6 @@
 
 --  This is the default version of this package, based on Big_Integers only.
 
-pragma Ada_2020;
-
 with Ada.Strings.Text_Output.Utils;
 
 package body Ada.Numerics.Big_Numbers.Big_Reals is
@@ -531,19 +529,24 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------------
 
    procedure Normalize (Arg : in out Big_Real) is
+      Zero : constant Big_Integer := To_Big_Integer (0);
    begin
-      if Arg.Den < To_Big_Integer (0) then
+      if Arg.Den < Zero then
          Arg.Num := -Arg.Num;
          Arg.Den := -Arg.Den;
       end if;
 
-      declare
-         GCD : constant Big_Integer :=
-           Greatest_Common_Divisor (Arg.Num, Arg.Den);
-      begin
-         Arg.Num := Arg.Num / GCD;
-         Arg.Den := Arg.Den / GCD;
-      end;
+      if Arg.Num = Zero then
+         Arg.Den := To_Big_Integer (1);
+      else
+         declare
+            GCD : constant Big_Integer :=
+              Greatest_Common_Divisor (Arg.Num, Arg.Den);
+         begin
+            Arg.Num := Arg.Num / GCD;
+            Arg.Den := Arg.Den / GCD;
+         end;
+      end if;
    end Normalize;
 
 end Ada.Numerics.Big_Numbers.Big_Reals;

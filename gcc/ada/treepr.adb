@@ -1006,6 +1006,15 @@ package body Treepr is
          return;
       end if;
 
+      --  Similarly, if N points to an extension, avoid crashing
+
+      if Atree_Private_Part.Nodes.Table (N).Is_Extension then
+         Print_Int (Int (N));
+         Print_Str (" is an extension, not a node");
+         Print_Eol;
+         return;
+      end if;
+
       Prefix_Str_Char (Prefix_Str'Range)    := Prefix_Str;
       Prefix_Str_Char (Prefix_Str'Last + 1) := Prefix_Char;
 
@@ -1265,7 +1274,7 @@ package body Treepr is
                --  Special case End_Span = Uint5
 
                when F_Field5 =>
-                  if Nkind_In (N, N_Case_Statement, N_If_Statement) then
+                  if Nkind (N) in N_Case_Statement | N_If_Statement then
                      Print_End_Span (N);
                   else
                      Print_Field (Field5 (N), Fmt);

@@ -4,6 +4,7 @@
    { dg-options "-Wall -ftrack-macro-expansion=0" }
    { dg-options "-Wall -Wno-narrowing -Wno-unused -ftrack-macro-expansion=0" { target c++ } }
    { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* } }
+   { dg-require-visibility "hidden" }
 */
 
 #define ATTR(...) __attribute__ ((__VA_ARGS__))
@@ -130,7 +131,7 @@ struct PackedMember
   char c;
   short s;
   int i;
-  ATTR (packed) int a[2];
+  ATTR (packed) int a[2]; /* { dg-warning "attribute ignored" "" { target default_packed } } */
 } gpak[2];
 
 void test_packed (struct PackedMember *p)

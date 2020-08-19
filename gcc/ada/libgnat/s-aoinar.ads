@@ -33,8 +33,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 generic
    type Atomic_Type is range <> with Atomic;
 package System.Atomic_Operations.Integer_Arithmetic

@@ -2129,6 +2129,52 @@ replace_result_decl (tree *tp, tree decl, tree replacement)
   return data.changed;
 }
 
+/* Evaluate the call T to virtual function thunk THUNK_FNDECL.  */
+
+static tree
+cxx_eval_thunk_call (const constexpr_ctx *ctx, tree t, tree thunk_fndecl,
+		     bool lval,
+		     bool *non_constant_p, bool *overflow_p)
+{
+  tree function = THUNK_TARGET (thunk_fndecl);
+
+  /* virtual_offset is only set in the presence of virtual bases, which make
+     the class non-literal, so we don't need to handle it here.  */
+  if (THUNK_VIRTUAL_OFFSET (thunk_fndecl))
+    {
+      gcc_assert (!DECL_DECLARED_CONSTEXPR_P (function));
+      if (!ctx->quiet)
+	{
+	  error ("call to non-%<constexpr%> function %qD", function);
+	  explain_invalid_constexpr_fn (function);
+	}
+      *non_constant_p = true;
+      return t;
+    }
+
+  tree new_call = copy_node (t);
+  CALL_EXPR_FN (new_call) = function;
+  TREE_TYPE (new_call) = TREE_TYPE (TREE_TYPE (function));
+
+  tree offset = size_int (THUNK_FIXED_OFFSET (thunk_fndecl));
+
+  if (DECL_THIS_THUNK_P (thunk_fndecl))
+    {
+      /* 'this'-adjusting thunk.  */
+      tree this_arg = CALL_EXPR_ARG (t, 0);
+      this_arg = build2 (POINTER_PLUS_EXPR, TREE_TYPE (this_arg),
+			 this_arg, offset);
+      CALL_EXPR_ARG (new_call, 0) = this_arg;
+    }
+  else
+    /* Return-adjusting thunk.  */
+    new_call = build2 (POINTER_PLUS_EXPR, TREE_TYPE (new_call),
+		       new_call, offset);
+
+  return cxx_eval_constant_expression (ctx, new_call, lval,
+				       non_constant_p, overflow_p);
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -2209,6 +2255,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (fndecl_built_in_p (fun))
     return cxx_eval_builtin_function_call (ctx, t, fun,
 					   lval, non_constant_p, overflow_p);
+  if (DECL_THUNK_P (fun))
+    return cxx_eval_thunk_call (ctx, t, fun, lval, non_constant_p, overflow_p);
   if (!DECL_DECLARED_CONSTEXPR_P (fun))
     {
       if (TREE_CODE (t) == CALL_EXPR
@@ -3037,8 +3085,8 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   else if (code == SPACESHIP_EXPR)
     {
       r = genericize_spaceship (type, lhs, rhs);
-      r = cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
-					overflow_p);
+      return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
+					   overflow_p);
     }
 
   if (r == NULL_TREE)
@@ -4123,6 +4171,18 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       pre_init = true;
     }
 
+  bool zeroed_out = false;
+  if (!CONSTRUCTOR_NO_CLEARING (ctx->ctor))
+    {
+      /* We're initializing an array object that had been zero-initialized
+	 earlier.  Truncate ctx->ctor, and propagate its zeroed state by
+	 clearing CONSTRUCTOR_NO_CLEARING on each of the aggregate element
+	 initializers we append to it.  */
+      gcc_checking_assert (initializer_zerop (ctx->ctor));
+      zeroed_out = true;
+      vec_safe_truncate (*p, 0);
+    }
+
   tree nelts = get_array_or_vector_nelts (ctx, atype, non_constant_p,
 					  overflow_p);
   unsigned HOST_WIDE_INT max = tree_to_uhwi (nelts);
@@ -4134,7 +4194,11 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       constexpr_ctx new_ctx;
       init_subob_ctx (ctx, new_ctx, idx, pre_init ? init : elttype);
       if (new_ctx.ctor != ctx->ctor)
-	CONSTRUCTOR_APPEND_ELT (*p, idx, new_ctx.ctor);
+	{
+	  if (zeroed_out)
+	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = false;
+	  CONSTRUCTOR_APPEND_ELT (*p, idx, new_ctx.ctor);
+	}
       if (TREE_CODE (elttype) == ARRAY_TYPE)
 	{
 	  /* A multidimensional array; recurse.  */
@@ -5647,9 +5711,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  TREE_CONSTANT (r) = true;
 	}
       else if (ctx->strict)
-	r = decl_really_constant_value (t);
+	r = decl_really_constant_value (t, /*unshare_p=*/false);
       else
-	r = decl_constant_value (t);
+	r = decl_constant_value (t, /*unshare_p=*/false);
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
@@ -7395,7 +7459,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       if (now && want_rval)
 	{
 	  tree type = TREE_TYPE (t);
-	  if (dependent_type_p (type)
+	  if ((processing_template_decl && !COMPLETE_TYPE_P (type))
+	      || dependent_type_p (type)
 	      || is_really_empty_class (type, /*ignore_vptr*/false))
 	    /* An empty class has no data to read.  */
 	    return true;

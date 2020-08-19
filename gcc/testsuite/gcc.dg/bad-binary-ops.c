@@ -35,10 +35,10 @@ int test_2 (void)
            ~~~~~~~~~~~~~~~~
            |
            struct s
-    + some_other_function ());
-    ^ ~~~~~~~~~~~~~~~~~~~~~~
-      |
-      struct t
+           + some_other_function ());
+           ^ ~~~~~~~~~~~~~~~~~~~~~~
+             |
+             struct t
    { dg-end-multiline-output "" } */
 }
 

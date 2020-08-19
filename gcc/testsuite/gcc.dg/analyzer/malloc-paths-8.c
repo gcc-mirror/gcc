@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fanalyzer-transitivity" } */
+/* { dg-require-effective-target alloca } */
 
 #include <stddef.h>
 #include <alloca.h>

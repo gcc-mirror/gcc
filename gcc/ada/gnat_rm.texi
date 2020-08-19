@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , May 14, 2020
+GNAT Reference Manual , Jul 01, 2020
 
 AdaCore
 
@@ -2361,9 +2361,9 @@ with a first parameter of True is to warn a client about use of a package,
 for example that it is not fully implemented.
 
 In previous versions of the compiler, combining @emph{-gnatwe} with
-Compile_Time_Warning resulted in an fatal error. Now the compiler will always
-emit a warning. You can use @ref{3a,,Pragma Compile_Time_Error} to force the generation
-of an error.
+Compile_Time_Warning resulted in a fatal error. Now the compiler always emits
+a warning. You can use @ref{3a,,Pragma Compile_Time_Error} to force the generation of
+an error.
 
 @node Pragma Compiler_Unit,Pragma Compiler_Unit_Warning,Pragma Compile_Time_Warning,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-compiler-unit}@anchor{3c}
@@ -3610,18 +3610,38 @@ extension mode (the use of Off as a parameter cancels the effect
 of the @emph{-gnatX} command switch).
 
 In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2012), and in addition a small number
+implemented (currently Ada 202x), and in addition a small number
 of GNAT specific extensions are recognized as follows:
 
 
-@table @asis
+@itemize *
 
-@item @emph{Constrained attribute for generic objects}
+@item 
+Constrained attribute for generic objects
 
 The @code{Constrained} attribute is permitted for objects of
 generic types. The result indicates if the corresponding actual
 is constrained.
-@end table
+
+@item 
+@code{Static} aspect on intrinsic functions
+
+The Ada 202x @code{Static} aspect can be specified on Intrinsic imported
+functions and the compiler will evaluate some of these intrinsic statically,
+in particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
+
+@item 
+@code{'Reduce} attribute
+
+This attribute part of the Ada 202x language definition is provided for
+now under -gnatX to confirm and potentially refine its usage and syntax.
+
+@item 
+@code{[]} aggregates
+
+This new aggregate syntax for arrays and containers is provided under -gnatX
+to experiment and confirm this new language syntax.
+@end itemize
 
 @node Pragma Extensions_Visible,Pragma External,Pragma Extensions_Allowed,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas id12}@anchor{66}@anchor{gnat_rm/implementation_defined_pragmas pragma-extensions-visible}@anchor{67}
@@ -18572,7 +18592,7 @@ Value_Size
 
 Note: the entries marked '*' are not actually specified by the Ada
 Reference Manual, which has nothing to say about size in the dynamic
-case. What GNAT does is to allocate sufficient bits to accomodate any
+case. What GNAT does is to allocate sufficient bits to accommodate any
 possible dynamic values for the bounds at run-time.
 
 So far, so good, but GNAT has to obey the RM rules, so the question is

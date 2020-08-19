@@ -136,13 +136,19 @@ void test01()
   sz04 = str02.capacity();
   VERIFY( sz04 >= sz03 );
   VERIFY( sz04 >= 100 );
+#if __cplusplus <= 201703L
   str02.reserve();
-  sz03 = str02.capacity();
-#if _GLIBCXX_USE_CXX11_ABI
-  VERIFY( sz03 < 100);
 #else
-  VERIFY( sz03 == 0 );
+  str02.shrink_to_fit(); // reserve is deprecated in C++20
 #endif
+  sz03 = str02.capacity();
+  VERIFY( sz03 < sz04 );
+
+  // P0966: reserve should not shrink
+  str02.reserve(100);
+  sz03 = str02.capacity();
+  str02.reserve(sz03 - 1);
+  VERIFY( str02.capacity() == sz03 );
 
   sz03 = str02.size() + 5;
   str02.resize(sz03);

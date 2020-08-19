@@ -501,6 +501,10 @@ private
    --  dispatch table, return the tagged kind of a type in the context of
    --  concurrency and limitedness.
 
+   function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean;
+   --  Given the tag of an object and the tag associated to a type, return
+   --  true if Obj is in Typ'Class.
+
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
    --  Ada 2005 (AI-251): General routine that checks if a given object
    --  implements a tagged type. Its common usage is to check if Obj is in

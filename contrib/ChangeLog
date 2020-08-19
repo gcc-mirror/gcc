@@ -1,3 +1,50 @@
+2020-07-29  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: fix how are ChangeLog paths combined.
+
+2020-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	* vimrc (SetStyle): Also inspect &filetype to determine whether
+	a file is C-like.
+
+2020-07-23  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: When reverting a backport,
+	we should print only Revert header.
+
+2020-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Fix typo.
+
+2020-07-10  Mike Nolta  <mike@nolta.net>
+
+	* download_prerequisites: Don't pass wget options to curl.
+
+2020-07-07  Alexandre Oliva  <oliva@adacore.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support CASE and COND.
+	* gcc-changelog/test_patches.txt: Add test.
+	* gcc-changelog/test_email.py: Add test.
+
+2020-06-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_repository.py: Support older releases of
+	GitPython when renamed_file was named renamed.
+
+2020-06-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Print revision
+	of original_info.
+	* gcc-changelog/git_commit.py: Support Revert commits.
+
+2020-06-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Use GitInfo
+	* gcc-changelog/git_commit.py: Add GitInfo class.
+	* gcc-changelog/git_email.py: Use GitInfo class.
+	* gcc-changelog/git_repository.py: Likewise.
+
 2020-06-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* download_prerequisites: Support AIX and OpenBSD unames.

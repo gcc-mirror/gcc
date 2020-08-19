@@ -696,6 +696,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-scaval$(objext) \
   s-secsta$(objext) \
   s-sequio$(objext) \
+  s-shabig$(objext) \
   s-shasto$(objext) \
   s-soflin$(objext) \
   s-soliin$(objext) \
@@ -833,13 +834,13 @@ ATOMICS_BUILTINS_TARGET_PAIRS = \
 # Special version of units for x86 and x86-64 platforms.
 
 X86_TARGET_PAIRS = \
-  a-numaux.ads<libgnat/a-numaux__x86.ads \
-  a-numaux.adb<libgnat/a-numaux__x86.adb \
+  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
+  a-numaux.adb<libgnat/a-numaux__dummy.adb \
   s-atocou.adb<libgnat/s-atocou__x86.adb
 
 X86_64_TARGET_PAIRS = \
-  a-numaux.ads<libgnat/a-numaux__x86.ads \
-  a-numaux.adb<libgnat/a-numaux__x86.adb \
+  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
+  a-numaux.adb<libgnat/a-numaux__dummy.adb \
   s-atocou.adb<libgnat/s-atocou__builtin.adb
 
 # Implementation of symbolic traceback based on dwarf
@@ -1647,8 +1648,8 @@ endif
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
-  a-numaux.adb<libgnat/a-numaux__x86.adb \
-  a-numaux.ads<libgnat/a-numaux__x86.ads \
+  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
+  a-numaux.adb<libgnat/a-numaux__dummy.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -1910,7 +1911,6 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
   endif
   ifeq ($(strip $(filter-out %86, $(target_cpu))),)
     LIBGNAT_TARGET_PAIRS +=  system.ads<libgnat/system-lynxos178-x86.ads
-    LIBGNAT_TARGET_PAIRS += $(X86_TARGET_PAIRS)
   endif
 
   ifeq ($(strip $(filter-out lynxos178e,$(target_os))),)
@@ -2704,10 +2704,7 @@ setup-rts: force
 	$(RM) $(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR))))
 	for f in $(RTSDIR)/*-*__*.ads $(RTSDIR)/*-*__*.adb; do \
-	  case "$$f" in \
-	    $(RTSDIR)/s-stratt__*) ;; \
-	    *) $(RM) $$f ;; \
-	  esac; \
+	  $(RM) $$f ; \
 	done
 # Copy new target dependent sources
 	$(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \

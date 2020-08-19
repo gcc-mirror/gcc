@@ -29,6 +29,16 @@
 #include <cerrno>
 #include <cxxabi_forced.h>
 
+#ifndef _GLIBCXX_USE_NANOSLEEP
+# ifdef _GLIBCXX_HAVE_SLEEP
+#  include <unistd.h>
+# elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+#  include <windows.h>
+# else
+#  error "No sleep function known for this target"
+# endif
+#endif
+
 #ifdef _GLIBCXX_HAS_GTHREADS
 
 #if defined(_GLIBCXX_USE_GET_NPROCS)
@@ -57,16 +67,6 @@ static inline int get_nprocs()
 # define _GLIBCXX_NPROCS sysconf(_SC_NPROC_ONLN)
 #else
 # define _GLIBCXX_NPROCS 0
-#endif
-
-#ifndef _GLIBCXX_USE_NANOSLEEP
-# ifdef _GLIBCXX_HAVE_SLEEP
-#  include <unistd.h>
-# elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
-#  include <windows.h>
-# else
-#  error "No sleep function known for this target"
-# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -180,13 +180,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __n;
   }
 
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // _GLIBCXX_HAS_GTHREADS
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace this_thread
 {
   void
   __sleep_for(chrono::seconds __s, chrono::nanoseconds __ns)
   {
 #ifdef _GLIBCXX_USE_NANOSLEEP
-    __gthread_time_t __ts =
+    struct ::timespec __ts =
       {
 	static_cast<std::time_t>(__s.count()),
 	static_cast<long>(__ns.count())
@@ -231,8 +239,5 @@ namespace this_thread
 #endif
   }
 }
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#endif // _GLIBCXX_HAS_GTHREADS

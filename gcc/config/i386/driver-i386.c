@@ -563,9 +563,15 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	      /* This is unknown family 0x6 CPU.  */
 	      if (has_feature (FEATURE_AVX))
 		{
-		  /* Assume Tiger Lake */
 		  if (has_feature (FEATURE_AVX512VP2INTERSECT))
-		    cpu = "tigerlake";
+		    {
+		      if (has_feature (FEATURE_TSXLDTRK))
+			/* Assume Sapphire Rapids.  */
+			cpu = "sapphirerapids";
+		      else
+			/* Assume Tiger Lake */
+			cpu = "tigerlake";
+		    }
 		  /* Assume Cooper Lake */
 		  else if (has_feature (FEATURE_AVX512BF16))
 		    cpu = "cooperlake";
@@ -587,6 +593,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		/* Assume Skylake with AVX-512.  */
 		else if (has_feature (FEATURE_AVX512F))
 		  cpu = "skylake-avx512";
+		 /* Assume Alder Lake */
+		else if (has_feature (FEATURE_SERIALIZE))
+		    cpu = "alderlake";
 		/* Assume Skylake.  */
 		else if (has_feature (FEATURE_CLFLUSHOPT))
 		  cpu = "skylake";

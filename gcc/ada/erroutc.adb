@@ -52,7 +52,7 @@ package body Erroutc is
    -----------------------
 
    function Matches (S : String; P : String) return Boolean;
-   --  Returns true if the String S patches the pattern P, which can contain
+   --  Returns true if the String S matches the pattern P, which can contain
    --  wildcard chars (*). The entire pattern must match the entire string.
    --  Case is ignored in the comparison (so X matches x).
 
@@ -258,12 +258,12 @@ package body Erroutc is
       elsif Warnings_Treated_As_Errors /= 0 then
          return True;
 
-         --  We should never treat warnings that originate from a
-         --  Compile_Time_Warning pragma as an error. Warnings_Count is the sum
-         --  of both "normal" and Compile_Time_Warning warnings. This means
-         --  that there only is one or more non-Compile_Time_Warning warnings
-         --  if Warnings_Count is greater than
-         --  Count_Compile_Time_Pragma_Warnings.
+      --  We should never treat warnings that originate from a
+      --  Compile_Time_Warning pragma as an error. Warnings_Count is the sum
+      --  of both "normal" and Compile_Time_Warning warnings. This means that
+      --  there are only one or more non-Compile_Time_Warning warnings when
+      --  Warnings_Count is greater than Count_Compile_Time_Pragma_Warnings.
+
       elsif Warning_Mode = Treat_As_Error
          and then Warnings_Count > Count_Compile_Time_Pragma_Warnings
       then
@@ -409,17 +409,17 @@ package body Erroutc is
          if PPtr = PLast and then P (PPtr) = '*' then
             return True;
 
-            --  Return True if both pattern and string exhausted
+         --  Return True if both pattern and string exhausted
 
          elsif PPtr > PLast and then SPtr > Slast then
             return True;
 
-            --  Return False, if one exhausted and not the other
+         --  Return False, if one exhausted and not the other
 
          elsif PPtr > PLast or else SPtr > Slast then
             return False;
 
-            --  Case where pattern starts with asterisk
+         --  Case where pattern starts with asterisk
 
          elsif P (PPtr) = '*' then
 
@@ -435,13 +435,13 @@ package body Erroutc is
 
             return False;
 
-            --  Dealt with end of string and *, advance if we have a match
+         --  Dealt with end of string and *, advance if we have a match
 
          elsif Fold_Lower (S (SPtr)) = Fold_Lower (P (PPtr)) then
             SPtr := SPtr + 1;
             PPtr := PPtr + 1;
 
-            --  If first characters do not match, that's decisive
+         --  If first characters do not match, that's decisive
 
          else
             return False;

@@ -41,12 +41,12 @@ func3 (int a, int b, int c)
 void __attribute__ ((target ("arch=armv8.3-a")))
 func4 (long offset, void *handler, int *ptr, int imm1, int imm2)
 {
-  /* paciasp */
+  /* no paciasp */
   *ptr = imm1 + foo (imm1) + imm2;
   __builtin_eh_return (offset, handler);
-  /* autiasp */
+  /* no autiasp */
   return;
 }
 
-/* { dg-final { scan-assembler-times "autiasp" 4 } } */
-/* { dg-final { scan-assembler-times "paciasp" 4 } } */
+/* { dg-final { scan-assembler-times "autiasp" 3 } } */
+/* { dg-final { scan-assembler-times "paciasp" 3 } } */

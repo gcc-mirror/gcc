@@ -462,17 +462,12 @@ linemap_add (line_maps *set, enum lc_reason reason,
 {
   /* Generate a start_location above the current highest_location.
      If possible, make the low range bits be zero.  */
-  location_t start_location;
-  if (set->highest_location < LINE_MAP_MAX_LOCATION_WITH_COLS)
-    {
-      start_location = set->highest_location + (1 << set->default_range_bits);
-      if (set->default_range_bits)
-	start_location &= ~((1 << set->default_range_bits) - 1);
-      linemap_assert (0 == (start_location
-			    & ((1 << set->default_range_bits) - 1)));
-    }
-  else
-    start_location = set->highest_location + 1;
+  location_t start_location = set->highest_location + 1;
+  unsigned range_bits = 0;
+  if (start_location < LINE_MAP_MAX_LOCATION_WITH_COLS)
+    range_bits = set->default_range_bits;
+  start_location += (1 << range_bits) - 1;
+  start_location &=  ~((1 << range_bits) - 1);
 
   linemap_assert (!LINEMAPS_ORDINARY_USED (set)
 		  || (start_location
@@ -537,8 +532,9 @@ linemap_add (line_maps *set, enum lc_reason reason,
   map->to_file = to_file;
   map->to_line = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
-  map->m_column_and_range_bits = 0;
-  map->m_range_bits = 0;
+  /* Do not store range_bits here.  That's readjusted in
+     linemap_line_start.  */
+  map->m_range_bits = map->m_column_and_range_bits = 0;
   set->highest_location = start_location;
   set->highest_line = start_location;
   set->max_column_hint = 0;
@@ -954,19 +950,16 @@ linemap_lookup (const line_maps *set, location_t line)
 static const line_map_ordinary *
 linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 {
-  unsigned int md, mn, mx;
-  const line_map_ordinary *cached, *result;
-
   if (IS_ADHOC_LOC (line))
     line = get_location_from_adhoc_loc (set, line);
 
   if (set ==  NULL || line < RESERVED_LOCATION_COUNT)
     return NULL;
 
-  mn = LINEMAPS_ORDINARY_CACHE (set);
-  mx = LINEMAPS_ORDINARY_USED (set);
+  unsigned mn = LINEMAPS_ORDINARY_CACHE (set);
+  unsigned mx = LINEMAPS_ORDINARY_USED (set);
 
-  cached = LINEMAPS_ORDINARY_MAP_AT (set, mn);
+  const line_map_ordinary *cached = LINEMAPS_ORDINARY_MAP_AT (set, mn);
   /* We should get a segfault if no line_maps have been added yet.  */
   if (line >= MAP_START_LOCATION (cached))
     {
@@ -981,7 +974,7 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 
   while (mx - mn > 1)
     {
-      md = (mn + mx) / 2;
+      unsigned md = (mn + mx) / 2;
       if (MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (set, md)) > line)
 	mx = md;
       else
@@ -989,7 +982,7 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
     }
 
   LINEMAPS_ORDINARY_CACHE (set) = mn;
-  result = LINEMAPS_ORDINARY_MAP_AT (set, mn);
+  const line_map_ordinary *result = LINEMAPS_ORDINARY_MAP_AT (set, mn);
   linemap_assert (line >= MAP_START_LOCATION (result));
   return result;
 }
@@ -1002,21 +995,18 @@ linemap_ordinary_map_lookup (const line_maps *set, location_t line)
 static const line_map_macro *
 linemap_macro_map_lookup (const line_maps *set, location_t line)
 {
-  unsigned int md, mn, mx;
-  const struct line_map_macro *cached, *result;
-
   if (IS_ADHOC_LOC (line))
     line = get_location_from_adhoc_loc (set, line);
 
   linemap_assert (line >= LINEMAPS_MACRO_LOWEST_LOCATION (set));
 
-  if (set ==  NULL)
+  if (set == NULL)
     return NULL;
 
-  mn = LINEMAPS_MACRO_CACHE (set);
-  mx = LINEMAPS_MACRO_USED (set);
-  cached = LINEMAPS_MACRO_MAP_AT (set, mn);
-  
+  unsigned mn = LINEMAPS_MACRO_CACHE (set);
+  unsigned mx = LINEMAPS_MACRO_USED (set);
+  const struct line_map_macro *cached = LINEMAPS_MACRO_MAP_AT (set, mn);
+
   if (line >= MAP_START_LOCATION (cached))
     {
       if (mn == 0 || line < MAP_START_LOCATION (&cached[-1]))
@@ -1027,7 +1017,7 @@ linemap_macro_map_lookup (const line_maps *set, location_t line)
 
   while (mn < mx)
     {
-      md = (mx + mn) / 2;
+      unsigned md = (mx + mn) / 2;
       if (MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (set, md)) > line)
 	mn = md + 1;
       else
@@ -1035,7 +1025,7 @@ linemap_macro_map_lookup (const line_maps *set, location_t line)
     }
 
   LINEMAPS_MACRO_CACHE (set) = mx;
-  result = LINEMAPS_MACRO_MAP_AT (set, LINEMAPS_MACRO_CACHE (set));
+  const struct line_map_macro *result = LINEMAPS_MACRO_MAP_AT (set, mx);
   linemap_assert (MAP_START_LOCATION (result) <= line);
 
   return result;

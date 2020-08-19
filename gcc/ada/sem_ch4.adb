@@ -286,6 +286,7 @@ package body Sem_Ch4 is
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean;
    --  AI05-0139: Generalized indexing to support iterators over containers
+   --  ??? Need to provide a more detailed spec of what this function does
 
    function Try_Indexed_Call
      (N          : Node_Id;
@@ -379,7 +380,7 @@ package body Sem_Ch4 is
       if Nkind (N) in N_Membership_Test then
          Error_Msg_N ("ambiguous operands for membership",  N);
 
-      elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
+      elsif Nkind (N) in N_Op_Eq | N_Op_Ne then
          Error_Msg_N ("ambiguous operands for equality",  N);
 
       else
@@ -1062,8 +1063,8 @@ package body Sem_Ch4 is
                      --  performing the writable actuals check.
 
                      if Has_Arbitrary_Evaluation_Order (Nkind (P))
-                       and then not Nkind_In (P, N_Assignment_Statement,
-                                                 N_Object_Declaration)
+                       and then Nkind (P) not in
+                                  N_Assignment_Statement | N_Object_Declaration
                      then
                         Outermost := P;
                      end if;
@@ -1072,8 +1073,8 @@ package body Sem_Ch4 is
 
                      exit when Stop_Subtree_Climbing (Nkind (P))
                        or else (Nkind (P) = N_Range
-                                 and then not
-                                   Nkind_In (Parent (P), N_In, N_Not_In));
+                                 and then
+                                   Nkind (Parent (P)) not in N_In | N_Not_In);
 
                      P := Parent (P);
                   end loop;
@@ -1123,8 +1124,7 @@ package body Sem_Ch4 is
          --  Check for tasking cases where only an entry call will do
 
          elsif not L
-           and then Nkind_In (K, N_Entry_Call_Alternative,
-                                 N_Triggering_Alternative)
+           and then K in N_Entry_Call_Alternative | N_Triggering_Alternative
          then
             Error_Msg_N ("entry name expected", Nam);
 
@@ -1184,10 +1184,10 @@ package body Sem_Ch4 is
          elsif Nkind (Nam) = N_Selected_Component then
             Nam_Ent := Entity (Selector_Name (Nam));
 
-            if not Ekind_In (Nam_Ent, E_Entry,
-                                      E_Entry_Family,
-                                      E_Function,
-                                      E_Procedure)
+            if Ekind (Nam_Ent) not in E_Entry
+                                    | E_Entry_Family
+                                    | E_Function
+                                    | E_Procedure
             then
                Error_Msg_N ("name in call is not a callable entity", Nam);
                Set_Etype (N, Any_Type);
@@ -1362,7 +1362,7 @@ package body Sem_Ch4 is
                   Set_Etype (Nam, It.Typ);
                end if;
 
-            elsif Nkind_In (Name (N), N_Function_Call, N_Selected_Component)
+            elsif Nkind (Name (N)) in N_Function_Call | N_Selected_Component
             then
                Remove_Interp (X);
             end if;
@@ -2215,8 +2215,6 @@ package body Sem_Ch4 is
    -------------------------------------
    -- Analyze_Expression_With_Actions --
    -------------------------------------
-
-   --  Start of processing for Analyze_Quantified_Expression
 
    procedure Analyze_Expression_With_Actions (N : Node_Id) is
 
@@ -3787,9 +3785,9 @@ package body Sem_Ch4 is
 
            --  Verify Nam is a non-visible controlled primitive
 
-           and then Nam_In (Chars (Nam), Name_Adjust,
-                                         Name_Finalize,
-                                         Name_Initialize)
+           and then Chars (Nam) in Name_Adjust
+                                 | Name_Finalize
+                                 | Name_Initialize
            and then Ekind (Nam) = E_Procedure
            and then Is_Controlled (Etype (First_Form))
            and then No (Next_Formal (First_Form))
@@ -4015,14 +4013,15 @@ package body Sem_Ch4 is
       Find_Type (Mark);
       T := Entity (Mark);
 
-      if Nkind_In (Enclosing_Declaration (N), N_Formal_Type_Declaration,
-                                              N_Full_Type_Declaration,
-                                              N_Incomplete_Type_Declaration,
-                                              N_Protected_Type_Declaration,
-                                              N_Private_Extension_Declaration,
-                                              N_Private_Type_Declaration,
-                                              N_Subtype_Declaration,
-                                              N_Task_Type_Declaration)
+      if Nkind (Enclosing_Declaration (N)) in
+           N_Formal_Type_Declaration       |
+           N_Full_Type_Declaration         |
+           N_Incomplete_Type_Declaration   |
+           N_Protected_Type_Declaration    |
+           N_Private_Extension_Declaration |
+           N_Private_Type_Declaration      |
+           N_Subtype_Declaration           |
+           N_Task_Type_Declaration
         and then T = Defining_Identifier (Enclosing_Declaration (N))
       then
          Error_Msg_N ("current instance not allowed", Mark);
@@ -4477,6 +4476,13 @@ package body Sem_Ch4 is
       --  Check whether prefix includes a dereference, explicit or implicit,
       --  at any recursive level.
 
+      function Try_By_Protected_Procedure_Prefixed_View return Boolean;
+      --  Return True if N is an access attribute whose prefix is a prefixed
+      --  class-wide (synchronized or protected) interface view for which some
+      --  interpretation is a procedure with synchronization kind By_Protected
+      --  _Procedure, and collect all its interpretations (since it may be an
+      --  overloaded interface primitive); otherwise return False.
+
       --------------------------------
       -- Find_Component_In_Instance --
       --------------------------------
@@ -4590,13 +4596,72 @@ package body Sem_Ch4 is
          elsif Is_Access_Type (Etype (Nod)) then
             return True;
 
-         elsif Nkind_In (Nod, N_Indexed_Component, N_Selected_Component) then
+         elsif Nkind (Nod) in N_Indexed_Component | N_Selected_Component then
             return Has_Dereference (Prefix (Nod));
 
          else
             return False;
          end if;
       end Has_Dereference;
+
+      ----------------------------------------------
+      -- Try_By_Protected_Procedure_Prefixed_View --
+      ----------------------------------------------
+
+      function Try_By_Protected_Procedure_Prefixed_View return Boolean is
+         Candidate : Node_Id := Empty;
+         Elmt      : Elmt_Id;
+         Prim      : Node_Id;
+
+      begin
+         if Nkind (Parent (N)) = N_Attribute_Reference
+           and then Attribute_Name (Parent (N)) in
+                      Name_Access
+                    | Name_Unchecked_Access
+                    | Name_Unrestricted_Access
+           and then Is_Class_Wide_Type (Prefix_Type)
+           and then (Is_Synchronized_Interface (Prefix_Type)
+                       or else Is_Protected_Interface (Prefix_Type))
+         then
+            --  If we have not found yet any interpretation then mark this
+            --  one as the first interpretation (cf. Add_One_Interp).
+
+            if No (Etype (Sel)) then
+               Set_Etype (Sel, Any_Type);
+            end if;
+
+            Elmt := First_Elmt (Primitive_Operations (Etype (Prefix_Type)));
+            while Present (Elmt) loop
+               Prim := Node (Elmt);
+
+               if Chars (Prim) = Chars (Sel)
+                 and then Is_By_Protected_Procedure (Prim)
+               then
+                  Candidate := New_Copy (Prim);
+
+                  --  Skip the controlling formal; required to check type
+                  --  conformance of the target access to protected type
+                  --  (see Conforming_Types).
+
+                  Set_First_Entity (Candidate,
+                    Next_Entity (First_Entity (Prim)));
+
+                  Add_One_Interp (Sel, Candidate, Etype (Prim));
+                  Set_Etype (N, Etype (Prim));
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+
+         --  Propagate overloaded attribute
+
+         if Present (Candidate) and then Is_Overloaded (Sel) then
+            Set_Is_Overloaded (N);
+         end if;
+
+         return Present (Candidate);
+      end Try_By_Protected_Procedure_Prefixed_View;
 
    --  Start of processing for Analyze_Selected_Component
 
@@ -4808,10 +4873,10 @@ package body Sem_Ch4 is
                      or else
                       (Nkind (Parent_N) = N_Attribute_Reference
                         and then
-                          Nam_In (Attribute_Name (Parent_N), Name_First,
-                                                             Name_Last,
-                                                             Name_Length,
-                                                             Name_Range)))
+                          Attribute_Name (Parent_N) in Name_First
+                                                     | Name_Last
+                                                     | Name_Length
+                                                     | Name_Range))
                then
                   Set_Etype (N, Etype (Comp));
 
@@ -4892,6 +4957,9 @@ package body Sem_Ch4 is
                if Find_Primitive_Operation (N) then
                   return;
                end if;
+
+            elsif Try_By_Protected_Procedure_Prefixed_View then
+               return;
 
             elsif Try_Object_Operation (N) then
                return;
@@ -4989,9 +5057,9 @@ package body Sem_Ch4 is
                   --  a visible entity is found.
 
                   if Is_Tagged_Type (Prefix_Type)
-                    and then Nkind_In (Parent (N), N_Function_Call,
-                                                   N_Indexed_Component,
-                                                   N_Procedure_Call_Statement)
+                    and then Nkind (Parent (N)) in N_Function_Call
+                                                 | N_Indexed_Component
+                                                 | N_Procedure_Call_Statement
                     and then Has_Mode_Conformant_Spec (Comp)
                   then
                      Has_Candidate := True;
@@ -5000,7 +5068,7 @@ package body Sem_Ch4 is
                --  Note: a selected component may not denote a component of a
                --  protected type (4.1.3(7)).
 
-               elsif Ekind_In (Comp, E_Discriminant, E_Entry_Family)
+               elsif Ekind (Comp) in E_Discriminant | E_Entry_Family
                  or else (In_Scope
                             and then not Is_Protected_Type (Prefix_Type)
                             and then Is_Entity_Name (Name))
@@ -5589,9 +5657,9 @@ package body Sem_Ch4 is
          end if;
 
       elsif Nkind (Expr) = N_Attribute_Reference
-        and then Nam_In (Attribute_Name (Expr), Name_Access,
-                                                Name_Unchecked_Access,
-                                                Name_Unrestricted_Access)
+        and then Attribute_Name (Expr) in Name_Access
+                                        | Name_Unchecked_Access
+                                        | Name_Unrestricted_Access
       then
          Error_Msg_N ("argument of conversion cannot be access", N);
          Error_Msg_N ("\use qualified expression instead", N);
@@ -5853,7 +5921,7 @@ package body Sem_Ch4 is
    --  Start of processing for Check_Arithmetic_Pair
 
    begin
-      if Nam_In (Op_Name, Name_Op_Add, Name_Op_Subtract) then
+      if Op_Name in Name_Op_Add | Name_Op_Subtract then
          if Is_Numeric_Type (T1)
            and then Is_Numeric_Type (T2)
            and then (Covers (T1 => T1, T2 => T2)
@@ -5863,7 +5931,7 @@ package body Sem_Ch4 is
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
          end if;
 
-      elsif Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide) then
+      elsif Op_Name in Name_Op_Multiply | Name_Op_Divide then
          if Is_Fixed_Point_Type (T1)
            and then (Is_Fixed_Point_Type (T2) or else T2 = Universal_Real)
          then
@@ -6161,7 +6229,7 @@ package body Sem_Ch4 is
 
          else
             while Present (It.Nam) loop
-               if Ekind_In (It.Nam, E_Function, E_Operator) then
+               if Ekind (It.Nam) in E_Function | E_Operator then
                   return;
                else
                   Get_Next_Interp (X, It);
@@ -6589,9 +6657,7 @@ package body Sem_Ch4 is
       procedure Check_Access_Attribute (N : Node_Id) is
       begin
          if Nkind (N) = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (N),
-                            Name_Access,
-                            Name_Unchecked_Access)
+           and then Attribute_Name (N) in Name_Access | Name_Unchecked_Access
          then
             Error_Msg_N
               ("access attribute cannot be used as actual for "
@@ -7333,7 +7399,7 @@ package body Sem_Ch4 is
             --  pretty much know that the other operand should be Boolean, so
             --  resolve it that way (generating an error).
 
-            elsif Nkind_In (N, N_Op_And, N_Op_Or, N_Op_Xor) then
+            elsif Nkind (N) in N_Op_And | N_Op_Or | N_Op_Xor then
                if Etype (L) = Standard_Boolean then
                   Resolve (R, Standard_Boolean);
                   return;
@@ -7347,16 +7413,16 @@ package body Sem_Ch4 is
             --  is not the same numeric type. If it is a non-numeric type,
             --  then probably it is intended to match the other operand.
 
-            elsif Nkind_In (N, N_Op_Add,
-                               N_Op_Divide,
-                               N_Op_Ge,
-                               N_Op_Gt,
-                               N_Op_Le,
-                               N_Op_Lt,
-                               N_Op_Mod,
-                               N_Op_Multiply,
-                               N_Op_Rem,
-                               N_Op_Subtract)
+            elsif Nkind (N) in N_Op_Add
+                             | N_Op_Divide
+                             | N_Op_Ge
+                             | N_Op_Gt
+                             | N_Op_Le
+                             | N_Op_Lt
+                             | N_Op_Mod
+                             | N_Op_Multiply
+                             | N_Op_Rem
+                             | N_Op_Subtract
             then
                --  If Allow_Integer_Address is active, check whether the
                --  operation becomes legal after converting an operand.
@@ -7372,7 +7438,7 @@ package body Sem_Ch4 is
                        Unchecked_Convert_To (
                          Standard_Address, Relocate_Node (R)));
 
-                     if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                     if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
                         Analyze_Comparison_Op (N);
                      else
                         Analyze_Arithmetic_Op (N);
@@ -7394,7 +7460,7 @@ package body Sem_Ch4 is
                        Unchecked_Convert_To (
                          Standard_Address, Relocate_Node (R)));
 
-                     if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                     if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
                         Analyze_Comparison_Op (N);
                      else
                         Analyze_Arithmetic_Op (N);
@@ -7424,7 +7490,7 @@ package body Sem_Ch4 is
                        Unchecked_Convert_To (
                          Standard_Address, Relocate_Node (R)));
 
-                     if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                     if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
                         Analyze_Comparison_Op (N);
                      else
                         Analyze_Arithmetic_Op (N);
@@ -7448,7 +7514,7 @@ package body Sem_Ch4 is
                elsif Null_To_Null_Address_Convert_OK (N) then
                   Replace_Null_By_Null_Address (N);
 
-                  if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                  if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
                      Analyze_Comparison_Op (N);
                   else
                      Analyze_Arithmetic_Op (N);
@@ -7460,7 +7526,7 @@ package body Sem_Ch4 is
             --  Comparisons on A'Access are common enough to deserve a
             --  special message.
 
-            elsif Nkind_In (N, N_Op_Eq, N_Op_Ne)
+            elsif Nkind (N) in N_Op_Eq | N_Op_Ne
                and then Ekind (Etype (L)) = E_Access_Attribute_Type
                and then Ekind (Etype (R)) = E_Access_Attribute_Type
             then
@@ -7518,7 +7584,7 @@ package body Sem_Ch4 is
 
                return;
 
-            elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
+            elsif Nkind (N) in N_Op_Eq | N_Op_Ne then
                if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
                   Rewrite (L,
                     Unchecked_Convert_To (
@@ -7609,7 +7675,7 @@ package body Sem_Ch4 is
                            --  indicate that the integer operand should be of
                            --  type Integer.
 
-                           if Nkind_In (N, N_Op_Multiply, N_Op_Divide)
+                           if Nkind (N) in N_Op_Multiply | N_Op_Divide
                              and then Is_Fixed_Point_Type (Etype (L))
                              and then Is_Integer_Type (Etype (R))
                            then
@@ -7911,7 +7977,7 @@ package body Sem_Ch4 is
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean
    is
-      Pref_Typ : constant Entity_Id := Etype (Prefix);
+      Pref_Typ : Entity_Id := Etype (Prefix);
 
       function Constant_Indexing_OK return Boolean;
       --  Constant_Indexing is legal if there is no Variable_Indexing defined
@@ -7962,8 +8028,8 @@ package body Sem_Ch4 is
             --  resolution does not depend on the type of the parameter that
             --  includes the indexing operation.
 
-            elsif Nkind_In (Parent (Par), N_Function_Call,
-                                          N_Procedure_Call_Statement)
+            elsif Nkind (Parent (Par)) in
+                    N_Function_Call | N_Procedure_Call_Statement
               and then Is_Entity_Name (Name (Parent (Par)))
             then
                declare
@@ -8347,6 +8413,25 @@ package body Sem_Ch4 is
          return True;
       end if;
 
+      --  An explicit dereference needs to be created in the case of a prefix
+      --  that's an access.
+
+      --  It seems that this should be done elsewhere, but not clear where that
+      --  should happen. Normally Insert_Explicit_Dereference is called via
+      --  Resolve_Implicit_Dereference, called from Resolve_Indexed_Component,
+      --  but that won't be called in this case because we transform the
+      --  indexing to a call. Resolve_Call.Check_Prefixed_Call takes care of
+      --  implicit dereferencing and referencing on prefixed calls, but that
+      --  would be too late, even if we expanded to a prefix call, because
+      --  Process_Indexed_Component will flag an error before the resolution
+      --  happens. ???
+
+      if Is_Access_Type (Pref_Typ) then
+         Pref_Typ := Implicitly_Designated_Type (Pref_Typ);
+         Insert_Explicit_Dereference (Prefix);
+         Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
+      end if;
+
       C_Type := Pref_Typ;
 
       --  If indexing a class-wide container, obtain indexing primitive from
@@ -8468,6 +8553,12 @@ package body Sem_Ch4 is
 
       if not Is_Overloaded (Func_Name) then
          Func := Entity (Func_Name);
+
+         --  Can happen in case of e.g. cascaded errors
+
+         if No (Func) then
+            return False;
+         end if;
 
          Indexing :=
            Make_Function_Call (Loc,
@@ -9173,7 +9264,7 @@ package body Sem_Ch4 is
 
             Hom := Current_Entity (Subprog);
             while Present (Hom) loop
-               if Ekind_In (Hom, E_Procedure, E_Function)
+               if Ekind (Hom) in E_Procedure | E_Function
                  and then Present (Renamed_Entity (Hom))
                  and then Is_Generic_Actual_Subprogram (Hom)
                  and then In_Open_Scopes (Scope (Hom))
@@ -9183,7 +9274,7 @@ package body Sem_Ch4 is
                   Candidate := Hom;
                end if;
 
-               if Ekind_In (Candidate, E_Function, E_Procedure)
+               if Ekind (Candidate) in E_Function | E_Procedure
                  and then (not Is_Hidden (Candidate) or else In_Instance)
                  and then Scope (Candidate) = Scope (Base_Type (Anc_Type))
                  and then First_Formal_Match (Candidate, CW_Typ)
@@ -9361,8 +9452,8 @@ package body Sem_Ch4 is
             Obj_Type := Designated_Type (Obj_Type);
          end if;
 
-         if Ekind_In (Obj_Type, E_Private_Subtype,
-                                E_Record_Subtype_With_Private)
+         if Ekind (Obj_Type)
+           in E_Private_Subtype | E_Record_Subtype_With_Private
          then
             Obj_Type := Base_Type (Obj_Type);
          end if;
@@ -9532,7 +9623,7 @@ package body Sem_Ch4 is
             if Is_Derived_Type (T) then
                return Primitive_Operations (T);
 
-            elsif Ekind_In (Scope (T), E_Procedure, E_Function) then
+            elsif Ekind (Scope (T)) in E_Procedure | E_Function then
 
                --  Scan the list of generic formals to find subprograms
                --  that may have a first controlling formal of the type.

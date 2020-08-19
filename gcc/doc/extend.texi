@@ -2446,6 +2446,7 @@ GCC plugins may provide their own attributes.
 * ARM Function Attributes::
 * AVR Function Attributes::
 * Blackfin Function Attributes::
+* BPF Function Attributes::
 * CR16 Function Attributes::
 * C-SKY Function Attributes::
 * Epiphany Function Attributes::
@@ -3723,6 +3724,7 @@ Function Attributes}, @ref{PowerPC Function Attributes},
 for details.
 
 @item symver ("@var{name2}@@@var{nodename}")
+@cindex @code{symver} function attribute
 On ELF targets this attribute creates a symbol version.  The @var{name2} part
 of the parameter is the actual name of the symbol by which it will be
 externally referenced.  The @code{nodename} portion should be the name of a
@@ -4654,6 +4656,24 @@ attribute is present.
 Use this attribute to indicate that
 all registers except the stack pointer should be saved in the prologue
 regardless of whether they are used or not.
+@end table
+
+@node BPF Function Attributes
+@subsection BPF Function Attributes
+
+These function attributes are supported by the BPF back end:
+
+@table @code
+@item kernel_helper
+@cindex @code{kernel helper}, function attribute, BPF
+use this attribute to indicate the specified function declaration is a
+kernel helper.  The helper function is passed as an argument to the
+attribute.  Example:
+
+@smallexample
+int bpf_probe_read (void *dst, int size, const void *unsafe_ptr)
+  __attribute__ ((kernel_helper (4)));
+@end smallexample
 @end table
 
 @node CR16 Function Attributes
@@ -11159,18 +11179,31 @@ The @var{level} argument must be a constant integer.
 
 On some machines it may be impossible to determine the return address of
 any function other than the current one; in such cases, or when the top
-of the stack has been reached, this function returns @code{0} or a
-random value.  In addition, @code{__builtin_frame_address} may be used
+of the stack has been reached, this function returns an unspecified
+value.  In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
 Additional post-processing of the returned value may be needed, see
 @code{__builtin_extract_return_addr}.
+
+The stored representation of the return address in memory may be different
+from the address returned by @code{__builtin_return_address}.  For example,
+on AArch64 the stored address may be mangled with return address signing
+whereas the address returned by @code{__builtin_return_address} is not.
 
 Calling this function with a nonzero argument can have unpredictable
 effects, including crashing the calling program.  As a result, calls
 that are considered unsafe are diagnosed when the @option{-Wframe-address}
 option is in effect.  Such calls should only be made in debugging
 situations.
+
+On targets where code addresses are representable as @code{void *},
+@smallexample
+void *addr = __builtin_extract_return_addr (__builtin_return_address (0));
+@end smallexample
+gives the code address where the current function would return.  For example,
+such an address may be used with @code{dladdr} or other interfaces that work
+with code addresses.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
@@ -13844,7 +13877,6 @@ instructions, but allow the compiler to schedule those calls.
 * AVR Built-in Functions::
 * Blackfin Built-in Functions::
 * BPF Built-in Functions::
-* BPF Kernel Helpers::
 * FR-V Built-in Functions::
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
@@ -13859,6 +13891,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
 * PowerPC Matrix-Multiply Assist Built-in Functions::
+* RISC-V Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -13881,6 +13914,11 @@ unsigned int __builtin_aarch64_get_fpcr ()
 void __builtin_aarch64_set_fpcr (unsigned int)
 unsigned int __builtin_aarch64_get_fpsr ()
 void __builtin_aarch64_set_fpsr (unsigned int)
+
+unsigned long long __builtin_aarch64_get_fpcr64 ()
+void __builtin_aarch64_set_fpcr64 (unsigned long long)
+unsigned long long __builtin_aarch64_get_fpsr64 ()
+void __builtin_aarch64_set_fpsr64 (unsigned long long)
 @end smallexample
 
 @node Alpha Built-in Functions
@@ -14858,158 +14896,6 @@ Load 16-bits from the @code{struct sk_buff} packet data pointed by the register 
 @deftypefn {Built-in Function} unsigned long long __builtin_bpf_load_word (unsigned long long @var{offset})
 Load 32-bits from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
 @end deftypefn
-
-@node BPF Kernel Helpers
-@subsection BPF Kernel Helpers
-
-These built-in functions are available for calling kernel helpers, and
-they are available depending on the kernel version selected as the
-CPU.
-
-Rather than using the built-ins directly, it is preferred for programs
-to include @file{bpf-helpers.h} and use the wrappers defined there.
-
-For a full description of what the helpers do, the arguments they
-take, and the returned value, see the
-@file{linux/include/uapi/linux/bpf.h} in a Linux source tree.
-
-@smallexample
-void *__builtin_bpf_helper_map_lookup_elem (void *map, void *key)
-int   __builtin_bpf_helper_map_update_elem (void *map, void *key,
-                                            void *value,
-                                            unsigned long long flags)
-int   __builtin_bpf_helper_map_delete_elem (void *map, const void *key)
-int   __builtin_bpf_helper_map_push_elem (void *map, const void *value,
-                                          unsigned long long flags)
-int   __builtin_bpf_helper_map_pop_elem (void *map, void *value)
-int   __builtin_bpf_helper_map_peek_elem (void *map, void *value)
-int __builtin_bpf_helper_clone_redirect (void *skb,
-                                         unsigned int ifindex,
-                                         unsigned long long flags)
-int __builtin_bpf_helper_skb_get_tunnel_key (void *ctx, void *key, int size, int flags)
-int __builtin_bpf_helper_skb_set_tunnel_key (void *ctx, void *key, int size, int flags)
-int __builtin_bpf_helper_skb_get_tunnel_opt (void *ctx, void *md, int size)
-int __builtin_bpf_helper_skb_set_tunnel_opt (void *ctx, void *md, int size)
-int __builtin_bpf_helper_skb_get_xfrm_state (void *ctx, int index, void *state,
-				     int size, int flags)
-static unsigned long long __builtin_bpf_helper_skb_cgroup_id (void *ctx)
-static unsigned long long __builtin_bpf_helper_skb_ancestor_cgroup_id
-                                         (void *ctx, int level)
-int __builtin_bpf_helper_skb_vlan_push (void *ctx, __be16 vlan_proto, __u16 vlan_tci)
-int __builtin_bpf_helper_skb_vlan_pop (void *ctx)
-int __builtin_bpf_helper_skb_ecn_set_ce (void *ctx)
-
-int __builtin_bpf_helper_skb_load_bytes (void *ctx, int off, void *to, int len)
-int __builtin_bpf_helper_skb_load_bytes_relative (void *ctx, int off, void *to, int len, __u32 start_header)
-int __builtin_bpf_helper_skb_store_bytes (void *ctx, int off, void *from, int len, int flags)
-int __builtin_bpf_helper_skb_under_cgroup (void *ctx, void *map, int index)
-int __builtin_bpf_helper_skb_change_head (void *, int len, int flags)
-int __builtin_bpf_helper_skb_pull_data (void *, int len)
-int __builtin_bpf_helper_skb_change_proto (void *ctx, __be16 proto, __u64 flags)
-int __builtin_bpf_helper_skb_change_type (void *ctx, __u32 type)
-int __builtin_bpf_helper_skb_change_tail (void *ctx, __u32 len, __u64 flags)
-int __builtin_bpf_helper_skb_adjust_room (void *ctx, __s32 len_diff, __u32 mode,
-    				  unsigned long long flags)
-@end smallexample
-
-Other helpers:
-
-@smallexample
-int __builtin_bpf_helper_probe_read (void *dst, unsigned int size, void *src)
-unsigned long long __builtin_bpf_helper_ktime_get_ns (void)
-int __builtin_bpf_helper_trace_printk (const char *fmt, unsigned int fmt_size, ...)
-void __builtin_bpf_helper_tail_call (void *ctx, void *prog_array_map, unsigned int index)
-unsigned int __builtin_bpf_helper_get_smp_processor_id (void)
-unsigned long long __builtin_bpf_helper_get_current_pid_tgid (void)
-unsigned long long __builtin_bpf_helper_get_current_uid_gid (void)
-int __builtin_bpf_helper_get_current_comm (void *buf, unsigned int size_of_buf)
-unsigned long long __builtin_bpf_helper_perf_event_read (void *map, unsigned long long flags)
-
-int __builtin_bpf_helper_redirect (unsigned int ifindex, unsigned long long flags)
-int __builtin_bpf_helper_redirect_map (void *map, unsigned int key, unsigned long long flags)
-int __builtin_bpf_helper_perf_event_output (void *ctx,void *map, unsigned long long flags, void *data, unsigned long long size)
-int __builtin_bpf_helper_get_stackid (void *ctx, void *map, unsigned long long flags)
-int __builtin_bpf_helper_probe_write_user (void *dst, const void *src, unsigned int len)
-int __builtin_bpf_helper_current_task_under_cgroup (void *map, unsigned int index)
-
-static unsigned long long __builtin_bpf_helper_get_prandom_u32 (void)
-int __builtin_bpf_helper_xdp_adjust_head (void *ctx, int offset)
-int __builtin_bpf_helper_xdp_adjust_meta (void *ctx, int offset)
-int __builtin_bpf_helper_get_socket_cookie (void *ctx)
-int __builtin_bpf_helper_setsockopt (void *ctx, int level, int optname, void *optval,
-			     int optlen)
-int __builtin_bpf_helper_getsockopt (void *ctx, int level, int optname, void *optval,
-			     int optlen)
-int __builtin_bpf_helper_sock_ops_cb_flags_set (void *ctx, int flags)
-int __builtin_bpf_helper_sk_redirect_map (void *ctx, void *map, int key, int flags)
-int __builtin_bpf_helper_sk_redirect_hash (void *ctx, void *map, void *key, int flags)
-int __builtin_bpf_helper_sock_map_update (void *map, void *key, void *value,
-				  unsigned long long flags)
-int __builtin_bpf_helper_sock_hash_update (void *map, void *key, void *value,
-				   unsigned long long flags)
-int __builtin_bpf_helper_perf_event_read_value (void *map, unsigned long long flags,
-					void *buf, unsigned int buf_size)
-int __builtin_bpf_helper_perf_prog_read_value (void *ctx, void *buf,
-				       unsigned int buf_size)
-
-int __builtin_bpf_helper_override_return (void *ctx, unsigned long rc)
-int __builtin_bpf_helper_msg_redirect_map (void *ctx, void *map, int key, int flags)
-int __builtin_bpf_helper_msg_redirect_hash (void *ctx,
-				    void *map, void *key, int flags)
-int __builtin_bpf_helper_msg_apply_bytes (void *ctx, int len)
-int __builtin_bpf_helper_msg_cork_bytes (void *ctx, int len)
-int __builtin_bpf_helper_msg_pull_data (void *ctx, int start, int end, int flags)
-int __builtin_bpf_helper_msg_push_data (void *ctx, int start, int end, int flags)
-int __builtin_bpf_helper_msg_pop_data (void *ctx, int start, int cut, int flags)
-int __builtin_bpf_helper_bind (void *ctx, void *addr, int addr_len)
-int __builtin_bpf_helper_xdp_adjust_tail (void *ctx, int offset)
-int __builtin_bpf_helper_sk_select_reuseport (void *ctx, void *map, void *key, __u32 flags)
-int __builtin_bpf_helper_get_stack (void *ctx, void *buf, int size, int flags)
-int __builtin_bpf_helper_fib_lookup (void *ctx, struct bpf_fib_lookup *params,
-			     int plen, __u32 flags)
-
-int __builtin_bpf_helper_lwt_push_encap (void *ctx, unsigned int type, void *hdr,
-				 unsigned int len)
-int __builtin_bpf_helper_lwt_seg6_store_bytes (void *ctx, unsigned int offset,
-				       void *from, unsigned int len)
-int __builtin_bpf_helper_lwt_seg6_action (void *ctx, unsigned int action, void *param,
-				  unsigned int param_len)
-int __builtin_bpf_helper_lwt_seg6_adjust_srh (void *ctx, unsigned int offset,
-				      unsigned int len)
-int __builtin_bpf_helper_rc_repeat (void *ctx)
-int __builtin_bpf_helper_rc_keydown (void *ctx, unsigned int protocol,
-			     unsigned long long scancode, unsigned int toggle)
-static unsigned long long __builtin_bpf_helper_get_current_cgroup_id (void)
-static void *__builtin_bpf_helper_get_local_storage (void *map, unsigned long long flags)
-static struct bpf_sock *__builtin_bpf_helper_sk_lookup_tcp (void *ctx, void *tuple, int size, unsigned long long netns_id, unsigned long long flags)
-static struct bpf_sock *__builtin_bpf_helper_sk_lookup_udp (void *ctx, void *tuple, int size, unsigned long long netns_id, unsigned long long flags)
-int __builtin_bpf_helper_sk_release (struct bpf_sock *sk)
-int __builtin_bpf_helper_rc_pointer_rel (void *ctx, int rel_x, int rel_y)
-static void __builtin_bpf_helper_spin_lock (struct bpf_spin_lock *lock)
-static void __builtin_bpf_helper_spin_unlock (struct bpf_spin_lock *lock)
-
-static struct bpf_sock *__builtin_bpf_helper_sk_fullsock (struct bpf_sock *sk)
-static struct bpf_tcp_sock *__builtin_bpf_helper_tcp_sock (struct bpf_sock *sk)
-static struct bpf_sock *__builtin_bpf_helper_get_listener_sock (struct bpf_sock *sk)
-
-int __builtin_bpf_helper_l3_csum_replace (void *ctx, int off, int from, int to, int flags)
-int __builtin_bpf_helper_l4_csum_replace (void *ctx, int off, int from, int to, int flags)
-int __builtin_bpf_helper_csum_diff (void *from, int from_size, void *to, int to_size, int seed)
-
-static unsigned int __builtin_bpf_helper_get_cgroup_classid (void *ctx)
-static unsigned int __builtin_bpf_helper_get_route_realm (void *ctx)
-static unsigned int __builtin_bpf_helper_get_hash_recalc (void *ctx)
-static unsigned long long __builtin_bpf_helper_get_current_task (void *ctx)
-
-static long long __builtin_bpf_helper_csum_update (void *ctx, __u32 csum)
-static void __builtin_bpf_helper_set_hash_invalid (void *ctx)
-int __builtin_bpf_helper_get_numa_node_id (void)
-int __builtin_bpf_helper_probe_read_str (void *ctx, __u32 size,
-				 const void *unsafe_ptr)
-static unsigned int __builtin_bpf_helper_get_socket_uid (void *ctx)
-static unsigned int __builtin_bpf_helper_set_hash (void *ctx, __u32 hash)
-@end smallexample
-
 
 @node FR-V Built-in Functions
 @subsection FR-V Built-in Functions
@@ -17091,7 +16977,7 @@ implementing assertions.
 * Basic PowerPC Built-in Functions Available on ISA 2.06::
 * Basic PowerPC Built-in Functions Available on ISA 2.07::
 * Basic PowerPC Built-in Functions Available on ISA 3.0::
-* Basic PowerPC Built-in Functions Available for a Future Architecture::
+* Basic PowerPC Built-in Functions Available on ISA 3.1::
 @end menu
 
 This section describes PowerPC built-in functions that do not require
@@ -17651,25 +17537,23 @@ the FPSCR.  The instruction is a lower latency version of the @code{mffs}
 instruction.  If the @code{mffsl} instruction is not available, then the
 builtin uses the older @code{mffs} instruction to read the FPSCR.
 
-@node Basic PowerPC Built-in Functions Available for a Future Architecture
-@subsubsection Basic PowerPC Built-in Functions Available for a Future Architecture
+@node Basic PowerPC Built-in Functions Available on ISA 3.1
+@subsubsection Basic PowerPC Built-in Functions Available on ISA 3.1
 
 The basic built-in functions described in this section are
-available on the PowerPC family of processors starting with a
-hypothetical CPU which may or may not be available in the future, as
-requested by specifying @option{-mcpu=future} on the command line.
-Unless explicitly disabled on the command line,
-specifying @option{-mcpu=future} has the effect of enabling all the
-same options as for @option{-mcpu=power9}.
+available on the PowerPC family of processors starting with ISA 3.1.
+Unless specific options are explicitly disabled on the
+command line, specifying option @option{-mcpu=power10} has the effect of
+enabling all the same options as for @option{-mcpu=power9}.
 
 The following built-in functions are available on Linux 64-bit systems
-that use a future architecture instruction set (@option{-mcpu=future}):
+that use a future architecture instruction set (@option{-mcpu=power10}):
 
 @smallexample
 @exdent unsigned long long int
 @exdent __builtin_cfuged (unsigned long long int, unsigned long long int)
 @end smallexample
-Perform a 64-bit centrifuge operation, as if implemented by the Future
+Perform a 64-bit centrifuge operation, as if implemented by the
 @code{cfuged} instruction.
 @findex __builtin_cfuged
 
@@ -17678,7 +17562,7 @@ Perform a 64-bit centrifuge operation, as if implemented by the Future
 @exdent __builtin_cntlzdm (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit count leading zeros operation under mask, as if
-implemented by the future @code{cntlzdm} instruction.
+implemented by the @code{cntlzdm} instruction.
 @findex __builtin_cntlzdm
 
 @smallexample
@@ -17686,7 +17570,7 @@ implemented by the future @code{cntlzdm} instruction.
 @exdent __builtin_cnttzdm (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit count trailing zeros operation under mask, as if
-implemented by the future @code{cnttzdm} instruction.
+implemented by the @code{cnttzdm} instruction.
 @findex __builtin_cnttzdm
 
 @smallexample
@@ -17694,7 +17578,7 @@ implemented by the future @code{cnttzdm} instruction.
 @exdent __builtin_pdepd (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit parallel bits deposit operation, as if implemented by the
-Future @code{pdepd} instruction.
+@code{pdepd} instruction.
 @findex __builtin_pdepd
 
 @smallexample
@@ -17702,7 +17586,7 @@ Future @code{pdepd} instruction.
 @exdent __builtin_pextd (unsigned long long int, unsigned long long int)
 @end smallexample
 Perform a 64-bit parallel bits extract operation, as if implemented by the
-Future @code{pextd} instruction.
+@code{pextd} instruction.
 @findex __builtin_pextd
 
 @node PowerPC AltiVec/VSX Built-in Functions
@@ -17816,7 +17700,7 @@ briefly described below.
 * PowerPC AltiVec Built-in Functions Available on ISA 2.06::
 * PowerPC AltiVec Built-in Functions Available on ISA 2.07::
 * PowerPC AltiVec Built-in Functions Available on ISA 3.0::
-* PowerPC AltiVec Built-in Functions Available for a Future Architecture::
+* PowerPC AltiVec Built-in Functions Available on ISA 3.1::
 @end menu
 
 @node PowerPC AltiVec Built-in Functions on ISA 2.05
@@ -20215,6 +20099,13 @@ bool scalar_test_data_class (__ieee128 source, const int condition);
 bool scalar_test_neg (float source);
 bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
+
+vector _uint128_t vec_msum (vector unsigned long long,
+			    vector unsigned long long,
+			    vector _uint128_t);
+vector _int128_t vec_msum (vector signed long long,
+			   vector signed long long,
+			   vector _int128_t);
 @end smallexample
 
 The @code{scalar_extract_exp} and @code{scalar_extract_sig}
@@ -20234,6 +20125,9 @@ Note that the sign of the significand is not represented in the result
 returned from the @code{scalar_extract_sig} function.  Use the
 @code{scalar_test_neg} function to test the sign of its @code{double}
 argument.
+The @code{vec_msum} functions perform a vector multiply-sum, returning
+the result of arg1*arg2+arg3.  ISA 3.0 adds support for vec_msum returning
+a vector int128 result.
 
 The @code{scalar_insert_exp}
 functions require a 64-bit environment supporting ISA 3.0 or later.
@@ -20860,20 +20754,18 @@ void vec_xst (vector unsigned char, int, vector unsigned char *);
 void vec_xst (vector unsigned char, int, unsigned char *);
 @end smallexample
 
-@node PowerPC AltiVec Built-in Functions Available for a Future Architecture
-@subsubsection PowerPC AltiVec Built-in Functions Available for a Future Architecture
+@node PowerPC AltiVec Built-in Functions Available on ISA 3.1
+@subsubsection PowerPC AltiVec Built-in Functions Available on ISA 3.1
 
 The following additional built-in functions are also available for the
-PowerPC family of processors, starting with a hypothetical CPU
-which may or may not be available in the future
-(@option{-mcpu=future}) or later:
+PowerPC family of processors, starting with ISA 3.1 (@option{-mcpu=power10}):
 
 
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
-Perform a vector centrifuge operation, as if implemented by the Future
+Perform a vector centrifuge operation, as if implemented by the
 @code{vcfuged} instruction.
 @findex vec_cfuge
 
@@ -20882,7 +20774,7 @@ Perform a vector centrifuge operation, as if implemented by the Future
 @exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector count leading zeros under bit mask operation, as if
-implemented by the Future @code{vclzdm} instruction.
+implemented by the @code{vclzdm} instruction.
 @findex vec_cntlzm
 
 @smallexample
@@ -20890,7 +20782,7 @@ implemented by the Future @code{vclzdm} instruction.
 @exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector count trailing zeros under bit mask operation, as if
-implemented by the Future @code{vctzdm} instruction.
+implemented by the @code{vctzdm} instruction.
 @findex vec_cnttzm
 
 @smallexample
@@ -20921,10 +20813,13 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 @exdent vector unsigned long long int
 @exdent vec_gnb (vector unsigned __int128, const unsigned char)
 @end smallexample
-Perform a 128-bit vector gather  operation, as if implemented by the Future
+Perform a 128-bit vector gather  operation, as if implemented by the
 @code{vgnb} instruction.  The second argument must be a literal
 integer value between 2 and 7 inclusive.
 @findex vec_gnb
+
+
+Vector Extract
 
 @smallexample
 @exdent vector unsigned long long int
@@ -20936,66 +20831,338 @@ integer value between 2 and 7 inclusive.
 @exdent vector unsigned long long int
 @exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int)
 @end smallexample
-Extract a single element from the vector formed by catenating this function's
-first two arguments at the byte offset specified by this function's
-third argument.  On big-endian targets, this function behaves as if
-implemented by the Future @code{vextdubvlx}, @code{vextduhvlx},
-@code{vextduwvlx}, or @code{vextddvlx} instructions, depending on the
-types of the function's first two arguments.  On little-endian
-targets, this function behaves as if implemented by the Future
-@code{vextdubvrx}, @code{vextduhvrx},
-@code{vextduwvrx}, or @code{vextddvrx} instructions.
-The byte offset of the element to be extracted is calculated
-by computing the remainder of dividing the third argument by 32.
-If this reminader value is not a multiple of the vector element size,
-or if its value added to the vector element size exceeds 32, the
-result is undefined.
+Extract an element from two concatenated vectors starting at the given byte index
+in natural-endian order, and place it zero-extended in doubleword 1 of the result
+according to natural element order.  If the byte index is out of range for the
+data type, the intrinsic will be rejected.
+For little-endian, this output will match the placement by the hardware
+instruction, i.e., dword[0] in RTL notation.  For big-endian, an additional
+instruction is needed to move it from the "left" doubleword to the  "right" one.
+For little-endian, semantics matching the @code{vextdubvrx},
+@code{vextduhvrx}, @code{vextduwvrx} instruction will be generated, while for
+big-endian, semantics matching the @code{vextdubvlx}, @code{vextduhvlx},
+@code{vextduwvlx} instructions
+will be generated.  Note that some fairly anomalous results can be generated if
+the byte index is not aligned on an element boundary for the element being
+extracted.  This is a limitation of the bi-endian vector programming model is
+consistent with the limitation on @code{vec_perm}.
 @findex vec_extractl
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vec_extracth (vector unsigned char, vector unsigned char, unsigned int)
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vec_extracth (vector unsigned short, vector unsigned short,
+unsigned int)
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vec_extracth (vector unsigned int, vector unsigned int, unsigned int)
 @exdent vector unsigned long long int
-@exdent vec_extractr (vector unsigned long long, vector unsigned long long, unsigned int)
+@exdent vec_extracth (vector unsigned long long, vector unsigned long long,
+unsigned int)
 @end smallexample
-Extract a single element from the vector formed by catenating this function's
-first two arguments at the byte offset calculated by subtracting this
-function's third argument from 31.  On big-endian targets, this
-function behaves as if
-implemented by the Future
-@code{vextdubvrx}, @code{vextduhvrx},
-@code{vextduwvrx}, or @code{vextddvrx} instructions, depending on the
-types of the function's first two arguments.
-On little-endian
-targets, this function behaves as if implemented by the Future
-@code{vextdubvlx}, @code{vextduhvlx},
-@code{vextduwvlx}, or @code{vextddvlx} instructions.
-The byte offset of the element to be extracted, measured from the
-right end of the catenation of the two vector arguments, is calculated
-by computing the remainder of dividing the third argument by 32.
-If this reminader value is not a multiple of the vector element size,
-or if its value added to the vector element size exceeds 32, the
-result is undefined.
-@findex vec_extractr
-
+Extract an element from two concatenated vectors starting at the given byte
+index.  The index is based on big endian order for a little endian system.
+Similarly, the index is based on little endian order for a big endian system.
+The extraced elements are zero-extended and put in doubleword 1
+according to natural element order.  If the byte index is out of range for the
+data type, the intrinsic will be rejected.  For little-endian, this output
+will match the placement by the hardware instruction (vextdubvrx, vextduhvrx,
+vextduwvrx, vextddvrx) i.e., dword[0] in RTL
+notation.  For big-endian, an additional instruction is needed to move it
+from the "left" doubleword to the "right" one.  For little-endian, semantics
+matching the @code{vextdubvlx}, @code{vextduhvlx}, @code{vextduwvlx}
+instructions will be generated, while for big-endian, semantics matching the
+@code{vextdubvrx}, @code{vextduhvrx}, @code{vextduwvrx} instructions will
+be generated.  Note that some fairly anomalous
+results can be generated if the byte index is not aligned on the
+element boundary for the element being extracted.  This is a
+limitation of the bi-endian vector programming model consistent with the
+limitation on @code{vec_perm}.
+@findex vec_extracth
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector parallel bits deposit operation, as if implemented by
-the Future @code{vpdepd} instruction.
+the @code{vpdepd} instruction.
 @findex vec_pdep
+
+Vector Insert
+
+@smallexample
+@exdent vector unsigned char
+@exdent vec_insertl (unsigned char, vector unsigned char, unsigned int);
+@exdent vector unsigned short
+@exdent vec_insertl (unsigned short, vector unsigned short, unsigned int);
+@exdent vector unsigned int
+@exdent vec_insertl (unsigned int, vector unsigned int, unsigned int);
+@exdent vector unsigned long long
+@exdent vec_insertl (unsigned long long, vector unsigned long long,
+unsigned int);
+@exdent vector unsigned char
+@exdent vec_insertl (vector unsigned char, vector unsigned char, unsigned int;
+@exdent vector unsigned short
+@exdent vec_insertl (vector unsigned short, vector unsigned short,
+unsigned int);
+@exdent vector unsigned int
+@exdent vec_insertl (vector unsigned int, vector unsigned int, unsigned int);
+@end smallexample
+
+Let src be the first argument, when the first argument is a scalar, or the
+rightmost element of the left doubleword of the first argument, when the first
+argument is a vector.  Insert the source into the destination at the position
+given by the third argument, using natural element order in the second
+argument.  The rest of the second argument is unchanged.  If the byte
+index is greater than 14 for halfwords, greater than 12 for words, or
+greater than 8 for doublewords the result is undefined.   For little-endian,
+the generated code will be semantically equivalent to @code{vins[bhw]rx}
+instructions.  Similarly for big-endian it will be semantically equivalent
+to @code{vins[bhw]lx}.  Note that some fairly anomalous results can be
+generated if the byte index is not aligned on an element boundary for the
+type of element being inserted.
+@findex vec_insertl
+
+@smallexample
+@exdent vector unsigned char
+@exdent vec_inserth (unsigned char, vector unsigned char, unsigned int);
+@exdent vector unsigned short
+@exdent vec_inserth (unsigned short, vector unsigned short, unsigned int);
+@exdent vector unsigned int
+@exdent vec_inserth (unsigned int, vector unsigned int, unsigned int);
+@exdent vector unsigned long long
+@exdent vec_inserth (unsigned long long, vector unsigned long long,
+unsigned int);
+@exdent vector unsigned char
+@exdent vec_inserth (vector unsigned char, vector unsigned char, unsigned int);
+@exdent vector unsigned short
+@exdent vec_inserth (vector unsigned short, vector unsigned short,
+unsigned int);
+@exdent vector unsigned int
+@exdent vec_inserth (vector unsigned int, vector unsigned int, unsigned int);
+@end smallexample
+
+Let src be the first argument, when the first argument is a scalar, or the
+rightmost element of the first argument, when the first argument is a vector.
+Insert src into the second argument at the position identified by the third
+argument, using opposite element order in the second argument, and leaving the
+rest of the second argument unchanged.  If the byte index is greater than 14
+for halfwords, 12 for words, or 8 for doublewords, the intrinsic will be
+rejected. Note that the underlying hardware instruction uses the same register
+for the second argument and the result.
+For little-endian, the code generation will be semantically equivalent to
+@code{vins[bhw]lx}, while for big-endian it will be semantically equivalent to
+@code{vins[bhw]rx}.
+Note that some fairly anomalous results can be generated if the byte index is
+not aligned on an element boundary for the sort of element being inserted.
+@findex vec_inserth
+
+Vector Replace Element
+@smallexample
+@exdent vector signed int vec_replace_elt (vector signed int, signed int,
+const int);
+@exdent vector unsigned int vec_replace_elt (vector unsigned int,
+unsigned int, const int);
+@exdent vector float vec_replace_elt (vector float, float, const int);
+@exdent vector signed long long vec_replace_elt (vector signed long long,
+signed long long, const int);
+@exdent vector unsigned long long vec_replace_elt (vector unsigned long long,
+unsigned long long, const int);
+@exdent vector double rec_replace_elt (vector double, double, const int);
+@end smallexample
+The third argument (constrained to [0,3]) identifies the natural-endian
+element number of the first argument that will be replaced by the second
+argument to produce the result.  The other elements of the first argument will
+remain unchanged in the result.
+
+If it's desirable to insert a word at an unaligned position, use
+vec_replace_unaligned instead.
+
+@findex vec_replace_element
+
+Vector Replace Unaligned
+@smallexample
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+signed int, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+unsigned int, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+float, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+signed long long, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+unsigned long long, const int);
+@exdent vector unsigned char vec_replace_unaligned (vector unsigned char,
+double, const int);
+@end smallexample
+
+The second argument replaces a portion of the first argument to produce the
+result, with the rest of the first argument unchanged in the result.  The
+third argument identifies the byte index (using left-to-right, or big-endian
+order) where the high-order byte of the second argument will be placed, with
+the remaining bytes of the second argument placed naturally "to the right"
+of the high-order byte.
+
+The programmer is responsible for understanding the endianness issues involved
+with the first argument and the result.
+@findex vec_replace_unaligned
+
+Vector Shift Left Double Bit Immediate
+@smallexample
+@exdent vector signed char vec_sldb (vector signed char, vector signed char,
+const unsigned int);
+@exdent vector unsigned char vec_sldb (vector unsigned char,
+vector unsigned char, const unsigned int);
+@exdent vector signed short vec_sldb (vector signed short, vector signed short,
+const unsigned int);
+@exdent vector unsigned short vec_sldb (vector unsigned short,
+vector unsigned short, const unsigned int);
+@exdent vector signed int vec_sldb (vector signed int, vector signed int,
+const unsigned int);
+@exdent vector unsigned int vec_sldb (vector unsigned int, vector unsigned int,
+const unsigned int);
+@exdent vector signed long long vec_sldb (vector signed long long,
+vector signed long long, const unsigned int);
+@exdent vector unsigned long long vec_sldb (vector unsigned long long,
+vector unsigned long long, const unsigned int);
+@end smallexample
+
+Shift the combined input vectors left by the amount specified by the low-order
+three bits of the third argument, and return the leftmost remaining 128 bits.
+Code using this instruction must be endian-aware.
+
+@findex vec_sldb
+
+Vector Shift Right Double Bit Immediate
+
+@smallexample
+@exdent vector signed char vec_srdb (vector signed char, vector signed char,
+const unsigned int);
+@exdent vector unsigned char vec_srdb (vector unsigned char, vector unsigned char,
+const unsigned int);
+@exdent vector signed short vec_srdb (vector signed short, vector signed short,
+const unsigned int);
+@exdent vector unsigned short vec_srdb (vector unsigned short, vector unsigned short,
+const unsigned int);
+@exdent vector signed int vec_srdb (vector signed int, vector signed int,
+const unsigned int);
+@exdent vector unsigned int vec_srdb (vector unsigned int, vector unsigned int,
+const unsigned int);
+@exdent vector signed long long vec_srdb (vector signed long long,
+vector signed long long, const unsigned int);
+@exdent vector unsigned long long vec_srdb (vector unsigned long long,
+vector unsigned long long, const unsigned int);
+@end smallexample
+
+Shift the combined input vectors right by the amount specified by the low-order
+three bits of the third argument, and return the remaining 128 bits.  Code
+using this built-in must be endian-aware.
+
+@findex vec_srdb
+
+Vector Splat
+
+@smallexample
+@exdent vector signed int vec_splati (const signed int);
+@exdent vector float vec_splati (const float);
+@end smallexample
+
+Splat a 32-bit immediate into a vector of words.
+
+@findex vec_splati
+
+@smallexample
+@exdent vector double vec_splatid (const float);
+@end smallexample
+
+Convert a single precision floating-point value to double-precision and splat
+the result to a vector of double-precision floats.
+
+@findex vec_splatid
+
+@smallexample
+@exdent vector signed int vec_splati_ins (vector signed int,
+const unsigned int, const signed int);
+@exdent vector unsigned int vec_splati_ins (vector unsigned int,
+const unsigned int, const unsigned int);
+@exdent vector float vec_splati_ins (vector float, const unsigned int,
+const float);
+@end smallexample
+
+Argument 2 must be either 0 or 1.  Splat the value of argument 3 into the word
+identified by argument 2 of each doubleword of argument 1 and return the
+result.  The other words of argument 1 are unchanged.
+
+@findex vec_splati_ins
+
+Vector Blend Variable
+
+@smallexample
+@exdent vector signed char vec_blendv (vector signed char, vector signed char,
+vector unsigned char);
+@exdent vector unsigned char vec_blendv (vector unsigned char,
+vector unsigned char, vector unsigned char);
+@exdent vector signed short vec_blendv (vector signed short,
+vector signed short, vector unsigned short);
+@exdent vector unsigned short vec_blendv (vector unsigned short,
+vector unsigned short, vector unsigned short);
+@exdent vector signed int vec_blendv (vector signed int, vector signed int,
+vector unsigned int);
+@exdent vector unsigned int vec_blendv (vector unsigned int,
+vector unsigned int, vector unsigned int);
+@exdent vector signed long long vec_blendv (vector signed long long,
+vector signed long long, vector unsigned long long);
+@exdent vector unsigned long long vec_blendv (vector unsigned long long,
+vector unsigned long long, vector unsigned long long);
+@exdent vector float vec_blendv (vector float, vector float,
+vector unsigned int);
+@exdent vector double vec_blendv (vector double, vector double,
+vector unsigned long long);
+@end smallexample
+
+Blend the first and second argument vectors according to the sign bits of the
+corresponding elements of the third argument vector.  This is similar to the
+@code{vsel} and @code{xxsel} instructions but for bigger elements.
+
+@findex vec_blendv
+
+Vector Permute Extended
+
+@smallexample
+@exdent vector signed char vec_permx (vector signed char, vector signed char,
+vector unsigned char, const int);
+@exdent vector unsigned char vec_permx (vector unsigned char,
+vector unsigned char, vector unsigned char, const int);
+@exdent vector signed short vec_permx (vector signed short,
+vector signed short, vector unsigned char, const int);
+@exdent vector unsigned short vec_permx (vector unsigned short,
+vector unsigned short, vector unsigned char, const int);
+@exdent vector signed int vec_permx (vector signed int, vector signed int,
+vector unsigned char, const int);
+@exdent vector unsigned int vec_permx (vector unsigned int,
+vector unsigned int, vector unsigned char, const int);
+@exdent vector signed long long vec_permx (vector signed long long,
+vector signed long long, vector unsigned char, const int);
+@exdent vector unsigned long long vec_permx (vector unsigned long long,
+vector unsigned long long, vector unsigned char, const int);
+@exdent vector float (vector float, vector float, vector unsigned char,
+const int);
+@exdent vector double (vector double, vector double, vector unsigned char,
+const int);
+@end smallexample
+
+Perform a partial permute of the first two arguments, which form a 32-byte
+section of an emulated vector up to 256 bytes wide, using the partial permute
+control vector in the third argument.  The fourth argument (constrained to
+values of 0-7) identifies which 32-byte section of the emulated vector is
+contained in the first two arguments.
+@findex vec_permx
 
 @smallexample
 @exdent vector unsigned long long int
 @exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
 @end smallexample
 Perform a vector parallel bit extract operation, as if implemented by
-the Future @code{vpextd} instruction.
+the @code{vpextd} instruction.
 @findex vec_pext
 
 @smallexample
@@ -21072,7 +21239,7 @@ zero element if the same argument is also passed to @code{vec_strir}.
             vector unsigned __int128, const unsigned int)
 @end smallexample
 Perform a 128-bit vector evaluate operation, as if implemented by the
-Future @code{xxeval} instruction.  The fourth argument must be a literal
+@code{xxeval} instruction.  The fourth argument must be a literal
 integer value between 0 and 255 inclusive.
 @findex vec_ternarylogic
 
@@ -21083,7 +21250,7 @@ integer value between 0 and 255 inclusive.
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
                                          const int)
 @end smallexample
-Generate PCV from specified Mask size, as if implemented by the Future
+Generate PCV from specified Mask size, as if implemented by the
 @code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
 immediate value is either 0, 1, 2 or 3.
 @findex vec_genpcvm
@@ -21457,8 +21624,18 @@ void __builtin_mma_assemble_pair (__vector_pair *, vec_t, vec_t);
 void __builtin_mma_disassemble_pair (void *, __vector_pair *);
 
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
-vec_t __builtin_vsx_xvcvbf16sp (vec_t);
+vec_t __builtin_vsx_xvcvbf16spn (vec_t);
 @end smallexample
+
+@node RISC-V Built-in Functions
+@subsection RISC-V Built-in Functions
+
+These built-in functions are available for the RISC-V family of
+processors.
+
+@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+Returns the value that is currently set in the @samp{tp} register.
+@end deftypefn
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
@@ -22233,6 +22410,12 @@ Intel Core i7 Tigerlake CPU.
 
 @item cooperlake
 Intel Core i7 Cooperlake CPU.
+
+@item sapphirerapids
+Intel Core i7 sapphirerapids CPU.
+
+@item alderlake
+Intel Core i7 Alderlake CPU.
 
 @item bonnell
 Intel Atom Bonnell CPU.

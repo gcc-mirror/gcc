@@ -705,8 +705,8 @@ package Errout is
       Flag_Location          : Source_Ptr;
       Is_Compile_Time_Pragma : Boolean);
    --  Same as Error_Msg (String, Source_Ptr) except Is_Compile_Time_Pragma
-   --  lets the caller specify whether the is a
-   --  Compile_Time_Warning/Compile_Time_Error pragma.
+   --  lets the caller specify whether this is a Compile_Time_Warning or
+   --  Compile_Time_Error pragma.
 
    procedure Error_Msg_S (Msg : String);
    --  Output a message at current scan pointer location. This routine can be
@@ -895,12 +895,15 @@ package Errout is
    --  first formal (RM 9.4(11.9/3)).
 
    procedure Error_Msg_Ada_2012_Feature (Feature : String; Loc : Source_Ptr);
-   --  If not operating in Ada 2012 mode, posts errors complaining that Feature
-   --  is only supported in Ada 2012, with appropriate suggestions to fix this.
-   --  Loc is the location at which the flag is to be posted. Feature, which
-   --  appears at the start of the first generated message, may contain error
-   --  message insertion characters in the normal manner, and in particular
-   --  may start with | to flag a non-serious error.
+   --  If not operating in Ada 2012 mode or higher, posts errors complaining
+   --  that Feature is only supported in Ada 2012, with appropriate suggestions
+   --  to fix this. Loc is the location at which the flag is to be posted.
+   --  Feature, which appears at the start of the first generated message, may
+   --  contain error message insertion characters in the normal manner, and in
+   --  particular may start with | to flag a non-serious error.
+
+   procedure Error_Msg_Ada_2020_Feature (Feature : String; Loc : Source_Ptr);
+   --  Analogous to Error_Msg_Ada_2012_Feature
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

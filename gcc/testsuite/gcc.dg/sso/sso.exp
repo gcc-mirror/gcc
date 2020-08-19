@@ -27,12 +27,12 @@ torture-init
 dg-init
 
 set SSO_TORTURE_OPTIONS [list \
-	{ -O0 } \
-	{ -O1 -fno-inline } \
-	{ -O2 } \
-	{ -O3 -finline-functions } \
-	{ -Os } \
-	{ -Og -g } ]
+	{ -Wno-scalar-storage-order -O0 } \
+	{ -Wno-scalar-storage-order -O1 -fno-inline } \
+	{ -Wno-scalar-storage-order -O2 } \
+	{ -Wno-scalar-storage-order -O3 -finline-functions } \
+	{ -Wno-scalar-storage-order -Os } \
+	{ -Wno-scalar-storage-order -Og -g } ]
 
 set-torture-options $SSO_TORTURE_OPTIONS
 

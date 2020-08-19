@@ -4106,6 +4106,18 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
       /* Accept all non-symbolic constants.  */
       return false;
 
+    case NEG:
+      /* Accept an unary '-' only on scalar numeric constants.  */
+      switch (GET_CODE (XEXP (x, 0)))
+	{
+	case CONST_INT:
+	case CONST_DOUBLE:
+	case CONST_WIDE_INT:
+	  return false;
+	default:
+	  return true;
+	}
+
     case LABEL_REF:
       /* Labels are OK iff we are non-PIC.  */
       return flag_pic != 0;
@@ -5268,6 +5280,7 @@ legitimize_tls_address (rtx addr, rtx reg)
     {
       switch (XINT (XEXP (addr, 0), 1))
 	{
+	case UNSPEC_NTPOFF:
 	case UNSPEC_INDNTPOFF:
 	  new_rtx = addr;
 	  break;
@@ -5287,6 +5300,18 @@ legitimize_tls_address (rtx addr, rtx reg)
       new_rtx = legitimize_tls_address (new_rtx, reg);
       new_rtx = plus_constant (Pmode, new_rtx,
 			       INTVAL (XEXP (XEXP (addr, 0), 1)));
+      new_rtx = force_operand (new_rtx, 0);
+    }
+
+  /* (const (neg (unspec (symbol_ref)))) -> (neg (const (unspec (symbol_ref)))) */
+  else if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == NEG)
+    {
+      new_rtx = XEXP (XEXP (addr, 0), 0);
+      if (GET_CODE (new_rtx) != SYMBOL_REF)
+	new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+
+      new_rtx = legitimize_tls_address (new_rtx, reg);
+      new_rtx = gen_rtx_NEG (Pmode, new_rtx);
       new_rtx = force_operand (new_rtx, 0);
     }
 
@@ -6436,11 +6461,16 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       /* Emit a strict_low_part pattern if possible.  */
       if (smode_bsize == bitsize && bitpos == mode_bsize - smode_bsize)
 	{
-	  op = gen_rtx_STRICT_LOW_PART (VOIDmode, gen_lowpart (smode, dest));
-	  op = gen_rtx_SET (op, gen_lowpart (smode, src));
-	  clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
-	  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
-	  return true;
+	  rtx low_dest = gen_lowpart (smode, dest);
+	  rtx low_src = gen_lowpart (smode, src);
+
+	  switch (smode)
+	    {
+	    case E_QImode: emit_insn (gen_movstrictqi (low_dest, low_src)); return true;
+	    case E_HImode: emit_insn (gen_movstricthi (low_dest, low_src)); return true;
+	    case E_SImode: emit_insn (gen_movstrictsi (low_dest, low_src)); return true;
+	    default: break;
+	    }
 	}
 
       /* ??? There are more powerful versions of ICM that are not

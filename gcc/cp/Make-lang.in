@@ -287,7 +287,6 @@ c++.mostlyclean:
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
-	-rm -f cxxmain.c
 c++.maintainer-clean:
 #
 # Stage hooks:

@@ -1920,23 +1920,9 @@ append_attrname (const std::pair<int, attr_access> &access,
    in the function call EXP.  */
 
 static void
-maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
+maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 {
-  tree fndecl = NULL_TREE;
-  tree fntype = NULL_TREE;
-  if (tree fnaddr = CALL_EXPR_FN (exp))
-    {
-      if (TREE_CODE (fnaddr) == ADDR_EXPR)
-	{
-	  fndecl = TREE_OPERAND (fnaddr, 0);
-	  fntype = TREE_TYPE (fndecl);
-	}
-      else
-	fntype = TREE_TYPE (TREE_TYPE (fnaddr));
-    }
-
-  if (!fntype)
-    return;
+  auto_diagnostic_group adg;
 
   /* A string describing the attributes that the warnings issued by this
      function apply to.  Used to print one informational note per function
@@ -2036,7 +2022,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree exp)
 	     attribute nonnull when the function accepts null pointers
 	     only when the corresponding size is zero.  */
 	  bool warned = false;
-	  location_t loc = EXPR_LOCATION (exp);
+	  const location_t loc = EXPR_LOC_OR_LOC (ptr, EXPR_LOCATION (exp));
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
 	    warned = warning_at (loc, OPT_Wnonnull,
 				 "%Kargument %i is null but the corresponding "
@@ -2499,7 +2485,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   maybe_warn_nonstring_arg (fndecl, exp);
 
   /* Check attribute access arguments.  */
-  maybe_warn_rdwr_sizes (&rdwr_idx, exp);
+  maybe_warn_rdwr_sizes (&rdwr_idx, fndecl, fntype, exp);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.

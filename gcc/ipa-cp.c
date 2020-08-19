@@ -123,6 +123,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "dbgcnt.h"
 
 template <typename valtype> class ipcp_value;
 
@@ -1010,7 +1011,7 @@ ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
 {
   gcc_assert (top_p ());
   m_lattice_val = IPA_BITS_CONSTANT;
-  m_value = value;
+  m_value = wi::bit_and (wi::bit_not (mask), value);
   m_mask = mask;
   return true;
 }
@@ -1047,6 +1048,7 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
 
   widest_int old_mask = m_mask;
   m_mask = (m_mask | mask) | (m_value ^ value);
+  m_value &= ~m_mask;
 
   if (wi::sext (m_mask, precision) == -1)
     return set_to_bottom ();
@@ -1270,6 +1272,7 @@ initialize_node_lattices (struct cgraph_node *node)
 	  plats->ctxlat.set_to_bottom ();
 	  set_agg_lats_to_bottom (plats);
 	  plats->bits_lattice.set_to_bottom ();
+	  plats->m_value_range.m_vr = value_range ();
 	  plats->m_value_range.set_to_bottom ();
 	}
       else
@@ -3898,8 +3901,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
       {
         class ipa_node_params *info = IPA_NODE_REF (node);
         determine_versionability (node, info);
-	info->lattices = XCNEWVEC (class ipcp_param_lattices,
-				   ipa_get_param_count (info));
+
+	unsigned nlattices = ipa_get_param_count (info);
+	void *chunk = XCNEWVEC (class ipcp_param_lattices, nlattices);
+	info->lattices = new (chunk) ipcp_param_lattices[nlattices];
 	initialize_node_lattices (node);
       }
     ipa_size_summary *s = ipa_size_summaries->get (node);
@@ -5667,8 +5672,9 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
 	  (has_undead_caller_from_outside_scc_p, NULL, true))
       return true;
     else if (!ipa_edge_within_scc (cs)
-	     && !IPA_NODE_REF (cs->caller)->node_dead)
-      return true;
+	     && (!IPA_NODE_REF (cs->caller) /* Unoptimized caller.  */
+		 || !IPA_NODE_REF (cs->caller)->node_dead))
+	  return true;
   return false;
 }
 
@@ -5784,9 +5790,13 @@ ipcp_store_bits_results (void)
 	  ipa_bits *jfbits;
 
 	  if (plats->bits_lattice.constant_p ())
-	    jfbits
-	      = ipa_get_ipa_bits_for_value (plats->bits_lattice.get_value (),
-					    plats->bits_lattice.get_mask ());
+	    {
+	      jfbits
+		= ipa_get_ipa_bits_for_value (plats->bits_lattice.get_value (),
+					      plats->bits_lattice.get_mask ());
+	      if (!dbg_cnt (ipa_cp_bits))
+		jfbits = NULL;
+	    }
 	  else
 	    jfbits = NULL;
 

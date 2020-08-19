@@ -46,6 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
@@ -56,8 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/constraint-manager.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/checker-path.h"
-#include "analyzer/call-string.h"
-#include "analyzer/program-point.h"
 #include "analyzer/exploded-graph.h"
 
 #if ENABLE_ANALYZER
@@ -214,16 +215,16 @@ state_change_event::state_change_event (const supernode *node,
 					const gimple *stmt,
 					int stack_depth,
 					const state_machine &sm,
-					tree var,
+					const svalue *sval,
 					state_machine::state_t from,
 					state_machine::state_t to,
-					tree origin,
+					const svalue *origin,
 					const program_state &dst_state)
 : checker_event (EK_STATE_CHANGE,
 		 stmt->location, node->m_fun->decl,
 		 stack_depth),
   m_node (node), m_stmt (stmt), m_sm (sm),
-  m_var (var), m_from (from), m_to (to),
+  m_sval (sval), m_from (from), m_to (to),
   m_origin (origin),
   m_dst_state (dst_state)
 {
@@ -245,9 +246,12 @@ state_change_event::get_desc (bool can_colorize) const
 {
   if (m_pending_diagnostic)
     {
+      region_model *model = m_dst_state.m_region_model;
+      tree var = model->get_representative_tree (m_sval);
+      tree origin = model->get_representative_tree (m_origin);
       label_text custom_desc
 	= m_pending_diagnostic->describe_state_change
-	    (evdesc::state_change (can_colorize, m_var, m_origin,
+	    (evdesc::state_change (can_colorize, var, origin,
 				   m_from, m_to, m_emission_id, *this));
       if (custom_desc.m_buffer)
 	{
@@ -260,16 +264,16 @@ state_change_event::get_desc (bool can_colorize) const
 		  (can_colorize,
 		   "%s (state of %qE: %qs -> %qs, origin: %qE)",
 		   custom_desc.m_buffer,
-		   m_var,
+		   var,
 		   m_sm.get_state_name (m_from),
 		   m_sm.get_state_name (m_to),
-		   m_origin);
+		   origin);
 	      else
 		result = make_label_text
 		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, origin: NULL)",
+		   "%s (state of %qE: %qs -> %qs, NULL origin)",
 		   custom_desc.m_buffer,
-		   m_var,
+		   var,
 		   m_sm.get_state_name (m_from),
 		   m_sm.get_state_name (m_to));
 	      custom_desc.maybe_free ();
@@ -281,27 +285,31 @@ state_change_event::get_desc (bool can_colorize) const
     }
 
   /* Fallback description.  */
-  if (m_var)
+  if (m_sval)
     {
+      label_text sval_desc = m_sval->get_desc ();
       if (m_origin)
-	return make_label_text
-	  (can_colorize,
-	   "state of %qE: %qs -> %qs (origin: %qE)",
-	   m_var,
-	   m_sm.get_state_name (m_from),
-	   m_sm.get_state_name (m_to),
-	   m_origin);
+	{
+	  label_text origin_desc = m_origin->get_desc ();
+	  return make_label_text
+	    (can_colorize,
+	     "state of %qs: %qs -> %qs (origin: %qs)",
+	     sval_desc.m_buffer,
+	     m_sm.get_state_name (m_from),
+	     m_sm.get_state_name (m_to),
+	     origin_desc.m_buffer);
+	}
       else
 	return make_label_text
 	  (can_colorize,
-	   "state of %qE: %qs -> %qs (origin: NULL)",
-	   m_var,
+	   "state of %qs: %qs -> %qs (NULL origin)",
+	   sval_desc.m_buffer,
 	   m_sm.get_state_name (m_from),
 	   m_sm.get_state_name (m_to));
     }
   else
     {
-      gcc_assert (m_origin == NULL_TREE);
+      gcc_assert (m_origin == NULL);
       return make_label_text
 	(can_colorize,
 	 "global state: %qs -> %qs",
@@ -954,7 +962,7 @@ checker_path::add_final_event (const state_machine *sm,
 			       tree var, state_machine::state_t state)
 {
   checker_event *end_of_path
-    = new warning_event (stmt->location,
+    = new warning_event (get_stmt_location (stmt, enode->get_function ()),
 			 enode->get_function ()->decl,
 			 enode->get_stack_depth (),
 			 sm, var, state);

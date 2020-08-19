@@ -118,7 +118,6 @@
 #include "function-abi.h"
 
 typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
-typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -305,6 +304,9 @@ struct expand_depth
   int entryvals;
 };
 
+/* Type for dependencies actively used when expand FROM into cur_loc.  */
+typedef vec<loc_exp_dep, va_heap, vl_embed> deps_vec;
+
 /* This data structure is allocated for one-part variables at the time
    of emitting notes.  */
 struct onepart_aux
@@ -325,7 +327,7 @@ struct onepart_aux
   /* The depth of the cur_loc expression.  */
   expand_depth depth;
   /* Dependencies actively used when expand FROM into cur_loc.  */
-  vec<loc_exp_dep, va_heap, vl_embed> deps;
+  deps_vec deps;
 };
 
 /* Structure describing one part of variable.  */
@@ -434,10 +436,16 @@ int_mem_offset (const_rtx mem)
 			       : NULL)
 #define VAR_LOC_FROM(var) (VAR_LOC_1PAUX (var)->from)
 #define VAR_LOC_DEPTH(var) (VAR_LOC_1PAUX (var)->depth)
-#define VAR_LOC_DEP_VEC(var) (VAR_LOC_1PAUX (var)		  \
-			      ? &VAR_LOC_1PAUX (var)->deps	  \
-			      : NULL)
+#define VAR_LOC_DEP_VEC(var) var_loc_dep_vec (var)
 
+/* Implements the VAR_LOC_DEP_VEC above as a function to work around
+   a bogus -Wnonnull (PR c/95554). */
+
+static inline deps_vec*
+var_loc_dep_vec (variable *var)
+{
+  return VAR_LOC_1PAUX (var) ? &VAR_LOC_1PAUX (var)->deps : NULL;
+}
 
 
 typedef unsigned int dvuid;
@@ -7069,54 +7077,68 @@ vt_find_locations (void)
   int htabsz = 0;
   int htabmax = param_max_vartrack_size;
   bool success = true;
+  unsigned int n_blocks_processed = 0;
 
   timevar_push (TV_VAR_TRACKING_DATAFLOW);
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
   rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   bb_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  pre_and_rev_post_order_compute (NULL, rc_order, false);
-  for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
+  auto_bitmap exit_bbs;
+  bitmap_set_bit (exit_bbs, EXIT_BLOCK);
+  auto_vec<std::pair<int, int> > toplevel_scc_extents;
+  int n = rev_post_order_and_mark_dfs_back_seme
+    (cfun, single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)), exit_bbs, true,
+     rc_order, &toplevel_scc_extents);
+  for (i = 0; i < n; i++)
     bb_order[rc_order[i]] = i;
-  free (rc_order);
 
-  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
   in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
+  bitmap_clear (in_pending);
 
-  FOR_EACH_BB_FN (bb, cfun)
-    pending->insert (bb_order[bb->index], bb);
-  bitmap_ones (in_pending);
-
-  while (success && !pending->empty ())
+  /* We're performing the dataflow iteration independently over the
+     toplevel SCCs plus leading non-cyclic entry blocks and separately
+     over the tail.  That ensures best memory locality and the least
+     number of visited blocks.  */
+  unsigned extent = 0;
+  int curr_start = -1;
+  int curr_end = -1;
+  do
     {
-      std::swap (worklist, pending);
-      std::swap (in_worklist, in_pending);
+      curr_start = curr_end + 1;
+      if (toplevel_scc_extents.length () <= extent)
+	curr_end = n - 1;
+      else
+	curr_end = toplevel_scc_extents[extent++].second;
 
-      bitmap_clear (visited);
-
-      while (!worklist->empty ())
+      for (int i = curr_start; i <= curr_end; ++i)
 	{
-	  bb = worklist->extract_min ();
-	  bitmap_clear_bit (in_worklist, bb->index);
-	  gcc_assert (!bitmap_bit_p (visited, bb->index));
-	  if (!bitmap_bit_p (visited, bb->index))
+	  pending->insert (i, BASIC_BLOCK_FOR_FN (cfun, rc_order[i]));
+	  bitmap_set_bit (in_pending, rc_order[i]);
+	}
+
+      while (success && !pending->empty ())
+	{
+	  std::swap (worklist, pending);
+	  std::swap (in_worklist, in_pending);
+
+	  while (!worklist->empty ())
 	    {
 	      bool changed;
 	      edge_iterator ei;
 	      int oldinsz, oldoutsz;
 
-	      bitmap_set_bit (visited, bb->index);
+	      bb = worklist->extract_min ();
+	      bitmap_clear_bit (in_worklist, bb->index);
 
 	      if (VTI (bb)->in.vars)
 		{
-		  htabsz
-		    -= shared_hash_htab (VTI (bb)->in.vars)->size ()
-			+ shared_hash_htab (VTI (bb)->out.vars)->size ();
+		  htabsz -= (shared_hash_htab (VTI (bb)->in.vars)->size ()
+			     + shared_hash_htab (VTI (bb)->out.vars)->size ());
 		  oldinsz = shared_hash_htab (VTI (bb)->in.vars)->elements ();
-		  oldoutsz
-		    = shared_hash_htab (VTI (bb)->out.vars)->elements ();
+		  oldoutsz = shared_hash_htab (VTI (bb)->out.vars)->elements ();
 		}
 	      else
 		oldinsz = oldoutsz = 0;
@@ -7177,8 +7199,9 @@ vt_find_locations (void)
 		}
 
 	      changed = compute_bb_dataflow (bb);
-	      htabsz += shared_hash_htab (VTI (bb)->in.vars)->size ()
-			 + shared_hash_htab (VTI (bb)->out.vars)->size ();
+	      n_blocks_processed++;
+	      htabsz += (shared_hash_htab (VTI (bb)->in.vars)->size ()
+			 + shared_hash_htab (VTI (bb)->out.vars)->size ());
 
 	      if (htabmax && htabsz > htabmax)
 		{
@@ -7200,8 +7223,11 @@ vt_find_locations (void)
 		      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 			continue;
 
-		      if (bitmap_bit_p (visited, e->dest->index))
+		      /* Iterate to an earlier block in RPO in the next
+			 round, iterate to the same block immediately.  */
+		      if (bb_order[e->dest->index] < bb_order[bb->index])
 			{
+			  gcc_assert (bb_order[e->dest->index] >= curr_start);
 			  if (!bitmap_bit_p (in_pending, e->dest->index))
 			    {
 			      /* Send E->DEST to next round.  */
@@ -7210,9 +7236,11 @@ vt_find_locations (void)
 					       e->dest);
 			    }
 			}
-		      else if (!bitmap_bit_p (in_worklist, e->dest->index))
+		      else if (bb_order[e->dest->index] <= curr_end
+			       && !bitmap_bit_p (in_worklist, e->dest->index))
 			{
-			  /* Add E->DEST to current round.  */
+			  /* Add E->DEST to current round or delay
+			     processing if it is in the next SCC.  */
 			  bitmap_set_bit (in_worklist, e->dest->index);
 			  worklist->insert (bb_order[e->dest->index],
 					    e->dest);
@@ -7222,8 +7250,8 @@ vt_find_locations (void)
 
 	      if (dump_file)
 		fprintf (dump_file,
-			 "BB %i: in %i (was %i), out %i (was %i), rem %i + %i, tsz %i\n",
-			 bb->index,
+			 "BB %i: in %i (was %i), out %i (was %i), rem %i + %i, "
+			 "tsz %i\n", bb->index,
 			 (int)shared_hash_htab (VTI (bb)->in.vars)->size (),
 			 oldinsz,
 			 (int)shared_hash_htab (VTI (bb)->out.vars)->size (),
@@ -7241,11 +7269,16 @@ vt_find_locations (void)
 	    }
 	}
     }
+  while (curr_end != n - 1);
+
+  statistics_counter_event (cfun, "compute_bb_dataflow times",
+			    n_blocks_processed);
 
   if (success && MAY_HAVE_DEBUG_BIND_INSNS)
     FOR_EACH_BB_FN (bb, cfun)
       gcc_assert (VTI (bb)->flooded);
 
+  free (rc_order);
   free (bb_order);
   delete worklist;
   delete pending;
@@ -8112,7 +8145,7 @@ loc_exp_dep_alloc (variable *var, int count)
     return;
 
   allocsize = offsetof (struct onepart_aux, deps)
-	      + vec<loc_exp_dep, va_heap, vl_embed>::embedded_size (count);
+	      + deps_vec::embedded_size (count);
 
   if (VAR_LOC_1PAUX (var))
     {
@@ -10477,7 +10510,6 @@ variable_tracking_main_1 (void)
       return 0;
     }
 
-  mark_dfs_back_edges ();
   if (!vt_initialize ())
     {
       vt_finalize ();

@@ -4329,6 +4329,7 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value,
   t = builtin_decl_implicit (BUILT_IN_MEMCPY);
 
   gs = gimple_build_call (t, 3, to_ptr, from_ptr, size);
+  gimple_call_set_alloca_for_var (gs, true);
 
   if (want_value)
     {
@@ -8767,21 +8768,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    case OMP_TARGET_DATA:
 	    case OMP_TARGET_ENTER_DATA:
 	    case OMP_TARGET_EXIT_DATA:
+	    case OACC_ENTER_DATA:
+	    case OACC_EXIT_DATA:
 	    case OACC_HOST_DATA:
 	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
 		  || (OMP_CLAUSE_MAP_KIND (c)
 		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 		/* For target {,enter ,exit }data only the array slice is
 		   mapped, but not the pointer to it.  */
-		remove = true;
-	      break;
-	    case OACC_ENTER_DATA:
-	    case OACC_EXIT_DATA:
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
-		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET
-		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
-		  || (OMP_CLAUSE_MAP_KIND (c)
-		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 		remove = true;
 	      break;
 	    default:
@@ -8793,7 +8787,15 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	     does not make sense.  Likewise, for 'update' only transferring the
 	     data itself is needed as the rest has been handled in previous
 	     directives.  However, for 'exit data', the array descriptor needs
-	     to be delete; hence, we turn the MAP_TO_PSET into a MAP_DELETE.  */
+	     to be delete; hence, we turn the MAP_TO_PSET into a MAP_DELETE.
+
+	     NOTE: Generally, it is not safe to perform "enter data" operations
+	     on arrays where the data *or the descriptor* may go out of scope
+	     before a corresponding "exit data" operation -- and such a
+	     descriptor may be synthesized temporarily, e.g. to pass an
+	     explicit-shape array to a function expecting an assumed-shape
+	     argument.  Performing "enter data" inside the called function
+	     would thus be problematic.  */
 	  if (code == OMP_TARGET_EXIT_DATA
 	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET)
 	    OMP_CLAUSE_SET_MAP_KIND (c, OMP_CLAUSE_MAP_KIND (*prev_list_p)
@@ -10994,6 +10996,37 @@ gimplify_omp_task (tree *expr_p, gimple_seq *pre_p)
   *expr_p = NULL_TREE;
 }
 
+/* Helper function for gimplify_omp_for.  If *TP is not a gimple constant,
+   force it into a temporary initialized in PRE_P and add firstprivate clause
+   to ORIG_FOR_STMT.  */
+
+static void
+gimplify_omp_taskloop_expr (tree type, tree *tp, gimple_seq *pre_p,
+			    tree orig_for_stmt)
+{
+  if (*tp == NULL || is_gimple_constant (*tp))
+    return;
+
+  *tp = get_initialized_tmp_var (*tp, pre_p, NULL, false);
+  /* Reference to pointer conversion is considered useless,
+     but is significant for firstprivate clause.  Force it
+     here.  */
+  if (type
+      && TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (*tp)) == REFERENCE_TYPE)
+    {
+      tree v = create_tmp_var (TYPE_MAIN_VARIANT (type));
+      tree m = build2 (INIT_EXPR, TREE_TYPE (v), v, *tp);
+      gimplify_and_add (m, pre_p);
+      *tp = v;
+    }
+
+  tree c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+  OMP_CLAUSE_DECL (c) = *tp;
+  OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (orig_for_stmt);
+  OMP_FOR_CLAUSES (orig_for_stmt) = c;
+}
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
@@ -11296,65 +11329,34 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
 	{
 	  t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), i);
-	  if (!is_gimple_constant (TREE_OPERAND (t, 1)))
-	    {
+	  gimple_seq *for_pre_p = (gimple_seq_empty_p (for_pre_body)
+				   ? pre_p : &for_pre_body);
 	      tree type = TREE_TYPE (TREE_OPERAND (t, 0));
-	      TREE_OPERAND (t, 1)
-		= get_initialized_tmp_var (TREE_OPERAND (t, 1),
-					   gimple_seq_empty_p (for_pre_body)
-					   ? pre_p : &for_pre_body, NULL,
-					   false);
-	      /* Reference to pointer conversion is considered useless,
-		 but is significant for firstprivate clause.  Force it
-		 here.  */
-	      if (TREE_CODE (type) == POINTER_TYPE
-		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 1)))
-		      == REFERENCE_TYPE))
-		{
-		  tree v = create_tmp_var (TYPE_MAIN_VARIANT (type));
-		  tree m = build2 (INIT_EXPR, TREE_TYPE (v), v,
-				   TREE_OPERAND (t, 1));
-		  gimplify_and_add (m, gimple_seq_empty_p (for_pre_body)
-				       ? pre_p : &for_pre_body);
-		  TREE_OPERAND (t, 1) = v;
-		}
-	      tree c = build_omp_clause (input_location,
-					 OMP_CLAUSE_FIRSTPRIVATE);
-	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (t, 1);
-	      OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (orig_for_stmt);
-	      OMP_FOR_CLAUSES (orig_for_stmt) = c;
+	  if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
+	    {
+	      tree v = TREE_OPERAND (t, 1);
+	      gimplify_omp_taskloop_expr (type, &TREE_VEC_ELT (v, 1),
+					  for_pre_p, orig_for_stmt);
+	      gimplify_omp_taskloop_expr (type, &TREE_VEC_ELT (v, 2),
+					  for_pre_p, orig_for_stmt);
 	    }
+	  else
+	    gimplify_omp_taskloop_expr (type, &TREE_OPERAND (t, 1), for_pre_p,
+					orig_for_stmt);
 
 	  /* Handle OMP_FOR_COND.  */
 	  t = TREE_VEC_ELT (OMP_FOR_COND (for_stmt), i);
-	  if (!is_gimple_constant (TREE_OPERAND (t, 1)))
+	  if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
 	    {
-	      tree type = TREE_TYPE (TREE_OPERAND (t, 0));
-	      TREE_OPERAND (t, 1)
-		= get_initialized_tmp_var (TREE_OPERAND (t, 1),
-					   gimple_seq_empty_p (for_pre_body)
-					   ? pre_p : &for_pre_body, NULL,
-					   false);
-	      /* Reference to pointer conversion is considered useless,
-		 but is significant for firstprivate clause.  Force it
-		 here.  */
-	      if (TREE_CODE (type) == POINTER_TYPE
-		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 1)))
-		      == REFERENCE_TYPE))
-		{
-		  tree v = create_tmp_var (TYPE_MAIN_VARIANT (type));
-		  tree m = build2 (INIT_EXPR, TREE_TYPE (v), v,
-				   TREE_OPERAND (t, 1));
-		  gimplify_and_add (m, gimple_seq_empty_p (for_pre_body)
-				       ? pre_p : &for_pre_body);
-		  TREE_OPERAND (t, 1) = v;
-		}
-	      tree c = build_omp_clause (input_location,
-					 OMP_CLAUSE_FIRSTPRIVATE);
-	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (t, 1);
-	      OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (orig_for_stmt);
-	      OMP_FOR_CLAUSES (orig_for_stmt) = c;
+	      tree v = TREE_OPERAND (t, 1);
+	      gimplify_omp_taskloop_expr (type, &TREE_VEC_ELT (v, 1),
+					  for_pre_p, orig_for_stmt);
+	      gimplify_omp_taskloop_expr (type, &TREE_VEC_ELT (v, 2),
+					  for_pre_p, orig_for_stmt);
 	    }
+	  else
+	    gimplify_omp_taskloop_expr (type, &TREE_OPERAND (t, 1), for_pre_p,
+					orig_for_stmt);
 
 	  /* Handle OMP_FOR_INCR.  */
 	  t = TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i);
@@ -11366,17 +11368,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	      if (TREE_CODE (t) == PLUS_EXPR && *tp == decl)
 		tp = &TREE_OPERAND (t, 0);
 
-	      if (!is_gimple_constant (*tp))
-		{
-		  gimple_seq *seq = gimple_seq_empty_p (for_pre_body)
-				    ? pre_p : &for_pre_body;
-		  *tp = get_initialized_tmp_var (*tp, seq, NULL, false);
-		  tree c = build_omp_clause (input_location,
-					     OMP_CLAUSE_FIRSTPRIVATE);
-		  OMP_CLAUSE_DECL (c) = *tp;
-		  OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (orig_for_stmt);
-		  OMP_FOR_CLAUSES (orig_for_stmt) = c;
-		}
+	      gimplify_omp_taskloop_expr (NULL_TREE, tp, for_pre_p,
+					  orig_for_stmt);
 	    }
 	}
 
@@ -12218,6 +12211,34 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  OMP_CLAUSE_DECL (t) = v;
 	  OMP_CLAUSE_CHAIN (t) = gimple_omp_for_clauses (gforo);
 	  gimple_omp_for_set_clauses (gforo, t);
+	  if (OMP_FOR_NON_RECTANGULAR (for_stmt))
+	    {
+	      tree *p1 = NULL, *p2 = NULL;
+	      t = gimple_omp_for_initial (gforo, i);
+	      if (TREE_CODE (t) == TREE_VEC)
+		p1 = &TREE_VEC_ELT (t, 0);
+	      t = gimple_omp_for_final (gforo, i);
+	      if (TREE_CODE (t) == TREE_VEC)
+		{
+		  if (p1)
+		    p2 = &TREE_VEC_ELT (t, 0);
+		  else
+		    p1 = &TREE_VEC_ELT (t, 0);
+		}
+	      if (p1)
+		{
+		  int j;
+		  for (j = 0; j < i; j++)
+		    if (*p1 == gimple_omp_for_index (gfor, j))
+		      {
+			*p1 = gimple_omp_for_index (gforo, j);
+			if (p2)
+			  *p2 = *p1;
+			break;
+		      }
+		  gcc_assert (j < i);
+		}
+	    }
 	}
       gimplify_seq_add_stmt (pre_p, gforo);
     }
@@ -13011,8 +13032,13 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DELETE);
 	      have_clause = true;
 	      break;
-	    case GOMP_MAP_POINTER:
 	    case GOMP_MAP_TO_PSET:
+	      /* Fortran arrays with descriptors must map that descriptor when
+		 doing standalone "attach" operations (in OpenACC).  In that
+		 case GOMP_MAP_TO_PSET appears by itself with no preceding
+		 clause (see trans-openmp.c:gfc_trans_omp_clauses).  */
+	      break;
+	    case GOMP_MAP_POINTER:
 	      /* TODO PR92929: we may see these here, but they'll always follow
 		 one of the clauses above, and will be handled by libgomp as
 		 one group, so no handling required here.  */

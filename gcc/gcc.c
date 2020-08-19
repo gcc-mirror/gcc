@@ -4907,6 +4907,9 @@ process_command (unsigned int decoded_options_count,
       int lendb = strlen (dumpbase);
       int lendbx = strlen (dumpbase_ext);
 
+      /* -dumpbase-ext must be a suffix proper; discard it if it
+	  matches all of -dumpbase, as that would make for an empty
+	  basename.  */
       if (lendbx >= lendb
 	  || strcmp (dumpbase + lendb - lendbx, dumpbase_ext) != 0)
 	{
@@ -5083,10 +5086,18 @@ process_command (unsigned int decoded_options_count,
   /* Check that dumpbase_ext, if still present, still matches the end
      of dumpbase, if present, and drop it otherwise.  We only retained
      it above when dumpbase was absent to maybe use it to drop the
-     extension from output_name before combining it with dumpdir.  */
+     extension from output_name before combining it with dumpdir.  We
+     won't deal with -dumpbase-ext when -dumpbase is not explicitly
+     given, even if just to activate backward-compatible dumpbase:
+     dropping it on the floor is correct, expected and documented
+     behavior.  Attempting to deal with a -dumpbase-ext that might
+     match the end of some input filename, or of the combination of
+     the output basename with the suffix of the input filename,
+     possible with an intermediate .gk extension for -fcompare-debug,
+     is just calling for trouble.  */
   if (dumpbase_ext)
     {
-      if (!dumpbase)
+      if (!dumpbase || !*dumpbase)
 	{
 	  free (dumpbase_ext);
 	  dumpbase_ext = NULL;

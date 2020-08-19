@@ -1060,113 +1060,389 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
   return pre_order_num;
 }
 
-/* Unlike pre_and_rev_post_order_compute we fill rev_post_order backwards
-   so iterating in RPO order needs to start with rev_post_order[n - 1]
-   going to rev_post_order[0].  If FOR_ITERATION is true then try to
-   make CFG cycles fit into small contiguous regions of the RPO order.
-   When FOR_ITERATION is true this requires up-to-date loop structures.  */
+
+/* Per basic-block data for rev_post_order_and_mark_dfs_back_seme,
+   element of a sparsely populated array indexed by basic-block number.  */
+typedef auto_vec<int, 2> scc_exit_vec_t;
+struct rpoamdbs_bb_data {
+    int depth;
+    int bb_to_pre;
+    /* The basic-block index of the SCC entry of the block visited first
+       (the SCC leader).  */
+    int scc;
+    /* The index into the RPO array where the blocks SCC entries end
+       (only valid for the SCC leader).  */
+    int scc_end;
+    /* The indexes of the exits destinations of this SCC (only valid
+       for the SCC leader).  Initialized upon discovery of SCC leaders.  */
+    scc_exit_vec_t scc_exits;
+};
+
+/* Tag H as a header of B, weaving H and its loop header list into the
+   current loop header list of B.  */
+
+static void
+tag_header (int b, int h, rpoamdbs_bb_data *bb_data)
+{
+  if (h == -1 || b == h)
+    return;
+  int cur1 = b;
+  int cur2 = h;
+  while (bb_data[cur1].scc != -1)
+    {
+      int ih = bb_data[cur1].scc;
+      if (ih == cur2)
+	return;
+      if (bb_data[ih].depth < bb_data[cur2].depth)
+	{
+	  bb_data[cur1].scc = cur2;
+	  cur1 = cur2;
+	  cur2 = ih;
+	}
+      else
+	cur1 = ih;
+    }
+  bb_data[cur1].scc = cur2;
+}
+
+/* Comparator for a sort of two edges destinations E1 and E2 after their index
+   in the PRE array as specified by BB_TO_PRE.  */
+
+static int
+cmp_edge_dest_pre (const void *e1_, const void *e2_, void *data_)
+{
+  const int *e1 = (const int *)e1_;
+  const int *e2 = (const int *)e2_;
+  rpoamdbs_bb_data *bb_data = (rpoamdbs_bb_data *)data_;
+  return (bb_data[*e1].bb_to_pre - bb_data[*e2].bb_to_pre);
+}
+
+/* Compute the reverse completion number of a depth first search
+   on the SEME region denoted by the ENTRY edge and the EXIT_BBS set of
+   exit block indexes and store it in the array REV_POST_ORDER.
+   Also sets the EDGE_DFS_BACK edge flags according to this visitation
+   order.
+   Returns the number of nodes visited.
+
+   In case the function has unreachable blocks the number of nodes
+   visited does not include them.
+
+   If FOR_ITERATION is true then compute an RPO where SCCs form a
+   contiguous region in the RPO array.
+   *TOPLEVEL_SCC_EXTENTS if not NULL is filled with pairs of
+   *REV_POST_ORDER indexes denoting extents of the toplevel SCCs in
+   this region.  */
 
 int
 rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
 				       bitmap exit_bbs, bool for_iteration,
-				       int *rev_post_order)
+				       int *rev_post_order,
+				       vec<std::pair<int, int> >
+					 *toplevel_scc_extents)
 {
-  int pre_order_num = 0;
   int rev_post_order_num = 0;
-
-  /* Allocate stack for back-tracking up CFG.  Worst case we need
-     O(n^2) edges but the following should suffice in practice without
-     a need to re-allocate.  */
-  auto_vec<edge, 20> stack (2 * n_basic_blocks_for_fn (fn));
-
-  int *pre = XNEWVEC (int, 2 * last_basic_block_for_fn (fn));
-  int *post = pre + last_basic_block_for_fn (fn);
 
   /* BB flag to track nodes that have been visited.  */
   auto_bb_flag visited (fn);
-  /* BB flag to track which nodes have post[] assigned to avoid
-     zeroing post.  */
-  auto_bb_flag post_assigned (fn);
 
-  /* Push the first edge on to the stack.  */
-  stack.quick_push (entry);
+  /* Lazily initialized per-BB data for the two DFS walks below.  */
+  rpoamdbs_bb_data *bb_data
+    = XNEWVEC (rpoamdbs_bb_data, last_basic_block_for_fn (fn));
 
-  while (!stack.is_empty ())
+  /* First DFS walk, loop discovery according to
+      A New Algorithm for Identifying Loops in Decompilation
+     by Tao Wei, Jian Mao, Wei Zou and You Chen of the Institute of
+     Computer Science and Technology of the Peking University.  */
+  auto_vec<edge_iterator, 20> ei_stack (n_basic_blocks_for_fn (fn) + 1);
+  auto_bb_flag is_header (fn);
+  int depth = 1;
+  unsigned n_sccs = 0;
+
+  basic_block dest = entry->dest;
+  edge_iterator ei;
+  int pre_num = 0;
+
+  /* DFS process DEST.  */
+find_loops:
+  bb_data[dest->index].bb_to_pre = pre_num++;
+  bb_data[dest->index].depth = depth;
+  bb_data[dest->index].scc = -1;
+  depth++;
+  gcc_assert ((dest->flags & (is_header|visited)) == 0);
+  dest->flags |= visited;
+  ei = ei_start (dest->succs);
+  while (!ei_end_p (ei))
     {
-      basic_block src;
-      basic_block dest;
-
-      /* Look at the edge on the top of the stack.  */
-      int idx = stack.length () - 1;
-      edge e = stack[idx];
-      src = e->src;
-      dest = e->dest;
-      e->flags &= ~EDGE_DFS_BACK;
-
-      /* Check if the edge destination has been visited yet.  */
-      if (! bitmap_bit_p (exit_bbs, dest->index)
-	  && ! (dest->flags & visited))
+      ei_edge (ei)->flags &= ~EDGE_DFS_BACK;
+      if (bitmap_bit_p (exit_bbs, ei_edge (ei)->dest->index))
+	;
+      else if (!(ei_edge (ei)->dest->flags & visited))
 	{
-	  /* Mark that we have visited the destination.  */
-	  dest->flags |= visited;
+	  ei_stack.quick_push (ei);
+	  dest = ei_edge (ei)->dest;
+	  /* DFS recurse on DEST.  */
+	  goto find_loops;
 
-	  pre[dest->index] = pre_order_num++;
-
-	  if (EDGE_COUNT (dest->succs) > 0)
-	    {
-	      /* Since the DEST node has been visited for the first
-		 time, check its successors.  */
-	      /* Push the edge vector in reverse to match previous behavior.  */
-	      stack.reserve (EDGE_COUNT (dest->succs));
-	      for (int i = EDGE_COUNT (dest->succs) - 1; i >= 0; --i)
-		stack.quick_push (EDGE_SUCC (dest, i));
-	      /* Generalize to handle more successors?  */
-	      if (for_iteration
-		  && EDGE_COUNT (dest->succs) == 2)
-		{
-		  edge &e1 = stack[stack.length () - 2];
-		  if (loop_exit_edge_p (e1->src->loop_father, e1))
-		    std::swap (e1, stack.last ());
-		}
-	    }
-	  else
-	    {
-	      /* There are no successors for the DEST node so assign
-		 its reverse completion number.  */
-	      post[dest->index] = rev_post_order_num;
-	      dest->flags |= post_assigned;
-	      rev_post_order[rev_post_order_num] = dest->index;
-	      rev_post_order_num++;
-	    }
+ret_from_find_loops:
+	  /* Return point of DFS recursion.  */
+	  ei = ei_stack.pop ();
+	  dest = ei_edge (ei)->src;
+	  int header = bb_data[ei_edge (ei)->dest->index].scc;
+	  tag_header (dest->index, header, bb_data);
+	  depth = bb_data[dest->index].depth + 1;
 	}
       else
 	{
-	  if (dest->flags & visited
-	      && src != entry->src
-	      && pre[src->index] >= pre[dest->index]
-	      && !(dest->flags & post_assigned))
-	    e->flags |= EDGE_DFS_BACK;
-
-	  if (idx != 0 && stack[idx - 1]->src != src)
+	  if (bb_data[ei_edge (ei)->dest->index].depth > 0) /* on the stack */
 	    {
-	      /* There are no more successors for the SRC node
-		 so assign its reverse completion number.  */
-	      post[src->index] = rev_post_order_num;
-	      src->flags |= post_assigned;
-	      rev_post_order[rev_post_order_num] = src->index;
-	      rev_post_order_num++;
+	      ei_edge (ei)->flags |= EDGE_DFS_BACK;
+	      n_sccs++;
+	      ei_edge (ei)->dest->flags |= is_header;
+	      ::new (&bb_data[ei_edge (ei)->dest->index].scc_exits)
+		auto_vec<int, 2> ();
+	      tag_header (dest->index, ei_edge (ei)->dest->index, bb_data);
 	    }
+	  else if (bb_data[ei_edge (ei)->dest->index].scc == -1)
+	    ;
+	  else
+	    {
+	      int header = bb_data[ei_edge (ei)->dest->index].scc;
+	      if (bb_data[header].depth > 0)
+		tag_header (dest->index, header, bb_data);
+	      else
+		{
+		  /* A re-entry into an existing loop.  */
+		  /* ???  Need to mark is_header?  */
+		  while (bb_data[header].scc != -1)
+		    {
+		      header = bb_data[header].scc;
+		      if (bb_data[header].depth > 0)
+			{
+			  tag_header (dest->index, header, bb_data);
+			  break;
+			}
+		    }
+		}
+	    }
+	}
+      ei_next (&ei);
+    }
+  rev_post_order[rev_post_order_num++] = dest->index;
+  /* not on the stack anymore */
+  bb_data[dest->index].depth = -bb_data[dest->index].depth;
+  if (!ei_stack.is_empty ())
+    /* Return from DFS recursion.  */
+    goto ret_from_find_loops;
 
-	  stack.pop ();
+  /* Optimize for no SCCs found or !for_iteration.  */
+  if (n_sccs == 0 || !for_iteration)
+    {
+      /* Clear the temporarily allocated flags.  */
+      for (int i = 0; i < rev_post_order_num; ++i)
+	BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags
+	  &= ~(is_header|visited);
+      /* And swap elements.  */
+      for (int i = 0; i < rev_post_order_num/2; ++i)
+	std::swap (rev_post_order[i], rev_post_order[rev_post_order_num-i-1]);
+      XDELETEVEC (bb_data);
+
+      return rev_post_order_num;
+    }
+
+  /* Next find SCC exits, clear the visited flag and compute an upper bound
+     for the edge stack below.  */
+  unsigned edge_count = 0;
+  for (int i = 0; i < rev_post_order_num; ++i)
+    {
+      int bb = rev_post_order[i];
+      BASIC_BLOCK_FOR_FN (fn, bb)->flags &= ~visited;
+      edge e;
+      FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (fn, bb)->succs)
+	{
+	  if (bitmap_bit_p (exit_bbs, e->dest->index))
+	    continue;
+	  edge_count++;
+	  /* if e is an exit from e->src, record it for
+	     bb_data[e->src].scc.  */
+	  int src_scc = e->src->index;
+	  if (!(e->src->flags & is_header))
+	    src_scc = bb_data[src_scc].scc;
+	  if (src_scc == -1)
+	    continue;
+	  int dest_scc = e->dest->index;
+	  if (!(e->dest->flags & is_header))
+	    dest_scc = bb_data[dest_scc].scc;
+	  if (src_scc == dest_scc)
+	    continue;
+	  /* When dest_scc is nested insde src_scc it's not an
+	     exit.  */
+	  int tem_dest_scc = dest_scc;
+	  unsigned dest_scc_depth = 0;
+	  while (tem_dest_scc != -1)
+	    {
+	      dest_scc_depth++;
+	      if ((tem_dest_scc = bb_data[tem_dest_scc].scc) == src_scc)
+		break;
+	    }
+	  if (tem_dest_scc != -1)
+	    continue;
+	  /* When src_scc is nested inside dest_scc record an
+	     exit from the outermost SCC this edge exits.  */
+	  int tem_src_scc = src_scc;
+	  unsigned src_scc_depth = 0;
+	  while (tem_src_scc != -1)
+	    {
+	      if (bb_data[tem_src_scc].scc == dest_scc)
+		{
+		  edge_count++;
+		  bb_data[tem_src_scc].scc_exits.safe_push (e->dest->index);
+		  break;
+		}
+	      tem_src_scc = bb_data[tem_src_scc].scc;
+	      src_scc_depth++;
+	    }
+	  /* Else find the outermost SCC this edge exits (exits
+	     from the inner SCCs are not important for the DFS
+	     walk adjustment).  Do so by computing the common
+	     ancestor SCC where the immediate child it to the source
+	     SCC is the exited SCC.  */
+	  if (tem_src_scc == -1)
+	    {
+	      edge_count++;
+	      while (src_scc_depth > dest_scc_depth)
+		{
+		  src_scc = bb_data[src_scc].scc;
+		  src_scc_depth--;
+		}
+	      while (dest_scc_depth > src_scc_depth)
+		{
+		  dest_scc = bb_data[dest_scc].scc;
+		  dest_scc_depth--;
+		}
+	      while (bb_data[src_scc].scc != bb_data[dest_scc].scc)
+		{
+		  src_scc = bb_data[src_scc].scc;
+		  dest_scc = bb_data[dest_scc].scc;
+		}
+	      bb_data[src_scc].scc_exits.safe_push (e->dest->index);
+	    }
 	}
     }
 
-  XDELETEVEC (pre);
+  /* Now the second DFS walk to compute a RPO where the extent of SCCs
+     is minimized thus SCC members are adjacent in the RPO array.
+     This is done by performing a DFS walk computing RPO with first visiting
+     extra direct edges from SCC entry to its exits.
+     That simulates a DFS walk over the graph with SCCs collapsed and
+     walking the SCCs themselves only when all outgoing edges from the
+     SCCs have been visited.
+     SCC_END[scc-header-index] is the position in the RPO array of the
+     last member of the SCC.  */
+  auto_vec<std::pair<basic_block, basic_block>, 20> estack (edge_count + 1);
+  int idx = rev_post_order_num;
+  basic_block edest;
+  dest = entry->dest;
 
-  /* Clear the temporarily allocated flags.  */
+  /* DFS process DEST.  */
+dfs_rpo:
+  gcc_checking_assert ((dest->flags & visited) == 0);
+  /* Verify we enter SCCs through the same header and SCC nesting appears
+     the same.  */
+  gcc_assert (bb_data[dest->index].scc == -1
+	      || (BASIC_BLOCK_FOR_FN (fn, bb_data[dest->index].scc)->flags
+		  & visited));
+  dest->flags |= visited;
+  bb_data[dest->index].scc_end = -1;
+  if ((dest->flags & is_header)
+      && !bb_data[dest->index].scc_exits.is_empty ())
+    {
+      /* Push the all SCC exits as outgoing edges from its header to
+	 be visited first.
+	 To process exits in the same relative order as in the first
+	 DFS walk sort them after their destination PRE order index.  */
+      gcc_sort_r (&bb_data[dest->index].scc_exits[0],
+		  bb_data[dest->index].scc_exits.length (),
+		  sizeof (int), cmp_edge_dest_pre, bb_data);
+      /* Process edges in reverse to match previous DFS walk order.  */
+      for (int i = bb_data[dest->index].scc_exits.length () - 1; i >= 0; --i)
+	estack.quick_push (std::make_pair
+	  (dest, BASIC_BLOCK_FOR_FN (fn, bb_data[dest->index].scc_exits[i])));
+    }
+  else
+    {
+      if (dest->flags & is_header)
+	bb_data[dest->index].scc_end = idx - 1;
+      /* Push the edge vector in reverse to match the iteration order
+	 from the DFS walk above.  */
+      for (int i = EDGE_COUNT (dest->succs) - 1; i >= 0; --i)
+	if (!bitmap_bit_p (exit_bbs, EDGE_SUCC (dest, i)->dest->index))
+	  estack.quick_push (std::make_pair (dest,
+					     EDGE_SUCC (dest, i)->dest));
+    }
+  while (!estack.is_empty ()
+	 && estack.last ().first == dest)
+    {
+      edest = estack.last ().second;
+      if (!(edest->flags & visited))
+	{
+	  dest = edest;
+	  /* DFS recurse on DEST.  */
+	  goto dfs_rpo;
+
+ret_from_dfs_rpo:
+	  /* Return point of DFS recursion.  */
+	  dest = estack.last ().first;
+	}
+      estack.pop ();
+      /* If we processed all SCC exits from DEST mark the SCC end
+	 since all RPO entries up to DEST itself will now belong
+	 to its SCC.  The special-case of no SCC exits is already
+	 dealt with above.  */
+      if (dest->flags & is_header
+	  /* When the last exit edge was processed mark the SCC end
+	     and push the regular edges.  */
+	  && bb_data[dest->index].scc_end == -1
+	  && (estack.is_empty ()
+	      || estack.last ().first != dest))
+	{
+	  bb_data[dest->index].scc_end = idx - 1;
+	  /* Push the edge vector in reverse to match the iteration order
+	     from the DFS walk above.  */
+	  for (int i = EDGE_COUNT (dest->succs) - 1; i >= 0; --i)
+	    if (!bitmap_bit_p (exit_bbs, EDGE_SUCC (dest, i)->dest->index))
+	      estack.quick_push (std::make_pair (dest,
+						 EDGE_SUCC (dest, i)->dest));
+	}
+    }
+  rev_post_order[--idx] = dest->index;
+  if (!estack.is_empty ())
+    /* Return from DFS recursion.  */
+    goto ret_from_dfs_rpo;
+
+  /* Each SCC extends are from the position of the header inside
+     the RPO array up to RPO array index scc_end[header-index].  */
+  if (toplevel_scc_extents)
+    for (int i = 0; i < rev_post_order_num; i++)
+      {
+	basic_block bb = BASIC_BLOCK_FOR_FN (fn, rev_post_order[i]);
+	if (bb->flags & is_header)
+	  {
+	    toplevel_scc_extents->safe_push
+	      (std::make_pair (i, bb_data[bb->index].scc_end));
+	    i = bb_data[bb->index].scc_end;
+	  }
+      }
+
+  /* Clear the temporarily allocated flags and free memory.  */
   for (int i = 0; i < rev_post_order_num; ++i)
-    BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags
-      &= ~(post_assigned|visited);
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, rev_post_order[i]);
+      if (bb->flags & is_header)
+	bb_data[bb->index].scc_exits.~scc_exit_vec_t ();
+      bb->flags &= ~(visited|is_header);
+    }
+
+  XDELETEVEC (bb_data);
 
   return rev_post_order_num;
 }

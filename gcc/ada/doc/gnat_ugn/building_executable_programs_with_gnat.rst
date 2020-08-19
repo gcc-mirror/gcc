@@ -4403,7 +4403,7 @@ to the default checks required by Ada as described above.
 
   All validity checks are turned on.
   That is, :switch:`-gnatVa` is
-  equivalent to ``gnatVcdfimorst``.
+  equivalent to ``gnatVcdfimoprst``.
 
 
 .. index:: -gnatVc  (gcc)
@@ -6709,6 +6709,14 @@ be presented in subsequent sections.
 
 :switch:`-x`
   Exclude source files (check object consistency only).
+
+
+  .. index:: -xdr  (gnatbind)
+
+:switch:`-xdr`
+  Use the target-independent XDR protocol for stream oriented attributes
+  instead of the default implementation which is based on direct binary
+  representations and is therefore target-and endianness-dependent.
 
 
   .. index:: -Xnnn  (gnatbind)

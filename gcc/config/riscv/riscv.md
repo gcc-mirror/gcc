@@ -65,11 +65,16 @@
   UNSPECV_BLOCKAGE
   UNSPECV_FENCE
   UNSPECV_FENCE_I
+
+  ;; Stack Smash Protector
+  UNSPEC_SSP_SET
+  UNSPEC_SSP_TEST
 ])
 
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
    (GP_REGNUM 			3)
+   (TP_REGNUM			4)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
    (S0_REGNUM			8)
@@ -2514,6 +2519,89 @@
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
   DONE;
 })
+
+;; Named pattern for expanding thread pointer reference.
+(define_expand "get_thread_pointer<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(reg:P TP_REGNUM))]
+  ""
+{})
+
+;; Named patterns for stack smashing protection.
+
+(define_expand "stack_protect_set"
+  [(match_operand 0 "memory_operand")
+   (match_operand 1 "memory_operand")]
+  ""
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  if (riscv_stack_protector_guard == SSP_TLS)
+  {
+    rtx reg = gen_rtx_REG (Pmode, riscv_stack_protector_guard_reg);
+    rtx offset = GEN_INT (riscv_stack_protector_guard_offset);
+    rtx addr = gen_rtx_PLUS (Pmode, reg, offset);
+    operands[1] = gen_rtx_MEM (Pmode, addr);
+  }
+
+  emit_insn ((mode == DImode
+	      ? gen_stack_protect_set_di
+	      : gen_stack_protect_set_si) (operands[0], operands[1]));
+  DONE;
+})
+
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the life of this sequence.
+(define_insn "stack_protect_set_<mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "=m")
+	(unspec:GPR [(match_operand:GPR 1 "memory_operand" "m")]
+	 UNSPEC_SSP_SET))
+   (set (match_scratch:GPR 2 "=&r") (const_int 0))]
+  ""
+  "<load>\\t%2, %1\;<store>\\t%2, %0\;li\t%2, 0"
+  [(set_attr "length" "12")])
+
+(define_expand "stack_protect_test"
+  [(match_operand 0 "memory_operand")
+   (match_operand 1 "memory_operand")
+   (match_operand 2)]
+  ""
+{
+  rtx result;
+  machine_mode mode = GET_MODE (operands[0]);
+
+  result = gen_reg_rtx(mode);
+  if (riscv_stack_protector_guard == SSP_TLS)
+  {
+      rtx reg = gen_rtx_REG (Pmode, riscv_stack_protector_guard_reg);
+      rtx offset = GEN_INT (riscv_stack_protector_guard_offset);
+      rtx addr = gen_rtx_PLUS (Pmode, reg, offset);
+      operands[1] = gen_rtx_MEM (Pmode, addr);
+  }
+  emit_insn ((mode == DImode
+		  ? gen_stack_protect_test_di
+		  : gen_stack_protect_test_si) (result,
+					        operands[0],
+					        operands[1]));
+
+  if (mode == DImode)
+    emit_jump_insn (gen_cbranchdi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
+				    result, const0_rtx, operands[2]));
+  else
+    emit_jump_insn (gen_cbranchsi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
+				    result, const0_rtx, operands[2]));
+
+  DONE;
+})
+
+(define_insn "stack_protect_test_<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(unspec:GPR [(match_operand:GPR 1 "memory_operand" "m")
+		     (match_operand:GPR 2 "memory_operand" "m")]
+	 UNSPEC_SSP_TEST))
+   (clobber (match_scratch:GPR 3 "=&r"))]
+  ""
+  "<load>\t%3, %1\;<load>\t%0, %2\;xor\t%0, %3, %0\;li\t%3, 0"
+  [(set_attr "length" "12")])
 
 (include "sync.md")
 (include "peephole.md")

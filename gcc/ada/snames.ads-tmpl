@@ -514,6 +514,8 @@ package Snames is
    Name_CPP_Constructor                : constant Name_Id := N + $; -- GNAT
    Name_CPP_Virtual                    : constant Name_Id := N + $; -- GNAT
    Name_CPP_Vtable                     : constant Name_Id := N + $; -- GNAT
+   Name_CUDA_Execute                   : constant Name_Id := N + $; -- GNAT
+   Name_CUDA_Global                    : constant Name_Id := N + $; -- GNAT
 
    --  Note: CPU is not in this list because its name matches the name of
    --  the corresponding attribute. However, it is included in the definition
@@ -1550,6 +1552,15 @@ package Snames is
    Name_Reference_Control_Type           : constant Name_Id := N + $;
    Name_Get_Element_Access               : constant Name_Id := N + $;
 
+   --  Names for Ada 202x Aggregate aspect. Name_Aggregate is already
+   --  present for gprbuild.
+
+   Name_Empty                            : constant Name_Id := N + $;
+   Name_Add_Named                        : constant Name_Id := N + $;
+   Name_Add_Unnamed                      : constant Name_Id := N + $;
+   Name_New_Indexed                      : constant Name_Id := N + $;
+   Name_Assign_Indexed                   : constant Name_Id := N + $;
+
    --  Ada 2005 reserved words
 
    First_2005_Reserved_Word              : constant Name_Id := N + $;
@@ -1989,6 +2000,8 @@ package Snames is
       Pragma_CPP_Constructor,
       Pragma_CPP_Virtual,
       Pragma_CPP_Vtable,
+      Pragma_CUDA_Execute,
+      Pragma_CUDA_Global,
       Pragma_Deadline_Floor,
       Pragma_Debug,
       Pragma_Default_Initial_Condition,

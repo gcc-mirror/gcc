@@ -13,8 +13,6 @@ main (int argc, char *argv[])
   char *block2 = (char *) malloc (SIZE);
   char *block3 = (char *) malloc (SIZE);
 
-  /* Doing this twice ensures that we have a non-zero virtual refcount.  Make
-     sure that works too.  */
 #ifdef OPENACC_API
   acc_copyin (block1, SIZE);
   acc_copyin (block1, SIZE);

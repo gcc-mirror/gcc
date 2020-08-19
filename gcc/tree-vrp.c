@@ -1151,25 +1151,29 @@ static bool
 range_fold_binary_symbolics_p (value_range *vr,
 			       tree_code code,
 			       tree expr_type,
-			       const value_range *vr0, const value_range *vr1)
+			       const value_range *vr0_,
+			       const value_range *vr1_)
 {
-  if (vr0->symbolic_p () || vr1->symbolic_p ())
+  if (vr0_->symbolic_p () || vr1_->symbolic_p ())
     {
+      value_range vr0 = drop_undefines_to_varying (vr0_, expr_type);
+      value_range vr1 = drop_undefines_to_varying (vr1_, expr_type);
       if ((code == PLUS_EXPR || code == MINUS_EXPR))
 	{
-	  extract_range_from_plus_minus_expr (vr, code, expr_type, vr0, vr1);
+	  extract_range_from_plus_minus_expr (vr, code, expr_type,
+					      &vr0, &vr1);
 	  return true;
 	}
       if (POINTER_TYPE_P (expr_type) && code == POINTER_PLUS_EXPR)
 	{
-	  extract_range_from_pointer_plus_expr (vr, code, expr_type, vr0, vr1);
+	  extract_range_from_pointer_plus_expr (vr, code, expr_type,
+						&vr0, &vr1);
 	  return true;
 	}
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
-      value_range vr0_cst (*vr0), vr1_cst (*vr1);
-      vr0_cst.normalize_symbolics ();
-      vr1_cst.normalize_symbolics ();
-      return op->fold_range (*vr, expr_type, vr0_cst, vr1_cst);
+      vr0.normalize_symbolics ();
+      vr1.normalize_symbolics ();
+      return op->fold_range (*vr, expr_type, vr0, vr1);
     }
   return false;
 }
@@ -1225,11 +1229,15 @@ range_fold_binary_expr (value_range *vr,
   if (!op)
     return;
 
-  value_range vr0 = drop_undefines_to_varying (vr0_, expr_type);
-  value_range vr1 = drop_undefines_to_varying (vr1_, expr_type);
-  if (range_fold_binary_symbolics_p (vr, code, expr_type, &vr0, &vr1))
+  if (range_fold_binary_symbolics_p (vr, code, expr_type, vr0_, vr1_))
     return;
 
+  value_range vr0 (*vr0_);
+  value_range vr1 (*vr1_);
+  if (vr0.undefined_p ())
+    vr0.set_varying (expr_type);
+  if (vr1.undefined_p ())
+    vr1.set_varying (expr_type);
   vr0.normalize_addresses ();
   vr1.normalize_addresses ();
   op->fold_range (*vr, expr_type, vr0, vr1);
@@ -1637,7 +1645,7 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
    (to transform signed values into unsigned) and at the end xor
    SGNBIT back.  */
 
-static wide_int
+wide_int
 masked_increment (const wide_int &val_in, const wide_int &mask,
 		  const wide_int &sgnbit, unsigned int prec)
 {

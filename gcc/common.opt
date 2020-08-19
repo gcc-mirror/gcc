@@ -228,10 +228,6 @@ unsigned int flag_sanitize_coverage
 Variable
 bool dump_base_name_prefixed = false
 
-; Flag whether HSA generation has been explicitely disabled
-Variable
-bool flag_disable_hsa = false
-
 ###
 Driver
 
@@ -619,8 +615,8 @@ Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
 
 Whsa
-Common Var(warn_hsa) Init(1) Warning
-Warn when a function cannot be expanded to HSAIL.
+Common Ignore Warning
+Does nothing.  Preserved for backward compatibility.
 
 Wimplicit-fallthrough
 Common Alias(Wimplicit-fallthrough=,3,0) Warning
@@ -1328,6 +1324,14 @@ Enum(diagnostic_url_rule) String(always) Value(DIAGNOSTICS_URL_YES)
 EnumValue
 Enum(diagnostic_url_rule) String(auto) Value(DIAGNOSTICS_URL_AUTO)
 
+fdiagnostics-column-unit=
+Common Joined RejectNegative Enum(diagnostics_column_unit)
+-fdiagnostics-column-unit=[display|byte]	Select whether column numbers are output as display columns (default) or raw bytes.
+
+fdiagnostics-column-origin=
+Common Joined RejectNegative UInteger
+-fdiagnostics-column-origin=<number>	Set the number of the first column.  The default is 1-based as per GNU style, but some utilities may expect 0-based, for example.
+
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|json]	Select output format.
@@ -1335,6 +1339,15 @@ Common Joined RejectNegative Enum(diagnostics_output_format)
 ; Required for these enum values.
 SourceInclude
 diagnostic.h
+
+Enum
+Name(diagnostics_column_unit) Type(int)
+
+EnumValue
+Enum(diagnostics_column_unit) String(display) Value(DIAGNOSTICS_COLUMN_UNIT_DISPLAY)
+
+EnumValue
+Enum(diagnostics_column_unit) String(byte) Value(DIAGNOSTICS_COLUMN_UNIT_BYTE)
 
 Enum
 Name(diagnostics_output_format) Type(int)
@@ -1364,6 +1377,14 @@ Print CWE identifiers for diagnostic messages, where available.
 fdiagnostics-path-format=
 Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
 Specify how to print any control-flow path associated with a diagnostic.
+
+fdiagnostics-plain-output
+Driver Common RejectNegative
+Turn off any diagnostics features that complicate the output, such as line numbers, color, and warning URLs.
+
+ftabstop=
+Common Joined RejectNegative UInteger
+-ftabstop=<number>      Distance between tab stops for column reporting.
 
 Enum
 Name(diagnostic_path_format) Type(int)
@@ -1755,7 +1776,7 @@ Common RejectNegative Alias(fcf-protection=,full)
 
 fcf-protection=
 Common Report Joined RejectNegative Enum(cf_protection_level) Var(flag_cf_protection) Init(CF_NONE)
--fcf-protection=[full|branch|return|none]	Instrument functions with checks to verify jump/call/return control-flow transfer
+-fcf-protection=[full|branch|return|none|check]	Instrument functions with checks to verify jump/call/return control-flow transfer
 instructions have valid targets.
 
 Enum
@@ -1769,6 +1790,9 @@ Enum(cf_protection_level) String(branch) Value(CF_BRANCH)
 
 EnumValue
 Enum(cf_protection_level) String(return) Value(CF_RETURN)
+
+EnumValue
+Enum(cf_protection_level) String(check) Value(CF_CHECK)
 
 EnumValue
 Enum(cf_protection_level) String(none) Value(CF_NONE)
@@ -2864,7 +2888,7 @@ Common Report Var(flag_unroll_all_loops) Optimization
 Perform loop unrolling for all loops.
 
 funroll-completely-grow-size
-Undocumented Var(flag_cunroll_grow_size) Init(2) Optimization
+Undocumented Var(flag_cunroll_grow_size) Optimization
 ; Internal undocumented flag, allow size growth during complete unrolling
 
 ; Nonzero means that loop optimizer may assume that the induction variables

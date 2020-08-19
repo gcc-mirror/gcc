@@ -580,6 +580,9 @@ struct lang_hooks
   const char *(*get_substring_location) (const substring_loc &,
 					 location_t *out_loc);
 
+  /* Invoked before the early_finish debug hook is invoked.  */
+  void (*finalize_early_debug) (void);
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

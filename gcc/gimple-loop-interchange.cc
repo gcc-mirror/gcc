@@ -2084,6 +2084,8 @@ pass_linterchange::execute (function *fun)
       loop_nest.release ();
     }
 
+  if (changed_p)
+    scev_reset ();
   return changed_p ? (TODO_update_ssa_only_virtuals) : 0;
 }
 

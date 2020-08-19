@@ -1555,8 +1555,11 @@
       using a certain 'count' register and (2) the loop count can be
       adjusted by modifying this register prior to the loop.
       ??? The possible introduction of a new block to initialize the
-      new IV can potentially affect branch optimizations.  */
-   if (optimize > 0 && flag_modulo_sched)
+      new IV can potentially affect branch optimizations.
+
+      Also used to implement the low over head loops feature, which is part of
+      the Armv8.1-M Mainline Low Overhead Branch (LOB) extension.  */
+   if (optimize > 0 && (flag_modulo_sched || TARGET_HAVE_LOB))
    {
      rtx s0;
      rtx bcomp;
@@ -1569,6 +1572,11 @@
        FAIL;
 
      s0 = operands [0];
+
+     /* Low over head loop instructions require the first operand to be LR.  */
+     if (TARGET_HAVE_LOB && arm_target_insn_ok_for_lob (operands [1]))
+       s0 = gen_rtx_REG (SImode, LR_REGNUM);
+
      if (TARGET_THUMB2)
        insn = emit_insn (gen_thumb2_addsi3_compare0 (s0, s0, GEN_INT (-1)));
      else
@@ -1582,8 +1590,9 @@
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));
      DONE;
-   }else
-      FAIL;
+   }
+ else
+   FAIL;
  }")
 
 (define_insn "*clear_apsr"
@@ -1650,3 +1659,35 @@
   "TARGET_HAVE_MVE"
   "lsrl%?\\t%Q0, %R0, %1"
   [(set_attr "predicable" "yes")])
+
+;; Originally expanded by 'doloop_end'.
+(define_insn "*doloop_end_internal"
+  [(parallel [(set (pc)
+                   (if_then_else
+                       (ne (reg:SI LR_REGNUM) (const_int 1))
+                     (label_ref (match_operand 0 "" ""))
+                     (pc)))
+              (set (reg:SI LR_REGNUM)
+                   (plus:SI (reg:SI LR_REGNUM) (const_int -1)))])]
+  "TARGET_32BIT && TARGET_HAVE_LOB"
+  "le\t%|lr, %l0")
+
+(define_expand "doloop_begin"
+  [(match_operand 0 "" "")
+   (match_operand 1 "" "")]
+  "TARGET_32BIT && TARGET_HAVE_LOB"
+  {
+    if (REGNO (operands[0]) == LR_REGNUM)
+      {
+	emit_insn (gen_dls_insn (operands[0]));
+	DONE;
+      }
+    else
+      FAIL;
+  })
+
+(define_insn "dls_insn"
+  [(set (reg:SI LR_REGNUM)
+        (unspec:SI [(match_operand:SI 0 "s_register_operand" "r")] UNSPEC_DLS))]
+  "TARGET_32BIT && TARGET_HAVE_LOB"
+  "dls\t%|lr, %0")

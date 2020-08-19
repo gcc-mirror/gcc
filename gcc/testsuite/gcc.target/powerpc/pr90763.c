@@ -1,5 +1,6 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
 /* PR90763: PowerPC vec_xl_len should take const.

@@ -122,7 +122,7 @@ gfc_basic_typename (bt type)
    the argument list of a single statement.  */
 
 const char *
-gfc_typename (gfc_typespec *ts)
+gfc_typename (gfc_typespec *ts, bool for_hash)
 {
   static char buffer1[GFC_MAX_SYMBOL_LEN + 7];  /* 7 for "TYPE()" + '\0'.  */
   static char buffer2[GFC_MAX_SYMBOL_LEN + 7];
@@ -149,6 +149,12 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "LOGICAL(%d)", ts->kind);
       break;
     case BT_CHARACTER:
+      if (for_hash)
+	{
+	  sprintf (buffer, "CHARACTER(%d)", ts->kind);
+	  break;
+	}
+
       if (ts->u.cl && ts->u.cl->length)
 	length = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
       if (ts->kind == gfc_default_character_kind)

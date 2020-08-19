@@ -77,12 +77,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    * satisfies the requirements of such a traits class.
    */
   template<typename _Ch_type>
-    struct regex_traits
+    class regex_traits
     {
     public:
       typedef _Ch_type				char_type;
       typedef std::basic_string<char_type>	string_type;
       typedef std::locale			locale_type;
+
     private:
       struct _RegexMask
 	{
@@ -2099,7 +2100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, typename _Alloc>
     inline bool
     operator==(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
+	       const match_results<_Bi_iter, _Alloc>& __m2)
     {
       if (__m1.ready() != __m2.ready())
 	return false;
@@ -2124,7 +2125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, class _Alloc>
     inline bool
     operator!=(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
+	       const match_results<_Bi_iter, _Alloc>& __m2)
     { return !(__m1 == __m2); }
 #endif
 

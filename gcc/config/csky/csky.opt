@@ -57,12 +57,33 @@ Target RejectNegative Report Alias(mlittle-endian) Undocumented
 ;; assembly.
 
 mhard-float
-Target Report RejectNegative Mask(HARD_FLOAT)
-Enable hardware floating-point instructions.
+Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
 msoft-float
-Target Report RejectNegative InverseMask(HARD_FLOAT)
-Use library calls to perform floating-point operations (default).
+Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
+
+mfloat-abi=v2
+Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
+
+mfloat-abi=v1
+Target RejectNegative Alias(mfloat-abi=, softfp) Undocumented
+
+mfloat-abi=
+Target RejectNegative Joined Enum(float_abi_type) Var(csky_float_abi) Init(CSKY_FLOAT_ABI_SOFT)
+Specify if floating point hardware should be used.
+
+Enum
+Name(float_abi_type) Type(enum float_abi_type)
+Known floating-point ABIs (for use with the -mfloat-abi= option):
+
+EnumValue
+Enum(float_abi_type) String(soft) Value(CSKY_FLOAT_ABI_SOFT)
+
+EnumValue
+Enum(float_abi_type) String(softfp) Value(CSKY_FLOAT_ABI_SOFTFP)
+
+EnumValue
+Enum(float_abi_type) String(hard) Value(CSKY_FLOAT_ABI_HARD)
 
 mfpu=
 Target RejectNegative Joined Enum(csky_fpu) Var(csky_fpu_index) Init(TARGET_FPU_auto) Save

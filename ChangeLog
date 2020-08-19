@@ -1,3 +1,19 @@
+2020-08-16  Sergei Trofimovich  <slyfox@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-08-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
+2020-07-30  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-07-22  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2020-06-12  Martin Liska  <mliska@suse.cz>
 
 	* .gitignore: Add .clang-tidy.

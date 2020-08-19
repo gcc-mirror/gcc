@@ -1,5 +1,6 @@
-/* { dg-do run { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do run { target lp64 } } */
 /* { dg-require-effective-target p9vector_hw } */
+/* { dg-require-effective-target float128 } */
 /* { dg-options "-mpower9-vector -O2" } */
 
 #define __STDC_WANT_IEC_60559_TYPES_EXT__ 1

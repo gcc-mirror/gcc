@@ -840,6 +840,8 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
     if (tree *p = hash_map_safe_get (normalized_map, tmpl))
       return *p;
 
+  push_nested_class_guard pncs (DECL_CONTEXT (d));
+
   tree args = generic_targs_for (tmpl);
   tree ci = get_constraints (decl);
   tree norm = get_normalized_constraints_from_info (ci, args, tmpl, diag);
@@ -2864,6 +2866,9 @@ constraint_satisfaction_value (tree t, tree args, tsubst_flags_t complain)
 bool
 constraints_satisfied_p (tree t)
 {
+  if (!flag_concepts)
+    return true;
+
   return constraint_satisfaction_value (t, tf_none) == boolean_true_node;
 }
 
@@ -2873,6 +2878,9 @@ constraints_satisfied_p (tree t)
 bool
 constraints_satisfied_p (tree t, tree args)
 {
+  if (!flag_concepts)
+    return true;
+
   return constraint_satisfaction_value (t, args, tf_none) == boolean_true_node;
 }
 

@@ -942,8 +942,11 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
   tree reqs2 = get_trailing_function_requirements (oldfn);
   if ((reqs1 != NULL_TREE) != (reqs2 != NULL_TREE))
     return false;
+
+  /* Substitution is needed when friends are involved.  */
   reqs1 = maybe_substitute_reqs_for (reqs1, newfn);
   reqs2 = maybe_substitute_reqs_for (reqs2, oldfn);
+
   return cp_tree_equal (reqs1, reqs2);
 }
 
@@ -971,12 +974,6 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      tree f1 = TREE_TYPE (newdecl);
-      tree f2 = TREE_TYPE (olddecl);
-      tree p1 = TYPE_ARG_TYPES (f1);
-      tree p2 = TYPE_ARG_TYPES (f2);
-      tree r2;
-
       /* Specializations of different templates are different functions
 	 even if they have the same type.  */
       tree t1 = (DECL_USE_TEMPLATE (newdecl)
@@ -999,14 +996,20 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 	  && DECL_EXTERN_C_P (olddecl) && !DECL_EXTERN_C_P (newdecl))
 	return 0;
 
+      tree f1 = TREE_TYPE (newdecl);
+      tree f2 = TREE_TYPE (olddecl);
       if (TREE_CODE (f1) != TREE_CODE (f2))
 	return 0;
 
       /* A declaration with deduced return type should use its pre-deduction
 	 type for declaration matching.  */
-      r2 = fndecl_declared_return_type (olddecl);
+      tree r2 = fndecl_declared_return_type (olddecl);
+      tree r1 = fndecl_declared_return_type (newdecl);
 
-      if (same_type_p (TREE_TYPE (f1), r2))
+      tree p1 = TYPE_ARG_TYPES (f1);
+      tree p2 = TYPE_ARG_TYPES (f2);
+
+      if (same_type_p (r1, r2))
 	{
 	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
 	      && fndecl_built_in_p (olddecl))
@@ -1679,6 +1682,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else if (DECL_TYPE_TEMPLATE_P (olddecl)
 	       || DECL_TYPE_TEMPLATE_P (newdecl))
 	/* Class template conflicts.  */;
+      else if ((TREE_CODE (olddecl) == TEMPLATE_DECL
+		&& DECL_TEMPLATE_RESULT (olddecl)
+		&& TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == VAR_DECL)
+	       || (TREE_CODE (newdecl) == TEMPLATE_DECL
+		   && DECL_TEMPLATE_RESULT (newdecl)
+		   && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == VAR_DECL))
+	/* Variable template conflicts.  */;
+      else if (concept_definition_p (olddecl)
+	       || concept_definition_p (newdecl))
+	/* Concept conflicts.  */;
       else if ((TREE_CODE (newdecl) == FUNCTION_DECL
 		&& DECL_FUNCTION_TEMPLATE_P (olddecl))
 	       || (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -1701,7 +1714,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      " literal operator template", newdecl);
 	  else
 	    return NULL_TREE;
-	  
+
 	  inform (olddecl_loc, "previous declaration %q#D", olddecl);
 	  return error_mark_node;
 	}
@@ -2444,14 +2457,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      || (TREE_CODE (olddecl) == TEMPLATE_DECL
 		  && (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl))
 		      == FUNCTION_DECL))))
-	{
-	  tree fn = olddecl;
-
-	  if (TREE_CODE (fn) == TEMPLATE_DECL)
-	    fn = DECL_TEMPLATE_RESULT (olddecl);
-
-	  new_redefines_gnu_inline = GNU_INLINE_P (fn) && DECL_INITIAL (fn);
-	}
+	new_redefines_gnu_inline = GNU_INLINE_P (STRIP_TEMPLATE (olddecl));
 
       if (!new_redefines_gnu_inline)
 	{
@@ -2517,7 +2523,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
       /* Merge parameter attributes. */
       tree oldarg, newarg;
-      for (oldarg = DECL_ARGUMENTS(olddecl),  newarg = DECL_ARGUMENTS(newdecl);
+      for (oldarg = DECL_ARGUMENTS(olddecl), newarg = DECL_ARGUMENTS(newdecl);
            oldarg && newarg;
            oldarg = DECL_CHAIN(oldarg), newarg = DECL_CHAIN(newarg))
 	{
@@ -2727,6 +2733,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
+
   if (VAR_P (newdecl))
     {
       if (DECL_READ_P (olddecl))
@@ -2734,6 +2741,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else if (DECL_READ_P (newdecl))
 	DECL_READ_P (olddecl) = 1;
     }
+
   if (DECL_PRESERVE_P (olddecl))
     DECL_PRESERVE_P (newdecl) = 1;
   else if (DECL_PRESERVE_P (newdecl))
@@ -3837,11 +3845,7 @@ tree
 build_typename_type (tree context, tree name, tree fullname,
 		     enum tag_types tag_type)
 {
-  tree t;
-  tree d;
   typename_info ti;
-  tree *e;
-  hashval_t hash;
 
   if (typename_htab == NULL)
     typename_htab = hash_table<typename_hasher>::create_ggc (61);
@@ -3853,11 +3857,12 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.class_p = (tag_type == class_type
 		|| tag_type == record_type
 		|| tag_type == union_type);
-  hash =  (htab_hash_pointer (ti.scope)
-	   ^ htab_hash_pointer (ti.name));
+  hashval_t hash =  (htab_hash_pointer (ti.scope)
+		     ^ htab_hash_pointer (ti.name));
 
   /* See if we already have this type.  */
-  e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
+  tree *e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
+  tree t = *e;
   if (*e)
     t = *e;
   else
@@ -3870,10 +3875,10 @@ build_typename_type (tree context, tree name, tree fullname,
       TYPENAME_IS_CLASS_P (t) = ti.class_p;
 
       /* Build the corresponding TYPE_DECL.  */
-      d = build_decl (input_location, TYPE_DECL, name, t);
-      TYPE_NAME (TREE_TYPE (d)) = d;
-      TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-      DECL_CONTEXT (d) = FROB_CONTEXT (context);
+      tree d = build_decl (input_location, TYPE_DECL, name, t);
+      TYPE_NAME (t) = d;
+      TYPE_STUB_DECL (t) = d;
+      DECL_CONTEXT (d) = ti.scope;
       DECL_ARTIFICIAL (d) = 1;
 
       /* Store it in the hash table.  */
@@ -4046,9 +4051,6 @@ tree
 make_unbound_class_template (tree context, tree name, tree parm_list,
 			     tsubst_flags_t complain)
 {
-  tree t;
-  tree d;
-
   if (TYPE_P (name))
     name = TYPE_IDENTIFIER (name);
   else if (DECL_P (name))
@@ -4093,16 +4095,16 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
     }
 
   /* Build the UNBOUND_CLASS_TEMPLATE.  */
-  t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
+  tree t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TREE_TYPE (t) = NULL_TREE;
   SET_TYPE_STRUCTURAL_EQUALITY (t);
 
   /* Build the corresponding TEMPLATE_DECL.  */
-  d = build_decl (input_location, TEMPLATE_DECL, name, t);
-  TYPE_NAME (TREE_TYPE (d)) = d;
-  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+  tree d = build_decl (input_location, TEMPLATE_DECL, name, t);
+  TYPE_NAME (t) = d;
+  TYPE_STUB_DECL (t) = d;
+  DECL_CONTEXT (d) = TYPE_CONTEXT (t);
   DECL_ARTIFICIAL (d) = 1;
   DECL_TEMPLATE_PARMS (d) = parm_list;
 
@@ -4200,6 +4202,7 @@ initialize_predefined_identifiers (void)
     {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
     {"__conv_op ", &conv_op_identifier, cik_conv_op},
     {"__in_chrg", &in_charge_identifier, cik_normal},
+    {"__as_base ", &as_base_identifier, cik_normal},
     {"this", &this_identifier, cik_normal},
     {"__delta", &delta_identifier, cik_normal},
     {"__pfn", &pfn_identifier, cik_normal},
@@ -4673,9 +4676,9 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   return decl;
 }
 
-/* Install DECL as a builtin function at current (global) scope.
-   Return the new decl (if we found an existing version).  Also
-   installs it into ::std, if it's not '_*'.  */
+/* Install DECL as a builtin function at current global scope.  Return
+   the new decl (if we found an existing version).  Also installs it
+   into ::std, if it's not '_*'.  */
 
 tree
 cxx_builtin_function (tree decl)
@@ -4809,14 +4812,11 @@ build_cp_library_fn_ptr (const char* name, tree type, int ecf_flags)
 tree
 push_library_fn (tree name, tree type, tree raises, int ecf_flags)
 {
-  tree fn;
-
   if (raises)
     type = build_exception_variant (type, raises);
 
-  fn = build_library_fn (name, ERROR_MARK, type, ecf_flags);
-  pushdecl_top_level (fn);
-  return fn;
+  tree fn = build_library_fn (name, ERROR_MARK, type, ecf_flags);
+  return pushdecl_top_level (fn);
 }
 
 /* Like build_cp_library_fn, but also pushes the function so that it
@@ -8000,6 +8000,13 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		       NULL_TREE, DECL_ATTRIBUTES (decl));
     }
 
+  /* This is the last point we can lower alignment so give the target the
+     chance to do so.  */
+  if (VAR_P (decl)
+      && !is_global_var (decl)
+      && !DECL_HARD_REGISTER (decl))
+    targetm.lower_local_decl_alignment (decl);
+
   invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
 }
 
@@ -8093,7 +8100,7 @@ get_tuple_size (tree type)
   if (inst == error_mark_node || !COMPLETE_TYPE_P (inst))
     return NULL_TREE;
   tree val = lookup_qualified_name (inst, value_identifier,
-				    /*type*/false, /*complain*/false);
+				    LOOK_want::NORMAL, /*complain*/false);
   if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
     val = maybe_constant_value (val);
   if (TREE_CODE (val) == INTEGER_CST)
@@ -8137,7 +8144,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
     e = move (e);
 
   tree fns = lookup_qualified_name (TREE_TYPE (e), get__identifier,
-				    /*type*/false, /*complain*/false);
+				    LOOK_want::NORMAL, /*complain*/false);
   bool use_member_get = false;
 
   /* To use a member get, member lookup must find at least one
@@ -9550,19 +9557,12 @@ grokfndecl (tree ctype,
 	  }
     }
 
-  /* FIXME: For now.  */
-  if (virtualp && (inlinep & 8) != 0)
-    {
-      sorry_at (DECL_SOURCE_LOCATION (decl),
-		"%<virtual%> %<consteval%> method %qD not supported yet",
-		decl);
-      inlinep &= ~8;
-    }
-
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
-  else if (!ctype)
+  else if (ctype)
+    DECL_CONTEXT (decl) = ctype;
+  else
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_decl_namespace ());
 
   /* `main' and builtins have implicit 'C' linkage.  */
@@ -9590,12 +9590,8 @@ grokfndecl (tree ctype,
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;
 
-  if (ctype)
-    {
-      DECL_CONTEXT (decl) = ctype;
-      if (funcdef_flag)
-	check_class_member_definition_namespace (decl);
-    }
+  if (ctype && funcdef_flag)
+    check_class_member_definition_namespace (decl);
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
@@ -12102,105 +12098,99 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Handle a late-specified return type.  */
 	    tree late_return_type = declarator->u.function.late_return_type;
-	    if (funcdecl_p
-		/* This is the case e.g. for
-		   using T = auto () -> int.  */
-		|| inner_declarator == NULL)
+	    if (tree auto_node = type_uses_auto (type))
 	      {
-		if (tree auto_node = type_uses_auto (type))
+		if (!late_return_type && funcdecl_p)
 		  {
-		    if (!late_return_type)
+		    if (current_class_type
+			&& LAMBDA_TYPE_P (current_class_type))
+		      /* OK for C++11 lambdas.  */;
+		    else if (cxx_dialect < cxx14)
 		      {
-			if (current_class_type
-			    && LAMBDA_TYPE_P (current_class_type))
-			  /* OK for C++11 lambdas.  */;
-			else if (cxx_dialect < cxx14)
-			  {
-			    error_at (typespec_loc, "%qs function uses "
-				      "%<auto%> type specifier without "
-				      "trailing return type", name);
-			    inform (typespec_loc,
-				    "deduced return type only available "
-				    "with %<-std=c++14%> or %<-std=gnu++14%>");
-			  }
-			else if (virtualp)
-			  {
-			    error_at (typespec_loc, "virtual function "
-				      "cannot have deduced return type");
-			    virtualp = false;
-			  }
+			error_at (typespec_loc, "%qs function uses "
+				  "%<auto%> type specifier without "
+				  "trailing return type", name);
+			inform (typespec_loc,
+				"deduced return type only available "
+				"with %<-std=c++14%> or %<-std=gnu++14%>");
 		      }
-		    else if (!is_auto (type) && sfk != sfk_conversion)
+		    else if (virtualp)
 		      {
-			error_at (typespec_loc, "%qs function with trailing "
-				  "return type has %qT as its type rather "
-				  "than plain %<auto%>", name, type);
-			return error_mark_node;
-		      }
-		    else if (is_auto (type) && AUTO_IS_DECLTYPE (type))
-		      {
-			if (funcdecl_p)
-			  error_at (typespec_loc,
-				    "%qs function with trailing return type "
-				    "has %<decltype(auto)%> as its type "
-				    "rather than plain %<auto%>", name);
-			else
-			  error_at (typespec_loc,
-				    "invalid use of %<decltype(auto)%>");
-			return error_mark_node;
-		      }
-		    tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
-		    if (!tmpl)
-		      if (tree late_auto = type_uses_auto (late_return_type))
-			tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
-		    if (tmpl && funcdecl_p)
-		      {
-			if (!dguide_name_p (unqualified_id))
-			  {
-			    error_at (declarator->id_loc, "deduced class "
-				      "type %qD in function return type",
-				      DECL_NAME (tmpl));
-			    inform (DECL_SOURCE_LOCATION (tmpl),
-				    "%qD declared here", tmpl);
-			    return error_mark_node;
-			  }
-			else if (!late_return_type)
-			  {
-			    error_at (declarator->id_loc, "deduction guide "
-				      "for %qT must have trailing return "
-				      "type", TREE_TYPE (tmpl));
-			    inform (DECL_SOURCE_LOCATION (tmpl),
-				    "%qD declared here", tmpl);
-			    return error_mark_node;
-			  }
-			else if (CLASS_TYPE_P (late_return_type)
-				 && CLASSTYPE_TEMPLATE_INFO (late_return_type)
-				 && (CLASSTYPE_TI_TEMPLATE (late_return_type)
-				     == tmpl))
-			  /* OK */;
-			else
-			  error ("trailing return type %qT of deduction guide "
-				 "is not a specialization of %qT",
-				 late_return_type, TREE_TYPE (tmpl));
+			error_at (typespec_loc, "virtual function "
+				  "cannot have deduced return type");
+			virtualp = false;
 		      }
 		  }
-		else if (late_return_type
-			 && sfk != sfk_conversion)
+		else if (!is_auto (type) && sfk != sfk_conversion)
 		  {
-		    if (late_return_type == error_mark_node)
-		      return error_mark_node;
-		    if (cxx_dialect < cxx11)
-		      /* Not using maybe_warn_cpp0x because this should
-			 always be an error.  */
-		      error_at (typespec_loc,
-				"trailing return type only available "
-				"with %<-std=c++11%> or %<-std=gnu++11%>");
-		    else
-		      error_at (typespec_loc, "%qs function with trailing "
-				"return type not declared with %<auto%> "
-				"type specifier", name);
+		    error_at (typespec_loc, "%qs function with trailing "
+			      "return type has %qT as its type rather "
+			      "than plain %<auto%>", name, type);
 		    return error_mark_node;
 		  }
+		else if (is_auto (type) && AUTO_IS_DECLTYPE (type))
+		  {
+		    if (funcdecl_p)
+		      error_at (typespec_loc,
+				"%qs function with trailing return type "
+				"has %<decltype(auto)%> as its type "
+				"rather than plain %<auto%>", name);
+		    else
+		      error_at (typespec_loc,
+				"invalid use of %<decltype(auto)%>");
+		    return error_mark_node;
+		  }
+		tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
+		if (!tmpl)
+		  if (tree late_auto = type_uses_auto (late_return_type))
+		    tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
+		if (tmpl && funcdecl_p)
+		  {
+		    if (!dguide_name_p (unqualified_id))
+		      {
+			error_at (declarator->id_loc, "deduced class "
+				  "type %qD in function return type",
+				  DECL_NAME (tmpl));
+			inform (DECL_SOURCE_LOCATION (tmpl),
+				"%qD declared here", tmpl);
+			return error_mark_node;
+		      }
+		    else if (!late_return_type)
+		      {
+			error_at (declarator->id_loc, "deduction guide "
+				  "for %qT must have trailing return "
+				  "type", TREE_TYPE (tmpl));
+			inform (DECL_SOURCE_LOCATION (tmpl),
+				"%qD declared here", tmpl);
+			return error_mark_node;
+		      }
+		    else if (CLASS_TYPE_P (late_return_type)
+			      && CLASSTYPE_TEMPLATE_INFO (late_return_type)
+			      && (CLASSTYPE_TI_TEMPLATE (late_return_type)
+				  == tmpl))
+		      /* OK */;
+		    else
+		      error ("trailing return type %qT of deduction guide "
+			      "is not a specialization of %qT",
+			      late_return_type, TREE_TYPE (tmpl));
+		  }
+	      }
+	    else if (late_return_type
+		     && sfk != sfk_conversion)
+	      {
+		if (late_return_type == error_mark_node)
+		  return error_mark_node;
+		if (cxx_dialect < cxx11)
+		  /* Not using maybe_warn_cpp0x because this should
+		     always be an error.  */
+		  error_at (typespec_loc,
+			    "trailing return type only available "
+			    "with %<-std=c++11%> or %<-std=gnu++11%>");
+		else
+		  error_at (typespec_loc, "%qs function with trailing "
+			    "return type not declared with %<auto%> "
+			    "type specifier", name);
+		return error_mark_node;
 	      }
 	    type = splice_late_return_type (type, late_return_type);
 	    if (type == error_mark_node)
@@ -12253,11 +12243,20 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* Only plain decltype(auto) is allowed.  */
 	    if (tree a = type_uses_auto (type))
 	      {
-		if (AUTO_IS_DECLTYPE (a) && a != type)
+		if (AUTO_IS_DECLTYPE (a))
 		  {
-		    error_at (typespec_loc, "%qT as type rather than "
-			      "plain %<decltype(auto)%>", type);
-		    return error_mark_node;
+		    if (a != type)
+		      {
+			error_at (typespec_loc, "%qT as type rather than "
+				  "plain %<decltype(auto)%>", type);
+			return error_mark_node;
+		      }
+		    else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+		      {
+			error_at (typespec_loc, "%<decltype(auto)%> cannot be "
+				  "cv-qualified");
+			return error_mark_node;
+		      }
 		  }
 	      }
 
@@ -13425,6 +13424,7 @@ grokdeclarator (const cp_declarator *declarator,
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
+
 		if (template_class_depth (current_class_type) == 0)
 		  {
 		    decl = check_explicit_specialization
@@ -14834,7 +14834,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
     {
       /* First try ordinary name lookup, ignoring hidden class name
 	 injected via friend declaration.  */
-      decl = lookup_name_prefer_type (name, 2);
+      decl = lookup_name (name, LOOK_want::TYPE);
       decl = strip_using_decl (decl);
       /* If that fails, the name will be placed in the smallest
 	 non-class, non-function-prototype scope according to 3.3.1/5.
@@ -16805,8 +16805,6 @@ finish_destructor_body (void)
 tree
 begin_function_body (void)
 {
-  tree stmt;
-
   if (! FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
     return NULL_TREE;
 
@@ -16818,7 +16816,7 @@ begin_function_body (void)
        operation of dwarfout.c.  */
     keep_next_level (true);
 
-  stmt = begin_compound_stmt (BCS_FN_BODY);
+  tree stmt = begin_compound_stmt (BCS_FN_BODY);
 
   if (processing_template_decl)
     /* Do nothing now.  */;
@@ -17114,6 +17112,51 @@ finish_function (bool inline_p)
 				      DECL_ATTRIBUTES (fndecl)))
       omp_declare_variant_finalize (fndecl, attr);
 
+  /* Complain if there's just no return statement.  */
+  if ((warn_return_type
+       || (cxx_dialect >= cxx14
+	   && DECL_DECLARED_CONSTEXPR_P (fndecl)))
+      && !VOID_TYPE_P (TREE_TYPE (fntype))
+      && !dependent_type_p (TREE_TYPE (fntype))
+      && !current_function_returns_value && !current_function_returns_null
+      /* Don't complain if we abort or throw.  */
+      && !current_function_returns_abnormally
+      /* Don't complain if there's an infinite loop.  */
+      && !current_function_infinite_loop
+      /* Don't complain if we are declared noreturn.  */
+      && !TREE_THIS_VOLATILE (fndecl)
+      && !DECL_NAME (DECL_RESULT (fndecl))
+      && !TREE_NO_WARNING (fndecl)
+      /* Structor return values (if any) are set by the compiler.  */
+      && !DECL_CONSTRUCTOR_P (fndecl)
+      && !DECL_DESTRUCTOR_P (fndecl)
+      && targetm.warn_func_return (fndecl))
+    {
+      gcc_rich_location richloc (input_location);
+      /* Potentially add a "return *this;" fix-it hint for
+	 assignment operators.  */
+      if (IDENTIFIER_ASSIGN_OP_P (DECL_NAME (fndecl)))
+	{
+	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
+	  if (TREE_CODE (valtype) == REFERENCE_TYPE
+	      && current_class_ref
+	      && same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
+	      && global_dc->option_enabled (OPT_Wreturn_type,
+					    global_dc->lang_mask,
+					    global_dc->option_state))
+	    add_return_star_this_fixit (&richloc, fndecl);
+	}
+      if (cxx_dialect >= cxx14
+	  && DECL_DECLARED_CONSTEXPR_P (fndecl))
+	error_at (&richloc, "no return statement in %<constexpr%> function "
+			    "returning non-void");
+      else if (warning_at (&richloc, OPT_Wreturn_type,
+			   "no return statement in function returning "
+			   "non-void"))
+	TREE_NO_WARNING (fndecl) = 1;
+    }
+
   /* Lambda closure members are implicitly constexpr if possible.  */
   if (cxx_dialect >= cxx17
       && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fndecl)))
@@ -17164,44 +17207,6 @@ finish_function (bool inline_p)
   /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
-  /* Complain if there's just no return statement.  */
-  if (warn_return_type
-      && !VOID_TYPE_P (TREE_TYPE (fntype))
-      && !dependent_type_p (TREE_TYPE (fntype))
-      && !current_function_returns_value && !current_function_returns_null
-      /* Don't complain if we abort or throw.  */
-      && !current_function_returns_abnormally
-      /* Don't complain if there's an infinite loop.  */
-      && !current_function_infinite_loop
-      /* Don't complain if we are declared noreturn.  */
-      && !TREE_THIS_VOLATILE (fndecl)
-      && !DECL_NAME (DECL_RESULT (fndecl))
-      && !TREE_NO_WARNING (fndecl)
-      /* Structor return values (if any) are set by the compiler.  */
-      && !DECL_CONSTRUCTOR_P (fndecl)
-      && !DECL_DESTRUCTOR_P (fndecl)
-      && targetm.warn_func_return (fndecl))
-    {
-      gcc_rich_location richloc (input_location);
-      /* Potentially add a "return *this;" fix-it hint for
-	 assignment operators.  */
-      if (IDENTIFIER_ASSIGN_OP_P (DECL_NAME (fndecl)))
-	{
-	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
-	  if (TREE_CODE (valtype) == REFERENCE_TYPE
-	      && current_class_ref
-	      && same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
-	      && global_dc->option_enabled (OPT_Wreturn_type,
-					    global_dc->lang_mask,
-					    global_dc->option_state))
-	    add_return_star_this_fixit (&richloc, fndecl);
-	}
-      if (warning_at (&richloc, OPT_Wreturn_type,
-	  "no return statement in function returning non-void"))
-	TREE_NO_WARNING (fndecl) = 1;
-    }
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */

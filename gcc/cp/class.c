@@ -182,7 +182,6 @@ static void dfs_accumulate_vtbl_inits (tree, tree, tree, tree, tree,
 static void build_rtti_vtbl_entries (tree, vtbl_init_data *);
 static void build_vcall_and_vbase_vtbl_entries (tree, vtbl_init_data *);
 static void clone_constructors_and_destructors (tree);
-static tree build_clone (tree, tree);
 static void update_vtable_entry_for_fn (tree, tree, tree, tree *, unsigned);
 static void build_ctor_vtbl_group (tree, tree);
 static void build_vtt (tree);
@@ -517,8 +516,14 @@ build_base_path (enum tree_code code,
 
  out:
   if (null_test)
-    expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test, expr,
-			    build_zero_cst (target_type));
+    {
+      expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test,
+			      expr, build_zero_cst (target_type));
+      /* Avoid warning for the whole conditional expression (in addition
+	 to NULL_TEST itself -- see above) in case the result is used in
+	 a nonnull context that the front end -Wnonnull checks.  */
+      TREE_NO_WARNING (expr) = 1;
+    }
 
   return expr;
 }
@@ -1968,6 +1973,9 @@ fixup_type_variants (tree t)
       /* Copy whatever these are holding today.  */
       TYPE_VFIELD (variants) = TYPE_VFIELD (t);
       TYPE_FIELDS (variants) = TYPE_FIELDS (t);
+
+      TYPE_SIZE (variants) = TYPE_SIZE (t);
+      TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
     }
 }
 
@@ -3050,11 +3058,14 @@ finish_struct_anon (tree t)
 void
 maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 {
-  /* Save some memory by not creating TREE_LIST if TYPE is not template.  */
-  if (CLASSTYPE_TEMPLATE_INFO (type))
-    CLASSTYPE_DECL_LIST (type)
-      = tree_cons (friend_p ? NULL_TREE : type,
-		   t, CLASSTYPE_DECL_LIST (type));
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && TREE_CODE (t) != CONST_DECL)
+    {
+      tree purpose = friend_p ? NULL_TREE : type;
+
+      CLASSTYPE_DECL_LIST (type)
+	= tree_cons (purpose, t, CLASSTYPE_DECL_LIST (type));
+    }
 }
 
 /* This function is called from declare_virt_assop_and_dtor via
@@ -3719,7 +3730,8 @@ check_field_decls (tree t, tree *access_decls,
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
-      else if (field_poverlapping_p (field) && is_empty_class (type))
+      else if (field_poverlapping_p (field)
+	       && is_empty_class (TREE_TYPE (field)))
 	/* Empty data members also don't make a class non-empty.  */
 	CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
       else
@@ -4386,15 +4398,20 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
 
   /* This routine should only be used for empty classes.  */
   gcc_assert (is_empty_class (type));
-  alignment = size_int (CLASSTYPE_ALIGN_UNIT (type));
+
+  if (decl && DECL_USER_ALIGN (decl))
+    alignment = size_int (DECL_ALIGN_UNIT (decl));
+  else
+    alignment = size_int (CLASSTYPE_ALIGN_UNIT (type));
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
   tree offset = size_zero_node;
-  if (layout_conflict_p (type,
-			 offset,
-			 offsets,
-			 /*vbases_p=*/0))
+  if (TREE_CODE (rli->t) != UNION_TYPE
+      && layout_conflict_p (type,
+			    offset,
+			    offsets,
+			    /*vbases_p=*/0))
     {
       /* That didn't work.  Now, we move forward from the next
 	 available spot in the class.  */
@@ -4414,7 +4431,14 @@ layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
 	}
     }
 
-  if (CLASSTYPE_USER_ALIGN (type))
+  if (decl && DECL_USER_ALIGN (decl))
+    {
+      rli->record_align = MAX (rli->record_align, DECL_ALIGN (decl));
+      if (warn_packed)
+	rli->unpacked_align = MAX (rli->unpacked_align, DECL_ALIGN (decl));
+      TYPE_USER_ALIGN (rli->t) = 1;
+    }
+  else if (CLASSTYPE_USER_ALIGN (type))
     {
       rli->record_align = MAX (rli->record_align, CLASSTYPE_ALIGN (type));
       if (warn_packed)
@@ -4444,9 +4468,10 @@ build_base_field_1 (tree t, tree binfo, tree access, tree *&next_field)
 {
   /* Create the FIELD_DECL.  */
   tree basetype = BINFO_TYPE (binfo);
-  gcc_assert (CLASSTYPE_AS_BASE (basetype));
-  tree decl = build_decl (input_location,
-			  FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
+  tree as_base = CLASSTYPE_AS_BASE (basetype);
+  gcc_assert (as_base);
+  tree decl = build_decl (input_location, FIELD_DECL, NULL_TREE, as_base);
+
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
@@ -4696,8 +4721,13 @@ check_methods (tree t)
     }
 }
 
-tree
-copy_fndecl_with_name (tree fn, tree name)
+/* FN is constructor, destructor or operator function.  Clone the
+   declaration to create a NAME'd variant.  NEED_VTT_PARM_P and
+   OMIT_INHERITED_PARMS_P are relevant if it's a cdtor.  */
+
+static tree
+copy_fndecl_with_name (tree fn, tree name, tree_code code,
+		       bool need_vtt_parm_p, bool omit_inherited_parms_p)
 {
   /* Copy the function.  */
   tree clone = copy_decl (fn);
@@ -4714,23 +4744,24 @@ copy_fndecl_with_name (tree fn, tree name)
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;
 
-  /* The base-class destructor is not virtual.  */
   if (name == base_dtor_identifier)
     {
+      /* The base-class destructor is not virtual.  */
       DECL_VIRTUAL_P (clone) = 0;
       DECL_VINDEX (clone) = NULL_TREE;
     }
-  else if (IDENTIFIER_OVL_OP_P (name))
+  else if (code != ERROR_MARK)
     {
-      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      /* Set the operator code.  */
+      const ovl_op_info_t *ovl_op = OVL_OP_INFO (false, code);
       DECL_OVERLOADED_OPERATOR_CODE_RAW (clone) = ovl_op->ovl_op_code;
-    }
 
-  if (DECL_VIRTUAL_P (clone))
-    IDENTIFIER_VIRTUAL_P (name) = true;
+      /* The operator could be virtual.  */
+      if (DECL_VIRTUAL_P (clone))
+	IDENTIFIER_VIRTUAL_P (name) = true;
+   }
 
-  bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
-  if (ctor_omit_inherited_parms_p)
+  if (omit_inherited_parms_p)
     gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (clone));
 
   /* If there was an in-charge parameter, drop it from the function
@@ -4744,13 +4775,12 @@ copy_fndecl_with_name (tree fn, tree name)
       /* Skip the in-charge parameter.  */
       parmtypes = TREE_CHAIN (parmtypes);
       /* And the VTT parm, in a complete [cd]tor.  */
-      if (DECL_HAS_VTT_PARM_P (fn)
-	  && ! DECL_NEEDS_VTT_PARM_P (clone))
+      if (DECL_HAS_VTT_PARM_P (fn) && !need_vtt_parm_p)
 	parmtypes = TREE_CHAIN (parmtypes);
-      if (ctor_omit_inherited_parms_p)
+      if (omit_inherited_parms_p)
 	{
 	  /* If we're omitting inherited parms, that just leaves the VTT.  */
-	  gcc_assert (DECL_NEEDS_VTT_PARM_P (clone));
+	  gcc_assert (need_vtt_parm_p);
 	  parmtypes = tree_cons (NULL_TREE, vtt_parm_type, void_list_node);
 	}
       TREE_TYPE (clone)
@@ -4766,6 +4796,7 @@ copy_fndecl_with_name (tree fn, tree name)
 
   /* Copy the function parameters.  */
   DECL_ARGUMENTS (clone) = copy_list (DECL_ARGUMENTS (clone));
+
   /* Remove the in-charge parameter.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
     {
@@ -4773,10 +4804,11 @@ copy_fndecl_with_name (tree fn, tree name)
 	= DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone)));
       DECL_HAS_IN_CHARGE_PARM_P (clone) = 0;
     }
+
   /* And the VTT parm, in a complete [cd]tor.  */
   if (DECL_HAS_VTT_PARM_P (fn))
     {
-      if (DECL_NEEDS_VTT_PARM_P (clone))
+      if (need_vtt_parm_p)
 	DECL_HAS_VTT_PARM_P (clone) = 1;
       else
 	{
@@ -4788,7 +4820,7 @@ copy_fndecl_with_name (tree fn, tree name)
 
   /* A base constructor inheriting from a virtual base doesn't get the
      arguments.  */
-  if (ctor_omit_inherited_parms_p)
+  if (omit_inherited_parms_p)
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
   for (tree parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
@@ -4804,12 +4836,22 @@ copy_fndecl_with_name (tree fn, tree name)
   return clone;
 }
 
+/* FN is an operator function, create a variant for CODE.  */
+
+tree
+copy_operator_fn (tree fn, tree_code code)
+{
+  return copy_fndecl_with_name (fn, ovl_op_identifier (code),
+				code, false, false);
+}
+
 /* FN is a constructor or destructor.  Clone the declaration to create
    a specialized in-charge or not-in-charge version, as indicated by
    NAME.  */
 
 static tree
-build_clone (tree fn, tree name)
+build_clone (tree fn, tree name, bool need_vtt_parm_p,
+	     bool omit_inherited_parms_p)
 {
   tree clone;
 
@@ -4819,7 +4861,8 @@ build_clone (tree fn, tree name)
       clone = copy_decl (fn);
       DECL_NAME (clone) = name;
 
-      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name);
+      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name,
+				 need_vtt_parm_p, omit_inherited_parms_p);
       DECL_TEMPLATE_RESULT (clone) = result;
 
       DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
@@ -4829,7 +4872,8 @@ build_clone (tree fn, tree name)
     }
   else
     {
-      clone = copy_fndecl_with_name (fn, name);
+      clone = copy_fndecl_with_name (fn, name, ERROR_MARK,
+				     need_vtt_parm_p, omit_inherited_parms_p);
       DECL_CLONED_FUNCTION (clone) = fn;
     }
 
@@ -4847,8 +4891,8 @@ build_clone (tree fn, tree name)
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-unsigned
-build_clones (tree fn)
+static unsigned
+build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
 {
   unsigned count = 0;
 
@@ -4856,8 +4900,9 @@ build_clones (tree fn)
     {
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
-      build_clone (fn, complete_ctor_identifier);
-      build_clone (fn, base_ctor_identifier);
+      build_clone (fn, complete_ctor_identifier, false, false);
+      build_clone (fn, base_ctor_identifier, needs_vtt_parm_p,
+		   omit_inherited_parms_p);
       count += 2;
     }
   else
@@ -4875,11 +4920,11 @@ build_clones (tree fn)
 	 destructor.  */
       if (DECL_VIRTUAL_P (fn))
 	{
-	  build_clone (fn, deleting_dtor_identifier);
+	  build_clone (fn, deleting_dtor_identifier, false, false);
 	  count++;
 	}
-      build_clone (fn, complete_dtor_identifier);
-      build_clone (fn, base_dtor_identifier);
+      build_clone (fn, complete_dtor_identifier, false, false);
+      build_clone (fn, base_dtor_identifier, needs_vtt_parm_p, false);
       count += 2;
     }
 
@@ -4891,14 +4936,21 @@ build_clones (tree fn)
    CLASSTYPE_MEMBER_VEC.  */
 
 void
-clone_function_decl (tree fn, bool update_methods)
+clone_cdtor (tree fn, bool update_methods)
 {
   /* Avoid inappropriate cloning.  */
   if (DECL_CHAIN (fn)
       && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
     return;
 
-  unsigned count = build_clones (fn);
+  /* Base cdtors need a vtt parm if there are virtual bases.  */
+  bool vtt = CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn));
+
+  /* Base ctor omits inherited parms it needs a vttparm and inherited
+     from a virtual nase ctor.  */
+  bool omit_inherited = ctor_omit_inherited_parms (fn);
+
+  unsigned count = build_cdtor_clones (fn, vtt, omit_inherited);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
@@ -4998,10 +5050,10 @@ clone_constructors_and_destructors (tree t)
   /* While constructors can be via a using declaration, at this point
      we no longer need to know that.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    clone_function_decl (*iter, /*update_methods=*/true);
+    clone_cdtor (*iter, /*update_methods=*/true);
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
-    clone_function_decl (dtor, /*update_methods=*/true);
+    clone_cdtor (dtor, /*update_methods=*/true);
 }
 
 /* Deduce noexcept for a destructor DTOR.  */
@@ -6056,10 +6108,8 @@ check_bases_and_members (tree t)
       }
 
   if (LAMBDA_TYPE_P (t))
-    {
-      /* "This class type is not an aggregate."  */
-      CLASSTYPE_NON_AGGREGATE (t) = 1;
-    }
+    /* "This class type is not an aggregate."  */
+    CLASSTYPE_NON_AGGREGATE (t) = 1;
 
   /* Compute the 'literal type' property before we
      do anything with non-static member functions.  */
@@ -6674,6 +6724,10 @@ layout_class_type (tree t, tree *virtuals_p)
       /* T needs a different layout as a base (eliding virtual bases
 	 or whatever).  Create that version.  */
       tree base_t = make_node (TREE_CODE (t));
+      tree base_d = create_implicit_typedef (as_base_identifier, base_t);
+
+      TYPE_CONTEXT (base_t) = t;
+      DECL_CONTEXT (base_d) = t;
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte
@@ -6682,6 +6736,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	 indicates the total number of bits used.  Therefore,
 	 rli_size_so_far, rather than rli_size_unit_so_far, is
 	 used to compute TYPE_SIZE_UNIT.  */
+
+      /* Set the size and alignment for the new type.  */
       tree eoc = end_of_class (t, /*include_virtuals_p=*/0);
       TYPE_SIZE_UNIT (base_t)
 	= size_binop (MAX_EXPR,
@@ -6708,6 +6764,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    *next_field = copy_node (field);
+	    /* Zap any NSDMI, it's not needed and might be a deferred
+	       parse.  */
+	    DECL_INITIAL (*next_field) = NULL_TREE;
 	    DECL_CONTEXT (*next_field) = base_t;
 	    next_field = &DECL_CHAIN (*next_field);
 	  }
@@ -6716,8 +6775,6 @@ layout_class_type (tree t, tree *virtuals_p)
       /* We use the base type for trivial assignments, and hence it
 	 needs a mode.  */
       compute_record_mode (base_t);
-
-      TYPE_CONTEXT (base_t) = t;
 
       /* Record the base version of the type.  */
       CLASSTYPE_AS_BASE (t) = base_t;
@@ -7562,12 +7619,7 @@ finish_struct (tree t, tree attributes)
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
       /* Fix up any variants we've already built.  */
-      for (x = TYPE_NEXT_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
-	{
-	  TYPE_SIZE (x) = TYPE_SIZE (t);
-	  TYPE_SIZE_UNIT (x) = TYPE_SIZE_UNIT (t);
-	  TYPE_FIELDS (x) = TYPE_FIELDS (t);
-	}
+      fixup_type_variants (t);
     }
   else
     finish_struct_1 (t);
@@ -8639,20 +8691,20 @@ void
 build_self_reference (void)
 {
   tree name = DECL_NAME (TYPE_NAME (current_class_type));
-  tree value = build_lang_decl (TYPE_DECL, name, current_class_type);
+  tree decl = build_lang_decl (TYPE_DECL, name, current_class_type);
 
-  DECL_NONLOCAL (value) = 1;
-  DECL_CONTEXT (value) = current_class_type;
-  DECL_ARTIFICIAL (value) = 1;
-  SET_DECL_SELF_REFERENCE_P (value);
-  set_underlying_type (value);
+  DECL_NONLOCAL (decl) = 1;
+  DECL_CONTEXT (decl) = current_class_type;
+  DECL_ARTIFICIAL (decl) = 1;
+  SET_DECL_SELF_REFERENCE_P (decl);
+  set_underlying_type (decl);
 
   if (processing_template_decl)
-    value = push_template_decl (value);
+    decl = push_template_decl (decl);
 
   tree saved_cas = current_access_specifier;
   current_access_specifier = access_public_node;
-  finish_member_declaration (value);
+  finish_member_declaration (decl);
   current_access_specifier = saved_cas;
 }
 
@@ -8967,11 +9019,11 @@ dump_class_hierarchy_1 (FILE *stream, dump_flags_t flags, tree t)
   fprintf (stream, "   size=%lu align=%lu\n",
 	   (unsigned long)(tree_to_shwi (TYPE_SIZE (t)) / BITS_PER_UNIT),
 	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
-  fprintf (stream, "   base size=%lu base align=%lu\n",
-	   (unsigned long)(tree_to_shwi (TYPE_SIZE (CLASSTYPE_AS_BASE (t)))
-			   / BITS_PER_UNIT),
-	   (unsigned long)(TYPE_ALIGN (CLASSTYPE_AS_BASE (t))
-			   / BITS_PER_UNIT));
+  if (tree as_base = CLASSTYPE_AS_BASE (t))
+    fprintf (stream, "   base size=%lu base align=%lu\n",
+	     (unsigned long)(tree_to_shwi (TYPE_SIZE (as_base))
+			     / BITS_PER_UNIT),
+	     (unsigned long)(TYPE_ALIGN (as_base) / BITS_PER_UNIT));
   dump_class_hierarchy_r (stream, flags, TYPE_BINFO (t), TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
 }

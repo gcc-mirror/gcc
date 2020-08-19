@@ -1493,6 +1493,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE rs6000_promote_function_mode
 
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE rs6000_override_options_after_change
+
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY rs6000_return_in_memory
 
@@ -3420,6 +3423,34 @@ rs6000_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
   return NULL;
 }
 
+/* This target function is similar to the hook TARGET_OPTION_OVERRIDE
+   but is called when the optimize level is changed via an attribute or
+   pragma or when it is reset at the end of the code affected by the
+   attribute or pragma.  It is not called at the beginning of compilation
+   when TARGET_OPTION_OVERRIDE is called so if you want to perform these
+   actions then, you should have TARGET_OPTION_OVERRIDE call
+   TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
+
+static void
+rs6000_override_options_after_change (void)
+{
+  /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
+     turns -frename-registers on.  */
+  if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
+       || (global_options_set.x_flag_unroll_all_loops
+	   && flag_unroll_all_loops))
+    {
+      if (!global_options_set.x_unroll_only_small_loops)
+	unroll_only_small_loops = 0;
+      if (!global_options_set.x_flag_rename_registers)
+	flag_rename_registers = 1;
+      if (!global_options_set.x_flag_cunroll_grow_size)
+	flag_cunroll_grow_size = 1;
+    }
+  else if (!global_options_set.x_flag_cunroll_grow_size)
+    flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
+}
+
 /* Override command line options.
 
    Combine build-specific configuration information with options
@@ -3979,6 +4010,22 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX))
+    {
+      if (TARGET_EFFICIENT_UNALIGNED_VSX)
+	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX;
+      else
+	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX;
+    }
+
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_VECTOR_PAIR))
+    {
+      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX)
+	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
+      else
+	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
+    }
+
   /* Use long double size to select the appropriate long double.  We use
      TYPE_PRECISION to differentiate the 3 different long double types.  We map
      128 into the precision used for TFmode.  */
@@ -4264,8 +4311,12 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
 
+  /* Enable -mmma by default on power10 systems.  */
+  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_MMA) == 0)
+    rs6000_isa_flags |= OPTION_MASK_MMA;
+
   /* Turn off vector pair/mma options on non-power10 systems.  */
-  if (!TARGET_POWER10 && TARGET_MMA)
+  else if (!TARGET_POWER10 && TARGET_MMA)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_MMA) != 0)
 	error ("%qs requires %qs", "-mmma", "-mcpu=power10");
@@ -4625,27 +4676,15 @@ rs6000_option_override_internal (bool global_init_p)
       SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			   param_max_completely_peeled_insns, 400);
 
+      /* Temporarily disable it for now since lxvl/stxvl on the default
+	 supported hardware Power9 has unexpected performance behaviors.  */
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   param_vect_partial_vector_usage, 0);
+
       /* Use the 'model' -fsched-pressure algorithm by default.  */
       SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			   param_sched_pressure_algorithm,
 			   SCHED_PRESSURE_MODEL);
-
-      /* Explicit -funroll-loops turns -munroll-only-small-loops off, and
-	 turns -frename-registers on.  */
-      if ((global_options_set.x_flag_unroll_loops && flag_unroll_loops)
-	   || (global_options_set.x_flag_unroll_all_loops
-	       && flag_unroll_all_loops))
-	{
-	  if (!global_options_set.x_unroll_only_small_loops)
-	    unroll_only_small_loops = 0;
-	  if (!global_options_set.x_flag_rename_registers)
-	    flag_rename_registers = 1;
-	  if (!global_options_set.x_flag_cunroll_grow_size)
-	    flag_cunroll_grow_size = 1;
-	}
-      else
-	if (!global_options_set.x_flag_cunroll_grow_size)
-	  flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
@@ -4653,6 +4692,8 @@ rs6000_option_override_internal (bool global_init_p)
       if (DEFAULT_ABI != ABI_V4)
 	targetm.expand_builtin_va_start = NULL;
     }
+
+  rs6000_override_options_after_change ();
 
   /* If not explicitly specified via option, decide whether to generate indexed
      load/store instructions.  A value of -1 indicates that the
@@ -5111,8 +5152,8 @@ rs6000_init_cost (struct loop *loop_info)
    compare + branch or compare + isel instructions.  */
 
 static unsigned
-adjust_vectorization_cost (enum vect_cost_for_stmt kind,
-			   struct _stmt_vec_info *stmt_info)
+rs6000_adjust_vect_cost_per_stmt (enum vect_cost_for_stmt kind,
+				  struct _stmt_vec_info *stmt_info)
 {
   if (kind == scalar_stmt && stmt_info && stmt_info->stmt
       && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
@@ -5140,7 +5181,7 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
     {
       int stmt_cost = rs6000_builtin_vectorization_cost (kind, vectype,
 							 misalign);
-      stmt_cost += adjust_vectorization_cost (kind, stmt_info);
+      stmt_cost += rs6000_adjust_vect_cost_per_stmt (kind, stmt_info);
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
@@ -5164,6 +5205,34 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
   return retval;
 }
 
+/* For some target specific vectorization cost which can't be handled per stmt,
+   we check the requisite conditions and adjust the vectorization cost
+   accordingly if satisfied.  One typical example is to model shift cost for
+   vector with length by counting number of required lengths under condition
+   LOOP_VINFO_FULLY_WITH_LENGTH_P.  */
+
+static void
+rs6000_adjust_vect_cost_per_loop (rs6000_cost_data *data)
+{
+  struct loop *loop = data->loop_info;
+  gcc_assert (loop);
+  loop_vec_info loop_vinfo = loop_vec_info_for_loop (loop);
+
+  if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+    {
+      rgroup_controls *rgc;
+      unsigned int num_vectors_m1;
+      unsigned int shift_cnt = 0;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), num_vectors_m1, rgc)
+	if (rgc->type)
+	  /* Each length needs one shift to fill into bits 0-7.  */
+	  shift_cnt += num_vectors_m1 + 1;
+
+      rs6000_add_stmt_cost (loop_vinfo, (void *) data, shift_cnt, scalar_stmt,
+			    NULL, NULL_TREE, 0, vect_body);
+    }
+}
+
 /* Implement targetm.vectorize.finish_cost.  */
 
 static void
@@ -5173,7 +5242,10 @@ rs6000_finish_cost (void *data, unsigned *prologue_cost,
   rs6000_cost_data *cost_data = (rs6000_cost_data*) data;
 
   if (cost_data->loop_info)
-    rs6000_density_test (cost_data);
+    {
+      rs6000_adjust_vect_cost_per_loop (cost_data);
+      rs6000_density_test (cost_data);
+    }
 
   /* Don't vectorize minimum-vectorization-factor, simple copy loops
      that require versioning for any reason.  The vectorization is at
@@ -5208,13 +5280,14 @@ rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 {
    if (unroll_only_small_loops)
     {
-      /* TODO: This is hardcoded to 10 right now.  It can be refined, for
-	 example we may want to unroll very small loops more times (4 perhaps).
-	 We also should use a PARAM for this.  */
+      /* TODO: These are hardcoded values right now.  We probably should use
+	 a PARAM here.  */
+      if (loop->ninsns <= 6)
+	return MIN (4, nunroll);
       if (loop->ninsns <= 10)
 	return MIN (2, nunroll);
-      else
-	return 0;
+
+      return 0;
     }
 
   return nunroll;
@@ -6494,29 +6567,48 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	}
       else
 	{
-	  rtx dbl_even = gen_reg_rtx (V2DFmode);
-	  rtx dbl_odd  = gen_reg_rtx (V2DFmode);
-	  rtx flt_even = gen_reg_rtx (V4SFmode);
-	  rtx flt_odd  = gen_reg_rtx (V4SFmode);
-	  rtx op0 = force_reg (SFmode, XVECEXP (vals, 0, 0));
-	  rtx op1 = force_reg (SFmode, XVECEXP (vals, 0, 1));
-	  rtx op2 = force_reg (SFmode, XVECEXP (vals, 0, 2));
-	  rtx op3 = force_reg (SFmode, XVECEXP (vals, 0, 3));
-
-	  /* Use VMRGEW if we can instead of doing a permute.  */
-	  if (TARGET_P8_VECTOR)
+	  if (TARGET_P8_VECTOR && TARGET_POWERPC64)
 	    {
-	      emit_insn (gen_vsx_concat_v2sf (dbl_even, op0, op2));
-	      emit_insn (gen_vsx_concat_v2sf (dbl_odd, op1, op3));
-	      emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
-	      emit_insn (gen_vsx_xvcvdpsp (flt_odd, dbl_odd));
-	      if (BYTES_BIG_ENDIAN)
-		emit_insn (gen_p8_vmrgew_v4sf_direct (target, flt_even, flt_odd));
-	      else
-		emit_insn (gen_p8_vmrgew_v4sf_direct (target, flt_odd, flt_even));
+	      rtx tmp_sf[4];
+	      rtx tmp_si[4];
+	      rtx tmp_di[4];
+	      rtx mrg_di[4];
+	      for (i = 0; i < 4; i++)
+		{
+		  tmp_si[i] = gen_reg_rtx (SImode);
+		  tmp_di[i] = gen_reg_rtx (DImode);
+		  mrg_di[i] = gen_reg_rtx (DImode);
+		  tmp_sf[i] = force_reg (SFmode, XVECEXP (vals, 0, i));
+		  emit_insn (gen_movsi_from_sf (tmp_si[i], tmp_sf[i]));
+		  emit_insn (gen_zero_extendsidi2 (tmp_di[i], tmp_si[i]));
+		}
+
+	      if (!BYTES_BIG_ENDIAN)
+		{
+		  std::swap (tmp_di[0], tmp_di[1]);
+		  std::swap (tmp_di[2], tmp_di[3]);
+		}
+
+	      emit_insn (gen_ashldi3 (mrg_di[0], tmp_di[0], GEN_INT (32)));
+	      emit_insn (gen_iordi3 (mrg_di[1], mrg_di[0], tmp_di[1]));
+	      emit_insn (gen_ashldi3 (mrg_di[2], tmp_di[2], GEN_INT (32)));
+	      emit_insn (gen_iordi3 (mrg_di[3], mrg_di[2], tmp_di[3]));
+
+	      rtx tmp_v2di = gen_reg_rtx (V2DImode);
+	      emit_insn (gen_vsx_concat_v2di (tmp_v2di, mrg_di[1], mrg_di[3]));
+	      emit_move_insn (target, gen_lowpart (V4SFmode, tmp_v2di));
 	    }
 	  else
 	    {
+	      rtx dbl_even = gen_reg_rtx (V2DFmode);
+	      rtx dbl_odd  = gen_reg_rtx (V2DFmode);
+	      rtx flt_even = gen_reg_rtx (V4SFmode);
+	      rtx flt_odd  = gen_reg_rtx (V4SFmode);
+	      rtx op0 = force_reg (SFmode, XVECEXP (vals, 0, 0));
+	      rtx op1 = force_reg (SFmode, XVECEXP (vals, 0, 1));
+	      rtx op2 = force_reg (SFmode, XVECEXP (vals, 0, 2));
+	      rtx op3 = force_reg (SFmode, XVECEXP (vals, 0, 3));
+
 	      emit_insn (gen_vsx_concat_v2sf (dbl_even, op0, op1));
 	      emit_insn (gen_vsx_concat_v2sf (dbl_odd, op2, op3));
 	      emit_insn (gen_vsx_xvcvdpsp (flt_even, dbl_even));
@@ -20461,7 +20553,7 @@ rs6000_xcoff_select_section (tree decl, int reloc,
 {
   /* Place variables with alignment stricter than BIGGEST_ALIGNMENT into
      named section.  */
-  if (align > BIGGEST_ALIGNMENT)
+  if (align > BIGGEST_ALIGNMENT && VAR_OR_FUNCTION_DECL_P (decl))
     {
       resolve_unique_section (decl, reloc, true);
       if (IN_NAMED_SECTION (decl))
@@ -23138,6 +23230,10 @@ struct rs6000_opt_mask {
 static struct rs6000_opt_mask const rs6000_opt_masks[] =
 {
   { "altivec",			OPTION_MASK_ALTIVEC,		false, true  },
+  { "block-ops-unaligned-vsx",	OPTION_MASK_BLOCK_OPS_UNALIGNED_VSX,
+								false, true  },
+  { "block-ops-vector-pair",	OPTION_MASK_BLOCK_OPS_VECTOR_PAIR,
+								false, true  },
   { "cmpb",			OPTION_MASK_CMPB,		false, true  },
   { "crypto",			OPTION_MASK_CRYPTO,		false, true  },
   { "direct-move",		OPTION_MASK_DIRECT_MOVE,	false, true  },
@@ -26733,38 +26829,74 @@ rs6000_cannot_substitute_mem_equiv_p (rtx mem)
 static const char *
 rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 {
-  if (element_mode (fromtype) != element_mode (totype))
+  /* Make sure we're working with the canonical types.  */
+  if (TYPE_CANONICAL (fromtype) != NULL_TREE)
+    fromtype = TYPE_CANONICAL (fromtype);
+  if (TYPE_CANONICAL (totype) != NULL_TREE)
+    totype = TYPE_CANONICAL (totype);
+
+  machine_mode frommode = TYPE_MODE (fromtype);
+  machine_mode tomode = TYPE_MODE (totype);
+
+  if (frommode != tomode)
     {
       /* Do not allow conversions to/from PXImode and POImode types.  */
-      if (TYPE_MODE (fromtype) == PXImode)
+      if (frommode == PXImode)
 	return N_("invalid conversion from type %<__vector_quad%>");
-      if (TYPE_MODE (totype) == PXImode)
+      if (tomode == PXImode)
 	return N_("invalid conversion to type %<__vector_quad%>");
-      if (TYPE_MODE (fromtype) == POImode)
+      if (frommode == POImode)
 	return N_("invalid conversion from type %<__vector_pair%>");
-      if (TYPE_MODE (totype) == POImode)
+      if (tomode == POImode)
 	return N_("invalid conversion to type %<__vector_pair%>");
     }
   else if (POINTER_TYPE_P (fromtype) && POINTER_TYPE_P (totype))
     {
+      /* We really care about the modes of the base types.  */
+      frommode = TYPE_MODE (TREE_TYPE (fromtype));
+      tomode = TYPE_MODE (TREE_TYPE (totype));
+
       /* Do not allow conversions to/from PXImode and POImode pointer
 	 types, except to/from void pointers.  */
-      if (TYPE_MODE (TREE_TYPE (fromtype)) == PXImode
-	  && TYPE_MODE (TREE_TYPE (totype)) != VOIDmode)
-	return N_("invalid conversion from type %<* __vector_quad%>");
-      if (TYPE_MODE (TREE_TYPE (totype)) == PXImode
-	  && TYPE_MODE (TREE_TYPE (fromtype)) != VOIDmode)
-	return N_("invalid conversion to type %<* __vector_quad%>");
-      if (TYPE_MODE (TREE_TYPE (fromtype)) == POImode
-	  && TYPE_MODE (TREE_TYPE (totype)) != VOIDmode)
-	return N_("invalid conversion from type %<* __vector_pair%>");
-      if (TYPE_MODE (TREE_TYPE (totype)) == POImode
-	  && TYPE_MODE (TREE_TYPE (fromtype)) != VOIDmode)
-	return N_("invalid conversion to type %<* __vector_pair%>");
+      if (frommode != tomode
+	  && frommode != VOIDmode
+	  && tomode != VOIDmode)
+	{
+	  if (frommode == PXImode)
+	    return N_("invalid conversion from type %<* __vector_quad%>");
+	  if (tomode == PXImode)
+	    return N_("invalid conversion to type %<* __vector_quad%>");
+	  if (frommode == POImode)
+	    return N_("invalid conversion from type %<* __vector_pair%>");
+	  if (tomode == POImode)
+	    return N_("invalid conversion to type %<* __vector_pair%>");
+	}
     }
 
   /* Conversion allowed.  */
   return NULL;
+}
+
+long long
+rs6000_const_f32_to_i32 (rtx operand)
+{
+  long long value;
+  const struct real_value *rv = CONST_DOUBLE_REAL_VALUE (operand);
+
+  gcc_assert (GET_MODE (operand) == SFmode);
+  REAL_VALUE_TO_TARGET_SINGLE (*rv, value);
+  return value;
+}
+
+void
+rs6000_emit_xxspltidp_v2df (rtx dst, long value)
+{
+  printf("rs6000_emit_xxspltidp_v2df called %ld\n", value);
+  printf("rs6000_emit_xxspltidp_v2df called 0x%lx\n", value);
+  if (((value & 0x7F800000) == 0) && ((value & 0x7FFFFF) != 0))
+    inform (input_location,
+	    "the result for the xxspltidp instruction is undefined for subnormal input values.\n");
+  emit_insn( gen_xxspltidp_v2df_inst (dst, GEN_INT (value)));
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

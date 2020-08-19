@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "tristate.h"
 #include "selftest.h"
+#include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/sm.h"
 #include "analyzer/program-state.h"
@@ -83,6 +84,22 @@ point_kind_to_string (enum point_kind pk)
 }
 
 /* class function_point.  */
+
+function_point::function_point (const supernode *supernode,
+				const superedge *from_edge,
+				unsigned stmt_idx,
+				enum point_kind kind)
+: m_supernode (supernode), m_from_edge (from_edge),
+  m_stmt_idx (stmt_idx), m_kind (kind)
+{
+  if (from_edge)
+    {
+      gcc_checking_assert (m_kind == PK_BEFORE_SUPERNODE);
+      gcc_checking_assert (from_edge->get_kind () == SUPEREDGE_CFG_EDGE);
+    }
+  if (stmt_idx)
+    gcc_checking_assert (m_kind == PK_BEFORE_STMT);
+}
 
 /* Print this function_point to PP.  */
 
@@ -149,6 +166,17 @@ function_point::hash () const
   return hstate.end ();
 }
 
+/* Get the function at this point, if any.  */
+
+function *
+function_point::get_function () const
+{
+  if (m_supernode)
+    return m_supernode->m_fun;
+  else
+    return NULL;
+}
+
 /* Get the gimple stmt for this function_point, if any.  */
 
 const gimple *
@@ -172,6 +200,26 @@ function_point::get_location () const
     return stmt->location;
 
   return UNKNOWN_LOCATION;
+}
+
+/* Create a function_point representing the entrypoint of function FUN.  */
+
+function_point
+function_point::from_function_entry (const supergraph &sg, function *fun)
+{
+  return before_supernode (sg.get_node_for_function_entry (fun), NULL);
+}
+
+/* Create a function_point representing entering supernode SUPERNODE,
+   having reached it via FROM_EDGE (which could be NULL).  */
+
+function_point
+function_point::before_supernode (const supernode *supernode,
+				  const superedge *from_edge)
+{
+  if (from_edge && from_edge->get_kind () != SUPEREDGE_CFG_EDGE)
+    from_edge = NULL;
+  return function_point (supernode, from_edge, 0, PK_BEFORE_SUPERNODE);
 }
 
 /* A subclass of diagnostic_context for use by
@@ -466,6 +514,19 @@ function_point::cmp_within_supernode (const function_point &point_a,
 #endif
 
   return result;
+}
+
+/* For PK_BEFORE_STMT, go to next stmt (or to PK_AFTER_SUPERNODE).  */
+
+void
+function_point::next_stmt ()
+{
+  gcc_assert (m_kind == PK_BEFORE_STMT);
+  if (++m_stmt_idx == m_supernode->m_stmts.length ())
+    {
+      m_kind = PK_AFTER_SUPERNODE;
+      m_stmt_idx = 0;
+    }
 }
 
 #if CHECKING_P

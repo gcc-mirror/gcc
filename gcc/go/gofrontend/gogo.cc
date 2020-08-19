@@ -57,6 +57,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     debug_escape_level_(0),
     debug_optimization_(false),
     nil_check_size_threshold_(4096),
+    need_eqtype_(false),
     verify_types_(),
     interface_types_(),
     specific_type_functions_(),
@@ -1622,16 +1623,31 @@ Gogo::write_globals()
               // The initializer is constant if it is the zero-value of the
               // variable's type or if the initial value is an immutable value
               // that is not copied to the heap.
-              bool is_static_initializer = false;
-              if (var->init() == NULL)
+	      Expression* init = var->init();
+
+	      // If we see "a = b; b = x", and x is a static
+	      // initializer, just set a to x.
+	      while (init != NULL && init->var_expression() != NULL)
+		{
+		  Named_object* ino = init->var_expression()->named_object();
+		  if (!ino->is_variable() || ino->package() != NULL)
+		    break;
+		  Expression* ino_init = ino->var_value()->init();
+		  if (ino->var_value()->has_pre_init()
+		      || ino_init == NULL
+		      || !ino_init->is_static_initializer())
+		    break;
+		  init = ino_init;
+		}
+
+              bool is_static_initializer;
+              if (init == NULL)
                 is_static_initializer = true;
               else
                 {
                   Type* var_type = var->type();
-                  Expression* init = var->init();
-                  Expression* init_cast =
-                      Expression::make_cast(var_type, init, var->location());
-                  is_static_initializer = init_cast->is_static_initializer();
+                  init = Expression::make_cast(var_type, init, var->location());
+                  is_static_initializer = init->is_static_initializer();
                 }
 
 	      // Non-constant variable initializations might need to create
@@ -1650,7 +1666,15 @@ Gogo::write_globals()
                     }
 		  var_init_fn = init_fndecl;
 		}
-              Bexpression* var_binit = var->get_init(this, var_init_fn);
+
+	      Bexpression* var_binit;
+	      if (init == NULL)
+		var_binit = NULL;
+	      else
+		{
+		  Translate_context context(this, var_init_fn, NULL, NULL);
+		  var_binit = init->get_backend(&context);
+		}
 
               if (var_binit == NULL)
 		;
@@ -3309,7 +3333,11 @@ Remove_deadcode::expression(Expression** pexpr)
       && be->boolean_constant_value(&bval)
       && (be->op() == OPERATOR_ANDAND
           || be->op() == OPERATOR_OROR))
-    *pexpr = Expression::make_boolean(bval, be->location());
+    {
+      *pexpr = Expression::make_boolean(bval, be->location());
+      Type_context context(NULL, false);
+      (*pexpr)->determine_type(&context);
+    }
   return TRAVERSE_CONTINUE;
 }
 
@@ -3342,7 +3370,8 @@ class Create_function_descriptors : public Traverse
   Gogo* gogo_;
 };
 
-// Create a descriptor for every top-level exported function.
+// Create a descriptor for every top-level exported function and every
+// function referenced by an inline function.
 
 int
 Create_function_descriptors::function(Named_object* no)
@@ -3350,8 +3379,9 @@ Create_function_descriptors::function(Named_object* no)
   if (no->is_function()
       && no->func_value()->enclosing() == NULL
       && !no->func_value()->is_method()
-      && !Gogo::is_hidden_name(no->name())
-      && !Gogo::is_thunk(no))
+      && ((!Gogo::is_hidden_name(no->name())
+	   && !Gogo::is_thunk(no))
+	  || no->func_value()->is_referenced_by_inline()))
     no->func_value()->descriptor(this->gogo_, no);
 
   return TRAVERSE_CONTINUE;

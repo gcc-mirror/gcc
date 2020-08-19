@@ -1539,6 +1539,111 @@
    (set_attr "length" "8")])
 
 ;; }}}
+;; {{{ ALU: generic 128-bit binop
+
+; TImode shifts can't be synthesized by the middle-end
+(define_expand "<expander>ti3"
+  [(set (match_operand:TI 0 "register_operand")
+	(vec_and_scalar_nocom:TI
+	  (match_operand:TI 1 "gcn_alu_operand")
+	  (match_operand:SI 2 "gcn_alu_operand")))]
+  ""
+  {
+    rtx dest = operands[0];
+    rtx src = operands[1];
+    rtx shift = operands[2];
+
+    enum {ashr, lshr, ashl} shiftop = <expander>;
+    rtx (*inverse_shift_fn) (rtx, rtx, rtx)
+      = (shiftop == ashl ? gen_lshrdi3 : gen_ashldi3);
+    rtx (*logical_shift_fn) (rtx, rtx, rtx)
+      = (shiftop == ashl ? gen_ashldi3 : gen_lshrdi3);
+
+    /* We shift "from" one subreg "to" the other, according to shiftop.  */
+    int from = (shiftop == ashl ? 0 : 8);
+    int to = (shiftop == ashl ? 8 : 0);
+    rtx destfrom = simplify_gen_subreg (DImode, dest, TImode, from);
+    rtx destto = simplify_gen_subreg (DImode, dest, TImode, to);
+    rtx srcfrom = simplify_gen_subreg (DImode, src, TImode, from);
+    rtx srcto = simplify_gen_subreg (DImode, src, TImode, to);
+
+    int shiftval = (CONST_INT_P (shift) ? INTVAL (shift) : -1);
+    enum {RUNTIME, ZERO, SMALL, LARGE} shiftcomparison
+     = (!CONST_INT_P (shift) ? RUNTIME
+        : shiftval == 0 ? ZERO
+        : shiftval < 64 ? SMALL
+        : LARGE);
+
+    rtx large_label, zero_label, exit_label;
+
+    if (shiftcomparison == RUNTIME)
+      {
+        zero_label = gen_label_rtx ();
+        large_label = gen_label_rtx ();
+        exit_label = gen_label_rtx ();
+
+        rtx cond = gen_rtx_EQ (VOIDmode, shift, const0_rtx);
+        emit_insn (gen_cbranchsi4 (cond, shift, const0_rtx, zero_label));
+
+        rtx sixtyfour = GEN_INT (64);
+        cond = gen_rtx_GE (VOIDmode, shift, sixtyfour);
+        emit_insn (gen_cbranchsi4 (cond, shift, sixtyfour, large_label));
+      }
+
+    if (shiftcomparison == SMALL || shiftcomparison == RUNTIME)
+      {
+        /* Shift both parts by the same amount, then patch in the bits that
+           cross the boundary.
+           This does *not* work for zero-length shifts.  */
+        rtx tmpto1 = gen_reg_rtx (DImode);
+        rtx tmpto2 = gen_reg_rtx (DImode);
+        emit_insn (gen_<expander>di3 (destfrom, srcfrom, shift));
+        emit_insn (logical_shift_fn (tmpto1, srcto, shift));
+        rtx lessershiftval = gen_reg_rtx (SImode);
+        emit_insn (gen_subsi3 (lessershiftval, GEN_INT (64), shift));
+        emit_insn (inverse_shift_fn (tmpto2, srcfrom, lessershiftval));
+        emit_insn (gen_iordi3 (destto, tmpto1, tmpto2));
+      }
+
+    if (shiftcomparison == RUNTIME)
+      {
+        emit_jump_insn (gen_jump (exit_label));
+        emit_barrier ();
+
+        emit_label (zero_label);
+      }
+
+    if (shiftcomparison == ZERO || shiftcomparison == RUNTIME)
+      emit_move_insn (dest, src);
+
+    if (shiftcomparison == RUNTIME)
+      {
+        emit_jump_insn (gen_jump (exit_label));
+        emit_barrier ();
+
+        emit_label (large_label);
+      }
+
+    if (shiftcomparison == LARGE || shiftcomparison == RUNTIME)
+      {
+        /* Do the shift within one part, and set the other part appropriately.
+           Shifts of 128+ bits are an error.  */
+        rtx lessershiftval = gen_reg_rtx (SImode);
+        emit_insn (gen_subsi3 (lessershiftval, shift, GEN_INT (64)));
+        emit_insn (gen_<expander>di3 (destto, srcfrom, lessershiftval));
+        if (shiftop == ashr)
+          emit_insn (gen_ashrdi3 (destfrom, srcfrom, GEN_INT (63)));
+        else
+          emit_move_insn (destfrom, const0_rtx);
+      }
+
+    if (shiftcomparison == RUNTIME)
+      emit_label (exit_label);
+
+    DONE;
+  })
+
+;; }}}
 ;; {{{ Atomics
 
 ; Each compute unit has it's own L1 cache. The L2 cache is shared between

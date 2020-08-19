@@ -488,10 +488,6 @@ enum omp_clause_code {
   /* OpenACC clause: tile ( size-expr-list ).  */
   OMP_CLAUSE_TILE,
 
-  /* OpenMP internal-only clause to specify grid dimensions of a gridified
-     kernel.  */
-  OMP_CLAUSE__GRIDDIM_,
-
   /* OpenACC clause: if_present.  */
   OMP_CLAUSE_IF_PRESENT,
 
@@ -1557,9 +1553,6 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_defaultmap_kind defaultmap_kind;
     enum omp_clause_bind_kind      bind_kind;
     enum omp_clause_device_type_kind device_type_kind;
-    /* The dimension a OMP_CLAUSE__GRIDDIM_ clause of a gridified target
-       construct describes.  */
-    unsigned int		   dimension;
   } GTY ((skip)) subcode;
 
   /* The gimplification of OMP_CLAUSE_REDUCTION_{INIT,MERGE} for omp-low's
@@ -1826,6 +1819,7 @@ struct GTY(()) tree_decl_with_vis {
  /* Belong to FUNCTION_DECL exclusively.  */
  unsigned regdecl_flag : 1;
  /* 14 unused bits. */
+ /* 32 more unused on 64 bit HW. */
 };
 
 struct GTY(()) tree_var_decl {
@@ -1901,6 +1895,7 @@ struct GTY(()) tree_function_decl {
   unsigned replaceable_operator : 1;
 
   /* 11 bits left for future expansion.  */
+  /* 32 bits on 64-bit HW.  */
 };
 
 struct GTY(()) tree_translation_unit_decl {

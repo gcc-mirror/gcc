@@ -1993,7 +1993,7 @@ package Sinfo is
    --    N_Raise_xxx_Error nodes since the transformation of these nodes is
    --    handled by the back end (using the N_Push/N_Pop mechanism).
 
-   --  Loop_Actions (List2-Sem)
+   --  Loop_Actions (List5-Sem)
    --    A list present in Component_Association nodes in array aggregates.
    --    Used to collect actions that must be executed within the loop because
    --    they may need to be evaluated anew each time through.
@@ -2081,9 +2081,9 @@ package Sinfo is
 
    --  Next_Rep_Item (Node5-Sem)
    --    Present in pragma nodes, attribute definition nodes, enumeration rep
-   --    clauses, record rep clauses, aspect specification nodes. Used to link
-   --    representation items that apply to an entity. See full description of
-   --    First_Rep_Item field in Einfo for further details.
+   --    clauses, record rep clauses, aspect specification and null statement
+   --    nodes. Used to link representation items that apply to an entity. See
+   --    full description of First_Rep_Item field in Einfo for further details.
 
    --  Next_Use_Clause (Node3-Sem)
    --    While use clauses are active during semantic processing, they are
@@ -4123,8 +4123,8 @@ package Sinfo is
       --  N_Component_Association
       --  Sloc points to first selector name
       --  Choices (List1)
-      --  Loop_Actions (List2-Sem)
       --  Expression (Node3) (empty if Box_Present)
+      --  Loop_Actions (List5-Sem)
       --  Box_Present (Flag15)
       --  Inherited_Discriminant (Flag13)
 
@@ -4222,9 +4222,10 @@ package Sinfo is
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
       --  Defining_Identifier (Node1)
-      --  Loop_Actions (List2-Sem)
+      --  Iterator_Specification (Node2) (set to Empty if no Iterator_Spec)
       --  Expression (Node3)
       --  Discrete_Choices (List4)
+      --  Loop_Actions (List5-Sem)
       --  Box_Present (Flag15)
 
       --  Note that Box_Present is always False, but it is intentionally added
@@ -4239,6 +4240,26 @@ package Sinfo is
       --  Expression (Node3)
       --  Component_Associations (List2)
       --  Etype (Node5-Sem)
+
+      ---------------------------------
+      --  3.4.5 Comtainer_Aggregates --
+      ---------------------------------
+
+      --  N_Iterated_Element_Association
+      --  Key_Expression (Node1)
+      --  Iterator_Specification (Node2)
+      --  Expression (Node3)
+      --  Loop_Parameter_Specification (Node4)
+      --  Loop_Actions (List5-Sem)
+
+      --  Exactly one of Iterator_Specification or Loop_Parameter_
+      --  specification is present. If the Key_Expression is absent,
+      --  the construct is parsed as an Iterated_Component_Association,
+      --  and legality checks are performed during semantic analysis.
+
+      --  Both iterated associations are Ada2020 features that are
+      --  expanded during aggregate construction, and do not appear in
+      --  expanded code.
 
       --------------------------------------------------
       -- 4.4  Expression/Relation/Term/Factor/Primary --
@@ -4847,6 +4868,7 @@ package Sinfo is
 
       --  N_Null_Statement
       --  Sloc points to NULL
+      --  Next_Rep_Item (Node5-Sem)
 
       ----------------
       -- 5.1  Label --
@@ -5081,11 +5103,15 @@ package Sinfo is
 
       --  LOOP_PARAMETER_SPECIFICATION ::=
       --    DEFINING_IDENTIFIER in [reverse] DISCRETE_SUBTYPE_DEFINITION
+      --    [Iterator_Filter]
+
+      --  Note; the optional Iterator_Filter is an Ada_2020 construct.
 
       --  N_Loop_Parameter_Specification
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
       --  Reverse_Present (Flag15)
+      --  Iterator_Filter (Node3) (set to Empty if not present)
       --  Discrete_Subtype_Definition (Node4)
 
       -----------------------------------
@@ -5102,6 +5128,7 @@ package Sinfo is
       --  Name (Node2)
       --  Reverse_Present (Flag15)
       --  Of_Present (Flag16)
+      --  Iterator_Filter (Node3) (set to Empty if not present)
       --  Subtype_Indication (Node5)
 
       --  Note: The Of_Present flag distinguishes the two forms
@@ -8910,6 +8937,7 @@ package Sinfo is
       N_Handled_Sequence_Of_Statements,
       N_Index_Or_Discriminant_Constraint,
       N_Iterated_Component_Association,
+      N_Iterated_Element_Association,
       N_Itype_Reference,
       N_Label,
       N_Modular_Type_Definition,
@@ -9826,11 +9854,17 @@ package Sinfo is
    function Iteration_Scheme
      (N : Node_Id) return Node_Id;    -- Node2
 
+   function Iterator_Filter
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Iterator_Specification
      (N : Node_Id) return Node_Id;    -- Node2
 
    function Itype
      (N : Node_Id) return Entity_Id;  -- Node1
+
+   function Key_Expression
+     (N : Node_Id) return Node_Id;    -- Node1
 
    function Kill_Range_Check
      (N : Node_Id) return Boolean;    -- Flag11
@@ -9866,7 +9900,7 @@ package Sinfo is
      (N : Node_Id) return Elist_Id;   -- Elist1
 
    function Loop_Actions
-     (N : Node_Id) return List_Id;    -- List2
+     (N : Node_Id) return List_Id;    -- List5
 
    function Loop_Parameter_Specification
      (N : Node_Id) return Node_Id;    -- Node4
@@ -10929,6 +10963,9 @@ package Sinfo is
    procedure Set_Is_Write
      (N : Node_Id; Val : Boolean := True);    -- Flag5
 
+   procedure Set_Iterator_Filter
+     (N : Node_Id; Val : Node_Id);            -- Node3
+
    procedure Set_Iteration_Scheme
      (N : Node_Id; Val : Node_Id);            -- Node2
 
@@ -10937,6 +10974,9 @@ package Sinfo is
 
    procedure Set_Itype
      (N : Node_Id; Val : Entity_Id);          -- Node1
+
+   procedure Set_Key_Expression
+     (N : Node_Id; Val : Node_Id);            -- Node1
 
    procedure Set_Kill_Range_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -10972,7 +11012,7 @@ package Sinfo is
      (N : Node_Id; Val : Elist_Id);           -- Elist1
 
    procedure Set_Loop_Actions
-     (N : Node_Id; Val : List_Id);            -- List2
+     (N : Node_Id; Val : List_Id);            -- List5
 
    procedure Set_Loop_Parameter_Specification
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11370,136 +11410,6 @@ package Sinfo is
    --  for the argument. This is Arg itself, or, in the case where Arg is a
    --  pragma argument association node, the expression from this node.
 
-   --------------------------------
-   -- Node_Kind Membership Tests --
-   --------------------------------
-
-   --  The following functions allow a convenient notation for testing whether
-   --  a Node_Kind value matches any one of a list of possible values. In each
-   --  case True is returned if the given T argument is equal to any of the V
-   --  arguments. Note that there is a similar set of functions defined in
-   --  Atree where the first argument is a Node_Id whose Nkind field is tested.
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind;
-      V7 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind;
-      V7 : Node_Kind;
-      V8 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind;
-      V7 : Node_Kind;
-      V8 : Node_Kind;
-      V9 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T   : Node_Kind;
-      V1  : Node_Kind;
-      V2  : Node_Kind;
-      V3  : Node_Kind;
-      V4  : Node_Kind;
-      V5  : Node_Kind;
-      V6  : Node_Kind;
-      V7  : Node_Kind;
-      V8  : Node_Kind;
-      V9  : Node_Kind;
-      V10 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T   : Node_Kind;
-      V1  : Node_Kind;
-      V2  : Node_Kind;
-      V3  : Node_Kind;
-      V4  : Node_Kind;
-      V5  : Node_Kind;
-      V6  : Node_Kind;
-      V7  : Node_Kind;
-      V8  : Node_Kind;
-      V9  : Node_Kind;
-      V10 : Node_Kind;
-      V11 : Node_Kind) return Boolean;
-
-   --  12..16-parameter versions are not yet needed
-
-   function Nkind_In
-     (T   : Node_Kind;
-      V1  : Node_Kind;
-      V2  : Node_Kind;
-      V3  : Node_Kind;
-      V4  : Node_Kind;
-      V5  : Node_Kind;
-      V6  : Node_Kind;
-      V7  : Node_Kind;
-      V8  : Node_Kind;
-      V9  : Node_Kind;
-      V10 : Node_Kind;
-      V11 : Node_Kind;
-      V12 : Node_Kind;
-      V13 : Node_Kind;
-      V14 : Node_Kind;
-      V15 : Node_Kind;
-      V16 : Node_Kind;
-      V17 : Node_Kind) return Boolean;
-
-   pragma Inline (Nkind_In);
-   --  Inline all above functions
-
    -----------------------
    -- Utility Functions --
    -----------------------
@@ -11876,20 +11786,27 @@ package Sinfo is
 
      N_Component_Association =>
        (1 => True,    --  Choices (List1)
-        2 => False,   --  Loop_Actions (List2-Sem)
+        2 => False,   --  unused
         3 => True,    --  Expression (Node3)
         4 => False,   --  unused
-        5 => False),  --  unused
+        5 => True),   --  Loop_Actions (List5-Sem);
 
      N_Iterated_Component_Association =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => True,    --  Loop_Actions (List2-Sem)
+        2 => True,    --  Iterator_Specification
         3 => True,    --  Expression (Node3)
         4 => True,    --  Discrete_Choices (List4)
-        5 => False),  --  unused
+        5 => True),   --  Loop_Actions (List5-Sem);
+
+     N_Iterated_Element_Association =>
+       (1 => True,    --  Key_expression
+        2 => True,    --  Iterator_Specification
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Loop_Parameter_Specification
+        5 => True),   --  Loop_Actions (List5-Sem);
 
      N_Delta_Aggregate =>
-       (1 => False,   --  Expressions (List1-Sem)
+       (1 => False,   --  Unused
         2 => True,    --  Component_Associations (List2)
         3 => True,    --  Expression (Node3)
         4 => False,   --  Unused
@@ -12201,7 +12118,7 @@ package Sinfo is
         2 => False,   --  unused
         3 => False,   --  unused
         4 => True,    --  Discrete_Subtype_Definition (Node4)
-        5 => False),  --  unused
+        5 => True),  --   Iterator_Filter (Node5)
 
      N_Iterator_Specification =>
        (1 => True,    --  Defining_Identifier (Node1)
@@ -13430,8 +13347,10 @@ package Sinfo is
    pragma Inline (Is_Task_Body_Procedure);
    pragma Inline (Is_Task_Master);
    pragma Inline (Is_Write);
+   pragma Inline (Iterator_Filter);
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
+   pragma Inline (Key_Expression);
    pragma Inline (Kill_Range_Check);
    pragma Inline (Last_Bit);
    pragma Inline (Last_Name);
@@ -13794,9 +13713,11 @@ package Sinfo is
    pragma Inline (Set_Is_Task_Body_Procedure);
    pragma Inline (Set_Is_Task_Master);
    pragma Inline (Set_Is_Write);
+   pragma Inline (Set_Iterator_Filter);
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Itype);
+   pragma Inline (Set_Key_Expression);
    pragma Inline (Set_Kill_Range_Check);
    pragma Inline (Set_Label_Construct);
    pragma Inline (Set_Last_Bit);

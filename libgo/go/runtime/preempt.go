@@ -56,6 +56,11 @@ import (
 	"runtime/internal/atomic"
 )
 
+// Keep in sync with cmd/compile/internal/gc/plive.go:go115ReduceLiveness.
+const go115ReduceLiveness = true
+
+const go115RestartSeq = go115ReduceLiveness && true // enable restartable sequences
+
 type suspendGState struct {
 	g *g
 
@@ -328,26 +333,30 @@ func wantAsyncPreempt(gp *g) bool {
 // 3. It's generally safe to interact with the runtime, even if we're
 // in a signal handler stopped here. For example, there are no runtime
 // locks held, so acquiring a runtime lock won't self-deadlock.
-func isAsyncSafePoint(gp *g, pc uintptr) bool {
+//
+// In some cases the PC is safe for asynchronous preemption but it
+// also needs to adjust the resumption PC. The new PC is returned in
+// the second result.
+func isAsyncSafePoint(gp *g, pc uintptr) (bool, uintptr) {
 	mp := gp.m
 
 	// Only user Gs can have safe-points. We check this first
 	// because it's extremely common that we'll catch mp in the
 	// scheduler processing this G preemption.
 	if mp.curg != gp {
-		return false
+		return false, 0
 	}
 
 	// Check M state.
 	if mp.p == 0 || !canPreemptM(mp) {
-		return false
+		return false, 0
 	}
 
 	// Check if PC is an unsafe-point.
 	f := FuncForPC(pc)
 	if f == nil {
 		// Not Go code.
-		return false
+		return false, 0
 	}
 	name := f.Name()
 	if hasPrefix(name, "runtime.") ||
@@ -363,8 +372,7 @@ func isAsyncSafePoint(gp *g, pc uintptr) bool {
 		//
 		// TODO(austin): We should improve this, or opt things
 		// in incrementally.
-		return false
+		return false, 0
 	}
-
-	return true
+	return true, pc
 }

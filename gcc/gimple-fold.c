@@ -700,7 +700,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
   tree len = gimple_call_arg (stmt, 2);
-  tree destvar, srcvar;
   location_t loc = gimple_location (stmt);
 
   /* If the LEN parameter is a constant zero or in range where
@@ -741,15 +740,24 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
     }
   else
     {
-      tree srctype, desttype;
+      /* We cannot (easily) change the type of the copy if it is a storage
+	 order barrier, i.e. is equivalent to a VIEW_CONVERT_EXPR that can
+	 modify the storage order of objects (see storage_order_barrier_p).  */
+      tree srctype
+	= POINTER_TYPE_P (TREE_TYPE (src))
+	  ? TREE_TYPE (TREE_TYPE (src)) : NULL_TREE;
+      tree desttype
+	= POINTER_TYPE_P (TREE_TYPE (dest))
+	  ? TREE_TYPE (TREE_TYPE (dest)) : NULL_TREE;
+      tree destvar, srcvar, srcoff;
       unsigned int src_align, dest_align;
-      tree off0;
-      const char *tmp_str;
       unsigned HOST_WIDE_INT tmp_len;
+      const char *tmp_str;
 
       /* Build accesses at offset zero with a ref-all character type.  */
-      off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
-							 ptr_mode, true), 0);
+      tree off0
+	= build_int_cst (build_pointer_type_for_mode (char_type_node,
+						      ptr_mode, true), 0);
 
       /* If we can perform the copy efficiently with first doing all loads
          and then all stores inline it that way.  Currently efficiently
@@ -766,8 +774,14 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	     strlenopt tests that rely on it for passing are adjusted, this
 	     hack can be removed.  */
 	  && !c_strlen (src, 1)
-	  && !((tmp_str = c_getstr (src, &tmp_len)) != NULL
-	       && memchr (tmp_str, 0, tmp_len) == NULL))
+	  && !((tmp_str = getbyterep (src, &tmp_len)) != NULL
+	       && memchr (tmp_str, 0, tmp_len) == NULL)
+	  && !(srctype
+	       && AGGREGATE_TYPE_P (srctype)
+	       && TYPE_REVERSE_STORAGE_ORDER (srctype))
+	  && !(desttype
+	       && AGGREGATE_TYPE_P (desttype)
+	       && TYPE_REVERSE_STORAGE_ORDER (desttype)))
 	{
 	  unsigned ilen = tree_to_uhwi (len);
 	  if (pow2p_hwi (ilen))
@@ -947,8 +961,13 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 
       if (!tree_fits_shwi_p (len))
 	return false;
-      if (!POINTER_TYPE_P (TREE_TYPE (src))
-	  || !POINTER_TYPE_P (TREE_TYPE (dest)))
+      if (!srctype
+	  || (AGGREGATE_TYPE_P (srctype)
+	      && TYPE_REVERSE_STORAGE_ORDER (srctype)))
+	return false;
+      if (!desttype
+	  || (AGGREGATE_TYPE_P (desttype)
+	      && TYPE_REVERSE_STORAGE_ORDER (desttype)))
 	return false;
       /* In the following try to find a type that is most natural to be
 	 used for the memcpy source and destination and that allows
@@ -956,11 +975,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	 using that type.  In theory we could always use a char[len] type
 	 but that only gains us that the destination and source possibly
 	 no longer will have their address taken.  */
-      srctype = TREE_TYPE (TREE_TYPE (src));
       if (TREE_CODE (srctype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
 	srctype = TREE_TYPE (srctype);
-      desttype = TREE_TYPE (TREE_TYPE (dest));
       if (TREE_CODE (desttype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
 	desttype = TREE_TYPE (desttype);
@@ -991,7 +1008,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       /* Choose between src and destination type for the access based
          on alignment, whether the access constitutes a register access
 	 and whether it may actually expose a declaration for SSA rewrite
-	 or SRA decomposition.  */
+	 or SRA decomposition.  Also try to expose a string constant, we
+	 might be able to concatenate several of them later into a single
+	 string store.  */
       destvar = NULL_TREE;
       srcvar = NULL_TREE;
       if (TREE_CODE (dest) == ADDR_EXPR
@@ -1008,7 +1027,16 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	       && (is_gimple_reg_type (srctype)
 		   || dest_align >= TYPE_ALIGN (srctype)))
 	srcvar = fold_build2 (MEM_REF, srctype, src, off0);
-      if (srcvar == NULL_TREE && destvar == NULL_TREE)
+      /* FIXME: Don't transform copies from strings with known original length.
+	 As soon as strlenopt tests that rely on it for passing are adjusted,
+	 this hack can be removed.  */
+      else if (gimple_call_alloca_for_var_p (stmt)
+	       && (srcvar = string_constant (src, &srcoff, NULL, NULL))
+	       && integer_zerop (srcoff)
+	       && tree_int_cst_equal (TYPE_SIZE_UNIT (TREE_TYPE (srcvar)), len)
+	       && dest_align >= TYPE_ALIGN (TREE_TYPE (srcvar)))
+	srctype = TREE_TYPE (srcvar);
+      else
 	return false;
 
       /* Now that we chose an access type express the other side in
@@ -1071,19 +1099,29 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  goto set_vop_and_replace;
 	}
 
-      /* We get an aggregate copy.  Use an unsigned char[] type to
-	 perform the copying to preserve padding and to avoid any issues
-	 with TREE_ADDRESSABLE types or float modes behavior on copying.  */
-      desttype = build_array_type_nelts (unsigned_char_type_node,
-					 tree_to_uhwi (len));
-      srctype = desttype;
-      if (src_align > TYPE_ALIGN (srctype))
-	srctype = build_aligned_type (srctype, src_align);
+      /* We get an aggregate copy.  If the source is a STRING_CST, then
+	 directly use its type to perform the copy.  */
+      if (TREE_CODE (srcvar) == STRING_CST)
+	  desttype = srctype;
+
+      /* Or else, use an unsigned char[] type to perform the copy in order
+	 to preserve padding and to avoid any issues with TREE_ADDRESSABLE
+	 types or float modes behavior on copying.  */
+      else
+	{
+	  desttype = build_array_type_nelts (unsigned_char_type_node,
+					     tree_to_uhwi (len));
+	  srctype = desttype;
+	  if (src_align > TYPE_ALIGN (srctype))
+	    srctype = build_aligned_type (srctype, src_align);
+	  srcvar = fold_build2 (MEM_REF, srctype, src, off0);
+	}
+
       if (dest_align > TYPE_ALIGN (desttype))
 	desttype = build_aligned_type (desttype, dest_align);
-      new_stmt
-	= gimple_build_assign (fold_build2 (MEM_REF, desttype, dest, off0),
-			       fold_build2 (MEM_REF, srctype, src, off0));
+      destvar = fold_build2 (MEM_REF, desttype, dest, off0);
+      new_stmt = gimple_build_assign (destvar, srcvar);
+
 set_vop_and_replace:
       gimple_move_vops (new_stmt, stmt);
       if (!lhs)
@@ -2426,8 +2464,8 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
      For nul-terminated strings then adjusted to their length so that
      LENx == NULPOSx holds.  */
   unsigned HOST_WIDE_INT len1 = HOST_WIDE_INT_MAX, len2 = len1;
-  const char *p1 = c_getstr (str1, &len1);
-  const char *p2 = c_getstr (str2, &len2);
+  const char *p1 = getbyterep (str1, &len1);
+  const char *p2 = getbyterep (str2, &len2);
 
   /* The position of the terminating nul character if one exists, otherwise
      a value greater than LENx.  */
@@ -2624,7 +2662,7 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
 
   unsigned HOST_WIDE_INT length = tree_to_uhwi (len);
   unsigned HOST_WIDE_INT string_length;
-  const char *p1 = c_getstr (arg1, &string_length);
+  const char *p1 = getbyterep (arg1, &string_length);
 
   if (p1)
     {
@@ -2632,7 +2670,7 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
       if (r == NULL)
 	{
 	  tree mem_size, offset_node;
-	  string_constant (arg1, &offset_node, &mem_size, NULL);
+	  byte_representation (arg1, &offset_node, &mem_size, NULL);
 	  unsigned HOST_WIDE_INT offset = (offset_node == NULL_TREE)
 					  ? 0 : tree_to_uhwi (offset_node);
 	  /* MEM_SIZE is the size of the array the string literal
@@ -4837,7 +4875,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 /* Canonicalize MEM_REFs invariant address operand after propagation.  */
 
 static bool
-maybe_canonicalize_mem_ref_addr (tree *t)
+maybe_canonicalize_mem_ref_addr (tree *t, bool is_debug = false)
 {
   bool res = false;
   tree *orig_t = t;
@@ -4901,7 +4939,11 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	  base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
 						&coffset);
 	  if (!base)
-	    gcc_unreachable ();
+	    {
+	      if (is_debug)
+		return false;
+	      gcc_unreachable ();
+	    }
 
 	  TREE_OPERAND (*t, 0) = build_fold_addr_expr (base);
 	  TREE_OPERAND (*t, 1) = int_const_binop (PLUS_EXPR,
@@ -5081,7 +5123,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (*val
 	      && (REFERENCE_CLASS_P (*val)
 		  || TREE_CODE (*val) == ADDR_EXPR)
-	      && maybe_canonicalize_mem_ref_addr (val))
+	      && maybe_canonicalize_mem_ref_addr (val, true))
 	    changed = true;
 	}
       break;
@@ -6837,10 +6879,17 @@ fold_array_ctor_reference (tree type, tree ctor,
 	     SIZE to the size of the accessed element.  */
 	  inner_offset = 0;
 	  type = TREE_TYPE (val);
-	  size = elt_size.to_uhwi () * BITS_PER_UNIT;
+	  size = elt_sz * BITS_PER_UNIT;
 	}
+      else if (size && access_index < CONSTRUCTOR_NELTS (ctor) - 1
+	       && TREE_CODE (val) == CONSTRUCTOR
+	       && (elt_sz * BITS_PER_UNIT - inner_offset) < size)
+	/* If this isn't the last element in the CTOR and a CTOR itself
+	   and it does not cover the whole object we are requesting give up
+	   since we're not set up for combining from multiple CTORs.  */
+	return NULL_TREE;
 
-      *suboff += (access_index * elt_size * BITS_PER_UNIT).to_uhwi ();
+      *suboff += access_index.to_uhwi () * elt_sz * BITS_PER_UNIT;
       return fold_ctor_reference (type, val, inner_offset, size, from_decl,
 				  suboff);
     }
@@ -7144,8 +7193,64 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (maybe_lt (offset, 0))
 	return NULL_TREE;
 
-      return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size,
-				  base);
+      tem = fold_ctor_reference (TREE_TYPE (t), ctor, offset, size, base);
+      if (tem)
+	return tem;
+
+      /* For bit field reads try to read the representative and
+	 adjust.  */
+      if (TREE_CODE (t) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (t, 1))
+	  && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)))
+	{
+	  HOST_WIDE_INT csize, coffset;
+	  tree field = TREE_OPERAND (t, 1);
+	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (repr))
+	      && size.is_constant (&csize)
+	      && offset.is_constant (&coffset)
+	      && (coffset % BITS_PER_UNIT != 0
+		  || csize % BITS_PER_UNIT != 0)
+	      && !reverse
+	      && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
+	    {
+	      poly_int64 bitoffset;
+	      poly_uint64 field_offset, repr_offset;
+	      if (poly_int_tree_p (DECL_FIELD_OFFSET (field), &field_offset)
+		  && poly_int_tree_p (DECL_FIELD_OFFSET (repr), &repr_offset))
+		bitoffset = (field_offset - repr_offset) * BITS_PER_UNIT;
+	      else
+		bitoffset = 0;
+	      bitoffset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
+			    - tree_to_uhwi (DECL_FIELD_BIT_OFFSET (repr)));
+	      HOST_WIDE_INT bitoff;
+	      int diff = (TYPE_PRECISION (TREE_TYPE (repr))
+			  - TYPE_PRECISION (TREE_TYPE (field)));
+	      if (bitoffset.is_constant (&bitoff)
+		  && bitoff >= 0
+		  && bitoff <= diff)
+		{
+		  offset -= bitoff;
+		  size = tree_to_uhwi (DECL_SIZE (repr));
+
+		  tem = fold_ctor_reference (TREE_TYPE (repr), ctor, offset,
+					     size, base);
+		  if (tem && TREE_CODE (tem) == INTEGER_CST)
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			tem = wide_int_to_tree (TREE_TYPE (field),
+						wi::lrshift (wi::to_wide (tem),
+							     bitoff));
+		      else
+			tem = wide_int_to_tree (TREE_TYPE (field),
+						wi::lrshift (wi::to_wide (tem),
+							     diff - bitoff));
+		      return tem;
+		    }
+		}
+	    }
+	}
+      break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:

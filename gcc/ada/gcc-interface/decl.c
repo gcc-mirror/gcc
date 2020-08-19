@@ -7234,12 +7234,12 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     {
       Entity_Id gnat_parent = Parent_Subtype (gnat_record_type);
 
-      /* Ensure the position does not overlap with the parent subtype, if there
-	 is one.  This test is omitted if the parent of the tagged type has a
-	 full rep clause since, in this case, component clauses are allowed to
-	 overlay the space allocated for the parent type and the front-end has
-	 checked that there are no overlapping components.  */
-      if (Present (gnat_parent) && !Is_Fully_Repped_Tagged_Type (gnat_parent))
+      /* Ensure the position doesn't overlap with the parent subtype if there
+	 is one.  It would be impossible to build CONSTRUCTORs and accessing
+	 the parent could clobber the component in the extension if directly
+	 done.  We accept it with -gnatd.K for the sake of compatibility.  */
+      if (Present (gnat_parent)
+	  && !(Debug_Flag_Dot_KK && Is_Fully_Repped_Tagged_Type (gnat_parent)))
 	{
 	  tree gnu_parent = gnat_to_gnu_type (gnat_parent);
 

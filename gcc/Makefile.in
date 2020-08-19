@@ -937,8 +937,7 @@ FIXED_VALUE_H = fixed-value.h
 RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
-	gtm-builtins.def sanitizer.def \
-	hsa-builtins.def
+	gtm-builtins.def sanitizer.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
 TREE_CORE_H = tree-core.h $(CORETYPES_H) all-tree.def tree.def \
@@ -1242,7 +1241,11 @@ ANALYZER_OBJS = \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \
 	analyzer/program-state.o \
+	analyzer/region.o \
 	analyzer/region-model.o \
+	analyzer/region-model-impl-calls.o \
+	analyzer/region-model-manager.o \
+	analyzer/region-model-reachability.o \
 	analyzer/sm.o \
 	analyzer/sm-file.o \
 	analyzer/sm-malloc.o \
@@ -1251,7 +1254,9 @@ ANALYZER_OBJS = \
 	analyzer/sm-signal.o \
 	analyzer/sm-taint.o \
 	analyzer/state-purge.o \
-	analyzer/supergraph.o
+	analyzer/store.o \
+	analyzer/supergraph.o \
+	analyzer/svalue.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
@@ -1399,11 +1404,6 @@ OBJS = \
 	haifa-sched.o \
 	hash-map-tests.o \
 	hash-set-tests.o \
-	hsa-common.o \
-	hsa-gen.o \
-	hsa-regalloc.o \
-	hsa-brig.o \
-	hsa-dump.o \
 	hw-doloop.o \
 	hwint.o \
 	ifcvt.o \
@@ -1431,7 +1431,6 @@ OBJS = \
 	ipa-icf.o \
 	ipa-icf-gimple.o \
 	ipa-reference.o \
-	ipa-hsa.o \
 	ipa-ref.o \
 	ipa-utils.o \
 	ipa.o \
@@ -1475,7 +1474,6 @@ OBJS = \
 	omp-offload.o \
 	omp-expand.o \
 	omp-general.o \
-	omp-grid.o \
 	omp-low.o \
 	omp-simd-clone.o \
 	opt-problem.o \
@@ -2645,7 +2643,6 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/omp-offload.h \
   $(srcdir)/omp-offload.c \
-  $(srcdir)/omp-expand.c \
   $(srcdir)/omp-general.c \
   $(srcdir)/omp-low.c \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
@@ -2654,13 +2651,13 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/tree-ssanames.h \
   $(srcdir)/tree-vrp.h \
+  $(srcdir)/value-range.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.c \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-predicate.h \
   $(srcdir)/ipa-fnsummary.h \
-  $(srcdir)/value-range.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/ubsan.c \
@@ -2669,7 +2666,6 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/sancov.c \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
-  $(srcdir)/hsa-common.c \
   $(srcdir)/calls.c \
   $(srcdir)/omp-general.h \
   @all_gtfiles@
@@ -3527,7 +3523,6 @@ distclean: clean lang.distclean
 	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.c
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
-	-rm -f cxxmain.c
 	-rm -f .gdbinit configargs.h
 	-rm -f gcov.pod
 # Delete po/*.gmo only if we are not building in the source directory.
@@ -4278,7 +4273,7 @@ TAGS: lang.tags
 	      ../include/*.h ../libiberty/*.c \
 	      ../libcpp/*.c ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
-	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\|DEFTIMEVAR\|DEFPARAM\|DEFPARAMENUM5\)[ ]?(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def timevar.def params.def \
+	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\|DEFTIMEVAR\|DEFPARAM\|DEFPARAMENUM5\)[ ]?(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def timevar.def \
 		; \
 	etags --include TAGS.sub $$incs)
 

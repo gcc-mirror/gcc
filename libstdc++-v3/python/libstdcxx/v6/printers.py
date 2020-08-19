@@ -245,7 +245,7 @@ class UniquePointerPrinter:
 
     def __init__ (self, typename, val):
         self.val = val
-        impl_type = val.type.fields()[0].type.tag
+        impl_type = val.type.fields()[0].type.strip_typedefs()
         # Check for new implementations first:
         if is_specialization_of(impl_type, '__uniq_ptr_data') \
             or is_specialization_of(impl_type, '__uniq_ptr_impl'):
@@ -253,7 +253,7 @@ class UniquePointerPrinter:
         elif is_specialization_of(impl_type, 'tuple'):
             tuple_member = val['_M_t']
         else:
-            raise ValueError("Unsupported implementation for unique_ptr: %s" % impl_type)
+            raise ValueError("Unsupported implementation for unique_ptr: %s" % str(impl_type))
         tuple_impl_type = tuple_member.type.fields()[0].type # _Tuple_impl
         tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
         head_field = tuple_head_type.fields()[0]
@@ -262,7 +262,7 @@ class UniquePointerPrinter:
         elif head_field.is_base_class:
             self.pointer = tuple_member.cast(head_field.type)
         else:
-            raise ValueError("Unsupported implementation for tuple in unique_ptr: %s" % impl_type)
+            raise ValueError("Unsupported implementation for tuple in unique_ptr: %s" % str(impl_type))
 
     def children (self):
         return SmartPtrIterator(self.pointer)
@@ -405,7 +405,7 @@ class StdVectorPrinter:
             self.bitvec = bitvec
             if bitvec:
                 self.item   = start['_M_p']
-                self.so     = start['_M_offset']
+                self.so     = 0
                 self.finish = finish['_M_p']
                 self.fo     = finish['_M_offset']
                 itype = self.item.dereference().type
@@ -453,12 +453,11 @@ class StdVectorPrinter:
         end = self.val['_M_impl']['_M_end_of_storage']
         if self.is_bool:
             start = self.val['_M_impl']['_M_start']['_M_p']
-            so    = self.val['_M_impl']['_M_start']['_M_offset']
             finish = self.val['_M_impl']['_M_finish']['_M_p']
             fo     = self.val['_M_impl']['_M_finish']['_M_offset']
             itype = start.dereference().type
             bl = 8 * itype.sizeof
-            length   = (bl - so) + bl * ((finish - start) - 1) + fo
+            length   = bl * (finish - start) + fo
             capacity = bl * (end - start)
             return ('%s<bool> of length %d, capacity %d'
                     % (self.typename, int (length), int (capacity)))

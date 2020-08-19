@@ -361,3 +361,7 @@ class TestGccChangelog(unittest.TestCase):
         assert '\tBackported from master:' in entry
         assert '\t2020-06-11  Martin Liska  <mliska@suse.cz>' in entry
         assert '\t\t    Jakub Jelinek  <jakub@redhat.com>' in entry
+
+    def test_square_and_lt_gt(self):
+        email = self.from_patch_glob('0001-Check-for-more-missing')
+        assert not email.errors

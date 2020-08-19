@@ -16,7 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do run { xfail c++2a } }
+// { dg-do run { xfail *-*-* } }
+// { dg-require-effective-target c++2a }
 
 #undef _GLIBCXX_ASSERTIONS
 #define _GLIBCXX_ASSERTIONS

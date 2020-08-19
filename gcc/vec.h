@@ -753,6 +753,17 @@ vec_safe_grow_cleared (vec<T, va_heap, vl_ptr> *&v,
   v->safe_grow_cleared (len PASS_MEM_STAT);
 }
 
+/* If V does not have space for NELEMS elements, call
+   V->reserve(NELEMS, EXACT).  */
+
+template<typename T>
+inline bool
+vec_safe_reserve (vec<T, va_heap, vl_ptr> *&v, unsigned nelems, bool exact = false
+		  CXX_MEM_STAT_INFO)
+{
+  return v->reserve (nelems, exact);
+}
+
 
 /* If V is NULL return false, otherwise return V->iterate(IX, PTR).  */
 template<typename T, typename A>
@@ -1270,8 +1281,13 @@ template<typename T, typename A>
 inline size_t
 vec<T, A, vl_embed>::embedded_size (unsigned alloc)
 {
-  typedef vec<T, A, vl_embed> vec_embedded;
-  return offsetof (vec_embedded, m_vecdata) + alloc * sizeof (T);
+  struct alignas (T) U { char data[sizeof (T)]; };
+  typedef vec<U, A, vl_embed> vec_embedded;
+  typedef typename std::conditional<std::is_standard_layout<T>::value,
+				    vec, vec_embedded>::type vec_stdlayout;
+  static_assert (sizeof (vec_stdlayout) == sizeof (vec), "");
+  static_assert (alignof (vec_stdlayout) == alignof (vec), "");
+  return offsetof (vec_stdlayout, m_vecdata) + alloc * sizeof (T);
 }
 
 

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 
 void

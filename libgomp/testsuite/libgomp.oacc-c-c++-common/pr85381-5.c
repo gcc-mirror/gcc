@@ -1,6 +1,6 @@
-/* { dg-additional-options "-save-temps" } */
 /* { dg-do run { target openacc_nvidia_accel_selected } }
    { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
+/* { dg-additional-options "-foffload=-fdump-rtl-mach" } */
 
 #define n 1024
 
@@ -21,4 +21,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-not "bar.sync" } } */
+/* { dg-final { scan-offload-rtl-dump-not "nvptx_barsync" "mach" } } */

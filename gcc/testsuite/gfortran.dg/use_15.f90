@@ -34,4 +34,4 @@ subroutine my_sub3 (a)              ! { dg-error "\(1\)" }
   print *, a
 end subroutine
 
-END
+END ! { dg-error "is an ambiguous reference" }

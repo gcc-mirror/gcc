@@ -2027,7 +2027,9 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
       || flavor == FL_DERIVED || flavor == FL_NAMELIST)
     {
-      gfc_error ("Symbol %qs at %L cannot have a type", sym->ns->proc_name->name, where);
+      gfc_error ("Symbol %qs at %L cannot have a type",
+		 sym->ns->proc_name ? sym->ns->proc_name->name : sym->name,
+		 where);
       return false;
     }
 
@@ -3143,11 +3145,15 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
 }
 
 
-/* Generate an error if a symbol is ambiguous.  */
+/* Generate an error if a symbol is ambiguous, and set the error flag
+   on it.  */
 
 static void
 ambiguous_symbol (const char *name, gfc_symtree *st)
 {
+
+  if (st->n.sym->error)
+    return;
 
   if (st->n.sym->module)
     gfc_error ("Name %qs at %C is an ambiguous reference to %qs "
@@ -3155,6 +3161,8 @@ ambiguous_symbol (const char *name, gfc_symtree *st)
   else
     gfc_error ("Name %qs at %C is an ambiguous reference to %qs "
 	       "from current program unit", name, st->n.sym->name);
+
+  st->n.sym->error = 1;
 }
 
 

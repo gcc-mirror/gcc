@@ -831,17 +831,17 @@ expression to a variable.
 Return true if g is any of the OpenMP codes.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_debug_begin_stmt_p (gimple g)
+@deftypefn {GIMPLE function} bool gimple_debug_begin_stmt_p (gimple g)
 Return true if g is a @code{GIMPLE_DEBUG} that marks the beginning of
 a source statement.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_debug_inline_entry_p (gimple g)
+@deftypefn {GIMPLE function} bool gimple_debug_inline_entry_p (gimple g)
 Return true if g is a @code{GIMPLE_DEBUG} that marks the entry
 point of an inlined function.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_debug_nonbind_marker_p (gimple g)
+@deftypefn {GIMPLE function} bool gimple_debug_nonbind_marker_p (gimple g)
 Return true if g is a @code{GIMPLE_DEBUG} that marks a program location,
 without any variable binding.
 @end deftypefn

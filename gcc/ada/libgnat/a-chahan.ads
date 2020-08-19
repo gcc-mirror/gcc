@@ -58,6 +58,7 @@ package Ada.Characters.Handling is
    function Is_Other_Format          (Item : Character) return Boolean;
    function Is_Punctuation_Connector (Item : Character) return Boolean;
    function Is_Space                 (Item : Character) return Boolean;
+   function Is_NFKC                  (Item : Character) return Boolean;
 
    ---------------------------------------------------
    -- Conversion Functions for Character and String --

@@ -354,7 +354,7 @@ package body Checks is
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
       Warn_Node  : Node_Id) return Check_Result;
-   --  Like Apply_Range_Checks, except it doesn't modify anything, just
+   --  Like Apply_Range_Check, except it does not modify anything, just
    --  returns a list of nodes as described in the spec of this package
    --  for the Range_Check function.
 
@@ -433,7 +433,7 @@ package body Checks is
          --  Nothing to do for Rem/Mod/Plus (overflow not possible, the check
          --  for zero-divide is a divide check, not an overflow check).
 
-         if Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
+         if Nkind (N) in N_Op_Rem | N_Op_Mod | N_Op_Plus then
             return;
          end if;
       end if;
@@ -585,7 +585,7 @@ package body Checks is
       if Ada_Version >= Ada_2012
          and then not Present (Param_Ent)
          and then Is_Entity_Name (N)
-         and then Ekind_In (Entity (N), E_Constant, E_Variable)
+         and then Ekind (Entity (N)) in E_Constant | E_Variable
          and then Present (Effective_Extra_Accessibility (Entity (N)))
       then
          Param_Ent := Entity (N);
@@ -621,9 +621,8 @@ package body Checks is
          --  deepest type level so as to appropriatly handle the rules for
          --  RM 3.10.2 (10.1/3).
 
-         if Ekind_In (Scope (Param_Ent), E_Function,
-                                         E_Operator,
-                                         E_Subprogram_Type)
+         if Ekind (Scope (Param_Ent))
+              in E_Function | E_Operator | E_Subprogram_Type
            and then Present (Extra_Accessibility_Of_Result (Scope (Param_Ent)))
          then
             Type_Level :=
@@ -1204,7 +1203,7 @@ package body Checks is
          --  there is no overflow check that starts from that parent node,
          --  so apply check now.
 
-         if Nkind_In (P, N_If_Expression, N_Case_Expression)
+         if Nkind (P) in N_If_Expression | N_Case_Expression
            and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
          then
             null;
@@ -2713,11 +2712,11 @@ package body Checks is
          --    mode IN OUT - Pre, Post => Formal'Valid[_Scalars]
          --    mode    OUT -      Post => Formal'Valid[_Scalars]
 
-         if Ekind_In (Formal, E_In_Parameter, E_In_Out_Parameter) then
+         if Ekind (Formal) in E_In_Parameter | E_In_Out_Parameter then
             Add_Validity_Check (Formal, Name_Precondition, False);
          end if;
 
-         if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+         if Ekind (Formal) in E_In_Out_Parameter | E_Out_Parameter then
             Add_Validity_Check (Formal, Name_Postcondition, False);
          end if;
 
@@ -2746,153 +2745,146 @@ package body Checks is
       S   : Entity_Id;
 
    begin
-      if Predicate_Checks_Suppressed (Empty) then
+      if not Predicate_Enabled (Typ)
+        or else not Predicate_Check_In_Scope (N)
+      then
          return;
+      end if;
 
-      elsif Predicates_Ignored (Typ) then
-         return;
+      S := Current_Scope;
+      while Present (S) and then not Is_Subprogram (S) loop
+         S := Scope (S);
+      end loop;
 
-      elsif Present (Predicate_Function (Typ)) then
-         S := Current_Scope;
-         while Present (S) and then not Is_Subprogram (S) loop
-            S := Scope (S);
-         end loop;
+      --  If the check appears within the predicate function itself, it means
+      --  that the user specified a check whose formal is the predicated
+      --  subtype itself, rather than some covering type. This is likely to be
+      --  a common error, and thus deserves a warning.
 
-         --  A predicate check does not apply within internally generated
-         --  subprograms, such as TSS functions.
+      if Present (S) and then S = Predicate_Function (Typ) then
+         Error_Msg_NE
+           ("predicate check includes a call to& that requires a "
+            & "predicate check??", Parent (N), Fun);
+         Error_Msg_N
+           ("\this will result in infinite recursion??", Parent (N));
 
-         if Within_Internal_Subprogram then
-            return;
-
-         --  If the check appears within the predicate function itself, it
-         --  means that the user specified a check whose formal is the
-         --  predicated subtype itself, rather than some covering type. This
-         --  is likely to be a common error, and thus deserves a warning.
-
-         elsif Present (S) and then S = Predicate_Function (Typ) then
+         if Is_First_Subtype (Typ) then
             Error_Msg_NE
-              ("predicate check includes a call to& that requires a "
-               & "predicate check??", Parent (N), Fun);
-            Error_Msg_N
-              ("\this will result in infinite recursion??", Parent (N));
+              ("\use an explicit subtype of& to carry the predicate",
+               Parent (N), Typ);
+         end if;
 
-            if Is_First_Subtype (Typ) then
-               Error_Msg_NE
-                 ("\use an explicit subtype of& to carry the predicate",
-                  Parent (N), Typ);
-            end if;
+         Insert_Action (N,
+           Make_Raise_Storage_Error (Sloc (N),
+             Reason => SE_Infinite_Recursion));
+         return;
+      end if;
 
-            Insert_Action (N,
-              Make_Raise_Storage_Error (Sloc (N),
-                Reason => SE_Infinite_Recursion));
+      --  Normal case of predicate active
 
-         --  Here for normal case of predicate active
+      --  If the expression is an IN parameter, the predicate will have
+      --  been applied at the point of call. An additional check would
+      --  be redundant, or will lead to out-of-scope references if the
+      --  call appears within an aspect specification for a precondition.
 
-         else
-            --  If the expression is an IN parameter, the predicate will have
-            --  been applied at the point of call. An additional check would
-            --  be redundant, or will lead to out-of-scope references if the
-            --  call appears within an aspect specification for a precondition.
+      --  However, if the reference is within the body of the subprogram
+      --  that declares the formal, the predicate can safely be applied,
+      --  which may be necessary for a nested call whose formal has a
+      --  different predicate.
 
-            --  However, if the reference is within the body of the subprogram
-            --  that declares the formal, the predicate can safely be applied,
-            --  which may be necessary for a nested call whose formal has a
-            --  different predicate.
+      if Is_Entity_Name (N)
+        and then Ekind (Entity (N)) = E_In_Parameter
+      then
+         declare
+            In_Body : Boolean := False;
+            P       : Node_Id := Parent (N);
 
-            if Is_Entity_Name (N)
-              and then Ekind (Entity (N)) = E_In_Parameter
-            then
-               declare
-                  In_Body : Boolean := False;
-                  P       : Node_Id := Parent (N);
+         begin
+            while Present (P) loop
+               if Nkind (P) = N_Subprogram_Body
+                 and then
+                   ((Present (Corresponding_Spec (P))
+                      and then
+                        Corresponding_Spec (P) = Scope (Entity (N)))
+                      or else
+                        Defining_Unit_Name (Specification (P)) =
+                          Scope (Entity (N)))
+               then
+                  In_Body := True;
+                  exit;
+               end if;
 
-               begin
-                  while Present (P) loop
-                     if Nkind (P) = N_Subprogram_Body
-                       and then
-                         ((Present (Corresponding_Spec (P))
-                            and then
-                              Corresponding_Spec (P) = Scope (Entity (N)))
-                            or else
-                              Defining_Unit_Name (Specification (P)) =
-                                Scope (Entity (N)))
-                     then
-                        In_Body := True;
-                        exit;
-                     end if;
+               P := Parent (P);
+            end loop;
 
-                     P := Parent (P);
-                  end loop;
-
-                  if not In_Body then
-                     return;
-                  end if;
-               end;
-            end if;
-
-            --  If the type has a static predicate and the expression is known
-            --  at compile time, see if the expression satisfies the predicate.
-
-            Check_Expression_Against_Static_Predicate (N, Typ);
-
-            if not Expander_Active then
+            if not In_Body then
                return;
             end if;
+         end;
+      end if;
 
-            Par := Parent (N);
-            if Nkind (Par) = N_Qualified_Expression then
-               Par := Parent (Par);
-            end if;
+      --  If the type has a static predicate and the expression is known
+      --  at compile time, see if the expression satisfies the predicate.
 
-            --  For an entity of the type, generate a call to the predicate
-            --  function, unless its type is an actual subtype, which is not
-            --  visible outside of the enclosing subprogram.
+      Check_Expression_Against_Static_Predicate (N, Typ);
 
-            if Is_Entity_Name (N)
-              and then not Is_Actual_Subtype (Typ)
-            then
-               Insert_Action (N,
-                 Make_Predicate_Check
-                   (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
+      if not Expander_Active then
+         return;
+      end if;
 
-            --  If the expression is an aggregate in an assignment, apply the
-            --  check to the LHS after the assignment, rather than create a
-            --  redundant temporary. This is only necessary in rare cases
-            --  of array types (including strings) initialized with an
-            --  aggregate with an "others" clause, either coming from source
-            --  or generated by an Initialize_Scalars pragma.
+      Par := Parent (N);
+      if Nkind (Par) = N_Qualified_Expression then
+         Par := Parent (Par);
+      end if;
 
-            elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate)
-              and then Nkind (Par) = N_Assignment_Statement
-            then
-               Insert_Action_After (Par,
-                 Make_Predicate_Check
-                   (Typ, Duplicate_Subexpr (Name (Par))));
+      --  For an entity of the type, generate a call to the predicate
+      --  function, unless its type is an actual subtype, which is not
+      --  visible outside of the enclosing subprogram.
 
-            --  Similarly, if the expression is an aggregate in an object
-            --  declaration, apply it to the object after the declaration.
-            --  This is only necessary in rare cases of tagged extensions
-            --  initialized with an aggregate with an "others => <>" clause.
+      if Is_Entity_Name (N)
+        and then not Is_Actual_Subtype (Typ)
+      then
+         Insert_Action (N,
+           Make_Predicate_Check
+             (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
+         return;
 
-            elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate)
-              and then Nkind (Par) = N_Object_Declaration
-            then
-               Insert_Action_After (Par,
-                 Make_Predicate_Check (Typ,
-                   New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+      elsif Nkind (N) in N_Aggregate | N_Extension_Aggregate then
 
-            --  If the expression is not an entity it may have side effects,
-            --  and the following call will create an object declaration for
-            --  it. We disable checks during its analysis, to prevent an
-            --  infinite recursion.
+         --  If the expression is an aggregate in an assignment, apply the
+         --  check to the LHS after the assignment, rather than create a
+         --  redundant temporary. This is only necessary in rare cases
+         --  of array types (including strings) initialized with an
+         --  aggregate with an "others" clause, either coming from source
+         --  or generated by an Initialize_Scalars pragma.
 
-            else
-               Insert_Action (N,
-                 Make_Predicate_Check
-                   (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
-            end if;
+         if Nkind (Par) = N_Assignment_Statement then
+            Insert_Action_After (Par,
+              Make_Predicate_Check
+                (Typ, Duplicate_Subexpr (Name (Par))));
+            return;
+
+         --  Similarly, if the expression is an aggregate in an object
+         --  declaration, apply it to the object after the declaration.
+         --  This is only necessary in rare cases of tagged extensions
+         --  initialized with an aggregate with an "others => <>" clause.
+
+         elsif Nkind (Par) = N_Object_Declaration then
+            Insert_Action_After (Par,
+              Make_Predicate_Check (Typ,
+                New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+            return;
          end if;
       end if;
+
+      --  If the expression is not an entity it may have side effects,
+      --  and the following call will create an object declaration for
+      --  it. We disable checks during its analysis, to prevent an
+      --  infinite recursion.
+
+      Insert_Action (N,
+        Make_Predicate_Check
+          (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
    end Apply_Predicate_Check;
 
    -----------------------
@@ -3326,7 +3318,7 @@ package body Checks is
                         --  provide a wider range.
 
                         if not CodePeer_Mode
-                          or else Target_Typ /= RTE (RE_Priority)
+                          or else not Is_RTE (Target_Typ, RE_Priority)
                         then
                            Bad_Value;
                         end if;
@@ -4044,9 +4036,9 @@ package body Checks is
       function Left_Expression (Op : Node_Id) return Node_Id is
          LE : Node_Id := Left_Opnd (Op);
       begin
-         while Nkind_In (LE, N_Qualified_Expression,
-                             N_Type_Conversion,
-                             N_Expression_With_Actions)
+         while Nkind (LE) in N_Qualified_Expression
+                           | N_Type_Conversion
+                           | N_Expression_With_Actions
          loop
             LE := Expression (LE);
          end loop;
@@ -4256,11 +4248,11 @@ package body Checks is
 
    begin
       pragma Assert
-        (Nkind_In (Kind, N_Component_Declaration,
-                         N_Discriminant_Specification,
-                         N_Function_Specification,
-                         N_Object_Declaration,
-                         N_Parameter_Specification));
+        (Kind in N_Component_Declaration
+               | N_Discriminant_Specification
+               | N_Function_Specification
+               | N_Object_Declaration
+               | N_Parameter_Specification);
 
       if Kind = N_Function_Specification then
          Typ := Etype (Defining_Entity (N));
@@ -5118,6 +5110,27 @@ package body Checks is
 
          when N_Attribute_Reference =>
             case Get_Attribute_Id (Attribute_Name (N)) is
+
+               --  For Min/Max attributes, we can refine the range using the
+               --  possible range of values of the attribute expressions.
+
+               when Attribute_Min
+                  | Attribute_Max
+               =>
+                  Determine_Range
+                    (First (Expressions (N)),
+                     OK1, Lo_Left, Hi_Left, Assume_Valid);
+
+                  if OK1 then
+                     Determine_Range
+                       (Next (First (Expressions (N))),
+                        OK1, Lo_Right, Hi_Right, Assume_Valid);
+                  end if;
+
+                  if OK1 then
+                     Lor := UI_Min (Lo_Left, Lo_Right);
+                     Hir := UI_Max (Hi_Left, Hi_Right);
+                  end if;
 
                --  For Pos/Val attributes, we can refine the range using the
                --  possible range of values of the attribute expression.
@@ -6064,7 +6077,7 @@ package body Checks is
             --  Likewise for Abs/Minus, the only case where the operation can
             --  overflow is when the operand is the largest negative number.
 
-            elsif Nkind_In (N, N_Op_Abs, N_Op_Minus) then
+            elsif Nkind (N) in N_Op_Abs | N_Op_Minus then
                Determine_Range
                  (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
 
@@ -6206,7 +6219,7 @@ package body Checks is
       --  Do not set range check flag if parent is assignment statement or
       --  object declaration with Suppress_Assignment_Checks flag set
 
-      if Nkind_In (Parent (N), N_Assignment_Statement, N_Object_Declaration)
+      if Nkind (Parent (N)) in N_Assignment_Statement | N_Object_Declaration
         and then Suppress_Assignment_Checks (Parent (N))
       then
          return;
@@ -6567,9 +6580,9 @@ package body Checks is
                --  If this is an indirect or dispatching call, get signature
                --  from the subprogram type.
 
-               if Nkind_In (P, N_Entry_Call_Statement,
-                               N_Function_Call,
-                               N_Procedure_Call_Statement)
+               if Nkind (P) in N_Entry_Call_Statement
+                             | N_Function_Call
+                             | N_Procedure_Call_Statement
                then
                   E := Get_Called_Entity (P);
                   L := Parameter_Associations (P);
@@ -6700,13 +6713,13 @@ package body Checks is
       --  Integer and character literals always have valid values, where
       --  appropriate these will be range checked in any case.
 
-      elsif Nkind_In (Expr, N_Integer_Literal, N_Character_Literal) then
+      elsif Nkind (Expr) in N_Integer_Literal | N_Character_Literal then
          return True;
 
       --  If we have a type conversion or a qualification of a known valid
       --  value, then the result will always be valid.
 
-      elsif Nkind_In (Expr, N_Type_Conversion, N_Qualified_Expression) then
+      elsif Nkind (Expr) in N_Type_Conversion | N_Qualified_Expression then
          return Expr_Known_Valid (Expression (Expr));
 
       --  Case of expression is a non-floating-point operator. In this case we
@@ -7045,9 +7058,7 @@ package body Checks is
       begin
          P := Prefix (N);
          while not Is_Entity_Name (P) loop
-            if not Nkind_In (P, N_Selected_Component,
-                                N_Indexed_Component)
-            then
+            if Nkind (P) not in N_Selected_Component | N_Indexed_Component then
                return Empty;
             end if;
 
@@ -7160,7 +7171,7 @@ package body Checks is
                   if Nkind (A_Idx) = N_Range then
                      A_Range := A_Idx;
 
-                  elsif Nkind_In (A_Idx, N_Identifier, N_Expanded_Name) then
+                  elsif Nkind (A_Idx) in N_Identifier | N_Expanded_Name then
                      A_Range := Scalar_Range (Entity (A_Idx));
 
                      if Nkind (A_Range) = N_Subtype_Indication then
@@ -7348,7 +7359,8 @@ package body Checks is
         --  the target.
 
         and then not
-          (Nkind_In (N, N_Integer_Literal, N_Real_Literal, N_Character_Literal)
+          (Nkind (N) in
+               N_Integer_Literal | N_Real_Literal | N_Character_Literal
              or else
                (Is_Entity_Name (N)
                  and then Ekind (Entity (N)) = E_Enumeration_Literal))
@@ -8519,9 +8531,8 @@ package body Checks is
       --  need to be called while elaboration is taking place.
 
       elsif Is_Controlled (Tag_Typ)
-        and then Nam_In (Chars (Subp_Id), Name_Adjust,
-                                          Name_Finalize,
-                                          Name_Initialize)
+        and then
+          Chars (Subp_Id) in Name_Adjust | Name_Finalize | Name_Initialize
       then
          return;
       end if;

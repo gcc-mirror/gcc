@@ -3013,8 +3013,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		 to the value directly in mode MODE, otherwise we must
 		 start with the register in word_mode and explicitly
 		 convert it.  */
-	      if (targetm.truly_noop_truncation (size * BITS_PER_UNIT,
-						 BITS_PER_WORD))
+	      if (mode == word_mode
+		  || TRULY_NOOP_TRUNCATION_MODES_P (mode, word_mode))
 		reg = gen_rtx_REG (mode, REGNO (entry_parm));
 	      else
 		{

@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "c-spellcheck.h"
 #include "selftest.h"
+#include "debug.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -5288,26 +5289,53 @@ c_determine_visibility (tree decl)
 
 struct nonnull_arg_ctx
 {
+  /* Location of the call.  */
   location_t loc;
+  /* The function whose arguments are being checked and its type (used
+     for calls through function pointers).  */
+  const_tree fndecl, fntype;
+  /* True if a warning has been issued.  */
   bool warned_p;
 };
 
-/* Check the argument list of a function call for null in argument slots
-   that are marked as requiring a non-null pointer argument.  The NARGS
-   arguments are passed in the array ARGARRAY.  Return true if we have
-   warned.  */
+/* Check the argument list of a function call to CTX.FNDECL of CTX.FNTYPE
+   for null in argument slots that are marked as requiring a non-null
+   pointer argument.  The NARGS arguments are passed in the array ARGARRAY.
+   Return true if we have warned.  */
 
 static bool
-check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
+check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 {
-  tree a;
-  int i;
+  int firstarg = 0;
+  if (TREE_CODE (ctx.fntype) == METHOD_TYPE)
+    {
+      bool closure = false;
+      if (ctx.fndecl)
+	{
+	  /* For certain lambda expressions the C++ front end emits calls
+	     that pass a null this pointer as an argument named __closure
+	     to the member operator() of empty function.  Detect those
+	     and avoid checking them, but proceed to check the remaining
+	     arguments.  */
+	  tree arg0 = DECL_ARGUMENTS (ctx.fndecl);
+	  if (tree arg0name = DECL_NAME (arg0))
+	    closure = id_equal (arg0name, "__closure");
+	}
 
-  attrs = lookup_attribute ("nonnull", attrs);
+      /* In calls to C++ non-static member functions check the this
+	 pointer regardless of whether the function is declared with
+	 attribute nonnull.  */
+      firstarg = 1;
+      if (!closure)
+	check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[0],
+					  firstarg);
+    }
+
+  tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
   if (attrs == NULL_TREE)
-    return false;
+    return ctx.warned_p;
 
-  a = attrs;
+  tree a = attrs;
   /* See if any of the nonnull attributes has no arguments.  If so,
      then every pointer argument is checked (in which case the check
      for pointer type is done in check_nonnull_arg).  */
@@ -5316,16 +5344,15 @@ check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
       a = lookup_attribute ("nonnull", TREE_CHAIN (a));
     while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE);
 
-  struct nonnull_arg_ctx ctx = { loc, false };
   if (a != NULL_TREE)
-    for (i = 0; i < nargs; i++)
+    for (int i = firstarg; i < nargs; i++)
       check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
 					i + 1);
   else
     {
       /* Walk the argument list.  If we encounter an argument number we
 	 should check for non-null, do it.  */
-      for (i = 0; i < nargs; i++)
+      for (int i = firstarg; i < nargs; i++)
 	{
 	  for (a = attrs; ; a = TREE_CHAIN (a))
 	    {
@@ -5491,16 +5518,45 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
      happen if the "nonnull" attribute was given without an operand
      list (which means to check every pointer argument).  */
 
-  if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
+  tree paramtype = TREE_TYPE (param);
+  if (TREE_CODE (paramtype) != POINTER_TYPE
+      && TREE_CODE (paramtype) != NULLPTR_TYPE)
     return;
 
   /* Diagnose the simple cases of null arguments.  */
-  if (integer_zerop (fold_for_warn (param)))
+  if (!integer_zerop (fold_for_warn (param)))
+    return;
+
+  auto_diagnostic_group adg;
+
+  const location_t loc = EXPR_LOC_OR_LOC (param, pctx->loc);
+
+  if (TREE_CODE (pctx->fntype) == METHOD_TYPE)
+    --param_num;
+
+  bool warned;
+  if (param_num == 0)
     {
-      warning_at (pctx->loc, OPT_Wnonnull, "null argument where non-null "
-		  "required (argument %lu)", (unsigned long) param_num);
-      pctx->warned_p = true;
+      warned = warning_at (loc, OPT_Wnonnull,
+			   "%qs pointer null", "this");
+      if (warned && pctx->fndecl)
+	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
+		"in a call to non-static member function %qD",
+		pctx->fndecl);
     }
+  else
+    {
+      warned = warning_at (loc, OPT_Wnonnull,
+			   "argument %u null where non-null expected",
+			   (unsigned) param_num);
+      if (warned && pctx->fndecl)
+	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
+		"in a call to function %qD declared %qs",
+		pctx->fndecl, "nonnull");
+    }
+
+  if (warned)
+    pctx->warned_p = true;
 }
 
 /* Helper for attribute handling; fetch the operand number from
@@ -5717,11 +5773,13 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   bool warned_p = false;
 
   /* Check for null being passed in a pointer argument that must be
-     non-null.  We also need to do this if format checking is enabled.  */
-
+     non-null.  In C++, this includes the this pointer.  We also need
+     to do this if format checking is enabled.  */
   if (warn_nonnull)
-    warned_p = check_function_nonnull (loc, TYPE_ATTRIBUTES (fntype),
-				       nargs, argarray);
+    {
+      nonnull_arg_ctx ctx = { loc, fndecl, fntype, false };
+      warned_p = check_function_nonnull (ctx, nargs, argarray);
+    }
 
   /* Check for errors in format strings.  */
 
@@ -5764,6 +5822,9 @@ check_function_arguments_recurse (void (*callback)
 				  void *ctx, tree param,
 				  unsigned HOST_WIDE_INT param_num)
 {
+  if (TREE_NO_WARNING (param))
+    return;
+
   if (CONVERT_EXPR_P (param)
       && (TYPE_PRECISION (TREE_TYPE (param))
 	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (param, 0)))))
@@ -5774,7 +5835,7 @@ check_function_arguments_recurse (void (*callback)
       return;
     }
 
-  if (TREE_CODE (param) == CALL_EXPR)
+  if (TREE_CODE (param) == CALL_EXPR && CALL_EXPR_FN (param))
     {
       tree type = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (param)));
       tree attrs;
@@ -6956,8 +7017,15 @@ get_atomic_generic_size (location_t loc, tree function,
       return 0;
     }
 
+  if (!COMPLETE_TYPE_P (TREE_TYPE (type_0)))
+    {
+      error_at (loc, "argument 1 of %qE must be a pointer to a complete type",
+		function);
+      return 0;
+    }
+
   /* Types must be compile time constant sizes. */
-  if (TREE_CODE ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))) != INTEGER_CST)
+  if (!tree_fits_uhwi_p ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))))
     {
       error_at (loc, 
 		"argument 1 of %qE must be a pointer to a constant size type",
@@ -8707,8 +8775,7 @@ c_family_tests (void)
 #endif /* #if CHECKING_P */
 
 /* Attempt to locate a suitable location within FILE for a
-   #include directive to be inserted before.  FILE should
-   be a string from libcpp (pointer equality is used).
+   #include directive to be inserted before.  
    LOC is the location of the relevant diagnostic.
 
    Attempt to return the location within FILE immediately
@@ -8743,13 +8810,17 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 
       if (const line_map_ordinary *from
 	  = linemap_included_from_linemap (line_table, ord_map))
-	if (from->to_file == file)
+	/* We cannot use pointer equality, because with preprocessed
+	   input all filename strings are unique.  */
+	if (0 == strcmp (from->to_file, file))
 	  {
 	    last_include_ord_map = from;
 	    last_ord_map_after_include = NULL;
 	  }
 
-      if (ord_map->to_file == file)
+      /* Likewise, use strcmp, and reject any line-zero introductory
+	 map.  */
+      if (ord_map->to_line && 0 == strcmp (ord_map->to_file, file))
 	{
 	  if (!first_ord_map_in_file)
 	    first_ord_map_in_file = ord_map;
@@ -9024,6 +9095,22 @@ tree
 braced_lists_to_strings (tree type, tree ctor)
 {
   return braced_lists_to_strings (type, ctor, false);
+}
+
+
+/* Emit debug for functions before finalizing early debug.  */
+
+void
+c_common_finalize_early_debug (void)
+{
+  /* Emit early debug for reachable functions, and by consequence,
+     locally scoped symbols.  Also emit debug for extern declared
+     functions that are still reachable at this point.  */
+  struct cgraph_node *cnode;
+  FOR_EACH_FUNCTION (cnode)
+    if (!cnode->alias && !cnode->thunk.thunk_p
+	&& (cnode->has_gimple_body_p () || !DECL_IS_BUILTIN (cnode->decl)))
+      (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
 #include "gt-c-family-c-common.h"

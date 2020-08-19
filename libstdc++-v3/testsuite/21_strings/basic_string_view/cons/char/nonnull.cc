@@ -23,7 +23,7 @@
 void
 test01()
 {
-  std::string_view s((const char*)nullptr); // { dg-warning "null arg" }
-  std::string_view t((char*)nullptr);	    // { dg-warning "null arg" }
-  std::string_view u(nullptr);		    // { dg-warning "null arg" }
+  std::string_view s((const char*)nullptr); // { dg-warning "\\\[-Wnonnull" }
+  std::string_view t((char*)nullptr);	    // { dg-warning "\\\[-Wnonnull" }
+  std::string_view u(nullptr);		    // { dg-warning "\\\[-Wnonnull" }
 }

@@ -76,6 +76,7 @@ package Aspects is
      (No_Aspect,                            -- Dummy entry for no aspect
       Aspect_Abstract_State,                -- GNAT
       Aspect_Address,
+      Aspect_Aggregate,
       Aspect_Alignment,
       Aspect_Annotate,                      -- GNAT
       Aspect_Async_Readers,                 -- GNAT
@@ -188,6 +189,7 @@ package Aspects is
       Aspect_Atomic_Components,
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
+      Aspect_CUDA_Global,                   -- GNAT
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Independent,
@@ -300,6 +302,7 @@ package Aspects is
       Aspect_Iterator_Element           => True,
       Aspect_Iterable                   => True,
       Aspect_Variable_Indexing          => True,
+      Aspect_Aggregate                  => True,
       others                            => False);
 
    --  The following array indicates aspects for which multiple occurrences of
@@ -345,6 +348,7 @@ package Aspects is
      (No_Aspect                         => Optional_Expression,
       Aspect_Abstract_State             => Expression,
       Aspect_Address                    => Expression,
+      Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
       Aspect_Annotate                   => Expression,
       Aspect_Async_Readers              => Optional_Expression,
@@ -442,6 +446,7 @@ package Aspects is
      (No_Aspect                           => False,
       Aspect_Abstract_State               => False,
       Aspect_Address                      => True,
+      Aspect_Aggregate                    => False,
       Aspect_Alignment                    => True,
       Aspect_Annotate                     => False,
       Aspect_Async_Readers                => False,
@@ -454,7 +459,8 @@ package Aspects is
       Aspect_Contract_Cases               => False,
       Aspect_Convention                   => True,
       Aspect_CPU                          => False,
-      Aspect_Default_Component_Value      => False,
+      Aspect_CUDA_Global                  => False,
+      Aspect_Default_Component_Value      => True,
       Aspect_Default_Initial_Condition    => False,
       Aspect_Default_Iterator             => False,
       Aspect_Default_Storage_Pool         => True,
@@ -580,6 +586,7 @@ package Aspects is
      (No_Aspect                           => No_Name,
       Aspect_Abstract_State               => Name_Abstract_State,
       Aspect_Address                      => Name_Address,
+      Aspect_Aggregate                    => Name_Aggregate,
       Aspect_Alignment                    => Name_Alignment,
       Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
       Aspect_Annotate                     => Name_Annotate,
@@ -596,6 +603,7 @@ package Aspects is
       Aspect_Contract_Cases               => Name_Contract_Cases,
       Aspect_Convention                   => Name_Convention,
       Aspect_CPU                          => Name_CPU,
+      Aspect_CUDA_Global                  => Name_CUDA_Global,
       Aspect_Default_Component_Value      => Name_Default_Component_Value,
       Aspect_Default_Initial_Condition    => Name_Default_Initial_Condition,
       Aspect_Default_Iterator             => Name_Default_Iterator,
@@ -828,11 +836,13 @@ package Aspects is
    Aspect_Delay : constant array (Aspect_Id) of Delay_Type :=
      (No_Aspect                           => Always_Delay,
       Aspect_Address                      => Always_Delay,
+      Aspect_Aggregate                    => Always_Delay,
       Aspect_All_Calls_Remote             => Always_Delay,
       Aspect_Asynchronous                 => Always_Delay,
       Aspect_Attach_Handler               => Always_Delay,
       Aspect_Constant_Indexing            => Always_Delay,
       Aspect_CPU                          => Always_Delay,
+      Aspect_CUDA_Global                  => Always_Delay,
       Aspect_Default_Iterator             => Always_Delay,
       Aspect_Default_Storage_Pool         => Always_Delay,
       Aspect_Default_Value                => Always_Delay,

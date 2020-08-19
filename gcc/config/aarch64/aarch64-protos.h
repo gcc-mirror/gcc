@@ -578,6 +578,7 @@ int aarch64_vec_fpconst_pow_of_2 (rtx);
 rtx aarch64_eh_return_handler_rtx (void);
 rtx aarch64_mask_from_zextract_ops (rtx, rtx);
 const char *aarch64_output_move_struct (rtx *operands);
+rtx aarch64_return_addr_rtx (void);
 rtx aarch64_return_addr (int, rtx);
 rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
 bool aarch64_simd_mem_operand_p (rtx);
@@ -681,7 +682,7 @@ void aarch64_split_compare_and_swap (rtx op[]);
 
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
-bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
+bool aarch64_gen_adjusted_ldpstp (rtx *, bool, machine_mode, RTX_CODE);
 
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
@@ -732,7 +733,7 @@ int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
-bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, scalar_mode);
+bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 void aarch64_swap_ldrstr_operands (rtx *, bool);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
@@ -779,5 +780,10 @@ extern const atomic_ool_names aarch64_ool_ldclr_names;
 extern const atomic_ool_names aarch64_ool_ldeor_names;
 
 tree aarch64_resolve_overloaded_builtin_general (location_t, tree, void *);
+
+const char *aarch64_sls_barrier (int);
+const char *aarch64_indirect_call_asm (rtx);
+extern bool aarch64_harden_sls_retbr_p (void);
+extern bool aarch64_harden_sls_blr_p (void);
 
 #endif /* GCC_AARCH64_PROTOS_H */

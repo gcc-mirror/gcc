@@ -3,7 +3,8 @@
    Verify that passing pointers to uninitialized objects to const
    arguments to built-ins is diagnosed where expected.
    { dg-do compile }
-   { dg-options "-O -Wall" } */
+   { dg-options "-O -Wall" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

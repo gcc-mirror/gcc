@@ -898,8 +898,9 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n");
-  fnotice (file, "  -j, --human-readable            Output human readable numbers\n");
+  fnotice (file, "  -j, --json-format               Output JSON intermediate format\n\
+                                    into .gcov.json.gz file\n");
+  fnotice (file, "  -H, --human-readable            Output human readable numbers\n");
   fnotice (file, "  -k, --use-colors                Emit colored output\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
                                     source files\n");
@@ -915,6 +916,9 @@ print_usage (int error_p)
   fnotice (file, "  -v, --version                   Print version number, then exit\n");
   fnotice (file, "  -w, --verbose                   Print verbose informations\n");
   fnotice (file, "  -x, --hash-filenames            Hash long pathnames\n");
+  fnotice (file, "\nObsolete options:\n");
+  fnotice (file, "  -i, --json-format               Replaced with -j, --json-format\n");
+  fnotice (file, "  -j, --human-readable            Replaced with -H, --human-readable\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
   exit (status);
@@ -942,8 +946,8 @@ static const struct option options[] =
   { "all-blocks",           no_argument,       NULL, 'a' },
   { "branch-probabilities", no_argument,       NULL, 'b' },
   { "branch-counts",        no_argument,       NULL, 'c' },
-  { "json-format",	    no_argument,       NULL, 'i' },
-  { "human-readable",	    no_argument,       NULL, 'j' },
+  { "json-format",	    no_argument,       NULL, 'j' },
+  { "human-readable",	    no_argument,       NULL, 'H' },
   { "no-output",            no_argument,       NULL, 'n' },
   { "long-file-names",      no_argument,       NULL, 'l' },
   { "function-summaries",   no_argument,       NULL, 'f' },
@@ -969,7 +973,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhijklmno:pqrs:tuvwx";
+  const char *opts = "abcdfhHijklmno:pqrs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -992,7 +996,7 @@ process_args (int argc, char **argv)
 	case 'l':
 	  flag_long_names = 1;
 	  break;
-	case 'j':
+	case 'H':
 	  flag_human_readable_numbers = 1;
 	  break;
 	case 'k':
@@ -1024,6 +1028,7 @@ process_args (int argc, char **argv)
 	  flag_unconditional = 1;
 	  break;
 	case 'i':
+	case 'j':
 	  flag_json_format = 1;
 	  flag_gcov_file = 1;
 	  break;
@@ -1967,11 +1972,16 @@ read_count_file (void)
 	}
       else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
+	  int read_length = (int)length;
+	  length = abs (read_length);
 	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->counts.size ()))
 	    goto mismatch;
 
-	  for (ix = 0; ix != fn->counts.size (); ix++)
-	    fn->counts[ix] += gcov_read_counter ();
+	  if (read_length > 0)
+	    for (ix = 0; ix != fn->counts.size (); ix++)
+	      fn->counts[ix] += gcov_read_counter ();
+	  else
+	    length = 0;
 	}
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))

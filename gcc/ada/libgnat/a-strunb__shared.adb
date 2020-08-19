@@ -56,6 +56,18 @@ package body Ada.Strings.Unbounded is
    --  allocated memory segments to use memory effectively by Append/Insert/etc
    --  operations.
 
+   function Sum (Left : Natural; Right : Integer) return Natural with Inline;
+   --  Returns summary of Left and Right, raise Constraint_Error on overflow
+
+   function Mul (Left, Right : Natural) return Natural with Inline;
+   --  Returns multiplication of Left and Right, raise Constraint_Error on
+   --  overflow
+
+   function Allocate
+     (Length, Growth : Natural) return not null Shared_String_Access;
+   --  Allocates new Shared_String with at least specified Length plus optional
+   --  Growth.
+
    ---------
    -- "&" --
    ---------
@@ -66,7 +78,7 @@ package body Ada.Strings.Unbounded is
    is
       LR : constant Shared_String_Access := Left.Reference;
       RR : constant Shared_String_Access := Right.Reference;
-      DL : constant Natural := LR.Last + RR.Last;
+      DL : constant Natural := Sum (LR.Last, RR.Last);
       DR : Shared_String_Access;
 
    begin
@@ -104,7 +116,7 @@ package body Ada.Strings.Unbounded is
       Right : String) return Unbounded_String
    is
       LR : constant Shared_String_Access := Left.Reference;
-      DL : constant Natural := LR.Last + Right'Length;
+      DL : constant Natural := Sum (LR.Last, Right'Length);
       DR : Shared_String_Access;
 
    begin
@@ -136,7 +148,7 @@ package body Ada.Strings.Unbounded is
       Right : Unbounded_String) return Unbounded_String
    is
       RR : constant Shared_String_Access := Right.Reference;
-      DL : constant Natural := Left'Length + RR.Last;
+      DL : constant Natural := Sum (Left'Length, RR.Last);
       DR : Shared_String_Access;
 
    begin
@@ -168,7 +180,7 @@ package body Ada.Strings.Unbounded is
       Right : Character) return Unbounded_String
    is
       LR : constant Shared_String_Access := Left.Reference;
-      DL : constant Natural := LR.Last + 1;
+      DL : constant Natural := Sum (LR.Last, 1);
       DR : Shared_String_Access;
 
    begin
@@ -185,7 +197,7 @@ package body Ada.Strings.Unbounded is
       Right : Unbounded_String) return Unbounded_String
    is
       RR : constant Shared_String_Access := Right.Reference;
-      DL : constant Natural := 1 + RR.Last;
+      DL : constant Natural := Sum (1, RR.Last);
       DR : Shared_String_Access;
 
    begin
@@ -232,7 +244,7 @@ package body Ada.Strings.Unbounded is
      (Left  : Natural;
       Right : String) return Unbounded_String
    is
-      DL : constant Natural := Left * Right'Length;
+      DL : constant Natural := Mul (Left, Right'Length);
       DR : Shared_String_Access;
       K  : Positive;
 
@@ -264,7 +276,7 @@ package body Ada.Strings.Unbounded is
       Right : Unbounded_String) return Unbounded_String
    is
       RR : constant Shared_String_Access := Right.Reference;
-      DL : constant Natural := Left * RR.Last;
+      DL : constant Natural := Mul (Left, RR.Last);
       DR : Shared_String_Access;
       K  : Positive;
 
@@ -480,13 +492,16 @@ package body Ada.Strings.Unbounded is
 
    function Aligned_Max_Length (Max_Length : Natural) return Natural is
       Static_Size : constant Natural :=
-        Empty_Shared_String'Size / Standard'Storage_Unit;
-      --  Total size of all static components
-
+                      Empty_Shared_String'Size / Standard'Storage_Unit;
+      --  Total size of all Shared_String static components
    begin
-      return
-        ((Static_Size + Max_Length - 1) / Min_Mul_Alloc + 2) * Min_Mul_Alloc
-           - Static_Size;
+      if Max_Length > Natural'Last - Static_Size then
+         return Natural'Last;
+      else
+         return
+           ((Static_Size + Max_Length - 1) / Min_Mul_Alloc + 2) * Min_Mul_Alloc
+             - Static_Size;
+      end if;
    end Aligned_Max_Length;
 
    --------------
@@ -509,6 +524,23 @@ package body Ada.Strings.Unbounded is
       end if;
    end Allocate;
 
+   --------------
+   -- Allocate --
+   --------------
+
+   function Allocate
+     (Length, Growth : Natural) return not null Shared_String_Access is
+   begin
+      if Natural'Last - Growth < Length then
+         --  Then Length + Growth would be more than Natural'Last
+
+         return new Shared_String (Integer'Last);
+
+      else
+         return Allocate (Length + Growth);
+      end if;
+   end Allocate;
+
    ------------
    -- Append --
    ------------
@@ -519,7 +551,7 @@ package body Ada.Strings.Unbounded is
    is
       SR  : constant Shared_String_Access := Source.Reference;
       NR  : constant Shared_String_Access := New_Item.Reference;
-      DL  : constant Natural              := SR.Last + NR.Last;
+      DL  : constant Natural              := Sum (SR.Last, NR.Last);
       DR  : Shared_String_Access;
 
    begin
@@ -544,7 +576,7 @@ package body Ada.Strings.Unbounded is
       --  Otherwise, allocate new one and fill it
 
       else
-         DR := Allocate (DL + DL / Growth_Factor);
+         DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
          DR.Data (SR.Last + 1 .. DL) := NR.Data (1 .. NR.Last);
          DR.Last := DL;
@@ -558,7 +590,7 @@ package body Ada.Strings.Unbounded is
       New_Item : String)
    is
       SR : constant Shared_String_Access := Source.Reference;
-      DL : constant Natural := SR.Last + New_Item'Length;
+      DL : constant Natural := Sum (SR.Last, New_Item'Length);
       DR : Shared_String_Access;
 
    begin
@@ -576,7 +608,7 @@ package body Ada.Strings.Unbounded is
       --  Otherwise, allocate new one and fill it
 
       else
-         DR := Allocate (DL + DL / Growth_Factor);
+         DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
          DR.Data (SR.Last + 1 .. DL) := New_Item;
          DR.Last := DL;
@@ -590,20 +622,20 @@ package body Ada.Strings.Unbounded is
       New_Item : Character)
    is
       SR : constant Shared_String_Access := Source.Reference;
-      DL : constant Natural := SR.Last + 1;
+      DL : constant Natural := Sum (SR.Last, 1);
       DR : Shared_String_Access;
 
    begin
       --  Try to reuse existing shared string
 
-      if Can_Be_Reused (SR, SR.Last + 1) then
+      if Can_Be_Reused (SR, DL) then
          SR.Data (SR.Last + 1) := New_Item;
          SR.Last := SR.Last + 1;
 
       --  Otherwise, allocate new one and fill it
 
       else
-         DR := Allocate (DL + DL / Growth_Factor);
+         DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
          DR.Data (DL) := New_Item;
          DR.Last := DL;
@@ -1089,7 +1121,7 @@ package body Ada.Strings.Unbounded is
       --  Otherwise, allocate new shared string and fill it
 
       else
-         DR := Allocate (DL + DL / Growth_Factor);
+         DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. Before - 1) := SR.Data (1 .. Before - 1);
          DR.Data (Before .. Before + New_Item'Length - 1) := New_Item;
          DR.Data (Before + New_Item'Length .. DL) :=
@@ -1138,7 +1170,7 @@ package body Ada.Strings.Unbounded is
       --  Otherwise, allocate new shared string and fill it
 
       else
-         DR := Allocate (DL + DL / Growth_Factor);
+         DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. Before - 1) := SR.Data (1 .. Before - 1);
          DR.Data (Before .. Before + New_Item'Length - 1) := New_Item;
          DR.Data (Before + New_Item'Length .. DL) :=
@@ -1157,6 +1189,16 @@ package body Ada.Strings.Unbounded is
    begin
       return Source.Reference.Last;
    end Length;
+
+   ---------
+   -- Mul --
+   ---------
+
+   function Mul (Left, Right : Natural) return Natural is
+      pragma Unsuppress (Overflow_Check);
+   begin
+      return Left * Right;
+   end Mul;
 
    ---------------
    -- Overwrite --
@@ -1178,7 +1220,7 @@ package body Ada.Strings.Unbounded is
          raise Index_Error;
       end if;
 
-      DL := Integer'Max (SR.Last, Position + New_Item'Length - 1);
+      DL := Integer'Max (SR.Last, Sum (Position - 1, New_Item'Length));
 
       --  Result is empty string, reuse empty shared string
 
@@ -1329,7 +1371,8 @@ package body Ada.Strings.Unbounded is
       --  Do replace operation when removed slice is not empty
 
       if High >= Low then
-         DL := By'Length + SR.Last + Low - Integer'Min (High, SR.Last) - 1;
+         DL := Sum (SR.Last,
+                    By'Length + Low - Integer'Min (High, SR.Last) - 1);
          --  This is the number of characters remaining in the string after
          --  replacing the slice.
 
@@ -1472,6 +1515,16 @@ package body Ada.Strings.Unbounded is
          return SR.Data (Low .. High);
       end if;
    end Slice;
+
+   ---------
+   -- Sum --
+   ---------
+
+   function Sum (Left : Natural; Right : Integer) return Natural is
+      pragma Unsuppress (Overflow_Check);
+   begin
+      return Left + Right;
+   end Sum;
 
    ----------
    -- Tail --
@@ -1996,7 +2049,7 @@ package body Ada.Strings.Unbounded is
    begin
       --  Check bounds
 
-      if Low > SR.Last + 1 or else High > SR.Last then
+      if Low - 1 > SR.Last or else High > SR.Last then
          raise Index_Error;
 
       --  Result is empty slice, reuse empty shared string
@@ -2030,7 +2083,7 @@ package body Ada.Strings.Unbounded is
    begin
       --  Check bounds
 
-      if Low > SR.Last + 1 or else High > SR.Last then
+      if Low - 1 > SR.Last or else High > SR.Last then
          raise Index_Error;
 
       --  Result is empty slice, reuse empty shared string

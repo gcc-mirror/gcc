@@ -51,7 +51,9 @@ generic
    Default_Capacity : Count_Type;
    Default_Ceiling  : System.Any_Priority := System.Priority'Last;
 
-package Ada.Containers.Bounded_Priority_Queues is
+package Ada.Containers.Bounded_Priority_Queues with
+  SPARK_Mode => Off
+is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
 

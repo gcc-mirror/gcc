@@ -124,13 +124,11 @@ add_decl_to_level (cp_binding_level *b, tree decl)
   TREE_CHAIN (decl) = b->names;
   b->names = decl;
 
-  /* If appropriate, add decl to separate list of statics.  We
-     include extern variables because they might turn out to be
-     static later.  It's OK for this list to contain a few false
-     positives.  */
+  /* If appropriate, add decl to separate list of statics.  We include
+     extern variables because they might turn out to be static later.
+     It's OK for this list to contain a few false positives.  */
   if (b->kind == sk_namespace
-      && ((VAR_P (decl)
-	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+      && ((VAR_P (decl) && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	  || (TREE_CODE (decl) == FUNCTION_DECL
 	      && (!TREE_PUBLIC (decl)
 		  || decl_anon_ns_mem_p (decl)
@@ -166,7 +164,8 @@ public:
   tree name;	/* The identifier being looked for.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
-  int flags;	/* Lookup flags.  */
+  LOOK_want want;  /* What kind of entity we want.  */
+
   bool deduping; /* Full deduping is needed because using declarations
 		    are in play.  */
   vec<tree, va_heap, vl_embed> *scopes;
@@ -179,8 +178,9 @@ protected:
   static name_lookup *active;
 
 public:
-  name_lookup (tree n, int f = 0)
-  : name (n), value (NULL_TREE), type (NULL_TREE), flags (f),
+  name_lookup (tree n, LOOK_want w = LOOK_want::NORMAL)
+  : name (n), value (NULL_TREE), type (NULL_TREE),
+    want (w),
     deduping (false), scopes (NULL), previous (NULL)
   {
     preserve_state ();
@@ -419,7 +419,7 @@ name_lookup::add_overload (tree fns)
   if (!deduping && TREE_CODE (fns) == OVERLOAD)
     {
       tree probe = fns;
-      if (flags & LOOKUP_HIDDEN)
+      if (!bool (want & LOOK_want::HIDDEN_FRIEND))
 	probe = ovl_skip_hidden (probe);
       if (probe && TREE_CODE (probe) == OVERLOAD
 	  && OVL_DEDUP_P (probe))
@@ -487,13 +487,13 @@ name_lookup::process_binding (tree new_val, tree new_type)
 {
   /* Did we really see a type? */
   if (new_type
-      && (LOOKUP_NAMESPACES_ONLY (flags)
-	  || (!(flags & LOOKUP_HIDDEN)
+      && ((want & LOOK_want::TYPE_NAMESPACE) == LOOK_want::NAMESPACE
+	  || (!bool (want & LOOK_want::HIDDEN_FRIEND)
 	      && DECL_LANG_SPECIFIC (new_type)
 	      && DECL_ANTICIPATED (new_type))))
     new_type = NULL_TREE;
 
-  if (new_val && !(flags & LOOKUP_HIDDEN))
+  if (new_val && !bool (want & LOOK_want::HIDDEN_FRIEND))
     new_val = ovl_skip_hidden (new_val);
 
   /* Do we really see a value? */
@@ -503,21 +503,21 @@ name_lookup::process_binding (tree new_val, tree new_type)
       case TEMPLATE_DECL:
 	/* If we expect types or namespaces, and not templates,
 	   or this is not a template class.  */
-	if ((LOOKUP_QUALIFIERS_ONLY (flags)
-	     && !DECL_TYPE_TEMPLATE_P (new_val)))
+	if (bool (want & LOOK_want::TYPE_NAMESPACE)
+	    && !DECL_TYPE_TEMPLATE_P (new_val))
 	  new_val = NULL_TREE;
 	break;
       case TYPE_DECL:
-	if (LOOKUP_NAMESPACES_ONLY (flags)
-	    || (new_type && (flags & LOOKUP_PREFER_TYPES)))
+	if ((want & LOOK_want::TYPE_NAMESPACE) == LOOK_want::NAMESPACE
+	    || (new_type && bool (want & LOOK_want::TYPE)))
 	  new_val = NULL_TREE;
 	break;
       case NAMESPACE_DECL:
-	if (LOOKUP_TYPES_ONLY (flags))
+	if ((want & LOOK_want::TYPE_NAMESPACE) == LOOK_want::TYPE)
 	  new_val = NULL_TREE;
 	break;
       default:
-	if (LOOKUP_QUALIFIERS_ONLY (flags))
+	if (bool (want & LOOK_want::TYPE_NAMESPACE))
 	  new_val = NULL_TREE;
       }
 
@@ -717,16 +717,17 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       if (scope == global_namespace)
 	break;
 
-      /* If looking for hidden names, we only look in the innermost
+      /* If looking for hidden friends, we only look in the innermost
 	 namespace scope.  [namespace.memdef]/3 If a friend
 	 declaration in a non-local class first declares a class,
 	 function, class template or function template the friend is a
 	 member of the innermost enclosing namespace.  See also
 	 [basic.lookup.unqual]/7 */
-      if (flags & LOOKUP_HIDDEN)
+      if (bool (want & LOOK_want::HIDDEN_FRIEND))
 	break;
     }
 
+  /* Restore to incoming length.  */
   vec_safe_truncate (queue, length);
 
   return found;
@@ -1670,7 +1671,7 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
    no existing MEMBER_VEC and fewer than 8 fields, do nothing.  We
    know there must be at least 1 field -- the self-reference
    TYPE_DECL, except for anon aggregates, which will have at least
-   one field.  */
+   one field anyway.  */
 
 void 
 set_class_bindings (tree klass, unsigned extra)
@@ -3692,7 +3693,6 @@ debug (cp_binding_level *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
-
 static void
 print_other_binding_stack (cp_binding_level *stack)
 {
@@ -3704,7 +3704,7 @@ print_other_binding_stack (cp_binding_level *stack)
     }
 }
 
-void
+DEBUG_FUNCTION void
 print_binding_stack (void)
 {
   cp_binding_level *b;
@@ -3743,7 +3743,7 @@ identifier_type_value_1 (tree id)
     return REAL_IDENTIFIER_TYPE_VALUE (id);
   /* Have to search for it. It must be on the global level, now.
      Ask lookup_name not to return non-types.  */
-  id = lookup_name_real (id, 2, 1, /*block_p=*/true, 0, 0);
+  id = lookup_name (id, LOOK_where::BLOCK_NAMESPACE, LOOK_want::TYPE);
   if (id)
     return TREE_TYPE (id);
   return NULL_TREE;
@@ -4744,7 +4744,7 @@ do_class_using_decl (tree scope, tree name)
       || scope == error_mark_node)
     return NULL_TREE;
 
-  name_lookup lookup (name, 0);
+  name_lookup lookup (name);
   if (!lookup_using_decl (scope, lookup))
     return NULL_TREE;
 
@@ -4817,7 +4817,8 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
      children.  */
   tree old = NULL_TREE;
   {
-    name_lookup lookup (DECL_NAME (decl), LOOKUP_HIDDEN);
+    name_lookup lookup (DECL_NAME (decl),
+			LOOK_want::NORMAL | LOOK_want::HIDDEN_FRIEND);
     if (!lookup.search_qualified (scope, /*usings=*/false))
       /* No old declaration at all.  */
       goto not_found;
@@ -5129,7 +5130,7 @@ finish_nonmember_using_decl (tree scope, tree name)
   if (scope == error_mark_node || name == error_mark_node)
     return;
 
-  name_lookup lookup (name, 0);
+  name_lookup lookup (name);
 
   if (!lookup_using_decl (scope, lookup))
     return;
@@ -5211,43 +5212,26 @@ cp_namespace_decls (tree ns)
   return NAMESPACE_LEVEL (ns)->names;
 }
 
-/* Combine prefer_type and namespaces_only into flags.  */
-
-static int
-lookup_flags (int prefer_type, int namespaces_only)
-{
-  if (namespaces_only)
-    return LOOKUP_PREFER_NAMESPACES;
-  if (prefer_type > 1)
-    return LOOKUP_PREFER_TYPES;
-  if (prefer_type > 0)
-    return LOOKUP_PREFER_BOTH;
-  return 0;
-}
-
 /* Given a lookup that returned VAL, use FLAGS to decide if we want to
-   ignore it or not.  Subroutine of lookup_name_real and
-   lookup_type_scope.  */
+   ignore it or not.  Subroutine of lookup_name_1 and lookup_type_scope.  */
 
 static bool
-qualify_lookup (tree val, int flags)
+qualify_lookup (tree val, LOOK_want want)
 {
   if (val == NULL_TREE)
     return false;
-  if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
-    return true;
-  if (flags & LOOKUP_PREFER_TYPES)
+
+  if (bool (want & LOOK_want::TYPE))
     {
       tree target_val = strip_using_decl (val);
-      if (TREE_CODE (target_val) == TYPE_DECL
-	  || TREE_CODE (target_val) == TEMPLATE_DECL)
+
+      if (TREE_CODE (STRIP_TEMPLATE (target_val)) == TYPE_DECL)
 	return true;
     }
-  if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
-    return false;
-  /* Look through lambda things that we shouldn't be able to see.  */
-  if (!(flags & LOOKUP_HIDDEN) && is_lambda_ignored_entity (val))
-    return false;
+
+  if (bool (want & LOOK_want::TYPE_NAMESPACE))
+    return TREE_CODE (val) == NAMESPACE_DECL;
+
   return true;
 }
 
@@ -5273,7 +5257,6 @@ using_directives_contain_std_p (vec<tree, va_gc> *usings)
 static bool
 has_using_namespace_std_directive_p ()
 {
-  /* Look at local using-directives.  */
   for (cp_binding_level *level = current_binding_level;
        level;
        level = level->level_chain)
@@ -5995,8 +5978,7 @@ suggest_alternative_in_scoped_enum (tree name, tree scoped_enum)
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
    or a class TYPE).
 
-   If PREFER_TYPE is > 0, we only return TYPE_DECLs or namespaces.
-   If PREFER_TYPE is > 1, we only return TYPE_DECLs.
+   WANT as for lookup_name_1.
 
    Returns a DECL (or OVERLOAD, or BASELINK) representing the
    declaration found.  If no suitable declaration can be found,
@@ -6004,17 +5986,13 @@ suggest_alternative_in_scoped_enum (tree name, tree scoped_enum)
    neither a class-type nor a namespace a diagnostic is issued.  */
 
 tree
-lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
-		       bool find_hidden /*=false*/)
+lookup_qualified_name (tree scope, tree name, LOOK_want want, bool complain)
 {
   tree t = NULL_TREE;
 
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
-      int flags = lookup_flags (prefer_type, /*namespaces_only*/false);
-      if (find_hidden)
-	flags |= LOOKUP_HIDDEN;
-      name_lookup lookup (name, flags);
+      name_lookup lookup (name, want);
 
       if (qualified_namespace_lookup (scope, &lookup))
 	t = lookup.value;
@@ -6022,7 +6000,8 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
   else if (is_class_type (scope, complain))
-    t = lookup_member (scope, name, 2, prefer_type, tf_warning_or_error);
+    t = lookup_member (scope, name, 2, bool (want & LOOK_want::TYPE),
+		       tf_warning_or_error);
 
   if (!t)
     return error_mark_node;
@@ -6032,8 +6011,10 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
 /* Wrapper for the above that takes a string argument.  The function name is
    not at the beginning of the line to keep this wrapper out of etags.  */
 
-tree lookup_qualified_name (tree t, const char *p, int wt, bool c, bool fh)
-{ return lookup_qualified_name (t, get_identifier (p), wt, c, fh); }
+tree lookup_qualified_name (tree t, const char *p, LOOK_want w, bool c)
+{
+  return lookup_qualified_name (t, get_identifier (p), w, c);
+}
 
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.
@@ -6416,24 +6397,35 @@ innermost_non_namespace_value (tree name)
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
    such declaration, or return a TREE_LIST with all the overloaded
-   definitions if there are many, or return 0 if it is undefined.
+   definitions if there are many, or return NULL_TREE if it is undefined.
    Hidden name, either friend declaration or built-in function, are
    not ignored.
 
-   If PREFER_TYPE is > 0, we prefer TYPE_DECLs or namespaces.
-   If PREFER_TYPE is > 1, we reject non-type decls (e.g. namespaces).
-   Otherwise we prefer non-TYPE_DECLs.
+   WHERE controls which scopes are considered.  It is a bit mask of
+   LOOK_where::BLOCK (look in block scope), LOOK_where::CLASS
+   (look in class scopes) & LOOK_where::NAMESPACE (look in namespace
+   scopes).  It is an error for no bits to be set.  These scopes are
+   searched from innermost to outermost.
 
-   If NONCLASS is nonzero, bindings in class scopes are ignored.  If
-   BLOCK_P is false, bindings in block scopes are ignored.  */
+   WANT controls what kind of entity we'd happy with.
+   LOOK_want::NORMAL for normal lookup (implicit typedefs can be
+   hidden).  LOOK_want::TYPE for only TYPE_DECLS, LOOK_want::NAMESPACE
+   for only NAMESPACE_DECLS.  These two can be bit-ored to find
+   namespace or type.
+
+   WANT can also have LOOK_want::HIDDEN_FRIEND or
+   LOOK_want::HIDDEN_LAMBDa added to it.  */
 
 static tree
-lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
-		    int namespaces_only, int flags)
+lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
 {
-  cxx_binding *iter;
   tree val = NULL_TREE;
 
+  gcc_checking_assert (unsigned (where) != 0);
+  /* If we're looking for hidden lambda things, we shouldn't be
+     looking in namespace scope.  */
+  gcc_checking_assert (!bool (want & LOOK_want::HIDDEN_LAMBDA)
+		       || !bool (where & LOOK_where::NAMESPACE));
   query_oracle (name);
 
   /* Conversion operators are handled specially because ordinary
@@ -6466,29 +6458,31 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
       return NULL_TREE;
     }
 
-  flags |= lookup_flags (prefer_type, namespaces_only);
-
   /* First, look in non-namespace scopes.  */
 
   if (current_class_type == NULL_TREE)
-    nonclass = 1;
+    /* Maybe avoid searching the binding stack at all.  */
+    where = LOOK_where (unsigned (where) & ~unsigned (LOOK_where::CLASS));
 
-  if (block_p || !nonclass)
-    for (iter = outer_binding (name, NULL, !nonclass);
-	 iter;
-	 iter = outer_binding (name, iter, !nonclass))
+  if (bool (where & (LOOK_where::BLOCK | LOOK_where::CLASS)))
+    for (cxx_binding *iter = nullptr;
+	 (iter = outer_binding (name, iter, bool (where & LOOK_where::CLASS)));)
       {
 	tree binding;
 
 	/* Skip entities we don't want.  */
-	if (LOCAL_BINDING_P (iter) ? !block_p : nonclass)
+	if (!bool (where & (LOCAL_BINDING_P (iter)
+			    ? LOOK_where::BLOCK : LOOK_where::CLASS)))
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if (qualify_lookup (iter->value, flags))
+	if (iter->value
+	    && (bool (want & LOOK_want::HIDDEN_LAMBDA)
+		|| !is_lambda_ignored_entity (iter->value))
+	    && qualify_lookup (iter->value, want))
 	  binding = iter->value;
-	else if ((flags & LOOKUP_PREFER_TYPES)
-		 && qualify_lookup (iter->type, flags))
+	else if (bool (want & LOOK_want::TYPE)
+		 && qualify_lookup (iter->type, want))
 	  binding = iter->type;
 	else
 	  binding = NULL_TREE;
@@ -6551,9 +6545,9 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
       }
 
   /* Now lookup in namespace scopes.  */
-  if (!val)
+  if (!val && bool (where & LOOK_where::NAMESPACE))
     {
-      name_lookup lookup (name, flags);
+      name_lookup lookup (name, want);
       if (lookup.search_unqualified
 	  (current_decl_namespace (), current_binding_level))
 	val = lookup.value;
@@ -6566,36 +6560,21 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   return val;
 }
 
-/* Wrapper for lookup_name_real_1.  */
+/* Wrapper for lookup_name_1.  */
 
 tree
-lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
-		  int namespaces_only, int flags)
+lookup_name (tree name, LOOK_where where, LOOK_want want)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_name_real_1 (name, prefer_type, nonclass, block_p,
-			    namespaces_only, flags);
+  tree ret = lookup_name_1 (name, where, want);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
 tree
-lookup_name_nonclass (tree name)
-{
-  return lookup_name_real (name, 0, 1, /*block_p=*/true, 0, 0);
-}
-
-tree
 lookup_name (tree name)
 {
-  return lookup_name_real (name, 0, 0, /*block_p=*/true, 0, 0);
-}
-
-tree
-lookup_name_prefer_type (tree name, int prefer_type)
-{
-  return lookup_name_real (name, prefer_type, 0, /*block_p=*/true, 0, 0);
+  return lookup_name (name, LOOK_where::ALL, LOOK_want::NORMAL);
 }
 
 /* Look up NAME for type used in elaborated name specifier in
@@ -6604,7 +6583,7 @@ lookup_name_prefer_type (tree name, int prefer_type)
    name, more scopes are checked if cleanup or template parameter
    scope is encountered.
 
-   Unlike lookup_name_real, we make sure that NAME is actually
+   Unlike lookup_name_1, we make sure that NAME is actually
    declared in the desired scope, not from inheritance, nor using
    directive.  For using declaration, there is DR138 still waiting
    to be resolved.  Hidden name coming from an earlier friend
@@ -6643,13 +6622,13 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 	     typedef struct C {} C;
 	   correctly.  */
 	if (tree type = iter->type)
-	  if (qualify_lookup (type, LOOKUP_PREFER_TYPES)
+	  if (qualify_lookup (type, LOOK_want::TYPE)
 	      && (scope != ts_current
 		  || LOCAL_BINDING_P (iter)
 		  || DECL_CONTEXT (type) == iter->scope->this_entity))
 	    return type;
 
-	if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES)
+	if (qualify_lookup (iter->value, LOOK_want::TYPE)
 	    && (scope != ts_current
 		|| !INHERITED_VALUE_BINDING_P (iter)))
 	  return iter->value;
@@ -6670,11 +6649,11 @@ lookup_type_scope_1 (tree name, tag_scope scope)
     {
       /* If this is the kind of thing we're looking for, we're done.  */
       if (tree type = MAYBE_STAT_TYPE (*slot))
-	if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
+	if (qualify_lookup (type, LOOK_want::TYPE))
 	  return type;
 
       if (tree decl = MAYBE_STAT_DECL (*slot))
-	if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
+	if (qualify_lookup (decl, LOOK_want::TYPE))
 	  return decl;
     }
 
@@ -7376,7 +7355,7 @@ push_namespace (tree name, bool make_inline)
 
   tree ns = NULL_TREE;
   {
-    name_lookup lookup (name, 0);
+    name_lookup lookup (name);
     if (!lookup.search_qualified (current_namespace, /*usings=*/false))
       ;
     else if (TREE_CODE (lookup.value) == TREE_LIST)

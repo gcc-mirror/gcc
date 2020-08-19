@@ -161,6 +161,7 @@
 #define vec_vmsumubm __builtin_vec_vmsumubm
 #define vec_vmsumshs __builtin_vec_vmsumshs
 #define vec_vmsumuhs __builtin_vec_vmsumuhs
+#define vec_vmsumudm __builtin_vec_vmsumudm
 #define vec_vmulesb __builtin_vec_vmulesb
 #define vec_vmulesh __builtin_vec_vmulesh
 #define vec_vmuleuh __builtin_vec_vmuleuh
@@ -492,6 +493,9 @@
 #define vec_cntlz_lsbb __builtin_vec_vclzlsbb
 #define vec_cnttz_lsbb __builtin_vec_vctzlsbb
 
+#define vec_test_lsbb_all_ones __builtin_vec_xvtlsbb_all_ones
+#define vec_test_lsbb_all_zeros __builtin_vec_xvtlsbb_all_zeros
+
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
 #endif
@@ -699,6 +703,17 @@ __altivec_scalar_pred(vec_any_nle,
 /* Overloaded built-in functions for ISA 3.1.  */
 #define vec_extractl(a, b, c)	__builtin_vec_extractl (a, b, c)
 #define vec_extracth(a, b, c)	__builtin_vec_extracth (a, b, c)
+#define vec_insertl(a, b, c)   __builtin_vec_insertl (a, b, c)
+#define vec_inserth(a, b, c)   __builtin_vec_inserth (a, b, c)
+#define vec_replace_elt(a, b, c)       __builtin_vec_replace_elt (a, b, c)
+#define vec_replace_unaligned(a, b, c) __builtin_vec_replace_un (a, b, c)
+#define vec_sldb(a, b, c)      __builtin_vec_sldb (a, b, c)
+#define vec_srdb(a, b, c)      __builtin_vec_srdb (a, b, c)
+#define vec_splati(a)  __builtin_vec_xxspltiw (a)
+#define vec_splatid(a) __builtin_vec_xxspltid (a)
+#define vec_splati_ins(a, b, c)        __builtin_vec_xxsplti32dx (a, b, c)
+#define vec_blendv(a, b, c)    __builtin_vec_xxblend (a, b, c)
+#define vec_permx(a, b, c, d)  __builtin_vec_xxpermx (a, b, c, d)
 
 #define vec_gnb(a, b)	__builtin_vec_gnb (a, b)
 #define vec_clrl(a, b)	__builtin_vec_clrl (a, b)
@@ -710,6 +725,16 @@ __altivec_scalar_pred(vec_any_nle,
 
 #define vec_strir_p(a)	__builtin_vec_strir_p (a)
 #define vec_stril_p(a)	__builtin_vec_stril_p (a)
+
+/* VSX Mask Manipulation builtin. */
+#define vec_genbm __builtin_vec_mtvsrbm
+#define vec_genhm __builtin_vec_mtvsrhm
+#define vec_genwm __builtin_vec_mtvsrwm
+#define vec_gendm __builtin_vec_mtvsrdm
+#define vec_genqm __builtin_vec_mtvsrqm
+#define vec_cntm __builtin_vec_cntm
+#define vec_expandm __builtin_vec_vexpandm
+#define vec_extractm __builtin_vec_vextractm
 #endif
 
 #endif /* _ALTIVEC_H */

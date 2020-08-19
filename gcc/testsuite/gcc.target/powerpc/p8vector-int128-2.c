@@ -1,7 +1,7 @@
-/* { dg-do run { target { powerpc*-*-linux* && lp64 } } } */
+/* { dg-do run } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-skip-if "" { powerpc*-*-*spe* } } */
 /* { dg-require-effective-target p8vector_hw } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 #include <stddef.h>

@@ -1,3 +1,85 @@
+2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/nvptx/atomic.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add atomic.c.
+
+2020-08-03  Ian Lance Taylor  <iant@golang.org>
+
+	* config/i386/morestack.S (BACKOFF) [x86_64]: Add 2048 bytes.
+
+2020-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96402
+	* config/aarch64/lse.S (__aarch64_cas16_acq_rel): Use x2, x3 instead
+	of x(tmp0), x(tmp1) in STXP arguments.
+
+2020-07-31  Maciej W. Rozycki  <macro@wdc.com>
+
+	* config/riscv/save-restore.S [__riscv_xlen == 64]
+	(__riscv_save_10, __riscv_save_8, __riscv_save_6, __riscv_save_4)
+	(__riscv_save_2): Replace negative immediates used for the final
+	stack pointer adjustment with positive ones, right-shifted by 4.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Add __gcov_kvp_pool
+	and __gcov_kvp_pool_index variables.
+	* libgcov.h (allocate_gcov_kvp): New.
+	(gcov_topn_add_value): Use it.
+
+2020-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/lse.S: Add PAC property note.
+
+2020-07-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/96035
+	* libgcov-driver-system.c: Create gcov folders with 0777
+	so that it respects a system umask.
+
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/t-slibgcc-aix: Set BITS from compiler cpp macro.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* config/aarch64/aarch64-unwind.h (MD_POST_EXTRACT_ROOT_ADDR): Remove.
+	(MD_POST_FROB_EH_HANDLER_ADDR): Remove.
+	(MD_POST_EXTRACT_FRAME_ADDR): Rename to ...
+	(MD_DEMANGLE_RETURN_ADDR): This.
+	(aarch64_post_extract_frame_addr): Rename to ...
+	(aarch64_demangle_return_addr): This.
+	(aarch64_post_frob_eh_handler_addr): Remove.
+	* unwind-dw2.c (uw_update_context): Demangle return address.
+	(uw_frob_return_addr): Remove.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/96001
+	* config/aarch64/lse.S: Add BTI marking and related definitions,
+	and add BTI c to function entries.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/lse.S: Add stack note.
+
+2020-07-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95348
+	* libgcov-driver.c (merge_one_data): Merge only profiles
+	that are not of non-zero type.
+	(write_one_data): Write counters only if there's one non-zero
+	value.
+	* libgcov-util.c (tag_function): Change signature from unsigned
+	to int.
+	(tag_blocks): Likewise.
+	(tag_arcs): Likewise.
+	(tag_counters): Likewise.
+	(tag_summary): Likewise.
+	(tag_lines): Read only if COUNTERS is non-zero.
+	(read_gcda_file): Handle negative length for COUNTERS type.
+
 2020-06-25  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c (merge_summary): Remove function as its name
