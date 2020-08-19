@@ -1,3 +1,8 @@
+2020-08-19  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/goacc/pr70828.f90: Update expected output in Gimple
+	dump.
+
 2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
