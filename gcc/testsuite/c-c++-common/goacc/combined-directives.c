@@ -110,7 +110,7 @@ test ()
 // { dg-final { scan-tree-dump-times "acc loop worker" 2 "gimple" } }
 // { dg-final { scan-tree-dump-times "acc loop vector" 2 "gimple" } }
 // { dg-final { scan-tree-dump-times "acc loop seq" 2 "gimple" } }
-// { dg-final { scan-tree-dump-times "acc loop auto" 2 "gimple" } }
+// { dg-final { scan-tree-dump-times "acc loop auto" 6 "gimple" } }
 // { dg-final { scan-tree-dump-times "acc loop tile.2, 3" 2 "gimple" } }
 // { dg-final { scan-tree-dump-times "acc loop independent private.i" 2 "gimple" } }
 // { dg-final { scan-tree-dump-times "private.z" 2 "gimple" } }

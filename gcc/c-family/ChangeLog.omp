@@ -1,3 +1,10 @@
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Annotate inner loops in "acc kernels loop" directives (C/C++).
+
+	* c-omp.cc (annotate_loops_in_kernels_regions): Process inner
+	loops in combined "acc kernels loop" directives.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-common.h (c_oacc_annotate_loops_in_kernels_regions): Declare.
