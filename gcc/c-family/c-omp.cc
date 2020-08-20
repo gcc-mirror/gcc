@@ -3484,18 +3484,30 @@ annotate_loops_in_kernels_regions (tree *nodeptr, int *walk_subtrees,
       /* Do not try to add automatic OpenACC annotations inside manually
 	 annotated loops.  Presumably, the user avoided doing it on
 	 purpose; for example, all available levels of parallelism may
-	 have been used up.  */
-      {
-	struct annotation_info nested_info
-	  = { NULL_TREE, NULL_TREE, false, as_explicit_annotation,
-	      node, info };
-	if (info->state >= as_in_kernels_region)
-	  do_not_annotate_loop_nest (info, as_explicit_annotation,
-				     node);
-	walk_tree (&OMP_BODY (node), annotate_loops_in_kernels_regions,
-		   (void *) &nested_info, NULL);
-	*walk_subtrees = 0;
-      }
+	 have been used up.  However, assume that the combined construct
+	 "#pragma acc kernels loop" means to try to process the whole
+	 loop nest.
+	 Note that a single OACC_LOOP construct represents an entire set
+	 of collapsed loops so we do not have to deal explicitly with the
+	 collapse clause here, as the Fortran front end does.  */
+      if (info->state == as_in_kernels_region && OACC_LOOP_COMBINED (node))
+	{
+	  walk_tree (&OMP_BODY (node), annotate_loops_in_kernels_regions,
+		     (void *) info, NULL);
+	  *walk_subtrees = 0;
+	}
+      else
+	{
+	  struct annotation_info nested_info
+	    = { NULL_TREE, NULL_TREE, false, as_explicit_annotation,
+		node, info };
+	  if (info->state >= as_in_kernels_region)
+	    do_not_annotate_loop_nest (info, as_explicit_annotation,
+				       node);
+	  walk_tree (&OMP_BODY (node), annotate_loops_in_kernels_regions,
+		     (void *) &nested_info, NULL);
+	  *walk_subtrees = 0;
+	}
       break;
 
     case FOR_STMT:
