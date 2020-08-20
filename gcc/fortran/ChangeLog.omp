@@ -1,3 +1,10 @@
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Add a "combined" flag for "acc kernels loop" etc directives.
+
+	* trans-openmp.c (gfc_trans_omp_do): Add combined parameter,
+	use it to set OACC_LOOP_COMBINED.  Update all call sites.
+
 2020-08-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

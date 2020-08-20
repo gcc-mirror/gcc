@@ -4273,7 +4273,8 @@ typedef struct dovar_init_d {
 
 static tree
 gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
-		  gfc_omp_clauses *do_clauses, tree par_clauses)
+		  gfc_omp_clauses *do_clauses, tree par_clauses,
+		  bool combined)
 {
   gfc_se se;
   tree dovar, stmt, from, to, step, type, init, cond, incr, orig_decls;
@@ -4601,7 +4602,10 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
     case EXEC_OMP_DO: stmt = make_node (OMP_FOR); break;
     case EXEC_OMP_DISTRIBUTE: stmt = make_node (OMP_DISTRIBUTE); break;
     case EXEC_OMP_TASKLOOP: stmt = make_node (OMP_TASKLOOP); break;
-    case EXEC_OACC_LOOP: stmt = make_node (OACC_LOOP); break;
+    case EXEC_OACC_LOOP:
+      stmt = make_node (OACC_LOOP);
+      OACC_LOOP_COMBINED (stmt) = combined;
+      break;
     default: gcc_unreachable ();
     }
 
@@ -4695,7 +4699,8 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
     pblock = &block;
   else
     pushlevel ();
-  stmt = gfc_trans_omp_do (code, EXEC_OACC_LOOP, pblock, &loop_clauses, NULL);
+  stmt = gfc_trans_omp_do (code, EXEC_OACC_LOOP, pblock, &loop_clauses, NULL,
+			   true);
   protected_set_expr_location (stmt, loc);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
@@ -5128,7 +5133,7 @@ gfc_trans_omp_do_simd (gfc_code *code, stmtblock_t *pblock,
     omp_do_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_DO], code->loc);
   body = gfc_trans_omp_do (code, EXEC_OMP_SIMD, pblock ? pblock : &block,
-			   &clausesa[GFC_OMP_SPLIT_SIMD], omp_clauses);
+			   &clausesa[GFC_OMP_SPLIT_SIMD], omp_clauses, false);
   if (pblock == NULL)
     {
       if (TREE_CODE (body) != BIND_EXPR)
@@ -5181,7 +5186,7 @@ gfc_trans_omp_parallel_do (gfc_code *code, stmtblock_t *pblock,
 	pushlevel ();
     }
   stmt = gfc_trans_omp_do (code, EXEC_OMP_DO, new_pblock,
-			   &clausesa[GFC_OMP_SPLIT_DO], omp_clauses);
+			   &clausesa[GFC_OMP_SPLIT_DO], omp_clauses, false);
   if (pblock == NULL)
     {
       if (TREE_CODE (stmt) != BIND_EXPR)
@@ -5424,7 +5429,8 @@ gfc_trans_omp_distribute (gfc_code *code, gfc_omp_clauses *clausesa)
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
       stmt = gfc_trans_omp_do (code, EXEC_OMP_SIMD, &block,
-			       &clausesa[GFC_OMP_SPLIT_SIMD], NULL_TREE);
+			       &clausesa[GFC_OMP_SPLIT_SIMD], NULL_TREE,
+			       false);
       if (TREE_CODE (stmt) != BIND_EXPR)
 	stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
       else
@@ -5480,7 +5486,7 @@ gfc_trans_omp_teams (gfc_code *code, gfc_omp_clauses *clausesa,
     case EXEC_OMP_TEAMS_DISTRIBUTE:
       stmt = gfc_trans_omp_do (code, EXEC_OMP_DISTRIBUTE, NULL,
 			       &clausesa[GFC_OMP_SPLIT_DISTRIBUTE],
-			       NULL);
+			       NULL, false);
       break;
     default:
       stmt = gfc_trans_omp_distribute (code, clausesa);
@@ -5548,7 +5554,8 @@ gfc_trans_omp_target (gfc_code *code)
       break;
     case EXEC_OMP_TARGET_SIMD:
       stmt = gfc_trans_omp_do (code, EXEC_OMP_SIMD, &block,
-			       &clausesa[GFC_OMP_SPLIT_SIMD], NULL_TREE);
+			       &clausesa[GFC_OMP_SPLIT_SIMD], NULL_TREE,
+			       false);
       if (TREE_CODE (stmt) != BIND_EXPR)
 	stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
       else
@@ -5617,7 +5624,8 @@ gfc_trans_omp_taskloop (gfc_code *code)
       break;
     case EXEC_OMP_TASKLOOP_SIMD:
       stmt = gfc_trans_omp_do (code, EXEC_OMP_SIMD, &block,
-			       &clausesa[GFC_OMP_SPLIT_SIMD], NULL_TREE);
+			       &clausesa[GFC_OMP_SPLIT_SIMD], NULL_TREE,
+			       false);
       if (TREE_CODE (stmt) != BIND_EXPR)
 	stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
       else
@@ -5930,7 +5938,7 @@ gfc_trans_oacc_directive (gfc_code *code)
       return gfc_trans_oacc_construct (code);
     case EXEC_OACC_LOOP:
       return gfc_trans_omp_do (code, code->op, NULL, code->ext.omp_clauses,
-			       NULL);
+			       NULL, false);
     case EXEC_OACC_UPDATE:
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
@@ -5967,7 +5975,7 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_SIMD:
     case EXEC_OMP_TASKLOOP:
       return gfc_trans_omp_do (code, code->op, NULL, code->ext.omp_clauses,
-			       NULL);
+			       NULL, false);
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_DISTRIBUTE_SIMD:
