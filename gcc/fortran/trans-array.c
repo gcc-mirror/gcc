@@ -9732,7 +9732,7 @@ gfc_bcast_alloc_comp (gfc_symbol *derived, gfc_expr *expr, int rank,
   args.image_index = image_index;
   args.stat = stat;
   args.errmsg = errmsg;
-  args.errmsg = errmsg_len;
+  args.errmsg_len = errmsg_len;
 
   if (rank == 0)
     {
