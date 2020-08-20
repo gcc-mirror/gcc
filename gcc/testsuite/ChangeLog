@@ -1,3 +1,26 @@
+2020-08-19  Joe Ramsay  <joe.ramsay@arm.com>
+
+	Backported from master:
+	2020-07-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	PR target/96682
+	* gcc.target/arm/mve/intrinsics/mve-vldstr16-no-writeback.c: New test.
+
+2020-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-3.c: Rename xvcvbf16sp to xvcvbf16spn.
+
+2020-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96506
+	* gcc.target/powerpc/pr96506.c: New test.
+
 2020-08-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96199

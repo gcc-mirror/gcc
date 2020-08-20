@@ -1,3 +1,50 @@
+2020-08-19  Joe Ramsay  <joe.ramsay@arm.com>
+
+	Backported from master:
+	2020-07-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	PR target/96682
+	* config/arm/arm-protos.h (arm_coproc_mem_operand_no_writeback):
+	Declare prototype.
+	(arm_mve_mode_and_operands_type_check): Declare prototype.
+	* config/arm/arm.c (arm_coproc_mem_operand): Refactor to use
+	_arm_coproc_mem_operand.
+	(arm_coproc_mem_operand_wb): New function to cover full, limited
+	and no writeback.
+	(arm_coproc_mem_operand_no_writeback): New constraint for memory
+	operand with no writeback.
+	(arm_print_operand): Extend 'E' specifier for memory operand
+	that does not support writeback.
+	(arm_mve_mode_and_operands_type_check): New constraint check for
+	MVE memory operands.
+	* config/arm/constraints.md: Add Uj constraint for VFP vldr.16
+	and vstr.16.
+	* config/arm/vfp.md (*mov_load_vfp_hf16): New pattern for
+	vldr.16.
+	(*mov_store_vfp_hf16): New pattern for vstr.16.
+	(*mov<mode>_vfp_<mode>16): Remove MVE moves.
+
+2020-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_VSX_1): Rename xvcvbf16sp to
+	xvcvbf16spn.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Likewise.
+	* config/rs6000/vsx.md: Likewise.
+	* doc/extend.texi: Likewise.
+
+2020-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96506
+	* config/rs6000/rs6000-call.c (rs6000_promote_function_mode): Disallow
+	MMA types as return values.
+	(rs6000_function_arg): Disallow MMA types as function arguments.
+
 2020-08-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96536

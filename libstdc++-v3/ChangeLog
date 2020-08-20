@@ -1,3 +1,19 @@
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_DEPRECATED_SUGGEST): New
+	macro for "use 'foo' instead" message in deprecated warnings.
+	* include/bits/ios_base.h (io_state, open_mode, seek_dir)
+	(streampos, streamoff): Use _GLIBCXX_DEPRECATED_SUGGEST.
+	* include/std/streambuf (stossc): Replace C++11 attribute
+	with _GLIBCXX_DEPRECATED_SUGGEST.
+	* include/std/type_traits (__is_nullptr_t): Use
+	_GLIBCXX_DEPRECATED_SUGGEST instead of _GLIBCXX_DEPRECATED.
+	* testsuite/27_io/types/1.cc: Check for deprecated warnings.
+	Also check for io_state, open_mode and seek_dir typedefs.
+
 2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/89760
