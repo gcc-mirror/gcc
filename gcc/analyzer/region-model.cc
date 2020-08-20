@@ -462,24 +462,23 @@ region_model::get_gassign_result (const gassign *assign,
       {
 	tree rhs2 = gimple_assign_rhs2 (assign);
 
-	// TODO: constraints between svalues
 	const svalue *rhs1_sval = get_rvalue (rhs1, ctxt);
 	const svalue *rhs2_sval = get_rvalue (rhs2, ctxt);
 
-	tristate t = eval_condition (rhs1_sval, op, rhs2_sval);
-	if (t.is_known ())
-	  return get_rvalue (t.is_true ()
-			     ? boolean_true_node
-			     : boolean_false_node,
-			     ctxt);
-	else
+	if (TREE_TYPE (lhs) == boolean_type_node)
 	  {
-	    // TODO: symbolic value for binop
-	    const svalue *sval_binop
-	      = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
-					    rhs1_sval, rhs2_sval);
-	    return sval_binop;
+	    /* Consider constraints between svalues.  */
+	    tristate t = eval_condition (rhs1_sval, op, rhs2_sval);
+	    if (t.is_known ())
+	      return m_mgr->get_or_create_constant_svalue
+		(t.is_true () ? boolean_true_node : boolean_false_node);
 	  }
+
+	/* Otherwise, generate a symbolic binary op.  */
+	const svalue *sval_binop
+	  = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
+					rhs1_sval, rhs2_sval);
+	return sval_binop;
       }
       break;
 
@@ -1369,7 +1368,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
   switch (ptr_sval->get_kind ())
     {
     default:
-      gcc_unreachable ();
+      break;
 
     case SK_REGION:
       {
@@ -1395,17 +1394,10 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 	      return m_mgr->get_offset_region (parent_region, type, offset);
 	    }
 	  default:
-	    goto create_symbolic_region;
+	    break;
 	  }
       }
-
-    case SK_CONSTANT:
-    case SK_INITIAL:
-    case SK_UNARYOP:
-    case SK_SUB:
-    case SK_WIDENING:
-    case SK_CONJURED:
-      goto create_symbolic_region;
+      break;
 
     case SK_POISONED:
       {
@@ -1425,20 +1417,11 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind));
 	      }
 	  }
-	goto create_symbolic_region;
       }
-
-    case SK_UNKNOWN:
-      {
-      create_symbolic_region:
-	return m_mgr->get_symbolic_region (ptr_sval);
-      }
-
-    case SK_SETJMP:
-      goto create_symbolic_region;
+      break;
     }
 
-  gcc_unreachable ();
+  return m_mgr->get_symbolic_region (ptr_sval);
 }
 
 /* Set the value of the region given by LHS_REG to the value given

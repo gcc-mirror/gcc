@@ -1,3 +1,52 @@
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96643
+	* region-model.cc (region_model::deref_rvalue): Rather than
+	attempting to handle all svalue kinds in the switch, only cover
+	the special cases, and move symbolic-region handling to after
+	the switch, thus implicitly handling the missing case SK_COMPOUND.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96705
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Check that we have an
+	integral type before calling build_int_cst.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96699
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_cast): Use FIX_TRUNC_EXPR for
+	casting from REAL_TYPE to INTEGER_TYPE.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96651
+	* region-model.cc (region_model::called_from_main_p): New.
+	(region_model::get_store_value): Move handling for globals into...
+	(region_model::get_initial_value_for_global): ...this new
+	function, and add logic for extracting values from decl
+	initializers.
+	* region-model.h (decl_region::get_svalue_for_constructor): New
+	decl.
+	(decl_region::get_svalue_for_initializer): New decl.
+	(region_model::called_from_main_p): New decl.
+	(region_model::get_initial_value_for_global): New.
+	* region.cc (decl_region::maybe_get_constant_value): Move logic
+	for getting an svalue from a CONSTRUCTOR node to...
+	(decl_region::get_svalue_for_constructor): ...this new function.
+	(decl_region::get_svalue_for_initializer): New.
+	* store.cc (get_svalue_for_ctor_val): Rewrite in terms of
+	region_model::get_rvalue.
+	* store.h (binding_cluster::get_map): New accessor.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96648
+	* region.cc (get_field_at_bit_offset): Gracefully handle negative
+	values for bit_offset.
+
 2020-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::get_rvalue_1): Fix name of local.

@@ -1801,12 +1801,12 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  }
       }
     else if ((fcode == P10_BUILTIN_VEC_XXEVAL)
-	    || (fcode == P10_BUILTIN_VXXPERMX))
+	    || (fcode == P10V_BUILTIN_VXXPERMX))
       {
 	signed char op3_type;
 
 	/* Need to special case P10_BUILTIN_VEC_XXEVAL and
-	   P10_BUILTIN_VXXPERMX because they take 4 arguments and the
+	   P10V_BUILTIN_VXXPERMX because they take 4 arguments and the
 	   existing infrastructure only handles three.  */
 	if (nargs != 4)
 	  {
@@ -1821,7 +1821,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  {
 	    if (fcode == P10_BUILTIN_VEC_XXEVAL)
 	      op3_type = desc->op3;
-	    else  /* P10_BUILTIN_VXXPERMX */
+	    else  /* P10V_BUILTIN_VXXPERMX */
 	      op3_type = RS6000_BTI_V16QI;
 
 	    if (rs6000_builtin_type_compatible (types[0], desc->op1)

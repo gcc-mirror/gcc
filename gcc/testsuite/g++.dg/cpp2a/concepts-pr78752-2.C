@@ -17,5 +17,5 @@ int main()
   func(1, 2, 3);
 
   t.func(1, 2, ""); // { dg-error "no match" }
-  func(1, 2, ""); // { dg-error "unsatisfied constraints" }
+  func(1, 2, ""); // { dg-error "no match" }
 }

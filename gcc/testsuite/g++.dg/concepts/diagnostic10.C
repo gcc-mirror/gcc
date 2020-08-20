@@ -14,5 +14,5 @@ struct S
 void
 bar()
 {
-  foo<S>(); // { dg-error "unsatisfied constraints" }
+  foo<S>(); // { dg-error "no match" }
 }

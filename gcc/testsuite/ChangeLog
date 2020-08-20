@@ -1,3 +1,79 @@
+2020-08-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2369
+	* g++.dg/concepts/diagnostic10.C: Adjust expexcted errors.
+	* g++.dg/concepts/diagnostic13.C: Adjust expexcted errors.
+	* g++.dg/concepts/diagnostic2.C: Adjust expexcted errors.
+	* g++.dg/concepts/diagnostic3.C: Adjust expexcted errors.
+	* g++.dg/concepts/diagnostic4.C: Adjust expexcted errors.
+	* g++.dg/concepts/diagnostic5.C: Adjust expexcted errors.
+	* g++.dg/concepts/diagnostic9.C: Adjust expexcted errors.
+	* g++.dg/concepts/expression2.C: Adjust expexcted errors.
+	* g++.dg/concepts/fn5.C: Adjust expexcted errors.
+	* g++.dg/concepts/placeholder5.C: Adjust expexcted errors.
+	* g++.dg/concepts/pr67595.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts-pr78752-2.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts-pr84140.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts-recursive-sat3.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts-requires18.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts-requires19.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts3.C: Adjust expexcted errors.
+	* g++.dg/cpp2a/concepts-nondep1.C: New test.
+	* g++.dg/cpp2a/concepts-nondep1a.C: New test.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96643
+	* g++.dg/analyzer/pr96643.C: New test.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96705
+	* gcc.dg/analyzer/pr96705.c: New test.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96699
+	* gcc.dg/analyzer/pr96699.c: New test.
+
+2020-08-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/pcrel-sibcall-1.c: Adjust.
+
+2020-08-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/94234
+	* gcc.dg/pr94234-1.c: New test.
+
+2020-08-19  Peixin Qiao  <qiaopeixin@huawei.com>
+
+	* gcc.target/aarch64/mgeneral-regs_7.c: New test.
+
+2020-08-19  Pat Bernardi  <bernardi@adacore.com>
+
+	* gcc.dg/sinatan-2.c: Add dg-require-effective-target c99_runtime.
+	* gcc.dg/sinhovercosh-1.c: Likewise.
+	* gcc.dg/tanhbysinh.c: Likewise.
+
+2020-08-19  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96494
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Return 1 for nvptx.
+	(check_effective_target_sync_int_long_stack): New proc.
+	* gcc.dg/pr86314.c: Require effective target sync_int_long_stack.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96651
+	* gcc.dg/analyzer/pr96651-1.c: New test.
+	* gcc.dg/analyzer/pr96651-2.c: New test.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96648
+	* gcc.dg/analyzer/pr96648.c: New test.
+
 2020-08-18  Peter Bergner  <bergner@linux.ibm.com>
 
 	* gcc.target/powerpc/mma-builtin-3.c: Rename xvcvbf16sp to xvcvbf16spn.

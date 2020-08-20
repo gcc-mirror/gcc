@@ -67,11 +67,11 @@ void test()
 {
   f1<int>();
   f1<bool>();
-  f1<void>(); // { dg-error "unsatisfied" }
+  f1<void>(); // { dg-error "no match" }
 
   f2<int>();
   f2<bool>();
-  f2<void>(); // { dg-error "unsatisfied" }
+  f2<void>(); // { dg-error "no match" }
 
   data<char> x;
   x.f1<int>();

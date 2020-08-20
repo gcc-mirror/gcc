@@ -47,12 +47,12 @@ void f6(T x) requires requires { requires check_v<decltype(x)>; } { }
 
 void test()
 {
-  f1<int>(); // { dg-error "unsatisfied" }
-  f2(0); // { dg-error "unsatisfied" }
+  f1<int>(); // { dg-error "no match" }
+  f2(0); // { dg-error "no match" }
 
-  f3<int>(); // { dg-error "unsatisfied" }
-  f4(0); // { dg-error "unsatisfied" }
+  f3<int>(); // { dg-error "no match" }
+  f4(0); // { dg-error "no match" }
 
-  f5<int>(); // { dg-error "unsatisfied" }
-  f6(0); // { dg-error "unsatisfied" }
+  f5<int>(); // { dg-error "no match" }
+  f6(0); // { dg-error "no match" }
 }

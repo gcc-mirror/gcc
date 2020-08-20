@@ -1,3 +1,99 @@
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/96042
+	* include/bits/range_access.h (__detail::__to_unsigned_like):
+	Do not use make_unsigned_t<T> in the return type, as it can
+	result in an error before the integral<T> constraint is checked.
+	[__STRICT_ANSI__]: Add overloads for 128-bit integer types.
+	(__detail::__make_unsigned_like_t): Define as the return type
+	of __to_unsigned_like.
+	* testsuite/std/ranges/subrange/96042.cc: New test.
+
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (operator!=, operator>, operator<=)
+	(operator>=): Remove deprecated functions.
+
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96042
+	* include/ext/numeric_traits.h (__is_integer_nonstrict): New
+	trait which is true for 128-bit integers even in strict modes.
+	(__numeric_traits_integer, __numeric_traits): Use
+	__is_integer_nonstrict instead of __is_integer.
+	* include/std/limits [__STRICT_ANSI__ && __SIZEOF_INT128__]
+	(numeric_limits<__int128>, (numeric_limits<unsigned __int128>):
+	Define.
+	* testsuite/std/ranges/iota/96042.cc: New test.
+
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_DEPRECATED_SUGGEST)
+	(_GLIBCXX11_DEPRECATED, _GLIBCXX11_DEPRECATED_SUGGEST)
+	(_GLIBCXX17_DEPRECATED_SUGGEST, _GLIBCXX20_DEPRECATED_SUGGEST):
+	Add new macros to comment.
+
+2020-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/Makefile.am (bits_headers): Add new header
+	<bits/max_size_type.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/iterator_concepts.h
+	(ranges::__detail::__max_diff_type): Remove definition, replace
+	with forward declaration of class __max_diff_type.
+	(__detail::__max_size_type): Remove definition, replace with
+	forward declaration of class __max_size_type.
+	(__detail::__is_unsigned_int128, __is_signed_int128)
+	(__is_int128): New concepts.
+	(__detail::__is_integer_like): Accept __int128 and unsigned
+	__int128.
+	(__detail::__is_signed_integer_like): Accept __int128.
+	* include/bits/max_size_type.h: New header.
+	* include/bits/range_access.h: Include <bits/max_size_type.h>.
+	(__detail::__to_unsigned_like): Two new overloads.
+	* testsuite/std/ranges/iota/difference_type.cc: New test.
+	* testsuite/std/ranges/iota/max_size_type.cc: New test.
+
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_DEPRECATED): Define for all
+	standard modes.
+	(_GLIBCXX_DEPRECATED_SUGGEST): New macro for "use 'foo' instead"
+	message in deprecated warnings.
+	(_GLIBCXX11_DEPRECATED, _GLIBCXX11_DEPRECATED_SUGGEST): New
+	macros for marking features derpecated in C++11.
+	(_GLIBCXX17_DEPRECATED_SUGGEST, _GLIBCXX20_DEPRECATED_SUGGEST):
+	New macros.
+	* include/backward/auto_ptr.h (auto_ptr_ref, auto_ptr<void>):
+	Use _GLIBCXX11_DEPRECATED instead of _GLIBCXX_DEPRECATED.
+	(auto_ptr): Use _GLIBCXX11_DEPRECATED_SUGGEST.
+	* include/backward/binders.h (binder1st, binder2nd): Likewise.
+	* include/bits/ios_base.h (io_state, open_mode, seek_dir)
+	(streampos, streamoff): Use _GLIBCXX_DEPRECATED_SUGGEST.
+	* include/std/streambuf (stossc): Replace C++11 attribute
+	with _GLIBCXX_DEPRECATED_SUGGEST.
+	* include/std/type_traits (__is_nullptr_t): Use
+	_GLIBCXX_DEPRECATED_SUGGEST instead of _GLIBCXX_DEPRECATED.
+	* testsuite/27_io/types/1.cc: Check for deprecated warnings.
+	Also check for io_state, open_mode and seek_dir typedefs.
+
+2020-08-19  Antony Polukhin  <antoshkka@gmail.com>
+
+	PR libstdc++/71579
+	* include/std/type_traits (invoke_result, is_nothrow_invocable_r)
+	Add static_asserts to make sure that the argument of the type
+	trait is not misused with incomplete types.
+	(is_swappable_with, is_nothrow_swappable_with): Add static_asserts
+	to make sure that the first and second arguments of the type trait
+	are not misused with incomplete types.
+	* testsuite/20_util/invoke_result/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_nothrow_invocable/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_nothrow_swappable/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_nothrow_swappable_with/incomplete_neg.cc: New
+	test.
+	* testsuite/20_util/is_swappable_with/incomplete_neg.cc: New test.
+
 2020-08-18  David Edelsohn  <dje.gcc@gmail.com>
 	    Clement Chigot  <clement.chigot@atos.net>
 
