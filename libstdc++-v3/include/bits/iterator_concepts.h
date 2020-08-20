@@ -173,6 +173,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= make_signed_t<decltype(std::declval<_Tp>() - std::declval<_Tp>())>;
     };
 
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  // __int128 is incrementable even if !integral<__int128>
+  template<>
+    struct incrementable_traits<__int128>
+    { using difference_type = __int128; };
+
+  template<>
+    struct incrementable_traits<unsigned __int128>
+    { using difference_type = __int128; };
+#endif
+
   namespace __detail
   {
     // An iterator such that iterator_traits<_Iter> names a specialization

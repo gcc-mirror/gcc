@@ -24,8 +24,13 @@ void
 test01()
 {
   // PR libstdc++/96042
-  using V = std::ranges::iota_view<long long, int>;
+  using V = std::ranges::iota_view<long long, long long>;
+
+  // In strict -std=c++20 mode there is no integer wider than long long,
+  // so V's difference type is an integer-class type, [iterator.concept.winc].
+  // In practice this is either __int128 or __detail::__max_diff_type.
   using D = std::ranges::range_difference_t<V>;
+  // Ensure that numeric_limits is correctly specialized for the type.
   using L = std::numeric_limits<D>;
   static_assert( L::is_specialized );
   static_assert( L::is_signed );
@@ -37,3 +42,24 @@ test01()
   static_assert( L::max() == ~L::min() );
   static_assert( L::lowest() == L::min() );
 }
+
+#ifdef __SIZEOF_INT128__
+void
+test02()
+{
+  // When the target supports __int128 it can be used in iota_view
+  // even in strict mode where !integral<__int128>.
+  using V = std::ranges::iota_view<__int128, __int128>;
+  using D = std::ranges::range_difference_t<V>; // __detail::__max_diff_type
+  using L = std::numeric_limits<D>;
+  static_assert( L::is_specialized );
+  static_assert( L::is_signed );
+  static_assert( L::is_integer );
+  static_assert( L::is_exact );
+  static_assert( L::digits > std::numeric_limits<long long>::digits );
+  static_assert( L::digits10 == static_cast<int>(L::digits * 0.30103) );
+  static_assert( L::min() == (D(1) << L::digits) );
+  static_assert( L::max() == ~L::min() );
+  static_assert( L::lowest() == L::min() );
+}
+#endif
