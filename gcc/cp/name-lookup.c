@@ -1252,18 +1252,18 @@ name_lookup::adl_class_fns (tree type)
 	  {
 	    tree fn = TREE_VALUE (friends);
 
-	    /* Only interested in anticipated friends.  (Non-anticipated
-	       ones will have been inserted during the namespace
-	       adl.)  */
-	    if (!DECL_ANTICIPATED (fn))
-	      continue;
-
 	    /* Only interested in global functions with potentially hidden
 	       (i.e. unqualified) declarations.  */
 	    if (!context)
 	      context = decl_namespace_context (type);
 	    if (CP_DECL_CONTEXT (fn) != context)
 	      continue;
+
+	    if (!deduping)
+	      {
+		lookup_mark (value, true);
+		deduping = true;
+	      }
 
 	    /* Template specializations are never found by name lookup.
 	       (Templates themselves can be found, but not template

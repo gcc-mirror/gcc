@@ -1,5 +1,12 @@
 2020-08-20  Nathan Sidwell  <nathan@acm.org>
 
+	Do not stream hidden_friend_p.
+	gcc/cp/
+	* module.cc (trees_{in,out}::lang_decl_bools): Do not stream
+	anticipated_p or hidden_friend_p.
+	* name-lookup.c (name_lookup::adl_class_fns): DECL_ANTICIPATED is
+	not informative.
+
 	Reimplement module binding extraction.
 	gcc/cp/
 	* module.cc (depset::clear_hidden_binding): New.

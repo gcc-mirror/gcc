@@ -5485,15 +5485,16 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.language == lang_cplusplus);
   WB ((lang->u.base.use_template >> 0) & 1);
   WB ((lang->u.base.use_template >> 1) & 1);
-  /* Do not write u.base.not_really_extern, importer will set when
-     reading the definition (if any).  */
+  /* Do not write lang->u.base.not_really_extern, importer will set
+     when reading the definition (if any).  */
   WB (lang->u.base.initialized_in_class);
   WB (lang->u.base.threadprivate_or_deleted_p);
-  WB (lang->u.base.anticipated_p);
+  /* Do not write lang->u.base.anticipated_p, it is a property of the
+     current TU.  */
   WB (lang->u.base.friend_or_tls);
   WB (lang->u.base.unknown_bound_p);
-  /* Do not write u.base.odr_used, importer will recalculate if they
-     do ODR use this decl.  */
+  /* Do not write lang->u.base.odr_used, importer will recalculate if
+     they do ODR use this decl.  */
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
@@ -5517,7 +5518,8 @@ trees_out::lang_decl_bools (tree t)
       WB (lang->u.fn.nonconverting);
       WB (lang->u.fn.thunk_p);
       WB (lang->u.fn.this_thunk_p);
-      WB (lang->u.fn.hidden_friend_p);
+      /* Do not stream lang->u.hidden_friend_p, it is a property of
+	 the TU.  */
       WB (lang->u.fn.omp_declare_reduction_p);
       WB (lang->u.fn.has_dependent_explicit_spec_p);
       WB (lang->u.fn.immediate_fn_p);
@@ -5558,10 +5560,10 @@ trees_in::lang_decl_bools (tree t)
   /* lang->u.base.not_really_extern is not streamed.  */
   RB (lang->u.base.initialized_in_class);
   RB (lang->u.base.threadprivate_or_deleted_p);
-  RB (lang->u.base.anticipated_p);
+  /* lang->u.base.anticipated_p is not streamed.  */
   RB (lang->u.base.friend_or_tls);
   RB (lang->u.base.unknown_bound_p);
-  /* u.base.odr_used is not streamed.  */
+  /* lang->u.base.odr_used is not streamed.  */
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
@@ -5583,7 +5585,7 @@ trees_in::lang_decl_bools (tree t)
       RB (lang->u.fn.nonconverting);
       RB (lang->u.fn.thunk_p);
       RB (lang->u.fn.this_thunk_p);
-      RB (lang->u.fn.hidden_friend_p);
+      /* lang->u.fn.hidden_friend_p is not streamed.  */
       RB (lang->u.fn.omp_declare_reduction_p);
       RB (lang->u.fn.has_dependent_explicit_spec_p);
       RB (lang->u.fn.immediate_fn_p);
