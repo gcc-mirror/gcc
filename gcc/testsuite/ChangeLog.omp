@@ -1,5 +1,17 @@
 2020-08-19   Sandra Loosemore  <sandra@codesourcery.com>
 
+	Annotate inner loops in "acc kernels loop" directives (Fortran).
+
+	* gfortran.dg/goacc/kernels-loop-annotation-18.f95: New.
+	* gfortran.dg/goacc/kernels-loop-annotation-19.f95: New.
+	* gfortran.dg/goacc/combined-directives.f90: Adjust expected
+	patterns.
+	* gfortran.dg/goacc/private-explicit-kernels-1.f95: Likewise.
+	* gfortran.dg/goacc/private-predetermined-kernels-1.f95:
+	Likewise.
+
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
 	Annotate inner loops in "acc kernels loop" directives (C/C++).
 
 	* c-c++-common/goacc/kernels-loop-annotation-18.c: New.
