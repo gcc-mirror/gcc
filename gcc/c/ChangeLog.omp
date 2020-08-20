@@ -1,3 +1,9 @@
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Add a "combined" flag for "acc kernels loop" etc directives.
+
+	* c-parser.cc (c_parser_oacc_loop): Set OACC_LOOP_COMBINED.
+
 2020-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-decl.cc (c_unwrap_for_init): New.
