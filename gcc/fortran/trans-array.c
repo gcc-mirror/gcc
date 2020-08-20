@@ -7019,7 +7019,12 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       e = gfc_constructor_first (expr->value.constructor)->expr;
 
       gfc_init_se (&tse, NULL);
+
+      /* Avoid evaluating trailing array references since all we need is
+	 the string length.  */
       if (e->rank)
+	tse.descriptor_only = 1;
+      if (e->rank && e->expr_type != EXPR_VARIABLE)
 	gfc_conv_expr_descriptor (&tse, e);
       else
 	gfc_conv_expr (&tse, e);
@@ -7037,14 +7042,26 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl,
 		      tse.string_length);
 
+      /* Make sure that deferred length components point to the hidden
+	 string_length component.  */
+      if (TREE_CODE (tse.expr) == COMPONENT_REF
+	  && TREE_CODE (tse.string_length) == COMPONENT_REF
+	  && TREE_OPERAND (tse.expr, 0) == TREE_OPERAND (tse.string_length, 0))
+	e->ts.u.cl->backend_decl = expr->ts.u.cl->backend_decl;
+
       return;
 
     case EXPR_OP:
       get_array_charlen (expr->value.op.op1, se);
 
-      /* For parentheses the expression ts.u.cl is identical.  */
+      /* For parentheses the expression ts.u.cl should be identical.  */
       if (expr->value.op.op == INTRINSIC_PARENTHESES)
-	return;
+	{
+	  if (expr->value.op.op1->ts.u.cl != expr->ts.u.cl)
+	    expr->ts.u.cl->backend_decl
+			= expr->value.op.op1->ts.u.cl->backend_decl;
+	  return;
+	}
 
       expr->ts.u.cl->backend_decl =
 		gfc_create_var (gfc_charlen_type_node, "sln");
