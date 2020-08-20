@@ -1523,7 +1523,7 @@ package body Einfo is
    function Has_Constrained_Partial_View (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag187 (Id);
+      return Flag187 (Base_Type (Id));
    end Has_Constrained_Partial_View;
 
    function Has_Controlled_Component (Id : E) return B is

@@ -3479,13 +3479,13 @@ package body Sem_Res is
 
                elsif Has_Discriminants (F_Typ)
                  and then not Is_Constrained (F_Typ)
-                 and then not Has_Constrained_Partial_View (F_Typ)
-                 and then not Is_Generic_Type (F_Typ)
+                 and then not Object_Type_Has_Constrained_Partial_View
+                                (Typ => F_Typ, Scop => Current_Scope)
                then
                   null;
 
                else
-                  Error_Msg_NE ("untagged actual does not match "
+                  Error_Msg_NE ("untagged actual does not statically match "
                                 & "aliased formal&", A, F);
                end if;
 
