@@ -340,7 +340,7 @@ Session::enable_dump (::std::string arg)
     {
       error_at (
 	UNKNOWN_LOCATION,
-	"dumping all is not supported as of now. choose 'lex' or 'parse'");
+	"dumping all is not supported as of now. choose 'lex', 'parse', or 'target_options");
       return false;
     }
   else if (arg == "lex")
@@ -379,13 +379,13 @@ Session::enable_dump (::std::string arg)
   else if (arg == "")
     {
       error_at (UNKNOWN_LOCATION,
-		"dump option was not given a name. choose 'lex' or 'parse'");
+		"dump option was not given a name. choose 'lex', 'parse', or 'target_options'");
       return false;
     }
   else
     {
       error_at (UNKNOWN_LOCATION,
-		"dump option '%s' was unrecognised. choose 'lex' or 'parse'",
+		"dump option '%s' was unrecognised. choose 'lex', 'parse', or 'target_options",
 		arg.c_str ());
       return false;
     }

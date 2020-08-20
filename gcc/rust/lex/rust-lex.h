@@ -5,6 +5,8 @@
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
 
+#include <utility>
+
 namespace Rust {
 class Lexer
 {
@@ -31,34 +33,38 @@ private:
   // ok maybe all these may mean the lexer structure needs to be rethought
   /* separated into functions because main method was too long, but they rely on
    * and change state in the lexer, so variables must be passed by reference. */
-  inline void parse_in_decimal (/*char& current_char, */ std::string &str,
-				int &length);
-  inline void parse_in_exponent_part (/*char& current_char, */ std::string &str,
-				      int &length);
-  inline bool parse_in_type_suffix (
-    /*char& current_char, */ PrimitiveCoreType &type_hint, int &length);
-  inline bool parse_ascii_escape (/*char& current_char, */ int &length,
-				  char &output_char);
-  inline bool parse_quote_escape (/*char& current_char, */ int &length,
-				  char &output_char);
-  inline bool parse_unicode_escape (
-    /*char& current_char, */ int &length, Codepoint &output_char);
-  inline bool parse_byte_escape (/*char& current_char, */ int &length,
-				 char &output_char);
-  inline bool parse_escape (int &length, char &output_char, char opening_char);
-  inline bool parse_utf8_escape (int &length, Codepoint &output_char,
-				 char opening_char);
-  inline int test_get_input_codepoint_length ();
-  inline int test_get_input_codepoint_n_length (int n_start_offset);
-  inline Codepoint test_peek_codepoint_input ();
-  inline Codepoint test_peek_codepoint_input (
+  std::pair<std::string, int> parse_in_decimal ();
+  std::pair<std::string, int> parse_in_exponent_part ();
+  std::pair<PrimitiveCoreType, int> parse_in_type_suffix ();
+  /*bool parse_ascii_escape (int &length,
+				  char &output_char);*/
+  /*bool parse_quote_escape (char& current_char, int &length,
+				  char &output_char);*/
+  /*bool parse_unicode_escape (
+    char& current_char, int &length, Codepoint &output_char);*/
+  /*bool parse_byte_escape (char& current_char, int &length,
+				 char &output_char);*/
+  std::pair<char, int> parse_escape (char opening_char);
+  std::pair<Codepoint, int> parse_utf8_escape (char opening_char);
+  int test_get_input_codepoint_length ();
+  int test_get_input_codepoint_n_length (int n_start_offset);
+  Codepoint test_peek_codepoint_input ();
+  Codepoint test_peek_codepoint_input (
     int n); // maybe can use get_input_codepoint_length to get starting index
-  inline void test_skip_codepoint_input ();
+  void test_skip_codepoint_input ();
 
 public:
   // Construct lexer with input file and filename provided
   Lexer (const char *filename, FILE *input, Linemap *linemap);
   ~Lexer ();
+
+  // don't allow copy semantics (for now, at least)
+  Lexer (const Lexer &other) = delete;
+  Lexer &operator= (const Lexer &other) = delete;
+
+  // enable move semantics
+  Lexer (Lexer &&other) = default;
+  Lexer &operator= (Lexer &&other) = default;
 
   // Returns token n tokens ahead of current position.
   const_TokenPtr peek_token (int n);

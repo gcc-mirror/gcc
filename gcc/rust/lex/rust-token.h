@@ -53,7 +53,6 @@ enum PrimitiveCoreType
 
 // note that abstract, async, become, box, do, final, macro, override, priv,
 // try, typeof, unsized, virtual, and yield are unused
-// TODO finish converting to rust keywords
 #define RS_TOKEN_LIST                                                          \
   RS_TOKEN (FIRST_TOKEN, "<first-token-marker>")                               \
   RS_TOKEN (END_OF_FILE, "end of file")                                        \
