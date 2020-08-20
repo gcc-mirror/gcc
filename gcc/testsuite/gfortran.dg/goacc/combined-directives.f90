@@ -139,10 +139,21 @@ end subroutine test
 
 ! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. collapse.2." 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "acc loop private.i. gang" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. worker" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. vector" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. seq" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. auto" 2 "gimple" } }
+
+! These are the parallel loop variants.
+! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. worker" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. vector" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. seq" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. auto" 1 "gimple" } }
+
+! These are the kernels loop variants.  Here the inner loops are annotated
+! separately.
+! { dg-final { scan-tree-dump-times "acc loop private.i. worker" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. vector" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. seq" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. auto" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop auto private.j." 4 "gimple" } }
+
 ! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. tile.2, 3" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "acc loop private.i. independent" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "private.z" 2 "gimple" } }
