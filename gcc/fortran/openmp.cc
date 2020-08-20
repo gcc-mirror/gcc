@@ -10562,7 +10562,6 @@ annotate_do_loops_in_kernels (gfc_code *code, gfc_code *parent,
 
 	case EXEC_OACC_PARALLEL_LOOP:
 	case EXEC_OACC_PARALLEL:
-	case EXEC_OACC_KERNELS_LOOP:
 	case EXEC_OACC_LOOP:
 	  /* Do not try to add automatic OpenACC annotations inside manually
 	     annotated loops.  Presumably, the user avoided doing it on
@@ -10605,6 +10604,55 @@ annotate_do_loops_in_kernels (gfc_code *code, gfc_code *parent,
 		return result;
 	      walk_block = false;
 	    }
+	  break;
+
+	case EXEC_OACC_KERNELS_LOOP:
+	  /* This is a combined "acc kernels loop" directive.  We want to
+	     leave the outer loop alone but try to annotate any nested
+	     loops in the body.  The expected structure nesting here is
+	       EXEC_OACC_KERNELS_LOOP
+		 EXEC_OACC_KERNELS_LOOP
+		   EXEC_DO
+		     EXEC_DO
+		       ...body...  */
+	  if (code->block)
+	    /* Might be empty?  */
+	    {
+	      gcc_assert (code->block->op == EXEC_OACC_KERNELS_LOOP);
+	      gfc_omp_clauses *clauses = code->ext.omp_clauses;
+	      int collapse = clauses->collapse;
+	      gfc_expr_list *tile = clauses->tile_list;
+	      gfc_code *inner = code->block->next;
+
+	      gcc_assert (inner->op == EXEC_DO);
+	      gcc_assert (inner->block->op == EXEC_DO);
+
+	      /* We need to skip over nested loops covered by "collapse" or
+		 "tile" clauses.  "Tile" takes precedence
+		 (see gfc_trans_omp_do).  */
+	      if (tile)
+		{
+		  collapse = 0;
+		  for (gfc_expr_list *el = tile; el; el = el->next)
+		    collapse++;
+		}
+	      if (clauses->orderedc)
+		collapse = clauses->orderedc;
+	      if (collapse <= 0)
+		collapse = 1;
+	      for (int i = 1; i < collapse; i++)
+		{
+		  gcc_assert (inner->op == EXEC_DO);
+		  gcc_assert (inner->block->op == EXEC_DO);
+		  inner = inner->block->next;
+		}
+	      if (inner)
+		/* Loop might have empty body?  */
+		annotate_do_loops_in_kernels (inner->block->next,
+					      inner, goto_targets,
+					      as_in_kernels_region);
+	    }
+	  walk_block = false;
 	  break;
 
 	case EXEC_DO_WHILE:

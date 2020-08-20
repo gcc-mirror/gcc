@@ -73,8 +73,9 @@ program test
 
   !$acc kernels loop private(i2_1_c, j2_1_c) independent
   ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(i2_1_c\\) private\\(j2_1_c\\) independent" 1 "original" } }
-  ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(i2_1_c\\) private\\(j2_1_c\\) independent" 1 "gimple" } }
+  ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(i2_1_c\\) independent" 1 "gimple" } }
   do i2_1_c = 1, 100
+  ! { dg-final { scan-tree-dump-times "#pragma acc loop auto private\\(j2_1_c\\)" 1 "gimple" } }
      do j2_1_c = 1, 100
      end do
   end do
@@ -130,9 +131,11 @@ program test
 
   !$acc kernels loop private(i3_1_c, j3_1_c, k3_1_c) independent
   ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(i3_1_c\\) private\\(j3_1_c\\) private\\(k3_1_c\\) independent" 1 "original" } }
-  ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(i3_1_c\\) private\\(j3_1_c\\) private\\(k3_1_c\\) independent" 1 "gimple" } }
+  ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(i3_1_c\\) independent" 1 "gimple" } }
   do i3_1_c = 1, 100
+  ! { dg-final { scan-tree-dump-times "#pragma acc loop auto private\\(j3_1_c\\)" 1 "gimple" } }
      do j3_1_c = 1, 100
+  ! { dg-final { scan-tree-dump-times "#pragma acc loop auto private\\(k3_1_c\\)" 1 "gimple" } }
         do k3_1_c = 1, 100
         end do
      end do

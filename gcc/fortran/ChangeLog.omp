@@ -1,5 +1,13 @@
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
+	Annotate inner loops in "acc kernels loop" directives (Fortran).
+
+	* openmp.cc (annotate_do_loops_in_kernels): Handle
+	EXEC_OACC_KERNELS_LOOP separately to permit annotation of inner
+	loops in a combined "acc kernels loop" directive.
+
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
 	Add a "combined" flag for "acc kernels loop" etc directives.
 
 	* trans-openmp.cc (gfc_trans_omp_do): Add combined parameter,
