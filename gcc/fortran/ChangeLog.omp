@@ -1,3 +1,10 @@
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Add a "combined" flag for "acc kernels loop" etc directives.
+
+	* trans-openmp.c (gfc_trans_omp_do): Add combined parameter,
+	use it to set OACC_LOOP_COMBINED.  Update all call sites.
+
 2020-07-20  Frederik Harwath  <frederik@codesourcery.com>
 
 	* openmp.c (oacc_is_parallel_or_serial): Removed function.
