@@ -524,6 +524,14 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
 
       *q = '\0';
 
+      if (strlen (subset) == 1)
+	{
+	  error_at (m_loc, "%<-march=%s%>: name of %s must be more than 1 letter",
+		    m_arch, ext_type_str);
+	  free (subset);
+	  return NULL;
+	}
+
       add (subset, major_version, minor_version, explicit_version_p);
       free (subset);
       p += end_of_version - subset;
