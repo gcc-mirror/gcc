@@ -1,3 +1,15 @@
+2020-08-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2369
+	* cp-tree.h (push_tinst_level, push_tinst_level_loc): Declare.
+	* constraint.cc (satisfy_declaration_constraints):
+	Use add_outermost_template_args and push_tinst_level.
+	* pt.c (add_outermost_template_args): Handle getting
+	a TEMPLATE_DECL as the first argument.
+	(push_tinst_level, push_tinst_level_loc): No longer static.
+	(fn_type_unification): Check satisfaction before non-dependent
+	conversions.
+
 2020-08-18  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (SET_TYPE_TEMPLTE_INFO): Do not deal with ALIAS templates.
