@@ -441,7 +441,12 @@ extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				int mod_glob_flag,
 				tree value, tree type, tree visible);
 extern void add_module_decl (tree ctx, tree name, tree decl);
-extern tree extract_module_binding (tree binding, bitmap partitions);
+
+extern unsigned walk_module_binding (tree binding, bitmap partitions,
+				     bool (*)(tree decl, bool maybe_dups,
+					      bool hiddenness,
+					      int usingness, void *data),
+				     void *data);
 // FIXME: These two should be local to module.cc
 extern unsigned get_field_ident (tree ctx, tree decl);
 extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);

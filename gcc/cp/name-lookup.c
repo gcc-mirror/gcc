@@ -65,6 +65,7 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 #define STAT_VISIBLE(N) OVL_CHAIN (N)
 #define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
 #define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
+#define STAT_TYPE_HIDDEN_P(N) OVL_DEDUP_P (N)
 /* When a STAT_HACK_P is true, OVL_USING_P and OVL_EXPORT_P are valid
    and apply to the hacked type.  */
 
@@ -4035,29 +4036,33 @@ mergeable_class_entities (tree klass, tree name)
   return found;
 }
 
-/* Given a namespace-level binding BINDING, extract the current
-   module's VALUE and TYPE bindings.  PARTITIONS tells us there are
-   partitions to consider.  */
+/* Given a namespace-level binding BINDING, walk it, calling CALLBACK
+   for all decls of the current module.  When partitions are involved,
+   decls might be mentioned more than once.   */
 
-tree
-extract_module_binding (tree binding, bitmap partitions)
+unsigned
+walk_module_binding (tree binding, bitmap partitions,
+		     bool (*callback) (tree decl, bool maybe_dup,
+				       bool hiddenness, int usingness,
+				       void *data),
+		     void *data)
 {
+  // FIXME: We don't quite deal with using decls naming stat hack
+  // type.
+  // Also using decls exporting something from the same scope
   tree current = binding;
+  unsigned count = 0;
 
   if (TREE_CODE (binding) == MODULE_VECTOR)
     current = MODULE_VECTOR_CLUSTER (binding, 0).slots[MODULE_SLOT_CURRENT];
 
-    /* This TU's bindings.  */
-  tree type = MAYBE_STAT_TYPE (current);
-  current = MAYBE_STAT_DECL (current);
-  tree value = current;
-
-  /* Keep implicit typedef in type slot.  */
-  if (value && DECL_IMPLICIT_TYPEDEF_P (value))
-    {
-      type = value;
-      value = NULL_TREE;
-    }
+  if (tree type = MAYBE_STAT_TYPE (current))
+    count += callback (type, false, DECL_HIDDEN_P (type), 0, data);
+  
+  for (ovl_iterator iter (MAYBE_STAT_DECL (current)); iter; ++iter)
+    count += callback (*iter, false, iter.hidden_p (),
+		       !iter.using_p () ? 0 : iter.exporting_p () ? -1 : +1,
+		       data);
 
   if (partitions && TREE_CODE (binding) == MODULE_VECTOR)
     {
@@ -4070,14 +4075,11 @@ extract_module_binding (tree binding, bitmap partitions)
 	  cluster++;
 	}
 
-      bool deduping = MODULE_VECTOR_PARTITION_DUPS_P (binding);
-      if (deduping)
-	lookup_mark (value, true);
+      bool maybe_dups = MODULE_VECTOR_PARTITION_DUPS_P (binding);
 
       for (; ix--; cluster++)
 	for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	  if (!cluster->slots[jx].is_lazy ())
-	    /* Load errors could mean there's nothing here.  */
 	    if (tree bind = cluster->slots[jx])
 	      {
 		if (TREE_CODE (bind) == NAMESPACE_DECL
@@ -4092,54 +4094,25 @@ extract_module_binding (tree binding, bitmap partitions)
 		    /* Not a partition's namespace.  */
 		    continue;
 		  found:
-		    if (!deduping)
-		      {
-			/* Namespaces are always shared, we must turn on
-			   deduping as we do not know otherwise.  */
-			lookup_mark (value, true);
-			deduping = true;
-		      }
-		    value = lookup_maybe_add (bind, value, deduping);
+		    count += callback (bind, maybe_dups, false, 0, data);
 		  }
 		else if (STAT_HACK_P (bind) && MODULE_BINDING_PARTITION_P (bind))
 		  {
-		    tree btype = STAT_TYPE (bind);
-		    tree bval = STAT_DECL (bind);
-
-		    /* We should never see an anonymous namespace.  */
-		    gcc_assert (!(TREE_CODE (bval) == NAMESPACE_DECL
-				  && !DECL_NAME (bval)));
-
-		    /* As above, keep implicit typedef in btype.  */
-		    if (DECL_IMPLICIT_TYPEDEF_P (bval))
-		      {
-			btype = bval;
-			bval = NULL;
-		      }
-
-		    if (btype)
-		      {
-			/* Types must be the same.  */
-			gcc_assert (!type || type == btype);
-			type = btype;
-		      }
-
-		    if (bval)
-		      // FIXME: Are we losing using and hidden
-		      // declaration information here?  Should we
-		      // propagate it into the overload?
-		      value = lookup_maybe_add (bval, value, deduping);
+		    if (tree btype = STAT_TYPE (bind))
+		      count += callback (btype, maybe_dups,
+					 STAT_TYPE_HIDDEN_P (bind),
+					 0, data);
+		    for (ovl_iterator iter (MAYBE_STAT_DECL (STAT_DECL (bind)));
+			 iter; ++iter)
+		      count += callback (*iter, maybe_dups, iter.hidden_p (),
+					 !iter.using_p () ? 0
+					 : iter.exporting_p () ? -1 : +1,
+					 data);
 		  }
 	      }
-
-      if (deduping)
-	lookup_mark (value, false);
     }
 
-  if (type)
-    value = lookup_add (type, value);
-
-  return value;
+  return count;
 }
 
 /* Imported module MOD has a binding to NS::NAME, stored in section

@@ -2382,6 +2382,10 @@ public:
   {
     set_flag_bit<DB_HIDDEN_BIT> ();
   }
+  void clear_hidden_binding ()
+  {
+    clear_flag_bit<DB_HIDDEN_BIT> ();
+  }
 
 public:
   bool is_special () const
@@ -2512,9 +2516,9 @@ public:
 
   private:
     depset *add_partial_redirect (depset *partial, depset **slot = nullptr);
-    bool add_binding (tree ns, tree value);
+    static bool add_binding_entity (tree, bool, bool, int, void *);
 
-  public:  
+  public:
     bool add_namespace_entities (tree ns, bitmap partitions);
     void add_specializations (bool decl_p);
     void add_class_entities (vec<tree, va_gc> *);
@@ -12215,27 +12219,23 @@ depset::hash::add_namespace_context (depset *dep, tree ns)
     dep->set_special ();
 }
 
-/* VALUE is an overload of decls that is bound in this module.  Create
-   the relevant depsets for the binding and its contents.  MAYBE_TYPE
-   is used for struct stat hack behaviour.  */
+struct add_binding_data
+{
+  tree ns;
+  bitmap partitions;
+  depset *binding;
+  depset::hash *hash;
+};
 
 bool
-depset::hash::add_binding (tree ns, tree value)
+depset::hash::add_binding_entity (tree decl, bool maybe_dups,
+				  bool hiddenness, int usingness,
+				  void *data_)
 {
-  depset *binding = make_binding (ns, NULL_TREE);
+  auto data = static_cast <add_binding_data *> (data_);
 
-  tree name = NULL_TREE;
-  gcc_checking_assert (TREE_PUBLIC (ns) && !is_key_order ());
-  for (ovl_iterator iter (value); iter; ++iter)
+  if (TREE_CODE (decl) != NAMESPACE_DECL || DECL_NAMESPACE_ALIAS (decl))
     {
-      tree decl = *iter;
-      name = DECL_NAME (decl);
-
-      gcc_checking_assert (!IDENTIFIER_ANON_P (name));
-      gcc_checking_assert (!(TREE_CODE (decl) == NAMESPACE_DECL
-			     && !DECL_NAMESPACE_ALIAS (decl)));
-      // FIXME:Distinguish GMF usings from purview usings.
-
       tree inner = decl;
 
       if (TREE_CODE (inner) == CONST_DECL
@@ -12246,7 +12246,7 @@ depset::hash::add_binding (tree ns, tree value)
 
       if (!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
 	/* Ignore global module fragment entities.  */
-	continue;
+	return false;
 
       if ((TREE_CODE (inner) == VAR_DECL
 	   || TREE_CODE (inner) == FUNCTION_DECL)
@@ -12254,7 +12254,7 @@ depset::hash::add_binding (tree ns, tree value)
 	{
 	  if (!header_module_p ())
 	    /* Ignore internal-linkage entitites.  */
-	    continue;
+	    return false;
 	  // FIXME: Promote here?  Or should we have done that already?
 	}
 
@@ -12262,76 +12262,93 @@ depset::hash::add_binding (tree ns, tree value)
 	   || TREE_CODE (decl) == TYPE_DECL)
 	  && DECL_TINFO_P (decl))
 	/* Ignore TINFO things.  */
-	continue;
+	return false;
 
-      bool using_p = iter.using_p ();
-      depset::entity_kind ek = depset::EK_FOR_BINDING;
-      tree maybe_using = decl;
-      if (using_p)
+      if (!usingness && CP_DECL_CONTEXT (decl) != data->ns)
+	/* A using that lost its wrapper or an unscoped enum
+	   constant.  */
+	usingness = (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
+					   ? TYPE_NAME (TREE_TYPE (decl))
+					   : STRIP_TEMPLATE (decl))
+		     ? -1 : +1);
+
+      if (!data->binding)
+	/* No binding to check.  */;
+      else if (usingness)
 	{
-	  maybe_using = iter.get_using ();
-	  ek = depset::EK_USING;
+	  /* Look in the binding to see if we already have this
+	     using.  */
+	  for (unsigned ix = data->binding->deps.length (); --ix;)
+	    {
+	      depset *d = data->binding->deps[ix];
+	      if (d->get_entity_kind () == EK_USING
+		  && OVL_FUNCTION (d->get_entity ()) == decl)
+		{
+		  if (!hiddenness)
+		    d->clear_hidden_binding ();
+		  if (usingness < 0)
+		    OVL_EXPORT_P (d->get_entity ()) = true;
+		  return false;
+		}
+	    }
 	}
-      else if (CP_DECL_CONTEXT (decl) != ns)
+      else if (maybe_dups)
 	{
-	  /* A using that lost its wrapper or an unscoped enum
-	     constant.  */
-	  // FIXME: name-lookup should preserve this, but we tend to
-	  // drop it for non-function decls :(
-	  maybe_using = ovl_make (decl, NULL_TREE);
-	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
-				    ? TYPE_NAME (TREE_TYPE (decl))
-				    : STRIP_TEMPLATE (decl)))
-	    OVL_EXPORT_P (maybe_using) = true;
-	  ek = depset::EK_USING;
+	  /* Look in the binding to see if we already have this decl.  */
+	  for (unsigned ix = data->binding->deps.length (); --ix;)
+	    {
+	      depset *d = data->binding->deps[ix];
+	      if (d->get_entity () == decl)
+		{
+		  if (!hiddenness)
+		    d->clear_hidden_binding ();
+		  return false;
+		}
+	    }
 	}
 
-      if (!binding->deps.length ())
-	add_namespace_context (binding, ns);
-
-      depset *dep = make_dependency (maybe_using, ek);
-      if (iter.hidden_p ())
+      /* We're adding something.  */
+      if (!data->binding)
 	{
-	  /* It is safe to mark the target decl with the hidden bit,
-	     because we cannot have other bindings to this decl in
-	     this TU.  The same is not true for export_p. */
-	  // FIXME: check whether a partition can make the entity
-	  // unhidden, perhaps the right things already happen?
-	  dep->set_hidden_binding ();
+	  data->binding = make_binding (data->ns, DECL_NAME (decl));
+	  data->hash->add_namespace_context (data->binding, data->ns);
+
+	  depset **slot = data->hash->binding_slot (data->ns,
+						    DECL_NAME (decl), true);
+	  gcc_checking_assert (!*slot);
+	  *slot = data->binding;
 	}
-      binding->deps.safe_push (dep);
+
+      if (usingness)
+	{
+	  decl = ovl_make (decl, NULL_TREE);
+	  if (usingness < 0)
+	    OVL_EXPORT_P (decl) = true;
+	}
+
+      depset *dep = data->hash->make_dependency
+	(decl, usingness ? EK_USING : EK_FOR_BINDING);
+      if (hiddenness)
+	dep->set_hidden_binding ();
+      data->binding->deps.safe_push (dep);
       /* Binding and contents are mutually dependent.  */
-      dep->deps.safe_push (binding);
-    }
+      dep->deps.safe_push (data->binding);
 
-  bool added = binding->deps.length () != 0;
-  if (added)
+      return true;
+    }
+  else if (DECL_NAME (decl))
     {
-      binding->set_binding_name (name);
-      depset **slot = binding_slot (ns, name, true);
-      gcc_checking_assert (!*slot);
-      *slot = binding;
+      /* Namespace.  */
+      gcc_checking_assert (TREE_PUBLIC (decl));
+      if (data->hash->add_namespace_entities (decl, data->partitions)
+	  || DECL_MODULE_EXPORT_P (decl))
+	{
+	  data->hash->make_dependency (decl, depset::EK_NAMESPACE);
+	  return true;
+	}
     }
-  else
-    delete binding;
 
-  return added;
-}
-
-/* Compare two writable bindings.  We don't particularly care on the
-   ordering, just so long as it reproduces across builds.  */
-
-static int
-writable_cmp (const void *a_, const void *b_)
-{
-  tree a = *(const tree *)a_;
-  tree b = *(const tree *)b_;
-
-  tree first_a = OVL_FIRST (a);
-  tree first_b = OVL_FIRST (b);
-
-  gcc_checking_assert (first_a != first_b);
-  return DECL_UID (first_a) < DECL_UID (first_b) ? -1 : +1;
+  return false;
 }
 
 /* Recursively find all the namespace bindings of NS.
@@ -12348,40 +12365,20 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
   dump.indent ();
 
   unsigned count = 0;
-  vec<tree> bindings;
-  bindings.create (DECL_NAMESPACE_BINDINGS (ns)->size ());
+  add_binding_data data;
+  data.ns = ns;
+  data.partitions = partitions;
+  data.hash = this;
 
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
   for (hash_table<named_decl_hash>::iterator iter
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    if (tree value = extract_module_binding (*iter, partitions))
-      bindings.quick_push (value);
-
-  /* Sort for reproducibility.  */
-  bindings.qsort (writable_cmp);
-  while (bindings.length ())
     {
-      tree value = bindings.pop ();
-      if (TREE_CODE (value) != NAMESPACE_DECL
-	  || DECL_NAMESPACE_ALIAS (value))
-	{
-	  if (add_binding (ns, value))
-	    count++;
-	}
-      else if (DECL_NAME (value))
-	{
-	  gcc_checking_assert (TREE_PUBLIC (value));
-	  bool not_empty = add_namespace_entities (value, partitions);
-	  if (not_empty || DECL_MODULE_EXPORT_P (value))
-	    {
-	      make_dependency (value, depset::EK_NAMESPACE);
-	      count++;
-	    }
-	}
+      data.binding = nullptr;
+      if (walk_module_binding (*iter, partitions, add_binding_entity, &data))
+	count++;
     }
-
-  bindings.release ();
 
   if (count)
     dump () && dump ("Found %u entries", count);
@@ -14154,31 +14151,39 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    for (unsigned jx = b->deps.length (); --jx;)
 	      {
 		depset *dep = b->deps[jx];
-		tree decl = dep->get_entity ();
+		tree bound = dep->get_entity ();
 		unsigned flags = 0;
 		if (dep->get_entity_kind () == depset::EK_USING)
 		  {
-		    flags |= cbf_using;
-		    if (OVL_USING_P (decl))
-		      flags |= cbf_wrapped;
-		    if (OVL_EXPORT_P (decl))
+		    tree ovl = bound;
+		    bound = OVL_FUNCTION (bound);
+		    if (!(TREE_CODE (bound) == CONST_DECL
+			  && UNSCOPED_ENUM_P (TREE_TYPE (bound))
+			  && decl == TYPE_NAME (TREE_TYPE (bound))))
+		      {
+			/* An unscope enumerator in its enumeration's
+			   scope is not a using.  */
+			flags |= cbf_using;
+			if (OVL_USING_P (ovl))
+			  flags |= cbf_wrapped;
+		      }
+		    if (OVL_EXPORT_P (ovl))
 		      flags |= cbf_export;
-		    decl = OVL_FUNCTION (decl);
 		  }
 		else
 		  {
 		    /* An implicit typedef must be at one.  */
-		    gcc_assert (!DECL_IMPLICIT_TYPEDEF_P (decl) || jx == 1);
+		    gcc_assert (!DECL_IMPLICIT_TYPEDEF_P (bound) || jx == 1);
 		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
-		    else if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (decl)))
+		    else if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (bound)))
 		      flags |= cbf_export;
 		  }
 
-		gcc_checking_assert (DECL_P (decl));
+		gcc_checking_assert (DECL_P (bound));
 
 		sec.i (flags);
-		sec.tree_node (decl);
+		sec.tree_node (bound);
 	      }
 
 	    /* Terminate the list.  */

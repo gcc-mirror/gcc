@@ -1,3 +1,20 @@
+2020-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement module binding extraction.
+	gcc/cp/
+	* module.cc (depset::clear_hidden_binding): New.
+	(depset::hash::add_binding): Delete.
+	(struct add_binding_data): New.
+	(depset::hash::add_binding_entity): New.
+	(writable_cmp): Delete.
+	(depset::hash::add_namespace_entities): Reimplement.
+	(module_state::write_cluster): Adjust for unscoped enums.
+	* name-lookup.h (extract_module_binding): Replace with ...
+	(walk_module_binding): ... this.
+	* name-lookup.c (STAT_TYPE_HIDDEN): New.
+	(extract_module_binding): Replace with ...
+	(walk_module_binding): ... this.
+
 2020-08-19  Nathan Sidwell  <nathan@acm.org>
 
 	ODR-check enums!
