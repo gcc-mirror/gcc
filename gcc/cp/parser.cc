@@ -46017,6 +46017,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 		     omp_clause_mask mask, tree *cclauses, bool *if_p)
 {
   bool is_parallel = ((mask >> PRAGMA_OACC_CLAUSE_REDUCTION) & 1) == 1;
+  bool is_combined = (cclauses != NULL);
 
   strcat (p_name, " loop");
   mask |= OACC_LOOP_CLAUSE_MASK;
@@ -46035,6 +46036,8 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
   tree block = begin_omp_structured_block ();
   int save = cp_parser_begin_omp_structured_block (parser);
   tree stmt = cp_parser_omp_for_loop (parser, OACC_LOOP, clauses, NULL, if_p);
+  if (stmt && stmt != error_mark_node)
+    OACC_LOOP_COMBINED (stmt) = is_combined;
   cp_parser_end_omp_structured_block (parser, save);
   add_stmt (finish_omp_structured_block (block));
 

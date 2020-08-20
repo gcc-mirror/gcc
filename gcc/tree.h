@@ -1599,6 +1599,11 @@ class auto_suppress_location_wrappers
 #define OMP_MASKED_COMBINED(NODE) \
   (OMP_MASKED_CHECK (NODE)->base.private_flag)
 
+/* True on an OACC_LOOP statement if it is part of a combined construct,
+   for example "#pragma acc kernels loop".  */
+#define OACC_LOOP_COMBINED(NODE) \
+  (OACC_LOOP_CHECK (NODE)->base.private_flag)
+
 /* Memory order for OMP_ATOMIC*.  */
 #define OMP_ATOMIC_MEMORY_ORDER(NODE) \
   (TREE_RANGE_CHECK (NODE, OMP_ATOMIC, \

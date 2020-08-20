@@ -18435,6 +18435,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 		    omp_clause_mask mask, tree *cclauses, bool *if_p)
 {
   bool is_parallel = ((mask >> PRAGMA_OACC_CLAUSE_REDUCTION) & 1) == 1;
+  bool is_combined = (cclauses != NULL);
 
   strcat (p_name, " loop");
   mask |= OACC_LOOP_CLAUSE_MASK;
@@ -18453,6 +18454,8 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
   tree block = c_begin_compound_stmt (true);
   tree stmt = c_parser_omp_for_loop (loc, parser, OACC_LOOP, clauses, NULL,
 				     if_p);
+  if (stmt && stmt != error_mark_node)
+    OACC_LOOP_COMBINED (stmt) = is_combined;
   block = c_end_compound_stmt (loc, block, true);
   add_stmt (block);
 

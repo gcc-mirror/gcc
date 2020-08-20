@@ -1,3 +1,9 @@
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Add a "combined" flag for "acc kernels loop" etc directives.
+
+	* tree.h (OACC_LOOP_COMBINED): New.
+
 2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.cc (localize_reductions): Do not create local

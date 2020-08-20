@@ -1,3 +1,9 @@
+2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Add a "combined" flag for "acc kernels loop" etc directives.
+
+	* parser.cc (cp_parser_oacc_loop): Set OACC_LOOP_COMBINED.
+
 2020-03-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* semantics.cc (handle_omp_array_sections_1): Call STRIP_NOPS
