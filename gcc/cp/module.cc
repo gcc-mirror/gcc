@@ -2267,7 +2267,9 @@ private:
 				   specialization.  */
     DB_ALIAS_SPEC_BIT,		/* Specialization of an alias template
 				   (in both spec tables).  */
-    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.  */
+    DB_TYPE_SPEC_BIT,		/* Specialization in the type table.
+				   */
+    DB_FRIEND_SPEC_BIT,		/* An instantiated template friend.  */
   };
 
 public:
@@ -2374,6 +2376,10 @@ public:
   bool is_type_spec () const
   {
     return get_flag_bit<DB_TYPE_SPEC_BIT> ();
+  }
+  bool is_friend_spec () const
+  {
+    return get_flag_bit<DB_FRIEND_SPEC_BIT> ();
   }
 
 public:
@@ -2863,6 +2869,7 @@ enum merge_kind
   // FIXME: perhaps the MK_field, MK_vtable, MK_as_base can all be
   // combined, so that this can be put up there?
   MK_partial = 16,
+  MK_friend_spec = 17,  /* Like named, but has a tmpl & args too.  */
   MK_hwm
 };
 /* This is more than a debugging array.  NULLs are used to determine
@@ -2876,6 +2883,7 @@ static char const *const merge_kind_name[MK_hwm] =
     "decl spec", "decl tmpl spec",	/* 12,13 decl (template).  */
     "alias spec", NULL,			/* 14,15 alias. */
     "partial",				/* 16 constrained partial */
+    "friend spec",			/* 17 friend specialization.  */
   };
 
 /* Mergeable entity location data.  */
@@ -9972,7 +9980,9 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	gcc_checking_assert (dep->is_special ());
 	spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
 
-	if (dep->is_type_spec ())
+	if (dep->is_friend_spec ())
+	  mk = MK_friend_spec;
+	else if (dep->is_type_spec ())
 	  mk = dep->is_partial () ? MK_type_partial_spec : MK_type_spec;
 	else
 	  mk = dep->is_alias () ? MK_alias_spec : MK_decl_spec;
@@ -10119,6 +10129,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  gcc_unreachable ();
 
 	case MK_named:
+	case MK_friend_spec:
 	  if (IDENTIFIER_CONV_OP_P (name))
 	    name = conv_op_identifier;
 
@@ -10150,6 +10161,17 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		   return type.  */
 		// FIXME: What if the return type is a voldemort?
 		key.ret = fndecl_declared_return_type (inner);
+	    }
+
+	  if (mk == MK_friend_spec)
+	    {
+	      gcc_checking_assert (dep && dep->is_special ());
+	      spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
+
+	      tree_node (entry->tmpl);
+	      tree_node (entry->args);
+	      if (streaming_p ())
+		u (get_mergeable_specialization_flags (entry->tmpl, decl));
 	    }
 	  break;
 
@@ -10456,7 +10478,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       key.index = code >> 2;
 
       if (mk == MK_partial
-	  || (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL))
+	  || ((mk == MK_named || mk == MK_friend_spec)
+	      && inner && TREE_CODE (inner) == FUNCTION_DECL))
 	{
 	  key.ret = tree_node ();
 	  tree arg, *arg_ptr = &key.args;
@@ -10505,174 +10528,188 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    add_mergeable_specialization (key.ret, key.args, decl, 2);
 	}
       else
-      switch (TREE_CODE (container))
-	{
-	default:
-	  gcc_unreachable ();
+	switch (TREE_CODE (container))
+	  {
+	  default:
+	    gcc_unreachable ();
 
-	case NAMESPACE_DECL:
-	  if (mk == MK_attached)
-	    {
-	      if (DECL_LANG_SPECIFIC (name)
-		  && DECL_ATTACHED_DECLS_P (name))
-		if (attachset *set = attached_table->get (DECL_UID (name)))
-		  if (key.index < set->num)
-		    {
-		      existing = set->values[key.index];
-		      if (existing)
-			{
-			  gcc_checking_assert
-			    (DECL_IMPLICIT_TYPEDEF_P (existing));
-			  if (inner != decl)
-			    existing
-			      = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
-			}
-		    }
-	    }
-	  else if (is_mod && !(state->is_module () || state->is_partition ()))
-	    kind = "unique";
-	  else
-	    {
-	      gcc_checking_assert (mk == MK_named || mk == MK_enum);
-	      tree mvec;
-	      tree *vslot = mergeable_namespace_slots (container, name, !is_mod,
-						       &mvec);
-	      existing = check_mergeable_decl (mk, decl, *vslot, key);
-	      if (mk == MK_enum)
-		/* We do not need to register enum-keyed types here,
-		as they'll be entered when we deal with the enumerator
-		itself.  */
-		;
-	      else if (!existing)
-		add_mergeable_namespace_entity (vslot, decl);
-	      else
-		{
-		  /* Note that we now have duplicates to deal with in
-		     name lookup.  */
-		  if (is_mod)
-		    MODULE_VECTOR_PARTITION_DUPS_P (mvec) = true;
-		  else
-		    MODULE_VECTOR_GLOBAL_DUPS_P (mvec) = true;
-		}
-	    }
-	  break;
-
-	case FUNCTION_DECL:
-	  // FIXME: What about a voldemort? how do we find what it
-	  // duplicates? Do we have to number vmorts relative to
-	  // their containing function?  But how would that work
-	  // when matching an in-TU declaration?
-	  kind = "unique";
-	  break;
-
-	case TYPE_DECL:
-	  if (is_mod && !(state->is_module () || state->is_partition ())
-	      /* Implicit member functions can come from
-		 anywhere.  */
-	      && !(DECL_ARTIFICIAL (decl)
-		   && TREE_CODE (decl) == FUNCTION_DECL
-		   && !DECL_THUNK_P (decl)))
-	    kind = "unique";
-	  else
-	    {
-	      tree ctx = TREE_TYPE (container);
-
-	      /* For some reason templated enumeral types are not marked
-		 as COMPLETE_TYPE_P, even though they have members.
-		 This may well be a bug elsewhere.  */
-	      if (TREE_CODE (ctx) == ENUMERAL_TYPE)
-		existing = find_enum_member (ctx, name);
-	      else if (COMPLETE_TYPE_P (ctx))
-		{
-		  switch (mk)
-		    {
-		    default:
-		      gcc_unreachable ();
-
-		    case MK_named:
-		      existing = mergeable_class_entities (ctx, name);
-		      if (existing)
-			{
-			  tree inner = decl;
-			  if (TREE_CODE (inner) == TEMPLATE_DECL
-			      && !DECL_MEMBER_TEMPLATE_P (inner))
-			    inner = DECL_TEMPLATE_RESULT (inner);
-
-			  existing = check_mergeable_decl
-			    (mk, inner, existing, key);
-
-			  if (!existing && DECL_ALIAS_TEMPLATE_P (decl))
-			    {} // FIXME: Insert into specialization
-			      // tables, we'll need the arguments for that!
-			}
-		      break;
-
-		    case MK_field:
+	  case NAMESPACE_DECL:
+	    if (mk == MK_attached)
+	      {
+		if (DECL_LANG_SPECIFIC (name)
+		    && DECL_ATTACHED_DECLS_P (name))
+		  if (attachset *set = attached_table->get (DECL_UID (name)))
+		    if (key.index < set->num)
 		      {
-			unsigned ix = key.index;
-			for (tree field = TYPE_FIELDS (ctx);
-			     field; field = DECL_CHAIN (field))
+			existing = set->values[key.index];
+			if (existing)
 			  {
-			    tree finner = STRIP_TEMPLATE (field);
-			    if (TREE_CODE (finner) == TREE_CODE (inner))
-			      if (!ix--)
-				{
-				  existing = field;
-				  break;
-				}
+			    gcc_checking_assert
+			      (DECL_IMPLICIT_TYPEDEF_P (existing));
+			    if (inner != decl)
+			      existing
+				= CLASSTYPE_TI_TEMPLATE (TREE_TYPE (existing));
 			  }
 		      }
-		      break;
+	      }
+	    else if (is_mod && !(state->is_module () || state->is_partition ()))
+	      kind = "unique";
+	    else
+	      {
+		gcc_checking_assert (mk == MK_named || mk == MK_enum);
+		tree mvec;
+		tree *vslot = mergeable_namespace_slots (container, name,
+							 !is_mod, &mvec);
+		existing = check_mergeable_decl (mk, decl, *vslot, key);
+		if (mk == MK_enum)
+		  /* We do not need to register enum-keyed types here,
+		     as they'll be entered when we deal with the enumerator
+		     itself.  */
+		  ;
+		else if (!existing)
+		  add_mergeable_namespace_entity (vslot, decl);
+		else
+		  {
+		    /* Note that we now have duplicates to deal with in
+		       name lookup.  */
+		    if (is_mod)
+		      MODULE_VECTOR_PARTITION_DUPS_P (mvec) = true;
+		    else
+		      MODULE_VECTOR_GLOBAL_DUPS_P (mvec) = true;
+		  }
+	      }
+	    break;
 
-		    case MK_vtable:
+	  case FUNCTION_DECL:
+	    // FIXME: What about a voldemort? how do we find what it
+	    // duplicates? Do we have to number vmorts relative to
+	    // their containing function?  But how would that work
+	    // when matching an in-TU declaration?
+	    kind = "unique";
+	    break;
+
+	  case TYPE_DECL:
+	    if (is_mod && !(state->is_module () || state->is_partition ())
+		/* Implicit member functions can come from
+		   anywhere.  */
+		&& !(DECL_ARTIFICIAL (decl)
+		     && TREE_CODE (decl) == FUNCTION_DECL
+		     && !DECL_THUNK_P (decl)))
+	      kind = "unique";
+	    else
+	      {
+		tree ctx = TREE_TYPE (container);
+
+		/* For some reason templated enumeral types are not marked
+		   as COMPLETE_TYPE_P, even though they have members.
+		   This may well be a bug elsewhere.  */
+		if (TREE_CODE (ctx) == ENUMERAL_TYPE)
+		  existing = find_enum_member (ctx, name);
+		else if (COMPLETE_TYPE_P (ctx))
+		  {
+		    switch (mk)
 		      {
-			unsigned ix = key.index;
-			for (tree vtable = CLASSTYPE_VTABLES (ctx);
-			     vtable; vtable = DECL_CHAIN (vtable))
-			  if (!ix--)
+		      default:
+			gcc_unreachable ();
+
+		      case MK_named:
+			existing = mergeable_class_entities (ctx, name);
+			if (existing)
+			  {
+			    tree inner = decl;
+			    if (TREE_CODE (inner) == TEMPLATE_DECL
+				&& !DECL_MEMBER_TEMPLATE_P (inner))
+			      inner = DECL_TEMPLATE_RESULT (inner);
+
+			    existing = check_mergeable_decl
+			      (mk, inner, existing, key);
+			    
+			    if (!existing && DECL_ALIAS_TEMPLATE_P (decl))
+			      {} // FIXME: Insert into specialization
+			    // tables, we'll need the arguments for that!
+			  }
+			break;
+
+		      case MK_field:
+			{
+			  unsigned ix = key.index;
+			  for (tree field = TYPE_FIELDS (ctx);
+			       field; field = DECL_CHAIN (field))
 			    {
-			      existing = vtable;
-			      break;
+			      tree finner = STRIP_TEMPLATE (field);
+			      if (TREE_CODE (finner) == TREE_CODE (inner))
+				if (!ix--)
+				  {
+				    existing = field;
+				    break;
+				  }
 			    }
-		      }
-		      break;
+			}
+			break;
 
-		    case MK_as_base:
+		      case MK_vtable:
+			{
+			  unsigned ix = key.index;
+			  for (tree vtable = CLASSTYPE_VTABLES (ctx);
+			       vtable; vtable = DECL_CHAIN (vtable))
+			    if (!ix--)
+			      {
+				existing = vtable;
+				break;
+			      }
+			}
+			break;
+
+		      case MK_as_base:
+			{
+			  tree as_base = CLASSTYPE_AS_BASE (ctx);
+			  if (as_base && as_base != ctx)
+			    existing = TYPE_NAME (as_base);
+			}
+			break;
+
+		      case MK_local_friend:
+			{
+			  unsigned ix = key.index;
+			  for (tree decls = CLASSTYPE_DECL_LIST (ctx);
+			       decls; decls = TREE_CHAIN (decls))
+			    if (!TREE_PURPOSE (decls) && !ix--)
+			      {
+				existing
+				  = friend_from_decl_list (TREE_VALUE (decls));
+				break;
+			      }
+			}
+			break;
+		      }
+
+		    if (existing && mk < MK_indirect_lwm
+			&& TREE_CODE (decl) == TEMPLATE_DECL
+			&& !DECL_MEMBER_TEMPLATE_P (decl))
 		      {
-			tree as_base = CLASSTYPE_AS_BASE (ctx);
-			if (as_base && as_base != ctx)
-			  existing = TYPE_NAME (as_base);
+			tree ti;
+			if (DECL_IMPLICIT_TYPEDEF_P (existing))
+			  ti = TYPE_TEMPLATE_INFO (TREE_TYPE (existing));
+			else
+			  ti = DECL_TEMPLATE_INFO (existing);
+			existing = TI_TEMPLATE (ti);
 		      }
-		      break;
+		  }
+	      }
+	  }
 
-		    case MK_local_friend:
-		      {
-			unsigned ix = key.index;
-			for (tree decls = CLASSTYPE_DECL_LIST (ctx);
-			     decls; decls = TREE_CHAIN (decls))
-			  if (!TREE_PURPOSE (decls) && !ix--)
-			    {
-			      existing
-				= friend_from_decl_list (TREE_VALUE (decls));
-			      break;
-			    }
-		      }
-		      break;
-		    }
+      if (mk == MK_friend_spec)
+	{
+	  tree tmpl = tree_node ();
+	  tree args = tree_node ();
+	  unsigned flags = u ();
 
-		  if (existing && mk < MK_indirect_lwm
-		      && TREE_CODE (decl) == TEMPLATE_DECL
-		      && !DECL_MEMBER_TEMPLATE_P (decl))
-		    {
-		      tree ti;
-		      if (DECL_IMPLICIT_TYPEDEF_P (existing))
-			ti = TYPE_TEMPLATE_INFO (TREE_TYPE (existing));
-		      else
-			ti = DECL_TEMPLATE_INFO (existing);
-		      existing = TI_TEMPLATE (ti);
-		    }
-		}
-	    }
+	  tree e = match_mergeable_specialization (true, tmpl, args, decl);
+	  if (!e)
+	    add_mergeable_specialization (tmpl, args,
+					  existing ? existing : decl, flags);
+	  else if (e != existing)
+	    set_overrun ();
 	}
     }
 
@@ -12514,6 +12551,12 @@ depset::hash::add_specializations (bool decl_p)
       bool is_partial = false;
       int use_tpl = 0;
       bool is_alias = false;
+      bool is_friend = false;
+
+      if (decl_p && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (entry->tmpl))
+	/* A friend of a template.  This is keyed to the
+	   instantiation.  */
+	is_friend = true;
 
       if (!decl_p && DECL_ALIAS_TEMPLATE_P (entry->tmpl))
 	{
@@ -12533,10 +12576,23 @@ depset::hash::add_specializations (bool decl_p)
 		  spec = tmpl;
 		  gcc_checking_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
 		}
+	      else if (is_friend)
+		{
+		  if (TI_TEMPLATE (ti) != entry->tmpl
+		      || !template_args_equal (TI_ARGS (ti), entry->tmpl))
+		    goto template_friend;
+		}
 	    }
 	  else
-	    /* This is some kind of friend.  */
-	    gcc_assert (!DECL_USE_TEMPLATE (spec));
+	    {
+	    template_friend:;
+	      gcc_checking_assert (is_friend);
+	      /* This is a friend of a template class, but not the one
+		 that generated entry->spec itself (i.e. it's an
+		 equivalent clone).  We do not need to record
+		 this.  */
+	      continue;
+	    }
 	}
       else
 	{
@@ -12612,21 +12668,15 @@ depset::hash::add_specializations (bool decl_p)
       depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
 	{
-	  /* An already located specialization, this is a friend
-	     with a different entry->tmpl, or the type of a type-alias.  */
+	  /* An already located specialization, this must be the TYPE
+	     corresponding to an alias_decl we found in the decl
+	     table.  */
 	  spec_entry *other = reinterpret_cast <spec_entry *> (dep->deps[0]);
-	  if (other->tmpl != entry->tmpl)
-	    gcc_checking_assert (!is_partial && !is_alias
-				 && needs_reaching == dep->is_unreached ());
-	  else
-	    {
-	      gcc_checking_assert (!decl_p && !dep->is_type_spec ()
-				   && is_alias
-				   && TREE_TYPE (other->spec) == entry->spec
-				   && template_args_equal (other->args,
-							   entry->args));
-	      dep->set_flag_bit<DB_ALIAS_SPEC_BIT> ();
-	    }
+	  gcc_checking_assert (!decl_p && is_alias && !dep->is_type_spec ());
+	  gcc_checking_assert (other->tmpl == entry->tmpl
+			       && template_args_equal (other->args, entry->args)
+			       && TREE_TYPE (other->spec) == entry->spec);
+	  dep->set_flag_bit<DB_ALIAS_SPEC_BIT> ();
 	}
       else
 	{
@@ -12639,6 +12689,8 @@ depset::hash::add_specializations (bool decl_p)
 	    add_partial_redirect (dep);
 	  if (!decl_p)
 	    dep->set_flag_bit<DB_TYPE_SPEC_BIT> ();
+	  if (is_friend)
+	    dep->set_flag_bit<DB_FRIEND_SPEC_BIT> ();
 	}
     }
   data.release ();
@@ -12722,7 +12774,8 @@ depset::hash::find_dependencies ()
 	      walker.end ();
 
 	      if (!walker.is_key_order ()
-		  && TREE_CODE (decl) == TEMPLATE_DECL)
+		  && TREE_CODE (decl) == TEMPLATE_DECL
+		  && !DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 		/* Mark all the explicit & partial specializations as
 		   reachable.  */
 		for (tree cons = DECL_TEMPLATE_INSTANTIATIONS (decl);
@@ -12745,8 +12798,8 @@ depset::hash::find_dependencies ()
 			    reached_unreached = true;
 			    spec_dep->clear_flag_bit<DB_UNREACHED_BIT> ();
 			    dump (dumper::DEPEND)
-			      && dump ("Reaching unreached specialization %C:%N",
-				       TREE_CODE (spec), spec);
+			      && dump ("Reaching unreached specialization"
+				       " %C:%N", TREE_CODE (spec), spec);
 			  }
 		      }
 		  }
