@@ -815,7 +815,7 @@ public:
             // `(Type)` is actually `(var)` so if `(var)` is a member requiring `this`
             // then rewrite as `(this.var)` in case it would be followed by a DotVar
             // to fix https://issues.dlang.org/show_bug.cgi?id=9490
-            VarExp *ve = e->isVarExp();
+            VarExp *ve = (e->op == TOKvar) ? (VarExp *)e : NULL;
             if (ve && ve->var && exp->parens && !ve->var->isStatic() && !(sc->stc & STCstatic) &&
                 sc->func && sc->func->needThis() && ve->var->toParent2()->isAggregateDeclaration())
             {
