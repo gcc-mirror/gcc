@@ -36,11 +36,16 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Since we provide a default -isystem, expand -isystem on the command
    line early.  */
+
+/* Self-tests may be run in contexts where the VxWorks environment isn't
+   available.  Prevent attempts at designating the location of runtime header
+   files, libraries or startfiles, which would fail on unset environment
+   variables and aren't needed for such tests.  */
 #if TARGET_VXWORKS7
 
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC                     \
- "%{!nostdinc:                                          \
+ "%{!nostdinc:%{!fself-test=*:                          \
     %{isystem*}                                         \
     %{mrtp: -idirafter %:getenv(VSB_DIR /h)             \
             -idirafter %:getenv(VSB_DIR /share/h)       \
@@ -49,19 +54,19 @@ along with GCC; see the file COPYING3.  If not see
       ;:    -idirafter %:getenv(VSB_DIR /h)             \
             -idirafter %:getenv(VSB_DIR /share/h)       \
             -idirafter %:getenv(VSB_DIR /krnl/h/system) \
-            -idirafter %:getenv(VSB_DIR /krnl/h/public)}}"
+            -idirafter %:getenv(VSB_DIR /krnl/h/public)}}}"
 
 #else /* TARGET_VXWORKS7 */
 
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC		\
- "%{!nostdinc:					\
+ "%{!nostdinc:%{!fself-test=*:			\
     %{isystem*}					\
     %{mrtp: -idirafter %:getenv(WIND_USR /h)	\
 	    -idirafter %:getenv(WIND_USR /h/wrn/coreip) \
       ;:    -idirafter %:getenv(WIND_BASE /target/h) \
 	    -idirafter %:getenv(WIND_BASE /target/h/wrn/coreip) \
-}}"
+}}}"
 
 #endif
 
@@ -108,7 +113,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #if TARGET_VXWORKS7
 #undef  STARTFILE_PREFIX_SPEC
-#define STARTFILE_PREFIX_SPEC "%:getenv(VSB_DIR /usr/lib/common)"
+#define STARTFILE_PREFIX_SPEC \
+  "%{!fself-test=*:%:getenv(VSB_DIR /usr/lib/common)}"
 #define TLS_SYM "-u __tls__"
 #else
 #define TLS_SYM ""
