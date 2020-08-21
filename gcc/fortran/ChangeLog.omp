@@ -1,6 +1,14 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Re-order 'if' clause pasing
+	to avoid creating spurious symbols.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_if_kind): Add OMP_IF_CANCEL and OMP_IF_SIMD.

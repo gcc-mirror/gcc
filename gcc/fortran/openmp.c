@@ -1299,8 +1299,6 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && c->if_expr == NULL
 	      && gfc_match ("if ( ") == MATCH_YES)
 	    {
-	      if (gfc_match ("%e )", &c->if_expr) == MATCH_YES)
-		continue;
 	      if (!openacc)
 		{
 		  /* This should match the enum gfc_omp_if_kind order.  */
@@ -1323,6 +1321,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  if (i < OMP_IF_LAST)
 		    continue;
 		}
+	      if (gfc_match ("%e )", &c->if_expr) == MATCH_YES)
+		continue;
 	      gfc_current_locus = old_loc;
 	    }
 	  if ((mask & OMP_CLAUSE_IF_PRESENT)

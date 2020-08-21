@@ -1,6 +1,13 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr67500.f90: New test.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/cancel-2.f90: New test.
