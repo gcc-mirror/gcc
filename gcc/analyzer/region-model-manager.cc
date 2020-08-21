@@ -781,6 +781,8 @@ region_model_manager::get_region_for_global (tree expr)
 const region *
 region_model_manager::get_field_region (const region *parent, tree field)
 {
+  gcc_assert (TREE_CODE (field) == FIELD_DECL);
+
   field_region::key_t key (parent, field);
   if (field_region *reg = m_field_regions.get (key))
     return reg;

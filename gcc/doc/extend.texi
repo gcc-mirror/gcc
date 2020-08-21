@@ -14699,12 +14699,12 @@ long long __builtin_arm_wzero ()
 
 GCC implements extensions for C as described in the ARM C Language
 Extensions (ACLE) specification, which can be found at
-@uref{http://infocenter.arm.com/help/topic/com.arm.doc.ihi0053c/IHI0053C_acle_2_0.pdf}.
+@uref{https://developer.arm.com/documentation/ihi0053/latest/}.
 
 As a part of ACLE, GCC implements extensions for Advanced SIMD as described in
 the ARM C Language Extensions Specification.  The complete list of Advanced SIMD
 intrinsics can be found at
-@uref{http://infocenter.arm.com/help/topic/com.arm.doc.ihi0073a/IHI0073A_arm_neon_intrinsics_ref.pdf}.
+@uref{https://developer.arm.com/documentation/ihi0073/latest/}.
 The built-in intrinsics for the Advanced SIMD extension are available when
 NEON is enabled.
 
@@ -14735,7 +14735,7 @@ void __builtin_arm_set_fpscr (unsigned int)
 GCC implements the ARMv8-M Security Extensions as described in the ARMv8-M
 Security Extensions: Requirements on Development Tools Engineering
 Specification, which can be found at
-@uref{http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf}.
+@uref{https://developer.arm.com/documentation/ecm0359818/latest/}.
 
 As part of the Security Extensions GCC implements two new function attributes:
 @code{cmse_nonsecure_entry} and @code{cmse_nonsecure_call}.

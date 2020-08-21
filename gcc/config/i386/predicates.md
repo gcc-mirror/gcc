@@ -87,6 +87,11 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == FLAGS_REG")))
 
+;; True if the operand is a MASK register.
+(define_predicate "mask_reg_operand"
+  (and (match_code "reg")
+       (match_test "MASK_REGNO_P (REGNO (op))")))
+
 ;; Match a DI, SI, HI or QImode nonimmediate_operand.
 (define_special_predicate "int_nonimmediate_operand"
   (and (match_operand 0 "nonimmediate_operand")

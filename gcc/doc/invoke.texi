@@ -19571,7 +19571,7 @@ is only available when generating non-pic code for M-profile targets.
 @opindex mcmse
 Generate secure code as per the "ARMv8-M Security Extensions: Requirements on
 Development Tools Engineering Specification", which can be found on
-@url{http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf}.
+@url{https://developer.arm.com/documentation/ecm0359818/latest/}.
 
 @item -mfdpic
 @itemx -mno-fdpic

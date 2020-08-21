@@ -150,6 +150,8 @@ extern rtx_insn *peephole2_insns (rtx, rtx_insn *, int *);
 extern int store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int if_test_bypass_p (rtx_insn *, rtx_insn *);
 
+extern void copy_frame_info_to_split_insn (rtx_insn *, rtx_insn *);
+
 #ifndef GENERATOR_FILE
 /* Try recognizing the instruction INSN,
    and return the code number that results.

@@ -1,3 +1,55 @@
+2020-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96723
+	* g++.dg/analyzer/pr96723.C: New test.
+
+2020-08-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96100
+	PR fortran/96101
+	* gfortran.dg/char_length_23.f90: New test.
+
+2020-08-20  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	PR target/96683
+	* gcc.target/arm/mve/intrinsics/vst1q_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_s8.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_u16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_u8.c: New test.
+
+2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr67500.f90: New file.
+
+2020-08-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (arm_soft_ok): Remove arm32 check.
+
+2020-08-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pure-code/pure-code.exp: Skip for
+	arm*-*-uclinuxfdpiceabi. Fix missing closing bracket.
+
+2020-08-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96436
+	* gfortran.dg/pr96436_1.f90: New test.
+	* gfortran.dg/pr96436_2.f90: New test.
+	* gfortran.dg/pr96436_3.f90: New test.
+	* gfortran.dg/pr96436_4.f90: New test.
+	* gfortran.dg/pr96436_5.f90: New test.
+	* gfortran.dg/pr96436_6.f90: New test.
+	* gfortran.dg/pr96436_7.f90: New test.
+	* gfortran.dg/pr96436_8.f90: New test.
+	* gfortran.dg/pr96436_9.f90
+	* gfortran.dg/pr96436_10.f90
+
+2020-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96713
+	* gcc.dg/analyzer/pr96713.c: New test.
+
 2020-08-19  Jason Merrill  <jason@redhat.com>
 
 	DR 2369

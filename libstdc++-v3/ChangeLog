@@ -1,3 +1,11 @@
+2020-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h [__STRICT_ANSI__]
+	(incrementable_traits<__int128>): Define specialization.
+	(incrementable_traits<unsigned __int128>): Likewise.
+	* testsuite/std/ranges/iota/96042.cc: Test iota_view with
+	__int128.
+
 2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 
@@ -62,7 +70,7 @@
 	(_GLIBCXX_DEPRECATED_SUGGEST): New macro for "use 'foo' instead"
 	message in deprecated warnings.
 	(_GLIBCXX11_DEPRECATED, _GLIBCXX11_DEPRECATED_SUGGEST): New
-	macros for marking features derpecated in C++11.
+	macros for marking features deprecated in C++11.
 	(_GLIBCXX17_DEPRECATED_SUGGEST, _GLIBCXX20_DEPRECATED_SUGGEST):
 	New macros.
 	* include/backward/auto_ptr.h (auto_ptr_ref, auto_ptr<void>):

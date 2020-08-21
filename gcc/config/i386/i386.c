@@ -18378,13 +18378,15 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
     return INTEGER_CLASS_P (regclass) ? regclass : NO_REGS;
 
   /* QImode constants are easy to load, but non-constant QImode data
-     must go into Q_REGS.  */
+     must go into Q_REGS or ALL_MASK_REGS.  */
   if (GET_MODE (x) == QImode && !CONSTANT_P (x))
     {
       if (Q_CLASS_P (regclass))
 	return regclass;
       else if (reg_class_subset_p (Q_REGS, regclass))
 	return Q_REGS;
+      else if (MASK_CLASS_P (regclass))
+	return regclass;
       else
 	return NO_REGS;
     }
@@ -18740,6 +18742,29 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
       return in ? ix86_cost->hard_register.sse_load [index]
 		: ix86_cost->hard_register.sse_store [index];
     }
+  if (MASK_CLASS_P (regclass))
+    {
+      int index;
+      switch (GET_MODE_SIZE (mode))
+	{
+	case 1:
+	  index = 0;
+	  break;
+	case 2:
+	  index = 1;
+	  break;
+	/* DImode loads and stores assumed to cost the same as SImode.  */
+	default:
+	  index = 2;
+	  break;
+	}
+
+      if (in == 2)
+	return MAX (ix86_cost->hard_register.mask_load[index],
+		    ix86_cost->hard_register.mask_store[index]);
+      return in ? ix86_cost->hard_register.mask_load[2]
+		: ix86_cost->hard_register.mask_store[2];
+    }
   if (MMX_CLASS_P (regclass))
     {
       int index;
@@ -18865,6 +18890,17 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
 	    ? ix86_cost->hard_register.sse_to_integer
 	    : ix86_cost->hard_register.integer_to_sse);
 
+  /* Moves between mask register and GPR.  */
+  if (MASK_CLASS_P (class1) != MASK_CLASS_P (class2))
+    {
+      return (MASK_CLASS_P (class1)
+	      ? ix86_cost->hard_register.mask_to_integer
+	      : ix86_cost->hard_register.integer_to_mask);
+    }
+  /* Moving between mask registers.  */
+  if (MASK_CLASS_P (class1) && MASK_CLASS_P (class2))
+    return ix86_cost->hard_register.mask_move;
+
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->hard_register.fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
@@ -18937,7 +18973,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if ((mode == P2QImode || mode == P2HImode))
 	return MASK_PAIR_REGNO_P(regno);
 
-      return (VALID_MASK_REG_MODE (mode)
+      return ((TARGET_AVX512F && VALID_MASK_REG_MODE (mode))
 	      || (TARGET_AVX512BW
 		  && VALID_MASK_AVX512BW_MODE (mode)));
     }

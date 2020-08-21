@@ -1,3 +1,11 @@
+2020-08-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96436
+	* io/format.c (parse_format_list):  Add new local variable
+	"standard" to hold the required standard to check. If the
+	format width is zero select standard depending on descriptor.
+	Call notification_std using the new standard variable.
+
 2020-08-17  David Edelsohn  <dje.gcc@gmail.com>
 	    Clement Chigot  <clement.chigot@atos.net>
 
