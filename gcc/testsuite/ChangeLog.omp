@@ -1,3 +1,8 @@
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr67500.f90: Change dg-warning to
+	dg-error.
+
 2020-08-19   Sandra Loosemore  <sandra@codesourcery.com>
 
 	Annotate inner loops in "acc kernels loop" directives (Fortran).
