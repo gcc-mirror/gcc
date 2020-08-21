@@ -3,6 +3,14 @@
 	Backport from mainline
 	2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
+	* module.c (mio_symbol_attribute): Fix indent of previous
+	commit.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.h (enum gfc_statement): Add ST_OMP_REQUIRES.
 	(enum gfc_omp_requires_kind): New.
 	(enum gfc_omp_atomic_op): Add GFC_OMP_ATOMIC_ACQ_REL.
