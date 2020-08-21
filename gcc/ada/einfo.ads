@@ -1576,7 +1576,7 @@ package Einfo is
 --       Defined for the given type. Note that this flag can be False even
 --       if Component_Size is non-zero (happens in the case of derived types).
 
---    Has_Constrained_Partial_View (Flag187)
+--    Has_Constrained_Partial_View (Flag187) [base type only]
 --       Defined in private type and their completions, when the private
 --       type has no discriminants and the full view has discriminants with
 --       defaults. In Ada 2005 heap-allocated objects of such types are not
