@@ -1,6 +1,18 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_omp_namelist): Add lastprivate_conditional.
+	* openmp.c (gfc_match_omp_clauses): Handle 'conditional:'
+	modifier of 'lastprivate'.
+	* trans-openmp.c (gfc_omp_clause_default_ctor): Don't assert
+	on OMP_CLAUSE__CONDTEMP_ and other OMP_*TEMP_.
+	(gfc_trans_omp_variable_list): Handle lastprivate_conditional.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.c (gfc_match_omp_clauses): Re-order 'if' clause pasing

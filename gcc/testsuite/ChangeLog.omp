@@ -1,5 +1,16 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backport from mainline
+	2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/lastprivate-conditional-1.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-2.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-3.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-4.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-5.f90: New test.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/gomp/pr67500.f90: Change dg-warning to
 	dg-error.
 
