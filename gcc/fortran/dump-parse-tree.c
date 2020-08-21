@@ -1693,7 +1693,9 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     if (omp_clauses->if_exprs[i])
       {
 	static const char *ifs[] = {
+	  "CANCEL",
 	  "PARALLEL",
+	  "SIMD",
 	  "TASK",
 	  "TASKLOOP",
 	  "TARGET",
