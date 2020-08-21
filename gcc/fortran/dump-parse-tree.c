@@ -1595,6 +1595,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_IS_DEVICE_PTR: type = "IS_DEVICE_PTR"; break;
 	  case OMP_LIST_USE_DEVICE_PTR: type = "USE_DEVICE_PTR"; break;
 	  case OMP_LIST_USE_DEVICE_ADDR: type = "USE_DEVICE_ADDR"; break;
+	  case OMP_LIST_NONTEMPORAL: type = "NONTEMPORAL"; break;
 	  default:
 	    gcc_unreachable ();
 	  }
