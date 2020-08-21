@@ -1,6 +1,21 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-1.f90: New test.
+	* gfortran.dg/gomp/requires-2.f90: New test.
+	* gfortran.dg/gomp/requires-3.f90: New test.
+	* gfortran.dg/gomp/requires-4.f90: New test.
+	* gfortran.dg/gomp/requires-5.f90: New test.
+	* gfortran.dg/gomp/requires-6.f90: New test.
+	* gfortran.dg/gomp/requires-7.f90: New test.
+	* gfortran.dg/gomp/requires-8.f90: New test.
+	* gfortran.dg/gomp/requires-9.f90: New test.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/nontemporal-1.f90: New test.
