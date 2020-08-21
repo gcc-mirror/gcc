@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *skb, *map;
   uint32_t index;
 
-  ret = __builtin_bpf_helper_skb_under_cgroup (skb, map, index);
+  ret = bpf_skb_under_cgroup (skb, map, index);
 }
 
 /* { dg-final { scan-assembler "call\t33" } } */

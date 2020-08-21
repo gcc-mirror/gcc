@@ -1,3 +1,77 @@
+2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_DEPRECATED_SUGGEST): New
+	macro for "use 'foo' instead" message in deprecated warnings.
+	* include/bits/ios_base.h (io_state, open_mode, seek_dir)
+	(streampos, streamoff): Use _GLIBCXX_DEPRECATED_SUGGEST.
+	* include/std/streambuf (stossc): Replace C++11 attribute
+	with _GLIBCXX_DEPRECATED_SUGGEST.
+	* include/std/type_traits (__is_nullptr_t): Use
+	_GLIBCXX_DEPRECATED_SUGGEST instead of _GLIBCXX_DEPRECATED.
+	* testsuite/27_io/types/1.cc: Check for deprecated warnings.
+	Also check for io_state, open_mode and seek_dir typedefs.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89760
+	* testsuite/experimental/net/execution_context/make_service.cc:
+	Add dg-require-gthreads.
+	* testsuite/experimental/net/executor/1.cc: Likewise.
+	* testsuite/experimental/net/headers.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/cons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc:
+	Likewise.
+	* testsuite/experimental/net/socket/basic_socket.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95749
+	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(stat_type): Change to __stat64.
+	(stat): Use _wstat64.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96303
+	* include/debug/bitset (bitset::operator==): Call _M_base() on
+	right operand.
+	(bitset::operator!=): Likewise, but don't define it at all when
+	default comparisons are supported by the compiler.
+	* testsuite/23_containers/bitset/operations/96303.cc: New test.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96484
+	* src/c++17/fs_ops.cc (fs::read_symlink): Return an error
+	immediately for non-symlinks.
+	* src/filesystem/ops.cc (fs::read_symlink): Likewise.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-require-gthreads "" }
 
 #include <experimental/net>
 

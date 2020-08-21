@@ -1010,7 +1010,7 @@ ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
 {
   gcc_assert (top_p ());
   m_lattice_val = IPA_BITS_CONSTANT;
-  m_value = value;
+  m_value = wi::bit_and (wi::bit_not (mask), value);
   m_mask = mask;
   return true;
 }
@@ -1047,6 +1047,7 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
 
   widest_int old_mask = m_mask;
   m_mask = (m_mask | mask) | (m_value ^ value);
+  m_value &= ~m_mask;
 
   if (wi::sext (m_mask, precision) == -1)
     return set_to_bottom ();
@@ -5672,8 +5673,9 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
 	  (has_undead_caller_from_outside_scc_p, NULL, true))
       return true;
     else if (!ipa_edge_within_scc (cs)
-	     && !IPA_NODE_REF (cs->caller)->node_dead)
-      return true;
+	     && (!IPA_NODE_REF (cs->caller) /* Unoptimized caller.  */
+		 || !IPA_NODE_REF (cs->caller)->node_dead))
+	  return true;
   return false;
 }
 

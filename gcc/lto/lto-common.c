@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "lto-common.h"
 #include "tree-pretty-print.h"
+#include "print-tree.h"
 
 /* True when no new types are going to be streamd from the global stream.  */
 
@@ -1054,6 +1055,7 @@ static unsigned long num_prevailing_types;
 static unsigned long num_type_scc_trees;
 static unsigned long total_scc_size;
 static unsigned long num_sccs_read;
+static unsigned long num_unshared_trees_read;
 static unsigned long total_scc_size_merged;
 static unsigned long num_sccs_merged;
 static unsigned long num_scc_compares;
@@ -1087,6 +1089,10 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   compare_values (TREE_CODE);
   code = TREE_CODE (t1);
+
+  /* If we end up comparing translation unit decls we either forgot to mark
+     some SCC as local or we compare too much.  */
+  gcc_checking_assert (code != TRANSLATION_UNIT_DECL);
 
   if (!TYPE_P (t1))
     {
@@ -1497,9 +1503,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      if (code == ENUMERAL_TYPE)
-	compare_tree_edges (TYPE_VALUES (t1), TYPE_VALUES (t2));
-      else if (code == ARRAY_TYPE)
+      if (code == ARRAY_TYPE)
 	compare_tree_edges (TYPE_DOMAIN (t1), TYPE_DOMAIN (t2));
       else if (RECORD_OR_UNION_TYPE_P (t1))
 	{
@@ -1626,6 +1630,28 @@ cmp_tree (const void *p1_, const void *p2_)
   return ((uintptr_t)p1[1] < (uintptr_t)p2[1]) ? -1 : 1;
 }
 
+/* New scc of size 1 containing T was streamed in from DATA_IN and not merged.
+   Register it to reader cache at index FROM.  */
+
+static void
+process_dref (class data_in *data_in, tree t, unsigned from)
+{
+  struct streamer_tree_cache_d *cache = data_in->reader_cache;
+  /* If we got a debug reference queued, see if the prevailing
+     tree has a debug reference and if not, register the one
+     for the tree we are about to throw away.  */
+  if (dref_queue.length () == 1)
+    {
+      dref_entry e = dref_queue.pop ();
+      gcc_assert (e.decl
+		  == streamer_tree_cache_get_tree (cache, from));
+      const char *sym;
+      unsigned HOST_WIDE_INT off;
+      if (!debug_hooks->die_ref_for_decl (t, &sym, &off))
+	debug_hooks->register_external_die (t, e.sym, e.off);
+    }
+}
+
 /* Try to unify the SCC with nodes FROM to FROM + LEN in CACHE and
    hash value SCC_HASH with an already recorded SCC.  Return true if
    that was successful, otherwise return false.  */
@@ -1646,22 +1672,16 @@ unify_scc (class data_in *data_in, unsigned from,
     {
       tree t = streamer_tree_cache_get_tree (cache, from + i);
       scc->entries[i] = t;
-      /* Do not merge SCCs with local entities inside them.  Also do
-	 not merge TRANSLATION_UNIT_DECLs and anonymous namespaces
-	 and types therein types.  */
-      if (TREE_CODE (t) == TRANSLATION_UNIT_DECL
-	  || (VAR_OR_FUNCTION_DECL_P (t)
-	      && !(TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
-	  || TREE_CODE (t) == LABEL_DECL
-	  || (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAME (t))
-	  || (TYPE_P (t)
-	      && type_with_linkage_p (TYPE_MAIN_VARIANT (t))
-	      && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t))))
-	{
-	  /* Avoid doing any work for these cases and do not worry to
-	     record the SCCs for further merging.  */
-	  return false;
-	}
+      /* These types should be streamed as unshared.  */
+      gcc_checking_assert
+	 (!(TREE_CODE (t) == TRANSLATION_UNIT_DECL
+	    || (VAR_OR_FUNCTION_DECL_P (t)
+		&& !(TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
+	    || TREE_CODE (t) == LABEL_DECL
+	    || (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAME (t))
+	    || (TYPE_P (t)
+		&& type_with_linkage_p (TYPE_MAIN_VARIANT (t))
+		&& type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t)))));
     }
 
   /* Look for the list of candidate SCCs to compare against.  */
@@ -1712,21 +1732,7 @@ unify_scc (class data_in *data_in, unsigned from,
 	     to the tree node mapping computed by compare_tree_sccs.  */
 	  if (len == 1)
 	    {
-	      /* If we got a debug reference queued, see if the prevailing
-		 tree has a debug reference and if not, register the one
-		 for the tree we are about to throw away.  */
-	      if (dref_queue.length () == 1)
-		{
-		  dref_entry e = dref_queue.pop ();
-		  gcc_assert (e.decl
-			      == streamer_tree_cache_get_tree (cache, from));
-		  const char *sym;
-		  unsigned HOST_WIDE_INT off;
-		  if (!debug_hooks->die_ref_for_decl (pscc->entries[0], &sym,
-						      &off))
-		    debug_hooks->register_external_die (pscc->entries[0],
-							e.sym, e.off);
-		}
+	      process_dref (data_in, pscc->entries[0], from);
 	      lto_maybe_register_decl (data_in, pscc->entries[0], from);
 	      streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
 	    }
@@ -1785,7 +1791,65 @@ unify_scc (class data_in *data_in, unsigned from,
   return unified_p;
 }
 
+typedef int_hash<unsigned, 0, UINT_MAX> code_id_hash;
 
+/* Do registering necessary once new tree fully streamed in (including all
+   trees it reffers to).  */
+
+static void
+process_new_tree (tree t, hash_map <code_id_hash, unsigned> *hm,
+		  unsigned index, unsigned *total, class data_in *data_in)
+{
+  /* Reconstruct the type variant and pointer-to/reference-to
+     chains.  */
+  if (TYPE_P (t))
+    {
+      /* Map the tree types to their frequencies.  */
+      if (flag_lto_dump_type_stats)
+	{
+	  unsigned key = (unsigned) TREE_CODE (t);
+	  unsigned *countp = hm->get (key);
+	  hm->put (key, countp ? (*countp) + 1 : 1);
+	  (*total)++;
+	}
+
+      num_prevailing_types++;
+      lto_fixup_prevailing_type (t);
+
+      /* Compute the canonical type of all non-ODR types.
+	 Delay ODR types for the end of merging process - the canonical
+	 type for those can be computed using the (unique) name however
+	 we want to do this only if units in other languages do not
+	 contain structurally equivalent type.
+
+	 Because SCC components are streamed in random (hash) order
+	 we may have encountered the type before while registering
+	 type canonical of a derived type in the same SCC.  */
+      if (!TYPE_CANONICAL (t))
+	{
+	  if (!RECORD_OR_UNION_TYPE_P (t)
+	      || !TYPE_CXX_ODR_P (t))
+	    gimple_register_canonical_type (t);
+	  else if (COMPLETE_TYPE_P (t))
+	    vec_safe_push (types_to_register, t);
+	}
+      if (TYPE_MAIN_VARIANT (t) == t && odr_type_p (t))
+	register_odr_type (t);
+    }
+  /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
+     type which is also member of this SCC.  */
+  if (TREE_CODE (t) == INTEGER_CST
+      && !TREE_OVERFLOW (t))
+    cache_integer_cst (t);
+  if (!flag_ltrans)
+    {
+      lto_maybe_register_decl (data_in, t, index);
+      /* Scan the tree for references to global functions or
+	 variables and record those for later fixup.  */
+      if (mentions_vars_p (t))
+	vec_safe_push (tree_with_vars, t);
+    }
+}
 
 /* Read all the symbols from buffer DATA, using descriptors in DECL_DATA.
    RESOLUTIONS is the set of symbols picked by the linker (read from the
@@ -1813,7 +1877,6 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   /* We do not uniquify the pre-loaded cache entries, those are middle-end
      internal types that should not be merged.  */
 
-  typedef int_hash<unsigned, 0, UINT_MAX> code_id_hash;
   hash_map <code_id_hash, unsigned> hm;
   unsigned total = 0;
 
@@ -1824,31 +1887,41 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
       unsigned from = data_in->reader_cache->nodes.length ();
       /* Read and uniquify SCCs as in the input stream.  */
       enum LTO_tags tag = streamer_read_record_start (&ib_main);
-      if (tag == LTO_tree_scc)
+      if (tag == LTO_tree_scc || tag == LTO_trees)
 	{
 	  unsigned len_;
 	  unsigned scc_entry_len;
+
+	  /* Because we stream in SCC order we know that all unshared trees
+	     are now fully streamed.  Process them.  */
 	  hashval_t scc_hash = lto_input_scc (&ib_main, data_in, &len_,
-					      &scc_entry_len);
+					      &scc_entry_len,
+					      tag == LTO_tree_scc);
 	  unsigned len = data_in->reader_cache->nodes.length () - from;
 	  gcc_assert (len == len_);
 
-	  total_scc_size += len;
-	  num_sccs_read++;
+	  if (tag == LTO_tree_scc)
+	    {
+	      total_scc_size += len;
+	      num_sccs_read++;
+	    }
+	  else
+	    num_unshared_trees_read += len;
 
 	  /* We have the special case of size-1 SCCs that are pre-merged
 	     by means of identifier and string sharing for example.
 	     ???  Maybe we should avoid streaming those as SCCs.  */
 	  tree first = streamer_tree_cache_get_tree (data_in->reader_cache,
 						     from);
-	  if (len == 1
-	      && (TREE_CODE (first) == IDENTIFIER_NODE
-		  || (TREE_CODE (first) == INTEGER_CST
-		      && !TREE_OVERFLOW (first))))
-	    continue;
+	  /* Identifier and integers are shared specially, they should never
+	     go by the tree merging path.  */
+	  gcc_checking_assert ((TREE_CODE (first) != IDENTIFIER_NODE
+				&& (TREE_CODE (first) != INTEGER_CST
+				    || TREE_OVERFLOW (first)))
+			       || len != 1);
 
 	  /* Try to unify the SCC with already existing ones.  */
-	  if (!flag_ltrans
+	  if (!flag_ltrans && tag != LTO_trees
 	      && unify_scc (data_in, from,
 			    len, scc_entry_len, scc_hash))
 	    continue;
@@ -1862,56 +1935,9 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	    {
 	      tree t = streamer_tree_cache_get_tree (data_in->reader_cache,
 						     from + i);
-	      /* Reconstruct the type variant and pointer-to/reference-to
-		 chains.  */
+	      process_new_tree (t, &hm, from + i, &total, data_in);
 	      if (TYPE_P (t))
-		{
-		  /* Map the tree types to their frequencies.  */
-		  if (flag_lto_dump_type_stats)
-		    {
-		      unsigned key = (unsigned) TREE_CODE (t);
-		      unsigned *countp = hm.get (key);
-		      hm.put (key, countp ? (*countp) + 1 : 1);
-		      total++;
-		    }
-
-		  seen_type = true;
-		  num_prevailing_types++;
-		  lto_fixup_prevailing_type (t);
-
-		  /* Compute the canonical type of all non-ODR types.
-		     Delay ODR types for the end of merging process - the canonical
-		     type for those can be computed using the (unique) name however
-		     we want to do this only if units in other languages do not
-		     contain structurally equivalent type.
-
-		     Because SCC components are streamed in random (hash) order
-		     we may have encountered the type before while registering
-		     type canonical of a derived type in the same SCC.  */
-		  if (!TYPE_CANONICAL (t))
-		    {
-		      if (!RECORD_OR_UNION_TYPE_P (t)
-			  || !TYPE_CXX_ODR_P (t))
-		        gimple_register_canonical_type (t);
-		      else if (COMPLETE_TYPE_P (t))
-			vec_safe_push (types_to_register, t);
-		    }
-		  if (TYPE_MAIN_VARIANT (t) == t && odr_type_p (t))
-		    register_odr_type (t);
-		}
-	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
-		 type which is also member of this SCC.  */
-	      if (TREE_CODE (t) == INTEGER_CST
-		  && !TREE_OVERFLOW (t))
-		cache_integer_cst (t);
-	      if (!flag_ltrans)
-		{
-		  lto_maybe_register_decl (data_in, t, from + i);
-		  /* Scan the tree for references to global functions or
-		     variables and record those for later fixup.  */
-		  if (mentions_vars_p (t))
-		    vec_safe_push (tree_with_vars, t);
-		}
+		seen_type = true;
 	    }
 
 	  /* Register DECLs with the debuginfo machinery.  */
@@ -1926,9 +1952,20 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	}
       else
 	{
-	  /* Pickle stray references.  */
 	  t = lto_input_tree_1 (&ib_main, data_in, tag, 0);
-	  gcc_assert (t && data_in->reader_cache->nodes.length () == from);
+	  gcc_assert (data_in->reader_cache->nodes.length () == from + 1);
+	  num_unshared_trees_read++;
+	  data_in->location_cache.accept_location_cache ();
+	  process_dref (data_in, t, from);
+	  if (TREE_CODE (t) == IDENTIFIER_NODE
+	      || (TREE_CODE (t) == INTEGER_CST
+		  && !TREE_OVERFLOW (t)))
+	    ;
+	  else
+	    {
+	      lto_maybe_register_decl (data_in, t, from);
+	      process_new_tree (t, &hm, from, &total, data_in);
+	    }
 	}
     }
 
@@ -2953,10 +2990,13 @@ print_lto_report_1 (void)
   const char *pfx = (flag_lto) ? "LTO" : (flag_wpa) ? "WPA" : "LTRANS";
   fprintf (stderr, "%s statistics\n", pfx);
 
-  fprintf (stderr, "[%s] read %lu SCCs of average size %f\n",
+  fprintf (stderr, "[%s] read %lu unshared trees\n",
+	   pfx, num_unshared_trees_read);
+  fprintf (stderr, "[%s] read %lu mergeable SCCs of average size %f\n",
 	   pfx, num_sccs_read, total_scc_size / (double)num_sccs_read);
-  fprintf (stderr, "[%s] %lu tree bodies read in total\n", pfx, total_scc_size);
-  if (flag_wpa && tree_scc_hash)
+  fprintf (stderr, "[%s] %lu tree bodies read in total\n", pfx,
+	   total_scc_size + num_unshared_trees_read);
+  if (flag_wpa && tree_scc_hash && num_sccs_read)
     {
       fprintf (stderr, "[%s] tree SCC table: size %ld, %ld elements, "
 	       "collision ratio: %f\n", pfx,

@@ -353,11 +353,13 @@ namespace __debug
 
       bool
       operator==(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
-      { return _M_base() == __rhs; }
+      { return _M_base() == __rhs._M_base(); }
 
+#if __cpp_impl_three_way_comparison < 201907L
       bool
       operator!=(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
-      { return _M_base() != __rhs; }
+      { return _M_base() != __rhs._M_base(); }
+#endif
 
       using _Base::test;
       using _Base::all;

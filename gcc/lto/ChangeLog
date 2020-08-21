@@ -1,3 +1,30 @@
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Do not compare TYPE_VALUES.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (lto_read_decls): Do not skip stray refs.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Sanity check that we never
+	read TRANSLATION_UNIT_DECL.
+	(process_dref): Break out from ...
+	(unify_scc): ... here.
+	(process_new_tree): Break out from ...
+	(lto_read_decls): ... here; handle streaming of singleton trees.
+	(print_lto_report_1): Update statistics.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

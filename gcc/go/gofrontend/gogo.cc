@@ -3342,7 +3342,8 @@ class Create_function_descriptors : public Traverse
   Gogo* gogo_;
 };
 
-// Create a descriptor for every top-level exported function.
+// Create a descriptor for every top-level exported function and every
+// function referenced by an inline function.
 
 int
 Create_function_descriptors::function(Named_object* no)
@@ -3350,8 +3351,9 @@ Create_function_descriptors::function(Named_object* no)
   if (no->is_function()
       && no->func_value()->enclosing() == NULL
       && !no->func_value()->is_method()
-      && !Gogo::is_hidden_name(no->name())
-      && !Gogo::is_thunk(no))
+      && ((!Gogo::is_hidden_name(no->name())
+	   && !Gogo::is_thunk(no))
+	  || no->func_value()->is_referenced_by_inline()))
     no->func_value()->descriptor(this->gogo_, no);
 
   return TRAVERSE_CONTINUE;

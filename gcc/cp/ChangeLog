@@ -1,3 +1,50 @@
+2020-08-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96199
+	* pt.c (maybe_dependent_member_ref): New.
+	(tsubst_copy) [CONST_DECL]: Use it.
+	[VAR_DECL]: Likewise.
+	(tsubst_aggr_type): Handle nested type.
+
+2020-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (resolve_overloaded_unification): Drop functions with
+	unsatisfied constraints.
+	(resolve_nondeduced_context): Likewise.
+
+2020-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96106
+	* pt.c (reduce_template_parm_level): Propagate DECL_VIRTUAL_P
+	from the original TEMPLATE_PARM_DECL to the new lowered one.
+
+2020-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96164
+	* constraint.cc (constraints_satisfied_p): Return true if
+	!flags_concepts.
+	* pt.c (do_type_instantiation): Update a paragraph taken from
+	[temp.explicit] to reflect the latest specification.  Don't
+	instantiate a member with unsatisfied constraints.
+
+2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96082
+	* parser.c (cp_parser_elaborated_type_specifier): Allow
+	'template' following ::.
+
 2020-07-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

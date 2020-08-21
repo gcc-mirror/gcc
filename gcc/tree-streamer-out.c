@@ -70,7 +70,8 @@ write_identifier (struct output_block *ob,
 static inline void
 pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, TREE_CODE (expr), 16);
+  if (streamer_debugging)
+    bp_pack_value (bp, TREE_CODE (expr), 16);
   if (!TYPE_P (expr))
     {
       bp_pack_value (bp, TREE_SIDE_EFFECTS (expr), 1);
@@ -729,9 +730,7 @@ static void
 write_ts_type_non_common_tree_pointers (struct output_block *ob, tree expr,
 					bool ref_p)
 {
-  if (TREE_CODE (expr) == ENUMERAL_TYPE)
-    stream_write_tree (ob, TYPE_VALUES (expr), ref_p);
-  else if (TREE_CODE (expr) == ARRAY_TYPE)
+  if (TREE_CODE (expr) == ARRAY_TYPE)
     stream_write_tree (ob, TYPE_DOMAIN (expr), ref_p);
   else if (RECORD_OR_UNION_TYPE_P (expr))
     streamer_write_chain (ob, TYPE_FIELDS (expr), ref_p);

@@ -9910,6 +9910,47 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
   goto retry;
 }
 
+/* Expression VALUE coincides with the start of type TYPE in a braced
+   initializer.  Return true if we should treat VALUE as initializing
+   the first element of TYPE, false if we should treat it as initializing
+   TYPE as a whole.
+
+   If the initializer is clearly invalid, the question becomes:
+   which choice gives the best error message?  */
+
+static bool
+initialize_elementwise_p (tree type, tree value)
+{
+  if (type == error_mark_node || value == error_mark_node)
+    return false;
+
+  gcc_checking_assert (TYPE_MAIN_VARIANT (type) == type);
+
+  tree value_type = TREE_TYPE (value);
+  if (value_type == error_mark_node)
+    return false;
+
+  /* GNU vectors can be initialized elementwise.  However, treat any
+     kind of vector value as initializing the vector type as a whole,
+     regardless of whether the value is a GNU vector.  Such initializers
+     are valid if and only if they would have been valid in a non-braced
+     initializer like:
+
+	TYPE foo = VALUE;
+
+     so recursing into the vector type would be at best confusing or at
+     worst wrong.  For example, when -flax-vector-conversions is in effect,
+     it's possible to initialize a V8HI from a V4SI, even though the vectors
+     have different element types and different numbers of elements.  */
+  if (gnu_vector_type_p (type))
+    return !VECTOR_TYPE_P (value_type);
+
+  if (AGGREGATE_TYPE_P (type))
+    return type != TYPE_MAIN_VARIANT (value_type);
+
+  return false;
+}
+
 /* Add one non-braced element to the current constructor level.
    This adjusts the current position within the constructor's type.
    This may also start or terminate implicit levels
@@ -10089,11 +10130,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
 	  else if (value.value != NULL_TREE
-		   && value.value != error_mark_node
-		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
-		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		       || fieldcode == UNION_TYPE
-		       || gnu_vector_type_p (fieldtype)))
+		   && initialize_elementwise_p (fieldtype, value.value))
 	    {
 	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
@@ -10181,11 +10218,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
 	  else if (value.value != NULL_TREE
-		   && value.value != error_mark_node
-		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
-		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		       || fieldcode == UNION_TYPE
-		       || gnu_vector_type_p (fieldtype)))
+		   && initialize_elementwise_p (fieldtype, value.value))
 	    {
 	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
@@ -10224,11 +10257,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
 	  else if (value.value != NULL_TREE
-		   && value.value != error_mark_node
-		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != elttype
-		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
-		       || eltcode == UNION_TYPE
-		       || gnu_vector_type_p (elttype)))
+		   && initialize_elementwise_p (elttype, value.value))
 	    {
 	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;

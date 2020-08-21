@@ -5608,15 +5608,14 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
 	  /* Type values are used only for C++ ODR checking.  Drop them
 	     for all type variants and non-ODR types.
 	     For ODR types the data is freed in free_odr_warning_data.  */
-	  if (TYPE_MAIN_VARIANT (type) != type
-	      || !type_with_linkage_p (type))
+	  if (!TYPE_VALUES (type))
+	    ;
+	  else if (TYPE_MAIN_VARIANT (type) != type
+		   || !type_with_linkage_p (type)
+		   || type_in_anonymous_namespace_p (type))
 	    TYPE_VALUES (type) = NULL;
 	  else
-	  /* Simplify representation by recording only values rather
-	     than const decls.  */
-	    for (tree e = TYPE_VALUES (type); e; e = TREE_CHAIN (e))
-	      if (TREE_CODE (TREE_VALUE (e)) == CONST_DECL)
-		TREE_VALUE (e) = DECL_INITIAL (TREE_VALUE (e));
+	    register_odr_enum (type);
 	}
       free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
       free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));

@@ -1244,6 +1244,18 @@ This DejaGnu directive compares @var{regexp} to the combined output
 that the test executable writes to @file{stdout} and @file{stderr}.
 @end table
 
+@subsubsection Specify environment variables for a test
+
+@table @code
+@item @{ dg-set-compiler-env-var @var{var_name} "@var{var_value}" @}
+Specify that the environment variable @var{var_name} needs to be set
+to @var{var_value} before invoking the compiler on the test file.
+
+@item @{ dg-set-target-env-var @var{var_name} "@var{var_value}" @}
+Specify that the environment variable @var{var_name} needs to be set
+to @var{var_value} before execution of the program created by the test.
+@end table
+
 @subsubsection Specify additional files for a test
 
 @table @code
@@ -2030,6 +2042,9 @@ whether it does so by default).
 @itemx aarch64_sve2048_hw
 Like @code{aarch64_sve_hw}, but also test for an exact hardware vector length.
 
+@item aarch64_fjcvtzs_hw
+AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
+instruction.
 @end table
 
 @subsubsection MIPS-specific attributes

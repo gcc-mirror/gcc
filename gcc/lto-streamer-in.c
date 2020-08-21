@@ -1417,24 +1417,29 @@ lto_read_tree (class lto_input_block *ib, class data_in *data_in,
 
   lto_read_tree_1 (ib, data_in, result);
 
-  /* end_marker = */ streamer_read_uchar (ib);
-
   return result;
 }
 
 
 /* Populate the reader cache with trees materialized from the SCC
-   following in the IB, DATA_IN stream.  */
+   following in the IB, DATA_IN stream.
+   If SHARED_SCC is true we input LTO_tree_scc.  */
 
 hashval_t
 lto_input_scc (class lto_input_block *ib, class data_in *data_in,
-	       unsigned *len, unsigned *entry_len)
+	       unsigned *len, unsigned *entry_len, bool shared_scc)
 {
-  /* A blob of unnamed tree nodes, fill the cache from it and
-     recurse.  */
   unsigned size = streamer_read_uhwi (ib);
-  hashval_t scc_hash = streamer_read_uhwi (ib);
+  hashval_t scc_hash = 0;
   unsigned scc_entry_len = 1;
+
+  if (shared_scc)
+    {
+      if (size & 1)
+	scc_entry_len = streamer_read_uhwi (ib);
+      size /= 2;
+      scc_hash = streamer_read_uhwi (ib);
+    }
 
   if (size == 1)
     {
@@ -1446,8 +1451,6 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
       unsigned int first = data_in->reader_cache->nodes.length ();
       tree result;
 
-      scc_entry_len = streamer_read_uhwi (ib);
-
       /* Materialize size trees by reading their headers.  */
       for (unsigned i = 0; i < size; ++i)
 	{
@@ -1456,7 +1459,8 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
 	      || tag == LTO_tree_pickle_reference
 	      || tag == LTO_integer_cst
-	      || tag == LTO_tree_scc)
+	      || tag == LTO_tree_scc
+	      || tag == LTO_trees)
 	    gcc_unreachable ();
 
 	  result = streamer_alloc_tree (ib, data_in, tag);
@@ -1469,7 +1473,6 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	  result = streamer_tree_cache_get_tree (data_in->reader_cache,
 						 first + i);
 	  lto_read_tree_1 (ib, data_in, result);
-	  /* end_marker = */ streamer_read_uchar (ib);
 	}
     }
 
@@ -1522,7 +1525,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
 				 (a, len, TYPE_PRECISION (type)));
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
     }
-  else if (tag == LTO_tree_scc)
+  else if (tag == LTO_tree_scc || tag == LTO_trees)
     gcc_unreachable ();
   else
     {
@@ -1538,11 +1541,11 @@ lto_input_tree (class lto_input_block *ib, class data_in *data_in)
 {
   enum LTO_tags tag;
 
-  /* Input and skip SCCs.  */
-  while ((tag = streamer_read_record_start (ib)) == LTO_tree_scc)
+  /* Input pickled trees needed to stream in the reference.  */
+  while ((tag = streamer_read_record_start (ib)) == LTO_trees)
     {
       unsigned len, entry_len;
-      lto_input_scc (ib, data_in, &len, &entry_len);
+      lto_input_scc (ib, data_in, &len, &entry_len, false);
 
       /* Register DECLs with the debuginfo machinery.  */
       while (!dref_queue.is_empty ())
@@ -1551,7 +1554,15 @@ lto_input_tree (class lto_input_block *ib, class data_in *data_in)
 	  debug_hooks->register_external_die (e.decl, e.sym, e.off);
 	}
     }
-  return lto_input_tree_1 (ib, data_in, tag, 0);
+  tree t = lto_input_tree_1 (ib, data_in, tag, 0);
+
+  if (!dref_queue.is_empty ())
+    {
+      dref_entry e = dref_queue.pop ();
+      debug_hooks->register_external_die (e.decl, e.sym, e.off);
+      gcc_checking_assert (dref_queue.is_empty ());
+    }
+  return t;
 }
 
 

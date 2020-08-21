@@ -88,7 +88,7 @@ along with GCC; see the file COPYING3.  If not see
      This means that the graph is not complete. Types with no methods are not
      inserted into the graph.  Also types without virtual methods are not
      represented at all, though it may be easy to add this.
- 
+
      The inheritance graph is represented as follows:
 
        Vertices are structures odr_type.  Every odr_type may correspond
@@ -131,6 +131,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "data-streamer.h"
+#include "lto-streamer.h"
+#include "streamer-hooks.h"
 
 /* Hash based set of pairs of types.  */
 struct type_pair
@@ -494,6 +497,29 @@ static odr_hash_type *odr_hash;
 
 static GTY(()) vec <odr_type, va_gc> *odr_types_ptr;
 #define odr_types (*odr_types_ptr)
+
+/* All enums defined and accessible for the unit.  */
+static GTY(()) vec <tree, va_gc> *odr_enums;
+
+/* Information we hold about value defined by an enum type.  */
+struct odr_enum_val
+{
+  const char *name;
+  wide_int val;
+  location_t locus;
+};
+
+/* Information about enum values.  */
+struct odr_enum
+{
+  location_t locus;
+  auto_vec<odr_enum_val, 0> vals;
+  bool warned;
+};
+
+/* A table of all ODR enum definitions.  */
+static hash_map <nofree_string_hash, odr_enum> *odr_enum_map = NULL;
+static struct obstack odr_enum_obstack;
 
 /* Set TYPE_BINFO of TYPE and its variants to BINFO.  */
 void
@@ -1205,37 +1231,6 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       return false;
     }
 
-  if (TREE_CODE (t1) == ENUMERAL_TYPE
-      && TYPE_VALUES (t1) && TYPE_VALUES (t2))
-    {
-      tree v1, v2;
-      for (v1 = TYPE_VALUES (t1), v2 = TYPE_VALUES (t2);
-	   v1 && v2 ; v1 = TREE_CHAIN (v1), v2 = TREE_CHAIN (v2))
-	{
-	  if (TREE_PURPOSE (v1) != TREE_PURPOSE (v2))
-	    {
-	      warn_odr (t1, t2, NULL, NULL, warn, warned,
-			G_("an enum with different value name"
-			   " is defined in another translation unit"));
-	      return false;
-	    }
-	  if (!operand_equal_p (TREE_VALUE (v1), TREE_VALUE (v2), 0))
-	    {
-	      warn_odr (t1, t2, NULL, NULL, warn, warned,
-			G_("an enum with different values is defined"
-			   " in another translation unit"));
-	      return false;
-	    }
-	}
-      if (v1 || v2)
-	{
-	  warn_odr (t1, t2, NULL, NULL, warn, warned,
-		    G_("an enum with mismatching number of values "
-		       "is defined in another translation unit"));
-	  return false;
-	}
-    }
-
   /* Non-aggregate types can be handled cheaply.  */
   if (INTEGRAL_TYPE_P (t1)
       || SCALAR_FLOAT_TYPE_P (t1)
@@ -1622,10 +1617,6 @@ add_type_duplicate (odr_type val, tree type)
     }
   else if (COMPLETE_TYPE_P (val->type) && !COMPLETE_TYPE_P (type))
     ;
-  else if (TREE_CODE (val->type) == ENUMERAL_TYPE
-	   && TREE_CODE (type) == ENUMERAL_TYPE
-	   && !TYPE_VALUES (val->type) && TYPE_VALUES (type))
-    prevail = true;
   else if (TREE_CODE (val->type) == RECORD_TYPE
 	   && TREE_CODE (type) == RECORD_TYPE
 	   && TYPE_BINFO (type) && !TYPE_BINFO (val->type))
@@ -1977,7 +1968,7 @@ get_odr_type (tree type, bool insert)
       unsigned int i;
 
       gcc_assert (BINFO_TYPE (TYPE_BINFO (val->type)) == type);
-  
+
       val->all_derivations_known = type_all_derivations_known_p (type);
       for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
 	/* For now record only polymorphic types. other are
@@ -2222,7 +2213,7 @@ dump_type_inheritance_graph (FILE *f)
 
 /* Save some WPA->ltrans streaming by freeing stuff needed only for good
    ODR warnings.
-   We free TYPE_VALUES of enums and also make TYPE_DECLs to not point back
+   We make TYPE_DECLs to not point back
    to the type (which is needed to keep them in the same SCC and preserve
    location information to output warnings) and subsequently we make all
    TYPE_DECLS of same assembler name equivalent.  */
@@ -2242,8 +2233,6 @@ free_odr_warning_data ()
       {
 	tree t = odr_types[i]->type;
 
-	if (TREE_CODE (t) == ENUMERAL_TYPE)
-	  TYPE_VALUES (t) = NULL;
 	TREE_TYPE (TYPE_NAME (t)) = void_type_node;
 
 	if (odr_types[i]->types)
@@ -2251,8 +2240,6 @@ free_odr_warning_data ()
 	    {
 	      tree td = (*odr_types[i]->types)[j];
 
-	      if (TREE_CODE (td) == ENUMERAL_TYPE)
-	        TYPE_VALUES (td) = NULL;
 	      TYPE_NAME (td) = TYPE_NAME (t);
 	    }
       }
@@ -2286,7 +2273,7 @@ build_type_inheritance_graph (void)
       get_odr_type (TYPE_METHOD_BASETYPE (TREE_TYPE (n->decl)), true);
 
     /* Look also for virtual tables of types that do not define any methods.
- 
+
        We need it in a case where class B has virtual base of class A
        re-defining its virtual method and there is class C with no virtual
        methods with B as virtual base.
@@ -2603,7 +2590,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
    INSERTED is used to avoid duplicate insertions of methods into NODES.
    MATCHED_VTABLES are used to avoid duplicate walking vtables.
    Clear COMPLETEP if unreferable target is found.
- 
+
    If CONSIDER_CONSTRUCTION is true, record to BASES_TO_CONSIDER
    all cases where BASE_SKIPPED is true (because the base is abstract
    class).  */
@@ -2803,7 +2790,7 @@ subbinfo_with_vtable_at_offset (tree binfo, unsigned HOST_WIDE_INT offset,
 	  && DECL_ASSEMBLER_NAME (v) == DECL_ASSEMBLER_NAME (vtable))
 	return binfo;
     }
-  
+
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     if (polymorphic_type_binfo_p (base_binfo))
       {
@@ -4018,5 +4005,369 @@ debug_tree_odr_name (tree type, bool demangle)
 
   fprintf (stderr, "%s\n", odr);
 }
+
+/* Register ODR enum so we later stream record about its values.  */
+
+void
+register_odr_enum (tree t)
+{
+  if (flag_lto)
+    vec_safe_push (odr_enums, t);
+}
+
+/* Write ODR enums to LTO stream file.  */
+
+static void
+ipa_odr_summary_write (void)
+{
+  if (!odr_enums && !odr_enum_map)
+    return;
+  struct output_block *ob = create_output_block (LTO_section_odr_types);
+  unsigned int i;
+  tree t;
+
+  if (odr_enums)
+    {
+      streamer_write_uhwi (ob, odr_enums->length ());
+
+      /* For every ODR enum stream out
+	   - its ODR name
+	   - number of values,
+	   - value names and constant their represent
+	   - bitpack of locations so we can do good diagnostics.  */
+      FOR_EACH_VEC_ELT (*odr_enums, i, t)
+	{
+	  streamer_write_string (ob, ob->main_stream,
+				 IDENTIFIER_POINTER
+				     (DECL_ASSEMBLER_NAME (TYPE_NAME (t))),
+				 true);
+
+	  int n = 0;
+	  for (tree e = TYPE_VALUES (t); e; e = TREE_CHAIN (e))
+	    n++;
+	  streamer_write_uhwi (ob, n);
+	  for (tree e = TYPE_VALUES (t); e; e = TREE_CHAIN (e))
+	    {
+	      streamer_write_string (ob, ob->main_stream,
+				     IDENTIFIER_POINTER (TREE_PURPOSE (e)),
+				     true);
+	      streamer_write_wide_int (ob,
+				       wi::to_wide (DECL_INITIAL
+						      (TREE_VALUE (e))));
+	    }
+
+	  bitpack_d bp = bitpack_create (ob->main_stream);
+	  lto_output_location (ob, &bp, DECL_SOURCE_LOCATION (TYPE_NAME (t)));
+	  for (tree e = TYPE_VALUES (t); e; e = TREE_CHAIN (e))
+	    lto_output_location (ob, &bp,
+				 DECL_SOURCE_LOCATION (TREE_VALUE (e)));
+	  streamer_write_bitpack (&bp);
+	}
+      vec_free (odr_enums);
+      odr_enums = NULL;
+    }
+  /* During LTO incremental linking we already have streamed in types.  */
+  else if (odr_enum_map)
+    {
+      gcc_checking_assert (!odr_enums);
+      streamer_write_uhwi (ob, odr_enum_map->elements ());
+
+      hash_map<nofree_string_hash, odr_enum>::iterator iter
+		= odr_enum_map->begin ();
+      for (; iter != odr_enum_map->end (); ++iter)
+	{
+	  odr_enum &this_enum = (*iter).second;
+	  streamer_write_string (ob, ob->main_stream, (*iter).first, true);
+
+	  streamer_write_uhwi (ob, this_enum.vals.length ());
+	  for (unsigned j = 0; j < this_enum.vals.length (); j++)
+	    {
+	      streamer_write_string (ob, ob->main_stream,
+				     this_enum.vals[j].name, true);
+	      streamer_write_wide_int (ob, this_enum.vals[j].val);
+	    }
+
+	  bitpack_d bp = bitpack_create (ob->main_stream);
+	  lto_output_location (ob, &bp, this_enum.locus);
+	  for (unsigned j = 0; j < this_enum.vals.length (); j++)
+	    lto_output_location (ob, &bp, this_enum.vals[j].locus);
+	  streamer_write_bitpack (&bp);
+	}
+
+      delete odr_enum_map;
+      obstack_free (&odr_enum_obstack, NULL);
+      odr_enum_map = NULL;
+    }
+
+  produce_asm (ob, NULL);
+  destroy_output_block (ob);
+}
+
+/* Write ODR enums from LTO stream file and warn on mismatches.  */
+
+static void
+ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
+		      size_t len)
+{
+  const struct lto_function_header *header
+    = (const struct lto_function_header *) data;
+  const int cfg_offset = sizeof (struct lto_function_header);
+  const int main_offset = cfg_offset + header->cfg_size;
+  const int string_offset = main_offset + header->main_size;
+  class data_in *data_in;
+
+  lto_input_block ib ((const char *) data + main_offset, header->main_size,
+		      file_data->mode_table);
+
+  data_in
+    = lto_data_in_create (file_data, (const char *) data + string_offset,
+			  header->string_size, vNULL);
+  unsigned int n = streamer_read_uhwi (&ib);
+
+  if (!odr_enum_map)
+    {
+      gcc_obstack_init (&odr_enum_obstack);
+      odr_enum_map = new (hash_map <nofree_string_hash, odr_enum>);
+    }
+
+  for (unsigned i = 0; i < n; i++)
+    {
+      const char *rname = streamer_read_string (data_in, &ib);
+      unsigned int nvals = streamer_read_uhwi (&ib);
+      char *name;
+  
+      obstack_grow (&odr_enum_obstack, rname, strlen (rname) + 1);
+      name = XOBFINISH (&odr_enum_obstack, char *);
+
+      bool existed_p;
+      class odr_enum &this_enum
+		 = odr_enum_map->get_or_insert (xstrdup (name), &existed_p);
+
+      /* If this is first time we see the enum, remember its definition.  */
+      if (!existed_p)
+	{
+	  this_enum.vals.safe_grow_cleared (nvals);
+	  this_enum.warned = false;
+	  if (dump_file)
+	    fprintf (dump_file, "enum %s\n{\n", name);
+	  for (unsigned j = 0; j < nvals; j++)
+	    {
+	      const char *val_name = streamer_read_string (data_in, &ib);
+	      obstack_grow (&odr_enum_obstack, val_name, strlen (val_name) + 1);
+	      this_enum.vals[j].name = XOBFINISH (&odr_enum_obstack, char *);
+	      this_enum.vals[j].val = streamer_read_wide_int (&ib);
+	      if (dump_file)
+		fprintf (dump_file, "  %s = " HOST_WIDE_INT_PRINT_DEC ",\n",
+			 val_name, wi::fits_shwi_p (this_enum.vals[j].val)
+			 ? this_enum.vals[j].val.to_shwi () : -1);
+	    }
+	  bitpack_d bp = streamer_read_bitpack (&ib);
+	  stream_input_location (&this_enum.locus, &bp, data_in);
+	  for (unsigned j = 0; j < nvals; j++)
+	    stream_input_location (&this_enum.vals[j].locus, &bp, data_in);
+	  data_in->location_cache.apply_location_cache ();
+	  if (dump_file)
+	    fprintf (dump_file, "}\n");
+	}
+      /* If we already have definition, compare it with new one and output
+	 warnings if they differs.  */
+      else
+	{
+	  int do_warning = -1;
+	  char *warn_name = NULL;
+	  wide_int warn_value = wi::zero (1);
+
+	  if (dump_file)
+	    fprintf (dump_file, "Comparing enum %s\n", name);
+
+	  /* Look for differences which we will warn about later once locations
+	     are streamed.  */
+	  for (unsigned j = 0; j < nvals; j++)
+	    {
+	      const char *id = streamer_read_string (data_in, &ib);
+	      wide_int val = streamer_read_wide_int (&ib);
+
+	      if (do_warning != -1 || j >= this_enum.vals.length ())
+		continue;
+	      if (strcmp (id, this_enum.vals[j].name)
+		  || val != this_enum.vals[j].val)
+		{
+		  warn_name = xstrdup (id);
+		  warn_value = val;
+		  do_warning = j;
+		  if (dump_file)
+		    fprintf (dump_file, "  Different on entry %i\n", j);
+		}
+	    }
+
+	  /* Stream in locations, but do not apply them unless we are going
+	     to warn.  */
+	  bitpack_d bp = streamer_read_bitpack (&ib);
+	  location_t locus;
+
+	  stream_input_location (&locus, &bp, data_in);
+
+	  /* Did we find a difference?  */
+	  if (do_warning != -1 || nvals != this_enum.vals.length ())
+	    {
+	      data_in->location_cache.apply_location_cache ();
+
+	      const int opts = DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES;
+	      char *dmgname = cplus_demangle (name, opts);
+	      if (this_enum.warned
+		  || !warning_at (this_enum.locus,
+				  OPT_Wodr, "type %qs violates the "
+				  "C++ One Definition Rule",
+				  dmgname))
+		do_warning = -1;
+	      else
+	       {
+		 this_enum.warned = true;
+		 if (do_warning == -1)
+		   inform (locus,
+			   "an enum with different number of values is defined"
+			   " in another translation unit");
+		 else if (warn_name)
+		   inform (locus,
+			   "an enum with different value name"
+			   " is defined in another translation unit");
+		 else
+		   inform (locus,
+			   "an enum with different values"
+			   " is defined in another translation unit");
+	       }
+	    }
+	  else
+	    data_in->location_cache.revert_location_cache ();
+
+	  /* Finally look up for location of the actual value that diverged.  */
+	  for (unsigned j = 0; j < nvals; j++)
+	    {
+	      location_t id_locus;
+
+	      data_in->location_cache.revert_location_cache ();
+	      stream_input_location (&id_locus, &bp, data_in);
+
+	      if ((int) j == do_warning)
+		{
+		  data_in->location_cache.apply_location_cache ();
+
+		  if (strcmp (warn_name, this_enum.vals[j].name))
+		    inform (this_enum.vals[j].locus,
+			    "name %qs differs from name %qs defined"
+			    " in another translation unit",
+			    this_enum.vals[j].name, warn_name);
+		  /* FIXME: In case there is easy way to print wide_ints,
+		     perhaps we could do it here instead of overlfow checpl.  */
+		  else if (wi::fits_shwi_p (this_enum.vals[j].val)
+			   && wi::fits_shwi_p (warn_value))
+		    inform (this_enum.vals[j].locus,
+			    "name %qs is defined to " HOST_WIDE_INT_PRINT_DEC
+			    " while another translation unit defines "
+			    "it as " HOST_WIDE_INT_PRINT_DEC,
+			    warn_name, this_enum.vals[j].val.to_shwi (),
+			    warn_value.to_shwi ());
+		  else
+		    inform (this_enum.vals[j].locus,
+			    "name %qs is defined to different value "
+			    "in another translation unit",
+			    warn_name);
+
+		  inform (id_locus,
+			  "mismatching definition");
+		}
+	      else
+	        data_in->location_cache.revert_location_cache ();
+	    }
+	  if (warn_name)
+	    free (warn_name);
+	  obstack_free (&odr_enum_obstack, name);
+	}
+    }
+  lto_free_section_data (file_data, LTO_section_ipa_fn_summary, NULL, data,
+			 len);
+  lto_data_in_delete (data_in);
+}
+
+/* Read all ODR type sections.  */
+
+static void
+ipa_odr_summary_read (void)
+{
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      size_t len;
+      const char *data
+	= lto_get_summary_section_data (file_data, LTO_section_odr_types,
+					&len);
+      if (data)
+	ipa_odr_read_section (file_data, data, len);
+    }
+  /* Enum info is used only to produce warnings.  Only case we will need it
+     again is streaming for incremental LTO.  */
+  if (flag_incremental_link != INCREMENTAL_LINK_LTO)
+    {
+      delete odr_enum_map;
+      obstack_free (&odr_enum_obstack, NULL);
+      odr_enum_map = NULL;
+    }
+}
+
+namespace {
+
+const pass_data pass_data_ipa_odr =
+{
+  IPA_PASS, /* type */
+  "odr", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_IPA_ODR, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_ipa_odr : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_odr (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_odr, ctxt,
+		      NULL, /* generate_summary */
+		      ipa_odr_summary_write, /* write_summary */
+		      ipa_odr_summary_read, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return (in_lto_p || flag_lto);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return 0;
+    }
+
+}; // class pass_ipa_odr
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_odr (gcc::context *ctxt)
+{
+  return new pass_ipa_odr (ctxt);
+}
+
 
 #include "gt-ipa-devirt.h"

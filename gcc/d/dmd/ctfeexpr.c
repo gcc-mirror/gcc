@@ -1911,7 +1911,7 @@ bool isCtfeValueValid(Expression *newval)
         // e1 should be a CTFE reference
         Expression *e1 = ((AddrExp *)newval)->e1;
         return tb->ty == Tpointer &&
-               ((e1->op == TOKstructliteral && isCtfeValueValid(e1)) ||
+               (((e1->op == TOKstructliteral || e1->op == TOKarrayliteral) && isCtfeValueValid(e1)) ||
                 (e1->op == TOKvar) ||
                 (e1->op == TOKdotvar && isCtfeReferenceValid(e1)) ||
                 (e1->op == TOKindex && isCtfeReferenceValid(e1)) ||

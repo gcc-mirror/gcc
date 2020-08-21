@@ -1,3 +1,513 @@
+2020-08-19  Joe Ramsay  <joe.ramsay@arm.com>
+
+	Backported from master:
+	2020-07-29  Joe Ramsay  <joe.ramsay@arm.com>
+
+	PR target/96682
+	* config/arm/arm-protos.h (arm_coproc_mem_operand_no_writeback):
+	Declare prototype.
+	(arm_mve_mode_and_operands_type_check): Declare prototype.
+	* config/arm/arm.c (arm_coproc_mem_operand): Refactor to use
+	_arm_coproc_mem_operand.
+	(arm_coproc_mem_operand_wb): New function to cover full, limited
+	and no writeback.
+	(arm_coproc_mem_operand_no_writeback): New constraint for memory
+	operand with no writeback.
+	(arm_print_operand): Extend 'E' specifier for memory operand
+	that does not support writeback.
+	(arm_mve_mode_and_operands_type_check): New constraint check for
+	MVE memory operands.
+	* config/arm/constraints.md: Add Uj constraint for VFP vldr.16
+	and vstr.16.
+	* config/arm/vfp.md (*mov_load_vfp_hf16): New pattern for
+	vldr.16.
+	(*mov_store_vfp_hf16): New pattern for vstr.16.
+	(*mov<mode>_vfp_<mode>16): Remove MVE moves.
+
+2020-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_VSX_1): Rename xvcvbf16sp to
+	xvcvbf16spn.
+	* config/rs6000/rs6000-call.c (builtin_function_type): Likewise.
+	* config/rs6000/vsx.md: Likewise.
+	* doc/extend.texi: Likewise.
+
+2020-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96506
+	* config/rs6000/rs6000-call.c (rs6000_promote_function_mode): Disallow
+	MMA types as return values.
+	(rs6000_function_arg): Disallow MMA types as function arguments.
+
+2020-08-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96536
+	* config/i386/i386.md (restore_stack_nonlocal):
+	Add missing compare RTX.
+
+2020-08-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96562
+	PR target/93897
+	* config/i386/i386-expand.c (ix86_expand_pinsr): Don't use
+	pinsr for TImode.
+	(ix86_expand_pextr): Don't use pextr for TImode.
+
+2020-08-14  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-05-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95362
+	* lto-streamer-out.c (lto_output_tree): Disable redundant streaming.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.h (LTO_minor_version): Bump version.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/95548
+	* ipa-devirt.c (struct odr_enum_val): Turn values to wide_int.
+	(ipa_odr_summary_write): Update streaming.
+	(ipa_odr_read_section): Update streaming.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c: Include data-streamer.h, lto-streamer.h and
+	streamer-hooks.h.
+	(odr_enums): New static var.
+	(struct odr_enum_val): New struct.
+	(class odr_enum): New struct.
+	(odr_enum_map): New hashtable.
+	(odr_types_equivalent_p): Drop code testing TYPE_VALUES.
+	(add_type_duplicate): Likewise.
+	(free_odr_warning_data): Do not free TYPE_VALUES.
+	(register_odr_enum): New function.
+	(ipa_odr_summary_write): New function.
+	(ipa_odr_read_section): New function.
+	(ipa_odr_summary_read): New function.
+	(class pass_ipa_odr): New pass.
+	(make_pass_ipa_odr): New function.
+	* ipa-utils.h (register_odr_enum): Declare.
+	* lto-section-in.c: (lto_section_name): Add odr_types section.
+	* lto-streamer.h (enum lto_section_type): Add odr_types section.
+	* passes.def: Add odr_types pass.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	TYPE_VALUES.
+	(hash_tree): Likewise.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+	* timevar.def (TV_IPA_ODR): New timervar.
+	* tree-pass.h (make_pass_ipa_odr): Declare.
+	* tree.c (free_lang_data_in_type): Regiser ODR types.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Add streamer_debugging check.
+	* lto-streamer.h (streamer_debugging): New constant
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Add
+	streamer_debugging check.
+	(streamer_get_pickled_tree): Likewise.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Likewise.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (lto_output_tree): Do not stream final ref if
+	it is not needed.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* tree-streamer.c (record_common_node): Fix hash value of pre-streamed
+	nodes.
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_read_tree): Do not stream end markers.
+	(lto_input_scc): Optimize streaming of entry lengths.
+	* lto-streamer-out.c (lto_write_tree): Do not stream end markers
+	(DFS::DFS): Optimize stremaing of entry lengths
+
+2020-08-13  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2020-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_input_scc): Add SHARED_SCC parameter.
+	(lto_input_tree_1): Strenghten sanity check.
+	(lto_input_tree): Update call of lto_input_scc.
+	* lto-streamer-out.c: Include ipa-utils.h
+	(create_output_block): Initialize local_trees if merigng is going
+	to happen.
+	(destroy_output_block): Destroy local_trees.
+	(DFS): Add max_local_entry.
+	(local_tree_p): New function.
+	(DFS::DFS): Initialize and maintain it.
+	(DFS::DFS_write_tree): Decide on streaming format.
+	(lto_output_tree): Stream inline singleton SCCs
+	* lto-streamer.h (enum LTO_tags): Add LTO_trees.
+	(struct output_block): Add local_trees.
+	(lto_input_scc): Update prototype.
+
+2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/96482
+	* ipa-cp.c (ipcp_bits_lattice::meet_with_1): Mask m_value
+	with m_mask.
+
+2020-08-12  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2020-08-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/96493
+	* config/rs6000/predicates.md (current_file_function_operand): Don't
+	accept functions that differ in r2 usage.
+
+2020-08-12  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-08-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/96482
+	* ipa-cp.c (ipcp_bits_lattice::meet_with_1): Drop value bits
+	for bits that are unknown.
+	(ipcp_bits_lattice::set_to_constant): Likewise.
+	* tree-ssa-ccp.c (get_default_value): Add sanity check that
+	IPA CP bit info has all bits set to zero in bits that
+	are unknown.
+
+2020-08-12  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-07-28  Sergei Trofimovich  <siarheit@google.com>
+
+	PR ipa/96291
+	* ipa-cp.c (has_undead_caller_from_outside_scc_p): Consider
+	unoptimized callers as undead.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md: Remove trailing whitespaces.
+	* config/bpf/constraints.md: Likewise.
+	* config/bpf/predicates.md: Likewise.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf-helpers.h (KERNEL_HELPER): Define.
+	(KERNEL_VERSION): Remove.
+	* config/bpf/bpf-helpers.def: Delete.
+	* config/bpf/bpf.c (bpf_handle_fndecl_attribute): New function.
+	(bpf_attribute_table): Define.
+	(bpf_helper_names): Delete.
+	(bpf_helper_code): Likewise.
+	(enum bpf_builtins): Adjust to new helpers mechanism.
+	(bpf_output_call): Likewise.
+	(bpf_init_builtins): Likewise.
+	(bpf_init_builtins): Likewise.
+	* doc/extend.texi (BPF Function Attributes): New section.
+	(BPF Kernel Helpers): Delete section.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.c (bpf_compute_frame_layout): Include space for
+	callee saved registers only in xBPF.
+	(bpf_expand_prologue): Save callee saved registers only in xBPF.
+	(bpf_expand_epilogue): Likewise for restoring.
+	* doc/invoke.texi (eBPF Options): Document this is activated by
+	-mxbpf.
+
+2020-08-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.opt (mxbpf): New option.
+	* doc/invoke.texi (Option Summary): Add -mxbpf.
+	(eBPF Options): Document -mxbbpf.
+
+2020-08-10  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96243
+	* config/i386/i386-expand.c (ix86_expand_sse_cmp): Refine for
+	maskcmp.
+	(ix86_expand_mask_vec_cmp): Change prototype.
+	* config/i386/i386-protos.h (ix86_expand_mask_vec_cmp): Change prototype.
+	* config/i386/i386.c (ix86_print_operand): Remove operand
+	modifier 'I'.
+	* config/i386/sse.md
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>): Deleted.
+	(*<avx512>_cmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(*<avx512>_ucmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(*<avx512>_ucmp<mode>3<mask_scalar_merge_name>,
+	avx512f_maskcmp<mode>3): Ditto.
+
+2020-08-10  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-05-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-compress.c (lto_compression_zstd): Fill up
+	num_compressed_il_bytes.
+	(lto_uncompression_zstd): Likewise for num_uncompressed_il_bytes here.
+
+2020-08-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96530
+	* config/rs6000/rs6000.c (rs6000_invalid_conversion): Use canonical
+	types for type comparisons.  Refactor code to simplify it.
+
+2020-08-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-08-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96446
+	* config/rs6000/mma.md (*movpxi): Add xxsetaccz generation.
+	Disable split for zero constant source operand.
+	(mma_xxsetaccz): Change to define_expand.  Call gen_movpxi.
+
+2020-08-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (readline): Check return value fgets.
+
+2020-08-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/sourcebuild.texi (dg-set-compiler-env-var,
+	dg-set-target-env-var): Document.
+
+2020-08-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/driver-arm.c (host_detect_local_cpu): Add GCC_CPUINFO.
+
+2020-08-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu):
+	Add GCC_CPUINFO.
+
+2020-08-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (INCLUDE_SET): New.
+	(parse_field): Use std::string.
+	(split_words, readline, find_field): New.
+	(host_detect_local_cpu): Fix truncation issues.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/arm/arm.md (arm_stack_protect_test_insn): Zero out
+	operand 2 after use.
+	* config/arm/thumb1.md (thumb1_stack_protect_test_insn): Likewise.
+
+2020-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/aarch64/aarch64.md (stack_protect_test_<mode>): Set the
+	CC register directly, instead of a GPR.  Replace the original GPR
+	destination with an extra scratch register.  Zero out operand 3
+	after use.
+	(stack_protect_test): Update accordingly.
+
+2020-08-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96483
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Handle
+	POLY_INT_CST.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (symver): Add @cindex for symver function attribute.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_indirect_call_asm):
+	New declaration.
+	* config/aarch64/aarch64.c (aarch64_regno_regclass): Handle new
+	stub registers class.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_register_move_cost): Likewise.
+	(aarch64_sls_shared_thunks): Global array to store stub labels.
+	(aarch64_sls_emit_function_stub): New.
+	(aarch64_create_blr_label): New.
+	(aarch64_sls_emit_blr_function_thunks): New.
+	(aarch64_sls_emit_shared_blr_thunks): New.
+	(aarch64_asm_file_end): New.
+	(aarch64_indirect_call_asm): New.
+	(TARGET_ASM_FILE_END): Use aarch64_asm_file_end.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Use
+	aarch64_sls_emit_blr_function_thunks.
+	* config/aarch64/aarch64.h (STB_REGNUM_P): New.
+	(enum reg_class): Add STUB_REGS class.
+	(machine_function): Introduce `call_via` array for
+	function-local stub labels.
+	* config/aarch64/aarch64.md (*call_insn, *call_value_insn): Use
+	aarch64_indirect_call_asm to emit code when hardening BLR
+	instructions.
+	* config/aarch64/constraints.md (Ucr): New constraint
+	representing registers for indirect calls.  Is GENERAL_REGS
+	usually, and STUB_REGS when hardening BLR instruction against
+	SLS.
+	* config/aarch64/predicates.md (aarch64_general_reg): STUB_REGS class
+	is also a general register.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sls_barrier): New.
+	* config/aarch64/aarch64.c (aarch64_output_casesi): Emit
+	speculation barrier after BR instruction if needs be.
+	(aarch64_trampoline_init): Handle ptr_mode value & adjust size
+	of code copied.
+	(aarch64_sls_barrier): New.
+	(aarch64_asm_trampoline_template): Add needed barriers.
+	* config/aarch64/aarch64.h (AARCH64_ISA_SB): New.
+	(TARGET_SB): New.
+	(TRAMPOLINE_SIZE): Account for barrier.
+	* config/aarch64/aarch64.md (indirect_jump, *casesi_dispatch,
+	simple_return, *do_return, *sibcall_insn, *sibcall_value_insn):
+	Emit barrier if needs be, also account for possible barrier using
+	"sls_length" attribute.
+	(sls_length): New attribute.
+	(length): Determine default using any non-default sls_length
+	value.
+
+2020-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_harden_sls_retbr_p):
+	New.
+	(aarch64_harden_sls_blr_p): New.
+	* config/aarch64/aarch64.c (enum aarch64_sls_hardening_type):
+	New.
+	(aarch64_harden_sls_retbr_p): New.
+	(aarch64_harden_sls_blr_p): New.
+	(aarch64_validate_sls_mitigation): New.
+	(aarch64_override_options): Parse options for SLS mitigation.
+	* config/aarch64/aarch64.opt (-mharden-sls): New option.
+	* doc/invoke.texi: Document new option.
+
+2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	Backported from master:
+	2020-08-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_fjcvtzs): Add missing
+	clobber.
+	* doc/sourcebuild.texi (aarch64_fjcvtzs_hw) Document new
+	target supports option.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96426
+	* tree-vect-generic.c (expand_vector_conversion): Replace .VEC_CONVERT
+	call with GIMPLE_NOP if there is no lhs.
+
+2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96354
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Add IS_DEBUG
+	argument.  Return false instead of gcc_unreachable if it is true and
+	get_addr_base_and_unit_offset returns NULL.
+	(fold_stmt_1) <case GIMPLE_DEBUG>: Adjust caller.
+
+2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Variadic Macros): Use the exact ... token in
+	code examples.
+
+2020-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Add missing comma after octeontx2f95mm entry.
+
+2020-08-03  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	Backported from master:
+	2020-08-03  Qian jianhua  <qianjh@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (a64fx): New core.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* config/aarch64/aarch64.c (a64fx_prefetch_tune, a64fx_tunings): New.
+	* doc/invoke.texi: Add a64fx to the list.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h: Remove leading empty lines.
+	* cgraphunit.c (enum cgraph_order_sort_kind): Remove
+	ORDER_UNDEFINED.
+	(struct cgraph_order_sort): Add constructors.
+	(cgraph_order_sort::process): New.
+	(cgraph_order_cmp): New.
+	(output_in_order): Simplify and push nodes to vector.
+
 2020-07-30  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

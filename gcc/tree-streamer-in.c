@@ -487,9 +487,13 @@ streamer_read_tree_bitfields (class lto_input_block *ib,
 
   /* The first word in BP contains the code of the tree that we
      are about to read.  */
-  code = (enum tree_code) bp_unpack_value (&bp, 16);
-  lto_tag_check (lto_tree_code_to_tag (code),
-		 lto_tree_code_to_tag (TREE_CODE (expr)));
+  if (streamer_debugging)
+    {
+      code = (enum tree_code) bp_unpack_value (&bp, 16);
+      lto_tag_check (lto_tree_code_to_tag (code),
+		     lto_tree_code_to_tag (TREE_CODE (expr)));
+    }
+  code = TREE_CODE (expr);
 
   /* Note that all these functions are highly sensitive to changes in
      the types and sizes of each of the fields being packed.  */
@@ -838,9 +842,7 @@ lto_input_ts_type_non_common_tree_pointers (class lto_input_block *ib,
 					    class data_in *data_in,
 					    tree expr)
 {
-  if (TREE_CODE (expr) == ENUMERAL_TYPE)
-    TYPE_VALUES (expr) = stream_read_tree (ib, data_in);
-  else if (TREE_CODE (expr) == ARRAY_TYPE)
+  if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_DOMAIN (expr) = stream_read_tree (ib, data_in);
   else if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);
@@ -1107,11 +1109,14 @@ streamer_get_pickled_tree (class lto_input_block *ib, class data_in *data_in)
   enum LTO_tags expected_tag;
 
   ix = streamer_read_uhwi (ib);
-  expected_tag = streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
-
   result = streamer_tree_cache_get_tree (data_in->reader_cache, ix);
-  gcc_assert (result
-              && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
+
+  if (streamer_debugging)
+    {
+      expected_tag = streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
+      gcc_assert (result
+		  && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
+    }
 
   return result;
 }
