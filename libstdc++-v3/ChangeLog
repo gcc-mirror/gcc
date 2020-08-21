@@ -1,3 +1,11 @@
+2020-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h [__STRICT_ANSI__]
+	(incrementable_traits<__int128>): Define specialization.
+	(incrementable_traits<unsigned __int128>): Likewise.
+	* testsuite/std/ranges/iota/96042.cc: Test iota_view with
+	__int128.
+
 2020-08-19  Jonathan Wakely  <jwakely@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 

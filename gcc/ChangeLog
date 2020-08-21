@@ -1,3 +1,16 @@
+2020-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/vxworks.h (VXWORKS_ADDITIONAL_CPP_SPEC): Don't include
+	VxWorks header files if -fself-test is used.
+	(STARTFILE_PREFIX_SPEC): Avoid using VSB_DIR if -fself-test is used.
+
+2020-08-20  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	PR target/96683
+	* config/arm/mve.md (mve_vst1q_f<mode>): Require MVE memory operand for
+	destination.
+	(mve_vst1q_<supf><mode>): Likewise.
+
 2020-08-19  2020-08-19  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_P10V_0, BU_P10V_1,

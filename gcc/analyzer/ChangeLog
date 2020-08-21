@@ -1,3 +1,20 @@
+2020-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96723
+	* region-model-manager.cc
+	(region_model_manager::get_field_region): Assert that field is a
+	FIELD_DECL.
+	* region.cc (region::get_subregions_for_binding): In
+	union-handling, filter the TYPE_FIELDS traversal to just FIELD_DECLs.
+
+2020-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96713
+	* region-model.cc (region_model::get_gassign_result): For
+	comparisons, only use eval_condition when the lhs has boolean
+	type, and use get_or_create_constant_svalue on the boolean
+	constants directly rather than via get_rvalue.
+
 2020-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96643

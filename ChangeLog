@@ -1,3 +1,10 @@
+2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR bootstrap/96612
+	* configure.ac: Run AX_CXX_COMPILE_STDCXX also for ${build} compiler,
+	if not the same as ${host}.
+	* configure: Regenerate.
+
 2020-08-16  Sergei Trofimovich  <slyfox@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.

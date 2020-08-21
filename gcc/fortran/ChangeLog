@@ -1,3 +1,23 @@
+2020-08-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96100
+	PR fortran/96101
+	* trans-array.c (get_array_charlen): Tidy up the evaluation of
+	the string length for array constructors. Avoid trailing array
+	references. Ensure string lengths of deferred length components
+	are set. For parentheses operator apply string  length to both
+	the primary expression and the enclosed expression.
+
+2020-08-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/94958
+	* trans-array.c (gfc_bcast_alloc_comp): Use the correct variable.
+
+2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Re-order 'if' clause pasing
+	to avoid creating spurious symbols.
+
 2020-08-18  Harald Anlauf  <anlauf@gmx.de>
 
 	* check.c (check_rest): Reject MIN/MAX character arguments of
