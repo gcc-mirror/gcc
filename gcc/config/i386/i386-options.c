@@ -922,12 +922,18 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 #define IX86_ATTR_ENUM(S,O)  { S, sizeof (S)-1, ix86_opt_enum, O, 0 }
 #define IX86_ATTR_YES(S,O,M) { S, sizeof (S)-1, ix86_opt_yes, O, M }
 #define IX86_ATTR_NO(S,O,M)  { S, sizeof (S)-1, ix86_opt_no,  O, M }
+#define IX86_ATTR_IX86_YES(S,O,M) \
+  { S, sizeof (S)-1, ix86_opt_ix86_yes, O, M }
+#define IX86_ATTR_IX86_NO(S,O,M) \
+  { S, sizeof (S)-1, ix86_opt_ix86_no,  O, M }
 
   enum ix86_opt_type
   {
     ix86_opt_unknown,
     ix86_opt_yes,
     ix86_opt_no,
+    ix86_opt_ix86_yes,
+    ix86_opt_ix86_no,
     ix86_opt_str,
     ix86_opt_enum,
     ix86_opt_isa
@@ -1062,6 +1068,10 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_YES ("recip",
 		   OPT_mrecip,
 		   MASK_RECIP),
+
+    IX86_ATTR_IX86_YES ("general-regs-only",
+			OPT_mgeneral_regs_only,
+			OPTION_MASK_GENERAL_REGS_ONLY),
   };
 
   location_t loc
@@ -1173,6 +1183,33 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	    opts->x_target_flags |= mask;
 	  else
 	    opts->x_target_flags &= ~mask;
+	}
+
+      else if (type == ix86_opt_ix86_yes || type == ix86_opt_ix86_no)
+	{
+	  if (mask == OPTION_MASK_GENERAL_REGS_ONLY)
+	    {
+	      if (type != ix86_opt_ix86_yes)
+		gcc_unreachable ();
+
+	      opts->x_ix86_target_flags |= mask;
+
+	      struct cl_decoded_option decoded;
+	      generate_option (opt, NULL, opt_set_p, CL_TARGET,
+			       &decoded);
+	      ix86_handle_option (opts, opts_set, &decoded,
+				  input_location);
+	    }
+	  else
+	    {
+	      if (type == ix86_opt_ix86_no)
+		opt_set_p = !opt_set_p;
+
+	      if (opt_set_p)
+		opts->x_ix86_target_flags |= mask;
+	      else
+		opts->x_ix86_target_flags &= ~mask;
+	    }
 	}
 
       else if (type == ix86_opt_str)
@@ -2260,9 +2297,10 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
 
-	/* Don't enable x87 instructions if only
-	   general registers are allowed.  */
-	if (!(opts_set->x_ix86_target_flags & OPTION_MASK_GENERAL_REGS_ONLY)
+	/* Don't enable x87 instructions if only general registers are
+	   allowed by target("general-regs-only") function attribute or
+	   -mgeneral-regs-only.  */
+	if (!(opts->x_ix86_target_flags & OPTION_MASK_GENERAL_REGS_ONLY)
 	    && !(opts_set->x_target_flags & MASK_80387))
 	  {
 	    if (((processor_alias_table[i].flags & PTA_NO_80387) != 0))

@@ -6656,6 +6656,10 @@ Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
 instructions followed an additional Newton-Raphson step instead of
 doing a floating-point division.
 
+@item general-regs-only
+@cindex @code{target("general-regs-only")} function attribute, x86
+Generate code which uses only the general registers.
+
 @item arch=@var{ARCH}
 @cindex @code{target("arch=@var{ARCH}")} function attribute, x86
 Specify the architecture to generate code for in compiling the function.
