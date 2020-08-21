@@ -1908,6 +1908,51 @@ init_spec (void)
 
   specs = sl;
 }
+
+/* Update the entry for SPEC in the static_specs table to point to VALUE,
+   ensuring that we free the previous value if necessary.  Set alloc_p for the
+   entry to ALLOC_P: this determines whether we take ownership of VALUE (i.e.
+   whether we need to free it later on).  */
+static void
+set_static_spec (const char **spec, const char *value, bool alloc_p)
+{
+  struct spec_list *sl = NULL;
+
+  for (unsigned i = 0; i < ARRAY_SIZE (static_specs); i++)
+    {
+      if (static_specs[i].ptr_spec == spec)
+	{
+	  sl = static_specs + i;
+	  break;
+	}
+    }
+
+  gcc_assert (sl);
+
+  if (sl->alloc_p)
+    {
+      const char *old = *spec;
+      free (const_cast <char *> (old));
+    }
+
+  *spec = value;
+  sl->alloc_p = alloc_p;
+}
+
+/* Update a static spec to a new string, taking ownership of that
+   string's memory.  */
+static void set_static_spec_owned (const char **spec, const char *val)
+{
+  return set_static_spec (spec, val, true);
+}
+
+/* Update a static spec to point to a new value, but don't take
+   ownership of (i.e. don't free) that string.  */
+static void set_static_spec_shared (const char **spec, const char *val)
+{
+  return set_static_spec (spec, val, false);
+}
+
 
 /* Change the value of spec NAME to SPEC.  If SPEC is empty, then the spec is
    removed; If the spec starts with a + then SPEC is added to the end of the
@@ -8344,7 +8389,7 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
   if (lto_wrapper_file)
     {
       lto_wrapper_file = convert_white_space (lto_wrapper_file);
-      lto_wrapper_spec = lto_wrapper_file;
+      set_static_spec_owned (&lto_wrapper_spec, lto_wrapper_file);
       obstack_init (&collect_obstack);
       obstack_grow (&collect_obstack, "COLLECT_LTO_WRAPPER=",
 		    sizeof ("COLLECT_LTO_WRAPPER=") - 1);
@@ -8851,7 +8896,7 @@ driver::maybe_run_linker (const char *argv0) const
 	    {
 	      char *s = find_a_file (&exec_prefixes, "collect2", X_OK, false);
 	      if (s == NULL)
-		linker_name_spec = "ld";
+		set_static_spec_shared (&linker_name_spec, "ld");
 	    }
 
 #if HAVE_LTO_PLUGIN > 0
@@ -8875,7 +8920,7 @@ driver::maybe_run_linker (const char *argv0) const
 	      linker_plugin_file_spec = convert_white_space (temp_spec);
 	    }
 #endif
-	  lto_gcc_spec = argv0;
+	  set_static_spec_shared (&lto_gcc_spec, argv0);
 	}
 
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
@@ -10817,9 +10862,9 @@ driver::finalize ()
   just_machine_suffix = 0;
   gcc_exec_prefix = 0;
   gcc_libexec_prefix = 0;
-  md_exec_prefix = MD_EXEC_PREFIX;
-  md_startfile_prefix = MD_STARTFILE_PREFIX;
-  md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
+  set_static_spec_shared (&md_exec_prefix, MD_EXEC_PREFIX);
+  set_static_spec_shared (&md_startfile_prefix, MD_STARTFILE_PREFIX);
+  set_static_spec_shared (&md_startfile_prefix_1, MD_STARTFILE_PREFIX_1);
   multilib_dir = 0;
   multilib_os_dir = 0;
   multiarch_dir = 0;
@@ -10843,8 +10888,7 @@ driver::finalize ()
       spec_list *sl = &static_specs[i];
       if (sl->alloc_p)
 	{
-	  if (0)
-	    free (const_cast <char *> (*(sl->ptr_spec)));
+	  free (const_cast <char *> (*(sl->ptr_spec)));
 	  sl->alloc_p = false;
 	}
       *(sl->ptr_spec) = sl->default_ptr;
