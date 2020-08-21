@@ -21,10 +21,10 @@
 // Ensure the library only uses the __name__ form for attributes.
 // Don't test 'const' and 'noreturn' because they are reserved anyway.
 #define abi_tag 1
-#define cold 1
 #ifndef __APPLE__
 // darwin headers use these, see PR 64883
 # define always_inline 1
+# define cold 1
 # define deprecated 1
 # define visibility 1
 #endif
