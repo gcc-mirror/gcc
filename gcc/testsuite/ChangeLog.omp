@@ -1,6 +1,14 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/lastprivate-conditional-3.f90: Enable some
+	previously disabled 'lastprivate(conditional:' dg-warnings.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/lastprivate-conditional-1.f90: New test.

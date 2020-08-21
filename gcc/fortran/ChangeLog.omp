@@ -1,6 +1,13 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_do): Fix 'lastprivate(conditional:'.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (gfc_omp_namelist): Add lastprivate_conditional.
