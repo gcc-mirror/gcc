@@ -1552,6 +1552,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     fputs (" SEQ", dumpfile);
   if (omp_clauses->independent)
     fputs (" INDEPENDENT", dumpfile);
+  if (omp_clauses->order_concurrent)
+    fputs (" ORDER(CONCURRENT)", dumpfile);
   if (omp_clauses->ordered)
     {
       if (omp_clauses->orderedc)

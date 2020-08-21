@@ -1,6 +1,18 @@
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle order(concurrent).
+	* gfortran.h (struct gfc_omp_clauses): Add order_concurrent.
+	* openmp.c (enum omp_mask1, OMP_DO_CLAUSES, OMP_SIMD_CLAUSES):
+	Add OMP_CLAUSE_ORDER.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_split_omp_clauses):
+	Handle order(concurrent) clause.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.c (gfc_trans_omp_do): Fix 'lastprivate(conditional:'.
