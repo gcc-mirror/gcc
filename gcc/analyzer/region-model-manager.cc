@@ -651,6 +651,8 @@ region_model_manager::get_or_create_widening_svalue (tree type,
 						     const svalue *base_sval,
 						     const svalue *iter_sval)
 {
+  gcc_assert (base_sval->get_kind () != SK_WIDENING);
+  gcc_assert (iter_sval->get_kind () != SK_WIDENING);
   widening_svalue::key_t key (type, point, base_sval, iter_sval);
   if (widening_svalue **slot = m_widening_values_map.get (key))
     return *slot;

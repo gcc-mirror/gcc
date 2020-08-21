@@ -1606,6 +1606,35 @@ store::eval_alias_1 (const region *base_reg_a,
 	      /* The initial value of a pointer can't point to a local.  */
 	      return tristate::TS_FALSE;
 	    }
+      if (sval_a->get_kind () == SK_INITIAL
+	  && base_reg_b->get_kind () == RK_HEAP_ALLOCATED)
+	{
+	  /* The initial value of a pointer can't point to a
+	     region that was allocated on the heap after the beginning of the
+	     path.  */
+	  return tristate::TS_FALSE;
+	}
+      if (const widening_svalue *widening_sval_a
+	  = sval_a->dyn_cast_widening_svalue ())
+	{
+	  const svalue *base = widening_sval_a->get_base_svalue ();
+	  if (const region_svalue *region_sval
+		= base->dyn_cast_region_svalue ())
+	    {
+	      const region *pointee = region_sval->get_pointee ();
+	      /* If we have sval_a is WIDENING(&REGION, OP), and
+		 B can't alias REGION, then B can't alias A either.
+		 For example, A might arise from
+		   for (ptr = &REGION; ...; ptr++)
+		 where sval_a is ptr in the 2nd iteration of the loop.
+		 We want to ensure that "*ptr" can only clobber things
+		 within REGION's base region.  */
+	      tristate ts = eval_alias (pointee->get_base_region (),
+					base_reg_b);
+	      if (ts.is_false ())
+		return tristate::TS_FALSE;
+	    }
+	}
     }
   return tristate::TS_UNKNOWN;
 }
