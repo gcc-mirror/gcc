@@ -125,7 +125,7 @@ package body Debug is
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
-   --  d.H
+   --  d.H  Disable the support for 128-bit integer types on 64-bit platforms
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
    --  d.K  Do not reject components in extensions overlapping with parent
@@ -882,6 +882,10 @@ package body Debug is
    --       when doing the analysis for the static elaboration model. This is
    --       now fixed, but we provide this debug flag to revert to the previous
    --       situation of ignoring such calls to aid in transition.
+
+   --  d.H  Disable the support for 128-bit integer types on 64-bit platforms.
+   --       This makes it easier to mimic the behavior of the current compiler
+   --       on 32-bit platforms or of older compilers on 64-bit platforms.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration

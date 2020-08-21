@@ -799,31 +799,31 @@ procedure Gnat1drv is
          Set_Standard_Output;
       end if;
 
-      --  Enable or disable the support for 128-bit types
+      --  Enable or disable the support for 128-bit types. It is automatically
+      --  enabled if the back end supports them, unless not in GNAT mode and
+      --  either the runtime does not contain the required support units or the
+      --  switch -gnatd.H is specified.
 
-      if Enable_128bit_Types then
-         if Ttypes.Standard_Long_Long_Long_Integer_Size < 128 then
-            Write_Line
-              ("128-bit types not implemented in this configuration");
-            raise Unrecoverable_Error;
+      Enable_128bit_Types := Ttypes.Standard_Long_Long_Long_Integer_Size = 128;
+
+      if Enable_128bit_Types and then not GNAT_Mode then
+         Name_Len := 13;
+         Name_Buffer (1 .. Name_Len) := "s-arit128.ads";
+
+         if Find_File (Name_Find, Osint.Source, Full_Name => True) = No_File
+           or else Debug_Flag_Dot_HH
+         then
+            Enable_128bit_Types := False;
+
+            Ttypes.Standard_Long_Long_Long_Integer_Size :=
+              Ttypes.Standard_Long_Long_Integer_Size;
+            Ttypes.Standard_Long_Long_Long_Integer_Width :=
+              Ttypes.Standard_Long_Long_Integer_Width;
+            Ttypes.System_Max_Integer_Size :=
+              Ttypes.Standard_Long_Long_Integer_Size;
+            Ttypes.System_Max_Binary_Modulus_Power :=
+              Ttypes.Standard_Long_Long_Integer_Size;
          end if;
-
-      --  In GNAT mode the support is automatically enabled if available,
-      --  so that the runtime is compiled with the support enabled.
-
-      elsif GNAT_Mode then
-         Enable_128bit_Types :=
-           Ttypes.Standard_Long_Long_Long_Integer_Size = 128;
-
-      else
-         Ttypes.Standard_Long_Long_Long_Integer_Size :=
-           Ttypes.Standard_Long_Long_Integer_Size;
-         Ttypes.Standard_Long_Long_Long_Integer_Width :=
-           Ttypes.Standard_Long_Long_Integer_Width;
-         Ttypes.System_Max_Integer_Size :=
-           Ttypes.Standard_Long_Long_Integer_Size;
-         Ttypes.System_Max_Binary_Modulus_Power :=
-           Ttypes.Standard_Long_Long_Integer_Size;
       end if;
 
       --  Finally capture adjusted value of Suppress_Options as the initial

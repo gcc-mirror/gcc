@@ -888,6 +888,7 @@ GNATRTL_128BIT_PAIRS = \
   a-wtmoio.adb<libgnat/a-wtmoio__128.adb \
   a-ztinio.adb<libgnat/a-ztinio__128.adb \
   a-ztmoio.adb<libgnat/a-ztmoio__128.adb \
+  i-cexten.ads<libgnat/i-cexten__128.ads \
   s-scaval.ads<libgnat/s-scaval__128.ads \
   s-scaval.adb<libgnat/s-scaval__128.adb
 
