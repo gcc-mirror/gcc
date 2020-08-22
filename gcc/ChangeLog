@@ -1,3 +1,51 @@
+2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/extend.texi: Update links to Arm docs.
+	* doc/invoke.texi: Likewise.
+
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (readline): Check return value fgets.
+
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/sourcebuild.texi (dg-set-compiler-env-var,
+	dg-set-target-env-var): Document.
+
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/driver-arm.c (host_detect_local_cpu): Add GCC_CPUINFO.
+
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (host_detect_local_cpu):
+	Add GCC_CPUINFO.
+
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (INCLUDE_SET): New.
+	(parse_field): Use std::string.
+	(split_words, readline, find_field): New.
+	(host_detect_local_cpu): Fix truncation issues.
+
 2020-08-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96536

@@ -1,3 +1,46 @@
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/aarch64-cpunative.exp: New file.
+	* gcc.target/aarch64/cpunative/info_0: New test.
+	* gcc.target/aarch64/cpunative/info_1: New test.
+	* gcc.target/aarch64/cpunative/info_10: New test.
+	* gcc.target/aarch64/cpunative/info_11: New test.
+	* gcc.target/aarch64/cpunative/info_12: New test.
+	* gcc.target/aarch64/cpunative/info_13: New test.
+	* gcc.target/aarch64/cpunative/info_14: New test.
+	* gcc.target/aarch64/cpunative/info_15: New test.
+	* gcc.target/aarch64/cpunative/info_2: New test.
+	* gcc.target/aarch64/cpunative/info_3: New test.
+	* gcc.target/aarch64/cpunative/info_4: New test.
+	* gcc.target/aarch64/cpunative/info_5: New test.
+	* gcc.target/aarch64/cpunative/info_6: New test.
+	* gcc.target/aarch64/cpunative/info_7: New test.
+	* gcc.target/aarch64/cpunative/info_8: New test.
+	* gcc.target/aarch64/cpunative/info_9: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_0.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_1.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_10.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_13.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_14.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_2.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_3.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_4.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_5.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_6.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_7.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_8.c: New test.
+
+2020-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/gcc-dg.exp (dg-set-compiler-env-var, dg-set-target-env-var): Add
+	verbose output.
+
 2020-08-12  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR testsuite/94077
