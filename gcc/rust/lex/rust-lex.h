@@ -6,6 +6,7 @@
 #include "rust-token.h"
 
 #include <utility>
+#include <tuple>
 
 namespace Rust {
 class Lexer
@@ -44,8 +45,8 @@ private:
     char& current_char, int &length, Codepoint &output_char);*/
   /*bool parse_byte_escape (char& current_char, int &length,
 				 char &output_char);*/
-  std::pair<char, int> parse_escape (char opening_char);
-  std::pair<Codepoint, int> parse_utf8_escape (char opening_char);
+  std::tuple<char, int, bool> parse_escape (char opening_char);
+  std::tuple<Codepoint, int, bool> parse_utf8_escape (char opening_char);
   int test_get_input_codepoint_length ();
   int test_get_input_codepoint_n_length (int n_start_offset);
   Codepoint test_peek_codepoint_input ();

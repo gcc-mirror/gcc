@@ -588,8 +588,8 @@ namespace Rust {
                     // detect escapes
                     if (current_char == '\\') {
                         auto escape_length_pair = parse_escape('\'');
-                        byte_char = escape_length_pair.first;
-                        length += escape_length_pair.second;
+                        byte_char = std::get<0>(escape_length_pair);
+                        length += std::get<1>(escape_length_pair);
 
                         if (byte_char > 127) {
                             rust_error_at(
@@ -644,15 +644,15 @@ namespace Rust {
                     while (current_char != '"' && current_char != '\n') {
                         if (current_char == '\\') {
                             auto escape_length_pair = parse_escape('"');
-                            char output_char = escape_length_pair.first;
+                            char output_char = std::get<0>(escape_length_pair);
                             //length += escape_length_pair.second;
 
                             // TODO: need to fix length - after escape, the length of the line up to the next non-whitespace char of the string is added to length, which is not what we want - we want length to be replaced by that.
                             // possible option could if "if escape_length_pair.first == 0, then length = escape_length_pair.second else length += escape_length_pair.second."
-                            if (output_char == 0)
-                                length = escape_length_pair.second - 1; 
+                            if (output_char == 0 && std::get<2>(escape_length_pair))
+                                length = std::get<1>(escape_length_pair) - 1;
                             else
-                                length += escape_length_pair.second;
+                                length += std::get<1>(escape_length_pair);
 
                             if (output_char > 127) {
                                 rust_error_at(get_current_location(),
@@ -1193,15 +1193,15 @@ namespace Rust {
                     if (current_char32.value == '\\') {
                         // parse escape
                         auto utf8_escape_pair = parse_utf8_escape('\'');
-                        current_char32 = utf8_escape_pair.first;
+                        current_char32 = std::get<0>(utf8_escape_pair);
                         //length += utf8_escape_pair.second;
 
                         // TODO: need to fix length - after escape, the length of the line up to the next non-whitespace char of the string is added to length, which is not what we want - we want length to be replaced by that.
                         // possible option could if "if escape_length_pair.first == 0, then length = escape_length_pair.second else length += escape_length_pair.second."
-                        if (current_char32 == Codepoint(0))
-                            length = utf8_escape_pair.second - 1; 
+                        if (current_char32 == Codepoint(0) && std::get<2>(utf8_escape_pair))
+                            length = std::get<1>(utf8_escape_pair);
                         else
-                            length += utf8_escape_pair.second;
+                            length += std::get<1>(utf8_escape_pair);
 
                         if (current_char32 != Codepoint(0))
                             str += current_char32;
@@ -1249,8 +1249,8 @@ namespace Rust {
                 if (current_char32.value == '\\') {
                     // parse escape
                     auto utf8_escape_pair = parse_utf8_escape('\'');
-                    current_char32 = utf8_escape_pair.first;
-                    length += utf8_escape_pair.second;
+                    current_char32 = std::get<0>(utf8_escape_pair);
+                    length += std::get<1>(utf8_escape_pair);
 
                     if (test_peek_codepoint_input().value != '\'') {
                         rust_error_at(get_current_location(), "unended char literal");
@@ -1439,7 +1439,7 @@ namespace Rust {
     }
 
     /* Parses escapes (and string continues) in "byte" strings and characters. Does not support unicode. */
-    std::pair<char, int> Lexer::parse_escape(char opening_char) {
+    std::tuple<char, int, bool> Lexer::parse_escape(char opening_char) {
         int additional_length_offset = 0;
         char output_char = 0;
 
@@ -1509,7 +1509,7 @@ namespace Rust {
                 rust_error_at(get_current_location(),
                   "cannot have a unicode escape \\u in a byte %s!",
                   opening_char == '\'' ? "character" : "string");
-                return std::make_pair(output_char, additional_length_offset);
+                return std::make_tuple(output_char, additional_length_offset, false);
 #if 0
 			{
                 // TODO: shouldn't be used with this - use parse_utf8_escape
@@ -1626,32 +1626,12 @@ namespace Rust {
                     additional_length_offset++;
                 }
 
-                // shouldn't need this
-#if 0
-                if (current_char == opening_char) {
-                    // TODO: does this skip the ' or " character? It shouldn't.
-                    output_char = 0;
-                    // return true;
-                    return std::make_pair(output_char, additional_length_offset);
-                } else {
-                    // TODO: shouldn't this make output_char null so that it isn't added to string?
-                    // or check for escape being zero?
-                    output_char = /*current_char*/0;
-
-                    // TODO: test has right result
-                    /*skip_input();
-                    current_char = peek_input();*/
-
-                    // return true;
-                    return std::make_pair(output_char, additional_length_offset);
-                }
-#endif
-                return std::make_pair(0, additional_length_offset);
+                return std::make_tuple(0, additional_length_offset, true);
             default:
                 rust_error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
                 // returns false if no parsing could be done
                 // return false;
-                return std::make_pair(output_char, additional_length_offset);
+                return std::make_tuple(output_char, additional_length_offset, false);
                 break;
         }
         // all non-special cases (string continue) should skip their used char
@@ -1661,11 +1641,11 @@ namespace Rust {
 
         // returns true if parsing was successful
         // return true;
-        return std::make_pair(output_char, additional_length_offset);
+        return std::make_tuple(output_char, additional_length_offset, false);
     }
 
     // Parses an escape (or string continue) in a string or character. Supports unicode escapes.
-    std::pair<Codepoint, int> Lexer::parse_utf8_escape(char opening_char) {
+    std::tuple<Codepoint, int, bool> Lexer::parse_utf8_escape(char opening_char) {
         Codepoint output_char;
         int additional_length_offset = 0;
 
@@ -1782,7 +1762,7 @@ namespace Rust {
                         rust_error_at(
                           get_current_location(), "expected terminating '}' in unicode escape");
                         // return false;
-                        return std::make_pair(output_char, additional_length_offset);
+                        return std::make_tuple(output_char, additional_length_offset, false);
                     }
                 }
 
@@ -1793,7 +1773,7 @@ namespace Rust {
                       "characters; it is %lu",
                       num_str.length());
                     // return false;
-                    return std::make_pair(output_char, additional_length_offset);
+                    return std::make_tuple(output_char, additional_length_offset, false);
                 }
 
                 long hex_num = std::strtol(num_str.c_str(), NULL, 16);
@@ -1807,7 +1787,7 @@ namespace Rust {
                 // (unicode number) or the character number?
 
                 // return true;
-                return std::make_pair(output_char, additional_length_offset);
+                return std::make_tuple(output_char, additional_length_offset, false);
             } break;
             case '\r':
             case '\n':
@@ -1834,25 +1814,12 @@ namespace Rust {
                     additional_length_offset++;
                 }
 
-                // shouldn't need this
-#if 0
-                if (current_char == opening_char) {
-                    output_char = 0;
-                    // return true;
-                    return std::make_pair(output_char, additional_length_offset);
-                } else {
-                    output_char = /*current_char*/0;
-
-                    // return true;
-                    return std::make_pair(output_char, additional_length_offset);
-                }
-#endif
-                return std::make_pair(0, additional_length_offset);
+                return std::make_tuple(0, additional_length_offset, true);
             default:
                 rust_error_at(get_current_location(), "unknown escape sequence '\\%c'", current_char);
                 // returns false if no parsing could be done
                 // return false;
-                return std::make_pair(output_char, additional_length_offset);
+                return std::make_tuple(output_char, additional_length_offset, false);
                 break;
         }
         /* all non-special cases (unicode, string continue) should skip their used
@@ -1863,7 +1830,7 @@ namespace Rust {
 
         // returns true if parsing was successful
         // return true;
-        return std::make_pair(output_char, additional_length_offset);
+        return std::make_tuple(output_char, additional_length_offset, false);
     }
 
 #if 0
