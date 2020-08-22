@@ -2384,11 +2384,7 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
 			unsigned HOST_WIDE_INT size,
 			unsigned int l2align)
 {
-   /* FIXME: We have a fudge to make this work with Java even when the target does
-   not use sections anchors -- Java seems to need at least one small item in a
-   non-zerofill segment.   */
-   if ((DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
-       || (size && size <= 2))
+   if (DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
     {
       /* Put smaller objects in _static_data, where the section anchors system
 	 can get them.
@@ -2414,16 +2410,13 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
     }
   else
     {
-      /* When we are on a non-section anchor target, we can get zero-sized
-	 items here.  However, all we need to do is to bump them to one byte
-	 and the section alignment will take care of the rest.  */
+      /* When we are on a non-section anchor target (or not using section
+	 anchors, we can get zero-sized items here.  However, all we need to
+	 do is to bump them to one byte and the section alignment will take
+	 care of the rest.  */
       char secnam[64];
-      unsigned int flags ;
-      snprintf (secnam, 64, "__DATA,__%sbss%u", ((size)?"":"zo_"),
-						(unsigned) l2align);
-      /* We can't anchor (yet, if ever) in zerofill sections, because we can't
-	 switch to them and emit a label.  */
-      flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
+      snprintf (secnam, 64, "__DATA,__bss");
+      unsigned int flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
       in_section = get_section (secnam, flags, NULL);
       fprintf (fp, "\t.zerofill %s,", secnam);
       assemble_name (fp, name);
@@ -2434,7 +2427,7 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
 	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
 		 size, (unsigned) l2align);
       else
-	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",0\n", size);
     }
 
   (*targetm.encode_section_info) (decl, DECL_RTL (decl), false);
@@ -2559,9 +2552,8 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
       return;
     }
 
-  /* So we have a public symbol (small item fudge for Java, see above).  */
-  if ((DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
-       || (size && size <= 2))
+  /* So we have a public symbol.  */
+  if (DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
     {
       /* Put smaller objects in data, where the section anchors system can get
 	 them.  However, if they are zero-sized punt them to yet a different
@@ -2586,16 +2578,10 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
     }
   else
     {
+      /* Section anchors not in use.  */
+      unsigned int flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
       char secnam[64];
-      unsigned int flags ;
-      /* When we are on a non-section anchor target, we can get zero-sized
-	 items here.  However, all we need to do is to bump them to one byte
-	 and the section alignment will take care of the rest.  */
-      snprintf (secnam, 64, "__DATA,__%spu_bss%u", ((size)?"":"zo_"), l2align);
-
-      /* We can't anchor in zerofill sections, because we can't switch
-	 to them and emit a label.  */
-      flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
+      snprintf (secnam, 64, "__DATA,__common");
       in_section = get_section (secnam, flags, NULL);
       fprintf (fp, "\t.zerofill %s,", secnam);
       assemble_name (fp, name);
@@ -2605,7 +2591,7 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
       if (l2align)
 	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", size, l2align);
       else
-	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",0\n", size);
     }
   (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
 }
