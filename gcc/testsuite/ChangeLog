@@ -1,3 +1,32 @@
+2020-08-21  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr96262-1.c: New test.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/bitwise_mask_op-1.c: New test.
+	* gcc.target/i386/bitwise_mask_op-2.c: New test.
+	* gcc.target/i386/bitwise_mask_op-3.c: New test.
+	* gcc.target/i386/avx512bw-pr88465.c: New testcase.
+	* gcc.target/i386/avx512bw-kunpckwd-1.c: Adjust testcase.
+	* gcc.target/i386/avx512bw-kunpckwd-3.c: Ditto.
+	* gcc.target/i386/avx512dq-kmovb-5.c: Ditto.
+	* gcc.target/i386/avx512f-kmovw-5.c: Ditto.
+	* gcc.target/i386/pr55342.c: Ditto.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/spill_to_mask-1.c: New tests.
+	* gcc.target/i386/spill_to_mask-2.c: New tests.
+	* gcc.target/i386/spill_to_mask-3.c: New tests.
+	* gcc.target/i386/spill_to_mask-4.c: New tests.
+
+2020-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95152
+	* gcc.dg/analyzer/pr95152-4.c: New test.
+	* gcc.dg/analyzer/pr95152-5.c: New test.
+
 2020-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96723

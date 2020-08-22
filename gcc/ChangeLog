@@ -1,3 +1,100 @@
+2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/extend.texi: Update links to Arm docs.
+	* doc/invoke.texi: Likewise.
+
+2020-08-21  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96262
+	* config/i386/i386-expand.c
+	(ix86_expand_vec_shift_qihi_constant): Refine.
+
+2020-08-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR jit/63854
+	* gcc.c (set_static_spec): New.
+	(set_static_spec_owned): New.
+	(set_static_spec_shared): New.
+	(driver::maybe_putenv_COLLECT_LTO_WRAPPER): Use
+	set_static_spec_owned() to take ownership of lto_wrapper_file
+	such that it gets freed in driver::finalize.
+	(driver::maybe_run_linker): Use set_static_spec_shared() to
+	ensure that we don't try and free() the static string "ld",
+	also ensuring that any previously-allocated string in
+	linker_name_spec is freed. Likewise with argv0.
+	(driver::finalize): Use set_static_spec_shared() when resetting
+	specs that previously had allocated strings; remove if(0)
+	around call to free().
+
+2020-08-21  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* emit-rtl.c (try_split): Call copy_frame_info_to_split_insn
+	to split certain RTX_FRAME_RELATED_P insns.
+	* recog.c (copy_frame_info_to_split_insn): New function.
+	(peep2_attempt): Split copying of frame related info of
+	RTX_FRAME_RELATED_P insns into above function and call it.
+	* recog.h (copy_frame_info_to_split_insn): Declare it.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/88808
+	* config/i386/i386.c (ix86_preferred_reload_class): Allow
+	QImode data go into mask registers.
+	* config/i386/i386.md: (*movhi_internal): Adjust constraints
+	for mask registers.
+	(*movqi_internal): Ditto.
+	(*anddi_1): Support mask register operations
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andn<mode>_1): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*one_cmpl<mode>2_1): Ditto.
+	(*one_cmplsi2_1_zext): Ditto.
+	(*one_cmplqi2_1): Ditto.
+	(define_peephole2): Move constant 0/-1 directly into mask
+	registers.
+	* config/i386/predicates.md (mask_reg_operand): New predicate.
+	* config/i386/sse.md (define_split): Add post-reload splitters
+	that would convert "generic" patterns to mask patterns.
+	(*knotsi_1_zext): New define_insn.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune-costs.h (skylake_cost): Adjust cost
+	model.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.c (inline_secondary_memory_needed):
+	No memory is needed between mask regs and gpr.
+	(ix86_hard_regno_mode_ok): Add condition TARGET_AVX512F for
+	mask regno.
+	* config/i386/i386.h (enum reg_class): Add INT_MASK_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	* config/i386/i386.md: Exclude mask register in
+	define_peephole2 which is avaiable only for gpr.
+
+2020-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/71453
+	* config/i386/i386.h (struct processor_costs): Add member
+	mask_to_integer, integer_to_mask, mask_load[3], mask_store[3],
+	mask_move.
+	* config/i386/x86-tune-costs.h (ix86_size_cost, i386_cost,
+	i386_cost, pentium_cost, lakemont_cost, pentiumpro_cost,
+	geode_cost, k6_cost, athlon_cost, k8_cost, amdfam10_cost,
+	bdver_cost, znver1_cost, znver2_cost, skylake_cost,
+	btver1_cost, btver2_cost, pentium4_cost, nocona_cost,
+	atom_cost, slm_cost, intel_cost, generic_cost, core_cost):
+	Initialize mask_load[3], mask_store[3], mask_move,
+	integer_to_mask, mask_to_integer for all target costs.
+	* config/i386/i386.c (ix86_register_move_cost): Using cost
+	model of mask registers.
+	(inline_memory_move_cost): Ditto.
+	(ix86_register_move_cost): Ditto.
+
 2020-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config/vxworks.h (VXWORKS_ADDITIONAL_CPP_SPEC): Don't include

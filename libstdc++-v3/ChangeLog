@@ -1,3 +1,26 @@
+2020-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96736
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Do not
+	test "cold" on darwin.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc:
+	Likewise.
+
+2020-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96718
+	* testsuite/25_algorithms/pstl/feature_test-2.cc: Require
+	tbb-backend effective target.
+	* testsuite/25_algorithms/pstl/feature_test-3.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test-5.cc: Likewise.
+	* testsuite/25_algorithms/pstl/feature_test.cc: Likewise.
+
 2020-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/iterator_concepts.h [__STRICT_ANSI__]
