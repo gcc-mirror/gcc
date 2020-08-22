@@ -332,11 +332,12 @@ cp_get_global_decls ()
   return NAMESPACE_LEVEL (global_namespace)->names;
 }
 
-/* Push DECL into the current scope.  */
+/* Push DECL into the current (namespace) scope.  */
 
 tree
 cp_pushdecl (tree decl)
 {
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
   return pushdecl (decl);
 }
 
@@ -354,7 +355,7 @@ identifier_global_value (tree name)
 tree
 identifier_global_tag (tree name)
 {
-  tree ret = lookup_qualified_name (global_namespace, name, /*prefer_type*/2,
+  tree ret = lookup_qualified_name (global_namespace, name, LOOK_want::TYPE,
 				    /*complain*/false);
   if (ret == error_mark_node)
     return NULL_TREE;

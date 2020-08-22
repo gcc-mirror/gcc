@@ -226,6 +226,8 @@ cgraph_node::delete_function_version_by_decl (tree decl)
   decl_node->remove ();
 }
 
+/* Release function dominator info if present.  */
+
 void
 cgraph_node::maybe_release_dominators (void)
 {
@@ -929,6 +931,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
+  if (callee)
+    caller->calls_declare_variant_alt |= callee->declare_variant_alt;
 
   if (callee && symtab->state != LTO_STREAMING
       && edge->callee->comdat_local_p ())

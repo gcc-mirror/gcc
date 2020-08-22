@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 class optrecord_json_writer;
 namespace selftest { class temp_dump_context; }
+class debug_dump_context;
 
 /* A class for handling the various dump_* calls.
 
@@ -42,6 +43,7 @@ namespace selftest { class temp_dump_context; }
 class dump_context
 {
   friend class selftest::temp_dump_context;
+  friend class debug_dump_context;
 
  public:
   static dump_context &get () { return *s_current; }
@@ -194,6 +196,25 @@ private:
   dump_flags_t m_dump_kind;
   auto_vec<stashed_item> m_stashed_items;
 };
+
+/* An RAII-style class for use in debug dumpers for temporarily using a
+   different dump_context.  It enables full details and outputs to
+   stderr instead of the currently active dump_file.  */
+
+class debug_dump_context
+{
+ public:
+  debug_dump_context ();
+  ~debug_dump_context ();
+
+ private:
+  dump_context m_context;
+  dump_context *m_saved;
+  dump_flags_t m_saved_flags;
+  dump_flags_t m_saved_pflags;
+  FILE *m_saved_file;
+};
+
 
 #if CHECKING_P
 

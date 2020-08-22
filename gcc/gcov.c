@@ -874,6 +874,9 @@ main (int argc, char **argv)
 	}
     }
 
+  if (!flag_use_stdout)
+    executed_summary (total_lines, total_executed);
+
   return 0;
 }
 
@@ -895,8 +898,9 @@ print_usage (int error_p)
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n");
-  fnotice (file, "  -j, --human-readable            Output human readable numbers\n");
+  fnotice (file, "  -j, --json-format               Output JSON intermediate format\n\
+                                    into .gcov.json.gz file\n");
+  fnotice (file, "  -H, --human-readable            Output human readable numbers\n");
   fnotice (file, "  -k, --use-colors                Emit colored output\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
                                     source files\n");
@@ -912,6 +916,9 @@ print_usage (int error_p)
   fnotice (file, "  -v, --version                   Print version number, then exit\n");
   fnotice (file, "  -w, --verbose                   Print verbose informations\n");
   fnotice (file, "  -x, --hash-filenames            Hash long pathnames\n");
+  fnotice (file, "\nObsolete options:\n");
+  fnotice (file, "  -i, --json-format               Replaced with -j, --json-format\n");
+  fnotice (file, "  -j, --human-readable            Replaced with -H, --human-readable\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
   exit (status);
@@ -926,9 +933,8 @@ print_version (void)
   fprintf (stdout, "Copyright %s 2020 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
-	   _("This is free software; see the source for copying conditions.\n"
-	     "There is NO warranty; not even for MERCHANTABILITY or \n"
-	     "FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
+	   _("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (SUCCESS_EXIT_CODE);
 }
 
@@ -940,8 +946,8 @@ static const struct option options[] =
   { "all-blocks",           no_argument,       NULL, 'a' },
   { "branch-probabilities", no_argument,       NULL, 'b' },
   { "branch-counts",        no_argument,       NULL, 'c' },
-  { "json-format",	    no_argument,       NULL, 'i' },
-  { "human-readable",	    no_argument,       NULL, 'j' },
+  { "json-format",	    no_argument,       NULL, 'j' },
+  { "human-readable",	    no_argument,       NULL, 'H' },
   { "no-output",            no_argument,       NULL, 'n' },
   { "long-file-names",      no_argument,       NULL, 'l' },
   { "function-summaries",   no_argument,       NULL, 'f' },
@@ -967,7 +973,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhijklmno:pqrs:tuvwx";
+  const char *opts = "abcdfhHijklmno:pqrs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -990,7 +996,7 @@ process_args (int argc, char **argv)
 	case 'l':
 	  flag_long_names = 1;
 	  break;
-	case 'j':
+	case 'H':
 	  flag_human_readable_numbers = 1;
 	  break;
 	case 'k':
@@ -1022,6 +1028,7 @@ process_args (int argc, char **argv)
 	  flag_unconditional = 1;
 	  break;
 	case 'i':
+	case 'j':
 	  flag_json_format = 1;
 	  flag_gcov_file = 1;
 	  break;
@@ -1410,17 +1417,13 @@ generate_results (const char *file_name)
     }
 
   name_map needle;
-
-  if (file_name)
-    {
-      needle.name = file_name;
-      vector<name_map>::iterator it = std::find (names.begin (), names.end (),
-						 needle);
-      if (it != names.end ())
-	file_name = sources[it->src].coverage.name;
-      else
-	file_name = canonicalize_name (file_name);
-    }
+  needle.name = file_name;
+  vector<name_map>::iterator it
+    = std::find (names.begin (), names.end (), needle);
+  if (it != names.end ())
+    file_name = sources[it->src].coverage.name;
+  else
+    file_name = canonicalize_name (file_name);
 
   gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
 
@@ -1462,7 +1465,11 @@ generate_results (const char *file_name)
       if (flag_gcov_file)
 	{
 	  if (flag_json_format)
-	    output_json_intermediate_file (json_files, src);
+	    {
+	      output_json_intermediate_file (json_files, src);
+	      if (!flag_use_stdout)
+		fnotice (stdout, "\n");
+	    }
 	  else
 	    {
 	      if (flag_use_stdout)
@@ -1509,9 +1516,6 @@ generate_results (const char *file_name)
 	    }
 	}
     }
-
-  if (!file_name)
-    executed_summary (total_lines, total_executed);
 }
 
 /* Release all memory used.  */
@@ -1968,11 +1972,16 @@ read_count_file (void)
 	}
       else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
+	  int read_length = (int)length;
+	  length = abs (read_length);
 	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->counts.size ()))
 	    goto mismatch;
 
-	  for (ix = 0; ix != fn->counts.size (); ix++)
-	    fn->counts[ix] += gcov_read_counter ();
+	  if (read_length > 0)
+	    for (ix = 0; ix != fn->counts.size (); ix++)
+	      fn->counts[ix] += gcov_read_counter ();
+	  else
+	    length = 0;
 	}
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))

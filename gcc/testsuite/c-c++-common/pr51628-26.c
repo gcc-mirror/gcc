@@ -15,19 +15,19 @@ void
 foo1 (void)
 {
   addr = (i = -1, &p.i);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }
 
 void
 foo2 (void)
 {
   addr = (i = -1, j = -2, &p.i);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }
 
 void
 foo3 (void)
 {
   addr = (i = -1, (j = -2, &p.i));
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -377,10 +376,6 @@ package body Sem_Dim is
    procedure Set_Symbol (E : Entity_Id; Val : String_Id);
    --  Associate a symbol representation of a dimension vector with a subtype
 
-   function String_From_Numeric_Literal (N : Node_Id) return String_Id;
-   --  Return the string that corresponds to the numeric litteral N as it
-   --  appears in the source.
-
    function Symbol_Of (E : Entity_Id) return String_Id;
    --  E denotes a subtype with a dimension. Return the symbol representation
    --  of the dimension vector.
@@ -628,8 +623,8 @@ package body Sem_Dim is
       --  Named symbol argument
 
       if No (Symbol_Expr)
-        or else not Nkind_In (Symbol_Expr, N_Character_Literal,
-                                           N_String_Literal)
+        or else Nkind (Symbol_Expr) not in
+                  N_Character_Literal | N_String_Literal
       then
          Symbol_Expr := Empty;
 
@@ -649,8 +644,8 @@ package body Sem_Dim is
 
                   --  Verify symbol expression is a string or a character
 
-                  if not Nkind_In (Symbol_Expr, N_Character_Literal,
-                                                N_String_Literal)
+                  if Nkind (Symbol_Expr) not in
+                       N_Character_Literal | N_String_Literal
                   then
                      Symbol_Expr := Empty;
                      Error_Msg_N
@@ -661,8 +656,8 @@ package body Sem_Dim is
                --  Special error if no Symbol choice but expression is string
                --  or character.
 
-               elsif Nkind_In (Expression (Assoc), N_Character_Literal,
-                                                   N_String_Literal)
+               elsif Nkind (Expression (Assoc)) in
+                       N_Character_Literal | N_String_Literal
                then
                   Num_Choices := Num_Choices + 1;
                   Error_Msg_N
@@ -681,7 +676,7 @@ package body Sem_Dim is
       --  Skip the symbol expression when present
 
       if Present (Symbol_Expr) and then Num_Choices = 0 then
-         Expr := Next (Expr);
+         Next (Expr);
       end if;
 
       Position := Low_Position_Bound;
@@ -1044,8 +1039,8 @@ package body Sem_Dim is
                --  Check the second argument for each dimension aggregate is
                --  a string or a character.
 
-               if not Nkind_In (Unit_Symbol, N_String_Literal,
-                                             N_Character_Literal)
+               if Nkind (Unit_Symbol) not in
+                    N_String_Literal | N_Character_Literal
                then
                   Error_Msg_N
                     ("expected unit symbol (string or character)",
@@ -1077,8 +1072,8 @@ package body Sem_Dim is
                --  Check the third argument for each dimension aggregate is
                --  a string or a character.
 
-               if not Nkind_In (Dim_Symbol, N_String_Literal,
-                                            N_Character_Literal)
+               if Nkind (Dim_Symbol) not in
+                    N_String_Literal | N_Character_Literal
                then
                   Error_Msg_N
                     ("expected dimension symbol (string or character)",
@@ -1148,13 +1143,11 @@ package body Sem_Dim is
          return;
 
       elsif not Comes_From_Source (N) then
-         if Nkind_In (N, N_Explicit_Dereference,
-                         N_Identifier,
-                         N_Object_Declaration,
-                         N_Subtype_Declaration)
+         if Nkind (N) not in N_Explicit_Dereference
+                           | N_Identifier
+                           | N_Object_Declaration
+                           | N_Subtype_Declaration
          then
-            null;
-         else
             return;
          end if;
       end if;
@@ -1446,9 +1439,8 @@ package body Sem_Dim is
          return;
       end if;
 
-      if Nkind_In (N_Kind, N_Op_Add, N_Op_Expon, N_Op_Subtract)
-        or else N_Kind in N_Multiplying_Operator
-        or else N_Kind in N_Op_Compare
+      if N_Kind in N_Op_Add | N_Op_Expon  | N_Op_Subtract
+                 | N_Multiplying_Operator | N_Op_Compare
       then
          declare
             L                : constant Node_Id        := Left_Opnd (N);
@@ -1464,7 +1456,7 @@ package body Sem_Dim is
          begin
             --  N_Op_Add, N_Op_Mod, N_Op_Rem or N_Op_Subtract case
 
-            if Nkind_In (N, N_Op_Add, N_Op_Mod, N_Op_Rem, N_Op_Subtract) then
+            if N_Kind in N_Op_Add | N_Op_Mod | N_Op_Rem | N_Op_Subtract then
 
                --  Check both operands have same dimension
 
@@ -1480,7 +1472,7 @@ package body Sem_Dim is
 
             --  N_Op_Multiply or N_Op_Divide case
 
-            elsif Nkind_In (N_Kind, N_Op_Multiply, N_Op_Divide) then
+            elsif N_Kind in N_Op_Multiply | N_Op_Divide then
 
                --  Check at least one operand is not dimensionless
 
@@ -1598,13 +1590,13 @@ package body Sem_Dim is
                   --  literal is treated as if its dimension matches the type
                   --  dimension.
 
-                  elsif Nkind_In (Original_Node (L), N_Integer_Literal,
-                                                     N_Real_Literal)
+                  elsif Nkind (Original_Node (L)) in
+                          N_Integer_Literal | N_Real_Literal
                   then
                      Dim_Warning_For_Numeric_Literal (L, Etype (R));
 
-                  elsif Nkind_In (Original_Node (R), N_Integer_Literal,
-                                                     N_Real_Literal)
+                  elsif Nkind (Original_Node (R)) in
+                          N_Integer_Literal | N_Real_Literal
                   then
                      Dim_Warning_For_Numeric_Literal (R, Etype (L));
 
@@ -1880,8 +1872,8 @@ package body Sem_Dim is
             --  dimensionless to indicate the literal is treated as if its
             --  dimension matches the type dimension.
 
-            if Nkind_In (Original_Node (Expr), N_Real_Literal,
-                                               N_Integer_Literal)
+            if Nkind (Original_Node (Expr)) in
+                 N_Real_Literal | N_Integer_Literal
             then
                Dim_Warning_For_Numeric_Literal (Expr, Etyp);
 
@@ -2070,8 +2062,8 @@ package body Sem_Dim is
 
                if Present (Expr)
                  and then Dims_Of_Typ /= Dimensions_Of (Expr)
-                 and then Nkind_In (Original_Node (Expr), N_Real_Literal,
-                                                          N_Integer_Literal)
+                 and then Nkind (Original_Node (Expr)) in
+                            N_Real_Literal | N_Integer_Literal
                then
                   Dim_Warning_For_Numeric_Literal (Expr, Etype (Typ));
                end if;
@@ -2110,7 +2102,7 @@ package body Sem_Dim is
                Check_Error_Detected;
                return;
 
-            elsif Ekind_In (Id,  E_Constant, E_Named_Real)
+            elsif Ekind (Id) in E_Constant | E_Named_Real
               and then Exists (Dimensions_Of (Id))
             then
                Set_Dimensions (N, Dimensions_Of (Id));
@@ -2247,8 +2239,8 @@ package body Sem_Dim is
             --  not dimensionless to indicate the literal is treated as if
             --  its dimension matches the type dimension.
 
-            if Nkind_In (Original_Node (Expr), N_Real_Literal,
-                                               N_Integer_Literal)
+            if Nkind (Original_Node (Expr)) in
+                 N_Real_Literal | N_Integer_Literal
             then
                Dim_Warning_For_Numeric_Literal (Expr, Etyp);
 
@@ -2590,16 +2582,6 @@ package body Sem_Dim is
             Result := No_Rational;
          end if;
 
-         --  Provide minimal semantic information on dimension expressions,
-         --  even though they have no run-time existence. This is for use by
-         --  ASIS tools, in particular pretty-printing. If generating code
-         --  standard operator resolution will take place.
-
-         if ASIS_Mode then
-            Set_Entity (N, Standard_Op_Minus);
-            Set_Etype  (N, Standard_Integer);
-         end if;
-
          return Result;
       end Process_Minus;
 
@@ -2624,16 +2606,6 @@ package body Sem_Dim is
             Left_Rat := Process_Literal (Left);
             Right_Rat := Process_Literal (Right);
             Result := Left_Rat / Right_Rat;
-         end if;
-
-         --  Provide minimal semantic information on dimension expressions,
-         --  even though they have no run-time existence. This is for use by
-         --  ASIS tools, in particular pretty-printing. If generating code
-         --  standard operator resolution will take place.
-
-         if ASIS_Mode then
-            Set_Entity (N, Standard_Op_Divide);
-            Set_Etype  (N, Standard_Integer);
          end if;
 
          return Result;
@@ -3759,63 +3731,6 @@ package body Sem_Dim is
    begin
       Symbol_Table.Set (E, Val);
    end Set_Symbol;
-
-   ---------------------------------
-   -- String_From_Numeric_Literal --
-   ---------------------------------
-
-   function String_From_Numeric_Literal (N : Node_Id) return String_Id is
-      Loc     : constant Source_Ptr        := Sloc (N);
-      Sbuffer : constant Source_Buffer_Ptr :=
-                  Source_Text (Get_Source_File_Index (Loc));
-      Src_Ptr : Source_Ptr := Loc;
-
-      C : Character  := Sbuffer (Src_Ptr);
-      --  Current source program character
-
-      function Belong_To_Numeric_Literal (C : Character) return Boolean;
-      --  Return True if C belongs to a numeric literal
-
-      -------------------------------
-      -- Belong_To_Numeric_Literal --
-      -------------------------------
-
-      function Belong_To_Numeric_Literal (C : Character) return Boolean is
-      begin
-         case C is
-            when '0' .. '9'
-               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
-            =>
-               return True;
-
-            --  Make sure '+' or '-' is part of an exponent.
-
-            when '+' | '-' =>
-               declare
-                  Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
-               begin
-                  return Prev_C = 'e' or else Prev_C = 'E';
-               end;
-
-            --  All other character doesn't belong to a numeric literal
-
-            when others =>
-               return False;
-         end case;
-      end Belong_To_Numeric_Literal;
-
-   --  Start of processing for String_From_Numeric_Literal
-
-   begin
-      Start_String;
-      while Belong_To_Numeric_Literal (C) loop
-         Store_String_Char (C);
-         Src_Ptr := Src_Ptr + 1;
-         C       := Sbuffer (Src_Ptr);
-      end loop;
-
-      return End_String;
-   end String_From_Numeric_Literal;
 
    ---------------
    -- Symbol_Of --

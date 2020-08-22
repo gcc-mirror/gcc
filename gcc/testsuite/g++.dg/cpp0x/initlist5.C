@@ -32,4 +32,4 @@ char c = char{ u };		// { dg-error "narrowing" }
 
 // PR c++/50011
 short unsigned su;
-int i { su };
+int i { su }; // { dg-error "narrowing" "" { target short_eq_int } }

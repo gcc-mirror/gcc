@@ -6,4 +6,5 @@ template < typename > struct T
   template < typename >
   template < bool > struct T < S > // { dg-error "" }
   {
-    void f () {			// { dg-error "" }
+    void f () { // { dg-error "expected" }
+// { dg-error "-:expected" "" { target *-*-* } .+1 }

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -35,7 +35,7 @@ Import::Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *alias
     this->id = id;
     this->aliasId = aliasId;
     this->isstatic = isstatic;
-    this->protection = Prot(PROTprivate); // default to private
+    this->protection = Prot(Prot::private_); // default to private
     this->pkg = NULL;
     this->mod = NULL;
 
@@ -45,7 +45,7 @@ Import::Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *alias
         // import [cstdio] = std.stdio;
         this->ident = aliasId;
     }
-    else if (packages && packages->dim)
+    else if (packages && packages->length)
     {
         // import [std].stdio;
         this->ident = (*packages)[0];
@@ -85,7 +85,7 @@ Dsymbol *Import::syntaxCopy(Dsymbol *s)
 
     Import *si = new Import(loc, packages, id, aliasId, isstatic);
 
-    for (size_t i = 0; i < names.dim; i++)
+    for (size_t i = 0; i < names.length; i++)
     {
         si->addAlias(names[i], aliases[i]);
     }
@@ -186,7 +186,7 @@ void Import::importAll(Scope *sc)
 
             if (sc->explicitProtection)
                 protection = sc->protection;
-            if (!isstatic && !aliasId && !names.dim)
+            if (!isstatic && !aliasId && !names.length)
             {
                 sc->scopesym->importScope(mod, protection);
             }
@@ -227,7 +227,7 @@ void Import::semantic(Scope *sc)
         if (sc->explicitProtection)
             protection = sc->protection;
 
-        if (!aliasId && !names.dim) // neither a selective nor a renamed import
+        if (!aliasId && !names.length) // neither a selective nor a renamed import
         {
             ScopeDsymbol *scopesym = NULL;
             if (sc->explicitProtection)
@@ -253,7 +253,7 @@ void Import::semantic(Scope *sc)
                 // import a.b.c.d;
                 Package *p = pkg; // a
                 scopesym->addAccessiblePackage(p, protection);
-                for (size_t i = 1; i < packages->dim; i++) // [b, c]
+                for (size_t i = 1; i < packages->length; i++) // [b, c]
                 {
                     Identifier *id = (*packages)[i];
                     p = (Package *) p->symtab->lookup(id);
@@ -273,7 +273,7 @@ void Import::semantic(Scope *sc)
 
         sc = sc->push(mod);
         sc->protection = protection;
-        for (size_t i = 0; i < aliasdecls.dim; i++)
+        for (size_t i = 0; i < aliasdecls.length; i++)
         {
             AliasDeclaration *ad = aliasdecls[i];
             //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), aliases[i]->toChars(), names[i]->toChars(), ad->_scope);
@@ -321,7 +321,7 @@ void Import::semantic(Scope *sc)
 
         OutBuffer *ob = global.params.moduleDeps;
         Module* imod = sc->instantiatingModule();
-        if (!global.params.moduleDepsFile)
+        if (!global.params.moduleDepsFile.length)
             ob->writestring("depsImport ");
         ob->writestring(imod->toPrettyChars());
         ob->writestring(" (");
@@ -341,7 +341,7 @@ void Import::semantic(Scope *sc)
 
         if (packages)
         {
-            for (size_t i = 0; i < packages->dim; i++)
+            for (size_t i = 0; i < packages->length; i++)
             {
                 Identifier *pid = (*packages)[i];
                 ob->printf("%s.", pid->toChars());
@@ -356,7 +356,7 @@ void Import::semantic(Scope *sc)
             ob->writestring("???");
         ob->writeByte(')');
 
-        for (size_t i = 0; i < names.dim; i++)
+        for (size_t i = 0; i < names.length; i++)
         {
             if (i == 0)
                 ob->writeByte(':');
@@ -413,7 +413,7 @@ Dsymbol *Import::toAlias()
 void Import::addMember(Scope *sc, ScopeDsymbol *sd)
 {
     //printf("Import::addMember(this=%s, sd=%s, sc=%p)\n", toChars(), sd->toChars(), sc);
-    if (names.dim == 0)
+    if (names.length == 0)
         return Dsymbol::addMember(sc, sd);
 
     if (aliasId)
@@ -422,7 +422,7 @@ void Import::addMember(Scope *sc, ScopeDsymbol *sd)
     /* Instead of adding the import to sd's symbol table,
      * add each of the alias=name pairs
      */
-    for (size_t i = 0; i < names.dim; i++)
+    for (size_t i = 0; i < names.length; i++)
     {
         Identifier *name = names[i];
         Identifier *alias = aliases[i];
@@ -442,14 +442,14 @@ void Import::addMember(Scope *sc, ScopeDsymbol *sd)
 void Import::setScope(Scope *sc)
 {
     Dsymbol::setScope(sc);
-    if (aliasdecls.dim)
+    if (aliasdecls.length)
     {
         if (!mod)
             importAll(sc);
 
         sc = sc->push(mod);
         sc->protection = protection;
-        for (size_t i = 0; i < aliasdecls.dim; i++)
+        for (size_t i = 0; i < aliasdecls.length; i++)
         {
             AliasDeclaration *ad = aliasdecls[i];
             ad->setScope(sc);

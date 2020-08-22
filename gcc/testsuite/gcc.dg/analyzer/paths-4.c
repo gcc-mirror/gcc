@@ -13,8 +13,8 @@ int test_1 (struct state *s)
   __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
   while (1)
     {
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
       /* TODO: why does the above need an extra stmt to merge state?  */
       do_stuff (s, s->mode);
     }
@@ -25,13 +25,13 @@ int test_2 (struct state *s)
   __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
   while (1)
     {
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
       /* TODO: why does the above need an extra stmt to merge state?  */
       switch (s->mode)
 	{
 	case 0:
-	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
 	  do_stuff (s, 0);
 	  break;
 	case 1:

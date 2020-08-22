@@ -41,7 +41,7 @@ struct Scope;
 struct Loc;
 
 template <typename TYPE> struct Array;
-typedef Array<Expression *> Expressions;
+typedef Array <Expression *> Expressions;
 
 /* Usage of TREE_LANG_FLAG_?:
    0: METHOD_CALL_EXPR
@@ -80,7 +80,7 @@ enum level_kind
 
 enum intrinsic_code
 {
-#define DEF_D_INTRINSIC(CODE, A, N, M, D, C) INTRINSIC_ ## CODE,
+#define DEF_D_INTRINSIC(CODE, B, N, M, D, C) INTRINSIC_ ## CODE,
 
 #include "intrinsics.def"
 
@@ -234,13 +234,13 @@ struct GTY(()) language_function
 
   /* Stack of statement lists being collected while we are
      compiling the function.  */
-  vec<tree, va_gc> *stmt_list;
+  vec <tree, va_gc> *stmt_list;
 
   /* Variables that are in scope that will need destruction later.  */
-  vec<tree, va_gc> *vars_in_scope;
+  vec <tree, va_gc> *vars_in_scope;
 
   /* Table of all used or defined labels in the function.  */
-  hash_map<Statement *, d_label_entry> *labels;
+  hash_map <Statement *, d_label_entry> *labels;
 };
 
 /* The D front end types have not been integrated into the GCC garbage
@@ -489,6 +489,7 @@ extern void apply_user_attributes (Dsymbol *, tree);
 /* In d-builtins.cc.  */
 extern const attribute_spec d_langhook_attribute_table[];
 extern const attribute_spec d_langhook_common_attribute_table[];
+extern Type *build_frontend_type (tree);
 
 extern tree d_builtin_function (tree);
 extern void d_init_builtins (void);
@@ -529,13 +530,16 @@ extern tree build_address (tree);
 extern tree d_mark_addressable (tree);
 extern tree d_mark_used (tree);
 extern tree d_mark_read (tree);
+extern tree build_memcmp_call (tree, tree, tree);
+extern tree build_memcpy_call (tree, tree, tree);
+extern tree build_memset_call (tree, tree = NULL_TREE);
 extern bool identity_compare_p (StructDeclaration *);
 extern tree build_float_identity (tree_code, tree, tree);
 extern tree build_struct_comparison (tree_code, StructDeclaration *,
 				     tree, tree);
 extern tree build_array_struct_comparison (tree_code, StructDeclaration *,
 					   tree, tree, tree);
-extern tree build_struct_literal (tree, vec<constructor_elt, va_gc> *);
+extern tree build_struct_literal (tree, vec <constructor_elt, va_gc> *);
 extern tree component_ref (tree, tree);
 extern tree build_assign (tree_code, tree, tree);
 extern tree modify_expr (tree, tree);
@@ -558,11 +562,11 @@ extern tree build_offset (tree, tree);
 extern tree build_memref (tree, tree, tree);
 extern tree build_array_set (tree, tree, tree);
 extern tree build_array_from_val (Type *, tree);
+extern tree build_array_from_exprs (Type *, Expressions *, bool);
 extern tree void_okay_p (tree);
+extern tree build_array_bounds_call (const Loc &);
 extern tree build_bounds_condition (const Loc &, tree, tree, bool);
 extern bool array_bounds_check (void);
-extern tree create_temporary_var (tree);
-extern tree maybe_temporary_var (tree, tree *);
 extern tree bind_expr (tree, tree);
 extern TypeFunction *get_function_type (Type *);
 extern bool call_by_alias_p (FuncDeclaration *, FuncDeclaration *);
@@ -571,6 +575,7 @@ extern tree d_build_call (TypeFunction *, tree, tree, Expressions *);
 extern tree d_assert_call (const Loc &, libcall_fn, tree = NULL_TREE);
 extern tree build_float_modulus (tree, tree, tree);
 extern tree build_vthis_function (tree, tree);
+extern tree error_no_frame_access (Dsymbol *);
 extern tree get_frame_for_symbol (Dsymbol *);
 extern tree build_vthis (AggregateDeclaration *);
 extern void build_closure (FuncDeclaration *);
@@ -586,7 +591,7 @@ extern tree convert_for_assignment (tree, Type *, Type *);
 extern tree convert_for_argument (tree, Parameter *);
 extern tree convert_for_condition (tree, Type *);
 extern tree d_array_convert (Expression *);
-extern tree d_array_convert (Type *, Expression *, vec<tree, va_gc> **);
+extern tree d_array_convert (Type *, Expression *);
 
 /* In d-incpath.cc.  */
 extern void add_import_paths (const char *, const char *, bool);
@@ -598,8 +603,6 @@ extern d_tree_node_structure_enum d_tree_node_structure (lang_tree_node *);
 extern struct lang_type *build_lang_type (Type *);
 extern struct lang_decl *build_lang_decl (Declaration *);
 extern tree d_pushdecl (tree);
-extern tree d_unsigned_type (tree);
-extern tree d_signed_type (tree);
 extern void d_keep (tree);
 
 /* In decl.cc.  */
@@ -630,7 +633,7 @@ extern void d_comdat_linkage (tree);
 extern void d_linkonce_linkage (tree);
 
 /* In expr.cc.  */
-extern tree build_expr (Expression *, bool = false);
+extern tree build_expr (Expression *, bool = false, bool = false);
 extern tree build_expr_dtor (Expression *);
 extern tree build_return_dtor (Expression *, Type *, TypeFunction *);
 
@@ -672,6 +675,8 @@ extern void add_stmt (tree);
 extern void build_function_body (FuncDeclaration *);
 
 /* In types.cc.  */
+extern tree d_unsigned_type (tree);
+extern tree d_signed_type (tree);
 extern bool valist_array_p (Type *);
 extern bool empty_aggregate_p (tree);
 extern bool same_type_p (Type *, Type *);

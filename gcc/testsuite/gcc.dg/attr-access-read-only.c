@@ -11,7 +11,7 @@ int  __attribute__ ((access ()))
 access___v (void);     // { dg-error "wrong number of arguments specified for 'access' attribute" }
 
 int  __attribute__ ((access (rdonly)))
-rdonly_spelling (void);   // { dg-error "attribute .access. invalid mode 'rdonly'; expected one of 'read_only', 'read_write', or 'write_only'" }
+rdonly_spelling (void);   // { dg-error "attribute .access. invalid mode 'rdonly'; expected one of 'read_only', 'read_write', 'write_only', or 'none'" }
 
 int  __attribute__ ((access (read_only)))
 rdonly_v_all (void);   // { dg-error "attribute .access\\(read_only\\). missing an argument" }

@@ -35,6 +35,10 @@
 #include <sys/resource.h>
 #include <syslog.h>
 
+#if !defined(ElfW)
+#define ElfW(type) Elf_##type
+#endif
+
 #if SANITIZER_FREEBSD
 #include <pthread_np.h>
 #include <osreldate.h>
@@ -50,6 +54,7 @@
 #if SANITIZER_NETBSD
 #include <sys/sysctl.h>
 #include <sys/tls.h>
+#include <lwp.h>
 #endif
 
 #if SANITIZER_SOLARIS
@@ -399,13 +404,7 @@ uptr ThreadSelf() {
 
 #if SANITIZER_NETBSD
 static struct tls_tcb * ThreadSelfTlsTcb() {
-  struct tls_tcb * tcb;
-# ifdef __HAVE___LWP_GETTCB_FAST
-  tcb = (struct tls_tcb *)__lwp_gettcb_fast();
-# elif defined(__HAVE___LWP_GETPRIVATE_FAST)
-  tcb = (struct tls_tcb *)__lwp_getprivate_fast();
-# endif
-  return tcb;
+  return (struct tls_tcb *)_lwp_getprivate();
 }
 
 uptr ThreadSelf() {

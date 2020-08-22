@@ -124,7 +124,7 @@ COMPILE.c = $(CC) -c @DEFS@ $(CFLAGS) $(CPPFLAGS) -I. -I$(INCDIR) \
 # CONFIGURED_OFILES and funcs in configure.ac.  Also run "make maint-deps"
 # to build the new rules.
 CFILES = alloca.c argv.c asprintf.c atexit.c				\
-	basename.c bcmp.c bcopy.c bsearch.c bzero.c			\
+	basename.c bcmp.c bcopy.c bsearch.c bsearch_r.c bzero.c		\
 	calloc.c choose-temp.c clock.c concat.c cp-demangle.c		\
 	 cp-demint.c cplus-dem.c crc32.c				\
 	d-demangle.c dwarfnames.c dyn-string.c				\
@@ -168,6 +168,7 @@ REQUIRED_OFILES =							\
 	./regex.$(objext) ./cplus-dem.$(objext) ./cp-demangle.$(objext) \
 	./md5.$(objext) ./sha1.$(objext) ./alloca.$(objext)		\
 	./argv.$(objext)						\
+	./bsearch_r.$(objext)						\
 	./choose-temp.$(objext) ./concat.$(objext)			\
 	./cp-demint.$(objext) ./crc32.$(objext) ./d-demangle.$(objext)	\
 	./dwarfnames.$(objext) ./dyn-string.$(objext)			\
@@ -600,6 +601,15 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/bsearch.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/bsearch.c $(OUTPUT_OPTION)
+
+./bsearch_r.$(objext): $(srcdir)/bsearch_r.c config.h $(INCDIR)/ansidecl.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/bsearch_r.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/bsearch_r.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/bsearch_r.c $(OUTPUT_OPTION)
 
 ./bzero.$(objext): $(srcdir)/bzero.c
 	if [ x"$(PICFLAG)" != x ]; then \

@@ -1,3 +1,109 @@
+2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/96377
+	* c-typeck.c (process_init_element): Split test for whether to
+	recurse into a record, union or array into...
+	(initialize_elementwise_p): ...this new function.  Don't recurse
+	into a vector type if the initialization value is also a vector.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* c-objc-common.h (LANG_HOOKS_FINALIZE_EARLY_DEBUG):
+	Define to c_common_finalize_early_debug.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_hint): Require nonnegative hint clause.
+	(c_parser_omp_critical): Permit hint(0) clause without named critical.
+	(c_parser_omp_construct): Don't assert if error_mark_node is returned.
+
+2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95237
+	* c-decl.c (finish_decl): Call target hook
+	lower_local_decl_alignment to lower local decl alignment.
+
+2020-07-09  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/95270
+	* c-typeck.c (c_finish_omp_clauses): Set OMP_CLAUSE_SIZE (bias) to zero
+	for standalone attach/detach clauses.
+
+2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* c-typeck.c (convert_for_assignment): If -Wscalar-storage-order is
+	set, warn for conversion between pointers that point to incompatible
+	scalar storage orders.
+
+2020-07-07  Kaipeng Zhou  <zhoukaipeng3@huawei.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Pass correct
+	parameters to c_parser_do_statement.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_expr_no_commas): Save, clear and restore
+	c_in_omp_for.
+	(c_parser_omp_for_loop): Set c_in_omp_for around some calls to avoid
+	premature c_fully_fold.  Defer explicit c_fully_fold calls to after
+	c_finish_omp_for.
+	* c-tree.h (c_in_omp_for): Declare.
+	* c-typeck.c (c_in_omp_for): Define.
+	(build_modify_expr): Avoid c_fully_fold if c_in_omp_for.
+	(digest_init): Likewise.
+	(build_binary_op): Likewise.
+
+2020-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_schedule): Reject modifier separated
+	from kind by comma rather than colon.
+
+2020-06-05  Mark Wielaard  <mark@klomp.org>
+
+	* c-decl.c (implicit_decl_warning): When warned and olddecl is
+	an undeclared builtin, then add a fixit header hint, if found.
+	(implicitly_declare): Add OPT_Wbuiltin_declaration_mismatch to
+	warning_at about implicit builtin declaration type mismatch.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* c-parser.c (struct c_parser): Add seen_string_literal
+	bitfield.
+	(c_parser_consume_token): Reset seen_string_literal.
+	(c_parser_error_richloc): Add name_hint if seen_string_literal
+	and next token is a CPP_NAME and we have a missing header
+	suggestion for the name.
+	(c_parser_string_literal): Set seen_string_literal.
+
+2020-06-03  Mark Wielaard  <mark@klomp.org>
+
+	* c-parser.c (c_parser_postfix_expression_after_primary): Add
+	scope with matching_parens after CPP_OPEN_PAREN.
+
+2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-objc-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* Make-lang.in: Remove extra slash.
+
+2020-05-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c: Fix typo.
+
+2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_target): Set cfun->has_omp_target.
+
+2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94703
+	* gimple-parser.c (c_parser_parse_ssa_name): Do not set
+	DECL_GIMPLE_REG_P.
+
 2020-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/94842

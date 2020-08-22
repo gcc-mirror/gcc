@@ -22,4 +22,4 @@ test_2 (void)
 {
   struct union_wrapper uw2;
   uw2.u.ptr = malloc (1024);
-} /* { dg-warning "leak of '\\(void \\*\\)uw2.u'" } */
+} /* { dg-warning "leak of 'uw2.u.ptr'" } */

@@ -66,6 +66,63 @@ struct GTY(()) machine_function
   int callee_saved_reg_size;
 };
 
+/* Handle an attribute requiring a FUNCTION_DECL;
+   arguments as in struct attribute_spec.handler.  */
+
+static tree
+bpf_handle_fndecl_attribute (tree *node, tree name,
+			     tree args,
+			     int flags ATTRIBUTE_UNUSED,
+			     bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+    }
+
+  if (is_attribute_p ("kernel_helper", name))
+    {
+      if (args)
+	{
+	  tree cst = TREE_VALUE (args);
+	  if (TREE_CODE (cst) != INTEGER_CST)
+	    {
+	      warning (OPT_Wattributes, "%qE attribute requires an integer argument",
+		       name);
+	      *no_add_attrs = true;
+	    }
+	}
+      else
+	{
+	  warning (OPT_Wattributes, "%qE requires an argument", name);
+	  *no_add_attrs = true;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Target-specific attributes.  */
+
+static const struct attribute_spec bpf_attribute_table[] =
+{
+  /* Syntax: { name, min_len, max_len, decl_required, type_required,
+	       function_type_required, affects_type_identity, handler,
+	       exclude } */
+
+ /* Attribute to mark function prototypes as kernel helpers.  */
+ { "kernel_helper", 1, 1, true, false, false, false,
+   bpf_handle_fndecl_attribute, NULL },
+
+ /* The last attribute spec is set to be NULL.  */
+ { NULL,	0,  0, false, false, false, false, NULL, NULL }
+};
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE bpf_attribute_table
+
 /* Data structures for the eBPF specific built-ins.  */
 
 /* Maximum number of arguments taken by a builtin function, plus
@@ -75,46 +132,12 @@ struct GTY(()) machine_function
 enum bpf_builtins
 {
   BPF_BUILTIN_UNUSED = 0,
-  /* Built-ins for kernel helpers.  */
-#define DEF_HELPER(V,D,N,T) BPF_BUILTIN_HELPER_##D,
-#  include "bpf-helpers.def"
-#undef DEF_HELPER
-  BPF_BUILTIN_HELPER_MAX,
   /* Built-ins for non-generic loads and stores.  */
-  BPF_BUILTIN_LOAD_BYTE = BPF_BUILTIN_HELPER_MAX,
+  BPF_BUILTIN_LOAD_BYTE,
   BPF_BUILTIN_LOAD_HALF,
   BPF_BUILTIN_LOAD_WORD,
   BPF_BUILTIN_MAX,
 };
-
-/* This table is indexed by an enum bpf_builtin.  */
-static const char *bpf_helper_names[] =
-{
-  NULL,
-#define DEF_HELPER(V,D,N,T) #N,
-#  include "bpf-helpers.def"
-#undef DEF_HELPER
-  NULL,
-  NULL,
-  NULL,
-  NULL
-};
-
-/* Return the builtin code corresponding to the kernel helper builtin
-   __builtin_NAME, or 0 if the name doesn't correspond to a kernel
-   helper builtin.  */
-
-static inline int
-bpf_helper_code (const char *name)
-{
-  int i;
-
-  for (i = 1; i < BPF_BUILTIN_HELPER_MAX; ++i)
-    if (strcmp (name, bpf_helper_names[i]) == 0)
-      return i;
-
-  return 0;
-}
 
 static GTY (()) tree bpf_builtins[(int) BPF_BUILTIN_MAX];
 
@@ -149,7 +172,7 @@ void
 bpf_target_macros (cpp_reader *pfile)
 {
   builtin_define ("__BPF__");
-  
+
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__BPF_BIG_ENDIAN__");
   else
@@ -187,7 +210,7 @@ bpf_target_macros (cpp_reader *pfile)
       case LINUX_V5_1: version_code = "0x50100"; break;
       case LINUX_V5_2: version_code = "0x50200"; break;
       default:
-	gcc_unreachable ();      
+	gcc_unreachable ();
       }
 
     kernel_version_code = ACONCAT (("__BPF_KERNEL_VERSION_CODE__=",
@@ -267,15 +290,18 @@ bpf_compute_frame_layout (void)
 
   cfun->machine->local_vars_size += padding_locals;
 
-  /* Set the space used in the stack by callee-saved used registers in
-     the current function.  There is no need to round up, since the
-     registers are all 8 bytes wide.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((df_regs_ever_live_p (regno)
-	 && !call_used_or_fixed_reg_p (regno))
-	|| (cfun->calls_alloca
-	    && regno == STACK_POINTER_REGNUM))
-      cfun->machine->callee_saved_reg_size += 8;
+  if (TARGET_XBPF)
+    {
+      /* Set the space used in the stack by callee-saved used
+	 registers in the current function.  There is no need to round
+	 up, since the registers are all 8 bytes wide.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if ((df_regs_ever_live_p (regno)
+	     && !call_used_or_fixed_reg_p (regno))
+	    || (cfun->calls_alloca
+		&& regno == STACK_POINTER_REGNUM))
+	  cfun->machine->callee_saved_reg_size += 8;
+    }
 
   /* Check that the total size of the frame doesn't exceed the limit
      imposed by eBPF.  */
@@ -299,38 +325,50 @@ bpf_compute_frame_layout (void)
 void
 bpf_expand_prologue (void)
 {
-  int regno, fp_offset;
   rtx insn;
   HOST_WIDE_INT size;
 
   size = (cfun->machine->local_vars_size
 	  + cfun->machine->callee_saved_reg_size);
-  fp_offset = -cfun->machine->local_vars_size;
 
-  /* Save callee-saved hard registes.  The register-save-area starts
-     right after the local variables.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+  /* The BPF "hardware" provides a fresh new set of registers for each
+     called function, some of which are initialized to the values of
+     the arguments passed in the first five registers.  In doing so,
+     it saves the values of the registers of the caller, and restored
+     them upon returning.  Therefore, there is no need to save the
+     callee-saved registers here.  What is worse, the kernel
+     implementation refuses to run programs in which registers are
+     referred before being initialized.  */
+  if (TARGET_XBPF)
     {
-      if ((df_regs_ever_live_p (regno)
-	   && !call_used_or_fixed_reg_p (regno))
-	  || (cfun->calls_alloca
-	      && regno == STACK_POINTER_REGNUM))
-	{
-	  rtx mem;
+      int regno;
+      int fp_offset = -cfun->machine->local_vars_size;
 
-	  if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-	    /* This has been already reported as an error in
-	       bpf_compute_frame_layout. */
-	    break;
-	  else
+      /* Save callee-saved hard registes.  The register-save-area
+	 starts right after the local variables.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  if ((df_regs_ever_live_p (regno)
+	       && !call_used_or_fixed_reg_p (regno))
+	      || (cfun->calls_alloca
+		  && regno == STACK_POINTER_REGNUM))
 	    {
-	      mem = gen_frame_mem (DImode,
-				   plus_constant (DImode,
-						  hard_frame_pointer_rtx,
-						  fp_offset - 8));
-	      insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      fp_offset -= 8;
+	      rtx mem;
+
+	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
+		/* This has been already reported as an error in
+		   bpf_compute_frame_layout. */
+		break;
+	      else
+		{
+		  mem = gen_frame_mem (DImode,
+				       plus_constant (DImode,
+						      hard_frame_pointer_rtx,
+						      fp_offset - 8));
+		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  fp_offset -= 8;
+		}
 	    }
 	}
     }
@@ -344,7 +382,7 @@ bpf_expand_prologue (void)
       insn = emit_move_insn (stack_pointer_rtx,
 			     hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
-      
+
       if (size > 0)
 	{
 	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
@@ -362,34 +400,38 @@ bpf_expand_prologue (void)
 void
 bpf_expand_epilogue (void)
 {
-  int regno, fp_offset;
-  rtx insn;
-
-  fp_offset = -cfun->machine->local_vars_size;
-
-  /* Restore callee-saved hard registes from the stack.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+  /* See note in bpf_expand_prologue for an explanation on why we are
+     not restoring callee-saved registers in BPF.  */
+  if (TARGET_XBPF)
     {
-      if ((df_regs_ever_live_p (regno)
-	   && !call_used_or_fixed_reg_p (regno))
-	  || (cfun->calls_alloca
-	      && regno == STACK_POINTER_REGNUM))
-	{
-	  rtx mem;
+      rtx insn;
+      int regno;
+      int fp_offset = -cfun->machine->local_vars_size;
 
-	  if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-	    /* This has been already reported as an error in
-	       bpf_compute_frame_layout. */
-	    break;
-	  else
+      /* Restore callee-saved hard registes from the stack.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  if ((df_regs_ever_live_p (regno)
+	       && !call_used_or_fixed_reg_p (regno))
+	      || (cfun->calls_alloca
+		  && regno == STACK_POINTER_REGNUM))
 	    {
-	      mem = gen_frame_mem (DImode,
-				   plus_constant (DImode,
-						  hard_frame_pointer_rtx,
-						  fp_offset - 8));
-	      insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      fp_offset -= 8;
+	      rtx mem;
+
+	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
+		/* This has been already reported as an error in
+		   bpf_compute_frame_layout. */
+		break;
+	      else
+		{
+		  mem = gen_frame_mem (DImode,
+				       plus_constant (DImode,
+						      hard_frame_pointer_rtx,
+						      fp_offset - 8));
+		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  fp_offset -= 8;
+		}
 	    }
 	}
     }
@@ -509,7 +551,7 @@ bpf_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 
 	rtx x0 = XEXP (x, 0);
 	rtx x1 = XEXP (x, 1);
-	
+
 	if (bpf_address_base_p (x0, strict) && GET_CODE (x1) == CONST_INT)
 	  return IN_RANGE (INTVAL (x1), -1 - 0x7fff, 0x7fff);
 
@@ -662,13 +704,16 @@ bpf_output_call (rtx target)
       break;
     case SYMBOL_REF:
       {
-	const char *function_name = XSTR (target, 0);
-	int code;
-      
-	if (strncmp (function_name, "__builtin_bpf_helper_", 21) == 0
-	    && ((code = bpf_helper_code (function_name + 21)) != 0))
+	tree decl = SYMBOL_REF_DECL (target);
+	tree attr;
+
+	if (decl
+	    && (attr = lookup_attribute ("kernel_helper",
+					 DECL_ATTRIBUTES (decl))))
 	  {
-	    xops[0] = GEN_INT (code);
+	    tree attr_args = TREE_VALUE (attr);
+
+	    xops[0] = GEN_INT (TREE_INT_CST_LOW (TREE_VALUE (attr_args)));
 	    output_asm_insn ("call\t%0", xops);
 	  }
 	else
@@ -773,40 +818,7 @@ def_builtin (const char *name, enum bpf_builtins code, tree type)
 static void
 bpf_init_builtins (void)
 {
-  /* Built-ins for calling kernel helpers.  */
-
-  tree pt = build_pointer_type (void_type_node);
-  tree const_void_type
-    = build_qualified_type (void_type_node, TYPE_QUAL_CONST);
-  tree cpt = build_pointer_type (const_void_type);
-  tree st = short_integer_type_node;
-  tree ust = uint16_type_node;
-  tree it = integer_type_node;
-  tree ut = unsigned_type_node;
-  tree const_char_type
-    = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
-  tree cst = build_pointer_type (const_char_type);
-  tree vt = void_type_node;
-  tree ult = long_unsigned_type_node;
-  tree u32t = uint32_type_node;
-  tree u64t = uint64_type_node;
-  tree llt = long_long_integer_type_node;
   tree ullt = long_long_unsigned_type_node;
-  
-#define TYPES build_function_type_list
-#define VTYPES build_varargs_function_type_list
-#define DEF_HELPER(V,D,N,T)				\
-  do							\
-    {							\
-      if (bpf_kernel >= (V))				\
-	def_builtin ("__builtin_bpf_helper_" #N,	\
-		     BPF_BUILTIN_HELPER_##D,		\
-		     T);				\
-    } while (0);
-#  include "bpf-helpers.def"
-#undef TYPES
-#undef VTYPES
-#undef DEF_HELPER
 
   /* Built-ins for BPF_LD_ABS and BPF_LD_IND instructions.  */
 
@@ -825,30 +837,17 @@ bpf_init_builtins (void)
    with bpf_init_builtins.  */
 
 static rtx
-bpf_expand_builtin (tree exp, rtx target,
+bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 		    rtx subtarget ATTRIBUTE_UNUSED,
 		    machine_mode mode ATTRIBUTE_UNUSED,
-		    int ignore)
+		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   int code = DECL_MD_FUNCTION_CODE (fndecl);
 
-  if (code >= 1 && code < BPF_BUILTIN_HELPER_MAX)
-    {
-      /* This is a builtin to call a kernel helper function.
-
-	 For these builtins, we just expand the function call normally
-	 with expand_call like we would do for a libcall. The function
-	 bpf_output_call below will then do The Right Thing (TM),
-	 recognizing the name of the called __builtin_helper_* symbol
-	 and emitting the corresponding CALL N instruction whenever
-	 necessary.  */
-
-      return expand_call (exp, target, ignore);
-    }
-  else if (code == BPF_BUILTIN_LOAD_BYTE
-	   || code == BPF_BUILTIN_LOAD_HALF
-	   || code == BPF_BUILTIN_LOAD_WORD)
+  if (code == BPF_BUILTIN_LOAD_BYTE
+      || code == BPF_BUILTIN_LOAD_HALF
+      || code == BPF_BUILTIN_LOAD_WORD)
     {
       /* Expand an indirect load from the sk_buff in the context.
 	 There is just one argument to the builtin, which is the

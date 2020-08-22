@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 template<class> constexpr bool is_int = false;
 template<> constexpr bool is_int<int> = true;
 

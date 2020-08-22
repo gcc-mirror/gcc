@@ -61,3 +61,4 @@ test03()
 }
 
 // { dg-prune-output "no type named .type" }
+// { dg-prune-output "type/value mismatch" }

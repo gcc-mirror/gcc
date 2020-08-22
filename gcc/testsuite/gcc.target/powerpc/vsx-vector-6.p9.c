@@ -1,6 +1,6 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9" } */
 
 /* Source code for the test in vsx-vector-6.h */
@@ -9,7 +9,7 @@
 /* { dg-final { scan-assembler-times {\mvmaxub\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmsumshs\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmsumuhs\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mvpermr?\M} 1 } } */
+/* { dg-final { scan-assembler-times {\m(?:v|xx)permr?\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxvabsdp\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxvadddp\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxvcmpeqdp\M} 9 } } */

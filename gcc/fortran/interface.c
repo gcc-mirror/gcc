@@ -1257,7 +1257,7 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 
   while (f1)
     {
-      if (f1->sym->attr.optional)
+      if (!f1->sym || f1->sym->attr.optional)
 	goto next;
 
       if (p1 && strcmp (f1->sym->name, p1) == 0)
@@ -1343,7 +1343,8 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     }
 
   /* Check INTENT.  */
-  if (s1->attr.intent != s2->attr.intent)
+  if (s1->attr.intent != s2->attr.intent && !s1->attr.artificial
+      && !s2->attr.artificial)
     {
       snprintf (errmsg, err_len, "INTENT mismatch in argument '%s'",
 		s1->name);
@@ -1464,6 +1465,19 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     {
       int i, compval;
       gfc_expr *shape1, *shape2;
+
+      /* Sometimes the ambiguity between deferred shape and assumed shape
+	 does not get resolved in module procedures, where the only explicit
+	 declaration of the dummy is in the interface.  */
+      if (s1->ns->proc_name && s1->ns->proc_name->attr.module_procedure
+	  && s1->as->type == AS_ASSUMED_SHAPE
+	  && s2->as->type == AS_DEFERRED)
+	{
+	  s2->as->type = AS_ASSUMED_SHAPE;
+	  for (i = 0; i < s2->as->rank; i++)
+	    if (s1->as->lower[i] != NULL)
+	      s2->as->lower[i] = gfc_copy_expr (s1->as->lower[i]);
+	}
 
       if (s1->as->type != s2->as->type)
 	{
@@ -1981,7 +1995,8 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 static void
 check_sym_interfaces (gfc_symbol *sym)
 {
-  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("generic interface ''")];
+  /* Provide sufficient space to hold "generic interface 'symbol.symbol'".  */
+  char interface_name[2*GFC_MAX_SYMBOL_LEN+2 + sizeof("generic interface ''")];
   gfc_interface *p;
 
   if (sym->ns != gfc_current_ns)
@@ -1989,6 +2004,8 @@ check_sym_interfaces (gfc_symbol *sym)
 
   if (sym->generic != NULL)
     {
+      size_t len = strlen (sym->name) + sizeof("generic interface ''");
+      gcc_assert (len < sizeof (interface_name));
       sprintf (interface_name, "generic interface '%s'", sym->name);
       if (check_interface0 (sym->generic, interface_name))
 	return;
@@ -2613,7 +2630,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       || (actual->rank == 0 && formal->attr.dimension
 	  && gfc_is_coindexed (actual)))
     {
-      if (where 
+      if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
 					   && !maybe_dummy_array_arg (actual))))
 	{
@@ -2704,7 +2721,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
-      if (where 
+      if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
 					   && !maybe_dummy_array_arg (actual))))
 	{
@@ -3961,7 +3978,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (!gfc_compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental,
 				  sym->attr.proc == PROC_ST_FUNCTION, where))
     return false;
- 
+
   if (!check_intents (dummy_args, *ap))
     return false;
 
@@ -5015,7 +5032,7 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
     gfc_error ("DTIO procedure %qs at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
 
-  if (!dtio_sub->resolved)
+  if (!dtio_sub->resolve_symbol_called)
     gfc_resolve_formal_arglist (dtio_sub);
 
   arg_num = 0;
@@ -5149,7 +5166,8 @@ gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_symtree *tb_io_st = NULL;
   bool t = false;
 
-  if (!derived || !derived->resolved || derived->attr.flavor != FL_DERIVED)
+  if (!derived || !derived->resolve_symbol_called
+      || derived->attr.flavor != FL_DERIVED)
     return NULL;
 
   /* Try to find a typebound DTIO binding.  */

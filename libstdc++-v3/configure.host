@@ -70,6 +70,9 @@
 #                          additional symbols to export from the shared
 #                          library, when symbol versioning is in use
 #
+#   tmake_file		   A list of machine-description-specific
+#			   makefile fragments.
+#
 #
 # If the defaults will not work for your platform, you need only change the
 # variables that won't work, i.e., you do not need to explicitly set a
@@ -91,6 +94,7 @@ try_cpu=generic
 abi_baseline_subdir_switch=--print-multi-directory
 abi_tweaks_dir="cpu/generic"
 error_constants_dir="os/generic"
+tmake_file=
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
@@ -206,17 +210,7 @@ case "${host_os}" in
     # Newer versions of AIX only support PowerPC architecture, so use
     # atomic instructions directly.
     os_include_dir="os/aix"
-    ;;
-  aix4.[3456789]*)
-    # We set os_include_dir to os/aix only on AIX 4.3 and newer, but
-    # os/aix/atomicity.h works on earlier versions of AIX 4.*, so we
-    # explicitly duplicate the directory for 4.[<3].
-    os_include_dir="os/aix"
-    atomicity_dir="os/aix"
-    ;;
-  aix4.*)
-    os_include_dir="os/generic"
-    atomicity_dir="os/aix"
+    tmake_file="os/aix/t-aix"
     ;;
   aix*)
     os_include_dir="os/generic"

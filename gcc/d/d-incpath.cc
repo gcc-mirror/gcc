@@ -75,7 +75,7 @@ add_globalpaths (Strings *paths)
       if (!global.path)
 	global.path = new Strings ();
 
-      for (size_t i = 0; i < paths->dim; i++)
+      for (size_t i = 0; i < paths->length; i++)
 	{
 	  const char *path = (*paths)[i];
 	  const char *target = lrealpath (path);
@@ -102,7 +102,7 @@ add_filepaths (Strings *paths)
       if (!global.filePath)
 	global.filePath = new Strings ();
 
-      for (size_t i = 0; i < paths->dim; i++)
+      for (size_t i = 0; i < paths->length; i++)
 	{
 	  const char *path = (*paths)[i];
 	  const char *target = lrealpath (path);
@@ -144,7 +144,7 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
 
 	  /* Ignore duplicate entries.  */
 	  bool found = false;
-	  for (size_t i = 0; i < global.params.imppath->dim; i++)
+	  for (size_t i = 0; i < global.params.imppath->length; i++)
 	    {
 	      if (strcmp (path, (*global.params.imppath)[i]) == 0)
 		{
@@ -173,7 +173,7 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
   /* Add import search paths.  */
   if (global.params.imppath)
     {
-      for (size_t i = 0; i < global.params.imppath->dim; i++)
+      for (size_t i = 0; i < global.params.imppath->length; i++)
 	{
 	  const char *path = (*global.params.imppath)[i];
 	  if (path)
@@ -184,7 +184,7 @@ add_import_paths (const char *iprefix, const char *imultilib, bool stdinc)
   /* Add string import search paths.  */
   if (global.params.fileImppath)
     {
-      for (size_t i = 0; i < global.params.fileImppath->dim; i++)
+      for (size_t i = 0; i < global.params.fileImppath->length; i++)
 	{
 	  const char *path = (*global.params.fileImppath)[i];
 	  if (path)

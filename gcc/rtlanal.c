@@ -2480,10 +2480,11 @@ remove_note (rtx_insn *insn, const_rtx note)
 }
 
 /* Remove REG_EQUAL and/or REG_EQUIV notes if INSN has such notes.
-   Return true if any note has been removed.  */
+   If NO_RESCAN is false and any notes were removed, call
+   df_notes_rescan.  Return true if any note has been removed.  */
 
 bool
-remove_reg_equal_equiv_notes (rtx_insn *insn)
+remove_reg_equal_equiv_notes (rtx_insn *insn, bool no_rescan)
 {
   rtx *loc;
   bool ret = false;
@@ -2500,6 +2501,8 @@ remove_reg_equal_equiv_notes (rtx_insn *insn)
       else
 	loc = &XEXP (*loc, 1);
     }
+  if (ret && !no_rescan)
+    df_notes_rescan (insn);
   return ret;
 }
 
@@ -6587,4 +6590,30 @@ tls_referenced_p (const_rtx x)
     if (GET_CODE (*iter) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*iter) != 0)
       return true;
   return false;
+}
+
+/* Process recursively X of INSN and add REG_INC notes if necessary.  */
+void
+add_auto_inc_notes (rtx_insn *insn, rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  const char *fmt;
+  int i, j;
+
+  if (code == MEM && auto_inc_p (XEXP (x, 0)))
+    {
+      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
+      return;
+    }
+
+  /* Scan all X sub-expressions.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	add_auto_inc_notes (insn, XEXP (x, i));
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
+    }
 }

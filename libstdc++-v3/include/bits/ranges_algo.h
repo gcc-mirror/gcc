@@ -1758,8 +1758,9 @@ namespace ranges
 	    // FIXME: Forwarding to std::sample here requires computing __lasti
 	    // which may take linear time.
 	    auto __lasti = ranges::next(__first, __last);
-	    return std::sample(std::move(__first), std::move(__lasti),
-			       std::move(__out), __n, std::forward<_Gen>(__g));
+	    return _GLIBCXX_STD_A::
+	      sample(std::move(__first), std::move(__lasti), std::move(__out),
+		     __n, std::forward<_Gen>(__g));
 	  }
 	else
 	  {
@@ -2018,8 +2019,8 @@ namespace ranges
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
-	std::sort(std::move(__first), __lasti,
-		  __detail::__make_comp_proj(__comp, __proj));
+	_GLIBCXX_STD_A::sort(std::move(__first), __lasti,
+			     __detail::__make_comp_proj(__comp, __proj));
 	return __lasti;
       }
 
@@ -2262,8 +2263,9 @@ namespace ranges
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __lasti = ranges::next(__first, __last);
-	std::nth_element(std::move(__first), std::move(__nth), __lasti,
-			 __detail::__make_comp_proj(__comp, __proj));
+	_GLIBCXX_STD_A::nth_element(std::move(__first), std::move(__nth),
+				    __lasti,
+				    __detail::__make_comp_proj(__comp, __proj));
 	return __lasti;
       }
 
@@ -3450,11 +3452,15 @@ namespace ranges
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	if constexpr (__detail::__is_normal_iterator<_Iter1>
-		      || __detail::__is_normal_iterator<_Iter2>)
-	  return (*this)(std::__niter_base(std::move(__first1)),
-			 std::__niter_base(std::move(__last1)),
-			 std::__niter_base(std::move(__first2)),
-			 std::__niter_base(std::move(__last2)),
+		      && same_as<_Iter1, _Sent1>)
+	  return (*this)(__first1.base(), __last1.base(),
+			 std::move(__first2), std::move(__last2),
+			 std::move(__comp),
+			 std::move(__proj1), std::move(__proj2));
+	else if constexpr (__detail::__is_normal_iterator<_Iter2>
+			   && same_as<_Iter2, _Sent2>)
+	  return (*this)(std::move(__first1), std::move(__last1),
+			 __first2.base(), __last2.base(),
 			 std::move(__comp),
 			 std::move(__proj1), std::move(__proj2));
 	else

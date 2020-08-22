@@ -43,6 +43,12 @@ package Ada.Wide_Characters.Handling is
    --  Returns True if the Wide_Character designated by Item is categorized as
    --  letter_uppercase, otherwise returns False.
 
+   function Is_Basic (Item : Wide_Character) return Boolean;
+   pragma Inline (Is_Basic);
+   --  Returns True if the Wide_Character designated by Item has no
+   --  Decomposition Mapping in the code charts of ISO/IEC 10646:2017,
+   --  otherwise returns False.
+
    function Is_Digit (Item : Wide_Character) return Boolean;
    pragma Inline (Is_Digit);
    --  Returns True if the Wide_Character designated by Item is categorized as
@@ -95,6 +101,12 @@ package Ada.Wide_Characters.Handling is
    --  Returns True if the Wide_Character designated by Item is categorized as
    --  separator_space, otherwise returns False.
 
+   function Is_NFKC (Item : Wide_Character) return Boolean;
+   pragma Inline (Is_NFKC);
+   --  Returns True if the Wide_Character designated by Item could be present
+   --  in a string normalized to Normalization Form KC (as defined by Clause
+   --  21 of ISO/IEC 10646:2017), otherwise returns False.
+
    function Is_Graphic (Item : Wide_Character) return Boolean;
    pragma Inline (Is_Graphic);
    --  Returns True if the Wide_Character designated by Item is categorized as
@@ -123,5 +135,17 @@ package Ada.Wide_Characters.Handling is
    --  Wide_Character conversion to each element of the Wide_String designated
    --  by Item. The result is the null Wide_String if the value of the formal
    --  parameter is the null Wide_String.
+
+   function To_Basic (Item : Wide_Character) return Wide_Character;
+   pragma Inline (To_Basic);
+   --  Returns the Wide_Character whose code point is given by the first value
+   --  of its Decomposition Mapping in the code charts of ISO/IEC 10646:2017 if
+   --  any, returns Item otherwise.
+
+   function To_Basic (Item : Wide_String) return Wide_String;
+   --  Returns the result of applying the To_Basic conversion to each
+   --  Wide_Character element of the Wide_String designated by Item. The result
+   --  is the null Wide_String if the value of the formal parameter is the null
+   --  Wide_String. The lower bound of the result Wide_String is 1.
 
 end Ada.Wide_Characters.Handling;

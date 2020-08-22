@@ -403,6 +403,7 @@ proc gdc-permute-options { options } {
 
 proc gdc-do-test { testcases } {
     global dg-do-what-default
+    global subdir
     global verbose
 
     # If a testcase doesn't have special options, use these.
@@ -430,27 +431,32 @@ proc gdc-do-test { testcases } {
 
     set saved-dg-do-what-default ${dg-do-what-default}
 
+    # Create gdc.test link so test names include that subdir.
+    set testdir [file dirname $subdir]
+    catch { file link $testdir . }
+
     # Main loop.
 
     # set verbose 1
     # set dg-final-code ""
     # Find all tests and pass to routine.
     foreach test $testcases {
-	regexp -- "(.*)/(.+)/(.+)\.(.+)$" $test match base dir name ext
+	regexp -- "(.*)/(.+)/(.+)\.(.+)$" $test match base type name ext
 
 	# Convert to DG test.
-	set imports [format "-I%s/%s" $base $dir]
+	set imports [format "-I%s/%s" $base $type]
 	set cleanup_extra_files ""
- 	set compilable_do_what "assemble"
-	set filename "[gdc-convert-test $base $dir/$name.$ext]"
+	set compilable_do_what "assemble"
+	# Include $testdir prefix so test names follow DejaGnu conventions.
+	set filename "$testdir/[gdc-convert-test $base $type/$name.$ext]"
 
-	if { $dir == "runnable" } {
+	if { $type == "runnable" } {
 	    append PERMUTE_ARGS " $SHARED_OPTION"
 	}
 
 	set options [gdc-permute-options [lsort -unique $PERMUTE_ARGS]]
 
-	switch $dir {
+	switch $type {
 	    runnable_cxx -
 	    runnable {
 		for { set i 0 } { $i<[llength $options] } { incr i } {

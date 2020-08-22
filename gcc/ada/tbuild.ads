@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,6 +139,10 @@ package Tbuild is
    --  No_Implicit_Loops and No_Implicit_Conditionals (the first applying in
    --  all cases, and the second only for while loops), and if one of these
    --  restrictions is being violated, an error message is posted on Node.
+
+   function Make_Increment
+     (Loc : Source_Ptr; Index : Entity_Id; Typ : Entity_Id) return Node_Id;
+   --  Return an assignment statement of the form "Index := Typ'Succ (Index);"
 
    function Make_Integer_Literal
      (Loc    : Source_Ptr;
@@ -330,6 +334,11 @@ package Tbuild is
    --  the required name. For instance, the special type used to record the
    --  fixed-point small is called typ_SMALL where typ is the name of the
    --  fixed-point type (as passed in Related_Id), and Suffix is "SMALL".
+
+   function Sel_Comp (Pre, Sel : String; Loc : Source_Ptr) return Node_Id;
+   function Sel_Comp (Pre : Node_Id; Sel : String) return Node_Id;
+   --  Create a selected component of the form Pre.Sel; that is, Pre is the
+   --  prefix, and Sel is the selector name.
 
    function OK_Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
    --  Like Convert_To, except that a conversion node is always generated, and

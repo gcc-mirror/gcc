@@ -199,6 +199,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512BF16_P(x)	TARGET_ISA2_AVX512BF16_P(x)
 #define TARGET_ENQCMD	TARGET_ISA2_ENQCMD
 #define TARGET_ENQCMD_P(x) TARGET_ISA2_ENQCMD_P(x)
+#define TARGET_SERIALIZE	TARGET_ISA2_SERIALIZE
+#define TARGET_SERIALIZE_P(x) TARGET_ISA2_SERIALIZE_P(x)
+#define TARGET_TSXLDTRK	TARGET_ISA2_TSXLDTRK
+#define TARGET_TSXLDTRK_P(x) TARGET_ISA2_TSXLDTRK_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -444,6 +448,8 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_CASCADELAKE (ix86_tune == PROCESSOR_CASCADELAKE)
 #define TARGET_TIGERLAKE (ix86_tune == PROCESSOR_TIGERLAKE)
 #define TARGET_COOPERLAKE (ix86_tune == PROCESSOR_COOPERLAKE)
+#define TARGET_SAPPHIRERAPIDS (ix86_tune == PROCESSOR_SAPPHIRERAPIDS)
+#define TARGET_ALDERLAKE (ix86_tune == PROCESSOR_ALDERLAKE)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
@@ -592,8 +598,7 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
-#define TARGET_USE_XCHG_FOR_ATOMIC_STORE \
-	ix86_tune_features[X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE]
+#define TARGET_AVOID_MFENCE ix86_tune_features[X86_TUNE_AVOID_MFENCE]
 #define TARGET_EMIT_VZEROUPPER \
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 #define TARGET_EXPAND_ABS \
@@ -2344,6 +2349,8 @@ enum processor_type
   PROCESSOR_CASCADELAKE,
   PROCESSOR_TIGERLAKE,
   PROCESSOR_COOPERLAKE,
+  PROCESSOR_SAPPHIRERAPIDS,
+  PROCESSOR_ALDERLAKE,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2440,11 +2447,15 @@ const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
-const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
+const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
 const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
 const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
+const wide_int_bitmask PTA_ENQCMD (0, HOST_WIDE_INT_1U << 15);
+const wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
+const wide_int_bitmask PTA_SERIALIZE (0, HOST_WIDE_INT_1U << 17);
+const wide_int_bitmask PTA_TSXLDTRK (0, HOST_WIDE_INT_1U << 18);
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -2471,11 +2482,16 @@ const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
   | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
 const wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
   | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
-  | PTA_RDPID | PTA_CLWB | PTA_AVX512VPOPCNTDQ;
+  | PTA_RDPID | PTA_AVX512VPOPCNTDQ;
 const wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT | PTA_PCONFIG
-  | PTA_WBNOINVD;
+  | PTA_WBNOINVD | PTA_CLWB;
 const wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
-  | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT;
+  | PTA_MOVDIR64B | PTA_CLWB | PTA_AVX512VP2INTERSECT;
+const wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
+  | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
+  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK;
+const wide_int_bitmask PTA_ALDERLAKE = PTA_SKYLAKE | PTA_CLDEMOTE | PTA_PTWRITE
+  | PTA_WAITPKG | PTA_SERIALIZE;
 const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
   | PTA_AVX512F | PTA_AVX512CD;
 const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -2494,6 +2510,8 @@ const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
 
 #include "insn-attr-common.h"
 
+#include "common/config/i386/i386-cpuinfo.h"
+
 class pta
 {
 public:
@@ -2501,10 +2519,13 @@ public:
   const enum processor_type processor;
   const enum attr_cpu schedule;
   const wide_int_bitmask flags;
+  const int model;
+  const enum feature_priority priority;
 };
 
 extern const pta processor_alias_table[];
 extern int const pta_size;
+extern unsigned int const num_arch_names;
 #endif
 
 #endif
@@ -2757,6 +2778,13 @@ enum function_type
   TYPE_EXCEPTION
 };
 
+enum queued_insn_type
+{
+  TYPE_NONE = 0,
+  TYPE_ENDBR,
+  TYPE_PATCHABLE_AREA
+};
+
 struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
   int varargs_gpr_size;
@@ -2847,8 +2875,11 @@ struct GTY(()) machine_function {
   /* Nonzero if the function places outgoing arguments on stack.  */
   BOOL_BITFIELD outgoing_args_on_stack : 1;
 
-  /* If true, ENDBR is queued at function entrance.  */
-  BOOL_BITFIELD endbr_queued_at_entrance : 1;
+  /* If true, ENDBR or patchable area is queued at function entrance.  */
+  ENUM_BITFIELD(queued_insn_type) insn_queued_at_entrance : 2;
+
+  /* If true, the function label has been emitted.  */
+  BOOL_BITFIELD function_label_emitted : 1;
 
   /* True if the function needs a stack frame.  */
   BOOL_BITFIELD stack_frame_required : 1;

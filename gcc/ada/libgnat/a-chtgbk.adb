@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,6 +228,8 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       N, M       : Count_Type;
 
    begin
+      TC_Check (HT.TC);
+
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
@@ -250,8 +252,6 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       --  hash table as this one, a key is mapped to exactly one node.)
 
       if Checked_Equivalent_Keys (HT, Key, Node) then
-         TE_Check (HT.TC);
-
          --  The new Key value is mapped to this same Node, so Node
          --  stays in the same bucket.
 
@@ -292,10 +292,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
          return;
       end if;
 
-      --  The node is a bucket different from the bucket implied by Key
-
-      TC_Check (HT.TC);
-
+      --  The node is in a bucket different from the bucket implied by Key.
       --  Do the assignment first, before moving the node, so that if Assign
       --  propagates an exception, then the hash table will not have been
       --  modified (except for any possible side-effect Assign had on Node).

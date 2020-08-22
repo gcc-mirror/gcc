@@ -10,4 +10,6 @@ foo (float32_t const * base, mve_pred16_t p)
   return vldrwq_z_f32 (base, p);
 }
 
-/* { dg-final { scan-assembler "vldrwt.f32"  }  } */
+/* { dg-final { scan-assembler-times "vpst" 1 }  } */
+/* { dg-final { scan-assembler-times "vldrwt.32" 1 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

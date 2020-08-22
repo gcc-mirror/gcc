@@ -19,3 +19,4 @@ foo1 (int32x4_t a, int32x4_t b)
 }
 
 /* { dg-final { scan-assembler "vbic"  }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

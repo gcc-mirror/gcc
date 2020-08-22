@@ -1224,8 +1224,8 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
      address with &OBJ.  */
-  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (op->op0, 0),
-					     &addr_offset);
+  addr_base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (op->op0, 0),
+					       &addr_offset, vn_valueize);
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
@@ -1282,8 +1282,9 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  poly_int64 addr_offset;
 
 	  addr = gimple_assign_rhs1 (def_stmt);
-	  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
-						     &addr_offset);
+	  addr_base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (addr, 0),
+						       &addr_offset,
+						       vn_valueize);
 	  /* If that didn't work because the address isn't invariant propagate
 	     the reference tree from the address operation in case the current
 	     dereference isn't offsetted.  */
@@ -2419,7 +2420,7 @@ public:
 };
 
 /* Global RPO state for access from hooks.  */
-static rpo_elim *rpo_avail;
+static eliminate_dom_walker *rpo_avail;
 basic_block vn_context_bb;
 
 /* Return true if BASE1 and BASE2 can be adjusted so they have the
@@ -3223,8 +3224,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       return NULL;
     }
 
-  /* 6) For memcpy copies translate the reference through them if
-     the copy kills ref.  */
+  /* 6) For memcpy copies translate the reference through them if the copy
+     kills ref.  But we cannot (easily) do this translation if the memcpy is
+     a storage order barrier, i.e. is equivalent to a VIEW_CONVERT_EXPR that
+     can modify the storage order of objects (see storage_order_barrier_p).  */
   else if (data->vn_walk_kind == VN_WALKREWRITE
 	   && is_gimple_reg_type (vr->type)
 	   /* ???  Handle BCOPY as well.  */
@@ -3274,6 +3277,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	}
       if (TREE_CODE (lhs) == ADDR_EXPR)
 	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (lhs)))
+	      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_TYPE (lhs))))
+	    return (void *)-1;
 	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (lhs, 0),
 						    &lhs_offset);
 	  if (!tem)
@@ -3302,6 +3308,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	rhs = vn_valueize (rhs);
       if (TREE_CODE (rhs) == ADDR_EXPR)
 	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (rhs)))
+	      && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (TREE_TYPE (rhs))))
+	    return (void *)-1;
 	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs, 0),
 						    &rhs_offset);
 	  if (!tem)
@@ -3592,6 +3601,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
   vr1->type = TREE_TYPE (op);
+  vr1->punned = 0;
   ao_ref op_ref;
   ao_ref_init (&op_ref, op);
   vr1->set = ao_ref_alias_set (&op_ref);
@@ -3651,6 +3661,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set,
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_refs (operands);
   vr1->type = type;
+  vr1->punned = 0;
   vr1->set = set;
   vr1->base_set = base_set;
   vr1->hashcode = vn_reference_compute_hash (vr1);
@@ -4471,6 +4482,8 @@ set_ssa_val_to (tree from, tree to)
   vn_ssa_aux_t from_info = VN_INFO (from);
   tree currval = from_info->valnum; // SSA_VAL (from)
   poly_int64 toff, coff;
+  bool curr_undefined = false;
+  bool curr_invariant = false;
 
   /* The only thing we allow as value numbers are ssa_names
      and invariants.  So assert that here.  We don't allow VN_TOP
@@ -4513,9 +4526,9 @@ set_ssa_val_to (tree from, tree to)
 	    }
 	  return false;
 	}
-      bool curr_invariant = is_gimple_min_invariant (currval);
-      bool curr_undefined = (TREE_CODE (currval) == SSA_NAME
-			     && ssa_undefined_value_p (currval, false));
+      curr_invariant = is_gimple_min_invariant (currval);
+      curr_undefined = (TREE_CODE (currval) == SSA_NAME
+			&& ssa_undefined_value_p (currval, false));
       if (currval != VN_TOP
 	  && !curr_invariant
 	  && !curr_undefined
@@ -4570,9 +4583,8 @@ set_and_exit:
       && !operand_equal_p (currval, to, 0)
       /* Different undefined SSA names are not actually different.  See
          PR82320 for a testcase were we'd otherwise not terminate iteration.  */
-      && !(TREE_CODE (currval) == SSA_NAME
+      && !(curr_undefined
 	   && TREE_CODE (to) == SSA_NAME
-	   && ssa_undefined_value_p (currval, false)
 	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
@@ -4584,6 +4596,22 @@ set_and_exit:
 	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
 	   && known_eq (coff, toff)))
     {
+      if (to != from
+	  && currval != VN_TOP
+	  && !curr_undefined
+	  /* We do not want to allow lattice transitions from one value
+	     to another since that may lead to not terminating iteration
+	     (see PR95049).  Since there's no convenient way to check
+	     for the allowed transition of VAL -> PHI (loop entry value,
+	     same on two PHIs, to same PHI result) we restrict the check
+	     to invariants.  */
+	  && curr_invariant
+	  && is_gimple_min_invariant (to))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " forced VARYING");
+	  to = from;
+	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " (changed)\n");
       from_info->valnum = to;
@@ -4866,6 +4894,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 	 them here.  */
       vr2->operands = vr1.operands.copy ();
       vr2->type = vr1.type;
+      vr2->punned = vr1.punned;
       vr2->set = vr1.set;
       vr2->base_set = vr1.base_set;
       vr2->hashcode = vr1.hashcode;
@@ -4892,10 +4921,11 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
   bool changed = false;
   tree last_vuse;
   tree result;
+  vn_reference_t res;
 
   last_vuse = gimple_vuse (stmt);
   result = vn_reference_lookup (op, gimple_vuse (stmt),
-				default_vn_walk_kind, NULL, true, &last_vuse);
+				default_vn_walk_kind, &res, true, &last_vuse);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -4917,6 +4947,13 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	  gimple_match_op res_op (gimple_match_cond::UNCOND,
 				  VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
 	  result = vn_nary_build_or_lookup (&res_op);
+	  if (result
+	      && TREE_CODE (result) == SSA_NAME
+	      && VN_INFO (result)->needs_insertion)
+	    /* Track whether this is the canonical expression for different
+	       typed loads.  We use that as a stopgap measure for code
+	       hoisting when dealing with floating point loads.  */
+	    res->punned = true;
 	}
 
       /* When building the conversion fails avoid inserting the reference
@@ -6559,7 +6596,11 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
 {
   eliminate_dom_walker walker (CDI_DOMINATORS, inserted_exprs);
 
+  eliminate_dom_walker *saved_rpo_avail = rpo_avail;
+  rpo_avail = &walker;
   walker.walk (cfun->cfg->x_entry_block_ptr);
+  rpo_avail = saved_rpo_avail;
+
   return walker.eliminate_cleanup ();
 }
 
@@ -7302,11 +7343,9 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
     e->flags &= ~EDGE_DFS_BACK;
 
   int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS);
+  auto_vec<std::pair<int, int> > toplevel_scc_extents;
   int n = rev_post_order_and_mark_dfs_back_seme
-    (fn, entry, exit_bbs, !loops_state_satisfies_p (LOOPS_NEED_FIXUP), rpo);
-  /* rev_post_order_and_mark_dfs_back_seme fills RPO in reverse order.  */
-  for (int i = 0; i < n / 2; ++i)
-    std::swap (rpo[i], rpo[n-i-1]);
+    (fn, entry, exit_bbs, true, rpo, !iterate ? &toplevel_scc_extents : NULL);
 
   if (!do_region)
     BITMAP_FREE (exit_bbs);
@@ -7384,12 +7423,20 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   vn_valueize = rpo_vn_valueize;
 
   /* Initialize the unwind state and edge/BB executable state.  */
-  bool need_max_rpo_iterate = false;
+  unsigned curr_scc = 0;
   for (int i = 0; i < n; ++i)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
       rpo_state[i].visited = 0;
       rpo_state[i].max_rpo = i;
+      if (!iterate && curr_scc < toplevel_scc_extents.length ())
+	{
+	  if (i >= toplevel_scc_extents[curr_scc].first
+	      && i <= toplevel_scc_extents[curr_scc].second)
+	    rpo_state[i].max_rpo = toplevel_scc_extents[curr_scc].second;
+	  if (i == toplevel_scc_extents[curr_scc].second)
+	    curr_scc++;
+	}
       bb->flags &= ~BB_EXECUTABLE;
       bool has_backedges = false;
       edge e;
@@ -7401,50 +7448,11 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  e->flags &= ~EDGE_EXECUTABLE;
 	  if (iterate || e == entry || (skip_entry_phis && bb == entry->dest))
 	    continue;
-	  if (bb_to_rpo[e->src->index] > i)
-	    {
-	      rpo_state[i].max_rpo = MAX (rpo_state[i].max_rpo,
-					  bb_to_rpo[e->src->index]);
-	      need_max_rpo_iterate = true;
-	    }
-	  else
-	    rpo_state[i].max_rpo
-	      = MAX (rpo_state[i].max_rpo,
-		     rpo_state[bb_to_rpo[e->src->index]].max_rpo);
 	}
       rpo_state[i].iterate = iterate && has_backedges;
     }
   entry->flags |= EDGE_EXECUTABLE;
   entry->dest->flags |= BB_EXECUTABLE;
-
-  /* When there are irreducible regions the simplistic max_rpo computation
-     above for the case of backedges doesn't work and we need to iterate
-     until there are no more changes.  */
-  unsigned nit = 0;
-  while (need_max_rpo_iterate)
-    {
-      nit++;
-      need_max_rpo_iterate = false;
-      for (int i = 0; i < n; ++i)
-	{
-	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
-	  edge e;
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    {
-	      if (e == entry || (skip_entry_phis && bb == entry->dest))
-		continue;
-	      int max_rpo = MAX (rpo_state[i].max_rpo,
-				 rpo_state[bb_to_rpo[e->src->index]].max_rpo);
-	      if (rpo_state[i].max_rpo != max_rpo)
-		{
-		  rpo_state[i].max_rpo = max_rpo;
-		  need_max_rpo_iterate = true;
-		}
-	    }
-	}
-    }
-  statistics_histogram_event (cfun, "RPO max_rpo iterations", nit);
 
   /* As heuristic to improve compile-time we handle only the N innermost
      loops and the outermost one optimistically.  */

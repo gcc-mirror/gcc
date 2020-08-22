@@ -60,7 +60,6 @@ static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
 void
 init_c_lex (void)
 {
-  struct cpp_callbacks *cb;
   struct c_fileinfo *toplevel;
 
   /* The get_fileinfo data structure must be initialized before
@@ -73,7 +72,7 @@ init_c_lex (void)
       toplevel->time = body_time;
     }
 
-  cb = cpp_get_callbacks (parse_in);
+  struct cpp_callbacks *cb = cpp_get_callbacks (parse_in);
 
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;

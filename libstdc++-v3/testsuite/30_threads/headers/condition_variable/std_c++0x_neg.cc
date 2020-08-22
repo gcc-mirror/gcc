@@ -1,5 +1,5 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++98" }
+// { dg-do compile { target c++98_only } }
 
 // Copyright (C) 2008-2020 Free Software Foundation, Inc.
 //
@@ -21,6 +21,3 @@
 #include <condition_variable>
 
 // { dg-error "ISO C.. 2011" "" { target *-*-* } 32 }
-
-
-

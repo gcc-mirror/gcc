@@ -639,19 +639,9 @@ decode_oacc_directive (void)
 
   gfc_matching_function = false;
 
-  if (gfc_pure (NULL))
-    {
-      gfc_error_now ("OpenACC directives at %C may not appear in PURE "
-		     "procedures");
-      gfc_error_recovery ();
-      return ST_NONE;
-    }
-
   if (gfc_current_state () == COMP_FUNCTION
       && gfc_current_block ()->result->ts.kind == -1)
     spec_only = true;
-
-  gfc_unset_implicit_pure (NULL);
 
   old_locus = gfc_current_locus;
 
@@ -660,6 +650,21 @@ decode_oacc_directive (void)
      first character.  */
 
   c = gfc_peek_ascii_char ();
+
+  switch (c)
+    {
+    case 'r':
+      matcha ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
+      break;
+    }
+
+  gfc_unset_implicit_pure (NULL);
+  if (gfc_pure (NULL))
+    {
+      gfc_error_now ("OpenACC directives other than ROUTINE may not appear in PURE "
+		     "procedures at %C");
+      goto error_handling;
+    }
 
   switch (c)
     {
@@ -704,9 +709,6 @@ decode_oacc_directive (void)
       break;
     case 'l':
       matcha ("loop", gfc_match_oacc_loop, ST_OACC_LOOP);
-      break;
-    case 'r':
-      match ("routine", gfc_match_oacc_routine, ST_OACC_ROUTINE);
       break;
     case 's':
       matcha ("serial loop", gfc_match_oacc_serial_loop, ST_OACC_SERIAL_LOOP);
@@ -849,7 +851,7 @@ decode_omp_directive (void)
   /* match is for directives that should be recognized only if
      -fopenmp, matchs for directives that should be recognized
      if either -fopenmp or -fopenmp-simd.
-     Handle only the directives allowed in PURE/ELEMENTAL procedures
+     Handle only the directives allowed in PURE procedures
      first (those also shall not turn off implicit pure).  */
   switch (c)
     {
@@ -868,7 +870,7 @@ decode_omp_directive (void)
   if (flag_openmp && gfc_pure (NULL))
     {
       gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-		     "at %C may not appear in PURE or ELEMENTAL procedures");
+		     "at %C may not appear in PURE procedures");
       gfc_error_recovery ();
       return ST_NONE;
     }
@@ -993,6 +995,9 @@ decode_omp_directive (void)
 	      ST_OMP_PARALLEL_WORKSHARE);
       matcho ("parallel", gfc_match_omp_parallel, ST_OMP_PARALLEL);
       break;
+    case 'r':
+      matcho ("requires", gfc_match_omp_requires, ST_OMP_REQUIRES);
+      break;
     case 's':
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
@@ -1078,12 +1083,43 @@ decode_omp_directive (void)
       if (!flag_openmp && gfc_pure (NULL))
 	{
 	  gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-			 "at %C may not appear in PURE or ELEMENTAL "
-			 "procedures");
+			 "at %C may not appear in PURE procedures");
 	  reject_statement ();
 	  gfc_error_recovery ();
 	  return ST_NONE;
 	}
+    }
+  switch (ret)
+    {
+    case ST_OMP_DECLARE_TARGET:
+    case ST_OMP_TARGET:
+    case ST_OMP_TARGET_DATA:
+    case ST_OMP_TARGET_ENTER_DATA:
+    case ST_OMP_TARGET_EXIT_DATA:
+    case ST_OMP_TARGET_TEAMS:
+    case ST_OMP_TARGET_TEAMS_DISTRIBUTE:
+    case ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case ST_OMP_TARGET_PARALLEL:
+    case ST_OMP_TARGET_PARALLEL_DO:
+    case ST_OMP_TARGET_PARALLEL_DO_SIMD:
+    case ST_OMP_TARGET_SIMD:
+    case ST_OMP_TARGET_UPDATE:
+      {
+	gfc_namespace *prog_unit = gfc_current_ns;
+	while (prog_unit->parent)
+	  {
+	    if (gfc_state_stack->previous
+		&& gfc_state_stack->previous->state == COMP_INTERFACE)
+	      break;
+	    prog_unit = prog_unit->parent;
+	  }
+	  prog_unit->omp_target_seen = true;
+	break;
+      }
+    default:
+      break;
     }
   return ret;
 
@@ -1603,7 +1639,8 @@ next_statement (void)
 /* OpenMP declaration statements.  */
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
-  case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION
+  case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
+  case ST_OMP_REQUIRES
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2405,6 +2442,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_PARALLEL_WORKSHARE:
       p = "!$OMP PARALLEL WORKSHARE";
+      break;
+    case ST_OMP_REQUIRES:
+      p = "!$OMP REQUIRES";
       break;
     case ST_OMP_SECTIONS:
       p = "!$OMP SECTIONS";
@@ -5383,7 +5423,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
       break;
     case EXEC_OMP_END_CRITICAL:
-      if (((cp->ext.omp_clauses == NULL) ^ (new_st.ext.omp_name == NULL))
+      if (((cp->ext.omp_clauses->critical_name == NULL)
+	    ^ (new_st.ext.omp_name == NULL))
 	  || (new_st.ext.omp_name != NULL
 	      && strcmp (cp->ext.omp_clauses->critical_name,
 			 new_st.ext.omp_name) != 0))
@@ -6446,6 +6487,11 @@ loop:
 
   gfc_resolve (gfc_current_ns);
 
+  /* Fix the implicit_pure attribute for those procedures who should
+     not have it.  */
+  while (gfc_fix_implicit_pure (gfc_current_ns))
+    ;
+
   /* Dump the parse tree if requested.  */
   if (flag_dump_fortran_original)
     gfc_dump_parse_tree (gfc_current_ns, stdout);
@@ -6491,11 +6537,36 @@ done:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
+  /* Go through all top-level namespaces and unset the implicit_pure
+     attribute for any procedures that call something not pure or
+     implicit_pure.  Because the a procedure marked as not implicit_pure
+     in one sweep may be called by another routine, we repeat this
+     process until there are no more changes.  */
+  bool changed;
+  do
+    {
+      changed = false;
+      for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+	   gfc_current_ns = gfc_current_ns->sibling)
+	{
+	  if (gfc_fix_implicit_pure (gfc_current_ns))
+	    changed = true;
+	}
+    }
+  while (changed);
 
-  /* Fixup for external procedures.  */
+  /* Fixup for external procedures and resolve 'omp requires'.  */
+  int omp_requires;
+  omp_requires = 0;
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
        gfc_current_ns = gfc_current_ns->sibling)
-    gfc_check_externals (gfc_current_ns);
+    {
+      omp_requires |= gfc_current_ns->omp_requires;
+      gfc_check_externals (gfc_current_ns);
+    }
+  for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+       gfc_current_ns = gfc_current_ns->sibling)
+    gfc_check_omp_requires (gfc_current_ns, omp_requires);
 
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;

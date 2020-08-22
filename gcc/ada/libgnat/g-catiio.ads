@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2019, AdaCore                     --
+--                     Copyright (C) 1999-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,8 @@
 --  This package augments standard Ada.Text_IO with facilities for input
 --  and output of time values in standardized format.
 
+with Ada.Calendar.Time_Zones; use Ada.Calendar;
+
 package GNAT.Calendar.Time_IO is
 
    Picture_Error : exception;
@@ -41,7 +43,7 @@ package GNAT.Calendar.Time_IO is
    --  This is a string to describe date and time output format. The string is
    --  a set of standard character and special tag that are replaced by the
    --  corresponding values. It follows the GNU Date specification. Here are
-   --  the recognized directives :
+   --  the recognized directives:
    --
    --          %    a literal %
    --          n    a newline
@@ -60,6 +62,8 @@ package GNAT.Calendar.Time_IO is
    --                (a nonstandard extension)
    --          %S   second (00..59)
    --          %T   time, 24-hour (hh:mm:ss)
+   --          %:::z  numeric time zone with : to necessary precision
+   --                 (e.g., -04, +05:30)
    --
    --          Date fields:
    --
@@ -96,8 +100,11 @@ package GNAT.Calendar.Time_IO is
    --          %e   microseconds (6 digits)
    --          %o   nanoseconds  (9 digits)
 
+   ISO_Time : constant Picture_String;
+   --  ISO 8601 standard date and time, with time zone.
+
    ISO_Date : constant Picture_String;
-   --  This format follow the ISO 8601 standard. The format is "YYYY-MM-DD",
+   --  This format follows the ISO 8601 standard. The format is "YYYY-MM-DD",
    --  four digits year, month and day number separated by minus.
 
    US_Date : constant Picture_String;
@@ -114,6 +121,13 @@ package GNAT.Calendar.Time_IO is
    --  Return Date, as interpreted in the current local time zone, as a string
    --  with format Picture. Raise Picture_Error if picture string is null or
    --  has an incorrect format.
+
+   function Image
+     (Date      : Ada.Calendar.Time;
+      Picture   : Picture_String;
+      Time_Zone : Time_Zones.Time_Offset) return String;
+   --  Same as previous Image, except it uses the specified time zone instead
+   --  of the local time zone.
 
    function Value (Date : String) return Ada.Calendar.Time;
    --  Parse the string Date, interpreted as a time representation in the
@@ -141,11 +155,15 @@ package GNAT.Calendar.Time_IO is
    --     mmm dd, yyyy         - month spelled out
    --     dd mmm yyyy          - month spelled out
    --
-   --  The following ISO-8861 format expressed as a regular expression is also
+   --  The following ISO-8601 format expressed as a regular expression is also
    --  supported:
    --
    --    (yyyymmdd | yyyy'-'mm'-'dd)'T'(hhmmss | hh':'mm':'ss)
-   --      [ ('Z' | ('.' | ',') s{s} | ('+'|'-')hh':'mm) ]
+   --      [ ('.' | ',') s{s} ]
+   --      [ ('Z' | ('+'|'-')hh':'mm) ]
+   --  Trailing characters (including spaces) are not allowed.
+   --  In the ISO case, the current time zone is not used; the time zone
+   --  is as specified in the string, defaulting to UTC.
    --
    --  Examples:
    --
@@ -161,6 +179,7 @@ package GNAT.Calendar.Time_IO is
    --  Put Date with format Picture. Raise Picture_Error if bad picture string
 
 private
+   ISO_Time      : constant Picture_String := "%Y-%m-%dT%H:%M:%S%:::z";
    ISO_Date      : constant Picture_String := "%Y-%m-%d";
    US_Date       : constant Picture_String := "%m/%d/%y";
    European_Date : constant Picture_String := "%d/%m/%y";

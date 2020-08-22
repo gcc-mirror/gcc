@@ -2644,6 +2644,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       }
     case STRING_CST:
     case INTEGER_CST:
+    case POLY_INT_CST:
     case COMPLEX_CST:
     case VECTOR_CST:
     case REAL_CST:
@@ -3570,6 +3571,16 @@ do_hoist_insertion (basic_block block)
 	    }
 	  continue;
 	}
+
+      /* If we end up with a punned expression representation and this
+	 happens to be a float typed one give up - we can't know for
+	 sure whether all paths perform the floating-point load we are
+	 about to insert and on some targets this can cause correctness
+	 issues.  See PR88240.  */
+      if (expr->kind == REFERENCE
+	  && PRE_EXPR_REFERENCE (expr)->punned
+	  && FLOAT_TYPE_P (get_expr_type (expr)))
+	continue;
 
       /* OK, we should hoist this value.  Perform the transformation.  */
       pre_stats.hoist_insert++;

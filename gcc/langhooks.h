@@ -252,6 +252,10 @@ struct lang_hooks_for_decls
      predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
   enum omp_clause_default_kind (*omp_predetermined_sharing) (tree);
 
+  /* Return mapping kind if OpenMP mapping attribute of DECL is
+     predetermined, OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED otherwise.  */
+  enum omp_clause_defaultmap_kind (*omp_predetermined_mapping) (tree);
+
   /* Return decl that should be reported for DEFAULT(NONE) failure
      diagnostics.  Usually the DECL passed in.  */
   tree (*omp_report_decl) (tree);
@@ -575,6 +579,9 @@ struct lang_hooks
      for GCC developers (to help debugging) rather than for end-users.  */
   const char *(*get_substring_location) (const substring_loc &,
 					 location_t *out_loc);
+
+  /* Invoked before the early_finish debug hook is invoked.  */
+  void (*finalize_early_debug) (void);
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

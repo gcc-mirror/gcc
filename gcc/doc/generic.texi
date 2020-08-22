@@ -886,7 +886,7 @@ This lookup table needs to be kept up to date with the tree structure
 hierarchy, or else checking and containment macros will fail
 inappropriately.
 
-For language specific @code{DECL} nodes, their is an @code{init_ts}
+For language specific @code{DECL} nodes, there is an @code{init_ts}
 function in an appropriate @file{.c} file, which initializes the lookup
 table.
 Code setting up the table for new @code{DECL} nodes should be added

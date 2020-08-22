@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,7 @@ with Sinput.L; use Sinput.L;
 with SCIL_LL;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
+with VAST;
 
 procedure Frontend is
 begin
@@ -381,6 +382,16 @@ begin
          Warn_On_Non_Local_Exception := True;
       end if;
 
+      --  Disable Initialize_Scalars for runtime files to avoid circular
+      --  dependencies.
+
+      if Initialize_Scalars
+        and then Fname.Is_Predefined_File_Name (File_Name (Main_Source_File))
+      then
+         Initialize_Scalars   := False;
+         Init_Or_Norm_Scalars := Normalize_Scalars;
+      end if;
+
       --  Now on to the semantics. Skip if in syntax only mode
 
       if Operating_Mode /= Check_Syntax then
@@ -412,14 +423,15 @@ begin
 
             --  Cleanup processing after completing main analysis
 
-            --  Comment needed for ASIS mode test and GNATprove mode test???
+            --  In GNATprove_Mode we do not perform most expansions but body
+            --  instantiation is needed.
 
             pragma Assert
               (Operating_Mode = Generate_Code
                 or else Operating_Mode = Check_Semantics);
 
             if Operating_Mode = Generate_Code
-              or else (ASIS_Mode or GNATprove_Mode)
+              or else GNATprove_Mode
             then
                Instantiate_Bodies;
             end if;
@@ -502,6 +514,12 @@ begin
    if Generate_SCIL then
       pragma Debug (Sem_SCIL.Check_SCIL_Nodes (Cunit (Main_Unit)));
       null;
+   end if;
+
+   --  Verify the validity of the tree
+
+   if Debug_Flag_Underscore_VV then
+      VAST.Check_Tree (Cunit (Main_Unit));
    end if;
 
    --  Dump the source now. Note that we do this as soon as the analysis

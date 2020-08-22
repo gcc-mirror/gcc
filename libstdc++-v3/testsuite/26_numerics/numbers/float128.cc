@@ -20,7 +20,7 @@
 
 #include <numbers>
 
-#if defined(_GLIBCXX_USE_FLOAT128)
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
 void
 test01()
 {

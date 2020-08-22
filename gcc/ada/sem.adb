@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -670,6 +670,9 @@ package body Sem is
          when N_Iterated_Component_Association =>
             Diagnose_Iterated_Component_Association (N);
 
+         when N_Iterated_Element_Association =>
+            null;   --  May require a more precise error if misplaced.
+
          --  For the remaining node types, we generate compiler abort, because
          --  these nodes are always analyzed within the Sem_Chn routines and
          --  there should never be a case of making a call to the main Analyze
@@ -796,7 +799,7 @@ package body Sem is
       --  and because the reference may become overloaded in the instance.
 
       elsif GNATprove_Mode
-        and then Nkind_In (N, N_Expanded_Name, N_Identifier)
+        and then Nkind (N) in N_Expanded_Name | N_Identifier
         and then not Is_Overloaded (N)
         and then not Inside_A_Generic
       then
@@ -819,7 +822,7 @@ package body Sem is
             Scope_Suppress.Suppress := Svs;
          end;
 
-      elsif Suppress = Overflow_Check then
+      else
          declare
             Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
@@ -1412,6 +1415,7 @@ package body Sem is
       S_GNAT_Mode         : constant Boolean          := GNAT_Mode;
       S_Global_Dis_Names  : constant Boolean          := Global_Discard_Names;
       S_In_Assertion_Expr : constant Nat              := In_Assertion_Expr;
+      S_In_Declare_Expr   : constant Nat              := In_Declare_Expr;
       S_In_Default_Expr   : constant Boolean          := In_Default_Expr;
       S_In_Spec_Expr      : constant Boolean          := In_Spec_Expression;
       S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
@@ -1523,6 +1527,7 @@ package body Sem is
       Full_Analysis      := True;
       Inside_A_Generic   := False;
       In_Assertion_Expr  := 0;
+      In_Declare_Expr    := 0;
       In_Default_Expr    := False;
       In_Spec_Expression := False;
       Set_Comes_From_Source_Default (False);
@@ -1607,6 +1612,7 @@ package body Sem is
       Global_Discard_Names := S_Global_Dis_Names;
       GNAT_Mode            := S_GNAT_Mode;
       In_Assertion_Expr    := S_In_Assertion_Expr;
+      In_Declare_Expr      := S_In_Declare_Expr;
       In_Default_Expr      := S_In_Default_Expr;
       In_Spec_Expression   := S_In_Spec_Expr;
       Inside_A_Generic     := S_Inside_A_Generic;
@@ -1673,6 +1679,7 @@ package body Sem is
       pragma Pack (Unit_Number_Set);
 
       Main_CU : constant Node_Id := Cunit (Main_Unit);
+      Spec_CU : Node_Id := Empty;
 
       Seen, Done : Unit_Number_Set := (others => False);
       --  Seen (X) is True after we have seen unit X in the walk. This is used
@@ -1732,7 +1739,7 @@ package body Sem is
       begin
          --  Problem does not arise with main subprograms
 
-         if not Nkind_In (MCU, N_Package_Body, N_Package_Declaration) then
+         if Nkind (MCU) not in N_Package_Body | N_Package_Declaration then
             return False;
          end if;
 
@@ -1841,13 +1848,18 @@ package body Sem is
 
                procedure Assert_Done (Withed_Unit : Node_Id) is
                begin
-                  if not Done (Get_Cunit_Unit_Number (Withed_Unit)) then
-                     if not Nkind_In
-                              (Unit (Withed_Unit),
-                                 N_Generic_Package_Declaration,
-                                 N_Package_Body,
-                                 N_Package_Renaming_Declaration,
-                                 N_Subprogram_Body)
+                  if Withed_Unit /= Main_CU
+                    and then not Done (Get_Cunit_Unit_Number (Withed_Unit))
+                  then
+                     --  N_Null_Statement will happen in case of a ghost unit
+                     --  which gets rewritten.
+
+                     if Nkind (Unit (Withed_Unit)) not in
+                          N_Generic_Package_Declaration  |
+                          N_Package_Body                 |
+                          N_Package_Renaming_Declaration |
+                          N_Subprogram_Body              |
+                          N_Null_Statement
                      then
                         Write_Unit_Name
                           (Unit_Name (Get_Cunit_Unit_Number (Withed_Unit)));
@@ -1947,7 +1959,7 @@ package body Sem is
             --  Process the unit if it is a spec or the main unit, if it
             --  has no previous spec or we have done all other units.
 
-            if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
+            if Nkind (Item) not in N_Package_Body | N_Subprogram_Body
               or else Acts_As_Spec (CU)
             then
                if CU = Main_CU and then not Do_Main then
@@ -2146,26 +2158,42 @@ package body Sem is
                   null;
 
                when others =>
-                  Par := Scope (Defining_Entity (Unit (CU)));
 
-                  if Is_Child_Unit (Defining_Entity (Unit (CU))) then
-                     while Present (Par)
-                       and then Par /= Standard_Standard
-                       and then Par /= Cunit_Entity (Main_Unit)
-                     loop
-                        Par := Scope (Par);
-                     end loop;
+                  --  Skip spec of main unit for now, we want to process it
+                  --  after all other specs.
+
+                  if Nkind (Unit (CU)) = N_Package_Declaration
+                    and then Library_Unit (CU) = Main_CU
+                    and then CU /= Main_CU
+                  then
+                     Spec_CU := CU;
+                  else
+                     Par := Scope (Defining_Entity (Unit (CU)));
+
+                     if Is_Child_Unit (Defining_Entity (Unit (CU))) then
+                        while Present (Par)
+                          and then Par /= Standard_Standard
+                          and then Par /= Cunit_Entity (Main_Unit)
+                        loop
+                           Par := Scope (Par);
+                        end loop;
+                     end if;
+
+                     if Par /= Cunit_Entity (Main_Unit) then
+                        Do_Unit_And_Dependents (CU, N);
+                     end if;
                   end if;
-
-                  if Par /= Cunit_Entity (Main_Unit) then
-                     Do_Unit_And_Dependents (CU, N);
-                  end if;
-
             end case;
          end;
 
          Next_Elmt (Cur);
       end loop;
+
+      --  Now process main package spec if skipped
+
+      if Present (Spec_CU) then
+         Do_Unit_And_Dependents (Spec_CU, Unit (Spec_CU));
+      end if;
 
       --  Now process package bodies on which main depends, followed by bodies
       --  of parents, if present, and finally main itself.
@@ -2358,7 +2386,7 @@ package body Sem is
             Action (Lib_Unit);
          end if;
 
-         Context_Item := Next (Context_Item);
+         Next (Context_Item);
       end loop;
    end Walk_Withs_Immediate;
 

@@ -1,3 +1,36 @@
+2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96202
+	* cet.m4 (GCC_CET_HOST_FLAGS): Don't enable CET without CET
+	support in stage1 nor for build support.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* cet.m4: Replace save_CFLAGS and save_LDFLAGS with
+	cet_save_CFLAGS and cet_save_LDFLAGS.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* ax_cxx_compile_stdcxx.m4: Import from autoconf archive with
+	an adjustment to try the default mode.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* cet.m4 (GCC_CET_FLAGS): Also check if -fcf-protection works
+	when defaulting to auto.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* cet.m4 (GCC_CET_FLAGS): Change default to auto.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/94998
+	* cet.m4 (GCC_CET_HOST_FLAGS): Enable CET in cross compiler if
+	possible.
+
 2020-04-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/94739

@@ -1072,7 +1072,7 @@ C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++).
 
 Wscalar-storage-order
-C ObjC C++ ObjC++ Init(1) Warning
+C ObjC C++ ObjC++ Var(warn_scalar_storage_order) Init(1) Warning
 Warn on suspicious constructs involving reverse scalar storage order.
 
 Wselector
@@ -1248,7 +1248,6 @@ C ObjC C++ LTO ObjC++ Var(warn_vla_limit) Warning Joined Host_Wide_Int ByteSize 
 -Wvla-larger-than=<number>	Warn on unbounded uses of variable-length
 arrays, and on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
-<number> bytes.
 
 Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
@@ -1876,10 +1875,6 @@ Enum(strong_eval_order) String(some) Value(1)
 EnumValue
 Enum(strong_eval_order) String(all) Value(2)
 
-ftabstop=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger
--ftabstop=<number>	Distance between tab stops for column reporting.
-
 ftemplate-backtrace-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(template_backtrace_limit) Init(10)
 Set the maximum number of template instantiation notes for a single warning or error.
@@ -2074,11 +2069,11 @@ C++ ObjC++
 Conform to the ISO 2017 C++ standard.
 
 std=c++2a
-C++ ObjC++
+C++ ObjC++ Alias(std=c++20) Undocumented
 Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
 
 std=c++20
-C++ ObjC++ Alias(std=c++2a)
+C++ ObjC++
 Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
 
 std=c11
@@ -2152,11 +2147,11 @@ C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu++2a
-C++ ObjC++
+C++ ObjC++ Alias(std=gnu++20)
 Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++20
-C++ ObjC++ Alias(std=gnu++2a)
+C++ ObjC++
 Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -367,6 +367,14 @@ package System.Tasking is
       X     : Ada.Exceptions.Exception_Occurrence);
    --  Used to represent protected procedures to be executed when task
    --  terminates.
+
+   type Initialization_Handler is access procedure;
+   pragma Favor_Top_Level (Initialization_Handler);
+   --  Use to represent procedures to be executed at task initialization.
+
+   Global_Initialization_Handler : Initialization_Handler := null;
+   pragma Atomic (Global_Initialization_Handler);
+   --  Global handler called when each task initializes.
 
    ------------------------------------
    -- Dispatching domain definitions --

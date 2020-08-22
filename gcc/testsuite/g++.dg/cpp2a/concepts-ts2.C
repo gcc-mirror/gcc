@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts-ts" }
 
 // Basic tests using function concepts.
@@ -173,7 +173,7 @@ template<typename T> void g(T x) { }
 void driver_3 () 
 {
   g(&ok<int>);
-  g(&err<int>); // { dg-error "no matches" }
+  g(&err<int>); // { dg-error "no match" }
 }
 
 

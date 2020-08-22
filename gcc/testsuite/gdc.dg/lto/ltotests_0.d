@@ -46,7 +46,7 @@ struct S61b
     {
         try
             other.a();
-        catch
+        catch (Throwable)
             other.b();
     }
 }

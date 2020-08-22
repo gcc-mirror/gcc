@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++17 -fno-inline" }
-// { dg-do link }
+// { dg-do link { target c++17 } }
 
 #include <iostream>
 

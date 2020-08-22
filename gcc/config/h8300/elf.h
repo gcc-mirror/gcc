@@ -39,6 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{mh:%{mn:-m h8300hnelf}} %{mh:%{!mn:-m h8300helf}} %{ms:%{mn:-m h8300snelf}} %{ms:%{!mn:-m h8300self}} %{msx:%{mn:-m h8300sxnelf;:-m h8300sxelf}}"
+#define LINK_SPEC "%{!ms:%{!msx:%{mn:-m h8300hnelf;:-m h8300helf}}} %{ms:%{mn:-m h8300snelf;:-m h8300self}} %{msx:%{mn:-m h8300sxnelf;:-m h8300sxelf}}"
 
 #endif /* h8300/elf.h */

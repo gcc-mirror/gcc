@@ -1,6 +1,153 @@
-2020-07-31  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
 
-	* Makefile.in: Use `+' on rule calling GCC
+	PR bootstrap/96202
+	* configure: Regenerated.
+
+2020-07-29  Tiziano Müller  <tiziano.mueller@chem.uzh.ch>
+
+	* init.c (builtin_array): Add xref comment.
+	* traditional.c (fun_like_macro): Add HAS_INCLUDE codes.
+
+2020-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96323
+	* lex.c (lex_raw_string): For c == '\n' don't continue after reporting
+	an prefix delimiter error.
+
+2020-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (cpp_read_main_file): Always use the last map for
+	the return value.
+
+2020-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	* line-map.c (linemap_add): Simplify column overflow calculation.
+	Add comment about range and column bit init.
+	(linemap_ordinary_map_lookup): Refactor for RAII
+	(linemap_macro_map_lookup): Likewise.
+
+2020-07-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/49973
+	PR other/86904
+	* include/cpplib.h (struct cpp_options):  Removed support for -ftabstop,
+	which is now handled by diagnostic_context.
+	(class cpp_display_width_computation): New class.
+	(cpp_byte_column_to_display_column): Add optional tabstop argument.
+	(cpp_display_width): Likewise.
+	(cpp_display_column_to_byte_column): Likewise.
+	* charset.c
+	(cpp_display_width_computation::cpp_display_width_computation): New
+	function.
+	(cpp_display_width_computation::advance_display_cols): Likewise.
+	(compute_next_display_width): Removed and implemented this
+	functionality in a new function...
+	(cpp_display_width_computation::process_next_codepoint): ...here.
+	(cpp_byte_column_to_display_column): Added tabstop argument.
+	Reimplemented in terms of class cpp_display_width_computation.
+	(cpp_display_column_to_byte_column): Likewise.
+	* init.c (cpp_create_reader): Remove handling of -ftabstop, which is now
+	handled by diagnostic_context.
+
+2020-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	* directives.c (do_linemarker): Optimize rewinding to line zero.
+	* files.c (_cpp_stack_file): Start on line zero when about to inject
+	headers.
+	(cpp_push_include, cpp_push_default_include): Use highest_line as
+	the location.
+	* include/cpplib.h (cpp_read_main_file): Add injecting parm.
+	* init.c (cpp_read_main_file): Likewise, inform _cpp_stack_file.
+	* internal.h (enum include_type): Add IT_MAIN_INJECT.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in (AR): Substitute @AR@.
+	* configure.ac (CHECK_PROG AR): New.
+	* configure: Regenerate.
+
+2020-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (typedef _cpp_file): Delete, unnecessary in C++.
+	(enum _cpp_find_file_kind): New.
+	(_cpp_find_file): Use it, not 3 bools.
+	* files.c (_cpp_find_file): Use _cpp_find_file_kind enum, not
+	bools.
+	(cpp_make_system_header): Break overly long line.
+	(_cpp_stack_include, _cpp_fake_include)
+	(_cpp_do_file_change, _cpp_compare_file_date, _cpp_has_header): Adjust.
+	* init.c (cpp_read_main): Adjust _cpp_find_file call.
+
+2020-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (cpp_get_otions, cpp_get_callbacks)
+	(cpp_get_deps): Mark as PURE.
+	* include/line-map.h (get_combined_adhoc_loc)
+	(get_location_from_adhoc_loc, get_pure_location): Reformat decls.
+	* internal.h (struct lexer_state): Clarify comment.
+	* system.h: Remove now-unneeded bool hackery.
+	* files.c (_cpp_find_file): Store LOC not highest_location.
+
+	PR preprocessor/95149
+	* lex.c (struct lit_accum): New.
+	(bufring_append): Replace by lit_accum::append.
+	(lex_raw_string): Reimplement, using fragments of the old version.
+	(lex_string): Adjust lex_raw_string call.
+
+	PR preprocessor/95182
+	* macro.c (collect_args): Preserve EOFif we fell out of the main
+	file.
+	(cpp_get_token_1): Reformat a couple of short lines.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-13  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (enum c_lang): Change CXX2A to CXX20.
+	* init.c, lex.c: Adjust.
+
+2020-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	EOF location is at end of file
+	PR preprocessor/95013
+	* lex.c (lex_raw_string): Process line notes before incrementing.
+	Correct incrementing condition.  Adjust for new
+	_cpp_get_fresh_line EOF behaviour.
+	(_cpp_get_fresh_line): Do not pop buffer at EOF, increment line
+	instead.
+	(_cpp_lex_direct): Adjust for new _cpp_get_fresh_line behaviour.
+	(cpp_directive_only_process): Assert we got a fresh line.
+	* traditional.c (_cpp_read_logical_line_trad): Adjust for new
+	_cpp_get_fresh_line behaviour.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (CET_HOST_FLAGS): New.
+	(COMPILER): Add $(CET_HOST_FLAGS).
+	* configure.ac: Add GCC_CET_HOST_FLAGS(CET_HOST_FLAGS) and
+	AC_SUBST(CET_HOST_FLAGS).  Clear CET_HOST_FLAGS if jit isn't
+	enabled.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2020-05-08  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement directives only processing, support raw literals.
+	* directives-only.c: Delete.
+	* Makefile.in (libcpp_a_OBJS, libcpp_a_SOURCES): Remove it.
+	* include/cpplib.h (enum CPP_DO_task): New enum.
+	(cpp_directive_only_preprocess): Declare.
+	* internal.h (_cpp_dir_only_callbacks): Delete.
+	(_cpp_preprocess_dir_only): Delete.
+	* lex.c (do_peek_backslask, do_peek_next, do_peek_prev): New.
+	(cpp_directives_only_process): New implementation.
 
 2020-02-14  Jakub Jelinek  <jakub@redhat.com>
 

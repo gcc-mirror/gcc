@@ -27,11 +27,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define DWARF_REGNUM_AARCH64_RA_STATE 34
 
-#define MD_POST_EXTRACT_ROOT_ADDR(addr)  __builtin_aarch64_xpaclri (addr)
-#define MD_POST_EXTRACT_FRAME_ADDR(context, fs, addr) \
-  aarch64_post_extract_frame_addr (context, fs, addr)
-#define MD_POST_FROB_EH_HANDLER_ADDR(current, target, addr) \
-  aarch64_post_frob_eh_handler_addr (current, target, addr)
+#define MD_DEMANGLE_RETURN_ADDR(context, fs, addr) \
+  aarch64_demangle_return_addr (context, fs, addr)
 #define MD_FROB_UPDATE_CONTEXT(context, fs) \
   aarch64_frob_update_context (context, fs)
 
@@ -52,14 +49,15 @@ aarch64_cie_signed_with_b_key (struct _Unwind_Context *context)
   return 0;
 }
 
-/* Do AArch64 private extraction on ADDR based on context info CONTEXT and
-   unwind frame info FS.  If ADDR is signed, we do address authentication on it
-   using CFA of current frame.  */
+/* Do AArch64 private extraction on ADDR_WORD based on context info CONTEXT and
+   unwind frame info FS.  If ADDR_WORD is signed, we do address authentication
+   on it using CFA of current frame.  */
 
 static inline void *
-aarch64_post_extract_frame_addr (struct _Unwind_Context *context,
-				 _Unwind_FrameState *fs, void *addr)
+aarch64_demangle_return_addr (struct _Unwind_Context *context,
+			      _Unwind_FrameState *fs, _Unwind_Word addr_word)
 {
+  void *addr = (void *)addr_word;
   if (context->flags & RA_SIGNED_BIT)
     {
       _Unwind_Word salt = (_Unwind_Word) context->cfa;
@@ -69,28 +67,6 @@ aarch64_post_extract_frame_addr (struct _Unwind_Context *context,
     }
   else
     return addr;
-}
-
-/* Do AArch64 private frob on exception handler's address HANDLER_ADDR before
-   installing it into current context CURRENT.  TARGET is currently not used.
-   We need to sign exception handler's address if CURRENT itself is signed.  */
-
-static inline void *
-aarch64_post_frob_eh_handler_addr (struct _Unwind_Context *current,
-				   struct _Unwind_Context *target
-				   ATTRIBUTE_UNUSED,
-				   void *handler_addr)
-{
-  if (current->flags & RA_SIGNED_BIT)
-    {
-      if (aarch64_cie_signed_with_b_key (current))
-	return __builtin_aarch64_pacib1716 (handler_addr,
-					    (_Unwind_Word) current->cfa);
-      return __builtin_aarch64_pacia1716 (handler_addr,
-					(_Unwind_Word) current->cfa);
-    }
-  else
-    return handler_addr;
 }
 
 /* Do AArch64 private initialization on CONTEXT based on frame info FS.  Mark

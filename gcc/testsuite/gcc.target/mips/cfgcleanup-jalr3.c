@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mabicalls -fpic -mno-mips16 -mno-micromips" } */
-/* { dg-additional-options "-fno-inline -fipa-ra -mcompact-branches=never" } */
+/* { dg-options "-mabicalls -fpic -mno-mips16 -mno-micromips -fno-inline -fipa-ra -mcompact-branches=never" } */
 /* { dg-skip-if "needs codesize optimization" { *-*-* } { "-O0" "-O1" "-O2" "-O3" } { "" } } */
 
 static int foo (void* p) { return 0; }

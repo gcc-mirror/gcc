@@ -14,66 +14,84 @@
 ------------------------------------------------------------------------------
 
 with Ada.Numerics.Big_Numbers.Big_Integers;
-with Ada.Streams;
 
---  Note that some Ada 2020 aspects are commented out since they are not
---  supported yet.
+with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
 
 package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
---  Nonblocking, Global => in out synchronized Big_Reals
 is
-   type Big_Real is private;
---   with Real_Literal => From_String,
---        Put_Image    => Put_Image;
+   type Big_Real is private with
+     Real_Literal => From_String,
+     Put_Image    => Put_Image;
 
-   function Is_Valid (Arg : Big_Real) return Boolean;
+   function Is_Valid (Arg : Big_Real) return Boolean
+   with
+     Convention => Intrinsic,
+     Global     => null;
 
-   function "/" (Num, Den : Big_Integers.Big_Integer) return Big_Real;
---   with Pre => (if Big_Integers."=" (Den, Big_Integers.To_Big_Integer (0))
---                then raise Constraint_Error);
+   subtype Valid_Big_Real is Big_Real
+     with Dynamic_Predicate => Is_Valid (Valid_Big_Real),
+          Predicate_Failure => raise Program_Error;
 
-   function Numerator (Arg : Big_Real) return Big_Integers.Big_Integer;
+   function "/"
+     (Num, Den : Big_Integers.Valid_Big_Integer) return Valid_Big_Real
+     with Global => null;
+--   with Pre => (Big_Integers."/=" (Den, Big_Integers.To_Big_Integer (0))
+--                or else Constraint_Error);
 
-   function Denominator (Arg : Big_Real) return Big_Integers.Big_Positive
-     with Post =>
-       (Arg = To_Real (0)) or else
-       (Big_Integers."="
-         (Big_Integers.Greatest_Common_Divisor
-           (Numerator (Arg), Denominator'Result),
-          Big_Integers.To_Big_Integer (1)));
+   function Numerator
+     (Arg : Valid_Big_Real) return Big_Integers.Valid_Big_Integer
+     with Global => null;
+
+   function Denominator (Arg : Valid_Big_Real) return Big_Integers.Big_Positive
+   with
+     Post   =>
+       (if Arg = To_Real (0)
+        then Big_Integers."=" (Denominator'Result,
+                               Big_Integers.To_Big_Integer (1))
+        else Big_Integers."="
+               (Big_Integers.Greatest_Common_Divisor
+                 (Numerator (Arg), Denominator'Result),
+                Big_Integers.To_Big_Integer (1))),
+     Global => null;
 
    function To_Big_Real
      (Arg : Big_Integers.Big_Integer)
-     return Big_Real is (Arg / Big_Integers.To_Big_Integer (1));
+     return Valid_Big_Real is (Arg / Big_Integers.To_Big_Integer (1))
+     with Global => null;
 
-   function To_Real (Arg : Integer) return Big_Real is
-     (Big_Integers.To_Big_Integer (Arg) / Big_Integers.To_Big_Integer (1));
+   function To_Real (Arg : Integer) return Valid_Big_Real is
+     (Big_Integers.To_Big_Integer (Arg) / Big_Integers.To_Big_Integer (1))
+     with Global => null;
 
-   function "=" (L, R : Big_Real) return Boolean;
+   function "=" (L, R : Valid_Big_Real) return Boolean with Global => null;
 
-   function "<" (L, R : Big_Real) return Boolean;
+   function "<" (L, R : Valid_Big_Real) return Boolean with Global => null;
 
-   function "<=" (L, R : Big_Real) return Boolean;
+   function "<=" (L, R : Valid_Big_Real) return Boolean with Global => null;
 
-   function ">" (L, R : Big_Real) return Boolean;
+   function ">" (L, R : Valid_Big_Real) return Boolean with Global => null;
 
-   function ">=" (L, R : Big_Real) return Boolean;
+   function ">=" (L, R : Valid_Big_Real) return Boolean with Global => null;
 
    function In_Range (Arg, Low, High : Big_Real) return Boolean is
-     (Low <= Arg and then Arg <= High);
+     (Low <= Arg and then Arg <= High)
+     with Global => null;
 
    generic
       type Num is digits <>;
    package Float_Conversions is
 
-      function To_Big_Real (Arg : Num) return Big_Real;
+      function To_Big_Real (Arg : Num) return Valid_Big_Real
+        with Global => null;
 
       function From_Big_Real (Arg : Big_Real) return Num
-        with Pre => In_Range (Arg,
-                              Low  => To_Big_Real (Num'First),
-                              High => To_Big_Real (Num'Last))
-                    or else (raise Constraint_Error);
+      with
+        Pre    => In_Range (Arg,
+                            Low  => To_Big_Real (Num'First),
+                            High => To_Big_Real (Num'Last))
+                   or else (raise Constraint_Error),
+        Global => null;
 
    end Float_Conversions;
 
@@ -81,53 +99,69 @@ is
       type Num is delta <>;
    package Fixed_Conversions is
 
-      function To_Big_Real (Arg : Num) return Big_Real;
+      function To_Big_Real (Arg : Num) return Valid_Big_Real
+        with Global => null;
 
       function From_Big_Real (Arg : Big_Real) return Num
-        with Pre => In_Range (Arg,
-                              Low  => To_Big_Real (Num'First),
-                              High => To_Big_Real (Num'Last))
-                    or else (raise Constraint_Error);
+      with
+        Pre    => In_Range (Arg,
+                            Low  => To_Big_Real (Num'First),
+                            High => To_Big_Real (Num'Last))
+                   or else (raise Constraint_Error),
+        Global => null;
 
    end Fixed_Conversions;
 
-   function To_String (Arg  : Big_Real;
+   function To_String (Arg  : Valid_Big_Real;
                        Fore : Field := 2;
                        Aft  : Field := 3;
                        Exp  : Field := 0) return String
-      with Post => To_String'Result'First = 1;
+   with
+     Post   => To_String'Result'First = 1,
+     Global => null;
 
-   function From_String (Arg : String) return Big_Real;
+   function From_String (Arg : String) return Big_Real
+     with Global => null;
 
    function To_Quotient_String (Arg : Big_Real) return String is
      (Big_Integers.To_String (Numerator (Arg)) & " / "
-      & Big_Integers.To_String (Denominator (Arg)));
+      & Big_Integers.To_String (Denominator (Arg)))
+     with Global => null;
 
-   function From_Quotient_String (Arg : String) return Big_Real;
+   function From_Quotient_String (Arg : String) return Valid_Big_Real
+     with Global => null;
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Real);
+   procedure Put_Image (S : in out Sink'Class; V : Big_Real);
 
-   function "+" (L : Big_Real) return Big_Real;
+   function "+" (L : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "-" (L : Big_Real) return Big_Real;
+   function "-" (L : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "abs" (L : Big_Real) return Big_Real;
+   function "abs" (L : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "+" (L, R : Big_Real) return Big_Real;
+   function "+" (L, R : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "-" (L, R : Big_Real) return Big_Real;
+   function "-" (L, R : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "*" (L, R : Big_Real) return Big_Real;
+   function "*" (L, R : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "/" (L, R : Big_Real) return Big_Real;
+   function "/" (L, R : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function "**" (L : Big_Real; R : Integer) return Big_Real;
+   function "**" (L : Valid_Big_Real; R : Integer) return Valid_Big_Real
+     with Global => null;
 
-   function Min (L, R : Big_Real) return Big_Real;
+   function Min (L, R : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
-   function Max (L, R : Big_Real) return Big_Real;
+   function Max (L, R : Valid_Big_Real) return Valid_Big_Real
+     with Global => null;
 
 private
 

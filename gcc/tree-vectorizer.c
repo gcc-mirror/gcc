@@ -99,7 +99,7 @@ auto_purge_vect_location::~auto_purge_vect_location ()
 
 void
 dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
-		stmt_vec_info stmt_info, int misalign, unsigned cost,
+		stmt_vec_info stmt_info, tree, int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
   fprintf (f, "%p ", data);
@@ -461,6 +461,7 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
 		    vec_info_shared *shared_)
   : kind (kind_in),
     shared (shared_),
+    stmt_vec_info_ro (false),
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
@@ -619,10 +620,49 @@ vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
 {
   gimple *old_stmt = stmt_info->stmt;
   gcc_assert (!stmt_info->pattern_stmt_p && old_stmt == gsi_stmt (*gsi));
-  set_vinfo_for_stmt (old_stmt, NULL);
-  set_vinfo_for_stmt (new_stmt, stmt_info);
+  gimple_set_uid (new_stmt, gimple_uid (old_stmt));
   stmt_info->stmt = new_stmt;
   gsi_replace (gsi, new_stmt, true);
+}
+
+/* Insert stmts in SEQ on the VEC_INFO region entry.  If CONTEXT is
+   not NULL it specifies whether to use the sub-region entry
+   determined by it, currently used for loop vectorization to insert
+   on the inner loop entry vs. the outer loop entry.  */
+
+void
+vec_info::insert_seq_on_entry (stmt_vec_info context, gimple_seq seq)
+{
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (this))
+    {
+      class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      basic_block new_bb;
+      edge pe;
+
+      if (context && nested_in_vect_loop_p (loop, context))
+	loop = loop->inner;
+
+      pe = loop_preheader_edge (loop);
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+      gcc_assert (!new_bb);
+    }
+  else
+    {
+      bb_vec_info bb_vinfo = as_a <bb_vec_info> (this);
+      gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
+      gsi_insert_seq_before (&gsi_region_begin, seq, GSI_SAME_STMT);
+    }
+}
+
+/* Like insert_seq_on_entry but just inserts the single stmt NEW_STMT.  */
+
+void
+vec_info::insert_on_entry (stmt_vec_info context, gimple *new_stmt)
+{
+  gimple_seq seq = NULL;
+  gimple_stmt_iterator gsi = gsi_start (seq);
+  gsi_insert_before_without_update (&gsi, new_stmt, GSI_SAME_STMT);
+  insert_seq_on_entry (context, seq);
 }
 
 /* Create and initialize a new stmt_vec_info struct for STMT.  */
@@ -641,6 +681,7 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
+  STMT_VINFO_VEC_STMTS (res) = vNULL;
 
   if (gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))
@@ -665,6 +706,7 @@ vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
   unsigned int uid = gimple_uid (stmt);
   if (uid == 0)
     {
+      gcc_assert (!stmt_vec_info_ro);
       gcc_checking_assert (info);
       uid = stmt_vec_infos.length () + 1;
       gimple_set_uid (stmt, uid);
@@ -705,7 +747,69 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 
   STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
+  STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
+}
+
+/* Returns true if S1 dominates S2.  */
+
+bool
+vect_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
+{
+  basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
+
+  /* If bb1 is NULL, it should be a GIMPLE_NOP def stmt of an (D)
+     SSA_NAME.  Assume it lives at the beginning of function and
+     thus dominates everything.  */
+  if (!bb1 || s1 == s2)
+    return true;
+
+  /* If bb2 is NULL, it doesn't dominate any stmt with a bb.  */
+  if (!bb2)
+    return false;
+
+  if (bb1 != bb2)
+    return dominated_by_p (CDI_DOMINATORS, bb2, bb1);
+
+  /* PHIs in the same basic block are assumed to be
+     executed all in parallel, if only one stmt is a PHI,
+     it dominates the other stmt in the same basic block.  */
+  if (gimple_code (s1) == GIMPLE_PHI)
+    return true;
+
+  if (gimple_code (s2) == GIMPLE_PHI)
+    return false;
+
+  /* Inserted vectorized stmts all have UID 0 while the original stmts
+     in the IL have UID increasing within a BB.  Walk from both sides
+     until we find the other stmt or a stmt with UID != 0.  */
+  gimple_stmt_iterator gsi1 = gsi_for_stmt (s1);
+  while (gimple_uid (gsi_stmt (gsi1)) == 0)
+    {
+      gsi_next (&gsi1);
+      if (gsi_end_p (gsi1))
+	return false;
+      if (gsi_stmt (gsi1) == s2)
+	return true;
+    }
+  if (gimple_uid (gsi_stmt (gsi1)) == -1u)
+    return false;
+
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (s2);
+  while (gimple_uid (gsi_stmt (gsi2)) == 0)
+    {
+      gsi_prev (&gsi2);
+      if (gsi_end_p (gsi2))
+	return false;
+      if (gsi_stmt (gsi2) == s1)
+	return true;
+    }
+  if (gimple_uid (gsi_stmt (gsi2)) == -1u)
+    return false;
+
+  if (gimple_uid (gsi_stmt (gsi1)) <= gimple_uid (gsi_stmt (gsi2)))
+    return true;
+  return false;
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -962,7 +1066,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
       return ret;
     }
 
-  if (!dbg_cnt (vect_loop))
+  /* Only count the original scalar loops.  */
+  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo) && !dbg_cnt (vect_loop))
     {
       /* Free existing information if loop is analyzed with some
 	 assumptions.  */
@@ -1179,7 +1284,11 @@ vectorize_loops (void)
 
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
   if (cfun->has_simduid_loops)
-    adjust_simduid_builtins (simduid_to_vf_htab);
+    {
+      adjust_simduid_builtins (simduid_to_vf_htab);
+      /* Avoid stale SCEV cache entries for the SIMD_LANE defs.  */
+      scev_reset ();
+    }
 
   /* Shrink any "omp array simd" temporary arrays to the
      actual vectorization factors.  */

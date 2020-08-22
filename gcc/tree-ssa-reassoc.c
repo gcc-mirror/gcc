@@ -2416,6 +2416,32 @@ struct range_entry
   unsigned int idx, next;
 };
 
+void dump_range_entry (FILE *file, struct range_entry *r);
+void debug_range_entry (struct range_entry *r);
+
+/* Dump the range entry R to FILE, skipping its expression if SKIP_EXP.  */
+
+void
+dump_range_entry (FILE *file, struct range_entry *r, bool skip_exp)
+{
+  if (!skip_exp)
+    print_generic_expr (file, r->exp);
+  fprintf (file, " %c[", r->in_p ? '+' : '-');
+  print_generic_expr (file, r->low);
+  fputs (", ", file);
+  print_generic_expr (file, r->high);
+  fputc (']', file);
+}
+
+/* Dump the range entry R to STDERR.  */
+
+DEBUG_FUNCTION void
+debug_range_entry (struct range_entry *r)
+{
+  dump_range_entry (stderr, r, false);
+  fputc ('\n', stderr);
+}
+
 /* This is similar to make_range in fold-const.c, but on top of
    GIMPLE instead of trees.  If EXP is non-NULL, it should be
    an SSA_NAME and STMT argument is ignored, otherwise STMT
@@ -2730,12 +2756,7 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
     {
       struct range_entry *r;
       fprintf (dump_file, "Optimizing range tests ");
-      print_generic_expr (dump_file, range->exp);
-      fprintf (dump_file, " %c[", range->in_p ? '+' : '-');
-      print_generic_expr (dump_file, range->low);
-      fprintf (dump_file, ", ");
-      print_generic_expr (dump_file, range->high);
-      fprintf (dump_file, "]");
+      dump_range_entry (dump_file, range, false);
       for (i = 0; i < count; i++)
 	{
 	  if (otherrange)
@@ -2747,15 +2768,13 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	      && TREE_CODE (r->exp) == SSA_NAME)
 	    {
 	      fprintf (dump_file, " and ");
-	      print_generic_expr (dump_file, r->exp);
+	      dump_range_entry (dump_file, r, false);
 	    }
 	  else
-	    fprintf (dump_file, " and");
-	  fprintf (dump_file, " %c[", r->in_p ? '+' : '-');
-	  print_generic_expr (dump_file, r->low);
-	  fprintf (dump_file, ", ");
-	  print_generic_expr (dump_file, r->high);
-	  fprintf (dump_file, "]");
+	    {
+	      fprintf (dump_file, " and");
+	      dump_range_entry (dump_file, r, true);
+	    }
 	}
       fprintf (dump_file, "\n into ");
       print_generic_expr (dump_file, tem);
@@ -3121,7 +3140,7 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
   int prec = GET_MODE_BITSIZE (word_mode);
   auto_vec<struct range_entry *, 64> candidates;
 
-  for (i = first; i < length - 2; i++)
+  for (i = first; i < length - 1; i++)
     {
       tree lowi, highi, lowj, highj, type;
 
@@ -3184,8 +3203,32 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	  candidates.safe_push (&ranges[j]);
 	}
 
-      /* If we need otherwise 3 or more comparisons, use a bit test.  */
-      if (candidates.length () >= 2)
+      /* If every possible relative value of the expression is a valid shift
+	 amount, then we can merge the entry test in the bit test.  In this
+	 case, if we would need otherwise 2 or more comparisons, then use
+	 the bit test; in the other cases, the threshold is 3 comparisons.  */
+      wide_int min, max;
+      bool entry_test_needed;
+      if (TREE_CODE (exp) == SSA_NAME
+	  && get_range_info (exp, &min, &max) == VR_RANGE
+	  && wi::leu_p (max - min, prec - 1))
+	{
+	  wide_int ilowi = wi::to_wide (lowi);
+	  if (wi::lt_p (min, ilowi, TYPE_SIGN (TREE_TYPE (lowi))))
+	    {
+	      lowi = wide_int_to_tree (TREE_TYPE (lowi), min);
+	      mask = wi::lshift (mask, ilowi - min);
+	    }
+	  else if (wi::gt_p (min, ilowi, TYPE_SIGN (TREE_TYPE (lowi))))
+	    {
+	      lowi = wide_int_to_tree (TREE_TYPE (lowi), min);
+	      mask = wi::lrshift (mask, min - ilowi);
+	    }
+	  entry_test_needed = false;
+	}
+      else
+	entry_test_needed = true;
+      if (candidates.length () >= (entry_test_needed ? 2 : 1))
 	{
 	  tree high = wide_int_to_tree (TREE_TYPE (lowi),
 					wi::to_widest (lowi)
@@ -3208,8 +3251,9 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	      HOST_WIDE_INT m = tree_to_uhwi (lowi);
 	      rtx reg = gen_raw_REG (word_mode, 10000);
 	      bool speed_p = optimize_bb_for_speed_p (gimple_bb (stmt));
-	      cost_diff = set_rtx_cost (gen_rtx_PLUS (word_mode, reg,
-						      GEN_INT (-m)), speed_p);
+	      cost_diff = set_src_cost (gen_rtx_PLUS (word_mode, reg,
+						      GEN_INT (-m)),
+					word_mode, speed_p);
 	      rtx r = immed_wide_int_const (mask, word_mode);
 	      cost_diff += set_src_cost (gen_rtx_AND (word_mode, reg, r),
 					 word_mode, speed_p);
@@ -3223,10 +3267,16 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 		}
 	    }
 
-	  tree tem = build_range_check (loc, optype, unshare_expr (exp),
-					false, lowi, high);
-	  if (tem == NULL_TREE || is_gimple_val (tem))
-	    continue;
+	  tree tem;
+	  if (entry_test_needed)
+	    {
+	      tem = build_range_check (loc, optype, unshare_expr (exp),
+				       false, lowi, high);
+	      if (tem == NULL_TREE || is_gimple_val (tem))
+		continue;
+	    }
+	  else
+	    tem = NULL_TREE;
 	  tree etype = unsigned_type_for (TREE_TYPE (exp));
 	  exp = fold_build2_loc (loc, MINUS_EXPR, etype,
 				 fold_convert_loc (loc, etype, exp),
@@ -3247,27 +3297,34 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	     split when it is running.  So, temporarily emit a code
 	     with BIT_IOR_EXPR instead of &&, and fix it up in
 	     branch_fixup.  */
-	  gimple_seq seq;
-	  tem = force_gimple_operand (tem, &seq, true, NULL_TREE);
-	  gcc_assert (TREE_CODE (tem) == SSA_NAME);
-	  gimple_set_visited (SSA_NAME_DEF_STMT (tem), true);
+	  gimple_seq seq = NULL;
+	  if (tem)
+	    {
+	      tem = force_gimple_operand (tem, &seq, true, NULL_TREE);
+	      gcc_assert (TREE_CODE (tem) == SSA_NAME);
+	      gimple_set_visited (SSA_NAME_DEF_STMT (tem), true);
+	    }
 	  gimple_seq seq2;
 	  exp = force_gimple_operand (exp, &seq2, true, NULL_TREE);
 	  gimple_seq_add_seq_without_update (&seq, seq2);
 	  gcc_assert (TREE_CODE (exp) == SSA_NAME);
 	  gimple_set_visited (SSA_NAME_DEF_STMT (exp), true);
-	  gimple *g = gimple_build_assign (make_ssa_name (optype),
-					   BIT_IOR_EXPR, tem, exp);
-	  gimple_set_location (g, loc);
-	  gimple_seq_add_stmt_without_update (&seq, g);
-	  exp = gimple_assign_lhs (g);
+	  if (tem)
+	    {
+	      gimple *g = gimple_build_assign (make_ssa_name (optype),
+					       BIT_IOR_EXPR, tem, exp);
+	      gimple_set_location (g, loc);
+	      gimple_seq_add_stmt_without_update (&seq, g);
+	      exp = gimple_assign_lhs (g);
+	    }
 	  tree val = build_zero_cst (optype);
 	  if (update_range_test (&ranges[i], NULL, candidates.address (),
 				 candidates.length (), opcode, ops, exp,
 				 seq, false, val, val, strict_overflow_p))
 	    {
 	      any_changes = true;
-	      reassoc_branch_fixups.safe_push (tem);
+	      if (tem)
+		reassoc_branch_fixups.safe_push (tem);
 	    }
 	  else
 	    gimple_seq_discard (seq);
@@ -3830,7 +3887,8 @@ optimize_range_tests (enum tree_code opcode,
    to type of comparison.  */
 
 static tree_code
-ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
+ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type,
+		  tree *lhs, tree *rhs, gassign **vcond)
 {
   if (TREE_CODE (var) != SSA_NAME)
     return ERROR_MARK;
@@ -3838,6 +3896,8 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
   gassign *stmt = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (var));
   if (stmt == NULL)
     return ERROR_MARK;
+  if (vcond)
+    *vcond = stmt;
 
   /* ??? If we start creating more COND_EXPR, we could perform
      this same optimization with them.	For now, simplify.  */
@@ -3846,8 +3906,19 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
 
   tree cond = gimple_assign_rhs1 (stmt);
   tree_code cmp = TREE_CODE (cond);
-  if (TREE_CODE_CLASS (cmp) != tcc_comparison)
+  if (cmp != SSA_NAME)
     return ERROR_MARK;
+
+  gassign *assign = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (cond));
+  if (stmt == NULL
+      || TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) != tcc_comparison)
+    return ERROR_MARK;
+
+  cmp = gimple_assign_rhs_code (assign);
+  if (lhs)
+    *lhs = gimple_assign_rhs1 (assign);
+  if (rhs)
+    *rhs = gimple_assign_rhs2 (assign);
 
   /* ??? For now, allow only canonical true and false result vectors.
      We could expand this to other constants should the need arise,
@@ -3869,7 +3940,7 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
 
   /* Success!  */
   if (rets)
-    *rets = stmt;
+    *rets = assign;
   if (reti)
     *reti = inv;
   if (type)
@@ -3893,10 +3964,11 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
     {
       tree elt0 = (*ops)[i]->op;
 
-      gassign *stmt0;
+      gassign *stmt0, *vcond0;
       bool invert;
-      tree type;
-      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert, &type);
+      tree type, lhs0, rhs0;
+      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert, &type, &lhs0,
+					 &rhs0, &vcond0);
       if (cmp0 == ERROR_MARK)
 	continue;
 
@@ -3904,26 +3976,20 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	{
 	  tree &elt1 = (*ops)[j]->op;
 
-	  gassign *stmt1;
-	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL, NULL);
+	  gassign *stmt1, *vcond1;
+	  tree lhs1, rhs1;
+	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL, NULL, &lhs1,
+					     &rhs1, &vcond1);
 	  if (cmp1 == ERROR_MARK)
 	    continue;
 
-	  tree cond0 = gimple_assign_rhs1 (stmt0);
-	  tree x0 = TREE_OPERAND (cond0, 0);
-	  tree y0 = TREE_OPERAND (cond0, 1);
-
-	  tree cond1 = gimple_assign_rhs1 (stmt1);
-	  tree x1 = TREE_OPERAND (cond1, 0);
-	  tree y1 = TREE_OPERAND (cond1, 1);
-
 	  tree comb;
 	  if (opcode == BIT_AND_EXPR)
-	    comb = maybe_fold_and_comparisons (type, cmp0, x0, y0, cmp1, x1,
-					       y1);
+	    comb = maybe_fold_and_comparisons (type, cmp0, lhs0, rhs0,
+					       cmp1, lhs1, rhs1);
 	  else if (opcode == BIT_IOR_EXPR)
-	    comb = maybe_fold_or_comparisons (type, cmp0, x0, y0, cmp1, x1,
-					      y1);
+	    comb = maybe_fold_or_comparisons (type, cmp0, lhs0, rhs0,
+					      cmp1, lhs1, rhs1);
 	  else
 	    gcc_unreachable ();
 	  if (comb == NULL)
@@ -3933,19 +3999,22 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Transforming ");
-	      print_generic_expr (dump_file, cond0);
+	      print_generic_expr (dump_file, gimple_assign_lhs (stmt0));
 	      fprintf (dump_file, " %c ", opcode == BIT_AND_EXPR ? '&' : '|');
-	      print_generic_expr (dump_file, cond1);
+	      print_generic_expr (dump_file, gimple_assign_lhs (stmt1));
 	      fprintf (dump_file, " into ");
 	      print_generic_expr (dump_file, comb);
 	      fputc ('\n', dump_file);
 	    }
 
-	  gimple_assign_set_rhs1 (stmt0, comb);
+	  gimple_stmt_iterator gsi = gsi_for_stmt (vcond0);
+	  tree exp = force_gimple_operand_gsi (&gsi, comb, true, NULL_TREE,
+					       true, GSI_SAME_STMT);
 	  if (invert)
-	    std::swap (*gimple_assign_rhs2_ptr (stmt0),
-		       *gimple_assign_rhs3_ptr (stmt0));
-	  update_stmt (stmt0);
+	    swap_ssa_operands (vcond0, gimple_assign_rhs2_ptr (vcond0),
+			       gimple_assign_rhs3_ptr (vcond0));
+	  gimple_assign_set_rhs1 (vcond0, exp);
+	  update_stmt (vcond0);
 
 	  elt1 = error_mark_node;
 	  any_changes = true;
@@ -4058,11 +4127,14 @@ final_range_test_p (gimple *stmt)
    of TEST_BB, and *OTHER_BB is either NULL and filled by the routine,
    or compared with to find a common basic block to which all conditions
    branch to if true resp. false.  If BACKWARD is false, TEST_BB should
-   be the only predecessor of BB.  */
+   be the only predecessor of BB.  *TEST_SWAPPED_P is set to true if
+   TEST_BB is a bb ending in condition where the edge to non-*OTHER_BB
+   block points to an empty block that falls through into *OTHER_BB and
+   the phi args match that path.  */
 
 static bool
 suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
-		  bool backward)
+		  bool *test_swapped_p, bool backward)
 {
   edge_iterator ei, ei2;
   edge e, e2;
@@ -4127,6 +4199,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
   /* Now check all PHIs of *OTHER_BB.  */
   e = find_edge (bb, *other_bb);
   e2 = find_edge (test_bb, *other_bb);
+ retry:;
   for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
@@ -4152,11 +4225,52 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
 	  else
 	    {
 	      gimple *test_last = last_stmt (test_bb);
-	      if (gimple_code (test_last) != GIMPLE_COND
-		  && gimple_phi_arg_def (phi, e2->dest_idx)
-		     == gimple_assign_lhs (test_last)
-		  && (integer_zerop (gimple_phi_arg_def (phi, e->dest_idx))
-		      || integer_onep (gimple_phi_arg_def (phi, e->dest_idx))))
+	      if (gimple_code (test_last) == GIMPLE_COND)
+		{
+		  if (backward ? e2->src != test_bb : e->src != bb)
+		    return false;
+
+		  /* For last_bb, handle also:
+		     if (x_3(D) == 3)
+		       goto <bb 6>; [34.00%]
+		     else
+		       goto <bb 7>; [66.00%]
+
+		     <bb 6> [local count: 79512730]:
+
+		     <bb 7> [local count: 1073741824]:
+		     # prephitmp_7 = PHI <1(3), 1(4), 0(5), 1(2), 1(6)>
+		     where bb 7 is *OTHER_BB, but the PHI values from the
+		     earlier bbs match the path through the empty bb
+		     in between.  */
+		  edge e3;
+		  if (backward)
+		    e3 = EDGE_SUCC (test_bb,
+				    e2 == EDGE_SUCC (test_bb, 0) ? 1 : 0);
+		  else
+		    e3 = EDGE_SUCC (bb,
+				    e == EDGE_SUCC (bb, 0) ? 1 : 0);
+		  if (empty_block_p (e3->dest)
+		      && single_succ_p (e3->dest)
+		      && single_succ (e3->dest) == *other_bb
+		      && single_pred_p (e3->dest)
+		      && single_succ_edge (e3->dest)->flags == EDGE_FALLTHRU)
+		    {
+		      if (backward)
+			e2 = single_succ_edge (e3->dest);
+		      else
+			e = single_succ_edge (e3->dest);
+		      if (test_swapped_p)
+			*test_swapped_p = true;
+		      goto retry;
+		    }
+		}
+	      else if (gimple_phi_arg_def (phi, e2->dest_idx)
+		       == gimple_assign_lhs (test_last)
+		       && (integer_zerop (gimple_phi_arg_def (phi,
+							      e->dest_idx))
+			   || integer_onep (gimple_phi_arg_def (phi,
+								e->dest_idx))))
 		continue;
 	    }
 
@@ -4345,7 +4459,7 @@ maybe_optimize_range_tests (gimple *stmt)
   while (single_pred_p (first_bb))
     {
       basic_block pred_bb = single_pred (first_bb);
-      if (!suitable_cond_bb (pred_bb, first_bb, &other_bb, true))
+      if (!suitable_cond_bb (pred_bb, first_bb, &other_bb, NULL, true))
 	break;
       if (!no_side_effect_bb (first_bb))
 	break;
@@ -4375,7 +4489,8 @@ maybe_optimize_range_tests (gimple *stmt)
 		&& gimple_code (stmt) == GIMPLE_COND
 		&& EDGE_COUNT (e->dest->succs) == 2)
 	      {
-		if (suitable_cond_bb (first_bb, e->dest, &other_bb, true))
+		if (suitable_cond_bb (first_bb, e->dest, &other_bb,
+				      NULL, true))
 		  break;
 		else
 		  other_bb = NULL;
@@ -4403,7 +4518,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	break;
       if (!single_pred_p (e->dest))
 	break;
-      if (!suitable_cond_bb (e->dest, last_bb, &other_bb, false))
+      if (!suitable_cond_bb (e->dest, last_bb, &other_bb, NULL, false))
 	break;
       if (!no_side_effect_bb (e->dest))
 	break;
@@ -4513,6 +4628,28 @@ maybe_optimize_range_tests (gimple *stmt)
 	    }
 	  bbinfo.safe_push (bb_ent);
 	  continue;
+	}
+      else if (bb == last_bb)
+	{
+	  /* For last_bb, handle also:
+	     if (x_3(D) == 3)
+	       goto <bb 6>; [34.00%]
+	     else
+	       goto <bb 7>; [66.00%]
+
+	     <bb 6> [local count: 79512730]:
+
+	     <bb 7> [local count: 1073741824]:
+	     # prephitmp_7 = PHI <1(3), 1(4), 0(5), 1(2), 1(6)>
+	     where bb 7 is OTHER_BB, but the PHI values from the
+	     earlier bbs match the path through the empty bb
+	     in between.  */
+	  bool test_swapped_p = false;
+	  bool ok = suitable_cond_bb (single_pred (last_bb), last_bb,
+				      &other_bb, &test_swapped_p, true);
+	  gcc_assert (ok);
+	  if (test_swapped_p)
+	    e = EDGE_SUCC (bb, e == EDGE_SUCC (bb, 0) ? 1 : 0);
 	}
       /* Otherwise stmt is GIMPLE_COND.  */
       code = gimple_cond_code (stmt);
@@ -4844,7 +4981,7 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
    recursive invocations.  */
 
 static tree
-rewrite_expr_tree (gimple *stmt, unsigned int opindex,
+rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 		   vec<operand_entry *> ops, bool changed, bool next_changed)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
@@ -4891,7 +5028,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
 		= find_insert_point (stmt, oe1->op, oe2->op);
 	      lhs = make_ssa_name (TREE_TYPE (lhs));
 	      stmt
-		= gimple_build_assign (lhs, gimple_assign_rhs_code (stmt),
+		= gimple_build_assign (lhs, rhs_code,
 				       oe1->op, oe2->op);
 	      gimple_set_uid (stmt, uid);
 	      gimple_set_visited (stmt, true);
@@ -4935,7 +5072,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
   tree new_rhs1
-    = rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), opindex + 1, ops,
+    = rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), rhs_code, opindex + 1, ops,
 			 changed || oe->op != rhs2 || next_changed,
 			 false);
 
@@ -4961,7 +5098,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
 	  gimple *insert_point = find_insert_point (stmt, new_rhs1, oe->op);
 
 	  lhs = make_ssa_name (TREE_TYPE (lhs));
-	  stmt = gimple_build_assign (lhs, gimple_assign_rhs_code (stmt),
+	  stmt = gimple_build_assign (lhs, rhs_code,
 				      new_rhs1, oe->op);
 	  gimple_set_uid (stmt, uid);
 	  gimple_set_visited (stmt, true);
@@ -6408,7 +6545,7 @@ reassociate_bb (basic_block bb)
                       if (len >= 3)
                         swap_ops_for_binary_stmt (ops, len - 3, stmt);
 
-		      new_lhs = rewrite_expr_tree (stmt, 0, ops,
+		      new_lhs = rewrite_expr_tree (stmt, rhs_code, 0, ops,
 						   powi_result != NULL
 						   || negate_result,
 						   len != orig_len);

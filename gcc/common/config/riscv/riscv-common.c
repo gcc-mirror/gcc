@@ -42,6 +42,22 @@ struct riscv_subset_t
   int major_version;
   int minor_version;
   struct riscv_subset_t *next;
+
+  bool explicit_version_p;
+};
+
+/* Type for implied ISA info.  */
+struct riscv_implied_info_t
+{
+  const char *ext;
+  const char *implied_ext;
+};
+
+/* Implied ISA info, must end with NULL sentinel.  */
+riscv_implied_info_t riscv_implied_info[] =
+{
+  {"d", "f"},
+  {NULL, NULL}
 };
 
 /* Subset list.  */
@@ -66,23 +82,25 @@ private:
   riscv_subset_list (const char *, location_t);
 
   const char *parsing_subset_version (const char *, unsigned *, unsigned *,
-				      unsigned, unsigned, bool);
+				      unsigned, unsigned, bool, bool *);
 
   const char *parse_std_ext (const char *);
 
-  const char *parse_sv_or_non_std_ext (const char *, const char *,
-				       const char *);
+  const char *parse_multiletter_ext (const char *, const char *,
+				     const char *);
+
+  void handle_implied_ext (const char *, int, int, bool);
 
 public:
   ~riscv_subset_list ();
 
-  void add (const char *, int, int);
+  void add (const char *, int, int, bool);
 
   riscv_subset_t *lookup (const char *,
 			  int major_version = RISCV_DONT_CARE_VERSION,
 			  int minor_version = RISCV_DONT_CARE_VERSION) const;
 
-  std::string to_string () const;
+  std::string to_string (bool) const;
 
   unsigned xlen() const {return m_xlen;};
 
@@ -95,7 +113,8 @@ static const char *riscv_supported_std_ext (void);
 static riscv_subset_list *current_subset_list = NULL;
 
 riscv_subset_t::riscv_subset_t ()
-  : name (), major_version (0), minor_version (0), next (NULL)
+  : name (), major_version (0), minor_version (0), next (NULL),
+    explicit_version_p (false)
 {
 }
 
@@ -122,7 +141,7 @@ riscv_subset_list::~riscv_subset_list ()
 
 void
 riscv_subset_list::add (const char *subset, int major_version,
-			int minor_version)
+			int minor_version, bool explicit_version_p)
 {
   riscv_subset_t *s = new riscv_subset_t ();
 
@@ -132,6 +151,7 @@ riscv_subset_list::add (const char *subset, int major_version,
   s->name = subset;
   s->major_version = major_version;
   s->minor_version = minor_version;
+  s->explicit_version_p = explicit_version_p;
   s->next = NULL;
 
   if (m_tail != NULL)
@@ -140,10 +160,11 @@ riscv_subset_list::add (const char *subset, int major_version,
   m_tail = s;
 }
 
-/* Convert subset info to string with explicit version info.  */
+/* Convert subset info to string with explicit version info,
+   VERSION_P to determine append version info or not.  */
 
 std::string
-riscv_subset_list::to_string () const
+riscv_subset_list::to_string (bool version_p) const
 {
   std::ostringstream oss;
   oss << "rv" << m_xlen;
@@ -153,14 +174,22 @@ riscv_subset_list::to_string () const
 
   while (subset != NULL)
     {
-      if (!first)
+      /* For !version_p, we only separate extension with underline for
+	 multi-letter extension.  */
+      if (!first &&
+	  (version_p
+	   || subset->explicit_version_p
+	   || subset->name.length() > 1))
 	oss << '_';
       first = false;
 
-      oss << subset->name
-	  << subset->major_version
-	  << 'p'
-	  << subset->minor_version;
+      oss << subset->name;
+
+      if (version_p || subset->explicit_version_p)
+	oss  << subset->major_version
+	     << 'p'
+	     << subset->minor_version;
+
       subset = subset->next;
     }
 
@@ -217,7 +246,8 @@ riscv_supported_std_ext (void)
      `major_version` using default_major_version.
      `default_major_version`: Default major version.
      `default_minor_version`: Default minor version.
-     `std_ext_p`: True if parsing std extension.  */
+     `std_ext_p`: True if parsing std extension.
+     `explicit_version_p`: True if this subset is not using default version.  */
 
 const char *
 riscv_subset_list::parsing_subset_version (const char *p,
@@ -225,13 +255,15 @@ riscv_subset_list::parsing_subset_version (const char *p,
 					   unsigned *minor_version,
 					   unsigned default_major_version,
 					   unsigned default_minor_version,
-					   bool std_ext_p)
+					   bool std_ext_p,
+					   bool *explicit_version_p)
 {
   bool major_p = true;
   unsigned version = 0;
   unsigned major = 0;
   unsigned minor = 0;
   char np;
+  *explicit_version_p = false;
 
   for (; *p; ++p)
     {
@@ -246,6 +278,7 @@ riscv_subset_list::parsing_subset_version (const char *p,
 		{
 		  *major_version = version;
 		  *minor_version = 0;
+		  *explicit_version_p = true;
 		  return p;
 		}
 	      else
@@ -279,6 +312,7 @@ riscv_subset_list::parsing_subset_version (const char *p,
     }
   else
     {
+      *explicit_version_p = true;
       *major_version = major;
       *minor_version = minor;
     }
@@ -302,6 +336,7 @@ riscv_subset_list::parse_std_ext (const char *p)
   unsigned major_version = 0;
   unsigned minor_version = 0;
   char std_ext = '\0';
+  bool explicit_version_p = false;
 
   /* First letter must start with i, e or g.  */
   switch (*p)
@@ -311,8 +346,9 @@ riscv_subset_list::parse_std_ext (const char *p)
       p = parsing_subset_version (p, &major_version, &minor_version,
 				  /* default_major_version= */ 2,
 				  /* default_minor_version= */ 0,
-				  /* std_ext_p= */ true);
-      add ("i", major_version, minor_version);
+				  /* std_ext_p= */ true,
+				  &explicit_version_p);
+      add ("i", major_version, minor_version, explicit_version_p);
       break;
 
     case 'e':
@@ -320,9 +356,10 @@ riscv_subset_list::parse_std_ext (const char *p)
       p = parsing_subset_version (p, &major_version, &minor_version,
 				  /* default_major_version= */ 1,
 				  /* default_minor_version= */ 9,
-				  /* std_ext_p= */ true);
+				  /* std_ext_p= */ true,
+				  &explicit_version_p);
 
-      add ("e", major_version, minor_version);
+      add ("e", major_version, minor_version, explicit_version_p);
 
       if (m_xlen > 32)
 	{
@@ -337,13 +374,14 @@ riscv_subset_list::parse_std_ext (const char *p)
       p = parsing_subset_version (p, &major_version, &minor_version,
 				  /* default_major_version= */ 2,
 				  /* default_minor_version= */ 0,
-				  /* std_ext_p= */ true);
-      add ("i", major_version, minor_version);
+				  /* std_ext_p= */ true,
+				  &explicit_version_p);
+      add ("i", major_version, minor_version, explicit_version_p);
 
       for (; *std_exts != 'q'; std_exts++)
 	{
 	  const char subset[] = {*std_exts, '\0'};
-	  add (subset, major_version, minor_version);
+	  add (subset, major_version, minor_version, explicit_version_p);
 	}
       break;
 
@@ -357,7 +395,7 @@ riscv_subset_list::parse_std_ext (const char *p)
     {
       char subset[2] = {0, 0};
 
-      if (*p == 'x' || *p == 's')
+      if (*p == 'x' || *p == 's' || *p == 'h' || *p == 'z')
 	break;
 
       if (*p == '_')
@@ -390,29 +428,61 @@ riscv_subset_list::parse_std_ext (const char *p)
       p = parsing_subset_version (p, &major_version, &minor_version,
 				  /* default_major_version= */ 2,
 				  /* default_minor_version= */ 0,
-				  /* std_ext_p= */ true);
+				  /* std_ext_p= */ true,
+				  &explicit_version_p);
 
       subset[0] = std_ext;
 
-      add (subset, major_version, minor_version);
+      handle_implied_ext (subset, major_version,
+			  minor_version, explicit_version_p);
+
+      add (subset, major_version, minor_version, explicit_version_p);
     }
   return p;
 }
 
-/* Parsing function for non-standard and supervisor extensions.
+
+/* Check any implied extensions for EXT with version
+   MAJOR_VERSION.MINOR_VERSION, EXPLICIT_VERSION_P indicate the version is
+   explicitly given by user or not.  */
+void
+riscv_subset_list::handle_implied_ext (const char *ext,
+				       int major_version,
+				       int minor_version,
+				       bool explicit_version_p)
+{
+  riscv_implied_info_t *implied_info;
+  for (implied_info = &riscv_implied_info[0];
+       implied_info->ext;
+       ++implied_info)
+    {
+      if (strcmp (ext, implied_info->ext) != 0)
+	continue;
+
+      /* Skip if implied extension already present.  */
+      if (lookup (implied_info->implied_ext))
+	continue;
+
+      /* TODO: Implied extension might use different version.  */
+      add (implied_info->implied_ext, major_version, minor_version,
+	   explicit_version_p);
+    }
+}
+
+/* Parsing function for multi-letter extensions.
 
    Return Value:
      Points to the end of extensions.
 
    Arguments:
      `p`: Current parsing position.
-     `ext_type`: What kind of extensions, 'x', 's' or 'sx'.
+     `ext_type`: What kind of extensions, 's', 'h', 'z' or 'x'.
      `ext_type_str`: Full name for kind of extension.  */
 
 const char *
-riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
-					    const char *ext_type,
-					    const char *ext_type_str)
+riscv_subset_list::parse_multiletter_ext (const char *p,
+					  const char *ext_type,
+					  const char *ext_type_str)
 {
   unsigned major_version = 0;
   unsigned minor_version = 0;
@@ -429,14 +499,10 @@ riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
       if (strncmp (p, ext_type, ext_type_len) != 0)
 	break;
 
-      /* It's non-standard supervisor extension if it prefix with sx.  */
-      if ((ext_type[0] == 's') && (ext_type_len == 1)
-	  && (*(p + 1) == 'x'))
-	break;
-
       char *subset = xstrdup (p);
       char *q = subset;
       const char *end_of_version;
+      bool explicit_version_p = false;
 
       while (*++q != '\0' && *q != '_' && !ISDIGIT (*q))
 	;
@@ -445,11 +511,12 @@ riscv_subset_list::parse_sv_or_non_std_ext (const char *p,
 	= parsing_subset_version (q, &major_version, &minor_version,
 				  /* default_major_version= */ 2,
 				  /* default_minor_version= */ 0,
-				  /* std_ext_p= */ FALSE);
+				  /* std_ext_p= */ FALSE,
+				  &explicit_version_p);
 
       *q = '\0';
 
-      add (subset, major_version, minor_version);
+      add (subset, major_version, minor_version, explicit_version_p);
       free (subset);
       p += end_of_version - subset;
 
@@ -494,21 +561,26 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing non-standard extension.  */
-  p = subset_list->parse_sv_or_non_std_ext (p, "x", "non-standard extension");
-
-  if (p == NULL)
-    goto fail;
-
   /* Parsing supervisor extension.  */
-  p = subset_list->parse_sv_or_non_std_ext (p, "s", "supervisor extension");
+  p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
 
   if (p == NULL)
     goto fail;
 
-  /* Parsing non-standard supervisor extension.  */
-  p = subset_list->parse_sv_or_non_std_ext
-    (p, "sx", "non-standard supervisor extension");
+  /* Parsing hypervisor extension.  */
+  p = subset_list->parse_multiletter_ext (p, "h", "hypervisor extension");
+
+  if (p == NULL)
+    goto fail;
+
+  /* Parsing sub-extensions.  */
+  p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
+
+  if (p == NULL)
+    goto fail;
+
+  /* Parsing non-standard extension.  */
+  p = subset_list->parse_multiletter_ext (p, "x", "non-standard extension");
 
   if (p == NULL)
     goto fail;
@@ -530,10 +602,10 @@ fail:
 /* Return the current arch string.  */
 
 std::string
-riscv_arch_str ()
+riscv_arch_str (bool version_p)
 {
   gcc_assert (current_subset_list);
-  return current_subset_list->to_string ();
+  return current_subset_list->to_string (version_p);
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
@@ -598,6 +670,21 @@ riscv_handle_option (struct gcc_options *opts,
     default:
       return true;
     }
+}
+
+/* Expand arch string with implied extensions.  */
+
+const char *
+riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
+		   const char **argv)
+{
+  static char *_arch_buf;
+  gcc_assert (argc == 1);
+  int flags;
+  location_t loc = UNKNOWN_LOCATION;
+  riscv_parse_arch_string (argv[0], &flags, loc);
+  _arch_buf = xstrdup (riscv_arch_str (false).c_str ());
+  return _arch_buf;
 }
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */

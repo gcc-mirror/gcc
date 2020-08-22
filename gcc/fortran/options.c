@@ -838,8 +838,8 @@ gfc_get_option_string (void)
         case OPT_o:
         case OPT_d:
         case OPT_dumpbase:
+        case OPT_dumpbase_ext:
         case OPT_dumpdir:
-        case OPT_auxbase:
         case OPT_quiet:
         case OPT_version:
         case OPT_fintrinsic_modules_path:
@@ -864,8 +864,8 @@ gfc_get_option_string (void)
         case OPT_o:
         case OPT_d:
         case OPT_dumpbase:
+        case OPT_dumpbase_ext:
         case OPT_dumpdir:
-        case OPT_auxbase:
         case OPT_quiet:
         case OPT_version:
         case OPT_fintrinsic_modules_path:

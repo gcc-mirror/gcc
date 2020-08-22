@@ -6,7 +6,11 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                 Copyright (C) 2019, Free Software Foundation, Inc.       --
+--                 Copyright (C) 2019-2020, Free Software Foundation, Inc.  --
+--                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,13 +33,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 generic
    type Atomic_Type is private with Atomic;
 package System.Atomic_Operations.Exchange
   with Pure
---  Blocking
 is
    function Atomic_Exchange
      (Item  : aliased in out Atomic_Type;

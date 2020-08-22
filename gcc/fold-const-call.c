@@ -1033,6 +1033,7 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
     case CFN_BUILT_IN_BSWAP16:
     case CFN_BUILT_IN_BSWAP32:
     case CFN_BUILT_IN_BSWAP64:
+    case CFN_BUILT_IN_BSWAP128:
       *result = wide_int::from (arg, precision, TYPE_SIGN (arg_type)).bswap ();
       return true;
 
@@ -1799,8 +1800,8 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 	  && !TREE_SIDE_EFFECTS (arg0)
 	  && !TREE_SIDE_EFFECTS (arg1))
 	return build_int_cst (type, 0);
-      if ((p0 = c_getstr (arg0, &s0))
-	  && (p1 = c_getstr (arg1, &s1))
+      if ((p0 = getbyterep (arg0, &s0))
+	  && (p1 = getbyterep (arg1, &s1))
 	  && s2 <= s0
 	  && s2 <= s1)
 	return build_cmp_result (type, memcmp (p0, p1, s2));
@@ -1813,7 +1814,7 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 	  && !TREE_SIDE_EFFECTS (arg0)
 	  && !TREE_SIDE_EFFECTS (arg1))
 	return build_int_cst (type, 0);
-      if ((p0 = c_getstr (arg0, &s0))
+      if ((p0 = getbyterep (arg0, &s0))
 	  && s2 <= s0
 	  && target_char_cst_p (arg1, &c))
 	{

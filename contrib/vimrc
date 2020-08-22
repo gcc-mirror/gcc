@@ -39,9 +39,13 @@ function! SetStyle()
     setlocal shiftwidth=2
     setlocal noexpandtab
   endif
-  setlocal textwidth=80
+  if &filetype == "gitcommit"
+    setlocal textwidth=72
+  else
+    setlocal textwidth=80
+  endif
   setlocal formatoptions-=ro formatoptions+=cqlt
-  if index(l:c_exts, l:ext) != -1
+  if index(l:c_exts, l:ext) != -1 || &filetype == "c" || &filetype == "cpp"
     setlocal cindent
     setlocal cinoptions=>4,n-2,{2,^-2,:2,=2,g0,f0,h2,p4,t0,+2,(0,u0,w1,m0
   endif

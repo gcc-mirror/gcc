@@ -96,7 +96,7 @@ namespace __gnu_debug
     { return std::make_pair(__rhs - __lhs, __dp_exact); }
 
   template<typename _Iterator>
-    _GLIBCXX_CONSTEXPR
+    _GLIBCXX14_CONSTEXPR
     inline typename _Distance_traits<_Iterator>::__type
     __get_distance(_Iterator __lhs, _Iterator __rhs,
 		   std::input_iterator_tag)

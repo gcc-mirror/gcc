@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -428,7 +428,7 @@ package body Sem_Elim is
 
             --  Check for case of subprogram
 
-            elsif Ekind_In (E, E_Function, E_Procedure) then
+            elsif Ekind (E) in E_Function | E_Procedure then
 
                --  If Source_Location present, then see if it matches
 

@@ -26,7 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "errno.h"
 
-#define JOBSERVER_MAKE_TOKEN  '+' /* Token which make sent when invoking GCC.  */
+/* Token which make sent when invoking GCC.  */
+#define JOBSERVER_MAKE_TOKEN  '+'
 
 bool jobserver_initialized = false;
 bool nonblock_mode = false;
@@ -42,11 +43,8 @@ jobserver_token_t jobserver_curr_token = JOBSERVER_NULL_TOKEN;
    thing.  */
 static void jobserver_crash ()
 {
-  error ("-fparallel-jobs=jobserver, but Make jobserver pipe is closed");
-  inform (UNKNOWN_LOCATION,
-	  "GCC must be invoked with a prepended `+' in the Makefile rule's command "
-	  "to use the jobserver parallel mode");
-  exit (1);
+  fatal_error (UNKNOWN_LOCATION,
+	       "-fparallel-jobs=jobserver, but Make jobserver pipe is closed");
 }
 
 /* Initialize this interface.  We try to find whether the Jobserver is active
@@ -124,7 +122,7 @@ void jobserver_return_token (jobserver_token_t c)
 /* TODO: Check if select if available in our system.  */
 #define HAVE_SELECT
 
-/* Retrieve a token from the Jobserver. We have two cases, in which we must be
+/* Retrieve a token from the Jobserver.  We have two cases, in which we must be
    careful.  First is when the function pselect is available in our system, as
    Make will set the read fd as nonblocking and will expect that we use select.
    (see posixos.c in GNU Make sourcecode).
@@ -152,8 +150,8 @@ char jobserver_get_token ()
 
 	  gcc_assert (r > 0);
 #else
-	  internal_error ("Make set Jobserver pipe to nonblock mode, but select "
-			  "is not supported in your system");
+	  internal_error ("Make set Jobserver pipe to nonblock mode, but "
+			  " select is not supported in your system");
 #endif
 	}
 

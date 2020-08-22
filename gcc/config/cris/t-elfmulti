@@ -16,8 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = march=v8/march=v10/march=v32
-MULTILIB_DIRNAMES = v8 v10 v32
+MULTILIB_OPTIONS = march=v8/march=v10
+MULTILIB_DIRNAMES = v8 v10
 MULTILIB_MATCHES = \
 		march?v8=mcpu?v8 \
 		march?v10=mcpu?etrax100lx \
@@ -26,6 +26,5 @@ MULTILIB_MATCHES = \
 		march?v10=march?ng \
 		march?v10=march?v11 \
 		march?v10=mcpu?v11 \
-		march?v10=mcpu?v10 \
-		march?v32=mcpu?v32
+		march?v10=mcpu?v10
 MULTILIB_EXTRA_OPTS = mbest-lib-options

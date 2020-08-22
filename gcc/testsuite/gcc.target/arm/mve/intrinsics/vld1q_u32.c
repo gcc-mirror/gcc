@@ -10,12 +10,11 @@ foo (uint32_t const * base)
   return vld1q_u32 (base);
 }
 
-/* { dg-final { scan-assembler "vldrw.u32"  }  } */
-
 uint32x4_t
 foo1 (uint32_t const * base)
 {
   return vld1q (base);
 }
 
-/* { dg-final { scan-assembler "vldrw.u32"  }  } */
+/* { dg-final { scan-assembler-times "vldrw.32" 2 }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

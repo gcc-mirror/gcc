@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-tree-dse --param uninlined-function-insns=0 --param early-inlining-insns=3 -fgnu-tm " } */
+/* { dg-require-effective-target fgnu_tm } */
 
 class a {
 public:

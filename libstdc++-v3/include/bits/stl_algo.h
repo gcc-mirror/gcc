@@ -708,37 +708,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InputIterator, typename _Size, typename _OutputIterator>
     _GLIBCXX20_CONSTEXPR
     _OutputIterator
-    __copy_n_a(_InputIterator __first, _Size __n, _OutputIterator __result)
-    {
-      if (__n > 0)
-	{
-	  while (true)
-	    {
-	      *__result = *__first;
-	      ++__result;
-	      if (--__n > 0)
-		++__first;
-	      else
-		break;
-	    }
-	}
-      return __result;
-    }
- 
-  template<typename _CharT, typename _Size>
-    __enable_if_t<__is_char<_CharT>::__value, _CharT*>
-    __copy_n_a(istreambuf_iterator<_CharT, char_traits<_CharT>>,
-	       _Size, _CharT*);
-
-  template<typename _InputIterator, typename _Size, typename _OutputIterator>
-    _GLIBCXX20_CONSTEXPR
-    _OutputIterator
     __copy_n(_InputIterator __first, _Size __n,
 	     _OutputIterator __result, input_iterator_tag)
     {
       return std::__niter_wrap(__result,
 			       __copy_n_a(__first, __n,
-					  std::__niter_base(__result)));
+					  std::__niter_base(__result), true));
     }
 
   template<typename _RandomAccessIterator, typename _Size,
@@ -771,10 +746,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_can_increment(__first, __n);
-      __glibcxx_requires_can_increment(__result, __n);
 
-      return std::__copy_n(__first, __n, __result,
+      const auto __n2 = std::__size_to_integer(__n);
+      if (__n2 <= 0)
+	return __result;
+
+      __glibcxx_requires_can_increment(__first, __n2);
+      __glibcxx_requires_can_increment(__result, __n2);
+
+      return std::__copy_n(__first, __n2, __result,
 			   std::__iterator_category(__first));
     }
 
@@ -2803,15 +2783,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Compare __comp)
     {
       while (__first1 != __last1 && __first2 != __last2)
-	if (__comp(__first2, __first1))
-	  return false;
-	else if (__comp(__first1, __first2))
-	  ++__first1;
-	else
-	  {
-	    ++__first1;
+	{
+	  if (__comp(__first2, __first1))
+	    return false;
+	  if (!__comp(__first1, __first2))
 	    ++__first2;
-	  }
+	  ++__first1;
+	}
 
       return __first2 == __last2;
     }

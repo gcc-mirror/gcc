@@ -21,10 +21,13 @@ package Ada.Calendar.Time_Zones is
    --  Time zone manipulation
 
    type Time_Offset is range -(28 * 60) .. 28 * 60;
+   --  Offset in minutes
 
    Unknown_Zone_Error : exception;
 
-   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset;
+   function Local_Time_Offset (Date : Time := Clock) return Time_Offset;
+   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset
+     renames Local_Time_Offset;
    --  Returns (in minutes), the difference between the implementation-defined
    --  time zone of Calendar, and UTC time, at the time Date. If the time zone
    --  of the Calendar implementation is unknown, raises Unknown_Zone_Error.

@@ -44,7 +44,9 @@ along with GCC; see the file COPYING3.  If not see
   %{mlongcalls:--longcalls} \
   %{mno-longcalls:--no-longcalls} \
   %{mauto-litpools:--auto-litpools} \
-  %{mno-auto-litpools:--no-auto-litpools}"
+  %{mno-auto-litpools:--no-auto-litpools} \
+  %{mabi=windowed:--abi-windowed} \
+  %{mabi=call0:--abi-call0}"
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 
@@ -55,7 +57,9 @@ along with GCC; see the file COPYING3.  If not see
     %{!static: \
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
-    %{static:-static}}"
+    %{static:-static}} \
+  %{mabi=windowed:--abi-windowed} \
+  %{mabi=call0:--abi-call0}"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."

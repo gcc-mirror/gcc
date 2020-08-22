@@ -97,6 +97,16 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
   if (NO_FUNCTION_CSE && CALL_P (insn))
     return false;
 
+  /* Remember if this insn has been sp += const_int.  */
+  rtx sp_set = set_for_reg_notes (insn);
+  rtx sp_addend = NULL_RTX;
+  if (sp_set
+      && SET_DEST (sp_set) == stack_pointer_rtx
+      && GET_CODE (SET_SRC (sp_set)) == PLUS
+      && XEXP (SET_SRC (sp_set), 0) == stack_pointer_rtx
+      && CONST_INT_P (XEXP (SET_SRC (sp_set), 1)))
+    sp_addend = XEXP (SET_SRC (sp_set), 1);
+
   if (GET_CODE (body) == SET)
     {
       int count = 0;
@@ -179,6 +189,15 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
       else
 	reload_cse_simplify_operands (insn, testreg);
     }
+
+  /* If sp += const_int insn is changed into sp = reg;, add REG_EQUAL
+     note so that the stack_adjustments pass can undo it if beneficial.  */
+  if (sp_addend
+      && SET_DEST (sp_set) == stack_pointer_rtx
+      && REG_P (SET_SRC (sp_set)))
+    set_dst_reg_note (insn, REG_EQUAL,
+		      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				    sp_addend), stack_pointer_rtx);
 
 done:
   return (EDGE_COUNT (insn_bb->succs) != insn_bb_succs);
@@ -572,6 +591,13 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 	    }
 	}
     }
+
+  /* The loop below sets alternative_order[0] but -Wmaybe-uninitialized
+     can't know that.  Clear it here to avoid the warning.  */
+  alternative_order[0] = 0;
+  gcc_assert (!recog_data.n_alternatives
+	      || (which_alternative >= 0
+		  && which_alternative < recog_data.n_alternatives));
 
   /* Record all alternatives which are better or equal to the currently
      matching one in the alternative_order array.  */
@@ -1204,11 +1230,10 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 	      /* Delete the reg-reg addition.  */
 	      delete_insn (insn);
 
-	      if (reg_state[regno].offset != const0_rtx
-		  /* Previous REG_EQUIV / REG_EQUAL notes for PREV
-		     are now invalid.  */
-		  && remove_reg_equal_equiv_notes (prev))
-		df_notes_rescan (prev);
+	      if (reg_state[regno].offset != const0_rtx)
+		/* Previous REG_EQUIV / REG_EQUAL notes for PREV
+		   are now invalid.  */
+		remove_reg_equal_equiv_notes (prev);
 
 	      reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
 	      return true;

@@ -46,7 +46,7 @@ int xxx(void)
 /* CRIS and MSP430 keep the address in a register.  */
 /* m68k sometimes puts the address in a register, depending on CPU and PIC.  */
 
-/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* sh*-*-* cris-*-* crisv32-*-* fido-*-* m68k-*-* i?86-*-mingw* i?86-*-cygwin* x86_64-*-mingw* visium-*-* nvptx*-*-* pdp11*-*-* msp430-*-* amdgcn*-*-* } } } */
+/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* sh*-*-* cris-*-* fido-*-* m68k-*-* i?86-*-mingw* i?86-*-cygwin* x86_64-*-mingw* visium-*-* nvptx*-*-* pdp11*-*-* msp430-*-* amdgcn*-*-* } } } */
 /* { dg-final { scan-assembler-times "foo,%r" 5 { target hppa*-*-* } } } */
 /* { dg-final { scan-assembler-times "= foo"  5 { target ia64*-*-* } } } */
 /* { dg-final { scan-assembler-times "call\[ \t\]*_foo" 5 { target i?86-*-mingw* i?86-*-cygwin* } } } */

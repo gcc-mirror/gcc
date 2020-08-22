@@ -2168,15 +2168,9 @@ create_access_replacement (struct access *access, tree reg_type = NULL_TREE)
        variant.  This avoids issues with weirdo ABIs like AAPCS.  */
     repl = create_tmp_var (build_qualified_type (TYPE_MAIN_VARIANT (type),
 						 TYPE_QUALS (type)), "SR");
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    {
-      if (!access->grp_partial_lhs)
-	DECL_GIMPLE_REG_P (repl) = 1;
-    }
-  else if (access->grp_partial_lhs
-	   && is_gimple_reg_type (type))
-    TREE_ADDRESSABLE (repl) = 1;
+  if (access->grp_partial_lhs
+      && is_gimple_reg_type (type))
+    DECL_NOT_GIMPLE_REG_P (repl) = 1;
 
   DECL_SOURCE_LOCATION (repl) = DECL_SOURCE_LOCATION (access->base);
   DECL_ARTIFICIAL (repl) = 1;
@@ -2764,6 +2758,9 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	}
       if (!lacc->first_child && !racc->first_child)
 	{
+	  /* We are about to change the access type from aggregate to scalar,
+	     so we need to put the reverse flag onto the access, if any.  */
+	  const bool reverse = TYPE_REVERSE_STORAGE_ORDER (lacc->type);
 	  tree t = lacc->base;
 
 	  lacc->type = racc->type;
@@ -2778,9 +2775,12 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	      lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
 						lacc->base, lacc->offset,
 						racc, NULL, false);
+	      if (TREE_CODE (lacc->expr) == MEM_REF)
+		REF_REVERSE_STORAGE_ORDER (lacc->expr) = reverse;
 	      lacc->grp_no_warning = true;
 	      lacc->grp_same_access_path = false;
 	    }
+	  lacc->reverse = reverse;
 	}
       return ret;
     }

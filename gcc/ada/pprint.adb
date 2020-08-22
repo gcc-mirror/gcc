@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -329,12 +329,10 @@ package body Pprint is
                                   (Constraint (Subtype_Indication (N)));
 
                               if List_Length (Ranges) = 1
-                                and then
-                                  Nkind_In
-                                    (First (Ranges),
-                                     N_Range,
-                                     N_Real_Range_Specification,
-                                     N_Signed_Integer_Type_Definition)
+                                and then Nkind (First (Ranges)) in
+                                           N_Range                          |
+                                           N_Real_Range_Specification       |
+                                           N_Signed_Integer_Type_Definition
                               then
                                  if Id = Attribute_First then
                                     return
@@ -765,8 +763,7 @@ package body Pprint is
                --  If argument does not already account for a closing
                --  parenthesis, count one here.
 
-               if not Nkind_In (Right, N_Aggregate,
-                                       N_Quantified_Expression)
+               if Nkind (Right) not in N_Aggregate | N_Quantified_Expression
                then
                   Append_Paren := Append_Paren + 1;
                end if;

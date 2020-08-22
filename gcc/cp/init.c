@@ -160,7 +160,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
      -- if T is a scalar type, the storage is set to the value of zero
 	converted to T.
 
-     -- if T is a non-union class type, the storage for each nonstatic
+     -- if T is a non-union class type, the storage for each non-static
 	data member and each base-class subobject is zero-initialized.
 
      -- if T is a union type, the storage for its first data member is
@@ -812,7 +812,7 @@ perform_member_init (tree member, tree init)
   if (init && TREE_CODE (init) == TREE_LIST
       && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
 	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
-	  || !(/* cxx_dialect >= cxx2a ? CP_AGGREGATE_TYPE_P (type) */
+	  || !(/* cxx_dialect >= cxx20 ? CP_AGGREGATE_TYPE_P (type) */
 	       /* :  */CLASS_TYPE_P (type))))
     init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 					    tf_warning_or_error);
@@ -1151,6 +1151,8 @@ sort_mem_initializers (tree t, tree mem_inits)
 
       /* Record the initialization.  */
       TREE_VALUE (subobject_init) = TREE_VALUE (init);
+      /* Carry over the dummy TREE_TYPE node containing the source location.  */
+      TREE_TYPE (subobject_init) = TREE_TYPE (init);
       next_subobject = subobject_init;
     }
 
@@ -1367,6 +1369,10 @@ emit_mem_initializers (tree mem_inits)
   /* Initialize the data members.  */
   while (mem_inits)
     {
+      /* If this initializer was explicitly provided, then the dummy TREE_TYPE
+	 node contains the source location.  */
+      iloc_sentinel ils (EXPR_LOCATION (TREE_TYPE (mem_inits)));
+
       perform_member_init (TREE_PURPOSE (mem_inits),
 			   TREE_VALUE (mem_inits));
       mem_inits = TREE_CHAIN (mem_inits);
@@ -1889,7 +1895,8 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
     }
 
   if (init && TREE_CODE (init) != TREE_LIST
-      && (flags & LOOKUP_ONLYCONVERTING))
+      && (flags & LOOKUP_ONLYCONVERTING)
+      && !unsafe_return_slot_p (exp))
     {
       /* Base subobjects should only get direct-initialization.  */
       gcc_assert (true_exp == exp);
@@ -2221,8 +2228,8 @@ build_offset_ref (tree type, tree member, bool address_p,
       /* If MEMBER is non-static, then the program has fallen afoul of
 	 [expr.prim]:
 
-	   An id-expression that denotes a nonstatic data member or
-	   nonstatic member function of a class can only be used:
+	   An id-expression that denotes a non-static data member or
+	   non-static member function of a class can only be used:
 
 	   -- as part of a class member access (_expr.ref_) in which the
 	   object-expression refers to the member's class or a class
@@ -2230,8 +2237,8 @@ build_offset_ref (tree type, tree member, bool address_p,
 
 	   -- to form a pointer to member (_expr.unary.op_), or
 
-	   -- in the body of a nonstatic member function of that class or
-	   of a class derived from that class (_class.mfct.nonstatic_), or
+	   -- in the body of a non-static member function of that class or
+	   of a class derived from that class (_class.mfct.non-static_), or
 
 	   -- in a mem-initializer for a constructor for that class or for
 	   a class derived from that class (_class.base.init_).  */
@@ -2272,10 +2279,12 @@ build_offset_ref (tree type, tree member, bool address_p,
    recursively); otherwise, return DECL.  If STRICT_P, the
    initializer is only returned if DECL is a
    constant-expression.  If RETURN_AGGREGATE_CST_OK_P, it is ok to
-   return an aggregate constant.  */
+   return an aggregate constant.  If UNSHARE_P, return an unshared
+   copy of the initializer.  */
 
 static tree
-constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
+constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
+		  bool unshare_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
 	 || decl_constant_var_p (decl)
@@ -2343,9 +2352,9 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
 	  && DECL_NONTRIVIALLY_INITIALIZED_P (decl))
 	break;
-      decl = unshare_expr (init);
+      decl = init;
     }
-  return decl;
+  return unshare_p ? unshare_expr (decl) : decl;
 }
 
 /* If DECL is a CONST_DECL, or a constant VAR_DECL initialized by constant
@@ -2357,26 +2366,36 @@ tree
 scalar_constant_value (tree decl)
 {
   return constant_value_1 (decl, /*strict_p=*/true,
-			   /*return_aggregate_cst_ok_p=*/false);
+			   /*return_aggregate_cst_ok_p=*/false,
+			   /*unshare_p=*/true);
 }
 
-/* Like scalar_constant_value, but can also return aggregate initializers.  */
+/* Like scalar_constant_value, but can also return aggregate initializers.
+   If UNSHARE_P, return an unshared copy of the initializer.  */
 
 tree
-decl_really_constant_value (tree decl)
+decl_really_constant_value (tree decl, bool unshare_p /*= true*/)
 {
   return constant_value_1 (decl, /*strict_p=*/true,
-			   /*return_aggregate_cst_ok_p=*/true);
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
 }
 
-/* A more relaxed version of scalar_constant_value, used by the
+/* A more relaxed version of decl_really_constant_value, used by the
    common C/C++ code.  */
+
+tree
+decl_constant_value (tree decl, bool unshare_p)
+{
+  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
+}
 
 tree
 decl_constant_value (tree decl)
 {
-  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
-			   /*return_aggregate_cst_ok_p=*/true);
+  return decl_constant_value (decl, /*unshare_p=*/true);
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */
@@ -2909,7 +2928,7 @@ build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
 static tree
 maybe_wrap_new_for_constexpr (tree alloc_call, tree elt_type, tree cookie_size)
 {
-  if (cxx_dialect < cxx2a)
+  if (cxx_dialect < cxx20)
     return alloc_call;
 
   if (current_function_decl != NULL_TREE
@@ -3276,7 +3295,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Create the argument list.  */
       vec_safe_insert (*placement, 0, size);
       /* Do name-lookup to find the appropriate operator.  */
-      fns = lookup_fnfields (elt_type, fnname, /*protect=*/2);
+      fns = lookup_fnfields (elt_type, fnname, /*protect=*/2, complain);
       if (fns == NULL_TREE)
 	{
 	  if (complain & tf_error)
@@ -3611,7 +3630,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		 means allocate an int, and initialize it with 10.
 
 		 In C++20, also handle `new A(1, 2)'.  */
-	      if (cxx_dialect >= cxx2a
+	      if (cxx_dialect >= cxx20
 		  && AGGREGATE_TYPE_P (type)
 		  && (*init)->length () > 1)
 		{
@@ -4076,7 +4095,9 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
     }
 
   body = loop;
-  if (!deallocate_expr)
+  if (deallocate_expr == error_mark_node)
+    return error_mark_node;
+  else if (!deallocate_expr)
     ;
   else if (!body)
     body = deallocate_expr;
@@ -4993,7 +5014,9 @@ build_delete (location_t loc, tree otype, tree addr,
       return expr;
     }
 
-  if (do_delete)
+  if (do_delete == error_mark_node)
+    return error_mark_node;
+  else if (do_delete)
     {
       tree do_delete_call_expr = extract_call_expr (do_delete);
       if (TREE_CODE (do_delete_call_expr) == CALL_EXPR)

@@ -283,6 +283,7 @@ $(srcdir)/generated/findloc0_r10.c \
 $(srcdir)/generated/findloc0_r16.c \
 $(srcdir)/generated/findloc0_c4.c \
 $(srcdir)/generated/findloc0_c8.c \
+$(srcdir)/generated/findloc0_c10.c \
 $(srcdir)/generated/findloc0_c16.c
 
 i_findloc0s_c= \
@@ -301,6 +302,7 @@ $(srcdir)/generated/findloc1_r10.c \
 $(srcdir)/generated/findloc1_r16.c \
 $(srcdir)/generated/findloc1_c4.c \
 $(srcdir)/generated/findloc1_c8.c \
+$(srcdir)/generated/findloc1_c10.c \
 $(srcdir)/generated/findloc1_c16.c
 
 i_findloc1s_c= \
@@ -1052,7 +1054,7 @@ I_M4_DEPS8=$(I_M4_DEPS) m4/ifindloc1.m4
 I_M4_DEPS9=$(I_M4_DEPS) m4/ifindloc2.m4
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
-	$(SHELL) $(srcdir)/mk-kinds-h.sh '$(FCCOMPILE)' > $@ || rm $@
+	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' '@LIBGOMP_CHECKED_REAL_KINDS@' '$(FCCOMPILE)' > $@ || rm $@
 
 kinds.inc: kinds.h
 	grep '^#' < kinds.h > $@
@@ -1061,10 +1063,10 @@ c99_protos.inc: $(srcdir)/c99_protos.h
 	grep '^#' < $(srcdir)/c99_protos.h > $@
 
 selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
-	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(FCCOMPILE)' > $@ || rm $@
+	$(SHELL) $(srcdir)/mk-sik-inc.sh '@LIBGOMP_CHECKED_INT_KINDS@' '$(FCCOMPILE)' > $@ || rm $@
 
 selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
-	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(FCCOMPILE)' > $@ || rm $@
+	$(SHELL) $(srcdir)/mk-srk-inc.sh '@LIBGOMP_CHECKED_REAL_KINDS@' '$(FCCOMPILE)' > $@ || rm $@
 
 fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 	cp $(srcdir)/$(FPU_HOST_HEADER) $@
@@ -1233,5 +1235,8 @@ $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 endif
 
 EXTRA_DIST = $(m4_files)
+
+# target overrides
+-include $(tmake_file)
 
 include $(top_srcdir)/../multilib.am

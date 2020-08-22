@@ -1,5 +1,5 @@
 // PR c++/69531 - DR 1307, Overload resolution based on size of array init-list.
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 int f(int, int const(&)[2]) { return 1; }
 int f(double, int const(&)[2]) { return 2; }

@@ -255,7 +255,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtsepi16_storeu_epi8 (void * __P, __mmask8 __M,__m128i __A)
 {
-  __builtin_ia32_pmovswb128mem_mask ((__v8qi *) __P , (__v8hi) __A, __M);
+  __builtin_ia32_pmovswb128mem_mask ((unsigned long long *) __P , (__v8hi) __A, __M);
 }
 
 extern __inline __m128i
@@ -325,7 +325,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtusepi16_storeu_epi8 (void * __P, __mmask8 __M,__m128i __A)
 {
-  __builtin_ia32_pmovuswb128mem_mask ((__v8qi *) __P , (__v8hi) __A, __M);
+  __builtin_ia32_pmovuswb128mem_mask ((unsigned long long *) __P , (__v8hi) __A, __M);
 }
 
 extern __inline __m128i
@@ -4048,7 +4048,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtepi16_storeu_epi8 (void * __P, __mmask8 __M,__m128i __A)
 {
-  __builtin_ia32_pmovwb128mem_mask ((__v8qi *) __P , (__v8hi) __A, __M);
+  __builtin_ia32_pmovwb128mem_mask ((unsigned long long *) __P , (__v8hi) __A, __M);
 }
 
 extern __inline __m128i

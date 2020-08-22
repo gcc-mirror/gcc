@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2013-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -425,6 +425,30 @@ package body Ada.Containers.Indefinite_Holders is
                Element => new Element_Type'(New_Item));
       end if;
    end Replace_Element;
+
+   ----------
+   -- Swap --
+   ----------
+
+   procedure Swap (Left, Right : in out Holder) is
+   begin
+      if Left.Busy /= 0 then
+         raise Program_Error with "attempt to tamper with elements";
+      end if;
+
+      if Right.Busy /= 0 then
+         raise Program_Error with "attempt to tamper with elements";
+      end if;
+
+      if Left.Reference /= Right.Reference then
+         declare
+            Tmp : constant Shared_Holder_Access := Left.Reference;
+         begin
+            Left.Reference := Right.Reference;
+            Right.Reference := Tmp;
+         end;
+      end if;
+   end Swap;
 
    ---------------
    -- To_Holder --

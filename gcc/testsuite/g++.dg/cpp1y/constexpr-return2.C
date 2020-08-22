@@ -3,6 +3,7 @@
 
 constexpr int f (int i)
 {
+  if (i == -1) return 0;
 }
 
 constexpr int i = f(42);	// { dg-error "flows off the end|in .constexpr. expansion of " }

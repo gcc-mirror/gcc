@@ -41,6 +41,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
   if (!CODE_CONTAINS_STRUCT (TREE_CODE (node), TS_DECL_COMMON)
       || !DECL_LANG_SPECIFIC (node))
     return;
+
   if (TREE_CODE (node) == FUNCTION_DECL)
     {
       int flags = TFF_DECL_SPECIFIERS|TFF_RETURN_TYPE
@@ -56,17 +57,35 @@ cxx_print_decl (FILE *file, tree node, int indent)
 	       decl_as_string (node, TFF_TEMPLATE_HEADER));
     }
 
-  indent_to (file, indent + 3);
+  bool need_indent = true;
+
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
-    fprintf (file, " not-really-extern");
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " not-really-extern");
+      need_indent = false;
+    }
+
   if (TREE_CODE (node) == FUNCTION_DECL
       && DECL_PENDING_INLINE_INFO (node))
-    fprintf (file, " pending-inline-info %p",
-	     (void *) DECL_PENDING_INLINE_INFO (node));
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " pending-inline-info %p",
+	       (void *) DECL_PENDING_INLINE_INFO (node));
+      need_indent = false;
+    }
+  
   if (VAR_OR_FUNCTION_DECL_P (node)
       && DECL_TEMPLATE_INFO (node))
-    fprintf (file, " template-info %p",
-	     (void *) DECL_TEMPLATE_INFO (node));
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " template-info %p",
+	       (void *) DECL_TEMPLATE_INFO (node));
+      need_indent = false;
+    }
 }
 
 void
@@ -103,6 +122,16 @@ cxx_print_type (FILE *file, tree node, int indent)
     case TYPENAME_TYPE:
       print_node (file, "fullname", TYPENAME_TYPE_FULLNAME (node),
 		  indent + 4);
+      return;
+
+    case TYPEOF_TYPE:
+      print_node (file, "expr", TYPEOF_TYPE_EXPR (node), indent + 4);
+      return;
+
+    case BASES:
+      if (BASES_DIRECT (node))
+	fputs (" direct", file);
+      print_node (file, "type", BASES_TYPE (node), indent + 4);
       return;
 
     case TYPE_PACK_EXPANSION:
@@ -218,8 +247,8 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "optype", BASELINK_OPTYPE (node), indent + 4);
       break;
     case OVERLOAD:
-      print_node (file, "function", OVL_FUNCTION (node), indent+4);
-      print_node (file, "next", OVL_CHAIN (node), indent+4);
+      print_node (file, "function", OVL_FUNCTION (node), indent + 4);
+      print_node (file, "next", OVL_CHAIN (node), indent + 4);
       break;
     case TEMPLATE_PARM_INDEX:
       print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);
@@ -268,6 +297,17 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       break;
     case LAMBDA_EXPR:
       cxx_print_lambda_node (file, node, indent);
+      break;
+    case STATIC_ASSERT:
+      if (location_t loc = STATIC_ASSERT_SOURCE_LOCATION (node))
+	{
+	  expanded_location xloc = expand_location (loc);
+	  indent_to (file, indent+4);
+	  fprintf (file, "%s:%d:%d", xloc.file, xloc.line, xloc.column);
+	}
+      print_node (file, "condition", STATIC_ASSERT_CONDITION (node), indent+4);
+      if (tree message = STATIC_ASSERT_MESSAGE (node))
+	print_node (file, "message", message, indent+4);
       break;
     default:
       break;

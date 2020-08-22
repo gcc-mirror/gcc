@@ -256,6 +256,8 @@ AC_CHECK_HEADERS([linux/random.h], [], [],
 #endif
 ]])
 
+AC_CHECK_HEADERS([xlocale.h])
+
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
 
@@ -281,6 +283,9 @@ if $GLIBCXX_IS_NATIVE; then
 
   # For Networking TS.
   AC_CHECK_FUNCS(sockatmark)
+
+  # Non-standard functions used by C++17 std::from_chars
+  AC_CHECK_FUNCS(uselocale)
 
   # For iconv support.
   AM_ICONV
@@ -528,6 +533,17 @@ AC_SUBST(ERROR_CONSTANTS_SRCDIR)
 AC_SUBST(CPU_OPT_EXT_RANDOM)
 AC_SUBST(CPU_OPT_BITS_RANDOM)
 
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+AC_SUBST(tmake_file)
 
 # Add CET specific flags if Intel CET is enabled.
 GCC_CET_FLAGS(CET_FLAGS)

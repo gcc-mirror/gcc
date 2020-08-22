@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -459,9 +459,9 @@ package body Par_SCO is
 
    function Is_Logical_Operator (N : Node_Id) return Tristate is
    begin
-      if Nkind_In (N, N_And_Then, N_Op_Not, N_Or_Else) then
+      if Nkind (N) in N_And_Then | N_Op_Not | N_Or_Else then
          return True;
-      elsif Nkind_In (N, N_Op_And, N_Op_Or) then
+      elsif Nkind (N) in N_Op_And | N_Op_Or then
          return Unknown;
       else
          return False;
@@ -599,9 +599,9 @@ package body Par_SCO is
             else
                L := Left_Opnd (N);
 
-               if Nkind_In (N, N_Op_Or, N_Or_Else) then
+               if Nkind (N) in N_Op_Or | N_Or_Else then
                   C1 := '|';
-               else pragma Assert (Nkind_In (N, N_Op_And, N_And_Then));
+               else pragma Assert (Nkind (N) in N_Op_And | N_And_Then);
                   C1 := '&';
                end if;
             end if;
@@ -688,9 +688,9 @@ package body Par_SCO is
                --  Doesn't this requirement of using First_Sloc need to be
                --  documented in the spec ???
 
-               if Nkind_In (Parent (N), N_Accept_Alternative,
-                                        N_Delay_Alternative,
-                                        N_Terminate_Alternative)
+               if Nkind (Parent (N)) in N_Accept_Alternative
+                                      | N_Delay_Alternative
+                                      | N_Terminate_Alternative
                then
                   Loc := First_Sloc (N);
                else
@@ -1747,7 +1747,7 @@ package body Par_SCO is
             --  chain.
 
             Current_Dominant := No_Dominant;
-            Extend_Statement_Sequence (N, Typ => ' ');
+            Extend_Statement_Sequence (N, Typ => 'X');
 
             --  For the case of an expression-function, collect decisions
             --  embedded in the expression now.

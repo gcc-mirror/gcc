@@ -170,10 +170,6 @@ The number of most executed permilles of the profiled execution of the entire pr
 Common Joined UInteger Var(param_hot_bb_frequency_fraction) Init(1000) Param
 The denominator n of fraction 1/n of the execution frequency of the entry block of a function that a basic block of this function needs to at least have in order to be considered hot.
 
--param=hsa-gen-debug-stores=
-Common Joined UInteger Var(param_hsa_gen_debug_stores) IntegerRange(0, 1) Param
-Level of hsa debug stores verbosity.
-
 -param=inline-heuristics-hint-percent=
 Common Joined UInteger Var(param_inline_heuristics_hint_percent) Init(200) Optimization IntegerRange(100, 1000000) Param
 The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable.
@@ -916,6 +912,14 @@ Stop reverse growth if the reverse probability of best edge is less than this th
 Common Joined UInteger Var(param_tree_reassoc_width) Param Optimization
 Set the maximum number of instructions executed in parallel in reassociated tree.  If 0, use the target dependent heuristic.
 
+-param=tsan-distinguish-volatile=
+Common Joined UInteger Var(param_tsan_distinguish_volatile) IntegerRange(0, 1) Param
+Emit special instrumentation for accesses to volatiles.
+
+-param=tsan-instrument-func-entry-exit=
+Common Joined UInteger Var(param_tsan_instrument_func_entry_exit) Init(1) IntegerRange(0, 1) Param
+Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
+
 -param=uninit-control-dep-attempts=
 Common Joined UInteger Var(param_uninit_control_dep_attempts) Init(1000) IntegerRange(1, 65536) Param Optimization
 Maximum number of nested calls to search for control dependencies during uninitialized variable analysis.
@@ -971,5 +975,9 @@ Bound on number of runtime checks inserted by the vectorizer's loop versioning f
 -param=vect-max-version-for-alignment-checks=
 Common Joined UInteger Var(param_vect_max_version_for_alignment_checks) Init(6) Param Optimization
 Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check.
+
+-param=vect-partial-vector-usage=
+Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange(0, 2) Param Optimization
+Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
 
 ; This comment is to ensure we retain the blank line above.

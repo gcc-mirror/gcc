@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +94,15 @@ package Output is
    --  special output is in effect. When a special output is in effect, the
    --  output will appear on the given file descriptor only after special
    --  output has been cancelled.
+
+   procedure Push_Output;
+   --  Saves the current output destination on a stack, but leaves it
+   --  unchanged. This subprogram only supports a small stack and is normally
+   --  used with a depth of one.
+
+   procedure Pop_Output;
+   --  Changes the current output destination to be the last output destination
+   --  popped using Push_Output.
 
    procedure Indent;
    --  Increases the current indentation level. Whenever a line is written

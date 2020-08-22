@@ -21,6 +21,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _CPUID_H_INCLUDED
+#define _CPUID_H_INCLUDED
+
 /* %eax */
 #define bit_AVX512BF16	(1 << 5)
 
@@ -122,16 +125,19 @@
 #define bit_AVX512VP2INTERSECT	(1 << 8)
 #define bit_IBT	(1 << 20)
 #define bit_PCONFIG	(1 << 18)
-/* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
+#define bit_SERIALIZE	(1 << 14)
+#define bit_TSXLDTRK    (1 << 16)
+
+/* XFEATURE_ENABLED_MASK register bits (%eax == 0xd, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
 #define bit_BNDCSR      (1 << 4)
 
-/* Extended State Enumeration Sub-leaf (%eax == 13, %ecx == 1) */
+/* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)
 #define bit_XSAVEC	(1 << 1)
 #define bit_XSAVES	(1 << 3)
 
-/* PT sub leaf (%eax == 14, %ecx == 0) */
+/* PT sub leaf (%eax == 0x14, %ecx == 0) */
 /* %ebx */
 #define bit_PTWRITE	(1 << 4)
 
@@ -310,3 +316,12 @@ __get_cpuid_count (unsigned int __leaf, unsigned int __subleaf,
   __cpuid_count (__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
   return 1;
 }
+
+static __inline void
+__cpuidex (int __cpuid_info[4], int __leaf, int __subleaf)
+{
+  __cpuid_count (__leaf, __subleaf, __cpuid_info[0], __cpuid_info[1],
+		 __cpuid_info[2], __cpuid_info[3]);
+}
+
+#endif /* _CPUID_H_INCLUDED */

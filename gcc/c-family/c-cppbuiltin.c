@@ -967,7 +967,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_enumerator_attributes=201411L");
 	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411L");
 	  cpp_define (pfile, "__cpp_fold_expressions=201603L");
-	  cpp_define (pfile, "__cpp_nontype_template_args=201411L");
+	  if (cxx_dialect <= cxx17)
+	    cpp_define (pfile, "__cpp_nontype_template_args=201411L");
 	  cpp_define (pfile, "__cpp_range_based_for=201603L");
 	  if (cxx_dialect <= cxx17)
 	    cpp_define (pfile, "__cpp_constexpr=201603L");
@@ -988,16 +989,17 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx17)
 	{
-	  /* Set feature test macros for C++2a.  */
+	  /* Set feature test macros for C++20.  */
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
 	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
 	  cpp_define (pfile, "__cpp_constexpr=201907L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
-	  /* cpp_define (pfile, "__cpp_consteval=201811L"); */
+	  cpp_define (pfile, "__cpp_consteval=201811L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
 	  cpp_define (pfile, "__cpp_deduction_guides=201907L");
+	  cpp_define (pfile, "__cpp_nontype_template_args=201911L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806L");
 	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907L");
@@ -1006,7 +1008,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (flag_concepts)
         {
-          if (cxx_dialect >= cxx2a)
+	  if (cxx_dialect >= cxx20)
             cpp_define (pfile, "__cpp_concepts=201907L");
           else
             cpp_define (pfile, "__cpp_concepts=201507L");

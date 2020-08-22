@@ -3,7 +3,7 @@
 
 typedef enum { AA=1, BB=2 } my_enum;
 
-typedef struct { my_enum a:4 ; unsigned b:28; } stru;
+typedef struct { my_enum a:4 ; unsigned b:28; } stru; // { dg-warning "width.*exceeds its type" "" { target { ! int32plus } } }
 
 void foo (char c, my_enum x, int i)
 {

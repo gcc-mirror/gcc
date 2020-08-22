@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,10 +120,9 @@ package body SCIL_LL is
                null;
 
             when N_SCIL_Membership_Test =>
-               pragma Assert (Nkind_In (N, N_Identifier,
-                                           N_And_Then,
-                                           N_Or_Else,
-                                           N_Expression_With_Actions));
+               pragma Assert
+                 (Nkind (N) in N_Identifier | N_And_Then | N_Or_Else |
+                               N_Expression_With_Actions);
                null;
 
             when others =>

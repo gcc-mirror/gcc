@@ -970,7 +970,7 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, "  Read from file: %s\n",
 	     lto_file_data->file_name);
 
-  fprintf(f, "  AUX2: %d\n", aux2);
+  fprintf (f, "  AUX2: %d\n", aux2);
 }
 
 /* Dump symtab node to F.  */
@@ -1089,6 +1089,11 @@ symtab_node::verify_base (void)
   else
     {
       error ("node has unknown type");
+      error_found = true;
+    }
+  if (order < 0 || order >= symtab->order)
+    {
+      error ("node has invalid order %i", order);
       error_found = true;
     }
    
@@ -1332,6 +1337,14 @@ symtab_node::verify_symtab_nodes (void)
 {
   symtab_node *node;
   hash_map<tree, symtab_node *> comdat_head_map (251);
+  asm_node *anode;
+
+  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+    if (anode->order < 0 || anode->order >= symtab->order)
+       {
+	  error ("invalid order in asm node %i", anode->order);
+	  internal_error ("symtab_node::verify failed");
+       }
 
   FOR_EACH_SYMBOL (node)
     {

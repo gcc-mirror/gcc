@@ -1,7 +1,7 @@
 // PR c++/89833
 // Test to verify that the same specializations on non-type template
 // parameters of class types are in fact treated as the same.
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct A1 { char c[5]; };
 

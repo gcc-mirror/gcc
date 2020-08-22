@@ -1074,7 +1074,7 @@ init_environment_variables (void)
 
   hsa_runtime_lib = secure_getenv ("HSA_RUNTIME_LIB");
   if (hsa_runtime_lib == NULL)
-    hsa_runtime_lib = HSA_RUNTIME_LIB "libhsa-runtime64.so";
+    hsa_runtime_lib = HSA_RUNTIME_LIB "libhsa-runtime64.so.1";
 
   support_cpu_devices = secure_getenv ("GCN_SUPPORT_CPU_DEVICES");
 
@@ -1135,40 +1135,6 @@ get_executable_symbol_name (hsa_executable_symbol_t symbol)
   res[len] = '\0';
 
   return res;
-}
-
-/* Helper function for find_executable_symbol.  */
-
-static hsa_status_t
-find_executable_symbol_1 (hsa_executable_t executable,
-			  hsa_executable_symbol_t symbol,
-			  void *data)
-{
-  hsa_executable_symbol_t *res = (hsa_executable_symbol_t *)data;
-  *res = symbol;
-  return HSA_STATUS_INFO_BREAK;
-}
-
-/* Find a global symbol in EXECUTABLE, save to *SYMBOL and return true.  If not
-   found, return false.  */
-
-static bool
-find_executable_symbol (hsa_executable_t executable,
-			hsa_executable_symbol_t *symbol)
-{
-  hsa_status_t status;
-
-  status
-    = hsa_fns.hsa_executable_iterate_symbols_fn (executable,
-						 find_executable_symbol_1,
-						 symbol);
-  if (status != HSA_STATUS_INFO_BREAK)
-    {
-      hsa_error ("Could not find executable symbol", status);
-      return false;
-    }
-
-  return true;
 }
 
 /* Get the number of GPU Compute Units.  */
@@ -2007,13 +1973,15 @@ init_kernel_properties (struct kernel_info *kernel)
   hsa_status_t status;
   struct agent_info *agent = kernel->agent;
   hsa_executable_symbol_t kernel_symbol;
+  char *buf = alloca (strlen (kernel->name) + 4);
+  sprintf (buf, "%s.kd", kernel->name);
   status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						 kernel->name, agent->id,
+						 buf, agent->id,
 						 0, &kernel_symbol);
   if (status != HSA_STATUS_SUCCESS)
     {
       hsa_warn ("Could not find symbol for kernel in the code object", status);
-      fprintf (stderr, "not found name: '%s'\n", kernel->name);
+      fprintf (stderr, "not found name: '%s'\n", buf);
       dump_executable_symbols (agent->executable);
       goto failure;
     }
@@ -2327,61 +2295,6 @@ init_basic_kernel_info (struct kernel_info *kernel,
   return true;
 }
 
-/* Find the load_offset for MODULE, save to *LOAD_OFFSET, and return true.  If
-   not found, return false.  */
-
-static bool
-find_load_offset (Elf64_Addr *load_offset, struct agent_info *agent,
-		  struct module_info *module, Elf64_Ehdr *image,
-		  Elf64_Shdr *sections)
-{
-  bool res = false;
-
-  hsa_status_t status;
-
-  hsa_executable_symbol_t symbol;
-  if (!find_executable_symbol (agent->executable, &symbol))
-    return false;
-
-  status = hsa_fns.hsa_executable_symbol_get_info_fn
-    (symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS, load_offset);
-  if (status != HSA_STATUS_SUCCESS)
-    {
-      hsa_error ("Could not extract symbol address", status);
-      return false;
-    }
-
-  char *symbol_name = get_executable_symbol_name (symbol);
-  if (symbol_name == NULL)
-    return false;
-
-  /* Find the kernel function in ELF, and calculate actual load offset.  */
-  for (int i = 0; i < image->e_shnum; i++)
-    if (sections[i].sh_type == SHT_SYMTAB)
-      {
-	Elf64_Shdr *strtab = &sections[sections[i].sh_link];
-	char *strings = (char *)image + strtab->sh_offset;
-
-	for (size_t offset = 0;
-	     offset < sections[i].sh_size;
-	     offset += sections[i].sh_entsize)
-	  {
-	    Elf64_Sym *sym = (Elf64_Sym*)((char*)image
-					  + sections[i].sh_offset
-					  + offset);
-	    if (strcmp (symbol_name, strings + sym->st_name) == 0)
-	      {
-		*load_offset -= sym->st_value;
-		res = true;
-		break;
-	      }
-	  }
-      }
-
-  free (symbol_name);
-  return res;
-}
-
 /* Check that the GCN ISA of the given image matches the ISA of the agent. */
 
 static bool
@@ -2421,7 +2334,6 @@ static bool
 create_and_finalize_hsa_program (struct agent_info *agent)
 {
   hsa_status_t status;
-  int reloc_count = 0;
   bool res = true;
   if (pthread_mutex_lock (&agent->prog_mutex))
     {
@@ -2449,18 +2361,6 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 
       if (!isa_matches_agent (agent, image))
 	goto fail;
-
-      /* Hide relocations from the HSA runtime loader.
-	 Keep a copy of the unmodified section headers to use later.  */
-      Elf64_Shdr *image_sections = (Elf64_Shdr *)((char *)image
-						  + image->e_shoff);
-      for (int i = image->e_shnum - 1; i >= 0; i--)
-	{
-	  if (image_sections[i].sh_type == SHT_RELA
-	      || image_sections[i].sh_type == SHT_REL)
-	    /* Change section type to something harmless.  */
-	    image_sections[i].sh_type |= 0x80;
-	}
 
       hsa_code_object_t co = { 0 };
       status = hsa_fns.hsa_code_object_deserialize_fn
@@ -2516,131 +2416,6 @@ create_and_finalize_hsa_program (struct agent_info *agent)
       hsa_error ("Could not freeze the GCN executable", status);
       goto fail;
     }
-
-  if (agent->module)
-    {
-      struct module_info *module = agent->module;
-      Elf64_Ehdr *image = (Elf64_Ehdr *)module->image_desc->gcn_image->image;
-      Elf64_Shdr *sections = (Elf64_Shdr *)((char *)image + image->e_shoff);
-
-      Elf64_Addr load_offset;
-      if (!find_load_offset (&load_offset, agent, module, image, sections))
-	goto fail;
-
-      /* Record the physical load address range.
-	 We need this for data copies later.  */
-      Elf64_Phdr *segments = (Elf64_Phdr *)((char*)image + image->e_phoff);
-      Elf64_Addr low = ~0, high = 0;
-      for (int i = 0; i < image->e_phnum; i++)
-	if (segments[i].p_memsz > 0)
-	  {
-	    if (segments[i].p_paddr < low)
-	      low = segments[i].p_paddr;
-	    if (segments[i].p_paddr > high)
-	      high = segments[i].p_paddr + segments[i].p_memsz - 1;
-	  }
-      module->phys_address_start = low + load_offset;
-      module->phys_address_end = high + load_offset;
-
-      // Find dynamic symbol table
-      Elf64_Shdr *dynsym = NULL;
-      for (int i = 0; i < image->e_shnum; i++)
-	if (sections[i].sh_type == SHT_DYNSYM)
-	  {
-	    dynsym = &sections[i];
-	    break;
-	  }
-
-      /* Fix up relocations.  */
-      for (int i = 0; i < image->e_shnum; i++)
-	{
-	  if (sections[i].sh_type == (SHT_RELA | 0x80))
-	    for (size_t offset = 0;
-		 offset < sections[i].sh_size;
-		 offset += sections[i].sh_entsize)
-	      {
-		Elf64_Rela *reloc = (Elf64_Rela*)((char*)image
-						  + sections[i].sh_offset
-						  + offset);
-		Elf64_Sym *sym =
-		  (dynsym
-		   ? (Elf64_Sym*)((char*)image
-				  + dynsym->sh_offset
-				  + (dynsym->sh_entsize
-				     * ELF64_R_SYM (reloc->r_info)))
-		   : NULL);
-
-		int64_t S = (sym ? sym->st_value : 0);
-		int64_t P = reloc->r_offset + load_offset;
-		int64_t A = reloc->r_addend;
-		int64_t B = load_offset;
-		int64_t V, size;
-		switch (ELF64_R_TYPE (reloc->r_info))
-		  {
-		  case R_AMDGPU_ABS32_LO:
-		    V = (S + A) & 0xFFFFFFFF;
-		    size = 4;
-		    break;
-		  case R_AMDGPU_ABS32_HI:
-		    V = (S + A) >> 32;
-		    size = 4;
-		    break;
-		  case R_AMDGPU_ABS64:
-		    V = S + A;
-		    size = 8;
-		    break;
-		  case R_AMDGPU_REL32:
-		    V = S + A - P;
-		    size = 4;
-		    break;
-		  case R_AMDGPU_REL64:
-		    /* FIXME
-		       LLD seems to emit REL64 where the the assembler has
-		       ABS64.  This is clearly wrong because it's not what the
-		       compiler is expecting.  Let's assume, for now, that
-		       it's a bug.  In any case, GCN kernels are always self
-		       contained and therefore relative relocations will have
-		       been resolved already, so this should be a safe
-		       workaround.  */
-		    V = S + A/* - P*/;
-		    size = 8;
-		    break;
-		  case R_AMDGPU_ABS32:
-		    V = S + A;
-		    size = 4;
-		    break;
-		    /* TODO R_AMDGPU_GOTPCREL */
-		    /* TODO R_AMDGPU_GOTPCREL32_LO */
-		    /* TODO R_AMDGPU_GOTPCREL32_HI */
-		  case R_AMDGPU_REL32_LO:
-		    V = (S + A - P) & 0xFFFFFFFF;
-		    size = 4;
-		    break;
-		  case R_AMDGPU_REL32_HI:
-		    V = (S + A - P) >> 32;
-		    size = 4;
-		    break;
-		  case R_AMDGPU_RELATIVE64:
-		    V = B + A;
-		    size = 8;
-		    break;
-		  default:
-		    fprintf (stderr, "Error: unsupported relocation type.\n");
-		    exit (1);
-		  }
-		status = hsa_fns.hsa_memory_copy_fn ((void*)P, &V, size);
-		if (status != HSA_STATUS_SUCCESS)
-		  {
-		    hsa_error ("Failed to fix up relocation", status);
-		    goto fail;
-		  }
-		reloc_count++;
-	      }
-	}
-    }
-
-  GCN_DEBUG ("Loaded GCN kernels to device %d (%d relocations)\n",
-	     agent->device_id, reloc_count);
 
 final:
   agent->prog_finalized = true;

@@ -67,7 +67,9 @@ func testCallers(t *testing.T, pcs []uintptr, pan bool) {
 	}
 }
 
-func testCallersEqual(t *testing.T, pcs []uintptr, want []string) {
+func testCallersEqual(t *testing.T, pcs []uintptr, want []string, ignore map[string]struct{}) {
+	t.Helper()
+
 	got := make([]string, 0, len(want))
 
 	frames := runtime.CallersFrames(pcs)
@@ -76,7 +78,9 @@ func testCallersEqual(t *testing.T, pcs []uintptr, want []string) {
 		if !more || len(got) >= len(want) {
 			break
 		}
-		got = append(got, frame.Function)
+		if _, ok := ignore[frame.Function]; !ok {
+			got = append(got, frame.Function)
+		}
 	}
 	if !reflect.DeepEqual(want, got) {
 		t.Fatalf("wanted %v, got %v", want, got)
@@ -106,7 +110,7 @@ func TestCallersPanic(t *testing.T) {
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
 		testCallers(t, pcs, true)
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 	}()
 	f1(true)
 }
@@ -128,7 +132,7 @@ func TestCallersDoublePanic(t *testing.T) {
 			if recover() == nil {
 				t.Fatal("did not panic")
 			}
-			testCallersEqual(t, pcs, want)
+			testCallersEqual(t, pcs, want, nil)
 		}()
 		if recover() == nil {
 			t.Fatal("did not panic")
@@ -149,7 +153,7 @@ func TestCallersAfterRecovery(t *testing.T) {
 	defer func() {
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 	}()
 	defer func() {
 		if recover() == nil {
@@ -177,7 +181,7 @@ func TestCallersAbortedPanic(t *testing.T) {
 		// recovered, there is no remaining panic on the stack.
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 	}()
 	defer func() {
 		r := recover()
@@ -208,7 +212,7 @@ func TestCallersAbortedPanic2(t *testing.T) {
 	defer func() {
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 	}()
 	func() {
 		defer func() {
@@ -233,10 +237,16 @@ func TestCallersNilPointerPanic(t *testing.T) {
 	want := []string{"runtime.Callers", "runtime_test.TestCallersNilPointerPanic.func1",
 		"runtime.gopanic", "runtime.panicmem", "runtime.sigpanic",
 		"runtime_test.TestCallersNilPointerPanic"}
+	ign := make(map[string]struct{})
 	if runtime.Compiler == "gccgo" {
+		// The expected results of gollvm and gccgo are slightly different, the result
+		// of gccgo does not contain tRunner, and the result of gollvm does not contain
+		// sigpanic. Make these two elementes optional to pass both of gollvm and gccgo.
 		want = []string{"runtime.Callers", "runtime_test.TestCallersNilPointerPanic..func1",
-			"runtime.gopanic", "runtime.panicmem", "runtime.sigpanic",
+			"runtime.gopanic", "runtime.panicmem",
 			"runtime_test.TestCallersNilPointerPanic"}
+		ign["runtime.sigpanic"] = struct{}{}
+		ign["testing.tRunner"] = struct{}{}
 	}
 
 	defer func() {
@@ -245,7 +255,7 @@ func TestCallersNilPointerPanic(t *testing.T) {
 		}
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, ign)
 	}()
 	var p *int
 	if *p == 3 {
@@ -271,7 +281,7 @@ func TestCallersDivZeroPanic(t *testing.T) {
 		}
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 	}()
 	var n int
 	if 5/n == 1 {
@@ -298,7 +308,7 @@ func TestCallersDeferNilFuncPanic(t *testing.T) {
 		}
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 		if state == 1 {
 			t.Fatal("nil defer func panicked at defer time rather than function exit time")
 		}
@@ -328,7 +338,7 @@ func TestCallersDeferNilFuncPanicWithLoop(t *testing.T) {
 		}
 		pcs := make([]uintptr, 20)
 		pcs = pcs[:runtime.Callers(0, pcs)]
-		testCallersEqual(t, pcs, want)
+		testCallersEqual(t, pcs, want, nil)
 		if state == 1 {
 			t.Fatal("nil defer func panicked at defer time rather than function exit time")
 		}

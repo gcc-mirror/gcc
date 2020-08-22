@@ -112,9 +112,6 @@ bpf-*-*)
         ;;
 cr16-*-*)
 	;;
-crisv32-*-*)
-	cpu_type=cris
-	;;
 csky*-*-*)
 	cpu_type=csky
 	;;
@@ -577,14 +574,8 @@ cr16-*-elf)
 	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
         ;;
-crisv32-*-elf)
-	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp"
- 	;;
 cris-*-elf)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-elfmulti"
-	;;
-cris-*-linux* | crisv32-*-linux*)
-	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
 	;;
 csky-*-elf*)
 	tmake_file="csky/t-csky t-fdpbit"
@@ -743,10 +734,16 @@ i[34567]86-*-linux*)
 	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/linux-unwind.h
 	;;
-i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
+i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-kopensolaris*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
 	tm_file="${tm_file} i386/elf-lib.h"
+	;;
+i[34567]86-*-gnu*)
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	tmake_file="${tmake_file} i386/t-crtpc t-crtfm i386/t-crtstuff t-dfprules"
+	tm_file="${tm_file} i386/elf-lib.h"
+	md_unwind_header=i386/gnu-unwind.h
 	;;
 x86_64-*-linux*)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
@@ -1276,7 +1273,7 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	md_unwind_header=rs6000/aix-unwind.h
 	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble rs6000/t-aix-cxa"
-	extra_parts="crtcxa.o crtcxa_s.o crtdbase.o"
+	extra_parts="crtcxa.o crtcxa_s.o crtdbase.o crtcxa_64.o crtcxa_64_s.o crtdbase_64.o"
 	;;
 rl78-*-elf)
 	tmake_file="$tm_file t-fdpbit rl78/t-rl78"

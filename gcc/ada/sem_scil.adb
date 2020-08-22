@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,8 +86,8 @@ package body Sem_SCIL is
             --  object or parameter declaration. Interface types are still
             --  unsupported.
 
-            elsif Nkind_In (Ctrl_Tag, N_Object_Declaration,
-                                      N_Parameter_Specification)
+            elsif Nkind (Ctrl_Tag) in
+                    N_Object_Declaration | N_Parameter_Specification
             then
                Ctrl_Typ := Etype (Defining_Identifier (Ctrl_Tag));
 
@@ -132,10 +132,10 @@ package body Sem_SCIL is
             --  Check contents of the boolean expression associated with the
             --  membership test.
 
-            pragma Assert (Nkind_In (N, N_Identifier,
-                                        N_And_Then,
-                                        N_Or_Else,
-                                        N_Expression_With_Actions)
+            pragma Assert
+              (Nkind (N) in
+                 N_Identifier | N_And_Then | N_Or_Else |
+                 N_Expression_With_Actions
               and then Etype (N) = Standard_Boolean);
 
             --  Check the entity identifier of the associated tagged type (that

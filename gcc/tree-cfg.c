@@ -577,9 +577,6 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
 	      gimple_set_location (s, gimple_location (stmt));
 	      gimple_set_block (s, gimple_block (stmt));
 	      gimple_set_lhs (stmt, tmp);
-	      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-		  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-		DECL_GIMPLE_REG_P (tmp) = 1;
 	      gsi_insert_after (&i, s, GSI_SAME_STMT);
 	    }
 	  start_new_block = true;
@@ -1731,6 +1728,7 @@ group_case_labels_stmt (gswitch *stmt)
   int old_size = gimple_switch_num_labels (stmt);
   int i, next_index, new_size;
   basic_block default_bb = NULL;
+  hash_set<tree> *removed_labels = NULL;
 
   default_bb = gimple_switch_default_bb (cfun, stmt);
 
@@ -1747,8 +1745,11 @@ group_case_labels_stmt (gswitch *stmt)
       base_bb = label_to_block (cfun, CASE_LABEL (base_case));
 
       /* Discard cases that have the same destination as the default case or
-	 whose destiniation blocks have already been removed as unreachable.  */
-      if (base_bb == NULL || base_bb == default_bb)
+	 whose destination blocks have already been removed as unreachable.  */
+      if (base_bb == NULL
+	  || base_bb == default_bb
+	  || (removed_labels
+	      && removed_labels->contains (CASE_LABEL (base_case))))
 	{
 	  i++;
 	  continue;
@@ -1771,10 +1772,13 @@ group_case_labels_stmt (gswitch *stmt)
 	  /* Merge the cases if they jump to the same place,
 	     and their ranges are consecutive.  */
 	  if (merge_bb == base_bb
+	      && (removed_labels == NULL
+		  || !removed_labels->contains (CASE_LABEL (merge_case)))
 	      && wi::to_wide (CASE_LOW (merge_case)) == bhp1)
 	    {
-	      base_high = CASE_HIGH (merge_case) ?
-		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);
+	      base_high
+		= (CASE_HIGH (merge_case)
+		   ? CASE_HIGH (merge_case) : CASE_LOW (merge_case));
 	      CASE_HIGH (base_case) = base_high;
 	      next_index++;
 	    }
@@ -1795,7 +1799,29 @@ group_case_labels_stmt (gswitch *stmt)
 	{
 	  edge base_edge = find_edge (gimple_bb (stmt), base_bb);
 	  if (base_edge != NULL)
-	    remove_edge_and_dominated_blocks (base_edge);
+	    {
+	      for (gimple_stmt_iterator gsi = gsi_start_bb (base_bb);
+		   !gsi_end_p (gsi); gsi_next (&gsi))
+		if (glabel *stmt = dyn_cast <glabel *> (gsi_stmt (gsi)))
+		  {
+		    if (FORCED_LABEL (gimple_label_label (stmt))
+			|| DECL_NONLOCAL (gimple_label_label (stmt)))
+		      {
+			/* Forced/non-local labels aren't going to be removed,
+			   but they will be moved to some neighbouring basic
+			   block. If some later case label refers to one of
+			   those labels, we should throw that case away rather
+			   than keeping it around and refering to some random
+			   other basic block without an edge to it.  */
+			if (removed_labels == NULL)
+			  removed_labels = new hash_set<tree>;
+			removed_labels->add (gimple_label_label (stmt));
+		      }
+		  }
+		else
+		  break;
+	      remove_edge_and_dominated_blocks (base_edge);
+	    }
 	  i = next_index;
 	  continue;
 	}
@@ -1812,6 +1838,7 @@ group_case_labels_stmt (gswitch *stmt)
   if (new_size < old_size)
     gimple_switch_set_num_labels (stmt, new_size);
 
+  delete removed_labels;
   return new_size < old_size;
 }
 
@@ -2983,12 +3010,6 @@ verify_address (tree t, bool verify_addressable)
 	|| TREE_CODE (base) == RESULT_DECL))
     return false;
 
-  if (DECL_GIMPLE_REG_P (base))
-    {
-      error ("%<DECL_GIMPLE_REG_P%> set on a variable with address taken");
-      return true;
-    }
-
   if (verify_addressable && !TREE_ADDRESSABLE (base))
     {
       error ("address taken but %<TREE_ADDRESSABLE%> bit not set");
@@ -3591,13 +3612,21 @@ verify_gimple_assign_unary (gassign *stmt)
 	/* Allow conversions from pointer type to integral type only if
 	   there is no sign or zero extension involved.
 	   For targets were the precision of ptrofftype doesn't match that
-	   of pointers we need to allow arbitrary conversions to ptrofftype.  */
+	   of pointers we allow conversions to types where
+	   POINTERS_EXTEND_UNSIGNED specifies how that works.  */
 	if ((POINTER_TYPE_P (lhs_type)
 	     && INTEGRAL_TYPE_P (rhs1_type))
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
-		    || ptrofftype_p (lhs_type))))
+#if defined(POINTERS_EXTEND_UNSIGNED)
+		    || (TYPE_MODE (rhs1_type) == ptr_mode
+			&& (TYPE_PRECISION (lhs_type)
+			      == BITS_PER_WORD /* word_mode */
+			    || (TYPE_PRECISION (lhs_type)
+				  == GET_MODE_PRECISION (Pmode))))
+#endif
+		   )))
 	  return false;
 
 	/* Allow conversion from integral to offset type and vice versa.  */
@@ -4156,7 +4185,7 @@ verify_gimple_assign_ternary (gassign *stmt)
       return true;
     }
 
-  if (((rhs_code == VEC_COND_EXPR || rhs_code == COND_EXPR)
+  if ((rhs_code == COND_EXPR
        ? !is_gimple_condexpr (rhs1) : !is_gimple_val (rhs1))
       || !is_gimple_val (rhs2)
       || !is_gimple_val (rhs3))
@@ -8439,8 +8468,8 @@ stmt_can_terminate_bb_p (gimple *t)
       && (call_flags & ECF_NOTHROW)
       && !(call_flags & ECF_RETURNS_TWICE)
       /* fork() doesn't really return twice, but the effect of
-         wrapping it in __gcov_fork() which calls __gcov_flush()
-	 and clears the counters before forking has the same
+	 wrapping it in __gcov_fork() which calls __gcov_dump() and
+	 __gcov_reset() and clears the counters before forking has the same
 	 effect as returning twice.  Force a fake edge.  */
       && !fndecl_built_in_p (fndecl, BUILT_IN_FORK))
     return false;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -458,8 +458,7 @@ package body Sem_Case is
          Choice      : Node_Id;
          Choice_Hi   : Uint;
          Choice_Lo   : Uint;
-         Prev_Choice : Node_Id;
-         pragma Warnings (Off, Prev_Choice);
+         Prev_Choice : Node_Id := Empty;
          Prev_Hi     : Uint;
 
       begin
@@ -484,6 +483,8 @@ package body Sem_Case is
                      exit;
                   end if;
                end loop;
+
+               pragma Assert (Present (Prev_Choice));
 
                if Sloc (Prev_Choice) <= Sloc (Choice) then
                   Error_Msg_Sloc := Sloc (Prev_Choice);
@@ -997,7 +998,8 @@ package body Sem_Case is
 
       function Lit_Of (Value : Uint) return Node_Id;
       --  Returns the Node_Id for the enumeration literal corresponding to the
-      --  position given by Value within the enumeration type Choice_Type.
+      --  position given by Value within the enumeration type Choice_Type. The
+      --  returned value has its Is_Static_Expression flag set to true.
 
       ------------------
       -- Build_Choice --
@@ -1011,10 +1013,11 @@ package body Sem_Case is
          --  If there is only one choice value missing between Value1 and
          --  Value2, build an integer or enumeration literal to represent it.
 
-         if (Value2 - Value1) = 0 then
+         if Value1 = Value2 then
             if Is_Integer_Type (Choice_Type) then
                Lit_Node := Make_Integer_Literal (Loc, Value1);
                Set_Etype (Lit_Node, Choice_Type);
+               Set_Is_Static_Expression (Lit_Node);
             else
                Lit_Node := Lit_Of (Value1);
             end if;
@@ -1027,8 +1030,10 @@ package body Sem_Case is
             if Is_Integer_Type (Choice_Type) then
                Lo := Make_Integer_Literal (Loc, Value1);
                Set_Etype (Lo, Choice_Type);
+               Set_Is_Static_Expression (Lo);
                Hi := Make_Integer_Literal (Loc, Value2);
                Set_Etype (Hi, Choice_Type);
+               Set_Is_Static_Expression (Hi);
                Lit_Node :=
                  Make_Range (Loc,
                    Low_Bound  => Lo,

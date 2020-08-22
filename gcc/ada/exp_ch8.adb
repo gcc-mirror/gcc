@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,7 +125,7 @@ package body Exp_Ch8 is
          if Modify_Tree_For_C then
             return True;
 
-         elsif Nkind_In (Nam, N_Indexed_Component, N_Slice) then
+         elsif Nkind (Nam) in N_Indexed_Component | N_Slice then
             if Is_Packed (Etype (Prefix (Nam))) then
                return True;
 
@@ -209,10 +209,7 @@ package body Exp_Ch8 is
       --  needing debug info if it comes from sources because the current
       --  setting in Freeze_Entity occurs too late. ???
 
-      if Comes_From_Source (Defining_Identifier (N)) then
-         Set_Debug_Info_Needed (Defining_Identifier (N));
-      end if;
-
+      Set_Debug_Info_Defining_Id (N);
       Decl := Debug_Renaming_Declaration (N);
 
       if Present (Decl) then

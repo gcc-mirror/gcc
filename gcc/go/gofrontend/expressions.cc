@@ -208,7 +208,7 @@ Expression::is_same_variable(Expression* a, Expression* b)
 // assignment.
 
 Expression*
-Expression::convert_for_assignment(Gogo*, Type* lhs_type,
+Expression::convert_for_assignment(Gogo* gogo, Type* lhs_type,
 				   Expression* rhs, Location location)
 {
   Type* rhs_type = rhs->type();
@@ -229,7 +229,7 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
                                                         location);
     }
   else if (!are_identical && rhs_type->interface_type() != NULL)
-    return Expression::convert_interface_to_type(lhs_type, rhs, location);
+    return Expression::convert_interface_to_type(gogo, lhs_type, rhs, location);
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
     {
       // Assigning nil to a slice.
@@ -498,7 +498,7 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
 // non-interface type.
 
 Expression*
-Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
+Expression::convert_interface_to_type(Gogo* gogo, Type *lhs_type, Expression* rhs,
                                       Location location)
 {
   // We are going to evaluate RHS multiple times.
@@ -507,8 +507,11 @@ Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
   // Build an expression to check that the type is valid.  It will
   // panic with an appropriate runtime type error if the type is not
   // valid.
-  // (lhs_type != rhs_type ? panicdottype(lhs_type, rhs_type, inter_type) :
-  //    nil /*dummy*/)
+  // (lhs_type == rhs_type ? nil /*dummy*/ :
+  //    panicdottype(lhs_type, rhs_type, inter_type))
+  // For some Oses, we need to call runtime.eqtype instead of
+  // lhs_type == rhs_type, as we may have unmerged type descriptors
+  // from shared libraries.
   Expression* lhs_type_expr = Expression::make_type_descriptor(lhs_type,
                                                                 location);
   Expression* rhs_descriptor =
@@ -518,15 +521,23 @@ Expression::convert_interface_to_type(Type *lhs_type, Expression* rhs,
   Expression* rhs_inter_expr = Expression::make_type_descriptor(rhs_type,
                                                                 location);
 
-  Expression* cond = Expression::make_binary(OPERATOR_NOTEQ, lhs_type_expr,
-                                             rhs_descriptor, location);
+  Expression* cond;
+  if (gogo->need_eqtype()) {
+    cond = Runtime::make_call(Runtime::EQTYPE, location,
+                              2, lhs_type_expr,
+                              rhs_descriptor);
+  } else {
+    cond = Expression::make_binary(OPERATOR_EQEQ, lhs_type_expr,
+                                   rhs_descriptor, location);
+  }
+
   rhs_descriptor = Expression::get_interface_type_descriptor(rhs);
   Expression* panic = Runtime::make_call(Runtime::PANICDOTTYPE, location,
                                          3, lhs_type_expr->copy(),
                                          rhs_descriptor,
                                          rhs_inter_expr);
   Expression* nil = Expression::make_nil(location);
-  Expression* check = Expression::make_conditional(cond, panic, nil,
+  Expression* check = Expression::make_conditional(cond, nil, panic,
                                                    location);
 
   // If the conversion succeeds, pull out the value.
@@ -556,7 +567,10 @@ Expression::get_backend(Translate_context* context)
 {
   // The child may have marked this expression as having an error.
   if (this->classification_ == EXPRESSION_ERROR)
-    return context->backend()->error_expression();
+    {
+      go_assert(saw_errors());
+      return context->backend()->error_expression();
+    }
 
   return this->do_get_backend(context);
 }
@@ -4157,32 +4171,8 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
       go_assert(e->integer_type() != NULL);
       go_assert(this->expr_->is_variable());
 
-      Runtime::Function code;
-      if (e->integer_type()->is_byte())
-        {
-          if (this->no_copy_)
-            {
-              if (gogo->debug_optimization())
-                go_debug(loc, "no copy string([]byte)");
-              Expression* ptr = Expression::make_slice_info(this->expr_,
-                                                            SLICE_INFO_VALUE_POINTER,
-                                                            loc);
-              Expression* len = Expression::make_slice_info(this->expr_,
-                                                            SLICE_INFO_LENGTH,
-                                                            loc);
-              Expression* str = Expression::make_string_value(ptr, len, loc);
-              return str->get_backend(context);
-            }
-          code = Runtime::SLICEBYTETOSTRING;
-        }
-      else
-        {
-          go_assert(e->integer_type()->is_rune());
-          code = Runtime::SLICERUNETOSTRING;
-        }
-
       Expression* buf;
-      if (this->no_escape_)
+      if (this->no_escape_ && !this->no_copy_)
         {
           Type* byte_type = Type::lookup_integer_type("uint8");
           Expression* buflen =
@@ -4194,8 +4184,30 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
         }
       else
         buf = Expression::make_nil(loc);
-      return Runtime::make_call(code, loc, 2, buf,
-				this->expr_)->get_backend(context);
+
+      if (e->integer_type()->is_byte())
+        {
+	  Expression* ptr =
+	    Expression::make_slice_info(this->expr_, SLICE_INFO_VALUE_POINTER,
+					loc);
+	  Expression* len =
+	    Expression::make_slice_info(this->expr_, SLICE_INFO_LENGTH, loc);
+          if (this->no_copy_)
+            {
+              if (gogo->debug_optimization())
+                go_debug(loc, "no copy string([]byte)");
+              Expression* str = Expression::make_string_value(ptr, len, loc);
+              return str->get_backend(context);
+            }
+	  return Runtime::make_call(Runtime::SLICEBYTETOSTRING, loc, 3, buf,
+				    ptr, len)->get_backend(context);
+        }
+      else
+        {
+          go_assert(e->integer_type()->is_rune());
+	  return Runtime::make_call(Runtime::SLICERUNETOSTRING, loc, 2, buf,
+				    this->expr_)->get_backend(context);
+	}
     }
   else if (type->is_slice_type() && expr_type->is_string_type())
     {
@@ -6041,10 +6053,7 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 						     &right_nc, location,
 						     &result))
 	      return this;
-	    return Expression::make_cast(Type::make_boolean_type(),
-					 Expression::make_boolean(result,
-								  location),
-					 location);
+	    return Expression::make_boolean(result, location);
 	  }
 	else
 	  {
@@ -6085,6 +6094,8 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
               Type* result_type = (left->type()->named_type() != NULL
                                    ? left->type()
                                    : right->type());
+	      delete left;
+	      delete right;
               return Expression::make_string_typed(left_string + right_string,
                                                    result_type, location);
             }
@@ -6092,6 +6103,8 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	    {
 	      int cmp = left_string.compare(right_string);
 	      bool r = Binary_expression::cmp_to_bool(op, cmp);
+	      delete left;
+	      delete right;
 	      return Expression::make_boolean(r, location);
 	    }
 	}
@@ -8400,8 +8413,16 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
         if (et->has_pointer())
           {
             Expression* td = Expression::make_type_descriptor(et, loc);
+	    Expression* pd =
+	      Expression::make_slice_info(arg1, SLICE_INFO_VALUE_POINTER, loc);
+	    Expression* ld =
+	      Expression::make_slice_info(arg1, SLICE_INFO_LENGTH, loc);
+	    Expression* ps =
+	      Expression::make_slice_info(arg2, SLICE_INFO_VALUE_POINTER, loc);
+	    Expression* ls =
+	      Expression::make_slice_info(arg2, SLICE_INFO_LENGTH, loc);
             ret = Runtime::make_call(Runtime::TYPEDSLICECOPY, loc,
-                                     3, td, arg1, arg2);
+                                     5, td, pd, ld, ps, ls);
           }
         else
           {

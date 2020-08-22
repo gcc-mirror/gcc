@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h" /* for "current_pass".  */
 #include "optinfo-emit-json.h"
 #include "stringpool.h" /* for get_identifier.  */
+#include "spellcheck.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -102,8 +103,9 @@ static struct dump_file_info dump_files[TDI_end] =
   DUMP_FILE_INFO (".gimple", "tree-gimple", DK_tree, 0),
   DUMP_FILE_INFO (".nested", "tree-nested", DK_tree, 0),
   DUMP_FILE_INFO (".lto-stream-out", "ipa-lto-stream-out", DK_ipa, 0),
+  DUMP_FILE_INFO (".profile-report", "profile-report", DK_ipa, 0),
 #define FIRST_AUTO_NUMBERED_DUMP 1
-#define FIRST_ME_AUTO_NUMBERED_DUMP 4
+#define FIRST_ME_AUTO_NUMBERED_DUMP 5
 
   DUMP_FILE_INFO (NULL, "lang-all", DK_lang, 0),
   DUMP_FILE_INFO (NULL, "tree-all", DK_tree, 0),
@@ -1798,7 +1800,7 @@ parse_dump_option (const char *option_value, const char **pos_p)
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
-      if (eq_ptr && !end_ptr)
+      if (eq_ptr && (!end_ptr || end_ptr > eq_ptr))
 	end_ptr = eq_ptr;
 
       if (!end_ptr)
@@ -1874,7 +1876,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
   return 1;
 }
 
-int
+void
 gcc::dump_manager::
 dump_switch_p (const char *arg)
 {
@@ -1896,8 +1898,20 @@ dump_switch_p (const char *arg)
     for (i = 0; i < m_extra_dump_files_in_use; i++)
       any |= dump_switch_p_1 (arg, &m_extra_dump_files[i], true);
 
-
-  return any;
+  if (!any)
+    {
+      auto_vec<const char *> candidates;
+      for (size_t i = TDI_none + 1; i != TDI_end; i++)
+	candidates.safe_push (dump_files[i].swtch);
+      for (size_t i = 0; i < m_extra_dump_files_in_use; i++)
+	candidates.safe_push (m_extra_dump_files[i].swtch);
+      const char *hint = find_closest_string (arg, &candidates);
+      if (hint)
+	error ("unrecognized command-line option %<-fdump-%s%>; "
+	       "did you mean %<-fdump-%s%>?", arg, hint);
+      else
+	error ("unrecognized command-line option %<-fdump-%s%>", arg);
+    }
 }
 
 /* Parse ARG as a -fopt-info switch and store flags, optgroup_flags
@@ -2064,6 +2078,34 @@ enable_rtl_dump_file (void)
 			    NULL);
   return num_enabled > 0;
 }
+
+/* debug_dump_context's ctor.  Temporarily override the dump_context
+   (to forcibly enable output to stderr).  */
+
+debug_dump_context::debug_dump_context ()
+: m_context (),
+  m_saved (&dump_context::get ()),
+  m_saved_flags (dump_flags),
+  m_saved_pflags (pflags),
+  m_saved_file (dump_file)
+{
+  set_dump_file (stderr);
+  dump_context::s_current = &m_context;
+  pflags = dump_flags = MSG_ALL_KINDS | MSG_ALL_PRIORITIES;
+  dump_context::get ().refresh_dumps_are_enabled ();
+}
+
+/* debug_dump_context's dtor.  Restore the saved dump_context.  */
+
+debug_dump_context::~debug_dump_context ()
+{
+  set_dump_file (m_saved_file);
+  dump_context::s_current = m_saved;
+  dump_flags = m_saved_flags;
+  pflags = m_saved_pflags;
+  dump_context::get ().refresh_dumps_are_enabled ();
+}
+
 
 #if CHECKING_P
 

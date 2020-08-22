@@ -29,43 +29,43 @@ int array1[] = {0, 1};
 int array2[] = {1, 0};
 int array3[] = {1, 0, 1};
 
-void 
+void
 test1()
 {
   Container con1(array1, array1);
   Container con2(array2, array2);
-  VERIFY( !std::lexicographical_compare(con1.begin(), con1.end(), 
+  VERIFY( !std::lexicographical_compare(con1.begin(), con1.end(),
 					con2.begin(), con2.end()) );
 }
 
-void 
+void
 test2()
 {
   Container con1(array1, array1 + 2);
   Container con2(array2, array2 + 2);
-  VERIFY( std::lexicographical_compare(con1.begin(), con1.end(), 
+  VERIFY( std::lexicographical_compare(con1.begin(), con1.end(),
 				       con2.begin(), con2.end()) );
 }
 
-void 
+void
 test3()
 {
   Container con1(array1, array1 + 2);
   Container con2(array2, array2 + 2);
-  VERIFY( !std::lexicographical_compare(con2.begin(), con2.end(), 
+  VERIFY( !std::lexicographical_compare(con2.begin(), con2.end(),
 				        con1.begin(), con1.end()) );
 }
 
-void 
+void
 test4()
 {
   Container con3(array3, array3 + 3);
   Container con2(array2, array2 + 2);
-  VERIFY( std::lexicographical_compare(con2.begin(), con2.end(), 
+  VERIFY( std::lexicographical_compare(con2.begin(), con2.end(),
 				       con3.begin(), con3.end()) );
 }
 
-void 
+void
 test5()
 {
   Container con3(array3, array3 + 3);
@@ -74,7 +74,30 @@ test5()
 					con2.begin(), con2.end()) );
 }
 
-int 
+void
+test6()
+{
+  VERIFY( std::lexicographical_compare(array2, array2 + 2,
+				       array3, array3 + 3) );
+  VERIFY( !std::lexicographical_compare(array3, array3 + 3,
+					array2, array2 + 2) );
+}
+
+using __gnu_test::random_access_iterator_wrapper;
+typedef test_container<int, random_access_iterator_wrapper> RaiContainer;
+
+void
+test7()
+{
+  RaiContainer con2(array2, array2 + 2);
+  RaiContainer con3(array3, array3 + 3);
+  VERIFY( std::lexicographical_compare(con2.begin(), con2.end(),
+				       con3.begin(), con3.end()) );
+  VERIFY( !std::lexicographical_compare(con3.begin(), con3.end(),
+					con2.begin(), con2.end()) );
+}
+
+int
 main()
 {
   test1();
@@ -82,4 +105,6 @@ main()
   test3();
   test4();
   test5();
+  test6();
+  test7();
 }

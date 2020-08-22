@@ -1,5 +1,5 @@
 /* PR tree-optimization/94800 */
-/* { dg-do compile } */
+/* { dg-do compile { target { lp64 } } } */
 /* { dg-require-effective-target popcountll } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 

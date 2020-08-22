@@ -5589,7 +5589,6 @@ handle_integral_assign (gimple_stmt_iterator *gsi, bool *cleanup_eh,
 	      set_strinfo (idx, si);
 	      si->writable = true;
 	      si->dont_invalidate = true;
-	      maybe_warn_overflow (stmt, lenrange[2], rvals);
 	    }
 	}
     }

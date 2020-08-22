@@ -6,23 +6,17 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -30,23 +24,25 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Atree;   use Atree;
-with Casing;  use Casing;
-with Debug;   use Debug;
-with Einfo;   use Einfo;
-with Lib;     use Lib;
-with Namet;   use Namet;
-with Nlists;  use Nlists;
-with Opt;     use Opt;
-with Output;  use Output;
-with Sem_Aux; use Sem_Aux;
-with Sinfo;   use Sinfo;
-with Sinput;  use Sinput;
-with Snames;  use Snames;
-with Stringt; use Stringt;
+with Atree;    use Atree;
+with Casing;   use Casing;
+with Debug;    use Debug;
+with Einfo;    use Einfo;
+with Lib;      use Lib;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Opt;      use Opt;
+with Output;   use Output;
+with Sem_Aux;  use Sem_Aux;
+with Sem_Eval; use Sem_Eval;
+with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
+with Snames;   use Snames;
+with Stringt;  use Stringt;
 with Table;
-with Uname;   use Uname;
-with Urealp;  use Urealp;
+with Ttypes;
+with Uname;    use Uname;
+with Urealp;   use Urealp;
 
 with Ada.Unchecked_Conversion;
 
@@ -54,18 +50,15 @@ with GNAT.HTable;
 
 package body Repinfo is
 
-   SSU : constant := 8;
-   --  Value for Storage_Unit, we do not want to get this from TTypes, since
-   --  this introduces problematic dependencies in ASIS, and in any case this
-   --  value is assumed to be 8 for the implementation of the DDA.
+   SSU : Pos renames Ttypes.System_Storage_Unit;
+   --  Value for Storage_Unit
 
    ---------------------------------------
    -- Representation of GCC Expressions --
    ---------------------------------------
 
    --    A table internal to this unit is used to hold the values of back
-   --    annotated expressions. This table is written out by -gnatt and read
-   --    back in for ASIS processing.
+   --    annotated expressions.
 
    --    Node values are stored as Uint values using the negative of the node
    --    index in this table. Constants appear as non-negative Uint values.
@@ -79,7 +72,7 @@ package body Repinfo is
 
    --  The following representation clause ensures that the above record
    --  has no holes. We do this so that when instances of this record are
-   --  written by Tree_Gen, we do not write uninitialized values to the file.
+   --  written, we do not write uninitialized values to the file.
 
    for Exp_Node use record
       Expr at  0 range 0 .. 31;
@@ -148,7 +141,7 @@ package body Repinfo is
    function Back_End_Layout return Boolean;
    --  Test for layout mode, True = back end, False = front end. This function
    --  is used rather than checking the configuration parameter because we do
-   --  not want Repinfo to depend on Targparm (for ASIS)
+   --  not want Repinfo to depend on Targparm.
 
    procedure List_Entities
      (Ent              : Entity_Id;
@@ -534,9 +527,9 @@ package body Repinfo is
 
                   List_Entities (E, Bytes_Big_Endian, True);
 
-               elsif Ekind_In (E, E_Entry,
-                                  E_Entry_Family,
-                                  E_Subprogram_Type)
+               elsif Ekind (E) in E_Entry
+                                | E_Entry_Family
+                                | E_Subprogram_Type
                then
                   if List_Representation_Info_Mechanisms then
                      List_Subprogram_Info (E);
@@ -565,9 +558,9 @@ package body Repinfo is
 
                --  Note that formals are not annotated so we skip them here
 
-               elsif Ekind_In (E, E_Constant,
-                                  E_Loop_Parameter,
-                                  E_Variable)
+               elsif Ekind (E) in E_Constant
+                                | E_Loop_Parameter
+                                | E_Variable
                then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
@@ -585,12 +578,12 @@ package body Repinfo is
 
                --  Recurse into bodies
 
-               elsif Ekind_In (E, E_Package_Body,
-                                  E_Protected_Body,
-                                  E_Protected_Type,
-                                  E_Subprogram_Body,
-                                  E_Task_Body,
-                                  E_Task_Type)
+               elsif Ekind (E) in E_Package_Body
+                                | E_Protected_Body
+                                | E_Protected_Type
+                                | E_Subprogram_Body
+                                | E_Task_Body
+                                | E_Task_Type
                then
                   List_Entities (E, Bytes_Big_Endian);
 
@@ -601,7 +594,7 @@ package body Repinfo is
                end if;
             end if;
 
-            E := Next_Entity (E);
+            Next_Entity (E);
          end loop;
 
          --  For a package body, the entities of the visible subprograms are
@@ -831,35 +824,8 @@ package body Repinfo is
    -------------------------
 
    procedure List_Linker_Section (Ent : Entity_Id) is
-      function Expr_Value_S (N : Node_Id) return Node_Id;
-      --  Returns the folded value of the expression. This function is called
-      --  in instances where it has already been determined that the expression
-      --  is static or its value is known at compile time. This version is used
-      --  for string types and returns the corresponding N_String_Literal node.
-      --  NOTE: This is an exact copy of Sem_Eval.Expr_Value_S. Licensing stops
-      --  Repinfo from within Sem_Eval. Once ASIS is removed, and the licenses
-      --  are modified, Repinfo should be able to rely on Sem_Eval.
-
-      ------------------
-      -- Expr_Value_S --
-      ------------------
-
-      function Expr_Value_S (N : Node_Id) return Node_Id is
-      begin
-         if Nkind (N) = N_String_Literal then
-            return N;
-         else
-            pragma Assert (Ekind (Entity (N)) = E_Constant);
-            return Expr_Value_S (Constant_Value (Entity (N)));
-         end if;
-      end Expr_Value_S;
-
-      --  Local variables
-
       Args : List_Id;
       Sect : Node_Id;
-
-   --  Start of processing for List_Linker_Section
 
    begin
       if Present (Linker_Section_Pragma (Ent)) then
@@ -1040,10 +1006,12 @@ package body Repinfo is
          Comp := First_Component_Or_Discriminant (Ent);
          while Present (Comp) loop
 
-            --  Skip discriminant in unchecked union (since it is not there!)
+            --  Skip a completely hidden discriminant or a discriminant in an
+            --  unchecked union (since it is not there).
 
             if Ekind (Comp) = E_Discriminant
-              and then Is_Unchecked_Union (Ent)
+              and then (Is_Completely_Hidden (Comp)
+                         or else Is_Unchecked_Union (Ent))
             then
                goto Continue;
             end if;
@@ -1312,10 +1280,12 @@ package body Repinfo is
          Comp := First_Component_Or_Discriminant (Ent);
          while Present (Comp) loop
 
-            --  Skip discriminant in unchecked union (since it is not there!)
+            --  Skip a completely hidden discriminant or a discriminant in an
+            --  unchecked union (since it is not there).
 
             if Ekind (Comp) = E_Discriminant
-              and then Is_Unchecked_Union (Ent)
+              and then (Is_Completely_Hidden (Comp)
+                         or else Is_Unchecked_Union (Ent))
             then
                goto Continue;
             end if;
@@ -1404,7 +1374,7 @@ package body Repinfo is
             Derived_Disc : Entity_Id;
 
          begin
-            Derived_Disc := First_Stored_Discriminant (Outer_Ent);
+            Derived_Disc := First_Discriminant (Outer_Ent);
 
             --  Loop over the discriminants of the extension
 
@@ -1428,7 +1398,7 @@ package body Repinfo is
                   end if;
                end if;
 
-               Next_Stored_Discriminant (Derived_Disc);
+               Next_Discriminant (Derived_Disc);
             end loop;
 
             --  Disc is not constrained by a discriminant of Outer_Ent
@@ -1497,12 +1467,13 @@ package body Repinfo is
                end if;
 
                --  If the record has discriminants and is not an unchecked
-               --  union, then display them now.
+               --  union, then display them now. Note that, even if this is
+               --  a structural layout, we list the visible discriminants.
 
                if Has_Discriminants (Ent)
                  and then not Is_Unchecked_Union (Ent)
                then
-                  Disc := First_Stored_Discriminant (Ent);
+                  Disc := First_Discriminant (Ent);
                   while Present (Disc) loop
 
                      --  If this is a record extension and the discriminant is
@@ -1540,7 +1511,7 @@ package body Repinfo is
                      List_Component_Layout (Listed_Disc, Indent => Indent);
 
                   <<Continue_Disc>>
-                     Next_Stored_Discriminant (Disc);
+                     Next_Discriminant (Disc);
                   end loop;
                end if;
 
@@ -1935,6 +1906,21 @@ package body Repinfo is
 
          when Convention_C =>
             Write_Str ("C");
+
+         when Convention_C_Variadic =>
+            declare
+               N : Nat :=
+                 Convention_Id'Pos (Convention (Ent)) -
+                   Convention_Id'Pos (Convention_C_Variadic_0);
+            begin
+               Write_Str ("C_Variadic_");
+               if N >= 10 then
+                  Write_Char ('1');
+                  N := N - 10;
+               end if;
+               pragma Assert (N < 10);
+               Write_Char (Character'Val (Character'Pos ('0') + N));
+            end;
 
          when Convention_COBOL =>
             Write_Str ("COBOL");
@@ -2335,24 +2321,6 @@ package body Repinfo is
          Write_Char (' ');
       end loop;
    end Spaces;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Rep_Table.Tree_Read;
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Rep_Table.Tree_Write;
-   end Tree_Write;
 
    ---------------------
    -- Write_Info_Line --

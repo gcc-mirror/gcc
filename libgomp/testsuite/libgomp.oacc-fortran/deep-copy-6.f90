@@ -3,6 +3,7 @@
 ! Test of attachment counters and finalize.
 
 program dtype
+  use openacc
   implicit none
   integer, parameter :: n = 512
   type mytype
@@ -11,10 +12,13 @@ program dtype
   end type mytype
   integer i
 
-  type(mytype) :: var
+  type(mytype), target :: var
+  integer, pointer :: hostptr(:)
 
   allocate(var%a(1:n))
   allocate(var%b(1:n))
+
+  hostptr => var%a
 
 !$acc data copy(var)
 
@@ -36,9 +40,20 @@ program dtype
   end do
 !$acc end parallel loop
 
+  if (.not. acc_is_present(var%a(5:n - 5))) stop 11
+  if (.not. acc_is_present(var%b(5:n - 5))) stop 12
+  if (.not. acc_is_present(var)) stop 13
 !$acc exit data copyout(var%a(5:n - 5), var%b(5:n - 5)) finalize
+  if (acc_get_device_type() .ne. acc_device_host) then
+     if (acc_is_present(var%a(5:n - 5))) stop 21
+     if (acc_is_present(var%b(5:n - 5))) stop 22
+  end if
+  if (.not. acc_is_present(var)) stop 23
 
 !$acc end data
+
+  ! See 'deep-copy-6-no_finalize.F90'.
+  if (.not. associated(hostptr, var%a)) stop 30
 
   do i = 1,4
     if (var%a(i) .ne. 0) stop 1

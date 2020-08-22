@@ -1712,12 +1712,12 @@ gfc_make_safe_expr (gfc_se * se)
    Also used for arguments to procedures with multiple entry points.  */
 
 tree
-gfc_conv_expr_present (gfc_symbol * sym)
+gfc_conv_expr_present (gfc_symbol * sym, bool use_saved_desc)
 {
-  tree decl, cond;
+  tree decl, orig_decl, cond;
 
   gcc_assert (sym->attr.dummy);
-  decl = gfc_get_symbol_decl (sym);
+  orig_decl = decl = gfc_get_symbol_decl (sym);
 
   /* Intrinsic scalars with VALUE attribute which are passed by value
      use a hidden argument to denote the present status.  */
@@ -1744,10 +1744,13 @@ gfc_conv_expr_present (gfc_symbol * sym)
       return cond;
     }
 
-  if (TREE_CODE (decl) != PARM_DECL)
+  /* Assumed-shape arrays use a local variable for the array data;
+     the actual PARAM_DECL is in a saved decl.  As the local variable
+     is NULL, it can be checked instead, unless use_saved_desc is
+     requested.  */
+
+  if (use_saved_desc && TREE_CODE (decl) != PARM_DECL)
     {
-      /* Array parameters use a temporary descriptor, we want the real
-         parameter.  */
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl))
              || GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
@@ -1761,9 +1764,12 @@ gfc_conv_expr_present (gfc_symbol * sym)
      we thus also need to check the array descriptor.  For BT_CLASS, it
      can also occur for scalars and F2003 due to type->class wrapping and
      class->class wrapping.  Note further that BT_CLASS always uses an
-     array descriptor for arrays, also for explicit-shape/assumed-size.  */
+     array descriptor for arrays, also for explicit-shape/assumed-size.
+     For assumed-rank arrays, no local variable is generated, hence,
+     the following also applies with !use_saved_desc.  */
 
-  if (!sym->attr.allocatable
+  if ((use_saved_desc || TREE_CODE (orig_decl) == PARM_DECL)
+      && !sym->attr.allocatable
       && ((sym->ts.type != BT_CLASS && !sym->attr.pointer)
 	  || (sym->ts.type == BT_CLASS
 	      && !CLASS_DATA (sym)->attr.allocatable
@@ -2607,7 +2613,8 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
     {
       /* Dereference character pointer dummy arguments
 	 or results.  */
-      if ((sym->attr.pointer || sym->attr.allocatable)
+      if ((sym->attr.pointer || sym->attr.allocatable
+	   || (sym->as && sym->as->type == AS_ASSUMED_RANK))
 	  && (sym->attr.dummy
 	      || sym->attr.function
 	      || sym->attr.result))
@@ -6237,6 +6244,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      || gfc_expr_attr (e).allocatable)
 		    set_dtype_for_unallocated (&parmse, e);
 		  else if (e->expr_type == EXPR_VARIABLE
+			   && e->ref
+			   && e->ref->u.ar.type == AR_FULL
 			   && e->symtree->n.sym->attr.dummy
 			   && e->symtree->n.sym->as
 			   && e->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
@@ -8804,6 +8813,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 
   if (expr->expr_type == EXPR_FUNCTION
       && ((expr->value.function.esym
+	   && expr->value.function.esym->result
 	   && expr->value.function.esym->result->attr.pointer
 	   && !expr->value.function.esym->result->attr.dimension)
 	  || (!expr->value.function.esym && !expr->ref
@@ -9926,6 +9936,8 @@ fcncall_realloc_result (gfc_se *se, int rank)
   tree tmp;
   tree offset;
   tree zero_cond;
+  tree not_same_shape;
+  stmtblock_t shape_block;
   int n;
 
   /* Use the allocation done by the library.  Substitute the lhs
@@ -9955,7 +9967,11 @@ fcncall_realloc_result (gfc_se *se, int rank)
   tmp = gfc_conv_descriptor_data_get (res_desc);
   gfc_conv_descriptor_data_set (&se->post, desc, tmp);
 
-  /* Check that the shapes are the same between lhs and expression.  */
+  /* Check that the shapes are the same between lhs and expression.
+     The evaluation of the shape is done in 'shape_block' to avoid
+     unitialized warnings from the lhs bounds. */
+  not_same_shape = boolean_false_node;
+  gfc_start_block (&shape_block);
   for (n = 0 ; n < rank; n++)
     {
       tree tmp1;
@@ -9972,15 +9988,24 @@ fcncall_realloc_result (gfc_se *se, int rank)
       tmp = fold_build2_loc (input_location, NE_EXPR,
 			     logical_type_node, tmp,
 			     gfc_index_zero_node);
-      tmp = gfc_evaluate_now (tmp, &se->post);
-      zero_cond = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				   logical_type_node, tmp,
-				   zero_cond);
+      tmp = gfc_evaluate_now (tmp, &shape_block);
+      if (n == 0)
+	not_same_shape = tmp;
+      else
+	not_same_shape = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+					  logical_type_node, tmp,
+					  not_same_shape);
     }
 
   /* 'zero_cond' being true is equal to lhs not being allocated or the
      shapes being different.  */
-  zero_cond = gfc_evaluate_now (zero_cond, &se->post);
+  tmp = fold_build2_loc (input_location, TRUTH_OR_EXPR, logical_type_node,
+			 zero_cond, not_same_shape);
+  gfc_add_modify (&shape_block, zero_cond, tmp);
+  tmp = gfc_finish_block (&shape_block);
+  tmp = build3_v (COND_EXPR, zero_cond,
+		  build_empty_stmt (input_location), tmp);
+  gfc_add_expr_to_block (&se->post, tmp);
 
   /* Now reset the bounds returned from the function call to bounds based
      on the lhs lbounds, except where the lhs is not allocated or the shapes

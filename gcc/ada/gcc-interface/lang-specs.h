@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 1992-2018, Free Software Foundation, Inc.        *
+ *           Copyright (C) 1992-2020, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -23,6 +23,10 @@
  *                                                                          *
  ****************************************************************************/
 
+/* Pass -d* flags to the actual compiler, but mapping non-Ada
+   extensions to .ada in dump file names.  */
+#define ADA_DUMPS_OPTIONS DUMPS_OPTIONS ("%{!.adb:%{!.ads:.ada}}")
+
 /* This is the contribution to the `default_compilers' array in gcc.c for
    GNAT.  */
 
@@ -34,17 +38,15 @@
  %{!S:%{!c:%e-c or -S required for Ada}}\
  gnat1 %{I*} %{k8:-gnatk8} %{Wall:-gnatwa} %{w:-gnatws} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b) -gnatd_A} \
-    %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}%{!c:%{!S:-auxbase %b}}} \
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} \
+    %{fcompare-debug-second:-gnatd_A} \
+    %{O*} %{W*} %{w} %{p} %{pg:-p} " ADA_DUMPS_OPTIONS " \
     %{coverage:-fprofile-arcs -ftest-coverage} "
 #if defined(TARGET_VXWORKS_RTP)
    "%{fRTS=rtp|fRTS=rtp-smp|fRTS=ravenscar-cert-rtp:-mrtp} "
 #endif
    "%{gnatea:-gnatez} %{g*&m*&f*} "
    "%1 %{!S:%{o*:%w%*-gnatO}} \
-    %i %{S:%W{o*}%{!o*:-o %b.s}} \
+    %i %{S:%W{o*}%{!o*:-o %w%b.s}} \
     %{gnatc*|gnats*: -o %j} %{-param*} \
     %{!gnatc*:%{!gnats*:%(invoke_as)}}", 0, 0, 0},
 
@@ -53,9 +55,7 @@
  %{!c:%e-c required for gnat2why}\
  gnat1why %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
-    %{a} %{d*} \
+    %{a} " ADA_DUMPS_OPTIONS " \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \
@@ -66,9 +66,7 @@
  %{!c:%e-c required for gnat2scil}\
  gnat1scil %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
-    %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
-    %{a} %{d*} \
+    %{a} " ADA_DUMPS_OPTIONS " \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
     %i \

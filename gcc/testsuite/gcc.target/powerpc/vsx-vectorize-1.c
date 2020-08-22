@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2 -ftree-vectorize -fno-tree-loop-distribute-patterns -fno-vect-cost-model -fdump-tree-vect-details" } */

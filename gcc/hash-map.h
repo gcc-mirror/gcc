@@ -177,7 +177,8 @@ public:
       return !ins;
     }
 
-  /* if the passed in key is in the map return its value otherwise NULL.  */
+  /* If the passed in key is in the map return pointer to its value
+     otherwise NULL.  */
 
   Value *get (const Key &k)
     {

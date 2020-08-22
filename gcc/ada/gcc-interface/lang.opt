@@ -104,8 +104,4 @@ fbuiltin-printf
 Ada Undocumented
 Ignored.
 
-fopenacc
-Ada LTO
-; Documented in C but it should be: Enable OpenACC support
-
 ; This comment is to ensure we retain the blank line above.

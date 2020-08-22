@@ -45,6 +45,15 @@ extern "C" {
 
 #define ITM_NORETURN	__attribute__((noreturn))
 #define ITM_PURE __attribute__((transaction_pure))
+#ifdef _GLIBCXX_NOTHROW
+# define _ITM_NOTHROW _GLIBCXX_NOTHROW
+#elif !defined (__cplusplus)
+# define _ITM_NOTHROW __attribute__((__nothrow__))
+#elif __cplusplus < 201103L
+# define _ITM_NOTHROW throw ()
+#else
+# define _ITM_NOTHROW noexcept
+#endif  
 
 /* The following are externally visible definitions and functions, though
    only very few of these should be called by user code.  */
@@ -282,11 +291,11 @@ extern void *_ITM_getTMCloneSafe (void *) ITM_REGPARM;
 extern void _ITM_registerTMCloneTable (void *, size_t);
 extern void _ITM_deregisterTMCloneTable (void *);
 
-extern void *_ITM_cxa_allocate_exception (size_t);
-extern void _ITM_cxa_free_exception (void *exc_ptr);
+extern void *_ITM_cxa_allocate_exception (size_t) _ITM_NOTHROW;
+extern void _ITM_cxa_free_exception (void *exc_ptr) _ITM_NOTHROW;
 extern void _ITM_cxa_throw (void *obj, void *tinfo, void (*dest) (void *));
-extern void *_ITM_cxa_begin_catch (void *exc_ptr);
-extern void _ITM_cxa_end_catch (void);
+extern void *_ITM_cxa_begin_catch (void *exc_ptr) _ITM_NOTHROW;
+extern void _ITM_cxa_end_catch (void); /* This can throw.  */
 extern void _ITM_commitTransactionEH(void *exc_ptr) ITM_REGPARM;
 
 #ifdef __cplusplus

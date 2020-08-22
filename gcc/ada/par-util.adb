@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -181,7 +181,7 @@ package body Util is
       if Ada_Version = Ada_95
         and then Warn_On_Ada_2005_Compatibility
       then
-         if Nam_In (Token_Name, Name_Overriding, Name_Synchronized)
+         if Token_Name in Name_Overriding | Name_Synchronized
            or else (Token_Name = Name_Interface
                      and then Prev_Token /= Tok_Pragma)
          then
@@ -276,7 +276,7 @@ package body Util is
 
       --  If we have a right paren, then that is taken as ending the list
       --  i.e. no comma is present.
-      --  Ditto for a right bracket in Ada2020.
+      --  Ditto for a right bracket in Ada 2020.
 
       elsif Token = Tok_Right_Paren
         or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020)

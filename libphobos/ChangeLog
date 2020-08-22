@@ -1,3 +1,34 @@
+2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d05ebaad.
+	* src/MERGE: Merge upstream phobos 021ae0df7.
+	* testsuite/libphobos.typeinfo/struct-align.d: Remove empty statement.
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* libdruntime/config/x86/switchcontext.S: Include <cet.h> if
+	__CET__ is defined.
+	(_CET_ENDBR): New.  Define if __CET__ is not defined.
+	(fiber_switchContext): Add _CET_ENDBR after .cfi_startproc.
+
+2020-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Add $(CET_FLAGS) to GCC FLAGS.
+	* configure.ac (CET_FLAGS): Add GCC_CET_FLAGS and AC_SUBST.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure.ac: Likewise.
+
 2020-04-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Remove

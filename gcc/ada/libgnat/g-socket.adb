@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2019, AdaCore                     --
+--                     Copyright (C) 2001-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Streams;              use Ada.Streams;
-with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Containers.Generic_Array_Sort;
+with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Finalization;
+with Ada.Streams;              use Ada.Streams;
 with Ada.Unchecked_Conversion;
 
-with GNAT.Sockets.Thin_Common; use GNAT.Sockets.Thin_Common;
 with GNAT.Sockets.Thin;        use GNAT.Sockets.Thin;
+with GNAT.Sockets.Thin_Common; use GNAT.Sockets.Thin_Common;
 
 with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
@@ -291,7 +291,7 @@ package body GNAT.Sockets is
    function Create_Address
      (Family : Family_Inet_4_6; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
      with Inline;
-   --  Creates address from family and Inet_Addr_Bytes array.
+   --  Creates address from family and Inet_Addr_Bytes array
 
    function Get_Bytes (Addr : Inet_Addr_Type) return Inet_Addr_Bytes
      with Inline;
@@ -836,6 +836,7 @@ package body GNAT.Sockets is
       --  the waiting task to resume its execution.
 
       Res := Signalling_Fds.Create (Two_Fds'Access);
+      pragma Annotate (CodePeer, Modified, Two_Fds);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -886,6 +887,7 @@ package body GNAT.Sockets is
         ((if Family = Family_Unspec then Default_Socket_Pair_Family
           else Families (Family)),
          Modes (Mode), Levels (Level), Pair'Access);
+      pragma Annotate (CodePeer, Modified, Pair);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -957,8 +959,12 @@ package body GNAT.Sockets is
       if Item.Last /= No_Socket then
          Get_Socket_From_Set
            (Item.Set'Access, Last => L'Access, Socket => S'Access);
+         pragma Annotate (CodePeer, Modified, L);
+         pragma Annotate (CodePeer, Modified, S);
+
          Item.Last := Socket_Type (L);
          Socket    := Socket_Type (S);
+
       else
          Socket := No_Socket;
       end if;
@@ -1216,7 +1222,7 @@ package body GNAT.Sockets is
       pragma Unreferenced (Family);
 
       HA     : aliased In_Addr_Union (Address.Family);
-      Buflen : constant C.int := Netdb_Buffer_Size;
+      Buflen : constant C.size_t := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Hostent;
       Err    : aliased C.int;
@@ -1271,7 +1277,7 @@ package body GNAT.Sockets is
 
       declare
          HN     : constant C.char_array := C.To_C (Name);
-         Buflen : constant C.int := Netdb_Buffer_Size;
+         Buflen : constant C.size_t := Netdb_Buffer_Size;
          Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
          Res    : aliased Hostent;
          Err    : aliased C.int;
@@ -1319,7 +1325,7 @@ package body GNAT.Sockets is
    is
       SN     : constant C.char_array := C.To_C (Name);
       SP     : constant C.char_array := C.To_C (Protocol);
-      Buflen : constant C.int := Netdb_Buffer_Size;
+      Buflen : constant C.size_t := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Servent;
 
@@ -1349,7 +1355,7 @@ package body GNAT.Sockets is
       Protocol : String) return Service_Entry_Type
    is
       SP     : constant C.char_array := C.To_C (Protocol);
-      Buflen : constant C.int := Netdb_Buffer_Size;
+      Buflen : constant C.size_t := Netdb_Buffer_Size;
       Buf    : aliased C.char_array (1 .. Netdb_Buffer_Size);
       Res    : aliased Servent;
 
@@ -2022,7 +2028,11 @@ package body GNAT.Sockets is
       type Local_Selector_Access is access Selector_Type;
       for Local_Selector_Access'Storage_Size use Selector_Type'Size;
 
-      S : Selector_Access;
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Selector_Type, Local_Selector_Access);
+
+      Local_S : Local_Selector_Access;
+      S       : Selector_Access;
       --  Selector to use for waiting
 
       R_Fd_Set : Socket_Set_Type;
@@ -2032,12 +2042,9 @@ package body GNAT.Sockets is
       --  Create selector if not provided by the user
 
       if Selector = null then
-         declare
-            Local_S : constant Local_Selector_Access := new Selector_Type;
-         begin
-            S := Local_S.all'Unchecked_Access;
-            Create_Selector (S.all);
-         end;
+         Local_S := new Selector_Type;
+         S := Local_S.all'Unchecked_Access;
+         Create_Selector (S.all);
 
       else
          S := Selector.all'Access;
@@ -2053,7 +2060,17 @@ package body GNAT.Sockets is
 
       if Selector = null then
          Close_Selector (S.all);
+         Unchecked_Free (Local_S);
       end if;
+
+   exception
+      when others =>
+         Status := Completed;
+
+         if Selector = null then
+            Close_Selector (S.all);
+            Unchecked_Free (Local_S);
+         end if;
    end Wait_On_Socket;
 
    -----------------
@@ -2709,14 +2726,14 @@ package body GNAT.Sockets is
                U4 := C.unsigned (Option.Timeout / 0.001);
 
                if Option.Timeout > 0.0 and then U4 = 0 then
-                  --  Avoid round to zero. Zero timeout mean unlimited.
+                  --  Avoid round to zero. Zero timeout mean unlimited
                   U4 := 1;
                end if;
 
                --  Old windows versions actual timeout is 500 ms + the given
                --  value (unless it is 0).
 
-               if Minus_500ms_Windows_Timeout /= 0 then
+               if Minus_500ms_Windows_Timeout then
                   if U4 > 500 then
                      U4 := U4 - 500;
 
@@ -2833,9 +2850,11 @@ package body GNAT.Sockets is
          --  Check for possible Duration overflow when Tv_Sec field is 64 bit
          --  integer.
 
-         if Val.Tv_Sec > time_t (Max_D) or else
-            (Val.Tv_Sec = time_t (Max_D) and then
-             Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
+         if Val.Tv_Sec > time_t (Max_D)
+             or else
+           (Val.Tv_Sec = time_t (Max_D)
+              and then
+            Val.Tv_Usec > suseconds_t ((Forever - Duration (Max_D)) * 1E6))
          then
             return Forever;
          end if;
@@ -2921,8 +2940,7 @@ package body GNAT.Sockets is
    -- To_Int --
    ------------
 
-   function To_Int (F : Request_Flag_Type) return C.int
-   is
+   function To_Int (F : Request_Flag_Type) return C.int is
       Current : Request_Flag_Type := F;
       Result  : C.int := 0;
 
@@ -2932,6 +2950,10 @@ package body GNAT.Sockets is
 
          if Current mod 2 /= 0 then
             if Flags (J) = -1 then
+               pragma Annotate
+                 (CodePeer, False_Positive,
+                  "test always false", "self fulfilling prophecy");
+
                Raise_Socket_Error (SOSC.EOPNOTSUPP);
             end if;
 

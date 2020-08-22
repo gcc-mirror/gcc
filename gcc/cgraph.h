@@ -947,7 +947,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       split_part (false), indirect_call_target (false), local (false),
       versionable (false), can_change_signature (false),
       redefined_extern_inline (false), tm_may_enter_irr (false),
-      ipcp_clone (false), m_uid (uid), m_summary_id (-1)
+      ipcp_clone (false), declare_variant_alt (false),
+      calls_declare_variant_alt (false), m_uid (uid), m_summary_id (-1)
   {}
 
   /* Remove the node from cgraph and all inline clones inlined into it.
@@ -1346,6 +1347,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Dump the callgraph to file F.  */
   static void dump_cgraph (FILE *f);
 
+  /* Release function dominator info if available.  */
   void maybe_release_dominators ();
 
   /* Dump the call graph to stderr.  */
@@ -1551,6 +1553,11 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned tm_may_enter_irr : 1;
   /* True if this was a clone created by ipa-cp.  */
   unsigned ipcp_clone : 1;
+  /* True if this is the deferred declare variant resolution artificial
+     function.  */
+  unsigned declare_variant_alt : 1;
+  /* True if the function calls declare_variant_alt functions.  */
+  unsigned calls_declare_variant_alt : 1;
 
 private:
   /* Unique id of the node.  */
@@ -2177,8 +2184,6 @@ private:
 /* Every top level asm statement is put into a asm_node.  */
 
 struct GTY(()) asm_node {
-
-
   /* Next asm node.  */
   asm_node *next;
   /* String for this asm node.  */
@@ -2284,7 +2289,7 @@ public:
   inline asm_node *finalize_toplevel_asm (tree asm_str);
 
   /* Analyze the whole compilation unit once it is parsed completely.  */
-  void finalize_compilation_unit (const char *);
+  void finalize_compilation_unit (void);
 
   /* C++ frontend produce same body aliases all over the place, even before PCH
      gets streamed out. It relies on us linking the aliases with their function
@@ -2294,7 +2299,7 @@ public:
   void process_same_body_aliases (void);
 
   /* Perform simple optimizations based on callgraph.  */
-  void compile (const char *);
+  void compile (void);
 
   /* Process CGRAPH_NEW_FUNCTIONS and perform actions necessary to add these
      functions into callgraph in a way so they look like ordinary reachable

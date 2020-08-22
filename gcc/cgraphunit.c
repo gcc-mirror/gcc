@@ -208,6 +208,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "lto-partition.h"
 #include "jobserver.h"
+#include "omp-offload.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -763,7 +764,7 @@ process_symver_attribute (symtab_node *n)
   if (n->weakref)
     {
       error_at (DECL_SOURCE_LOCATION (n->decl),
-		"weakref cannot be versioned");
+		"%<weakref%> cannot be versioned");
       return;
     }
   if (!TREE_PUBLIC (n->decl))
@@ -1161,6 +1162,9 @@ analyze_functions (bool first_time)
       if (node->cpp_implicit_alias)
 	  node->fixup_same_cpp_alias_visibility (node->get_alias_target ());
   build_type_inheritance_graph ();
+
+  if (flag_openmp && first_time)
+    omp_discover_implicit_declare_target ();
 
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */
@@ -2060,10 +2064,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	for (; i < nargs; i++, arg = DECL_CHAIN (arg))
 	  {
 	    tree tmp = arg;
-	    if (VECTOR_TYPE_P (TREE_TYPE (arg))
-		|| TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	      DECL_GIMPLE_REG_P (arg) = 1;
-
+	    DECL_NOT_GIMPLE_REG_P (arg) = 0;
 	    if (!is_gimple_val (arg))
 	      {
 		tmp = create_tmp_reg (TYPE_MAIN_VARIANT
@@ -2498,7 +2499,6 @@ expand_all_functions (void)
 
 enum cgraph_order_sort_kind
 {
-  ORDER_UNDEFINED = 0,
   ORDER_FUNCTION,
   ORDER_VAR,
   ORDER_VAR_UNDEF,
@@ -2507,6 +2507,30 @@ enum cgraph_order_sort_kind
 
 struct cgraph_order_sort
 {
+  /* Construct from a cgraph_node.  */
+  cgraph_order_sort (cgraph_node *node)
+  : kind (ORDER_FUNCTION), order (node->order)
+  {
+    u.f = node;
+  }
+
+  /* Construct from a varpool_node.  */
+  cgraph_order_sort (varpool_node *node)
+  : kind (node->definition ? ORDER_VAR : ORDER_VAR_UNDEF), order (node->order)
+  {
+    u.v = node;
+  }
+
+  /* Construct from a asm_node.  */
+  cgraph_order_sort (asm_node *node)
+  : kind (ORDER_ASM), order (node->order)
+  {
+    u.a = node;
+  }
+
+  /* Assembly cgraph_order_sort based on its type.  */
+  void process ();
+
   enum cgraph_order_sort_kind kind;
   union
   {
@@ -2514,7 +2538,44 @@ struct cgraph_order_sort
     varpool_node *v;
     asm_node *a;
   } u;
+  int order;
 };
+
+/* Assembly cgraph_order_sort based on its type.  */
+
+void
+cgraph_order_sort::process ()
+{
+  switch (kind)
+    {
+    case ORDER_FUNCTION:
+      u.f->process = 0;
+      u.f->expand ();
+      break;
+    case ORDER_VAR:
+      u.v->assemble_decl ();
+      break;
+    case ORDER_VAR_UNDEF:
+      assemble_undefined_decl (u.v->decl);
+      break;
+    case ORDER_ASM:
+      assemble_asm (u.a->asm_str);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Compare cgraph_order_sort by order.  */
+
+static int
+cgraph_order_cmp (const void *a_p, const void *b_p)
+{
+  const cgraph_order_sort *nodea = (const cgraph_order_sort *)a_p;
+  const cgraph_order_sort *nodeb = (const cgraph_order_sort *)b_p;
+
+  return nodea->order - nodeb->order;
+}
 
 /* Output all functions, variables, and asm statements in the order
    according to their order fields, which is the order in which they
@@ -2525,89 +2586,41 @@ struct cgraph_order_sort
 static void
 output_in_order (void)
 {
-  int max;
-  cgraph_order_sort *nodes;
   int i;
-  cgraph_node *pf;
-  varpool_node *pv;
-  asm_node *pa;
-  max = symtab->order;
-  nodes = XCNEWVEC (cgraph_order_sort, max);
+  cgraph_node *cnode;
+  varpool_node *vnode;
+  asm_node *anode;
+  auto_vec<cgraph_order_sort> nodes;
+  cgraph_order_sort *node;
 
-  FOR_EACH_DEFINED_FUNCTION (pf)
-    {
-      if (pf->process && !pf->thunk.thunk_p && !pf->alias)
-	{
-	  if (!pf->no_reorder)
-	    continue;
-	  i = pf->order;
-	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-	  nodes[i].kind = ORDER_FUNCTION;
-	  nodes[i].u.f = pf;
-	}
-    }
+  FOR_EACH_DEFINED_FUNCTION (cnode)
+    if (cnode->process && !cnode->thunk.thunk_p
+	&& !cnode->alias && cnode->no_reorder)
+      nodes.safe_push (cgraph_order_sort (cnode));
 
   /* There is a similar loop in symbol_table::output_variables.
      Please keep them in sync.  */
-  FOR_EACH_VARIABLE (pv)
-    {
-      if (!pv->no_reorder)
-	continue;
-      if (DECL_HARD_REGISTER (pv->decl)
-	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
-	continue;
-      i = pv->order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = pv->definition ? ORDER_VAR : ORDER_VAR_UNDEF;
-      nodes[i].u.v = pv;
-    }
+  FOR_EACH_VARIABLE (vnode)
+    if (vnode->no_reorder
+	&& !DECL_HARD_REGISTER (vnode->decl)
+	&& !DECL_HAS_VALUE_EXPR_P (vnode->decl))
+      nodes.safe_push (cgraph_order_sort (vnode));
 
-  for (pa = symtab->first_asm_symbol (); pa; pa = pa->next)
-    {
-      i = pa->order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = ORDER_ASM;
-      nodes[i].u.a = pa;
-    }
+  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+    nodes.safe_push (cgraph_order_sort (anode));
+
+  /* Sort nodes by order.  */
+  nodes.qsort (cgraph_order_cmp);
 
   /* In toplevel reorder mode we output all statics; mark them as needed.  */
+  FOR_EACH_VEC_ELT (nodes, i, node)
+    if (node->kind == ORDER_VAR)
+      node->u.v->finalize_named_section_flags ();
 
-  for (i = 0; i < max; ++i)
-    if (nodes[i].kind == ORDER_VAR)
-      nodes[i].u.v->finalize_named_section_flags ();
-
-  for (i = 0; i < max; ++i)
-    {
-      switch (nodes[i].kind)
-	{
-	case ORDER_FUNCTION:
-	  nodes[i].u.f->process = 0;
-	  nodes[i].u.f->expand ();
-	  break;
-
-	case ORDER_VAR:
-	  nodes[i].u.v->assemble_decl ();
-	  break;
-
-	case ORDER_VAR_UNDEF:
-	  assemble_undefined_decl (nodes[i].u.v->decl);
-	  break;
-
-	case ORDER_ASM:
-	  assemble_asm (nodes[i].u.a->asm_str);
-	  break;
-
-	case ORDER_UNDEFINED:
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
+  FOR_EACH_VEC_ELT (nodes, i, node)
+    node->process ();
 
   symtab->clear_asm_symbols ();
-
-  free (nodes);
 }
 
 static void
@@ -2825,8 +2838,8 @@ maybe_compile_in_parallel (void)
   symtab_node::checking_verify_symtab_nodes ();
 
   /* Partition the program so that COMDATs get mapped to the same
-     partition. If promote_statics is true, it also maps statics
-     to the same partition. If balance is true, try to balance the
+     partition.  If promote_statics is true, it also maps statics
+     to the same partition.  If balance is true, try to balance the
      partitions for compilation performance.  */
   lto_merge_comdat_map (balance, promote_statics, num_jobs);
 
@@ -2835,7 +2848,7 @@ maybe_compile_in_parallel (void)
   FOR_EACH_SYMBOL (node)
     node->aux = NULL;
 
-  /* We decided that partitioning is a bad idea. In this case, just
+  /* We decided that partitioning is a bad idea.  In this case, just
      proceed with the default compilation method.  */
   if (ltrans_partitions.length () <= 1)
     {
@@ -2924,7 +2937,7 @@ maybe_compile_in_parallel (void)
 /* Perform simple optimizations based on callgraph.  */
 
 void
-symbol_table::compile (const char *name)
+symbol_table::compile (void)
 {
   if (seen_error ())
     return;
@@ -2970,7 +2983,6 @@ symbol_table::compile (const char *name)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
-  init_asm_output (name);
   if (split_outputs)
     handle_additional_asm (childno);
 
@@ -3141,7 +3153,7 @@ debuginfo_early_stop (void)
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
 void
-symbol_table::finalize_compilation_unit (const char *name)
+symbol_table::finalize_compilation_unit (void)
 {
   timevar_push (TV_CGRAPH);
 
@@ -3184,11 +3196,9 @@ symbol_table::finalize_compilation_unit (const char *name)
 
   if (!seen_error ())
     {
-      /* Emit early debug for reachable functions, and by consequence,
-	 locally scoped symbols.  */
-      struct cgraph_node *cnode;
-      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
-	(*debug_hooks->early_global_decl) (cnode->decl);
+      /* Give the frontends the chance to emit early debug based on
+	 what is still reachable in the TU.  */
+      (*lang_hooks.finalize_early_debug) ();
 
       /* Clean up anything that needs cleaning up after initial debug
 	 generation.  */
@@ -3198,7 +3208,7 @@ symbol_table::finalize_compilation_unit (const char *name)
     }
 
   /* Finally drive the pass manager.  */
-  compile (name);
+  compile ();
 
   timevar_pop (TV_CGRAPH);
 }

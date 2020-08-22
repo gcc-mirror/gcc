@@ -810,7 +810,7 @@ gfc_add_modify (block, var, build_int_cst (integer_type_node, 42));
 @end smallexample
 
 @node Converting Expressions
-@section Converting Expressons to tree
+@section Converting Expressions to tree
 
 Converting expressions to @code{tree} is done by functions called
 @code{gfc_conv_*}.

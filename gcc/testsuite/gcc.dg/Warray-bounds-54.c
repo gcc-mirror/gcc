@@ -10,9 +10,9 @@ int f0 (void)
   return p[2];      // { dg-warning "-Warray-bounds" }
 }
 
-int f1 (void)
+int f1 (int j)
 {
-  int i;
+  int i = j;
   int *p = &i;
   return p[2];      // { dg-warning "-Warray-bounds" }
 }
@@ -22,3 +22,5 @@ int f2 (int i)
   int *p = &i;
   return p[2];      // { dg-warning "-Warray-bounds" }
 }
+
+/* { dg-prune-output "-Wuninitialized" } */

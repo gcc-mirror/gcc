@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -261,10 +261,23 @@ private
    subtype Memory_Index is Memory_Size;
    --  Index into the memory storage of a single chunk
 
+   Memory_Alignment : constant := Standard'Maximum_Alignment * 2;
+   --  The memory alignment we will want to honor on every allocation.
+   --
+   --  At this stage, gigi assumes we can accommodate any alignment requirement
+   --  there might be on the data type for which the memory gets allocated (see
+   --  build_call_alloc_dealloc).
+   --
+   --  The multiplication factor is intended to account for requirements
+   --  by user code compiled with specific arch/cpu options such as -mavx
+   --  on X86[_64] targets, which Standard'Maximum_Alignment doesn't convey
+   --  without such compilation options. * 4 would actually be needed to
+   --  support -mavx512f on X86, but this would incur more annoying memory
+   --  consumption overheads.
+
    type Chunk_Memory is array (Memory_Size range <>) of SSE.Storage_Element;
-   for Chunk_Memory'Alignment use Standard'Maximum_Alignment;
-   --  The memory storage of a single chunk. It utilizes maximum alignment in
-   --  order to guarantee efficient operations.
+   for Chunk_Memory'Alignment use Memory_Alignment;
+   --  The memory storage of a single chunk
 
    --------------
    -- SS_Chunk --

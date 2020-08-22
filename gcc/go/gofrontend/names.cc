@@ -975,7 +975,14 @@ Gogo::type_descriptor_name(const Type* type, Named_type* nt)
     return "unsafe.Pointer..d";
 
   if (nt == NULL)
-    return "type.." + type->mangled_name(this);
+    {
+      // Sanity check: we should never generate a type descriptor for
+      // an unnamed primitive type.  For those we should always be
+      // using a named type, like "int".
+      go_assert(!type->is_basic_type());
+
+      return "type.." + type->mangled_name(this);
+    }
 
   std::string ret;
   Named_object* no = nt->named_object();
@@ -1024,7 +1031,7 @@ Gogo::type_descriptor_name(const Type* type, Named_type* nt)
 // Return the name of the type descriptor list symbol of a package.
 
 std::string
-Gogo::type_descriptor_list_symbol(std::string pkgpath)
+Gogo::type_descriptor_list_symbol(const std::string& pkgpath)
 {
   return pkgpath + "..types";
 }

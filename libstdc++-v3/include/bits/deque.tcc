@@ -1065,6 +1065,57 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       return __result;
     }
 
+  template<bool _IsMove, typename _CharT>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> >::__type
+    __copy_move_a2(
+	istreambuf_iterator<_CharT, char_traits<_CharT> > __first,
+	istreambuf_iterator<_CharT, char_traits<_CharT> > __last,
+	_GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> __result)
+    {
+      if (__first == __last)
+	return __result;
+
+      for (;;)
+	{
+	  const std::ptrdiff_t __len = __result._M_last - __result._M_cur;
+	  const std::ptrdiff_t __nb
+	    = std::__copy_n_a(__first, __len, __result._M_cur, false)
+	    - __result._M_cur;
+	  __result += __nb;
+
+	  if (__nb != __len)
+	    break;
+	}
+
+      return __result;
+    }
+
+  template<typename _CharT, typename _Size>
+    typename __gnu_cxx::__enable_if<
+      __is_char<_CharT>::__value,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> >::__type
+    __copy_n_a(
+      istreambuf_iterator<_CharT, char_traits<_CharT> > __it, _Size __size,
+      _GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*> __result,
+      bool __strict)
+    {
+      if (__size == 0)
+	return __result;
+
+      do
+	{
+	  const _Size __len
+	    = std::min<_Size>(__result._M_last - __result._M_cur, __size);
+	  std::__copy_n_a(__it, __len, __result._M_cur, __strict);
+	  __result += __len;
+	  __size -= __len;
+	}
+      while (__size != 0);
+      return __result;
+    }
+
   template<bool _IsMove,
 	   typename _Tp, typename _Ref, typename _Ptr, typename _OI>
     _OI
@@ -1208,6 +1259,109 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	}
 
       return true;
+    }
+
+  template<typename _Tp1, typename _Ref, typename _Ptr, typename _Tp2>
+    int
+    __lex_cmp_dit(
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref, _Ptr> __first1,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref, _Ptr> __last1,
+	const _Tp2* __first2, const _Tp2* __last2)
+    {
+      const bool __simple =
+	(__is_byte<_Tp1>::__value && __is_byte<_Tp2>::__value
+	 && !__gnu_cxx::__numeric_traits<_Tp1>::__is_signed
+	 && !__gnu_cxx::__numeric_traits<_Tp2>::__is_signed
+	 && __is_pointer<_Ptr>::__value
+#if __cplusplus > 201703L && __cpp_lib_concepts
+	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
+	 // so __is_byte<T> could be true, but we can't use memcmp with
+	 // volatile data.
+	 && !is_volatile_v<_Tp1>
+	 && !is_volatile_v<_Tp2>
+#endif
+	 );
+      typedef std::__lexicographical_compare<__simple> _Lc;
+
+      while (__first1._M_node != __last1._M_node)
+	{
+	  const ptrdiff_t __len1 = __first1._M_last - __first1._M_cur;
+	  const ptrdiff_t __len2 = __last2 - __first2;
+	  const ptrdiff_t __len = std::min(__len1, __len2);
+	  // if __len1 > __len2 this will return a positive value:
+	  if (int __ret = _Lc::__3way(__first1._M_cur, __first1._M_last,
+				      __first2, __first2 + __len))
+	    return __ret;
+
+	  __first1 += __len;
+	  __first2 += __len;
+	}
+      return _Lc::__3way(__first1._M_cur, __last1._M_cur,
+			 __first2, __last2);
+    }
+
+  template<typename _Tp1, typename _Ref1, typename _Ptr1,
+	   typename _Tp2>
+    inline bool
+    __lexicographical_compare_aux1(
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1> __first1,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1> __last1,
+	_Tp2* __first2, _Tp2* __last2)
+    { return std::__lex_cmp_dit(__first1, __last1, __first2, __last2) < 0; }
+
+  template<typename _Tp1,
+	   typename _Tp2, typename _Ref2, typename _Ptr2>
+    inline  bool
+    __lexicographical_compare_aux1(_Tp1* __first1, _Tp1* __last1,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __first2,
+	_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __last2)
+    { return std::__lex_cmp_dit(__first2, __last2, __first1, __last1) > 0; }
+
+  template<typename _Tp1, typename _Ref1, typename _Ptr1,
+	   typename _Tp2, typename _Ref2, typename _Ptr2>
+    inline bool
+    __lexicographical_compare_aux1(
+		_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1> __first1,
+		_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref1, _Ptr1> __last1,
+		_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __first2,
+		_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __last2)
+    {
+      const bool __simple =
+	(__is_byte<_Tp1>::__value && __is_byte<_Tp2>::__value
+	 && !__gnu_cxx::__numeric_traits<_Tp1>::__is_signed
+	 && !__gnu_cxx::__numeric_traits<_Tp2>::__is_signed
+	 && __is_pointer<_Ptr1>::__value
+	 && __is_pointer<_Ptr2>::__value
+#if __cplusplus > 201703L && __cpp_lib_concepts
+	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
+	 // so __is_byte<T> could be true, but we can't use memcmp with
+	 // volatile data.
+	 && !is_volatile_v<_Tp1>
+	 && !is_volatile_v<_Tp2>
+#endif
+	 );
+      typedef std::__lexicographical_compare<__simple> _Lc;
+
+      while (__first1 != __last1)
+	{
+	  const ptrdiff_t __len2 = __first2._M_node == __last2._M_node
+	    ? __last2._M_cur - __first2._M_cur
+	    : __first2._M_last - __first2._M_cur;
+	  if (__len2 == 0)
+	    return false;
+	  const ptrdiff_t __len1 = __first1._M_node == __last1._M_node
+	    ? __last1._M_cur - __first1._M_cur
+	    : __first1._M_last - __first1._M_cur;
+	  const ptrdiff_t __len = std::min(__len1, __len2);
+	  if (int __ret = _Lc::__3way(__first1._M_cur, __first1._M_cur + __len,
+				      __first2._M_cur, __first2._M_cur + __len))
+	    return __ret < 0;
+
+	  __first1 += __len;
+	  __first2 += __len;
+	}
+
+      return __last2 != __first2;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

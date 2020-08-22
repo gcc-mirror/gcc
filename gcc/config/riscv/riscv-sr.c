@@ -115,7 +115,7 @@ riscv_sr_match_prologue (rtx_insn **body)
       && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC_VOLATILE
       && (GET_CODE (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0))
 	  == CONST_INT)
-      && INTVAL (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0)) == 2)
+      && INTVAL (XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 0)) == 0)
     return insn;
 
   return NULL;
@@ -244,6 +244,12 @@ check_for_no_return_call (rtx_insn *prologue)
 void
 riscv_remove_unneeded_save_restore_calls (void)
 {
+  /* We'll adjust stack size after this optimization, that require update every
+     sp use site, which could be unsafe, so we decide to turn off this
+     optimization if there are any arguments put on stack.  */
+  if (crtl->args.size != 0)
+    return;
+
   /* Will point to the first instruction of the function body, after the
      prologue end note.  */
   rtx_insn *body = NULL;
@@ -306,6 +312,10 @@ riscv_remove_unneeded_save_restore_calls (void)
 
 	  if (CALL_P (insn))
 	    ++call_count;
+	  /* Ignore any USEs in the gpr_save pattern.  They don't prevent us
+	     from optimizing away the save call.  */
+	  else if (insn == prologue_matched)
+	    ;
 	  else
 	    {
 	      df_ref use;

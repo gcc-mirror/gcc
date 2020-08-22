@@ -61,4 +61,3 @@
 
 (define_predicate "register_compare_operator"
   (match_code "eq,ne,geu,gtu,ge,gt"))
-

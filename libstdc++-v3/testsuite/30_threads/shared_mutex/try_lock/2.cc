@@ -1,5 +1,5 @@
-// { dg-do run }
 // { dg-options "-std=gnu++17 -pthread" }
+// { dg-do run { target c++17 } }
 // { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
 

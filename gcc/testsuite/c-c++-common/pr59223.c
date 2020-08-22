@@ -9,5 +9,5 @@ int foo (int x)
     y = 1;
   else if (x == 1)
     y = 2;
-  return y; /* { dg-warning "may be used uninitialized in this function" } */
+  return y; /* { dg-warning "may be used uninitialized" } */
 }

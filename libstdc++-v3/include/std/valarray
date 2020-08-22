@@ -571,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t _M_size;
       _Tp* __restrict__ _M_data;
 
-      friend class _Array<_Tp>;
+      friend struct _Array<_Tp>;
     };
 
 #if __cpp_deduction_guides >= 201606

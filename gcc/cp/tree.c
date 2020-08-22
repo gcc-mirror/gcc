@@ -73,7 +73,12 @@ lvalue_kind (const_tree ref)
 	  && TREE_CODE (ref) != COMPONENT_REF
 	  /* Functions are always lvalues.  */
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
-	return clk_rvalueref;
+	{
+	  op1_lvalue_kind = clk_rvalueref;
+	  if (implicit_rvalue_p (ref))
+	    op1_lvalue_kind |= clk_implicit_rval;
+	  return op1_lvalue_kind;
+	}
 
       /* lvalue references and named rvalue references are lvalues.  */
       return clk_ordinary;
@@ -691,7 +696,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
      it can produce a { }.  */
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      gcc_assert (cxx_dialect >= cxx2a);
+      gcc_assert (cxx_dialect >= cxx20);
       return finish_compound_literal (type, init, complain);
     }
 
@@ -1062,13 +1067,7 @@ build_cplus_array_type (tree elt_type, tree index_type)
     }
   else
     {
-      bool typeless_storage
-	= (elt_type == unsigned_char_type_node
-	   || elt_type == signed_char_type_node
-	   || elt_type == char_type_node
-	   || (TREE_CODE (elt_type) == ENUMERAL_TYPE
-	       && TYPE_CONTEXT (elt_type) == std_node
-	       && !strcmp ("byte", TYPE_NAME_STRING (elt_type))));
+      bool typeless_storage = is_byte_access_type (elt_type);
       t = build_array_type (elt_type, index_type, typeless_storage);
     }
 
@@ -2302,7 +2301,7 @@ ovl_skip_hidden (tree ovl)
   return ovl;
 }
 
-/* NODE is an OVL_HIDDEN_P node which is now revealed.  */
+/* NODE is an OVL_HIDDEN_P node that is now revealed.  */
 
 tree
 ovl_iterator::reveal_node (tree overload, tree node)
@@ -4047,13 +4046,27 @@ maybe_dummy_object (tree type, tree* binfop)
 
 /* Returns 1 if OB is a placeholder object, or a pointer to one.  */
 
-int
+bool
 is_dummy_object (const_tree ob)
 {
   if (INDIRECT_REF_P (ob))
     ob = TREE_OPERAND (ob, 0);
   return (TREE_CODE (ob) == CONVERT_EXPR
 	  && TREE_OPERAND (ob, 0) == void_node);
+}
+
+/* Returns true if TYPE is a character type or std::byte.  */
+
+bool
+is_byte_access_type (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (char_type_p (type))
+    return true;
+
+  return (TREE_CODE (type) == ENUMERAL_TYPE
+	  && TYPE_CONTEXT (type) == std_node
+	  && !strcmp ("byte", TYPE_NAME_STRING (type)));
 }
 
 /* Returns 1 iff type T is something we want to treat as a scalar type for
@@ -4511,33 +4524,25 @@ zero_init_expr_p (tree t)
 bool
 structural_type_p (tree t, bool explain)
 {
-  t = strip_array_types (t);
-  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
+  /* A structural type is one of the following: */
+
+  /* a scalar type, or */
+  if (SCALAR_TYPE_P (t))
     return true;
-  if (NULLPTR_TYPE_P (t))
-    return true;
-  if (TYPE_PTR_P (t) || TYPE_PTRMEM_P (t))
-    return true;
+  /* an lvalue reference type, or */
   if (TYPE_REF_P (t) && !TYPE_REF_IS_RVALUE (t))
     return true;
+  /* a literal class type with the following properties:
+     - all base classes and non-static data members are public and non-mutable
+       and
+     - the types of all bases classes and non-static data members are
+       structural types or (possibly multi-dimensional) array thereof.  */
   if (!CLASS_TYPE_P (t))
     return false;
-  if (TREE_CODE (t) == UNION_TYPE)
-    {
-      if (explain)
-	inform (location_of (t), "%qT is a union", t);
-      return false;
-    }
   if (!literal_type_p (t))
     {
       if (explain)
 	explain_non_literal_class (t);
-      return false;
-    }
-  if (CLASSTYPE_HAS_MUTABLE (t))
-    {
-      if (explain)
-	inform (location_of (t), "%qT has a mutable member", t);
       return false;
     }
   for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
@@ -4555,12 +4560,19 @@ structural_type_p (tree t, bool explain)
 	    }
 	  return false;
 	}
-      if (!structural_type_p (TREE_TYPE (m)))
+      if (DECL_MUTABLE_P (m))
+	{
+	  if (explain)
+	    inform (location_of (m), "%qD is mutable", m);
+	  return false;
+	}
+      tree mtype = strip_array_types (TREE_TYPE (m));
+      if (!structural_type_p (mtype))
 	{
 	  if (explain)
 	    {
 	      inform (location_of (m), "%qD has a non-structural type", m);
-	      structural_type_p (TREE_TYPE (m), true);
+	      structural_type_p (mtype, true);
 	    }
 	  return false;
 	}
@@ -4599,7 +4611,7 @@ handle_nodiscard_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
-/* Handle a C++2a "no_unique_address" attribute; arguments as in
+/* Handle a C++20 "no_unique_address" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
 handle_no_unique_addr_attribute (tree* node,
@@ -5006,9 +5018,18 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   while (0)
 
   if (TYPE_P (*tp))
-    /* Walk into template args without looking through typedefs.  */
-    if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
-      WALK_SUBTREE (TI_ARGS (ti));
+    {
+      /* Walk into template args without looking through typedefs.  */
+      if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
+	WALK_SUBTREE (TI_ARGS (ti));
+      /* Don't look through typedefs; walk_tree_fns that want to look through
+	 typedefs (like min_vis_r) need to do that themselves.  */
+      if (typedef_variant_p (*tp))
+	{
+	  *walk_subtrees_p = 0;
+	  return NULL_TREE;
+	}
+    }
 
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */
@@ -5021,11 +5042,16 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_TYPE_PARM:
-    case TYPENAME_TYPE:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
       /* None of these have subtrees other than those already walked
 	 above.  */
+      *walk_subtrees_p = 0;
+      break;
+
+    case TYPENAME_TYPE:
+      WALK_SUBTREE (TYPE_CONTEXT (*tp));
+      WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (*tp));
       *walk_subtrees_p = 0;
       break;
 

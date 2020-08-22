@@ -208,7 +208,6 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	if (is_named_call_p (callee_fndecl, "fread", call, 4))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
-	    arg = sm_ctxt->get_readable_tree (arg);
 
 	    sm_ctxt->on_transition (node, stmt, arg, m_start, m_tainted);
 
@@ -231,7 +230,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
       if (op == ARRAY_REF)
 	{
 	  tree arg = TREE_OPERAND (rhs1, 1);
-	  arg = sm_ctxt->get_readable_tree (arg);
+	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	  /* Unsigned types have an implicit lower bound.  */
 	  bool is_unsigned = false;
@@ -241,14 +240,14 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  /* Complain about missing bounds.  */
 	  sm_ctxt->warn_for_state
 	    (node, stmt, arg, m_tainted,
-	     new tainted_array_index (*this, arg,
+	     new tainted_array_index (*this, diag_arg,
 				      is_unsigned
 				      ? BOUNDS_LOWER : BOUNDS_NONE));
 	  sm_ctxt->on_transition (node, stmt, arg, m_tainted, m_stop);
 
 	  /* Complain about missing upper bound.  */
 	  sm_ctxt->warn_for_state  (node, stmt, arg, m_has_lb,
-				    new tainted_array_index (*this, arg,
+				    new tainted_array_index (*this, diag_arg,
 							     BOUNDS_LOWER));
 	  sm_ctxt->on_transition (node, stmt, arg, m_has_lb, m_stop);
 
@@ -256,7 +255,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  if (!is_unsigned)
 	    {
 	      sm_ctxt->warn_for_state  (node, stmt, arg, m_has_ub,
-					new tainted_array_index (*this, arg,
+					new tainted_array_index (*this, diag_arg,
 								 BOUNDS_UPPER));
 	      sm_ctxt->on_transition (node, stmt, arg, m_has_ub, m_stop);
 	    }

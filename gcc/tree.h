@@ -925,7 +925,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a CALL_EXPR, if the function being called is BUILT_IN_ALLOCA, means that
-   it has been built for the declaration of a variable-sized object.  */
+   it has been built for the declaration of a variable-sized object and, if the
+   function being called is BUILT_IN_MEMCPY, means that it has been built for
+   the assignment of a variable-sized object.  */
 #define CALL_ALLOCA_FOR_VAR_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
@@ -1465,6 +1467,11 @@ class auto_suppress_location_wrappers
   != UNKNOWN_LOCATION)
 #define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
+/* True on OMP_FOR and other OpenMP/OpenACC looping constructs if the loop nest
+   is non-rectangular.  */
+#define OMP_FOR_NON_RECTANGULAR(NODE) \
+  (OMP_LOOPING_CHECK (NODE)->base.private_flag)
+
 /* True on an OMP_SECTION statement that was the last lexical member.
    This status is meaningful in the implementation of lastprivate.  */
 #define OMP_SECTION_LAST(NODE) \
@@ -1772,14 +1779,6 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_TILE_COUNT(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 2)
 
-#define OMP_CLAUSE__GRIDDIM__DIMENSION(NODE) \
-  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_)\
-   ->omp_clause.subcode.dimension)
-#define OMP_CLAUSE__GRIDDIM__SIZE(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 0)
-#define OMP_CLAUSE__GRIDDIM__GROUP(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 1)
-
 /* _CONDTEMP_ holding temporary with iteration count.  */
 #define OMP_CLAUSE__CONDTEMP__ITER(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__CONDTEMP_)->base.public_flag)
@@ -1996,6 +1995,8 @@ class auto_suppress_location_wrappers
 
 extern machine_mode element_mode (const_tree);
 extern machine_mode vector_type_mode (const_tree);
+extern unsigned int vector_element_bits (const_tree);
+extern tree vector_element_bits_tree (const_tree);
 
 /* The "canonical" type for this type node, which is used by frontends to
    compare the type for equality with another type.  If two types are
@@ -2646,8 +2647,8 @@ extern machine_mode vector_type_mode (const_tree);
    they are killing assignments.  Thus the variable may now
    be treated as a GIMPLE register, and use real instead of
    virtual ops in SSA form.  */
-#define DECL_GIMPLE_REG_P(DECL) \
-  DECL_COMMON_CHECK (DECL)->decl_common.gimple_reg_flag
+#define DECL_NOT_GIMPLE_REG_P(DECL) \
+  DECL_COMMON_CHECK (DECL)->decl_common.not_gimple_reg_flag
 
 extern tree decl_value_expr_lookup (tree);
 extern void decl_value_expr_insert (tree, tree);
@@ -4035,6 +4036,7 @@ tree_strip_any_location_wrapper (tree exp)
 #define uint16_type_node		global_trees[TI_UINT16_TYPE]
 #define uint32_type_node		global_trees[TI_UINT32_TYPE]
 #define uint64_type_node		global_trees[TI_UINT64_TYPE]
+#define uint128_type_node		global_trees[TI_UINT128_TYPE]
 
 #define void_node			global_trees[TI_VOID]
 
@@ -4415,7 +4417,7 @@ extern tree build_one_cst (tree);
 extern tree build_minus_one_cst (tree);
 extern tree build_all_ones_cst (tree);
 extern tree build_zero_cst (tree);
-extern tree build_string (int, const char *);
+extern tree build_string (unsigned, const char * = NULL);
 extern tree build_poly_int_cst (tree, const poly_wide_int_ref &);
 extern tree build_tree_list (tree, tree CXX_MEM_STAT_INFO);
 extern tree build_tree_list_vec (const vec<tree, va_gc> * CXX_MEM_STAT_INFO);
@@ -4446,7 +4448,8 @@ extern tree build_call_expr_internal_loc_array (location_t, enum internal_fn,
 extern tree maybe_build_call_expr_loc (location_t, combined_fn, tree,
 				       int, ...);
 extern tree build_alloca_call_expr (tree, unsigned int, HOST_WIDE_INT);
-extern tree build_string_literal (int, const char *, tree = char_type_node,
+extern tree build_string_literal (unsigned, const char * = NULL,
+				  tree = char_type_node,
 				  unsigned HOST_WIDE_INT = HOST_WIDE_INT_M1U);
 
 /* Construct various nodes representing data types.  */
@@ -4641,7 +4644,6 @@ extern hashval_t type_hash_canon_hash (tree);
 extern tree type_hash_canon (unsigned int, tree);
 
 extern tree convert (tree, tree);
-extern unsigned int expr_align (const_tree);
 extern tree size_in_bytes_loc (location_t, const_tree);
 inline tree
 size_in_bytes (const_tree t)
@@ -4699,9 +4701,10 @@ extern tree nreverse (tree);
 
 extern int list_length (const_tree);
 
-/* Returns the first FIELD_DECL in a type.  */
+/* Returns the first/last FIELD_DECL in a RECORD_TYPE.  */
 
-extern tree first_field (const_tree);
+extern tree first_field (const_tree) ATTRIBUTE_NONNULL (1);
+extern tree last_field (const_tree) ATTRIBUTE_NONNULL (1);
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
    aggregate of zeros.  Otherwise return FALSE.  If NONZERO is not
@@ -5231,8 +5234,8 @@ extern location_t *block_nonartificial_location (tree);
 extern location_t tree_nonartificial_location (tree);
 extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, poly_int64, tree);
-extern bool virtual_method_call_p (const_tree);
-extern tree obj_type_ref_class (const_tree ref);
+extern bool virtual_method_call_p (const_tree, bool = false);
+extern tree obj_type_ref_class (const_tree ref, bool = false);
 extern bool types_same_for_odr (const_tree type1, const_tree type2);
 extern bool contains_bitfld_component_ref_p (const_tree);
 extern bool block_may_fallthru (const_tree);

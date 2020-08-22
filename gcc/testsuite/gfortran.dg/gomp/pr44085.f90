@@ -8,7 +8,7 @@
   common /thrs/ thr3, thr4
 !$omp threadprivate (thr1, thr2, /thrs/)
 
-!$omp task untied		! { dg-error "enclosing task" }
+!$omp task untied		! { dg-message "note: enclosing task" }
   thr1 = thr1 + 1		! { dg-error "used in untied task" }
   thr2 = thr2 + 2		! { dg-error "used in untied task" }
   thr3 = thr3 + 3		! { dg-error "used in untied task" }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 
 --  This is the default version of this package, based on Big_Integers only.
 
-with Ada.Characters.Conversions; use Ada.Characters.Conversions;
+with Ada.Strings.Text_Output.Utils;
 
 package body Ada.Numerics.Big_Numbers.Big_Reals is
 
@@ -46,13 +46,13 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    --------------
 
    function Is_Valid (Arg : Big_Real) return Boolean is
-     (Is_Valid (Arg.Num) and then Is_Valid (Arg.Den));
+     (Is_Valid (Arg.Num) and Is_Valid (Arg.Den));
 
    ---------
    -- "/" --
    ---------
 
-   function "/" (Num, Den : Big_Integer) return Big_Real is
+   function "/" (Num, Den : Valid_Big_Integer) return Valid_Big_Real is
       Result : Big_Real;
    begin
       if Den = To_Big_Integer (0) then
@@ -69,45 +69,47 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Numerator --
    ---------------
 
-   function Numerator (Arg : Big_Real) return Big_Integer is (Arg.Num);
+   function Numerator (Arg : Valid_Big_Real) return Valid_Big_Integer is
+     (Arg.Num);
 
    -----------------
    -- Denominator --
    -----------------
 
-   function Denominator (Arg : Big_Real) return Big_Positive is (Arg.Den);
+   function Denominator (Arg : Valid_Big_Real) return Big_Positive is
+     (Arg.Den);
 
    ---------
    -- "=" --
    ---------
 
-   function "=" (L, R : Big_Real) return Boolean is
+   function "=" (L, R : Valid_Big_Real) return Boolean is
      (abs L.Num = abs R.Num and then L.Den = R.Den);
 
    ---------
    -- "<" --
    ---------
 
-   function "<" (L, R : Big_Real) return Boolean is
+   function "<" (L, R : Valid_Big_Real) return Boolean is
      (abs L.Num * R.Den < abs R.Num * L.Den);
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (L, R : Big_Real) return Boolean is (not (R < L));
+   function "<=" (L, R : Valid_Big_Real) return Boolean is (not (R < L));
 
    ---------
    -- ">" --
    ---------
 
-   function ">" (L, R : Big_Real) return Boolean is (R < L);
+   function ">" (L, R : Valid_Big_Real) return Boolean is (R < L);
 
    ----------
    -- ">=" --
    ----------
 
-   function ">=" (L, R : Big_Real) return Boolean is (not (L < R));
+   function ">=" (L, R : Valid_Big_Real) return Boolean is (not (L < R));
 
    -----------------------
    -- Float_Conversions --
@@ -119,7 +121,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       -- To_Big_Real --
       -----------------
 
-      function To_Big_Real (Arg : Num) return Big_Real is
+      function To_Big_Real (Arg : Num) return Valid_Big_Real is
       begin
          return From_String (Arg'Image);
       end To_Big_Real;
@@ -145,7 +147,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       -- To_Big_Real --
       -----------------
 
-      function To_Big_Real (Arg : Num) return Big_Real is
+      function To_Big_Real (Arg : Num) return Valid_Big_Real is
       begin
          return From_String (Arg'Image);
       end To_Big_Real;
@@ -166,8 +168,10 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------------
 
    function To_String
-     (Arg : Big_Real; Fore : Field := 2; Aft : Field := 3; Exp : Field := 0)
-      return String
+     (Arg  : Valid_Big_Real;
+      Fore : Field := 2;
+      Aft  : Field := 3;
+      Exp  : Field := 0) return String
    is
       Zero : constant Big_Integer := To_Big_Integer (0);
       Ten  : constant Big_Integer := To_Big_Integer (10);
@@ -373,7 +377,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- From_Quotient_String --
    --------------------------
 
-   function From_Quotient_String (Arg : String) return Big_Real is
+   function From_Quotient_String (Arg : String) return Valid_Big_Real is
       Index : Natural := 0;
    begin
       for J in Arg'First + 1 .. Arg'Last - 1 loop
@@ -395,18 +399,19 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Put_Image --
    ---------------
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Real) is
+   procedure Put_Image (S : in out Sink'Class; V : Big_Real) is
+      --  This is implemented in terms of To_String. It might be more elegant
+      --  and more efficient to do it the other way around, but this is the
+      --  most expedient implementation for now.
    begin
-      Wide_Wide_String'Write (Stream, To_Wide_Wide_String (To_String (Arg)));
+      Strings.Text_Output.Utils.Put_UTF_8 (S, To_String (V));
    end Put_Image;
 
    ---------
    -- "+" --
    ---------
 
-   function "+" (L : Big_Real) return Big_Real is
+   function "+" (L : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
       Result.Num := L.Num;
@@ -418,21 +423,21 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "-" --
    ---------
 
-   function "-" (L : Big_Real) return Big_Real is
+   function "-" (L : Valid_Big_Real) return Valid_Big_Real is
      (Num => -L.Num, Den => L.Den);
 
    -----------
    -- "abs" --
    -----------
 
-   function "abs" (L : Big_Real) return Big_Real is
+   function "abs" (L : Valid_Big_Real) return Valid_Big_Real is
      (Num => abs L.Num, Den => L.Den);
 
    ---------
    -- "+" --
    ---------
 
-   function "+" (L, R : Big_Real) return Big_Real is
+   function "+" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
       Result.Num := L.Num * R.Den + R.Num * L.Den;
@@ -445,7 +450,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "-" --
    ---------
 
-   function "-" (L, R : Big_Real) return Big_Real is
+   function "-" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
       Result.Num := L.Num * R.Den - R.Num * L.Den;
@@ -458,7 +463,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "*" --
    ---------
 
-   function "*" (L, R : Big_Real) return Big_Real is
+   function "*" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
       Result.Num := L.Num * R.Num;
@@ -471,7 +476,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "/" --
    ---------
 
-   function "/" (L, R : Big_Real) return Big_Real is
+   function "/" (L, R : Valid_Big_Real) return Valid_Big_Real is
       Result : Big_Real;
    begin
       Result.Num := L.Num * R.Den;
@@ -484,7 +489,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- "**" --
    ----------
 
-   function "**" (L : Big_Real; R : Integer) return Big_Real is
+   function "**" (L : Valid_Big_Real; R : Integer) return Valid_Big_Real is
       Result : Big_Real;
    begin
       if R = 0 then
@@ -509,32 +514,39 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Min --
    ---------
 
-   function Min (L, R : Big_Real) return Big_Real is (if L < R then L else R);
+   function Min (L, R : Valid_Big_Real) return Valid_Big_Real is
+     (if L < R then L else R);
 
    ---------
    -- Max --
    ---------
 
-   function Max (L, R : Big_Real) return Big_Real is (if L > R then L else R);
+   function Max (L, R : Valid_Big_Real) return Valid_Big_Real is
+     (if L > R then L else R);
 
    ---------------
    -- Normalize --
    ---------------
 
    procedure Normalize (Arg : in out Big_Real) is
+      Zero : constant Big_Integer := To_Big_Integer (0);
    begin
-      if Arg.Den < To_Big_Integer (0) then
+      if Arg.Den < Zero then
          Arg.Num := -Arg.Num;
          Arg.Den := -Arg.Den;
       end if;
 
-      declare
-         GCD : constant Big_Integer :=
-           Greatest_Common_Divisor (Arg.Num, Arg.Den);
-      begin
-         Arg.Num := Arg.Num / GCD;
-         Arg.Den := Arg.Den / GCD;
-      end;
+      if Arg.Num = Zero then
+         Arg.Den := To_Big_Integer (1);
+      else
+         declare
+            GCD : constant Big_Integer :=
+              Greatest_Common_Divisor (Arg.Num, Arg.Den);
+         begin
+            Arg.Num := Arg.Num / GCD;
+            Arg.Den := Arg.Den / GCD;
+         end;
+      end if;
    end Normalize;
 
 end Ada.Numerics.Big_Numbers.Big_Reals;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2019, AdaCore                     --
+--                     Copyright (C) 2008-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -281,7 +281,7 @@ package GNAT.Sockets.Thin_Common is
      (Name     : C.char_array;
       Ret      : not null access Hostent;
       Buf      : System.Address;
-      Buflen   : C.int;
+      Buflen   : C.size_t;
       H_Errnop : not null access C.int) return C.int;
 
    function C_Gethostbyaddr
@@ -290,7 +290,7 @@ package GNAT.Sockets.Thin_Common is
       Addr_Type : C.int;
       Ret       : not null access Hostent;
       Buf       : System.Address;
-      Buflen    : C.int;
+      Buflen    : C.size_t;
       H_Errnop  : not null access C.int) return C.int;
 
    function C_Getservbyname
@@ -298,14 +298,14 @@ package GNAT.Sockets.Thin_Common is
       Proto  : C.char_array;
       Ret    : not null access Servent;
       Buf    : System.Address;
-      Buflen : C.int) return C.int;
+      Buflen : C.size_t) return C.int;
 
    function C_Getservbyport
      (Port   : C.int;
       Proto  : C.char_array;
       Ret    : not null access Servent;
       Buf    : System.Address;
-      Buflen : C.int) return C.int;
+      Buflen : C.size_t) return C.int;
 
    Address_Size : constant := Standard'Address_Size;
 
@@ -451,12 +451,19 @@ package GNAT.Sockets.Thin_Common is
    renames Short_To_Network;
    --  Symmetric operation
 
-   function Minus_500ms_Windows_Timeout return C.int;
+   Minus_500ms_Windows_Timeout : constant Boolean;
    --  Microsoft Windows desktop older then 8.0 and Microsoft Windows Server
    --  older than 2019 need timeout correction for 500 milliseconds. This
-   --  routine returns 1 for such versions.
+   --  constant is True for such versions.
 
 private
+
+   function Get_Minus_500ms_Timeout return C.int
+     with Import, Convention => C, External_Name => "__gnat_minus_500ms";
+
+   Minus_500ms_Windows_Timeout : constant Boolean :=
+                                   Get_Minus_500ms_Timeout /= 0;
+
    pragma Import (C, Get_Socket_From_Set, "__gnat_get_socket_from_set");
    pragma Import (C, Is_Socket_In_Set, "__gnat_is_socket_in_set");
    pragma Import (C, Last_Socket_In_Set, "__gnat_last_socket_in_set");
@@ -487,7 +494,5 @@ private
    pragma Import (C, Hostent_H_Addrtype, "__gnat_hostent_h_addrtype");
    pragma Import (C, Hostent_H_Length,   "__gnat_hostent_h_length");
    pragma Import (C, Hostent_H_Addr,     "__gnat_hostent_h_addr");
-
-   pragma Import (C, Minus_500ms_Windows_Timeout, "__gnat_minus_500ms");
 
 end GNAT.Sockets.Thin_Common;

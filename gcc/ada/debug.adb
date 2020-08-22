@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,7 @@ package body Debug is
    --  dC   Output debugging information on check suppression
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
-   --  dF   Perform the new SPARK checking rules for pointer aliasing
+   --  dF
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
@@ -118,17 +118,17 @@ package body Debug is
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
-   --  d.A  Read/write Aspect_Specifications hash table to tree
+   --  d.A
    --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
    --  d.G  Ignore calls through generic formal parameters for elaboration
-   --  d.H  GNSA mode for ASIS
+   --  d.H
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
-   --  d.K
+   --  d.K  Do not reject components in extensions overlapping with parent
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -170,10 +170,10 @@ package body Debug is
    --  d_w
    --  d_x
    --  d_y
-   --  d_z
+   --  d_z  Enable Put_Image on tagged types
 
    --  d_A  Stop generation of ALI file
-   --  d_B
+   --  d_B  Warn on build-in-place function calls
    --  d_C
    --  d_D
    --  d_E
@@ -193,7 +193,7 @@ package body Debug is
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U
-   --  d_V
+   --  d_V  Enable verifications on the expanded tree
    --  d_W
    --  d_X
    --  d_Y
@@ -602,12 +602,6 @@ package body Debug is
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
 
-   --  dF   Disable the new SPARK checking rules for pointer aliasing. This is
-   --       only activated as part of GNATprove mode and on SPARK code. Now
-   --       that pointer support is part of the official SPARK language, this
-   --       switch allows reverting to the previous version of GNATprove
-   --       rejecting pointers.
-
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also
    --       suppresses warnings on instantiations in the main extended
@@ -847,11 +841,6 @@ package body Debug is
    --       handling of Inline_Always by the front end on such targets. For the
    --       targets that do not use the GCC back end, this switch is ignored.
 
-   --  d.A  There seems to be a problem with ASIS if we activate the circuit
-   --       for reading and writing the aspect specification hash table, so
-   --       for now, this is controlled by the debug flag d.A. The hash table
-   --       is only written and read if this flag is set.
-
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
    --       some code containing an abort_statement, and compile it with
@@ -892,9 +881,6 @@ package body Debug is
    --       now fixed, but we provide this debug flag to revert to the previous
    --       situation of ignoring such calls to aid in transition.
 
-   --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
-   --       the call to gigi in ASIS_Mode.
-
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
    --       types in CodePeer is good for the majority of Ada code, but in some
@@ -905,6 +891,11 @@ package body Debug is
    --       if it applies to a body. This switch disables the legality check
    --       for that. If the procedure does in fact return normally, execution
    --       is erroneous, and therefore unpredictable.
+
+   --  d.K  Do not reject components in extensions overlapping with the parent
+   --       component. Such components can be specified by means of a component
+   --       clause but they cannot be fully supported by the GCC type system.
+   --       This switch nevertheless allows them for the sake of compatibility.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
@@ -1001,7 +992,14 @@ package body Debug is
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
 
+   --  d_z  Enable the default Put_Image on tagged types that are not
+   --       predefined.
+
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
+
+   --  d_B  Warn on build-in-place function calls. This allows users to
+   --       inspect their code in case it triggers compiler bugs related
+   --       to build-in-place calls. See known-problem entries for details.
 
    --  d_F  The compiler encodes the full path from an invocation construct to
    --       an external target, offering additional information to GNATBIND for
@@ -1015,8 +1013,11 @@ package body Debug is
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
 
-   --  d_T  The compiler outputs trance information to standard output whenever
+   --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
+
+   --  d_V  Enable verification of the expanded code before calling the backend
+   --       and generate error messages on each inconsistency found.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

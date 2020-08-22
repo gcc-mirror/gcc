@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -181,11 +181,11 @@ package body SPARK_Specific is
       --  If N is the defining identifier for a subprogram, then return the
       --  enclosing subprogram or package, not this subprogram.
 
-      if Nkind_In (N, N_Defining_Identifier, N_Defining_Operator_Symbol)
-        and then (Ekind (N) in Entry_Kind
-                   or else Ekind (N) = E_Subprogram_Body
-                   or else Ekind (N) in Generic_Subprogram_Kind
-                   or else Ekind (N) in Subprogram_Kind)
+      if Nkind (N) in N_Defining_Identifier | N_Defining_Operator_Symbol
+        and then Ekind (N) in Entry_Kind
+                            | E_Subprogram_Body
+                            | Generic_Subprogram_Kind
+                            | Subprogram_Kind
       then
          Context := Parent (Unit_Declaration_Node (N));
 
@@ -291,10 +291,10 @@ package body SPARK_Specific is
 
       procedure Create_Heap is
       begin
-         Name_Len := Name_Of_Heap_Variable'Length;
-         Name_Buffer (1 .. Name_Len) := Name_Of_Heap_Variable;
-
-         Heap := Make_Defining_Identifier (Standard_Location, Name_Enter);
+         Heap :=
+           Make_Defining_Identifier
+             (Standard_Location,
+              Name_Enter (Name_Of_Heap_Variable));
 
          Set_Ekind       (Heap, E_Variable);
          Set_Is_Internal (Heap, True);

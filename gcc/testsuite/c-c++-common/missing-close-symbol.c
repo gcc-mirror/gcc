@@ -24,9 +24,9 @@ void test_static_assert_different_line (void)
   _Static_assert(sizeof(int) >= sizeof(char), /* { dg-message "to match this '\\('" } */
 		 "msg"; /* { dg-error "expected '\\)' before ';' token" } */
   /* { dg-begin-multiline-output "" }
-    "msg";
-         ^
-         )
+                  "msg";
+                       ^
+                       )
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
    _Static_assert(sizeof(int) >= sizeof(char),

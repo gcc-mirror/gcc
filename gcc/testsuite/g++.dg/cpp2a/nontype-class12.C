@@ -1,5 +1,5 @@
 // PR c++/88744
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 #define SA(X) static_assert((X),#X)
 

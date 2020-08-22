@@ -13,121 +13,153 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;
-with Ada.Streams;
+with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
 
+private with Ada.Finalization;
 private with System;
-
---  Note that some Ada 2020 aspects are commented out since they are not
---  supported yet.
 
 package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
---  Nonblocking
 is
-   type Big_Integer is private;
-   --  with Integer_Literal => From_String,
-   --       Put_Image => Put_Image;
+   type Big_Integer is private
+     with Integer_Literal => From_String,
+          Put_Image       => Put_Image;
 
    function Is_Valid (Arg : Big_Integer) return Boolean
-     with Convention => Intrinsic;
+   with
+     Convention => Intrinsic,
+     Global     => null;
 
-   function "=" (L, R : Big_Integer) return Boolean;
+   subtype Valid_Big_Integer is Big_Integer
+     with Dynamic_Predicate => Is_Valid (Valid_Big_Integer),
+          Predicate_Failure => raise Program_Error;
 
-   function "<" (L, R : Big_Integer) return Boolean;
+   function "=" (L, R : Valid_Big_Integer) return Boolean with Global => null;
 
-   function "<=" (L, R : Big_Integer) return Boolean;
+   function "<" (L, R : Valid_Big_Integer) return Boolean with Global => null;
 
-   function ">" (L, R : Big_Integer) return Boolean;
+   function "<=" (L, R : Valid_Big_Integer) return Boolean with Global => null;
 
-   function ">=" (L, R : Big_Integer) return Boolean;
+   function ">" (L, R : Valid_Big_Integer) return Boolean with Global => null;
 
-   function To_Big_Integer (Arg : Integer) return Big_Integer;
+   function ">=" (L, R : Valid_Big_Integer) return Boolean with Global => null;
+
+   function To_Big_Integer (Arg : Integer) return Valid_Big_Integer
+     with Global => null;
 
    subtype Big_Positive is Big_Integer
-     with Dynamic_Predicate => Big_Positive > To_Big_Integer (0),
+     with Dynamic_Predicate =>
+            (if Is_Valid (Big_Positive)
+             then Big_Positive > To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
    subtype Big_Natural is Big_Integer
-     with Dynamic_Predicate => Big_Natural >= To_Big_Integer (0),
+     with Dynamic_Predicate =>
+            (if Is_Valid (Big_Natural)
+             then Big_Natural >= To_Big_Integer (0)),
           Predicate_Failure => (raise Constraint_Error);
 
-   function In_Range (Arg, Low, High : Big_Integer) return Boolean is
-     ((Low <= Arg) and (Arg <= High));
+   function In_Range
+     (Arg : Valid_Big_Integer; Low, High : Big_Integer) return Boolean
+   is (Low <= Arg and Arg <= High)
+   with
+     Global => null;
 
-   function To_Integer (Arg : Big_Integer) return Integer
-     with Pre => In_Range (Arg,
-                           Low  => To_Big_Integer (Integer'First),
-                           High => To_Big_Integer (Integer'Last))
-                  or else (raise Constraint_Error);
+   function To_Integer (Arg : Valid_Big_Integer) return Integer
+   with
+     Pre    => In_Range (Arg,
+                         Low  => To_Big_Integer (Integer'First),
+                         High => To_Big_Integer (Integer'Last))
+                or else (raise Constraint_Error),
+     Global => null;
 
    generic
       type Int is range <>;
    package Signed_Conversions is
 
-      function To_Big_Integer (Arg : Int) return Big_Integer;
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer
+        with Global => null;
 
-      function From_Big_Integer (Arg : Big_Integer) return Int
-        with Pre => In_Range (Arg,
-                              Low  => To_Big_Integer (Int'First),
-                              High => To_Big_Integer (Int'Last))
-                     or else (raise Constraint_Error);
-
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int
+      with
+        Pre    => In_Range (Arg,
+                            Low  => To_Big_Integer (Int'First),
+                            High => To_Big_Integer (Int'Last))
+                   or else (raise Constraint_Error),
+        Global => null;
    end Signed_Conversions;
 
    generic
       type Int is mod <>;
    package Unsigned_Conversions is
 
-      function To_Big_Integer (Arg : Int) return Big_Integer;
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer
+        with Global => null;
 
-      function From_Big_Integer (Arg : Big_Integer) return Int
-        with Pre => In_Range (Arg,
-                              Low  => To_Big_Integer (Int'First),
-                              High => To_Big_Integer (Int'Last))
-                     or else (raise Constraint_Error);
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int
+      with
+        Pre    => In_Range (Arg,
+                            Low  => To_Big_Integer (Int'First),
+                            High => To_Big_Integer (Int'Last))
+                   or else (raise Constraint_Error),
+        Global => null;
 
    end Unsigned_Conversions;
 
-   function To_String (Arg : Big_Integer;
+   function To_String (Arg   : Valid_Big_Integer;
                        Width : Field := 0;
                        Base  : Number_Base := 10) return String
-     with Post => To_String'Result'First = 1;
+   with
+     Post   => To_String'Result'First = 1,
+     Global => null;
 
-   function From_String (Arg : String) return Big_Integer;
+   function From_String (Arg : String) return Big_Integer
+     with Global => null;
 
-   procedure Put_Image
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Arg    : Big_Integer);
+   procedure Put_Image (S : in out Sink'Class; V : Big_Integer);
 
-   function "+" (L : Big_Integer) return Big_Integer;
+   function "+" (L : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "-" (L : Big_Integer) return Big_Integer;
+   function "-" (L : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "abs" (L : Big_Integer) return Big_Integer;
+   function "abs" (L : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "+" (L, R : Big_Integer) return Big_Integer;
+   function "+" (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "-" (L, R : Big_Integer) return Big_Integer;
+   function "-" (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "*" (L, R : Big_Integer) return Big_Integer;
+   function "*" (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "/" (L, R : Big_Integer) return Big_Integer;
+   function "/" (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "mod" (L, R : Big_Integer) return Big_Integer;
+   function "mod" (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "rem" (L, R : Big_Integer) return Big_Integer;
+   function "rem" (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function "**" (L : Big_Integer; R : Natural) return Big_Integer;
+   function "**" (L : Valid_Big_Integer; R : Natural) return Valid_Big_Integer
+      with Global => null;
 
-   function Min (L, R : Big_Integer) return Big_Integer;
+   function Min (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
-   function Max (L, R : Big_Integer) return Big_Integer;
+   function Max (L, R : Valid_Big_Integer) return Valid_Big_Integer
+      with Global => null;
 
    function Greatest_Common_Divisor
-     (L, R : Big_Integer) return Big_Positive
-     with Pre => (L /= To_Big_Integer (0) and R /= To_Big_Integer (0))
-       or else (raise Constraint_Error);
+     (L, R : Valid_Big_Integer) return Big_Positive
+   with
+     Pre    => (L /= To_Big_Integer (0) and R /= To_Big_Integer (0))
+             or else (raise Constraint_Error),
+     Global => null;
 
 private
 

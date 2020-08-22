@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -707,9 +707,6 @@ package body Ch6 is
          else
             Scan_Body_Or_Expression_Function : declare
 
-               Body_Is_Hidden_In_SPARK : Boolean;
-               Hidden_Region_Start     : Source_Ptr;
-
                function Likely_Expression_Function return Boolean;
                --  Returns True if we have a probable case of an expression
                --  function omitting the parentheses, if so, returns True
@@ -886,9 +883,9 @@ package body Ch6 is
                      --  with syntactic parentheses.
 
                      if not (Paren_Count (Expr) /= 0
-                              or else Nkind_In (Expr, N_Aggregate,
-                                                      N_Extension_Aggregate,
-                                                      N_Quantified_Expression))
+                              or else Nkind (Expr) in N_Aggregate
+                                                    | N_Extension_Aggregate
+                                                    | N_Quantified_Expression)
                      then
                         Error_Msg
                           ("expression function must be enclosed in "
@@ -942,25 +939,7 @@ package body Ch6 is
                      Set_Aspect_Specifications (Body_Node, Aspects);
                   end if;
 
-                  --  In SPARK, a HIDE directive can be placed at the beginning
-                  --  of a subprogram implementation, thus hiding the
-                  --  subprogram body from SPARK tool-set. No violation of the
-                  --  SPARK restriction should be issued on nodes in a hidden
-                  --  part, which is obtained by marking such hidden parts.
-
-                  if Token = Tok_SPARK_Hide then
-                     Body_Is_Hidden_In_SPARK := True;
-                     Hidden_Region_Start     := Token_Ptr;
-                     Scan; -- past HIDE directive
-                  else
-                     Body_Is_Hidden_In_SPARK := False;
-                  end if;
-
                   Parse_Decls_Begin_End (Body_Node);
-
-                  if Body_Is_Hidden_In_SPARK then
-                     Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
-                  end if;
                end if;
 
                return Body_Node;
@@ -980,6 +959,16 @@ package body Ch6 is
          --  the collected aspects, if any, to the body.
 
          if Token = Tok_Is then
+
+            --  If the subprogram is a procedure and already has a
+            --  specification, we can't define another.
+
+            if Nkind (Specification (Decl_Node)) = N_Procedure_Specification
+              and then Null_Present (Specification (Decl_Node))
+            then
+               Error_Msg_AP ("null procedure cannot have a body");
+            end if;
+
             Scan;
             goto Subprogram_Body;
 
@@ -1867,6 +1856,7 @@ package body Ch6 is
       if Token = Tok_Colon_Equal then
          Scan; -- past :=
          Set_Expression (Decl_Node, P_Expression_No_Right_Paren);
+         Set_Has_Init_Expression (Decl_Node);
       end if;
 
       return Decl_Node;

@@ -28,8 +28,10 @@ namespace ana {
 class extrinsic_state
 {
 public:
-  extrinsic_state (auto_delete_vec <state_machine> &checkers)
-  : m_checkers (checkers)
+  extrinsic_state (auto_delete_vec <state_machine> &checkers,
+		   logger *logger = NULL,
+		   engine *eng = NULL)
+  : m_checkers (checkers), m_logger (logger), m_engine (eng)
   {
   }
 
@@ -45,65 +47,24 @@ public:
 
   unsigned get_num_checkers () const { return m_checkers.length (); }
 
+  logger *get_logger () const { return m_logger; }
+
   void dump_to_pp (pretty_printer *pp) const;
   void dump_to_file (FILE *outf) const;
   void dump () const;
 
+  engine *get_engine () const { return m_engine; }
+  region_model_manager *get_model_manager () const;
+
 private:
   /* The state machines.  */
   auto_delete_vec <state_machine> &m_checkers;
+
+  logger *m_logger;
+  engine *m_engine;
 };
 
-} // namespace ana
-
-template <> struct default_hash_traits<svalue_id>
-: public pod_hash_traits<svalue_id>
-{
-  static const bool empty_zero_p = false;
-};
-
-template <>
-inline hashval_t
-pod_hash_traits<svalue_id>::hash (value_type v)
-{
-  return v.as_int ();
-}
-
-template <>
-inline bool
-pod_hash_traits<svalue_id>::equal (const value_type &existing,
-				   const value_type &candidate)
-{
-  return existing == candidate;
-}
-template <>
-inline void
-pod_hash_traits<svalue_id>::mark_deleted (value_type &v)
-{
-  v = svalue_id::from_int (-2);
-}
-template <>
-inline void
-pod_hash_traits<svalue_id>::mark_empty (value_type &v)
-{
-  v = svalue_id::null ();
-}
-template <>
-inline bool
-pod_hash_traits<svalue_id>::is_deleted (value_type v)
-{
-  return v.as_int () == -2;
-}
-template <>
-inline bool
-pod_hash_traits<svalue_id>::is_empty (value_type v)
-{
-  return v.null_p ();
-}
-
-namespace ana {
-
-/* Map from svalue_id to state machine state, also capturing the origin of
+/* Map from svalue * to state machine state, also capturing the origin of
    each state.  */
 
 class sm_state_map
@@ -114,12 +75,12 @@ public:
   {
     /* Default ctor needed by hash_map::empty.  */
     entry_t ()
-    : m_state (0), m_origin (svalue_id::null ())
+    : m_state (0), m_origin (NULL)
     {
     }
 
     entry_t (state_machine::state_t state,
-	     svalue_id origin)
+	     const svalue *origin)
     : m_state (state), m_origin (origin)
     {}
 
@@ -134,21 +95,19 @@ public:
     }
 
     state_machine::state_t m_state;
-    svalue_id m_origin;
+    const svalue *m_origin;
   };
-  typedef hash_map <svalue_id, entry_t> map_t;
+  typedef hash_map <const svalue *, entry_t> map_t;
   typedef map_t::iterator iterator_t;
 
-  sm_state_map ();
+  sm_state_map (const state_machine &sm, int m_sm_idx);
 
   sm_state_map *clone () const;
 
-  sm_state_map *
-  clone_with_remapping (const one_way_svalue_id_map &id_map) const;
-
-  void print (const state_machine &sm, const region_model *model,
+  void print (const region_model *model,
+	      bool simple, bool multiline,
 	      pretty_printer *pp) const;
-  void dump (const state_machine &sm) const;
+  void dump (bool simple) const;
 
   bool is_empty_p () const;
 
@@ -160,51 +119,47 @@ public:
     return !(*this == other);
   }
 
-  state_machine::state_t get_state (svalue_id sid) const;
-  svalue_id get_origin (svalue_id sid) const;
+  state_machine::state_t get_state (const svalue *sval,
+				    const extrinsic_state &ext_state) const;
+  const svalue *get_origin (const svalue *sval,
+			    const extrinsic_state &ext_state) const;
 
   void set_state (region_model *model,
-		  svalue_id sid,
+		  const svalue *sval,
 		  state_machine::state_t state,
-		  svalue_id origin);
+		  const svalue *origin,
+		  const extrinsic_state &ext_state);
   bool set_state (const equiv_class &ec,
 		  state_machine::state_t state,
-		  svalue_id origin);
-  bool impl_set_state (svalue_id sid,
+		  const svalue *origin,
+		  const extrinsic_state &ext_state);
+  bool impl_set_state (const svalue *sval,
 		       state_machine::state_t state,
-		       svalue_id origin);
+		       const svalue *origin,
+		       const extrinsic_state &ext_state);
 
   void set_global_state (state_machine::state_t state);
   state_machine::state_t get_global_state () const;
 
-  void purge_for_unknown_fncall (const exploded_graph &eg,
-				 const state_machine &sm,
-				 const gcall *call, tree fndecl,
-				 region_model *new_model,
-				 region_model_context *ctxt);
-
-  void remap_svalue_ids (const svalue_id_map &map);
-
-  int on_svalue_purge (const state_machine &sm,
-		       int sm_idx,
-		       svalue_id first_unused_sid,
-		       const svalue_id_map &map,
+  void on_svalue_leak (const svalue *sval,
 		       impl_region_model_context *ctxt);
+  void on_liveness_change (const svalue_set &live_svalues,
+			   const region_model *model,
+			   impl_region_model_context *ctxt);
 
-  void on_inherited_svalue (svalue_id parent_sid,
-			    svalue_id child_sid);
-
-  void on_cast (svalue_id src_sid,
-		svalue_id dst_sid);
-
-  void on_unknown_change (svalue_id sid);
-
-  void validate (const state_machine &sm, int num_svalues) const;
+  void on_unknown_change (const svalue *sval,
+			  bool is_mutable,
+			  const extrinsic_state &ext_state);
 
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }
 
+  static const svalue *
+  canonicalize_svalue (const svalue *sval, const extrinsic_state &ext_state);
+
 private:
+  const state_machine &m_sm;
+  int m_sm_idx;
   map_t m_map;
   state_machine::state_t m_global_state;
 };
@@ -229,7 +184,6 @@ public:
 
 #if __cplusplus >= 201103
   program_state (program_state &&other);
-  program_state& operator= (program_state &&other); // doesn't seem to be used
 #endif
 
   ~program_state ();
@@ -244,27 +198,27 @@ public:
   void print (const extrinsic_state &ext_state,
 	      pretty_printer *pp) const;
 
-  void dump_to_pp (const extrinsic_state &ext_state, bool summarize,
-		   pretty_printer *pp) const;
-  void dump_to_file (const extrinsic_state &ext_state, bool summarize,
-		     FILE *outf) const;
-  void dump (const extrinsic_state &ext_state, bool summarize) const;
+  void dump_to_pp (const extrinsic_state &ext_state, bool simple,
+		   bool multiline, pretty_printer *pp) const;
+  void dump_to_file (const extrinsic_state &ext_state, bool simple,
+		     bool multiline, FILE *outf) const;
+  void dump (const extrinsic_state &ext_state, bool simple) const;
+
+  void push_frame (const extrinsic_state &ext_state, function *fun);
+  function * get_current_function () const;
 
   bool on_edge (exploded_graph &eg,
 		const exploded_node &enode,
-		const superedge *succ,
-		state_change *change);
+		const superedge *succ);
 
   program_state prune_for_point (exploded_graph &eg,
 				 const program_point &point,
-				 state_change *change) const;
+				 const exploded_node *enode_for_diag) const;
 
-  void remap_svalue_ids (const svalue_id_map &map);
-
-  tree get_representative_tree (svalue_id sid) const;
+  tree get_representative_tree (const svalue *sval) const;
 
   bool can_purge_p (const extrinsic_state &ext_state,
-		    svalue_id sid)
+		    const svalue *sval)
   {
     /* Don't purge vars that have non-purgeable sm state, to avoid
        generating false "leak" complaints.  */
@@ -273,17 +227,23 @@ public:
     FOR_EACH_VEC_ELT (m_checker_states, i, smap)
       {
 	const state_machine &sm = ext_state.get_sm (i);
-	if (!sm.can_purge_p (smap->get_state (sid)))
+	if (!sm.can_purge_p (smap->get_state (sval, ext_state)))
 	  return false;
       }
     return true;
   }
 
   bool can_merge_with_p (const program_state &other,
-			 const extrinsic_state &ext_state,
+			 const program_point &point,
 			 program_state *out) const;
 
   void validate (const extrinsic_state &ext_state) const;
+
+  static void detect_leaks (const program_state &src_state,
+			    const program_state &dest_state,
+			    const svalue *extra_sval,
+			    const extrinsic_state &ext_state,
+			    region_model_context *ctxt);
 
   /* TODO: lose the pointer here (const-correctness issues?).  */
   region_model *m_region_model;
@@ -311,76 +271,14 @@ public:
   virtual bool on_state_change (const state_machine &sm,
 				state_machine::state_t src_sm_val,
 				state_machine::state_t dst_sm_val,
-				tree dst_rep,
-				svalue_id dst_origin_sid) = 0;
+				const svalue *dst_sval,
+				const svalue *dst_origin_sval) = 0;
 };
 
 extern bool for_each_state_change (const program_state &src_state,
-				   const program_state &dst_state,
-				   const extrinsic_state &ext_state,
-				   state_change_visitor *visitor);
-
-/* A class for recording "interesting" state changes.
-   This is used for annotating edges in the GraphViz output of the
-   exploded_graph, and for recording sm-state-changes, so that
-   values that change aren't purged (to make it easier to generate
-   state_change_event instances in the diagnostic_path).  */
-
-class state_change
-{
- public:
-  struct sm_change
-  {
-    sm_change (int sm_idx,
-	       svalue_id new_sid,
-	       state_machine::state_t old_state,
-	       state_machine::state_t new_state)
-    : m_sm_idx (sm_idx),
-      m_new_sid (new_sid),
-      m_old_state (old_state), m_new_state (new_state)
-    {}
-
-    const state_machine &get_sm (const extrinsic_state &ext_state) const
-    {
-      return ext_state.get_sm (m_sm_idx);
-    }
-
-    void dump (pretty_printer *pp, const extrinsic_state &ext_state) const;
-
-    void remap_svalue_ids (const svalue_id_map &map);
-    int on_svalue_purge (svalue_id first_unused_sid);
-
-    void validate (const program_state &new_state,
-		   const extrinsic_state &ext_state) const;
-
-    int m_sm_idx;
-    svalue_id m_new_sid;
-    state_machine::state_t m_old_state;
-    state_machine::state_t m_new_state;
-  };
-
-  state_change ();
-  state_change (const state_change &other);
-
-  void add_sm_change (int sm_idx,
-		      svalue_id new_sid,
-		      state_machine::state_t old_state,
-		      state_machine::state_t new_state);
-
-  bool affects_p (svalue_id sid) const;
-
-  void dump (pretty_printer *pp, const extrinsic_state &ext_state) const;
-  void dump (const extrinsic_state &ext_state) const;
-
-  void remap_svalue_ids (const svalue_id_map &map);
-  int on_svalue_purge (svalue_id first_unused_sid);
-
-  void validate (const program_state &new_state,
-		 const extrinsic_state &ext_state) const;
-
- private:
-  auto_vec<sm_change> m_sm_changes;
-};
+				    const program_state &dst_state,
+				    const extrinsic_state &ext_state,
+				    state_change_visitor *visitor);
 
 } // namespace ana
 

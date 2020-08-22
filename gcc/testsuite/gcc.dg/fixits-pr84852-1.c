@@ -12,7 +12,7 @@
 
 int foo (void) { return strlen(""); }
 
-/* { dg-warning "incompatible implicit declaration of built-in function 'strlen'" "" { target *-*-* } -812156810 } */
+/* { dg-warning "incompatible implicit declaration of built-in function 'strlen'" "" { target *-*-* } { -812156810 } } */
 /* { dg-message "include '<string.h>' or provide a declaration of 'strlen'" "" { target *-*-* } 1 } */
 #if 0
 { dg-begin-multiline-output "" }

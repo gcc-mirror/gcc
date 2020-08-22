@@ -48,6 +48,9 @@
 #define PPC_PLATFORM_POWER8            13
 #define PPC_PLATFORM_POWER9            14
 
+/* This is not yet official.  */
+#define PPC_PLATFORM_POWER10           15
+
 /* AT_HWCAP bits.  These must match the values defined in the Linux kernel.  */
 #define PPC_FEATURE_32              0x80000000
 #define PPC_FEATURE_64              0x40000000
@@ -93,6 +96,9 @@
 #define PPC_FEATURE2_SCV            0x00100000
 #define PPC_FEATURE2_HTM_NO_SUSPEND 0x00080000
 
+/* These are not yet official.  */
+#define PPC_FEATURE2_ARCH_3_1       0x00040000
+#define PPC_FEATURE2_MMA            0x00020000
 
 /* Thread Control Block (TCB) offsets of the AT_PLATFORM, AT_HWCAP and
    AT_HWCAP2 values.  These must match the values defined in GLIBC.  */

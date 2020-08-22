@@ -18,6 +18,7 @@
 # libgomp.exp.
 
 load_lib scandump.exp
+load_lib scanoffload.exp
 
 # Utility for scanning compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
@@ -36,12 +37,12 @@ proc scan-offload-tree-dump { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump "offload-tree" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o" \
-		  [lindex $args 2]
+	scoff end-1 scan-dump "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" "" \
+	    [lindex $args 2]
     } else {
-	scan-dump "offload-tree" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o"
+	scoff end scan-dump "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ""
     }
 }
 
@@ -61,12 +62,12 @@ proc scan-offload-tree-dump-times { args } {
 	return
     }
     if { [llength $args] >= 4 } {
-	scan-dump-times "offload-tree" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9]t.[lindex $args 2]" ".o" \
-			[lindex $args 3]
+	scoff end-1 scan-dump-times "offload-tree" [lindex $args 0] \
+	    [lindex $args 1] "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 2]" "" \
+	    [lindex $args 3]
     } else {
-	scan-dump-times "offload-tree" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9]t.[lindex $args 2]" ".o"
+	scoff end scan-dump-times "offload-tree" [lindex $args 0] \
+	    [lindex $args 1] "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 2]" ""
     }
 }
 
@@ -86,12 +87,12 @@ proc scan-offload-tree-dump-not { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump-not "offload-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o" \
-		      [lindex $args 2]
+	scoff end-1 scan-dump-not "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" "" \
+	    [lindex $args 2]
     } else {
-	scan-dump-not "offload-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o"
+	scoff end scan-dump-not "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ""
     }
 }
 
@@ -112,12 +113,12 @@ proc scan-offload-tree-dump-dem { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump-dem "offload-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o" \
-		      [lindex $args 2]
+	scoff end-1 scan-dump-dem "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" "" \
+	    [lindex $args 2]
     } else {
-	scan-dump-dem "offload-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o"
+	scoff end scan-dump-dem "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ""
     }
 }
 
@@ -137,11 +138,11 @@ proc scan-offload-tree-dump-dem-not { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump-dem-not "offload-tree" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o" \
-			  [lindex $args 2]
+	scoff end-1 scan-dump-dem-not "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" "" \
+	    [lindex $args 2]
     } else {
-	scan-dump-dem-not "offload-tree" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ".o"
+	scoff end scan-dump-dem-not "offload-tree" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]t.[lindex $args 1]" ""
     }
 }

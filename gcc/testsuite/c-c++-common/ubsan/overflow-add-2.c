@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable -Wno-volatile" { target c++ } } */
 
 #define INT_MAX __INT_MAX__
 #define INT_MIN (-__INT_MAX__ - 1)

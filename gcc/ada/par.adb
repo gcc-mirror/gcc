@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -679,7 +679,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  begin message if indeed the BEGIN is missing.
 
       function P_Array_Type_Definition                return Node_Id;
-      function P_Basic_Declarative_Items              return List_Id;
       function P_Constraint_Opt                       return Node_Id;
       function P_Declarative_Part                     return List_Id;
       function P_Discrete_Choice_List                 return List_Id;
@@ -693,6 +692,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Subtype_Mark                         return Node_Id;
       function P_Subtype_Mark_Resync                  return Node_Id;
       function P_Unknown_Discriminant_Part_Opt        return Boolean;
+
+      function P_Basic_Declarative_Items
+        (Declare_Expression : Boolean) return List_Id;
+      --  Used to parse the declarative items in a package visible or
+      --  private part (in which case Declare_Expression is False), and
+      --  the declare_items of a declare_expression (in which case
+      --  Declare_Expression is True). Declare_Expression is used to
+      --  affect the wording of error messages, and to control style
+      --  checking.
 
       function P_Access_Definition
         (Null_Exclusion_Present : Boolean) return Node_Id;
@@ -787,11 +795,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Simple_Expression                    return Node_Id;
       function P_Simple_Expression_Or_Range_Attribute return Node_Id;
 
-      function P_Case_Expression return Node_Id;
-      --  Scans out a case expression. Called with Token pointing to the CASE
-      --  keyword, and returns pointing to the terminating right parent,
-      --  semicolon, or comma, but does not consume this terminating token.
-
       function P_Expression_If_OK return Node_Id;
       --  Scans out an expression allowing an unparenthesized case expression,
       --  if expression, or quantified expression to appear without enclosing
@@ -838,6 +841,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Similar to the above, but the caller has already scanned out the
       --  conditional expression and passes it as an argument. This form of
       --  the call does not check for a following right parenthesis.
+
+      function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id;
+      --  Parse an iterator specification. The defining identifier has already
+      --  been scanned, as it is the common prefix between loop and iterator
+      --  specification.
 
       function P_Loop_Parameter_Specification return Node_Id;
       --  Used in loop constructs and quantified expressions.

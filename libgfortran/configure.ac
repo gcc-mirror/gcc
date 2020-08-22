@@ -216,6 +216,19 @@ AM_CONDITIONAL(LIBGFOR_USE_SYMVER_SUN, [test "x$gfortran_use_symver" = xsun])
 
 AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
 
+# Some compiler target support may have limited support for integer
+# or floating point numbers – or may want to reduce the libgfortran size
+# although they do have the support.
+LIBGOMP_CHECKED_INT_KINDS="1 2 4 8 16"
+LIBGOMP_CHECKED_REAL_KINDS="4 8 10 16"
+
+if test "x${target_cpu}" = xamdgcn; then
+  # amdgcn only has limited support for __int128.
+  LIBGOMP_CHECKED_INT_KINDS="1 2 4 8"
+fi
+AC_SUBST(LIBGOMP_CHECKED_INT_KINDS)
+AC_SUBST(LIBGOMP_CHECKED_REAL_KINDS)
+
 # Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
 # similarly to how libstdc++ does it
 ac_test_CFLAGS="${CFLAGS+set}"
@@ -600,6 +613,18 @@ AC_SUBST(IEEE_SUPPORT)
 # Some targets require additional compiler options for IEEE compatibility.
 IEEE_FLAGS="${ieee_flags}"
 AC_SUBST(IEEE_FLAGS)
+
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+AC_SUBST(tmake_file)
 
 
 # Check for POSIX getpwuid_r 

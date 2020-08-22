@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -433,7 +433,7 @@ package body Sem_Ch11 is
 
       if ((Is_Subprogram (Current_Scope) or else Is_Entry (Current_Scope))
            and then Chars (Current_Scope) /= Name_uPostconditions)
-         or else Ekind_In (Current_Scope, E_Block, E_Task_Type)
+         or else Ekind (Current_Scope) in E_Block | E_Task_Type
       then
          Warn_On_Useless_Assignments (Current_Scope);
       end if;
@@ -459,8 +459,6 @@ package body Sem_Ch11 is
       if Comes_From_Source (N) then
          Check_Compiler_Unit ("raise expression", N);
       end if;
-
-      Check_SPARK_05_Restriction ("raise expression is not allowed", N);
 
       --  Check exception restrictions on the original source
 
@@ -517,10 +515,6 @@ package body Sem_Ch11 is
       Par            : Node_Id;
 
    begin
-      if Comes_From_Source (N) then
-         Check_SPARK_05_Restriction ("raise statement is not allowed", N);
-      end if;
-
       Check_Unreachable_Code (N);
 
       --  Check exception restrictions on the original source
@@ -543,7 +537,7 @@ package body Sem_Ch11 is
             --  Skip past null statements and pragmas
 
             while Present (P)
-              and then Nkind_In (P, N_Null_Statement, N_Pragma)
+              and then Nkind (P) in N_Null_Statement | N_Pragma
             loop
                P := Prev (P);
             end loop;
@@ -600,11 +594,9 @@ package body Sem_Ch11 is
 
       if No (Exception_Id) then
          P := Parent (N);
-         while not Nkind_In (P, N_Exception_Handler,
-                                N_Subprogram_Body,
-                                N_Package_Body,
-                                N_Task_Body,
-                                N_Entry_Body)
+         while Nkind (P) not in
+                 N_Exception_Handler | N_Subprogram_Body | N_Package_Body |
+                 N_Task_Body         | N_Entry_Body
          loop
             P := Parent (P);
          end loop;
@@ -722,10 +714,6 @@ package body Sem_Ch11 is
    --  Start of processing for Analyze_Raise_xxx_Error
 
    begin
-      if Nkind (Original_Node (N)) = N_Raise_Statement then
-         Check_SPARK_05_Restriction ("raise statement is not allowed", N);
-      end if;
-
       if No (Etype (N)) then
          Set_Etype (N, Standard_Void_Type);
       end if;

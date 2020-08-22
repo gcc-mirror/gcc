@@ -652,6 +652,7 @@ extern GTY(()) int darwin_ms_struct;
    that the name *is* defined in this module, so it doesn't need to
    make them indirect.  */
 
+#undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
     const char *xname = NAME;						\
@@ -808,6 +809,12 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
   do {							\
     if (strcmp ("LC", PREFIX) == 0)			\
       sprintf (LABEL, "*%s%ld", "lC", (long)(NUM));	\
+    else if (strcmp ("Lubsan_data", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lubsan_data", (long)(NUM));\
+    else if (strcmp ("Lubsan_type", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lubsan_type", (long)(NUM));\
+    else if (strcmp ("LASAN", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lASAN", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
   } while (0)
@@ -1053,7 +1060,9 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    providing an osx-version-min of this unless overridden by the User.
    10.5 is the only version that fully supports all our archs so that's the
    fall-back default.  */
+#ifndef DEF_MIN_OSX_VERSION
 #define DEF_MIN_OSX_VERSION "10.5"
+#endif
 
 /* Later versions of ld64 support coalescing weak code/data without requiring
    that they be placed in specially identified sections.  This is the earliest

@@ -173,7 +173,7 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_STDC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
-	     CLK_GNUCXX2A, CLK_CXX2A, CLK_ASM};
+	     CLK_GNUCXX20, CLK_CXX20, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -312,9 +312,6 @@ enum cpp_normalize_level {
    carries all the options visible to the command line.  */
 struct cpp_options
 {
-  /* Characters between tab stops.  */
-  unsigned int tabstop;
-
   /* The language we're preprocessing.  */
   enum c_lang lang;
 
@@ -484,7 +481,7 @@ struct cpp_options
   /* Nonzero for C2X decimal floating-point constants.  */
   unsigned char dfp_constants;
 
-  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  /* Nonzero for C++20 __VA_OPT__ feature.  */
   unsigned char va_opt;
 
   /* Nonzero for the '::' token.  */
@@ -969,17 +966,18 @@ extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
    call cpp_finish on that reader.  You can either edit the callbacks
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
-extern cpp_options *cpp_get_options (cpp_reader *);
-extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
+extern cpp_options *cpp_get_options (cpp_reader *) ATTRIBUTE_PURE;
+extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
-extern class mkdeps *cpp_get_deps (cpp_reader *);
+extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
-extern const char *cpp_read_main_file (cpp_reader *, const char *);
+extern const char *cpp_read_main_file (cpp_reader *, const char *,
+				       bool injecting = false);
 
 /* Set up built-ins with special behavior.  Use cpp_init_builtins()
    instead unless your know what you are doing.  */
@@ -1304,6 +1302,18 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 /* In lex.c */
 extern void cpp_force_token_locations (cpp_reader *, location_t);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
+enum CPP_DO_task
+{
+  CPP_DO_print,
+  CPP_DO_location,
+  CPP_DO_token
+};
+
+extern void cpp_directive_only_process (cpp_reader *pfile,
+					void *data,
+					void (*cb) (cpp_reader *,
+						    CPP_DO_task,
+						    void *data, ...));
 
 /* In expr.c */
 extern enum cpp_ttype cpp_userdef_string_remove_type
@@ -1322,14 +1332,43 @@ extern const char * cpp_get_userdef_suffix
   (const cpp_token *);
 
 /* In charset.c */
+
+/* A class to manage the state while converting a UTF-8 sequence to cppchar_t
+   and computing the display width one character at a time.  */
+class cpp_display_width_computation {
+ public:
+  cpp_display_width_computation (const char *data, int data_length,
+				 int tabstop);
+  const char *next_byte () const { return m_next; }
+  int bytes_processed () const { return m_next - m_begin; }
+  int bytes_left () const { return m_bytes_left; }
+  bool done () const { return !bytes_left (); }
+  int display_cols_processed () const { return m_display_cols; }
+
+  int process_next_codepoint ();
+  int advance_display_cols (int n);
+
+ private:
+  const char *const m_begin;
+  const char *m_next;
+  size_t m_bytes_left;
+  const int m_tabstop;
+  int m_display_cols;
+};
+
+/* Convenience functions that are simple use cases for class
+   cpp_display_width_computation.  Tab characters will be expanded to spaces
+   as determined by TABSTOP.  */
 int cpp_byte_column_to_display_column (const char *data, int data_length,
-				       int column);
-inline int cpp_display_width (const char *data, int data_length)
+				       int column, int tabstop);
+inline int cpp_display_width (const char *data, int data_length,
+			      int tabstop)
 {
-    return cpp_byte_column_to_display_column (data, data_length, data_length);
+  return cpp_byte_column_to_display_column (data, data_length, data_length,
+					    tabstop);
 }
 int cpp_display_column_to_byte_column (const char *data, int data_length,
-				       int display_col);
+				       int display_col, int tabstop);
 int cpp_wcwidth (cppchar_t c);
 
 #endif /* ! LIBCPP_CPPLIB_H */

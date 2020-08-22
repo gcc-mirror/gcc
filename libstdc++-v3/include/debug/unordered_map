@@ -81,6 +81,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -121,8 +129,8 @@ namespace __debug
 
       unordered_map(const unordered_map&) = default;
 
-      unordered_map(const _Base& __x)
-      : _Base(__x) { }
+      unordered_map(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_map(unordered_map&&) = default;
 
@@ -136,6 +144,7 @@ namespace __debug
 
       unordered_map(unordered_map&& __umap,
 		    const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__umap._M_base()), __a)) )
       : _Safe(std::move(__umap._M_safe()), __a),
 	_Base(std::move(__umap._M_base()), __a) { }
 
@@ -160,7 +169,7 @@ namespace __debug
 	unordered_map(_InputIterator __first, _InputIterator __last,
 		      size_type __n,
 		      const allocator_type& __a)
-	  : unordered_map(__first, __last, __n, hasher(), key_equal(), __a)
+	: unordered_map(__first, __last, __n, hasher(), key_equal(), __a)
 	{ }
 
       template<typename _InputIterator>
@@ -168,20 +177,20 @@ namespace __debug
 		      size_type __n,
 		      const hasher& __hf,
 		      const allocator_type& __a)
-	  : unordered_map(__first, __last, __n, __hf, key_equal(), __a)
+	: unordered_map(__first, __last, __n, __hf, key_equal(), __a)
 	{ }
 
       unordered_map(initializer_list<value_type> __l,
 		    size_type __n,
 		    const allocator_type& __a)
-	: unordered_map(__l, __n, hasher(), key_equal(), __a)
+      : unordered_map(__l, __n, hasher(), key_equal(), __a)
       { }
 
       unordered_map(initializer_list<value_type> __l,
 		    size_type __n,
 		    const hasher& __hf,
 		    const allocator_type& __a)
-	: unordered_map(__l, __n, __hf, key_equal(), __a)
+      : unordered_map(__l, __n, __hf, key_equal(), __a)
       { }
 
       ~unordered_map() = default;
@@ -621,7 +630,7 @@ namespace __debug
 	  [__victim](_Base_const_iterator __it) { return __it == __victim; });
 	this->_M_invalidate_local_if(
 	  [__victim](_Base_const_local_iterator __it)
-	  { return __it._M_curr() == __victim._M_cur; });
+	  { return __it == __victim; });
       }
 
       _Base_iterator
@@ -776,6 +785,14 @@ namespace __debug
       template<typename _ItT, typename _SeqT>
 	friend class ::__gnu_debug::_Safe_local_iterator;
 
+      // Reference wrapper for base class. See PR libstdc++/90102.
+      struct _Base_ref
+      {
+	_Base_ref(const _Base& __r) : _M_ref(__r) { }
+
+	const _Base& _M_ref;
+      };
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -816,8 +833,8 @@ namespace __debug
 
       unordered_multimap(const unordered_multimap&) = default;
 
-      unordered_multimap(const _Base& __x)
-      : _Base(__x) { }
+      unordered_multimap(_Base_ref __x)
+      : _Base(__x._M_ref) { }
 
       unordered_multimap(unordered_multimap&&) = default;
 
@@ -831,6 +848,7 @@ namespace __debug
 
       unordered_multimap(unordered_multimap&& __umap,
 			 const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__umap._M_base()), __a)) )
       : _Safe(std::move(__umap._M_safe()), __a),
 	_Base(std::move(__umap._M_base()), __a) { }
 
@@ -854,26 +872,26 @@ namespace __debug
 	unordered_multimap(_InputIterator __first, _InputIterator __last,
 			   size_type __n,
 			   const allocator_type& __a)
-	  : unordered_multimap(__first, __last, __n, hasher(), key_equal(), __a)
+	: unordered_multimap(__first, __last, __n, hasher(), key_equal(), __a)
 	{ }
 
       template<typename _InputIterator>
 	unordered_multimap(_InputIterator __first, _InputIterator __last,
 			   size_type __n, const hasher& __hf,
 			   const allocator_type& __a)
-	  : unordered_multimap(__first, __last, __n, __hf, key_equal(), __a)
+	: unordered_multimap(__first, __last, __n, __hf, key_equal(), __a)
 	{ }
 
       unordered_multimap(initializer_list<value_type> __l,
 			 size_type __n,
 			 const allocator_type& __a)
-	: unordered_multimap(__l, __n, hasher(), key_equal(), __a)
+      : unordered_multimap(__l, __n, hasher(), key_equal(), __a)
       { }
 
       unordered_multimap(initializer_list<value_type> __l,
 			 size_type __n, const hasher& __hf,
 			 const allocator_type& __a)
-	: unordered_multimap(__l, __n, __hf, key_equal(), __a)
+      : unordered_multimap(__l, __n, __hf, key_equal(), __a)
       { }
 
       ~unordered_multimap() = default;
@@ -1228,7 +1246,7 @@ namespace __debug
 	  [__victim](_Base_const_iterator __it) { return __it == __victim; });
 	this->_M_invalidate_local_if(
 	  [__victim](_Base_const_local_iterator __it)
-	  { return __it._M_curr() == __victim._M_cur; });
+	  { return __it == __victim; });
       }
 
       _Base_iterator

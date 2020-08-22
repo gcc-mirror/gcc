@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 
 --    Analysis     implements the bulk of semantic analysis such as
 --                 name analysis and type resolution for declarations,
---                 instructions and expressions.  The main routine
+--                 instructions and expressions. The main routine
 --                 driving this process is procedure Analyze given below.
 --                 This analysis phase is really a bottom up pass that is
 --                 achieved during the recursive traversal performed by the
@@ -51,7 +51,7 @@
 --                 recursive calls to itself to resolve operands.
 
 --    Expansion    if we are not generating code this phase is a no-op.
---                 otherwise this phase expands, i.e. transforms, original
+--                 Otherwise this phase expands, i.e. transforms, original
 --                 declaration, expressions or instructions into simpler
 --                 structures that can be handled by the back-end. This
 --                 phase is also in charge of generating code which is
@@ -72,7 +72,7 @@
 --  up. For instructions and declarations, before the call to the Analyze
 --  routine completes we perform expansion since at that point we have all
 --  semantic information needed. For expression nodes, after the call to
---  Analysis terminates we invoke the Resolve routine to transmit top-down
+--  Analyze terminates we invoke the Resolve routine to transmit top-down
 --  the type that was gathered by Analyze which will resolve possible
 --  ambiguities in the expression. Just before the call to Resolve
 --  terminates, the expression can be expanded since all the semantic
@@ -138,7 +138,7 @@
 --  this is the one case where this model falls down. Here is how we patch
 --  it up without causing too much distortion to our basic model.
 
---  A switch (In_Spec_Expression) is set to show that we are in the initial
+--  A flag (In_Spec_Expression) is set to show that we are in the initial
 --  occurrence of a default expression. The analyzer is then called on this
 --  expression with the switch set true. Analysis and resolution proceed almost
 --  as usual, except that Freeze_Expression will not freeze non-static
@@ -178,7 +178,7 @@
 --  needs to be called 100 times.)
 
 --  The reason this mechanism does not work is that the expanded code for the
---  children is typically inserted above the parent and thus when the father
+--  children is typically inserted above the parent and thus when the parent
 --  gets expanded no re-evaluation takes place. For instance in the case of
 --  aggregates if "new Thing (Function_Call)" is expanded before the aggregate
 --  the expanded code will be placed outside of the aggregate and when
@@ -245,13 +245,20 @@ package Sem is
 
    In_Assertion_Expr : Nat := 0;
    --  This is set non-zero if we are within the expression of an assertion
-   --  pragma or aspect. It is a counter which is incremented at the start of
-   --  expanding such an expression, and decremented on completion of expanding
-   --  that expression. Probably a boolean would be good enough, since we think
-   --  that such expressions cannot nest, but that might not be true in the
-   --  future (e.g. if let expressions are added to Ada) so we prepare for that
-   --  future possibility by making it a counter. As with In_Spec_Expression,
-   --  it must be recursively saved and restored for a Semantics call.
+   --  pragma or aspect. It is incremented at the start of expanding such an
+   --  expression, and decremented on completion of expanding that
+   --  expression. This needs to be a counter, rather than a Boolean, because
+   --  assertions can contain declare_expressions, which can contain
+   --  assertions. As with In_Spec_Expression, it must be recursively saved and
+   --  restored for a Semantics call.
+
+   In_Declare_Expr : Nat := 0;
+   --  This is set non-zero if we are within a declare_expression. It is
+   --  incremented at the start of expanding such an expression, and
+   --  decremented on completion of expanding that expression. This needs to be
+   --  a counter, rather than a Boolean, because declare_expressions can
+   --  nest. As with In_Spec_Expression, it must be recursively saved and
+   --  restored for a Semantics call.
 
    In_Compile_Time_Warning_Or_Error : Boolean := False;
    --  Switch to indicate that we are validating a pragma Compile_Time_Warning

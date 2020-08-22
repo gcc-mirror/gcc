@@ -1,3 +1,46 @@
+2020-08-16  Sergei Trofimovich  <slyfox@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-08-12  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
+2020-07-30  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-07-22  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-06-12  Martin Liska  <mliska@suse.cz>
+
+	* .gitignore: Add .clang-tidy.
+
+2020-06-08  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Check AX_CXX_COMPILE_STDCXX if not bootstrapping.
+	* configure: Regenerate.
+
+2020-06-06  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* MAINTAINERS: Add myself as xtensa port maintainer.
+
+2020-05-28  Nicolas Bértolo  <nicolasbertolo@gmail.com>
+
+	* configure.ac: Don't require --enable-host-shared when building
+	for Mingw.
+	* configure: Regenerate.
+
+2020-05-18  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Update bootstrap dialect to -std=c++11.
+
+2020-05-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2020-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/92713

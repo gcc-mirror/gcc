@@ -123,7 +123,9 @@ enum include_type
    /* Non-directive including mechanisms.  */
    IT_CMDLINE,  /* -include */
    IT_DEFAULT,  /* forced header  */
-   IT_MAIN,     /* main  */
+   IT_MAIN,     /* main, start on line 1 */
+   IT_MAIN_INJECT,  /* main, but there will be an injected preamble
+		       before line 1 */
 
    IT_DIRECTIVE_HWM = IT_IMPORT + 1,  /* Directives below this.  */
    IT_HEADER_HWM = IT_DEFAULT + 1     /* Header files below this.  */
@@ -275,7 +277,7 @@ struct lexer_state
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
 
-  /* Nonzero when handling a deferred pragma.  */
+  /* Nonzero when tokenizing a deferred pragma.  */
   unsigned char in_deferred_pragma;
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
@@ -677,10 +679,10 @@ extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.c */
-typedef struct _cpp_file _cpp_file;
+enum _cpp_find_file_kind
+  { _cpp_FFK_NORMAL, _cpp_FFK_FAKE, _cpp_FFK_PRE_INCLUDE, _cpp_FFK_HAS_INCLUDE };
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
-				  int angle, bool fake, bool preinclude,
-				  bool has_include, location_t);
+				  int angle, _cpp_find_file_kind, location_t);
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
@@ -746,17 +748,6 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 linenum_type, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
 extern char *_cpp_bracket_include (cpp_reader *);
-
-/* In directives.c */
-struct _cpp_dir_only_callbacks
-{
-  /* Called to print a block of lines. */
-  void (*print_lines) (int, const void *, size_t);
-  bool (*maybe_print_line) (location_t);
-};
-
-extern void _cpp_preprocess_dir_only (cpp_reader *,
-				      const struct _cpp_dir_only_callbacks *);
 
 /* In traditional.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);

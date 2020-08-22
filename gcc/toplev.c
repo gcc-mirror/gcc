@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "omp-offload.h"
-#include "hsa-common.h"
 #include "edit-context.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
@@ -109,7 +108,7 @@ static int lang_dependent_init (const char *);
 static void finalize (bool);
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
-static void compile_file (const char *);
+static void compile_file (void);
 
 /* True if we don't need a backend (e.g. preprocessing only).  */
 static bool no_backend;
@@ -452,7 +451,7 @@ wrapup_global_declarations (tree *vec, int len)
    output and various debugging dumps.  */
 
 static void
-compile_file (const char *name)
+compile_file (void)
 {
   timevar_start (TV_PHASE_PARSING);
   timevar_push (TV_PARSE_GLOBAL);
@@ -483,7 +482,7 @@ compile_file (const char *name)
   if (!in_lto_p)
     {
       timevar_start (TV_PHASE_OPT_GEN);
-      symtab->finalize_compilation_unit (name);
+      symtab->finalize_compilation_unit ();
       timevar_stop (TV_PHASE_OPT_GEN);
     }
 
@@ -514,8 +513,6 @@ compile_file (const char *name)
 	tsan_finish_file ();
 
       omp_finish_file ();
-
-      hsa_output_brig ();
 
       output_shared_constant_pool ();
       output_object_blocks ();
@@ -799,8 +796,8 @@ print_switch_values (print_switch_fn_type print_fn)
 	case OPT_o:
 	case OPT_d:
 	case OPT_dumpbase:
+	case OPT_dumpbase_ext:
 	case OPT_dumpdir:
-	case OPT_auxbase:
 	case OPT_quiet:
 	case OPT_version:
 	  /* Ignore these.  */
@@ -834,7 +831,7 @@ print_switch_values (print_switch_fn_type print_fn)
    on, because then the driver will have provided the name of a
    temporary file or bit bucket for us.  NAME is the file specified on
    the command line, possibly NULL.  */
-void
+static void
 init_asm_output (const char *name)
 {
   if (name == NULL && asm_file_name == 0)
@@ -935,11 +932,12 @@ handle_additional_asm (int childno)
   if (!asm_out_file)
     fatal_error (UNKNOWN_LOCATION, "Unable to create asm output file");
 
-  /* Reopen file as append mode. Here we assume that write to append file is
+  /* Reopen file as append mode.  Here we assume that write to append file is
      atomic, as it is in Linux.  */
   additional_asm_filenames = fopen (split_outputs, "a");
   if (!additional_asm_filenames)
-    fatal_error (UNKNOWN_LOCATION, "Unable to open the temporary asm files container");
+    fatal_error (UNKNOWN_LOCATION,
+		 "Unable to open the temporary asm files container");
 
   fprintf (additional_asm_filenames, "%d %s\n", childno, asm_file_name);
   fclose (additional_asm_filenames);
@@ -1457,11 +1455,19 @@ process_options (void)
   /* Set aux_base_name if not already set.  */
   if (aux_base_name)
     ;
-  else if (main_input_filename)
+  else if (dump_base_name)
     {
-      char *name = xstrdup (lbasename (main_input_filename));
+      const char *name = dump_base_name;
+      int nlen, len;
 
-      strip_off_ending (name, strlen (name));
+      if (dump_base_ext && (len = strlen (dump_base_ext))
+	  && (nlen = strlen (name)) && nlen > len
+	  && strcmp (name + nlen - len, dump_base_ext) == 0)
+	{
+	  char *p = xstrndup (name, nlen - len);
+	  name = p;
+	}
+
       aux_base_name = name;
     }
   else
@@ -1515,11 +1521,6 @@ process_options (void)
 		"%<-fabi-version=1%> is no longer supported");
       flag_abi_version = 2;
     }
-
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (flag_unroll_all_loops)
-    flag_unroll_loops = 1;
 
   /* web and rename-registers help when run after loop unrolling.  */
   if (flag_web == AUTODETECT_VALUE)
@@ -1869,11 +1870,31 @@ process_options (void)
   /* Address Sanitizer needs porting to each target architecture.  */
 
   if ((flag_sanitize & SANITIZE_ADDRESS)
-      && (!FRAME_GROWS_DOWNWARD || targetm.asan_shadow_offset == NULL))
+      && !FRAME_GROWS_DOWNWARD)
     {
       warning_at (UNKNOWN_LOCATION, 0,
 		  "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> "
 		  "are not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_USER_ADDRESS)
+      && targetm.asan_shadow_offset == NULL)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fsanitize=address%> not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_KERNEL_ADDRESS)
+      && (targetm.asan_shadow_offset == NULL
+	  && param_asan_stack
+	  && !asan_shadow_offset_set_p ()))
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fsanitize=kernel-address%> with stack protection "
+		  "is not supported without %<-fasan-shadow-offset=%> "
+		  "for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
@@ -1900,6 +1921,9 @@ process_options (void)
   if (flag_checking >= 2)
     hash_table_sanitize_eq_limit
       = param_hash_table_verification_limit;
+
+  if (flag_large_source_files)
+    line_table->default_range_bits = 0;
 
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */
@@ -2008,8 +2032,21 @@ static int
 lang_dependent_init (const char *name)
 {
   location_t save_loc = input_location;
-  if (dump_base_name == 0)
-    dump_base_name = name && name[0] ? name : "gccdump";
+  if (!dump_base_name)
+    {
+      dump_base_name = name && name[0] ? name : "gccdump";
+
+      /* We do not want to derive a non-empty dumpbase-ext from an
+	 explicit -dumpbase argument, only from a defaulted
+	 dumpbase.  */
+      if (!dump_base_ext)
+	{
+	  const char *base = lbasename (dump_base_name);
+	  const char *ext = strrchr (base, '.');
+	  if (ext)
+	    dump_base_ext = ext;
+	}
+    }
 
   /* Other front-end initialization.  */
   input_location = BUILTINS_LOCATION;
@@ -2019,20 +2056,27 @@ lang_dependent_init (const char *name)
 
   if (!flag_wpa)
     {
-      /* If stack usage information is desired, open the output file.  */
-      if (flag_stack_usage && !flag_generate_lto)
-	stack_usage_file = open_auxiliary_file ("su");
+      init_asm_output (name);
 
-      /* If call graph information is desired, open the output file.  */
-      if (flag_callgraph_info && !flag_generate_lto)
+      if (!flag_generate_lto && !flag_compare_debug)
 	{
-	  callgraph_info_file = open_auxiliary_file ("ci");
-	  /* Write the file header.  */
-	  fprintf (callgraph_info_file,
-		   "graph: { title: \"%s\"\n", main_input_filename);
-	  bitmap_obstack_initialize (NULL);
-	  callgraph_info_external_printed = BITMAP_ALLOC (NULL);
+	  /* If stack usage information is desired, open the output file.  */
+	  if (flag_stack_usage)
+	    stack_usage_file = open_auxiliary_file ("su");
+
+	  /* If call graph information is desired, open the output file.  */
+	  if (flag_callgraph_info)
+	    {
+	      callgraph_info_file = open_auxiliary_file ("ci");
+	      /* Write the file header.  */
+	      fprintf (callgraph_info_file,
+		       "graph: { title: \"%s\"\n", main_input_filename);
+	      bitmap_obstack_initialize (NULL);
+	      callgraph_info_external_printed = BITMAP_ALLOC (NULL);
+	    }
 	}
+      else
+	flag_stack_usage = flag_callgraph_info = false;
     }
 
   /* This creates various _DECL nodes, so needs to be called after the
@@ -2299,10 +2343,8 @@ do_compile ()
       if (!no_backend)
 	backend_init ();
 
-      int init = lang_dependent_init (main_input_filename);
-
       /* Language-dependent initialization.  Returns true on success.  */
-      if (init)
+      if (lang_dependent_init (main_input_filename))
         {
           /* Initialize yet another pass.  */
 
@@ -2317,7 +2359,7 @@ do_compile ()
 
           timevar_stop (TV_PHASE_SETUP);
 
-          compile_file (main_input_filename);
+	  compile_file ();
         }
       else
         {

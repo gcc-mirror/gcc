@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -398,6 +398,17 @@ package body Ada.Characters.Handling is
    begin
       return False;
    end Is_Mark;
+
+   -------------
+   -- Is_NFKC --
+   -------------
+
+   function Is_NFKC (Item : Character) return Boolean is
+   begin
+      return Character'Pos (Item) not in
+        160 | 168 | 170 | 175 | 178 | 179 | 180 | 181 | 184 | 185 | 186 |
+        188 | 189 | 190;
+   end Is_NFKC;
 
    ---------------------
    -- Is_Other_Format --

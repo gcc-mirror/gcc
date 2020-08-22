@@ -1036,6 +1036,8 @@ On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
 
+@hook TARGET_LOWER_LOCAL_DECL_ALIGNMENT
+
 @hook TARGET_STATIC_RTX_ALIGNMENT
 
 @defmac DATA_ALIGNMENT (@var{type}, @var{basic-align})
@@ -4697,6 +4699,8 @@ Define this macro if a non-short-circuit operation produced by
 
 @hook TARGET_NOCE_CONVERSION_PROFITABLE_P
 
+@hook TARGET_NEW_ADDRESS_PROFITABLE_P
+
 @hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 
 @hook TARGET_ESTIMATED_POLY_VALUE
@@ -7657,7 +7661,7 @@ this macro.
 @end defmac
 
 @defmac VECTOR_STORE_FLAG_VALUE (@var{mode})
-A C expression that gives a rtx representing the nonzero true element
+A C expression that gives an rtx representing the nonzero true element
 for vector comparisons.  The returned rtx should be valid for the inner
 mode of @var{mode} which is guaranteed to be a vector mode.  Define
 this macro on machines that have vector comparison operations that

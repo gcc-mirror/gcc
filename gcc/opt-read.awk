@@ -81,8 +81,8 @@ BEGIN {
 		}
 		else if ($1 == "Enum") {
 			props = $2
-			name = opt_args("Name", props)
-			type = opt_args("Type", props)
+			name = opt_args_non_empty("Name", props)
+			type = opt_args_non_empty("Type", props)
 			unknown_error = opt_args("UnknownError", props)
 			enum_names[n_enums] = name
 			enum_type[name] = type
@@ -93,9 +93,9 @@ BEGIN {
 		}
 		else if ($1 == "EnumValue")  {
 			props = $2
-			enum_name = opt_args("Enum", props)
-			string = opt_args("String", props)
-			value = opt_args("Value", props)
+			enum_name = opt_args_non_empty("Enum", props)
+			string = opt_args_non_empty("String", props)
+			value = opt_args_non_empty("Value", props)
 			val_flags = "0"
 			val_flags = val_flags \
 			  test_flag("Canonical", props, "| CL_ENUM_CANONICAL") \

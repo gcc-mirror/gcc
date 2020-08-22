@@ -214,6 +214,11 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= -16 && INTVAL (op) <= 15")))
 
+;; Return 1 if op is an unsigned 1-bit constant integer.
+(define_predicate "u1bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 1")))
+
 ;; Return 1 if op is a unsigned 3-bit constant integer.
 (define_predicate "u3bit_cint_operand"
   (and (match_code "const_int")
@@ -233,6 +238,11 @@
 (define_predicate "u7bit_cint_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 127)")))
+
+;; Return 1 if op is a unsigned 8-bit constant integer.
+(define_predicate "u8bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 255)")))
 
 ;; Return 1 if op is a signed 8-bit constant integer.
 ;; Integer multiplication complete more quickly
@@ -266,6 +276,16 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT)
 		    (INTVAL (op) + 0x8000) >= 0x10000")))
+
+;; Return 1 if op is a 32-bit constant signed integer
+(define_predicate "s32bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "(0x80000000 + UINTVAL (op)) >> 32 == 0")))
+
+;; Return 1 if op is a constant 32-bit unsigned
+(define_predicate "c32bit_cint_operand"
+  (and (match_code "const_int")
+       (match_test "((UINTVAL (op) >> 32) == 0)")))
 
 ;; Return 1 if op is a positive constant integer that is an exact power of 2.
 (define_predicate "exact_log2_cint_operand"
@@ -1031,7 +1051,12 @@
 		    && !((DEFAULT_ABI == ABI_AIX
 			  || DEFAULT_ABI == ABI_ELFv2)
 			 && (SYMBOL_REF_EXTERNAL_P (op)
-			     || SYMBOL_REF_WEAK (op)))")))
+			     || SYMBOL_REF_WEAK (op)))
+		    && !(DEFAULT_ABI == ABI_ELFv2
+			 && SYMBOL_REF_DECL (op) != NULL
+			 && TREE_CODE (SYMBOL_REF_DECL (op)) == FUNCTION_DECL
+			 && (rs6000_fndecl_pcrel_p (SYMBOL_REF_DECL (op))
+			     != rs6000_pcrel_p (cfun)))")))
 
 ;; Return 1 if this operand is a valid input for a move insn.
 (define_predicate "input_operand"
@@ -1113,6 +1138,11 @@
     }
   return gpc_reg_operand (op, mode);
 })
+
+;; Return 1 if this operand is valid for a MMA assemble accumulator insn.
+(define_special_predicate "mma_assemble_input_operand"
+  (match_test "(mode == V16QImode
+		&& (vsx_register_operand (op, mode) || MEM_P (op)))"))
 
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"

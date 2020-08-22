@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ package Sem_Prag is
       Pragma_Contract_Cases               => True,
       Pragma_Convention                   => True,
       Pragma_CPU                          => True,
+      Pragma_CUDA_Global                  => True,
       Pragma_Default_Initial_Condition    => True,
       Pragma_Default_Storage_Pool         => True,
       Pragma_Depends                      => True,
@@ -426,7 +427,7 @@ package Sem_Prag is
    --  of the pragma. The argument is extracted in the following manner:
    --
    --    When the pragma is generated from an aspect, return the corresponding
-   --    aspect for ASIS or when Context_Id denotes a generic unit.
+   --    aspect when Context_Id denotes a generic unit.
    --
    --    Otherwise return the first argument of Prag
    --
@@ -529,6 +530,11 @@ package Sem_Prag is
    --  S contains a name that is a valid C identifier, then S is simply set as
    --  the value of the Interface_Name. Otherwise it is encoded as needed by
    --  particular operating systems. See the body for details of the encoding.
+
+   procedure Set_Overflow_Mode (N : Node_Id);
+   --  Sets Sem.Scope_Suppress according to the overflow modes specified in
+   --  the pragma Overflow_Mode passed in argument. This should only be called
+   --  after N has been successfully analyzed.
 
    function Test_Case_Arg
      (Prag        : Node_Id;

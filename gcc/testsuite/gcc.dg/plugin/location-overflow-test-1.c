@@ -13,7 +13,7 @@ int
 fn_1 (int flag)
 {
   int x = 4, y = 5;
-  if (flag) x = 3; y = 2; /* { dg-message "-:disabled from this point" } */
+  if (flag) x = 3; y = 2; /* { dg-message "-:disabled from this point" "adding '-flarge-source-files'" } */
   return x * y;
 }
 

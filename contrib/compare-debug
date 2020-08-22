@@ -2,7 +2,7 @@
 
 # Compare stripped copies of two given object files.
 
-# Copyright (C) 2007, 2008, 2009, 2010, 2012 Free Software Foundation
+# Copyright (C) 2007, 2008, 2009, 2010, 2012, 2020 Free Software Foundation
 # Originally by Alexandre Oliva <aoliva@redhat.com>
 
 # This file is part of GCC.
@@ -183,8 +183,28 @@ $rm "$1.$suf1" "$2.$suf2"
 
 trap "exit $status; exit" 0 1 2 15
 
-if test -f "$1".gkd || test -f "$2".gkd; then
-  if cmp "$1".gkd "$2".gkd; then
+# Replace the suffix in $1 and $2 with .*.gkd, compare them if a
+# single file is found by the globbing.
+base1=`echo "$1" | sed '$s,\.[^.]*$,,'` gkd1=
+for f in "$base1".*.gkd; do
+  if test "x$gkd1" != x; then
+    gkd1=
+    break
+  elif test -f "$f"; then
+    gkd1=$f
+  fi
+done
+base2=`echo "$2" | sed '$s,\.[^.]*$,,'` gkd2=
+for f in "$base2".*.gkd; do
+  if test "x$gkd2" != x; then
+    gkd2=
+    break
+  elif test -f "$f"; then
+    gkd2=$f
+  fi
+done
+if test "x$gkd1" != x || test "x$gkd2" != x; then
+  if cmp "${gkd1-/dev/null}" "${gkd2-/dev/null}"; then
     :
   else
     status=$?

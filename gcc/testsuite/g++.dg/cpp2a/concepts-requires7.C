@@ -1,5 +1,5 @@
 // PR c++/66758
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template <class T, class U>
 concept C = requires (T t, U u) { t + u; };

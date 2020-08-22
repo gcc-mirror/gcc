@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,867 +172,6 @@ package body Bindo.Graphs is
       return Bucket_Range_Type (Vertex);
    end Hash_Library_Graph_Vertex;
 
-   -----------------------
-   -- Invocation_Graphs --
-   -----------------------
-
-   package body Invocation_Graphs is
-
-      -----------------------
-      -- Local subprograms --
-      -----------------------
-
-      procedure Free is
-        new Ada.Unchecked_Deallocation
-              (Invocation_Graph_Attributes, Invocation_Graph);
-
-      function Get_IGE_Attributes
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id)
-         return Invocation_Graph_Edge_Attributes;
-      pragma Inline (Get_IGE_Attributes);
-      --  Obtain the attributes of edge Edge of invocation graph G
-
-      function Get_IGV_Attributes
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id)
-         return Invocation_Graph_Vertex_Attributes;
-      pragma Inline (Get_IGV_Attributes);
-      --  Obtain the attributes of vertex Vertex of invocation graph G
-
-      procedure Increment_Invocation_Graph_Edge_Count
-        (G    : Invocation_Graph;
-         Kind : Invocation_Kind);
-      pragma Inline (Increment_Invocation_Graph_Edge_Count);
-      --  Increment the number of edges of king Kind in invocation graph G by
-      --  one.
-
-      function Is_Elaboration_Root
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Boolean;
-      pragma Inline (Is_Elaboration_Root);
-      --  Determine whether vertex Vertex of invocation graph denotes the
-      --  elaboration procedure of a spec or a body.
-
-      function Is_Existing_Source_Target_Relation
-        (G   : Invocation_Graph;
-         Rel : Source_Target_Relation) return Boolean;
-      pragma Inline (Is_Existing_Source_Target_Relation);
-      --  Determine whether a source vertex and a target vertex described by
-      --  relation Rel are already related in invocation graph G.
-
-      procedure Save_Elaboration_Root
-        (G    : Invocation_Graph;
-         Root : Invocation_Graph_Vertex_Id);
-      pragma Inline (Save_Elaboration_Root);
-      --  Save elaboration root Root of invocation graph G
-
-      procedure Set_Corresponding_Vertex
-        (G      : Invocation_Graph;
-         IS_Id  : Invocation_Signature_Id;
-         Vertex : Invocation_Graph_Vertex_Id);
-      pragma Inline (Set_Corresponding_Vertex);
-      --  Associate vertex Vertex of invocation graph G with signature IS_Id
-
-      procedure Set_Is_Existing_Source_Target_Relation
-        (G   : Invocation_Graph;
-         Rel : Source_Target_Relation;
-         Val : Boolean := True);
-      pragma Inline (Set_Is_Existing_Source_Target_Relation);
-      --  Mark a source vertex and a target vertex described by relation Rel as
-      --  already related in invocation graph G depending on value Val.
-
-      procedure Set_IGE_Attributes
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id;
-         Val  : Invocation_Graph_Edge_Attributes);
-      pragma Inline (Set_IGE_Attributes);
-      --  Set the attributes of edge Edge of invocation graph G to value Val
-
-      procedure Set_IGV_Attributes
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id;
-         Val    : Invocation_Graph_Vertex_Attributes);
-      pragma Inline (Set_IGV_Attributes);
-      --  Set the attributes of vertex Vertex of invocation graph G to value
-      --  Val.
-
-      --------------
-      -- Add_Edge --
-      --------------
-
-      procedure Add_Edge
-        (G      : Invocation_Graph;
-         Source : Invocation_Graph_Vertex_Id;
-         Target : Invocation_Graph_Vertex_Id;
-         IR_Id  : Invocation_Relation_Id)
-      is
-         pragma Assert (Present (G));
-         pragma Assert (Present (Source));
-         pragma Assert (Present (Target));
-         pragma Assert (Present (IR_Id));
-
-         Rel : constant Source_Target_Relation :=
-                 (Source => Source,
-                  Target => Target);
-
-         Edge : Invocation_Graph_Edge_Id;
-
-      begin
-         --  Nothing to do when the source and target are already related by an
-         --  edge.
-
-         if Is_Existing_Source_Target_Relation (G, Rel) then
-            return;
-         end if;
-
-         Edge := Sequence_Next_Edge;
-
-         --  Add the edge to the underlying graph
-
-         DG.Add_Edge
-           (G           => G.Graph,
-            E           => Edge,
-            Source      => Source,
-            Destination => Target);
-
-         --  Build and save the attributes of the edge
-
-         Set_IGE_Attributes
-           (G    => G,
-            Edge => Edge,
-            Val  => (Relation => IR_Id));
-
-         --  Mark the source and target as related by the new edge. This
-         --  prevents all further attempts to link the same source and target.
-
-         Set_Is_Existing_Source_Target_Relation (G, Rel);
-
-         --  Update the edge statistics
-
-         Increment_Invocation_Graph_Edge_Count (G, Kind (IR_Id));
-      end Add_Edge;
-
-      ----------------
-      -- Add_Vertex --
-      ----------------
-
-      procedure Add_Vertex
-        (G           : Invocation_Graph;
-         IC_Id       : Invocation_Construct_Id;
-         Body_Vertex : Library_Graph_Vertex_Id;
-         Spec_Vertex : Library_Graph_Vertex_Id)
-      is
-         pragma Assert (Present (G));
-         pragma Assert (Present (IC_Id));
-         pragma Assert (Present (Body_Vertex));
-         pragma Assert (Present (Spec_Vertex));
-
-         Construct_Signature : constant Invocation_Signature_Id :=
-                                 Signature (IC_Id);
-         Vertex : Invocation_Graph_Vertex_Id;
-
-      begin
-         --  Nothing to do when the construct already has a vertex
-
-         if Present (Corresponding_Vertex (G, Construct_Signature)) then
-            return;
-         end if;
-
-         Vertex := Sequence_Next_Vertex;
-
-         --  Add the vertex to the underlying graph
-
-         DG.Add_Vertex (G.Graph, Vertex);
-
-         --  Build and save the attributes of the vertex
-
-         Set_IGV_Attributes
-           (G      => G,
-            Vertex => Vertex,
-            Val    => (Body_Vertex => Body_Vertex,
-                       Construct   => IC_Id,
-                       Spec_Vertex => Spec_Vertex));
-
-         --  Associate the construct with its corresponding vertex
-
-         Set_Corresponding_Vertex (G, Construct_Signature, Vertex);
-
-         --  Save the vertex for later processing when it denotes a spec or
-         --  body elaboration procedure.
-
-         if Is_Elaboration_Root (G, Vertex) then
-            Save_Elaboration_Root (G, Vertex);
-         end if;
-      end Add_Vertex;
-
-      -----------------
-      -- Body_Vertex --
-      -----------------
-
-      function Body_Vertex
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return Get_IGV_Attributes (G, Vertex).Body_Vertex;
-      end Body_Vertex;
-
-      ------------
-      -- Column --
-      ------------
-
-      function Column
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Nat
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return Column (Signature (Construct (G, Vertex)));
-      end Column;
-
-      ---------------
-      -- Construct --
-      ---------------
-
-      function Construct
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Invocation_Construct_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return Get_IGV_Attributes (G, Vertex).Construct;
-      end Construct;
-
-      --------------------------
-      -- Corresponding_Vertex --
-      --------------------------
-
-      function Corresponding_Vertex
-        (G     : Invocation_Graph;
-         IS_Id : Invocation_Signature_Id) return Invocation_Graph_Vertex_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (IS_Id));
-
-         return Signature_Tables.Get (G.Signature_To_Vertex, IS_Id);
-      end Corresponding_Vertex;
-
-      ------------
-      -- Create --
-      ------------
-
-      function Create
-        (Initial_Vertices : Positive;
-         Initial_Edges    : Positive) return Invocation_Graph
-      is
-         G : constant Invocation_Graph := new Invocation_Graph_Attributes;
-
-      begin
-         G.Edge_Attributes     := IGE_Tables.Create       (Initial_Edges);
-         G.Graph               :=
-           DG.Create
-             (Initial_Vertices => Initial_Vertices,
-              Initial_Edges    => Initial_Edges);
-         G.Relations           := Relation_Sets.Create    (Initial_Edges);
-         G.Roots               := IGV_Sets.Create         (Initial_Vertices);
-         G.Signature_To_Vertex := Signature_Tables.Create (Initial_Vertices);
-         G.Vertex_Attributes   := IGV_Tables.Create       (Initial_Vertices);
-
-         return G;
-      end Create;
-
-      -------------
-      -- Destroy --
-      -------------
-
-      procedure Destroy (G : in out Invocation_Graph) is
-      begin
-         pragma Assert (Present (G));
-
-         IGE_Tables.Destroy       (G.Edge_Attributes);
-         DG.Destroy               (G.Graph);
-         Relation_Sets.Destroy    (G.Relations);
-         IGV_Sets.Destroy         (G.Roots);
-         Signature_Tables.Destroy (G.Signature_To_Vertex);
-         IGV_Tables.Destroy       (G.Vertex_Attributes);
-
-         Free (G);
-      end Destroy;
-
-      -----------------------------------
-      -- Destroy_Invocation_Graph_Edge --
-      -----------------------------------
-
-      procedure Destroy_Invocation_Graph_Edge
-        (Edge : in out Invocation_Graph_Edge_Id)
-      is
-         pragma Unreferenced (Edge);
-      begin
-         null;
-      end Destroy_Invocation_Graph_Edge;
-
-      ----------------------------------------------
-      -- Destroy_Invocation_Graph_Edge_Attributes --
-      ----------------------------------------------
-
-      procedure Destroy_Invocation_Graph_Edge_Attributes
-        (Attrs : in out Invocation_Graph_Edge_Attributes)
-      is
-         pragma Unreferenced (Attrs);
-      begin
-         null;
-      end Destroy_Invocation_Graph_Edge_Attributes;
-
-      -------------------------------------
-      -- Destroy_Invocation_Graph_Vertex --
-      -------------------------------------
-
-      procedure Destroy_Invocation_Graph_Vertex
-        (Vertex : in out Invocation_Graph_Vertex_Id)
-      is
-         pragma Unreferenced (Vertex);
-      begin
-         null;
-      end Destroy_Invocation_Graph_Vertex;
-
-      ------------------------------------------------
-      -- Destroy_Invocation_Graph_Vertex_Attributes --
-      ------------------------------------------------
-
-      procedure Destroy_Invocation_Graph_Vertex_Attributes
-        (Attrs : in out Invocation_Graph_Vertex_Attributes)
-      is
-         pragma Unreferenced (Attrs);
-      begin
-         null;
-      end Destroy_Invocation_Graph_Vertex_Attributes;
-
-      -----------
-      -- Extra --
-      -----------
-
-      function Extra
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Name_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return Extra (Relation (G, Edge));
-      end Extra;
-
-      ------------------------
-      -- Get_IGE_Attributes --
-      ------------------------
-
-      function Get_IGE_Attributes
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id)
-         return Invocation_Graph_Edge_Attributes
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return IGE_Tables.Get (G.Edge_Attributes, Edge);
-      end Get_IGE_Attributes;
-
-      ------------------------
-      -- Get_IGV_Attributes --
-      ------------------------
-
-      function Get_IGV_Attributes
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id)
-         return Invocation_Graph_Vertex_Attributes
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return IGV_Tables.Get (G.Vertex_Attributes, Vertex);
-      end Get_IGV_Attributes;
-
-      --------------
-      -- Has_Next --
-      --------------
-
-      function Has_Next (Iter : All_Edge_Iterator) return Boolean is
-      begin
-         return DG.Has_Next (DG.All_Edge_Iterator (Iter));
-      end Has_Next;
-
-      --------------
-      -- Has_Next --
-      --------------
-
-      function Has_Next (Iter : All_Vertex_Iterator) return Boolean is
-      begin
-         return DG.Has_Next (DG.All_Vertex_Iterator (Iter));
-      end Has_Next;
-
-      --------------
-      -- Has_Next --
-      --------------
-
-      function Has_Next (Iter : Edges_To_Targets_Iterator) return Boolean is
-      begin
-         return DG.Has_Next (DG.Outgoing_Edge_Iterator (Iter));
-      end Has_Next;
-
-      --------------
-      -- Has_Next --
-      --------------
-
-      function Has_Next (Iter : Elaboration_Root_Iterator) return Boolean is
-      begin
-         return IGV_Sets.Has_Next (IGV_Sets.Iterator (Iter));
-      end Has_Next;
-
-      -------------------------------
-      -- Hash_Invocation_Signature --
-      -------------------------------
-
-      function Hash_Invocation_Signature
-        (IS_Id : Invocation_Signature_Id) return Bucket_Range_Type
-      is
-      begin
-         pragma Assert (Present (IS_Id));
-
-         return Bucket_Range_Type (IS_Id);
-      end Hash_Invocation_Signature;
-
-      ---------------------------------
-      -- Hash_Source_Target_Relation --
-      ---------------------------------
-
-      function Hash_Source_Target_Relation
-        (Rel : Source_Target_Relation) return Bucket_Range_Type
-      is
-      begin
-         pragma Assert (Present (Rel.Source));
-         pragma Assert (Present (Rel.Target));
-
-         return
-           Hash_Two_Keys
-             (Bucket_Range_Type (Rel.Source),
-              Bucket_Range_Type (Rel.Target));
-      end Hash_Source_Target_Relation;
-
-      -------------------------------------------
-      -- Increment_Invocation_Graph_Edge_Count --
-      -------------------------------------------
-
-      procedure Increment_Invocation_Graph_Edge_Count
-        (G    : Invocation_Graph;
-         Kind : Invocation_Kind)
-      is
-         pragma Assert (Present (G));
-
-         Count : Natural renames G.Counts (Kind);
-
-      begin
-         Count := Count + 1;
-      end Increment_Invocation_Graph_Edge_Count;
-
-      ---------------------------------
-      -- Invocation_Graph_Edge_Count --
-      ---------------------------------
-
-      function Invocation_Graph_Edge_Count
-        (G    : Invocation_Graph;
-         Kind : Invocation_Kind) return Natural
-      is
-      begin
-         pragma Assert (Present (G));
-
-         return G.Counts (Kind);
-      end Invocation_Graph_Edge_Count;
-
-      -------------------------
-      -- Is_Elaboration_Root --
-      -------------------------
-
-      function Is_Elaboration_Root
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Boolean
-      is
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         Vertex_Kind : constant Invocation_Construct_Kind :=
-                         Kind (Construct (G, Vertex));
-
-      begin
-         return
-           Vertex_Kind = Elaborate_Body_Procedure
-             or else
-           Vertex_Kind = Elaborate_Spec_Procedure;
-      end Is_Elaboration_Root;
-
-      ----------------------------------------
-      -- Is_Existing_Source_Target_Relation --
-      ----------------------------------------
-
-      function Is_Existing_Source_Target_Relation
-        (G   : Invocation_Graph;
-         Rel : Source_Target_Relation) return Boolean
-      is
-      begin
-         pragma Assert (Present (G));
-
-         return Relation_Sets.Contains (G.Relations, Rel);
-      end Is_Existing_Source_Target_Relation;
-
-      -----------------------
-      -- Iterate_All_Edges --
-      -----------------------
-
-      function Iterate_All_Edges
-        (G : Invocation_Graph) return All_Edge_Iterator
-      is
-      begin
-         pragma Assert (Present (G));
-
-         return All_Edge_Iterator (DG.Iterate_All_Edges (G.Graph));
-      end Iterate_All_Edges;
-
-      --------------------------
-      -- Iterate_All_Vertices --
-      --------------------------
-
-      function Iterate_All_Vertices
-        (G : Invocation_Graph) return All_Vertex_Iterator
-      is
-      begin
-         pragma Assert (Present (G));
-
-         return All_Vertex_Iterator (DG.Iterate_All_Vertices (G.Graph));
-      end Iterate_All_Vertices;
-
-      ------------------------------
-      -- Iterate_Edges_To_Targets --
-      ------------------------------
-
-      function Iterate_Edges_To_Targets
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Edges_To_Targets_Iterator
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return
-           Edges_To_Targets_Iterator
-             (DG.Iterate_Outgoing_Edges (G.Graph, Vertex));
-      end Iterate_Edges_To_Targets;
-
-      -------------------------------
-      -- Iterate_Elaboration_Roots --
-      -------------------------------
-
-      function Iterate_Elaboration_Roots
-        (G : Invocation_Graph) return Elaboration_Root_Iterator
-      is
-      begin
-         pragma Assert (Present (G));
-
-         return Elaboration_Root_Iterator (IGV_Sets.Iterate (G.Roots));
-      end Iterate_Elaboration_Roots;
-
-      ----------
-      -- Kind --
-      ----------
-
-      function Kind
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Invocation_Kind
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return Kind (Relation (G, Edge));
-      end Kind;
-
-      ----------
-      -- Line --
-      ----------
-
-      function Line
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Nat
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return Line (Signature (Construct (G, Vertex)));
-      end Line;
-
-      ----------
-      -- Name --
-      ----------
-
-      function Name
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Name_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return Name (Signature (Construct (G, Vertex)));
-      end Name;
-
-      ----------
-      -- Next --
-      ----------
-
-      procedure Next
-        (Iter : in out All_Edge_Iterator;
-         Edge : out Invocation_Graph_Edge_Id)
-      is
-      begin
-         DG.Next (DG.All_Edge_Iterator (Iter), Edge);
-      end Next;
-
-      ----------
-      -- Next --
-      ----------
-
-      procedure Next
-        (Iter   : in out All_Vertex_Iterator;
-         Vertex : out Invocation_Graph_Vertex_Id)
-      is
-      begin
-         DG.Next (DG.All_Vertex_Iterator (Iter), Vertex);
-      end Next;
-
-      ----------
-      -- Next --
-      ----------
-
-      procedure Next
-        (Iter : in out Edges_To_Targets_Iterator;
-         Edge : out Invocation_Graph_Edge_Id)
-      is
-      begin
-         DG.Next (DG.Outgoing_Edge_Iterator (Iter), Edge);
-      end Next;
-
-      ----------
-      -- Next --
-      ----------
-
-      procedure Next
-        (Iter : in out Elaboration_Root_Iterator;
-         Root : out Invocation_Graph_Vertex_Id)
-      is
-      begin
-         IGV_Sets.Next (IGV_Sets.Iterator (Iter), Root);
-      end Next;
-
-      ---------------------
-      -- Number_Of_Edges --
-      ---------------------
-
-      function Number_Of_Edges (G : Invocation_Graph) return Natural is
-      begin
-         pragma Assert (Present (G));
-
-         return DG.Number_Of_Edges (G.Graph);
-      end Number_Of_Edges;
-
-      --------------------------------
-      -- Number_Of_Edges_To_Targets --
-      --------------------------------
-
-      function Number_Of_Edges_To_Targets
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Natural
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return DG.Number_Of_Outgoing_Edges (G.Graph, Vertex);
-      end Number_Of_Edges_To_Targets;
-
-      ---------------------------------
-      -- Number_Of_Elaboration_Roots --
-      ---------------------------------
-
-      function Number_Of_Elaboration_Roots
-        (G : Invocation_Graph) return Natural
-      is
-      begin
-         pragma Assert (Present (G));
-
-         return IGV_Sets.Size (G.Roots);
-      end Number_Of_Elaboration_Roots;
-
-      ------------------------
-      -- Number_Of_Vertices --
-      ------------------------
-
-      function Number_Of_Vertices (G : Invocation_Graph) return Natural is
-      begin
-         pragma Assert (Present (G));
-
-         return DG.Number_Of_Vertices (G.Graph);
-      end Number_Of_Vertices;
-
-      -------------
-      -- Present --
-      -------------
-
-      function Present (G : Invocation_Graph) return Boolean is
-      begin
-         return G /= Nil;
-      end Present;
-
-      --------------
-      -- Relation --
-      --------------
-
-      function Relation
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Invocation_Relation_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return Get_IGE_Attributes (G, Edge).Relation;
-      end Relation;
-
-      ---------------------------
-      -- Save_Elaboration_Root --
-      ---------------------------
-
-      procedure Save_Elaboration_Root
-        (G    : Invocation_Graph;
-         Root : Invocation_Graph_Vertex_Id)
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Root));
-
-         IGV_Sets.Insert (G.Roots, Root);
-      end Save_Elaboration_Root;
-
-      ------------------------------
-      -- Set_Corresponding_Vertex --
-      ------------------------------
-
-      procedure Set_Corresponding_Vertex
-        (G      : Invocation_Graph;
-         IS_Id  : Invocation_Signature_Id;
-         Vertex : Invocation_Graph_Vertex_Id)
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (IS_Id));
-         pragma Assert (Present (Vertex));
-
-         Signature_Tables.Put (G.Signature_To_Vertex, IS_Id, Vertex);
-      end Set_Corresponding_Vertex;
-
-      --------------------------------------------
-      -- Set_Is_Existing_Source_Target_Relation --
-      --------------------------------------------
-
-      procedure Set_Is_Existing_Source_Target_Relation
-        (G   : Invocation_Graph;
-         Rel : Source_Target_Relation;
-         Val : Boolean := True)
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Rel.Source));
-         pragma Assert (Present (Rel.Target));
-
-         if Val then
-            Relation_Sets.Insert (G.Relations, Rel);
-         else
-            Relation_Sets.Delete (G.Relations, Rel);
-         end if;
-      end Set_Is_Existing_Source_Target_Relation;
-
-      ------------------------
-      -- Set_IGE_Attributes --
-      ------------------------
-
-      procedure Set_IGE_Attributes
-        (G    : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id;
-         Val  : Invocation_Graph_Edge_Attributes)
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         IGE_Tables.Put (G.Edge_Attributes, Edge, Val);
-      end Set_IGE_Attributes;
-
-      ------------------------
-      -- Set_IGV_Attributes --
-      ------------------------
-
-      procedure Set_IGV_Attributes
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id;
-         Val    : Invocation_Graph_Vertex_Attributes)
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         IGV_Tables.Put (G.Vertex_Attributes, Vertex, Val);
-      end Set_IGV_Attributes;
-
-      -----------------
-      -- Spec_Vertex --
-      -----------------
-
-      function Spec_Vertex
-        (G      : Invocation_Graph;
-         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         return Get_IGV_Attributes (G, Vertex).Spec_Vertex;
-      end Spec_Vertex;
-
-      ------------
-      -- Target --
-      ------------
-
-      function Target
-        (G      : Invocation_Graph;
-         Edge : Invocation_Graph_Edge_Id) return Invocation_Graph_Vertex_Id
-      is
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return DG.Destination_Vertex (G.Graph, Edge);
-      end Target;
-   end Invocation_Graphs;
-
    --------------------
    -- Library_Graphs --
    --------------------
@@ -1060,18 +199,30 @@ package body Bindo.Graphs is
       --  corresponding specs or bodies, where the body is a predecessor
       --  and the spec is a successor. Add all edges to list Edges.
 
-      function Add_Edge_With_Return
+      procedure Add_Edge_Kind_Check
+        (G              : Library_Graph;
+         Pred           : Library_Graph_Vertex_Id;
+         Succ           : Library_Graph_Vertex_Id;
+         New_Kind       : Library_Graph_Edge_Kind);
+      --  This is called by Add_Edge in the case where there is already a
+      --  Pred-->Succ edge, to assert that the New_Kind is appropriate. Raises
+      --  Program_Error if a bug is detected. The purpose is to prevent bugs
+      --  where calling Add_Edge in different orders produces different output.
+
+      function Add_Edge
         (G              : Library_Graph;
          Pred           : Library_Graph_Vertex_Id;
          Succ           : Library_Graph_Vertex_Id;
          Kind           : Library_Graph_Edge_Kind;
          Activates_Task : Boolean) return Library_Graph_Edge_Id;
-      pragma Inline (Add_Edge_With_Return);
+      pragma Inline (Add_Edge);
       --  Create a new edge in library graph G with source vertex Pred and
       --  destination vertex Succ, and return its handle. Kind denotes the
       --  nature of the edge. Activates_Task should be set when the edge
       --  involves a task activation. If Pred and Succ are already related,
-      --  no edge is created and No_Library_Graph_Edge is returned.
+      --  no edge is created and No_Library_Graph_Edge is returned, but if
+      --  Activates_Task is True, then the flag of the existing edge is
+      --  updated.
 
       function At_Least_One_Edge_Satisfies
         (G         : Library_Graph;
@@ -1276,6 +427,12 @@ package body Bindo.Graphs is
       --
       --    * Cycle_Limit is the upper bound of the number of cycles to be
       --      discovered.
+
+      function Find_Edge
+        (G    : Library_Graph;
+         Pred : Library_Graph_Vertex_Id;
+         Succ : Library_Graph_Vertex_Id) return Library_Graph_Edge_Id;
+      --  There must be an edge Pred-->Succ; this returns it
 
       function Find_First_Lower_Precedence_Cycle
         (G     : Library_Graph;
@@ -1502,6 +659,11 @@ package body Bindo.Graphs is
       --  is the number of invocation edges along the cycle path. Indent is
       --  the desired indentation level for tracing.
 
+      procedure Set_Activates_Task
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
+      --  Set the Activates_Task flag of the Edge to True
+
       procedure Set_Component_Attributes
         (G    : Library_Graph;
          Comp : Component_Id;
@@ -1518,11 +680,10 @@ package body Bindo.Graphs is
 
       procedure Set_Is_Recorded_Edge
         (G   : Library_Graph;
-         Rel : Predecessor_Successor_Relation;
-         Val : Boolean := True);
+         Rel : Predecessor_Successor_Relation);
       pragma Inline (Set_Is_Recorded_Edge);
       --  Mark a predecessor vertex and a successor vertex described by
-      --  relation Rel as already linked depending on value Val.
+      --  relation Rel as already linked.
 
       procedure Set_LGC_Attributes
         (G     : Library_Graph;
@@ -1635,12 +796,7 @@ package body Bindo.Graphs is
          Edge : Library_Graph_Edge_Id) return Boolean
       is
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
-         return
-           Kind (G, Edge) = Invocation_Edge
-            and then Get_LGE_Attributes (G, Edge).Activates_Task;
+         return Get_LGE_Attributes (G, Edge).Activates_Task;
       end Activates_Task;
 
       -------------------------------
@@ -1674,7 +830,7 @@ package body Bindo.Graphs is
          --  the body may be visited first, yet Corresponding_Item will still
          --  attempt to create the Body_Before_Spec edge. This is OK because
          --  successor and predecessor are kept consistent in both cases, and
-         --  Add_Edge_With_Return will prevent the creation of the second edge.
+         --  Add_Edge will prevent the creation of the second edge.
 
          --  Assume that no Body_Before_Spec is necessary
 
@@ -1684,7 +840,7 @@ package body Bindo.Graphs is
 
          if Is_Body_With_Spec (G, Vertex) then
             Edge :=
-              Add_Edge_With_Return
+              Add_Edge
                 (G              => G,
                  Pred           => Vertex,
                  Succ           => Corresponding_Item (G, Vertex),
@@ -1695,7 +851,7 @@ package body Bindo.Graphs is
 
          elsif Is_Spec_With_Body (G, Vertex) then
             Edge :=
-              Add_Edge_With_Return
+              Add_Edge
                 (G              => G,
                  Pred           => Corresponding_Item (G, Vertex),
                  Succ           => Vertex,
@@ -1745,30 +901,72 @@ package body Bindo.Graphs is
          Kind           : Library_Graph_Edge_Kind;
          Activates_Task : Boolean)
       is
-         Edge : Library_Graph_Edge_Id;
-         pragma Unreferenced (Edge);
-
-      begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Pred));
-         pragma Assert (Present (Succ));
-         pragma Assert (Kind /= No_Edge);
-         pragma Assert (not Activates_Task or else Kind = Invocation_Edge);
-
-         Edge :=
-           Add_Edge_With_Return
+         Ignore : constant Library_Graph_Edge_Id :=
+           Add_Edge
              (G              => G,
               Pred           => Pred,
               Succ           => Succ,
               Kind           => Kind,
               Activates_Task => Activates_Task);
+      begin
+         null;
       end Add_Edge;
 
-      --------------------------
-      -- Add_Edge_With_Return --
-      --------------------------
+      -------------------------
+      -- Add_Edge_Kind_Check --
+      -------------------------
 
-      function Add_Edge_With_Return
+      procedure Add_Edge_Kind_Check
+        (G              : Library_Graph;
+         Pred           : Library_Graph_Vertex_Id;
+         Succ           : Library_Graph_Vertex_Id;
+         New_Kind       : Library_Graph_Edge_Kind)
+      is
+         Old_Edge : constant Library_Graph_Edge_Id :=
+           Find_Edge (G, Pred, Succ);
+         Old_Kind : constant Library_Graph_Edge_Kind :=
+           Get_LGE_Attributes (G, Old_Edge).Kind;
+         OK : Boolean;
+      begin
+         case New_Kind is
+            when Spec_Before_Body_Edge =>
+               OK := False;
+               --  Spec_Before_Body_Edge comes first, and there is never more
+               --  than one Spec_Before_Body_Edge for a given unit, so we can't
+               --  have a preexisting edge in the Spec_Before_Body_Edge case.
+
+            when With_Edge | Elaborate_Edge | Elaborate_All_Edge
+              | Forced_Edge | Invocation_Edge =>
+               OK := Old_Kind <= New_Kind;
+               --  These edges are created in the order of the enumeration
+               --  type, and there can be duplicates; hence "<=".
+
+            when Body_Before_Spec_Edge =>
+               OK := Old_Kind = Body_Before_Spec_Edge
+               --  We call Add_Edge with Body_Before_Spec_Edge twice -- once
+               --  for the spec and once for the body.
+
+                 or else Old_Kind = Forced_Edge
+                 or else Old_Kind = Invocation_Edge;
+               --  The old one can be Forced_Edge or Invocation_Edge, which
+               --  necessarily results in an elaboration cycle (in the static
+               --  model), but this assertion happens before cycle detection,
+               --  so we need to allow these cases.
+
+            when No_Edge =>
+               OK := False;
+         end case;
+
+         if not OK then
+            raise Program_Error with Old_Kind'Img & "-->" & New_Kind'Img;
+         end if;
+      end Add_Edge_Kind_Check;
+
+      --------------
+      -- Add_Edge --
+      --------------
+
+      function Add_Edge
         (G              : Library_Graph;
          Pred           : Library_Graph_Vertex_Id;
          Succ           : Library_Graph_Vertex_Id;
@@ -1778,19 +976,29 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Pred));
          pragma Assert (Present (Succ));
-         pragma Assert (Kind /= No_Edge);
+         pragma Assert (Kind = Invocation_Edge or else not Activates_Task);
+         --  Only invocation edges can activate tasks
 
          Rel : constant Predecessor_Successor_Relation :=
-                 (Predecessor => Pred,
-                  Successor   => Succ);
+           (Predecessor => Pred, Successor => Succ);
 
          Edge : Library_Graph_Edge_Id;
 
       begin
-         --  Nothing to do when the predecessor and successor are already
-         --  related by an edge.
+         --  If we already have a Pred-->Succ edge, we don't add another
+         --  one. But we need to update Activates_Task, in order to avoid
+         --  depending on the order of processing of edges. If we have
+         --  Pred-->Succ with Activates_Task=True, and another Pred-->Succ with
+         --  Activates_Task=False, we want Activates_Task to be True no matter
+         --  which order we processed those two Add_Edge calls.
 
          if Is_Recorded_Edge (G, Rel) then
+            pragma Debug (Add_Edge_Kind_Check (G, Pred, Succ, Kind));
+
+            if Activates_Task then
+               Set_Activates_Task (G, Find_Edge (G, Pred, Succ));
+            end if;
+
             return No_Library_Graph_Edge;
          end if;
 
@@ -1834,7 +1042,7 @@ package body Bindo.Graphs is
          Increment_Library_Graph_Edge_Count (G, Kind);
 
          return Edge;
-      end Add_Edge_With_Return;
+      end Add_Edge;
 
       ----------------
       -- Add_Vertex --
@@ -3140,6 +2348,44 @@ package body Bindo.Graphs is
          LGV_Sets.Destroy  (Visited_Set);
          LGV_Lists.Destroy (Visited_Stack);
       end Find_Cycles_In_Component;
+
+      ---------------
+      -- Find_Edge --
+      ---------------
+
+      function Find_Edge
+        (G    : Library_Graph;
+         Pred : Library_Graph_Vertex_Id;
+         Succ : Library_Graph_Vertex_Id) return Library_Graph_Edge_Id
+      is
+         Result : Library_Graph_Edge_Id := No_Library_Graph_Edge;
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_To_Successors_Iterator :=
+           Iterate_Edges_To_Successors (G, Pred);
+
+      begin
+         --  IMPORTANT:
+         --
+         --    * The iteration must run to completion in order to unlock the
+         --      edges to successors.
+
+         --  This does a linear search through the successors of Pred.
+         --  Efficiency is not a problem, because this is called only when
+         --  Activates_Task is True, which is rare, and anyway, there aren't
+         --  usually large numbers of successors.
+
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            if Succ = Successor (G, Edge) then
+               pragma Assert (not Present (Result));
+               Result := Edge;
+            end if;
+         end loop;
+
+         pragma Assert (Present (Result));
+         return Result;
+      end Find_Edge;
 
       ---------------------------------------
       -- Find_First_Lower_Precedence_Cycle --
@@ -4459,9 +3705,6 @@ package body Bindo.Graphs is
          Edge : Library_Graph_Edge_Id) return Library_Graph_Edge_Kind
       is
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Edge));
-
          return Get_LGE_Attributes (G, Edge).Kind;
       end Kind;
 
@@ -5097,6 +4340,21 @@ package body Bindo.Graphs is
               and then LGE_Lists.Equal (Left.Path, Right.Path);
       end Same_Library_Graph_Cycle_Attributes;
 
+      ------------------------
+      -- Set_Activates_Task --
+      ------------------------
+
+      procedure Set_Activates_Task
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
+      is
+         Attributes : Library_Graph_Edge_Attributes :=
+           Get_LGE_Attributes (G, Edge);
+      begin
+         Attributes.Activates_Task := True;
+         Set_LGE_Attributes (G, Edge, Attributes);
+      end Set_Activates_Task;
+
       ------------------------------
       -- Set_Component_Attributes --
       ------------------------------
@@ -5175,19 +4433,14 @@ package body Bindo.Graphs is
 
       procedure Set_Is_Recorded_Edge
         (G   : Library_Graph;
-         Rel : Predecessor_Successor_Relation;
-         Val : Boolean := True)
+         Rel : Predecessor_Successor_Relation)
       is
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Rel.Predecessor));
          pragma Assert (Present (Rel.Successor));
 
-         if Val then
-            RE_Sets.Insert (G.Recorded_Edges, Rel);
-         else
-            RE_Sets.Delete (G.Recorded_Edges, Rel);
-         end if;
+         RE_Sets.Insert (G.Recorded_Edges, Rel);
       end Set_Is_Recorded_Edge;
 
       ------------------------
@@ -5211,9 +4464,9 @@ package body Bindo.Graphs is
       ------------------------
 
       procedure Set_LGE_Attributes
-        (G      : Library_Graph;
+        (G    : Library_Graph;
          Edge : Library_Graph_Edge_Id;
-         Val    : Library_Graph_Edge_Attributes)
+         Val  : Library_Graph_Edge_Attributes)
       is
       begin
          pragma Assert (Present (G));
@@ -5585,6 +4838,881 @@ package body Bindo.Graphs is
          LGV_Lists.Prepend (Visited_Stack, Vertex);
       end Visit;
    end Library_Graphs;
+
+   -----------------------
+   -- Invocation_Graphs --
+   -----------------------
+
+   package body Invocation_Graphs is
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Free is
+        new Ada.Unchecked_Deallocation
+              (Invocation_Graph_Attributes, Invocation_Graph);
+
+      function Get_IGE_Attributes
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id)
+         return Invocation_Graph_Edge_Attributes;
+      pragma Inline (Get_IGE_Attributes);
+      --  Obtain the attributes of edge Edge of invocation graph G
+
+      function Get_IGV_Attributes
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id)
+         return Invocation_Graph_Vertex_Attributes;
+      pragma Inline (Get_IGV_Attributes);
+      --  Obtain the attributes of vertex Vertex of invocation graph G
+
+      procedure Increment_Invocation_Graph_Edge_Count
+        (G    : Invocation_Graph;
+         Kind : Invocation_Kind);
+      pragma Inline (Increment_Invocation_Graph_Edge_Count);
+      --  Increment the number of edges of king Kind in invocation graph G by
+      --  one.
+
+      function Is_Elaboration_Root
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Boolean;
+      pragma Inline (Is_Elaboration_Root);
+      --  Determine whether vertex Vertex of invocation graph denotes the
+      --  elaboration procedure of a spec or a body.
+
+      function Is_Existing_Source_Target_Relation
+        (G   : Invocation_Graph;
+         Rel : Source_Target_Relation) return Boolean;
+      pragma Inline (Is_Existing_Source_Target_Relation);
+      --  Determine whether a source vertex and a target vertex described by
+      --  relation Rel are already related in invocation graph G.
+
+      procedure Save_Elaboration_Root
+        (G    : Invocation_Graph;
+         Root : Invocation_Graph_Vertex_Id);
+      pragma Inline (Save_Elaboration_Root);
+      --  Save elaboration root Root of invocation graph G
+
+      procedure Set_Corresponding_Vertex
+        (G      : Invocation_Graph;
+         IS_Id  : Invocation_Signature_Id;
+         Vertex : Invocation_Graph_Vertex_Id);
+      pragma Inline (Set_Corresponding_Vertex);
+      --  Associate vertex Vertex of invocation graph G with signature IS_Id
+
+      procedure Set_Is_Existing_Source_Target_Relation
+        (G   : Invocation_Graph;
+         Rel : Source_Target_Relation;
+         Val : Boolean := True);
+      pragma Inline (Set_Is_Existing_Source_Target_Relation);
+      --  Mark a source vertex and a target vertex described by relation Rel as
+      --  already related in invocation graph G depending on value Val.
+
+      procedure Set_IGE_Attributes
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id;
+         Val  : Invocation_Graph_Edge_Attributes);
+      pragma Inline (Set_IGE_Attributes);
+      --  Set the attributes of edge Edge of invocation graph G to value Val
+
+      procedure Set_IGV_Attributes
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id;
+         Val    : Invocation_Graph_Vertex_Attributes);
+      pragma Inline (Set_IGV_Attributes);
+      --  Set the attributes of vertex Vertex of invocation graph G to value
+      --  Val.
+
+      --------------
+      -- Add_Edge --
+      --------------
+
+      procedure Add_Edge
+        (G      : Invocation_Graph;
+         Source : Invocation_Graph_Vertex_Id;
+         Target : Invocation_Graph_Vertex_Id;
+         IR_Id  : Invocation_Relation_Id)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Source));
+         pragma Assert (Present (Target));
+         pragma Assert (Present (IR_Id));
+
+         Rel : constant Source_Target_Relation :=
+                 (Source => Source,
+                  Target => Target);
+
+         Edge : Invocation_Graph_Edge_Id;
+
+      begin
+         --  Nothing to do when the source and target are already related by an
+         --  edge.
+
+         if Is_Existing_Source_Target_Relation (G, Rel) then
+            return;
+         end if;
+
+         Edge := Sequence_Next_Edge;
+
+         --  Add the edge to the underlying graph
+
+         DG.Add_Edge
+           (G           => G.Graph,
+            E           => Edge,
+            Source      => Source,
+            Destination => Target);
+
+         --  Build and save the attributes of the edge
+
+         Set_IGE_Attributes
+           (G    => G,
+            Edge => Edge,
+            Val  => (Relation => IR_Id));
+
+         --  Mark the source and target as related by the new edge. This
+         --  prevents all further attempts to link the same source and target.
+
+         Set_Is_Existing_Source_Target_Relation (G, Rel);
+
+         --  Update the edge statistics
+
+         Increment_Invocation_Graph_Edge_Count (G, Kind (IR_Id));
+      end Add_Edge;
+
+      ----------------
+      -- Add_Vertex --
+      ----------------
+
+      procedure Add_Vertex
+        (G           : Invocation_Graph;
+         IC_Id       : Invocation_Construct_Id;
+         Body_Vertex : Library_Graph_Vertex_Id;
+         Spec_Vertex : Library_Graph_Vertex_Id)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (IC_Id));
+         pragma Assert (Present (Body_Vertex));
+         pragma Assert (Present (Spec_Vertex));
+
+         Construct_Signature : constant Invocation_Signature_Id :=
+                                 Signature (IC_Id);
+         Vertex : Invocation_Graph_Vertex_Id;
+
+      begin
+         --  Nothing to do when the construct already has a vertex
+
+         if Present (Corresponding_Vertex (G, Construct_Signature)) then
+            return;
+         end if;
+
+         Vertex := Sequence_Next_Vertex;
+
+         --  Add the vertex to the underlying graph
+
+         DG.Add_Vertex (G.Graph, Vertex);
+
+         --  Build and save the attributes of the vertex
+
+         Set_IGV_Attributes
+           (G      => G,
+            Vertex => Vertex,
+            Val    => (Body_Vertex => Body_Vertex,
+                       Construct   => IC_Id,
+                       Spec_Vertex => Spec_Vertex));
+
+         --  Associate the construct with its corresponding vertex
+
+         Set_Corresponding_Vertex (G, Construct_Signature, Vertex);
+
+         --  Save the vertex for later processing when it denotes a spec or
+         --  body elaboration procedure.
+
+         if Is_Elaboration_Root (G, Vertex) then
+            Save_Elaboration_Root (G, Vertex);
+         end if;
+      end Add_Vertex;
+
+      -----------------
+      -- Body_Vertex --
+      -----------------
+
+      function Body_Vertex
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Get_IGV_Attributes (G, Vertex).Body_Vertex;
+      end Body_Vertex;
+
+      ------------
+      -- Column --
+      ------------
+
+      function Column
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Nat
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Column (Signature (Construct (G, Vertex)));
+      end Column;
+
+      ---------------
+      -- Construct --
+      ---------------
+
+      function Construct
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Invocation_Construct_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Get_IGV_Attributes (G, Vertex).Construct;
+      end Construct;
+
+      --------------------------
+      -- Corresponding_Vertex --
+      --------------------------
+
+      function Corresponding_Vertex
+        (G     : Invocation_Graph;
+         IS_Id : Invocation_Signature_Id) return Invocation_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (IS_Id));
+
+         return Signature_Tables.Get (G.Signature_To_Vertex, IS_Id);
+      end Corresponding_Vertex;
+
+      ------------
+      -- Create --
+      ------------
+
+      function Create
+        (Initial_Vertices : Positive;
+         Initial_Edges    : Positive;
+         Lib_Graph        : Library_Graphs.Library_Graph)
+        return Invocation_Graph
+      is
+         G : constant Invocation_Graph := new Invocation_Graph_Attributes'
+           (Counts              => <>,
+            Edge_Attributes     => IGE_Tables.Create       (Initial_Edges),
+            Graph               =>
+              DG.Create
+                (Initial_Vertices => Initial_Vertices,
+                 Initial_Edges    => Initial_Edges),
+            Relations           => Relation_Sets.Create    (Initial_Edges),
+            Roots               => IGV_Sets.Create         (Initial_Vertices),
+            Signature_To_Vertex => Signature_Tables.Create (Initial_Vertices),
+            Vertex_Attributes   => IGV_Tables.Create       (Initial_Vertices),
+            Lib_Graph           => Lib_Graph);
+      begin
+         return G;
+      end Create;
+
+      -------------
+      -- Destroy --
+      -------------
+
+      procedure Destroy (G : in out Invocation_Graph) is
+      begin
+         pragma Assert (Present (G));
+
+         IGE_Tables.Destroy       (G.Edge_Attributes);
+         DG.Destroy               (G.Graph);
+         Relation_Sets.Destroy    (G.Relations);
+         IGV_Sets.Destroy         (G.Roots);
+         Signature_Tables.Destroy (G.Signature_To_Vertex);
+         IGV_Tables.Destroy       (G.Vertex_Attributes);
+
+         Free (G);
+      end Destroy;
+
+      -----------------------------------
+      -- Destroy_Invocation_Graph_Edge --
+      -----------------------------------
+
+      procedure Destroy_Invocation_Graph_Edge
+        (Edge : in out Invocation_Graph_Edge_Id)
+      is
+         pragma Unreferenced (Edge);
+      begin
+         null;
+      end Destroy_Invocation_Graph_Edge;
+
+      ----------------------------------------------
+      -- Destroy_Invocation_Graph_Edge_Attributes --
+      ----------------------------------------------
+
+      procedure Destroy_Invocation_Graph_Edge_Attributes
+        (Attrs : in out Invocation_Graph_Edge_Attributes)
+      is
+         pragma Unreferenced (Attrs);
+      begin
+         null;
+      end Destroy_Invocation_Graph_Edge_Attributes;
+
+      -------------------------------------
+      -- Destroy_Invocation_Graph_Vertex --
+      -------------------------------------
+
+      procedure Destroy_Invocation_Graph_Vertex
+        (Vertex : in out Invocation_Graph_Vertex_Id)
+      is
+         pragma Unreferenced (Vertex);
+      begin
+         null;
+      end Destroy_Invocation_Graph_Vertex;
+
+      ------------------------------------------------
+      -- Destroy_Invocation_Graph_Vertex_Attributes --
+      ------------------------------------------------
+
+      procedure Destroy_Invocation_Graph_Vertex_Attributes
+        (Attrs : in out Invocation_Graph_Vertex_Attributes)
+      is
+         pragma Unreferenced (Attrs);
+      begin
+         null;
+      end Destroy_Invocation_Graph_Vertex_Attributes;
+
+      -----------
+      -- Extra --
+      -----------
+
+      function Extra
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Name_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Extra (Relation (G, Edge));
+      end Extra;
+
+      ------------------------
+      -- Get_IGE_Attributes --
+      ------------------------
+
+      function Get_IGE_Attributes
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id)
+         return Invocation_Graph_Edge_Attributes
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return IGE_Tables.Get (G.Edge_Attributes, Edge);
+      end Get_IGE_Attributes;
+
+      ------------------------
+      -- Get_IGV_Attributes --
+      ------------------------
+
+      function Get_IGV_Attributes
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id)
+         return Invocation_Graph_Vertex_Attributes
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return IGV_Tables.Get (G.Vertex_Attributes, Vertex);
+      end Get_IGV_Attributes;
+
+      --------------
+      -- Has_Next --
+      --------------
+
+      function Has_Next (Iter : All_Edge_Iterator) return Boolean is
+      begin
+         return DG.Has_Next (DG.All_Edge_Iterator (Iter));
+      end Has_Next;
+
+      --------------
+      -- Has_Next --
+      --------------
+
+      function Has_Next (Iter : All_Vertex_Iterator) return Boolean is
+      begin
+         return DG.Has_Next (DG.All_Vertex_Iterator (Iter));
+      end Has_Next;
+
+      --------------
+      -- Has_Next --
+      --------------
+
+      function Has_Next (Iter : Edges_To_Targets_Iterator) return Boolean is
+      begin
+         return DG.Has_Next (DG.Outgoing_Edge_Iterator (Iter));
+      end Has_Next;
+
+      --------------
+      -- Has_Next --
+      --------------
+
+      function Has_Next (Iter : Elaboration_Root_Iterator) return Boolean is
+      begin
+         return IGV_Sets.Has_Next (IGV_Sets.Iterator (Iter));
+      end Has_Next;
+
+      -------------------------------
+      -- Hash_Invocation_Signature --
+      -------------------------------
+
+      function Hash_Invocation_Signature
+        (IS_Id : Invocation_Signature_Id) return Bucket_Range_Type
+      is
+      begin
+         pragma Assert (Present (IS_Id));
+
+         return Bucket_Range_Type (IS_Id);
+      end Hash_Invocation_Signature;
+
+      ---------------------------------
+      -- Hash_Source_Target_Relation --
+      ---------------------------------
+
+      function Hash_Source_Target_Relation
+        (Rel : Source_Target_Relation) return Bucket_Range_Type
+      is
+      begin
+         pragma Assert (Present (Rel.Source));
+         pragma Assert (Present (Rel.Target));
+
+         return
+           Hash_Two_Keys
+             (Bucket_Range_Type (Rel.Source),
+              Bucket_Range_Type (Rel.Target));
+      end Hash_Source_Target_Relation;
+
+      -------------------------------------------
+      -- Increment_Invocation_Graph_Edge_Count --
+      -------------------------------------------
+
+      procedure Increment_Invocation_Graph_Edge_Count
+        (G    : Invocation_Graph;
+         Kind : Invocation_Kind)
+      is
+         pragma Assert (Present (G));
+
+         Count : Natural renames G.Counts (Kind);
+
+      begin
+         Count := Count + 1;
+      end Increment_Invocation_Graph_Edge_Count;
+
+      ---------------------------------
+      -- Invocation_Graph_Edge_Count --
+      ---------------------------------
+
+      function Invocation_Graph_Edge_Count
+        (G    : Invocation_Graph;
+         Kind : Invocation_Kind) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return G.Counts (Kind);
+      end Invocation_Graph_Edge_Count;
+
+      -------------------------
+      -- Is_Elaboration_Root --
+      -------------------------
+
+      function Is_Elaboration_Root
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Boolean
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         Vertex_Kind : constant Invocation_Construct_Kind :=
+                         Kind (Construct (G, Vertex));
+
+      begin
+         return
+           Vertex_Kind = Elaborate_Body_Procedure
+             or else
+           Vertex_Kind = Elaborate_Spec_Procedure;
+      end Is_Elaboration_Root;
+
+      ----------------------------------------
+      -- Is_Existing_Source_Target_Relation --
+      ----------------------------------------
+
+      function Is_Existing_Source_Target_Relation
+        (G   : Invocation_Graph;
+         Rel : Source_Target_Relation) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return Relation_Sets.Contains (G.Relations, Rel);
+      end Is_Existing_Source_Target_Relation;
+
+      -----------------------
+      -- Iterate_All_Edges --
+      -----------------------
+
+      function Iterate_All_Edges
+        (G : Invocation_Graph) return All_Edge_Iterator
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return All_Edge_Iterator (DG.Iterate_All_Edges (G.Graph));
+      end Iterate_All_Edges;
+
+      --------------------------
+      -- Iterate_All_Vertices --
+      --------------------------
+
+      function Iterate_All_Vertices
+        (G : Invocation_Graph) return All_Vertex_Iterator
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return All_Vertex_Iterator (DG.Iterate_All_Vertices (G.Graph));
+      end Iterate_All_Vertices;
+
+      ------------------------------
+      -- Iterate_Edges_To_Targets --
+      ------------------------------
+
+      function Iterate_Edges_To_Targets
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Edges_To_Targets_Iterator
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return
+           Edges_To_Targets_Iterator
+             (DG.Iterate_Outgoing_Edges (G.Graph, Vertex));
+      end Iterate_Edges_To_Targets;
+
+      -------------------------------
+      -- Iterate_Elaboration_Roots --
+      -------------------------------
+
+      function Iterate_Elaboration_Roots
+        (G : Invocation_Graph) return Elaboration_Root_Iterator
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return Elaboration_Root_Iterator (IGV_Sets.Iterate (G.Roots));
+      end Iterate_Elaboration_Roots;
+
+      ----------
+      -- Kind --
+      ----------
+
+      function Kind
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Kind
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (Relation (G, Edge));
+      end Kind;
+
+      -------------------
+      -- Get_Lib_Graph --
+      -------------------
+
+      function Get_Lib_Graph
+        (G : Invocation_Graph) return Library_Graphs.Library_Graph
+      is
+         pragma Assert (Present (G));
+      begin
+         return G.Lib_Graph;
+      end Get_Lib_Graph;
+
+      ----------
+      -- Line --
+      ----------
+
+      function Line
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Nat
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Line (Signature (Construct (G, Vertex)));
+      end Line;
+
+      ----------
+      -- Name --
+      ----------
+
+      function Name
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Name_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Name (Signature (Construct (G, Vertex)));
+      end Name;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next
+        (Iter : in out All_Edge_Iterator;
+         Edge : out Invocation_Graph_Edge_Id)
+      is
+      begin
+         DG.Next (DG.All_Edge_Iterator (Iter), Edge);
+      end Next;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next
+        (Iter   : in out All_Vertex_Iterator;
+         Vertex : out Invocation_Graph_Vertex_Id)
+      is
+      begin
+         DG.Next (DG.All_Vertex_Iterator (Iter), Vertex);
+      end Next;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next
+        (Iter : in out Edges_To_Targets_Iterator;
+         Edge : out Invocation_Graph_Edge_Id)
+      is
+      begin
+         DG.Next (DG.Outgoing_Edge_Iterator (Iter), Edge);
+      end Next;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next
+        (Iter : in out Elaboration_Root_Iterator;
+         Root : out Invocation_Graph_Vertex_Id)
+      is
+      begin
+         IGV_Sets.Next (IGV_Sets.Iterator (Iter), Root);
+      end Next;
+
+      ---------------------
+      -- Number_Of_Edges --
+      ---------------------
+
+      function Number_Of_Edges (G : Invocation_Graph) return Natural is
+      begin
+         pragma Assert (Present (G));
+
+         return DG.Number_Of_Edges (G.Graph);
+      end Number_Of_Edges;
+
+      --------------------------------
+      -- Number_Of_Edges_To_Targets --
+      --------------------------------
+
+      function Number_Of_Edges_To_Targets
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return DG.Number_Of_Outgoing_Edges (G.Graph, Vertex);
+      end Number_Of_Edges_To_Targets;
+
+      ---------------------------------
+      -- Number_Of_Elaboration_Roots --
+      ---------------------------------
+
+      function Number_Of_Elaboration_Roots
+        (G : Invocation_Graph) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return IGV_Sets.Size (G.Roots);
+      end Number_Of_Elaboration_Roots;
+
+      ------------------------
+      -- Number_Of_Vertices --
+      ------------------------
+
+      function Number_Of_Vertices (G : Invocation_Graph) return Natural is
+      begin
+         pragma Assert (Present (G));
+
+         return DG.Number_Of_Vertices (G.Graph);
+      end Number_Of_Vertices;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (G : Invocation_Graph) return Boolean is
+      begin
+         return G /= Nil;
+      end Present;
+
+      --------------
+      -- Relation --
+      --------------
+
+      function Relation
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Relation_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Get_IGE_Attributes (G, Edge).Relation;
+      end Relation;
+
+      ---------------------------
+      -- Save_Elaboration_Root --
+      ---------------------------
+
+      procedure Save_Elaboration_Root
+        (G    : Invocation_Graph;
+         Root : Invocation_Graph_Vertex_Id)
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Root));
+
+         IGV_Sets.Insert (G.Roots, Root);
+      end Save_Elaboration_Root;
+
+      ------------------------------
+      -- Set_Corresponding_Vertex --
+      ------------------------------
+
+      procedure Set_Corresponding_Vertex
+        (G      : Invocation_Graph;
+         IS_Id  : Invocation_Signature_Id;
+         Vertex : Invocation_Graph_Vertex_Id)
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (IS_Id));
+         pragma Assert (Present (Vertex));
+
+         Signature_Tables.Put (G.Signature_To_Vertex, IS_Id, Vertex);
+      end Set_Corresponding_Vertex;
+
+      --------------------------------------------
+      -- Set_Is_Existing_Source_Target_Relation --
+      --------------------------------------------
+
+      procedure Set_Is_Existing_Source_Target_Relation
+        (G   : Invocation_Graph;
+         Rel : Source_Target_Relation;
+         Val : Boolean := True)
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Rel.Source));
+         pragma Assert (Present (Rel.Target));
+
+         if Val then
+            Relation_Sets.Insert (G.Relations, Rel);
+         else
+            Relation_Sets.Delete (G.Relations, Rel);
+         end if;
+      end Set_Is_Existing_Source_Target_Relation;
+
+      ------------------------
+      -- Set_IGE_Attributes --
+      ------------------------
+
+      procedure Set_IGE_Attributes
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id;
+         Val  : Invocation_Graph_Edge_Attributes)
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         IGE_Tables.Put (G.Edge_Attributes, Edge, Val);
+      end Set_IGE_Attributes;
+
+      ------------------------
+      -- Set_IGV_Attributes --
+      ------------------------
+
+      procedure Set_IGV_Attributes
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id;
+         Val    : Invocation_Graph_Vertex_Attributes)
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         IGV_Tables.Put (G.Vertex_Attributes, Vertex, Val);
+      end Set_IGV_Attributes;
+
+      -----------------
+      -- Spec_Vertex --
+      -----------------
+
+      function Spec_Vertex
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Get_IGV_Attributes (G, Vertex).Spec_Vertex;
+      end Spec_Vertex;
+
+      ------------
+      -- Target --
+      ------------
+
+      function Target
+        (G      : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return DG.Destination_Vertex (G.Graph, Edge);
+      end Target;
+   end Invocation_Graphs;
 
    -------------
    -- Present --

@@ -1485,6 +1485,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	      if ((set = single_set (temp)) != 0
 		  && (note = find_reg_equal_equiv_note (temp)) != 0
 		  && (note = XEXP (note, 0), GET_CODE (note)) != EXPR_LIST
+		  && ! side_effects_p (SET_SRC (set))
 		  /* Avoid using a register that may already been marked
 		     dead by an earlier instruction.  */
 		  && ! unmentioned_reg_p (note, SET_SRC (set))
@@ -2458,7 +2459,7 @@ static void
 adjust_for_new_dest (rtx_insn *insn)
 {
   /* For notes, be conservative and simply remove them.  */
-  remove_reg_equal_equiv_notes (insn);
+  remove_reg_equal_equiv_notes (insn, true);
 
   /* The new insn will have a destination that was previously the destination
      of an insn just above it.  Call distribute_links to make a LOG_LINK from
@@ -2623,15 +2624,16 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
   return true;
 }
 
-/* Return whether X is just a single set, with the source
+/* Return whether X is just a single_set, with the source
    a general_operand.  */
 static bool
-is_just_move (rtx x)
+is_just_move (rtx_insn *x)
 {
-  if (INSN_P (x))
-    x = PATTERN (x);
+  rtx set = single_set (x);
+  if (!set)
+    return false;
 
-  return (GET_CODE (x) == SET && general_operand (SET_SRC (x), VOIDmode));
+  return general_operand (SET_SRC (set), VOIDmode);
 }
 
 /* Callback function to count autoincs.  */

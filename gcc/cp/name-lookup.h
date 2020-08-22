@@ -278,8 +278,56 @@ extern void push_binding_level (cp_binding_level *);
 extern bool handle_namespace_attrs (tree, tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
-extern tree lookup_name_prefer_type (tree, int);
-extern tree lookup_name_real (tree, int, int, bool, int, int);
+
+/* What kind of scopes name lookup looks in.  An enum class so we
+   don't accidentally mix integers.  */
+enum class LOOK_where
+{
+  BLOCK = 1 << 0,  /* Consider block scopes.  */ 
+  CLASS = 1 << 1,  /* Consider class scopes.  */ 
+  NAMESPACE = 1 << 2,  /* Consider namespace scopes.  */ 
+
+  ALL = BLOCK | CLASS | NAMESPACE,
+  BLOCK_NAMESPACE = BLOCK | NAMESPACE,
+  CLASS_NAMESPACE = CLASS | NAMESPACE,
+};
+constexpr LOOK_where operator| (LOOK_where a, LOOK_where b)
+{
+  return LOOK_where (unsigned (a) | unsigned (b));
+}
+constexpr LOOK_where operator& (LOOK_where a, LOOK_where b)
+{
+  return LOOK_where (unsigned (a) & unsigned (b));
+}
+
+enum class LOOK_want
+{
+  NORMAL = 0,  /* Normal lookup -- non-types can hide implicit types.  */
+  TYPE = 1 << 1,  /* We only want TYPE_DECLS.  */
+  NAMESPACE = 1 << 2,  /* We only want NAMESPACE_DECLS.  */
+
+  HIDDEN_FRIEND = 1 << 3, /* See hidden friends.  */
+  HIDDEN_LAMBDA = 1 << 4,  /* See lambda-ignored entities.  */
+
+  TYPE_NAMESPACE = TYPE | NAMESPACE,  /* Either NAMESPACE or TYPE.  */
+};
+constexpr LOOK_want operator| (LOOK_want a, LOOK_want b)
+{
+  return LOOK_want (unsigned (a) | unsigned (b));
+}
+constexpr LOOK_want operator& (LOOK_want a, LOOK_want b)
+{
+  return LOOK_want (unsigned (a) & unsigned (b));
+}
+
+extern tree lookup_name (tree, LOOK_where, LOOK_want = LOOK_want::NORMAL);
+/* Also declared in c-family/c-common.h.  */
+extern tree lookup_name (tree name);
+inline tree lookup_name (tree name, LOOK_want want)
+{
+  return lookup_name (name, LOOK_where::ALL, want);
+}
+
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);
@@ -287,9 +335,12 @@ inline tree get_global_binding (tree id)
 {
   return get_namespace_binding (NULL_TREE, id);
 }
-extern tree lookup_qualified_name (tree, tree, int = 0, bool = true, /*hidden*/bool = false);
-extern tree lookup_qualified_name (tree t, const char *p, int = 0, bool = true, bool = false);
-extern tree lookup_name_nonclass (tree);
+extern tree lookup_qualified_name (tree scope, tree name,
+				   LOOK_want = LOOK_want::NORMAL,
+				   bool = true);
+extern tree lookup_qualified_name (tree scope, const char *name,
+				   LOOK_want = LOOK_want::NORMAL,
+				   bool = true);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);

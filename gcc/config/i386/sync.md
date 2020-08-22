@@ -100,8 +100,13 @@
   [(set (match_operand:BLK 0)
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))
    (clobber (reg:CC FLAGS_REG))]
-  "!(TARGET_64BIT || TARGET_SSE2)"
-  "lock{%;} or{l}\t{$0, (%%esp)|DWORD PTR [esp], 0}"
+  ""
+{
+  rtx mem = gen_rtx_MEM (word_mode, stack_pointer_rtx);
+
+  output_asm_insn ("lock{%;} or%z0\t{$0, %0|%0, 0}", &mem);
+  return "";
+}
   [(set_attr "memory" "unknown")])
 
 (define_expand "mem_thread_fence"
@@ -117,7 +122,9 @@
       rtx (*mfence_insn)(rtx);
       rtx mem;
 
-      if (TARGET_64BIT || TARGET_SSE2)
+      if ((TARGET_64BIT || TARGET_SSE2)
+	  && (optimize_function_for_size_p (cfun)
+	      || !TARGET_AVOID_MFENCE))
 	mfence_insn = gen_mfence_sse2;
       else
 	mfence_insn = gen_mfence_nosse;
@@ -306,11 +313,10 @@
     {
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
-      /* For seq-cst stores, use XCHG when we lack MFENCE
-      	 or when target prefers XCHG.  */
+      /* For seq-cst stores, use XCHG when we lack MFENCE.  */
       if (is_mm_seq_cst (model)
 	  && (!(TARGET_64BIT || TARGET_SSE2)
-	      || TARGET_USE_XCHG_FOR_ATOMIC_STORE))
+	      || TARGET_AVOID_MFENCE))
 	{
 	  emit_insn (gen_atomic_exchange<mode> (gen_reg_rtx (<MODE>mode),
 						operands[0], operands[1],
@@ -593,6 +599,75 @@
         (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))]
   "TARGET_CMPXCHG"
   "lock{%;} %K4cmpxchg{<imodesuffix>}\t{%3, %1|%1, %3}")
+
+(define_peephole2
+  [(set (match_operand:SWI 0 "register_operand")
+	(match_operand:SWI 1 "general_operand"))
+   (parallel [(set (match_dup 0)
+		   (unspec_volatile:SWI
+		     [(match_operand:SWI 2 "memory_operand")
+		      (match_dup 0)
+		      (match_operand:SWI 3 "register_operand")
+		      (match_operand:SI 4 "const_int_operand")]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 2)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])
+   (set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (match_operand:SWI 5 "register_operand")
+		     (match_operand:SWI 6 "general_operand")))]
+  "(rtx_equal_p (operands[0], operands[5])
+    && rtx_equal_p (operands[1], operands[6]))
+   || (rtx_equal_p (operands[0], operands[6])
+       && rtx_equal_p (operands[1], operands[5]))"
+  [(set (match_dup 0)
+	(match_dup 1))
+   (parallel [(set (match_dup 0)
+		   (unspec_volatile:SWI
+		     [(match_dup 2)
+		      (match_dup 0)
+		      (match_dup 3)
+		      (match_dup 4)]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 2)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])])
+
+(define_peephole2
+  [(parallel [(set (match_operand:SWI48 0 "register_operand")
+		   (match_operand:SWI48 1 "const_int_operand"))
+	      (clobber (reg:CC FLAGS_REG))])
+   (parallel [(set (match_operand:SWI 2 "register_operand")
+		   (unspec_volatile:SWI
+		     [(match_operand:SWI 3 "memory_operand")
+		      (match_dup 2)
+		      (match_operand:SWI 4 "register_operand")
+		      (match_operand:SI 5 "const_int_operand")]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 3)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])
+   (set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (match_dup 2)
+		     (match_dup 1)))]
+  "REGNO (operands[0]) == REGNO (operands[2])"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (clobber (reg:CC FLAGS_REG))])
+   (parallel [(set (match_dup 2)
+		   (unspec_volatile:SWI
+		     [(match_dup 3)
+		      (match_dup 2)
+		      (match_dup 4)
+		      (match_dup 5)]
+		     UNSPECV_CMPXCHG))
+	      (set (match_dup 3)
+		   (unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
+	      (set (reg:CCZ FLAGS_REG)
+		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])])
 
 ;; For operand 2 nonmemory_operand predicate is used instead of
 ;; register_operand to allow combiner to better optimize atomic

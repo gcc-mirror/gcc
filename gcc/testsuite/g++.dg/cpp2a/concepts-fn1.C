@@ -1,4 +1,4 @@
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 template<typename T>
 concept Type = true;
@@ -170,7 +170,7 @@ template<typename T> void g(T x) { }
 void driver_3 () 
 {
   g(&ok<int>);
-  g(&err<int>); // { dg-error "no matches" }
+  g(&err<int>); // { dg-error "no match" }
 }
 
 

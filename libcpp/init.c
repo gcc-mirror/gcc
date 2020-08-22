@@ -117,8 +117,8 @@ static const struct lang_flags lang_defaults[] =
   /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0,      0,   1,     0 },
   /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
   /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0 },
-  /* GNUCXX2A */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
-  /* CXX2A    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* CXX20    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
   /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0 }
 };
 
@@ -190,7 +190,6 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, discard_comments_in_macro_exp) = 1;
   CPP_OPTION (pfile, max_include_depth) = 200;
-  CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
@@ -401,6 +400,9 @@ static const struct builtin_macro builtin_array[] =
   B("__LINE__",		 BT_SPECLINE,      true),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),
   B("__COUNTER__",	 BT_COUNTER,       true),
+  /* Make sure to update the list of built-in
+     function-like macros in traditional.c:
+     fun_like_macro() when adding more following */
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),
@@ -533,8 +535,8 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      if (CPP_OPTION (pfile, lang) == CLK_CXX2A
-	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX2A)
+      if (CPP_OPTION (pfile, lang) == CLK_CXX20
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX20)
 	_cpp_define_builtin (pfile, "__cplusplus 201709L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX17
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX17)
@@ -657,13 +659,12 @@ cpp_post_options (cpp_reader *pfile)
 }
 
 /* Setup for processing input from the file named FNAME, or stdin if
-   it is the empty string.  Return the original filename
-   on success (e.g. foo.i->foo.c), or NULL on failure.  */
+   it is the empty string.  Return the original filename on success
+   (e.g. foo.i->foo.c), or NULL on failure.  INJECTING is true if
+   there may be injected headers before line 1 of the main file.  */
 const char *
-cpp_read_main_file (cpp_reader *pfile, const char *fname)
+cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
-  const location_t loc = 0;
-
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
       if (!pfile->deps)
@@ -675,23 +676,19 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
 
   pfile->main_file
     = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
-		      /*fake=*/false, /*preinclude=*/false, /*hasinclude=*/false,
-		      loc);
+		      _cpp_FFK_NORMAL, 0);
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 
-  _cpp_stack_file (pfile, pfile->main_file, IT_MAIN, 0);
+  _cpp_stack_file (pfile, pfile->main_file,
+		   injecting ? IT_MAIN_INJECT : IT_MAIN, 0);
 
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
-    {
-      read_original_filename (pfile);
-      fname =
-	ORDINARY_MAP_FILE_NAME
-	((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)));
-    }
-  return fname;
+    read_original_filename (pfile);
+
+  return ORDINARY_MAP_FILE_NAME (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table));
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.

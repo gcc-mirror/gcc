@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2009-2019, Free Software Foundation, Inc.          --
+--         Copyright (C) 2009-2020, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,11 +38,11 @@ package body Ada.Calendar.Time_Zones is
    --  All operations in this package are target and time representation
    --  independent, thus only one source file is needed for multiple targets.
 
-   ---------------------
-   -- UTC_Time_Offset --
-   ---------------------
+   -----------------------
+   -- Local_Time_Offset --
+   -----------------------
 
-   function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
+   function Local_Time_Offset (Date : Time := Clock) return Time_Offset is
       Offset_L : constant Long_Integer :=
         Time_Zones_Operations.UTC_Time_Offset (Date);
       Offset   : Time_Offset;
@@ -64,6 +64,6 @@ package body Ada.Calendar.Time_Zones is
       end if;
 
       return Offset;
-   end UTC_Time_Offset;
+   end Local_Time_Offset;
 
 end Ada.Calendar.Time_Zones;

@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "timevar.h"
 #include "stor-layout.h"
+#include "cgraph.h"
+#include "debug.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -579,11 +581,22 @@ lhd_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED, bool *se ATTRIBUTE_UNUSE
    predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
 
 enum omp_clause_default_kind
-lhd_omp_predetermined_sharing (tree decl ATTRIBUTE_UNUSED)
+lhd_omp_predetermined_sharing (tree decl)
 {
   if (DECL_ARTIFICIAL (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+/* Return sharing kind if OpenMP mapping attribute of DECL is
+   predetermined, OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED otherwise.  */
+
+enum omp_clause_defaultmap_kind
+lhd_omp_predetermined_mapping (tree decl)
+{
+  if (DECL_ARTIFICIAL (decl))
+    return OMP_CLAUSE_DEFAULTMAP_TO;
+  return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
 /* Generate code to copy SRC to DST.  */
@@ -853,6 +866,18 @@ tree
 lhd_unit_size_without_reusable_padding (tree t)
 {
   return TYPE_SIZE_UNIT (t);
+}
+
+/* Default implementation for the finalize_early_debug hook.  */
+
+void
+lhd_finalize_early_debug (void)
+{
+  /* Emit early debug for reachable functions, and by consequence,
+     locally scoped symbols.  */
+  struct cgraph_node *cnode;
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
+    (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */

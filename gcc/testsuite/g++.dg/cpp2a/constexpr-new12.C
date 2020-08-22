@@ -1,5 +1,5 @@
 // PR c++/93633
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-fdelete-null-pointer-checks" }
 
 struct A {
@@ -24,4 +24,4 @@ foo ()
   return r;
 }
 
-constexpr auto a = foo ();	// { dg-error "is not a constant expression" }
+constexpr auto a = foo ();	// { dg-error "constant expression" }

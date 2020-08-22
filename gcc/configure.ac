@@ -385,6 +385,7 @@ AC_SUBST(PICFLAG_FOR_TARGET)
 # -------------------------
 
 AC_USE_SYSTEM_EXTENSIONS
+
 AC_PROG_CPP
 AC_C_INLINE
 
@@ -1056,30 +1057,26 @@ AC_SUBST(accel_dir_suffix)
 for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   tgt=`echo $tgt | sed 's/=.*//'`
 
-  if echo "$tgt" | grep "^hsa" > /dev/null ; then
-    enable_hsa=1
-  else
-    enable_offloading=1
-    case "$tgt" in
-      *-intelmic-* | *-intelmicemul-*)
-	omp_device_property=omp-device-properties-i386
-	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
-	;;
-      amdgcn*)
-	omp_device_property=omp-device-properties-gcn
-	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
-	;;
-      nvptx*)
-	omp_device_property=omp-device-properties-nvptx
-	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
-	;;
-      *)
-	AC_MSG_ERROR([unknown offload target specified])
-	;;
-    esac
-    omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
-    omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
-  fi
+  enable_offloading=1
+  case "$tgt" in
+    *-intelmic-* | *-intelmicemul-*)
+  	omp_device_property=omp-device-properties-i386
+  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
+  	;;
+    amdgcn*)
+  	omp_device_property=omp-device-properties-gcn
+  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
+  	;;
+    nvptx*)
+  	omp_device_property=omp-device-properties-nvptx
+  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/nvptx/t-omp-device"
+  	;;
+    *)
+  	AC_MSG_ERROR([unknown offload target specified])
+  	;;
+  esac
+  omp_device_properties="${omp_device_properties} ${tgt}=${omp_device_property}"
+  omp_device_property_deps="${omp_device_property_deps} ${omp_device_property}"
 
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
@@ -1098,11 +1095,6 @@ if test x"$enable_offloading" != x; then
 else
   AC_DEFINE(ENABLE_OFFLOADING, 0,
     [Define this to enable support for offloading.])
-fi
-
-if test x"$enable_hsa" = x1 ; then
-  AC_DEFINE(ENABLE_HSA, 1,
-    [Define this to enable support for generating HSAIL.])
 fi
 
 AC_ARG_WITH(multilib-list,
@@ -1339,6 +1331,8 @@ AC_SUBST(ZSTD_INCLUDE)
 AC_SUBST(ZSTD_LIB)
 ZSTD_CPPFLAGS=
 ZSTD_LDFLAGS=
+AC_SUBST(ZSTD_CPPFLAGS)
+AC_SUBST(ZSTD_LDFLAGS)
 AC_ARG_WITH(zstd,
 	[AS_HELP_STRING([--with-zstd=PATH],
 		[specify prefix directory for installed zstd library.
@@ -2871,12 +2865,6 @@ else
   if test x"$ld_is_gold" = xyes; then
     :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
-    case "${target}" in
-      mmix-knuth-mmixware)
-        # The linker emits by default mmo, not ELF, so "no" is appropriate.
-	gcc_cv_ld_hidden=no
-	;;
-    esac
     if test 0"$ld_date" -lt 20020404; then
       if test -n "$ld_date"; then
 	# If there was date string, but was earlier than 2002-04-04, fail
@@ -5103,6 +5091,11 @@ configured with --enable-newlib-nano-formatted-io.])
       [	vl %v24,0(%r15),3 ],,
       [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS, 1,
 	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument.])])
+    gcc_GAS_CHECK_FEATURE([vector load/store alignment hints on z13],
+      gcc_cv_as_s390_vector_loadstore_alignment_hints_on_z13,, [-mzarch -march=z13],
+      [	vl %v24,0(%r15),3 ],,
+      [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13, 1,
+	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument on z13.])])
 
     ;;
 esac
@@ -6845,6 +6838,17 @@ if test "$gcc_cv_no_pie" = "yes"; then
   NO_PIE_FLAG="-no-pie"
 fi
 AC_SUBST([NO_PIE_FLAG])
+
+# Enable Intel CET on Intel CET enabled host if jit is enabled.
+GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+case x$enable_languages in
+*jit*)
+  ;;
+*)
+  CET_HOST_FLAGS=
+  ;;
+esac
+AC_SUBST(CET_HOST_FLAGS)
 
 # Check linker supports '-z bndplt'
 ld_bndplt_support=no

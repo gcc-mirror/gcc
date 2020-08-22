@@ -11,4 +11,4 @@ unsigned test(unsigned k, unsigned b) {
         return a[0]+a[1];
 }
 
-/* { dg-final { scan-tree-dump "Conditional store replacement" "cselim" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Conditional store replacement" "cselim" } } */

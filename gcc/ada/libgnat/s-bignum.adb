@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,68 +29,121 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Generic_Bignums;
 with Ada.Unchecked_Conversion;
+with System.Generic_Bignums;
+with System.Secondary_Stack;  use System.Secondary_Stack;
+with System.Shared_Bignums;   use System.Shared_Bignums;
+with System.Storage_Elements; use System.Storage_Elements;
 
 package body System.Bignums is
 
-   package Sec_Stack_Bignums is new
-     System.Generic_Bignums (Use_Secondary_Stack => True);
-   use Sec_Stack_Bignums;
+   function Allocate_Bignum (D : Digit_Vector; Neg : Boolean) return Bignum;
+   --  Allocate Bignum value with the given contents
 
-   function "+" is new Ada.Unchecked_Conversion
-     (Bignum, Sec_Stack_Bignums.Bignum);
+   procedure Free_Bignum (X : in out Bignum) is null;
+   --  No op when using the secondary stack
 
-   function "-" is new Ada.Unchecked_Conversion
-     (Sec_Stack_Bignums.Bignum, Bignum);
+   function To_Bignum (X : aliased in out Bignum) return Bignum is (X);
 
-   function Big_Add (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Add (+X, +Y));
+   ---------------------
+   -- Allocate_Bignum --
+   ---------------------
 
-   function Big_Sub (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Sub (+X, +Y));
+   function Allocate_Bignum (D : Digit_Vector; Neg : Boolean) return Bignum is
+      Addr : aliased Address;
+   begin
+      --  Note: The approach used here is designed to avoid strict aliasing
+      --  warnings that appeared previously using unchecked conversion.
 
-   function Big_Mul (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Mul (+X, +Y));
+      SS_Allocate (Addr, Storage_Offset (4 + 4 * D'Length));
 
-   function Big_Div (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Div (+X, +Y));
+      declare
+         B : Bignum;
+         for B'Address use Addr'Address;
+         pragma Import (Ada, B);
 
-   function Big_Exp (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Exp (+X, +Y));
+         BD : Bignum_Data (D'Length);
+         for BD'Address use Addr;
+         pragma Import (Ada, BD);
 
-   function Big_Mod (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Mod (+X, +Y));
+         --  Expose a writable view of discriminant BD.Len so that we can
+         --  initialize it. We need to use the exact layout of the record
+         --  to ensure that the Length field has 24 bits as expected.
 
-   function Big_Rem (X, Y : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Rem (+X, +Y));
+         type Bignum_Data_Header is record
+            Len : Length;
+            Neg : Boolean;
+         end record;
 
-   function Big_Neg (X    : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Neg (+X));
+         for Bignum_Data_Header use record
+            Len at 0 range 0 .. 23;
+            Neg at 3 range 0 .. 7;
+         end record;
 
-   function Big_Abs (X    : Bignum) return Bignum is
-     (-Sec_Stack_Bignums.Big_Abs (+X));
+         BDH : Bignum_Data_Header;
+         for BDH'Address use BD'Address;
+         pragma Import (Ada, BDH);
 
-   function Big_EQ  (X, Y : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Big_EQ (+X, +Y));
-   function Big_NE  (X, Y : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Big_NE (+X, +Y));
-   function Big_GE  (X, Y : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Big_GE (+X, +Y));
-   function Big_LE  (X, Y : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Big_LE (+X, +Y));
-   function Big_GT  (X, Y : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Big_GT (+X, +Y));
-   function Big_LT  (X, Y : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Big_LT (+X, +Y));
+         pragma Assert (BDH.Len'Size = BD.Len'Size);
 
-   function Bignum_In_LLI_Range (X : Bignum) return Boolean is
-     (Sec_Stack_Bignums.Bignum_In_LLI_Range (+X));
+      begin
+         BDH.Len := D'Length;
+         BDH.Neg := Neg;
+         B.D := D;
+         return B;
+      end;
+   end Allocate_Bignum;
 
-   function To_Bignum (X : Long_Long_Integer) return Bignum is
-     (-Sec_Stack_Bignums.To_Bignum (X));
+   package Sec_Stack_Bignums is new System.Generic_Bignums
+     (Bignum, Allocate_Bignum, Free_Bignum, To_Bignum);
 
-   function From_Bignum (X : Bignum) return Long_Long_Integer is
-     (Sec_Stack_Bignums.From_Bignum (+X));
+   function Big_Add (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Add;
+
+   function Big_Sub (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Sub;
+
+   function Big_Mul (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Mul;
+
+   function Big_Div (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Div;
+
+   function Big_Exp (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Exp;
+
+   function Big_Mod (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Mod;
+
+   function Big_Rem (X, Y : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Rem;
+
+   function Big_Neg (X : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Neg;
+
+   function Big_Abs (X : Bignum) return Bignum
+     renames Sec_Stack_Bignums.Big_Abs;
+
+   function Big_EQ  (X, Y : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Big_EQ;
+   function Big_NE  (X, Y : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Big_NE;
+   function Big_GE  (X, Y : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Big_GE;
+   function Big_LE  (X, Y : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Big_LE;
+   function Big_GT  (X, Y : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Big_GT;
+   function Big_LT  (X, Y : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Big_LT;
+
+   function Bignum_In_LLI_Range (X : Bignum) return Boolean
+     renames Sec_Stack_Bignums.Bignum_In_LLI_Range;
+
+   function To_Bignum (X : Long_Long_Integer) return Bignum
+     renames Sec_Stack_Bignums.To_Bignum;
+
+   function From_Bignum (X : Bignum) return Long_Long_Integer
+     renames Sec_Stack_Bignums.From_Bignum;
 
 end System.Bignums;

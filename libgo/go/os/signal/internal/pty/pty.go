@@ -50,8 +50,8 @@ func (e *PtyError) Error() string {
 
 func (e *PtyError) Unwrap() error { return e.Errno }
 
-// Open returns a master pty and the name of the linked slave tty.
-func Open() (master *os.File, slave string, err error) {
+// Open returns a control pty and the name of the linked process tty.
+func Open() (pty *os.File, processTTY string, err error) {
 	m := posix_openpt(_O_RDWR)
 	if m < 0 {
 		return nil, "", ptyError("posix_openpt", syscall.GetErrno())
@@ -74,6 +74,6 @@ func Open() (master *os.File, slave string, err error) {
 			break
 		}
 	}
-	slave = string(s)
-	return os.NewFile(uintptr(m), "pty-master"), slave, nil
+	processTTY = string(s)
+	return os.NewFile(uintptr(m), "pty"), processTTY, nil
 }

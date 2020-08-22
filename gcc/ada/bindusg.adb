@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,6 +314,11 @@ package body Bindusg is
 
       Write_Line
         ("  -x        Exclude source files (check object consistency only)");
+
+      --  Line for -xdr switch
+
+      Write_Line
+        ("  -xdr      Use the XDR protocol for streaming");
 
       --  Line for -X switch
 

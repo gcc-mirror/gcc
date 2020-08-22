@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int_eq_float } */
 
 #include <stdio.h>
 #include <string.h>

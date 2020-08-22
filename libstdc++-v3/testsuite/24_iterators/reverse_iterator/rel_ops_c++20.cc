@@ -169,25 +169,3 @@ static_assert( crend > rbeg );
 static_assert( rbeg <= crend );
 static_assert( crend >= rbeg );
 static_assert( std::is_lt(rbeg <=> crend) );
-
-#include <testsuite_greedy_ops.h>
-
-// copied from 24_iterators/reverse_iterator/greedy_ops.cc
-void test01()
-{
-  typedef std::reverse_iterator<greedy_ops::X*> iterator_type;
-
-  iterator_type it;
-
-  it == it;
-  it != it;
-  it < it;
-  it <= it;
-  it > it;
-  it >= it;
-#if __cplusplus < 201103L
-  it - it; // See PR libstdc++/71771
-#endif
-  1 + it;
-  it + 1;
-}

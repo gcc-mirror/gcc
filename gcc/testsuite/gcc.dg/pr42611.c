@@ -3,7 +3,8 @@
 /* { dg-options "" } */
 
 #define L \
-  (sizeof (__SIZE_TYPE__) == 1 ? __SCHAR_MAX__				\
+  (sizeof (__SIZE_TYPE__) == sizeof (void *) ? __INTPTR_MAX__ \
+  : sizeof (__SIZE_TYPE__) == 1 ? __SCHAR_MAX__				\
   : sizeof (__SIZE_TYPE__) == sizeof (short) ? __SHRT_MAX__		\
   : sizeof (__SIZE_TYPE__) == sizeof (int) ? __INT_MAX__		\
   : sizeof (__SIZE_TYPE__) == sizeof (long) ? __LONG_MAX__		\

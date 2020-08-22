@@ -181,12 +181,6 @@
 #endif
 
 
-/* Define this to enable support for generating HSAIL. */
-#ifndef USED_FOR_TARGET
-#undef ENABLE_HSA
-#endif
-
-
 /* Define if gcc should always pass --build-id to linker. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_LD_BUILDID
@@ -703,6 +697,13 @@
    alignment hint argument. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS
+#endif
+
+
+/* Define if your assembler supports vl/vst/vlm/vstm with an optional
+   alignment hint argument on z13. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13
 #endif
 
 

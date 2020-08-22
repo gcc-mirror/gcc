@@ -552,6 +552,11 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 		       TYPE_NAME (type));
       break;
 
+    case TYPE_PACK_EXPANSION:
+      emit_diagnostic (diag_kind, loc, 0,
+		       "invalid use of pack expansion %qT", type);
+      break;
+
     case TYPENAME_TYPE:
     case DECLTYPE_TYPE:
       emit_diagnostic (diag_kind, loc, 0,
@@ -706,7 +711,17 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 				  NULL_TREE);
 
-		  code = build2 (INIT_EXPR, inner_type, sub, value);
+		  if (unsafe_return_slot_p (sub))
+		    {
+		      /* We may need to add a copy constructor call if
+			 the field has [[no_unique_address]].  */
+		      releasing_vec args = make_tree_vector_single (value);
+		      code = build_special_member_call
+			(sub, complete_ctor_identifier, &args, inner_type,
+			 LOOKUP_NORMAL, tf_warning_or_error);
+		    }
+		  else
+		    code = build2 (INIT_EXPR, inner_type, sub, value);
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
@@ -1008,10 +1023,17 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 	      || !int_fits_type_p (init, type)))
 	ok = false;
     }
+  /* [dcl.init.list]#7.2: "from long double to double or float, or from
+      double to float".  */
   else if (TREE_CODE (ftype) == REAL_TYPE
 	   && TREE_CODE (type) == REAL_TYPE)
     {
-      if (TYPE_PRECISION (type) < TYPE_PRECISION (ftype))
+      if ((same_type_p (ftype, long_double_type_node)
+	   && (same_type_p (type, double_type_node)
+	       || same_type_p (type, float_type_node)))
+	  || (same_type_p (ftype, double_type_node)
+	      && same_type_p (type, float_type_node))
+	  || (TYPE_PRECISION (type) < TYPE_PRECISION (ftype)))
 	{
 	  if (TREE_CODE (init) == REAL_CST)
 	    {
@@ -1040,9 +1062,10 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
     }
   else if (TREE_CODE (type) == BOOLEAN_TYPE
 	   && (TYPE_PTR_P (ftype) || TYPE_PTRMEM_P (ftype)))
-    /* This hasn't actually made it into C++20 yet, but let's add it now to get
-       an idea of the impact.  */
-    ok = (cxx_dialect < cxx2a);
+    /* C++20 P1957R2: converting from a pointer type or a pointer-to-member
+       type to bool should be considered narrowing.  This is a DR so is not
+       limited to C++20 only.  */
+    ok = false;
 
   bool almost_ok = ok;
   if (!ok && !CONSTANT_CLASS_P (init) && (complain & tf_warning_or_error))
@@ -1094,7 +1117,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
   return ok;
 }
 
-/* True iff TYPE is a C++2a "ordinary" character type.  */
+/* True iff TYPE is a C++20 "ordinary" character type.  */
 
 bool
 ordinary_char_type_p (tree type)
@@ -1488,17 +1511,6 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	= massage_init_elt (TREE_TYPE (type), ce->value, nested, flags,
 			    complain);
 
-      if (TREE_CODE (ce->value) == CONSTRUCTOR
-	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value))
-	{
-	  /* Shift CONSTRUCTOR_PLACEHOLDER_BOUNDARY from the element initializer
-	     up to the array initializer, so that the call to
-	     replace_placeholders from store_init_value can resolve any
-	     PLACEHOLDER_EXPRs inside this element initializer.  */
-	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
-	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
-	}
-
       gcc_checking_assert
 	(ce->value == error_mark_node
 	 || (same_type_ignoring_top_level_qualifiers_p
@@ -1527,13 +1539,6 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	      /* The default zero-initialization is fine for us; don't
 		 add anything to the CONSTRUCTOR.  */
 	      next = NULL_TREE;
-	    else if (TREE_CODE (next) == CONSTRUCTOR
-		     && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next))
-	      {
-		/* As above.  */
-		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next) = 0;
-		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
-	      }
 	  }
 	else if (!zero_init_p (TREE_TYPE (type)))
 	  next = build_zero_init (TREE_TYPE (type),
@@ -2228,7 +2233,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
     {
       /* 5.5/6: In a .* expression whose object expression is an rvalue, the
 	 program is ill-formed if the second operand is a pointer to member
-	 function with ref-qualifier & (for C++2A: unless its cv-qualifier-seq
+	 function with ref-qualifier & (for C++20: unless its cv-qualifier-seq
 	 is const). In a .* expression whose object expression is an lvalue,
 	 the program is ill-formed if the second operand is a pointer to member
 	 function with ref-qualifier &&.  */
@@ -2253,12 +2258,12 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 			   "an lvalue", ptrmem_type);
 		  return error_mark_node;
 		}
-	      else if (cxx_dialect < cxx2a)
+	      else if (cxx_dialect < cxx20)
 		{
 		  if (complain & tf_warning_or_error)
 		    pedwarn (input_location, OPT_Wpedantic,
 			     "pointer-to-member-function type %qT requires "
-			     "an lvalue before C++2a", ptrmem_type);
+			     "an lvalue before C++20", ptrmem_type);
 		  else
 		    return error_mark_node;
 		}

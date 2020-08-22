@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -74,12 +74,12 @@ bool checkParamArgumentEscape(Scope *sc, FuncDeclaration *fdc, Identifier *par, 
 
     escapeByValue(arg, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byfunc.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byfunc.length && !er.byexp.length)
         return false;
 
     bool result = false;
 
-    for (size_t i = 0; i < er.byvalue.dim; i++)
+    for (size_t i = 0; i < er.byvalue.length; i++)
     {
         //printf("byvalue %s\n", v->toChars());
         VarDeclaration *v = er.byvalue[i];
@@ -111,7 +111,7 @@ bool checkParamArgumentEscape(Scope *sc, FuncDeclaration *fdc, Identifier *par, 
         }
     }
 
-    for (size_t i = 0; i < er.byref.dim; i++)
+    for (size_t i = 0; i < er.byref.length; i++)
     {
         VarDeclaration *v = er.byref[i];
         if (v->isDataseg())
@@ -128,14 +128,14 @@ bool checkParamArgumentEscape(Scope *sc, FuncDeclaration *fdc, Identifier *par, 
         }
     }
 
-    for (size_t i = 0; i < er.byfunc.dim; i++)
+    for (size_t i = 0; i < er.byfunc.length; i++)
     {
         FuncDeclaration *fd = er.byfunc[i];
         //printf("fd = %s, %d\n", fd->toChars(), fd->tookAddressOf);
         VarDeclarations vars;
         findAllOuterAccessedVariables(fd, &vars);
 
-        for (size_t j = 0; j < vars.dim; j++)
+        for (size_t j = 0; j < vars.length; j++)
         {
             VarDeclaration *v = vars[j];
             //printf("v = %s\n", v->toChars());
@@ -153,7 +153,7 @@ bool checkParamArgumentEscape(Scope *sc, FuncDeclaration *fdc, Identifier *par, 
         }
     }
 
-    for (size_t i = 0; i < er.byexp.dim; i++)
+    for (size_t i = 0; i < er.byexp.length; i++)
     {
         Expression *ee = er.byexp[i];
         if (sc->func->setUnsafe())
@@ -202,7 +202,7 @@ bool checkAssignEscape(Scope *sc, Expression *e, bool gag)
 
     escapeByValue(e2, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byfunc.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byfunc.length && !er.byexp.length)
         return false;
 
     VarDeclaration *va = NULL;
@@ -226,7 +226,7 @@ bool checkAssignEscape(Scope *sc, Expression *e, bool gag)
         inferScope = ((TypeFunction *)sc->func->type)->trust != TRUSTsystem;
 
     bool result = false;
-    for (size_t i = 0; i < er.byvalue.dim; i++)
+    for (size_t i = 0; i < er.byvalue.length; i++)
     {
         VarDeclaration *v = er.byvalue[i];
         //printf("byvalue: %s\n", v->toChars());
@@ -309,7 +309,7 @@ bool checkAssignEscape(Scope *sc, Expression *e, bool gag)
         }
     }
 
-    for (size_t i = 0; i < er.byref.dim; i++)
+    for (size_t i = 0; i < er.byref.length; i++)
     {
         VarDeclaration *v = er.byref[i];
         //printf("byref: %s\n", v->toChars());
@@ -352,14 +352,14 @@ bool checkAssignEscape(Scope *sc, Expression *e, bool gag)
         }
     }
 
-    for (size_t i = 0; i < er.byfunc.dim; i++)
+    for (size_t i = 0; i < er.byfunc.length; i++)
     {
         FuncDeclaration *fd = er.byfunc[i];
         //printf("fd = %s, %d\n", fd->toChars(), fd->tookAddressOf);
         VarDeclarations vars;
         findAllOuterAccessedVariables(fd, &vars);
 
-        for (size_t j = 0; j < vars.dim; j++)
+        for (size_t j = 0; j < vars.length; j++)
         {
             VarDeclaration *v = vars[j];
             //printf("v = %s\n", v->toChars());
@@ -392,7 +392,7 @@ bool checkAssignEscape(Scope *sc, Expression *e, bool gag)
         }
     }
 
-    for (size_t i = 0; i < er.byexp.dim; i++)
+    for (size_t i = 0; i < er.byexp.length; i++)
     {
         Expression *ee = er.byexp[i];
         if (va && !va->isDataseg() && !va->doNotInferScope)
@@ -433,11 +433,11 @@ bool checkThrowEscape(Scope *sc, Expression *e, bool gag)
 
     escapeByValue(e, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byexp.length)
         return false;
 
     bool result = false;
-    for (size_t i = 0; i < er.byvalue.dim; i++)
+    for (size_t i = 0; i < er.byvalue.length; i++)
     {
         VarDeclaration *v = er.byvalue[i];
         //printf("byvalue %s\n", v->toChars());
@@ -528,11 +528,11 @@ static bool checkReturnEscapeImpl(Scope *sc, Expression *e, bool refs, bool gag)
     else
         escapeByValue(e, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byexp.length)
         return false;
 
     bool result = false;
-    for (size_t i = 0; i < er.byvalue.dim; i++)
+    for (size_t i = 0; i < er.byvalue.length; i++)
     {
         VarDeclaration *v = er.byvalue[i];
         //printf("byvalue %s\n", v->toChars());
@@ -595,7 +595,7 @@ static bool checkReturnEscapeImpl(Scope *sc, Expression *e, bool refs, bool gag)
         }
     }
 
-    for (size_t i = 0; i < er.byref.dim; i++)
+    for (size_t i = 0; i < er.byref.length; i++)
     {
         VarDeclaration *v = er.byref[i];
         //printf("byref %s\n", v->toChars());
@@ -665,7 +665,7 @@ static bool checkReturnEscapeImpl(Scope *sc, Expression *e, bool refs, bool gag)
         }
     }
 
-    for (size_t i = 0; i < er.byexp.dim; i++)
+    for (size_t i = 0; i < er.byexp.length; i++)
     {
         Expression *ee = er.byexp[i];
         //printf("byexp %s\n", ee->toChars());
@@ -707,12 +707,12 @@ static void inferReturn(FuncDeclaration *fd, VarDeclaration *v)
     else
     {
         // Perform 'return' inference on parameter
-        if (tf->ty == Tfunction && tf->parameters)
+        if (tf->ty == Tfunction)
         {
-            const size_t dim = Parameter::dim(tf->parameters);
+            const size_t dim = tf->parameterList.length();
             for (size_t i = 0; i < dim; i++)
             {
-                Parameter *p = Parameter::getNth(tf->parameters, i);
+                Parameter *p = tf->parameterList[i];
                 if (p->ident == v->ident)
                 {
                     p->storageClass |= STCreturn;
@@ -819,7 +819,7 @@ static void escapeByValue(Expression *e, EscapeByResults *er)
             {
                 if (e->basis)
                     e->basis->accept(this);
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     Expression *el = (*e->elements)[i];
                     if (el)
@@ -832,7 +832,7 @@ static void escapeByValue(Expression *e, EscapeByResults *er)
         {
             if (e->elements)
             {
-                for (size_t i = 0; i < e->elements->dim; i++)
+                for (size_t i = 0; i < e->elements->length; i++)
                 {
                     Expression *ex = (*e->elements)[i];
                     if (ex)
@@ -846,7 +846,7 @@ static void escapeByValue(Expression *e, EscapeByResults *er)
             Type *tb = e->newtype->toBasetype();
             if (tb->ty == Tstruct && !e->member && e->arguments)
             {
-                for (size_t i = 0; i < e->arguments->dim; i++)
+                for (size_t i = 0; i < e->arguments->length; i++)
                 {
                     Expression *ex = (*e->arguments)[i];
                     if (ex)
@@ -945,19 +945,19 @@ static void escapeByValue(Expression *e, EscapeByResults *er)
             else
                 return;
 
-            if (e->arguments && e->arguments->dim)
+            if (e->arguments && e->arguments->length)
             {
                 /* j=1 if _arguments[] is first argument,
                  * skip it because it is not passed by ref
                  */
-                size_t j = (tf->linkage == LINKd && tf->varargs == 1);
-                for (size_t i = j; i < e->arguments->dim; ++i)
+                size_t j = tf->isDstyleVariadic();
+                for (size_t i = j; i < e->arguments->length; ++i)
                 {
                     Expression *arg = (*e->arguments)[i];
-                    size_t nparams = Parameter::dim(tf->parameters);
+                    size_t nparams = tf->parameterList.length();
                     if (i - j < nparams && i >= j)
                     {
-                        Parameter *p = Parameter::getNth(tf->parameters, i - j);
+                        Parameter *p = tf->parameterList[i - j];
                         const StorageClass stc = tf->parameterStorageClass(p);
                         if ((stc & (STCscope)) && (stc & STCreturn))
                             arg->accept(this);
@@ -1141,20 +1141,20 @@ static void escapeByRef(Expression *e, EscapeByResults *er)
                 return;
             if (tf->isref)
             {
-                if (e->arguments && e->arguments->dim)
+                if (e->arguments && e->arguments->length)
                 {
                     /* j=1 if _arguments[] is first argument,
                      * skip it because it is not passed by ref
                      */
-                    size_t j = (tf->linkage == LINKd && tf->varargs == 1);
+                    size_t j = tf->isDstyleVariadic();
 
-                    for (size_t i = j; i < e->arguments->dim; ++i)
+                    for (size_t i = j; i < e->arguments->length; ++i)
                     {
                         Expression *arg = (*e->arguments)[i];
-                        size_t nparams = Parameter::dim(tf->parameters);
+                        size_t nparams = tf->parameterList.length();
                         if (i - j < nparams && i >= j)
                         {
-                            Parameter *p = Parameter::getNth(tf->parameters, i - j);
+                            Parameter *p = tf->parameterList[i - j];
                             const StorageClass stc = tf->parameterStorageClass(p);
                             if ((stc & (STCout | STCref)) && (stc & STCreturn))
                                 arg->accept(this);
@@ -1216,10 +1216,10 @@ void findAllOuterAccessedVariables(FuncDeclaration *fd, VarDeclarations *vars)
         FuncDeclaration *fdp = p->isFuncDeclaration();
         if (fdp)
         {
-            for (size_t i = 0; i < fdp->closureVars.dim; i++)
+            for (size_t i = 0; i < fdp->closureVars.length; i++)
             {
                 VarDeclaration *v = fdp->closureVars[i];
-                for (size_t j = 0; j < v->nestedrefs.dim; j++)
+                for (size_t j = 0; j < v->nestedrefs.length; j++)
                 {
                     FuncDeclaration *fdv = v->nestedrefs[j];
                     if (fdv == fd)

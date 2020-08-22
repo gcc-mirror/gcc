@@ -167,6 +167,18 @@ enum processor_flags
 	(TARGET_VX && TARGET_CPU_VXE2)
 #define TARGET_VXE2_P(opts)						\
 	(TARGET_VX_P (opts) && TARGET_CPU_VXE2_P (opts))
+#if defined(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13)
+#define TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS TARGET_Z13
+#elif defined(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS)
+#define TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS TARGET_Z14
+#else
+#define TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS 0
+#endif
+
+/* Evaluate to true if it is ok to emit a non-signaling vector
+   comparison.  */
+#define TARGET_NONSIGNALING_VECTOR_COMPARE_OK \
+  (TARGET_VX && !TARGET_VXE && (flag_finite_math_only || !flag_trapping_math))
 
 #ifdef HAVE_AS_MACHINE_MACHINEMODE
 #define S390_USE_TARGET_ATTRIBUTE 1

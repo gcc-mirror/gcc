@@ -1,0 +1,9 @@
+ifeq ($(MULTIBUILDTOP),)
+BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
+    echo '64'; else echo '32'; fi)
+MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
+all-local:
+	ar -X$(BITS) rc src/.libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)-v3/src/.libs/$(PACKAGE).so.$(MAJOR)
+	ar -X$(BITS) rc ../pthread/$(PACKAGE)-v3/src/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)-v3/src/.libs/$(PACKAGE).so.$(MAJOR)
+endif
+

@@ -1,5 +1,5 @@
 // P1668R1: Permit unevaluated inline asm in constexpr functions
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 // { dg-additional-options "-Wno-pedantic" }
 
 constexpr int

@@ -650,7 +650,7 @@ lto_main (void)
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */
-	  symtab->compile (main_input_filename);
+	  symtab->compile ();
 
 	  timevar_stop (TV_PHASE_OPT_GEN);
 

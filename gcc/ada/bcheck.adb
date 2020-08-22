@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -771,7 +771,7 @@ package body Bcheck is
       --  Reset when we find a unit that depends on the default and does
       --  not have a local specification of the Optimize_Alignment setting.
 
-      OA_Unit : Unit_Id;
+      OA_Unit : Unit_Id := No_Unit_Id;
       --  Id of unit from which OA_Setting was set
 
       C : Character;
@@ -789,6 +789,7 @@ package body Bcheck is
                null;
 
             else
+               pragma Assert (Present (OA_Unit));
                Error_Msg_Unit_1 := Units.Table (OA_Unit).Uname;
                Error_Msg_Unit_2 := Units.Table (U).Uname;
 

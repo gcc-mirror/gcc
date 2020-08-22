@@ -198,6 +198,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(sizeof(_Tp) > 0,
 		    "Incomplete or zero-sized types are not supported");
 
+#if __cplusplus > 201703L
+      static_assert(is_copy_constructible_v<_Tp>);
+      static_assert(is_move_constructible_v<_Tp>);
+      static_assert(is_copy_assignable_v<_Tp>);
+      static_assert(is_move_assignable_v<_Tp>);
+#endif
+
     public:
       atomic() = default;
       ~atomic() noexcept = default;
@@ -244,11 +251,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m)); }
+      {
+	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+      }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
-      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m)); }
+      {
+	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+      }
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept

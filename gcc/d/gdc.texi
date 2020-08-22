@@ -600,6 +600,12 @@ Warn when a @code{pragma()} is encountered that is not understood by
 where a pragma that is part of the D language, but not implemented by
 the compiler, won't get reported.
 
+@item -Wno-varargs
+@cindex Wvarargs
+@cindex Wno-varargs
+Do not warn upon questionable usage of the macros used to handle variable
+arguments like @code{va_start}.
+
 @item -fignore-unknown-pragmas
 @cindex @option{-fignore-unknown-pragmas}
 @cindex @option{-fno-ignore-unknown-pragmas}

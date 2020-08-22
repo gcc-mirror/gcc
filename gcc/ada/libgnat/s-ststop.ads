@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,15 +53,15 @@
 --       or
 --     String_Output_Blk_IO (Some_Stream, Some_String);
 
---  String_Output form is used if pragma Restrictions (No_String_Optimziations)
+--  String_Output form is used if pragma Restrictions (No_String_Optimizations)
 --  is active, which requires element by element operations. The BLK_IO form
 --  is used if this restriction is not set, allowing block optimization.
 
 --  Note that if System.Stream_Attributes.Block_IO_OK is False, then the BLK_IO
 --  form is treated as equivalent to the normal case, so that the optimization
 --  is inhibited anyway, regardless of the setting of the restriction. This
---  handles versions of System.Stream_Attributes (in particular the XDR version
---  found in s-stratt-xdr) which do not permit block io optimization.
+--  handles the XDR implementation of System.Stream_Attributes in particular
+--  which does not permit block io optimization.
 
 pragma Compiler_Unit_Warning;
 

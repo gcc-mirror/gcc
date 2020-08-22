@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,15 +99,5 @@ package Fname is
    function Is_GNAT_File_Name (Fname : String) return Boolean;
    function Is_GNAT_File_Name (Fname : File_Name_Type) return Boolean;
    --  True for units in the GNAT hierarchy
-
-   procedure Tree_Read;
-   --  Dummy procedure (reads dummy table values from tree file)
-
-   procedure Tree_Write;
-   --  Writes out internal tables to current tree file using Tree_Write
-   --  This is actually a dummy routine, since the relevant table is
-   --  no longer used, but we retain it for now, to avoid a tree file
-   --  incompatibility with the 3.13 compiler. Should be removed for
-   --  the 3.14a release ???
 
 end Fname;

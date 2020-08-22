@@ -376,6 +376,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+tmake_file = @tmake_file@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
@@ -861,6 +862,9 @@ vpath % $(strip $(search_path))
 # when it is reloaded during the build of all-multi.
 all-multi: $(libatomic_la_LIBADD)
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
+
+# target overrides
+-include $(tmake_file)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

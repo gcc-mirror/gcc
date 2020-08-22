@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011-2019, Free Software Foundation, Inc.      --
+--             Copyright (C) 2011-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,9 @@
 with Ada.Finalization;
 with System; use type System.Address;
 
-package body Ada.Containers.Bounded_Multiway_Trees is
+package body Ada.Containers.Bounded_Multiway_Trees with
+  SPARK_Mode => Off
+is
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");
@@ -366,6 +368,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       First, Last : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -382,8 +386,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
-
-      TC_Check (Container.TC);
 
       if Container.Count = 0 then
          Initialize_Root (Container);
@@ -985,6 +987,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Count : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -992,8 +996,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Checks and then Parent.Container /= Container'Unrestricted_Access then
          raise Program_Error with "Parent cursor not in container";
       end if;
-
-      TC_Check (Container.TC);
 
       if Container.Count = 0 then
          pragma Assert (Is_Root (Parent));
@@ -1024,6 +1026,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       X : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1040,8 +1044,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Checks and then not Is_Leaf (Position) then
          raise Constraint_Error with "Position cursor does not designate leaf";
       end if;
-
-      TC_Check (Container.TC);
 
       X := Position.Node;
       Position := No_Element;
@@ -1064,6 +1066,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Count : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1076,8 +1080,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Checks and then Is_Root (Position) then
          raise Program_Error with "Position cursor designates root";
       end if;
-
-      TC_Check (Container.TC);
 
       X := Position.Node;
       Position := No_Element;
@@ -1506,6 +1508,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Last  : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -1536,8 +1540,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
-
-      TC_Check (Container.TC);
 
       if Container.Count = 0 then
          Initialize_Root (Container);
@@ -1584,6 +1586,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  OK to reference, see below
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -1614,8 +1618,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
-
-      TC_Check (Container.TC);
 
       if Container.Count = 0 then
          Initialize_Root (Container);
@@ -2181,6 +2183,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       First, Last : Count_Type;
 
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -2197,8 +2201,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
-
-      TC_Check (Container.TC);
 
       if Container.Count = 0 then
          Initialize_Root (Container);
@@ -2545,6 +2547,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       New_Item  : Element_Type)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -2557,8 +2561,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Checks and then Is_Root (Position) then
          raise Program_Error with "Position cursor designates root";
       end if;
-
-      TE_Check (Container.TC);
 
       Container.Elements (Position.Node) := New_Item;
    end Replace_Element;
@@ -2627,6 +2629,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Source_Parent : Cursor)
    is
    begin
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Checks and then Target_Parent = No_Element then
          raise Constraint_Error with "Target_Parent cursor has no element";
       end if;
@@ -2671,8 +2676,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
             return;
          end if;
 
-         TC_Check (Target.TC);
-
          if Checks and then Is_Reachable (Container => Target,
                           From      => Target_Parent.Node,
                           To        => Source_Parent.Node)
@@ -2689,9 +2692,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
          return;
       end if;
-
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
 
       if Target.Count = 0 then
          Initialize_Root (Target);
@@ -2712,6 +2712,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Source_Parent   : Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Target_Parent = No_Element then
          raise Constraint_Error with "Target_Parent cursor has no element";
       end if;
@@ -2754,8 +2756,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       pragma Assert (Container.Count > 0);
-
-      TC_Check (Container.TC);
 
       if Checks and then Is_Reachable (Container => Container,
                        From      => Target_Parent.Node,
@@ -2911,6 +2911,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Position : in out Cursor)
    is
    begin
+      TC_Check (Target.TC);
+      TC_Check (Source.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -2957,8 +2960,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
             end if;
          end if;
 
-         TC_Check (Target.TC);
-
          if Checks and then Is_Reachable (Container => Target,
                           From      => Parent.Node,
                           To        => Position.Node)
@@ -2973,9 +2974,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
          return;
       end if;
-
-      TC_Check (Target.TC);
-      TC_Check (Source.TC);
 
       if Target.Count = 0 then
          Initialize_Root (Target);
@@ -2998,6 +2996,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Position  : Cursor)
    is
    begin
+      TC_Check (Container.TC);
+
       if Checks and then Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
       end if;
@@ -3047,8 +3047,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
             return;
          end if;
       end if;
-
-      TC_Check (Container.TC);
 
       if Checks and then Is_Reachable (Container => Container,
                        From      => Parent.Node,
@@ -3176,6 +3174,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       I, J      : Cursor)
    is
    begin
+      TE_Check (Container.TC);
+
       if Checks and then I = No_Element then
          raise Constraint_Error with "I cursor has no element";
       end if;
@@ -3203,8 +3203,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Checks and then Is_Root (J) then
          raise Program_Error with "J cursor designates root";
       end if;
-
-      TE_Check (Container.TC);
 
       declare
          EE : Element_Array renames Container.Elements;

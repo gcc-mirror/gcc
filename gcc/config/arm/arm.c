@@ -306,10 +306,10 @@ static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 					   tree vectype,
 					   int misalign ATTRIBUTE_UNUSED);
-static unsigned arm_add_stmt_cost (void *data, int count,
+static unsigned arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 				   enum vect_cost_for_stmt kind,
 				   struct _stmt_vec_info *stmt_info,
-				   int misalign,
+				   tree vectype, int misalign,
 				   enum vect_cost_model_location where);
 
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
@@ -382,6 +382,7 @@ static const struct attribute_spec arm_attribute_table[] =
     arm_handle_cmse_nonsecure_entry, NULL },
   { "cmse_nonsecure_call", 0, 0, true, false, false, true,
     arm_handle_cmse_nonsecure_call, NULL },
+  { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -832,6 +833,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
+
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP arm_invalid_within_doloop
 
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
@@ -4188,6 +4192,31 @@ arm_trampoline_adjust_address (rtx addr)
   return addr;
 }
 
+/* Return 1 if REG needs to be saved. For interrupt handlers, this
+   includes call-clobbered registers too.  If this is a leaf function
+   we can just examine the registers used by the RTL, but otherwise we
+   have to assume that whatever function is called might clobber
+   anything, and so we have to save all the call-clobbered registers
+   as well.  */
+static inline bool reg_needs_saving_p (unsigned reg)
+{
+  unsigned long func_type = arm_current_func_type ();
+
+  if (IS_INTERRUPT (func_type))
+    if (df_regs_ever_live_p (reg)
+	/* Save call-clobbered core registers.  */
+	|| (! crtl->is_leaf && call_used_or_fixed_reg_p (reg) && reg < FIRST_VFP_REGNUM))
+      return true;
+    else
+      return false;
+  else
+    if (!df_regs_ever_live_p (reg)
+	|| call_used_or_fixed_reg_p (reg))
+      return false;
+    else
+      return true;
+}
+
 /* Return 1 if it is possible to return using a single instruction.
    If SIBLING is non-null, this is a test for a return before a sibling
    call.  SIBLING is the call insn, so we can examine its register usage.  */
@@ -4317,12 +4346,12 @@ use_return_insn (int iscond, rtx sibling)
      since this also requires an insn.  */
   if (TARGET_VFP_BASE)
     for (regno = FIRST_VFP_REGNUM; regno <= LAST_VFP_REGNUM; regno++)
-      if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
+      if (reg_needs_saving_p (regno))
 	return 0;
 
   if (TARGET_REALLY_IWMMXT)
     for (regno = FIRST_IWMMXT_REGNUM; regno <= LAST_IWMMXT_REGNUM; regno++)
-      if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
+      if (reg_needs_saving_p (regno))
 	return 0;
 
   return 1;
@@ -7232,6 +7261,11 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 		   name);
 	  *no_add_attrs = true;
 	}
+      else if (TARGET_VFP_BASE)
+	{
+	  warning (OPT_Wattributes, "FP registers might be clobbered despite %qE attribute: compile with %<-mgeneral-regs-only%>",
+		   name);
+	}
       /* FIXME: the argument if any is checked for type attributes;
 	 should it be checked for decl ones?  */
     }
@@ -7505,6 +7539,15 @@ static int
 arm_comp_type_attributes (const_tree type1, const_tree type2)
 {
   int l1, l2, s1, s2;
+
+  tree attrs1 = lookup_attribute ("Advanced SIMD type",
+				  TYPE_ATTRIBUTES (type1));
+  tree attrs2 = lookup_attribute ("Advanced SIMD type",
+				  TYPE_ATTRIBUTES (type2));
+  if (bool (attrs1) != bool (attrs2))
+    return 0;
+  if (attrs1 && !attribute_value_equal (attrs1, attrs2))
+    return 0;
 
   /* Check for mismatch of non-default calling convention.  */
   if (TREE_CODE (type1) != FUNCTION_TYPE)
@@ -8442,6 +8485,10 @@ thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
 {
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
+
+  if (TARGET_HAVE_MVE
+      && (mode == V8QImode || mode == E_V4QImode || mode == V4HImode))
+    return mve_vector_mem_operand (mode, x, strict_p);
 
   if (arm_address_register_rtx_p (x, strict_p))
     return 1;
@@ -12131,17 +12178,16 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
 static unsigned
-arm_add_stmt_cost (class vec_info *vinfo, void *data, int count,
+arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 		   enum vect_cost_for_stmt kind,
-		   struct _stmt_vec_info *stmt_info, int misalign,
-		   enum vect_cost_model_location where)
+		   struct _stmt_vec_info *stmt_info, tree vectype,
+		   int misalign, enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
     {
-      tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost = arm_builtin_vectorization_cost (kind, vectype, misalign);
 
       /* Statements in an inner loop relative to the loop being
@@ -13189,13 +13235,14 @@ neon_element_bits (machine_mode mode)
 /* Predicates for `match_operand' and `match_operator'.  */
 
 /* Return TRUE if OP is a valid coprocessor memory address pattern.
-   WB is true if full writeback address modes are allowed and is false
+   WB level is 2 if full writeback address modes are allowed, 1
    if limited writeback address modes (POST_INC and PRE_DEC) are
-   allowed.  */
+   allowed and 0 if no writeback at all is supported.  */
 
 int
-arm_coproc_mem_operand (rtx op, bool wb)
+arm_coproc_mem_operand_wb (rtx op, int wb_level)
 {
+  gcc_assert (wb_level == 0 || wb_level == 1 || wb_level == 2);
   rtx ind;
 
   /* Reject eliminable registers.  */
@@ -13228,16 +13275,18 @@ arm_coproc_mem_operand (rtx op, bool wb)
 
   /* Autoincremment addressing modes.  POST_INC and PRE_DEC are
      acceptable in any case (subject to verification by
-     arm_address_register_rtx_p).  We need WB to be true to accept
+     arm_address_register_rtx_p).  We need full writeback to accept
+     PRE_INC and POST_DEC, and at least restricted writeback for
      PRE_INC and POST_DEC.  */
-  if (GET_CODE (ind) == POST_INC
-      || GET_CODE (ind) == PRE_DEC
-      || (wb
-	  && (GET_CODE (ind) == PRE_INC
-	      || GET_CODE (ind) == POST_DEC)))
+  if (wb_level > 0
+      && (GET_CODE (ind) == POST_INC
+	  || GET_CODE (ind) == PRE_DEC
+	  || (wb_level > 1
+	      && (GET_CODE (ind) == PRE_INC
+		  || GET_CODE (ind) == POST_DEC))))
     return arm_address_register_rtx_p (XEXP (ind, 0), 0);
 
-  if (wb
+  if (wb_level > 1
       && (GET_CODE (ind) == POST_MODIFY || GET_CODE (ind) == PRE_MODIFY)
       && arm_address_register_rtx_p (XEXP (ind, 0), 0)
       && GET_CODE (XEXP (ind, 1)) == PLUS
@@ -13256,6 +13305,104 @@ arm_coproc_mem_operand (rtx op, bool wb)
       && (INTVAL (XEXP (ind, 1)) & 3) == 0)
     return TRUE;
 
+  return FALSE;
+}
+
+/* Return TRUE if OP is a valid coprocessor memory address pattern.
+   WB is true if full writeback address modes are allowed and is false
+   if limited writeback address modes (POST_INC and PRE_DEC) are
+   allowed.  */
+
+int arm_coproc_mem_operand (rtx op, bool wb)
+{
+  return arm_coproc_mem_operand_wb (op, wb ? 2 : 1);
+}
+
+/* Return TRUE if OP is a valid coprocessor memory address pattern in a
+   context in which no writeback address modes are allowed.  */
+
+int
+arm_coproc_mem_operand_no_writeback (rtx op)
+{
+  return arm_coproc_mem_operand_wb (op, 0);
+}
+
+/* This function returns TRUE on matching mode and op.
+1. For given modes, check for [Rn], return TRUE for Rn <= LO_REGS.
+2. For other modes, check for [Rn], return TRUE for Rn < R15 (expect R13).  */
+int
+mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
+{
+  enum rtx_code code;
+  int val, reg_no;
+
+  /* Match: (mem (reg)).  */
+  if (REG_P (op))
+    {
+      int reg_no = REGNO (op);
+      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	       ? reg_no <= LAST_LO_REGNUM
+	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+    }
+  code = GET_CODE (op);
+
+  if (code == POST_INC || code == PRE_DEC
+      || code == PRE_INC || code == POST_DEC)
+    {
+      reg_no = REGNO (XEXP (op, 0));
+      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	       ? reg_no <= LAST_LO_REGNUM
+	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+    }
+  else if ((code == POST_MODIFY || code == PRE_MODIFY)
+	   && GET_CODE (XEXP (op, 1)) == PLUS && REG_P (XEXP (XEXP (op, 1), 1)))
+    {
+      reg_no = REGNO (XEXP (op, 0));
+      val = INTVAL (XEXP ( XEXP (op, 1), 1));
+      switch (mode)
+	{
+	  case E_V16QImode:
+	    if (abs (val) <= 127)
+	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
+	  case E_V8HImode:
+	  case E_V8HFmode:
+	    if (abs (val) <= 255)
+	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
+	  case E_V8QImode:
+	  case E_V4QImode:
+	    if (abs (val) <= 127)
+	      return (reg_no <= LAST_LO_REGNUM
+		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
+	  case E_V4HImode:
+	  case E_V4HFmode:
+	    if (val % 2 == 0 && abs (val) <= 254)
+	      return (reg_no <= LAST_LO_REGNUM
+		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
+	  case E_V4SImode:
+	  case E_V4SFmode:
+	    if (val % 4 == 0 && abs (val) <= 508)
+	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
+	  case E_V2DImode:
+	  case E_V2DFmode:
+	  case E_TImode:
+	    if (val % 4 == 0 && val >= 0 && val <= 1020)
+	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	    return FALSE;
+	  default:
+	    return FALSE;
+	}
+    }
   return FALSE;
 }
 
@@ -13325,15 +13472,6 @@ neon_vector_mem_operand (rtx op, int type, bool strict)
 	  < (VALID_NEON_QREG_MODE (GET_MODE (op))? 1016 : 1024))
       && (INTVAL (XEXP (ind, 1)) & 3) == 0)
     return TRUE;
-
-  if (type == 1 && TARGET_HAVE_MVE
-      && (GET_CODE (ind) == POST_INC || GET_CODE (ind) == PRE_DEC))
-    {
-      rtx ind1 = XEXP (ind, 0);
-      if (!REG_P (ind1))
-	return 0;
-      return VFP_REGNO_OK_FOR_SINGLE (REGNO (ind1));
-    }
 
   return FALSE;
 }
@@ -19551,6 +19689,7 @@ output_move_double (rtx *operands, bool emit, int *count)
   if (code0 == REG)
     {
       unsigned int reg0 = REGNO (operands[0]);
+      const bool can_ldrd = TARGET_LDRD && (TARGET_THUMB2 || (reg0 % 2 == 0));
 
       otherops[0] = gen_rtx_REG (SImode, 1 + reg0);
 
@@ -19562,7 +19701,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 
 	  if (emit)
 	    {
-	      if (TARGET_LDRD
+	      if (can_ldrd
 		  && !(fix_cm3_ldrd && reg0 == REGNO(XEXP (operands[1], 0))))
 		output_asm_insn ("ldrd%?\t%0, [%m1]", operands);
 	      else
@@ -19571,7 +19710,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
 	case PRE_INC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (can_ldrd);
 	  if (emit)
 	    output_asm_insn ("ldrd%?\t%0, [%m1, #8]!", operands);
 	  break;
@@ -19579,7 +19718,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	case PRE_DEC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		output_asm_insn ("ldrd%?\t%0, [%m1, #-8]!", operands);
 	      else
 		output_asm_insn ("ldmdb%?\t%m1!, %M0", operands);
@@ -19589,7 +19728,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	case POST_INC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		output_asm_insn ("ldrd%?\t%0, [%m1], #8", operands);
 	      else
 		output_asm_insn ("ldmia%?\t%m1!, %M0", operands);
@@ -19597,7 +19736,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
 	case POST_DEC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (can_ldrd);
 	  if (emit)
 	    output_asm_insn ("ldrd%?\t%0, [%m1], #-8", operands);
 	  break;
@@ -19619,6 +19758,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		  /* Registers overlap so split out the increment.  */
 		  if (emit)
 		    {
+		      gcc_assert (can_ldrd);
 		      output_asm_insn ("add%?\t%1, %1, %2", otherops);
 		      output_asm_insn ("ldrd%?\t%0, [%1] @split", otherops);
 		    }
@@ -19630,10 +19770,11 @@ output_move_double (rtx *operands, bool emit, int *count)
 		  /* Use a single insn if we can.
 		     FIXME: IWMMXT allows offsets larger than ldrd can
 		     handle, fix these up with a pair of ldr.  */
-		  if (TARGET_THUMB2
+		  if (can_ldrd
+		      && (TARGET_THUMB2
 		      || !CONST_INT_P (otherops[2])
 		      || (INTVAL (otherops[2]) > -256
-			  && INTVAL (otherops[2]) < 256))
+			  && INTVAL (otherops[2]) < 256)))
 		    {
 		      if (emit)
 			output_asm_insn ("ldrd%?\t%0, [%1, %2]!", otherops);
@@ -19656,10 +19797,11 @@ output_move_double (rtx *operands, bool emit, int *count)
 	      /* Use a single insn if we can.
 		 FIXME: IWMMXT allows offsets larger than ldrd can handle,
 		 fix these up with a pair of ldr.  */
-	      if (TARGET_THUMB2
+	      if (can_ldrd
+		  && (TARGET_THUMB2
 		  || !CONST_INT_P (otherops[2])
 		  || (INTVAL (otherops[2]) > -256
-		      && INTVAL (otherops[2]) < 256))
+		      && INTVAL (otherops[2]) < 256)))
 		{
 		  if (emit)
 		    output_asm_insn ("ldrd%?\t%0, [%1], %2", otherops);
@@ -19690,7 +19832,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  operands[1] = otherops[0];
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		output_asm_insn ("ldrd%?\t%0, [%1]", operands);
 	      else
 		output_asm_insn ("ldmia%?\t%1, %M0", operands);
@@ -19735,7 +19877,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		    }
 		  otherops[0] = gen_rtx_REG(SImode, REGNO(operands[0]) + 1);
 		  operands[1] = otherops[0];
-		  if (TARGET_LDRD
+		  if (can_ldrd
 		      && (REG_P (otherops[2])
 			  || TARGET_THUMB2
 			  || (CONST_INT_P (otherops[2])
@@ -19796,7 +19938,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	      if (count)
 		*count = 2;
 
-	      if (TARGET_LDRD)
+	      if (can_ldrd)
 		return "ldrd%?\t%0, [%1]";
 
 	      return "ldmia%?\t%1, %M0";
@@ -20668,8 +20810,7 @@ arm_compute_save_reg0_reg12_mask (void)
 	max_reg = 12;
 
       for (reg = 0; reg <= max_reg; reg++)
-	if (df_regs_ever_live_p (reg)
-	    || (! crtl->is_leaf && call_used_or_fixed_reg_p (reg)))
+	if (reg_needs_saving_p (reg))
 	  save_reg_mask |= (1 << reg);
 
       /* Also save the pic base register if necessary.  */
@@ -20938,7 +21079,6 @@ thumb1_compute_save_core_reg_mask (void)
   return mask;
 }
 
-
 /* Return the number of bytes required to save VFP registers.  */
 static int
 arm_get_vfp_saved_size (void)
@@ -20956,10 +21096,7 @@ arm_get_vfp_saved_size (void)
 	   regno < LAST_VFP_REGNUM;
 	   regno += 2)
 	{
-	  if ((!df_regs_ever_live_p (regno)
-	       || call_used_or_fixed_reg_p (regno))
-	      && (!df_regs_ever_live_p (regno + 1)
-		  || call_used_or_fixed_reg_p (regno + 1)))
+	  if (!reg_needs_saving_p (regno) && !reg_needs_saving_p (regno + 1))
 	    {
 	      if (count > 0)
 		{
@@ -22484,8 +22621,7 @@ arm_compute_frame_layout (void)
 	  for (regno = FIRST_IWMMXT_REGNUM;
 	       regno <= LAST_IWMMXT_REGNUM;
 	       regno++)
-	    if (df_regs_ever_live_p (regno)
-		&& !call_used_or_fixed_reg_p (regno))
+	    if (reg_needs_saving_p (regno))
 	      saved += 8;
 	}
 
@@ -22706,8 +22842,9 @@ arm_save_coproc_regs(void)
   unsigned start_reg;
   rtx insn;
 
+  if (TARGET_REALLY_IWMMXT)
   for (reg = LAST_IWMMXT_REGNUM; reg >= FIRST_IWMMXT_REGNUM; reg--)
-    if (df_regs_ever_live_p (reg) && !call_used_or_fixed_reg_p (reg))
+    if (reg_needs_saving_p (reg))
       {
 	insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	insn = gen_rtx_MEM (V2SImode, insn);
@@ -22722,9 +22859,7 @@ arm_save_coproc_regs(void)
 
       for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
 	{
-	  if ((!df_regs_ever_live_p (reg) || call_used_or_fixed_reg_p (reg))
-	      && (!df_regs_ever_live_p (reg + 1)
-		  || call_used_or_fixed_reg_p (reg + 1)))
+	  if (!reg_needs_saving_p (reg) && !reg_needs_saving_p (reg + 1))
 	    {
 	      if (start_reg != reg)
 		saved_size += vfp_emit_fstmd (start_reg,
@@ -23455,7 +23590,7 @@ arm_print_condition (FILE *stream)
 /* Globally reserved letters: acln
    Puncutation letters currently used: @_|?().!#
    Lower case letters currently used: bcdefhimpqtvwxyz
-   Upper case letters currently used: ABCDFGHJKLMNOPQRSTU
+   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTU
    Letters previously used, but now deprecated/obsolete: sVWXYZ.
 
    Note that the global reservation for 'c' is only for CONSTANT_ADDRESS_P.
@@ -24021,11 +24156,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
       }
       return;
 
-    /* To print the memory operand with "Us" constraint.  Based on the rtx_code
-       the memory operands output looks like following.
+    /* To print the memory operand with "Ux" or "Uj" constraint.  Based on the
+       rtx_code the memory operands output looks like following.
        1. [Rn], #+/-<imm>
        2. [Rn, #+/-<imm>]!
-       3. [Rn].  */
+       3. [Rn, #+/-<imm>]
+       4. [Rn].  */
     case 'E':
       {
 	rtx addr;
@@ -24059,6 +24195,16 @@ arm_print_operand (FILE *stream, rtx x, int code)
 		else
 		  asm_fprintf (stream, ", #%wd]!",INTVAL (postinc_reg));
 	      }
+	  }
+	else if (code == PLUS)
+	  {
+	    rtx base = XEXP (addr, 0);
+	    rtx index = XEXP (addr, 1);
+
+	    gcc_assert (REG_P (base) && CONST_INT_P (index));
+
+	    HOST_WIDE_INT offset = INTVAL (index);
+	    asm_fprintf (stream, "[%r, #%wd]", REGNO (base), offset);
 	  }
 	else
 	  {
@@ -26502,7 +26648,7 @@ thumb1_expand_prologue (void)
 
   if (IS_INTERRUPT (func_type))
     {
-      error ("interrupt Service Routines cannot be coded in Thumb mode");
+      error ("Interrupt Service Routines cannot be coded in Thumb-1 mode");
       return;
     }
 
@@ -26865,7 +27011,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 	continue;
       if (IN_RANGE (regno, IP_REGNUM, PC_REGNUM))
 	continue;
-      if (call_used_or_fixed_reg_p (regno)
+      if (!callee_saved_reg_p (regno)
 	  && (!IN_RANGE (regno, FIRST_VFP_REGNUM, LAST_VFP_REGNUM)
 	      || TARGET_HARD_FLOAT))
 	bitmap_set_bit (to_clear_bitmap, regno);
@@ -27019,7 +27165,7 @@ thumb1_expand_epilogue (void)
   /* Emit a clobber for each insn that will be restored in the epilogue,
      so that flow2 will get register lifetimes correct.  */
   for (regno = 0; regno < 13; regno++)
-    if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
+    if (reg_needs_saving_p (regno))
       emit_clobber (gen_rtx_REG (SImode, regno));
 
   if (! df_regs_ever_live_p (LR_REGNUM))
@@ -27085,9 +27231,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
 
       for (i = FIRST_VFP_REGNUM; i < LAST_VFP_REGNUM; i += 2)
         /* Look for a case where a reg does not need restoring.  */
-        if ((!df_regs_ever_live_p (i) || call_used_or_fixed_reg_p (i))
-            && (!df_regs_ever_live_p (i + 1)
-                || call_used_or_fixed_reg_p (i + 1)))
+	if (!reg_needs_saving_p (i) && !reg_needs_saving_p (i + 1))
           {
             if (start_reg != i)
               arm_emit_vfp_multi_reg_pop (start_reg,
@@ -27114,7 +27258,7 @@ arm_expand_epilogue_apcs_frame (bool really_return)
       int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
 
       for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
-        if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
+	if (reg_needs_saving_p (i))
           {
             rtx addr = gen_frame_mem (V2SImode,
                                  plus_constant (Pmode, hard_frame_pointer_rtx,
@@ -27319,9 +27463,7 @@ arm_expand_epilogue (bool really_return)
          unlike pop, vldm can only do consecutive regs.  */
       for (i = LAST_VFP_REGNUM - 1; i >= FIRST_VFP_REGNUM; i -= 2)
         /* Look for a case where a reg does not need restoring.  */
-        if ((!df_regs_ever_live_p (i) || call_used_or_fixed_reg_p (i))
-            && (!df_regs_ever_live_p (i + 1)
-                || call_used_or_fixed_reg_p (i + 1)))
+	if (!reg_needs_saving_p (i) && !reg_needs_saving_p (i + 1))
           {
             /* Restore the regs discovered so far (from reg+2 to
                end_reg).  */
@@ -27343,7 +27485,7 @@ arm_expand_epilogue (bool really_return)
 
   if (TARGET_IWMMXT)
     for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
-      if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
+      if (reg_needs_saving_p (i))
         {
           rtx_insn *insn;
           rtx addr = gen_rtx_MEM (V2SImode,
@@ -33212,6 +33354,40 @@ arm_ge_bits_access (void)
   return true;
 }
 
+/* NULL if insn INSN is valid within a low-overhead loop.
+   Otherwise return why doloop cannot be applied.  */
+
+static const char *
+arm_invalid_within_doloop (const rtx_insn *insn)
+{
+  if (!TARGET_HAVE_LOB)
+    return default_invalid_within_doloop (insn);
+
+  if (CALL_P (insn))
+    return "Function call in the loop.";
+
+  if (reg_mentioned_p (gen_rtx_REG (SImode, LR_REGNUM), insn))
+    return "LR is used inside loop.";
+
+  return NULL;
+}
+
+bool
+arm_target_insn_ok_for_lob (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  /* Make sure the basic block of the target insn is a simple latch
+     having as single predecessor and successor the body of the loop
+     itself.  Only simple loops with a single basic block as body are
+     supported for 'low over head loop' making sure that LE target is
+     above LE itself in the generated code.  */
+
+  return single_succ_p (bb)
+    && single_pred_p (bb)
+    && single_succ_edge (bb)->dest == single_pred_edge (bb)->src
+    && contains_no_active_insn_p (bb);
+}
+
 #if CHECKING_P
 namespace selftest {
 
@@ -33391,6 +33567,31 @@ arm_gen_far_branch (rtx * operands, int pos_label, const char * dest,
   return "";
 }
 
+/* If given mode matches, load from memory to LO_REGS.
+   (i.e [Rn], Rn <= LO_REGS).  */
+enum reg_class
+arm_mode_base_reg_class (machine_mode mode)
+{
+  if (TARGET_HAVE_MVE
+      && (mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode))
+    return LO_REGS;
+
+  return MODE_BASE_REG_REG_CLASS (mode);
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+bool
+arm_mve_mode_and_operands_type_check (machine_mode mode, rtx op0, rtx op1)
+{
+  if (!(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT))
+    return true;
+  else if (mode == E_BFmode)
+    return false;
+  else if ((s_register_operand (op0, mode) && MEM_P (op1))
+	   || (s_register_operand (op1, mode) && MEM_P (op0)))
+    return false;
+  return true;
+}
 
 #include "gt-arm.h"

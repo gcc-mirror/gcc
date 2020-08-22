@@ -397,6 +397,9 @@ struct gomp_team_state
   unsigned place_partition_off;
   unsigned place_partition_len;
 
+  /* Def-allocator-var ICV.  */
+  uintptr_t def_allocator;
+
 #ifdef HAVE_SYNC_BUILTINS
   /* Number of single stmts encountered.  */
   unsigned long single_count;
@@ -450,6 +453,7 @@ extern int gomp_debug_var;
 extern bool gomp_display_affinity_var;
 extern char *gomp_affinity_format_var;
 extern size_t gomp_affinity_format_len;
+extern uintptr_t gomp_def_allocator;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
@@ -948,8 +952,8 @@ struct target_var_desc {
   bool copy_from;
   /* True if data always should be copied from device to host at the end.  */
   bool always_copy_from;
-  /* True if variable should be detached at end of region.  */
-  bool do_detach;
+  /* True if this is for OpenACC 'attach'.  */
+  bool is_attach;
   /* Relative offset against key host_start.  */
   uintptr_t offset;
   /* Actual length.  */
@@ -1012,11 +1016,8 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
-  /* Reference counts beyond those that represent genuine references in the
-     linked splay tree key/target memory structures, e.g. for multiple OpenACC
-     "present increment" operations (via "acc enter data") referring to the same
-     host-memory block.  */
-  uintptr_t virtual_refcount;
+  /* Dynamic reference count.  */
+  uintptr_t dynamic_refcount;
   struct splay_tree_aux *aux;
 };
 
@@ -1149,7 +1150,6 @@ struct gomp_device_descr
 enum gomp_map_vars_kind
 {
   GOMP_MAP_VARS_OPENACC,
-  GOMP_MAP_VARS_OPENACC_ENTER_DATA,
   GOMP_MAP_VARS_TARGET,
   GOMP_MAP_VARS_DATA,
   GOMP_MAP_VARS_ENTER_DATA

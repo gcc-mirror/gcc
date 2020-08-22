@@ -13,7 +13,8 @@ void foo(void)
   b[3] = a[3][0];
 }
 
-/* ???  The profitability check is not reached because we give up on the
-   gaps we access earlier.  */
+/* ???  Due to the gaps we fall back to scalar loads which makes the
+   vectorization profitable.  */
 /* { dg-final { scan-tree-dump "not profitable" "slp2" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Basic block will be vectorized" 0 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "BB vectorization with gaps at the end of a load is not supported" 1 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "Basic block will be vectorized" 1 "slp2" } } */

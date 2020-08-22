@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,11 +117,12 @@ package body System.Storage_Pools.Subpools is
       Is_Subpool_Allocation : constant Boolean :=
                                 Pool in Root_Storage_Pool_With_Subpools'Class;
 
-      Master  : Finalization_Master_Ptr := null;
-      N_Addr  : Address;
-      N_Ptr   : FM_Node_Ptr;
-      N_Size  : Storage_Count;
-      Subpool : Subpool_Handle := null;
+      Master     : Finalization_Master_Ptr := null;
+      N_Addr     : Address;
+      N_Ptr      : FM_Node_Ptr;
+      N_Size     : Storage_Count;
+      Subpool    : Subpool_Handle := null;
+      Lock_Taken : Boolean := False;
 
       Header_And_Padding : Storage_Offset;
       --  This offset includes the size of a FM_Node plus any additional
@@ -205,6 +206,7 @@ package body System.Storage_Pools.Subpools is
          --    Read  - allocation, finalization
          --    Write - finalization
 
+         Lock_Taken := True;
          Lock_Task.all;
 
          --  Do not allow the allocation of controlled objects while the
@@ -322,6 +324,7 @@ package body System.Storage_Pools.Subpools is
          end if;
 
          Unlock_Task.all;
+         Lock_Taken := False;
 
       --  Non-controlled allocation
 
@@ -335,7 +338,7 @@ package body System.Storage_Pools.Subpools is
          --  Unlock the task in case the allocation step failed and reraise the
          --  exception.
 
-         if Is_Controlled then
+         if Lock_Taken then
             Unlock_Task.all;
          end if;
 

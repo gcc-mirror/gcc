@@ -1,2 +1,0 @@
-# Override t-linux default.
-SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/cris/libgcc-glibc.ver

@@ -4,7 +4,10 @@
 
 package runtime
 
-import "unsafe"
+import (
+	"runtime/internal/atomic"
+	"unsafe"
+)
 
 // Solaris runtime-integrated network poller.
 //
@@ -82,6 +85,10 @@ func port_getn(port int32, evs *portevent, max uint32, nget *uint32, timeout *ti
 
 //extern port_alert
 func port_alert(port int32, flags, events uint32, user uintptr) int32
+
+var (
+	netpollWakeSig uint32 // used to avoid duplicate calls of netpollBreak
+)
 
 var portfd int32 = -1
 
@@ -161,15 +168,17 @@ func netpollarm(pd *pollDesc, mode int) {
 
 // netpollBreak interrupts a port_getn wait.
 func netpollBreak() {
-	// Use port_alert to put portfd into alert mode.
-	// This will wake up all threads sleeping in port_getn on portfd,
-	// and cause their calls to port_getn to return immediately.
-	// Further, until portfd is taken out of alert mode,
-	// all calls to port_getn will return immediately.
-	if port_alert(portfd, _PORT_ALERT_UPDATE, _POLLHUP, uintptr(unsafe.Pointer(&portfd))) < 0 {
-		if e := errno(); e != _EBUSY {
-			println("runtime: port_alert failed with", e)
-			throw("runtime: netpoll: port_alert failed")
+	if atomic.Cas(&netpollWakeSig, 0, 1) {
+		// Use port_alert to put portfd into alert mode.
+		// This will wake up all threads sleeping in port_getn on portfd,
+		// and cause their calls to port_getn to return immediately.
+		// Further, until portfd is taken out of alert mode,
+		// all calls to port_getn will return immediately.
+		if port_alert(portfd, _PORT_ALERT_UPDATE, _POLLHUP, uintptr(unsafe.Pointer(&portfd))) < 0 {
+			if e := errno(); e != _EBUSY {
+				println("runtime: port_alert failed with", e)
+				throw("runtime: netpoll: port_alert failed")
+			}
 		}
 	}
 }
@@ -242,6 +251,7 @@ retry:
 					println("runtime: port_alert failed with", e)
 					throw("runtime: netpoll: port_alert failed")
 				}
+				atomic.Store(&netpollWakeSig, 0)
 			}
 			continue
 		}

@@ -348,6 +348,18 @@ AC_SUBST(config_path)
 AC_SUBST(XCFLAGS)
 AC_SUBST(XLDFLAGS)
 
+# Conditionalize the makefile for this target machine.
+tmake_file_=
+for f in ${tmake_file}
+do
+	if test -f ${srcdir}/config/$f
+	then
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
+	fi
+done
+tmake_file="${tmake_file_}"
+AC_SUBST(tmake_file)
+
 # Cleanup and exit.
 CFLAGS="$save_CFLAGS"
 AC_CACHE_SAVE
@@ -383,6 +395,10 @@ for i in $config_path; do
   fi
 done
 
+_AC_COMPUTE_INT([sizeof (__INTPTR_TYPE__)], [INTPTR_T_KIND])
+_AC_COMPUTE_INT([sizeof (__int128)], [OMP_INT128_SIZE],,[OMP_INT128_SIZE=0])
+_AC_COMPUTE_INT([2*sizeof (__INTPTR_TYPE__)], [OMP_DEPEND_KIND],,
+		[OMP_DEPEND_KIND=0])
 _AC_COMPUTE_INT([sizeof (omp_lock_t)], [OMP_LOCK_SIZE],,
   [AC_MSG_ERROR([unsupported system, cannot find sizeof (omp_lock_t)])])
 _AC_COMPUTE_INT([__alignof (omp_lock_t)], [OMP_LOCK_ALIGN])
@@ -415,7 +431,17 @@ fi
 if test $OMP_NEST_LOCK_25_SIZE -gt 8 || test $OMP_NEST_LOCK_25_ALIGN -gt $OMP_NEST_LOCK_25_SIZE; then
   OMP_NEST_LOCK_25_KIND=8
 fi
+if test $OMP_DEPEND_KIND -eq 16; then
+  if test $OMP_INT128_SIZE -ne 16; then
+    AC_MSG_ERROR([unsupported system, cannot find Fortran int kind=16, needed for omp_depend_kind])
+  fi
+else
+  if test $OMP_DEPEND_KIND -ne 8; then
+    AC_MSG_ERROR([unsupported system, cannot find Fortran integer kind for omp_depend_kind])
+  fi
+fi
 
+AC_SUBST(INTPTR_T_KIND)
 AC_SUBST(OMP_LOCK_SIZE)
 AC_SUBST(OMP_LOCK_ALIGN)
 AC_SUBST(OMP_NEST_LOCK_SIZE)
@@ -428,6 +454,7 @@ AC_SUBST(OMP_NEST_LOCK_25_SIZE)
 AC_SUBST(OMP_NEST_LOCK_25_ALIGN)
 AC_SUBST(OMP_LOCK_25_KIND)
 AC_SUBST(OMP_NEST_LOCK_25_KIND)
+AC_SUBST(OMP_DEPEND_KIND)
 CFLAGS="$save_CFLAGS"
 
 # Determine what GCC version number to use in filesystem paths.

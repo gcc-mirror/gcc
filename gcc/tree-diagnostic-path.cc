@@ -493,7 +493,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
    doesn't have access to trees (for m_fndecl).  */
 
 json::value *
-default_tree_make_json_for_path (diagnostic_context *,
+default_tree_make_json_for_path (diagnostic_context *context,
 				 const diagnostic_path *path)
 {
   json::array *path_array = new json::array ();
@@ -504,7 +504,8 @@ default_tree_make_json_for_path (diagnostic_context *,
       json::object *event_obj = new json::object ();
       if (event.get_location ())
 	event_obj->set ("location",
-			json_from_expanded_location (event.get_location ()));
+			json_from_expanded_location (context,
+						     event.get_location ()));
       label_text event_text (event.get_desc (false));
       event_obj->set ("description", new json::string (event_text.m_buffer));
       event_text.maybe_free ();

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,7 @@
 --  Err_Vars. Like Errout, it also uses the common variables and routines
 --  in package Erroutc.
 
---  This package is used by the preprocessor (gprep.adb) and the project
---  manager (prj-err.ads).
+--  This package is used by the preprocessor (gprep.adb).
 
 with Styleg;
 with Types; use Types;

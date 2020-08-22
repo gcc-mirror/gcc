@@ -1552,7 +1552,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	 reversal.  */
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
-      clone_function_decl (decl, /*update_methods=*/true);
+      clone_cdtor (decl, /*update_methods=*/true);
       gcc_assert (TYPE_FIELDS (current_class_type) == decl);
       TYPE_FIELDS (current_class_type)
 	= nreverse (TYPE_FIELDS (current_class_type));
@@ -2652,10 +2652,10 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
     }
   tree res = identifier;
   if (!scope)
-    res = lookup_name_real (res, 0, 0, true, 0, 0);
+    res = lookup_name (res, LOOK_where::BLOCK_NAMESPACE);
   else if (!TYPE_P (scope) || !dependent_scope_p (scope))
     {
-      res = lookup_qualified_name (scope, res, false, true);
+      res = lookup_qualified_name (scope, res, LOOK_want::NORMAL, true);
       /* We've already resolved the name in the scope, so skip the
 	 build_qualified_name call below.  */
       scope = NULL;

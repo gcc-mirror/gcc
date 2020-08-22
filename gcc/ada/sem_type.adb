@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Alloc;
 with Debug;    use Debug;
@@ -375,7 +376,7 @@ package body Sem_Type is
            or else Nkind (N) = N_Expanded_Name
            or else (Nkind (N) in N_Op and then E = Entity (N))
            or else (In_Instance or else In_Inlined_Body)
-           or else Ekind (Vis_Type) = E_Anonymous_Access_Type
+           or else Is_Anonymous_Access_Type (Vis_Type)
          then
             null;
 
@@ -958,32 +959,7 @@ package body Sem_Type is
             --  Note: test for presence of E is defense against previous error.
 
             if No (E) then
-
-               --  If expansion is disabled the Corresponding_Record_Type may
-               --  not be available yet, so use the interface list in the
-               --  declaration directly.
-
-               if ASIS_Mode
-                 and then Nkind (Parent (BT2)) = N_Protected_Type_Declaration
-                 and then Present (Interface_List (Parent (BT2)))
-               then
-                  declare
-                     Intf : Node_Id := First (Interface_List (Parent (BT2)));
-                  begin
-                     while Present (Intf) loop
-                        if Is_Ancestor (Etype (T1), Entity (Intf)) then
-                           return True;
-                        else
-                           Next (Intf);
-                        end if;
-                     end loop;
-                  end;
-
-                  return False;
-
-               else
-                  Check_Error_Detected;
-               end if;
+               Check_Error_Detected;
 
             --  Here we have a corresponding record type
 
@@ -1046,23 +1022,25 @@ package body Sem_Type is
 
       --  Ada 2012 (AI05-0149): Allow an anonymous access type in the context
       --  of a named general access type. An implicit conversion will be
-      --  applied. For the resolution, one designated type must cover the
-      --  other.
+      --  applied. For the resolution, the designated types must match if
+      --  untagged; further, if the designated type is tagged, the designated
+      --  type of the anonymous access type shall be covered by the designated
+      --  type of the named access type.
 
       elsif Ada_Version >= Ada_2012
         and then Ekind (BT1) = E_General_Access_Type
         and then Ekind (BT2) = E_Anonymous_Access_Type
-        and then (Covers (Designated_Type (T1), Designated_Type (T2))
-                    or else
-                  Covers (Designated_Type (T2), Designated_Type (T1)))
+        and then Covers (Designated_Type (T1), Designated_Type (T2))
+        and then (Is_Class_Wide_Type (Designated_Type (T1)) >=
+                  Is_Class_Wide_Type (Designated_Type (T2)))
       then
          return True;
 
       --  An Access_To_Subprogram is compatible with itself, or with an
       --  anonymous type created for an attribute reference Access.
 
-      elsif Ekind_In (BT1, E_Access_Subprogram_Type,
-                           E_Access_Protected_Subprogram_Type)
+      elsif Ekind (BT1) in E_Access_Subprogram_Type
+                         | E_Access_Protected_Subprogram_Type
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -1077,8 +1055,8 @@ package body Sem_Type is
       --  with itself, or with an anonymous type created for an attribute
       --  reference Access.
 
-      elsif Ekind_In (BT1, E_Anonymous_Access_Subprogram_Type,
-                           E_Anonymous_Access_Protected_Subprogram_Type)
+      elsif Ekind (BT1) in E_Anonymous_Access_Subprogram_Type
+                         | E_Anonymous_Access_Protected_Subprogram_Type
         and then Is_Access_Type (T2)
         and then (not Comes_From_Source (T1)
                    or else not Comes_From_Source (T2))
@@ -1128,7 +1106,7 @@ package body Sem_Type is
       --  imposed by context.
 
       elsif Ekind (T2) = E_Access_Attribute_Type
-        and then Ekind_In (BT1, E_General_Access_Type, E_Access_Type)
+        and then Ekind (BT1) in E_General_Access_Type | E_Access_Type
         and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
          --  If the target type is a RACW type while the source is an access
@@ -1264,8 +1242,8 @@ package body Sem_Type is
       --                                   Formal_Obj => Actual_Obj);
 
       elsif Ada_Version >= Ada_2005
-        and then Ekind (T1) = E_Anonymous_Access_Type
-        and then Ekind (T2) = E_Anonymous_Access_Type
+        and then Is_Anonymous_Access_Type (T1)
+        and then Is_Anonymous_Access_Type (T2)
         and then Is_Generic_Type (Directly_Designated_Type (T1))
         and then Get_Instance_Of (Directly_Designated_Type (T1)) =
                                                Directly_Designated_Type (T2)
@@ -1383,7 +1361,7 @@ package body Sem_Type is
       begin
          return In_Same_List (Parent (Typ), Op_Decl)
            or else
-             (Ekind_In (Scop, E_Package, E_Generic_Package)
+             (Is_Package_Or_Generic_Package (Scop)
                and then List_Containing (Op_Decl) =
                               Visible_Declarations (Parent (Scop))
                and then List_Containing (Parent (Typ)) =
@@ -1621,10 +1599,10 @@ package body Sem_Type is
                  and then Is_Overloaded (Act1)
                  and then
                    (Nkind (Act1) in N_Unary_Op
-                     or else Nkind_In (Left_Opnd (Act1), N_Integer_Literal,
-                                                         N_Real_Literal))
-                 and then Nkind_In (Right_Opnd (Act1), N_Integer_Literal,
-                                                       N_Real_Literal)
+                     or else Nkind (Left_Opnd (Act1)) in
+                               N_Integer_Literal | N_Real_Literal)
+                 and then Nkind (Right_Opnd (Act1)) in
+                            N_Integer_Literal | N_Real_Literal
                  and then Has_Compatible_Type (Act1, Standard_Boolean)
                  and then Etype (F1) = Standard_Boolean
                then
@@ -1649,8 +1627,8 @@ package body Sem_Type is
                   elsif Present (Act2)
                     and then Nkind (Act2) in N_Op
                     and then Is_Overloaded (Act2)
-                    and then Nkind_In (Right_Opnd (Act2), N_Integer_Literal,
-                                                          N_Real_Literal)
+                    and then Nkind (Right_Opnd (Act2)) in
+                               N_Integer_Literal | N_Real_Literal
                     and then Has_Compatible_Type (Act2, Standard_Boolean)
                   then
                      --  The preference rule on the first actual is not
@@ -1910,9 +1888,7 @@ package body Sem_Type is
       elsif Nkind (Parent (N)) = N_Object_Renaming_Declaration
         and then Present (Access_Definition (Parent (N)))
       then
-         if Ekind_In (It1.Typ, E_Anonymous_Access_Type,
-                               E_Anonymous_Access_Subprogram_Type)
-         then
+         if Is_Anonymous_Access_Type (It1.Typ) then
             if Ekind (It2.Typ) = Ekind (It1.Typ) then
 
                --  True ambiguity
@@ -1923,9 +1899,7 @@ package body Sem_Type is
                return It1;
             end if;
 
-         elsif Ekind_In (It2.Typ, E_Anonymous_Access_Type,
-                                  E_Anonymous_Access_Subprogram_Type)
-         then
+         elsif Is_Anonymous_Access_Type (It2.Typ) then
             return It2;
 
          --  No legal interpretation
@@ -2120,7 +2094,7 @@ package body Sem_Type is
            and then not In_Instance
          then
             if Is_Fixed_Point_Type (Typ)
-              and then Nam_In (Chars (Nam1), Name_Op_Multiply, Name_Op_Divide)
+              and then Chars (Nam1) in Name_Op_Multiply | Name_Op_Divide
               and then
                 (Ada_Version = Ada_83
                   or else (Ada_Version >= Ada_2012
@@ -2140,10 +2114,10 @@ package body Sem_Type is
             --  declared in the same declarative list as the type. The node
             --  may be an operator or a function call.
 
-            elsif Nam_In (Chars (Nam1), Name_Op_Eq, Name_Op_Ne)
+            elsif Chars (Nam1) in Name_Op_Eq | Name_Op_Ne
               and then Ada_Version >= Ada_2005
               and then Etype (User_Subp) = Standard_Boolean
-              and then Ekind (Operand_Type) = E_Anonymous_Access_Type
+              and then Is_Anonymous_Access_Type (Operand_Type)
               and then
                 In_Same_Declaration_List
                   (Designated_Type (Operand_Type),
@@ -2272,35 +2246,6 @@ package body Sem_Type is
          return T;
 
       elsif T = Universal_Fixed then
-         return Etype (R);
-
-      --  Ada 2005 (AI-230): Support the following operators:
-
-      --    function "="  (L, R : universal_access) return Boolean;
-      --    function "/=" (L, R : universal_access) return Boolean;
-
-      --  Pool specific access types (E_Access_Type) are not covered by these
-      --  operators because of the legality rule of 4.5.2(9.2): "The operands
-      --  of the equality operators for universal_access shall be convertible
-      --  to one another (see 4.6)". For example, considering the type decla-
-      --  ration "type P is access Integer" and an anonymous access to Integer,
-      --  P is convertible to "access Integer" by 4.6 (24.11-24.15), but there
-      --  is no rule in 4.6 that allows "access Integer" to be converted to P.
-      --  Note that this does not preclude one operand to be a pool-specific
-      --  access type, as a previous version of this code enforced.
-
-      elsif Ada_Version >= Ada_2005
-        and then Ekind_In (Etype (L), E_Anonymous_Access_Type,
-                                      E_Anonymous_Access_Subprogram_Type)
-        and then Is_Access_Type (Etype (R))
-      then
-         return Etype (L);
-
-      elsif Ada_Version >= Ada_2005
-        and then Ekind_In (Etype (R), E_Anonymous_Access_Type,
-                                      E_Anonymous_Access_Subprogram_Type)
-        and then Is_Access_Type (Etype (L))
-      then
          return Etype (R);
 
       --  If one operand is a raise_expression, use type of other operand
@@ -2450,7 +2395,19 @@ package body Sem_Type is
            or else
              (not Is_Tagged_Type (Typ)
                and then Ekind (Typ) /= E_Anonymous_Access_Type
-               and then Covers (Etype (N), Typ));
+               and then Covers (Etype (N), Typ))
+
+           or else
+             (Nkind (N) = N_Integer_Literal
+               and then Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+
+           or else
+             (Nkind (N) = N_Real_Literal
+               and then Present (Find_Aspect (Typ, Aspect_Real_Literal)))
+
+           or else
+             (Nkind (N) = N_String_Literal
+               and then Present (Find_Aspect (Typ, Aspect_String_Literal)));
 
       --  Overloaded case
 
@@ -3148,7 +3105,7 @@ package body Sem_Type is
       elsif Num = 1 then
          T1 := Etype (New_First_F);
 
-         if Nam_In (Op_Name, Name_Op_Subtract, Name_Op_Add, Name_Op_Abs) then
+         if Op_Name in Name_Op_Subtract | Name_Op_Add | Name_Op_Abs then
             return Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T);
 
@@ -3166,24 +3123,23 @@ package body Sem_Type is
          T1 := Etype (New_First_F);
          T2 := Etype (Next_Formal (New_First_F));
 
-         if Nam_In (Op_Name, Name_Op_And, Name_Op_Or, Name_Op_Xor) then
+         if Op_Name in Name_Op_And | Name_Op_Or | Name_Op_Xor then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Valid_Boolean_Arg (Base_Type (T));
 
-         elsif Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne) then
+         elsif Op_Name in Name_Op_Eq | Name_Op_Ne then
             return Base_Type (T1) = Base_Type (T2)
               and then not Is_Limited_Type (T1)
               and then Is_Boolean_Type (T);
 
-         elsif Nam_In (Op_Name, Name_Op_Lt, Name_Op_Le,
-                                Name_Op_Gt, Name_Op_Ge)
+         elsif Op_Name in Name_Op_Lt | Name_Op_Le | Name_Op_Gt | Name_Op_Ge
          then
             return Base_Type (T1) = Base_Type (T2)
               and then Valid_Comparison_Arg (T1)
               and then Is_Boolean_Type (T);
 
-         elsif Nam_In (Op_Name, Name_Op_Add, Name_Op_Subtract) then
+         elsif Op_Name in Name_Op_Add | Name_Op_Subtract then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T);
@@ -3236,7 +3192,7 @@ package body Sem_Type is
                         and then Is_Floating_Point_Type (T2)
                         and then Base_Type (T2) = Base_Type (T));
 
-         elsif Nam_In (Op_Name, Name_Op_Mod, Name_Op_Rem) then
+         elsif Op_Name in Name_Op_Mod | Name_Op_Rem then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Integer_Type (T);
@@ -3448,39 +3404,79 @@ package body Sem_Type is
       then
          return T2;
 
-      elsif Ekind_In (B1, E_Access_Subprogram_Type,
-                          E_Access_Protected_Subprogram_Type)
+      elsif Is_Access_Type (T1)
+        and then Is_Access_Type (T2)
+        and then Is_Class_Wide_Type (Designated_Type (T1))
+        and then not Is_Class_Wide_Type (Designated_Type (T2))
+        and then
+          Is_Ancestor (Root_Type (Designated_Type (T1)), Designated_Type (T2))
+      then
+         return T1;
+
+      elsif Is_Access_Type (T1)
+        and then Is_Access_Type (T2)
+        and then Is_Class_Wide_Type (Designated_Type (T2))
+        and then not Is_Class_Wide_Type (Designated_Type (T1))
+        and then
+          Is_Ancestor (Root_Type (Designated_Type (T2)), Designated_Type (T1))
+      then
+         return T2;
+
+      elsif Ekind (B1) in E_Access_Subprogram_Type
+                        | E_Access_Protected_Subprogram_Type
         and then Ekind (Designated_Type (B1)) /= E_Subprogram_Type
         and then Is_Access_Type (T2)
       then
          return T2;
 
-      elsif Ekind_In (B2, E_Access_Subprogram_Type,
-                          E_Access_Protected_Subprogram_Type)
+      elsif Ekind (B2) in E_Access_Subprogram_Type
+                        | E_Access_Protected_Subprogram_Type
         and then Ekind (Designated_Type (B2)) /= E_Subprogram_Type
         and then Is_Access_Type (T1)
       then
          return T1;
 
-      elsif Ekind_In (T1, E_Allocator_Type,
-                          E_Access_Attribute_Type,
-                          E_Anonymous_Access_Type)
+      elsif Ekind (T1) in E_Allocator_Type | E_Access_Attribute_Type
         and then Is_Access_Type (T2)
       then
          return T2;
 
-      elsif Ekind_In (T2, E_Allocator_Type,
-                          E_Access_Attribute_Type,
-                          E_Anonymous_Access_Type)
+      elsif Ekind (T2) in E_Allocator_Type | E_Access_Attribute_Type
         and then Is_Access_Type (T1)
       then
          return T1;
 
+      --  Ada 2005 (AI-230): Support the following operators:
+
+      --    function "="  (L, R : universal_access) return Boolean;
+      --    function "/=" (L, R : universal_access) return Boolean;
+
+      --  Pool-specific access types (E_Access_Type) are not covered by these
+      --  operators because of the legality rule of 4.5.2(9.2): "The operands
+      --  of the equality operators for universal_access shall be convertible
+      --  to one another (see 4.6)". For example, considering the type decla-
+      --  ration "type P is access Integer" and an anonymous access to Integer,
+      --  P is convertible to "access Integer" by 4.6 (24.11-24.15), but there
+      --  is no rule in 4.6 that allows "access Integer" to be converted to P.
+      --  Note that this does not preclude one operand to be a pool-specific
+      --  access type, as a previous version of this code enforced.
+
+      elsif Ada_Version >= Ada_2005 then
+         if Is_Anonymous_Access_Type (T1)
+           and then Is_Access_Type (T2)
+         then
+            return T1;
+
+         elsif Is_Anonymous_Access_Type (T2)
+           and then Is_Access_Type (T1)
+         then
+            return T2;
+         end if;
+      end if;
+
       --  If none of the above cases applies, types are not compatible
 
-      else
-         return Any_Type;
-      end if;
+      return Any_Type;
    end Specific_Type;
 
    ---------------------

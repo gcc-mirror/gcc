@@ -271,7 +271,7 @@
 {
   if (!register_operand(operands[0], <MM:MODE>mode)
       && !register_operand(operands[1], <MM:MODE>mode))
-    operands[1] = force_reg (<MM:MODE>mode, operands[1]); 
+    operands[1] = force_reg (<MM:MODE>mode, operands[1]);
 }")
 
 (define_insn "*mov<MM:mode>"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2011-2019, Free Software Foundation, Inc.       --
+--            Copyright (C) 2011-2020, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-package body Ada.Containers.Bounded_Priority_Queues is
+package body Ada.Containers.Bounded_Priority_Queues with
+  SPARK_Mode => Off
+is
 
    package body Implementation is
 

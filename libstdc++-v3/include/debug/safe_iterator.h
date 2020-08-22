@@ -263,14 +263,14 @@ namespace __gnu_debug
       _Safe_iterator&
       operator=(_Safe_iterator&& __x) noexcept
       {
-	_GLIBCXX_DEBUG_VERIFY(this != &__x,
-			      _M_message(__msg_self_move_assign)
-			      ._M_iterator(*this, "this"));
 	_GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
 			      || __x.base() == _Iterator(),
 			      _M_message(__msg_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
+
+	if (std::__addressof(__x) == this)
+	  return *this;
 
 	if (this->_M_sequence && this->_M_sequence == __x._M_sequence)
 	  {

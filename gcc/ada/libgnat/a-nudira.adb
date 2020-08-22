@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,17 @@ is
    function Random (Gen : Generator) return Result_Subtype is
       function Random is
         new SRN.Random_Discrete (Result_Subtype, Result_Subtype'First);
+   begin
+      return Random (SRN.Generator (Gen));
+   end Random;
+
+   function Random
+     (Gen   : Generator;
+      First : Result_Subtype;
+      Last  : Result_Subtype) return Result_Subtype
+   is
+      subtype Local_Subtype is Result_Subtype range First .. Last;
+      function Random is new SRN.Random_Discrete (Local_Subtype, First);
    begin
       return Random (SRN.Generator (Gen));
    end Random;

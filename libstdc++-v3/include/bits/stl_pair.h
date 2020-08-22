@@ -89,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename...>
     class tuple;
 
-  template<std::size_t...>
+  template<size_t...>
     struct _Index_tuple;
 
   // Concept utility functions, reused in conditionally-explicit
@@ -446,11 +446,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      template<typename... _Args1, std::size_t... _Indexes1,
-               typename... _Args2, std::size_t... _Indexes2>
+      template<typename... _Args1, size_t... _Indexes1,
+	       typename... _Args2, size_t... _Indexes2>
 	_GLIBCXX20_CONSTEXPR
         pair(tuple<_Args1...>&, tuple<_Args2...>&,
-             _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
+	     _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
 #endif // C++11
     };
 

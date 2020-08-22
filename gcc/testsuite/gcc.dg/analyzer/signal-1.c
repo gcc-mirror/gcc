@@ -1,6 +1,7 @@
 /* Example of a bad call within a signal handler.
    'handler' calls 'custom_logger' which calls 'fprintf', and 'fprintf' is
    not allowed from a signal handler.  */
+/* { dg-require-effective-target signal } */
 
 #include <stdio.h>
 #include <signal.h>

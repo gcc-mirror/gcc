@@ -79,6 +79,7 @@ extern bool lhd_handle_option (size_t, const char *, HOST_WIDE_INT, int,
 /* Declarations for tree gimplification hooks.  */
 extern int lhd_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern enum omp_clause_default_kind lhd_omp_predetermined_sharing (tree);
+extern enum omp_clause_defaultmap_kind lhd_omp_predetermined_mapping (tree);
 extern tree lhd_omp_assignment (tree, tree, tree);
 extern void lhd_omp_finish_clause (tree, gimple_seq *);
 struct gimplify_omp_ctx;
@@ -91,6 +92,7 @@ extern const char *lhd_get_substring_location (const substring_loc &,
 					       location_t *out_loc);
 extern int lhd_decl_dwarf_attribute (const_tree, int);
 extern int lhd_type_dwarf_attribute (const_tree, int);
+extern void lhd_finalize_early_debug (void);
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -138,6 +140,7 @@ extern int lhd_type_dwarf_attribute (const_tree, int);
 #define LANG_HOOKS_EMITS_BEGIN_STMT	false
 #define LANG_HOOKS_RUN_LANG_SELFTESTS   lhd_do_nothing
 #define LANG_HOOKS_GET_SUBSTRING_LOCATION lhd_get_substring_location
+#define LANG_HOOKS_FINALIZE_EARLY_DEBUG lhd_finalize_early_debug
 
 /* Attribute hooks.  */
 #define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
@@ -246,6 +249,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT hook_tree_tree_bool_null
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING lhd_omp_predetermined_sharing
+#define LANG_HOOKS_OMP_PREDETERMINED_MAPPING lhd_omp_predetermined_mapping
 #define LANG_HOOKS_OMP_REPORT_DECL lhd_pass_through_t
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR hook_bool_tree_bool_false
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE hook_bool_tree_bool_false
@@ -274,6 +278,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT, \
   LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE, \
   LANG_HOOKS_OMP_PREDETERMINED_SHARING, \
+  LANG_HOOKS_OMP_PREDETERMINED_MAPPING, \
   LANG_HOOKS_OMP_REPORT_DECL, \
   LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR, \
   LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE, \
@@ -361,7 +366,8 @@ extern void lhd_end_section (void);
   LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS, \
   LANG_HOOKS_EMITS_BEGIN_STMT, \
   LANG_HOOKS_RUN_LANG_SELFTESTS, \
-  LANG_HOOKS_GET_SUBSTRING_LOCATION \
+  LANG_HOOKS_GET_SUBSTRING_LOCATION, \
+  LANG_HOOKS_FINALIZE_EARLY_DEBUG \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

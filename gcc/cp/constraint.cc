@@ -1075,6 +1075,19 @@ associate_classtype_constraints (tree type)
 	 original declaration.  */
       if (tree orig_ci = get_constraints (decl))
         {
+	  if (int extra_levels = (TMPL_PARMS_DEPTH (current_template_parms)
+				  - TMPL_ARGS_DEPTH (TYPE_TI_ARGS (type))))
+	    {
+	      /* If there is a discrepancy between the current template depth
+		 and the template depth of the original declaration, then we
+		 must be redeclaring a class template as part of a friend
+		 declaration within another class template.  Before matching
+		 constraints, we need to reduce the template parameter level
+		 within the current constraints via substitution.  */
+	      tree outer_gtargs = template_parms_to_args (current_template_parms);
+	      TREE_VEC_LENGTH (outer_gtargs) = extra_levels;
+	      ci = tsubst_constraint_info (ci, outer_gtargs, tf_none, NULL_TREE);
+	    }
           if (!equivalent_constraints (ci, orig_ci))
             {
 	      error ("%qT does not match original declaration", type);
@@ -1473,7 +1486,7 @@ finish_shorthand_constraint (tree decl, tree constr)
      The standard behavior cannot be overridden by -fconcepts-ts.  */
   bool variadic_concept_p = template_parameter_pack_p (proto);
   bool declared_pack_p = template_parameter_pack_p (decl);
-  bool apply_to_each_p = (cxx_dialect >= cxx2a) ? true : !variadic_concept_p;
+  bool apply_to_each_p = (cxx_dialect >= cxx20) ? true : !variadic_concept_p;
 
   /* Get the argument and overload used for the requirement
      and adjust it if we're going to expand later.  */
@@ -2173,9 +2186,7 @@ tsubst_requires_expr (tree t, tree args,
   if (reqs == error_mark_node)
     return boolean_false_node;
 
-  /* In certain cases, produce a new requires-expression.
-     Otherwise the value of the expression is true.  */
-  if (processing_template_decl && uses_template_parms (args))
+  if (processing_template_decl)
     return finish_requires_expr (cp_expr_location (t), parms, reqs);
 
   return boolean_true_node;
@@ -2492,15 +2503,15 @@ satisfy_disjunction (tree t, tree args, subst_info info)
 tree
 satisfaction_value (tree t)
 {
-  if (t == error_mark_node)
+  if (t == error_mark_node || t == boolean_true_node || t == boolean_false_node)
     return t;
-  if (t == boolean_true_node || t == integer_one_node)
-    return boolean_true_node;
-  if (t == boolean_false_node || t == integer_zero_node)
-    return boolean_false_node;
 
-  /* Anything else should be invalid.  */
-  gcc_assert (false);
+  gcc_assert (TREE_CODE (t) == INTEGER_CST
+	      && same_type_p (TREE_TYPE (t), boolean_type_node));
+  if (integer_zerop (t))
+    return boolean_false_node;
+  else
+    return boolean_true_node;
 }
 
 /* Build a new template argument list with template arguments corresponding
@@ -2853,6 +2864,9 @@ constraint_satisfaction_value (tree t, tree args, tsubst_flags_t complain)
 bool
 constraints_satisfied_p (tree t)
 {
+  if (!flag_concepts)
+    return true;
+
   return constraint_satisfaction_value (t, tf_none) == boolean_true_node;
 }
 
@@ -2862,6 +2876,9 @@ constraints_satisfied_p (tree t)
 bool
 constraints_satisfied_p (tree t, tree args)
 {
+  if (!flag_concepts)
+    return true;
+
   return constraint_satisfaction_value (t, args, tf_none) == boolean_true_node;
 }
 

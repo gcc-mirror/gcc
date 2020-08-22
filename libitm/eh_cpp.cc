@@ -87,23 +87,23 @@ struct __cxa_eh_globals
   unsigned int	uncaughtExceptions;
 };
 
-extern void *__cxa_allocate_exception (size_t) WEAK;
-extern void __cxa_free_exception (void *) WEAK;
+extern void *__cxa_allocate_exception (size_t) _ITM_NOTHROW WEAK;
+extern void __cxa_free_exception (void *) _ITM_NOTHROW WEAK;
 extern void __cxa_throw (void *, void *, void (*) (void *)) WEAK;
-extern void *__cxa_begin_catch (void *) WEAK;
+extern void *__cxa_begin_catch (void *) _ITM_NOTHROW WEAK;
 extern void __cxa_end_catch (void) WEAK;
-extern void __cxa_tm_cleanup (void *, void *, unsigned int) WEAK;
-extern __cxa_eh_globals *__cxa_get_globals (void) WEAK;
+extern void __cxa_tm_cleanup (void *, void *, unsigned int) throw () WEAK;
+extern __cxa_eh_globals *__cxa_get_globals (void) _ITM_NOTHROW WEAK;
 
 #if !defined (HAVE_ELF_STYLE_WEAKREF) 
-void *__cxa_allocate_exception (size_t) { return NULL; }
-void __cxa_free_exception (void *) { return; }
+void *__cxa_allocate_exception (size_t) _ITM_NOTHROW { return NULL; }
+void __cxa_free_exception (void *) _ITM_NOTHROW { return; }
 void __cxa_throw (void *, void *, void (*) (void *)) { return; }
-void *__cxa_begin_catch (void *) { return NULL; }
+void *__cxa_begin_catch (void *) _ITM_NOTHROW { return NULL; }
 void __cxa_end_catch (void) { return; }
-void __cxa_tm_cleanup (void *, void *, unsigned int) { return; }
+void __cxa_tm_cleanup (void *, void *, unsigned int) throw () { return; }
 void _Unwind_DeleteException (_Unwind_Exception *) { return; }
-__cxa_eh_globals *__cxa_get_globals (void) { return NULL; }
+__cxa_eh_globals *__cxa_get_globals (void) _ITM_NOTHROW { return NULL; }
 #endif /* HAVE_ELF_STYLE_WEAKREF */
 
 }
@@ -117,7 +117,7 @@ free_any_exception (void *exc_ptr)
 }
 
 void *
-_ITM_cxa_allocate_exception (size_t size)
+_ITM_cxa_allocate_exception (size_t size) _ITM_NOTHROW
 {
   void *r = __cxa_allocate_exception (size);
   gtm_thr()->record_allocation (r, free_any_exception);
@@ -125,7 +125,7 @@ _ITM_cxa_allocate_exception (size_t size)
 }
 
 void
-_ITM_cxa_free_exception (void *exc_ptr)
+_ITM_cxa_free_exception (void *exc_ptr) _ITM_NOTHROW
 {
   // __cxa_free_exception can be called from user code directly if
   // construction of an exception object throws another exception, in which
@@ -143,7 +143,7 @@ _ITM_cxa_throw (void *obj, void *tinfo, void (*dest) (void *))
 }
 
 void *
-_ITM_cxa_begin_catch (void *exc_ptr)
+_ITM_cxa_begin_catch (void *exc_ptr) _ITM_NOTHROW
 {
   // If this exception object has been allocated by this transaction, we
   // discard the undo log entry for the allocation; we are entering phase (3)

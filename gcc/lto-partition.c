@@ -376,6 +376,8 @@ lto_max_map (void)
     new_partition ("empty");
 }
 
+/* Class implementing a union-find algorithm.  */
+
 class union_find
 {
 public:
@@ -452,168 +454,11 @@ DEBUG_FUNCTION void ds_print_roots (void)
   ds->print_roots ();
 }
 
-static void analyse_symbol (symtab_node *, int);
-
-static void
-analyse_symbol_references (symtab_node *node, int set)
-{
-  int i;
-  struct ipa_ref *ref = NULL;
-
-  /* Add all duplicated references to the partition.  */
-  for (i = 0; node->iterate_reference (i, ref); i++)
-    {
-      if (ref->referred->get_partitioning_class () == SYMBOL_DUPLICATE)
-	{
-	  symtab_node *node1 = ref->referred;
-	  if (dump_file)
-	    fprintf (dump_file, "  Adding %s to partition because it "
-		     "SYMBOL_DUPLICATE\n", node1->dump_name ());
-	  analyse_symbol (node1, set);
-	}
-
-      /* Check if we have a reference to global variable or function.  */
-      if (is_a <varpool_node *> (ref->referred)
-	  && TREE_STATIC (ref->referred->decl)
-	  && !TREE_PUBLIC (ref->referred->decl))
-	{
-	  symtab_node *node1 = ref->referred;
-	  fprintf (dump_file, "  Adding %s to partition because it is static variable\n",
-		   node1->dump_name ());
-	  analyse_symbol (node1, set);
-	}
-      else if (is_a <cgraph_node *> (ref->referred))
-	{
-	  symtab_node *node1 = ref->referred;
-	  fprintf (dump_file, "  Adding %s to partition because reference to "
-		   "function\n", node1->dump_name ());
-	  analyse_symbol (node1, set);
-	}
-    }
-}
-
 static bool
 privatize_symbol_name (symtab_node *);
 
 static void
 promote_symbol (symtab_node *);
-
-static bool analyse_symbol_1 (symtab_node *node, int set)
-{
-  struct ipa_ref *ref;
-  symtab_node *node1;
-
-  ds->unite (node->aux2, set);
-
-  /* If NODE was already analysed, return.  */
-  if (symbol_partitioned_p (node))
-    return true;
-
-  /* Indicate that we analysed this node once.  */
-  node->aux = (void *)((size_t)node->aux + 1);
-
-  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
-    {
-      struct cgraph_edge *e;
-
-      /* Add all inline clones and callees that are duplicated.  */
-      for (e = cnode->callees; e; e = e->next_callee)
-	if (!e->inline_failed)
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "  Adding %s to partition because "
-		       "INLINED.\n", e->callee->dump_name ());
-	    analyse_symbol_1 (e->callee, set);
-	  }
-	else if (e->callee->get_partitioning_class () == SYMBOL_DUPLICATE)
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "  Adding %s to partition because "
-		       "SYMBOL_DUPLICATE\n", e->callee->dump_name ());
-	    analyse_symbol (e->callee, set);
-	  }
-
-      /* Add all thunks associated with the function.  */
-      for (e = cnode->callers; e; e = e->next_caller)
-	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "  Adding %s to partition because THUNK.THUNK_P\n",
-		       e->caller->dump_name ());
-	    analyse_symbol_1 (e->caller, set);
-	  }
-
-	else if (e->inline_failed && TREE_STATIC (cnode->decl)
-		 && !TREE_PUBLIC (cnode->decl))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "  Adding %s to partition because STATIC\n",
-		       e->caller->dump_name ());
-	    analyse_symbol_1 (e->caller, set);
-	  }
-
-    }
-
-  analyse_symbol_references (node, set);
-
-  /* Add all aliases associated with the symbol.  */
-
-  FOR_EACH_ALIAS (node, ref)
-    if (!ref->referring->transparent_alias)
-      {
-	if (dump_file)
-	  fprintf (dump_file, "  Adding %s to partition because ref1 TRANSPARENT_ALIAS\n",
-		       ref->referring->dump_name ());
-	analyse_symbol_1 (ref->referring, set);
-      }
-    else
-      {
-	struct ipa_ref *ref2;
-	/* We do not need to add transparent aliases if they are not used.
-	   However we must add aliases of transparent aliases if they exist.  */
-	FOR_EACH_ALIAS (ref->referring, ref2)
-	  {
-	    /* Nested transparent aliases are not permitted.  */
-	    gcc_checking_assert (!ref2->referring->transparent_alias);
-
-	    if (dump_file)
-	      fprintf (dump_file, "  Adding %s to partition because TRANSPARENT_ALIAS\n",
-		       ref2->referring->dump_name ());
-	    analyse_symbol_1 (ref2->referring, set);
-	  }
-      }
-
-  /* Ensure that SAME_COMDAT_GROUP lists all allways added in a group.  */
-  if (node->same_comdat_group)
-    for (node1 = node->same_comdat_group;
-	 node1 != node; node1 = node1->same_comdat_group)
-      if (!node->alias)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "  Adding %s to partition because COMDAT\n",
-		       node1->dump_name ());
-	  bool added = analyse_symbol_1 (node1, set);
-	  gcc_assert (added);
-	}
-  return true;
-}
-
-static void analyse_symbol (symtab_node *node, int set)
-{
-  symtab_node *node1;
-
-  
-  while ((node1 = contained_in_symbol (node)) != node)
-    {
-      ds->unite (node->aux2, node1->aux2);
-      if (dump_file)
-	fprintf (dump_file, "  Adding %s to partition because CONTAINED_IN_SYMBOL\n",
-		   node->dump_name ());
-      node = node1;
-    }
-  analyse_symbol_1 (node, set);
-
-}
 
 /* Quickly balance partitions, trying to reach target_size in each of
    them.  Returns true if something was done, or false if we decided
@@ -738,157 +583,6 @@ build_ltrans_partitions (union_find *ds, int n)
     }
 
   return true;
-}
-
-/* Maximal partitioning with a restriction: Varnodes can't be let alone in a
-   single partition, i.e. there must be at least one function adjacent to a
-   varnode.  Complexity: (2|E| + |V|)*log*(|V|) + 2|V|.  */
-
-void
-lto_max_no_alonevap_map (void)
-{
-  symtab_node *node;
-  int n_partitions = 0, i, n = 0, j = 0;
-  int *compression;
-  int *sizes;
-
-  FOR_EACH_SYMBOL (node)
-    node->aux2 = n++;
-
-  union_find disjoint_sets = union_find (n);
-  ds = &disjoint_sets;
-
-  /* Allocate a compression vector, where we will map each disjoint set into
-     0, ..., n_partitions - 1.  Also allocates a size vector which will
-     hold each partition size.  Complexity: n.  */
-
-  compression = (int *) alloca (n * sizeof (*compression));
-  sizes       = (int *) alloca (n * sizeof (*sizes));
-  memset (sizes, 0, n * sizeof (*sizes));
-  for (i = 0; i < n; ++i)
-    compression[i] = -1; /* Invalid value.  */
-
-  int total_size = 0, max_size = -1;
-  int target_size;
-  const int eps = 0;
-  /* Compute the size of each node.  */
-
-  /* Look for each function neighbor, checking for global-like variables that
-     it references.  Complexity:
-
-       \sum_{i=0}^n g(v_i)*c(u) = 2|E|*c(u) = 2|E| * log*(n)
-
-     where n is the graph order, v is a vertex from the graph, g(v) is the
-     order of vertex, E is the set of edges of the graph, and c(u) is the cost
-     of a single union operation, wich is log*(n).  The fact that such sum
-     is |2E|*log*(n) is a consequence from the handshake lemma.  */
-
-  FOR_EACH_SYMBOL (node)
-    {
-      if (dump_file)
-	fprintf (dump_file, "Analysing %s\n", node->dump_name ());
-      analyse_symbol (node, node->aux2);
-    }
-
-  i = 0;
-  FOR_EACH_SYMBOL (node)
-    {
-      cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
-      if (!cnode)
-	{
-	  i++;
-	  continue;
-	}
-
-      ipa_size_summary *summary = ipa_size_summaries->get (cnode);
-      if (summary)
-	{
-	  int root = disjoint_sets.find (i);
-	  sizes[root] += summary->size;
-	}
-      i++;
-    }
-
-  /* Compute the total size and maximum size.  */
-  for (i = 0; i < n; ++i)
-    {
-      total_size += sizes[i];
-      max_size    = MAX (max_size, sizes[i]);
-    }
-
-  /* Quick return if total size is small.  */
-  //if (total_size < param_min_partition_size)
-  //  return;
-
-  target_size = total_size / 8;
-
-  /* Unite small partitions.  */
-  for (i = 0, j = 0; j < n; ++j)
-    {
-      if (sizes[j] == 0)
-	continue;
-
-      if (i == -1)
-	i = j;
-      else
-	{
-	  if (sizes[i] + sizes[j] < target_size + eps)
-	    {
-	      ds->unite (i, j);
-	      sizes[i] += sizes[j];
-	      sizes[j] = 0;
-	    }
-	  else
-	      i = j;
-	}
-    }
-
-  /* Compress 0...(n-1) into 0...(n_partitions-1) so that we avoid manuvers with
-     the LTRANS partitions.  Complexity: n * log*(n).  */
-
-  i = 0, j = 0;
-  FOR_EACH_SYMBOL (node)
-    {
-      int root = disjoint_sets.find (i);
-      node->aux2 = root;
-      node->aux = NULL;
-
-      if (node->get_partitioning_class () == SYMBOL_PARTITION
-	  && compression[root] < 0)
-	compression[root] = j++;
-      i++;
-    }
-
-  n_partitions = j;
-
-  /* Quick return if we have only one partition.  */
-  /* FIXME: We can't quiclky return here because nodes may be dirty.  */
-#if 0
-  if (n_partitions <= 1)
-    return;
-#endif
-
-  /* Create LTRANS partitions.  */
-  ltrans_partitions.create (n_partitions);
-  for (i = 0; i < n_partitions; i++)
-    new_partition ("");
-
-  if (dump_file)
-    fprintf (dump_file, "\n\nResulting partitions:\n");
-
-  /* Indeed insert vertex into the LTRANS partitions, and clear AUX
-     variable.  Complexity: n.  */
-  FOR_EACH_SYMBOL (node)
-    {
-      if (node->get_partitioning_class () != SYMBOL_PARTITION
-	  || symbol_partitioned_p (node))
-	  continue;
-
-      int p = compression[node->aux2];
-      if (dump_file)
-	fprintf (dump_file, "p = %d\t;; %s\n", p, node->dump_name ());
-      add_symbol_to_partition (ltrans_partitions[p], node);
-    }
 }
 
 /* Partition COMDAT groups together, and also bring together nodes that
@@ -1205,10 +899,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	else
 	  order.safe_push (node);
 	if (!node->alias)
-	  {
-	    compute_fn_summary (node, true);
-	    total_size += ipa_size_summaries->get (node)->size;
-	  }
+	  total_size += ipa_size_summaries->get (node)->size;
       }
 
   original_total_size = total_size;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,11 +33,9 @@
 --  source file must be properly reflected in the C header file namet.h
 --  which is created manually from namet.ads and namet.adb.
 
-with Debug;    use Debug;
-with Opt;      use Opt;
-with Output;   use Output;
-with System;   use System;
-with Tree_IO;  use Tree_IO;
+with Debug;  use Debug;
+with Opt;    use Opt;
+with Output; use Output;
 with Widechar;
 
 with Interfaces; use Interfaces;
@@ -1181,11 +1179,13 @@ package body Namet is
       Hash_Index : Hash_Index_Type;
       --  Computed hash index
 
+      Result : Valid_Name_Id;
+
    begin
       --  Quick handling for one character names
 
       if Buf.Length = 1 then
-         return Valid_Name_Id (First_Name_Id + Character'Pos (Buf.Chars (1)));
+         Result := First_Name_Id + Character'Pos (Buf.Chars (1));
 
       --  Otherwise search hash table for existing matching entry
 
@@ -1212,7 +1212,8 @@ package body Namet is
                   end if;
                end loop;
 
-               return New_Id;
+               Result := New_Id;
+               goto Done;
 
                --  Current entry in hash chain does not match
 
@@ -1250,8 +1251,11 @@ package body Namet is
 
          Name_Chars.Append (ASCII.NUL);
 
-         return Name_Entries.Last;
+         Result := Name_Entries.Last;
       end if;
+
+      <<Done>>
+      return Result;
    end Name_Find;
 
    function Name_Find (S : String) return Valid_Name_Id is
@@ -1260,230 +1264,6 @@ package body Namet is
       Append (Buf, S);
       return Name_Find (Buf);
    end Name_Find;
-
-   -------------
-   -- Nam_In --
-   -------------
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id;
-      V4 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id;
-      V4 : Name_Id;
-      V5 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4 or else
-             T = V5;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id;
-      V4 : Name_Id;
-      V5 : Name_Id;
-      V6 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4 or else
-             T = V5 or else
-             T = V6;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id;
-      V4 : Name_Id;
-      V5 : Name_Id;
-      V6 : Name_Id;
-      V7 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4 or else
-             T = V5 or else
-             T = V6 or else
-             T = V7;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id;
-      V4 : Name_Id;
-      V5 : Name_Id;
-      V6 : Name_Id;
-      V7 : Name_Id;
-      V8 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4 or else
-             T = V5 or else
-             T = V6 or else
-             T = V7 or else
-             T = V8;
-   end Nam_In;
-
-   function Nam_In
-     (T  : Name_Id;
-      V1 : Name_Id;
-      V2 : Name_Id;
-      V3 : Name_Id;
-      V4 : Name_Id;
-      V5 : Name_Id;
-      V6 : Name_Id;
-      V7 : Name_Id;
-      V8 : Name_Id;
-      V9 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4 or else
-             T = V5 or else
-             T = V6 or else
-             T = V7 or else
-             T = V8 or else
-             T = V9;
-   end Nam_In;
-
-   function Nam_In
-     (T   : Name_Id;
-      V1  : Name_Id;
-      V2  : Name_Id;
-      V3  : Name_Id;
-      V4  : Name_Id;
-      V5  : Name_Id;
-      V6  : Name_Id;
-      V7  : Name_Id;
-      V8  : Name_Id;
-      V9  : Name_Id;
-      V10 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1 or else
-             T = V2 or else
-             T = V3 or else
-             T = V4 or else
-             T = V5 or else
-             T = V6 or else
-             T = V7 or else
-             T = V8 or else
-             T = V9 or else
-             T = V10;
-   end Nam_In;
-
-   function Nam_In
-     (T   : Name_Id;
-      V1  : Name_Id;
-      V2  : Name_Id;
-      V3  : Name_Id;
-      V4  : Name_Id;
-      V5  : Name_Id;
-      V6  : Name_Id;
-      V7  : Name_Id;
-      V8  : Name_Id;
-      V9  : Name_Id;
-      V10 : Name_Id;
-      V11 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1  or else
-             T = V2  or else
-             T = V3  or else
-             T = V4  or else
-             T = V5  or else
-             T = V6  or else
-             T = V7  or else
-             T = V8  or else
-             T = V9  or else
-             T = V10 or else
-             T = V11;
-   end Nam_In;
-
-   function Nam_In
-     (T   : Name_Id;
-      V1  : Name_Id;
-      V2  : Name_Id;
-      V3  : Name_Id;
-      V4  : Name_Id;
-      V5  : Name_Id;
-      V6  : Name_Id;
-      V7  : Name_Id;
-      V8  : Name_Id;
-      V9  : Name_Id;
-      V10 : Name_Id;
-      V11 : Name_Id;
-      V12 : Name_Id) return Boolean
-   is
-   begin
-      return T = V1  or else
-             T = V2  or else
-             T = V3  or else
-             T = V4  or else
-             T = V5  or else
-             T = V6  or else
-             T = V7  or else
-             T = V8  or else
-             T = V9  or else
-             T = V10 or else
-             T = V11 or else
-             T = V12;
-   end Nam_In;
 
    -----------------
    -- Name_Equals --
@@ -1728,34 +1508,6 @@ package body Namet is
    begin
       return Buf.Chars (1 .. Buf.Length);
    end To_String;
-
-   ---------------
-   -- Tree_Read --
-   ---------------
-
-   procedure Tree_Read is
-   begin
-      Name_Chars.Tree_Read;
-      Name_Entries.Tree_Read;
-
-      Tree_Read_Data
-        (Hash_Table'Address,
-         Hash_Table'Length * (Hash_Table'Component_Size / Storage_Unit));
-   end Tree_Read;
-
-   ----------------
-   -- Tree_Write --
-   ----------------
-
-   procedure Tree_Write is
-   begin
-      Name_Chars.Tree_Write;
-      Name_Entries.Tree_Write;
-
-      Tree_Write_Data
-        (Hash_Table'Address,
-         Hash_Table'Length * (Hash_Table'Component_Size / Storage_Unit));
-   end Tree_Write;
 
    ------------
    -- Unlock --

@@ -12,6 +12,10 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define to 1 if you have the declaration of `getpagesize', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETPAGESIZE
+
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRNLEN
@@ -34,6 +38,14 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have KERN_PROC and KERN_PROC_PATHNAME in <sys/sysctl.h>.
+   */
+#undef HAVE_KERN_PROC
+
+/* Define to 1 if you have KERN_PROCARGS and KERN_PROC_PATHNAME in
+   <sys/sysctl.h>. */
+#undef HAVE_KERN_PROC_ARGS
+
 /* Define to 1 if you have the <link.h> header file. */
 #undef HAVE_LINK_H
 
@@ -42,6 +54,9 @@
 
 /* Define to 1 if you have the `lstat' function. */
 #undef HAVE_LSTAT
+
+/* Define to 1 if you have the <mach-o/dyld.h> header file. */
+#undef HAVE_MACH_O_DYLD_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

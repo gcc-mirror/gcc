@@ -294,7 +294,7 @@ average_time (const size_t *times, size_t trials)
 /* Test a larger text, if available.  */
 
 static void
-test_large (struct backtrace_state *state)
+test_large (struct backtrace_state *state ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_ZLIB
   unsigned char *orig_buf;

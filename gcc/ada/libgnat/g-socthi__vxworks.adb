@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2019, AdaCore                     --
+--                     Copyright (C) 2002-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,14 +78,14 @@ package body GNAT.Sockets.Thin is
    function Syscall_Recv
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
+      Len   : C.size_t;
       Flags : C.int) return C.int;
    pragma Import (C, Syscall_Recv, "recv");
 
    function Syscall_Recvfrom
      (S       : C.int;
       Msg     : System.Address;
-      Len     : C.int;
+      Len     : C.size_t;
       Flags   : C.int;
       From    : System.Address;
       Fromlen : not null access C.int) return C.int;
@@ -106,17 +106,17 @@ package body GNAT.Sockets.Thin is
    function Syscall_Send
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
-      Flags : C.int) return C.int;
+      Len   : C.size_t;
+      Flags : C.int) return System.CRTL.ssize_t;
    pragma Import (C, Syscall_Send, "send");
 
    function Syscall_Sendto
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
+      Len   : C.size_t;
       Flags : C.int;
       To    : System.Address;
-      Tolen : C.int) return C.int;
+      Tolen : C.int) return System.CRTL.ssize_t;
    pragma Import (C, Syscall_Sendto, "sendto");
 
    function Syscall_Socket
@@ -252,7 +252,7 @@ package body GNAT.Sockets.Thin is
    function C_Recv
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
+      Len   : C.size_t;
       Flags : C.int) return C.int
    is
       Res : C.int;
@@ -277,7 +277,7 @@ package body GNAT.Sockets.Thin is
    function C_Recvfrom
      (S       : C.int;
       Msg     : System.Address;
-      Len     : C.int;
+      Len     : C.size_t;
       Flags   : C.int;
       From    : System.Address;
       Fromlen : not null access C.int) return C.int
@@ -352,7 +352,7 @@ package body GNAT.Sockets.Thin is
    function C_Sendto
      (S     : C.int;
       Msg   : System.Address;
-      Len   : C.int;
+      Len   : C.size_t;
       Flags : C.int;
       To    : System.Address;
       Tolen : C.int) return C.int
@@ -369,12 +369,12 @@ package body GNAT.Sockets.Thin is
             --  support sendto(2) calls on connected sockets with a null
             --  destination address, so use send(2) instead in that case.
 
-            Res := Syscall_Send (S, Msg, Len, Flags);
+            Res := C.int (Syscall_Send (S, Msg, Len, Flags));
 
          --  Normal case where destination address is non-null
 
          else
-            Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);
+            Res := C.int (Syscall_Sendto (S, Msg, Len, Flags, To, Tolen));
          end if;
 
          exit when SOSC.Thread_Blocking_IO

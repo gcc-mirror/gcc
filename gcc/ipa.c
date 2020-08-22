@@ -350,9 +350,8 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 
   /* Mark variables that are obviously needed.  */
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if ((!vnode->can_remove_if_no_refs_p()
+    if (!vnode->can_remove_if_no_refs_p ()
 	&& !vnode->in_other_partition)
-	|| vnode->force_output)
       {
 	reachable.add (vnode);
 	enqueue_node (vnode, &first, &reachable);
@@ -451,6 +450,9 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 			reachable.add (body);
 		      reachable.add (e->callee);
 		    }
+		  else if (e->callee->declare_variant_alt
+			   && !e->callee->in_other_partition)
+		    reachable.add (e->callee);
 		  enqueue_node (e->callee, &first, &reachable);
 		}
 

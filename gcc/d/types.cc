@@ -42,6 +42,49 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 
 
+/* Return the signed or unsigned version of TYPE, an integral type, the
+   signedness being specified by UNSIGNEDP.  */
+
+static tree
+d_signed_or_unsigned_type (int unsignedp, tree type)
+{
+  if (TYPE_UNSIGNED (type) == (unsigned) unsignedp)
+    return type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_cent_type))
+    return unsignedp ? d_ucent_type : d_cent_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_long_type))
+    return unsignedp ? d_ulong_type : d_long_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_int_type))
+    return unsignedp ? d_uint_type : d_int_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_short_type))
+    return unsignedp ? d_ushort_type : d_short_type;
+
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (d_byte_type))
+    return unsignedp ? d_ubyte_type : d_byte_type;
+
+  return signed_or_unsigned_type_for (unsignedp, type);
+}
+
+/* Return the unsigned version of TYPE, an integral type.  */
+
+tree
+d_unsigned_type (tree type)
+{
+  return d_signed_or_unsigned_type (1, type);
+}
+
+/* Return the signed version of TYPE, an integral type.  */
+
+tree
+d_signed_type (tree type)
+{
+  return d_signed_or_unsigned_type (0, type);
+}
+
 /* Return TRUE if TYPE is a static array va_list.  This is for compatibility
    with the C ABI, where va_list static arrays are passed by reference.
    However for every other case in D, static arrays are passed by value.  */
@@ -49,10 +92,11 @@ along with GCC; see the file COPYING3.  If not see
 bool
 valist_array_p (Type *type)
 {
-  if (Type::tvalist->ty == Tsarray)
+  Type *tvalist = target.va_listType (Loc (), NULL);
+  if (tvalist->ty == Tsarray)
     {
       Type *tb = type->toBasetype ();
-      if (same_type_p (tb, Type::tvalist))
+      if (same_type_p (tb, tvalist))
 	return true;
     }
 
@@ -105,7 +149,7 @@ same_type_p (Type *t1, Type *t2)
   return false;
 }
 
-/* Returns 'Object' type which all D classes are derived from.  */
+/* Returns `Object' type which all D classes are derived from.  */
 
 Type *
 get_object_type (void)
@@ -203,7 +247,7 @@ insert_type_modifiers (tree type, unsigned mod)
 
   tree qualtype = build_qualified_type (type, quals);
 
-  /* Mark whether the type is qualified 'shared'.  */
+  /* Mark whether the type is qualified `shared'.  */
   if (mod & MODshared)
     TYPE_SHARED (qualtype) = 1;
 
@@ -268,7 +312,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 {
   size_t fields = 0;
 
-  for (size_t i = 0; i < members->dim; i++)
+  for (size_t i = 0; i < members->length; i++)
     {
       Dsymbol *sym = (*members)[i];
       VarDeclaration *var = sym->isVarDeclaration ();
@@ -285,13 +329,13 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	      Dsymbols tmembers;
 	      /* No other way to coerce the underlying type out of the tuple.
 		 Frontend should have already validated this.  */
-	      for (size_t j = 0; j < td->objects->dim; j++)
+	      for (size_t j = 0; j < td->objects->length; j++)
 		{
 		  RootObject *ro = (*td->objects)[j];
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
 		  Expression *e = (Expression *) ro;
 		  gcc_assert (e->op == TOKdsymbol);
-		  DsymbolExp *se = (DsymbolExp *) e;
+		  DsymbolExp *se = e->isDsymbolExp ();
 
 		  tmembers.push (se->s);
 		}
@@ -364,7 +408,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
       AttribDeclaration *attrib = sym->isAttribDeclaration ();
       if (attrib != NULL)
 	{
-	  Dsymbols *decls = attrib->include (NULL, NULL);
+	  Dsymbols *decls = attrib->include (NULL);
 	  if (decls != NULL)
 	    {
 	      fields += layout_aggregate_members (decls, context, inherited_p);
@@ -409,7 +453,7 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
 
 	  /* Add the vtable pointer, and optionally the monitor fields.  */
 	  InterfaceDeclaration *id = cd->isInterfaceDeclaration ();
-	  if (!id || id->vtblInterfaces->dim == 0)
+	  if (!id || id->vtblInterfaces->length == 0)
 	    {
 	      tree field = create_field_decl (vtbl_ptr_type_node, "__vptr", 1,
 					      inherited_p);
@@ -423,13 +467,13 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
 	    {
 	      tree field = create_field_decl (ptr_type_node, "__monitor", 1,
 					      inherited_p);
-	      insert_aggregate_field (type, field, Target::ptrsize);
+	      insert_aggregate_field (type, field, target.ptrsize);
 	    }
 	}
 
       if (cd->vtblInterfaces)
 	{
-	  for (size_t i = 0; i < cd->vtblInterfaces->dim; i++)
+	  for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
 	    {
 	      BaseClass *bc = (*cd->vtblInterfaces)[i];
 	      tree field = create_field_decl (vtbl_ptr_type_node, NULL, 1, 1);
@@ -442,12 +486,12 @@ layout_aggregate_type (AggregateDeclaration *decl, tree type,
     {
       size_t fields = layout_aggregate_members (base->members, type,
 						inherited_p);
-      gcc_assert (fields == base->fields.dim);
+      gcc_assert (fields == base->fields.length);
 
       /* Make sure that all fields have been created.  */
       if (!inherited_p)
 	{
-	  for (size_t i = 0; i < base->fields.dim; i++)
+	  for (size_t i = 0; i < base->fields.length; i++)
 	    {
 	      VarDeclaration *var = base->fields[i];
 	      gcc_assert (var->csym != NULL);
@@ -497,9 +541,9 @@ merge_aggregate_types (Type *type, tree deco)
   AggregateDeclaration *sym;
 
   if (type->ty == Tstruct)
-    sym = ((TypeStruct *) type)->sym;
+    sym = type->isTypeStruct ()->sym;
   else if (type->ty == Tclass)
-    sym = ((TypeClass *) type)->sym;
+    sym = type->isTypeClass ()->sym;
   else
     gcc_unreachable ();
 
@@ -670,7 +714,7 @@ public:
 
   void visit (TypeVector *t)
   {
-    int nunits = ((TypeSArray *) t->basetype)->dim->toUInteger ();
+    int nunits = t->basetype->isTypeSArray ()->dim->toUInteger ();
     tree inner = build_ctype (t->elementType ());
 
     /* Same rationale as void static arrays.  */
@@ -708,26 +752,23 @@ public:
 
        Variadic functions with D linkage have an additional hidden argument
        with the name _arguments passed to the function.  */
-    if (t->varargs == 1 && t->linkage == LINKd)
+    if (t->isDstyleVariadic ())
       {
 	tree type = build_ctype (Type::typeinfotypelist->type);
 	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
-    if (t->parameters)
-      {
-	size_t n_args = Parameter::dim (t->parameters);
+    size_t n_args = t->parameterList.length ();
 
-	for (size_t i = 0; i < n_args; i++)
-	  {
-	    tree type = parameter_type (Parameter::getNth (t->parameters, i));
-	    fnparams = chainon (fnparams, build_tree_list (0, type));
-	  }
+    for (size_t i = 0; i < n_args; i++)
+      {
+	tree type = parameter_type (t->parameterList[i]);
+	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
     /* When the last parameter is void_list_node, that indicates a fixed length
        parameter list, otherwise function is treated as variadic.  */
-    if (t->varargs != 1)
+    if (t->parameterList.varargs != VARARGvariadic)
       fnparams = chainon (fnparams, void_list_node);
 
     if (t->next != NULL)
@@ -836,7 +877,7 @@ public:
 	tree values = NULL_TREE;
 	if (t->sym->members)
 	  {
-	    for (size_t i = 0; i < t->sym->members->dim; i++)
+	    for (size_t i = 0; i < t->sym->members->length; i++)
 	      {
 		EnumMember *member = (*t->sym->members)[i]->isEnumMember ();
 		/* Templated functions can seep through to the back-end
@@ -972,7 +1013,7 @@ public:
       }
 
     /* Associate all virtual methods with the class too.  */
-    for (size_t i = 0; i < t->sym->vtbl.dim; i++)
+    for (size_t i = 0; i < t->sym->vtbl.length; i++)
       {
 	FuncDeclaration *fd = t->sym->vtbl[i]->isFuncDeclaration ();
 	tree method = fd ? get_symbol_decl (fd) : error_mark_node;

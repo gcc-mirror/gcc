@@ -222,19 +222,6 @@ along with GCC; see the file COPYING3.  If not see
 		|| flag_tree_parallelize_loops > 1 \
 		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
 
-#undef DEF_HSA_BUILTIN
-#ifdef ENABLE_HSA
-#define DEF_HSA_BUILTIN(ENUM, NAME, TYPE, ATTRS)			\
-  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
-               false, false, true, ATTRS, false, \
-	       (!flag_disable_hsa))
-#else
-#define DEF_HSA_BUILTIN(ENUM, NAME, TYPE, ATTRS)			\
-  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
-               false, false, true, ATTRS, false, \
-	       (false))
-#endif
-
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */
 #undef DEF_TM_BUILTIN
@@ -834,6 +821,8 @@ DEF_GCC_BUILTIN        (BUILT_IN_APPLY_ARGS, "apply_args", BT_FN_PTR_VAR, ATTR_L
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP16, "bswap16", BT_FN_UINT16_UINT16, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP32, "bswap32", BT_FN_UINT32_UINT32, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP64, "bswap64", BT_FN_UINT64_UINT64, ATTR_CONST_NOTHROW_LEAF_LIST)
+DEF_GCC_BUILTIN        (BUILT_IN_BSWAP128, "bswap128", BT_FN_UINT128_UINT128, ATTR_CONST_NOTHROW_LEAF_LIST)
+
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_CLEAR_CACHE, "__clear_cache", BT_FN_VOID_PTR_PTR, ATTR_NOTHROW_LEAF_LIST)
 /* [trans-mem]: Adjust BUILT_IN_TM_CALLOC if BUILT_IN_CALLOC is changed.  */
 DEF_LIB_BUILTIN        (BUILT_IN_CALLOC, "calloc", BT_FN_PTR_SIZE_SIZE, ATTR_MALLOC_WARN_UNUSED_RESULT_SIZE_1_2_NOTHROW_LEAF_LIST)
@@ -1060,9 +1049,6 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* Offloading and Multi Processing builtins.  */
 #include "omp-builtins.def"
-
-/* Heterogeneous Systems Architecture.  */
-#include "hsa-builtins.def"
 
 /* GTM builtins. */
 #include "gtm-builtins.def"

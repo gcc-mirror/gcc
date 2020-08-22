@@ -1035,20 +1035,6 @@ gimple_build_omp_master (gimple_seq body)
   return p;
 }
 
-/* Build a GIMPLE_OMP_GRID_BODY statement.
-
-   BODY is the sequence of statements to be executed by the kernel.  */
-
-gimple *
-gimple_build_omp_grid_body (gimple_seq body)
-{
-  gimple *p = gimple_alloc (GIMPLE_OMP_GRID_BODY, 0);
-  if (body)
-    gimple_omp_set_body (p, body);
-
-  return p;
-}
-
 /* Build a GIMPLE_OMP_TASKGROUP statement.
 
    BODY is the sequence of statements to be executed by the taskgroup
@@ -2018,7 +2004,6 @@ gimple_copy (gimple *stmt)
 
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
-	case GIMPLE_OMP_GRID_BODY:
 	copy_omp_body:
 	  new_seq = gimple_seq_copy (gimple_omp_body (stmt));
 	  gimple_omp_set_body (copy, new_seq);

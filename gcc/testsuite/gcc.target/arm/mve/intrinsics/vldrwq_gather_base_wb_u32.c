@@ -10,6 +10,7 @@ foo (uint32x4_t * addr)
   return vldrwq_gather_base_wb_u32 (addr, 8);
 }
 
-/* { dg-final { scan-assembler "vldrb.8 q\[0-9\]+, \\\[r\[0-9\]+\\\]" } } */
+/* { dg-final { scan-assembler "vldrw.32\tq\[0-9\]+, \\\[r\[0-9\]+\\\]" } } */
 /* { dg-final { scan-assembler "vldrw.u32\tq\[0-9\]+, \\\[q\[0-9\]+, #\[0-9\]+\\\]!" } } */
-/* { dg-final { scan-assembler "vstrb.8 q\[0-9\]+, \\\[r\[0-9\]+\\\]" } } */
+/* { dg-final { scan-assembler "vstrw.32\tq\[0-9\]+, \\\[r\[0-9\]+\\\]" } } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

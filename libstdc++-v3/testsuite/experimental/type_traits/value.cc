@@ -214,10 +214,13 @@ static_assert(is_pod_v<int>
 static_assert(!is_pod_v<NType>
 	      && !is_pod<NType>::value, "");
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 static_assert(is_literal_type_v<int>
 	      && is_literal_type<int>::value, "");
 static_assert(!is_literal_type_v<NType>
 	      && !is_literal_type<NType>::value, "");
+#pragma GCC diagnostic pop
 
 static_assert(is_empty_v<EmptyFinal>
 	      && is_empty<EmptyFinal>::value, "");

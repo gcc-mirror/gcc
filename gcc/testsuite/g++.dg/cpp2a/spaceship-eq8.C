@@ -1,5 +1,5 @@
 // PR c++/92966
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 struct S {
   int operator==(const S&) const = default;	// { dg-error "must return 'bool'" }

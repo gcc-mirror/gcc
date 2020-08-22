@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -73,15 +73,15 @@ do {							 \
 #define TYPE_IS_FAT_POINTER_P(NODE) \
   (TREE_CODE (NODE) == RECORD_TYPE && TYPE_FAT_POINTER_P (NODE))
 
-/* For integral types and array types, nonzero if this is a packed array type
-   used for bit-packed types.  Such types should not be extended to a larger
-   size or validated against a specified size.  */
-#define TYPE_PACKED_ARRAY_TYPE_P(NODE) \
+/* For integral types and array types, nonzero if this is an implementation
+   type for a bit-packed array type.  Such types should not be extended to a
+   larger size or validated against a specified size.  */
+#define TYPE_BIT_PACKED_ARRAY_TYPE_P(NODE) \
   TYPE_LANG_FLAG_0 (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
 
-#define TYPE_IS_PACKED_ARRAY_TYPE_P(NODE) \
+#define BIT_PACKED_ARRAY_TYPE_P(NODE) \
   ((TREE_CODE (NODE) == INTEGER_TYPE || TREE_CODE (NODE) == ARRAY_TYPE) \
-   && TYPE_PACKED_ARRAY_TYPE_P (NODE))
+   && TYPE_BIT_PACKED_ARRAY_TYPE_P (NODE))
 
 /* For FUNCTION_TYPE and METHOD_TYPE, nonzero if the function returns by
    direct reference, i.e. the callee returns a pointer to a memory location
@@ -196,7 +196,7 @@ do {							 \
    types.  */
 #define TYPE_IMPL_PACKED_ARRAY_P(NODE) \
   ((TREE_CODE (NODE) == ARRAY_TYPE && TYPE_PACKED (NODE)) \
-   || (TREE_CODE (NODE) == INTEGER_TYPE && TYPE_PACKED_ARRAY_TYPE_P (NODE)))
+   || (TREE_CODE (NODE) == INTEGER_TYPE && TYPE_BIT_PACKED_ARRAY_TYPE_P (NODE)))
 
 /* True for types that can hold a debug type.  */
 #define TYPE_CAN_HAVE_DEBUG_TYPE_P(NODE) (!TYPE_IMPL_PACKED_ARRAY_P (NODE))
@@ -523,13 +523,6 @@ do {						   \
 #define DECL_INDUCTION_VAR(NODE) \
   GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
 #define SET_DECL_INDUCTION_VAR(NODE, X) \
-  SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
-
-/* In a VAR_DECL without the DECL_LOOP_PARM_P flag set and that is a renaming
-   pointer, points to the object being renamed, if any.  */
-#define DECL_RENAMED_OBJECT(NODE) \
-  GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
-#define SET_DECL_RENAMED_OBJECT(NODE, X) \
   SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
 
 /* In a TYPE_DECL, points to the parallel type if any, otherwise 0.  */

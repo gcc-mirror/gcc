@@ -1087,12 +1087,21 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 	emit_clobber (dest);
 
       for (i = 0; i < words; ++i)
-	emit_move_insn (simplify_gen_subreg_concatn (word_mode, dest,
-						     dest_mode,
-						     i * UNITS_PER_WORD),
-			simplify_gen_subreg_concatn (word_mode, src,
-						     orig_mode,
-						     i * UNITS_PER_WORD));
+	{
+	  rtx t = simplify_gen_subreg_concatn (word_mode, dest,
+					       dest_mode,
+					       i * UNITS_PER_WORD);
+	  /* simplify_gen_subreg_concatn can return (const_int 0) for
+	     some sub-objects of paradoxical subregs.  As a source operand,
+	     that's fine.  As a destination it must be avoided.  Those are
+	     supposed to be don't care bits, so we can just drop that store
+	     on the floor.  */
+	  if (t != CONST0_RTX (word_mode))
+	    emit_move_insn (t,
+			    simplify_gen_subreg_concatn (word_mode, src,
+							 orig_mode,
+							 i * UNITS_PER_WORD));
+	}
     }
 
   if (real_dest != NULL_RTX)

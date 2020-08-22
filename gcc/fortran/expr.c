@@ -3693,7 +3693,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 
   /* Check size of array assignments.  */
   if (lvalue->rank != 0 && rvalue->rank != 0
-      && !gfc_check_conformance (lvalue, rvalue, "array assignment"))
+      && !gfc_check_conformance (lvalue, rvalue, _("array assignment")))
     return false;
 
   /* Handle the case of a BOZ literal on the RHS.  */
@@ -4271,7 +4271,20 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
       gfc_symbol *sym;
       bool target;
 
-      gcc_assert (rvalue->symtree);
+      if (gfc_is_size_zero_array (rvalue))
+	{
+	  gfc_error ("Zero-sized array detected at %L where an entity with "
+		     "the TARGET attribute is expected", &rvalue->where);
+	  return false;
+	}
+      else if (!rvalue->symtree)
+	{
+	  gfc_error ("Pointer assignment target in initialization expression "
+		     "does not have the TARGET attribute at %L",
+		     &rvalue->where);
+	  return false;
+	}
+
       sym = rvalue->symtree->n.sym;
 
       if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
@@ -4346,7 +4359,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
      contiguous.  Be lenient in the definition of what counts as
      contiguous.  */
 
-  if (lhs_attr.contiguous && !gfc_is_simply_contiguous (rvalue, false, true))
+  if (lhs_attr.contiguous
+      && lhs_attr.dimension > 0
+      && !gfc_is_simply_contiguous (rvalue, false, true))
     gfc_warning (OPT_Wextra, "Assignment to contiguous pointer from "
 		 "non-contiguous target at %L", &rvalue->where);
 

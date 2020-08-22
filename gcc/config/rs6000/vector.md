@@ -354,7 +354,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vcond<mode><mode>"
@@ -371,7 +371,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vcondv4sfv4si"
@@ -389,7 +389,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vcondv4siv4sf"
@@ -407,7 +407,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vcondv2dfv2di"
@@ -425,7 +425,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vcondv2div2df"
@@ -443,7 +443,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vcondu<mode><mode>"
@@ -460,7 +460,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vconduv4sfv4si"
@@ -478,7 +478,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 (define_expand "vconduv2dfv2di"
@@ -496,7 +496,7 @@
 				    operands[3], operands[4], operands[5]))
     DONE;
   else
-    FAIL;
+    gcc_unreachable ();
 })
 
 ;; To support vector condition vectorization, define vcond_mask and vec_cmp.

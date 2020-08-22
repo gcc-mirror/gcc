@@ -595,10 +595,11 @@ gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
     }
 }
 
-/* Filter edge predictions PREDS by a function FILTER.  DATA are passed
-   to the filter function.  */
+/* Filter edge predictions PREDS by a function FILTER: if FILTER return false
+   the prediction is removed.
+   DATA are passed to the filter function.  */
 
-void
+static void
 filter_predictions (edge_prediction **preds,
 		    bool (*filter) (edge_prediction *, void *), void *data)
 {
@@ -627,10 +628,10 @@ filter_predictions (edge_prediction **preds,
 /* Filter function predicate that returns true for a edge predicate P
    if its edge is equal to DATA.  */
 
-bool
-equal_edge_p (edge_prediction *p, void *data)
+static bool
+not_equal_edge_p (edge_prediction *p, void *data)
 {
-  return p->ep_edge == (edge)data;
+  return p->ep_edge != (edge)data;
 }
 
 /* Remove all predictions on given basic block that are attached
@@ -642,7 +643,7 @@ remove_predictions_associated_with_edge (edge e)
     return;
 
   edge_prediction **preds = bb_predictions->get (e->src);
-  filter_predictions (preds, equal_edge_p, e);
+  filter_predictions (preds, not_equal_edge_p, e);
 }
 
 /* Clears the list of predictions stored for BB.  */
@@ -3121,6 +3122,35 @@ tree_guess_outgoing_edge_probabilities (basic_block bb)
   bb_predictions = NULL;
 }
 
+/* Filter function predicate that returns true for a edge predicate P
+   if its edge is equal to DATA.  */
+
+static bool
+not_loop_guard_equal_edge_p (edge_prediction *p, void *data)
+{
+  return p->ep_edge != (edge)data || p->ep_predictor != PRED_LOOP_GUARD;
+}
+
+/* Predict edge E with PRED unless it is already predicted by some predictor
+   considered equivalent.  */
+
+static void
+maybe_predict_edge (edge e, enum br_predictor pred, enum prediction taken)
+{
+  if (edge_predicted_by_p (e, pred, taken))
+    return;
+  if (pred == PRED_LOOP_GUARD
+      && edge_predicted_by_p (e, PRED_LOOP_GUARD_WITH_RECURSION, taken))
+    return;
+  /* Consider PRED_LOOP_GUARD_WITH_RECURSION superrior to LOOP_GUARD.  */
+  if (pred == PRED_LOOP_GUARD_WITH_RECURSION)
+    {
+      edge_prediction **preds = bb_predictions->get (e->src);
+      if (preds)
+	filter_predictions (preds, not_loop_guard_equal_edge_p, e);
+    }
+  predict_edge_def (e, pred, taken);
+}
 /* Predict edges to successors of CUR whose sources are not postdominated by
    BB by PRED and recurse to all postdominators.  */
 
@@ -3176,10 +3206,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 	 regions that are only reachable by abnormal edges.  We simply
 	 prevent visiting given BB twice.  */
       if (found)
-	{
-	  if (!edge_predicted_by_p (e, pred, taken))
-            predict_edge_def (e, pred, taken);
-	}
+	maybe_predict_edge (e, pred, taken);
       else if (bitmap_set_bit (visited, e->src->index))
 	predict_paths_for_bb (e->src, e->src, pred, taken, visited, in_loop);
     }
@@ -3222,7 +3249,7 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
   if (!has_nonloop_edge)
     predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
   else
-    predict_edge_def (e, pred, taken);
+    maybe_predict_edge (e, pred, taken);
 }
 
 /* This is used to carry information about basic blocks.  It is
@@ -3892,7 +3919,30 @@ estimate_bb_frequencies (bool force)
       cfun->cfg->count_max = profile_count::uninitialized ();
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
-	  sreal tmp = BLOCK_INFO (bb)->frequency * freq_max + sreal (1, -1);
+	  sreal tmp = BLOCK_INFO (bb)->frequency;
+	  if (tmp >= 1)
+	    {
+	      gimple_stmt_iterator gsi;
+	      tree decl;
+
+	      /* Self recursive calls can not have frequency greater than 1
+		 or program will never terminate.  This will result in an
+		 inconsistent bb profile but it is better than greatly confusing
+		 IPA cost metrics.  */
+	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+		if (is_gimple_call (gsi_stmt (gsi))
+		    && (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
+		    && recursive_call_p (current_function_decl, decl))
+		  {
+		    if (dump_file)
+		      fprintf (dump_file, "Dropping frequency of recursive call"
+			       " in bb %i from %f\n", bb->index,
+			       tmp.to_double ());
+		    tmp = (sreal)9 / (sreal)10;
+		    break;
+		  }
+	    }
+	  tmp = tmp * freq_max + sreal (1, -1);
 	  profile_count count = profile_count::from_gcov_type (tmp.to_int ());	
 
 	  /* If we have profile feedback in which this function was never

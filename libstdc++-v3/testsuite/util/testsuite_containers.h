@@ -408,8 +408,9 @@ namespace __gnu_test
   void
   erase_external_iterators(std::multimap<int, int>& s);
 
-// NB: "must be compiled with C++11"
-#if __cplusplus >= 201103L
+#if __cplusplus < 201103L
+# error "must be compiled with C++11 (or later)"
+#else
 template<typename _Tp>
   void
   linkage_check_cxx98_cxx11_erase(_Tp& container)

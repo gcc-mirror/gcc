@@ -3,6 +3,10 @@
       PROGRAM MAIN
       IMPLICIT NONE
 
+! Initialize before the checkpoint, in case this produces any output.
+!$ACC PARALLEL
+!$ACC END PARALLEL
+
       PRINT *, "CheCKpOInT"
 !$ACC PARALLEL
       STOP 35

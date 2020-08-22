@@ -702,7 +702,7 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
       initializer = convert_from_reference (var);
 
       /* Warn about deprecated implicit capture of this via [=].  */
-      if (cxx_dialect >= cxx2a
+      if (cxx_dialect >= cxx20
 	  && this_capture_p
 	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY)
 	{

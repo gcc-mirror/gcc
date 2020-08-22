@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1051,7 +1051,7 @@ package Lib.Writ is
    procedure Write_ALI (Object : Boolean);
    --  This procedure writes the library information for the current main unit
    --  The Object parameter is true if an object file is created, and false
-   --  otherwise. Note that the pseudo-object file generated in GNATProve mode
+   --  otherwise. Note that the pseudo-object file generated in GNATprove mode
    --  does count as an object file from this point of view.
    --
    --  Note: in the case where we are not generating code (-gnatc mode), this

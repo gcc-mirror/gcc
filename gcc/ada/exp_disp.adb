@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -389,8 +389,8 @@ package body Exp_Disp is
             --  Handle full type declarations and derivations of library level
             --  tagged types
 
-            elsif Nkind_In (D, N_Full_Type_Declaration,
-                               N_Derived_Type_Definition)
+            elsif Nkind (D) in
+                    N_Full_Type_Declaration | N_Derived_Type_Definition
               and then Is_Library_Level_Tagged_Type (Defining_Entity (D))
               and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
               and then not Is_Private_Type (Defining_Entity (D))
@@ -643,28 +643,31 @@ package body Exp_Disp is
       elsif TSS_Name = TSS_Deep_Finalize then
          return Uint_9;
 
+      elsif TSS_Name = TSS_Put_Image then
+         return Uint_10;
+
       --  In VM targets unconditionally allow obtaining the position associated
       --  with predefined interface primitives since in these platforms any
       --  tagged type has these primitives.
 
       elsif Ada_Version >= Ada_2005 or else not Tagged_Type_Expansion then
          if Chars (E) = Name_uDisp_Asynchronous_Select then
-            return Uint_10;
-
-         elsif Chars (E) = Name_uDisp_Conditional_Select then
             return Uint_11;
 
-         elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
+         elsif Chars (E) = Name_uDisp_Conditional_Select then
             return Uint_12;
 
-         elsif Chars (E) = Name_uDisp_Get_Task_Id then
+         elsif Chars (E) = Name_uDisp_Get_Prim_Op_Kind then
             return Uint_13;
 
-         elsif Chars (E) = Name_uDisp_Requeue then
+         elsif Chars (E) = Name_uDisp_Get_Task_Id then
             return Uint_14;
 
-         elsif Chars (E) = Name_uDisp_Timed_Select then
+         elsif Chars (E) = Name_uDisp_Requeue then
             return Uint_15;
+
+         elsif Chars (E) = Name_uDisp_Timed_Select then
+            return Uint_16;
          end if;
       end if;
 
@@ -1020,9 +1023,9 @@ package body Exp_Disp is
       --  list including the creation of a new set of matching entities.
 
       declare
-         Old_Formal : Entity_Id := First_Formal (Subp);
-         New_Formal : Entity_Id;
-         Extra      : Entity_Id := Empty;
+         Old_Formal  : Entity_Id := First_Formal (Subp);
+         New_Formal  : Entity_Id;
+         Last_Formal : Entity_Id := Empty;
 
       begin
          if Present (Old_Formal) then
@@ -1046,7 +1049,7 @@ package body Exp_Disp is
                --  errors when the itype is the completion of a type derived
                --  from a private type.
 
-               Extra := New_Formal;
+               Last_Formal := New_Formal;
                Next_Formal (Old_Formal);
                exit when No (Old_Formal);
 
@@ -1056,17 +1059,56 @@ package body Exp_Disp is
             end loop;
 
             Unlink_Next_Entity (New_Formal);
-            Set_Last_Entity (Subp_Typ, Extra);
+            Set_Last_Entity (Subp_Typ, Last_Formal);
          end if;
 
          --  Now that the explicit formals have been duplicated, any extra
-         --  formals needed by the subprogram must be created.
+         --  formals needed by the subprogram must be duplicated; we know
+         --  that extra formals are available because they were added when
+         --  the tagged type was frozen (see Expand_Freeze_Record_Type).
 
-         if Present (Extra) then
-            Set_Extra_Formal (Extra, Empty);
+         pragma Assert (Is_Frozen (Typ));
+
+         --  Warning: The addition of the extra formals cannot be performed
+         --  here invoking Create_Extra_Formals since we must ensure that all
+         --  the extra formals of the pointer type and the target subprogram
+         --  match (and for functions that return a tagged type the profile of
+         --  the built subprogram type always returns a class-wide type, which
+         --  may affect the addition of some extra formals).
+
+         if Present (Last_Formal)
+           and then Present (Extra_Formal (Last_Formal))
+         then
+            Old_Formal := Extra_Formal (Last_Formal);
+            New_Formal := New_Copy (Old_Formal);
+            Set_Scope (New_Formal, Subp_Typ);
+
+            Set_Extra_Formal (Last_Formal, New_Formal);
+            Set_Extra_Formals (Subp_Typ, New_Formal);
+
+            if Ekind (Subp) = E_Function
+              and then Present (Extra_Accessibility_Of_Result (Subp))
+              and then Extra_Accessibility_Of_Result (Subp) = Old_Formal
+            then
+               Set_Extra_Accessibility_Of_Result (Subp_Typ, New_Formal);
+            end if;
+
+            Old_Formal := Extra_Formal (Old_Formal);
+            while Present (Old_Formal) loop
+               Set_Extra_Formal (New_Formal, New_Copy (Old_Formal));
+               New_Formal := Extra_Formal (New_Formal);
+               Set_Scope (New_Formal, Subp_Typ);
+
+               if Ekind (Subp) = E_Function
+                 and then Present (Extra_Accessibility_Of_Result (Subp))
+                 and then Extra_Accessibility_Of_Result (Subp) = Old_Formal
+               then
+                  Set_Extra_Accessibility_Of_Result (Subp_Typ, New_Formal);
+               end if;
+
+               Old_Formal := Extra_Formal (Old_Formal);
+            end loop;
          end if;
-
-         Create_Extra_Formals (Subp_Typ);
       end;
 
       --  Complete description of pointer type, including size information, as
@@ -1110,6 +1152,14 @@ package body Exp_Disp is
         and then Is_Class_Wide_Type (Ctrl_Typ)
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
+
+      elsif Is_Access_Type (Ctrl_Typ) then
+         Controlling_Tag :=
+           Make_Selected_Component (Loc,
+             Prefix        =>
+               Make_Explicit_Dereference (Loc,
+                 Duplicate_Subexpr_Move_Checks (Ctrl_Arg)),
+             Selector_Name => New_Occurrence_Of (DTC_Entity (Subp), Loc));
 
       else
          Controlling_Tag :=
@@ -1173,9 +1223,8 @@ package body Exp_Disp is
          --  the corresponding object or parameter declaration
 
          elsif Nkind (Controlling_Tag) = N_Identifier
-           and then Nkind_In (Parent (Entity (Controlling_Tag)),
-                              N_Object_Declaration,
-                              N_Parameter_Specification)
+           and then Nkind (Parent (Entity (Controlling_Tag))) in
+                      N_Object_Declaration | N_Parameter_Specification
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent (Entity (Controlling_Tag)));
@@ -1185,9 +1234,8 @@ package body Exp_Disp is
 
          elsif Nkind (Controlling_Tag) = N_Explicit_Dereference
             and then Nkind (Prefix (Controlling_Tag)) = N_Identifier
-            and then Nkind_In (Parent (Entity (Prefix (Controlling_Tag))),
-                               N_Object_Declaration,
-                               N_Parameter_Specification)
+            and then Nkind (Parent (Entity (Prefix (Controlling_Tag)))) in
+                       N_Object_Declaration | N_Parameter_Specification
          then
             Set_SCIL_Controlling_Tag (SCIL_Node,
               Parent (Entity (Prefix (Controlling_Tag))));
@@ -2134,6 +2182,11 @@ package body Exp_Disp is
       end loop;
 
       Thunk_Id := Make_Temporary (Loc, 'T');
+
+      --  Note: any change to this symbol name needs to be coordinated
+      --  with GNATcoverage, as that tool relies on it to identify
+      --  thunks and exclude them from source coverage analysis.
+
       Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
@@ -3828,6 +3881,7 @@ package body Exp_Disp is
       --  tagged type, when one of its primitive operations has a type in its
       --  profile whose full view has not been analyzed yet. More complex cases
       --  involve composite types that have one private unfrozen subcomponent.
+      --  Move this check to sem???
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -4301,6 +4355,7 @@ package body Exp_Disp is
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => OSD,
+                Constant_Present    => True,
                 Object_Definition   =>
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>
@@ -4338,7 +4393,7 @@ package body Exp_Disp is
                     Attribute_Name => Name_Alignment)));
 
             --  In secondary dispatch tables the Typeinfo component contains
-            --  the address of the Object Specific Data (see a-tags.ads)
+            --  the address of the Object Specific Data (see a-tags.ads).
 
             Append_To (DT_Aggr_List,
               Make_Attribute_Reference (Loc,
@@ -4680,16 +4735,16 @@ package body Exp_Disp is
       end if;
 
       --  Ensure that the value of Max_Predef_Prims defined in a-tags is
-      --  correct. Valid values are 9 under configurable runtime or 15
+      --  correct. Valid values are 10 under configurable runtime or 16
       --  with full runtime.
 
       if RTE_Available (RE_Interface_Data) then
-         if Max_Predef_Prims /= 15 then
+         if Max_Predef_Prims /= 16 then
             Error_Msg_N ("run-time library configuration error", Typ);
             goto Leave;
          end if;
       else
-         if Max_Predef_Prims /= 9 then
+         if Max_Predef_Prims /= 10 then
             Error_Msg_N ("run-time library configuration error", Typ);
             Error_Msg_CRT ("tagged types", Typ);
             goto Leave;
@@ -8142,6 +8197,7 @@ package body Exp_Disp is
             --  We exclude Input and Output stream operations because
             --  Limited_Controlled inherits useless Input and Output stream
             --  operations from Root_Controlled, which can never be overridden.
+            --  Move this check to sem???
 
             if not Is_TSS (Prim, TSS_Stream_Input)
                  and then
@@ -8504,7 +8560,7 @@ package body Exp_Disp is
 
       --  Propagate the value to the wrapped subprogram (if one is present)
 
-      if Ekind_In (Prim, E_Function, E_Procedure)
+      if Ekind (Prim) in E_Function | E_Procedure
         and then Is_Primitive_Wrapper (Prim)
         and then Present (Wrapped_Entity (Prim))
         and then Is_Dispatching_Operation (Wrapped_Entity (Prim))
@@ -8537,7 +8593,7 @@ package body Exp_Disp is
 
       --  Propagate the value to the wrapped subprogram (if one is present)
 
-      if Ekind_In (Prim, E_Function, E_Procedure)
+      if Ekind (Prim) in E_Function | E_Procedure
         and then Is_Primitive_Wrapper (Prim)
         and then Present (Wrapped_Entity (Prim))
         and then Is_Dispatching_Operation (Wrapped_Entity (Prim))
@@ -8674,7 +8730,7 @@ package body Exp_Disp is
             --  If the DTC_Entity attribute is already set we can also output
             --  the name of the interface covered by this primitive (if any).
 
-            if Ekind_In (Alias (Prim), E_Function, E_Procedure)
+            if Ekind (Alias (Prim)) in E_Function | E_Procedure
               and then Present (DTC_Entity (Alias (Prim)))
               and then Is_Interface (Scope (DTC_Entity (Alias (Prim))))
             then

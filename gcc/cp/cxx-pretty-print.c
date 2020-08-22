@@ -173,12 +173,13 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (t))
-	{
-	  pp_cxx_begin_template_argument_list (pp);
-	  tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
-	  pp_cxx_template_argument_list (pp, args);
-	  pp_cxx_end_template_argument_list (pp);
-	}
+	if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (ti)))
+	  {
+	    pp_cxx_begin_template_argument_list (pp);
+	    tree args = INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti));
+	    pp_cxx_template_argument_list (pp, args);
+	    pp_cxx_end_template_argument_list (pp);
+	  }
       break;
 
     case BIT_NOT_EXPR:
@@ -1534,7 +1535,7 @@ pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
     }
   bool first = true;
 
-  /* Skip artificial parameter for nonstatic member functions.  */
+  /* Skip artificial parameter for non-static member functions.  */
   if (TREE_CODE (t) == METHOD_TYPE)
     types = TREE_CHAIN (types);
 

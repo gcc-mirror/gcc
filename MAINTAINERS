@@ -118,6 +118,7 @@ visium port		Eric Botcazou		<ebotcazou@libertysurf.fr>
 x86-64 port		Jan Hubicka		<hubicka@ucw.cz>
 xstormy16 port		Nick Clifton		<nickc@redhat.com>
 xtensa port		Sterling Augustine	<augustine.sterling@gmail.com>
+xtensa port		Max Filippov		<jcmvbkbc@gmail.com>
 
 			OS Port Maintainers	(OS alphabetical order)
 
@@ -353,6 +354,7 @@ William Cohen					<wcohen@redhat.com>
 Michael Collison				<michael.collison@arm.com>
 Josh Conner					<joshconner@google.com>
 R. Kelley Cook					<kcook@gcc.gnu.org>
+Alex Coplan					<alex.coplan@arm.com>
 Andrea Corallo					<andrea.corallo@arm.com>
 Christian Cornelssen				<ccorn@cs.tu-berlin.de>
 Ludovic Courtès					<ludo@gnu.org>
@@ -382,7 +384,6 @@ Chris Fairles					<cfairles@gcc.gnu.org>
 Alessandro Fanfarillo				<fanfarillo.gcc@gmail.com>
 Changpeng Fang					<changpeng.fang@amd.com>
 Li Feng						<nemokingdom@gmail.com>
-Max Filippov					<jcmvbkbc@gmail.com>
 Thomas Fitzsimmons				<fitzsim@redhat.com>
 Alexander Fomin					<afomin.mailbox@gmail.com>
 Brian Ford					<ford@vss.fsi.com>
@@ -562,6 +563,7 @@ Vladimir Prus					<vladimir@codesourcery.com>
 Yao Qi						<yao@codesourcery.com>
 Jerry Quinn					<jlquinn@optonline.net>
 Easwaran Raman					<eraman@google.com>
+Joe Ramsay					<joe.ramsay@arm.com>
 Rolf Rasmussen					<rolfwr@gcc.gnu.org>
 Fritz Reese					<fritzoreese@gmail.com>
 Volker Reichelt					<v.reichelt@netcologne.de>
@@ -586,7 +588,7 @@ Stefan Schulze Frielinghaus			<stefansf@linux.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
 Martin Sebor					<msebor@gcc.gnu.org>
 Svein Seldal					<svein@dev.seldal.com>
-Senthil Kumar Selvaraj				<senthil_kumar.selvaraj@atmel.com>
+Senthil Kumar Selvaraj				<saaadhu@gcc.gnu.org>
 Thiemo Seufer					<ths@networkno.de>
 Bill Seurer					<seurer@linux.vnet.ibm.com>
 Tim Shen					<timshen@google.com>
@@ -620,6 +622,7 @@ Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
 Daniel Towner					<dant@picochip.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
+Sergei Trofimovich				<slyfox@gcc.gnu.org>
 Igor Tsimbalist					<igor.v.tsimbalist@intel.com>
 Martin Uecker					<uecker@eecs.berkeley.edu>
 David Ung					<davidu@mips.com>
@@ -644,6 +647,7 @@ Mark Wielaard					<mark@gcc.gnu.org>
 Edmar Wienskoski				<edmar@freescale.com>
 Ollie Wild					<aaw@google.com>
 Kevin Williams					<kevin.williams@inria.fr>
+Przemyslaw Wirkus				<przemyslaw.wirkus@arm.com>
 Carlo Wood					<carlo@alinoe.com>
 Jackson Woodruff				<jackson.woodruff@arm.com>
 Mingjie Xing					<mingjie.xing@gmail.com>

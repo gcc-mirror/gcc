@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,7 +138,7 @@ package body Exp_Intr is
                Ent : Entity_Id := Current_Scope;
             begin
                while Present (Ent) loop
-                  exit when not Ekind_In (Ent, E_Block, E_Loop);
+                  exit when Ekind (Ent) not in E_Block | E_Loop;
                   Ent := Scope (Ent);
                end loop;
 
@@ -430,28 +430,21 @@ package body Exp_Intr is
       --  the tag in the table of ancestor tags.
 
       elsif not Is_Interface (Result_Typ) then
-         declare
-            Obj_Tag_Node : Node_Id := New_Copy_Tree (Tag_Arg);
-            CW_Test_Node : Node_Id;
-
-         begin
-            Build_CW_Membership (Loc,
-              Obj_Tag_Node => Obj_Tag_Node,
-              Typ_Tag_Node =>
-                New_Occurrence_Of (
-                   Node (First_Elmt (Access_Disp_Table (
-                                       Root_Type (Result_Typ)))), Loc),
-              Related_Nod => N,
-              New_Node    => CW_Test_Node);
-
-            Insert_Action (N,
-              Make_Implicit_If_Statement (N,
-                Condition =>
-                  Make_Op_Not (Loc, CW_Test_Node),
-                Then_Statements =>
-                  New_List (Make_Raise_Statement (Loc,
-                              New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
-         end;
+         Insert_Action (N,
+           Make_Implicit_If_Statement (N,
+             Condition =>
+               Make_Op_Not (Loc,
+                 Make_Function_Call (Loc,
+                    Name => New_Occurrence_Of (RTE (RE_CW_Membership), Loc),
+                    Parameter_Associations => New_List (
+                      New_Copy_Tree (Tag_Arg),
+                      New_Occurrence_Of (
+                        Node (First_Elmt (Access_Disp_Table (
+                                            Root_Type (Result_Typ)))), Loc)))),
+             Then_Statements =>
+               New_List (
+                 Make_Raise_Statement (Loc,
+                   Name => New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
 
       --  Call IW_Membership test if the Result_Type is an abstract interface
       --  to look for the tag in the table of interface tags.
@@ -634,9 +627,9 @@ package body Exp_Intr is
       elsif Nam = Name_Generic_Dispatching_Constructor then
          Expand_Dispatching_Constructor_Call (N);
 
-      elsif Nam_In (Nam, Name_Import_Address,
-                         Name_Import_Largest_Value,
-                         Name_Import_Value)
+      elsif Nam in Name_Import_Address
+                 | Name_Import_Largest_Value
+                 | Name_Import_Value
       then
          Expand_Import_Call (N);
 
@@ -670,19 +663,19 @@ package body Exp_Intr is
       elsif Nam = Name_To_Pointer then
          Expand_To_Pointer (N);
 
-      elsif Nam_In (Nam, Name_File,
-                         Name_Line,
-                         Name_Source_Location,
-                         Name_Enclosing_Entity,
-                         Name_Compilation_ISO_Date,
-                         Name_Compilation_Date,
-                         Name_Compilation_Time)
+      elsif Nam in Name_File
+                 | Name_Line
+                 | Name_Source_Location
+                 | Name_Enclosing_Entity
+                 | Name_Compilation_ISO_Date
+                 | Name_Compilation_Date
+                 | Name_Compilation_Time
       then
          Expand_Source_Info (N, Nam);
 
-         --  If we have a renaming, expand the call to the original operation,
-         --  which must itself be intrinsic, since renaming requires matching
-         --  conventions and this has already been checked.
+      --  If we have a renaming, expand the call to the original operation,
+      --  which must itself be intrinsic, since renaming requires matching
+      --  conventions and this has already been checked.
 
       elsif Present (Alias (E)) then
          Expand_Intrinsic_Call (N, Alias (E));
@@ -690,10 +683,10 @@ package body Exp_Intr is
       elsif Nkind (N) in N_Binary_Op then
          Expand_Binary_Operator_Call (N);
 
-         --  The only other case is where an external name was specified, since
-         --  this is the only way that an otherwise unrecognized name could
-         --  escape the checking in Sem_Prag. Nothing needs to be done in such
-         --  a case, since we pass such a call to the back end unchanged.
+      --  The only other case is where an external name was specified, since
+      --  this is the only way that an otherwise unrecognized name could
+      --  escape the checking in Sem_Prag. Nothing needs to be done in such
+      --  a case, since we pass such a call to the back end unchanged.
 
       else
          null;

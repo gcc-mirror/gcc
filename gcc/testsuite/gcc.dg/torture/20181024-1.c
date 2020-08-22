@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target size32plus } */
 /* { dg-additional-options "-march=core-avx2" { target { x86_64-*-* i?86-*-* } } } */
+/* { dg-require-effective-target size32plus } */
 
 typedef enum {
  C = 0,               N, S, E, W, T, B,               NE, NW, SE, SW,               NT, NB, ST, SB,               ET, EB, WT, WB,               FLAGS, N_CELL_ENTRIES} CELL_ENTRIES;

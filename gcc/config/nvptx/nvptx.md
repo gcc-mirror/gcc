@@ -118,6 +118,10 @@
 (define_predicate "nvptx_float_comparison_operator"
   (match_code "eq,ne,le,ge,lt,gt,uneq,unle,unge,unlt,ungt,unordered,ordered"))
 
+(define_predicate "nvptx_vector_index_operand"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) < 4")))
+
 ;; Test for a valid operand for a call instruction.
 (define_predicate "call_insn_operand"
   (match_code "symbol_ref,reg")
@@ -193,6 +197,10 @@
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+
+;; Define element mode for each vector mode.
+(define_mode_attr VECELEM [(V2SI "SI") (V2DI "DI")])
+(define_mode_attr Vecelem [(V2SI "si") (V2DI "di")])
 
 ;; We should get away with not defining memory alternatives, since we don't
 ;; get variables in this mode and pseudos are never spilled.
@@ -319,6 +327,13 @@
    %.\\tld%A1%u1\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
 
+(define_insn "extendqihi2"
+  [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
+	(sign_extend:HI (match_operand:QI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tcvt.s16.s8\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
 (define_insn "extend<mode>si2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R,R")
 	(sign_extend:SI (match_operand:QHIM 1 "nvptx_nonimmediate_operand" "R,m")))]
@@ -372,6 +387,22 @@
 		    (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tadd%t0\\t%0, %1, %2;")
+
+(define_insn "*vadd_addsi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (plus:SI (plus:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+			  (match_operand:SI 2 "nvptx_register_operand" "R"))
+		 (match_operand:SI 3 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tvadd%t0%t1%t2.add\\t%0, %1, %2, %3;")
+
+(define_insn "*vsub_addsi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (plus:SI (minus:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+			   (match_operand:SI 2 "nvptx_register_operand" "R"))
+		 (match_operand:SI 3 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tvsub%t0%t1%t2.add\\t%0, %1, %2, %3;")
 
 (define_insn "sub<mode>3"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
@@ -493,26 +524,118 @@
   DONE;
 })
 
+(define_insn "popcount<mode>2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(popcount:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tpopc.b%T1\\t%0, %1;")
+
+;; Multiplication variants
+
+(define_insn "mulhisi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "nvptx_register_operand" "R"))
+		 (sign_extend:SI
+		  (match_operand:HI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.s16\\t%0, %1, %2;")
+
+(define_insn "mulsidi3"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(mult:DI (sign_extend:DI
+		  (match_operand:SI 1 "nvptx_register_operand" "R"))
+		 (sign_extend:DI
+		  (match_operand:SI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.s32\\t%0, %1, %2;")
+
+(define_insn "umulhisi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "nvptx_register_operand" "R"))
+		 (zero_extend:SI
+		  (match_operand:HI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.u16\\t%0, %1, %2;")
+
+(define_insn "umulsidi3"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(mult:DI (zero_extend:DI
+		  (match_operand:SI 1 "nvptx_register_operand" "R"))
+		 (zero_extend:DI
+		  (match_operand:SI 2 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tmul.wide.u32\\t%0, %1, %2;")
+
+(define_insn "smulhi3_highpart"
+  [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
+	(truncate:HI
+	 (lshiftrt:SI
+	  (mult:SI (sign_extend:SI
+		    (match_operand:HI 1 "nvptx_register_operand" "R"))
+		   (sign_extend:SI
+		    (match_operand:HI 2 "nvptx_register_operand" "R")))
+	  (const_int 16))))]
+  ""
+  "%.\\tmul.hi.s16\\t%0, %1, %2;")
+
+(define_insn "smulsi3_highpart"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (sign_extend:DI
+		    (match_operand:SI 1 "nvptx_register_operand" "R"))
+		   (sign_extend:DI
+		    (match_operand:SI 2 "nvptx_register_operand" "R")))
+	  (const_int 32))))]
+  ""
+  "%.\\tmul.hi.s32\\t%0, %1, %2;")
+
+(define_insn "umulhi3_highpart"
+  [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
+	(truncate:HI
+	 (lshiftrt:SI
+	  (mult:SI (zero_extend:SI
+		    (match_operand:HI 1 "nvptx_register_operand" "R"))
+		   (zero_extend:SI
+		    (match_operand:HI 2 "nvptx_register_operand" "R")))
+	  (const_int 16))))]
+  ""
+  "%.\\tmul.hi.u16\\t%0, %1, %2;")
+
+(define_insn "umulsi3_highpart"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (zero_extend:DI
+		    (match_operand:SI 1 "nvptx_register_operand" "R"))
+		   (zero_extend:DI
+		    (match_operand:SI 2 "nvptx_register_operand" "R")))
+	  (const_int 32))))]
+  ""
+  "%.\\tmul.hi.u32\\t%0, %1, %2;")
+
 ;; Shifts
 
 (define_insn "ashl<mode>3"
-  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(ashift:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")
-		     (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(ashift:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+		      (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshl.b%T0\\t%0, %1, %2;")
 
 (define_insn "ashr<mode>3"
-  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(ashiftrt:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")
-		       (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(ashiftrt:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+			(match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshr.s%T0\\t%0, %1, %2;")
 
 (define_insn "lshr<mode>3"
-  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(lshiftrt:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")
-		       (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(lshiftrt:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+			(match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshr.u%T0\\t%0, %1, %2;")
 
@@ -812,6 +935,15 @@
   ""
   "%.\\tfma%#%t0\\t%0, %1, %2, %3;")
 
+(define_insn "*recip<mode>2"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+	(div:SDFM
+	  (match_operand:SDFM 2 "const_double_operand" "F")
+	  (match_operand:SDFM 1 "nvptx_register_operand" "R")))]
+  "CONST_DOUBLE_P (operands[2])
+   && real_identical (CONST_DOUBLE_REAL_VALUE (operands[2]), &dconst1)"
+  "%.\\trcp%#%t0\\t%0, %1;")
+
 (define_insn "div<mode>3"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
 	(div:SDFM (match_operand:SDFM 1 "nvptx_register_operand" "R")
@@ -990,6 +1122,78 @@
 		     FPINT2))]
   ""
   "%.\\tcvt<FPINT2:fpint2_roundingmode>.s%T0%t1\\t%0, %1;")
+
+;; Vector operations
+
+(define_insn "*vec_set<mode>_0"
+  [(set (match_operand:VECIM 0 "nvptx_register_operand" "=R")
+	(vec_merge:VECIM
+	  (vec_duplicate:VECIM
+	    (match_operand:<VECELEM> 1 "nvptx_register_operand" "R"))
+	  (match_dup 0)
+	  (const_int 1)))]
+  ""
+  "%.\\tmov%t1\\t%0.x, %1;")
+
+(define_insn "*vec_set<mode>_1"
+  [(set (match_operand:VECIM 0 "nvptx_register_operand" "=R")
+	(vec_merge:VECIM
+	  (vec_duplicate:VECIM
+	    (match_operand:<VECELEM> 1 "nvptx_register_operand" "R"))
+	  (match_dup 0)
+	  (const_int 2)))]
+  ""
+  "%.\\tmov%t1\\t%0.y, %1;")
+
+(define_insn "*vec_set<mode>_2"
+  [(set (match_operand:VECIM 0 "nvptx_register_operand" "=R")
+	(vec_merge:VECIM
+	  (vec_duplicate:VECIM
+	    (match_operand:<VECELEM> 1 "nvptx_register_operand" "R"))
+	  (match_dup 0)
+	  (const_int 4)))]
+  ""
+  "%.\\tmov%t1\\t%0.z, %1;")
+
+(define_insn "*vec_set<mode>_3"
+  [(set (match_operand:VECIM 0 "nvptx_register_operand" "=R")
+	(vec_merge:VECIM
+	  (vec_duplicate:VECIM
+	    (match_operand:<VECELEM> 1 "nvptx_register_operand" "R"))
+	  (match_dup 0)
+	  (const_int 8)))]
+  ""
+  "%.\\tmov%t1\\t%0.w, %1;")
+
+(define_expand "vec_set<mode>"
+  [(match_operand:VECIM 0 "nvptx_register_operand")
+   (match_operand:<VECELEM> 1 "nvptx_register_operand")
+   (match_operand:SI 2 "nvptx_vector_index_operand")]
+  ""
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  int mask = 1 << INTVAL (operands[2]);
+  rtx tmp = gen_rtx_VEC_DUPLICATE (mode, operands[1]);
+  tmp = gen_rtx_VEC_MERGE (mode, tmp, operands[0], GEN_INT (mask));
+  emit_insn (gen_rtx_SET (operands[0], tmp));
+  DONE;
+})
+
+(define_insn "vec_extract<mode><Vecelem>"
+  [(set (match_operand:<VECELEM> 0 "nvptx_register_operand" "=R")
+	(vec_select:<VECELEM>
+	  (match_operand:VECIM 1 "nvptx_register_operand" "R")
+	  (parallel [(match_operand:SI 2 "nvptx_vector_index_operand" "")])))]
+  ""
+{
+  static const char *const asms[4] = {
+    "%.\\tmov%t0\\t%0, %1.x;",
+    "%.\\tmov%t0\\t%0, %1.y;",
+    "%.\\tmov%t0\\t%0, %1.z;",
+    "%.\\tmov%t0\\t%0, %1.w;"
+  };
+  return asms[INTVAL (operands[2])];
+})
 
 ;; Miscellaneous
 

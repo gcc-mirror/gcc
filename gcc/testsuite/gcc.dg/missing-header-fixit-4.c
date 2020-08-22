@@ -9,6 +9,10 @@ void test (int i, int j)
 {
   printf ("%i of %i\n", i, j); /* { dg-line printf } */
   /* { dg-warning "implicit declaration of function" "" { target *-*-* } printf } */
+  /* { dg-begin-multiline-output "" }
+   10 |   printf ("%i of %i\n", i, j);
+      |   ^~~~~~
+   { dg-end-multiline-output "" } */
   /* { dg-warning "incompatible implicit declaration" "" { target *-*-* } printf } */
   /* { dg-begin-multiline-output "" }
    10 |   printf ("%i of %i\n", i, j);

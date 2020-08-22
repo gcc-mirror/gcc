@@ -19,3 +19,4 @@ foo1 (float16x8_t a, float16x8_t b)
 }
 
 /* { dg-final { scan-assembler "vbic"  }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

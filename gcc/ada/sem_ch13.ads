@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,9 @@ with Types; use Types;
 with Uintp; use Uintp;
 
 package Sem_Ch13 is
+   function All_Membership_Choices_Static (Expr : Node_Id) return Boolean;
+   --  Given a membership test, returns True iff all choices are static.
+
    procedure Analyze_At_Clause                          (N : Node_Id);
    procedure Analyze_Attribute_Definition_Clause        (N : Node_Id);
    procedure Analyze_Enumeration_Representation_Clause  (N : Node_Id);
@@ -125,6 +128,25 @@ package Sem_Ch13 is
    --  If the size is too small, and an error message is given, then both
    --  Esize and RM_Size are reset to the allowed minimum value in T.
 
+   function Has_Compatible_Representation
+     (Target_Type, Operand_Type : Entity_Id) return Boolean;
+   --  Given two types, where the two types are related by possible derivation,
+   --  determines if the two types have compatible representation, or different
+   --  representations, requiring the special processing for representation
+   --  change. A False result is possible only for array, enumeration or
+   --  record types.
+
+   procedure Parse_Aspect_Aggregate
+     (N                   : Node_Id;
+      Empty_Subp          : in out Node_Id;
+      Add_Named_Subp      : in out Node_Id;
+      Add_Unnamed_Subp    : in out Node_Id;
+      New_Indexed_Subp    : in out Node_Id;
+      Assign_Indexed_Subp : in out Node_Id);
+   --  Utility to unpack the subprograms in an occurrence of aspect Aggregate;
+   --  used to verify the structure of the aspect, and resolve and expand an
+   --  aggregate for a container type that carries the aspect.
+
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at start of processing a representation clause/pragma. Used to
    --  check that the representation item is not being applied to an incomplete
@@ -181,13 +203,6 @@ package Sem_Ch13 is
    --  definition clauses which have From_Aspect_Specification set. This is
    --  because such clauses are linked on to the Rep_Item chain in procedure
    --  Sem_Ch13.Analyze_Aspect_Specifications. See that procedure for details.
-
-   function Same_Representation (Typ1, Typ2 : Entity_Id) return Boolean;
-   --  Given two types, where the two types are related by possible derivation,
-   --  determines if the two types have the same representation, or different
-   --  representations, requiring the special processing for representation
-   --  change. A False result is possible only for array, enumeration or
-   --  record types.
 
    procedure Validate_Unchecked_Conversion
      (N        : Node_Id;
@@ -341,6 +356,10 @@ package Sem_Ch13 is
    --  aggregate, and each entry must denote a function with the proper syntax
    --  for First, Next, and Has_Element. Optionally an Element primitive may
    --  also be defined.
+
+   procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id);
+   --  Check legality of Integer_Literal, Real_Literal, and String_Literal
+   --  aspect specifications.
 
    procedure Install_Discriminants (E : Entity_Id);
    --  Make visible the discriminants of type entity E

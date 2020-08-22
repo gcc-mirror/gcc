@@ -40,9 +40,9 @@
 #include <iosfwd>
 #include <bits/char_traits.h>
 #include <bits/functional_hash.h>
-#include <bits/int_limits.h>
 #include <bits/range_access.h>
 #include <bits/ostream_insert.h>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -462,10 +462,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
 	const difference_type __diff = __n1 - __n2;
-	if (__diff > __detail::__int_limits<int>::max())
-	  return __detail::__int_limits<int>::max();
-	if (__diff < __detail::__int_limits<int>::min())
-	  return __detail::__int_limits<int>::min();
+	if (__diff > __gnu_cxx::__int_traits<int>::__max)
+	  return __gnu_cxx::__int_traits<int>::__max;
+	if (__diff < __gnu_cxx::__int_traits<int>::__min)
+	  return __gnu_cxx::__int_traits<int>::__min;
 	return static_cast<int>(__diff);
       }
 

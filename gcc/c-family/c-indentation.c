@@ -24,8 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "c-indentation.h"
 #include "selftest.h"
-
-extern cpp_options *cpp_opts;
+#include "diagnostic.h"
 
 /* Round up VIS_COLUMN to nearest tab stop. */
 
@@ -67,6 +66,11 @@ get_visual_column (expanded_location exploc, location_t loc,
 		  "%<-Wmisleading-indentation%> is disabled from this point"
 		  " onwards, since column-tracking was disabled due to"
 		  " the size of the code/headers");
+	  if (!flag_large_source_files)
+	    inform (loc,
+		    "adding %<-flarge-source-files%> will allow for more" 
+		    " column-tracking support, at the expense of compilation"
+		    " time and memory");
 	}
       return false;
     }
@@ -294,7 +298,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   expanded_location next_stmt_exploc = expand_location (next_stmt_loc);
   expanded_location guard_exploc = expand_location (guard_loc);
 
-  const unsigned int tab_width = cpp_opts->tabstop;
+  const unsigned int tab_width = global_dc->tabstop;
 
   /* They must be in the same file.  */
   if (next_stmt_exploc.file != body_exploc.file)

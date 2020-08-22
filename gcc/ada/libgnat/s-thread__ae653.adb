@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ pragma Restrictions (No_Tasking);
 --  which do not use Ada tasking. This restriction ensures that this
 --  will be checked by the binder.
 
+with System.Storage_Elements; use System.Storage_Elements;
 with System.OS_Versions; use System.OS_Versions;
 
 package body System.Threads is
@@ -44,14 +45,16 @@ package body System.Threads is
 
    package SSL renames System.Soft_Links;
 
-   Current_ATSD : aliased System.Address := System.Null_Address;
-   pragma Export (C, Current_ATSD, "__gnat_current_atsd");
-
    Main_ATSD : aliased ATSD;
    --  TSD for environment task
 
-   Stack_Limit : Address;
+   Current_ATSD : aliased System.Address := System.Null_Address;
+   pragma Thread_Local_Storage (Current_ATSD);
+   --  pragma TLS needed since TaskVarAdd no longer available
 
+   --  Assume guard pages for Helix APEX partitions, but leave
+   --  checking mechanism in for now, in case of surprises. ???
+   Stack_Limit : Address;
    pragma Import (C, Stack_Limit, "__gnat_stack_limit");
 
    type Set_Stack_Limit_Proc_Acc is access procedure;
@@ -62,21 +65,16 @@ package body System.Threads is
    --  Procedure to be called when a task is created to set stack limit if
    --  limit checking is used.
 
-   --------------------------
-   -- VxWorks specific API --
-   --------------------------
+   --  VxWorks specific API
 
    ERROR : constant STATUS := Interfaces.C.int (-1);
+   OK    : constant STATUS := Interfaces.C.int (0);
 
    function taskIdVerify (tid : t_id) return STATUS;
    pragma Import (C, taskIdVerify, "taskIdVerify");
 
    function taskIdSelf return t_id;
    pragma Import (C, taskIdSelf, "taskIdSelf");
-
-   function taskVarAdd
-     (tid : t_id; pVar : System.Address) return int;
-   pragma Import (C, taskVarAdd, "taskVarAdd");
 
    -----------------------
    -- Local Subprograms --
@@ -102,21 +100,18 @@ package body System.Threads is
      (Sec_Stack_Ptr        : SST.SS_Stack_Ptr;
       Process_ATSD_Address : System.Address)
    is
-      --  Current_ATSD must already be a taskVar of taskIdSelf.
-      --  No assertion because taskVarGet is not available on VxWorks/CERT,
-      --  which is used on VxWorks 653 3.x as a guest OS.
 
-      TSD : constant ATSD_Access := From_Address (Process_ATSD_Address);
+      ATSD : constant ATSD_Access := From_Address (Process_ATSD_Address);
 
    begin
 
-      TSD.Sec_Stack_Ptr := Sec_Stack_Ptr;
-      SST.SS_Init (TSD.Sec_Stack_Ptr);
+      ATSD.Sec_Stack_Ptr := Sec_Stack_Ptr;
+      SST.SS_Init (ATSD.Sec_Stack_Ptr);
       Current_ATSD := Process_ATSD_Address;
-
       Install_Handler;
 
-      --  Initialize stack limit if needed
+      --  Assume guard pages for Helix/Vx7, but leave in for now ???
+      --  Initialize stack limit if needed.
 
       if Current_ATSD /= Main_ATSD'Address
         and then Set_Stack_Limit_Hook /= null
@@ -184,24 +179,16 @@ package body System.Threads is
    --------------
 
    function Register (T : Thread_Id) return STATUS is
-      Result : STATUS;
-
    begin
       --  It cannot be assumed that the caller of this routine has a ATSD;
       --  so neither this procedure nor the procedures that it calls should
       --  raise or handle exceptions, or make use of a secondary stack.
 
-      --  This routine is only necessary because taskVarAdd cannot be
-      --  executed once an VxWorks 653 partition has entered normal mode
-      --  (depending on configRecord.c, allocation could be disabled).
-      --  Otherwise, everything could have been done in Thread_Body_Enter.
-
       if taskIdVerify (T) = ERROR then
          return ERROR;
       end if;
 
-      Result := taskVarAdd (T, Current_ATSD'Address);
-      pragma Assert (Result /= ERROR);
+      Current_ATSD := To_Address (Integer_Address (T));
 
       --  The same issue applies to the task variable that contains the stack
       --  limit when that overflow checking mechanism is used instead of
@@ -211,17 +198,15 @@ package body System.Threads is
       --  System.Stack_Check_Limits = True.
 
       pragma Warnings (Off);
+
       --  OS is a constant
-      if Result /= ERROR
-        and then OS /= VxWorks_653
-        and then Set_Stack_Limit_Hook /= null
-      then
-         Result := taskVarAdd (T, Stack_Limit'Address);
-         pragma Assert (Result /= ERROR);
+      if OS /= VxWorks_653 and then Set_Stack_Limit_Hook /= null then
+         --  Check that this is correct if limit checking left in. ???
+         Stack_Limit := To_Address (Integer_Address (T));
       end if;
       pragma Warnings (On);
 
-      return Result;
+      return OK;
    end Register;
 
    -------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,11 +42,9 @@ with System.Tasking.Utilities;
 with System.Tasking.Rendezvous;
 with System.Tasking.Initialization;
 with System.Interrupt_Management;
-with System.Parameters;
 
 package body System.Interrupts is
 
-   use Parameters;
    use Tasking;
    use System.OS_Interface;
    use Interfaces.C;
@@ -644,21 +642,11 @@ package body System.Interrupts is
          end loop;
 
          Initialization.Defer_Abort (Self_Id);
-
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
-
          STPO.Write_Lock (Self_Id);
          Self_Id.Common.State := Interrupt_Server_Idle_Sleep;
          STPO.Sleep (Self_Id, Interrupt_Server_Idle_Sleep);
          Self_Id.Common.State := Runnable;
          STPO.Unlock (Self_Id);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
-
          Initialization.Undefer_Abort (Self_Id);
 
          --  Undefer abort here to allow a window for this task to be aborted

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2015-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,8 @@ package Contracts is
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
    --  Add pragma Prag to the contract of a constant, entry, entry family,
    --  [generic] package, package body, protected unit, [generic] subprogram,
-   --  subprogram body, variable or task unit denoted by Id. The following are
-   --  valid pragmas:
+   --  subprogram body, variable, task unit, or type denoted by Id.
+   --  The following are valid pragmas:
    --
    --    Abstract_State
    --    Async_Readers
@@ -113,6 +113,19 @@ package Contracts is
    --
    --  Freeze_Id is the entity of a [generic] package body or a [generic]
    --  subprogram body which "freezes" the contract of Obj_Id.
+
+   procedure Analyze_Type_Contract (Type_Id : Entity_Id);
+   --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
+   --  if they appeared at the end of the declarative region. The pragmas to be
+   --  considered are:
+   --
+   --    Async_Readers
+   --    Async_Writers
+   --    Effective_Reads
+   --    Effective_Writes
+   --
+   --  In the case of a protected or task type, there will also be
+   --  a call to Analyze_Protected_Contract or Analyze_Task_Contract.
 
    procedure Analyze_Package_Body_Contract
      (Body_Id   : Entity_Id;

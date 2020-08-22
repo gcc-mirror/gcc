@@ -344,6 +344,13 @@ asan_shadow_offset ()
   return asan_shadow_offset_value;
 }
 
+/* Returns Asan shadow offset has been set.  */
+bool
+asan_shadow_offset_set_p ()
+{
+  return asan_shadow_offset_computed;
+}
+
 alias_set_type asan_shadow_set = -1;
 
 /* Pointer types to 1, 2 or 4 byte integers in shadow memory.  A separate
@@ -1598,8 +1605,25 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
       if (use_after_return_class < 5
 	  && can_store_by_pieces (sz, builtin_memset_read_str, &c,
 				  BITS_PER_UNIT, true))
-	store_by_pieces (shadow_mem, sz, builtin_memset_read_str, &c,
-			 BITS_PER_UNIT, true, RETURN_BEGIN);
+	{
+	  /* Emit:
+	       memset(ShadowBase, kAsanStackAfterReturnMagic, ShadowSize);
+	       **SavedFlagPtr(FakeStack, class_id) = 0
+	  */
+	  store_by_pieces (shadow_mem, sz, builtin_memset_read_str, &c,
+			   BITS_PER_UNIT, true, RETURN_BEGIN);
+
+	  unsigned HOST_WIDE_INT offset
+	    = (1 << (use_after_return_class + 6));
+	  offset -= GET_MODE_SIZE (ptr_mode);
+	  mem = gen_rtx_MEM (ptr_mode, base);
+	  mem = adjust_address (mem, ptr_mode, offset);
+	  rtx addr = gen_reg_rtx (ptr_mode);
+	  emit_move_insn (addr, mem);
+	  addr = convert_memory_address (Pmode, addr);
+	  mem = gen_rtx_MEM (QImode, addr);
+	  emit_move_insn (mem, const0_rtx);
+	}
       else if (use_after_return_class >= 5
 	       || !set_storage_via_setmem (shadow_mem,
 					   GEN_INT (sz),
@@ -2696,7 +2720,6 @@ create_odr_indicator (tree decl, tree type)
   TREE_ADDRESSABLE (var) = 1;
   TREE_READONLY (var) = 0;
   TREE_THIS_VOLATILE (var) = 1;
-  DECL_GIMPLE_REG_P (var) = 0;
   DECL_ARTIFICIAL (var) = 1;
   DECL_IGNORED_P (var) = 1;
   TREE_STATIC (var) = 1;
@@ -2766,7 +2789,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
       TREE_ADDRESSABLE (refdecl) = TREE_ADDRESSABLE (decl);
       TREE_READONLY (refdecl) = TREE_READONLY (decl);
       TREE_THIS_VOLATILE (refdecl) = TREE_THIS_VOLATILE (decl);
-      DECL_GIMPLE_REG_P (refdecl) = DECL_GIMPLE_REG_P (decl);
+      DECL_NOT_GIMPLE_REG_P (refdecl) = DECL_NOT_GIMPLE_REG_P (decl);
       DECL_ARTIFICIAL (refdecl) = DECL_ARTIFICIAL (decl);
       DECL_IGNORED_P (refdecl) = DECL_IGNORED_P (decl);
       TREE_STATIC (refdecl) = 1;

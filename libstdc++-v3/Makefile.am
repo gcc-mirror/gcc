@@ -173,4 +173,7 @@ AM_MAKEFLAGS = \
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
+# target overrides
+-include $(tmake_file)
+
 include $(top_srcdir)/../multilib.am

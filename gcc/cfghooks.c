@@ -640,6 +640,7 @@ split_edge (edge e)
   profile_count count = e->count ();
   edge f;
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
+  bool back = (e->flags & EDGE_DFS_BACK) != 0;
   class loop *loop;
   basic_block src = e->src, dest = e->dest;
 
@@ -658,6 +659,11 @@ split_edge (edge e)
       ret->flags |= BB_IRREDUCIBLE_LOOP;
       single_pred_edge (ret)->flags |= EDGE_IRREDUCIBLE_LOOP;
       single_succ_edge (ret)->flags |= EDGE_IRREDUCIBLE_LOOP;
+    }
+  if (back)
+    {
+      single_pred_edge (ret)->flags &= ~EDGE_DFS_BACK;
+      single_succ_edge (ret)->flags |= EDGE_DFS_BACK;
     }
 
   if (dom_info_available_p (CDI_DOMINATORS))

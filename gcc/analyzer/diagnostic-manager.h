@@ -39,7 +39,8 @@ public:
 		    const exploded_node *enode,
 		    const supernode *snode, const gimple *stmt,
 		    stmt_finder *stmt_finder,
-		    tree var, state_machine::state_t state,
+		    tree var, const svalue *sval,
+		    state_machine::state_t state,
 		    pending_diagnostic *d);
   ~saved_diagnostic ();
 
@@ -73,6 +74,7 @@ public:
   const gimple *m_stmt;
   stmt_finder *m_stmt_finder;
   tree m_var;
+  const svalue *m_sval;
   state_machine::state_t m_state;
   pending_diagnostic *m_d;
   exploded_edge *m_trailing_eedge;
@@ -99,13 +101,17 @@ class path_builder;
 class diagnostic_manager : public log_user
 {
 public:
-  diagnostic_manager (logger *logger, int verbosity);
+  diagnostic_manager (logger *logger, engine *eng, int verbosity);
+
+  engine *get_engine () const { return m_eng; }
 
   void add_diagnostic (const state_machine *sm,
 		       const exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
-		       tree var, state_machine::state_t state,
+		       tree var,
+		       const svalue *sval,
+		       state_machine::state_t state,
 		       pending_diagnostic *d);
 
   void add_diagnostic (const exploded_node *enode,
@@ -152,16 +158,22 @@ private:
 
   void prune_path (checker_path *path,
 		   const state_machine *sm,
-		   tree var, state_machine::state_t state) const;
+		   const svalue *sval,
+		   state_machine::state_t state) const;
 
   void prune_for_sm_diagnostic (checker_path *path,
 				const state_machine *sm,
 				tree var,
 				state_machine::state_t state) const;
+  void prune_for_sm_diagnostic (checker_path *path,
+				const state_machine *sm,
+				const svalue *sval,
+				state_machine::state_t state) const;
   void update_for_unsuitable_sm_exprs (tree *expr) const;
   void prune_interproc_events (checker_path *path) const;
   void finish_pruning (checker_path *path) const;
 
+  engine *m_eng;
   auto_delete_vec<saved_diagnostic> m_saved_diagnostics;
   const int m_verbosity;
 };

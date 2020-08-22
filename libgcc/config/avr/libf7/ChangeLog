@@ -1,3 +1,7 @@
+2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* t-libf7: Use -include.
+
 2020-01-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Implement 64-bit double functions.

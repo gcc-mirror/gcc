@@ -1,6 +1,6 @@
 // P1668R1: Permit unevaluated inline asm in constexpr functions
 // PR c++/91346
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++20 } }
 
 constexpr int
 foo (bool b)

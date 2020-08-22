@@ -5,9 +5,9 @@ extern void baz (int *);
 int
 foo (int i)
 {
-  int j; /* { dg-warning "'j' may be used uninitialized in this function" "uninitialized" { xfail *-*-* } } */
+  int j; /* { dg-warning "'j' may be used uninitialized" "uninitialized" { xfail *-*-* } } */
 
-  if (bar (i)) { 
+  if (bar (i)) {
     baz (&j);
   } else {
   }
@@ -19,7 +19,7 @@ foo (int i)
 
 int foo2( void ) {
   int rc;
-  return rc;  /* { dg-warning "'rc' is used uninitialized in this function" } */
+  return rc;  /* { dg-warning "'rc' is used uninitialized" } */
   *&rc = 0;
 }
 
@@ -28,16 +28,16 @@ void frob(int *pi);
 
 int main(void)
 {
-  int i; 
-  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" } */
+  int i;
+  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized" } */
   frob(&i);
 
   return 0;
 }
 
 void foo3(int*);
-void bar3(void) { 
-  int x; 
-  if(x) /* { dg-warning "'x' is used uninitialized in this function" "uninitialized" } */
-    foo3(&x); 
+void bar3(void) {
+  int x;
+  if(x) /* { dg-warning "'x' is used uninitialized" "uninitialized" } */
+    foo3(&x);
 }

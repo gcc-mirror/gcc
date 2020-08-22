@@ -1949,11 +1949,7 @@ path::_S_convert_loc(const char* __first, const char* __last,
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "Cannot convert character sequence",
 	  std::make_error_code(errc::illegal_byte_sequence)));
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  return __ws;
-#else
-  return _Cvt<wchar_t>::_S_convert(__ws.data(), __ws.data() + __ws.size());
-#endif
+  return _S_convert(std::move(__ws));
 #else
   return {__first, __last};
 #endif

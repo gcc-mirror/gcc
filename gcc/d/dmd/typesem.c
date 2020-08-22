@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -82,7 +82,7 @@ Expression *typeToExpression(Type *t)
 Expression *typeToExpressionHelper(TypeQualified *t, Expression *e, size_t i)
 {
     //printf("toExpressionHelper(e = %s %s)\n", Token::toChars(e->op), e->toChars());
-    for (; i < t->idents.dim; i++)
+    for (; i < t->idents.length; i++)
     {
         RootObject *id = t->idents[i];
         //printf("\t[%d] e: '%s', id: '%s'\n", i, e->toChars(), id->toChars());

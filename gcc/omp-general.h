@@ -43,12 +43,20 @@ enum oacc_loop_flags {
 };
 
 /* A structure holding the elements of:
-   for (V = N1; V cond N2; V += STEP) [...] */
+   for (V = N1; V cond N2; V += STEP) [...]
+   or for non-rectangular loops:
+   for (V = M1 * W + N1; V cond M2 * W + N2; V += STEP;
+   where W is V of the OUTER-th loop (e.g. for OUTER 1 it is the
+   the index of the immediately surrounding loop).
+   NON_RECT_REFERENCED is true for loops referenced by loops
+   with non-NULL M1 or M2.  */
 
 struct omp_for_data_loop
 {
-  tree v, n1, n2, step;
+  tree v, n1, n2, step, m1, m2;
   enum tree_code cond_code;
+  int outer;
+  bool non_rect_referenced;
 };
 
 /* A structure describing the main elements of a parallel loop.  */
@@ -62,12 +70,22 @@ struct omp_for_data
   tree tiling;  /* Tiling values (if non null).  */
   int collapse;  /* Collapsed loops, 1 for a non-collapsed loop.  */
   int ordered;
+  int first_nonrect, last_nonrect;
   bool have_nowait, have_ordered, simd_schedule, have_reductemp;
   bool have_pointer_condtemp, have_scantemp, have_nonctrl_scantemp;
+  bool non_rect;
   int lastprivate_conditional;
   unsigned char sched_modifiers;
   enum omp_clause_schedule_kind sched_kind;
   struct omp_for_data_loop *loops;
+  /* The following are relevant only for non-rectangular loops
+     where only a single loop depends on an outer loop iterator.  */
+  tree first_inner_iterations; /* Number of iterations of the inner
+				  loop with the first outer iterator
+				  (or adjn1, if that is non-NULL).  */
+  tree factor; /* (m2 - m1) * outer_step / inner_step.  */
+  /* Adjusted n1 of the outer loop in such loop nests (if needed).  */
+  tree adjn1;
 };
 
 #define OACC_FN_ATTRIB "oacc function"
@@ -82,6 +100,7 @@ extern tree omp_get_for_step_from_incr (location_t loc, tree incr);
 extern void omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 				  struct omp_for_data_loop *loops);
 extern gimple *omp_build_barrier (tree lhs);
+extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
 extern int omp_constructor_traits_to_codes (tree, enum tree_code *);

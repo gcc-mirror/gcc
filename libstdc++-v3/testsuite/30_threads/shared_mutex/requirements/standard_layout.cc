@@ -1,5 +1,5 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 // { dg-require-gthreads "" }
 
 // Copyright (C) 2015-2020 Free Software Foundation, Inc.

@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 
 #include <functional>
 

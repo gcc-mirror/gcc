@@ -209,6 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_map(unordered_map&& __umap,
 		    const allocator_type& __a)
+	noexcept( noexcept(_Hashtable(std::move(__umap._M_h), __a)) )
       : _M_h(std::move(__umap._M_h), __a)
       { }
 
@@ -466,39 +467,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires amortized constant time.
        */
       template <typename... _Args>
-        pair<iterator, bool>
-        try_emplace(const key_type& __k, _Args&&... __args)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            {
-              __i = emplace(std::piecewise_construct,
-                            std::forward_as_tuple(__k),
-                            std::forward_as_tuple(
-                              std::forward<_Args>(__args)...))
-                .first;
-              return {__i, true};
-            }
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	try_emplace(const key_type& __k, _Args&&... __args)
+	{
+	  return _M_h.try_emplace(cend(), __k, std::forward<_Args>(__args)...);
+	}
 
       // move-capable overload
       template <typename... _Args>
-        pair<iterator, bool>
-        try_emplace(key_type&& __k, _Args&&... __args)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            {
-              __i = emplace(std::piecewise_construct,
-                            std::forward_as_tuple(std::move(__k)),
-                            std::forward_as_tuple(
-                              std::forward<_Args>(__args)...))
-                .first;
-              return {__i, true};
-            }
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	try_emplace(key_type&& __k, _Args&&... __args)
+	{
+	  return _M_h.try_emplace(cend(), std::move(__k),
+				  std::forward<_Args>(__args)...);
+	}
 
       /**
        *  @brief Attempts to build and insert a std::pair into the
@@ -529,32 +511,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires amortized constant time.
        */
       template <typename... _Args>
-        iterator
-        try_emplace(const_iterator __hint, const key_type& __k,
-                    _Args&&... __args)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            __i = emplace_hint(__hint, std::piecewise_construct,
-                               std::forward_as_tuple(__k),
-                               std::forward_as_tuple(
-                                 std::forward<_Args>(__args)...));
-          return __i;
-        }
+	iterator
+	try_emplace(const_iterator __hint, const key_type& __k,
+		    _Args&&... __args)
+	{
+	  return _M_h.try_emplace(__hint, __k,
+				  std::forward<_Args>(__args)...).first;
+	}
 
       // move-capable overload
       template <typename... _Args>
-        iterator
-        try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            __i = emplace_hint(__hint, std::piecewise_construct,
-                               std::forward_as_tuple(std::move(__k)),
-                               std::forward_as_tuple(
-                                 std::forward<_Args>(__args)...));
-          return __i;
-        }
+	iterator
+	try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
+	{
+	  return _M_h.try_emplace(__hint, std::move(__k),
+				  std::forward<_Args>(__args)...).first;
+	}
 #endif // C++17
 
       //@{
@@ -678,39 +650,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires amortized constant time.
        */
       template <typename _Obj>
-        pair<iterator, bool>
-        insert_or_assign(const key_type& __k, _Obj&& __obj)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            {
-              __i = emplace(std::piecewise_construct,
-                            std::forward_as_tuple(__k),
-                            std::forward_as_tuple(std::forward<_Obj>(__obj)))
-                .first;
-              return {__i, true};
-            }
-          (*__i).second = std::forward<_Obj>(__obj);
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	insert_or_assign(const key_type& __k, _Obj&& __obj)
+	{
+	  auto __ret = _M_h.try_emplace(cend(), __k,
+					std::forward<_Obj>(__obj));
+	  if (!__ret.second)
+	    __ret.first->second = std::forward<_Obj>(__obj);
+	  return __ret;
+	}
 
       // move-capable overload
       template <typename _Obj>
-        pair<iterator, bool>
-        insert_or_assign(key_type&& __k, _Obj&& __obj)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            {
-              __i = emplace(std::piecewise_construct,
-                            std::forward_as_tuple(std::move(__k)),
-                            std::forward_as_tuple(std::forward<_Obj>(__obj)))
-                .first;
-              return {__i, true};
-            }
-          (*__i).second = std::forward<_Obj>(__obj);
-          return {__i, false};
-        }
+	pair<iterator, bool>
+	insert_or_assign(key_type&& __k, _Obj&& __obj)
+	{
+	  auto __ret = _M_h.try_emplace(cend(), std::move(__k),
+					std::forward<_Obj>(__obj));
+	  if (!__ret.second)
+	    __ret.first->second = std::forward<_Obj>(__obj);
+	  return __ret;
+	}
 
       /**
        *  @brief Attempts to insert a std::pair into the %unordered_map.
@@ -739,38 +699,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Insertion requires amortized constant time.
        */
       template <typename _Obj>
-        iterator
-        insert_or_assign(const_iterator __hint, const key_type& __k,
-                         _Obj&& __obj)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            {
-              return emplace_hint(__hint, std::piecewise_construct,
-                                  std::forward_as_tuple(__k),
-                                  std::forward_as_tuple(
-                                    std::forward<_Obj>(__obj)));
-            }
-          (*__i).second = std::forward<_Obj>(__obj);
-          return __i;
-        }
+	iterator
+	insert_or_assign(const_iterator __hint, const key_type& __k,
+			 _Obj&& __obj)
+	{
+	  auto __ret = _M_h.try_emplace(__hint, __k, std::forward<_Obj>(__obj));
+	  if (!__ret.second)
+	    __ret.first->second = std::forward<_Obj>(__obj);
+	  return __ret.first;
+	}
 
       // move-capable overload
       template <typename _Obj>
-        iterator
-        insert_or_assign(const_iterator __hint, key_type&& __k, _Obj&& __obj)
-        {
-          iterator __i = find(__k);
-          if (__i == end())
-            {
-              return emplace_hint(__hint, std::piecewise_construct,
-                                  std::forward_as_tuple(std::move(__k)),
-                                  std::forward_as_tuple(
-                                    std::forward<_Obj>(__obj)));
-            }
-          (*__i).second = std::forward<_Obj>(__obj);
-          return __i;
-        }
+	iterator
+	insert_or_assign(const_iterator __hint, key_type&& __k, _Obj&& __obj)
+	{
+	  auto __ret = _M_h.try_emplace(__hint, std::move(__k),
+					std::forward<_Obj>(__obj));
+	  if (!__ret.second)
+	    __ret.first->second = std::forward<_Obj>(__obj);
+	  return __ret.first;
+	}
 #endif
 
       //@{
@@ -1355,6 +1304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_multimap(unordered_multimap&& __ummap,
 			 const allocator_type& __a)
+	noexcept( noexcept(_Hashtable(std::move(__ummap._M_h), __a)) )
       : _M_h(std::move(__ummap._M_h), __a)
       { }
 

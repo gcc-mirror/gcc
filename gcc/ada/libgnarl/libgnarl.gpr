@@ -1,0 +1,28 @@
+with "libgnat_common";
+
+library project Libgnarl is
+
+   for Languages use ("Ada", "C");
+   for Source_Dirs use (".");
+   for Source_List_File use "libgnarl.lst";
+   for Object_Dir use "../obj-" & Libgnat_Common.Library_Kind;
+
+   for Library_Name use "gnarl";
+   for Library_Dir use "../adalib";
+   for Library_Kind use Libgnat_Common.Library_Kind;
+
+   package Compiler is
+
+      for Switches ("C") use Libgnat_Common.C_Flags;
+      for Switches ("Ada") use Libgnat_Common.Ada_Flags;
+
+      for Switches ("s-tasdeb.adb") use
+        Libgnat_Common.Ada_Flags &
+        Libgnat_Common.Force_Debug &
+        Libgnat_Common.No_Opt;
+      --  Compile s-tasdeb.o without optimization and with debug info so that
+      --  it is always possible to set conditional breakpoints on tasks.
+
+   end Compiler;
+
+end Libgnarl;

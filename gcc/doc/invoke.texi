@@ -185,7 +185,9 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file}  -x @var{language}  @gol
+@gccoptlist{-c  -S  -E  -o @var{file} @gol
+-dumpbase @var{dumpbase}  -dumpbase-ext @var{auxdropsuf} @gol
+-dumpdir @var{dumppfx}  -x @var{language}  @gol
 -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
 @@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  @gol
@@ -278,6 +280,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Diagnostic Message Formatting Options
 @xref{Diagnostic Message Formatting Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
+-fdiagnostics-plain-output @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
@@ -290,7 +293,9 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-template-tree  -fno-elide-type @gol
 -fdiagnostics-path-format=@r{[}none@r{|}separate-events@r{|}inline-events@r{]} @gol
 -fdiagnostics-show-path-depths @gol
--fno-show-column}
+-fno-show-column @gol
+-fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]} @gol
+-fdiagnostics-column-origin=@var{origin}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -328,7 +333,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
--Wno-hsa  -Wno-if-not-aligned  -Wno-ignored-attributes @gol
+-Wno-if-not-aligned  -Wno-ignored-attributes @gol
 -Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wno-implicit-function-declaration  -Wno-implicit-int @gol
@@ -499,7 +504,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-sched-spec  -fno-signed-zeros @gol
 -fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-sibling-calls @gol
--fpartial-inlining  -fpeel-loops  -fpredictive-commoning @gol
+-fpartial-inlining  -fparallel-jobs=@var{alg} @gol
+-fpeel-loops  -fpredictive-commoning @gol
 -fprefetch-loop-arrays @gol
 -fprofile-correction @gol
 -fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training @gol
@@ -555,7 +561,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
--fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{]} @gol
+-fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -574,8 +580,8 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -fmacro-prefix-map=@var{old}=@var{new}  @gol
--fmax-include-depth=@var{depth} @gol
+-finput-charset=@var{charset}  -flarge-source-files  @gol
+-fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth} @gol
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -696,6 +702,7 @@ Objective-C and Objective-C++ Dialects}.
 -msign-return-address=@var{scope} @gol
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
 +@var{b-key}]|@var{bti} @gol
+-mharden-sls=@var{opts} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
@@ -815,6 +822,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
 -mbig-endian  -EB  -mlittle-endian  -EL @gol
 -mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu @gol
+-mfloat-abi=@var{name} @gol
 -melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust @gol
 -mdsp  -medsp  -mvdsp @gol
 -mdiv  -msmart  -mhigh-registers  -manchor @gol
@@ -862,7 +870,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes}}
+-mframe-limit=@var{bytes} -mxbpf}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -1129,12 +1137,15 @@ See RS/6000 and PowerPC Options.
 -mpreferred-stack-boundary=@var{num} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
+-mshorten-memrefs  -mno-shorten-memrefs @gol
 -mstrict-align  -mno-strict-align @gol
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mrelax  -mno-relax @gol
 -mriscv-attribute  -mmo-riscv-attribute @gol
--malign-data=@var{type}}
+-malign-data=@var{type} @gol
++-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
++-mstack-protector-guard-offset=@var{offset}}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -1176,6 +1187,7 @@ See RS/6000 and PowerPC Options.
 -mblock-move-inline-limit=@var{num} @gol
 -mblock-compare-inline-limit=@var{num} @gol
 -mblock-compare-inline-loop-limit=@var{num} @gol
+-mno-block-ops-unaligned-vsx @gol
 -mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -mvrsave  -mno-vrsave @gol
@@ -1198,7 +1210,7 @@ See RS/6000 and PowerPC Options.
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
--mpcrel -mno-pcrel}
+-mpcrel -mno-pcrel -mmma -mno-mmma}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -1344,7 +1356,7 @@ See RS/6000 and PowerPC Options.
 -mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
--mrdseed  -msgx -mavx512vp2intersect@gol
+-mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -1383,7 +1395,8 @@ See RS/6000 and PowerPC Options.
 -mtext-section-literals  -mno-text-section-literals @gol
 -mauto-litpools  -mno-auto-litpools @gol
 -mtarget-align  -mno-target-align @gol
--mlongcalls  -mno-longcalls}
+-mlongcalls  -mno-longcalls @gol
+-mabi=@var{abi-type}}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -1601,9 +1614,9 @@ Input files that don't require preprocessing are ignored.
 @cindex output file option
 @item -o @var{file}
 @opindex o
-Place output in file @var{file}.  This applies to whatever
-sort of output is being produced, whether it be an executable file,
-an object file, an assembler file or preprocessed C code.
+Place the primary output in file @var{file}.  This applies to whatever
+sort of output is being produced, whether it be an executable file, an
+object file, an assembler file or preprocessed C code.
 
 If @option{-o} is not specified, the default is to put an executable
 file in @file{a.out}, the object file for
@@ -1611,6 +1624,314 @@ file in @file{a.out}, the object file for
 assembler file in @file{@var{source}.s}, a precompiled header file in
 @file{@var{source}.@var{suffix}.gch}, and all preprocessed C source on
 standard output.
+
+Though @option{-o} names only the primary output, it also affects the
+naming of auxiliary and dump outputs.  See the examples below.  Unless
+overridden, both auxiliary outputs and dump outputs are placed in the
+same directory as the primary output.  In auxiliary outputs, the suffix
+of the input file is replaced with that of the auxiliary output file
+type; in dump outputs, the suffix of the dump file is appended to the
+input file suffix.  In compilation commands, the base name of both
+auxiliary and dump outputs is that of the primary output; in compile and
+link commands, the primary output name, minus the executable suffix, is
+combined with the input file name.  If both share the same base name,
+disregarding the suffix, the result of the combination is that base
+name, otherwise, they are concatenated, separated by a dash.
+
+@smallexample
+gcc -c foo.c ...
+@end smallexample
+
+will use @file{foo.o} as the primary output, and place aux outputs and
+dumps next to it, e.g., aux file @file{foo.dwo} for
+@option{-gsplit-dwarf}, and dump file @file{foo.c.???r.final} for
+@option{-fdump-rtl-final}.
+
+If a non-linker output file is explicitly specified, aux and dump files
+by default take the same base name:
+
+@smallexample
+gcc -c foo.c -o dir/foobar.o ...
+@end smallexample
+
+will name aux outputs @file{dir/foobar.*} and dump outputs
+@file{dir/foobar.c.*}.
+
+A linker output will instead prefix aux and dump outputs:
+
+@smallexample
+gcc foo.c bar.c -o dir/foobar ...
+@end smallexample
+
+will generally name aux outputs @file{dir/foobar-foo.*} and
+@file{dir/foobar-bar.*}, and dump outputs @file{dir/foobar-foo.c.*} and
+@file{dir/foobar-bar.c.*}.
+
+The one exception to the above is when the executable shares the base
+name with the single input:
+
+@smallexample
+gcc foo.c -o dir/foo ...
+@end smallexample
+
+in which case aux outputs are named @file{dir/foo.*} and dump outputs
+named @file{dir/foo.c.*}.
+
+The location and the names of auxiliary and dump outputs can be adjusted
+by the options @option{-dumpbase}, @option{-dumpbase-ext},
+@option{-dumpdir}, @option{-save-temps=cwd}, and
+@option{-save-temps=obj}.
+
+
+@item -dumpbase @var{dumpbase}
+@opindex dumpbase
+This option sets the base name for auxiliary and dump output files.  It
+does not affect the name of the primary output file.  Intermediate
+outputs, when preserved, are not regarded as primary outputs, but as
+auxiliary outputs:
+
+@smallexample
+gcc -save-temps -S foo.c
+@end smallexample
+
+saves the (no longer) temporary preprocessed file in @file{foo.i}, and
+then compiles to the (implied) output file @file{foo.s}, whereas:
+
+@smallexample
+gcc -save-temps -dumpbase save-foo -c foo.c
+@end smallexample
+
+preprocesses to in @file{save-foo.i}, compiles to @file{save-foo.s} (now
+an intermediate, thus auxiliary output), and then assembles to the
+(implied) output file @file{foo.o}.
+
+Absent this option, dump and aux files take their names from the input
+file, or from the (non-linker) output file, if one is explicitly
+specified: dump output files (e.g. those requested by @option{-fdump-*}
+options) with the input name suffix, and aux output files (those
+requested by other non-dump options, e.g. @code{-save-temps},
+@code{-gsplit-dwarf}, @code{-fcallgraph-info}) without it.
+
+Similar suffix differentiation of dump and aux outputs can be attained
+for explicitly-given @option{-dumpbase basename.suf} by also specifying
+@option{-dumpbase-ext .suf}.
+
+If @var{dumpbase} is explicitly specified with any directory component,
+any @var{dumppfx} specification (e.g. @option{-dumpdir} or
+@option{-save-temps=*}) is ignored, and instead of appending to it,
+@var{dumpbase} fully overrides it:
+
+@smallexample
+gcc foo.c -c -o dir/foo.o -dumpbase alt/foo \
+  -dumpdir pfx- -save-temps=cwd ...
+@end smallexample
+
+creates auxiliary and dump outputs named @file{alt/foo.*}, disregarding
+@file{dir/} in @option{-o}, the @file{./} prefix implied by
+@option{-save-temps=cwd}, and @file{pfx-} in @option{-dumpdir}.
+
+When @option{-dumpbase} is specified in a command that compiles multiple
+inputs, or that compiles and then links, it may be combined with
+@var{dumppfx}, as specified under @option{-dumpdir}.  Then, each input
+file is compiled using the combined @var{dumppfx}, and default values
+for @var{dumpbase} and @var{auxdropsuf} are computed for each input
+file:
+
+@smallexample
+gcc foo.c bar.c -c -dumpbase main ...
+@end smallexample
+
+creates @file{foo.o} and @file{bar.o} as primary outputs, and avoids
+overwriting the auxiliary and dump outputs by using the @var{dumpbase}
+as a prefix, creating auxiliary and dump outputs named @file{main-foo.*}
+and @file{main-bar.*}.
+
+An empty string specified as @var{dumpbase} avoids the influence of the
+output basename in the naming of auxiliary and dump outputs during
+compilation, computing default values :
+
+@smallexample
+gcc -c foo.c -o dir/foobar.o -dumpbase '' ...
+@end smallexample
+
+will name aux outputs @file{dir/foo.*} and dump outputs
+@file{dir/foo.c.*}.  Note how their basenames are taken from the input
+name, but the directory still defaults to that of the output.
+
+The empty-string dumpbase does not prevent the use of the output
+basename for outputs during linking:
+
+@smallexample
+gcc foo.c bar.c -o dir/foobar -dumpbase '' -flto ...
+@end smallexample
+
+The compilation of the source files will name auxiliary outputs
+@file{dir/foo.*} and @file{dir/bar.*}, and dump outputs
+@file{dir/foo.c.*} and @file{dir/bar.c.*}.  LTO recompilation during
+linking will use @file{dir/foobar.} as the prefix for dumps and
+auxiliary files.
+
+
+@item -dumpbase-ext @var{auxdropsuf}
+@opindex dumpbase-ext
+When forming the name of an auxiliary (but not a dump) output file, drop
+trailing @var{auxdropsuf} from @var{dumpbase} before appending any
+suffixes.  If not specified, this option defaults to the suffix of a
+default @var{dumpbase}, i.e., the suffix of the input file when
+@option{-dumpbase} is not present in the command line, or @var{dumpbase}
+is combined with @var{dumppfx}.
+
+@smallexample
+gcc foo.c -c -o dir/foo.o -dumpbase x-foo.c -dumpbase-ext .c ...
+@end smallexample
+
+creates @file{dir/foo.o} as the main output, and generates auxiliary
+outputs in @file{dir/x-foo.*}, taking the location of the primary
+output, and dropping the @file{.c} suffix from the @var{dumpbase}.  Dump
+outputs retain the suffix: @file{dir/x-foo.c.*}.
+
+This option is disregarded if it does not match the suffix of a
+specified @var{dumpbase}, except as an alternative to the executable
+suffix when appending the linker output base name to @var{dumppfx}, as
+specified below:
+
+@smallexample
+gcc foo.c bar.c -o main.out -dumpbase-ext .out ...
+@end smallexample
+
+creates @file{main.out} as the primary output, and avoids overwriting
+the auxiliary and dump outputs by using the executable name minus
+@var{auxdropsuf} as a prefix, creating auxiliary outputs named
+@file{main-foo.*} and @file{main-bar.*} and dump outputs named
+@file{main-foo.c.*} and @file{main-bar.c.*}.
+
+
+@item -dumpdir @var{dumppfx}
+@opindex dumpdir
+When forming the name of an auxiliary or dump output file, use
+@var{dumppfx} as a prefix:
+
+@smallexample
+gcc -dumpdir pfx- -c foo.c ...
+@end smallexample
+
+creates @file{foo.o} as the primary output, and auxiliary outputs named
+@file{pfx-foo.*}, combining the given @var{dumppfx} with the default
+@var{dumpbase} derived from the default primary output, derived in turn
+from the input name.  Dump outputs also take the input name suffix:
+@file{pfx-foo.c.*}.
+
+If @var{dumppfx} is to be used as a directory name, it must end with a
+directory separator:
+
+@smallexample
+gcc -dumpdir dir/ -c foo.c -o obj/bar.o ...
+@end smallexample
+
+creates @file{obj/bar.o} as the primary output, and auxiliary outputs
+named @file{dir/bar.*}, combining the given @var{dumppfx} with the
+default @var{dumpbase} derived from the primary output name.  Dump
+outputs also take the input name suffix: @file{dir/bar.c.*}.
+
+It defaults to the location of the output file; options
+@option{-save-temps=cwd} and @option{-save-temps=obj} override this
+default, just like an explicit @option{-dumpdir} option.  In case
+multiple such options are given, the last one prevails:
+
+@smallexample
+gcc -dumpdir pfx- -c foo.c -save-temps=obj ...
+@end smallexample
+
+outputs @file{foo.o}, with auxiliary outputs named @file{foo.*} because
+@option{-save-temps=*} overrides the @var{dumppfx} given by the earlier
+@option{-dumpdir} option.  It does not matter that @option{=obj} is the
+default for @option{-save-temps}, nor that the output directory is
+implicitly the current directory.  Dump outputs are named
+@file{foo.c.*}.
+
+When compiling from multiple input files, if @option{-dumpbase} is
+specified, @var{dumpbase}, minus a @var{auxdropsuf} suffix, and a dash
+are appended to (or override, if containing any directory components) an
+explicit or defaulted @var{dumppfx}, so that each of the multiple
+compilations gets differently-named aux and dump outputs.
+
+@smallexample
+gcc foo.c bar.c -c -dumpdir dir/pfx- -dumpbase main ...
+@end smallexample
+
+outputs auxiliary dumps to @file{dir/pfx-main-foo.*} and
+@file{dir/pfx-main-bar.*}, appending @var{dumpbase}- to @var{dumppfx}.
+Dump outputs retain the input file suffix: @file{dir/pfx-main-foo.c.*}
+and @file{dir/pfx-main-bar.c.*}, respectively.  Contrast with the
+single-input compilation:
+
+@smallexample
+gcc foo.c -c -dumpdir dir/pfx- -dumpbase main ...
+@end smallexample
+
+that, applying @option{-dumpbase} to a single source, does not compute
+and append a separate @var{dumpbase} per input file.  Its auxiliary and
+dump outputs go in @file{dir/pfx-main.*}.
+
+When compiling and then linking from multiple input files, a defaulted
+or explicitly specified @var{dumppfx} also undergoes the @var{dumpbase}-
+transformation above (e.g. the compilation of @file{foo.c} and
+@file{bar.c} above, but without @option{-c}).  If neither
+@option{-dumpdir} nor @option{-dumpbase} are given, the linker output
+base name, minus @var{auxdropsuf}, if specified, or the executable
+suffix otherwise, plus a dash is appended to the default @var{dumppfx}
+instead.  Note, however, that unlike earlier cases of linking:
+
+@smallexample
+gcc foo.c bar.c -dumpdir dir/pfx- -o main ...
+@end smallexample
+
+does not append the output name @file{main} to @var{dumppfx}, because
+@option{-dumpdir} is explicitly specified.  The goal is that the
+explicitly-specified @var{dumppfx} may contain the specified output name
+as part of the prefix, if desired; only an explicitly-specified
+@option{-dumpbase} would be combined with it, in order to avoid simply
+discarding a meaningful option.
+
+When compiling and then linking from a single input file, the linker
+output base name will only be appended to the default @var{dumppfx} as
+above if it does not share the base name with the single input file
+name.  This has been covered in single-input linking cases above, but
+not with an explicit @option{-dumpdir} that inhibits the combination,
+even if overridden by @option{-save-temps=*}:
+
+@smallexample
+gcc foo.c -dumpdir alt/pfx- -o dir/main.exe -save-temps=cwd ...
+@end smallexample
+
+Auxiliary outputs are named @file{foo.*}, and dump outputs
+@file{foo.c.*}, in the current working directory as ultimately requested
+by @option{-save-temps=cwd}.
+
+Summing it all up for an intuitive though slightly imprecise data flow:
+the primary output name is broken into a directory part and a basename
+part; @var{dumppfx} is set to the former, unless overridden by
+@option{-dumpdir} or @option{-save-temps=*}, and @var{dumpbase} is set
+to the latter, unless overriden by @option{-dumpbase}.  If there are
+multiple inputs or linking, this @var{dumpbase} may be combined with
+@var{dumppfx} and taken from each input file.  Auxiliary output names
+for each input are formed by combining @var{dumppfx}, @var{dumpbase}
+minus suffix, and the auxiliary output suffix; dump output names are
+only different in that the suffix from @var{dumpbase} is retained.
+
+When it comes to auxiliary and dump outputs created during LTO
+recompilation, a combination of @var{dumppfx} and @var{dumpbase}, as
+given or as derived from the linker output name but not from inputs,
+even in cases in which this combination would not otherwise be used as
+such, is passed down with a trailing period replacing the compiler-added
+dash, if any, as a @option{-dumpdir} option to @command{lto-wrapper};
+being involved in linking, this program does not normally get any
+@option{-dumpbase} and @option{-dumpbase-ext}, and it ignores them.
+
+When running sub-compilers, @command{lto-wrapper} appends LTO stage
+names to the received @var{dumppfx}, ensures it contains a directory
+component so that it overrides any @option{-dumpdir}, and passes that as
+@option{-dumpbase} to sub-compilers.
 
 @item -v
 @opindex v
@@ -2056,7 +2377,6 @@ The name @samp{c++1y} is deprecated.
 @item gnu++14
 @itemx gnu++1y
 GNU dialect of @option{-std=c++14}.
-This is the default for C++ code.
 The name @samp{gnu++1y} is deprecated.
 
 @item c++17
@@ -2067,6 +2387,7 @@ The name @samp{c++1z} is deprecated.
 @item gnu++17
 @itemx gnu++1z
 GNU dialect of @option{-std=c++17}.
+This is the default for C++ code.
 The name @samp{gnu++1z} is deprecated.
 
 @item c++20
@@ -2514,7 +2835,7 @@ This flag is enabled by default for @option{-std=c++17}.
 @itemx -fno-char8_t
 @opindex fchar8_t
 @opindex fno-char8_t
-Enable support for @code{char8_t} as adopted for C++2a.  This includes
+Enable support for @code{char8_t} as adopted for C++20.  This includes
 the addition of a new @code{char8_t} fundamental type, changes to the
 types of UTF-8 string and character literals, new signatures for
 user-defined literals, associated standard library updates, and new
@@ -2580,10 +2901,10 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @itemx -fconcepts-ts
 @opindex fconcepts
 @opindex fconcepts-ts
-Below @option{-std=c++2a}, @option{-fconcepts} enables support for the
+Below @option{-std=c++20}, @option{-fconcepts} enables support for the
 C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
 
-With @option{-std=c++2a} and above, Concepts are part of the language
+With @option{-std=c++20} and above, Concepts are part of the language
 standard, so @option{-fconcepts} defaults to on.  But the standard
 specification of Concepts differs significantly from the TS, so some
 constructs that were allowed in the TS but didn't make it into the
@@ -2959,7 +3280,6 @@ In addition, these warning options have meanings only for C++ programs:
 @table @gcctabopt
 @item -Wabi-tag @r{(C++ and Objective-C++ only)}
 @opindex Wabi-tag
-@opindex Wabi-tag
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
 about ABI tags.
@@ -2968,7 +3288,7 @@ about ABI tags.
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 Warn about uses of a comma expression within a subscripting expression.
-This usage was deprecated in C++2a.  However, a comma expression wrapped
+This usage was deprecated in C++20.  However, a comma expression wrapped
 in @code{( )} is not deprecated.  Example:
 
 @smallexample
@@ -2980,7 +3300,7 @@ void f(int *a, int b, int c) @{
 @end group
 @end smallexample
 
-Enabled by default with @option{-std=c++2a}.
+Enabled by default with @option{-std=c++20}.
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
@@ -3501,7 +3821,7 @@ non-class type, @code{volatile}-qualified function return type,
 @code{volatile}-qualified parameter type, and structured bindings of a
 @code{volatile}-qualified type.  This usage was deprecated in C++20.
 
-Enabled by default with @option{-std=c++2a}.
+Enabled by default with @option{-std=c++20}.
 
 @item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
 @opindex Wzero-as-null-pointer-constant
@@ -3973,6 +4293,19 @@ Note - this option also affects the display of the @samp{#error} and
 function/type/variable attribute.  It does not however affect the
 @samp{pragma GCC warning} and @samp{pragma GCC error} pragmas.
 
+@item -fdiagnostics-plain-output
+This option requests that diagnostic output look as plain as possible, which
+may be useful when running @command{dejagnu} or other utilities that need to
+parse diagnostics output and prefer that it remain more stable over time.
+@option{-fdiagnostics-plain-output} is currently equivalent to the following
+options:
+@gccoptlist{-fno-diagnostics-show-caret @gol
+-fno-diagnostics-show-line-numbers @gol
+-fdiagnostics-color=never @gol
+-fdiagnostics-urls=never}
+In the future, if GCC changes the default appearance of its diagnostics, the
+corresponding option to disable the new behavior will be added to this list.
+
 @item -fdiagnostics-show-location=once
 @opindex fdiagnostics-show-location
 Only meaningful in line-wrapping mode.  Instructs the diagnostic messages
@@ -4418,6 +4751,31 @@ Do not print column numbers in diagnostics.  This may be necessary if
 diagnostics are being scanned by a program that does not understand the
 column numbers, such as @command{dejagnu}.
 
+@item -fdiagnostics-column-unit=@var{UNIT}
+@opindex fdiagnostics-column-unit
+Select the units for the column number.  This affects traditional diagnostics
+(in the absence of @option{-fno-show-column}), as well as JSON format
+diagnostics if requested.
+
+The default @var{UNIT}, @samp{display}, considers the number of display
+columns occupied by each character.  This may be larger than the number
+of bytes required to encode the character, in the case of tab
+characters, or it may be smaller, in the case of multibyte characters.
+For example, the character ``GREEK SMALL LETTER PI (U+03C0)'' occupies one
+display column, and its UTF-8 encoding requires two bytes; the character
+``SLIGHTLY SMILING FACE (U+1F642)'' occupies two display columns, and
+its UTF-8 encoding requires four bytes.
+
+Setting @var{UNIT} to @samp{byte} changes the column number to the raw byte
+count in all cases, as was traditionally output by GCC prior to version 11.1.0.
+
+@item -fdiagnostics-column-origin=@var{ORIGIN}
+@opindex fdiagnostics-column-origin
+Select the origin for column numbers, i.e. the column number assigned to the
+first column.  The default value of 1 corresponds to traditional GCC
+behavior and to the GNU style guide.  Some utilities may perform better with an
+origin of 0; any non-negative value may be specified.
+
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
@@ -4453,11 +4811,15 @@ might be printed in JSON form (after formatting) like this:
         "locations": [
             @{
                 "caret": @{
+		    "display-column": 3,
+		    "byte-column": 3,
                     "column": 3,
                     "file": "misleading-indentation.c",
                     "line": 15
                 @},
                 "finish": @{
+		    "display-column": 4,
+		    "byte-column": 4,
                     "column": 4,
                     "file": "misleading-indentation.c",
                     "line": 15
@@ -4473,6 +4835,8 @@ might be printed in JSON form (after formatting) like this:
                 "locations": [
                     @{
                         "caret": @{
+			    "display-column": 5,
+			    "byte-column": 5,
                             "column": 5,
                             "file": "misleading-indentation.c",
                             "line": 17
@@ -4482,6 +4846,7 @@ might be printed in JSON form (after formatting) like this:
                 "message": "...this statement, but the latter is @dots{}"
             @}
         ]
+	"column-origin": 1,
     @},
     @dots{}
 ]
@@ -4494,10 +4859,34 @@ A diagnostic has a @code{kind}.  If this is @code{warning}, then there is
 an @code{option} key describing the command-line option controlling the
 warning.
 
-A diagnostic can contain zero or more locations.  Each location has up
-to three positions within it: a @code{caret} position and optional
-@code{start} and @code{finish} positions.  A location can also have
-an optional @code{label} string.  For example, this error:
+A diagnostic can contain zero or more locations.  Each location has an
+optional @code{label} string and up to three positions within it: a
+@code{caret} position and optional @code{start} and @code{finish} positions.
+A position is described by a @code{file} name, a @code{line} number, and
+three numbers indicating a column position:
+@itemize @bullet
+
+@item
+@code{display-column} counts display columns, accounting for tabs and
+multibyte characters.
+
+@item
+@code{byte-column} counts raw bytes.
+
+@item
+@code{column} is equal to one of
+the previous two, as dictated by the @option{-fdiagnostics-column-unit}
+option.
+
+@end itemize
+All three columns are relative to the origin specified by
+@option{-fdiagnostics-column-origin}, which is typically equal to 1 but may
+be set, for instance, to 0 for compatibility with other utilities that
+number columns from 0.  The column origin is recorded in the JSON output in
+the @code{column-origin} tag.  In the remaining examples below, the extra
+column number outputs have been omitted for brevity.
+
+For example, this error:
 
 @smallexample
 bad-binary-ops.c:64:23: error: invalid operands to binary + (have 'S' @{aka
@@ -5899,7 +6288,7 @@ This is the warning level of @option{-Wshift-overflow} and is enabled
 by default in C99 and C++11 modes (and newer).  This warning level does
 not warn about left-shifting 1 into the sign bit.  (However, in C, such
 an overflow is still rejected in contexts where an integer constant expression
-is required.)  No warning is emitted in C++2A mode (and newer), as signed left
+is required.)  No warning is emitted in C++20 mode (and newer), as signed left
 shifts always wrap.
 
 @item -Wshift-overflow=2
@@ -8217,12 +8606,6 @@ Suppress warnings when a positional initializer is used to initialize
 a structure that has been marked with the @code{designated_init}
 attribute.
 
-@item -Wno-hsa
-@opindex Whsa
-@opindex Wno-hsa
-Do not warn when HSAIL cannot be emitted for the compiled function or
-OpenMP construct.  These warnings are enabled by default.
-
 @end table
 
 @node Static Analyzer Options
@@ -8795,11 +9178,11 @@ except when selective scheduling is enabled.
 
 @item -gsplit-dwarf
 @opindex gsplit-dwarf
-Separate as much DWARF debugging information as possible into a
-separate output file with the extension @file{.dwo}.  This option allows
-the build system to avoid linking files with debug information.  To
-be useful, this option requires a debugger capable of reading @file{.dwo}
-files.
+If DWARF debugging information is enabled, separate as much debugging
+information as possible into a separate output file with the extension
+@file{.dwo}.  This option allows the build system to avoid linking files with
+debug information.  To be useful, this option requires a debugger capable of
+reading @file{.dwo} files.
 
 @item -gdescribe-dies
 @opindex gdescribe-dies
@@ -10254,7 +10637,7 @@ When enabled, interprocedural constant propagation performs function cloning
 when externally visible function can be called with constant arguments.
 Because this optimization can create multiple copies of functions,
 it may significantly increase code size
-(see @option{--param ipcp-unit-growth=@var{value}}).
+(see @option{--param ipa-cp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
@@ -11204,6 +11587,14 @@ conflicting translation units.  Specifically
 precedence; and for example @option{-ffp-contract=off} takes precedence
 over @option{-ffp-contract=fast}.  You can override them at link time.
 
+Diagnostic options such as @option{-Wstringop-overflow} are passed
+through to the link stage and their setting matches that of the
+compile-step at function granularity.  Note that this matters only
+for diagnostics emitted during optimization.  Note that code
+transforms such as inlining can lead to warnings being enabled
+or disabled for regions if code not consistent with the setting
+at compile time.
+
 When you need to pass options to the assembler via @option{-Wa} or
 @option{-Xassembler} make sure to either compile such translation
 units with @option{-fno-lto} or consistently use the same assembler
@@ -11399,7 +11790,7 @@ default, GCC emits an error message when an inconsistent profile is detected.
 This option is enabled by @option{-fauto-profile}.
 
 @item -fprofile-partial-training
-@opindex fprofile-use
+@opindex fprofile-partial-training
 With @code{-fprofile-use} all portions of programs not executed during train
 run are optimized agressively for size rather than speed.  In some cases it is
 not practical to train all possible hot paths in the program. (For
@@ -12135,7 +12526,7 @@ For example, parameter value 20 limits unit growth to 1.2 times the original
 size. Cold functions (either marked cold via an attribute or by profile
 feedback) are not accounted into the unit size.
 
-@item ipcp-unit-growth
+@item ipa-cp-unit-growth
 Specifies maximal overall growth of the compilation unit caused by
 interprocedural constant propagation.  For example, parameter value 10 limits
 unit growth to 1.1 times the original size.
@@ -13011,12 +13402,6 @@ Maximum depth of recursion when querying properties of SSA names in things
 like fold routines.  One level of recursion corresponds to following a
 use-def chain.
 
-@item hsa-gen-debug-stores
-Enable emission of special debug stores within HSA kernels which are
-then read and reported by libgomp plugin.  Generation of these stores
-is disabled by default, use @option{--param hsa-gen-debug-stores=1} to
-enable it.
-
 @item max-speculative-devirt-maydefs
 The maximum number of may-defs we analyze when looking for a must-def
 specifying the dynamic type of an object that invokes a virtual call
@@ -13069,6 +13454,15 @@ by the copy loop headers pass.
 
 @item vect-epilogues-nomask
 Enable loop epilogue vectorization using smaller vector size.
+
+@item vect-partial-vector-usage
+Controls when the loop vectorizer considers using partial vector loads
+and stores as an alternative to falling back to scalar code.  0 stops
+the vectorizer from ever using partial vector loads and stores.  1 allows
+partial vector loads and stores if vectorization removes the need for the
+code to iterate.  2 allows partial vector loads and stores in all loops.
+The parameter only has an effect on targets that support partial
+vector loads and stores.
 
 @item slp-max-insns-in-bb
 Maximum number of instructions in basic block to be
@@ -13141,9 +13535,6 @@ will not try to thread through its block.
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
 
-@item max-once-peeled-insns
-The maximum number of insns of a peeled loop that rolls only once.
-
 @item sra-max-scalarization-size-Osize
 Maximum size, in storage units, of an aggregate
 which should be considered for scalarization when compiling for size.
@@ -13173,6 +13564,37 @@ a property of a variable such as its value.  This limits the number
 of iterations or recursive calls GCC performs when optimizing certain
 statements or when determining their validity prior to issuing
 diagnostics.
+
+@item store-merging-max-size
+Maximum size of a single store merging region in bytes.
+
+@item hash-table-verification-limit
+The number of elements for which hash table verification is done
+for each searched element.
+
+@item max-find-base-term-values
+Maximum number of VALUEs handled during a single find_base_term call.
+
+@item analyzer-max-enodes-per-program-point
+The maximum number of exploded nodes per program point within
+the analyzer, before terminating analysis of that point.
+
+@item analyzer-min-snodes-for-call-summary
+The minimum number of supernodes within a function for the
+analyzer to consider summarizing its effects at call sites.
+
+@item analyzer-max-recursion-depth
+The maximum number of times a callsite can appear in a call stack
+within the analyzer, before terminating analysis of a call that would
+recurse deeper.
+
+@item gimple-fe-computed-hot-bb-threshold
+The number of executions of a basic block which is considered hot.
+The parameter is used only in GIMPLE FE.
+
+@item analyzer-bb-explosion-factor
+The maximum number of 'after supernode' exploded nodes within the analyzer
+per supernode, before terminating analysis.
 
 @end table
 
@@ -13393,6 +13815,7 @@ location.  If you combine the option with multiple source files,
 the @file{.gcno} file will be overwritten.
 
 @item -fprofile-prefix-path=@var{path}
+@opindex fprofile-prefix-path
 
 This option can be used in combination with
 @option{profile-generate=}@var{profile_dir} and
@@ -13794,7 +14217,7 @@ operand constant, @code{__sanitizer_cov_trace_cmpf} or
 @code{__sanitizer_cov_trace_cmpd} for float or double comparisons and
 @code{__sanitizer_cov_trace_switch} for switch statements.
 
-@item -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{]}
+@item -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
 @opindex fcf-protection
 Enable code instrumentation of control-flow transfers to increase
 program security by checking that target addresses of control-flow
@@ -13811,6 +14234,11 @@ implements checking of validity at the point of returning from a
 function.  The value @code{full} is an alias for specifying both
 @code{branch} and @code{return}. The value @code{none} turns off
 instrumentation.
+
+The value @code{check} is used for the final link with link-time
+optimization (LTO).  An error is issued if LTO object files are
+compiled with different @option{-fcf-protection} values.  The
+value @code{check} is ignored at the compile time.
 
 The macro @code{__CET__} is defined when @option{-fcf-protection} is
 used.  The first bit of @code{__CET__} is set to 1 for the value
@@ -14084,6 +14512,35 @@ of the function name, it is considered to be a match.  For C99 and C++
 extended identifiers, the function name must be given in UTF-8, not
 using universal character names.
 
+@item -fparallel-jobs=@var{n}
+@opindex parallel
+This option is experimental.
+
+This option enables parallel compilation of files using a maximum of
+@var{n} parallel jobs.  When invoked, it tries to distribute the symbols
+within the file into multiple partitions and compile them in parallel.
+
+For now, private symbols are paritioned together with public symbols
+if there are references to them to avoid code layout modifications
+when compiling.  This means that compiling a file
+with very few public symbols will not provide noticeable improvements
+in compilation time.  However, you can use
+@option{--param=promote-statics=1} to allow GCC to automatically
+promote a symbol to be globally available, improving compilation
+performance in exchange to changing code layout.
+
+You can also specify @option{-fparallel-jobs=jobserver} to use GNU make's
+job server mode to determine the number of parallel jobs.  This
+is useful when the Makefile calling GCC is already executing in parallel.
+You must prepend a @samp{+} to the command recipe in the parent Makefile
+for this to work.  This option likely only works if @env{MAKE} is
+GNU make.  If you specify @option{-fparallel-jobs=auto}, GCC will try to
+automatically detect a running GNU make's job server.
+
+An extra parameter, @option{--param=balance-partitions=0} can be used to
+avoid balancing created partitions.  This should only be used to debug
+the compiler.
+
 @item -fpatchable-function-entry=@var{N}[,@var{M}]
 @opindex fpatchable-function-entry
 Generate @var{N} NOPs right at the beginning
@@ -14173,6 +14630,21 @@ This option may be useful in conjunction with the @option{-B} or
 @option{-wrapper} options to specify an alternate preprocessor or
 perform additional processing of the program source between
 normal preprocessing and compilation.
+
+@item -flarge-source-files
+@opindex flarge-source-files
+Adjust GCC to expect large source files, at the expense of slower
+compilation and higher memory usage.
+
+Specifically, GCC normally tracks both column numbers and line numbers
+within source files and it normally prints both of these numbers in
+diagnostics.  However, once it has processed a certain number of source
+lines, it stops tracking column numbers and only tracks line numbers.
+This means that diagnostics for later lines do not include column numbers.
+It also means that options like @option{-Wmisleading-indentation} cease to work
+at that point, although the compiler prints a note if this happens.
+Passing @option{-flarge-source-files} significantly increases the number
+of source lines that GCC can process before it stops tracking columns.
 
 @end table
 
@@ -16254,54 +16726,28 @@ computing CRC32).
 The @var{string} should be different for every file you compile.
 
 @item -save-temps
-@itemx -save-temps=cwd
 @opindex save-temps
-Store the usual ``temporary'' intermediate files permanently; place them
-in the current directory and name them based on the source file.  Thus,
-compiling @file{foo.c} with @option{-c -save-temps} produces files
-@file{foo.i} and @file{foo.s}, as well as @file{foo.o}.  This creates a
-preprocessed @file{foo.i} output file even though the compiler now
-normally uses an integrated preprocessor.
+Store the usual ``temporary'' intermediate files permanently; name them
+as auxiliary output files, as specified described under
+@option{-dumpbase} and @option{-dumpdir}.
 
 When used in combination with the @option{-x} command-line option,
-@option{-save-temps} is sensible enough to avoid over writing an
+@option{-save-temps} is sensible enough to avoid overwriting an
 input source file with the same extension as an intermediate file.
 The corresponding intermediate file may be obtained by renaming the
 source file before using @option{-save-temps}.
 
-If you invoke GCC in parallel, compiling several different source
-files that share a common base name in different subdirectories or the
-same source file compiled for multiple output destinations, it is
-likely that the different parallel compilers will interfere with each
-other, and overwrite the temporary files.  For instance:
-
-@smallexample
-gcc -save-temps -o outdir1/foo.o indir1/foo.c&
-gcc -save-temps -o outdir2/foo.o indir2/foo.c&
-@end smallexample
-
-may result in @file{foo.i} and @file{foo.o} being written to
-simultaneously by both compilers.
+@item -save-temps=cwd
+@opindex save-temps=cwd
+Equivalent to @option{-save-temps -dumpdir ./}.
 
 @item -save-temps=obj
 @opindex save-temps=obj
-Store the usual ``temporary'' intermediate files permanently.  If the
-@option{-o} option is used, the temporary files are based on the
-object file.  If the @option{-o} option is not used, the
-@option{-save-temps=obj} switch behaves like @option{-save-temps}.
-
-For example:
-
-@smallexample
-gcc -save-temps=obj -c foo.c
-gcc -save-temps=obj -c bar.c -o dir/xbar.o
-gcc -save-temps=obj foobar.c -o dir2/yfoobar
-@end smallexample
-
-@noindent
-creates @file{foo.i}, @file{foo.s}, @file{dir/xbar.i},
-@file{dir/xbar.s}, @file{dir2/yfoobar.i}, @file{dir2/yfoobar.s}, and
-@file{dir2/yfoobar.o}.
+Equivalent to @option{-save-temps -dumpdir @file{outdir/}}, where
+@file{outdir/} is the directory of the output file specified after the
+@option{-o} option, including any directory separators.  If the
+@option{-o} option is not used, the @option{-save-temps=obj} switch
+behaves like @option{-save-temps=cwd}.
 
 @item -time@r{[}=@var{file}@r{]}
 @opindex time
@@ -16338,7 +16784,7 @@ can later tell what file was being compiled, and with which options.
 Dump the final internal representation (RTL) to @var{file}.  If the
 optional argument is omitted (or if @var{file} is @code{.}), the name
 of the dump file is determined by appending @code{.gkd} to the
-compilation output file name.
+dump base name, see @option{-dumpbase}.
 
 @item -fcompare-debug@r{[}=@var{opts}@r{]}
 @opindex fcompare-debug
@@ -16787,24 +17233,6 @@ and from what offset from that base register. There is no default
 register or offset as this is entirely for use within the Linux
 kernel.
 
-@item -mstack-protector-guard=@var{guard}
-@itemx -mstack-protector-guard-reg=@var{reg}
-@itemx -mstack-protector-guard-offset=@var{offset}
-@opindex mstack-protector-guard
-@opindex mstack-protector-guard-reg
-@opindex mstack-protector-guard-offset
-Generate stack protection code using canary at @var{guard}.  Supported
-locations are @samp{global} for a global canary or @samp{sysreg} for a
-canary in an appropriate system register.
-
-With the latter choice the options
-@option{-mstack-protector-guard-reg=@var{reg}} and
-@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
-which system register to use as base register for reading the canary,
-and from what offset from that base register. There is no default
-register or offset as this is entirely for use within the Linux
-kernel.
-
 @item -mtls-dialect=desc
 @opindex mtls-dialect=desc
 Use TLS descriptors as the thread-local storage mechanism for dynamic accesses
@@ -16939,10 +17367,11 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
-@samp{octeontx2f95mm}
+@samp{octeontx2f95mm},
+@samp{a64fx},
 @samp{thunderx}, @samp{thunderxt88},
 @samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
-@samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110},
+@samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}
@@ -17028,6 +17457,17 @@ argument @samp{leaf} can be used to extend the signing to include leaf
 functions.  The optional argument @samp{b-key} can be used to sign the functions
 with the B-key instead of the A-key.
 @samp{bti} turns on branch target identification mechanism.
+
+@item -mharden-sls=@var{opts}
+@opindex mharden-sls
+Enable compiler hardening against straight line speculation (SLS).
+@var{opts} is a comma-separated list of the following options:
+@table @samp
+@item retbr
+@item blr
+@end table
+In addition, @samp{-mharden-sls=all} enables all SLS hardening while
+@samp{-mharden-sls=none} disables all SLS hardening.
 
 @item -msve-vector-bits=@var{bits}
 @opindex msve-vector-bits
@@ -20222,6 +20662,23 @@ Specify the C-SKY target processor.  Valid values for @var{cpu} are:
 
 Select big- or little-endian code.  The default is little-endian.
 
+@item -mfloat-abi=@var{name}
+@opindex mfloat-abi
+Specifies which floating-point ABI to use.  Permissible values
+are: @samp{soft}, @samp{softfp} and @samp{hard}.
+
+Specifying @samp{soft} causes GCC to generate output containing
+library calls for floating-point operations.
+@samp{softfp} allows the generation of code using hardware floating-point
+instructions, but still uses the soft-float calling conventions.
+@samp{hard} allows generation of floating-point instructions
+and uses FPU-specific calling conventions.
+
+The default depends on the specific target configuration.  Note that
+the hard-float and soft-float ABIs are not link-compatible; you must
+compile your entire program with the same ABI, and link with a
+compatible set of libraries.
+
 @item -mhard-float
 @opindex mhard-float
 @itemx -msoft-float
@@ -20996,6 +21453,14 @@ Generate code for a big-endian target.
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a little-endian target.  This is the default.
+
+@item -mxbpf
+Generate code for an expanded version of BPF, which relaxes some of
+the restrictions imposed by the BPF architecture:
+@itemize @minus
+@item Save and restore callee-saved registers at function entry and
+exit, respectively.
+@end itemize
 @end table
 
 @node FR30 Options
@@ -25313,6 +25778,15 @@ Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
 
+@item -mshorten-memrefs
+@itemx -mno-shorten-memrefs
+@opindex mshorten-memrefs
+Do or do not attempt to make more use of compressed load/store instructions by
+replacing a load/store of 'base register + large offset' with a new load/store
+of 'new base + small offset'.  If the new base gets stored in a compressed
+register, then the new load/store can be compressed.  Currently targets 32-bit
+integer load/stores only.
+
 @item -mstrict-align
 @itemx -mno-strict-align
 @opindex mstrict-align
@@ -25356,6 +25830,24 @@ Control how GCC aligns variables and constants of array, structure, or union
 types.  Supported values for @var{type} are @samp{xlen} which uses x register
 width as the alignment value, and @samp{natural} which uses natural alignment.
 @samp{xlen} is the default.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for a global canary or @samp{tls} for per-thread
+canary in the TLS block.
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which register to use as base register for reading the canary,
+and from what offset from that base register. There is no default
+register or offset as this is entirely for use within the Linux
+kernel.
 @end table
 
 @node RL78 Options
@@ -25586,7 +26078,8 @@ following options:
 -mpowerpc-gpopt  -mpowerpc-gfxopt @gol
 -mmulhw  -mdlmzb  -mmfpgpr  -mvsx @gol
 -mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector @gol
--mquad-memory  -mquad-memory-atomic  -mfloat128  -mfloat128-hardware}
+-mquad-memory  -mquad-memory-atomic  -mfloat128 @gol
+-mfloat128-hardware -mprefixed -mpcrel -mmma}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -26582,6 +27075,20 @@ addressing (@option{-mprefixed}) options are enabled.
 @opindex mno-prefixed
 Generate (do not generate) addressing modes using prefixed load and
 store instructions when the option @option{-mcpu=future} is used.
+
+@item -mmma
+@itemx -mno-mma
+@opindex mmma
+@opindex mno-mma
+Generate (do not generate) the MMA instructions when the option
+@option{-mcpu=future} is used.
+
+@item -mblock-ops-unaligned-vsx
+@itemx -mno-block-ops-unaligned-vsx
+@opindex block-ops-unaligned-vsx
+@opindex no-block-ops-unaligned-vsx
+Generate (do not generate) unaligned vsx loads and stores for
+inline expansion of @code{memcpy} and @code{memmove}.
 @end table
 
 @node RX Options
@@ -28714,6 +29221,19 @@ RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ, AVX512BITALG, AVX512VNNI, VPCLMULQDQ,
 VAES, PCONFIG, WBNOINVD, MOVDIRI, MOVDIR64B and  AVX512VP2INTERSECT instruction
 set support.
 
+@item sapphirerapids
+Intel sapphirerapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND,
+FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES,
+AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI, AVX512BF16,
+MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
+SERIALIZE and TSXLDTRK instruction set support.
+
+@item alderlake
+Intel Alderlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, CLDEMOTE,
+PTWRITE, WAITPKG and SERIALIZE instruction set support.
+
 @item k6
 AMD K6 CPU with MMX instruction set support.
 
@@ -29468,6 +29988,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -menqcmd
 @opindex menqcmd
 @need 200
+@itemx -mtsxldtrk
+@opindex mtsxldtrk
+@need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
 @need 200
@@ -29485,6 +30008,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mcldemote
 @opindex mcldemote
+@need 200
+@itemx -mserialize
+@opindex mserialize
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -29493,9 +30019,9 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, or CLDEMOTE
-extended instruction sets.  Each has a corresponding @option{-mno-} option to
-disable use of these instructions.
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
+or CLDEMOTE extended instruction sets.  Each has a corresponding
+@option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -30420,6 +30946,29 @@ assembly code generated by GCC still shows direct call
 instructions---look at the disassembled object code to see the actual
 instructions.  Note that the assembler uses an indirect call for
 every cross-file call, not just those that really are out of range.
+
+@item -mabi=@var{name}
+@opindex mabi
+Generate code for the specified ABI@.  Permissible values are: @samp{call0},
+@samp{windowed}.  Default ABI is chosen by the Xtensa core configuration.
+
+@item -mabi=call0
+@opindex mabi=call0
+When this option is enabled function parameters are passed in registers
+@code{a2} through @code{a7}, registers @code{a12} through @code{a15} are
+caller-saved, and register @code{a15} may be used as a frame pointer.
+When this version of the ABI is enabled the C preprocessor symbol
+@code{__XTENSA_CALL0_ABI__} is defined.
+
+@item -mabi=windowed
+@opindex mabi=windowed
+When this option is enabled function parameters are passed in registers
+@code{a10} through @code{a15}, and called function rotates register window
+by 8 registers on entry so that its arguments are found in registers
+@code{a2} through @code{a7}.  Register @code{a7} may be used as a frame
+pointer.  Register window is rotated 8 registers back upon return.
+When this version of the ABI is enabled the C preprocessor symbol
+@code{__XTENSA_WINDOWED_ABI__} is defined.
 @end table
 
 @node zSeries Options
@@ -30582,17 +31131,24 @@ together or combine them with constant text in a single argument.
 @item %%
 Substitute one @samp{%} into the program name or argument.
 
+@item %"
+Substitute an empty argument.
+
 @item %i
 Substitute the name of the input file being processed.
 
 @item %b
-Substitute the basename of the input file being processed.
-This is the substring up to (and not including) the last period
-and not including the directory.
+Substitute the basename for outputs related with the input file being
+processed.  This is often the substring up to (and not including) the
+last period and not including the directory but, unless %w is active, it
+expands to the basename for auxiliary outputs, which may be influenced
+by an explicit output name, and by various other options that control
+how auxiliary outputs are named.
 
 @item %B
 This is the same as @samp{%b}, but include the file suffix (text after
-the last period).
+the last period).  Without %w, it expands to the basename for dump
+outputs.
 
 @item %d
 Marks the argument containing or following the @samp{%d} as a

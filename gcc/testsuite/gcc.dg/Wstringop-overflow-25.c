@@ -1,6 +1,7 @@
 /* PR middle-end/91582 - missing heap overflow detection for strcpy
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" }
+   { dg-require-effective-target alloca } */
 
 #include "range.h"
 
@@ -370,14 +371,14 @@ NOIPA void test_strcpy_malloc_flexarray (void)
   size_t r_2_3 = UR (2, 3);
 
   T (char, S (0), r_0_1);
-  T (char, S (1), r_0_1);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" { xfail *-*-* } }
+  T (char, S (1), r_0_1);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" }
 
   T (char, S (0), r_1_2);
   T (char, S (1), r_1_2);
-  T (char, S (2), r_1_2);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" { xfail *-*-* } }
+  T (char, S (2), r_1_2);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" }
 
   T (char, S (0), r_2_3);
   T (char, S (2), r_2_3);
-  T (char, S (3), r_2_3);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" { xfail *-*-* } }
-  T (char, S (9), r_2_3);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" { xfail *-*-* } }
+  T (char, S (3), r_2_3);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" }
+  T (char, S (9), r_2_3);       // { dg-warning "\\\[-Wstringop-overflow" "pr92814" }
 }

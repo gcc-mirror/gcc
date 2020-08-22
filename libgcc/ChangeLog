@@ -1,7 +1,318 @@
+2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/nvptx/atomic.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add atomic.c.
+
+2020-08-03  Ian Lance Taylor  <iant@golang.org>
+
+	* config/i386/morestack.S (BACKOFF) [x86_64]: Add 2048 bytes.
+
+2020-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96402
+	* config/aarch64/lse.S (__aarch64_cas16_acq_rel): Use x2, x3 instead
+	of x(tmp0), x(tmp1) in STXP arguments.
+
+2020-07-31  Maciej W. Rozycki  <macro@wdc.com>
+
+	* config/riscv/save-restore.S [__riscv_xlen == 64]
+	(__riscv_save_10, __riscv_save_8, __riscv_save_6, __riscv_save_4)
+	(__riscv_save_2): Replace negative immediates used for the final
+	stack pointer adjustment with positive ones, right-shifted by 4.
+
+2020-07-31  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Add __gcov_kvp_pool
+	and __gcov_kvp_pool_index variables.
+	* libgcov.h (allocate_gcov_kvp): New.
+	(gcov_topn_add_value): Use it.
+
+2020-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/lse.S: Add PAC property note.
+
+2020-07-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/96035
+	* libgcov-driver-system.c: Create gcov folders with 0777
+	so that it respects a system umask.
+
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/t-slibgcc-aix: Set BITS from compiler cpp macro.
+
+2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* config/aarch64/aarch64-unwind.h (MD_POST_EXTRACT_ROOT_ADDR): Remove.
+	(MD_POST_FROB_EH_HANDLER_ADDR): Remove.
+	(MD_POST_EXTRACT_FRAME_ADDR): Rename to ...
+	(MD_DEMANGLE_RETURN_ADDR): This.
+	(aarch64_post_extract_frame_addr): Rename to ...
+	(aarch64_demangle_return_addr): This.
+	(aarch64_post_frob_eh_handler_addr): Remove.
+	* unwind-dw2.c (uw_update_context): Demangle return address.
+	(uw_frob_return_addr): Remove.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/96001
+	* config/aarch64/lse.S: Add BTI marking and related definitions,
+	and add BTI c to function entries.
+
+2020-07-09  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/lse.S: Add stack note.
+
+2020-07-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95348
+	* libgcov-driver.c (merge_one_data): Merge only profiles
+	that are not of non-zero type.
+	(write_one_data): Write counters only if there's one non-zero
+	value.
+	* libgcov-util.c (tag_function): Change signature from unsigned
+	to int.
+	(tag_blocks): Likewise.
+	(tag_arcs): Likewise.
+	(tag_counters): Likewise.
+	(tag_summary): Likewise.
+	(tag_lines): Read only if COUNTERS is non-zero.
+	(read_gcda_file): Handle negative length for COUNTERS type.
+
+2020-06-25  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (merge_summary): Remove function as its name
+	is misleading and doing something different.
+	(dump_one_gcov): Add ATTRIBUTE_UNUSED for 2 args. Take read summary
+	in gcov-tool.
+	* libgcov-util.c (curr_object_summary): Remove.
+	(read_gcda_file): Remove unused curr_object_summary.
+	(gcov_merge): Merge summaries.
+	* libgcov.h: Add summary argument for gcov_info struct.
+
+2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95259
+	* config/i386/cpuinfo.c: Don't include "cpuinfo.h".  Include
+	"common/config/i386/i386-cpuinfo.h" and
+	"common/config/i386/cpuinfo.h".
+	(__cpu_features2): Changed to array.
+	(get_amd_cpu): Removed.
+	(get_intel_cpu): Likewise.
+	(get_available_features): Likewise.
+	(__cpu_indicator_init): Call cpu_indicator_init.
+	* config/i386/cpuinfo.h: Removed.
+
+2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.in: Remove uses of empty.mk. Use -include.
+	* config/avr/t-avr: Use -include.
+	* empty.mk: Delete.
+
+2020-06-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (extra_parts): Add crtcxa_64 and crtdbase_64.
+	* config/rs6000/t-aix-cxa: Explicitly compile 32 bit with -maix32
+	and 64 bit with -maix64.
+	* config/rs6000/t-slibgcc-aix: Remove extra @multilib_dir@ level.
+	Build and install AIX-style FAT libraries.
+
+2020-06-17  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config.host (md_unwind_header) <i[34567]86-*-gnu*>: Set to
+	'i386/gnu-unwind.h'
+	* config/i386/gnu-unwind.h: New file.
+
+2020-06-17  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-util.c (read_gcda_finalize): Remove const operator.
+	(merge_wrapper): Add both counts and use them properly.
+	(topn_to_memory_representation): New function.
+	(gcov_merge): Covert on disk representation to in memory
+	representation.
+	* libgcov.h: Remove const operator.
+
+2020-06-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac: Use AC_COMPILE_IFELSE instead of manual
+	preprocessor invocation to check for __XTENSA_CALL0_ABI__.
+
+2020-06-09  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95494
+	* libgcov-driver.c (write_top_counters): Cast first to
+	intptr_t as sizeof(*) != sizeof(gcov_type).
+	* libgcov.h (gcov_counter_set_if_null): Remove.
+	(gcov_topn_add_value): Cast first to intptr_t and update
+	linked list directly.
+
+2020-06-09  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/unwind-dw2-xtensa.c (uw_install_context): Merge
+	with uw_install_context_1.
+
+2020-06-04  Andreas Schwab  <schwab@suse.de>
+
+	PR target/59230
+	PR libfortran/59227
+	* config/ia64/t-softfp-compat (softfp_file_list): Filter out
+	soft-fp/divtf3.c.
+	(LIB2ADD): Add config/ia64/divtf3.c.
+	* config/ia64/divtf3.c: New file.
+
+2020-06-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/95480
+	* libgcov-profiler.c (GCOV_SUPPORTS_ATOMIC): Move to...
+	* libgcov.h (GCOV_SUPPORTS_ATOMIC): ...here.
+	(gcov_counter_add): Use GCOV_SUPPORTS_ATOMIC guard.
+	(gcov_counter_set_if_null): Likewise.
+
+2020-06-02  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/div.S (__divdi3): For negative arguments, change bgez
+	to bgtz.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov.h (gcov_topn_add_value): Use xcalloc instead
+	of xmalloc.
+
+2020-06-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (prune_topn_counter): Remove.
+	(prune_counters): Likewise.
+	(merge_one_data): Special case TOP N counters
+	as they have variable length.
+	(write_top_counters): New.
+	(write_one_data): Special case TOP N.
+	(dump_one_gcov): Do not prune TOP N counters.
+	* libgcov-merge.c (merge_topn_values_set): Remove.
+	(__gcov_merge_topn): Use gcov_topn_add_value.
+	* libgcov-profiler.c (__gcov_topn_values_profiler_body):
+	Likewise here.
+	* libgcov.h (gcov_counter_add): New.
+	(gcov_counter_set_if_null): Likewise.
+	(gcov_topn_add_value): New.
+
+2020-06-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (struct fenv):
+	Add __attribute__ ((gcc_struct)).
+
+2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/95413
+	* configure: Regenerated.
+
+2020-05-28  Dong JianQiang  <dongjianqiang2@huawei.com>
+
+	PR gcov-profile/95332
+	* libgcov-util.c (read_gcda_file): Call gcov_magic.
+	* libgcov.h (gcov_magic): Disable GCC poison.
+
+2020-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	* config/i386/cpuinfo.h (processor_features): Move
+	FEATURE_AVX512VP2INTERSECT after FEATURE_AVX512BF16.
+
+2020-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91695
+	* config/i386/cpuinfo.c (get_available_features): Fix VPCLMULQDQ
+	check.
+
+2020-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/95212
+	PR target/95220
+	* config/i386/cpuinfo.c (get_available_features): Fix
+	FEATURE_GFNI check.  Also check FEATURE_AVX512VP2INTERSECT.
+	* config/i386/cpuinfo.h (processor_features): Add
+	FEATURE_AVX512VP2INTERSECT.
+
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.host: Remove support for crisv32-*-* and cris*-*-linux.
+	* config/cris/libgcc-glibc.ver, config/cris/t-linux: Remove.
+
+2020-05-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__math_force_eval): Remove.
+	(__math_force_eval_div): New define.
+	(__sfp_handle_exceptions): Use __math_force_eval_div to use
+	generic division to generate INVALID, DIVZERO and INEXACT
+	exceptions.
+
+2020-05-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/lse-init.c (init_have_lse_atomics): Use __getauxval
+	instead of getauxval.
+	(AT_HWCAP): Define.
+	(HWCAP_ATOMICS): Define.
+	Guard detection on __gnu_linux__.
+
+2020-05-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.host: Delete changes meant for a private branch.
+	* config/rs6000/t-float128: Likewise.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Remove __gcov_flush.
+	* gcov.h (__gcov_flush): Remove.
+	* libgcov-interface.c (__gcov_flush): Remove.
+	(init_mx): Use renamed mutex.
+	(__gcov_lock): Likewise.
+	(__gcov_unlock): Likewise.
+	(__gcov_fork): Likewise.
+	(__gcov_flush): Remove.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* libgcov-interface.c (__gcov_fork): Do not flush
+	and reset only in child process.
+	(__gcov_execl): Dump counters only and reset them
+	only if exec* fails.
+	(__gcov_execlp): Likewise.
+	(__gcov_execle): Likewise.
+	(__gcov_execv): Likewise.
+	(__gcov_execvp): Likewise.
+	(__gcov_execve): Likewise.
+
+2020-05-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/93623
+	* Makefile.in: Add _gcov_lock_unlock to LIBGCOV_INTERFACE.
+	* libgcov-interface.c (ALIAS_void_fn): Remove.
+	(__gcov_lock): New.
+	(__gcov_unlock): New.
+	(__gcov_flush): Use __gcov_lock and __gcov_unlock.
+	(__gcov_reset): Likewise.
+	(__gcov_dump): Likewise.
+	* libgcov.h (__gcov_lock): New declaration.
+	(__gcov_unlock): Likewise.
+
 2020-05-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__math_force_eval): New define.
-	(__sfp_handle_exceptions): Use __math_force_eval to evaluete
+	(__sfp_handle_exceptions): Use __math_force_eval to evaluate
 	generic division to generate INVALID and DIVZERO exceptions.
 
 2020-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>

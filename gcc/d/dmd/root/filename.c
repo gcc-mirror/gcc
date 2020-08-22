@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2019 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,7 +8,7 @@
 
 #include "dsystem.h"
 #include "filename.h"
-
+#include "port.h"
 #include "outbuffer.h"
 #include "array.h"
 #include "file.h"
@@ -111,7 +111,7 @@ Strings *FileName::splitPath(const char *path)
                     {
                         char *home = getenv("HOME");
                         // Expand ~ only if it is prefixing the rest of the path.
-                        if (!buf.offset && p[1] == '/' && home)
+                        if (!buf.length() && p[1] == '/' && home)
                             buf.writestring(home);
                         else
                             buf.writestring("~");
@@ -125,9 +125,9 @@ Strings *FileName::splitPath(const char *path)
                 }
                 break;
             }
-            if (buf.offset)             // if path is not empty
+            if (buf.length())             // if path is not empty
             {
-                array->push(buf.extractString());
+                array->push(buf.extractChars());
             }
         } while (c);
     }
@@ -425,7 +425,7 @@ const char *FileName::searchPath(Strings *path, const char *name, bool cwd)
     if (path)
     {
 
-        for (size_t i = 0; i < path->dim; i++)
+        for (size_t i = 0; i < path->length; i++)
         {
             const char *p = (*path)[i];
             const char *n = combine(p, name);
@@ -492,7 +492,7 @@ const char *FileName::safeSearchPath(Strings *path, const char *name)
         /* Each path is converted to a cannonical name and then a check is done to see
          * that the searched name is really a child one of the the paths searched.
          */
-        for (size_t i = 0; i < path->dim; i++)
+        for (size_t i = 0; i < path->length; i++)
         {
             const char *cname = NULL;
             const char *cpath = canonicalName((*path)[i]);

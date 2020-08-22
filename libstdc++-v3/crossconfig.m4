@@ -63,6 +63,8 @@ case "${host}" in
     # We don't yet support AIX's TLS ABI.
     #GCC_CHECK_TLS
     AM_ICONV
+
+    AC_DEFINE(HAVE_USELOCALE)
     ;;
 
   *-darwin*)
@@ -73,6 +75,8 @@ case "${host}" in
     # Don't call GLIBCXX_CHECK_LINKER_FEATURES, Darwin doesn't have a GNU ld
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
+
+    AC_CHECK_FUNCS(uselocale)
     ;;
 
   *djgpp)
@@ -129,6 +133,7 @@ case "${host}" in
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
+    AC_CHECK_FUNCS(uselocale)
     ;;
 
   *-fuchsia*)
@@ -190,6 +195,7 @@ case "${host}" in
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
+    AC_CHECK_FUNCS(uselocale)
     AM_ICONV
     ;;
   *-mingw32*)
@@ -299,7 +305,8 @@ dnl # macros, in which case the tests might fail, and we might have to
 dnl # switch to more elaborate tests.
     GLIBCXX_CHECK_MATH_DECLS([
       acosl asinl atan2l atanl ceill cosl coshl expl fabsl floorl fmodl
-      frexpl ldexpl log10l logl modfl powl sinl sinhl sqrtl tanl tanhl])
+      frexpl ldexpl log10l logl modfl powl sinl sinhl sqrtl tanl tanhl hypotl
+      ldexpf modff hypotf frexpf])
 dnl # sincosl is the only one missing here, compared with the *l
 dnl # functions in the list guarded by
 dnl # long_double_math_on_this_cpu in configure.ac, right after

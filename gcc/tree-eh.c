@@ -2072,9 +2072,6 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	  gimple_set_location (s, gimple_location (stmt));
 	  gimple_set_block (s, gimple_block (stmt));
 	  gimple_set_lhs (stmt, tmp);
-	  if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-	      || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (tmp) = 1;
 	  gsi_insert_after (gsi, s, GSI_SAME_STMT);
 	}
       /* Look for things that can throw exceptions, and record them.  */
@@ -2939,6 +2936,16 @@ stmt_could_throw_p (function *fun, gimple *stmt)
     }
 }
 
+/* Return true if STMT in function FUN must be assumed necessary because of
+   non-call exceptions.  */
+
+bool
+stmt_unremovable_because_of_non_call_eh_p (function *fun, gimple *stmt)
+{
+  return (fun->can_throw_non_call_exceptions
+	  && !fun->can_delete_dead_exceptions
+	  && stmt_could_throw_p (fun, stmt));
+}
 
 /* Return true if expression T could throw an exception.  */
 

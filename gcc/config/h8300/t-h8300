@@ -16,9 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = mh/ms/msx mn mint32
-MULTILIB_DIRNAMES = h8300h h8300s h8sx normal int32
-MULTILIB_EXCEPTIONS = mint32 mn mn/mint32
+MULTILIB_OPTIONS = ms/msx mn mint32
+MULTILIB_DIRNAMES = h8300s h8sx normal int32
 
 s-config s-conditions s-flags s-codes s-constants s-emit s-recog \
 s-opinit s-extract s-peep s-attr s-attrtab s-output: \

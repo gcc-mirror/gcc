@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -368,7 +368,7 @@ package body Exp_Ch7 is
    --  Mode such subprograms must be handled as nested inside the (implicit)
    --  elaboration procedure that executes that statement part. To handle
    --  properly uplevel references we construct that subprogram explicitly,
-   --  to contain blocks and inner subprograms, The statement part becomes
+   --  to contain blocks and inner subprograms, the statement part becomes
    --  a call to this subprogram. This is only done if blocks are present
    --  in the statement list of the body. (It would be nice to unify this
    --  procedure with Check_Unnesting_In_Decls_Or_Stmts, if possible, since
@@ -909,7 +909,7 @@ package body Exp_Ch7 is
       elsif Is_Protected_Body then
          declare
             Spec      : constant Node_Id := Parent (Corresponding_Spec (N));
-            Conc_Typ  : Entity_Id;
+            Conc_Typ  : Entity_Id := Empty;
             Param     : Node_Id;
             Param_Typ : Entity_Id;
 
@@ -929,6 +929,7 @@ package body Exp_Ch7 is
             end loop;
 
             pragma Assert (Present (Param));
+            pragma Assert (Present (Conc_Typ));
 
             --  Historical note: In earlier versions of GNAT, there was code
             --  at this point to generate stuff to service entry queues. It is
@@ -1342,8 +1343,8 @@ package body Exp_Ch7 is
             --  Treat use clauses as declarations and insert directly in front
             --  of them.
 
-            if Nkind_In (Insertion_Node, N_Use_Package_Clause,
-                                         N_Use_Type_Clause)
+            if Nkind (Insertion_Node) in
+                 N_Use_Package_Clause | N_Use_Type_Clause
             then
                Insert_List_Before_And_Analyze (Insertion_Node, Actions);
             else
@@ -1375,12 +1376,12 @@ package body Exp_Ch7 is
    ---------------------
 
    procedure Build_Finalizer
-     (N           : Node_Id;
-      Clean_Stmts : List_Id;
-      Mark_Id     : Entity_Id;
-      Top_Decls   : List_Id;
-      Defer_Abort : Boolean;
-      Fin_Id      : out Entity_Id)
+     (N                 : Node_Id;
+      Clean_Stmts       : List_Id;
+      Mark_Id           : Entity_Id;
+      Top_Decls         : List_Id;
+      Defer_Abort       : Boolean;
+      Fin_Id            : out Entity_Id)
    is
       Acts_As_Clean    : constant Boolean :=
                            Present (Mark_Id)
@@ -2049,10 +2050,8 @@ package body Exp_Ch7 is
                --  freeze node, the body must be inserted directly after the
                --  construct.
 
-               if Nkind_In (Last_Top_Level_Ctrl_Construct,
-                              N_Freeze_Entity,
-                              N_Package_Declaration,
-                              N_Package_Body)
+               if Nkind (Last_Top_Level_Ctrl_Construct) in
+                    N_Freeze_Entity | N_Package_Declaration | N_Package_Body
                then
                   Finalizer_Insert_Nod := Last_Top_Level_Ctrl_Construct;
                end if;
@@ -2154,7 +2153,6 @@ package body Exp_Ch7 is
 
          Decl := Last_Non_Pragma (Decls);
          while Present (Decl) loop
-
             --  Library-level tagged types
 
             if Nkind (Decl) = N_Full_Type_Declaration then
@@ -2845,13 +2843,10 @@ package body Exp_Ch7 is
 
                Result := Next (Stmt);
                while Present (Result) loop
-                  if not Nkind_In (Result, N_Call_Marker,
-                                           N_Raise_Program_Error)
-                  then
-                     exit;
-                  end if;
+                  exit when Nkind (Result) not in
+                              N_Call_Marker | N_Raise_Program_Error;
 
-                  Result := Next (Result);
+                  Next (Result);
                end loop;
 
                return Result;
@@ -2894,7 +2889,7 @@ package body Exp_Ch7 is
             if No_Initialization (Decl) then
                if No (Expression (Last_Init)) then
                   loop
-                     Last_Init := Next (Last_Init);
+                     Next (Last_Init);
                      exit when No (Last_Init);
                      exit when Nkind (Last_Init) = N_Object_Declaration
                        and then Nkind (Expression (Last_Init)) = N_Reference
@@ -3045,7 +3040,7 @@ package body Exp_Ch7 is
          --  Insert the counter after all initialization has been done. The
          --  place of insertion depends on the context.
 
-         if Ekind_In (Obj_Id, E_Constant, E_Variable) then
+         if Ekind (Obj_Id) in E_Constant | E_Variable then
 
             --  The object is initialized by a build-in-place function call.
             --  The counter insertion point is after the function call.
@@ -3270,7 +3265,7 @@ package body Exp_Ch7 is
                end;
             end if;
 
-            if Ekind_In (Obj_Id, E_Constant, E_Variable)
+            if Ekind (Obj_Id) in E_Constant | E_Variable
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
                --  Temporaries created for the purpose of "exporting" a
@@ -3509,7 +3504,7 @@ package body Exp_Ch7 is
 
       --  Step 3: Finalizer creation
 
-      if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
+      if Acts_As_Clean or else Has_Ctrl_Objs or else Has_Tagged_Types then
          Create_Finalizer;
       end if;
    end Build_Finalizer;
@@ -4361,7 +4356,7 @@ package body Exp_Ch7 is
          if Is_Subprogram (E) then
             return True;
 
-         elsif Ekind_In (E, E_Block, E_Loop)
+         elsif Ekind (E) in E_Block | E_Loop
            and then Contains_Subprogram (E)
          then
             return True;
@@ -4393,7 +4388,7 @@ package body Exp_Ch7 is
 
       Ftyp := Etype (Fent);
 
-      if Nkind_In (Arg, N_Type_Conversion, N_Unchecked_Type_Conversion) then
+      if Nkind (Arg) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          Atyp := Entity (Subtype_Mark (Arg));
       else
          Atyp := Etype (Arg);
@@ -4414,7 +4409,7 @@ package body Exp_Ch7 is
       --  Make_Init_Call, set the target type to the type of the formal
       --  directly, to avoid spurious typing problems.
 
-      elsif Nkind_In (Arg, N_Unchecked_Type_Conversion, N_Type_Conversion)
+      elsif Nkind (Arg) in N_Unchecked_Type_Conversion | N_Type_Conversion
         and then not Is_Class_Wide_Type (Atyp)
       then
          Set_Subtype_Mark (Arg, New_Occurrence_Of (Ftyp, Sloc (Arg)));
@@ -4633,12 +4628,12 @@ package body Exp_Ch7 is
 
       function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean is
       begin
-         return Ekind_In (Id, E_Entry,
-                              E_Entry_Family,
-                              E_Function,
-                              E_Package,
-                              E_Procedure,
-                              E_Subprogram_Body);
+         return Ekind (Id) in E_Entry
+                            | E_Entry_Family
+                            | E_Function
+                            | E_Package
+                            | E_Procedure
+                            | E_Subprogram_Body;
       end Is_Package_Or_Subprogram;
 
       --  Local variables
@@ -4711,11 +4706,12 @@ package body Exp_Ch7 is
    ----------------------------
 
    procedure Expand_Cleanup_Actions (N : Node_Id) is
-      pragma Assert (Nkind_In (N, N_Block_Statement,
-                                  N_Entry_Body,
-                                  N_Extended_Return_Statement,
-                                  N_Subprogram_Body,
-                                  N_Task_Body));
+      pragma Assert
+        (Nkind (N) in N_Block_Statement
+                    | N_Entry_Body
+                    | N_Extended_Return_Statement
+                    | N_Subprogram_Body
+                    | N_Task_Body);
 
       Scop : constant Entity_Id := Current_Scope;
 
@@ -5305,9 +5301,8 @@ package body Exp_Ch7 is
                --  of the alternative.
 
                if Nkind (Parent (Curr)) = N_Entry_Call_Alternative
-                 and then Nkind_In (Parent (Parent (Curr)),
-                                    N_Conditional_Entry_Call,
-                                    N_Timed_Entry_Call)
+                 and then Nkind (Parent (Parent (Curr))) in
+                            N_Conditional_Entry_Call | N_Timed_Entry_Call
                then
                   return Parent (Parent (Curr));
 
@@ -5648,7 +5643,7 @@ package body Exp_Ch7 is
                --      <or>
                --    Hook := Obj_Id'Unrestricted_Access;
 
-               if Ekind_In (Obj_Id, E_Constant, E_Variable)
+               if Ekind (Obj_Id) in E_Constant | E_Variable
                  and then Present (Last_Aggregate_Assignment (Obj_Id))
                then
                   Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
@@ -5720,8 +5715,8 @@ package body Exp_Ch7 is
          Blk_Decl  : Node_Id := Empty;
          Blk_Decls : List_Id := No_List;
          Blk_Ins   : Node_Id;
-         Blk_Stmts : List_Id;
-         Loc       : Source_Ptr;
+         Blk_Stmts : List_Id := No_List;
+         Loc       : Source_Ptr := No_Location;
          Obj_Decl  : Node_Id;
 
       --  Start of processing for Process_Transients_In_Scope
@@ -5854,6 +5849,7 @@ package body Exp_Ch7 is
                --  Construct all necessary circuitry to hook and finalize a
                --  single transient object.
 
+               pragma Assert (Present (Blk_Stmts));
                Process_Transient_In_Scope
                  (Obj_Decl  => Obj_Decl,
                   Blk_Data  => Blk_Data,
@@ -5874,6 +5870,9 @@ package body Exp_Ch7 is
          --  insert it into the tree.
 
          if Present (Blk_Decl) then
+
+            pragma Assert (Present (Blk_Stmts));
+            pragma Assert (Loc /= No_Location);
 
             --  Note that this Abort_Undefer does not require a extra block or
             --  an AT_END handler because each finalization exception is caught
@@ -8285,12 +8284,12 @@ package body Exp_Ch7 is
          Ref  := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
-        and then Present (Full_View (Typ))
-        and then Is_Concurrent_Type (Full_View (Typ))
+        and then Present (Underlying_Type (Typ))
+        and then Is_Concurrent_Type (Underlying_Type (Typ))
       then
-         Utyp := Corresponding_Record_Type (Full_View (Typ));
+         Utyp := Corresponding_Record_Type (Underlying_Type (Typ));
          Atyp := Typ;
-         Ref  := Convert_Concurrent (Ref, Full_View (Typ));
+         Ref  := Convert_Concurrent (Ref, Underlying_Type (Typ));
 
       else
          Utyp := Typ;
@@ -8426,6 +8425,15 @@ package body Exp_Ch7 is
                   Ref := Unchecked_Convert_To (Formal_Typ, Ref);
                end if;
             end;
+
+            --  If the object is unanalyzed, set its expected type for use in
+            --  Convert_View in case an additional conversion is needed.
+
+            if No (Etype (Ref))
+              and then Nkind (Ref) /= N_Unchecked_Type_Conversion
+            then
+               Set_Etype (Ref, Typ);
+            end if;
 
             Ref := Convert_View (Fin_Id, Ref);
          end if;
@@ -8999,10 +9007,9 @@ package body Exp_Ch7 is
          Par : Node_Id := Parent (N);
 
       begin
-         while not (Nkind_In (Par, N_Handled_Sequence_Of_Statements,
-                                   N_Loop_Statement,
-                                   N_Package_Specification)
-                      or else Nkind (Par) in N_Proper_Body)
+         while Nkind (Par) not in
+           N_Handled_Sequence_Of_Statements | N_Loop_Statement |
+           N_Package_Specification          | N_Proper_Body
          loop
             pragma Assert (Present (Par));
             Par := Parent (Par);
@@ -9089,12 +9096,12 @@ package body Exp_Ch7 is
             --  Prevent the search from going too far because transient blocks
             --  are bounded by packages and subprogram scopes.
 
-            elsif Ekind_In (Scop, E_Entry,
-                                  E_Entry_Family,
-                                  E_Function,
-                                  E_Package,
-                                  E_Procedure,
-                                  E_Subprogram_Body)
+            elsif Ekind (Scop) in E_Entry
+                                | E_Entry_Family
+                                | E_Function
+                                | E_Package
+                                | E_Procedure
+                                | E_Subprogram_Body
             then
                exit;
             end if;
@@ -9385,7 +9392,7 @@ package body Exp_Ch7 is
          Manage_SS =>
            Uses_Sec_Stack (Curr_S)
              and then Nkind (N) = N_Object_Declaration
-             and then Ekind_In (Encl_S, E_Package, E_Package_Body)
+             and then Ekind (Encl_S) in E_Package | E_Package_Body
              and then Is_Library_Level_Entity (Encl_S));
       Pop_Scope;
 

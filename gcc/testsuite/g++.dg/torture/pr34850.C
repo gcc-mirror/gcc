@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
-/* { dg-options "-ffat-lto-objects" } */
-/* { dg-additional-options "-Wno-return-type" } */
+/* { dg-options "-ffat-lto-objects -Wno-return-type -Wno-attribute-warning" } */
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;

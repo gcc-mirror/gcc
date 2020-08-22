@@ -277,7 +277,7 @@ private:
   {
   public:
     name_prop (loop_info &li) : m_li (li) {}
-    tree get_value (tree) FINAL OVERRIDE;
+    tree get_value (tree, gimple *) FINAL OVERRIDE;
 
   private:
     /* Information about the versioning we've performed on the loop.  */
@@ -534,7 +534,8 @@ loop_versioning::lv_dom_walker::after_dom_children (basic_block bb)
    Return the new value if so, otherwise return null.  */
 
 tree
-loop_versioning::name_prop::get_value (tree val)
+loop_versioning::name_prop::get_value (tree val,
+				       gimple *stmt ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (val) == SSA_NAME
       && bitmap_bit_p (&m_li.unity_names, SSA_NAME_VERSION (val)))

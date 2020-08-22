@@ -23,14 +23,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Utility functions for use by state machines.  */
 
-extern tree is_zero_assignment (const gimple *stmt);
-extern bool any_pointer_p (tree var);
-
 namespace ana {
 
 class state_machine;
 class sm_context;
 class pending_diagnostic;
+
+extern bool any_pointer_p (tree var);
 
 /* An abstract base class for a state machine describing an API.
    A mapping from state IDs to names, and various virtual functions
@@ -52,6 +51,11 @@ public:
      but we should not inherit the "malloc:non-null" state of a field
      within a heap-allocated struct.  */
   virtual bool inherited_state_p () const = 0;
+
+  virtual state_machine::state_t get_default_state (const svalue *) const
+  {
+    return 0;
+  }
 
   const char *get_name () const { return m_name; }
 
@@ -85,6 +89,19 @@ public:
   virtual pending_diagnostic *on_leak (tree var ATTRIBUTE_UNUSED) const
   {
     return NULL;
+  }
+
+  /* Return true if S should be reset to "start" for values passed (or reachable
+     from) calls to unknown functions.  IS_MUTABLE is true for pointers as
+     non-const, false if only passed as const-pointers.
+
+     For example, in sm-malloc.cc, an on-stack ptr doesn't stop being
+     stack-allocated when passed to an unknown fn, but a malloc-ed pointer
+     could be freed when passed to an unknown fn (unless passed as "const").  */
+  virtual bool reset_when_passed_to_unknown_fn_p (state_t s ATTRIBUTE_UNUSED,
+						  bool is_mutable) const
+  {
+    return is_mutable;
   }
 
   void validate (state_t s) const;
@@ -154,7 +171,12 @@ public:
 			       tree var, state_machine::state_t state,
 			       pending_diagnostic *d) = 0;
 
-  virtual tree get_readable_tree (tree expr)
+  /* For use when generating trees when creating pending_diagnostics, so that
+     rather than e.g.
+       "double-free of '<unknown>'"
+     we can print:
+       "double-free of 'inbuf.data'".  */
+  virtual tree get_diagnostic_tree (tree expr)
   {
     return expr;
   }
@@ -165,6 +187,11 @@ public:
   /* A vfunc for handling custom transitions, such as when registering
      a signal handler.  */
   virtual void on_custom_transition (custom_transition *transition) = 0;
+
+  /* If STMT is an assignment known to assign zero to its LHS, return
+     the LHS.
+     Otherwise return NULL_TREE.  */
+  virtual tree is_zero_assignment (const gimple *stmt) = 0;
 
 protected:
   sm_context (int sm_idx, const state_machine &sm)

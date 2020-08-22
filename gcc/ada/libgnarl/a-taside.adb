@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with System.Address_Image;
-with System.Parameters;
 with System.Soft_Links;
 with System.Task_Primitives;
 with System.Task_Primitives.Operations;
@@ -48,9 +47,6 @@ pragma Warnings (On);
 package body Ada.Task_Identification with
   SPARK_Mode => Off
 is
-
-   use System.Parameters;
-
    package STPO renames System.Task_Primitives.Operations;
 
    -----------------------
@@ -165,20 +161,11 @@ is
          raise Program_Error;
       else
          System.Soft_Links.Abort_Defer.all;
-
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
-
          STPO.Write_Lock (Id);
          Result := Id.Callable;
          STPO.Unlock (Id);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
-
          System.Soft_Links.Abort_Undefer.all;
+
          return Result;
       end if;
    end Is_Callable;
@@ -198,20 +185,11 @@ is
          raise Program_Error;
       else
          System.Soft_Links.Abort_Defer.all;
-
-         if Single_Lock then
-            STPO.Lock_RTS;
-         end if;
-
          STPO.Write_Lock (Id);
          Result := Id.Common.State = Terminated;
          STPO.Unlock (Id);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
-
          System.Soft_Links.Abort_Undefer.all;
+
          return Result;
       end if;
    end Is_Terminated;

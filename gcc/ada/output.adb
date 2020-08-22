@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,13 @@ package body Output is
 
    Current_FD : File_Descriptor := Standout;
    --  File descriptor for current output
+
+   type FD_Array is array (Nat range 1 .. 3) of File_Descriptor;
+   FD_Stack     : FD_Array;
+   FD_Stack_Idx : Nat := FD_Array'First - 1;
+   --  Maintain a small stack for Push_Output and Pop_Output. We'd normally
+   --  use Table for this and allow an unlimited depth, but we're the target
+   --  of a pragma Elaborate_All in Table, so we can't use it here.
 
    Special_Output_Proc : Output_Proc := null;
    --  Record argument to last call to Set_Special_Output. If this is
@@ -227,6 +234,28 @@ package body Output is
       Cur_Indentation :=
         (Cur_Indentation - Indentation_Amount) mod Indentation_Limit;
    end Outdent;
+
+   ----------------
+   -- Pop_Output --
+   ----------------
+
+   procedure Pop_Output is
+   begin
+      pragma Assert (FD_Stack_Idx >= FD_Array'First);
+      Current_FD := FD_Stack (FD_Stack_Idx);
+      FD_Stack_Idx := FD_Stack_Idx - 1;
+   end Pop_Output;
+
+   -----------------
+   -- Push_Output --
+   -----------------
+
+   procedure Push_Output is
+   begin
+      pragma Assert (FD_Stack_Idx < FD_Array'Last);
+      FD_Stack_Idx := FD_Stack_Idx + 1;
+      FD_Stack (FD_Stack_Idx) := Current_FD;
+   end Push_Output;
 
    ---------------------------
    -- Restore_Output_Buffer --

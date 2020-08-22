@@ -65,16 +65,30 @@
   UNSPECV_BLOCKAGE
   UNSPECV_FENCE
   UNSPECV_FENCE_I
+
+  ;; Stack Smash Protector
+  UNSPEC_SSP_SET
+  UNSPEC_SSP_TEST
 ])
 
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
    (GP_REGNUM 			3)
+   (TP_REGNUM			4)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
    (S0_REGNUM			8)
    (S1_REGNUM			9)
    (S2_REGNUM			18)
+   (S3_REGNUM			19)
+   (S4_REGNUM			20)
+   (S5_REGNUM			21)
+   (S6_REGNUM			22)
+   (S7_REGNUM			23)
+   (S8_REGNUM			24)
+   (S9_REGNUM			25)
+   (S10_REGNUM			26)
+   (S11_REGNUM			27)
 
    (NORMAL_RETURN		0)
    (SIBCALL_RETURN		1)
@@ -1808,6 +1822,28 @@
   operands[2] = GEN_INT (ctz_hwi (INTVAL (operands[2])));
 })
 
+;; Handle SImode to DImode zero-extend combined with a left shift.  This can
+;; occur when unsigned int is used for array indexing.  Split this into two
+;; shifts.  Otherwise we can get 3 shifts.
+
+(define_insn_and_split "zero_extendsidi2_shifted"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+			   (match_operand:QI 2 "immediate_operand" "I"))
+		(match_operand 3 "immediate_operand" "")))
+   (clobber (match_scratch:DI 4 "=&r"))]
+  "TARGET_64BIT
+   && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+	(ashift:DI (match_dup 1) (const_int 32)))
+   (set (match_dup 0)
+	(lshiftrt:DI (match_dup 4) (match_dup 5)))]
+  "operands[5] = GEN_INT (32 - (INTVAL (operands [2])));"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "DI")])
+
 ;;
 ;;  ....................
 ;;
@@ -2405,12 +2441,16 @@
   ""
   "ebreak")
 
+;; Must use the registers that we save to prevent the rename reg optimization
+;; pass from using them before the gpr_save pattern when shrink wrapping
+;; occurs.  See bug 95252 for instance.
+
 (define_insn "gpr_save"
-  [(unspec_volatile [(match_operand 0 "const_int_operand")] UNSPECV_GPR_SAVE)
-   (clobber (reg:SI T0_REGNUM))
-   (clobber (reg:SI T1_REGNUM))]
+  [(match_parallel 1 "gpr_save_operation"
+     [(unspec_volatile [(match_operand 0 "const_int_operand")]
+	               UNSPECV_GPR_SAVE)])]
   ""
-  { return riscv_output_gpr_save (INTVAL (operands[0])); })
+  "call\tt0,__riscv_save_%0")
 
 (define_insn "gpr_restore"
   [(unspec_volatile [(match_operand 0 "const_int_operand")] UNSPECV_GPR_RESTORE)]
@@ -2479,6 +2519,89 @@
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
   DONE;
 })
+
+;; Named pattern for expanding thread pointer reference.
+(define_expand "get_thread_pointer<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(reg:P TP_REGNUM))]
+  ""
+{})
+
+;; Named patterns for stack smashing protection.
+
+(define_expand "stack_protect_set"
+  [(match_operand 0 "memory_operand")
+   (match_operand 1 "memory_operand")]
+  ""
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  if (riscv_stack_protector_guard == SSP_TLS)
+  {
+    rtx reg = gen_rtx_REG (Pmode, riscv_stack_protector_guard_reg);
+    rtx offset = GEN_INT (riscv_stack_protector_guard_offset);
+    rtx addr = gen_rtx_PLUS (Pmode, reg, offset);
+    operands[1] = gen_rtx_MEM (Pmode, addr);
+  }
+
+  emit_insn ((mode == DImode
+	      ? gen_stack_protect_set_di
+	      : gen_stack_protect_set_si) (operands[0], operands[1]));
+  DONE;
+})
+
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the life of this sequence.
+(define_insn "stack_protect_set_<mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "=m")
+	(unspec:GPR [(match_operand:GPR 1 "memory_operand" "m")]
+	 UNSPEC_SSP_SET))
+   (set (match_scratch:GPR 2 "=&r") (const_int 0))]
+  ""
+  "<load>\\t%2, %1\;<store>\\t%2, %0\;li\t%2, 0"
+  [(set_attr "length" "12")])
+
+(define_expand "stack_protect_test"
+  [(match_operand 0 "memory_operand")
+   (match_operand 1 "memory_operand")
+   (match_operand 2)]
+  ""
+{
+  rtx result;
+  machine_mode mode = GET_MODE (operands[0]);
+
+  result = gen_reg_rtx(mode);
+  if (riscv_stack_protector_guard == SSP_TLS)
+  {
+      rtx reg = gen_rtx_REG (Pmode, riscv_stack_protector_guard_reg);
+      rtx offset = GEN_INT (riscv_stack_protector_guard_offset);
+      rtx addr = gen_rtx_PLUS (Pmode, reg, offset);
+      operands[1] = gen_rtx_MEM (Pmode, addr);
+  }
+  emit_insn ((mode == DImode
+		  ? gen_stack_protect_test_di
+		  : gen_stack_protect_test_si) (result,
+					        operands[0],
+					        operands[1]));
+
+  if (mode == DImode)
+    emit_jump_insn (gen_cbranchdi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
+				    result, const0_rtx, operands[2]));
+  else
+    emit_jump_insn (gen_cbranchsi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
+				    result, const0_rtx, operands[2]));
+
+  DONE;
+})
+
+(define_insn "stack_protect_test_<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(unspec:GPR [(match_operand:GPR 1 "memory_operand" "m")
+		     (match_operand:GPR 2 "memory_operand" "m")]
+	 UNSPEC_SSP_TEST))
+   (clobber (match_scratch:GPR 3 "=&r"))]
+  ""
+  "<load>\t%3, %1\;<load>\t%0, %2\;xor\t%0, %3, %0\;li\t%3, 0"
+  [(set_attr "length" "12")])
 
 (include "sync.md")
 (include "peephole.md")

@@ -122,9 +122,11 @@ along with GCC; see the file COPYING3.  If not see
 #define m_CASCADELAKE (HOST_WIDE_INT_1U<<PROCESSOR_CASCADELAKE)
 #define m_TIGERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_TIGERLAKE)
 #define m_COOPERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_COOPERLAKE)
+#define m_SAPPHIRERAPIDS (HOST_WIDE_INT_1U<<PROCESSOR_SAPPHIRERAPIDS)
+#define m_ALDERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ALDERLAKE)
 #define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
 		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
-		       | m_TIGERLAKE | m_COOPERLAKE)
+		       | m_TIGERLAKE | m_COOPERLAKE | m_SAPPHIRERAPIDS)
 #define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
@@ -205,7 +207,9 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mcldemote",	OPTION_MASK_ISA2_CLDEMOTE },
   { "-mptwrite",	OPTION_MASK_ISA2_PTWRITE },
   { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
-  { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD }
+  { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD },
+  { "-mserialize",	OPTION_MASK_ISA2_SERIALIZE },
+  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -717,6 +721,8 @@ static const struct processor_costs *processor_cost_table[] =
   &skylake_cost,
   &skylake_cost,
   &skylake_cost,
+  &skylake_cost,
+  &skylake_cost,
   &intel_cost,
   &geode_cost,
   &k6_cost,
@@ -1017,6 +1023,8 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
     IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
     IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
+    IX86_ATTR_ISA ("serialize", OPT_mserialize),
+    IX86_ATTR_ISA ("tsxldtrk", OPT_mtsxldtrk),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -2226,6 +2234,21 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_PTWRITE))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PTWRITE;
+	if (((processor_alias_table[i].flags & PTA_WAITPKG) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_WAITPKG))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_WAITPKG;
+	if (((processor_alias_table[i].flags & PTA_ENQCMD) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_ENQCMD))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_ENQCMD;
+	if (((processor_alias_table[i].flags & PTA_CLDEMOTE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_CLDEMOTE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CLDEMOTE;
+	if (((processor_alias_table[i].flags & PTA_SERIALIZE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_SERIALIZE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_SERIALIZE;
+	if (((processor_alias_table[i].flags & PTA_TSXLDTRK) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_TSXLDTRK))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_TSXLDTRK;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)

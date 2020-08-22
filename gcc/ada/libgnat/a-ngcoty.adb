@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,11 +66,19 @@ package body Ada.Numerics.Generic_Complex_Types is
          --  return false, the test can only be written thus.
 
          if not (abs (X) <= R'Last) then
+            pragma Annotate
+              (CodePeer, Intentional,
+               "test always false", "test for infinity");
+
             X := Scale**2 * ((Left.Re / Scale) * (Right.Re / Scale) -
                              (Left.Im / Scale) * (Right.Im / Scale));
          end if;
 
          if not (abs (Y) <= R'Last) then
+            pragma Annotate
+              (CodePeer, Intentional,
+               "test always false", "test for infinity");
+
             Y := Scale**2 * ((Left.Re / Scale) * (Right.Im / Scale)
                            + (Left.Im / Scale) * (Right.Re / Scale));
          end if;
@@ -588,6 +596,7 @@ package body Ada.Numerics.Generic_Complex_Types is
 
       exception
          when Constraint_Error =>
+            pragma Assert (X.Re /= 0.0);
             return R (Double (abs (X.Re))
               * Sqrt (1.0 + (Double (X.Im) / Double (X.Re)) ** 2));
       end;
@@ -602,6 +611,7 @@ package body Ada.Numerics.Generic_Complex_Types is
 
       exception
          when Constraint_Error =>
+            pragma Assert (X.Im /= 0.0);
             return R (Double (abs (X.Im))
               * Sqrt (1.0 + (Double (X.Re) / Double (X.Im)) ** 2));
       end;

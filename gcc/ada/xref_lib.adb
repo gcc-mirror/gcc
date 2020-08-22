@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -22,6 +22,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+pragma Ada_2012;
 
 with Osint;
 with Output; use Output;
@@ -767,13 +769,14 @@ package body Xref_Lib is
 
       E_Line   : Natural;   --  Line number of current entity
       E_Col    : Natural;   --  Column number of current entity
-      E_Type   : Character; --  Type of current entity
       E_Name   : Positive;  --  Pointer to begin of entity name
       E_Global : Boolean;   --  True iff entity is global
+      E_Type   : Character; --  Type of current entity
 
       R_Line   : Natural;   --  Line number of current reference
       R_Col    : Natural;   --  Column number of current reference
-      R_Type   : Character; --  Type of current reference
+
+      R_Type   : Character := ASCII.NUL; --  Type of current reference
 
       Decl_Ref : Declaration_Reference;
       File_Ref : File_Reference := Current_Xref_File (File);
@@ -876,18 +879,19 @@ package body Xref_Lib is
       if Ali (Ptr) > ' ' then
          E_Type := Ali (Ptr);
          Ptr := Ptr + 1;
-      end if;
 
-      --  Ignore some of the entities (labels,...)
+         --  Ignore some of the entities (labels,...)
 
-      case E_Type is
-         when 'l' | 'L' | 'q' =>
+         if E_Type in 'l' | 'L' | 'q' then
             Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
             return;
+         end if;
+      else
+         --  Unexpected contents, skip line and return
 
-         when others =>
-            null;
-      end case;
+         Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
+         return;
+      end if;
 
       Parse_Number (Ali, Ptr, E_Col);
 
@@ -966,7 +970,7 @@ package body Xref_Lib is
             Parse_Derived_Info : declare
                P_Line   : Natural;          --  parent entity line
                P_Column : Natural;          --  parent entity column
-               P_Eun    : Positive;         --  parent entity file number
+               P_Eun    : Natural := 0;     --  parent entity file number
 
             begin
                Parse_Number (Ali, Ptr, P_Line);
@@ -1010,6 +1014,8 @@ package body Xref_Lib is
                --  on or if we want to output the type hierarchy
 
                if Der_Info or else Type_Tree then
+                  pragma Assert (P_Eun /= 0);
+
                   declare
                      Symbol : constant String :=
                                 Get_Symbol_Name (P_Eun, P_Line, P_Column);
@@ -1126,8 +1132,8 @@ package body Xref_Lib is
             --    5U14*Foo2 5>20 6b<c,myfoo2>22   # Imported entity
             --    5U14*Foo2 5>20 6i<c,myfoo2>22   # Exported entity
 
-            if (R_Type = 'b' or else R_Type = 'i')
-              and then Ali (Ptr) = '<'
+            if Ali (Ptr) = '<'
+              and then (R_Type = 'b' or else R_Type = 'i')
             then
                while Ptr <= Ali'Last
                  and then Ali (Ptr) /= '>'
@@ -1138,6 +1144,8 @@ package body Xref_Lib is
             end if;
 
             Parse_Number (Ali, Ptr, R_Col);
+
+            pragma Assert (R_Type /= ASCII.NUL);
 
             --  Insert the reference or body in the table
 

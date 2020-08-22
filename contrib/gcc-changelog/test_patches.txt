@@ -1,0 +1,3197 @@
+=== 0342-ARC-Propagate-uncached-type-attribute-to-each-member.patch ===
+From 62a715c706d8482560dadfa9ead0766f3c20e434 Mon Sep 17 00:00:00 2001
+From: Claudiu Zissulescu <claziss@gmail.com>
+Date: Mon, 27 Jan 2020 14:51:03 +0200
+Subject: [PATCH 0342/2034] [ARC] Propagate uncached type attribute to each
+ member of a struct.
+
+Like `packed` type attribute, the ARC's `uncached` type attribute
+needs to be propagated to each member of the struct where it is used,
+triggering the .di flag for any access of the struct members. However,
+any complex CFG manipulation may drop memory pointer type attributes,
+leading to the impossibility to discriminate the direct accesses from
+normal ones. To solve this issue, we will treat the direct memory
+accessed specially via unspecs.
+
+gcc/
+xxxx-xx-xx  Claudiu Zissulescu  <claziss@synopsys.com>
+	Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* config/arc/arc.c (arc_is_uncached_mem_p): Check struct
+	attributes if needed.
+	(prepare_move_operands): Generate special
+	unspec instruction for direct access.
+	(arc_isuncached_mem_p): Propagate uncached attribute to each
+	structure member.
+	* config/arc/arc.md (VUNSPEC_ARC_LDDI): Define.
+	(VUNSPEC_ARC_STDI): Likewise.
+	(ALLI): New mode iterator.
+	(mALLI): New mode attribute.
+	(lddi): New instruction pattern.
+	(stdi): Likewise.
+	(stdidi_split): Split instruction for architectures which are not
+	supporting ll64 option.
+	(lddidi_split): Likewise.
+
+testsuite/
+xxxx-xx-xx  Claudiu Zissulescu  <claziss@synopsys.com>
+	Petro Karashchenko  <petro.karashchenko@ring.com>
+
+	* gcc.target/arc/uncached-1.c: Update test.
+	* gcc.target/arc/uncached-2.c: Likewise.
+	* gcc.target/arc/uncached-3.c: New test.
+	* gcc.target/arc/uncached-4.c: Likewise.
+	* gcc.target/arc/uncached-5.c: Likewise.
+	* gcc.target/arc/uncached-6.c: Likewise.
+	* gcc.target/arc/uncached-7.c: Likewise.
+	* gcc.target/arc/uncached-8.c: Likewise.
+	* gcc.target/arc/arc.exp (ll64): New predicate.
+---
+ gcc/ChangeLog                             |  19 ++++
+ gcc/config/arc/arc.c                      | 118 ++++++++++++++--------
+ gcc/config/arc/arc.md                     |  60 +++++++++++
+ gcc/testsuite/ChangeLog                   |  11 ++
+ gcc/testsuite/gcc.target/arc/arc.exp      |   9 ++
+ gcc/testsuite/gcc.target/arc/uncached-1.c |   2 +-
+ gcc/testsuite/gcc.target/arc/uncached-2.c |   2 +-
+ gcc/testsuite/gcc.target/arc/uncached-3.c |  22 ++++
+ gcc/testsuite/gcc.target/arc/uncached-4.c |  42 ++++++++
+ gcc/testsuite/gcc.target/arc/uncached-5.c |  29 ++++++
+ gcc/testsuite/gcc.target/arc/uncached-6.c |  35 +++++++
+ gcc/testsuite/gcc.target/arc/uncached-7.c |  11 ++
+ gcc/testsuite/gcc.target/arc/uncached-8.c |  33 ++++++
+ 13 files changed, 351 insertions(+), 42 deletions(-)
+ create mode 100644 gcc/testsuite/gcc.target/arc/uncached-3.c
+ create mode 100644 gcc/testsuite/gcc.target/arc/uncached-4.c
+ create mode 100644 gcc/testsuite/gcc.target/arc/uncached-5.c
+ create mode 100644 gcc/testsuite/gcc.target/arc/uncached-6.c
+ create mode 100644 gcc/testsuite/gcc.target/arc/uncached-7.c
+ create mode 100644 gcc/testsuite/gcc.target/arc/uncached-8.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 91dfcd71a4b..2cc61d68cf3 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/arc/arc.c b/gcc/config/arc/arc.c
+index 22475f2732e..e1a865f02e6 100644
+--- a/gcc/config/arc/arc.c
++++ b/gcc/config/arc/arc.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/arc/arc.md b/gcc/config/arc/arc.md
+index cf7aa8d83c9..46cb254ed28 100644
+--- a/gcc/config/arc/arc.md
++++ b/gcc/config/arc/arc.md
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 16ddef07516..991934272e0 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/arc/arc.exp b/gcc/testsuite/gcc.target/arc/arc.exp
+index 8d1844edd22..501d4589c53 100644
+--- a/gcc/testsuite/gcc.target/arc/arc.exp
++++ b/gcc/testsuite/gcc.target/arc/arc.exp
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-1.c b/gcc/testsuite/gcc.target/arc/uncached-1.c
+index 7a6bade81c4..fa5ecb7b7d3 100644
+--- a/gcc/testsuite/gcc.target/arc/uncached-1.c
++++ b/gcc/testsuite/gcc.target/arc/uncached-1.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-2.c b/gcc/testsuite/gcc.target/arc/uncached-2.c
+index 89eed326e01..9d6bfbbb50e 100644
+--- a/gcc/testsuite/gcc.target/arc/uncached-2.c
++++ b/gcc/testsuite/gcc.target/arc/uncached-2.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-3.c b/gcc/testsuite/gcc.target/arc/uncached-3.c
+new file mode 100644
+index 00000000000..f2a317b2816
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/arc/uncached-3.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-4.c b/gcc/testsuite/gcc.target/arc/uncached-4.c
+new file mode 100644
+index 00000000000..fecb16648b8
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/arc/uncached-4.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-5.c b/gcc/testsuite/gcc.target/arc/uncached-5.c
+new file mode 100644
+index 00000000000..4fe0464fdde
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/arc/uncached-5.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-6.c b/gcc/testsuite/gcc.target/arc/uncached-6.c
+new file mode 100644
+index 00000000000..581a9eccb3b
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/arc/uncached-6.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-7.c b/gcc/testsuite/gcc.target/arc/uncached-7.c
+new file mode 100644
+index 00000000000..4001b8bd821
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/arc/uncached-7.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/arc/uncached-8.c b/gcc/testsuite/gcc.target/arc/uncached-8.c
+new file mode 100644
+index 00000000000..060229b11df
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/arc/uncached-8.c
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0814-sra-Avoid-totally-scalarizing-overallping-field_decl.patch ===
+From 665c5bad168ab63629b29ed2ce08ed042c088dc2 Mon Sep 17 00:00:00 2001
+From: Martin Jambor <mjambor@suse.cz>
+Date: Wed, 19 Feb 2020 11:08:40 +0100
+Subject: [PATCH 0814/2034] sra: Avoid totally scalarizing overallping
+ field_decls (PR 93667)
+
+[[no_unique_address]] C++ attribute can cause two fields of a
+RECORD_TYPE overlap, which currently confuses the totally scalarizing
+code into creating invalid access tree.  For GCC 10, I'd like to
+simply disable total scalarization of types where this happens.
+
+For GCC 11 I'll write down a TODO item to enable total scalarization
+of cases like this where the problematic fields are basically empty -
+despite having a non-zero size - i.e. when they are just RECORD_TYPEs
+without any data fields.
+
+2020-02-19  Martin Jambor  <mjambor@suse.cz>
+
+	gcc/
+
+	PR tree-optimization/93667
+	* tree-sra.c (scalarizable_type_p): Return false if record fields
+	do not follow wach other.
+
+	gcc/testsuite/
+
+	PR tree-optimization/93667
+	* g++.dg/tree-ssa/pr93667.C: New test.
+---
+ gcc/ChangeLog                           |  6 ++++++
+ gcc/testsuite/ChangeLog                 |  5 +++++
+ gcc/testsuite/g++.dg/tree-ssa/pr93667.C | 11 +++++++++++
+ gcc/tree-sra.c                          | 14 ++++++++++++++
+ 4 files changed, 36 insertions(+)
+ create mode 100644 gcc/testsuite/g++.dg/tree-ssa/pr93667.C
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 77c2a9ad810..6b53f9a2f07 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 9b4fe11a6f6..8033fa0a3bb 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/tree-ssa/pr93667.C b/gcc/testsuite/g++.dg/tree-ssa/pr93667.C
+new file mode 100644
+index 00000000000..d875f53d9ec
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/tree-ssa/pr93667.C
+@@ -0,0 +1 @@
++
+diff --git a/gcc/tree-sra.c b/gcc/tree-sra.c
+index 0cfac0a8192..4c7d651e6b9 100644
+--- a/gcc/tree-sra.c
++++ b/gcc/tree-sra.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0413-SRA-Total-scalarization-after-access-propagation-PR9.patch ===
+From 636e80eea24b780f1d5f4c14c58fc00001df8508 Mon Sep 17 00:00:00 2001
+From: Martin Jambor <mjambor@suse.cz>
+Date: Wed, 29 Jan 2020 13:13:13 +0100
+Subject: [PATCH 0413/2034] SRA: Total scalarization after access propagation
+ [PR92706]
+
+2020-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/92706
+	* tree-sra.c (struct access): Adjust comment of
+	grp_total_scalarization.
+	(find_access_in_subtree): Look for single children spanning an entire
+	access.
+	(scalarizable_type_p): Allow register accesses, adjust callers.
+	(completely_scalarize): Remove function.
+	(scalarize_elem): Likewise.
+	(create_total_scalarization_access): Likewise.
+	(sort_and_splice_var_accesses): Do not track total scalarization
+	flags.
+	(analyze_access_subtree): New parameter totally, adjust to new meaning
+	of grp_total_scalarization.
+	(analyze_access_trees): Pass new parameter to analyze_access_subtree.
+	(can_totally_scalarize_forest_p): New function.
+	(create_total_scalarization_access): Likewise.
+	(create_total_access_and_reshape): Likewise.
+	(total_should_skip_creating_access): Likewise.
+	(totally_scalarize_subtree): Likewise.
+	(analyze_all_variable_accesses): Perform total scalarization after
+	subaccess propagation using the new functions above.
+	(initialize_constant_pool_replacements): Output initializers by
+	traversing the access tree.
+
+	testsuite/
+	* gcc.dg/tree-ssa/pr92706-2.c: New test.
+	* gcc.dg/guality/pr59776.c: Xfail tests for s2.g.
+---
+ gcc/ChangeLog                             |  26 +
+ gcc/testsuite/ChangeLog                   |   6 +
+ gcc/testsuite/gcc.dg/guality/pr59776.c    |   4 +-
+ gcc/testsuite/gcc.dg/tree-ssa/pr92706-2.c |  19 +
+ gcc/tree-sra.c                            | 666 ++++++++++++++++------
+ 5 files changed, 537 insertions(+), 184 deletions(-)
+ create mode 100644 gcc/testsuite/gcc.dg/tree-ssa/pr92706-2.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 16247a59304..61da54df346 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 05518848829..38758207989 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.dg/guality/pr59776.c b/gcc/testsuite/gcc.dg/guality/pr59776.c
+index 382abb622bb..6c1c8165b70 100644
+--- a/gcc/testsuite/gcc.dg/guality/pr59776.c
++++ b/gcc/testsuite/gcc.dg/guality/pr59776.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.dg/tree-ssa/pr92706-2.c b/gcc/testsuite/gcc.dg/tree-ssa/pr92706-2.c
+new file mode 100644
+index 00000000000..37ab9765db0
+--- /dev/null
++++ b/gcc/testsuite/gcc.dg/tree-ssa/pr92706-2.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/tree-sra.c b/gcc/tree-sra.c
+index 36106fecaf1..2b0849858de 100644
+--- a/gcc/tree-sra.c
++++ b/gcc/tree-sra.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0334-Do-not-generate-a-unique-fnname-for-resolver.patch ===
+From c2bd2b4664be8b73f8fd58a64dec1e93871797cc Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 27 Jan 2020 10:48:18 +0100
+Subject: [PATCH 0334/2034] Do not generate a unique fnname for resolver.
+
+	PR target/93274
+	* config/i386/i386-features.c (make_resolver_func):
+	Align the code with ppc64 target implementation.
+	Do not generate a unique name for resolver function.
+	PR target/93274
+	* gcc.target/i386/pr81213.c: Adjust to not expect
+	a globally unique name.
+---
+ gcc/ChangeLog                           |  7 +++++++
+ gcc/config/i386/i386-features.c         | 19 ++++---------------
+ gcc/testsuite/ChangeLog                 |  6 ++++++
+ gcc/testsuite/gcc.target/i386/pr81213.c |  4 ++--
+ 4 files changed, 19 insertions(+), 17 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 45075840824..59806baa757 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/i386/i386-features.c b/gcc/config/i386/i386-features.c
+index e580b26b995..b49e6f8d408 100644
+--- a/gcc/config/i386/i386-features.c
++++ b/gcc/config/i386/i386-features.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 2de060843d9..22a37dd1ab2 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/i386/pr81213.c b/gcc/testsuite/gcc.target/i386/pr81213.c
+index 13e15d5fef0..89c47529861 100644
+--- a/gcc/testsuite/gcc.target/i386/pr81213.c
++++ b/gcc/testsuite/gcc.target/i386/pr81213.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 1850-List-valid-pairs-for-new-and-delete-operators.patch ===
+From d7a65edb629a010f7ef907d457343abcb569fab7 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Thu, 16 Apr 2020 15:39:22 +0200
+Subject: [PATCH 1850/2034] List valid pairs for new and delete operators.
+
+	PR c++/94314
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
+	DECL_IS_REPLACEABLE_OPERATOR during cloning.
+	* tree-ssa-dce.c (valid_new_delete_pair_p): New function.
+	(propagate_necessity): Check operator names.
+
+	PR c++/94314
+	* g++.dg/pr94314.C: Do not use dg-additional-options
+	and remove not needed stdio.h include.
+	* g++.dg/pr94314-2.C: Likewise.
+	* g++.dg/pr94314-3.C: Likewise.
+	* g++.dg/pr94314-4.C: New test.
+
+Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
+---
+ gcc/ChangeLog                    |  9 +++
+ gcc/cgraphclones.c               |  2 +
+ gcc/testsuite/ChangeLog          | 10 ++++
+ gcc/testsuite/g++.dg/pr94314-2.C |  5 +-
+ gcc/testsuite/g++.dg/pr94314-3.C |  5 +-
+ gcc/testsuite/g++.dg/pr94314-4.C | 30 ++++++++++
+ gcc/testsuite/g++.dg/pr94314.C   |  5 +-
+ gcc/tree-ssa-dce.c               | 98 ++++++++++++++++++++++++++++----
+ 8 files changed, 142 insertions(+), 22 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/pr94314-4.C
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 74dbeeb44c6..9e499ec9c86 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cgraphclones.c b/gcc/cgraphclones.c
+index c73b8f810f0..8f541a28b6e 100644
+--- a/gcc/cgraphclones.c
++++ b/gcc/cgraphclones.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 756f1d759e6..94d2312022d 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/pr94314-2.C b/gcc/testsuite/g++.dg/pr94314-2.C
+index 36b93ed6d4d..998ce601767 100644
+--- a/gcc/testsuite/g++.dg/pr94314-2.C
++++ b/gcc/testsuite/g++.dg/pr94314-2.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/pr94314-3.C b/gcc/testsuite/g++.dg/pr94314-3.C
+index 575ba9d8ad8..846a5d6a3d8 100644
+--- a/gcc/testsuite/g++.dg/pr94314-3.C
++++ b/gcc/testsuite/g++.dg/pr94314-3.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/pr94314-4.C b/gcc/testsuite/g++.dg/pr94314-4.C
+new file mode 100644
+index 00000000000..d097f29d4ad
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/pr94314-4.C
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/g++.dg/pr94314.C b/gcc/testsuite/g++.dg/pr94314.C
+index 86e651d10ba..4e5ae122e9f 100644
+--- a/gcc/testsuite/g++.dg/pr94314.C
++++ b/gcc/testsuite/g++.dg/pr94314.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/tree-ssa-dce.c b/gcc/tree-ssa-dce.c
+index fd5f24c746c..757cfad5b5e 100644
+--- a/gcc/tree-ssa-dce.c
++++ b/gcc/tree-ssa-dce.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0085-Daily-bump.patch ===
+From 03647d2e26176bb874460b67deab0c30aa715d59 Mon Sep 17 00:00:00 2001
+From: GCC Administrator <gccadmin@gcc.gnu.org>
+Date: Thu, 16 Jan 2020 00:16:32 +0000
+Subject: [PATCH 0085/2034] Daily bump.
+
+---
+ gcc/DATESTAMP | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/DATESTAMP b/gcc/DATESTAMP
+index ba948c594d4..62611957f86 100644
+--- a/gcc/DATESTAMP
++++ b/gcc/DATESTAMP
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0040-PR90916-ICE-in-retrieve-specialization.patch ===
+From a5a3c2dcf73aa245b0eb6f6cf56c4d03ab6056da Mon Sep 17 00:00:00 2001
+From: Nathan Sidwell <nathans@fb.com>
+Date: Tue, 14 Jan 2020 11:12:40 -0800
+Subject: [PATCH 0040/2034] [PR90916] ICE in retrieve specialization
+
+https://gcc.gnu.org/ml/gcc-patches/2020-01/msg00809.html
+	PR c++/90916
+	* pt.c (retrieve_specialization): Get the TI from the decl or the
+	classtype as appropriate.
+---
+ gcc/cp/ChangeLog                        |  6 ++++++
+ gcc/cp/pt.c                             | 15 ++++++++++-----
+ gcc/testsuite/g++.dg/template/pr90916.C |  8 ++++++++
+ 3 files changed, 24 insertions(+), 5 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/template/pr90916.C
+
+diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
+index 004ce0fdcdf..3cc7c48b490 100644
+--- a/gcc/cp/ChangeLog
++++ b/gcc/cp/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
+index fa82ecad233..4fdc74f9ca8 100644
+--- a/gcc/cp/pt.c
++++ b/gcc/cp/pt.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/template/pr90916.C b/gcc/testsuite/g++.dg/template/pr90916.C
+new file mode 100644
+index 00000000000..bdb7e7b58ef
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/template/pr90916.C
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 2004-amdgcn-Check-HSA-return-codes-PR94629.patch ===
+From 966de09be91c639d66d252c9ae6ab8da5ebfca18 Mon Sep 17 00:00:00 2001
+From: Andrew Stubbs <ams@codesourcery.com>
+Date: Mon, 20 Apr 2020 15:25:31 +0100
+Subject: [PATCH 2004/2034] amdgcn: Check HSA return codes [PR94629]
+
+Ensure that the returned status values are not ignored.  The old code was
+not broken, but this is both safer and satisfies static analysis.
+
+2020-04-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR other/94629
+
+	libgomp/
+	* plugin/plugin-gcn.c (init_hsa_context): Check return value from
+	hsa_iterate_agents.
+	(GOMP_OFFLOAD_init_device): Check return values from both calls to
+	hsa_agent_iterate_regions.
+---
+ libgomp/ChangeLog           | 9 +++++++++
+ libgomp/plugin/plugin-gcn.c | 8 ++++++++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/libgomp/ChangeLog b/libgomp/ChangeLog
+index c524abbbfb6..ee1764d4ae3 100644
+--- a/libgomp/ChangeLog
++++ b/libgomp/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/libgomp/plugin/plugin-gcn.c b/libgomp/plugin/plugin-gcn.c
+index dc72c90962c..4c6a4c03b6e 100644
+--- a/libgomp/plugin/plugin-gcn.c
++++ b/libgomp/plugin/plugin-gcn.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0198-Change-recursive-prepare_block_for_update-to-use-a-w.patch ===
+From 6fc2f9337311c11dabcc464c808cbef205f17a52 Mon Sep 17 00:00:00 2001
+From: Andrew Pinski <apinski@marvell.com>
+Date: Tue, 21 Jan 2020 08:34:42 +0000
+Subject: [PATCH 0198/2034] Change recursive prepare_block_for_update to use a
+ worklist
+
+Reported as PR 93321, prepare_block_for_update with some huge
+recusive inlining can go past the stack limit. Transforming this
+recursive into worklist improves the stack usage here and we no
+longer seg fault for the testcase.  Note the order we walk the siblings
+change.
+
+ChangeLog:
+	PR tree-opt/93321
+	* tree-into-ssa.c (prepare_block_for_update_1): Split out from ...
+	(prepare_block_for_update): This.  Use a worklist instead of recursing.
+---
+ gcc/ChangeLog       |  8 ++++++
+ gcc/tree-into-ssa.c | 59 ++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 55 insertions(+), 12 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 8c17e5992d2..262f0d6506f 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/tree-into-ssa.c b/gcc/tree-into-ssa.c
+index c27bf2ce121..6528acac31a 100644
+--- a/gcc/tree-into-ssa.c
++++ b/gcc/tree-into-ssa.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0184-PR-80005-Fix-__has_include.patch ===
+From ad1a3914ae8d67c94b0d2428e3f9672e7db491a1 Mon Sep 17 00:00:00 2001
+From: Nathan Sidwell <nathan@acm.org>
+Date: Mon, 20 Jan 2020 05:39:59 -0800
+Subject: [PATCH 0184/2034] [PR 80005]  Fix __has_include
+
+__has_include is funky in that it is macro-like from the POV of #ifdef and
+friends, but lexes its parenthesize argument #include-like.  We were
+failing the second part of that, because we used a forwarding macro to an
+internal name, and hence always lexed the argument in macro-parameter
+context.  We componded that by not setting the right flag when lexing, so
+it didn't even know.  Mostly users got lucky.
+
+This reimplements the handline.
+1) Remove the forwarding, but declare object-like macros that
+expand to themselves.  This satisfies the #ifdef requirement
+
+2) Correctly set angled_brackets when lexing the parameter.  This tells
+the lexer (a) <...> is a header name and (b) "..." is too (not a string).
+
+3) Remove the in__has_include lexer state, just tell find_file that that's
+what's happenning, so it doesn't emit an error.
+
+We lose the (undocumented) ability to #undef __has_include.  That may well
+have been an accident of implementation.  There are no tests for it.
+
+We gain __has_include behaviour for all users of the preprocessors -- not
+just the C-family ones that defined a forwarding macro.
+
+	libcpp/
+	PR preprocessor/80005
+	* include/cpplib.h (BT_HAS_ATTRIBUTE): Fix comment.
+	* internal.h (struct lexer_state): Delete in__has_include field.
+	(struct spec_nodes): Rename n__has_include{,_next}__ fields.
+	(_cpp_defined_macro_p): New.
+	(_cpp_find_file): Add has_include parm.
+	* directives.c (lex_macro_node): Combine defined,
+	__has_inline{,_next} checking.
+	(do_ifdef, do_ifndef): Use _cpp_defined_macro_p.
+	(_cpp_init_directives): Refactor.
+	* expr.c (parse_defined): Use _cpp_defined_macro_p.
+	(eval_token): Adjust parse_has_include calls.
+	(parse_has_include): Add OP parameter.  Reimplement.
+	* files.c (_cpp_find_file): Add HAS_INCLUDE parm.  Use it to
+	inhibit error message.
+	(_cpp_stack_include): Adjust _cpp_find_file call.
+	(_cpp_fake_include, _cpp_compare_file_date): Likewise.
+	(open_file_failed): Remove in__has_include check.
+	(_cpp_has_header): Adjust _cpp_find_file call.
+	* identifiers.c (_cpp_init_hashtable): Don't init
+	__has_include{,_next} here ...
+	* init.c (cpp_init_builtins): ... init them here.  Define as
+	macros.
+	(cpp_read_main_file): Adjust _cpp_find_file call.
+	* pch.c (cpp_read_state): Adjust __has_include{,_next} access.
+	* traditional.c (_cpp_scan_out_locgical_line): Likewise.
+
+	gcc/c-family/
+	PR preprocessor/80005
+	* c-cppbuiltins.c (c_cpp_builtins): Don't define __has_include{,_next}.
+
+	gcc/testsuite/
+	PR preprocessor/80005
+	* g++.dg/cpp1y/feat-cxx14.C: Adjust.
+	* g++.dg/cpp1z/feat-cxx17.C: Adjust.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust.
+	* g++.dg/cpp/pr80005.C: New.
+---
+ gcc/c-family/ChangeLog                  |  5 ++++
+ gcc/c-family/c-cppbuiltin.c             |  6 -----
+ gcc/testsuite/ChangeLog                 |  8 +++++++
+ gcc/testsuite/g++.dg/cpp/pr80005.C      | 24 +++++++++++++++++++
+ gcc/testsuite/g++.dg/cpp1y/feat-cxx14.C | 10 ++------
+ gcc/testsuite/g++.dg/cpp1z/feat-cxx1z.C | 10 ++------
+ gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C | 10 ++------
+ libcpp/ChangeLog                        | 29 +++++++++++++++++++++-
+ libcpp/directives.c                     | 29 ++++++++--------------
+ libcpp/expr.c                           | 32 ++++++++++++-------------
+ libcpp/files.c                          | 27 +++++++++++----------
+ libcpp/identifiers.c                    |  3 +--
+ libcpp/include/cpplib.h                 |  2 +-
+ libcpp/init.c                           | 14 ++++++++++-
+ libcpp/internal.h                       | 20 +++++++++++-----
+ libcpp/pch.c                            |  4 ++--
+ libcpp/traditional.c                    |  8 +++----
+ 17 files changed, 146 insertions(+), 95 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/cpp/pr80005.C
+
+diff --git a/gcc/c-family/ChangeLog b/gcc/c-family/ChangeLog
+index 09ba2c8b40f..fdddb98a74d 100644
+--- a/gcc/c-family/ChangeLog
++++ b/gcc/c-family/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/c-family/c-cppbuiltin.c b/gcc/c-family/c-cppbuiltin.c
+index a6308921dc9..70a12055e27 100644
+--- a/gcc/c-family/c-cppbuiltin.c
++++ b/gcc/c-family/c-cppbuiltin.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index a526e32ac89..67d5f2e9e28 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/cpp/pr80005.C b/gcc/testsuite/g++.dg/cpp/pr80005.C
+new file mode 100644
+index 00000000000..cc752616782
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/cpp/pr80005.C
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/g++.dg/cpp1y/feat-cxx14.C b/gcc/testsuite/g++.dg/cpp1y/feat-cxx14.C
+index a2a93f437b3..a78b6a36f36 100644
+--- a/gcc/testsuite/g++.dg/cpp1y/feat-cxx14.C
++++ b/gcc/testsuite/g++.dg/cpp1y/feat-cxx14.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/cpp1z/feat-cxx1z.C b/gcc/testsuite/g++.dg/cpp1z/feat-cxx1z.C
+index 55e56a06fe8..e6f456b2415 100644
+--- a/gcc/testsuite/g++.dg/cpp1z/feat-cxx1z.C
++++ b/gcc/testsuite/g++.dg/cpp1z/feat-cxx1z.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C b/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C
+index dd15cd6af3c..82fd602f9f1 100644
+--- a/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C
++++ b/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/ChangeLog b/libcpp/ChangeLog
+index 3249b93fe88..27a841bbdce 100644
+--- a/libcpp/ChangeLog
++++ b/libcpp/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/directives.c b/libcpp/directives.c
+index 983206a5838..10735c8c668 100644
+--- a/libcpp/directives.c
++++ b/libcpp/directives.c
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/expr.c b/libcpp/expr.c
+index 317faf50208..df21a4b9fb9 100644
+--- a/libcpp/expr.c
++++ b/libcpp/expr.c
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/files.c b/libcpp/files.c
+index 7abae7ae6ec..260e787c329 100644
+--- a/libcpp/files.c
++++ b/libcpp/files.c
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/identifiers.c b/libcpp/identifiers.c
+index 562d8fee3b5..9627e1bf4b0 100644
+--- a/libcpp/identifiers.c
++++ b/libcpp/identifiers.c
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/include/cpplib.h b/libcpp/include/cpplib.h
+index 1c26c365347..56cbbd82750 100644
+--- a/libcpp/include/cpplib.h
++++ b/libcpp/include/cpplib.h
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/init.c b/libcpp/init.c
+index 2b4923e1451..e798140ef8b 100644
+--- a/libcpp/init.c
++++ b/libcpp/init.c
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/internal.h b/libcpp/internal.h
+index 3623baf8191..5453c3bff85 100644
+--- a/libcpp/internal.h
++++ b/libcpp/internal.h
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/pch.c b/libcpp/pch.c
+index 607f805bebe..e631050936b 100644
+--- a/libcpp/pch.c
++++ b/libcpp/pch.c
+@@ -1 +1,2 @@
+
++
+diff --git a/libcpp/traditional.c b/libcpp/traditional.c
+index 21c63b47dd5..ff06d31a897 100644
+--- a/libcpp/traditional.c
++++ b/libcpp/traditional.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== long-lines.patch ===
+From eb7c7c524556df5364f03adc20f6a9db20858484 Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Mon, 13 Jan 2020 14:14:57 +0100
+Subject: [PATCH 0004/2034] tree-opt: Fix bootstrap failure in
+ tree-ssa-forwprop.c some more PR90838
+
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE directly in CTZ_DEFINED_VALUE_AT_ZERO macro and and SCALAR_INT_TYPE_MODE directly in and so
+	argument rather than to initialize temporary for targets that
+	don't use the mode argument at all.  Initialize ctzval to avoid
+	warning at -O0.
+---
+ gcc/ChangeLog           | 9 +++++++++
+ gcc/tree-ssa-forwprop.c | 6 +++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index a195863212e..f7df07343d1 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/tree-ssa-forwprop.c b/gcc/tree-ssa-forwprop.c
+index aac31d02b6c..56c470f6ecf 100644
+--- a/gcc/tree-ssa-forwprop.c
++++ b/gcc/tree-ssa-forwprop.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0735-PR-87488-Add-with-diagnostics-urls-configuration-opt.patch ===
+From 458c8d6459c4005fc9886b6e25d168a6535ac415 Mon Sep 17 00:00:00 2001
+From: Bernd Edlinger <bernd.edlinger@hotmail.de>
+Date: Wed, 29 Jan 2020 15:31:10 +0100
+Subject: [PATCH 0735/2034] PR 87488: Add --with-diagnostics-urls configuration
+ option
+
+2020-02-15  David Malcolm  <dmalcolm@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 87488
+	PR other/93168
+	* config.in (DIAGNOSTICS_URLS_DEFAULT): New define.
+	* configure.ac (--with-diagnostics-urls): New configuration
+	option, based on --with-diagnostics-color.
+	(DIAGNOSTICS_URLS_DEFAULT): New define.
+	* config.h: Regenerate.
+	* configure: Regenerate.
+	* diagnostic.c (diagnostic_urls_init): Handle -1 for
+	DIAGNOSTICS_URLS_DEFAULT from configure-time
+	--with-diagnostics-urls=auto-if-env by querying for a GCC_URLS
+	and TERM_URLS environment variable.
+	* diagnostic-url.h (diagnostic_url_format): New enum type.
+	(diagnostic_urls_enabled_p): rename to...
+	(determine_url_format): ... this, and change return type.
+	* diagnostic-color.c (parse_env_vars_for_urls): New helper function.
+	(auto_enable_urls): Disable URLs on xfce4-terminal, gnome-terminal,
+	the linux console, and mingw.
+	(diagnostic_urls_enabled_p): rename to...
+	(determine_url_format): ... this, and adjust.
+	* pretty-print.h (pretty_printer::show_urls): rename to...
+	(pretty_printer::url_format): ... this, and change to enum.
+	* pretty-print.c (pretty_printer::pretty_printer,
+	pp_begin_url, pp_end_url, test_urls): Adjust.
+	* doc/install.texi (--with-diagnostics-urls): Document the new
+	configuration option.
+	(--with-diagnostics-color): Document the existing interaction
+	with GCC_COLORS better.
+	* doc/invoke.texi (-fdiagnostics-urls): Add GCC_URLS and TERM_URLS
+	vindex reference.  Update description of defaults based on the above.
+	(-fdiagnostics-color): Update description of how -fdiagnostics-color
+	interacts with GCC_COLORS.
+---
+ gcc/ChangeLog          |  36 +++++++++++++++
+ gcc/config.in          |   6 +++
+ gcc/configure          |  41 ++++++++++++++++-
+ gcc/configure.ac       |  28 ++++++++++++
+ gcc/diagnostic-color.c | 101 ++++++++++++++++++++++++++++++++++++++---
+ gcc/diagnostic-url.h   |  18 +++++++-
+ gcc/diagnostic.c       |  21 +++++++--
+ gcc/doc/install.texi   |  15 ++++--
+ gcc/doc/invoke.texi    |  39 ++++++++++++++--
+ gcc/pretty-print.c     |  44 +++++++++++++++---
+ gcc/pretty-print.h     |   5 +-
+ 11 files changed, 328 insertions(+), 26 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index e6eb6ab4c21..22f990a3088 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config.in b/gcc/config.in
+index 48292861842..01fb18dbbb5 100644
+--- a/gcc/config.in
++++ b/gcc/config.in
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/configure b/gcc/configure
+index 5fa565a40a4..f55cdb8c77f 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 671b9a67d81..0e6e475950d 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/diagnostic-color.c b/gcc/diagnostic-color.c
+index d5547952921..b1baded2c9e 100644
+--- a/gcc/diagnostic-color.c
++++ b/gcc/diagnostic-color.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/diagnostic-url.h b/gcc/diagnostic-url.h
+index 6be056941f1..d28460b928b 100644
+--- a/gcc/diagnostic-url.h
++++ b/gcc/diagnostic-url.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/diagnostic.c b/gcc/diagnostic.c
+index 3386f070256..e4a08f76def 100644
+--- a/gcc/diagnostic.c
++++ b/gcc/diagnostic.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/install.texi b/gcc/doc/install.texi
+index 6ffafacff50..8ddebbb6267 100644
+--- a/gcc/doc/install.texi
++++ b/gcc/doc/install.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index bd9ecebf103..597151670be 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/pretty-print.c b/gcc/pretty-print.c
+index 817c1059e08..dde138b0533 100644
+--- a/gcc/pretty-print.c
++++ b/gcc/pretty-print.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/pretty-print.h b/gcc/pretty-print.h
+index 001468c966e..22892f12ab7 100644
+--- a/gcc/pretty-print.h
++++ b/gcc/pretty-print.h
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0031-Fix-typo-and-avoid-possible-memory-leak-in-average_n.patch ===
+From b38e86ddb7a9b6d7e87d7cc0b23983d027fcbd96 Mon Sep 17 00:00:00 2001
+From: Kewen Lin <linkw@linux.ibm.com>
+Date: Tue, 14 Jan 2020 02:34:10 -0600
+Subject: [PATCH 0031/2034] Fix typo and avoid possible memory leak in
+ average_num_loop_insns
+
+Function average_num_loop_insns forgets to free loop body in early
+return.  Besides, overflow comparison checks 1000000 (e6) but the
+return value is 100000 (e5), fix this typo.
+
+gcc/ChangeLog
+
+2020-01-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+    * cfgloopanal.c (average_num_loop_insns): Free bbs when early
+    return, fix typo on return value.
+---
+ gcc/ChangeLog     | 5 +++++
+ gcc/cfgloopanal.c | 5 ++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 07e5bebe909..f3301b16464 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cfgloopanal.c b/gcc/cfgloopanal.c
+index 392b1c337c4..0b33e8272a7 100644
+--- a/gcc/cfgloopanal.c
++++ b/gcc/cfgloopanal.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0735-PR-87488-Add-with-diagnostics-urls-configuration-opt.patch ===
+From 458c8d6459c4005fc9886b6e25d168a6535ac415 Mon Sep 17 00:00:00 2001
+From: Bernd Edlinger <bernd.edlinger@hotmail.de>
+Date: Wed, 29 Jan 2020 15:31:10 +0100
+Subject: [PATCH 0735/2034] PR 87488: Add --with-diagnostics-urls configuration
+ option
+
+2020-02-15  David Malcolm  <dmalcolm@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 87488
+	PR other/93168
+	* config.in (DIAGNOSTICS_URLS_DEFAULT): New define.
+	* configure.ac (--with-diagnostics-urls): New configuration
+	option, based on --with-diagnostics-color.
+	(DIAGNOSTICS_URLS_DEFAULT): New define.
+	* config.h: Regenerate.
+	* configure: Regenerate.
+	* diagnostic.c (diagnostic_urls_init): Handle -1 for
+	DIAGNOSTICS_URLS_DEFAULT from configure-time
+	--with-diagnostics-urls=auto-if-env by querying for a GCC_URLS
+	and TERM_URLS environment variable.
+	* diagnostic-url.h (diagnostic_url_format): New enum type.
+	(diagnostic_urls_enabled_p): rename to...
+	(determine_url_format): ... this, and change return type.
+	* diagnostic-color.c (parse_env_vars_for_urls): New helper function.
+	(auto_enable_urls): Disable URLs on xfce4-terminal, gnome-terminal,
+	the linux console, and mingw.
+	(diagnostic_urls_enabled_p): rename to...
+	(determine_url_format): ... this, and adjust.
+	* pretty-print.h (pretty_printer::show_urls): rename to...
+	(pretty_printer::url_format): ... this, and change to enum.
+	* pretty-print.c (pretty_printer::pretty_printer,
+	pp_begin_url, pp_end_url, test_urls): Adjust.
+	* doc/install.texi (--with-diagnostics-urls): Document the new
+	configuration option.
+	(--with-diagnostics-color): Document the existing interaction
+	with GCC_COLORS better.
+	* doc/invoke.texi (-fdiagnostics-urls): Add GCC_URLS and TERM_URLS
+	vindex reference.  Update description of defaults based on the above.
+	(-fdiagnostics-color): Update description of how -fdiagnostics-color
+	interacts with GCC_COLORS.
+---
+ gcc/ChangeLog          |  36 +++++++++++++++
+ gcc/config.in          |   6 +++
+ gcc/configure          |  41 ++++++++++++++++-
+ gcc/configure.ac       |  28 ++++++++++++
+ gcc/diagnostic-color.c | 101 ++++++++++++++++++++++++++++++++++++++---
+ gcc/diagnostic-url.h   |  18 +++++++-
+ gcc/diagnostic.c       |  21 +++++++--
+ gcc/doc/install.texi   |  15 ++++--
+ gcc/doc/invoke.texi    |  39 ++++++++++++++--
+ gcc/pretty-print.c     |  44 +++++++++++++++---
+ gcc/pretty-print.h     |   5 +-
+ 11 files changed, 328 insertions(+), 26 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index e6eb6ab4c21..22f990a3088 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config.in b/gcc/config.in
+index 48292861842..01fb18dbbb5 100644
+--- a/gcc/config.in
++++ b/gcc/config.in
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/configure b/gcc/configure
+index 5fa565a40a4..f55cdb8c77f 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 671b9a67d81..0e6e475950d 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/diagnostic-color.c b/gcc/diagnostic-color.c
+index d5547952921..b1baded2c9e 100644
+--- a/gcc/diagnostic-color.c
++++ b/gcc/diagnostic-color.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/diagnostic-url.h b/gcc/diagnostic-url.h
+index 6be056941f1..d28460b928b 100644
+--- a/gcc/diagnostic-url.h
++++ b/gcc/diagnostic-url.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/diagnostic.c b/gcc/diagnostic.c
+index 3386f070256..e4a08f76def 100644
+--- a/gcc/diagnostic.c
++++ b/gcc/diagnostic.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/install.texi b/gcc/doc/install.texi
+index 6ffafacff50..8ddebbb6267 100644
+--- a/gcc/doc/install.texi
++++ b/gcc/doc/install.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index bd9ecebf103..597151670be 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/pretty-print.c b/gcc/pretty-print.c
+index 817c1059e08..dde138b0533 100644
+--- a/gcc/pretty-print.c
++++ b/gcc/pretty-print.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/pretty-print.h b/gcc/pretty-print.h
+index 001468c966e..22892f12ab7 100644
+--- a/gcc/pretty-print.h
++++ b/gcc/pretty-print.h
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== co-authored-by.patch ===
+From d7a65edb629a010f7ef907d457343abcb569fab7 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Thu, 16 Apr 2020 15:39:22 +0200
+Subject: [PATCH 1850/2034] List valid pairs for new and delete operators.
+
+	PR c++/94314
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
+	DECL_IS_REPLACEABLE_OPERATOR during cloning.
+	* tree-ssa-dce.c (valid_new_delete_pair_p): New function.
+	(propagate_necessity): Check operator names.
+
+	PR c++/94314
+	* g++.dg/pr94314.C: Do not use dg-additional-options
+	and remove not needed stdio.h include.
+	* g++.dg/pr94314-2.C: Likewise.
+	* g++.dg/pr94314-3.C: Likewise.
+	* g++.dg/pr94314-4.C: New test.
+
+co-authored-By: Jakub Jelinek <jakub@redhat.com>
+Co-Authored-by: John Miller <jm@example.com>
+co-authored-by: John Miller2 <jm2@example.com>
+---
+ gcc/ChangeLog                    |  9 +++
+ gcc/cgraphclones.c               |  2 +
+ gcc/testsuite/ChangeLog          | 10 ++++
+ gcc/testsuite/g++.dg/pr94314-2.C |  5 +-
+ gcc/testsuite/g++.dg/pr94314-3.C |  5 +-
+ gcc/testsuite/g++.dg/pr94314-4.C | 30 ++++++++++
+ gcc/testsuite/g++.dg/pr94314.C   |  5 +-
+ gcc/tree-ssa-dce.c               | 98 ++++++++++++++++++++++++++++----
+ 8 files changed, 142 insertions(+), 22 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/pr94314-4.C
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 74dbeeb44c6..9e499ec9c86 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cgraphclones.c b/gcc/cgraphclones.c
+index c73b8f810f0..8f541a28b6e 100644
+--- a/gcc/cgraphclones.c
++++ b/gcc/cgraphclones.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 756f1d759e6..94d2312022d 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/pr94314-2.C b/gcc/testsuite/g++.dg/pr94314-2.C
+index 36b93ed6d4d..998ce601767 100644
+--- a/gcc/testsuite/g++.dg/pr94314-2.C
++++ b/gcc/testsuite/g++.dg/pr94314-2.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/pr94314-3.C b/gcc/testsuite/g++.dg/pr94314-3.C
+index 575ba9d8ad8..846a5d6a3d8 100644
+--- a/gcc/testsuite/g++.dg/pr94314-3.C
++++ b/gcc/testsuite/g++.dg/pr94314-3.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/pr94314-4.C b/gcc/testsuite/g++.dg/pr94314-4.C
+new file mode 100644
+index 00000000000..d097f29d4ad
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/pr94314-4.C
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/g++.dg/pr94314.C b/gcc/testsuite/g++.dg/pr94314.C
+index 86e651d10ba..4e5ae122e9f 100644
+--- a/gcc/testsuite/g++.dg/pr94314.C
++++ b/gcc/testsuite/g++.dg/pr94314.C
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/tree-ssa-dce.c b/gcc/tree-ssa-dce.c
+index fd5f24c746c..757cfad5b5e 100644
+--- a/gcc/tree-ssa-dce.c
++++ b/gcc/tree-ssa-dce.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 1699-combine-Fix-split_i2i3-ICE-PR94291.patch ===
+From c23c899aedf11069e992eed7358802b262d62f98 Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Tue, 7 Apr 2020 21:30:12 +0200
+Subject: [PATCH 1699/2034] combine: Fix split_i2i3 ICE [PR94291]
+
+The following testcase ICEs on armv7hl-linux-gnueabi.
+try_combine is called on:
+(gdb) p debug_rtx (i3)
+(insn 20 12 22 2 (set (mem/c:SI (plus:SI (reg/f:SI 102 sfp)
+                (const_int -4 [0xfffffffffffffffc])) [1 x+0 S4 A32])
+        (reg:SI 125)) "pr94291.c":7:8 241 {*arm_movsi_insn}
+     (expr_list:REG_DEAD (reg:SI 125)
+        (nil)))
+(gdb) p debug_rtx (i2)
+(insn 12 7 20 2 (parallel [
+            (set (reg:CC 100 cc)
+                (compare:CC (reg:SI 121 [ <retval> ])
+                    (const_int 0 [0])))
+            (set (reg:SI 125)
+                (reg:SI 121 [ <retval> ]))
+        ]) "pr94291.c":7:8 248 {*movsi_compare0}
+     (expr_list:REG_UNUSED (reg:CC 100 cc)
+        (nil)))
+and tries to recognize cc = r121 cmp 0; [sfp-4] = r121 parallel,
+but that isn't recognized, so it splits it into two: split_i2i3
+[sfp-4] = r121 followed by cc = r121 cmp 0 which is recognized, but
+ICEs because the code below insist that the SET_DEST of newi2pat
+(or first set in PARALLEL thereof) must be a REG or SUBREG of REG,
+but it is a MEM in this case.  I don't see any condition that would
+guarantee that, perhaps for the swap_i2i3 case it was somehow guaranteed.
+
+As the code just wants to update LOG_LINKS and LOG_LINKS are only for
+registers, not for MEM or anything else, the patch just doesn't update those
+if it isn't a REG or SUBREG of REG.
+
+2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94291
+	PR rtl-optimization/84169
+	* combine.c (try_combine): For split_i2i3, don't assume SET_DEST
+	must be a REG or SUBREG of REG; if it is not one of these, don't
+	update LOG_LINKs.
+
+	* gcc.dg/pr94291.c: New test.
+---
+ gcc/ChangeLog                  |  8 +++++++
+ gcc/combine.c                  | 42 +++++++++++++++++++---------------
+ gcc/testsuite/ChangeLog        |  6 +++++
+ gcc/testsuite/gcc.dg/pr94291.c | 14 ++++++++++++
+ 4 files changed, 51 insertions(+), 19 deletions(-)
+ create mode 100644 gcc/testsuite/gcc.dg/pr94291.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index a1ab9fb4ef3..12803e90b0a 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/combine.c b/gcc/combine.c
+index 58366a6d331..cff76cd3303 100644
+--- a/gcc/combine.c
++++ b/gcc/combine.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 71b5a14bcbe..3cbf891d58d 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.dg/pr94291.c b/gcc/testsuite/gcc.dg/pr94291.c
+new file mode 100644
+index 00000000000..7daa2b01166
+--- /dev/null
++++ b/gcc/testsuite/gcc.dg/pr94291.c
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0001-Add-patch_area_size-and-patch_area_entry-to-crtl.patch ===
+From 6607bdd99994c834f92fce924abdaea3405f62dc Mon Sep 17 00:00:00 2001
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Fri, 1 May 2020 21:03:10 -0700
+Subject: [PATCH] Add patch_area_size and patch_area_entry to crtl
+
+Currently patchable area is at the wrong place.  It is placed immediately
+after function label and before .cfi_startproc.  A backend should be able
+to add a pseudo patchable area instruction durectly into RTL.  This patch
+adds patch_area_size and patch_area_entry to crtl so that the patchable
+area info is available in RTL passes.
+
+It also limits patch_area_size and patch_area_entry to 65535, which is
+a reasonable maximum size for patchable area.
+
+gcc/
+
+	PR target/93492
+	* cfgexpand.c (pass_expand::execute): Set crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* emit-rtl.h (rtl_data): Add patch_area_size and patch_area_entry.
+	* opts.c (common_handle_option): Limit
+	function_entry_patch_area_size and function_entry_patch_area_start
+	to USHRT_MAX.  Fix a typo in error message.
+	* varasm.c (assemble_start_function): Use crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* doc/invoke.texi: Document the maximum value for
+	-fpatchable-function-entry.
+
+gcc/c-family/
+
+	PR target/12345
+	* c-attribs.c (handle_patchable_function_entry_attribute): Limit
+	value to USHRT_MAX (65535).
+
+---
+ gcc/ChangeLog                                 | 14 ++++++++
+ gcc/c-family/ChangeLog                        |  6 ++++
+ gcc/c-family/c-attribs.c                      |  9 +++++
+ gcc/cfgexpand.c                               | 33 +++++++++++++++++++
+ gcc/doc/invoke.texi                           |  1 +
+ gcc/emit-rtl.h                                |  6 ++++
+ gcc/opts.c                                    |  4 ++-
+ gcc/testsuite/ChangeLog                       |  7 ++++
+ .../patchable_function_entry-error-1.c        |  9 +++++
+ .../patchable_function_entry-error-2.c        |  9 +++++
+ .../patchable_function_entry-error-3.c        | 17 ++++++++++
+ gcc/varasm.c                                  | 30 ++---------------
+ 12 files changed, 116 insertions(+), 29 deletions(-)
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index e85a8e8813e..fb776ba5a0e 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/c-family/ChangeLog b/gcc/c-family/ChangeLog
+index c429b49e68c..69ea1fdc4f3 100644
+--- a/gcc/c-family/ChangeLog
++++ b/gcc/c-family/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/c-family/c-attribs.c b/gcc/c-family/c-attribs.c
+index ac936d5bbbb..a101312c581 100644
+--- a/gcc/c-family/c-attribs.c
++++ b/gcc/c-family/c-attribs.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cfgexpand.c b/gcc/cfgexpand.c
+index a7ec77d5c85..86efa22bf60 100644
+--- a/gcc/cfgexpand.c
++++ b/gcc/cfgexpand.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index 527d362533a..767d1f07801 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/emit-rtl.h b/gcc/emit-rtl.h
+index a878efe3cf7..3d6565c8a30 100644
+--- a/gcc/emit-rtl.h
++++ b/gcc/emit-rtl.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/opts.c b/gcc/opts.c
+index c212a1a57dc..3dccef39701 100644
+--- a/gcc/opts.c
++++ b/gcc/opts.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 176aa117904..185f9ea725e 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+new file mode 100644
+index 00000000000..f60bf46cfe3
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+new file mode 100644
+index 00000000000..90f88c78be7
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+new file mode 100644
+index 00000000000..4490e5c15ca
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/varasm.c b/gcc/varasm.c
+index 271a67abf56..f062e48071f 100644
+--- a/gcc/varasm.c
++++ b/gcc/varasm.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+
+=== 1957-c-generic-lambda-forwarding-function-PR94546.patch ===
+From aedd04caa945260ea77fd22f29b77292f7dba72e Mon Sep 17 00:00:00 2001
+From: Jason Merrill <jason@redhat.com>
+Date: Wed, 22 Apr 2020 02:27:54 -0400
+Subject: [PATCH 1957/2034] c++: generic lambda forwarding function [PR94546]
+
+While instantiating test(Plot) we partially instantiate the generic lambda.
+We look at forward<T>(rest)... and see that it's just replacing parameter
+packs with new parameter packs and tries to do a direct substitution.  But
+because register_parameter_specializations had built up a
+NONTYPE_ARGUMENT_PACK around the new parameter pack, the substitution
+failed.  So let's not wrap it that way.
+
+gcc/cp/ChangeLog
+2020-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94546
+	* pt.c (register_parameter_specializations): If the instantiation is
+	still a parameter pack, don't wrap it in a NONTYPE_ARGUMENT_PACK.
+	(tsubst_pack_expansion, tsubst_expr): Adjust.
+---
+ gcc/cp/ChangeLog                              |  7 +++++
+ gcc/cp/pt.c                                   | 28 +++++++------------
+ .../g++.dg/cpp2a/lambda-generic-variadic20.C  | 23 +++++++++++++++
+ 3 files changed, 40 insertions(+), 18 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/cpp2a/lambda-generic-variadic20.C
+
+diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
+index 640e4948130..4b6691a77f0 100644
+--- a/gcc/cp/ChangeLog
++++ b/gcc/cp/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
+index 7bf249cee5c..2fe7b66707c 100644
+--- a/gcc/cp/pt.c
++++ b/gcc/cp/pt.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/cpp2a/lambda-generic-variadic20.C b/gcc/testsuite/g++.dg/cpp2a/lambda-generic-variadic20.C
+new file mode 100644
+index 00000000000..3d69dbb8e98
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/cpp2a/lambda-generic-variadic20.C
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0030-PR-c-92746-ICE-with-noexcept-of-function-concept-che.patch ===
+From edabbec31e3bfc9a9757f80c8610706ed00e5a1a Mon Sep 17 00:00:00 2001
+From: Jason Merrill <jason@redhat.com>
+Date: Mon, 13 Jan 2020 18:13:46 -0500
+Subject: [PATCH 0030/2034] 	PR c++/92746 - ICE with noexcept of function
+ concept check.
+
+Another place that needs to specially handle Concepts TS function-style
+concepts.
+
+	* except.c (check_noexcept_r): Handle concept-check.
+---
+ gcc/cp/ChangeLog                            | 3 +++
+ gcc/cp/except.c                             | 2 ++
+ gcc/testsuite/g++.dg/concepts/fn-concept3.C | 6 ++++++
+ 3 files changed, 11 insertions(+)
+ create mode 100644 gcc/testsuite/g++.dg/concepts/fn-concept3.C
+
+diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
+index 59646c70fa4..4729e3d331d 100644
+--- a/gcc/cp/ChangeLog
++++ b/gcc/cp/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cp/except.c b/gcc/cp/except.c
+index e073bd4d2bc..55b4b6af442 100644
+--- a/gcc/cp/except.c
++++ b/gcc/cp/except.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/concepts/fn-concept3.C b/gcc/testsuite/g++.dg/concepts/fn-concept3.C
+new file mode 100644
+index 00000000000..ecb7f6b12f7
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/concepts/fn-concept3.C
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0129-Add-PR-number-to-change-log.patch ===
+From f788c2d66a6ee1ded65dafccbc5e485d42af4808 Mon Sep 17 00:00:00 2001
+From: Richard Sandiford <richard.sandiford@arm.com>
+Date: Fri, 17 Jan 2020 12:22:58 +0000
+Subject: [PATCH 0129/2034] Add PR number to change log
+
+---
+ gcc/ChangeLog | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 6c6d586ca75..49ca5f92dec 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0577-aarch64-Add-an-and.patch ===
+From bba0c624c8b1d6e54dc58091dd21b0c2ab000434 Mon Sep 17 00:00:00 2001
+From: Richard Sandiford <richard.sandiford@arm.com>
+Date: Mon, 3 Feb 2020 21:43:44 +0000
+Subject: [PATCH 0577/2034] aarch64: Add an and/ior-based movk pattern
+ [PR87763]
+
+This patch adds a second movk pattern that models the instruction
+as a "normal" and/ior operation rather than an insertion.  It fixes
+the third insv_1.c failure in PR87763, which was a regression from
+GCC 8.
+
+2020-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+gcc/
+	PR target/87763
+	* config/aarch64/aarch64-protos.h (aarch64_movk_shift): Declare.
+	* config/aarch64/aarch64.c (aarch64_movk_shift): New function.
+	* config/aarch64/aarch64.md (aarch64_movk<mode>): New pattern.
+
+gcc/testsuite/
+	PR target/87763
+	* gcc.target/aarch64/movk_2.c: New test.
+---
+ gcc/ChangeLog                             |  7 ++
+ gcc/config/aarch64/aarch64-protos.h       |  1 +
+ gcc/config/aarch64/aarch64.c              | 24 +++++++
+ gcc/config/aarch64/aarch64.md             | 17 +++++
+ gcc/testsuite/ChangeLog                   |  5 ++
+ gcc/testsuite/gcc.target/aarch64/movk_2.c | 78 +++++++++++++++++++++++
+ 6 files changed, 132 insertions(+)
+ create mode 100644 gcc/testsuite/gcc.target/aarch64/movk_2.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index efbbbf08225..cea8ffee99c 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/aarch64-protos.h b/gcc/config/aarch64/aarch64-protos.h
+index 24cc65a383a..d29975a8921 100644
+--- a/gcc/config/aarch64/aarch64-protos.h
++++ b/gcc/config/aarch64/aarch64-protos.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/aarch64.c b/gcc/config/aarch64/aarch64.c
+index 6581e4cb075..6a1b4099af1 100644
+--- a/gcc/config/aarch64/aarch64.c
++++ b/gcc/config/aarch64/aarch64.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/aarch64.md b/gcc/config/aarch64/aarch64.md
+index 90eebce85c0..9c1f17d0f85 100644
+--- a/gcc/config/aarch64/aarch64.md
++++ b/gcc/config/aarch64/aarch64.md
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 601bc336290..cdb26581b9c 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/aarch64/movk_2.c b/gcc/testsuite/gcc.target/aarch64/movk_2.c
+new file mode 100644
+index 00000000000..a0477ad5d42
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/movk_2.c
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 1975-S-390-Fix-several-test-cases.patch ===
+From 803596fe9591026a50b59ff961ebc114097677b5 Mon Sep 17 00:00:00 2001
+From: Stefan Schulze Frielinghaus <stefansf@linux.ibm.com>
+Date: Tue, 10 Mar 2020 10:49:28 +0100
+Subject: [PATCH 1975/2034] S/390: Fix several test cases
+
+gcc/ChangeLog:
+
+2020-04-21  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md ("*<risbg_n>_ior_and_sr_ze<mode>"): Lift from SI
+	mode to DSI. ("*trunc_sidi_and_subreg_ze<clobbercc_or_nocc>"): New
+	insn pattern.
+
+gcc/testsuite/ChangeLog:
+
+2020-04-21  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/addsub-signed-overflow-1.c: Fix options.
+	* gcc.target/s390/addsub-signed-overflow-2.c: Fix options.
+	* gcc.target/s390/bswap-1.c: Fix scan assembler regex.
+	* gcc.target/s390/global-array-element-pic2.c: Fix scan assembler regex.
+	* gcc.target/s390/load-relative-check.c: Fix options.
+	* gcc.target/s390/morestack.c: Fix options.
+	* gcc.target/s390/nobp-return-mem-z900.c: Temporarily silence this case.
+	* gcc.target/s390/risbg-ll-1.c: Fix scan assembler regex.
+	* gcc.target/s390/risbg-ll-2.c: Fix scan assembler regex.
+	* gcc.target/s390/risbg-ll-3.c: Fix scan assembler regex.
+	* gcc.target/s390/target-attribute/pr82012.c: Fix error message.
+---
+ gcc/config/s390/s390.md                       | 39 ++++++++++++-------
+ .../s390/addsub-signed-overflow-1.c           |  2 +-
+ .../s390/addsub-signed-overflow-2.c           |  2 +-
+ gcc/testsuite/gcc.target/s390/bswap-1.c       |  8 ++--
+ .../s390/global-array-element-pic2.c          |  4 +-
+ .../gcc.target/s390/load-relative-check.c     |  2 +-
+ gcc/testsuite/gcc.target/s390/morestack.c     |  2 +-
+ .../gcc.target/s390/nobp-return-mem-z900.c    | 17 ++++++--
+ gcc/testsuite/gcc.target/s390/risbg-ll-1.c    | 13 +++----
+ gcc/testsuite/gcc.target/s390/risbg-ll-2.c    |  6 +--
+ gcc/testsuite/gcc.target/s390/risbg-ll-3.c    |  2 +-
+ .../s390/target-attribute/pr82012.c           |  2 +-
+ 12 files changed, 59 insertions(+), 40 deletions(-)
+
+diff --git a/gcc/config/s390/s390.md b/gcc/config/s390/s390.md
+index 44b59659e20..cf53ef1b791 100644
+--- a/gcc/config/s390/s390.md
++++ b/gcc/config/s390/s390.md
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-1.c b/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-1.c
+index 143220d5541..ebc02479587 100644
+--- a/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-1.c
++++ b/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-1.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-2.c b/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-2.c
+index 798e489cece..8bd1a764bc6 100644
+--- a/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-2.c
++++ b/gcc/testsuite/gcc.target/s390/addsub-signed-overflow-2.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/bswap-1.c b/gcc/testsuite/gcc.target/s390/bswap-1.c
+index edfcdf888c0..c11a0ea780b 100644
+--- a/gcc/testsuite/gcc.target/s390/bswap-1.c
++++ b/gcc/testsuite/gcc.target/s390/bswap-1.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/global-array-element-pic2.c b/gcc/testsuite/gcc.target/s390/global-array-element-pic2.c
+index b9398a8042f..72b87d40b85 100644
+--- a/gcc/testsuite/gcc.target/s390/global-array-element-pic2.c
++++ b/gcc/testsuite/gcc.target/s390/global-array-element-pic2.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/load-relative-check.c b/gcc/testsuite/gcc.target/s390/load-relative-check.c
+index 3d4671a6b3f..a55bc2442f1 100644
+--- a/gcc/testsuite/gcc.target/s390/load-relative-check.c
++++ b/gcc/testsuite/gcc.target/s390/load-relative-check.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/morestack.c b/gcc/testsuite/gcc.target/s390/morestack.c
+index aa28b72aa6c..4cfa220e737 100644
+--- a/gcc/testsuite/gcc.target/s390/morestack.c
++++ b/gcc/testsuite/gcc.target/s390/morestack.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/nobp-return-mem-z900.c b/gcc/testsuite/gcc.target/s390/nobp-return-mem-z900.c
+index 0b318115a8f..3d6aca1f95f 100644
+--- a/gcc/testsuite/gcc.target/s390/nobp-return-mem-z900.c
++++ b/gcc/testsuite/gcc.target/s390/nobp-return-mem-z900.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/risbg-ll-1.c b/gcc/testsuite/gcc.target/s390/risbg-ll-1.c
+index 30350d04c45..1cac15820c0 100644
+--- a/gcc/testsuite/gcc.target/s390/risbg-ll-1.c
++++ b/gcc/testsuite/gcc.target/s390/risbg-ll-1.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/risbg-ll-2.c b/gcc/testsuite/gcc.target/s390/risbg-ll-2.c
+index 754c17311dd..8bf1a0ff88b 100644
+--- a/gcc/testsuite/gcc.target/s390/risbg-ll-2.c
++++ b/gcc/testsuite/gcc.target/s390/risbg-ll-2.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/risbg-ll-3.c b/gcc/testsuite/gcc.target/s390/risbg-ll-3.c
+index 2a2db543cd9..90d37f2c1ce 100644
+--- a/gcc/testsuite/gcc.target/s390/risbg-ll-3.c
++++ b/gcc/testsuite/gcc.target/s390/risbg-ll-3.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/s390/target-attribute/pr82012.c b/gcc/testsuite/gcc.target/s390/target-attribute/pr82012.c
+index 2e1f7ae57be..ad1bf76d4d2 100644
+--- a/gcc/testsuite/gcc.target/s390/target-attribute/pr82012.c
++++ b/gcc/testsuite/gcc.target/s390/target-attribute/pr82012.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 1999-rs6000-Fix-C-14-vs.-C-17-ABI-bug-on-powerpc64le-PR94.patch ===
+From a39ed81b8a0b46320a7c6ece3f7ad4c3f8519609 Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Thu, 23 Apr 2020 09:59:57 +0200
+Subject: [PATCH 1999/2034] rs6000: Fix C++14 vs. C++17 ABI bug on powerpc64le
+ [PR94707]
+
+As mentioned in the PR and on IRC, the recently added struct-layout-1.exp
+new tests FAIL on powerpc64le-linux (among other targets).
+FAIL: tmpdir-g++.dg-struct-layout-1/t032 cp_compat_x_tst.o-cp_compat_y_tst.o execute
+FAIL: tmpdir-g++.dg-struct-layout-1/t058 cp_compat_x_tst.o-cp_compat_y_tst.o execute
+FAIL: tmpdir-g++.dg-struct-layout-1/t059 cp_compat_x_tst.o-cp_compat_y_tst.o execute
+in particular.  The problem is that the presence or absence of the C++17
+artificial empty base fields, which have non-zero TYPE_SIZE, but zero
+DECL_SIZE, change the ABI decisions, if it is present (-std=c++17), the type
+might not be considered homogeneous, while if it is absent (-std=c++14), it
+can be.
+
+The following patch fixes that and emits a -Wpsabi inform; perhaps more
+often than it could, because the fact that rs6000_discover_homogeneous_aggregate
+returns true when it didn't in in GCC 7/8/9 with -std=c++17 doesn't still
+mean it will make a different ABI decision, but the warning triggered only
+on the test I've changed (the struct-layout-1.exp tests use -w -Wno-psabi
+already).
+
+2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94707
+	* config/rs6000/rs6000-call.c (rs6000_aggregate_candidate): Add
+	cxx17_empty_base_seen argument.  Pass it to recursive calls.
+	Ignore cxx17_empty_base_field_p fields after setting
+	*cxx17_empty_base_seen to true.
+	(rs6000_discover_homogeneous_aggregate): Adjust
+	rs6000_aggregate_candidate caller.  With -Wpsabi, diagnose homogeneous
+	aggregates with C++17 empty base fields.
+
+	* g++.dg/tree-ssa/pr27830.C: Use -Wpsabi -w for -std=c++17 and higher.
+---
+ gcc/ChangeLog                           | 13 ++++++++++
+ gcc/config/rs6000/rs6000-call.c         | 34 +++++++++++++++++++++----
+ gcc/testsuite/ChangeLog                 |  3 +++
+ gcc/testsuite/g++.dg/tree-ssa/pr27830.C |  2 ++
+ 4 files changed, 47 insertions(+), 5 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 06f7eda0033..93c3076eb86 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/rs6000/rs6000-call.c b/gcc/config/rs6000/rs6000-call.c
+index e08621ace27..a9ae7ab70ca 100644
+--- a/gcc/config/rs6000/rs6000-call.c
++++ b/gcc/config/rs6000/rs6000-call.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 684e408c1a5..245c1512c76 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/tree-ssa/pr27830.C b/gcc/testsuite/g++.dg/tree-ssa/pr27830.C
+index 01c7fc18783..551ebc428cd 100644
+--- a/gcc/testsuite/g++.dg/tree-ssa/pr27830.C
++++ b/gcc/testsuite/g++.dg/tree-ssa/pr27830.C
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== 0001-Add-patch_area_size-and-patch_area_entry-to-crtl.patch ===
+From 6607bdd99994c834f92fce924abdaea3405f62dc Mon Sep 17 00:00:00 2001
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Fri, 1 May 2020 21:03:10 -0700
+Subject: [PATCH] Add patch_area_size and patch_area_entry to crtl
+
+Currently patchable area is at the wrong place.  It is placed immediately
+after function label and before .cfi_startproc.  A backend should be able
+to add a pseudo patchable area instruction durectly into RTL.  This patch
+adds patch_area_size and patch_area_entry to crtl so that the patchable
+area info is available in RTL passes.
+
+It also limits patch_area_size and patch_area_entry to 65535, which is
+a reasonable maximum size for patchable area.
+
+gcc/
+
+	PR target/93492
+	* cfgexpand.c (pass_expand::execute): Set crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* emit-rtl.h (rtl_data): Add patch_area_size and patch_area_entry.
+	* opts.c (common_handle_option): Limit
+	function_entry_patch_area_size and function_entry_patch_area_start
+	to USHRT_MAX.  Fix a typo in error message.
+	* varasm.c (assemble_start_function): Use crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* doc/invoke.texi: Document the maximum value for
+	-fpatchable-function-entry.
+
+gcc/c-family/
+
+	PR target/12345
+	* c-attribs.c (handle_patchable_function_entry_attribute): Limit
+	value to USHRT_MAX (65535).
+
+---
+ gcc/ChangeLog                                 | 14 ++++++++
+ gcc/c-family/ChangeLog                        |  6 ++++
+ gcc/c-family/c-attribs.c                      |  9 +++++
+ gcc/cfgexpand.c                               | 33 +++++++++++++++++++
+ gcc/doc/invoke.texi                           |  1 +
+ gcc/emit-rtl.h                                |  6 ++++
+ gcc/opts.c                                    |  4 ++-
+ gcc/testsuite/ChangeLog                       |  7 ++++
+ .../patchable_function_entry-error-1.c        |  9 +++++
+ .../patchable_function_entry-error-2.c        |  9 +++++
+ .../patchable_function_entry-error-3.c        | 17 ++++++++++
+ gcc/varasm.c                                  | 30 ++---------------
+ 12 files changed, 116 insertions(+), 29 deletions(-)
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index e85a8e8813e..fb776ba5a0e 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/c-family/ChangeLog b/gcc/c-family/ChangeLog
+index c429b49e68c..69ea1fdc4f3 100644
+--- a/gcc/c-family/ChangeLog
++++ b/gcc/c-family/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/c-family/c-attribs.c b/gcc/c-family/c-attribs.c
+index ac936d5bbbb..a101312c581 100644
+--- a/gcc/c-family/c-attribs.c
++++ b/gcc/c-family/c-attribs.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cfgexpand.c b/gcc/cfgexpand.c
+index a7ec77d5c85..86efa22bf60 100644
+--- a/gcc/cfgexpand.c
++++ b/gcc/cfgexpand.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index 527d362533a..767d1f07801 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/emit-rtl.h b/gcc/emit-rtl.h
+index a878efe3cf7..3d6565c8a30 100644
+--- a/gcc/emit-rtl.h
++++ b/gcc/emit-rtl.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/opts.c b/gcc/opts.c
+index c212a1a57dc..3dccef39701 100644
+--- a/gcc/opts.c
++++ b/gcc/opts.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 176aa117904..185f9ea725e 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+new file mode 100644
+index 00000000000..f60bf46cfe3
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+new file mode 100644
+index 00000000000..90f88c78be7
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+new file mode 100644
+index 00000000000..4490e5c15ca
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/varasm.c b/gcc/varasm.c
+index 271a67abf56..f062e48071f 100644
+--- a/gcc/varasm.c
++++ b/gcc/varasm.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+
+=== 0002-Bump-date.patch ===
+From a139bafeec76732d964b99e8be3d61b3cab0359d Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Tue, 12 May 2020 09:27:51 +0200
+Subject: [PATCH 2/2] Bump date.
+
+---
+ gcc/DATESTAMP | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/DATESTAMP b/gcc/DATESTAMP
+index c3d42a6f89a..b03d4a0feab 100644
+--- a/gcc/DATESTAMP
++++ b/gcc/DATESTAMP
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+
+=== 0001-Just-test-it.patch ===
+From 6b10b909c0b49ac7ace2cd53021b3ff7ffb2d3f4 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Tue, 12 May 2020 09:25:54 +0200
+Subject: [PATCH 1/2] Just test it.
+
+gcc/ChangeLog:
+
+2020-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/12345
+	* tree-vrp.c: Done.
+	* tree.c: Done.
+---
+ gcc/tree-vrp.c | 2 ++
+ gcc/tree.c     | 3 +++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/gcc/tree-vrp.c b/gcc/tree-vrp.c
+index a8861670790..32722d2c714 100644
+--- a/gcc/tree-vrp.c
++++ b/gcc/tree-vrp.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/tree.c b/gcc/tree.c
+index 0ddf002e9eb..fa7c6b28a4e 100644
+--- a/gcc/tree.c
++++ b/gcc/tree.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+
+=== trailing-whitespaces.patch ===
+From eb7c7c524556df5364f03adc20f6a9db20858484 Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Mon, 13 Jan 2020 14:14:57 +0100
+Subject: [PATCH 0004/2034] tree-opt: Fix bootstrap failure in
+ tree-ssa-forwprop.c some more PR90838
+
+2020-01-13  Jakub Jelinek  <jakub@redhat.com>   
+
+	PR tree-optimization/90838
+	* tree-ssa-forwprop.c (simplify_count_trailing_zeroes): Use
+	SCALAR_INT_TYPE_MODE directly in CTZ_DEFINED_VALUE_AT_ZERO macro      
+	argument rather than to initialize temporary for targets that
+	don't use the mode argument at all.  Initialize ctzval to avoid  
+	warning at -O0.
+---
+ gcc/ChangeLog           | 9 +++++++++
+ gcc/tree-ssa-forwprop.c | 6 +++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index a195863212e..f7df07343d1 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/tree-ssa-forwprop.c b/gcc/tree-ssa-forwprop.c
+index aac31d02b6c..56c470f6ecf 100644
+--- a/gcc/tree-ssa-forwprop.c
++++ b/gcc/tree-ssa-forwprop.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.1
+
+=== pr-check1.patch ===
+From 5194b51ed9714808d88827531e91474895b6c706 Mon Sep 17 00:00:00 2001
+From: Jason Merrill <jason@redhat.com>
+Date: Thu, 16 Jan 2020 16:55:39 -0500
+Subject: [PATCH 0121/2034] PR c++/93286 - ICE with __is_constructible and
+ variadic template.
+
+Here we had been recursing in tsubst_copy_and_build if type2 was a TREE_LIST
+because that function knew how to deal with pack expansions, and tsubst
+didn't.  But tsubst_copy_and_build expects to be dealing with expressions,
+so we crash when trying to convert_from_reference a type.
+
+gcc/cp/ChangeLog:
+	PR ipa/12345
+	* pt.c (tsubst) [TREE_LIST]: Handle pack expansion.
+	(tsubst_copy_and_build) [TRAIT_EXPR]: Always use tsubst for type2.
+
+gcc/testsuite/ChangeLog:
+	* g++.dg/ext/is_constructible4.C: New file.
+---
+ gcc/cp/ChangeLog                             |  4 ++
+ gcc/cp/pt.c                                  | 74 ++++++++++++++++++--
+ gcc/testsuite/g++.dg/ext/is_constructible4.C | 18 +++++
+ 3 files changed, 89 insertions(+), 7 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/ext/is_constructible4.C
+
+diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
+index 3ca5d7a11b4..c37e461bcc5 100644
+--- a/gcc/cp/ChangeLog
++++ b/gcc/cp/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
+index 9bb8cc13e5f..872f8ff8f52 100644
+--- a/gcc/cp/pt.c
++++ b/gcc/cp/pt.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/ext/is_constructible4.C b/gcc/testsuite/g++.dg/ext/is_constructible4.C
+new file mode 100644
+index 00000000000..6dfe3c01661
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/ext/is_constructible4.C
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0020-IPA-Avoid-segfault-in-devirtualization_time_bonus-PR.patch ===
+From 8472660b98a31b32b7d030c2cdc4d41d326364d5 Mon Sep 17 00:00:00 2001
+From: Martin Jambor <mjambor@suse.cz>
+Date: Mon, 13 Jan 2020 19:13:46 +0100
+Subject: [PATCH 0020/2034] IPA: Avoid segfault in devirtualization_time_bonus
+ (PR 93223)
+
+2020-01-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93223
+	* ipa-cp.c (devirtualization_time_bonus): Check whether isummary is
+	NULL.
+
+	testsuite/
+	* g++.dg/ipa/pr93223.C: New test.
+---
+ gcc/ipa-cp.c                       |  2 +-
+ gcc/testsuite/g++.dg/ipa/pr93223.C | 62 ++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 1 deletion(-)
+ create mode 100644 gcc/testsuite/g++.dg/ipa/pr93223.C
+
+diff --git a/gcc/ipa-cp.c b/gcc/ipa-cp.c
+index 612f3d0a89b..17da1d8e8a7 100644
+--- a/gcc/ipa-cp.c
++++ b/gcc/ipa-cp.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/ipa/pr93223.C b/gcc/testsuite/g++.dg/ipa/pr93223.C
+new file mode 100644
+index 00000000000..87f98b5e244
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/ipa/pr93223.C
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0043-Compare-TREE_ADDRESSABLE-and-TYPE_MODE-when-ODR-chec.patch ===
+From 288c5324bf6e418dd94d718d1619464a4f68ff8e Mon Sep 17 00:00:00 2001
+From: Jan Hubicka <jh@suse.cz>
+Date: Tue, 14 Jan 2020 21:45:03 +0100
+Subject: [PATCH 0043/2034] Compare TREE_ADDRESSABLE and TYPE_MODE when ODR
+ checking types.
+
+	PR lto/91576
+	* ipa-devirt.c (odr_types_equivalent_p): Compare TREE_ADDRESSABLE and
+	TYPE_MODE.
+
+	* testsuite/g++.dg/lto/odr-8_0.C: New testcase.
+	* testsuite/g++.dg/lto/odr-8_1.C: New testcase.
+---
+ gcc/ChangeLog                      |  6 ++++++
+ gcc/ipa-devirt.c                   | 21 +++++++++++++++++++++
+ gcc/testsuite/ChangeLog            |  6 ++++++
+ gcc/testsuite/g++.dg/lto/odr-8_0.C |  7 +++++++
+ gcc/testsuite/g++.dg/lto/odr-8_1.C | 12 ++++++++++++
+ 5 files changed, 52 insertions(+)
+ create mode 100644 gcc/testsuite/g++.dg/lto/odr-8_0.C
+ create mode 100644 gcc/testsuite/g++.dg/lto/odr-8_1.C
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 38165123654..33ca91a6467 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/ipa-devirt.c b/gcc/ipa-devirt.c
+index f0031957375..b609a77701d 100644
+--- a/gcc/ipa-devirt.c
++++ b/gcc/ipa-devirt.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 8e3b9105188..dc42601794b 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/g++.dg/lto/odr-8_0.C b/gcc/testsuite/g++.dg/lto/odr-8_0.C
+new file mode 100644
+index 00000000000..59f51399fac
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/lto/odr-8_0.C
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/g++.dg/lto/odr-8_1.C b/gcc/testsuite/g++.dg/lto/odr-8_1.C
+new file mode 100644
+index 00000000000..742df8cc906
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/lto/odr-8_1.C
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0096-GCC-PATCH-AArch64-Add-ACLE-intrinsics-for-dot-produc.patch ===
+From 8c197c851e7528baba7cb837f34c05ba2242f705 Mon Sep 17 00:00:00 2001
+From: Stam Markianos-Wright <stam.markianos-wright@arm.com>
+Date: Thu, 16 Jan 2020 14:20:48 +0000
+Subject: [PATCH 0096/2034] [GCC][PATCH][AArch64]Add ACLE intrinsics for dot
+ product (usdot - vector, <us/su>dot - by element) for AArch64 AdvSIMD ARMv8.6
+ Extension
+
+gcc/ChangeLog:
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/aarch64/aarch64-builtins.c: (enum aarch64_type_qualifiers):
+	New qualifier_lane_quadtup_index, TYPES_TERNOP_SSUS,
+	TYPES_QUADOPSSUS_LANE_QUADTUP, TYPES_QUADOPSSSU_LANE_QUADTUP.
+	(aarch64_simd_expand_args): Add case SIMD_ARG_LANE_QUADTUP_INDEX.
+	(aarch64_simd_expand_builtin): Add qualifier_lane_quadtup_index.
+	* config/aarch64/aarch64-simd-builtins.def (usdot, usdot_lane,
+	usdot_laneq, sudot_lane,sudot_laneq): New.
+	* config/aarch64/aarch64-simd.md (aarch64_usdot): New.
+	(aarch64_<sur>dot_lane): New.
+	* config/aarch64/arm_neon.h (vusdot_s32): New.
+	(vusdotq_s32): New.
+	(vusdot_lane_s32): New.
+	(vsudot_lane_s32): New.
+	* config/aarch64/iterators.md (DOTPROD_I8MM): New iterator.
+	(UNSPEC_USDOT, UNSPEC_SUDOT): New unspecs.
+
+gcc/testsuite/ChangeLog:
+
+2020-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-1.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-2.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-3.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-3-4.c: New test.
+---
+ gcc/ChangeLog                                 |  18 +++
+ gcc/config/aarch64/aarch64-builtins.c         |  45 +++++-
+ gcc/config/aarch64/aarch64-simd-builtins.def  |   5 +
+ gcc/config/aarch64/aarch64-simd.md            |  34 +++++
+ gcc/config/aarch64/arm_neon.h                 |  83 +++++++++++
+ gcc/config/aarch64/iterators.md               |   7 +
+ gcc/testsuite/ChangeLog                       |   7 +
+ .../aarch64/advsimd-intrinsics/vdot-3-1.c     | 136 +++++++++++++++++
+ .../aarch64/advsimd-intrinsics/vdot-3-2.c     | 137 ++++++++++++++++++
+ .../aarch64/advsimd-intrinsics/vdot-3-3.c     |  31 ++++
+ .../aarch64/advsimd-intrinsics/vdot-3-4.c     |  31 ++++
+ 11 files changed, 531 insertions(+), 3 deletions(-)
+ create mode 100755 gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c
+ create mode 100755 gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c
+ create mode 100755 gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c
+ create mode 100755 gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c
+
+diff --git a/gcc/ChangeLog b/gcc/ChangeLog
+index 9a949980699..49dcecb6777 100644
+--- a/gcc/ChangeLog
++++ b/gcc/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/aarch64-builtins.c b/gcc/config/aarch64/aarch64-builtins.c
+index f0e0461b7f0..f50c4857e1c 100644
+--- a/gcc/config/aarch64/aarch64-builtins.c
++++ b/gcc/config/aarch64/aarch64-builtins.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/aarch64-simd-builtins.def b/gcc/config/aarch64/aarch64-simd-builtins.def
+index 57fc5933b43..4744dd1f6b2 100644
+--- a/gcc/config/aarch64/aarch64-simd-builtins.def
++++ b/gcc/config/aarch64/aarch64-simd-builtins.def
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/aarch64-simd.md b/gcc/config/aarch64/aarch64-simd.md
+index 2989096b170..9e56e8caf35 100644
+--- a/gcc/config/aarch64/aarch64-simd.md
++++ b/gcc/config/aarch64/aarch64-simd.md
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/arm_neon.h b/gcc/config/aarch64/arm_neon.h
+index eaba156e26c..c96214003dd 100644
+--- a/gcc/config/aarch64/arm_neon.h
++++ b/gcc/config/aarch64/arm_neon.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/config/aarch64/iterators.md b/gcc/config/aarch64/iterators.md
+index b9843b83c5f..83720d9802a 100644
+--- a/gcc/config/aarch64/iterators.md
++++ b/gcc/config/aarch64/iterators.md
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
+index 0d8aa6063a7..8b01aa06a40 100644
+--- a/gcc/testsuite/ChangeLog
++++ b/gcc/testsuite/ChangeLog
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c
+new file mode 100755
+index 00000000000..ac4f821e771
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c
+new file mode 100755
+index 00000000000..96bca2356e4
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c
+new file mode 100755
+index 00000000000..18ecabef8dc
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c
+new file mode 100755
+index 00000000000..66c87d48694
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c
+@@ -0,0 +1 @@
++
+-- 
+2.26.1
+
+=== 0001-c-Alias.patch ===
+From 3f1a149fc35cdba988464562e2fb824b10652d6b Mon Sep 17 00:00:00 2001
+From: Nathan Sidwell <nathan@acm.org>
+Date: Tue, 19 May 2020 13:29:19 -0700
+Subject: [PATCH] c++: Alias template instantiation template info
+
+I discovered that the alias instantiation machinery would setup
+template_info, and then sometime later overwrite that with equivalent
+info.  This broke modules, because the template info, once set, is
+logically immutable.  Let's just not do that.
+
+	* pt.c (lookup_template_class_1): Do not reinit template_info of an
+	alias here.
+
+(cherry picked from commit 74744bb1f2847b5b9ce3e97e0fec9c23bb0e499f)
+---
+ gcc/cp/pt.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
+index b8f03d18541..7230ac724ba 100644
+--- a/gcc/cp/pt.c
++++ b/gcc/cp/pt.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+=== 0001-RISC-V-Make-unique.patch ===
+From adce62f53d8ad00e8110a6a2de7962d7a850de16 Mon Sep 17 00:00:00 2001
+From: Keith Packard <keithp@keithp.com>
+Date: Wed, 29 Apr 2020 09:49:56 -0700
+Subject: [PATCH] RISC-V: Make unique SECCAT_SRODATA names start with .srodata
+ (not .sdata2)
+
+default_unique_section uses ".sdata2" as a prefix for SECCAT_SRODATA
+unique sections, but RISC-V uses ".srodata" instead. Override the
+TARGET_ASM_UNIQUE_SECTION function to catch this case, allowing the
+default to be used for all other sections.
+
+gcc/
+	* config/riscv/riscv.c (riscv_unique_section): New.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
+Signed-off-by: Keith Packard <keithp@keithp.com>
+Reviewed-by: Keith Packard <keithp@keithp.com>
+Reviewed-on: Keith Packard <keithp@keithp.com>
+Co-Authored-by: Keith Packard <keithp@keithp.com>
+Acked-By: Keith Packard <keithp@keithp.com>
+Tested-by: Keith Packard <keithp@keithp.com>
+Reported-by: Keith Packard <keithp@keithp.com>
+Suggested-by: Keith Packard <keithp@keithp.com>
+---
+ gcc/ChangeLog            |  5 +++++
+ gcc/config/riscv/riscv.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+
+diff --git a/gcc/config/riscv/riscv.c b/gcc/config/riscv/riscv.c
+index e4c08d780db..1ad9799fce4 100644
+--- a/gcc/config/riscv/riscv.c
++++ b/gcc/config/riscv/riscv.c
+@@ -1 +1,2 @@
+
++
+
+-- 
+2.26.2
+
+=== 0001-Fortran-ProcPtr-function.patch ===
+From eb069ae8819c3a84d7f78becc5501e21ee3a9554 Mon Sep 17 00:00:00 2001
+From: Mark Eggleston <markeggleston@gcc.gnu.org>
+Date: Thu, 7 May 2020 08:02:02 +0100
+Subject: [PATCH] Fortran  : ProcPtr function results: 'ppr@' in error message
+ PR39695
+
+The value 'ppr@' is set in the name of result symbol, the actual
+name of the symbol is in the procedure name symbol pointed
+to by the result symbol's namespace (ns). When reporting errors for
+symbols that have the proc_pointer attribute check whether the
+result attribute is set and set the name accordingly.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/fortran/
+
+	PR fortran/39695
+	* resolve.c (resolve_fl_procedure): Set name depending on
+	whether the result attribute is set.  For PROCEDURE/RESULT
+	conflict use the name in sym->ns->proc_name->name.
+	* symbol.c (gfc_add_type): Add check for function and result
+	attributes use sym->ns->proc_name->name if both are set.
+	Where the symbol cannot have a type use the name in
+	sym->ns->proc_name->name.
+
+2020-05-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/testsuite/
+
+	PR fortran/39695
+	* gfortran.dg/pr39695_1.f90: New test.
+	* gfortran.dg/pr39695_2.f90: New test.
+	* gfortran.dg/pr39695_3.f90: New test.
+	* gfortran.dg/pr39695_4.f90: New test.
+---
+ gcc/fortran/ChangeLog                   | 11 +++++++++++
+ gcc/fortran/resolve.c                   |  6 ++++--
+ gcc/fortran/symbol.c                    |  7 +++++--
+ gcc/testsuite/ChangeLog                 |  8 ++++++++
+ gcc/testsuite/gfortran.dg/pr39695_1.f90 |  8 ++++++++
+ gcc/testsuite/gfortran.dg/pr39695_2.f90 | 12 ++++++++++++
+ gcc/testsuite/gfortran.dg/pr39695_3.f90 | 11 +++++++++++
+ gcc/testsuite/gfortran.dg/pr39695_4.f90 | 14 ++++++++++++++
+ 8 files changed, 73 insertions(+), 4 deletions(-)
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_1.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_2.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_3.f90
+ create mode 100644 gcc/testsuite/gfortran.dg/pr39695_4.f90
+
+diff --git a/gcc/fortran/resolve.c b/gcc/fortran/resolve.c
+index f6e10ea379c..aaee5eb6b9b 100644
+--- a/gcc/fortran/resolve.c
++++ b/gcc/fortran/resolve.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/fortran/symbol.c b/gcc/fortran/symbol.c
+index 59f602d80d5..b96706138c9 100644
+--- a/gcc/fortran/symbol.c
++++ b/gcc/fortran/symbol.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_1.f90 b/gcc/testsuite/gfortran.dg/pr39695_1.f90
+new file mode 100644
+index 00000000000..4c4b3045f69
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_1.f90
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_2.f90 b/gcc/testsuite/gfortran.dg/pr39695_2.f90
+new file mode 100644
+index 00000000000..8534724959a
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_2.f90
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_3.f90 b/gcc/testsuite/gfortran.dg/pr39695_3.f90
+new file mode 100644
+index 00000000000..661e2540bb3
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_3.f90
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/gfortran.dg/pr39695_4.f90 b/gcc/testsuite/gfortran.dg/pr39695_4.f90
+new file mode 100644
+index 00000000000..ecb0a43929f
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr39695_4.f90
+@@ -0,0 +1 @@
++
+-- 
+2.26.2
+
+=== 0001-c-C-20-DR-2237.patch ===
+From 4b38d56dbac6742b038551a36ec80200313123a1 Mon Sep 17 00:00:00 2001
+From: Marek Polacek <polacek@redhat.com>
+Date: Sat, 4 Apr 2020 18:09:53 -0400
+Subject: [PATCH] c++: C++20 DR 2237, disallow simple-template-id in cdtor.
+
+This patch implements DR 2237 which says that a simple-template-id is
+no longer valid as the declarator-id of a constructor or destructor;
+see [diff.cpp17.class]#2.  It is not explicitly stated but out-of-line
+destructors with a simple-template-id are also meant to be ill-formed
+now.  (Out-of-line constructors like that are invalid since DR1435 I
+think.)  This change only applies to C++20; it is not a DR against C++17.
+
+I'm not crazy about the diagnostic in constructors but ISTM that
+cp_parser_constructor_declarator_p shouldn't print errors.
+
+	DR 2237
+	* parser.c (cp_parser_unqualified_id): Reject simple-template-id as
+	the declarator-id of a destructor.
+---
+diff --git a/gcc/cp/parser.c b/gcc/cp/parser.c
+index a6a5d975af3..a8082d39aca 100644
+--- a/gcc/cp/parser.c
++++ b/gcc/cp/parser.c
+@@ -1 +1,2 @@
+
++
+
+=== 0001-go-in-ignored-location.patch ===
+From 81994eab700da7fea6644541c163aa0f0f3b8cf1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Cl=C3=A9ment=20Chigot?= <chigot.c@gmail.com>
+Date: Tue, 19 May 2020 16:03:54 +0200
+Subject: libgo: update x/sys/cpu after gccgo support added
+
+Reviewed-on: https://go-review.googlesource.com/c/gofrontend/+/234597
+---
+ gcc/go/gofrontend/MERGE                       |  2 +-
+ .../sys/cpu/{cpu_aix_ppc64.go => cpu_aix.go}  |  2 +-
+ .../golang.org/x/sys/cpu/syscall_aix_gccgo.go | 27 +++++++++++++++++++
+ 3 files changed, 29 insertions(+), 2 deletions(-)
+ rename libgo/go/golang.org/x/sys/cpu/{cpu_aix_ppc64.go => cpu_aix.go} (96%)
+ create mode 100644 libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+
+diff --git a/gcc/go/gofrontend/MERGE b/gcc/go/gofrontend/MERGE
+index bc9c1f07eda..284374820b0 100644
+--- a/gcc/go/gofrontend/MERGE
++++ b/gcc/go/gofrontend/MERGE
+@@ -1 +1,2 @@
+
++
+diff --git a/libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go b/libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+similarity index 96%
+rename from libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go
+rename to libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+index b0ede112d4e..02d03129e50 100644
+--- a/libgo/go/golang.org/x/sys/cpu/cpu_aix_ppc64.go
++++ b/libgo/go/golang.org/x/sys/cpu/cpu_aix.go
+@@ -1 +1,2 @@
+
++
+diff --git a/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go b/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+new file mode 100644
+index 00000000000..2609cc49ae7
+--- /dev/null
++++ b/libgo/go/golang.org/x/sys/cpu/syscall_aix_gccgo.go
+@@ -0,0 +1 @@
++
+
+-- 
+2.27.0.rc0.183.gde8f92d652-goog
+=== 0001-Update-merge.sh-to-reflect.patch  ===
+From b3d566f570f4416299240b51654b70c74f6cba6a Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 25 May 2020 20:55:29 +0200
+Subject: [PATCH] Update merge.sh to reflect usage of git.
+
+After switching to GIT, we should use it in libsanitizer
+merge script. I'll do merge from master as soon as
+PR95311 gets fixed.
+
+I'm going to install the patch.
+
+libsanitizer/ChangeLog:
+
+	* LOCAL_PATCHES: Use git hash instead of SVN id.
+	* merge.sh: Use git instead of VCS.  Update paths
+	relative to upstream git repository.
+---
+ libsanitizer/LOCAL_PATCHES |  2 +-
+ libsanitizer/merge.sh      | 10 ++++------
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/libsanitizer/LOCAL_PATCHES b/libsanitizer/LOCAL_PATCHES
+index 292b7a6e489..7732de3d436 100644
+--- a/libsanitizer/LOCAL_PATCHES
++++ b/libsanitizer/LOCAL_PATCHES
+@@ -1 +1,2 @@
+
++
+diff --git a/libsanitizer/merge.sh b/libsanitizer/merge.sh
+index dfa7bf3d196..3f4f1629a22 100755
+--- a/libsanitizer/merge.sh
++++ b/libsanitizer/merge.sh
+@@ -1 +1,2 @@
+
++
+ 
+-- 
+2.26.2
+=== 0001-Ada-Reuse-Is_Package_Or_Generic_Package-where-possib.patch ===
+From 557b268fffffdeb0980a17411f458eee333f55c6 Mon Sep 17 00:00:00 2001
+From: Piotr Trojanek <trojanek@adacore.com>
+Date: Thu, 12 Dec 2019 11:45:24 +0100
+Subject: [PATCH] [Ada] Reuse Is_Package_Or_Generic_Package where possible
+
+2020-05-26  Piotr Trojanek  <trojanek@adacore.com>
+
+gcc/ada/
+
+	* contracts.adb, einfo.adb, exp_ch9.adb, sem_ch12.adb,
+	sem_ch4.adb, sem_ch7.adb, sem_ch8.adb, sem_elab.adb,
+	sem_type.adb, sem_util.adb: Reuse Is_Package_Or_Generic_Package
+	where possible (similarly, reuse Is_Concurrent_Type if it was
+	possible in the same expressions).
+---
+ gcc/ada/contracts.adb |  2 +-
+ gcc/ada/einfo.adb     | 22 +++++++++++-----------
+ gcc/ada/exp_ch9.adb   |  2 +-
+ gcc/ada/sem_ch12.adb  |  2 +-
+ gcc/ada/sem_ch4.adb   |  2 +-
+ gcc/ada/sem_ch7.adb   |  6 +++---
+ gcc/ada/sem_ch8.adb   |  6 +++---
+ gcc/ada/sem_elab.adb  |  2 +-
+ gcc/ada/sem_type.adb  |  2 +-
+ gcc/ada/sem_util.adb  |  6 +++---
+ 10 files changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/gcc/ada/contracts.adb b/gcc/ada/contracts.adb
+index 981bb91..d58f136 100644
+--- a/gcc/ada/contracts.adb
++++ b/gcc/ada/contracts.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/einfo.adb b/gcc/ada/einfo.adb
+index 98b508f..1df8ed0 100644
+--- a/gcc/ada/einfo.adb
++++ b/gcc/ada/einfo.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/exp_ch9.adb b/gcc/ada/exp_ch9.adb
+index 64ac353..392a221 100644
+--- a/gcc/ada/exp_ch9.adb
++++ b/gcc/ada/exp_ch9.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch12.adb b/gcc/ada/sem_ch12.adb
+index dc3a3c2..209e060 100644
+--- a/gcc/ada/sem_ch12.adb
++++ b/gcc/ada/sem_ch12.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch4.adb b/gcc/ada/sem_ch4.adb
+index 5910112..702f265 100644
+--- a/gcc/ada/sem_ch4.adb
++++ b/gcc/ada/sem_ch4.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch7.adb b/gcc/ada/sem_ch7.adb
+index 6d9a1db..f217dfd 100644
+--- a/gcc/ada/sem_ch7.adb
++++ b/gcc/ada/sem_ch7.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_ch8.adb b/gcc/ada/sem_ch8.adb
+index f083f7c..7f50b40 100644
+--- a/gcc/ada/sem_ch8.adb
++++ b/gcc/ada/sem_ch8.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_elab.adb b/gcc/ada/sem_elab.adb
+index f3cac46..dbf3fac 100644
+--- a/gcc/ada/sem_elab.adb
++++ b/gcc/ada/sem_elab.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_type.adb b/gcc/ada/sem_type.adb
+index e5d01dd..1868568 100644
+--- a/gcc/ada/sem_type.adb
++++ b/gcc/ada/sem_type.adb
+@@ -0,0 +1 @@
++
+diff --git a/gcc/ada/sem_util.adb b/gcc/ada/sem_util.adb
+index b980b4c..c1b1d9e 100644
+--- a/gcc/ada/sem_util.adb
++++ b/gcc/ada/sem_util.adb
+@@ -0,0 +1 @@
++
+-- 
+2.1.4
+
+=== 0001-Ada-Add-support-for-XDR-streaming-in-the-default-run.patch ===
+From ed248d9bc3b72b6888a1b9cd84a8ef26809249f0 Mon Sep 17 00:00:00 2001
+From: Arnaud Charlet <charlet@adacore.com>
+Date: Thu, 23 Apr 2020 05:46:29 -0400
+Subject: [PATCH] [Ada] Add support for XDR streaming in the default runtime
+
+--!# FROM: /homes/derodat/tron/gnat2fsf/gnat
+--!# COMMIT: 5ad4cabb9f70114eb61c025e91406d4fba253f95
+--!# Change-Id: I21f92cad27933747495cdfa544a048f62f944cbd
+--!# TN: T423-014
+
+Currently we provide a separate implementation of Stream_Attributes via
+s-stratt__xdr.adb which needs to be recompiled manually.
+
+This change introduces instead a new binder switch to choose at bind
+time which stream implementation to use and replaces s-stratt__xdr.adb
+by a new unit System.Stream_Attributes.XDR.
+
+2020-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+gcc/ada/
+
+	* Makefile.rtl: Add s-statxd.o.
+	* bindgen.adb (Gen_Adainit): Add support for XDR_Stream.
+	* bindusg.adb (Display): Add mention of -xdr.
+	* gnatbind.adb: Process -xdr switch.
+	* init.c (__gl_xdr_stream): New.
+	* opt.ads (XDR_Stream): New.
+	* libgnat/s-stratt__xdr.adb: Rename to...
+	* libgnat/s-statxd.adb: this and adjust.
+	* libgnat/s-statxd.ads: New.
+	* libgnat/s-stratt.ads, libgnat/s-stratt.adb: Choose between
+	default and XDR implementation at runtime.
+	* libgnat/s-ststop.ads: Update comments.
+	* doc/gnat_rm/implementation_advice.rst: Update doc on XDR
+	streaming.
+	* gnat_rm.texi: Regenerate.
+---
+ gcc/ada/Makefile.rtl                          |   1 +
+ gcc/ada/bindgen.adb                           |  29 +-
+ gcc/ada/bindusg.adb                           |   5 +
+ gcc/ada/doc/gnat_rm/implementation_advice.rst |  35 +--
+ gcc/ada/gnat_rm.texi                          |  36 +--
+ gcc/ada/gnatbind.adb                          |   5 +
+ gcc/ada/init.c                                |   1 +
+ .../{s-stratt__xdr.adb => s-statxd.adb}       |  63 ++--
+ gcc/ada/libgnat/s-statxd.ads                  | 117 +++++++
+ gcc/ada/libgnat/s-stratt.adb                  | 286 +++++++++++++++---
+ gcc/ada/libgnat/s-stratt.ads                  |   7 +-
+ gcc/ada/libgnat/s-ststop.ads                  |   4 +-
+ gcc/ada/opt.ads                               |   6 +-
+ 13 files changed, 428 insertions(+), 167 deletions(-)
+ rename gcc/ada/libgnat/{s-stratt__xdr.adb => s-statxd.adb} (96%)
+ create mode 100644 gcc/ada/libgnat/s-statxd.ads
+
+diff --git a/gcc/ada/Makefile.rtl b/gcc/ada/Makefile.rtl
+index b340a9ef919..15e4f68ccdb 100644
+--- a/gcc/ada/Makefile.rtl
++++ b/gcc/ada/Makefile.rtl
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/bindgen.adb b/gcc/ada/bindgen.adb
+index 99ad3009d13..91b4cb38486 100644
+--- a/gcc/ada/bindgen.adb
++++ b/gcc/ada/bindgen.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/bindusg.adb b/gcc/ada/bindusg.adb
+index 45215d2ebea..6fd55ee8721 100644
+--- a/gcc/ada/bindusg.adb
++++ b/gcc/ada/bindusg.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/doc/gnat_rm/implementation_advice.rst b/gcc/ada/doc/gnat_rm/implementation_advice.rst
+index 31376d92461..998d0c597df 100644
+--- a/gcc/ada/doc/gnat_rm/implementation_advice.rst
++++ b/gcc/ada/doc/gnat_rm/implementation_advice.rst
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/gnat_rm.texi b/gcc/ada/gnat_rm.texi
+index c174073d508..d72f905a2df 100644
+--- a/gcc/ada/gnat_rm.texi
++++ b/gcc/ada/gnat_rm.texi
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/gnatbind.adb b/gcc/ada/gnatbind.adb
+index 4907082a42c..4372152b439 100644
+--- a/gcc/ada/gnatbind.adb
++++ b/gcc/ada/gnatbind.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/init.c b/gcc/ada/init.c
+index f9f627ebcff..e76aa79c5a8 100644
+--- a/gcc/ada/init.c
++++ b/gcc/ada/init.c
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-stratt__xdr.adb b/gcc/ada/libgnat/s-statxd.adb
+similarity index 96%
+rename from gcc/ada/libgnat/s-stratt__xdr.adb
+rename to gcc/ada/libgnat/s-statxd.adb
+index 7e32fcf9b91..fcefae7e6f2 100644
+--- a/gcc/ada/libgnat/s-stratt__xdr.adb
++++ b/gcc/ada/libgnat/s-statxd.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-statxd.ads b/gcc/ada/libgnat/s-statxd.ads
+new file mode 100644
+index 00000000000..cca5e5471bd
+--- /dev/null
++++ b/gcc/ada/libgnat/s-statxd.ads
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-stratt.adb b/gcc/ada/libgnat/s-stratt.adb
+index 64f3f040081..366dabdc7b6 100644
+--- a/gcc/ada/libgnat/s-stratt.adb
++++ b/gcc/ada/libgnat/s-stratt.adb
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-stratt.ads b/gcc/ada/libgnat/s-stratt.ads
+index 73369490146..c8c453aad2a 100644
+--- a/gcc/ada/libgnat/s-stratt.ads
++++ b/gcc/ada/libgnat/s-stratt.ads
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/libgnat/s-ststop.ads b/gcc/ada/libgnat/s-ststop.ads
+index d0da0609d9d..321460b89d8 100644
+--- a/gcc/ada/libgnat/s-ststop.ads
++++ b/gcc/ada/libgnat/s-ststop.ads
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/ada/opt.ads b/gcc/ada/opt.ads
+index 9e0263b431d..37f3d030e3f 100644
+--- a/gcc/ada/opt.ads
++++ b/gcc/ada/opt.ads
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.20.1
+=== 0001-Fortran-type-is-real-kind-1.patch ===
+From 3ea6977d0f1813d982743a09660eec1760e981ec Mon Sep 17 00:00:00 2001
+From: Mark Eggleston <markeggleston@gcc.gnu.org>
+Date: Wed, 1 Apr 2020 09:52:41 +0100
+Subject: [PATCH] Fortran  : "type is( real(kind(1.)) )" spurious syntax error
+ PR94397
+
+Based on a patch in the comments of the PR. That patch fixed this
+problem but caused the test cases for PR93484 to fail. It has been
+changed to reduce initialisation expressions if the expression is
+not EXPR_VARIABLE and not EXPR_CONSTANT.
+
+2020-05-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/fortran/
+
+	PR fortran/94397
+	* match.c (gfc_match_type_spec): New variable ok initialised
+	to true. Set ok with the return value of gfc_reduce_init_expr
+	called only if the expression is not EXPR_CONSTANT and is not
+	EXPR_VARIABLE. Add !ok to the check for type not being integer
+	or the rank being greater than zero.
+
+2020-05-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+gcc/testsuite/
+
+	PR fortran/94397
+	* gfortran.dg/pr94397.F90: New test.
+---
+ gcc/fortran/match.c                   |  5 ++++-
+ gcc/testsuite/gfortran.dg/pr94397.F90 | 26 ++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+ create mode 100644 gcc/testsuite/gfortran.dg/pr94397.F90
+
+diff --git a/gcc/fortran/match.c b/gcc/fortran/match.c
+index 8ae34a94a95..82d2b5087e5 100644
+--- a/gcc/fortran/match.c
++++ b/gcc/fortran/match.c
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/testsuite/gfortran.dg/pr94397.F90 b/gcc/testsuite/gfortran.dg/pr94397.F90
+new file mode 100644
+index 00000000000..fda10c1a88b
+--- /dev/null
++++ b/gcc/testsuite/gfortran.dg/pr94397.F90
+@@ -0,0 +1 @@
++
+-- 
+2.26.2
+
+=== 0001-Missing-change-description.patch ===
+From 8ec655bd94615ba45adabae9b50df299edb74eda Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Fri, 29 May 2020 13:42:57 +0200
+Subject: [PATCH] Test me.
+
+gcc/ChangeLog:
+
+	* ipa-icf-gimple.c (compare_gimple_asm):
+	* ipa-icf-gimple2.c (compare_gimple_asm): Good.
+	* ipa-icf-gimple3.c (compare_gimple_asm):
+---
+ contrib/gcc-changelog/git_commit.py | 10 ++++++++++
+ gcc/ipa-icf-gimple.c                |  1 +
+ 2 files changed, 11 insertions(+)
+
+diff --git a/gcc/ipa-icf-gimple.c b/gcc/ipa-icf-gimple.c
+index 1cd5872c03d..6f95aedb3d3 100644
+--- a/gcc/ipa-icf-gimple.c
++++ b/gcc/ipa-icf-gimple.c
+@@ -850,3 +850,4 @@
+ }
+ 
+ } // ipa_icf_gimple namespace
++
+-- 
+2.26.2
+
+=== 0001-Fix-text-of-hyperlink-in-manual.patch ===
+From c7904d9e08a0ca3f733be3c2e8a3b912fa851fc5 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Fri, 8 Mar 2019 13:56:53 +0000
+Subject: [PATCH] Fix text of hyperlink in manual
+
+	* doc/xml/manual/using.xml: Use link element instead of xref.
+	* doc/html/*: Regenerate.
+
+---
+ libstdc++-v3/ChangeLog                         | 3 +++
+ libstdc++-v3/doc/html/manual/using_macros.html | 3 ++-
+ libstdc++-v3/doc/xml/manual/using.xml          | 4 ++--
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/libstdc++-v3/doc/html/manual/using_macros.html b/libstdc++-v3/doc/html/manual/using_macros.html
+index 7030bd2d0fd..dad6564a97d 100644
+--- a/libstdc++-v3/doc/html/manual/using_macros.html
++++ b/libstdc++-v3/doc/html/manual/using_macros.html
+@@ -1 +1,2 @@
+ 
++
+diff --git a/libstdc++-v3/doc/xml/manual/using.xml b/libstdc++-v3/doc/xml/manual/using.xml
+index 2d44a739406..7647e9b8dad 100644
+--- a/libstdc++-v3/doc/xml/manual/using.xml
++++ b/libstdc++-v3/doc/xml/manual/using.xml
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.25.4
+
+=== 0002-libstdc-Fake-test-change-1.patch ===
+From fe4ade6778d1d97214db12bf2c40d0f40e7f953a Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Tue, 2 Jun 2020 11:52:34 +0100
+Subject: [PATCH] libstdc++: Fake change for testing git_commit.py
+
+libstdc++-v3/ChangeLog:
+
+	* doc/xml/faq.xml: Fake change.
+	* doc/html/*: Regenerated.
+---
+ libstdc++-v3/doc/xml/faq.xml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libstdc++-v3/doc/xml/faq.xml b/libstdc++-v3/doc/xml/faq.xml
+index e419d3c22a0..bcc14dd6d90 100644
+--- a/libstdc++-v3/doc/xml/faq.xml
++++ b/libstdc++-v3/doc/xml/faq.xml
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.25.4
+
+=== 0003-libstdc-Fake-test-change-2.patch ===
+From e460effb3a42c1c046b682fe266da418f2693ef3 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Tue, 2 Jun 2020 11:52:34 +0100
+Subject: [PATCH] libstdc++: Fake change for testing 2
+
+libstdc++-v3/ChangeLog:
+
+	* doc/xml/faq.xml: Fake change.
+---
+ libstdc++-v3/doc/html/faq.html | 2 +-
+ libstdc++-v3/doc/xml/faq.xml   | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/libstdc++-v3/doc/html/faq.html b/libstdc++-v3/doc/html/faq.html
+index 967e5f5f348..95d21b5bf9f 100644
+--- a/libstdc++-v3/doc/html/faq.html
++++ b/libstdc++-v3/doc/html/faq.html
+@@ -1 +1,2 @@
+ 
++
+--- a/libstdc++-v3/doc/xml/faq.xml
++++ b/libstdc++-v3/doc/xml/faq.xml
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.25.4
+=== 0001-configure.patch ===
+From dbe341cf6a77bb28c5fdf8b32dcb0ff1c2a27348 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Tue, 9 Jun 2020 09:39:36 +0200
+Subject: [PATCH] c++: Fix --disable-bootstrap with older g++.
+
+Previously I had AX_CXX_COMPILE_STDCXX in the gcc directory configure, which
+added -std=c++11 to CXX if needed, but then CXX is overridden from the
+toplevel directory, so it didn't have the desired effect.  Fixed by moving
+the check to the toplevel.  Currently it is only used when building GCC
+without bootstrapping; other packages that share the toplevel directory
+can adjust the condition if they also want to require C++11 support.
+
+ChangeLog:
+
+	* configure.ac: Check AX_CXX_COMPILE_STDCXX if not bootstrapping.
+	* configure: Regenerate.
+
+gcc/ChangeLog:
+
+	* aclocal.m4: Remove ax_cxx_compile_stdcxx.m4.
+	* configure.ac: Remove AX_CXX_COMPILE_STDCXX.
+	* configure: Regenerate.
+
+---
+ configure        | 999 ++++++++++++++++++++++++++++++++++++++++++++++-
+ configure.ac     |   6 +-
+ gcc/aclocal.m4   |   1 -
+ gcc/configure    | 997 +---------------------------------------------
+ gcc/configure.ac |   2 -
+ 5 files changed, 1004 insertions(+), 1001 deletions(-)
+
+diff --git a/configure b/configure
+index b7897446c70..a0c5aca9e8d 100755
+--- a/configure
++++ b/configure
+@@ -1 +1,2 @@
+ 
++
+diff --git a/configure.ac b/configure.ac
+index 59bd92a3e53..1a53ed418e4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/aclocal.m4 b/gcc/aclocal.m4
+index e93c1535063..1737d59d1cb 100644
+--- a/gcc/aclocal.m4
++++ b/gcc/aclocal.m4
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/configure b/gcc/configure
+index 46850710424..629c7c7e153 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -1 +1,2 @@
+ 
++
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 60d83c30771..9e7efd13ecc 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.26.2
+
+=== 0001-asan-fix-RTX-emission.patch ===
+From e1d68582022cfa2b1dc76646724b397ba2739439 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Thu, 11 Jun 2020 09:34:41 +0200
+Subject: [PATCH] asan: fix RTX emission for ilp32
+
+gcc/ChangeLog:
+
+	PR sanitizer/95634
+	* asan.c (asan_emit_stack_protection): Fix emission for ilp32
+	by using Pmode instead of ptr_mode.
+
+Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
+---
+ gcc/asan.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/asan.c b/gcc/asan.c
+index 823eb539993..4ec22162c12 100644
+--- a/gcc/asan.c
++++ b/gcc/asan.c
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.27.0
+
+=== 0001-Check-for-more-missing-math-decls-on-vxworks.patch ===
+From 0edfc1fd22405ee8e946101e44cd8edc0ee12047 Mon Sep 17 00:00:00 2001
+From: Douglas B Rupp <douglas.b.rupp@gmail.com>
+Date: Sun, 31 May 2020 13:25:28 -0700
+Subject: [PATCH] Check for more missing math decls on vxworks.
+
+Use the GLIBCXX_CHECK_MATH_DECL macro to check for the full list of
+vxworks math decls.
+
+for libstdc++-v3/ChangeLog:
+
+	* crossconfig.m4 <*-vxworks>: Check for more math decls.
+	* configure [FAKEPATCH]: Rebuild.
+---
+ libstdc++-v3/configure      | 255 ++++++++++++++++++++++++++++++++++++++++++++
+ libstdc++-v3/crossconfig.m4 |   3 +-
+ 2 files changed, 257 insertions(+), 1 deletion(-)
+
+diff --git a/libstdc++-v3/configure b/libstdc++-v3/configure
+index b5beb45..4ef678e 100755
+--- a/libstdc++-v3/configure
++++ b/libstdc++-v3/configure
+@@ -1 +1,2 @@
+ 
++
+diff --git a/libstdc++-v3/crossconfig.m4 b/libstdc++-v3/crossconfig.m4
+index fe18288..313f84d 100644
+--- a/libstdc++-v3/crossconfig.m4
++++ b/libstdc++-v3/crossconfig.m4
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.7.4
+

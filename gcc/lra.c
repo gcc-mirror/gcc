@@ -490,13 +490,16 @@ void
 lra_emit_move (rtx x, rtx y)
 {
   int old;
-
+  rtx_insn *insn;
+  
   if (GET_CODE (y) != PLUS)
     {
       if (rtx_equal_p (x, y))
 	return;
       old = max_reg_num ();
-      rtx_insn *insn = emit_move_insn (x, y);
+
+      insn = (GET_CODE (x) != STRICT_LOW_PART
+	      ? emit_move_insn (x, y) : emit_insn (gen_rtx_SET (x, y)));
       /* The move pattern may require scratch registers, so convert them
 	 into real registers now.  */
       if (insn != NULL_RTX)
@@ -2230,34 +2233,6 @@ has_nonexceptional_receiver (void)
   /* No exceptional block reached exit unexceptionally.	 */
   return false;
 }
-
-
-/* Process recursively X of INSN and add REG_INC notes if necessary.  */
-static void
-add_auto_inc_notes (rtx_insn *insn, rtx x)
-{
-  enum rtx_code code = GET_CODE (x);
-  const char *fmt;
-  int i, j;
-
-  if (code == MEM && auto_inc_p (XEXP (x, 0)))
-    {
-      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
-      return;
-    }
-
-  /* Scan all X sub-expressions.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	add_auto_inc_notes (insn, XEXP (x, i));
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
-    }
-}
-
 
 /* Remove all REG_DEAD and REG_UNUSED notes and regenerate REG_INC.
    We change pseudos by hard registers without notification of DF and

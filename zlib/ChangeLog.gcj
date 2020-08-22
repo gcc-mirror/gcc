@@ -1,3 +1,20 @@
+2020-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/95147
+	* configure: Regenerated.
+
+2020-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2020-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_CFLAGS): New.
+	* configure.ac (CET_FLAGS): Add GCC_CET_FLAGS and AC_SUBST.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure.ac: Likewise.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* configure.ac: Handle `--with-toolexeclibdir='.

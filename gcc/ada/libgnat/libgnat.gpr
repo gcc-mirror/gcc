@@ -1,0 +1,69 @@
+with "libgnat_common";
+
+library project Libgnat is
+
+   for Languages use ("Ada", "C");
+   for Source_Dirs use (".");
+   for Source_List_File use "libgnat.lst";
+   for Object_Dir use "../obj-" & Libgnat_Common.Library_Kind;
+
+   for Library_Name use "gnat";
+   for Library_Dir use "../adalib";
+   for Library_Kind use Libgnat_Common.Library_Kind;
+
+   package Compiler is
+
+      for Switches ("C") use Libgnat_Common.C_Flags;
+      for Switches ("Ada") use Libgnat_Common.Ada_Flags;
+
+      for Switches ("s-traceb.adb") use
+        Libgnat_Common.Ada_Flags & Libgnat_Common.Force_Debug &
+        Libgnat_Common.No_Inline & Libgnat_Common.No_Sibling;
+      --  Force no sibling call optimization on s-traceb.o so the number of
+      --  stack frames to be skipped when computing a call chain is not
+      --  modified by optimization. We don.t want inlining, either.
+
+      for Switches ("a-except.adb") use
+        Libgnat_Common.Ada_Flags & ("-O1") &
+        Libgnat_Common.Force_Debug & Libgnat_Common.No_Inline &
+        Libgnat_Common.No_Reorder;
+      --  Force no function reordering because of the exclusion bounds
+      --  mechanism (see the source file for more detailed information).
+      --  Force debugging information so that it is always possible to set
+      --  conditional breakpoints on exceptions.
+      --  Use -O1 otherwise gdb isn.t able to get a full backtrace on mips
+      --  targets.
+
+      for Switches ("s-excdeb.adb") use
+        Libgnat_Common.Ada_Flags & Libgnat_Common.Force_Debug &
+        Libgnat_Common.No_Opt;
+      --  Compile without optimization and with debug info to let the debugger
+      --  set breakpoints and inspect subprogram parameters on exception
+      --  related events.
+
+      for Switches ("s-assert.adb") use
+        Libgnat_Common.Ada_Flags & Libgnat_Common.Force_Debug;
+      --  Force debugging information on s-assert.o so that it is always
+      --  possible to set breakpoint on assert failures.
+
+      for Switches ("a-tags.adb") use
+        Libgnat_Common.Ada_Flags & Libgnat_Common.Force_Debug;
+      --  Force debugging information on a-tags.o so that the debugger can find
+      --  the description of Ada.Tags.Type_Specific_Data.
+
+      for Switches ("s-memory.adb") use
+        Libgnat_Common.Ada_Flags & Libgnat_Common.No_Sibling;
+      --  Force no sibling call optimization on s-memory.o to avoid turning the
+      --  tail recursion in Alloc into a loop that confuses branch prediction.
+
+      for Switches ("g-debpoo.adb") use
+        Libgnat_Common.Ada_Flags & Libgnat_Common.No_Reorder;
+      --  Need to keep functions ordered on g-debpoo.o since labels are used to
+      --  exclude subprograms from traceback computation.
+
+      for Switches ("traceback.c") use
+        Libgnat_Common.C_Flags & Libgnat_Common.No_Omit;
+
+   end Compiler;
+
+end Libgnat;

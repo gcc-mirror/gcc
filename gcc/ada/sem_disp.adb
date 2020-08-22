@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Elists;   use Elists;
@@ -292,7 +293,7 @@ package body Sem_Disp is
          Next_Formal (Formal);
       end loop;
 
-      if Ekind_In (Subp, E_Function, E_Generic_Function) then
+      if Ekind (Subp) in E_Function | E_Generic_Function then
          Ctrl_Type := Check_Controlling_Type (Etype (Subp), Subp);
 
          if Present (Ctrl_Type) then
@@ -620,7 +621,7 @@ package body Sem_Disp is
                   Par := Parent (Par);
                end if;
 
-               if Nkind_In (Par, N_Function_Call, N_Procedure_Call_Statement)
+               if Nkind (Par) in N_Function_Call | N_Procedure_Call_Statement
                  and then Is_Entity_Name (Name (Par))
                then
                   declare
@@ -683,7 +684,7 @@ package body Sem_Disp is
                --  For equality operators, one of the operands must be
                --  statically or dynamically tagged.
 
-               elsif Nkind_In (Par, N_Op_Eq, N_Op_Ne) then
+               elsif Nkind (Par) in N_Op_Eq | N_Op_Ne then
                   if N = Right_Opnd (Par)
                     and then Is_Tag_Indeterminate (Left_Opnd (Par))
                   then
@@ -992,7 +993,7 @@ package body Sem_Disp is
    --  Start of processing for Check_Dispatching_Operation
 
    begin
-      if not Ekind_In (Subp, E_Function, E_Procedure) then
+      if Ekind (Subp) not in E_Function | E_Procedure then
          return;
 
       --  The Default_Initial_Condition procedure is not a primitive subprogram
@@ -1408,7 +1409,7 @@ package body Sem_Disp is
          --  visible operation that may be declared in a partial view when
          --  the full view is controlled.
 
-         if Nam_In (Chars (Subp), Name_Initialize, Name_Adjust, Name_Finalize)
+         if Chars (Subp) in Name_Initialize | Name_Adjust | Name_Finalize
            and then Is_Controlled (Tagged_Type)
            and then not Is_Visibly_Controlled (Tagged_Type)
            and then not Is_Inherited_Public_Operation (Ovr_Subp)
@@ -1481,22 +1482,6 @@ package body Sem_Disp is
                end;
             end if;
          end if;
-
-      --  If the tagged type is a concurrent type then we must be compiling
-      --  with no code generation (we are either compiling a generic unit or
-      --  compiling under -gnatc mode) because we have previously tested that
-      --  no serious errors has been reported. In this case we do not add the
-      --  primitive to the list of primitives of Tagged_Type but we leave the
-      --  primitive decorated as a dispatching operation to be able to analyze
-      --  and report errors associated with the Object.Operation notation.
-
-      elsif Is_Concurrent_Type (Tagged_Type) then
-         pragma Assert (not Expander_Active);
-
-         --  Attach operation to list of primitives of the synchronized type
-         --  itself, for ASIS use.
-
-         Add_Dispatching_Operation (Tagged_Type, Subp);
 
       --  If no old subprogram, then we add this as a dispatching operation,
       --  but we avoid doing this if an error was posted, to prevent annoying
@@ -1584,10 +1569,10 @@ package body Sem_Disp is
          Set_DT_Position_Value (Subp, No_Uint);
 
       elsif Has_Controlled_Component (Tagged_Type)
-        and then Nam_In (Chars (Subp), Name_Initialize,
-                                       Name_Adjust,
-                                       Name_Finalize,
-                                       Name_Finalize_Address)
+        and then Chars (Subp) in Name_Initialize
+                               | Name_Adjust
+                               | Name_Finalize
+                               | Name_Finalize_Address
       then
          declare
             F_Node   : constant Node_Id := Freeze_Node (Tagged_Type);
@@ -1649,6 +1634,42 @@ package body Sem_Disp is
                Decl := Last (Actions (F_Node));
                Analyze (Decl);
             end if;
+         end;
+      end if;
+
+      --  AI12-0279: If the Yield aspect is specified for a dispatching
+      --  subprogram that inherits the aspect, the specified value shall
+      --  be confirming.
+
+      if Is_Dispatching_Operation (Subp)
+        and then Is_Primitive_Wrapper (Subp)
+        and then Present (Wrapped_Entity (Subp))
+        and then Comes_From_Source (Wrapped_Entity (Subp))
+        and then Present (Overridden_Operation (Subp))
+        and then Has_Yield_Aspect (Overridden_Operation (Subp))
+                   /= Has_Yield_Aspect (Wrapped_Entity (Subp))
+      then
+         declare
+            W_Ent  : constant Entity_Id := Wrapped_Entity (Subp);
+            W_Decl : constant Node_Id := Parent (W_Ent);
+            Asp    : Node_Id;
+
+         begin
+            if Present (Aspect_Specifications (W_Decl)) then
+               Asp := First (Aspect_Specifications (W_Decl));
+               while Present (Asp) loop
+                  if Chars (Identifier (Asp)) = Name_Yield then
+                     Error_Msg_Name_1 := Name_Yield;
+                     Error_Msg_N
+                       ("specification of inherited aspect% can only confirm "
+                        & "parent value", Asp);
+                  end if;
+
+                  Next (Asp);
+               end loop;
+            end if;
+
+            Set_Has_Yield_Aspect (Wrapped_Entity (Subp));
          end;
       end if;
 
@@ -1989,7 +2010,7 @@ package body Sem_Disp is
       Ctrl_Type : Entity_Id;
 
    begin
-      if Ekind_In (Subp, E_Function, E_Procedure)
+      if Ekind (Subp) in E_Function | E_Procedure
         and then Present (DTC_Entity (Subp))
       then
          return Scope (DTC_Entity (Subp));
@@ -2564,14 +2585,6 @@ package body Sem_Disp is
       Prim : Node_Id;
 
    begin
-      --  Diagnose failure to match No_Return in parent (Ada-2005, AI-414, but
-      --  we do it unconditionally in Ada 95 now, since this is our pragma).
-
-      if No_Return (Prev_Op) and then not No_Return (New_Op) then
-         Error_Msg_N ("procedure & must have No_Return pragma", New_Op);
-         Error_Msg_N ("\since overridden procedure has No_Return", New_Op);
-      end if;
-
       --  If there is no previous operation to override, the type declaration
       --  was malformed, and an error must have been emitted already.
 
@@ -2682,7 +2695,6 @@ package body Sem_Disp is
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
          Set_Has_Controlling_Result (New_Op, Has_Controlling_Result (Prev_Op));
-         return;
       end if;
    end Override_Dispatching_Operation;
 

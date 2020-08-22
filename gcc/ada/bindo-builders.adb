@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019, Free Software Foundation, Inc.           --
+--             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +110,8 @@ package body Bindo.Builders is
          Inv_Graph :=
            Create
              (Initial_Vertices => Number_Of_Elaborable_Units,
-              Initial_Edges    => Number_Of_Elaborable_Units);
+              Initial_Edges    => Number_Of_Elaborable_Units,
+              Lib_Graph        => Lib_G);
          Lib_Graph := Lib_G;
 
          For_Each_Elaborable_Unit (Create_Vertices'Access);

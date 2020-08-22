@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2005-2019, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2020, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,6 +146,12 @@ package Ada.Wide_Wide_Characters.Unicode is
    --  Returns true iff U is considered a space to be ignored, or if C is one
    --  of the corresponding categories, which are the following:
    --    Separator, Space (Zs)
+
+   function Is_NFKC (U : Wide_Wide_Character) return Boolean;
+   pragma Inline (Is_NFKC);
+   --  Returns True if the Wide_Wide_Character designated by U could be present
+   --  in a string normalized to Normalization Form KC (as defined by Clause
+   --  21 of ISO/IEC 10646:2017), otherwise returns False.
 
    function Is_Non_Graphic (U : Wide_Wide_Character) return Boolean;
    function Is_Non_Graphic (C : Category)            return Boolean;

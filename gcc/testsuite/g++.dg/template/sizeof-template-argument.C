@@ -3,9 +3,9 @@
 
 template<int> struct A {};
 
-template<typename> struct B : A <sizeof(=)> {}; /* { dg-error "expected primary-expression" } */
+template<typename> struct B : A <sizeof(=)> {}; /* { dg-error "" } */
 
-template<typename> struct C : A <sizeof(=)> {}; /* { dg-error "expected primary-expression" } */
+template<typename> struct C : A <sizeof(=)> {}; /* { dg-error "" } */
 
 int a;
 

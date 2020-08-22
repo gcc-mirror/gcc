@@ -1,4 +1,4 @@
-// { dg-do run { target c++2a } }
+// { dg-do run { target c++20 } }
 
 template<class, class> constexpr bool is_same_v = false;
 template<class T> constexpr bool is_same_v<T, T> = true;
