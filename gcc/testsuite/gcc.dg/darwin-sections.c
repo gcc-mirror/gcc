@@ -13,45 +13,41 @@ e_s ea;
 /* { dg-final { scan-assembler ".comm\[\t \]_ub,1" } } */
 /* { dg-final { scan-assembler ".comm\[\t \]_ea,1" } } */
 
-/* These should go into .data */
+/* These should go into __DATA,__common */
 char a = 0;
 short b = 0;
-/* { dg-final { scan-assembler ".globl _a.*.data.*.space\[\t \]1" } } */
-/* { dg-final { scan-assembler ".globl _b.*.data.*.space\[\t \]2" } } */
-
-/* These should go into __pu_bssN */
 long long d = 0;
 float e = 0;
 double f = 0;
 long double g = 0.L;
 long long al_256 __attribute__((aligned (256))) = 0;
-/* { dg-final { scan-assembler ".zerofill __DATA,__pu_bss3,_d,8,3" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__pu_bss2,_e,4,2" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__pu_bss3,_f,8,3" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__pu_bss4,_g,16,4" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__pu_bss8,_al_256,8,8" } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_a,1,0} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_b,2,1} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_d,8,3} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_e,4,2} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_f,8,3} } } */
+/* long double can be 64 or 128 bits depending on the Darwin subtarget.  */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_g,(16,4|8,3)} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__common,_al_256,8,8} } } */
 
-/* This should go into __zo_bss0 */
+/* These should go into __DATA,__bss */
 static e_s sea;
-/* { dg-final { scan-assembler ".zerofill __DATA,__zo_bss0,_sea,1" } } */
-
-/* These should go into .static_data */
 static char sa ;
 static short sb ;
-/* { dg-final { scan-assembler ".static_data.*_sa:.*.space\[\t \]1" } } */
-/* { dg-final { scan-assembler ".static_data.*_sb:.*.space\[\t \]2" } } */
-
-/* These should go into _bssN */
 static long long sd;
 static float se ;
 static double sf ;
 static long double sg;
 static long long sal_256 __attribute__((aligned (2048)));
-/* { dg-final { scan-assembler ".zerofill __DATA,__bss3,_sd,8,3" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__bss2,_se,4,2" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__bss3,_sf,8,3" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__bss4,_sg,16,4" } } */
-/* { dg-final { scan-assembler ".zerofill __DATA,__bss11,_sal_256,8,11" } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sea,1,0} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sa,1,0} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sb,2,1} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sd,8,3} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_se,4,2} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sf,8,3} } } */
+/* long double can be 64 or 128 bits depending on the Darwin subtarget.  */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sg,(16,4|8,3)} } } */
+/* { dg-final { scan-assembler {.zerofill __DATA,__bss,_sal_256,8,11} } } */
 
 long long foo (int x)
 {
