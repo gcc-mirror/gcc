@@ -1,3 +1,21 @@
+2020-08-23   Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/goacc/kernels-loop-annotation-1.f95: Update
+	expected output.
+	* gfortran.dg/goacc/kernels-loop-annotation-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-3.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-4.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-5.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-6.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-7.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-8.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-11.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-12.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-13.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-14.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-15.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-annotation-16.f95: Likewise.
+
 2020-08-22   Sandra Loosemore  <sandra@codesourcery.com>
 
 	Test cases for allowing calls to C/C++ builtins and Fortran
