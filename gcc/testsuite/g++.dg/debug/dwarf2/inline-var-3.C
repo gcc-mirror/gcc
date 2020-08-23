@@ -1,7 +1,9 @@
+// DWARF5 variant of inline-var-1.C
 // { dg-do compile { target c++17 } }
-// { dg-options "-O -gdwarf-2 -dA -gno-strict-dwarf -fno-eliminate-unused-debug-symbols" }
+// { dg-options "-O -gdwarf-5 -dA -gno-strict-dwarf -fno-eliminate-unused-debug-symbols" }
 // { dg-require-weak "" }
-// { dg-final { scan-assembler-times "0x3\[^\n\r]* DW_AT_inline" 6 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times " DW_AT_inline \\(0x3\\)" 2 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times "0x3\[^\n\r]* DW_AT_inline" 4 { xfail *-*-aix* } } }
 // { dg-final { scan-assembler-times "0x1\[^\n\r]* DW_AT_inline" 2 { xfail *-*-aix* } } }
 // { dg-final { scan-assembler-times " DW_AT_declaration" 6 { xfail *-*-aix* } } }
 // { dg-final { scan-assembler-times " DW_AT_specification" 6 { xfail *-*-aix* } } }

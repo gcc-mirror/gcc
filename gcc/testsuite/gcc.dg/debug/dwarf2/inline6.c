@@ -1,4 +1,4 @@
-/* Contributed by Dodji Seketeli <dodji@redhat.com>
+/* DWARF5 variant of inline2.
    Origin: PR debug/37801
 
   Abstract instances (DW_TAG_subroutines having the DW_AT_inline attribute)
@@ -14,9 +14,8 @@
   properly nested DW_TAG_inlined_subroutine DIEs for third, second and first.
 */
 
-/* Explicitly use dwarf-2 because dwarf-5 might use DW_FORM_implicit_const
-   which is hard to scan for. */
-/* { dg-options "-O -g3 -gdwarf-2 -dA -fgnu89-inline" } */
+/* Explicitly use dwarf-5 which uses DW_FORM_implicit_const.  */
+/* { dg-options "-O -g3 -gdwarf-5 -dA -fgnu89-inline" } */
 /* { dg-do compile } */
 
 /* There are 6 inlined subroutines:
@@ -34,7 +33,7 @@
 /* There are 3 DW_AT_inline attributes: one per abstract inline instance.
    The value of the attribute must be 0x3, meaning the function was
    actually inlined.  */
-/* { dg-final { scan-assembler-times  "(?:byte|data1)\[^\n\]*0x3\[^\n\]* DW_AT_inline" 3 } } */
+/* { dg-final { scan-assembler-times  " DW_AT_inline \\(0x3\\)" 3 } } */
 
 volatile int *a;
 
