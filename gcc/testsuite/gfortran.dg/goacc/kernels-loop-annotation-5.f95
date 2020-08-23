@@ -31,5 +31,5 @@ function f (a, b)
 
 end function f
 
-! { dg-final { scan-tree-dump-times "acc loop private.* auto" 1 "original" } }
+! { dg-final { scan-tree-dump-times "acc loop auto" 1 "original" } }
 
