@@ -6954,6 +6954,16 @@ package body Exp_Aggr is
 
          if Present (Component_Associations (N)) then
             Comp := First (Component_Associations (N));
+
+            --  If the component is an Iterated_Element_Association
+            --  it includes an iterator or a loop parameter, possibly
+            --  with a filter, so we do not attempt to compute its
+            --  size. Room for future optimization ???
+
+            if Nkind (Comp) = N_Iterated_Element_Association then
+               return -1;
+            end if;
+
             while Present (Comp) loop
                Choice := First (Choice_List (Comp));
 
