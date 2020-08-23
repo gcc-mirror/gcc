@@ -30,4 +30,4 @@ subroutine f (a, b, c)
 !$acc end kernels
 end subroutine f
 
-! { dg-final { scan-tree-dump-times "acc loop private\\(.\\) auto" 3 "original" } }
+! { dg-final { scan-tree-dump-times "acc loop auto" 3 "original" } }
