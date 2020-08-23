@@ -1,3 +1,11 @@
+2020-08-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Allow annotation of loops containing calls to builtins in
+	kernels regions.
+
+	* c-omp.cc (annotate_loops_in_kernels_regions): Test for
+	calls to builtins.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Annotate inner loops in "acc kernels loop" directives (C/C++).
