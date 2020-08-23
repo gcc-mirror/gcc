@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fcoarray=single" }
+! { dg-options "-fcoarray=single -g" }
 !
 ! Test the fix for PR96737 in which the 'TYPE_CANONICAL' was not campatible
 ! in the submodule.
