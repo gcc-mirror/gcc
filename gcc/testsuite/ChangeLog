@@ -1,3 +1,15 @@
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94851
+	* gcc.dg/analyzer/pr94851-1.c: New test.
+	* gcc.dg/analyzer/pr94851-3.c: New test.
+	* gcc.dg/analyzer/pr94851-4.c: New test.
+
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-ipa-8-double-free.c: Drop
+	-fanalyzer-verbose-state-changes.
+
 2020-08-21  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr96262-1.c: New test.
