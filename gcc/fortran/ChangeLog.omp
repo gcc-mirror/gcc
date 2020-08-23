@@ -1,3 +1,11 @@
+2020-08-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Permit calls to Fortran intrinsics when annotating loops in
+	kernels regions.
+
+	* openmp.cc (check_expr_for_invalid_calls): Check for intrinsic
+	functions.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Annotate inner loops in "acc kernels loop" directives (Fortran).

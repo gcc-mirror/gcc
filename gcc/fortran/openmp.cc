@@ -10446,9 +10446,12 @@ check_expr_for_invalid_calls (gfc_expr **exprp, int *walk_subtrees,
   switch (expr->expr_type)
     {
     case EXPR_FUNCTION:
-      if (expr->value.function.esym
-	  && (expr->value.function.esym->attr.oacc_routine_lop
-	      != OACC_ROUTINE_LOP_NONE))
+      /* Permit calls to Fortran intrinsic functions and to routines
+	 with an explicitly declared parallelism level.  */
+      if (expr->value.function.isym
+	  || (expr->value.function.esym
+	      && (expr->value.function.esym->attr.oacc_routine_lop
+		  != OACC_ROUTINE_LOP_NONE)))
 	return 0;
       /* Else fall through.  */
 
