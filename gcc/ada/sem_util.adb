@@ -751,6 +751,13 @@ package body Sem_Util is
             then
                return Accessibility_Level_Helper (Expression (E), Static);
 
+            --  We don't care about the master if we are looking at a named
+            --  access type.
+
+            elsif Is_Named_Access_Type (Etype (E)) then
+               return Make_Level_Literal
+                        (Type_Access_Level (Etype (E)));
+
             --  In section RM 3.10.2 (10/4) the accessibility rules for
             --  aggregates and value conversions are outlined. Are these
             --  followed in the case of initialization of an object ???
