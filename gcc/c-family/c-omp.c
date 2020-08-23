@@ -3317,8 +3317,9 @@ annotate_loops_in_kernels_regions (tree *nodeptr, int *walk_subtrees,
       break;
 
     case CALL_EXPR:
-      /* Direct function calls to functions marked as OpenACC routines are
-	 allowed.  Reject indirect calls or calls to non-routines.  */
+      /* Direct function calls to builtins and functions marked as
+	 OpenACC routines are allowed.  Reject indirect calls or calls
+	 to non-routines.  */
       if (info->state >= as_in_kernels_loop)
 	{
 	  tree fn = CALL_EXPR_FN (node), fn_decl = NULL_TREE;
@@ -3332,8 +3333,9 @@ annotate_loops_in_kernels_regions (tree *nodeptr, int *walk_subtrees,
 	    }
 	  if (fn_decl == NULL_TREE)
 	    do_not_annotate_loop_nest (info, as_invalid_call, node);
-	  else if (!lookup_attribute ("oacc function",
-				      DECL_ATTRIBUTES (fn_decl)))
+	  else if (!fndecl_built_in_p (fn_decl, BUILT_IN_NORMAL)
+		   && !lookup_attribute ("oacc function",
+					 DECL_ATTRIBUTES (fn_decl)))
 	    do_not_annotate_loop_nest (info, as_invalid_call, node);
 	}
       break;
