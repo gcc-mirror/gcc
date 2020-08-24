@@ -1,3 +1,7 @@
+2020-08-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-sese.c: Fix comment typo.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Add a "combined" flag for "acc kernels loop" etc directives.

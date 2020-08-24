@@ -100,9 +100,7 @@ program main
   end if
   !$acc end kernels
 
-  !$acc kernels
-  !TODO This refers to the "gang-single" "f_g" call.
-  ! { dg-warning "region contains gang partitoned code but is not gang partitioned" "TODO" { xfail *-*-* } .-2 }
+  !$acc kernels  ! { dg-warning "region contains gang partitioned code but is not gang partitioned" }
   ! { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" "" { target *-*-* } .+1 }
   y = f_g (a(5)) ! { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" }
 
