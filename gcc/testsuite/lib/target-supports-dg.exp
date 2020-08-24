@@ -665,3 +665,13 @@ if { [info procs saved-dg-process-target] == [list] } {
 	return [dg-process-target-1 $selector]
     }
 }
+
+# If this target does not support the "symver" attribute, skip this
+# test.
+
+proc dg-require-symver { args } {
+    if { ![ check_symver_available ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}

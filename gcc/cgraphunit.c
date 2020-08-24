@@ -720,80 +720,81 @@ process_symver_attribute (symtab_node *n)
 {
   tree value = lookup_attribute ("symver", DECL_ATTRIBUTES (n->decl));
 
-  if (!value)
-    return;
-  if (lookup_attribute ("symver", TREE_CHAIN (value)))
+  for (; value != NULL; value = TREE_CHAIN (value))
     {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"multiple versions for one symbol");
-      return;
-    }
-  tree symver = get_identifier_with_length
-		  (TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (value))),
-		   TREE_STRING_LENGTH (TREE_VALUE (TREE_VALUE (value))));
-  symtab_node *def = symtab_node::get_for_asmname (symver);
+      /* Starting from bintuils 2.35 gas supports:
+	  # Assign foo to bar@V1 and baz@V2.
+	  .symver foo, bar@V1
+	  .symver foo, baz@V2
+      */
 
-  if (def)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"duplicate definition of a symbol version");
-      inform (DECL_SOURCE_LOCATION (def->decl),
-	      "same version was previously defined here");
-      return;
-    }
-  if (!n->definition)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"symbol needs to be defined to have a version");
-      return;
-    }
-  if (DECL_COMMON (n->decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"common symbol cannot be versioned");
-      return;
-    }
-  if (DECL_COMDAT (n->decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"comdat symbol cannot be versioned");
-      return;
-    }
-  if (n->weakref)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"%<weakref%> cannot be versioned");
-      return;
-    }
-  if (!TREE_PUBLIC (n->decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"versioned symbol must be public");
-      return;
-    }
-  if (DECL_VISIBILITY (n->decl) != VISIBILITY_DEFAULT)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"versioned symbol must have default visibility");
-      return;
-    }
+      tree symver = get_identifier_with_length
+	(TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (value))),
+	 TREE_STRING_LENGTH (TREE_VALUE (TREE_VALUE (value))));
+      symtab_node *def = symtab_node::get_for_asmname (symver);
 
-  /* Create new symbol table entry representing the version.  */
-  tree new_decl = copy_node (n->decl);
+      if (def)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "duplicate definition of a symbol version");
+	  inform (DECL_SOURCE_LOCATION (def->decl),
+		  "same version was previously defined here");
+	  return;
+	}
+      if (!n->definition)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "symbol needs to be defined to have a version");
+	  return;
+	}
+      if (DECL_COMMON (n->decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "common symbol cannot be versioned");
+	  return;
+	}
+      if (DECL_COMDAT (n->decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "comdat symbol cannot be versioned");
+	  return;
+	}
+      if (n->weakref)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "%<weakref%> cannot be versioned");
+	  return;
+	}
+      if (!TREE_PUBLIC (n->decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "versioned symbol must be public");
+	  return;
+	}
+      if (DECL_VISIBILITY (n->decl) != VISIBILITY_DEFAULT)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "versioned symbol must have default visibility");
+	  return;
+	}
 
-  DECL_INITIAL (new_decl) = NULL_TREE;
-  if (TREE_CODE (new_decl) == FUNCTION_DECL)
-    DECL_STRUCT_FUNCTION (new_decl) = NULL;
-  SET_DECL_ASSEMBLER_NAME (new_decl, symver);
-  TREE_PUBLIC (new_decl) = 1;
-  DECL_ATTRIBUTES (new_decl) = NULL;
+      /* Create new symbol table entry representing the version.  */
+      tree new_decl = copy_node (n->decl);
 
-  symtab_node *symver_node = symtab_node::get_create (new_decl);
-  symver_node->alias = true;
-  symver_node->definition = true;
-  symver_node->symver = true;
-  symver_node->create_reference (n, IPA_REF_ALIAS, NULL);
-  symver_node->analyzed = true;
+      DECL_INITIAL (new_decl) = NULL_TREE;
+      if (TREE_CODE (new_decl) == FUNCTION_DECL)
+	DECL_STRUCT_FUNCTION (new_decl) = NULL;
+      SET_DECL_ASSEMBLER_NAME (new_decl, symver);
+      TREE_PUBLIC (new_decl) = 1;
+      DECL_ATTRIBUTES (new_decl) = NULL;
+
+      symtab_node *symver_node = symtab_node::get_create (new_decl);
+      symver_node->alias = true;
+      symver_node->definition = true;
+      symver_node->symver = true;
+      symver_node->create_reference (n, IPA_REF_ALIAS, NULL);
+      symver_node->analyzed = true;
+    }
 }
 
 /* Process attributes common for vars and functions.  */
