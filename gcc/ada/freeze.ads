@@ -152,15 +152,15 @@ package Freeze is
    --    occur.
    --
    --    Size is known at compile time, but the actual value of the size is not
-   --    known to the front end or is definitely greater than 64. In this case,
-   --    Size_Known_At_Compile_Time is set, but the RM_Size field is left set
-   --    to zero (to be set by Gigi).
+   --    known to the front end or is greater than System_Max_Integer_Size. In
+   --    this case, Size_Known_At_Compile_Time is set, but the RM_Size field is
+   --    left set to zero (to be set by Gigi).
    --
    --    Size is known at compile time, and the actual value of the size is
-   --    known to the front end and is not greater than 64. In this case, the
-   --    flag Size_Known_At_Compile_Time is set, and in addition RM_Size is set
-   --    to the required size, allowing for possible front end packing of an
-   --    array using this type as a component type.
+   --    known to the front end and not greater than System_Max_Integer_Size.
+   --    In this case, Size_Known_At_Compile_Time is set, and in addition the
+   --    RM_Size field is set to the required size, allowing for possible front
+   --    end packing of an array using this type as a component type.
    --
    --  Note: the flag Size_Known_At_Compile_Time is used to determine if the
    --  secondary stack must be used to return a value of the type, and also
