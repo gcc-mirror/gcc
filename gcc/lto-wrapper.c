@@ -1982,7 +1982,26 @@ cont:
           arg_it++;
         }
         ////fprintf(stderr, "\n");
-        mapper->Uncork();
+        auto response = mapper->Uncork();
+        auto r_iter = response.begin ();
+
+        while(r_iter != response.end()) {
+          Cody::Packet const &p = *r_iter;
+
+          if(p.GetCode() == Cody::Client::PC_LTO_COMPILED) {
+            if(strcmp(p.GetString().c_str(), "success") == 0) {
+              // fprintf(stderr, "\tlto compilation succeeded\n");
+            }
+            else {
+              fprintf(stderr, "\tlto compilation failure message: %s\n", p.GetString().c_str());
+            }
+          }
+          else {
+            fprintf(stderr, "\tlto compilation unknown failure\n");
+          }
+
+          ++r_iter;
+        }
 
         //fprintf(stderr, "\tRAVI PRINT: %s\n", new_argv[0]);
 	      //fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
