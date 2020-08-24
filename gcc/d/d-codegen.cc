@@ -1987,11 +1987,11 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      targ = build2 (COMPOUND_EXPR, TREE_TYPE (t), targ, t);
 	    }
 
-	  /* Parameter is a struct passed by invisible reference.  */
+	  /* Parameter is a struct or array passed by invisible reference.  */
 	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
 	    {
 	      Type *t = arg->type->toBasetype ();
-	      StructDeclaration *sd = t->isTypeStruct ()->sym;
+	      StructDeclaration *sd = t->baseElemOf ()->isTypeStruct ()->sym;
 
 	      /* Nested structs also have ADDRESSABLE set, but if the type has
 		 neither a copy constructor nor a destructor available, then we
