@@ -1836,7 +1836,7 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
    Single-Entry-Single-Exit regions.  Some of those regions will be
    trivial ones consisting of a single BB.  The blocks of a
    partitioned region might form a set of disjoint graphs -- because
-   the region encloses a differently partitoned sub region.
+   the region encloses a differently partitioned sub region.
 
    We use the linear time algorithm described in 'Finding Regions Fast:
    Single Entry Single Exit and control Regions in Linear Time'

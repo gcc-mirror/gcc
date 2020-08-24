@@ -1,3 +1,9 @@
+2020-08-24  Tobias Burnus  <tobias@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/gfortran.dg/goacc/kernels-decompose-2.f95:
+	Fix typo; remove XFAIL.
+
 2020-08-23   Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.dg/goacc/kernels-loop-annotation-1.f95: Update
