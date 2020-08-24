@@ -372,12 +372,16 @@ namespace __variant
   template<typename... _Types>
     struct _Variant_storage<false, _Types...>
     {
-      constexpr _Variant_storage() : _M_index(variant_npos) { }
+      constexpr
+      _Variant_storage()
+      : _M_index(static_cast<__index_type>(variant_npos))
+      { }
 
       template<size_t _Np, typename... _Args>
-	constexpr _Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
+	constexpr
+	_Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
 	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
-	_M_index(_Np)
+	_M_index{_Np}
 	{ }
 
       constexpr void _M_reset_impl()
@@ -395,7 +399,7 @@ namespace __variant
       void _M_reset()
       {
 	_M_reset_impl();
-	_M_index = variant_npos;
+	_M_index = static_cast<__index_type>(variant_npos);
       }
 
       ~_Variant_storage()
@@ -424,16 +428,20 @@ namespace __variant
   template<typename... _Types>
     struct _Variant_storage<true, _Types...>
     {
-      constexpr _Variant_storage() : _M_index(variant_npos) { }
+      constexpr
+      _Variant_storage()
+      : _M_index(static_cast<__index_type>(variant_npos))
+      { }
 
       template<size_t _Np, typename... _Args>
-	constexpr _Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
+	constexpr
+	_Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
 	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
-	_M_index(_Np)
+	_M_index{_Np}
 	{ }
 
       void _M_reset()
-      { _M_index = variant_npos; }
+      { _M_index = static_cast<__index_type>(variant_npos); }
 
       void*
       _M_storage() const
@@ -447,7 +455,7 @@ namespace __variant
       {
 	if constexpr (__never_valueless<_Types...>())
 	  return true;
-	return this->_M_index != __index_type(variant_npos);
+	return this->_M_index != static_cast<__index_type>(variant_npos);
       }
 
       _Variadic_union<_Types...> _M_u;
