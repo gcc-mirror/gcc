@@ -141,3 +141,29 @@ struct J
 // iterator_traits<J> matches constrained specialization in the library,
 // so use its value_type.
 static_assert( check_alias<J, int> );
+
+struct I2
+{
+  using element_type = int;
+};
+// iterator_traits<I2> is not specialized, and no standard specialization
+// matches, so use indirectly_readable_traits.
+static_assert( check_alias<I2, std::indirectly_readable_traits<I2>::value_type> );
+
+// LWG 3446
+struct I3
+{
+  using value_type = long;
+  using element_type = const long;
+};
+// iterator_traits<I3> is not specialized, and no standard specialization
+// matches, so use indirectly_readable_traits.
+static_assert( check_alias<I3, std::indirectly_readable_traits<I3>::value_type> );
+
+// Correction to LWG 3446
+struct I4
+{
+  using value_type = int;
+  using element_type = long;
+};
+static_assert( ! has_alias<I4> );
