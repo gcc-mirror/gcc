@@ -115,7 +115,7 @@ extrinsic_state::get_model_manager () const
 /* sm_state_map's ctor.  */
 
 sm_state_map::sm_state_map (const state_machine &sm, int sm_idx)
-: m_sm (sm), m_sm_idx (sm_idx), m_map (), m_global_state (0)
+: m_sm (sm), m_sm_idx (sm_idx), m_map (), m_global_state (sm.get_start_state ())
 {
 }
 
@@ -143,7 +143,8 @@ sm_state_map::print (const region_model *model,
     {
       if (multiline)
 	pp_string (pp, "  ");
-      pp_printf (pp, "global: %s", m_sm.get_state_name (m_global_state));
+      pp_string (pp, "global: ");
+      m_global_state->dump_to_pp (pp);
       if (multiline)
 	pp_newline (pp);
       first = false;
@@ -163,7 +164,8 @@ sm_state_map::print (const region_model *model,
       sval->dump_to_pp (pp, simple);
 
       entry_t e = (*iter).second;
-      pp_printf (pp, ": %s", m_sm.get_state_name (e.m_state));
+      pp_string (pp, ": ");
+      e.m_state->dump_to_pp (pp);
       if (model)
 	if (tree rep = model->get_representative_tree (sval))
 	  {
@@ -212,7 +214,7 @@ sm_state_map::dump (bool simple) const
 bool
 sm_state_map::is_empty_p () const
 {
-  return m_map.elements () == 0 && m_global_state == 0;
+  return m_map.elements () == 0 && m_global_state == m_sm.get_start_state ();
 }
 
 /* Generate a hash value for this sm_state_map.  */
@@ -232,11 +234,11 @@ sm_state_map::hash () const
       inchash::hash hstate;
       hstate.add_ptr ((*iter).first);
       entry_t e = (*iter).second;
-      hstate.add_int (e.m_state);
+      hstate.add_int (e.m_state->get_id ());
       hstate.add_ptr (e.m_origin);
       result ^= hstate.end ();
     }
-  result ^= m_global_state;
+  result ^= m_global_state->get_id ();
 
   return result;
 }
@@ -1054,9 +1056,12 @@ test_sm_state_map ()
   auto_delete_vec <state_machine> checkers;
   checkers.safe_push (sm);
   extrinsic_state ext_state (checkers);
+  state_machine::state_t start = sm->get_start_state ();
 
   /* Test setting states on svalue_id instances directly.  */
   {
+    const state_machine::state test_state_42 ("test state 42", 42);
+    const state_machine::state_t TEST_STATE_42 = &test_state_42;
     region_model_manager mgr;
     region_model model (&mgr);
     const svalue *x_sval = model.get_rvalue (x, NULL);
@@ -1065,21 +1070,24 @@ test_sm_state_map ()
 
     sm_state_map map (*sm, 0);
     ASSERT_TRUE (map.is_empty_p ());
-    ASSERT_EQ (map.get_state (x_sval, ext_state), 0);
+    ASSERT_EQ (map.get_state (x_sval, ext_state), start);
 
-    map.impl_set_state (x_sval, 42, z_sval, ext_state);
-    ASSERT_EQ (map.get_state (x_sval, ext_state), 42);
+    map.impl_set_state (x_sval, TEST_STATE_42, z_sval, ext_state);
+    ASSERT_EQ (map.get_state (x_sval, ext_state), TEST_STATE_42);
     ASSERT_EQ (map.get_origin (x_sval, ext_state), z_sval);
-    ASSERT_EQ (map.get_state (y_sval, ext_state), 0);
+    ASSERT_EQ (map.get_state (y_sval, ext_state), start);
     ASSERT_FALSE (map.is_empty_p ());
 
     map.impl_set_state (y_sval, 0, z_sval, ext_state);
-    ASSERT_EQ (map.get_state (y_sval, ext_state), 0);
+    ASSERT_EQ (map.get_state (y_sval, ext_state), start);
 
     map.impl_set_state (x_sval, 0, z_sval, ext_state);
-    ASSERT_EQ (map.get_state (x_sval, ext_state), 0);
+    ASSERT_EQ (map.get_state (x_sval, ext_state), start);
     ASSERT_TRUE (map.is_empty_p ());
   }
+
+  const state_machine::state test_state_5 ("test state 5", 5);
+  const state_machine::state_t TEST_STATE_5 = &test_state_5;
 
   /* Test setting states via equivalence classes.  */
   {
@@ -1091,16 +1099,16 @@ test_sm_state_map ()
 
     sm_state_map map (*sm, 0);
     ASSERT_TRUE (map.is_empty_p ());
-    ASSERT_EQ (map.get_state (x_sval, ext_state), 0);
-    ASSERT_EQ (map.get_state (y_sval, ext_state), 0);
+    ASSERT_EQ (map.get_state (x_sval, ext_state), start);
+    ASSERT_EQ (map.get_state (y_sval, ext_state), start);
 
     model.add_constraint (x, EQ_EXPR, y, NULL);
 
     /* Setting x to a state should also update y, as they
        are in the same equivalence class.  */
-    map.set_state (&model, x_sval, 5, z_sval, ext_state);
-    ASSERT_EQ (map.get_state (x_sval, ext_state), 5);
-    ASSERT_EQ (map.get_state (y_sval, ext_state), 5);
+    map.set_state (&model, x_sval, TEST_STATE_5, z_sval, ext_state);
+    ASSERT_EQ (map.get_state (x_sval, ext_state), TEST_STATE_5);
+    ASSERT_EQ (map.get_state (y_sval, ext_state), TEST_STATE_5);
     ASSERT_EQ (map.get_origin (x_sval, ext_state), z_sval);
     ASSERT_EQ (map.get_origin (y_sval, ext_state), z_sval);
   }
@@ -1119,18 +1127,22 @@ test_sm_state_map ()
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
 
-    map1.impl_set_state (y_sval, 5, z_sval, ext_state);
+    map1.impl_set_state (y_sval, TEST_STATE_5, z_sval, ext_state);
     ASSERT_NE (map0.hash (), map1.hash ());
     ASSERT_NE (map0, map1);
 
     /* Make the same change to map2.  */
-    map2.impl_set_state (y_sval, 5, z_sval, ext_state);
+    map2.impl_set_state (y_sval, TEST_STATE_5, z_sval, ext_state);
     ASSERT_EQ (map1.hash (), map2.hash ());
     ASSERT_EQ (map1, map2);
   }
 
   /* Equality and hashing shouldn't depend on ordering.  */
   {
+    const state_machine::state test_state_2 ("test state 2", 2);
+    const state_machine::state_t TEST_STATE_2 = &test_state_2;
+    const state_machine::state test_state_3 ("test state 3", 3);
+    const state_machine::state_t TEST_STATE_3 = &test_state_3;
     sm_state_map map0 (*sm, 0);
     sm_state_map map1 (*sm, 0);
     sm_state_map map2 (*sm, 0);
@@ -1144,13 +1156,13 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    map1.impl_set_state (x_sval, 2, NULL, ext_state);
-    map1.impl_set_state (y_sval, 3, NULL, ext_state);
-    map1.impl_set_state (z_sval, 2, NULL, ext_state);
+    map1.impl_set_state (x_sval, TEST_STATE_2, NULL, ext_state);
+    map1.impl_set_state (y_sval, TEST_STATE_3, NULL, ext_state);
+    map1.impl_set_state (z_sval, TEST_STATE_2, NULL, ext_state);
 
-    map2.impl_set_state (z_sval, 2, NULL, ext_state);
-    map2.impl_set_state (y_sval, 3, NULL, ext_state);
-    map2.impl_set_state (x_sval, 2, NULL, ext_state);
+    map2.impl_set_state (z_sval, TEST_STATE_2, NULL, ext_state);
+    map2.impl_set_state (y_sval, TEST_STATE_3, NULL, ext_state);
+    map2.impl_set_state (x_sval, TEST_STATE_2, NULL, ext_state);
 
     ASSERT_EQ (map1.hash (), map2.hash ());
     ASSERT_EQ (map1, map2);
@@ -1241,7 +1253,8 @@ test_program_state_merging ()
   model0->set_value (model0->get_lvalue (p, &ctxt),
 		     ptr_sval, &ctxt);
   sm_state_map *smap = s0.m_checker_states[0];
-  const state_machine::state_t TEST_STATE = 3;
+  const state_machine::state test_state ("test state", 0);
+  const state_machine::state_t TEST_STATE = &test_state;
   smap->impl_set_state (ptr_sval, TEST_STATE, NULL, ext_state);
   ASSERT_EQ (smap->get_state (ptr_sval, ext_state), TEST_STATE);
 
@@ -1293,10 +1306,14 @@ test_program_state_merging_2 ()
   checkers.safe_push (make_signal_state_machine (NULL));
   extrinsic_state ext_state (checkers);
 
+  const state_machine::state test_state_0 ("test state 0", 0);
+  const state_machine::state test_state_1 ("test state 1", 1);
+  const state_machine::state_t TEST_STATE_0 = &test_state_0;
+  const state_machine::state_t TEST_STATE_1 = &test_state_1;
+
   program_state s0 (ext_state);
   {
     sm_state_map *smap0 = s0.m_checker_states[0];
-    const state_machine::state_t TEST_STATE_0 = 0;
     smap0->set_global_state (TEST_STATE_0);
     ASSERT_EQ (smap0->get_global_state (), TEST_STATE_0);
   }
@@ -1304,7 +1321,6 @@ test_program_state_merging_2 ()
   program_state s1 (ext_state);
   {
     sm_state_map *smap1 = s1.m_checker_states[0];
-    const state_machine::state_t TEST_STATE_1 = 1;
     smap1->set_global_state (TEST_STATE_1);
     ASSERT_EQ (smap1->get_global_state (), TEST_STATE_1);
   }

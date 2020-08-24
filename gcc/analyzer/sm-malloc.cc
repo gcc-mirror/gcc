@@ -98,9 +98,6 @@ public:
   bool reset_when_passed_to_unknown_fn_p (state_t s,
 					  bool is_mutable) const FINAL OVERRIDE;
 
-  /* Start state.  */
-  state_t m_start;
-
   /* State for a pointer returned from malloc that hasn't been checked for
      NULL.
      It could be a pointer to heap-allocated memory, or could be NULL.  */
@@ -147,7 +144,7 @@ public:
   label_text describe_state_change (const evdesc::state_change &change)
     OVERRIDE
   {
-    if (change.m_old_state == m_sm.m_start
+    if (change.m_old_state == m_sm.get_start_state ()
 	&& change.m_new_state == m_sm.m_unchecked)
       // TODO: verify that it's the allocation stmt, not a copy
       return label_text::borrow ("allocated here");
@@ -258,7 +255,7 @@ public:
   label_text describe_state_change (const evdesc::state_change &change)
     FINAL OVERRIDE
   {
-    if (change.m_old_state == m_sm.m_start
+    if (change.m_old_state == m_sm.get_start_state ()
 	&& change.m_new_state == m_sm.m_unchecked)
       {
 	m_origin_of_unchecked_event = change.m_event_id;
@@ -659,7 +656,6 @@ private:
 malloc_state_machine::malloc_state_machine (logger *logger)
 : state_machine ("malloc", logger)
 {
-  m_start = add_state ("start");
   m_unchecked = add_state ("unchecked");
   m_null = add_state ("null");
   m_nonnull = add_state ("nonnull");

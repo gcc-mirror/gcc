@@ -65,9 +65,6 @@ public:
 		     tree rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
-
-private:
-  state_t m_start;
 };
 
 class pattern_match : public pending_diagnostic_subclass<pattern_match>
@@ -100,7 +97,6 @@ private:
 pattern_test_state_machine::pattern_test_state_machine (logger *logger)
 : state_machine ("pattern-test", logger)
 {
-  m_start = add_state ("start");
 }
 
 bool

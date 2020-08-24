@@ -236,8 +236,8 @@ public:
 	  logger->log ("%s: state transition of %qE: %s -> %s",
 		       m_sm.get_name (),
 		       var,
-		       m_sm.get_state_name (from),
-		       m_sm.get_state_name (to));
+		       from->get_name (),
+		       to->get_name ());
 	m_new_smap->set_state (m_new_state->m_region_model, var_new_sval,
 			       to, origin_new_sval, m_eg.get_ext_state ());
       }
@@ -815,8 +815,8 @@ exploded_node::get_dot_fillcolor () const
       for (sm_state_map::iterator_t iter = smap->begin ();
 	   iter != smap->end ();
 	   ++iter)
-	total_sm_state += (*iter).second.m_state;
-      total_sm_state += smap->get_global_state ();
+	total_sm_state += (*iter).second.m_state->get_id ();
+      total_sm_state += smap->get_global_state ()->get_id ();
     }
 
   if (total_sm_state > 0)

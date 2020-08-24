@@ -45,6 +45,27 @@ any_pointer_p (tree var)
   return POINTER_TYPE_P (TREE_TYPE (var));
 }
 
+
+/* class state_machine::state.  */
+
+/* Base implementation of dump_to_pp vfunc.  */
+
+void
+state_machine::state::dump_to_pp (pretty_printer *pp) const
+{
+  pp_string (pp, m_name);
+}
+
+/* class state_machine.  */
+
+/* state_machine's ctor.  */
+
+state_machine::state_machine (const char *name, logger *logger)
+: log_user (logger), m_name (name), m_next_state_id (0),
+  m_start (add_state ("start"))
+{
+}
+
 /* Add a state with name NAME to this state_machine.
    The string is required to outlive the state_machine.
 
@@ -53,39 +74,24 @@ any_pointer_p (tree var)
 state_machine::state_t
 state_machine::add_state (const char *name)
 {
-  m_state_names.safe_push (name);
-  return m_state_names.length () - 1;
-}
-
-/* Get the name of state S within this state_machine.  */
-
-const char *
-state_machine::get_state_name (state_t s) const
-{
-  return m_state_names[s];
+  state *s = new state (name, alloc_state_id ());
+  m_states.safe_push (s);
+  return s;
 }
 
 /* Get the state with name NAME, which must exist.
    This is purely intended for use in selftests.  */
 
 state_machine::state_t
-state_machine::get_state_by_name (const char *name)
+state_machine::get_state_by_name (const char *name) const
 {
   unsigned i;
-  const char *iter_name;
-  FOR_EACH_VEC_ELT (m_state_names, i, iter_name)
-    if (!strcmp (name, iter_name))
-      return i;
+  state *s;
+  FOR_EACH_VEC_ELT (m_states, i, s)
+    if (!strcmp (name, s->get_name ()))
+      return s;
   /* Name not found.  */
   gcc_unreachable ();
-}
-
-/* Assert that S is a valid state for this state_machine.  */
-
-void
-state_machine::validate (state_t s) const
-{
-  gcc_assert (s < m_state_names.length ());
 }
 
 /* Dump a multiline representation of this state machine to PP.  */
@@ -94,9 +100,13 @@ void
 state_machine::dump_to_pp (pretty_printer *pp) const
 {
   unsigned i;
-  const char *name;
-  FOR_EACH_VEC_ELT (m_state_names, i, name)
-    pp_printf (pp, "  state %i: %qs\n", i, name);
+  state *s;
+  FOR_EACH_VEC_ELT (m_states, i, s)
+    {
+      pp_printf (pp, "  state %i: ", i);
+      s->dump_to_pp (pp);
+      pp_newline (pp);
+    }
 }
 
 /* Create instances of the various state machines, each using LOGGER,

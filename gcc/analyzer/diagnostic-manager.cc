@@ -775,7 +775,7 @@ struct null_assignment_sm_context : public sm_context
 		      state_machine::state_t to,
 		      tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
   {
-    if (from != 0)
+    if (from != m_sm.get_start_state ())
       return;
 
     const svalue *var_new_sval
@@ -1207,12 +1207,12 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  label_text sval_desc = sval->get_desc ();
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
 		       idx, event_kind_to_string (base_event->m_kind),
-		       sval_desc.m_buffer, sm->get_state_name (state));
+		       sval_desc.m_buffer, state->get_name ());
 		}
 	      else
 		log ("considering event %i (%s), with global state: %qs",
 		     idx, event_kind_to_string (base_event->m_kind),
-		     sm->get_state_name (state));
+		     state->get_name ());
 	    }
 	  else
 	    log ("considering event %i", idx);
@@ -1275,8 +1275,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    sval = state_change->m_origin;
 		  }
 		log ("event %i: switching state of interest from %qs to %qs",
-		     idx, sm->get_state_name (state_change->m_to),
-		     sm->get_state_name (state_change->m_from));
+		     idx, state_change->m_to->get_name (),
+		     state_change->m_from->get_name ());
 		state = state_change->m_from;
 	      }
 	    else if (m_verbosity < 4)

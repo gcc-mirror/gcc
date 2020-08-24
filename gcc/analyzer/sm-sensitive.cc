@@ -66,9 +66,6 @@ public:
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
-  /* Start state.  */
-  state_t m_start;
-
   /* State for "sensitive" data, such as a password.  */
   state_t m_sensitive;
 
@@ -163,7 +160,6 @@ private:
 sensitive_state_machine::sensitive_state_machine (logger *logger)
 : state_machine ("sensitive", logger)
 {
-  m_start = add_state ("start");
   m_sensitive = add_state ("sensitive");
   m_stop = add_state ("stop");
 }

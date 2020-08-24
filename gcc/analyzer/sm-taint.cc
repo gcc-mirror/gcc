@@ -66,9 +66,6 @@ public:
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
-  /* Start state.  */
-  state_t m_start;
-
   /* State for a "tainted" value: unsanitized data potentially under an
      attacker's control.  */
   state_t m_tainted;
@@ -188,7 +185,6 @@ private:
 taint_state_machine::taint_state_machine (logger *logger)
 : state_machine ("taint", logger)
 {
-  m_start = add_state ("start");
   m_tainted = add_state ("tainted");
   m_has_lb = add_state ("has_lb");
   m_has_ub = add_state ("has_ub");

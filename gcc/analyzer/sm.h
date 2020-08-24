@@ -32,17 +32,32 @@ class pending_diagnostic;
 extern bool any_pointer_p (tree var);
 
 /* An abstract base class for a state machine describing an API.
-   A mapping from state IDs to names, and various virtual functions
+   Manages a set of state objects, and has various virtual functions
    for pattern-matching on statements.  */
 
 class state_machine : public log_user
 {
 public:
-  typedef unsigned state_t;
+  /* States are represented by immutable objects, owned by the state
+     machine.  */
+  class state
+  {
+  public:
+    state (const char *name, unsigned id) : m_name (name), m_id (id) {}
+    virtual ~state () {}
 
-  state_machine (const char *name, logger *logger)
-  : log_user (logger), m_name (name) {}
+    const char *get_name () const { return m_name; }
+    virtual void dump_to_pp (pretty_printer *pp) const;
 
+    unsigned get_id () const { return m_id; }
+
+  private:
+    const char *m_name;
+    unsigned m_id;
+  };
+  typedef const state_machine::state *state_t;
+
+  state_machine (const char *name, logger *logger);
   virtual ~state_machine () {}
 
   /* Should states be inherited from a parent region to a child region,
@@ -54,14 +69,12 @@ public:
 
   virtual state_machine::state_t get_default_state (const svalue *) const
   {
-    return 0;
+    return m_start;
   }
 
   const char *get_name () const { return m_name; }
 
-  const char *get_state_name (state_t s) const;
-
-  state_t get_state_by_name (const char *name);
+  state_t get_state_by_name (const char *name) const;
 
   /* Return true if STMT is a function call recognized by this sm.  */
   virtual bool on_stmt (sm_context *sm_ctxt,
@@ -108,23 +121,26 @@ public:
 
   void dump_to_pp (pretty_printer *pp) const;
 
+  state_t get_start_state () const { return m_start; }
+
 protected:
   state_t add_state (const char *name);
+  unsigned alloc_state_id () { return m_next_state_id++; }
 
 private:
   DISABLE_COPY_AND_ASSIGN (state_machine);
 
   const char *m_name;
-  auto_vec<const char *> m_state_names;
+
+  /* States are owned by the state_machine.  */
+  auto_delete_vec<state> m_states;
+
+  unsigned m_next_state_id;
+
+protected:
+  /* Must be inited after m_next_state_id.  */
+  state_t m_start;
 };
-
-/* Is STATE the start state?  (zero is hardcoded as the start state).  */
-
-static inline bool
-start_start_p (state_machine::state_t state)
-{
-  return state == 0;
-}
 
 /* Abstract base class for state machines to pass to
    sm_context::on_custom_transition for handling non-standard transitions
