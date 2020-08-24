@@ -419,43 +419,102 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
     {
       if (!index)
 	index = build_int_cst (integer_type_node, ix);
-      const region *child_reg
-	= get_subregion_within_ctor (parent_reg, index, mgr);
-      if (TREE_CODE (val) == CONSTRUCTOR)
-	apply_ctor_to_region (child_reg, val, mgr);
-      else
+      else if (TREE_CODE (index) == RANGE_EXPR)
 	{
-	  const svalue *sval = get_svalue_for_ctor_val (val, mgr);
-	  const binding_key *k
-	    = binding_key::make (mgr->get_store_manager (), child_reg,
-				 BK_direct);
-	  /* Handle the case where we have an unknown size for child_reg
-	     (e.g. due to it being a trailing field with incomplete array
-	     type.  */
-	  if (!k->concrete_p ())
-	    {
-	      /* Assume that sval has a well-defined size for this case.  */
-	      tree sval_type = sval->get_type ();
-	      gcc_assert (sval_type);
-	      HOST_WIDE_INT sval_byte_size = int_size_in_bytes (sval_type);
-	      gcc_assert (sval_byte_size != -1);
-	      bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
-	      /* Get offset of child relative to base region.  */
-	      region_offset child_base_offset = child_reg->get_offset ();
-	      gcc_assert (!child_base_offset.symbolic_p ());
-	      /* Convert to an offset relative to the parent region.  */
-	      region_offset parent_base_offset = parent_reg->get_offset ();
-	      gcc_assert (!parent_base_offset.symbolic_p ());
-	      bit_offset_t child_parent_offset
-		= (child_base_offset.get_bit_offset ()
-		   - parent_base_offset.get_bit_offset ());
-	      /* Create a concrete key for the child within the parent.  */
-	      k = mgr->get_store_manager ()->get_concrete_binding
-		(child_parent_offset, sval_bit_size, BK_direct);
-	    }
-	  gcc_assert (k->concrete_p ());
-	  put (k, sval);
+	  tree min_index = TREE_OPERAND (index, 0);
+	  tree max_index = TREE_OPERAND (index, 1);
+	  apply_ctor_val_to_range (parent_reg, mgr, min_index, max_index, val);
+	  continue;
 	}
+      apply_ctor_pair_to_child_region (parent_reg, mgr, index, val);
+    }
+}
+
+/* Bind the value VAL into the range of elements within PARENT_REF
+   from MIN_INDEX to MAX_INDEX (including endpoints).
+   For use in handling RANGE_EXPR within a CONSTRUCTOR.  */
+
+void
+binding_map::apply_ctor_val_to_range (const region *parent_reg,
+				      region_model_manager *mgr,
+				      tree min_index, tree max_index,
+				      tree val)
+{
+  gcc_assert (TREE_CODE (min_index) == INTEGER_CST);
+  gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
+
+  /* Generate a binding key for the range.  */
+  const region *min_element
+    = get_subregion_within_ctor (parent_reg, min_index, mgr);
+  const region *max_element
+    = get_subregion_within_ctor (parent_reg, max_index, mgr);
+  region_offset min_offset = min_element->get_offset ();
+  bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
+  store_manager *smgr = mgr->get_store_manager ();
+  const binding_key *max_element_key
+    = binding_key::make (smgr, max_element, BK_direct);
+  gcc_assert (max_element_key->concrete_p ());
+  const concrete_binding *max_element_ckey
+    = max_element_key->dyn_cast_concrete_binding ();
+  bit_size_t range_size_in_bits
+    = max_element_ckey->get_next_bit_offset () - start_bit_offset;
+  const concrete_binding *range_key
+    = smgr->get_concrete_binding (start_bit_offset, range_size_in_bits,
+				  BK_direct);
+  gcc_assert (range_key->concrete_p ());
+
+  /* Get the value.  */
+  gcc_assert (TREE_CODE (val) != CONSTRUCTOR);
+  const svalue *sval = get_svalue_for_ctor_val (val, mgr);
+
+  /* Bind the value to the range.  */
+  put (range_key, sval);
+}
+
+/* Bind the value VAL into INDEX within PARENT_REF.
+   For use in handling a pair of entries within a CONSTRUCTOR.  */
+
+void
+binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
+					      region_model_manager *mgr,
+					      tree index, tree val)
+{
+  const region *child_reg
+    = get_subregion_within_ctor (parent_reg, index, mgr);
+  if (TREE_CODE (val) == CONSTRUCTOR)
+    apply_ctor_to_region (child_reg, val, mgr);
+  else
+    {
+      const svalue *sval = get_svalue_for_ctor_val (val, mgr);
+      const binding_key *k
+	= binding_key::make (mgr->get_store_manager (), child_reg,
+			     BK_direct);
+      /* Handle the case where we have an unknown size for child_reg
+	 (e.g. due to it being a trailing field with incomplete array
+	 type.  */
+      if (!k->concrete_p ())
+	{
+	  /* Assume that sval has a well-defined size for this case.  */
+	  tree sval_type = sval->get_type ();
+	  gcc_assert (sval_type);
+	  HOST_WIDE_INT sval_byte_size = int_size_in_bytes (sval_type);
+	  gcc_assert (sval_byte_size != -1);
+	  bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
+	  /* Get offset of child relative to base region.  */
+	  region_offset child_base_offset = child_reg->get_offset ();
+	  gcc_assert (!child_base_offset.symbolic_p ());
+	  /* Convert to an offset relative to the parent region.  */
+	  region_offset parent_base_offset = parent_reg->get_offset ();
+	  gcc_assert (!parent_base_offset.symbolic_p ());
+	  bit_offset_t child_parent_offset
+	    = (child_base_offset.get_bit_offset ()
+	       - parent_base_offset.get_bit_offset ());
+	  /* Create a concrete key for the child within the parent.  */
+	  k = mgr->get_store_manager ()->get_concrete_binding
+	    (child_parent_offset, sval_bit_size, BK_direct);
+	}
+      gcc_assert (k->concrete_p ());
+      put (k, sval);
     }
 }
 

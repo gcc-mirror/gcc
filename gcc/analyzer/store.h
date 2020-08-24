@@ -344,6 +344,14 @@ public:
 			     region_model_manager *mgr);
 
 private:
+  void apply_ctor_val_to_range (const region *parent_reg,
+				region_model_manager *mgr,
+				tree min_index, tree max_index,
+				tree val);
+  void apply_ctor_pair_to_child_region (const region *parent_reg,
+					region_model_manager *mgr,
+					tree index, tree val);
+
   map_t m_map;
 };
 
