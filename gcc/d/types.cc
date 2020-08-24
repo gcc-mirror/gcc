@@ -142,8 +142,11 @@ make_array_type (Type *type, unsigned HOST_WIDE_INT size)
       return t;
     }
 
-  return build_array_type (build_ctype (type),
-			   build_index_type (size_int (size - 1)));
+  tree t = build_array_type (build_ctype (type),
+			     build_index_type (size_int (size - 1)));
+  /* Propagate TREE_ADDRESSABLE to the static array type.  */
+  TREE_ADDRESSABLE (t) = TREE_ADDRESSABLE (TREE_TYPE (t));
+  return t;
 }
 
 /* Builds a record type whose name is NAME.  NFIELDS is the number of fields,
