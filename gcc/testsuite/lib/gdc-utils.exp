@@ -370,6 +370,11 @@ proc gdc-convert-test { base test } {
 	}
 
 	fail_compilation {
+	    # Fail compilation tests only check for language errors from the
+	    # front-end.  No need to run all permutations of the default DFLAGS.
+	    if { $PERMUTE_ARGS == $DEFAULT_DFLAGS } {
+		set PERMUTE_ARGS ""
+	    }
 	    puts $fdout "// { dg-final { output-exists-not } }"
 	}
     }
