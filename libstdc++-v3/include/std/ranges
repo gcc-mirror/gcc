@@ -889,12 +889,13 @@ namespace ranges
       {
 	using __detail::__is_integer_like;
 	using __detail::__to_unsigned_like;
-	if constexpr (__is_integer_like<_Winc> && __is_integer_like<_Bound>)
-	  return (_M_value < 0)
-	    ? ((_M_bound < 0)
-		? __to_unsigned_like(-_M_value) - __to_unsigned_like(-_M_bound)
-		: __to_unsigned_like(_M_bound) + __to_unsigned_like(-_M_value))
-	    : __to_unsigned_like(_M_bound) - __to_unsigned_like(_M_value);
+	if constexpr (integral<_Winc> && integral<_Bound>)
+	  {
+	    using _Up = make_unsigned_t<decltype(_M_bound - _M_value)>;
+	    return _Up(_M_bound) - _Up(_M_value);
+	  }
+	else if constexpr (__is_integer_like<_Winc>)
+	  return __to_unsigned_like(_M_bound) - __to_unsigned_like(_M_value);
 	else
 	  return __to_unsigned_like(_M_bound - _M_value);
       }
