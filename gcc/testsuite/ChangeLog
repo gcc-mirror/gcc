@@ -1,3 +1,33 @@
+2020-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96744
+	* gcc.target/i386/pr96744-1.c: New test.
+	* gcc.target/i386/pr96744-2.c: Likewise.
+	* gcc.target/i386/pr96744-3a.c: Likewise.
+	* gcc.target/i386/pr96744-3b.c: Likewise.
+	* gcc.target/i386/pr96744-4.c: Likewise.
+	* gcc.target/i386/pr96744-5.c: Likewise.
+	* gcc.target/i386/pr96744-6.c: Likewise.
+	* gcc.target/i386/pr96744-7.c: Likewise.
+	* gcc.target/i386/pr96744-8a.c: Likewise.
+	* gcc.target/i386/pr96744-8b.c: Likewise.
+	* gcc.target/i386/pr96744-9.c: Likewise.
+
+2020-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/92785
+	* gfortran.dg/unlimited_polymorphic_31.f03: Change to stop 1.
+
+2020-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96737
+	* gfortran.dg/pr96737.f90: Add option -g.
+
+2020-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96737
+	* gfortran.dg/pr96737.f90: New test.
+
 2020-08-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94851

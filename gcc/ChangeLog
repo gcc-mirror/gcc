@@ -1,3 +1,16 @@
+2020-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96744
+	* config/i386/i386-options.c (IX86_ATTR_IX86_YES): New.
+	(IX86_ATTR_IX86_NO): Likewise.
+	(ix86_opt_type): Add ix86_opt_ix86_yes and ix86_opt_ix86_no.
+	(ix86_valid_target_attribute_inner_p): Handle general-regs-only,
+	ix86_opt_ix86_yes and ix86_opt_ix86_no.
+	(ix86_option_override_internal): Check opts->x_ix86_target_flags
+	instead of opts->x_ix86_target_flags.
+	* doc/extend.texi: Document target("general-regs-only") function
+	attribute.
+
 2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/extend.texi: Update links to Arm docs.

@@ -1,3 +1,10 @@
+2020-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96737
+	* trans-types.c (gfc_get_derived_type): Derived types that are
+	used in submodules are not compatible with TYPE_CANONICAL from
+	any of the global namespaces.
+
 2020-08-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/96100
