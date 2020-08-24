@@ -186,7 +186,7 @@ package body Exp_Fixd is
    --  Given an operand of fixed-point operation, return an expression that
    --  represents the corresponding Universal_Real value. The expression
    --  can be of integer type, floating-point type, or fixed-point type.
-   --  The expression returned is neither analyzed and resolved. The Etype
+   --  The expression returned is neither analyzed nor resolved. The Etype
    --  of the result is properly set (to Universal_Real).
 
    function Integer_Literal
@@ -2351,19 +2351,8 @@ package body Exp_Fixd is
    ---------------
 
    function Fpt_Value (N : Node_Id) return Node_Id is
-      Typ   : constant Entity_Id  := Etype (N);
-
    begin
-      if Is_Integer_Type (Typ)
-        or else Is_Floating_Point_Type (Typ)
-      then
-         return Build_Conversion (N, Universal_Real, N);
-
-      --  Fixed-point case, must get integer value first
-
-      else
-         return Build_Conversion (N, Universal_Real, N);
-      end if;
+      return Build_Conversion (N, Universal_Real, N);
    end Fpt_Value;
 
    ---------------------
