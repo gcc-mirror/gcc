@@ -13383,8 +13383,8 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P8V_BUILTIN_VGBBD:
     case MISC_BUILTIN_CDTBCD:
     case MISC_BUILTIN_CBCDTD:
-    case VSX_BUILTIN_XVCVSPBF16:
-    case VSX_BUILTIN_XVCVBF16SPN:
+    case P10V_BUILTIN_XVCVSPBF16:
+    case P10V_BUILTIN_XVCVBF16SPN:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       break;
