@@ -16,9 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-pthread"  }
+// { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-effective-target c++11 }
-// { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
 
 // LWG 2021. Further incorrect usages of result_of
