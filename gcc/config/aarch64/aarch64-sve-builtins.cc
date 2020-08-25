@@ -101,7 +101,7 @@ struct registered_function_hasher : nofree_ptr_hash <registered_function>
 /* Information about each single-predicate or single-vector type.  */
 static CONSTEXPR const vector_type_info vector_types[] = {
 #define DEF_SVE_TYPE(ACLE_NAME, NCHARS, ABI_NAME, SCALAR_TYPE) \
-  { #ACLE_NAME, #ABI_NAME, #NCHARS #ABI_NAME },
+  { #ACLE_NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME },
 #include "aarch64-sve-builtins.def"
 };
 
