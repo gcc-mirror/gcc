@@ -6071,7 +6071,8 @@ package body Einfo is
 
    procedure Set_Limited_View (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) = E_Package);
+      pragma Assert (Ekind (Id) = E_Package
+        and then not Is_Generic_Instance (Id));
       Set_Node23 (Id, V);
    end Set_Limited_View;
 
@@ -7845,6 +7846,17 @@ package body Einfo is
    begin
       return Has_Own_Invariants (Id) or else Has_Inherited_Invariants (Id);
    end Has_Invariants;
+
+   --------------------------
+   -- Has_Limited_View --
+   --------------------------
+
+   function Has_Limited_View (Id : E) return B is
+   begin
+      return Ekind (Id) = E_Package
+        and then not Is_Generic_Instance (Id)
+        and then Present (Limited_View (Id));
+   end Has_Limited_View;
 
    --------------------------
    -- Has_Non_Limited_View --

@@ -52,6 +52,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
@@ -1538,6 +1539,21 @@ package body Sem_Ch8 is
               ("expect package name in renaming, found& declared#",
                Name (N), Old_P);
          end if;
+
+         --  Set basic attributes to minimize cascaded errors
+
+         Set_Ekind (New_P, E_Package);
+         Set_Etype (New_P, Standard_Void_Type);
+
+      elsif Present (Renamed_Entity (Old_P))
+        and then (From_Limited_With (Renamed_Entity (Old_P))
+                    or else Has_Limited_View (Renamed_Entity (Old_P)))
+        and then not
+          Unit_Is_Visible (Cunit (Get_Source_Unit (Renamed_Entity (Old_P))))
+      then
+         Error_Msg_NE
+           ("renaming of limited view of package & not usable in this context"
+            & " (RM 8.5.3(3.1/2))", Name (N), Renamed_Entity (Old_P));
 
          --  Set basic attributes to minimize cascaded errors
 
@@ -6290,6 +6306,22 @@ package body Sem_Ch8 is
       then
          P_Name := Renamed_Object (P_Name);
 
+         if From_Limited_With (P_Name)
+           and then not Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
+         then
+            Error_Msg_NE
+              ("renaming of limited view of package & not usable in this"
+               & " context (RM 8.5.3(3.1/2))", Prefix (N), P_Name);
+
+         elsif Has_Limited_View (P_Name)
+           and then not Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
+           and then not Is_Visible_Through_Renamings (P_Name)
+         then
+            Error_Msg_NE
+              ("renaming of limited view of package & not usable in this"
+               & " context (RM 8.5.3(3.1/2))", Prefix (N), P_Name);
+         end if;
+
          --  Rewrite node with entity field pointing to renamed object
 
          Rewrite (Prefix (N), New_Copy (Prefix (N)));
@@ -6353,6 +6385,19 @@ package body Sem_Ch8 is
               and then Scope (Non_Limited_View (Id)) = P_Name
             then
                Candidate        := Get_Full_View (Non_Limited_View (Id));
+               Is_New_Candidate := True;
+
+            --  Handle special case where the prefix is a renaming of a shadow
+            --  package which is visible. Required to avoid reporting spurious
+            --  errors.
+
+            elsif Ekind (P_Name) = E_Package
+              and then From_Limited_With (P_Name)
+              and then not From_Limited_With (Id)
+              and then Sloc (Scope (Id)) = Sloc (P_Name)
+              and then Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
+            then
+               Candidate        := Get_Full_View (Id);
                Is_New_Candidate := True;
 
             --  An unusual case arises with a fully qualified name for an

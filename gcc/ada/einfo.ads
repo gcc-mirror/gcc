@@ -1785,6 +1785,10 @@ package Einfo is
 --       invariant of its own or inherits at least one class-wide invariant
 --       from a parent type or an interface.
 
+--    Has_Limited_View (synth)
+--       Defined in all entities. True for non-generic package entities that
+--       are non-instances and their Limited_View attribute is present.
+
 --    Has_Loop_Entry_Attributes (Flag260)
 --       Defined in E_Loop entities. Set when the loop is subject to at least
 --       one attribute 'Loop_Entry. The flag also implies that the loop has
@@ -6484,6 +6488,7 @@ package Einfo is
    --    Has_Null_Abstract_State             (synth)
    --    Is_Elaboration_Target               (synth)
    --    Is_Wrapper_Package                  (synth)    (non-generic case only)
+   --    Has_Limited_View                    (synth)    (non-generic case only)
    --    Scope_Depth                         (synth)
 
    --  E_Package_Body
@@ -7675,6 +7680,7 @@ package Einfo is
    function Has_Foreign_Convention              (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
    function Has_Invariants                      (Id : E) return B;
+   function Has_Limited_View                    (Id : E) return B;
    function Has_Non_Limited_View                (Id : E) return B;
    function Has_Non_Null_Abstract_State         (Id : E) return B;
    function Has_Non_Null_Visible_Refinement     (Id : E) return B;
@@ -9207,6 +9213,7 @@ package Einfo is
    pragma Inline (Base_Type);
    pragma Inline (Float_Rep);
    pragma Inline (Has_Foreign_Convention);
+   pragma Inline (Has_Limited_View);
    pragma Inline (Has_Non_Limited_View);
    pragma Inline (Is_Base_Type);
    pragma Inline (Is_Boolean_Type);

@@ -4480,10 +4480,6 @@ package body Sem_Ch10 is
       --  Determine whether any package in the ancestor chain starting with
       --  C_Unit has a limited with clause for package Pack.
 
-      function Is_Visible_Through_Renamings (P : Entity_Id) return Boolean;
-      --  Check if some package installed though normal with-clauses has a
-      --  renaming declaration of package P. AARM 10.1.2(21/2).
-
       -------------------------
       -- Check_Body_Required --
       -------------------------
@@ -4813,108 +4809,6 @@ package body Sem_Ch10 is
          return False;
       end Has_Limited_With_Clause;
 
-      ----------------------------------
-      -- Is_Visible_Through_Renamings --
-      ----------------------------------
-
-      function Is_Visible_Through_Renamings (P : Entity_Id) return Boolean is
-         Kind     : constant Node_Kind :=
-                      Nkind (Unit (Cunit (Current_Sem_Unit)));
-         Aux_Unit : Node_Id;
-         Item     : Node_Id;
-         Decl     : Entity_Id;
-
-      begin
-         --  Example of the error detected by this subprogram:
-
-         --  package P is
-         --    type T is ...
-         --  end P;
-
-         --  with P;
-         --  package Q is
-         --     package Ren_P renames P;
-         --  end Q;
-
-         --  with Q;
-         --  package R is ...
-
-         --  limited with P; -- ERROR
-         --  package R.C is ...
-
-         Aux_Unit := Cunit (Current_Sem_Unit);
-
-         loop
-            Item := First (Context_Items (Aux_Unit));
-            while Present (Item) loop
-               if Nkind (Item) = N_With_Clause
-                 and then not Limited_Present (Item)
-                 and then Nkind (Unit (Library_Unit (Item))) =
-                                                  N_Package_Declaration
-               then
-                  Decl :=
-                    First (Visible_Declarations
-                            (Specification (Unit (Library_Unit (Item)))));
-                  while Present (Decl) loop
-                     if Nkind (Decl) = N_Package_Renaming_Declaration
-                       and then Entity (Name (Decl)) = P
-                     then
-                        --  Generate the error message only if the current unit
-                        --  is a package declaration; in case of subprogram
-                        --  bodies and package bodies we just return True to
-                        --  indicate that the limited view must not be
-                        --  installed.
-
-                        if Kind = N_Package_Declaration then
-                           Error_Msg_N
-                             ("simultaneous visibility of the limited and " &
-                              "unlimited views not allowed", N);
-                           Error_Msg_Sloc := Sloc (Item);
-                           Error_Msg_NE
-                             ("\\  unlimited view of & visible through the " &
-                              "context clause #", N, P);
-                           Error_Msg_Sloc := Sloc (Decl);
-                           Error_Msg_NE ("\\  and the renaming #", N, P);
-                        end if;
-
-                        return True;
-                     end if;
-
-                     Next (Decl);
-                  end loop;
-               end if;
-
-               Next (Item);
-            end loop;
-
-            --  If it is a body not acting as spec, follow pointer to the
-            --  corresponding spec, otherwise follow pointer to parent spec.
-
-            if Present (Library_Unit (Aux_Unit))
-              and then Nkind (Unit (Aux_Unit)) in
-                         N_Package_Body | N_Subprogram_Body
-            then
-               if Aux_Unit = Library_Unit (Aux_Unit) then
-
-                  --  Aux_Unit is a body that acts as a spec. Clause has
-                  --  already been flagged as illegal.
-
-                  return False;
-
-               else
-                  Aux_Unit := Library_Unit (Aux_Unit);
-               end if;
-
-            else
-               Aux_Unit := Parent_Spec (Unit (Aux_Unit));
-            end if;
-
-            exit when No (Aux_Unit);
-         end loop;
-
-         return False;
-      end Is_Visible_Through_Renamings;
-
    --  Start of processing for Install_Limited_With_Clause
 
    begin
@@ -4952,7 +4846,7 @@ package body Sem_Ch10 is
       --  Do not install the limited-view if the full-view is already visible
       --  through renaming declarations.
 
-      if Is_Visible_Through_Renamings (P) then
+      if Is_Visible_Through_Renamings (P, N) then
          return;
       end if;
 
@@ -5551,6 +5445,148 @@ package body Sem_Ch10 is
          return False;
       end if;
    end Is_Ancestor_Unit;
+
+   ----------------------------------
+   -- Is_Visible_Through_Renamings --
+   ----------------------------------
+
+   function Is_Visible_Through_Renamings
+     (P          : Entity_Id;
+      Error_Node : Node_Id := Empty) return Boolean
+   is
+      function Is_Limited_Withed_Unit
+        (Lib_Unit : Node_Id;
+         Pkg_Ent  : Entity_Id) return Boolean;
+      --  Return True if Pkg_Ent is a limited-withed package of the given
+      --  library unit.
+
+      ----------------------------
+      -- Is_Limited_Withed_Unit --
+      ----------------------------
+
+      function Is_Limited_Withed_Unit
+        (Lib_Unit : Node_Id;
+         Pkg_Ent  : Entity_Id) return Boolean
+      is
+         Item : Node_Id := First (Context_Items (Lib_Unit));
+
+      begin
+         while Present (Item) loop
+            if Nkind (Item) = N_With_Clause
+              and then Limited_Present (Item)
+              and then Entity (Name (Item)) = Pkg_Ent
+            then
+               return True;
+            end if;
+
+            Next (Item);
+         end loop;
+
+         return False;
+      end Is_Limited_Withed_Unit;
+
+      --  Local variables
+
+      Kind     : constant Node_Kind := Nkind (Unit (Cunit (Current_Sem_Unit)));
+      Aux_Unit : Node_Id;
+      Item     : Node_Id;
+      Decl     : Entity_Id;
+
+   begin
+      --  Example of the error detected by this subprogram:
+
+      --  package P is
+      --    type T is ...
+      --  end P;
+
+      --  with P;
+      --  package Q is
+      --     package Ren_P renames P;
+      --  end Q;
+
+      --  with Q;
+      --  package R is ...
+
+      --  limited with P; -- ERROR
+      --  package R.C is ...
+
+      Aux_Unit := Cunit (Current_Sem_Unit);
+
+      loop
+         Item := First (Context_Items (Aux_Unit));
+         while Present (Item) loop
+            if Nkind (Item) = N_With_Clause
+              and then not Limited_Present (Item)
+              and then Nkind (Unit (Library_Unit (Item))) =
+                                               N_Package_Declaration
+            then
+               Decl :=
+                 First (Visible_Declarations
+                         (Specification (Unit (Library_Unit (Item)))));
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Package_Renaming_Declaration
+                    and then Entity (Name (Decl)) = P
+                    and then not Is_Limited_Withed_Unit
+                                   (Lib_Unit => Library_Unit (Item),
+                                    Pkg_Ent  => Entity (Name (Decl)))
+                  then
+                     --  Generate the error message only if the current unit
+                     --  is a package declaration; in case of subprogram
+                     --  bodies and package bodies we just return True to
+                     --  indicate that the limited view must not be
+                     --  installed.
+
+                     if Kind = N_Package_Declaration
+                       and then Present (Error_Node)
+                     then
+                        Error_Msg_N
+                          ("simultaneous visibility of the limited and " &
+                           "unlimited views not allowed", Error_Node);
+                        Error_Msg_Sloc := Sloc (Item);
+                        Error_Msg_NE
+                          ("\\  unlimited view of & visible through the " &
+                           "context clause #", Error_Node, P);
+                        Error_Msg_Sloc := Sloc (Decl);
+                        Error_Msg_NE ("\\  and the renaming #", Error_Node, P);
+                     end if;
+
+                     return True;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end if;
+
+            Next (Item);
+         end loop;
+
+         --  If it is a body not acting as spec, follow pointer to the
+         --  corresponding spec, otherwise follow pointer to parent spec.
+
+         if Present (Library_Unit (Aux_Unit))
+           and then Nkind (Unit (Aux_Unit)) in
+                      N_Package_Body | N_Subprogram_Body
+         then
+            if Aux_Unit = Library_Unit (Aux_Unit) then
+
+               --  Aux_Unit is a body that acts as a spec. Clause has
+               --  already been flagged as illegal.
+
+               return False;
+
+            else
+               Aux_Unit := Library_Unit (Aux_Unit);
+            end if;
+
+         else
+            Aux_Unit := Parent_Spec (Unit (Aux_Unit));
+         end if;
+
+         exit when No (Aux_Unit);
+      end loop;
+
+      return False;
+   end Is_Visible_Through_Renamings;
 
    -----------------------
    -- Load_Needed_Body --
