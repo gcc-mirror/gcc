@@ -274,6 +274,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__detail::_ReuseOrAllocNode<__node_alloc_type>;
       using __alloc_node_gen_t =
 	__detail::_AllocNode<__node_alloc_type>;
+      using __node_builder_t =
+	__detail::_NodeBuilder<_ExtractKey>;
 
       // Simple RAII type for managing a node containing an element
       struct _Scoped_node
@@ -850,9 +852,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	iterator
 	_M_emplace(const_iterator, false_type __uks, _Args&&... __args);
 
+      template<typename _Kt, typename _Arg, typename _NodeGenerator>
+	std::pair<iterator, bool>
+	_M_insert_unique(_Kt&&, _Arg&&, const _NodeGenerator&);
+
+      template<typename _Kt>
+	static typename conditional<
+	  __and_<__is_nothrow_invocable<_Hash&, const key_type&>,
+		 __not_<__is_nothrow_invocable<_Hash&, _Kt>>>::value,
+	  key_type, _Kt&&>::type
+	_S_forward_key(_Kt&& __k)
+	{ return std::forward<_Kt>(__k); }
+
+      static const key_type&
+      _S_forward_key(const key_type& __k)
+      { return __k; }
+
+      static key_type&&
+      _S_forward_key(key_type&& __k)
+      { return std::move(__k); }
+
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert(_Arg&&, const _NodeGenerator&, true_type __uks);
+	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
+		  true_type /* __uks */)
+	{
+	  return _M_insert_unique(
+	    _S_forward_key(_ExtractKey{}(std::forward<_Arg>(__arg))),
+	    std::forward<_Arg>(__arg), __node_gen);
+	}
 
       template<typename _Arg, typename _NodeGenerator>
 	iterator
@@ -2067,22 +2095,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    template<typename _Arg, typename _NodeGenerator>
+    template<typename _Kt, typename _Arg, typename _NodeGenerator>
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-      _M_insert(_Arg&& __v, const _NodeGenerator& __node_gen,
-		true_type /* __uks */)
+      _M_insert_unique(_Kt&& __k, _Arg&& __v,
+		       const _NodeGenerator& __node_gen)
       -> pair<iterator, bool>
       {
-	const key_type& __k = _ExtractKey{}(__v);
-	__hash_code __code = this->_M_hash_code(__k);
+	__hash_code __code = this->_M_hash_code_tr(__k);
 	size_type __bkt = _M_bucket_index(__code);
 
-	if (__node_ptr __node = _M_find_node(__bkt, __k, __code))
+	if (__node_ptr __node = _M_find_node_tr(__bkt, __k, __code))
 	  return { iterator(__node), false };
 
-	_Scoped_node __node{ __node_gen(std::forward<_Arg>(__v)), this };
+	_Scoped_node __node {
+	  __node_builder_t::_S_build(std::forward<_Kt>(__k),
+				     std::forward<_Arg>(__v),
+				     __node_gen),
+	  this
+	};
 	auto __pos
 	  = _M_insert_unique_node(__bkt, __code, __node._M_node);
 	__node._M_node = nullptr;
@@ -2103,12 +2135,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		false_type /* __uks */)
       -> iterator
       {
-	// First compute the hash code so that we don't do anything if it
-	// throws.
-	__hash_code __code = this->_M_hash_code(_ExtractKey{}(__v));
-
-	// Second allocate new node so that we don't rehash if it throws.
+	// First allocate new node so that we don't do anything if it throws.
 	_Scoped_node __node{ __node_gen(std::forward<_Arg>(__v)), this };
+
+	// Second compute the hash code so that we don't rehash if it throws.
+	__hash_code __code
+	  = this->_M_hash_code(_ExtractKey{}(__node._M_node->_M_v()));
+
 	auto __pos
 	  = _M_insert_multi_node(__hint._M_cur, __code, __node._M_node);
 	__node._M_node = nullptr;
