@@ -757,8 +757,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3458. Is shared_future intended to work with arrays or function types?
-      static_assert(!is_array<_Res>{}, "result type is not an array");
-      static_assert(!is_function<_Res>{}, "result type is not a function");
+      static_assert(!is_array<_Res>{}, "result type must not be an array");
+      static_assert(!is_function<_Res>{}, "result type must not be a function");
+      static_assert(is_destructible<_Res>{},
+		    "result type must be destructible");
 
       friend class promise<_Res>;
       template<typename> friend class packaged_task;
@@ -892,8 +894,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3458. Is shared_future intended to work with arrays or function types?
-      static_assert(!is_array<_Res>{}, "result type is not an array");
-      static_assert(!is_function<_Res>{}, "result type is not a function");
+      static_assert(!is_array<_Res>{}, "result type must not be an array");
+      static_assert(!is_function<_Res>{}, "result type must not be a function");
+      static_assert(is_destructible<_Res>{},
+		    "result type must be destructible");
 
       typedef __basic_future<_Res> _Base_type;
 
@@ -1049,8 +1053,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3466: Specify the requirements for promise/future/[...] consistently
-      static_assert(!is_array<_Res>{}, "result type is not an array");
-      static_assert(!is_function<_Res>{}, "result type is not a function");
+      static_assert(!is_array<_Res>{}, "result type must not be an array");
+      static_assert(!is_function<_Res>{}, "result type must not be a function");
+      static_assert(is_destructible<_Res>{},
+		    "result type must be destructible");
 
       typedef __future_base::_State_base 	_State;
       typedef __future_base::_Result<_Res>	_Res_type;
