@@ -1,3 +1,12 @@
+2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96486
+	* intrinsics/env.c: If value_len is > 0 blank the string.
+	Copy the result only if its length is > 0.
+
 2020-07-25  Dominique d'Humieres  <dhumieres.dominique@free.fr>
 
 	Backported from master:
