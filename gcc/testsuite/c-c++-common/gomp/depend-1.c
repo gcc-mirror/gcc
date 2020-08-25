@@ -40,7 +40,7 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
     ;
   #pragma omp task depend(out: f[1:10]) /* { dg-error "high bound \[^\n\r]* above array section size" } */
     ;
-  #pragma omp task depend(in: g[:][2:4]) /* { dg-error "for pointer type length expression must be specified" } */
+  #pragma omp task depend(in: g[:][2:4]) /* { dg-error "for array function parameter length expression must be specified" } */
     ;
   #pragma omp task depend(in: h[2:2][-1:]) /* { dg-error "negative low bound in array section" } */
     ;
