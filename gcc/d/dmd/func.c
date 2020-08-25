@@ -1212,8 +1212,9 @@ Ldone:
         if (type && mod)
         {
             printedMain = true;
-            const char *name = FileName::searchPath(global.path, mod->srcfile->toChars(), true);
-            message("entry     %-10s\t%s", type, name);
+            const char *name = mod->srcfile->toChars();
+            const char *path = FileName::searchPath(global.path, name, true);
+            message("entry     %-10s\t%s", type, path ? path : name);
         }
     }
 
