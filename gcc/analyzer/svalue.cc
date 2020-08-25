@@ -910,6 +910,20 @@ unmergeable_svalue::implicitly_live_p (const svalue_set &live_svalues,
 
 /* class compound_svalue : public svalue.  */
 
+compound_svalue::compound_svalue (tree type, const binding_map &map)
+: svalue (calc_complexity (map), type), m_map (map)
+{
+  /* All keys within the underlying binding_map are required to be concrete,
+     not symbolic.  */
+#if CHECKING_P
+  for (iterator_t iter = begin (); iter != end (); ++iter)
+    {
+      const binding_key *key = (*iter).first;
+      gcc_assert (key->concrete_p ());
+    }
+#endif
+}
+
 /* Implementation of svalue::dump_to_pp vfunc for compound_svalue.  */
 
 void
