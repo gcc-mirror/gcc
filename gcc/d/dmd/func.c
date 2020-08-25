@@ -30,7 +30,7 @@
 #include "visitor.h"
 #include "objc.h"
 
-Expression *addInvariant(Loc loc, Scope *sc, AggregateDeclaration *ad, VarDeclaration *vthis, bool direct);
+Expression *addInvariant(AggregateDeclaration *ad, VarDeclaration *vthis);
 bool checkReturnEscape(Scope *sc, Expression *e, bool gag);
 bool checkReturnEscapeRef(Scope *sc, Expression *e, bool gag);
 bool checkNestedRef(Dsymbol *s, Dsymbol *p);
@@ -1648,7 +1648,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         Statement *fpreinv = NULL;
         if (addPreInvariant())
         {
-            Expression *e = addInvariant(loc, sc, ad, vthis, isDtorDeclaration() != NULL);
+            Expression *e = addInvariant(ad, vthis);
             if (e)
                 fpreinv = new ExpStatement(Loc(), e);
         }
@@ -1657,7 +1657,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         Statement *fpostinv = NULL;
         if (addPostInvariant())
         {
-            Expression *e = addInvariant(loc, sc, ad, vthis, isCtorDeclaration() != NULL);
+            Expression *e = addInvariant(ad, vthis);
             if (e)
                 fpostinv = new ExpStatement(Loc(), e);
         }
@@ -4154,67 +4154,47 @@ bool FuncDeclaration::addPostInvariant()
  * Input:
  *      ad      aggregate with the invariant
  *      vthis   variable with 'this'
- *      direct  call invariant directly
  * Returns:
  *      void expression that calls the invariant
  */
-Expression *addInvariant(Loc loc, Scope *sc, AggregateDeclaration *ad, VarDeclaration *vthis, bool direct)
+Expression *addInvariant(AggregateDeclaration *ad, VarDeclaration *vthis)
 {
     Expression *e = NULL;
-    if (direct)
+
+    // Call invariant directly only if it exists
+    FuncDeclaration *inv = ad->inv;
+    ClassDeclaration *cd = ad->isClassDeclaration();
+
+    while (!inv && cd)
     {
-        // Call invariant directly only if it exists
-        FuncDeclaration *inv = ad->inv;
-        ClassDeclaration *cd = ad->isClassDeclaration();
-
-        while (!inv && cd)
-        {
-            cd = cd->baseClass;
-            if (!cd)
-                break;
-            inv = cd->inv;
-        }
-        if (inv)
-        {
-        #if 1
-            // Workaround for bugzilla 13394: For the correct mangling,
-            // run attribute inference on inv if needed.
-            inv->functionSemantic();
-        #endif
-
-            //e = new DsymbolExp(Loc(), inv);
-            //e = new CallExp(Loc(), e);
-            //e = e->semantic(sc2);
-
-            /* Bugzilla 13113: Currently virtual invariant calls completely
-             * bypass attribute enforcement.
-             * Change the behavior of pre-invariant call by following it.
-             */
-            e = new ThisExp(Loc());
-            e->type = vthis->type;
-            e = new DotVarExp(Loc(), e, inv, false);
-            e->type = inv->type;
-            e = new CallExp(Loc(), e);
-            e->type = Type::tvoid;
-        }
+        cd = cd->baseClass;
+        if (!cd)
+            break;
+        inv = cd->inv;
     }
-    else
+    if (inv)
     {
     #if 1
         // Workaround for bugzilla 13394: For the correct mangling,
         // run attribute inference on inv if needed.
-        if (ad->isStructDeclaration() && ad->inv)
-            ad->inv->functionSemantic();
+        inv->functionSemantic();
     #endif
 
-        // Call invariant virtually
-        Expression *v = new ThisExp(Loc());
-        v->type = vthis->type;
-        if (ad->isStructDeclaration())
-            v = v->addressOf();
-        e = new StringExp(Loc(), const_cast<char *>("null this"));
-        e = new AssertExp(loc, v, e);
-        e = semantic(e, sc);
+        //e = new DsymbolExp(Loc(), inv);
+        //e = new CallExp(Loc(), e);
+        //e = e->semantic(sc2);
+
+        /* https://issues.dlang.org/show_bug.cgi?id=13113
+         * Currently virtual invariant calls completely
+         * bypass attribute enforcement.
+         * Change the behavior of pre-invariant call by following it.
+         */
+        e = new ThisExp(Loc());
+        e->type = vthis->type;
+        e = new DotVarExp(Loc(), e, inv, false);
+        e->type = inv->type;
+        e = new CallExp(Loc(), e);
+        e->type = Type::tvoid;
     }
     return e;
 }

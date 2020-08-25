@@ -1188,7 +1188,9 @@ public:
                     }
 
                     // T value = tmp[key];
-                    fs->value->_init = new ExpInitializer(loc, new IndexExp(loc, new VarExp(loc, tmp), new VarExp(loc, fs->key)));
+                    IndexExp *indexExp = new IndexExp(loc, new VarExp(loc, tmp), new VarExp(loc, fs->key));
+                    indexExp->indexIsInBounds = true; // disabling bounds checking in foreach statements.
+                    fs->value->_init = new ExpInitializer(loc, indexExp);
                     Statement *ds = new ExpStatement(loc, fs->value);
 
                     if (dim == 2)
