@@ -2613,7 +2613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	days __d = (_M_wdi.weekday()
 		    - chrono::weekday{sys_days{_M_y / _M_m / 1}}
 		    + days((_M_wdi.index()-1)*7 + 1));
-	__glibcxx_assert(__d >= 1);
+	__glibcxx_assert(__d.count() >= 1);
 	return __d.count() <= unsigned{(_M_y / _M_m / last).day()};
       }
 
