@@ -731,7 +731,6 @@ package Rtsfind is
      RE_Unsigned_128,                    -- Interfaces
 
      RO_IC_Unsigned,                     -- Interfaces.C
-     RO_IC_Unsigned_Long_Long,           -- Interfaces.C
 
      RE_Chars_Ptr,                       -- Interfaces.C.Strings
      RE_New_Char_Array,                  -- Interfaces.C.Strings
@@ -2380,7 +2379,6 @@ package Rtsfind is
      RE_Unsigned_128                     => Interfaces,
 
      RO_IC_Unsigned                      => Interfaces_C,
-     RO_IC_Unsigned_Long_Long            => Interfaces_C,
 
      RE_Chars_Ptr                        => Interfaces_C_Strings,
      RE_New_Char_Array                   => Interfaces_C_Strings,
