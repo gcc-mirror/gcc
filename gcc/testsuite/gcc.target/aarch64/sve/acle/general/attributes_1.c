@@ -6,8 +6,8 @@
 #error "__ARM_FEATURE_SVE_BITS is not defined but should be"
 #endif
 
-#if __ARM_FEATURE_SVE_VECTOR_OPERATIONS != 1
-#error "__ARM_FEATURE_SVE_VECTOR_OPERATIONS should be equal to 1"
+#if __ARM_FEATURE_SVE_VECTOR_OPERATORS != 1
+#error "__ARM_FEATURE_SVE_VECTOR_OPERATORS should be equal to 1"
 #endif
 
 #ifndef __cplusplus
