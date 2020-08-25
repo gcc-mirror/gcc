@@ -2713,7 +2713,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	 denoted by the object expression of the class member access.  */
       tree ob = TREE_OPERAND (fn, 0);
       if (obvalue_p (ob))
-	result = build_trivial_dtor_call (ob);
+	result = build_trivial_dtor_call (ob, true);
       else
 	/* No location to clobber.  */
 	result = convert_to_void (ob, ICV_STATEMENT, complain);
