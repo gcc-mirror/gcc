@@ -20,6 +20,24 @@ Checked!(T, Hook) checked(Hook, T)(const T value)
 
 @system unittest
 {
+    static struct Hook1
+    {
+        uint var1 = uint.max;
+        uint var2 = uint.max;
+    }
+
+    assert(checked!Hook1(12).toHash() != checked!Hook1(13).toHash());
+    assert(checked!Hook1(13).toHash() == checked!Hook1(13).toHash());
+
+    static struct Hook2
+    {
+        uint var1 = uint.max;
+        ushort var2 = ushort.max;
+    }
+
+    assert(checked!Hook2(12).toHash() != checked!Hook2(13).toHash());
+    assert(checked!Hook2(13).toHash() == checked!Hook2(13).toHash());
+
     static struct Hook3
     {
         ulong var1 = ulong.max;
