@@ -8328,7 +8328,19 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
     }
 
   real_from_target (&r, tmp, mode);
-  return build_real (type, r);
+  tree ret = build_real (type, r);
+  if (MODE_COMPOSITE_P (mode))
+    {
+      /* For floating point values in composite modes, punt if this folding
+	 doesn't preserve bit representation.  As the mode doesn't have fixed
+	 precision while GCC pretends it does, there could be valid values that
+	 GCC can't really represent accurately.  See PR95450.  */
+      unsigned char buf[24];
+      if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
+	  || memcmp (ptr, buf, total_bytes) != 0)
+	ret = NULL_TREE;
+    }
+  return ret;
 }
 
 
