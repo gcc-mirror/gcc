@@ -507,6 +507,8 @@ package body System.Img_Real is
          if V > Long_Long_Float'Last then
             pragma Annotate (CodePeer, False_Positive, "dead code",
                              "CodePeer analysis ignores NaN and Inf values");
+            pragma Annotate (CodePeer, False_Positive, "test always true",
+                             "CodePeer analysis ignores NaN and Inf values");
             Set ('+');
             Set ('I');
             Set ('n');
@@ -516,8 +518,6 @@ package body System.Img_Real is
 
          elsif V < Long_Long_Float'First then
             Set ('-');
-            pragma Annotate (CodePeer, False_Positive, "dead code",
-                             "CodePeer analysis ignores NaN and Inf values");
             Set ('I');
             Set ('n');
             Set ('f');
