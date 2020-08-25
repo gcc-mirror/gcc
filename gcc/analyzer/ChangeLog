@@ -1,3 +1,24 @@
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94851
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Fold bitwise "& 0" to 0.
+
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (store::eval_alias): Make const.  Split out 2nd half
+	into store::eval_alias_1 and call it twice for symmetry, avoiding
+	test duplication.
+	(store::eval_alias_1): New function, split out from the above.
+	* store.h (store::eval_alias): Make const.
+	(store::eval_alias_1): New decl.
+
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::push_frame): Bind the default
+	SSA name for each parm if it exists, falling back to the parm
+	itself otherwise, rather than doing both.
+
 2020-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96723

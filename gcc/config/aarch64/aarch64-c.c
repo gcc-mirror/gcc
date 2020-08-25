@@ -149,7 +149,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 	bits = 0;
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
     }
-  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE_VECTOR_OPERATIONS",
+  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE_VECTOR_OPERATORS",
 			pfile);
   aarch64_def_or_undef (TARGET_SVE_I8MM,
 			"__ARM_FEATURE_SVE_MATMUL_INT8", pfile);

@@ -2412,6 +2412,21 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
   CLEAR_RESOURCE (&needed);
   CLEAR_RESOURCE (&set);
 
+  /* Handle the flags register specially, to be able to accept a
+     candidate that clobbers it.  See also fill_simple_delay_slots.  */
+  bool filter_flags
+    = (slots_to_fill == 1
+       && targetm.flags_regnum != INVALID_REGNUM
+       && find_regno_note (insn, REG_DEAD, targetm.flags_regnum));
+  struct resources fset;
+  struct resources flags_res;
+  if (filter_flags)
+    {
+      CLEAR_RESOURCE (&fset);
+      CLEAR_RESOURCE (&flags_res);
+      SET_HARD_REG_BIT (flags_res.regs, targetm.flags_regnum);
+    }
+
   /* If we do not own this thread, we must stop as soon as we find
      something that we can't put in a delay slot, since all we can do
      is branch into THREAD at a later point.  Therefore, labels stop
@@ -2440,8 +2455,18 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
       /* If TRIAL conflicts with the insns ahead of it, we lose.  Also,
 	 don't separate or copy insns that set and use CC0.  */
       if (! insn_references_resource_p (trial, &set, true)
-	  && ! insn_sets_resource_p (trial, &set, true)
+	  && ! insn_sets_resource_p (trial, filter_flags ? &fset : &set, true)
 	  && ! insn_sets_resource_p (trial, &needed, true)
+	  /* If we're handling sets to the flags register specially, we
+	     only allow an insn into a delay-slot, if it either:
+	     - doesn't set the flags register,
+	     - the "set" of the flags register isn't used (clobbered),
+	     - insns between the delay-slot insn and the trial-insn
+	     as accounted in "set", have not affected the flags register.  */
+	  && (! filter_flags
+	      || ! insn_sets_resource_p (trial, &flags_res, true)
+	      || find_regno_note (trial, REG_UNUSED, targetm.flags_regnum)
+	      || ! TEST_HARD_REG_BIT (set.regs, targetm.flags_regnum))
 	  && (!HAVE_cc0 || (! (reg_mentioned_p (cc0_rtx, pat)
 			      && (! own_thread || ! sets_cc0_p (pat)))))
 	  && ! can_throw_internal (trial))
@@ -2619,6 +2644,16 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
       lose = 1;
       mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
       mark_referenced_resources (trial, &needed, true);
+      if (filter_flags)
+	{
+	  mark_set_resources (trial, &fset, 0, MARK_SRC_DEST_CALL);
+
+	  /* Groups of flags-register setters with users should not
+	     affect opportunities to move flags-register-setting insns
+	     (clobbers) into the delay-slot.  */
+	  CLEAR_HARD_REG_BIT (needed.regs, targetm.flags_regnum);
+	  CLEAR_HARD_REG_BIT (fset.regs, targetm.flags_regnum);
+	}
 
       /* Ensure we don't put insns between the setting of cc and the comparison
 	 by moving a setting of cc into an earlier delay slot since these insns

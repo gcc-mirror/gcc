@@ -1,6 +1,6 @@
 /* Example of a multilevel wrapper around malloc/free, with a double-'free'.  */
 
-/* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fanalyzer-verbose-state-changes -fdiagnostics-show-caret" } */
+/* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
 
 #include <stdlib.h>
@@ -83,7 +83,7 @@ void test (int i)
                   |   NN |   return malloc (size);
                   |      |          ~~~~~~~~~~~~~
                   |      |          |
-                  |      |          (6) allocated here (state of '<unknown>': 'start' -> 'unchecked', NULL origin)
+                  |      |          (6) allocated here
                   |
            <------+
            |
@@ -96,7 +96,7 @@ void test (int i)
            |   NN |   if (!result)
            |      |      ~                              
            |      |      |
-           |      |      (8) assuming 'result' is non-NULL (state of 'result': 'unchecked' -> 'nonnull', NULL origin)
+           |      |      (8) assuming 'result' is non-NULL
            |      |      (9) following 'false' branch (when 'result' is non-NULL)...
            |   NN |     abort ();
            |   NN |   result->i = i;
@@ -140,7 +140,7 @@ void test (int i)
                   |   NN |   free (ptr);
                   |      |   ~~~~~~~~~~
                   |      |   |
-                  |      |   (16) first 'free' here (state of 'ptr': 'nonnull' -> 'freed', NULL origin)
+                  |      |   (16) first 'free' here
                   |
            <------+
            |
@@ -187,7 +187,7 @@ void test (int i)
                   |   NN |   free (ptr);
                   |      |   ~~~~~~~~~~
                   |      |   |
-                  |      |   (23) second 'free' here; first 'free' was at (16) ('ptr' is in state 'freed')
+                  |      |   (23) second 'free' here; first 'free' was at (16)
                   |
    { dg-end-multiline-output "" } */
 

@@ -2353,17 +2353,12 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
 	     rest of the params as uninitialized.  */
 	  if (idx >= arg_svals->length ())
 	    break;
+	  tree parm_lval = iter_parm;
+	  if (tree parm_default_ssa = ssa_default_def (fun, iter_parm))
+	    parm_lval = parm_default_ssa;
+	  const region *parm_reg = get_lvalue (parm_lval, ctxt);
 	  const svalue *arg_sval = (*arg_svals)[idx];
-	  const region *parm_reg = get_lvalue (iter_parm, ctxt);
 	  set_value (parm_reg, arg_sval, ctxt);
-
-	  /* Also do it for default SSA name (sharing the same value).  */
-	  tree parm_default_ssa = ssa_default_def (fun, iter_parm);
-	  if (parm_default_ssa)
-	    {
-	      const region *defssa_reg = get_lvalue (parm_default_ssa, ctxt);
-	      set_value (defssa_reg, arg_sval, ctxt);
-	    }
 	}
     }
   else
@@ -2375,10 +2370,10 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
       for (tree iter_parm = DECL_ARGUMENTS (fndecl); iter_parm;
 	   iter_parm = DECL_CHAIN (iter_parm))
 	{
-	  on_top_level_param (iter_parm, ctxt);
-	  tree parm_default_ssa = ssa_default_def (fun, iter_parm);
-	  if (parm_default_ssa)
+	  if (tree parm_default_ssa = ssa_default_def (fun, iter_parm))
 	    on_top_level_param (parm_default_ssa, ctxt);
+	  else
+	    on_top_level_param (iter_parm, ctxt);
 	}
     }
 

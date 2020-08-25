@@ -321,3 +321,19 @@ debug_tree (cp_expr node)
 {
   debug_tree (node.get_value());
 }
+
+DEBUG_FUNCTION void
+debug_overload (tree node)
+{
+  FILE *file = stdout;
+
+  for (lkp_iterator iter (node); iter; ++iter)
+    {
+      tree decl = *iter;
+      auto xloc = expand_location (DECL_SOURCE_LOCATION (decl));
+      auto fullname = decl_as_string (decl, 0);
+
+      fprintf (file, "%p: %s:%d:%d \"%s\"\n", (void *)decl,
+	       xloc.file, xloc.line, xloc.column, fullname);
+    }
+}

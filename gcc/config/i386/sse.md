@@ -1588,7 +1588,7 @@
 (define_split
   [(set (match_operand:DI 0 "mask_reg_operand")
 	(zero_extend:DI
-	  (not:DI (match_operand:SI 1 "mask_reg_operand"))))]
+	  (not:SI (match_operand:SI 1 "mask_reg_operand"))))]
   "TARGET_AVX512BW && reload_completed"
   [(parallel
      [(set (match_dup 0)

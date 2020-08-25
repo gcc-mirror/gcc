@@ -1887,7 +1887,7 @@ checking with extra checks that might affect code generation and should
 therefore not differ between stage1 and later stages in bootstrap.
 
 The @samp{valgrind} check requires the external @command{valgrind} simulator,
-available from @uref{http://valgrind.org/}.  The @samp{rtl} checks are
+available from @uref{https://valgrind.org}.  The @samp{rtl} checks are
 expensive and the @samp{df}, @samp{gcac} and @samp{valgrind} checks are very
 expensive.
 

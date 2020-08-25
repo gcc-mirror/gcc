@@ -1544,7 +1544,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 
 tristate
 store::eval_alias (const region *base_reg_a,
-		   const region *base_reg_b)
+		   const region *base_reg_b) const
 {
   /* SSA names can't alias.  */
   tree decl_a = base_reg_a->maybe_get_decl ();
@@ -1554,31 +1554,34 @@ store::eval_alias (const region *base_reg_a,
   if (decl_b && TREE_CODE (decl_b) == SSA_NAME)
     return tristate::TS_FALSE;
 
+  /* Try both ways, for symmetry.  */
+  tristate ts_ab = eval_alias_1 (base_reg_a, base_reg_b);
+  if (ts_ab.is_false ())
+    return tristate::TS_FALSE;
+  tristate ts_ba = eval_alias_1 (base_reg_b, base_reg_a);
+  if (ts_ba.is_false ())
+    return tristate::TS_FALSE;
+  return tristate::TS_UNKNOWN;
+}
+
+/* Half of store::eval_alias; called twice for symmetry.  */
+
+tristate
+store::eval_alias_1 (const region *base_reg_a,
+		     const region *base_reg_b) const
+{
   if (const symbolic_region *sym_reg_a
       = base_reg_a->dyn_cast_symbolic_region ())
     {
       const svalue *sval_a = sym_reg_a->get_pointer ();
-      if (sval_a->get_kind () == SK_INITIAL
-	  && decl_b
-	  && !is_global_var (decl_b))
-	{
-	  /* The initial value of a pointer can't point to a local.  */
-	  return tristate::TS_FALSE;
-	}
+      if (sval_a->get_kind () == SK_INITIAL)
+	if (tree decl_b = base_reg_b->maybe_get_decl ())
+	  if (!is_global_var (decl_b))
+	    {
+	      /* The initial value of a pointer can't point to a local.  */
+	      return tristate::TS_FALSE;
+	    }
     }
-  if (const symbolic_region *sym_reg_b
-      = base_reg_b->dyn_cast_symbolic_region ())
-    {
-      const svalue *sval_b = sym_reg_b->get_pointer ();
-      if (sval_b->get_kind () == SK_INITIAL
-	  && decl_a
-	  && !is_global_var (decl_a))
-	{
-	  /* The initial value of a pointer can't point to a local.  */
-	  return tristate::TS_FALSE;
-	}
-    }
-
   return tristate::TS_UNKNOWN;
 }
 

@@ -1492,6 +1492,33 @@ hppa_address_cost (rtx X, machine_mode mode ATTRIBUTE_UNUSED,
     }
 }
 
+/* Return true if X represents a (possibly non-canonical) shNadd pattern.
+   The machine mode of X is known to be SImode or DImode.  */
+
+static bool
+hppa_rtx_costs_shadd_p (rtx x)
+{
+  if (GET_CODE (x) != PLUS
+      || !REG_P (XEXP (x, 1)))
+    return false;
+  rtx op0 = XEXP (x, 0);
+  if (GET_CODE (op0) == ASHIFT
+      && CONST_INT_P (XEXP (op0, 1))
+      && REG_P (XEXP (op0, 0)))
+    {
+      unsigned HOST_WIDE_INT x = UINTVAL (XEXP (op0, 1));
+      return x == 1 || x == 2 || x == 3;
+    }
+  if (GET_CODE (op0) == MULT
+      && CONST_INT_P (XEXP (op0, 1))
+      && REG_P (XEXP (op0, 0)))
+    {
+      unsigned HOST_WIDE_INT x = UINTVAL (XEXP (op0, 1));
+      return x == 2 || x == 4 || x == 8;
+    }
+  return false;
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -1499,15 +1526,16 @@ hppa_address_cost (rtx X, machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		int opno ATTRIBUTE_UNUSED,
-		int *total, bool speed ATTRIBUTE_UNUSED)
+		int *total, bool speed)
 {
-  int factor;
   int code = GET_CODE (x);
 
   switch (code)
     {
     case CONST_INT:
-      if (INTVAL (x) == 0)
+      if (outer_code == SET)
+	*total = COSTS_N_INSNS (1);
+      else if (INTVAL (x) == 0)
 	*total = 0;
       else if (INT_14_BITS (x))
 	*total = 1;
@@ -1530,32 +1558,35 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  && outer_code != SET)
 	*total = 0;
       else
-        *total = 8;
+	*total = 8;
       return true;
 
     case MULT:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
 	  *total = COSTS_N_INSNS (3);
-	  return true;
 	}
-
-      /* A mode size N times larger than SImode needs O(N*N) more insns.  */
-      factor = GET_MODE_SIZE (mode) / 4;
-      if (factor == 0)
-	factor = 1;
-
-      if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
-	*total = factor * factor * COSTS_N_INSNS (8);
+      else if (mode == DImode)
+	{
+	  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+	    *total = COSTS_N_INSNS (32);
+	  else
+	    *total = COSTS_N_INSNS (80);
+	}
       else
-	*total = factor * factor * COSTS_N_INSNS (20);
-      return true;
+	{
+	  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+	    *total = COSTS_N_INSNS (8);
+	  else
+	    *total = COSTS_N_INSNS (20);
+	}
+      return REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1));
 
     case DIV:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
 	  *total = COSTS_N_INSNS (14);
-	  return true;
+	  return false;
 	}
       /* FALLTHRU */
 
@@ -1563,34 +1594,107 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MOD:
     case UMOD:
       /* A mode size N times larger than SImode needs O(N*N) more insns.  */
-      factor = GET_MODE_SIZE (mode) / 4;
-      if (factor == 0)
-	factor = 1;
-
-      *total = factor * factor * COSTS_N_INSNS (60);
-      return true;
+      if (mode == DImode)
+	*total = COSTS_N_INSNS (240);
+      else
+	*total = COSTS_N_INSNS (60);
+      return REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1));
 
     case PLUS: /* this includes shNadd insns */
     case MINUS:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	*total = COSTS_N_INSNS (3);
+      else if (mode == DImode)
 	{
-	  *total = COSTS_N_INSNS (3);
-	  return true;
+	  if (TARGET_64BIT)
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      /* Handle shladd,l instructions.  */
+	      if (hppa_rtx_costs_shadd_p (x))
+		return true;
+	    }
+	  else
+	    *total = COSTS_N_INSNS (2);
 	}
-
-      /* A size N times larger than UNITS_PER_WORD needs N times as
-	 many insns, taking N times as long.  */
-      factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
-      if (factor == 0)
-	factor = 1;
-      *total = factor * COSTS_N_INSNS (1);
-      return true;
+      else
+	{
+	  *total = COSTS_N_INSNS (1);
+	  /* Handle shNadd instructions.  */
+	  if (hppa_rtx_costs_shadd_p (x))
+	    return true;
+	}
+      return REG_P (XEXP (x, 0))
+	     && (REG_P (XEXP (x, 1))
+		 || CONST_INT_P (XEXP (x, 1)));
 
     case ASHIFT:
+      if (mode == DImode)
+	{
+	  if (TARGET_64BIT)
+	    *total = COSTS_N_INSNS (3);
+	  else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      return true;
+	    }
+	  else if (speed)
+	    *total = COSTS_N_INSNS (13);
+	  else
+	    *total = COSTS_N_INSNS (18);
+	}
+      else if (TARGET_64BIT)
+	*total = COSTS_N_INSNS (4);
+      else
+	*total = COSTS_N_INSNS (2);
+      return REG_P (XEXP (x, 0))
+	     && (REG_P (XEXP (x, 1))
+		 || CONST_INT_P (XEXP (x, 1)));
+
     case ASHIFTRT:
+      if (mode == DImode)
+	{
+	  if (TARGET_64BIT)
+	    *total = COSTS_N_INSNS (3);
+	  else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      return true;
+	    }
+	  else if (speed)
+	    *total = COSTS_N_INSNS (14);
+	  else
+	    *total = COSTS_N_INSNS (19);
+	}
+      else if (TARGET_64BIT)
+	*total = COSTS_N_INSNS (4);
+      else
+	*total = COSTS_N_INSNS (2);
+      return REG_P (XEXP (x, 0))
+	     && (REG_P (XEXP (x, 1))
+		 || CONST_INT_P (XEXP (x, 1)));
+
     case LSHIFTRT:
-      *total = COSTS_N_INSNS (1);
-      return true;
+      if (mode == DImode)
+	{
+	  if (TARGET_64BIT)
+	    *total = COSTS_N_INSNS (2);
+	  else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      return true;
+	    }
+	  else if (speed)
+	    *total = COSTS_N_INSNS (12);
+	  else
+	    *total = COSTS_N_INSNS (15);
+	}
+      else if (TARGET_64BIT)
+	*total = COSTS_N_INSNS (3);
+      else
+	*total = COSTS_N_INSNS (2);
+      return REG_P (XEXP (x, 0))
+	     && (REG_P (XEXP (x, 1))
+		 || CONST_INT_P (XEXP (x, 1)));
 
     default:
       return false;

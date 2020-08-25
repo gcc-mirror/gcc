@@ -41,4 +41,4 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_perm } } } */
-/* { dg-final { scan-tree-dump-times "basic block part vectorized" 2 "slp2" { target vect_perm } } } */
+/* { dg-final { scan-tree-dump "basic block part vectorized" "slp2" { target vect_perm } } } */

@@ -2713,7 +2713,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	 denoted by the object expression of the class member access.  */
       tree ob = TREE_OPERAND (fn, 0);
       if (obvalue_p (ob))
-	result = build_trivial_dtor_call (ob);
+	result = build_trivial_dtor_call (ob, true);
       else
 	/* No location to clobber.  */
 	result = convert_to_void (ob, ICV_STATEMENT, complain);
@@ -5083,8 +5083,13 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (length == NULL_TREE)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "for pointer type length expression must be specified");
+	  if (DECL_ARRAY_PARAMETER_P (ret))
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "for array function parameter length expression "
+		      "must be specified");
+	  else
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "for pointer type length expression must be specified");
 	  return error_mark_node;
 	}
       if (length != NULL_TREE

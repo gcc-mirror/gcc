@@ -1865,7 +1865,8 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	if (is_gimple_debug (stmt))
 	  continue;
 	++(*n_stmts);
-	opt_result res = vect_find_stmt_data_reference (loop, stmt, datarefs);
+	opt_result res = vect_find_stmt_data_reference (loop, stmt, datarefs,
+							NULL, 0);
 	if (!res)
 	  {
 	    if (is_gimple_call (stmt) && loop->safelen)
@@ -2087,7 +2088,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
   /* Analyze the access patterns of the data-refs in the loop (consecutive,
      complex, etc.). FORNOW: Only handle consecutive access pattern.  */
 
-  ok = vect_analyze_data_ref_accesses (loop_vinfo);
+  ok = vect_analyze_data_ref_accesses (loop_vinfo, NULL);
   if (!ok)
     {
       if (dump_enabled_p ())

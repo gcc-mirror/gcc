@@ -451,6 +451,12 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       if (cst1 && integer_onep (cst1))
 	return arg0;
       break;
+    case BIT_AND_EXPR:
+      if (cst1)
+	if (zerop (cst1) && INTEGRAL_TYPE_P (type))
+	  /* "(ARG0 & 0)" -> "0".  */
+	  return get_or_create_constant_svalue (build_int_cst (type, 0));
+      break;
     case TRUTH_ANDIF_EXPR:
     case TRUTH_AND_EXPR:
       if (cst1)

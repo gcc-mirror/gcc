@@ -3217,7 +3217,8 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
    region.  */
 
 static bool
-vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
+vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
+		       vec<int> *dataref_groups)
 {
   DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
 
@@ -3239,7 +3240,7 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
       return false;
     }
 
-  if (!vect_analyze_data_ref_accesses (bb_vinfo))
+  if (!vect_analyze_data_ref_accesses (bb_vinfo, dataref_groups))
     {
      if (dump_enabled_p ())
        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3348,10 +3349,11 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal)
    given by DATAREFS.  */
 
 static bool
-vect_slp_bb_region (gimple_stmt_iterator region_begin,
-		    gimple_stmt_iterator region_end,
-		    vec<data_reference_p> datarefs,
-		    unsigned int n_stmts)
+vect_slp_region (gimple_stmt_iterator region_begin,
+		 gimple_stmt_iterator region_end,
+		 vec<data_reference_p> datarefs,
+		 vec<int> *dataref_groups,
+		 unsigned int n_stmts)
 {
   bb_vec_info bb_vinfo;
   auto_vector_modes vector_modes;
@@ -3378,7 +3380,7 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 	bb_vinfo->shared->check_datarefs ();
       bb_vinfo->vector_mode = next_vector_mode;
 
-      if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal)
+      if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal, dataref_groups)
 	  && dbg_cnt (vect_slp))
 	{
 	  if (dump_enabled_p ())
@@ -3473,45 +3475,30 @@ vect_slp_bb_region (gimple_stmt_iterator region_begin,
 bool
 vect_slp_bb (basic_block bb)
 {
-  gimple_stmt_iterator gsi;
-  bool any_vectorized = false;
+  vec<data_reference_p> datarefs = vNULL;
+  vec<int> dataref_groups = vNULL;
+  int insns = 0;
+  int current_group = 0;
+  gimple_stmt_iterator region_begin = gsi_start_nondebug_after_labels_bb (bb);
+  gimple_stmt_iterator region_end = gsi_last_bb (bb);
+  if (!gsi_end_p (region_end))
+    gsi_next (&region_end);
 
-  gsi = gsi_after_labels (bb);
-  while (!gsi_end_p (gsi))
+  for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
-      gimple_stmt_iterator region_begin = gsi;
-      vec<data_reference_p> datarefs = vNULL;
-      int insns = 0;
+      gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
 
-      for (; !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  if (is_gimple_debug (stmt))
-	    {
-	      /* Skip leading debug stmts.  */
-	      if (gsi_stmt (region_begin) == stmt)
-		gsi_next (&region_begin);
-	      continue;
-	    }
-	  insns++;
+      insns++;
 
-	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
-	    vect_location = stmt;
+      if (gimple_location (stmt) != UNKNOWN_LOCATION)
+	vect_location = stmt;
 
-	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs))
-	    break;
-	}
-      if (gsi_end_p (region_begin))
-	break;
-
-      /* Skip leading unhandled stmts.  */
-      if (gsi_stmt (region_begin) == gsi_stmt (gsi))
-	{
-	  gsi_next (&gsi);
-	  continue;
-	}
-
-      gimple_stmt_iterator region_end = gsi;
+      if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs,
+					  &dataref_groups, current_group))
+	++current_group;
 
       if (insns > param_slp_max_insns_in_bb)
 	{
@@ -3520,17 +3507,10 @@ vect_slp_bb (basic_block bb)
 			     "not vectorized: too many instructions in "
 			     "basic block.\n");
 	}
-      else if (vect_slp_bb_region (region_begin, region_end, datarefs, insns))
-	any_vectorized = true;
-
-      if (gsi_end_p (region_end))
-	break;
-
-      /* Skip the unhandled stmt.  */
-      gsi_next (&gsi);
     }
 
-  return any_vectorized;
+  return vect_slp_region (region_begin, region_end, datarefs,
+			  &dataref_groups, insns);
 }
 
 
