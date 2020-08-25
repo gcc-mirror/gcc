@@ -4485,7 +4485,15 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi, const vr_values *rvals)
     ++cstlen2;
 
   /* The exact number of characters to compare.  */
-  HOST_WIDE_INT cmpsiz = bound < 0 ? cstlen1 < 0 ? cstlen2 : cstlen1 : bound;
+  HOST_WIDE_INT cmpsiz;
+  if (cstlen1 >= 0 && cstlen2 >= 0)
+    cmpsiz = MIN (cstlen1, cstlen2);
+  else if (cstlen1 >= 0)
+    cmpsiz = cstlen1;
+  else
+    cmpsiz = cstlen2;
+  if (bound >= 0)
+    cmpsiz = MIN (cmpsiz, bound);
   /* The size of the array in which the unknown string is stored.  */
   HOST_WIDE_INT varsiz = arysiz1 < 0 ? arysiz2 : arysiz1;
 
