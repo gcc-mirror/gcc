@@ -1,6 +1,14 @@
 2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Reject vars with
+	allocatable components in OpenMP map clauses.
+
+2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.c (resolve_omp_clauses): Permit 'omp target data' without

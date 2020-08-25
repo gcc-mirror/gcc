@@ -1,6 +1,13 @@
 2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-06-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/map-alloc-comp-1.f90: New test.
+
+2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/map-3.f90: New test.
