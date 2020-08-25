@@ -13298,8 +13298,13 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (length == NULL_TREE)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "for pointer type length expression must be specified");
+	  if (C_ARRAY_PARAMETER (ret))
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "for array function parameter length expression "
+		      "must be specified");
+	  else
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "for pointer type length expression must be specified");
 	  return error_mark_node;
 	}
       if (length != NULL_TREE
