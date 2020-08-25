@@ -1,3 +1,48 @@
+2020-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration): Switch valgrind.com to https.
+
+2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	PR target/94538
+	* config/arm/thumb1.md: Disable set-constant splitter when
+	TARGET_HAVE_MOVT.
+	(thumb1_movsi_insn): Fix -mpure-code
+	alternative.
+
+2020-08-24  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Work on
+	data_ref_pair.
+	(vect_analyze_data_ref_accesses): Work on groups.
+	(vect_find_stmt_data_reference): Add group_id argument and fill
+	up dataref_groups vector.
+	* tree-vect-loop.c (vect_get_datarefs_in_loop): Pass new
+	arguments.
+	(vect_analyze_loop_2): Likewise.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Pass argument.
+	(vect_slp_bb_region): Likewise.
+	(vect_slp_region): Likewise.
+	(vect_slp_bb):Work on the entire BB.
+	* tree-vectorizer.h (vect_analyze_data_ref_accesses): Add new
+	argument.
+	(vect_find_stmt_data_reference): Likewise.
+
+2020-08-24  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96597
+	* tree-ssa-sccvn.c (vn_reference_lookup_call): Add missing
+	initialization of ::punned.
+	(vn_reference_insert): Use consistently false instead of 0.
+	(vn_reference_insert_pieces): Likewise.
+
+2020-08-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/93372
+	* reorg.c (fill_slots_from_thread): Allow trial insns that clobber
+	TARGET_FLAGS_REGNUM as delay-slot fillers.
+
 2020-08-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/96744

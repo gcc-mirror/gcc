@@ -1,3 +1,247 @@
+2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (join_view): Add deduction guide (LWG 3474).
+	* testsuite/std/ranges/adaptors/join_lwg3474.cc: New test.
+
+2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (indirectly_readable): Add
+	partial specializations to resolve ambiguities (LWG 3446).
+	* testsuite/24_iterators/associated_types/readable.traits.cc:
+	Check types with both value_type and element_type.
+
+2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::iota_view::size()): Perform all
+	calculations in the right unsigned types.
+	* testsuite/std/ranges/iota/size.cc: New test.
+
+2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96766
+	* include/std/variant (_Variant_storage): Replace implicit
+	conversions from size_t to __index_type with explicit casts.
+
+2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Run for
+	C++11 and skip for C++17 or later.
+
+2020-08-24  Corentin Gay  <gay@adacore.com>
+
+	* testsuite/20_util/shared_ptr/atomic/3.cc: Do not require POSIX
+	threads and add -pthread only on targets supporting them.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc:
+	Likewise.
+	* testsuite/30_threads/async/42819.cc: Likewise.
+	* testsuite/30_threads/async/49668.cc: Likewise.
+	* testsuite/30_threads/async/54297.cc: Likewise.
+	* testsuite/30_threads/async/any.cc: Likewise.
+	* testsuite/30_threads/async/async.cc: Likewise.
+	* testsuite/30_threads/async/except.cc: Likewise.
+	* testsuite/30_threads/async/launch.cc: Likewise.
+	* testsuite/30_threads/async/lwg2021.cc: Likewise.
+	* testsuite/30_threads/async/sync.cc: Likewise. : Likewise.
+	* testsuite/30_threads/call_once/39909.cc: Likewise.
+	* testsuite/30_threads/call_once/49668.cc: Likewise.
+	* testsuite/30_threads/call_once/60497.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/call_once/dr2442.cc: Likewise.
+	* testsuite/30_threads/condition_variable/54185.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/2.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/3.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/53841.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/68519.cc: Likewise.
+	* testsuite/30_threads/condition_variable/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/50862.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/53830.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cond.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Likewise.
+	* testsuite/30_threads/future/cons/move.cc: Likewise.
+	* testsuite/30_threads/future/members/45133.cc: Likewise.
+	* testsuite/30_threads/future/members/get.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/future/members/share.cc: Likewise.
+	* testsuite/30_threads/future/members/valid.cc: Likewise.
+	* testsuite/30_threads/future/members/wait.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/lock/1.cc: Likewise.
+	* testsuite/30_threads/lock/2.cc: Likewise.
+	* testsuite/30_threads/lock/3.cc: Likewise.
+	* testsuite/30_threads/lock/4.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/typesizes.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/49668.cc: Likewise.
+	* testsuite/30_threads/packaged_task/60564.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/3.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/56492.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/at_thread_exit.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke3.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke4.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke5.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/swap.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/valid.cc: Likewise.
+	* testsuite/30_threads/promise/60966.cc: Likewise.
+	* testsuite/30_threads/promise/cons/1.cc: Likewise.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/promise/members/at_thread_exit.cc: Likewise.
+	* testsuite/30_threads/promise/members/at_thread_exit2.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value3.cc: Likewise.
+	* testsuite/30_threads/promise/members/swap.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/unlock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/unlock/2.cc: Likewise.
+	* testsuite/30_threads/shared_future/cons/move.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/45133.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/valid.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/shared_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/shared_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/shared_timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/this_thread/1.cc: Likewise.
+	* testsuite/30_threads/this_thread/sleep_for-mt.cc: Likewise.
+	* testsuite/30_threads/this_thread/sleep_until-mt.cc: Likewise.
+	* testsuite/30_threads/thread/cons/1.cc: Likewise.
+	* testsuite/30_threads/thread/cons/2.cc: Likewise.
+	* testsuite/30_threads/thread/cons/3.cc: Likewise.
+	* testsuite/30_threads/thread/cons/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/49668.cc: Likewise.
+	* testsuite/30_threads/thread/cons/5.cc: Likewise.
+	* testsuite/30_threads/thread/cons/6.cc: Likewise.
+	* testsuite/30_threads/thread/cons/7.cc: Likewise.
+	* testsuite/30_threads/thread/cons/8.cc: Likewise.
+	* testsuite/30_threads/thread/cons/9.cc: Likewise.
+	* testsuite/30_threads/thread/cons/moveable.cc: Likewise.
+	* testsuite/30_threads/thread/cons/terminate.cc: Likewise.
+	* testsuite/30_threads/thread/members/1.cc: Likewise.
+	* testsuite/30_threads/thread/members/2.cc: Likewise.
+	* testsuite/30_threads/thread/members/3.cc: Likewise.
+	* testsuite/30_threads/thread/members/4.cc: Likewise.
+	* testsuite/30_threads/thread/members/5.cc: Likewise.
+	* testsuite/30_threads/thread/members/hardware_concurrency.cc:
+	Likewise.
+	* testsuite/30_threads/thread/native_handle/typesizes.cc: Likewise.
+	* testsuite/30_threads/thread/swap/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/unlock/2.cc: Likewise.
+	* testsuite/30_threads/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/try_lock/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+
 2020-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/96736

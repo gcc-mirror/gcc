@@ -1,3 +1,25 @@
+2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96486
+	* gfortran.dg/pr96486.f90: New test.
+
+2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	* gcc.target/arm/pure-code/pr94538-1.c: New test.
+	* gcc.target/arm/pure-code/pr94538-2.c: New test.
+
+2020-08-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/vect/bb-slp-38.c: Adjust pattern as now we only process
+	a single vectorization and now 2 partial.
+	* gcc.dg/vect/bb-slp-45.c: New test.
+
+2020-08-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/93372
+	* gcc.target/cris/pr93372-47.c: New test.
+
 2020-08-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/96744
