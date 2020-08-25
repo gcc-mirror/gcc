@@ -3115,6 +3115,10 @@ tree_ssa_lim (function *fun)
      out of the loops as well.  */
   do_store_motion ();
 
+  free (rpo);
+  rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+
   /* Move the expressions that are expensive enough.  */
   for (int i = 0; i < n; ++i)
     todo |= move_computations_worker (BASIC_BLOCK_FOR_FN (fun, rpo[i]));
