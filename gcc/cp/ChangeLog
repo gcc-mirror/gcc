@@ -1,3 +1,9 @@
+2020-08-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95428
+	* optimize.c (populate_clone_array): Revert PR70462 change.
+	(maybe_clone_body): Likewise.
+
 2020-08-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96199

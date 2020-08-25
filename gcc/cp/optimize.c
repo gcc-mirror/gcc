@@ -244,19 +244,13 @@ populate_clone_array (tree fn, tree *fns)
   fns[1] = NULL_TREE;
   fns[2] = NULL_TREE;
 
-  tree ctx = DECL_CONTEXT (fn);
-
   FOR_EACH_CLONE (clone, fn)
     if (DECL_NAME (clone) == complete_dtor_identifier
 	|| DECL_NAME (clone) == complete_ctor_identifier)
       fns[1] = clone;
     else if (DECL_NAME (clone) == base_dtor_identifier
 	     || DECL_NAME (clone) == base_ctor_identifier)
-      {
-	/* We don't need to define the base variants for a final class.  */
-	if (!CLASSTYPE_FINAL (ctx))
-	  fns[0] = clone;
-      }
+      fns[0] = clone;
     else if (DECL_NAME (clone) == deleting_dtor_identifier)
       fns[2] = clone;
     else
@@ -481,7 +475,7 @@ maybe_clone_body (tree fn)
 
   /* Remember if we can't have multiple clones for some reason.  We need to
      check this before we remap local static initializers in clone_body.  */
-  if (!tree_versionable_function_p (fn) && fns[0] && fns[1])
+  if (!tree_versionable_function_p (fn))
     need_alias = true;
 
   /* We know that any clones immediately follow FN in the TYPE_FIELDS

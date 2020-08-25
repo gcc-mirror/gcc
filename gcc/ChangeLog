@@ -1,3 +1,20 @@
+2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/extend.texi: Update links to Arm docs.
+	* doc/invoke.texi: Likewise.
+
+2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR ipa/95320
+	* ipa-utils.h (odr_type_p): Also permit calls with
+	only flag_generate_offload set.
+
 2020-08-19  Joe Ramsay  <joe.ramsay@arm.com>
 
 	Backported from master:
