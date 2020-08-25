@@ -1252,6 +1252,8 @@ main ()
   printf ("/* Note this file is auto-generated from gen-mul-tables.cc.\n");
   printf ("   Make any required changes there.  */\n");
   printf ("\n");
+  printf ("#define IN_TARGET_CODE 1\n");
+  printf ("\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
