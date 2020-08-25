@@ -31,28 +31,37 @@ private:
   // Builds a token from the input queue.
   TokenPtr build_token ();
 
-  // ok maybe all these may mean the lexer structure needs to be rethought
-  /* separated into functions because main method was too long, but they rely on
-   * and change state in the lexer, so variables must be passed by reference. */
   std::pair<std::string, int> parse_in_decimal ();
   std::pair<std::string, int> parse_in_exponent_part ();
   std::pair<PrimitiveCoreType, int> parse_in_type_suffix ();
-  /*bool parse_ascii_escape (int &length,
-				  char &output_char);*/
-  /*bool parse_quote_escape (char& current_char, int &length,
-				  char &output_char);*/
-  /*bool parse_unicode_escape (
-    char& current_char, int &length, Codepoint &output_char);*/
-  /*bool parse_byte_escape (char& current_char, int &length,
-				 char &output_char);*/
   std::tuple<char, int, bool> parse_escape (char opening_char);
   std::tuple<Codepoint, int, bool> parse_utf8_escape (char opening_char);
-  int test_get_input_codepoint_length ();
+  int parse_partial_string_continue ();
+  std::pair<long, int> parse_partial_hex_escape ();
+  std::pair<Codepoint, int> parse_partial_unicode_escape ();
+
+  int get_input_codepoint_length ();
   int test_get_input_codepoint_n_length (int n_start_offset);
-  Codepoint test_peek_codepoint_input ();
-  Codepoint test_peek_codepoint_input (
-    int n); // maybe can use get_input_codepoint_length to get starting index
-  void test_skip_codepoint_input ();
+  Codepoint peek_codepoint_input ();
+  Codepoint test_peek_codepoint_input (int n);
+  void skip_codepoint_input ();
+
+  TokenPtr parse_byte_char (Location loc);
+  TokenPtr parse_byte_string (Location loc);
+  TokenPtr parse_raw_byte_string (Location loc);
+  TokenPtr parse_raw_identifier (Location loc);
+  TokenPtr parse_string (Location loc);
+  TokenPtr maybe_parse_raw_string (Location loc);
+  TokenPtr parse_raw_string (Location loc, int initial_hash_count);
+  TokenPtr parse_non_decimal_int_literals (Location loc);
+  TokenPtr parse_decimal_int_or_float (Location loc);
+  TokenPtr parse_char_or_lifetime (Location loc);
+  TokenPtr parse_identifier_or_keyword (Location loc);
+
+  template <typename IsDigitFunc>
+  TokenPtr parse_non_decimal_int_literal (Location loc,
+					  IsDigitFunc is_digit_func,
+					  std::string existent_str, int base);
 
 public:
   // Construct lexer with input file and filename provided
@@ -68,14 +77,14 @@ public:
   Lexer &operator= (Lexer &&other) = default;
 
   // Returns token n tokens ahead of current position.
-  const_TokenPtr peek_token (int n);
+  const_TokenPtr peek_token (int n) { return token_queue.peek (n); }
   // Peeks the current token.
-  const_TokenPtr peek_token ();
+  const_TokenPtr peek_token () { return peek_token (0); }
 
   // Advances current token to n + 1 tokens ahead of current position.
-  void skip_token (int n);
+  void skip_token (int n) { token_queue.skip (n); }
   // Skips the current token.
-  void skip_token ();
+  void skip_token () { skip_token (0); }
 
   // Replaces the current token with a specified token.
   void replace_current_token (TokenPtr replacement);
@@ -90,6 +99,8 @@ private:
   int current_line;
   // Current column number.
   int current_column;
+  // Current character.
+  int current_char;
   // Line map.
   Linemap *line_map;
 
@@ -132,11 +143,6 @@ private:
   TokenSource token_source;
   // Token stream queue.
   buffered_queue<std::shared_ptr<Token>, TokenSource> token_queue;
-
-  // START CRAPPY CHANGES
-  int current_char;
-
-  // END CRAPPY CHANGES
 };
 } // namespace Rust
 
