@@ -2192,7 +2192,15 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		*memory_access_type = get_negative_load_store_type
 				       (vinfo, stmt_info, vectype, vls_type, 1);
 	      else
-		*memory_access_type = VMAT_STRIDED_SLP;
+		{
+		  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
+		     separated by the stride, until we have a complete vector.
+		     Fall back to scalar accesses if that isn't possible.  */
+		  if (multiple_p (nunits, group_size))
+		    *memory_access_type = VMAT_STRIDED_SLP;
+		  else
+		    *memory_access_type = VMAT_ELEMENTWISE;
+		}
 	    }
 	  else
 	    {
