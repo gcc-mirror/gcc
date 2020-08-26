@@ -27204,7 +27204,7 @@ static bool maybe_at_text_label_p = true;
 /* One above highest N where .LVLN label might be equal to .Ltext0 label.  */
 static unsigned int first_loclabel_num_not_at_text_label;
 
-/* Look ahead for a real insn, or for a begin stmt marker.  */
+/* Look ahead for a real insn.  */
 
 static rtx_insn *
 dwarf2out_next_real_insn (rtx_insn *loc_note)
@@ -27229,7 +27229,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 {
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES + 2];
   struct var_loc_node *newloc;
-  rtx_insn *next_real, *next_note;
+  rtx_insn *next_real;
   rtx_insn *call_insn = NULL;
   static const char *last_label;
   static const char *last_postcall_label;
@@ -27254,7 +27254,6 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	      var_loc_p = false;
 
 	      next_real = dwarf2out_next_real_insn (call_insn);
-	      next_note = NULL;
 	      cached_next_real_insn = NULL;
 	      goto create_label;
 	    }
@@ -27282,7 +27281,6 @@ dwarf2out_var_location (rtx_insn *loc_note)
 		  var_loc_p = false;
 
 		  next_real = dwarf2out_next_real_insn (call_insn);
-		  next_note = NULL;
 		  cached_next_real_insn = NULL;
 		  goto create_label;
 		}
@@ -27311,22 +27309,28 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	next_real = NULL;
     }
 
-  next_note = NEXT_INSN (loc_note);
-  if (! next_note
-      || next_note->deleted ()
-      || ! NOTE_P (next_note)
-      || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
-	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
-	  && NOTE_KIND (next_note) != NOTE_INSN_INLINE_ENTRY))
-    next_note = NULL;
-
   if (! next_real)
     next_real = dwarf2out_next_real_insn (loc_note);
 
-  if (next_note)
+  if (next_real)
     {
-      expected_next_loc_note = next_note;
-      cached_next_real_insn = next_real;
+      rtx_insn *next_note = NEXT_INSN (loc_note);
+      while (next_note != next_real)
+	{
+	  if (! next_note->deleted ()
+	      && NOTE_P (next_note)
+	      && NOTE_KIND (next_note) == NOTE_INSN_VAR_LOCATION)
+	    break;
+	  next_note = NEXT_INSN (next_note);
+	}
+
+      if (next_note == next_real)
+	cached_next_real_insn = NULL;
+      else
+	{
+	  expected_next_loc_note = next_note;
+	  cached_next_real_insn = next_real;
+	}
     }
   else
     cached_next_real_insn = NULL;
