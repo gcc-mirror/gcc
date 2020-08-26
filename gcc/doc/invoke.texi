@@ -13859,20 +13859,20 @@ is present in the command line.
 @item -fprofile-filter-files=@var{regex}
 @opindex fprofile-filter-files
 
-Instrument only functions from files where names match
-any regular expression (separated by a semi-colon).
+Instrument only functions from files whose name matches
+any of the regular expressions (separated by semi-colons).
 
-For example, @option{-fprofile-filter-files=main.c;module.*.c} will instrument
+For example, @option{-fprofile-filter-files=main\.c;module.*\.c} will instrument
 only @file{main.c} and all C files starting with 'module'.
 
 @item -fprofile-exclude-files=@var{regex}
 @opindex fprofile-exclude-files
 
-Instrument only functions from files where names do not match
-all the regular expressions (separated by a semi-colon).
+Instrument only functions from files whose name does not match
+any of the regular expressions (separated by semi-colons).
 
-For example, @option{-fprofile-exclude-files=/usr/*} will prevent instrumentation
-of all files that are located in @file{/usr/} folder.
+For example, @option{-fprofile-exclude-files=/usr/.*} will prevent instrumentation
+of all files that are located in the @file{/usr/} folder.
 
 @item -fprofile-reproducible
 @opindex fprofile-reproducible
