@@ -1190,10 +1190,10 @@ namespace __detail
 	   typename _Hash, typename _RangeHash, typename _Unused>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _Hash, _RangeHash,
 			   _Unused, false>
-    : private _Hashtable_ebo_helper<0, _Hash>
+    : private _Hashtable_ebo_helper<1, _Hash>
     {
     private:
-      using __ebo_hash = _Hashtable_ebo_helper<0, _Hash>;
+      using __ebo_hash = _Hashtable_ebo_helper<1, _Hash>;
 
       // Gives the local iterator implementation access to _M_bucket_index().
       friend struct _Local_iterator_base<_Key, _Value, _ExtractKey,
@@ -1260,10 +1260,10 @@ namespace __detail
 	   typename _Hash, typename _RangeHash, typename _Unused>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _Hash, _RangeHash,
 			   _Unused, true>
-    : private _Hashtable_ebo_helper<0, _Hash>
+    : private _Hashtable_ebo_helper<1, _Hash>
     {
     private:
-      using __ebo_hash = _Hashtable_ebo_helper<0, _Hash>;
+      using __ebo_hash = _Hashtable_ebo_helper<1, _Hash>;
 
     public:
       typedef _Hash					hasher;
