@@ -46,8 +46,8 @@
 	Likewise.
 
 2020-08-25  Patrick Palka  <ppalka@redhat.com>
-	    Ed Smith-Rowland <3dw4rd@verizon.net>
-	    Jonathan Wakely <jwakely@redhat.com>
+	    Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (time_point::operator++)
 	(time_point::operator--): Define.
