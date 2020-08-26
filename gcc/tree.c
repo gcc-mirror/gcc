@@ -1726,7 +1726,7 @@ wide_int_to_tree (tree type, const poly_wide_int_ref &value)
 }
 
 tree
-cache_integer_cst (tree t, bool small)
+cache_integer_cst (tree t, bool replace)
 {
   tree type = TREE_TYPE (t);
   int ix = -1;
@@ -1735,6 +1735,8 @@ cache_integer_cst (tree t, bool small)
 
   gcc_assert (!TREE_OVERFLOW (t));
 
+  /* The caching indices here must match those in
+     wide_int_to_type_1.  */
   switch (TREE_CODE (type))
     {
     case NULLPTR_TYPE:
@@ -1743,12 +1745,15 @@ cache_integer_cst (tree t, bool small)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      /* Cache NULL pointer.  */
-      if (integer_zerop (t))
-	{
-	  limit = 1;
+      {
+	if (integer_zerop (t))
 	  ix = 0;
-	}
+	else if (integer_onep (t))
+	  ix = 2;
+
+	if (ix >= 0)
+	  limit = 3;
+      }
       break;
 
     case BOOLEAN_TYPE:
@@ -1817,20 +1822,24 @@ cache_integer_cst (tree t, bool small)
 
       if (tree r = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix))
 	{
-	  gcc_assert (small);
+	  gcc_assert (replace);
 	  t = r;
 	}
       else
 	TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
     }
-  else if (!small)
+  else
     {
       /* Use the cache of larger shared ints.  */
       tree *slot = int_cst_hash_table->find_slot (t, INSERT);
       /* If there is already an entry for the number verify it's the
          same.  */
-      if (*slot)
-	gcc_assert (wi::to_wide (tree (*slot)) == wi::to_wide (t));
+      if (tree r = *slot)
+	{
+	  gcc_assert (wi::to_wide (tree (r)) == wi::to_wide (t));
+	  if (replace)
+	    t = r;
+	}
       else
 	/* Otherwise insert this one into the hash table.  */
 	*slot = t;

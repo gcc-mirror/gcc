@@ -1,5 +1,9 @@
 2020-08-26  Nathan Sidwell  <nathan@acm.org>
 
+	Fix int_cst caching
+	gcc/
+	* tree.c (cache_integer_cst): Fix pointer type indices.
+
 	Cherry pick 794275711bd.
 	gcc/cp/
 	* name-lookup.c (op_unqualified_lookup): Don't check if matches
