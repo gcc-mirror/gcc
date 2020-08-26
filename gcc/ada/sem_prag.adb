@@ -29600,44 +29600,38 @@ package body Sem_Prag is
       ER   : Boolean;
       EW   : Boolean)
    is
+      type Properties is array (Positive range 1 .. 4) of Boolean;
+      type Combinations is array (Positive range <>) of Properties;
+      --  Arrays of Async_Readers, Async_Writers, Effective_Writes and
+      --  Effective_Reads properties and their combinations, respectively.
+
+      Specified : constant Properties := (AR, AW, EW, ER);
+      --  External properties, as given by the Item pragma
+
+      Allowed : constant Combinations :=
+        (1 => (True,  False, True,  False),
+         2 => (False, True,  False, True),
+         3 => (True,  False, False, False),
+         4 => (False, True,  False, False),
+         5 => (True,  True,  True,  False),
+         6 => (True,  True,  False, True),
+         7 => (True,  True,  False, False),
+         8 => (True,  True,  True,  True));
+      --  Allowed combinations, as listed in the SPARK RM 7.1.2(6) table
+
    begin
-      --  All properties enabled
+      --  Check if the specified properties match any of the allowed
+      --  combination; if not, then emit an error.
 
-      if AR and AW and ER and EW then
-         null;
+      for J in Allowed'Range loop
+         if Specified = Allowed (J) then
+            return;
+         end if;
+      end loop;
 
-      --  Async_Readers + Effective_Writes
-      --  Async_Readers + Async_Writers + Effective_Writes
-
-      elsif AR and EW and not ER then
-         null;
-
-      --  Async_Writers + Effective_Reads
-      --  Async_Readers + Async_Writers + Effective_Reads
-
-      elsif AW and ER and not EW then
-         null;
-
-      --  Async_Readers + Async_Writers
-
-      elsif AR and AW and not ER and not EW then
-         null;
-
-      --  Async_Readers
-
-      elsif AR and not AW and not ER and not EW then
-         null;
-
-      --  Async_Writers
-
-      elsif AW and not AR and not ER and not EW then
-         null;
-
-      else
-         SPARK_Msg_N
-           ("illegal combination of external properties (SPARK RM 7.1.2(6))",
-            Item);
-      end if;
+      SPARK_Msg_N
+        ("illegal combination of external properties (SPARK RM 7.1.2(6))",
+         Item);
    end Check_External_Properties;
 
    ----------------
