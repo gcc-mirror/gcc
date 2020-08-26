@@ -1,5 +1,16 @@
 2020-08-26  Nathan Sidwell  <nathan@acm.org>
 
+	Fix type lang specific changing.
+	gcc/cp/
+	* lex.c (copy_lang_type): Split allocation & assignment to be
+	conditional-breakpoint friendly.
+	* module.cc (trees_in::read_class_def): Update variants if we
+	alter TYPE_LANG_SPECIFIC.
+	* name-lookup.c (maybe_lazily_declare): Look at main variant's
+	decl.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-inst-1{.h,_[ab].C}: New.
+
 	Fix int_cst caching
 	gcc/
 	* tree.c (cache_integer_cst): Fix pointer type indices.

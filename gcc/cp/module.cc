@@ -11531,7 +11531,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
 	    = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type_dup);
 
-	  if (TYPE_LANG_SPECIFIC (type_dup))
+	  if (auto ls = TYPE_LANG_SPECIFIC (type_dup))
 	    {
 	      if (TYPE_LANG_SPECIFIC (type))
 		{
@@ -11540,7 +11540,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 		  CLASSTYPE_TYPEINFO_VAR (type_dup)
 		    = CLASSTYPE_TYPEINFO_VAR (type);
 		}
-	      TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (type_dup);
+	      for (tree v = type; v; v = TYPE_NEXT_VARIANT (v))
+		TYPE_LANG_SPECIFIC (v) = ls;
 	    }
 	}
 

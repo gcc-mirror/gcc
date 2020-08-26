@@ -1036,8 +1036,7 @@ copy_lang_type (tree node)
   if (! TYPE_LANG_SPECIFIC (node))
     return;
 
-  struct lang_type *lt
-    = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
+  auto *lt = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
 
   memcpy (lt, TYPE_LANG_SPECIFIC (node), (sizeof (struct lang_type)));
   TYPE_LANG_SPECIFIC (node) = lt;
@@ -1069,9 +1068,9 @@ maybe_add_lang_type_raw (tree t)
   if (!RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
     return false;
   
-  TYPE_LANG_SPECIFIC (t)
-    = (struct lang_type *) (ggc_internal_cleared_alloc
-			    (sizeof (struct lang_type)));
+  auto *lt = (struct lang_type *) (ggc_internal_cleared_alloc
+				   (sizeof (struct lang_type)));
+  TYPE_LANG_SPECIFIC (t) = lt;
 
   if (GATHER_STATISTICS)
     {
