@@ -6423,15 +6423,15 @@
     {
       if (REG_P (operands[0]) && GET_CODE (operands[2]) == CONST_INT)
 	{
-          unsigned HOST_WIDE_INT shift = UINTVAL (operands[2]);
+	  unsigned HOST_WIDE_INT shift = UINTVAL (operands[2]);
 	  if (shift >= 1 && shift <= 31)
 	    {
 	      rtx dst = operands[0];
 	      rtx src = force_reg (DImode, operands[1]);
 	      emit_insn (gen_shd_internal (gen_highpart (SImode, dst),
-					   gen_highpart (SImode, src),
-					   GEN_INT (32-shift),
 					   gen_lowpart (SImode, src),
+					   GEN_INT (32-shift),
+					   gen_highpart (SImode, src),
 					   GEN_INT (shift)));
 	      emit_insn (gen_ashlsi3 (gen_lowpart (SImode, dst),
 				      gen_lowpart (SImode, src),
