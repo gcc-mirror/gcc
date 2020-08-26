@@ -1,3 +1,12 @@
+2020-08-26  Nathan Sidwell  <nathan@acm.org>
+
+	Cherry pick 794275711bd.
+	gcc/cp/
+	* name-lookup.c (op_unqualified_lookup): Don't check if matches
+	global lookup.
+	gcc/testsuite/
+	* g++.dg/lookup/operator-[12].C: New.
+
 2020-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	Operator function lookups in templates

@@ -7817,8 +7817,7 @@ lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
 
   /* If we have a known type overload, pull it out.  This can happen
      for both using decls and unhidden functions.  */
-  if (val && TREE_CODE (val) == OVERLOAD
-      && TREE_TYPE (val) != unknown_type_node)
+  if (val && TREE_CODE (val) == OVERLOAD && TREE_TYPE (val) != unknown_type_node)
     val = OVL_FIRST (val);
 
   return val;
@@ -9111,13 +9110,6 @@ op_unqualified_lookup (tree fnname)
   if (!fns)
     /* Remember we found nothing!  */
     return error_mark_node;
-
-  if (!module_has_cmi_p () && !global_purview_p ()
-      && fns == get_global_binding (fnname))
-    /* The instantiation can find these.  This isn't quite right,
-       because we'll also find any later declarations, which we
-       should not be paying attention to.  */
-    return NULL_TREE;
 
   tree d = is_overloaded_fn (fns) ? get_first_fn (fns) : fns;
   if (DECL_CLASS_SCOPE_P (d))
