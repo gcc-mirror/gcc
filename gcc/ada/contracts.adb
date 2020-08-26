@@ -795,13 +795,13 @@ package body Contracts is
 
       --  Local variables
 
-      AR_Val       : Boolean := False;
-      AW_Val       : Boolean := False;
-      ER_Val       : Boolean := False;
-      EW_Val       : Boolean := False;
-      Seen         : Boolean := False;
-      Prag         : Node_Id;
-      Obj_Typ      : Entity_Id;
+      AR_Val  : Boolean := False;
+      AW_Val  : Boolean := False;
+      ER_Val  : Boolean := False;
+      EW_Val  : Boolean := False;
+      Seen    : Boolean := False;
+      Prag    : Node_Id;
+      Obj_Typ : Entity_Id;
 
    --  Start of processing for Check_Type_Or_Object_External_Properties
 
@@ -938,7 +938,7 @@ package body Contracts is
             --  with its type (SPARK RM 7.1.3(2)).
 
             if not Is_Type_Id then
-               if Is_Effectively_Volatile  (Obj_Typ) then
+               if Is_Effectively_Volatile (Obj_Typ) then
                   Check_Volatility_Compatibility
                     (Type_Or_Obj_Id, Obj_Typ,
                      "volatile object", "its type",
