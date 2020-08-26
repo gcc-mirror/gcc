@@ -1,3 +1,91 @@
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* gimple.c (infer_nonnull_range): Formatting fix.
+	(infer_nonnull_range_by_dereference): Return false for clobber stmts.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): If both cstlen1
+	and cstlen2 are set, set cmpsiz to their minimum, otherwise use the
+	one that is set.  If bound is used and smaller than cmpsiz, set cmpsiz
+	to bound.  If both cstlen1 and cstlen2 are set, perform the optimization.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* fold-const.c (native_interpret_real): For MODE_COMPOSITE_P modes
+	punt if the to be returned REAL_CST does not encode to the bitwise
+	same representation.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96535
+	* toplev.c (process_options): Move flag_unroll_loops and
+	flag_cunroll_grow_size handling from here to ...
+	* opts.c (finish_options): ... here.  For flag_cunroll_grow_size,
+	don't check for AUTODETECT_VALUE, but instead check
+	opts_set->x_flag_cunroll_grow_size.
+	* common.opt (funroll-completely-grow-size): Default to 0.
+	* config/rs6000/rs6000.c (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE):
+	Redefine.
+	(rs6000_override_options_after_change): New function.
+	(rs6000_option_override_internal): Call it.  Move there the
+	flag_cunroll_grow_size, unroll_only_small_loops and
+	flag_rename_registers handling.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96549
+	* tree.c (get_narrower): Use TREE_TYPE (ret) instead of
+	TREE_TYPE (win) for COMPOUND_EXPRs.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93553
+	* tree-nested.c (convert_nonlocal_omp_clauses): For
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_LASTPRIVATE and OMP_CLAUSE_LINEAR
+	save info->new_local_var_chain around walks of the clause gimple
+	sequences and declare_vars if needed into the sequence.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96459
+	* omp-low.c (lower_omp_taskreg): Call lower_reduction_clauses even in
+	for host teams.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* tree-sra.c (create_access): Disqualify any aggregate with negative
+	offset access.
+	(build_ref_for_model): Add assert that offset is non-negative.
+
 2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

@@ -1,3 +1,67 @@
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* g++.dg/opt/pr96722.C: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* gcc.dg/strcmpopt_12.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* gcc.target/powerpc/pr95450.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96571
+	* gcc.dg/Wunused-var-4.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96545
+	* c-c++-common/pr96545.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96549
+	* gcc.c-torture/execute/pr96549.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96497
+	* g++.dg/cpp2a/spaceship-constexpr3.C: New test.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* gcc.dg/tree-ssa/pr96730.c: New test.
+
 2020-08-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/other/final8.C: Adjust expected output.
