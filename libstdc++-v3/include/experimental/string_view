@@ -179,8 +179,7 @@ inline namespace fundamentals_v1
       constexpr const _CharT&
       operator[](size_type __pos) const
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(__pos < this->_M_len);
+	__glibcxx_assert(__pos < this->_M_len);
 	return *(this->_M_str + __pos);
       }
 
@@ -199,16 +198,14 @@ inline namespace fundamentals_v1
       constexpr const _CharT&
       front() const
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(this->_M_len > 0);
+	__glibcxx_assert(this->_M_len > 0);
 	return *this->_M_str;
       }
 
       constexpr const _CharT&
       back() const
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(this->_M_len > 0);
+	__glibcxx_assert(this->_M_len > 0);
 	return *(this->_M_str + this->_M_len - 1);
       }
 
