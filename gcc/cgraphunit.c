@@ -727,6 +727,9 @@ process_symver_attribute (symtab_node *n)
 	  .symver foo, bar@V1
 	  .symver foo, baz@V2
       */
+      const char *purpose = IDENTIFIER_POINTER (TREE_PURPOSE (value));
+      if (strcmp (purpose, "symver") != 0)
+	continue;
 
       tree symver = get_identifier_with_length
 	(TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (value))),
