@@ -166,9 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       void>::__type
         advance(istreambuf_iterator<_CharT2>&, _Distance);
 
-      template<typename _CharT2, typename _Traits2>
-        friend basic_istream<_CharT2, _Traits2>&
-        operator>>(basic_istream<_CharT2, _Traits2>&, _CharT2*);
+      friend void __istream_extract(istream&, char*, streamsize);
 
       template<typename _CharT2, typename _Traits2, typename _Alloc>
         friend basic_istream<_CharT2, _Traits2>&

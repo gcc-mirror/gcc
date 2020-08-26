@@ -37,7 +37,7 @@ void test01()
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(istream&, _CharT*)
-  int n = 20;
+  const int n = 20;
   wchar_t array1[n];
   typedef std::wios::traits_type ctraits_type;
 

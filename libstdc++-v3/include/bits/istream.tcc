@@ -986,8 +986,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    basic_istream<_CharT, _Traits>&
-    operator>>(basic_istream<_CharT, _Traits>& __in, _CharT* __s)
+    void
+    __istream_extract(basic_istream<_CharT, _Traits>& __in, _CharT* __s,
+		      streamsize __num)
     {
       typedef basic_istream<_CharT, _Traits>		__istream_type;
       typedef basic_streambuf<_CharT, _Traits>          __streambuf_type;
@@ -1003,9 +1004,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __try
 	    {
 	      // Figure out how many characters to extract.
-	      streamsize __num = __in.width();
-	      if (__num <= 0)
-		__num = __gnu_cxx::__numeric_traits<streamsize>::__max;
+	      streamsize __width = __in.width();
+	      if (0 < __width && __width < __num)
+		__num = __width;
 
 	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
 
@@ -1042,7 +1043,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__err |= ios_base::failbit;
       if (__err)
 	__in.setstate(__err);
-      return __in;
     }
 
   // 27.6.1.4 Standard basic_istream manipulators
@@ -1075,11 +1075,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   extern template class basic_istream<char>;
   extern template istream& ws(istream&);
   extern template istream& operator>>(istream&, char&);
-  extern template istream& operator>>(istream&, char*);
   extern template istream& operator>>(istream&, unsigned char&);
   extern template istream& operator>>(istream&, signed char&);
-  extern template istream& operator>>(istream&, unsigned char*);
-  extern template istream& operator>>(istream&, signed char*);
 
   extern template istream& istream::_M_extract(unsigned short&);
   extern template istream& istream::_M_extract(unsigned int&);  
@@ -1101,7 +1098,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   extern template class basic_istream<wchar_t>;
   extern template wistream& ws(wistream&);
   extern template wistream& operator>>(wistream&, wchar_t&);
-  extern template wistream& operator>>(wistream&, wchar_t*);
+  extern template void __istream_extract(wistream&, wchar_t*, streamsize);
 
   extern template wistream& wistream::_M_extract(unsigned short&);
   extern template wistream& wistream::_M_extract(unsigned int&);  

@@ -1,5 +1,8 @@
 2020-08-26  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 17abcc77341.
+	libstdc++: Replace operator>>(istream&, char*) [LWG 2499]
+
 	Fix type lang specific changing.
 	gcc/cp/
 	* lex.c (copy_lang_type): Split allocation & assignment to be

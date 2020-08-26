@@ -19,6 +19,7 @@
 
 // 27.6.1.2.3 basic_istream::operator>>
 
+// { dg-do run { target { ! c++20 } } }
 // { dg-require-fileio "" }
 
 #include <istream>

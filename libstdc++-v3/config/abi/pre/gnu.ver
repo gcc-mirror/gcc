@@ -2304,6 +2304,11 @@ GLIBCXX_3.4.29 {
     # std::from_chars
     _ZSt10from_charsPKcS0_R[def]St12chars_format;
 
+    # std::__istream_extract(istream&, char*, streamsize)
+    _ZSt17__istream_extractRSiPc[ilx];
+    # std::__istream_extract(wistream&, wchar_t*, streamsize)
+    _ZSt17__istream_extractIwSt11char_traitsIwEEvRSt13basic_istreamIT_T0_EPS3_[ilx];
+
 } GLIBCXX_3.4.28;
 
 # Symbols in the support library (libsupc++) have their own tag.
