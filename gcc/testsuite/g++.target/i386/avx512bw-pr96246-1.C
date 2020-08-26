@@ -1,6 +1,7 @@
 /* PR target/96246 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=c++14 -mavx512bw" } */
+/* { dg-require-effective-target c99_runtime } */
 /* { dg-final { scan-assembler-times "vpblendm\[bwdq\]\[\t \]" 4 } } */
 /* { dg-final { scan-assembler-times "vblendmp\[sd\]\[\t \]" 2 } } */
 
