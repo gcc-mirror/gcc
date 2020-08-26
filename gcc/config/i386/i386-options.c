@@ -1189,6 +1189,13 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	{
 	  if (mask == OPTION_MASK_GENERAL_REGS_ONLY)
 	    {
+	      if (!opt_set_p)
+		{
+		  error_at (loc, "pragma or attribute %<target(\"%s\")%>  "
+			    "does not allow a negated form", p);
+		  return false;
+		}
+
 	      if (type != ix86_opt_ix86_yes)
 		gcc_unreachable ();
 
