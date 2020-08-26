@@ -1254,6 +1254,25 @@ package body Sem_Ch4 is
 
          Analyze_One_Call (N, Nam_Ent, True, Success);
 
+         --  If the nonoverloaded interpretation is a call to an abstract
+         --  nondispatching operation, then flag an error and return.
+
+         --  Should this be incorporated in Remove_Abstract_Operations (which
+         --  currently only deals with cases where the name is overloaded)? ???
+
+         if Is_Overloadable (Nam_Ent)
+           and then Is_Abstract_Subprogram (Nam_Ent)
+           and then not Is_Dispatching_Operation (Nam_Ent)
+         then
+            Set_Etype (N, Any_Type);
+
+            Error_Msg_Sloc := Sloc (Nam_Ent);
+            Error_Msg_NE
+              ("cannot call abstract operation& declared#", N, Nam_Ent);
+
+            return;
+         end if;
+
          --  If this is an indirect call, the return type of the access_to
          --  subprogram may be an incomplete type. At the point of the call,
          --  use the full type if available, and at the same time update the
