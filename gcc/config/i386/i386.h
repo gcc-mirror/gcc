@@ -2955,9 +2955,9 @@ extern void debug_dispatch_window (int);
 /* The value at zero is only defined for the BMI instructions
    LZCNT and TZCNT, not the BSR/BSF insns in the original isa.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 1 : 0)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 2 : 0)
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 1 : 0)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 2 : 0)
 
 
 /* Flags returned by ix86_get_callcvt ().  */

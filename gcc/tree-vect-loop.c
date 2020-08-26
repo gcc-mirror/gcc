@@ -4646,7 +4646,8 @@ info_for_reduction (vec_info *vinfo, stmt_vec_info stmt_info)
 {
   stmt_info = vect_orig_stmt (stmt_info);
   gcc_assert (STMT_VINFO_REDUC_DEF (stmt_info));
-  if (!is_a <gphi *> (stmt_info->stmt))
+  if (!is_a <gphi *> (stmt_info->stmt)
+      || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
     stmt_info = STMT_VINFO_REDUC_DEF (stmt_info);
   gphi *phi = as_a <gphi *> (stmt_info->stmt);
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
@@ -9029,6 +9030,38 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 		    loop_vinfo->remove_stmt (stmt_info);
 		}
 	    }
+	}
+
+      /* Fill in backedge defs of reductions.  */
+      for (unsigned i = 0; i < loop_vinfo->reduc_latch_defs.length (); ++i)
+	{
+	  stmt_vec_info stmt_info = loop_vinfo->reduc_latch_defs[i];
+	  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+	  vec<gimple *> &phi_info
+	    = STMT_VINFO_VEC_STMTS (STMT_VINFO_REDUC_DEF (orig_stmt_info));
+	  vec<gimple *> &vec_stmt
+	    = STMT_VINFO_VEC_STMTS (stmt_info);
+	  gcc_assert (phi_info.length () == vec_stmt.length ());
+	  gphi *phi
+	    = dyn_cast <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt);
+	  edge e = loop_latch_edge (gimple_bb (phi_info[0])->loop_father);
+	  for (unsigned j = 0; j < phi_info.length (); ++j)
+	    add_phi_arg (as_a <gphi *> (phi_info[j]),
+			 gimple_get_lhs (vec_stmt[j]), e,
+			 gimple_phi_arg_location (phi, e->dest_idx));
+	}
+      for (unsigned i = 0; i < loop_vinfo->reduc_latch_slp_defs.length (); ++i)
+	{
+	  slp_tree slp_node = loop_vinfo->reduc_latch_slp_defs[i].first;
+	  slp_tree phi_node = loop_vinfo->reduc_latch_slp_defs[i].second;
+	  gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
+	  e = loop_latch_edge (gimple_bb (phi)->loop_father);
+	  gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
+		      == SLP_TREE_VEC_STMTS (slp_node).length ());
+	  for (unsigned j = 0; j < SLP_TREE_VEC_STMTS (phi_node).length (); ++j)
+	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[j]),
+			 vect_get_slp_vect_def (slp_node, j),
+			 e, gimple_phi_arg_location (phi, e->dest_idx));
 	}
 
       /* Stub out scalar statements that must not survive vectorization.

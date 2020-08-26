@@ -1,3 +1,122 @@
+2020-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95863
+	* config/i386/i386.h (CTZ_DEFINED_VALUE_AT_ZERO): Return 0/2.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Likewise.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/87256
+	* config/pa/pa.c (hppa_rtx_costs_shadd_p): New helper function
+	to check for coefficients supported by shNadd and shladd,l.
+	(hppa_rtx_costs):  Rewrite to avoid using estimates based upon
+	FACTOR and enable recursing deeper into RTL expressions.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/pa/pa.md (ashldi3): Additionally, on !TARGET_64BIT
+	generate a two instruction shd/zdep sequence when shifting
+	registers by suitable constants.
+	(shd_internal): New define_expand to provide gen_shd_internal.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Rename
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS to
+	__ARM_FEATURE_SVE_VECTOR_OPERATORS.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (add_sve_type_attribute):
+	Take the ACLE name of the type as a parameter and add it as fourth
+	argument to the "SVE type" attribute.
+	(register_builtin_types): Update call accordingly.
+	(register_tuple_type): Likewise.  Construct the name of the type
+	earlier in order to do this.
+	(get_arm_sve_vector_bits_attributes): New function.
+	(handle_arm_sve_vector_bits_attribute): Report a more sensible
+	error message if the attribute is applied to an SVE tuple type.
+	Don't allow the attribute to be applied to an existing fixed-length
+	SVE type.  Mangle the new type as __SVE_VLS<type, vector-bits>.
+	Add a dummy TYPE_DECL to the new type.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (DEF_SVE_TYPE): Add a
+	leading "u" to each mangled name.
+
+2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96548
+	PR tree-optimization/96760
+	* tree-ssa-loop-im.c (tree_ssa_lim): Recompute RPO after
+	store-motion.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* gimple.c (infer_nonnull_range): Formatting fix.
+	(infer_nonnull_range_by_dereference): Return false for clobber stmts.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): If both cstlen1
+	and cstlen2 are set, set cmpsiz to their minimum, otherwise use the
+	one that is set.  If bound is used and smaller than cmpsiz, set cmpsiz
+	to bound.  If both cstlen1 and cstlen2 are set, perform the optimization.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* tree-sra.c (create_access): Disqualify any aggregate with negative
+	offset access.
+	(build_ref_for_model): Add assert that offset is non-negative.
+
+2020-08-25  Wei Wentao  <weiwt.fnst@cn.fujitsu.com>
+
+	* rtl.def: Fix typo in comment.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/21137
+	* fold-const.c (fold_binary_loc) [NE_EXPR/EQ_EXPR]: Call
+	STRIP_NOPS when checking whether to simplify ((x>>C1)&C2) != 0.
+
+2020-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/64242
+	* config/mips/mips.md (builtin_longjmp): Restore the frame
+	pointer and stack pointer and gp.
+
+2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96690
+	* dwarf2out.c (reference_to_unused): Make FUNCTION_DECL
+	processing more consistent with respect to
+	symtab->global_info_ready.
+	(tree_add_const_value_attribute): Unconditionally call
+	rtl_for_decl_init to do all mangling early but throw
+	away the result if early_dwarf.
+
+2020-08-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96755
+	* config/i386/sse.md: Correct the mode of NOT operands to
+	SImode.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96715
+	* match.pd (copysign(x,-x) -> -x): New simplification.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* fold-const.c (native_interpret_real): For MODE_COMPOSITE_P modes
+	punt if the to be returned REAL_CST does not encode to the bitwise
+	same representation.
+
 2020-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Configuration): Switch valgrind.com to https.

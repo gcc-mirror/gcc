@@ -57,6 +57,7 @@ extern enum value_range_kind intersect_range_with_nonzero_bits
   (enum value_range_kind, wide_int *, wide_int *, const wide_int &, signop);
 
 extern bool find_case_label_range (gswitch *, tree, tree, size_t *, size_t *);
+extern tree find_case_label_range (gswitch *, const irange *vr);
 extern bool find_case_label_index (gswitch *, size_t, tree, size_t *);
 extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);

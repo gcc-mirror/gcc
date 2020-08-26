@@ -752,7 +752,7 @@ cleanup:
   return MATCH_ERROR;
 }
 
-/* OpenMP 4.5 clauses.  */
+/* OpenMP clauses.  */
 enum omp_mask1
 {
   OMP_CLAUSE_PRIVATE,
@@ -800,7 +800,8 @@ enum omp_mask1
   OMP_CLAUSE_SIMD,
   OMP_CLAUSE_THREADS,
   OMP_CLAUSE_USE_DEVICE_PTR,
-  OMP_CLAUSE_USE_DEVICE_ADDR,  /* Actually, OpenMP 5.0.  */
+  OMP_CLAUSE_USE_DEVICE_ADDR,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_DEVICE_TYPE,  /* OpenMP 5.0.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -1214,6 +1215,24 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					   OMP_MAP_FORCE_DEVICEPTR, false,
 					   allow_derived))
 	    continue;
+	  if ((mask & OMP_CLAUSE_DEVICE_TYPE)
+	      && gfc_match ("device_type ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("host") == MATCH_YES)
+		c->device_type = OMP_DEVICE_TYPE_HOST;
+	      else if (gfc_match ("nohost") == MATCH_YES)
+		c->device_type = OMP_DEVICE_TYPE_NOHOST;
+	      else if (gfc_match ("any") == MATCH_YES)
+		c->device_type = OMP_DEVICE_TYPE_ANY;
+	      else
+		{
+		  gfc_error ("Expected HOST, NOHOST or ANY at %C");
+		  break;
+		}
+	      if (gfc_match (" )") != MATCH_YES)
+		break;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_DEVICE_RESIDENT)
 	      && gfc_match_omp_variable_list
 		   ("device_resident (",
@@ -2638,7 +2657,7 @@ cleanup:
 #define OMP_ORDERED_CLAUSES \
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
-  (omp_mask (OMP_CLAUSE_TO) | OMP_CLAUSE_LINK)
+  (omp_mask (OMP_CLAUSE_TO) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE)
 
 
 static match
@@ -3275,6 +3294,15 @@ gfc_match_omp_declare_target (void)
 		gfc_add_omp_declare_target_link (&n->sym->attr, n->sym->name,
 						 &n->sym->declared_at);
 	    }
+	  if (c->device_type != OMP_DEVICE_TYPE_UNSET)
+	    {
+	      if (n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+		  && n->sym->attr.omp_device_type != c->device_type)
+		gfc_error_now ("List item %qs at %L set in previous OMP DECLARE "
+			       "TARGET directive to a different DEVICE_TYPE",
+			       n->sym->name, &n->where);
+	      n->sym->attr.omp_device_type = c->device_type;
+	    }
 	  n->sym->mark = 1;
 	}
       else if (n->u.common->omp_declare_target
@@ -3297,6 +3325,13 @@ gfc_match_omp_declare_target (void)
 	{
 	  n->u.common->omp_declare_target = 1;
 	  n->u.common->omp_declare_target_link = (list == OMP_LIST_LINK);
+	  if (n->u.common->omp_device_type != OMP_DEVICE_TYPE_UNSET
+	      && n->u.common->omp_device_type != c->device_type)
+	    gfc_error_now ("COMMON at %L set in previous OMP DECLARE "
+			   "TARGET directive to a different DEVICE_TYPE",
+			   &n->where);
+	  n->u.common->omp_device_type = c->device_type;
+
 	  for (s = n->u.common->head; s; s = s->common_next)
 	    {
 	      s->mark = 1;
@@ -3307,8 +3342,17 @@ gfc_match_omp_declare_target (void)
 		    gfc_add_omp_declare_target_link (&s->attr, s->name,
 						     &s->declared_at);
 		}
+	      if (s->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+		  && s->attr.omp_device_type != c->device_type)
+		gfc_error_now ("List item %qs at %L set in previous OMP DECLARE"
+			       " TARGET directive to a different DEVICE_TYPE",
+			       s->name, &n->where);
+	      s->attr.omp_device_type = c->device_type;
 	    }
 	}
+  if (c->device_type && !c->lists[OMP_LIST_TO] && !c->lists[OMP_LIST_LINK])
+    gfc_warning_now (0, "OMP DECLARE TARGET directive at %L with only "
+			"DEVICE_TYPE clause is ignored", &old_loc);
 
   gfc_buffer_error (true);
 

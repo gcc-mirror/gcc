@@ -11569,9 +11569,20 @@ There are some code generation flags preserved by GCC when
 generating bytecodes, as they need to be used during the final link.
 Currently, the following options and their settings are taken from
 the first object file that explicitly specifies them: 
-@option{-fPIC}, @option{-fpic}, @option{-fpie}, @option{-fcommon},
-@option{-fexceptions}, @option{-fnon-call-exceptions}, @option{-fgnu-tm}
-and all the @option{-m} target flags.
+@option{-fcommon}, @option{-fexceptions}, @option{-fnon-call-exceptions},
+@option{-fgnu-tm} and all the @option{-m} target flags.
+
+The following options @option{-fPIC}, @option{-fpic}, @option{-fpie} and
+@option{-fPIE} are combined based on the following scheme:
+
+@smallexample
+@option{-fPIC} + @option{-fpic} = @option{-fpic}
+@option{-fPIC} + @option{-fno-pic} = @option{-fno-pic}
+@option{-fpic/-fPIC} + (no option) = (no option)
+@option{-fPIC} + @option{-fPIE} = @option{-fPIE}
+@option{-fpic} + @option{-fPIE} = @option{-fpie}
+@option{-fPIC/-fpic} + @option{-fpie} = @option{-fpie}
+@end smallexample
 
 Certain ABI-changing flags are required to match in all compilation units,
 and trying to override this at link time with a conflicting value

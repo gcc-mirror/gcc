@@ -8,8 +8,6 @@ void test(int start, int end)
 
   for (i = start; i < end; i++) {
       __analyzer_eval (i < end); /* { dg-warning "TRUE" "true" } */
-      /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
-      /* TODO(xfail^^^): should report TRUE twice. */
 
       __analyzer_eval (i == start); /* { dg-warning "TRUE" "1st" } */
       /* { dg-warning "FALSE" "2nd" { xfail *-*-* } .-1 } */

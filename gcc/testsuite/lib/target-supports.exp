@@ -10445,3 +10445,15 @@ proc check_effective_target_large_initializer { } {
 
     return 1
 }
+# Returns 1 if the target toolchain supports extended
+# syntax of .symver directive, 0 otherwise.
+
+proc check_symver_available { } {
+    return [check_no_compiler_messages symver_available object {
+	    int foo(void) { return 0; }
+	    int main (void) {
+		asm volatile (".symver foo,foo@VER_1, local");
+		return 0;
+	    }
+	}]
+}

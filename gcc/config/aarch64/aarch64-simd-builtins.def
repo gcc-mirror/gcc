@@ -37,15 +37,19 @@
    macro holding the RTL pattern for the intrinsic.  This mapping is:
    0 - CODE_FOR_aarch64_<name><mode>
    1-9 - CODE_FOR_<name><mode><1-9>
-   10 - CODE_FOR_<name><mode>.  */
+   10 - CODE_FOR_<name><mode>.
+
+   Parameter 4 is the 'flag' of the intrinsic.  This is used to
+   help describe the attributes (for example, pure) for the intrinsic
+   function.  */
 
   BUILTIN_VDC (COMBINE, combine, 0, ALL)
   VAR1 (COMBINEP, combine, 0, ALL, di)
   BUILTIN_VB (BINOP, pmul, 0, ALL)
   BUILTIN_VHSDF_HSDF (BINOP, fmulx, 0, ALL)
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2, ALL)
-  BUILTIN_VD_BHSI (BINOP, addp, 0, ALL)
-  VAR1 (UNOP, addp, 0, ALL, di)
+  BUILTIN_VD_BHSI (BINOP, addp, 0, NONE)
+  VAR1 (UNOP, addp, 0, NONE, di)
   BUILTIN_VDQ_BHSI (UNOP, clrsb, 2, ALL)
   BUILTIN_VDQ_BHSI (UNOP, clz, 2, ALL)
   BUILTIN_VS (UNOP, ctz, 2, ALL)
@@ -119,41 +123,41 @@
   BUILTIN_VALLDIF (STORESTRUCT_LANE, st3_lane, 0, ALL)
   BUILTIN_VALLDIF (STORESTRUCT_LANE, st4_lane, 0, ALL)
 
-  BUILTIN_VQW (BINOP, saddl2, 0, ALL)
-  BUILTIN_VQW (BINOP, uaddl2, 0, ALL)
-  BUILTIN_VQW (BINOP, ssubl2, 0, ALL)
-  BUILTIN_VQW (BINOP, usubl2, 0, ALL)
-  BUILTIN_VQW (BINOP, saddw2, 0, ALL)
-  BUILTIN_VQW (BINOP, uaddw2, 0, ALL)
-  BUILTIN_VQW (BINOP, ssubw2, 0, ALL)
-  BUILTIN_VQW (BINOP, usubw2, 0, ALL)
+  BUILTIN_VQW (BINOP, saddl2, 0, NONE)
+  BUILTIN_VQW (BINOP, uaddl2, 0, NONE)
+  BUILTIN_VQW (BINOP, ssubl2, 0, NONE)
+  BUILTIN_VQW (BINOP, usubl2, 0, NONE)
+  BUILTIN_VQW (BINOP, saddw2, 0, NONE)
+  BUILTIN_VQW (BINOP, uaddw2, 0, NONE)
+  BUILTIN_VQW (BINOP, ssubw2, 0, NONE)
+  BUILTIN_VQW (BINOP, usubw2, 0, NONE)
   /* Implemented by aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>.  */
-  BUILTIN_VD_BHSI (BINOP, saddl, 0, ALL)
-  BUILTIN_VD_BHSI (BINOP, uaddl, 0, ALL)
-  BUILTIN_VD_BHSI (BINOP, ssubl, 0, ALL)
-  BUILTIN_VD_BHSI (BINOP, usubl, 0, ALL)
+  BUILTIN_VD_BHSI (BINOP, saddl, 0, NONE)
+  BUILTIN_VD_BHSI (BINOP, uaddl, 0, NONE)
+  BUILTIN_VD_BHSI (BINOP, ssubl, 0, NONE)
+  BUILTIN_VD_BHSI (BINOP, usubl, 0, NONE)
   /* Implemented by aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>.  */
-  BUILTIN_VD_BHSI (BINOP, saddw, 0, ALL)
-  BUILTIN_VD_BHSI (BINOP, uaddw, 0, ALL)
-  BUILTIN_VD_BHSI (BINOP, ssubw, 0, ALL)
-  BUILTIN_VD_BHSI (BINOP, usubw, 0, ALL)
+  BUILTIN_VD_BHSI (BINOP, saddw, 0, NONE)
+  BUILTIN_VD_BHSI (BINOP, uaddw, 0, NONE)
+  BUILTIN_VD_BHSI (BINOP, ssubw, 0, NONE)
+  BUILTIN_VD_BHSI (BINOP, usubw, 0, NONE)
   /* Implemented by aarch64_<sur>h<addsub><mode>.  */
-  BUILTIN_VDQ_BHSI (BINOP, shadd, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, shsub, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, uhadd, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, uhsub, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, srhadd, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, urhadd, 0, ALL)
+  BUILTIN_VDQ_BHSI (BINOP, shadd, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, shsub, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, uhadd, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, uhsub, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, srhadd, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, urhadd, 0, NONE)
   /* Implemented by aarch64_<sur><addsub>hn<mode>.  */
-  BUILTIN_VQN (BINOP, addhn, 0, ALL)
-  BUILTIN_VQN (BINOP, subhn, 0, ALL)
-  BUILTIN_VQN (BINOP, raddhn, 0, ALL)
-  BUILTIN_VQN (BINOP, rsubhn, 0, ALL)
+  BUILTIN_VQN (BINOP, addhn, 0, NONE)
+  BUILTIN_VQN (BINOP, subhn, 0, NONE)
+  BUILTIN_VQN (BINOP, raddhn, 0, NONE)
+  BUILTIN_VQN (BINOP, rsubhn, 0, NONE)
   /* Implemented by aarch64_<sur><addsub>hn2<mode>.  */
-  BUILTIN_VQN (TERNOP, addhn2, 0, ALL)
-  BUILTIN_VQN (TERNOP, subhn2, 0, ALL)
-  BUILTIN_VQN (TERNOP, raddhn2, 0, ALL)
-  BUILTIN_VQN (TERNOP, rsubhn2, 0, ALL)
+  BUILTIN_VQN (TERNOP, addhn2, 0, NONE)
+  BUILTIN_VQN (TERNOP, subhn2, 0, NONE)
+  BUILTIN_VQN (TERNOP, raddhn2, 0, NONE)
+  BUILTIN_VQN (TERNOP, rsubhn2, 0, NONE)
 
   BUILTIN_VSQN_HSDI (UNOP, sqmovun, 0, ALL)
   /* Implemented by aarch64_<sur>qmovn<mode>.  */
@@ -238,8 +242,8 @@
   BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_laneq, 0, ALL)
 
   /* Implemented by aarch64_fcadd<rot><mode>.   */
-  BUILTIN_VHSDF (BINOP, fcadd90, 0, ALL)
-  BUILTIN_VHSDF (BINOP, fcadd270, 0, ALL)
+  BUILTIN_VHSDF (BINOP, fcadd90, 0, FP)
+  BUILTIN_VHSDF (BINOP, fcadd270, 0, FP)
 
   /* Implemented by aarch64_fcmla{_lane}{q}<rot><mode>.   */
   BUILTIN_VHSDF (TERNOP, fcmla0, 0, ALL)
@@ -594,7 +598,7 @@
   BUILTIN_VHSDF_HSDF (BINOP, fabd, 3, ALL)
 
   /* Implemented by aarch64_faddp<mode>.  */
-  BUILTIN_VHSDF (BINOP, faddp, 0, ALL)
+  BUILTIN_VHSDF (BINOP, faddp, 0, FP)
 
   /* Implemented by aarch64_cm<optab><mode>.  */
   BUILTIN_VHSDF_HSDF (BINOP_USS, cmeq, 0, ALL)

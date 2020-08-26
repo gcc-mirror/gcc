@@ -3802,6 +3802,61 @@ find_case_label_range (gswitch *stmt, tree min, tree max, size_t *min_idx,
     }
 }
 
+/* Given a SWITCH_STMT, return the case label that encompasses the
+   known possible values for the switch operand.  RANGE_OF_OP is a
+   range for the known values of the switch operand.  */
+
+tree
+find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
+{
+  if (range_of_op->undefined_p ()
+      || range_of_op->varying_p ()
+      || range_of_op->symbolic_p ())
+    return NULL_TREE;
+
+  size_t i, j;
+  tree op = gimple_switch_index (switch_stmt);
+  tree type = TREE_TYPE (op);
+  tree tmin = wide_int_to_tree (type, range_of_op->lower_bound ());
+  tree tmax = wide_int_to_tree (type, range_of_op->upper_bound ());
+  find_case_label_range (switch_stmt, tmin, tmax, &i, &j);
+  if (i == j)
+    {
+      /* Look for exactly one label that encompasses the range of
+	 the operand.  */
+      tree label = gimple_switch_label (switch_stmt, i);
+      tree case_high
+	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
+      widest_irange label_range (CASE_LOW (label), case_high);
+      label_range.intersect (range_of_op);
+      if (label_range == *range_of_op)
+	return label;
+    }
+  else if (i > j)
+    {
+      /* If there are no labels at all, take the default.  */
+      return gimple_switch_label (switch_stmt, 0);
+    }
+  else
+    {
+      /* Otherwise, there are various labels that can encompass
+	 the range of operand.  In which case, see if the range of
+	 the operand is entirely *outside* the bounds of all the
+	 (non-default) case labels.  If so, take the default.  */
+      unsigned n = gimple_switch_num_labels (switch_stmt);
+      tree min_label = gimple_switch_label (switch_stmt, 1);
+      tree max_label = gimple_switch_label (switch_stmt, n - 1);
+      tree case_high = CASE_HIGH (max_label);
+      if (!case_high)
+	case_high = CASE_LOW (max_label);
+      widest_irange label_range (CASE_LOW (min_label), case_high);
+      label_range.intersect (range_of_op);
+      if (label_range.undefined_p ())
+	return gimple_switch_label (switch_stmt, 0);
+    }
+  return NULL_TREE;
+}
+
 /* Evaluate statement STMT.  If the statement produces a useful range,
    return SSA_PROP_INTERESTING and record the SSA name with the
    interesting range into *OUTPUT_P.
@@ -4088,7 +4143,10 @@ static class vr_values *x_vr_values;
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
    statement we want to simplify, WITHIN_STMT provides the location
-   for any overflow warnings.  */
+   for any overflow warnings.
+
+   ?? This should be cleaned up.  There's a virtually identical copy
+   of this function in tree-ssa-dom.c.  */
 
 static tree
 simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
@@ -4114,9 +4172,6 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 						  op0, op1, within_stmt);
     }
 
-  /* We simplify a switch statement by trying to determine which case label
-     will be taken.  If we are successful then we return the corresponding
-     CASE_LABEL_EXPR.  */
   if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
     {
       tree op = gimple_switch_index (switch_stmt);
@@ -4126,59 +4181,7 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
       op = lhs_of_dominating_assert (op, bb, stmt);
 
       const value_range_equiv *vr = vr_values->get_value_range (op);
-      if (vr->undefined_p ()
-	  || vr->varying_p ()
-	  || vr->symbolic_p ())
-	return NULL_TREE;
-
-      if (vr->kind () == VR_RANGE)
-	{
-	  size_t i, j;
-	  /* Get the range of labels that contain a part of the operand's
-	     value range.  */
-	  find_case_label_range (switch_stmt, vr->min (), vr->max (), &i, &j);
-
-	  /* Is there only one such label?  */
-	  if (i == j)
-	    {
-	      tree label = gimple_switch_label (switch_stmt, i);
-
-	      /* The i'th label will be taken only if the value range of the
-		 operand is entirely within the bounds of this label.  */
-	      if (CASE_HIGH (label) != NULL_TREE
-		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min ()) <= 0
-		     && tree_int_cst_compare (CASE_HIGH (label),
-					      vr->max ()) >= 0)
-		  : (tree_int_cst_equal (CASE_LOW (label), vr->min ())
-		     && tree_int_cst_equal (vr->min (), vr->max ())))
-		return label;
-	    }
-
-	  /* If there are no such labels then the default label will be
-	     taken.  */
-	  if (i > j)
-	    return gimple_switch_label (switch_stmt, 0);
-	}
-
-      if (vr->kind () == VR_ANTI_RANGE)
-	{
-	  unsigned n = gimple_switch_num_labels (switch_stmt);
-	  tree min_label = gimple_switch_label (switch_stmt, 1);
-	  tree max_label = gimple_switch_label (switch_stmt, n - 1);
-
-	  /* The default label will be taken only if the anti-range of the
-	     operand is entirely outside the bounds of all the (non-default)
-	     case labels.  */
-	  if (tree_int_cst_compare (vr->min (), CASE_LOW (min_label)) <= 0
-	      && (CASE_HIGH (max_label) != NULL_TREE
-		  ? tree_int_cst_compare (vr->max (),
-					  CASE_HIGH (max_label)) >= 0
-		  : tree_int_cst_compare (vr->max (),
-					  CASE_LOW (max_label)) >= 0))
-	  return gimple_switch_label (switch_stmt, 0);
-	}
-
-      return NULL_TREE;
+      return find_case_label_range (switch_stmt, vr);
     }
 
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))

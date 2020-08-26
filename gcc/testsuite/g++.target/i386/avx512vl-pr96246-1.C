@@ -1,8 +1,8 @@
 /* PR target/96246 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mavx512bw -mavx512vl" } */
-/* { dg-final { scan-assembler-times "vpblendm\[bwdq\]\[\t ]" 6 } } */
-/* { dg-final { scan-assembler-times "vblendmp\[sd\]\[\t ]" 3 } } */
+/* { dg-options "-O2 -std=c++14 -mavx512bw -mavx512vl" } */
+/* { dg-final { scan-assembler-times "vpblendm\[bwdq\]\[\t \]" 6 } } */
+/* { dg-final { scan-assembler-times "vblendmp\[sd\]\[\t \]" 3 } } */
 
 typedef char v16qi __attribute__ ((vector_size (16)));
 typedef char v32qi __attribute__ ((vector_size (32)));
@@ -19,10 +19,7 @@ typedef double v4df __attribute__((vector_size (32)));
   __attribute__ ((noipa))				\
   foo_##vtype (vtype a, vtype b, vtype c, vtype d)	\
   {							\
-    vtype e;						\
-    for (int i = 0; i != num; i++)			\
-      e[i] = a[i] > b[i] ? c[i] : d[i];			\
-    return e;						\
+    return a > b ? c : d;				\
   }
 
 COMPILE_TEST (v16qi, 16);

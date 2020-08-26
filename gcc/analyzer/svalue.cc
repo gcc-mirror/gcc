@@ -196,6 +196,18 @@ svalue::can_merge_p (const svalue *other,
 						 other, this);
     }
 
+  /* Merger of:
+	 this: BINOP (X, OP, CST)
+	other: X, where X is non-widening
+	   to: WIDENING (other, this).  */
+  if (const binop_svalue *binop_sval = dyn_cast_binop_svalue ())
+    if (binop_sval->get_arg0 () == other
+	&& binop_sval->get_arg1 ()->get_kind () == SK_CONSTANT
+	&& other->get_kind () != SK_WIDENING)
+      return mgr->get_or_create_widening_svalue (other->get_type (),
+						 merger->m_point,
+						 other, this);
+
   /* Merge: (Widen(existing_val, V), existing_val) -> Widen (existing_val, V)
      and thus get a fixed point.  */
   if (const widening_svalue *widen_sval = dyn_cast_widening_svalue ())
@@ -231,6 +243,17 @@ svalue::can_merge_p (const svalue *other,
 	  {
 	    return widen_arg0;
 	  }
+
+	/* Merger of:
+	    this: BINOP(WIDENING(BASE, BINOP(BASE, X)), X)
+	   other: BINOP(BASE, X)
+	      to: WIDENING(BASE, BINOP(BASE, X)).  */
+	if (widen_arg0->get_iter_svalue () == other)
+	  if (const binop_svalue *other_binop_sval
+		= other->dyn_cast_binop_svalue ())
+	    if (other_binop_sval->get_arg0 () == widen_arg0->get_base_svalue ()
+		&& other_binop_sval->get_arg1 () == binop_sval->get_arg1 ())
+	      return widen_arg0;
       }
 
   return mgr->get_or_create_unknown_svalue (get_type ());
@@ -909,6 +932,20 @@ unmergeable_svalue::implicitly_live_p (const svalue_set &live_svalues,
 }
 
 /* class compound_svalue : public svalue.  */
+
+compound_svalue::compound_svalue (tree type, const binding_map &map)
+: svalue (calc_complexity (map), type), m_map (map)
+{
+  /* All keys within the underlying binding_map are required to be concrete,
+     not symbolic.  */
+#if CHECKING_P
+  for (iterator_t iter = begin (); iter != end (); ++iter)
+    {
+      const binding_key *key = (*iter).first;
+      gcc_assert (key->concrete_p ());
+    }
+#endif
+}
 
 /* Implementation of svalue::dump_to_pp vfunc for compound_svalue.  */
 

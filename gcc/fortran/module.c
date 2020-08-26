@@ -2051,7 +2051,8 @@ enum ab_attribute
   AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
   AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
   AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
-  AB_OMP_REQ_MEM_ORDER_RELAXED
+  AB_OMP_REQ_MEM_ORDER_RELAXED, AB_OMP_DEVICE_TYPE_NOHOST,
+  AB_OMP_DEVICE_TYPE_HOST, AB_OMP_DEVICE_TYPE_ANY
 };
 
 static const mstring attr_bits[] =
@@ -2132,6 +2133,9 @@ static const mstring attr_bits[] =
     minit ("OMP_REQ_MEM_ORDER_SEQ_CST", AB_OMP_REQ_MEM_ORDER_SEQ_CST),
     minit ("OMP_REQ_MEM_ORDER_ACQ_REL", AB_OMP_REQ_MEM_ORDER_ACQ_REL),
     minit ("OMP_REQ_MEM_ORDER_RELAXED", AB_OMP_REQ_MEM_ORDER_RELAXED),
+    minit ("OMP_DEVICE_TYPE_HOST", AB_OMP_DEVICE_TYPE_HOST),
+    minit ("OMP_DEVICE_TYPE_NOHOST", AB_OMP_DEVICE_TYPE_NOHOST),
+    minit ("OMP_DEVICE_TYPE_ANYHOST", AB_OMP_DEVICE_TYPE_ANY),
     minit (NULL, -1)
 };
 
@@ -2397,6 +2401,22 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      == OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
 	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_RELAXED, attr_bits);
 	}
+      switch (attr->omp_device_type)
+	{
+	case OMP_DEVICE_TYPE_UNSET:
+	  break;
+	case OMP_DEVICE_TYPE_HOST:
+	  MIO_NAME (ab_attribute) (AB_OMP_DEVICE_TYPE_HOST, attr_bits);
+	  break;
+	case OMP_DEVICE_TYPE_NOHOST:
+	  MIO_NAME (ab_attribute) (AB_OMP_DEVICE_TYPE_NOHOST, attr_bits);
+	  break;
+	case OMP_DEVICE_TYPE_ANY:
+	  MIO_NAME (ab_attribute) (AB_OMP_DEVICE_TYPE_ANY, attr_bits);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       mio_rparen ();
     }
   else
@@ -2660,6 +2680,15 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_RELAXED,
 					   "relaxed", &gfc_current_locus,
 					   module_name);
+	      break;
+	    case AB_OMP_DEVICE_TYPE_HOST:
+	      attr->omp_device_type = OMP_DEVICE_TYPE_HOST;
+	      break;
+	    case AB_OMP_DEVICE_TYPE_NOHOST:
+	      attr->omp_device_type = OMP_DEVICE_TYPE_NOHOST;
+	      break;
+	    case AB_OMP_DEVICE_TYPE_ANY:
+	      attr->omp_device_type = OMP_DEVICE_TYPE_ANY;
 	      break;
 	    }
 	}
@@ -4849,6 +4878,7 @@ load_commons (void)
 	p->saved = 1;
       if (flags & 2)
 	p->threadprivate = 1;
+      p->omp_device_type = (gfc_omp_device_type) ((flags >> 2) & 3);
       p->use_assoc = 1;
 
       /* Get whether this was a bind(c) common or not.  */
@@ -5713,6 +5743,7 @@ write_common_0 (gfc_symtree *st, bool this_module)
       flags = p->saved ? 1 : 0;
       if (p->threadprivate)
 	flags |= 2;
+      flags |= p->omp_device_type << 2;
       mio_integer (&flags);
 
       /* Write out whether the common block is bind(c) or not.  */

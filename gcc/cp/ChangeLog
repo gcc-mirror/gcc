@@ -1,3 +1,26 @@
+2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/96678
+	* semantics.c (handle_omp_array_sections_1): Talk about
+	array function parameter in the error message.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96721
+	* cp-tree.h (build_trivial_dtor_call): Add bool argument defaulted
+	to false.
+	* call.c (build_trivial_dtor_call): Add NO_PTR_DEREF argument.  If
+	instance is a pointer and NO_PTR_DEREF is true, clobber the pointer
+	rather than what it points to.
+	* semantics.c (finish_call_expr): Call build_trivial_dtor_call with
+	true as NO_PTR_DEREF.
+
+2020-08-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95428
+	* optimize.c (populate_clone_array): Revert PR70462 change.
+	(maybe_clone_body): Likewise.
+
 2020-08-24  Nathan Sidwell  <nathan@acm.org>
 
 	* ptree.c (debug_overload): New.

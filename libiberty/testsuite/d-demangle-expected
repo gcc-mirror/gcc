@@ -274,14 +274,6 @@ _D8demangle4testFNhG4dZv
 demangle.test(__vector(double[4]))
 #
 --format=dlang
-_D8demangle4testFI5identZv
-demangle.test(ident)
-#
---format=dlang
-_D8demangle4testFI5ident4testZv
-demangle.test(ident.test)
-#
---format=dlang
 _D8demangle4testFC5classZv
 demangle.test(class)
 #
@@ -312,6 +304,14 @@ demangle.test(typedef)
 --format=dlang
 _D8demangle4testFT7typedef4testZv
 demangle.test(typedef.test)
+#
+--format=dlang
+_D8demangle4testFIaZv
+demangle.test(in char)
+#
+--format=dlang
+_D8demangle4testFIKaZv
+demangle.test(in ref char)
 #
 --format=dlang
 _D8demangle4testFJaZv

@@ -1109,6 +1109,9 @@ namespace ana {
    mapping, but are required to use an svalue, such as when handling
    compound assignments and compound return values.
 
+   All keys within the underlying binding_map are required to be concrete,
+   not symbolic.
+
    Instances of this class shouldn't be bound as-is into the store;
    instead they should be unpacked.  Similarly, they should not be
    nested.  */
@@ -1150,11 +1153,7 @@ public:
     const binding_map *m_map_ptr;
   };
 
-  compound_svalue (tree type, const binding_map &map)
-  : svalue (calc_complexity (map), type),
-    m_map (map)
-  {
-  }
+  compound_svalue (tree type, const binding_map &map);
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_COMPOUND; }
   const compound_svalue *dyn_cast_compound_svalue () const { return this; }

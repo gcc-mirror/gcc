@@ -2896,7 +2896,7 @@ public:
             else
             {
                 static int nest;
-                if (++nest > 500)
+                if (++nest > global.recursionLimit)
                 {
                     exp->error("recursive evaluation of %s", exp->toChars());
                     --nest;
