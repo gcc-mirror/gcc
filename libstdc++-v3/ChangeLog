@@ -1,3 +1,101 @@
+2020-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/21_strings/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/deque/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/deque/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/forward_list/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/forward_list/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/list/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/list/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/map/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/map/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/multimap/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/multimap/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/multiset/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/multiset/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/set/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/set/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/unordered_map/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/unordered_map/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/unordered_multimap/debug/iterator_self_move_assign_neg.cc:
+	Removed.
+	* testsuite/23_containers/unordered_multimap/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/unordered_multiset/debug/iterator_self_move_assign_neg.cc:
+	Removed.
+	* testsuite/23_containers/unordered_multiset/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/unordered_set/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/unordered_set/debug/self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/vector/debug/iterator_self_move_assign_neg.cc: Removed.
+	* testsuite/23_containers/vector/debug/self_move_assign_neg.cc: Removed.
+
+2020-08-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/chrono (year_month_weekday::ok): Fix assert.
+
+2020-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (future, shared_future. promise): Add
+	is_destructible assertion (LWG 3466). Adjust string-literal for
+	!is_array and !is_function assertions.
+	* testsuite/30_threads/future/requirements/lwg3458.cc: Check
+	types with no accessible destructor. Adjust expected errors.
+	* testsuite/30_threads/promise/requirements/lwg3466.cc:
+	Likewise.
+	* testsuite/30_threads/shared_future/requirements/lwg3458.cc:
+	Likewise.
+
+2020-08-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/chrono (time_point::operator++)
+	(time_point::operator--): Define.
+	(utc_clock, tai_clock, gps_clock): Forward declare.
+	(utc_time, utc_seconds, tai_time, tai_seconds, gps_time)
+	(gps_seconds): Define.
+	(is_clock<utc_clock>, is_clock<tai_clock>, is_clock<gps_clock>)
+	(is_clock_v<utc_clock>, is_clock_v<tai_clock>)
+	(is_clock_v<gps_clock>): Define these specializations.
+	(leap_second_info): Define.
+	(day, month, year, weekday, weekday_indexed)
+	(weekday_last, month_day, month_day_last, month_weekday)
+	(month_weekday_last, year_month, year_month_day)
+	(year_month_day_last, year_month_weekday, year_month_weekday_last):
+	Declare and later define.
+	(last_spec, last, __detail::__days_per_month)
+	(__detail::__days_per_month, __detail::__last_day): Define.
+	(January, February, March, April, May, June, July, August)
+	(September, October, November, December, Sunday, Monday, Tuesday)
+	(Wednesday, Thursday, Friday, Saturday): Define.
+	(weekday::operator[]): Define out-of-line.
+	(year_month_day::_S_from_days, year_month_day::M_days_since_epoch):
+	Likewise.
+	(year_month_day::year_month_day, year_month_day::ok): Likewise.
+	(__detail::__pow10, hh_mm_ss): Define.
+	(literals::chrono_literals::operator""d)
+	(literals::chrono_literals::operator""y): Define.
+	(is_am, is_pm, make12, make24): Define.
+	* testsuite/20_util/time_point/4.cc: New test.
+	* testsuite/std/time/day/1.cc: New test.
+	* testsuite/std/time/hh_mm_ss/1.cc: New test.
+	* testsuite/std/time/is_am/1.cc: New test.
+	* testsuite/std/time/is_pm/1.cc: New test.
+	* testsuite/std/time/make12/1.cc: New test.
+	* testsuite/std/time/make24/1.cc: New test.
+	* testsuite/std/time/month/1.cc: New test.
+	* testsuite/std/time/month_day/1.cc: New test.
+	* testsuite/std/time/month_day_last/1.cc: New test.
+	* testsuite/std/time/month_weekday/1.cc: New test.
+	* testsuite/std/time/month_weekday_last/1.cc: New test.
+	* testsuite/std/time/weekday/1.cc: New test.
+	* testsuite/std/time/weekday_indexed/1.cc: New test.
+	* testsuite/std/time/weekday_last/1.cc: New test.
+	* testsuite/std/time/year/1.cc: New test.
+	* testsuite/std/time/year_month/1.cc: New test.
+	* testsuite/std/time/year_month_day/1.cc: New test.
+	* testsuite/std/time/year_month_day_last/1.cc: New test.
+	* testsuite/std/time/year_month_weekday/1.cc: New test.
+	* testsuite/std/time/year_month_weekday_last/1.cc: New test.
+
 2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (join_view): Add deduction guide (LWG 3474).

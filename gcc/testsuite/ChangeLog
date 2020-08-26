@@ -1,3 +1,100 @@
+2020-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95863
+	* gcc.target/i386/pr95863-1.c: New test.
+	* gcc.target/i386/pr95863-2.c: Likewise.
+
+2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/96678
+	* c-c++-common/gomp/map-4.c: New test.
+	* c-c++-common/gomp/depend-1.c: Update dg-error.
+	* c-c++-common/gomp/map-1.c: Likewise.
+	* c-c++-common/gomp/reduction-1.c: Likewise.
+	* g++.dg/gomp/depend-1.C: Likewise.
+	* g++.dg/gomp/depend-2.C: Likewise.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/attributes_1.c: Rename
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS to
+	__ARM_FEATURE_SVE_VECTOR_OPERATORS.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/attributes_2.C: New test.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_6.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_7.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_8.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_9.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_10.C: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Check the
+	error messages reported when arm_sve_vector_bits is applied to
+	SVE tuple types or to existing fixed-length SVE types.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Add a leading
+	"u" to the mangling of each SVE vector and predicate type.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_3.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_5.C: Likewise.
+
+2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96548
+	PR tree-optimization/96760
+	* gcc.dg/torture/pr96548.c: New testcase.
+	* gcc.dg/torture/pr96760.c: Likewise.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* g++.dg/opt/pr96722.C: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* gcc.dg/strcmpopt_12.c: New test.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* gcc.dg/tree-ssa/pr96730.c: New test.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/21137
+	* gcc.dg/pr21137.c: New test.
+
+2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96690
+	* g++.dg/lto/pr96690_0.C: New testcase.
+
+2020-08-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr96755.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96715
+	* gcc.dg/tree-ssa/copy-sign-3.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96721
+	* g++.dg/opt/flifetime-dse8.C: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* gcc.target/powerpc/pr95450.c: New test.
+
+2020-08-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/final8.C: Adjust expected output.
+
 2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	PR fortran/96486
