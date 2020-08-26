@@ -113,11 +113,20 @@
        (ior (match_code "reg,mem")
 	    (match_operand 0 "immediate_operand"))))
 
-; TRUE for constants which are bit positions for zero_extract
-(define_predicate "msp430_bitpos"
+(define_predicate "const_1_to_8_operand"
+  (and (match_code "const_int")
+       (match_test ("   INTVAL (op) >= 1
+		     && INTVAL (op) <= 8 "))))
+
+(define_predicate "const_0_to_15_operand"
   (and (match_code "const_int")
        (match_test ("   INTVAL (op) >= 0
 		     && INTVAL (op) <= 15 "))))
+
+(define_predicate "const_1_to_19_operand"
+  (and (match_code "const_int")
+       (match_test ("   INTVAL (op) >= 1
+		     && INTVAL (op) <= 19 "))))
 
 (define_predicate "msp430_symbol_operand"
   (match_code "symbol_ref")

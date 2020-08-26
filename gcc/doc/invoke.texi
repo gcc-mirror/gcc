@@ -1070,7 +1070,7 @@ Objective-C and Objective-C++ Dialects}.
 -mwarn-mcu @gol
 -mcode-region=  -mdata-region= @gol
 -msilicon-errata=  -msilicon-errata-warn= @gol
--mhwmult=  -minrt  -mtiny-printf}
+-mhwmult=  -minrt  -mtiny-printf  -mmax-inline-shift=}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
@@ -24815,6 +24815,19 @@ buffered before it is sent to write.
 
 This option requires Newlib Nano IO, so GCC must be configured with
 @samp{--enable-newlib-nano-formatted-io}.
+
+@item -mmax-inline-shift=
+@opindex mmax-inline-shift=
+This option takes an integer between 0 and 64 inclusive, and sets
+the maximum number of inline shift instructions which should be emitted to
+perform a shift operation by a constant amount.  When this value needs to be
+exceeded, an mspabi helper function is used instead.  The default value is 4.
+
+This only affects cases where a shift by multiple positions cannot be
+completed with a single instruction (e.g. all shifts >1 on the 430 ISA).
+
+Shifts of a 32-bit value are at least twice as costly, so the value passed for
+this option is divided by 2 and the resulting value used instead.
 
 @item -mcode-region=
 @itemx -mdata-region=

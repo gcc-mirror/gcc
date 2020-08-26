@@ -109,3 +109,9 @@ mdevices-csv-loc=
 Target Joined Var(msp430_devices_csv_loc) RejectNegative Report
 The path to devices.csv.  The GCC driver can normally locate devices.csv itself
 and pass this option to the compiler, so the user shouldn't need to pass this.
+
+mmax-inline-shift=
+Target RejectNegative Joined UInteger IntegerRange(0,65) Var(msp430_max_inline_shift) Init(65) Report
+For shift operations by a constant amount, which require an individual instruction to shift by one
+position, set the maximum number of inline shift instructions (maximum value 64) to emit instead of using the corresponding __mspabi helper function.
+The default value is 4.
