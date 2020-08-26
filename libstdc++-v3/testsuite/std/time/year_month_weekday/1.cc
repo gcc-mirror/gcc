@@ -58,6 +58,11 @@ constexpr_year_month_weekday()
   static_assert(years{1} + January/Tuesday[2]/1900y == January/Tuesday[2]/1901y);
   static_assert(January/Tuesday[2]/1900y - years{1} == January/Tuesday[2]/1899y);
 
+  static_assert(January/Tuesday[1]/1900y != February/Tuesday[1]/1900y);
+  static_assert(January/Tuesday[1]/1900y != January/Wednesday[1]/1900y);
+  static_assert(January/Tuesday[1]/1900y != January/Tuesday[1]/1901y);
+  static_assert(January/Tuesday[1]/1900y != January/Tuesday[2]/1900y);
+
   // N.B. unix seems to be a macro somewhere!
   constexpr ymwd myunix(local_days{days{0}});
   static_assert(myunix.ok());
