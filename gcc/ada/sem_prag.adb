@@ -2101,12 +2101,11 @@ package body Sem_Prag is
       Expr     : Node_Id;
 
    begin
-      Expr_Val := False;
-
-      --  Do not analyze the pragma multiple times
+      --  Do not analyze the pragma multiple times, but set the output
+      --  parameter to the argument specified by the pragma.
 
       if Is_Analyzed_Pragma (N) then
-         return;
+         goto Leave;
       end if;
 
       Error_Msg_Name_1 := Pragma_Name (N);
@@ -2147,6 +2146,10 @@ package body Sem_Prag is
          end if;
       end if;
 
+      Set_Is_Analyzed_Pragma (N);
+
+      <<Leave>>
+
       --  Ensure that the Boolean expression (if present) is static. A missing
       --  argument defaults the value to True (SPARK RM 7.1.2(5)).
 
@@ -2160,7 +2163,6 @@ package body Sem_Prag is
          end if;
       end if;
 
-      Set_Is_Analyzed_Pragma (N);
    end Analyze_External_Property_In_Decl_Part;
 
    ---------------------------------
