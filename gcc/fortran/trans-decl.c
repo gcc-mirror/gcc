@@ -1465,11 +1465,31 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
       tree dims = oacc_build_routine_dims (clauses);
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
+  if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET)
+    {
+      tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
+      switch (sym_attr.omp_device_type)
+	{
+	case OMP_DEVICE_TYPE_HOST:
+	  OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_HOST;
+	  break;
+	case OMP_DEVICE_TYPE_NOHOST:
+	  OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_NOHOST;
+	  break;
+	case OMP_DEVICE_TYPE_ANY:
+	  OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_ANY;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+    }
 
   if (sym_attr.omp_declare_target_link
       || sym_attr.oacc_declare_link)
     list = tree_cons (get_identifier ("omp declare target link"),
-		      NULL_TREE, list);
+		      clauses, list);
   else if (sym_attr.omp_declare_target
 	   || sym_attr.oacc_declare_create
 	   || sym_attr.oacc_declare_copyin

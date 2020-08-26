@@ -753,6 +753,13 @@ CInteropKind_t;
    that the list is initialized.  */
 extern CInteropKind_t c_interop_kinds_table[];
 
+enum gfc_omp_device_type
+{
+  OMP_DEVICE_TYPE_UNSET,
+  OMP_DEVICE_TYPE_HOST,
+  OMP_DEVICE_TYPE_NOHOST,
+  OMP_DEVICE_TYPE_ANY
+};
 
 /* Structure and list of supported extension attributes.  */
 typedef enum
@@ -919,6 +926,7 @@ typedef struct
   /* Mentioned in OMP DECLARE TARGET.  */
   unsigned omp_declare_target:1;
   unsigned omp_declare_target_link:1;
+  ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
 
   /* Mentioned in OACC DECLARE.  */
   unsigned oacc_declare_create:1;
@@ -1360,6 +1368,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *num_threads;
   gfc_omp_namelist *lists[OMP_LIST_NUM];
   enum gfc_omp_sched_kind sched_kind;
+  enum gfc_omp_device_type device_type;
   struct gfc_expr *chunk_size;
   enum gfc_omp_default_sharing default_sharing;
   int collapse, orderedc;
@@ -1699,6 +1708,7 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   unsigned char omp_declare_target : 1;
   unsigned char omp_declare_target_link : 1;
+  ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
   /* Provide sufficient space to hold "symbol.symbol.eq.1234567890".  */
   char name[2*GFC_MAX_SYMBOL_LEN + 1 + 14 + 1];
   struct gfc_symbol *head;
