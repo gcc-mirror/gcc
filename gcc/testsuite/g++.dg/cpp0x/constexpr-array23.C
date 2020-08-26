@@ -9,9 +9,9 @@ struct A
 };
 
 struct B
-{				// This should really be target { ! c++2a }
-  typedef A W[4];		// { dg-error "paren" "" { target *-*-* } .+1 }
-  constexpr B () : w ({ A::z, A::z, A::z, A::z }) {} // { dg-error "constant" }
+{
+  typedef A W[4];		// { dg-error "paren" "" { target { ! c++20 } } .+1 }
+  constexpr B () : w ({ A::z, A::z, A::z, A::z }) {} // { dg-error "constant|could not convert" }
   W w;
 };
 

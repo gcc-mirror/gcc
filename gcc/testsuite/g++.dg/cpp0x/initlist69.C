@@ -6,14 +6,14 @@ struct ca {
   T elem[1];
 
   ca(const T (&s)[1]): elem{{s}} { }	   // { dg-error "invalid" }
-  ca(const T (&s)[1],int): elem({{s}}) { } // { dg-error "paren|invalid" }
+  ca(const T (&s)[1],int): elem({{s}}) { } // { dg-error "paren|invalid|too many" }
   ca(const T (&s)[1],char): elem(s) { }	   // { dg-error "array" }
   ca(const T (&s)[1],double): elem{s} { }  // { dg-error "invalid" }
 
   ca(const T &v): elem{{v}} { }	      // OK
   ca(const T &v,int): elem{{{v}}} { } // { dg-error "braces" }
   ca(const T &v,char): elem{v} { }    // OK
-  ca(const T &v,double): elem({v}) { } // { dg-error "paren" }
+  ca(const T &v,double): elem({v}) { } // { dg-error "paren" "" { target { ! c++20 } } }
 };
 
 int main() {

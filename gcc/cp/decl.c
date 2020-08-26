@@ -5557,6 +5557,37 @@ start_decl_1 (tree decl, bool initialized)
   maybe_push_cleanup_level (type);
 }
 
+/* Given a parenthesized list of values INIT, create a CONSTRUCTOR to handle
+   C++20 P0960.  TYPE is the type of the object we're initializing.  */
+
+tree
+do_aggregate_paren_init (tree init, tree type)
+{
+  tree val = TREE_VALUE (init);
+
+  if (TREE_CHAIN (init) == NULL_TREE)
+    {
+      /* If the list has a single element and it's a string literal,
+	 then it's the initializer for the array as a whole.  */
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	  && TREE_CODE (tree_strip_any_location_wrapper (val))
+	     == STRING_CST)
+	return val;
+      /* Handle non-standard extensions like compound literals.  This also
+	 prevents triggering aggregate parenthesized-initialization in
+	 compiler-generated code for =default.  */
+      else if (same_type_ignoring_top_level_qualifiers_p (type,
+							  TREE_TYPE (val)))
+	return val;
+    }
+
+  init = build_constructor_from_list (init_list_type_node, init);
+  CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+  CONSTRUCTOR_IS_PAREN_INIT (init) = true;
+  return init;
+}
+
 /* Handle initialization of references.  DECL, TYPE, and INIT have the
    same meaning as in cp_finish_decl.  *CLEANUP must be NULL on entry,
    but will be set to a new CLEANUP_STMT if a temporary is created
@@ -5604,11 +5635,7 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
 	  /* If the list had more than one element, the code is ill-formed
 	     pre-C++20, so we can build a constructor right away.  */
 	  else
-	    {
-	      init = build_constructor_from_list (init_list_type_node, init);
-	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
-	      CONSTRUCTOR_IS_PAREN_INIT (init) = true;
-	    }
+	    init = do_aggregate_paren_init (init, ttype);
 	}
       else
 	init = build_x_compound_expr_from_list (init, ELK_INIT,
@@ -6794,30 +6821,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	       && TREE_CODE (type) == ARRAY_TYPE
 	       && !DECL_DECOMPOSITION_P (decl)
 	       && (cxx_dialect >= cxx20))
-	{
-	  /* [dcl.init.string] "An array of ordinary character type [...]
-	     can be initialized by an ordinary string literal [...] by an
-	     appropriately-typed string literal enclosed in braces" only
-	     talks about braces, but GCC has always accepted
-
-	       char a[]("foobar");
-
-	     so we continue to do so.  */
-	  tree val = TREE_VALUE (init);
-	  if (TREE_CHAIN (init) == NULL_TREE
-	      && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
-	      && TREE_CODE (tree_strip_any_location_wrapper (val))
-		 == STRING_CST)
-	    /* If the list has a single element and it's a string literal,
-	       then it's the initializer for the array as a whole.  */
-	    init = val;
-	  else
-	    {
-	      init = build_constructor_from_list (init_list_type_node, init);
-	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
-	      CONSTRUCTOR_IS_PAREN_INIT (init) = true;
-	    }
-	}
+	init = do_aggregate_paren_init (init, type);
       else if (TREE_CODE (init) == TREE_LIST
 	       && TREE_TYPE (init) != unknown_type_node
 	       && !MAYBE_CLASS_TYPE_P (type))
