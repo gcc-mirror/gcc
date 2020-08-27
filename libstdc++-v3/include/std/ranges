@@ -3366,12 +3366,20 @@ namespace views
       { return _Iterator<true>(ranges::begin(_M_base)); }
 
       constexpr auto
-      end() requires (!__detail::__simple_view<_Vp>)
-      { return ranges::end(_M_base); }
+      end()
+      { return _Sentinel<false>{ranges::end(_M_base)}; }
 
       constexpr auto
-      end() const requires __detail::__simple_view<_Vp>
-      { return ranges::end(_M_base); }
+      end() requires common_range<_Vp>
+      { return _Iterator<false>{ranges::end(_M_base)}; }
+
+      constexpr auto
+      end() const requires range<const _Vp>
+      { return _Sentinel<true>{ranges::end(_M_base)}; }
+
+      constexpr auto
+      end() const requires common_range<const _Vp>
+      { return _Iterator<true>{ranges::end(_M_base)}; }
 
       constexpr auto
       size() requires sized_range<_Vp>
@@ -3382,6 +3390,9 @@ namespace views
       { return ranges::size(_M_base); }
 
     private:
+      template<bool _Const>
+	struct _Sentinel;
+
       template<bool _Const>
 	struct _Iterator
 	{
@@ -3485,10 +3496,6 @@ namespace views
 	  { return __x._M_current == __y._M_current; }
 
 	  friend constexpr bool
-	  operator==(const _Iterator& __x, const sentinel_t<_Base>& __y)
-	  { return __x._M_current == __y; }
-
-	  friend constexpr bool
 	  operator<(const _Iterator& __x, const _Iterator& __y)
 	    requires random_access_range<_Base>
 	  { return __x._M_current < __y._M_current; }
@@ -3536,15 +3543,54 @@ namespace views
 	    requires random_access_range<_Base>
 	  { return __x._M_current - __y._M_current; }
 
-	  friend constexpr difference_type
-	  operator-(const _Iterator<_Const>& __x, const sentinel_t<_Base>& __y)
-	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
-	  { return __x._M_current - __y; }
+	  friend _Sentinel<_Const>;
+	};
 
-	  friend constexpr difference_type
-	  operator-(const sentinel_t<_Base>& __x, const _Iterator<_Const>& __y)
+      template<bool _Const>
+	struct _Sentinel
+	{
+	private:
+	  constexpr bool
+	  _M_equal(const _Iterator<_Const>& __x) const
+	  { return __x._M_current == _M_end; }
+
+	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
+
+	public:
+	  _Sentinel() = default;
+
+	  constexpr explicit
+	  _Sentinel(sentinel_t<_Base> __end)
+	    : _M_end(std::move(__end))
+	  { }
+
+	  constexpr
+	  _Sentinel(_Sentinel<!_Const> __other)
+	    requires _Const
+	      && convertible_to<sentinel_t<_Vp>, sentinel_t<_Base>>
+	    : _M_end(std::move(__other._M_end))
+	  { }
+
+	  constexpr sentinel_t<_Base>
+	  base() const
+	  { return _M_end; }
+
+	  friend constexpr bool
+	  operator==(const _Iterator<_Const>& __x, const _Sentinel& __y)
+	  { return __y._M_equal(__x); }
+
+	  friend constexpr range_difference_t<_Base>
+	  operator-(const _Iterator<_Const>& __x, const _Sentinel& __y)
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
-	  { return -(__y - __x); }
+	  { return __x._M_current - __y._M_end; }
+
+	  friend constexpr range_difference_t<_Base>
+	  operator-(const _Sentinel& __x, const _Iterator<_Const>& __y)
+	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
+	  { return __x._M_end - __y._M_current; }
+
+	  friend _Sentinel<!_Const>;
 	};
 
       _Vp _M_base = _Vp();
