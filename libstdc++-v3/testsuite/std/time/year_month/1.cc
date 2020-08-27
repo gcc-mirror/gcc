@@ -83,4 +83,16 @@ constexpr_year_month()
   static_assert(2017y/33 + months{0} == 2019y/9);
 
   static_assert(2010y/January + months{-12} == 2009y/January);
+
+  static_assert(2010y/month{0} + months{-1} == 2009y/November);
+  static_assert(2010y/month{0} + months{0} == 2009y/December);
+  static_assert(2010y/month{0} + months{1} == 2010y/January);
+  static_assert(2010y/month{0} + months{2} == 2010y/February);
+  static_assert(2010y/month{0} + months{11} == 2010y/November);
+  static_assert(2010y/month{0} + months{12} == 2010y/December);
+  static_assert(2010y/month{0} + months{13} == 2011y/January);
+
+  static_assert(months{-1} + 2010y/month{37} == 2012y/December);
+  static_assert(months{0} + 2010y/month{37} == 2013y/January);
+  static_assert(months{1} + 2010y/month{37} == 2013y/February);
 }

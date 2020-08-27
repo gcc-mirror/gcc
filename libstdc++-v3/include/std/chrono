@@ -2133,7 +2133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // TODO: Optimize?
 	  auto __m = __ym.month() + __dm;
-	  auto __i = unsigned{__ym.month()} - 1 + __dm.count();
+	  auto __i = int(unsigned(__ym.month())) - 1 + __dm.count();
 	  auto __y = (__i < 0
 		      ? __ym.year() + years{(__i - 11) / 12}
 		      : __ym.year() + years{__i / 12});
