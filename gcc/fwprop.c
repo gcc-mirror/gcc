@@ -292,10 +292,10 @@ build_single_def_use_links (void)
   df_maybe_reorganize_use_refs (DF_REF_ORDER_BY_INSN_WITH_NOTES);
 
   use_def_ref.create (DF_USES_TABLE_SIZE ());
-  use_def_ref.safe_grow_cleared (DF_USES_TABLE_SIZE ());
+  use_def_ref.safe_grow_cleared (DF_USES_TABLE_SIZE (), true);
 
   reg_defs.create (max_reg_num ());
-  reg_defs.safe_grow_cleared (max_reg_num ());
+  reg_defs.safe_grow_cleared (max_reg_num (), true);
 
   reg_defs_stack.create (n_basic_blocks_for_fn (cfun) * 10);
   local_md = BITMAP_ALLOC (NULL);
@@ -975,7 +975,7 @@ update_uses (df_ref use)
 
       /* Set up the use-def chain.  */
       if (DF_REF_ID (use) >= (int) use_def_ref.length ())
-        use_def_ref.safe_grow_cleared (DF_REF_ID (use) + 1);
+	use_def_ref.safe_grow_cleared (DF_REF_ID (use) + 1, true);
 
       if (flag_checking)
 	gcc_assert (sparseset_bit_p (active_defs_check, regno));

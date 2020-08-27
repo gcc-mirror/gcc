@@ -592,7 +592,8 @@ symtab_node::create_reference (symtab_node *referred_node,
 
   list = &ref_list;
   old_references = vec_safe_address (list->references);
-  vec_safe_grow (list->references, vec_safe_length (list->references) + 1);
+  vec_safe_grow (list->references, vec_safe_length (list->references) + 1,
+		 true);
   ref = &list->references->last ();
 
   list2 = &referred_node->ref_list;

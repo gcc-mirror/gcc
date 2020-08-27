@@ -2222,7 +2222,7 @@ predicate_rhs_code (gassign *stmt, tree mask, tree cond,
 
   /* Construct the arguments to the conditional internal function.   */
   auto_vec<tree, 8> args;
-  args.safe_grow (nops + 1);
+  args.safe_grow (nops + 1, true);
   args[0] = mask;
   for (unsigned int i = 1; i < nops; ++i)
     args[i] = gimple_op (stmt, i);

@@ -3764,7 +3764,7 @@ determine_unlikely_bbs ()
   propagate_unlikely_bbs_forward ();
 
   auto_vec<int, 64> nsuccs;
-  nsuccs.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  nsuccs.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
   FOR_ALL_BB_FN (bb, cfun)
     if (!(bb->count == profile_count::zero ())
 	&& bb != EXIT_BLOCK_PTR_FOR_FN (cfun))

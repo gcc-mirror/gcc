@@ -1,3 +1,10 @@
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_function_args): Handle 'in' and 'in ref'
+	parameter storage classes.
+	(dlang_type): Remove identifier type.
+	* testsuite/d-demangle-expected: Update tests.
+
 2020-08-03  Richard Biener  <rguenther@suse.de>
 
 	PR lto/96385

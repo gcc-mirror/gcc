@@ -1948,7 +1948,7 @@ regrename_init (bool insn_info)
   gcc_obstack_init (&rename_obstack);
   insn_rr.create (0);
   if (insn_info)
-    insn_rr.safe_grow_cleared (get_max_uid ());
+    insn_rr.safe_grow_cleared (get_max_uid (), true);
 }
 
 /* Free all global data used by the register renamer.  */

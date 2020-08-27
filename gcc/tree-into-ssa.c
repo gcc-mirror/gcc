@@ -323,7 +323,7 @@ get_ssa_name_ann (tree name)
 
   /* Re-allocate the vector at most once per update/into-SSA.  */
   if (ver >= len)
-    info_for_ssa_name.safe_grow_cleared (num_ssa_names);
+    info_for_ssa_name.safe_grow_cleared (num_ssa_names, true);
 
   /* But allocate infos lazily.  */
   info = info_for_ssa_name[ver];
@@ -944,7 +944,7 @@ mark_phi_for_rewrite (basic_block bb, gphi *phi)
     {
       n = (unsigned) last_basic_block_for_fn (cfun) + 1;
       if (phis_to_rewrite.length () < n)
-	phis_to_rewrite.safe_grow_cleared (n);
+	phis_to_rewrite.safe_grow_cleared (n, true);
 
       phis = phis_to_rewrite[idx];
       gcc_assert (!phis.exists ());

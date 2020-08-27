@@ -1255,4 +1255,8 @@ add-aix-fat-library: all-multi
 	  arx=`echo $(AR) | sed -e 's/-X[^ ]*//g'`; \
 	  $${arx} -X$(AIX_EXTRA_ARCH) rc .libs/$(PACKAGE).a ../ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
 	  $${arx} -X$(AIX_EXTRA_ARCH) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR); \
+	  $${arx} -X$(AIX_EXTRA_ARCH) rc libgobegin.a ../ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/$(libgobegin_a_OBJECTS); \
+	  $${arx} -X$(AIX_EXTRA_ARCH) rc ../pthread/$(PACKAGE)/libgobegin.a ../pthread/ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/$(libgobegin_a_OBJECTS); \
+	  $${arx} -X$(AIX_EXTRA_ARCH) rc libgolibbegin.a ../ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/$(libgolibbegin_a_OBJECTS); \
+	  $${arx} -X$(AIX_EXTRA_ARCH) rc ../pthread/$(PACKAGE)/libgolibbegin.a ../pthread/ppc$(AIX_EXTRA_ARCH)/$(PACKAGE)/$(libgolibbegin_a_OBJECTS); \
 	fi

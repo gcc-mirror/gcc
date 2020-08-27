@@ -3372,8 +3372,8 @@ vectorizable_call (vec_info *vinfo,
   if (modifier == NONE || ifn != IFN_LAST)
     {
       tree prev_res = NULL_TREE;
-      vargs.safe_grow (nargs);
-      orig_vargs.safe_grow (nargs);
+      vargs.safe_grow (nargs, true);
+      orig_vargs.safe_grow (nargs, true);
       auto_vec<vec<tree> > vec_defs (nargs);
       for (j = 0; j < ncopies; ++j)
 	{
@@ -4020,7 +4020,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		== SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP))
 	  {
 	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_grow_cleared (i * 3
-									+ 1);
+									+ 1,
+								      true);
 	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (arginfo[i].op);
 	    tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
 		       ? size_type_node : TREE_TYPE (arginfo[i].op);
@@ -4060,8 +4061,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   auto_vec<vec<tree> > vec_oprnds;
   auto_vec<unsigned> vec_oprnds_i;
-  vec_oprnds.safe_grow_cleared (nargs);
-  vec_oprnds_i.safe_grow_cleared (nargs);
+  vec_oprnds.safe_grow_cleared (nargs, true);
+  vec_oprnds_i.safe_grow_cleared (nargs, true);
   for (j = 0; j < ncopies; ++j)
     {
       /* Build argument list for the vectorized call.  */
@@ -6356,7 +6357,7 @@ scan_store_can_perm_p (tree vectype, tree init,
       if (use_whole_vector)
 	{
 	  if (kind != scan_store_kind_perm && use_whole_vector->is_empty ())
-	    use_whole_vector->safe_grow_cleared (i);
+	    use_whole_vector->safe_grow_cleared (i, true);
 	  if (kind != scan_store_kind_perm || !use_whole_vector->is_empty ())
 	    use_whole_vector->safe_push (kind);
 	}
@@ -7839,7 +7840,7 @@ vectorizable_store (vec_info *vinfo,
   tree vec_mask = NULL;
   auto_vec<tree> vec_offsets;
   auto_vec<vec<tree> > gvec_oprnds;
-  gvec_oprnds.safe_grow_cleared (group_size);
+  gvec_oprnds.safe_grow_cleared (group_size, true);
   for (j = 0; j < ncopies; j++)
     {
       gimple *new_stmt;

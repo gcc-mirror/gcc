@@ -9742,7 +9742,8 @@ build_vtbl_initializer (tree binfo,
     {
       int n_entries = vec_safe_length (vid.inits);
 
-      vec_safe_grow (vid.inits, TARGET_VTABLE_DATA_ENTRY_DISTANCE * n_entries);
+      vec_safe_grow (vid.inits, TARGET_VTABLE_DATA_ENTRY_DISTANCE * n_entries,
+		     true);
 
       /* Move data entries into their new positions and add padding
 	 after the new positions.  Iterate backwards so we don't
@@ -9774,7 +9775,7 @@ build_vtbl_initializer (tree binfo,
      order.  Straighten them out and add them to the running list in one
      step.  */
   jx = vec_safe_length (*inits);
-  vec_safe_grow (*inits, jx + vid.inits->length ());
+  vec_safe_grow (*inits, jx + vid.inits->length (), true);
 
   for (ix = vid.inits->length () - 1;
        vid.inits->iterate (ix, &e);

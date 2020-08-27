@@ -59,7 +59,7 @@ void
 set_ssa_name_value (tree name, tree value)
 {
   if (SSA_NAME_VERSION (name) >= ssa_name_values.length ())
-    ssa_name_values.safe_grow_cleared (SSA_NAME_VERSION (name) + 1);
+    ssa_name_values.safe_grow_cleared (SSA_NAME_VERSION (name) + 1, true);
   if (value && TREE_OVERFLOW_P (value))
     value = drop_tree_overflow (value);
   ssa_name_values[SSA_NAME_VERSION (name)] = value;

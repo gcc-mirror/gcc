@@ -2503,6 +2503,10 @@ func (b *Builder) gccArchArgs() []string {
 		if cfg.Goos == "aix" {
 			return []string{"-maix64"}
 		}
+	case "ppc":
+		if cfg.Goos == "aix" {
+			return []string{"-maix32"}
+		}
 	}
 	return nil
 }

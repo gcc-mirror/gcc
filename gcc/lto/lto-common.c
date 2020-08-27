@@ -2227,7 +2227,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
 
   /* Create vector for fast access of resolution.  We do this lazily
      to save memory.  */
-  resolutions.safe_grow_cleared (file_data->max_index + 1);
+  resolutions.safe_grow_cleared (file_data->max_index + 1, true);
   for (i = 0; file_data->respairs.iterate (i, &rp); i++)
     resolutions[rp->index] = rp->res;
   file_data->respairs.release ();

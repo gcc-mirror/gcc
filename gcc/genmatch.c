@@ -2122,7 +2122,7 @@ capture_info::capture_info (simplify *s, operand *result, bool gimple_)
     }
 
   force_no_side_effects = 0;
-  info.safe_grow_cleared (s->capture_max + 1);
+  info.safe_grow_cleared (s->capture_max + 1, true);
   for (int i = 0; i <= s->capture_max; ++i)
     info[i].same_as = i;
 
@@ -5050,7 +5050,7 @@ parser::finish_match_operand (operand *op)
   /* Look for matching captures, diagnose mis-uses of @@ and apply
      early lowering and distribution of value_match.  */
   auto_vec<vec<capture *> > cpts;
-  cpts.safe_grow_cleared (capture_ids->elements ());
+  cpts.safe_grow_cleared (capture_ids->elements (), true);
   walk_captures (op, cpts);
   for (unsigned i = 0; i < cpts.length (); ++i)
     {

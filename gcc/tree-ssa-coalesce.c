@@ -541,7 +541,7 @@ ssa_conflicts_new (unsigned size)
   ptr = XNEW (ssa_conflicts);
   bitmap_obstack_initialize (&ptr->obstack);
   ptr->conflicts.create (size);
-  ptr->conflicts.safe_grow_cleared (size);
+  ptr->conflicts.safe_grow_cleared (size, true);
   return ptr;
 }
 

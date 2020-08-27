@@ -2210,11 +2210,11 @@ Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(
 
 fprofile-filter-files=
 Common Joined RejectNegative Var(flag_profile_filter_files)
-Instrument only functions from files where names match any regular expression (separated by a semi-colon).
+Instrument only functions from files whose name matches any of the regular expressions (separated by semi-colons).
 
 fprofile-exclude-files=
 Common Joined RejectNegative Var(flag_profile_exclude_files)
-Instrument only functions from files where names do not match all the regular expressions (separated by a semi-colon).
+Instrument only functions from files whose name does not match any of the regular expressions (separated by semi-colons).
 
 Enum
 Name(profile_reproducibility) Type(enum profile_reproducibility) UnknownError(unknown profile reproducibility method %qs)

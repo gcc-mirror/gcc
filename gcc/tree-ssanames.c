@@ -287,7 +287,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
       t = make_node (SSA_NAME);
       SSA_NAME_VERSION (t) = version;
       if (version >= SSANAMES (fn)->length ())
-	vec_safe_grow_cleared (SSANAMES (fn), version + 1);
+	vec_safe_grow_cleared (SSANAMES (fn), version + 1, true);
       gcc_assert ((*SSANAMES (fn))[version] == NULL);
       (*SSANAMES (fn))[version] = t;
       ssa_name_nodes_created++;

@@ -39302,7 +39302,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       TREE_VEC_ELT (incrv, i) = incr;
       if (orig_init)
 	{
-	  orig_inits.safe_grow_cleared (i + 1);
+	  orig_inits.safe_grow_cleared (i + 1, true);
 	  orig_inits[i] = orig_init;
 	}
       if (orig_decl)

@@ -3365,9 +3365,9 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 
       b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 2 + !zero_p;
       if (buckets.length () <= b)
-	buckets.safe_grow_cleared (b + 1);
+	buckets.safe_grow_cleared (b + 1, true);
       if (chains.length () <= (unsigned) i)
-	chains.safe_grow (i + 1);
+	chains.safe_grow (i + 1, true);
       chains[i] = buckets[b];
       buckets[b] = i + 1;
     }
@@ -5651,13 +5651,20 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
 
       if (!binrhsisreassoc)
 	{
-	  if (!try_special_add_to_ops (ops, rhscode, binrhs, binrhsdef))
+	  bool swap = false;
+	  if (try_special_add_to_ops (ops, rhscode, binrhs, binrhsdef))
+	    /* If we add ops for the rhs we expect to be able to recurse
+	       to it via the lhs during expression rewrite so swap
+	       operands.  */
+	    swap = true;
+	  else
 	    add_to_ops_vec (ops, binrhs);
 
 	  if (!try_special_add_to_ops (ops, rhscode, binlhs, binlhsdef))
 	    add_to_ops_vec (ops, binlhs);
 
-	  return;
+	  if (!swap)
+	    return;
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5676,6 +5683,8 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
 	  fprintf (dump_file, " is now ");
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
+      if (!binrhsisreassoc)
+	return;
 
       /* We want to make it so the lhs is always the reassociative op,
 	 so swap.  */

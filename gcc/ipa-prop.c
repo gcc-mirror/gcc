@@ -276,7 +276,7 @@ ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 
   if (!info->descriptors && param_count)
     {
-      vec_safe_grow_cleared (info->descriptors, param_count);
+      vec_safe_grow_cleared (info->descriptors, param_count, true);
       return true;
     }
   else
@@ -906,7 +906,7 @@ parm_bb_aa_status_for_bb (struct ipa_func_body_info *fbi, basic_block bb,
   gcc_checking_assert (fbi);
   struct ipa_bb_info *bi = ipa_get_bb_info (fbi, bb);
   if (bi->param_aa_statuses.is_empty ())
-    bi->param_aa_statuses.safe_grow_cleared (fbi->param_count);
+    bi->param_aa_statuses.safe_grow_cleared (fbi->param_count, true);
   struct ipa_param_aa_status *paa = &bi->param_aa_statuses[index];
   if (!paa->valid)
     {
@@ -2113,9 +2113,9 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
   if (arg_num == 0 || args->jump_functions)
     return;
-  vec_safe_grow_cleared (args->jump_functions, arg_num);
+  vec_safe_grow_cleared (args->jump_functions, arg_num, true);
   if (flag_devirtualize)
-    vec_safe_grow_cleared (args->polymorphic_call_contexts, arg_num);
+    vec_safe_grow_cleared (args->polymorphic_call_contexts, arg_num, true);
 
   if (gimple_call_internal_p (call))
     return;
@@ -2877,7 +2877,7 @@ ipa_analyze_node (struct cgraph_node *node)
   fbi.node = node;
   fbi.info = IPA_NODE_REF (node);
   fbi.bb_infos = vNULL;
-  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
   fbi.param_count = ipa_get_param_count (info);
   fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
@@ -3024,7 +3024,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		  if (!dst_ctx)
 		    {
 		      vec_safe_grow_cleared (args->polymorphic_call_contexts,
-					     count);
+					     count, true);
 		      dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
 		    }
 
@@ -3095,7 +3095,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		      if (!dst_ctx)
 			{
 			  vec_safe_grow_cleared (args->polymorphic_call_contexts,
-					         count);
+						 count, true);
 			  dst_ctx = ipa_get_ith_polymorhic_call_context (args, i);
 			}
 		      dst_ctx->combine_with (ctx);
@@ -4900,9 +4900,9 @@ ipa_read_edge_info (class lto_input_block *ib,
   if (prevails && e->possibly_call_in_translation_unit_p ())
     {
       class ipa_edge_args *args = IPA_EDGE_REF_GET_CREATE (e);
-      vec_safe_grow_cleared (args->jump_functions, count);
+      vec_safe_grow_cleared (args->jump_functions, count, true);
       if (contexts_computed)
-	vec_safe_grow_cleared (args->polymorphic_call_contexts, count);
+	vec_safe_grow_cleared (args->polymorphic_call_contexts, count, true);
       for (int k = 0; k < count; k++)
 	{
 	  ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), e,
@@ -5197,7 +5197,7 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
     {
       ipcp_transformation_initialize ();
       ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
-      vec_safe_grow_cleared (ts->m_vr, count);
+      vec_safe_grow_cleared (ts->m_vr, count, true);
       for (i = 0; i < count; i++)
 	{
 	  ipa_vr *parm_vr;
@@ -5219,7 +5219,7 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
     {
       ipcp_transformation_initialize ();
       ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
-      vec_safe_grow_cleared (ts->bits, count);
+      vec_safe_grow_cleared (ts->bits, count, true);
 
       for (i = 0; i < count; i++)
 	{
@@ -5754,11 +5754,11 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.node = node;
   fbi.info = NULL;
   fbi.bb_infos = vNULL;
-  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
   fbi.param_count = param_count;
   fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
-  vec_safe_grow_cleared (descriptors, param_count);
+  vec_safe_grow_cleared (descriptors, param_count, true);
   ipa_populate_param_decls (node, *descriptors);
   calculate_dominance_info (CDI_DOMINATORS);
   ipcp_modif_dom_walker (&fbi, descriptors, aggval, &something_changed,

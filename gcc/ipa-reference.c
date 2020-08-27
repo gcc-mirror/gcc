@@ -1057,7 +1057,7 @@ ipa_reference_write_optimization_summary (void)
   int i;
 
   vec_alloc (reference_vars_to_consider, ipa_reference_vars_uids);
-  reference_vars_to_consider->safe_grow (ipa_reference_vars_uids);
+  reference_vars_to_consider->safe_grow (ipa_reference_vars_uids, true);
 
   /* See what variables we are interested in.  */
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)

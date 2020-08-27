@@ -2987,7 +2987,7 @@ final_warning_record::grow_type_warnings (unsigned newlen)
   unsigned len = type_warnings.length ();
   if (newlen > len)
     {
-      type_warnings.safe_grow_cleared (newlen);
+      type_warnings.safe_grow_cleared (newlen, true);
       for (unsigned i = len; i < newlen; i++)
 	type_warnings[i].dyn_count = profile_count::zero ();
     }
@@ -4146,7 +4146,7 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
       /* If this is first time we see the enum, remember its definition.  */
       if (!existed_p)
 	{
-	  this_enum.vals.safe_grow_cleared (nvals);
+	  this_enum.vals.safe_grow_cleared (nvals, true);
 	  this_enum.warned = false;
 	  if (dump_file)
 	    fprintf (dump_file, "enum %s\n{\n", name);

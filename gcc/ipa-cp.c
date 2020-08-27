@@ -3325,12 +3325,12 @@ gather_context_independent_values (class ipa_node_params *info,
 
   known_csts->create (0);
   known_contexts->create (0);
-  known_csts->safe_grow_cleared (count);
-  known_contexts->safe_grow_cleared (count);
+  known_csts->safe_grow_cleared (count, true);
+  known_contexts->safe_grow_cleared (count, true);
   if (known_aggs)
     {
       known_aggs->create (0);
-      known_aggs->safe_grow_cleared (count);
+      known_aggs->safe_grow_cleared (count, true);
     }
 
   if (removable_params_cost)
@@ -4823,7 +4823,8 @@ find_more_contexts_for_caller_subset (cgraph_node *node,
 	    }
 
 	  if (!known_contexts->exists ())
-	    known_contexts->safe_grow_cleared (ipa_get_param_count (info));
+	    known_contexts->safe_grow_cleared (ipa_get_param_count (info),
+					       true);
 	  (*known_contexts)[i] = newval;
 	}
 

@@ -1,3 +1,113 @@
+2020-08-26  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/387-7.c: Add dg-require-effective-target c99_runtime.
+	* gcc.target/i386/387-9.c: Likewise.
+	* g++.target/i386/avx512bw-pr96246-1.C: Likewise.
+	* gcc.target/i386/avx512f-rint-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-rintf-sfix-vec-2.c: Likewise.
+	* g++.target/i386/avx512vl-pr96246-1.C: Likewise.
+	* gcc.target/i386/pr61403.c: Likewise.
+	* gcc.target/i386/sse4_1-ceil-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-ceilf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-floor-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-floorf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-rint-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-rintf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-round-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-roundf-sfix-vec.c: Likewise.
+
+2020-08-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96802
+	* gcc.target/i386/pr96802-1.c: New test.
+	* gcc.target/i386/pr96802-2.c: Likewise.
+
+2020-08-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/emulate-srli.c: Fix expected assembler text.
+	* gcc.target/msp430/max-inline-shift-430-no-opt.c: New test.
+	* gcc.target/msp430/max-inline-shift-430.c: New test.
+	* gcc.target/msp430/max-inline-shift-430x.c: New test.
+
+2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	* gcc.dg/vect/pr96698.c: New testcase.
+
+2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96783
+	* gcc.dg/vect/pr96783-1.c: New testcase.
+	* gcc.dg/vect/pr96783-2.c: Likewise.
+
+2020-08-26  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/operator-1.C: New.
+	* g++.dg/lookup/operator-2.C: New.
+
+2020-08-26  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* gcc.target/aarch64/insv_1.c: Add '#' in scan-assembler
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96156
+	* gdc.dg/pr96156.d: New test.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96153
+	* gdc.dg/pr96153.d: Add new tests.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96157
+	* gdc.dg/pr96157a.d: New test.
+	* gdc.dg/pr96157b.d: New test.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc-utils.exp (gdc-convert-test): Clear PERMUTE_ARGS for
+	fail_compilation tests if not set by test file.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* lib/target-supports-dg.exp: Add dg-require-symver.
+	* lib/target-supports.exp: Likewise.
+	* gcc.dg/ipa/symver1.c: New test.
+
+2020-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-target-4.f90: New test.
+	* gfortran.dg/gomp/declare-target-5.f90: New test.
+
+2020-08-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96667
+	* gcc.target/i386/avx512bw-pr96246-1.c: Moved to...
+	* g++.target/i386/avx512bw-pr96246-1.C: ...here.
+	* gcc.target/i386/avx512bw-pr96246-2.c: Moved to...
+	* g++.target/i386/avx512bw-pr96246-2.C: ...here.
+	* gcc.target/i386/avx512vl-pr96246-1.c: Moved to...
+	* g++.target/i386/avx512vl-pr96246-1.C: ...here.
+	* gcc.target/i386/avx512vl-pr96246-2.c: Moved to...
+	* g++.target/i386/avx512vl-pr96246-2.C: ...here.
+
+2020-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94858
+	* gcc.dg/analyzer/loop-start-up-to-end-by-1.c: Remove xfail.
+	* gcc.dg/analyzer/pr94858-1.c: New test.
+	* gcc.dg/analyzer/pr94858-2.c: New test.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-2.c: Update expected number
+	of enodes.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-3.c: Likewise.
+
+2020-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96777
+	* gcc.dg/analyzer/pr96777.c: New test.
+
 2020-08-25  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95863

@@ -4480,7 +4480,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	  if (clauses->orderedc)
 	    {
 	      if (doacross_steps == NULL)
-		vec_safe_grow_cleared (doacross_steps, clauses->orderedc);
+		vec_safe_grow_cleared (doacross_steps, clauses->orderedc, true);
 	      (*doacross_steps)[i] = step;
 	    }
 	}

@@ -24833,14 +24833,27 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
   rtx call[2];
   rtx insn;
+  rtx r12 = NULL_RTX;
+  rtx func_addr = func_desc;
 
   gcc_assert (INTVAL (cookie) == 0);
 
   if (global_tlsarg)
     tlsarg = global_tlsarg;
 
+  /* For ELFv2, r12 and CTR need to hold the function address
+     for an indirect call.  */
+  if (GET_CODE (func_desc) != SYMBOL_REF && DEFAULT_ABI == ABI_ELFv2)
+    {
+      r12 = gen_rtx_REG (Pmode, 12);
+      if (!rtx_equal_p (r12, func_desc))
+	emit_move_insn (r12, func_desc);
+      func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+      emit_move_insn (func_addr, r12);
+    }
+
   /* Create the call.  */
-  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_desc), tlsarg);
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
@@ -24853,6 +24866,10 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (!rs6000_pcrel_p (cfun))
     use_reg (&CALL_INSN_FUNCTION_USAGE (insn),
 	     gen_rtx_REG (Pmode, TOC_REGNUM));
+
+  /* Note use of r12.  */
+  if (r12)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r12);
 }
 
 /* Expand code to perform a call under the SYSV4 ABI.  */

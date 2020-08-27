@@ -16487,7 +16487,11 @@ iamcu_alignment (tree type, int align)
 
   /* Intel MCU psABI specifies scalar types > 4 bytes aligned to 4
      bytes.  */
-  mode = TYPE_MODE (strip_array_types (type));
+  type = strip_array_types (type);
+  if (TYPE_ATOMIC (type))
+    return align;
+
+  mode = TYPE_MODE (type);
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_INT:
@@ -16644,7 +16648,8 @@ ix86_local_alignment (tree exp, machine_mode mode,
       && align == 64
       && ix86_preferred_stack_boundary < 64
       && (mode == DImode || (type && TYPE_MODE (type) == DImode))
-      && (!type || !TYPE_USER_ALIGN (type))
+      && (!type || (!TYPE_USER_ALIGN (type)
+		    && !TYPE_ATOMIC (strip_array_types (type))))
       && (!decl || !DECL_USER_ALIGN (decl)))
     align = 32;
 
@@ -16757,7 +16762,8 @@ ix86_minimum_alignment (tree exp, machine_mode mode,
   /* Don't do dynamic stack realignment for long long objects with
      -mpreferred-stack-boundary=2.  */
   if ((mode == DImode || (type && TYPE_MODE (type) == DImode))
-      && (!type || !TYPE_USER_ALIGN (type))
+      && (!type || (!TYPE_USER_ALIGN (type)
+		    && !TYPE_ATOMIC (strip_array_types (type))))
       && (!decl || !DECL_USER_ALIGN (decl)))
     {
       gcc_checking_assert (!TARGET_STV);
@@ -20293,11 +20299,30 @@ x86_field_alignment (tree type, int computed)
     return computed;
   if (TARGET_IAMCU)
     return iamcu_alignment (type, computed);
-  mode = TYPE_MODE (strip_array_types (type));
+  type = strip_array_types (type);
+  mode = TYPE_MODE (type);
   if (mode == DFmode || mode == DCmode
       || GET_MODE_CLASS (mode) == MODE_INT
       || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
-    return MIN (32, computed);
+    {
+      if (TYPE_ATOMIC (type) && computed > 32)
+	{
+	  static bool warned;
+
+	  if (!warned && warn_psabi)
+	    {
+	      const char *url
+		= CHANGES_ROOT_URL "gcc-11/changes.html#ia32_atomic";
+
+	      warned = true;
+	      inform (input_location, "the alignment of %<_Atomic %T%> "
+				      "fields changed in %{GCC 11.1%}",
+		      TYPE_MAIN_VARIANT (type), url);
+	    }
+	}
+      else
+      return MIN (32, computed);
+    }
   return computed;
 }
 

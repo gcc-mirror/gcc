@@ -97,7 +97,7 @@ generic_subrtx_iterator <T>::add_single_to_queue (array_type &array,
       /* A previous iteration might also have moved from the stack to the
 	 heap, in which case the heap array will already be big enough.  */
       if (vec_safe_length (array.heap) <= i)
-	vec_safe_grow (array.heap, i + 1);
+	vec_safe_grow (array.heap, i + 1, true);
       base = array.heap->address ();
       memcpy (base, array.stack, sizeof (array.stack));
       base[LOCAL_ELEMS] = x;

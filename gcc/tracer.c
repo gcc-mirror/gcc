@@ -257,7 +257,7 @@ static bool
 tail_duplicate (void)
 {
   auto_vec<fibonacci_node<long, basic_block_def>*> blocks;
-  blocks.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  blocks.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 
   basic_block *trace = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   int *counts = XNEWVEC (int, last_basic_block_for_fn (cfun));

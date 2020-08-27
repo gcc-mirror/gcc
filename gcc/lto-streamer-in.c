@@ -610,7 +610,7 @@ input_eh_regions (class lto_input_block *ib, class data_in *data_in,
   gcc_assert (len == (int) len);
   if (len > 0)
     {
-      vec_safe_grow_cleared (fn->eh->region_array, len);
+      vec_safe_grow_cleared (fn->eh->region_array, len, true);
       for (i = 0; i < len; i++)
 	{
 	  eh_region r = input_eh_region (ib, data_in, i);
@@ -623,7 +623,7 @@ input_eh_regions (class lto_input_block *ib, class data_in *data_in,
   gcc_assert (len == (int) len);
   if (len > 0)
     {
-      vec_safe_grow_cleared (fn->eh->lp_array, len);
+      vec_safe_grow_cleared (fn->eh->lp_array, len, true);
       for (i = 0; i < len; i++)
 	{
 	  eh_landing_pad lp = input_eh_lp (ib, data_in, i);
@@ -636,7 +636,7 @@ input_eh_regions (class lto_input_block *ib, class data_in *data_in,
   gcc_assert (len == (int) len);
   if (len > 0)
     {
-      vec_safe_grow_cleared (fn->eh->ttype_data, len);
+      vec_safe_grow_cleared (fn->eh->ttype_data, len, true);
       for (i = 0; i < len; i++)
 	{
 	  tree ttype = stream_read_tree (ib, data_in);
@@ -651,7 +651,7 @@ input_eh_regions (class lto_input_block *ib, class data_in *data_in,
     {
       if (targetm.arm_eabi_unwinder)
 	{
-	  vec_safe_grow_cleared (fn->eh->ehspec_data.arm_eabi, len);
+	  vec_safe_grow_cleared (fn->eh->ehspec_data.arm_eabi, len, true);
 	  for (i = 0; i < len; i++)
 	    {
 	      tree t = stream_read_tree (ib, data_in);
@@ -660,7 +660,7 @@ input_eh_regions (class lto_input_block *ib, class data_in *data_in,
 	}
       else
 	{
-	  vec_safe_grow_cleared (fn->eh->ehspec_data.other, len);
+	  vec_safe_grow_cleared (fn->eh->ehspec_data.other, len, true);
 	  for (i = 0; i < len; i++)
 	    {
 	      uchar c = streamer_read_uchar (ib);
@@ -712,10 +712,10 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
 
   last_basic_block_for_fn (fn) = bb_count;
   if (bb_count > basic_block_info_for_fn (fn)->length ())
-    vec_safe_grow_cleared (basic_block_info_for_fn (fn), bb_count);
+    vec_safe_grow_cleared (basic_block_info_for_fn (fn), bb_count, true);
 
   if (bb_count > label_to_block_map_for_fn (fn)->length ())
-    vec_safe_grow_cleared (label_to_block_map_for_fn (fn), bb_count);
+    vec_safe_grow_cleared (label_to_block_map_for_fn (fn), bb_count, true);
 
   index = streamer_read_hwi (ib);
   while (index != -1)
@@ -963,7 +963,7 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
   if (len > 0)
     {
       int i;
-      vec_safe_grow_cleared (fn->local_decls, len);
+      vec_safe_grow_cleared (fn->local_decls, len, true);
       for (i = 0; i < len; i++)
 	{
 	  tree t = stream_read_tree (ib, data_in);
@@ -1058,7 +1058,7 @@ input_function (tree fn_decl, class data_in *data_in,
   if (n_debugargs)
     {
       vec<tree, va_gc> **debugargs = decl_debug_args_insert (fn_decl);
-      vec_safe_grow (*debugargs, n_debugargs);
+      vec_safe_grow (*debugargs, n_debugargs, true);
       for (unsigned i = 0; i < n_debugargs; ++i)
 	(**debugargs)[i] = stream_read_tree (ib, data_in);
     }

@@ -412,7 +412,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       return;
     }
 
-  bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
   edge_gcov_counts = new hash_map<edge,gcov_type>;
 
   /* Attach extra info block to each bb.  */

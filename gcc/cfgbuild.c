@@ -657,7 +657,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
   basic_block bb, min, max;
   bool found = false;
   auto_vec<unsigned int> n_succs;
-  n_succs.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  n_succs.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 
   FOR_EACH_BB_FN (bb, cfun)
     SET_STATE (bb,

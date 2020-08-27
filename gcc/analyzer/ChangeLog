@@ -1,3 +1,30 @@
+2020-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94858
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_widening_svalue): Assert that
+	neither of the inputs are themselves widenings.
+	* store.cc (store::eval_alias_1): The initial value of a pointer
+	can't point to a region that was allocated on the heap after the
+	beginning of the path.  A widened pointer value can't alias anything
+	that the initial pointer value can't alias.
+	* svalue.cc (svalue::can_merge_p): Merge BINOP (X, OP, CST) with X
+	to a widening svalue.  Merge
+	BINOP(WIDENING(BASE, BINOP(BASE, X)), X) and BINOP(BASE, X) to
+	to the LHS of the first BINOP.
+
+2020-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96777
+	* region-model.h (class compound_svalue): Document that all keys
+	must be concrete.
+	(compound_svalue::compound_svalue): Move definition to svalue.cc.
+	* store.cc (binding_map::apply_ctor_to_region): Handle
+	initializers for trailing arrays with incomplete size.
+	* svalue.cc (compound_svalue::compound_svalue): Move definition
+	here from region-model.h.  Add assertion that all keys are
+	concrete.
+
 2020-08-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94851

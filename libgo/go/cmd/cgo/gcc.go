@@ -1573,6 +1573,10 @@ func (p *Package) gccMachine() []string {
 		if goos == "aix" {
 			return []string{"-maix64"}
 		}
+	case "ppc":
+		if goos == "aix" {
+			return []string{"-maix32"}
+		}
 	}
 	return nil
 }
@@ -1615,7 +1619,6 @@ func (p *Package) gccCmd() []string {
 	c = append(c, p.GccOptions...)
 	c = append(c, p.gccMachine()...)
 	if goos == "aix" {
-		c = append(c, "-maix64")
 		c = append(c, "-mcmodel=large")
 	}
 	c = append(c, "-") //read input from standard input

@@ -1,3 +1,63 @@
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd e49192807
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96156
+	* d-frontend.cc (retStyle): Only return RETstack for struct and static
+	array types.
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Use NRVO return
+	for all TREE_ADDRESSABLE types.  Set shidden to the RESULT_DECL.
+	* expr.cc (ExprVisitor::visit (CallExp *)): Force TARGET_EXPR if the
+	'this' pointer reference is a CONSTRUCTOR.
+	(ExprVisitor::visit (StructLiteralExp *)): Generate assignment to the
+	symbol to initialize with literal.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Detect returning
+	struct literals and write directly into the RESULT_DECL.
+	* dmd/MERGE: Merge upstream dmd fe5f388d8.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd cb4a96fae
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_parse_file): Use read() to load contents from stdin,
+	allow the front-end to free the memory after parsing.
+	* dmd/MERGE: Merge upstream dmd 2cc25c219.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96153
+	* d-codegen.cc (build_address): Create a temporary for CALL_EXPRs
+	returning trivial aggregates, pre-filling it with zeroes.
+	(build_memset_call): Use build_zero_cst if setting the entire object.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96157
+	* d-codegen.cc (d_build_call): Handle TREE_ADDRESSABLE static arrays.
+	* types.cc (make_array_type): Propagate TREE_ADDRESSABLE from base
+	type to static array.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-gimplify.cc (d_gimplify_expr): Move lowering of each tree node to
+	separate functions.
+	(d_gimplify_modify_expr): New function.
+	(d_gimplify_addr_expr): New function.
+	(d_gimplify_call_expr): New function.
+	(d_gimplify_unsigned_rshift_expr): New function.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_OBJS): Add d-gimplify.o.
+	* d-lang.cc (empty_modify_p): Move to d-gimplify.cc.
+	(d_gimplify_expr): Likewise.
+	* d-tree.h (d_gimplify_expr): Declare.
+	* d-gimplify.cc: New file.
+
 2020-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 1b5a53d01.

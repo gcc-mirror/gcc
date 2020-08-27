@@ -170,6 +170,9 @@ test1 (void *q, int x)
   r = (char *) L"abcd\0efg";
   if (__builtin_object_size (r + 2, 3) != sizeof (L"abcd\0efg") - 2)
     abort ();
+  /* Prevent DSE from removing calls that prevent bad combining of
+     addresses and offsets.  */
+  asm volatile ("" : : "g" (&a));
 }
 
 size_t l1 = 1;

@@ -1177,7 +1177,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 
 	gcc_assert (tk_index - TK_VMI_CLASS_TYPES + 1 == nbases);
 
-	vec_safe_grow (init_vec, nbases);
+	vec_safe_grow (init_vec, nbases, true);
 	/* Generate the base information initializer.  */
 	for (unsigned ix = nbases; ix--;)
 	  {
