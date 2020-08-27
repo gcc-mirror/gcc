@@ -94,12 +94,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			(_Period1::den / __gcd_den::value) * _Period2::den>;
 
     public:
-      using type = chrono::duration<__cr, __r>;
+      using type = chrono::duration<__cr, typename __r::type>;
     };
-
-  template<typename _Period1, typename _Period2>
-    struct __duration_common_type<__failure_type, _Period1, _Period2>
-    { typedef __failure_type type; };
 
   /// @endcond
 
@@ -108,8 +104,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Rep1, typename _Period1, typename _Rep2, typename _Period2>
     struct common_type<chrono::duration<_Rep1, _Period1>,
 		       chrono::duration<_Rep2, _Period2>>
-    : __duration_common_type<common_type<_Rep1, _Rep2>, _Period1, _Period2>
+    : __duration_common_type<common_type<_Rep1, _Rep2>,
+			     typename _Period1::type,
+			     typename _Period2::type>
     { };
+
+  /// Specialization of common_type for two identical chrono::duration types.
+  /// @relates duration
+  template<typename _Rep, typename _Period>
+    struct common_type<chrono::duration<_Rep, _Period>,
+		       chrono::duration<_Rep, _Period>>
+    { using type = chrono::duration<_Rep, typename _Period::type>; };
+
+  /// Specialization of common_type for one chrono::duration type.
+  /// @relates duration
+  template<typename _Rep, typename _Period>
+    struct common_type<chrono::duration<_Rep, _Period>>
+    { using type = chrono::duration<_Rep, typename _Period::type>; };
 
   // 20.11.4.3 specialization of common_type (for time_point, sfinae-friendly)
 
@@ -134,6 +145,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       chrono::time_point<_Clock, _Duration2>>
     : __timepoint_common_type<common_type<_Duration1, _Duration2>, _Clock>
     { };
+
+  /// Specialization of common_type for two identical chrono::time_point types.
+  /// @relates time_point
+  template<typename _Clock, typename _Duration>
+    struct common_type<chrono::time_point<_Clock, _Duration>,
+		       chrono::time_point<_Clock, _Duration>>
+    { using type = chrono::time_point<_Clock, _Duration>; };
+
+  /// Specialization of common_type for one chrono::time_point type.
+  /// @relates time_point
+  template<typename _Clock, typename _Duration>
+    struct common_type<chrono::time_point<_Clock, _Duration>>
+    { using type = chrono::time_point<_Clock, _Duration>; };
 
   // @} group chrono
 
@@ -401,8 +425,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       public:
 
-	typedef _Rep						rep;
-	typedef _Period 					period;
+	using rep = _Rep;
+	using period = typename _Period::type;
 
 	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
 	static_assert(__is_ratio<_Period>::value,
@@ -438,11 +462,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return __r; }
 
 	// 20.11.5.3 arithmetic
-	constexpr duration
+
+	constexpr duration<rep, period>
 	operator+() const
 	{ return *this; }
 
-	constexpr duration
+	constexpr duration<rep, period>
 	operator-() const
 	{ return duration(-__r); }
 
