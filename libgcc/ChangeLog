@@ -1,3 +1,9 @@
+2020-08-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__gnu_mspabi_sllp): New.
+	* config/msp430/srai.S (__gnu_mspabi_srap): New.
+	* config/msp430/srli.S (__gnu_mspabi_srlp): New.
+
 2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/nvptx/atomic.c: New.

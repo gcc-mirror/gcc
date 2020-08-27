@@ -1,3 +1,136 @@
+2020-08-26  Göran Uddeborg  <goeran@uddeborg.se>
+
+	PR gcov-profile/96285
+	* common.opt, doc/invoke.texi: Clarify wording of
+	-fprofile-exclude-files and adjust -fprofile-filter-files to
+	match.
+
+2020-08-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96802
+	* config/i386/i386-options.c (ix86_valid_target_attribute_inner_p):
+	Reject target("no-general-regs-only").
+
+2020-08-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md (K): Change unused constraint to
+	constraint to a const_int between 1 and 19.
+	(P): New constraint.
+	* config/msp430/msp430-protos.h (msp430x_logical_shift_right): Remove.
+	(msp430_expand_shift): New.
+	(msp430_output_asm_shift_insns): New.
+	* config/msp430/msp430.c (msp430_rtx_costs): Remove shift costs.
+	(CSH): Remove.
+	(msp430_expand_helper): Remove hard-coded generation of some inline
+	shift insns.
+	(use_helper_for_const_shift): New.
+	(msp430_expand_shift): New.
+	(msp430_output_asm_shift_insns): New.
+	(msp430_print_operand): Add new 'W' operand selector.
+	(msp430x_logical_shift_right): Remove.
+	* config/msp430/msp430.md (HPSI): New define_mode_iterator.
+	(HDI): Likewise.
+	(any_shift): New define_code_iterator.
+	(shift_insn): New define_code_attr.
+	Adjust unnamed insn patterns searched for by combine.
+	(ashlhi3): Remove.
+	(slli_1): Remove.
+	(430x_shift_left): Remove.
+	(slll_1): Remove.
+	(slll_2): Remove.
+	(ashlsi3): Remove.
+	(ashldi3): Remove.
+	(ashrhi3): Remove.
+	(srai_1): Remove.
+	(430x_arithmetic_shift_right): Remove.
+	(srap_1): Remove.
+	(srap_2): Remove.
+	(sral_1): Remove.
+	(sral_2): Remove.
+	(ashrsi3): Remove.
+	(ashrdi3): Remove.
+	(lshrhi3): Remove.
+	(srli_1): Remove.
+	(430x_logical_shift_right): Remove.
+	(srlp_1): Remove.
+	(srll_1): Remove.
+	(srll_2x): Remove.
+	(lshrsi3): Remove.
+	(lshrdi3): Remove.
+	(<shift_insn><mode>3): New define_expand.
+	(<shift_insn>hi3_430): New define_insn.
+	(<shift_insn>si3_const): Likewise.
+	(ashl<mode>3_430x): Likewise.
+	(ashr<mode>3_430x): Likewise.
+	(lshr<mode>3_430x): Likewise.
+	(*bitbranch<mode>4_z): Replace renamed predicate msp430_bitpos with
+	const_0_to_15_operand.
+	* config/msp430/msp430.opt: New option -mmax-inline-shift=.
+	* config/msp430/predicates.md (const_1_to_8_operand): New predicate.
+	(const_0_to_15_operand): Rename msp430_bitpos predicate.
+	(const_1_to_19_operand): New predicate.
+	* doc/invoke.texi: Document -mmax-inline-shift=.
+
+2020-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Abstract code out to...
+	* tree-vrp.c (find_case_label_range): ...here.  Rewrite for to use irange
+	API.
+	(simplify_stmt_for_jump_threading): Call find_case_label_range instead of
+	duplicating the code in simplify_stmt_for_jump_threading.
+	* tree-vrp.h (find_case_label_range): New prototype.
+
+2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	* tree-vectorizer.h (loop_vec_info::reduc_latch_defs): New.
+	(loop_vec_info::reduc_latch_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_transform_stmt): Only record
+	stmts to update PHI latches from, perform the update ...
+	* tree-vect-loop.c (vect_transform_loop): ... here after
+	vectorizing those PHIs.
+	(info_for_reduction): Properly handle non-reduction PHIs.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (process_symver_attribute): Match only symver
+	TREE_PURPOSE.
+
+2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96783
+	* tree-vect-stmts.c (get_group_load_store_type): Use
+	VMAT_ELEMENTWISE for negative strides when we cannot
+	use VMAT_STRIDED_SLP.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document how are pie and pic options merged.
+
+2020-08-26  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for add/sub arithmetic intrinsics.
+
+2020-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96729
+	* dwarf2out.c (dwarf2out_next_real_insn): Adjust function comment.
+	(dwarf2out_var_location): Look for next_note only if next_real is
+	non-NULL, in that case look for the first non-deleted
+	NOTE_INSN_VAR_LOCATION between loc_note and next_real, if any.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/tilepro/gen-mul-tables.cc (main): Define IN_TARGET_CODE to 1
+	in the target file.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (process_symver_attribute): Allow multiple
+	symver attributes for one symbol.
+	* doc/extend.texi: Document the change.
+
 2020-08-25  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/95863

@@ -1,3 +1,18 @@
+2020-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_device_type): New.
+	(symbol_attribute, gfc_omp_clauses, gfc_common_head): Use it.
+	* module.c (enum ab_attribute): Add AB_OMP_DEVICE_TYPE_HOST,
+	AB_OMP_DEVICE_TYPE_NOHOST and AB_OMP_DEVICE_TYPE_ANY.
+	(attr_bits, mio_symbol_attribute): Handle it.
+	(load_commons, write_common_0): Handle omp_device_type flag.
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_DEVICE_TYPE
+	(OMP_DECLARE_TARGET_CLAUSES): Likewise.
+	(gfc_match_omp_clauses): Match 'device_type'.
+	(gfc_match_omp_declare_target): Handle it.
+	* trans-common.c (build_common_decl): Write device-type clause.
+	* trans-decl.c (add_attributes_to_decl): Likewise.
+
 2020-08-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/96737

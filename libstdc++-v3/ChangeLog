@@ -1,3 +1,80 @@
+2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (_Tuple_impl): Whitespaces changes for
+	consistent indentation. Also use __enable_if_t alias template.
+
+2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96803
+	* include/std/tuple
+	(_Tuple_impl(allocator_arg_t, Alloc, const _Tuple_impl<U...>&)):
+	Replace parameter pack with a type parameter and a pack and pass
+	the first type to __use_alloc.
+	* testsuite/20_util/tuple/cons/96803.cc: New test.
+
+2020-08-26  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/chrono (year_month_weekday::operator==): Compare
+	weekday_indexed instead of weekday.
+	* testsuite/std/time/year_month_weekday/1.cc: Augment testcase.
+
+2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Hash_code_base): Change
+	index of _Hashtable_ebo_helper base class.
+	* testsuite/23_containers/unordered_map/dup_types.cc: New test.
+
+2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71960
+	* include/experimental/string_view (basic_string_view):
+	Enable debug assertions.
+	* include/std/string_view (basic_string_view):
+	Likewise.
+
+2020-08-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hashtable<>): Rename _H1 into _Hash
+	_H2 into _RangeHash and _Hash into _Unused.
+	(_Hastable_base<>): Likewise.
+	(_Map_base<>): Likewise.
+	(_Insert_base<>): Likewise.
+	(_Insert<>): Likewise.
+	(_Rehash_base<>): Likewise.
+	(_Local_iterator_base<>): Likewise.
+	(_Hash_code_base<>): Likewise.
+	(_Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, false>):
+	Remove.
+	(_Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash, true>):
+	Remove.
+	(_Hash_code_base<_Key, _Value, _ExtractKey, _Hash, _RangeHas, _Unused,
+	bool>): Remove _Hashtable_ebo_helper<2, _RangeHash> base type..
+	(_Hash_code_base<>::_M_bucket_index(const _Key&, __hash_code, size_t)):
+	Replace by...
+	(_Hash_code_base<>::_M_bucket_index(__hash_code, size_t)): ...this.
+	(_Local_iterator<>): Remove _H1 and _H2 template parameters.
+	(_Local_const_iterator<>): Likewise.
+	(_Equality<>): Likewise.
+	(_Map_base<>::operator[](const key_type&): Adapt.
+	(_Map_base<>::operator[](key_type&&): Adapt.
+	(_Identity::operator()): Add noexcept.
+	(_Select1st::operator()): Likewise.
+	(_Hash_code_base<>): Remove _Hashtable_ebo_helper<0, _ExtractKey> base
+	type.
+	(_Hash_code_base::_M_extract): Remove.
+	* include/bits/hashtable.h (_Hashtable<>): Remove _H1 and _H2 template
+	parameters. Remove _ExtractKey from constructors.
+	(_Hashtable<>::_M_insert_unique_node(const key_type&, size_t,
+	__hash_code, __node_type*, size_t)): Replace by...
+	(_Hashtable<>::_M_insert_unique_node(size_t, __hash_code,
+	 __node_type*, size_t)): ...this.
+	(_Hashtable<>::_M_insert_muti_node(__node_type*, const key_type&,
+	__hash_code, __node_type*)): Replace by...
+	(_Hashtable<>::_M_insert_multi_node(__node_type*, __hash_code,
+	__node_type*)): ...this.
+	(_Hashtable<>::__key_extract): Remove.
+	* include/bits/node_handle.h: Adapt.
+
 2020-08-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/debug/iterator_self_move_assign_neg.cc: Removed.

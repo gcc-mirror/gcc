@@ -1,3 +1,15 @@
+2020-08-26  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (poplevel): A local-binding tree list holds the name in
+	TREE_PURPOSE.
+	* name-lookup.c (update_local_overload): Add id to TREE_PURPOSE.
+	(lookup_name_1): Deal with local-binding error_mark_node marker.
+	(op_unqualified_lookup): Return error_mark_node for 'nothing
+	found'.  Retain global binding, check class binding here.
+	(maybe_save_operator_binding): Reimplement to always cache a
+	result.
+	(push_operator_bindings): Deal with 'ignore' marker.
+
 2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c/96678
