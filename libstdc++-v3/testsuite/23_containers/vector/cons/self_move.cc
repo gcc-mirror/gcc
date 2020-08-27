@@ -1,10 +1,4 @@
-// { dg-do run }
-// { dg-options "-pthread"  }
-// { dg-require-effective-target c++11 }
-// { dg-require-effective-target pthread }
-// { dg-require-gthreads "" }
-
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,25 +15,30 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do run { target c++11 } }
 
-#include <thread>
-#include <system_error>
+#include <vector>
+#include <debug/vector>
 #include <testsuite_hooks.h>
 
-int main()
+template<typename Container>
+void
+test(std::initializer_list<typename Container::value_type> vals)
 {
-  try 
-    {
-      std::this_thread::yield();
-    }
-  catch (const std::system_error&)
-    {
-      VERIFY( false );
-    }
-  catch (...)
-    {
-      VERIFY( false );
-    }
+  Container c{vals};
+  c = std::move(c);
+  VERIFY( c == c );
 
-  return 0;
+  auto it = c.begin();
+  it = std::move(it);
+  VERIFY( it == c.begin() );
+}
+
+int
+main()
+{
+  test<std::vector<int>>({1, 2, 3});
+  test<std::vector<std::vector<int>>>({{1,2}, {3,4}, {5,6}, {7,8}});
+  test<__gnu_debug::vector<int>>({1, 2, 3});
+  test<__gnu_debug::vector<std::vector<int>>>({{1,2}, {3,4}});
 }

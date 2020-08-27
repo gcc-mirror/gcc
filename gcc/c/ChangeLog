@@ -1,3 +1,10 @@
+2020-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96571
+	* c-parser.c (c_parser_generic_selection): Change match_found from bool
+	to int, holding index of the match.  Call mark_exp_read on the selector
+	expression and on expressions other than the selected one.
+
 2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c/96377

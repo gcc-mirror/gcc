@@ -300,7 +300,7 @@
    UNSPEC_VSX_DIVUD
    UNSPEC_VSX_MULSD
    UNSPEC_VSX_SIGN_EXTEND
-   UNSPEC_VSX_XVCVBF16SP
+   UNSPEC_VSX_XVCVBF16SPN
    UNSPEC_VSX_XVCVSPBF16
    UNSPEC_VSX_XVCVSPSXDS
    UNSPEC_VSX_XVCVSPHP
@@ -364,10 +364,10 @@
   ])
 
 (define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
-				 UNSPEC_VSX_XVCVBF16SP])
+				 UNSPEC_VSX_XVCVBF16SPN])
 
 (define_int_attr xvcvbf16       [(UNSPEC_VSX_XVCVSPBF16 "xvcvspbf16")
-				 (UNSPEC_VSX_XVCVBF16SP "xvcvbf16sp")])
+				 (UNSPEC_VSX_XVCVBF16SPN "xvcvbf16spn")])
 
 ;; Like VI, defined in vector.md, but add ISA 2.07 integer vector ops
 (define_mode_iterator VI2 [V4SI V8HI V16QI V2DI])

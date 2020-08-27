@@ -1,3 +1,370 @@
+2020-08-18  David Edelsohn  <dje.gcc@gmail.com>
+	    Clement Chigot  <clement.chigot@atos.net>
+
+	* config/os/aix/t-aix: Add complementary mode object files to
+	libsupc++.a
+
+2020-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Check
+	"cold" isn't used in the library. Also check <cxxabi.h>.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc:
+	Likewise.
+
+2020-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69724
+	* include/std/future (__future_base::_S_make_deferred_state)
+	(__future_base::_S_make_async_state): Remove.
+	(__future_base::_Deferred_state): Change constructor to accept a
+	parameter pack of arguments and forward them to the call
+	wrapper.
+	(__future_base::_Async_state_impl): Likewise. Replace lambda
+	expression with a named member function.
+	(async): Construct state object directly from the arguments,
+	instead of using thread::__make_invoker, _S_make_deferred_state
+	and _S_make_async_state. Move shared state into the returned
+	future.
+	* include/std/thread (thread::_Call_wrapper): New alias
+	template for use by constructor and std::async.
+	(thread::thread(Callable&&, Args&&...)): Create state object
+	directly instead of using _S_make_state.
+	(thread::__make_invoker, thread::__decayed_tuple)
+	(thread::_S_make_state): Remove.
+	* testsuite/30_threads/async/69724.cc: New test.
+
+2020-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/55713
+	PR libstdc++/71096
+	PR libstdc++/93147
+	* include/std/tuple [__has_cpp_attribute(no_unique_address)]
+	(_Head_base<Idx, Head, true>): New definition of the partial
+	specialization, using [[no_unique_address]] instead of
+	inheritance.
+	* testsuite/libstdc++-prettyprinters/48362.cc: Adjust expected
+	output.
+	* testsuite/20_util/tuple/comparison_operators/93147.cc: New test.
+	* testsuite/20_util/tuple/creation_functions/55713.cc: New test.
+	* testsuite/20_util/tuple/element_access/71096.cc: New test.
+
+2020-08-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* testsuite/lib/libstdc++.exp: Use the new option
+	-fdiagnostics-plain-output.
+
+2020-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CHEADERS): Warn if the c_std
+	option is used and fail unless --enable-cheaders-obsolete is
+	also used.
+	* configure: Regenerate.
+
+2020-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85828
+	* include/bits/basic_string.h (operator=(basic_string&&)): Check
+	for self-move before copying with char_traits::copy.
+	* include/bits/hashtable.h (operator=(_Hashtable&&)): Check for
+	self-move.
+	* include/bits/stl_deque.h (_M_move_assign1(deque&&, false_type)):
+	Check for equal allocators.
+	* include/bits/stl_list.h (_M_move_assign(list&&, true_type)):
+	Call clear() instead of _M_clear().
+	* include/debug/formatter.h (__msg_self_move_assign): Change
+	comment.
+	* include/debug/macros.h (__glibcxx_check_self_move_assign):
+	(_GLIBCXX_DEBUG_VERIFY): Remove.
+	* include/debug/safe_container.h (operator=(_Safe_container&&)):
+	Remove assertion check for safe move and make it well-defined.
+	* include/debug/safe_iterator.h (operator=(_Safe_iterator&&)):
+	Remove assertion check for self-move.
+	* include/debug/safe_local_iterator.h
+	(operator=(_Safe_local_iterator&&)): Likewise.
+	* testsuite/21_strings/basic_string/cons/char/self_move.cc: New test.
+	* testsuite/23_containers/deque/cons/self_move.cc: New test.
+	* testsuite/23_containers/forward_list/cons/self_move.cc: New test.
+	* testsuite/23_containers/list/cons/self_move.cc: New test.
+	* testsuite/23_containers/set/cons/self_move.cc: New test.
+	* testsuite/23_containers/unordered_set/cons/self_move.cc: New test.
+	* testsuite/23_containers/vector/cons/self_move.cc: New test.
+
+2020-08-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/91620
+	* include/bits/forward_list.tcc (forward_list<>::remove): Collect nodes
+	to destroy in an intermediate forward_list.
+	(forward_list<>::remove_if, forward_list<>::unique): Likewise.
+	* include/bits/list.tcc (list<>::remove, list<>::unique): Likewise.
+	(list<>::remove_if): Likewise.
+	* include/debug/forward_list (forward_list<>::_M_erase_after): Remove.
+	(forward_list<>::erase_after): Adapt.
+	(forward_list<>::remove, forward_list<>::remove_if): Collect nodes to
+	destroy in an intermediate forward_list.
+	(forward_list<>::unique): Likewise.
+	* include/debug/list (list<>::remove, list<>::unique): Likewise.
+	(list<>::remove_if): Likewise.
+	* testsuite/23_containers/forward_list/operations/91620.cc: New test.
+	* testsuite/23_containers/list/operations/91620.cc: New test.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/cons/84535.cc: Use a custom
+	namespace.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: Likewise.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89760
+	* include/experimental/executor [!_GLIBCXX_HAS_GTHREADS]:
+	(execution_context::mutex_type): Define dummy mutex type.
+	(system_context): Use execution_context::mutex_type.
+	(system_context) [!_GLIBCXX_HAS_GTHREADS]: Define dummy
+	thread and condition variable types.
+	[!_GLIBCXX_HAS_GTHREADS] (system_context::_M_run()): Do not
+	define.
+	(system_context::_M_post) [!_GLIBCXX_HAS_GTHREADS]: Throw
+	an exception when threads aren't available.
+	(strand::running_in_this_thread()): Defer to _M_state.
+	(strand::_State::running_in_this_thread()): New function.
+	(use_future_t): Do not depend on _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/experimental/io_context (io_context): Use the
+	execution_context::mutex_type alias. Replace stack of thread
+	IDs with counter.
+	* testsuite/experimental/net/execution_context/use_service.cc:
+	Enable test for non-pthread targets.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (system_context::a__tag): Make
+	default constructor explicit.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (system_context::_M_run()):
+	Fix predicate.
+	* testsuite/experimental/net/system_context/1.cc: New test.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Check _GLIBCXX_HAS_GTHREADS using
+	#ifdef instead of #if.
+	(stop_token::_S_yield()): Check _GLIBCXX_HAS_GTHREADS before
+	using __gthread_yield.
+
+2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread [!_GLIBCXX_HAS_GTHREADS] (this_thread::yield)
+	(this_thread::sleep_until): Define.
+	[!_GLIBCXX_HAS_GTHREADS] (this_thread::sleep_for): Define. Replace
+	use of __gthread_time_t typedef with timespec.
+	* src/c++11/thread.cc [!_GLIBCXX_HAS_GTHREADS] (__sleep_for):
+	Likewise.
+	* testsuite/30_threads/this_thread/2.cc: Moved to...
+	* testsuite/30_threads/this_thread/yield.cc: ...here.
+	* testsuite/30_threads/this_thread/3.cc: Moved to...
+	* testsuite/30_threads/this_thread/sleep_for-mt.cc: ...here.
+	* testsuite/30_threads/this_thread/4.cc: Moved to...
+	* testsuite/30_threads/this_thread/sleep_until-mt.cc: ...here.
+	* testsuite/30_threads/this_thread/58038.cc: Add
+	dg-require-sleep.
+	* testsuite/30_threads/this_thread/60421.cc: Likewise.
+	* testsuite/30_threads/this_thread/sleep_for.cc: New test.
+	* testsuite/30_threads/this_thread/sleep_until.cc: New test.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* src/c++17/fs_ops.cc (read_symlink): Use posix::lstat instead
+	of calling ::lstat directly.
+	* src/filesystem/ops.cc (read_symlink): Likewise.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Use gdb.Type.strip_typedefs().
+	* testsuite/libstdc++-prettyprinters/compat.cc: Use a typedef in
+	the emulated old type.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Do not depend on
+	$enable_libstdcxx_filesystem_ts.
+	* configure: Regenerate.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93904
+	* include/bits/stl_iterator.h (inserter): Do not deduce
+	iterator type (LWG 561).
+	* testsuite/24_iterators/insert_iterator/dr561.cc: New test.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI=0]
+	(basic_string::reserve()): Do nothing if exceptions are not
+	enabled.
+
+2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95749
+	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(stat_type): Change to __stat64.
+	(stat): Use _wstat64.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96303
+	* include/debug/bitset (bitset::operator==): Call _M_base() on
+	right operand.
+	(bitset::operator!=): Likewise, but don't define it at all when
+	default comparisons are supported by the compiler.
+	* testsuite/23_containers/bitset/operations/96303.cc: New test.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc:
+	Replace VERIFY with static_assert where the compiler now
+	allows it.
+	* testsuite/18_support/comparisons/algorithms/weak_order.cc:
+	Likewise.
+
+2020-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Fix wildcards for wstring symbols.
+
+2020-08-06  Andrew Luo  <andrewluotechnologies@outlook.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Use less greedy
+	patterns for basic_string members.
+	(GLIBCXX_3.4.29): Export new basic_string::reserve symbols.
+	* doc/xml/manual/status_cxx2020.xml: Update P0966 status.
+	* include/bits/basic_string.h (shrink_to_fit()): Call reserve().
+	(reserve(size_type)): Remove default argument.
+	(reserve()): Declare new overload.
+	[!_GLIBCXX_USE_CXX11_ABI] (shrink_to_fit, reserve): Likewise.
+	* include/bits/basic_string.tcc (reserve(size_type)): Remove
+	support for shrinking capacity.
+	(reserve()): Perform shrink-to-fit operation.
+	[!_GLIBCXX_USE_CXX11_ABI] (reserve): Likewise.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Adjust to
+	reflect new behavior.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/18654.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/18654.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/2.cc:
+	Likewise.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc
+	(operator>>(basic_istream&, basic_string&)): Do not set eofbit
+	if extraction stopped after in.width() characters.
+	* src/c++98/istream-string.cc (operator>>(istream&, string&)):
+	Likewise.
+	* include/bits/istream.tcc (__istream_extract): Do not set
+	eofbit if extraction stopped after n-1 characters.
+	* src/c++98/istream.cc (__istream_extract): Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/13.cc: New test.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/13.cc: New test.
+	* testsuite/27_io/basic_istream/extractors_character/char/5.cc: New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/5.cc: New test.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96484
+	* src/c++17/fs_ops.cc (fs::read_symlink): Return an error
+	immediately for non-symlinks.
+	* src/filesystem/ops.cc (fs::read_symlink): Likewise.
+
+2020-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (operator>>(istream&, char*)): Add
+	attributes to get warnings for pointers that are null or known
+	to point to the end of a buffer. Request upper bound from
+	__builtin_object_size check and handle zero-sized buffer case.
+	(operator>>(istream&, signed char))
+	(operator>>(istream&, unsigned char*)): Add attributes.
+	* testsuite/27_io/basic_istream/extractors_character/char/overflow.cc:
+	Check extracting into the middle of a buffer.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/overflow.cc: New test.
+
+2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (atomic<T>::store): Reformat.
+
+2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Replace oneAPI DPC++ link
+	with LLVM repo for PSTL.
+	* doc/html/manual/status.html: Regenerate.
+
+2020-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Export new symbols.
+	* include/bits/istream.tcc (__istream_extract): New function
+	template implementing both of operator>>(istream&, char*) and
+	operator>>(istream&, char(&)[N]). Add explicit instantiation
+	declaration for it. Remove explicit instantiation declarations
+	for old function templates.
+	* include/std/istream (__istream_extract): Declare.
+	(operator>>(basic_istream<C,T>&, C*)): Define inline and simply
+	call __istream_extract.
+	(operator>>(basic_istream<char,T>&, signed char*)): Likewise.
+	(operator>>(basic_istream<char,T>&, unsigned char*)): Likewise.
+	(operator>>(basic_istream<C,T>&, C(7)[N])): Define for LWG 2499.
+	(operator>>(basic_istream<char,T>&, signed char(&)[N])):
+	Likewise.
+	(operator>>(basic_istream<char,T>&, unsigned char(&)[N])):
+	Likewise.
+	* include/std/streambuf (basic_streambuf): Declare char overload
+	of __istream_extract as a friend.
+	* src/c++11/istream-inst.cc: Add explicit instantiation
+	definition for wchar_t overload of __istream_extract. Remove
+	explicit instantiation definitions of old operator>> overloads
+	for versioned-namespace build.
+	* src/c++98/istream.cc (operator>>(istream&, char*)): Replace
+	with __istream_extract(istream&, char*, streamsize).
+	* testsuite/27_io/basic_istream/extractors_character/char/3.cc:
+	Do not use variable-length array.
+	* testsuite/27_io/basic_istream/extractors_character/char/4.cc:
+	Do not run test for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc:
+	Do not test writing to pointers for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/char/9826.cc:
+	Use array instead of pointer.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/3.cc:
+	Do not use variable-length array.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/4.cc:
+	Do not run test for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/9555-ic.cc:
+	Do not test writing to pointers for C++20.
+	* testsuite/27_io/basic_istream/extractors_character/char/lwg2499.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/char/lwg2499_neg.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/char/overflow.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499_neg.cc:
+	New test.
+
 2020-08-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/using_exceptions.xml: Move www.stroustrup.com to

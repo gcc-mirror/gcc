@@ -1,3 +1,9 @@
+2020-08-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96301
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Only return
+	non-trivial structs by invisible reference.
+
 2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/96153

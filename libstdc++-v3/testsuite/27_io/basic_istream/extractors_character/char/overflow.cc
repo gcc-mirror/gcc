@@ -15,14 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-O2 -std=gnu++98" }
+// { dg-options "-O2" }
 // { dg-do run }
 
 // This test checks that operator>> will avoid a buffer overflow when
 // reading into a buffer with a size that is known at compile time.
 
 // Since C++20 this is guaranteed (see LWG 2499), for previous standards
-// we try to check the buffer size as an extension (which depends on -O2).
+// checking the buffer size is an extension and depends on optimisation.
 
 #include <sstream>
 #include <testsuite_hooks.h>
@@ -30,11 +30,24 @@
 void
 test01()
 {
-  std::istringstream in("foolish child");
+  std::istringstream in("foolishly");
   char pc[5];
   in >> pc;
   VERIFY( in.good() );
   VERIFY( std::string(pc) == "fool" );
+
+#if __cplusplus <= 201703L
+  char* p = pc + 1;
+  in >> p;
+  VERIFY( in.good() );
+  VERIFY( std::string(pc) == "fish" );
+
+  p = pc + 4;
+  *p = '#';
+  in >> p;
+  VERIFY( in.fail() ); // if no characters are extracted, failbit is set
+  VERIFY( *p == '\0' );
+#endif
 }
 
 void
@@ -61,4 +74,6 @@ int
 main()
 {
   test01();
+  test02();
+  test03();
 }

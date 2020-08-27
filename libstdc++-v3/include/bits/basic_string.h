@@ -717,10 +717,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 	if (__str._M_is_local())
 	  {
-	    // We've always got room for a short string, just copy it.
-	    if (__str.size())
-	      this->_S_copy(_M_data(), __str._M_data(), __str.size());
-	    _M_set_length(__str.size());
+	    // We've always got room for a short string, just copy it
+	    // (unless this is a self-move, because that would violate the
+	    // char_traits::copy precondition that the ranges don't overlap).
+	    if (__builtin_expect(std::__addressof(__str) != this, true))
+	      {
+		if (__str.size())
+		  this->_S_copy(_M_data(), __str._M_data(), __str.size());
+		_M_set_length(__str.size());
+	      }
 	  }
 	else if (_Alloc_traits::_S_propagate_on_move_assign()
 	    || _Alloc_traits::_S_always_equal()
@@ -940,20 +945,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { this->resize(__n, _CharT()); }
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       ///  A non-binding request to reduce capacity() to size().
       void
       shrink_to_fit() noexcept
-      {
-#if __cpp_exceptions
-	if (capacity() > size())
-	  {
-	    try
-	      { reserve(0); }
-	    catch(...)
-	      { }
-	  }
-#endif
-      }
+      { reserve(); }
+#pragma GCC diagnostic pop
 #endif
 
       /**
@@ -985,7 +983,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  data.
        */
       void
-      reserve(size_type __res_arg = 0);
+      reserve(size_type __res_arg);
+
+      /**
+       *  Equivalent to shrink_to_fit().
+       */
+#if __cplusplus > 201703L
+      [[deprecated("use shrink_to_fit() instead")]]
+#endif
+      void
+      reserve();
 
       /**
        *  Erases the string, making it empty.
@@ -3942,20 +3949,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { this->resize(__n, _CharT()); }
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       ///  A non-binding request to reduce capacity() to size().
       void
-      shrink_to_fit() _GLIBCXX_NOEXCEPT
-      {
-#if __cpp_exceptions
-	if (capacity() > size())
-	  {
-	    try
-	      { reserve(0); }
-	    catch(...)
-	      { }
-	  }
-#endif
-      }
+      shrink_to_fit() noexcept
+      { reserve(); }
+#pragma GCC diagnostic pop
 #endif
 
       /**
@@ -3984,7 +3984,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  data.
        */
       void
-      reserve(size_type __res_arg = 0);
+      reserve(size_type __res_arg);
+
+      /// Equivalent to shrink_to_fit().
+#if __cplusplus > 201703L
+      [[deprecated("use shrink_to_fit() instead")]]
+#endif
+      void
+      reserve();
 
       /**
        *  Erases the string, making it empty.

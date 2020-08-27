@@ -8686,7 +8686,7 @@ c_parser_generic_selection (c_parser *parser)
   struct c_expr selector, error_expr;
   tree selector_type;
   struct c_generic_association matched_assoc;
-  bool match_found = false;
+  int match_found = -1;
   location_t generic_loc, selector_loc;
 
   error_expr.original_code = ERROR_MARK;
@@ -8721,6 +8721,7 @@ c_parser_generic_selection (c_parser *parser)
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
       return selector;
     }
+  mark_exp_read (selector.value);
   selector_type = TREE_TYPE (selector.value);
   /* In ISO C terms, rvalues (including the controlling expression of
      _Generic) do not have qualified types.  */
@@ -8820,18 +8821,18 @@ c_parser_generic_selection (c_parser *parser)
 
       if (assoc.type == NULL_TREE)
 	{
-	  if (!match_found)
+	  if (match_found < 0)
 	    {
 	      matched_assoc = assoc;
-	      match_found = true;
+	      match_found = associations.length ();
 	    }
 	}
       else if (comptypes (assoc.type, selector_type))
 	{
-	  if (!match_found || matched_assoc.type == NULL_TREE)
+	  if (match_found < 0 || matched_assoc.type == NULL_TREE)
 	    {
 	      matched_assoc = assoc;
-	      match_found = true;
+	      match_found = associations.length ();
 	    }
 	  else
 	    {
@@ -8849,13 +8850,19 @@ c_parser_generic_selection (c_parser *parser)
       c_parser_consume_token (parser);
     }
 
+  unsigned int ix;
+  struct c_generic_association *iter;
+  FOR_EACH_VEC_ELT (associations, ix, iter)
+    if (ix != (unsigned) match_found)
+      mark_exp_read (iter->expression.value);
+
   if (!parens.require_close (parser))
     {
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
       return error_expr;
     }
 
-  if (!match_found)
+  if (match_found < 0)
     {
       error_at (selector_loc, "%<_Generic%> selector of type %qT is not "
 		"compatible with any association",

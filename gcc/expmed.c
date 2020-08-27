@@ -155,6 +155,8 @@ init_expmed_one_conv (struct init_expmed_rtl *all, scalar_int_mode to_mode,
   PUT_MODE (all->reg, from_mode);
   set_convert_cost (to_mode, from_mode, speed,
 		    set_src_cost (which, to_mode, speed));
+  /* Restore all->reg's mode.  */
+  PUT_MODE (all->reg, to_mode);
 }
 
 static void
@@ -229,6 +231,7 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
       if (GET_MODE_CLASS (int_mode_to) == MODE_INT
 	  && GET_MODE_WIDER_MODE (int_mode_to).exists (&wider_mode))
 	{
+	  PUT_MODE (all->reg, mode);
 	  PUT_MODE (all->zext, wider_mode);
 	  PUT_MODE (all->wide_mult, wider_mode);
 	  PUT_MODE (all->wide_lshr, wider_mode);

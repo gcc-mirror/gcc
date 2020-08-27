@@ -794,6 +794,7 @@ enum omp_mask1
   OMP_CLAUSE_IS_DEVICE_PTR,
   OMP_CLAUSE_LINK,
   OMP_CLAUSE_NOGROUP,
+  OMP_CLAUSE_NOTEMPORAL,
   OMP_CLAUSE_NUM_TASKS,
   OMP_CLAUSE_PRIORITY,
   OMP_CLAUSE_SIMD,
@@ -1510,6 +1511,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->nogroup = needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_NOTEMPORAL)
+	      && gfc_match_omp_variable_list ("nontemporal (",
+					      &c->lists[OMP_LIST_NONTEMPORAL],
+					      true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_NOTINBRANCH)
 	      && !c->notinbranch
 	      && !c->inbranch
@@ -2591,7 +2597,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
    | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ALIGNED | OMP_CLAUSE_SIMDLEN	\
-   | OMP_CLAUSE_IF | OMP_CLAUSE_ORDER)
+   | OMP_CLAUSE_IF | OMP_CLAUSE_ORDER | OMP_CLAUSE_NOTEMPORAL)
 #define OMP_TASK_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
@@ -4363,7 +4369,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     = { "PRIVATE", "FIRSTPRIVATE", "LASTPRIVATE", "COPYPRIVATE", "SHARED",
 	"COPYIN", "UNIFORM", "ALIGNED", "LINEAR", "DEPEND", "MAP",
 	"TO", "FROM", "REDUCTION", "DEVICE_RESIDENT", "LINK", "USE_DEVICE",
-	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR" };
+	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
+	"NONTEMPORAL" };
+  STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
     return;
@@ -4725,12 +4733,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
-	const char *name;
-
-	if (list < OMP_LIST_NUM)
-	  name = clause_names[list];
-	else
-	  gcc_unreachable ();
+	const char *name = clause_names[list];
 
 	switch (list)
 	  {

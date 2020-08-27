@@ -447,12 +447,6 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(		\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred))
 
-// Verify that the container is not self move assigned
-#define __glibcxx_check_self_move_assign(_Other)			\
-_GLIBCXX_DEBUG_VERIFY(this != &_Other,					\
-		      _M_message(__gnu_debug::__msg_self_move_assign)	\
-                      ._M_sequence(*this, "this"))
-
 // Verify that load factor is positive
 #define __glibcxx_check_max_load_factor(_F)				\
 _GLIBCXX_DEBUG_VERIFY(_F > 0.0f,					\

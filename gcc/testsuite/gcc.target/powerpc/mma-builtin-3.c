@@ -18,7 +18,7 @@ void
 foo1 (vec_t *vec)
 {
   vec[1] = __builtin_vsx_xvcvspbf16 (vec[0]);
-  vec[3] = __builtin_vsx_xvcvbf16sp (vec[2]);
+  vec[3] = __builtin_vsx_xvcvbf16spn (vec[2]);
 }
 
 /* { dg-final { scan-assembler-times {\mxxmtacc\M} 1 } } */
@@ -28,4 +28,4 @@ foo1 (vec_t *vec)
 /* { dg-final { scan-assembler-not {\mlxvp\M} } } */
 /* { dg-final { scan-assembler-not {\mstxvp\M} } } */
 /* { dg-final { scan-assembler-times {\mxvcvspbf16\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mxvcvbf16sp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxvcvbf16spn\M} 1 } } */

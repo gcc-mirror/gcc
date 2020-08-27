@@ -2,7 +2,8 @@
    PR middle-end/85484 - missing -Wstringop-overflow for strcpy with
    a string of non-const length
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

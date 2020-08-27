@@ -251,11 +251,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
-      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m)); }
+      {
+	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+      }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
-      { __atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m)); }
+      {
+	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+      }
 
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept

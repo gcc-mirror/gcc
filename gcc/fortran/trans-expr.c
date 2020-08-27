@@ -9936,6 +9936,8 @@ fcncall_realloc_result (gfc_se *se, int rank)
   tree tmp;
   tree offset;
   tree zero_cond;
+  tree not_same_shape;
+  stmtblock_t shape_block;
   int n;
 
   /* Use the allocation done by the library.  Substitute the lhs
@@ -9965,7 +9967,11 @@ fcncall_realloc_result (gfc_se *se, int rank)
   tmp = gfc_conv_descriptor_data_get (res_desc);
   gfc_conv_descriptor_data_set (&se->post, desc, tmp);
 
-  /* Check that the shapes are the same between lhs and expression.  */
+  /* Check that the shapes are the same between lhs and expression.
+     The evaluation of the shape is done in 'shape_block' to avoid
+     unitialized warnings from the lhs bounds. */
+  not_same_shape = boolean_false_node;
+  gfc_start_block (&shape_block);
   for (n = 0 ; n < rank; n++)
     {
       tree tmp1;
@@ -9982,15 +9988,24 @@ fcncall_realloc_result (gfc_se *se, int rank)
       tmp = fold_build2_loc (input_location, NE_EXPR,
 			     logical_type_node, tmp,
 			     gfc_index_zero_node);
-      tmp = gfc_evaluate_now (tmp, &se->post);
-      zero_cond = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				   logical_type_node, tmp,
-				   zero_cond);
+      tmp = gfc_evaluate_now (tmp, &shape_block);
+      if (n == 0)
+	not_same_shape = tmp;
+      else
+	not_same_shape = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+					  logical_type_node, tmp,
+					  not_same_shape);
     }
 
   /* 'zero_cond' being true is equal to lhs not being allocated or the
      shapes being different.  */
-  zero_cond = gfc_evaluate_now (zero_cond, &se->post);
+  tmp = fold_build2_loc (input_location, TRUTH_OR_EXPR, logical_type_node,
+			 zero_cond, not_same_shape);
+  gfc_add_modify (&shape_block, zero_cond, tmp);
+  tmp = gfc_finish_block (&shape_block);
+  tmp = build3_v (COND_EXPR, zero_cond,
+		  build_empty_stmt (input_location), tmp);
+  gfc_add_expr_to_block (&se->post, tmp);
 
   /* Now reset the bounds returned from the function call to bounds based
      on the lhs lbounds, except where the lhs is not allocated or the shapes

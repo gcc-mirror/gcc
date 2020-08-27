@@ -1,3 +1,73 @@
+2020-08-18  Harald Anlauf  <anlauf@gmx.de>
+
+	* check.c (check_rest): Reject MIN/MAX character arguments of
+	different kind.
+	* simplify.c (min_max_choose): The simplification result shall
+	have the highest kind value of the arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Choose type and
+	kind of intermediate by looking at all arguments, not the result.
+
+2020-08-17  Martin Liska  <mliska@suse.cz>
+
+	* openmp.c (resolve_omp_clauses): Add static assert
+	for OMP_LIST_NUM and size of clause_names array.
+	Remove check that is always true.
+
+2020-08-17  Martin Liska  <mliska@suse.cz>
+
+	* openmp.c (resolve_omp_clauses): Add NONTEMPORAL to clause
+	names.
+
+2020-08-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/93671
+	* trans-array.c (structure_alloc_comps): Keep caf-mode when applying to
+	components; get the caf_token correctly for allocated scalar components.
+
+2020-08-13  Matthew Krupcale  <mkrupcale@matthewkrupcale.com>
+
+	PR fortran/96595
+	* invoke.texi: Fix typos.
+
+2020-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h: Add OMP_LIST_NONTEMPORAL.
+	* dump-parse-tree.c (show_omp_clauses): Dump it
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_NOTEMPORAL.
+	(OMP_SIMD_CLAUSES): Add it.
+	(gfc_match_omp_clauses): Match nontemporal clause.
+	* trans-openmp.c (gfc_trans_omp_clauses): Process
+	nontemporal clause.
+
+2020-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96556
+	* frontend-passes.c (doloop_contained_function_call):
+	Do not dereference a NULL pointer for value.function.esym.
+
+2020-08-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96312
+	* trans-expr.c (fcncall_realloc_result): Only compare shapes if
+	lhs was allocated..
+
+2020-08-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96102
+	* resolve.c (check_host_association): Replace the gcc_assert
+	with an error for internal procedures.
+
+2020-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96469
+	* frontend-passes.c (doloop_contained_function_call): New
+	function.
+	(doloop_contained_procedure_code): New function.
+	(CHECK_INQ): Macro for inquire checks.
+	(doloop_code): Invoke doloop_contained_procedure_code and
+	doloop_contained_function_call if appropriate.
+	(do_intent): Likewise.
+
 2020-08-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.c (resolve_omp_do): Detect not perfectly
@@ -28,21 +98,6 @@
 2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR target/96320
-	* interface.c (gfc_check_dummy_characteristics): If a module
-	procedure arrives with assumed shape in the interface and
-	deferred shape in the procedure itself, update the latter and
-	copy the lower bounds.
-
-2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96325
-	* primary.c (gfc_match_varspec): In the case that a component
-	reference is added to an intrinsic type component, emit the
-	error message in this function.
-
-2020-08-01  Paul Thomas  <pault@gcc.gnu.org>
-
-	PR fortran/96320
 	* interface.c (gfc_check_dummy_characteristics): If a module
 	procedure arrives with assumed shape in the interface and
 	deferred shape in the procedure itself, update the latter and

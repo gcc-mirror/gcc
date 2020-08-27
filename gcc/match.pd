@@ -3461,40 +3461,42 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (vec_cond @0 (op! @3 @1) (op! @3 @2))))
 #endif
 
-/* (v ? w : 0) ? a : b is just (v & w) ? a : b  */
+/* (v ? w : 0) ? a : b is just (v & w) ? a : b
+   Currently disabled after pass lvec because ARM understands
+   VEC_COND_EXPR<v==w,-1,0> but not a plain v==w fed to BIT_IOR_EXPR.  */
 (simplify
  (vec_cond (vec_cond:s @0 @3 integer_zerop) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_and @0 @3) @1 @2)))
 (simplify
  (vec_cond (vec_cond:s @0 integer_all_onesp @3) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_ior @0 @3) @1 @2)))
 (simplify
  (vec_cond (vec_cond:s @0 integer_zerop @3) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_ior @0 (bit_not @3)) @2 @1)))
 (simplify
  (vec_cond (vec_cond:s @0 @3 integer_all_onesp) @1 @2)
- (if (types_match (@0, @3))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @3))
   (vec_cond (bit_and @0 (bit_not @3)) @2 @1)))
 
 /* c1 ? c2 ? a : b : b  -->  (c1 & c2) ? a : b  */
 (simplify
  (vec_cond @0 (vec_cond:s @1 @2 @3) @3)
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_and @0 @1) @2 @3)))
 (simplify
  (vec_cond @0 @2 (vec_cond:s @1 @2 @3))
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_ior @0 @1) @2 @3)))
 (simplify
  (vec_cond @0 (vec_cond:s @1 @2 @3) @2)
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_ior (bit_not @0) @1) @2 @3)))
 (simplify
  (vec_cond @0 @3 (vec_cond:s @1 @2 @3))
- (if (types_match (@0, @1))
+ (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_and (bit_not @0) @1) @2 @3)))
 
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
@@ -3826,7 +3828,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (cmp @0 @2))))))
 
 /* For integral types with undefined overflow fold
-   x * C1 == C2 into x == C2 / C1 or false.  */
+   x * C1 == C2 into x == C2 / C1 or false.
+   If overflow wraps and C1 is odd, simplify to x == C2 / C1 in the ring
+   Z / 2^n Z.  */
 (for cmp (eq ne)
  (simplify
   (cmp (mult @0 INTEGER_CST@1) INTEGER_CST@2)
@@ -3837,7 +3841,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (wi::multiple_of_p (wi::to_widest (@2), wi::to_widest (@1),
 			    TYPE_SIGN (TREE_TYPE (@0)), &quot))
      (cmp @0 { wide_int_to_tree (TREE_TYPE (@0), quot); })
-     { constant_boolean_node (cmp == NE_EXPR, type); })))))
+     { constant_boolean_node (cmp == NE_EXPR, type); }))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+	&& (wi::bit_and (wi::to_wide (@1), 1) == 1))
+    (cmp @0
+     {
+       tree itype = TREE_TYPE (@0);
+       int p = TYPE_PRECISION (itype);
+       wide_int m = wi::one (p + 1) << p;
+       wide_int a = wide_int::from (wi::to_wide (@1), p + 1, UNSIGNED);
+       wide_int i = wide_int::from (wi::mod_inv (a, m),
+				    p, TYPE_SIGN (itype));
+       wide_int_to_tree (itype, wi::mul (i, wi::to_wide (@2)));
+     })))))
 
 /* Simplify comparison of something with itself.  For IEEE
    floating-point, we can only do some of these simplifications.  */

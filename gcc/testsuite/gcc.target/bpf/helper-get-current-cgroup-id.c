@@ -1,13 +1,15 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
 {
   uint64_t ret;
-  
-  ret = __builtin_bpf_helper_get_current_cgroup_id ();
+
+  ret = bpf_get_current_cgroup_id ();
 }
 
 /* { dg-final { scan-assembler "call\t80" } } */

@@ -30,16 +30,15 @@ int test_1 (int n)
     int sum = 0;
     int i;
     for (i = 0; i < n; i++)
-      p[i] = i;
+      p[i] = i; /* { dg-warning "dereference of possibly-NULL" } */
     for (i = 0; i < n; i++)
       sum += foo (p[i]); /* { dg-bogus "uninitialized" } */
     result = sum;
   }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
-  return result; /* { dg-message "leak of 'p'" } */
-  /* FIXME: should this be 'ptr'?  */
+  return result; /* { dg-message "leak of 'p'|leak of 'ptr'" } */
 }
 
 /* A simpler version of the above.  */

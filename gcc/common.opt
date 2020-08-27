@@ -1378,6 +1378,10 @@ fdiagnostics-path-format=
 Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
 Specify how to print any control-flow path associated with a diagnostic.
 
+fdiagnostics-plain-output
+Driver Common RejectNegative
+Turn off any diagnostics features that complicate the output, such as line numbers, color, and warning URLs.
+
 ftabstop=
 Common Joined RejectNegative UInteger
 -ftabstop=<number>      Distance between tab stops for column reporting.
@@ -2884,7 +2888,7 @@ Common Report Var(flag_unroll_all_loops) Optimization
 Perform loop unrolling for all loops.
 
 funroll-completely-grow-size
-Undocumented Var(flag_cunroll_grow_size) Init(2) Optimization
+Undocumented Var(flag_cunroll_grow_size) Optimization
 ; Internal undocumented flag, allow size growth during complete unrolling
 
 ; Nonzero means that loop optimizer may assume that the induction variables

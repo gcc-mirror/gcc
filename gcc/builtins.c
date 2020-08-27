@@ -4441,7 +4441,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   /* Try to get the byte representation of the constant SRC points to,
      with its byte size in NBYTES.  */
   unsigned HOST_WIDE_INT nbytes;
-  const char *rep = c_getstr (src, &nbytes);
+  const char *rep = getbyterep (src, &nbytes);
 
   /* If the function's constant bound LEN_RTX is less than or equal
      to the byte size of the representation of the constant argument,
@@ -4449,7 +4449,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
      the bytes from memory and only store the computed constant.
      This works in the overlap (memmove) case as well because
      store_by_pieces just generates a series of stores of constants
-     from the representation returned by c_getstr().  */
+     from the representation returned by getbyterep().  */
   if (rep
       && CONST_INT_P (len_rtx)
       && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= nbytes
@@ -4698,7 +4698,7 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	 because the latter will potentially produce pessimized code
 	 when used to produce the return value.  */
       c_strlen_data lendata = { };
-      if (!c_getstr (src, NULL)
+      if (!c_getstr (src)
 	  || !(len = c_strlen (src, 0, &lendata, 1)))
 	return expand_movstr (dst, src, target,
 			      /*retmode=*/ RETURN_END_MINUS_ONE);
@@ -5351,11 +5351,11 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
      when the function's result is used for equality to zero, ARG1)
      points to, with its byte size in NBYTES.  */
   unsigned HOST_WIDE_INT nbytes;
-  const char *rep = c_getstr (arg2, &nbytes);
+  const char *rep = getbyterep (arg2, &nbytes);
   if (result_eq && rep == NULL)
     {
       /* For equality to zero the arguments are interchangeable.  */
-      rep = c_getstr (arg1, &nbytes);
+      rep = getbyterep (arg1, &nbytes);
       if (rep != NULL)
 	std::swap (arg1_rtx, arg2_rtx);
     }
@@ -7805,8 +7805,8 @@ inline_expand_builtin_bytecmp (tree exp, rtx target)
   /* Get the object representation of the initializers of ARG1 and ARG2
      as strings, provided they refer to constant objects, with their byte
      sizes in LEN1 and LEN2, respectively.  */
-  const char *bytes1 = c_getstr (arg1, &len1);
-  const char *bytes2 = c_getstr (arg2, &len2);
+  const char *bytes1 = getbyterep (arg1, &len1);
+  const char *bytes2 = getbyterep (arg2, &len2);
 
   /* Fail if neither argument refers to an initialized constant.  */
   if (!bytes1 && !bytes2)

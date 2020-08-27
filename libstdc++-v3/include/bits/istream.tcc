@@ -1023,7 +1023,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  ++__extracted;
 		  __c = __sb->snextc();
 		}
-	      if (_Traits::eq_int_type(__c, __eof))
+
+	      if (__extracted < __num - 1
+		  && _Traits::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS

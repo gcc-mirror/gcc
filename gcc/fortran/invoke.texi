@@ -235,11 +235,11 @@ intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
 
 @item -fallow-argument-mismatch
 @opindex @code{fallow-argument-mismatch}
-Some code contains calls to external procedures whith mismatches
+Some code contains calls to external procedures with mismatches
 between the calls and the procedure definition, or with mismatches
 between different calls. Such code is non-conforming, and will usually
-be flagged wi1th an error.  This options degrades the error to a
-warning, which can only be disabled by disabling all warnings vial
+be flagged with an error.  This options degrades the error to a
+warning, which can only be disabled by disabling all warnings via
 @option{-w}.  Only a single occurrence per argument is flagged by this
 warning.  @option{-fallow-argument-mismatch} is implied by
 @option{-std=legacy}.

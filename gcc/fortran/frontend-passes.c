@@ -2329,7 +2329,8 @@ doloop_contained_function_call (gfc_expr **e,
   gfc_symbol *sym, *do_var;
   contained_info *info;
 
-  if (expr->expr_type != EXPR_FUNCTION || expr->value.function.isym)
+  if (expr->expr_type != EXPR_FUNCTION || expr->value.function.isym
+      || expr->value.function.esym == NULL)
     return 0;
 
   sym = expr->value.function.esym;

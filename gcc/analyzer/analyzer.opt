@@ -34,9 +34,17 @@ The maximum number of exploded nodes per program point within the analyzer, befo
 Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
+-param=analyzer-max-svalue-depth=
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(13) Param
+The maximum depth of a symbolic value, before approximating the value as unknown.
+
 -param=analyzer-min-snodes-for-call-summary=
 Common Joined UInteger Var(param_analyzer_min_snodes_for_call_summary) Init(10) Param
 The minimum number of supernodes within a function for the analyzer to consider summarizing its effects at call sites.
+
+-param=analyzer-max-enodes-for-full-dump=
+Common Joined UInteger Var(param_analyzer_max_enodes_for_full_dump) Init(200) Param
+The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format.
 
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning

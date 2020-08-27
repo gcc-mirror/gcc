@@ -3,10 +3,10 @@
 /* { dg-options "-Ofast -mavx512bw -mavx512vl -mno-xop -mprefer-vector-width=256" } */
 /* { dg-final { scan-assembler-times "vpcmp\[bwdq\]\[\t ]" 8 } } */
 /* { dg-final { scan-assembler-times "vpcmpu\[bwdq\]\[\t ]" 8 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]8\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]16\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]32\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
-/* { dg-final { scan-assembler-times "vmovdq\[au\]64\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
+/* { dg-final { scan-assembler-times "(?:vmovdq\[au\]8|vpblendmb)\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
+/* { dg-final { scan-assembler-times "(?:vmovdq\[au\]16|vpblendmw)\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
+/* { dg-final { scan-assembler-times "(?:vmovdq\[au\]32|vpblendmd)\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
+/* { dg-final { scan-assembler-times "(?:vmovdq\[au\]64|vpblendmq)\[^\{\n\]*%ymm0+\[^\n\]*\{%k\[1-7\]\}" 4 } } */
 
 __attribute__((noipa)) void
 f1 (char *__restrict dst, char *__restrict src1, char *__restrict src2)

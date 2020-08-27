@@ -3389,6 +3389,8 @@ namespace wi
   wide_int round_down_for_mask (const wide_int &, const wide_int &);
   wide_int round_up_for_mask (const wide_int &, const wide_int &);
 
+  wide_int mod_inv (const wide_int &a, const wide_int &b);
+
   template <typename T>
   T mask (unsigned int, bool);
 

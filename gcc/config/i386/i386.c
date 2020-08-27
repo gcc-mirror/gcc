@@ -10056,6 +10056,9 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
       break;
 
     CASE_CONST_SCALAR_INT:
+      if (ix86_endbr_immediate_operand (x, VOIDmode))
+	return false;
+
       switch (mode)
 	{
 	case E_TImode:
@@ -10449,6 +10452,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
   /* Validate displacement.  */
   if (disp)
     {
+      if (ix86_endbr_immediate_operand (disp, VOIDmode))
+	return false;
+
       if (GET_CODE (disp) == CONST
 	  && GET_CODE (XEXP (disp, 0)) == UNSPEC
 	  && XINT (XEXP (disp, 0), 1) != UNSPEC_MACHOPIC_OFFSET)
@@ -12409,7 +12415,6 @@ print_reg (rtx x, int code, FILE *file)
    M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
    N -- print maskz if it's constant 0 operand.
-   I -- print comparision predicate operand for sse cmp condition.
  */
 
 void
@@ -12636,40 +12641,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    {
 	      ix86_print_operand (file, x, 0);
 	      fputs (", ", file);
-	    }
-	  return;
-
-	case 'I':
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('$', file);
-	  switch (GET_CODE (x))
-	    {
-	    case EQ:
-	      putc ('0', file);
-	      break;
-	    case NE:
-	      putc ('4', file);
-	      break;
-	    case GE:
-	    case GEU:
-	      putc ('5', file);
-	      break;
-	    case GT:
-	    case GTU:
-	      putc ('6', file);
-	      break;
-	    case LE:
-	    case LEU:
-	      putc ('2', file);
-	      break;
-	    case LT:
-	    case LTU:
-	      putc ('1', file);
-	      break;
-	    default:
-	      output_operand_lossage ("operand is not a condition code, "
-				      "invalid operand code 'I'");
-	      return;
 	    }
 	  return;
 

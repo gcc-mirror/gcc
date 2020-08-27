@@ -387,6 +387,8 @@ get_intel_cpu (struct __processor_model *cpu_model,
     case 0xa5:
     case 0xa6:
       /* Comet Lake.  */
+    case 0xa7:
+      /* Rocket Lake.  */
       cpu = "skylake";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("skylake");
@@ -455,6 +457,14 @@ get_intel_cpu (struct __processor_model *cpu_model,
       CHECK___builtin_cpu_is ("tigerlake");
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
+      break;
+    case 0x97:
+      /* Alder Lake.  */
+      cpu = "alderlake";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("alderlake");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_ALDERLAKE;
       break;
     case 0x8f:
       /* Sapphire Rapids.  */

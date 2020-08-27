@@ -1637,6 +1637,12 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
   x = adjust_address (x, BLKmode, 0);
   y = adjust_address (y, BLKmode, 0);
 
+  /* If source and destination are the same, no need to copy anything.  */
+  if (rtx_equal_p (x, y)
+      && !MEM_VOLATILE_P (x)
+      && !MEM_VOLATILE_P (y))
+    return 0;
+
   /* Set MEM_SIZE as appropriate for this block copy.  The main place this
      can be incorrect is coming from __builtin_memcpy.  */
   poly_int64 const_size;
@@ -11594,15 +11600,123 @@ is_aligning_offset (const_tree offset, const_tree exp)
   /* This must now be the address of EXP.  */
   return TREE_CODE (offset) == ADDR_EXPR && TREE_OPERAND (offset, 0) == exp;
 }
-
-/* Return the tree node if an ARG corresponds to a string constant or zero
-   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
-   non-constant) offset in bytes within the string that ARG is accessing.
-   If MEM_SIZE is non-zero the storage size of the memory is returned.
-   If DECL is non-zero the constant declaration is returned if available.  */
 
-tree
-string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
+/* If EXPR is a constant initializer (either an expression or CONSTRUCTOR),
+   attempt to obtain its native representation as an array of nonzero BYTES.
+   Return true on success and false on failure (the latter without modifying
+   BYTES).  */
+
+static bool
+convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
+{
+  if (TREE_CODE (expr) == CONSTRUCTOR)
+    {
+      /* Set to the size of the CONSTRUCTOR elements.  */
+      unsigned HOST_WIDE_INT ctor_size = bytes->length ();
+
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree val, idx;
+	  tree eltype = TREE_TYPE (type);
+	  unsigned HOST_WIDE_INT elsize =
+	    tree_to_uhwi (TYPE_SIZE_UNIT (eltype));
+
+	  /* Jump through hoops to determine the lower bound for languages
+	     like Ada that can set it to an (almost) arbitrary value.  */
+	  tree dom = TYPE_DOMAIN (type);
+	  if (!dom)
+	    return false;
+	  tree min = TYPE_MIN_VALUE (dom);
+	  if (!min || !tree_fits_uhwi_p (min))
+	    return false;
+	  unsigned HOST_WIDE_INT i, last_idx = tree_to_uhwi (min) - 1;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, idx, val)
+	    {
+	      /* Append zeros for elements with no initializers.  */
+	      if (!tree_fits_uhwi_p (idx))
+		return false;
+	      unsigned HOST_WIDE_INT cur_idx = tree_to_uhwi (idx);
+	      if (unsigned HOST_WIDE_INT size = cur_idx - (last_idx + 1))
+		{
+		  size = size * elsize + bytes->length ();
+		  bytes->safe_grow_cleared (size);
+		}
+
+	      if (!convert_to_bytes (eltype, val, bytes))
+		return false;
+
+	      last_idx = cur_idx;
+	    }
+	}
+      else if (TREE_CODE (type) == RECORD_TYPE)
+	{
+	  tree val, fld;
+	  unsigned HOST_WIDE_INT i;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, fld, val)
+	    {
+	      /* Append zeros for members with no initializers and
+		 any padding.  */
+	      unsigned HOST_WIDE_INT cur_off = int_byte_position (fld);
+	      if (bytes->length () < cur_off)
+		bytes->safe_grow_cleared (cur_off);
+
+	      if (!convert_to_bytes (TREE_TYPE (val), val, bytes))
+		return false;
+	    }
+	}
+      else
+	return false;
+
+      /* Compute the size of the COSNTRUCTOR elements.  */
+      ctor_size = bytes->length () - ctor_size;
+
+      /* Append zeros to the byte vector to the full size of the type.
+	 The type size can be less than the size of the CONSTRUCTOR
+	 if the latter contains initializers for a flexible array
+	 member.  */
+      tree size = TYPE_SIZE_UNIT (type);
+      unsigned HOST_WIDE_INT type_size = tree_to_uhwi (size);
+      if (ctor_size < type_size)
+	if (unsigned HOST_WIDE_INT size_grow = type_size - ctor_size)
+	  bytes->safe_grow_cleared (bytes->length () + size_grow);
+
+      return true;
+    }
+
+  /* Except for RECORD_TYPE which may have an initialized flexible array
+     member, the size of a type is the same as the size of the initializer
+     (including any implicitly zeroed out members and padding).  Allocate
+     just enough for that many bytes.  */
+  tree expr_size = TYPE_SIZE_UNIT (TREE_TYPE (expr));
+  if (!expr_size || !tree_fits_uhwi_p (expr_size))
+    return false;
+  const unsigned HOST_WIDE_INT expr_bytes = tree_to_uhwi (expr_size);
+  const unsigned bytes_sofar = bytes->length ();
+  /* native_encode_expr can convert at most INT_MAX bytes.  vec is limited
+     to at most UINT_MAX.  */
+  if (bytes_sofar + expr_bytes > INT_MAX)
+    return false;
+
+  /* Unlike for RECORD_TYPE, there is no need to clear the memory since
+     it's completely overwritten by native_encode_expr.  */
+  bytes->safe_grow (bytes_sofar + expr_bytes);
+  unsigned char *pnext = bytes->begin () + bytes_sofar;
+  int nbytes = native_encode_expr (expr, pnext, expr_bytes, 0);
+  /* NBYTES is zero on failure.  Otherwise it should equal EXPR_BYTES.  */
+  return (unsigned HOST_WIDE_INT) nbytes == expr_bytes;
+}
+
+/* Return a STRING_CST corresponding to ARG's constant initializer either
+   if it's a string constant, or, when VALREP is set, any other constant,
+   or null otherwise.
+   On success, set *PTR_OFFSET to the (possibly non-constant) byte offset
+   within the byte string that ARG is references.  If nonnull set *MEM_SIZE
+   to the size of the byte string.  If nonnull, set *DECL to the constant
+   declaration ARG refers to.  */
+
+static tree
+constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
+		      bool valrep = false)
 {
   tree dummy = NULL_TREE;;
   if (!mem_size)
@@ -11749,18 +11863,43 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       return array;
     }
 
-  if (!VAR_P (array) && TREE_CODE (array) != CONST_DECL)
-    return NULL_TREE;
-
   tree init = ctor_for_folding (array);
-
-  /* Handle variables initialized with string literals.  */
   if (!init || init == error_mark_node)
     return NULL_TREE;
+
+  if (valrep)
+    {
+      HOST_WIDE_INT cstoff;
+      if (!base_off.is_constant (&cstoff))
+	return NULL_TREE;
+
+      /* If value representation was requested convert the initializer
+	 for the whole array or object into a string of bytes forming
+	 its value representation and return it.  */
+      auto_vec<unsigned char> bytes;
+      if (!convert_to_bytes (TREE_TYPE (init), init, &bytes))
+	return NULL_TREE;
+
+      unsigned n = bytes.length ();
+      const char *p = reinterpret_cast<const char *>(bytes.address ());
+      init = build_string_literal (n, p, char_type_node);
+      init = TREE_OPERAND (init, 0);
+      init = TREE_OPERAND (init, 0);
+
+      *mem_size = size_int (TREE_STRING_LENGTH (init));
+      *ptr_offset = wide_int_to_tree (ssizetype, base_off);
+
+      if (decl)
+	*decl = array;
+
+      return init;
+    }
+
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
       /* Convert the 64-bit constant offset to a wider type to avoid
-	 overflow.  */
+	 overflow and use it to obtain the initializer for the subobject
+	 it points into.  */
       offset_int wioff;
       if (!base_off.is_constant (&wioff))
 	return NULL_TREE;
@@ -11773,6 +11912,9 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       unsigned HOST_WIDE_INT fieldoff = 0;
       init = fold_ctor_reference (TREE_TYPE (arg), init, base_off, 0, array,
 				  &fieldoff);
+      if (!init || init == error_mark_node)
+	return NULL_TREE;
+
       HOST_WIDE_INT cstoff;
       if (!base_off.is_constant (&cstoff))
 	return NULL_TREE;
@@ -11784,9 +11926,6 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       else
 	offset = off;
     }
-
-  if (!init)
-    return NULL_TREE;
 
   *ptr_offset = offset;
 
@@ -11858,37 +11997,27 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
   return init;
 }
-
-/* Compute the modular multiplicative inverse of A modulo M
-   using extended Euclid's algorithm.  Assumes A and M are coprime.  */
-static wide_int
-mod_inv (const wide_int &a, const wide_int &b)
+
+/* Return STRING_CST if an ARG corresponds to a string constant or zero
+   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
+   non-constant) offset in bytes within the string that ARG is accessing.
+   If MEM_SIZE is non-zero the storage size of the memory is returned.
+   If DECL is non-zero the constant declaration is returned if available.  */
+
+tree
+string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 {
-  /* Verify the assumption.  */
-  gcc_checking_assert (wi::eq_p (wi::gcd (a, b), 1));
+  return constant_byte_string (arg, ptr_offset, mem_size, decl, false);
+}
 
-  unsigned int p = a.get_precision () + 1;
-  gcc_checking_assert (b.get_precision () + 1 == p);
-  wide_int c = wide_int::from (a, p, UNSIGNED);
-  wide_int d = wide_int::from (b, p, UNSIGNED);
-  wide_int x0 = wide_int::from (0, p, UNSIGNED);
-  wide_int x1 = wide_int::from (1, p, UNSIGNED);
+/* Similar to string_constant, return a STRING_CST corresponding
+   to the value representation of the first argument if it's
+   a constant.  */
 
-  if (wi::eq_p (b, 1))
-    return wide_int::from (1, p, UNSIGNED);
-
-  while (wi::gt_p (c, 1, UNSIGNED))
-    {
-      wide_int t = d;
-      wide_int q = wi::divmod_trunc (c, d, UNSIGNED, &d);
-      c = t;
-      wide_int s = x0;
-      x0 = wi::sub (x1, wi::mul (q, x0));
-      x1 = s;
-    }
-  if (wi::lt_p (x1, 0, SIGNED))
-    x1 += d;
-  return x1;
+tree
+byte_representation (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
+{
+  return constant_byte_string (arg, ptr_offset, mem_size, decl, true);
 }
 
 /* Optimize x % C1 == C2 for signed modulo if C1 is a power of two and C2
@@ -12101,7 +12230,7 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   w = wi::lrshift (w, shift);
   wide_int a = wide_int::from (w, prec + 1, UNSIGNED);
   wide_int b = wi::shifted_mask (prec, 1, false, prec + 1);
-  wide_int m = wide_int::from (mod_inv (a, b), prec, UNSIGNED);
+  wide_int m = wide_int::from (wi::mod_inv (a, b), prec, UNSIGNED);
   tree c3 = wide_int_to_tree (type, m);
   tree c5 = NULL_TREE;
   wide_int d, e;

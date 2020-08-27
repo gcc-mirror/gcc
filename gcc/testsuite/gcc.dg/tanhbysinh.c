@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Ofast -fdump-tree-optimized" } */
+/* { dg-require-effective-target c99_runtime } */
 
 extern float sinhf (float);
 extern float tanhf (float);
