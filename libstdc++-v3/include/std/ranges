@@ -1865,7 +1865,7 @@ namespace views
 	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  template<bool _Const2>
-	    constexpr range_difference_t<_Base>
+	    constexpr auto
 	    __distance_from(const _Iterator<_Const2>& __i) const
 	    { return _M_end - __i._M_current; }
 
@@ -1902,17 +1902,17 @@ namespace views
 	    operator==(const _Iterator<_Const2>& __x, const _Sentinel& __y)
 	    { return __y.__equal(__x); }
 
-	  template<bool _Const2>
-	    requires sized_sentinel_for<sentinel_t<_Base>,
-		       iterator_t<__detail::__maybe_const_t<_Const2, _Vp>>>
-	    friend constexpr range_difference_t<_Base>
+	  template<bool _Const2,
+		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>
+	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
+	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Iterator<_Const2>& __x, const _Sentinel& __y)
 	    { return -__y.__distance_from(__x); }
 
-	  template<bool _Const2>
-	    requires sized_sentinel_for<sentinel_t<_Base>,
-		       iterator_t<__detail::__maybe_const_t<_Const2, _Vp>>>
-	    friend constexpr range_difference_t<_Base>
+	  template<bool _Const2,
+		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>
+	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
+	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Sentinel& __y, const _Iterator<_Const2>& __x)
 	    { return __y.__distance_from(__x); }
 
