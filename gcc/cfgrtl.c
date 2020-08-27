@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "print-rtl.h"
+#include "rtl-iter.h"
+#include "gimplify.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics.  */
 #if __GNUC__ >= 10
@@ -4199,7 +4201,8 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 }
 
 rtx_insn *
-duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
+duplicate_insn_chain (rtx_insn *from, rtx_insn *to,
+		      class loop *loop, copy_bb_data *id)
 {
   rtx_insn *insn, *next, *copy;
   rtx_note *last;
@@ -4228,6 +4231,51 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 	      && ANY_RETURN_P (JUMP_LABEL (insn)))
 	    JUMP_LABEL (copy) = JUMP_LABEL (insn);
           maybe_copy_prologue_epilogue_insn (insn, copy);
+	  /* If requested remap dependence info of cliques brought in
+	     via inlining.  */
+	  if (id)
+	    {
+	      subrtx_iterator::array_type array;
+	      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+		if (MEM_P (*iter) && MEM_EXPR (*iter))
+		  {
+		    tree op = MEM_EXPR (*iter);
+		    if (TREE_CODE (op) == WITH_SIZE_EXPR)
+		      op = TREE_OPERAND (op, 0);
+		    while (handled_component_p (op))
+		      op = TREE_OPERAND (op, 0);
+		    if ((TREE_CODE (op) == MEM_REF
+			 || TREE_CODE (op) == TARGET_MEM_REF)
+			&& MR_DEPENDENCE_CLIQUE (op) > 1
+			&& (!loop
+			    || (MR_DEPENDENCE_CLIQUE (op)
+				!= loop->owned_clique)))
+		      {
+			if (!id->dependence_map)
+			  id->dependence_map = new hash_map<dependence_hash,
+			      unsigned short>;
+			bool existed;
+			unsigned short &newc = id->dependence_map->get_or_insert
+					 (MR_DEPENDENCE_CLIQUE (op), &existed);
+			if (!existed)
+			  {
+			    gcc_assert
+			      (MR_DEPENDENCE_CLIQUE (op) <= cfun->last_clique);
+			    newc = ++cfun->last_clique;
+			  }
+			/* We cannot adjust MR_DEPENDENCE_CLIQUE in-place
+			   since MEM_EXPR is shared so make a copy and
+			   walk to the subtree again.  */
+			tree new_expr = unshare_expr (MEM_EXPR (*iter));
+			if (TREE_CODE (new_expr) == WITH_SIZE_EXPR)
+			  new_expr = TREE_OPERAND (new_expr, 0);
+			while (handled_component_p (new_expr))
+			  new_expr = TREE_OPERAND (new_expr, 0);
+			MR_DEPENDENCE_CLIQUE (new_expr) = newc;
+			set_mem_expr (const_cast <rtx> (*iter), new_expr);
+		      }
+		  }
+	    }
 	  break;
 
 	case JUMP_TABLE_DATA:
@@ -4292,12 +4340,14 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 /* Create a duplicate of the basic block BB.  */
 
 static basic_block
-cfg_layout_duplicate_bb (basic_block bb, copy_bb_data *)
+cfg_layout_duplicate_bb (basic_block bb, copy_bb_data *id)
 {
   rtx_insn *insn;
   basic_block new_bb;
 
-  insn = duplicate_insn_chain (BB_HEAD (bb), BB_END (bb));
+  class loop *loop = (id && current_loops) ? bb->loop_father : NULL;
+
+  insn = duplicate_insn_chain (BB_HEAD (bb), BB_END (bb), loop, id);
   new_bb = create_basic_block (insn,
 			       insn ? get_last_insn () : NULL,
 			       EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
@@ -4308,7 +4358,7 @@ cfg_layout_duplicate_bb (basic_block bb, copy_bb_data *)
       insn = BB_HEADER (bb);
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      insn = duplicate_insn_chain (BB_HEADER (bb), insn);
+      insn = duplicate_insn_chain (BB_HEADER (bb), insn, loop, id);
       if (insn)
 	BB_HEADER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
@@ -4318,7 +4368,7 @@ cfg_layout_duplicate_bb (basic_block bb, copy_bb_data *)
       insn = BB_FOOTER (bb);
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      insn = duplicate_insn_chain (BB_FOOTER (bb), insn);
+      insn = duplicate_insn_chain (BB_FOOTER (bb), insn, loop, id);
       if (insn)
 	BB_FOOTER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }

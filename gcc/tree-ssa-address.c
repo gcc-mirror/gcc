@@ -1044,6 +1044,16 @@ copy_ref_info (tree new_ref, tree old_ref)
 	}
     }
 
+  /* We can transfer dependence info.  */
+  if (!MR_DEPENDENCE_CLIQUE (new_ref)
+      && (TREE_CODE (base) == MEM_REF
+	  || TREE_CODE (base) == TARGET_MEM_REF)
+      && MR_DEPENDENCE_CLIQUE (base))
+    {
+      MR_DEPENDENCE_CLIQUE (new_ref) = MR_DEPENDENCE_CLIQUE (base);
+      MR_DEPENDENCE_BASE (new_ref) = MR_DEPENDENCE_BASE (base);
+    }
+
   /* And alignment info.  Note we cannot transfer misalignment info
      since that sits on the SSA name but this is flow-sensitive info
      which we cannot transfer in this generic routine.  */
