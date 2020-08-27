@@ -5080,8 +5080,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      duplicate_ssa_name_ptr_info (sprime,
 					   SSA_NAME_PTR_INFO (lhs));
 	      if (b != sprime_b)
-		mark_ptr_info_alignment_unknown
-		    (SSA_NAME_PTR_INFO (sprime));
+		reset_flow_sensitive_info (sprime);
 	    }
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 		   && SSA_NAME_RANGE_INFO (lhs)
