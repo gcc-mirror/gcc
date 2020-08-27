@@ -5053,7 +5053,6 @@ trees_out::start (tree t, bool code_streamed)
       break;
 
     case IDENTIFIER_NODE:
-    case MEM_REF:
     case SSA_NAME:
     case TARGET_MEM_REF:
     case TRANSLATION_UNIT_DECL:
@@ -5136,7 +5135,6 @@ trees_in::start (unsigned code)
 
     case FIXED_CST:
     case IDENTIFIER_NODE:
-    case MEM_REF:
     case POLY_INT_CST:
     case SSA_NAME:
     case TARGET_MEM_REF:
@@ -5186,7 +5184,6 @@ trees_out::core_bools (tree t)
     {
     case CALL_EXPR:
     case INTEGER_CST:
-    case MEM_REF:
     case SSA_NAME:
     case TARGET_MEM_REF:
     case TREE_VEC:
@@ -5364,7 +5361,6 @@ trees_in::core_bools (tree t)
     {
     case CALL_EXPR:
     case INTEGER_CST:
-    case MEM_REF:
     case SSA_NAME:
     case TARGET_MEM_REF:
     case TREE_VEC:

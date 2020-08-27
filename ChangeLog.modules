@@ -1,4 +1,13 @@
 2020-08-27  Nathan Sidwell  <nathan@acm.org>
+
+	Stream MEM_REFs, who knew?
+	gcc/cp/
+	* module.cc (trees_{in,out}::start): Permit MEM_REFs.
+	(trees_{in,out}::core_bools): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/memref-1_[ab].C: New.
+
+2020-08-27  Nathan Sidwell  <nathan@acm.org>
 	    Jeff Chapman II  <jchapman@lock3software.com>
 
 	Fix hash table breakage.
