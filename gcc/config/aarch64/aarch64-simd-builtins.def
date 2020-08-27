@@ -300,36 +300,36 @@
   BUILTIN_VALL (UNOP, reduc_plus_scal_, 10, ALL)
 
   /* Implemented by reduc_<maxmin_uns>_scal_<mode> (producing scalar).  */
-  BUILTIN_VDQIF_F16 (UNOP, reduc_smax_scal_, 10, ALL)
-  BUILTIN_VDQIF_F16 (UNOP, reduc_smin_scal_, 10, ALL)
-  BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10, ALL)
-  BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10, ALL)
-  BUILTIN_VHSDF (UNOP, reduc_smax_nan_scal_, 10, ALL)
-  BUILTIN_VHSDF (UNOP, reduc_smin_nan_scal_, 10, ALL)
+  BUILTIN_VDQIF_F16 (UNOP, reduc_smax_scal_, 10, NONE)
+  BUILTIN_VDQIF_F16 (UNOP, reduc_smin_scal_, 10, NONE)
+  BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10, NONE)
+  BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10, NONE)
+  BUILTIN_VHSDF (UNOP, reduc_smax_nan_scal_, 10, NONE)
+  BUILTIN_VHSDF (UNOP, reduc_smin_nan_scal_, 10, NONE)
 
   /* Implemented by <maxmin_uns><mode>3.
      smax variants map to fmaxnm,
      smax_nan variants map to fmax.  */
-  BUILTIN_VDQ_BHSI (BINOP, smax, 3, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, smin, 3, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, umax, 3, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, umin, 3, ALL)
-  BUILTIN_VHSDF_DF (BINOP, smax_nan, 3, ALL)
-  BUILTIN_VHSDF_DF (BINOP, smin_nan, 3, ALL)
+  BUILTIN_VDQ_BHSI (BINOP, smax, 3, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, smin, 3, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, umax, 3, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, umin, 3, NONE)
+  BUILTIN_VHSDF_DF (BINOP, smax_nan, 3, NONE)
+  BUILTIN_VHSDF_DF (BINOP, smin_nan, 3, NONE)
 
   /* Implemented by <maxmin_uns><mode>3.  */
-  BUILTIN_VHSDF_HSDF (BINOP, fmax, 3, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP, fmin, 3, ALL)
+  BUILTIN_VHSDF_HSDF (BINOP, fmax, 3, FP)
+  BUILTIN_VHSDF_HSDF (BINOP, fmin, 3, FP)
 
   /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
-  BUILTIN_VDQ_BHSI (BINOP, smaxp, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, sminp, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, umaxp, 0, ALL)
-  BUILTIN_VDQ_BHSI (BINOP, uminp, 0, ALL)
-  BUILTIN_VHSDF (BINOP, smaxp, 0, ALL)
-  BUILTIN_VHSDF (BINOP, sminp, 0, ALL)
-  BUILTIN_VHSDF (BINOP, smax_nanp, 0, ALL)
-  BUILTIN_VHSDF (BINOP, smin_nanp, 0, ALL)
+  BUILTIN_VDQ_BHSI (BINOP, smaxp, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, sminp, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, umaxp, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOP, uminp, 0, NONE)
+  BUILTIN_VHSDF (BINOP, smaxp, 0, NONE)
+  BUILTIN_VHSDF (BINOP, sminp, 0, NONE)
+  BUILTIN_VHSDF (BINOP, smax_nanp, 0, NONE)
+  BUILTIN_VHSDF (BINOP, smin_nanp, 0, NONE)
 
   /* Implemented by <frint_pattern><mode>2.  */
   BUILTIN_VHSDF (UNOP, btrunc, 2, ALL)
