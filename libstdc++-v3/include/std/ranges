@@ -3362,15 +3362,15 @@ namespace views
       { return _Iterator<false>(ranges::begin(_M_base)); }
 
       constexpr auto
-      begin() const requires __detail::__simple_view<_Vp>
+      begin() const requires range<const _Vp>
       { return _Iterator<true>(ranges::begin(_M_base)); }
 
       constexpr auto
-      end()
+      end() requires (!__detail::__simple_view<_Vp> && !common_range<_Vp>)
       { return _Sentinel<false>{ranges::end(_M_base)}; }
 
       constexpr auto
-      end() requires common_range<_Vp>
+      end() requires (!__detail::__simple_view<_Vp> && common_range<_Vp>)
       { return _Iterator<false>{ranges::end(_M_base)}; }
 
       constexpr auto
@@ -3576,19 +3576,26 @@ namespace views
 	  base() const
 	  { return _M_end; }
 
-	  friend constexpr bool
-	  operator==(const _Iterator<_Const>& __x, const _Sentinel& __y)
-	  { return __y._M_equal(__x); }
+	  template<bool _Const2>
+	    requires sentinel_for<sentinel_t<_Base>,
+		       iterator_t<__detail::__maybe_const_t<_Const2, _Vp>>>
+	    friend constexpr bool
+	    operator==(const _Iterator<_Const2>& __x, const _Sentinel& __y)
+	    { return __y._M_equal(__x); }
 
-	  friend constexpr range_difference_t<_Base>
-	  operator-(const _Iterator<_Const>& __x, const _Sentinel& __y)
-	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
-	  { return __x._M_current - __y._M_end; }
+	  template<bool _Const2,
+		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>
+	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
+	    friend constexpr range_difference_t<_Base2>
+	    operator-(const _Iterator<_Const2>& __x, const _Sentinel& __y)
+	    { return __x._M_current - __y._M_end; }
 
-	  friend constexpr range_difference_t<_Base>
-	  operator-(const _Sentinel& __x, const _Iterator<_Const>& __y)
-	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
-	  { return __x._M_end - __y._M_current; }
+	  template<bool _Const2,
+		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>
+	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
+	    friend constexpr range_difference_t<_Base>
+	    operator-(const _Sentinel& __x, const _Iterator<_Const2>& __y)
+	    { return __x._M_end - __y._M_current; }
 
 	  friend _Sentinel<!_Const>;
 	};
