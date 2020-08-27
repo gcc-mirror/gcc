@@ -1,4 +1,15 @@
 2020-08-27  Nathan Sidwell  <nathan@acm.org>
+	    Jeff Chapman II  <jchapman@lock3software.com>
+
+	Fix hash table breakage.
+	gcc/cp/
+	* name-lookup.c (push_namespace): Do not create slot on first
+	lookup.
+	gcc/testsuite/
+	* g++.dg/modules/string-view1.C: New test.
+	* g++.dg/modules/string-view2.C: Ditto.
+
+2020-08-27  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 708b3600d04.
 

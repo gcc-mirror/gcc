@@ -8872,8 +8872,9 @@ push_namespace (tree name, bool make_inline)
     {
       /* Before making a new namespace, see if we already have one in
 	 the existing partitions of the current namespace.  */
-      tree *slot = find_namespace_slot (current_namespace, name, true);
-      ns = reuse_namespace (slot, current_namespace, name);
+      tree *slot = find_namespace_slot (current_namespace, name, false);
+      if (slot)
+	ns = reuse_namespace (slot, current_namespace, name);
       if (!ns)
 	ns = make_namespace (current_namespace, name,
 			     input_location, make_inline);
@@ -8884,6 +8885,12 @@ push_namespace (tree name, bool make_inline)
 	{
 	  /* finish up making the namespace.  */
 	  add_decl_to_level (NAMESPACE_LEVEL (current_namespace), ns);
+	  if (!slot)
+	    {
+	      slot = find_namespace_slot (current_namespace, name);
+	      /* This should find the slot created by pushdecl.  */
+	      gcc_checking_assert (slot);
+	    }
 	  make_namespace_finish (ns, slot);
 
 	  /* Add the anon using-directive here, we don't do it in
