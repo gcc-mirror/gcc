@@ -2046,6 +2046,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // YEAR_MONTH
 
+    namespace __detail
+    {
+      // [time.cal.ym], [time.cal.ymd], etc constrain the 'months'-based
+      // addition/subtraction operator overloads like so:
+      //
+      //   Constraints: if the argument supplied by the caller for the months
+      //   parameter is convertible to years, its implicit conversion sequence
+      //   to years is worse than its implicit conversion sequence to months.
+      //
+      // We realize this constraint by templatizing the 'months'-based
+      // overloads (using a dummy defaulted template parameter), so that
+      // overload resolution doesn't select the 'months'-based overload unless
+      // the implicit conversion sequence to 'months' is better than that to
+      // 'years'.
+      using __months_years_conversion_disambiguator = void;
+    }
+
     class year_month
     {
     private:
@@ -2068,19 +2085,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       month() const noexcept
       { return _M_m; }
 
-      constexpr year_month&
-      operator+=(const months& __dm) noexcept
-      {
-	*this = *this + __dm;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month&
+	operator+=(const months& __dm) noexcept
+	{
+	  *this = *this + __dm;
+	  return *this;
+	}
 
-      constexpr year_month&
-      operator-=(const months& __dm) noexcept
-      {
-	*this = *this - __dm;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month&
+	operator-=(const months& __dm) noexcept
+	{
+	  *this = *this - __dm;
+	  return *this;
+	}
 
       constexpr year_month&
       operator+=(const years& __dy)  noexcept
@@ -2108,25 +2127,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator<=>(const year_month& __x, const year_month& __y) noexcept
 	= default;
 
-      friend constexpr year_month
-      operator+(const year_month& __ym, const months& __dm) noexcept
-      {
-	// TODO: Optimize?
-	auto __m = __ym.month() + __dm;
-	auto __i = unsigned{__ym.month()} - 1 + __dm.count();
-	auto __y = (__i < 0
-		    ? __ym.year() + years{(__i - 11) / 12}
-		    : __ym.year() + years{__i / 12});
-	return __y / __m;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month
+	operator+(const year_month& __ym, const months& __dm) noexcept
+	{
+	  // TODO: Optimize?
+	  auto __m = __ym.month() + __dm;
+	  auto __i = unsigned{__ym.month()} - 1 + __dm.count();
+	  auto __y = (__i < 0
+		      ? __ym.year() + years{(__i - 11) / 12}
+		      : __ym.year() + years{__i / 12});
+	  return __y / __m;
+	}
 
-      friend constexpr year_month
-      operator+(const months& __dm, const year_month& __ym) noexcept
-      { return __ym + __dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month
+	operator+(const months& __dm, const year_month& __ym) noexcept
+	{ return __ym + __dm; }
 
-      friend constexpr year_month
-      operator-(const year_month& __ym, const months& __dm) noexcept
-      { return __ym + -__dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month
+	operator-(const year_month& __ym, const months& __dm) noexcept
+	{ return __ym + -__dm; }
 
       friend constexpr months
       operator-(const year_month& __x, const year_month& __y) noexcept
@@ -2200,19 +2222,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : year_month_day(sys_days{__dp.time_since_epoch()})
       { }
 
-      constexpr year_month_day&
-      operator+=(const months& __m) noexcept
-      {
-	*this = *this + __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_day&
+	operator+=(const months& __m) noexcept
+	{
+	  *this = *this + __m;
+	  return *this;
+	}
 
-      constexpr year_month_day&
-      operator-=(const months& __m) noexcept
-      {
-	*this = *this - __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_day&
+	operator-=(const months& __m) noexcept
+	{
+	  *this = *this - __m;
+	  return *this;
+	}
 
       constexpr year_month_day&
       operator+=(const years& __y) noexcept
@@ -2262,13 +2286,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator<=>(const year_month_day& __x, const year_month_day& __y) noexcept
 	= default;
 
-      friend constexpr year_month_day
-      operator+(const year_month_day& __ymd, const months& __dm) noexcept
-      { return (__ymd.year() / __ymd.month() + __dm) / __ymd.day(); }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_day
+	operator+(const year_month_day& __ymd, const months& __dm) noexcept
+	{ return (__ymd.year() / __ymd.month() + __dm) / __ymd.day(); }
 
-      friend constexpr year_month_day
-      operator+(const months& __dm, const year_month_day& __ymd) noexcept
-      { return __ymd + __dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_day
+	operator+(const months& __dm, const year_month_day& __ymd) noexcept
+	{ return __ymd + __dm; }
 
       friend constexpr year_month_day
       operator+(const year_month_day& __ymd, const years& __dy) noexcept
@@ -2278,9 +2304,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator+(const years& __dy, const year_month_day& __ymd) noexcept
       { return __ymd + __dy; }
 
-      friend constexpr year_month_day
-      operator-(const year_month_day& __ymd, const months& __dm) noexcept
-      { return __ymd + -__dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_day
+	operator-(const year_month_day& __ymd, const months& __dm) noexcept
+	{ return __ymd + -__dm; }
 
       friend constexpr year_month_day
       operator-(const year_month_day& __ymd, const years& __dy) noexcept
@@ -2364,19 +2391,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_y{__y}, _M_mdl{__mdl}
       { }
 
-      constexpr year_month_day_last&
-      operator+=(const months& __m) noexcept
-      {
-	*this = *this + __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_day_last&
+	operator+=(const months& __m) noexcept
+	{
+	  *this = *this + __m;
+	  return *this;
+	}
 
-      constexpr year_month_day_last&
-      operator-=(const months& __m) noexcept
-      {
-	*this = *this - __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_day_last&
+	operator-=(const months& __m) noexcept
+	{
+	  *this = *this - __m;
+	  return *this;
+	}
 
       constexpr year_month_day_last&
       operator+=(const years& __y)  noexcept
@@ -2438,20 +2467,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  const year_month_day_last& __y) noexcept
 	= default;
 
-      friend constexpr year_month_day_last
-      operator+(const year_month_day_last& __ymdl,
-		const months& __dm) noexcept
-      { return (__ymdl.year() / __ymdl.month() + __dm) / last; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_day_last
+	operator+(const year_month_day_last& __ymdl,
+		  const months& __dm) noexcept
+	{ return (__ymdl.year() / __ymdl.month() + __dm) / last; }
 
-      friend constexpr year_month_day_last
-      operator+(const months& __dm,
-		const year_month_day_last& __ymdl) noexcept
-      { return __ymdl + __dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_day_last
+	operator+(const months& __dm,
+		  const year_month_day_last& __ymdl) noexcept
+	{ return __ymdl + __dm; }
 
-      friend constexpr year_month_day_last
-      operator-(const year_month_day_last& __ymdl,
-		const months& __dm) noexcept
-      { return __ymdl + -__dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_day_last
+	operator-(const year_month_day_last& __ymdl,
+		  const months& __dm) noexcept
+	{ return __ymdl + -__dm; }
 
       friend constexpr year_month_day_last
       operator+(const year_month_day_last& __ymdl,
@@ -2544,19 +2576,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : year_month_weekday{sys_days{__dp.time_since_epoch()}}
       { }
 
-      constexpr year_month_weekday&
-      operator+=(const months& __m) noexcept
-      {
-	*this = *this + __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_weekday&
+	operator+=(const months& __m) noexcept
+	{
+	  *this = *this + __m;
+	  return *this;
+	}
 
-      constexpr year_month_weekday&
-      operator-=(const months& __m) noexcept
-      {
-	*this = *this - __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_weekday&
+	operator-=(const months& __m) noexcept
+	{
+	  *this = *this - __m;
+	  return *this;
+	}
 
       constexpr year_month_weekday&
       operator+=(const years& __y) noexcept
@@ -2626,13 +2660,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && __x.weekday_indexed() == __y.weekday_indexed();
       }
 
-      friend constexpr year_month_weekday
-      operator+(const year_month_weekday& __ymwd, const months& __dm) noexcept
-      { return (__ymwd.year() / __ymwd.month() + __dm) / __ymwd.weekday_indexed(); }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_weekday
+	operator+(const year_month_weekday& __ymwd, const months& __dm) noexcept
+	{
+	  return ((__ymwd.year() / __ymwd.month() + __dm)
+		  / __ymwd.weekday_indexed());
+	}
 
-      friend constexpr year_month_weekday
-      operator+(const months& __dm, const year_month_weekday& __ymwd) noexcept
-      { return __ymwd + __dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_weekday
+	operator+(const months& __dm, const year_month_weekday& __ymwd) noexcept
+	{ return __ymwd + __dm; }
 
       friend constexpr year_month_weekday
       operator+(const year_month_weekday& __ymwd, const years& __dy) noexcept
@@ -2642,9 +2681,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator+(const years& __dy, const year_month_weekday& __ymwd) noexcept
       { return __ymwd + __dy; }
 
-      friend constexpr year_month_weekday
-      operator-(const year_month_weekday& __ymwd, const months& __dm) noexcept
-      { return __ymwd + -__dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_weekday
+	operator-(const year_month_weekday& __ymwd, const months& __dm) noexcept
+	{ return __ymwd + -__dm; }
 
       friend constexpr year_month_weekday
       operator-(const year_month_weekday& __ymwd, const years& __dy) noexcept
@@ -2690,19 +2730,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_y{__y}, _M_m{__m}, _M_wdl{__wdl}
       { }
 
-      constexpr year_month_weekday_last&
-      operator+=(const months& __m) noexcept
-      {
-	*this = *this + __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_weekday_last&
+	operator+=(const months& __m) noexcept
+	{
+	  *this = *this + __m;
+	  return *this;
+	}
 
-      constexpr year_month_weekday_last&
-      operator-=(const months& __m) noexcept
-      {
-	*this = *this - __m;
-	return *this;
-      }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	constexpr year_month_weekday_last&
+	operator-=(const months& __m) noexcept
+	{
+	  *this = *this - __m;
+	  return *this;
+	}
 
       constexpr year_month_weekday_last&
       operator+=(const years& __y)  noexcept
@@ -2759,15 +2801,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && __x.weekday_last() == __y.weekday_last();
       }
 
-      friend constexpr year_month_weekday_last
-      operator+(const year_month_weekday_last& __ymwdl,
-		const months& __dm) noexcept
-      { return (__ymwdl.year() / __ymwdl.month() + __dm) / __ymwdl.weekday_last(); }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_weekday_last
+	operator+(const year_month_weekday_last& __ymwdl,
+		  const months& __dm) noexcept
+	{
+	  return ((__ymwdl.year() / __ymwdl.month() + __dm)
+		  / __ymwdl.weekday_last());
+	}
 
-      friend constexpr year_month_weekday_last
-      operator+(const months& __dm,
-		const year_month_weekday_last& __ymwdl) noexcept
-      { return __ymwdl + __dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_weekday_last
+	operator+(const months& __dm,
+		  const year_month_weekday_last& __ymwdl) noexcept
+	{ return __ymwdl + __dm; }
 
       friend constexpr year_month_weekday_last
       operator+(const year_month_weekday_last& __ymwdl,
@@ -2779,10 +2826,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		const year_month_weekday_last& __ymwdl) noexcept
       { return __ymwdl + __dy; }
 
-      friend constexpr year_month_weekday_last
-      operator-(const year_month_weekday_last& __ymwdl,
-		const months& __dm) noexcept
-      { return __ymwdl + -__dm; }
+      template<typename = __detail::__months_years_conversion_disambiguator>
+	friend constexpr year_month_weekday_last
+	operator-(const year_month_weekday_last& __ymwdl,
+		  const months& __dm) noexcept
+	{ return __ymwdl + -__dm; }
 
       friend constexpr year_month_weekday_last
       operator-(const year_month_weekday_last& __ymwdl,
