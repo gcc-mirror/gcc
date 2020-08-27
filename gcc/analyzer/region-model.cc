@@ -1398,6 +1398,15 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 {
   gcc_assert (ptr_sval);
 
+  /* If we're dereferencing PTR_SVAL, assume that it is non-NULL; add this
+     as a constraint.  This suppresses false positives from
+     -Wanalyzer-null-dereference for the case where we later have an
+     if (PTR_SVAL) that would occur if we considered the false branch
+     and transitioned the malloc state machine from start->null.  */
+  tree null_ptr_cst = build_int_cst (ptr_sval->get_type (), 0);
+  const svalue *null_ptr = m_mgr->get_or_create_constant_svalue (null_ptr_cst);
+  m_constraints->add_constraint (ptr_sval, NE_EXPR, null_ptr);
+
   switch (ptr_sval->get_kind ())
     {
     default:
