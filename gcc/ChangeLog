@@ -1,3 +1,20 @@
+2020-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/87256
+	* config/pa/pa.c (hppa_rtx_costs_shadd_p): New helper function
+	to check for coefficients supported by shNadd and shladd,l.
+	(hppa_rtx_costs):  Rewrite to avoid using estimates based upon
+	FACTOR and enable recursing deeper into RTL expressions.
+	* config/pa/pa.md (shd_internal): Fix define_expand to provide
+	gen_shd_internal.
+
+2020-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/pa/pa.md (ashldi3): Additionally, on !TARGET_64BIT
+	generate a two instruction shd/zdep sequence when shifting
+	registers by suitable constants.
+	(shd_internal): New define_expand to provide gen_shd_internal.
+
 2020-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
