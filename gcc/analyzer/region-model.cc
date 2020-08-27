@@ -1764,6 +1764,7 @@ region_model::add_any_constraints_from_gassign (enum tree_code op,
       break;
 
     case NOP_EXPR:
+    case VIEW_CONVERT_EXPR:
       {
 	add_constraint (gimple_assign_rhs1 (assign), op, rhs, ctxt);
       }
