@@ -14529,21 +14529,19 @@ Selector_expression::lower_method_expression(Gogo* gogo)
       is_pointer = true;
       type = type->points_to();
     }
-  Named_type* nt = type->named_type();
-  if (nt == NULL)
-    {
-      go_error_at(location,
-                  ("method expression requires named type or "
-                   "pointer to named type"));
-      return Expression::make_error(location);
-    }
 
+  Named_type* nt = type->named_type();
+  Struct_type* st = type->struct_type();
   bool is_ambiguous;
-  Method* method = nt->method_function(name, &is_ambiguous);
+  Method* method = NULL;
+  if (nt != NULL)
+    method = nt->method_function(name, &is_ambiguous);
+  else if (st != NULL)
+    method = st->method_function(name, &is_ambiguous);
   const Typed_identifier* imethod = NULL;
   if (method == NULL && !is_pointer)
     {
-      Interface_type* it = nt->interface_type();
+      Interface_type* it = type->interface_type();
       if (it != NULL)
 	imethod = it->find_method(name);
     }
@@ -14551,16 +14549,28 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   if ((method == NULL && imethod == NULL)
       || (left_type->named_type() != NULL && left_type->points_to() != NULL))
     {
-      if (!is_ambiguous)
-	go_error_at(location, "type %<%s%s%> has no method %<%s%>",
-                    is_pointer ? "*" : "",
-                    nt->message_name().c_str(),
-                    Gogo::message_name(name).c_str());
+      if (nt != NULL)
+	{
+	  if (!is_ambiguous)
+	    go_error_at(location, "type %<%s%s%> has no method %<%s%>",
+			is_pointer ? "*" : "",
+			nt->message_name().c_str(),
+			Gogo::message_name(name).c_str());
+	  else
+	    go_error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
+			Gogo::message_name(name).c_str(),
+			is_pointer ? "*" : "",
+			nt->message_name().c_str());
+	}
       else
-	go_error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
-                    Gogo::message_name(name).c_str(),
-                    is_pointer ? "*" : "",
-                    nt->message_name().c_str());
+	{
+	  if (!is_ambiguous)
+	    go_error_at(location, "type has no method %<%s%>",
+			Gogo::message_name(name).c_str());
+	  else
+	    go_error_at(location, "method %<%s%> is ambiguous",
+			Gogo::message_name(name).c_str());
+	}
       return Expression::make_error(location);
     }
 
@@ -14657,7 +14667,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   Expression* ve = Expression::make_var_reference(vno, location);
   Expression* bm;
   if (method != NULL)
-    bm = Type::bind_field_or_method(gogo, nt, ve, name, location);
+    bm = Type::bind_field_or_method(gogo, type, ve, name, location);
   else
     bm = Expression::make_interface_field_reference(ve, name, location);
 
