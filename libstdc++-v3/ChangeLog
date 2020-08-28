@@ -1,3 +1,95 @@
+2020-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__duration_common_type): Ensure the
+	reduced ratio is used. Remove unused partial specialization
+	using __failure_type.
+	(common_type): Pass reduced ratios to __duration_common_type.
+	Add partial specializations for simple cases involving a single
+	duration or time_point type.
+	(duration::period): Use reduced ratio.
+	(duration::operator+(), duration::operator-()): Return duration
+	type using the reduced ratio.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Adjust expected errors.
+	* testsuite/20_util/duration/requirements/reduced_period.cc: New test.
+
+2020-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/chrono (year_month::operator+): Properly handle a
+	month value of 0 by casting the month value to int before
+	subtracting 1 from it so that the difference is sign-extended in
+	the subsequent addition.
+	* testsuite/std/time/year_month/1.cc: Test adding months to a
+	year_month whose month component is below or above the
+	normalized range of [1,12].
+
+2020-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/chrono
+	(__detail::__months_years_conversion_disambiguator): Define.
+	(year_month::operator+=): Templatize the 'months'-based overload
+	so that the 'years'-based overload is selected in case of
+	equally-ranked implicit conversion sequences to both 'months'
+	and 'years' from the supplied argument.
+	(year_month::operator-=): Likewise.
+	(year_month::operator+): Likewise.
+	(year_month::operator-): Likewise.
+	(year_month_day::operator+=): Likewise.
+	(year_month_day::operator-=): Likewise.
+	(year_month_day::operator+): Likewise.
+	(year_month_day::operator-): Likewise.
+	(year_month_day_last::operator+=): Likewise.
+	(year_month_day_last::operator-=): Likewise.
+	(year_month_day_last::operator+): Likewise
+	(year_month_day_last::operator-): Likewise.
+	(year_month_day_weekday::operator+=): Likewise
+	(year_month_day_weekday::operator-=): Likewise.
+	(year_month_day_weekday::operator+): Likewise.
+	(year_month_day_weekday::operator-): Likewise.
+	(year_month_day_weekday_last::operator+=): Likewise
+	(year_month_day_weekday_last::operator-=): Likewise.
+	(year_month_day_weekday_last::operator+): Likewise.
+	(year_month_day_weekday_last::operator-): Likewise.
+	(testsuite/std/time/year_month/2.cc): New test.
+	(testsuite/std/time/year_month_day/2.cc): New test.
+	(testsuite/std/time/year_month_day_last/2.cc): New test.
+	(testsuite/std/time/year_month_weekday/2.cc): New test.
+	(testsuite/std/time/year_month_weekday_last/2.cc): New test.
+	* testsuite/std/time/year_month/2.cc: New file.
+	* testsuite/std/time/year_month_day/2.cc: New file.
+	* testsuite/std/time/year_month_day_last/2.cc: New file.
+	* testsuite/std/time/year_month_weekday/2.cc: New file.
+	* testsuite/std/time/year_month_weekday_last/2.cc: New file.
+
+2020-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95322
+	* include/std/ranges (transform_view::sentinel::__distance_from):
+	Give this a deduced return type.
+	(transform_view::sentinel::operator-): Adjust the return type so
+	that it's based on the constness of the iterator rather than
+	that of the sentinel.
+	* testsuite/std/ranges/adaptors/95322.cc: Refer to LWG 3488.
+
+2020-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (elements_view::begin): Adjust constraints.
+	(elements_view::end): Likewise.
+	(elements_view::_Sentinel::operator==): Templatize to take both
+	_Iterator<true> and _Iterator<false>.
+	(elements_view::_Sentinel::operator-): Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc: Add testcase for
+	the example from P1994R1.
+	* testsuite/std/ranges/adaptors/lwg3406.cc: New test.
+
+2020-08-27  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (elements_view::end): Replace these two
+	overloads with four new overloads.
+	(elements_view::_Iterator::operator==): Remove.
+	(elements_view::_Iterator::operator-): Likewise.
+	(elements_view::_Sentinel): Define.
+
 2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/tuple (_Tuple_impl): Whitespaces changes for

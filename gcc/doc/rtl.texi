@@ -3954,7 +3954,7 @@ variable.
 @findex NOTE_INSN_BEGIN_STMT
 @item NOTE_INSN_BEGIN_STMT
 This note is used to generate @code{is_stmt} markers in line number
-debuggign information.  It indicates the beginning of a user
+debugging information.  It indicates the beginning of a user
 statement.
 
 @findex NOTE_INSN_INLINE_ENTRY

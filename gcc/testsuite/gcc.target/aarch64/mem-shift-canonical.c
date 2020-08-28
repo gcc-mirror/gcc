@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Os -ftree-vectorize -dp" } */
+/* { dg-require-effective-target lp64 } */
 
 
 struct T
