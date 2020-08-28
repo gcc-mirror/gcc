@@ -254,35 +254,23 @@ public:
 			   to, origin_new_sval, m_eg.get_ext_state ());
   }
 
-  void warn_for_state (const supernode *snode, const gimple *stmt,
-		       tree var, state_machine::state_t state,
-		       pending_diagnostic *d) FINAL OVERRIDE
+  void warn (const supernode *snode, const gimple *stmt,
+	     tree var, pending_diagnostic *d) FINAL OVERRIDE
   {
     LOG_FUNC (get_logger ());
     gcc_assert (d); // take ownership
-
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL);
-    state_machine::state_t current;
-    if (var)
-      {
-	const svalue *var_old_sval
-	  = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
-	current = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
-      }
-    else
-      current = m_old_smap->get_global_state ();
 
-    if (state == current)
-      {
-	const svalue *var_old_sval
-	  = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
-	m_eg.get_diagnostic_manager ().add_diagnostic
-	  (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
-	   var, var_old_sval, state, d);
-      }
-    else
-      delete d;
+    const svalue *var_old_sval
+      = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
+    state_machine::state_t current
+      = (var
+	 ? m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ())
+	 : m_old_smap->get_global_state ());
+    m_eg.get_diagnostic_manager ().add_diagnostic
+      (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
+       var, var_old_sval, current, d);
   }
 
   /* Hook for picking more readable trees for SSA names of temporaries,

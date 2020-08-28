@@ -808,9 +808,8 @@ struct null_assignment_sm_context : public sm_context
 							*m_new_state));
   }
 
-  void warn_for_state (const supernode *, const gimple *,
-		       tree, state_machine::state_t,
-		       pending_diagnostic *d) FINAL OVERRIDE
+  void warn (const supernode *, const gimple *,
+	     tree, pending_diagnostic *d) FINAL OVERRIDE
   {
     delete d;
   }

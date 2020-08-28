@@ -128,7 +128,7 @@ pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
     return;
 
   pending_diagnostic *diag = new pattern_match (lhs, op, rhs);
-  sm_ctxt->warn_for_state (node, stmt, lhs, m_start, diag);
+  sm_ctxt->warn (node, stmt, lhs, diag);
 }
 
 bool

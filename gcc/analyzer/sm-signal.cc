@@ -346,9 +346,10 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
 	  if (signal_unsafe_p (callee_fndecl))
-	    sm_ctxt->warn_for_state (node, stmt, NULL_TREE, m_in_signal_handler,
-				     new signal_unsafe_call (*this, call,
-							     callee_fndecl));
+	    if (sm_ctxt->get_global_state () == m_in_signal_handler)
+	      sm_ctxt->warn (node, stmt, NULL_TREE,
+			     new signal_unsafe_call (*this, call,
+						     callee_fndecl));
     }
 
   return false;

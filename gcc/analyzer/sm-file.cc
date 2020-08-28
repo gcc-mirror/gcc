@@ -344,9 +344,12 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 
 	    sm_ctxt->on_transition (node, stmt , arg, m_nonnull, m_closed);
 
-	    sm_ctxt->warn_for_state (node, stmt, arg, m_closed,
-				     new double_fclose (*this, diag_arg));
-	    sm_ctxt->on_transition (node, stmt, arg, m_closed, m_stop);
+	    if (sm_ctxt->get_state (stmt, arg) == m_closed)
+	      {
+		sm_ctxt->warn (node, stmt, arg,
+			       new double_fclose (*this, diag_arg));
+		sm_ctxt->set_next_state (stmt, arg, m_stop);
+	      }
 	    return true;
 	  }
 

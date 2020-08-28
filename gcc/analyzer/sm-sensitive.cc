@@ -174,8 +174,9 @@ sensitive_state_machine::warn_for_any_exposure (sm_context *sm_ctxt,
 						tree arg) const
 {
   tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-  sm_ctxt->warn_for_state (node, stmt, arg, m_sensitive,
-			   new exposure_through_output_file (*this, diag_arg));
+  if (sm_ctxt->get_state (stmt, arg) == m_sensitive)
+    sm_ctxt->warn (node, stmt, arg,
+		   new exposure_through_output_file (*this, diag_arg));
 }
 
 /* Implementation of state_machine::on_stmt vfunc for

@@ -198,11 +198,9 @@ public:
   }
 
   /* Called by state_machine in response to pattern matches:
-     issue a diagnostic D if VAR is in state STATE, using NODE and STMT
-     for location information.  */
-  virtual void warn_for_state (const supernode *node, const gimple *stmt,
-			       tree var, state_machine::state_t state,
-			       pending_diagnostic *d) = 0;
+     issue a diagnostic D using NODE and STMT for location information.  */
+  virtual void warn (const supernode *node, const gimple *stmt,
+		     tree var, pending_diagnostic *d) = 0;
 
   /* For use when generating trees when creating pending_diagnostics, so that
      rather than e.g.

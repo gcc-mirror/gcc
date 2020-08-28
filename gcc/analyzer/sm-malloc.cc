@@ -716,14 +716,20 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	       we don't want to complain about double-free of NULL.  */
 
 	    /* freed -> stop, with warning.  */
-	    sm_ctxt->warn_for_state (node, stmt, arg, m_freed,
-				     new double_free (*this, diag_arg));
-	    sm_ctxt->on_transition (node, stmt, arg, m_freed, m_stop);
+	    if (sm_ctxt->get_state (stmt, arg) == m_freed)
+	      {
+		sm_ctxt->warn (node, stmt, arg,
+			       new double_free (*this, diag_arg));
+		sm_ctxt->set_next_state (stmt, arg, m_stop);
+	      }
 
 	    /* non-heap -> stop, with warning.  */
-	    sm_ctxt->warn_for_state (node, stmt, arg, m_non_heap,
-				     new free_of_non_heap (*this, diag_arg));
-	    sm_ctxt->on_transition (node, stmt, arg, m_non_heap, m_stop);
+	    if (sm_ctxt->get_state (stmt, arg) == m_non_heap)
+	      {
+		sm_ctxt->warn (node, stmt, arg,
+			       new free_of_non_heap (*this, diag_arg));
+		sm_ctxt->set_next_state (stmt, arg, m_stop);
+	      }
 	    return true;
 	  }
 
@@ -744,17 +750,23 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 		      || bitmap_bit_p (nonnull_args, i))
 		    {
 		      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-		      sm_ctxt->warn_for_state
-			(node, stmt, arg, m_unchecked,
-			 new possible_null_arg (*this, diag_arg, callee_fndecl,
-						i));
-		      sm_ctxt->on_transition (node, stmt, arg, m_unchecked,
-					      m_nonnull);
-
-		      sm_ctxt->warn_for_state
-			(node, stmt, arg, m_null,
-			 new null_arg (*this, diag_arg, callee_fndecl, i));
-		      sm_ctxt->on_transition (node, stmt, arg, m_null, m_stop);
+		      state_t state = sm_ctxt->get_state (stmt, arg);
+		      /* Can't use a switch as the states are non-const.  */
+		      if (state == m_unchecked)
+			{
+			  sm_ctxt->warn (node, stmt, arg,
+					 new possible_null_arg (*this, diag_arg,
+								callee_fndecl,
+								i));
+			  sm_ctxt->set_next_state (stmt, arg, m_nonnull);
+			}
+		      else if (state == m_null)
+			{
+			  sm_ctxt->warn (node, stmt, arg,
+					 new null_arg (*this, diag_arg,
+						       callee_fndecl, i));
+			  sm_ctxt->set_next_state (stmt, arg, m_stop);
+			}
 		    }
 		}
 	      BITMAP_FREE (nonnull_args);
@@ -800,17 +812,26 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  tree arg = TREE_OPERAND (op, 0);
 	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
-	  sm_ctxt->warn_for_state (node, stmt, arg, m_unchecked,
-				   new possible_null_deref (*this, diag_arg));
-	  sm_ctxt->on_transition (node, stmt, arg, m_unchecked, m_nonnull);
-
-	  sm_ctxt->warn_for_state (node, stmt, arg, m_null,
-				   new null_deref (*this, diag_arg));
-	  sm_ctxt->on_transition (node, stmt, arg, m_null, m_stop);
-
-	  sm_ctxt->warn_for_state (node, stmt, arg, m_freed,
-				   new use_after_free (*this, diag_arg));
-	  sm_ctxt->on_transition (node, stmt, arg, m_freed, m_stop);
+	  state_t state = sm_ctxt->get_state (stmt, arg);
+	  /* Can't use a switch as the states are non-const.  */
+	  if (state == m_unchecked)
+	    {
+	      sm_ctxt->warn (node, stmt, arg,
+			     new possible_null_deref (*this, diag_arg));
+	      sm_ctxt->set_next_state (stmt, arg, m_nonnull);
+	    }
+	  else if (state == m_null)
+	    {
+	      sm_ctxt->warn (node, stmt, arg,
+			     new null_deref (*this, diag_arg));
+	      sm_ctxt->set_next_state (stmt, arg, m_stop);
+	    }
+	  else if (state == m_freed)
+	    {
+	      sm_ctxt->warn (node, stmt, arg,
+			     new use_after_free (*this, diag_arg));
+	      sm_ctxt->set_next_state (stmt, arg, m_stop);
+	    }
 	}
     }
   return false;

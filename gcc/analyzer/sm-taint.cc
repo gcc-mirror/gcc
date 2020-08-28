@@ -233,27 +233,36 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	    is_unsigned = TYPE_UNSIGNED (TREE_TYPE (arg));
 
-	  /* Complain about missing bounds.  */
-	  sm_ctxt->warn_for_state
-	    (node, stmt, arg, m_tainted,
-	     new tainted_array_index (*this, diag_arg,
-				      is_unsigned
-				      ? BOUNDS_LOWER : BOUNDS_NONE));
-	  sm_ctxt->on_transition (node, stmt, arg, m_tainted, m_stop);
-
-	  /* Complain about missing upper bound.  */
-	  sm_ctxt->warn_for_state  (node, stmt, arg, m_has_lb,
-				    new tainted_array_index (*this, diag_arg,
-							     BOUNDS_LOWER));
-	  sm_ctxt->on_transition (node, stmt, arg, m_has_lb, m_stop);
-
-	  /* Complain about missing lower bound.  */
-	  if (!is_unsigned)
+	  state_t state = sm_ctxt->get_state (stmt, arg);
+	  /* Can't use a switch as the states are non-const.  */
+	  if (state == m_tainted)
 	    {
-	      sm_ctxt->warn_for_state  (node, stmt, arg, m_has_ub,
-					new tainted_array_index (*this, diag_arg,
-								 BOUNDS_UPPER));
-	      sm_ctxt->on_transition (node, stmt, arg, m_has_ub, m_stop);
+	      /* Complain about missing bounds.  */
+	      pending_diagnostic *d
+		= new tainted_array_index (*this, diag_arg,
+					   is_unsigned
+					   ? BOUNDS_LOWER : BOUNDS_NONE);
+	      sm_ctxt->warn (node, stmt, arg, d);
+	      sm_ctxt->set_next_state (stmt, arg, m_stop);
+	    }
+	  else if (state == m_has_lb)
+	    {
+	      /* Complain about missing upper bound.  */
+	      sm_ctxt->warn (node, stmt, arg,
+			      new tainted_array_index (*this, diag_arg,
+						       BOUNDS_LOWER));
+	      sm_ctxt->set_next_state (stmt, arg, m_stop);
+	    }
+	  else if (state == m_has_ub)
+	    {
+	      /* Complain about missing lower bound.  */
+	      if (!is_unsigned)
+		{
+		  sm_ctxt->warn  (node, stmt, arg,
+				  new tainted_array_index (*this, diag_arg,
+							   BOUNDS_UPPER));
+		  sm_ctxt->set_next_state (stmt, arg, m_stop);
+		}
 	    }
 	}
     }
