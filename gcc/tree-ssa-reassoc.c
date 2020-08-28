@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify.h"
 #include "case-cfn-macros.h"
+#include "tree-ssa-reassoc.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -188,15 +189,6 @@ static struct
   int pows_created;
 } reassociate_stats;
 
-/* Operator, rank pair.  */
-struct operand_entry
-{
-  unsigned int rank;
-  unsigned int id;
-  tree op;
-  unsigned int count;
-  gimple *stmt_to_insert;
-};
 
 static object_allocator<operand_entry> operand_entry_pool
   ("operand entry pool");
@@ -226,7 +218,7 @@ static bool reassoc_stmt_dominates_stmt_p (gimple *, gimple *);
 /* Wrapper around gsi_remove, which adjusts gimple_uid of debug stmts
    possibly added by gsi_remove.  */
 
-bool
+static bool
 reassoc_remove_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -2408,18 +2400,7 @@ optimize_ops_list (enum tree_code opcode,
    For more information see comments above fold_test_range in fold-const.c,
    this implementation is for GIMPLE.  */
 
-struct range_entry
-{
-  tree exp;
-  tree low;
-  tree high;
-  bool in_p;
-  bool strict_overflow_p;
-  unsigned int idx, next;
-};
 
-void dump_range_entry (FILE *file, struct range_entry *r);
-void debug_range_entry (struct range_entry *r);
 
 /* Dump the range entry R to FILE, skipping its expression if SKIP_EXP.  */
 
@@ -2449,7 +2430,7 @@ debug_range_entry (struct range_entry *r)
    an SSA_NAME and STMT argument is ignored, otherwise STMT
    argument should be a GIMPLE_COND.  */
 
-static void
+void
 init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 {
   int in_p;
@@ -4286,7 +4267,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
    range test optimization, all SSA_NAMEs set in the bb are consumed
    in the bb and there are no PHIs.  */
 
-static bool
+bool
 no_side_effect_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
