@@ -6288,6 +6288,15 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
             Check_Not_Incomplete_Type;
+
+            --  'Tag requires visibility on the corresponding package holding
+            --  the tag, so record a reference here, to avoid spurious unused
+            --  with_clause reported when compiling the main unit.
+
+            if In_Extended_Main_Source_Unit (Current_Scope) then
+               Set_Referenced (P_Type, True);
+               Set_Referenced (Scope (P_Type), True);
+            end if;
          end if;
 
          --  Set appropriate type
