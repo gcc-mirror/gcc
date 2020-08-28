@@ -1,3 +1,15 @@
+2020-08-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	PR target/94538
+	* config/arm/thumb1.md: Disable set-constant splitter when
+	TARGET_HAVE_MOVT.
+	(thumb1_movsi_insn): Fix -mpure-code
+	alternative.
+
 2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

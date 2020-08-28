@@ -1,3 +1,24 @@
+2020-08-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95882
+	* gfortran.dg/pr95882_1.f90: New test.
+	* gfortran.dg/pr95882_2.f90: New test.
+	* gfortran.dg/pr95882_3.f90: New test.
+	* gfortran.dg/pr95882_4.f90: New test.
+	* gfortran.dg/pr95882_5.f90: New test.
+
+2020-08-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	* gcc.target/arm/pure-code/pr94538-1.c: New test.
+	* gcc.target/arm/pure-code/pr94538-2.c: New test.
+
 2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master:
