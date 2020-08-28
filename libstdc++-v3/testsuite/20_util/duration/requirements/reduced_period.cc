@@ -129,3 +129,55 @@ test02()
   static_assert( is_same<decltype(-d3), common_type<D3>::type>::value,
       "unary - returns the reduced duration" );
 }
+
+template<typename T>
+struct Number
+{
+  explicit
+  Number(T t = 0) : i(t)
+  { }
+
+  template<typename U, bool B = std::is_convertible<U, T>::value,
+	   typename = typename std::enable_if<B>::type>
+    explicit
+    Number(Number<U> n) : i(n.i)
+    { }
+
+  T i = 0;
+
+  Number& operator+=(Number n) { i += n.i; return *this; }
+  Number& operator-=(Number n) { i -= n.i; return *this; }
+  Number& operator*=(Number n) { i *= n.i; return *this; }
+  Number& operator/=(Number n) { i /= n.i; return *this; }
+  Number& operator%=(Number n) { i %= n.i; return *this; }
+
+  Number operator+(Number n) { return { i + n.i }; }
+  Number operator-(Number n) { return { i - n.i }; }
+  Number operator*(Number n) { return { i * n.i }; }
+  Number operator/(Number n) { return { i / n.i }; }
+  Number operator%(Number n) { return { i % n.i }; }
+};
+
+namespace std
+{
+  // Specialise common_type to give a different type
+  template<>
+    struct common_type<Number<int>, Number<int>>
+    { using type = Number<long>; };
+}
+
+void
+test03()
+{
+
+  using D4 = duration<Number<int>, ratio<49, 21>>;
+  static_assert( is_same<common_type<D4>::type,
+			 duration<Number<long>, ratio<7, 3>>>::value,
+      "common_type_t<duration<R,P>> uses common_type_t<R>" );
+
+  D4 d4;
+  static_assert( is_same<decltype(+d4), common_type<D4>::type>::value,
+      "unary + returns type with common_type_t<D4::rep> as rep" );
+  static_assert( is_same<decltype(-d4), common_type<D4>::type>::value,
+      "unary - returns type with common_type_t<D4::rep> as rep" );
+}
