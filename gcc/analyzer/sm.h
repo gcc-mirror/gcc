@@ -125,6 +125,12 @@ public:
 
 protected:
   state_t add_state (const char *name);
+  state_t add_custom_state (state *s)
+  {
+    m_states.safe_push (s);
+    return s;
+  }
+
   unsigned alloc_state_id () { return m_next_state_id++; }
 
 private:

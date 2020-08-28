@@ -70,6 +70,10 @@ Wanalyzer-malloc-leak
 Common Var(warn_analyzer_malloc_leak) Init(1) Warning
 Warn about code paths in which a heap-allocated pointer leaks.
 
+Wanalyzer-mismatching-deallocation
+Common Var(warn_analyzer_mismatching_deallocation) Init(1) Warning
+Warn about code paths in which the wrong deallocation function is called.
+
 Wanalyzer-possible-null-argument
 Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
 Warn about code paths in which a possibly-NULL value is passed to a must-not-be-NULL function argument.

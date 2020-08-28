@@ -414,6 +414,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
 -Wno-analyzer-malloc-leak @gol
+-Wno-analyzer-mismatching-deallocation @gol
 -Wno-analyzer-null-argument @gol
 -Wno-analyzer-null-dereference @gol
 -Wno-analyzer-possible-null-argument @gol
@@ -8645,6 +8646,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
+-Wanalyzer-mismatching-deallocation @gol
 -Wanalyzer-possible-null-argument @gol
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
@@ -8728,6 +8730,17 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a
 pointer allocated via @code{malloc} is leaked.
+
+@item -Wno-analyzer-mismatching-deallocation
+@opindex Wanalyzer-mismatching-deallocation
+@opindex Wno-analyzer-mismatching-deallocation
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-mismatching-deallocation}
+to disable it.
+
+This diagnostic warns for paths through the code in which the
+wrong deallocation function is called on a pointer value, based on
+which function was used to allocate the pointer value.
 
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
