@@ -366,7 +366,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstring-compare @gol
--Wstringop-overflow=@var{n}  -Wno-stringop-truncation @gol
+-Wno-stringop-overflow -Wno-stringop-overread @gol
+-Wno-stringop-truncation @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
@@ -6754,6 +6755,7 @@ void f (char *d)
 
 @option{-Wstring-compare} is enabled by @option{-Wextra}.
 
+@item -Wno-stringop-overflow
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=@var{type}
 @opindex Wstringop-overflow
@@ -6794,6 +6796,15 @@ const char* f (enum Color clr)
 @end smallexample
 
 Option @option{-Wstringop-overflow=2} is enabled by default.
+
+@item -Wno-stringop-overread
+@opindex Wstringop-overread
+@opindex Wno-stringop-overread
+Warn for calls to string manipulation functions such as @code{memchr},
+@code{strcpy} that are determined to read past the end of the source
+sequence. 
+
+Option @option{-Wstringop-overread} is enabled by default.
 
 @table @gcctabopt
 @item -Wstringop-overflow
@@ -7502,8 +7513,12 @@ This warning is also enabled by @option{-Wshadow=local}.
 Warn whenever an object is defined whose size exceeds @var{byte-size}.
 @option{-Wlarger-than=}@samp{PTRDIFF_MAX} is enabled by default.
 Warnings controlled by the option can be disabled either by specifying
-@var{byte-size} of @samp{SIZE_MAX} or more or by
-@option{-Wno-larger-than}.
+@var{byte-size} of @samp{SIZE_MAX} or more or by @option{-Wno-larger-than}.
+
+Also warn for calls to bounded functions such as @code{memchr} or
+@code{strnlen} that specify a bound greater than the largest possible
+object, which is @samp{PTRDIFF_MAX} bytes by default.  These warnings
+can only be disabled by @option{-Wno-larger-than}.
 
 @item -Wno-larger-than
 @opindex Wno-larger-than

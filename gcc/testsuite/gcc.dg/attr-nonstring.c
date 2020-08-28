@@ -44,80 +44,80 @@ int strcmp_nonstring_1 (NONSTRING const char *a, const char *b)
      no good on its own.  Use dg-regexp instead to verify that just
      one instance of the warning is issued.  See gcc.dg/pr64223-1
      for a different approach.  */
-  return strcmp (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strcmp. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strcmp" } */
+  return strcmp (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strcmp. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strcmp" } */
 }
 
 int strcmp_nonstring_2 (const char *a, NONSTRING const char *b)
 {
-  return strcmp (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strcmp. argument 2 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strcmp" } */
+  return strcmp (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strcmp. argument 2 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strcmp" } */
 }
 
 int strncmp_nonstring_1 (const char *s)
 {
-  return strncmp (s, ns5, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .strncmp. argument 2 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overflow=]" "strncmp" } */
+  return strncmp (s, ns5, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .strncmp. argument 2 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overread\[^\n\r\]*" "strncmp" } */
 }
 
 int strncmp_nonstring_2 (const char *s)
 {
-  return strncmp (ns5, s, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .strncmp. argument 1 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overflow=]" "strncmp" } */
+  return strncmp (ns5, s, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .strncmp. argument 1 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overread\[^\n\r\]*" "strncmp" } */
 }
 
 char* stpcpy_nonstring (char *d, NONSTRING const char *s)
 {
-  return stpcpy (d, s);  /* { dg-regexp "\[^\n\r\]+: warning: .stpcpy. argument 2 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "stpcpy" } */
+  return stpcpy (d, s);  /* { dg-regexp "\[^\n\r\]+: warning: .stpcpy. argument 2 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "stpcpy" } */
 }
 
 char* stpncpy_nonstring (char *d)
 {
-  return stpncpy (d, ns5, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .stpncpy. argument 2 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overflow=]" "stpncpy" } */
+  return stpncpy (d, ns5, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .stpncpy. argument 2 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overread\[^\n\r\]*" "stpncpy" } */
 }
 
 char* strchr_nonstring (NONSTRING const char *s, int c)
 {
-  return strchr (s, c);  /* { dg-regexp "\[^\n\r\]+: warning: .strchr. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strchr" } */
+  return strchr (s, c);  /* { dg-regexp "\[^\n\r\]+: warning: .strchr. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strchr" } */
 }
 
 char* strrchr_nonstring (NONSTRING const char *s, int c)
 {
-  return strrchr (s, c);  /* { dg-regexp "\[^\n\r\]+: warning: .strrchr. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strrchr" } */
+  return strrchr (s, c);  /* { dg-regexp "\[^\n\r\]+: warning: .strrchr. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strrchr" } */
 }
 
 char* strcpy_nonstring (char *d, NONSTRING const char *s)
 {
-  return strcpy (d, s);  /* { dg-regexp "\[^\n\r\]+: warning: .strcpy. argument 2 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strcpy" } */
+  return strcpy (d, s);  /* { dg-regexp "\[^\n\r\]+: warning: .strcpy. argument 2 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strcpy" } */
 }
 
 char* strncpy_nonstring (char *d)
 {
-  return strncpy (d, ns5, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .strncpy. argument 2 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overflow=]" "strncpy" } */
+  return strncpy (d, ns5, sizeof ns5 + 1);  /* { dg-regexp "\[^\n\r\]+: warning: .strncpy. argument 2 declared attribute .nonstring. \[^\n\r\]+ \\\[-Wstringop-overread\[^\n\r\]*" "strncpy" } */
 }
 
 char* strstr_nonstring_1 (NONSTRING const char *a, const char *b)
 {
-  return strstr (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strstr. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strstr" } */
+  return strstr (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strstr. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strstr" } */
 }
 
 char* strstr_nonstring_2 (const char *a, NONSTRING const char *b)
 {
-  return strstr (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strstr. argument 2 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strstr" } */
+  return strstr (a, b);  /* { dg-regexp "\[^\n\r\]+: warning: .strstr. argument 2 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strstr" } */
 }
 
 char* stdup_nonstring (NONSTRING const char *s)
 {
-  return strdup (s);  /* { dg-regexp "\[^\n\r\]+: warning: .strdup. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strdup" } */
+  return strdup (s);  /* { dg-regexp "\[^\n\r\]+: warning: .strdup. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strdup" } */
 }
 
 size_t strlen_nonstring (NONSTRING const char *s)
 {
-  return strlen (s);  /* { dg-regexp "\[^\n\r\]+: warning: .strlen. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "strlen" } */
+  return strlen (s);  /* { dg-regexp "\[^\n\r\]+: warning: .strlen. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "strlen" } */
 }
 
 int printf_nonstring (NONSTRING const char *s)
 {
-  return printf (s);  /* { dg-regexp "\[^\n\r\]+: warning: .printf. argument 1 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "printf" } */
+  return printf (s);  /* { dg-regexp "\[^\n\r\]+: warning: .printf. argument 1 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "printf" } */
 }
 
 int sprintf_nonstring_2 (char *d, NONSTRING const char *s)
 {
-  return sprintf (d, s);  /* { dg-regexp "\[^\n\r\]+: warning: .sprintf. argument 2 declared attribute .nonstring. \\\[-Wstringop-overflow=]" "sprintf" } */
+  return sprintf (d, s);  /* { dg-regexp "\[^\n\r\]+: warning: .sprintf. argument 2 declared attribute .nonstring. \\\[-Wstringop-overread\[^\n\r\]*" "sprintf" } */
 }

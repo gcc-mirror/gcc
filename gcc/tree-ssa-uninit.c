@@ -489,10 +489,10 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
       attr_access *access = rdwr_idx.get (argno - 1);
       if (access)
 	{
-	  if (access->mode == attr_access::none
-	      || access->mode == attr_access::write_only)
+	  if (access->mode == access_none
+	      || access->mode == access_write_only)
 	    continue;
-	  if (save_always_executed && access->mode == attr_access::read_only)
+	  if (save_always_executed && access->mode == access_read_only)
 	    /* Attribute read_only arguments imply read access.  */
 	    wlims.always_executed = true;
 	  else
@@ -524,7 +524,7 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
 
       if (access)
 	{
-	  const char* const mode = (access->mode == attr_access::read_only
+	  const char* const mode = (access->mode == access_read_only
 				    ? "read_only" : "read_write");
 	  char attrstr[80];
 	  int n = sprintf (attrstr, "access (%s, %u", mode, argno);

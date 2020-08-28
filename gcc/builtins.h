@@ -153,38 +153,56 @@ extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
 extern bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
-extern void warn_string_no_nul (location_t, const char *, tree, tree);
+extern void warn_string_no_nul (location_t, tree, const char *, tree,
+				tree, tree = NULL_TREE, bool = false,
+				const wide_int[2] = NULL);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern bool builtin_with_linkage_p (tree);
 
 /* Describes a reference to an object used in an access.  */
 struct access_ref
 {
-  access_ref (): ref ()
-  {
-    /* Set to valid.  */
-    offrng[0] = offrng[1] = 0;
-    /* Invalidate.   */
-    sizrng[0] = sizrng[1] = -1;
-  }
+  /* Set the bounds of the reference to at most as many bytes
+     as the first argument or unknown when null, and at least
+     one when the second argument is true unless the first one
+     is a constant zero.  */
+  access_ref (tree = NULL_TREE, bool = false);
 
-  /* Reference to the object.  */
+  /* Reference to the accessed object(s).  */
   tree ref;
 
-  /* Range of offsets into and sizes of the object(s).  */
+  /* Range of byte offsets into and sizes of the object(s).  */
   offset_int offrng[2];
   offset_int sizrng[2];
+  /* Range of the bound of the access: denotes that the access
+     is at least BNDRNG[0] bytes but no more than BNDRNG[1].
+     For string functions the size of the actual access is
+     further constrained by the length of the string.  */
+  offset_int bndrng[2];
 };
 
 /* Describes a pair of references used in an access by built-in
    functions like memcpy.  */
 struct access_data
 {
+  /* Set the access to at most MAXWRITE and MAXREAD bytes, and
+     at least 1 when MINWRITE or MINREAD, respectively, is set.  */
+  access_data (tree expr, access_mode mode,
+	       tree maxwrite = NULL_TREE, bool minwrite = false,
+	       tree maxread = NULL_TREE, bool minread = false)
+    : call (expr),
+      dst (maxwrite, minwrite), src (maxread, minread), mode (mode) { }
+
+  /* Built-in function call.  */
+  tree call;
   /* Destination and source of the access.  */
   access_ref dst, src;
+  /* Read-only for functions like memcmp or strlen, write-only
+     for memset, read-write for memcpy or strcat.  */
+  access_mode mode;
 };
 
-extern bool check_access (tree, tree, tree, tree, tree, tree, tree,
-			  bool = true, const access_data * = NULL);
+extern bool check_access (tree, tree, tree, tree, tree,
+			  access_mode, const access_data * = NULL);
 
 #endif /* GCC_BUILTINS_H */

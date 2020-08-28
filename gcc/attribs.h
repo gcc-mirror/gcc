@@ -234,7 +234,6 @@ struct attr_access
   unsigned sizarg;
 
   /* The access mode.  */
-  enum access_mode { none, read_only, write_only, read_write };
   access_mode mode;
 };
 

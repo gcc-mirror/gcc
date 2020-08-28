@@ -1,6 +1,6 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-overflow -Wno-stringop-truncation" } */
+/* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-overflow -Wno-stringop-overread -Wno-stringop-truncation" } */
 /* Test just twice, once with -O0 non-fortified, once with -O2 fortified.  */
 /* { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { *-*-* }  { "-flto" } { "" } } */

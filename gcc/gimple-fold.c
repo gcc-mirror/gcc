@@ -1875,7 +1875,7 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!gimple_no_warning_p (stmt))
-	warn_string_no_nul (loc, "strcpy", src, nonstr);
+	warn_string_no_nul (loc, NULL_TREE, "strcpy", src, nonstr);
       gimple_set_no_warning (stmt, true);
       return false;
     }
@@ -3074,11 +3074,16 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
 
   /* Set to non-null if ARG refers to an unterminated array.  */
   c_strlen_data data = { };
+  /* The size of the unterminated array if SRC referes to one.  */
+  tree size;
+  /* True if the size is exact/constant, false if it's the lower bound
+     of a range.  */
+  bool exact;
   tree len = c_strlen (src, 1, &data, 1);
   if (!len
       || TREE_CODE (len) != INTEGER_CST)
     {
-      data.decl = unterminated_array (src);
+      data.decl = unterminated_array (src, &size, &exact);
       if (!data.decl)
 	return false;
     }
@@ -3087,7 +3092,8 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!gimple_no_warning_p (stmt))
-	warn_string_no_nul (loc, "stpcpy", src, data.decl);
+	warn_string_no_nul (loc, NULL_TREE, "stpcpy", src, data.decl, size,
+			    exact);
       gimple_set_no_warning (stmt, true);
       return false;
     }

@@ -2045,10 +2045,10 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
 
 	  switch (*m)
 	    {
-	    case 'r': acc.mode = acc.read_only; break;
-	    case 'w': acc.mode = acc.write_only; break;
-	    case 'x': acc.mode = acc.read_write; break;
-	    case '-': acc.mode = acc.none; break;
+	    case 'r': acc.mode = access_read_only; break;
+	    case 'w': acc.mode = access_write_only; break;
+	    case 'x': acc.mode = access_read_write; break;
+	    case '-': acc.mode = access_none; break;
 	    default: gcc_unreachable ();
 	    }
 
