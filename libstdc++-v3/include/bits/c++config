@@ -77,8 +77,13 @@
 // Macros for deprecated attributes.
 //   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
+//   _GLIBCXX_DEPRECATED_SUGGEST( string-literal )
+//   _GLIBCXX11_DEPRECATED
+//   _GLIBCXX11_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX17_DEPRECATED
+//   _GLIBCXX17_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX20_DEPRECATED( string-literal )
+//   _GLIBCXX20_DEPRECATED_SUGGEST( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif

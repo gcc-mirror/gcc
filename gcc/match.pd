@@ -2550,6 +2550,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     && tree_int_cst_sign_bit (@2) == 0))
      (minus (convert @1) (convert @2)))))
    (simplify
+    (pointer_diff (pointer_plus @0 @2) (pointer_plus @1 @2))
+     (pointer_diff @0 @1))
+   (simplify
     (pointer_diff (pointer_plus @@0 @1) (pointer_plus @0 @2))
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */

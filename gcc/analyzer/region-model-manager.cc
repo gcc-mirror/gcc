@@ -396,6 +396,11 @@ region_model_manager::get_or_create_unaryop (tree type, enum tree_code op,
 const svalue *
 region_model_manager::get_or_create_cast (tree type, const svalue *arg)
 {
+  gcc_assert (type);
+  if (arg->get_type ())
+    if (TREE_CODE (type) == INTEGER_TYPE
+	&& TREE_CODE (arg->get_type ()) == REAL_TYPE)
+      return get_or_create_unaryop (type, FIX_TRUNC_EXPR, arg);
   return get_or_create_unaryop (type, NOP_EXPR, arg);
 }
 
@@ -440,7 +445,7 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       break;
     case MULT_EXPR:
       /* (VAL * 0).  */
-      if (cst1 && zerop (cst1))
+      if (cst1 && zerop (cst1) && INTEGRAL_TYPE_P (type))
 	return get_or_create_constant_svalue (build_int_cst (type, 0));
       /* (VAL * 1) -> VAL.  */
       if (cst1 && integer_onep (cst1))
@@ -450,7 +455,7 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
     case TRUTH_AND_EXPR:
       if (cst1)
 	{
-	  if (zerop (cst1))
+	  if (zerop (cst1) && INTEGRAL_TYPE_P (type))
 	    /* "(ARG0 && 0)" -> "0".  */
 	    return get_or_create_constant_svalue (build_int_cst (type, 0));
 	  else
