@@ -8863,6 +8863,24 @@ push_namespace (tree name, bool make_inline)
     {
       /* DR2061.  NS might be a member of an inline namespace.  We
 	 need to push into those namespaces.  */
+      if (modules_p ())
+	{
+	  for (tree parent, ctx = ns; ctx != current_namespace;
+	       ctx = parent)
+	    {
+	      parent = CP_DECL_CONTEXT (ctx);
+
+	      tree bind = *find_namespace_slot (parent, DECL_NAME (ctx), false);
+	      if (bind != ctx)
+		{
+		  mc_slot &slot
+		    = MODULE_VECTOR_CLUSTER (bind, 0).slots[MODULE_SLOT_CURRENT];
+		  gcc_checking_assert (!(tree)slot || (tree)slot == ctx);
+		  slot = ctx;
+		}
+	    }
+	}
+
       count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
       if (DECL_SOURCE_LOCATION (ns) == BUILTINS_LOCATION)
 	/* It's not builtin now.  */
@@ -8889,7 +8907,7 @@ push_namespace (tree name, bool make_inline)
 	    {
 	      slot = find_namespace_slot (current_namespace, name);
 	      /* This should find the slot created by pushdecl.  */
-	      gcc_checking_assert (slot);
+	      gcc_checking_assert (slot && *slot == ns);
 	    }
 	  make_namespace_finish (ns, slot);
 
@@ -8992,7 +9010,7 @@ add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
   /* Append a new slot.  */
   tree *mslot = &(tree &)*append_imported_binding_slot (slot, name, origin);
 
-  gcc_assert (!*mslot || (visible_p && *mslot == decl));
+  gcc_assert (!*mslot);
   *mslot = visible_p ? decl : stat_hack (decl, NULL_TREE);
 
   return decl;

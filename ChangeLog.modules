@@ -1,5 +1,20 @@
 2020-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Fix pushing imported namespaces.
+	gcc/cp/
+	* module.cc (depset::hash_add_namespace): Don't mark bindings
+	special.
+	(struct add_binding_data): Record finding a namespace.
+	(depset::hash::add_binding_entity): Make namespaces idempotent.
+	(depset::hash::add_namespace_entities): Clear met_namespace.
+	(module_state::write): Zap partitions bitmap if empty.
+	* name-lookup.c (push_namespace): Ensure namespace is in
+	MODULE_SLOT_CURRENT.
+	* ptree.c (cxx_print_xnode): Show more detail on MODULE_VECTOR.
+	gcc/testsuite/
+	* g++.dg/modules/ns-imp-1_[abc].C: New.
+	* g++.dg/modules/ns-part-1_[abc].C: New.
+
 	gcc/testsuite/
 	* lib/prune.exp (prune_ices): Adjust regexp.
 

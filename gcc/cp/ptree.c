@@ -299,7 +299,8 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{
-		  int len = sprintf (pfx, "elt:%u", cluster->indices[jx].base);
+		  int len = sprintf (pfx, "module:%u",
+				     cluster->indices[jx].base);
 		  if (cluster->indices[jx].span > 1)
 		    len
 		      += sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
@@ -308,7 +309,9 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		  if (slot.is_lazy ())
 		    {
 		      indent_to (file, indent + 4);
-		      fprintf (file, "%s lazy:%u", pfx, slot.get_lazy ());
+		      unsigned lazy = slot.get_lazy ();
+		      fprintf (file, "%s snum:%u flags:%d",
+			       pfx, lazy >> 2, lazy & 3);
 		    }
 		  else if (slot)
 		    print_node (file, pfx, slot, indent + 4);

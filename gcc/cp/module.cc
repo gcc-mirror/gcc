@@ -12251,7 +12251,7 @@ depset::hash::add_namespace_context (depset *dep, tree ns)
 
   /* Mark it as special if imported so we don't walk connect when
      SCCing.  */
-  if (ns_dep->is_import ())
+  if (!dep->is_binding () && ns_dep->is_import ())
     dep->set_special ();
 }
 
@@ -12261,6 +12261,7 @@ struct add_binding_data
   bitmap partitions;
   depset *binding;
   depset::hash *hash;
+  bool met_namespace;
 };
 
 bool
@@ -12372,10 +12373,11 @@ depset::hash::add_binding_entity (tree decl, bool maybe_dups,
 
       return true;
     }
-  else if (DECL_NAME (decl))
+  else if (DECL_NAME (decl) && !data->met_namespace)
     {
-      /* Namespace.  */
+      /* Namespace, walk exactly once.  */
       gcc_checking_assert (TREE_PUBLIC (decl));
+      data->met_namespace = true;
       if (data->hash->add_namespace_entities (decl, data->partitions)
 	  || DECL_MODULE_EXPORT_P (decl))
 	{
@@ -12412,6 +12414,7 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
     {
       data.binding = nullptr;
+      data.met_namespace = false;
       if (walk_module_binding (*iter, partitions, add_binding_entity, &data))
 	count++;
     }
@@ -17026,6 +17029,10 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      }
 	}
     }
+
+  if (partitions && bitmap_empty_p (partitions))
+    /* No partitions present.  */
+    partitions = nullptr;
 
   /* Find the set of decls we must write out.  */
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
