@@ -173,6 +173,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= make_signed_t<decltype(std::declval<_Tp>() - std::declval<_Tp>())>;
     };
 
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  // __int128 is incrementable even if !integral<__int128>
+  template<>
+    struct incrementable_traits<__int128>
+    { using difference_type = __int128; };
+
+  template<>
+    struct incrementable_traits<unsigned __int128>
+    { using difference_type = __int128; };
+#endif
+
   namespace __detail
   {
     // An iterator such that iterator_traits<_Iter> names a specialization
@@ -209,6 +220,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp> requires is_object_v<_Tp>
       struct __cond_value_type<_Tp>
       { using value_type = remove_cv_t<_Tp>; };
+
+    template<typename _Tp>
+      concept __has_member_value_type
+	= requires { typename _Tp::value_type; };
+
+    template<typename _Tp>
+      concept __has_member_element_type
+	= requires { typename _Tp::element_type; };
+
   } // namespace __detail
 
   template<typename> struct indirectly_readable_traits { };
@@ -227,14 +247,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : indirectly_readable_traits<_Iter>
     { };
 
-  template<typename _Tp> requires requires { typename _Tp::value_type; }
+  template<__detail::__has_member_value_type _Tp>
     struct indirectly_readable_traits<_Tp>
     : __detail::__cond_value_type<typename _Tp::value_type>
     { };
 
-  template<typename _Tp> requires requires { typename _Tp::element_type; }
+  template<__detail::__has_member_element_type _Tp>
     struct indirectly_readable_traits<_Tp>
     : __detail::__cond_value_type<typename _Tp::element_type>
+    { };
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3446. indirectly_readable_traits ambiguity for types with both [...]
+  template<__detail::__has_member_value_type _Tp>
+    requires __detail::__has_member_element_type<_Tp>
+    && same_as<remove_cv_t<typename _Tp::element_type>,
+	       remove_cv_t<typename _Tp::value_type>>
+    struct indirectly_readable_traits<_Tp>
+    : __detail::__cond_value_type<typename _Tp::value_type>
+    { };
+
+  // LWG 3446 doesn't add this, but it's needed for the case where
+  // value_type and element_type are both present, but not the same type.
+  template<__detail::__has_member_value_type _Tp>
+    requires __detail::__has_member_element_type<_Tp>
+    struct indirectly_readable_traits<_Tp>
     { };
 
   namespace __detail

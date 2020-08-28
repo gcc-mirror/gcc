@@ -1491,7 +1491,7 @@ omp_construct_simd_compare (tree clauses1, tree clauses2)
 	  }
 	unsigned HOST_WIDE_INT argno = tree_to_uhwi (OMP_CLAUSE_DECL (c));
 	if (argno >= v->length ())
-	  v->safe_grow_cleared (argno + 1);
+	  v->safe_grow_cleared (argno + 1, true);
 	(*v)[argno] = c;
       }
   /* Here, r is used as a bitmask, 2 is set if CLAUSES1 has something

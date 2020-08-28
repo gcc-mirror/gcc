@@ -609,13 +609,13 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		  {
 		    gcc_checking_assert (TREE_CODE (cst) != TREE_BINFO);
 		    if (!known_vals_ptr->length ())
-		      vec_safe_grow_cleared (known_vals_ptr, count);
+		      vec_safe_grow_cleared (known_vals_ptr, count, true);
 		    (*known_vals_ptr)[i] = cst;
 		  }
 		else if (inline_p && !es->param[i].change_prob)
 		  {
 		    if (!known_vals_ptr->length ())
-		      vec_safe_grow_cleared (known_vals_ptr, count);
+		      vec_safe_grow_cleared (known_vals_ptr, count, true);
 		    (*known_vals_ptr)[i] = error_mark_node;
 		  }
 
@@ -632,7 +632,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		      {
 			if (!known_value_ranges.length ())
 			  {
-			    known_value_ranges.safe_grow (count);
+			    known_value_ranges.safe_grow (count, true);
 			    for (int i = 0; i < count; ++i)
 			      new (&known_value_ranges[i]) value_range ();
 			  }
@@ -649,7 +649,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		    if (agg.items.length ())
 		      {
 			if (!known_aggs_ptr->length ())
-			  vec_safe_grow_cleared (known_aggs_ptr, count);
+			  vec_safe_grow_cleared (known_aggs_ptr, count, true);
 			(*known_aggs_ptr)[i] = agg;
 		      }
 		  }
@@ -665,7 +665,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		if (!ctx.useless_p ())
 		  {
 		    if (!known_contexts_ptr->length ())
-		      known_contexts_ptr->safe_grow_cleared (count);
+		      known_contexts_ptr->safe_grow_cleared (count, true);
 		    (*known_contexts_ptr)[i]
 		      = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
 		  }
@@ -686,7 +686,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	  if (cst)
 	    {
 	      if (!known_vals_ptr->length ())
-	        vec_safe_grow_cleared (known_vals_ptr, count);
+		vec_safe_grow_cleared (known_vals_ptr, count, true);
 	      (*known_vals_ptr)[i] = cst;
 	    }
 	}
@@ -792,7 +792,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       struct cgraph_edge *edge, *next;
 
       info->size_time_table = 0;
-      known_vals.safe_grow_cleared (count);
+      known_vals.safe_grow_cleared (count, true);
       for (i = 0; i < count; i++)
 	{
 	  struct ipa_replace_map *r;
@@ -2485,12 +2485,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  fbi.node = node;
 	  fbi.info = IPA_NODE_REF (node);
 	  fbi.bb_infos = vNULL;
-	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
+	  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 	  fbi.param_count = count_formal_params (node->decl);
 	  fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
 	  nonconstant_names.safe_grow_cleared
-	    (SSANAMES (my_function)->length ());
+	    (SSANAMES (my_function)->length (), true);
 	}
     }
 
@@ -2624,7 +2624,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		  int i;
 
 		  if (count)
-		    es->param.safe_grow_cleared (count);
+		    es->param.safe_grow_cleared (count, true);
 		  for (i = 0; i < count; i++)
 		    {
 		      int prob = param_change_prob (&fbi, stmt, i);
@@ -3927,8 +3927,8 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 
       if (count)
 	{
-	  operand_map.safe_grow_cleared (count);
-	  offset_map.safe_grow_cleared (count);
+	  operand_map.safe_grow_cleared (count, true);
+	  offset_map.safe_grow_cleared (count, true);
 	}
       for (i = 0; i < count; i++)
 	{
@@ -4167,7 +4167,7 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
   length = streamer_read_uhwi (ib);
   if (length && es && e->possibly_call_in_translation_unit_p ())
     {
-      es->param.safe_grow_cleared (length);
+      es->param.safe_grow_cleared (length, true);
       for (i = 0; i < length; i++)
 	es->param[i].change_prob = streamer_read_uhwi (ib);
     }

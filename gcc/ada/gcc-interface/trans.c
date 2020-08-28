@@ -624,7 +624,7 @@ gigi (Node_Id gnat_root,
       constructor_elt *elt;
 
       fdesc_type_node = make_node (RECORD_TYPE);
-      vec_safe_grow (null_vec, TARGET_VTABLE_USES_DESCRIPTORS);
+      vec_safe_grow (null_vec, TARGET_VTABLE_USES_DESCRIPTORS, true);
       elt = (null_vec->address () + TARGET_VTABLE_USES_DESCRIPTORS - 1);
 
       for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; j++)
@@ -1747,7 +1747,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	      gnu_result = build1 (INDIRECT_REF, gnu_result_type, gnu_result);
 	    }
 
-	  vec_safe_grow (gnu_vec, TARGET_VTABLE_USES_DESCRIPTORS);
+	  vec_safe_grow (gnu_vec, TARGET_VTABLE_USES_DESCRIPTORS, true);
 	  elt = (gnu_vec->address () + TARGET_VTABLE_USES_DESCRIPTORS - 1);
 	  for (gnu_field = TYPE_FIELDS (gnu_result_type), i = 0;
 	       i < TARGET_VTABLE_USES_DESCRIPTORS;

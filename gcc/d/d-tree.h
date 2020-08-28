@@ -593,6 +593,9 @@ extern tree convert_for_condition (tree, Type *);
 extern tree d_array_convert (Expression *);
 extern tree d_array_convert (Type *, Expression *);
 
+/* In d-gimplify.cc.  */
+extern int d_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
+
 /* In d-incpath.cc.  */
 extern void add_import_paths (const char *, const char *, bool);
 

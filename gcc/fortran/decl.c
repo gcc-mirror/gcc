@@ -1146,6 +1146,9 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
       gfc_free_expr (e);
     }
 
+  if (gfc_seen_div0)
+    m = MATCH_ERROR;
+
   return m;
 
 syntax:

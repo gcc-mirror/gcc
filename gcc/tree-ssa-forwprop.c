@@ -2290,7 +2290,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   tree one_constant = NULL_TREE;
   tree one_nonconstant = NULL_TREE;
   auto_vec<tree> constants;
-  constants.safe_grow_cleared (nelts);
+  constants.safe_grow_cleared (nelts, true);
   auto_vec<std::pair<unsigned, unsigned>, 64> elts;
   FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (op), i, elt)
     {

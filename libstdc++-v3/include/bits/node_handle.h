@@ -226,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Key2, typename _Value2, typename _ValueAlloc,
 	       typename _ExtractKey, typename _Equal,
-	       typename _H1, typename _H2, typename _Hash,
+	       typename _Hash, typename _RangeHash, typename _Unused,
 	       typename _RehashPolicy, typename _Traits>
 	friend class _Hashtable;
     };
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Key2, typename _Value2, typename _ValueAlloc,
 	       typename _ExtractKey, typename _Equal,
-	       typename _H1, typename _H2, typename _Hash,
+	       typename _Hash, typename _RangeHash, typename _Unused,
 	       typename _RehashPolicy, typename _Traits>
 	friend class _Hashtable;
     };

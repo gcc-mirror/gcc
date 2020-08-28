@@ -311,6 +311,8 @@ region::get_subregions_for_binding (region_model_manager *mgr,
 	for (tree field = TYPE_FIELDS (get_type ()); field != NULL_TREE;
 	     field = DECL_CHAIN (field))
 	  {
+	    if (TREE_CODE (field) != FIELD_DECL)
+	      continue;
 	    const region *subregion = mgr->get_field_region (this, field);
 	    subregion->get_subregions_for_binding (mgr,
 						   relative_bit_offset,

@@ -2559,14 +2559,16 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 
   /* If use associated, use the module type for this one.  */
   if (derived->backend_decl == NULL
-      && derived->attr.use_assoc
+      && (derived->attr.use_assoc || derived->attr.used_in_submodule)
       && derived->module
       && gfc_get_module_backend_decl (derived))
     goto copy_derived_types;
 
   /* The derived types from an earlier namespace can be used as the
      canonical type.  */
-  if (derived->backend_decl == NULL && !derived->attr.use_assoc
+  if (derived->backend_decl == NULL
+      && !derived->attr.use_assoc
+      && !derived->attr.used_in_submodule
       && gfc_global_ns_list)
     {
       for (ns = gfc_global_ns_list;

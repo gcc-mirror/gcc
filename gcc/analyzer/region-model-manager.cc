@@ -451,6 +451,12 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       if (cst1 && integer_onep (cst1))
 	return arg0;
       break;
+    case BIT_AND_EXPR:
+      if (cst1)
+	if (zerop (cst1) && INTEGRAL_TYPE_P (type))
+	  /* "(ARG0 & 0)" -> "0".  */
+	  return get_or_create_constant_svalue (build_int_cst (type, 0));
+      break;
     case TRUTH_ANDIF_EXPR:
     case TRUTH_AND_EXPR:
       if (cst1)
@@ -645,6 +651,8 @@ region_model_manager::get_or_create_widening_svalue (tree type,
 						     const svalue *base_sval,
 						     const svalue *iter_sval)
 {
+  gcc_assert (base_sval->get_kind () != SK_WIDENING);
+  gcc_assert (iter_sval->get_kind () != SK_WIDENING);
   widening_svalue::key_t key (type, point, base_sval, iter_sval);
   if (widening_svalue **slot = m_widening_values_map.get (key))
     return *slot;
@@ -781,6 +789,8 @@ region_model_manager::get_region_for_global (tree expr)
 const region *
 region_model_manager::get_field_region (const region *parent, tree field)
 {
+  gcc_assert (TREE_CODE (field) == FIELD_DECL);
+
   field_region::key_t key (parent, field);
   if (field_region *reg = m_field_regions.get (key))
     return reg;

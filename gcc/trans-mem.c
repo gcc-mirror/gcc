@@ -2030,7 +2030,7 @@ tm_region_init (struct tm_region *region)
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
      using bb->aux.  */
-  bb_regions.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  bb_regions.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -2774,7 +2774,7 @@ get_bb_regions_instrumented (bool traverse_clones,
   vec<tm_region *> ret;
 
   ret.create (n);
-  ret.safe_grow_cleared (n);
+  ret.safe_grow_cleared (n, true);
   stuff.bb2reg = &ret;
   stuff.include_uninstrumented_p = include_uninstrumented_p;
   expand_regions (all_tm_regions, collect_bb2reg, &stuff, traverse_clones);

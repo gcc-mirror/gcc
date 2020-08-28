@@ -699,6 +699,15 @@ dlang_function_args (string *decl, const char *mangled, struct dlang_info *info)
 
       switch (*mangled)
 	{
+	case 'I': /* in(T) */
+	  mangled++;
+	  string_append (decl, "in ");
+	  if (*mangled == 'K') /* in ref(T) */
+	    {
+	      mangled++;
+	      string_append (decl, "ref ");
+	    }
+	  break;
 	case 'J': /* out(T) */
 	  mangled++;
 	  string_append (decl, "out ");
@@ -826,7 +835,6 @@ dlang_type (string *decl, const char *mangled, struct dlang_info *info)
       mangled = dlang_function_type (decl, mangled, info);
       string_append (decl, "function");
       return mangled;
-    case 'I': /* ident T */
     case 'C': /* class T */
     case 'S': /* struct T */
     case 'E': /* enum T */

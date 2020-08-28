@@ -1,3 +1,65 @@
+2020-08-27  Martin Liska  <mliska@suse.cz>
+
+	* class.c (build_vtbl_initializer): Set exact argument of a vector
+	growth function to true.
+	* constraint.cc (get_mapped_args): Likewise.
+	* decl.c (cp_maybe_mangle_decomp): Likewise.
+	(cp_finish_decomp): Likewise.
+	* parser.c (cp_parser_omp_for_loop): Likewise.
+	* pt.c (canonical_type_parameter): Likewise.
+	* rtti.c (get_pseudo_ti_init): Likewise.
+
+2020-08-26  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (poplevel): A local-binding tree list holds the name in
+	TREE_PURPOSE.
+	* name-lookup.c (update_local_overload): Add id to TREE_PURPOSE.
+	(lookup_name_1): Deal with local-binding error_mark_node marker.
+	(op_unqualified_lookup): Return error_mark_node for 'nothing
+	found'.  Retain global binding, check class binding here.
+	(maybe_save_operator_binding): Reimplement to always cache a
+	result.
+	(push_operator_bindings): Deal with 'ignore' marker.
+
+2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/96678
+	* semantics.c (handle_omp_array_sections_1): Talk about
+	array function parameter in the error message.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96721
+	* cp-tree.h (build_trivial_dtor_call): Add bool argument defaulted
+	to false.
+	* call.c (build_trivial_dtor_call): Add NO_PTR_DEREF argument.  If
+	instance is a pointer and NO_PTR_DEREF is true, clobber the pointer
+	rather than what it points to.
+	* semantics.c (finish_call_expr): Call build_trivial_dtor_call with
+	true as NO_PTR_DEREF.
+
+2020-08-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95428
+	* optimize.c (populate_clone_array): Revert PR70462 change.
+	(maybe_clone_body): Likewise.
+
+2020-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	* ptree.c (debug_overload): New.
+
+2020-08-19  Jason Merrill  <jason@redhat.com>
+
+	DR 2369
+	* cp-tree.h (push_tinst_level, push_tinst_level_loc): Declare.
+	* constraint.cc (satisfy_declaration_constraints):
+	Use add_outermost_template_args and push_tinst_level.
+	* pt.c (add_outermost_template_args): Handle getting
+	a TEMPLATE_DECL as the first argument.
+	(push_tinst_level, push_tinst_level_loc): No longer static.
+	(fn_type_unification): Check satisfaction before non-dependent
+	conversions.
+
 2020-08-18  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (SET_TYPE_TEMPLTE_INFO): Do not deal with ALIAS templates.

@@ -1627,7 +1627,7 @@ rtx_reader::read_rtx_code (const char *code_name)
   if (reuse_id != -1)
     {
       /* Store away for later reuse.  */
-      m_reuse_rtx_by_id.safe_grow_cleared (reuse_id + 1);
+      m_reuse_rtx_by_id.safe_grow_cleared (reuse_id + 1, true);
       m_reuse_rtx_by_id[reuse_id] = return_rtx;
     }
 

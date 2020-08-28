@@ -1470,6 +1470,10 @@ if test "$enable_bootstrap:$GXX" = "yes:yes"; then
   CXX="$CXX -std=c++11"
 elif test "$have_compiler" = yes; then
   AX_CXX_COMPILE_STDCXX(11)
+
+  if test "${build}" != "${host}"; then
+    AX_CXX_COMPILE_STDCXX(11, [], [], [_FOR_BUILD])
+  fi
 fi
 
 # Used for setting $lt_cv_objdir

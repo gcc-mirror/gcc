@@ -555,7 +555,7 @@ loop_versioning::loop_versioning (function *fn)
   gcc_obstack_init (&m_obstack);
 
   /* Initialize the loop information.  */
-  m_loops.safe_grow_cleared (m_nloops);
+  m_loops.safe_grow_cleared (m_nloops, true);
   for (unsigned int i = 0; i < m_nloops; ++i)
     {
       m_loops[i].outermost = get_loop (m_fn, 0);
@@ -564,7 +564,7 @@ loop_versioning::loop_versioning (function *fn)
 
   /* Initialize the list of blocks that belong to each loop.  */
   unsigned int nbbs = last_basic_block_for_fn (fn);
-  m_next_block_in_loop.safe_grow (nbbs);
+  m_next_block_in_loop.safe_grow (nbbs, true);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fn)
     {

@@ -131,6 +131,7 @@
 #include "lra-int.h"
 #include "print-rtl.h"
 #include "function-abi.h"
+#include "rtl-iter.h"
 
 /* Value of LRA_CURR_RELOAD_NUM at the beginning of BB of the current
    insn.  Remember that LRA_CURR_RELOAD_NUM is the number of emitted
@@ -568,6 +569,33 @@ static void
 init_curr_insn_input_reloads (void)
 {
   curr_insn_input_reloads_num = 0;
+}
+
+/* The canonical form of an rtx inside a MEM is not necessarily the same as the
+   canonical form of the rtx outside the MEM.  Fix this up in the case that
+   we're reloading an address (and therefore pulling it outside a MEM).  */
+static rtx
+canonicalize_reload_addr (rtx addr)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, addr, NONCONST)
+    {
+      rtx x = *iter;
+      if (GET_CODE (x) == MULT && CONST_INT_P (XEXP (x, 1)))
+	{
+	  const HOST_WIDE_INT ci = INTVAL (XEXP (x, 1));
+	  const int pwr2 = exact_log2 (ci);
+	  if (pwr2 > 0)
+	    {
+	      /* Rewrite this to use a shift instead, which is canonical when
+		 outside of a MEM.  */
+	      PUT_CODE (x, ASHIFT);
+	      XEXP (x, 1) = GEN_INT (pwr2);
+	    }
+	}
+    }
+
+  return addr;
 }
 
 /* Create a new pseudo using MODE, RCLASS, ORIGINAL or reuse already
@@ -4362,12 +4390,19 @@ curr_insn_transform (bool check_only_p)
 	    {
 	      rtx addr = *loc;
 	      enum rtx_code code = GET_CODE (addr);
-	      
+	      bool align_p = false;
+
 	      if (code == AND && CONST_INT_P (XEXP (addr, 1)))
-		/* (and ... (const_int -X)) is used to align to X bytes.  */
-		addr = XEXP (*loc, 0);
+		{
+		  /* (and ... (const_int -X)) is used to align to X bytes.  */
+		  align_p = true;
+		  addr = XEXP (*loc, 0);
+		}
+	      else
+		addr = canonicalize_reload_addr (addr);
+
 	      lra_emit_move (new_reg, addr);
-	      if (addr != *loc)
+	      if (align_p)
 		emit_move_insn (new_reg, gen_rtx_AND (GET_MODE (new_reg), new_reg, XEXP (*loc, 1)));
 	    }
 	  before = get_insns ();

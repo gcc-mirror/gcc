@@ -2881,7 +2881,7 @@ internal_arg_pointer_based_exp_scan (void)
 	    {
 	      if (idx >= internal_arg_pointer_exp_state.cache.length ())
 		internal_arg_pointer_exp_state.cache
-		  .safe_grow_cleared (idx + 1);
+		  .safe_grow_cleared (idx + 1, true);
 	      internal_arg_pointer_exp_state.cache[idx] = val;
 	    }
 	}

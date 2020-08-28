@@ -30,7 +30,7 @@
 #include "visitor.h"
 #include "objc.h"
 
-Expression *addInvariant(Loc loc, Scope *sc, AggregateDeclaration *ad, VarDeclaration *vthis, bool direct);
+Expression *addInvariant(AggregateDeclaration *ad, VarDeclaration *vthis);
 bool checkReturnEscape(Scope *sc, Expression *e, bool gag);
 bool checkReturnEscapeRef(Scope *sc, Expression *e, bool gag);
 bool checkNestedRef(Dsymbol *s, Dsymbol *p);
@@ -1212,8 +1212,9 @@ Ldone:
         if (type && mod)
         {
             printedMain = true;
-            const char *name = FileName::searchPath(global.path, mod->srcfile->toChars(), true);
-            message("entry     %-10s\t%s", type, name);
+            const char *name = mod->srcfile->toChars();
+            const char *path = FileName::searchPath(global.path, name, true);
+            message("entry     %-10s\t%s", type, path ? path : name);
         }
     }
 
@@ -1647,7 +1648,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         Statement *fpreinv = NULL;
         if (addPreInvariant())
         {
-            Expression *e = addInvariant(loc, sc, ad, vthis, isDtorDeclaration() != NULL);
+            Expression *e = addInvariant(ad, vthis);
             if (e)
                 fpreinv = new ExpStatement(Loc(), e);
         }
@@ -1656,7 +1657,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         Statement *fpostinv = NULL;
         if (addPostInvariant())
         {
-            Expression *e = addInvariant(loc, sc, ad, vthis, isCtorDeclaration() != NULL);
+            Expression *e = addInvariant(ad, vthis);
             if (e)
                 fpostinv = new ExpStatement(Loc(), e);
         }
@@ -1702,9 +1703,6 @@ void FuncDeclaration::semantic3(Scope *sc)
                     v->ctorinit = 0;
                 }
             }
-
-            if (!inferRetType && retStyle(f) != RETstack)
-                nrvo_can = 0;
 
             bool inferRef = (f->isref && (storage_class & STCauto));
 
@@ -1760,7 +1758,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                 if (storage_class & STCauto)
                     storage_class &= ~STCauto;
             }
-            if (retStyle(f) != RETstack)
+            if (retStyle(f) != RETstack || checkNrvo())
                 nrvo_can = 0;
 
             if (fbody->isErrorStatement())
@@ -4156,67 +4154,47 @@ bool FuncDeclaration::addPostInvariant()
  * Input:
  *      ad      aggregate with the invariant
  *      vthis   variable with 'this'
- *      direct  call invariant directly
  * Returns:
  *      void expression that calls the invariant
  */
-Expression *addInvariant(Loc loc, Scope *sc, AggregateDeclaration *ad, VarDeclaration *vthis, bool direct)
+Expression *addInvariant(AggregateDeclaration *ad, VarDeclaration *vthis)
 {
     Expression *e = NULL;
-    if (direct)
+
+    // Call invariant directly only if it exists
+    FuncDeclaration *inv = ad->inv;
+    ClassDeclaration *cd = ad->isClassDeclaration();
+
+    while (!inv && cd)
     {
-        // Call invariant directly only if it exists
-        FuncDeclaration *inv = ad->inv;
-        ClassDeclaration *cd = ad->isClassDeclaration();
-
-        while (!inv && cd)
-        {
-            cd = cd->baseClass;
-            if (!cd)
-                break;
-            inv = cd->inv;
-        }
-        if (inv)
-        {
-        #if 1
-            // Workaround for bugzilla 13394: For the correct mangling,
-            // run attribute inference on inv if needed.
-            inv->functionSemantic();
-        #endif
-
-            //e = new DsymbolExp(Loc(), inv);
-            //e = new CallExp(Loc(), e);
-            //e = e->semantic(sc2);
-
-            /* Bugzilla 13113: Currently virtual invariant calls completely
-             * bypass attribute enforcement.
-             * Change the behavior of pre-invariant call by following it.
-             */
-            e = new ThisExp(Loc());
-            e->type = vthis->type;
-            e = new DotVarExp(Loc(), e, inv, false);
-            e->type = inv->type;
-            e = new CallExp(Loc(), e);
-            e->type = Type::tvoid;
-        }
+        cd = cd->baseClass;
+        if (!cd)
+            break;
+        inv = cd->inv;
     }
-    else
+    if (inv)
     {
     #if 1
         // Workaround for bugzilla 13394: For the correct mangling,
         // run attribute inference on inv if needed.
-        if (ad->isStructDeclaration() && ad->inv)
-            ad->inv->functionSemantic();
+        inv->functionSemantic();
     #endif
 
-        // Call invariant virtually
-        Expression *v = new ThisExp(Loc());
-        v->type = vthis->type;
-        if (ad->isStructDeclaration())
-            v = v->addressOf();
-        e = new StringExp(Loc(), const_cast<char *>("null this"));
-        e = new AssertExp(loc, v, e);
-        e = semantic(e, sc);
+        //e = new DsymbolExp(Loc(), inv);
+        //e = new CallExp(Loc(), e);
+        //e = e->semantic(sc2);
+
+        /* https://issues.dlang.org/show_bug.cgi?id=13113
+         * Currently virtual invariant calls completely
+         * bypass attribute enforcement.
+         * Change the behavior of pre-invariant call by following it.
+         */
+        e = new ThisExp(Loc());
+        e->type = vthis->type;
+        e = new DotVarExp(Loc(), e, inv, false);
+        e->type = inv->type;
+        e = new CallExp(Loc(), e);
+        e->type = Type::tvoid;
     }
     return e;
 }
@@ -4290,6 +4268,53 @@ void FuncDeclaration::checkDmain()
         error("must return int or void, not %s", tf->nextOf()->toChars());
     else if (tf->parameterList.varargs || nparams >= 2 || argerr)
         error("parameters must be main() or main(string[] args)");
+}
+
+/***********************************************
+ * Check all return statements for a function to verify that returning
+ * using NRVO is possible.
+ *
+ * Returns:
+ *      true if the result cannot be returned by hidden reference.
+ */
+bool FuncDeclaration::checkNrvo()
+{
+    if (!nrvo_can)
+        return true;
+
+    if (returns == NULL)
+        return true;
+
+    TypeFunction *tf = type->toTypeFunction();
+    if (tf->isref)
+        return true;
+
+    for (size_t i = 0; i < returns->length; i++)
+    {
+        ReturnStatement *rs = (*returns)[i];
+
+        if (VarExp *ve = rs->exp->isVarExp())
+        {
+            VarDeclaration *v = ve->var->isVarDeclaration();
+            if (!v || v->isOut() || v->isRef())
+                return true;
+            else if (nrvo_var == NULL)
+            {
+                if (!v->isDataseg() && !v->isParameter() && v->toParent2() == this)
+                {
+                    //printf("Setting nrvo to %s\n", v->toChars());
+                    nrvo_var = v;
+                }
+                else
+                    return true;
+            }
+            else if (nrvo_var != v)
+                return true;
+        }
+        else //if (!exp->isLvalue())    // keep NRVO-ability
+            return true;
+    }
+    return false;
 }
 
 const char *FuncDeclaration::kind() const

@@ -378,7 +378,7 @@ rtl_create_basic_block (void *headp, void *endp, basic_block after)
       size_t new_size =
 	(last_basic_block_for_fn (cfun)
 	 + (last_basic_block_for_fn (cfun) + 3) / 4);
-      vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
+      vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size, true);
     }
 
   n_basic_blocks_for_fn (cfun)++;

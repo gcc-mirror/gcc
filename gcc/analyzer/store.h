@@ -553,7 +553,7 @@ public:
   cluster_map_t::iterator end () const { return m_cluster_map.end (); }
 
   tristate eval_alias (const region *base_reg_a,
-		       const region *base_reg_b);
+		       const region *base_reg_b) const;
 
   template <typename BindingVisitor>
   void for_each_binding (BindingVisitor &v)
@@ -569,6 +569,8 @@ public:
 
 private:
   void remove_overlapping_bindings (store_manager *mgr, const region *reg);
+  tristate eval_alias_1 (const region *base_reg_a,
+			 const region *base_reg_b) const;
 
   cluster_map_t m_cluster_map;
 

@@ -4282,7 +4282,7 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
 
       auto_vec<tree, 8> args;
       unsigned int nargs = gimple_call_num_args (last_stmt);
-      args.safe_grow (nargs);
+      args.safe_grow (nargs, true);
       for (unsigned int i = 0; i < nargs; ++i)
 	args[i] = ((int) i == mask_argno
 		   ? tmp

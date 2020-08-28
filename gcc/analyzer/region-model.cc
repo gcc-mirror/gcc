@@ -462,24 +462,23 @@ region_model::get_gassign_result (const gassign *assign,
       {
 	tree rhs2 = gimple_assign_rhs2 (assign);
 
-	// TODO: constraints between svalues
 	const svalue *rhs1_sval = get_rvalue (rhs1, ctxt);
 	const svalue *rhs2_sval = get_rvalue (rhs2, ctxt);
 
-	tristate t = eval_condition (rhs1_sval, op, rhs2_sval);
-	if (t.is_known ())
-	  return get_rvalue (t.is_true ()
-			     ? boolean_true_node
-			     : boolean_false_node,
-			     ctxt);
-	else
+	if (TREE_TYPE (lhs) == boolean_type_node)
 	  {
-	    // TODO: symbolic value for binop
-	    const svalue *sval_binop
-	      = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
-					    rhs1_sval, rhs2_sval);
-	    return sval_binop;
+	    /* Consider constraints between svalues.  */
+	    tristate t = eval_condition (rhs1_sval, op, rhs2_sval);
+	    if (t.is_known ())
+	      return m_mgr->get_or_create_constant_svalue
+		(t.is_true () ? boolean_true_node : boolean_false_node);
 	  }
+
+	/* Otherwise, generate a symbolic binary op.  */
+	const svalue *sval_binop
+	  = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
+					rhs1_sval, rhs2_sval);
+	return sval_binop;
       }
       break;
 
@@ -2354,17 +2353,12 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
 	     rest of the params as uninitialized.  */
 	  if (idx >= arg_svals->length ())
 	    break;
+	  tree parm_lval = iter_parm;
+	  if (tree parm_default_ssa = ssa_default_def (fun, iter_parm))
+	    parm_lval = parm_default_ssa;
+	  const region *parm_reg = get_lvalue (parm_lval, ctxt);
 	  const svalue *arg_sval = (*arg_svals)[idx];
-	  const region *parm_reg = get_lvalue (iter_parm, ctxt);
 	  set_value (parm_reg, arg_sval, ctxt);
-
-	  /* Also do it for default SSA name (sharing the same value).  */
-	  tree parm_default_ssa = ssa_default_def (fun, iter_parm);
-	  if (parm_default_ssa)
-	    {
-	      const region *defssa_reg = get_lvalue (parm_default_ssa, ctxt);
-	      set_value (defssa_reg, arg_sval, ctxt);
-	    }
 	}
     }
   else
@@ -2376,10 +2370,10 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
       for (tree iter_parm = DECL_ARGUMENTS (fndecl); iter_parm;
 	   iter_parm = DECL_CHAIN (iter_parm))
 	{
-	  on_top_level_param (iter_parm, ctxt);
-	  tree parm_default_ssa = ssa_default_def (fun, iter_parm);
-	  if (parm_default_ssa)
+	  if (tree parm_default_ssa = ssa_default_def (fun, iter_parm))
 	    on_top_level_param (parm_default_ssa, ctxt);
+	  else
+	    on_top_level_param (iter_parm, ctxt);
 	}
     }
 

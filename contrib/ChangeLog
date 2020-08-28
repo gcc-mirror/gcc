@@ -1,3 +1,8 @@
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add OPT-enable-obsolete to tilegx-linux-gnu,
+	tilegxbe-linux-gnu, and tilepro-linux-gnu.
+
 2020-07-29  Martin Liska  <mliska@suse.cz>
 
 	* git-backport.py: fix how are ChangeLog paths combined.

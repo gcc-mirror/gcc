@@ -1,6 +1,6 @@
 /* PR rtl-optimization/55342 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-avx512dq" } */
 /* { dg-final { scan-assembler-not "notb" } } */
 
 

@@ -3157,7 +3157,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* We need to pre-pend vr->operands[0..i] to rhs.  */
       vec<vn_reference_op_s> old = vr->operands;
       if (i + 1 + rhs.length () > vr->operands.length ())
-	vr->operands.safe_grow (i + 1 + rhs.length ());
+	vr->operands.safe_grow (i + 1 + rhs.length (), true);
       else
 	vr->operands.truncate (i + 1 + rhs.length ());
       FOR_EACH_VEC_ELT (rhs, j, vro)
@@ -3362,7 +3362,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (vr->operands.length () < 2)
 	{
 	  vec<vn_reference_op_s> old = vr->operands;
-	  vr->operands.safe_grow_cleared (2);
+	  vr->operands.safe_grow_cleared (2, true);
 	  if (old == shared_lookup_references)
 	    shared_lookup_references = vr->operands;
 	}
@@ -3448,7 +3448,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
 
   vr1.vuse = vuse_ssa_val (vuse);
   shared_lookup_references.truncate (0);
-  shared_lookup_references.safe_grow (operands.length ());
+  shared_lookup_references.safe_grow (operands.length (), true);
   memcpy (shared_lookup_references.address (),
 	  operands.address (),
 	  sizeof (vn_reference_op_s)
@@ -3578,6 +3578,7 @@ vn_reference_lookup_call (gcall *call, vn_reference_t *vnresult,
   vr->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr->operands = valueize_shared_reference_ops_from_call (call);
   vr->type = gimple_expr_type (call);
+  vr->punned = false;
   vr->set = 0;
   vr->base_set = 0;
   vr->hashcode = vn_reference_compute_hash (vr);
@@ -3601,7 +3602,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
   vr1->type = TREE_TYPE (op);
-  vr1->punned = 0;
+  vr1->punned = false;
   ao_ref op_ref;
   ao_ref_init (&op_ref, op);
   vr1->set = ao_ref_alias_set (&op_ref);
@@ -3661,7 +3662,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set,
   vr1->vuse = vuse_ssa_val (vuse);
   vr1->operands = valueize_refs (operands);
   vr1->type = type;
-  vr1->punned = 0;
+  vr1->punned = false;
   vr1->set = set;
   vr1->base_set = base_set;
   vr1->hashcode = vn_reference_compute_hash (vr1);
@@ -5714,7 +5715,7 @@ eliminate_dom_walker::eliminate_push_avail (basic_block, tree op)
   if (TREE_CODE (valnum) == SSA_NAME)
     {
       if (avail.length () <= SSA_NAME_VERSION (valnum))
-	avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1);
+	avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1, true);
       tree pushop = op;
       if (avail[SSA_NAME_VERSION (valnum)])
 	pushop = avail[SSA_NAME_VERSION (valnum)];
@@ -5859,8 +5860,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      duplicate_ssa_name_ptr_info (sprime,
 					   SSA_NAME_PTR_INFO (lhs));
 	      if (b != sprime_b)
-		mark_ptr_info_alignment_unknown
-		    (SSA_NAME_PTR_INFO (sprime));
+		reset_flow_sensitive_info (sprime);
 	    }
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 		   && SSA_NAME_RANGE_INFO (lhs)

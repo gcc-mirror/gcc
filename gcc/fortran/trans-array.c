@@ -6472,8 +6472,14 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
 
   if (sym->attr.optional || sym->attr.not_always_present)
     {
-      tmp = gfc_conv_expr_present (sym);
-      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt (input_location));
+      tree nullify;
+      if (TREE_CODE (parm) != PARM_DECL)
+	nullify = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
+				   parm, null_pointer_node);
+      else
+	nullify = build_empty_stmt (input_location);
+      tmp = gfc_conv_expr_present (sym, true);
+      stmt = build3_v (COND_EXPR, tmp, stmt, nullify);
     }
 
   gfc_add_init_cleanup (block, stmt, NULL_TREE);
@@ -7018,7 +7024,12 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       e = gfc_constructor_first (expr->value.constructor)->expr;
 
       gfc_init_se (&tse, NULL);
+
+      /* Avoid evaluating trailing array references since all we need is
+	 the string length.  */
       if (e->rank)
+	tse.descriptor_only = 1;
+      if (e->rank && e->expr_type != EXPR_VARIABLE)
 	gfc_conv_expr_descriptor (&tse, e);
       else
 	gfc_conv_expr (&tse, e);
@@ -7036,14 +7047,26 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl,
 		      tse.string_length);
 
+      /* Make sure that deferred length components point to the hidden
+	 string_length component.  */
+      if (TREE_CODE (tse.expr) == COMPONENT_REF
+	  && TREE_CODE (tse.string_length) == COMPONENT_REF
+	  && TREE_OPERAND (tse.expr, 0) == TREE_OPERAND (tse.string_length, 0))
+	e->ts.u.cl->backend_decl = expr->ts.u.cl->backend_decl;
+
       return;
 
     case EXPR_OP:
       get_array_charlen (expr->value.op.op1, se);
 
-      /* For parentheses the expression ts.u.cl is identical.  */
+      /* For parentheses the expression ts.u.cl should be identical.  */
       if (expr->value.op.op == INTRINSIC_PARENTHESES)
-	return;
+	{
+	  if (expr->value.op.op1->ts.u.cl != expr->ts.u.cl)
+	    expr->ts.u.cl->backend_decl
+			= expr->value.op.op1->ts.u.cl->backend_decl;
+	  return;
+	}
 
       expr->ts.u.cl->backend_decl =
 		gfc_create_var (gfc_charlen_type_node, "sln");
@@ -9732,7 +9755,7 @@ gfc_bcast_alloc_comp (gfc_symbol *derived, gfc_expr *expr, int rank,
   args.image_index = image_index;
   args.stat = stat;
   args.errmsg = errmsg;
-  args.errmsg = errmsg_len;
+  args.errmsg_len = errmsg_len;
 
   if (rank == 0)
     {

@@ -279,6 +279,13 @@ struct processor_costs {
 				   in SImode, DImode and TImode.  */
       const int sse_to_integer;	/* cost of moving SSE register to integer.  */
       const int integer_to_sse;	/* cost of moving integer register to SSE. */
+      const int mask_to_integer; /* cost of moving mask register to integer.  */
+      const int integer_to_mask; /* cost of moving integer register to mask.  */
+      const int mask_load[3]; /* cost of loading mask registers
+				 in QImode, HImode and SImode.  */
+      const int mask_store[3]; /* cost of storing mask register
+				  in QImode, HImode and SImode.  */
+      const int mask_move; /* cost of moving mask register.  */
     } hard_register;
 
   const int add;		/* cost of an add instruction */
@@ -1411,6 +1418,7 @@ enum reg_class
   FLOAT_INT_SSE_REGS,
   MASK_REGS,
   ALL_MASK_REGS,
+  INT_MASK_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1470,6 +1478,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_REGS",				\
    "ALL_MASK_REGS",			\
+   "INT_MASK_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1508,6 +1517,7 @@ enum reg_class
  { 0xff9ffff, 0xfffffff0,   0xf },	/* FLOAT_INT_SSE_REGS */	\
        { 0x0,        0x0, 0xfe0 },	/* MASK_REGS */			\
        { 0x0,        0x0, 0xff0 },	/* ALL_MASK_REGS */		\
+   { 0x900ff,      0xff0, 0xff0 },	/* INT_MASK_REGS */	\
 { 0xffffffff, 0xffffffff, 0xfff }	/* ALL_REGS  */			\
 }
 
@@ -2945,9 +2955,9 @@ extern void debug_dispatch_window (int);
 /* The value at zero is only defined for the BMI instructions
    LZCNT and TZCNT, not the BSR/BSF insns in the original isa.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 1 : 0)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 2 : 0)
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 1 : 0)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 2 : 0)
 
 
 /* Flags returned by ix86_get_callcvt ().  */

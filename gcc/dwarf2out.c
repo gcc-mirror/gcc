@@ -19756,7 +19756,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
   /* ???  The C++ FE emits debug information for using decls, so
      putting gcc_unreachable here falls over.  See PR31899.  For now
      be conservative.  */
-  else if (!symtab->global_info_ready && VAR_OR_FUNCTION_DECL_P (*tp))
+  else if (!symtab->global_info_ready && VAR_P (*tp))
     return *tp;
   else if (VAR_P (*tp))
     {
@@ -19771,7 +19771,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
          optimizing and gimplifying the CU by now.
 	 So if *TP has no call graph node associated
 	 to it, it means *TP will not be emitted.  */
-      if (!cgraph_node::get (*tp))
+      if (!symtab->global_info_ready || !cgraph_node::get (*tp))
 	return *tp;
     }
   else if (TREE_CODE (*tp) == STRING_CST && !TREE_ASM_WRITTEN (*tp))
@@ -20295,12 +20295,11 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	  return true;
 	}
     }
-  if (! early_dwarf)
-    {
-      rtl = rtl_for_decl_init (init, type);
-      if (rtl)
-	return add_const_value_attribute (die, rtl);
-    }
+  /* Generate the RTL even if early_dwarf to force mangling of all refered to
+     symbols.  */
+  rtl = rtl_for_decl_init (init, type);
+  if (rtl && !early_dwarf)
+    return add_const_value_attribute (die, rtl);
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))
@@ -27205,7 +27204,7 @@ static bool maybe_at_text_label_p = true;
 /* One above highest N where .LVLN label might be equal to .Ltext0 label.  */
 static unsigned int first_loclabel_num_not_at_text_label;
 
-/* Look ahead for a real insn, or for a begin stmt marker.  */
+/* Look ahead for a real insn.  */
 
 static rtx_insn *
 dwarf2out_next_real_insn (rtx_insn *loc_note)
@@ -27230,7 +27229,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 {
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES + 2];
   struct var_loc_node *newloc;
-  rtx_insn *next_real, *next_note;
+  rtx_insn *next_real;
   rtx_insn *call_insn = NULL;
   static const char *last_label;
   static const char *last_postcall_label;
@@ -27255,7 +27254,6 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	      var_loc_p = false;
 
 	      next_real = dwarf2out_next_real_insn (call_insn);
-	      next_note = NULL;
 	      cached_next_real_insn = NULL;
 	      goto create_label;
 	    }
@@ -27283,7 +27281,6 @@ dwarf2out_var_location (rtx_insn *loc_note)
 		  var_loc_p = false;
 
 		  next_real = dwarf2out_next_real_insn (call_insn);
-		  next_note = NULL;
 		  cached_next_real_insn = NULL;
 		  goto create_label;
 		}
@@ -27312,22 +27309,28 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	next_real = NULL;
     }
 
-  next_note = NEXT_INSN (loc_note);
-  if (! next_note
-      || next_note->deleted ()
-      || ! NOTE_P (next_note)
-      || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
-	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
-	  && NOTE_KIND (next_note) != NOTE_INSN_INLINE_ENTRY))
-    next_note = NULL;
-
   if (! next_real)
     next_real = dwarf2out_next_real_insn (loc_note);
 
-  if (next_note)
+  if (next_real)
     {
-      expected_next_loc_note = next_note;
-      cached_next_real_insn = next_real;
+      rtx_insn *next_note = NEXT_INSN (loc_note);
+      while (next_note != next_real)
+	{
+	  if (! next_note->deleted ()
+	      && NOTE_P (next_note)
+	      && NOTE_KIND (next_note) == NOTE_INSN_VAR_LOCATION)
+	    break;
+	  next_note = NEXT_INSN (next_note);
+	}
+
+      if (next_note == next_real)
+	cached_next_real_insn = NULL;
+      else
+	{
+	  expected_next_loc_note = next_note;
+	  cached_next_real_insn = next_real;
+	}
     }
   else
     cached_next_real_insn = NULL;

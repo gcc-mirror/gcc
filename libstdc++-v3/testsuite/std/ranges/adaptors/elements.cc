@@ -45,8 +45,30 @@ test01()
   VERIFY( ranges::equal(v1, x | views::values) );
 }
 
+struct S
+{
+  friend bool
+  operator==(std::input_iterator auto const& i, S)
+  { return std::get<1>(*i) == 0; }
+};
+
+void
+test02()
+{
+  // This verifies that P1994R1 (and LWG3406) is implemented.
+  std::pair<std::pair<char, int>, long> x[]
+    = {{{1,2},3l}, {{1,0},2l}, {{1,2},0l}};
+  ranges::subrange r{ranges::begin(x), S{}};
+
+  auto v = r | views::keys;
+  VERIFY( ranges::equal(v, (std::pair<char, int>[]){{1,2},{1,0}}) );
+  ranges::subrange v2{ranges::begin(v), S{}};
+  VERIFY( ranges::equal(v2, (std::pair<char, int>[]){{1,2}}) );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

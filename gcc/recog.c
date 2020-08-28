@@ -3277,6 +3277,78 @@ peep2_reinit_state (regset live)
   COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
 }
 
+/* Copies frame related info of an insn (OLD_INSN) to the single
+   insn (NEW_INSN) that was obtained by splitting OLD_INSN.  */
+
+void
+copy_frame_info_to_split_insn (rtx_insn *old_insn, rtx_insn *new_insn)
+{
+  bool any_note = false;
+  rtx note;
+
+  if (!RTX_FRAME_RELATED_P (old_insn))
+    return;
+
+  RTX_FRAME_RELATED_P (new_insn) = 1;
+
+  /* Allow the backend to fill in a note during the split.  */
+  for (note = REG_NOTES (new_insn); note ; note = XEXP (note, 1))
+    switch (REG_NOTE_KIND (note))
+      {
+      case REG_FRAME_RELATED_EXPR:
+      case REG_CFA_DEF_CFA:
+      case REG_CFA_ADJUST_CFA:
+      case REG_CFA_OFFSET:
+      case REG_CFA_REGISTER:
+      case REG_CFA_EXPRESSION:
+      case REG_CFA_RESTORE:
+      case REG_CFA_SET_VDRAP:
+        any_note = true;
+        break;
+      default:
+        break;
+      }
+
+  /* If the backend didn't supply a note, copy one over.  */
+  if (!any_note)
+    for (note = REG_NOTES (old_insn); note ; note = XEXP (note, 1))
+      switch (REG_NOTE_KIND (note))
+        {
+        case REG_FRAME_RELATED_EXPR:
+        case REG_CFA_DEF_CFA:
+        case REG_CFA_ADJUST_CFA:
+        case REG_CFA_OFFSET:
+        case REG_CFA_REGISTER:
+        case REG_CFA_EXPRESSION:
+        case REG_CFA_RESTORE:
+        case REG_CFA_SET_VDRAP:
+          add_reg_note (new_insn, REG_NOTE_KIND (note), XEXP (note, 0));
+          any_note = true;
+          break;
+        default:
+          break;
+        }
+
+  /* If there still isn't a note, make sure the unwind info sees the
+     same expression as before the split.  */
+  if (!any_note)
+    {
+      rtx old_set, new_set;
+
+      /* The old insn had better have been simple, or annotated.  */
+      old_set = single_set (old_insn);
+      gcc_assert (old_set != NULL);
+
+      new_set = single_set (new_insn);
+      if (!new_set || !rtx_equal_p (new_set, old_set))
+        add_reg_note (new_insn, REG_FRAME_RELATED_EXPR, old_set);
+    }
+
+  /* Copy prologue/epilogue status.  This is required in order to keep
+     proper placement of EPILOGUE_BEG and the DW_CFA_remember_state.  */
+  maybe_copy_prologue_epilogue_insn (old_insn, new_insn);
+}
+
 /* While scanning basic block BB, we found a match of length MATCH_LEN,
    starting at INSN.  Perform the replacement, removing the old insns and
    replacing them with ATTEMPT.  Returns the last insn emitted, or NULL
@@ -3297,9 +3369,6 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
   old_insn = peep2_insn_data[peep2_current].insn;
   if (RTX_FRAME_RELATED_P (old_insn))
     {
-      bool any_note = false;
-      rtx note;
-
       if (match_len != 0)
 	return NULL;
 
@@ -3313,64 +3382,7 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 	return NULL;
 
       /* We have a 1-1 replacement.  Copy over any frame-related info.  */
-      RTX_FRAME_RELATED_P (new_insn) = 1;
-
-      /* Allow the backend to fill in a note during the split.  */
-      for (note = REG_NOTES (new_insn); note ; note = XEXP (note, 1))
-	switch (REG_NOTE_KIND (note))
-	  {
-	  case REG_FRAME_RELATED_EXPR:
-	  case REG_CFA_DEF_CFA:
-	  case REG_CFA_ADJUST_CFA:
-	  case REG_CFA_OFFSET:
-	  case REG_CFA_REGISTER:
-	  case REG_CFA_EXPRESSION:
-	  case REG_CFA_RESTORE:
-	  case REG_CFA_SET_VDRAP:
-	    any_note = true;
-	    break;
-	  default:
-	    break;
-	  }
-
-      /* If the backend didn't supply a note, copy one over.  */
-      if (!any_note)
-        for (note = REG_NOTES (old_insn); note ; note = XEXP (note, 1))
-	  switch (REG_NOTE_KIND (note))
-	    {
-	    case REG_FRAME_RELATED_EXPR:
-	    case REG_CFA_DEF_CFA:
-	    case REG_CFA_ADJUST_CFA:
-	    case REG_CFA_OFFSET:
-	    case REG_CFA_REGISTER:
-	    case REG_CFA_EXPRESSION:
-	    case REG_CFA_RESTORE:
-	    case REG_CFA_SET_VDRAP:
-	      add_reg_note (new_insn, REG_NOTE_KIND (note), XEXP (note, 0));
-	      any_note = true;
-	      break;
-	    default:
-	      break;
-	    }
-
-      /* If there still isn't a note, make sure the unwind info sees the
-	 same expression as before the split.  */
-      if (!any_note)
-	{
-	  rtx old_set, new_set;
-
-	  /* The old insn had better have been simple, or annotated.  */
-	  old_set = single_set (old_insn);
-	  gcc_assert (old_set != NULL);
-
-	  new_set = single_set (new_insn);
-	  if (!new_set || !rtx_equal_p (new_set, old_set))
-	    add_reg_note (new_insn, REG_FRAME_RELATED_EXPR, old_set);
-	}
-
-      /* Copy prologue/epilogue status.  This is required in order to keep
-	 proper placement of EPILOGUE_BEG and the DW_CFA_remember_state.  */
-      maybe_copy_prologue_epilogue_insn (old_insn, new_insn);
+      copy_frame_info_to_split_insn (old_insn, new_insn);
     }
 
   /* If we are splitting a CALL_INSN, look for the CALL_INSN

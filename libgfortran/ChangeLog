@@ -1,3 +1,17 @@
+2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96486
+	* intrinsics/env.c: If value_len is > 0 blank the string.
+	Copy the result only if its length is > 0.
+
+2020-08-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96436
+	* io/format.c (parse_format_list):  Add new local variable
+	"standard" to hold the required standard to check. If the
+	format width is zero select standard depending on descriptor.
+	Call notification_std using the new standard variable.
+
 2020-08-17  David Edelsohn  <dje.gcc@gmail.com>
 	    Clement Chigot  <clement.chigot@atos.net>
 

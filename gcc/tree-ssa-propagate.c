@@ -420,7 +420,7 @@ ssa_prop_init (void)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->flags &= ~EDGE_EXECUTABLE;
     }
-  uid_to_stmt.safe_grow (gimple_stmt_max_uid (cfun));
+  uid_to_stmt.safe_grow (gimple_stmt_max_uid (cfun), true);
 }
 
 
@@ -671,7 +671,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       if (nargs > 0)
         {
           args.create (nargs);
-          args.safe_grow_cleared (nargs);
+	  args.safe_grow_cleared (nargs, true);
 
           for (i = 0; i < nargs; i++)
             args[i] = CALL_EXPR_ARG (expr, i);

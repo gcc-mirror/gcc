@@ -1,3 +1,796 @@
+2020-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65146
+	* config/i386/i386.c (iamcu_alignment): Don't decrease alignment
+	for TYPE_ATOMIC types.
+	(ix86_local_alignment): Likewise.
+	(ix86_minimum_alignment): Likewise.
+	(x86_field_alignment): Likewise, and emit a -Wpsabi diagnostic
+	for it.
+
+2020-08-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/96787
+	* config/rs6000/rs6000.c (rs6000_sibcall_aix): Support
+	indirect call for ELFv2.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* tree-ssa-address.c (copy_ref_info): Reset flow-sensitive
+	info of the copied points-to.  Transfer bigger alignment
+	via the access type.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Reset all flow-sensitive info.
+
+2020-08-27  Martin Liska  <mliska@suse.cz>
+
+	* alias.c (init_alias_analysis): Set exact argument of a vector
+	growth function to true.
+	* calls.c (internal_arg_pointer_based_exp_scan): Likewise.
+	* cfgbuild.c (find_many_sub_basic_blocks): Likewise.
+	* cfgexpand.c (expand_asm_stmt): Likewise.
+	* cfgrtl.c (rtl_create_basic_block): Likewise.
+	* combine.c (combine_split_insns): Likewise.
+	(combine_instructions): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (function_expander::add_output_operand): Likewise.
+	(function_expander::add_input_operand): Likewise.
+	(function_expander::add_integer_operand): Likewise.
+	(function_expander::add_address_operand): Likewise.
+	(function_expander::add_fixed_operand): Likewise.
+	* df-core.c (df_worklist_dataflow_doublequeue): Likewise.
+	* dwarf2cfi.c (update_row_reg_save): Likewise.
+	* early-remat.c (early_remat::init_block_info): Likewise.
+	(early_remat::finalize_candidate_indices): Likewise.
+	* except.c (sjlj_build_landing_pads): Likewise.
+	* final.c (compute_alignments): Likewise.
+	(grow_label_align): Likewise.
+	* function.c (temp_slots_at_level): Likewise.
+	* fwprop.c (build_single_def_use_links): Likewise.
+	(update_uses): Likewise.
+	* gcc.c (insert_wrapper): Likewise.
+	* genautomata.c (create_state_ainsn_table): Likewise.
+	(add_vect): Likewise.
+	(output_dead_lock_vect): Likewise.
+	* genmatch.c (capture_info::capture_info): Likewise.
+	(parser::finish_match_operand): Likewise.
+	* genrecog.c (optimize_subroutine_group): Likewise.
+	(merge_pattern_info::merge_pattern_info): Likewise.
+	(merge_into_decision): Likewise.
+	(print_subroutine_start): Likewise.
+	(main): Likewise.
+	* gimple-loop-versioning.cc (loop_versioning::loop_versioning): Likewise.
+	* gimple.c (gimple_set_bb): Likewise.
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_user): Likewise.
+	* haifa-sched.c (sched_extend_luids): Likewise.
+	(extend_h_i_d): Likewise.
+	* insn-addr.h (insn_addresses_new): Likewise.
+	* ipa-cp.c (gather_context_independent_values): Likewise.
+	(find_more_contexts_for_caller_subset): Likewise.
+	* ipa-devirt.c (final_warning_record::grow_type_warnings): Likewise.
+	(ipa_odr_read_section): Likewise.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Likewise.
+	(ipa_fn_summary_t::duplicate): Likewise.
+	(analyze_function_body): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(read_ipa_call_summary): Likewise.
+	* ipa-icf.c (sem_function::bb_dict_test): Likewise.
+	* ipa-prop.c (ipa_alloc_node_params): Likewise.
+	(parm_bb_aa_status_for_bb): Likewise.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(ipa_analyze_node): Likewise.
+	(update_jump_functions_after_inlining): Likewise.
+	(ipa_read_edge_info): Likewise.
+	(read_ipcp_transformation_info): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-reference.c (ipa_reference_write_optimization_summary): Likewise.
+	* ipa-split.c (execute_split_functions): Likewise.
+	* ira.c (find_moveable_pseudos): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs): Likewise.
+	* lto-streamer-in.c (input_eh_regions): Likewise.
+	(input_cfg): Likewise.
+	(input_struct_function_base): Likewise.
+	(input_function): Likewise.
+	* modulo-sched.c (set_node_sched_params): Likewise.
+	(extend_node_sched_params): Likewise.
+	(schedule_reg_moves): Likewise.
+	* omp-general.c (omp_construct_simd_compare): Likewise.
+	* passes.c (pass_manager::create_pass_tab): Likewise.
+	(enable_disable_pass): Likewise.
+	* predict.c (determine_unlikely_bbs): Likewise.
+	* profile.c (compute_branch_probabilities): Likewise.
+	* read-rtl-function.c (function_reader::parse_block): Likewise.
+	* read-rtl.c (rtx_reader::read_rtx_code): Likewise.
+	* reg-stack.c (stack_regs_mentioned): Likewise.
+	* regrename.c (regrename_init): Likewise.
+	* rtlanal.c (T>::add_single_to_queue): Likewise.
+	* sched-deps.c (init_deps_data_vector): Likewise.
+	* sel-sched-ir.c (sel_extend_global_bb_info): Likewise.
+	(extend_region_bb_info): Likewise.
+	(extend_insn_data): Likewise.
+	* symtab.c (symtab_node::create_reference): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* trans-mem.c (tm_region_init): Likewise.
+	(get_bb_regions_instrumented): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	(build_gimple_cfg): Likewise.
+	(create_bb): Likewise.
+	(move_block_to_fn): Likewise.
+	* tree-complex.c (tree_lower_complex): Likewise.
+	* tree-if-conv.c (predicate_rhs_code): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	* tree-into-ssa.c (get_ssa_name_ann): Likewise.
+	(mark_phi_for_rewrite): Likewise.
+	* tree-object-size.c (compute_builtin_object_size): Likewise.
+	(init_object_sizes): Likewise.
+	* tree-predcom.c (initialize_root_vars_store_elim_1): Likewise.
+	(initialize_root_vars_store_elim_2): Likewise.
+	(prepare_initializers_chain_store_elim): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	(multiplier_allowed_in_address_p): Likewise.
+	* tree-ssa-coalesce.c (ssa_conflicts_new): Likewise.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-ssa-loop-ivopts.c (addr_offset_valid_p): Likewise.
+	(get_address_cost_ainc): Likewise.
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk): Likewise.
+	* tree-ssa-pre.c (add_to_value): Likewise.
+	(phi_translate_1): Likewise.
+	(do_pre_regular_insertion): Likewise.
+	(do_pre_partial_partial_insertion): Likewise.
+	(init_pre): Likewise.
+	* tree-ssa-propagate.c (ssa_prop_init): Likewise.
+	(update_call_from_tree): Likewise.
+	* tree-ssa-reassoc.c (optimize_range_tests_cmp_bitwise): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.
+	(eliminate_dom_walker::eliminate_push_avail): Likewise.
+	* tree-ssa-strlen.c (set_strinfo): Likewise.
+	(get_stridx_plus_constant): Likewise.
+	(zero_length_string): Likewise.
+	(find_equal_ptrs): Likewise.
+	(printf_strlen_execute): Likewise.
+	* tree-ssa-threadedge.c (set_ssa_name_value): Likewise.
+	* tree-ssanames.c (make_ssa_name_fn): Likewise.
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Likewise.
+	* tree-vect-loop.c (vect_record_loop_mask): Likewise.
+	(vect_get_loop_mask): Likewise.
+	(vect_record_loop_len): Likewise.
+	(vect_get_loop_len): Likewise.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-slp.c (vect_slp_convert_to_external): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	(vect_bb_vectorization_profitable_p): Likewise.
+	(vectorizable_slp_permutation): Likewise.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(scan_store_can_perm_p): Likewise.
+	(vectorizable_store): Likewise.
+	* expr.c: Likewise.
+	* vec.c (test_safe_grow_cleared): Likewise.
+	* vec.h (vec_safe_grow): Likewise.
+	(vec_safe_grow_cleared): Likewise.
+	(vl_ptr>::safe_grow): Likewise.
+	(vl_ptr>::safe_grow_cleared): Likewise.
+	* config/c6x/c6x.c (insn_set_clock): Likewise.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_mem_ref): Handle TARGET_MEM_REFs.
+	(dump_generic_node): Use dump_mem_ref also for TARGET_MEM_REF.
+
+2020-08-27  Alex Coplan  <alex.coplan@arm.com>
+
+	* lra-constraints.c (canonicalize_reload_addr): New.
+	(curr_insn_transform): Use canonicalize_reload_addr to ensure we
+	generate canonical RTL for an address reload.
+
+2020-08-27  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for rounding intrinsics.
+
+2020-08-27  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for min/max intrinsics.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96579
+	* tree-ssa-reassoc.c (linearize_expr_tree): If we expand
+	rhs via special ops make sure to swap operands.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96565
+	* tree-ssa-dse.c (dse_classify_store): Remove defs with
+	no uses from further processing.
+
+2020-08-26  Göran Uddeborg  <goeran@uddeborg.se>
+
+	PR gcov-profile/96285
+	* common.opt, doc/invoke.texi: Clarify wording of
+	-fprofile-exclude-files and adjust -fprofile-filter-files to
+	match.
+
+2020-08-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96802
+	* config/i386/i386-options.c (ix86_valid_target_attribute_inner_p):
+	Reject target("no-general-regs-only").
+
+2020-08-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/constraints.md (K): Change unused constraint to
+	constraint to a const_int between 1 and 19.
+	(P): New constraint.
+	* config/msp430/msp430-protos.h (msp430x_logical_shift_right): Remove.
+	(msp430_expand_shift): New.
+	(msp430_output_asm_shift_insns): New.
+	* config/msp430/msp430.c (msp430_rtx_costs): Remove shift costs.
+	(CSH): Remove.
+	(msp430_expand_helper): Remove hard-coded generation of some inline
+	shift insns.
+	(use_helper_for_const_shift): New.
+	(msp430_expand_shift): New.
+	(msp430_output_asm_shift_insns): New.
+	(msp430_print_operand): Add new 'W' operand selector.
+	(msp430x_logical_shift_right): Remove.
+	* config/msp430/msp430.md (HPSI): New define_mode_iterator.
+	(HDI): Likewise.
+	(any_shift): New define_code_iterator.
+	(shift_insn): New define_code_attr.
+	Adjust unnamed insn patterns searched for by combine.
+	(ashlhi3): Remove.
+	(slli_1): Remove.
+	(430x_shift_left): Remove.
+	(slll_1): Remove.
+	(slll_2): Remove.
+	(ashlsi3): Remove.
+	(ashldi3): Remove.
+	(ashrhi3): Remove.
+	(srai_1): Remove.
+	(430x_arithmetic_shift_right): Remove.
+	(srap_1): Remove.
+	(srap_2): Remove.
+	(sral_1): Remove.
+	(sral_2): Remove.
+	(ashrsi3): Remove.
+	(ashrdi3): Remove.
+	(lshrhi3): Remove.
+	(srli_1): Remove.
+	(430x_logical_shift_right): Remove.
+	(srlp_1): Remove.
+	(srll_1): Remove.
+	(srll_2x): Remove.
+	(lshrsi3): Remove.
+	(lshrdi3): Remove.
+	(<shift_insn><mode>3): New define_expand.
+	(<shift_insn>hi3_430): New define_insn.
+	(<shift_insn>si3_const): Likewise.
+	(ashl<mode>3_430x): Likewise.
+	(ashr<mode>3_430x): Likewise.
+	(lshr<mode>3_430x): Likewise.
+	(*bitbranch<mode>4_z): Replace renamed predicate msp430_bitpos with
+	const_0_to_15_operand.
+	* config/msp430/msp430.opt: New option -mmax-inline-shift=.
+	* config/msp430/predicates.md (const_1_to_8_operand): New predicate.
+	(const_0_to_15_operand): Rename msp430_bitpos predicate.
+	(const_1_to_19_operand): New predicate.
+	* doc/invoke.texi: Document -mmax-inline-shift=.
+
+2020-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Abstract code out to...
+	* tree-vrp.c (find_case_label_range): ...here.  Rewrite for to use irange
+	API.
+	(simplify_stmt_for_jump_threading): Call find_case_label_range instead of
+	duplicating the code in simplify_stmt_for_jump_threading.
+	* tree-vrp.h (find_case_label_range): New prototype.
+
+2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	* tree-vectorizer.h (loop_vec_info::reduc_latch_defs): New.
+	(loop_vec_info::reduc_latch_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_transform_stmt): Only record
+	stmts to update PHI latches from, perform the update ...
+	* tree-vect-loop.c (vect_transform_loop): ... here after
+	vectorizing those PHIs.
+	(info_for_reduction): Properly handle non-reduction PHIs.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (process_symver_attribute): Match only symver
+	TREE_PURPOSE.
+
+2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96783
+	* tree-vect-stmts.c (get_group_load_store_type): Use
+	VMAT_ELEMENTWISE for negative strides when we cannot
+	use VMAT_STRIDED_SLP.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document how are pie and pic options merged.
+
+2020-08-26  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for add/sub arithmetic intrinsics.
+
+2020-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96729
+	* dwarf2out.c (dwarf2out_next_real_insn): Adjust function comment.
+	(dwarf2out_var_location): Look for next_note only if next_real is
+	non-NULL, in that case look for the first non-deleted
+	NOTE_INSN_VAR_LOCATION between loc_note and next_real, if any.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/tilepro/gen-mul-tables.cc (main): Define IN_TARGET_CODE to 1
+	in the target file.
+
+2020-08-26  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (process_symver_attribute): Allow multiple
+	symver attributes for one symbol.
+	* doc/extend.texi: Document the change.
+
+2020-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95863
+	* config/i386/i386.h (CTZ_DEFINED_VALUE_AT_ZERO): Return 0/2.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Likewise.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/87256
+	* config/pa/pa.c (hppa_rtx_costs_shadd_p): New helper function
+	to check for coefficients supported by shNadd and shladd,l.
+	(hppa_rtx_costs):  Rewrite to avoid using estimates based upon
+	FACTOR and enable recursing deeper into RTL expressions.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/pa/pa.md (ashldi3): Additionally, on !TARGET_64BIT
+	generate a two instruction shd/zdep sequence when shifting
+	registers by suitable constants.
+	(shd_internal): New define_expand to provide gen_shd_internal.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Rename
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS to
+	__ARM_FEATURE_SVE_VECTOR_OPERATORS.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (add_sve_type_attribute):
+	Take the ACLE name of the type as a parameter and add it as fourth
+	argument to the "SVE type" attribute.
+	(register_builtin_types): Update call accordingly.
+	(register_tuple_type): Likewise.  Construct the name of the type
+	earlier in order to do this.
+	(get_arm_sve_vector_bits_attributes): New function.
+	(handle_arm_sve_vector_bits_attribute): Report a more sensible
+	error message if the attribute is applied to an SVE tuple type.
+	Don't allow the attribute to be applied to an existing fixed-length
+	SVE type.  Mangle the new type as __SVE_VLS<type, vector-bits>.
+	Add a dummy TYPE_DECL to the new type.
+
+2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (DEF_SVE_TYPE): Add a
+	leading "u" to each mangled name.
+
+2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96548
+	PR tree-optimization/96760
+	* tree-ssa-loop-im.c (tree_ssa_lim): Recompute RPO after
+	store-motion.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* gimple.c (infer_nonnull_range): Formatting fix.
+	(infer_nonnull_range_by_dereference): Return false for clobber stmts.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): If both cstlen1
+	and cstlen2 are set, set cmpsiz to their minimum, otherwise use the
+	one that is set.  If bound is used and smaller than cmpsiz, set cmpsiz
+	to bound.  If both cstlen1 and cstlen2 are set, perform the optimization.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* tree-sra.c (create_access): Disqualify any aggregate with negative
+	offset access.
+	(build_ref_for_model): Add assert that offset is non-negative.
+
+2020-08-25  Wei Wentao  <weiwt.fnst@cn.fujitsu.com>
+
+	* rtl.def: Fix typo in comment.
+
+2020-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/21137
+	* fold-const.c (fold_binary_loc) [NE_EXPR/EQ_EXPR]: Call
+	STRIP_NOPS when checking whether to simplify ((x>>C1)&C2) != 0.
+
+2020-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/64242
+	* config/mips/mips.md (builtin_longjmp): Restore the frame
+	pointer and stack pointer and gp.
+
+2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96690
+	* dwarf2out.c (reference_to_unused): Make FUNCTION_DECL
+	processing more consistent with respect to
+	symtab->global_info_ready.
+	(tree_add_const_value_attribute): Unconditionally call
+	rtl_for_decl_init to do all mangling early but throw
+	away the result if early_dwarf.
+
+2020-08-25  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96755
+	* config/i386/sse.md: Correct the mode of NOT operands to
+	SImode.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96715
+	* match.pd (copysign(x,-x) -> -x): New simplification.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* fold-const.c (native_interpret_real): For MODE_COMPOSITE_P modes
+	punt if the to be returned REAL_CST does not encode to the bitwise
+	same representation.
+
+2020-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration): Switch valgrind.com to https.
+
+2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	PR target/94538
+	* config/arm/thumb1.md: Disable set-constant splitter when
+	TARGET_HAVE_MOVT.
+	(thumb1_movsi_insn): Fix -mpure-code
+	alternative.
+
+2020-08-24  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Work on
+	data_ref_pair.
+	(vect_analyze_data_ref_accesses): Work on groups.
+	(vect_find_stmt_data_reference): Add group_id argument and fill
+	up dataref_groups vector.
+	* tree-vect-loop.c (vect_get_datarefs_in_loop): Pass new
+	arguments.
+	(vect_analyze_loop_2): Likewise.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Pass argument.
+	(vect_slp_bb_region): Likewise.
+	(vect_slp_region): Likewise.
+	(vect_slp_bb):Work on the entire BB.
+	* tree-vectorizer.h (vect_analyze_data_ref_accesses): Add new
+	argument.
+	(vect_find_stmt_data_reference): Likewise.
+
+2020-08-24  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96597
+	* tree-ssa-sccvn.c (vn_reference_lookup_call): Add missing
+	initialization of ::punned.
+	(vn_reference_insert): Use consistently false instead of 0.
+	(vn_reference_insert_pieces): Likewise.
+
+2020-08-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/93372
+	* reorg.c (fill_slots_from_thread): Allow trial insns that clobber
+	TARGET_FLAGS_REGNUM as delay-slot fillers.
+
+2020-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96744
+	* config/i386/i386-options.c (IX86_ATTR_IX86_YES): New.
+	(IX86_ATTR_IX86_NO): Likewise.
+	(ix86_opt_type): Add ix86_opt_ix86_yes and ix86_opt_ix86_no.
+	(ix86_valid_target_attribute_inner_p): Handle general-regs-only,
+	ix86_opt_ix86_yes and ix86_opt_ix86_no.
+	(ix86_option_override_internal): Check opts->x_ix86_target_flags
+	instead of opts->x_ix86_target_flags.
+	* doc/extend.texi: Document target("general-regs-only") function
+	attribute.
+
+2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/extend.texi: Update links to Arm docs.
+	* doc/invoke.texi: Likewise.
+
+2020-08-21  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/96262
+	* config/i386/i386-expand.c
+	(ix86_expand_vec_shift_qihi_constant): Refine.
+
+2020-08-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR jit/63854
+	* gcc.c (set_static_spec): New.
+	(set_static_spec_owned): New.
+	(set_static_spec_shared): New.
+	(driver::maybe_putenv_COLLECT_LTO_WRAPPER): Use
+	set_static_spec_owned() to take ownership of lto_wrapper_file
+	such that it gets freed in driver::finalize.
+	(driver::maybe_run_linker): Use set_static_spec_shared() to
+	ensure that we don't try and free() the static string "ld",
+	also ensuring that any previously-allocated string in
+	linker_name_spec is freed. Likewise with argv0.
+	(driver::finalize): Use set_static_spec_shared() when resetting
+	specs that previously had allocated strings; remove if(0)
+	around call to free().
+
+2020-08-21  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* emit-rtl.c (try_split): Call copy_frame_info_to_split_insn
+	to split certain RTX_FRAME_RELATED_P insns.
+	* recog.c (copy_frame_info_to_split_insn): New function.
+	(peep2_attempt): Split copying of frame related info of
+	RTX_FRAME_RELATED_P insns into above function and call it.
+	* recog.h (copy_frame_info_to_split_insn): Declare it.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/88808
+	* config/i386/i386.c (ix86_preferred_reload_class): Allow
+	QImode data go into mask registers.
+	* config/i386/i386.md: (*movhi_internal): Adjust constraints
+	for mask registers.
+	(*movqi_internal): Ditto.
+	(*anddi_1): Support mask register operations
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andn<mode>_1): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*one_cmpl<mode>2_1): Ditto.
+	(*one_cmplsi2_1_zext): Ditto.
+	(*one_cmplqi2_1): Ditto.
+	(define_peephole2): Move constant 0/-1 directly into mask
+	registers.
+	* config/i386/predicates.md (mask_reg_operand): New predicate.
+	* config/i386/sse.md (define_split): Add post-reload splitters
+	that would convert "generic" patterns to mask patterns.
+	(*knotsi_1_zext): New define_insn.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune-costs.h (skylake_cost): Adjust cost
+	model.
+
+2020-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.c (inline_secondary_memory_needed):
+	No memory is needed between mask regs and gpr.
+	(ix86_hard_regno_mode_ok): Add condition TARGET_AVX512F for
+	mask regno.
+	* config/i386/i386.h (enum reg_class): Add INT_MASK_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	* config/i386/i386.md: Exclude mask register in
+	define_peephole2 which is avaiable only for gpr.
+
+2020-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/71453
+	* config/i386/i386.h (struct processor_costs): Add member
+	mask_to_integer, integer_to_mask, mask_load[3], mask_store[3],
+	mask_move.
+	* config/i386/x86-tune-costs.h (ix86_size_cost, i386_cost,
+	i386_cost, pentium_cost, lakemont_cost, pentiumpro_cost,
+	geode_cost, k6_cost, athlon_cost, k8_cost, amdfam10_cost,
+	bdver_cost, znver1_cost, znver2_cost, skylake_cost,
+	btver1_cost, btver2_cost, pentium4_cost, nocona_cost,
+	atom_cost, slm_cost, intel_cost, generic_cost, core_cost):
+	Initialize mask_load[3], mask_store[3], mask_move,
+	integer_to_mask, mask_to_integer for all target costs.
+	* config/i386/i386.c (ix86_register_move_cost): Using cost
+	model of mask registers.
+	(inline_memory_move_cost): Ditto.
+	(ix86_register_move_cost): Ditto.
+
+2020-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/vxworks.h (VXWORKS_ADDITIONAL_CPP_SPEC): Don't include
+	VxWorks header files if -fself-test is used.
+	(STARTFILE_PREFIX_SPEC): Avoid using VSB_DIR if -fself-test is used.
+
+2020-08-20  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	PR target/96683
+	* config/arm/mve.md (mve_vst1q_f<mode>): Require MVE memory operand for
+	destination.
+	(mve_vst1q_<supf><mode>): Likewise.
+
+2020-08-19  2020-08-19  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_P10V_0, BU_P10V_1,
+	BU_P10V_2, BU_P10V_3): Rename BU_P10V_VSX_0, BU_P10V_VSX_1,
+	BU_P10V_VSX_2, BU_P10V_VSX_3 respectively.
+	(BU_P10V_4): Remove.
+	(BU_P10V_AV_0, BU_P10V_AV_1, BU_P10V_AV_2, BU_P10V_AV_3, BU_P10V_AV_4):
+	New definitions for Power 10 Altivec macros.
+	(VSTRIBR, VSTRIHR, VSTRIBL, VSTRIHL, VSTRIBR_P, VSTRIHR_P,
+	VSTRIBL_P, VSTRIHL_P, MTVSRBM, MTVSRHM, MTVSRWM, MTVSRDM, MTVSRQM,
+	VEXPANDMB, VEXPANDMH, VEXPANDMW, VEXPANDMD, VEXPANDMQ, VEXTRACTMB,
+	VEXTRACTMH, VEXTRACTMW, VEXTRACTMD, VEXTRACTMQ): Replace macro
+	expansion BU_P10V_1 with BU_P10V_AV_1.
+	(VCLRLB, VCLRRB, VCFUGED, VCLZDM, VCTZDM, VPDEPD, VPEXTD, VGNB,
+	VCNTMBB, VCNTMBH, VCNTMBW, VCNTMBD): Replace macro expansion
+	BU_P10V_2 with	BU_P10V_AV_2.
+	(VEXTRACTBL, VEXTRACTHL, VEXTRACTWL, VEXTRACTDL, VEXTRACTBR, VEXTRACTHR,
+	VEXTRACTWR, VEXTRACTDR, VINSERTGPRBL, VINSERTGPRHL, VINSERTGPRWL,
+	VINSERTGPRDL, VINSERTVPRBL, VINSERTVPRHL, VINSERTVPRWL, VINSERTGPRBR,
+	VINSERTGPRHR, VINSERTGPRWR, VINSERTGPRDR, VINSERTVPRBR, VINSERTVPRHR,
+	VINSERTVPRWR, VREPLACE_ELT_V4SI, VREPLACE_ELT_UV4SI, VREPLACE_ELT_V2DF,
+	VREPLACE_ELT_V4SF, VREPLACE_ELT_V2DI, VREPLACE_ELT_UV2DI, VREPLACE_UN_V4SI,
+	VREPLACE_UN_UV4SI, VREPLACE_UN_V4SF, VREPLACE_UN_V2DI, VREPLACE_UN_UV2DI,
+	VREPLACE_UN_V2DF, VSLDB_V16QI, VSLDB_V8HI, VSLDB_V4SI, VSLDB_V2DI,
+	VSRDB_V16QI, VSRDB_V8HI, VSRDB_V4SI, VSRDB_V2DI): Replace macro expansion
+	BU_P10V_3 with BU_P10V_AV_3.
+	(VXXSPLTIW_V4SI, VXXSPLTIW_V4SF, VXXSPLTID): Replace macro expansion
+	BU_P10V_1 with BU_P10V_AV_1.
+	(XXGENPCVM_V16QI, XXGENPCVM_V8HI, XXGENPCVM_V4SI, XXGENPCVM_V2DI):
+	Replace macro expansion BU_P10V_2 with BU_P10V_VSX_2.
+	(VXXSPLTI32DX_V4SI, VXXSPLTI32DX_V4SF, VXXBLEND_V16QI, VXXBLEND_V8HI,
+	VXXBLEND_V4SI, VXXBLEND_V2DI, VXXBLEND_V4SF, VXXBLEND_V2DF): Replace macor
+	expansion BU_P10V_3 with BU_P10V_VSX_3.
+	(XXEVAL, VXXPERMX): Replace macro expansion BU_P10V_4 with BU_P10V_VSX_4.
+	(XVCVBF16SP, XVCVSPBF16): Replace macro expansion BU_VSX_1 with
+	BU_P10V_VSX_1. Also change MISC to CONST.
+	* config/rs6000/rs6000-c.c: (P10_BUILTIN_VXXPERMX): Replace with
+	P10V_BUILTIN_VXXPERMX.
+	(P10_BUILTIN_VCLRLB, P10_BUILTIN_VCLRLB, P10_BUILTIN_VCLRRB,
+	P10_BUILTIN_VGNB, P10_BUILTIN_XXEVAL, P10_BUILTIN_VXXPERMX,
+	P10_BUILTIN_VEXTRACTBL, P10_BUILTIN_VEXTRACTHL, P10_BUILTIN_VEXTRACTWL,
+	P10_BUILTIN_VEXTRACTDL, P10_BUILTIN_VINSERTGPRHL,
+	P10_BUILTIN_VINSERTGPRWL, P10_BUILTIN_VINSERTGPRDL,
+	P10_BUILTIN_VINSERTVPRBL, P10_BUILTIN_VINSERTVPRHL,
+	P10_BUILTIN_VEXTRACTBR, P10_BUILTIN_VEXTRACTHR,
+	P10_BUILTIN_VEXTRACTWR, P10_BUILTIN_VEXTRACTDR,
+	P10_BUILTIN_VINSERTGPRBR, P10_BUILTIN_VINSERTGPRHR,
+	P10_BUILTIN_VINSERTGPRWR, P10_BUILTIN_VINSERTGPRDR,
+	P10_BUILTIN_VINSERTVPRBR, P10_BUILTIN_VINSERTVPRHR,
+	P10_BUILTIN_VINSERTVPRWR, P10_BUILTIN_VREPLACE_ELT_UV4SI,
+	P10_BUILTIN_VREPLACE_ELT_V4SI, P10_BUILTIN_VREPLACE_ELT_UV2DI,
+	P10_BUILTIN_VREPLACE_ELT_V2DI, P10_BUILTIN_VREPLACE_ELT_V2DF,
+	P10_BUILTIN_VREPLACE_UN_UV4SI, P10_BUILTIN_VREPLACE_UN_V4SI,
+	P10_BUILTIN_VREPLACE_UN_V4SF, P10_BUILTIN_VREPLACE_UN_UV2DI,
+	P10_BUILTIN_VREPLACE_UN_V2DI, P10_BUILTIN_VREPLACE_UN_V2DF,
+	P10_BUILTIN_VSLDB_V16QI, P10_BUILTIN_VSLDB_V16QI,
+	P10_BUILTIN_VSLDB_V8HI, P10_BUILTIN_VSLDB_V4SI,
+	P10_BUILTIN_VSLDB_V2DI, P10_BUILTIN_VXXSPLTIW_V4SI,
+	P10_BUILTIN_VXXSPLTIW_V4SF, P10_BUILTIN_VXXSPLTID,
+	P10_BUILTIN_VXXSPLTI32DX_V4SI, P10_BUILTIN_VXXSPLTI32DX_V4SF,
+	P10_BUILTIN_VXXBLEND_V16QI, P10_BUILTIN_VXXBLEND_V8HI,
+	P10_BUILTIN_VXXBLEND_V4SI, P10_BUILTIN_VXXBLEND_V2DI,
+	P10_BUILTIN_VXXBLEND_V4SF, P10_BUILTIN_VXXBLEND_V2DF,
+	P10_BUILTIN_VSRDB_V16QI, P10_BUILTIN_VSRDB_V8HI,
+	P10_BUILTIN_VSRDB_V4SI, P10_BUILTIN_VSRDB_V2DI,
+	P10_BUILTIN_VSTRIBL, P10_BUILTIN_VSTRIHL,
+	P10_BUILTIN_VSTRIBL_P, P10_BUILTIN_VSTRIHL_P,
+	P10_BUILTIN_VSTRIBR, P10_BUILTIN_VSTRIHR,
+	P10_BUILTIN_VSTRIBR_P, P10_BUILTIN_VSTRIHR_P,
+	P10_BUILTIN_MTVSRBM, P10_BUILTIN_MTVSRHM,
+	P10_BUILTIN_MTVSRWM, P10_BUILTIN_MTVSRDM,
+	P10_BUILTIN_MTVSRQM, P10_BUILTIN_VCNTMBB,
+	P10_BUILTIN_VCNTMBH, P10_BUILTIN_VCNTMBW,
+	P10_BUILTIN_VCNTMBD, P10_BUILTIN_VEXPANDMB,
+	P10_BUILTIN_VEXPANDMH, P10_BUILTIN_VEXPANDMW,
+	P10_BUILTIN_VEXPANDMD, P10_BUILTIN_VEXPANDMQ,
+	P10_BUILTIN_VEXTRACTMB, P10_BUILTIN_VEXTRACTMH,
+	P10_BUILTIN_VEXTRACTMW, P10_BUILTIN_VEXTRACTMD,
+	P10_BUILTIN_VEXTRACTMQ, P10_BUILTIN_XVTLSBB_ZEROS,
+	P10_BUILTIN_XVTLSBB_ONES): Replace with
+	P10V_BUILTIN_VCLRLB, P10V_BUILTIN_VCLRLB, P10V_BUILTIN_VCLRRB,
+	P10V_BUILTIN_VGNB, P10V_BUILTIN_XXEVAL, P10V_BUILTIN_VXXPERMX,
+	P10V_BUILTIN_VEXTRACTBL, P10V_BUILTIN_VEXTRACTHL, P10V_BUILTIN_VEXTRACTWL,
+	P10V_BUILTIN_VEXTRACTDL, P10V_BUILTIN_VINSERTGPRHL,
+	P10V_BUILTIN_VINSERTGPRWL, P10V_BUILTIN_VINSERTGPRDL,
+	P10V_BUILTIN_VINSERTVPRBL,P10V_BUILTIN_VINSERTVPRHL,
+	P10V_BUILTIN_VEXTRACTBR, P10V_BUILTIN_VEXTRACTHR
+	P10V_BUILTIN_VEXTRACTWR, P10V_BUILTIN_VEXTRACTDR,
+	P10V_BUILTIN_VINSERTGPRBR, P10V_BUILTIN_VINSERTGPRHR,
+	P10V_BUILTIN_VINSERTGPRWR, P10V_BUILTIN_VINSERTGPRDR,
+	P10V_BUILTIN_VINSERTVPRBR, P10V_BUILTIN_VINSERTVPRHR,
+	P10V_BUILTIN_VINSERTVPRWR, P10V_BUILTIN_VREPLACE_ELT_UV4SI,
+	P10V_BUILTIN_VREPLACE_ELT_V4SI, P10V_BUILTIN_VREPLACE_ELT_UV2DI,
+	P10V_BUILTIN_VREPLACE_ELT_V2DI, P10V_BUILTIN_VREPLACE_ELT_V2DF,
+	P10V_BUILTIN_VREPLACE_UN_UV4SI, P10V_BUILTIN_VREPLACE_UN_V4SI,
+	P10V_BUILTIN_VREPLACE_UN_V4SF, P10V_BUILTIN_VREPLACE_UN_UV2DI,
+	P10V_BUILTIN_VREPLACE_UN_V2DI, P10V_BUILTIN_VREPLACE_UN_V2DF,
+	P10V_BUILTIN_VSLDB_V16QI, P10V_BUILTIN_VSLDB_V16QI,
+	P10V_BUILTIN_VSLDB_V8HI, P10V_BUILTIN_VSLDB_V4SI,
+	P10V_BUILTIN_VSLDB_V2DI, P10V_BUILTIN_VXXSPLTIW_V4SI,
+	P10V_BUILTIN_VXXSPLTIW_V4SF, P10V_BUILTIN_VXXSPLTID,
+	P10V_BUILTIN_VXXSPLTI32DX_V4SI, P10V_BUILTIN_VXXSPLTI32DX_V4SF,
+	P10V_BUILTIN_VXXBLEND_V16QI, P10V_BUILTIN_VXXBLEND_V8HI,
+	P10V_BUILTIN_VXXBLEND_V4SI, P10V_BUILTIN_VXXBLEND_V2DI,
+	P10V_BUILTIN_VXXBLEND_V4SF, P10V_BUILTIN_VXXBLEND_V2DF,
+	P10V_BUILTIN_VSRDB_V16QI, P10V_BUILTIN_VSRDB_V8HI,
+	P10V_BUILTIN_VSRDB_V4SI, P10V_BUILTIN_VSRDB_V2DI,
+	P10V_BUILTIN_VSTRIBL, P10V_BUILTIN_VSTRIHL,
+	P10V_BUILTIN_VSTRIBL_P, P10V_BUILTIN_VSTRIHL_P,
+	P10V_BUILTIN_VSTRIBR, P10V_BUILTIN_VSTRIHR,
+	P10V_BUILTIN_VSTRIBR_P, P10V_BUILTIN_VSTRIHR_P,
+	P10V_BUILTIN_MTVSRBM, P10V_BUILTIN_MTVSRHM,
+	P10V_BUILTIN_MTVSRWM, P10V_BUILTIN_MTVSRDM,
+	P10V_BUILTIN_MTVSRQM, P10V_BUILTIN_VCNTMBB,
+	P10V_BUILTIN_VCNTMBH, P10V_BUILTIN_VCNTMBW,
+	P10V_BUILTIN_VCNTMBD, P10V_BUILTIN_VEXPANDMB,
+	P10V_BUILTIN_VEXPANDMH, P10V_BUILTIN_VEXPANDMW,
+	P10V_BUILTIN_VEXPANDMD, P10V_BUILTIN_VEXPANDMQ,
+	P10V_BUILTIN_VEXTRACTMB, P10V_BUILTIN_VEXTRACTMH,
+	P10V_BUILTIN_VEXTRACTMW, P10V_BUILTIN_VEXTRACTMD,
+	P10V_BUILTIN_VEXTRACTMQ, P10V_BUILTIN_XVTLSBB_ZEROS,
+	P10V_BUILTIN_XVTLSBB_ONES respectively.
+	* config/rs6000/rs6000-call.c: Ditto above, change P10_BUILTIN_name to
+	P10V_BUILTIN_name.
+	(P10_BUILTIN_XVCVSPBF16, P10_BUILTIN_XVCVBF16SP): Change to
+	P10V_BUILTIN_XVCVSPBF16, P10V_BUILTIN_XVCVBF16SP respectively.
+
+2020-08-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.c (rs6000_decl_ok_for_sibcall):
+	Sibcalls are always legal when the caller doesn't preserve r2.
+
+2020-08-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_builtin)
+	[case IX86_BUILTIN_ENQCMD, case IX86_BUILTIN_ENQCMDS]:
+	Rewrite expansion to use code_for_enqcmd.
+	[case IX86_BUILTIN_WRSSD, case IX86_BUILTIN_WRSSQ]:
+	Rewrite expansion to use code_for_wrss.
+	[case IX86_BUILTIN_WRUSSD, case IX86_BUILTIN_WRUSSD]:
+	Rewrite expansion to use code_for_wrss.
+
+2020-08-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/94234
+	* match.pd ((PTR_A + OFF) - (PTR_B + OFF)) -> (PTR_A - PTR_B): New
+	simplification.
+
+2020-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Detect Rocket
+	Lake and Alder Lake.
+
+2020-08-19  Peixin Qiao  <qiaopeixin@huawei.com>
+
+	* config/aarch64/aarch64.c (aarch64_init_cumulative_args): Remove
+	"fndecl && TREE_PUBLIC (fndecl)" check since it prevents the funtion
+	type check when calling via a function pointer or when calling a static
+	function.
+
+2020-08-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	* opts-global.c (decode_options): Call target_option_override_hook
+	before it prints for --help=*.
+
 2020-08-18  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_VSX_1): Rename xvcvbf16sp to

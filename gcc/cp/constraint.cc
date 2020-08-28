@@ -2552,7 +2552,7 @@ get_mapped_args (tree map)
       /* Insert the argument into its corresponding position.  */
       vec<tree> &list = lists[level - 1];
       if (index >= (int)list.length ())
-	list.safe_grow_cleared (index + 1);
+	list.safe_grow_cleared (index + 1, true);
       list[index] = TREE_PURPOSE (p);
     }
 

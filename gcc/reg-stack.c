@@ -318,7 +318,7 @@ stack_regs_mentioned (const_rtx insn)
       /* Allocate some extra size to avoid too many reallocs, but
 	 do not grow too quickly.  */
       max = uid + uid / 20 + 1;
-      stack_regs_mentioned_data.safe_grow_cleared (max);
+      stack_regs_mentioned_data.safe_grow_cleared (max, true);
     }
 
   test = stack_regs_mentioned_data[uid];

@@ -240,6 +240,7 @@ loop infrastructure	Zdenek Dvorak		<ook@ucw.cz>
 loop ivopts		Bin Cheng		<bin.cheng@linux.alibaba.com>
 loop optimizer		Bin Cheng		<bin.cheng@linux.alibaba.com>
 OpenACC			Thomas Schwinge		<thomas@codesourcery.com>
+OpenACC			Tobias Burnus		<tobias@codesourcery.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>

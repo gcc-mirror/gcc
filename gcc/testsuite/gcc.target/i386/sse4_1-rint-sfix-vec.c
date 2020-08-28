@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse4.1" } */
 /* { dg-require-effective-target sse4 } */
+/* { dg-require-effective-target c99_runtime } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse4_1-check.h"

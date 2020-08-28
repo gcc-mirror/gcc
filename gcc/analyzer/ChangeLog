@@ -1,3 +1,117 @@
+2020-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94858
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_widening_svalue): Assert that
+	neither of the inputs are themselves widenings.
+	* store.cc (store::eval_alias_1): The initial value of a pointer
+	can't point to a region that was allocated on the heap after the
+	beginning of the path.  A widened pointer value can't alias anything
+	that the initial pointer value can't alias.
+	* svalue.cc (svalue::can_merge_p): Merge BINOP (X, OP, CST) with X
+	to a widening svalue.  Merge
+	BINOP(WIDENING(BASE, BINOP(BASE, X)), X) and BINOP(BASE, X) to
+	to the LHS of the first BINOP.
+
+2020-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96777
+	* region-model.h (class compound_svalue): Document that all keys
+	must be concrete.
+	(compound_svalue::compound_svalue): Move definition to svalue.cc.
+	* store.cc (binding_map::apply_ctor_to_region): Handle
+	initializers for trailing arrays with incomplete size.
+	* svalue.cc (compound_svalue::compound_svalue): Move definition
+	here from region-model.h.  Add assertion that all keys are
+	concrete.
+
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94851
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Fold bitwise "& 0" to 0.
+
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (store::eval_alias): Make const.  Split out 2nd half
+	into store::eval_alias_1 and call it twice for symmetry, avoiding
+	test duplication.
+	(store::eval_alias_1): New function, split out from the above.
+	* store.h (store::eval_alias): Make const.
+	(store::eval_alias_1): New decl.
+
+2020-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::push_frame): Bind the default
+	SSA name for each parm if it exists, falling back to the parm
+	itself otherwise, rather than doing both.
+
+2020-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96723
+	* region-model-manager.cc
+	(region_model_manager::get_field_region): Assert that field is a
+	FIELD_DECL.
+	* region.cc (region::get_subregions_for_binding): In
+	union-handling, filter the TYPE_FIELDS traversal to just FIELD_DECLs.
+
+2020-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96713
+	* region-model.cc (region_model::get_gassign_result): For
+	comparisons, only use eval_condition when the lhs has boolean
+	type, and use get_or_create_constant_svalue on the boolean
+	constants directly rather than via get_rvalue.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96643
+	* region-model.cc (region_model::deref_rvalue): Rather than
+	attempting to handle all svalue kinds in the switch, only cover
+	the special cases, and move symbolic-region handling to after
+	the switch, thus implicitly handling the missing case SK_COMPOUND.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96705
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Check that we have an
+	integral type before calling build_int_cst.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96699
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_cast): Use FIX_TRUNC_EXPR for
+	casting from REAL_TYPE to INTEGER_TYPE.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96651
+	* region-model.cc (region_model::called_from_main_p): New.
+	(region_model::get_store_value): Move handling for globals into...
+	(region_model::get_initial_value_for_global): ...this new
+	function, and add logic for extracting values from decl
+	initializers.
+	* region-model.h (decl_region::get_svalue_for_constructor): New
+	decl.
+	(decl_region::get_svalue_for_initializer): New decl.
+	(region_model::called_from_main_p): New decl.
+	(region_model::get_initial_value_for_global): New.
+	* region.cc (decl_region::maybe_get_constant_value): Move logic
+	for getting an svalue from a CONSTRUCTOR node to...
+	(decl_region::get_svalue_for_constructor): ...this new function.
+	(decl_region::get_svalue_for_initializer): New.
+	* store.cc (get_svalue_for_ctor_val): Rewrite in terms of
+	region_model::get_rvalue.
+	* store.h (binding_cluster::get_map): New accessor.
+
+2020-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96648
+	* region.cc (get_field_at_bit_offset): Gracefully handle negative
+	values for bit_offset.
+
 2020-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::get_rvalue_1): Fix name of local.

@@ -143,12 +143,20 @@ Loc::equals (const Loc &loc)
    hidden pointer to the caller's stack.  */
 
 RET
-retStyle (TypeFunction *)
+retStyle (TypeFunction *tf)
 {
   /* Need the backend type to determine this, but this is called from the
      frontend before semantic processing is finished.  An accurate value
      is not currently needed anyway.  */
-  return RETstack;
+  if (tf->isref)
+    return RETregs;
+
+  Type *tn = tf->next->toBasetype ();
+
+  if (tn->ty == Tstruct || tn->ty == Tsarray)
+    return RETstack;
+
+  return RETregs;
 }
 
 /* Determine if function FD is a builtin one that we can evaluate in CTFE.  */

@@ -26,9 +26,18 @@ std::future<int(&)[1]> good;
 std::future<int(&)()> good2;
 
 std::future<int[1]> bad; // { dg-error "here" }
-// { dg-error "result type is not an array" "" { target *-*-* } 0 }
+// { dg-error "result type must not be an array" "" { target *-*-* } 0 }
 // { dg-prune-output "function returning an array" }
 
 std::future<int()> bad2; // { dg-error "here" }
-// { dg-error "result type is not a function" "" { target *-*-* } 0 }
+// { dg-error "result type must not be a function" "" { target *-*-* } 0 }
 // { dg-prune-output "function returning a function" }
+
+struct Indestructible { ~Indestructible() = delete; };
+std::future<Indestructible> bad3; // { dg-error "here" }
+// { dg-error "result type must be destructible" "" { target *-*-* } 0 }
+// { dg-prune-output {deleted function} }
+
+class PrivateDtor { public: PrivateDtor(); private: ~PrivateDtor(); };
+std::future<PrivateDtor> bad4; // { dg-error "here" }
+// { dg-prune-output {is private} }

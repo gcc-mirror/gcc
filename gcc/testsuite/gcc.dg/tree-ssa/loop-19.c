@@ -22,6 +22,6 @@ void tuned_STREAM_Copy()
    However, due to a bug in jump threading, we end up peeling one iteration from
    the loop, which creates an additional occurrence.  */
 
-/* { dg-final { scan-tree-dump-times "MEM.(base: &|symbol: )a," 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "MEM.(base: &|symbol: )c," 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "MEM\[^;\]*&a" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "MEM\[^;\]*&c" 1 "optimized" } } */
 

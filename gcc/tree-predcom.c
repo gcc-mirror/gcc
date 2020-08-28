@@ -1783,7 +1783,7 @@ initialize_root_vars_store_elim_1 (chain_p chain)
   unsigned i, n = chain->length;
 
   chain->vars.create (n);
-  chain->vars.safe_grow_cleared (n);
+  chain->vars.safe_grow_cleared (n, true);
 
   /* Initialize root value for eliminated stores at each distance.  */
   for (i = 0; i < n; i++)
@@ -1843,7 +1843,7 @@ initialize_root_vars_store_elim_2 (class loop *loop,
   /* Root values are either rhs operand of stores to be eliminated, or
      loaded from memory before loop.  */
   auto_vec<tree> vtemps;
-  vtemps.safe_grow_cleared (n);
+  vtemps.safe_grow_cleared (n, true);
   for (i = 0; i < n; i++)
     {
       init = get_init_expr (chain, i);
@@ -2953,7 +2953,7 @@ prepare_initializers_chain_store_elim (class loop *loop, chain_p chain)
     }
 
   chain->inits.create (n);
-  chain->inits.safe_grow_cleared (n);
+  chain->inits.safe_grow_cleared (n, true);
 
   /* For store eliminatin chain like below:
 
@@ -2971,7 +2971,7 @@ prepare_initializers_chain_store_elim (class loop *loop, chain_p chain)
      elements because loop body is guaranteed to be executed at least once
      after loop's preheader edge.  */
   auto_vec<bool> bubbles;
-  bubbles.safe_grow_cleared (n + 1);
+  bubbles.safe_grow_cleared (n + 1, true);
   for (i = 0; i < chain->refs.length (); i++)
     bubbles[chain->refs[i]->distance] = true;
 

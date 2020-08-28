@@ -1693,7 +1693,7 @@ gimple_set_bb (gimple *stmt, basic_block bb)
 	      unsigned new_len = 3 * uid / 2 + 1;
 
 	      vec_safe_grow_cleared (label_to_block_map_for_fn (cfun),
-				     new_len);
+				     new_len, true);
 	    }
 	}
 
@@ -2917,8 +2917,8 @@ check_loadstore (gimple *, tree op, tree, void *data)
 bool
 infer_nonnull_range (gimple *stmt, tree op)
 {
-  return infer_nonnull_range_by_dereference (stmt, op)
-    || infer_nonnull_range_by_attribute (stmt, op);
+  return (infer_nonnull_range_by_dereference (stmt, op)
+	  || infer_nonnull_range_by_attribute (stmt, op));
 }
 
 /* Return true if OP can be inferred to be non-NULL after STMT
@@ -2930,7 +2930,8 @@ infer_nonnull_range_by_dereference (gimple *stmt, tree op)
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
   if (!flag_delete_null_pointer_checks
       || !POINTER_TYPE_P (TREE_TYPE (op))
-      || gimple_code (stmt) == GIMPLE_ASM)
+      || gimple_code (stmt) == GIMPLE_ASM
+      || gimple_clobber_p (stmt))
     return false;
 
   if (walk_stmt_load_store_ops (stmt, (void *)op,

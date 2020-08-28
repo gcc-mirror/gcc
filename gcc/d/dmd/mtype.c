@@ -2189,7 +2189,7 @@ Expression *Type::noMember(Scope *sc, Expression *e, Identifier *ident, int flag
 
     static int nest;      // https://issues.dlang.org/show_bug.cgi?id=17380
 
-    if (++nest > 500)
+    if (++nest > global.recursionLimit)
     {
       ::error(e->loc, "cannot resolve identifier `%s`", ident->toChars());
       --nest;
@@ -5536,7 +5536,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
 
     bool errors = false;
 
-    if (inuse > 500)
+    if (inuse > global.recursionLimit)
     {
         inuse = 0;
         ::error(loc, "recursive type");

@@ -2601,7 +2601,7 @@ addr_offset_valid_p (struct iv_use *use, poly_int64 offset)
 
   list_index = (unsigned) as * MAX_MACHINE_MODE + (unsigned) mem_mode;
   if (list_index >= vec_safe_length (addr_list))
-    vec_safe_grow_cleared (addr_list, list_index + MAX_MACHINE_MODE);
+    vec_safe_grow_cleared (addr_list, list_index + MAX_MACHINE_MODE, true);
 
   addr = (*addr_list)[list_index];
   if (!addr)
@@ -4569,7 +4569,7 @@ get_address_cost_ainc (poly_int64 ainc_step, poly_int64 ainc_offset,
       unsigned nsize = ((unsigned) as + 1) *MAX_MACHINE_MODE;
 
       gcc_assert (nsize > idx);
-      ainc_cost_data_list.safe_grow_cleared (nsize);
+      ainc_cost_data_list.safe_grow_cleared (nsize, true);
     }
 
   ainc_cost_data *data = ainc_cost_data_list[idx];

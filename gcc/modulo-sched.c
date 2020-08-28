@@ -440,7 +440,7 @@ static void
 set_node_sched_params (ddg_ptr g)
 {
   node_sched_param_vec.truncate (0);
-  node_sched_param_vec.safe_grow_cleared (g->num_nodes);
+  node_sched_param_vec.safe_grow_cleared (g->num_nodes, true);
 }
 
 /* Make sure that node_sched_param_vec has an entry for every move in PS.  */
@@ -448,7 +448,7 @@ static void
 extend_node_sched_params (partial_schedule_ptr ps)
 {
   node_sched_param_vec.safe_grow_cleared (ps->g->num_nodes
-					  + ps->reg_moves.length ());
+					  + ps->reg_moves.length (), true);
 }
 
 /* Update the sched_params (time, row and stage) for node U using the II,
@@ -735,7 +735,7 @@ schedule_reg_moves (partial_schedule_ptr ps)
 
       /* Create NREG_MOVES register moves.  */
       first_move = ps->reg_moves.length ();
-      ps->reg_moves.safe_grow_cleared (first_move + nreg_moves);
+      ps->reg_moves.safe_grow_cleared (first_move + nreg_moves, true);
       extend_node_sched_params (ps);
 
       /* Record the moves associated with this node.  */

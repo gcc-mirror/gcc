@@ -712,7 +712,7 @@ set_strinfo (int idx, strinfo *si)
   if (vec_safe_length (stridx_to_strinfo) && (*stridx_to_strinfo)[0])
     unshare_strinfo_vec ();
   if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
-    vec_safe_grow_cleared (stridx_to_strinfo, idx + 1);
+    vec_safe_grow_cleared (stridx_to_strinfo, idx + 1, true);
   (*stridx_to_strinfo)[idx] = si;
 }
 
@@ -1365,7 +1365,7 @@ get_stridx_plus_constant (strinfo *basesi, unsigned HOST_WIDE_INT off,
 
   if (TREE_CODE (ptr) == SSA_NAME
       && ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
-    ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+    ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names, true);
 
   gcc_checking_assert (compare_tree_int (si->nonzero_chars, off) != -1);
   for (chainsi = si; chainsi->next; chainsi = si)
@@ -1429,7 +1429,7 @@ zero_length_string (tree ptr, strinfo *chainsi)
   strinfo *si;
   int idx;
   if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
-    ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+    ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names, true);
   gcc_checking_assert (TREE_CODE (ptr) == SSA_NAME
 		       && ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] == 0);
 
@@ -1582,7 +1582,7 @@ find_equal_ptrs (tree ptr, int idx)
       /* We might find an endptr created in this pass.  Grow the
 	 vector in that case.  */
       if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
-	ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+	ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names, true);
 
       if (ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] != 0)
 	return;
@@ -4485,11 +4485,19 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi, const vr_values *rvals)
     ++cstlen2;
 
   /* The exact number of characters to compare.  */
-  HOST_WIDE_INT cmpsiz = bound < 0 ? cstlen1 < 0 ? cstlen2 : cstlen1 : bound;
+  HOST_WIDE_INT cmpsiz;
+  if (cstlen1 >= 0 && cstlen2 >= 0)
+    cmpsiz = MIN (cstlen1, cstlen2);
+  else if (cstlen1 >= 0)
+    cmpsiz = cstlen1;
+  else
+    cmpsiz = cstlen2;
+  if (bound >= 0)
+    cmpsiz = MIN (cmpsiz, bound);
   /* The size of the array in which the unknown string is stored.  */
   HOST_WIDE_INT varsiz = arysiz1 < 0 ? arysiz2 : arysiz1;
 
-  if (cmpsiz < varsiz && used_only_for_zero_equality (lhs))
+  if ((varsiz < 0 || cmpsiz < varsiz) && used_only_for_zero_equality (lhs))
     {
       /* If the known length is less than the size of the other array
 	 and the strcmp result is only used to test equality to zero,
@@ -5912,7 +5920,7 @@ printf_strlen_execute (function *fun, bool warn_only)
 
   /* This has to happen after initializing the loop optimizer
      and initializing SCEV as they create new SSA_NAMEs.  */
-  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names, true);
   max_stridx = 1;
 
   /* String length optimization is implemented as a walk of the dominator

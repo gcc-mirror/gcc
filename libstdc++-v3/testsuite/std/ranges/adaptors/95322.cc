@@ -26,7 +26,7 @@ using __gnu_test::test_forward_range;
 void
 test01()
 {
-  // PR libstdc++/95322
+  // PR libstdc++/95322 and LWG 3488
   int a[2]{1, 2};
   test_forward_range<int> v{a};
   auto view1 = v | std::views::take(2);

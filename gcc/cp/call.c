@@ -8430,10 +8430,12 @@ conv_binds_ref_to_prvalue (conversion *c)
 }
 
 /* Call the trivial destructor for INSTANCE, which can be either an lvalue of
-   class type or a pointer to class type.  */
+   class type or a pointer to class type.  If NO_PTR_DEREF is true and
+   INSTANCE has pointer type, clobber the pointer rather than what it points
+   to.  */
 
 tree
-build_trivial_dtor_call (tree instance)
+build_trivial_dtor_call (tree instance, bool no_ptr_deref)
 {
   gcc_assert (!is_dummy_object (instance));
 
@@ -8443,7 +8445,8 @@ build_trivial_dtor_call (tree instance)
       return fold_convert (void_type_node, instance);
     }
 
-  if (INDIRECT_TYPE_P (TREE_TYPE (instance)))
+  if (INDIRECT_TYPE_P (TREE_TYPE (instance))
+      && (!no_ptr_deref || TYPE_REF_P (TREE_TYPE (instance))))
     {
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (instance))))
 	goto no_clobber;
