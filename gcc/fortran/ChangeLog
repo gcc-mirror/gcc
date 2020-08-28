@@ -1,3 +1,14 @@
+2020-08-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95882
+	* decl.c (char_len_param_value): Check gfc_seen_div0 and
+	if it is set return MATCH_ERROR.
+
+2020-08-27  Martin Liska  <mliska@suse.cz>
+
+	* trans-openmp.c (gfc_trans_omp_do): Set exact argument of a vector
+	growth function to true.
+
 2020-08-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_device_type): New.

@@ -1,3 +1,211 @@
+2020-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65146
+	* config/i386/i386.c (iamcu_alignment): Don't decrease alignment
+	for TYPE_ATOMIC types.
+	(ix86_local_alignment): Likewise.
+	(ix86_minimum_alignment): Likewise.
+	(x86_field_alignment): Likewise, and emit a -Wpsabi diagnostic
+	for it.
+
+2020-08-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/96787
+	* config/rs6000/rs6000.c (rs6000_sibcall_aix): Support
+	indirect call for ELFv2.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* tree-ssa-address.c (copy_ref_info): Reset flow-sensitive
+	info of the copied points-to.  Transfer bigger alignment
+	via the access type.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Reset all flow-sensitive info.
+
+2020-08-27  Martin Liska  <mliska@suse.cz>
+
+	* alias.c (init_alias_analysis): Set exact argument of a vector
+	growth function to true.
+	* calls.c (internal_arg_pointer_based_exp_scan): Likewise.
+	* cfgbuild.c (find_many_sub_basic_blocks): Likewise.
+	* cfgexpand.c (expand_asm_stmt): Likewise.
+	* cfgrtl.c (rtl_create_basic_block): Likewise.
+	* combine.c (combine_split_insns): Likewise.
+	(combine_instructions): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (function_expander::add_output_operand): Likewise.
+	(function_expander::add_input_operand): Likewise.
+	(function_expander::add_integer_operand): Likewise.
+	(function_expander::add_address_operand): Likewise.
+	(function_expander::add_fixed_operand): Likewise.
+	* df-core.c (df_worklist_dataflow_doublequeue): Likewise.
+	* dwarf2cfi.c (update_row_reg_save): Likewise.
+	* early-remat.c (early_remat::init_block_info): Likewise.
+	(early_remat::finalize_candidate_indices): Likewise.
+	* except.c (sjlj_build_landing_pads): Likewise.
+	* final.c (compute_alignments): Likewise.
+	(grow_label_align): Likewise.
+	* function.c (temp_slots_at_level): Likewise.
+	* fwprop.c (build_single_def_use_links): Likewise.
+	(update_uses): Likewise.
+	* gcc.c (insert_wrapper): Likewise.
+	* genautomata.c (create_state_ainsn_table): Likewise.
+	(add_vect): Likewise.
+	(output_dead_lock_vect): Likewise.
+	* genmatch.c (capture_info::capture_info): Likewise.
+	(parser::finish_match_operand): Likewise.
+	* genrecog.c (optimize_subroutine_group): Likewise.
+	(merge_pattern_info::merge_pattern_info): Likewise.
+	(merge_into_decision): Likewise.
+	(print_subroutine_start): Likewise.
+	(main): Likewise.
+	* gimple-loop-versioning.cc (loop_versioning::loop_versioning): Likewise.
+	* gimple.c (gimple_set_bb): Likewise.
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_user): Likewise.
+	* haifa-sched.c (sched_extend_luids): Likewise.
+	(extend_h_i_d): Likewise.
+	* insn-addr.h (insn_addresses_new): Likewise.
+	* ipa-cp.c (gather_context_independent_values): Likewise.
+	(find_more_contexts_for_caller_subset): Likewise.
+	* ipa-devirt.c (final_warning_record::grow_type_warnings): Likewise.
+	(ipa_odr_read_section): Likewise.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Likewise.
+	(ipa_fn_summary_t::duplicate): Likewise.
+	(analyze_function_body): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(read_ipa_call_summary): Likewise.
+	* ipa-icf.c (sem_function::bb_dict_test): Likewise.
+	* ipa-prop.c (ipa_alloc_node_params): Likewise.
+	(parm_bb_aa_status_for_bb): Likewise.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(ipa_analyze_node): Likewise.
+	(update_jump_functions_after_inlining): Likewise.
+	(ipa_read_edge_info): Likewise.
+	(read_ipcp_transformation_info): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-reference.c (ipa_reference_write_optimization_summary): Likewise.
+	* ipa-split.c (execute_split_functions): Likewise.
+	* ira.c (find_moveable_pseudos): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs): Likewise.
+	* lto-streamer-in.c (input_eh_regions): Likewise.
+	(input_cfg): Likewise.
+	(input_struct_function_base): Likewise.
+	(input_function): Likewise.
+	* modulo-sched.c (set_node_sched_params): Likewise.
+	(extend_node_sched_params): Likewise.
+	(schedule_reg_moves): Likewise.
+	* omp-general.c (omp_construct_simd_compare): Likewise.
+	* passes.c (pass_manager::create_pass_tab): Likewise.
+	(enable_disable_pass): Likewise.
+	* predict.c (determine_unlikely_bbs): Likewise.
+	* profile.c (compute_branch_probabilities): Likewise.
+	* read-rtl-function.c (function_reader::parse_block): Likewise.
+	* read-rtl.c (rtx_reader::read_rtx_code): Likewise.
+	* reg-stack.c (stack_regs_mentioned): Likewise.
+	* regrename.c (regrename_init): Likewise.
+	* rtlanal.c (T>::add_single_to_queue): Likewise.
+	* sched-deps.c (init_deps_data_vector): Likewise.
+	* sel-sched-ir.c (sel_extend_global_bb_info): Likewise.
+	(extend_region_bb_info): Likewise.
+	(extend_insn_data): Likewise.
+	* symtab.c (symtab_node::create_reference): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* trans-mem.c (tm_region_init): Likewise.
+	(get_bb_regions_instrumented): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	(build_gimple_cfg): Likewise.
+	(create_bb): Likewise.
+	(move_block_to_fn): Likewise.
+	* tree-complex.c (tree_lower_complex): Likewise.
+	* tree-if-conv.c (predicate_rhs_code): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	* tree-into-ssa.c (get_ssa_name_ann): Likewise.
+	(mark_phi_for_rewrite): Likewise.
+	* tree-object-size.c (compute_builtin_object_size): Likewise.
+	(init_object_sizes): Likewise.
+	* tree-predcom.c (initialize_root_vars_store_elim_1): Likewise.
+	(initialize_root_vars_store_elim_2): Likewise.
+	(prepare_initializers_chain_store_elim): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	(multiplier_allowed_in_address_p): Likewise.
+	* tree-ssa-coalesce.c (ssa_conflicts_new): Likewise.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-ssa-loop-ivopts.c (addr_offset_valid_p): Likewise.
+	(get_address_cost_ainc): Likewise.
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk): Likewise.
+	* tree-ssa-pre.c (add_to_value): Likewise.
+	(phi_translate_1): Likewise.
+	(do_pre_regular_insertion): Likewise.
+	(do_pre_partial_partial_insertion): Likewise.
+	(init_pre): Likewise.
+	* tree-ssa-propagate.c (ssa_prop_init): Likewise.
+	(update_call_from_tree): Likewise.
+	* tree-ssa-reassoc.c (optimize_range_tests_cmp_bitwise): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.
+	(eliminate_dom_walker::eliminate_push_avail): Likewise.
+	* tree-ssa-strlen.c (set_strinfo): Likewise.
+	(get_stridx_plus_constant): Likewise.
+	(zero_length_string): Likewise.
+	(find_equal_ptrs): Likewise.
+	(printf_strlen_execute): Likewise.
+	* tree-ssa-threadedge.c (set_ssa_name_value): Likewise.
+	* tree-ssanames.c (make_ssa_name_fn): Likewise.
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Likewise.
+	* tree-vect-loop.c (vect_record_loop_mask): Likewise.
+	(vect_get_loop_mask): Likewise.
+	(vect_record_loop_len): Likewise.
+	(vect_get_loop_len): Likewise.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-slp.c (vect_slp_convert_to_external): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	(vect_bb_vectorization_profitable_p): Likewise.
+	(vectorizable_slp_permutation): Likewise.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(scan_store_can_perm_p): Likewise.
+	(vectorizable_store): Likewise.
+	* expr.c: Likewise.
+	* vec.c (test_safe_grow_cleared): Likewise.
+	* vec.h (vec_safe_grow): Likewise.
+	(vec_safe_grow_cleared): Likewise.
+	(vl_ptr>::safe_grow): Likewise.
+	(vl_ptr>::safe_grow_cleared): Likewise.
+	* config/c6x/c6x.c (insn_set_clock): Likewise.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_mem_ref): Handle TARGET_MEM_REFs.
+	(dump_generic_node): Use dump_mem_ref also for TARGET_MEM_REF.
+
+2020-08-27  Alex Coplan  <alex.coplan@arm.com>
+
+	* lra-constraints.c (canonicalize_reload_addr): New.
+	(curr_insn_transform): Use canonicalize_reload_addr to ensure we
+	generate canonical RTL for an address reload.
+
+2020-08-27  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for rounding intrinsics.
+
+2020-08-27  Zhiheng Xie  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for min/max intrinsics.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96579
+	* tree-ssa-reassoc.c (linearize_expr_tree): If we expand
+	rhs via special ops make sure to swap operands.
+
+2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96565
+	* tree-ssa-dse.c (dse_classify_store): Remove defs with
+	no uses from further processing.
+
 2020-08-26  Göran Uddeborg  <goeran@uddeborg.se>
 
 	PR gcov-profile/96285
