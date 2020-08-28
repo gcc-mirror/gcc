@@ -906,8 +906,8 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512VP2INTERSECT_SET;
 	  opts->x_ix86_isa_flags2_explicit |=
 	    OPTION_MASK_ISA2_AVX512VP2INTERSECT_SET;
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512F_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512F_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512DQ_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512DQ_SET;
 	}
       else
 	{
