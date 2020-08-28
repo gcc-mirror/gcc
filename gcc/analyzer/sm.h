@@ -170,15 +170,32 @@ public:
      other callback handling.  */
   virtual tree get_fndecl_for_call (const gcall *call) = 0;
 
+  /* Get the old state of VAR at STMT.  */
+  virtual state_machine::state_t get_state (const gimple *stmt,
+					    tree var) = 0;
+  /* Set the next state of VAR to be TO, recording the "origin" of the
+     state as ORIGIN.
+     Use STMT for location information.  */
+  virtual void set_next_state (const gimple *stmt,
+			       tree var,
+			       state_machine::state_t to,
+			       tree origin = NULL_TREE) = 0;
+
   /* Called by state_machine in response to pattern matches:
      if VAR is in state FROM, transition it to state TO, potentially
      recording the "origin" of the state as ORIGIN.
      Use NODE and STMT for location information.  */
-   virtual void on_transition (const supernode *node, const gimple *stmt,
-			      tree var,
-			      state_machine::state_t from,
-			      state_machine::state_t to,
-			      tree origin = NULL_TREE) = 0;
+  void on_transition (const supernode *node ATTRIBUTE_UNUSED,
+		      const gimple *stmt,
+		      tree var,
+		      state_machine::state_t from,
+		      state_machine::state_t to,
+		      tree origin = NULL_TREE)
+  {
+    state_machine::state_t current = get_state (stmt, var);
+    if (current == from)
+      set_next_state (stmt, var, to, origin);
+  }
 
   /* Called by state_machine in response to pattern matches:
      issue a diagnostic D if VAR is in state STATE, using NODE and STMT

@@ -754,12 +754,15 @@ struct null_assignment_sm_context : public sm_context
 {
   null_assignment_sm_context (int sm_idx,
 			      const state_machine &sm,
+			      const program_state *old_state,
 			      const program_state *new_state,
 			      const gimple *stmt,
 			      const program_point *point,
-			      checker_path *emission_path)
-  : sm_context (sm_idx, sm), m_new_state (new_state),
-    m_stmt (stmt), m_point (point), m_emission_path (emission_path)
+			      checker_path *emission_path,
+			      const extrinsic_state &ext_state)
+  : sm_context (sm_idx, sm), m_old_state (old_state), m_new_state (new_state),
+    m_stmt (stmt), m_point (point), m_emission_path (emission_path),
+    m_ext_state (ext_state)
   {
   }
 
@@ -768,13 +771,25 @@ struct null_assignment_sm_context : public sm_context
     return NULL_TREE;
   }
 
-  void on_transition (const supernode *node ATTRIBUTE_UNUSED,
-		      const gimple *stmt ATTRIBUTE_UNUSED,
-		      tree var,
-		      state_machine::state_t from,
-		      state_machine::state_t to,
-		      tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
+				    tree var) FINAL OVERRIDE
   {
+    const svalue *var_old_sval
+      = m_old_state->m_region_model->get_rvalue (var, NULL);
+    const sm_state_map *old_smap = m_old_state->m_checker_states[m_sm_idx];
+
+    state_machine::state_t current
+      = old_smap->get_state (var_old_sval, m_ext_state);
+
+    return current;
+  }
+
+  void set_next_state (const gimple *stmt,
+		       tree var,
+		       state_machine::state_t to,
+		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+    state_machine::state_t from = get_state (stmt, var);
     if (from != m_sm.get_start_state ())
       return;
 
@@ -791,7 +806,6 @@ struct null_assignment_sm_context : public sm_context
 							from, to,
 							NULL,
 							*m_new_state));
-
   }
 
   void warn_for_state (const supernode *, const gimple *,
@@ -833,11 +847,13 @@ struct null_assignment_sm_context : public sm_context
     return NULL_TREE;
   }
 
+  const program_state *m_old_state;
   const program_state *m_new_state;
   const gimple *m_stmt;
   const program_point *m_point;
   state_change_visitor *m_visitor;
   checker_path *m_emission_path;
+  const extrinsic_state &m_ext_state;
 };
 
 /* Subroutine of diagnostic_manager::build_emission_path.
@@ -943,15 +959,18 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		if (const gassign *assign = dyn_cast<const gassign *> (stmt))
 		  {
 		    const extrinsic_state &ext_state = pb.get_ext_state ();
+		    program_state old_state (iter_state);
 		    iter_state.m_region_model->on_assignment (assign, NULL);
 		    for (unsigned i = 0; i < ext_state.get_num_checkers (); i++)
 		      {
 			const state_machine &sm = ext_state.get_sm (i);
 			null_assignment_sm_context sm_ctxt (i, sm,
+							    &old_state,
 							    &iter_state,
 							    stmt,
 							    &iter_point,
-							    emission_path);
+							    emission_path,
+							    pb.get_ext_state ());
 			sm.on_stmt (&sm_ctxt, dst_point.get_supernode (), stmt);
 			// TODO: what about phi nodes?
 		      }

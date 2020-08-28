@@ -205,12 +205,26 @@ public:
     return model->get_fndecl_for_call (call, &old_ctxt);
   }
 
-  void on_transition (const supernode *node  ATTRIBUTE_UNUSED,
-		      const gimple *stmt,
-		      tree var,
-		      state_machine::state_t from,
-		      state_machine::state_t to,
-		      tree origin) FINAL OVERRIDE
+  state_machine::state_t get_state (const gimple *stmt,
+				    tree var)
+  {
+    logger * const logger = get_logger ();
+    LOG_FUNC (logger);
+    impl_region_model_context old_ctxt
+      (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
+       stmt);
+    const svalue *var_old_sval
+      = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
+
+    state_machine::state_t current
+      = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
+    return current;
+  }
+
+  void set_next_state (const gimple *stmt,
+		       tree var,
+		       state_machine::state_t to,
+		       tree origin)
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
@@ -230,17 +244,14 @@ public:
 
     state_machine::state_t current
       = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
-    if (current == from)
-      {
-	if (logger)
-	  logger->log ("%s: state transition of %qE: %s -> %s",
-		       m_sm.get_name (),
-		       var,
-		       from->get_name (),
-		       to->get_name ());
-	m_new_smap->set_state (m_new_state->m_region_model, var_new_sval,
-			       to, origin_new_sval, m_eg.get_ext_state ());
-      }
+    if (logger)
+      logger->log ("%s: state transition of %qE: %s -> %s",
+		   m_sm.get_name (),
+		   var,
+		   current->get_name (),
+		   to->get_name ());
+    m_new_smap->set_state (m_new_state->m_region_model, var_new_sval,
+			   to, origin_new_sval, m_eg.get_ext_state ());
   }
 
   void warn_for_state (const supernode *snode, const gimple *stmt,
