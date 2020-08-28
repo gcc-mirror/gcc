@@ -6472,8 +6472,14 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
 
   if (sym->attr.optional || sym->attr.not_always_present)
     {
-      tmp = gfc_conv_expr_present (sym);
-      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt (input_location));
+      tree nullify;
+      if (TREE_CODE (parm) != PARM_DECL)
+	nullify = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
+				   parm, null_pointer_node);
+      else
+	nullify = build_empty_stmt (input_location);
+      tmp = gfc_conv_expr_present (sym, true);
+      stmt = build3_v (COND_EXPR, tmp, stmt, nullify);
     }
 
   gfc_add_init_cleanup (block, stmt, NULL_TREE);
