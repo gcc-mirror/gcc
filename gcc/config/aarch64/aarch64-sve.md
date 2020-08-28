@@ -5234,21 +5234,22 @@
 
 ;; Predicated floating-point subtraction from a constant, merging with an
 ;; independent value.
-(define_insn_and_rewrite "*cond_sub<mode>_any_const"
+;;
+;; The subtraction predicate and the merge predicate are allowed to be
+;; different.
+(define_insn_and_rewrite "*cond_sub<mode>_relaxed_const"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w")]
 	     UNSPEC_COND_FSUB)
 	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[3], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[3], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %3.<Vetype>\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
    movprfx\t%0.<Vetype>, %1/m, %3.<Vetype>\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
@@ -5271,6 +5272,37 @@
   [(set_attr "movprfx" "yes")]
 )
 
+;; Predicated floating-point subtraction from a constant, merging with an
+;; independent value.
+;;
+;; The subtraction predicate and the merge predicate must be the same.
+(define_insn_and_rewrite "*cond_sub<mode>_strict_const"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w")]
+	     UNSPEC_COND_FSUB)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[3], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %3.<Vetype>\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
+   movprfx\t%0.<Vetype>, %1/m, %3.<Vetype>\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[3],
+                                             operands[4], operands[1]));
+    operands[4] = operands[3] = operands[0];
+  }
+  [(set_attr "movprfx" "yes")]
+)
 ;; Register merging forms are handled through SVE_COND_FP_BINARY.
 
 ;; -------------------------------------------------------------------------
