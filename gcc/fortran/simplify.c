@@ -6398,7 +6398,7 @@ gfc_simplify_is_contiguous (gfc_expr *array)
 
   if (gfc_is_not_contiguous (array))
     return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 0);
-    
+
   return NULL;
 }
 
@@ -6725,6 +6725,7 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   unsigned long j;
   size_t nsource;
   gfc_expr *e, *result;
+  bool zerosize = false;
 
   /* Check that argument expression types are OK.  */
   if (!is_constant_array_expr (source)
@@ -6847,7 +6848,14 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   result->rank = rank;
   result->shape = gfc_get_shape (rank);
   for (i = 0; i < rank; i++)
-    mpz_init_set_ui (result->shape[i], shape[i]);
+    {
+      mpz_init_set_ui (result->shape[i], shape[i]);
+      if (shape[i] == 0)
+	zerosize = true;
+    }
+
+  if (zerosize)
+    goto sizezero;
 
   while (nsource > 0 || npad > 0)
     {
@@ -6896,6 +6904,8 @@ inc:
 
       break;
     }
+
+sizezero:
 
   mpz_clear (index);
 
