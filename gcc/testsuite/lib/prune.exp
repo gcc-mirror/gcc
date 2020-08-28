@@ -133,8 +133,8 @@ proc prune_file_path { text } {
 # footnote.
 
 proc prune_ices { text } {
-  regsub -all "(^|\n)\[^\n\]*: internal compiler error:.*for instructions\[^\n\]*" $text "" text
-  regsub -all "(^|\n|')*Internal compiler error:.*for instructions\[^\n\]*" $text "" text
+  regsub -all "(^|\n)\[^\n\]*: internal compiler error:.*\nSee \[^\n\]*" $text "" text
+  regsub -all "(^|\n|')*Internal compiler error:.*\nSee \[^\n\]*" $text "" text
   return $text
 }
 

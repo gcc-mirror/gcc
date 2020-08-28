@@ -1,5 +1,8 @@
 2020-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* lib/prune.exp (prune_ices): Adjust regexp.
+
 	Merge trunk cb3c3d63315.
 	Whee, all up to date!
 
