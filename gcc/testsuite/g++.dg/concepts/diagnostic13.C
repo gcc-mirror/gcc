@@ -10,5 +10,5 @@ void foo() { }
 
 void bar()
 {
-  foo<int, char>(); // { dg-error "unsatisfied constraints" }
+  foo<int, char>(); // { dg-error "no match" }
 }

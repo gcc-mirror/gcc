@@ -10,5 +10,5 @@ template <foo::Addable T> T Add (T a, T b)
 void frob ()
 {
   Add (1, 2);
-  Add ((int *)0, (int *)0); // { dg-error "unsatisfied constraint"  }
+  Add ((int *)0, (int *)0); // { dg-error "no match"  }
 }

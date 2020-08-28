@@ -1,5 +1,10 @@
 2020-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk f1612b8ae8a.
+	c++: Check satisfaction before non-dep convs. [CWG2369]
+	gcc/testsuite/
+	* g++.dg/modules/concept-[13]_b.C: Adjust.
+
 	Merge trunk e6e01618e83.
 
 2020-08-27  Nathan Sidwell  <nathan@acm.org>
