@@ -3,12 +3,12 @@
 
 #include "struct_vect_14.c"
 
-/* { dg-final { scan-assembler-times {\tld2b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7]/z, \[x[0-9]+, x[0-9]+\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tld2b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7]/z, \[x[0-9]+\]\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tld3b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7]/z, \[x[0-9]+\]\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tld4b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7]/z, \[x[0-9]+, x[0-9]+\]\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tst2b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7], \[x[0-9]+, x[0-9]+\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tld4b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7]/z, \[x[0-9]+\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tst2b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7], \[x[0-9]+\]\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tst3b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7], \[x[0-9]+\]\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tst4b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7], \[x[0-9]+, x[0-9]+\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tst4b\t{z[0-9]+.b - z[0-9]+.b}, p[0-7], \[x[0-9]+\]\n} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tld2h\t{z[0-9]+.h - z[0-9]+.h}, p[0-7]/z, \[x[0-9]+\]\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tld3h\t{z[0-9]+.h - z[0-9]+.h}, p[0-7]/z, \[x[0-9]+\]\n} 2 } } */

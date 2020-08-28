@@ -9,5 +9,5 @@ vset (int *restrict dst, int *restrict src, int count)
       *dst++ = 1;
 }
 
-/* { dg-final { scan-assembler-not {\tst1w\tz} } } */
-/* { dg-final { scan-assembler-times {\tstp\tq} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1w\tz} 2 } } */
+/* { dg-final { scan-assembler-not {\tstp\tq} } } */
