@@ -46,9 +46,9 @@ test01()
   std::gcd<const int&, const int&>(0.1, 0.1);   // { dg-error "from here" }
 }
 
-// { dg-error "integers" "" { target *-*-* } 133 }
-// { dg-error "integers" "" { target *-*-* } 134 }
-// { dg-error "not bools" "" { target *-*-* } 135 }
-// { dg-error "not bools" "" { target *-*-* } 137 }
+// { dg-error "must be integers" "" { target *-*-* } 134 }
+// { dg-error "must be integers" "" { target *-*-* } 135 }
+// { dg-error "must not be bool" "" { target *-*-* } 136 }
+// { dg-error "must not be bool" "" { target *-*-* } 137 }
 // { dg-prune-output "deleted function" }
-// { dg-prune-output "invalid operands" }
+// { dg-prune-output "incomplete type .*make_unsigned" }
