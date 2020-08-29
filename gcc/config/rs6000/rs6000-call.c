@@ -12643,7 +12643,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       }
 
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
-    case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
 	int icode2 = (BYTES_BIG_ENDIAN ? (int) CODE_FOR_altivec_lvsr_direct
 		     : (int) CODE_FOR_altivec_lvsl_direct);
@@ -12658,14 +12657,9 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	gcc_assert (POINTER_TYPE_P (TREE_TYPE (arg)));
 	op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
 	addr = memory_address (mode, op);
-	if (fcode == ALTIVEC_BUILTIN_MASK_FOR_STORE)
-	  op = addr;
-	else
-	  {
-	    /* For the load case need to negate the address.  */
-	    op = gen_reg_rtx (GET_MODE (addr));
-	    emit_insn (gen_rtx_SET (op, gen_rtx_NEG (GET_MODE (addr), addr)));
-	  }
+	/* We need to negate the address.  */
+	op = gen_reg_rtx (GET_MODE (addr));
+	emit_insn (gen_rtx_SET (op, gen_rtx_NEG (GET_MODE (addr), addr)));
 	op = gen_rtx_MEM (mode, op);
 
 	if (target == 0
