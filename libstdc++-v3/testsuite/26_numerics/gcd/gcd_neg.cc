@@ -50,4 +50,5 @@ test01()
 // { dg-error "must be integers" "" { target *-*-* } 135 }
 // { dg-error "must not be bool" "" { target *-*-* } 136 }
 // { dg-error "must not be bool" "" { target *-*-* } 137 }
+// { dg-prune-output "deleted function" }
 // { dg-prune-output "incomplete type .*make_unsigned" }

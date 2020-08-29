@@ -95,7 +95,7 @@ namespace __detail
       return __val < 0 ? -(_Up)__val : (_Up)__val;
     }
 
-  void __absu(bool) = delete;
+  template<typename _Up> void __absu(bool) = delete;
 
   // GCD implementation
   template<typename _Tp>
