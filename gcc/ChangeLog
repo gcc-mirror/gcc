@@ -1,3 +1,114 @@
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	* attribs.c (init_attr_rdwr_indices): Use global access_mode.
+	* attribs.h (struct attr_access): Same.
+	* builtins.c (fold_builtin_strlen): Add argument.
+	(compute_objsize): Declare.
+	(get_range): Declare.
+	(check_read_access): New function.
+	(access_ref::access_ref): Define ctor.
+	(warn_string_no_nul): Add arguments.  Handle -Wstrintop-overread.
+	(check_nul_terminated_array): Handle source strings of different
+	ranges of sizes.
+	(expand_builtin_strlen): Remove warning code, call check_read_access
+	instead.  Declare locals closer to their initialization.
+	(expand_builtin_strnlen): Same.
+	(maybe_warn_for_bound): New function.
+	(warn_for_access): Remove argument.  Handle -Wstrintop-overread.
+	(inform_access): Change argument type.
+	(get_size_range): New function.
+	(check_access): Remove unused arguments.  Add new arguments.  Handle
+	-Wstrintop-overread.  Move warning code to helpers and call them.
+	Call check_nul_terminated_array.
+	(check_memop_access): Remove unnecessary and provide additional
+	arguments in calls.
+	(expand_builtin_memchr): Call check_read_access.
+	(expand_builtin_strcat): Remove unnecessary and provide additional
+	arguments in calls.
+	(expand_builtin_strcpy): Same.
+	(expand_builtin_strcpy_args): Same.  Avoid testing no-warning bit.
+	(expand_builtin_stpcpy_1): Remove unnecessary and provide additional
+	arguments in calls.
+	(expand_builtin_stpncpy): Same.
+	(check_strncat_sizes): Same.
+	(expand_builtin_strncat): Remove unnecessary and provide additional
+	arguments in calls.  Adjust comments.
+	(expand_builtin_strncpy): Remove unnecessary and provide additional
+	arguments in calls.
+	(expand_builtin_memcmp): Remove warning code.  Call check_access.
+	(expand_builtin_strcmp): Call check_access instead of
+	check_nul_terminated_array.
+	(expand_builtin_strncmp): Handle -Wstrintop-overread.
+	(expand_builtin_fork_or_exec): Call check_access instead of
+	check_nul_terminated_array.
+	(expand_builtin): Same.
+	(fold_builtin_1): Pass additional argument.
+	(fold_builtin_n): Same.
+	(fold_builtin_strpbrk): Remove calls to check_nul_terminated_array.
+	(expand_builtin_memory_chk): Add comments.
+	(maybe_emit_chk_warning): Remove unnecessary and provide additional
+	arguments in calls.
+	(maybe_emit_sprintf_chk_warning): Same.  Adjust comments.
+	* builtins.h (warn_string_no_nul): Add arguments.
+	(struct access_ref): Add member and ctor argument.
+	(struct access_data): Add members and ctor.
+	(check_access): Adjust signature.
+	* calls.c (maybe_warn_nonstring_arg): Return an indication of
+	whether a warning was issued.  Issue -Wstrintop-overread instead
+	of -Wstringop-overflow.
+	(append_attrname): Adjust to naming changes.
+	(maybe_warn_rdwr_sizes): Same.  Remove unnecessary and provide
+	additional arguments in calls.
+	* calls.h (maybe_warn_nonstring_arg): Return bool.
+	* doc/invoke.texi (-Wstringop-overread): Document new option.
+	* gimple-fold.c (gimple_fold_builtin_strcpy): Provide an additional
+	argument in call.
+	(gimple_fold_builtin_stpcpy): Same.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Adjust to naming
+	changes.
+	* tree.h (enum access_mode): New type.
+
+2020-08-28  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_aix): Remove test for r12.
+	(rs6000_sibcall_aix): Likewise.
+
+2020-08-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-tree.c (gcn_goacc_get_worker_red_decl): Add "true"
+	parameter to vec_safe_grow_cleared.
+
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	* ggc-common.c (gt_pch_save): Add argument to a call.
+
+2020-08-28  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/96357
+	* config/aarch64/aarch64-sve.md
+	(cond_sub<mode>_relaxed_const): Updated and renamed from
+	cond_sub<mode>_any_const pattern.
+	(cond_sub<mode>_strict_const): New pattern.
+
+2020-08-28  Wei Wentao  <weiwt.fnst@cn.fujitsu.com>
+
+	* doc/rtl.texi: Fix typo.
+
+2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
+
+	PR target/96744
+	* config/i386/i386-expand.c (split_double_mode): Also handle
+	E_P2HImode and E_P2QImode.
+	* config/i386/sse.md (MASK_DWI): New define_mode_iterator.
+	(mov<mode>): New expander for P2HI,P2QI.
+	(*mov<mode>_internal): New define_insn_and_split to split
+	movement of P2QI/P2HI to 2 movqi/movhi patterns after reload.
+
+2020-08-28  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c (ix86_handle_option): Set
+	AVX512DQ when AVX512VP2INTERSECT exists.
+
 2020-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65146

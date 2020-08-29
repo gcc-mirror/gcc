@@ -1,3 +1,76 @@
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	* c-c++-common/Warray-bounds-7.c: Adjust expected warnings.
+	* c-c++-common/Wrestrict.c: Remove xfail.
+	* c-c++-common/attr-nonstring-3.c: Adjust text of expected warnings.
+	* c-c++-common/attr-nonstring-6.c: Suppress -Wstringop-overread
+	instead of -Wstringop-overflow.
+	* c-c++-common/attr-nonstring-8.c: Adjust text of expected warnings.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Also suppress
+	 -Wstringop-overread.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Same.
+	* gcc.dg/Warray-bounds-39.c: Adjust expected warnings.
+	* gcc.dg/Warray-bounds-40.c: Also suppress -Wstringop-overread.
+	* gcc.dg/Warray-bounds-58.c: Remove xfail.  Also expect
+	-Wstringop-overread.  Adjust text of expected warnings.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: Also suppress
+	 -Wstringop-overread.
+	* gcc.dg/Wstringop-overflow-22.c: Adjust text of expected warnings.
+	* gcc.dg/Wstringop-overflow-33.c: Expect -Wstringop-overread.
+	* gcc.dg/Wstringop-overflow-9.c: Expect -Wstringop-overread.
+	* gcc.dg/attr-nonstring-2.c: Adjust text of expected warnings.
+	* gcc.dg/attr-nonstring-3.c: Same.
+	* gcc.dg/attr-nonstring-4.c: Same.
+	* gcc.dg/attr-nonstring.c: Expect -Wstringop-overread.
+	* gcc.dg/builtin-stringop-chk-5.c: Adjust comment.
+	* gcc.dg/builtin-stringop-chk-8.c: Enable -Wstringop-overread instead
+	of -Wstringop-overflow.
+	* gcc.dg/pr78902.c: Also expect -Wstringop-overread.
+	* gcc.dg/pr79214.c: Adjust text of expected warnings.
+	* gcc.dg/strcmpopt_10.c: Suppress valid -Wno-stringop-overread.
+	* gcc.dg/strlenopt-57.c: Also expect -Wstringop-overread.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Also suppress valid
+	-Wno-stringop-overread.
+	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c: Same.
+	* gcc.dg/uninit-33.c: Same.
+	* gcc.dg/warn-strnlen-no-nul-2.c: Adjust text of expected warning.
+	* gcc.dg/warn-strnlen-no-nul.c: Same.
+	* gcc.target/i386/strcmpopt_6.c: Suppress -Wstringop-overread.
+	* gcc.dg/Wstringop-overread-2.c: New test.
+	* gcc.dg/Wstringop-overread.c: New test.
+
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/96596
+	* gcc.dg/Wbuiltin-declaration-mismatch-16.c: New test.
+
+2020-08-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* gfortran.dg/optional_assumed_charlen_2.f90: New test.
+
+2020-08-28  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/96357
+	* gcc.target/aarch64/sve/pr96357.c: New test.
+
+2020-08-28  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/mem-shift-canonical.c: Skip on ILP32.
+
+2020-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96624
+	* gfortran.dg/reshape_8.f90 : New test.
+
+2020-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/pr96579.c: Compile only with target dfp.
+
+2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
+
+	* gcc.target/i386/double_mask_reg-1.c: New test.
+
 2020-08-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.target/hppa/shadd-2.c: Adjust times to 4.

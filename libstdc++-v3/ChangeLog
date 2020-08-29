@@ -1,3 +1,31 @@
+2020-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (common_type): Fix partial specializations
+	for a single duration type to use the common_type of the rep.
+	(duration::operator+, duration::operator-): Fix return types
+	to also use the common_type of the rep.
+	* testsuite/20_util/duration/requirements/reduced_period.cc:
+	Check duration using a rep that has common_type specialized.
+
+2020-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92978
+	* include/std/numeric (__abs_integral): Replace with ...
+	(__detail::__absu): New function template that returns an
+	unsigned type, guaranteeing it can represent the most
+	negative signed value.
+	(__detail::__gcd, __detail::__lcm): Require arguments to
+	be unsigned and therefore already non-negative.
+	(gcd, lcm): Convert arguments to absolute value as unsigned
+	type before calling __detail::__gcd or __detail::__lcm.
+	* include/experimental/numeric (gcd, lcm): Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust expected
+	errors.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/92978.cc: New test.
+	* testsuite/26_numerics/lcm/92978.cc: New test.
+	* testsuite/experimental/numeric/92978.cc: New test.
+
 2020-08-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (__duration_common_type): Ensure the
