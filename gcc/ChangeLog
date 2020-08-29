@@ -1,3 +1,18 @@
+2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
+
+	PR target/96744
+	* config/i386/i386-expand.c (split_double_mode): Also handle
+	E_P2HImode and E_P2QImode.
+	* config/i386/sse.md (MASK_DWI): New define_mode_iterator.
+	(mov<mode>): New expander for P2HI,P2QI.
+	(*mov<mode>_internal): New define_insn_and_split to split
+	movement of P2QI/P2HI to 2 movqi/movhi patterns after reload.
+
+2020-08-28  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c (ix86_handle_option): Set
+	AVX512DQ when AVX512VP2INTERSECT exists.
+
 2020-08-27  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: (BU_P10V_VSX_1) New builtin

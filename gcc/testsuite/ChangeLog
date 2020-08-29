@@ -1,3 +1,7 @@
+2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
+
+	* gcc.target/i386/double_mask_reg-1.c: New test.
+
 2020-08-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.target/hppa/shadd-2.c: Adjust times to 4.
