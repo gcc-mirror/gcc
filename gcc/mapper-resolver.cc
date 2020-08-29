@@ -244,14 +244,14 @@ module_resolver::IncludeTranslateRequest (Cody::Server *s,
   return 0;
 }
 
-int module_resolver::LTOCompileRequest (Cody::Server *s, std::vector<std::string> &args) {
+int module_resolver::InvokeSubProcessRequest (Cody::Server *s, std::vector<std::string> &args) {
   char **new_argv = (char **)malloc((args.size()) * sizeof(char *));
   new_argv[args.size()-1] = NULL;
 
   int i = 0;
   for (std::vector<std::string>::iterator arg = args.begin() ; arg != args.end(); ++arg, ++i) {
 
-    // ignore "LTO-COMPILE"
+    // ignore "INVOKE"
     if(i == 0) continue;
     //new_argv[i++] = (char *)malloc(args[i].length() * sizeof(char)); 
 
@@ -265,7 +265,7 @@ int module_resolver::LTOCompileRequest (Cody::Server *s, std::vector<std::string
   fork_execute (new_argv[0], new_argv, true);
 
   // TODO: send back a compile status response
-  s->LTOResponse("success");
+  s->InvokedResponse("success");
   return 0;
 }
 

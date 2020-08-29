@@ -78,7 +78,7 @@ public:
   virtual int IncludeTranslateRequest (Cody::Server *s, std::string &include)
     override;
 
-  virtual int LTOCompileRequest (Cody::Server *s, std::vector<std::string> &args)
+  virtual int InvokeSubProcessRequest (Cody::Server *s, std::vector<std::string> &args)
     override;
 
 private:

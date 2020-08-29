@@ -1919,6 +1919,8 @@ cont:
 	}
 
     auto *mapper = get_mapper (main_source_loc);
+    mapper->Cork();
+
       /* Execute the LTRANS stage for each input file (or prepare a
 	 makefile to invoke this in parallel).  */
       for (i = 0; i < nr; ++i)
@@ -1962,55 +1964,42 @@ cont:
 	    }
 	  else
 	    {
-        //fprintf(stderr, "\tRAVI PRINT: %s ", new_argv[0]);
-        mapper->Cork();
-
         // TODO: better way to figure out the number of arguments?
         for (j = 1; new_argv[j] != NULL; ++j);
         fprintf(stderr, "argc: %d\n", j);
 
-        //std::vector<const char*> v_new_argv(new_argv, new_argv + j);
-        //mapper->LTOCompile(v_new_argv);
-        mapper->LTOCompile(new_argv, j);
-        const char **arg_it = new_argv + 1;
+        mapper->InvokeSubProcess(new_argv, j);
 
-        while(*arg_it != NULL) 
-        {
-          //fprintf(stderr, "\tRAVI PRINT: %s\n", *arg_it);
-          fprintf(stderr, " \'%s\' ", *arg_it);
-          //mapper->LTOCompile(*arg_it);
-          arg_it++;
-        }
-        ////fprintf(stderr, "\n");
-        auto response = mapper->Uncork();
-        auto r_iter = response.begin ();
-
-        while(r_iter != response.end()) {
-          Cody::Packet const &p = *r_iter;
-
-          if(p.GetCode() == Cody::Client::PC_LTO_COMPILED) {
-            if(strcmp(p.GetString().c_str(), "success") == 0) {
-              // fprintf(stderr, "\tlto compilation succeeded\n");
-            }
-            else {
-              fprintf(stderr, "\tlto compilation failure message: %s\n", p.GetString().c_str());
-            }
-          }
-          else {
-            fprintf(stderr, "\tlto compilation unknown failure\n");
-          }
-
-          ++r_iter;
-        }
-
-        //fprintf(stderr, "\tRAVI PRINT: %s\n", new_argv[0]);
-	      //fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
-			  //  true);
-	      maybe_unlink (input_name);
+        // TODO: unlink input file somewhere
+				// maybe_unlink (input_name);
 	    }
 
 	  output_names[i] = output_name;
 	}
+
+  auto response = mapper->Uncork();
+  auto r_iter = response.begin ();
+
+  while(r_iter != response.end()) {
+    Cody::Packet const &p = *r_iter;
+
+    if(p.GetCode() == Cody::Client::PC_INVOKED) {
+      if(strcmp(p.GetString().c_str(), "success") == 0) {
+        fprintf(stderr, "\tlto compilation succeeded\n");
+      }
+      else {
+        fprintf(stderr, "\tlto compilation failure message: %s\n", p.GetString().c_str());
+      }
+    }
+    else {
+      fprintf(stderr, "\tlto compilation unknown failure\n");
+    }
+
+    ++r_iter;
+  }
+
+  fprintf(stderr, "\n");
+
       if (parallel)
 	{
 	  struct pex_obj *pex;
