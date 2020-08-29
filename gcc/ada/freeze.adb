@@ -182,6 +182,12 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
+   function Is_Uninitialized_Aggregate (N : Node_Id) return Boolean;
+   --  Determine whether an array aggregate used in an object declaration
+   --  is uninitialized, when the aggregate is declared with a box and
+   --  the component type has no default value. Such an aggregate can be
+   --  optimized away and prevent the copying of uninitialized data.
+
    procedure Process_Default_Expressions
      (E     : Entity_Id;
       After : in out Node_Id);
@@ -718,7 +724,14 @@ package body Freeze is
          --  expansion elsewhere. This exception is necessary to avoid copying
          --  limited objects.
 
-         if Present (Init) and then not Is_Limited_View (Typ) then
+         if Present (Init)
+           and then not Is_Limited_View (Typ)
+         then
+            if Is_Uninitialized_Aggregate (Init) then
+               Init := Empty;
+               Set_No_Initialization (Decl);
+               return;
+            end if;
 
             --  Capture initialization value at point of declaration, and make
             --  explicit assignment legal, because object may be a constant.
@@ -9130,6 +9143,40 @@ package body Freeze is
          Build_Procedure_Form (Unit_Declaration_Node (E));
       end if;
    end Freeze_Subprogram;
+
+   --------------------------------
+   -- Is_Uninitialized_Aggregate --
+   --------------------------------
+
+   function Is_Uninitialized_Aggregate (N : Node_Id) return Boolean is
+      Aggr : constant Node_Id := Original_Node (N);
+      Typ  : constant Entity_Id := Etype (Aggr);
+
+      Comp      : Node_Id;
+      Comp_Type : Entity_Id;
+   begin
+      if Nkind (Aggr) /= N_Aggregate
+        or else No (Typ)
+        or else Ekind (Typ) /= E_Array_Type
+        or else Present (Expressions (Aggr))
+        or else No (Component_Associations (Aggr))
+      then
+         return False;
+      else
+         Comp_Type := Component_Type (Typ);
+         Comp := First (Component_Associations (Aggr));
+
+         if not Box_Present (Comp)
+           or else Present (Next (Comp))
+         then
+            return False;
+         end if;
+
+         return Is_Scalar_Type (Comp_Type)
+           and then No (Default_Aspect_Component_Value (Typ))
+           and then No (Default_Aspect_Value (Comp_Type));
+      end if;
+   end Is_Uninitialized_Aggregate;
 
    ----------------------
    -- Is_Fully_Defined --
