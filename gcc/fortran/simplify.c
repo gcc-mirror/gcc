@@ -4080,7 +4080,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
       || (coarray && d == as->rank + as->corank
 	  && (!upper || flag_coarray == GFC_FCOARRAY_SINGLE)))
     {
-      if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
+      if (as->lower[d-1] && as->lower[d-1]->expr_type == EXPR_CONSTANT)
 	{
 	  gfc_free_expr (result);
 	  return gfc_copy_expr (as->lower[d-1]);
