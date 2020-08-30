@@ -1,4 +1,10 @@
 2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-omp.cc (end_test_ok_for_annotation_r): New.
+	(end_test_ok_for_annotation): New.
+	(check_and_annotate_for_loop): Use the new helper function.
+
+2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
     
 	* c-omp.cc (annotate_for_loop): Move initializer processing...
 	(check_and_annotate_for_loop): ... to here.  Allow the loop
