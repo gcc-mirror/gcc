@@ -3273,7 +3273,7 @@ check_references (gfc_ref* ref, bool (*checker) (gfc_expr*))
   switch (ref->type)
     {
     case REF_ARRAY:
-      for (dim = 0; dim != ref->u.ar.dimen; ++dim)
+      for (dim = 0; dim < ref->u.ar.dimen; ++dim)
 	{
 	  if (!checker (ref->u.ar.start[dim]))
 	    return false;
