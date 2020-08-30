@@ -1,3 +1,8 @@
+2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-loop-annotation-21.c: New.
+	* c-c++-common/goacc/kernels-loop-annotation-22.c: New.
+
 2020-08-23   Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.dg/goacc/kernels-loop-annotation-1.f95: Update

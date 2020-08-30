@@ -3172,6 +3172,116 @@ is_local_var (tree decl)
 	  && !TREE_ADDRESSABLE (decl));
 }
 
+/* EXP is a loop bound expression for a comparison against local
+   variable DECL.  Check whether this is potentially valid in an OpenACC loop
+   context, namely that it can be precomputed when entering the loop
+   construct per the OpenACC specification.  Local variables referenced
+   in both DECL and EXP that may not be modified in the body of the loop
+   are added to the list in INFO to be checked later.
+
+   FIXME: Ideally we would like to make this test permissive rather than
+   restrictive, and allow the later conversion of the "auto" attribute to
+   either "seq" or "independent" to make the determination using dataflow,
+   alias analysis, etc rather than a tree traversal.  But presently it does
+   not do that and always just hoists the loop bound expression.  So the
+   current implementation only considers expressions involving unmodified
+   local variables and constants, using a tree walk.  */
+
+static tree
+end_test_ok_for_annotation_r (tree *tp, int *walk_subtrees,
+			      void *data)
+{
+  tree exp = *tp;
+  struct annotation_info *info = (struct annotation_info *) data;
+
+  switch (TREE_CODE_CLASS (TREE_CODE (exp)))
+    {
+    case tcc_constant:
+      /* Constants are trivially known to be invariant.  */
+      return NULL_TREE;
+
+    case tcc_declaration:
+      if (is_local_var (exp))
+	{
+	  tree t;
+	  /* Add it to the list of variables that can't be modified in the
+	     loop, only if not already present.  */
+	  for (t = info->vars; t && TREE_VALUE (t) != exp;
+	       t = TREE_CHAIN (t))
+	    ;
+	  if (!t)
+	    info->vars = tree_cons (NULL_TREE, exp, info->vars);
+	  return NULL_TREE;
+	}
+      else if (TREE_CODE (exp) == VAR_DECL && TREE_READONLY (exp))
+	return NULL_TREE;
+      else if (TREE_CODE (exp) == FUNCTION_DECL)
+	return NULL_TREE;
+      break;
+
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
+      /* Allow arithmetic expressions and comparisons provided
+	 that the operands are good.  */
+      return NULL_TREE;
+
+    default:
+      /* Handle some special cases.  */
+      switch (TREE_CODE (exp))
+	{
+	case COND_EXPR:
+	case TRUTH_ANDIF_EXPR:
+	case TRUTH_ORIF_EXPR:
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	case TRUTH_XOR_EXPR:
+	case TRUTH_NOT_EXPR:
+	  /* ?: and boolean operators are OK.  */
+	  return NULL_TREE;
+
+	case CALL_EXPR:
+	  /* Allow calls to constant functions with invariant operands.  */
+	  {
+	    tree fndecl = get_callee_fndecl (exp);
+	    if (fndecl && TREE_READONLY (fndecl))
+	      return NULL_TREE;
+	  }
+	  break;
+
+	case ADDR_EXPR:
+	  /* We can expect addresses of things to be invariant.  */
+	  return NULL_TREE;
+
+	default:
+	  break;
+	}
+    }
+
+  /* Reject anything else.  */
+  *walk_subtrees = 0;
+  return exp;
+}
+
+static bool
+end_test_ok_for_annotation (tree decl, tree exp,
+			    struct annotation_info *info)
+{
+  /* Traversal returns NULL_TREE if all is well.  */
+  if (!walk_tree (&exp, end_test_ok_for_annotation_r, info, NULL))
+    {
+      /* So far, so good.  Check the decl against any variables collected
+	 in the exp.  */
+      tree t;
+      for (t = info->vars; t; t = TREE_CHAIN (t))
+	if (TREE_VALUE (t) == decl)
+	  return false;
+      info->vars = tree_cons (NULL_TREE, decl, info->vars);
+      return true;
+    }
+  return false;
+}
+
 /* The initializer for a FOR_STMT is sometimes wrapped in various other
    language-specific tree structures.  We need a hook to unwrap them.
    This function takes a tree argument and should return either a
@@ -3340,16 +3450,8 @@ check_and_annotate_for_loop (tree *nodeptr, tree_stmt_iterator *prev_tsi,
 	limit_exp = TREE_OPERAND (cond, 0);
 
       if (!limit_exp
-	  || (!is_local_var (limit_exp)
-	      && (TREE_CODE_CLASS (TREE_CODE (limit_exp)) != tcc_constant)))
+	  || !end_test_ok_for_annotation (decl, limit_exp, &loop_info))
 	do_not_annotate_loop (&loop_info, as_invalid_predicate, cond);
-      else
-	{
-	  /* These variables must not be assigned to in the loop.  */
-	  loop_info.vars = tree_cons (NULL_TREE, decl, loop_info.vars);
-	  if (TREE_CODE_CLASS (TREE_CODE (limit_exp)) != tcc_constant)
-	    loop_info.vars = tree_cons (NULL_TREE, limit_exp, loop_info.vars);
-	}
     }
 
   /* Walk the body.  This will process any nested loops, so we have to do it
