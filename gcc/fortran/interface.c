@@ -3303,7 +3303,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return false;
 	}
 
-      if (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE
+      if (f->sym->as
+	  && (f->sym->as->type == AS_ASSUMED_SHAPE
+	      || f->sym->as->type == AS_DEFERRED
+	      || (f->sym->as->type == AS_ASSUMED_RANK && f->sym->attr.pointer))
 	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->as
 	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SIZE
