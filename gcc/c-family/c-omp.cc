@@ -3181,86 +3181,26 @@ static tree (*lang_specific_unwrap_initializer) (tree);
 
 /* Try to annotate the given NODE, which must be a FOR_STMT, with a
    "#pragma acc loop auto" annotation.  In practice, this means
-   building an OMP_FOR node for it.  PREV_STMT is the statement
-   immediately before the loop, which may be used as the loop's
-   initialization statement.  Annotating the loop may fail, in which
-   case INFO is used to record the cause of the failure and the
-   original loop remains unchanged.  This function returns the
-   transformed loop if the transformation succeeded, the original node
-   otherwise.  */
+   building an OMP_FOR node for it.  DECL and INIT are the
+   previously-verified iteration variable and initializer.  Annotating
+   the loop may fail, in which case INFO is used to record the cause
+   of the failure and the original loop remains unchanged.  This
+   function returns the transformed loop if the transformation
+   succeeded, the original node otherwise.  */
 
 static tree
-annotate_for_loop (tree node, tree_stmt_iterator *prev_tsi,
+annotate_for_loop (tree node, tree decl, tree init,
 		   struct annotation_info *info)
 {
   gcc_checking_assert (TREE_CODE (node) == FOR_STMT);
 
   location_t loc = EXPR_LOCATION (node);
   tree cond = FOR_COND (node);
-  gcc_assert (cond);
-  tree decl = TREE_OPERAND (cond, 0);
-  gcc_assert (decl && TREE_CODE (decl) == VAR_DECL);
-  tree init = FOR_INIT_STMT (node);
-  tree prev_stmt = NULL_TREE;
-  bool unlink_prev = false;
-  bool fix_decl = false;
-
-
-  /* Both the C and C++ front ends normally put the initializer in the
-     statement list just before the FOR_STMT instead of in FOR_INIT_STMT.
-     If FOR_INIT_STMT happens to exist but isn't a MODIFY_EXPR, bail out
-     because the code below won't handle it.  */
-  if (init != NULL_TREE && TREE_CODE (init) != MODIFY_EXPR)
-    {
-      do_not_annotate_loop (info, as_invalid_initializer, NULL_TREE);
-      return node;
-    }
-
-  /* Examine the statement before the loop to see if it is a
-     valid initializer.  It must be either a MODIFY_EXPR or VAR_DECL,
-     possibly wrapped in language-specific structure.  */
-  if (init == NULL_TREE && prev_tsi != NULL)
-    {
-      prev_stmt = tsi_stmt (*prev_tsi);
-
-      /* Call the language-specific hook to unwrap prev_stmt.  */
-      if (prev_stmt)
-	prev_stmt = (*lang_specific_unwrap_initializer) (prev_stmt);
-
-      /* See if we have a valid MODIFY_EXPR.  */
-      if (prev_stmt
-	  && TREE_CODE (prev_stmt) == MODIFY_EXPR
-	  && TREE_OPERAND (prev_stmt, 0) == decl
-	  && !TREE_SIDE_EFFECTS (TREE_OPERAND (prev_stmt, 1)))
-	{
-	  init = prev_stmt;
-	  unlink_prev = true;
-	}
-      else if (prev_stmt == decl
-	       && !TREE_SIDE_EFFECTS (DECL_INITIAL (decl)))
-	{
-	  /* If the preceding statement is the declaration of the loop
-	     variable with its initialization, build an assignment
-	     expression for the loop's initializer.  */
-	  init = build2 (MODIFY_EXPR, TREE_TYPE (decl), decl,
-			 DECL_INITIAL (decl));
-	  /* We need to remove the initializer from the decl if we
-	     end up using the init we just built instead.  */
-	  fix_decl = true;
-	}
-    }
-
-  if (init == NULL_TREE)
-    /* There is nothing we can do to find the correct init statement for
-       this loop, but c_finish_omp_for insists on having one and would fail
-       otherwise.  In that case, we would just return node.  Do that
-       directly, here.  */
-    {
-      do_not_annotate_loop (info, as_missing_initializer, NULL_TREE);
-      return node;
-    }
-
   tree incr = FOR_EXPR (node);
+
+  gcc_assert (decl);
+  gcc_assert (cond);
+  gcc_assert (decl && TREE_CODE (decl) == VAR_DECL);
 
   /* The C++ frontend can wrap the increment two levels deep inside a
      cleanup expression, but c_finish_omp_for does not care about that.  */
@@ -3285,18 +3225,6 @@ annotate_for_loop (tree node, tree_stmt_iterator *prev_tsi,
 					    NULL_TREE, false, info);
   if (omp_for != NULL_TREE)
     {
-      if (unlink_prev)
-	/* We don't need the previous statement that we consumed as an
-	   initializer in the new OMP_FOR any more.  */
-	tsi_delink (prev_tsi);
-
-      if (fix_decl)
-	/* We no longer need the initializer expression on the decl of
-	   the loop variable and don't want to duplicate it.  The
-	   kernels conversion pass would interpret it as a stray
-	   assignment in a gang-single region.  */
-	DECL_INITIAL (prev_stmt) = NULL_TREE;
-
       /* Add an auto clause, then return the new loop.  */
       tree auto_clause = build_omp_clause (loc, OMP_CLAUSE_AUTO);
       OMP_CLAUSE_CHAIN (auto_clause) = OMP_FOR_CLAUSES (omp_for);
@@ -3322,11 +3250,16 @@ check_and_annotate_for_loop (tree *nodeptr, tree_stmt_iterator *prev_tsi,
 {
   tree node = *nodeptr;
   gcc_assert (TREE_CODE (node) == FOR_STMT);
+  tree init = FOR_INIT_STMT (node);
+  tree cond = FOR_COND (node);
+  tree prev_stmt = NULL_TREE;
+  tree decl = NULL_TREE;
+  bool unlink_prev = false;
+  bool fix_decl = false;
 
   /* This structure describes the current loop statement.  */
   struct annotation_info loop_info
     = { node, NULL_TREE, false, as_in_kernels_loop, NULL_TREE, info };
-  tree cond = FOR_COND (node);
 
   /* If we are in the body of an explicitly-annotated loop, do not add
      annotations to this loop or any other nested loops.  */
@@ -3338,30 +3271,84 @@ check_and_annotate_for_loop (tree *nodeptr, tree_stmt_iterator *prev_tsi,
      That is why we are doing some checks on the loop condition
      that duplicate what c_finish_omp_for is doing.  */
 
-  /* The loop condition must be a comparison.  */
+  /* First we need to find the decl and initializer for the
+     controlling variable.  Both the C and C++ front ends normally put
+     the initializer in the statement list just before the FOR_STMT
+     instead of in FOR_INIT_STMT.  If FOR_INIT_STMT happens to exist
+     but isn't a MODIFY_EXPR, give up.
+     handle it.  */
+
+  else if (init != NULL_TREE && TREE_CODE (init) != MODIFY_EXPR)
+    do_not_annotate_loop (&loop_info, as_invalid_initializer, NULL_TREE);
+
+  /* Examine the statement before the loop to see if it is a
+     valid initializer.  It must be either a MODIFY_EXPR or VAR_DECL,
+     possibly wrapped in language-specific structure.  */
+  else if (init == NULL_TREE && prev_tsi != NULL && tsi_stmt (*prev_tsi))
+    {
+      prev_stmt = tsi_stmt (*prev_tsi);
+
+      /* Call the language-specific hook to unwrap prev_stmt.  */
+      prev_stmt = (*lang_specific_unwrap_initializer) (prev_stmt);
+
+      /* See if we have a valid MODIFY_EXPR.  */
+      if (TREE_CODE (prev_stmt) == MODIFY_EXPR
+	  && is_local_var (TREE_OPERAND (prev_stmt, 0))
+	  && !TREE_SIDE_EFFECTS (TREE_OPERAND (prev_stmt, 1)))
+	{
+	  decl = TREE_OPERAND (prev_stmt, 0);
+	  init = prev_stmt;
+	  unlink_prev = true;
+	}
+      else if (is_local_var (prev_stmt)
+	       && !TREE_SIDE_EFFECTS (DECL_INITIAL (prev_stmt)))
+	{
+	  /* If the preceding statement is the declaration of the loop
+	     variable with its initialization, build an assignment
+	     expression for the loop's initializer.  */
+	  decl = prev_stmt;
+	  init = build2 (MODIFY_EXPR, TREE_TYPE (decl), decl,
+			 DECL_INITIAL (decl));
+	  /* We need to remove the initializer from the decl if we
+	     end up using the init we just built instead.  */
+	  fix_decl = true;
+	}
+    }
+
+  if (init == NULL_TREE || decl == NULL_TREE)
+    /* There is nothing we can do to find the correct init statement for
+       this loop.  */
+    do_not_annotate_loop (&loop_info, as_missing_initializer, NULL_TREE);
+
+  /* The condition must be a comparison of the decl we found in
+     the initializer against an expression that can be hoisted
+     outside the loop.  */
+  if (loop_info.state > as_in_kernels_loop)
+    /* Skip validating condition if we've already got an error.  */
+    ;
   else if (cond == NULL_TREE)
     do_not_annotate_loop (&loop_info, as_missing_predicate, NULL_TREE);
   else if (TREE_CODE_CLASS (TREE_CODE (cond)) != tcc_comparison)
     do_not_annotate_loop (&loop_info, as_invalid_predicate, cond);
   else
     {
-      /* The condition's LHS must be a local variable that does not
-	 have its address taken.  Its RHS must also be such a local
-	 variable or a constant.  */
-      tree induction_var = TREE_OPERAND (cond, 0);
-      tree limit_var = TREE_OPERAND (cond, 1);
-      if (!is_local_var (induction_var)
-	  || (!is_local_var (limit_var)
-	      && (TREE_CODE_CLASS (TREE_CODE (limit_var))
-		  != tcc_constant)))
+      tree limit_exp = NULL_TREE;
+
+      if (TREE_OPERAND (cond, 0) == decl)
+	limit_exp = TREE_OPERAND (cond, 1);
+      else if (TREE_OPERAND (cond, 1) == decl)
+	limit_exp = TREE_OPERAND (cond, 0);
+
+      if (!limit_exp
+	  || (!is_local_var (limit_exp)
+	      && (TREE_CODE_CLASS (TREE_CODE (limit_exp)) != tcc_constant)))
 	do_not_annotate_loop (&loop_info, as_invalid_predicate, cond);
       else
 	{
 	  /* These variables must not be assigned to in the loop.  */
-	  loop_info.vars = tree_cons (NULL_TREE, induction_var,
-				      loop_info.vars);
-	  if (TREE_CODE_CLASS (TREE_CODE (limit_var)) != tcc_constant)
-	    loop_info.vars = tree_cons (NULL_TREE, limit_var, loop_info.vars);
+	  loop_info.vars = tree_cons (NULL_TREE, decl, loop_info.vars);
+	  if (TREE_CODE_CLASS (TREE_CODE (limit_exp)) != tcc_constant)
+	    loop_info.vars = tree_cons (NULL_TREE, limit_exp, loop_info.vars);
 	}
     }
 
@@ -3376,11 +3363,24 @@ check_and_annotate_for_loop (tree *nodeptr, tree_stmt_iterator *prev_tsi,
       /* If the traversal of the loop and all nested loops didn't hit
 	 any problems, attempt the actual transformation.  If it
 	 succeeds, replace this node with the annotated loop.  */
-      tree result = annotate_for_loop (node, prev_tsi, &loop_info);
+      tree result = annotate_for_loop (node, decl, init, &loop_info);
       if (result != node)
 	{
 	  /* Success!  */
 	  *nodeptr = result;
+
+	  if (unlink_prev)
+	    /* We don't need the previous statement that we consumed
+	       as an initializer in the new OMP_FOR any more.  */
+	    tsi_delink (prev_tsi);
+
+	  if (fix_decl)
+	    /* We no longer need the initializer expression on the
+	       decl of the loop variable and don't want to duplicate
+	       it.  The kernels conversion pass would interpret it as
+	       a stray assignment in a gang-single region.  */
+	    DECL_INITIAL (decl) = NULL_TREE;
+
 	  return;
 	}
     }
