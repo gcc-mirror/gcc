@@ -3007,6 +3007,12 @@ gfc_check_init_expr (gfc_expr *e)
 			   e->symtree->n.sym->name, &e->where);
 		break;
 
+	      case AS_ASSUMED_RANK:
+		gfc_error ("Assumed-rank array %qs at %L is not permitted "
+			   "in an initialization expression",
+			   e->symtree->n.sym->name, &e->where);
+		break;
+
 	      default:
 		gcc_unreachable();
 	  }
