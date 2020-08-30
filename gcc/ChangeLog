@@ -1,3 +1,9 @@
+2020-08-29  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (MASK_FOR_STORE): Remove.
+	* config/rs6000/rs6000-call.c (rs6000_expand_builtin): Remove
+	all logic for ALTIVEC_BUILTIN_MASK_FOR_STORE.
+
 2020-08-28  Martin Sebor  <msebor@redhat.com>
 
 	* attribs.c (init_attr_rdwr_indices): Use global access_mode.

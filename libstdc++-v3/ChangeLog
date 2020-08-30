@@ -1,3 +1,11 @@
+2020-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (__detail::__absu(bool)): Make deleted
+	function a function template, so it will be chosen for calls
+	with an explicit template argument list.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Add dg-prune-output.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+
 2020-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (common_type): Fix partial specializations
