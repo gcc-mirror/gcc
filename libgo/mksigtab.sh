@@ -95,10 +95,12 @@ checksig _SIGLOST '   {_SigNotify, "SIGLOST: resource lost (Sun); server died (G
 
 # Special handling of signals 32 and 33 on GNU/Linux systems,
 # because they are special to glibc.
+# Signal 34 is additionally special to Linux systems with musl.
 if test "${GOOS}" = "linux"; then
-    SIGLIST=$SIGLIST"_32__33_"
+    SIGLIST=$SIGLIST"_32__33__34_"
     echo '	32: {_SigSetStack + _SigUnblock, "signal 32"}, /* SIGCANCEL; see issue 6997 */'
     echo '	33: {_SigSetStack + _SigUnblock, "signal 33"}, /* SIGSETXID; see issues 3871, 9400, 12498 */'
+    echo '	34: {_SigSetStack + _SigUnblock, "signal 34"}, /* musl SIGSYNCCALL; see issue 39343 */'
 fi
 
 if test "${GOOS}" = "aix"; then
