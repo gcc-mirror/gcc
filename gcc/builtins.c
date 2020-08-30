@@ -214,8 +214,13 @@ access_ref::access_ref (tree bound /* = NULL_TREE */,
   /* When BOUND is nonnull and a range can be extracted from it,
      set the bounds of the access to reflect both it and MINACCESS.
      BNDRNG[0] is the size of the minimum access.  */
-  if (bound && get_range (bound, UNSIGNED, bndrng))
-    bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
+  tree rng[2];
+  if (bound && get_size_range (bound, rng, true))
+    {
+      bndrng[0] = wi::to_offset (rng[0]);
+      bndrng[1] = wi::to_offset (rng[1]);
+      bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
+    }
 }
 
 /* Return true if NAME starts with __builtin_ or __sync_.  */
