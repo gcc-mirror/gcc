@@ -16938,11 +16938,8 @@
 				GET_MODE (operands[2]));
   operands[4] = lowpart_subreg (V16QImode, operands[3],
 				GET_MODE (operands[3]));
-  rtvec par = gen_rtvec (4, GEN_INT (0xf7f7f7f7),
-			 GEN_INT (0xf7f7f7f7),
-			 GEN_INT (0xf7f7f7f7),
-			 GEN_INT (0xf7f7f7f7));
-  rtx vec_const = gen_rtx_CONST_VECTOR (V4SImode, par);
+  rtx vec_const = ix86_build_const_vector (V4SImode, true,
+					   gen_int_mode (0xf7f7f7f7, SImode));
   operands[5] = force_const_mem (V4SImode, vec_const);
 }
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
