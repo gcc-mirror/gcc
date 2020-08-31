@@ -1,7 +1,7 @@
 /* When the specified length exceeds one of the arguments of the call to memcmp, 
    the call to memcmp should NOT be inlined.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wno-stringop-overflow" } */
+/* { dg-options "-O2 -Wno-stringop-overread" } */
 
 typedef struct { char s[8]; int x; } S;
 
