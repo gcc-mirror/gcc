@@ -673,6 +673,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  case BUILT_IN_MALLOC:
 	    return impl_call_malloc (cd);
 	  case BUILT_IN_MEMSET:
+	  case BUILT_IN_MEMSET_CHK:
 	    impl_call_memset (cd);
 	    return false;
 	    break;
