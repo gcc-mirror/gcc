@@ -1,3 +1,13 @@
+2020-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (get_fixed_binding_slot): Don't stat-hack a
+	namespace.
+	* module.cc (trees_in::assert_definition): Header units are
+	module_purview, but ok.
+	gcc/testsuite/
+	* g++.dg/modules/ns-dup-1_[ab].C: New.
+
 2020-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	Fix pushing imported namespaces.

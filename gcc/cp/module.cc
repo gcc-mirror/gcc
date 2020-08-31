@@ -4524,9 +4524,11 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
        be present.  */
     gcc_assert (!is_duplicate (decl)
 		? !slot
-		: (!DECL_LANG_SPECIFIC (decl)
+		: (slot
+		   || !DECL_LANG_SPECIFIC (decl)
 		   || !DECL_MODULE_PURVIEW_P (decl)
-		   || slot));
+		   || (!DECL_MODULE_IMPORT_P (decl)
+		       && header_module_p ())));
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     gcc_assert (!note_defs->find_slot (DECL_TEMPLATE_RESULT (decl), NO_INSERT));

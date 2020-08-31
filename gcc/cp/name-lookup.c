@@ -277,7 +277,9 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 		init_global_partition (cluster, decl);
 	    }
 
-	  if (cluster[0].slots[MODULE_SLOT_GLOBAL])
+	  if (cluster[0].slots[MODULE_SLOT_GLOBAL]
+	      && !(TREE_CODE (orig) == NAMESPACE_DECL
+		   && !DECL_NAMESPACE_ALIAS (orig)))
 	    {
 	      /* Note that we had some GMF entries.  */
 	      if (!STAT_HACK_P (orig))
