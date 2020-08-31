@@ -72,7 +72,10 @@ module_resolver::read_tuple_file (int fd, char const *prefix, bool force)
   if (fstat (fd, &stat) < 0)
     return -errno;
 
-  // Just Map the file, we're gonna read all of it, so no need for
+  if (!stat.st_size)
+    return 0;
+
+  // Just map the file, we're gonna read all of it, so no need for
   // line buffering
   void *buffer = mmap (nullptr, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   if (buffer == MAP_FAILED)

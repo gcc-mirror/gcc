@@ -1,5 +1,10 @@
 2020-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* mapper.h (module_resolver): Default to no xlation.
+	* mapper-resolver.cc (module_resolver::read_tuple_file): Don't
+	fail on zero-length files.
+
 	Add control for default header translation rules.
 	gcc/cp/
 	* mapper-client.cc (module_client::open_module_client): Better

@@ -40,7 +40,7 @@ private:
   bool default_translate = true;
 
 public:
-  module_resolver (bool map = true, bool xlate = true);
+  module_resolver (bool map = true, bool xlate = false);
   virtual ~module_resolver () override;
 
 public:
