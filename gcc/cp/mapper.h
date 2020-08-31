@@ -36,16 +36,21 @@ private:
   std::string ident;
   module_map map;
   int fd_repo = -1;
-  bool provide_default = true;
+  bool default_map = true;
+  bool default_translate = true;
 
 public:
-  module_resolver (bool def = true);
+  module_resolver (bool map = true, bool xlate = true);
   virtual ~module_resolver () override;
 
 public:
-  void set_default (bool d)
+  void set_default_map (bool d)
   {
-    provide_default = d;
+    default_map = d;
+  }
+  void set_default_translate (bool d)
+  {
+    default_translate = d;
   }
   void set_ident (char const *i)
   {

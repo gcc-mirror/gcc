@@ -1,5 +1,23 @@
 2020-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	Add control for default header translation rules.
+	gcc/cp/
+	* mapper-client.cc (module_client::open_module_client): Better
+	error reporting.
+	* mapper-resolver.cc (module_resolver::module_resolver): Specify
+	default translate behavior.
+	(module_resolver::IncludeTranslateRequest): Check it.
+	* mapper-server.cc (flag_xlate): New.
+	(process_args): Rename -f->-m add -t
+	(main): Adjust.
+	* mapper.h (module_resolver): Add default_xlate field.
+	gcc/testsuite/
+	* g++.dg/modules/inc-xlate-1_e.C: Adjust.
+	* g++.dg/modules/legacy-2_b.H: Adjust.
+	* g++.dg/modules/legacy-6.map: Adjust.
+	* g++.dg/modules/legacy-6_[cd].C: Adjust.
+	* g++.dg/modules/map-2.C: Adjust.
+
 	gcc/cp/
 	* name-lookup.c (get_fixed_binding_slot): Don't stat-hack a
 	namespace.

@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #define MAPPER_FOR_GCC 1
 #include "mapper.h"
+#include "intl.h"
 
 module_client::module_client (pex_obj *p, int fd_from, int fd_to)
   : Client (fd_from, fd_to), pex (p)
@@ -113,6 +114,7 @@ module_client::open_module_client (location_t loc, const char *o,
   std::string ident;
   std::string name;
   char const *errmsg = nullptr;
+  unsigned line = 0;
 
   if (o && o[0])
     {
@@ -203,27 +205,31 @@ module_client::open_module_client (location_t loc, const char *o,
   if (!c)
     {
       // Make a default in-process client
-      auto r = new module_resolver ();
-      auto *s = new Cody::Server (r);
-      c = new module_client (s);
-      if (!errmsg && !name.empty ())
+      bool file = !errmsg && !name.empty ();
+      auto r = new module_resolver (!file, true);
+
+      if (file)
 	{
 	int fd = open (name.c_str (), O_RDONLY | O_CLOEXEC);
 	if (fd < 0)
 	  errmsg = "opening";
 	else
 	  {
-	    if (r->read_tuple_file (fd, ident, false))
-	      errmsg = "reading";
+	    if (int l = r->read_tuple_file (fd, ident, false))
+	      {
+		if (l > 0)
+		  line = l;
+		errmsg = "reading";
+	      }
 	      
 	    close (fd);
 	  }
 	}
       else
-	{
-	  r->set_repo ("gcm.cache");
-	  r->set_default (true);
-	}
+	r->set_repo ("gcm.cache");
+
+      auto *s = new Cody::Server (r);
+      c = new module_client (s);
     }
 
 #ifdef SIGPIPE
@@ -233,7 +239,8 @@ module_client::open_module_client (location_t loc, const char *o,
 #endif
 
   if (errmsg)
-    error_at (loc, "failed %s mapper %qs", errmsg, name.c_str ());
+    error_at (loc, line ? G_("failed %s mapper %qs line %u")
+	      : G_("failed %s mapper %qs"), errmsg, name.c_str (), line);
 
   // now wave hello!
   c->Cork ();

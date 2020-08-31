@@ -137,7 +137,10 @@ static bool flag_one = false;
 static bool flag_sequential = false;
 
 /* Fallback to default if map file is unrewarding.  */
-static bool flag_fallback = false;
+static bool flag_map = false;
+
+/* Fallback to xlate if map file is unrewarding.  */
+static bool flag_xlate = false;
 
 /* Root binary directory.  */
 static const char *flag_root = "gcm.cache";
@@ -331,18 +334,19 @@ process_args (int argc, char **argv)
   static const struct option options[] =
     {
      { "accept", required_argument, NULL, 'a' },
-     { "fallback",no_argument,	NULL, 'f' },
      { "help",	no_argument,	NULL, 'h' },
+     { "map",   no_argument,	NULL, 'm' },
      { "noisy",	no_argument,	NULL, 'n' },
      { "one",	no_argument,	NULL, '1' },
      { "root",	required_argument, NULL, 'r' },
      { "sequential", no_argument, NULL, 's' },
+     { "translate",no_argument,	NULL, 't' },
      { "version", no_argument,	NULL, 'v' },
      { 0, 0, 0, 0 }
     };
   int opt;
   bool bad_accept = false;
-  const char *opts = "a:fhn1r:sv";
+  const char *opts = "a:fhmn1r:stv";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -351,12 +355,13 @@ process_args (int argc, char **argv)
 	  if (!accept_from (optarg))
 	    bad_accept = true;
 	  break;
-	case 'f':
-	  flag_fallback = true;
-	  break;
 	case 'h':
 	  print_usage (false);
 	  /* print_usage will exit.  */
+	case 'f': // deprecated alias
+	case 'm':
+	  flag_map = true;
+	  break;
 	case 'n':
 	  flag_noisy = true;
 	  break;
@@ -368,6 +373,9 @@ process_args (int argc, char **argv)
 	  break;
 	case 's':
 	  flag_sequential = true;
+	  break;
+	case 't':
+	  flag_xlate = true;
 	  break;
 	case 'v':
 	  print_version ();
@@ -878,12 +886,9 @@ main (int argc, char *argv[])
 
   int argno = process_args (argc, argv);
 
-  module_resolver r;
-  if (flag_root)
-    r.set_repo (flag_root);
-
   std::string name;
   int sock_fd = -1; /* Socket fd, otherwise stdin/stdout.  */
+  module_resolver r (flag_map, flag_xlate);
 
   if (argno != argc)
     {
@@ -918,8 +923,10 @@ main (int argc, char *argv[])
 	  error ("failed reading '%s': %s", option.c_str (), xstrerror (err));
       }
   else
-    flag_fallback = true;
-  r.set_default (flag_fallback);
+    r.set_default_map (true);
+
+  if (flag_root)
+    r.set_repo (flag_root);
 
 #ifdef HAVE_AF_INET6
   netmask_set_t::iterator end = netmask_set.end ();

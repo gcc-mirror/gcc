@@ -1,4 +1,4 @@
-/* C++ modules.  Experimental!	-*- c++-mode -*-
+/* C++ modules.  Experimental!	-*- c++ -*-
    Copyright (C) 2017-2020 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
@@ -30,8 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/types.h>
 #include <sys/stat.h>
 
-module_resolver::module_resolver (bool def)
-  : provide_default (def)
+module_resolver::module_resolver (bool map, bool xlate)
+  : default_map (map), default_translate (xlate)
 {
 }
 
@@ -179,7 +179,7 @@ module_resolver::cmi_response (Cody::Server *s, std::string &module)
   if (iter == map.end ())
     {
       std::string file;
-      if (provide_default)
+      if (default_map)
 	file = std::move (GetCMIName (module));
       auto res = map.emplace (module, file);
       iter = res.first;
@@ -206,11 +206,10 @@ module_resolver::ModuleImportRequest (Cody::Server *s, std::string &module)
 }
 
 int
-module_resolver::IncludeTranslateRequest (Cody::Server *s,
-					      std::string &include)
+module_resolver::IncludeTranslateRequest (Cody::Server *s, std::string &include)
 {
   auto iter = map.find (include);
-  if (iter == map.end ())
+  if (iter == map.end () && default_translate)
     {
       // Not found, look for it
       if (fd_repo == -1 && !repo.empty ())
