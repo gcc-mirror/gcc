@@ -652,18 +652,50 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	 in region-model-impl-calls.cc.
 	 Having them split out into separate functions makes it easier
 	 to put breakpoints on the handling of specific functions.  */
-      if (is_named_call_p (callee_fndecl, "malloc", call, 1))
+
+      if (fndecl_built_in_p (callee_fndecl)
+	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
+	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
+	  {
+	  default:
+	    break;
+	  case BUILT_IN_ALLOCA:
+	  case BUILT_IN_ALLOCA_WITH_ALIGN:
+	    return impl_call_alloca (cd);
+	  case BUILT_IN_CALLOC:
+	    return impl_call_calloc (cd);
+	  case BUILT_IN_EXPECT:
+	  case BUILT_IN_EXPECT_WITH_PROBABILITY:
+	    return impl_call_builtin_expect (cd);
+	  case BUILT_IN_FREE:
+	    /* Handle in "on_call_post".  */
+	    break;
+	  case BUILT_IN_MALLOC:
+	    return impl_call_malloc (cd);
+	  case BUILT_IN_MEMSET:
+	    impl_call_memset (cd);
+	    return false;
+	    break;
+	  case BUILT_IN_STRLEN:
+	    if (impl_call_strlen (cd))
+	      return false;
+	    break;
+	  }
+      else if (gimple_call_internal_p (call))
+	switch (gimple_call_internal_fn (call))
+	  {
+	  default:
+	    break;
+	  case IFN_BUILTIN_EXPECT:
+	    return impl_call_builtin_expect (cd);
+	  }
+      else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	return impl_call_malloc (cd);
       else if (is_named_call_p (callee_fndecl, "calloc", call, 2))
 	return impl_call_calloc (cd);
-      else if (is_named_call_p (callee_fndecl, "__builtin_alloca", call, 1))
+      else if (is_named_call_p (callee_fndecl, "alloca", call, 1))
 	return impl_call_alloca (cd);
-      else if (gimple_call_builtin_p (call, BUILT_IN_EXPECT)
-	       || gimple_call_builtin_p (call, BUILT_IN_EXPECT_WITH_PROBABILITY)
-	       || gimple_call_internal_p (call, IFN_BUILTIN_EXPECT))
-	return impl_call_builtin_expect (cd);
-      else if (is_named_call_p (callee_fndecl, "memset", call, 3)
-	       || gimple_call_builtin_p (call, BUILT_IN_MEMSET))
+      else if (is_named_call_p (callee_fndecl, "memset", call, 3))
 	{
 	  impl_call_memset (cd);
 	  return false;
