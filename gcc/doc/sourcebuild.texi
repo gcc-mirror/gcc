@@ -1711,6 +1711,21 @@ Target supports AND, IOR and XOR reduction on vectors.
 
 @item vect_fold_extract_last
 Target supports the @code{fold_extract_last} optab.
+
+@item vect_len_load_store
+Target supports the @code{len_load} and @code{len_store} optabs.
+
+@item vect_partial_vectors_usage_1
+Target supports loop vectorization with partial vectors and
+@code{vect-partial-vector-usage} is set to 1.
+
+@item vect_partial_vectors_usage_2
+Target supports loop vectorization with partial vectors and
+@code{vect-partial-vector-usage} is set to 2.
+
+@item vect_partial_vectors
+Target supports loop vectorization with partial vectors and
+@code{vect-partial-vector-usage} is nonzero.
 @end table
 
 @subsubsection Thread Local Storage attributes

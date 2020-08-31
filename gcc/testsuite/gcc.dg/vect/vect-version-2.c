@@ -17,4 +17,8 @@ void foo (double *x, double *y, int m, int n, int o, int p)
 	  }
 }
 
-/* { dg-final { scan-tree-dump "reusing loop version created by if conversion" "vect" } } */
+/* Vectorization using partial vectors has zero versioning_threshold with
+   either usage 1 or usage 2, the cond_expr replies on the computation in
+   outer loop, so it doesn't need to reuse the loop version created by if
+   conversion.  */
+/* { dg-final { scan-tree-dump "reusing loop version created by if conversion" "vect" {target {! vect_partial_vectors } } } } */

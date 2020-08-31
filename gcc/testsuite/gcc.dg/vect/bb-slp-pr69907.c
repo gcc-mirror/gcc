@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3" } */
+/* Disable for vectorization using partial vectors since it would have only
+   one iteration left, consequently BB vectorization won't happen.  */
+/* { dg-additional-options "-O3 --param=vect-partial-vector-usage=0" } */
 /* { dg-require-effective-target vect_unpack } */
 
 #include "tree-vect.h"
