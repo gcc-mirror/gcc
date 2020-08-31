@@ -208,7 +208,7 @@ build_frontend_type (tree type)
 	break;
 
       dtype = dtype->sarrayOf (nunits)->addMod (mod);
-      if (dtype->nextOf ()->isTypeBasic () == NULL)
+      if (target.isVectorTypeSupported (dtype->size (), dtype->nextOf ()))
 	break;
 
       dtype = (TypeVector::create (dtype))->addMod (mod);
