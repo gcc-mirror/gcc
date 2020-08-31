@@ -1,6 +1,6 @@
 /* PR target/92658 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mavx512f" } */
+/* { dg-options "-O2 -ftree-vectorize -mavx512f -mprefer-vector-width=512" } */
 
 typedef unsigned char v8qi __attribute__((vector_size (8)));
 typedef unsigned char v16qi __attribute__((vector_size (16)));
