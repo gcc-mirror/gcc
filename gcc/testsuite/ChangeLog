@@ -1,3 +1,31 @@
+2020-08-30  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overread-3.c: New test.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/96728
+	* gfortran.dg/PR96728.f90: New test.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/96727
+	* gfortran.dg/PR96727.f90: New test.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/96726
+	* gfortran.dg/PR96726.f90: New test.
+
+2020-08-30  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	* gfortran.dg/PR95352.f90: New test.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94110
+	* gfortran.dg/PR94110.f90: New test.
+
 2020-08-28  Martin Sebor  <msebor@redhat.com>
 
 	* c-c++-common/Warray-bounds-7.c: Adjust expected warnings.

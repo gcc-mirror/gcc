@@ -1,3 +1,35 @@
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/96728
+	* module.c (module_peek_char): Peek ahead function.
+	(parse_integer): Add code for parsing signed integers.
+	(parse_atom): Add code to handle signed integers.
+	(peek_atom): Add code to handle signed integers.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/96727
+	* expr.c (gfc_check_init_expr): Add default error message for the AS_ASSUMED_RANK case.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/96726
+	* expr.c (check_references): Change different relational operator
+	to less-than operator to avoid infinite loop.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/95352
+	* simplify.c (simplify_bound_dim): Add check for NULL pointer
+	before trying to access structure member.
+
+2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94110
+	* interface.c (gfc_compare_actual_formal): Add code to also raise
+	the actual argument cannot be an assumed-size array error when the
+	dummy arguments are deferred-shape or assumed-rank pointer.
+
 2020-08-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94672

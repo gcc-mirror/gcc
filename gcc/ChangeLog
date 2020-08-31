@@ -1,3 +1,14 @@
+2020-08-30  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (access_ref::access_ref): Call get_size_range instead
+	of get_range.
+
+2020-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (ssse3_pshufbv8qi): Use gen_int_mode instead of
+	GEN_INT, and ix86_build_const_vector instead of gen_rtvec and
+	gen_rtx_CONT_VECTOR.
+
 2020-08-29  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (MASK_FOR_STORE): Remove.
