@@ -2554,7 +2554,9 @@ class region_model
   bool impl_call_calloc (const call_details &cd);
   void impl_call_free (const call_details &cd);
   bool impl_call_malloc (const call_details &cd);
+  void impl_call_memcpy (const call_details &cd);
   bool impl_call_memset (const call_details &cd);
+  void impl_call_strcpy (const call_details &cd);
   bool impl_call_strlen (const call_details &cd);
   bool impl_call_operator_new (const call_details &cd);
   bool impl_call_operator_delete (const call_details &cd);
