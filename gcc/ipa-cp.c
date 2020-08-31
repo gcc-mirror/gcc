@@ -5481,11 +5481,11 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 				   freq_sum, count_sum,
 				   val->local_size_cost)
       && !good_cloning_opportunity_p (node,
-				      val->local_time_benefit
-				      + val->prop_time_benefit,
+				      safe_add (val->local_time_benefit,
+						val->prop_time_benefit),
 				      freq_sum, count_sum,
-				      val->local_size_cost
-				      + val->prop_size_cost))
+				      safe_add (val->local_size_cost,
+						val->prop_size_cost)))
     return false;
 
   if (dump_file)
