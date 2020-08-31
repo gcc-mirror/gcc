@@ -115,9 +115,6 @@ Target::_init (const Param &)
 		   (TYPE_PRECISION (long_double_type_node) / BITS_PER_UNIT));
   this->realalignsize = TYPE_ALIGN_UNIT (long_double_type_node);
 
-  /* Size of run-time TypeInfo object.  */
-  this->classinfosize = 19 * this->ptrsize;
-
   /* Much of the dmd front-end uses ints for sizes and offsets, and cannot
      handle any larger data type without some pervasive rework.  */
   this->maxStaticDataSize = tree_to_shwi (TYPE_MAX_VALUE (integer_type_node));
