@@ -1,3 +1,19 @@
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96157
+	* gdc.dg/pr96157a.d: New test.
+	* gdc.dg/pr96157b.d: New test.
+
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/compilable/ice20092.d: New test.
+
 2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
 
 	* gcc.target/i386/double_mask_reg-1.c: New test.
