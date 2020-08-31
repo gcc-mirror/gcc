@@ -5340,6 +5340,15 @@ canonical_type_used_p (const_tree t)
 	   || TREE_CODE (t) == VECTOR_TYPE);
 }
 
+/* Kinds of access to pass-by-reference arguments to functions.  */
+enum access_mode
+{
+  access_none = 0,
+  access_read_only = 1,
+  access_write_only = 2,
+  access_read_write = access_read_only | access_write_only
+};
+
 #define tree_map_eq tree_map_base_eq
 extern unsigned int tree_map_hash (const void *);
 #define tree_map_marked_p tree_map_base_marked_p

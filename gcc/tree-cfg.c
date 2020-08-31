@@ -4809,17 +4809,7 @@ verify_gimple_switch (gswitch *stmt)
 	  return true;
 	}
 
-      if (elt_type)
-	{
-	  if (TREE_TYPE (CASE_LOW (elt)) != elt_type
-	      || (CASE_HIGH (elt) && TREE_TYPE (CASE_HIGH (elt)) != elt_type))
-	    {
-	      error ("type mismatch for case label in switch statement");
-	      debug_generic_expr (elt);
-	      return true;
-	    }
-	}
-      else
+      if (! elt_type)
 	{
 	  elt_type = TREE_TYPE (CASE_LOW (elt));
 	  if (TYPE_PRECISION (index_type) < TYPE_PRECISION (elt_type))
@@ -4827,6 +4817,13 @@ verify_gimple_switch (gswitch *stmt)
 	      error ("type precision mismatch in switch statement");
 	      return true;
 	    }
+	}
+      if (TREE_TYPE (CASE_LOW (elt)) != elt_type
+          || (CASE_HIGH (elt) && TREE_TYPE (CASE_HIGH (elt)) != elt_type))
+	{
+	  error ("type mismatch for case label in switch statement");
+	  debug_generic_expr (elt);
+	  return true;
 	}
 
       if (prev_upper_bound)

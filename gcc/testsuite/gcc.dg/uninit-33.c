@@ -27,7 +27,7 @@ void nowarn_scalar_plus_fpri (void)
   int i;
   /* This gets a -Wstringop-overflow for reading past the end but not
      -Wuninitialized because there's nothing to initialize there.  */
-  fpri (&i + 1);              // { dg-warning "\\\[-Wstringop-overflow" }
+  fpri (&i + 1);              // { dg-warning "\\\[-Wstringop-overread" }
 }
 
 void nowarn_array_assign_fpcri (void)

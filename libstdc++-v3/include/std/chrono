@@ -114,13 +114,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Rep, typename _Period>
     struct common_type<chrono::duration<_Rep, _Period>,
 		       chrono::duration<_Rep, _Period>>
-    { using type = chrono::duration<_Rep, typename _Period::type>; };
+    {
+      using type = chrono::duration<typename common_type<_Rep>::type,
+				    typename _Period::type>;
+    };
 
   /// Specialization of common_type for one chrono::duration type.
   /// @relates duration
   template<typename _Rep, typename _Period>
     struct common_type<chrono::duration<_Rep, _Period>>
-    { using type = chrono::duration<_Rep, typename _Period::type>; };
+    {
+      using type = chrono::duration<typename common_type<_Rep>::type,
+				    typename _Period::type>;
+    };
 
   // 20.11.4.3 specialization of common_type (for time_point, sfinae-friendly)
 
@@ -463,13 +469,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// 20.11.5.3 arithmetic
 
-	constexpr duration<rep, period>
+	constexpr duration<typename common_type<rep>::type, period>
 	operator+() const
-	{ return *this; }
+	{ return duration<typename common_type<rep>::type, period>(__r); }
 
-	constexpr duration<rep, period>
+	constexpr duration<typename common_type<rep>::type, period>
 	operator-() const
-	{ return duration(-__r); }
+	{ return duration<typename common_type<rep>::type, period>(-__r); }
 
 	_GLIBCXX17_CONSTEXPR duration&
 	operator++()

@@ -40,7 +40,7 @@ void strnlen_cst (void)
   T (NS, /* [] */, n);
   T (NS, /* [] */, n + 1);     /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 
-  T (NS, 9, n);                /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound" } */
+  T (NS, 9, n);                /* { dg-warning "specified bound \[0-9\]+ exceeds source size 9" } */
   T (NS, 10, n + 1);           /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 }
 
@@ -53,12 +53,12 @@ void strnlen_range (void)
   T (STR, /* [] */, n);
   T (STR, /* [] */, n + 1);    /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds maximum object size \[0-9\]+" } */
 
-  T (STR, 1, n);
+  T (STR, 1, n);               /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds source size 1" } */
   T (STR, 2, n + 1);           /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds maximum object size \[0-9\]+" } */
 
   T (NS, /* [] */, n);
   T (NS, /* [] */, n + 1);     /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds maximum object size \[0-9\]+" } */
 
-  T (NS, 9, n);                /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound" } */
+  T (NS, 9, n);                /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds source size 9" } */
   T (NS, 10, n + 1);           /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds maximum object size \[0-9\]+" } */
 }

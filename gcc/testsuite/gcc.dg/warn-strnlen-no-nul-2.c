@@ -62,5 +62,11 @@ void test (int n0)
 
   int n = n0 < n1 ? n1 : n0;
 
-  sink (strnlen (c + n, n + 1));    /* { dg-warning "specified bound \\\[5, \[0-9\]+] may exceed the size of at most 4 of unterminated array" } */
+  /* N is at least 4 and c[4] is out-of-bounds.  This could trigger
+     either -Warray-bounds or -Wstringop-overread.  -Warray-bounds
+     only diagnoses past-the-end accesses by modifying functions
+     (in gimple-ssa-warn-restrict.c) and even for those, either
+     -Wstringop-overflow or -Wstringop-overread would be more
+     appropriate.  */
+  sink (strnlen (c + n, n + 1));    /* { dg-warning "specified bound \\\[5, \[0-9\]+] exceeds the size of at most 4 of unterminated array" } */
 }

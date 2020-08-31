@@ -7081,6 +7081,67 @@ proc check_effective_target_vect_fully_masked { } {
 	           || [istarget amdgcn*-*-*] }]
 }
 
+# Return true if the target supports the @code{len_load} and
+# @code{len_store} optabs.
+
+proc check_effective_target_vect_len_load_store { } {
+    return 0
+}
+
+# Return the value of parameter vect-partial-vector-usage specified for
+# target by checking the output of "-Q --help=params".  Return zero if
+# the desirable pattern isn't found.
+
+proc check_vect_partial_vector_usage { } {
+    global tool
+
+    return [check_cached_effective_target vect_partial_vector_usage {
+      set result [check_compile vect_partial_vector_usage assembly {
+	  int i;
+      } "-Q --help=params" ]
+
+      # Get compiler emitted messages and delete generated file.
+      set lines [lindex $result 0]
+      set output [lindex $result 1]
+      remote_file build delete $output
+
+      set pattern {=vect-partial-vector-usage=<0,2>\s+([0-2])}
+      # Capture the usage value to val, set it to zero if not found.
+      if { ![regexp $pattern $lines whole val] } then {
+	  set val 0
+      }
+
+      return $val
+    }]
+}
+
+# Return true if the target supports loop vectorization with partial vectors
+# and @code{vect-partial-vector-usage} is set to 1.
+
+proc check_effective_target_vect_partial_vectors_usage_1 { } {
+    return [expr { ([check_effective_target_vect_fully_masked]
+		    || [check_effective_target_vect_len_load_store])
+		   && [check_vect_partial_vector_usage] == 1 }]
+}
+
+# Return true if the target supports loop vectorization with partial vectors
+# and @code{vect-partial-vector-usage} is set to 2.
+
+proc check_effective_target_vect_partial_vectors_usage_2 { } {
+    return [expr { ([check_effective_target_vect_fully_masked]
+		    || [check_effective_target_vect_len_load_store])
+		   && [check_vect_partial_vector_usage] == 2 }]
+}
+
+# Return true if the target supports loop vectorization with partial vectors
+# and @code{vect-partial-vector-usage} is nonzero.
+
+proc check_effective_target_vect_partial_vectors { } {
+    return [expr { ([check_effective_target_vect_fully_masked]
+		    || [check_effective_target_vect_len_load_store])
+		   && [check_vect_partial_vector_usage] != 0 }]
+}
+
 # Return 1 if the target doesn't prefer any alignment beyond element
 # alignment during vectorization.
 
