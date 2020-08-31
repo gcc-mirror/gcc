@@ -402,9 +402,11 @@ get_svalue_for_ctor_val (tree val, region_model_manager *mgr)
 }
 
 /* Bind values from CONSTRUCTOR to this map, relative to
-   PARENT_REG's relationship to its base region.  */
+   PARENT_REG's relationship to its base region.
+   Return true if successful, false if there was a problem (e.g. due
+   to hitting a complexity limit).  */
 
-void
+bool
 binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
 				   region_model_manager *mgr)
 {
@@ -423,18 +425,24 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
 	{
 	  tree min_index = TREE_OPERAND (index, 0);
 	  tree max_index = TREE_OPERAND (index, 1);
-	  apply_ctor_val_to_range (parent_reg, mgr, min_index, max_index, val);
+	  if (!apply_ctor_val_to_range (parent_reg, mgr,
+					min_index, max_index, val))
+	    return false;
 	  continue;
 	}
-      apply_ctor_pair_to_child_region (parent_reg, mgr, index, val);
+      if (!apply_ctor_pair_to_child_region (parent_reg, mgr, index, val))
+	return false;
     }
+  return true;
 }
 
 /* Bind the value VAL into the range of elements within PARENT_REF
    from MIN_INDEX to MAX_INDEX (including endpoints).
-   For use in handling RANGE_EXPR within a CONSTRUCTOR.  */
+   For use in handling RANGE_EXPR within a CONSTRUCTOR.
+   Return true if successful, false if there was a problem (e.g. due
+   to hitting a complexity limit).  */
 
-void
+bool
 binding_map::apply_ctor_val_to_range (const region *parent_reg,
 				      region_model_manager *mgr,
 				      tree min_index, tree max_index,
@@ -469,12 +477,15 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
 
   /* Bind the value to the range.  */
   put (range_key, sval);
+  return true;
 }
 
 /* Bind the value VAL into INDEX within PARENT_REF.
-   For use in handling a pair of entries within a CONSTRUCTOR.  */
+   For use in handling a pair of entries within a CONSTRUCTOR.
+   Return true if successful, false if there was a problem (e.g. due
+   to hitting a complexity limit).  */
 
-void
+bool
 binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 					      region_model_manager *mgr,
 					      tree index, tree val)
@@ -482,7 +493,7 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
   const region *child_reg
     = get_subregion_within_ctor (parent_reg, index, mgr);
   if (TREE_CODE (val) == CONSTRUCTOR)
-    apply_ctor_to_region (child_reg, val, mgr);
+    return apply_ctor_to_region (child_reg, val, mgr);
   else
     {
       const svalue *sval = get_svalue_for_ctor_val (val, mgr);
@@ -502,7 +513,8 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 	  bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
 	  /* Get offset of child relative to base region.  */
 	  region_offset child_base_offset = child_reg->get_offset ();
-	  gcc_assert (!child_base_offset.symbolic_p ());
+	  if (child_base_offset.symbolic_p ())
+	    return false;
 	  /* Convert to an offset relative to the parent region.  */
 	  region_offset parent_base_offset = parent_reg->get_offset ();
 	  gcc_assert (!parent_base_offset.symbolic_p ());
@@ -515,6 +527,7 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 	}
       gcc_assert (k->concrete_p ());
       put (k, sval);
+      return true;
     }
 }
 

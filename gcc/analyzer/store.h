@@ -340,15 +340,15 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
-  void apply_ctor_to_region (const region *parent_reg, tree ctor,
+  bool apply_ctor_to_region (const region *parent_reg, tree ctor,
 			     region_model_manager *mgr);
 
 private:
-  void apply_ctor_val_to_range (const region *parent_reg,
+  bool apply_ctor_val_to_range (const region *parent_reg,
 				region_model_manager *mgr,
 				tree min_index, tree max_index,
 				tree val);
-  void apply_ctor_pair_to_child_region (const region *parent_reg,
+  bool apply_ctor_pair_to_child_region (const region *parent_reg,
 					region_model_manager *mgr,
 					tree index, tree val);
 

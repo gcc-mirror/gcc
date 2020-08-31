@@ -904,7 +904,8 @@ decl_region::get_svalue_for_constructor (tree ctor,
      decl_region as the base region when building child regions
      for offset calculations.  */
   binding_map map;
-  map.apply_ctor_to_region (this, ctor, mgr);
+  if (!map.apply_ctor_to_region (this, ctor, mgr))
+    return mgr->get_or_create_unknown_svalue (get_type ());
 
   /* Return a compound svalue for the map we built.  */
   return mgr->get_or_create_compound_svalue (get_type (), map);
