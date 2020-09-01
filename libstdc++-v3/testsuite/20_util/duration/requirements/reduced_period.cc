@@ -151,11 +151,11 @@ struct Number
   Number& operator/=(Number n) { i /= n.i; return *this; }
   Number& operator%=(Number n) { i %= n.i; return *this; }
 
-  Number operator+(Number n) { return { i + n.i }; }
-  Number operator-(Number n) { return { i - n.i }; }
-  Number operator*(Number n) { return { i * n.i }; }
-  Number operator/(Number n) { return { i / n.i }; }
-  Number operator%(Number n) { return { i % n.i }; }
+  Number operator+(Number n) { return Number{ i + n.i }; }
+  Number operator-(Number n) { return Number{ i - n.i }; }
+  Number operator*(Number n) { return Number{ i * n.i }; }
+  Number operator/(Number n) { return Number{ i / n.i }; }
+  Number operator%(Number n) { return Number{ i % n.i }; }
 };
 
 namespace std
