@@ -1408,7 +1408,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap setlocale \
-	gcc_UNLOCKED_FUNCS madvise mallinfo)
+	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1488,7 +1488,7 @@ gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
 #endif
 ])
 
-gcc_AC_CHECK_DECLS(mallinfo, , ,[
+gcc_AC_CHECK_DECLS([mallinfo, mallinfo2], , ,[
 #include "ansidecl.h"
 #include "system.h"
 #ifdef HAVE_MALLOC_H

@@ -1008,13 +1008,19 @@ ggc_prune_overhead_list (void)
       }
 }
 
-/* Return memory used by heap in kb, 0 if this info is not available.  */
+/* Print memory used by heap in kb if this info is available.  */
 
 void
 report_heap_memory_use ()
 {
-#ifdef HAVE_MALLINFO
+#if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
+#ifdef HAVE_MALLINFO2
+  #define MALLINFO_FN mallinfo2
+#else
+  #define MALLINFO_FN mallinfo
+#endif
   if (!quiet_flag)
-    fprintf (stderr," {heap %luk}", (unsigned long)(mallinfo().arena / 1024));
+    fprintf (stderr," {heap %luk}",
+	     (unsigned long) MALLINFO_FN ().arena / ONE_K);
 #endif
 }

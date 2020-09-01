@@ -732,7 +732,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 
 #ifdef INCLUDE_MALLOC_H
-#ifdef HAVE_MALLINFO
+#if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
 #include <malloc.h>
 #endif
 #endif
