@@ -2199,6 +2199,26 @@ PowerPC target supports executing AltiVec instructions.
 
 @item vsx_hw
 PowerPC target supports executing VSX instructions (ISA 2.06).
+
+@item has_arch_pwr5
+PowerPC target pre-defines macro _ARCH_PWR5 which means the @code{-mcpu}
+setting is Power5 or later.
+
+@item has_arch_pwr6
+PowerPC target pre-defines macro _ARCH_PWR6 which means the @code{-mcpu}
+setting is Power6 or later.
+
+@item has_arch_pwr7
+PowerPC target pre-defines macro _ARCH_PWR7 which means the @code{-mcpu}
+setting is Power7 or later.
+
+@item has_arch_pwr8
+PowerPC target pre-defines macro _ARCH_PWR8 which means the @code{-mcpu}
+setting is Power8 or later.
+
+@item has_arch_pwr9
+PowerPC target pre-defines macro _ARCH_PWR9 which means the @code{-mcpu}
+setting is Power9 or later.
 @end table
 
 @subsubsection Other hardware attributes
