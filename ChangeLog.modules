@@ -1,5 +1,9 @@
 2020-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* lang-specs.h: c++headers always do directives-only preprocessing
+	in modules mode.
+
 	Deal with running out of locations.
 	gcc/cp/
 	* module.cc (module_state::read_prepare_maps): New.
