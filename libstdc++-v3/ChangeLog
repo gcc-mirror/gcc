@@ -1,3 +1,23 @@
+2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71960
+	* include/experimental/string_view (basic_string_view):
+	Enable debug assertions.
+	* include/std/string_view (basic_string_view):
+	Likewise.
+
+2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96766
+	* include/std/variant (_Variant_storage): Replace implicit
+	conversions from size_t to __index_type with explicit casts.
+
 2020-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

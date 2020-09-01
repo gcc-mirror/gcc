@@ -1910,10 +1910,10 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      targ = build2 (COMPOUND_EXPR, TREE_TYPE (t), targ, t);
 	    }
 
-	  /* Parameter is a struct passed by invisible reference.  */
+	  /* Parameter is a struct or array passed by invisible reference.  */
 	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
 	    {
-	      Type *t = arg->type->toBasetype ();
+	      Type *t = arg->type->toBasetype ()->baseElemOf ();
 	      gcc_assert (t->ty == Tstruct);
 	      StructDeclaration *sd = ((TypeStruct *) t)->sym;
 

@@ -931,6 +931,11 @@ create_access (tree expr, gimple *stmt, bool write)
     }
   if (size == 0)
     return NULL;
+  if (offset < 0)
+    {
+      disqualify_candidate (base, "Encountered a negative offset access.");
+      return NULL;
+    }
   if (size < 0)
     {
       disqualify_candidate (base, "Encountered an unconstrained access.");
@@ -1667,6 +1672,7 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 		     struct access *model, gimple_stmt_iterator *gsi,
 		     bool insert_after)
 {
+  gcc_assert (offset >= 0);
   if (TREE_CODE (model->expr) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (model->expr, 1)))
     {

@@ -1,3 +1,40 @@
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96157
+	* d-codegen.cc (d_build_call): Handle TREE_ADDRESSABLE static arrays.
+	* types.cc (make_array_type): Propagate TREE_ADDRESSABLE from base
+	type to static array.
+
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/globals.h (Global): Add recursionLimit.
+	* dmd/dmacro.c (Macro::expand): Limit recursive expansion to
+	global.recursionLimit.
+	* dmd/dtemplate.c (deduceType): Likewise.
+	(TemplateInstance::tryExpandMembers): Likewise.
+	(TemplateInstance::trySemantic3): Likewise.
+	(TemplateMixin::semantic): Likewise.
+	* dmd/expressionsem.c (ExpressionSemanticVisitor::visit): Likewise.
+	* dmd/mtype.c (Type::noMember): Likewise.
+	(TypeFunction::semantic): Likewise.
+	* dmd/optimize.c (Expression_optimize): Likewise.
+
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_parse_file): Use read() to load contents from stdin,
+	allow the front-end to free the memory after parsing.
+	* dmd/func.c (FuncDeclaration::semantic): Use module filename if
+	searchPath returns NULL.
+
 2020-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/96250

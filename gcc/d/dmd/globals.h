@@ -236,6 +236,8 @@ struct Global
 
     void* console;         // opaque pointer to console for controlling text attributes
 
+    enum { recursionLimit = 500 }; // number of recursive template expansions before abort
+
     /* Start gagging. Return the current number of gagged errors
      */
     unsigned startGagging();

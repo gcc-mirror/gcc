@@ -1,3 +1,130 @@
+2020-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96854
+	* gcc.dg/vect/pr96854.c: New testcase.
+
+2020-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-pr96551-1.c: New test.
+	* gcc.target/i386/avx512f-pr96551-2.c: New test.
+
+2020-08-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-08-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/94672
+	* gfortran.dg/optional_assumed_charlen_2.f90: New test.
+
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96157
+	* gdc.dg/pr96157a.d: New test.
+	* gdc.dg/pr96157b.d: New test.
+
+2020-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/compilable/ice20092.d: New test.
+
+2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
+
+	* gcc.target/i386/double_mask_reg-1.c: New test.
+
+2020-08-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.target/hppa/shadd-2.c: Adjust times to 4.
+
+2020-08-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95882
+	* gfortran.dg/pr95882_1.f90: New test.
+	* gfortran.dg/pr95882_2.f90: New test.
+	* gfortran.dg/pr95882_3.f90: New test.
+	* gfortran.dg/pr95882_4.f90: New test.
+	* gfortran.dg/pr95882_5.f90: New test.
+
+2020-08-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	* gcc.target/arm/pure-code/pr94538-1.c: New test.
+	* gcc.target/arm/pure-code/pr94538-2.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* g++.dg/opt/pr96722.C: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* gcc.dg/strcmpopt_12.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* gcc.target/powerpc/pr95450.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96571
+	* gcc.dg/Wunused-var-4.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96545
+	* c-c++-common/pr96545.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96549
+	* gcc.c-torture/execute/pr96549.c: New test.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96497
+	* g++.dg/cpp2a/spaceship-constexpr3.C: New test.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* gcc.dg/tree-ssa/pr96730.c: New test.
+
 2020-08-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/other/final8.C: Adjust expected output.

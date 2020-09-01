@@ -6416,9 +6416,32 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(ashift:DI (match_operand:DI 1 "lhs_lshift_operand" "")
 		   (match_operand:DI 2 "arith32_operand" "")))]
-  "TARGET_64BIT"
+  ""
   "
 {
+  if (!TARGET_64BIT)
+    {
+      if (REG_P (operands[0]) && GET_CODE (operands[2]) == CONST_INT)
+	{
+	  unsigned HOST_WIDE_INT shift = UINTVAL (operands[2]);
+	  if (shift >= 1 && shift <= 31)
+	    {
+	      rtx dst = operands[0];
+	      rtx src = force_reg (DImode, operands[1]);
+	      emit_insn (gen_shd_internal (gen_highpart (SImode, dst),
+					   gen_lowpart (SImode, src),
+					   GEN_INT (32-shift),
+					   gen_highpart (SImode, src),
+					   GEN_INT (shift)));
+	      emit_insn (gen_ashlsi3 (gen_lowpart (SImode, dst),
+				      gen_lowpart (SImode, src),
+				      GEN_INT (shift)));
+	      DONE;
+	    }
+	}
+      /* Fallback to using optabs.c's expand_doubleword_shift.  */
+      FAIL;
+    }
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       rtx temp = gen_reg_rtx (DImode);
@@ -6704,6 +6727,15 @@
   "{shd|shrpw} %1,%2,%4,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
+
+(define_expand "shd_internal"
+  [(set (match_operand:SI 0 "register_operand")
+	(ior:SI
+	  (lshiftrt:SI (match_operand:SI 1 "register_operand")
+		       (match_operand:SI 2 "const_int_operand"))
+	  (ashift:SI (match_operand:SI 3 "register_operand")
+		     (match_operand:SI 4 "const_int_operand"))))]
+  "")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")

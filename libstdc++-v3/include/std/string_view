@@ -207,8 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       operator[](size_type __pos) const noexcept
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(__pos < this->_M_len);
+	__glibcxx_assert(__pos < this->_M_len);
 	return *(this->_M_str + __pos);
       }
 
@@ -225,16 +224,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       front() const noexcept
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(this->_M_len > 0);
+	__glibcxx_assert(this->_M_len > 0);
 	return *this->_M_str;
       }
 
       constexpr const_reference
       back() const noexcept
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(this->_M_len > 0);
+	__glibcxx_assert(this->_M_len > 0);
 	return *(this->_M_str + this->_M_len - 1);
       }
 

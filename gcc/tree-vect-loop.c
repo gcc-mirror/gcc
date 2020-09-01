@@ -7867,6 +7867,11 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
+  /* Due to how we generate code for SLP_TREE_TWO_OPERATORS we cannot
+     vectorize live operations out of it.  */
+  if (slp_node && SLP_TREE_TWO_OPERATORS (slp_node))
+    return false;
+
   /* If a stmt of a reduction is live, vectorize it via
      vect_create_epilog_for_reduction.  vectorizable_reduction assessed
      validity so just trigger the transform here.  */

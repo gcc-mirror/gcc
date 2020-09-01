@@ -116,6 +116,12 @@ split_double_mode (machine_mode mode, rtx operands[],
     case E_DImode:
       half_mode = SImode;
       break;
+    case E_P2HImode:
+      half_mode = HImode;
+      break;
+    case E_P2QImode:
+      half_mode = QImode;
+      break;
     default:
       gcc_unreachable ();
     }

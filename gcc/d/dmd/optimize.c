@@ -19,6 +19,7 @@
 #include "init.h"
 #include "enum.h"
 #include "ctfe.h"
+#include "errors.h"
 
 Expression *semantic(Expression *e, Scope *sc);
 
@@ -1256,10 +1257,18 @@ Expression *Expression_optimize(Expression *e, int result, bool keepLvalue)
     v.ret = e;
 
     // Optimize the expression until it can no longer be simplified.
-    while (ex != v.ret)
+    size_t b = 0;
+    while (1)
     {
+        if (b++ == global.recursionLimit)
+        {
+            e->error("infinite loop while optimizing expression");
+            fatal();
+        }
         ex = v.ret;
         ex->accept(&v);
+        if (ex == v.ret)
+            break;
     }
     return ex;
 }

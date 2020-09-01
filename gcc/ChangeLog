@@ -1,3 +1,159 @@
+2020-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96854
+	* tree-vect-loop.c (vectorizable_live_operation): Disallow
+	SLP_TREE_TWO_OPERATORS nodes.
+
+2020-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96551
+	* config/i386/sse.md (vec_unpacku_float_hi_v16si): For vector
+	compare to integer mask, don't use gen_rtx_LT, use
+	ix86_expand_mask_vec_cmp instead.
+	(vec_unpacku_float_hi_v16si): Ditto.
+
+2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
+
+	PR target/96744
+	* config/i386/i386-expand.c (split_double_mode): Also handle
+	E_P2HImode and E_P2QImode.
+	* config/i386/sse.md (MASK_DWI): New define_mode_iterator.
+	(mov<mode>): New expander for P2HI,P2QI.
+	(*mov<mode>_internal): New define_insn_and_split to split
+	movement of P2QI/P2HI to 2 movqi/movhi patterns after reload.
+
+2020-08-28  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c (ix86_handle_option): Set
+	AVX512DQ when AVX512VP2INTERSECT exists.
+
+2020-08-27  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: (BU_P10V_VSX_1) New builtin
+	macro expansion.
+	(XVCVBF16SPN, XVCVSPBF16): Replace macro expansion BU_VSX_1 with
+	BU_P10V_VSX_1.
+	* config/rs6000/rs6000-call.c: (VSX_BUILTIN_XVCVSPBF16,
+	VSX_BUILTIN_XVCVBF16SPN): Replace with P10V_BUILTIN_XVCVSPBF16,
+	P10V_BUILTIN_XVCVBF16SPN respectively.
+
+2020-08-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-08-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/94538
+	PR target/94538
+	* config/arm/thumb1.md: Disable set-constant splitter when
+	TARGET_HAVE_MOVT.
+	(thumb1_movsi_insn): Fix -mpure-code
+	alternative.
+
+2020-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/87256
+	* config/pa/pa.c (hppa_rtx_costs_shadd_p): New helper function
+	to check for coefficients supported by shNadd and shladd,l.
+	(hppa_rtx_costs):  Rewrite to avoid using estimates based upon
+	FACTOR and enable recursing deeper into RTL expressions.
+	* config/pa/pa.md (shd_internal): Fix define_expand to provide
+	gen_shd_internal.
+
+2020-08-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/pa/pa.md (ashldi3): Additionally, on !TARGET_64BIT
+	generate a two instruction shd/zdep sequence when shifting
+	registers by suitable constants.
+	(shd_internal): New define_expand to provide gen_shd_internal.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* gimple.c (infer_nonnull_range): Formatting fix.
+	(infer_nonnull_range_by_dereference): Return false for clobber stmts.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96758
+	* tree-ssa-strlen.c (handle_builtin_string_cmp): If both cstlen1
+	and cstlen2 are set, set cmpsiz to their minimum, otherwise use the
+	one that is set.  If bound is used and smaller than cmpsiz, set cmpsiz
+	to bound.  If both cstlen1 and cstlen2 are set, perform the optimization.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95450
+	* fold-const.c (native_interpret_real): For MODE_COMPOSITE_P modes
+	punt if the to be returned REAL_CST does not encode to the bitwise
+	same representation.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96535
+	* toplev.c (process_options): Move flag_unroll_loops and
+	flag_cunroll_grow_size handling from here to ...
+	* opts.c (finish_options): ... here.  For flag_cunroll_grow_size,
+	don't check for AUTODETECT_VALUE, but instead check
+	opts_set->x_flag_cunroll_grow_size.
+	* common.opt (funroll-completely-grow-size): Default to 0.
+	* config/rs6000/rs6000.c (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE):
+	Redefine.
+	(rs6000_override_options_after_change): New function.
+	(rs6000_option_override_internal): Call it.  Move there the
+	flag_cunroll_grow_size, unroll_only_small_loops and
+	flag_rename_registers handling.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96549
+	* tree.c (get_narrower): Use TREE_TYPE (ret) instead of
+	TREE_TYPE (win) for COMPOUND_EXPRs.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93553
+	* tree-nested.c (convert_nonlocal_omp_clauses): For
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_LASTPRIVATE and OMP_CLAUSE_LINEAR
+	save info->new_local_var_chain around walks of the clause gimple
+	sequences and declare_vars if needed into the sequence.
+
+2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96459
+	* omp-low.c (lower_omp_taskreg): Call lower_reduction_clauses even in
+	for host teams.
+
+2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-08-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96730
+	* tree-sra.c (create_access): Disqualify any aggregate with negative
+	offset access.
+	(build_ref_for_model): Add assert that offset is non-negative.
+
 2020-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
