@@ -248,17 +248,22 @@ package body Exp_SPARK is
                Index_Typ := First_Index (Typ);
 
                while Present (Index) loop
-                  --  The index denotes a range of elements
+                  --  If the index denotes a range of elements or a constrained
+                  --  subtype indication, then their low and high bounds
+                  --  already have range checks applied.
 
-                  if Nkind (Index) = N_Range then
-                     Apply_Scalar_Range_Check
-                       (Low_Bound  (Index), Base_Type (Etype (Index_Typ)));
-                     Apply_Scalar_Range_Check
-                       (High_Bound (Index), Base_Type (Etype (Index_Typ)));
+                  if Nkind (Index) in N_Range | N_Subtype_Indication then
+                     null;
 
-                  --  Otherwise the index denotes a single element
+                  --  Otherwise the index denotes a single expression where
+                  --  range checks need to be applied or a subtype name
+                  --  (without range constraints) where applying checks is
+                  --  harmless.
+                  --
+                  --  In delta_aggregate and Update attribute on array the
+                  --  others_choice is not allowed.
 
-                  else
+                  else pragma Assert (Nkind (Index) in N_Subexpr);
                      Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
                   end if;
 
