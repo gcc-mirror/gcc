@@ -724,7 +724,7 @@ vec_free (vec<T, A, vl_embed> *&v)
 template<typename T, typename A>
 inline void
 vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len,
-	       bool exact CXX_MEM_STAT_INFO)
+	       bool exact = false CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   gcc_checking_assert (len >= oldlen);
@@ -737,7 +737,7 @@ vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len,
 template<typename T, typename A>
 inline void
 vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len,
-		       bool exact CXX_MEM_STAT_INFO)
+		       bool exact = false CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   vec_safe_grow (v, len, exact PASS_MEM_STAT);
@@ -750,7 +750,7 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len,
 template<typename T>
 inline void
 vec_safe_grow_cleared (vec<T, va_heap, vl_ptr> *&v,
-		       unsigned len, bool exact CXX_MEM_STAT_INFO)
+		       unsigned len, bool exact = false CXX_MEM_STAT_INFO)
 {
   v->safe_grow_cleared (len, exact PASS_MEM_STAT);
 }
@@ -1467,8 +1467,8 @@ public:
   T *safe_push (const T &CXX_MEM_STAT_INFO);
   T &pop (void);
   void truncate (unsigned);
-  void safe_grow (unsigned, bool CXX_MEM_STAT_INFO);
-  void safe_grow_cleared (unsigned, bool CXX_MEM_STAT_INFO);
+  void safe_grow (unsigned, bool = false CXX_MEM_STAT_INFO);
+  void safe_grow_cleared (unsigned, bool = false CXX_MEM_STAT_INFO);
   void quick_grow (unsigned);
   void quick_grow_cleared (unsigned);
   void quick_insert (unsigned, const T &);

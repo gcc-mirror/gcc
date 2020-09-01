@@ -9011,7 +9011,9 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
       if (*nelts == error_mark_node)
 	*nelts = integer_one_node;
 
-      if (outer_declarator)
+      if (*nelts == NULL_TREE)
+	/* Leave [] in the declarator.  */;
+      else if (outer_declarator)
 	outer_declarator->declarator = declarator->declarator;
       else
 	new_declarator = NULL;
@@ -9072,6 +9074,7 @@ static cp_declarator *
 cp_parser_direct_new_declarator (cp_parser* parser)
 {
   cp_declarator *declarator = NULL;
+  bool first_p = true;
 
   while (true)
     {
@@ -9082,14 +9085,17 @@ cp_parser_direct_new_declarator (cp_parser* parser)
       cp_parser_require (parser, CPP_OPEN_SQUARE, RT_OPEN_SQUARE);
 
       token = cp_lexer_peek_token (parser->lexer);
-      expression = cp_parser_expression (parser);
+      if (token->type == CPP_CLOSE_SQUARE && first_p)
+	expression = NULL_TREE;
+      else
+	expression = cp_parser_expression (parser);
       /* The standard requires that the expression have integral
 	 type.  DR 74 adds enumeration types.  We believe that the
 	 real intent is that these expressions be handled like the
 	 expression in a `switch' condition, which also allows
 	 classes with a single conversion to integral or
 	 enumeration type.  */
-      if (!processing_template_decl)
+      if (expression && !processing_template_decl)
 	{
 	  expression
 	    = build_expr_type_conversion (WANT_INT | WANT_ENUM,
@@ -9114,6 +9120,7 @@ cp_parser_direct_new_declarator (cp_parser* parser)
 	 bounds.  */
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_SQUARE))
 	break;
+      first_p = false;
     }
 
   return declarator;

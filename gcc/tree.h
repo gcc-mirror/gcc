@@ -4407,6 +4407,7 @@ extern void verify_constructor_flags (tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
+extern tree build_constructor_from_vec (tree, const vec<tree, va_gc> *);
 extern tree build_constructor_va (tree, int, ...);
 extern tree build_clobber (tree);
 extern tree build_real_from_int_cst (tree, const_tree);

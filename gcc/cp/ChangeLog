@@ -1,3 +1,20 @@
+2020-08-31  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/93529
+	* call.c (build_new_method_call_1): Use build_constructor_from_vec
+	instead of build_tree_list_vec + build_constructor_from_list.
+	* init.c (build_new_1): Handle new char[]{"foo"}.  Use
+	build_constructor_from_vec instead of build_tree_list_vec +
+	build_constructor_from_list.
+	(build_new): Deduce the array size in new-expression if not
+	present.  Handle ()-init.  Handle initializing an array from
+	a string literal.
+	* parser.c (cp_parser_new_type_id): Leave [] alone.
+	(cp_parser_direct_new_declarator): Allow [].
+	* pt.c (type_dependent_expression_p): In a NEW_EXPR, consider
+	array types whose dimension has to be deduced type-dependent.
+
 2020-08-27  Martin Liska  <mliska@suse.cz>
 
 	* class.c (build_vtbl_initializer): Set exact argument of a vector

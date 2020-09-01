@@ -1085,10 +1085,11 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 
 static void
 duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
-			   int to_stage, rtx count_reg)
+			   int to_stage, rtx count_reg, class loop *loop)
 {
   int row;
   ps_insn_ptr ps_ij;
+  copy_bb_data id;
 
   for (row = 0; row < ps->ii; row++)
     for (ps_ij = ps->rows[row]; ps_ij; ps_ij = ps_ij->next_in_row)
@@ -1113,7 +1114,8 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 	if (from_stage <= last_u && to_stage >= first_u)
 	  {
 	    if (u < ps->g->num_nodes)
-	      duplicate_insn_chain (ps_first_note (ps, u), u_insn);
+	      duplicate_insn_chain (ps_first_note (ps, u), u_insn,
+				    loop, &id);
 	    else
 	      emit_insn (copy_rtx (PATTERN (u_insn)));
 	  }
@@ -1151,7 +1153,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, class loop *loop,
     }
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, 0, i, count_reg);
+    duplicate_insns_of_cycles (ps, 0, i, count_reg, loop);
 
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
@@ -1165,7 +1167,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, class loop *loop,
   start_sequence ();
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, i + 1, last_stage, count_reg);
+    duplicate_insns_of_cycles (ps, i + 1, last_stage, count_reg, loop);
 
   /* Put the epilogue on the exit edge.  */
   gcc_assert (single_exit (loop));

@@ -68,6 +68,20 @@ void test_5 (int n)
   __analyzer_eval (buf[42] == '\0'); /* { dg-warning "UNKNOWN" } */
 }
 
+/* As test_5, but with "__builtin___memset_chk".  */
+
+void test_5a (int n)
+{
+  char buf[256];
+  buf[42] = 'A';
+  __analyzer_eval (buf[42] == 'A'); /* { dg-warning "TRUE" } */
+  __builtin___memset_chk (buf, 0, n, __builtin_object_size (buf, 0));
+
+  /* We can't know if buf[42] was written to or not.  */
+  __analyzer_eval (buf[42] == 'A'); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (buf[42] == '\0'); /* { dg-warning "UNKNOWN" } */
+}
+
 /* A "memset" with unknown value, but with zero size.  */
 
 static size_t __attribute__((noinline))

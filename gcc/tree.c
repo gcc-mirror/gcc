@@ -2123,6 +2123,21 @@ build_constructor_from_list (tree type, tree vals)
   return build_constructor (type, v);
 }
 
+/* Return a new CONSTRUCTOR node whose type is TYPE and whose values
+   are in a vector pointed to by VALS.  Note that the TREE_PURPOSE
+   fields in the constructor remain null.  */
+
+tree
+build_constructor_from_vec (tree type, const vec<tree, va_gc> *vals)
+{
+  vec<constructor_elt, va_gc> *v = NULL;
+
+  for (tree t : *vals)
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, t);
+
+  return build_constructor (type, v);
+}
+
 /* Return a new CONSTRUCTOR node whose type is TYPE.  NELTS is the number
    of elements, provided as index/value pairs.  */
 
