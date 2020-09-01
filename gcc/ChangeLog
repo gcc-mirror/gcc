@@ -1,3 +1,17 @@
+2020-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96854
+	* tree-vect-loop.c (vectorizable_live_operation): Disallow
+	SLP_TREE_TWO_OPERATORS nodes.
+
+2020-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96551
+	* config/i386/sse.md (vec_unpacku_float_hi_v16si): For vector
+	compare to integer mask, don't use gen_rtx_LT, use
+	ix86_expand_mask_vec_cmp instead.
+	(vec_unpacku_float_hi_v16si): Ditto.
+
 2020-08-28  Uros Bizjak    <ubizjak@gmail.com>
 
 	PR target/96744
