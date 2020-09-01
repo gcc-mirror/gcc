@@ -477,19 +477,16 @@ namespace std
     __builtin_abort();
   }
 }
-#define __glibcxx_assert_impl(_Condition)				 \
-  do 									 \
-  {							      		 \
-    if (! (_Condition))                                                  \
-      std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
-				#_Condition);				 \
-  } while (false)
+#define __glibcxx_assert_impl(_Condition)			       \
+  if (!bool(_Condition))					       \
+    std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
+			      #_Condition)
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-# define __glibcxx_assert(_Condition) __glibcxx_assert_impl(_Condition)
+# define __glibcxx_assert_2(_Condition) __glibcxx_assert_impl(_Condition)
 #else
-# define __glibcxx_assert(_Condition)
+# define __glibcxx_assert_2(_Condition)
 #endif
 
 // Macros for race detectors.
@@ -682,6 +679,26 @@ namespace std
 #  define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same(T, U)
 # endif
 #endif // GCC
+
+#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+# define __glibcxx_assert_1(_Condition)		\
+    if (__builtin_is_constant_evaluated())	\
+     {						\
+       void __failed_assertion();	\
+       if (!bool(_Condition))			\
+	 __failed_assertion();	\
+     }						\
+    else
+#else
+# define __glibcxx_assert_1(_Condition)
+#endif
+
+# define __glibcxx_assert(_Condition)	  \
+  do {					  \
+    __glibcxx_assert_1(_Condition)	  \
+    { __glibcxx_assert_2(_Condition); }   \
+  } while (false)
+
 
 // PSTL configuration
 

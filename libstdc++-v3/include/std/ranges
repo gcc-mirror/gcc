@@ -860,9 +860,7 @@ namespace ranges
       : _M_value(__value), _M_bound(__bound)
       {
 	if constexpr (totally_ordered_with<_Winc, _Bound>)
-	  {
-	    __glibcxx_assert( bool(__value <= __bound) );
-	  }
+	  __glibcxx_assert( bool(__value <= __bound) );
       }
 
       constexpr _Iterator

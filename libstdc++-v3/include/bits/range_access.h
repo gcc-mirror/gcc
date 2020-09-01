@@ -987,10 +987,7 @@ namespace ranges
 	}
       else
 	{
-#ifdef __cpp_lib_is_constant_evaluated
-	  if (std::is_constant_evaluated() && __n < 0)
-	    throw "attempt to decrement a non-bidirectional iterator";
-#endif
+	  // cannot decrement a non-bidirectional iterator
 	  __glibcxx_assert(__n >= 0);
 	  while (__n-- > 0)
 	    ++__it;
@@ -1065,10 +1062,7 @@ namespace ranges
 	}
       else
 	{
-#ifdef __cpp_lib_is_constant_evaluated
-	  if (std::is_constant_evaluated() && __n < 0)
-	    throw "attempt to decrement a non-bidirectional iterator";
-#endif
+	  // cannot decrement a non-bidirectional iterator
 	  __glibcxx_assert(__n >= 0);
 	  return __n;
 	}
