@@ -51,8 +51,8 @@ void test_memcpy_array (const void *s)
   T (a7 + UR (8, 9), s, 7);   /* { dg-warning "writing 7 bytes into a region of size 0" } */
 
   T (a7 + UR (9, 10), s, 7);  /* { dg-warning "writing 7 bytes into a region of size 0" } */
-  T (a7 + UR (DIFF_MAX, DIFF_MAX + (size_t)1), s, 7);  /* { dg-warning "writing 7 bytes into a region of size 0" "pr85350" { xfail *-*-* } } */
-  T (a7 + UR (DIFF_MAX, SIZE_MAX), s, 7);  /* { dg-warning "writing 7 bytes into a region of size 0" "pr85350" { xfail *-*-*} } */
+  T (a7 + UR (DIFF_MAX, DIFF_MAX + (size_t)1), s, 7);  /* { dg-warning "writing 7 bytes into a region of size 0" } */
+  T (a7 + UR (DIFF_MAX, SIZE_MAX), s, 7);  /* { dg-warning "writing 7 bytes into a region of size 0" } */
 
   /* This is valid.  */
   char *d = a7 + 7;
@@ -102,8 +102,8 @@ void test_strcpy_array (void)
   T (a7 + UR (8, 9), "012345");   /* { dg-warning "writing 7 bytes into a region of size 0" } */
 
   T (a7 + UR (9, 10), "012345");  /* { dg-warning "writing 7 bytes into a region of size 0" } */
-  T (a7 + UR (DIFF_MAX, DIFF_MAX + (size_t)1), "012345");  /* { dg-warning "writing 7 bytes into a region of size 0" "pr85350" { xfail *-*-* } } */
-  T (a7 + UR (DIFF_MAX, SIZE_MAX), "012345");  /* { dg-warning "writing 7 bytes into a region of size 0" "pr85350" { xfail *-*-* } } */
+  T (a7 + UR (DIFF_MAX, DIFF_MAX + (size_t)1), "012345");  /* { dg-warning "writing 7 bytes into a region of size 0" } */
+  T (a7 + UR (DIFF_MAX, SIZE_MAX), "012345");  /* { dg-warning "writing 7 bytes into a region of size 0" } */
 
   char *d = a7 + 7;
 
@@ -127,6 +127,6 @@ void test_strncpy_memarray (struct MemArray *p, const void *s)
   T (p->a9 + UR (9, 10), s, 9);   /* { dg-warning "writing 9 bytes into a region of size 0" } */
   T (p->a9 + UR (10, 11), s, 9);  /* { dg-warning "writing 9 bytes into a region of size 0" } */
 
-  T (p->a9 + UR (DIFF_MAX, DIFF_MAX + (size_t)1), s, 1);  /* { dg-warning "writing 1 byte into a region of size 0" "pr85350" { xfail *-*-* } } */
-  T (p->a9 + UR (DIFF_MAX, SIZE_MAX), s, 3);  /* { dg-warning "writing 3 bytes into a region of size 0" "pr85350" { xfail *-*-* } } */
+  T (p->a9 + UR (DIFF_MAX, DIFF_MAX + (size_t)1), s, 1);  /* { dg-warning "writing 1 byte into a region of size 0" } */
+  T (p->a9 + UR (DIFF_MAX, SIZE_MAX), s, 3);  /* { dg-warning "writing 3 bytes into a region of size 0" } */
 }
