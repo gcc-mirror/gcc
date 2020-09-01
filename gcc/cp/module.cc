@@ -3646,11 +3646,14 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_entities (unsigned count, unsigned lwm, unsigned hwm);
 
  private:
-  location_map_info prepare_maps ();
+  location_map_info write_prepare_maps (module_state_config *);
+  bool read_prepare_maps (const module_state_config *);
+
   void write_ordinary_maps (elf_out *to, location_map_info &,
-			    bool, unsigned *crc_ptr);
+			    module_state_config *, bool, unsigned *crc_ptr);
   bool read_ordinary_maps ();
-  void write_macro_maps (elf_out *to, location_map_info &, unsigned *crc_ptr);
+  void write_macro_maps (elf_out *to, location_map_info &,
+			 module_state_config *, unsigned *crc_ptr);
   bool read_macro_maps ();
 
  private:
@@ -14030,11 +14033,15 @@ struct module_state_config {
   const char *dialect_str;
   unsigned num_imports;
   unsigned num_partitions;
+  unsigned ordinary_locs;
+  unsigned macro_locs;
+  unsigned ordinary_loc_align;
 
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
-     num_imports (0), num_partitions (0)
+     num_imports (0), num_partitions (0),
+     ordinary_locs (0), macro_locs (0), ordinary_loc_align (0)
   {
   }
 
@@ -15243,15 +15250,20 @@ module_state::read_location (bytes_in &sec) const
     case LK_MACRO:
       {
 	unsigned off = sec.u ();
-	location_t adjusted = MAX_LOCATION_T - off;
 
-	adjusted -= slurp->loc_deltas.second;
-	if (adjusted < macro_locs.first)
-	  sec.set_overrun ();
-	else if (adjusted < macro_locs.second)
-	  locus = adjusted;
+	if (macro_locs.first)
+	  {
+	    location_t adjusted = MAX_LOCATION_T - off;
+	    adjusted -= slurp->loc_deltas.second;
+	    if (adjusted < macro_locs.first)
+	      sec.set_overrun ();
+	    else if (adjusted < macro_locs.second)
+	      locus = adjusted;
+	    else
+	      sec.set_overrun ();
+	  }
 	else
-	  sec.set_overrun ();
+	  locus = loc;
 	dump (dumper::LOCATION)
 	  && dump ("Macro %u becoming %u", off, locus);
       }
@@ -15260,15 +15272,20 @@ module_state::read_location (bytes_in &sec) const
     case LK_ORDINARY:
       {
 	unsigned off = sec.u ();
-	location_t adjusted = off;
+	if (ordinary_locs.second)
+	  {
+	    location_t adjusted = off;
 
-	adjusted += slurp->loc_deltas.first;
-	if (adjusted >= ordinary_locs.second)
-	  sec.set_overrun ();
-	else if (adjusted >= ordinary_locs.first)
-	  locus = adjusted;
-	else if (adjusted < spans.main_start ())
-	  locus = off;
+	    adjusted += slurp->loc_deltas.first;
+	    if (adjusted >= ordinary_locs.second)
+	      sec.set_overrun ();
+	    else if (adjusted >= ordinary_locs.first)
+	      locus = adjusted;
+	    else if (adjusted < spans.main_start ())
+	      locus = off;
+	  }
+	else
+	  locus = loc;
 
 	dump (dumper::LOCATION)
 	  && dump ("Ordinary location %u becoming %u", off, locus);
@@ -15299,14 +15316,18 @@ module_state::read_location (bytes_in &sec) const
 	   {
 	     if (kind == LK_IMPORT_MACRO)
 	       {
-		 if (off < import->macro_locs.second - macro_locs.first)
+		 if (!import->macro_locs.first)
+		   locus = import->loc;
+		 else if (off < import->macro_locs.second - macro_locs.first)
 		   locus = import->macro_locs.second - off - 1;
 		 else
 		   sec.set_overrun ();
 	       }
 	     else
 	       {
-		 if (off < (import->ordinary_locs.second
+		 if (!import->ordinary_locs.second)
+		   locus = import->loc;
+		 else if (off < (import->ordinary_locs.second
 			    - import->ordinary_locs.first))
 		   locus = import->ordinary_locs.first + off;
 		 else
@@ -15323,10 +15344,11 @@ module_state::read_location (bytes_in &sec) const
 /* Prepare the span adjustments.  */
 // FIXME: The location streaming does not consider running out of
 // locations in either the module interface, nor in the importers.
-// At least we fail with a hard error though.
+// At least we fail with a hard error though.  This routine should
+// fill in the module_state_config, not the individual writers.
 
 location_map_info
-module_state::prepare_maps ()
+module_state::write_prepare_maps (module_state_config *)
 {
   dump () && dump ("Preparing locations");
   dump.indent ();
@@ -15434,6 +15456,30 @@ module_state::prepare_maps ()
   return info;
 }
 
+bool
+module_state::read_prepare_maps (const module_state_config *cfg)
+{
+  location_t ordinary = line_table->highest_location + 1;
+  ordinary = ((ordinary + (1u << cfg->ordinary_loc_align))
+	      & ~((1u << cfg->ordinary_loc_align) - 1));
+  ordinary += cfg->ordinary_locs;
+
+  location_t macro = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
+  macro += cfg->macro_locs;
+
+  if (ordinary < LINE_MAP_MAX_LOCATION_WITH_COLS
+      && macro >= LINE_MAP_MAX_LOCATION)
+    /* OK, we have enough locations.  */
+    return true;
+
+  ordinary_locs.first = ordinary_locs.second = 0;
+  macro_locs.first = macro_locs.second = 0;
+
+  inform (loc, "unable to represent source locations in this module");
+
+  return false;
+}
+
 /* Write the location maps.  This also determines the shifts for the
    location spans.  */
 // FIXME: I do not prune the unreachable locations.  Modules with
@@ -15442,7 +15488,8 @@ module_state::prepare_maps ()
 
 void
 module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
-				   bool has_partitions, unsigned *crc_p)
+				   module_state_config *cfg, bool has_partitions,
+				   unsigned *crc_p)
 {
   dump () && dump ("Writing ordinary location maps");
   dump.indent ();
@@ -15571,6 +15618,10 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
   dump () && dump ("Ordinary location hwm:%u", offset);
   sec.u (offset);
 
+  // Record number of locations and alignment.
+  cfg->ordinary_loc_align = info.max_range;
+  cfg->ordinary_locs = offset;
+
   filenames.release ();
 
   sec.end (to, to->name (MOD_SNAME_PFX ".olm"), crc_p);
@@ -15579,7 +15630,7 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
 
 void
 module_state::write_macro_maps (elf_out *to, location_map_info &info,
-				unsigned *crc_p)
+				module_state_config *cfg, unsigned *crc_p)
 {
   dump () && dump ("Writing macro location maps");
   dump.indent ();
@@ -15661,6 +15712,8 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
   dump () && dump ("Macro location lwm:%u", offset);
   sec.u (offset);
   gcc_assert (macro_num == info.num_maps.second);
+
+  cfg->macro_locs = offset;
 
   sec.end (to, to->name (MOD_SNAME_PFX ".mlm"), crc_p);
   dump.outdent ();
@@ -15752,8 +15805,9 @@ module_state::read_ordinary_maps ()
      hand out.  */
   line_table->highest_location = ordinary_locs.second - 1;
 
-  if (lwm > line_table->highest_location)
-    /* We ran out of locations, fail.  */
+  if (line_table->highest_location >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+    /* We shouldn't run out of locations, as we checked before
+       starting.  */
     sec.set_overrun ();
   dump () && dump ("Ordinary location hwm:%u", ordinary_locs.second);
 
@@ -15804,8 +15858,8 @@ module_state::read_macro_maps ()
       const line_map_macro *macro
 	= linemap_enter_macro (line_table, node, exp_loc, n_tokens);
       if (!macro)
-	/* We ran out of numbers, bail out (and that'll set overrun
-	   due to unread data.  */
+	/* We shouldn't run out of locations, as we checked that we
+	   had enough before starting.  */
 	break;
 
       location_t *locs = macro->macro_locations;
@@ -16782,6 +16836,10 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u (config.num_imports);
   cfg.u (config.num_partitions);
 
+  cfg.u (config.ordinary_locs);
+  cfg.u (config.macro_locs);
+  cfg.u (config.ordinary_loc_align);  
+
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
   cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
@@ -16961,6 +17019,9 @@ module_state::read_config (module_state_config &config)
   config.num_imports = cfg.u ();
   config.num_partitions = cfg.u ();
 
+  config.ordinary_locs = cfg.u ();
+  config.macro_locs = cfg.u ();
+  config.ordinary_loc_align = cfg.u ();
 
  done:
   return cfg.end (from ());
@@ -17072,8 +17133,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
   vec<depset *> sccs = table.connect ();
 
   unsigned crc = 0;
-  location_map_info map_info = prepare_maps ();
   module_state_config config;
+  location_map_info map_info = write_prepare_maps (&config);
   unsigned counts[MSC_HWM];
 
   config.num_imports = mod_hwm;
@@ -17212,8 +17273,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
     write_partitions (to, config.num_partitions, &crc);
 
   /* Write the line maps.  */
-  write_ordinary_maps (to, map_info, config.num_partitions, &crc);
-  write_macro_maps (to, map_info, &crc);
+  write_ordinary_maps (to, map_info, &config, config.num_partitions, &crc);
+  write_macro_maps (to, map_info, &config, &crc);
 
   if (is_header ())
     {
@@ -17257,8 +17318,10 @@ module_state::read_initial (cpp_reader *reader)
   if (ok && !read_config (config))
     ok = false;
 
+  bool have_locs = ok && read_prepare_maps (&config);
+
   /* Ordinary maps before the imports.  */
-  if (ok && !read_ordinary_maps ())
+  if (have_locs && !read_ordinary_maps ())
     ok = false;
 
   /* Allocate the REMAP vector.  */
@@ -17301,7 +17364,7 @@ module_state::read_initial (cpp_reader *reader)
   gcc_assert (!from ()->is_frozen ());
 
   /* Macro maps after the imports.  */
-  if (ok && !read_macro_maps ())
+  if (ok && have_locs && !read_macro_maps ())
     ok = false;
 
   gcc_assert (slurp->current == ~0u);

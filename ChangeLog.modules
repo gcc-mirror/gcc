@@ -1,5 +1,14 @@
 2020-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	Deal with running out of locations.
+	gcc/cp/
+	* module.cc (module_state::read_prepare_maps): New.
+	(module_state::write_{ordinary,macro}_maps): Adjust.
+	(struct module_state_config): Record number of locations needed.
+	(module_state::read_location): Deal with lack of locations.
+	(module_state::{read,write}_config): Adjust.
+	(module_state::read_initial): Adjust.
+
 	gcc/cp/
 	* mapper.h (module_resolver): Default to no xlation.
 	* mapper-resolver.cc (module_resolver::read_tuple_file): Don't
