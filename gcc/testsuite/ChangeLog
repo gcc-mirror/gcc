@@ -1,3 +1,78 @@
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96798
+	* gcc.dg/analyzer/memset-1.c (test_5a): New.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96860
+	* gcc.dg/analyzer/pr96860-1.c: New test.
+	* gcc.dg/analyzer/pr96860-2.c: New test.
+
+2020-08-31  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/93529
+	* g++.dg/cpp0x/sfinae4.C: Adjust expected result after P1009.
+	* g++.dg/cpp2a/new-array1.C: New test.
+	* g++.dg/cpp2a/new-array2.C: New test.
+	* g++.dg/cpp2a/new-array3.C: New test.
+	* g++.dg/cpp2a/new-array4.C: New test.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96763
+	* g++.dg/analyzer/pr96763.C: New test.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96764
+	* gcc.dg/analyzer/pr96764.c: New test.
+
+2020-08-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/96818
+	* g++.dg/pr96818.C: New file.
+	* gcc.dg/pr96818.c: New file.
+
+2020-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96854
+	* gcc.dg/vect/pr96854.c: New testcase.
+
+2020-08-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/strcmpopt_6.c: Suppress -Wstringop-overread.
+
+2020-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-pr96551-1.c: New test.
+	* gcc.target/i386/avx512f-pr96551-2.c: New test.
+
+2020-08-31  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/96806
+	* g++.dg/ipa/pr96806.C: New test.
+
+2020-08-31  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* gcc.dg/vect/bb-slp-pr69907.c: Adjust for partial vector usages.
+	* gcc.dg/vect/slp-3.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-11.c: Likewise.
+	* gcc.dg/vect/slp-perm-1.c: Likewise.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+	* gcc.dg/vect/slp-perm-8.c: Likewise.
+	* gcc.dg/vect/slp-perm-9.c: Likewise.
+	* gcc.dg/vect/vect-version-2.c: Likewise.
+	* lib/target-supports.exp (check_vect_partial_vector_usage): New
+	function.
+	(check_effective_target_vect_len_load_store): Likewise.
+	(check_effective_target_vect_partial_vectors_usage_1): Likewise.
+	(check_effective_target_vect_partial_vectors_usage_2): Likewise.
+	(check_effective_target_vect_partial_vectors): Likewise.
+
 2020-08-30  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Wstringop-overread-3.c: New test.

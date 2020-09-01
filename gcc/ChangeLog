@@ -1,3 +1,61 @@
+2020-08-31  Carl Love  <cel@us.ibm.com>
+
+	PR target/85830
+	* config/rs6000/altivec.h (vec_popcntb, vec_popcnth, vec_popcntw,
+	vec_popcntd): Remove defines.
+
+2020-08-31  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/93529
+	* tree.c (build_constructor_from_vec): New.
+	* tree.h (build_constructor_from_vec): Declare.
+
+2020-08-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/96818
+	* tree-vrp.c (find_case_label_range): Cast label range to
+	type of switch operand.
+
+2020-08-31  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96551
+	* config/i386/sse.md (vec_unpacku_float_hi_v16si): For vector
+	compare to integer mask, don't use gen_rtx_LT, use
+	ix86_expand_mask_vec_cmp instead.
+	(vec_unpacku_float_hi_v16si): Ditto.
+
+2020-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-cfg.c (verify_gimple_switch): If the first non-default case
+	label has CASE_HIGH, verify it has the same type as CASE_LOW.
+
+2020-08-31  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/96806
+	* ipa-cp.c (decide_about_value): Use safe_add to avoid cost addition
+	overflow.
+
+2020-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54201
+	* varasm.c: Include alloc-pool.h.
+	(output_constant_pool_contents): Emit desc->mark < 0 entries as
+	aliases.
+	(struct constant_descriptor_rtx_data): New type.
+	(constant_descriptor_rtx_data_cmp): New function.
+	(struct const_rtx_data_hasher): New type.
+	(const_rtx_data_hasher::hash, const_rtx_data_hasher::equal): New
+	methods.
+	(optimize_constant_pool): New function.
+	(output_shared_constant_pool): Call it if TARGET_SUPPORTS_ALIASES.
+
+2020-08-31  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* doc/sourcebuild.texi (vect_len_load_store,
+	vect_partial_vectors_usage_1, vect_partial_vectors_usage_2,
+	vect_partial_vectors): Document.
+
 2020-08-30  Martin Sebor  <msebor@redhat.com>
 
 	* builtins.c (access_ref::access_ref): Call get_size_range instead
