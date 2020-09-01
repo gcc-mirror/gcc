@@ -1,6 +1,14 @@
 2020-09-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-target-4.f90: New test.
+	* gfortran.dg/gomp/declare-target-5.f90: New test.
+
+2020-09-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/96867
