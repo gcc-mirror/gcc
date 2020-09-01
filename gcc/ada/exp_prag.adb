@@ -752,6 +752,11 @@ package body Exp_Prag is
       --  type of which is Integer, the value of which is Init_Val if present
       --  and 0 otherwise.
 
+      function Etype_Or_Dim3 (N : Node_Id) return Node_Id;
+      --  If N is an aggregate whose type is unknown, return a new occurrence
+      --  of the public Dim3 type. Otherwise, return a new occurrence of N's
+      --  type.
+
       function Get_Nth_Arg_Type
          (Subprogram : Entity_Id;
           N          : Positive) return Entity_Id;
@@ -988,6 +993,20 @@ package body Exp_Prag is
             Default_Val => Make_Null (Loc));
       end Build_Stream_Declaration;
 
+      ------------------------
+      -- Etype_Or_Dim3  --
+      ------------------------
+
+      function Etype_Or_Dim3 (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (N) = N_Aggregate and then Is_Composite_Type (Etype (N))
+         then
+            return New_Occurrence_Of (RTE (RE_Dim3), Sloc (N));
+         end if;
+
+         return New_Occurrence_Of (Etype (N), Loc);
+      end Etype_Or_Dim3;
+
       ----------------------
       -- Get_Nth_Arg_Type --
       ----------------------
@@ -1054,13 +1073,11 @@ package body Exp_Prag is
       --  referenced multiple times but could have side effects.
       Temp_Grid_Decl : constant Node_Id := Make_Object_Declaration (Loc,
         Defining_Identifier => Temp_Grid,
-        Object_Definition   =>
-          New_Occurrence_Of (Etype (Grid_Dimensions), Loc),
+        Object_Definition   => Etype_Or_Dim3 (Grid_Dimensions),
         Expression          => Grid_Dimensions);
       Temp_Block_Decl : constant Node_Id := Make_Object_Declaration (Loc,
         Defining_Identifier => Temp_Block,
-        Object_Definition   =>
-          New_Occurrence_Of (Etype (Block_Dimensions), Loc),
+        Object_Definition   => Etype_Or_Dim3 (Block_Dimensions),
         Expression          => Block_Dimensions);
 
       --  List holding the entities of the copies of Procedure_Call's
