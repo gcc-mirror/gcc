@@ -51,7 +51,7 @@
 
 2020-08-31  Feng Xue  <fxue@os.amperecomputing.com>
 
-	PR tree-optimization/96806
+	PR ipa/96806
 	* g++.dg/ipa/pr96806.C: New test.
 
 2020-08-31  Kewen Lin  <linkw@gcc.gnu.org>

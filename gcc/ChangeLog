@@ -32,7 +32,7 @@
 
 2020-08-31  Feng Xue  <fxue@os.amperecomputing.com>
 
-	PR tree-optimization/96806
+	PR ipa/96806
 	* ipa-cp.c (decide_about_value): Use safe_add to avoid cost addition
 	overflow.
 
