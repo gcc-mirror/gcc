@@ -79,6 +79,7 @@
 #if __cplusplus > 201703L
 # include <compare>
 # include <new>
+# include <bits/exception_defines.h>
 # include <bits/iterator_concepts.h>
 #endif
 
@@ -2062,7 +2063,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _M_current++;
 	  } __catch(...) {
 	    ++_M_length;
-	    throw;
+	    __throw_exception_again;
 	  }
 
       }

@@ -22,4 +22,4 @@
 #include <variant>
 
 static_assert(sizeof(std::variant<signed char, unsigned char>)
-	      < sizeof(size_t));
+	      < sizeof(std::size_t));

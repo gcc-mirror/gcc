@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <new>
+#include <type_traits>
 #include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_destroying_delete
