@@ -2013,7 +2013,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _M_current++;
 	  } __catch(...) {
 	    ++_M_length;
-	    throw;
+	    __throw_exception_again;
 	  }
 
       }
