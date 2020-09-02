@@ -11286,10 +11286,9 @@ package body Sem_Attr is
                  --  Otherwise a check will be generated later when the return
                  --  statement gets expanded.
 
-                 and then not Is_Special_Aliased_Formal_Access
-                                (N, Current_Scope)
+                 and then not Is_Special_Aliased_Formal_Access (N)
                  and then
-                   Static_Accessibility_Level (P) >
+                   Static_Accessibility_Level (N, Zero_On_Dynamic_Level) >
                      Deepest_Type_Access_Level (Btyp)
                then
                   --  In an instance, this is a runtime check, but one we know
@@ -11433,8 +11432,19 @@ package body Sem_Attr is
 
                if Attr_Id /= Attribute_Unchecked_Access
                  and then Ekind (Btyp) = E_General_Access_Type
+
+                 --  Call Accessibility_Level directly to avoid returning zero
+                 --  on cases where the prefix is an explicitly aliased
+                 --  parameter in a return statement, instead of using the
+                 --  normal Static_Accessibility_Level function.
+
+                 --  Shouldn't this be handled somehow in
+                 --  Static_Accessibility_Level ???
+
+                 and then Nkind (Accessibility_Level (P, Dynamic_Level))
+                            = N_Integer_Literal
                  and then
-                   Static_Accessibility_Level (P)
+                   Intval (Accessibility_Level (P, Dynamic_Level))
                      > Deepest_Type_Access_Level (Btyp)
                then
                   Accessibility_Message;
@@ -11456,7 +11466,7 @@ package body Sem_Attr is
                --  anonymous_access_to_protected, there are no accessibility
                --  checks either. Omit check entirely for Unrestricted_Access.
 
-               elsif Static_Accessibility_Level (P)
+               elsif Static_Accessibility_Level (P, Zero_On_Dynamic_Level)
                        > Deepest_Type_Access_Level (Btyp)
                  and then Comes_From_Source (N)
                  and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type

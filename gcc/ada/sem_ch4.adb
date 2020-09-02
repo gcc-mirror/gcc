@@ -976,7 +976,7 @@ package body Sem_Ch4 is
       Nam     : Node_Id;
       X       : Interp_Index;
       It      : Interp;
-      Nam_Ent : Entity_Id;
+      Nam_Ent : Entity_Id := Empty;
       Success : Boolean := False;
 
       Deref : Boolean := False;
@@ -1469,6 +1469,46 @@ package body Sem_Ch4 is
          end if;
 
          End_Interp_List;
+      end if;
+
+      --  Check the accessibility level for actuals for explicitly aliased
+      --  formals.
+
+      if Nkind (N) = N_Function_Call
+        and then Comes_From_Source (N)
+        and then Present (Nam_Ent)
+        and then In_Return_Value (N)
+      then
+         declare
+            Form : Node_Id;
+            Act  : Node_Id;
+         begin
+            Act  := First_Actual (N);
+            Form := First_Formal (Nam_Ent);
+
+            while Present (Form) and then Present (Act) loop
+               --  Check whether the formal is aliased and if the accessibility
+               --  level of the actual is deeper than the accessibility level
+               --  of the enclosing subprogam to which the current return
+               --  statement applies.
+
+               --  Should we be checking Is_Entity_Name on Act? Won't this miss
+               --  other cases ???
+
+               if Is_Explicitly_Aliased (Form)
+                 and then Is_Entity_Name (Act)
+                 and then Static_Accessibility_Level
+                            (Act, Zero_On_Dynamic_Level)
+                              > Subprogram_Access_Level (Current_Subprogram)
+               then
+                  Error_Msg_N ("actual for explicitly aliased formal is too"
+                                & " short lived", Act);
+               end if;
+
+               Next_Formal (Form);
+               Next_Actual (Act);
+            end loop;
+         end;
       end if;
 
       if Ada_Version >= Ada_2012 then

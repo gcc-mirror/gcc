@@ -823,6 +823,37 @@ package body Exp_Ch4 is
 
       Apply_Predicate_Check (Exp, T);
 
+      --  Check that any anonymous access discriminants are suitable
+      --  for use in an allocator.
+
+      --  Note: This check is performed here instead of during analysis so that
+      --  we can check against the fully resolved etype of Exp.
+
+      if Is_Entity_Name (Exp)
+        and then Has_Anonymous_Access_Discriminant (Etype (Exp))
+        and then Static_Accessibility_Level (Exp, Object_Decl_Level)
+                   > Static_Accessibility_Level (N, Object_Decl_Level)
+      then
+         --  A dynamic check and a warning are generated when we are within
+         --  an instance.
+
+         if In_Instance then
+            Insert_Action (N,
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Accessibility_Check_Failed));
+
+            Error_Msg_N ("anonymous access discriminant is too deep for use"
+                         & " in allocator<<", N);
+            Error_Msg_N ("\Program_Error [<<", N);
+
+         --  Otherwise, make the error static
+
+         else
+            Error_Msg_N ("anonymous access discriminant is too deep for use"
+                          & " in allocator", N);
+         end if;
+      end if;
+
       if Do_Range_Check (Exp) then
          Generate_Range_Check (Exp, T, CE_Range_Check_Failed);
       end if;
@@ -848,35 +879,6 @@ package body Exp_Ch4 is
          Rewrite (N, New_Copy (Exp));
          Set_Etype (N, PtrT);
          return;
-      end if;
-
-      --  In the case of an Ada 2012 allocator whose initial value comes from a
-      --  function call, pass "the accessibility level determined by the point
-      --  of call" (AI05-0234) to the function. Conceptually, this belongs in
-      --  Expand_Call but it couldn't be done there (because the Etype of the
-      --  allocator wasn't set then) so we generate the parameter here. See
-      --  the Boolean variable Defer in (a block within) Expand_Call.
-
-      if Ada_Version >= Ada_2012 and then Nkind (Exp) = N_Function_Call then
-         declare
-            Subp : Entity_Id;
-
-         begin
-            if Nkind (Name (Exp)) = N_Explicit_Dereference then
-               Subp := Designated_Type (Etype (Prefix (Name (Exp))));
-            else
-               Subp := Entity (Name (Exp));
-            end if;
-
-            Subp := Ultimate_Alias (Subp);
-
-            if Present (Extra_Accessibility_Of_Result (Subp)) then
-               Add_Extra_Actual_To_Call
-                 (Subprogram_Call => Exp,
-                  Extra_Formal    => Extra_Accessibility_Of_Result (Subp),
-                  Extra_Actual    => Dynamic_Accessibility_Level (PtrT));
-            end if;
-         end;
       end if;
 
       Aggr_In_Place := Is_Delayed_Aggregate (Exp);
@@ -6870,7 +6872,8 @@ package body Exp_Ch4 is
                   --  objects of an anonymous access type.
 
                   else
-                     Param_Level := Dynamic_Accessibility_Level (Expr_Entity);
+                     Param_Level := Accessibility_Level
+                                      (Expr_Entity, Dynamic_Level);
 
                      Type_Level :=
                        Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
@@ -12285,8 +12288,8 @@ package body Exp_Ch4 is
            and then Ekind (Operand_Type) = E_Anonymous_Access_Type
            and then Nkind (Operand) = N_Selected_Component
            and then Ekind (Entity (Selector_Name (Operand))) = E_Discriminant
-           and then Static_Accessibility_Level (Operand) >
-                      Type_Access_Level (Target_Type)
+           and then Static_Accessibility_Level (Operand, Zero_On_Dynamic_Level)
+                      > Type_Access_Level (Target_Type)
          then
             Raise_Accessibility_Error;
             goto Done;

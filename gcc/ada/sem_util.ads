@@ -43,6 +43,36 @@ package Sem_Util is
    --  including the cases where there can't be any because e.g. the type is
    --  not tagged.
 
+   type Accessibility_Level_Kind is
+     (Dynamic_Level,
+      Object_Decl_Level,
+      Zero_On_Dynamic_Level);
+   --  Accessibility_Level_Kind is an enumerated type which captures the
+   --  different modes in which an accessibility level could be obtained for
+   --  a given expression.
+
+   --  When in the context of the function Accessibility_Level,
+   --  Accessibility_Level_Kind signals what type of accessibility level to
+   --  obtain. For example, when Level is Dynamic_Level, a defining identifier
+   --  associated with a SAOOAAT may be returned or an N_Integer_Literal node.
+   --  When the level is Object_Decl_Level, an N_Integer_Literal node is
+   --  returned containing the level of the declaration of the object if
+   --  relevant (be it a SAOOAAT or otherwise). Finally, Zero_On_Dynamic_Level
+   --  returns library level for all cases where the accessibility level is
+   --  dynamic (used to bypass static accessibility checks in dynamic cases).
+
+   function Accessibility_Level
+     (Expr              : Node_Id;
+      Level             : Accessibility_Level_Kind;
+      In_Return_Context : Boolean := False) return Node_Id;
+   --  Centralized accessibility level calculation routine for finding the
+   --  accessibility level of a given expression Expr.
+
+   --  In_Return_Context forcing the Accessibility_Level calculations to be
+   --  carried out "as if" Expr existed in a return value. This is useful for
+   --  calculating the accessibility levels for discriminant associations
+   --  and return aggregates.
+
    function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String;
    --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to get
    --  the given string argument, adding leading and trailing asterisks if they
@@ -704,12 +734,6 @@ package Sem_Util is
    --  private components of protected objects, but is generally useful when
    --  restriction No_Implicit_Heap_Allocation is active.
 
-   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id;
-   --  Expr should be an expression of an access type. Builds an integer
-   --  literal except in cases involving anonymous access types, where
-   --  accessibility levels are tracked at run time (access parameters and
-   --  stand-alone objects of anonymous access types).
-
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
    --  Same as Einfo.Extra_Accessibility except thtat object renames
    --  are looked through.
@@ -1054,7 +1078,7 @@ package Sem_Util is
    --  discriminants. Otherwise all components of the parent must be included
    --  in the subtype for semantic analysis.
 
-   function Get_Accessibility (E : Entity_Id) return Entity_Id;
+   function Get_Dynamic_Accessibility (E : Entity_Id) return Entity_Id;
    --  Obtain the accessibility level for a given entity formal taking into
    --  account both extra and minimum accessibility.
 
@@ -1282,6 +1306,9 @@ package Sem_Util is
    --  as an access type internally, this function tests only for access types
    --  known to the programmer. See also Has_Tagged_Component.
 
+   function Has_Anonymous_Access_Discriminant (Typ : Entity_Id) return Boolean;
+   --  Returns True if Typ has one or more anonymous access discriminants
+
    type Alignment_Result is (Known_Compatible, Unknown, Known_Incompatible);
    --  Result of Has_Compatible_Alignment test, description found below. Note
    --  that the values are arranged in increasing order of problematicness.
@@ -1410,6 +1437,20 @@ package Sem_Util is
    --  Return True if the loop has no side effect and can therefore be
    --  marked for removal. Return False if N is not a N_Loop_Statement.
 
+   subtype Static_Accessibility_Level_Kind
+     is Accessibility_Level_Kind range Object_Decl_Level
+                                         .. Zero_On_Dynamic_Level;
+   --  Restrict the reange of Accessibility_Level_Kind to be non-dynamic for
+   --  use in the static version of Accessibility_Level below.
+
+   function Static_Accessibility_Level
+     (Expr              : Node_Id;
+      Level             : Static_Accessibility_Level_Kind;
+      In_Return_Context : Boolean := False) return Uint;
+   --  Overloaded version of Accessibility_Level which returns a universal
+   --  integer for use in compile-time checking. Note: Level is restricted to
+   --  be non-dynamic.
+
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
    --  Initialize primitive (and, in Ada 2012, whether that primitive is
@@ -1530,6 +1571,11 @@ package Sem_Util is
 
    function In_Quantified_Expression (N : Node_Id) return Boolean;
    --  Returns true if the expression N occurs within a quantified expression
+
+   function In_Return_Value (Expr : Node_Id) return Boolean;
+   --  Returns true if the expression Expr occurs within a simple return
+   --  statement or is part of an assignment to the return object in an
+   --  extended return statement.
 
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
    --  Returns True if N denotes a component or subcomponent in a record or
@@ -1872,6 +1918,9 @@ package Sem_Util is
    function Is_Entry_Declaration (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id is the spec entity of an entry [family]
 
+   function Is_Explicitly_Aliased (N : Node_Id) return Boolean;
+   --  Determine if a given node N is an explicitly aliased formal parameter.
+
    function Is_Expanded_Priority_Attribute (E : Entity_Id) return Boolean;
    --  Check whether a function in a call is an expanded priority attribute,
    --  which is transformed into an Rtsfind call to Get_Ceiling. This expansion
@@ -1983,6 +2032,9 @@ package Sem_Util is
    --  Determines whether Expr is a reference to a variable or IN OUT mode
    --  parameter of the current enclosing subprogram.
    --  Why are OUT parameters not considered here ???
+
+   function Is_Master (N : Node_Id) return Boolean;
+   --  Determine if the given node N constitutes a finalization master
 
    function Is_Name_Reference (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is a reference to a name. This is
@@ -2144,10 +2196,14 @@ package Sem_Util is
    --  created for a single task type.
 
    function Is_Special_Aliased_Formal_Access
-     (Exp  : Node_Id;
-      Scop : Entity_Id) return Boolean;
+     (Exp               : Node_Id;
+      In_Return_Context : Boolean := False) return Boolean;
    --  Determines whether a dynamic check must be generated for explicitly
    --  aliased formals within a function Scop for the expression Exp.
+
+   --  In_Return_Context forces Is_Special_Aliased_Formal_Access to assume
+   --  that Exp is within a return value which is useful for checking
+   --  expressions within discriminant associations of return objects.
 
    --  More specially, Is_Special_Aliased_Formal_Access checks that Exp is a
    --  'Access attribute reference within a return statement where the ultimate
@@ -2647,9 +2703,6 @@ package Sem_Util is
    --  Returns the number of elements in the array T if the index bounds of T
    --  is known at compile time. If the bounds are not known at compile time,
    --  the function returns the value zero.
-
-   function Static_Accessibility_Level (Expr : Node_Id) return Uint;
-   --  Return the numeric accessibility level of the expression Expr
 
    function Original_Aspect_Pragma_Name (N : Node_Id) return Name_Id;
    --  Retrieve the name of aspect or pragma N, taking into account a possible

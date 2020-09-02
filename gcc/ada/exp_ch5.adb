@@ -2518,7 +2518,7 @@ package body Exp_Ch5 is
                                Condition =>
                                  Make_Op_Gt (Loc,
                                    Left_Opnd  =>
-                                     Dynamic_Accessibility_Level (Rhs),
+                                     Accessibility_Level (Rhs, Dynamic_Level),
                                    Right_Opnd =>
                                      Make_Integer_Literal (Loc,
                                        Intval =>
@@ -2534,7 +2534,8 @@ package body Exp_Ch5 is
                                          (Effective_Extra_Accessibility
                                             (Entity (Lhs)), Loc),
                                      Expression =>
-                                        Dynamic_Accessibility_Level (Rhs));
+                                       Accessibility_Level
+                                         (Rhs, Dynamic_Level));
 
          begin
             if not Accessibility_Checks_Suppressed (Entity (Lhs)) then
