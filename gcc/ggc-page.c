@@ -1164,9 +1164,9 @@ release_pages (void)
     {
       fprintf (stderr, " {GC");
       if (n1)
-	fprintf (stderr, " released %luk", (unsigned long)(n1 / 1024));
+	fprintf (stderr, " released " PRsa (0), SIZE_AMOUNT (n1));
       if (n2)
-	fprintf (stderr, " madv_dontneed %luk", (unsigned long)(n2 / 1024));
+	fprintf (stderr, " madv_dontneed " PRsa (0), SIZE_AMOUNT (n2));
       fprintf (stderr, "}");
     }
 }
@@ -2208,7 +2208,7 @@ ggc_collect (void)
 
   /* Output this later so we do not interfere with release_pages.  */
   if (!quiet_flag)
-    fprintf (stderr, " {GC %luk -> ", (unsigned long) allocated / 1024);
+    fprintf (stderr, " {GC " PRsa (0) " -> ", SIZE_AMOUNT (allocated));
 
   /* Indicate that we've seen collections at this context depth.  */
   G.context_depth_collections = ((unsigned long)1 << (G.context_depth + 1)) - 1;
@@ -2235,7 +2235,7 @@ ggc_collect (void)
   timevar_pop (TV_GC);
 
   if (!quiet_flag)
-    fprintf (stderr, "%luk}", (unsigned long) G.allocated / 1024);
+    fprintf (stderr, PRsa (0) "}", SIZE_AMOUNT (G.allocated));
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file, "END COLLECTING\n");
 }
@@ -2250,9 +2250,8 @@ ggc_trim ()
   sweep_pages ();
   release_pages ();
   if (!quiet_flag)
-    fprintf (stderr, " {GC trimmed to %luk, %luk mapped}",
-	     (unsigned long) G.allocated / 1024,
-	     (unsigned long) G.bytes_mapped / 1024);
+    fprintf (stderr, " {GC trimmed to " PRsa (0) ", " PRsa (0) " mapped}",
+	     SIZE_AMOUNT (G.allocated), SIZE_AMOUNT (G.bytes_mapped));
   timevar_pop (TV_GC);
 }
 
@@ -2269,7 +2268,7 @@ ggc_grow (void)
   else
     ggc_collect ();
   if (!quiet_flag)
-    fprintf (stderr, " {GC %luk} ", (unsigned long) G.allocated / 1024);
+    fprintf (stderr, " {GC " PRsa (0) "} ", SIZE_AMOUNT (G.allocated));
 }
 
 void

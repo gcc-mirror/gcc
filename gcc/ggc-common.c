@@ -1008,7 +1008,7 @@ ggc_prune_overhead_list (void)
       }
 }
 
-/* Print memory used by heap in kb if this info is available.  */
+/* Print memory used by heap if this info is available.  */
 
 void
 report_heap_memory_use ()
@@ -1020,7 +1020,7 @@ report_heap_memory_use ()
   #define MALLINFO_FN mallinfo
 #endif
   if (!quiet_flag)
-    fprintf (stderr," {heap %luk}",
-	     (unsigned long) MALLINFO_FN ().arena / ONE_K);
+    fprintf (stderr, " {heap " PRsa (0) "}",
+	     SIZE_AMOUNT (MALLINFO_FN ().arena));
 #endif
 }
