@@ -219,23 +219,6 @@ bpf_target_macros (cpp_reader *pfile)
   }
 }
 
-/* Output assembly directives to switch to section NAME.  The section
-   should have attributes as specified by FLAGS, which is a bit mask
-   of the 'SECTION_*' flags defined in 'output.h'.  If DECL is
-   non-NULL, it is the 'VAR_DECL' or 'FUNCTION_DECL' with which this
-   section is associated.  */
-
-static void
-bpf_asm_named_section (const char *name,
-		       unsigned int flags ATTRIBUTE_UNUSED,
-		       tree decl ATTRIBUTE_UNUSED)
-{
-  fprintf (asm_out_file, "\t.section\t%s\n", name);
-}
-
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION bpf_asm_named_section
-
 /* Return an RTX representing the place where a function returns or
    receives a value of data type RET_TYPE, a tree node representing a
    data type.  */

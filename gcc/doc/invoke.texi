@@ -24777,7 +24777,7 @@ any scripts that would be selected by the @option{-mmcu=} option.
 
 @item -mlarge
 @opindex mlarge
-Use large-model addressing (20-bit pointers, 32-bit @code{size_t}).
+Use large-model addressing (20-bit pointers, 20-bit @code{size_t}).
 
 @item -msmall
 @opindex msmall

@@ -1,3 +1,11 @@
+2020-09-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95398
+	* resolve.c (resolve_select_type): Add check for BT_CLASS
+	type before using the CLASS_DATA macro which will have a
+	NULL pointer to derive components if it isn't BT_CLASS.
+
 2020-08-30  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/96728

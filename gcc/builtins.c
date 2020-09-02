@@ -4367,12 +4367,17 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	     offset to the maximum.  */
 	  offset_int orng[2];
 	  tree off = gimple_assign_rhs2 (stmt);
-	  if (!get_range (off, SIGNED, orng, rvals)
-	      || !wi::les_p (orng[0], orng[1]))
+	  if (!get_range (off, SIGNED, orng, rvals))
 	    {
 	      orng[0] = wi::to_offset (TYPE_MIN_VALUE (ptrdiff_type_node));
 	      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
 	    }
+	  else if (wi::lts_p (orng[1], orng[0]))
+	    /* The upper bound is less than the lower bound when the integer
+	       operand is the result of signed integer conversion to sizetype,
+	       as in P + OFF + CST where OFF > 0.
+	       Correct just the upper bound.  */
+	    orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
 
 	  pref->offrng[0] += orng[0];
 	  pref->offrng[1] += orng[1];

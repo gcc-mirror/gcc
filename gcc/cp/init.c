@@ -3575,6 +3575,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		    /* We'll check the length at runtime.  */
 		    domain = NULL_TREE;
 		  arraytype = build_cplus_array_type (type, domain);
+		  /* If we have new char[4]{"foo"}, we have to reshape
+		     so that the STRING_CST isn't wrapped in { }.  */
+		  vecinit = reshape_init (arraytype, vecinit, complain);
+		  /* The middle end doesn't cope with the location wrapper
+		     around a STRING_CST.  */
+		  STRIP_ANY_LOCATION_WRAPPER (vecinit);
 		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
 	    }

@@ -340,9 +340,9 @@ gfc_boz2real (gfc_expr *x, int kind)
       /* Clear first two bits.  */
       else
 	{
-	  if (buf[0] == '4' || buf[0] == '6')
+	  if (buf[0] == '2' || buf[0] == '4' || buf[0] == '6')
 	    buf[0] = '0';
-	  else if (buf[0] == '5' || buf[0] == '7')
+	  else if (buf[0] == '3' || buf[0] == '5' || buf[0] == '7')
 	    buf[0] = '1';
 	}
     }
@@ -429,9 +429,9 @@ gfc_boz2int (gfc_expr *x, int kind)
       /* Clear first two bits.  */
       else
 	{
-	  if (buf[0] == '4' || buf[0] == '6')
+	  if (buf[0] == '2' || buf[0] == '4' || buf[0] == '6')
 	    buf[0] = '0';
-	  else if (buf[0] == '5' || buf[0] == '7')
+	  else if (buf[0] == '3' || buf[0] == '5' || buf[0] == '7')
 	    buf[0] = '1';
 	}
     }

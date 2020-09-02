@@ -1,3 +1,9 @@
+2020-09-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96792
+	* region-model.cc (region_model::deref_rvalue): Add the constraint
+	that PTR_SVAL is non-NULL.
+
 2020-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96798

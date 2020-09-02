@@ -1,3 +1,14 @@
+2020-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77841
+	* init.c (build_new_1): Call reshape_init.
+
+2020-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96867
+	* semantics.c (handle_omp_array_sections_1): Test
+	DECL_ARRAY_PARAMETER_P only on PARM_DECLs.
+
 2020-08-31  Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

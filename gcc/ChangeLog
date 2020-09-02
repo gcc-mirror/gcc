@@ -1,3 +1,54 @@
+2020-09-01  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (compute_objsize):  Only replace the upper bound
+	of a POINTER_PLUS offset when it's less than the lower bound.
+
+2020-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96808
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Do not
+	reuse accumulator memory reference for source and destination accesses.
+
+2020-09-01  Martin Liska  <mliska@suse.cz>
+
+	* cfgrtl.c (rtl_create_basic_block): Use default value for
+	growth vector function.
+	* gimple.c (gimple_set_bb): Likewise.
+	* symbol-summary.h: Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	(build_gimple_cfg): Likewise.
+	(create_bb): Likewise.
+	(move_block_to_fn): Likewise.
+
+2020-09-01  Martin Liska  <mliska@suse.cz>
+
+	* vec.h (vec_safe_grow): Change default of exact to false.
+	(vec_safe_grow_cleared): Likewise.
+
+2020-09-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/90597
+	* targhooks.c (default_vector_alignment): Return at least the
+	GET_MODE_ALIGNMENT for the type's mode.
+
+2020-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/96812
+	* tree-ssa-address.c (copy_ref_info): Also copy dependence info.
+	* cfgrtl.h (duplicate_insn_chain): Adjust prototype.
+	* cfgrtl.c (duplicate_insn_chain): Remap dependence info
+	if requested.
+	(cfg_layout_duplicate_bb): Make sure we remap dependence info.
+	* modulo-sched.c (duplicate_insns_of_cycles): Remap dependence
+	info.
+	(generate_prolog_epilog): Adjust.
+	* config/c6x/c6x.c (hwloop_optimize): Remap dependence info.
+
+2020-09-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* doc/sourcebuild.texi (has_arch_pwr5, has_arch_pwr6, has_arch_pwr7,
+	has_arch_pwr8, has_arch_pwr9): Document.
+
 2020-08-31  Carl Love  <cel@us.ibm.com>
 
 	PR target/85830
