@@ -908,7 +908,10 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
   char *buf = nullptr;
 
   /* Check C++ module include translation.  */
-  if (!file->header_unit && type < IT_HEADER_HWM && pfile->cb.translate_include)
+  if (!file->header_unit && type < IT_HEADER_HWM
+      /* Do not include translate include-next.  */
+      && type != IT_INCLUDE_NEXT
+      && pfile->cb.translate_include)
     buf = (pfile->cb.translate_include
 	   (pfile, pfile->line_table, loc, file->path));
 
