@@ -1140,6 +1140,14 @@ _D4test34__T3barVG3uw3_616263VG3wd3_646566Z1xi
 test.bar!("abc"w, "def"d).x
 #
 --format=dlang
+_D4test21__T3funVwi4294967295Z3funFNaNbNiNfZv
+test.fun!('\Uffffffff').fun()
+#
+--format=dlang
+_D4test21__T3funVwi4294967296Z3funFNaNbNiNfZv
+_D4test21__T3funVwi4294967296Z3funFNaNbNiNfZv
+#
+--format=dlang
 _D6plugin8generateFiiZAya
 plugin.generate(int, int)
 #
