@@ -1,3 +1,40 @@
+2020-09-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-42.c: New test.
+	* gcc.dg/Wstringop-overread-4.c: New test.
+
+2020-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77841
+	* g++.dg/cpp0x/initlist-new4.C: New test.
+
+2020-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96808
+	* gcc.target/powerpc/pr96808.c: New test.
+
+2020-09-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96792
+	* gcc.dg/analyzer/pr96792.c: New test.
+
+2020-09-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/95398
+	* gfortran.dg/pr95398.f90: New test.
+
+2020-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96867
+	* c-c++-common/gomp/pr96867.c: New test.
+
+2020-09-01  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_len_load_store): Call check function
+	check_effective_target_has_arch_pwr9.
+
 2020-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96798

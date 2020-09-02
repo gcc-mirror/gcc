@@ -1,3 +1,9 @@
+2020-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96867
+	* c-typeck.c (handle_omp_array_sections_1): Test C_ARRAY_PARAMETER
+	only on PARM_DECLs.
+
 2020-08-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c/96596

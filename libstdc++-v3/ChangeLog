@@ -1,3 +1,36 @@
+2020-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71960
+	* include/bits/c++config (__glibcxx_assert_impl): Remove
+	do-while so that uses of the macro need to add it.
+	(__glibcxx_assert): Rename macro for runtime assertions
+	to __glibcxx_assert_2.
+	(__glibcxx_assert_1): Define macro for constexpr assertions.
+	(__glibcxx_assert): Define macro for constexpr and runtime
+	assertions.
+	* include/bits/range_access.h (ranges::advance): Remove
+	redundant precondition checks during constant evaluation.
+	* include/parallel/base.h (_GLIBCXX_PARALLEL_ASSERT): Always
+	use do-while in macro expansion.
+	* include/std/ranges (iota_view::iota_view(W, B)): Remove
+	redundant braces.
+
+2020-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration::_S_gcd(intmax_t, intmax_t)):
+	New helper function for finding GCD of two positive intmax_t
+	values.
+	(duration::__divide): New helper alias for dividing one period
+	by another.
+	(duration::__is_harmonic): Use __divide not ratio_divide.
+	(duration(const duration<R2, P2>&)): Require the duration rep
+	types to be convertible.
+	* testsuite/20_util/duration/cons/dr2094.cc: New test.
+	* testsuite/20_util/duration/requirements/reduced_period.cc:
+	Fix definition of unused member functions in test type.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Adjust expected errors.
+
 2020-08-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/numeric (__detail::__absu(bool)): Make deleted
