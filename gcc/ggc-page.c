@@ -2184,7 +2184,7 @@ ggc_collect (void)
      total allocations haven't expanded much since the last
      collection.  */
   float allocated_last_gc =
-    MAX (G.allocated_last_gc, (size_t)param_ggc_min_heapsize * 1024);
+    MAX (G.allocated_last_gc, (size_t)param_ggc_min_heapsize * ONE_K);
 
   /* It is also good time to get memory block pool into limits.  */
   memory_block_pool::trim ();
