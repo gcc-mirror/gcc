@@ -5301,7 +5301,6 @@ trees_out::core_bools (tree t)
       WB (t->decl_with_vis.seen_in_bind_expr);
       WB (t->decl_with_vis.comdat_flag);
       WB (t->decl_with_vis.visibility_specified);
-      WB (t->decl_with_vis.comdat_flag);
       WB (t->decl_with_vis.init_priority_p);
       WB (t->decl_with_vis.shadowed_for_var_p);
       WB (t->decl_with_vis.cxx_constructor);
@@ -5446,7 +5445,6 @@ trees_in::core_bools (tree t)
       RB (t->decl_with_vis.seen_in_bind_expr);
       RB (t->decl_with_vis.comdat_flag);
       RB (t->decl_with_vis.visibility_specified);
-      RB (t->decl_with_vis.comdat_flag);
       RB (t->decl_with_vis.init_priority_p);
       RB (t->decl_with_vis.shadowed_for_var_p);
       RB (t->decl_with_vis.cxx_constructor);
@@ -10868,17 +10866,11 @@ trees_in::is_matching_decl (tree existing, tree decl)
 
   tree e_inner = inner == decl ? existing : DECL_TEMPLATE_RESULT (existing);
 
-  if (TREE_CODE (inner) == FUNCTION_DECL)
-    if (DECL_DECLARED_INLINE_P (inner))
-      DECL_DECLARED_INLINE_P (e_inner) = true;
+  if (TREE_CODE (inner) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (inner))
+    DECL_DECLARED_INLINE_P (e_inner) = true;
   if (!DECL_EXTERNAL (inner))
     DECL_EXTERNAL (e_inner) = false;
-  if (DECL_LANG_SPECIFIC (inner) && DECL_NOT_REALLY_EXTERN (inner))
-    {
-      retrofit_lang_decl (e_inner);
-      DECL_NOT_REALLY_EXTERN (e_inner) = true;
-    }
-
   // FIXME: Check default tmpl and fn parms here
 
   return true;
@@ -11104,6 +11096,16 @@ trees_out::write_function_def (tree decl)
 	}
       tree_node (cexpr->body);
     }
+
+  if (streaming_p ())
+    {
+      unsigned flags = 0;
+
+      if (DECL_NOT_REALLY_EXTERN (decl))
+	flags |= 1;
+
+      u (flags);
+    }
 }
 
 void
@@ -11155,6 +11157,8 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   else
     cexpr.decl = NULL_TREE;
 
+  unsigned flags = u ();
+
   if (get_overrun ())
     return NULL_TREE;
 
@@ -11164,8 +11168,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 
   if (installing)
     {
-      if (DECL_EXTERNAL (decl))
-	DECL_NOT_REALLY_EXTERN (decl) = true;
+      DECL_NOT_REALLY_EXTERN (decl) = flags & 1;
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
@@ -14511,6 +14514,7 @@ module_state::read_cluster (unsigned snum)
 	  cfun->returns_struct = aggr;
 
 	  if (DECL_COMDAT (decl))
+	    // FIXME: Comdat grouping?
 	    comdat_linkage (decl);
 	  note_vague_linkage_fn (decl);
 	  cgraph_node::finalize_function (decl, true);

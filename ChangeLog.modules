@@ -1,5 +1,16 @@
 2020-09-02  Nathan Sidwell  <nathan@acm.org>
 
+	Extern instantiations.
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_bools): Drop duplicate comdat
+	flag.
+	(trees_in::is_matching_decl): Don't propagate not-really-extern
+	here.
+	(trees_{in,out}::{read,write}_function_def): Stream
+	not-really-extern here.
+	gcc/testsuite/
+	* g++.dg/modules/extern-tpl-1_[abc].[CH]: New.
+
 	Rename -fnote-include-translate to -flang-info-include-translate.
 	gcc/cp/
 	* (module_translate_include): Check if matches trailing part of
