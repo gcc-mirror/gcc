@@ -15731,7 +15731,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gsi_replace (gsi, g, true);
       return true;
     /* Flavors of vec_and.  */
-    case ALTIVEC_BUILTIN_VAND:
+    case ALTIVEC_BUILTIN_VAND_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V16QI:
+    case ALTIVEC_BUILTIN_VAND_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V8HI:
+    case ALTIVEC_BUILTIN_VAND_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V4SI:
+    case ALTIVEC_BUILTIN_VAND_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V2DI:
+    case ALTIVEC_BUILTIN_VAND_V4SF:
+    case ALTIVEC_BUILTIN_VAND_V2DF:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15740,7 +15749,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gsi_replace (gsi, g, true);
       return true;
     /* Flavors of vec_andc.  */
-    case ALTIVEC_BUILTIN_VANDC:
+    case ALTIVEC_BUILTIN_VANDC_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V16QI:
+    case ALTIVEC_BUILTIN_VANDC_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V8HI:
+    case ALTIVEC_BUILTIN_VANDC_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V4SI:
+    case ALTIVEC_BUILTIN_VANDC_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V2DI:
+    case ALTIVEC_BUILTIN_VANDC_V4SF:
+    case ALTIVEC_BUILTIN_VANDC_V2DF:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15754,12 +15772,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       return true;
     /* Flavors of vec_nand.  */
     case P8V_BUILTIN_VEC_NAND:
+    case P8V_BUILTIN_NAND_V16QI_UNS:
     case P8V_BUILTIN_NAND_V16QI:
+    case P8V_BUILTIN_NAND_V8HI_UNS:
     case P8V_BUILTIN_NAND_V8HI:
+    case P8V_BUILTIN_NAND_V4SI_UNS:
     case P8V_BUILTIN_NAND_V4SI:
+    case P8V_BUILTIN_NAND_V2DI_UNS:
+    case P8V_BUILTIN_NAND_V2DI:
     case P8V_BUILTIN_NAND_V4SF:
     case P8V_BUILTIN_NAND_V2DF:
-    case P8V_BUILTIN_NAND_V2DI:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15772,7 +15794,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gsi_replace (gsi, g, true);
       return true;
     /* Flavors of vec_or.  */
-    case ALTIVEC_BUILTIN_VOR:
+    case ALTIVEC_BUILTIN_VOR_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V16QI:
+    case ALTIVEC_BUILTIN_VOR_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V8HI:
+    case ALTIVEC_BUILTIN_VOR_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V4SI:
+    case ALTIVEC_BUILTIN_VOR_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V2DI:
+    case ALTIVEC_BUILTIN_VOR_V4SF:
+    case ALTIVEC_BUILTIN_VOR_V2DF:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15781,12 +15812,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gsi_replace (gsi, g, true);
       return true;
     /* flavors of vec_orc.  */
+    case P8V_BUILTIN_ORC_V16QI_UNS:
     case P8V_BUILTIN_ORC_V16QI:
+    case P8V_BUILTIN_ORC_V8HI_UNS:
     case P8V_BUILTIN_ORC_V8HI:
+    case P8V_BUILTIN_ORC_V4SI_UNS:
     case P8V_BUILTIN_ORC_V4SI:
+    case P8V_BUILTIN_ORC_V2DI_UNS:
+    case P8V_BUILTIN_ORC_V2DI:
     case P8V_BUILTIN_ORC_V4SF:
     case P8V_BUILTIN_ORC_V2DF:
-    case P8V_BUILTIN_ORC_V2DI:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15799,7 +15834,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gsi_replace (gsi, g, true);
       return true;
     /* Flavors of vec_xor.  */
-    case ALTIVEC_BUILTIN_VXOR:
+    case ALTIVEC_BUILTIN_VXOR_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V16QI:
+    case ALTIVEC_BUILTIN_VXOR_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V8HI:
+    case ALTIVEC_BUILTIN_VXOR_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V4SI:
+    case ALTIVEC_BUILTIN_VXOR_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V2DI:
+    case ALTIVEC_BUILTIN_VXOR_V4SF:
+    case ALTIVEC_BUILTIN_VXOR_V2DF:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15808,7 +15852,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gsi_replace (gsi, g, true);
       return true;
     /* Flavors of vec_nor.  */
-    case ALTIVEC_BUILTIN_VNOR:
+    case ALTIVEC_BUILTIN_VNOR_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V16QI:
+    case ALTIVEC_BUILTIN_VNOR_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V8HI:
+    case ALTIVEC_BUILTIN_VNOR_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V4SI:
+    case ALTIVEC_BUILTIN_VNOR_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V2DI:
+    case ALTIVEC_BUILTIN_VNOR_V4SF:
+    case ALTIVEC_BUILTIN_VNOR_V2DF:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -17881,6 +17934,41 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case ALTIVEC_BUILTIN_VMINUW:
     case P8V_BUILTIN_VMAXUD:
     case P8V_BUILTIN_VMINUD:
+    case ALTIVEC_BUILTIN_VAND_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VAND_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VANDC_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VNOR_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VOR_V2DI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V16QI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V8HI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V4SI_UNS:
+    case ALTIVEC_BUILTIN_VXOR_V2DI_UNS:
+    case P8V_BUILTIN_EQV_V16QI_UNS:
+    case P8V_BUILTIN_EQV_V8HI_UNS:
+    case P8V_BUILTIN_EQV_V4SI_UNS:
+    case P8V_BUILTIN_EQV_V2DI_UNS:
+    case P8V_BUILTIN_EQV_V1TI_UNS:
+    case P8V_BUILTIN_NAND_V16QI_UNS:
+    case P8V_BUILTIN_NAND_V8HI_UNS:
+    case P8V_BUILTIN_NAND_V4SI_UNS:
+    case P8V_BUILTIN_NAND_V2DI_UNS:
+    case P8V_BUILTIN_NAND_V1TI_UNS:
+    case P8V_BUILTIN_ORC_V16QI_UNS:
+    case P8V_BUILTIN_ORC_V8HI_UNS:
+    case P8V_BUILTIN_ORC_V4SI_UNS:
+    case P8V_BUILTIN_ORC_V2DI_UNS:
+    case P8V_BUILTIN_ORC_V1TI_UNS:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;

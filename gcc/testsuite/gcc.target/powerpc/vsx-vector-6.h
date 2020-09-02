@@ -1,167 +1,154 @@
-/* This test code is included into vsx-vector-6-be.c and vsx-vector-6-le.c.  
-   The two files have the tests for the number of instructions generated for
-   LE versus BE.  */
+/* This test code is included into vsx-vector-6.p7.c, vsx-vector-6.p8.c
+   and vsx-vector-6.p9.c.  The .c files have the tests for the number
+   of instructions generated for each cpu type.  */
 
 #include <altivec.h>
 
-void foo (vector double *out, vector double *in, vector long *p_l, vector bool long *p_b,
-	  vector unsigned char *p_uc, int *i, vector float *p_f,
-	  vector bool char *outbc, vector bool int *outbi,
-	  vector bool short *outbsi, vector int *outsi,
-	  vector unsigned int *outui, vector signed char *outsc,
-	  vector unsigned char *outuc)
+typedef struct {
+  vector double d;
+  vector float f;
+  vector long sl;
+  vector int si;
+  vector short ss;
+  vector char sc;
+  vector unsigned int ui;
+  vector unsigned short int us;
+  vector unsigned char uc;
+  vector bool long long bll;
+  vector bool long bl;
+  vector bool int bi;
+  vector bool short bs;
+  vector bool char bc;
+} opnd_t;
+
+void
+func_1op (opnd_t *dst, opnd_t *src)
 {
-  vector double in0 = in[0];
-  vector double in1 = in[1];
-  vector double in2 = in[2];
-  vector long inl = *p_l;
-  vector bool long inb = *p_b;
-  vector bool long long inbl0;
-  vector bool long long inbl1;
-  vector unsigned char uc = *p_uc;
-  vector float inf0;
-  vector float inf1;
-  vector float inf2;
-  vector char inc0;
-  vector char inc1;
-  vector bool char inbc0;
-  vector bool char inbc1;
-  vector bool short inbs0;
-  vector bool short inbs1;
-  vector bool int inbi0;
-  vector bool int inbi1;
-  vector signed short int inssi0, inssi1;
-  vector unsigned short int inusi0, inusi1;
-  vector signed int insi0, insi1;
-  vector unsigned int inui0, inui1;
-  vector unsigned char inuc0, inuc1;
-  
-  *out++ = vec_abs (in0);
-  *out++ = vec_add (in0, in1);
-  *out++ = vec_and (in0, in1);
-  *out++ = vec_and (in0, inb);
-  *out++ = vec_and (inb, in0);
-  *out++ = vec_andc (in0, in1);
-  *out++ = vec_andc (in0, inb);
-  *out++ = vec_andc (inb, in0);
-  *out++ = vec_andc (inbl0, in0);
-  *out++ = vec_andc (in0, inbl0);
-
-  *out++ = vec_ceil (in0);
-  *p_b++ = vec_cmpeq (in0, in1);
-  *p_b++ = vec_cmpgt (in0, in1);
-  *p_b++ = vec_cmpge (in0, in1);
-  *p_b++ = vec_cmplt (in0, in1);
-  *p_b++ = vec_cmple (in0, in1);
-  *out++ = vec_div (in0, in1);
-  *out++ = vec_floor (in0);
-  *out++ = vec_madd (in0, in1, in2);
-  *out++ = vec_msub (in0, in1, in2);
-  *out++ = vec_max (in0, in1);
-  *out++ = vec_min (in0, in1);
-  *out++ = vec_msub (in0, in1, in2);
-  *out++ = vec_mul (in0, in1);
-  *out++ = vec_nearbyint (in0);
-  *out++ = vec_nmadd (in0, in1, in2);
-  *out++ = vec_nmsub (in0, in1, in2);
-  *out++ = vec_nor (in0, in1);
-  *out++ = vec_or (in0, in1);
-  *out++ = vec_or (in0, inb);
-  *out++ = vec_or (inb, in0);
-  *out++ = vec_perm (in0, in1, uc);
-  *out++ = vec_rint (in0);
-  *out++ = vec_sel (in0, in1, inl);
-  *out++ = vec_sel (in0, in1, inb);
-  *out++ = vec_sub (in0, in1);
-  *out++ = vec_sqrt (in0);
-  *out++ = vec_trunc (in0);
-  *out++ = vec_xor (in0, in1);
-  *out++ = vec_xor (in0, inb);
-  *out++ = vec_xor (inb, in0);
-
-  *i++ = vec_all_eq (in0, in1);
-  *i++ = vec_all_ge (in0, in1);
-  *i++ = vec_all_gt (in0, in1);
-  *i++ = vec_all_le (in0, in1);
-  *i++ = vec_all_lt (in0, in1);
-  *i++ = vec_all_nan (in0);
-  *i++ = vec_all_ne (in0, in1);
-  *i++ = vec_all_nge (in0, in1);
-  *i++ = vec_all_ngt (in0, in1);
-  *i++ = vec_all_nle (in0, in1);
-  *i++ = vec_all_nlt (in0, in1);
-  *i++ = vec_all_numeric (in0);
-  *i++ = vec_any_eq (in0, in1);
-  *i++ = vec_any_ge (in0, in1);
-  *i++ = vec_any_gt (in0, in1);
-  *i++ = vec_any_le (in0, in1);
-  *i++ = vec_any_lt (in0, in1);
-  *i++ = vec_any_nan (in0);
-  *i++ = vec_any_ne (in0, in1);
-  *i++ = vec_any_nge (in0, in1);
-  *i++ = vec_any_ngt (in0, in1);
-  *i++ = vec_any_nle (in0, in1);
-  *i++ = vec_any_nlt (in0, in1);
-  *i++ = vec_any_numeric (in0);
-
-  *p_f++ = vec_msub (inf0, inf1, inf2);
-  *p_f++ = vec_nmsub (inf0, inf1, inf2);
-  *p_f++ = vec_nmadd (inf0, inf1, inf2);
-  *p_f++ = vec_or (inf0, inf1);
-  *p_f++ = vec_trunc (inf0);
-  
-  *out++ = vec_or (inbl0, in0);
-  *out++ = vec_or (in0, inbl0);
-
-  *out++ = vec_nor (in0, in1);
-
-  *outbc++ = vec_nor (inbc0, inbc1);
-  *outbc++ = vec_andc (inbc0, inbc1);
-  *outbc++ = vec_or (inbc0, inbc1);
-
-  *outuc++ = vec_max (inuc0, inuc1);
-
-  *outbi++ = vec_andc (inbi0, inbi1);
-  *outbsi++ = vec_andc (inbs0, inbs1);
-
-  *outbsi++ = vec_andc (inbs0, inbs1);
-
-  *outbi++ = vec_nor (inbi0, inbi1);
-  *outbi++ = vec_or (inbi0, inbi1);
-
-  *outbsi++ = vec_nor (inbs0, inbs1);
-  *outbsi++ = vec_or (inbs0, inbs1);
-
-  *outsi++ = vec_msums(inssi0, inssi1, insi0);
-  *outui++ = vec_msums(inusi0, inusi1, inui0);
-
-  *p_f++ = vec_nor (inf0, inf1);
-
-  *p_f++ = vec_andc (inf0, inf1);
-  *p_f++ = vec_andc (inbi0, inf0);
-  *p_f++ = vec_andc (inf0, inbi0);
-
-  *in++ = vec_andc (inbl0, in1);
-  *in++ = vec_andc (in0, inbl1);
+  dst[0].d = vec_abs (src[0].d);
+  dst[1].d = vec_ceil (src[1].d);
+  dst[2].d = vec_floor (src[2].d);
+  dst[3].d = vec_nearbyint (src[3].d);
+  dst[4].d = vec_rint (src[4].d);
+  dst[5].d = vec_sqrt (src[5].d);
+  dst[6].d = vec_trunc (src[6].d);
+  dst[7].f = vec_trunc (src[7].f);
 }
 
-int main()
+void
+func_2op (opnd_t *dst, opnd_t *src0, opnd_t *src1)
 {
-  vector double *out;
-  vector double *in;
-  vector long *p_l;
-  vector bool long *p_b;
-  vector unsigned char *p_uc;
-  int *i;
-  vector float *p_f;
-  vector bool char *outbc;
-  vector bool int *outbi;
-  vector bool short *outbsi;
-  vector int *outsi;
-  vector unsigned int *outui;
-  vector signed char *outsc;
-  vector unsigned char *outuc;
+  dst[0].d = vec_add (src0[0].d, src1[0].d);
+  dst[1].d = vec_div (src0[1].d, src1[1].d);
+  dst[2].d = vec_max (src0[2].d, src1[2].d);
+  dst[3].uc = vec_max (src0[3].uc, src1[3].uc);
+  dst[4].d = vec_min (src0[4].d, src1[4].d);
+  dst[5].d = vec_mul (src0[5].d, src1[5].d);
+  dst[6].d = vec_sub (src0[6].d, src1[6].d);
+}
 
-  foo (out, in, p_l, p_b, p_uc, i, p_f, outbc,
-       outbi, outbsi, outsi, outui, outsc, outuc);
+void
+func_2lop (opnd_t *dst, opnd_t *src0, opnd_t *src1)
+{
+  dst[0].d = vec_and (src0[0].d, src1[0].d);
+  dst[1].d = vec_and (src0[1].d, src1[1].bl);
+  dst[2].d = vec_and (src0[2].bl, src1[2].d);
+
+  dst[3].d = vec_andc (src0[3].d, src1[3].d);
+  dst[4].d = vec_andc (src0[4].d, src1[4].bl);
+  dst[5].d = vec_andc (src0[5].bl, src1[5].d);
+  dst[6].d = vec_andc (src0[6].bll, src1[6].d);
+  dst[7].d = vec_andc (src0[7].d, src1[7].bll);
+  dst[8].bi = vec_andc (src0[8].bi, src1[8].bi);
+  dst[9].bs = vec_andc (src0[9].bs, src1[9].bs);
+  dst[10].bc = vec_andc (src0[10].bc, src1[10].bc);
+  dst[11].f = vec_andc (src0[11].f, src1[11].f);
+  dst[12].f = vec_andc (src0[12].bi, src1[12].f);
+  dst[13].f = vec_andc (src0[13].f, src1[13].bi);
+  dst[14].d = vec_andc (src0[14].bll, src1[14].d);
+  dst[15].d = vec_andc (src0[15].d, src1[15].bll);
+
+  dst[16].d = vec_nor (src0[16].d, src1[16].d);
+  dst[17].f = vec_nor (src0[17].f, src1[17].f);
+  dst[18].bi = vec_nor (src0[18].bi, src1[18].bi);
+  dst[19].bs = vec_nor (src0[19].bs, src1[19].bs);
+  dst[20].bc = vec_nor (src0[20].bc, src1[20].bc);
+
+  dst[21].d = vec_or (src0[21].d, src1[21].d);
+  dst[22].d = vec_or (src0[22].d, src1[22].bl);
+  dst[23].d = vec_or (src0[23].bl, src1[23].d);
+  dst[24].d = vec_or (src0[24].bll, src1[24].d);
+  dst[25].d = vec_or (src0[25].d, src1[25].bll);
+  dst[26].f = vec_or (src0[26].f, src1[26].f);
+  dst[27].bi = vec_or (src0[27].bi, src1[27].bi);
+  dst[28].bs = vec_or (src0[28].bs, src1[28].bs);
+  dst[29].bc = vec_or (src0[29].bc, src1[29].bc);
+
+  dst[30].d = vec_xor (src0[30].d, src1[30].d);
+  dst[31].d = vec_xor (src0[31].d, src1[31].bl);
+  dst[32].d = vec_xor (src0[32].bl, src1[32].d);
+}
+
+void
+func_cmp (opnd_t *dst, opnd_t *src0, opnd_t *src1)
+{
+  dst[0].bl = vec_cmpeq (src0[0].d, src1[0].d);
+  dst[1].bl = vec_cmpgt (src0[1].d, src1[1].d);
+  dst[2].bl = vec_cmpge (src0[2].d, src1[2].d);
+  dst[3].bl = vec_cmplt (src0[3].d, src1[3].d);
+  dst[4].bl = vec_cmple (src0[4].d, src1[4].d);
+}
+
+void
+func_all_cmp (int *dst, opnd_t *src0, opnd_t *src1)
+{
+  dst[0] = vec_all_eq (src0[0].d, src1[0].d);
+  dst[1] = vec_all_ge (src0[1].d, src1[1].d);
+  dst[2] = vec_all_gt (src0[2].d, src1[2].d);
+  dst[3] = vec_all_le (src0[3].d, src1[3].d);
+  dst[4] = vec_all_lt (src0[4].d, src1[4].d);
+  dst[5] = vec_all_nan (src0[5].d);
+  dst[6] = vec_all_ne (src0[6].d, src1[6].d);
+  dst[7] = vec_all_nge (src0[7].d, src1[7].d);
+  dst[8] = vec_all_ngt (src0[8].d, src1[8].d);
+  dst[9] = vec_all_nle (src0[9].d, src1[9].d);
+  dst[10] = vec_all_nlt (src0[10].d, src1[10].d);
+  dst[11] = vec_all_numeric (src0[11].d);
+  dst[12] = vec_any_eq (src0[12].d, src1[12].d);
+  dst[13] = vec_any_ge (src0[13].d, src1[13].d);
+  dst[14] = vec_any_gt (src0[14].d, src1[14].d);
+  dst[15] = vec_any_le (src0[15].d, src1[15].d);
+  dst[16] = vec_any_lt (src0[16].d, src1[16].d);
+  dst[17] = vec_any_nan (src0[17].d);
+  dst[18] = vec_any_ne (src0[18].d, src1[18].d);
+  dst[19] = vec_any_nge (src0[19].d, src1[19].d);
+  dst[20] = vec_any_ngt (src0[20].d, src1[20].d);
+  dst[21] = vec_any_nle (src0[21].d, src1[21].d);
+  dst[22] = vec_any_nlt (src0[22].d, src1[22].d);
+  dst[23] = vec_any_numeric (src0[23].d);
+}
+
+void
+func_3op (opnd_t *dst, opnd_t *src0, opnd_t *src1, opnd_t *src2)
+{
+  dst[0].d = vec_madd (src0[0].d, src1[0].d, src2[0].d);
+  dst[1].d = vec_msub (src0[1].d, src1[1].d, src2[1].d);
+  dst[2].d = vec_nmadd (src0[2].d, src1[2].d, src2[2].d);
+  dst[3].d = vec_nmsub (src0[3].d, src1[3].d, src2[3].d);
+
+  dst[4].f = vec_madd (src0[4].f, src1[4].f, src2[4].f);
+  dst[5].f = vec_msub (src0[5].f, src1[5].f, src2[5].f);
+  dst[6].f = vec_nmsub (src0[6].f, src1[6].f, src2[6].f);
+  dst[7].f = vec_nmadd (src0[7].f, src1[7].f, src2[7].f);
+
+#if defined (__BIG_ENDIAN__) || defined (_ARCH_PWR9)
+  dst[8].d = vec_perm (src0[8].d, src1[8].d, src2[8].uc);
+#else
+  dst[8].d = vec_perm (src0[8].d, src1[8].d, ~src2[8].uc);
+#endif
+
+  dst[9].d = vec_sel (src0[9].d, src1[9].d, src2[9].d);
+  dst[10].d = vec_sel (src0[10].d, src1[10].d, src2[10].bl);
+
+  dst[11].si = vec_msums(src0[11].ss, src1[11].ss, src2[11].si);
+  dst[12].ui = vec_msums(src0[12].us, src1[12].us, src2[12].ui);
 }

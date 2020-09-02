@@ -3,7 +3,9 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -O2" } */
+/* Disable ipa-icf to avoid compiler to generate tail call for some function,
+   we can not get the expected assembly due the omitted function body.  */
+/* { dg-options "-mpower8-vector -O2 -fno-ipa-icf" } */
 
 #include <altivec.h>
 

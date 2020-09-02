@@ -3,7 +3,9 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2" } */
+/* Disable ipa-icf to avoid compiler to generate tail call for some function,
+   we can not get the expected assembly due the omitted function body.  */
+/* { dg-options "-mvsx -O2 -fno-ipa-icf" } */
 
 #include <altivec.h>
 
