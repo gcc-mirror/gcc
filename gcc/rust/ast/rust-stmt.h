@@ -13,34 +13,19 @@ class EmptyStmt : public Stmt
   Location locus;
 
 public:
-  ::std::string as_string () const { return ::std::string (1, ';'); }
+  std::string as_string () const override { return std::string (1, ';'); }
 
   EmptyStmt (Location locus) : locus (locus) {}
 
   Location get_locus () const { return locus; }
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual EmptyStmt *clone_stmt_impl () const OVERRIDE
-  {
-    return new EmptyStmt (*this);
-  }
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  EmptyStmt *clone_stmt_impl () const override { return new EmptyStmt (*this); }
 };
-
-/* This is syntactically identical to declaring an item inside a module BUT it
- * has block scope. Type of "declaration statement" as it introduces new name
- * into scope */
-/*class ItemStatement : public Statement {
-    // TODO: put in same params as regular item
-    // maybe even merge data structure with module item?
-
-  public:
-    ::std::string as_string() const;
-};*/
-// removed - just made item inherit from statement
 
 /* Variable assignment let statement - type of "declaration statement" as it
  * introduces new name into scope */
@@ -48,47 +33,37 @@ class LetStmt : public Stmt
 {
 public:
   // bool has_outer_attrs;
-  ::std::vector<Attribute> outer_attrs;
+  std::vector<Attribute> outer_attrs;
 
-  // Pattern variables_pattern;
-  ::std::unique_ptr<Pattern> variables_pattern;
+  std::unique_ptr<Pattern> variables_pattern;
 
   // bool has_type;
-  // Type type;
-  ::std::unique_ptr<Type> type;
+  std::unique_ptr<Type> type;
 
   // bool has_init_expr;
-  // Expr* init_expr;
-  ::std::unique_ptr<Expr> init_expr;
+  std::unique_ptr<Expr> init_expr;
 
   Location locus;
 
   Type *inferedType;
 
   // Returns whether let statement has outer attributes.
-  inline bool has_outer_attrs () const { return !outer_attrs.empty (); }
+  bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
   // Returns whether let statement has a given return type.
-  inline bool has_type () const { return type != NULL; }
+  bool has_type () const { return type != nullptr; }
 
   // Returns whether let statement has an initialisation expression.
-  inline bool has_init_expr () const { return init_expr != NULL; }
+  bool has_init_expr () const { return init_expr != nullptr; }
 
-  /*~LetStatement() {
-      if (has_init_expr) {
-	  delete init_expr;
-      }
-  }*/
+  std::string as_string () const override;
 
-  ::std::string as_string () const;
-
-  LetStmt (::std::unique_ptr<Pattern> variables_pattern,
-	   ::std::unique_ptr<Expr> init_expr, ::std::unique_ptr<Type> type,
-	   ::std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (::std::move (outer_attrs)),
-      variables_pattern (::std::move (variables_pattern)),
-      type (::std::move (type)), init_expr (::std::move (init_expr)),
-      locus (locus)
+  LetStmt (std::unique_ptr<Pattern> variables_pattern,
+	   std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
+	   std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)),
+      variables_pattern (std::move (variables_pattern)),
+      type (std::move (type)), init_expr (std::move (init_expr)), locus (locus)
   {}
 
   // Copy constructor with clone
@@ -98,8 +73,6 @@ public:
       type (other.type->clone_type ()),
       init_expr (other.init_expr->clone_expr ()), locus (other.locus)
   {}
-
-  // Destructor - define here if required
 
   // Overloaded assignment operator to clone
   LetStmt &operator= (LetStmt const &other)
@@ -119,19 +92,16 @@ public:
 
   Location get_locus () const { return locus; }
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual LetStmt *clone_stmt_impl () const OVERRIDE
-  {
-    return new LetStmt (*this);
-  }
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  LetStmt *clone_stmt_impl () const override { return new LetStmt (*this); }
 };
 
-// Abstract base class for expression statements (statements containing an
-// expression)
+/* Abstract base class for expression statements (statements containing an
+ * expression) */
 class ExprStmt : public Stmt
 {
   // TODO: add any useful virtual functions
@@ -154,27 +124,21 @@ public:
   /* HACK: cannot ensure type safety of ExprWithoutBlock due to Pratt parsing,
    * so have to store more general type of Expr. FIXME: fix this issue somehow
    * or redesign AST. */
-  //::std::unique_ptr<ExprWithoutBlock> expr;
-  ::std::unique_ptr<Expr> expr;
+  // std::unique_ptr<ExprWithoutBlock> expr;
+  std::unique_ptr<Expr> expr;
 
-  /*~ExpressionStatementWithoutBlock() {
-      delete expr;
-  }*/
+  std::string as_string () const override;
 
-  ::std::string as_string () const;
-
-  // ExprStmtWithoutBlock(::std::unique_ptr<ExprWithoutBlock> expr) :
-  // expr(::std::move(expr)) {}
-  ExprStmtWithoutBlock (::std::unique_ptr<Expr> expr, Location locus)
-    : ExprStmt (locus), expr (::std::move (expr))
+  // ExprStmtWithoutBlock(std::unique_ptr<ExprWithoutBlock> expr) :
+  // expr(std::move(expr)) {}
+  ExprStmtWithoutBlock (std::unique_ptr<Expr> expr, Location locus)
+    : ExprStmt (locus), expr (std::move (expr))
   {}
 
   // Copy constructor with clone
   ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
     : ExprStmt (other), expr (other.expr->clone_expr /*_without_block*/ ())
   {}
-
-  // Destructor - define here if required
 
   // Overloaded assignment operator to clone
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock const &other)
@@ -189,12 +153,12 @@ public:
   ExprStmtWithoutBlock (ExprStmtWithoutBlock &&other) = default;
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock &&other) = default;
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual ExprStmtWithoutBlock *clone_stmt_impl () const OVERRIDE
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ExprStmtWithoutBlock *clone_stmt_impl () const override
   {
     return new ExprStmtWithoutBlock (*this);
   }
@@ -204,27 +168,20 @@ protected:
 class ExprStmtWithBlock : public ExprStmt
 {
 public:
-  // ExprWithBlock* expr;
-  ::std::unique_ptr<ExprWithBlock> expr;
+  std::unique_ptr<ExprWithBlock> expr;
 
-  /*~ExpressionStatementWithBlock() {
-      delete expr;
-  }*/
+  std::string as_string () const override;
 
-  ::std::string as_string () const;
+  std::vector<LetStmt *> locals;
 
-  ::std::vector<LetStmt *> locals;
-
-  ExprStmtWithBlock (::std::unique_ptr<ExprWithBlock> expr, Location locus)
-    : ExprStmt (locus), expr (::std::move (expr))
+  ExprStmtWithBlock (std::unique_ptr<ExprWithBlock> expr, Location locus)
+    : ExprStmt (locus), expr (std::move (expr))
   {}
 
   // Copy constructor with clone
   ExprStmtWithBlock (ExprStmtWithBlock const &other)
     : ExprStmt (other), expr (other.expr->clone_expr_with_block ())
   {}
-
-  // Destructor - define here if required
 
   // Overloaded assignment operator to clone
   ExprStmtWithBlock &operator= (ExprStmtWithBlock const &other)
@@ -239,24 +196,20 @@ public:
   ExprStmtWithBlock (ExprStmtWithBlock &&other) = default;
   ExprStmtWithBlock &operator= (ExprStmtWithBlock &&other) = default;
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual ExprStmtWithBlock *clone_stmt_impl () const OVERRIDE
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ExprStmtWithBlock *clone_stmt_impl () const override
   {
     return new ExprStmtWithBlock (*this);
   }
 };
 
-// Replaced definition of MacroInvocationSemi with forward decl - defined in
-// rust-macro.h
+/* Replaced definition of MacroInvocationSemi with forward decl - defined in
+ * rust-macro.h */
 class MacroInvocationSemi;
-/*class MacroInvocationSemi : public Statement {
-  public:
-    ::std::string as_string() const;
-};*/
 } // namespace AST
 } // namespace Rust
 

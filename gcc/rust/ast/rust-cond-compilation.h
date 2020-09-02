@@ -13,10 +13,9 @@ public:
   virtual ~ConfigurationPredicate () {}
 
   // Unique pointer custom clone function
-  ::std::unique_ptr<ConfigurationPredicate>
-  clone_configuration_predicate () const
+  std::unique_ptr<ConfigurationPredicate> clone_configuration_predicate () const
   {
-    return ::std::unique_ptr<ConfigurationPredicate> (
+    return std::unique_ptr<ConfigurationPredicate> (
       clone_configuration_predicate_impl ());
   }
 
@@ -35,28 +34,27 @@ class ConfigurationOption : public ConfigurationPredicate
   Identifier option_name;
 
   // bool has_string_literal_option_body;
-  ::std::string option_value; // technically a string or raw string literal
+  std::string option_value; // technically a string or raw string literal
 
 public:
-  // Returns whether the configuration option has a "value" part of the
-  // key-value pair.
-  inline bool has_option_value () const { return !option_value.empty (); }
+  /* Returns whether the configuration option has a "value" part of the
+   * key-value pair. */
+  bool has_option_value () const { return !option_value.empty (); }
 
   // Key-value pair constructor
-  ConfigurationOption (Identifier option_name, ::std::string option_value)
+  ConfigurationOption (Identifier option_name, std::string option_value)
     : option_name (option_name), option_value (option_value)
   {}
 
   // Name-only constructor
   ConfigurationOption (Identifier option_name) : option_name (option_name) {}
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual ConfigurationOption *
-  clone_configuration_predicate_impl () const OVERRIDE
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ConfigurationOption *clone_configuration_predicate_impl () const override
   {
     return new ConfigurationOption (*this);
   }
@@ -65,27 +63,27 @@ protected:
 // TODO: inline
 struct ConfigurationPredicateList
 {
-  ::std::vector< ::std::unique_ptr<ConfigurationPredicate> > predicate_list;
+  std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list;
 };
 
 // Predicate that returns true if all of the supplied predicates return true.
 class ConfigurationAll : public ConfigurationPredicate
 {
-  ::std::vector< ::std::unique_ptr<ConfigurationPredicate> >
+  std::vector<std::unique_ptr<ConfigurationPredicate>>
     predicate_list; // inlined form
 
 public:
   ConfigurationAll (
-    ::std::vector< ::std::unique_ptr<ConfigurationPredicate> > predicate_list)
+    std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list)
     : predicate_list (predicate_list)
   {}
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual ConfigurationAll *clone_configuration_predicate_impl () const OVERRIDE
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ConfigurationAll *clone_configuration_predicate_impl () const override
   {
     return new ConfigurationAll (*this);
   }
@@ -94,31 +92,31 @@ protected:
 // Predicate that returns true if any of the supplied predicates are true.
 class ConfigurationAny : public ConfigurationPredicate
 {
-  ::std::vector< ::std::unique_ptr<ConfigurationPredicate> >
+  std::vector<std::unique_ptr<ConfigurationPredicate>>
     predicate_list; // inlined form
 
 public:
   ConfigurationAny (
-    ::std::vector< ::std::unique_ptr<ConfigurationPredicate> > predicate_list)
+    std::vector<std::unique_ptr<ConfigurationPredicate>> predicate_list)
     : predicate_list (predicate_list)
   {}
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual ConfigurationAny *clone_configuration_predicate_impl () const OVERRIDE
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ConfigurationAny *clone_configuration_predicate_impl () const override
   {
     return new ConfigurationAny (*this);
   }
 };
 
-// Predicate that produces the negation of a supplied other configuration
-// predicate.
+/* Predicate that produces the negation of a supplied other configuration
+ * predicate. */
 class ConfigurationNot : public ConfigurationPredicate
 {
-  ::std::unique_ptr<ConfigurationPredicate> config_to_negate;
+  std::unique_ptr<ConfigurationPredicate> config_to_negate;
 
 public:
   ConfigurationNot (ConfigurationPredicate *config_to_negate)
@@ -128,10 +126,8 @@ public:
   // Copy constructor with clone
   ConfigurationNot (ConfigurationNot const &other)
     : config_to_negate (
-	other.config_to_negate->clone_configuration_predicate ())
+      other.config_to_negate->clone_configuration_predicate ())
   {}
-
-  // Destructor - define here if required
 
   // Overloaded assignment operator to clone
   ConfigurationNot &operator= (ConfigurationNot const &other)
@@ -145,12 +141,12 @@ public:
   ConfigurationNot (ConfigurationNot &&other) = default;
   ConfigurationNot &operator= (ConfigurationNot &&other) = default;
 
-  virtual void accept_vis (ASTVisitor &vis) OVERRIDE;
+  void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  virtual ConfigurationNot *clone_configuration_predicate_impl () const OVERRIDE
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ConfigurationNot *clone_configuration_predicate_impl () const override
   {
     return new ConfigurationNot (*this);
   }
@@ -159,7 +155,7 @@ protected:
 // TODO: relationship to other attributes?
 class CfgAttribute
 {
-  ::std::unique_ptr<ConfigurationPredicate> config_to_include;
+  std::unique_ptr<ConfigurationPredicate> config_to_include;
 
 public:
   CfgAttribute (ConfigurationPredicate *config_to_include)
@@ -169,10 +165,8 @@ public:
   // Copy constructor with clone
   CfgAttribute (CfgAttribute const &other)
     : config_to_include (
-	other.config_to_include->clone_configuration_predicate ())
+      other.config_to_include->clone_configuration_predicate ())
   {}
-
-  // Destructor - define here if required
 
   // Overloaded assignment operator to clone
   CfgAttribute &operator= (CfgAttribute const &other)
@@ -195,29 +189,27 @@ public:
 // TODO: inline
 struct CfgAttrs
 {
-  ::std::vector<Attribute> cfg_attrs;
+  std::vector<Attribute> cfg_attrs;
 };
 
 // TODO: relationship to other attributes?
 class CfgAttrAttribute
 {
-  ::std::unique_ptr<ConfigurationPredicate> config_to_include;
-  ::std::vector<Attribute> cfg_attrs;
+  std::unique_ptr<ConfigurationPredicate> config_to_include;
+  std::vector<Attribute> cfg_attrs;
 
 public:
   CfgAttrAttribute (ConfigurationPredicate *config_to_include,
-		    ::std::vector<Attribute> cfg_attrs)
+		    std::vector<Attribute> cfg_attrs)
     : config_to_include (config_to_include), cfg_attrs (cfg_attrs)
   {}
 
   // Copy constructor with clone
   CfgAttrAttribute (CfgAttrAttribute const &other)
     : config_to_include (
-	other.config_to_include->clone_configuration_predicate ()),
+      other.config_to_include->clone_configuration_predicate ()),
       cfg_attrs (cfg_attrs)
   {}
-
-  // Destructor - define here if required
 
   // Overloaded assignment operator to clone
   CfgAttrAttribute &operator= (CfgAttrAttribute const &other)

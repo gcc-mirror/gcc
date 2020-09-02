@@ -25,19 +25,10 @@ extern Backend *
 rust_get_backend ();
 
 namespace Rust {
-// Simple wrapper for FILE* that simplifies destruction.
-struct RAIIFile
-{
-  FILE *file;
-
-  RAIIFile (const char *filename) : file (fopen (filename, "r")) {}
-
-  ~RAIIFile () { fclose (file); }
-};
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
 void
-Session::implicitly_enable_feature (::std::string feature_name)
+Session::implicitly_enable_feature (std::string feature_name)
 {
   // TODO: is this really required since features added would be complete via
   // target spec?
@@ -91,7 +82,7 @@ Session::implicitly_enable_feature (::std::string feature_name)
 	}
 
       options.target_data.insert_key_value_pair ("target_feature",
-						 ::std::move (feature_name));
+						 std::move (feature_name));
     }
 }
 
@@ -235,7 +226,7 @@ Session::enable_features ()
       }
   }
   options.target_data.features.shrink_to_fit();
-  ::std::sort(options.target_data.features.begin(),
+  std::sort(options.target_data.features.begin(),
   options.target_data.features.end());*/
 }
 
@@ -313,7 +304,7 @@ Session::handle_option (
       // enable dump and return whether this was successful
       if (arg != NULL)
 	{
-	  ret = enable_dump (::std::string (arg));
+	  ret = enable_dump (std::string (arg));
 	}
       else
 	{
@@ -332,7 +323,7 @@ Session::handle_option (
 /* Enables a certain dump depending on the name passed in. Returns true if name
  * is valid, false otherwise. */
 bool
-Session::enable_dump (::std::string arg)
+Session::enable_dump (std::string arg)
 {
   // FIXME: change dumping algorithm when new non-inhibiting dump system is
   // created
@@ -411,7 +402,7 @@ Session::parse_file (const char *filename)
 {
   RAIIFile file_wrap (filename);
 
-  if (file_wrap.file == NULL)
+  if (file_wrap.get_raw() == NULL)
     {
       fatal_error (UNKNOWN_LOCATION, "cannot open filename %s: %m", filename);
     }
@@ -419,10 +410,10 @@ Session::parse_file (const char *filename)
   Backend *backend = rust_get_backend ();
 
   // parse file here
-  // create lexer and parser - these are file-specific and so aren't instance
-  // variables
-  Rust::Lexer lex (filename, file_wrap.file, rust_get_linemap ());
-  Rust::Parser parser (lex);
+  /* create lexer and parser - these are file-specific and so aren't instance
+   * variables */
+  Rust::Lexer lex (filename, std::move (file_wrap), rust_get_linemap ());
+  Rust::Parser parser (/*std::move (*/lex/*)*/);
 
   // generate crate from parser
   auto parsed_crate = parser.parse_crate ();
@@ -518,7 +509,7 @@ check_cfg (const AST::Attribute &attr ATTRIBUTE_UNUSED)
 // Checks whether any 'cfg' attribute on the item prevents compilation of that
 // item.
 bool
-check_item_cfg (::std::vector<AST::Attribute> attrs)
+check_item_cfg (std::vector<AST::Attribute> attrs)
 {
   for (const auto &attr : attrs)
     {
@@ -534,7 +525,7 @@ check_item_cfg (::std::vector<AST::Attribute> attrs)
 
 // TODO: actually implement method
 void
-load_extern_crate (::std::string crate_name ATTRIBUTE_UNUSED)
+load_extern_crate (std::string crate_name ATTRIBUTE_UNUSED)
 {}
 // TODO: deprecated - don't use
 
@@ -555,7 +546,7 @@ Session::debug_dump_load_crates (Parser &parser)
    * enable using Option and Copy without qualifying it or importing it via
    * 'use' manually) */
 
-  ::std::vector< ::std::string> crate_names;
+  std::vector<std::string> crate_names;
   for (const auto &item : crate.items)
     {
       // if item is extern crate, add name? to list of stuff ONLY IF config is
@@ -656,7 +647,7 @@ Session::injection (AST::Crate &crate)
    * test should be prioritised since they seem to be used the most. */
 
   // crate injection
-  ::std::vector< ::std::string> names;
+  std::vector<std::string> names;
   if (contains_name (crate.inner_attrs, "no_core"))
     {
       // no prelude
@@ -689,33 +680,33 @@ Session::injection (AST::Crate &crate)
       AST::Attribute attr (AST::SimplePath::from_str ("macro_use"), NULL);
 
       // create "extern crate" item with the name
-      ::std::unique_ptr<AST::ExternCrate> extern_crate (
+      std::unique_ptr<AST::ExternCrate> extern_crate (
 	new AST::ExternCrate (*it, AST::Visibility::create_error (),
-			      {::std::move (attr)},
+			      {std::move (attr)},
 			      Linemap::unknown_location ()));
 
       // insert at beginning
-      crate.items.insert (crate.items.begin (), ::std::move (extern_crate));
+      crate.items.insert (crate.items.begin (), std::move (extern_crate));
     }
 
   // create use tree path
   // prelude is injected_crate_name
-  ::std::vector<AST::SimplePathSegment> segments
+  std::vector<AST::SimplePathSegment> segments
     = {AST::SimplePathSegment (injected_crate_name),
        AST::SimplePathSegment ("prelude"), AST::SimplePathSegment ("v1")};
   // create use tree and decl
-  ::std::unique_ptr<AST::UseTreeGlob> use_tree (
+  std::unique_ptr<AST::UseTreeGlob> use_tree (
     new AST::UseTreeGlob (AST::UseTreeGlob::PATH_PREFIXED,
-			  AST::SimplePath (::std::move (segments)),
+			  AST::SimplePath (std::move (segments)),
 			  Location ()));
   AST::Attribute prelude_attr (AST::SimplePath::from_str ("prelude_import"),
 			       NULL);
-  ::std::unique_ptr<AST::UseDeclaration> use_decl (
-    new AST::UseDeclaration (::std::move (use_tree),
+  std::unique_ptr<AST::UseDeclaration> use_decl (
+    new AST::UseDeclaration (std::move (use_tree),
 			     AST::Visibility::create_error (),
-			     {::std::move (prelude_attr)}, Location ()));
+			     {std::move (prelude_attr)}, Location ()));
 
-  crate.items.insert (crate.items.begin (), ::std::move (use_decl));
+  crate.items.insert (crate.items.begin (), std::move (use_decl));
 
   /* TODO: potentially add checking attribute crate type? I can't figure out
    * what this does currently comment says "Unconditionally collect crate types

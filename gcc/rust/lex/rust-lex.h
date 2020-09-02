@@ -9,6 +9,36 @@
 #include <tuple>
 
 namespace Rust {
+// Simple wrapper for FILE* that simplifies destruction.
+struct RAIIFile
+{
+private:
+  FILE *file;
+
+public:
+  RAIIFile (const char *filename) : file (fopen (filename, "r")) {}
+  RAIIFile (const RAIIFile &other) = delete;
+  RAIIFile &operator= (const RAIIFile &other) = delete;
+
+  // have to specify setting file to nullptr, otherwise unintended fclose occurs
+  RAIIFile (RAIIFile &&other) : file (other.file) { other.file = nullptr; }
+  RAIIFile &operator= (RAIIFile &&other)
+  {
+    file = other.file;
+    other.file = nullptr;
+
+    return *this;
+  }
+
+  ~RAIIFile ()
+  {
+    if (file != nullptr)
+      fclose (file);
+  }
+
+  FILE *get_raw () { return file; }
+};
+
 class Lexer
 {
 private:
@@ -65,7 +95,7 @@ private:
 
 public:
   // Construct lexer with input file and filename provided
-  Lexer (const char *filename, FILE *input, Linemap *linemap);
+  Lexer (const char *filename, RAIIFile input, Linemap *linemap);
   ~Lexer ();
 
   // don't allow copy semantics (for now, at least)
@@ -88,12 +118,19 @@ public:
 
   // Replaces the current token with a specified token.
   void replace_current_token (TokenPtr replacement);
+  // FIXME: don't use anymore
+
+  /* Splits the current token into two. Intended for use with nested generics
+   * closes (i.e. T<U<X>> where >> is wrongly lexed as one token). Note that
+   * this will only work with "simple" tokens like punctuation. */
+  void split_current_token (TokenId new_left, TokenId new_right);
 
   Linemap *get_line_map () { return line_map; }
 
 private:
   // File for use as input.
-  FILE *input;
+  RAIIFile input;
+  // TODO is this actually required? could just have file storage in InputSource
 
   // Current line number.
   int current_line;
@@ -104,8 +141,8 @@ private:
   // Line map.
   Linemap *line_map;
 
-  // Max column number that can be quickly allocated - higher may require
-  // allocating new linemap
+  /* Max column number that can be quickly allocated - higher may require
+   * allocating new linemap */
   static const int max_column_hint = 80;
 
   // Input source wrapper thing.
@@ -122,7 +159,7 @@ private:
   };
 
   // The input source for the lexer.
-  InputSource input_source;
+  // InputSource input_source;
   // Input file queue.
   buffered_queue<int, InputSource> input_queue;
 
@@ -140,7 +177,7 @@ private:
   };
 
   // The token source for the lexer.
-  TokenSource token_source;
+  // TokenSource token_source;
   // Token stream queue.
   buffered_queue<std::shared_ptr<Token>, TokenSource> token_queue;
 };

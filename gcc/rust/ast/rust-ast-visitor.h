@@ -7,8 +7,8 @@
 
 namespace Rust {
 namespace AST {
-// Pure abstract class that provides an interface for accessing different
-// classes of the AST.
+/* Pure abstract class that provides an interface for accessing different
+ * classes of the AST. */
 class ASTVisitor
 {
 public:

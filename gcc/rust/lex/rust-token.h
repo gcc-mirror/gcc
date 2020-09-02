@@ -8,8 +8,6 @@
 // order: config, system, coretypes, input
 
 #include <string>
-//#include <tr1/memory> // as shared_ptr is not available in std memory in c++03
-// replace with proper std::memory in c++11
 #include <memory>
 
 #include "rust-linemap.h"
@@ -51,8 +49,8 @@ enum PrimitiveCoreType
 //
 // Keep RS_TOKEN_KEYWORD sorted
 
-// note that abstract, async, become, box, do, final, macro, override, priv,
-// try, typeof, unsized, virtual, and yield are unused
+/* note that abstract, async, become, box, do, final, macro, override, priv,
+ * try, typeof, unsized, virtual, and yield are unused */
 #define RS_TOKEN_LIST                                                          \
   RS_TOKEN (FIRST_TOKEN, "<first-token-marker>")                               \
   RS_TOKEN (END_OF_FILE, "end of file")                                        \
@@ -146,7 +144,7 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD (AS, "as")                                                  \
   RS_TOKEN_KEYWORD (ASYNC, "async")   /* unused */                             \
   RS_TOKEN_KEYWORD (BECOME, "become") /* unused */                             \
-  RS_TOKEN_KEYWORD (BOX, "box")       /* unused */                             \
+  RS_TOKEN_KEYWORD (BOX, "box")	      /* unused */                             \
   RS_TOKEN_KEYWORD (BREAK, "break")                                            \
   RS_TOKEN_KEYWORD (CONST, "const")                                            \
   RS_TOKEN_KEYWORD (CONTINUE, "continue")                                      \
@@ -171,7 +169,7 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD (MOVE, "move")                                              \
   RS_TOKEN_KEYWORD (MUT, "mut")                                                \
   RS_TOKEN_KEYWORD (OVERRIDE_TOK, "override") /* unused */                     \
-  RS_TOKEN_KEYWORD (PRIV, "priv")	     /* unused */                     \
+  RS_TOKEN_KEYWORD (PRIV, "priv")	      /* unused */                     \
   RS_TOKEN_KEYWORD (PUB, "pub")                                                \
   RS_TOKEN_KEYWORD (REF, "ref")                                                \
   RS_TOKEN_KEYWORD (RETURN_TOK, "return")                                      \
@@ -209,15 +207,15 @@ enum TokenId
 // dodgy "TokenPtr" declaration with Token forward declaration
 class Token;
 // A smart pointer (shared_ptr) to Token.
-typedef ::std::shared_ptr<Token> TokenPtr;
+typedef std::shared_ptr<Token> TokenPtr;
 // A smart pointer (shared_ptr) to a constant Token.
-typedef ::std::shared_ptr<const Token> const_TokenPtr;
+typedef std::shared_ptr<const Token> const_TokenPtr;
 
 // Hackily defined way to get token description for enum value using x-macros
 const char *
 get_token_description (TokenId id);
-// Hackily defined way to get token description as a string for enum value using
-// x-macros
+/* Hackily defined way to get token description as a string for enum value using
+ * x-macros */
 const char *
 token_id_to_str (TokenId id);
 // Get type hint description as a string.
@@ -233,117 +231,136 @@ private:
   // Token location.
   Location locus;
   // Associated text (if any) of token.
-  ::std::string *str;
-  // Type hint for token based on lexer data (e.g. type suffix). Does not exist
-  // for most tokens.
+  std::string *str;
+  // TODO: maybe remove issues and just store std::string as value?
+  /* Type hint for token based on lexer data (e.g. type suffix). Does not exist
+   * for most tokens. */
   PrimitiveCoreType type_hint;
 
   // Token constructor from token id and location. Has a null string.
   Token (TokenId token_id, Location location)
-    : token_id (token_id), locus (location), str (NULL),
+    : token_id (token_id), locus (location), str (nullptr),
       type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a string.
-  Token (TokenId token_id, Location location, const ::std::string &paramStr)
-    : token_id (token_id), locus (location), str (new ::std::string (paramStr)),
+  Token (TokenId token_id, Location location, const std::string &paramStr)
+    : token_id (token_id), locus (location), str (new std::string (paramStr)),
       type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a char.
   Token (TokenId token_id, Location location, char paramChar)
     : token_id (token_id), locus (location),
-      str (new ::std::string (1, paramChar)), type_hint (CORETYPE_UNKNOWN)
+      str (new std::string (1, paramChar)), type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a "codepoint".
   Token (TokenId token_id, Location location, Codepoint paramCodepoint)
     : token_id (token_id), locus (location),
-      str (new ::std::string (paramCodepoint.as_string ())),
+      str (new std::string (paramCodepoint.as_string ())),
       type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, a string, and type hint.
-  Token (TokenId token_id, Location location, const ::std::string &paramStr,
+  Token (TokenId token_id, Location location, const std::string &paramStr,
 	 PrimitiveCoreType parType)
-    : token_id (token_id), locus (location), str (new ::std::string (paramStr)),
+    : token_id (token_id), locus (location), str (new std::string (paramStr)),
       type_hint (parType)
   {}
 
-  // No default initialiser.
-  Token ();
-  // Do not copy/assign tokens.
-  Token (const Token &);
-  Token &operator= (const Token &);
-
 public:
+  // No default constructor.
+  Token () = delete;
+  // Do not copy/assign tokens.
+  Token (const Token &) = delete;
+  Token &operator= (const Token &) = delete;
+
+  // Allow moving tokens.
+  Token (Token &&other) = default;
+  Token &operator= (Token &&other) = default;
+
   ~Token () { delete str; }
+
+  /* TODO: make_shared (which saves a heap allocation) does not work with the
+   * private constructor */
 
   // Makes and returns a new TokenPtr (with null string).
   static TokenPtr make (TokenId token_id, Location locus)
   {
+    // return std::make_shared<Token> (token_id, locus);
     return TokenPtr (new Token (token_id, locus));
   }
 
   // Makes and returns a new TokenPtr of type IDENTIFIER.
-  static TokenPtr make_identifier (Location locus, const ::std::string &str)
+  static TokenPtr make_identifier (Location locus, const std::string &str)
   {
+    // return std::make_shared<Token> (IDENTIFIER, locus, str);
     return TokenPtr (new Token (IDENTIFIER, locus, str));
   }
 
   // Makes and returns a new TokenPtr of type INT_LITERAL.
-  static TokenPtr make_int (Location locus, const ::std::string &str)
+  /*static TokenPtr make_int (Location locus, const std::string &str)
   {
-    return TokenPtr (new Token (INT_LITERAL, locus, str));
-  }
+    //return TokenPtr (new Token (INT_LITERAL, locus, str));
+    return std::make_shared<Token>(INT_LITERAL, locus, str);
+  }*/
 
   // Makes and returns a new TokenPtr of type INT_LITERAL.
-  static TokenPtr make_int (Location locus, const ::std::string &str,
-			    PrimitiveCoreType type_hint)
+  static TokenPtr make_int (Location locus, const std::string &str,
+			    PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
+    // return std::make_shared<Token> (INT_LITERAL, locus, str, type_hint);
     return TokenPtr (new Token (INT_LITERAL, locus, str, type_hint));
   }
 
   // Makes and returns a new TokenPtr of type FLOAT_LITERAL.
-  static TokenPtr make_float (Location locus, const ::std::string &str)
+  /*static TokenPtr make_float (Location locus, const std::string &str)
   {
     return TokenPtr (new Token (FLOAT_LITERAL, locus, str));
-  }
+    return std::make_shared<Token>(FLOAT_LITERAL, locus, str);
+  }*/
 
   // Makes and returns a new TokenPtr of type FLOAT_LITERAL.
-  static TokenPtr make_float (Location locus, const ::std::string &str,
-			      PrimitiveCoreType type_hint)
+  static TokenPtr make_float (Location locus, const std::string &str,
+			      PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
+    // return std::make_shared<Token> (FLOAT_LITERAL, locus, str, type_hint);
     return TokenPtr (new Token (FLOAT_LITERAL, locus, str, type_hint));
   }
 
   // Makes and returns a new TokenPtr of type STRING_LITERAL.
-  static TokenPtr make_string (Location locus, const ::std::string &str)
+  static TokenPtr make_string (Location locus, const std::string &str)
   {
+    // return std::make_shared<Token> (STRING_LITERAL, locus, str, CORETYPE_STR);
     return TokenPtr (new Token (STRING_LITERAL, locus, str, CORETYPE_STR));
   }
 
-  // Makes and returns a new TokenPtr of type CHAR_LITERAL (fix).
+  // Makes and returns a new TokenPtr of type CHAR_LITERAL.
   static TokenPtr make_char (Location locus, Codepoint char_lit)
   {
+    // return std::make_shared<Token> (CHAR_LITERAL, locus, char_lit);
     return TokenPtr (new Token (CHAR_LITERAL, locus, char_lit));
   }
 
-  // Makes and returns a new TokenPtr of type BYTE_CHAR_LITERAL (fix).
+  // Makes and returns a new TokenPtr of type BYTE_CHAR_LITERAL.
   static TokenPtr make_byte_char (Location locus, char byte_char)
   {
+    // return std::make_shared<Token> (BYTE_CHAR_LITERAL, locus, byte_char);
     return TokenPtr (new Token (BYTE_CHAR_LITERAL, locus, byte_char));
   }
 
   // Makes and returns a new TokenPtr of type BYTE_STRING_LITERAL (fix).
-  static TokenPtr make_byte_string (Location locus, const ::std::string &str)
+  static TokenPtr make_byte_string (Location locus, const std::string &str)
   {
+    // return std::make_shared<Token> (BYTE_STRING_LITERAL, locus, str); 
     return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, str));
   }
 
   // Makes and returns a new TokenPtr of type LIFETIME.
-  static TokenPtr make_lifetime (Location locus, const ::std::string &str)
+  static TokenPtr make_lifetime (Location locus, const std::string &str)
   {
+    // return std::make_shared<Token> (LIFETIME, locus, str);
     return TokenPtr (new Token (LIFETIME, locus, str));
   }
 
@@ -354,11 +371,11 @@ public:
   Location get_locus () const { return locus; }
 
   // Gets string description of the token.
-  const ::std::string &
+  const std::string &
   get_str () const; /*{
 // FIXME: put in header again when fix null problem
-//gcc_assert(str != NULL);
-if (str == NULL) {
+//gcc_assert(str != nullptr);
+if (str == nullptr) {
 error_at(get_locus(), "attempted to get string for '%s', which has no string.
 returning empty string instead.", get_token_description()); return "";
 }
@@ -385,7 +402,7 @@ return *str;
 
   /* Returns whether the token is a literal of any type (int, float, char,
    * string, byte char, byte string). */
-  inline bool is_literal () const
+  bool is_literal () const
   {
     switch (token_id)
       {
@@ -401,12 +418,12 @@ return *str;
       }
   }
 
-  // Returns whether the token actually has a string (regardless of whether it
-  // should or not).
-  inline bool has_str () const { return str != NULL; }
+  /* Returns whether the token actually has a string (regardless of whether it
+   * should or not). */
+  bool has_str () const { return str != nullptr; }
 
   // Returns whether the token should have a string.
-  inline bool should_have_str () const
+  bool should_have_str () const
   {
     return is_literal () || token_id == IDENTIFIER || token_id == LIFETIME;
   }

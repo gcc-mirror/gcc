@@ -95,10 +95,13 @@ is_whitespace (char character)
   return ISSPACE (character);
 }
 
-Lexer::Lexer (const char *filename, FILE *input, Linemap *linemap)
-  : input (input), current_line (1), current_column (1), line_map (linemap),
-    input_source (input), input_queue (input_source), token_source (this),
-    token_queue (token_source)
+// this compiles fine, so any intellisense saying otherwise is fake news
+Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap)
+  : input (std::move (file_input)), current_line (1), current_column (1), line_map (linemap),
+    /*input_source (input.get_raw ()), */
+    input_queue {InputSource (input.get_raw ())},
+    /*token_source (this),*/
+    token_queue (TokenSource (this))
 {
   // inform line_table that file is being entered and is in line 1
   line_map->start_file (filename, current_line);
@@ -156,6 +159,8 @@ void
 Lexer::replace_current_token (TokenPtr replacement)
 {
   token_queue.replace_current_value (replacement);
+
+  fprintf(stderr, "called 'replace_current_token' - this is deprecated");
 }
 
 /* shitty anonymous namespace that can only be accessed inside the compilation
@@ -1000,8 +1005,8 @@ Lexer::parse_escape (char opening_char)
   return std::make_tuple (output_char, additional_length_offset, false);
 }
 
-// Parses an escape (or string continue) in a string or character. Supports
-// unicode escapes.
+/* Parses an escape (or string continue) in a string or character. Supports
+ * unicode escapes. */
 std::tuple<Codepoint, int, bool>
 Lexer::parse_utf8_escape (char opening_char)
 {
@@ -1983,6 +1988,7 @@ Lexer::parse_char_or_lifetime (Location loc)
 	{
 	  rust_error_at (get_current_location (),
 			 "expected ' after character constant in char literal");
+    return nullptr;
 	}
     }
 }
@@ -2288,5 +2294,16 @@ Lexer::test_peek_codepoint_input (int n)
      0); return output; } else { rust_error_at(get_current_location(), "invalid
      UTF-8 (too long)"); return 0xFFFE;
 	  }*/
+}
+
+void 
+Lexer::split_current_token (TokenId new_left, TokenId new_right) {
+  // TODO: assert that this TokenId is a "simple token" like punctuation and not like "IDENTIFIER"?
+  Location current_loc = peek_token ()->get_locus();
+  TokenPtr new_left_tok = Token::make (new_left, current_loc);
+  TokenPtr new_right_tok = Token::make (new_right, current_loc + 1);
+
+  token_queue.replace_current_value (std::move (new_left_tok));
+  token_queue.insert (1, std::move (new_right_tok));
 }
 } // namespace Rust
