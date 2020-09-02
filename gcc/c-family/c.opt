@@ -1674,19 +1674,11 @@ Winvalid-imported-macros
 C++ ObjC++ Var(warn_imported_macros)
 Warn about macros that have conflicting header units definitions.
 
-fnote-include-translate
+flang-info-include-translate
 C++ Var(note_include_translate)
 Note #include directives translated to import declarations.
 
-Winclude-translate
-C++ Alias(fnote-include-translate) Undocumented
-; undocumented, delete
-
-fnote-include-translate=query
-C++ RejectNegative
-Note queries of #include directives translation.
-
-fnote-include-translate=
+flang-info-include-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)
 Note a #include translation of a specific header.
 

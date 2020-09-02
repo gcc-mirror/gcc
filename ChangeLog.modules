@@ -1,3 +1,17 @@
+2020-09-02  Nathan Sidwell  <nathan@acm.org>
+
+	Rename -fnote-include-translate to -flang-info-include-translate.
+	gcc/cp/
+	* (module_translate_include): Check if matches trailing part of
+	header name.
+	(handle_module_option): Adjust.
+	gcc/c-family/
+	* c.opt (-fnote-include-translate{,=}): Rename to ...
+	(-flang-info-include-translate{,=}): ... here.
+	(-fnote-include-translate=query): Delete.
+	gcc/
+	* doc/invoke.texi: Update documentation.
+
 2020-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

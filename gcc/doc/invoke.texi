@@ -3061,10 +3061,9 @@ regardless.)
 @opindex fmodule-only
 Only emit the module CMI, inhibiting any object file.
 
-@item -fnote-include-translate
-@itemx -fnote-include-translate=@var{header}
-@itemx -fnote-include-translate=query
-@opindex fnote-include-translate
+@item -flang-info-include-translate
+@itemx -flang-info-include-translate=@var{header}
+@opindex flang-info-include-translate
 Note include translation events.
 
 @item -Winvalid-imported-macros
@@ -32010,12 +32009,10 @@ descriptors.  By default, the limit is a few less than the per-process
 file descriptor hard limit, if that is determinable.@footnote{Where
 applicable the soft limit is incremented as needed towards the hard limit.}
 
-The @option{-fnote-include-translate} options note whether include
-translation occurs.  With no argument, all include translation is
-noted.  With a @var{query} argument, all queries about include
-translation is noted, together with the responses.  Otherwise, queries
-about include translation of a specific header file is noted.  The
-latter form may be repeated.
+The @option{-flang-info-include-translate} options note whether
+include translation occurs.  With no argument, all include translation
+is noted.  Otherwise, queries about include translation of a specific
+header file is noted.  The latter form may be repeated.
 
 The @option{-Winvalid-imported-macros} option causes all imported macros
 to be resolved at the end of compilation.  Without this, imported

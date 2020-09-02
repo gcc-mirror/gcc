@@ -18663,9 +18663,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     }
 
   bool note = false;
-  if (note_include_translate < 0)
-    note = true;
-  else if (note_include_translate > 0 && xlate)
+  if (note_include_translate && xlate)
     note = true;
   else if (note_includes)
     {
@@ -18674,7 +18672,10 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
       for (unsigned ix = note_includes->length (); !note && ix--;)
 	{
 	  const char *hdr = (*note_includes)[ix];
-	  if (!strcmp (hdr, path))
+	  size_t hdr_len = strlen (hdr);
+	  if ((hdr_len == len
+	       || (hdr_len < len && IS_DIR_SEPARATOR (path[len - hdr_len - 1])))
+	      && !memcmp (hdr, path + len - hdr_len, hdr_len))
 	    note = true;
 	}
     }
@@ -19398,11 +19399,7 @@ handle_module_option (unsigned code, const char *str, int)
       flag_modules = 1;
       return true;
 
-    case OPT_fnote_include_translate_query:
-      note_include_translate = -1;
-      return true;
-
-    case OPT_fnote_include_translate_:
+    case OPT_flang_info_include_translate_:
       vec_safe_push (note_includes, str);
       return true;
 
