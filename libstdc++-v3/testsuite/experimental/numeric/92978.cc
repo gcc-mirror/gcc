@@ -29,7 +29,7 @@ test01()
   static_assert( std::experimental::gcd(120U, -10) == 10,
       "mixed signed/unsigned" );
 
-  static_assert( std::lcm(-42, 21U) == 42U );
+  static_assert( std::experimental::lcm(-42, 21U) == 42U );
 }
 
 void
