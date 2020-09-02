@@ -901,6 +901,7 @@ package body Sem_Aggr is
 
       elsif Present (Find_Aspect (Typ, Aspect_Aggregate))
         and then Ekind (Typ) /= E_Record_Type
+        and then Ada_Version >= Ada_2020
       then
          Resolve_Container_Aggregate (N, Typ);
 
