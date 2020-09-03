@@ -136,19 +136,7 @@ tree_vec_extract (gimple_stmt_iterator *gsi, tree type,
 	t = gimple_assign_rhs1 (def_stmt);
     }
   if (bitpos)
-    {
-      if (TREE_CODE (type) == BOOLEAN_TYPE)
-	{
-	  tree itype
-	    = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 0);
-	  tree field = gimplify_build3 (gsi, BIT_FIELD_REF, itype, t,
-					bitsize, bitpos);
-	  return gimplify_build2 (gsi, NE_EXPR, type, field,
-				  build_zero_cst (itype));
-	}
-      else
-	return gimplify_build3 (gsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
-    }
+    return gimplify_build3 (gsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
   else
     return gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, t);
 }
