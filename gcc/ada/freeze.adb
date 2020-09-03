@@ -8008,19 +8008,19 @@ package body Freeze is
          if Nkind (Node) in N_Has_Etype
            and then Present (Etype (Node))
            and then Is_Access_Type (Etype (Node))
-           and then Nkind (Parent (Node)) = N_Function_Call
-           and then Node = Controlling_Argument (Parent (Node))
          then
-            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            if Nkind (Parent (Node)) = N_Function_Call
+              and then Node = Controlling_Argument (Parent (Node))
+            then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
 
-         --  An explicit dereference freezes the designated type as well,
-         --  even though that type is not attached to an entity in the
-         --  expression.
+            --  An explicit dereference freezes the designated type as well,
+            --  even though that type is not attached to an entity in the
+            --  expression.
 
-         elsif Nkind (Node) in N_Has_Etype
-           and then Nkind (Parent (Node)) = N_Explicit_Dereference
-         then
-            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            elsif Nkind (Parent (Node)) = N_Explicit_Dereference then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            end if;
 
          --  An iterator specification freezes the iterator type, even though
          --  that type is not attached to an entity in the construct.
