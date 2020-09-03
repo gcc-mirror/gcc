@@ -1,3 +1,12 @@
+2020-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96869
+	* d-builtins.cc (build_frontend_type): Don't expose intrinsics that
+	use unsupported vector types.
+	* d-target.cc (Target::isVectorTypeSupported): Restrict to supporting
+	only if TARGET_VECTOR_MODE_SUPPORTED_P is true.  Don't allow complex
+	or boolean vector types.
+
 2020-08-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-target.cc (Target::_init): Don't set classinfosize.

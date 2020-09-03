@@ -1,3 +1,41 @@
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92978
+	* testsuite/experimental/numeric/92978.cc: Use experimental::lcm
+	not std::lcm.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96851
+	* include/bits/cpp_type_traits.h (__is_memcmp_ordered):
+	New trait that says if memcmp can be used for ordering.
+	(__is_memcmp_ordered_with): Likewise, for two types.
+	* include/bits/deque.tcc (__lex_cmp_dit): Use new traits
+	instead of __is_byte and __numeric_traits.
+	(__lexicographical_compare_aux1): Likewise.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn):
+	Likewise.
+	* include/bits/stl_algobase.h (__lexicographical_compare_aux1)
+	(__is_byte_iter): Likewise.
+	* include/std/array (operator<=>): Likewise. Only use memcmp
+	when std::is_constant_evaluated() is false.
+	* testsuite/23_containers/array/comparison_operators/96851.cc:
+	New test.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h: Include <bits/exception_defines.h>
+	for definitions of __try, __catch and __throw_exception_again.
+	(counted_iterator::operator++(int)): Use __throw_exception_again
+	instead of throw.
+	* libsupc++/new: Include <bits/exception.h> not <exception>.
+	* libsupc++/new_opvnt.cc: Include <bits/exception_defines.h>.
+	* testsuite/18_support/destroying_delete.cc: Include
+	<type_traits> for std::is_same_v definition.
+	* testsuite/20_util/variant/index_type.cc: Qualify size_t.
+
 2020-09-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71960
