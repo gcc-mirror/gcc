@@ -460,6 +460,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool, typename... _Types>
     struct _TupleConstraints
     {
+      template<typename _Tp, typename _Up> // Workaround for PR 96592
+	using is_constructible
+	  = __bool_constant<__is_constructible(_Tp, _Up)>;
+
       // Constraint for a non-explicit constructor.
       // True iff each Ti in _Types... can be constructed from Ui in _UTypes...
       // and every Ui is implicitly convertible to Ti.
