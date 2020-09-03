@@ -1203,7 +1203,7 @@ maybe_initialize_constexpr_call_table (void)
 
    This is not GC-deletable to avoid GC affecting UID generation.  */
 
-static GTY(()) hash_map<tree, tree> *fundef_copies_table;
+static GTY(()) decl_tree_map *fundef_copies_table;
 
 /* Reuse a copy or create a new unshared copy of the function FUN.
    Return this copy.  We use a TREE_LIST whose PURPOSE is body, VALUE

@@ -5453,6 +5453,11 @@ struct type_tree_cache_traits
   : simple_cache_map_traits<tree_type_hash, tree> { };
 typedef hash_map<tree,tree,type_tree_cache_traits> type_tree_cache_map;
 
+/* Similarly to decl_tree_cache_map, but without caching.  */
+struct decl_tree_traits
+  : simple_hashmap_traits<tree_decl_hash, tree> { };
+typedef hash_map<tree,tree,decl_tree_traits> decl_tree_map;
+
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from CALL_EXPR node EXP.  */
 static inline void
