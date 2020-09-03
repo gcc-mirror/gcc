@@ -1,3 +1,25 @@
+2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.c (bpf_asm_named_section): Delete.
+	(TARGET_ASM_NAMED_SECTION): Likewise.
+
+2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* config.gcc: Use elfos.h in bpf-*-* targets.
+	* config/bpf/bpf.h (MAX_OFILE_ALIGNMENT): Remove definition.
+	(COMMON_ASM_OP): Likewise.
+	(INIT_SECTION_ASM_OP): Likewise.
+	(FINI_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_SKIP): Likewise.
+	(ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+
 2020-09-01  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
