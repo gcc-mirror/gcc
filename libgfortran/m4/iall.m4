@@ -35,7 +35,7 @@ ARRAY_FUNCTION(0,
 `  result &= *src;')
 
 MASKED_ARRAY_FUNCTION(0,
-`  result = 0;',
+`  result = ('rtype_name`) -1;',
 `  if (*msrc)
     result &= *src;')
 
