@@ -61,6 +61,9 @@ package body System.Img_Enum_New is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
+      pragma Assert (Pos in IndexesT'Range);
+      pragma Assert (Pos + 1 in IndexesT'Range);
+
       Start : constant Natural := Natural (IndexesT (Pos));
       Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
@@ -102,6 +105,9 @@ package body System.Img_Enum_New is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
+      pragma Assert (Pos in IndexesT'Range);
+      pragma Assert (Pos + 1 in IndexesT'Range);
+
       Start : constant Natural := Natural (IndexesT (Pos));
       Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
@@ -142,6 +148,9 @@ package body System.Img_Enum_New is
         new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
+
+      pragma Assert (Pos in IndexesT'Range);
+      pragma Assert (Pos + 1 in IndexesT'Range);
 
       Start : constant Natural := Natural (IndexesT (Pos));
       Next  : constant Natural := Natural (IndexesT (Pos + 1));

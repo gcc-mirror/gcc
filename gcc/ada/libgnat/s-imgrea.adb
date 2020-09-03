@@ -376,17 +376,20 @@ package body System.Img_Real is
          --  be significantly more efficient than the Long_Long_Unsigned one.
 
          if X < Powten (Unsdigs) then
+            pragma Assert (X in 0.0 .. Long_Long_Float (Unsigned'Last));
             Ndigs := 0;
             Set_Image_Unsigned
               (Unsigned (Long_Long_Float'Truncation (X)),
                Digs, Ndigs);
-            pragma Annotate (CodePeer, False_Positive, "overflow check",
-                             "The X integer part fits in unsigned");
 
          --  But if we want more digits than fit in Unsigned, we have to use
          --  the Long_Long_Unsigned routine after all.
 
          else
+            pragma Assert (X < Powten (Maxdigs));
+            pragma Assert
+              (X in 0.0 .. Long_Long_Float (Long_Long_Unsigned'Last));
+
             Ndigs := 0;
             Set_Image_Long_Long_Unsigned
               (Long_Long_Unsigned (Long_Long_Float'Truncation (X)),
