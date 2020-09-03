@@ -1,3 +1,13 @@
+2020-08-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Don't set classinfosize.
+	* d-tree.h (base_vtable_offset): Move under typeinfo.cc section.
+	* decl.cc (base_vtable_offset): Move to...
+	* typeinfo.cc (base_vtable_offset): ...here.  Get base offset from
+	internal TypeInfo_Class type.
+	* intrinsics.cc (expand_intrinsic_bt): Use pointer TYPE_SIZE for
+	setting bitsize value.  Build integer constants of correct type.
+
 2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd e49192807

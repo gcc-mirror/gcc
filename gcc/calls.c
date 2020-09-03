@@ -1274,7 +1274,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   if (range_type == VR_VARYING)
     {
       if (integral)
-	{
+	{	
 	  /* Use the full range of the type of the expression when
 	     no value range information is available.  */
 	  range[0] = TYPE_MIN_VALUE (exptype);
@@ -1559,22 +1559,23 @@ get_attr_nonstring_decl (tree expr, tree *ref)
   return NULL_TREE;
 }
 
-/* Warn about passing a non-string array/pointer to a function that
-   expects a nul-terminated string argument.  */
+/* Warn about passing a non-string array/pointer to a built-in function
+   that expects a nul-terminated string argument.  Returns true if
+   a warning has been issued.*/
 
-void
+bool
 maybe_warn_nonstring_arg (tree fndecl, tree exp)
 {
   if (!fndecl || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
-    return;
+    return false;
 
-  if (TREE_NO_WARNING (exp) || !warn_stringop_overflow)
-    return;
+  if (TREE_NO_WARNING (exp) || !warn_stringop_overread)
+    return false;
 
   /* Avoid clearly invalid calls (more checking done below).  */
   unsigned nargs = call_expr_nargs (exp);
   if (!nargs)
-    return;
+    return false;
 
   /* The bound argument to a bounded string function like strncpy.  */
   tree bound = NULL_TREE;
@@ -1666,22 +1667,27 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
   if (bndrng[0])
     {
-      /* Diagnose excessive bound prior the adjustment below and
+      /* Diagnose excessive bound prior to the adjustment below and
 	 regardless of attribute nonstring.  */
       tree maxobjsize = max_object_size ();
       if (tree_int_cst_lt (maxobjsize, bndrng[0]))
 	{
+	  bool warned = false;
 	  if (tree_int_cst_equal (bndrng[0], bndrng[1]))
-	    warning_at (loc, OPT_Wstringop_overflow_,
-			"%K%qD specified bound %E "
-			"exceeds maximum object size %E",
-			exp, fndecl, bndrng[0], maxobjsize);
+	    warned = warning_at (loc, OPT_Wstringop_overread,
+				 "%K%qD specified bound %E "
+				 "exceeds maximum object size %E",
+				 exp, fndecl, bndrng[0], maxobjsize);
 	  else
-	    warning_at (loc, OPT_Wstringop_overflow_,
-			"%K%qD specified bound [%E, %E] "
-			"exceeds maximum object size %E",
-			exp, fndecl, bndrng[0], bndrng[1], maxobjsize);
-	  return;
+	    warned = warning_at (loc, OPT_Wstringop_overread,
+				 "%K%qD specified bound [%E, %E] "
+				 "exceeds maximum object size %E",
+				 exp, fndecl, bndrng[0], bndrng[1],
+				 maxobjsize);
+	  if (warned)
+	    TREE_NO_WARNING (exp) = true;
+
+	  return warned;
 	}
     }
 
@@ -1710,6 +1716,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
     }
 
+  bool any_arg_warned = false;
   /* Iterate over the built-in function's formal arguments and check
      each const char* against the actual argument.  If the actual
      argument is declared attribute non-string issue a warning unless
@@ -1820,19 +1827,19 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
       if (wi::ltu_p (asize, wibnd))
 	{
 	  if (bndrng[0] == bndrng[1])
-	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+	    warned = warning_at (loc, OPT_Wstringop_overread,
 				 "%qD argument %i declared attribute "
 				 "%<nonstring%> is smaller than the specified "
 				 "bound %wu",
 				 fndecl, argno + 1, wibnd.to_uhwi ());
 	  else if (wi::ltu_p (asize, wi::to_offset (bndrng[0])))
-	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+	    warned = warning_at (loc, OPT_Wstringop_overread,
 				 "%qD argument %i declared attribute "
 				 "%<nonstring%> is smaller than "
 				 "the specified bound [%E, %E]",
 				 fndecl, argno + 1, bndrng[0], bndrng[1]);
 	  else
-	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+	    warned = warning_at (loc, OPT_Wstringop_overread,
 				 "%qD argument %i declared attribute "
 				 "%<nonstring%> may be smaller than "
 				 "the specified bound [%E, %E]",
@@ -1842,14 +1849,22 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	; /* Avoid warning for calls to strncat() when the bound
 	     is equal to the size of the non-string argument.  */
       else if (!bound)
-	warned = warning_at (loc, OPT_Wstringop_overflow_,
+	warned = warning_at (loc, OPT_Wstringop_overread,
 			     "%qD argument %i declared attribute %<nonstring%>",
 			     fndecl, argno + 1);
 
       if (warned)
-	inform (DECL_SOURCE_LOCATION (decl),
-		"argument %qD declared here", decl);
+	{
+	  inform (DECL_SOURCE_LOCATION (decl),
+		  "argument %qD declared here", decl);
+	  any_arg_warned = true;
+	}
     }
+
+  if (any_arg_warned)
+    TREE_NO_WARNING (exp) = true;
+
+  return any_arg_warned;
 }
 
 /* Issue an error if CALL_EXPR was flagged as requiring
@@ -1896,11 +1911,11 @@ append_attrname (const std::pair<int, attr_access> &access,
   size_t len = strlen (attrstr);
 
   const char* const atname
-    = (access.second.mode == attr_access::read_only
+    = (access.second.mode == access_read_only
        ? "read_only"
-       : (access.second.mode == attr_access::write_only
+       : (access.second.mode == access_write_only
 	  ? "write_only"
-	  : (access.second.mode == attr_access::read_write
+	  : (access.second.mode == access_read_write
 	     ? "read_write" : "none")));
 
   const char *sep = len ? ", " : "";
@@ -2045,7 +2060,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
       tree objsize = compute_objsize (ptr, 0);
 
       tree srcsize;
-      if (access.second.mode == attr_access::write_only)
+      if (access.second.mode == access_write_only)
 	{
 	  /* For a write-only argument there is no source.  */
 	  srcsize = NULL_TREE;
@@ -2055,8 +2070,8 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	  /* For read-only and read-write attributes also set the source
 	     size.  */
 	  srcsize = objsize;
-	  if (access.second.mode == attr_access::read_only
-	      || access.second.mode == attr_access::none)
+	  if (access.second.mode == access_read_only
+	      || access.second.mode == access_none)
 	    {
 	      /* For a read-only attribute there is no destination so
 		 clear OBJSIZE.  This emits "reading N bytes" kind of
@@ -2070,8 +2085,8 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	 iteration so that accesses via different arguments are
 	 diagnosed.  */
       TREE_NO_WARNING (exp) = false;
-      check_access (exp, NULL_TREE, NULL_TREE, size, /*maxread=*/ NULL_TREE,
-		    srcsize, objsize, access.second.mode != attr_access::none);
+      check_access (exp, size, /*maxread=*/ NULL_TREE, srcsize, objsize,
+		    access.second.mode);
 
       if (TREE_NO_WARNING (exp))
 	/* If check_access issued a warning above, append the relevant

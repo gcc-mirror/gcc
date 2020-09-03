@@ -7026,7 +7026,7 @@
 
   emit_insn (gen_vec_extract_hi_v16si (tmp[3], operands[1]));
   emit_insn (gen_floatv8siv8df2 (tmp[2], tmp[3]));
-  emit_insn (gen_rtx_SET (k, gen_rtx_LT (QImode, tmp[2], tmp[0])));
+  ix86_expand_mask_vec_cmp (k, LT, tmp[2], tmp[0]);
   emit_insn (gen_addv8df3_mask (tmp[2], tmp[2], tmp[1], tmp[2], k));
   emit_move_insn (operands[0], tmp[2]);
   DONE;
@@ -7073,7 +7073,7 @@
   k = gen_reg_rtx (QImode);
 
   emit_insn (gen_avx512f_cvtdq2pd512_2 (tmp[2], operands[1]));
-  emit_insn (gen_rtx_SET (k, gen_rtx_LT (QImode, tmp[2], tmp[0])));
+  ix86_expand_mask_vec_cmp (k, LT, tmp[2], tmp[0]);
   emit_insn (gen_addv8df3_mask (tmp[2], tmp[2], tmp[1], tmp[2], k));
   emit_move_insn (operands[0], tmp[2]);
   DONE;
@@ -16938,11 +16938,8 @@
 				GET_MODE (operands[2]));
   operands[4] = lowpart_subreg (V16QImode, operands[3],
 				GET_MODE (operands[3]));
-  rtvec par = gen_rtvec (4, GEN_INT (0xf7f7f7f7),
-			 GEN_INT (0xf7f7f7f7),
-			 GEN_INT (0xf7f7f7f7),
-			 GEN_INT (0xf7f7f7f7));
-  rtx vec_const = gen_rtx_CONST_VECTOR (V4SImode, par);
+  rtx vec_const = ix86_build_const_vector (V4SImode, true,
+					   gen_int_mode (0xf7f7f7f7, SImode));
   operands[5] = force_const_mem (V4SImode, vec_const);
 }
   [(set_attr "mmx_isa" "native,sse_noavx,avx")

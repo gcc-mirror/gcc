@@ -5600,7 +5600,8 @@ hwloop_optimize (hwloop_info loop)
       int j;
       rtx_insn *this_iter;
 
-      this_iter = duplicate_insn_chain (head_insn, tail_insn);
+      copy_bb_data id;
+      this_iter = duplicate_insn_chain (head_insn, tail_insn, NULL, &id);
       j = 0;
       while (this_iter)
 	{

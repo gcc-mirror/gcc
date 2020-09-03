@@ -456,7 +456,7 @@ gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
 
       varpool_node::finalize_decl (decl);
 
-      vec_safe_grow_cleared (machfun->reduc_decls, offset + 1);
+      vec_safe_grow_cleared (machfun->reduc_decls, offset + 1, true);
       (*machfun->reduc_decls)[offset] = decl;
 
       return decl;

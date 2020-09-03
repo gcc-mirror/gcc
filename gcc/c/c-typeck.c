@@ -13298,7 +13298,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (length == NULL_TREE)
 	{
-	  if (C_ARRAY_PARAMETER (ret))
+	  if (TREE_CODE (ret) == PARM_DECL && C_ARRAY_PARAMETER (ret))
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "for array function parameter length expression "
 		      "must be specified");

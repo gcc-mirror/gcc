@@ -21,9 +21,9 @@ void test_var_flexarray_cst_off (void)
 {
   /* Use arbitrary constants greater than 16 in case GCC ever starts
      unrolling strlen() calls with small array arguments.  */
-  a[0] = 17 < strlen (a0.a + 1);        // { dg-warning "\\\[-Warray-bounds" }
-  a[1] = 19 < strlen (a1.a + 1);
-  a[2] = 23 < strlen (a9.a + 9);
+  a[0] = 17 < strlen (a0.a + 1);        // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  a[1] = 19 < strlen (a1.a + 1);        // { dg-warning "\\\[-Wstringop-overread" }
+  a[2] = 23 < strlen (a9.a + 9);        // { dg-warning "\\\[-Wstringop-overread" }
   a[3] = 29 < strlen (ax.a + 3);
 }
 

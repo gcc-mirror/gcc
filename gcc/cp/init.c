@@ -3559,8 +3559,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       else if (array_p)
 	{
 	  tree vecinit = NULL_TREE;
-	  if (vec_safe_length (*init) == 1
-	      && DIRECT_LIST_INIT_P ((**init)[0]))
+	  const size_t len = vec_safe_length (*init);
+	  if (len == 1 && DIRECT_LIST_INIT_P ((**init)[0]))
 	    {
 	      vecinit = (**init)[0];
 	      if (CONSTRUCTOR_NELTS (vecinit) == 0)
@@ -3577,6 +3577,15 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		  arraytype = build_cplus_array_type (type, domain);
 		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
+	    }
+	  /* This handles code like new char[]{"foo"}.  */
+	  else if (len == 1
+		   && char_type_p (TYPE_MAIN_VARIANT (type))
+		   && TREE_CODE (tree_strip_any_location_wrapper ((**init)[0]))
+		      == STRING_CST)
+	    {
+	      vecinit = (**init)[0];
+	      STRIP_ANY_LOCATION_WRAPPER (vecinit);
 	    }
 	  else if (*init)
             {
@@ -3634,8 +3643,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		  && AGGREGATE_TYPE_P (type)
 		  && (*init)->length () > 1)
 		{
-		  ie = build_tree_list_vec (*init);
-		  ie = build_constructor_from_list (init_list_type_node, ie);
+		  ie = build_constructor_from_vec (init_list_type_node, *init);
 		  CONSTRUCTOR_IS_DIRECT_INIT (ie) = true;
 		  CONSTRUCTOR_IS_PAREN_INIT (ie) = true;
 		  ie = digest_init (type, ie, complain);
@@ -3915,6 +3923,45 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
       if (complain & tf_error)
         error_at (loc, "new cannot be applied to a function type");
       return error_mark_node;
+    }
+
+  /* P1009: Array size deduction in new-expressions.  */
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && !TYPE_DOMAIN (type)
+      && *init)
+    {
+      /* This means we have 'new T[]()'.  */
+      if ((*init)->is_empty ())
+	{
+	  tree ctor = build_constructor (init_list_type_node, NULL);
+	  CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
+	  vec_safe_push (*init, ctor);
+	}
+      tree &elt = (**init)[0];
+      /* The C++20 'new T[](e_0, ..., e_k)' case allowed by P0960.  */
+      if (!DIRECT_LIST_INIT_P (elt) && cxx_dialect >= cxx20)
+	{
+	  /* Handle new char[]("foo").  */
+	  if (vec_safe_length (*init) == 1
+	      && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	      && TREE_CODE (tree_strip_any_location_wrapper (elt))
+		 == STRING_CST)
+	    /* Leave it alone: the string should not be wrapped in {}.  */;
+	  else
+	    {
+	      tree ctor = build_constructor_from_vec (init_list_type_node, *init);
+	      CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
+	      CONSTRUCTOR_IS_PAREN_INIT (ctor) = true;
+	      elt = ctor;
+	      /* We've squashed all the vector elements into the first one;
+		 truncate the rest.  */
+	      (*init)->truncate (1);
+	    }
+	}
+      /* Otherwise we should have 'new T[]{e_0, ..., e_k}'.  */
+      if (BRACE_ENCLOSED_INITIALIZER_P (elt))
+	elt = reshape_init (type, elt, complain);
+      cp_complete_array_type (&type, elt, /*do_default*/false);
     }
 
   /* The type allocated must be complete.  If the new-type-id was

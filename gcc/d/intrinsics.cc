@@ -303,7 +303,7 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
   tree type = TREE_TYPE (TREE_TYPE (ptr));
 
   /* size_t bitsize = sizeof(*ptr) * BITS_PER_UNIT;  */
-  tree bitsize = fold_convert (type, TYPE_SIZE (type));
+  tree bitsize = fold_convert (type, TYPE_SIZE (TREE_TYPE (ptr)));
 
   /* ptr[bitnum / bitsize]  */
   ptr = build_array_index (ptr, fold_build2 (TRUNC_DIV_EXPR, type,
@@ -312,14 +312,15 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
 
   /* mask = 1 << (bitnum % bitsize);  */
   bitnum = fold_build2 (TRUNC_MOD_EXPR, type, bitnum, bitsize);
-  bitnum = fold_build2 (LSHIFT_EXPR, type, size_one_node, bitnum);
+  bitnum = fold_build2 (LSHIFT_EXPR, type, build_one_cst (type), bitnum);
 
   /* cond = ptr[bitnum / size] & mask;  */
   tree cond = fold_build2 (BIT_AND_EXPR, type, ptr, bitnum);
 
   /* cond ? -1 : 0;  */
   cond = build_condition (TREE_TYPE (callexp), d_truthvalue_conversion (cond),
-			 integer_minus_one_node, integer_zero_node);
+			  build_minus_one_cst (TREE_TYPE (callexp)),
+			  build_zero_cst (TREE_TYPE (callexp)));
 
   /* Update the bit as needed, only testing the bit for bt().  */
   tree_code code;

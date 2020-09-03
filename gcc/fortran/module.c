@@ -1234,6 +1234,13 @@ get_module_locus (module_locus *m)
   m->pos = module_pos;
 }
 
+/* Peek at the next character in the module.  */
+
+static int
+module_peek_char (void)
+{
+  return module_content[module_pos];
+}
 
 /* Get the next character in the module, updating our reckoning of
    where we are.  */
@@ -1314,7 +1321,19 @@ parse_string (void)
 static void
 parse_integer (int c)
 {
-  atom_int = c - '0';
+  int sign = 1;
+
+  atom_int = 0;
+  switch (c)
+    {
+    case ('-'):
+      sign = -1;
+    case ('+'):
+      break;
+    default:
+      atom_int = c - '0';
+      break;
+    }
 
   for (;;)
     {
@@ -1328,6 +1347,7 @@ parse_integer (int c)
       atom_int = 10 * atom_int + c - '0';
     }
 
+  atom_int *= sign; 
 }
 
 
@@ -1400,6 +1420,16 @@ parse_atom (void)
     case '9':
       parse_integer (c);
       return ATOM_INTEGER;
+
+    case '+':
+    case '-':
+      if (ISDIGIT (module_peek_char ()))
+	{
+	  parse_integer (c);
+	  return ATOM_INTEGER;
+	}
+      else
+	bad_module ("Bad name");
 
     case 'a':
     case 'b':
@@ -1503,6 +1533,16 @@ peek_atom (void)
     case '9':
       module_unget_char ();
       return ATOM_INTEGER;
+
+    case '+':
+    case '-':
+      if (ISDIGIT (module_peek_char ()))
+	{
+	  module_unget_char ();
+	  return ATOM_INTEGER;
+	}
+      else
+	bad_module ("Bad name");
 
     case 'a':
     case 'b':

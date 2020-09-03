@@ -181,12 +181,10 @@ init_empty_tree_cfg_for_function (struct function *fn)
   profile_status_for_fn (fn) = PROFILE_ABSENT;
   n_basic_blocks_for_fn (fn) = NUM_FIXED_BLOCKS;
   last_basic_block_for_fn (fn) = NUM_FIXED_BLOCKS;
-  vec_alloc (basic_block_info_for_fn (fn), initial_cfg_capacity);
   vec_safe_grow_cleared (basic_block_info_for_fn (fn),
 			 initial_cfg_capacity, true);
 
   /* Build a mapping of labels to their associated blocks.  */
-  vec_alloc (label_to_block_map_for_fn (fn), initial_cfg_capacity);
   vec_safe_grow_cleared (label_to_block_map_for_fn (fn),
 			 initial_cfg_capacity, true);
 
@@ -232,7 +230,7 @@ build_gimple_cfg (gimple_seq seq)
   if (basic_block_info_for_fn (cfun)->length ()
       < (size_t) n_basic_blocks_for_fn (cfun))
     vec_safe_grow_cleared (basic_block_info_for_fn (cfun),
-			   n_basic_blocks_for_fn (cfun), true);
+			   n_basic_blocks_for_fn (cfun));
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -681,12 +679,8 @@ create_bb (void *h, void *e, basic_block after)
   /* Grow the basic block array if needed.  */
   if ((size_t) last_basic_block_for_fn (cfun)
       == basic_block_info_for_fn (cfun)->length ())
-    {
-      size_t new_size =
-	(last_basic_block_for_fn (cfun)
-	 + (last_basic_block_for_fn (cfun) + 3) / 4);
-      vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size, true);
-    }
+    vec_safe_grow_cleared (basic_block_info_for_fn (cfun),
+			   last_basic_block_for_fn (cfun) + 1);
 
   /* Add the newly created block to the array.  */
   SET_BASIC_BLOCK_FOR_FN (cfun, last_basic_block_for_fn (cfun), bb);
@@ -4809,17 +4803,7 @@ verify_gimple_switch (gswitch *stmt)
 	  return true;
 	}
 
-      if (elt_type)
-	{
-	  if (TREE_TYPE (CASE_LOW (elt)) != elt_type
-	      || (CASE_HIGH (elt) && TREE_TYPE (CASE_HIGH (elt)) != elt_type))
-	    {
-	      error ("type mismatch for case label in switch statement");
-	      debug_generic_expr (elt);
-	      return true;
-	    }
-	}
-      else
+      if (! elt_type)
 	{
 	  elt_type = TREE_TYPE (CASE_LOW (elt));
 	  if (TYPE_PRECISION (index_type) < TYPE_PRECISION (elt_type))
@@ -4827,6 +4811,13 @@ verify_gimple_switch (gswitch *stmt)
 	      error ("type precision mismatch in switch statement");
 	      return true;
 	    }
+	}
+      if (TREE_TYPE (CASE_LOW (elt)) != elt_type
+          || (CASE_HIGH (elt) && TREE_TYPE (CASE_HIGH (elt)) != elt_type))
+	{
+	  error ("type mismatch for case label in switch statement");
+	  debug_generic_expr (elt);
+	  return true;
 	}
 
       if (prev_upper_bound)
@@ -7097,7 +7088,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   edge_iterator ei;
   edge e;
   gimple_stmt_iterator si;
-  unsigned old_len, new_len;
+  unsigned old_len;
 
   /* Remove BB from dominance structures.  */
   delete_from_dominance_info (CDI_DOMINATORS, bb);
@@ -7133,10 +7124,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
   old_len = vec_safe_length (cfg->x_basic_block_info);
   if ((unsigned) cfg->x_last_basic_block >= old_len)
-    {
-      new_len = cfg->x_last_basic_block + (cfg->x_last_basic_block + 3) / 4;
-      vec_safe_grow_cleared (cfg->x_basic_block_info, new_len, true);
-    }
+    vec_safe_grow_cleared (cfg->x_basic_block_info,
+			   cfg->x_last_basic_block + 1);
 
   (*cfg->x_basic_block_info)[bb->index] = bb;
 
@@ -7209,10 +7198,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
 	  old_len = vec_safe_length (cfg->x_label_to_block_map);
 	  if (old_len <= (unsigned) uid)
-	    {
-	      new_len = 3 * uid / 2 + 1;
-	      vec_safe_grow_cleared (cfg->x_label_to_block_map, new_len, true);
-	    }
+	    vec_safe_grow_cleared (cfg->x_label_to_block_map, uid + 1);
 
 	  (*cfg->x_label_to_block_map)[uid] = bb;
 	  (*cfun->cfg->x_label_to_block_map)[uid] = NULL;

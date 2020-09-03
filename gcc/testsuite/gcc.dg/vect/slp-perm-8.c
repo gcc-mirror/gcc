@@ -60,7 +60,9 @@ int main (int argc, const char* argv[])
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_perm_byte } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm3_byte && { ! vect_load_lanes } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm3_byte && { { ! vect_load_lanes } && {! vect_partial_vectors_usage_1 } } } } } } */
+/* The epilogues are vectorized using partial vectors.  */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_perm3_byte && { { ! vect_load_lanes } && vect_partial_vectors_usage_1 } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target vect_load_lanes } } } */
 /* { dg-final { scan-tree-dump "Built SLP cancelled: can use load/store-lanes" "vect" { target { vect_perm3_byte && vect_load_lanes } } } } */
 /* { dg-final { scan-tree-dump "LOAD_LANES" "vect" { target vect_load_lanes } } } */

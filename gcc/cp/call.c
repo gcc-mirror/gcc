@@ -10297,8 +10297,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  && !vec_safe_is_empty (user_args))
 	{
 	  /* Create a CONSTRUCTOR from ARGS, e.g. {1, 2} from <1, 2>.  */
-	  tree list = build_tree_list_vec (user_args);
-	  tree ctor = build_constructor_from_list (init_list_type_node, list);
+	  tree ctor = build_constructor_from_vec (init_list_type_node,
+						  user_args);
 	  CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
 	  CONSTRUCTOR_IS_PAREN_INIT (ctor) = true;
 	  if (is_dummy_object (instance))

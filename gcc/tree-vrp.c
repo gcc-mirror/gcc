@@ -3850,6 +3850,8 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       if (!case_high)
 	case_high = CASE_LOW (max_label);
       widest_irange label_range (CASE_LOW (min_label), case_high);
+      if (!types_compatible_p (label_range.type (), range_of_op->type ()))
+	range_cast (label_range, range_of_op->type ());
       label_range.intersect (range_of_op);
       if (label_range.undefined_p ())
 	return gimple_switch_label (switch_stmt, 0);

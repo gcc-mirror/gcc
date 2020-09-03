@@ -6310,7 +6310,7 @@ recording::switch_::make_debug_string ()
     {
       size_t len = strlen (c->get_debug_string ());
       unsigned idx = cases_str.length ();
-      cases_str.safe_grow (idx + 1 + len);
+      cases_str.safe_grow (idx + 1 + len, true);
       cases_str[idx] = ' ';
       memcpy (&(cases_str[idx + 1]),
 	      c->get_debug_string (),

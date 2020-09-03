@@ -114,13 +114,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Rep, typename _Period>
     struct common_type<chrono::duration<_Rep, _Period>,
 		       chrono::duration<_Rep, _Period>>
-    { using type = chrono::duration<_Rep, typename _Period::type>; };
+    {
+      using type = chrono::duration<typename common_type<_Rep>::type,
+				    typename _Period::type>;
+    };
 
   /// Specialization of common_type for one chrono::duration type.
   /// @relates duration
   template<typename _Rep, typename _Period>
     struct common_type<chrono::duration<_Rep, _Period>>
-    { using type = chrono::duration<_Rep, typename _Period::type>; };
+    {
+      using type = chrono::duration<typename common_type<_Rep>::type,
+				    typename _Period::type>;
+    };
 
   // 20.11.4.3 specialization of common_type (for time_point, sfinae-friendly)
 
@@ -418,10 +424,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Rep2>
 	  using __is_float = treat_as_floating_point<_Rep2>;
 
+	static constexpr intmax_t
+	_S_gcd(intmax_t __m, intmax_t __n) noexcept
+	{
+	  // Duration only allows positive periods so we don't need to
+	  // support negative values here (unlike __static_gcd and std::gcd).
+	  return (__m == 0) ? __n : (__n == 0) ? __m : _S_gcd(__n, __m % __n);
+	}
+
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 2094. overflow shouldn't participate in overload resolution
+	// 3090. What is [2094] intended to mean?
+	// This only produces a valid type if no overflow occurs.
+	template<typename _R1, typename _R2,
+		 intmax_t __gcd1 = _S_gcd(_R1::num, _R2::num),
+		 intmax_t __gcd2 = _S_gcd(_R1::den, _R2::den)>
+	  using __divide = ratio<(_R1::num / __gcd1) * (_R2::den / __gcd2),
+				 (_R1::den / __gcd2) * (_R2::num / __gcd1)>;
+
 	// _Period2 is an exact multiple of _Period
 	template<typename _Period2>
 	  using __is_harmonic
-	    = __bool_constant<ratio_divide<_Period2, _Period>::den == 1>;
+	    = __bool_constant<__divide<_Period2, _Period>::den == 1>;
 
       public:
 
@@ -447,6 +471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  : __r(static_cast<rep>(__rep)) { }
 
 	template<typename _Rep2, typename _Period2, typename = _Require<
+		 is_convertible<const _Rep2&, rep>,
 		 __or_<__is_float<rep>,
 		       __and_<__is_harmonic<_Period2>,
 			      __not_<__is_float<_Rep2>>>>>>
@@ -463,13 +488,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// 20.11.5.3 arithmetic
 
-	constexpr duration<rep, period>
+	constexpr duration<typename common_type<rep>::type, period>
 	operator+() const
-	{ return *this; }
+	{ return duration<typename common_type<rep>::type, period>(__r); }
 
-	constexpr duration<rep, period>
+	constexpr duration<typename common_type<rep>::type, period>
 	operator-() const
-	{ return duration(-__r); }
+	{ return duration<typename common_type<rep>::type, period>(-__r); }
 
 	_GLIBCXX17_CONSTEXPR duration&
 	operator++()

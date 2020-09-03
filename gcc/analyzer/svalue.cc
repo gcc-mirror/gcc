@@ -128,16 +128,19 @@ svalue::maybe_get_constant () const
     return NULL_TREE;
 }
 
-/* If this svalue is a cast (i.e a unaryop NOP_EXPR), return the underlying
-   svalue.
+/* If this svalue is a cast (i.e a unaryop NOP_EXPR or VIEW_CONVERT_EXPR),
+   return the underlying svalue.
    Otherwise return NULL.  */
 
 const svalue *
 svalue::maybe_undo_cast () const
 {
   if (const unaryop_svalue *unaryop_sval = dyn_cast_unaryop_svalue ())
-    if (unaryop_sval->get_op () == NOP_EXPR)
-      return unaryop_sval->get_arg ();
+    {
+      enum tree_code op = unaryop_sval->get_op ();
+      if (op == NOP_EXPR || op == VIEW_CONVERT_EXPR)
+	return unaryop_sval->get_arg ();
+    }
   return NULL;
 }
 
@@ -566,7 +569,7 @@ unaryop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
     {
-      if (m_op == NOP_EXPR)
+      if (m_op == VIEW_CONVERT_EXPR || m_op == NOP_EXPR)
 	{
 	  pp_string (pp, "CAST(");
 	  dump_tree (pp, get_type ());

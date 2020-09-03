@@ -1,5 +1,7 @@
 2020-09-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 8bc0f24d7a2.
+
 	Instantiation after extern instantiation.
 	gcc/cp/
 	* module.cc (trees_in::read_class_def): Maybe set

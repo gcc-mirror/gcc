@@ -354,11 +354,8 @@ public:
       id = this->m_symtab->assign_summary_id (node);
 
     if ((unsigned int)id >= m_vector->length ())
-      {
-	int newlen = this->m_symtab->cgraph_max_summary_id;
-	vec_safe_reserve (m_vector, newlen - m_vector->length ());
-	m_vector->quick_grow_cleared (newlen);
-      }
+      vec_safe_grow_cleared (m_vector,
+			     this->m_symtab->cgraph_max_summary_id);
 
     if ((*m_vector)[id] == NULL)
       (*m_vector)[id] = this->allocate_new ();
@@ -815,11 +812,7 @@ public:
       id = this->m_symtab->assign_summary_id (edge);
 
     if ((unsigned)id >= m_vector->length ())
-      {
-	int newlen = this->m_symtab->edges_max_summary_id;
-	m_vector->reserve (newlen - m_vector->length ());
-	m_vector->quick_grow_cleared (newlen);
-      }
+      vec_safe_grow_cleared (m_vector, this->m_symtab->edges_max_summary_id);
 
     if ((*m_vector)[id] == NULL)
       (*m_vector)[id] = this->allocate_new ();

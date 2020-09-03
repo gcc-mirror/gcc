@@ -24725,8 +24725,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	  /* A function pointer in the ELFv2 ABI is just a plain address, but
 	     the ABI requires it to be loaded into r12 before the call.  */
 	  func_addr = gen_rtx_REG (Pmode, 12);
-	  if (!rtx_equal_p (func_addr, func))
-	    emit_move_insn (func_addr, func);
+	  emit_move_insn (func_addr, func);
 	  abi_reg = func_addr;
 	  /* Indirect calls via CTR are strongly preferred over indirect
 	     calls via LR, so move the address there.  Needed to mark
@@ -24846,8 +24845,7 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   if (GET_CODE (func_desc) != SYMBOL_REF && DEFAULT_ABI == ABI_ELFv2)
     {
       r12 = gen_rtx_REG (Pmode, 12);
-      if (!rtx_equal_p (r12, func_desc))
-	emit_move_insn (r12, func_desc);
+      emit_move_insn (r12, func_desc);
       func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
       emit_move_insn (func_addr, r12);
     }

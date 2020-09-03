@@ -85,7 +85,7 @@ void test_strncat_nonstring_var (char *d, size_t n)
   T (strncat (nd3, ns5, UR (1, 2)));
   T (strncat (nd3, ns5, UR (2, 3)));
   T (strncat (nd3, ns5, UR (3, 4)));
-  T (strncat (nd3, ns5, UR (4, 5)));  /* { dg-warning "specified bound between 4 and 5 exceeds destination size 3" } */
+  T (strncat (nd3, ns5, UR (4, 5)));  /* { dg-warning "specified bound \\\[4, 5] exceeds destination size 3" } */
 
   T (strncat (nd5, ns3, UR (0, 1)));
   T (strncat (nd5, ns3, UR (1, 2)));

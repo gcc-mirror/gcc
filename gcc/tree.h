@@ -4410,6 +4410,7 @@ extern void verify_constructor_flags (tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
+extern tree build_constructor_from_vec (tree, const vec<tree, va_gc> *);
 extern tree build_constructor_va (tree, int, ...);
 extern tree build_clobber (tree);
 extern tree build_real_from_int_cst (tree, const_tree);
@@ -5342,6 +5343,15 @@ canonical_type_used_p (const_tree t)
 	   || TREE_CODE (t) == ARRAY_TYPE
 	   || TREE_CODE (t) == VECTOR_TYPE);
 }
+
+/* Kinds of access to pass-by-reference arguments to functions.  */
+enum access_mode
+{
+  access_none = 0,
+  access_read_only = 1,
+  access_write_only = 2,
+  access_read_write = access_read_only | access_write_only
+};
 
 #define tree_map_eq tree_map_base_eq
 extern unsigned int tree_map_hash (const void *);

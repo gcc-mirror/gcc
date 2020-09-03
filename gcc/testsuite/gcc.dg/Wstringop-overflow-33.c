@@ -7,7 +7,7 @@ void fcst (char *d)
 {
   char a[2] = "0";
 
-  __builtin_strcpy (d, a + 3);    // { dg-warning "\\\[-W(array-bounds|stringop-overflow)" }
+  __builtin_strcpy (d, a + 3);    // { dg-warning "\\\[-W(array-bounds|stringop-overread)" }
 }
 
 void frng (char *d, int i)
@@ -17,14 +17,14 @@ void frng (char *d, int i)
   if (i < 3)
     i = 3;
 
-  __builtin_strcpy (d, a + i);    // { dg-warning "\\\[-W(array-bounds|stringop-overflow)" }
+  __builtin_strcpy (d, a + i);    // { dg-warning "\\\[-W(array-bounds|stringop-overread)" }
 }
 
 void gcst (char *d)
 {
   char a[2] = "0";
 
-  __builtin_strcpy (d, a + 2);    // { dg-warning "\\\[-W(array-bounds|stringop-overflow)" }
+  __builtin_strcpy (d, a + 2);    // { dg-warning "\\\[-W(array-bounds|stringop-overread)" }
 }
 
 void grng (char *d, int i)
@@ -34,7 +34,7 @@ void grng (char *d, int i)
   if (i < 2)
     i = 2;
 
-  __builtin_strcpy (d, a + i);    // { dg-warning "\\\[-W(array-bounds|stringop-overflow)" }
+  __builtin_strcpy (d, a + i);    // { dg-warning "\\\[-W(array-bounds|stringop-overread)" }
 }
 
 /* { dg-prune-output "-Wuninitialized" } */

@@ -54,15 +54,19 @@ inline namespace fundamentals_v2
   /// Greatest common divisor
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
-    gcd(_Mn __m, _Nn __n)
+    gcd(_Mn __m, _Nn __n) noexcept
     {
-      static_assert(is_integral_v<_Mn>, "gcd arguments are integers");
-      static_assert(is_integral_v<_Nn>, "gcd arguments are integers");
-      static_assert(!is_same_v<remove_cv_t<_Mn>, bool>,
-		    "gcd arguments are not bools");
-      static_assert(!is_same_v<remove_cv_t<_Nn>, bool>,
-		    "gcd arguments are not bools");
-      return std::__detail::__gcd(__m, __n);
+      static_assert(is_integral_v<_Mn>,
+	  "std::experimental::gcd arguments must be integers");
+      static_assert(is_integral_v<_Nn>,
+	  "std::experimental::gcd arguments must be integers");
+      static_assert(_Mn(2) != _Mn(1),
+	  "std::experimental::gcd arguments must not be bool");
+      static_assert(_Nn(2) != _Nn(1),
+	  "std::experimental::gcd arguments must not be bool");
+      using _Up = make_unsigned_t<common_type_t<_Mn, _Nn>>;
+      return std::__detail::__gcd(std::__detail::__absu<_Up>(__m),
+				  std::__detail::__absu<_Up>(__n));
     }
 
   /// Least common multiple
@@ -70,13 +74,17 @@ inline namespace fundamentals_v2
     constexpr common_type_t<_Mn, _Nn>
     lcm(_Mn __m, _Nn __n)
     {
-      static_assert(is_integral_v<_Mn>, "lcm arguments are integers");
-      static_assert(is_integral_v<_Nn>, "lcm arguments are integers");
-      static_assert(!is_same_v<remove_cv_t<_Mn>, bool>,
-		    "lcm arguments are not bools");
-      static_assert(!is_same_v<remove_cv_t<_Nn>, bool>,
-		    "lcm arguments are not bools");
-      return std::__detail::__lcm(__m, __n);
+      static_assert(is_integral_v<_Mn>,
+	  "std::experimental::lcm arguments must be integers");
+      static_assert(is_integral_v<_Nn>,
+	  "std::experimental::lcm arguments must be integers");
+      static_assert(_Mn(2) != _Mn(1),
+	  "std::experimental::lcm arguments must not be bool");
+      static_assert(_Nn(2) != _Nn(1),
+	  "std::experimental::lcm arguments must not be bool");
+      using _Up = make_unsigned_t<common_type_t<_Mn, _Nn>>;
+      return std::__detail::__lcm(std::__detail::__absu<_Up>(__m),
+				  std::__detail::__absu<_Up>(__n));
     }
 } // namespace fundamentals_v2
 } // namespace experimental

@@ -1712,7 +1712,10 @@ match_builtin_function_types (tree newtype, tree oldtype,
 	return NULL_TREE;
 
       tree oldtype = TYPE_MAIN_VARIANT (TREE_VALUE (oldargs));
-      tree newtype = TYPE_MAIN_VARIANT (TREE_VALUE (newargs));
+      tree newtype = TREE_VALUE (newargs);
+      if (newtype == error_mark_node)
+       return NULL_TREE;
+      newtype = TYPE_MAIN_VARIANT (newtype);
 
       if (!types_close_enough_to_match (oldtype, newtype))
 	return NULL_TREE;

@@ -324,6 +324,7 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
   switch (op)
     {
     default: break;
+    case VIEW_CONVERT_EXPR:
     case NOP_EXPR:
       {
 	/* Handle redundant casts.  */
@@ -390,6 +391,30 @@ region_model_manager::get_or_create_unaryop (tree type, enum tree_code op,
   return unaryop_sval;
 }
 
+/* Get a tree code for a cast to DST_TYPE from SRC_TYPE.
+   Use NOP_EXPR if possible (e.g. to help fold_unary convert casts
+   of 0 to (T*) to simple pointer constants), but use FIX_TRUNC_EXPR
+   and VIEW_CONVERT_EXPR for cases that fold_unary would otherwise crash
+   on.  */
+
+static enum tree_code
+get_code_for_cast (tree dst_type, tree src_type)
+{
+  gcc_assert (dst_type);
+  if (!src_type)
+    return NOP_EXPR;
+
+  if (TREE_CODE (src_type) == REAL_TYPE)
+    {
+      if (TREE_CODE (dst_type) == INTEGER_TYPE)
+	return FIX_TRUNC_EXPR;
+      else
+	return VIEW_CONVERT_EXPR;
+    }
+
+  return NOP_EXPR;
+}
+
 /* Return the svalue * for a cast of ARG to type TYPE, creating it
    if necessary.  */
 
@@ -397,11 +422,8 @@ const svalue *
 region_model_manager::get_or_create_cast (tree type, const svalue *arg)
 {
   gcc_assert (type);
-  if (arg->get_type ())
-    if (TREE_CODE (type) == INTEGER_TYPE
-	&& TREE_CODE (arg->get_type ()) == REAL_TYPE)
-      return get_or_create_unaryop (type, FIX_TRUNC_EXPR, arg);
-  return get_or_create_unaryop (type, NOP_EXPR, arg);
+  enum tree_code op = get_code_for_cast (type, arg->get_type ());
+  return get_or_create_unaryop (type, op, arg);
 }
 
 /* Subroutine of region_model_manager::get_or_create_binop.
@@ -561,7 +583,8 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
   if (const unaryop_svalue *unary
       = parent_svalue->dyn_cast_unaryop_svalue ())
     {
-      if (unary->get_op () == NOP_EXPR)
+      if (unary->get_op () == NOP_EXPR
+	  || unary->get_op () == VIEW_CONVERT_EXPR)
 	if (tree cst = unary->get_arg ()->maybe_get_constant ())
 	  if (zerop (cst))
 	    {

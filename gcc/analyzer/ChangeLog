@@ -1,3 +1,60 @@
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96798
+	* region-model.cc (region_model::on_call_pre): Handle
+	BUILT_IN_MEMSET_CHK.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Gather handling of
+	builtins and of internal fns into switch statements.  Handle
+	"alloca" and BUILT_IN_ALLOCA_WITH_ALIGN.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96860
+	* region.cc (decl_region::get_svalue_for_constructor): Support
+	apply_ctor_to_region failing.
+	* store.cc (binding_map::apply_ctor_to_region): Add failure
+	handling.
+	(binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.  Replace
+	assertion that child_base_offset is not symbolic with error
+	handling.
+	* store.h (binding_map::apply_ctor_to_region): Convert return type
+	from void to bool.
+	(binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96763
+	* store.cc (binding_map::apply_ctor_to_region): Handle RANGE_EXPR
+	by calling a new binding_map::apply_ctor_val_to_range subroutine.
+	Split out the existing non-CONSTRUCTOR-handling code to a new
+	apply_ctor_pair_to_child_region subroutine.
+	(binding_map::apply_ctor_val_to_range): New.
+	(binding_map::apply_ctor_pair_to_child_region): New, split out
+	from binding_map::apply_ctor_to_region as noted above.
+	* store.h (binding_map::apply_ctor_val_to_range): New decl.
+	(binding_map::apply_ctor_pair_to_child_region): New decl.
+
+2020-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96764
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Handle VIEW_CONVERT_EXPR.
+	(region_model_manager::get_or_create_cast): Move logic for
+	real->integer casting to...
+	(get_code_for_cast): ...this new function, and add logic for
+	real->non-integer casts.
+	(region_model_manager::maybe_fold_sub_svalue): Handle
+	VIEW_CONVERT_EXPR.
+	* region-model.cc
+	(region_model::add_any_constraints_from_gassign): Likewise.
+	* svalue.cc (svalue::maybe_undo_cast): Likewise.
+	(unaryop_svalue::dump_to_pp): Likewise.
+
 2020-08-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94858

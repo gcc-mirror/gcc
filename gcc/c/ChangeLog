@@ -1,3 +1,9 @@
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/96596
+	* c-decl.c (match_builtin_function_types): Avoid dealing with erroneous
+	argument type.
+
 2020-08-27  Martin Liska  <mliska@suse.cz>
 
 	* gimple-parser.c (c_parser_gimple_compound_statement): Set exact argument of a vector

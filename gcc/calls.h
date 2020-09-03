@@ -132,7 +132,7 @@ extern bool reference_callee_copied (CUMULATIVE_ARGS *,
 				     const function_arg_info &);
 extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
-extern void maybe_warn_nonstring_arg (tree, tree);
+extern bool maybe_warn_nonstring_arg (tree, tree);
 extern bool get_size_range (tree, tree[2], bool = false);
 extern rtx rtx_for_static_chain (const_tree, bool);
 extern bool cxx17_empty_base_field_p (const_tree);

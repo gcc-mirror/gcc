@@ -1,3 +1,8 @@
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	* jit-recording.c (recording::switch_::make_debug_string): Add argument
+	to a call.
+
 2020-08-22  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* libgccjit.c:

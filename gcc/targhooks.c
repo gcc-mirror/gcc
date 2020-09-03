@@ -1233,8 +1233,9 @@ default_vector_alignment (const_tree type)
   tree size = TYPE_SIZE (type);
   if (tree_fits_uhwi_p (size))
     align = tree_to_uhwi (size);
-
-  return align < MAX_OFILE_ALIGNMENT ? align : MAX_OFILE_ALIGNMENT;
+  if (align >= MAX_OFILE_ALIGNMENT)
+    return MAX_OFILE_ALIGNMENT;
+  return MAX (align, GET_MODE_ALIGNMENT (TYPE_MODE (type)));
 }
 
 /* The default implementation of

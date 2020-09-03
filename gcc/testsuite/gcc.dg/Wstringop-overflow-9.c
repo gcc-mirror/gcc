@@ -63,10 +63,10 @@ void test_strncpy (void)
 
 char* test_strndup (void)
 {
-  return strndup (s, SIZE_MAX - 5);   /* { dg-warning ".strndup. specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+ \\\[-Wstringop-overflow=\\\]" } */
+  return strndup (s, SIZE_MAX - 5);   /* { dg-warning ".strndup. specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+ \\\[-Wstringop-overread" } */
 }
 
 size_t test_strnlen (void)
 {
-  return strnlen (s, SIZE_MAX - 6);   /* { dg-warning ".strnlen. specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+ \\\[-Wstringop-overflow=\\\]" } */
+  return strnlen (s, SIZE_MAX - 6);   /* { dg-warning ".strnlen. specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+ \\\[-Wstringop-overread" } */
 }

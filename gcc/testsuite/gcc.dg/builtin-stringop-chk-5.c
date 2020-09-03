@@ -87,7 +87,7 @@ void test_memop_warn_local (const void *src)
   memset (&b->d, 0, offsetfrom (struct B, b, d) + 1);   /* { dg-warning "writing 6 bytes into a region of size 5" } */
   escape (b);
 
-  /* Same as above but clearing just elements of the second element
+  /* Same as above but clearing just members of the second element
      of the array.  */
   memset (&b[1].a.b, 0, offsetfrom (struct B, b[1], a.b) + 1);   /* { dg-warning "writing 4 bytes into a region of size 3" } */
   escape (b);

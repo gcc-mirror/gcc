@@ -506,7 +506,7 @@ gt_pch_save (FILE *f)
       if (__builtin_expect (RUNNING_ON_VALGRIND, 0))
 	{
 	  if (vbits.length () < valid_size)
-	    vbits.safe_grow (valid_size);
+	    vbits.safe_grow (valid_size, true);
 	  get_vbits = VALGRIND_GET_VBITS (state.ptrs[i]->obj,
 					  vbits.address (), valid_size);
 	  if (get_vbits == 3)
