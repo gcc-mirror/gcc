@@ -1891,6 +1891,14 @@ gimple_set_location (gimple *g, location_t location)
   g->location = location;
 }
 
+/* Return address of the location information for statement G.  */
+
+static inline location_t *
+gimple_location_ptr (gimple *g)
+{
+  return &g->location;
+}
+
 
 /* Return true if G contains location information.  */
 
@@ -4584,6 +4592,14 @@ static inline void
 gimple_phi_arg_set_location (gphi *phi, size_t i, location_t loc)
 {
   gimple_phi_arg (phi, i)->locus = loc;
+}
+
+/* Return address of source location of gimple argument I of phi node PHI.  */
+
+static inline location_t *
+gimple_phi_arg_location_ptr (gphi *phi, size_t i)
+{
+  return &gimple_phi_arg (phi, i)->locus;
 }
 
 /* Return TRUE if argument I of phi node PHI has a location record.  */
