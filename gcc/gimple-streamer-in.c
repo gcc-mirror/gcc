@@ -57,11 +57,7 @@ input_phi (class lto_input_block *ib, basic_block bb, class data_in *data_in,
       tree def = stream_read_tree (ib, data_in);
       int src_index = streamer_read_uhwi (ib);
       bitpack_d bp = streamer_read_bitpack (ib);
-      /* Do not cache a location - we do not have API to get pointer to the
-	 location in PHI statement and we may trigger reallocation.  */
-      location_t arg_loc = stream_input_location_now (&bp, data_in);
       basic_block sbb = BASIC_BLOCK_FOR_FN (fn, src_index);
-
       edge e = NULL;
       int j;
 
@@ -72,7 +68,11 @@ input_phi (class lto_input_block *ib, basic_block bb, class data_in *data_in,
 	    break;
 	  }
 
-      add_phi_arg (result, def, e, arg_loc);
+      add_phi_arg (result, def, e, UNKNOWN_LOCATION);
+      /* Read location and lexical block information.  */
+      location_t *arg_locp = gimple_phi_arg_location_ptr (result, e->dest_idx);
+      data_in->location_cache.input_location_and_block (arg_locp, &bp, ib,
+							data_in);
     }
 
   return result;
@@ -106,12 +106,9 @@ input_gimple_stmt (class lto_input_block *ib, class data_in *data_in,
   has_hist = bp_unpack_value (&bp, 1);
   stmt->subcode = bp_unpack_var_len_unsigned (&bp);
 
-  /* Read location information.  Caching here makes no sense until streamer
-     cache can handle the following gimple_set_block.  */
-  gimple_set_location (stmt, stream_input_location_now (&bp, data_in));
-
-  /* Read lexical block reference.  */
-  gimple_set_block (stmt, stream_read_tree (ib, data_in));
+  /* Read location and lexical block information.  */
+  data_in->location_cache.input_location_and_block (gimple_location_ptr (stmt),
+						    &bp, ib, data_in);
 
   /* Read in all the operands.  */
   switch (code)

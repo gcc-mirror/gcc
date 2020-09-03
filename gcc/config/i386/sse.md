@@ -12120,6 +12120,18 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "*avx512dq_mul<mode>3<mask_name>_bcst"
+  [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
+	(mult:VI8_AVX512VL
+	  (vec_duplicate:VI8_AVX512VL
+	    (match_operand:<ssescalarmode> 1 "memory_operand" "m"))
+	  (match_operand:VI8_AVX512VL 2 "register_operand" "v")))]
+  "TARGET_AVX512DQ"
+  "vpmullq\t{%1<avx512bcst>, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1<avx512bcst>}"
+  [(set_attr "type" "sseimul")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_expand "mul<mode>3<mask_name>"
   [(set (match_operand:VI4_AVX512F 0 "register_operand")
 	(mult:VI4_AVX512F
@@ -12158,6 +12170,18 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "<mask_prefix4>")
    (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx512f_mul<mode>3<mask_name>_bcst"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(mult:VI4_AVX512VL
+	  (vec_duplicate:VI4_AVX512VL
+	    (match_operand:<ssescalarmode> 1 "memory_operand" "m"))
+	  (match_operand:VI4_AVX512VL 2 "register_operand" "v")))]
+  "TARGET_AVX512F"
+   "vpmulld\t{%1<avx512bcst>, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1<avx512bcst>}"
+  [(set_attr "type" "sseimul")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "mul<mode>3"

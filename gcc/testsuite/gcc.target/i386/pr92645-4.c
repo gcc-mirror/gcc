@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx2 -fdump-tree-optimized -Wno-psabi" } */
+/* { dg-options "-O2 -mavx2 -fdump-tree-optimized -Wno-psabi -mno-avx512f" } */
 
 typedef unsigned int u32v4 __attribute__((vector_size(16)));
 typedef unsigned short u16v16 __attribute__((vector_size(32)));

@@ -1,3 +1,10 @@
+2020-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/96859
+	* check.c (gfc_boz2real, gfc_boz2int): When clearing first two bits,
+	change also '2' to '0' and '3' to '1' rather than just handling '4'
+	through '7'.
+
 2020-09-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mark Eggleston  <markeggleston@gcc.gnu.org>
 

@@ -61,6 +61,7 @@ package Stand is
       S_Integer,
       S_Long_Integer,
       S_Long_Long_Integer,
+      S_Long_Long_Long_Integer,
 
       S_Natural,
       S_Positive,
@@ -282,6 +283,9 @@ package Stand is
    Standard_Integer             : Entity_Id renames SE (S_Integer);
    Standard_Long_Integer        : Entity_Id renames SE (S_Long_Integer);
    Standard_Long_Long_Integer   : Entity_Id renames SE (S_Long_Long_Integer);
+
+   Standard_Long_Long_Long_Integer : Entity_Id renames
+                                                 SE (S_Long_Long_Long_Integer);
 
    Standard_Op_Add              : Entity_Id renames SE (S_Op_Add);
    Standard_Op_And              : Entity_Id renames SE (S_Op_And);

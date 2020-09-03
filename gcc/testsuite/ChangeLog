@@ -1,3 +1,161 @@
+2020-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96869
+	* gdc.dg/simd.d: Removed.
+	* gdc.dg/cast1.d: New test.
+	* gdc.dg/gdc213.d: Compile with target vect_sizes_16B_8B.
+	* gdc.dg/gdc284.d: Likewise.
+	* gdc.dg/gdc67.d: Likewise.
+	* gdc.dg/pr96869.d: New test.
+	* gdc.dg/simd1.d: New test.
+	* gdc.dg/simd10447.d: New test.
+	* gdc.dg/simd12776.d: New test.
+	* gdc.dg/simd13841.d: New test.
+	* gdc.dg/simd13927.d: New test.
+	* gdc.dg/simd15123.d: New test.
+	* gdc.dg/simd15144.d: New test.
+	* gdc.dg/simd16087.d: New test.
+	* gdc.dg/simd16697.d: New test.
+	* gdc.dg/simd17237.d: New test.
+	* gdc.dg/simd17695.d: New test.
+	* gdc.dg/simd17720a.d: New test.
+	* gdc.dg/simd17720b.d: New test.
+	* gdc.dg/simd19224.d: New test.
+	* gdc.dg/simd19627.d: New test.
+	* gdc.dg/simd19628.d: New test.
+	* gdc.dg/simd19629.d: New test.
+	* gdc.dg/simd19630.d: New test.
+	* gdc.dg/simd2a.d: New test.
+	* gdc.dg/simd2b.d: New test.
+	* gdc.dg/simd2c.d: New test.
+	* gdc.dg/simd2d.d: New test.
+	* gdc.dg/simd2e.d: New test.
+	* gdc.dg/simd2f.d: New test.
+	* gdc.dg/simd2g.d: New test.
+	* gdc.dg/simd2h.d: New test.
+	* gdc.dg/simd2i.d: New test.
+	* gdc.dg/simd2j.d: New test.
+	* gdc.dg/simd7951.d: New test.
+	* gdc.dg/torture/array2.d: New test.
+	* gdc.dg/torture/array3.d: New test.
+	* gdc.dg/torture/simd16488a.d: New test.
+	* gdc.dg/torture/simd16488b.d: New test.
+	* gdc.dg/torture/simd16703.d: New test.
+	* gdc.dg/torture/simd19223.d: New test.
+	* gdc.dg/torture/simd19607.d: New test.
+	* gdc.dg/torture/simd3.d: New test.
+	* gdc.dg/torture/simd4.d: New test.
+	* gdc.dg/torture/simd7411.d: New test.
+	* gdc.dg/torture/simd7413a.d: New test.
+	* gdc.dg/torture/simd7413b.d: New test.
+	* gdc.dg/torture/simd7414.d: New test.
+	* gdc.dg/torture/simd9200.d: New test.
+	* gdc.dg/torture/simd9304.d: New test.
+	* gdc.dg/torture/simd9449.d: New test.
+	* gdc.dg/torture/simd9910.d: New test.
+	* gdc.dg/simd13927b.d: New file.
+
+2020-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc-utils.exp (gdc-convert-test): Handle LINK directive.
+	Set PERMUTE_ARGS as DEFAULT_DFLAGS only for runnable tests.
+	(gdc-do-test): Set default action of compilable tests to compile.
+	Test SHARED_OPTION on runnable_cxx tests.
+
+2020-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/dg.exp: Remove torture options.
+	* gdc.dg/gdc115.d: Move test to gdc.dg/torture.
+	* gdc.dg/gdc131.d: Likewise.
+	* gdc.dg/gdc141.d: Likewise.
+	* gdc.dg/gdc17.d: Likewise.
+	* gdc.dg/gdc171.d: Likewise.
+	* gdc.dg/gdc179.d: Likewise.
+	* gdc.dg/gdc186.d: Likewise.
+	* gdc.dg/gdc187.d: Likewise.
+	* gdc.dg/gdc191.d: Likewise.
+	* gdc.dg/gdc198.d: Likewise.
+	* gdc.dg/gdc200.d: Likewise.
+	* gdc.dg/gdc210.d: Likewise.
+	* gdc.dg/gdc240.d: Likewise.
+	* gdc.dg/gdc242b.d: Likewise.
+	* gdc.dg/gdc248.d: Likewise.
+	* gdc.dg/gdc250.d: Likewise.
+	* gdc.dg/gdc273.d: Likewise.
+	* gdc.dg/gdc283.d: Likewise.
+	* gdc.dg/gdc285.d: Likewise.
+	* gdc.dg/gdc286.d: Likewise.
+	* gdc.dg/gdc309.d: Likewise.
+	* gdc.dg/gdc35.d: Likewise.
+	* gdc.dg/gdc36.d: Likewise.
+	* gdc.dg/gdc51.d: Likewise.
+	* gdc.dg/gdc57.d: Likewise.
+	* gdc.dg/gdc66.d: Likewise.
+	* gdc.dg/imports/gdc36.d: Likewise.
+	* gdc.dg/init1.d: Likewise.
+	* gdc.dg/pr92309.d: Likewise.
+	* gdc.dg/pr94424.d: Likewise.
+	* gdc.dg/pr94777b.d: Likewise.
+	* gdc.dg/pr96152.d: Likewise.
+	* gdc.dg/pr96153.d: Likewise.
+	* gdc.dg/pr96156.d: Likewise.
+	* gdc.dg/pr96157a.d: Likewise.
+	* gdc.dg/torture/torture.exp: New file.
+	* gdc.dg/torture/gdc115.d: New file.
+	* gdc.dg/torture/gdc131.d: New file.
+	* gdc.dg/torture/gdc141.d: New file.
+	* gdc.dg/torture/gdc17.d: New file.
+	* gdc.dg/torture/gdc171.d: New file.
+	* gdc.dg/torture/gdc179.d: New file.
+	* gdc.dg/torture/gdc186.d: New file.
+	* gdc.dg/torture/gdc187.d: New file.
+	* gdc.dg/torture/gdc191.d: New file.
+	* gdc.dg/torture/gdc198.d: New file.
+	* gdc.dg/torture/gdc200.d: New file.
+	* gdc.dg/torture/gdc210.d: New file.
+	* gdc.dg/torture/gdc240.d: New file.
+	* gdc.dg/torture/gdc242b.d: New file.
+	* gdc.dg/torture/gdc248.d: New file.
+	* gdc.dg/torture/gdc250.d: New file.
+	* gdc.dg/torture/gdc273.d: New file.
+	* gdc.dg/torture/gdc283.d: New file.
+	* gdc.dg/torture/gdc285.d: New file.
+	* gdc.dg/torture/gdc286.d: New file.
+	* gdc.dg/torture/gdc309.d: New file.
+	* gdc.dg/torture/gdc35.d: New file.
+	* gdc.dg/torture/gdc36.d: New file.
+	* gdc.dg/torture/gdc51.d: New file.
+	* gdc.dg/torture/gdc57.d: New file.
+	* gdc.dg/torture/gdc66.d: New file.
+	* gdc.dg/torture/imports/gdc36.d: New file.
+	* gdc.dg/torture/init1.d: New file.
+	* gdc.dg/torture/pr92309.d: New file.
+	* gdc.dg/torture/pr94424.d: New file.
+	* gdc.dg/torture/pr94777b.d: New file.
+	* gdc.dg/torture/pr96152.d: New file.
+	* gdc.dg/torture/pr96153.d: New file.
+	* gdc.dg/torture/pr96156.d: New file.
+	* gdc.dg/torture/pr96157a.d: New file.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/60304
+	* g++.dg/warn/Wconversion-null-5.C: New test.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.old-deja/g++.abi/cxa_vec.C: Include <exception> for
+	std::set_terminate.
+
+2020-09-02  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.dg/pr55940.c: Skip for msp430 unless -mlarge is specified.
+
+2020-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/96859
+	* gfortran.dg/pr96859.f90: New test.
+
 2020-09-01  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Wstringop-overflow.c: Remove xfails.

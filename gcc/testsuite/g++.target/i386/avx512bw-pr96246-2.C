@@ -3,6 +3,10 @@
 /* { dg-require-effective-target avx512bw } */
 /* { dg-options "-O2 -std=c++14 -mavx512bw" } */
 
+#define AVX512BW
+
+#include "avx512f-helper.h"
+
 #include "avx512bw-pr96246-1.C"
 
 #define RUNTIME_TEST(vtype, num)			\
@@ -24,8 +28,8 @@
     }							\
   while (0)
 
-int
-main (void)
+void
+test_512 (void)
 {
   RUNTIME_TEST (v64qi, 64);
   RUNTIME_TEST (v32hi, 32);
@@ -33,5 +37,4 @@ main (void)
   RUNTIME_TEST (v8di, 8);
   RUNTIME_TEST (v16sf, 16);
   RUNTIME_TEST (v8df, 8);
-  return 0;
 }

@@ -76,6 +76,7 @@
 
 #if __cplusplus >= 201402L
 #include <type_traits>
+#include <bit>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -97,15 +98,40 @@ namespace __detail
 
   template<typename _Up> void __absu(bool) = delete;
 
-  // GCD implementation
+  // GCD implementation, using Stein's algorithm
   template<typename _Tp>
     constexpr _Tp
     __gcd(_Tp __m, _Tp __n)
     {
       static_assert(is_unsigned<_Tp>::value, "type must be unsigned");
-      return __m == 0 ? __n
-	: __n == 0 ? __m
-	: __detail::__gcd(__n, _Tp(__m % __n));
+
+      if (__m == 0)
+	return __n;
+      if (__n == 0)
+	return __m;
+
+      const int __i = std::__countr_zero(__m);
+      __m >>= __i;
+      const int __j = std::__countr_zero(__n);
+      __n >>= __j;
+      const int __k = __i < __j ? __i : __j; // min(i, j)
+
+      while (true)
+	{
+	  if (__m > __n)
+	    {
+	      _Tp __tmp = __m;
+	      __m = __n;
+	      __n = __tmp;
+	    }
+
+	  __n -= __m;
+
+	  if (__n == 0)
+	    return __m << __k;
+
+	  __n >>= std::__countr_zero(__n);
+	}
     }
 
   // LCM implementation

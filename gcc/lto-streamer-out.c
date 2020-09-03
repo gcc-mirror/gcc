@@ -60,6 +60,10 @@ clear_line_info (struct output_block *ob)
   ob->current_line = 0;
   ob->current_col = 0;
   ob->current_sysp = false;
+  /* Initialize to something that will never appear as block,
+     so that the first location with block in a function etc.
+     always streams a change_block bit and the first block.  */
+  ob->current_block = void_node;
 }
 
 
@@ -178,40 +182,72 @@ tree_is_indexable (tree t)
    After outputting bitpack, lto_output_location_data has
    to be done to output actual data.  */
 
+static void
+lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
+		       location_t orig_loc, bool block_p)
+{
+  location_t loc = LOCATION_LOCUS (orig_loc);
+
+  bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT,
+		        loc < RESERVED_LOCATION_COUNT
+			? loc : RESERVED_LOCATION_COUNT);
+  if (loc >= RESERVED_LOCATION_COUNT)
+    {
+      expanded_location xloc = expand_location (loc);
+
+      bp_pack_value (bp, ob->current_file != xloc.file, 1);
+      bp_pack_value (bp, ob->current_line != xloc.line, 1);
+      bp_pack_value (bp, ob->current_col != xloc.column, 1);
+
+      if (ob->current_file != xloc.file)
+	{
+	  bp_pack_string (ob, bp, remap_debug_filename (xloc.file), true);
+	  bp_pack_value (bp, xloc.sysp, 1);
+	}
+      ob->current_file = xloc.file;
+      ob->current_sysp = xloc.sysp;
+
+      if (ob->current_line != xloc.line)
+	bp_pack_var_len_unsigned (bp, xloc.line);
+      ob->current_line = xloc.line;
+
+      if (ob->current_col != xloc.column)
+	bp_pack_var_len_unsigned (bp, xloc.column);
+      ob->current_col = xloc.column;
+    }
+
+  if (block_p)
+    {
+      tree block = LOCATION_BLOCK (orig_loc);
+      bp_pack_value (bp, ob->current_block != block, 1);
+      streamer_write_bitpack (bp);
+      if (ob->current_block != block)
+	lto_output_tree (ob, block, true, true);
+      ob->current_block = block;
+    }
+}
+
+/* Output info about new location into bitpack BP.
+   After outputting bitpack, lto_output_location_data has
+   to be done to output actual data.  */
+
 void
 lto_output_location (struct output_block *ob, struct bitpack_d *bp,
 		     location_t loc)
 {
-  expanded_location xloc;
+  lto_output_location_1 (ob, bp, loc, false);
+}
 
-  loc = LOCATION_LOCUS (loc);
-  bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT,
-		        loc < RESERVED_LOCATION_COUNT
-			? loc : RESERVED_LOCATION_COUNT);
-  if (loc < RESERVED_LOCATION_COUNT)
-    return;
+/* Output info about new location into bitpack BP.
+   After outputting bitpack, lto_output_location_data has
+   to be done to output actual data.  Like lto_output_location, but
+   additionally output LOCATION_BLOCK info too and write the BP bitpack.  */
 
-  xloc = expand_location (loc);
-
-  bp_pack_value (bp, ob->current_file != xloc.file, 1);
-  bp_pack_value (bp, ob->current_line != xloc.line, 1);
-  bp_pack_value (bp, ob->current_col != xloc.column, 1);
-
-  if (ob->current_file != xloc.file)
-    {
-      bp_pack_string (ob, bp, remap_debug_filename (xloc.file), true);
-      bp_pack_value (bp, xloc.sysp, 1);
-    }
-  ob->current_file = xloc.file;
-  ob->current_sysp = xloc.sysp;
-
-  if (ob->current_line != xloc.line)
-    bp_pack_var_len_unsigned (bp, xloc.line);
-  ob->current_line = xloc.line;
-
-  if (ob->current_col != xloc.column)
-    bp_pack_var_len_unsigned (bp, xloc.column);
-  ob->current_col = xloc.column;
+void
+lto_output_location_and_block (struct output_block *ob, struct bitpack_d *bp,
+			       location_t loc)
+{
+  lto_output_location_1 (ob, bp, loc, true);
 }
 
 

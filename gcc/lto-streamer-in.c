@@ -156,7 +156,18 @@ lto_location_cache::cmp_loc (const void *pa, const void *pb)
     return a->sysp ? 1 : -1;
   if (a->line != b->line)
     return a->line - b->line;
-  return a->col - b->col;
+  if (a->col != b->col)
+    return a->col - b->col;
+  if ((a->block == NULL_TREE) != (b->block == NULL_TREE))
+    return a->block ? 1 : -1;
+  if (a->block)
+    {
+      if (BLOCK_NUMBER (a->block) < BLOCK_NUMBER (b->block))
+	return -1;
+      if (BLOCK_NUMBER (a->block) > BLOCK_NUMBER (b->block))
+	return 1;
+    }
+  return 0;
 }
 
 /* Apply all changes in location cache.  Add locations into linemap and patch
@@ -191,22 +202,33 @@ lto_location_cache::apply_location_cache ()
 	  linemap_line_start (line_table, loc.line, max + 1);
 	}
       gcc_assert (*loc.loc == BUILTINS_LOCATION + 1);
-      if (current_file == loc.file && current_line == loc.line
-	  && current_col == loc.col)
-	*loc.loc = current_loc;
-      else
-        current_loc = *loc.loc = linemap_position_for_column (line_table,
-							      loc.col);
+      if (current_file != loc.file
+	  || current_line != loc.line
+	  || current_col != loc.col)
+	{
+	  current_loc = linemap_position_for_column (line_table, loc.col);
+	  if (loc.block)
+	    current_loc = set_block (current_loc, loc.block);
+	}
+      else if (current_block != loc.block)
+	{
+	  if (loc.block)
+	    current_loc = set_block (current_loc, loc.block);
+	  else
+	    current_loc = LOCATION_LOCUS (current_loc);
+	}
+      *loc.loc = current_loc;
       current_line = loc.line;
       prev_file = current_file = loc.file;
       current_col = loc.col;
+      current_block = loc.block;
     }
   loc_cache.truncate (0);
   accepted_length = 0;
   return true;
 }
 
-/* Tree merging did not suceed; mark all changes in the cache as accepted.  */
+/* Tree merging did not succeed; mark all changes in the cache as accepted.  */
 
 void
 lto_location_cache::accept_location_cache ()
@@ -215,7 +237,7 @@ lto_location_cache::accept_location_cache ()
   accepted_length = loc_cache.length ();
 }
 
-/* Tree merging did suceed; throw away recent changes.  */
+/* Tree merging did succeed; throw away recent changes.  */
 
 void
 lto_location_cache::revert_location_cache ()
@@ -223,33 +245,46 @@ lto_location_cache::revert_location_cache ()
   loc_cache.truncate (accepted_length);
 }
 
-/* Read a location bitpack from input block IB and either update *LOC directly
-   or add it to the location cache.
+/* Read a location bitpack from bit pack BP and either update *LOC directly
+   or add it to the location cache.  If IB is non-NULL, stream in a block
+   afterwards.
    It is neccesary to call apply_location_cache to get *LOC updated.  */
 
 void
-lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
-				    class data_in *data_in)
+lto_location_cache::input_location_and_block (location_t *loc,
+					      struct bitpack_d *bp,
+					      class lto_input_block *ib,
+					      class data_in *data_in)
 {
   static const char *stream_file;
   static int stream_line;
   static int stream_col;
   static bool stream_sysp;
-  bool file_change, line_change, column_change;
+  static tree stream_block;
 
   gcc_assert (current_cache == this);
 
   *loc = bp_unpack_int_in_range (bp, "location", 0, RESERVED_LOCATION_COUNT);
 
   if (*loc < RESERVED_LOCATION_COUNT)
-    return;
+    {
+      if (ib)
+	{
+	  bool block_change = bp_unpack_value (bp, 1);
+	  if (block_change)
+	    stream_block = stream_read_tree (ib, data_in);
+	  if (stream_block)
+	    *loc = set_block (*loc, stream_block);
+	}
+      return;
+    }
 
   /* Keep value RESERVED_LOCATION_COUNT in *loc as linemap lookups will
      ICE on it.  */
 
-  file_change = bp_unpack_value (bp, 1);
-  line_change = bp_unpack_value (bp, 1);
-  column_change = bp_unpack_value (bp, 1);
+  bool file_change = bp_unpack_value (bp, 1);
+  bool line_change = bp_unpack_value (bp, 1);
+  bool column_change = bp_unpack_value (bp, 1);
 
   if (file_change)
     {
@@ -263,19 +298,46 @@ lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
   if (column_change)
     stream_col = bp_unpack_var_len_unsigned (bp);
 
-  /* This optimization saves location cache operations druing gimple
+  tree block = NULL_TREE;
+  if (ib)
+    {
+      bool block_change = bp_unpack_value (bp, 1);
+      if (block_change)
+	stream_block = stream_read_tree (ib, data_in);
+      block = stream_block;
+    }
+
+  /* This optimization saves location cache operations during gimple
      streaming.  */
      
-  if (current_file == stream_file && current_line == stream_line
-      && current_col == stream_col && current_sysp == stream_sysp)
+  if (current_file == stream_file
+      && current_line == stream_line
+      && current_col == stream_col
+      && current_sysp == stream_sysp)
     {
-      *loc = current_loc;
+      if (current_block == block)
+	*loc = current_loc;
+      else if (block)
+	*loc = set_block (current_loc, block);
+      else
+	*loc = LOCATION_LOCUS (current_loc);
       return;
     }
 
   struct cached_location entry
-    = {stream_file, loc, stream_line, stream_col, stream_sysp};
+    = {stream_file, loc, stream_line, stream_col, stream_sysp, block};
   loc_cache.safe_push (entry);
+}
+
+/* Read a location bitpack from bit pack BP and either update *LOC directly
+   or add it to the location cache.
+   It is neccesary to call apply_location_cache to get *LOC updated.  */
+
+void
+lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
+				    class data_in *data_in)
+{
+  return input_location_and_block (loc, bp, NULL, data_in);
 }
 
 /* Read a location bitpack from input block IB and either update *LOC directly
@@ -1100,6 +1162,9 @@ input_function (tree fn_decl, class data_in *data_in,
 		node->count_materialization_scale);
       tag = streamer_read_record_start (ib);
     }
+
+  /* Finalize gimple_location/gimple_block of stmts and phis.  */
+  data_in->location_cache.apply_location_cache ();
 
   /* Fix up the call statements that are mentioned in the callgraph
      edges.  */
