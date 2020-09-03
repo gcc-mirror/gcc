@@ -5352,6 +5352,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 			&constexpr_ctx_count, allow_non_constant, strict,
 			manifestly_const_eval || !allow_non_constant };
 
+  /* Turn off -frounding-math for manifestly constant evaluation.  */
+  warning_sentinel rm (flag_rounding_math, ctx.manifestly_const_eval);
   tree type = initialized_type (t);
   tree r = t;
   if (VOID_TYPE_P (type))
