@@ -5643,6 +5643,7 @@ trees_out::lang_type_bools (tree t)
   WB (lang->has_copy_assign);
   WB (lang->has_new);
   WB (lang->has_array_new);
+
   WB ((lang->gets_delete >> 0) & 1);
   WB ((lang->gets_delete >> 1) & 1);
   // Interfaceness is recalculated upon reading.  May have to revisit?
@@ -5653,6 +5654,7 @@ trees_out::lang_type_bools (tree t)
   WB (lang->anon_aggr);
   WB (lang->non_zero_init);
   WB (lang->empty_p);
+
   WB (lang->vec_new_uses_cookie);
   WB (lang->declared_class);
   WB (lang->diamond_shaped);
@@ -5661,6 +5663,7 @@ trees_out::lang_type_bools (tree t)
   // lang->debug_requested
   WB (lang->fields_readonly);
   WB (lang->ptrmemfunc_flag);
+
   WB (lang->lazy_default_ctor);
   WB (lang->lazy_copy_ctor);
   WB (lang->lazy_copy_assign);
@@ -5669,6 +5672,7 @@ trees_out::lang_type_bools (tree t)
   WB (lang->has_complex_copy_ctor);
   WB (lang->has_complex_copy_assign);
   WB (lang->non_aggregate);
+
   WB (lang->has_complex_dflt);
   WB (lang->has_list_ctor);
   WB (lang->non_std_layout);
@@ -5677,6 +5681,7 @@ trees_out::lang_type_bools (tree t)
   WB (lang->lazy_move_assign);
   WB (lang->has_complex_move_ctor);
   WB (lang->has_complex_move_assign);
+
   WB (lang->has_constexpr_ctor);
   WB (lang->unique_obj_representations);
   WB (lang->unique_obj_representations_set);
@@ -5708,6 +5713,7 @@ trees_in::lang_type_bools (tree t)
   RB (lang->has_copy_assign);
   RB (lang->has_new);
   RB (lang->has_array_new);
+
   v = b () << 0;
   v |= b () << 1;
   lang->gets_delete = v;
@@ -5718,6 +5724,7 @@ trees_in::lang_type_bools (tree t)
   RB (lang->anon_aggr);
   RB (lang->non_zero_init);
   RB (lang->empty_p);
+
   RB (lang->vec_new_uses_cookie);
   RB (lang->declared_class);
   RB (lang->diamond_shaped);
@@ -5726,6 +5733,7 @@ trees_in::lang_type_bools (tree t)
   gcc_assert (!lang->debug_requested);
   RB (lang->fields_readonly);
   RB (lang->ptrmemfunc_flag);
+
   RB (lang->lazy_default_ctor);
   RB (lang->lazy_copy_ctor);
   RB (lang->lazy_copy_assign);
@@ -5734,6 +5742,7 @@ trees_in::lang_type_bools (tree t)
   RB (lang->has_complex_copy_ctor);
   RB (lang->has_complex_copy_assign);
   RB (lang->non_aggregate);
+
   RB (lang->has_complex_dflt);
   RB (lang->has_list_ctor);
   RB (lang->non_std_layout);
@@ -5742,6 +5751,7 @@ trees_in::lang_type_bools (tree t)
   RB (lang->lazy_move_assign);
   RB (lang->has_complex_move_ctor);
   RB (lang->has_complex_move_assign);
+
   RB (lang->has_constexpr_ctor);
   RB (lang->unique_obj_representations);
   RB (lang->unique_obj_representations_set);
@@ -10871,6 +10881,7 @@ trees_in::is_matching_decl (tree existing, tree decl)
     DECL_DECLARED_INLINE_P (e_inner) = true;
   if (!DECL_EXTERNAL (inner))
     DECL_EXTERNAL (e_inner) = false;
+
   // FIXME: Check default tmpl and fn parms here
 
   return true;
@@ -11510,6 +11521,15 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   bool installing = maybe_dup && !TYPE_SIZE (type);
   if (installing)
     {
+      if (DECL_EXTERNAL (defn) && TYPE_LANG_SPECIFIC (type))
+	{
+	  /* We don't deal with not-really-extern, because, for a
+	     module you want the import to be the interface, and for a
+	     header-unit, you're doing it wrong.  */
+	  CLASSTYPE_INTERFACE_UNKNOWN (type) = false;
+	  CLASSTYPE_INTERFACE_ONLY (type) = true;
+	}
+
       if (maybe_dup != defn)
 	{
 	  // FIXME: This is needed on other defns too, almost

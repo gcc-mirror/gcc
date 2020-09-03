@@ -1,3 +1,12 @@
+2020-09-03  Nathan Sidwell  <nathan@acm.org>
+
+	Instantiation after extern instantiation.
+	gcc/cp/
+	* module.cc (trees_in::read_class_def): Maybe set
+	CLASSTYPE_INTERFACE.
+	gcc/testsuite/
+	* g++.dg/modules/extern-tpl-2_[abc].[CH]: New.
+
 2020-09-02  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
