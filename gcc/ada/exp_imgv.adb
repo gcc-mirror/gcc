@@ -619,15 +619,18 @@ package body Exp_Imgv is
            or else No (Lit_Strings (Rtyp))
          then
             --  When pragma Discard_Names applies to the first subtype, build
-            --  (Pref'Pos (Expr))'Img.
+            --  (Long_Long_Integer (Pref'Pos (Expr)))'Img. The conversion is
+            --  there to avoid applying 'Img directly in Universal_Integer,
+            --  which can be a very large type. See also the handling of 'Val.
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Prefix =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => Pref,
-                     Attribute_Name => Name_Pos,
-                     Expressions    => New_List (Expr)),
+                  Convert_To (Standard_Long_Long_Integer,
+                    Make_Attribute_Reference (Loc,
+                    Prefix         => Pref,
+                    Attribute_Name => Name_Pos,
+                    Expressions    => New_List (Expr))),
                 Attribute_Name =>
                   Name_Img));
             Analyze_And_Resolve (N, Standard_String);
