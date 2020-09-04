@@ -627,11 +627,6 @@ public:
      stmt in the chain.  */
   auto_vec<stmt_vec_info> reduction_chains;
 
-  /* The vectorized stmts defining the latch values of the reduction
-     they are involved with.  */
-  auto_vec<stmt_vec_info> reduc_latch_defs;
-  auto_vec<std::pair<slp_tree, slp_tree> > reduc_latch_slp_defs;
-
   /* Cost vector for a single scalar iteration.  */
   auto_vec<stmt_info_for_cost> scalar_cost_vec;
 

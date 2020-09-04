@@ -8555,6 +8555,42 @@ scale_profile_for_vect_loop (class loop *loop, unsigned vf)
     scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
 }
 
+/* For a vectorized stmt DEF_STMT_INFO adjust all vectorized PHI
+   latch edge values originally defined by it.  */
+
+static void
+maybe_set_vectorized_backedge_value (loop_vec_info loop_vinfo,
+				     stmt_vec_info def_stmt_info)
+{
+  tree def = gimple_get_lhs (vect_orig_stmt (def_stmt_info)->stmt);
+  if (!def || TREE_CODE (def) != SSA_NAME)
+    return;
+  stmt_vec_info phi_info;
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, def)
+    if (gphi *phi = dyn_cast <gphi *> (USE_STMT (use_p)))
+      if (gimple_bb (phi)->loop_father->header == gimple_bb (phi)
+	  && (phi_info = loop_vinfo->lookup_stmt (phi))
+	  && VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (phi_info))
+	  && STMT_VINFO_REDUC_TYPE (phi_info) != FOLD_LEFT_REDUCTION
+	  && STMT_VINFO_REDUC_TYPE (phi_info) != EXTRACT_LAST_REDUCTION)
+	{
+	  loop_p loop = gimple_bb (phi)->loop_father;
+	  edge e = loop_latch_edge (loop);
+	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == def)
+	    {
+	      vec<gimple *> &phi_defs = STMT_VINFO_VEC_STMTS (phi_info);
+	      vec<gimple *> &latch_defs = STMT_VINFO_VEC_STMTS (def_stmt_info);
+	      gcc_assert (phi_defs.length () == latch_defs.length ());
+	      for (unsigned i = 0; i < phi_defs.length (); ++i)
+		add_phi_arg (as_a <gphi *> (phi_defs[i]),
+			     gimple_get_lhs (latch_defs[i]), e,
+			     gimple_phi_arg_location (phi, e->dest_idx));
+	    }
+	}
+}
+
 /* Vectorize STMT_INFO if relevant, inserting any new instructions before GSI.
    When vectorizing STMT_INFO as a store, set *SEEN_STORE to its
    stmt_vec_info.  */
@@ -8933,7 +8969,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
 	   gsi_next (&si))
-        {
+	{
 	  gphi *phi = si.phi ();
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -8966,6 +9002,27 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 		dump_printf_loc (MSG_NOTE, vect_location, "transform phi.\n");
 	      vect_transform_stmt (loop_vinfo, stmt_info, NULL, NULL, NULL);
 	    }
+	}
+
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  gphi *phi = si.phi ();
+	  stmt_info = loop_vinfo->lookup_stmt (phi);
+	  if (!stmt_info)
+	    continue;
+
+	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	      && !STMT_VINFO_LIVE_P (stmt_info))
+	    continue;
+
+	  if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
+	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def
+	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
+	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def)
+	      && ! PURE_SLP_STMT (stmt_info))
+	    maybe_set_vectorized_backedge_value (loop_vinfo, stmt_info);
 	}
 
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
@@ -9005,9 +9062,16 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			= STMT_VINFO_RELATED_STMT (stmt_info);
 		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info, &si,
 						&seen_store);
+		      maybe_set_vectorized_backedge_value (loop_vinfo,
+							   pat_stmt_info);
 		    }
-		  vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
-					    &seen_store);
+		  else
+		    {
+		      vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
+						&seen_store);
+		      maybe_set_vectorized_backedge_value (loop_vinfo,
+							   stmt_info);
+		    }
 		}
 	      gsi_next (&si);
 	      if (seen_store)
@@ -9023,38 +9087,6 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 		    loop_vinfo->remove_stmt (stmt_info);
 		}
 	    }
-	}
-
-      /* Fill in backedge defs of reductions.  */
-      for (unsigned i = 0; i < loop_vinfo->reduc_latch_defs.length (); ++i)
-	{
-	  stmt_vec_info stmt_info = loop_vinfo->reduc_latch_defs[i];
-	  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
-	  vec<gimple *> &phi_info
-	    = STMT_VINFO_VEC_STMTS (STMT_VINFO_REDUC_DEF (orig_stmt_info));
-	  vec<gimple *> &vec_stmt
-	    = STMT_VINFO_VEC_STMTS (stmt_info);
-	  gcc_assert (phi_info.length () == vec_stmt.length ());
-	  gphi *phi
-	    = dyn_cast <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt);
-	  edge e = loop_latch_edge (gimple_bb (phi_info[0])->loop_father);
-	  for (unsigned j = 0; j < phi_info.length (); ++j)
-	    add_phi_arg (as_a <gphi *> (phi_info[j]),
-			 gimple_get_lhs (vec_stmt[j]), e,
-			 gimple_phi_arg_location (phi, e->dest_idx));
-	}
-      for (unsigned i = 0; i < loop_vinfo->reduc_latch_slp_defs.length (); ++i)
-	{
-	  slp_tree slp_node = loop_vinfo->reduc_latch_slp_defs[i].first;
-	  slp_tree phi_node = loop_vinfo->reduc_latch_slp_defs[i].second;
-	  gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
-	  e = loop_latch_edge (gimple_bb (phi)->loop_father);
-	  gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
-		      == SLP_TREE_VEC_STMTS (slp_node).length ());
-	  for (unsigned j = 0; j < SLP_TREE_VEC_STMTS (phi_node).length (); ++j)
-	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[j]),
-			 vect_get_slp_vect_def (slp_node, j),
-			 e, gimple_phi_arg_location (phi, e->dest_idx));
 	}
 
       /* Stub out scalar statements that must not survive vectorization.
