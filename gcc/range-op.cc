@@ -160,7 +160,7 @@ range_operator::fold_range (irange &r, tree type,
       return true;
     }
 
-  widest_irange tmp;
+  int_range_max tmp;
   r.set_undefined ();
   for (unsigned x = 0; x < num_lh; ++x)
     for (unsigned y = 0; y < num_rh; ++y)
@@ -1367,7 +1367,7 @@ operator_div::wi_fold (irange &r, tree type,
   // Then divide by the non-zero positive numbers, if any.
   if (wi::gt_p (divisor_max, wi::zero (prec), sign))
     {
-      widest_irange tmp;
+      int_range_max tmp;
       wi_cross_product (tmp, type, dividend_min, dividend_max,
 			wi::one (prec), divisor_max);
       r.union_ (tmp);
@@ -1567,7 +1567,7 @@ operator_lshift::op1_range (irange &r,
       //
       // Perform a logical rshift by doing the rshift as unsigned.
       tree unsigned_type = unsigned_type_for (type);
-      widest_irange unsigned_lhs = lhs;
+      int_range_max unsigned_lhs = lhs;
       range_cast (unsigned_lhs, unsigned_type);
       rshift_op = range_op_handler (RSHIFT_EXPR, unsigned_type);
       rshift_op->fold_range (lb, unsigned_type, unsigned_lhs, shifted);
@@ -1611,7 +1611,7 @@ operator_rshift::op1_range (irange &r,
     {
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
-      widest_irange lhs_refined;
+      int_range_max lhs_refined;
       op_rshift.fold_range (lhs_refined, type, int_range<1> (type), op2);
       lhs_refined.intersect (lhs);
       if (lhs_refined.undefined_p ())
@@ -1619,8 +1619,8 @@ operator_rshift::op1_range (irange &r,
 	  r.set_undefined ();
 	  return true;
 	}
-      widest_irange shift_range (shift, shift);
-      widest_irange lb, ub;
+      int_range_max shift_range (shift, shift);
+      int_range_max lb, ub;
       op_lshift.fold_range (lb, type, lhs_refined, shift_range);
       //    LHS
       // 0000 0111 = OP1 >> 3
@@ -1632,7 +1632,7 @@ operator_rshift::op1_range (irange &r,
 			       fold_build2 (LSHIFT_EXPR, type,
 					    build_minus_one_cst (type),
 					    shift));
-      widest_irange mask_range (build_zero_cst (type), mask);
+      int_range_max mask_range (build_zero_cst (type), mask);
       op_plus.fold_range (ub, type, lb, mask_range);
       r = lb;
       r.union_ (ub);
@@ -1786,7 +1786,7 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
   // Then process any additonal pairs by unioning with their results.
   for (unsigned x = 1; x < inner.num_pairs (); ++x)
     {
-      widest_irange tmp;
+      int_range_max tmp;
       fold_pair (tmp, x, inner, outer);
       r.union_ (tmp);
       if (r.varying_p ())
@@ -1811,7 +1811,7 @@ operator_cast::op1_range (irange &r, tree type,
         {
 	  // We want to insert the LHS as an unsigned value since it
 	  // would not trigger the signed bit of the larger type.
-	  widest_irange converted_lhs = lhs;
+	  int_range_max converted_lhs = lhs;
 	  range_cast (converted_lhs, unsigned_type_for (lhs_type));
 	  range_cast (converted_lhs, type);
 	  // Start by building the positive signed outer range for the type.
@@ -1826,14 +1826,14 @@ operator_cast::op1_range (irange &r, tree type,
 	  lim = wi::mask (TYPE_PRECISION (lhs_type), true,
 			  TYPE_PRECISION (type));
 	  // Add this to the unsigned LHS range(s).
-	  widest_irange lim_range (type, lim, lim);
-	  widest_irange lhs_neg;
+	  int_range_max lim_range (type, lim, lim);
+	  int_range_max lhs_neg;
 	  range_op_handler (PLUS_EXPR, type)->fold_range (lhs_neg,
 							  type,
 							  converted_lhs,
 							  lim_range);
 	  // And union this with the entire outer types negative range.
-	  widest_irange neg (type,
+	  int_range_max neg (type,
 			     wi::min_value (TYPE_PRECISION (type),
 					    SIGNED),
 			     lim - 1);
@@ -1846,7 +1846,7 @@ operator_cast::op1_range (irange &r, tree type,
       return true;
     }
 
-  widest_irange tmp;
+  int_range_max tmp;
   if (TYPE_PRECISION (lhs_type) == TYPE_PRECISION (type))
     tmp = lhs;
   else
@@ -1984,7 +1984,7 @@ operator_bitwise_and::remove_impossible_ranges (irange &r,
   tree type = r.type ();
   int prec = TYPE_PRECISION (type);
   int leading_zeros = wi::clz (mask);
-  widest_irange impossible_ranges;
+  int_range_max impossible_ranges;
 
   /* We know that starting at the most significant bit, any 0 in the
      mask means the resulting range cannot contain a 1 in that same
@@ -2315,10 +2315,10 @@ operator_bitwise_and::op1_range (irange &r, tree type,
   r.set_undefined ();
   for (unsigned i = 0; i < lhs.num_pairs (); ++i)
     {
-      widest_irange chunk (lhs.type (),
+      int_range_max chunk (lhs.type (),
 			   lhs.lower_bound (i),
 			   lhs.upper_bound (i));
-      widest_irange res;
+      int_range_max res;
       simple_op1_range_solver (res, type, chunk, op2);
       r.union_ (res);
     }
@@ -2872,7 +2872,7 @@ operator_abs::op1_range (irange &r, tree type,
       return true;
     }
   // Start with the positives because negatives are an impossible result.
-  widest_irange positives = range_positives (type);
+  int_range_max positives = range_positives (type);
   positives.intersect (lhs);
   r = positives;
   // Then add the negative of each pair:
@@ -3284,7 +3284,7 @@ range_op_handler (enum tree_code code, tree type)
 void
 range_cast (irange &r, tree type)
 {
-  widest_irange tmp = r;
+  int_range_max tmp = r;
   range_operator *op = range_op_handler (CONVERT_EXPR, type);
   // Call op_convert, if it fails, the result is varying.
   if (!op->fold_range (r, type, tmp, int_range<1> (type)))
@@ -3321,84 +3321,84 @@ build_range3 (int a, int b, int c, int d, int e, int f)
 static void
 range3_tests ()
 {
-  typedef int_range<3> irange3;
-  irange3 r0, r1, r2;
-  irange3 i1, i2, i3;
+  typedef int_range<3> int_range3;
+  int_range3 r0, r1, r2;
+  int_range3 i1, i2, i3;
 
   // ([10,20] U [5,8]) U [1,3] ==> [1,3][5,8][10,20].
-  r0 = irange3 (INT (10), INT (20));
-  r1 = irange3 (INT (5), INT (8));
+  r0 = int_range3 (INT (10), INT (20));
+  r1 = int_range3 (INT (5), INT (8));
   r0.union_ (r1);
-  r1 = irange3 (INT (1), INT (3));
+  r1 = int_range3 (INT (1), INT (3));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == build_range3 (1, 3, 5, 8, 10, 20));
 
   // [1,3][5,8][10,20] U [-5,0] => [-5,3][5,8][10,20].
-  r1 = irange3 (INT (-5), INT (0));
+  r1 = int_range3 (INT (-5), INT (0));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == build_range3 (-5, 3, 5, 8, 10, 20));
 
   // [10,20][30,40] U [50,60] ==> [10,20][30,40][50,60].
-  r1 = irange3 (INT (50), INT (60));
-  r0 = irange3 (INT (10), INT (20));
-  r0.union_ (irange3 (INT (30), INT (40)));
+  r1 = int_range3 (INT (50), INT (60));
+  r0 = int_range3 (INT (10), INT (20));
+  r0.union_ (int_range3 (INT (30), INT (40)));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == build_range3 (10, 20, 30, 40, 50, 60));
   // [10,20][30,40][50,60] U [70, 80] ==> [10,20][30,40][50,60][70,80].
-  r1 = irange3 (INT (70), INT (80));
+  r1 = int_range3 (INT (70), INT (80));
   r0.union_ (r1);
 
   r2 = build_range3 (10, 20, 30, 40, 50, 60);
-  r2.union_ (irange3 (INT (70), INT (80)));
+  r2.union_ (int_range3 (INT (70), INT (80)));
   ASSERT_TRUE (r0 == r2);
 
   // [10,20][30,40][50,60] U [6,35] => [6,40][50,60].
   r0 = build_range3 (10, 20, 30, 40, 50, 60);
-  r1 = irange3 (INT (6), INT (35));
+  r1 = int_range3 (INT (6), INT (35));
   r0.union_ (r1);
-  r1 = irange3 (INT (6), INT (40));
-  r1.union_ (irange3 (INT (50), INT (60)));
+  r1 = int_range3 (INT (6), INT (40));
+  r1.union_ (int_range3 (INT (50), INT (60)));
   ASSERT_TRUE (r0 == r1);
 
   // [10,20][30,40][50,60] U [6,60] => [6,60].
   r0 = build_range3 (10, 20, 30, 40, 50, 60);
-  r1 = irange3 (INT (6), INT (60));
+  r1 = int_range3 (INT (6), INT (60));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == irange3 (INT (6), INT (60)));
+  ASSERT_TRUE (r0 == int_range3 (INT (6), INT (60)));
 
   // [10,20][30,40][50,60] U [6,70] => [6,70].
   r0 = build_range3 (10, 20, 30, 40, 50, 60);
-  r1 = irange3 (INT (6), INT (70));
+  r1 = int_range3 (INT (6), INT (70));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == irange3 (INT (6), INT (70)));
+  ASSERT_TRUE (r0 == int_range3 (INT (6), INT (70)));
 
   // [10,20][30,40][50,60] U [35,70] => [10,20][30,70].
   r0 = build_range3 (10, 20, 30, 40, 50, 60);
-  r1 = irange3 (INT (35), INT (70));
+  r1 = int_range3 (INT (35), INT (70));
   r0.union_ (r1);
-  r1 = irange3 (INT (10), INT (20));
-  r1.union_ (irange3 (INT (30), INT (70)));
+  r1 = int_range3 (INT (10), INT (20));
+  r1.union_ (int_range3 (INT (30), INT (70)));
   ASSERT_TRUE (r0 == r1);
 
   // [10,20][30,40][50,60] U [15,35] => [10,40][50,60].
   r0 = build_range3 (10, 20, 30, 40, 50, 60);
-  r1 = irange3 (INT (15), INT (35));
+  r1 = int_range3 (INT (15), INT (35));
   r0.union_ (r1);
-  r1 = irange3 (INT (10), INT (40));
-  r1.union_ (irange3 (INT (50), INT (60)));
+  r1 = int_range3 (INT (10), INT (40));
+  r1.union_ (int_range3 (INT (50), INT (60)));
   ASSERT_TRUE (r0 == r1);
 
   // [10,20][30,40][50,60] U [35,35] => [10,20][30,40][50,60].
   r0 = build_range3 (10, 20, 30, 40, 50, 60);
-  r1 = irange3 (INT (35), INT (35));
+  r1 = int_range3 (INT (35), INT (35));
   r0.union_ (r1);
   ASSERT_TRUE (r0 == build_range3 (10, 20, 30, 40, 50, 60));
 }
 
 static void
-widest_irange_tests ()
+int_range_max_tests ()
 {
-  widest_irange big;
+  int_range_max big;
   unsigned int nrange;
 
   // Build a huge multi-range range.
@@ -3410,7 +3410,7 @@ widest_irange_tests ()
   ASSERT_TRUE (big.num_pairs () == nrange);
 
   // Verify that we can copy it without loosing precision.
-  widest_irange copy (big);
+  int_range_max copy (big);
   ASSERT_TRUE (copy.num_pairs () == nrange);
 
   // Inverting it should produce one more sub-range.
@@ -3423,9 +3423,9 @@ widest_irange_tests ()
 
   // Test that [10,10][20,20] does NOT contain 15.
   {
-    widest_irange i1 (build_int_cst (integer_type_node, 10),
+    int_range_max i1 (build_int_cst (integer_type_node, 10),
 		      build_int_cst (integer_type_node, 10));
-    widest_irange i2 (build_int_cst (integer_type_node, 20),
+    int_range_max i2 (build_int_cst (integer_type_node, 20),
 		      build_int_cst (integer_type_node, 20));
     i1.union_ (i2);
     ASSERT_FALSE (i1.contains_p (build_int_cst (integer_type_node, 15)));
@@ -3463,9 +3463,9 @@ operator_tests ()
   tree max = vrp_val_max (integer_type_node);
   tree tiny = fold_build2 (PLUS_EXPR, integer_type_node, min,
 			   build_one_cst (integer_type_node));
-  widest_irange res;
-  widest_irange i1 (tiny, max);
-  widest_irange i2 (build_int_cst (integer_type_node, 255),
+  int_range_max res;
+  int_range_max i1 (tiny, max);
+  int_range_max i2 (build_int_cst (integer_type_node, 255),
 		    build_int_cst (integer_type_node, 255));
 
   // [MIN+1, MAX] = OP1 & 255: OP1 is VARYING
@@ -3497,20 +3497,20 @@ operator_tests ()
 
   // unsigned: [3, MAX] = OP1 >> 1
   {
-    widest_irange lhs (build_int_cst (unsigned_type_node, 3),
+    int_range_max lhs (build_int_cst (unsigned_type_node, 3),
 		       TYPE_MAX_VALUE (unsigned_type_node));
-    widest_irange one (build_one_cst (unsigned_type_node),
+    int_range_max one (build_one_cst (unsigned_type_node),
 		       build_one_cst (unsigned_type_node));
-    widest_irange op1;
+    int_range_max op1;
     op_rshift.op1_range (op1, unsigned_type_node, lhs, one);
     ASSERT_FALSE (op1.contains_p (UINT (3)));
   }
 
   // signed: [3, MAX] = OP1 >> 1
   {
-    widest_irange lhs (INT (3), TYPE_MAX_VALUE (integer_type_node));
-    widest_irange one (INT (1), INT (1));
-    widest_irange op1;
+    int_range_max lhs (INT (3), TYPE_MAX_VALUE (integer_type_node));
+    int_range_max one (INT (1), INT (1));
+    int_range_max op1;
     op_rshift.op1_range (op1, integer_type_node, lhs, one);
     ASSERT_FALSE (op1.contains_p (INT (-2)));
   }
@@ -3518,10 +3518,10 @@ operator_tests ()
   // This is impossible, so OP1 should be [].
   // signed: [MIN, MIN] = OP1 >> 1
   {
-    widest_irange lhs (TYPE_MIN_VALUE (integer_type_node),
+    int_range_max lhs (TYPE_MIN_VALUE (integer_type_node),
 		       TYPE_MIN_VALUE (integer_type_node));
-    widest_irange one (INT (1), INT (1));
-    widest_irange op1;
+    int_range_max one (INT (1), INT (1));
+    int_range_max op1;
     op_rshift.op1_range (op1, integer_type_node, lhs, one);
     ASSERT_TRUE (op1.undefined_p ());
   }
@@ -3529,11 +3529,11 @@ operator_tests ()
   // signed: ~[-1] = OP1 >> 31
   if (TYPE_PRECISION (integer_type_node) > 31)
     {
-      widest_irange lhs (INT (-1), INT (-1), VR_ANTI_RANGE);
-      widest_irange shift (INT (31), INT (31));
-      widest_irange op1;
+      int_range_max lhs (INT (-1), INT (-1), VR_ANTI_RANGE);
+      int_range_max shift (INT (31), INT (31));
+      int_range_max op1;
       op_rshift.op1_range (op1, integer_type_node, lhs, shift);
-      widest_irange negatives = range_negatives (integer_type_node);
+      int_range_max negatives = range_negatives (integer_type_node);
       negatives.intersect (op1);
       ASSERT_TRUE (negatives.undefined_p ());
     }
@@ -3823,7 +3823,7 @@ range_tests ()
   ASSERT_TRUE (r0.nonzero_p ());
 
   multi_precision_range_tests ();
-  widest_irange_tests ();
+  int_range_max_tests ();
   operator_tests ();
 }
 
