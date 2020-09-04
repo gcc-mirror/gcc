@@ -1,7 +1,7 @@
 2020-09-02  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
-	2020-02-08  Peter Bergner  <bergner@linux.ibm.com>
+	2019-12-30  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/92923
 	* config/rs6000/rs6000-builtin.def (VAND, VANDC, VNOR, VOR, VXOR):
