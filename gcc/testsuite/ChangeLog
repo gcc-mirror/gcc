@@ -1,3 +1,11 @@
+2020-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96808
+	* gcc.target/powerpc/pr96808.c: New test.
+
 2020-09-01  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Backported from master:

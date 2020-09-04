@@ -1,3 +1,12 @@
+2020-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96808
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Do not
+	reuse accumulator memory reference for source and destination accesses.
+
 2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	Backported from master:
