@@ -60,6 +60,7 @@ clear_line_info (struct output_block *ob)
   ob->current_line = 0;
   ob->current_col = 0;
   ob->current_sysp = false;
+  ob->reset_locus = true;
   /* Initialize to something that will never appear as block,
      so that the first location with block in a function etc.
      always streams a change_block bit and the first block.  */
@@ -194,6 +195,17 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
   if (loc >= RESERVED_LOCATION_COUNT)
     {
       expanded_location xloc = expand_location (loc);
+
+      if (ob->reset_locus)
+	{
+	  if (xloc.file == NULL)
+	    ob->current_file = "";
+	  if (xloc.line == 0)
+	    ob->current_line = 1;
+	  if (xloc.column == 0)
+	    ob->current_col = 1;
+	  ob->reset_locus = false;
+	}
 
       bp_pack_value (bp, ob->current_file != xloc.file, 1);
       bp_pack_value (bp, ob->current_line != xloc.line, 1);

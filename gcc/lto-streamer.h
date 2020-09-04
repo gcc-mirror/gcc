@@ -717,6 +717,7 @@ struct output_block
   int current_line;
   int current_col;
   bool current_sysp;
+  bool reset_locus;
   tree current_block;
 
   /* Cache of nodes written in this section.  */
