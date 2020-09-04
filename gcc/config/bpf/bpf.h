@@ -22,7 +22,7 @@
 
 /**** Controlling the Compilation Driver.  */
 
-#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL}"
+#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf}"
 #define LINK_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL}"
 #define LIB_SPEC ""
 #define STARTFILE_SPEC ""
