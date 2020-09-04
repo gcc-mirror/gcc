@@ -771,7 +771,7 @@ sort_hist_values (histogram_value hist)
   int counters = hist->hvalue.counters[1];
   for (int i = 0; i < counters - 1; i++)
   /* Hist value is organized as:
-     [total_executions, N, counter1, ..., valueN, counterN]
+     [total_executions, N, value1, counter1, ..., valueN, counterN]
      Use decrease bubble sort to rearrange it.  The sort starts from <value1,
      counter1> and compares counter first.  If counter is same, compares the
      value, exchange it if small to keep stable.  */
