@@ -549,7 +549,11 @@ package body Sem_Prag is
 
       pragma Assert (Nkind (CCases) = N_Aggregate);
 
-      if Present (Component_Associations (CCases)) then
+      --  Only CASE_GUARD => CONSEQUENCE clauses are allowed
+
+      if Present (Component_Associations (CCases))
+        and then No (Expressions (CCases))
+      then
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining
@@ -23900,7 +23904,7 @@ package body Sem_Prag is
             Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
 
             --  Chain the pragma on the contract for further processing by
-            --  Analyze_Contract_Cases_In_Decl_Part.
+            --  Analyze_Subprogram_Variant_In_Decl_Part.
 
             Add_Contract_Item (N, Defining_Entity (Subp_Decl));
 
@@ -29048,7 +29052,11 @@ package body Sem_Prag is
 
       pragma Assert (Nkind (Variants) = N_Aggregate);
 
-      if Present (Component_Associations (Variants)) then
+      --  Only "change_direction => discrete_expression" clauses are allowed
+
+      if Present (Component_Associations (Variants))
+        and then No (Expressions (Variants))
+      then
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining

@@ -668,7 +668,7 @@ package body Contracts is
             end;
          end if;
 
-         --  Analyze contract-cases and test-cases
+         --  Analyze contract-cases, subprogram-variant and test-cases
 
          Prag := Contract_Test_Cases (Items);
          while Present (Prag) loop
@@ -1432,6 +1432,7 @@ package body Contracts is
       --    Global
       --    Postcondition
       --    Precondition
+      --    Subprogram_Variant
       --    Test_Case
 
       else
