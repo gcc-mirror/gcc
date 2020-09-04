@@ -8012,14 +8012,14 @@ vectorizable_induction (loop_vec_info loop_vinfo,
    it can be supported.  */
 
 bool
-vectorizable_live_operation (loop_vec_info loop_vinfo,
+vectorizable_live_operation (vec_info *vinfo,
 			     stmt_vec_info stmt_info,
 			     gimple_stmt_iterator *gsi,
 			     slp_tree slp_node, slp_instance slp_node_instance,
 			     int slp_index, bool vec_stmt_p,
-			     stmt_vector_for_cost *)
+			     stmt_vector_for_cost *cost_vec)
 {
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   imm_use_iterator imm_iter;
   tree lhs, lhs_type, bitsize, vec_bitsize;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -8064,10 +8064,6 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
       return true;
     }
 
-  /* FORNOW.  CHECKME.  */
-  if (nested_in_vect_loop_p (loop, stmt_info))
-    return false;
-
   /* If STMT is not relevant and it is a simple assignment and its inputs are
      invariant then it can remain in place, unvectorized.  The original last
      scalar value that it computes will be used.  */
@@ -8090,12 +8086,11 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
     {
       gcc_assert (slp_index >= 0);
 
-      int num_scalar = SLP_TREE_LANES (slp_node);
-      int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-
       /* Get the last occurrence of the scalar index from the concatenation of
 	 all the slp vectors. Calculate which slp vector it is and the index
 	 within.  */
+      int num_scalar = SLP_TREE_LANES (slp_node);
+      int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       poly_uint64 pos = (num_vec * nunits) - num_scalar + slp_index;
 
       /* Calculate which vector contains the result, and which lane of
@@ -8113,7 +8108,7 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
   if (!vec_stmt_p)
     {
       /* No transformation required.  */
-      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+      if (loop_vinfo && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  if (!direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
 					       OPTIMIZE_FOR_SPEED))
@@ -8150,14 +8145,20 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 				     1, vectype, NULL);
 	    }
 	}
+      /* ???  Enable for loop costing as well.  */
+      if (!loop_vinfo)
+	record_stmt_cost (cost_vec, 1, vec_to_scalar, stmt_info, NULL_TREE,
+			  0, vect_epilogue);
       return true;
     }
 
   /* Use the lhs of the original scalar statement.  */
   gimple *stmt = vect_orig_stmt (stmt_info)->stmt;
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "extracting lane for live "
+		     "stmt %G", stmt);
 
-  lhs = (is_a <gphi *> (stmt)) ? gimple_phi_result (stmt)
-	: gimple_get_lhs (stmt);
+  lhs = gimple_get_lhs (stmt);
   lhs_type = TREE_TYPE (lhs);
 
   bitsize = vector_element_bits_tree (vectype);
@@ -8165,16 +8166,14 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
   tree vec_lhs, bitstart;
+  gimple *vec_stmt;
   if (slp_node)
     {
-      gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
+      gcc_assert (!loop_vinfo || !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
 
       /* Get the correct slp vectorized stmt.  */
-      gimple *vec_stmt = SLP_TREE_VEC_STMTS (slp_node)[vec_entry];
-      if (gphi *phi = dyn_cast <gphi *> (vec_stmt))
-	vec_lhs = gimple_phi_result (phi);
-      else
-	vec_lhs = gimple_get_lhs (vec_stmt);
+      vec_stmt = SLP_TREE_VEC_STMTS (slp_node)[vec_entry];
+      vec_lhs = gimple_get_lhs (vec_stmt);
 
       /* Get entry to use.  */
       bitstart = bitsize_int (vec_index);
@@ -8183,102 +8182,158 @@ vectorizable_live_operation (loop_vec_info loop_vinfo,
   else
     {
       /* For multiple copies, get the last copy.  */
-      vec_lhs = gimple_get_lhs (STMT_VINFO_VEC_STMTS (stmt_info).last ());
+      vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info).last ();
+      vec_lhs = gimple_get_lhs (vec_stmt);
 
       /* Get the last lane in the vector.  */
       bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
     }
 
-  /* Ensure the VEC_LHS for lane extraction stmts satisfy loop-closed PHI
-     requirement, insert one phi node for it.  It looks like:
-	 loop;
-       BB:
-	 # lhs' = PHI <lhs>
-     ==>
-	 loop;
-       BB:
-	 # vec_lhs' = PHI <vec_lhs>
-	 new_tree = lane_extract <vec_lhs', ...>;
-	 lhs' = new_tree;  */
-
-  basic_block exit_bb = single_exit (loop)->dest;
-  gcc_assert (single_pred_p (exit_bb));
-
-  tree vec_lhs_phi = copy_ssa_name (vec_lhs);
-  gimple *phi = create_phi_node (vec_lhs_phi, exit_bb);
-  SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, vec_lhs);
-
-  gimple_seq stmts = NULL;
-  tree new_tree;
-  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+  if (loop_vinfo)
     {
-      /* Emit:
+      /* Ensure the VEC_LHS for lane extraction stmts satisfy loop-closed PHI
+	 requirement, insert one phi node for it.  It looks like:
+	   loop;
+	 BB:
+	   # lhs' = PHI <lhs>
+	 ==>
+	   loop;
+	 BB:
+	   # vec_lhs' = PHI <vec_lhs>
+	   new_tree = lane_extract <vec_lhs', ...>;
+	   lhs' = new_tree;  */
 
-	   SCALAR_RES = EXTRACT_LAST <VEC_LHS, MASK>
+      class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      basic_block exit_bb = single_exit (loop)->dest;
+      gcc_assert (single_pred_p (exit_bb));
 
-	 where VEC_LHS is the vectorized live-out result and MASK is
-	 the loop mask for the final iteration.  */
-      gcc_assert (ncopies == 1 && !slp_node);
-      tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
-      tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo), 1,
-				      vectype, 0);
-      tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
-				      mask, vec_lhs_phi);
+      tree vec_lhs_phi = copy_ssa_name (vec_lhs);
+      gimple *phi = create_phi_node (vec_lhs_phi, exit_bb);
+      SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, vec_lhs);
 
-      /* Convert the extracted vector element to the required scalar type.  */
-      new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
-    }
-  else
-    {
-      tree bftype = TREE_TYPE (vectype);
-      if (VECTOR_BOOLEAN_TYPE_P (vectype))
-	bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
-      new_tree = build3 (BIT_FIELD_REF, bftype, vec_lhs_phi, bitsize, bitstart);
-      new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
-				       &stmts, true, NULL_TREE);
-    }
-
-  if (stmts)
-    {
-      gimple_stmt_iterator exit_gsi = gsi_after_labels (exit_bb);
-      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
-
-      /* Remove existing phi from lhs and create one copy from new_tree.  */
-      tree lhs_phi = NULL_TREE;
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_phis (exit_bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      gimple_seq stmts = NULL;
+      tree new_tree;
+      if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
 	{
-	  gimple *phi = gsi_stmt (gsi);
-	  if ((gimple_phi_arg_def (phi, 0) == lhs))
-	    {
-	      remove_phi_node (&gsi, false);
-	      lhs_phi = gimple_phi_result (phi);
-	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
-	      gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
-	      break;
-	    }
-	}
-    }
+	  /* Emit:
 
-  /* Replace use of lhs with newly computed result.  If the use stmt is a
-     single arg PHI, just replace all uses of PHI result.  It's necessary
-     because lcssa PHI defining lhs may be before newly inserted stmt.  */
-  use_operand_p use_p;
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
-    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-	&& !is_gimple_debug (use_stmt))
-    {
-      if (gimple_code (use_stmt) == GIMPLE_PHI
-	  && gimple_phi_num_args (use_stmt) == 1)
-	{
-	  replace_uses_by (gimple_phi_result (use_stmt), new_tree);
+	       SCALAR_RES = EXTRACT_LAST <VEC_LHS, MASK>
+
+	     where VEC_LHS is the vectorized live-out result and MASK is
+	     the loop mask for the final iteration.  */
+	  gcc_assert (ncopies == 1 && !slp_node);
+	  tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
+	  tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo),
+					  1, vectype, 0);
+	  tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
+					  mask, vec_lhs_phi);
+
+	  /* Convert the extracted vector element to the scalar type.  */
+	  new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
 	}
       else
 	{
-	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	    SET_USE (use_p, new_tree);
+	  tree bftype = TREE_TYPE (vectype);
+	  if (VECTOR_BOOLEAN_TYPE_P (vectype))
+	    bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
+	  new_tree = build3 (BIT_FIELD_REF, bftype,
+			     vec_lhs_phi, bitsize, bitstart);
+	  new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
+					   &stmts, true, NULL_TREE);
 	}
-      update_stmt (use_stmt);
+
+      if (stmts)
+	{
+	  gimple_stmt_iterator exit_gsi = gsi_after_labels (exit_bb);
+	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+
+	  /* Remove existing phi from lhs and create one copy from new_tree.  */
+	  tree lhs_phi = NULL_TREE;
+	  gimple_stmt_iterator gsi;
+	  for (gsi = gsi_start_phis (exit_bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *phi = gsi_stmt (gsi);
+	      if ((gimple_phi_arg_def (phi, 0) == lhs))
+		{
+		  remove_phi_node (&gsi, false);
+		  lhs_phi = gimple_phi_result (phi);
+		  gimple *copy = gimple_build_assign (lhs_phi, new_tree);
+		  gsi_insert_before (&exit_gsi, copy, GSI_SAME_STMT);
+		  break;
+		}
+	    }
+	}
+
+      /* Replace use of lhs with newly computed result.  If the use stmt is a
+	 single arg PHI, just replace all uses of PHI result.  It's necessary
+	 because lcssa PHI defining lhs may be before newly inserted stmt.  */
+      use_operand_p use_p;
+      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
+	if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
+	    && !is_gimple_debug (use_stmt))
+	  {
+	    if (gimple_code (use_stmt) == GIMPLE_PHI
+		&& gimple_phi_num_args (use_stmt) == 1)
+	      {
+		replace_uses_by (gimple_phi_result (use_stmt), new_tree);
+	      }
+	    else
+	      {
+		FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		    SET_USE (use_p, new_tree);
+	      }
+	    update_stmt (use_stmt);
+	  }
+    }
+  else
+    {
+      /* For basic-block vectorization simply insert the lane-extraction.  */
+      tree bftype = TREE_TYPE (vectype);
+      if (VECTOR_BOOLEAN_TYPE_P (vectype))
+	bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
+      tree new_tree = build3 (BIT_FIELD_REF, bftype,
+			      vec_lhs, bitsize, bitstart);
+      gimple_seq stmts = NULL;
+      new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
+				       &stmts, true, NULL_TREE);
+
+      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+
+      /* Replace use of lhs with newly computed result.  If the use stmt is a
+	 single arg PHI, just replace all uses of PHI result.  It's necessary
+	 because lcssa PHI defining lhs may be before newly inserted stmt.  */
+      use_operand_p use_p;
+      stmt_vec_info use_stmt_info;
+      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
+	if (!is_gimple_debug (use_stmt)
+	    && (!(use_stmt_info = vinfo->lookup_stmt (use_stmt))
+		|| !PURE_SLP_STMT (vect_stmt_to_vectorize (use_stmt_info))))
+	  {
+	    /* ???  This can happen when the live lane ends up being
+	       used in a vector construction code-generated by an
+	       external SLP node (and code-generation for that already
+	       happened).  See gcc.dg/vect/bb-slp-47.c.
+	       Doing this is what would happen if that vector CTOR
+	       were not code-generated yet so it is not too bad.
+	       ???  In fact we'd likely want to avoid this situation
+	       in the first place.  */
+	    if (gimple_code (use_stmt) != GIMPLE_PHI
+		&& !vect_stmt_dominates_stmt_p (gsi_stmt (*gsi), use_stmt))
+	      {
+		gcc_assert (is_gimple_assign (use_stmt)
+			    && gimple_assign_rhs_code (use_stmt) == CONSTRUCTOR);
+		if (dump_enabled_p ())
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "Using original scalar computation for "
+				   "live lane because use preceeds vector "
+				   "def\n");
+		continue;
+	      }
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	      SET_USE (use_p, new_tree);
+	    update_stmt (use_stmt);
+	  }
     }
 
   return true;
