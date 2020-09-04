@@ -1,3 +1,25 @@
+2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96901
+	* constexpr.c (fundef_copies_table): Change type from
+	hash_map<tree, tree> * to decl_tree_map *.
+
+2020-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92812
+	* cp-tree.h (do_aggregate_paren_init): Declare.
+	* decl.c (do_aggregate_paren_init): New.
+	(grok_reference_init): Use it.
+	(check_initializer): Likewise.
+	* init.c (perform_member_init): Handle initializing an array from
+	a ()-list.  Use do_aggregate_paren_init.
+
+2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96862
+	* constexpr.c (cxx_eval_outermost_constant_expr): Temporarily disable
+	flag_rounding_math during manifestly constant evaluation.
+
 2020-09-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77841

@@ -705,8 +705,13 @@ bpf_output_call (rtx target)
 	break;
       }
     default:
-      error ("indirect call in function, which are not supported by eBPF");
-      output_asm_insn ("call 0", NULL);
+      if (TARGET_XBPF)
+	output_asm_insn ("call\t%0", &target);
+      else
+	{
+	  error ("indirect call in function, which are not supported by eBPF");
+	  output_asm_insn ("call 0", NULL);
+	}
       break;
     }
 

@@ -20,6 +20,7 @@ class B
 };
 
 B::B (const A a[])
-  : ary(a)        // { dg-error "array" }
+		  // { dg-error "could not convert|invalid conversion" "" { target { c++20 } } .+1 }
+  : ary(a)        // { dg-error "array" "" { target { ! c++20 } } }
 {
 }

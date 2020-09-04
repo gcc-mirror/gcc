@@ -809,13 +809,25 @@ perform_member_init (tree member, tree init)
       return;
     }
 
-  if (init && TREE_CODE (init) == TREE_LIST
-      && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
-	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
-	  || !(/* cxx_dialect >= cxx20 ? CP_AGGREGATE_TYPE_P (type) */
-	       /* :  */CLASS_TYPE_P (type))))
-    init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-					    tf_warning_or_error);
+  if (init && TREE_CODE (init) == TREE_LIST)
+    {
+      /* A(): a{e} */
+      if (DIRECT_LIST_INIT_P (TREE_VALUE (init)))
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      /* We are trying to initialize an array from a ()-list.  If we
+	 should attempt to do so, conjure up a CONSTRUCTOR.  */
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       /* P0960 is a C++20 feature.  */
+	       && cxx_dialect >= cxx20)
+	init = do_aggregate_paren_init (init, type);
+      else if (!CLASS_TYPE_P (type))
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      /* If we're initializing a class from a ()-list, leave the TREE_LIST
+	 alone: we might call an appropriate constructor, or (in C++20)
+	 do aggregate-initialization.  */
+    }
 
   if (init == void_type_node)
     {

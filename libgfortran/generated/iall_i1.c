@@ -345,7 +345,7 @@ miall_i1 (gfc_array_i1 * const restrict retarray,
       msrc = mbase;
       {
 
-  result = 0;
+  result = (GFC_INTEGER_1) -1;
 	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
 

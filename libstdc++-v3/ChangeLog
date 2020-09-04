@@ -1,3 +1,22 @@
+2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96592
+	* include/std/tuple (_TupleConstraints<true, T...>): Use
+	alternative is_constructible instead of std::is_constructible.
+	* testsuite/20_util/tuple/cons/96592.cc: New test.
+
+2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration::_S_gcd): Use iterative algorithm
+	for C++14 and later.
+	* include/std/numeric (__detail::__gcd): Replace recursive
+	Euclidean algorithm with iterative version of binary GCD algorithm.
+	* testsuite/26_numerics/gcd/1.cc: Test additional inputs.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error lines.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/experimental/numeric/gcd.cc: Test additional inputs.
+	* testsuite/26_numerics/gcd/2.cc: New test.
+
 2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92978
