@@ -941,6 +941,11 @@ create_access (tree expr, gimple *stmt, bool write)
       disqualify_candidate (base, "Encountered an unconstrained access.");
       return NULL;
     }
+  if (offset + size > tree_to_shwi (DECL_SIZE (base)))
+    {
+      disqualify_candidate (base, "Encountered an access beyond the base.");
+      return NULL;
+    }
 
   access = create_access_1 (base, offset, size);
   access->expr = expr;
@@ -1880,12 +1885,12 @@ maybe_add_sra_candidate (tree var)
       reject (var, "has incomplete type");
       return false;
     }
-  if (!tree_fits_uhwi_p (TYPE_SIZE (type)))
+  if (!tree_fits_shwi_p (TYPE_SIZE (type)))
     {
       reject (var, "type size not fixed");
       return false;
     }
-  if (tree_to_uhwi (TYPE_SIZE (type)) == 0)
+  if (tree_to_shwi (TYPE_SIZE (type)) == 0)
     {
       reject (var, "type size is zero");
       return false;
