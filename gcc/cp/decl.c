@@ -17460,10 +17460,10 @@ complete_vars (tree type)
 	      && (TYPE_MAIN_VARIANT (strip_array_types (type))
 		  == iv->incomplete_type))
 	    {
-	      /* Complete the type of the variable.  The VAR_DECL itself
-		 will be laid out in expand_expr.  */
+	      /* Complete the type of the variable.  */
 	      complete_type (type);
 	      cp_apply_type_quals_to_decl (cp_type_quals (type), var);
+	      layout_var_decl (var);
 	    }
 
 	  /* Remove this entry from the list.  */
