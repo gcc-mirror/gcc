@@ -854,8 +854,6 @@ extern class data_in *lto_data_in_create (struct lto_file_decl_data *,
 extern void lto_data_in_delete (class data_in *);
 extern void lto_input_data_block (class lto_input_block *, void *, size_t);
 void lto_input_location (location_t *, struct bitpack_d *, class data_in *);
-location_t stream_input_location_now (struct bitpack_d *bp,
-				      class data_in *data);
 tree lto_input_tree_ref (class lto_input_block *, class data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);

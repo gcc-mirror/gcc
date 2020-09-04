@@ -351,19 +351,6 @@ lto_input_location (location_t *loc, struct bitpack_d *bp,
   data_in->location_cache.input_location (loc, bp, data_in);
 }
 
-/* Read location and return it instead of going through location caching.
-   This should be used only when the resulting location is not going to be
-   discarded.  */
-
-location_t
-stream_input_location_now (struct bitpack_d *bp, class data_in *data_in)
-{
-  location_t loc;
-  stream_input_location (&loc, bp, data_in);
-  data_in->location_cache.apply_location_cache ();
-  return loc;
-}
-
 /* Read a reference to a tree node from DATA_IN using input block IB.
    TAG is the expected node that should be found in IB, if TAG belongs
    to one of the indexable trees, expect to read a reference index to
@@ -527,8 +514,8 @@ input_eh_region (class lto_input_block *ib, class data_in *data_in, int ix)
 	  r->type = ERT_MUST_NOT_THROW;
 	  r->u.must_not_throw.failure_decl = stream_read_tree (ib, data_in);
 	  bitpack_d bp = streamer_read_bitpack (ib);
-	  r->u.must_not_throw.failure_loc
-	   = stream_input_location_now (&bp, data_in);
+	  stream_input_location (&r->u.must_not_throw.failure_loc,
+	  			 &bp, data_in);
 	}
 	break;
 
@@ -1059,8 +1046,8 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
   fn->last_clique = bp_unpack_value (&bp, sizeof (short) * 8);
 
   /* Input the function start and end loci.  */
-  fn->function_start_locus = stream_input_location_now (&bp, data_in);
-  fn->function_end_locus = stream_input_location_now (&bp, data_in);
+  stream_input_location (&fn->function_start_locus, &bp, data_in);
+  stream_input_location (&fn->function_end_locus, &bp, data_in);
 
   /* Restore the instance discriminators if present.  */
   int instance_number = bp_unpack_value (&bp, 1);
