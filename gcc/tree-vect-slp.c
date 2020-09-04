@@ -2281,6 +2281,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMT (new_instance) = constructor ? stmt_info : NULL;
+	  new_instance->reduc_phis = NULL;
 
 	  vect_gather_slp_loads (new_instance, node);
 	  if (dump_enabled_p ())
@@ -4407,6 +4408,25 @@ vect_schedule_slp (vec_info *vinfo)
       slp_tree root = SLP_INSTANCE_TREE (instance);
       stmt_vec_info store_info;
       unsigned int j;
+
+      /* For reductions set the latch values of the vectorized PHIs.  */
+      if (instance->reduc_phis
+	  && STMT_VINFO_REDUC_TYPE (SLP_TREE_SCALAR_STMTS
+			(instance->reduc_phis)[0]) != FOLD_LEFT_REDUCTION
+	  && STMT_VINFO_REDUC_TYPE (SLP_TREE_SCALAR_STMTS
+			(instance->reduc_phis)[0]) != EXTRACT_LAST_REDUCTION)
+	{
+	  slp_tree slp_node = root;
+	  slp_tree phi_node = instance->reduc_phis;
+	  gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
+	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
+	  gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
+		      == SLP_TREE_VEC_STMTS (slp_node).length ());
+	  for (unsigned j = 0; j < SLP_TREE_VEC_STMTS (phi_node).length (); ++j)
+	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[j]->stmt),
+			 gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[j]->stmt),
+			 e, gimple_phi_arg_location (phi, e->dest_idx));
+	}
 
       /* Remove scalar call stmts.  Do not do this for basic-block
 	 vectorization as not all uses may be vectorized.
