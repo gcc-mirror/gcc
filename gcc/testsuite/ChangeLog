@@ -1,3 +1,74 @@
+2020-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96820
+	* gcc.dg/tree-ssa/pr96820.c: New test.
+
+2020-09-03  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr96139-a.c: New test.
+	* gcc.target/powerpc/pr96139-b.c: New test.
+	* gcc.target/powerpc/pr96139-c.c: New test.
+
+2020-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/iall_masked.f90: New test.
+
+2020-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92812
+	* g++.dg/cpp0x/constexpr-array23.C: Adjust dg-error.
+	* g++.dg/cpp0x/initlist69.C: Likewise.
+	* g++.dg/diagnostic/mem-init1.C: Likewise.
+	* g++.dg/init/array28.C: Likewise.
+	* g++.dg/cpp2a/paren-init33.C: New test.
+	* g++.dg/cpp2a/paren-init34.C: New test.
+	* g++.dg/cpp2a/paren-init35.C: New test.
+	* g++.old-deja/g++.brendan/crash60.C: Adjust dg-error.
+	* g++.old-deja/g++.law/init10.C: Likewise.
+	* g++.old-deja/g++.other/array3.C: Likewise.
+
+2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96862
+	* g++.dg/cpp1z/constexpr-96862.C: New test.
+
+2020-09-03  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/87767
+	* gcc.target/i386/avx2-broadcast-pr87767-1.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-1.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-2.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-3.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-4.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-5.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-6.c: New test.
+	* gcc.target/i386/avx512f-broadcast-pr87767-7.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-2.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-3.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-4.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-5.c: New test.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-6.c: New test.
+
+2020-09-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96246
+	PR target/96855
+	PR target/96856
+	PR target/96857
+	* g++.target/i386/avx512bw-pr96246-2.C: Add runtime check for
+	AVX512BW.
+	* g++.target/i386/avx512vl-pr96246-2.C: Add runtime check for
+	AVX512BW and AVX512VL
+	* g++.target/i386/avx512f-helper.h: New header.
+	* gcc.target/i386/pr92658-avx512f.c: Add
+	-mprefer-vector-width=512 to avoid impact of different default
+	mtune which gcc is built with.
+	* gcc.target/i386/avx512bw-pr95488-1.c: Ditto.
+	* gcc.target/i386/pr92645-4.c: Add -mno-avx512f to avoid
+	impact of different default march which gcc is built with.
+
 2020-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/96869

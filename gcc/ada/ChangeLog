@@ -1,3 +1,15 @@
+2020-09-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* fe.h, opt.ads (Enable_128bit_Types): New.
+	* stand.ads (Standard_Long_Long_Long_Integer,
+	S_Long_Long_Long_Integer): New.
+
+2020-09-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Get_Fullest_View): New procedure.
+	* exp_unst.adb (Check Static_Type): Do all processing on fullest
+	view of specified type.
+
 2020-08-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/trans.c (gigi): Set exact argument of a vector

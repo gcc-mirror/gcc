@@ -1,3 +1,94 @@
+2020-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96820
+	* tree-sra.c (create_access): Disqualify candidates with accesses
+	beyond the end of the original aggregate.
+	(maybe_add_sra_candidate): Check that candidate type size fits
+	signed uhwi for the sake of consistency.
+
+2020-09-03  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtin): Update V2DI_type_node
+	and unsigned_V2DI_type_node definitions.
+
+2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96901
+	* tree.h (struct decl_tree_traits): New type.
+	(decl_tree_map): New typedef.
+
+2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/94311
+	* gimple.h (gimple_location_ptr, gimple_phi_arg_location_ptr): New
+	functions.
+	* streamer-hooks.h (struct streamer_hooks): Add
+	output_location_and_block callback.  Fix up formatting for
+	output_location.
+	(stream_output_location_and_block): Define.
+	* lto-streamer.h (class lto_location_cache): Fix comment typo.  Add
+	current_block member.
+	(lto_location_cache::input_location_and_block): New method.
+	(lto_location_cache::lto_location_cache): Initialize current_block.
+	(lto_location_cache::cached_location): Add block member.
+	(struct output_block): Add current_block member.
+	(lto_output_location): Formatting fix.
+	(lto_output_location_and_block): Declare.
+	* lto-streamer.c (lto_streamer_hooks_init): Initialize
+	streamer_hooks.output_location_and_block.
+	* lto-streamer-in.c (lto_location_cache::cmp_loc): Also compare
+	block members.
+	(lto_location_cache::apply_location_cache): Handle blocks.
+	(lto_location_cache::accept_location_cache,
+	lto_location_cache::revert_location_cache): Fix up function comments.
+	(lto_location_cache::input_location_and_block): New method.
+	(lto_location_cache::input_location): Implement using
+	input_location_and_block.
+	(input_function): Invoke apply_location_cache after streaming in all
+	bbs.
+	* lto-streamer-out.c (clear_line_info): Set current_block.
+	(lto_output_location_1): New function, moved from lto_output_location,
+	added block handling.
+	(lto_output_location): Implement using lto_output_location_1.
+	(lto_output_location_and_block): New function.
+	* gimple-streamer-in.c (input_phi): Use input_location_and_block
+	to input and cache both location and block.
+	(input_gimple_stmt): Likewise.
+	* gimple-streamer-out.c (output_phi): Use
+	stream_output_location_and_block.
+	(output_gimple_stmt): Likewise.
+
+2020-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-generic.c (tree_vec_extract): Remove odd
+	special-casing of boolean vectors.
+	* fold-const.c (fold_ternary_loc): Handle boolean vector
+	type BIT_FIELD_REFs.
+
+2020-09-03  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/87767
+	* config/i386/i386-features.c
+	(replace_constant_pool_with_broadcast): New function.
+	(constant_pool_broadcast): Ditto.
+	(class pass_constant_pool_broadcast): New pass.
+	(make_pass_constant_pool_broadcast): Ditto.
+	(remove_partial_avx_dependency): Call
+	replace_constant_pool_with_broadcast under TARGET_AVX512F, it
+	would save compile time when both pass rpad and cpb are
+	available.
+	(remove_partial_avx_dependency_gate): New function.
+	(class pass_remove_partial_avx_dependency::gate): Call
+	remove_partial_avx_dependency_gate.
+	* config/i386/i386-passes.def: Insert new pass after combine.
+	* config/i386/i386-protos.h
+	(make_pass_constant_pool_broadcast): Declare.
+	* config/i386/sse.md (*avx512dq_mul<mode>3<mask_name>_bcst):
+	New define_insn.
+	(*avx512f_mul<mode>3<mask_name>_bcst): Ditto.
+	* config/i386/avx512fintrin.h (_mm512_set1_ps,
+	_mm512_set1_pd,_mm512_set1_epi32, _mm512_set1_epi64): Adjusted.
+
 2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/60304
