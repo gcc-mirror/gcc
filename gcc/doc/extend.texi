@@ -21642,6 +21642,126 @@ integer value between 0 and 255 inclusive.
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
                                          const int)
 @end smallexample
+
+Vector Integer Multiply/Divide/Modulo
+
+@smallexample
+@exdent vector signed int
+@exdent vec_mulh (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_mulh (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer
+value in word element @code{i} of a is multiplied by the integer value in word
+element @code{i} of b. The high-order 32 bits of the 64-bit product are placed
+into word element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_mulh (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer
+value in doubleword element @code{i} of a is multiplied by the integer value in
+doubleword element @code{i} of b. The high-order 64 bits of the 128-bit product
+are placed into doubleword element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector unsigned long long
+@exdent vec_mul (vector unsigned long long a, vector unsigned long long b)
+@exdent vector signed long long
+@exdent vec_mul (vector signed long long a, vector signed long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer
+value in doubleword element @code{i} of a is multiplied by the integer value in
+doubleword element @code{i} of b. The low-order 64 bits of the 128-bit product
+are placed into doubleword element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_div (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_div (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is divided by the integer in word element @code{i}
+of b. The unique integer quotient is placed into the word element @code{i} of
+the vector returned. If an attempt is made to perform any of the divisions
+<anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_div (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_div (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is divided by the integer in doubleword
+element @code{i} of b. The unique integer quotient is placed into the
+doubleword element @code{i} of the vector returned. If an attempt is made to
+perform any of the divisions 0x8000_0000_0000_0000 ÷ -1 or <anything> ÷ 0 then
+the quotient is undefined.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_dive (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_dive (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is shifted left by 32 bits, then divided by the
+integer in word element @code{i} of b. The unique integer quotient is placed
+into the word element @code{i} of the vector returned. If the quotient cannot
+be represented in 32 bits, or if an attempt is made to perform any of the
+divisions <anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_dive (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_dive (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is shifted left by 64 bits, then divided by
+the integer in doubleword element @code{i} of b. The unique integer quotient is
+placed into the doubleword element @code{i} of the vector returned. If the
+quotient cannot be represented in 64 bits, or if an attempt is made to perform
+<anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_mod (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_mod (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is divided by the integer in word element @code{i}
+of b. The unique integer remainder is placed into the word element @code{i} of
+the vector returned.  If an attempt is made to perform any of the divisions
+0x8000_0000 ÷ -1 or <anything> ÷ 0 then the remainder is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_mod (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_mod (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is divided by the integer in doubleword
+element @code{i} of b. The unique integer remainder is placed into the
+doubleword element @code{i} of the vector returned. If an attempt is made to
+perform <anything> ÷ 0 then the remainder is undefined.
+
 Generate PCV from specified Mask size, as if implemented by the
 @code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
 immediate value is either 0, 1, 2 or 3.
