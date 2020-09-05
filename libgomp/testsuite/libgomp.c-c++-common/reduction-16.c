@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-additional-options "-foffload=-latomic" { target offload_target_nvptx } } */
 
 #include <stdlib.h>
 
