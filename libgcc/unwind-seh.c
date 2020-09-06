@@ -466,6 +466,9 @@ _Unwind_Backtrace(_Unwind_Trace_Fn trace,
 			    &gcc_context.disp->HandlerData,
 			    &gcc_context.disp->EstablisherFrame, NULL);
 
+      gcc_context.cfa = ms_context.Rsp;
+      gcc_context.ra = ms_context.Rip;
+
       /* Call trace function.  */
       if (trace (&gcc_context, trace_argument) != _URC_NO_REASON)
 	return _URC_FATAL_PHASE1_ERROR;
