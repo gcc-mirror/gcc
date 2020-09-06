@@ -6599,7 +6599,17 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   /* Brace elision is not performed for a CONSTRUCTOR representing
      parenthesized aggregate initialization.  */
   if (CONSTRUCTOR_IS_PAREN_INIT (init))
-    return init;
+    {
+      tree elt = (*v)[0].value;
+      /* If we're initializing a char array from a string-literal that is
+	 enclosed in braces, unwrap it here.  */
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && vec_safe_length (v) == 1
+	  && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	  && TREE_CODE (tree_strip_any_location_wrapper (elt)) == STRING_CST)
+	return elt;
+      return init;
+    }
 
   /* Handle [dcl.init.list] direct-list-initialization from
      single element of enumeration with a fixed underlying type.  */
