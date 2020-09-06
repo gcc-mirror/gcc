@@ -242,7 +242,7 @@ prune_counters (struct gcov_info *gi)
 	  if (gi->merge[j] == NULL)
 	    continue;
 
-	  if (gi->merge[j] == __gcov_merge_topn)
+	  if (j == GCOV_COUNTER_V_TOPN || j == GCOV_COUNTER_V_INDIR)
 	    {
 	      gcc_assert (!(ci->num % GCOV_TOPN_VALUES_COUNTERS));
 	      for (unsigned k = 0; k < (ci->num / GCOV_TOPN_VALUES_COUNTERS);
