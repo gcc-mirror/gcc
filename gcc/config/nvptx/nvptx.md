@@ -1667,6 +1667,22 @@
   "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;"
   [(set_attr "atomic" "true")])
 
+(define_expand "atomic_test_and_set"
+  [(match_operand:SI 0 "nvptx_register_operand")	;; bool success output
+   (match_operand:QI 1 "memory_operand")		;; memory
+   (match_operand:SI 2 "const_int_operand")]		;; model
+  ""
+{
+  rtx libfunc;
+  rtx addr;
+  libfunc = init_one_libfunc ("__atomic_test_and_set_1");
+  addr = convert_memory_address (ptr_mode, XEXP (operands[1], 0));
+  emit_library_call_value (libfunc, operands[0], LCT_NORMAL, SImode,
+			  addr, ptr_mode,
+			  operands[2], SImode);
+  DONE;
+})
+
 (define_insn "nvptx_barsync"
   [(unspec_volatile [(match_operand:SI 0 "nvptx_nonmemory_operand" "Ri")
 		     (match_operand:SI 1 "const_int_operand")]
