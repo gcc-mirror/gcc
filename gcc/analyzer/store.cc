@@ -466,11 +466,14 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
   const region *max_element
     = get_subregion_within_ctor (parent_reg, max_index, mgr);
   region_offset min_offset = min_element->get_offset ();
+  if (min_offset.symbolic_p ())
+    return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
   store_manager *smgr = mgr->get_store_manager ();
   const binding_key *max_element_key
     = binding_key::make (smgr, max_element, BK_direct);
-  gcc_assert (max_element_key->concrete_p ());
+  if (max_element_key->symbolic_p ())
+    return false;
   const concrete_binding *max_element_ckey
     = max_element_key->dyn_cast_concrete_binding ();
   bit_size_t range_size_in_bits
@@ -478,7 +481,8 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
   const concrete_binding *range_key
     = smgr->get_concrete_binding (start_bit_offset, range_size_in_bits,
 				  BK_direct);
-  gcc_assert (range_key->concrete_p ());
+  if (range_key->symbolic_p ())
+    return false;
 
   /* Get the value.  */
   if (TREE_CODE (val) == CONSTRUCTOR)
