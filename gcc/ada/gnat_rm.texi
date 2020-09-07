@@ -8776,12 +8776,6 @@ there is no guarantee that all the bits will be accessed if the reference
 is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
 
-It is not permissible to specify @code{Atomic} and @code{Volatile_Full_Access} for
-the same type or object.
-
-It is not permissible to specify @code{Volatile_Full_Access} for a composite
-(record or array) type or object that has an @code{Aliased} subcomponent.
-
 @node Pragma Volatile_Function,Pragma Warning_As_Error,Pragma Volatile_Full_Access,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas id56}@anchor{11a}@anchor{gnat_rm/implementation_defined_pragmas pragma-volatile-function}@anchor{11b}
 @section Pragma Volatile_Function

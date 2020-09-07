@@ -1670,10 +1670,6 @@ package Sem_Util is
    --  Determine whether arbitrary node N denotes a reference to an atomic
    --  object as per RM C.6(7) and the crucial remark in RM C.6(8).
 
-   function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a reference to an object
-   --  which is either atomic or Volatile_Full_Access.
-
    function Is_Attribute_Loop_Entry (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Loop_Entry
 
@@ -1908,6 +1904,10 @@ package Sem_Util is
    function Is_Fixed_Model_Number (U : Ureal; T : Entity_Id) return Boolean;
    --  Returns True iff the number U is a model number of the fixed-point type
    --  T, i.e. if it is an exact multiple of Small.
+
+   function Is_Full_Access_Object (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to a full access
+   --  object as per Ada 2020 RM C.6(8.2).
 
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is fully
@@ -2173,9 +2173,9 @@ package Sem_Util is
    --  meaning that the name of the call denotes a static function
    --  and all of the call's actual parameters are given by static expressions.
 
-   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
+   function Is_Subcomponent_Of_Full_Access_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to a subcomponent
-   --  of an atomic object as per RM C.6(7).
+   --  of a full access object as per RM C.6(7).
 
    function Is_Subprogram_Contract_Annotation (Item : Node_Id) return Boolean;
    --  Determine whether aspect specification or pragma Item is one of the

@@ -426,6 +426,8 @@ package body Exp_Aggr is
          return Nkind (First (Assoc)) /= N_Iterated_Component_Association;
       end Is_OK_Aggregate;
 
+   --  Start of processing for Aggr_Assignment_OK_For_Backend
+
    begin
       --  Back end doesn't know about <>
 
@@ -474,7 +476,7 @@ package body Exp_Aggr is
          Csiz := Component_Size (Ctyp);
          Ctyp := Component_Type (Ctyp);
 
-         if Is_Atomic_Or_VFA (Ctyp) then
+         if Is_Full_Access (Ctyp) then
             return False;
          end if;
       end loop;
@@ -8289,13 +8291,13 @@ package body Exp_Aggr is
    --  Start of processing for Expand_Record_Aggregate
 
    begin
-      --  If the aggregate is to be assigned to an atomic/VFA variable, we have
+      --  If the aggregate is to be assigned to a full access variable, we have
       --  to prevent a piecemeal assignment even if the aggregate is to be
       --  expanded. We create a temporary for the aggregate, and assign the
       --  temporary instead, so that the back end can generate an atomic move
       --  for it.
 
-      if Is_Atomic_VFA_Aggregate (N) then
+      if Is_Full_Access_Aggregate (N) then
          return;
 
       --  No special management required for aggregates used to initialize

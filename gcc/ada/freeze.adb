@@ -1737,11 +1737,11 @@ package body Freeze is
       end loop;
    end Check_Unsigned_Type;
 
-   -----------------------------
-   -- Is_Atomic_VFA_Aggregate --
-   -----------------------------
+   ------------------------------
+   -- Is_Full_Access_Aggregate --
+   ------------------------------
 
-   function Is_Atomic_VFA_Aggregate (N : Node_Id) return Boolean is
+   function Is_Full_Access_Aggregate (N : Node_Id) return Boolean is
       Loc   : constant Source_Ptr := Sloc (N);
       New_N : Node_Id;
       Par   : Node_Id;
@@ -1765,9 +1765,9 @@ package body Freeze is
          when N_Assignment_Statement =>
             Typ := Etype (Name (Par));
 
-            if not Is_Atomic_Or_VFA (Typ)
+            if not Is_Full_Access (Typ)
               and then not (Is_Entity_Name (Name (Par))
-                             and then Is_Atomic_Or_VFA (Entity (Name (Par))))
+                             and then Is_Full_Access (Entity (Name (Par))))
             then
                return False;
             end if;
@@ -1775,8 +1775,8 @@ package body Freeze is
          when N_Object_Declaration =>
             Typ := Etype (Defining_Identifier (Par));
 
-            if not Is_Atomic_Or_VFA (Typ)
-              and then not Is_Atomic_Or_VFA (Defining_Identifier (Par))
+            if not Is_Full_Access (Typ)
+              and then not Is_Full_Access (Defining_Identifier (Par))
             then
                return False;
             end if;
@@ -1797,7 +1797,7 @@ package body Freeze is
 
       Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
       return True;
-   end Is_Atomic_VFA_Aggregate;
+   end Is_Full_Access_Aggregate;
 
    -----------------------------------------------
    -- Explode_Initialization_Compound_Statement --
@@ -2639,12 +2639,12 @@ package body Freeze is
                end;
             end if;
 
-            --  Check for Aliased or Atomic_Components/Atomic/VFA with
+            --  Check for Aliased or Atomic_Components or Full Access with
             --  unsuitable packing or explicit component size clause given.
 
             if (Has_Aliased_Components (Arr)
                  or else Has_Atomic_Components (Arr)
-                 or else Is_Atomic_Or_VFA (Ctyp))
+                 or else Is_Full_Access (Ctyp))
               and then
                 (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
             then
@@ -2652,8 +2652,8 @@ package body Freeze is
 
                   procedure Complain_CS (T : String);
                   --  Outputs error messages for incorrect CS clause or pragma
-                  --  Pack for aliased or atomic/VFA components (T is "aliased"
-                  --  or "atomic/vfa");
+                  --  Pack for aliased or full access components (T is either
+                  --  "aliased" or "atomic" or "volatile full access");
 
                   -----------------
                   -- Complain_CS --
@@ -5518,11 +5518,11 @@ package body Freeze is
          --  than component-wise (the assignment to the temp may be done
          --  component-wise, but that is harmless).
 
-         elsif Is_Atomic_Or_VFA (E)
+         elsif Is_Full_Access (E)
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then Is_Atomic_VFA_Aggregate (Expression (Parent (E)))
+           and then Is_Full_Access_Aggregate (Expression (Parent (E)))
          then
             null;
          end if;

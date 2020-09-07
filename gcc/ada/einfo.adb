@@ -8046,15 +8046,6 @@ package body Einfo is
       return Empty;
    end Invariant_Procedure;
 
-   ----------------------
-   -- Is_Atomic_Or_VFA --
-   ----------------------
-
-   function Is_Atomic_Or_VFA (Id : E) return B is
-   begin
-      return Is_Atomic (Id) or else Is_Volatile_Full_Access (Id);
-   end Is_Atomic_Or_VFA;
-
    ------------------
    -- Is_Base_Type --
    ------------------
@@ -8212,6 +8203,15 @@ package body Einfo is
    begin
       return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
+
+   ----------------------
+   -- Is_Full_Access --
+   ----------------------
+
+   function Is_Full_Access (Id : E) return B is
+   begin
+      return Is_Atomic (Id) or else Is_Volatile_Full_Access (Id);
+   end Is_Full_Access;
 
    -------------------
    -- Is_Null_State --

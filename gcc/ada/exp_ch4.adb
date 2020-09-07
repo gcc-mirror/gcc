@@ -8334,12 +8334,12 @@ package body Exp_Ch4 is
          --  Where the component type is elementary we can use a block bit
          --  comparison (if supported on the target) exception in the case
          --  of floating-point (negative zero issues require element by
-         --  element comparison), and atomic/VFA types (where we must be sure
+         --  element comparison), and full access types (where we must be sure
          --  to load elements independently) and possibly unaligned arrays.
 
          elsif Is_Elementary_Type (Component_Type (Typl))
            and then not Is_Floating_Point_Type (Component_Type (Typl))
-           and then not Is_Atomic_Or_VFA (Component_Type (Typl))
+           and then not Is_Full_Access (Component_Type (Typl))
            and then not Is_Possibly_Unaligned_Object (Lhs)
            and then not Is_Possibly_Unaligned_Slice (Lhs)
            and then not Is_Possibly_Unaligned_Object (Rhs)

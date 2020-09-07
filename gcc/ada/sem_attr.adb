@@ -11505,7 +11505,7 @@ package body Sem_Attr is
 
             Set_Etype (N, Btyp);
 
-            --  Check for incorrect atomic/volatile reference (RM C.6(12))
+            --  Check for incorrect atomic/volatile/VFA reference (RM C.6(12))
 
             if Attr_Id /= Attribute_Unrestricted_Access then
                if Is_Atomic_Object (P)
@@ -11521,6 +11521,27 @@ package body Sem_Attr is
                   Error_Msg_F
                     ("access to volatile object cannot yield access-to-" &
                      "non-volatile type", P);
+
+               elsif Is_Volatile_Full_Access_Object (P)
+                 and then not Is_Volatile_Full_Access (Designated_Type (Typ))
+               then
+                  Error_Msg_F
+                    ("access to full access object cannot yield access-to-" &
+                     "non-full-access type", P);
+               end if;
+
+               --  Check for nonatomic subcomponent of a full access object
+               --  in Ada 2020 (RM C.6 (12)).
+
+               if Ada_Version >= Ada_2020
+                 and then Is_Subcomponent_Of_Full_Access_Object (P)
+                 and then not Is_Atomic_Object (P)
+               then
+                  Error_Msg_NE
+                    ("cannot have access attribute with prefix &", N, P);
+                  Error_Msg_N
+                    ("\nonatomic subcomponent of full access object "
+                     & "(RM C.6(12))", N);
                end if;
             end if;
 

@@ -3944,10 +3944,6 @@ package body Sem_Prag is
       procedure Check_At_Most_N_Arguments (N : Nat);
       --  Check there are no more than N arguments present
 
-      procedure Check_Atomic_VFA (E : Entity_Id; VFA : Boolean);
-      --  Apply legality checks to type or object E subject to an Atomic aspect
-      --  in Ada 2020 (RM C.6(13)) or to a Volatile_Full_Access aspect.
-
       procedure Check_Component
         (Comp            : Node_Id;
          UU_Typ          : Entity_Id;
@@ -5627,165 +5623,6 @@ package body Sem_Prag is
          end if;
       end Check_At_Most_N_Arguments;
 
-      ------------------------
-      --  Check_Atomic_VFA  --
-      ------------------------
-
-      procedure Check_Atomic_VFA (E : Entity_Id; VFA : Boolean) is
-
-         Aliased_Subcomponent : exception;
-         --  Exception raised if an aliased subcomponent is found in E
-
-         Independent_Subcomponent : exception;
-         --  Exception raised if an independent subcomponent is found in E
-
-         procedure Check_Subcomponents (Typ : Entity_Id);
-         --  Apply checks to subcomponents for Atomic and Volatile_Full_Access
-
-         -------------------------
-         -- Check_Subcomponents --
-         -------------------------
-
-         procedure Check_Subcomponents (Typ : Entity_Id) is
-            Comp : Entity_Id;
-
-         begin
-            if Is_Array_Type (Typ) then
-               Comp := Component_Type (Typ);
-
-               --  For Atomic we accept any atomic subcomponents
-
-               if not VFA
-                 and then (Has_Atomic_Components (Typ)
-                            or else Is_Atomic (Comp))
-               then
-                  null;
-
-               --  Give an error if the components are aliased
-
-               elsif Has_Aliased_Components (Typ)
-                 or else Is_Aliased (Comp)
-               then
-                  raise Aliased_Subcomponent;
-
-               --  For VFA we accept non-aliased VFA subcomponents
-
-               elsif VFA
-                 and then Is_Volatile_Full_Access (Comp)
-               then
-                  null;
-
-               --  Give an error if the components are independent
-
-               elsif Has_Independent_Components (Typ)
-                  or else Is_Independent (Comp)
-               then
-                  raise Independent_Subcomponent;
-               end if;
-
-               --  Recurse on the component type
-
-               Check_Subcomponents (Comp);
-
-            --  Note: Has_Aliased_Components, like Has_Atomic_Components,
-            --  and Has_Independent_Components, applies only to arrays.
-            --  However, this flag does not have a corresponding pragma, so
-            --  perhaps it should be possible to apply it to record types as
-            --  well. Should this be done ???
-
-            elsif Is_Record_Type (Typ) then
-               --  It is possible to have an aliased discriminant, so they
-               --  must be checked along with normal components.
-
-               Comp := First_Component_Or_Discriminant (Typ);
-               while Present (Comp) loop
-
-                  --  For Atomic we accept any atomic subcomponents
-
-                  if not VFA
-                    and then (Is_Atomic (Comp)
-                               or else Is_Atomic (Etype (Comp)))
-                  then
-                     null;
-
-                  --  Give an error if the component is aliased
-
-                  elsif Is_Aliased (Comp)
-                    or else Is_Aliased (Etype (Comp))
-                  then
-                     raise Aliased_Subcomponent;
-
-                  --  For VFA we accept non-aliased VFA subcomponents
-
-                  elsif VFA
-                    and then (Is_Volatile_Full_Access (Comp)
-                               or else Is_Volatile_Full_Access (Etype (Comp)))
-                  then
-                     null;
-
-                  --  Give an error if the component is independent
-
-                  elsif Is_Independent (Comp)
-                     or else Is_Independent (Etype (Comp))
-                  then
-                     raise Independent_Subcomponent;
-                  end if;
-
-                  --  Recurse on the component type
-
-                  Check_Subcomponents (Etype (Comp));
-
-                  Next_Component_Or_Discriminant (Comp);
-               end loop;
-            end if;
-         end Check_Subcomponents;
-
-         Typ : Entity_Id;
-
-      begin
-         --  Fetch the type in case we are dealing with an object or component
-
-         if Is_Type (E) then
-            Typ := E;
-         else
-            pragma Assert (Is_Object (E)
-              or else
-                Nkind (Declaration_Node (E)) = N_Component_Declaration);
-
-            Typ := Etype (E);
-         end if;
-
-         --  Check all the subcomponents of the type recursively, if any
-
-         Check_Subcomponents (Typ);
-
-      exception
-         when Aliased_Subcomponent =>
-            if VFA then
-               Error_Pragma
-                 ("cannot apply Volatile_Full_Access with aliased "
-                  & "subcomponent ");
-            else
-               Error_Pragma
-                 ("cannot apply Atomic with aliased subcomponent "
-                  & "(RM C.6(13))");
-            end if;
-
-         when Independent_Subcomponent =>
-            if VFA then
-               Error_Pragma
-                 ("cannot apply Volatile_Full_Access with independent "
-                  & "subcomponent ");
-            else
-               Error_Pragma
-                 ("cannot apply Atomic with independent subcomponent "
-                  & "(RM C.6(13))");
-            end if;
-
-         when others =>
-            raise Program_Error;
-      end Check_Atomic_VFA;
-
       ---------------------
       -- Check_Component --
       ---------------------
@@ -7371,8 +7208,9 @@ package body Sem_Prag is
       ------------------------------------------------
 
       procedure Process_Atomic_Independent_Shared_Volatile is
-         procedure Check_VFA_Conflicts (Ent : Entity_Id);
-         --  Check that Volatile_Full_Access and VFA do not conflict
+         procedure Check_Full_Access_Only (Ent : Entity_Id);
+         --  Apply legality checks to type or object Ent subject to the
+         --  Full_Access_Only aspect in Ada 2020 (RM C.6(8.2)).
 
          procedure Mark_Component_Or_Object (Ent : Entity_Id);
          --  Appropriately set flags on the given entity, either an array or
@@ -7389,15 +7227,68 @@ package body Sem_Prag is
          --  full access arrays. Note: this is necessary for derived types.
 
          -------------------------
-         -- Check_VFA_Conflicts --
+         -- Check_Full_Access_Only --
          -------------------------
 
-         procedure Check_VFA_Conflicts (Ent : Entity_Id) is
-            Comp : Entity_Id;
+         procedure Check_Full_Access_Only (Ent : Entity_Id) is
             Typ  : Entity_Id;
 
-            VFA_And_Atomic : Boolean := False;
-            --  Set True if both VFA and Atomic present
+            Full_Access_Subcomponent : exception;
+            --  Exception raised if a full access subcomponent is found
+
+            Generic_Type_Subcomponent : exception;
+            --  Exception raised if a subcomponent with generic type is found
+
+            procedure Check_Subcomponents (Typ : Entity_Id);
+            --  Apply checks to subcomponents recursively
+
+            -------------------------
+            -- Check_Subcomponents --
+            -------------------------
+
+            procedure Check_Subcomponents (Typ : Entity_Id) is
+               Comp : Entity_Id;
+
+            begin
+               if Is_Array_Type (Typ) then
+                  Comp := Component_Type (Typ);
+
+                  if Has_Atomic_Components (Typ)
+                    or else Is_Full_Access (Comp)
+                  then
+                     raise Full_Access_Subcomponent;
+
+                  elsif Is_Generic_Type (Comp) then
+                     raise Generic_Type_Subcomponent;
+                  end if;
+
+                  --  Recurse on the component type
+
+                  Check_Subcomponents (Comp);
+
+               elsif Is_Record_Type (Typ) then
+                  Comp := First_Component_Or_Discriminant (Typ);
+                  while Present (Comp) loop
+
+                     if Is_Full_Access (Comp)
+                       or else Is_Full_Access (Etype (Comp))
+                     then
+                        raise Full_Access_Subcomponent;
+
+                     elsif Is_Generic_Type (Etype (Comp)) then
+                        raise Generic_Type_Subcomponent;
+                     end if;
+
+                     --  Recurse on the component type
+
+                     Check_Subcomponents (Etype (Comp));
+
+                     Next_Component_Or_Discriminant (Comp);
+                  end loop;
+               end if;
+            end Check_Subcomponents;
+
+         --  Start of processing for Check_Full_Access_Only
 
          begin
             --  Fetch the type in case we are dealing with an object or
@@ -7413,49 +7304,29 @@ package body Sem_Prag is
                Typ := Etype (Ent);
             end if;
 
-            --  Check Atomic and VFA used together
-
-            if Prag_Id = Pragma_Volatile_Full_Access
-              or else Is_Volatile_Full_Access (Ent)
-            then
-               if Prag_Id = Pragma_Atomic
-                 or else Prag_Id = Pragma_Shared
-                 or else Is_Atomic (Ent)
-               then
-                  VFA_And_Atomic := True;
-
-               elsif Is_Array_Type (Typ) then
-                  VFA_And_Atomic := Has_Atomic_Components (Typ);
-
-               --  Note: Has_Atomic_Components is not used below, as this flag
-               --  represents the pragma of the same name, Atomic_Components,
-               --  which only applies to arrays.
-
-               elsif Is_Record_Type (Typ) then
-                  --  Attributes cannot be applied to discriminants, only
-                  --  regular record components.
-
-                  Comp := First_Component (Typ);
-                  while Present (Comp) loop
-                     if Is_Atomic (Comp)
-                       or else Is_Atomic (Typ)
-                     then
-                        VFA_And_Atomic := True;
-
-                        exit;
-                     end if;
-
-                     Next_Component (Comp);
-                  end loop;
-               end if;
-
-               if VFA_And_Atomic then
-                  Error_Pragma
-                    ("cannot have Volatile_Full_Access and Atomic for same "
-                     & "entity");
-               end if;
+            if not Is_Volatile (Ent) and then not Is_Volatile (Typ) then
+               Error_Pragma
+                 ("cannot have Full_Access_Only without Volatile/Atomic "
+                  & "(RM C.6(8.2))");
+               return;
             end if;
-         end Check_VFA_Conflicts;
+
+            --  Check all the subcomponents of the type recursively, if any
+
+            Check_Subcomponents (Typ);
+
+         exception
+            when Full_Access_Subcomponent =>
+               Error_Pragma
+                 ("cannot have Full_Access_Only with full access subcomponent "
+                  & "(RM C.6(8.2))");
+
+            when Generic_Type_Subcomponent =>
+               Error_Pragma
+                 ("cannot have Full_Access_Only with subcomponent of generic "
+                  & "type (RM C.6(8.2))");
+
+         end Check_Full_Access_Only;
 
          ------------------------------
          -- Mark_Component_Or_Object --
@@ -7611,6 +7482,7 @@ package body Sem_Prag is
          end if;
 
          E := Entity (E_Arg);
+         Decl := Declaration_Node (E);
 
          --  A pragma that applies to a Ghost entity becomes Ghost for the
          --  purposes of legality checks and removal of ignored Ghost code.
@@ -7621,9 +7493,43 @@ package body Sem_Prag is
 
          Check_Duplicate_Pragma (E);
 
-         --  Check appropriateness of the entity
+         --  Check the constraints of Full_Access_Only in Ada 2020. Note that
+         --  they do not apply to GNAT's Volatile_Full_Access because 1) this
+         --  aspect subsumes the Volatile aspect and 2) nesting is supported
+         --  for this aspect and the outermost enclosing VFA object prevails.
 
-         Decl := Declaration_Node (E);
+         --  Note also that we used to forbid specifying both Atomic and VFA on
+         --  the same type or object, but the restriction has been lifted in
+         --  light of the semantics of Full_Access_Only and Atomic in Ada 2020.
+
+         if Prag_Id = Pragma_Volatile_Full_Access
+           and then From_Aspect_Specification (N)
+           and then
+             Get_Aspect_Id (Corresponding_Aspect (N)) = Aspect_Full_Access_Only
+         then
+            Check_Full_Access_Only (E);
+         end if;
+
+         --  The following check is only relevant when SPARK_Mode is on as
+         --  this is not a standard Ada legality rule. Pragma Volatile can
+         --  only apply to a full type declaration or an object declaration
+         --  (SPARK RM 7.1.3(2)). Original_Node is necessary to account for
+         --  untagged derived types that are rewritten as subtypes of their
+         --  respective root types.
+
+         if SPARK_Mode = On
+           and then Prag_Id = Pragma_Volatile
+           and then Nkind (Original_Node (Decl)) not in
+                      N_Full_Type_Declaration        |
+                      N_Formal_Type_Declaration      |
+                      N_Object_Declaration           |
+                      N_Single_Protected_Declaration |
+                      N_Single_Task_Declaration
+         then
+            Error_Pragma_Arg
+              ("argument of pragma % must denote a full type or object "
+               & "declaration", Arg1);
+         end if;
 
          --  Deal with the case where the pragma/attribute is applied to a type
 
@@ -7655,41 +7561,6 @@ package body Sem_Prag is
 
          else
             Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
-         end if;
-
-         --  Check that Volatile_Full_Access and Atomic do not conflict
-
-         Check_VFA_Conflicts (E);
-
-         --  Check for the application of Atomic or Volatile_Full_Access to
-         --  an entity that has [nonatomic] aliased, or else specified to be
-         --  independently addressable, subcomponents.
-
-         if (Prag_Id = Pragma_Atomic and then Ada_Version >= Ada_2020)
-           or else Prag_Id = Pragma_Volatile_Full_Access
-         then
-            Check_Atomic_VFA (E, VFA => Prag_Id = Pragma_Volatile_Full_Access);
-         end if;
-
-         --  The following check is only relevant when SPARK_Mode is on as
-         --  this is not a standard Ada legality rule. Pragma Volatile can
-         --  only apply to a full type declaration or an object declaration
-         --  (SPARK RM 7.1.3(2)). Original_Node is necessary to account for
-         --  untagged derived types that are rewritten as subtypes of their
-         --  respective root types.
-
-         if SPARK_Mode = On
-           and then Prag_Id = Pragma_Volatile
-           and then Nkind (Original_Node (Decl)) not in
-                      N_Full_Type_Declaration        |
-                      N_Formal_Type_Declaration      |
-                      N_Object_Declaration           |
-                      N_Single_Protected_Declaration |
-                      N_Single_Task_Declaration
-         then
-            Error_Pragma_Arg
-              ("argument of pragma % must denote a full type or object "
-               & "declaration", Arg1);
          end if;
       end Process_Atomic_Independent_Shared_Volatile;
 
@@ -13591,11 +13462,6 @@ package body Sem_Prag is
                --  Atomic implies both Independent and Volatile
 
                if Prag_Id = Pragma_Atomic_Components then
-                  if Ada_Version >= Ada_2020 then
-                     Check_Atomic_VFA
-                       (Component_Type (Etype (E)), VFA => False);
-                  end if;
-
                   Set_Has_Atomic_Components (E);
                   Set_Has_Independent_Components (E);
                end if;

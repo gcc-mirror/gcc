@@ -240,10 +240,6 @@ package Sem_Aux is
    --  not inherited from its parents, if any). If found then True is returned,
    --  otherwise False indicates that no matching entry was found.
 
-   function Has_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean;
-   --  Determine whether the Rep_Item chain of arbitrary entity E contains item
-   --  N. N must denote a valid rep item.
-
    function Has_Rep_Pragma
      (E             : Entity_Id;
       Nam           : Name_Id;

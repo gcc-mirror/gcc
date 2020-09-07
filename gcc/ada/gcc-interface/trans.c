@@ -901,7 +901,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	 the actual assignment might end up being done component-wise.  */
       return (!constant
 	      ||(Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
-		 && Is_Atomic_Or_VFA (Defining_Entity (gnat_parent)))
+		 && Is_Full_Access (Defining_Entity (gnat_parent)))
 	      /* We don't use a constructor if this is a class-wide object
 		 because the effective type of the object is the equivalent
 		 type of the class-wide subtype and it smashes most of the
@@ -916,7 +916,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	      || Name (gnat_parent) == gnat_node
 	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
 		  && Is_Entity_Name (Name (gnat_parent))
-		  && Is_Atomic_Or_VFA (Entity (Name (gnat_parent)))));
+		  && Is_Full_Access (Entity (Name (gnat_parent)))));
 
     case N_Unchecked_Type_Conversion:
 	if (!constant)

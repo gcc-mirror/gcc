@@ -7285,12 +7285,6 @@ there is no guarantee that all the bits will be accessed if the reference
 is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
 
-It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
-the same type or object.
-
-It is not permissible to specify ``Volatile_Full_Access`` for a composite
-(record or array) type or object that has an ``Aliased`` subcomponent.
-
 .. _Pragma-Volatile_Function:
 
 Pragma Volatile_Function

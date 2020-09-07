@@ -704,29 +704,6 @@ package body Sem_Aux is
       return Present (Get_Rep_Item (E, Nam1, Nam2, Check_Parents));
    end Has_Rep_Item;
 
-   function Has_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean is
-      Item : Node_Id;
-
-   begin
-      pragma Assert
-        (Nkind (N) in N_Aspect_Specification
-                    | N_Attribute_Definition_Clause
-                    | N_Enumeration_Representation_Clause
-                    | N_Pragma
-                    | N_Record_Representation_Clause);
-
-      Item := First_Rep_Item (E);
-      while Present (Item) loop
-         if Item = N then
-            return True;
-         end if;
-
-         Next_Rep_Item (Item);
-      end loop;
-
-      return False;
-   end Has_Rep_Item;
-
    --------------------
    -- Has_Rep_Pragma --
    --------------------

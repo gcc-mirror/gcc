@@ -14566,7 +14566,7 @@ package body Sem_Util is
             --                      ^
             --                     Item
 
-            if Has_Rep_Item (From_Typ, Next_Item) then
+            if Present_In_Rep_Item (From_Typ, Next_Item) then
                exit;
             end if;
 
@@ -15186,15 +15186,6 @@ package body Sem_Util is
         Is_Object (Id)
           and then (Is_Atomic (Id) or else Is_Atomic (Etype (Id)));
    end Is_Atomic_Object_Entity;
-
-   -----------------------------
-   -- Is_Atomic_Or_VFA_Object --
-   -----------------------------
-
-   function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean is
-   begin
-      return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
-   end Is_Atomic_Or_VFA_Object;
 
    -----------------------------
    -- Is_Attribute_Loop_Entry --
@@ -16796,6 +16787,15 @@ package body Sem_Util is
       Urealp.Release (M);
       return R;
    end Is_Fixed_Model_Number;
+
+   -----------------------------
+   -- Is_Full_Access_Object --
+   -----------------------------
+
+   function Is_Full_Access_Object (N : Node_Id) return Boolean is
+   begin
+      return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
+   end Is_Full_Access_Object;
 
    -------------------------------
    -- Is_Fully_Initialized_Type --
@@ -19746,11 +19746,12 @@ package body Sem_Util is
         and then Has_All_Static_Actuals (Call);
    end Is_Static_Function_Call;
 
-   ----------------------------------------
-   --  Is_Subcomponent_Of_Atomic_Object  --
-   ----------------------------------------
+   -------------------------------------------
+   -- Is_Subcomponent_Of_Full_Access_Object --
+   -------------------------------------------
 
-   function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean is
+   function Is_Subcomponent_Of_Full_Access_Object (N : Node_Id) return Boolean
+   is
       R : Node_Id;
 
    begin
@@ -19763,19 +19764,19 @@ package body Sem_Util is
          --  If the prefix is an access value, only the designated type matters
 
          if Is_Access_Type (Etype (R)) then
-            if Is_Atomic (Designated_Type (Etype (R))) then
+            if Is_Full_Access (Designated_Type (Etype (R))) then
                return True;
             end if;
 
          else
-            if Is_Atomic_Object (R) then
+            if Is_Full_Access_Object (R) then
                return True;
             end if;
          end if;
       end loop;
 
       return False;
-   end Is_Subcomponent_Of_Atomic_Object;
+   end Is_Subcomponent_Of_Full_Access_Object;
 
    ---------------------------------------
    -- Is_Subprogram_Contract_Annotation --

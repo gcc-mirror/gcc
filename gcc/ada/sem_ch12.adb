@@ -11379,8 +11379,8 @@ package body Sem_Ch12 is
 
          Note_Possible_Modification (Actual, Sure => True);
 
-         --  Check for instantiation with atomic/volatile object actual for
-         --  nonatomic/nonvolatile formal (RM C.6 (12)).
+         --  Check for instantiation with atomic/volatile/VFA object actual for
+         --  nonatomic/nonvolatile/nonVFA formal (RM C.6 (12)).
 
          if Is_Atomic_Object (Actual) and then not Is_Atomic (Orig_Ftyp) then
             Error_Msg_NE
@@ -11394,20 +11394,29 @@ package body Sem_Ch12 is
               ("cannot instantiate nonvolatile formal & of mode in out",
                Actual, Gen_Obj);
             Error_Msg_N ("\with volatile object actual (RM C.6(12))", Actual);
+
+         elsif Is_Volatile_Full_Access_Object (Actual)
+           and then not Is_Volatile_Full_Access (Orig_Ftyp)
+         then
+            Error_Msg_NE
+              ("cannot instantiate nonfull access formal & of mode in out",
+               Actual, Gen_Obj);
+            Error_Msg_N
+              ("\with full access object actual (RM C.6(12))", Actual);
          end if;
 
-         --  Check for instantiation on nonatomic subcomponent of an atomic
-         --  object in Ada 2020 (RM C.6 (13)).
+         --  Check for instantiation on nonatomic subcomponent of a full access
+         --  object in Ada 2020 (RM C.6 (12)).
 
          if Ada_Version >= Ada_2020
-            and then Is_Subcomponent_Of_Atomic_Object (Actual)
+            and then Is_Subcomponent_Of_Full_Access_Object (Actual)
             and then not Is_Atomic_Object (Actual)
          then
             Error_Msg_NE
               ("cannot instantiate formal & of mode in out with actual",
                Actual, Gen_Obj);
             Error_Msg_N
-              ("\nonatomic subcomponent of atomic object (RM C.6(13))",
+              ("\nonatomic subcomponent of full access object (RM C.6(12))",
                Actual);
          end if;
 
@@ -12699,15 +12708,15 @@ package body Sem_Ch12 is
 
             if Is_Volatile (A_Gen_T) and then not Is_Volatile (Act_T) then
                Error_Msg_NE
-                  ("actual for& has different Volatile aspect",
-                    Actual, A_Gen_T);
+                  ("actual for& must have Volatile aspect",
+                   Actual, A_Gen_T);
 
             elsif Is_Derived_Type (A_Gen_T)
               and then Is_Volatile (A_Gen_T) /= Is_Volatile (Act_T)
             then
                Error_Msg_NE
                   ("actual for& has different Volatile aspect",
-                     Actual, A_Gen_T);
+                   Actual, A_Gen_T);
             end if;
 
             --  We assume that an array type whose atomic component type

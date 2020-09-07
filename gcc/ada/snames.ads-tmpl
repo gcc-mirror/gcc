@@ -143,6 +143,7 @@ package Snames is
    Name_Disable_Controlled             : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
    Name_Exclusive_Functions            : constant Name_Id := N + $;
+   Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
    Name_Real_Literal                   : constant Name_Id := N + $;
    Name_Relaxed_Initialization         : constant Name_Id := N + $;

@@ -4726,7 +4726,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  Check illegal cases of atomic/volatile actual (RM C.6(12,13))
+            --  Check illegal cases of atomic/volatile/VFA actual (RM C.6(12))
 
             if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
@@ -4748,17 +4748,29 @@ package body Sem_Res is
                      A, F);
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
+
+               elsif Is_Volatile_Full_Access_Object (A)
+                 and then not Is_Volatile_Full_Access (Etype (F))
+               then
+                  Error_Msg_NE
+                    ("cannot pass full access object to nonfull access "
+                     & "formal&", A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
                end if;
 
+               --  Check for nonatomic subcomponent of a full access object
+               --  in Ada 2020 (RM C.6 (12)).
+
                if Ada_Version >= Ada_2020
-                 and then Is_Subcomponent_Of_Atomic_Object (A)
+                 and then Is_Subcomponent_Of_Full_Access_Object (A)
                  and then not Is_Atomic_Object (A)
                then
                   Error_Msg_N
-                    ("cannot pass nonatomic subcomponent of atomic object",
-                     A);
+                    ("cannot pass nonatomic subcomponent of full access "
+                     & "object", A);
                   Error_Msg_NE
-                    ("\to formal & which is passed by reference (RM C.6(13))",
+                    ("\to formal & which is passed by reference (RM C.6(12))",
                      A, F);
                end if;
             end if;
