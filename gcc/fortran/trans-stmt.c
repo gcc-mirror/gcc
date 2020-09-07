@@ -689,8 +689,7 @@ gfc_trans_fail_image (gfc_code *code ATTRIBUTE_UNUSED)
 {
   if (flag_coarray == GFC_FCOARRAY_LIB)
     return build_call_expr_loc (input_location,
-				gfor_fndecl_caf_fail_image, 1,
-				build_int_cst (pchar_type_node, 0));
+				gfor_fndecl_caf_fail_image, 0);
   else
     {
       const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);

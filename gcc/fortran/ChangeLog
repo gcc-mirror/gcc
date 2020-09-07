@@ -1,3 +1,17 @@
+2020-09-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-types.c (gfc_get_ppc_type): Add comment.
+
+2020-09-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-types.c (gfc_get_ppc_type): Fix function arg types.
+
+2020-09-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/96947
+	* trans-stmt.c (gfc_trans_fail_image): caf_fail_image
+	expects no argument.
+
 2020-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/96859

@@ -875,7 +875,6 @@ public:
 	    tree offexp = d_array_length (result);
 	    offexp = build2 (MINUS_EXPR, TREE_TYPE (offexp),
 			     offexp, size_one_node);
-	    offexp = d_save_expr (offexp);
 
 	    tree ptrexp = d_array_ptr (result);
 	    ptrexp = void_okay_p (ptrexp);
@@ -885,9 +884,7 @@ public:
 	    tree t2 = build_expr (e->e2);
 	    tree expr = stabilize_expr (&t2);
 
-	    t2 = d_save_expr (t2);
 	    result = modify_expr (build_deref (ptrexp), t2);
-	    result = compound_expr (t2, result);
 
 	    this->result_ = compound_expr (expr, result);
 	  }

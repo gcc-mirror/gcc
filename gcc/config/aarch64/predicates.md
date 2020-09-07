@@ -235,21 +235,6 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (UINTVAL (op), 0, 0xffffff)")))
 
-(define_predicate "aarch64_pwr_imm3"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) != 0
-		    && (unsigned) exact_log2 (INTVAL (op)) <= 4")))
-
-(define_predicate "aarch64_pwr_2_si"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) != 0
-		    && (unsigned) exact_log2 (INTVAL (op)) < 32")))
-
-(define_predicate "aarch64_pwr_2_di"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) != 0
-		    && (unsigned) exact_log2 (INTVAL (op)) < 64")))
-
 (define_predicate "aarch64_mem_pair_offset"
   (and (match_code "const_int")
        (match_test "aarch64_offset_7bit_signed_scaled_p (mode, INTVAL (op))")))

@@ -12118,7 +12118,7 @@ file_name_acquire (dwarf_file_data **slot, file_name_acquire_data *fnad)
   f = strrchr (f, DIR_SEPARATOR);
 #if defined (DIR_SEPARATOR_2)
   {
-    char *g = strrchr (fi->path, DIR_SEPARATOR_2);
+    const char *g = strrchr (fi->path, DIR_SEPARATOR_2);
 
     if (g != NULL)
       {

@@ -2100,9 +2100,11 @@ output_cfg (struct output_block *ob, struct function *fn)
       streamer_write_uhwi (ob, EDGE_COUNT (bb->succs));
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  streamer_write_uhwi (ob, e->dest->index);
+	  bitpack_d bp = bitpack_create (ob->main_stream);
+	  bp_pack_var_len_unsigned (&bp, e->dest->index);
+	  bp_pack_var_len_unsigned (&bp, e->flags);
+	  stream_output_location_and_block (ob, &bp, e->goto_locus);
 	  e->probability.stream_out (ob);
-	  streamer_write_uhwi (ob, e->flags);
 	}
     }
 
@@ -2418,6 +2420,8 @@ output_function (struct cgraph_node *node)
       streamer_write_uhwi (ob, 1);
       output_struct_function_base (ob, fn);
 
+      output_cfg (ob, fn);
+
       /* Output all the SSA names used in the function.  */
       output_ssa_names (ob, fn);
 
@@ -2430,8 +2434,6 @@ output_function (struct cgraph_node *node)
 
       /* The terminator for this function.  */
       streamer_write_record_start (ob, LTO_null);
-
-      output_cfg (ob, fn);
    }
   else
     streamer_write_uhwi (ob, 0);

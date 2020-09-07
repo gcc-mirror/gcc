@@ -10532,7 +10532,7 @@ vectorizable_comparison (vec_info *vinfo,
    GSI and VEC_STMT_P are as for vectorizable_live_operation.  */
 
 static bool
-can_vectorize_live_stmts (loop_vec_info loop_vinfo,
+can_vectorize_live_stmts (vec_info *vinfo,
 			  stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			  slp_tree slp_node, slp_instance slp_node_instance,
 			  bool vec_stmt_p,
@@ -10545,7 +10545,7 @@ can_vectorize_live_stmts (loop_vec_info loop_vinfo,
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
 	{
 	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
-	      && !vectorizable_live_operation (loop_vinfo,
+	      && !vectorizable_live_operation (vinfo,
 					       slp_stmt_info, gsi, slp_node,
 					       slp_node_instance, i,
 					       vec_stmt_p, cost_vec))
@@ -10553,7 +10553,7 @@ can_vectorize_live_stmts (loop_vec_info loop_vinfo,
 	}
     }
   else if (STMT_VINFO_LIVE_P (stmt_info)
-	   && !vectorizable_live_operation (loop_vinfo, stmt_info, gsi,
+	   && !vectorizable_live_operation (vinfo, stmt_info, gsi,
 					    slp_node, slp_node_instance, -1,
 					    vec_stmt_p, cost_vec))
     return false;
@@ -10923,10 +10923,8 @@ vect_transform_stmt (vec_info *vinfo,
 
   /* Handle stmts whose DEF is used outside the loop-nest that is
      being vectorized.  */
-  if (is_a <loop_vec_info> (vinfo))
-    done = can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
-				     stmt_info, gsi, slp_node,
-				     slp_node_instance, true, NULL);
+  done = can_vectorize_live_stmts (vinfo, stmt_info, gsi, slp_node,
+				   slp_node_instance, true, NULL);
   gcc_assert (done);
 
   return false;

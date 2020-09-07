@@ -780,23 +780,19 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
       /* Connect up the CFG.  */
       for (i = 0; i < edge_count; i++)
 	{
-	  unsigned int dest_index;
-	  unsigned int edge_flags;
-	  basic_block dest;
-	  profile_probability probability;
-	  edge e;
-
-	  dest_index = streamer_read_uhwi (ib);
-	  probability = profile_probability::stream_in (ib);
-	  edge_flags = streamer_read_uhwi (ib);
-
-	  dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
+	  bitpack_d bp = streamer_read_bitpack (ib);
+	  unsigned int dest_index = bp_unpack_var_len_unsigned (&bp);
+	  unsigned int edge_flags = bp_unpack_var_len_unsigned (&bp);
+	  basic_block dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
 
 	  if (dest == NULL)
 	    dest = make_new_block (fn, dest_index);
 
-	  e = make_edge (bb, dest, edge_flags);
-	  e->probability = probability;
+	  edge e = make_edge (bb, dest, edge_flags);
+	  data_in->location_cache.input_location_and_block (&e->goto_locus,
+							    &bp, ib, data_in);
+	  e->probability = profile_probability::stream_in (ib);
+
 	}
 
       index = streamer_read_hwi (ib);

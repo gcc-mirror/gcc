@@ -2202,6 +2202,15 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	scalar_stmts.safe_push (next_info);
     }
 
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "Starting SLP discovery for\n");
+      for (i = 0; i < scalar_stmts.length (); ++i)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "  %G", scalar_stmts[i]->stmt);
+    }
+
   /* Build the tree for the SLP instance.  */
   bool *matches = XALLOCAVEC (bool, group_size);
   unsigned npermutes = 0;
@@ -2232,6 +2241,10 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      return false;
 	    }
 	  /* Fatal mismatch.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "SLP discovery succeeded but node needs "
+			     "splitting\n");
 	  matches[0] = true;
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
 	  vect_free_slp_tree (node, false);
@@ -2374,6 +2387,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
 	  unsigned group1_size = i & ~(const_nunits - 1);
 
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Splitting SLP group at stmt %u\n", i);
 	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
 							   group1_size);
 	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
@@ -2395,6 +2411,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	 (some) of the remainder.  FORNOW ignore this possibility.  */
     }
 
+  /* Failed to SLP.  */
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "SLP discovery failed\n");
   return false;
 }
 
@@ -2970,6 +2989,101 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 }
 
 
+/* Mark lanes of NODE that are live outside of the basic-block vectorized
+   region and that can be vectorized using vectorizable_live_operation
+   with STMT_VINFO_LIVE_P.  Not handled live operations will cause the
+   scalar code computing it to be retained.  */
+
+static void
+vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
+			     slp_instance instance,
+			     stmt_vector_for_cost *cost_vec,
+			     hash_set<stmt_vec_info> &svisited)
+{
+  unsigned i;
+  stmt_vec_info stmt_info;
+  stmt_vec_info last_stmt = vect_find_last_scalar_stmt_in_slp (node);
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
+    {
+      stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+      if (svisited.contains (orig_stmt_info))
+	continue;
+      bool mark_visited = true;
+      gimple *orig_stmt = orig_stmt_info->stmt;
+      ssa_op_iter op_iter;
+      def_operand_p def_p;
+      FOR_EACH_SSA_DEF_OPERAND (def_p, orig_stmt, op_iter, SSA_OP_DEF)
+	{
+	  imm_use_iterator use_iter;
+	  gimple *use_stmt;
+	  stmt_vec_info use_stmt_info;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
+	    if (!is_gimple_debug (use_stmt))
+	      {
+		use_stmt_info = bb_vinfo->lookup_stmt (use_stmt);
+		if (!use_stmt_info
+		    || !PURE_SLP_STMT (vect_stmt_to_vectorize (use_stmt_info)))
+		  {
+		    STMT_VINFO_LIVE_P (stmt_info) = true;
+		    if (vectorizable_live_operation (bb_vinfo, stmt_info,
+						     NULL, node, instance, i,
+						     false, cost_vec))
+		      /* ???  So we know we can vectorize the live stmt
+			 from one SLP node.  If we cannot do so from all
+			 or none consistently we'd have to record which
+			 SLP node (and lane) we want to use for the live
+			 operation.  So make sure we can code-generate
+			 from all nodes.  */
+		      mark_visited = false;
+		    else
+		      STMT_VINFO_LIVE_P (stmt_info) = false;
+		    BREAK_FROM_IMM_USE_STMT (use_iter);
+		  }
+	      }
+	  /* We have to verify whether we can insert the lane extract
+	     before all uses.  The following is a conservative approximation.
+	     We cannot put this into vectorizable_live_operation because
+	     iterating over all use stmts from inside a FOR_EACH_IMM_USE_STMT
+	     doesn't work.
+	     Note that while the fact that we emit code for loads at the
+	     first load should make this a non-problem leafs we construct
+	     from scalars are vectorized after the last scalar def.
+	     ???  If we'd actually compute the insert location during
+	     analysis we could use sth less conservative than the last
+	     scalar stmt in the node for the dominance check.  */
+	  /* ???  What remains is "live" uses in vector CTORs in the same
+	     SLP graph which is where those uses can end up code-generated
+	     right after their definition instead of close to their original
+	     use.  But that would restrict us to code-generate lane-extracts
+	     from the latest stmt in a node.  So we compensate for this
+	     during code-generation, simply not replacing uses for those
+	     hopefully rare cases.  */
+	  if (STMT_VINFO_LIVE_P (stmt_info))
+	    FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
+	      if (!is_gimple_debug (use_stmt)
+		  && (!(use_stmt_info = bb_vinfo->lookup_stmt (use_stmt))
+		      || !PURE_SLP_STMT (vect_stmt_to_vectorize (use_stmt_info)))
+		  && !vect_stmt_dominates_stmt_p (last_stmt->stmt, use_stmt))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Cannot determine insertion place for "
+				     "lane extract\n");
+		  STMT_VINFO_LIVE_P (stmt_info) = false;
+		  mark_visited = true;
+		}
+	}
+      if (mark_visited)
+	svisited.add (orig_stmt_info);
+    }
+
+  slp_tree child;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+      vect_bb_slp_mark_live_stmts (bb_vinfo, child, instance,
+				   cost_vec, svisited);
+}
+
 /* Analyze statements in SLP instances of VINFO.  Return true if the
    operations are supported. */
 
@@ -3019,6 +3133,19 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	}
     }
 
+  /* Compute vectorizable live stmts.  */
+  if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo))
+    {
+      hash_set<stmt_vec_info> svisited;
+      stmt_vector_for_cost cost_vec;
+      cost_vec.create (2);
+      for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
+	vect_bb_slp_mark_live_stmts (bb_vinfo, SLP_INSTANCE_TREE (instance),
+				     instance, &cost_vec, svisited);
+      add_stmt_costs (vinfo, vinfo->target_cost_data, &cost_vec);
+      cost_vec.release ();
+    }
+
   return !vinfo->slp_instances.is_empty ();
 }
 
@@ -3048,31 +3175,36 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
       if ((*life)[i])
 	continue;
 
+      stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+      gimple *orig_stmt = orig_stmt_info->stmt;
+
       /* If there is a non-vectorized use of the defs then the scalar
          stmt is kept live in which case we do not account it or any
 	 required defs in the SLP children in the scalar cost.  This
 	 way we make the vectorization more costly when compared to
 	 the scalar cost.  */
-      stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
-      gimple *orig_stmt = orig_stmt_info->stmt;
-      FOR_EACH_SSA_DEF_OPERAND (def_p, orig_stmt, op_iter, SSA_OP_DEF)
+      if (!STMT_VINFO_LIVE_P (stmt_info))
 	{
-	  imm_use_iterator use_iter;
-	  gimple *use_stmt;
-	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
-	    if (!is_gimple_debug (use_stmt))
-	      {
-		stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
-		if (!use_stmt_info
-		    || !PURE_SLP_STMT (vect_stmt_to_vectorize (use_stmt_info)))
+	  FOR_EACH_SSA_DEF_OPERAND (def_p, orig_stmt, op_iter, SSA_OP_DEF)
+	    {
+	      imm_use_iterator use_iter;
+	      gimple *use_stmt;
+	      FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
+		if (!is_gimple_debug (use_stmt))
 		  {
-		    (*life)[i] = true;
-		    BREAK_FROM_IMM_USE_STMT (use_iter);
+		    stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
+		    if (!use_stmt_info
+			|| !PURE_SLP_STMT
+			      (vect_stmt_to_vectorize (use_stmt_info)))
+		      {
+			(*life)[i] = true;
+			BREAK_FROM_IMM_USE_STMT (use_iter);
+		      }
 		  }
-	      }
+	    }
+	  if ((*life)[i])
+	    continue;
 	}
-      if ((*life)[i])
-	continue;
 
       /* Count scalar stmts only once.  */
       if (gimple_visited_p (orig_stmt))
@@ -4549,6 +4681,16 @@ vect_schedule_slp (vec_info *vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Vectorizing SLP tree:\n");
+	  if (SLP_INSTANCE_ROOT_STMT (instance))
+	    dump_printf_loc (MSG_NOTE, vect_location, "Root stmt: %G",
+			 SLP_INSTANCE_ROOT_STMT (instance)->stmt);
+	  vect_print_slp_graph (MSG_NOTE, vect_location,
+				SLP_INSTANCE_TREE (instance));
+	}
       /* Schedule the tree of INSTANCE.  */
       vect_schedule_slp_instance (vinfo, node, instance);
 

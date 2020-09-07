@@ -1,3 +1,85 @@
+2020-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	PR tree-optimization/96920
+	* tree-vectorizer.h (loop_vec_info::reduc_latch_defs): Remove.
+	(loop_vec_info::reduc_latch_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_transform_stmt): Remove vectorized
+	cycle PHI latch code.
+	* tree-vect-loop.c (maybe_set_vectorized_backedge_value): New
+	helper to set vectorized cycle PHI latch values.
+	(vect_transform_loop): Walk over all PHIs again after
+	vectorizing them, calling maybe_set_vectorized_backedge_value.
+	Call maybe_set_vectorized_backedge_value for each vectorized
+	stmt.  Remove delayed update code.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Initialize
+	SLP instance reduc_phis member.
+	(vect_schedule_slp): Set vectorized cycle PHI latch values.
+
+2020-09-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Remove
+	dead code as LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) is
+	always verified.
+
+2020-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96769
+	* config/arm/thumb1.md: Move movsi splitter for
+	arm_disable_literal_pool after the other movsi splitters.
+
+2020-09-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (range_operator::fold_range): Rename widest_irange
+	to int_range_max.
+	(operator_div::wi_fold): Same.
+	(operator_lshift::op1_range): Same.
+	(operator_rshift::op1_range): Same.
+	(operator_cast::fold_range): Same.
+	(operator_cast::op1_range): Same.
+	(operator_bitwise_and::remove_impossible_ranges): Same.
+	(operator_bitwise_and::op1_range): Same.
+	(operator_abs::op1_range): Same.
+	(range_cast): Same.
+	(widest_irange_tests): Same.
+	(range3_tests): Rename irange3 to int_range3.
+	(int_range_max_tests): Rename from widest_irange_tests.
+	Rename widest_irange to int_range_max.
+	(operator_tests): Rename widest_irange to int_range_max.
+	(range_tests): Same.
+	* tree-vrp.c (find_case_label_range): Same.
+	* value-range.cc (irange::irange_intersect): Same.
+	(irange::invert): Same.
+	* value-range.h: Same.
+
+2020-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96931
+	* tree-cfgcleanup.c (cleanup_call_ctrl_altering_flag): If
+	there's a fallthru edge and no abnormal edge the call is
+	no longer control-altering.
+	(cleanup_control_flow_bb): Pass down the BB to
+	cleanup_call_ctrl_altering_flag.
+
+2020-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer.h (stream_input_location_now): Remove declaration.
+	* lto-streamer-in.c (stream_input_location_now): Remove.
+	(input_eh_region, input_struct_function_base): Use
+	stream_input_location instead of stream_input_location_now.
+
+2020-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer.h (struct output_block): Add reset_locus member.
+	* lto-streamer-out.c (clear_line_info): Set reset_locus to true.
+	(lto_output_location_1): If reset_locus, clear it and ensure
+	current_{file,line,col} is different from xloc members.
+
+2020-09-04  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.h (ASM_SPEC): Pass -mxbpf to gas, if specified.
+	* config/bpf/bpf.c (bpf_output_call): Support indirect calls in xBPF.
+
 2020-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/96820

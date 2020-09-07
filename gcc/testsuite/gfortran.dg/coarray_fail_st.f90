@@ -18,4 +18,4 @@ program fail_statement
 
 end program fail_statement
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_fail_image \\\(0B\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_fail_image \\\(\\\);" 1 "original" } }
