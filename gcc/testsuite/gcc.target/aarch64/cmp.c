@@ -58,4 +58,5 @@ cmp_di_test4 (int a, s64 b, s64 c)
 }
 
 /* { dg-final { scan-assembler-times "cmp\tw\[0-9\]+, w\[0-9\]+" 2 } } */
-/* { dg-final { scan-assembler-times "cmp\tx\[0-9\]+, x\[0-9\]+" 4 } } */
+/* { dg-final { scan-assembler-times "cmp\tx\[0-9\]+, x\[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-times "cmp\tx\[0-9\]+, w\[0-9\]+, sxtw" 2 } } */

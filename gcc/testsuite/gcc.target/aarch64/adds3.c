@@ -58,4 +58,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "adds\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, sxtw" 2 } } */
+/* { dg-final { scan-assembler-times "adds\tx\[0-9\]+, x\[0-9\]+, w\[0-9\]+, sxtw" 2 } } */
