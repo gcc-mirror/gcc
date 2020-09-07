@@ -425,9 +425,18 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
 	{
 	  tree min_index = TREE_OPERAND (index, 0);
 	  tree max_index = TREE_OPERAND (index, 1);
-	  if (!apply_ctor_val_to_range (parent_reg, mgr,
-					min_index, max_index, val))
-	    return false;
+	  if (min_index == max_index)
+	    {
+	      if (!apply_ctor_pair_to_child_region (parent_reg, mgr,
+						    min_index, val))
+		return false;
+	    }
+	  else
+	    {
+	      if (!apply_ctor_val_to_range (parent_reg, mgr,
+					    min_index, max_index, val))
+		return false;
+	    }
 	  continue;
 	}
       if (!apply_ctor_pair_to_child_region (parent_reg, mgr, index, val))
@@ -472,7 +481,8 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
   gcc_assert (range_key->concrete_p ());
 
   /* Get the value.  */
-  gcc_assert (TREE_CODE (val) != CONSTRUCTOR);
+  if (TREE_CODE (val) == CONSTRUCTOR)
+    return false;
   const svalue *sval = get_svalue_for_ctor_val (val, mgr);
 
   /* Bind the value to the range.  */
