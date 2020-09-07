@@ -236,12 +236,17 @@ get_reg_class (int regno)
    CL.  Use elimination first if REG is a hard register.  If REG is a
    reload pseudo created by this constraints pass, assume that it will
    be allocated a hard register from its allocno class, but allow that
-   class to be narrowed to CL if it is currently a superset of CL.
+   class to be narrowed to CL if it is currently a superset of CL and
+   if either:
+
+   - ALLOW_ALL_RELOAD_CLASS_CHANGES_P is true or
+   - the instruction we're processing is not a reload move.
 
    If NEW_CLASS is nonnull, set *NEW_CLASS to the new allocno class of
    REGNO (reg), or NO_REGS if no change in its class was needed.  */
 static bool
-in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class)
+in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class,
+	    bool allow_all_reload_class_changes_p = false)
 {
   enum reg_class rclass, common_class;
   machine_mode reg_mode;
@@ -266,7 +271,8 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class)
 	 typically moves that have many alternatives, and restricting
 	 reload pseudos for one alternative may lead to situations
 	 where other reload pseudos are no longer allocatable.  */
-      || (INSN_UID (curr_insn) >= new_insn_uid_start
+      || (!allow_all_reload_class_changes_p
+	  && INSN_UID (curr_insn) >= new_insn_uid_start
 	  && curr_insn_set != NULL
 	  && ((OBJECT_P (SET_SRC (curr_insn_set))
 	       && ! CONSTANT_P (SET_SRC (curr_insn_set)))
@@ -598,13 +604,12 @@ canonicalize_reload_addr (rtx addr)
   return addr;
 }
 
-/* Create a new pseudo using MODE, RCLASS, ORIGINAL or reuse already
-   created input reload pseudo (only if TYPE is not OP_OUT).  Don't
-   reuse pseudo if IN_SUBREG_P is true and the reused pseudo should be
-   wrapped up in SUBREG.  The result pseudo is returned through
-   RESULT_REG.  Return TRUE if we created a new pseudo, FALSE if we
-   reused the already created input reload pseudo.  Use TITLE to
-   describe new registers for debug purposes.  */
+/* Create a new pseudo using MODE, RCLASS, ORIGINAL or reuse an existing
+   reload pseudo.  Don't reuse an existing reload pseudo if IN_SUBREG_P
+   is true and the reused pseudo should be wrapped up in a SUBREG.
+   The result pseudo is returned through RESULT_REG.  Return TRUE if we
+   created a new pseudo, FALSE if we reused an existing reload pseudo.
+   Use TITLE to describe new registers for debug purposes.  */
 static bool
 get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 		enum reg_class rclass, bool in_subreg_p,
@@ -616,6 +621,35 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 
   if (type == OP_OUT)
     {
+      /* Output reload registers tend to start out with a conservative
+	 choice of register class.  Usually this is ALL_REGS, although
+	 a target might narrow it (for performance reasons) through
+	 targetm.preferred_reload_class.  It's therefore quite common
+	 for a reload instruction to require a more restrictive class
+	 than the class that was originally assigned to the reload register.
+
+	 In these situations, it's more efficient to refine the choice
+	 of register class rather than create a second reload register.
+	 This also helps to avoid cycling for registers that are only
+	 used by reload instructions.  */
+      if (REG_P (original)
+	  && (int) REGNO (original) >= new_regno_start
+	  && INSN_UID (curr_insn) >= new_insn_uid_start
+	  && in_class_p (original, rclass, &new_class, true))
+	{
+	  unsigned int regno = REGNO (original);
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file, "	 Reuse r%d for output ", regno);
+	      dump_value_slim (lra_dump_file, original, 1);
+	    }
+	  if (new_class != lra_get_allocno_class (regno))
+	    lra_change_class (regno, new_class, ", change to", false);
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file, "\n");
+	  *result_reg = original;
+	  return false;
+	}
       *result_reg
 	= lra_create_new_reg_with_unique_value (mode, original, rclass, title);
       return true;
