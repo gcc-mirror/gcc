@@ -9637,6 +9637,12 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  new_st->expr1->value.function.actual->next = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->next->expr = gfc_get_variable_expr (st);
 	  new_st->expr1->value.function.actual->next->expr->where = code->loc;
+	  /* Set up types in formal arg list.  */
+	  new_st->expr1->value.function.isym->formal = XCNEW (gfc_intrinsic_arg);
+	  new_st->expr1->value.function.isym->formal->ts = new_st->expr1->value.function.actual->expr->ts;
+	  new_st->expr1->value.function.isym->formal->next = XCNEW (gfc_intrinsic_arg);
+	  new_st->expr1->value.function.isym->formal->next->ts = new_st->expr1->value.function.actual->next->expr->ts;
+
 	  new_st->next = body->next;
 	}
 	if (default_case->next)
