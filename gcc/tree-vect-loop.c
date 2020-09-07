@@ -4089,6 +4089,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
   if (vec_outside_cost <= 0)
     min_profitable_estimate = 0;
+  /* ??? This "else if" arm is written to handle all cases; see below for
+     what we would do for !LOOP_VINFO_USING_PARTIAL_VECTORS_P.  */
   else if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       /* This is a repeat of the code above, but with + SOC rather
@@ -4101,10 +4103,17 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       if (outside_overhead > 0)
 	min_vec_niters = outside_overhead / saving_per_viter + 1;
 
-      int threshold = (vec_inside_cost * min_vec_niters
-		       + vec_outside_cost
-		       + scalar_outside_cost);
-      min_profitable_estimate = threshold / scalar_single_iter_cost + 1;
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+	{
+	  int threshold = (vec_inside_cost * min_vec_niters
+			   + vec_outside_cost
+			   + scalar_outside_cost);
+	  min_profitable_estimate = threshold / scalar_single_iter_cost + 1;
+	}
+      else
+	min_profitable_estimate = (min_vec_niters * assumed_vf
+				   + peel_iters_prologue
+				   + peel_iters_epilogue);
     }
   else
     {
