@@ -3545,7 +3545,8 @@ bool
 darwin_libc_has_function (enum function_class fn_class)
 {
   if (fn_class == function_sincos)
-    return false;
+    return (strverscmp (darwin_macosx_version_min, "10.9") >= 0);
+
   if (fn_class == function_c99_math_complex
       || fn_class == function_c99_misc)
     return (TARGET_64BIT
