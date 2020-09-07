@@ -653,7 +653,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	 Having them split out into separate functions makes it easier
 	 to put breakpoints on the handling of specific functions.  */
 
-      if (fndecl_built_in_p (callee_fndecl)
+      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
 	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
 	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
 	  {
