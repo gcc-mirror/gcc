@@ -2202,6 +2202,15 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	scalar_stmts.safe_push (next_info);
     }
 
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "Starting SLP discovery for\n");
+      for (i = 0; i < scalar_stmts.length (); ++i)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "  %G", scalar_stmts[i]->stmt);
+    }
+
   /* Build the tree for the SLP instance.  */
   bool *matches = XALLOCAVEC (bool, group_size);
   unsigned npermutes = 0;
@@ -2232,6 +2241,10 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      return false;
 	    }
 	  /* Fatal mismatch.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "SLP discovery succeeded but node needs "
+			     "splitting\n");
 	  matches[0] = true;
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
 	  vect_free_slp_tree (node, false);
@@ -2374,6 +2387,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
 	  unsigned group1_size = i & ~(const_nunits - 1);
 
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Splitting SLP group at stmt %u\n", i);
 	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
 							   group1_size);
 	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
@@ -2395,6 +2411,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	 (some) of the remainder.  FORNOW ignore this possibility.  */
     }
 
+  /* Failed to SLP.  */
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "SLP discovery failed\n");
   return false;
 }
 
@@ -4662,6 +4681,16 @@ vect_schedule_slp (vec_info *vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Vectorizing SLP tree:\n");
+	  if (SLP_INSTANCE_ROOT_STMT (instance))
+	    dump_printf_loc (MSG_NOTE, vect_location, "Root stmt: %G",
+			 SLP_INSTANCE_ROOT_STMT (instance)->stmt);
+	  vect_print_slp_graph (MSG_NOTE, vect_location,
+				SLP_INSTANCE_TREE (instance));
+	}
       /* Schedule the tree of INSTANCE.  */
       vect_schedule_slp_instance (vinfo, node, instance);
 
