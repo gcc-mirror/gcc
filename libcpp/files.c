@@ -1693,7 +1693,7 @@ remap_filename (cpp_reader *pfile, _cpp_file *file)
       p = strchr (fname, '/');
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
       {
-	char *p2 = strchr (fname, '\\');
+	const char *p2 = strchr (fname, '\\');
 	if (!p || (p > p2))
 	  p = p2;
       }
