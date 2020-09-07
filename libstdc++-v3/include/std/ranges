@@ -494,10 +494,12 @@ namespace ranges
 
 	using std::optional<_Tp>::operator=;
 
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3477. Simplify constraints for semiregular-box
 	__box&
 	operator=(const __box& __that)
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
-	requires (!assignable_from<_Tp&, const _Tp&>)
+	requires (!copyable<_Tp>)
 	{
 	  if ((bool)__that)
 	    this->emplace(*__that);
@@ -509,7 +511,7 @@ namespace ranges
 	__box&
 	operator=(__box&& __that)
 	noexcept(is_nothrow_move_constructible_v<_Tp>)
-	requires (!assignable_from<_Tp&, _Tp>)
+	requires (!movable<_Tp>)
 	{
 	  if ((bool)__that)
 	    this->emplace(std::move(*__that));
