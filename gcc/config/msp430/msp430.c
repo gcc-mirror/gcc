@@ -223,7 +223,7 @@ msp430_option_override (void)
 		  if (target_cpu == NULL)
 		    warning (0,
 			     "Unrecognized MCU name %qs, assuming that it is "
-			     "just a MSP430 with no hardware multiply.\n"
+			     "just a MSP430X with no hardware multiply.\n"
 			     "Use the %<-mcpu%> and %<-mhwmult%> options to "
 			     "set these explicitly.",
 			     target_mcu);
@@ -242,21 +242,14 @@ msp430_option_override (void)
 	      if (msp430_warn_mcu)
 		warning (0,
 			 "Unrecognized MCU name %qs, assuming that it just "
-			 "supports the MSP430 ISA.\nUse the %<-mcpu%> option "
+			 "supports the MSP430X ISA.\nUse the %<-mcpu%> option "
 			 "to set the ISA explicitly.",
 			 target_mcu);
-
-	      msp430x = false;
 	    }
 	  else if (msp430_warn_mcu)
 	    warning (0, "Unrecognized MCU name %qs.", target_mcu);
 	}
     }
-
-  /* The F5 series are all able to support the 430X ISA.  */
-  if (target_cpu == NULL && target_mcu == NULL
-      && msp430_hwmult_type == MSP430_HWMULT_F5SERIES)
-    msp430x = true;
 
   if (TARGET_LARGE && !msp430x)
     error ("%<-mlarge%> requires a 430X-compatible %<-mmcu=%>");
