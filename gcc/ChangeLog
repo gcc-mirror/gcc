@@ -1,3 +1,112 @@
+2020-09-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/96796
+	* lra-constraints.c (in_class_p): Add a default-false
+	allow_all_reload_class_changes_p parameter.  Do not treat
+	reload moves specially when the parameter is true.
+	(get_reload_reg): Try to narrow the class of an existing OP_OUT
+	reload if we're reloading a reload pseudo in a reload instruction.
+
+2020-09-07  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Revert
+	dead-code removal introduced by 09fa6acd8d9 + add a comment to
+	clarify.
+
+2020-09-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/rtl.texi (subreg): Fix documentation to state there is a known
+	number of undefined bits in regs and subregs of MODE_PARTIAL_INT modes.
+
+2020-09-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_option_override): Don't set the
+	ISA to 430 when the MCU is unrecognized.
+
+2020-09-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_libc_has_function): Report sincos
+	available from 10.9.
+
+2020-09-07  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.md (*adds_mul_imm_<mode>): Delete.
+	(*subs_mul_imm_<mode>): Delete.
+	(*adds_<optab><mode>_multp2): Delete.
+	(*subs_<optab><mode>_multp2): Delete.
+	(*add_mul_imm_<mode>): Delete.
+	(*add_<optab><ALLX:mode>_mult_<GPI:mode>): Delete.
+	(*add_<optab><SHORT:mode>_mult_si_uxtw): Delete.
+	(*add_<optab><mode>_multp2): Delete.
+	(*add_<optab>si_multp2_uxtw): Delete.
+	(*add_uxt<mode>_multp2): Delete.
+	(*add_uxtsi_multp2_uxtw): Delete.
+	(*sub_mul_imm_<mode>): Delete.
+	(*sub_mul_imm_si_uxtw): Delete.
+	(*sub_<optab><mode>_multp2): Delete.
+	(*sub_<optab>si_multp2_uxtw): Delete.
+	(*sub_uxt<mode>_multp2): Delete.
+	(*sub_uxtsi_multp2_uxtw): Delete.
+	(*neg_mul_imm_<mode>2): Delete.
+	(*neg_mul_imm_si2_uxtw): Delete.
+	* config/aarch64/predicates.md (aarch64_pwr_imm3): Delete.
+	(aarch64_pwr_2_si): Delete.
+	(aarch64_pwr_2_di): Delete.
+
+2020-09-07  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.md
+	(*adds_<optab><ALLX:mode>_<GPI:mode>): Ensure extended operand
+	agrees with width of extension specifier.
+	(*subs_<optab><ALLX:mode>_<GPI:mode>): Likewise.
+	(*adds_<optab><ALLX:mode>_shift_<GPI:mode>): Likewise.
+	(*subs_<optab><ALLX:mode>_shift_<GPI:mode>): Likewise.
+	(*add_<optab><ALLX:mode>_<GPI:mode>): Likewise.
+	(*add_<optab><ALLX:mode>_shft_<GPI:mode>): Likewise.
+	(*add_uxt<mode>_shift2): Likewise.
+	(*sub_<optab><ALLX:mode>_<GPI:mode>): Likewise.
+	(*sub_<optab><ALLX:mode>_shft_<GPI:mode>): Likewise.
+	(*sub_uxt<mode>_shift2): Likewise.
+	(*cmp_swp_<optab><ALLX:mode>_reg<GPI:mode>): Likewise.
+	(*cmp_swp_<optab><ALLX:mode>_shft_<GPI:mode>): Likewise.
+
+2020-09-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp_instance): Dump
+	stmts we start SLP analysis from, failure and splitting.
+	(vect_schedule_slp): Dump SLP graph entry and root stmt
+	we are about to emit code for.
+
+2020-09-07  Martin Storsjö  <martin@martin.st>
+
+	* dwarf2out.c (file_name_acquire): Make a strchr return value
+	pointer to const.
+
+2020-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94235
+	* lto-streamer-out.c (output_cfg): Also stream goto_locus for edges.
+	Use bp_pack_var_len_unsigned instead of streamer_write_uhwi to stream
+	e->dest->index and e->flags.
+	(output_function): Call output_cfg before output_ssa_name, rather than
+	after streaming all bbs.
+	* lto-streamer-in.c (input_cfg): Stream in goto_locus for edges.
+	Use bp_unpack_var_len_unsigned instead of streamer_read_uhwi to stream
+	in dest_index and edge_flags.
+
+2020-09-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_live_operation): Adjust.
+	* tree-vect-loop.c (vectorizable_live_operation): Vectorize
+	live lanes out of basic-block vectorization nodes.
+	* tree-vect-slp.c (vect_bb_slp_mark_live_stmts): New function.
+	(vect_slp_analyze_operations): Analyze live lanes and their
+	vectorization possibility after the whole SLP graph is final.
+	(vect_bb_slp_scalar_cost): Adjust for vectorized live lanes.
+	* tree-vect-stmts.c (can_vectorize_live_stmts): Adjust.
+	(vect_transform_stmt): Call can_vectorize_live_stmts also for
+	basic-block vectorization.
+
 2020-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/96698

@@ -1,3 +1,8 @@
+2020-09-07  Martin Storsjö  <martin@martin.st>
+
+	* files.c (remap_filename): Make a strchr return value pointer
+	to const.
+
 2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/96202
