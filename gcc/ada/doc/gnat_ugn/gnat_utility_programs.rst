@@ -1920,12 +1920,13 @@ building specialized scripts.
 
 
    :switch:`--comments-fill`
-     Fill comment blocks.
+     Fill comment blocks. This is the default.
+     Use :switch:`--no-comments-fill` to turn off filling.
 
 
    :switch:`--comments-special`
      Keep unchanged special form comments.
-     This is the default.
+     The default is :switch:`--no-comments-special`.
 
 
    .. index:: --comments-only (gnatpp)
