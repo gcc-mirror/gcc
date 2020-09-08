@@ -24,6 +24,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "../common/threadasm.S"
 
+/* NB: Generate the CET marker for -fcf-protection.  */
+#ifdef __CET__
+# include <cet.h>
+#endif
+
 #if defined(__i386__) && !defined(__CET__)
 
     .text
