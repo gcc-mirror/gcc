@@ -93,6 +93,8 @@ target_triplet = @target@
 subdir = testsuite
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/cet.m4 \
+	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -149,6 +151,7 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
+CET_FLAGS = @CET_FLAGS@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 CHECKING_DFLAGS = @CHECKING_DFLAGS@
@@ -157,6 +160,7 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DCFG_ARM_EABI_UNWINDER = @DCFG_ARM_EABI_UNWINDER@
 DCFG_DLPI_TLS_MODID = @DCFG_DLPI_TLS_MODID@
+DCFG_ENABLE_CET = @DCFG_ENABLE_CET@
 DCFG_HAVE_64BIT_ATOMICS = @DCFG_HAVE_64BIT_ATOMICS@
 DCFG_HAVE_ATOMIC_BUILTINS = @DCFG_HAVE_ATOMIC_BUILTINS@
 DCFG_HAVE_LIBATOMIC = @DCFG_HAVE_LIBATOMIC@

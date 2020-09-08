@@ -1,3 +1,24 @@
+2020-09-07  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-intrinsic.c (build_round_expr): Use temporary with
+	appropriate kind for conversion before rounding to nearest
+	integer when the result precision is 128 bits.
+
+2020-09-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96896
+	* resolve.c (get_temp_from_expr): Also reset proc_pointer +
+	use_assoc attribute.
+	(resolve_ptr_fcn_assign): Use information from the LHS.
+
+2020-09-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-types.c (gfc_get_derived_type): Fix argument types.
+
+2020-09-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* resolve.c (resolve_select_type): Provide a formal arg list.
+
 2020-09-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-types.c (gfc_get_ppc_type): Add comment.

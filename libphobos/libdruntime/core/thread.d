@@ -3586,35 +3586,45 @@ private
     }
     else version (X86)
     {
-        version = AsmExternal;
+        import gcc.config;
 
-        version (MinGW)
+        version = AlignFiberStackTo16Byte;
+
+        static if (!GNU_Enable_CET)
         {
-            version = GNU_AsmX86_Windows;
-            version = AlignFiberStackTo16Byte;
-        }
-        else version (Posix)
-        {
-            version = AsmX86_Posix;
-            version (OSX)
-                version = AlignFiberStackTo16Byte;
+            version = AsmExternal;
+
+            version (MinGW)
+            {
+                version = GNU_AsmX86_Windows;
+            }
+            else version (Posix)
+            {
+                version = AsmX86_Posix;
+            }
         }
     }
     else version (X86_64)
     {
-        version (D_X32)
-        {
-            // let X32 be handled by ucontext swapcontext
-        }
-        else
-        {
-            version = AsmExternal;
-            version = AlignFiberStackTo16Byte;
+        import gcc.config;
 
-            version (MinGW)
-                version = GNU_AsmX86_64_Windows;
-            else version (Posix)
-                version = AsmX86_64_Posix;
+        version = AlignFiberStackTo16Byte;
+
+        static if (!GNU_Enable_CET)
+        {
+            version (D_X32)
+            {
+                // let X32 be handled by ucontext swapcontext
+            }
+            else
+            {
+                version = AsmExternal;
+
+                version (MinGW)
+                    version = GNU_AsmX86_64_Windows;
+                else version (Posix)
+                    version = AsmX86_64_Posix;
+            }
         }
     }
     else version (PPC)
