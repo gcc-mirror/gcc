@@ -1,3 +1,15 @@
+2020-09-08  Nathan Sidwell  <nathan@acm.org>
+
+	Change cxx_int_tree_map to cxx_decl_tree_map.
+	gcc/cp/
+	* cp-tree.h (struct cxx_int_tree_map): Rename to ...
+	(struct cxx_decl_tree_map): ... here.
+	* cp-gimplify.c (cxx_int_tree_map_hasher): Rename to ...
+	(cxx_decl_tree_map_hasher): ... here.  Update member fns
+	(cp_genericize_r): Adjust extern_decl_map lookup.
+	* name-lookup.c (set_local_extern_decl_linkage): Adjust
+	extern_decl_map insertion.
+
 2020-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	FLAG DAY! Mapper reponse format change in LibCody

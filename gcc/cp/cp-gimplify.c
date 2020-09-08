@@ -962,20 +962,20 @@ is_invisiref_parm (const_tree t)
 	  && DECL_BY_REFERENCE (t));
 }
 
-/* Return true if the uid in both int tree maps are equal.  */
+/* Return true if the decls in both decl tree maps are equal.  */
 
 bool
-cxx_int_tree_map_hasher::equal (cxx_int_tree_map *a, cxx_int_tree_map *b)
+cxx_decl_tree_map_hasher::equal (cxx_decl_tree_map *a, cxx_decl_tree_map *b)
 {
-  return (a->uid == b->uid);
+  return (a->decl == b->decl);
 }
 
-/* Hash a UID in a cxx_int_tree_map.  */
+/* Hash a UID in a cxx_decl_tree_map.  */
 
 unsigned int
-cxx_int_tree_map_hasher::hash (cxx_int_tree_map *item)
+cxx_decl_tree_map_hasher::hash (cxx_decl_tree_map *item)
 {
-  return item->uid;
+  return DECL_UID (item->decl);
 }
 
 /* A stable comparison routine for use with splay trees and DECLs.  */
@@ -1266,10 +1266,9 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       && VAR_OR_FUNCTION_DECL_P (stmt)
       && DECL_EXTERNAL (stmt))
     {
-      struct cxx_int_tree_map *h, in;
-      in.uid = DECL_UID (stmt);
-      h = cp_function_chain->extern_decl_map->find_with_hash (&in, in.uid);
-      if (h)
+      cxx_decl_tree_map in;
+      in.decl = stmt;
+      if (auto *h = cp_function_chain->extern_decl_map->find (&in))
 	{
 	  *stmt_p = h->to;
 	  TREE_USED (h->to) |= TREE_USED (stmt);

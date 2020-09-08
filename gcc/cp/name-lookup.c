@@ -3522,21 +3522,20 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 	       args are not shared.  Add the decl into a hash table to
 	       make sure only the previous decl in this case is seen
 	       by the middle end.  */
-	    struct cxx_int_tree_map *h;
-
 	    /* We inherit the outer decl's linkage.  But we're a
 	       different decl.  */
 	    TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
 
 	    if (cp_function_chain->extern_decl_map == NULL)
 	      cp_function_chain->extern_decl_map
-		= hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
+		= hash_table<cxx_decl_tree_map_hasher>::create_ggc (20);
 
-	    h = ggc_alloc<cxx_int_tree_map> ();
-	    h->uid = DECL_UID (decl);
+	    auto *h = ggc_alloc<cxx_decl_tree_map> ();
+	    h->decl = decl;
 	    h->to = *iter;
-	    cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-	      ->find_slot (h, INSERT);
+	    auto **loc
+	      = cp_function_chain->extern_decl_map->find_slot (h, INSERT);
+	    gcc_checking_assert (!*loc);
 	    *loc = h;
 	    break;
 	  }

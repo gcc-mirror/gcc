@@ -2005,17 +2005,18 @@ public:
 
 #define cp_noexcept_operand scope_chain->noexcept_operand
 
-/* A list of private types mentioned, for deferred access checking.  */
+/* Map a _DECL to a tree.  Use DECL_UID for hash.  Both trees must be
+   reachable for GC via some other path.  */
 
-struct GTY((for_user)) cxx_int_tree_map {
-  unsigned int uid;
+struct GTY((for_user)) cxx_decl_tree_map {
+  tree decl;
   tree to;
 };
 
-struct cxx_int_tree_map_hasher : ggc_ptr_hash<cxx_int_tree_map>
+struct cxx_decl_tree_map_hasher : ggc_ptr_hash<cxx_decl_tree_map>
 {
-  static hashval_t hash (cxx_int_tree_map *);
-  static bool equal (cxx_int_tree_map *, cxx_int_tree_map *);
+  static hashval_t hash (cxx_decl_tree_map *);
+  static bool equal (cxx_decl_tree_map *, cxx_decl_tree_map *);
 };
 
 struct named_label_entry; /* Defined in decl.c.  */
@@ -2070,7 +2071,10 @@ struct GTY(()) language_function {
   /* Tracking possibly infinite loops.  This is a vec<tree> only because
      vec<bool> doesn't work with gtype.  */
   vec<tree, va_gc> *infinite_loops;
-  hash_table<cxx_int_tree_map_hasher> *extern_decl_map;
+
+  /* Map of block-scope extern decls to the namespace-scope decl they
+     match.  Usually empty.  */
+  hash_table<cxx_decl_tree_map_hasher> *extern_decl_map;
 };
 
 /* The current C++-specific per-function global variables.  */
