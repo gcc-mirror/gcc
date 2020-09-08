@@ -1,3 +1,8 @@
+2020-09-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96574
+	* gcc.target/i386/pr92865-1.c: Adjust testcase.
+
 2020-09-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
