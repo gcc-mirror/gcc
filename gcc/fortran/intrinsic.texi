@@ -6154,7 +6154,8 @@ END PROGRAM
 @item @emph{Description}:
 Determines the location of the element in the array with the value
 given in the @var{VALUE} argument, or, if the @var{DIM} argument is
-supplied, determines the locations of the maximum element along each
+supplied, determines the locations of the elements equal to the
+@var{VALUE} argument element along each
 row of the array in the @var{DIM} direction.  If @var{MASK} is
 present, only the elements for which @var{MASK} is @code{.TRUE.} are
 considered.  If more than one element in the array has the value
