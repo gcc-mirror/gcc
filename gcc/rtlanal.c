@@ -1619,6 +1619,10 @@ set_noop_p (const_rtx set)
 	return 0;
       src = SUBREG_REG (src);
       dst = SUBREG_REG (dst);
+      if (GET_MODE (src) != GET_MODE (dst))
+	/* It is hard to tell whether subregs refer to the same bits, so act
+	   conservatively and return 0.  */
+	return 0;
     }
 
   /* It is a NOOP if destination overlaps with selected src vector
