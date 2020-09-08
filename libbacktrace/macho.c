@@ -903,6 +903,7 @@ macho_add_dsym (struct backtrace_state *state, const char *filename,
   dsymsuffixdirlen = strlen (dsymsuffixdir);
 
   dsymlen = (dirnamelen
+	     + 1
 	     + basenamelen
 	     + dsymsuffixdirlen
 	     + basenamelen
@@ -925,7 +926,7 @@ macho_add_dsym (struct backtrace_state *state, const char *filename,
 
   if (diralc != NULL)
     {
-      backtrace_free (state, diralc, dirnamelen, error_callback, data);
+      backtrace_free (state, diralc, dirnamelen + 1, error_callback, data);
       diralc = NULL;
     }
 
