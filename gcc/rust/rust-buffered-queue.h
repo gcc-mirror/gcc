@@ -2,10 +2,9 @@
 #define RUST_BUFFERED_QUEUE_H
 
 #include <vector>
+#include <utility>
 
-#include "config.h"
-#include "system.h"
-// order: config, system
+#include "rust-system.h"
 
 namespace Rust {
 /* Buffered queue implementation. Items are of type T, queue source is of type
@@ -32,7 +31,7 @@ public:
   T peek (int n)
   {
     // n should not be behind
-    gcc_assert (n >= 0);
+    rust_assert (n >= 0);
 
     int num_queued_items = end - start;
     int num_items_required = n + 1;
@@ -50,20 +49,39 @@ public:
 	    int new_size = (buffer.size () + num_items_to_read);
 	    new_size += (new_size >> 1);
 
-	    // create new queue buffer with new size
-	    std::vector<T> new_queue (new_size);
-	    std::copy (buffer.begin () + start, buffer.begin () + end,
-		       new_queue.begin ());
+	    // old method:
+	    /*
+		  // create new queue buffer with new size
+		  std::vector<T> new_queue (new_size);
+		  std::copy (buffer.begin () + start, buffer.begin () + end,
+			     new_queue.begin ());
+		  start = 0;
+		  end = num_queued_items;
+		  // TODO: would move be better here? optimisation for move with
+		  // shared pointer?
+
+		  // swap member buffer and new queue buffer
+		  std::swap (buffer, new_queue);
+	    */
+
+	    // TODO: determine overhead of this approach vs copy. Should be lower.
+	    std::vector<T> new_queue;
+	    new_queue.reserve (new_size);
+	    new_queue.insert (new_queue.begin (),
+			      std::make_move_iterator (buffer.begin () + start),
+			      std::make_move_iterator (buffer.begin () + end));
 	    start = 0;
 	    end = num_queued_items;
-	    // TODO: would move be better here? optimisation for move with
-	    // shared pointer?
+      // fill up rest of vector with junk so that indexing can work
+      new_queue.insert (new_queue.begin () + end, new_size - new_queue.size(), T ());
 
-	    // swap member buffer and new queue buffer
-	    std::swap (buffer, new_queue);
+	    buffer = std::move (new_queue);
+	    /* this should be best method - std::move(range) would have
+	     * allocation problems; initial construction would require
+	     * reallocation upon resizing */
 
 	    // validate that buffer is large enough now
-	    gcc_assert (end + num_queued_items < (int) buffer.size ());
+	    rust_assert (end + num_queued_items < (int) buffer.size ());
 	  }
 
 	/* iterate through buffer and invoke operator () on source on values
@@ -75,11 +93,11 @@ public:
 	end += num_items_to_read;
       }
 
-    gcc_assert (0 <= start);
-    gcc_assert (start <= end);
-    gcc_assert (end <= (int) buffer.size ());
+    rust_assert (0 <= start);
+    rust_assert (start <= end);
+    rust_assert (end <= (int) buffer.size ());
 
-    gcc_assert (start + n < end);
+    rust_assert (start + n < end);
 
     // return value at start + n in buffer
     return buffer[start + n];
@@ -96,14 +114,14 @@ public:
 
     // Clear queue values from start to n (inclusive).
     for (int i = 0; i < (n + 1); i++)
-	buffer[start + i] = T ();
+      buffer[start + i] = T ();
 
     // Move start forward by n + 1.
     start += (n + 1);
 
     // Ensure start is not impossible somehow
-    gcc_assert (0 <= start);
-    gcc_assert (start <= end);
+    rust_assert (0 <= start);
+    rust_assert (start <= end);
 
     // Compact buffer if empty
     if (start == end)
@@ -125,12 +143,12 @@ public:
   }
 
   // Insert at arbitrary position (attempt)
-  void insert (int index, T elem_to_insert) 
+  void insert (int index, T elem_to_insert)
   {
     // TODO: test as this may not work properly
 
     // n should not be behind
-    gcc_assert (index >= 0);
+    rust_assert (index >= 0);
 
     // call peek to ensure that the items behind this (at least) are in queue
     if (index >= 1)

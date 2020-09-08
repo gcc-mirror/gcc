@@ -97,9 +97,10 @@ is_whitespace (char character)
 
 // this compiles fine, so any intellisense saying otherwise is fake news
 Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap)
-  : input (std::move (file_input)), current_line (1), current_column (1), line_map (linemap),
+  : input (std::move (file_input)), current_line (1), current_column (1),
+    line_map (linemap),
     /*input_source (input.get_raw ()), */
-    input_queue {InputSource (input.get_raw ())},
+    input_queue{InputSource (input.get_raw ())},
     /*token_source (this),*/
     token_queue (TokenSource (this))
 {
@@ -160,13 +161,14 @@ Lexer::replace_current_token (TokenPtr replacement)
 {
   token_queue.replace_current_value (replacement);
 
-  fprintf(stderr, "called 'replace_current_token' - this is deprecated");
+  fprintf (stderr, "called 'replace_current_token' - this is deprecated");
 }
 
 /* shitty anonymous namespace that can only be accessed inside the compilation
- * unit - used for classify_keyword Binary search in sorted array of keywords
+ * unit - used for classify_keyword binary search in sorted array of keywords
  * created with x-macros. */
 namespace {
+// TODO: make constexpr when update to c++20
 const std::string keyword_index[] = {
 #define RS_TOKEN(x, y)
 #define RS_TOKEN_KEYWORD(name, keyword) keyword,
@@ -175,7 +177,7 @@ const std::string keyword_index[] = {
 #undef RS_TOKEN
 };
 
-TokenId keyword_keys[] = {
+constexpr TokenId keyword_keys[] = {
 #define RS_TOKEN(x, y)
 #define RS_TOKEN_KEYWORD(name, keyword) name,
   RS_TOKEN_LIST
@@ -183,7 +185,7 @@ TokenId keyword_keys[] = {
 #undef RS_TOKEN
 };
 
-const int num_keywords = sizeof (keyword_index) / sizeof (*keyword_index);
+constexpr int num_keywords = sizeof (keyword_index) / sizeof (*keyword_index);
 } // namespace
 
 /* Determines whether the string passed in is a keyword or not. If it is, it
@@ -1988,7 +1990,7 @@ Lexer::parse_char_or_lifetime (Location loc)
 	{
 	  rust_error_at (get_current_location (),
 			 "expected ' after character constant in char literal");
-    return nullptr;
+	  return nullptr;
 	}
     }
 }
@@ -2296,10 +2298,12 @@ Lexer::test_peek_codepoint_input (int n)
 	  }*/
 }
 
-void 
-Lexer::split_current_token (TokenId new_left, TokenId new_right) {
-  // TODO: assert that this TokenId is a "simple token" like punctuation and not like "IDENTIFIER"?
-  Location current_loc = peek_token ()->get_locus();
+void
+Lexer::split_current_token (TokenId new_left, TokenId new_right)
+{
+  // TODO: assert that this TokenId is a "simple token" like punctuation and not
+  // like "IDENTIFIER"?
+  Location current_loc = peek_token ()->get_locus ();
   TokenPtr new_left_tok = Token::make (new_left, current_loc);
   TokenPtr new_right_tok = Token::make (new_right, current_loc + 1);
 

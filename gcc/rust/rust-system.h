@@ -41,91 +41,14 @@
 #include <deque>
 #include <functional>
 
-/* TODO: strictly speaking, as AST move semantics make frontend C++11-and-up
- * only, unordered map should always be definable (i.e. don't have to resort to
- * tr1 like in C++03), so don't need to have this macro switch - just include
- * <unordered_map> and <unordered_set>. */
-#if defined(HAVE_UNORDERED_MAP)
-
+// Rust frontend requires C++11 minimum, so will have unordered_map and set
 #include <unordered_map>
 #include <unordered_set>
 
-#define Unordered_map(KEYTYPE, VALTYPE) std::unordered_map<KEYTYPE, VALTYPE>
-
-#define Unordered_map_hash(KEYTYPE, VALTYPE, HASHFN, EQFN)                     \
-  std::unordered_map<KEYTYPE, VALTYPE, HASHFN, EQFN>
-
-#define Unordered_set(KEYTYPE) std::unordered_set<KEYTYPE>
-
-#define Unordered_set_hash(KEYTYPE, HASHFN, EQFN)                              \
-  std::unordered_set<KEYTYPE, HASHFN, EQFN>
-
-#elif defined(HAVE_TR1_UNORDERED_MAP)
-
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
-
-#define Unordered_map(KEYTYPE, VALTYPE)                                        \
-  std::tr1::unordered_map<KEYTYPE, VALTYPE>
-
-#define Unordered_map_hash(KEYTYPE, VALTYPE, HASHFN, EQFN)                     \
-  std::tr1::unordered_map<KEYTYPE, VALTYPE, HASHFN, EQFN>
-
-#define Unordered_set(KEYTYPE) std::tr1::unordered_set<KEYTYPE>
-
-#define Unordered_set_hash(KEYTYPE, HASHFN, EQFN)                              \
-  std::tr1::unordered_set<KEYTYPE, HASHFN, EQFN>
-
-#elif defined(HAVE_EXT_HASH_MAP)
-
-#include <ext/hash_map>
-#include <ext/hash_set>
-
-#define Unordered_map(KEYTYPE, VALTYPE) __gnu_cxx::hash_map<KEYTYPE, VALTYPE>
-
-#define Unordered_map_hash(KEYTYPE, VALTYPE, HASHFN, EQFN)                     \
-  __gnu_cxx::hash_map<KEYTYPE, VALTYPE, HASHFN, EQFN>
-
-#define Unordered_set(KEYTYPE) __gnu_cxx::hash_set<KEYTYPE>
-
-#define Unordered_set_hash(KEYTYPE, HASHFN, EQFN)                              \
-  __gnu_cxx::hash_set<KEYTYPE, HASHFN, EQFN>
-
-// Provide hash functions for strings and pointers.
-
-namespace __gnu_cxx {
-
-template <> struct hash<std::string>
-{
-  size_t operator() (std::string s) const
-  {
-    return __stl_hash_string (s.c_str ());
-  }
-};
-
-template <typename T> struct hash<T *>
-{
-  size_t operator() (T *p) const { return reinterpret_cast<size_t> (p); }
-};
-
-} // namespace __gnu_cxx
-
-#else
-
-#define Unordered_map(KEYTYPE, VALTYPE) std::map<KEYTYPE, VALTYPE>
-
-#define Unordered_set(KEYTYPE) std::set<KEYTYPE>
-
-// We could make this work by writing an adapter class which
-// implemented operator< in terms of the hash function.
-#error "requires hash table type"
-
-#endif
-
-// We don't really need iostream, but some versions of gmp.h include
-// it when compiled with C++, which means that we need to include it
-// before the macro magic of safe-ctype.h, which is included by
-// system.h.
+/* We don't really need iostream, but some versions of gmp.h include
+ * it when compiled with C++, which means that we need to include it
+ * before the macro magic of safe-ctype.h, which is included by
+ * system.h. */
 #include <iostream>
 
 #include "system.h"
