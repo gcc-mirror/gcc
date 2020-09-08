@@ -2091,7 +2091,7 @@ msp430_output_aligned_decl_common (FILE *		  stream,
 static void
 msp430_file_end (void)
 {
-#ifdef HAVE_AS_GNU_ATTRIBUTE
+#ifdef HAVE_AS_MSPABI_ATTRIBUTE
   /* Enum for tag names.  */
   enum
     {
@@ -2130,7 +2130,7 @@ msp430_file_end (void)
 	   OFBA_MSPABI_Tag_Data_Model,
 	   TARGET_LARGE ? OFBA_MSPABI_Val_Model_Large
 	   : OFBA_MSPABI_Val_Model_Small);
-#ifdef HAVE_AS_MSPABI_ATTRIBUTE
+#ifdef HAVE_AS_GNU_ATTRIBUTE
   /* Emit .gnu_attribute directive for Tag_GNU_MSP430_Data_Region.  */
   fprintf (asm_out_file, "\t%s %d, %d\n", gnu_attr, Tag_GNU_MSP430_Data_Region,
 	   msp430_data_region == MSP430_REGION_LOWER

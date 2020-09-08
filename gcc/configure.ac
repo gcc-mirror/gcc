@@ -5041,7 +5041,7 @@ pointers into PC-relative form.])
 	  [Define if your assembler supports .gnu_attribute.])])
     gcc_GAS_CHECK_FEATURE([.mspabi_attribute support],
       gcc_cv_as_msp430_mspabi_attribute, [2,33,50],,
-      [.mspabi_attribute 4,1],,
+      [.mspabi_attribute 4,2],,
       [AC_DEFINE(HAVE_AS_MSPABI_ATTRIBUTE, 1,
 	  [Define if your assembler supports .mspabi_attribute.])])
     if test x$enable_newlib_nano_formatted_io = xyes; then
