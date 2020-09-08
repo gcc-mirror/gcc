@@ -55,7 +55,7 @@ struct backtrace_simple_data
   int ret;
 };
 
-/* Unwind library callback routine.  This is passd to
+/* Unwind library callback routine.  This is passed to
    _Unwind_Backtrace.  */
 
 static _Unwind_Reason_Code
