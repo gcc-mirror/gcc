@@ -99,7 +99,7 @@ D Joined Separate
 ; Documented in C
 
 Waddress
-D Warning Var(warn_address)
+D Warning Var(warn_address) LangEnabledBy(D, Wextra)
 ; Documented in C
 
 Wall
@@ -119,7 +119,7 @@ D
 ; Documented in C
 
 Wcast-result
-D Warning Var(warn_cast_result)
+D Warning Var(warn_cast_result) LangEnabledBy(D, Wextra)
 Warn about casts that will produce a null result.
 
 Wdeprecated
@@ -143,7 +143,7 @@ D
 ; Documented in C
 
 Wunknown-pragmas
-D LangEnabledBy(D, Wall)
+D Var(warn_unknown_pragmas) LangEnabledBy(D, Wextra)
 ; Documented in C
 
 Wvarargs
