@@ -3091,7 +3091,7 @@ package body Sem_Aggr is
                         Base_Type (Index_Type)
                      then
                         Error_Msg_NE
-                          ("choice does mat match index type of",
+                          ("choice does not match index type of &",
                            Choice, Typ);
                      end if;
                   else
