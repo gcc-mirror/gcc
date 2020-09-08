@@ -449,10 +449,10 @@ package GNAT.Sockets is
 
    type Selector_Status is (Completed, Expired, Aborted);
    --  Completion status of a selector operation, indicated as follows:
-   --    Complete: one of the expected events occurred
-   --    Expired:  no event occurred before the expiration of the timeout
-   --    Aborted:  an external action cancelled the wait operation before
-   --              any event occurred.
+   --    Completed: one of the expected events occurred
+   --    Expired:   no event occurred before the expiration of the timeout
+   --    Aborted:   an external action cancelled the wait operation before
+   --               any event occurred.
 
    Socket_Error : exception;
    --  There is only one exception in this package to deal with an error during
