@@ -734,33 +734,24 @@ public:
 	   a check for isVarDeclaration() in DeclarationExp codegen.  */
 	declare_local_var (d);
 
-	if (d->_init)
+	if (d->_init && !d->_init->isVoidInitializer ())
 	  {
 	    tree decl = get_symbol_decl (d);
 
-	    if (!d->_init->isVoidInitializer ())
-	      {
-		ExpInitializer *vinit = d->_init->isExpInitializer ();
-		Expression *ie = initializerToExpression (vinit);
-		tree exp = build_expr (ie);
+	    ExpInitializer *vinit = d->_init->isExpInitializer ();
+	    Expression *ie = initializerToExpression (vinit);
+	    tree exp = build_expr (ie);
 
-		/* Maybe put variable on list of things needing destruction.  */
-		if (d->needsScopeDtor ())
-		  {
-		    vec_safe_push (d_function_chain->vars_in_scope, decl);
-		    /* Force a TARGET_EXPR to add the corresponding cleanup.  */
-		    exp = force_target_expr (compound_expr (exp, decl));
-		    TARGET_EXPR_CLEANUP (exp) = build_expr (d->edtor);
-		  }
-
-		add_stmt (exp);
-	      }
-	    else if (d->size (d->loc) != 0)
+	    /* Maybe put variable on list of things needing destruction.  */
+	    if (d->needsScopeDtor ())
 	      {
-		/* Zero-length arrays do not have an initializer.  */
-		warning (OPT_Wuninitialized, "uninitialized variable '%s'",
-			 d->ident ? d->ident->toChars () : "(no name)");
+		vec_safe_push (d_function_chain->vars_in_scope, decl);
+		/* Force a TARGET_EXPR to add the corresponding cleanup.  */
+		exp = force_target_expr (compound_expr (exp, decl));
+		TARGET_EXPR_CLEANUP (exp) = build_expr (d->edtor);
 	      }
+
+	    add_stmt (exp);
 	  }
       }
 
