@@ -27,7 +27,7 @@
 #include "opts.h"
 #include "flags.h"
 
-/* Check for generic -mcpu= and -mmcu= names here.  If found then we
+/* Check for generic -mmcu= names here.  If found then we
    convert to a baseline cpu name.  Otherwise we allow the option to
    be passed on to the backend where it can be checked more fully.  */
 
@@ -39,26 +39,6 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 {
   switch (decoded->opt_index)
     {
-    case OPT_mcpu_:
-      if (strcasecmp (decoded->arg, "msp430x") == 0
-	  || strcasecmp (decoded->arg, "msp430xv2") == 0
-	  || strcasecmp (decoded->arg, "430x") == 0
-	  || strcasecmp (decoded->arg, "430xv2") == 0)
-	{
-	  target_cpu = "msp430x";
-	}
-      else if (strcasecmp (decoded->arg, "msp430") == 0
-	       || strcasecmp (decoded->arg, "430") == 0)
-	{
-	  target_cpu = "msp430";
-	}
-      else
-	{
-	  error ("unrecognized argument of %<-mcpu%>: %s", decoded->arg);
-	  return false;
-	}
-      break;
-
     case OPT_mmcu_:
       /* For backwards compatibility we recognise two generic MCU
 	 430X names.  However we want to be able to generate special C
@@ -66,13 +46,13 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	 to NULL.  */
       if (strcasecmp (decoded->arg, "msp430") == 0)
 	{
-	  target_cpu = "msp430";
+	  target_cpu = MSP430_CPU_MSP430;
 	  target_mcu = NULL;
 	}
       else if (strcasecmp (decoded->arg, "msp430x") == 0
 	       || strcasecmp (decoded->arg, "msp430xv2") == 0)
 	{
-	  target_cpu = "msp430x";
+	  target_cpu = MSP430_CPU_MSP430X;
 	  target_mcu = NULL;
 	}
       break;

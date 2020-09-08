@@ -160,15 +160,7 @@ msp430_option_override (void)
 
   init_machine_status = msp430_init_machine_status;
 
-  if (target_cpu)
-    {
-      /* gcc/common/config/msp430-common.c will have
-	 already canonicalised the string in target_cpu.  */
-      if (strcasecmp (target_cpu, "msp430x") == 0)
-	msp430x = true;
-      else /* target_cpu == "msp430" - already handled by the front end.  */
-	msp430x = false;
-    }
+  msp430x = target_cpu >= MSP430_CPU_MSP430X_DEFAULT;
 
   if (target_mcu)
     {
@@ -180,7 +172,7 @@ msp430_option_override (void)
 
 	  if (msp430_warn_mcu)
 	    {
-	      if (target_cpu && msp430x != xisa)
+	      if (target_cpu != MSP430_CPU_MSP430X_DEFAULT && msp430x != xisa)
 		warning (0, "MCU %qs supports %s ISA but %<-mcpu%> option "
 			 "is set to %s",
 			 target_mcu, xisa ? "430X" : "430",
@@ -212,7 +204,10 @@ msp430_option_override (void)
 			 "but %<-mhwmult%> is set to f5series",
 			 target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
 	    }
-	  msp430x = xisa;
+	  /* Only override the default setting with the extracted ISA value if
+	     the user has not passed -mcpu=.  */
+	  if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
+	    msp430x = xisa;
 	}
       else
 	{
@@ -220,7 +215,7 @@ msp430_option_override (void)
 	    {
 	      if (msp430_warn_mcu)
 		{
-		  if (target_cpu == NULL)
+		  if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
 		    warning (0,
 			     "Unrecognized MCU name %qs, assuming that it is "
 			     "just a MSP430X with no hardware multiply.\n"
@@ -237,7 +232,7 @@ msp430_option_override (void)
 
 	      msp430_hwmult_type = MSP430_HWMULT_NONE;
 	    }
-	  else if (target_cpu == NULL)
+	  else if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
 	    {
 	      if (msp430_warn_mcu)
 		warning (0,

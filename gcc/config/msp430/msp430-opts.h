@@ -29,6 +29,18 @@ enum msp430_hwmult_types
   MSP430_HWMULT_F5SERIES
 };
 
+enum msp430_cpu_types
+{
+  MSP430_CPU_MSP430,
+  MSP430_CPU_430,
+  MSP430_CPU_MSP430X_DEFAULT, /* The default setting, which will be overriden
+				 by any other -mcpu= value.  */
+  MSP430_CPU_MSP430X,
+  MSP430_CPU_430X,
+  MSP430_CPU_MSP430XV2,
+  MSP430_CPU_430XV2
+};
+
 enum msp430_regions
 {
   MSP430_REGION_ANY,
