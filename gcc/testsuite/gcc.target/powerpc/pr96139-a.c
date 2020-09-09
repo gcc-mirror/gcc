@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -m32" } */
+/* { dg-options "-O2 -Wall -m32 -mvsx" } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 
 #include <stdio.h>
 #include <altivec.h>
