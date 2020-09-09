@@ -9855,7 +9855,7 @@ vectorizable_condition (vec_info *vinfo,
 	return false;
 
       /* FORNOW: only supported as part of a reduction.  */
-      if (STMT_VINFO_LIVE_P (stmt_info))
+      if (loop_vinfo && STMT_VINFO_LIVE_P (stmt_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10328,7 +10328,7 @@ vectorizable_comparison (vec_info *vinfo,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
     return false;
 
-  if (STMT_VINFO_LIVE_P (stmt_info))
+  if (loop_vinfo && STMT_VINFO_LIVE_P (stmt_info))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
