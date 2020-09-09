@@ -9232,7 +9232,9 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	    ? CLASS_DATA (code->expr2)->ts.u.derived : code->expr2->ts.u.derived;
 	}
 
-      if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
+      if (code->expr2->rank
+	  && code->expr1->ts.type == BT_CLASS
+	  && CLASS_DATA (code->expr1)->as)
 	CLASS_DATA (code->expr1)->as->rank = code->expr2->rank;
 
       /* F2008: C803 The selector expression must not be coindexed.  */
@@ -11685,6 +11687,8 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      omp_workshare_flag = 1;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
 	      break;
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:

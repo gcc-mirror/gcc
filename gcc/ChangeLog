@@ -1,3 +1,84 @@
+2020-09-04  Carl Love  <cel@us.ibm.com>
+
+	PR target/85830
+	* config/rs6000/altivec.h (vec_popcntb, vec_popcnth, vec_popcntw,
+	vec_popcntd): Remove defines.
+
+2020-09-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/96820
+	* tree-sra.c (create_access): Disqualify candidates with accesses
+	beyond the end of the original aggregate.
+	(maybe_add_sra_candidate): Check that candidate type size fits
+	signed uhwi for the sake of consistency.
+
+2020-09-04  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2020-09-04  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.h (ASM_SPEC): Pass -mxbpf to gas, if specified.
+	* config/bpf/bpf.c (bpf_output_call): Support indirect calls in xBPF.
+
+2020-09-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-09-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/96808
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Do not
+	reuse accumulator memory reference for source and destination accesses.
+
+2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.c (bpf_asm_named_section): Delete.
+	(TARGET_ASM_NAMED_SECTION): Likewise.
+
+2020-09-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* config.gcc: Use elfos.h in bpf-*-* targets.
+	* config/bpf/bpf.h (MAX_OFILE_ALIGNMENT): Remove definition.
+	(COMMON_ASM_OP): Likewise.
+	(INIT_SECTION_ASM_OP): Likewise.
+	(FINI_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_SKIP): Likewise.
+	(ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+
+2020-09-01  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-08-24  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96597
+	* tree-ssa-sccvn.c (vn_reference_lookup_call): Add missing
+	initialization of ::punned.
+	(vn_reference_insert): Use consistently false instead of 0.
+	(vn_reference_insert_pieces): Likewise.
+
+2020-09-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88240
+	* tree-ssa-sccvn.h (vn_reference_s::punned): New flag.
+	* tree-ssa-sccvn.c (vn_reference_insert): Initialize punned.
+	(vn_reference_insert_pieces): Likewise.
+	(visit_reference_op_call): Likewise.
+	(visit_reference_op_load): Track whether a ref was punned.
+	* tree-ssa-pre.c (do_hoist_insertion): Refuse to perform hoist
+	insertion on punned floating point loads.
+
 2020-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/96854

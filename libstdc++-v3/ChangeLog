@@ -1,3 +1,76 @@
+2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Remove bits/int_limits.h.
+	* include/Makefile.in: Regenerate.
+	* include/bits/int_limits.h: Removed.
+	* include/bits/parse_numbers.h (_Select_int_base): Replace
+	__int_limits with __int_traits.
+	* include/bits/range_access.h (_SSize::operator()): Likewise.
+	* include/ext/numeric_traits.h (__numeric_traits_integer): Add
+	static assertion.
+	(__int_traits): New alias template.
+	* include/std/bit (__rotl, __rotr, __countl_zero, __countl_one)
+	(__countr_zero, __countr_one, __popcount, __bit_ceil)
+	(__bit_floor, __bit_width) Replace __int_limits with
+	__int_traits.
+	* include/std/charconv (__to_chars_8, __from_chars_binary)
+	(__from_chars_alpha_to_num, from_chars): Likewise.
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Likewise.
+	* include/std/string_view (basic_string_view::_S_compare):
+	Likewise.
+	* include/std/utility (cmp_equal, cmp_less, in_range): Likewise.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92978
+	* include/std/numeric (__abs_integral): Replace with ...
+	(__detail::__absu): New function template that returns an
+	unsigned type, guaranteeing it can represent the most
+	negative signed value.
+	(__detail::__gcd, __detail::__lcm): Require arguments to
+	be unsigned and therefore already non-negative.
+	(gcd, lcm): Convert arguments to absolute value as unsigned
+	type before calling __detail::__gcd or __detail::__lcm.
+	* include/experimental/numeric (gcd, lcm): Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust expected
+	errors.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/92978.cc: New test.
+	* testsuite/26_numerics/lcm/92978.cc: New test.
+	* testsuite/experimental/numeric/92978.cc: New test.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96851
+	* include/bits/cpp_type_traits.h (__is_memcmp_ordered):
+	New trait that says if memcmp can be used for ordering.
+	(__is_memcmp_ordered_with): Likewise, for two types.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn):
+	Use new traits instead of __is_byte and __numeric_traits.
+	* include/bits/stl_algobase.h (__lexicographical_compare_aux1)
+	(__is_byte_iter): Likewise.
+	* include/std/array (operator<=>): Likewise. Only use memcmp
+	when std::is_constant_evaluated() is false.
+	* testsuite/23_containers/array/comparison_operators/96851.cc:
+	New test.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator::operator++(int)):
+	Use __throw_exception_again macro.
+
 2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
