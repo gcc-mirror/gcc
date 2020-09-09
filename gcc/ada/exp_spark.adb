@@ -227,6 +227,7 @@ package body Exp_SPARK is
 
                if Nkind (Assoc) = N_Iterated_Component_Association then
                   Push_Scope (Scope (Defining_Identifier (Assoc)));
+                  Enter_Name (Defining_Identifier (Assoc));
                   Analyze_And_Resolve (Expr, Comp_Type);
                end if;
 
