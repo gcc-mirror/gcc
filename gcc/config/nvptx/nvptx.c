@@ -2224,7 +2224,7 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
      elt_size. */
   init_frag.remaining = (size + elt_size - 1) / elt_size;
 
-  fprintf (file, "%s .align %d .u%d ",
+  fprintf (file, "%s .align %d .u" HOST_WIDE_INT_PRINT_UNSIGNED " ",
 	   section, align / BITS_PER_UNIT,
 	   elt_size * BITS_PER_UNIT);
   assemble_name (file, name);
