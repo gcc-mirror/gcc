@@ -2518,7 +2518,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	{
 	  tree ifn = get_first_fn (fn);
 	  if (TREE_CODE (ifn) == FUNCTION_DECL
-	      && DECL_LOCAL_FUNCTION_P (ifn))
+	      && DECL_LOCAL_DECL_P (ifn))
 	    orig_fn = DECL_NAME (ifn);
 	}
 

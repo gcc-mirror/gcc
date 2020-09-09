@@ -4852,7 +4852,17 @@ void
 trees_out::chained_decls (tree decls)
 {
   for (; decls; decls = DECL_CHAIN (decls))
-    tree_node (decls);
+    {
+      if (TREE_CODE (decls) == VAR_DECL && DECL_LOCAL_DECL_P (decls))
+	{
+	  /* Make sure this is the first encounter, and mark for
+	     walk-by-value.  */
+	  gcc_checking_assert (!TREE_VISITED (decls)
+			       && !DECL_TEMPLATE_INFO (decls));
+	  mark_by_value (decls);
+	}
+      tree_node (decls);
+    }
   tree_node (NULL_TREE);
 }
 
@@ -6011,6 +6021,9 @@ trees_out::core_vals (tree t)
     case BLOCK:
       state->write_location (*this, t->block.locus);
       state->write_location (*this, t->block.end_locus);
+      
+      // FIXME:This contains VAR_DECLS and FN_DECLS with extern. Those
+      // should be first met here and walked by value
       chained_decls (t->block.vars);
       /* nonlocalized_vars is a middle-end thing.  */
       WT (t->block.subblocks);
@@ -9840,6 +9853,10 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 {
   if (!dep)
     {
+      if (TREE_CODE (decl) == VAR_DECL
+	  && DECL_LOCAL_DECL_P (decl))
+	return MK_unique;
+
       /* Either unique, or some member of a class that cannot have an
 	 out-of-class definition.  For instance a FIELD_DECL.  */
       tree ctx = CP_DECL_CONTEXT (decl);

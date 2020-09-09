@@ -1,3 +1,32 @@
+2020-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	DECL_LOCAL_DECL_P
+	gcc/cp/
+	* cp-tree.h (DECL_LOCAL_FUNCTION_P): Rename to ...
+	(DECL_LOCAL_DECL_P): ... here.  Apply to VAR_DECLS too.
+	* decl.c (start_decl): Set DECL_LOCAL_DECL_P as approriate.
+	(start_decl_1): Reformat.
+	(omp_declare_variant_finalize_one): Use DECL_LOCAL_DECL_P.
+	(local_variable_p): Simplify.
+	* module.cc (trees_out::chained_decls): Stream DECL_LOCAL_DECL_P
+	by value.
+	(trees_out::get_merge_kind): DECL_LOCAL_DECL_P decls are unique.
+	* name-lookup.c (set_decl_context_in_fn): Assert DECL_LOCAL_DECL_P
+	as expected, don't set it here.
+	(do_pushdecl): Don't call it for friends or dependent types.
+	(is_local_extern): Simplify.
+	* parser.c (cp_parser_postfix_expression): Use DECL_LOCAL_DECL_P.
+	(cp_parser_omp_declare_reduction): Set DECL_LOCAL_DECL_P.
+	Refactor.
+	* pt.c (check_default_tmpl_args): Use DECL_LOCAL_DECL_P.
+	(tsubst_expr): Adjust omp reduction case.
+	(tsubst_omp_udr): Add comments.
+	(type_dependent_expression_p): Adjust.
+	* call.c (equal_functions): Adjust.
+	* semantics.c (finish_call_expr): Adjust.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_call_expr): Use DECL_LOCAL_DECL_P.
+
 2020-09-08  Nathan Sidwell  <nathan@acm.org>
 
 	Change cxx_int_tree_map to cxx_decl_tree_map.

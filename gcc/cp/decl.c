@@ -5256,8 +5256,8 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   return type;
 }
 
-/* Process a DECLARATOR for a function-scope variable declaration,
-   namespace-scope variable declaration, or function declaration.
+/* Process a DECLARATOR for a function-scope or namespace-scope
+   variable or function declaration.
    (Function definitions go through start_function; class member
    declarations appearing in the body of the class go through
    grokfield.)  The DECL corresponding to the DECLARATOR is returned.
@@ -5467,6 +5467,12 @@ start_decl (const cp_declarator *declarator,
 
   was_public = TREE_PUBLIC (decl);
 
+  if ((DECL_EXTERNAL (decl) || TREE_CODE (decl) == FUNCTION_DECL)
+      && current_function_decl)
+    /* A function-scope decl of some namespace-scope decl.  */
+    // FIXME: This is ill-formed in a named module
+    DECL_LOCAL_DECL_P (decl) = true;
+
   /* Enter this declaration into the symbol table.  Don't push the plain
      VAR_DECL for a variable template.  */
   if (!template_parm_scope_p ()
@@ -5534,20 +5540,17 @@ start_decl (const cp_declarator *declarator,
 void
 start_decl_1 (tree decl, bool initialized)
 {
-  tree type;
-  bool complete_p;
-  bool aggregate_definition_p;
-
-  gcc_assert (!processing_template_decl);
+  gcc_checking_assert (!processing_template_decl);
 
   if (error_operand_p (decl))
     return;
 
-  gcc_assert (VAR_P (decl));
+  gcc_checking_assert (VAR_P (decl));
 
-  type = TREE_TYPE (decl);
-  complete_p = COMPLETE_TYPE_P (type);
-  aggregate_definition_p = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
+  tree type = TREE_TYPE (decl);
+  bool complete_p = COMPLETE_TYPE_P (type);
+  bool aggregate_definition_p
+    = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
 
   /* If an explicit initializer is present, or if this is a definition
      of an aggregate, then we need a complete type at this point.
@@ -5572,6 +5575,7 @@ start_decl_1 (tree decl, bool initialized)
 				   : TCTX_STATIC_STORAGE);
       verify_type_context (input_location, context, TREE_TYPE (decl));
     }
+
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -7405,7 +7409,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  fn = STRIP_TEMPLATE (fn);
 	  if (!((TREE_CODE (fn) == USING_DECL && DECL_DEPENDENT_P (fn))
 		 || DECL_FUNCTION_MEMBER_P (fn)
-		 || DECL_LOCAL_FUNCTION_P (fn)))
+		 || DECL_LOCAL_DECL_P (fn)))
 	    {
 	      koenig_p = true;
 	      if (!any_type_dependent_arguments_p (args))
@@ -13930,11 +13934,9 @@ int
 local_variable_p (const_tree t)
 {
   if ((VAR_P (t)
-       /* A VAR_DECL with a context that is a _TYPE is a static data
-	  member.  */
-       && !TYPE_P (CP_DECL_CONTEXT (t))
-       /* Any other non-local variable must be at namespace scope.  */
-       && !DECL_NAMESPACE_SCOPE_P (t))
+       && (DECL_LOCAL_DECL_P (t)
+	   || !DECL_CONTEXT (t)
+	   || TREE_CODE (DECL_CONTEXT (t)) == FUNCTION_DECL))
       || (TREE_CODE (t) == PARM_DECL))
     return 1;
 

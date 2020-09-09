@@ -5431,7 +5431,7 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
      class template.  */
 
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL
-      || (TREE_CODE (decl) == FUNCTION_DECL && DECL_LOCAL_FUNCTION_P (decl)))
+      || (TREE_CODE (decl) == FUNCTION_DECL && DECL_LOCAL_DECL_P (decl)))
     /* You can't have a function template declaration in a local
        scope, nor you can you define a member of a class template in a
        local scope.  */
@@ -18155,7 +18155,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			 && DECL_OMP_DECLARE_REDUCTION_P (decl)
 			 && DECL_FUNCTION_SCOPE_P (pattern_decl))
 		  {
-		    DECL_CONTEXT (decl) = NULL_TREE;
+		    gcc_checking_assert (DECL_LOCAL_DECL_P (decl));
+		    /* We pretend this is regular local decl of a
+		       namespace-scope fn.  Then we make it really
+		       local, it is a nested function.*/
+		    DECL_CONTEXT (decl) = global_namespace;
 		    pushdecl (decl);
 		    DECL_CONTEXT (decl) = current_function_decl;
 		    cp_check_omp_declare_reduction (decl);
@@ -18977,7 +18981,7 @@ tsubst_omp_udr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == NULL_TREE || t == error_mark_node)
     return;
 
-  gcc_assert (TREE_CODE (t) == STATEMENT_LIST);
+  gcc_assert (TREE_CODE (t) == STATEMENT_LIST && current_function_decl);
 
   tree_stmt_iterator tsi;
   int i;
@@ -18997,6 +19001,8 @@ tsubst_omp_udr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			     args, complain, in_decl);
       tree omp_in = tsubst (DECL_EXPR_DECL (stmts[1]),
 			    args, complain, in_decl);
+      /* tsubsting a local var_decl leaves DECL_CONTEXT null, as we
+	 expect to be pushing it.  */
       DECL_CONTEXT (omp_out) = current_function_decl;
       DECL_CONTEXT (omp_in) = current_function_decl;
       keep_next_level (true);
@@ -25771,6 +25777,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	 a full instantiation.  */
       if (cp_unevaluated_operand != 0)
 	goto out;
+
       /* ??? Historically, we have instantiated inline functions, even
 	 when marked as "extern template".  */
       if (!(external_p && VAR_P (d)))
@@ -27062,7 +27069,7 @@ type_dependent_expression_p (tree expression)
 	   && DECL_FRIEND_P (expression)
 	   && (!DECL_FRIEND_CONTEXT (expression)
 	       || dependent_type_p (DECL_FRIEND_CONTEXT (expression))))
-      && !DECL_LOCAL_FUNCTION_P (expression))
+      && !DECL_LOCAL_DECL_P (expression))
     {
       gcc_assert (!dependent_type_p (TREE_TYPE (expression))
 		  || undeduced_auto_decl (expression));
