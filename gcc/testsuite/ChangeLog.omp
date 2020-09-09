@@ -1,3 +1,11 @@
+2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/combined-if.f90: Update scan-tree-dump-times
+	for 'omp simd.*if'.
+
 2020-09-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

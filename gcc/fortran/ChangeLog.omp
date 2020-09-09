@@ -1,3 +1,11 @@
+2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_resolve_do_iterator): Remove special code
+	for SIMD, which is not needed.
+
 2020-09-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
