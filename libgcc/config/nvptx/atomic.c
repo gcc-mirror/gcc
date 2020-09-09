@@ -36,10 +36,13 @@
 #define __SYNC_SUBWORD_COMPARE_AND_SWAP(TYPE, SIZE)			     \
 									     \
 TYPE									     \
-__sync_val_compare_and_swap_##SIZE (TYPE *ptr, TYPE oldval, TYPE newval)     \
+__sync_val_compare_and_swap_##SIZE (volatile void *vptr, TYPE oldval,	     \
+				    TYPE newval)			     \
 {									     \
-  unsigned int *wordptr = (unsigned int *)((__UINTPTR_TYPE__ ) ptr & ~3UL);  \
-  int shift = ((__UINTPTR_TYPE__ ) ptr & 3UL) * 8;			     \
+  volatile TYPE *ptr = vptr;						     \
+  volatile unsigned int *wordptr					     \
+    = (volatile unsigned int *)((__UINTPTR_TYPE__) ptr & ~3UL);	     \
+  int shift = ((__UINTPTR_TYPE__) ptr & 3UL) * 8;			     \
   unsigned int valmask = (1 << (SIZE * 8)) - 1;				     \
   unsigned int wordmask = ~(valmask << shift);				     \
   unsigned int oldword = *wordptr;					     \
@@ -64,7 +67,8 @@ __sync_val_compare_and_swap_##SIZE (TYPE *ptr, TYPE oldval, TYPE newval)     \
 }									     \
 									     \
 bool									     \
-__sync_bool_compare_and_swap_##SIZE (TYPE *ptr, TYPE oldval, TYPE newval)    \
+__sync_bool_compare_and_swap_##SIZE (volatile void *ptr, TYPE oldval,	     \
+				     TYPE newval)			     \
 {									     \
   return __sync_val_compare_and_swap_##SIZE (ptr, oldval, newval) == oldval; \
 }
