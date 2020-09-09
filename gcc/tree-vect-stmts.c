@@ -9853,15 +9853,6 @@ vectorizable_condition (vec_info *vinfo,
     {
       if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
 	return false;
-
-      /* FORNOW: only supported as part of a reduction.  */
-      if (loop_vinfo && STMT_VINFO_LIVE_P (stmt_info))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "value used after loop.\n");
-	  return false;
-	}
     }
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
