@@ -227,7 +227,7 @@ package body Exp_SPARK is
 
                if Nkind (Assoc) = N_Iterated_Component_Association then
                   Push_Scope (Scope (Defining_Identifier (Assoc)));
-                  Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+                  Analyze_And_Resolve (Expr, Comp_Type);
                end if;
 
                if Is_Scalar_Type (Comp_Type) then
@@ -240,11 +240,7 @@ package body Exp_SPARK is
                   End_Scope;
                end if;
 
-               Index :=
-                 First
-                   (if Nkind (Assoc) = N_Iterated_Component_Association
-                    then Discrete_Choices (Assoc)
-                    else Choices (Assoc));
+               Index     := First (Choice_List (Assoc));
                Index_Typ := First_Index (Typ);
 
                while Present (Index) loop
@@ -399,7 +395,7 @@ package body Exp_SPARK is
 
                Push_Scope (Scope (Defining_Identifier (Assoc)));
                Enter_Name (Defining_Identifier (Assoc));
-               Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+               Analyze_And_Resolve (Expr, Comp_Type);
 
                if Is_Scalar_Type (Comp_Type) then
                   Apply_Scalar_Range_Check (Expr, Comp_Type);
