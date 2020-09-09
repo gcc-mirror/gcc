@@ -18077,7 +18077,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			 && DECL_OMP_DECLARE_REDUCTION_P (decl)
 			 && DECL_FUNCTION_SCOPE_P (pattern_decl))
 		  {
-		    DECL_CONTEXT (decl) = NULL_TREE;
+		    /* We pretend this is regular local extern decl of
+		       a namespace-scope fn.  Then we make it really
+		       local, it is a nested function.  */
+		    DECL_CONTEXT (decl) = global_namespace;
 		    pushdecl (decl);
 		    DECL_CONTEXT (decl) = current_function_decl;
 		    cp_check_omp_declare_reduction (decl);
@@ -18899,7 +18902,7 @@ tsubst_omp_udr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == NULL_TREE || t == error_mark_node)
     return;
 
-  gcc_assert (TREE_CODE (t) == STATEMENT_LIST);
+  gcc_assert (TREE_CODE (t) == STATEMENT_LIST && current_function_decl);
 
   tree_stmt_iterator tsi;
   int i;
@@ -18919,6 +18922,8 @@ tsubst_omp_udr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			     args, complain, in_decl);
       tree omp_in = tsubst (DECL_EXPR_DECL (stmts[1]),
 			    args, complain, in_decl);
+      /* tsubsting a local var_decl leaves DECL_CONTEXT null, as we
+	 expect to be pushing it.  */
       DECL_CONTEXT (omp_out) = current_function_decl;
       DECL_CONTEXT (omp_in) = current_function_decl;
       keep_next_level (true);
