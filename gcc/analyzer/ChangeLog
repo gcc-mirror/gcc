@@ -1,3 +1,24 @@
+2020-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96949
+	* store.cc (binding_map::apply_ctor_val_to_range): Add
+	error-handling for the cases where we have symbolic offsets.
+
+2020-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96950
+	* store.cc (binding_map::apply_ctor_to_region): Handle RANGE_EXPR
+	where min_index == max_index.
+	(binding_map::apply_ctor_val_to_range): Replace assertion that we
+	don't have a CONSTRUCTOR value with error-handling.
+
+2020-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96962
+	* region-model.cc (region_model::on_call_pre): Fix guard on switch
+	on built-ins to only consider BUILT_IN_NORMAL, rather than other
+	kinds of build-ins.
+
 2020-09-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96792

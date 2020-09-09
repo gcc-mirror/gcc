@@ -330,7 +330,7 @@ coff_is_function_symbol (const b_coff_internal_symbol *isym)
 
 static int
 coff_initialize_syminfo (struct backtrace_state *state,
-			 uintptr_t base_address,
+			 uintptr_t base_address, int is_64,
 			 const b_coff_section_header *sects, size_t sects_num,
 			 const b_coff_external_symbol *syms, size_t syms_size,
 			 const unsigned char *strtab, size_t strtab_size,
@@ -426,9 +426,12 @@ coff_initialize_syminfo (struct backtrace_state *state,
 	  else
 	    name = isym.name;
 
-	  /* Strip leading '_'.  */
-	  if (name[0] == '_')
-	    name++;
+	  if (!is_64)
+	    {
+	      /* Strip leading '_'.  */
+	      if (name[0] == '_')
+		name++;
+	    }
 
 	  /* Symbol value is section relative, so we need to read the address
 	     of its section.  */
@@ -605,6 +608,7 @@ coff_add (struct backtrace_state *state, int descriptor,
   off_t max_offset;
   struct backtrace_view debug_view;
   int debug_view_valid;
+  int is_64;
   uintptr_t image_base;
   struct dwarf_sections dwarf_sections;
 
@@ -680,12 +684,16 @@ coff_add (struct backtrace_state *state, int descriptor,
   sects = (const b_coff_section_header *)
     (sects_view.data + fhdr.size_of_optional_header);
 
+  is_64 = 0;
   if (fhdr.size_of_optional_header > sizeof (*opt_hdr))
     {
       if (opt_hdr->magic == PE_MAGIC)
 	image_base = opt_hdr->u.pe.image_base;
       else if (opt_hdr->magic == PEP_MAGIC)
-	image_base = opt_hdr->u.pep.image_base;
+	{
+	  image_base = opt_hdr->u.pep.image_base;
+	  is_64 = 1;
+	}
       else
 	{
 	  error_callback (data, "bad magic in PE optional header", 0);
@@ -778,7 +786,7 @@ coff_add (struct backtrace_state *state, int descriptor,
       if (sdata == NULL)
 	goto fail;
 
-      if (!coff_initialize_syminfo (state, image_base,
+      if (!coff_initialize_syminfo (state, image_base, is_64,
 				    sects, sects_num,
 				    syms_view.data, syms_size,
 				    str_view.data, str_size,

@@ -910,7 +910,7 @@ write_fn_proto (std::stringstream &s, bool is_defn,
       if (not_atomic_weak_arg)
 	argno = write_arg_type (s, -1, argno, type, prototyped);
       else
-	gcc_assert (type == boolean_type_node);
+	gcc_assert (TREE_CODE (type) == BOOLEAN_TYPE);
     }
 
   if (stdarg_p (fntype))
@@ -2224,7 +2224,7 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
      elt_size. */
   init_frag.remaining = (size + elt_size - 1) / elt_size;
 
-  fprintf (file, "%s .align %d .u%d ",
+  fprintf (file, "%s .align %d .u" HOST_WIDE_INT_PRINT_UNSIGNED " ",
 	   section, align / BITS_PER_UNIT,
 	   elt_size * BITS_PER_UNIT);
   assemble_name (file, name);

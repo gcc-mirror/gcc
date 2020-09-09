@@ -9853,15 +9853,6 @@ vectorizable_condition (vec_info *vinfo,
     {
       if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
 	return false;
-
-      /* FORNOW: only supported as part of a reduction.  */
-      if (STMT_VINFO_LIVE_P (stmt_info))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "value used after loop.\n");
-	  return false;
-	}
     }
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -10327,14 +10318,6 @@ vectorizable_comparison (vec_info *vinfo,
   gcc_assert (ncopies >= 1);
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
     return false;
-
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "value used after loop.\n");
-      return false;
-    }
 
   gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
   if (!stmt)

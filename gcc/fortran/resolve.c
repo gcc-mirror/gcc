@@ -11722,6 +11722,8 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      omp_workshare_flag = 1;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
 	      break;
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:

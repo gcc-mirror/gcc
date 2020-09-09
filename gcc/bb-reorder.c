@@ -2680,9 +2680,6 @@ make_pass_reorder_blocks (gcc::context *ctxt)
 static bool
 maybe_duplicate_computed_goto (basic_block bb, int max_size)
 {
-  if (single_pred_p (bb))
-    return false;
-
   /* Make sure that the block is small enough.  */
   rtx_insn *insn;
   FOR_BB_INSNS (bb, insn)
@@ -2700,10 +2697,9 @@ maybe_duplicate_computed_goto (basic_block bb, int max_size)
     {
       basic_block pred = e->src;
 
-      /* Do not duplicate BB into PRED if that is the last predecessor, or if
-	 we cannot merge a copy of BB with PRED.  */
-      if (single_pred_p (bb)
-	  || !single_succ_p (pred)
+      /* Do not duplicate BB into PRED if we cannot merge a copy of BB
+	 with PRED.  */
+      if (!single_succ_p (pred)
 	  || e->flags & EDGE_COMPLEX
 	  || pred->index < NUM_FIXED_BLOCKS
 	  || (JUMP_P (BB_END (pred)) && !simplejump_p (BB_END (pred)))

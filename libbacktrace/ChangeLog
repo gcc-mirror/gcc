@@ -1,3 +1,22 @@
+2020-09-08  Ian Lance Taylor  <iant@golang.org>
+
+	* simple.c (simple_unwind): Correct comment spelling.
+
+2020-09-08  Ian Lance Taylor  <iant@golang.org>
+
+	* macho.c (macho_add_dsym): Make space for '/' in dsym.  Use
+	correct length when freeing diralc.
+
+2020-09-08  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/96973
+	* macho.c (macho_add_fat): Correctly swap 32-bit file offset.
+
+2020-09-08  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/96971
+	* filetype.awk: Only match magic number at start of line.
+
 2020-08-24  Ian Lance Taylor  <iant@golang.org>
 
 	* macho.c (MACH_O_MH_MAGIC_FAT_64): Define.
