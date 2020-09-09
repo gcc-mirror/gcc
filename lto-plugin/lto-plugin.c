@@ -112,6 +112,7 @@ struct sym_aux
 struct plugin_symtab
 {
   int nsyms;
+  int last_sym;
   struct sym_aux *aux;
   struct ld_plugin_symbol *syms;
   unsigned long long id;
@@ -374,19 +375,30 @@ translate (char *data, char *end, struct plugin_symtab *out)
 static void
 parse_symtab_extension (char *data, char *end, struct plugin_symtab *out)
 {
-  unsigned i;
+  unsigned long i;
+  unsigned char version;
 
-  unsigned char version = *data;
+  if (data >= end)
+    /* FIXME: Issue an error ?  */
+    return;
+
+  version = *data;
   data++;
+
+  if (version != 1)
+    return;
 
   /* Version 1 contains the following data per entry:
      - symbol_type
      - section_kind
      .  */
 
-  if (version == 1)
-    for (i = 0; i < out->nsyms; i++)
-      data = parse_table_entry_extension (data, &out->syms[i]);
+  unsigned long nsyms = (end - data) / 2;
+
+  for (i = 0; i < nsyms; i++)
+    data = parse_table_entry_extension (data, out->syms + i + out->last_sym);
+
+  out->last_sym += nsyms;
 }
 
 /* Free all memory that is no longer needed after writing the symbol
@@ -1165,9 +1177,12 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
       /*  Parsing symtab extension should be done only for add_symbols_v2 and
 	  later versions.  */
       if (!errmsg && add_symbols_v2 != NULL)
-	errmsg = simple_object_find_sections (obj.objfile,
-					      process_symtab_extension,
-					      &obj, &err);
+	{
+	  obj.out->last_sym = 0;
+	  errmsg = simple_object_find_sections (obj.objfile,
+						process_symtab_extension,
+						&obj, &err);
+	}
     }
 
   if (!obj.objfile || errmsg)
