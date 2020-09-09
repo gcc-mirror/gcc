@@ -25,4 +25,6 @@ foo3 (int i)
   return p[i];
 }
 
-/* { dg-final { scan-assembler "movl\[ \t\]*%\[fg\]s:0\\(,%\[a-z0-9\]*,4\\), %eax" } }  */
+/* { dg-final { scan-assembler "movl\[ \t\]*%\[fg\]s:0\\(,%\[a-z0-9\]*,4\\), %eax" { target { ! x32 } } } }  */
+/* { dg-final { scan-assembler-not "movl\[ \t\]*%fs:0\\(,%\[a-z0-9\]*,4\\), %eax" { target x32 } } }  */
+/* { dg-final { scan-assembler "movl\[ \t\]*\\(%eax,%edi,4\\), %eax" { target x32 } } }  */
