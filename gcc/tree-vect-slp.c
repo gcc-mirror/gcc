@@ -1903,11 +1903,14 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
     }
 
   /* Check that the loads in the first sequence are different and there
-     are no gaps between them.  */
+     are no gaps between them and that there is an actual permutation.  */
+  bool any_permute = false;
   auto_sbitmap load_index (group_size);
   bitmap_clear (load_index);
   FOR_EACH_VEC_ELT (node->load_permutation, i, lidx)
     {
+      if (lidx != i)
+	any_permute = true;
       if (lidx >= group_size)
 	return false;
       if (bitmap_bit_p (load_index, lidx))
@@ -1915,6 +1918,8 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
 
       bitmap_set_bit (load_index, lidx);
     }
+  if (!any_permute)
+    return false;
   for (i = 0; i < group_size; i++)
     if (!bitmap_bit_p (load_index, i))
       return false;
