@@ -10319,14 +10319,6 @@ vectorizable_comparison (vec_info *vinfo,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
     return false;
 
-  if (loop_vinfo && STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "value used after loop.\n");
-      return false;
-    }
-
   gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
   if (!stmt)
     return false;
