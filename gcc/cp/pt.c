@@ -6094,7 +6094,9 @@ push_template_decl_real (tree decl, bool is_friend)
     {
       if (is_primary)
 	retrofit_lang_decl (decl);
-      if (DECL_LANG_SPECIFIC (decl))
+      if (DECL_LANG_SPECIFIC (decl)
+	  && (TREE_CODE (decl) != VAR_DECL
+	      || !ctx || !DECL_LOCAL_DECL_P (decl)))
 	DECL_TEMPLATE_INFO (decl) = info;
     }
 
@@ -14631,6 +14633,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 			 && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
 		  spec = t;
 	      }
+	    else if (!DECL_TEMPLATE_INFO (t))
+	      goto local;
 
 	    if (!spec)
 	      {
@@ -14650,10 +14654,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 	else
 	  {
-	    /* A local variable.  */
-	    local_p = true;
 	    /* Subsequent calls to pushdecl will fill this in.  */
 	    ctx = NULL_TREE;
+	  local:
+	    /* A local variable.  */
+	    local_p = true;
 	    /* Unless this is a reference to a static variable from an
 	       enclosing function, in which case we need to fill it in now.  */
 	    if (TREE_STATIC (t))
@@ -14817,10 +14822,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    DECL_TEMPLATE_INFO (r) = build_template_info (tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
-	    /* Remember whether we require constant initialization of
-	       a non-constant template variable.  */
-	    TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (r))
-	      = TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (t));
 	    if (!error_operand_p (r) || (complain & tf_error))
 	      register_specialization (r, gen_tmpl, argvec, false, hash);
 	  }
@@ -18117,13 +18118,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	else
 	  {
 	    init = DECL_INITIAL (decl);
-	    /* The following tsubst call will clear the DECL_TEMPLATE_INFO
-	       for local variables, so save if DECL was declared constinit.  */
-	    const bool constinit_p
-	      = (VAR_P (decl)
-		 && DECL_LANG_SPECIFIC (decl)
-		 && DECL_TEMPLATE_INFO (decl)
-		 && TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (decl)));
 	    decl = tsubst (decl, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
@@ -18192,6 +18186,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		       now.  */
 		    predeclare_vla (decl);
 
+		    bool constinit_p
+		      = VAR_P (decl) && DECL_DECLARED_CONSTINIT_P (decl);
 		    cp_finish_decl (decl, init, const_init, NULL_TREE,
 				    constinit_p ? LOOKUP_CONSTINIT : 0);
 
@@ -25857,8 +25853,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
         push_nested_class (DECL_CONTEXT (d));
 
       const_init = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
-      int flags = (TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (d))
-		   ? LOOKUP_CONSTINIT : 0);
+      int flags = (DECL_DECLARED_CONSTINIT_P (d) ? LOOKUP_CONSTINIT : 0);
       cp_finish_decl (d, init, const_init, NULL_TREE, flags);
 
       if (enter_context)

@@ -1,5 +1,18 @@
 2020-09-09  Nathan Sidwell  <nathan@acm.org>
 
+	Local extern vars do not get template header
+	gcc/cp/
+	* cp-tree.h (TINFO_VAR_DECLARED_CONSTINIT): Replace with ...
+	(DECL_DECLARED_CONSTINIT_P): ... here, decl_lang_flag 7.
+	* decl.c (start_decl): Set DECL_DECLARED_CONSTINIT_P as necessary.
+	(cp_finish_decl): Likewise.
+	* pt.c (push_template_decl_real): Don't add a header for
+	DECL_LOCAL_DECL_P VAR_DECLS.
+	(tsubst_decl): Check for VAR_DECLS lacking template info are
+	local.  No need to handle TINFO_VAR_DECLARED_CONSTINIT specially.
+	(tsubst_expr): Likewise.
+	(instantiate_decl): Likewise.
+
 	DECL_LOCAL_DECL_P
 	gcc/cp/
 	* cp-tree.h (DECL_LOCAL_FUNCTION_P): Rename to ...
