@@ -1,3 +1,19 @@
+2020-09-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96949
+	* gfortran.dg/analyzer/pr96949.f90: New test.
+
+2020-09-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/96967
+	* gcc.dg/tree-ssa/pr96967.c: New file.
+
+2020-09-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/mcpu-is-430.c: New test.
+	* gcc.target/msp430/mcpu-is-430x.c: New test.
+	* gcc.target/msp430/mcpu-is-430xv2.c: New test.
+
 2020-09-07  Harald Anlauf  <anlauf@gmx.de>
 
 	* gfortran.dg/pr96711.f90: New test.

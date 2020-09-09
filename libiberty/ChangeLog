@@ -1,3 +1,34 @@
+2020-09-08  Felix Willgerodt  <felix.willgerodt@intel.com>
+
+	* floatformat.c (floatformat_bfloat16_big): New.
+	(floatformat_bfloat16_little): New.
+
+2020-09-08  Alan Modra  <amodra@gmail.com>
+
+	* d-demangle.c: Include limits.h.
+	(ULONG_MAX, UINT_MAX): Provide fall-back definition.
+	(dlang_number): Simplify and correct overflow test.  Only
+	write *ret on returning non-NULL.  Make "ret" an unsigned long*.
+	Only succeed for result of [0,UINT_MAX].
+	(dlang_decode_backref): Simplify and correct overflow test.
+	Only write *ret on returning non-NULL.  Only succeed for
+	result [1,MAX_LONG].
+	(dlang_backref): Remove now unnecessary range check.
+	(dlang_symbol_name_p): Likewise.
+	(string_need): Take a size_t n arg, and use size_t tem.
+	(string_append): Use size_t n.
+	(string_appendn, string_prependn): Take a size_t n arg.
+	(TEMPLATE_LENGTH_UNKNOWN): Define as -1UL.
+	(dlang_lname, dlang_parse_template): Take an unsigned long len
+	arg.
+	(dlang_symbol_backref, dlang_identifier, dlang_parse_integer),
+	(dlang_parse_integer, dlang_parse_string),
+	(dlang_parse_arrayliteral, dlang_parse_assocarray),
+	(dlang_parse_structlit, dlang_parse_tuple),
+	(dlang_template_symbol_param, dlang_template_args): Use
+	unsigned long variables.
+	* testsuite/d-demangle-expected: Add new tests.
+
 2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_function_args): Handle 'in' and 'in ref'

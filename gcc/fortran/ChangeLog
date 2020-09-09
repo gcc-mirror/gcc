@@ -1,3 +1,7 @@
+2020-09-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi: Fix description of FINDLOC result.
+
 2020-09-07  Harald Anlauf  <anlauf@gmx.de>
 
 	* trans-intrinsic.c (build_round_expr): Use temporary with

@@ -1,3 +1,8 @@
+2020-09-08  Felix Willgerodt  <felix.willgerodt@intel.com>
+
+	* floatformat.h (floatformat_bfloat16_big): New.
+	(floatformat_bfloat16_little): New.
+
 2020-08-03  Martin Jambor  <mjambor@suse.cz>
 
 	* gomp-constants.h (GOMP_VERSION_HSA): Remove.

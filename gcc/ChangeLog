@@ -1,3 +1,42 @@
+2020-09-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (scatter<mode>_insn_1offset_ds<exec_scatter>):
+	Add waitcnt.
+	* config/gcn/gcn.md (*mov<mode>_insn, *movti_insn): Add waitcnt to
+	ds_write alternatives.
+
+2020-09-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/mkoffload.c (process_asm): Initialise regcount.  Update
+	scanning for SGPR/VGPR usage for HSACO v3.
+
+2020-09-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/96967
+	* tree-vrp.c (find_case_label_range): Cast label range to
+	type of switch operand.
+
+2020-09-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_file_end): Fix jumbled
+	HAVE_AS_MSPABI_ATTRIBUTE and HAVE_AS_GNU_ATTRIBUTE checks.
+	* configure: Regenerate.
+	* configure.ac: Use ".mspabi_attribute 4,2" to check for assembler
+	support for this object attribute directive.
+
+2020-09-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* common/config/msp430/msp430-common.c (msp430_handle_option): Remove
+	OPT_mcpu_ handling.
+	Set target_cpu value to new enum values when parsing certain -mmcu=
+	values.
+	* config/msp430/msp430-opts.h (enum msp430_cpu_types): New.
+	* config/msp430/msp430.c (msp430_option_override): Handle new
+	target_cpu enum values.
+	Set target_cpu using extracted value for given MCU when -mcpu=
+	option is not passed by the user.
+	* config/msp430/msp430.opt: Handle -mcpu= values using enums.
+
 2020-09-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/96796

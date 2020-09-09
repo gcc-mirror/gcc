@@ -1,3 +1,17 @@
+2020-09-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95680
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (DCFG_ENABLE_CET): Substitute.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/x86/switchcontext.S: Remove CET support code.
+	* libdruntime/core/thread.d: Import gcc.config.  Don't set version
+	AsmExternal when GNU_Enable_CET is true.
+	* libdruntime/gcc/config.d.in (GNU_Enable_CET): Define.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2020-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime d05ebaad.
