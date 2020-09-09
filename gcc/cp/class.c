@@ -8286,6 +8286,19 @@ resolve_address_of_overloaded_function (tree target_type,
 	     one, or vice versa.  */
 	  continue;
 
+	/* Constraints must be satisfied. This is done before
+	   return type deduction since that instantiates the
+	   function. */
+	if (!constraints_satisfied_p (fn))
+	  continue;
+
+	if (undeduced_auto_decl (fn))
+	  {
+	    /* Force instantiation to do return type deduction.  */
+	    maybe_instantiate_decl (fn);
+	    require_deduced_type (fn);
+	  }
+
 	/* In C++17 we need the noexcept-qualifier to compare types.  */
 	if (flag_noexcept_type
 	    && !maybe_instantiate_noexcept (fn, complain))

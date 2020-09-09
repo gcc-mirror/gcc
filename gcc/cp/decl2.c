@@ -81,7 +81,6 @@ static void import_export_class (tree);
 static tree get_guard_bits (tree);
 static void determine_visibility_from_class (tree, tree);
 static bool determine_hidden_inline (tree);
-static void maybe_instantiate_decl (tree);
 
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
@@ -5386,7 +5385,7 @@ possibly_inlined_p (tree decl)
    them instantiated for reduction clauses which inline them by hand
    directly.  */
 
-static void
+void
 maybe_instantiate_decl (tree decl)
 {
   if (DECL_LANG_SPECIFIC (decl)

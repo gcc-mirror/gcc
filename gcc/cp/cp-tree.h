@@ -6905,6 +6905,7 @@ extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern bool always_instantiate_p		(tree);
 extern bool maybe_instantiate_noexcept		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree instantiate_decl			(tree, bool, bool);
+extern void maybe_instantiate_decl		(tree);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool template_heads_equivalent_p		(const_tree, const_tree);
 extern bool builtin_pack_fn_p			(tree);
