@@ -910,7 +910,7 @@ write_fn_proto (std::stringstream &s, bool is_defn,
       if (not_atomic_weak_arg)
 	argno = write_arg_type (s, -1, argno, type, prototyped);
       else
-	gcc_assert (type == boolean_type_node);
+	gcc_assert (TREE_CODE (type) == BOOLEAN_TYPE);
     }
 
   if (stdarg_p (fntype))
