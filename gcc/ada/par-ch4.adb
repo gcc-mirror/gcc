@@ -3438,6 +3438,12 @@ package body Ch4 is
 
       procedure Build_Iterated_Element_Association is
       begin
+         --  Build loop_parameter_specification
+
+         Loop_Spec :=
+           New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
+         Set_Defining_Identifier (Loop_Spec, Id);
+
          Choice :=  First (Discrete_Choices (Assoc_Node));
          Assoc_Node :=
            New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
@@ -3487,12 +3493,6 @@ package body Ch4 is
             Scan;    -- past WHEN
             Filter := P_Condition;
          end if;
-
-         --  Build loop_parameter_specification
-
-         Loop_Spec :=
-           New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
-         Set_Defining_Identifier (Loop_Spec, Id);
 
          if Token = Tok_Use then
 
