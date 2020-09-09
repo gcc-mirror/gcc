@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -m64" } */
+/* { dg-options "-O2 -Wall -m64 -mvsx" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 
 #include <stdio.h>
 #include <altivec.h>

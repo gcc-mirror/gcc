@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -Wall" } */
+/* { dg-options "-O2 -Wall -maltivec" } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 
 /*
