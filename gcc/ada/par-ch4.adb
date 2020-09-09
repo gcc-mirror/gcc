@@ -3469,26 +3469,26 @@ package body Ch4 is
       --  In addition, if "use" is present after the specification,
       --  this is an Iterated_Element_Association that carries a
       --  key_expression, and we generate the appropriate node.
-      --  Finally, the Iterated_Element form is reserved for contwiner
+      --  Finally, the Iterated_Element form is reserved for container
       --  aggregates, and is illegal in array aggregates.
 
       Id := P_Defining_Identifier;
       Assoc_Node :=
         New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
 
-      if Token =  Tok_In then
+      if Token = Tok_In then
          Set_Defining_Identifier (Assoc_Node, Id);
          T_In;
          Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
 
-         --  The iterator may include a filter.
+         --  The iterator may include a filter
 
          if Token = Tok_When then
             Scan;    -- past WHEN
             Filter := P_Condition;
          end if;
 
-         --  Build loop_parameter specification.
+         --  Build loop_parameter_specification
 
          Loop_Spec :=
            New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
@@ -3497,15 +3497,15 @@ package body Ch4 is
          if Token = Tok_Use then
 
             --  Ada_2020 Key-expression is present, rewrite node as an
-            --  iterated_Element_Awwoiation.
+            --  Iterated_Element_Association.
 
             Scan;  --  past USE
             Build_Iterated_Element_Association;
             Set_Key_Expression (Assoc_Node, P_Expression);
 
          elsif Present (Filter) then
-            --  A loop_Parameter_Specification also indicates an Ada_2020
-            --  conwtruct, in contrast with a subtype indication used in
+            --  A loop_parameter_specification also indicates an Ada_2020
+            --  construct, in contrast with a subtype indication used in
             --  array aggregates.
 
             Build_Iterated_Element_Association;
@@ -3525,7 +3525,7 @@ package body Ch4 is
 
          if Token = Tok_Use then
             Scan;  -- past USE
-            --  This is an iterated_elenent_qssociation.
+            --  This is an iterated_element_association
 
             Assoc_Node :=
               New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
