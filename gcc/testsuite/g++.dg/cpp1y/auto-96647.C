@@ -1,5 +1,5 @@
 // PR c++/96647
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++14 } }
 
 template<typename>
 struct Base {
