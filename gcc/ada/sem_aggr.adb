@@ -3458,10 +3458,23 @@ package body Sem_Aggr is
 
       if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
 
-         --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
-         --  must not have unknown discriminants.
+         --  AI05-0115: If the ancestor part is a subtype mark, the ancestor
+         --  must not have unknown discriminants. To catch cases where the
+         --  aggregate occurs at a place where the full view of the ancestor
+         --  type is visible and doesn't have unknown discriminants, but the
+         --  aggregate type was derived from a partial view that has unknown
+         --  discriminants, we check whether the aggregate type has unknown
+         --  discriminants (unknown discriminants were inherited), along
+         --  with checking that the partial view of the ancestor has unknown
+         --  discriminants. (It might be sufficient to replace the entire
+         --  condition with Has_Unknown_Discriminants (Typ), but that might
+         --  miss some cases, not clear, and causes error changes in some tests
+         --  such as class-wide cases, that aren't clearly improvements. ???)
 
-         if Has_Unknown_Discriminants (Entity (A)) then
+         if Has_Unknown_Discriminants (Entity (A))
+           or else (Has_Unknown_Discriminants (Typ)
+                      and then Partial_View_Has_Unknown_Discr (Entity (A)))
+         then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
                  & "has unknown discriminants", N, Typ);
