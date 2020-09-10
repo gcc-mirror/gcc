@@ -161,6 +161,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_LSE	      (1 << 4)  /* Has Large System Extensions.  */
 #define AARCH64_FL_RDMA       (1 << 5)  /* Has Round Double Multiply Add.  */
 #define AARCH64_FL_V8_1       (1 << 6)  /* Has ARMv8.1-A extensions.  */
+/* Armv8-R.  */
+#define AARCH64_FL_V8_R       (1 << 7)  /* Armv8-R AArch64.  */
 /* ARMv8.2-A architecture extensions.  */
 #define AARCH64_FL_V8_2       (1 << 8)  /* Has ARMv8.2-A features.  */
 #define AARCH64_FL_F16	      (1 << 9)  /* Has ARMv8.2-A FP16 extensions.  */
@@ -246,6 +248,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_6			\
   (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_V8_6 | AARCH64_FL_FPSIMD \
    | AARCH64_FL_I8MM | AARCH64_FL_BF16)
+#define AARCH64_FL_FOR_ARCH8_R     \
+  (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
 
 /* Macros to test ISA flags.  */
 
@@ -282,6 +286,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
+#define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)

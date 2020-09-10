@@ -17344,6 +17344,7 @@ and the features that they enable by default:
 @item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+fp16fml}, @samp{+dotprod}
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
