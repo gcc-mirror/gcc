@@ -873,7 +873,18 @@ namespace pmr
       }
     else
       {
-	// TODO round to preferred granularity ?
+	// Round to preferred granularity.
+	if (opts.max_blocks_per_chunk < size_t(-4))
+	  {
+	    // round up
+	    opts.max_blocks_per_chunk += 3;
+	    opts.max_blocks_per_chunk &= ~size_t(3);
+	  }
+	else
+	  {
+	    // round down
+	    opts.max_blocks_per_chunk &= ~size_t(3);
+	  }
       }
 
     if (opts.max_blocks_per_chunk > chunk::max_blocks_per_chunk())
@@ -1013,11 +1024,9 @@ namespace pmr
 	  : pool_sizes[i];
 
 	// Decide on initial number of blocks per chunk.
-	// Always have at least 16 blocks per chunk:
-	const size_t min_blocks_per_chunk = 16;
-	// But for smaller blocks, use a larger initial size:
-	size_t blocks_per_chunk
-	  = std::max(1024 / block_size, min_blocks_per_chunk);
+	// At least 16 blocks per chunk seems reasonable,
+	// more for smaller blocks:
+	size_t blocks_per_chunk = std::max(size_t(16), 1024 / block_size);
 	// But don't exceed the requested max_blocks_per_chunk:
 	blocks_per_chunk
 	  = std::min(blocks_per_chunk, _M_opts.max_blocks_per_chunk);
