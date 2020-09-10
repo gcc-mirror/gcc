@@ -63,7 +63,8 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
      as interoperability with the same arm macro.  */
   builtin_define ("__ARM_ARCH_8A");
 
-  builtin_define_with_int_value ("__ARM_ARCH_PROFILE", 'A');
+  builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
+      AARCH64_ISA_V8_R ? 'R' : 'A');
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");

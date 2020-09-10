@@ -7467,7 +7467,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			if ((TREE_CODE (fn) == USING_DECL
 			     && DECL_DEPENDENT_P (fn))
 			    || DECL_FUNCTION_MEMBER_P (fn)
-			    || DECL_LOCAL_FUNCTION_P (fn))
+			    || DECL_LOCAL_DECL_P (fn))
 			  {
 			    do_adl_p = false;
 			    break;
@@ -42582,6 +42582,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	{
 	  block_scope = true;
 	  DECL_CONTEXT (fndecl) = global_namespace;
+	  DECL_LOCAL_DECL_P (fndecl) = true;
 	  if (!processing_template_decl)
 	    pushdecl (fndecl);
 	}
@@ -42616,16 +42617,9 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	  cp_parser_push_lexer_for_tokens (parser, cp);
 	  parser->lexer->in_pragma = true;
 	}
-      if (!cp_parser_omp_declare_reduction_exprs (fndecl, parser))
-	{
-	  if (!block_scope)
-	    finish_function (/*inline_p=*/false);
-	  else
-	    DECL_CONTEXT (fndecl) = current_function_decl;
-	  if (cp)
-	    cp_parser_pop_lexer (parser);
-	  goto fail;
-	}
+
+      bool ok = cp_parser_omp_declare_reduction_exprs (fndecl, parser);
+
       if (cp)
 	cp_parser_pop_lexer (parser);
       if (!block_scope)
@@ -42633,6 +42627,14 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       else
 	{
 	  DECL_CONTEXT (fndecl) = current_function_decl;
+	  if (DECL_TEMPLATE_INFO (fndecl))
+	    DECL_CONTEXT (DECL_TI_TEMPLATE (fndecl)) = current_function_decl;
+	}
+      if (!ok)
+	goto fail;
+
+      if (block_scope)
+	{
 	  block = finish_omp_structured_block (block);
 	  if (TREE_CODE (block) == BIND_EXPR)
 	    DECL_SAVED_TREE (fndecl) = BIND_EXPR_BODY (block);
@@ -42641,6 +42643,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	  if (processing_template_decl)
 	    add_decl_expr (fndecl);
 	}
+
       cp_check_omp_declare_reduction (fndecl);
       if (cp == NULL && types.length () > 1)
 	cp = cp_token_cache_new (first_token,

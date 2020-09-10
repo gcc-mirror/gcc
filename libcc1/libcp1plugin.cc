@@ -3294,7 +3294,7 @@ plugin_build_call_expr (cc1_plugin::connection *self,
 	  fn = STRIP_TEMPLATE (fn);
 
 	  if (!DECL_FUNCTION_MEMBER_P (fn)
-	      && !DECL_LOCAL_FUNCTION_P (fn))
+	      && !DECL_LOCAL_DECL_P (fn))
 	    koenig_p = true;
 	}
     }

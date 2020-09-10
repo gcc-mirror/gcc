@@ -1,3 +1,9 @@
+2020-09-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR d/95680
+	* libdruntime/config/x86/switchcontext.S: Include <cet.h> to
+	generate the CET marker for -fcf-protection.
+
 2020-09-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/95680

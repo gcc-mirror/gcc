@@ -430,10 +430,10 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	      /* d_convert will make a no-op cast.  */
 	      break;
 	    }
-	  else if (cdfrom->isCPPclass ())
+	  else if (cdfrom->isCPPclass () || cdto->isCPPclass ())
 	    {
 	      /* Downcasting in C++ is a no-op.  */
-	      if (cdto->isCPPclass ())
+	      if (cdfrom->isCPPclass () && cdto->isCPPclass ())
 		break;
 
 	      /* Casting from a C++ interface to a class/non-C++ interface

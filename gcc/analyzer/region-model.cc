@@ -706,6 +706,16 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  if (impl_call_strlen (cd))
 	    return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "operator new", call, 1))
+	return impl_call_operator_new (cd);
+      else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
+	return impl_call_operator_new (cd);
+      else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+	       || is_named_call_p (callee_fndecl, "operator delete", call, 2)
+	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
+	{
+	  /* Handle in "on_call_post".  */
+	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && !DECL_PURE_P (callee_fndecl)
 	       && !fndecl_built_in_p (callee_fndecl))
@@ -746,12 +756,22 @@ region_model::on_call_post (const gcall *call,
 			    region_model_context *ctxt)
 {
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
-    if (is_named_call_p (callee_fndecl, "free", call, 1))
-      {
-	call_details cd (call, this, ctxt);
-	impl_call_free (cd);
-	return;
-      }
+    {
+      if (is_named_call_p (callee_fndecl, "free", call, 1))
+	{
+	  call_details cd (call, this, ctxt);
+	  impl_call_free (cd);
+	  return;
+	}
+      if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+	  || is_named_call_p (callee_fndecl, "operator delete", call, 2)
+	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
+	{
+	  call_details cd (call, this, ctxt);
+	  impl_call_operator_delete (cd);
+	  return;
+	}
+    }
 
   if (unknown_side_effects)
     handle_unrecognized_call (call, ctxt);
@@ -2191,6 +2211,11 @@ region_model::maybe_update_for_edge (const superedge &edge,
       return apply_constraints_for_gswitch (*switch_sedge, switch_stmt, ctxt);
     }
 
+  /* Apply any constraints due to an exception being thrown.  */
+  if (const cfg_superedge *cfg_sedge = dyn_cast <const cfg_superedge *> (&edge))
+    if (cfg_sedge->get_flags () & EDGE_EH)
+      return apply_constraints_for_exception (last_stmt, ctxt);
+
   return true;
 }
 
@@ -2347,6 +2372,34 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 	}
       return true;
     }
+}
+
+/* Apply any constraints due to an exception being thrown at LAST_STMT.
+
+   If they are feasible, add the constraints and return true.
+
+   Return false if the constraints contradict existing knowledge
+   (and so the edge should not be taken).  */
+
+bool
+region_model::apply_constraints_for_exception (const gimple *last_stmt,
+					       region_model_context *ctxt)
+{
+  gcc_assert (last_stmt);
+  if (const gcall *call = dyn_cast <const gcall *> (last_stmt))
+    if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
+      if (is_named_call_p (callee_fndecl, "operator new", call, 1)
+	  || is_named_call_p (callee_fndecl, "operator new []", call, 1))
+	{
+	  /* We have an exception thrown from operator new.
+	     Add a constraint that the result was NULL, to avoid a false
+	     leak report due to the result being lost when following
+	     the EH edge.  */
+	  if (tree lhs = gimple_call_lhs (call))
+	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt);
+	  return true;
+	}
+  return true;
 }
 
 /* For use with push_frame when handling a top-level call within the analysis.

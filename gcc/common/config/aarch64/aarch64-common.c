@@ -426,8 +426,11 @@ aarch64_get_extension_string_for_isa_flags (uint64_t isa_flags,
       names.  However as a special case if CRC was enabled before, always print
       it.  This is required because some CPUs have an incorrect specification
       in older assemblers.  Even though CRC should be the default for these
-      cases the -mcpu values won't turn it on.  */
-  if (isa_flags & AARCH64_ISA_CRC)
+      cases the -mcpu values won't turn it on.
+
+      Note that assemblers with Armv8-R AArch64 support should not have this
+      issue, so we don't need this fix when targeting Armv8-R.  */
+  if ((isa_flags & AARCH64_ISA_CRC) && !AARCH64_ISA_V8_R)
     isa_flag_bits |= AARCH64_ISA_CRC;
 
   /* Pass Two:

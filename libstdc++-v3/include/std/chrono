@@ -1591,7 +1591,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year
       operator+(const year& __x, const years& __y) noexcept
-      { return year{int{__x} + __y.count()}; }
+      { return year{int{__x} + static_cast<int>(__y.count())}; }
 
       friend constexpr year
       operator+(const years& __x, const year& __y) noexcept

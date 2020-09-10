@@ -265,8 +265,8 @@ state_change_event::get_desc (bool can_colorize) const
 		   "%s (state of %qE: %qs -> %qs, origin: %qE)",
 		   custom_desc.m_buffer,
 		   var,
-		   m_sm.get_state_name (m_from),
-		   m_sm.get_state_name (m_to),
+		   m_from->get_name (),
+		   m_to->get_name (),
 		   origin);
 	      else
 		result = make_label_text
@@ -274,8 +274,8 @@ state_change_event::get_desc (bool can_colorize) const
 		   "%s (state of %qE: %qs -> %qs, NULL origin)",
 		   custom_desc.m_buffer,
 		   var,
-		   m_sm.get_state_name (m_from),
-		   m_sm.get_state_name (m_to));
+		   m_from->get_name (),
+		   m_to->get_name ());
 	      custom_desc.maybe_free ();
 	      return result;
 	    }
@@ -295,8 +295,8 @@ state_change_event::get_desc (bool can_colorize) const
 	    (can_colorize,
 	     "state of %qs: %qs -> %qs (origin: %qs)",
 	     sval_desc.m_buffer,
-	     m_sm.get_state_name (m_from),
-	     m_sm.get_state_name (m_to),
+	     m_from->get_name (),
+	     m_to->get_name (),
 	     origin_desc.m_buffer);
 	}
       else
@@ -304,8 +304,8 @@ state_change_event::get_desc (bool can_colorize) const
 	  (can_colorize,
 	   "state of %qs: %qs -> %qs (NULL origin)",
 	   sval_desc.m_buffer,
-	   m_sm.get_state_name (m_from),
-	   m_sm.get_state_name (m_to));
+	   m_from->get_name (),
+	   m_to->get_name ());
     }
   else
     {
@@ -313,8 +313,8 @@ state_change_event::get_desc (bool can_colorize) const
       return make_label_text
 	(can_colorize,
 	 "global state: %qs -> %qs",
-	 m_sm.get_state_name (m_from),
-	 m_sm.get_state_name (m_to));
+	 m_from->get_name (),
+	 m_to->get_name ());
     }
 }
 
@@ -876,7 +876,7 @@ warning_event::get_desc (bool can_colorize) const
 		= make_label_text (can_colorize,
 				   "%s (%qE is in state %qs)",
 				   ev_desc.m_buffer,
-				   m_var,m_sm->get_state_name (m_state));
+				   m_var, m_state->get_name ());
 	      ev_desc.maybe_free ();
 	      return result;
 	    }
@@ -888,8 +888,7 @@ warning_event::get_desc (bool can_colorize) const
   if (m_sm)
     return make_label_text (can_colorize,
 			    "here (%qE is in state %qs)",
-			    m_var,
-			    m_sm->get_state_name (m_state));
+			    m_var, m_state->get_name ());
   else
     return label_text::borrow ("here");
 }

@@ -1,3 +1,40 @@
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77841
+	* decl.c (reshape_init): If we're initializing a char array from
+	a string-literal that is enclosed in braces, unwrap it.
+	* init.c (build_new_1): Don't handle string-initializers here.
+	(build_new): Handle new-expression with paren-init when the
+	array bound is known.  Always pass string constants to build_new_1
+	enclosed in braces.  Don't handle string-initializers in any
+	special way.
+
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95164
+	* decl.c (reshape_init_r): When initializing an aggregate member
+	with an initializer from an initializer-list, also consider
+	COMPOUND_LITERAL_P.
+
+2020-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_omp_declare_reduction): Refactor to avoid
+	code duplication.  Update DECL_TI_TEMPLATE's context.
+	* pt.c (tsubst_expr): For OMP reduction function, set context to
+	global_namespace before pushing.
+	(tsubst_omp_udr): Assert current_function_decl, add comment about
+	decl context.
+
+2020-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96647
+	* class.c (resolve_address_of_overloaded_function): Check
+	constraints_satisfied_p and perform return-type deduction via
+	maybe_instantiate_decl when considering non-template functions
+	in the overload set.
+	* cp-tree.h (maybe_instantiate_decl): Declare.
+	* decl2.c (maybe_instantiate_decl): Remove static.
+
 2020-09-04  Jason Merrill  <jason@redhat.com>
 
 	* expr.c (mark_use): Use iloc_sentinel.

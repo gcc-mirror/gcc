@@ -318,6 +318,41 @@ region_model::impl_call_memset (const call_details &cd)
   return false;
 }
 
+/* Handle the on_call_pre part of "operator new".  */
+
+bool
+region_model::impl_call_operator_new (const call_details &cd)
+{
+  const svalue *size_sval = cd.get_arg_svalue (0);
+  const region *new_reg = create_region_for_heap_alloc (size_sval);
+  if (cd.get_lhs_type ())
+    {
+      const svalue *ptr_sval
+	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+      cd.maybe_set_lhs (ptr_sval);
+    }
+  return false;
+}
+
+/* Handle the on_call_pre part of "operator delete", which comes in
+   both sized and unsized variants (2 arguments and 1 argument
+   respectively).  */
+
+bool
+region_model::impl_call_operator_delete (const call_details &cd)
+{
+  const svalue *ptr_sval = cd.get_arg_svalue (0);
+  if (const region_svalue *ptr_to_region_sval
+      = ptr_sval->dyn_cast_region_svalue ())
+    {
+      /* If the ptr points to an underlying heap region, delete it,
+	 poisoning pointers.  */
+      const region *freed_reg = ptr_to_region_sval->get_pointee ();
+      unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+    }
+  return false;
+}
+
 /* Handle the on_call_pre part of "strlen".
    Return true if the LHS is updated.  */
 

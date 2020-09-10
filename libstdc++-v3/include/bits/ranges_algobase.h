@@ -105,7 +105,6 @@ namespace ranges
 	      return false;
 
 	    using _ValueType1 = iter_value_t<_Iter1>;
-	    using _ValueType2 = iter_value_t<_Iter2>;
 	    constexpr bool __use_memcmp
 	      = ((is_integral_v<_ValueType1> || is_pointer_v<_ValueType1>)
 		 && __memcmpable<_Iter1, _Iter2>::__value

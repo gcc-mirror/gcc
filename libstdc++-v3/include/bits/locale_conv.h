@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __outchars = __outnext - &__outstr.front();
 	}
       while (__result == codecvt_base::partial && __next != __last
-	     && (__outstr.size() - __outchars) < __maxlen);
+	     && ptrdiff_t(__outstr.size() - __outchars) < __maxlen);
 
       if (__result == codecvt_base::error)
 	{
@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _State __state = {};
       size_t __n;
       return __str_codecvt_in(__first, __last, __outstr, __cvt, __state, __n)
-	&& (__n == (__last - __first));
+	&& (__n == size_t(__last - __first));
     }
 
   // Convert wide character string to narrow.

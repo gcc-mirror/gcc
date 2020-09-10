@@ -205,12 +205,26 @@ public:
     return model->get_fndecl_for_call (call, &old_ctxt);
   }
 
-  void on_transition (const supernode *node  ATTRIBUTE_UNUSED,
-		      const gimple *stmt,
-		      tree var,
-		      state_machine::state_t from,
-		      state_machine::state_t to,
-		      tree origin) FINAL OVERRIDE
+  state_machine::state_t get_state (const gimple *stmt,
+				    tree var)
+  {
+    logger * const logger = get_logger ();
+    LOG_FUNC (logger);
+    impl_region_model_context old_ctxt
+      (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
+       stmt);
+    const svalue *var_old_sval
+      = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
+
+    state_machine::state_t current
+      = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
+    return current;
+  }
+
+  void set_next_state (const gimple *stmt,
+		       tree var,
+		       state_machine::state_t to,
+		       tree origin)
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
@@ -230,48 +244,33 @@ public:
 
     state_machine::state_t current
       = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
-    if (current == from)
-      {
-	if (logger)
-	  logger->log ("%s: state transition of %qE: %s -> %s",
-		       m_sm.get_name (),
-		       var,
-		       m_sm.get_state_name (from),
-		       m_sm.get_state_name (to));
-	m_new_smap->set_state (m_new_state->m_region_model, var_new_sval,
-			       to, origin_new_sval, m_eg.get_ext_state ());
-      }
+    if (logger)
+      logger->log ("%s: state transition of %qE: %s -> %s",
+		   m_sm.get_name (),
+		   var,
+		   current->get_name (),
+		   to->get_name ());
+    m_new_smap->set_state (m_new_state->m_region_model, var_new_sval,
+			   to, origin_new_sval, m_eg.get_ext_state ());
   }
 
-  void warn_for_state (const supernode *snode, const gimple *stmt,
-		       tree var, state_machine::state_t state,
-		       pending_diagnostic *d) FINAL OVERRIDE
+  void warn (const supernode *snode, const gimple *stmt,
+	     tree var, pending_diagnostic *d) FINAL OVERRIDE
   {
     LOG_FUNC (get_logger ());
     gcc_assert (d); // take ownership
-
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL);
-    state_machine::state_t current;
-    if (var)
-      {
-	const svalue *var_old_sval
-	  = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
-	current = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
-      }
-    else
-      current = m_old_smap->get_global_state ();
 
-    if (state == current)
-      {
-	const svalue *var_old_sval
-	  = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
-	m_eg.get_diagnostic_manager ().add_diagnostic
-	  (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
-	   var, var_old_sval, state, d);
-      }
-    else
-      delete d;
+    const svalue *var_old_sval
+      = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
+    state_machine::state_t current
+      = (var
+	 ? m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ())
+	 : m_old_smap->get_global_state ());
+    m_eg.get_diagnostic_manager ().add_diagnostic
+      (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
+       var, var_old_sval, current, d);
   }
 
   /* Hook for picking more readable trees for SSA names of temporaries,
@@ -815,8 +814,8 @@ exploded_node::get_dot_fillcolor () const
       for (sm_state_map::iterator_t iter = smap->begin ();
 	   iter != smap->end ();
 	   ++iter)
-	total_sm_state += (*iter).second.m_state;
-      total_sm_state += smap->get_global_state ();
+	total_sm_state += (*iter).second.m_state->get_id ();
+      total_sm_state += smap->get_global_state ()->get_id ();
     }
 
   if (total_sm_state > 0)

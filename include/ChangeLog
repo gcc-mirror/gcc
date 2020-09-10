@@ -1,3 +1,13 @@
+2020-09-09  Caroline Tice  <cmtice@google.com>
+
+	* dwarf2.h (enum dwarf_sect_v5): A new enum section for the
+	sections in a DWARF 5 DWP file (DWP version 5).
+
+2020-09-09  Caroline Tice  <cmtice@google.com>
+
+	* dwarf2.h (enum dwarf_sect_v5): A new enum section for the
+	sections in a DWARF 5 DWP file (DWP version 5).
+
 2020-09-08  Felix Willgerodt  <felix.willgerodt@intel.com>
 
 	* floatformat.h (floatformat_bfloat16_big): New.

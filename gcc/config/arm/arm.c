@@ -3024,10 +3024,11 @@ static GTY(()) bool thumb_flipper;
 static GTY(()) tree init_optimize;
 
 static void
-arm_override_options_after_change_1 (struct gcc_options *opts)
+arm_override_options_after_change_1 (struct gcc_options *opts,
+				     struct gcc_options *opts_set)
 {
   /* -falign-functions without argument: supply one.  */
-  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+  if (opts->x_flag_align_functions && !opts_set->x_str_align_functions)
     opts->x_str_align_functions = TARGET_THUMB_P (opts->x_target_flags)
       && opts->x_optimize_size ? "2" : "4";
 }
@@ -3037,11 +3038,7 @@ arm_override_options_after_change_1 (struct gcc_options *opts)
 static void
 arm_override_options_after_change (void)
 {
-  arm_configure_build_target (&arm_active_target,
-			      TREE_TARGET_OPTION (target_option_default_node),
-			      &global_options_set, false);
-
-  arm_override_options_after_change_1 (&global_options);
+  arm_override_options_after_change_1 (&global_options, &global_options_set);
 }
 
 /* Implement TARGET_OPTION_SAVE.  */
@@ -3069,7 +3066,7 @@ static void
 arm_option_override_internal (struct gcc_options *opts,
 			      struct gcc_options *opts_set)
 {
-  arm_override_options_after_change_1 (opts);
+  arm_override_options_after_change_1 (opts, opts_set);
 
   if (TARGET_INTERWORK && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
     {
@@ -32338,6 +32335,8 @@ arm_set_current_function (tree fndecl)
   cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
 
   save_restore_target_globals (new_tree);
+
+  arm_override_options_after_change_1 (&global_options, &global_options_set);
 }
 
 /* Implement TARGET_OPTION_PRINT.  */

@@ -414,6 +414,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
 -Wno-analyzer-malloc-leak @gol
+-Wno-analyzer-mismatching-deallocation @gol
 -Wno-analyzer-null-argument @gol
 -Wno-analyzer-null-dereference @gol
 -Wno-analyzer-possible-null-argument @gol
@@ -8645,6 +8646,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
+-Wanalyzer-mismatching-deallocation @gol
 -Wanalyzer-possible-null-argument @gol
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
@@ -8728,6 +8730,17 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a
 pointer allocated via @code{malloc} is leaked.
+
+@item -Wno-analyzer-mismatching-deallocation
+@opindex Wanalyzer-mismatching-deallocation
+@opindex Wno-analyzer-mismatching-deallocation
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-mismatching-deallocation}
+to disable it.
+
+This diagnostic warns for paths through the code in which the
+wrong deallocation function is called on a pointer value, based on
+which function was used to allocate the pointer value.
 
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
@@ -17331,6 +17344,7 @@ and the features that they enable by default:
 @item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+fp16fml}, @samp{+dotprod}
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
+@item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
@@ -17370,8 +17384,8 @@ performance of the code.  Permissible values for this option are:
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
-@samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}
-@samp{native}.
+@samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
+@samp{cortex-r82}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},

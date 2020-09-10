@@ -212,7 +212,11 @@ static void
 cleanup_call_ctrl_altering_flag (basic_block bb, gimple *bb_end)
 {
   if (!is_gimple_call (bb_end)
-      || !gimple_call_ctrl_altering_p (bb_end))
+      || !gimple_call_ctrl_altering_p (bb_end)
+      || (/* IFN_UNIQUE should be the last insn, to make checking for it
+	     as cheap as possible.  */
+	  gimple_call_internal_p (bb_end)
+	  && gimple_call_internal_unique_p (bb_end)))
     return;
 
   int flags = gimple_call_flags (bb_end);

@@ -1,3 +1,27 @@
+2020-09-09  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_initialize_syminfo): Add is_64 parameter.
+	(coff_add): Determine and pass is_64.
+
+2020-09-09  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/96973
+	* fileline.c (macho_get_executable_path): New static function.
+	(fileline_initialize): Call macho_get_executable_path.
+
+2020-09-09  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (function_addrs_search): Compare against the next entry
+	low address, not the high address.
+	(unit_addrs_search): Likewise.
+	(build_address_map): Add a trailing unit_addrs.
+	(read_function_entry): Add a trailing function_addrs.
+	(read_function_info): Likewise.
+	(report_inlined_functions): Search backward for function_addrs
+	match.
+	(dwarf_lookup_pc): Search backward for unit_addrs and
+	function_addrs matches.
+
 2020-09-08  Ian Lance Taylor  <iant@golang.org>
 
 	* simple.c (simple_unwind): Correct comment spelling.

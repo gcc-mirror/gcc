@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "debug.h"
 #include "alloc-pool.h"
+#include "toplev.h"
 
 /* Allocator used to hold string slot entries for line map streaming.  */
 static struct object_allocator<struct string_slot> *string_slot_allocator;
@@ -50,10 +51,57 @@ static struct object_allocator<struct string_slot> *string_slot_allocator;
 /* The table to hold the file names.  */
 static hash_table<string_slot_hasher> *file_name_hash_table;
 
+/* The table to hold the relative pathname prefixes.  */
+
 /* This obstack holds file names used in locators. Line map datastructures
    points here and thus it needs to be kept allocated as long as linemaps
    exists.  */
 static struct obstack file_name_obstack;
+
+/* Map a pair of nul terminated strings where the first one can be
+   pointer compared, but the second can't, to another string.  */
+struct string_pair_map
+{
+  const char *str1;
+  const char *str2;
+  const char *str3;
+  hashval_t hash;
+  bool prefix;
+};
+
+/* Allocator used to hold string pair map entries for line map streaming.  */
+static struct object_allocator<struct string_pair_map>
+  *string_pair_map_allocator;
+
+struct string_pair_map_hasher : nofree_ptr_hash <string_pair_map>
+{
+  static inline hashval_t hash (const string_pair_map *);
+  static inline bool equal (const string_pair_map *, const string_pair_map *);
+};
+
+inline hashval_t
+string_pair_map_hasher::hash (const string_pair_map *spm)
+{
+  return spm->hash;
+}
+
+inline bool
+string_pair_map_hasher::equal (const string_pair_map *spm1,
+			       const string_pair_map *spm2)
+{
+  return (spm1->hash == spm2->hash
+	  && spm1->str1 == spm2->str1
+	  && spm1->prefix == spm2->prefix
+	  && strcmp (spm1->str2, spm2->str2) == 0);
+}
+
+/* The table to hold the pairs of pathnames and corresponding
+   resulting pathname.  Used for both mapping of get_src_pwd ()
+   and recorded source working directory to relative path prefix
+   from current working directory to the recorded one, and for
+   mapping of that relative path prefix and some relative path
+   to those concatenated.  */
+static hash_table<string_pair_map_hasher> *path_name_pair_hash_table;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -90,13 +138,216 @@ lto_input_data_block (class lto_input_block *ib, void *addr, size_t length)
     buffer[i] = streamer_read_uchar (ib);
 }
 
+/* Compute the relative path to get to DATA_WD (absolute directory name)
+   from CWD (another absolute directory name).  E.g. for
+   DATA_WD of "/tmp/foo/bar" and CWD of "/tmp/baz/qux" return
+   "../../foo/bar".  Returned string should be freed by the caller.
+   Return NULL if absolute file name needs to be used.  */
 
-/* Lookup STRING in file_name_hash_table.  If found, return the existing
-   string, otherwise insert STRING as the canonical version.  */
+static char *
+relative_path_prefix (const char *data_wd, const char *cwd)
+{
+  const char *d = data_wd;
+  const char *c = cwd;
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+  if (d[1] == ':')
+    {
+      if (!IS_DIR_SEPARATOR (d[2]))
+	return NULL;
+      if (c[0] == d[0] && c[1] == ':' && IS_DIR_SEPARATOR (c[2]))
+	{
+	  c += 3;
+	  d += 3;
+	}
+      else
+	return NULL;
+    }
+  else if (c[1] == ':')
+    return NULL;
+#endif
+  do
+    {
+      while (IS_DIR_SEPARATOR (*d))
+	d++;
+      while (IS_DIR_SEPARATOR (*c))
+	c++;
+      size_t i;
+      for (i = 0; c[i] && !IS_DIR_SEPARATOR (c[i]) && c[i] == d[i]; i++)
+	;
+      if ((c[i] == '\0' || IS_DIR_SEPARATOR (c[i]))
+	  && (d[i] == '\0' || IS_DIR_SEPARATOR (d[i])))
+	{
+	  c += i;
+	  d += i;
+	  if (*c == '\0' || *d == '\0')
+	    break;
+	}
+      else
+	break;
+    }
+  while (1);
+  size_t num_up = 0;
+  do
+    {
+      while (IS_DIR_SEPARATOR (*c))
+	c++;
+      if (*c == '\0')
+	break;
+      num_up++;
+      while (*c && !IS_DIR_SEPARATOR (*c))
+	c++;
+    }
+  while (1);
+  while (IS_DIR_SEPARATOR (*d))
+    d++;
+  size_t len = strlen (d);
+  if (len == 0 && num_up == 0)
+    return xstrdup (".");
+  char *ret = XNEWVEC (char, num_up * 3 + len + 1);
+  char *p = ret;
+  for (; num_up; num_up--)
+    {
+      const char dir_up[3] = { '.', '.', DIR_SEPARATOR };
+      memcpy (p, dir_up, 3);
+      p += 3;
+    }
+  memcpy (p, d, len + 1);
+  return ret;
+}
+
+/* Look up DATA_WD in hash table of relative prefixes.  If found,
+   return relative path from CWD to DATA_WD from the hash table,
+   otherwise create it.  */
 
 static const char *
-canon_file_name (const char *string)
+canon_relative_path_prefix (const char *data_wd, const char *cwd)
 {
+  if (!IS_ABSOLUTE_PATH (data_wd) || !IS_ABSOLUTE_PATH (cwd))
+    return NULL;
+
+  if (!path_name_pair_hash_table)
+    {
+      path_name_pair_hash_table
+	= new hash_table<string_pair_map_hasher> (37);
+      string_pair_map_allocator
+	= new object_allocator <struct string_pair_map>
+		("line map string pair map hash");
+    }
+
+  inchash::hash h;
+  h.add_ptr (cwd);
+  h.merge_hash (htab_hash_string (data_wd));
+  h.add_int (true);
+
+  string_pair_map s_slot;
+  s_slot.str1 = cwd;
+  s_slot.str2 = data_wd;
+  s_slot.str3 = NULL;
+  s_slot.hash = h.end ();
+  s_slot.prefix = true;
+
+  string_pair_map **slot
+    = path_name_pair_hash_table->find_slot (&s_slot, INSERT);
+  if (*slot == NULL)
+    {
+      /* Compute relative path from cwd directory to data_wd directory.
+	 E.g. if cwd is /tmp/foo/bar and data_wd is /tmp/baz/qux ,
+	 it will return ../../baz/qux .  */
+      char *relative_path = relative_path_prefix (data_wd, cwd);
+      const char *relative = relative_path ? relative_path : data_wd;
+      size_t relative_len = strlen (relative);
+      gcc_assert (relative_len);
+
+      size_t data_wd_len = strlen (data_wd);
+      bool add_separator = false;
+      if (!IS_DIR_SEPARATOR (relative[relative_len - 1]))
+	add_separator = true;
+
+      size_t len = relative_len + 1 + data_wd_len + 1 + add_separator;
+
+      char *saved_string = XOBNEWVEC (&file_name_obstack, char, len);
+      struct string_pair_map *new_slot
+	= string_pair_map_allocator->allocate ();
+      memcpy (saved_string, data_wd, data_wd_len + 1);
+      memcpy (saved_string + data_wd_len + 1, relative, relative_len);
+      if (add_separator)
+	saved_string[len - 2] = DIR_SEPARATOR;
+      saved_string[len - 1] = '\0';
+      new_slot->str1 = cwd;
+      new_slot->str2 = saved_string;
+      new_slot->str3 = saved_string + data_wd_len + 1;
+      if (relative_len == 1 && relative[0] == '.')
+	new_slot->str3 = NULL;
+      new_slot->hash = s_slot.hash;
+      new_slot->prefix = true;
+      *slot = new_slot;
+      free (relative_path);
+      return new_slot->str3;
+    }
+  else
+    {
+      string_pair_map *old_slot = *slot;
+      return old_slot->str3;
+    }
+}
+
+/* Look up the pair of RELATIVE_PREFIX and STRING strings in a hash table.
+   If found, return the concatenation of those from the hash table,
+   otherwise concatenate them.  */
+
+static const char *
+canon_relative_file_name (const char *relative_prefix, const char *string)
+{
+  inchash::hash h;
+  h.add_ptr (relative_prefix);
+  h.merge_hash (htab_hash_string (string));
+
+  string_pair_map s_slot;
+  s_slot.str1 = relative_prefix;
+  s_slot.str2 = string;
+  s_slot.str3 = NULL;
+  s_slot.hash = h.end ();
+  s_slot.prefix = false;
+
+  string_pair_map **slot
+    = path_name_pair_hash_table->find_slot (&s_slot, INSERT);
+  if (*slot == NULL)
+    {
+      size_t relative_prefix_len = strlen (relative_prefix);
+      size_t string_len = strlen (string);
+      size_t len = relative_prefix_len + string_len + 1;
+
+      char *saved_string = XOBNEWVEC (&file_name_obstack, char, len);
+      struct string_pair_map *new_slot
+	= string_pair_map_allocator->allocate ();
+      memcpy (saved_string, relative_prefix, relative_prefix_len);
+      memcpy (saved_string + relative_prefix_len, string, string_len + 1);
+      new_slot->str1 = relative_prefix;
+      new_slot->str2 = saved_string + relative_prefix_len;
+      new_slot->str3 = saved_string;
+      new_slot->hash = s_slot.hash;
+      new_slot->prefix = false;
+      *slot = new_slot;
+      return new_slot->str3;
+    }
+  else
+    {
+      string_pair_map *old_slot = *slot;
+      return old_slot->str3;
+    }
+}
+
+/* Lookup STRING in file_name_hash_table.  If found, return the existing
+   string, otherwise insert STRING as the canonical version.
+   If STRING is a relative pathname and RELATIVE_PREFIX is non-NULL, use
+   canon_relative_file_name instead.  */
+
+static const char *
+canon_file_name (const char *relative_prefix, const char *string)
+{
+  if (relative_prefix && !IS_ABSOLUTE_PATH (string))
+    return canon_relative_file_name (relative_prefix, string);
+
   string_slot **slot;
   struct string_slot s_slot;
   size_t len = strlen (string);
@@ -261,10 +512,12 @@ lto_location_cache::input_location_and_block (location_t *loc,
   static int stream_col;
   static bool stream_sysp;
   static tree stream_block;
+  static const char *stream_relative_path_prefix;
 
   gcc_assert (current_cache == this);
 
-  *loc = bp_unpack_int_in_range (bp, "location", 0, RESERVED_LOCATION_COUNT);
+  *loc = bp_unpack_int_in_range (bp, "location", 0,
+				 RESERVED_LOCATION_COUNT + 1);
 
   if (*loc < RESERVED_LOCATION_COUNT)
     {
@@ -279,16 +532,28 @@ lto_location_cache::input_location_and_block (location_t *loc,
       return;
     }
 
+  bool file_change = (*loc == RESERVED_LOCATION_COUNT + 1);
   /* Keep value RESERVED_LOCATION_COUNT in *loc as linemap lookups will
      ICE on it.  */
-
-  bool file_change = bp_unpack_value (bp, 1);
+  *loc = RESERVED_LOCATION_COUNT;
   bool line_change = bp_unpack_value (bp, 1);
   bool column_change = bp_unpack_value (bp, 1);
 
   if (file_change)
     {
-      stream_file = canon_file_name (bp_unpack_string (data_in, bp));
+      bool pwd_change = bp_unpack_value (bp, 1);
+      if (pwd_change)
+	{
+	  const char *pwd = bp_unpack_string (data_in, bp);
+	  const char *src_pwd = get_src_pwd ();
+	  if (strcmp (pwd, src_pwd) == 0)
+	    stream_relative_path_prefix = NULL;
+	  else
+	    stream_relative_path_prefix
+	      = canon_relative_path_prefix (pwd, src_pwd);
+	}
+      stream_file = canon_file_name (stream_relative_path_prefix,
+				     bp_unpack_string (data_in, bp));
       stream_sysp = bp_unpack_value (bp, 1);
     }
 
@@ -1857,6 +2122,10 @@ lto_free_file_name_hash (void)
   file_name_hash_table = NULL;
   delete string_slot_allocator;
   string_slot_allocator = NULL;
+  delete path_name_pair_hash_table;
+  path_name_pair_hash_table = NULL;
+  delete string_pair_map_allocator;
+  string_pair_map_allocator = NULL;
   /* file_name_obstack must stay allocated since it is referred to by
      line map table.  */
 }

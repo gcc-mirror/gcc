@@ -1,3 +1,15 @@
+2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95109
+	PR fortran/94690
+	* resolve.c (gfc_resolve_code): Also call
+	gfc_resolve_omp_parallel_blocks for 'distribute parallel do (simd)'.
+	* openmp.c (gfc_resolve_omp_parallel_blocks): Handle it.
+	(gfc_resolve_do_iterator): Remove special code for SIMD, which is
+	not needed.
+	* trans-openmp.c (gfc_trans_omp_target): For TARGET_PARALLEL_DO_SIMD,
+	call simd not do processing function.
+
 2020-09-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsic.texi: Fix description of FINDLOC result.

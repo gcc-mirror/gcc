@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h" /* remap_debug_filename()  */
 #include "output.h"
 #include "ipa-utils.h"
+#include "toplev.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -61,6 +62,7 @@ clear_line_info (struct output_block *ob)
   ob->current_col = 0;
   ob->current_sysp = false;
   ob->reset_locus = true;
+  ob->emit_pwd = true;
   /* Initialize to something that will never appear as block,
      so that the first location with block in a function etc.
      always streams a change_block bit and the first block.  */
@@ -189,9 +191,6 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
 {
   location_t loc = LOCATION_LOCUS (orig_loc);
 
-  bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT,
-		        loc < RESERVED_LOCATION_COUNT
-			? loc : RESERVED_LOCATION_COUNT);
   if (loc >= RESERVED_LOCATION_COUNT)
     {
       expanded_location xloc = expand_location (loc);
@@ -207,13 +206,30 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
 	  ob->reset_locus = false;
 	}
 
-      bp_pack_value (bp, ob->current_file != xloc.file, 1);
+      /* As RESERVED_LOCATION_COUNT is 2, we can use the spare value of
+	 3 without wasting additional bits to signalize file change.
+	 If RESERVED_LOCATION_COUNT changes, reconsider this.  */
+      gcc_checking_assert (RESERVED_LOCATION_COUNT == 2);
+      bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT + 1,
+			    RESERVED_LOCATION_COUNT
+			    + (ob->current_file != xloc.file));
+
       bp_pack_value (bp, ob->current_line != xloc.line, 1);
       bp_pack_value (bp, ob->current_col != xloc.column, 1);
 
       if (ob->current_file != xloc.file)
 	{
-	  bp_pack_string (ob, bp, remap_debug_filename (xloc.file), true);
+	  bool stream_pwd = false;
+	  const char *remapped = remap_debug_filename (xloc.file);
+	  if (ob->emit_pwd && remapped && !IS_ABSOLUTE_PATH (remapped))
+	    {
+	      stream_pwd = true;
+	      ob->emit_pwd = false;
+	    }
+	  bp_pack_value (bp, stream_pwd, 1);
+	  if (stream_pwd)
+	    bp_pack_string (ob, bp, get_src_pwd (), true);
+	  bp_pack_string (ob, bp, remapped, true);
 	  bp_pack_value (bp, xloc.sysp, 1);
 	}
       ob->current_file = xloc.file;
@@ -227,6 +243,8 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
 	bp_pack_var_len_unsigned (bp, xloc.column);
       ob->current_col = xloc.column;
     }
+  else
+    bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT + 1, loc);
 
   if (block_p)
     {
@@ -2376,7 +2394,6 @@ output_function (struct cgraph_node *node)
   fn = DECL_STRUCT_FUNCTION (function);
   ob = create_output_block (LTO_section_function_body);
 
-  clear_line_info (ob);
   ob->symbol = node;
 
   gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
@@ -2462,7 +2479,6 @@ output_constructor (struct varpool_node *node)
   timevar_push (TV_IPA_LTO_CTORS_OUT);
   ob = create_output_block (LTO_section_function_body);
 
-  clear_line_info (ob);
   ob->symbol = node;
 
   /* Make string 0 be a NULL string.  */

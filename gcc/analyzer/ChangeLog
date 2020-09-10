@@ -1,3 +1,226 @@
+2020-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94355
+	* analyzer.opt (Wanalyzer-mismatching-deallocation): New warning.
+	* region-model-impl-calls.cc
+	(region_model::impl_call_operator_new): New.
+	(region_model::impl_call_operator_delete): New.
+	* region-model.cc (region_model::on_call_pre): Detect operator new
+	and operator delete.
+	(region_model::on_call_post): Likewise.
+	(region_model::maybe_update_for_edge): Detect EH edges and call...
+	(region_model::apply_constraints_for_exception): New function.
+	* region-model.h (region_model::impl_call_operator_new): New decl.
+	(region_model::impl_call_operator_delete): New decl.
+	(region_model::apply_constraints_for_exception): New decl.
+	* sm-malloc.cc (enum resource_state): New.
+	(struct allocation_state): New state subclass.
+	(enum wording): New.
+	(struct api): New.
+	(malloc_state_machine::custom_data_t): New typedef.
+	(malloc_state_machine::add_state): New decl.
+	(malloc_state_machine::m_unchecked)
+	(malloc_state_machine::m_nonnull)
+	(malloc_state_machine::m_freed): Delete these states in favor
+	of...
+	(malloc_state_machine::m_malloc)
+	(malloc_state_machine::m_scalar_new)
+	(malloc_state_machine::m_vector_new): ...this new api instances,
+	which own their own versions of these states.
+	(malloc_state_machine::on_allocator_call): New decl.
+	(malloc_state_machine::on_deallocator_call): New decl.
+	(api::api): New ctor.
+	(dyn_cast_allocation_state): New.
+	(as_a_allocation_state): New.
+	(get_rs): New.
+	(unchecked_p): New.
+	(nonnull_p): New.
+	(freed_p): New.
+	(malloc_diagnostic::describe_state_change): Use unchecked_p and
+	nonnull_p.
+	(class mismatching_deallocation): New.
+	(double_free::double_free): Add funcname param for initializing
+	m_funcname.
+	(double_free::emit): Use m_funcname in warning message rather
+	than hardcoding "free".
+	(double_free::describe_state_change): Likewise.  Use freed_p.
+	(double_free::describe_call_with_state): Use freed_p.
+	(double_free::describe_final_event): Use m_funcname in message
+	rather than hardcoding "free".
+	(double_free::m_funcname): New field.
+	(possible_null::describe_state_change): Use unchecked_p.
+	(possible_null::describe_return_of_state): Likewise.
+	(use_after_free::use_after_free): Add param for initializing m_api.
+	(use_after_free::emit): Use m_api->m_dealloc_funcname in message
+	rather than hardcoding "free".
+	(use_after_free::describe_state_change): Use freed_p.  Change the
+	wording of the message based on the API.
+	(use_after_free::describe_final_event): Use
+	m_api->m_dealloc_funcname in message rather than hardcoding
+	"free".  Change the wording of the message based on the API.
+	(use_after_free::m_api): New field.
+	(malloc_leak::describe_state_change): Use unchecked_p.  Update
+	for renaming of m_malloc_event to m_alloc_event.
+	(malloc_leak::describe_final_event): Update for renaming of
+	m_malloc_event to m_alloc_event.
+	(malloc_leak::m_malloc_event): Rename...
+	(malloc_leak::m_alloc_event): ...to this.
+	(free_of_non_heap::free_of_non_heap): Add param for initializing
+	m_funcname.
+	(free_of_non_heap::emit): Use m_funcname in message rather than
+	hardcoding "free".
+	(free_of_non_heap::describe_final_event): Likewise.
+	(free_of_non_heap::m_funcname): New field.
+	(allocation_state::dump_to_pp): New.
+	(allocation_state::get_nonnull): New.
+	(malloc_state_machine::malloc_state_machine): Update for changes
+	to state fields and new api fields.
+	(malloc_state_machine::add_state): New.
+	(malloc_state_machine::on_stmt): Move malloc/calloc handling to
+	on_allocator_call and call it, passing in the API pointer.
+	Likewise for free, moving it to on_deallocator_call.  Handle calls
+	to operator new and delete in an analogous way.  Use unchecked_p
+	when testing for possibly-null-arg and possibly-null-deref, and
+	transition to the non-null for the correct API.  Remove redundant
+	node param from call to on_zero_assignment.  Use freed_p for
+	use-after-free check, and pass in API.
+	(malloc_state_machine::on_allocator_call): New, based on code in
+	on_stmt.
+	(malloc_state_machine::on_deallocator_call): Likewise.
+	(malloc_state_machine::on_phi): Mark node param with
+	ATTRIBUTE_UNUSED; don't pass it to on_zero_assignment.
+	(malloc_state_machine::on_condition): Mark node param with
+	ATTRIBUTE_UNUSED.  Replace on_transition calls with get_state and
+	set_next_state pairs, transitioning to the non-null state for the
+	appropriate API.
+	(malloc_state_machine::can_purge_p): Port to new state approach.
+	(malloc_state_machine::on_zero_assignment): Replace on_transition
+	calls with get_state and set_next_state pairs.  Drop redundant
+	node param.
+	* sm.h (state_machine::add_custom_state): New.
+
+2020-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc
+	(null_assignment_sm_context::warn_for_state): Replace with...
+	(null_assignment_sm_context::warn): ...this.
+	* engine.cc (impl_sm_context::warn_for_state): Replace with...
+	(impl_sm_context::warn): ...this.
+	* sm-file.cc (fileptr_state_machine::on_stmt): Replace
+	warn_for_state and on_transition calls with a get_state
+	test guarding warn and set_next_state calls.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Likewise.
+	* sm-pattern-test.cc (pattern_test_state_machine::on_condition):
+	Replace warn_for_state call with warn call.
+	* sm-sensitive.cc
+	(sensitive_state_machine::warn_for_any_exposure): Replace
+	warn_for_state call with a get_state test guarding a warn call.
+	* sm-signal.cc (signal_state_machine::on_stmt): Likewise.
+	* sm-taint.cc (taint_state_machine::on_stmt):  Replace
+	warn_for_state and on_transition calls with a get_state
+	test guarding warn and set_next_state calls.
+	* sm.h (sm_context::warn_for_state): Replace with...
+	(sm_context::warn): ...this.
+
+2020-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc
+	(null_assignment_sm_context::null_assignment_sm_context): Add old_state
+	and ext_state params, initializing m_old_state and m_ext_state.
+	(null_assignment_sm_context::on_transition): Split into...
+	(null_assignment_sm_context::get_state): ...this new vfunc
+	implementation and...
+	(null_assignment_sm_context::set_next_state): ...this new vfunc
+	implementation.
+	(null_assignment_sm_context::m_old_state): New field.
+	(null_assignment_sm_context::m_ext_state): New field.
+	(diagnostic_manager::add_events_for_eedge): Pass in old state and
+	ext_state when creating sm_ctxt.
+	* engine.cc (impl_sm_context::on_transition): Split into...
+	(impl_sm_context::get_state): ...this new vfunc
+	implementation and...
+	(impl_sm_context::set_next_state): ...this new vfunc
+	implementation.
+	* sm.h (sm_context::get_state): New pure virtual function.
+	(sm_context::set_next_state): Likewise.
+	(sm_context::on_transition): Convert from a pure virtual function
+	to a regular function implemented in terms of get_state and
+	set_next_state.
+
+2020-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (state_change_event::get_desc): Update
+	state_machine::get_state_name calls to state::get_name.
+	(warning_event::get_desc): Likewise.
+	* diagnostic-manager.cc
+	(null_assignment_sm_context::on_transition): Update comparison
+	against 0 with comparison with m_sm.get_start_state.
+	(diagnostic_manager::prune_for_sm_diagnostic): Update
+	state_machine::get_state_name calls to state::get_name.
+	* engine.cc (impl_sm_context::on_transition): Likewise.
+	(exploded_node::get_dot_fillcolor): Use get_id when summing
+	the sm states.
+	* program-state.cc (sm_state_map::sm_state_map): Don't hardcode
+	0 as the start state when initializing m_global_state.
+	(sm_state_map::print): Use dump_to_pp rather than get_state_name
+	when dumping states.
+	(sm_state_map::is_empty_p): Don't hardcode 0 as the start state
+	when examining m_global_state.
+	(sm_state_map::hash): Use get_id when hashing states.
+	(selftest::test_sm_state_map): Use state objects rather than
+	arbitrary hardcoded integers.
+	(selftest::test_program_state_merging): Likewise.
+	(selftest::test_program_state_merging_2): Likewise.
+	* sm-file.cc (fileptr_state_machine::m_start): Move to base class.
+	(file_diagnostic::describe_state_change): Use get_start_state.
+	(fileptr_state_machine::fileptr_state_machine): Drop m_start
+	initialization.
+	* sm-malloc.cc (malloc_state_machine::m_start): Move to base
+	class.
+	(malloc_diagnostic::describe_state_change): Use get_start_state.
+	(possible_null::describe_state_change): Likewise.
+	(malloc_state_machine::malloc_state_machine): Drop m_start
+	initialization.
+	* sm-pattern-test.cc (pattern_test_state_machine::m_start): Move
+	to base class.
+	(pattern_test_state_machine::pattern_test_state_machine): Drop
+	m_start initialization.
+	* sm-sensitive.cc (sensitive_state_machine::m_start): Move to base
+	class.
+	(sensitive_state_machine::sensitive_state_machine): Drop m_start
+	initialization.
+	* sm-signal.cc (signal_state_machine::m_start): Move to base
+	class.
+	(signal_state_machine::signal_state_machine): Drop m_start
+	initialization.
+	* sm-taint.cc (taint_state_machine::m_start): Move to base class.
+	(taint_state_machine::taint_state_machine): Drop m_start
+	initialization.
+	* sm.cc (state_machine::state::dump_to_pp): New.
+	(state_machine::state_machine): Move here from sm.h.  Initialize
+	m_next_state_id and m_start.
+	(state_machine::add_state): Reimplement in terms of state objects.
+	(state_machine::get_state_name): Delete.
+	(state_machine::get_state_by_name): Reimplement in terms of state
+	objects.  Make const.
+	(state_machine::validate): Delete.
+	(state_machine::dump_to_pp): Reimplement in terms of state
+	objects.
+	* sm.h (state_machine::state): New class.
+	(state_machine::state_t): Convert typedef from "unsigned" to
+	"const state_machine::state *".
+	(state_machine::state_machine): Move to sm.cc.
+	(state_machine::get_default_state): Use m_start rather than
+	hardcoding 0.
+	(state_machine::get_state_name): Delete.
+	(state_machine::get_state_by_name): Make const.
+	(state_machine::get_start_state): New accessor.
+	(state_machine::alloc_state_id): New.
+	(state_machine::m_state_names): Drop in favor of...
+	(state_machine::m_states): New field
+	(state_machine::m_start): New field
+	(start_start_p): Delete.
+
 2020-09-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96949

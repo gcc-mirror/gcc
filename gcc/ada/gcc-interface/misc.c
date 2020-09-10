@@ -35,6 +35,7 @@
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "toplev.h"
+#include "tree-pass.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "plugin.h"
@@ -306,6 +307,9 @@ internal_error_function (diagnostic_context *context, const char *msgid,
 
   /* Warn if plugins present.  */
   warn_if_plugins ();
+
+  /* Dump the representation of the function.  */
+  emergency_dump_function ();
 
   /* Reset the pretty-printer.  */
   pp_clear_output_area (context->printer);

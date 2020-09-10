@@ -464,7 +464,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
-      TINFO_VAR_DECLARED_CONSTINIT (in TEMPLATE_INFO)
       CALL_FROM_NEW_OR_DELETE_P (in CALL_EXPR)
    3: IMPLICIT_RVALUE_P (in NON_LVALUE_EXPR or STATIC_CAST_EXPR)
       ICS_BAD_FLAG (in _CONV)
@@ -506,7 +505,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
    Usage of DECL_LANG_FLAG_?:
    0: DECL_TEMPLATE_PARM_P (in PARM_DECL, CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
-      DECL_LOCAL_FUNCTION_P (in FUNCTION_DECL)
+      DECL_LOCAL_DECL_P (in FUNCTION_DECL, VAR_DECL)
       DECL_MUTABLE_P (in FIELD_DECL)
       DECL_DEPENDENT_P (in USING_DECL)
       LABEL_DECL_BREAK (in LABEL_DECL)
@@ -534,6 +533,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TYPE_DECL_ALIAS_P (in TYPE_DECL)
    7: DECL_THUNK_P (in a member FUNCTION_DECL)
       DECL_NORMAL_CAPTURE_P (in FIELD_DECL)
+      DECL_DECLARED_CONSTINIT_P (in VAR_DECL)
    8: DECL_DECLARED_CONSTEXPR_P (in VAR_DECL, FUNCTION_DECL)
 
    Usage of language-independent fields in a language-dependent manner:
@@ -1461,11 +1461,6 @@ struct GTY (()) tree_lambda_expr
    of the member template of a particular class specialization.  */
 #define TINFO_USED_TEMPLATE_ID(NODE) \
   (TREE_LANG_FLAG_1 (TEMPLATE_INFO_CHECK (NODE)))
-
-/* Non-zero if this variable template specialization was declared with the
-   `constinit' specifier.  */
-#define TINFO_VAR_DECLARED_CONSTINIT(NODE) \
-  (TREE_LANG_FLAG_2 (TEMPLATE_INFO_CHECK (NODE)))
 
 /* The representation of a deferred access check.  */
 
@@ -3224,6 +3219,10 @@ struct GTY(()) lang_decl {
 #define DECL_EXTERN_C_FUNCTION_P(NODE) \
   (DECL_NON_THUNK_FUNCTION_P (NODE) && DECL_EXTERN_C_P (NODE))
 
+/* Non-zero if this variable is declared `constinit' specifier.  */
+#define DECL_DECLARED_CONSTINIT_P(NODE)		\
+  (DECL_LANG_FLAG_7 (VAR_DECL_CHECK (NODE)))
+
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
   DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
@@ -4009,10 +4008,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPE_CONTAINS_VPTR_P(NODE)		\
   (TYPE_POLYMORPHIC_P (NODE) || CLASSTYPE_VBASECLASSES (NODE))
 
-/* Nonzero if NODE is a FUNCTION_DECL (for a function with global
-   scope) declared in a local scope.  */
-#define DECL_LOCAL_FUNCTION_P(NODE) \
-  DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
+/* Nonzero if NODE is a FUNCTION_DECL or VARIABLE_DECL (for a decl
+   with namespace scope) declared in a local scope.  */
+#define DECL_LOCAL_DECL_P(NODE) \
+  DECL_LANG_FLAG_0 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero if NODE is the target for genericization of 'break' stmts.  */
 #define LABEL_DECL_BREAK(NODE) \
