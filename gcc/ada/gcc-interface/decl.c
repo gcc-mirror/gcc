@@ -8849,11 +8849,15 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
     if (!Is_Access_Type (Etype (Node (gnat_constr))))
       {
 	tree gnu_field = gnat_to_gnu_field_decl (gnat_discrim);
-	tree replacement = convert (TREE_TYPE (gnu_field),
-				    elaborate_expression
-				    (Node (gnat_constr), gnat_subtype,
-				     get_entity_char (gnat_discrim),
-				     definition, true, false));
+	tree replacement
+	  = elaborate_expression (Node (gnat_constr), gnat_subtype,
+				  get_entity_char (gnat_discrim),
+				  definition, true, false);
+	/* If this is a definition, we need to make sure that the SAVE_EXPRs
+	   are instantiated on every possibly path in size computations.  */
+	if (definition && TREE_CODE (replacement) == SAVE_EXPR)
+	  add_stmt (replacement);
+	replacement = convert (TREE_TYPE (gnu_field), replacement);
 	subst_pair s = { gnu_field, replacement };
 	gnu_list.safe_push (s);
       }
