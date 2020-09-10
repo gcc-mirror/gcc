@@ -1,3 +1,13 @@
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95164
+	* decl.c (reshape_init_r): When initializing an aggregate member
+	with an initializer from an initializer-list, also consider
+	COMPOUND_LITERAL_P.
+
 2020-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
