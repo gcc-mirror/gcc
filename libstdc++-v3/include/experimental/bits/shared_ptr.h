@@ -137,10 +137,13 @@ inline namespace fundamentals_v2
 	: _Base_type(__r) { }
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Tp1, typename = _Compatible<_Tp1>>
 	shared_ptr(std::auto_ptr<_Tp1>&& __r)
 	: _Base_type(std::move(__r))
 	{ _M_enable_shared_from_this_with(static_cast<_Tp1*>(this->get())); }
+#pragma GCC diagnostic pop
 #endif
 
       template<typename _Tp1, typename _Del,
@@ -187,6 +190,8 @@ inline namespace fundamentals_v2
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Tp1>
 	_Compatible<_Tp1, shared_ptr&>
 	operator=(std::auto_ptr<_Tp1>&& __r)
@@ -194,6 +199,7 @@ inline namespace fundamentals_v2
 	  __shared_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
 	}
+#pragma GCC diagnostic pop
 #endif
 
       template <typename _Tp1, typename _Del>
