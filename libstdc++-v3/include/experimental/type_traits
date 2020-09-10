@@ -114,9 +114,9 @@ template <typename _Tp>
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 template <typename _Tp>
   constexpr bool is_pod_v = is_pod<_Tp>::value;
-#pragma GCC diagnostic pop
 template <typename _Tp>
   constexpr bool is_literal_type_v = is_literal_type<_Tp>::value;
+#pragma GCC diagnostic pop
 template <typename _Tp>
   constexpr bool is_empty_v = is_empty<_Tp>::value;
 template <typename _Tp>

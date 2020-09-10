@@ -266,6 +266,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	explicit _Unlock(_Lock& __lk) : _M_lock(__lk) { __lk.unlock(); }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	~_Unlock() noexcept(false)
 	{
 	  if (uncaught_exception())
@@ -280,6 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    _M_lock.lock();
 	}
+#pragma GCC diagnostic pop
 
 	_Unlock(const _Unlock&) = delete;
 	_Unlock& operator=(const _Unlock&) = delete;
