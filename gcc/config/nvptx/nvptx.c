@@ -2054,7 +2054,11 @@ nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
 
   for (unsigned part = 0; size; size -= part)
     {
-      val >>= part * BITS_PER_UNIT;
+      if (part * BITS_PER_UNIT == HOST_BITS_PER_WIDE_INT)
+	/* Avoid undefined behaviour.  */
+	val = 0;
+      else
+	val >>= (part * BITS_PER_UNIT);
       part = init_frag.size - init_frag.offset;
       part = MIN (part, size);
 
