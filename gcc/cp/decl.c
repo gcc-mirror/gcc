@@ -5422,14 +5422,8 @@ start_decl (const cp_declarator *declarator,
     decl = maybe_push_decl (decl);
 
   if (processing_template_decl)
-    {
-      /* Make sure that for a `constinit' decl push_template_decl creates
-	 a DECL_TEMPLATE_INFO info for us, so that cp_finish_decl can then set
-	 TINFO_VAR_DECLARED_CONSTINIT.  */
-      if (decl_spec_seq_has_spec_p (declspecs, ds_constinit))
-	retrofit_lang_decl (decl);
-      decl = push_template_decl (decl);
-    }
+    decl = push_template_decl (decl);
+
   if (decl == error_mark_node)
     return error_mark_node;
 
@@ -7683,7 +7677,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       /* Handle `constinit' on variable templates.  */
       if (flags & LOOKUP_CONSTINIT)
-	TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (decl)) = true;
+	DECL_DECLARED_CONSTINIT_P (decl) = true;
 
       /* Generally, initializers in templates are expanded when the
 	 template is instantiated.  But, if DECL is a variable constant
