@@ -2885,7 +2885,7 @@
   else
     gcc_unreachable ();
 }
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm,vecmove")])
 
 ;; Combiner patterns to allow creating XXPERMDI's to access either double
 ;; word element in a vector register.
@@ -4440,7 +4440,7 @@
   "@
    xxpermdi %x0,%x1,%x1,0
    mtvsrdd %x0,%1,%1"
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "vecperm,vecmove")])
 
 (define_insn "vsx_splat_<mode>_mem"
   [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
@@ -4493,7 +4493,7 @@
 	(unspec:V4SF [(match_dup 0)
 		      (const_int 0)] UNSPEC_VSX_XXSPLTW))]
   ""
-  [(set_attr "type" "vecload,vecperm,mftgpr")
+  [(set_attr "type" "vecload,vecperm,vecperm")
    (set_attr "length" "*,8,*")
    (set_attr "isa" "*,p8v,*")])
 
