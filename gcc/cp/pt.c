@@ -19278,7 +19278,8 @@ out:
 }
 
 /* Like tsubst but deals with expressions and performs semantic
-   analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)".  */
+   analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)" or
+   "F<TARGS> (ARGS)".  */
 
 tree
 tsubst_copy_and_build (tree t,
@@ -19360,7 +19361,10 @@ tsubst_copy_and_build (tree t,
     case TEMPLATE_ID_EXPR:
       {
 	tree object;
-	tree templ = RECUR (TREE_OPERAND (t, 0));
+	tree templ = tsubst_copy_and_build (TREE_OPERAND (t, 0), args,
+					    complain, in_decl,
+					    function_p,
+					    integral_constant_expression_p);
 	tree targs = TREE_OPERAND (t, 1);
 
 	if (targs)
@@ -19407,13 +19411,21 @@ tsubst_copy_and_build (tree t,
 	  }
 	else
 	  object = NULL_TREE;
-	templ = lookup_template_function (templ, targs);
+
+	tree tid = lookup_template_function (templ, targs);
 
 	if (object)
-	  RETURN (build3 (COMPONENT_REF, TREE_TYPE (templ),
-			 object, templ, NULL_TREE));
+	  RETURN (build3 (COMPONENT_REF, TREE_TYPE (tid),
+			 object, tid, NULL_TREE));
+	else if (identifier_p (templ))
+	  {
+	    /* C++20 P0846: we can encounter an IDENTIFIER_NODE here when
+	       name lookup found nothing when parsing the template name.  */
+	    gcc_assert (cxx_dialect >= cxx20 || seen_error ());
+	    RETURN (tid);
+	  }
 	else
-	  RETURN (baselink_for_fns (templ));
+	  RETURN (baselink_for_fns (tid));
       }
 
     case INDIRECT_REF:
@@ -20004,14 +20016,17 @@ tsubst_copy_and_build (tree t,
 
 	/* We do not perform argument-dependent lookup if normal
 	   lookup finds a non-function, in accordance with the
-	   expected resolution of DR 218.  */
+	   resolution of DR 218.  */
 	if (koenig_p
 	    && ((is_overloaded_fn (function)
 		 /* If lookup found a member function, the Koenig lookup is
 		    not appropriate, even if an unqualified-name was used
 		    to denote the function.  */
 		 && !DECL_FUNCTION_MEMBER_P (get_first_fn (function)))
-		|| identifier_p (function))
+		|| identifier_p (function)
+		/* C++20 P0846: Lookup found nothing.  */
+		|| (TREE_CODE (function) == TEMPLATE_ID_EXPR
+		    && identifier_p (TREE_OPERAND (function, 0))))
 	    /* Only do this when substitution turns a dependent call
 	       into a non-dependent call.  */
 	    && type_dependent_expression_p_push (t)
@@ -20019,9 +20034,13 @@ tsubst_copy_and_build (tree t,
 	  function = perform_koenig_lookup (function, call_args, tf_none);
 
 	if (function != NULL_TREE
-	    && identifier_p (function)
+	    && (identifier_p (function)
+		|| (TREE_CODE (function) == TEMPLATE_ID_EXPR
+		    && identifier_p (TREE_OPERAND (function, 0))))
 	    && !any_type_dependent_arguments_p (call_args))
 	  {
+	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	      function = TREE_OPERAND (function, 0);
 	    if (koenig_p && (complain & tf_warning_or_error))
 	      {
 		/* For backwards compatibility and good diagnostics, try
