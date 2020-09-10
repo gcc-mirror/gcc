@@ -10486,6 +10486,18 @@ proc check_effective_target_large_initializer { } {
 
     return 1
 }
+
+# Return 1 if the target allows function prototype mismatches
+# in the assembly.
+
+proc check_effective_target_non_strict_prototype { } {
+    if { [istarget nvptx*-*-*] } {
+	return 0
+    }
+
+    return 1
+}
+
 # Returns 1 if the target toolchain supports extended
 # syntax of .symver directive, 0 otherwise.
 
