@@ -1007,6 +1007,16 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		  continue;
 		}
 	    }
+
+	  if (!types_compatible_p (vectype, *node_vectype))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: different vector type "
+				 "in %G", stmt);
+	      /* Mismatch.  */
+	      continue;
+	    }
 	}
 
       /* Grouped store or load.  */
@@ -2382,7 +2392,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
   unsigned HOST_WIDE_INT const_nunits;
   if (is_a <bb_vec_info> (vinfo)
       && STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      && DR_GROUP_FIRST_ELEMENT (stmt_info)
+      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info))
       && nunits.is_constant (&const_nunits))
     {
       /* We consider breaking the group only on VF boundaries from the existing
@@ -4893,13 +4903,12 @@ vect_schedule_slp (vec_info *vinfo)
       if (is_a <loop_vec_info> (vinfo))
 	vect_remove_slp_scalar_calls (vinfo, root);
 
+      /* Remove vectorized stores original scalar stmts.  */
       for (j = 0; SLP_TREE_SCALAR_STMTS (root).iterate (j, &store_info); j++)
         {
-	  if (!STMT_VINFO_DATA_REF (store_info))
+	  if (!STMT_VINFO_DATA_REF (store_info)
+	      || !DR_IS_WRITE (STMT_VINFO_DATA_REF (store_info)))
 	    break;
-
-	  if (SLP_INSTANCE_ROOT_STMT (instance))
-	    continue;
 
 	  store_info = vect_orig_stmt (store_info);
 	  /* Free the attached stmt_vec_info and remove the stmt.  */
