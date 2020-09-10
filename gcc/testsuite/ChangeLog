@@ -1,3 +1,10 @@
+2020-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/iall_masked.f90: New test.
+
 2020-09-02  Kewen Lin  <linkw@linux.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-logical-ands-longlong.c: Adjust.
