@@ -718,6 +718,7 @@ struct output_block
   int current_col;
   bool current_sysp;
   bool reset_locus;
+  bool emit_pwd;
   tree current_block;
 
   /* Cache of nodes written in this section.  */
