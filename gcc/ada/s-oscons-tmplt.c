@@ -1739,6 +1739,9 @@ CND(SIZEOF_sigset, "sigset")
 #if defined(_WIN32) || defined(__vxworks)
 #define SIZEOF_nfds_t sizeof (int) * 8
 #define SIZEOF_socklen_t sizeof (size_t)
+#elif defined(__Lynx__)
+#define SIZEOF_nfds_t sizeof (unsigned long int) * 8
+#define SIZEOF_socklen_t sizeof (socklen_t)
 #else
 #define SIZEOF_nfds_t sizeof (nfds_t) * 8
 #define SIZEOF_socklen_t sizeof (socklen_t)
