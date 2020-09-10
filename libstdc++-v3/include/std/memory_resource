@@ -636,11 +636,11 @@ namespace pmr
     void*
     do_allocate(size_t __bytes, size_t __alignment) override
     {
-      if (__bytes == 0)
+      if (__builtin_expect(__bytes == 0, false))
 	__bytes = 1; // Ensures we don't return the same pointer twice.
 
       void* __p = std::align(__alignment, __bytes, _M_current_buf, _M_avail);
-      if (!__p)
+      if (__builtin_expect(__p == nullptr, false))
 	{
 	  _M_new_buffer(__bytes, __alignment);
 	  __p = _M_current_buf;
@@ -671,7 +671,7 @@ namespace pmr
     static size_t
     _S_next_bufsize(size_t __buffer_size) noexcept
     {
-      if (__buffer_size == 0)
+      if (__builtin_expect(__buffer_size == 0, false))
 	__buffer_size = 1;
       return __buffer_size * _S_growth_factor;
     }

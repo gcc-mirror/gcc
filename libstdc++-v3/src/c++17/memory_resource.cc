@@ -175,6 +175,47 @@ namespace pmr
   // versions will not use this symbol.
   monotonic_buffer_resource::~monotonic_buffer_resource() { release(); }
 
+  namespace {
+
+  // aligned_size<N> stores the size and alignment of a memory allocation.
+  // The size must be a multiple of N, leaving the low log2(N) bits free
+  // to store the base-2 logarithm of the alignment.
+  // For example, allocate(1024, 32) is stored as 1024 + log2(32) = 1029.
+  template<unsigned N>
+  struct aligned_size
+  {
+    // N must be a power of two
+    static_assert( std::__popcount(N) == 1 );
+
+    static constexpr size_t _S_align_mask = N - 1;
+    static constexpr size_t _S_size_mask = ~_S_align_mask;
+
+    constexpr
+    aligned_size(size_t sz, size_t align) noexcept
+    : value(sz | (std::__bit_width(align) - 1u))
+    {
+      __glibcxx_assert(size() == sz); // sz must be a multiple of N
+    }
+
+    constexpr size_t
+    size() const noexcept
+    { return value & _S_size_mask; }
+
+    constexpr size_t
+    alignment() const noexcept
+    { return size_t(1) << (value & _S_align_mask); }
+
+    size_t value; // size | log2(alignment)
+  };
+
+  // Round n up to a multiple of alignment, which must be a power of two.
+  constexpr size_t aligned_ceil(size_t n, size_t alignment)
+  {
+    return (n + alignment - 1) & ~(alignment - 1);
+  }
+
+  } // namespace
+
   // Memory allocated by the upstream resource is managed in a linked list
   // of _Chunk objects. A _Chunk object recording the size and alignment of
   // the allocated block and a pointer to the previous chunk is placed
@@ -189,23 +230,26 @@ namespace pmr
     allocate(memory_resource* __r, size_t __size, size_t __align,
 	     _Chunk*& __head)
     {
-      __size = std::__bit_ceil(__size + sizeof(_Chunk));
+      const size_t __orig_size = __size;
 
-      if constexpr (alignof(_Chunk) > 1)
+      // Add space for the _Chunk object and round up to 64 bytes.
+      __size = aligned_ceil(__size + sizeof(_Chunk), 64);
+
+      // Check for unsigned wraparound
+      if (__size < __orig_size) [[unlikely]]
 	{
-	  // PR libstdc++/90046
-	  // For targets like epiphany-elf where alignof(_Chunk) != 1
-	  // ensure that the last sizeof(_Chunk) bytes in the buffer
-	  // are suitably-aligned for a _Chunk.
-	  // This should be unnecessary, because the caller already
-	  // passes in max(__align, alignof(max_align_t)).
-	  if (__align < alignof(_Chunk))
-	    __align = alignof(_Chunk);
+	  // monotonic_buffer_resource::do_allocate is not allowed to throw.
+	  // If the required size is too large for size_t then ask the
+	  // upstream resource for an impossibly large size and alignment.
+	  __size = -1;
+	  __align = ~(size_t(-1) >> 1);
 	}
 
       void* __p = __r->allocate(__size, __align);
 
       // Add a chunk defined by (__p, __size, __align) to linked list __head.
+      // We know the end of the buffer is suitably-aligned for a _Chunk
+      // because the caller ensured __align is at least alignof(max_align_t).
       void* const __back = (char*)__p + __size - sizeof(_Chunk);
       __head = ::new(__back) _Chunk(__size, __align, __head);
       return { __p, __size - sizeof(_Chunk) };
@@ -220,16 +264,9 @@ namespace pmr
       while (__next)
 	{
 	  _Chunk* __ch = __next;
-	  __builtin_memcpy(&__next, __ch->_M_next, sizeof(_Chunk*));
-
-	  __glibcxx_assert(__ch->_M_canary != 0);
-	  __glibcxx_assert(__ch->_M_canary == (__ch->_M_size|__ch->_M_align));
-
-	  if (__ch->_M_canary != (__ch->_M_size | __ch->_M_align))
-	    return; // buffer overflow detected!
-
-	  size_t __size = (size_t)1 << __ch->_M_size;
-	  size_t __align = (size_t)1 << __ch->_M_align;
+	  __next = __ch->_M_next;
+	  size_t __size = __ch->_M_size.size();
+	  size_t __align = __ch->_M_size.alignment();
 	  void* __start = (char*)(__ch + 1) - __size;
 	  __r->deallocate(__start, __size, __align);
 	}
@@ -237,24 +274,18 @@ namespace pmr
 
   private:
     _Chunk(size_t __size, size_t __align, _Chunk* __next) noexcept
-    : _M_size(std::__bit_width(__size) - 1),
-      _M_align(std::__bit_width(__align) - 1)
-    {
-      __builtin_memcpy(_M_next, &__next, sizeof(__next));
-      _M_canary = _M_size | _M_align;
-    }
+    : _M_size(__size, __align), _M_next(__next)
+    { }
 
-    unsigned char _M_canary;
-    unsigned char _M_size;
-    unsigned char _M_align;
-    unsigned char _M_next[sizeof(_Chunk*)];
+    aligned_size<64> _M_size;
+    _Chunk* _M_next;
   };
 
   void
   monotonic_buffer_resource::_M_new_buffer(size_t bytes, size_t alignment)
   {
     const size_t n = std::max(bytes, _M_next_bufsiz);
-    const size_t m = std::max(alignment, alignof(std::max_align_t));
+    const size_t m = aligned_ceil(alignment, alignof(std::max_align_t));
     auto [p, size] = _Chunk::allocate(_M_upstream, n, m, _M_head);
     _M_current_buf = p;
     _M_avail = size;
@@ -550,49 +581,43 @@ namespace pmr
   // An oversized allocation that doesn't fit in a pool.
   struct big_block
   {
-    // Alignment must be a power-of-two so we only need to use enough bits
-    // to store the power, not the actual value:
-    static constexpr unsigned _S_alignbits
-      = std::__bit_width((unsigned)numeric_limits<size_t>::digits - 1);
-    // Use the remaining bits to store the size:
-    static constexpr unsigned _S_sizebits
-      = numeric_limits<size_t>::digits - _S_alignbits;
-    // The maximum value that can be stored in _S_size
-    static constexpr size_t all_ones = size_t(-1) >> _S_alignbits;
-    // The minimum size of a big block (smaller sizes will be rounded up).
-    static constexpr size_t min = 1u << _S_alignbits;
+    // The minimum size of a big block.
+    // All big_block allocations will be a multiple of this value.
+    // Use bit_ceil to get a power of two even for e.g. 20-bit size_t.
+    static constexpr size_t min = __bit_ceil(numeric_limits<size_t>::digits);
 
+    constexpr
     big_block(size_t bytes, size_t alignment)
-    : _M_size(alloc_size(bytes) >> _S_alignbits),
-      _M_align_exp(std::__bit_width(alignment) - 1u)
-    { }
+    : _M_size(alloc_size(bytes), alignment)
+    {
+      // Check for unsigned wraparound
+      if (size() < bytes) [[unlikely]]
+	{
+	  // (sync|unsync)_pool_resource::do_allocate is not allowed to throw.
+	  // If the required size is too large for size_t then ask the
+	  // upstream resource for an impossibly large size and alignment.
+	  _M_size.value = -1;
+	}
+    }
 
     void* pointer = nullptr;
-    size_t _M_size : numeric_limits<size_t>::digits - _S_alignbits;
-    size_t _M_align_exp : _S_alignbits;
+    aligned_size<min> _M_size;
 
     size_t size() const noexcept
     {
-      // If all bits are set in _M_size it means the maximum possible size:
-      if (__builtin_expect(_M_size == (size_t(-1) >> _S_alignbits), false))
-	return (size_t)-1;
-      else
-	return _M_size << _S_alignbits;
+      if (_M_size.value == size_t(-1)) [[unlikely]]
+	return size_t(-1);
+      return _M_size.size();
     }
 
-    size_t align() const noexcept { return size_t(1) << _M_align_exp; }
+    size_t align() const noexcept
+    { return _M_size.alignment(); }
 
     // Calculate size to be allocated instead of requested number of bytes.
     // The requested value will be rounded up to a multiple of big_block::min,
-    // so the low _S_alignbits bits are all zero and don't need to be stored.
+    // so the low bits are all zero and can be used to hold the alignment.
     static constexpr size_t alloc_size(size_t bytes) noexcept
-    {
-      const size_t s = bytes + min - 1u;
-      if (__builtin_expect(s < bytes, false))
-	return size_t(-1); // addition wrapped past zero, return max value
-      else
-	return s & ~(min - 1u);
-    }
+    { return aligned_ceil(bytes, min); }
 
     friend bool operator<(void* p, const big_block& b) noexcept
     { return less<void*>{}(p, b.pointer); }
@@ -895,9 +920,8 @@ namespace pmr
       {
 	// Round to preferred granularity
 	static_assert(std::__has_single_bit(pool_sizes[0]));
-	constexpr size_t mask = pool_sizes[0] - 1;
-	opts.largest_required_pool_block += mask;
-	opts.largest_required_pool_block &= ~mask;
+	opts.largest_required_pool_block
+	  = aligned_ceil(opts.largest_required_pool_block, pool_sizes[0]);
       }
 
     if (opts.largest_required_pool_block < big_block::min)
@@ -964,7 +988,9 @@ namespace pmr
     auto& b = _M_unpooled.emplace_back(bytes, alignment);
     __try {
       // N.B. need to allocate b.size(), which might be larger than bytes.
-      void* p = resource()->allocate(b.size(), alignment);
+      // Also use b.align() instead of alignment parameter, which will be
+      // an impossibly large value if (bytes+bookkeeping) > SIZE_MAX.
+      void* p = resource()->allocate(b.size(), b.align());
       b.pointer = p;
       if (_M_unpooled.size() > 1)
 	{
