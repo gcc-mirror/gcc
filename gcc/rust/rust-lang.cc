@@ -34,17 +34,11 @@
 // TODO: is this best way to do it? Is it allowed? (should be)
 
 /* General TODOs:
- *  - maybe convert all raw pointer-returning/passing functions that
- * conceptually return a unique pointer actually return a unique pointer. i.e.
- * parse methods and constructors for AST objects. make_unique should probably
- * be avoided to keep C++11 compatibility.
  *  - convert all copies of expensive-to-copy (deep copy) AST objects into
- * moves, if possible. Don't
- *    remove clone functionality - it may be required for e.g. HIR conversion.
+ * moves, if possible. Don't remove clone functionality - it may be required for e.g. HIR conversion.
  */
 
 #include "rust-system.h"
-#include "rust-parse.h"
 #include "rust-session-manager.h"
 
 #include "rust-target.h"
