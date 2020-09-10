@@ -2855,14 +2855,13 @@ check_local_shadow (tree decl)
 static void
 set_decl_context_in_fn (tree ctx, tree decl)
 {
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      || (VAR_P (decl) && DECL_EXTERNAL (decl)))
+    /* Make sure local externs are marked as such.  */
+    gcc_checking_assert (DECL_LOCAL_DECL_P (decl)
+			 && DECL_NAMESPACE_SCOPE_P (decl));
+
   if (!DECL_CONTEXT (decl)
-      /* A local declaration for a function doesn't constitute
-	 nesting.  */
-      && TREE_CODE (decl) != FUNCTION_DECL
-      /* A local declaration for an `extern' variable is in the
-	 scope of the current namespace, not the current
-	 function.  */
-      && !(VAR_P (decl) && DECL_EXTERNAL (decl))
       /* When parsing the parameter list of a function declarator,
 	 don't set DECL_CONTEXT to an enclosing function.  When we
 	 push the PARM_DECLs in order to process the function body,
@@ -2871,12 +2870,6 @@ set_decl_context_in_fn (tree ctx, tree decl)
 	   && current_binding_level->kind == sk_function_parms
 	   && current_binding_level->this_entity == NULL))
     DECL_CONTEXT (decl) = ctx;
-
-  /* If this is the declaration for a namespace-scope function,
-     but the declaration itself is in a local scope, mark the
-     declaration.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (decl))
-    DECL_LOCAL_FUNCTION_P (decl) = 1;
 }
 
 /* DECL is a local-scope decl with linkage.  SHADOWED is true if the
@@ -2998,7 +2991,7 @@ do_pushdecl (tree decl, bool is_friend)
   if (decl == error_mark_node)
     return error_mark_node;
 
-  if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl)
+  if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl && !is_friend)
     set_decl_context_in_fn (current_function_decl, decl);
 
   /* The binding level we will be pushing into.  During local class
@@ -6682,29 +6675,15 @@ lookup_type_scope (tree name, tag_scope scope)
 }
 
 /* Returns true iff DECL is a block-scope extern declaration of a function
-   or variable.  */
+   or variable.  We will already have determined validity of the decl
+   when pushing it.  So we do not have to redo that lookup.  */
 
 bool
 is_local_extern (tree decl)
 {
-  cxx_binding *binding;
-
-  /* For functions, this is easy.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    return DECL_LOCAL_FUNCTION_P (decl);
-
-  if (!VAR_P (decl))
-    return false;
-  if (!current_function_decl)
-    return false;
-
-  /* For variables, this is not easy.  We need to look at the binding stack
-     for the identifier to see whether the decl we have is a local.  */
-  for (binding = IDENTIFIER_BINDING (DECL_NAME (decl));
-       binding && binding->scope->kind != sk_namespace;
-       binding = binding->previous)
-    if (binding->value == decl)
-      return LOCAL_BINDING_P (binding);
+  if ((TREE_CODE (decl) == FUNCTION_DECL
+       || TREE_CODE (decl) == VAR_DECL))
+    return DECL_LOCAL_DECL_P (decl);
 
   return false;
 }

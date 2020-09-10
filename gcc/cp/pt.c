@@ -5417,7 +5417,7 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
      class template.  */
 
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL
-      || (TREE_CODE (decl) == FUNCTION_DECL && DECL_LOCAL_FUNCTION_P (decl)))
+      || (TREE_CODE (decl) == FUNCTION_DECL && DECL_LOCAL_DECL_P (decl)))
     /* You can't have a function template declaration in a local
        scope, nor you can you define a member of a class template in a
        local scope.  */
@@ -18080,6 +18080,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    /* We pretend this is regular local extern decl of
 		       a namespace-scope fn.  Then we make it really
 		       local, it is a nested function.  */
+		    gcc_checking_assert (DECL_LOCAL_DECL_P (decl));
 		    DECL_CONTEXT (decl) = global_namespace;
 		    pushdecl (decl);
 		    DECL_CONTEXT (decl) = current_function_decl;
@@ -26978,7 +26979,7 @@ type_dependent_expression_p (tree expression)
 	   && DECL_FRIEND_P (expression)
 	   && (!DECL_FRIEND_CONTEXT (expression)
 	       || dependent_type_p (DECL_FRIEND_CONTEXT (expression))))
-      && !DECL_LOCAL_FUNCTION_P (expression))
+      && !DECL_LOCAL_DECL_P (expression))
     {
       gcc_assert (!dependent_type_p (TREE_TYPE (expression))
 		  || undeduced_auto_decl (expression));

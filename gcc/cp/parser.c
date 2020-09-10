@@ -7467,7 +7467,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			if ((TREE_CODE (fn) == USING_DECL
 			     && DECL_DEPENDENT_P (fn))
 			    || DECL_FUNCTION_MEMBER_P (fn)
-			    || DECL_LOCAL_FUNCTION_P (fn))
+			    || DECL_LOCAL_DECL_P (fn))
 			  {
 			    do_adl_p = false;
 			    break;
@@ -42582,6 +42582,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	{
 	  block_scope = true;
 	  DECL_CONTEXT (fndecl) = global_namespace;
+	  DECL_LOCAL_DECL_P (fndecl) = true;
 	  if (!processing_template_decl)
 	    pushdecl (fndecl);
 	}
