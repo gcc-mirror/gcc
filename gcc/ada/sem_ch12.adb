@@ -4070,6 +4070,16 @@ package body Sem_Ch12 is
             return True;
          end if;
 
+         --  In GNATprove mode, never instantiate bodies outside of the main
+         --  unit, as it does not use frontend/backend inlining in the way that
+         --  GNAT does, so does not benefit from such instantiations. On the
+         --  contrary, such instantiations may bring artificial constraints,
+         --  as for example such bodies may require preprocessing.
+
+         if GNATprove_Mode then
+            return False;
+         end if;
+
          --  If not, then again no need to instantiate bodies in generic units
 
          if Is_Generic_Unit (Cunit_Entity (Get_Code_Unit (N))) then
