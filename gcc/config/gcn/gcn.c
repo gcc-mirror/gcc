@@ -468,7 +468,8 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return (vgpr_1reg_mode_p (mode)
 	    || (!((regno - FIRST_VGPR_REG) & 1) && vgpr_2reg_mode_p (mode))
 	    /* TImode is used by DImode compare_and_swap.  */
-	    || mode == TImode);
+	    || (mode == TImode
+		&& !((regno - FIRST_VGPR_REG) & 3)));
   return false;
 }
 
