@@ -1,3 +1,7 @@
+2020-09-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* largefile.m4: Sync from binutils-gdb.
+
 2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR bootstrap/96612

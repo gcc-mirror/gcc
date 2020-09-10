@@ -1,3 +1,76 @@
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77841
+	* g++.old-deja/g++.ext/arrnew2.C: Expect the error only in C++17
+	and less.
+	* g++.old-deja/g++.robertl/eb58.C: Adjust dg-error.
+	* g++.old-deja/g++.robertl/eb63.C: Expect the error only in C++17
+	and less.
+	* g++.dg/cpp2a/new-array5.C: New test.
+	* g++.dg/cpp2a/paren-init36.C: New test.
+	* g++.dg/cpp2a/paren-init37.C: New test.
+	* g++.dg/pr84729.C: Adjust dg-error.
+
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95164
+	* g++.dg/cpp0x/initlist123.C: New test.
+
+2020-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94355
+	* g++.dg/analyzer/new-1.C: New test.
+	* g++.dg/analyzer/new-vs-malloc.C: New test.
+
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wnonnull6.C: Use target c++14.
+
+2020-09-09  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/auto-96647.C: Moved to...
+	* g++.dg/cpp1y/auto-96647.C: ...here.  Use target c++14.
+
+2020-09-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96955
+	* gcc.target/i386/builtin_thread_pointer.c: Update scan-assembler
+	for x32.
+
+2020-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96647
+	* g++.dg/cpp0x/auto-96647.C: New test.
+	* g++.dg/cpp0x/error9.C: New test.
+	* g++.dg/cpp2a/concepts-fn6.C: New test.
+
+2020-09-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-live-6.c: New testcase.
+
+2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/combined-if.f90: Update scan-tree-dump-times for
+	'omp simd.*if' for nvptx even more.
+
+2020-09-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-cond-13.c: New testcase.
+	* gcc.target/i386/pr87007-4.c: Adjust.
+	* gcc.target/i386/pr87007-5.c: Likewise.
+
+2020-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/builtin_thread_pointer.c: New test.
+
+2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95109
+	PR fortran/94690
+	* gfortran.dg/gomp/combined-if.f90: Update scan-tree-dump-times for
+	'omp simd.*if'.
+	* gfortran.dg/gomp/openmp-simd-5.f90: New test.
+
 2020-09-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96949

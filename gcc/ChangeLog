@@ -1,3 +1,52 @@
+2020-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94355
+	* doc/invoke.texi: Document -Wanalyzer-mismatching-deallocation.
+
+2020-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/96475
+	* bb-reorder.c (maybe_duplicate_computed_goto): Remove single_pred_p
+	micro-optimization.
+
+2020-09-09  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): Fix Wformat
+	warning.
+
+2020-09-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Do
+	nothing when the permutation doesn't permute.
+
+2020-09-09  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96991
+	* config/nvptx/nvptx.c (write_fn_proto): Fix boolean type check.
+
+2020-09-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_comparison): Allow
+	STMT_VINFO_LIVE_P stmts.
+
+2020-09-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_condition): Allow
+	STMT_VINFO_LIVE_P stmts.
+
+2020-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96978
+	* tree-vect-stmts.c (vectorizable_condition): Do not
+	look at STMT_VINFO_LIVE_P for BB vectorization.
+	(vectorizable_comparison): Likewise.
+
+2020-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96955
+	* config/i386/i386.md (get_thread_pointer<mode>): New
+	expander.
+
 2020-09-08  Julian Brown  <julian@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (scatter<mode>_insn_1offset_ds<exec_scatter>):
