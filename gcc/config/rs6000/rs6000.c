@@ -4020,10 +4020,11 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_VECTOR_PAIR))
     {
-      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX)
-	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
-      else
-	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
+      /* When the POImode issues of PR96791 are resolved, then we can
+	 once again enable use of vector pair for memcpy/memmove on
+	 P10 if we have TARGET_MMA.  For now we make it disabled by
+	 default for all targets.  */
+      rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
     }
 
   /* Use long double size to select the appropriate long double.  We use
