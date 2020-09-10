@@ -9083,10 +9083,12 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   if (uint_size == No_Uint)
     return;
 
-  /* Only issue an error if a Value_Size clause was explicitly given.
-     Otherwise, we'd be duplicating an error on the Size clause.  */
+  /* Only issue an error if a Value_Size clause was explicitly given for the
+     entity; otherwise, we'd be duplicating an error on the Size clause.  */
   gnat_attr_node
     = Get_Attribute_Definition_Clause (gnat_entity, Attr_Value_Size);
+  if (Present (gnat_attr_node) && Entity (gnat_attr_node) != gnat_entity)
+    gnat_attr_node = Empty;
 
   /* Get the size as an INTEGER_CST.  Issue an error if a size was specified
      but cannot be represented in bitsizetype.  */
