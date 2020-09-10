@@ -3037,10 +3037,6 @@ arm_override_options_after_change_1 (struct gcc_options *opts)
 static void
 arm_override_options_after_change (void)
 {
-  arm_configure_build_target (&arm_active_target,
-			      TREE_TARGET_OPTION (target_option_default_node),
-			      &global_options_set, false);
-
   arm_override_options_after_change_1 (&global_options);
 }
 
@@ -32338,6 +32334,8 @@ arm_set_current_function (tree fndecl)
   cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
 
   save_restore_target_globals (new_tree);
+
+  arm_override_options_after_change_1 (&global_options);
 }
 
 /* Implement TARGET_OPTION_PRINT.  */
