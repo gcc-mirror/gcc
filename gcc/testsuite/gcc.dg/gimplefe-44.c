@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target exceptions } */
 /* { dg-options "-fexceptions -fgimple -fdump-tree-eh-eh" } */
 
 void __GIMPLE foo()
