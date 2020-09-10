@@ -2036,13 +2036,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr decltype(auto)
       operator*()
       noexcept(noexcept(*_M_current))
-      { return *_M_current; }
+      {
+	__glibcxx_assert( _M_length > 0 );
+	return *_M_current;
+      }
 
       constexpr decltype(auto)
       operator*() const
       noexcept(noexcept(*_M_current))
       requires __detail::__dereferenceable<const _It>
-      { return *_M_current; }
+      {
+	__glibcxx_assert( _M_length > 0 );
+	return *_M_current;
+      }
 
       constexpr counted_iterator&
       operator++()
@@ -2170,14 +2176,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iter_move(const counted_iterator& __i)
       noexcept(noexcept(ranges::iter_move(__i._M_current)))
       requires input_iterator<_It>
-      { return ranges::iter_move(__i._M_current); }
+      {
+	__glibcxx_assert( __i._M_length > 0 );
+	return ranges::iter_move(__i._M_current);
+      }
 
       template<indirectly_swappable<_It> _It2>
 	friend constexpr void
 	iter_swap(const counted_iterator& __x,
 		  const counted_iterator<_It2>& __y)
 	noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
-	{ ranges::iter_swap(__x._M_current, __y._M_current); }
+	{
+	  __glibcxx_assert( __x._M_length > 0 && __y._M_length > 0 );
+	  ranges::iter_swap(__x._M_current, __y._M_current);
+	}
 
     private:
       template<input_or_output_iterator _It2> friend class counted_iterator;
