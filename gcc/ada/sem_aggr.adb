@@ -3026,6 +3026,7 @@ package body Sem_Aggr is
 
       Assoc  : Node_Id;
       Choice : Node_Id;
+      Expr   : Node_Id;
 
    begin
       Assoc := First (Deltas);
@@ -3062,8 +3063,12 @@ package body Sem_Aggr is
                end if;
                Enter_Name (Id);
 
-               Analyze_And_Resolve
-                 (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
+               --  Resolve a copy of the expression, after setting
+               --  its parent properly to preserve its context.
+
+               Expr := New_Copy_Tree (Expression (Assoc));
+               Set_Parent (Expr, Assoc);
+               Analyze_And_Resolve (Expr, Component_Type (Typ));
                End_Scope;
             end;
 
