@@ -5598,13 +5598,11 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_DELEGATING_CONS (LOOKUP_NO_NON_INTEGRAL << 1)
 /* Allow initialization of a flexible array members.  */
 #define LOOKUP_ALLOW_FLEXARRAY_INIT (LOOKUP_DELEGATING_CONS << 1)
-/* Require constant initialization of a non-constant variable.  */
-#define LOOKUP_CONSTINIT (LOOKUP_ALLOW_FLEXARRAY_INIT << 1)
 /* We're looking for either a rewritten comparison operator candidate or the
    operator to use on the former's result.  We distinguish between the two by
    knowing that comparisons other than == and <=> must be the latter, as must
    a <=> expression trying to rewrite to <=> without reversing.  */
-#define LOOKUP_REWRITTEN (LOOKUP_CONSTINIT << 1)
+#define LOOKUP_REWRITTEN (LOOKUP_ALLOW_FLEXARRAY_INIT << 1)
 /* Reverse the order of the two arguments for comparison rewriting.  First we
    swap the arguments in add_operator_candidates, then we swap the conversions
    in add_candidate (so that they correspond to the original order of the

@@ -994,9 +994,6 @@ grokfield (const cp_declarator *declarator,
   else
     flags = LOOKUP_IMPLICIT;
 
-  if (decl_spec_seq_has_spec_p (declspecs, ds_constinit))
-    flags |= LOOKUP_CONSTINIT;
-
   switch (TREE_CODE (value))
     {
     case VAR_DECL:
