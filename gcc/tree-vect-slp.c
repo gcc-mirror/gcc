@@ -3163,8 +3163,15 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	    visited.add (*x);
 	  i++;
 
-	  /* Remember the SLP graph entry cost for later.  */
-	  instance->cost_vec = cost_vec;
+	  /* For BB vectorization remember the SLP graph entry
+	     cost for later.  */
+	  if (is_a <bb_vec_info> (vinfo))
+	    instance->cost_vec = cost_vec;
+	  else
+	    {
+	      add_stmt_costs (vinfo, vinfo->target_cost_data, &cost_vec);
+	      cost_vec.release ();
+	    }
 	}
     }
 
