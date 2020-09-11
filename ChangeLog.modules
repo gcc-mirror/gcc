@@ -1,3 +1,17 @@
+2020-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	Local extern fns do not get template header
+	gcc/cp/
+	* module.cc (trees_out::chained_decls): Also mark local fns for
+	by-value walking.
+	(trees_out::decl_node): Assert we don't meet a local var or fn.
+	(trees_out::get_merge_kind): Local fns are also unique.
+	* pt.c (push_template_decl_real): Local fns also lack a header.
+	(tsubst_function_decl): Cope with local fns.
+	(tsubst_decl): Adjust VAR_DECL tsubsting.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-extern-{var,fn}-1_{a.H,b.C}: New.
+
 2020-09-09  Nathan Sidwell  <nathan@acm.org>
 
 	Local extern vars do not get template header

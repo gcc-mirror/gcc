@@ -4853,7 +4853,9 @@ trees_out::chained_decls (tree decls)
 {
   for (; decls; decls = DECL_CHAIN (decls))
     {
-      if (TREE_CODE (decls) == VAR_DECL && DECL_LOCAL_DECL_P (decls))
+      if ((TREE_CODE (decls) == VAR_DECL
+	   || TREE_CODE (decls) == FUNCTION_DECL)
+	  && DECL_LOCAL_DECL_P (decls))
 	{
 	  /* Make sure this is the first encounter, and mark for
 	     walk-by-value.  */
@@ -8087,6 +8089,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
     default:
       break;
 
+    case FUNCTION_DECL:
+      gcc_checking_assert (!DECL_LOCAL_DECL_P (decl));
+      break;
+
     case RESULT_DECL:
       // FIXME: Like a parm?
       return true;
@@ -8185,6 +8191,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       break;
 
     case VAR_DECL:
+      gcc_checking_assert (!DECL_LOCAL_DECL_P (decl));
       if (DECL_VTABLE_OR_VTT_P (decl))
 	{
 	  /* VTT or VTABLE, they are all on the vtables list.  */
@@ -9853,7 +9860,8 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 {
   if (!dep)
     {
-      if (TREE_CODE (decl) == VAR_DECL
+      if ((TREE_CODE (decl) == VAR_DECL
+	   || TREE_CODE (decl) == FUNCTION_DECL)
 	  && DECL_LOCAL_DECL_P (decl))
 	return MK_unique;
 
@@ -12517,6 +12525,8 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
        gcc_checking_assert (!check_mergeable_specialization (true, entry)
 			    == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
     }
+  else if (VAR_P (entry->spec) || TREE_CODE (entry->spec) == FUNCTION_DECL)
+    gcc_checking_assert (!DECL_LOCAL_DECL_P (entry->spec));
 
   data->safe_push (entry);
 }
