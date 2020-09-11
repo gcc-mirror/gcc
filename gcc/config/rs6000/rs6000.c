@@ -15057,13 +15057,33 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   return 1;
 }
 
-/* ISA 3.0 (power9) minmax subcase to emit a XSMAXCDP or XSMINCDP instruction
-   for SF/DF scalars.  Move TRUE_COND to DEST if OP of the operands of the last
-   comparison is nonzero/true, FALSE_COND if it is zero/false.  Return 0 if the
-   hardware has no such operation.  */
+/* Possibly emit the xsmaxcdp and xsmincdp instructions to emit a maximum or
+   minimum with "C" semantics.
 
-static int
-rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
+   Unless you use -ffast-math, you can't use these instructions to replace
+   conditions that implicitly reverse the condition because the comparison
+   might generate a NaN or signed zer0.
+
+   I.e. the following can be replaced all of the time
+	ret = (op1 >  op2) ? op1 : op2	; generate xsmaxcdp
+	ret = (op1 >= op2) ? op1 : op2	; generate xsmaxcdp
+	ret = (op1 <  op2) ? op1 : op2;	; generate xsmincdp
+	ret = (op1 <= op2) ? op1 : op2;	; generate xsmincdp
+
+   The following can be replaced only if -ffast-math is used:
+	ret = (op1 <  op2) ? op2 : op1	; generate xsmaxcdp
+	ret = (op1 <= op2) ? op2 : op1	; generate xsmaxcdp
+	ret = (op1 >  op2) ? op2 : op1;	; generate xsmincdp
+	ret = (op1 >= op2) ? op2 : op1;	; generate xsmincdp
+
+   Move TRUE_COND to DEST if OP of the operands of the last comparison is
+   nonzero/true, FALSE_COND if it is zero/false.
+
+   Return false if we can't generate the appropriate minimum or maximum, and
+   true if we can did the minimum or maximum.  */
+
+static bool
+rs6000_maybe_emit_maxc_minc (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   enum rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
@@ -15073,14 +15093,14 @@ rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   bool max_p = false;
 
   if (result_mode != compare_mode)
-    return 0;
+    return false;
 
   if (code == GE || code == GT)
     max_p = true;
   else if (code == LE || code == LT)
     max_p = false;
   else
-    return 0;
+    return false;
 
   if (rtx_equal_p (op0, true_cond) && rtx_equal_p (op1, false_cond))
     ;
@@ -15093,19 +15113,23 @@ rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     max_p = !max_p;
 
   else
-    return 0;
+    return false;
 
   rs6000_emit_minmax (dest, max_p ? SMAX : SMIN, op0, op1);
-  return 1;
+  return true;
 }
 
-/* ISA 3.0 (power9) conditional move subcase to emit XSCMP{EQ,GE,GT,NE}DP and
-   XXSEL instructions for SF/DF scalars.  Move TRUE_COND to DEST if OP of the
-   operands of the last comparison is nonzero/true, FALSE_COND if it is
-   zero/false.  Return 0 if the hardware has no such operation.  */
+/* Possibly emit a floating point conditional move by generating a compare that
+   sets a mask instruction and a XXSEL select instruction.
 
-static int
-rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
+   Move TRUE_COND to DEST if OP of the operands of the last comparison is
+   nonzero/true, FALSE_COND if it is zero/false.
+
+   Return false if the operation cannot be generated, and true if we could
+   generate the instruction.  */
+
+static bool
+rs6000_maybe_emit_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   enum rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
@@ -15133,7 +15157,7 @@ rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
       break;
 
     default:
-      return 0;
+      return false;
     }
 
   /* Generate:	[(parallel [(set (dest)
@@ -15153,7 +15177,28 @@ rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   emit_insn (gen_rtx_PARALLEL (VOIDmode,
 			       gen_rtvec (2, cmove_rtx, clobber_rtx)));
 
-  return 1;
+  return true;
+}
+
+/* Helper function to return true if the target has instructions to do a
+   compare and set mask instruction that can be used with XXSEL to implement a
+   conditional move.  It is also assumed that such a target also supports the
+   "C" minimum and maximum instructions. */
+
+static bool
+have_compare_and_set_mask (machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+    case DFmode:
+      return TARGET_P9_MINMAX;
+
+    default:
+      break;
+    }
+
+  return false;
 }
 
 /* Emit a conditional move: move TRUE_COND to DEST if OP of the
@@ -15182,15 +15227,15 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (GET_MODE (false_cond) != result_mode)
     return false;
 
-  /* See if we can use the ISA 3.0 (power9) min/max/compare functions.  */
-  if (TARGET_P9_MINMAX
-      && (compare_mode == SFmode || compare_mode == DFmode)
-      && (result_mode == SFmode || result_mode == DFmode))
+  /* See if we can use the "C" minimum, "C" maximum, and compare and set mask
+     instructions.  */
+  if (have_compare_and_set_mask (compare_mode)
+      && have_compare_and_set_mask (result_mode))
     {
-      if (rs6000_emit_p9_fp_minmax (dest, op, true_cond, false_cond))
+      if (rs6000_maybe_emit_maxc_minc (dest, op, true_cond, false_cond))
 	return true;
 
-      if (rs6000_emit_p9_fp_cmove (dest, op, true_cond, false_cond))
+      if (rs6000_maybe_emit_fp_cmove (dest, op, true_cond, false_cond))
 	return true;
     }
 
