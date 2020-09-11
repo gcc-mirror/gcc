@@ -368,7 +368,8 @@ enum cf_protection_level
   CF_BRANCH = 1 << 0,
   CF_RETURN = 1 << 1,
   CF_FULL = CF_BRANCH | CF_RETURN,
-  CF_SET = 1 << 2
+  CF_SET = 1 << 2,
+  CF_CHECK = 1 << 3
 };
 
 /* Parloops schedule type.  */
