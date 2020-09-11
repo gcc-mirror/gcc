@@ -35,7 +35,15 @@
 
 // Constants for the wait/wake futex syscall operations
 const unsigned futex_wait_op = 0;
+const unsigned futex_wait_bitset_op = 9;
+const unsigned futex_clock_realtime_flag = 256;
+const unsigned futex_bitset_match_any = ~0;
 const unsigned futex_wake_op = 1;
+
+namespace
+{
+  std::atomic<bool> futex_clock_realtime_unavailable;
+}
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -58,6 +66,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     else
       {
+	if (!futex_clock_realtime_unavailable.load(std::memory_order_relaxed))
+	  {
+	    struct timespec rt;
+	    rt.tv_sec = __s.count();
+	    rt.tv_nsec = __ns.count();
+	    if (syscall (SYS_futex, __addr,
+			 futex_wait_bitset_op | futex_clock_realtime_flag,
+			 __val, &rt, nullptr, futex_bitset_match_any) == -1)
+	      {
+		__glibcxx_assert(errno == EINTR || errno == EAGAIN
+				|| errno == ETIMEDOUT || errno == ENOSYS);
+		if (errno == ETIMEDOUT)
+		  return false;
+		if (errno == ENOSYS)
+		  {
+		    futex_clock_realtime_unavailable.store(true,
+						    std::memory_order_relaxed);
+		    // Fall through to legacy implementation if the system
+		    // call is unavailable.
+		  }
+		else
+		  return true;
+	      }
+	    else
+	      return true;
+	  }
+
+	// We only get to here if futex_clock_realtime_unavailable was
+	// true or has just been set to true.
 	struct timeval tv;
 	gettimeofday (&tv, NULL);
 	// Convert the absolute timeout value to a relative timeout
