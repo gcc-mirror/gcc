@@ -603,9 +603,13 @@ vec_info::remove_stmt (stmt_vec_info stmt_info)
 {
   gcc_assert (!stmt_info->pattern_stmt_p);
   set_vinfo_for_stmt (stmt_info->stmt, NULL);
-  gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
   unlink_stmt_vdef (stmt_info->stmt);
-  gsi_remove (&si, true);
+  gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
+  gimple_stmt_iterator *psi = &si;
+  if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (this))
+    if (gsi_stmt (bb_vinfo->region_begin) == stmt_info->stmt)
+      psi = &bb_vinfo->region_begin;
+  gsi_remove (psi, true);
   release_defs (stmt_info->stmt);
   free_stmt_vec_info (stmt_info);
 }

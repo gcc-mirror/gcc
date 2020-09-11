@@ -18103,10 +18103,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		       now.  */
 		    predeclare_vla (decl);
 
-		    bool constinit_p
-		      = VAR_P (decl) && DECL_DECLARED_CONSTINIT_P (decl);
-		    cp_finish_decl (decl, init, const_init, NULL_TREE,
-				    constinit_p ? LOOKUP_CONSTINIT : 0);
+		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
 
 		    if (ndecl != error_mark_node)
 		      cp_finish_decomp (ndecl, first, cnt);
@@ -25758,8 +25755,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
         push_nested_class (DECL_CONTEXT (d));
 
       const_init = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
-      int flags = (DECL_DECLARED_CONSTINIT_P (d) ? LOOKUP_CONSTINIT : 0);
-      cp_finish_decl (d, init, const_init, NULL_TREE, flags);
+      cp_finish_decl (d, init, const_init, NULL_TREE, 0);
 
       if (enter_context)
         pop_nested_class ();

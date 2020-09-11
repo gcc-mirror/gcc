@@ -2050,11 +2050,20 @@ output_init_frag (rtx sym)
 static void
 nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
 {
-  val &= ((unsigned  HOST_WIDE_INT)2 << (size * BITS_PER_UNIT - 1)) - 1;
+  bool negative_p
+    = val & (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1));
+
+  /* Avoid undefined behaviour.  */
+  if (size * BITS_PER_UNIT < HOST_BITS_PER_WIDE_INT)
+    val &= (HOST_WIDE_INT_1U << (size * BITS_PER_UNIT)) - 1;
 
   for (unsigned part = 0; size; size -= part)
     {
-      val >>= part * BITS_PER_UNIT;
+      if (part * BITS_PER_UNIT == HOST_BITS_PER_WIDE_INT)
+	/* Avoid undefined behaviour.  */
+	val = negative_p ? -1 : 0;
+      else
+	val >>= (part * BITS_PER_UNIT);
       part = init_frag.size - init_frag.offset;
       part = MIN (part, size);
 

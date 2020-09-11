@@ -1,3 +1,8 @@
+2020-09-10  Jonathan Yong  <10walls@gmail.com>
+
+	* Makefile.am: drop versioning from libtool completely.
+	* Makefile.in: regenerate.
+
 2020-09-09  Nick Clifton  <nickc@redhat.com>
 
 	* lto-plugin.c (struct plugin_symtab): Add last_sym field.

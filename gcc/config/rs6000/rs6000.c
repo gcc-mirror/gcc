@@ -4020,10 +4020,11 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_VECTOR_PAIR))
     {
-      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX)
-	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
-      else
-	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
+      /* When the POImode issues of PR96791 are resolved, then we can
+	 once again enable use of vector pair for memcpy/memmove on
+	 P10 if we have TARGET_MMA.  For now we make it disabled by
+	 default for all targets.  */
+      rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
     }
 
   /* Use long double size to select the appropriate long double.  We use
@@ -15159,7 +15160,7 @@ rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
    operands of the last comparison is nonzero/true, FALSE_COND if it
    is zero/false.  Return 0 if the hardware has no such operation.  */
 
-int
+bool
 rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   enum rtx_code code = GET_CODE (op);
@@ -15175,11 +15176,11 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
       /* In the isel case however, we can use a compare immediate, so
 	 op1 may be a small constant.  */
       && (!TARGET_ISEL || !short_cint_operand (op1, VOIDmode)))
-    return 0;
+    return false;
   if (GET_MODE (true_cond) != result_mode)
-    return 0;
+    return false;
   if (GET_MODE (false_cond) != result_mode)
-    return 0;
+    return false;
 
   /* See if we can use the ISA 3.0 (power9) min/max/compare functions.  */
   if (TARGET_P9_MINMAX
@@ -15187,16 +15188,16 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
       && (result_mode == SFmode || result_mode == DFmode))
     {
       if (rs6000_emit_p9_fp_minmax (dest, op, true_cond, false_cond))
-	return 1;
+	return true;
 
       if (rs6000_emit_p9_fp_cmove (dest, op, true_cond, false_cond))
-	return 1;
+	return true;
     }
 
   /* Don't allow using floating point comparisons for integer results for
      now.  */
   if (FLOAT_MODE_P (compare_mode) && !FLOAT_MODE_P (result_mode))
-    return 0;
+    return false;
 
   /* First, work out if the hardware can do this at all, or
      if it's too slow....  */
@@ -15204,7 +15205,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     {
       if (TARGET_ISEL)
 	return rs6000_emit_int_cmove (dest, op, true_cond, false_cond);
-      return 0;
+      return false;
     }
 
   is_against_zero = op1 == CONST0_RTX (compare_mode);
@@ -15216,7 +15217,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
      generated.  */
   if (SCALAR_FLOAT_MODE_P (compare_mode)
       && flag_trapping_math && ! is_against_zero)
-    return 0;
+    return false;
 
   /* Eliminate half of the comparisons by switching operands, this
      makes the remaining code simpler.  */
@@ -15232,7 +15233,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   /* UNEQ and LTGT take four instructions for a comparison with zero,
      it'll probably be faster to use a branch here too.  */
   if (code == UNEQ && HONOR_NANS (compare_mode))
-    return 0;
+    return false;
 
   /* We're going to try to implement comparisons by performing
      a subtract, then comparing against zero.  Unfortunately,
@@ -15247,14 +15248,14 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
       && ((! rtx_equal_p (op0, false_cond) && ! rtx_equal_p (op1, false_cond))
 	  || (! rtx_equal_p (op0, true_cond)
 	      && ! rtx_equal_p (op1, true_cond))))
-    return 0;
+    return false;
 
   /* At this point we know we can use fsel.  */
 
   /* Don't allow compare_mode other than SFmode or DFmode, for others there
      is no fsel instruction.  */
   if (compare_mode != SFmode && compare_mode != DFmode)
-    return 0;
+    return false;
 
   /* Reduce the comparison to a comparison against zero.  */
   if (! is_against_zero)
@@ -15353,12 +15354,12 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 						gen_rtx_GE (VOIDmode,
 							    op0, op1),
 						true_cond, false_cond)));
-  return 1;
+  return true;
 }
 
 /* Same as above, but for ints (isel).  */
 
-int
+bool
 rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   rtx condition_rtx, cr;
@@ -15368,7 +15369,7 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   bool signedp;
 
   if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
-    return 0;
+    return false;
 
   /* We still have to do the compare, because isel doesn't do a
      compare, it just looks at the CRx bits set by a previous compare
@@ -15403,7 +15404,7 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 
   emit_insn (isel_func (dest, condition_rtx, true_cond, false_cond, cr));
 
-  return 1;
+  return true;
 }
 
 void

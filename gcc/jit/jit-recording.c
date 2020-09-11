@@ -2175,6 +2175,61 @@ recording::type::access_as_type (reproducer &r)
   return r.get_identifier (this);
 }
 
+/* Override of default implementation of
+   recording::type::get_size.
+
+   Return the size in bytes.  This is in use for global
+   initialization.  */
+
+size_t
+recording::memento_of_get_type::get_size ()
+{
+  int size;
+  switch (m_kind)
+    {
+    case GCC_JIT_TYPE_VOID:
+      return 0;
+    case GCC_JIT_TYPE_BOOL:
+    case GCC_JIT_TYPE_CHAR:
+    case GCC_JIT_TYPE_SIGNED_CHAR:
+    case GCC_JIT_TYPE_UNSIGNED_CHAR:
+      return 1;
+    case GCC_JIT_TYPE_SHORT:
+    case GCC_JIT_TYPE_UNSIGNED_SHORT:
+      size = SHORT_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_INT:
+    case GCC_JIT_TYPE_UNSIGNED_INT:
+      size = INT_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_LONG:
+    case GCC_JIT_TYPE_UNSIGNED_LONG:
+      size = LONG_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_LONG_LONG:
+    case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+      size = LONG_LONG_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_FLOAT:
+      size = FLOAT_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_DOUBLE:
+      size = DOUBLE_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_LONG_DOUBLE:
+      size = LONG_DOUBLE_TYPE_SIZE;
+      break;
+    default:
+      /* As this function is called by
+	 'gcc_jit_global_set_initializer' and
+	 'recording::global::write_reproducer' possible types are only
+	 integrals and are covered by the previous cases.  */
+      gcc_unreachable ();
+    }
+
+  return size / BITS_PER_UNIT;
+}
+
 /* Implementation of pure virtual hook recording::type::dereference for
    recording::memento_of_get_type.  */
 
@@ -2481,6 +2536,15 @@ recording::memento_of_get_type::write_reproducer (reproducer &r)
 }
 
 /* The implementation of class gcc::jit::recording::memento_of_get_pointer.  */
+
+/* Override of default implementation of
+   recording::type::get_size for get_pointer.  */
+
+size_t
+recording::memento_of_get_pointer::get_size ()
+{
+  return POINTER_SIZE / BITS_PER_UNIT;
+}
 
 /* Override of default implementation of
    recording::type::accepts_writes_from for get_pointer.
@@ -4393,10 +4457,20 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 void
 recording::global::replay_into (replayer *r)
 {
-  set_playback_obj (r->new_global (playback_location (r, m_loc),
-				   m_kind,
-				   m_type->playback_type (),
-				   playback_string (m_name)));
+  set_playback_obj (
+    m_initializer
+    ? r->new_global_initialized (playback_location (r, m_loc),
+				 m_kind,
+				 m_type->playback_type (),
+				 m_type->dereference ()->get_size (),
+				 m_initializer_num_bytes
+				 / m_type->dereference ()->get_size (),
+				 m_initializer,
+				 playback_string (m_name))
+    : r->new_global (playback_location (r, m_loc),
+		     m_kind,
+		     m_type->playback_type (),
+		     playback_string (m_name)));
 }
 
 /* Override the default implementation of
@@ -4440,9 +4514,26 @@ recording::global::write_to_dump (dump &d)
       d.write ("extern ");
       break;
     }
-  d.write ("%s %s;\n",
+
+  d.write ("%s %s",
 	   m_type->get_debug_string (),
 	   get_debug_string ());
+
+  if (!m_initializer)
+    {
+      d.write (";\n");
+      return;
+    }
+
+  d.write ("=\n  { ");
+  const unsigned char *p = (const unsigned char *)m_initializer;
+  for (size_t i = 0; i < m_initializer_num_bytes; i++)
+    {
+      d.write ("0x%x, ", p[i]);
+      if (i && !(i % 64))
+	d.write ("\n    ");
+    }
+  d.write ("};\n");
 }
 
 /* A table of enum gcc_jit_global_kind values expressed in string
@@ -4453,6 +4544,27 @@ static const char * const global_kind_reproducer_strings[] = {
   "GCC_JIT_GLOBAL_INTERNAL",
   "GCC_JIT_GLOBAL_IMPORTED"
 };
+
+template <typename T>
+void
+recording::global::write_initializer_reproducer (const char *id, reproducer &r)
+{
+  const char *init_id = r.make_tmp_identifier ("init_for", this);
+  r.write ("  %s %s[] =\n    {",
+	   m_type->dereference ()->get_debug_string (),
+	   init_id);
+
+  const T *p = (const T *)m_initializer;
+  for (size_t i = 0; i < m_initializer_num_bytes / sizeof (T); i++)
+    {
+      r.write ("%" PRIu64 ", ", (uint64_t)p[i]);
+      if (i && !(i % 64))
+	r.write ("\n    ");
+    }
+  r.write ("};\n");
+  r.write ("  gcc_jit_global_set_initializer (%s, %s, sizeof (%s));\n",
+	   id, init_id, init_id);
+}
 
 /* Implementation of recording::memento::write_reproducer for globals. */
 
@@ -4472,6 +4584,27 @@ recording::global::write_reproducer (reproducer &r)
     global_kind_reproducer_strings[m_kind],
     r.get_identifier_as_type (get_type ()),
     m_name->get_debug_string ());
+
+  if (m_initializer)
+    switch (m_type->dereference ()->get_size ())
+      {
+      case 1:
+	write_initializer_reproducer<uint8_t> (id, r);
+	break;
+      case 2:
+	write_initializer_reproducer<uint16_t> (id, r);
+	break;
+      case 4:
+	write_initializer_reproducer<uint32_t> (id, r);
+	break;
+      case 8:
+	write_initializer_reproducer<uint64_t> (id, r);
+	break;
+      default:
+	/* This function is serving on sizes returned by 'get_size',
+	   these are all covered by the previous cases.  */
+	gcc_unreachable ();
+      }
 }
 
 /* The implementation of the various const-handling classes:

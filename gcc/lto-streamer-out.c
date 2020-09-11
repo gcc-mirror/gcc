@@ -2294,7 +2294,7 @@ collect_block_tree_leafs (tree root, vec<tree> &leafs)
     if (! BLOCK_SUBBLOCKS (root))
       leafs.safe_push (root);
     else
-      collect_block_tree_leafs (BLOCK_SUBBLOCKS (root), leafs);
+      collect_block_tree_leafs (root, leafs);
 }
 
 /* This performs function body modifications that are needed for streaming

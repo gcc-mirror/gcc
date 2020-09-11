@@ -788,6 +788,21 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    gcc_jit_type *type,
 			    const char *name);
 
+#define LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
+
+/* Set an initial value for a global, which must be an array of
+   integral type.  Return the global itself.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_14; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
+*/
+
+extern gcc_jit_lvalue *
+gcc_jit_global_set_initializer (gcc_jit_lvalue *global,
+				const void *blob,
+				size_t num_bytes);
+
 /* Upcasting.  */
 extern gcc_jit_object *
 gcc_jit_lvalue_as_object (gcc_jit_lvalue *lvalue);

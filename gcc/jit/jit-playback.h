@@ -111,6 +111,15 @@ public:
 	      type *type,
 	      const char *name);
 
+  lvalue *
+  new_global_initialized (location *loc,
+                          enum gcc_jit_global_kind kind,
+                          type *type,
+                          size_t element_size,
+                          size_t initializer_num_elem,
+                          const void *initializer,
+                          const char *name);
+
   template <typename HOST_TYPE>
   rvalue *
   new_rvalue_from_const (type *type,
@@ -265,6 +274,14 @@ private:
   const char * get_path_c_file () const;
   const char * get_path_s_file () const;
   const char * get_path_so_file () const;
+
+  tree
+  global_new_decl (location *loc,
+                   enum gcc_jit_global_kind kind,
+                   type *type,
+                   const char *name);
+  lvalue *
+  global_finalize_lvalue (tree inner);
 
 private:
 

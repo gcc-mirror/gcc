@@ -219,3 +219,10 @@ entrypoints:
   * :func:`gcc_jit_version_minor`
 
   * :func:`gcc_jit_version_patchlevel`
+
+.. _LIBGCCJIT_ABI_14:
+
+``LIBGCCJIT_ABI_14``
+--------------------
+``LIBGCCJIT_ABI_14`` covers the addition of
+:func:`gcc_jit_global_set_initializer`

@@ -1,3 +1,25 @@
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/95680
+	PR d/97007
+	* Makefile.am (AM_MAKEFLAGS): Remove $(CET_FLAGS).
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (DCFG_ENABLE_CET): Remove substitution.
+	(CET_DFLAGS): Substitute.
+	* libdruntime/Makefile.am (AM_DFLAGS): Add $(CET_DFLAGS).
+	(AM_CFLAGS): Add $(CET_FLAGS).
+	(AM_CCASFLAGS): Likewise.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/core/thread.d: Replace static if GNU_Enable_CET
+	condition with `version (CET)'.
+	* libdruntime/gcc/config.d.in (GNU_Enable_CET): Remove.
+	* src/Makefile.am (AM_DFLAGS): Add $(CET_DFLAGS).
+	(AM_CFLAGS): Add $(CET_FLAGS).
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add $(CET_DFLAGS) to --gdcflags.
+
 2020-09-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR d/95680

@@ -109,9 +109,11 @@ typedef unsigned UWORD __attribute__((mode(word)));
 #define MASK_1		((UWORD)0xff)
 #define MASK_2		((UWORD)0xffff)
 #define MASK_4		((UWORD)0xffffffff)
+#define MASK_8		((UWORD)0xffffffffffffffff)
 #define INVERT_MASK_1	((UWORD)WORDS_BIGENDIAN << ((WORDSIZE - 1) * CHAR_BIT))
 #define INVERT_MASK_2	((UWORD)WORDS_BIGENDIAN << ((WORDSIZE - 2) * CHAR_BIT))
 #define INVERT_MASK_4	((UWORD)WORDS_BIGENDIAN << ((WORDSIZE - 4) * CHAR_BIT))
+#define INVERT_MASK_8	((UWORD)WORDS_BIGENDIAN << ((WORDSIZE - 8) * CHAR_BIT))
 
 /* Most of the files in this library are compiled multiple times with
    N defined to be a power of 2 between 1 and 16.  The SIZE macro is

@@ -1,3 +1,38 @@
+2020-09-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/acle/armv8-r.c: New test.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Waddress.d: New test.
+	* gdc.dg/Wcastresult1.d: New test.
+	* gdc.dg/Wcastresult2.d: New test.
+
+2020-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/size_clause5.ads: New test.
+
+2020-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr59.adb: New test.
+	* gnat.dg/discr59_pkg1.ads: New helper.
+	* gnat.dg/discr59_pkg2.ads: Likewise.
+
+2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96939
+	* gcc.target/arm/lto/pr96939_0.c: New test.
+	* gcc.target/arm/lto/pr96939_1.c: New file.
+
+2020-09-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/analyzer/vla-1.c: Add require-effective-target alloca.
+
+2020-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96043
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr69297.c: Adjust.
+
 2020-09-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77841
@@ -3433,7 +3468,7 @@
 
 	* gcc.target/riscv/save-restore-9.c: New.
 
-2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso-11.c: New test.
 	* gcc.dg/sso/sso.exp: Pass -Wno-scalar-storage-order.
@@ -3568,7 +3603,7 @@
 	* g++.dg/coroutines/pr9xxxx-mismatched-traits-and-promise-prev.C: Moved to...
 	* g++.dg/coroutines/pr94760-mismatched-traits-and-promise-prev.C: ...here.
 
-2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt87.adb: New test.
 	* gnat.dg/opt87_pkg.ads: New helper.
@@ -4126,7 +4161,7 @@
 	* lib/target-supports.exp
 	(check_effective_target_offload_nvptx): New.
 
-2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt86_pkg.ads: New helper.
 	* gnat.dg/opt86a.adb: New test.
@@ -4904,11 +4939,11 @@
 	PR target/95683
 	* gcc.target/riscv/pr95683.c: New.
 
-2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr30.ads, gnat.dg/aggr30.adb: New test.
 
-2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt85.ads, gnat.dg/opt85.adb: New test.
 
@@ -5789,7 +5824,7 @@
 	supported, detect the default linker output name, cope with
 	the need for an explicit executable output.
 
-2020-05-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/builtin-bswap-10.c: New test.
 	* gcc.dg/builtin-bswap-11.c: Likewise.

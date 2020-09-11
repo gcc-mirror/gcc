@@ -25,25 +25,72 @@
 
 // PR libstdc++/68519
 
-bool val = false;
-std::mutex mx;
-std::condition_variable cv;
-
 void
-test01()
+test_wait_for()
 {
+  std::mutex mx;
+  std::condition_variable cv;
+
   for (int i = 0; i < 3; ++i)
   {
     std::unique_lock<std::mutex> l(mx);
     auto start = std::chrono::system_clock::now();
-    cv.wait_for(l, std::chrono::duration<float>(1), [] { return val; });
+    cv.wait_for(l, std::chrono::duration<float>(1), [] { return false; });
     auto t = std::chrono::system_clock::now();
     VERIFY( (t - start) >= std::chrono::seconds(1) );
+  }
+}
+
+// In order to ensure that the delta calculated in the arbitrary clock overload
+// of condition_variable::wait_until fits accurately in a float, but the result
+// of adding it to steady_clock with a float duration does not, this clock
+// needs to use a more recent epoch.
+struct recent_epoch_float_clock
+{
+  using rep = std::chrono::duration<float>::rep;
+  using period = std::chrono::duration<float>::period;
+  using time_point = std::chrono::time_point<recent_epoch_float_clock,
+    std::chrono::duration<float>>;
+  static constexpr bool is_steady = true;
+
+  static const std::chrono::steady_clock::time_point epoch;
+
+  static time_point now()
+  {
+    const auto steady = std::chrono::steady_clock::now();
+    return time_point{steady - epoch};
+  }
+};
+
+const std::chrono::steady_clock::time_point recent_epoch_float_clock::epoch =
+  std::chrono::steady_clock::now();
+
+void
+test_wait_until()
+{
+  using clock = recent_epoch_float_clock;
+
+  std::mutex mx;
+  std::condition_variable cv;
+
+  for (int i = 0; i < 3; ++i)
+  {
+    std::unique_lock<std::mutex> l(mx);
+    const auto start = clock::now();
+    const auto wait_time = start + std::chrono::duration<float>{1.0};
+
+    // In theory we could get a spurious wakeup, but in practice we won't.
+    const auto result = cv.wait_until(l, wait_time);
+
+    VERIFY( result == std::cv_status::timeout );
+    const auto elapsed = clock::now() - start;
+    VERIFY( elapsed >= std::chrono::seconds(1) );
   }
 }
 
 int
 main()
 {
-  test01();
+  test_wait_for();
+  test_wait_until();
 }

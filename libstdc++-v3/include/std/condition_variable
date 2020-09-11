@@ -133,10 +133,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L
 	static_assert(chrono::is_clock_v<_Clock>);
 #endif
+	using __s_dur = typename __clock_t::duration;
 	const typename _Clock::time_point __c_entry = _Clock::now();
 	const __clock_t::time_point __s_entry = __clock_t::now();
 	const auto __delta = __atime - __c_entry;
-	const auto __s_atime = __s_entry + __delta;
+	const auto __s_atime = __s_entry +
+	  chrono::__detail::ceil<__s_dur>(__delta);
 
 	if (__wait_until_impl(__lock, __s_atime) == cv_status::no_timeout)
 	  return cv_status::no_timeout;
@@ -166,10 +168,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const chrono::duration<_Rep, _Period>& __rtime)
       {
 	using __dur = typename steady_clock::duration;
-	auto __reltime = chrono::duration_cast<__dur>(__rtime);
-	if (__reltime < __rtime)
-	  ++__reltime;
-	return wait_until(__lock, steady_clock::now() + __reltime);
+	return wait_until(__lock,
+			  steady_clock::now() +
+			  chrono::__detail::ceil<__dur>(__rtime));
       }
 
     template<typename _Rep, typename _Period, typename _Predicate>
@@ -179,10 +180,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Predicate __p)
       {
 	using __dur = typename steady_clock::duration;
-	auto __reltime = chrono::duration_cast<__dur>(__rtime);
-	if (__reltime < __rtime)
-	  ++__reltime;
-	return wait_until(__lock, steady_clock::now() + __reltime,
+	return wait_until(__lock,
+			  steady_clock::now() +
+			  chrono::__detail::ceil<__dur>(__rtime),
 			  std::move(__p));
       }
 

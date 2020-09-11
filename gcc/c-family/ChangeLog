@@ -58,7 +58,7 @@
 	is now a common option.
 	* c.opt: Likewise.
 
-2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c.opt (Wscalar-storage-order): Add explicit variable.
 
