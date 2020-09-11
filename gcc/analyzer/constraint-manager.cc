@@ -1160,39 +1160,6 @@ constraint_manager::get_or_add_equiv_class (const svalue *sval)
 
   equiv_class_id new_id (m_equiv_classes.length () - 1);
 
-  if (sval->maybe_get_constant ())
-    {
-      /* If we have a new EC for a constant, add constraints comparing this
-	 to other constants we may have (so that we accumulate the transitive
-	 closure of all constraints on constants as the constants are
-	 added).  */
-      for (equiv_class_id other_id (0); other_id.m_idx < new_id.m_idx;
-	   other_id.m_idx++)
-	{
-	  const equiv_class &other_ec = other_id.get_obj (*this);
-	  if (other_ec.m_constant
-	      && types_compatible_p (TREE_TYPE (new_ec->m_constant),
-				     TREE_TYPE (other_ec.m_constant)))
-	    {
-	      /* If we have two ECs, both with constants, the constants must be
-		 non-equal (or they would be in the same EC).
-		 Determine the direction of the inequality, and record that
-		 fact.  */
-	      tree lt
-		= fold_binary (LT_EXPR, boolean_type_node,
-			       new_ec->m_constant, other_ec.m_constant);
-	      if (lt == boolean_true_node)
-		add_constraint_internal (new_id, CONSTRAINT_LT, other_id);
-	      else if (lt == boolean_false_node)
-		add_constraint_internal (other_id, CONSTRAINT_LT, new_id);
-	      /* Refresh new_id, in case ECs were merged.  SVAL should always
-		 be present by now, so this should never lead to a
-		 recursion.  */
-	      new_id = get_or_add_equiv_class (sval);
-	    }
-	}
-    }
-
   return new_id;
 }
 
