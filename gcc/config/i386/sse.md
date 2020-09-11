@@ -23491,7 +23491,7 @@
 	(match_operand:MASK_DWI 1 "nonimmediate_operand"))]
   "TARGET_AVX512VP2INTERSECT"
 {
-  if (MEM_P (operands[1]) && MEM_P (operands[2]))
+  if (MEM_P (operands[0]) && MEM_P (operands[1]))
     operands[1] = force_reg (<MODE>mode, operands[1]);
 })
 
