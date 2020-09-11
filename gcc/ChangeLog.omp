@@ -1,3 +1,26 @@
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-30  Roger Sayle  <roger@nextmovesoftware.com>
+		    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (nvptx_vector_index_operand): New predicate.
+	(VECELEM): New mode attribute for a vector's uppercase element mode.
+	(Vecelem): New mode attribute for a vector's lowercase element mode.
+	(*vec_set<mode>_0, *vec_set<mode>_1, *vec_set<mode>_2)
+	(*vec_set<mode>_3): New instructions.
+	(vec_set<mode>): New expander to generate one of the above insns.
+	(vec_extract<mode><Vecelem>): New instruction.
+
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+		    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (extendqihi2): New instruction.
+	(ashl<mode>3, ashr<mode>3, lshr<mode>3): Support HImode.
+
 2020-08-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-sese.c: Fix comment typo.

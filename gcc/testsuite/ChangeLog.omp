@@ -1,3 +1,12 @@
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+		    Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/cvt.c: New test.
+	* gcc.target/nvptx/shift16.c: New test.
+
 2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
