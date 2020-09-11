@@ -50,17 +50,50 @@ void test02()
   VERIFY( status == std::future_status::timeout );
   status = f1.wait_until(std::chrono::system_clock::now());
   VERIFY( status == std::future_status::timeout );
+  status = f1.wait_until(std::chrono::steady_clock::now());
+  VERIFY( status == std::future_status::timeout );
   l.unlock();  // allow async thread to proceed
   f1.wait();   // wait for it to finish
   status = f1.wait_for(std::chrono::milliseconds(0));
   VERIFY( status == std::future_status::ready );
   status = f1.wait_until(std::chrono::system_clock::now());
   VERIFY( status == std::future_status::ready );
+  status = f1.wait_until(std::chrono::steady_clock::now());
+  VERIFY( status == std::future_status::ready );
+}
+
+// This test is prone to failures if run on a loaded machine where the
+// kernel decides not to schedule us for several seconds. It also
+// assumes that no-one will warp CLOCK whilst the test is
+// running when CLOCK is std::chrono::system_clock.
+template<typename CLOCK>
+void test03()
+{
+  auto const start = CLOCK::now();
+  future<void> f1 = async(launch::async, []() {
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+    });
+  std::future_status status;
+
+  status = f1.wait_for(std::chrono::milliseconds(500));
+  VERIFY( status == std::future_status::timeout );
+
+  status = f1.wait_until(start + std::chrono::seconds(1));
+  VERIFY( status == std::future_status::timeout );
+
+  status = f1.wait_until(start + std::chrono::seconds(5));
+  VERIFY( status == std::future_status::ready );
+
+  auto const elapsed = CLOCK::now() - start;
+  VERIFY( elapsed >= std::chrono::seconds(2) );
+  VERIFY( elapsed < std::chrono::seconds(5) );
 }
 
 int main()
 {
   test01();
   test02();
+  test03<std::chrono::system_clock>();
+  test03<std::chrono::steady_clock>();
   return 0;
 }
