@@ -190,6 +190,8 @@ public:
   /* If this instance is the main entry of a subgraph the set of
      entries into the same subgraph, including itself.  */
   vec<_slp_instance *> subgraph_entries;
+
+  dump_user_location_t location () const;
 } *slp_instance;
 
 
@@ -2027,7 +2029,7 @@ extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, vec<tree>,
 					  gimple_stmt_iterator *, poly_uint64,
 					  bool, unsigned *);
 extern bool vect_slp_analyze_operations (vec_info *);
-extern void vect_schedule_slp (vec_info *);
+extern void vect_schedule_slp (vec_info *, vec<slp_instance>);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);

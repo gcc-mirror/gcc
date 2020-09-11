@@ -117,6 +117,18 @@ vect_free_slp_tree (slp_tree node, bool final_p)
   delete node;
 }
 
+/* Return a location suitable for dumpings related to the SLP instance.  */
+
+dump_user_location_t
+_slp_instance::location () const
+{
+  if (root_stmt)
+    return root_stmt->stmt;
+  else
+    return SLP_TREE_SCALAR_STMTS (root)[0]->stmt;
+}
+
+
 /* Free the memory allocated for the SLP instance.  FINAL_P is true if we
    have vectorized the instance or if we have made a final decision not
    to vectorize the statements in any way.  */
@@ -2121,6 +2133,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
   vec<stmt_vec_info> scalar_stmts;
   bool constructor = false;
 
+  if (is_a <bb_vec_info> (vinfo))
+    vect_location = stmt_info->stmt;
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       scalar_type = TREE_TYPE (DR_REF (dr));
@@ -3120,6 +3134,8 @@ vect_slp_analyze_operations (vec_info *vinfo)
       hash_set<slp_tree> lvisited;
       stmt_vector_for_cost cost_vec;
       cost_vec.create (2);
+      if (is_a <bb_vec_info> (vinfo))
+	vect_location = instance->location ();
       if (!vect_slp_analyze_node_operations (vinfo,
 					     SLP_INSTANCE_TREE (instance),
 					     instance, visited, lvisited,
@@ -3157,8 +3173,11 @@ vect_slp_analyze_operations (vec_info *vinfo)
     {
       hash_set<stmt_vec_info> svisited;
       for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
-	vect_bb_slp_mark_live_stmts (bb_vinfo, SLP_INSTANCE_TREE (instance),
-				     instance, &instance->cost_vec, svisited);
+	{
+	  vect_location = instance->location ();
+	  vect_bb_slp_mark_live_stmts (bb_vinfo, SLP_INSTANCE_TREE (instance),
+				       instance, &instance->cost_vec, svisited);
+	}
     }
 
   return !vinfo->slp_instances.is_empty ();
@@ -3435,54 +3454,6 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   return true;
 }
 
-/* For each SLP subgraph determine profitability and remove parts not so.
-   Returns true if any profitable to vectorize subgraph remains.  */
-
-static bool
-vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
-{
-  slp_instance instance;
-  unsigned i;
-
-  auto_vec<slp_instance> subgraphs (BB_VINFO_SLP_INSTANCES (bb_vinfo).length ());
-  FOR_EACH_VEC_ELT (BB_VINFO_SLP_INSTANCES (bb_vinfo), i, instance)
-    if (!instance->subgraph_entries.is_empty ())
-      subgraphs.quick_push (instance);
-  BB_VINFO_SLP_INSTANCES (bb_vinfo).truncate (0);
-  for (i = 0; i < subgraphs.length ();)
-    {
-      instance = subgraphs[i];
-      if (!vect_bb_vectorization_profitable_p (bb_vinfo,
-					       instance->subgraph_entries))
-	{
-	  /* ???  We need to think of providing better dump/opt-report
-	     locations here.  */
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "not vectorized: vectorization is not "
-			       "profitable.\n");
-	    }
-	  slp_instance entry;
-	  unsigned j;
-	  FOR_EACH_VEC_ELT (instance->subgraph_entries, j, entry)
-	    if (entry != instance)
-	      vect_free_slp_instance (entry, false);
-	  vect_free_slp_instance (instance, false);
-	  subgraphs.ordered_remove (i);
-	}
-      else
-	{
-	  slp_instance entry;
-	  unsigned j;
-	  FOR_EACH_VEC_ELT (instance->subgraph_entries, j, entry)
-	    BB_VINFO_SLP_INSTANCES (bb_vinfo).safe_push (entry);
-	  ++i;
-	}
-    }
-  return !BB_VINFO_SLP_INSTANCES (bb_vinfo).is_empty ();
-}
-
 /* Find any vectorizable constructors and add them to the grouped_store
    array.  */
 
@@ -3590,6 +3561,7 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
      dependence in the SLP instances.  */
   for (i = 0; BB_VINFO_SLP_INSTANCES (bb_vinfo).iterate (i, &instance); )
     {
+      vect_location = instance->location ();
       if (! vect_slp_analyze_instance_alignment (bb_vinfo, instance)
 	  || ! vect_slp_analyze_instance_dependence (bb_vinfo, instance))
 	{
@@ -3626,14 +3598,6 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 
   vect_bb_partition_graph (bb_vinfo);
 
-  /* Cost model: check if the vectorization opportunities are worthwhile.  */
-  if (!unlimited_cost_model (NULL)
-      && !vect_bb_vectorization_profitable_p (bb_vinfo))
-    return false;
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "Basic block will be vectorized using SLP\n");
   return true;
 }
 
@@ -3686,22 +3650,48 @@ vect_slp_region (gimple_stmt_iterator region_begin,
 	    }
 
 	  bb_vinfo->shared->check_datarefs ();
-	  vect_schedule_slp (bb_vinfo);
 
-	  unsigned HOST_WIDE_INT bytes;
-	  if (dump_enabled_p ())
+	  unsigned i;
+	  slp_instance instance;
+	  FOR_EACH_VEC_ELT (BB_VINFO_SLP_INSTANCES (bb_vinfo), i, instance)
 	    {
-	      if (GET_MODE_SIZE (bb_vinfo->vector_mode).is_constant (&bytes))
-		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				 "basic block part vectorized using %wu byte "
-				 "vectors\n", bytes);
-	      else
-		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				 "basic block part vectorized using variable "
-				 "length vectors\n");
-	    }
+	      if (instance->subgraph_entries.is_empty ())
+		continue;
 
-	  vectorized = true;
+	      vect_location = instance->location ();
+	      if (!unlimited_cost_model (NULL)
+		  && !vect_bb_vectorization_profitable_p
+			(bb_vinfo, instance->subgraph_entries))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "not vectorized: vectorization is not "
+				     "profitable.\n");
+		  continue;
+		}
+
+	      if (!vectorized && dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Basic block will be vectorized "
+				 "using SLP\n");
+	      vectorized = true;
+
+	      vect_schedule_slp (bb_vinfo, instance->subgraph_entries);
+
+	      unsigned HOST_WIDE_INT bytes;
+	      if (dump_enabled_p ())
+		{
+		  if (GET_MODE_SIZE
+			(bb_vinfo->vector_mode).is_constant (&bytes))
+		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+				     "basic block part vectorized using %wu "
+				     "byte vectors\n", bytes);
+		  else
+		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+				     "basic block part vectorized using "
+				     "variable length vectors\n");
+		}
+	    }
 	}
       else
 	{
@@ -4828,16 +4818,14 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
     gsi_replace (&rgsi, rstmt, true);
 }
 
-/* Generate vector code for all SLP instances in the loop/basic block.  */
+/* Generate vector code for SLP_INSTANCES in the loop/basic block.  */
 
 void
-vect_schedule_slp (vec_info *vinfo)
+vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
 {
-  vec<slp_instance> slp_instances;
   slp_instance instance;
   unsigned int i;
 
-  slp_instances = vinfo->slp_instances;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
