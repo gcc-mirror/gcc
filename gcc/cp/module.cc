@@ -9869,6 +9869,11 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	 out-of-class definition.  For instance a FIELD_DECL.  */
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == FUNCTION_DECL)
+	// FIXME: This not right if DECL has a template header.  For
+	// those will have instantiations pointing at it.  I think the
+	// only case is class definitions inside templates (including
+	// lambdas).  At least those have an ABI-mandated
+	// disambiguation mechanism that we can leverage.
 	return MK_unique;
 
       if (TREE_CODE (decl) == TEMPLATE_DECL

@@ -1,5 +1,11 @@
 2020-09-11  Nathan Sidwell  <nathan@acm.org>
 
+	Concepts and local externs
+	gcc/cp/
+	* decl.c (grokfndecl): Don't attach to local extern.
+	gcc/testsuite/
+	* concepts/local-extern.C: New.
+
 	Local extern fns do not get template header
 	gcc/cp/
 	* module.cc (trees_out::chained_decls): Also mark local fns for
