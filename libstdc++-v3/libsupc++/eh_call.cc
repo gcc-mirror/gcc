@@ -138,7 +138,7 @@ __cxa_call_unexpected(void* exc_obj_in)
 
 	  if (__cxa_type_match(&new_xh->unwindHeader, catch_type, false,
 			       &new_ptr) != ctm_failed)
-	    __throw_exception_again;
+	    { __throw_exception_again; }
 
 	  // If the exception spec allows std::bad_exception, throw that.
 	  // We don't have a thrown object to compare against, but since
