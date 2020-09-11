@@ -36,7 +36,11 @@ void cpy_sl_1_max (long i, const char *s)
 void cpy_ul_1_max (unsigned long i, const char *s)
 {
   if (i < 1) i = 1;
+
   d = strcpy (a + i, s);      // { dg-warning "writing 1 or more bytes into a region of size 0" }
+
+  /* Because of integer wraparound the offset's range is [1, 0] so
+     the overflow isn't diagnosed (yet).  */
   d = strcpy (a + i + 1, s);  // { dg-warning "writing 1 or more bytes into a region of size 0" "" { xfail *-*-* } }
 }
 
