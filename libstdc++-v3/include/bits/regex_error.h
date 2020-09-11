@@ -167,7 +167,8 @@ namespace regex_constants
   __throw_regex_error(regex_constants::error_type __ecode);
 
   inline void
-  __throw_regex_error(regex_constants::error_type __ecode, const char* __what)
+  __throw_regex_error(regex_constants::error_type __ecode __attribute__((unused)),
+		      const char* __what__attribute__((unused)))
   { _GLIBCXX_THROW_OR_ABORT(regex_error(__ecode, __what)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
