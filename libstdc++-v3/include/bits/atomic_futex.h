@@ -229,11 +229,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_load_when_equal_until(unsigned __val, memory_order __mo,
 	  const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	const typename _Clock::time_point __c_entry = _Clock::now();
-	const __clock_t::time_point __s_entry = __clock_t::now();
-	const auto __delta = __atime - __c_entry;
-	const auto __s_atime = __s_entry + __delta;
-	return _M_load_when_equal_until(__val, __mo, __s_atime);
+	typename _Clock::time_point __c_entry = _Clock::now();
+	do {
+	  const __clock_t::time_point __s_entry = __clock_t::now();
+	  const auto __delta = __atime - __c_entry;
+	  const auto __s_atime = __s_entry + __delta;
+	  if (_M_load_when_equal_until(__val, __mo, __s_atime))
+	    return true;
+	  __c_entry = _Clock::now();
+	} while (__c_entry < __atime);
+	return false;
       }
 
     // Returns false iff a timeout occurred.
