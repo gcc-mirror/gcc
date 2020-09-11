@@ -1,3 +1,19 @@
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lang.opt (Waddress): Enable warning by -Wextra.
+	(Wcast-result): Likewise.
+	(Wunknown-pragmas): Likewise.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Don't warn about
+	variables initialized with 'void'.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-convert.cc (convert_expr): Warn when casting from a D class to a
+	C++ class.
+
 2020-09-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/96924

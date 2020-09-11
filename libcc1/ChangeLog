@@ -1,3 +1,7 @@
+2020-09-10  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_call_expr): Use DECL_LOCAL_DECL_P.
+
 2020-08-14  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_dependent_expr): Rename

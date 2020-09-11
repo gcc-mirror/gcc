@@ -1,3 +1,38 @@
+2020-09-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/acle/armv8-r.c: New test.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Waddress.d: New test.
+	* gdc.dg/Wcastresult1.d: New test.
+	* gdc.dg/Wcastresult2.d: New test.
+
+2020-09-10  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/specs/size_clause5.ads: New test.
+
+2020-09-10  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/discr59.adb: New test.
+	* gnat.dg/discr59_pkg1.ads: New helper.
+	* gnat.dg/discr59_pkg2.ads: Likewise.
+
+2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96939
+	* gcc.target/arm/lto/pr96939_0.c: New test.
+	* gcc.target/arm/lto/pr96939_1.c: New file.
+
+2020-09-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/analyzer/vla-1.c: Add require-effective-target alloca.
+
+2020-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96043
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr69297.c: Adjust.
+
 2020-09-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/77841

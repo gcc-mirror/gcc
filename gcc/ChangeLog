@@ -1,3 +1,125 @@
+2020-09-10  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_emit_cmove): Change return
+	type to bool.
+	(rs6000_emit_int_cmove): Change return type to bool.
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): Change return type
+	to bool.
+	(rs6000_emit_int_cmove): Change return type to bool.
+
+2020-09-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97004
+	* config/nvptx/nvptx.c (nvptx_assemble_value): Handle shift by
+	number of bits in shift operand.
+
+2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer-out.c (collect_block_tree_leafs): Recurse on
+	root rather than BLOCK_SUBBLOCKS (root).
+
+2020-09-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Cortex-R82.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add entry for Cortex-R82.
+
+2020-09-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_get_extension_string_for_isa_flags): Don't force +crc for
+	Armv8-R.
+	* config/aarch64/aarch64-arches.def: Add entry for Armv8-R.
+	* config/aarch64/aarch64-c.c (aarch64_define_unconditional_macros): Set
+	__ARM_ARCH_PROFILE correctly for Armv8-R.
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_R): New.
+	(AARCH64_FL_FOR_ARCH8_R): New.
+	(AARCH64_ISA_V8_R): New.
+	* doc/invoke.texi: Add Armv8-R to architecture table.
+
+2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/arm.c (arm_override_options_after_change_1): Add opts_set
+	argument, test opts_set->x_str_align_functions rather than
+	opts->x_str_align_functions.
+	(arm_override_options_after_change, arm_option_override_internal,
+	arm_set_current_function): Adjust callers.
+
+2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96939
+	* config/arm/arm.c (arm_override_options_after_change): Don't call
+	arm_configure_build_target here.
+	(arm_set_current_function): Call arm_override_options_after_change_1
+	at the end.
+
+2020-09-10  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.md
+	(lfiwzx, floatunssi<mode>2_lfiwzx, p8_mtvsrwz, p8_mtvsrd_sf): Fix insn
+	type.
+	* config/rs6000/vsx.md
+	(vsx_concat_<mode>, vsx_splat_<mode>_reg, vsx_splat_v4sf): Likewise.
+
+2020-09-10  Jonathan Yong  <10walls@gmail.com>
+
+	* config.host: Adjust plugin name for Windows.
+
+2020-09-10  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/97000
+	* tree-cfgcleanup.c (cleanup_call_ctrl_altering_flag): Don't clear
+	flag for IFN_UNIQUE.
+
+2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/93865
+	* lto-streamer.h (struct output_block): Add emit_pwd member.
+	* lto-streamer-out.c: Include toplev.h.
+	(clear_line_info): Set emit_pwd.
+	(lto_output_location_1): Encode the ob->current_file != xloc.file
+	bit directly into the location number.  If changing file, emit
+	additionally a bit whether pwd is emitted and emit it before the
+	first relative pathname since clear_line_info.
+	(output_function, output_constructor): Don't call clear_line_info
+	here.
+	* lto-streamer-in.c (struct string_pair_map): New type.
+	(struct string_pair_map_hasher): New type.
+	(string_pair_map_hasher::hash): New method.
+	(string_pair_map_hasher::equal): New method.
+	(path_name_pair_hash_table, string_pair_map_allocator): New variables.
+	(relative_path_prefix, canon_relative_path_prefix,
+	canon_relative_file_name): New functions.
+	(canon_file_name): Add relative_prefix argument, if non-NULL
+	and string is a relative path, return canon_relative_file_name.
+	(lto_location_cache::input_location_and_block): Decode file change
+	bit from the location number.  If changing file, unpack bit whether
+	pwd is streamed and stream in pwd.  Adjust canon_file_name caller.
+	(lto_free_file_name_hash): Delete path_name_pair_hash_table
+	and string_pair_map_allocator.
+
+2020-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96043
+	* tree-vectorizer.h (_slp_instance::cost_vec): New.
+	(_slp_instance::subgraph_entries): Likewise.
+	(BB_VINFO_TARGET_COST_DATA): Remove.
+	* tree-vect-slp.c (vect_free_slp_instance): Free
+	cost_vec and subgraph_entries.
+	(vect_analyze_slp_instance): Initialize them.
+	(vect_slp_analyze_operations): Defer passing costs to
+	the target, instead record them in the SLP graph entry.
+	(get_ultimate_leader): New helper for graph partitioning.
+	(vect_bb_partition_graph_r): Likewise.
+	(vect_bb_partition_graph): New function to partition the
+	SLP graph into independently costable parts.
+	(vect_bb_vectorization_profitable_p): Adjust to work on
+	a subgraph.
+	(vect_bb_vectorization_profitable_p): New wrapper,
+	discarding non-profitable vectorization of subgraphs.
+	(vect_slp_analyze_bb_1): Call vect_bb_partition_graph before
+	costing.
+
 2020-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94355

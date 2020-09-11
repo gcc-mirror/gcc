@@ -1,3 +1,102 @@
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__do_str_codecvt, __str_codecvt_in_all):
+	Add casts to compare types of the same signedness.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__equal_fn): Remove unused
+	typedef.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_array_constexpr):
+	(__cpp_lib_constexpr_char_traits): Only define C++17 value when
+	compiling C++17.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h (shared_ptr(auto_ptr&&))
+	(operator=(auto_ptr&&)): Add diagnostic pragmas to suppress
+	warnings for uses of std::auto_ptr.
+	* include/experimental/type_traits (is_literal_type_v):
+	Likewise, for use of std::is_literal_type.
+	* include/std/condition_variable (condition_variable_any::_Unlock):
+	Likewise, for use of std::uncaught_exception.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_List::type()): Avoid narrowing
+	conversion.
+	* include/std/chrono (operator+(const year&, const years&)):
+	Likewise.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/codecvt.h (codecvt_byname): Remove names of
+	unused parameters.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets_nonio.tcc: Adjust whitespace.
+
+2020-09-10  Krystian Kuźniarek  <krystian.kuzniarek@gmail.com>
+
+	* include/c_global/cmath (__lerp): Avoid -Wparentheses warnings.
+
+2020-09-10  Krystian Kuźniarek  <krystian.kuzniarek@gmail.com>
+
+	* include/bits/atomic_base.h: Fix -Wunused-variable
+	warnings.
+	* include/ext/new_allocator.h: Fix -Wunused-parameter
+	warnings.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator): Add assertions
+	to check preconditions added by LWG 3472.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94160
+	* src/c++17/memory_resource.cc (munge_options): Round
+	max_blocks_per_chunk to a multiple of four.
+	(__pool_resource::_M_alloc_pools()): Simplify slightly.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Check that valid pointers are returned when small values are
+	used for max_blocks_per_chunk.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96942
+	* include/std/memory_resource (monotonic_buffer_resource::do_allocate):
+	Use __builtin_expect when checking if a new buffer needs to be
+	allocated from the upstream resource, and for checks for edge
+	cases like zero sized buffers and allocations.
+	* src/c++17/memory_resource.cc (aligned_size): New class template.
+	(aligned_ceil): New helper function to round up to a given
+	alignment.
+	(monotonic_buffer_resource::chunk): Replace _M_size and _M_align
+	with an aligned_size member. Remove _M_canary member. Change _M_next
+	to pointer instead of unaligned buffer.
+	(monotonic_buffer_resource::chunk::allocate): Round up to multiple
+	of 64 instead of to power of two. Check for size overflow. Remove
+	redundant check for minimum required alignment.
+	(monotonic_buffer_resource::chunk::release): Adjust for changes
+	to data members.
+	(monotonic_buffer_resource::_M_new_buffer): Use aligned_ceil.
+	(big_block): Replace _M_size and _M_align with aligned_size
+	member.
+	(big_block::big_block): Check for size overflow.
+	(big_block::size, big_block::align): Adjust to use aligned_size.
+	(big_block::alloc_size): Use aligned_ceil.
+	(munge_options): Use aligned_ceil.
+	(__pool_resource::allocate): Use big_block::align for alignment.
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc: Check
+	upstream resource gets expected values for impossible sizes.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Likewise. Adjust checks for expected alignment in existing test.
+
 2020-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (duration::_S_gcd): Use invariant that
