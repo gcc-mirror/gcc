@@ -442,6 +442,7 @@ bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
 	${bits_srcdir}/algorithmfwd.h \
+	${bits_srcdir}/align.h \
 	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/allocated_ptr.h \
 	${bits_srcdir}/allocator.h \

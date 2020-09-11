@@ -61,6 +61,7 @@
  */
 
 #include <bits/stl_algobase.h>
+#include <bits/align.h>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
@@ -101,46 +102,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-/**
- *  @brief Fit aligned storage in buffer.
- *  @ingroup memory
- *
- *  This function tries to fit @a __size bytes of storage with alignment
- *  @a __align into the buffer @a __ptr of size @a __space bytes.  If such
- *  a buffer fits then @a __ptr is changed to point to the first byte of the
- *  aligned storage and @a __space is reduced by the bytes used for alignment.
- *
- *  C++11 20.6.5 [ptr.align]
- *
- *  @param __align   A fundamental or extended alignment value.
- *  @param __size    Size of the aligned storage required.
- *  @param __ptr     Pointer to a buffer of @a __space bytes.
- *  @param __space   Size of the buffer pointed to by @a __ptr.
- *  @return the updated pointer if the aligned storage fits, otherwise nullptr.
- *
- */
-inline void*
-align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
-{
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-  const auto __intptr = reinterpret_cast<uintptr_t>(__ptr);
-#else
-  // Cannot use std::uintptr_t so assume that std::size_t can be used instead.
-  static_assert(sizeof(size_t) >= sizeof(void*),
-      "std::size_t must be a suitable substitute for std::uintptr_t");
-  const auto __intptr = reinterpret_cast<unsigned long long>(__ptr);
-#endif
-  const auto __aligned = (__intptr - 1u + __align) & -__align;
-  const auto __diff = __aligned - __intptr;
-  if ((__size + __diff) > __space)
-    return nullptr;
-  else
-    {
-      __space -= __diff;
-      return __ptr = reinterpret_cast<void*>(__aligned);
-    }
-}
-
 /** @defgroup ptr_safety Pointer Safety and Garbage Collection
  *  @ingroup memory
  *
@@ -178,25 +139,6 @@ undeclare_no_pointers(char*, size_t) { }
 inline pointer_safety
 get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 // @}
-
-#if __cplusplus > 201703L
-#define __cpp_lib_assume_aligned 201811L
-  /** @brief Inform the compiler that a pointer is aligned.
-   *
-   *  @tparam _Align An alignment value (i.e. a power of two)
-   *  @tparam _Tp    An object type
-   *  @param  __ptr  A pointer that is aligned to _Align
-   *  @ingroup memory
-   */
-  template<size_t _Align, class _Tp>
-    [[nodiscard,__gnu__::__always_inline__]]
-    constexpr _Tp* assume_aligned(_Tp* __ptr)
-    {
-      static_assert(std::has_single_bit(_Align));
-      _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
-      return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
-    }
-#endif // C++2a
 
 #if __cplusplus > 201703L
   template<typename _Tp>
