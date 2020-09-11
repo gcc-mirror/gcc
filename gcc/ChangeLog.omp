@@ -3,6 +3,15 @@
 	Backport from mainline
 	2020-09-11  Tom de Vries  <tdevries@suse.de>
 
+	PR target/96964
+	* config/nvptx/nvptx.md (define_expand "atomic_test_and_set"): New
+	expansion.
+
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-11  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_assemble_value): Fix undefined
 	behaviour.
 
