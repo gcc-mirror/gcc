@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <unsigned _Waiter_bit = 0x80000000>
   class __atomic_futex_unsigned : __atomic_futex_unsigned_base
   {
-    typedef chrono::system_clock __clock_t;
+    typedef chrono::steady_clock __clock_t;
 
     // This must be lock-free and at offset 0.
     atomic<unsigned> _M_data;
@@ -169,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     unsigned
     _M_load_and_test_until_impl(unsigned __assumed, unsigned __operand,
 	bool __equal, memory_order __mo,
-	const chrono::time_point<__clock_t, _Dur>& __atime)
+	const chrono::time_point<std::chrono::system_clock, _Dur>& __atime)
     {
       auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
       auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
@@ -229,7 +229,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_load_when_equal_until(unsigned __val, memory_order __mo,
 	  const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	// DR 887 - Sync unknown clock to known clock.
 	const typename _Clock::time_point __c_entry = _Clock::now();
 	const __clock_t::time_point __s_entry = __clock_t::now();
 	const auto __delta = __atime - __c_entry;
@@ -241,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Duration>
     _GLIBCXX_ALWAYS_INLINE bool
     _M_load_when_equal_until(unsigned __val, memory_order __mo,
-	const chrono::time_point<__clock_t, _Duration>& __atime)
+	const chrono::time_point<std::chrono::system_clock, _Duration>& __atime)
     {
       unsigned __i = _M_load(__mo);
       if ((__i & ~_Waiter_bit) == __val)
