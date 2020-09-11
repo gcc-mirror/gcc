@@ -124,7 +124,7 @@ __cxa_call_unexpected(void* exc_obj_in)
       void* new_ptr = __get_object_from_ambiguous_exception (new_xh);
       const std::type_info* catch_type;
       int n;
-      bool bad_exception_allowed = false;
+      bool bad_exception_allowed __attribute__((unused)) = false;
       const std::type_info& bad_exc = typeid(std::bad_exception);
 
       // Check the new exception against the rtti list
