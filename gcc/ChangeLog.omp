@@ -3,6 +3,14 @@
 	Backport from mainline
 	2020-09-11  Tom de Vries  <tdevries@suse.de>
 
+	* config/nvptx/nvptx.c (nvptx_assemble_value): Fix undefined
+	behaviour.
+
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-11  Tom de Vries  <tdevries@suse.de>
+
 	* config/nvptx/nvptx.c (nvptx_assemble_value): Handle negative
 	__int128.
 
