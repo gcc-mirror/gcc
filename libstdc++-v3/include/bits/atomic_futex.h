@@ -219,8 +219,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_load_when_equal_for(unsigned __val, memory_order __mo,
 	  const chrono::duration<_Rep, _Period>& __rtime)
       {
+	using __dur = typename __clock_t::duration;
 	return _M_load_when_equal_until(__val, __mo,
-					__clock_t::now() + __rtime);
+		    __clock_t::now() + chrono::__detail::ceil<__dur>(__rtime));
       }
 
     // Returns false iff a timeout occurred.
@@ -233,7 +234,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	do {
 	  const __clock_t::time_point __s_entry = __clock_t::now();
 	  const auto __delta = __atime - __c_entry;
-	  const auto __s_atime = __s_entry + __delta;
+	  const auto __s_atime = __s_entry +
+	      chrono::__detail::ceil<_Duration>(__delta);
 	  if (_M_load_when_equal_until(__val, __mo, __s_atime))
 	    return true;
 	  __c_entry = _Clock::now();

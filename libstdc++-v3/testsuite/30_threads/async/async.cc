@@ -157,6 +157,20 @@ void test04()
   }
 }
 
+void test_pr91486()
+{
+  future<void> f1 = async(launch::async, []() {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    });
+
+  std::chrono::duration<float> const wait_time = std::chrono::seconds(1);
+  auto const start_steady = chrono::steady_clock::now();
+  auto status = f1.wait_for(wait_time);
+  auto const elapsed_steady = chrono::steady_clock::now() - start_steady;
+
+  VERIFY( elapsed_steady >= std::chrono::seconds(1) );
+}
+
 int main()
 {
   test01();
@@ -165,5 +179,6 @@ int main()
   test03<std::chrono::steady_clock>();
   test03<steady_clock_copy>();
   test04();
+  test_pr91486();
   return 0;
 }
