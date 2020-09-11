@@ -3665,3 +3665,50 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	inform (origloc, "previously declared as %s", curparmstr.c_str ());
     }
 }
+
+/* Warn about divisions of two sizeof operators when the first one is applied
+   to an array and the divisor does not equal the size of the array element.
+   For instance:
+
+     sizeof (ARR) / sizeof (OP)
+
+   ARR is the array argument of the first sizeof, ARR_TYPE is its ARRAY_TYPE.
+   OP1 is the whole second SIZEOF_EXPR, or its argument; TYPE1 is the type
+   of the second argument.  */
+
+void
+maybe_warn_sizeof_array_div (location_t loc, tree arr, tree arr_type,
+			     tree op1, tree type1)
+{
+  tree elt_type = TREE_TYPE (arr_type);
+
+  if (!warn_sizeof_array_div
+      /* Don't warn on multidimensional arrays.  */
+      || TREE_CODE (elt_type) == ARRAY_TYPE)
+    return;
+
+  if (!tree_int_cst_equal (TYPE_SIZE (elt_type), TYPE_SIZE (type1)))
+    {
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wsizeof_array_div,
+		      "expression does not compute the number of "
+		      "elements in this array; element type is "
+		      "%qT, not %qT", elt_type, type1))
+	{
+	  if (EXPR_HAS_LOCATION (op1))
+	    {
+	      location_t op1_loc = EXPR_LOCATION (op1);
+	      gcc_rich_location richloc (op1_loc);
+	      richloc.add_fixit_insert_before (op1_loc, "(");
+	      richloc.add_fixit_insert_after (op1_loc, ")");
+	      inform (&richloc, "add parentheses around %qE to "
+		      "silence this warning", op1);
+	    }
+	  else
+	    inform (loc, "add parentheses around the second %<sizeof%> "
+		    "to silence this warning");
+	  if (DECL_P (arr))
+	    inform (DECL_SOURCE_LOCATION (arr), "array %qD declared here", arr);
+	}
+    }
+}

@@ -1854,6 +1854,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
     {
     case CONSTRUCTOR:
     case SIZEOF_EXPR:
+    case PAREN_SIZEOF_EXPR:
       return;
 
     case COMPOUND_EXPR:
@@ -8142,6 +8143,7 @@ void
 c_common_init_ts (void)
 {
   MARK_TS_EXP (SIZEOF_EXPR);
+  MARK_TS_EXP (PAREN_SIZEOF_EXPR);
   MARK_TS_EXP (C_MAYBE_CONST_EXPR);
   MARK_TS_EXP (EXCESS_PRECISION_EXPR);
   MARK_TS_EXP (BREAK_STMT);
