@@ -1,3 +1,9 @@
+2020-09-10  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/discr59.adb: New test.
+	* gnat.dg/discr59_pkg1.ads: New helper.
+	* gnat.dg/discr59_pkg2.ads: Likewise.
+
 2020-09-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
