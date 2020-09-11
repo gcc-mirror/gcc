@@ -677,6 +677,8 @@
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
   {
+    gcc_assert (rtx_equal_p (operands[0], operands[1])
+		|| !reg_overlap_mentioned_p (operands[0], operands[1]));
     operands[6] = gcn_operand_part (TImode, operands[0], 3);
     operands[7] = gcn_operand_part (TImode, operands[1], 3);
     operands[4] = gcn_operand_part (TImode, operands[0], 2);

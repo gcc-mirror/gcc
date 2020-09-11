@@ -4844,7 +4844,7 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
    recursive invocations.  */
 
 static tree
-rewrite_expr_tree (gimple *stmt, unsigned int opindex,
+rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 		   vec<operand_entry *> ops, bool changed, bool next_changed)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
@@ -4891,7 +4891,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
 		= find_insert_point (stmt, oe1->op, oe2->op);
 	      lhs = make_ssa_name (TREE_TYPE (lhs));
 	      stmt
-		= gimple_build_assign (lhs, gimple_assign_rhs_code (stmt),
+		= gimple_build_assign (lhs, rhs_code,
 				       oe1->op, oe2->op);
 	      gimple_set_uid (stmt, uid);
 	      gimple_set_visited (stmt, true);
@@ -4935,7 +4935,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
   /* Recurse on the LHS of the binary operator, which is guaranteed to
      be the non-leaf side.  */
   tree new_rhs1
-    = rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), opindex + 1, ops,
+    = rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), rhs_code, opindex + 1, ops,
 			 changed || oe->op != rhs2 || next_changed,
 			 false);
 
@@ -4961,7 +4961,7 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
 	  gimple *insert_point = find_insert_point (stmt, new_rhs1, oe->op);
 
 	  lhs = make_ssa_name (TREE_TYPE (lhs));
-	  stmt = gimple_build_assign (lhs, gimple_assign_rhs_code (stmt),
+	  stmt = gimple_build_assign (lhs, rhs_code,
 				      new_rhs1, oe->op);
 	  gimple_set_uid (stmt, uid);
 	  gimple_set_visited (stmt, true);
@@ -5514,13 +5514,20 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
 
       if (!binrhsisreassoc)
 	{
-	  if (!try_special_add_to_ops (ops, rhscode, binrhs, binrhsdef))
+	  bool swap = false;
+	  if (try_special_add_to_ops (ops, rhscode, binrhs, binrhsdef))
+	    /* If we add ops for the rhs we expect to be able to recurse
+	       to it via the lhs during expression rewrite so swap
+	       operands.  */
+	    swap = true;
+	  else
 	    add_to_ops_vec (ops, binrhs);
 
 	  if (!try_special_add_to_ops (ops, rhscode, binlhs, binlhsdef))
 	    add_to_ops_vec (ops, binlhs);
 
-	  return;
+	  if (!swap)
+	    return;
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5539,6 +5546,8 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
 	  fprintf (dump_file, " is now ");
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
+      if (!binrhsisreassoc)
+	return;
 
       /* We want to make it so the lhs is always the reassociative op,
 	 so swap.  */
@@ -6408,7 +6417,7 @@ reassociate_bb (basic_block bb)
                       if (len >= 3)
                         swap_ops_for_binary_stmt (ops, len - 3, stmt);
 
-		      new_lhs = rewrite_expr_tree (stmt, 0, ops,
+		      new_lhs = rewrite_expr_tree (stmt, rhs_code, 0, ops,
 						   powi_result != NULL
 						   || negate_result,
 						   len != orig_len);
