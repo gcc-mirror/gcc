@@ -9457,7 +9457,10 @@ grokfndecl (tree ctype,
     {
       tree tmpl_reqs = NULL_TREE;
       tree ctx = friendp ? current_class_type : ctype;
-      bool memtmpl = (processing_template_decl > template_class_depth (ctx));
+      bool block_local = TREE_CODE (current_scope ()) == FUNCTION_DECL;
+      bool memtmpl = (!block_local
+		      && (processing_template_decl
+			  > template_class_depth (ctx)));
       if (memtmpl)
         tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
       tree ci = build_constraints (tmpl_reqs, decl_reqs);
@@ -9467,9 +9470,11 @@ grokfndecl (tree ctype,
           ci = NULL_TREE;
         }
       /* C++20 CA378: Remove non-templated constrained functions.  */
-      if (ci && !flag_concepts_ts
-	  && (!processing_template_decl
-	      || (friendp && !memtmpl && !funcdef_flag)))
+      if (ci
+	  && (block_local
+	      || (!flag_concepts_ts
+		  && (!processing_template_decl
+		      || (friendp && !memtmpl && !funcdef_flag)))))
 	{
 	  error_at (location, "constraints on a non-templated function");
 	  ci = NULL_TREE;
