@@ -1,6 +1,14 @@
 2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-08-04  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96428
+	* config/nvptx/nvptx.c (nvptx_gen_shuffle): Handle V2SI/V2DI.
+
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-07-30  Roger Sayle  <roger@nextmovesoftware.com>
 		    Tom de Vries  <tdevries@suse.de>
 
