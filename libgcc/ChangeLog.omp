@@ -1,3 +1,11 @@
+2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-09  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/atomic.c (__SYNC_SUBWORD_COMPARE_AND_SWAP): Fix
+	Wbuiltin-declaration-mismatch.
+
 2020-08-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/nvptx/atomic.c: New.
