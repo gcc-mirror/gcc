@@ -54,8 +54,15 @@ struct streamer_hooks {
   /* [REQ] Called by every streaming routine that needs to read a location.  */
   void (*input_location) (location_t *, struct bitpack_d *, class data_in *);
 
-  /* [REQ] Called by every streaming routine that needs to write a location.  */
-  void (*output_location) (struct output_block *, struct bitpack_d *, location_t);
+  /* [REQ] Called by every streaming routine that needs to write a
+     location.  */
+  void (*output_location) (struct output_block *, struct bitpack_d *,
+			   location_t);
+
+  /* [REQ] Called by every streaming routine that needs to write a
+     location, both LOCATION_LOCUS and LOCATION_BLOCK.  */
+  void (*output_location_and_block) (struct output_block *, struct bitpack_d *,
+				     location_t);
 };
 
 #define stream_write_tree(OB, EXPR, REF_P) \
@@ -72,6 +79,9 @@ struct streamer_hooks {
 
 #define stream_output_location(OB, BP, LOC) \
     streamer_hooks.output_location (OB, BP, LOC)
+
+#define stream_output_location_and_block(OB, BP, LOC) \
+    streamer_hooks.output_location_and_block (OB, BP, LOC)
 
 /* Streamer hooks.  */
 extern struct streamer_hooks streamer_hooks;

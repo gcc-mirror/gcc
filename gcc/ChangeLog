@@ -1,3 +1,11 @@
+2020-09-09  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/96357
+	* config/aarch64/aarch64-sve.md
+	(cond_sub<mode>_relaxed_const): Updated and renamed from
+	cond_sub<mode>_any_const pattern.
+	(cond_sub<mode>_strict_const): New pattern.
+
 2020-09-04  Carl Love  <cel@us.ibm.com>
 
 	PR target/85830
