@@ -61,7 +61,6 @@
  */
 
 #include <bits/stl_algobase.h>
-#include <bits/align.h>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
@@ -75,6 +74,7 @@
 #  include <iosfwd>           	  // std::basic_ostream
 #  include <ext/atomicity.h>
 #  include <ext/concurrence.h>
+#  include <bits/align.h>
 #  include <bits/functexcept.h>
 #  include <bits/stl_function.h>  // std::less
 #  include <bits/uses_allocator.h>
