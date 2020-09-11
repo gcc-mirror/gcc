@@ -1922,10 +1922,9 @@ GLIBCXX_3.4.21 {
     _ZNSt7codecvtID[is]c*;
     _ZT[ISV]St7codecvtID[is]c*E;
 
-    extern "C++"
-    {
-      std::__atomic_futex_unsigned_base*;
-    };
+    # std::__atomic_futex_unsigned_base members
+    _ZNSt28__atomic_futex_unsigned_base19_M_futex_notify_all*;
+    _ZNSt28__atomic_futex_unsigned_base19_M_futex_wait_until*;
 
     # codecvt_utf8 etc.
     _ZNKSt19__codecvt_utf8_base*;
@@ -2319,6 +2318,9 @@ GLIBCXX_3.4.29 {
     _ZNSs7reserveEv;
     _ZNSbIwSt11char_traitsIwESaIwEE7reserveEv;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7reserveEv;
+
+    # std::__atomic_futex_unsigned_base::_M_futex_wait_until_steady
+    _ZNSt28__atomic_futex_unsigned_base26_M_futex_wait_until_steady*;
 
 } GLIBCXX_3.4.28;
 

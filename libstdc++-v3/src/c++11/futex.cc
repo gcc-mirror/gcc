@@ -33,9 +33,15 @@
 #include <errno.h>
 #include <debug/debug.h>
 
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+#include <unistd.h>
+#include <sys/syscall.h>
+#endif
+
 // Constants for the wait/wake futex syscall operations
 const unsigned futex_wait_op = 0;
 const unsigned futex_wait_bitset_op = 9;
+const unsigned futex_clock_monotonic_flag = 0;
 const unsigned futex_clock_realtime_flag = 256;
 const unsigned futex_bitset_match_any = ~0;
 const unsigned futex_wake_op = 1;
@@ -43,6 +49,7 @@ const unsigned futex_wake_op = 1;
 namespace
 {
   std::atomic<bool> futex_clock_realtime_unavailable;
+  std::atomic<bool> futex_clock_monotonic_unavailable;
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -101,6 +108,81 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct timespec rt;
 	rt.tv_sec = __s.count() - tv.tv_sec;
 	rt.tv_nsec = __ns.count() - tv.tv_usec * 1000;
+	if (rt.tv_nsec < 0)
+	  {
+	    rt.tv_nsec += 1000000000;
+	    --rt.tv_sec;
+	  }
+	// Did we already time out?
+	if (rt.tv_sec < 0)
+	  return false;
+
+	if (syscall (SYS_futex, __addr, futex_wait_op, __val, &rt) == -1)
+	  {
+	    __glibcxx_assert(errno == EINTR || errno == EAGAIN
+			     || errno == ETIMEDOUT);
+	    if (errno == ETIMEDOUT)
+	      return false;
+	  }
+	return true;
+      }
+  }
+
+  bool
+  __atomic_futex_unsigned_base::_M_futex_wait_until_steady(unsigned *__addr,
+      unsigned __val,
+      bool __has_timeout, chrono::seconds __s, chrono::nanoseconds __ns)
+  {
+    if (!__has_timeout)
+      {
+	// Ignore whether we actually succeeded to block because at worst,
+	// we will fall back to spin-waiting.  The only thing we could do
+	// here on errors is abort.
+	int ret __attribute__((unused));
+	ret = syscall (SYS_futex, __addr, futex_wait_op, __val, nullptr);
+	__glibcxx_assert(ret == 0 || errno == EINTR || errno == EAGAIN);
+	return true;
+      }
+    else
+      {
+	if (!futex_clock_monotonic_unavailable.load(std::memory_order_relaxed))
+	  {
+	    struct timespec rt;
+	    rt.tv_sec = __s.count();
+	    rt.tv_nsec = __ns.count();
+
+	    if (syscall (SYS_futex, __addr,
+			 futex_wait_bitset_op | futex_clock_monotonic_flag,
+			 __val, &rt, nullptr, futex_bitset_match_any) == -1)
+	      {
+		__glibcxx_assert(errno == EINTR || errno == EAGAIN
+				 || errno == ETIMEDOUT || errno == ENOSYS);
+		if (errno == ETIMEDOUT)
+		  return false;
+		else if (errno == ENOSYS)
+		  {
+		    futex_clock_monotonic_unavailable.store(true,
+						    std::memory_order_relaxed);
+		    // Fall through to legacy implementation if the system
+		    // call is unavailable.
+		  }
+		else
+		  return true;
+	      }
+	  }
+
+	// We only get to here if futex_clock_monotonic_unavailable was
+	// true or has just been set to true.
+	struct timespec ts;
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+	syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &ts);
+#else
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+#endif
+	// Convert the absolute timeout value to a relative timeout
+	struct timespec rt;
+	rt.tv_sec = __s.count() - ts.tv_sec;
+	rt.tv_nsec = __ns.count() - ts.tv_nsec;
 	if (rt.tv_nsec < 0)
 	  {
 	    rt.tv_nsec += 1000000000;
