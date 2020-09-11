@@ -3801,7 +3801,7 @@
 	(peephole2 to remove unneded compare after CMPXCHG):
 	New pattern, also handle XOR zeroing and load of -1 by OR.
 
-2020-07-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_compute_frame_layout): Minor tweak.
 	(ix86_adjust_stack_and_probe): Delete.
@@ -4525,7 +4525,7 @@
 	* config/riscv/riscv-sr.c (riscv_remove_unneeded_save_restore_calls):
 	Abort if any arguments on stack.
 
-2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Do not fold if
 	either type has reverse scalar storage order.
@@ -4660,7 +4660,7 @@
 	* config/cris/cris.md ("*extopqihi", "*extop<mode>si<setnz>_swap")
 	("*extop<mode>si<setnz>", "*addxqihi_swap"): Reinstate.
 
-2020-07-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Fold calls that
 	were initially created for the assignment of a variable-sized
@@ -5161,7 +5161,7 @@
 	* doc/standards.texi (C Language): Correct the default dialect.
 	(C++ Language): Update the default for C++ to gnu++17.
 
-2020-06-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-reassoc.c (dump_range_entry): New function.
 	(debug_range_entry): New debug function.
@@ -6156,7 +6156,7 @@
 	* config/riscv/riscv.c (riscv_gpr_save_operation_p): Remove
 	assertion and turn it into a early exit check.
 
-2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_init_constructor) <AGGREGATE_TYPE>: Declare
 	new ENSURE_SINGLE_ACCESS constant and move variables down.  If it is
@@ -6166,7 +6166,7 @@
 	the type is aggregate non-addressable, ask gimplify_init_constructor
 	whether it can generate a single access to the target.
 
-2020-06-15  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (propagate_subaccesses_from_rhs): When a non-scalar
 	access on the LHS is replaced with a scalar access, propagate the
@@ -7269,7 +7269,7 @@
 	* config/gcn/gcn.opt (-mlocal-symbol-id): Delete.
 	* config/gcn/mkoffload.c (main): Don't use -mlocal-symbol-id.
 
-2020-06-02  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/95395
 	* optabs.c (expand_unop): Fix bits/bytes confusion in latest change.
@@ -7611,7 +7611,7 @@
 	make a nonzero adjustment to the memory offset.
 	(b<ior,xor>hi_msx): Turn into a splitter.
 
-2020-05-28  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-store-merging.c (merged_store_group::can_be_merged_into):
 	Fix off-by-one error.
@@ -7730,7 +7730,7 @@
 	function.
 	(TARGET_DELEGITIMIZE_ADDRESS): New macro.
 
-2020-05-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* builtin-types.def (BT_UINT128): New primitive type.
 	(BT_FN_UINT128_UINT128): New function type.
