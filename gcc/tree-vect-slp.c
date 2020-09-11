@@ -3626,16 +3626,10 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 
   vect_bb_partition_graph (bb_vinfo);
 
-  /* Cost model: check if the vectorization is worthwhile.  */
+  /* Cost model: check if the vectorization opportunities are worthwhile.  */
   if (!unlimited_cost_model (NULL)
       && !vect_bb_vectorization_profitable_p (bb_vinfo))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: vectorization is not "
-			 "profitable.\n");
-      return false;
-    }
+    return false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
