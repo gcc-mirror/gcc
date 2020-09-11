@@ -61,7 +61,7 @@
 	* c-typeck.c (c_finish_omp_clauses): Set OMP_CLAUSE_SIZE (bias) to zero
 	for standalone attach/detach clauses.
 
-2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-typeck.c (convert_for_assignment): If -Wscalar-storage-order is
 	set, warn for conversion between pointers that point to incompatible
