@@ -1003,6 +1003,10 @@ get_array_bit_stride (tree comp_type)
   if (INTEGRAL_TYPE_P (comp_type))
     return TYPE_RM_SIZE (comp_type);
 
+  /* Likewise for record or union types.  */
+  if (RECORD_OR_UNION_TYPE_P (comp_type) && !TYPE_FAT_POINTER_P (comp_type))
+    return TYPE_ADA_SIZE (comp_type);
+
   /* The gnat_get_array_descr_info debug hook expects a debug tyoe.  */
   comp_type = maybe_debug_type (comp_type);
 
