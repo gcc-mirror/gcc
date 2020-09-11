@@ -2053,7 +2053,9 @@ nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
   bool negative_p
     = val & (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1));
 
-  val &= ((unsigned  HOST_WIDE_INT)2 << (size * BITS_PER_UNIT - 1)) - 1;
+  /* Avoid undefined behaviour.  */
+  if (size * BITS_PER_UNIT < HOST_BITS_PER_WIDE_INT)
+    val &= (HOST_WIDE_INT_1U << (size * BITS_PER_UNIT)) - 1;
 
   for (unsigned part = 0; size; size -= part)
     {
