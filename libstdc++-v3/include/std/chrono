@@ -329,20 +329,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif // C++20
 
-    // We want to use ceil even when compiling for earlier standards versions
-    namespace __detail
-    {
-      template<typename _ToDur, typename _Rep, typename _Period>
-	constexpr __enable_if_is_duration<_ToDur>
-	ceil(const duration<_Rep, _Period>& __d)
-	{
-	  auto __to = chrono::duration_cast<_ToDur>(__d);
-	  if (__to < __d)
-	    return __to + _ToDur{1};
-	  return __to;
-	}
-    }
-
 #if __cplusplus >= 201703L
 # define __cpp_lib_chrono 201611
 
@@ -360,7 +346,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr __enable_if_is_duration<_ToDur>
       ceil(const duration<_Rep, _Period>& __d)
       {
-	return __detail::ceil<_ToDur>(__d);
+	auto __to = chrono::duration_cast<_ToDur>(__d);
+	if (__to < __d)
+	  return __to + _ToDur{1};
+	return __to;
       }
 
     template <typename _ToDur, typename _Rep, typename _Period>
@@ -394,6 +383,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __d;
 	return -__d;
       }
+
+    // Make chrono::ceil<D> also usable as chrono::__detail::ceil<D>.
+    namespace __detail { using chrono::ceil; }
+
+#else // ! C++17
+
+    // We want to use ceil even when compiling for earlier standards versions.
+    // C++11 only allows a single statement in a constexpr function, so we
+    // need to move the comparison into a separate function, __ceil_impl.
+    namespace __detail
+    {
+      template<typename _Tp, typename _Up>
+	constexpr _Tp
+	__ceil_impl(const _Tp& __t, const _Up& __u)
+	{
+	  return (__t < __u) ? (__t + _Tp{1}) : __t;
+	}
+
+      // C++11-friendly version of std::chrono::ceil<D> for internal use.
+      template<typename _ToDur, typename _Rep, typename _Period>
+	constexpr _ToDur
+	ceil(const duration<_Rep, _Period>& __d)
+	{
+	  return __detail::__ceil_impl(chrono::duration_cast<_ToDur>(__d), __d);
+	}
+    }
 #endif // C++17
 
     /// duration_values
