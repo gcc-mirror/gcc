@@ -618,10 +618,9 @@ gnat_get_fixed_point_type_info (const_tree type,
 {
   tree scale_factor;
 
-  /* GDB cannot handle fixed-point types yet, so rely on GNAT encodings
-     instead for it.  */
+  /* Do nothing if the GNAT encodings are used.  */
   if (!TYPE_IS_FIXED_POINT_P (type)
-      || gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+      || gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
     return false;
 
   scale_factor = TYPE_SCALE_FACTOR (type);
