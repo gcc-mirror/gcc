@@ -1,3 +1,91 @@
+2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/gimplefe-44.c: Require exceptions.
+
+2020-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/pr96579.c: Compile only with target dfp.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96579
+	* gcc.dg/pr96579.c: New testcase.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96370
+	* gcc.dg/pr96370.c: New testcase.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96514
+	* gcc.dg/pr96514.c: New testcase.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96369
+	* c-c++-common/pr96369.c: New testcase.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96349
+	* gcc.dg/torture/pr96349.c: New testcase.
+
+2020-09-11  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from master:
+	2020-07-27  Matthias Klose  <doko@ubuntu.com>
+
+	PR bootstrap/96203
+	* gcc.target/i386/pr96203-1.c: New test.
+	* gcc.target/i386/pr96203-2.c: Likewise.
+
+2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack27.adb: New test.
+	* gnat.dg/pack27_pkg.ads: New helper.
+
+2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr7.ads: New test.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96862
+	* g++.dg/cpp1z/constexpr-96862.C: New test.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/96859
+	* gfortran.dg/pr96859.f90: New test.
+
 2020-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/size_clause5.ads: New test.
