@@ -191,20 +191,21 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
       lexer.skip_token ();
       return true;
       case RIGHT_SHIFT: {
+#if 0
 	/* shit. preferred HACK would be to replace this token in stream with
 	 * '>', but may not be possible at this point. */
 	// FIXME: ensure locations aren't messed up
 	TokenPtr right_angle = Token::make (RIGHT_ANGLE, tok->get_locus () + 1);
 	lexer.replace_current_token (right_angle);
+#endif
 
 	// new implementation that should be better
-#if 0
   lexer.split_current_token (RIGHT_ANGLE, RIGHT_ANGLE);
   lexer.skip_token ();
-#endif
 	return true;
       }
       case GREATER_OR_EQUAL: {
+#if 0
 	// another HACK - replace with equal (as assignment intended, probably)
 	/* FIXME: is this even required? how many people wouldn't leave a space?
 	 * - apparently rustc has this feature */
@@ -212,14 +213,15 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
 	TokenPtr equal = Token::make (EQUAL, tok->get_locus () + 1);
 	lexer.replace_current_token (equal);
 	return true;
+#endif
 
 	// new implementation that should be better
-#if 0
   lexer.split_current_token (RIGHT_ANGLE, EQUAL);
   lexer.skip_token ();
-#endif
+  return true;
       }
       case RIGHT_SHIFT_EQ: {
+#if 0
 	// another HACK - replace with greater or equal
 	// FIXME: again, is this really required? rustc has the feature, though
 	// FIXME: ensure locations aren't messed up
@@ -227,12 +229,12 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
 	  = Token::make (GREATER_OR_EQUAL, tok->get_locus () + 1);
 	lexer.replace_current_token (greater_equal);
 	return true;
+#endif
 
 	// new implementation that should be better
-#if 0
   lexer.split_current_token (RIGHT_ANGLE, GREATER_OR_EQUAL);
   lexer.skip_token ();
-#endif
+  return true;
       }
     default:
       rust_error_at (tok->get_locus (),
@@ -255,8 +257,8 @@ Parser<ManagedTokenSource>::left_binding_power (const_TokenPtr token)
   switch (token->get_id ())
     {
       /* TODO: issue here - distinguish between method calls and field access
-	   * somehow? Also would have to distinguish between paths and function
-	   * calls (:: operator), maybe more stuff. */
+       * somehow? Also would have to distinguish between paths and function
+       * calls (:: operator), maybe more stuff. */
       /* Current plan for tackling LBP - don't do it based on token, use
        * lookahead. Or alternatively, only use Pratt parsing for OperatorExpr
        * and handle other expressions without it. rustc only considers
@@ -6461,16 +6463,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
   /* TODO: maybe move more logic for expr without block in here for better error
    * handling */
 
-  // try to parse expr without block
-  /*AST::ExprWithoutBlock* expr = nullptr;
-  expr = parse_expr_without_block(std::move(outer_attrs));*/
-  // HACK: parse expression instead of expression without block, due to Pratt
-  // parsing issues
-  /*std::unique_ptr<AST::Expr> expr = nullptr;
-  Location locus = lexer.peek_token ()->get_locus ();
-  expr = parse_expr (std::move (outer_attrs));*/
-
-  // attempt to parse via parse_expr_without_block
+  // attempt to parse via parse_expr_without_block - seems to work
   std::unique_ptr<AST::ExprWithoutBlock> expr = nullptr;
   Location locus = lexer.peek_token ()->get_locus ();
   expr = parse_expr_without_block (std::move (outer_attrs));
@@ -10800,9 +10793,9 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
   switch (t2->get_id ())
     {
       case EXCLAM: {
-	// macro invocation or macro invocation semi - depends on whether there
-	// is a final ';' convert path in expr to simple path (as that is used
-	// in macros)
+	/* macro invocation or macro invocation semi - depends on whether there
+	 * is a final ';' */
+	// convert path in expr to simple path (as that is used in macros)
 	AST::SimplePath macro_path = path.as_simple_path ();
 	if (macro_path.is_empty ())
 	  {
@@ -10854,8 +10847,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 		rust_error_at (
 		  t3->get_locus (),
 		  "failed to parse token tree for macro invocation (or semi) - "
-		  "found "
-		  "'%s'",
+		  "found '%s'",
 		  t3->get_token_description ());
 		return ExprOrStmt::create_error ();
 	      }
@@ -10967,8 +10959,8 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	return ExprOrStmt (std::move (expr));
       }
       case LEFT_PAREN: {
-	// assume struct expr tuple (as struct-enum disambiguation requires name
-	// lookup) again, make statement if final ';'
+	/* assume struct expr tuple (as struct-enum disambiguation requires name
+	 * lookup) again, make statement if final ';' */
 	std::unique_ptr<AST::CallExpr> struct_expr
 	  = parse_struct_expr_tuple_partial (std::move (path),
 					     std::move (outer_attrs));
@@ -11022,9 +11014,6 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::StructExprField>
 Parser<ManagedTokenSource>::parse_struct_expr_field ()
 {
-  // DEBUG:
-  fprintf (stderr, "beginning struct/enum expr field parsing \n");
-
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
@@ -11045,11 +11034,6 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	      return nullptr;
 	    }
 
-	  // DEBUG:
-	  fprintf (
-	    stderr,
-	    "struct/enum expr field parsing field identifier value done \n");
-
 	  return std::unique_ptr<AST::StructExprFieldIdentifierValue> (
 	    new AST::StructExprFieldIdentifierValue (std::move (ident),
 						     std::move (expr)));
@@ -11059,10 +11043,6 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	  // struct expr field with identifier only
 	  Identifier ident = t->get_str ();
 	  lexer.skip_token ();
-
-	  // DEBUG:
-	  fprintf (stderr,
-		   "struct/enum expr field parsing field identifier done \n");
 
 	  return std::unique_ptr<AST::StructExprFieldIdentifier> (
 	    new AST::StructExprFieldIdentifier (std::move (ident)));
@@ -11088,30 +11068,18 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	    return nullptr;
 	  }
 
-	// DEBUG:
-	fprintf (stderr,
-		 "struct/enum expr field parsing field index value done \n");
-
 	return std::unique_ptr<AST::StructExprFieldIndexValue> (
 	  new AST::StructExprFieldIndexValue (index, std::move (expr)));
       }
     case DOT_DOT:
-      // this is a struct base and can't be parsed here, so just return nothing
-      // without erroring
-
-      // DEBUG:
-      fprintf (stderr, "struct/enum expr field parsing failed - '..' \n");
+      /* this is a struct base and can't be parsed here, so just return nothing
+       * without erroring */
 
       return nullptr;
     default:
-      // DEBUG:
-      fprintf (stderr,
-	       "struct/enum expr field parsing failed - unrecognised char \n");
-
       rust_error_at (t->get_locus (),
 		     "unrecognised token '%s' as first token of struct expr "
-		     "field - expected identifier "
-		     "or int literal",
+		     "field - expected identifier or int literal",
 		     t->get_token_description ());
       return nullptr;
     }
@@ -11194,9 +11162,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
       /* with curly bracketed macros, assume it is a macro invocation unless
        * a semicolon is explicitly put at the end. this is not necessarily
        * true (i.e. context-dependence) and so may have to be fixed up via
-       * HACKs in semantic
-       * analysis (by checking whether it is the last elem in the vector).
-       */
+       * HACKs in semantic analysis (by checking whether it is the last elem in
+       * the vector). */
 
       if (lexer.peek_token ()->get_id () == SEMICOLON)
 	{
@@ -11399,8 +11366,7 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
 
   // parse null denotation (unary part of expression)
   std::unique_ptr<AST::Expr> expr
-    = null_denotation (current_token, std::move (outer_attrs),
-			   restrictions);
+    = null_denotation (current_token, std::move (outer_attrs), restrictions);
 
   if (expr == nullptr)
     {
@@ -11720,7 +11686,8 @@ Parser<ManagedTokenSource>::null_denotation (
 
 	// HACK: as struct expressions should always be value expressions,
 	// cannot be referenced
-	ParseRestrictions entered_from_unary = { .can_be_struct_expr = false, .entered_from_unary = true };
+	ParseRestrictions entered_from_unary
+	  = {.can_be_struct_expr = false, .entered_from_unary = true};
 	/*entered_from_unary.entered_from_unary = true;
 	entered_from_unary.can_be_struct_expr = false;*/
 
@@ -11786,8 +11753,8 @@ Parser<ManagedTokenSource>::null_denotation (
 	fprintf (stderr, "beginning null denotation "
 			 "self/self-alias/dollar/crate/super handling\n");
 
-	// best option: parse as path, then extract identifier, macro,
-	// struct/enum, or just path info from it
+	/* best option: parse as path, then extract identifier, macro,
+	 * struct/enum, or just path info from it */
 	AST::PathInExpression path = parse_path_in_expression_pratt (tok);
 
 	// DEBUG
@@ -11956,33 +11923,55 @@ Parser<ManagedTokenSource>::left_denotation (
 				     std::move (outer_attrs), restrictions);
     case EQUAL_EQUAL:
       // equal to expression - binary infix (no associativity)
-      return parse_binary_equal_expr (tok, std::move (left),
-				      std::move (outer_attrs), restrictions);
+      /*return parse_binary_equal_expr (tok, std::move (left),
+				      std::move (outer_attrs), restrictions);*/
+      return parse_comparison_expr (tok, std::move (left),
+				    std::move (outer_attrs),
+				    AST::ComparisonExpr::ExprType::EQUAL,
+				    restrictions);
     case NOT_EQUAL:
       // not equal to expression - binary infix (no associativity)
-      return parse_binary_not_equal_expr (tok, std::move (left),
+      /*return parse_binary_not_equal_expr (tok, std::move (left),
 					  std::move (outer_attrs),
-					  restrictions);
+					  restrictions);*/
+      return parse_comparison_expr (tok, std::move (left),
+				    std::move (outer_attrs),
+				    AST::ComparisonExpr::ExprType::NOT_EQUAL,
+				    restrictions);
     case RIGHT_ANGLE:
       // greater than expression - binary infix (no associativity)
-      return parse_binary_greater_than_expr (tok, std::move (left),
+      /*return parse_binary_greater_than_expr (tok, std::move (left),
 					     std::move (outer_attrs),
-					     restrictions);
+					     restrictions);*/
+      return parse_comparison_expr (tok, std::move (left),
+				    std::move (outer_attrs),
+				    AST::ComparisonExpr::ExprType::GREATER_THAN,
+				    restrictions);
     case LEFT_ANGLE:
       // less than expression - binary infix (no associativity)
-      return parse_binary_less_than_expr (tok, std::move (left),
+      /*return parse_binary_less_than_expr (tok, std::move (left),
 					  std::move (outer_attrs),
-					  restrictions);
+					  restrictions);*/
+      return parse_comparison_expr (tok, std::move (left),
+				    std::move (outer_attrs),
+				    AST::ComparisonExpr::ExprType::LESS_THAN,
+				    restrictions);
     case GREATER_OR_EQUAL:
       // greater than or equal to expression - binary infix (no associativity)
-      return parse_binary_greater_equal_expr (tok, std::move (left),
+      /*return parse_binary_greater_equal_expr (tok, std::move (left),
 					      std::move (outer_attrs),
-					      restrictions);
+					      restrictions);*/
+      return parse_comparison_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ComparisonExpr::ExprType::GREATER_OR_EQUAL, restrictions);
     case LESS_OR_EQUAL:
       // less than or equal to expression - binary infix (no associativity)
-      return parse_binary_less_equal_expr (tok, std::move (left),
+      /*return parse_binary_less_equal_expr (tok, std::move (left),
 					   std::move (outer_attrs),
-					   restrictions);
+					   restrictions);*/
+      return parse_comparison_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ComparisonExpr::ExprType::LESS_OR_EQUAL, restrictions);
     case OR:
       // lazy logical or expression - binary infix
       return parse_lazy_or_expr (tok, std::move (left), std::move (outer_attrs),
@@ -12093,8 +12082,8 @@ Parser<ManagedTokenSource>::left_denotation (
 		 && lexer.peek_token (1)->get_id () != LEFT_PAREN
 		 && lexer.peek_token (1)->get_id () != SCOPE_RESOLUTION)
 	  {
-	    // field expression (or should be) - FIXME: scope resolution right
-	    // after identifier should always be method, I'm pretty sure
+	    /* field expression (or should be) - FIXME: scope resolution right
+	     * after identifier should always be method, I'm pretty sure */
 	    return parse_field_access_expr (tok, std::move (left),
 					    std::move (outer_attrs),
 					    restrictions);
@@ -12360,6 +12349,58 @@ Parser<ManagedTokenSource>::parse_right_shift_expr (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
 				      AST::ArithmeticOrLogicalExpr::RIGHT_SHIFT,
 				      locus));
+}
+
+/* Returns the left binding power for the given ComparisonExpr type.
+ * TODO make constexpr? Would that even do anything useful? */
+inline binding_powers
+get_lbp_for_comparison_expr (AST::ComparisonExpr::ExprType expr_type)
+{
+  switch (expr_type)
+    {
+    case AST::ComparisonExpr::EQUAL:
+      return LBP_EQUAL;
+    case AST::ComparisonExpr::NOT_EQUAL:
+      return LBP_NOT_EQUAL;
+    case AST::ComparisonExpr::GREATER_THAN:
+      return LBP_GREATER_THAN;
+    case AST::ComparisonExpr::LESS_THAN:
+      return LBP_SMALLER_THAN;
+    case AST::ComparisonExpr::GREATER_OR_EQUAL:
+      return LBP_GREATER_EQUAL;
+    case AST::ComparisonExpr::LESS_OR_EQUAL:
+      return LBP_SMALLER_EQUAL;
+    default:
+      // WTF? should not happen, this is an error
+      rust_error_at (
+	Location (),
+	"could not get LBP for ComparisonExpr - unknown ExprType!");
+      return LBP_EQUAL;
+    }
+}
+
+/* Parses a ComparisonExpr of given type and LBP. TODO find a way to only
+ * specify one and have the other looked up - e.g. specify ExprType and binding
+ * power is looked up? */
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ComparisonExpr>
+Parser<ManagedTokenSource>::parse_comparison_expr (
+  const_TokenPtr, std::unique_ptr<AST::Expr> left, std::vector<AST::Attribute>,
+  AST::ComparisonExpr::ExprType expr_type, ParseRestrictions restrictions)
+{
+  // parse RHS (as tok has already been consumed in parse_expression)
+  std::unique_ptr<AST::Expr> right
+    = parse_expr (get_lbp_for_comparison_expr (expr_type),
+		  std::vector<AST::Attribute> (), restrictions);
+  if (right == nullptr)
+    return nullptr;
+
+  // TODO: check types. actually, do so during semantic analysis
+  Location locus = left->get_locus_slow ();
+
+  return std::unique_ptr<AST::ComparisonExpr> (
+    new AST::ComparisonExpr (std::move (left), std::move (right), expr_type,
+			     locus));
 }
 
 // Parses a binary equal to expression (with Pratt parsing).

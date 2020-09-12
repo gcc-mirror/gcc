@@ -95,6 +95,12 @@ is_whitespace (char character)
   return ISSPACE (character);
 }
 
+bool
+is_non_decimal_int_literal_separator (char character)
+{
+  return character == 'x' || character == 'o' || character == 'b';
+}
+
 // this compiles fine, so any intellisense saying otherwise is fake news
 Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap)
   : input (std::move (file_input)), current_line (1), current_column (1),
@@ -674,10 +680,11 @@ Lexer::build_token ()
 		  return Token::make (DOT_DOT, loc);
 		}
 	    }
-	  else if (!ISDIGIT (peek_input ()))
+	  else /*if (!ISDIGIT (peek_input ()))*/
 	    {
 	      // single dot .
-	      // Only if followed by a non-number - otherwise is float
+	      // Only if followed by a non-number - otherwise is float 
+        // nope, float cannot start with '.'. 
 	      current_column++;
 	      return Token::make (DOT, loc);
 	    }
@@ -721,9 +728,9 @@ Lexer::build_token ()
 	return parse_identifier_or_keyword (loc);
 
       // int and float literals
-      if (ISDIGIT (current_char) || current_char == '.')
+      if (ISDIGIT (current_char))
 	{ //  _ not allowed as first char
-	  if (current_char == '0' && !ISDIGIT (peek_input ()))
+	  if (current_char == '0' && is_non_decimal_int_literal_separator (peek_input ()))
 	    {
 	      // handle binary, octal, hex literals
 	      TokenPtr non_dec_int_lit_ptr
@@ -751,6 +758,14 @@ Lexer::build_token ()
 	  if (char_or_lifetime_ptr != nullptr)
 	    return char_or_lifetime_ptr;
 	}
+
+      // DEBUG: check for specific character problems:
+      if (current_char == '0')
+        fprintf(stderr, "'0' uncaught before unexpected character\n");
+      else if (current_char == ']')
+        fprintf(stderr, "']' uncaught before unexpected character\n");
+      else if (current_char == 0x5d)
+        fprintf(stderr, "whatever 0x5d is (not '0' or ']') uncaught before unexpected character\n");
 
       // didn't match anything so error
       rust_error_at (loc, "unexpected character '%x'", current_char);

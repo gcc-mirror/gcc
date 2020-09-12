@@ -120,31 +120,36 @@ protected:
 class ExprStmtWithoutBlock : public ExprStmt
 {
 public:
-  // ExprWithoutBlock* expr;
+  // TODO: ensure that this works
+  std::unique_ptr<ExprWithoutBlock> expr;
   /* HACK: cannot ensure type safety of ExprWithoutBlock due to Pratt parsing,
    * so have to store more general type of Expr. FIXME: fix this issue somehow
    * or redesign AST. */
-  // std::unique_ptr<ExprWithoutBlock> expr;
-  std::unique_ptr<Expr> expr;
+  // std::unique_ptr<Expr> expr;
 
   std::string as_string () const override;
 
-  // ExprStmtWithoutBlock(std::unique_ptr<ExprWithoutBlock> expr) :
-  // expr(std::move(expr)) {}
-  ExprStmtWithoutBlock (std::unique_ptr<Expr> expr, Location locus)
+  ExprStmtWithoutBlock (std::unique_ptr<ExprWithoutBlock> expr, Location locus)
     : ExprStmt (locus), expr (std::move (expr))
   {}
+  /*ExprStmtWithoutBlock (std::unique_ptr<Expr> expr, Location locus)
+    : ExprStmt (locus), expr (std::move (expr))
+  {}*/
 
   // Copy constructor with clone
   ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr /*_without_block*/ ())
+    : ExprStmt (other), expr (other.expr->clone_expr_without_block ())
   {}
+  /*ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
+    : ExprStmt (other), expr (other.expr->clone_expr ())
+  {}*/
 
   // Overloaded assignment operator to clone
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock const &other)
   {
     ExprStmt::operator= (other);
-    expr = other.expr->clone_expr /*_without_block*/ ();
+    expr = other.expr->clone_expr_without_block ();
+    //expr = other.expr->clone_expr ();
 
     return *this;
   }
