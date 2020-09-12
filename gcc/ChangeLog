@@ -1,3 +1,61 @@
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (refered_from_nonlocal_fn): Use
+	DECL_EXTERNAL || TREE_PUBLIC instead of externally_visible.
+	(refered_from_nonlocal_var): Likewise.
+	(ipa_pta_execute): Likewise.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* tree-ssa-structalias.c (ipa_pta_execute): Use
+	varpool_node::externally_visible_p ().
+	(refered_from_nonlocal_var): Likewise.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94964
+	* cfgloopmanip.c (create_preheader): Require non-complex
+	preheader edge for CP_SIMPLE_PREHEADERS.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95049
+	* tree-ssa-sccvn.c (set_ssa_val_to): Reject lattice transition
+	between different constants.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95133
+	* gimple-ssa-split-paths.c
+	(find_block_to_duplicate_for_splitting_paths): Check for
+	normal edges.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95717
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Move BB SSA updating before exit/latch PHI current def copying.
+
 2020-09-02  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
