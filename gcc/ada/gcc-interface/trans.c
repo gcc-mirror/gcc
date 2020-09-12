@@ -439,6 +439,19 @@ gigi (Node_Id gnat_root,
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
 
+  if (Enable_128bit_Types)
+    {
+      tree int128_type = gnat_type_for_size (128, 0);
+      mulv128_decl
+	= create_subprog_decl (get_identifier ("__gnat_mulv128"), NULL_TREE,
+			       build_function_type_list (int128_type,
+							 int128_type,
+							 int128_type,
+							 NULL_TREE),
+			       NULL_TREE, is_default, true, true, true, false,
+			       false, NULL, Empty);
+    }
+
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
 
@@ -9386,6 +9399,15 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
 						       convert (int64, lhs),
 						       convert (int64, rhs)));
+	}
+
+      /* Likewise for a 128-bit mult and a 64-bit target.  */
+      else if (code == MULT_EXPR && precision == 128 && BITS_PER_WORD < 128)
+	{
+	  tree int128 = gnat_type_for_size (128, 0);
+	  return convert (gnu_type, build_call_n_expr (mulv128_decl, 2,
+						       convert (int128, lhs),
+						       convert (int128, rhs)));
 	}
 
       enum internal_fn icode;

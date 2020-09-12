@@ -524,7 +524,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  else if (IN (kind, Access_Kind))
 	    max_esize = POINTER_SIZE * 2;
 	  else
-	    max_esize = LONG_LONG_TYPE_SIZE;
+	    max_esize = Enable_128bit_Types ? 128 : LONG_LONG_TYPE_SIZE;
 
 	  if (esize > max_esize)
 	   esize = max_esize;

@@ -390,6 +390,9 @@ enum standard_datatypes
   /* Function decl node for 64-bit multiplication with overflow checking.  */
   ADT_mulv64_decl,
 
+  /* Function decl node for 128-bit multiplication with overflow checking.  */
+  ADT_mulv128_decl,
+
   /* Identifier for the name of the _Parent field in tagged record types.  */
   ADT_parent_name_id,
 
@@ -462,6 +465,7 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
 #define realloc_decl gnat_std_decls[(int) ADT_realloc_decl]
 #define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
+#define mulv128_decl gnat_std_decls[(int) ADT_mulv128_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
 #define exception_data_name_id gnat_std_decls[(int) ADT_exception_data_name_id]
 #define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]
@@ -1035,6 +1039,7 @@ extern Pos get_target_short_size (void);
 extern Pos get_target_int_size (void);
 extern Pos get_target_long_size (void);
 extern Pos get_target_long_long_size (void);
+extern Pos get_target_long_long_long_size (void);
 extern Pos get_target_pointer_size (void);
 extern Pos get_target_maximum_default_alignment (void);
 extern Pos get_target_system_allocator_alignment (void);
