@@ -255,7 +255,7 @@ module_client::open_module_client (location_t loc, const char *o,
     error_at (loc, "failed mapper handshake %s", connect.GetString ().c_str ());
 
   auto &repo = packets[1];
-  if (repo.GetCode () == Cody::Client::PC_MODULE_REPO)
+  if (repo.GetCode () == Cody::Client::PC_PATHNAME)
     set_repo (repo.GetString ().c_str ());
 
   return c;

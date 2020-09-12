@@ -18634,7 +18634,7 @@ canonicalize_header_name (cpp_reader *reader, location_t loc, bool unquoted,
 void module_state::set_filename (const Cody::Packet &packet)
 {
   gcc_checking_assert (!filename);
-  if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
+  if (packet.GetCode () == Cody::Client::PC_PATHNAME)
     filename = xstrdup (packet.GetString ().c_str ());
   else
     {
@@ -18670,9 +18670,9 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   path = canonicalize_header_name (NULL, loc, true, path, len);
   auto packet = mapper->IncludeTranslate (path, len);
   int xlate = false;
-  if (packet.GetCode () == Cody::Client::PC_INCLUDE_TRANSLATE)
+  if (packet.GetCode () == Cody::Client::PC_BOOL)
     xlate = packet.GetInteger ();
-  else if (packet.GetCode () == Cody::Client::PC_MODULE_CMI)
+  else if (packet.GetCode () == Cody::Client::PC_PATHNAME)
     {
       /* Record the CMI name for when we do the import.  */
       module_state *import = get_module (build_string (len, path));

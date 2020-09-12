@@ -1,3 +1,18 @@
+2020-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	FLAG DAY! Mapper reponse format change in LibCody
+	gcc/cp/
+	* mapper-client.cc (module_client::open_module_client): Use
+	Client::PC_PATHNAME.
+	* mapper-resolver.cc (module_resolver::ModuleRepoRequest): Use
+	PathnameResponse.
+	(module_resolver::cmi_response): Likewise.
+	(module_resolver::IncludeTranslateRequest): Use BoolResponse and
+	PathnameResponse.
+	* module.cc (module_state::set_filename): Use Client::PC_PATHNAME.
+	(module_translate_include): Use Client::PC_BOOL and
+	Client::PC_PATHNAME.
+
 2020-09-03  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 8bc0f24d7a2.
