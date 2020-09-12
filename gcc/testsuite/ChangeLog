@@ -1,3 +1,69 @@
+2020-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/concepts/local-extern.C: New file.
+
+2020-09-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr96139-a.c: Specify -mvsx option and update the
+	dg-require stanza to match.
+	* gcc.target/powerpc/pr96139-b.c: Same.
+	* gcc.target/powerpc/pr96139-c.c: Specify -maltivec option and update
+	the dg-require stanza to match.
+
+2020-09-11  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/97018
+	* gcc.target/i386/l_fma_double_1.c: Add option -mno-avx512f.
+	* gcc.target/i386/l_fma_double_2.c: Likewise.
+	* gcc.target/i386/l_fma_double_3.c: Likewise.
+	* gcc.target/i386/l_fma_double_4.c: Likewise.
+	* gcc.target/i386/l_fma_double_5.c: Likewise.
+	* gcc.target/i386/l_fma_double_6.c: Likewise.
+	* gcc.target/i386/l_fma_float_1.c: Likewise.
+	* gcc.target/i386/l_fma_float_2.c: Likewise.
+	* gcc.target/i386/l_fma_float_3.c: Likewise.
+	* gcc.target/i386/l_fma_float_4.c: Likewise.
+	* gcc.target/i386/l_fma_float_5.c: Likewise.
+	* gcc.target/i386/l_fma_float_6.c: Likewise.
+
+2020-09-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/96903
+	* gcc.dg/Wstringop-overflow-42.c:: Add comment.
+	* gcc.dg/Wstringop-overflow-43.c: New test.
+
+2020-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* obj-c++.dg/syntax-error-9.mm: Adjust expected errors.
+
+2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/gimplefe-44.c: Require exceptions.
+
+2020-09-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-blob.c.
+	* jit.dg/test-global-set-initializer.c: New testcase.
+
+2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack27.adb: New test.
+	* gnat.dg/pack27_pkg.ads: New helper.
+
+2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr7.ads: New test.
+
+2020-09-11  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/int128.c: New test.
+
+2020-09-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96798
+	* gcc.dg/analyzer/memcpy-1.c: New test.
+	* gcc.dg/analyzer/strcpy-1.c: New test.
+
 2020-09-10  Alex Coplan  <alex.coplan@arm.com>
 
 	* gcc.target/aarch64/acle/armv8-r.c: New test.

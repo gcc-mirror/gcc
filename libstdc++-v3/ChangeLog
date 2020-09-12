@@ -1,3 +1,137 @@
+2020-09-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/std/memory: Move #include <bits/align.h> inside C++11
+	conditional includes.
+
+2020-09-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am (bits_headers): Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/align.h: New file.
+	* include/std/memory (align): Move definition to bits/align.h.
+	(assume_aligned): Likewise.
+
+2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono [C++17] (chrono::__detail::ceil): Add
+	using declaration to make chrono::ceil available for internal
+	use with a consistent name.
+	(chrono::__detail::__ceil_impl): New function template.
+	(chrono::__detail::ceil): Use __ceil_impl to compare and
+	increment the value. Remove SFINAE constraint.
+
+2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_error.h (__throw_regex_error): Fix
+	parameter declaration and use reserved attribute names.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* include/std/condition_variable (condition_variable::wait_until):
+	Convert delta to steady_clock duration before adding to current
+	steady_clock time to avoid rounding errors described in PR68519.
+	(condition_variable::wait_for): Simplify calculation of absolute
+	time by using chrono::__detail::ceil in both overloads.
+	* testsuite/30_threads/condition_variable/members/68519.cc:
+	(test_wait_for): Renamed from test01. Replace unassigned val
+	variable with constant false. Reduce scope of mx and cv
+	variables to just test_wait_for function.
+	(test_wait_until): Add new test case.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/91486
+	* include/bits/atomic_futex.h
+	(__atomic_futex_unsigned::_M_load_when_equal_for)
+	(__atomic_futex_unsigned::_M_load_when_equal_until): Use
+	__detail::ceil to convert delta to the reference clock
+	duration type to avoid resolution problems.
+	* include/std/chrono (__detail::ceil): Move implementation
+	of std::chrono::ceil into private namespace so that it's
+	available to pre-C++17 code.
+	* testsuite/30_threads/async/async.cc (test_pr91486):
+	Test __atomic_futex_unsigned::_M_load_when_equal_for.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* include/bits/atomic_futex.h
+	(__atomic_futex_unsigned::_M_load_when_equal_until): Add
+	loop on generic _Clock to check the timeout against _Clock
+	again after _M_load_when_equal_until returns indicating a
+	timeout.
+	* testsuite/30_threads/async/async.cc: Invent slow_clock
+	that runs at an eleventh of steady_clock's speed. Use it
+	to test the user-supplied-clock variant of
+	__atomic_futex_unsigned::_M_load_when_equal_until works
+	generally with test03 and loops correctly when the timeout
+	time hasn't been reached in test04.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* include/bits/atomic_futex.h (__atomic_futex_unsigned): Change
+	__clock_t typedef to use steady_clock so that unknown clocks are
+	synced to it rather than system_clock. Change existing __clock_t
+	overloads of _M_load_and_text_until_impl and
+	_M_load_when_equal_until to use system_clock explicitly. Remove
+	comment about DR 887 since these changes address that problem as
+	best as we currently able.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* config/abi/pre/gnu.ver: Update for addition of
+	__atomic_futex_unsigned_base::_M_futex_wait_until_steady.
+	* include/bits/atomic_futex.h (__atomic_futex_unsigned_base):
+	Add comments to clarify that _M_futex_wait_until and
+	_M_load_and_test_until use CLOCK_REALTIME.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady)
+	(__atomic_futex_unsigned_base::_M_load_and_text_until_steady):
+	New member functions that use CLOCK_MONOTONIC.
+	(__atomic_futex_unsigned_base::_M_load_and_test_until_impl)
+	(__atomic_futex_unsigned_base::_M_load_when_equal_until): Add
+	overloads that accept a steady_clock time_point and use the
+	new member functions.
+	* src/c++11/futex.cc: Include headers required for
+	clock_gettime.
+	(futex_clock_monotonic_flag): New constant to tell futex to
+	use CLOCK_MONOTONIC to match existing futex_clock_realtime_flag.
+	(futex_clock_monotonic_unavailable): New global to store the
+	result of trying to use CLOCK_MONOTONIC.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady): Add
+	new variant of _M_futex_wait_until that uses CLOCK_MONOTONIC to
+	support waiting using steady_clock.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* src/c++11/futex.cc: Add new constants for required futex
+	flags.  Add futex_clock_realtime_unavailable flag to store
+	result of trying to use FUTEX_CLOCK_REALTIME.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until): Try to
+	use FUTEX_WAIT_BITSET with FUTEX_CLOCK_REALTIME and only
+	fall back to using gettimeofday and FUTEX_WAIT if that's not
+	supported.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/async/async.cc (test02): Test steady_clock
+	with std::future::wait_until.
+	(test03): Add new test templated on clock type waiting for future
+	associated with async to resolve.
+	(main): Call test03 to test both system_clock and steady_clock.
+
+2020-09-11  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* libsupc++/eh_call.cc: Avoid warning with -fno-exceptions.
+
+2020-09-11  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* libsupc++/eh_call.cc: Avoid warning with -fno-exceptions.
+
+2020-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* include/bits/regex_error.h: Avoid warning with -fno-exceptions.
+
 2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (__do_str_codecvt, __str_codecvt_in_all):

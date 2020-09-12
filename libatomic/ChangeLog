@@ -1,3 +1,11 @@
+2020-09-11  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96898
+	* configure.tgt: Add nvptx.
+	* libatomic_i.h (MASK_8, INVERT_MASK_8): New macro definition.
+	* config/nvptx/host-config.h: New file.
+	* config/nvptx/lock.c: New file.
+
 2020-09-07  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libatomic.c/atomic-generic.c: Include string.h.

@@ -1,3 +1,86 @@
+2020-09-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_maybe_emit_maxc_minc): Rename
+	from rs6000_emit_p9_fp_minmax.  Change return type to bool.  Add
+	comments to document NaN/signed zero behavior.
+	(rs6000_maybe_emit_fp_cmove): Rename from rs6000_emit_p9_fp_cmove.
+	(have_compare_and_set_mask): New helper function.
+	(rs6000_emit_cmove): Update calls to new names and the new helper
+	function.
+
+2020-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* config/i386/sse.md (mov<mode>): Fix operand indices.
+
+2020-09-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/96903
+	* builtins.c (compute_objsize): Remove incorrect offset adjustment.
+	(compute_objsize): Adjust offset range here instead.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97020
+	* tree-vect-slp.c (vect_slp_analyze_operations): Apply
+	SLP costs when doing loop vectorization.
+
+2020-09-11  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96964
+	* config/nvptx/nvptx.md (define_expand "atomic_test_and_set"): New
+	expansion.
+
+2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_hard_regno_mode_ok): Align TImode registers.
+	* config/gcn/gcn.md: Assert that TImode registers do not early clobber.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_instance::location): New method.
+	(vect_schedule_slp): Adjust prototype.
+	* tree-vectorizer.c (vec_info::remove_stmt): Adjust
+	the BB region begin if we removed the stmt it points to.
+	* tree-vect-loop.c (vect_transform_loop): Adjust.
+	* tree-vect-slp.c (_slp_instance::location): Implement.
+	(vect_analyze_slp_instance): For BB vectorization set
+	vect_location to that of the instance.
+	(vect_slp_analyze_operations): Likewise.
+	(vect_bb_vectorization_profitable_p): Remove wrapper.
+	(vect_slp_analyze_bb_1): Remove cost check here.
+	(vect_slp_region): Cost check and code generate subgraphs separately,
+	report optimized locations and missed optimizations due to
+	profitability for each of them.
+	(vect_schedule_slp): Get the vector of SLP graph entries to
+	vectorize as argument.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97013
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Remove duplicate dumping.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): Check vector
+	types for all lanes are compatible.
+	(vect_analyze_slp_instance): Appropriately check for stores.
+	(vect_schedule_slp): Likewise.
+
+2020-09-11  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_value): Fix undefined
+	behaviour.
+
+2020-09-11  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_value): Handle negative
+	__int128.
+
+2020-09-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Change default.
+
 2020-09-10  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_emit_cmove): Change return
