@@ -6476,6 +6476,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  gnu_expr = gnat_to_gnu (Expression (gnat_node));
 
+	  /* First deal with erroneous expressions.  */
 	  if (TREE_CODE (gnu_expr) == ERROR_MARK)
 	    {
 	      /* If this is a named number for which we cannot manipulate
@@ -6485,6 +6486,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	      else if (type_annotate_only)
 		gnu_expr = NULL_TREE;
 	    }
+
+	  /* Then a special case: we do not want the SLOC of the expression
+	     of the tag to pop up every time it is referenced somewhere.  */
+	  else if (EXPR_P (gnu_expr) && Is_Tag (gnat_temp))
+	    SET_EXPR_LOCATION (gnu_expr, UNKNOWN_LOCATION);
 	}
       else
 	gnu_expr = NULL_TREE;
