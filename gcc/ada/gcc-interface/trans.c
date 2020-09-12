@@ -968,12 +968,8 @@ lvalue_for_aggregate_p (Node_Id gnat_node, tree gnu_type)
 				     get_unpadded_type (Etype (gnat_parent)));
 
     case N_Object_Declaration:
-      /* For an aggregate object declaration, return the constant at top level
-	 in order to avoid generating elaboration code.  */
-      if (global_bindings_p ())
-	return false;
-
-      /* ... fall through ... */
+      /* For an aggregate object declaration, return false consistently.  */
+      return false;
 
     case N_Assignment_Statement:
       /* For an aggregate assignment, decide based on the size.  */
