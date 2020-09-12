@@ -1245,6 +1245,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		if (TREE_CODE (gnu_address) == POINTER_PLUS_EXPR
 		    && TREE_OPERAND (gnu_address, 1) == off)
 		  gnu_address = TREE_OPERAND (gnu_address, 0);
+
 		/* This is the pattern built for an overaligned object.  */
 		else if (TREE_CODE (gnu_address) == POINTER_PLUS_EXPR
 			 && TREE_CODE (TREE_OPERAND (gnu_address, 1))
@@ -1255,6 +1256,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    = build2 (POINTER_PLUS_EXPR, gnu_type,
 			      TREE_OPERAND (gnu_address, 0),
 			      TREE_OPERAND (TREE_OPERAND (gnu_address, 1), 0));
+
+		/* We make an exception for an absolute address but we warn
+		   that there is a descriptor at the start of the object.  */
+		else if (TREE_CODE (gnu_address) == INTEGER_CST)
+		  {
+		    post_error_ne ("??aliased object& with unconstrained "
+				   "array nominal subtype", gnat_clause,
+				   gnat_entity);
+		    post_error ("\\starts with a descriptor whose size is "
+				"given by ''Descriptor_Size", gnat_clause);
+		  }
+
 		else
 		  {
 		    post_error_ne ("aliased object& with unconstrained array "
