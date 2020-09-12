@@ -204,7 +204,9 @@ is_setjmp_call_p (const gcall *call)
 {
   if (is_special_named_call_p (call, "setjmp", 1)
       || is_special_named_call_p (call, "sigsetjmp", 2))
-    return true;
+    /* region_model::on_setjmp requires a pointer.  */
+    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))))
+      return true;
 
   return false;
 }
