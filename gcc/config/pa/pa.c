@@ -1630,13 +1630,16 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case ASHIFT:
       if (mode == DImode)
 	{
-	  if (TARGET_64BIT)
-	    *total = COSTS_N_INSNS (3);
-	  else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+	  if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
 	    {
-	      *total = COSTS_N_INSNS (2);
+	      if (TARGET_64BIT)
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
 	      return true;
 	    }
+	  else if (TARGET_64BIT)
+	    *total = COSTS_N_INSNS (3);
 	  else if (speed)
 	    *total = COSTS_N_INSNS (13);
 	  else
@@ -1661,13 +1664,16 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case ASHIFTRT:
       if (mode == DImode)
 	{
-	  if (TARGET_64BIT)
-	    *total = COSTS_N_INSNS (3);
-	  else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+	  if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
 	    {
-	      *total = COSTS_N_INSNS (2);
+	      if (TARGET_64BIT)
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
 	      return true;
 	    }
+	  else if (TARGET_64BIT)
+	    *total = COSTS_N_INSNS (3);
 	  else if (speed)
 	    *total = COSTS_N_INSNS (14);
 	  else
@@ -1692,13 +1698,16 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case LSHIFTRT:
       if (mode == DImode)
 	{
-	  if (TARGET_64BIT)
-	    *total = COSTS_N_INSNS (2);
-	  else if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+	  if (REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
 	    {
-	      *total = COSTS_N_INSNS (2);
+	      if (TARGET_64BIT)
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
 	      return true;
 	    }
+	  else if (TARGET_64BIT)
+	    *total = COSTS_N_INSNS (2);
 	  else if (speed)
 	    *total = COSTS_N_INSNS (12);
 	  else
