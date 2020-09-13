@@ -1,3 +1,16 @@
+2020-09-12  Roger Sayle  <roger@nextmovesoftware.com>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (shrpsi4_1, shrpsi4_2): New define_insns split
+	out from previous shrpsi4 providing two commutitive variants using
+	plus_xor_ior_operator as a predicate.
+	(shrpdi4_1, shrpdi4_2, shrpdi_3, shrpdi_4): Likewise DImode versions
+	where _1 and _2 take register shifts, and _3 and _4 for integers.
+	(rotlsi3_internal): Name this anonymous instruction.
+	(rotrdi3): New DImode insn copied from rotrsi3.
+	(rotldi3): New DImode expander copied from rotlsi3.
+	(rotldi4_internal): New DImode insn copied from rotsi3_internal.
+
 2020-09-11  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_maybe_emit_maxc_minc): Rename

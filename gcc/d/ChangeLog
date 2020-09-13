@@ -1,3 +1,23 @@
+2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97002
+	* d-codegen.cc (d_build_call): Set input_location on CALL_EXPR.
+	* d-lang.cc: Include function.h.
+	(d_type_promotes_to): Do default conversions for C and C++ functions.
+	* intrinsics.cc (expand_intrinsic_vaarg): Use build1_loc to build
+	VA_ARG_EXPR.
+
+2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_build_d_type_nodes): Call build_ctype() on all
+	basic front-end types.
+	* decl.cc (DeclVisitor::visit (EnumDeclaration *)): Always add decl to
+	current binding level.
+	(build_type_decl): Build TYPE_DECL as a typedef if not for an enum or
+	record type.
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Set underlying type for
+	ENUMERAL_TYPEs.  Build TYPE_DECL for non-numeric enums.
+
 2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* lang.opt (Waddress): Enable warning by -Wextra.

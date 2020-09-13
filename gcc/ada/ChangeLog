@@ -1,3 +1,34 @@
+2020-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h: Fix pilot error in previous change.
+	* gcc-interface/gigi.h (enum standard_datatypes): Add ADT_mulv128_decl.
+	(mulv128_decl): New macro.
+	(get_target_long_long_long_size): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use a maximum size of
+	128 bits for discrete types if Enable_128bit_Types is true.
+	* gcc-interface/targtyps.c: Include target.h.
+	(get_target_long_long_long_size): New function.
+	* gcc-interface/trans.c (gigi): Initialize mulv128_decl if need be.
+	(build_binary_op_trapv): Call it for 128-bit multiplication.
+	* gcc-interface/utils.c (make_type_from_size): Enforce a maximum
+	size of 128 bits if Enable_128bit_Types is true.
+
+2020-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_for_aggr_p) <N_Object_Declaration>:
+	Return false unconditionally.
+
+2020-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Object_Declaration>: Clear
+	the SLOC of the expression of a tag.
+
+2020-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Only give
+	a warning for the overlay of an aliased array with an unconstrained
+	nominal subtype if the address is absolute.
+
 2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (type_has_variable_size): New function.
