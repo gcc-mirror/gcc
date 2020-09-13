@@ -30,6 +30,10 @@ The maximum number of 'after supernode' exploded nodes within the analyzer per s
 Common Joined UInteger Var(param_analyzer_max_enodes_per_program_point) Init(8) Param
 The maximum number of exploded nodes per program point within the analyzer, before terminating analysis of that point.
 
+-param=analyzer-max-constraints=
+Common Joined UInteger Var(param_analyzer_max_constraints) Init(20) Param
+The maximum number of constraints per state.
+
 -param=analyzer-max-recursion-depth=
 Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.

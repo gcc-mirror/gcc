@@ -940,6 +940,9 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
 					      enum constraint_op c_op,
 					      equiv_class_id rhs_id)
 {
+  if (m_constraints.length () >= param_analyzer_max_constraints)
+    return;
+
   constraint new_c (lhs_id, c_op, rhs_id);
 
   /* Remove existing constraints that would be implied by the
