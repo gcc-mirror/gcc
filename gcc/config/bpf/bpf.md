@@ -82,10 +82,15 @@
 
 ;;;; NOPs
 
+;; The Linux kernel verifier performs some optimizations that rely on
+;; nop instructions to be encoded as `ja 0', i.e. a jump to offset 0,
+;; which actually means to jump to the next instruction, since in BPF
+;; offsets are expressed in 64-bit words _minus one_.
+
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "mov\t%%r0,%%r0"
+  "ja\t0"
   [(set_attr "type" "alu")])
 
 ;;;; Arithmetic/Logical
