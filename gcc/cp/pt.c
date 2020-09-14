@@ -6072,8 +6072,7 @@ push_template_decl_real (tree decl, bool is_friend)
       if (is_primary)
 	retrofit_lang_decl (decl);
       if (DECL_LANG_SPECIFIC (decl)
-	  && ((TREE_CODE (decl) != VAR_DECL
-	       && TREE_CODE (decl) != FUNCTION_DECL)
+	  && (!VAR_OR_FUNCTION_DECL_P (decl)
 	      || !ctx
 	      || !DECL_LOCAL_DECL_P (decl)))
 	DECL_TEMPLATE_INFO (decl) = info;
