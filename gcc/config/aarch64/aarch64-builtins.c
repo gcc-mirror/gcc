@@ -2024,7 +2024,7 @@ aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
   return target;
 }
 
-/* Expand an expression EXP as fpsr or cpsr setter (depending on
+/* Expand an expression EXP as fpsr or fpcr setter (depending on
    UNSPEC) using MODE.  */
 static void
 aarch64_expand_fpsr_fpcr_setter (int unspec, machine_mode mode, tree exp)
@@ -2032,6 +2032,18 @@ aarch64_expand_fpsr_fpcr_setter (int unspec, machine_mode mode, tree exp)
   tree arg = CALL_EXPR_ARG (exp, 0);
   rtx op = force_reg (mode, expand_normal (arg));
   emit_insn (gen_aarch64_set (unspec, mode, op));
+}
+
+/* Expand a fpsr or fpcr getter (depending on UNSPEC) using MODE.
+   Return the target.  */
+static rtx
+aarch64_expand_fpsr_fpcr_getter (enum insn_code icode, machine_mode mode,
+				 rtx target)
+{
+  expand_operand op;
+  create_output_operand (&op, target, mode);
+  expand_insn (icode, 1, &op);
+  return op.value;
 }
 
 /* Expand an expression EXP that calls built-in function FCODE,
@@ -2048,26 +2060,26 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
   switch (fcode)
     {
     case AARCH64_BUILTIN_GET_FPCR:
-      emit_insn (gen_aarch64_get (UNSPECV_GET_FPCR, SImode, target));
-      return target;
+      return aarch64_expand_fpsr_fpcr_getter (CODE_FOR_aarch64_get_fpcrsi,
+					      SImode, target);
     case AARCH64_BUILTIN_SET_FPCR:
       aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPCR, SImode, exp);
       return target;
     case AARCH64_BUILTIN_GET_FPSR:
-      emit_insn (gen_aarch64_get (UNSPECV_GET_FPSR, SImode, target));
-      return target;
+      return aarch64_expand_fpsr_fpcr_getter (CODE_FOR_aarch64_get_fpsrsi,
+					      SImode, target);
     case AARCH64_BUILTIN_SET_FPSR:
       aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPSR, SImode, exp);
       return target;
     case AARCH64_BUILTIN_GET_FPCR64:
-      emit_insn (gen_aarch64_get (UNSPECV_GET_FPCR, DImode, target));
-      return target;
+      return aarch64_expand_fpsr_fpcr_getter (CODE_FOR_aarch64_get_fpcrdi,
+					      DImode, target);
     case AARCH64_BUILTIN_SET_FPCR64:
       aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPCR, DImode, exp);
       return target;
     case AARCH64_BUILTIN_GET_FPSR64:
-      emit_insn (gen_aarch64_get (UNSPECV_GET_FPSR, DImode, target));
-      return target;
+      return aarch64_expand_fpsr_fpcr_getter (CODE_FOR_aarch64_get_fpsrdi,
+					      DImode, target);
     case AARCH64_BUILTIN_SET_FPSR64:
       aarch64_expand_fpsr_fpcr_setter (UNSPECV_SET_FPSR, DImode, exp);
       return target;
