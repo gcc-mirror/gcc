@@ -1446,6 +1446,7 @@ region_model::region_exists_p (const region *reg) const
 
 /* Get a region for referencing PTR_SVAL, creating a region if need be, and
    potentially generating warnings via CTXT.
+   PTR_SVAL must be of pointer type.
    PTR_TREE if non-NULL can be used when emitting diagnostics.  */
 
 const region *
@@ -1453,6 +1454,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 			    region_model_context *ctxt)
 {
   gcc_assert (ptr_sval);
+  gcc_assert (POINTER_TYPE_P (ptr_sval->get_type ()));
 
   /* If we're dereferencing PTR_SVAL, assume that it is non-NULL; add this
      as a constraint.  This suppresses false positives from

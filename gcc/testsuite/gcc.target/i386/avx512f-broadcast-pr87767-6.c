@@ -1,7 +1,7 @@
 /* PR target/87767 */
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512f" } */
-/* { dg-require-effective-target avx512f} */
+/* { dg-require-effective-target avx512f } */
 
 #include "avx512f-helper.h"
 

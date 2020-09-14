@@ -56,10 +56,6 @@
 (define_reservation "FX2_power6"
                     "iu1_power6+iu2_power6")
 
-(define_reservation "X2F_power6"
-                    "(iu1_power6+iu2_power6+fpu1_power6)\
-                    |(iu1_power6+iu2_power6+fpu2_power6)")
-
 (define_reservation "BX2_power6"
                     "iu1_power6+iu2_power6+bpu_power6")
 
@@ -605,20 +601,3 @@
 
 (define_bypass 5 "power6-vecperm" "power6-vecstore" )
 
-(define_insn_reservation "power6-mftgpr" 8
-  (and (eq_attr "type" "mftgpr")
-       (eq_attr "cpu" "power6"))
-  "X2F_power6")
-
-(define_insn_reservation "power6-mffgpr" 14
-  (and (eq_attr "type" "mffgpr")
-       (eq_attr "cpu" "power6"))
-  "LX2_power6")
-
-(define_bypass 4 "power6-mftgpr" "power6-imul,\
-                                  power6-lmul,\
-                                  power6-imul-cmp,\
-                                  power6-lmul-cmp,\
-                                  power6-imul3,\
-                                  power6-idiv,\
-                                  power6-ldiv" )

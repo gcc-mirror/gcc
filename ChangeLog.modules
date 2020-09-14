@@ -1,5 +1,7 @@
 2020-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk cd6743e9c41
+
 	gcc/cp/
 	* module.cc (trees_out::get_merge_kind): Add asserts & FIXMEs.
 

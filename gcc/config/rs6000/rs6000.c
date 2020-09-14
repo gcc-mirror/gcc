@@ -17498,14 +17498,6 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
               }
             break;
 
-          case TYPE_FPLOAD:
-            if ((rs6000_tune == PROCESSOR_POWER6)
-                && get_attr_update (insn) == UPDATE_NO
-                && recog_memoized (dep_insn)
-                && (INSN_CODE (dep_insn) >= 0)
-                && (get_attr_type (dep_insn) == TYPE_MFFGPR))
-              return 2;
-
           default:
             break;
           }
@@ -17530,11 +17522,6 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
               if (get_attr_type (dep_insn) == TYPE_FP
 		  || get_attr_type (dep_insn) == TYPE_FPSIMPLE)
                 return 1;
-              break;
-            case TYPE_FPLOAD:
-              if (get_attr_update (insn) == UPDATE_NO
-                  && get_attr_type (dep_insn) == TYPE_MFFGPR)
-                return 2;
               break;
             default:
               break;
