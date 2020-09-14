@@ -420,9 +420,10 @@ namespace __gnu_parallel
     }
 
 #if _GLIBCXX_PARALLEL_ASSERTIONS && defined(__glibcxx_assert_impl)
-#define _GLIBCXX_PARALLEL_ASSERT(_Condition) __glibcxx_assert_impl(_Condition)
+# define _GLIBCXX_PARALLEL_ASSERT(_Condition) \
+  do { __glibcxx_assert_impl(_Condition); } while (false)
 #else
-#define _GLIBCXX_PARALLEL_ASSERT(_Condition)
+# define _GLIBCXX_PARALLEL_ASSERT(_Condition) do { } while (false)
 #endif
 
 } //namespace __gnu_parallel

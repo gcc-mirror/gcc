@@ -1,3 +1,8 @@
+2020-09-14  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 10f51543bb8
+	libstdc++: Add compile-time checks to__glibcxx_assert [PR 71960]
+
 2020-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	Concepts and local externs
