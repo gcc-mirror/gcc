@@ -9867,12 +9867,20 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	 out-of-class definition.  For instance a FIELD_DECL.  */
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == FUNCTION_DECL)
-	// FIXME: This not right if DECL has a template header.  For
-	// those will have instantiations pointing at it.  I think the
-	// only case is class definitions inside templates (including
-	// lambdas).  At least those have an ABI-mandated
-	// disambiguation mechanism that we can leverage.
-	return MK_unique;
+	{
+	  // FIXME: This not right if DECL has a template header.  For
+	  // those will have instantiations pointing at it.  I think the
+	  // only case is class definitions inside templates (including
+	  // lambdas).  At least those have an ABI-mandated
+	  // disambiguation mechanism that we can leverage.  Hm, do
+	  // such class definitions show up in the instantiation
+	  // table, and hence have DEP non-null?
+	  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
+			       || !DECL_LANG_SPECIFIC (decl)
+			       || !DECL_TEMPLATE_INFO (decl));
+
+	  return MK_unique;
+	}
 
       if (TREE_CODE (decl) == TEMPLATE_DECL
 	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
@@ -10017,6 +10025,11 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       {
 	gcc_checking_assert (dep->is_special ());
 	spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
+
+	if (TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
+	  // FIXME: Doesn't this need some kind of deduplication using
+	  // the uniqueness of the context?
+	  gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
 
 	if (dep->is_friend_spec ())
 	  mk = MK_friend_spec;
