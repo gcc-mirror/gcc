@@ -3850,7 +3850,7 @@ arm_options_perform_arch_sanity_checks (void)
 
   /* We don't clear D16-D31 VFP registers for cmse_nonsecure_call functions
      and ARMv8-M Baseline and Mainline do not allow such configuration.  */
-  if (use_cmse && LAST_VFP_REGNUM > LAST_LO_VFP_REGNUM)
+  if (use_cmse && TARGET_HARD_FLOAT && LAST_VFP_REGNUM > LAST_LO_VFP_REGNUM)
     error ("ARMv8-M Security Extensions incompatible with selected FPU");
 
 
