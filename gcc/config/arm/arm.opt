@@ -21,15 +21,6 @@
 HeaderInclude
 config/arm/arm-opts.h
 
-TargetSave
-const char *x_arm_arch_string
-
-TargetSave
-const char *x_arm_cpu_string
-
-TargetSave
-const char *x_arm_tune_string
-
 Enum
 Name(tls_type) Type(enum arm_tls_type)
 TLS dialect to use:
@@ -82,7 +73,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative Negative(march=) ToLower Joined Var(arm_arch_string)
+Target Save RejectNegative Negative(march=) ToLower Joined Var(arm_arch_string)
 Specify the name of the target architecture.
 
 ; Other arm_arch values are loaded from arm-tables.opt
@@ -107,7 +98,7 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
-Target RejectNegative Negative(mcpu=) ToLower Joined Var(arm_cpu_string)
+Target Save RejectNegative Negative(mcpu=) ToLower Joined Var(arm_cpu_string)
 Specify the name of the target CPU.
 
 mfloat-abi=
@@ -232,7 +223,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
-Target RejectNegative Negative(mtune=) ToLower Joined Var(arm_tune_string)
+Target Save RejectNegative Negative(mtune=) ToLower Joined Var(arm_tune_string)
 Tune code for the given processor.
 
 mprint-tune-info

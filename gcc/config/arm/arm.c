@@ -247,8 +247,6 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static void arm_option_save (struct cl_target_option *, struct gcc_options *,
-			     struct gcc_options *);
 static void arm_option_restore (struct gcc_options *, struct gcc_options *,
 				struct cl_target_option *);
 static void arm_override_options_after_change (void);
@@ -442,9 +440,6 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE arm_override_options_after_change
-
-#undef TARGET_OPTION_SAVE
-#define TARGET_OPTION_SAVE arm_option_save
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE arm_option_restore
@@ -3042,24 +3037,11 @@ arm_override_options_after_change (void)
   arm_override_options_after_change_1 (&global_options, &global_options_set);
 }
 
-/* Implement TARGET_OPTION_SAVE.  */
-static void
-arm_option_save (struct cl_target_option *ptr, struct gcc_options *opts,
-		 struct gcc_options */* opts_set */)
-{
-  ptr->x_arm_arch_string = opts->x_arm_arch_string;
-  ptr->x_arm_cpu_string = opts->x_arm_cpu_string;
-  ptr->x_arm_tune_string = opts->x_arm_tune_string;
-}
-
 /* Implement TARGET_OPTION_RESTORE.  */
 static void
 arm_option_restore (struct gcc_options *opts, struct gcc_options *opts_set,
 		    struct cl_target_option *ptr)
 {
-  opts->x_arm_arch_string = ptr->x_arm_arch_string;
-  opts->x_arm_cpu_string = ptr->x_arm_cpu_string;
-  opts->x_arm_tune_string = ptr->x_arm_tune_string;
   arm_configure_build_target (&arm_active_target, ptr, opts_set, false);
 }
 
