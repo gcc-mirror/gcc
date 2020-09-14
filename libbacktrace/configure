@@ -635,6 +635,16 @@ LTLIBOBJS
 LIBOBJS
 NATIVE_FALSE
 NATIVE_TRUE
+HAVE_LIBLZMA_FALSE
+HAVE_LIBLZMA_TRUE
+HAVE_MINIDEBUG_FALSE
+HAVE_MINIDEBUG_TRUE
+HAVE_COMM_FALSE
+HAVE_COMM_TRUE
+COMM
+HAVE_XZ_FALSE
+HAVE_XZ_TRUE
+XZ
 HAVE_DSYMUTIL_FALSE
 HAVE_DSYMUTIL_TRUE
 HAVE_OBJCOPY_DEBUGLINK_FALSE
@@ -804,7 +814,8 @@ LIBS
 CPPFLAGS
 CPP
 OBJCOPY
-DSYMUTIL'
+DSYMUTIL
+NM'
 
 
 # Initialize some variables set by options.
@@ -1460,6 +1471,7 @@ Some influential environment variables:
   CPP         C preprocessor
   OBJCOPY     location of objcopy
   DSYMUTIL    location of dsymutil
+  NM          location of nm
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -11505,7 +11517,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11508 "configure"
+#line 11520 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11611,7 +11623,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11614 "configure"
+#line 11626 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13857,6 +13869,196 @@ else
 fi
 
 
+
+# Extract the first word of "nm", so it can be a program name with args.
+set dummy nm; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_NM+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$NM"; then
+  ac_cv_prog_NM="$NM" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_NM="nm"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+NM=$ac_cv_prog_NM
+if test -n "$NM"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NM" >&5
+$as_echo "$NM" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+# Extract the first word of "xz", so it can be a program name with args.
+set dummy xz; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XZ+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XZ"; then
+  ac_cv_prog_XZ="$XZ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XZ="xz"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+XZ=$ac_cv_prog_XZ
+if test -n "$XZ"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XZ" >&5
+$as_echo "$XZ" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+ if test "$XZ" != ""; then
+  HAVE_XZ_TRUE=
+  HAVE_XZ_FALSE='#'
+else
+  HAVE_XZ_TRUE='#'
+  HAVE_XZ_FALSE=
+fi
+
+# Extract the first word of "comm", so it can be a program name with args.
+set dummy comm; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_COMM+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$COMM"; then
+  ac_cv_prog_COMM="$COMM" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_COMM="comm"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+COMM=$ac_cv_prog_COMM
+if test -n "$COMM"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $COMM" >&5
+$as_echo "$COMM" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+ if test "$COMM" != ""; then
+  HAVE_COMM_TRUE=
+  HAVE_COMM_FALSE='#'
+else
+  HAVE_COMM_TRUE='#'
+  HAVE_COMM_FALSE=
+fi
+
+
+ if test "${with_target_subdir}" = "" -a "$FORMAT_FILE" = "elf.lo" -a "${OBJCOPY}" != "" -a "${NM}" != "" -a "${XZ}" != "" -a "${COMM}" != ""; then
+  HAVE_MINIDEBUG_TRUE=
+  HAVE_MINIDEBUG_FALSE='#'
+else
+  HAVE_MINIDEBUG_TRUE='#'
+  HAVE_MINIDEBUG_FALSE=
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for lzma_auto_decoder in -llzma" >&5
+$as_echo_n "checking for lzma_auto_decoder in -llzma... " >&6; }
+if ${ac_cv_lib_lzma_lzma_auto_decoder+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-llzma  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char lzma_auto_decoder ();
+int
+main ()
+{
+return lzma_auto_decoder ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_lzma_lzma_auto_decoder=yes
+else
+  ac_cv_lib_lzma_lzma_auto_decoder=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_lzma_lzma_auto_decoder" >&5
+$as_echo "$ac_cv_lib_lzma_lzma_auto_decoder" >&6; }
+if test "x$ac_cv_lib_lzma_lzma_auto_decoder" = xyes; then :
+
+$as_echo "#define HAVE_LIBLZMA 1" >>confdefs.h
+
+fi
+
+ if test "$ac_cv_lib_lzma_lzma_auto_decoder" = yes; then
+  HAVE_LIBLZMA_TRUE=
+  HAVE_LIBLZMA_FALSE='#'
+else
+  HAVE_LIBLZMA_TRUE='#'
+  HAVE_LIBLZMA_FALSE=
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether tests can run" >&5
 $as_echo_n "checking whether tests can run... " >&6; }
 if ${libbacktrace_cv_sys_native+:} false; then :
@@ -14071,6 +14273,22 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_DSYMUTIL_TRUE}" && test -z "${HAVE_DSYMUTIL_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_DSYMUTIL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_XZ_TRUE}" && test -z "${HAVE_XZ_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_XZ\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_COMM_TRUE}" && test -z "${HAVE_COMM_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_COMM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_MINIDEBUG_TRUE}" && test -z "${HAVE_MINIDEBUG_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_MINIDEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_LIBLZMA_TRUE}" && test -z "${HAVE_LIBLZMA_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_LIBLZMA\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${NATIVE_TRUE}" && test -z "${NATIVE_FALSE}"; then

@@ -335,4 +335,13 @@ extern int backtrace_uncompress_zdebug (struct backtrace_state *,
 					unsigned char **uncompressed,
 					size_t *uncompressed_size);
 
+/* A test-only hook for elf_uncompress_lzma.  */
+
+extern int backtrace_uncompress_lzma (struct backtrace_state *,
+				      const unsigned char *compressed,
+				      size_t compressed_size,
+				      backtrace_error_callback, void *data,
+				      unsigned char **uncompressed,
+				      size_t *uncompressed_size);
+
 #endif
