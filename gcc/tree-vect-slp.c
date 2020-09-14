@@ -2051,9 +2051,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		  /* The load requires permutation when unrolling exposes
 		     a gap either because the group is larger than the SLP
 		     group-size or because there is a gap between the groups.  */
-		  && (known_eq (unrolling_factor, 1U)
-		      || (group_size == DR_GROUP_SIZE (first_stmt_info)
-			  && DR_GROUP_GAP (first_stmt_info) == 0)))
+		  && group_size == DR_GROUP_SIZE (first_stmt_info)
+		  && DR_GROUP_GAP (first_stmt_info) == 0)
 		{
 		  load_permutation.release ();
 		  continue;
