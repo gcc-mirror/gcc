@@ -247,8 +247,9 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static void arm_option_save (struct cl_target_option *, struct gcc_options *);
-static void arm_option_restore (struct gcc_options *,
+static void arm_option_save (struct cl_target_option *, struct gcc_options *,
+			     struct gcc_options *);
+static void arm_option_restore (struct gcc_options *, struct gcc_options *,
 				struct cl_target_option *);
 static void arm_override_options_after_change (void);
 static void arm_option_print (FILE *, int, struct cl_target_option *);
@@ -3043,7 +3044,8 @@ arm_override_options_after_change (void)
 
 /* Implement TARGET_OPTION_SAVE.  */
 static void
-arm_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
+arm_option_save (struct cl_target_option *ptr, struct gcc_options *opts,
+		 struct gcc_options */* opts_set */)
 {
   ptr->x_arm_arch_string = opts->x_arm_arch_string;
   ptr->x_arm_cpu_string = opts->x_arm_cpu_string;
@@ -3052,13 +3054,13 @@ arm_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
 
 /* Implement TARGET_OPTION_RESTORE.  */
 static void
-arm_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+arm_option_restore (struct gcc_options *opts, struct gcc_options *opts_set,
+		    struct cl_target_option *ptr)
 {
   opts->x_arm_arch_string = ptr->x_arm_arch_string;
   opts->x_arm_cpu_string = ptr->x_arm_cpu_string;
   opts->x_arm_tune_string = ptr->x_arm_tune_string;
-  arm_configure_build_target (&arm_active_target, ptr, &global_options_set,
-			      false);
+  arm_configure_build_target (&arm_active_target, ptr, opts_set, false);
 }
 
 /* Reset options between modes that the user has specified.  */
@@ -3457,7 +3459,7 @@ arm_option_override (void)
       arm_fpu_index = (enum fpu_type) fpu_index;
     }
 
-  cl_target_option_save (&opts, &global_options);
+  cl_target_option_save (&opts, &global_options, &global_options_set);
   arm_configure_build_target (&arm_active_target, &opts, &global_options_set,
 			      true);
 
@@ -3682,7 +3684,8 @@ arm_option_override (void)
     flag_schedule_fusion = 0;
 
   /* Need to remember initial options before they are overriden.  */
-  init_optimize = build_optimization_node (&global_options);
+  init_optimize = build_optimization_node (&global_options,
+					   &global_options_set);
 
   arm_options_perform_arch_sanity_checks ();
   arm_option_override_internal (&global_options, &global_options_set);
@@ -3691,7 +3694,7 @@ arm_option_override (void)
 
   /* Create the default target_options structure.  */
   target_option_default_node = target_option_current_node
-    = build_target_option_node (&global_options);
+    = build_target_option_node (&global_options, &global_options_set);
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -32332,7 +32335,8 @@ arm_set_current_function (tree fndecl)
   arm_previous_fndecl = fndecl;
 
   /* First set the target options.  */
-  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
 
   save_restore_target_globals (new_tree);
 
@@ -32534,7 +32538,7 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   if (!arm_valid_target_attribute_rec (args, opts))
     return NULL_TREE;
 
-  cl_target_option_save (&cl_opts, opts);
+  cl_target_option_save (&cl_opts, opts, opts_set);
   arm_configure_build_target (&arm_active_target, &cl_opts, opts_set, false);
   arm_option_check_internal (opts);
   /* Do any overrides, such as global options arch=xxx.
@@ -32543,11 +32547,11 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   arm_options_perform_arch_sanity_checks ();
   arm_option_override_internal (opts, opts_set);
 
-  return build_target_option_node (opts);
+  return build_target_option_node (opts, opts_set);
 }
 
 static void 
-add_attribute  (const char * mode, tree *attributes)
+add_attribute (const char * mode, tree *attributes)
 {
   size_t len = strlen (mode);
   tree value = build_string (len, mode);
@@ -32599,7 +32603,7 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
 			      tree args, int ARG_UNUSED (flags))
 {
   bool ret = true;
-  struct gcc_options func_options;
+  struct gcc_options func_options, func_options_set;
   tree cur_tree, new_optimize;
   gcc_assert ((fndecl != NULL_TREE) && (args != NULL_TREE));
 
@@ -32615,22 +32619,23 @@ arm_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
   memset (&func_options, 0, sizeof (func_options));
   init_options_struct (&func_options, NULL);
   lang_hooks.init_options_struct (&func_options);
+  memset (&func_options_set, 0, sizeof (func_options_set));
 
   /* Initialize func_options to the defaults.  */
-  cl_optimization_restore (&func_options,
+  cl_optimization_restore (&func_options, &func_options_set,
 			   TREE_OPTIMIZATION (func_optimize));
 
-  cl_target_option_restore (&func_options,
+  cl_target_option_restore (&func_options, &func_options_set,
 			    TREE_TARGET_OPTION (target_option_default_node));
 
   /* Set func_options flags with new target mode.  */
   cur_tree = arm_valid_target_attribute_tree (args, &func_options,
-					      &global_options_set);
+					      &func_options_set);
 
   if (cur_tree == NULL_TREE)
     ret = false;
 
-  new_optimize = build_optimization_node (&func_options);
+  new_optimize = build_optimization_node (&func_options, &func_options_set);
 
   DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = cur_tree;
 

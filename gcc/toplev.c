@@ -1867,7 +1867,8 @@ process_options (void)
                                     DK_ERROR, UNKNOWN_LOCATION);
 
   /* Save the current optimization options.  */
-  optimization_default_node = build_optimization_node (&global_options);
+  optimization_default_node
+    = build_optimization_node (&global_options, &global_options_set);
   optimization_current_node = optimization_default_node;
 
   if (flag_checking >= 2)
@@ -2075,7 +2076,7 @@ target_reinit (void)
     {
       optimization_current_node = optimization_default_node;
       cl_optimization_restore
-	(&global_options,
+	(&global_options, &global_options_set,
 	 TREE_OPTIMIZATION (optimization_default_node));
     }
   this_fn_optabs = this_target_optabs;
@@ -2107,7 +2108,7 @@ target_reinit (void)
   if (saved_optimization_current_node != optimization_default_node)
     {
       optimization_current_node = saved_optimization_current_node;
-      cl_optimization_restore (&global_options,
+      cl_optimization_restore (&global_options, &global_options_set,
 			       TREE_OPTIMIZATION (optimization_current_node));
     }
   this_fn_optabs = saved_this_fn_optabs;

@@ -691,7 +691,8 @@ gigi (Node_Id gnat_root,
 
   /* Save the current optimization options again after the above possible
      global_options changes.  */
-  optimization_default_node = build_optimization_node (&global_options);
+  optimization_default_node
+    = build_optimization_node (&global_options, &global_options_set);
   optimization_current_node = optimization_default_node;
 
   /* Now translate the compilation unit proper.  */
