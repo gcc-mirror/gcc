@@ -3632,7 +3632,7 @@ primary_template_specialization_p (const_tree t)
   if (!t)
     return false;
 
-  if (TREE_CODE (t) == FUNCTION_DECL || VAR_P (t))
+  if (VAR_OR_FUNCTION_DECL_P (t))
     return (DECL_LANG_SPECIFIC (t)
 	    && DECL_USE_TEMPLATE (t)
 	    && DECL_TEMPLATE_INFO (t)
@@ -6095,10 +6095,8 @@ push_template_decl_real (tree decl, bool is_friend)
       if (is_primary)
 	retrofit_lang_decl (decl);
       if (DECL_LANG_SPECIFIC (decl)
-	  && ((TREE_CODE (decl) != VAR_DECL
-	       && TREE_CODE (decl) != FUNCTION_DECL)
-	      || !ctx
-	      || !DECL_LOCAL_DECL_P (decl)))
+	  && !(VAR_OR_FUNCTION_DECL_P (decl)
+	       && DECL_LOCAL_DECL_P (decl)))
 	DECL_TEMPLATE_INFO (decl) = info;
     }
 

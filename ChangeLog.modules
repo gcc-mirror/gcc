@@ -1,5 +1,15 @@
 2020-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* pt.c (primary_template_specialization_p): Use
+	VAR_OR_FUNCTION_DECL_P.
+	(push_template_decl_real): Likewise.
+	* module.cc (trees_out::chained_decls): Use
+	VAR_OR_FUNCTION_DECL_P.
+	(trees_out::get_merge_kind, trees_in::is_matching_decl)
+	(depset::hash::make_dependency, depset::hash::add_binding_entity)
+	(specialization_add): Likewise.
+
 	Merge trunk d106029c2aa
 
 	Merge trunk 10f51543bb8
