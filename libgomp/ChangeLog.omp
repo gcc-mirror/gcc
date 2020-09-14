@@ -1,3 +1,13 @@
+2020-09-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-14  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/atomic.c: New file.  Add
+	__sync_val_compare_and_swap_16.
+	* testsuite/libgomp.c-c++-common/reduction-16.c: Add -latomic for
+	target offload_target_nvptx.
+
 2020-08-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
