@@ -2171,7 +2171,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		}
 	    }
 	  else
-	    gimple_call_set_tail (call, true);
+	    {
+	      gimple_call_set_tail (call, true);
+	      cfun->tail_call_marked = true;
+	    }
 
 	  /* Build return value.  */
 	  if (!DECL_BY_REFERENCE (resdecl))
@@ -2184,6 +2187,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       else
 	{
 	  gimple_call_set_tail (call, true);
+	  cfun->tail_call_marked = true;
 	  remove_edge (single_succ_edge (bb));
 	}
 
