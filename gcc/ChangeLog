@@ -1,3 +1,8 @@
+2020-09-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/pa/pa.c (hppa_rtx_costs) [ASHIFT, ASHIFTRT, LSHIFTRT]:
+	Provide accurate costs for DImode shifts of integer constants.
+
 2020-09-12  Roger Sayle  <roger@nextmovesoftware.com>
 	    John David Anglin  <danglin@gcc.gnu.org>
 
