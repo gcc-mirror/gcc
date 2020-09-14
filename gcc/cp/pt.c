@@ -6071,7 +6071,11 @@ push_template_decl_real (tree decl, bool is_friend)
     {
       if (is_primary)
 	retrofit_lang_decl (decl);
-      if (DECL_LANG_SPECIFIC (decl))
+      if (DECL_LANG_SPECIFIC (decl)
+	  && ((TREE_CODE (decl) != VAR_DECL
+	       && TREE_CODE (decl) != FUNCTION_DECL)
+	      || !ctx
+	      || !DECL_LOCAL_DECL_P (decl)))
 	DECL_TEMPLATE_INFO (decl) = info;
     }
 
@@ -13701,14 +13705,20 @@ static tree
 tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 		      tree lambda_fntype)
 {
-  tree gen_tmpl, argvec;
+  tree gen_tmpl = NULL_TREE, argvec = NULL_TREE;
   hashval_t hash = 0;
   tree in_decl = t;
 
   /* Nobody should be tsubst'ing into non-template functions.  */
-  gcc_assert (DECL_TEMPLATE_INFO (t) != NULL_TREE);
+  gcc_assert (DECL_TEMPLATE_INFO (t) != NULL_TREE
+	      || DECL_LOCAL_DECL_P (t));
 
-  if (TREE_CODE (DECL_TI_TEMPLATE (t)) == TEMPLATE_DECL)
+  if (DECL_LOCAL_DECL_P (t))
+    {
+      if (tree spec = retrieve_local_specialization (t))
+	return spec;
+    }
+  else if (TREE_CODE (DECL_TI_TEMPLATE (t)) == TEMPLATE_DECL)
     {
       /* If T is not dependent, just return it.  */
       if (!uses_template_parms (DECL_TI_ARGS (t))
@@ -13957,6 +13967,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	  && !PRIMARY_TEMPLATE_P (gen_tmpl)
 	  && !uses_template_parms (argvec))
 	tsubst_default_arguments (r, complain);
+    }
+  else if (DECL_LOCAL_DECL_P (r))
+    {
+      if (!cp_unevaluated_operand)
+	register_local_specialization (r, t);
     }
   else
     DECL_TEMPLATE_INFO (r) = NULL_TREE;
@@ -14503,11 +14518,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       {
 	tree argvec = NULL_TREE;
 	tree gen_tmpl = NULL_TREE;
-	tree spec;
 	tree tmpl = NULL_TREE;
-	tree ctx;
 	tree type = NULL_TREE;
-	bool local_p;
 
 	if (TREE_TYPE (t) == error_mark_node)
 	  RETURN (error_mark_node);
@@ -14529,19 +14541,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	/* Check to see if we already have the specialization we
 	   need.  */
-	spec = NULL_TREE;
-	if (DECL_CLASS_SCOPE_P (t) || DECL_NAMESPACE_SCOPE_P (t))
+	tree spec = NULL_TREE;
+	bool local_p = false;
+	tree ctx = DECL_CONTEXT (t);
+	if (!(VAR_P (t) && DECL_LOCAL_DECL_P (t))
+	    && (DECL_CLASS_SCOPE_P (t) || DECL_NAMESPACE_SCOPE_P (t)))
 	  {
-	    /* T is a static data member or namespace-scope entity.
-	       We have to substitute into namespace-scope variables
-	       (not just variable templates) because of cases like:
-
-	         template <class T> void f() { extern T t; }
-
-	       where the entity referenced is not known until
-	       instantiation time.  */
 	    local_p = false;
-	    ctx = DECL_CONTEXT (t);
 	    if (DECL_CLASS_SCOPE_P (t))
 	      {
 		ctx = tsubst_aggr_type (ctx, args,
@@ -14581,10 +14587,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 	else
 	  {
+	    if (!(VAR_P (t) && DECL_LOCAL_DECL_P (t)))
+	      /* Subsequent calls to pushdecl will fill this in.  */
+	      ctx = NULL_TREE;
 	    /* A local variable.  */
 	    local_p = true;
-	    /* Subsequent calls to pushdecl will fill this in.  */
-	    ctx = NULL_TREE;
 	    /* Unless this is a reference to a static variable from an
 	       enclosing function, in which case we need to fill it in now.  */
 	    if (TREE_STATIC (t))
