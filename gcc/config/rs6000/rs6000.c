@@ -2393,7 +2393,7 @@ rs6000_debug_reg_global (void)
   else
     fprintf (stderr, DEBUG_FMT_S, "tune", "<none>");
 
-  cl_target_option_save (&cl_opts, &global_options);
+  cl_target_option_save (&cl_opts, &global_options, &global_options_set);
   rs6000_print_isa_options (stderr, 0, "rs6000_isa_flags",
 			    rs6000_isa_flags);
 
@@ -4769,7 +4769,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* Save the initial options in case the user does function specific options */
   if (global_init_p)
     target_option_default_node = target_option_current_node
-      = build_target_option_node (&global_options);
+      = build_target_option_node (&global_options, &global_options_set);
 
   /* If not explicitly specified via option, decide whether to generate the
      extra blr's required to preserve the link stack on some cpus (eg, 476).  */
@@ -15057,13 +15057,33 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   return 1;
 }
 
-/* ISA 3.0 (power9) minmax subcase to emit a XSMAXCDP or XSMINCDP instruction
-   for SF/DF scalars.  Move TRUE_COND to DEST if OP of the operands of the last
-   comparison is nonzero/true, FALSE_COND if it is zero/false.  Return 0 if the
-   hardware has no such operation.  */
+/* Possibly emit the xsmaxcdp and xsmincdp instructions to emit a maximum or
+   minimum with "C" semantics.
 
-static int
-rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
+   Unless you use -ffast-math, you can't use these instructions to replace
+   conditions that implicitly reverse the condition because the comparison
+   might generate a NaN or signed zer0.
+
+   I.e. the following can be replaced all of the time
+	ret = (op1 >  op2) ? op1 : op2	; generate xsmaxcdp
+	ret = (op1 >= op2) ? op1 : op2	; generate xsmaxcdp
+	ret = (op1 <  op2) ? op1 : op2;	; generate xsmincdp
+	ret = (op1 <= op2) ? op1 : op2;	; generate xsmincdp
+
+   The following can be replaced only if -ffast-math is used:
+	ret = (op1 <  op2) ? op2 : op1	; generate xsmaxcdp
+	ret = (op1 <= op2) ? op2 : op1	; generate xsmaxcdp
+	ret = (op1 >  op2) ? op2 : op1;	; generate xsmincdp
+	ret = (op1 >= op2) ? op2 : op1;	; generate xsmincdp
+
+   Move TRUE_COND to DEST if OP of the operands of the last comparison is
+   nonzero/true, FALSE_COND if it is zero/false.
+
+   Return false if we can't generate the appropriate minimum or maximum, and
+   true if we can did the minimum or maximum.  */
+
+static bool
+rs6000_maybe_emit_maxc_minc (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   enum rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
@@ -15073,14 +15093,14 @@ rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   bool max_p = false;
 
   if (result_mode != compare_mode)
-    return 0;
+    return false;
 
   if (code == GE || code == GT)
     max_p = true;
   else if (code == LE || code == LT)
     max_p = false;
   else
-    return 0;
+    return false;
 
   if (rtx_equal_p (op0, true_cond) && rtx_equal_p (op1, false_cond))
     ;
@@ -15093,19 +15113,23 @@ rs6000_emit_p9_fp_minmax (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     max_p = !max_p;
 
   else
-    return 0;
+    return false;
 
   rs6000_emit_minmax (dest, max_p ? SMAX : SMIN, op0, op1);
-  return 1;
+  return true;
 }
 
-/* ISA 3.0 (power9) conditional move subcase to emit XSCMP{EQ,GE,GT,NE}DP and
-   XXSEL instructions for SF/DF scalars.  Move TRUE_COND to DEST if OP of the
-   operands of the last comparison is nonzero/true, FALSE_COND if it is
-   zero/false.  Return 0 if the hardware has no such operation.  */
+/* Possibly emit a floating point conditional move by generating a compare that
+   sets a mask instruction and a XXSEL select instruction.
 
-static int
-rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
+   Move TRUE_COND to DEST if OP of the operands of the last comparison is
+   nonzero/true, FALSE_COND if it is zero/false.
+
+   Return false if the operation cannot be generated, and true if we could
+   generate the instruction.  */
+
+static bool
+rs6000_maybe_emit_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   enum rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
@@ -15133,7 +15157,7 @@ rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
       break;
 
     default:
-      return 0;
+      return false;
     }
 
   /* Generate:	[(parallel [(set (dest)
@@ -15153,7 +15177,28 @@ rs6000_emit_p9_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   emit_insn (gen_rtx_PARALLEL (VOIDmode,
 			       gen_rtvec (2, cmove_rtx, clobber_rtx)));
 
-  return 1;
+  return true;
+}
+
+/* Helper function to return true if the target has instructions to do a
+   compare and set mask instruction that can be used with XXSEL to implement a
+   conditional move.  It is also assumed that such a target also supports the
+   "C" minimum and maximum instructions. */
+
+static bool
+have_compare_and_set_mask (machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+    case DFmode:
+      return TARGET_P9_MINMAX;
+
+    default:
+      break;
+    }
+
+  return false;
 }
 
 /* Emit a conditional move: move TRUE_COND to DEST if OP of the
@@ -15182,15 +15227,15 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (GET_MODE (false_cond) != result_mode)
     return false;
 
-  /* See if we can use the ISA 3.0 (power9) min/max/compare functions.  */
-  if (TARGET_P9_MINMAX
-      && (compare_mode == SFmode || compare_mode == DFmode)
-      && (result_mode == SFmode || result_mode == DFmode))
+  /* See if we can use the "C" minimum, "C" maximum, and compare and set mask
+     instructions.  */
+  if (have_compare_and_set_mask (compare_mode)
+      && have_compare_and_set_mask (result_mode))
     {
-      if (rs6000_emit_p9_fp_minmax (dest, op, true_cond, false_cond))
+      if (rs6000_maybe_emit_maxc_minc (dest, op, true_cond, false_cond))
 	return true;
 
-      if (rs6000_emit_p9_fp_cmove (dest, op, true_cond, false_cond))
+      if (rs6000_maybe_emit_fp_cmove (dest, op, true_cond, false_cond))
 	return true;
     }
 
@@ -17453,14 +17498,6 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
               }
             break;
 
-          case TYPE_FPLOAD:
-            if ((rs6000_tune == PROCESSOR_POWER6)
-                && get_attr_update (insn) == UPDATE_NO
-                && recog_memoized (dep_insn)
-                && (INSN_CODE (dep_insn) >= 0)
-                && (get_attr_type (dep_insn) == TYPE_MFFGPR))
-              return 2;
-
           default:
             break;
           }
@@ -17485,11 +17522,6 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
               if (get_attr_type (dep_insn) == TYPE_FP
 		  || get_attr_type (dep_insn) == TYPE_FPSIMPLE)
                 return 1;
-              break;
-            case TYPE_FPLOAD:
-              if (get_attr_update (insn) == UPDATE_NO
-                  && get_attr_type (dep_insn) == TYPE_MFFGPR)
-                return 2;
               break;
             default:
               break;
@@ -23617,18 +23649,19 @@ rs6000_valid_attribute_p (tree fndecl,
       && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
     return true;
 
-  old_optimize = build_optimization_node (&global_options);
+  old_optimize = build_optimization_node (&global_options,
+					  &global_options_set);
   func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
   /* If the function changed the optimization levels as well as setting target
      options, start with the optimizations specified.  */
   if (func_optimize && func_optimize != old_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (func_optimize));
 
   /* The target attributes may also change some optimization flags, so update
      the optimization options if necessary.  */
-  cl_target_option_save (&cur_target, &global_options);
+  cl_target_option_save (&cur_target, &global_options, &global_options_set);
   rs6000_cpu_index = rs6000_tune_index = -1;
   ret = rs6000_inner_target_options (args, true);
 
@@ -23636,12 +23669,14 @@ rs6000_valid_attribute_p (tree fndecl,
   if (ret)
     {
       ret = rs6000_option_override_internal (false);
-      new_target = build_target_option_node (&global_options);
+      new_target = build_target_option_node (&global_options,
+					     &global_options_set);
     }
   else
     new_target = NULL;
 
-  new_optimize = build_optimization_node (&global_options);
+  new_optimize = build_optimization_node (&global_options,
+					  &global_options_set);
 
   if (!new_target)
     ret = false;
@@ -23654,10 +23689,10 @@ rs6000_valid_attribute_p (tree fndecl,
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
     }
 
-  cl_target_option_restore (&global_options, &cur_target);
+  cl_target_option_restore (&global_options, &global_options_set, &cur_target);
 
   if (old_optimize != new_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (old_optimize));
 
   return ret;
@@ -23671,7 +23706,8 @@ rs6000_valid_attribute_p (tree fndecl,
 bool
 rs6000_pragma_target_parse (tree args, tree pop_target)
 {
-  tree prev_tree = build_target_option_node (&global_options);
+  tree prev_tree = build_target_option_node (&global_options,
+					     &global_options_set);
   tree cur_tree;
   struct cl_target_option *prev_opt, *cur_opt;
   HOST_WIDE_INT prev_flags, cur_flags, diff_flags;
@@ -23700,7 +23736,7 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
       cur_tree = ((pop_target)
 		  ? pop_target
 		  : target_option_default_node);
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else
@@ -23708,7 +23744,8 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
       rs6000_cpu_index = rs6000_tune_index = -1;
       if (!rs6000_inner_target_options (args, false)
 	  || !rs6000_option_override_internal (false)
-	  || (cur_tree = build_target_option_node (&global_options))
+	  || (cur_tree = build_target_option_node (&global_options,
+						   &global_options_set))
 	     == NULL_TREE)
 	{
 	  if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
@@ -23763,7 +23800,8 @@ static GTY(()) tree rs6000_previous_fndecl;
 void
 rs6000_activate_target_options (tree new_tree)
 {
-  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
   if (TREE_TARGET_GLOBALS (new_tree))
     restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
   else if (new_tree == target_option_default_node)
@@ -23854,7 +23892,8 @@ rs6000_set_current_function (tree fndecl)
 
 static void
 rs6000_function_specific_save (struct cl_target_option *ptr,
-			       struct gcc_options *opts)
+			       struct gcc_options *opts,
+			       struct gcc_options */* opts_set */)
 {
   ptr->x_rs6000_isa_flags = opts->x_rs6000_isa_flags;
   ptr->x_rs6000_isa_flags_explicit = opts->x_rs6000_isa_flags_explicit;
@@ -23864,6 +23903,7 @@ rs6000_function_specific_save (struct cl_target_option *ptr,
 
 static void
 rs6000_function_specific_restore (struct gcc_options *opts,
+				  struct gcc_options */* opts_set */,
 				  struct cl_target_option *ptr)
 				  
 {

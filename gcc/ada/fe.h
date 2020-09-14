@@ -213,6 +213,7 @@ typedef enum {
 extern Ada_Version_Type Ada_Version;
 extern Boolean Back_End_Inlining;
 extern Boolean Debug_Generated_Code;
+extern Boolean Enable_128bit_Types;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;

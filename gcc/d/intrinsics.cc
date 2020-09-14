@@ -562,7 +562,7 @@ expand_intrinsic_vaarg (tree callexp)
     }
 
   /* (T) VA_ARG_EXP<ap>;  */
-  tree exp = build1 (VA_ARG_EXPR, type, ap);
+  tree exp = build1_loc (EXPR_LOCATION (callexp), VA_ARG_EXPR, type, ap);
 
   /* parmn = (T) VA_ARG_EXP<ap>;  */
   if (parmn != NULL_TREE)

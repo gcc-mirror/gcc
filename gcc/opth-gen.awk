@@ -137,6 +137,7 @@ n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 0;
 n_opt_other = 0;
+n_opt_explicit = 4;
 var_opt_char[0] = "unsigned char x_optimize";
 var_opt_char[1] = "unsigned char x_optimize_size";
 var_opt_char[2] = "unsigned char x_optimize_debug";
@@ -152,6 +153,7 @@ for (i = 0; i < n_opts; i++) {
 			continue;
 
 		var_opt_seen[name]++;
+		n_opt_explicit++;
 		otype = var_type_struct(flags[i]);
 		if (otype ~ "^((un)?signed +)?int *$")
 			var_opt_int[n_opt_int++] = otype "x_" name;
@@ -190,6 +192,9 @@ for (i = 0; i < n_opt_char; i++) {
 	print "  " var_opt_char[i] ";";
 }
 
+print "  /* " n_opt_explicit " members */";
+print "  unsigned HOST_WIDE_INT explicit_mask[" int ((n_opt_explicit + 63) / 64) "];";
+
 print "};";
 print "";
 
@@ -203,6 +208,7 @@ n_target_short = 0;
 n_target_int = 0;
 n_target_enum = 0;
 n_target_other = 0;
+n_target_explicit = n_extra_target_vars;
 
 for (i = 0; i < n_target_save; i++) {
 	if (target_save_decl[i] ~ "^((un)?signed +)?int +[_" alnum "]+$")
@@ -232,6 +238,7 @@ if (have_save) {
 				continue;
 
 			var_save_seen[name]++;
+			n_target_explicit++;
 			otype = var_type_struct(flags[i])
 			if (otype ~ "^((un)?signed +)?int *$")
 				var_target_int[n_target_int++] = otype "x_" name;
@@ -251,6 +258,7 @@ if (have_save) {
 	}
 } else {
 	var_target_int[n_target_int++] = "int x_target_flags";
+	n_target_explicit++;
 }
 
 for (i = 0; i < n_target_other; i++) {
@@ -273,14 +281,17 @@ for (i = 0; i < n_target_char; i++) {
 	print "  " var_target_char[i] ";";
 }
 
+print "  /* " n_target_explicit " members */";
+print "  unsigned HOST_WIDE_INT explicit_mask[" int ((n_target_explicit + 63) / 64) "];";
+
 print "};";
 print "";
 print "";
 print "/* Save optimization variables into a structure.  */"
-print "extern void cl_optimization_save (struct cl_optimization *, struct gcc_options *);";
+print "extern void cl_optimization_save (struct cl_optimization *, struct gcc_options *, struct gcc_options *);";
 print "";
 print "/* Restore optimization variables from a structure.  */";
-print "extern void cl_optimization_restore (struct gcc_options *, struct cl_optimization *);";
+print "extern void cl_optimization_restore (struct gcc_options *, struct gcc_options *, struct cl_optimization *);";
 print "";
 print "/* Print optimization variables from a structure.  */";
 print "extern void cl_optimization_print (FILE *, int, struct cl_optimization *);";
@@ -289,10 +300,10 @@ print "/* Print different optimization variables from structures provided as arg
 print "extern void cl_optimization_print_diff (FILE *, int, cl_optimization *ptr1, cl_optimization *ptr2);";
 print "";
 print "/* Save selected option variables into a structure.  */"
-print "extern void cl_target_option_save (struct cl_target_option *, struct gcc_options *);";
+print "extern void cl_target_option_save (struct cl_target_option *, struct gcc_options *, struct gcc_options *);";
 print "";
 print "/* Restore selected option variables from a structure.  */"
-print "extern void cl_target_option_restore (struct gcc_options *, struct cl_target_option *);";
+print "extern void cl_target_option_restore (struct gcc_options *, struct gcc_options *, struct cl_target_option *);";
 print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";

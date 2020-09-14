@@ -78,7 +78,8 @@ for (i = 0; i < n_opts; i++) {
 
 print "/* Save optimization variables into a structure.  */"
 print "void";
-print "cl_optimization_save (struct cl_optimization *ptr, struct gcc_options *opts)";
+print "cl_optimization_save (struct cl_optimization *ptr, struct gcc_options *opts,";
+print "		      struct gcc_options *opts_set)";
 print "{";
 
 n_opt_char = 4;
@@ -116,9 +117,10 @@ for (i = 0; i < n_opts; i++) {
 		else if (otype ~ "^((un)?signed +)?short *$")
 			var_opt_short[n_opt_short++] = name;
 
-		else if (otype ~ ("^enum +[_" alnum "]+ *"))
+		else if (otype ~ ("^enum +[_" alnum "]+ *")) {
+			var_opt_enum_type[n_opt_enum] = otype;
 			var_opt_enum[n_opt_enum++] = name;
-
+		}
 		else if (otype ~ "^((un)?signed +)?char *$") {
 			var_opt_char[n_opt_char++] = name;
 			if (otype ~ "^unsigned +char *$")
@@ -166,12 +168,88 @@ for (i = 0; i < n_opt_string; i++) {
 	print "  ptr->x_" var_opt_string[i] " = opts->x_" var_opt_string[i] ";";
 }
 
+print "";
+print "  unsigned HOST_WIDE_INT mask = 0;";
+
+j = 0;
+k = 0;
+for (i = 0; i < n_opt_other; i++) {
+	print "  if (opts_set->x_" var_opt_other[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_opt_int; i++) {
+	print "  if (opts_set->x_" var_opt_int[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_opt_enum; i++) {
+	print "  if (opts_set->x_" var_opt_enum[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_opt_short; i++) {
+	print "  if (opts_set->x_" var_opt_short[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_opt_char; i++) {
+	print "  if (opts_set->x_" var_opt_char[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_opt_string; i++) {
+	print "  if (opts_set->x_" var_opt_string[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+if (j != 0) {
+	print "  ptr->explicit_mask[" k "] = mask;";
+}
+
 print "}";
 
 print "";
 print "/* Restore optimization options from a structure.  */";
 print "void";
-print "cl_optimization_restore (struct gcc_options *opts, struct cl_optimization *ptr)";
+print "cl_optimization_restore (struct gcc_options *opts, struct gcc_options *opts_set,";
+print "			 struct cl_optimization *ptr)";
 print "{";
 
 for (i = 0; i < n_opt_other; i++) {
@@ -196,6 +274,77 @@ for (i = 0; i < n_opt_char; i++) {
 
 for (i = 0; i < n_opt_string; i++) {
 	print "  opts->x_" var_opt_string[i] " = ptr->x_" var_opt_string[i] ";";
+}
+
+print "";
+print "  unsigned HOST_WIDE_INT mask;";
+
+j = 64;
+k = 0;
+for (i = 0; i < n_opt_other; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_opt_other[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_opt_int; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_opt_int[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_opt_enum; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_opt_enum[i] " = static_cast<" var_opt_enum_type[i] ">((mask & 1) != 0);";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_opt_short; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_opt_short[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_opt_char; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_opt_char[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_opt_string; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_opt_string[i] " = (mask & 1) ? \"\" : nullptr;";
+	print "  mask >>= 1;"
+	j++;
 }
 
 print "  targetm.override_options_after_change ();";
@@ -344,7 +493,8 @@ print "}";
 print "";
 print "/* Save selected option variables into a structure.  */"
 print "void";
-print "cl_target_option_save (struct cl_target_option *ptr, struct gcc_options *opts)";
+print "cl_target_option_save (struct cl_target_option *ptr, struct gcc_options *opts,";
+print "		       struct gcc_options *opts_set)";
 print "{";
 
 n_target_char = 0;
@@ -372,9 +522,10 @@ if (have_save) {
 			else if (otype ~ "^((un)?signed +)?short *$")
 				var_target_short[n_target_short++] = name;
 
-			else if (otype ~ ("^enum +[_" alnum "]+ *$"))
+			else if (otype ~ ("^enum +[_" alnum "]+ *$")) {
+				var_target_enum_type[n_target_enum] = otype;
 				var_target_enum[n_target_enum++] = name;
-
+			}
 			else if (otype ~ "^((un)?signed +)?char *$") {
 				var_target_char[n_target_char++] = name;
 				if (otype ~ "^unsigned +char *$")
@@ -409,7 +560,7 @@ if (have_assert)
 	print "";
 
 print "  if (targetm.target_option.save)";
-print "    targetm.target_option.save (ptr, opts);";
+print "    targetm.target_option.save (ptr, opts, opts_set);";
 print "";
 
 for (i = 0; i < n_extra_target_vars; i++) {
@@ -440,12 +591,99 @@ for (i = 0; i < n_target_string; i++) {
 	print "  ptr->x_" var_target_string[i] " = opts->x_" var_target_string[i] ";";
 }
 
+print "";
+print "  unsigned HOST_WIDE_INT mask = 0;";
+
+j = 0;
+k = 0;
+for (i = 0; i < n_extra_target_vars; i++) {
+	print "  if (opts_set->x_" extra_target_vars[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_target_other; i++) {
+	print "  if (opts_set->x_" var_target_other[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_target_enum; i++) {
+	print "  if (opts_set->x_" var_target_enum[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_target_int; i++) {
+	print "  if (opts_set->x_" var_target_int[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_target_short; i++) {
+	print "  if (opts_set->x_" var_target_short[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_target_char; i++) {
+	print "  if (opts_set->x_" var_target_char[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+for (i = 0; i < n_target_string; i++) {
+	print "  if (opts_set->x_" var_target_string[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
+	j++;
+	if (j == 64) {
+		print "  ptr->explicit_mask[" k "] = mask;";
+		print "  mask = 0;";
+		j = 0;
+		k++;
+	}
+}
+
+if (j != 0) {
+	print "  ptr->explicit_mask[" k "] = mask;";
+}
+
 print "}";
 
 print "";
 print "/* Restore selected current options from a structure.  */";
 print "void";
-print "cl_target_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)";
+print "cl_target_option_restore (struct gcc_options *opts, struct gcc_options *opts_set,";
+print "			  struct cl_target_option *ptr)";
 print "{";
 
 for (i = 0; i < n_extra_target_vars; i++) {
@@ -476,11 +714,101 @@ for (i = 0; i < n_target_string; i++) {
 	print "  opts->x_" var_target_string[i] " = ptr->x_" var_target_string[i] ";";
 }
 
+print "";
+print "  unsigned HOST_WIDE_INT mask;";
+
+j = 64;
+k = 0;
+for (i = 0; i < n_extra_target_vars; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	if (extra_target_var_types[i] ~ ("^enum +[_" alnum "]+ *$")) {
+		print "  opts_set->x_" extra_target_vars[i] " = static_cast<" extra_target_var_types[i] ">((mask & 1) != 0);";
+	}
+	else if (extra_target_var_types[i] ~ "^const char \\**$") {
+		print "  opts_set->x_" extra_target_vars[i] " = (mask & 1) ? \"\" : nullptr;";
+	}
+	else {
+		print "  opts_set->x_" extra_target_vars[i] " = (mask & 1) != 0;";
+	}
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_target_other; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_target_other[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_target_enum; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_target_enum[i] " = static_cast<" var_target_enum_type[i] ">((mask & 1) != 0);";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_target_int; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_target_int[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_target_short; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_target_short[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_target_char; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_target_char[i] " = (mask & 1) != 0;";
+	print "  mask >>= 1;"
+	j++;
+}
+
+for (i = 0; i < n_target_string; i++) {
+	if (j == 64) {
+		print "  mask = ptr->explicit_mask[" k "];";
+		k++;
+		j = 0;
+	}
+	print "  opts_set->x_" var_target_string[i] " = (mask & 1) ? \"\" : nullptr;";
+	print "  mask >>= 1;"
+	j++;
+}
+
 # This must occur after the normal variables in case the code depends on those
 # variables.
 print "";
 print "  if (targetm.target_option.restore)";
-print "    targetm.target_option.restore (opts, ptr);";
+print "    targetm.target_option.restore (opts, opts_set, ptr);";
 
 print "}";
 
@@ -726,6 +1054,10 @@ for (i = 0; i < n_target_val; i++) {
 	print "    return false;";
 }
 
+print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->explicit_mask[0]); i++)";
+print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
+print "      return false;"
+
 print "  return true;";
 
 print "}";
@@ -754,6 +1086,8 @@ for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  hstate.add_hwi (ptr->" name");";
 }
+print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "    hstate.add_hwi (ptr->explicit_mask[i]);";
 print "  return hstate.end ();";
 print "}";
 
@@ -778,6 +1112,10 @@ for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  bp_pack_value (bp, ptr->" name", 64);";
 }
+
+print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
+
 print "}";
 
 print "";
@@ -803,6 +1141,9 @@ for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  ptr->" name" = (" var_target_val_type[i] ") bp_unpack_value (bp, 64);";
 }
+
+print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";
 
 print "}";
 
@@ -869,6 +1210,8 @@ for (i = 0; i < n_opt_val; i++) {
 	else
 		print "  hstate.add_hwi (ptr->" name");";
 }
+print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "    hstate.add_hwi (ptr->explicit_mask[i]);";
 print "  return hstate.end ();";
 print "}";
 
@@ -896,6 +1239,9 @@ for (i = 0; i < n_opt_val; i++) {
 		print "    return false;";
 	}
 }
+print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->explicit_mask[0]); i++)";
+print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
+print "      return false;"
 print "  return true;";
 print "}";
 
@@ -914,6 +1260,8 @@ for (i = 0; i < n_opt_val; i++) {
 	else
 		print "  bp_pack_value (bp, ptr->" name", 64);";
 }
+print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
 print "}";
 
 print "";
@@ -935,6 +1283,8 @@ for (i = 0; i < n_opt_val; i++) {
 	else
 	      print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_value (bp, 64);";
 }
+print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";
 print "}";
 print "/* Free heap memory used by optimization options  */";
 print "void";

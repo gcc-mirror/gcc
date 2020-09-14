@@ -800,11 +800,12 @@ lto_input_ts_function_decl_tree_pointers (class lto_input_block *ib,
     tree opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr);
     if (opts)
       {
-	struct gcc_options tmp;
+	struct gcc_options tmp, tmp_set;
 	init_options_struct (&tmp, NULL);
-	cl_optimization_restore (&tmp, TREE_OPTIMIZATION (opts));
-	finish_options (&tmp, &global_options_set, UNKNOWN_LOCATION);
-	opts = build_optimization_node (&tmp);
+	memset (&tmp_set, 0, sizeof (tmp_set));
+	cl_optimization_restore (&tmp, &tmp_set, TREE_OPTIMIZATION (opts));
+	finish_options (&tmp, &tmp_set, UNKNOWN_LOCATION);
+	opts = build_optimization_node (&tmp, &tmp_set);
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = opts;
       }
   }

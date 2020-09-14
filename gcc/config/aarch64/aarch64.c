@@ -15034,7 +15034,7 @@ aarch64_override_options (void)
   /* Save these options as the default ones in case we push and pop them later
      while processing functions with potential target attributes.  */
   target_option_default_node = target_option_current_node
-      = build_target_option_node (&global_options);
+    = build_target_option_node (&global_options, &global_options_set);
 }
 
 /* Implement targetm.override_options_after_change.  */
@@ -15109,7 +15109,8 @@ initialize_aarch64_code_model (struct gcc_options *opts)
 /* Implement TARGET_OPTION_SAVE.  */
 
 static void
-aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
+aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts,
+		     struct gcc_options */* opts_set */)
 {
   ptr->x_aarch64_override_tune_string = opts->x_aarch64_override_tune_string;
   ptr->x_aarch64_branch_protection_string
@@ -15120,7 +15121,9 @@ aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts)
    using the information saved in PTR.  */
 
 static void
-aarch64_option_restore (struct gcc_options *opts, struct cl_target_option *ptr)
+aarch64_option_restore (struct gcc_options *opts,
+			struct gcc_options */* opts_set */,
+			struct cl_target_option *ptr)
 {
   opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
   selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
@@ -15210,7 +15213,8 @@ aarch64_set_current_function (tree fndecl)
   aarch64_previous_fndecl = fndecl;
 
   /* First set the target options.  */
-  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
 
   aarch64_save_restore_target_globals (new_tree);
 }
@@ -15709,17 +15713,18 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
     }
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
-  old_optimize = build_optimization_node (&global_options);
+  old_optimize
+    = build_optimization_node (&global_options, &global_options_set);
   func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
   /* If the function changed the optimization levels as well as setting
      target options, start with the optimizations specified.  */
   if (func_optimize && func_optimize != old_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (func_optimize));
 
   /* Save the current target options to restore at the end.  */
-  cl_target_option_save (&cur_target, &global_options);
+  cl_target_option_save (&cur_target, &global_options, &global_options_set);
 
   /* If fndecl already has some target attributes applied to it, unpack
      them so that we add this attribute on top of them, rather than
@@ -15730,11 +15735,12 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 	= TREE_TARGET_OPTION (existing_target);
 
       if (existing_options)
-	cl_target_option_restore (&global_options, existing_options);
+	cl_target_option_restore (&global_options, &global_options_set,
+				  existing_options);
     }
   else
-    cl_target_option_restore (&global_options,
-			TREE_TARGET_OPTION (target_option_current_node));
+    cl_target_option_restore (&global_options, &global_options_set,
+			      TREE_TARGET_OPTION (target_option_current_node));
 
   ret = aarch64_process_target_attr (args);
 
@@ -15754,12 +15760,14 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 	  aarch64_init_simd_builtins ();
 	  current_target_pragma = saved_current_target_pragma;
 	}
-      new_target = build_target_option_node (&global_options);
+      new_target = build_target_option_node (&global_options,
+					     &global_options_set);
     }
   else
     new_target = NULL;
 
-  new_optimize = build_optimization_node (&global_options);
+  new_optimize = build_optimization_node (&global_options,
+					  &global_options_set);
 
   if (fndecl && ret)
     {
@@ -15769,10 +15777,10 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
     }
 
-  cl_target_option_restore (&global_options, &cur_target);
+  cl_target_option_restore (&global_options, &global_options_set, &cur_target);
 
   if (old_optimize != new_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (old_optimize));
   return ret;
 }

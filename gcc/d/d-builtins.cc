@@ -848,6 +848,14 @@ d_build_d_type_nodes (void)
   ireal_type_node = build_distinct_type_copy (long_double_type_node);
   TYPE_IMAGINARY_FLOAT (ireal_type_node) = 1;
 
+  /* Calling build_ctype() links the front-end Type to the GCC node,
+     and sets the TYPE_NAME to the D language type.  */
+  for (unsigned ty = 0; ty < TMAX; ty++)
+    {
+      if (Type::basic[ty] != NULL)
+	build_ctype (Type::basic[ty]);
+    }
+
   /* Used for ModuleInfo, ClassInfo, and Interface decls.  */
   unknown_type_node = make_node (RECORD_TYPE);
 

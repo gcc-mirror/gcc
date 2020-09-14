@@ -4975,26 +4975,28 @@ gcn_fixup_accel_lto_options (tree fndecl)
   if (!func_optimize)
     return;
 
-  tree old_optimize = build_optimization_node (&global_options);
+  tree old_optimize
+    = build_optimization_node (&global_options, &global_options_set);
   tree new_optimize;
 
   /* If the function changed the optimization levels as well as
      setting target options, start with the optimizations
      specified.  */
   if (func_optimize != old_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (func_optimize));
 
   gcn_option_override ();
 
   /* The target attributes may also change some optimization flags,
      so update the optimization options if necessary.  */
-  new_optimize = build_optimization_node (&global_options);
+  new_optimize = build_optimization_node (&global_options,
+					  &global_options_set);
 
   if (old_optimize != new_optimize)
     {
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
-      cl_optimization_restore (&global_options,
+      cl_optimization_restore (&global_options, &global_options_set,
 			       TREE_OPTIMIZATION (old_optimize));
     }
 }

@@ -603,7 +603,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
 static bool
 ix86_pragma_target_parse (tree args, tree pop_target)
 {
-  tree prev_tree = build_target_option_node (&global_options);
+  tree prev_tree
+    = build_target_option_node (&global_options, &global_options_set);
   tree cur_tree;
   struct cl_target_option *prev_opt;
   struct cl_target_option *cur_opt;
@@ -621,7 +622,7 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   if (! args)
     {
       cur_tree = (pop_target ? pop_target : target_option_default_node);
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else
@@ -631,7 +632,7 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 						   &global_options_set, 0);
       if (!cur_tree || cur_tree == error_mark_node)
        {
-         cl_target_option_restore (&global_options,
+         cl_target_option_restore (&global_options, &global_options_set,
                                    TREE_TARGET_OPTION (prev_tree));
          return false;
        }

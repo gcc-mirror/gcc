@@ -3322,13 +3322,15 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   else
     emit_move_insn (parmreg, validated_mem);
 
-  /* If we were passed a pointer but the actual value can safely live
-     in a register, retrieve it and use it directly.  */
+  /* If we were passed a pointer but the actual value can live in a register,
+     retrieve it and use it directly.  Note that we cannot use nominal_mode,
+     because it will have been set to Pmode above, we must use the actual mode
+     of the parameter instead.  */
   if (data->arg.pass_by_reference && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
     {
-      /* We can't use nominal_mode, because it will have been set to
-	 Pmode above.  We must use the actual mode of the parm.  */
-      if (use_register_for_decl (parm))
+      /* Use a stack slot for debugging purposes, except if a tail call is
+	 involved because this would create a dangling reference.  */
+      if (use_register_for_decl (parm) || cfun->tail_call_marked)
 	{
 	  parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
 	  mark_user_reg (parmreg);
@@ -4664,7 +4666,8 @@ invoke_set_current_function_hook (tree fndecl)
       if (optimization_current_node != opts)
 	{
 	  optimization_current_node = opts;
-	  cl_optimization_restore (&global_options, TREE_OPTIMIZATION (opts));
+	  cl_optimization_restore (&global_options, &global_options_set,
+				   TREE_OPTIMIZATION (opts));
 	}
 
       targetm.set_current_function (fndecl);

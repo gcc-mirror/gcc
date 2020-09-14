@@ -1343,7 +1343,7 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	 not already have the proper size and the size is not too large.  */
       if (BIT_PACKED_ARRAY_TYPE_P (type)
 	  || (TYPE_PRECISION (type) == size && biased_p == for_biased)
-	  || size > LONG_LONG_TYPE_SIZE)
+	  || size > (Enable_128bit_Types ? 128 : LONG_LONG_TYPE_SIZE))
 	break;
 
       biased_p |= for_biased;

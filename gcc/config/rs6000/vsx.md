@@ -1173,7 +1173,7 @@
   return rs6000_output_move_128bit (operands);
 }
   [(set_attr "type"
-               "vecstore,  vecload,   vecsimple, mffgpr,    mftgpr,    load,
+               "vecstore,  vecload,   vecsimple, mtvsr,     mfvsr,     load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
                 vecsimple, *,         *,         vecstore,  vecload")
    (set_attr "num_insns"
@@ -3314,7 +3314,7 @@
   else
     gcc_unreachable ();
 }
-  [(set_attr "type" "veclogical,mftgpr,mftgpr,vecperm")
+  [(set_attr "type" "veclogical,mfvsr,mfvsr,vecperm")
    (set_attr "isa" "*,*,p8v,p9v")])
 
 ;; Optimize extracting a single scalar element from memory.
@@ -3757,7 +3757,7 @@
 
   DONE;
 }
-  [(set_attr "type" "mftgpr,vecperm,fpstore")
+  [(set_attr "type" "mfvsr,vecperm,fpstore")
    (set_attr "length" "8")
    (set_attr "isa" "*,p8v,*")])
 
@@ -3806,7 +3806,7 @@
 		  gen_rtx_REG (DImode, REGNO (vec_tmp)));
   DONE;
 }
-  [(set_attr "type" "mftgpr")])
+  [(set_attr "type" "mfvsr")])
 
 ;; Optimize extracting a single scalar element from memory.
 (define_insn_and_split "*vsx_extract_<mode>_load"

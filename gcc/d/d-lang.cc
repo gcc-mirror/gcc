@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "target.h"
+#include "function.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "varasm.h"
@@ -1358,12 +1359,65 @@ d_type_for_size (unsigned bits, int unsignedp)
   return 0;
 }
 
-/* Implements the lang_hooks.types.type_promotes_to routine for language D.
-   All promotions for variable arguments are handled by the D frontend.  */
+/* Implements the lang_hooks.types.type_promotes_to routine for language D.  */
 
 static tree
 d_type_promotes_to (tree type)
 {
+  /* Promotions are only applied on unnamed function arguments for declarations
+     with `extern(C)' or `extern(C++)' linkage.  */
+  if (cfun && DECL_LANG_FRONTEND (cfun->decl)
+      && DECL_LANG_FRONTEND (cfun->decl)->linkage != LINKd)
+    {
+      /* In [type/integer-promotions], integer promotions are conversions of the
+	 following types:
+
+		bool	int
+		byte	int
+		ubyte	int
+		short	int
+		ushort	int
+		char	int
+		wchar	int
+		dchar	uint
+
+	 If an enum has as a base type one of the types in the left column, it
+	 is converted to the type in the right column.  */
+      if (TREE_CODE (type) == ENUMERAL_TYPE && ENUM_IS_SCOPED (type))
+	type = TREE_TYPE (type);
+
+      type = TYPE_MAIN_VARIANT (type);
+
+      /* Check for promotions of target-defined types first.  */
+      tree promoted_type = targetm.promoted_type (type);
+      if (promoted_type)
+	return promoted_type;
+
+      if (TREE_CODE (type) == BOOLEAN_TYPE)
+	return d_int_type;
+
+      if (INTEGRAL_TYPE_P (type))
+	{
+	  if (type == d_byte_type || type == d_ubyte_type
+	      || type == d_short_type || type == d_ushort_type
+	      || type == char8_type_node || type == char16_type_node)
+	    return d_int_type;
+
+	  if (type == char32_type_node)
+	    return d_uint_type;
+
+	  if (TYPE_PRECISION (type) < TYPE_PRECISION (d_int_type))
+	    return d_int_type;
+	}
+
+      /* Float arguments are converted to doubles.  */
+      if (type == float_type_node)
+	return double_type_node;
+
+      if (type == ifloat_type_node)
+	return idouble_type_node;
+    }
+
   return type;
 }
 

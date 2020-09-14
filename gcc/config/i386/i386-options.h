@@ -70,8 +70,10 @@ extern const char *stringop_alg_names[];
 
 void ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2);
 void ix86_function_specific_save (struct cl_target_option *,
-				  struct gcc_options *opts);
+				  struct gcc_options *opts,
+				  struct gcc_options *opts_set);
 void ix86_function_specific_restore (struct gcc_options *opts,
+				     struct gcc_options *opts_set,
 				     struct cl_target_option *);
 void ix86_function_specific_post_stream_in (struct cl_target_option *);
 void ix86_function_specific_print (FILE *, int,

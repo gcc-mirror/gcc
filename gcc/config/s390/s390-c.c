@@ -388,7 +388,7 @@ s390_cpu_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "__s390x__");
   if (TARGET_LONG_DOUBLE_128)
     cpp_define (pfile, "__LONG_DOUBLE_128__");
-  cl_target_option_save (&opts, &global_options);
+  cl_target_option_save (&opts, &global_options, &global_options_set);
   s390_cpu_cpp_builtins_internal (pfile, &opts, NULL);
 }
 
@@ -400,7 +400,8 @@ s390_cpu_cpp_builtins (cpp_reader *pfile)
 static bool
 s390_pragma_target_parse (tree args, tree pop_target)
 {
-  tree prev_tree = build_target_option_node (&global_options);
+  tree prev_tree = build_target_option_node (&global_options,
+					     &global_options_set);
   tree cur_tree;
 
   if (! args)
@@ -411,7 +412,7 @@ s390_pragma_target_parse (tree args, tree pop_target)
 						   &global_options_set, true);
       if (!cur_tree || cur_tree == error_mark_node)
 	{
-	  cl_target_option_restore (&global_options,
+	  cl_target_option_restore (&global_options, &global_options_set,
 				    TREE_TARGET_OPTION (prev_tree));
 	  return false;
 	}

@@ -621,7 +621,7 @@ pru_option_override (void)
   /* Save the initial options in case the user does function specific
      options.  */
   target_option_default_node = target_option_current_node
-    = build_target_option_node (&global_options);
+    = build_target_option_node (&global_options, &global_options_set);
 
   /* Due to difficulties in implementing the TI ABI with GCC,
      at least check and error-out if GCC cannot compile a
@@ -2848,7 +2848,7 @@ pru_set_current_function (tree fndecl)
 
       else if (new_tree)
 	{
-	  cl_target_option_restore (&global_options,
+	  cl_target_option_restore (&global_options, &global_options_set,
 				    TREE_TARGET_OPTION (new_tree));
 	  target_reinit ();
 	}
@@ -2858,7 +2858,7 @@ pru_set_current_function (tree fndecl)
 	  struct cl_target_option *def
 	    = TREE_TARGET_OPTION (target_option_current_node);
 
-	  cl_target_option_restore (&global_options, def);
+	  cl_target_option_restore (&global_options, &global_options_set, def);
 	  target_reinit ();
 	}
     }

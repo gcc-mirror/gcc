@@ -242,12 +242,12 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   else
     {
       pop_target = pop_target ? pop_target : target_option_default_node;
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (pop_target));
     }
 
   target_option_current_node
-    = build_target_option_node (&global_options);
+    = build_target_option_node (&global_options, &global_options_set);
 
   aarch64_reset_previous_fndecl ();
   /* For the definitions, ensure all newly defined macros are considered

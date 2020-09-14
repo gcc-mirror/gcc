@@ -1,3 +1,39 @@
+2020-09-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_14): New ABI tag.
+	* docs/topics/expressions.rst (gcc_jit_global_set_initializer):
+	Document new entry point in section 'Global variables'.
+	* jit-playback.c (global_new_decl, global_finalize_lvalue): New
+	method.
+	(playback::context::new_global): Make use of global_new_decl,
+	global_finalize_lvalue.
+	(load_blob_in_ctor): New template function in use by the
+	following.
+	(playback::context::new_global_initialized): New method.
+	* jit-playback.h (class context): Decl 'new_global_initialized',
+	'global_new_decl', 'global_finalize_lvalue'.
+	(lvalue::set_initializer): Add implementation.
+	* jit-recording.c (recording::memento_of_get_pointer::get_size)
+	(recording::memento_of_get_type::get_size): Add implementation.
+	(recording::global::write_initializer_reproducer): New function in
+	use by 'recording::global::write_reproducer'.
+	(recording::global::replay_into)
+	(recording::global::write_to_dump)
+	(recording::global::write_reproducer): Handle
+	initialized case.
+	* jit-recording.h (class type): Decl 'get_size' and
+	'num_elements'.
+	* libgccjit++.h (class lvalue): Declare new 'set_initializer'
+	method.
+	(class lvalue): Decl 'is_global' and 'set_initializer'.
+	(class global) Decl 'write_initializer_reproducer'. Add
+	'm_initializer', 'm_initializer_num_bytes' fields.  Implement
+	'set_initializer'. Add a destructor to free 'm_initializer'.
+	* libgccjit.c (gcc_jit_global_set_initializer): New function.
+	* libgccjit.h (gcc_jit_global_set_initializer): New function
+	declaration.
+	* libgccjit.map (LIBGCCJIT_ABI_14): New ABI tag.
+
 2020-08-28  Martin Sebor  <msebor@redhat.com>
 
 	* jit-recording.c (recording::switch_::make_debug_string): Add argument

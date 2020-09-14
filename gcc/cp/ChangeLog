@@ -1,3 +1,31 @@
+2020-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (grokfndecl): Don't attach to local extern.
+
+2020-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_objc_method_definition_list): Reimplement
+	loop, make sure we pop scope.
+
+2020-09-11  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (LOOKUP_CONSTINIT): Remove.
+	(LOOKUP_REWRITTEN): Adjust.
+	* decl.c (duplicate_decls): Set DECL_DECLARED_CONSTINIT_P.
+	(check_initializer): Use DECL_DECLARED_CONSTINIT_P instead of
+	LOOKUP_CONSTINIT.
+	(cp_finish_decl): Don't set DECL_DECLARED_CONSTINIT_P.  Use
+	DECL_DECLARED_CONSTINIT_P instead of LOOKUP_CONSTINIT.
+	(grokdeclarator): Set DECL_DECLARED_CONSTINIT_P.
+	* decl2.c (grokfield): Don't handle LOOKUP_CONSTINIT.
+	* parser.c (cp_parser_decomposition_declaration): Remove
+	LOOKUP_CONSTINIT handling.
+	(cp_parser_init_declarator): Likewise.
+	* pt.c (tsubst_expr): Likewise.
+	(instantiate_decl): Likewise.
+	* typeck2.c (store_init_value): Use DECL_DECLARED_CONSTINIT_P instead
+	of LOOKUP_CONSTINIT.
+
 2020-09-10  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (TINFO_VAR_DECLARED_CONSTINIT): Replace with ...
