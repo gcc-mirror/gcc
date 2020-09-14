@@ -6627,32 +6627,82 @@
    (set_attr "length" "4")])
 
 ; Shift right pair word 0 to 31 bits.
-(define_insn "shrpsi4"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand" "r,r")
-			   (minus:SI (const_int 32)
-			     (match_operand:SI 3 "shift5_operand" "q,n")))
-		(lshiftrt:SI (match_operand:SI 2 "register_operand" "r,r")
-			     (match_dup 3))))]
+(define_insn "*shrpsi4_1"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 4 "plus_xor_ior_operator"
+	  [(ashift:SI (match_operand:SI 1 "register_operand" "r")
+		      (minus:SI (const_int 32)
+				(match_operand:SI 3 "register_operand" "q")))
+	   (lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
+			(match_dup 3))]))]
   ""
-  "@
-   {vshd %1,%2,%0|shrpw %1,%2,%%sar,%0}
-   {shd|shrpw} %1,%2,%3,%0"
+  "{vshd %1,%2,%0|shrpw %1,%2,%%sar,%0}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+(define_insn "*shrpsi4_2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 4 "plus_xor_ior_operator"
+	  [(lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
+			(match_operand:SI 3 "register_operand" "q"))
+	   (ashift:SI (match_operand:SI 1 "register_operand" "r")
+		      (minus:SI (const_int 32)
+				(match_dup 3)))]))]
+  ""
+  "{vshd %1,%2,%0|shrpw %1,%2,%%sar,%0}"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 ; Shift right pair doubleword 0 to 63 bits.
-(define_insn "shrpdi4"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(ior:DI (ashift:DI (match_operand:SI 1 "register_operand" "r,r")
-			   (minus:DI (const_int 64)
-			     (match_operand:DI 3 "shift6_operand" "q,n")))
-		(lshiftrt:DI (match_operand:DI 2 "register_operand" "r,r")
-			     (match_dup 3))))]
+(define_insn "*shrpdi4_1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(match_operator:DI 4 "plus_xor_ior_operator"
+	  [(ashift:DI (match_operand:DI 1 "register_operand" "r")
+		      (minus:DI (const_int 64)
+				(match_operand:DI 3 "register_operand" "q")))
+	   (lshiftrt:DI (match_operand:DI 2 "register_operand" "r")
+			(match_dup 3))]))]
   "TARGET_64BIT"
-  "@
-   shrpd %1,%2,%%sar,%0
-   shrpd %1,%2,%3,%0"
+  "shrpd %1,%2,%%sar,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+(define_insn "*shrpdi4_2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(match_operator:DI 4 "plus_xor_ior_operator"
+	  [(lshiftrt:DI (match_operand:DI 2 "register_operand" "r")
+			(match_operand:DI 3 "shift6_operand" "q"))
+	   (ashift:DI (match_operand:SI 1 "register_operand" "r")
+		      (minus:DI (const_int 64)
+				(match_dup 3)))]))]
+  "TARGET_64BIT"
+  "shrpd %1,%2,%%sar,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+(define_insn "*shrpdi4_3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(match_operator:DI 5 "plus_xor_ior_operator"
+	  [(ashift:DI (match_operand:DI 1 "register_operand" "r")
+		      (match_operand:DI 3 "const_int_operand" "n"))
+	   (lshiftrt:DI (match_operand:DI 2 "register_operand" "r")
+			(match_operand:DI 4 "const_int_operand" "n"))]))]
+  "TARGET_64BIT
+   && INTVAL (operands[3]) + INTVAL (operands[4]) == 64"
+  "shrpd %1,%2,%4,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+(define_insn "*shrpdi4_4"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(match_operator:DI 5 "plus_xor_ior_operator"
+	  [(lshiftrt:DI (match_operand:DI 2 "register_operand" "r")
+			(match_operand:DI 4 "const_int_operand" "n"))
+	   (ashift:DI (match_operand:DI 1 "register_operand" "r")
+		      (match_operand:DI 3 "const_int_operand" "n"))]))]
+  "TARGET_64BIT
+   && INTVAL (operands[3]) + INTVAL (operands[4]) == 64"
+  "shrpd %1,%2,%4,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
@@ -6691,7 +6741,7 @@
   /* Else expand normally.  */
 }")
 
-(define_insn ""
+(define_insn "*rotlsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (rotate:SI (match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "const_int_operand" "n")))]
@@ -6700,6 +6750,54 @@
 {
   operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
   return \"{shd|shrpw} %1,%1,%2,%0\";
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+(define_insn "rotrdi3"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(rotatert:DI (match_operand:DI 1 "register_operand" "r,r")
+		     (match_operand:DI 2 "shift6_operand" "q,n")))]
+  "TARGET_64BIT"
+  "*
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 63);
+      return \"shrpd %1,%1,%2,%0\";
+    }
+  else
+    return \"shrpd %1,%1,%%sar,%0\";
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+(define_expand "rotldi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+        (rotate:DI (match_operand:DI 1 "register_operand" "")
+                   (match_operand:DI 2 "arith32_operand" "")))]
+  "TARGET_64BIT"
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    {
+      rtx temp = gen_reg_rtx (DImode);
+      emit_insn (gen_subdi3 (temp, GEN_INT (64), operands[2]));
+      emit_insn (gen_rotrdi3 (operands[0], operands[1], temp));
+      DONE;
+    }
+  /* Else expand normally.  */
+}")
+
+(define_insn "*rotldi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (rotate:DI (match_operand:DI 1 "register_operand" "r")
+                   (match_operand:DI 2 "const_int_operand" "n")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[2] = GEN_INT ((64 - INTVAL (operands[2])) & 63);
+  return \"shrpd %1,%1,%2,%0\";
 }"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])

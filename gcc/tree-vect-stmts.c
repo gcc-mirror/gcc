@@ -9853,15 +9853,6 @@ vectorizable_condition (vec_info *vinfo,
     {
       if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
 	return false;
-
-      /* FORNOW: only supported as part of a reduction.  */
-      if (STMT_VINFO_LIVE_P (stmt_info))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "value used after loop.\n");
-	  return false;
-	}
     }
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -10328,14 +10319,6 @@ vectorizable_comparison (vec_info *vinfo,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
     return false;
 
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "value used after loop.\n");
-      return false;
-    }
-
   gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
   if (!stmt)
     return false;
@@ -10532,7 +10515,7 @@ vectorizable_comparison (vec_info *vinfo,
    GSI and VEC_STMT_P are as for vectorizable_live_operation.  */
 
 static bool
-can_vectorize_live_stmts (loop_vec_info loop_vinfo,
+can_vectorize_live_stmts (vec_info *vinfo,
 			  stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			  slp_tree slp_node, slp_instance slp_node_instance,
 			  bool vec_stmt_p,
@@ -10545,7 +10528,7 @@ can_vectorize_live_stmts (loop_vec_info loop_vinfo,
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
 	{
 	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
-	      && !vectorizable_live_operation (loop_vinfo,
+	      && !vectorizable_live_operation (vinfo,
 					       slp_stmt_info, gsi, slp_node,
 					       slp_node_instance, i,
 					       vec_stmt_p, cost_vec))
@@ -10553,7 +10536,7 @@ can_vectorize_live_stmts (loop_vec_info loop_vinfo,
 	}
     }
   else if (STMT_VINFO_LIVE_P (stmt_info)
-	   && !vectorizable_live_operation (loop_vinfo, stmt_info, gsi,
+	   && !vectorizable_live_operation (vinfo, stmt_info, gsi,
 					    slp_node, slp_node_instance, -1,
 					    vec_stmt_p, cost_vec))
     return false;
@@ -10921,39 +10904,10 @@ vect_transform_stmt (vec_info *vinfo,
   if (STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
     return is_store;
 
-  /* If this stmt defines a value used on a backedge, record it so
-     we can update the vectorized PHIs later.  */
-  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
-  stmt_vec_info reduc_info;
-  if (STMT_VINFO_REDUC_DEF (orig_stmt_info)
-      && vect_stmt_to_vectorize (orig_stmt_info) == stmt_info
-      && (reduc_info = info_for_reduction (vinfo, orig_stmt_info))
-      && STMT_VINFO_REDUC_TYPE (reduc_info) != FOLD_LEFT_REDUCTION
-      && STMT_VINFO_REDUC_TYPE (reduc_info) != EXTRACT_LAST_REDUCTION)
-    {
-      gphi *phi;
-      edge e;
-      if (!slp_node
-	  && (phi = dyn_cast <gphi *>
-		      (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
-	  && dominated_by_p (CDI_DOMINATORS,
-			     gimple_bb (orig_stmt_info->stmt), gimple_bb (phi))
-	  && (e = loop_latch_edge (gimple_bb (phi)->loop_father))
-	  && (PHI_ARG_DEF_FROM_EDGE (phi, e)
-	      == gimple_get_lhs (orig_stmt_info->stmt)))
-	as_a <loop_vec_info> (vinfo)->reduc_latch_defs.safe_push (stmt_info);
-      else if (slp_node
-	       && slp_node != slp_node_instance->reduc_phis)
-	as_a <loop_vec_info> (vinfo)->reduc_latch_slp_defs.safe_push
-	    (std::make_pair (slp_node, slp_node_instance->reduc_phis));
-    }
-
   /* Handle stmts whose DEF is used outside the loop-nest that is
      being vectorized.  */
-  if (is_a <loop_vec_info> (vinfo))
-    done = can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
-				     stmt_info, gsi, slp_node,
-				     slp_node_instance, true, NULL);
+  done = can_vectorize_live_stmts (vinfo, stmt_info, gsi, slp_node,
+				   slp_node_instance, true, NULL);
   gcc_assert (done);
 
   return false;

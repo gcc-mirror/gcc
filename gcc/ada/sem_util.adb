@@ -9958,6 +9958,79 @@ package body Sem_Util is
       end if;
    end Get_Enum_Lit_From_Pos;
 
+   ----------------------
+   -- Get_Fullest_View --
+   ----------------------
+
+   function Get_Fullest_View
+     (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id is
+   begin
+      --  Strictly speaking, the recursion below isn't necessary, but
+      --  it's both simplest and safest.
+
+      case Ekind (E) is
+         when Incomplete_Kind =>
+            if From_Limited_With (E) then
+               return Get_Fullest_View (Non_Limited_View (E), Include_PAT);
+            elsif Present (Full_View (E)) then
+               return Get_Fullest_View (Full_View (E), Include_PAT);
+            elsif Ekind (E) = E_Incomplete_Subtype then
+               return Get_Fullest_View (Etype (E));
+            end if;
+
+         when Private_Kind =>
+            if Present (Underlying_Full_View (E)) then
+               return
+                 Get_Fullest_View (Underlying_Full_View (E), Include_PAT);
+            elsif Present (Full_View (E)) then
+               return Get_Fullest_View (Full_View (E), Include_PAT);
+            elsif Etype (E) /= E then
+               return Get_Fullest_View (Etype (E), Include_PAT);
+            end if;
+
+         when Array_Kind =>
+            if Include_PAT and then Present (Packed_Array_Impl_Type (E)) then
+               return Get_Fullest_View (Packed_Array_Impl_Type (E));
+            end if;
+
+         when E_Record_Subtype =>
+            if Present (Cloned_Subtype (E)) then
+               return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
+            end if;
+
+         when E_Class_Wide_Type =>
+            return Get_Fullest_View (Root_Type (E), Include_PAT);
+
+         when  E_Class_Wide_Subtype =>
+            if Present (Equivalent_Type (E)) then
+               return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
+            elsif Present (Cloned_Subtype (E)) then
+               return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
+            end if;
+
+         when E_Protected_Type | E_Protected_Subtype
+            | E_Task_Type |  E_Task_Subtype =>
+            if Present (Corresponding_Record_Type (E)) then
+               return Get_Fullest_View (Corresponding_Record_Type (E),
+                                        Include_PAT);
+            end if;
+
+         when E_Access_Protected_Subprogram_Type
+            | E_Anonymous_Access_Protected_Subprogram_Type =>
+            if Present (Equivalent_Type (E)) then
+               return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
+            end if;
+
+         when E_Access_Subtype =>
+            return Get_Fullest_View (Base_Type (E), Include_PAT);
+
+         when others =>
+            null;
+      end case;
+
+      return E;
+   end Get_Fullest_View;
+
    ------------------------
    -- Get_Generic_Entity --
    ------------------------

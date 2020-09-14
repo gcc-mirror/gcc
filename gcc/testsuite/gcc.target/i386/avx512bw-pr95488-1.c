@@ -1,6 +1,6 @@
 /* PR target/95488  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512bw" }  */
+/* { dg-options "-O2 -mavx512bw -mprefer-vector-width=512" }  */
 /* { dg-final { scan-assembler-times "vpmovzxbw" 4 } } */
 /* { dg-final { scan-assembler-times "vpmullw\[^\n\]*zmm" 2 } } */
 /* { dg-final { scan-assembler-times "vpmovwb" 2 } } */

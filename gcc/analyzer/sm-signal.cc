@@ -91,9 +91,6 @@ public:
 
   /* These states are "global", rather than per-expression.  */
 
-  /* Start state.  */
-  state_t m_start;
-
   /* State for when we're in a signal handler.  */
   state_t m_in_signal_handler;
 
@@ -196,7 +193,6 @@ private:
 signal_state_machine::signal_state_machine (logger *logger)
 : state_machine ("signal", logger)
 {
-  m_start = add_state ("start");
   m_in_signal_handler = add_state ("in_signal_handler");
   m_stop = add_state ("stop");
 }
@@ -350,9 +346,10 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
 	  if (signal_unsafe_p (callee_fndecl))
-	    sm_ctxt->warn_for_state (node, stmt, NULL_TREE, m_in_signal_handler,
-				     new signal_unsafe_call (*this, call,
-							     callee_fndecl));
+	    if (sm_ctxt->get_global_state () == m_in_signal_handler)
+	      sm_ctxt->warn (node, stmt, NULL_TREE,
+			     new signal_unsafe_call (*this, call,
+						     callee_fndecl));
     }
 
   return false;

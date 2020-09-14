@@ -14466,12 +14466,9 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
       if (decl != error_mark_node)
 	{
-	  int flags = (decl_spec_seq_has_spec_p (decl_specifiers, ds_constinit)
-		       ? LOOKUP_CONSTINIT : 0);
 	  cp_maybe_mangle_decomp (decl, prev, v.length ());
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
-			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT)
-			  | flags);
+			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT));
 	  cp_finish_decomp (decl, prev, v.length ());
 	}
     }
@@ -21392,8 +21389,6 @@ cp_parser_init_declarator (cp_parser* parser,
      declarations.  */
   if (!member_p && decl && decl != error_mark_node && !range_for_decl_p)
     {
-      int cf = (decl_spec_seq_has_spec_p (decl_specifiers, ds_constinit)
-		? LOOKUP_CONSTINIT : 0);
       cp_finish_decl (decl,
 		      initializer, !is_non_constant_init,
 		      asm_specification,
@@ -21402,7 +21397,7 @@ cp_parser_init_declarator (cp_parser* parser,
 			 `explicit' constructor is OK.  Otherwise, an
 			 `explicit' constructor cannot be used.  */
 		      ((is_direct_init || !is_initialized)
-		       ? LOOKUP_NORMAL : LOOKUP_IMPLICIT) | cf);
+		       ? LOOKUP_NORMAL : LOOKUP_IMPLICIT));
     }
   else if ((cxx_dialect != cxx98) && friend_p
 	   && decl && TREE_CODE (decl) == FUNCTION_DECL)
@@ -33364,44 +33359,42 @@ cp_parser_objc_method_prototype_list (cp_parser* parser)
 static void
 cp_parser_objc_method_definition_list (cp_parser* parser)
 {
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-
-  while (token->keyword != RID_AT_END && token->type != CPP_EOF)
+  for (;;)
     {
-      tree meth;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-      if (token->type == CPP_PLUS || token->type == CPP_MINUS)
+      if (token->keyword == RID_AT_END)
 	{
-	  cp_token *ptk;
-	  tree sig, attribute;
-	  bool is_class_method;
-	  if (token->type == CPP_PLUS)
-	    is_class_method = true;
-	  else
-	    is_class_method = false;
+	  cp_lexer_consume_token (parser->lexer);  /* Eat '@end'.  */
+	  break;
+	}
+      else if (token->type == CPP_EOF)
+	{
+	  cp_parser_error (parser, "expected %<@end%>");
+	  break;
+	}
+      else if (token->type == CPP_PLUS || token->type == CPP_MINUS)
+	{
+	  bool is_class_method = token->type == CPP_PLUS;
+
 	  push_deferring_access_checks (dk_deferred);
-	  sig = cp_parser_objc_method_signature (parser, &attribute);
+	  tree attribute;
+	  tree sig = cp_parser_objc_method_signature (parser, &attribute);
 	  if (sig == error_mark_node)
+	    cp_parser_skip_to_end_of_block_or_statement (parser);
+	  else
 	    {
-	      cp_parser_skip_to_end_of_block_or_statement (parser);
-	      token = cp_lexer_peek_token (parser->lexer);
-	      continue;
-	    }
-	  objc_start_method_definition (is_class_method, sig, attribute,
-					NULL_TREE);
+	      objc_start_method_definition (is_class_method, sig,
+					    attribute, NULL_TREE);
 
-	  /* For historical reasons, we accept an optional semicolon.  */
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	    cp_lexer_consume_token (parser->lexer);
+	      /* For historical reasons, we accept an optional semicolon.  */
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+		cp_lexer_consume_token (parser->lexer);
 
-	  ptk = cp_lexer_peek_token (parser->lexer);
-	  if (!(ptk->type == CPP_PLUS || ptk->type == CPP_MINUS
-		|| ptk->type == CPP_EOF || ptk->keyword == RID_AT_END))
-	    {
 	      perform_deferred_access_checks (tf_warning_or_error);
 	      stop_deferring_access_checks ();
-	      meth = cp_parser_function_definition_after_declarator (parser,
-								     false);
+	      tree meth
+		= cp_parser_function_definition_after_declarator (parser, false);
 	      pop_deferring_access_checks ();
 	      objc_finish_method_definition (meth);
 	    }
@@ -33421,14 +33414,7 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
       else
 	/* Allow for interspersed non-ObjC++ code.  */
 	cp_parser_objc_interstitial_code (parser);
-
-      token = cp_lexer_peek_token (parser->lexer);
     }
-
-  if (token->type != CPP_EOF)
-    cp_lexer_consume_token (parser->lexer);  /* Eat '@end'.  */
-  else
-    cp_parser_error (parser, "expected %<@end%>");
 
   objc_finish_implementation ();
 }

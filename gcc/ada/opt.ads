@@ -525,6 +525,13 @@ package Opt is
    --  dataflow analysis, which is not available. This behavior parallels that
    --  of the old ABE mechanism.
 
+   Enable_128bit_Types : Boolean := False;
+   --  GNAT
+   --  Set to True to enable the support for 128-bit types in the compiler.
+   --  The prerequisite is a 64-bit target that supports 128-bit computation.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
    --  Records the error message line length limit. If this is set to zero,

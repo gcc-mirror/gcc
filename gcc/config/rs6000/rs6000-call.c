@@ -12801,7 +12801,7 @@ rs6000_init_builtins (void)
 
   V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
 				       : "__vector long long",
-				       intDI_type_node, 2);
+				       long_long_integer_type_node, 2);
   V2DF_type_node = rs6000_vector_type ("__vector double", double_type_node, 2);
   V4SI_type_node = rs6000_vector_type ("__vector signed int",
 				       intSI_type_node, 4);
@@ -12820,7 +12820,7 @@ rs6000_init_builtins (void)
   unsigned_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
 				       ? "__vector unsigned long"
 				       : "__vector unsigned long long",
-				       unsigned_intDI_type_node, 2);
+				       long_long_unsigned_type_node, 2);
 
   opaque_V4SI_type_node = build_opaque_vector_type (intSI_type_node, 4);
 

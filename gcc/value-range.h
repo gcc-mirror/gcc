@@ -174,7 +174,7 @@ typedef int_range<1> value_range;
 
 // This is an "infinite" precision irange for use in temporary
 // calculations.
-typedef int_range<255> widest_irange;
+typedef int_range<255> int_range_max;
 
 // Returns true for an old-school value_range as described above.
 inline bool

@@ -247,16 +247,17 @@ Target::isVectorTypeSupported (int sz, Type *type)
   if (type == Type::tvoid)
     type = Type::tuns8;
 
-  /* No support for non-trivial types.  */
-  if (!type->isTypeBasic ())
+  /* No support for non-trivial types, complex types, or booleans.  */
+  if (!type->isTypeBasic () || type->iscomplex () || type->ty == Tbool)
     return 3;
 
-  /* If there is no hardware support, check if we can safely emulate it.  */
-  tree ctype = build_ctype (type);
-  machine_mode mode = TYPE_MODE (ctype);
+  /* In [simd/vector extensions], which vector types are supported depends on
+     the target.  The implementation is expected to only support the vector
+     types that are implemented in the target's hardware.  */
+  unsigned HOST_WIDE_INT nunits = sz / type->size ();
+  tree ctype = build_vector_type (build_ctype (type), nunits);
 
-  if (!targetm.vector_mode_supported_p (mode)
-      && !targetm.scalar_mode_supported_p (as_a <scalar_mode> (mode)))
+  if (!targetm.vector_mode_supported_p (TYPE_MODE (ctype)))
     return 3;
 
   return 0;

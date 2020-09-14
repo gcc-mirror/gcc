@@ -390,7 +390,7 @@ arm_pragma_target_parse (tree args, tree pop_target)
   if (! args)
     {
       cur_tree = ((pop_target) ? pop_target : target_option_default_node);
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else
@@ -399,7 +399,7 @@ arm_pragma_target_parse (tree args, tree pop_target)
 						  &global_options_set);
       if (cur_tree == NULL_TREE)
 	{
-	  cl_target_option_restore (&global_options,
+	  cl_target_option_restore (&global_options, &global_options_set,
 				    TREE_TARGET_OPTION (prev_tree));
 	  return false;
 	}

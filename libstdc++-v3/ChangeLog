@@ -1,3 +1,335 @@
+2020-09-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/std/memory: Move #include <bits/align.h> inside C++11
+	conditional includes.
+
+2020-09-11  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am (bits_headers): Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/align.h: New file.
+	* include/std/memory (align): Move definition to bits/align.h.
+	(assume_aligned): Likewise.
+
+2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono [C++17] (chrono::__detail::ceil): Add
+	using declaration to make chrono::ceil available for internal
+	use with a consistent name.
+	(chrono::__detail::__ceil_impl): New function template.
+	(chrono::__detail::ceil): Use __ceil_impl to compare and
+	increment the value. Remove SFINAE constraint.
+
+2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_error.h (__throw_regex_error): Fix
+	parameter declaration and use reserved attribute names.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* include/std/condition_variable (condition_variable::wait_until):
+	Convert delta to steady_clock duration before adding to current
+	steady_clock time to avoid rounding errors described in PR68519.
+	(condition_variable::wait_for): Simplify calculation of absolute
+	time by using chrono::__detail::ceil in both overloads.
+	* testsuite/30_threads/condition_variable/members/68519.cc:
+	(test_wait_for): Renamed from test01. Replace unassigned val
+	variable with constant false. Reduce scope of mx and cv
+	variables to just test_wait_for function.
+	(test_wait_until): Add new test case.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/91486
+	* include/bits/atomic_futex.h
+	(__atomic_futex_unsigned::_M_load_when_equal_for)
+	(__atomic_futex_unsigned::_M_load_when_equal_until): Use
+	__detail::ceil to convert delta to the reference clock
+	duration type to avoid resolution problems.
+	* include/std/chrono (__detail::ceil): Move implementation
+	of std::chrono::ceil into private namespace so that it's
+	available to pre-C++17 code.
+	* testsuite/30_threads/async/async.cc (test_pr91486):
+	Test __atomic_futex_unsigned::_M_load_when_equal_for.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* include/bits/atomic_futex.h
+	(__atomic_futex_unsigned::_M_load_when_equal_until): Add
+	loop on generic _Clock to check the timeout against _Clock
+	again after _M_load_when_equal_until returns indicating a
+	timeout.
+	* testsuite/30_threads/async/async.cc: Invent slow_clock
+	that runs at an eleventh of steady_clock's speed. Use it
+	to test the user-supplied-clock variant of
+	__atomic_futex_unsigned::_M_load_when_equal_until works
+	generally with test03 and loops correctly when the timeout
+	time hasn't been reached in test04.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* include/bits/atomic_futex.h (__atomic_futex_unsigned): Change
+	__clock_t typedef to use steady_clock so that unknown clocks are
+	synced to it rather than system_clock. Change existing __clock_t
+	overloads of _M_load_and_text_until_impl and
+	_M_load_when_equal_until to use system_clock explicitly. Remove
+	comment about DR 887 since these changes address that problem as
+	best as we currently able.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* config/abi/pre/gnu.ver: Update for addition of
+	__atomic_futex_unsigned_base::_M_futex_wait_until_steady.
+	* include/bits/atomic_futex.h (__atomic_futex_unsigned_base):
+	Add comments to clarify that _M_futex_wait_until and
+	_M_load_and_test_until use CLOCK_REALTIME.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady)
+	(__atomic_futex_unsigned_base::_M_load_and_text_until_steady):
+	New member functions that use CLOCK_MONOTONIC.
+	(__atomic_futex_unsigned_base::_M_load_and_test_until_impl)
+	(__atomic_futex_unsigned_base::_M_load_when_equal_until): Add
+	overloads that accept a steady_clock time_point and use the
+	new member functions.
+	* src/c++11/futex.cc: Include headers required for
+	clock_gettime.
+	(futex_clock_monotonic_flag): New constant to tell futex to
+	use CLOCK_MONOTONIC to match existing futex_clock_realtime_flag.
+	(futex_clock_monotonic_unavailable): New global to store the
+	result of trying to use CLOCK_MONOTONIC.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady): Add
+	new variant of _M_futex_wait_until that uses CLOCK_MONOTONIC to
+	support waiting using steady_clock.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* src/c++11/futex.cc: Add new constants for required futex
+	flags.  Add futex_clock_realtime_unavailable flag to store
+	result of trying to use FUTEX_CLOCK_REALTIME.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until): Try to
+	use FUTEX_WAIT_BITSET with FUTEX_CLOCK_REALTIME and only
+	fall back to using gettimeofday and FUTEX_WAIT if that's not
+	supported.
+
+2020-09-11  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/async/async.cc (test02): Test steady_clock
+	with std::future::wait_until.
+	(test03): Add new test templated on clock type waiting for future
+	associated with async to resolve.
+	(main): Call test03 to test both system_clock and steady_clock.
+
+2020-09-11  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* libsupc++/eh_call.cc: Avoid warning with -fno-exceptions.
+
+2020-09-11  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* libsupc++/eh_call.cc: Avoid warning with -fno-exceptions.
+
+2020-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* include/bits/regex_error.h: Avoid warning with -fno-exceptions.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__do_str_codecvt, __str_codecvt_in_all):
+	Add casts to compare types of the same signedness.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__equal_fn): Remove unused
+	typedef.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_array_constexpr):
+	(__cpp_lib_constexpr_char_traits): Only define C++17 value when
+	compiling C++17.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h (shared_ptr(auto_ptr&&))
+	(operator=(auto_ptr&&)): Add diagnostic pragmas to suppress
+	warnings for uses of std::auto_ptr.
+	* include/experimental/type_traits (is_literal_type_v):
+	Likewise, for use of std::is_literal_type.
+	* include/std/condition_variable (condition_variable_any::_Unlock):
+	Likewise, for use of std::uncaught_exception.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_List::type()): Avoid narrowing
+	conversion.
+	* include/std/chrono (operator+(const year&, const years&)):
+	Likewise.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/codecvt.h (codecvt_byname): Remove names of
+	unused parameters.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets_nonio.tcc: Adjust whitespace.
+
+2020-09-10  Krystian Kuźniarek  <krystian.kuzniarek@gmail.com>
+
+	* include/c_global/cmath (__lerp): Avoid -Wparentheses warnings.
+
+2020-09-10  Krystian Kuźniarek  <krystian.kuzniarek@gmail.com>
+
+	* include/bits/atomic_base.h: Fix -Wunused-variable
+	warnings.
+	* include/ext/new_allocator.h: Fix -Wunused-parameter
+	warnings.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator): Add assertions
+	to check preconditions added by LWG 3472.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94160
+	* src/c++17/memory_resource.cc (munge_options): Round
+	max_blocks_per_chunk to a multiple of four.
+	(__pool_resource::_M_alloc_pools()): Simplify slightly.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Check that valid pointers are returned when small values are
+	used for max_blocks_per_chunk.
+
+2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96942
+	* include/std/memory_resource (monotonic_buffer_resource::do_allocate):
+	Use __builtin_expect when checking if a new buffer needs to be
+	allocated from the upstream resource, and for checks for edge
+	cases like zero sized buffers and allocations.
+	* src/c++17/memory_resource.cc (aligned_size): New class template.
+	(aligned_ceil): New helper function to round up to a given
+	alignment.
+	(monotonic_buffer_resource::chunk): Replace _M_size and _M_align
+	with an aligned_size member. Remove _M_canary member. Change _M_next
+	to pointer instead of unaligned buffer.
+	(monotonic_buffer_resource::chunk::allocate): Round up to multiple
+	of 64 instead of to power of two. Check for size overflow. Remove
+	redundant check for minimum required alignment.
+	(monotonic_buffer_resource::chunk::release): Adjust for changes
+	to data members.
+	(monotonic_buffer_resource::_M_new_buffer): Use aligned_ceil.
+	(big_block): Replace _M_size and _M_align with aligned_size
+	member.
+	(big_block::big_block): Check for size overflow.
+	(big_block::size, big_block::align): Adjust to use aligned_size.
+	(big_block::alloc_size): Use aligned_ceil.
+	(munge_options): Use aligned_ceil.
+	(__pool_resource::allocate): Use big_block::align for alignment.
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc: Check
+	upstream resource gets expected values for impossible sizes.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Likewise. Adjust checks for expected alignment in existing test.
+
+2020-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration::_S_gcd): Use invariant that
+	neither value is zero initially.
+
+2020-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__box): Simplify constraints as per LWG 3477.
+
+2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96592
+	* include/std/tuple (_TupleConstraints<true, T...>): Use
+	alternative is_constructible instead of std::is_constructible.
+	* testsuite/20_util/tuple/cons/96592.cc: New test.
+
+2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration::_S_gcd): Use iterative algorithm
+	for C++14 and later.
+	* include/std/numeric (__detail::__gcd): Replace recursive
+	Euclidean algorithm with iterative version of binary GCD algorithm.
+	* testsuite/26_numerics/gcd/1.cc: Test additional inputs.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error lines.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/experimental/numeric/gcd.cc: Test additional inputs.
+	* testsuite/26_numerics/gcd/2.cc: New test.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92978
+	* testsuite/experimental/numeric/92978.cc: Use experimental::lcm
+	not std::lcm.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96851
+	* include/bits/cpp_type_traits.h (__is_memcmp_ordered):
+	New trait that says if memcmp can be used for ordering.
+	(__is_memcmp_ordered_with): Likewise, for two types.
+	* include/bits/deque.tcc (__lex_cmp_dit): Use new traits
+	instead of __is_byte and __numeric_traits.
+	(__lexicographical_compare_aux1): Likewise.
+	* include/bits/ranges_algo.h (__lexicographical_compare_fn):
+	Likewise.
+	* include/bits/stl_algobase.h (__lexicographical_compare_aux1)
+	(__is_byte_iter): Likewise.
+	* include/std/array (operator<=>): Likewise. Only use memcmp
+	when std::is_constant_evaluated() is false.
+	* testsuite/23_containers/array/comparison_operators/96851.cc:
+	New test.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+
+2020-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h: Include <bits/exception_defines.h>
+	for definitions of __try, __catch and __throw_exception_again.
+	(counted_iterator::operator++(int)): Use __throw_exception_again
+	instead of throw.
+	* libsupc++/new: Include <bits/exception.h> not <exception>.
+	* libsupc++/new_opvnt.cc: Include <bits/exception_defines.h>.
+	* testsuite/18_support/destroying_delete.cc: Include
+	<type_traits> for std::is_same_v definition.
+	* testsuite/20_util/variant/index_type.cc: Qualify size_t.
+
+2020-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71960
+	* include/bits/c++config (__glibcxx_assert_impl): Remove
+	do-while so that uses of the macro need to add it.
+	(__glibcxx_assert): Rename macro for runtime assertions
+	to __glibcxx_assert_2.
+	(__glibcxx_assert_1): Define macro for constexpr assertions.
+	(__glibcxx_assert): Define macro for constexpr and runtime
+	assertions.
+	* include/bits/range_access.h (ranges::advance): Remove
+	redundant precondition checks during constant evaluation.
+	* include/parallel/base.h (_GLIBCXX_PARALLEL_ASSERT): Always
+	use do-while in macro expansion.
+	* include/std/ranges (iota_view::iota_view(W, B)): Remove
+	redundant braces.
+
+2020-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration::_S_gcd(intmax_t, intmax_t)):
+	New helper function for finding GCD of two positive intmax_t
+	values.
+	(duration::__divide): New helper alias for dividing one period
+	by another.
+	(duration::__is_harmonic): Use __divide not ratio_divide.
+	(duration(const duration<R2, P2>&)): Require the duration rep
+	types to be convertible.
+	* testsuite/20_util/duration/cons/dr2094.cc: New test.
+	* testsuite/20_util/duration/requirements/reduced_period.cc:
+	Fix definition of unused member functions in test type.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Adjust expected errors.
+
 2020-08-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/numeric (__detail::__absu(bool)): Make deleted

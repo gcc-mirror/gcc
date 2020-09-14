@@ -63,7 +63,8 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
      as interoperability with the same arm macro.  */
   builtin_define ("__ARM_ARCH_8A");
 
-  builtin_define_with_int_value ("__ARM_ARCH_PROFILE", 'A');
+  builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
+      AARCH64_ISA_V8_R ? 'R' : 'A');
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");
@@ -241,12 +242,12 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   else
     {
       pop_target = pop_target ? pop_target : target_option_default_node;
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (pop_target));
     }
 
   target_option_current_node
-    = build_target_option_node (&global_options);
+    = build_target_option_node (&global_options, &global_options_set);
 
   aarch64_reset_previous_fndecl ();
   /* For the definitions, ensure all newly defined macros are considered

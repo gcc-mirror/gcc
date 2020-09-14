@@ -793,13 +793,24 @@ macho_add_fat (struct backtrace_state *state, const char *filename,
 
   for (i = 0; i < nfat_arch; ++i)
     {
-      struct macho_fat_arch_64 fat_arch;
       uint32_t fcputype;
+      uint64_t foffset;
 
       if (is_64)
-	memcpy (&fat_arch,
-		(const char *) arch_view.data + i * arch_size,
-		arch_size);
+	{
+	  struct macho_fat_arch_64 fat_arch_64;
+
+	  memcpy (&fat_arch_64,
+		  (const char *) arch_view.data + i * arch_size,
+		  arch_size);
+	  fcputype = fat_arch_64.cputype;
+	  foffset = fat_arch_64.offset;
+	  if (swapped)
+	    {
+	      fcputype = __builtin_bswap32 (fcputype);
+	      foffset = __builtin_bswap64 (foffset);
+	    }
+	}
       else
 	{
 	  struct macho_fat_arch fat_arch_32;
@@ -807,26 +818,18 @@ macho_add_fat (struct backtrace_state *state, const char *filename,
 	  memcpy (&fat_arch_32,
 		  (const char *) arch_view.data + i * arch_size,
 		  arch_size);
-	  fat_arch.cputype = fat_arch_32.cputype;
-	  fat_arch.cpusubtype = fat_arch_32.cpusubtype;
-	  fat_arch.offset = (uint64_t) fat_arch_32.offset;
-	  fat_arch.size = (uint64_t) fat_arch_32.size;
-	  fat_arch.align = fat_arch_32.align;
-	  fat_arch.reserved = 0;
+	  fcputype = fat_arch_32.cputype;
+	  foffset = (uint64_t) fat_arch_32.offset;
+	  if (swapped)
+	    {
+	      fcputype = __builtin_bswap32 (fcputype);
+	      foffset = (uint64_t) __builtin_bswap32 ((uint32_t) foffset);
+	    }
 	}
-
-      fcputype = fat_arch.cputype;
-      if (swapped)
-	fcputype = __builtin_bswap32 (fcputype);
 
       if (fcputype == cputype)
 	{
-	  uint64_t foffset;
-
 	  /* FIXME: What about cpusubtype?  */
-	  foffset = fat_arch.offset;
-	  if (swapped)
-	    foffset = __builtin_bswap64 (foffset);
 	  backtrace_release_view (state, &arch_view, error_callback, data);
 	  return macho_add (state, filename, descriptor, foffset, match_uuid,
 			    base_address, skip_symtab, error_callback, data,
@@ -900,6 +903,7 @@ macho_add_dsym (struct backtrace_state *state, const char *filename,
   dsymsuffixdirlen = strlen (dsymsuffixdir);
 
   dsymlen = (dirnamelen
+	     + 1
 	     + basenamelen
 	     + dsymsuffixdirlen
 	     + basenamelen
@@ -922,7 +926,7 @@ macho_add_dsym (struct backtrace_state *state, const char *filename,
 
   if (diralc != NULL)
     {
-      backtrace_free (state, diralc, dirnamelen, error_callback, data);
+      backtrace_free (state, diralc, dirnamelen + 1, error_callback, data);
       diralc = NULL;
     }
 

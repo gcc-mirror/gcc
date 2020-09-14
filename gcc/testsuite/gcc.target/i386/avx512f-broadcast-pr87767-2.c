@@ -1,0 +1,42 @@
+/* PR target/87767 */
+/* { dg-do run } */
+/* { dg-options "-O2 -mavx512f -mavx512dq" } */
+/* { dg-require-effective-target avx512dq } */
+
+#define AVX512DQ
+#include "avx512f-helper.h"
+
+#include "avx512f-broadcast-pr87767-1.c"
+
+#define RTEST(VTYPE, TYPE, N, OP_NAME, OP)		\
+  do							\
+    {							\
+      TYPE exp[N], src[N];				\
+      VTYPE res;					\
+      for (int i = 0; i < N; i++)			\
+	src[i] = i * i * 107;				\
+      res = foo_##OP_NAME##_##VTYPE (*(VTYPE*)&src[0]);	\
+      for (int i = 0; i < N; i ++)			\
+	exp[i] = src[i] OP CONSTANT;			\
+      for (int j = 0; j < N; j++)			\
+	{						\
+	  if (res[j] != exp[j])				\
+	    abort();					\
+	}						\
+    }							\
+  while (0)
+
+void
+test_512 (void)
+{
+  RTEST (v16si, int, 16, add, +);
+  RTEST (v8di, long long, 8, add, +);
+  RTEST (v16sf, float, 16, add, +);
+  RTEST (v8df, double, 8, add, +);
+  RTEST (v16si, int, 16, sub, -);
+  RTEST (v8di, long long, 8, sub, -);
+  RTEST (v16si, int, 16, mul, *);
+  RTEST (v8di, long long, 8, mul, *);
+  RTEST (v16sf, float, 16, mul, *);
+  RTEST (v8df, double, 8, mul, *);
+}

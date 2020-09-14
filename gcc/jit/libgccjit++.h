@@ -488,6 +488,7 @@ namespace gccjit
 			 location loc = location ());
 
     rvalue get_address (location loc = location ());
+    lvalue set_initializer (const void *blob, size_t num_bytes);
   };
 
   class param : public lvalue
@@ -1735,6 +1736,15 @@ lvalue::get_address (location loc)
 {
   return rvalue (gcc_jit_lvalue_get_address (get_inner_lvalue (),
 					     loc.get_inner_location ()));
+}
+
+inline lvalue
+lvalue::set_initializer (const void *blob, size_t num_bytes)
+{
+  gcc_jit_global_set_initializer (get_inner_lvalue (),
+                                  blob,
+                                  num_bytes);
+  return *this;
 }
 
 // class param : public lvalue

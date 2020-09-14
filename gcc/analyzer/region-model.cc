@@ -653,11 +653,13 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	 Having them split out into separate functions makes it easier
 	 to put breakpoints on the handling of specific functions.  */
 
-      if (fndecl_built_in_p (callee_fndecl)
+      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
 	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
 	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
 	  {
 	  default:
+	    if (!DECL_PURE_P (callee_fndecl))
+	      unknown_side_effects = true;
 	    break;
 	  case BUILT_IN_ALLOCA:
 	  case BUILT_IN_ALLOCA_WITH_ALIGN:
@@ -672,20 +674,54 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	    break;
 	  case BUILT_IN_MALLOC:
 	    return impl_call_malloc (cd);
+	  case BUILT_IN_MEMCPY:
+	  case BUILT_IN_MEMCPY_CHK:
+	    impl_call_memcpy (cd);
+	    return false;
 	  case BUILT_IN_MEMSET:
 	  case BUILT_IN_MEMSET_CHK:
 	    impl_call_memset (cd);
 	    return false;
 	    break;
+	  case BUILT_IN_STRCPY:
+	  case BUILT_IN_STRCPY_CHK:
+	    impl_call_strcpy (cd);
+	    return false;
 	  case BUILT_IN_STRLEN:
 	    if (impl_call_strlen (cd))
 	      return false;
+	    break;
+
+	  /* Stdio builtins.  */
+	  case BUILT_IN_FPRINTF:
+	  case BUILT_IN_FPRINTF_UNLOCKED:
+	  case BUILT_IN_PUTC:
+	  case BUILT_IN_PUTC_UNLOCKED:
+	  case BUILT_IN_FPUTC:
+	  case BUILT_IN_FPUTC_UNLOCKED:
+	  case BUILT_IN_FPUTS:
+	  case BUILT_IN_FPUTS_UNLOCKED:
+	  case BUILT_IN_FWRITE:
+	  case BUILT_IN_FWRITE_UNLOCKED:
+	  case BUILT_IN_PRINTF:
+	  case BUILT_IN_PRINTF_UNLOCKED:
+	  case BUILT_IN_PUTCHAR:
+	  case BUILT_IN_PUTCHAR_UNLOCKED:
+	  case BUILT_IN_PUTS:
+	  case BUILT_IN_PUTS_UNLOCKED:
+	  case BUILT_IN_VFPRINTF:
+	  case BUILT_IN_VPRINTF:
+	    /* These stdio builtins have external effects that are out
+	       of scope for the analyzer: we only want to model the effects
+	       on the return value.  */
 	    break;
 	  }
       else if (gimple_call_internal_p (call))
 	switch (gimple_call_internal_fn (call))
 	  {
 	  default:
+	    if (!DECL_PURE_P (callee_fndecl))
+	      unknown_side_effects = true;
 	    break;
 	  case IFN_BUILTIN_EXPECT:
 	    return impl_call_builtin_expect (cd);
@@ -705,6 +741,16 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	{
 	  if (impl_call_strlen (cd))
 	    return false;
+	}
+      else if (is_named_call_p (callee_fndecl, "operator new", call, 1))
+	return impl_call_operator_new (cd);
+      else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
+	return impl_call_operator_new (cd);
+      else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+	       || is_named_call_p (callee_fndecl, "operator delete", call, 2)
+	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
+	{
+	  /* Handle in "on_call_post".  */
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && !DECL_PURE_P (callee_fndecl)
@@ -746,12 +792,22 @@ region_model::on_call_post (const gcall *call,
 			    region_model_context *ctxt)
 {
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
-    if (is_named_call_p (callee_fndecl, "free", call, 1))
-      {
-	call_details cd (call, this, ctxt);
-	impl_call_free (cd);
-	return;
-      }
+    {
+      if (is_named_call_p (callee_fndecl, "free", call, 1))
+	{
+	  call_details cd (call, this, ctxt);
+	  impl_call_free (cd);
+	  return;
+	}
+      if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+	  || is_named_call_p (callee_fndecl, "operator delete", call, 2)
+	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
+	{
+	  call_details cd (call, this, ctxt);
+	  impl_call_operator_delete (cd);
+	  return;
+	}
+    }
 
   if (unknown_side_effects)
     handle_unrecognized_call (call, ctxt);
@@ -2191,6 +2247,11 @@ region_model::maybe_update_for_edge (const superedge &edge,
       return apply_constraints_for_gswitch (*switch_sedge, switch_stmt, ctxt);
     }
 
+  /* Apply any constraints due to an exception being thrown.  */
+  if (const cfg_superedge *cfg_sedge = dyn_cast <const cfg_superedge *> (&edge))
+    if (cfg_sedge->get_flags () & EDGE_EH)
+      return apply_constraints_for_exception (last_stmt, ctxt);
+
   return true;
 }
 
@@ -2347,6 +2408,34 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 	}
       return true;
     }
+}
+
+/* Apply any constraints due to an exception being thrown at LAST_STMT.
+
+   If they are feasible, add the constraints and return true.
+
+   Return false if the constraints contradict existing knowledge
+   (and so the edge should not be taken).  */
+
+bool
+region_model::apply_constraints_for_exception (const gimple *last_stmt,
+					       region_model_context *ctxt)
+{
+  gcc_assert (last_stmt);
+  if (const gcall *call = dyn_cast <const gcall *> (last_stmt))
+    if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
+      if (is_named_call_p (callee_fndecl, "operator new", call, 1)
+	  || is_named_call_p (callee_fndecl, "operator new []", call, 1))
+	{
+	  /* We have an exception thrown from operator new.
+	     Add a constraint that the result was NULL, to avoid a false
+	     leak report due to the result being lost when following
+	     the EH edge.  */
+	  if (tree lhs = gimple_call_lhs (call))
+	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt);
+	  return true;
+	}
+  return true;
 }
 
 /* For use with push_frame when handling a top-level call within the analysis.

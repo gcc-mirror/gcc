@@ -2042,6 +2042,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
     }
 
   tree result = build_call_vec (TREE_TYPE (ctype), callee, args);
+  SET_EXPR_LOCATION (result, input_location);
 
   /* Enforce left to right evaluation.  */
   if (tf->linkage == LINKd)

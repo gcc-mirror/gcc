@@ -23,8 +23,29 @@ Target Report Var(msp430_warn_devices_csv) Init(1)
 Warn if devices.csv is not found or there are problem parsing it (default: on).
 
 mcpu=
-Target Report Joined RejectNegative Var(target_cpu)
+Target Report Joined RejectNegative Var(target_cpu) ToLower Enum(msp430_cpu_types) Init(MSP430_CPU_MSP430X_DEFAULT)
 Specify the ISA to build for: msp430, msp430x, msp430xv2.
+
+Enum
+Name(msp430_cpu_types) Type(enum msp430_cpu_types)
+
+EnumValue
+Enum(msp430_cpu_types) String(msp430) Value(MSP430_CPU_MSP430) Canonical
+
+EnumValue
+Enum(msp430_cpu_types) String(430) Value(MSP430_CPU_MSP430)
+
+EnumValue
+Enum(msp430_cpu_types) String(msp430x) Value(MSP430_CPU_MSP430X) Canonical
+
+EnumValue
+Enum(msp430_cpu_types) String(430x) Value(MSP430_CPU_MSP430X)
+
+EnumValue
+Enum(msp430_cpu_types) String(msp430xv2) Value(MSP430_CPU_MSP430XV2) Canonical
+
+EnumValue
+Enum(msp430_cpu_types) String(430xv2) Value(MSP430_CPU_MSP430XV2)
 
 mlarge
 Target Report Mask(LARGE) RejectNegative

@@ -510,14 +510,14 @@ new_function (location *loc,
   return func;
 }
 
-/* Construct a playback::lvalue instance (wrapping a tree).  */
+/* In use by new_global and new_global_initialized.  */
 
-playback::lvalue *
+tree
 playback::context::
-new_global (location *loc,
-	    enum gcc_jit_global_kind kind,
-	    type *type,
-	    const char *name)
+global_new_decl (location *loc,
+		 enum gcc_jit_global_kind kind,
+		 type *type,
+		 const char *name)
 {
   gcc_assert (type);
   gcc_assert (name);
@@ -547,6 +547,15 @@ new_global (location *loc,
   if (loc)
     set_tree_location (inner, loc);
 
+  return inner;
+}
+
+/* In use by new_global and new_global_initialized.  */
+
+playback::lvalue *
+playback::context::
+global_finalize_lvalue (tree inner)
+{
   varpool_node::get_create (inner);
 
   varpool_node::finalize_decl (inner);
@@ -554,6 +563,92 @@ new_global (location *loc,
   m_globals.safe_push (inner);
 
   return new lvalue (this, inner);
+}
+
+/* Construct a playback::lvalue instance (wrapping a tree).  */
+
+playback::lvalue *
+playback::context::
+new_global (location *loc,
+	    enum gcc_jit_global_kind kind,
+	    type *type,
+	    const char *name)
+{
+  tree inner = global_new_decl (loc, kind, type, name);
+
+  return global_finalize_lvalue (inner);
+}
+
+/* Fill 'constructor_elements' with the memory content of
+   'initializer'.  Each element of the initializer is of the size of
+   type T.  In use by new_global_initialized.*/
+
+template<typename T>
+static void
+load_blob_in_ctor (vec<constructor_elt, va_gc> *&constructor_elements,
+		   size_t num_elem,
+		   const void *initializer)
+{
+  /* Loosely based on 'output_init_element' c-typeck.c:9691.  */
+  const T *p = (const T *)initializer;
+  tree node = make_unsigned_type (BITS_PER_UNIT * sizeof (T));
+  for (size_t i = 0; i < num_elem; i++)
+    {
+      constructor_elt celt =
+	{ build_int_cst (long_unsigned_type_node, i),
+	  build_int_cst (node, p[i]) };
+      vec_safe_push (constructor_elements, celt);
+    }
+}
+
+/* Construct an initialized playback::lvalue instance (wrapping a
+   tree).  */
+
+playback::lvalue *
+playback::context::
+new_global_initialized (location *loc,
+			enum gcc_jit_global_kind kind,
+			type *type,
+                        size_t element_size,
+			size_t initializer_num_elem,
+			const void *initializer,
+			const char *name)
+{
+  tree inner = global_new_decl (loc, kind, type, name);
+
+  vec<constructor_elt, va_gc> *constructor_elements = NULL;
+
+  switch (element_size)
+    {
+    case 1:
+      load_blob_in_ctor<uint8_t> (constructor_elements, initializer_num_elem,
+				  initializer);
+      break;
+    case 2:
+      load_blob_in_ctor<uint16_t> (constructor_elements, initializer_num_elem,
+				   initializer);
+      break;
+    case 4:
+      load_blob_in_ctor<uint32_t> (constructor_elements, initializer_num_elem,
+				   initializer);
+      break;
+    case 8:
+      load_blob_in_ctor<uint64_t> (constructor_elements, initializer_num_elem,
+				   initializer);
+      break;
+    default:
+      /* This function is serving on sizes returned by 'get_size',
+	 these are all covered by the previous cases.  */
+      gcc_unreachable ();
+    }
+  /* Compare with 'pop_init_level' c-typeck.c:8780.  */
+  tree ctor = build_constructor (type->as_tree (), constructor_elements);
+  constructor_elements = NULL;
+
+  /* Compare with 'store_init_value' c-typeck.c:7555.  */
+  DECL_INITIAL (inner) = ctor;
+
+  return global_finalize_lvalue (inner);
 }
 
 /* Implementation of the various

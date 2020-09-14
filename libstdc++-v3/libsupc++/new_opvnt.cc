@@ -25,7 +25,8 @@
 
 #include <bits/c++config.h>
 #include "new"
- 
+#include "exception_defines.h"
+
 _GLIBCXX_WEAK_DEFINITION void*
 operator new[] (std::size_t sz, const std::nothrow_t&) noexcept
 {

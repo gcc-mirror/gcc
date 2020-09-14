@@ -5786,13 +5786,11 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_DELEGATING_CONS (LOOKUP_NO_NON_INTEGRAL << 1)
 /* Allow initialization of a flexible array members.  */
 #define LOOKUP_ALLOW_FLEXARRAY_INIT (LOOKUP_DELEGATING_CONS << 1)
-/* Require constant initialization of a non-constant variable.  */
-#define LOOKUP_CONSTINIT (LOOKUP_ALLOW_FLEXARRAY_INIT << 1)
 /* We're looking for either a rewritten comparison operator candidate or the
    operator to use on the former's result.  We distinguish between the two by
    knowing that comparisons other than == and <=> must be the latter, as must
    a <=> expression trying to rewrite to <=> without reversing.  */
-#define LOOKUP_REWRITTEN (LOOKUP_CONSTINIT << 1)
+#define LOOKUP_REWRITTEN (LOOKUP_ALLOW_FLEXARRAY_INIT << 1)
 /* Reverse the order of the two arguments for comparison rewriting.  First we
    swap the arguments in add_operator_candidates, then we swap the conversions
    in add_candidate (so that they correspond to the original order of the
@@ -6772,6 +6770,7 @@ extern bool check_array_designated_initializer  (constructor_elt *,
 extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
 extern tree build_explicit_specifier		(tree, tsubst_flags_t);
 extern void do_push_parm_decls			(tree, tree, tree *);
+extern tree do_aggregate_paren_init		(tree, tree);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -7196,6 +7195,7 @@ extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern bool always_instantiate_p		(tree);
 extern bool maybe_instantiate_noexcept		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree instantiate_decl			(tree, bool, bool);
+extern void maybe_instantiate_decl		(tree);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool template_heads_equivalent_p		(const_tree, const_tree);
 extern bool builtin_pack_fn_p			(tree);

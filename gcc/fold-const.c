@@ -12581,7 +12581,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && tree_fits_uhwi_p (op2))
 	{
 	  tree eltype = TREE_TYPE (TREE_TYPE (arg0));
-	  unsigned HOST_WIDE_INT width = tree_to_uhwi (TYPE_SIZE (eltype));
+	  unsigned HOST_WIDE_INT width
+	    = (TREE_CODE (eltype) == BOOLEAN_TYPE
+	       ? TYPE_PRECISION (eltype) : tree_to_uhwi (TYPE_SIZE (eltype)));
 	  unsigned HOST_WIDE_INT n = tree_to_uhwi (arg1);
 	  unsigned HOST_WIDE_INT idx = tree_to_uhwi (op2);
 

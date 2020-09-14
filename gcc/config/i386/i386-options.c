@@ -627,7 +627,8 @@ ix86_debug_options (void)
 
 void
 ix86_function_specific_save (struct cl_target_option *ptr,
-			     struct gcc_options *opts)
+			     struct gcc_options *opts,
+			     struct gcc_options */* opts_set */)
 {
   ptr->arch = ix86_arch;
   ptr->schedule = ix86_schedule;
@@ -754,6 +755,7 @@ set_ix86_tune_features (struct gcc_options *opts,
 
 void
 ix86_function_specific_restore (struct gcc_options *opts,
+				struct gcc_options */* opts_set */,
 				struct cl_target_option *ptr)
 {
   enum processor_type old_tune = ix86_tune;
@@ -1356,7 +1358,7 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
 
       /* Save the current options unless we are validating options for
 	 #pragma.  */
-      t = build_target_option_node (opts);
+      t = build_target_option_node (opts, opts_set);
 
       opts->x_ix86_arch_string = orig_arch_string;
       opts->x_ix86_tune_string = orig_tune_string;
@@ -1377,7 +1379,7 @@ ix86_valid_target_attribute_p (tree fndecl,
 			       tree args,
 			       int flags)
 {
-  struct gcc_options func_options;
+  struct gcc_options func_options, func_options_set;
   tree new_target, new_optimize;
   bool ret = true;
 
@@ -1389,7 +1391,8 @@ ix86_valid_target_attribute_p (tree fndecl,
       && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
     return true;
 
-  tree old_optimize = build_optimization_node (&global_options);
+  tree old_optimize = build_optimization_node (&global_options,
+					       &global_options_set);
 
   /* Get the optimization options of the current function.  */  
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
@@ -1401,21 +1404,22 @@ ix86_valid_target_attribute_p (tree fndecl,
   memset (&func_options, 0, sizeof (func_options));
   init_options_struct (&func_options, NULL);
   lang_hooks.init_options_struct (&func_options);
- 
-  cl_optimization_restore (&func_options,
+  memset (&func_options_set, 0, sizeof (func_options_set));
+
+  cl_optimization_restore (&func_options, &func_options_set,
 			   TREE_OPTIMIZATION (func_optimize));
 
   /* Initialize func_options to the default before its target options can
      be set.  */
-  cl_target_option_restore (&func_options,
+  cl_target_option_restore (&func_options, &func_options_set,
 			    TREE_TARGET_OPTION (target_option_default_node));
 
   /* FLAGS == 1 is used for target_clones attribute.  */
   new_target
     = ix86_valid_target_attribute_tree (fndecl, args, &func_options,
-					&global_options_set, flags == 1);
+					&func_options_set, flags == 1);
 
-  new_optimize = build_optimization_node (&func_options);
+  new_optimize = build_optimization_node (&func_options, &func_options_set);
 
   if (new_target == error_mark_node)
     ret = false;
@@ -2954,7 +2958,7 @@ ix86_option_override_internal (bool main_args_p,
      options.  */
   if (main_args_p)
     target_option_default_node = target_option_current_node
-      = build_target_option_node (opts);
+      = build_target_option_node (opts, opts_set);
 
   if (opts->x_flag_cf_protection != CF_NONE)
     opts->x_flag_cf_protection
@@ -2991,7 +2995,8 @@ void
 ix86_reset_previous_fndecl (void)
 {
   tree new_tree = target_option_current_node;
-  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
   if (TREE_TARGET_GLOBALS (new_tree))
     restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
   else if (new_tree == target_option_default_node)
@@ -3250,7 +3255,8 @@ ix86_set_current_function (tree fndecl)
 
   if (old_tree != new_tree)
     {
-      cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+      cl_target_option_restore (&global_options, &global_options_set,
+				TREE_TARGET_OPTION (new_tree));
       if (TREE_TARGET_GLOBALS (new_tree))
 	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
       else if (new_tree == target_option_default_node)

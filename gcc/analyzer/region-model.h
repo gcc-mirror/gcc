@@ -2554,8 +2554,12 @@ class region_model
   bool impl_call_calloc (const call_details &cd);
   void impl_call_free (const call_details &cd);
   bool impl_call_malloc (const call_details &cd);
+  void impl_call_memcpy (const call_details &cd);
   bool impl_call_memset (const call_details &cd);
+  void impl_call_strcpy (const call_details &cd);
   bool impl_call_strlen (const call_details &cd);
+  bool impl_call_operator_new (const call_details &cd);
+  bool impl_call_operator_delete (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);
@@ -2694,6 +2698,8 @@ class region_model
   bool apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 				      const gswitch *switch_stmt,
 				      region_model_context *ctxt);
+  bool apply_constraints_for_exception (const gimple *last_stmt,
+					region_model_context *ctxt);
 
   int poison_any_pointers_to_descendents (const region *reg,
 					  enum poison_kind pkind);

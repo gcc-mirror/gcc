@@ -52,10 +52,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1
   struct __atomic_futex_unsigned_base
   {
-    // Returns false iff a timeout occurred.
+    // __s and __ns are measured against CLOCK_REALTIME. Returns false
+    // iff a timeout occurred.
     bool
     _M_futex_wait_until(unsigned *__addr, unsigned __val, bool __has_timeout,
 	chrono::seconds __s, chrono::nanoseconds __ns);
+
+    // __s and __ns are measured against CLOCK_MONOTONIC. Returns
+    // false iff a timeout occurred.
+    bool
+    _M_futex_wait_until_steady(unsigned *__addr, unsigned __val,
+	bool __has_timeout, chrono::seconds __s, chrono::nanoseconds __ns);
 
     // This can be executed after the object has been destroyed.
     static void _M_futex_notify_all(unsigned* __addr);
@@ -64,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <unsigned _Waiter_bit = 0x80000000>
   class __atomic_futex_unsigned : __atomic_futex_unsigned_base
   {
-    typedef chrono::system_clock __clock_t;
+    typedef chrono::steady_clock __clock_t;
 
     // This must be lock-free and at offset 0.
     atomic<unsigned> _M_data;
@@ -86,6 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // value if equal is false.
     // The assumed value is the caller's assumption about the current value
     // when making the call.
+    // __s and __ns are measured against CLOCK_REALTIME.
     unsigned
     _M_load_and_test_until(unsigned __assumed, unsigned __operand,
 	bool __equal, memory_order __mo, bool __has_timeout,
@@ -100,6 +108,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // and the futex syscalls synchronize between themselves.
 	  _M_data.fetch_or(_Waiter_bit, memory_order_relaxed);
 	  bool __ret = _M_futex_wait_until((unsigned*)(void*)&_M_data,
+					   __assumed | _Waiter_bit,
+					   __has_timeout, __s, __ns);
+	  // Fetch the current value after waiting (clears _Waiter_bit).
+	  __assumed = _M_load(__mo);
+	  if (!__ret || ((__operand == __assumed) == __equal))
+	    return __assumed;
+	  // TODO adapt wait time
+	}
+    }
+
+    // If a timeout occurs, returns a current value after the timeout;
+    // otherwise, returns the operand's value if equal is true or a different
+    // value if equal is false.
+    // The assumed value is the caller's assumption about the current value
+    // when making the call.
+    // __s and __ns are measured against CLOCK_MONOTONIC.
+    unsigned
+    _M_load_and_test_until_steady(unsigned __assumed, unsigned __operand,
+	bool __equal, memory_order __mo, bool __has_timeout,
+	chrono::seconds __s, chrono::nanoseconds __ns)
+    {
+      for (;;)
+	{
+	  // Don't bother checking the value again because we expect the caller
+	  // to have done it recently.
+	  // memory_order_relaxed is sufficient because we can rely on just the
+	  // modification order (store_notify uses an atomic RMW operation too),
+	  // and the futex syscalls synchronize between themselves.
+	  _M_data.fetch_or(_Waiter_bit, memory_order_relaxed);
+	  bool __ret = _M_futex_wait_until_steady((unsigned*)(void*)&_M_data,
 					   __assumed | _Waiter_bit,
 					   __has_timeout, __s, __ns);
 	  // Fetch the current value after waiting (clears _Waiter_bit).
@@ -131,12 +169,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     unsigned
     _M_load_and_test_until_impl(unsigned __assumed, unsigned __operand,
 	bool __equal, memory_order __mo,
-	const chrono::time_point<__clock_t, _Dur>& __atime)
+	const chrono::time_point<std::chrono::system_clock, _Dur>& __atime)
     {
       auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
       auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
       // XXX correct?
       return _M_load_and_test_until(__assumed, __operand, __equal, __mo,
+	  true, __s.time_since_epoch(), __ns);
+    }
+
+    template<typename _Dur>
+    unsigned
+    _M_load_and_test_until_impl(unsigned __assumed, unsigned __operand,
+	bool __equal, memory_order __mo,
+	const chrono::time_point<std::chrono::steady_clock, _Dur>& __atime)
+    {
+      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+      // XXX correct?
+      return _M_load_and_test_until_steady(__assumed, __operand, __equal, __mo,
 	  true, __s.time_since_epoch(), __ns);
     }
 
@@ -168,8 +219,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_load_when_equal_for(unsigned __val, memory_order __mo,
 	  const chrono::duration<_Rep, _Period>& __rtime)
       {
+	using __dur = typename __clock_t::duration;
 	return _M_load_when_equal_until(__val, __mo,
-					__clock_t::now() + __rtime);
+		    __clock_t::now() + chrono::__detail::ceil<__dur>(__rtime));
       }
 
     // Returns false iff a timeout occurred.
@@ -178,19 +230,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_load_when_equal_until(unsigned __val, memory_order __mo,
 	  const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	// DR 887 - Sync unknown clock to known clock.
-	const typename _Clock::time_point __c_entry = _Clock::now();
-	const __clock_t::time_point __s_entry = __clock_t::now();
-	const auto __delta = __atime - __c_entry;
-	const auto __s_atime = __s_entry + __delta;
-	return _M_load_when_equal_until(__val, __mo, __s_atime);
+	typename _Clock::time_point __c_entry = _Clock::now();
+	do {
+	  const __clock_t::time_point __s_entry = __clock_t::now();
+	  const auto __delta = __atime - __c_entry;
+	  const auto __s_atime = __s_entry +
+	      chrono::__detail::ceil<_Duration>(__delta);
+	  if (_M_load_when_equal_until(__val, __mo, __s_atime))
+	    return true;
+	  __c_entry = _Clock::now();
+	} while (__c_entry < __atime);
+	return false;
       }
 
     // Returns false iff a timeout occurred.
     template<typename _Duration>
     _GLIBCXX_ALWAYS_INLINE bool
     _M_load_when_equal_until(unsigned __val, memory_order __mo,
-	const chrono::time_point<__clock_t, _Duration>& __atime)
+	const chrono::time_point<std::chrono::system_clock, _Duration>& __atime)
+    {
+      unsigned __i = _M_load(__mo);
+      if ((__i & ~_Waiter_bit) == __val)
+	return true;
+      // TODO Spin-wait first.  Ignore effect on timeout.
+      __i = _M_load_and_test_until_impl(__i, __val, true, __mo, __atime);
+      return (__i & ~_Waiter_bit) == __val;
+    }
+
+    // Returns false iff a timeout occurred.
+    template<typename _Duration>
+    _GLIBCXX_ALWAYS_INLINE bool
+    _M_load_when_equal_until(unsigned __val, memory_order __mo,
+	const chrono::time_point<std::chrono::steady_clock, _Duration>& __atime)
     {
       unsigned __i = _M_load(__mo);
       if ((__i & ~_Waiter_bit) == __val)

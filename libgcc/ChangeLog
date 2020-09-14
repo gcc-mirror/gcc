@@ -1,3 +1,8 @@
+2020-09-09  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/atomic.c (__SYNC_SUBWORD_COMPARE_AND_SWAP): Fix
+	Wbuiltin-declaration-mismatch.
+
 2020-08-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/slli.S (__gnu_mspabi_sllp): New.

@@ -809,13 +809,25 @@ perform_member_init (tree member, tree init)
       return;
     }
 
-  if (init && TREE_CODE (init) == TREE_LIST
-      && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
-	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
-	  || !(/* cxx_dialect >= cxx20 ? CP_AGGREGATE_TYPE_P (type) */
-	       /* :  */CLASS_TYPE_P (type))))
-    init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-					    tf_warning_or_error);
+  if (init && TREE_CODE (init) == TREE_LIST)
+    {
+      /* A(): a{e} */
+      if (DIRECT_LIST_INIT_P (TREE_VALUE (init)))
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      /* We are trying to initialize an array from a ()-list.  If we
+	 should attempt to do so, conjure up a CONSTRUCTOR.  */
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       /* P0960 is a C++20 feature.  */
+	       && cxx_dialect >= cxx20)
+	init = do_aggregate_paren_init (init, type);
+      else if (!CLASS_TYPE_P (type))
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      /* If we're initializing a class from a ()-list, leave the TREE_LIST
+	 alone: we might call an appropriate constructor, or (in C++20)
+	 do aggregate-initialization.  */
+    }
 
   if (init == void_type_node)
     {
@@ -3575,17 +3587,14 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		    /* We'll check the length at runtime.  */
 		    domain = NULL_TREE;
 		  arraytype = build_cplus_array_type (type, domain);
+		  /* If we have new char[4]{"foo"}, we have to reshape
+		     so that the STRING_CST isn't wrapped in { }.  */
+		  vecinit = reshape_init (arraytype, vecinit, complain);
+		  /* The middle end doesn't cope with the location wrapper
+		     around a STRING_CST.  */
+		  STRIP_ANY_LOCATION_WRAPPER (vecinit);
 		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
-	    }
-	  /* This handles code like new char[]{"foo"}.  */
-	  else if (len == 1
-		   && char_type_p (TYPE_MAIN_VARIANT (type))
-		   && TREE_CODE (tree_strip_any_location_wrapper ((**init)[0]))
-		      == STRING_CST)
-	    {
-	      vecinit = (**init)[0];
-	      STRIP_ANY_LOCATION_WRAPPER (vecinit);
 	    }
 	  else if (*init)
             {
@@ -3926,9 +3935,8 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
     }
 
   /* P1009: Array size deduction in new-expressions.  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && !TYPE_DOMAIN (type)
-      && *init)
+  const bool array_p = TREE_CODE (type) == ARRAY_TYPE;
+  if (*init && (array_p || (nelts && cxx_dialect >= cxx20)))
     {
       /* This means we have 'new T[]()'.  */
       if ((*init)->is_empty ())
@@ -3941,27 +3949,29 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
       /* The C++20 'new T[](e_0, ..., e_k)' case allowed by P0960.  */
       if (!DIRECT_LIST_INIT_P (elt) && cxx_dialect >= cxx20)
 	{
-	  /* Handle new char[]("foo").  */
-	  if (vec_safe_length (*init) == 1
-	      && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
-	      && TREE_CODE (tree_strip_any_location_wrapper (elt))
-		 == STRING_CST)
-	    /* Leave it alone: the string should not be wrapped in {}.  */;
-	  else
-	    {
-	      tree ctor = build_constructor_from_vec (init_list_type_node, *init);
-	      CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
-	      CONSTRUCTOR_IS_PAREN_INIT (ctor) = true;
-	      elt = ctor;
-	      /* We've squashed all the vector elements into the first one;
-		 truncate the rest.  */
-	      (*init)->truncate (1);
-	    }
+	  tree ctor = build_constructor_from_vec (init_list_type_node, *init);
+	  CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (ctor) = true;
+	  elt = ctor;
+	  /* We've squashed all the vector elements into the first one;
+	     truncate the rest.  */
+	  (*init)->truncate (1);
 	}
       /* Otherwise we should have 'new T[]{e_0, ..., e_k}'.  */
-      if (BRACE_ENCLOSED_INITIALIZER_P (elt))
-	elt = reshape_init (type, elt, complain);
-      cp_complete_array_type (&type, elt, /*do_default*/false);
+      if (array_p && !TYPE_DOMAIN (type))
+	{
+	  /* We need to reshape before deducing the bounds to handle code like
+
+	       struct S { int x, y; };
+	       new S[]{1, 2, 3, 4};
+
+	     which should deduce S[2].	But don't change ELT itself: we want to
+	     pass a list-initializer to build_new_1, even for STRING_CSTs.  */
+	  tree e = elt;
+	  if (BRACE_ENCLOSED_INITIALIZER_P (e))
+	    e = reshape_init (type, e, complain);
+	  cp_complete_array_type (&type, e, /*do_default*/false);
+	}
     }
 
   /* The type allocated must be complete.  If the new-type-id was

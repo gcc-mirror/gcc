@@ -1343,7 +1343,7 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	 not already have the proper size and the size is not too large.  */
       if (BIT_PACKED_ARRAY_TYPE_P (type)
 	  || (TYPE_PRECISION (type) == size && biased_p == for_biased)
-	  || size > LONG_LONG_TYPE_SIZE)
+	  || size > (Enable_128bit_Types ? 128 : LONG_LONG_TYPE_SIZE))
 	break;
 
       biased_p |= for_biased;
@@ -2905,6 +2905,31 @@ aggregate_type_contains_array_p (tree type, bool self_referential)
     }
 }
 
+/* Return true if TYPE is a type with variable size or a padding type with a
+   field of variable size or a record that has a field with such a type.  */
+
+static bool
+type_has_variable_size (tree type)
+{
+  tree field;
+
+  if (!TREE_CONSTANT (TYPE_SIZE (type)))
+    return true;
+
+  if (TYPE_IS_PADDING_P (type)
+      && !TREE_CONSTANT (DECL_SIZE (TYPE_FIELDS (type))))
+    return true;
+
+  if (!RECORD_OR_UNION_TYPE_P (type))
+    return false;
+
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    if (type_has_variable_size (TREE_TYPE (field)))
+      return true;
+
+  return false;
+}
+
 /* Return a FIELD_DECL node.  NAME is the field's name, TYPE is its type and
    RECORD_TYPE is the type of the enclosing record.  If SIZE is nonzero, it
    is the specified size of the field.  If POS is nonzero, it is the bit
@@ -2974,13 +2999,15 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 
   DECL_PACKED (field_decl) = pos ? DECL_BIT_FIELD (field_decl) : packed;
 
-  /* If FIELD_TYPE is BLKmode, we must ensure this is aligned to at least a
-     byte boundary since GCC cannot handle less-aligned BLKmode bitfields.
+  /* If FIELD_TYPE has BLKmode, we must ensure this is aligned to at least
+     a byte boundary since GCC cannot handle less aligned BLKmode bitfields.
+     Likewise if it has a variable size and no specified position because
+     variable-sized objects need to be aligned to at least a byte boundary.
      Likewise for an aggregate without specified position that contains an
-     array, because in this case slices of variable length of this array
-     must be handled by GCC and variable-sized objects need to be aligned
-     to at least a byte boundary.  */
+     array because, in this case, slices of variable length of this array
+     must be handled by GCC and have variable size.  */
   if (packed && (TYPE_MODE (type) == BLKmode
+		 || (!pos && type_has_variable_size (type))
 		 || (!pos
 		     && AGGREGATE_TYPE_P (type)
 		     && aggregate_type_contains_array_p (type, false))))

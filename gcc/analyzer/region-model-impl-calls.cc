@@ -276,6 +276,30 @@ region_model::impl_call_malloc (const call_details &cd)
   return true;
 }
 
+/* Handle the on_call_pre part of "memcpy" and "__builtin_memcpy".  */
+
+void
+region_model::impl_call_memcpy (const call_details &cd)
+{
+  const svalue *dest_sval = cd.get_arg_svalue (0);
+  const svalue *num_bytes_sval = cd.get_arg_svalue (2);
+
+  const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
+					 cd.get_ctxt ());
+
+  cd.maybe_set_lhs (dest_sval);
+
+  if (tree num_bytes = num_bytes_sval->maybe_get_constant ())
+    {
+      /* "memcpy" of zero size is a no-op.  */
+      if (zerop (num_bytes))
+	return;
+    }
+
+  /* Otherwise, mark region's contents as unknown.  */
+  mark_region_as_unknown (dest_reg);
+}
+
 /* Handle the on_call_pre part of "memset" and "__builtin_memset".  */
 
 bool
@@ -316,6 +340,56 @@ region_model::impl_call_memset (const call_details &cd)
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);
   return false;
+}
+
+/* Handle the on_call_pre part of "operator new".  */
+
+bool
+region_model::impl_call_operator_new (const call_details &cd)
+{
+  const svalue *size_sval = cd.get_arg_svalue (0);
+  const region *new_reg = create_region_for_heap_alloc (size_sval);
+  if (cd.get_lhs_type ())
+    {
+      const svalue *ptr_sval
+	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+      cd.maybe_set_lhs (ptr_sval);
+    }
+  return false;
+}
+
+/* Handle the on_call_pre part of "operator delete", which comes in
+   both sized and unsized variants (2 arguments and 1 argument
+   respectively).  */
+
+bool
+region_model::impl_call_operator_delete (const call_details &cd)
+{
+  const svalue *ptr_sval = cd.get_arg_svalue (0);
+  if (const region_svalue *ptr_to_region_sval
+      = ptr_sval->dyn_cast_region_svalue ())
+    {
+      /* If the ptr points to an underlying heap region, delete it,
+	 poisoning pointers.  */
+      const region *freed_reg = ptr_to_region_sval->get_pointee ();
+      unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+    }
+  return false;
+}
+
+/* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */
+
+void
+region_model::impl_call_strcpy (const call_details &cd)
+{
+  const svalue *dest_sval = cd.get_arg_svalue (0);
+  const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
+					 cd.get_ctxt ());
+
+  cd.maybe_set_lhs (dest_sval);
+
+  /* For now, just mark region's contents as unknown.  */
+  mark_region_as_unknown (dest_reg);
 }
 
 /* Handle the on_call_pre part of "strlen".

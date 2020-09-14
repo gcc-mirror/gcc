@@ -2435,7 +2435,9 @@ gfc_get_ppc_type (gfc_component* c)
   else
     t = void_type_node;
 
-  return build_pointer_type (build_function_type_list (t, NULL_TREE));
+  /* FIXME: it would be better to provide explicit interfaces in all
+     cases, since they should be known by the compiler.  */
+  return build_pointer_type (build_function_type (t, NULL_TREE));
 }
 
 
@@ -2714,7 +2716,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	field_type = gfc_get_ppc_type (c);
       else if (c->attr.proc_pointer && derived->backend_decl)
 	{
-	  tmp = build_function_type_list (derived->backend_decl, NULL_TREE);
+	  tmp = build_function_type (derived->backend_decl, NULL_TREE);
 	  field_type = build_pointer_type (tmp);
 	}
       else if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)

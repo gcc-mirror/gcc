@@ -618,12 +618,12 @@ public:
 	  d_linkonce_linkage (d->sinit);
 
 	d_finish_decl (d->sinit);
-
-	/* Add this decl to the current binding level.  */
-	tree ctype = build_ctype (d->type);
-	if (TREE_CODE (ctype) == ENUMERAL_TYPE && TYPE_NAME (ctype))
-	  d_pushdecl (TYPE_NAME (ctype));
       }
+
+    /* Add this decl to the current binding level.  */
+    tree ctype = build_ctype (d->type);
+    if (TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
 
     d->semanticRun = PASSobj;
   }
@@ -734,33 +734,24 @@ public:
 	   a check for isVarDeclaration() in DeclarationExp codegen.  */
 	declare_local_var (d);
 
-	if (d->_init)
+	if (d->_init && !d->_init->isVoidInitializer ())
 	  {
 	    tree decl = get_symbol_decl (d);
 
-	    if (!d->_init->isVoidInitializer ())
-	      {
-		ExpInitializer *vinit = d->_init->isExpInitializer ();
-		Expression *ie = initializerToExpression (vinit);
-		tree exp = build_expr (ie);
+	    ExpInitializer *vinit = d->_init->isExpInitializer ();
+	    Expression *ie = initializerToExpression (vinit);
+	    tree exp = build_expr (ie);
 
-		/* Maybe put variable on list of things needing destruction.  */
-		if (d->needsScopeDtor ())
-		  {
-		    vec_safe_push (d_function_chain->vars_in_scope, decl);
-		    /* Force a TARGET_EXPR to add the corresponding cleanup.  */
-		    exp = force_target_expr (compound_expr (exp, decl));
-		    TARGET_EXPR_CLEANUP (exp) = build_expr (d->edtor);
-		  }
-
-		add_stmt (exp);
-	      }
-	    else if (d->size (d->loc) != 0)
+	    /* Maybe put variable on list of things needing destruction.  */
+	    if (d->needsScopeDtor ())
 	      {
-		/* Zero-length arrays do not have an initializer.  */
-		warning (OPT_Wuninitialized, "uninitialized variable '%s'",
-			 d->ident ? d->ident->toChars () : "(no name)");
+		vec_safe_push (d_function_chain->vars_in_scope, decl);
+		/* Force a TARGET_EXPR to add the corresponding cleanup.  */
+		exp = force_target_expr (compound_expr (exp, decl));
+		TARGET_EXPR_CLEANUP (exp) = build_expr (d->edtor);
 	      }
+
+	    add_stmt (exp);
 	  }
       }
 
@@ -2279,8 +2270,6 @@ build_type_decl (tree type, Dsymbol *dsym)
   if (TYPE_STUB_DECL (type))
     return;
 
-  gcc_assert (!POINTER_TYPE_P (type));
-
   /* If a templated type, use the template instance name, as that includes all
      template parameters.  */
   const char *name = dsym->parent->isTemplateInstance ()
@@ -2290,7 +2279,6 @@ build_type_decl (tree type, Dsymbol *dsym)
 			  get_identifier (name), type);
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (d_mangle_decl (dsym)));
   TREE_PUBLIC (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
   DECL_CONTEXT (decl) = d_decl_context (dsym);
 
   TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
@@ -2299,9 +2287,14 @@ build_type_decl (tree type, Dsymbol *dsym)
   /* Not sure if there is a need for separate TYPE_DECLs in
      TYPE_NAME and TYPE_STUB_DECL.  */
   if (TREE_CODE (type) == ENUMERAL_TYPE || RECORD_OR_UNION_TYPE_P (type))
-    TYPE_STUB_DECL (type) = decl;
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      TYPE_STUB_DECL (type) = decl;
+    }
+  else if (type != TYPE_MAIN_VARIANT (type))
+    DECL_ORIGINAL_TYPE (decl) = TYPE_MAIN_VARIANT (type);
 
-  rest_of_decl_compilation (decl, SCOPE_FILE_SCOPE_P (decl), 0);
+  rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
 }
 
 /* Create a declaration for field NAME of a given TYPE, setting the flags

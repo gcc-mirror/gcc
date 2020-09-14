@@ -2209,17 +2209,22 @@ whether the subreg is a lowpart of a block.
 @end table
 
 A @code{MODE_PARTIAL_INT} mode behaves as if it were as wide as the
-corresponding @code{MODE_INT} mode, except that it has an unknown
-number of undefined bits.  For example:
+corresponding @code{MODE_INT} mode, except that it has a number of
+undefined bits, which are determined by the precision of the
+mode.
+
+For example, on a little-endian target which defines @code{PSImode}
+to have a precision of 20 bits:
 
 @smallexample
 (subreg:PSI (reg:SI 0) 0)
 @end smallexample
 
+accesses the low 20 bits of @samp{(reg:SI 0)}.
+
 @findex REGMODE_NATURAL_SIZE
-accesses the whole of @samp{(reg:SI 0)}, but the exact relationship
-between the @code{PSImode} value and the @code{SImode} value is not
-defined.  If we assume @samp{REGMODE_NATURAL_SIZE (DImode) <= 4},
+Continuing with a @code{PSImode} precision of 20 bits, if we assume
+@samp{REGMODE_NATURAL_SIZE (DImode) <= 4},
 then the following two @code{subreg}s:
 
 @smallexample
@@ -2227,9 +2232,8 @@ then the following two @code{subreg}s:
 (subreg:PSI (reg:DI 0) 4)
 @end smallexample
 
-represent independent 4-byte accesses to the two halves of
-@samp{(reg:DI 0)}.  Both @code{subreg}s have an unknown number
-of undefined bits.
+represent accesses to the low 20 bits of the two halves of
+@samp{(reg:DI 0)}.
 
 If @samp{REGMODE_NATURAL_SIZE (PSImode) <= 2} then these two @code{subreg}s:
 
@@ -2240,15 +2244,17 @@ If @samp{REGMODE_NATURAL_SIZE (PSImode) <= 2} then these two @code{subreg}s:
 
 represent independent 2-byte accesses that together span the whole
 of @samp{(reg:PSI 0)}.  Storing to the first @code{subreg} does not
-affect the value of the second, and vice versa.  @samp{(reg:PSI 0)}
-has an unknown number of undefined bits, so the assignment:
+affect the value of the second, and vice versa, so the assignment:
 
 @smallexample
 (set (subreg:HI (reg:PSI 0) 0) (reg:HI 4))
 @end smallexample
 
-does not guarantee that @samp{(subreg:HI (reg:PSI 0) 0)} has the
-value @samp{(reg:HI 4)}.
+sets the low 16 bits of @samp{(reg:PSI 0)} to @samp{(reg:HI 4)}, and
+the high 4 defined bits of @samp{(reg:PSI 0)} retain their
+original value.  The behavior here is the same as for
+normal @code{subreg}s, when there are no
+@code{MODE_PARTIAL_INT} modes involved.
 
 @cindex @code{TARGET_CAN_CHANGE_MODE_CLASS} and subreg semantics
 The rules above apply to both pseudo @var{reg}s and hard @var{reg}s.

@@ -192,6 +192,7 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define Ada_Version			opt__ada_version
 #define Back_End_Inlining		opt__back_end_inlining
 #define Debug_Generated_Code		opt__debug_generated_code
+#define Enable_128bit_Types		opt__enable_128bit_types
 #define Exception_Extra_Info		opt__exception_extra_info
 #define Exception_Locations_Suppressed	opt__exception_locations_suppressed
 #define Exception_Mechanism		opt__exception_mechanism
@@ -212,6 +213,7 @@ typedef enum {
 extern Ada_Version_Type Ada_Version;
 extern Boolean Back_End_Inlining;
 extern Boolean Debug_Generated_Code;
+extern Boolean Enable_128bit_Types;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;

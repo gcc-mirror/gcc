@@ -187,3 +187,8 @@ LIBGCCJIT_ABI_13 {
     gcc_jit_version_minor;
     gcc_jit_version_patchlevel;
 } LIBGCCJIT_ABI_12;
+
+LIBGCCJIT_ABI_14 {
+  global:
+    gcc_jit_global_set_initializer;
+} LIBGCCJIT_ABI_13;

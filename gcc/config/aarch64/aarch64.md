@@ -2341,38 +2341,6 @@
   [(set_attr "type" "alus_shift_imm")]
 )
 
-(define_insn "*adds_mul_imm_<mode>"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
-	 (plus:GPI (mult:GPI
-		    (match_operand:GPI 1 "register_operand" "r")
-		    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))
-		   (match_operand:GPI 3 "register_operand" "r"))
-	 (const_int 0)))
-   (set (match_operand:GPI 0 "register_operand" "=r")
-	(plus:GPI (mult:GPI (match_dup 1) (match_dup 2))
-		  (match_dup 3)))]
-  ""
-  "adds\\t%<w>0, %<w>3, %<w>1, lsl %p2"
-  [(set_attr "type" "alus_shift_imm")]
-)
-
-(define_insn "*subs_mul_imm_<mode>"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
-	 (minus:GPI (match_operand:GPI 1 "register_operand" "r")
-		    (mult:GPI
-		     (match_operand:GPI 2 "register_operand" "r")
-		     (match_operand:QI 3 "aarch64_pwr_2_<mode>" "n")))
-	 (const_int 0)))
-   (set (match_operand:GPI 0 "register_operand" "=r")
-	(minus:GPI (match_dup 1)
-		   (mult:GPI (match_dup 2) (match_dup 3))))]
-  ""
-  "subs\\t%<w>0, %<w>1, %<w>2, lsl %p3"
-  [(set_attr "type" "alus_shift_imm")]
-)
-
 (define_insn "*adds_<optab><ALLX:mode>_<GPI:mode>"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
@@ -2383,7 +2351,7 @@
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (ANY_EXTEND:GPI (match_dup 1)) (match_dup 2)))]
   ""
-  "adds\\t%<GPI:w>0, %<GPI:w>2, %<GPI:w>1, <su>xt<ALLX:size>"
+  "adds\\t%<GPI:w>0, %<GPI:w>2, %w1, <su>xt<ALLX:size>"
   [(set_attr "type" "alus_ext")]
 )
 
@@ -2397,7 +2365,7 @@
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_dup 1) (ANY_EXTEND:GPI (match_dup 2))))]
   ""
-  "subs\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size>"
+  "subs\\t%<GPI:w>0, %<GPI:w>1, %w2, <su>xt<ALLX:size>"
   [(set_attr "type" "alus_ext")]
 )
 
@@ -2415,7 +2383,7 @@
 			      (match_dup 2))
 		  (match_dup 3)))]
   ""
-  "adds\\t%<GPI:w>0, %<GPI:w>3, %<GPI:w>1, <su>xt<ALLX:size> %2"
+  "adds\\t%<GPI:w>0, %<GPI:w>3, %w1, <su>xt<ALLX:size> %2"
   [(set_attr "type" "alus_ext")]
 )
 
@@ -2433,47 +2401,7 @@
 		   (ashift:GPI (ANY_EXTEND:GPI (match_dup 2))
 			       (match_dup 3))))]
   ""
-  "subs\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size> %3"
-  [(set_attr "type" "alus_ext")]
-)
-
-(define_insn "*adds_<optab><mode>_multp2"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
-	 (plus:GPI (ANY_EXTRACT:GPI
-		    (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		    (match_operand 3 "const_int_operand" "n")
-		    (const_int 0))
-		   (match_operand:GPI 4 "register_operand" "rk"))
-	(const_int 0)))
-   (set (match_operand:GPI 0 "register_operand" "=r")
-	(plus:GPI (ANY_EXTRACT:GPI (mult:GPI (match_dup 1) (match_dup 2))
-				   (match_dup 3)
-				   (const_int 0))
-		  (match_dup 4)))]
-  "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
-  "adds\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "type" "alus_ext")]
-)
-
-(define_insn "*subs_<optab><mode>_multp2"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
-	 (minus:GPI (match_operand:GPI 4 "register_operand" "rk")
-		    (ANY_EXTRACT:GPI
-		     (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			       (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		     (match_operand 3 "const_int_operand" "n")
-		     (const_int 0)))
-	(const_int 0)))
-   (set (match_operand:GPI 0 "register_operand" "=r")
-	(minus:GPI (match_dup 4) (ANY_EXTRACT:GPI
-				  (mult:GPI (match_dup 1) (match_dup 2))
-				  (match_dup 3)
-				  (const_int 0))))]
-  "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
-  "subs\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
+  "subs\\t%<GPI:w>0, %<GPI:w>1, %w2, <su>xt<ALLX:size> %3"
   [(set_attr "type" "alus_ext")]
 )
 
@@ -2534,22 +2462,12 @@
   [(set_attr "type" "alu_shift_imm")]
 )
 
-(define_insn "*add_mul_imm_<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(plus:GPI (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))
-		  (match_operand:GPI 3 "register_operand" "r")))]
-  ""
-  "add\\t%<w>0, %<w>3, %<w>1, lsl %p2"
-  [(set_attr "type" "alu_shift_imm")]
-)
-
 (define_insn "*add_<optab><ALLX:mode>_<GPI:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(plus:GPI (ANY_EXTEND:GPI (match_operand:ALLX 1 "register_operand" "r"))
 		  (match_operand:GPI 2 "register_operand" "r")))]
   ""
-  "add\\t%<GPI:w>0, %<GPI:w>2, %<GPI:w>1, <su>xt<ALLX:size>"
+  "add\\t%<GPI:w>0, %<GPI:w>2, %w1, <su>xt<ALLX:size>"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -2571,7 +2489,7 @@
 			      (match_operand 2 "aarch64_imm3" "Ui3"))
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
-  "add\\t%<GPI:w>0, %<GPI:w>3, %<GPI:w>1, <su>xt<ALLX:size> %2"
+  "add\\t%<GPI:w>0, %<GPI:w>3, %w1, <su>xt<ALLX:size> %2"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -2585,57 +2503,6 @@
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <su>xt<SHORT:size> %2"
-  [(set_attr "type" "alu_ext")]
-)
-
-(define_insn "*add_<optab><ALLX:mode>_mult_<GPI:mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(plus:GPI (mult:GPI (ANY_EXTEND:GPI
-			     (match_operand:ALLX 1 "register_operand" "r"))
-			    (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		  (match_operand:GPI 3 "register_operand" "r")))]
-  ""
-  "add\\t%<GPI:w>0, %<GPI:w>3, %<GPI:w>1, <su>xt<ALLX:size> %p2"
-  [(set_attr "type" "alu_ext")]
-)
-
-;; zero_extend version of above
-(define_insn "*add_<optab><SHORT:mode>_mult_si_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
-	(zero_extend:DI (plus:SI (mult:SI (ANY_EXTEND:SI
-			     (match_operand:SHORT 1 "register_operand" "r"))
-			    (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		  (match_operand:SI 3 "register_operand" "r"))))]
-  ""
-  "add\\t%w0, %w3, %w1, <su>xt<SHORT:size> %p2"
-  [(set_attr "type" "alu_ext")]
-)
-
-(define_insn "*add_<optab><mode>_multp2"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(plus:GPI (ANY_EXTRACT:GPI
-		   (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			     (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		   (match_operand 3 "const_int_operand" "n")
-		   (const_int 0))
-		  (match_operand:GPI 4 "register_operand" "r")))]
-  "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
-  "add\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "type" "alu_ext")]
-)
-
-;; zero_extend version of above
-(define_insn "*add_<optab>si_multp2_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
-	(zero_extend:DI
-         (plus:SI (ANY_EXTRACT:SI
-		   (mult:SI (match_operand:SI 1 "register_operand" "r")
-			    (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		   (match_operand 3 "const_int_operand" "n")
-                   (const_int 0))
-		  (match_operand:SI 4 "register_operand" "r"))))]
-  "aarch64_is_extend_from_extract (SImode, operands[2], operands[3])"
-  "add\\t%w0, %w4, %w1, <su>xt%e3 %p2"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -2819,7 +2686,7 @@
   "*
   operands[3] = GEN_INT (aarch64_uxt_size (INTVAL(operands[2]),
 					   INTVAL (operands[3])));
-  return \"add\t%<w>0, %<w>4, %<w>1, uxt%e3 %2\";"
+  return \"add\t%<w>0, %<w>4, %w1, uxt%e3 %2\";"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -2837,38 +2704,6 @@
   operands[3] = GEN_INT (aarch64_uxt_size (INTVAL (operands[2]),
 					   INTVAL (operands[3])));
   return \"add\t%w0, %w4, %w1, uxt%e3 %2\";"
-  [(set_attr "type" "alu_ext")]
-)
-
-(define_insn "*add_uxt<mode>_multp2"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(plus:GPI (and:GPI
-		   (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			     (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		   (match_operand 3 "const_int_operand" "n"))
-		  (match_operand:GPI 4 "register_operand" "r")))]
-  "aarch64_uxt_size (exact_log2 (INTVAL (operands[2])), INTVAL (operands[3])) != 0"
-  "*
-  operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
-					   INTVAL (operands[3])));
-  return \"add\t%<w>0, %<w>4, %<w>1, uxt%e3 %p2\";"
-  [(set_attr "type" "alu_ext")]
-)
-
-;; zero_extend version of above
-(define_insn "*add_uxtsi_multp2_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
-	(zero_extend:DI
-         (plus:SI (and:SI
-		   (mult:SI (match_operand:SI 1 "register_operand" "r")
-			    (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		   (match_operand 3 "const_int_operand" "n"))
-		  (match_operand:SI 4 "register_operand" "r"))))]
-  "aarch64_uxt_size (exact_log2 (INTVAL (operands[2])), INTVAL (operands[3])) != 0"
-  "*
-  operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
-					   INTVAL (operands[3])));
-  return \"add\t%w0, %w4, %w1, uxt%e3 %p2\";"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -3275,37 +3110,13 @@
   [(set_attr "type" "alu_shift_imm")]
 )
 
-(define_insn "*sub_mul_imm_<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(minus:GPI (match_operand:GPI 3 "register_operand" "r")
-		   (mult:GPI
-		    (match_operand:GPI 1 "register_operand" "r")
-		    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))))]
-  ""
-  "sub\\t%<w>0, %<w>3, %<w>1, lsl %p2"
-  [(set_attr "type" "alu_shift_imm")]
-)
-
-;; zero_extend version of above
-(define_insn "*sub_mul_imm_si_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-         (minus:SI (match_operand:SI 3 "register_operand" "r")
-		   (mult:SI
-		    (match_operand:SI 1 "register_operand" "r")
-		    (match_operand:QI 2 "aarch64_pwr_2_si" "n")))))]
-  ""
-  "sub\\t%w0, %w3, %w1, lsl %p2"
-  [(set_attr "type" "alu_shift_imm")]
-)
-
 (define_insn "*sub_<optab><ALLX:mode>_<GPI:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 		   (ANY_EXTEND:GPI
 		    (match_operand:ALLX 2 "register_operand" "r"))))]
   ""
-  "sub\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size>"
+  "sub\\t%<GPI:w>0, %<GPI:w>1, %w2, <su>xt<ALLX:size>"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -3328,7 +3139,7 @@
 				(match_operand:ALLX 2 "register_operand" "r"))
 			       (match_operand 3 "aarch64_imm3" "Ui3"))))]
   ""
-  "sub\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size> %3"
+  "sub\\t%<GPI:w>0, %<GPI:w>1, %w2, <su>xt<ALLX:size> %3"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -3342,34 +3153,6 @@
 			      (match_operand 3 "aarch64_imm3" "Ui3")))))]
   ""
   "sub\\t%w0, %w1, %w2, <su>xt<SHORT:size> %3"
-  [(set_attr "type" "alu_ext")]
-)
-
-(define_insn "*sub_<optab><mode>_multp2"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(minus:GPI (match_operand:GPI 4 "register_operand" "rk")
-		   (ANY_EXTRACT:GPI
-		    (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		    (match_operand 3 "const_int_operand" "n")
-		    (const_int 0))))]
-  "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
-  "sub\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "type" "alu_ext")]
-)
-
-;; zero_extend version of above
-(define_insn "*sub_<optab>si_multp2_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
-	(zero_extend:DI
-         (minus:SI (match_operand:SI 4 "register_operand" "rk")
-		   (ANY_EXTRACT:SI
-		    (mult:SI (match_operand:SI 1 "register_operand" "r")
-			     (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		    (match_operand 3 "const_int_operand" "n")
-		    (const_int 0)))))]
-  "aarch64_is_extend_from_extract (SImode, operands[2], operands[3])"
-  "sub\\t%w0, %w4, %w1, <su>xt%e3 %p2"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -3607,7 +3390,7 @@
   "*
   operands[3] = GEN_INT (aarch64_uxt_size (INTVAL (operands[2]),
 					   INTVAL (operands[3])));
-  return \"sub\t%<w>0, %<w>4, %<w>1, uxt%e3 %2\";"
+  return \"sub\t%<w>0, %<w>4, %w1, uxt%e3 %2\";"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -3625,38 +3408,6 @@
   operands[3] = GEN_INT (aarch64_uxt_size (INTVAL (operands[2]),
 					   INTVAL (operands[3])));
   return \"sub\t%w0, %w4, %w1, uxt%e3 %2\";"
-  [(set_attr "type" "alu_ext")]
-)
-
-(define_insn "*sub_uxt<mode>_multp2"
-  [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(minus:GPI (match_operand:GPI 4 "register_operand" "rk")
-		   (and:GPI
-		    (mult:GPI (match_operand:GPI 1 "register_operand" "r")
-			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		    (match_operand 3 "const_int_operand" "n"))))]
-  "aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),INTVAL (operands[3])) != 0"
-  "*
-  operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
-					   INTVAL (operands[3])));
-  return \"sub\t%<w>0, %<w>4, %<w>1, uxt%e3 %p2\";"
-  [(set_attr "type" "alu_ext")]
-)
-
-;; zero_extend version of above
-(define_insn "*sub_uxtsi_multp2_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
-	(zero_extend:DI
-         (minus:SI (match_operand:SI 4 "register_operand" "rk")
-		   (and:SI
-		    (mult:SI (match_operand:SI 1 "register_operand" "r")
-			     (match_operand 2 "aarch64_pwr_imm3" "Up3"))
-		    (match_operand 3 "const_int_operand" "n")))))]
-  "aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),INTVAL (operands[3])) != 0"
-  "*
-  operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
-					   INTVAL (operands[3])));
-  return \"sub\t%w0, %w4, %w1, uxt%e3 %p2\";"
   [(set_attr "type" "alu_ext")]
 )
 
@@ -3769,28 +3520,6 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "neg\\t%w0, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
-)
-
-(define_insn "*neg_mul_imm_<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(neg:GPI (mult:GPI
-		  (match_operand:GPI 1 "register_operand" "r")
-		  (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))))]
-  ""
-  "neg\\t%<w>0, %<w>1, lsl %p2"
-  [(set_attr "type" "alu_shift_imm")]
-)
-
-;; zero_extend version of above
-(define_insn "*neg_mul_imm_si2_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-         (neg:SI (mult:SI
-		  (match_operand:SI 1 "register_operand" "r")
-		  (match_operand:QI 2 "aarch64_pwr_2_si" "n")))))]
-  ""
-  "neg\\t%w0, %w1, lsl %p2"
   [(set_attr "type" "alu_shift_imm")]
 )
 
@@ -4054,7 +3783,7 @@
 			 (match_operand:ALLX 0 "register_operand" "r"))
 			(match_operand:GPI 1 "register_operand" "r")))]
   ""
-  "cmp\\t%<GPI:w>1, %<GPI:w>0, <su>xt<ALLX:size>"
+  "cmp\\t%<GPI:w>1, %w0, <su>xt<ALLX:size>"
   [(set_attr "type" "alus_ext")]
 )
 
@@ -4066,7 +3795,7 @@
 			 (match_operand 1 "aarch64_imm3" "Ui3"))
 	(match_operand:GPI 2 "register_operand" "r")))]
   ""
-  "cmp\\t%<GPI:w>2, %<GPI:w>0, <su>xt<ALLX:size> %1"
+  "cmp\\t%<GPI:w>2, %w0, <su>xt<ALLX:size> %1"
   [(set_attr "type" "alus_ext")]
 )
 

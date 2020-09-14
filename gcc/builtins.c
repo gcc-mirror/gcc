@@ -4367,8 +4367,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	     offset to the maximum.  */
 	  offset_int orng[2];
 	  tree off = gimple_assign_rhs2 (stmt);
-	  if (!get_range (off, SIGNED, orng, rvals)
-	      || !wi::les_p (orng[0], orng[1]))
+	  if (!get_range (off, SIGNED, orng, rvals))
 	    {
 	      orng[0] = wi::to_offset (TYPE_MIN_VALUE (ptrdiff_type_node));
 	      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
@@ -4398,7 +4397,8 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   return false;
 }
 
-/* Convenience wrapper around the above.  */
+/* A "public" wrapper around the above.  Clients should use this overload
+   instead.  */
 
 static tree
 compute_objsize (tree ptr, int ostype, access_ref *pref,
@@ -4415,6 +4415,15 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   if (!success)
     return NULL_TREE;
 
+  if (pref->offrng[1] < pref->offrng[0])
+    {
+      if (pref->offrng[1] < 0
+	  && pref->sizrng[1] <= pref->offrng[0])
+	return size_zero_node;
+
+      return wide_int_to_tree (sizetype, pref->sizrng[1]);
+    }
+
   if (pref->offrng[0] < 0)
     {
       if (pref->offrng[1] < 0)
@@ -4423,7 +4432,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
       pref->offrng[0] = 0;
     }
 
-  if (pref->sizrng[1] < pref->offrng[0])
+  if (pref->sizrng[1] <= pref->offrng[0])
     return size_zero_node;
 
   return wide_int_to_tree (sizetype, pref->sizrng[1] - pref->offrng[0]);

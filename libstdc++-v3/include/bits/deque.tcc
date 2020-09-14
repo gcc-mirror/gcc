@@ -1269,9 +1269,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	const _Tp2* __first2, const _Tp2* __last2)
     {
       const bool __simple =
-	(__is_byte<_Tp1>::__value && __is_byte<_Tp2>::__value
-	 && !__gnu_cxx::__numeric_traits<_Tp1>::__is_signed
-	 && !__gnu_cxx::__numeric_traits<_Tp2>::__is_signed
+	(__is_memcmp_ordered_with<_Tp1, _Tp2>::__value
 	 && __is_pointer<_Ptr>::__value
 #if __cplusplus > 201703L && __cpp_lib_concepts
 	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
@@ -1327,9 +1325,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 		_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __last2)
     {
       const bool __simple =
-	(__is_byte<_Tp1>::__value && __is_byte<_Tp2>::__value
-	 && !__gnu_cxx::__numeric_traits<_Tp1>::__is_signed
-	 && !__gnu_cxx::__numeric_traits<_Tp2>::__is_signed
+	(__is_memcmp_ordered_with<_Tp1, _Tp2>::__value
 	 && __is_pointer<_Ptr1>::__value
 	 && __is_pointer<_Ptr2>::__value
 #if __cplusplus > 201703L && __cpp_lib_concepts

@@ -83,9 +83,6 @@ public:
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
   pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
 
-  /* Start state.  */
-  state_t m_start;
-
   /* State for a FILE * returned from fopen that hasn't been checked for
      NULL.
      It could be an open stream, or could be NULL.  */
@@ -121,7 +118,7 @@ public:
   label_text describe_state_change (const evdesc::state_change &change)
     OVERRIDE
   {
-    if (change.m_old_state == m_sm.m_start
+    if (change.m_old_state == m_sm.get_start_state ()
 	&& change.m_new_state == m_sm.m_unchecked)
       // TODO: verify that it's the fopen stmt, not a copy
       return label_text::borrow ("opened here");
@@ -229,7 +226,6 @@ private:
 fileptr_state_machine::fileptr_state_machine (logger *logger)
 : state_machine ("file", logger)
 {
-  m_start = add_state ("start");
   m_unchecked = add_state ("unchecked");
   m_null = add_state ("null");
   m_nonnull = add_state ("nonnull");
@@ -348,9 +344,12 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 
 	    sm_ctxt->on_transition (node, stmt , arg, m_nonnull, m_closed);
 
-	    sm_ctxt->warn_for_state (node, stmt, arg, m_closed,
-				     new double_fclose (*this, diag_arg));
-	    sm_ctxt->on_transition (node, stmt, arg, m_closed, m_stop);
+	    if (sm_ctxt->get_state (stmt, arg) == m_closed)
+	      {
+		sm_ctxt->warn (node, stmt, arg,
+			       new double_fclose (*this, diag_arg));
+		sm_ctxt->set_next_state (stmt, arg, m_stop);
+	      }
 	    return true;
 	  }
 

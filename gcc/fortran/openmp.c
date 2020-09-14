@@ -5962,6 +5962,8 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
 
   switch (code->op)
     {
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_PARALLEL_DO:
@@ -6046,31 +6048,6 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
 
   if (omp_current_ctx->sharing_clauses->contains (sym))
     return;
-
-  if (omp_current_ctx->is_openmp && omp_current_ctx->code->block)
-    {
-      /* SIMD is handled differently and, hence, ignored here.  */
-      gfc_code *omp_code = omp_current_ctx->code->block;
-      for ( ; omp_code->next; omp_code = omp_code->next)
-	switch (omp_code->op)
-	  {
-	  case EXEC_OMP_SIMD:
-	  case EXEC_OMP_DO_SIMD:
-	  case EXEC_OMP_PARALLEL_DO_SIMD:
-	  case EXEC_OMP_DISTRIBUTE_SIMD:
-	  case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
-	  case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
-	  case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
-	  case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
-	  case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
-	  case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
-	  case EXEC_OMP_TARGET_SIMD:
-	  case EXEC_OMP_TASKLOOP_SIMD:
-	    return;
-	  default:
-	    break;
-	  }
-    }
 
   if (! omp_current_ctx->private_iterators->add (sym) && add_clause)
     {

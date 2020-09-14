@@ -456,20 +456,20 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 	    // grouping rules.
 	    long __paddec = __len - __lc->_M_frac_digits;
 	    if (__paddec > 0)
-  	      {
+	      {
 		if (__lc->_M_frac_digits < 0)
 		  __paddec = __len;
-  		if (__lc->_M_grouping_size)
-  		  {
+		if (__lc->_M_grouping_size)
+		  {
 		    __value.assign(2 * __paddec, char_type());
- 		    _CharT* __vend = 
+		    _CharT* __vend =
 		      std::__add_grouping(&__value[0], __lc->_M_thousands_sep,
 					  __lc->_M_grouping,
 					  __lc->_M_grouping_size,
 					  __beg, __beg + __paddec);
 		    __value.erase(__vend - &__value[0]);
-  		  }
-  		else
+		  }
+		else
 		  __value.assign(__beg, __paddec);
 	      }
 
@@ -485,7 +485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 		    __value.append(-__paddec, __lit[money_base::_S_zero]);
 		    __value.append(__beg, __len);
 		  }
-  	      }
+	      }
   
 	    // Calculate length of resulting string.
 	    const ios_base::fmtflags __f = __io.flags() 

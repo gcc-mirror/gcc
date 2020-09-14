@@ -1228,6 +1228,12 @@ package Sem_Util is
    --    UFull_Typ - the underlying full view, if the full view is private
    --    CRec_Typ  - the corresponding record type of the full views
 
+   function Get_Fullest_View
+     (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id;
+   --  Get the fullest possible view of E, looking through private,
+   --  limited, packed array and other implementation types.  If Include_PAT
+   --  is False, don't look inside packed array types.
+
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a component
    --  (at any recursive level) that is an access type. This is a conservative

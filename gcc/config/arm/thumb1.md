@@ -64,21 +64,6 @@
    (set_attr "conds" "clob")]
 )
 
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "immediate_operand" ""))]
-  "TARGET_THUMB1
-   && arm_disable_literal_pool
-   && GET_CODE (operands[1]) == CONST_INT
-   && !TARGET_HAVE_MOVT
-   && !satisfies_constraint_I (operands[1])"
-  [(clobber (const_int 0))]
-  "
-    thumb1_gen_const_int (operands[0], INTVAL (operands[1]));
-    DONE;
-  "
-)
-
 (define_insn "*thumb1_adddi3"
   [(set (match_operand:DI          0 "register_operand" "=l")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0")
@@ -830,6 +815,21 @@
     operands[2] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
     operands[3] = GEN_INT (255);
   }"
+)
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "const_int_operand" ""))]
+  "TARGET_THUMB1
+   && arm_disable_literal_pool
+   && GET_CODE (operands[1]) == CONST_INT
+   && !TARGET_HAVE_MOVT
+   && !satisfies_constraint_K (operands[1])"
+  [(clobber (const_int 0))]
+  "
+    thumb1_gen_const_int (operands[0], INTVAL (operands[1]));
+    DONE;
+  "
 )
 
 (define_insn "*thumb1_movhi_insn"

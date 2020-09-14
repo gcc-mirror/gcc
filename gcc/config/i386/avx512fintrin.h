@@ -239,22 +239,17 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set1_pd (double __A)
 {
-  return (__m512d) __builtin_ia32_broadcastsd512 (__extension__
-						  (__v2df) { __A, },
-						  (__v8df)
-						  _mm512_undefined_pd (),
-						  (__mmask8) -1);
+  return __extension__ (__m512d)(__v8df)
+    { __A, __A, __A, __A, __A, __A, __A, __A };
 }
 
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set1_ps (float __A)
 {
-  return (__m512) __builtin_ia32_broadcastss512 (__extension__
-						 (__v4sf) { __A, },
-						 (__v16sf)
-						 _mm512_undefined_ps (),
-						 (__mmask16) -1);
+  return __extension__ (__m512)(__v16sf)
+    { __A, __A, __A, __A, __A, __A, __A, __A,
+      __A, __A, __A, __A, __A, __A, __A, __A };
 }
 
 /* Create the vector [A B C D A B C D A B C D A B C D].  */
@@ -4072,10 +4067,9 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set1_epi32 (int __A)
 {
-  return (__m512i) __builtin_ia32_pbroadcastd512_gpr_mask (__A,
-							   (__v16si)
-							   _mm512_undefined_epi32 (),
-							   (__mmask16)(-1));
+  return (__m512i)(__v16si)
+    { __A, __A, __A, __A, __A, __A, __A, __A,
+      __A, __A, __A, __A, __A, __A, __A, __A };
 }
 
 extern __inline __m512i
@@ -4128,10 +4122,7 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set1_epi64 (long long __A)
 {
-  return (__m512i) __builtin_ia32_pbroadcastq512_gpr_mask (__A,
-							   (__v8di)
-							   _mm512_undefined_epi32 (),
-							   (__mmask8)(-1));
+  return (__m512i)(__v8di) { __A, __A, __A, __A, __A, __A, __A, __A };
 }
 
 extern __inline __m512i

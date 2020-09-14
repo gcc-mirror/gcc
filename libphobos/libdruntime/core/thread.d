@@ -3586,30 +3586,39 @@ private
     }
     else version (X86)
     {
-        version = AsmExternal;
+        version = AlignFiberStackTo16Byte;
 
-        version (MinGW)
+        version (CET)
         {
-            version = GNU_AsmX86_Windows;
-            version = AlignFiberStackTo16Byte;
+            // fiber_switchContext does not support shadow stack from
+            // Intel CET.  So use ucontext implementation.
         }
-        else version (Posix)
+        else
         {
-            version = AsmX86_Posix;
-            version (OSX)
-                version = AlignFiberStackTo16Byte;
+            version = AsmExternal;
+
+            version (MinGW)
+                version = GNU_AsmX86_Windows;
+            else version (Posix)
+                version = AsmX86_Posix;
         }
     }
     else version (X86_64)
     {
-        version (D_X32)
+        version = AlignFiberStackTo16Byte;
+
+        version (CET)
+        {
+            // fiber_switchContext does not support shadow stack from
+            // Intel CET.  So use ucontext implementation.
+        }
+        else version (D_X32)
         {
             // let X32 be handled by ucontext swapcontext
         }
         else
         {
             version = AsmExternal;
-            version = AlignFiberStackTo16Byte;
 
             version (MinGW)
                 version = GNU_AsmX86_64_Windows;

@@ -1,3 +1,12 @@
+2020-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	* m4/iall.m4: Initial value for result should be -1.
+	* generated/iall_i1.c (miall_i1): Generated.
+	* generated/iall_i16.c (miall_i16): Likewise.
+	* generated/iall_i2.c (miall_i2): Likewise.
+	* generated/iall_i4.c (miall_i4): Likewise.
+	* generated/iall_i8.c (miall_i8): Likewise.
+
 2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	PR fortran/96486

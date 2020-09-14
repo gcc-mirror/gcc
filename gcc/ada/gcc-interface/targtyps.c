@@ -29,6 +29,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "target.h"
 #include "tree.h"
 
 #include "ada.h"
@@ -92,6 +93,15 @@ Pos
 get_target_long_long_size (void)
 {
   return LONG_LONG_TYPE_SIZE;
+}
+
+Pos
+get_target_long_long_long_size (void)
+{
+  if (targetm.scalar_mode_supported_p (TImode))
+    return GET_MODE_BITSIZE (TImode);
+  else
+    return LONG_LONG_TYPE_SIZE;
 }
 
 Pos

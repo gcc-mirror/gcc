@@ -10,8 +10,8 @@ program p
   integer :: c
 
   c = 3
-  func (b(2, 2)) = b ! { dg-error "Different ranks" }
-  func (c) = b       ! { dg-error "Different ranks" }
+  func (b(2, 2)) = b ! { dg-error "Incompatible ranks 1 and 2 in assignment" }
+  func (c) = b       ! { dg-error "Incompatible ranks 1 and 2 in assignment" }
 
 contains
   function func(arg) result(r)

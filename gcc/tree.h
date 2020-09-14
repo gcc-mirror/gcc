@@ -3275,8 +3275,10 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define TREE_OPTIMIZATION_BASE_OPTABS(NODE) \
   (OPTIMIZATION_NODE_CHECK (NODE)->optimization.base_optabs)
 
-/* Return a tree node that encapsulates the optimization options in OPTS.  */
-extern tree build_optimization_node (struct gcc_options *opts);
+/* Return a tree node that encapsulates the optimization options in OPTS
+   and OPTS_SET.  */
+extern tree build_optimization_node (struct gcc_options *opts,
+				     struct gcc_options *opts_set);
 
 #define TREE_TARGET_OPTION(NODE) \
   (TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
@@ -3284,8 +3286,10 @@ extern tree build_optimization_node (struct gcc_options *opts);
 #define TREE_TARGET_GLOBALS(NODE) \
   (TARGET_OPTION_NODE_CHECK (NODE)->target_option.globals)
 
-/* Return a tree node that encapsulates the target options in OPTS.  */
-extern tree build_target_option_node (struct gcc_options *opts);
+/* Return a tree node that encapsulates the target options in OPTS and
+   OPTS_SET.  */
+extern tree build_target_option_node (struct gcc_options *opts,
+				      struct gcc_options *opts_set);
 
 extern void prepare_target_option_nodes_for_pch (void);
 
@@ -5455,6 +5459,11 @@ typedef hash_map<tree,tree,decl_tree_cache_traits> decl_tree_cache_map;
 struct type_tree_cache_traits
   : simple_cache_map_traits<tree_type_hash, tree> { };
 typedef hash_map<tree,tree,type_tree_cache_traits> type_tree_cache_map;
+
+/* Similarly to decl_tree_cache_map, but without caching.  */
+struct decl_tree_traits
+  : simple_hashmap_traits<tree_decl_hash, tree> { };
+typedef hash_map<tree,tree,decl_tree_traits> decl_tree_map;
 
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from CALL_EXPR node EXP.  */

@@ -2,7 +2,7 @@
 /* { dg-options "-O0 -gdwarf-2 -dA" } */
 /* { dg-skip-if "Unmatchable assembly" { mmix-*-* } } */
 /* { dg-final { scan-assembler "__debug_pubtypes" } } */
-/* { dg-final { scan-assembler "long+\[ \t\]+0x165+\[ \t\]+\[#;]+\[ \t\]+Pub Info Length" } } */
+/* { dg-final { scan-assembler {long+[ \t]+0x184+[ \t]+[#;]+[ \t]+Pub Info Length} } } */
 /* { dg-final { scan-assembler "used_struct\\\\0\"+\[ \t\]+\[#;]+\[ \t\]+external name" } } */
 /* { dg-final { scan-assembler-not "unused_struct\\\\0\"+\[ \t\]+\[#;]+\[ \t\]+external name" } } */
 /* { dg-final { scan-assembler "\"list_name_type\\\\0\"+\[ \t\]+\[#;]+\[ \t\]+external name" } } */

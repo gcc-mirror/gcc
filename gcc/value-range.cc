@@ -1690,7 +1690,7 @@ irange::irange_intersect (const irange &r)
   signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
   unsigned bld_pair = 0;
   unsigned bld_lim = m_max_ranges;
-  widest_irange r2 (*this);
+  int_range_max r2 (*this);
   unsigned r2_lim = r2.num_pairs ();
   unsigned i2 = 0;
   for (unsigned i = 0; i < r.num_pairs (); )
@@ -1827,7 +1827,7 @@ irange::invert ()
   unsigned i = 0;
   wi::overflow_type ovf;
   // Construct leftmost range.
-  widest_irange orig_range (*this);
+  int_range_max orig_range (*this);
   unsigned nitems = 0;
   wide_int tmp;
   // If this is going to underflow on the MINUS 1, don't even bother

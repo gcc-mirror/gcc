@@ -1119,6 +1119,45 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
 
 /* Public entrypoint.  See description in libgccjit.h.
 
+   After error-checking, the real work is done by the
+   gcc::jit::recording::global::set_initializer method, in
+   jit-recording.c.  */
+
+extern gcc_jit_lvalue *
+gcc_jit_global_set_initializer (gcc_jit_lvalue *global,
+				const void *blob,
+				size_t num_bytes)
+{
+  RETURN_NULL_IF_FAIL (global, NULL, NULL, "NULL global");
+  RETURN_NULL_IF_FAIL (blob, NULL, NULL, "NULL blob");
+  RETURN_NULL_IF_FAIL_PRINTF1 (global->is_global (), NULL, NULL,
+			       "lvalue \"%s\" not a global",
+			       global->get_debug_string ());
+
+  gcc::jit::recording::type *lval_type = global->get_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (lval_type->is_array (), NULL, NULL,
+			       "global \"%s\" is not an array",
+			       global->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (lval_type->dereference ()->is_int (), NULL, NULL,
+			       "global \"%s\" is not an array of integral type",
+			       global->get_debug_string ());
+  size_t lvalue_size =
+    lval_type->dereference ()->get_size ()
+    * static_cast <gcc::jit::recording::array_type *> (lval_type)->num_elements ();
+  RETURN_NULL_IF_FAIL_PRINTF3 (
+    lvalue_size == num_bytes, NULL, NULL,
+    "mismatching sizes:"
+    " global \"%s\" has size %zu whereas initializer has size %zu",
+    global->get_debug_string (), lvalue_size, num_bytes);
+
+  reinterpret_cast <gcc::jit::recording::global *> (global)
+    ->set_initializer (blob, num_bytes);
+
+  return global;
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
    After error-checking, this calls the trivial
    gcc::jit::recording::memento::as_object method (an lvalue is a
    memento), in jit-recording.h.  */

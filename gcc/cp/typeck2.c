@@ -920,7 +920,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	  /* [dcl.constinit]/2 "If a variable declared with the constinit
 	     specifier has dynamic initialization, the program is
 	     ill-formed."  */
-	  if (flags & LOOKUP_CONSTINIT)
+	  if (DECL_DECLARED_CONSTINIT_P (decl))
 	    {
 	      error_at (location_of (decl),
 			"%<constinit%> variable %qD does not have a constant "

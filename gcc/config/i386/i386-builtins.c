@@ -1866,7 +1866,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
      before the ssse3 version. */
   if (strstr (attrs_str, "arch=") != NULL)
     {
-      cl_target_option_save (&cur_target, &global_options);
+      cl_target_option_save (&cur_target, &global_options,
+			     &global_options_set);
       target_node
 	= ix86_valid_target_attribute_tree (decl, attrs, &global_options,
 					    &global_options_set, 0);
@@ -1935,7 +1936,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    }
 
-      cl_target_option_restore (&global_options, &cur_target);
+      cl_target_option_restore (&global_options, &global_options_set,
+				&cur_target);
 	
       if (predicate_list && arg_str == NULL)
 	{

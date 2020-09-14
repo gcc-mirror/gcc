@@ -395,11 +395,24 @@ build_round_expr (tree arg, tree restype)
     fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
   else if (resprec <= LONG_LONG_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_LLROUND, argprec);
+  else if (resprec >= argprec && resprec == 128)
+    {
+      /* Search for a real kind suitable as temporary for conversion.  */
+      int kind = -1;
+      for (int i = 0; kind < 0 && gfc_real_kinds[i].kind != 0; i++)
+	if (gfc_real_kinds[i].mode_precision >= resprec)
+	  kind = gfc_real_kinds[i].kind;
+      if (kind < 0)
+	gfc_internal_error ("Could not find real kind with at least %d bits",
+			    resprec);
+      arg = fold_convert (gfc_float128_type_node, arg);
+      fn = gfc_builtin_decl_for_float_kind (BUILT_IN_ROUND, kind);
+    }
   else
     gcc_unreachable ();
 
-  return fold_convert (restype, build_call_expr_loc (input_location,
-						 fn, 1, arg));
+  return convert (restype, build_call_expr_loc (input_location,
+						fn, 1, arg));
 }
 
 

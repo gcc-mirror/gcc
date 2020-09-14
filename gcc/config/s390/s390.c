@@ -15207,6 +15207,7 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 static void
 s390_function_specific_restore (struct gcc_options *opts,
+				struct gcc_options */* opts_set */,
 				struct cl_target_option *ptr ATTRIBUTE_UNUSED)
 {
   opts->x_s390_cost_pointer = (long)processor_table[opts->x_s390_tune].cost;
@@ -15230,7 +15231,7 @@ s390_override_options_after_change (void)
 
 static void
 s390_option_override_internal (struct gcc_options *opts,
-			       const struct gcc_options *opts_set)
+			       struct gcc_options *opts_set)
 {
   /* Architecture mode defaults according to ABI.  */
   if (!(opts_set->x_target_flags & MASK_ZARCH))
@@ -15444,7 +15445,7 @@ s390_option_override_internal (struct gcc_options *opts,
 
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
-  s390_function_specific_restore (opts, NULL);
+  s390_function_specific_restore (opts, opts_set, NULL);
 
   /* Check whether -mfentry is supported. It cannot be used in 31-bit mode,
      because 31-bit PLT stubs assume that %r12 contains GOT address, which is
@@ -15513,7 +15514,8 @@ s390_option_override (void)
 
   /* Save the initial options in case the user does function specific
      options.  */
-  target_option_default_node = build_target_option_node (&global_options);
+  target_option_default_node
+    = build_target_option_node (&global_options, &global_options_set);
   target_option_current_node = target_option_default_node;
 
   /* This cannot reside in s390_option_optimization_table since HAVE_prefetch
@@ -15803,7 +15805,7 @@ s390_valid_target_attribute_tree (tree args,
       s390_option_override_internal (opts, &new_opts_set);
       /* Save the current options unless we are validating options for
 	 #pragma.  */
-      t = build_target_option_node (opts);
+      t = build_target_option_node (opts, &new_opts_set);
     }
   return t;
 }
@@ -15816,7 +15818,7 @@ s390_valid_target_attribute_p (tree fndecl,
 			       tree args,
 			       int ARG_UNUSED (flags))
 {
-  struct gcc_options func_options;
+  struct gcc_options func_options, func_options_set;
   tree new_target, new_optimize;
   bool ret = true;
 
@@ -15828,7 +15830,8 @@ s390_valid_target_attribute_p (tree fndecl,
       && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
     return true;
 
-  tree old_optimize = build_optimization_node (&global_options);
+  tree old_optimize
+    = build_optimization_node (&global_options, &global_options_set);
 
   /* Get the optimization options of the current function.  */
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
@@ -15840,19 +15843,21 @@ s390_valid_target_attribute_p (tree fndecl,
   memset (&func_options, 0, sizeof (func_options));
   init_options_struct (&func_options, NULL);
   lang_hooks.init_options_struct (&func_options);
+  memset (&func_options_set, 0, sizeof (func_options_set));
 
-  cl_optimization_restore (&func_options, TREE_OPTIMIZATION (func_optimize));
+  cl_optimization_restore (&func_options, &func_options_set,
+			   TREE_OPTIMIZATION (func_optimize));
 
   /* Initialize func_options to the default before its target options can
      be set.  */
-  cl_target_option_restore (&func_options,
+  cl_target_option_restore (&func_options, &func_options_set,
 			    TREE_TARGET_OPTION (target_option_default_node));
 
   new_target = s390_valid_target_attribute_tree (args, &func_options,
 						 &global_options_set,
 						 (args ==
 						  current_target_pragma));
-  new_optimize = build_optimization_node (&func_options);
+  new_optimize = build_optimization_node (&func_options, &func_options_set);
   if (new_target == error_mark_node)
     ret = false;
   else if (fndecl && new_target)
@@ -15990,7 +15995,8 @@ s390_indirect_branch_settings (tree fndecl)
 void
 s390_activate_target_options (tree new_tree)
 {
-  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
   if (TREE_TARGET_GLOBALS (new_tree))
     restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
   else if (new_tree == target_option_default_node)

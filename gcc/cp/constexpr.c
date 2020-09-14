@@ -1202,7 +1202,7 @@ maybe_initialize_constexpr_call_table (void)
 
    This is not GC-deletable to avoid GC affecting UID generation.  */
 
-static GTY(()) hash_map<tree, tree> *fundef_copies_table;
+static GTY(()) decl_tree_map *fundef_copies_table;
 
 /* Reuse a copy or create a new unshared copy of the function FUN.
    Return this copy.  We use a TREE_LIST whose PURPOSE is body, VALUE
@@ -6679,6 +6679,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 			allow_non_constant, strict,
 			manifestly_const_eval || !allow_non_constant };
 
+  /* Turn off -frounding-math for manifestly constant evaluation.  */
+  warning_sentinel rm (flag_rounding_math, ctx.manifestly_const_eval);
   tree type = initialized_type (t);
   tree r = t;
   bool is_consteval = false;

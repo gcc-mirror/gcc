@@ -71,6 +71,7 @@ BEGIN {
 			n_target_save++
 
 			extra_target_vars[n_extra_target_vars] = name
+			extra_target_var_types[n_extra_target_vars] = type
 			n_extra_target_vars++
 		}
 		else if ($1 == "HeaderInclude") {

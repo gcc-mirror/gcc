@@ -1,5 +1,7 @@
 2020-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk d106029c2aa
+
 	Merge trunk 10f51543bb8
 	libstdc++: Add compile-time checks to__glibcxx_assert [PR 71960]
 

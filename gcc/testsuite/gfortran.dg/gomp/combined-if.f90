@@ -104,6 +104,6 @@ contains
 end module
 
 ! { dg-final { scan-tree-dump-times "(?n)#pragma omp target.* if\\(" 9 "omplower" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma omp simd.* if\\(" 4 "omplower" { target { ! offload_nvptx } } } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma omp simd.* if\\(" 7 "omplower" { target { offload_nvptx } } } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma omp simd.* if\\(" 5 "omplower" { target { ! offload_nvptx } } } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma omp simd.* if\\(" 9 "omplower" { target { offload_nvptx } } } }
 ! { dg-final { scan-tree-dump-times "(?n)#pragma omp parallel.* if\\(" 6 "omplower" } }

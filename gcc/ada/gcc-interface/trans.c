@@ -439,6 +439,19 @@ gigi (Node_Id gnat_root,
 			   NULL_TREE, is_default, true, true, true, false,
 			   false, NULL, Empty);
 
+  if (Enable_128bit_Types)
+    {
+      tree int128_type = gnat_type_for_size (128, 0);
+      mulv128_decl
+	= create_subprog_decl (get_identifier ("__gnat_mulv128"), NULL_TREE,
+			       build_function_type_list (int128_type,
+							 int128_type,
+							 int128_type,
+							 NULL_TREE),
+			       NULL_TREE, is_default, true, true, true, false,
+			       false, NULL, Empty);
+    }
+
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
 
@@ -678,7 +691,8 @@ gigi (Node_Id gnat_root,
 
   /* Save the current optimization options again after the above possible
      global_options changes.  */
-  optimization_default_node = build_optimization_node (&global_options);
+  optimization_default_node
+    = build_optimization_node (&global_options, &global_options_set);
   optimization_current_node = optimization_default_node;
 
   /* Now translate the compilation unit proper.  */
@@ -968,12 +982,8 @@ lvalue_for_aggregate_p (Node_Id gnat_node, tree gnu_type)
 				     get_unpadded_type (Etype (gnat_parent)));
 
     case N_Object_Declaration:
-      /* For an aggregate object declaration, return the constant at top level
-	 in order to avoid generating elaboration code.  */
-      if (global_bindings_p ())
-	return false;
-
-      /* ... fall through ... */
+      /* For an aggregate object declaration, return false consistently.  */
+      return false;
 
     case N_Assignment_Statement:
       /* For an aggregate assignment, decide based on the size.  */
@@ -6476,6 +6486,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  gnu_expr = gnat_to_gnu (Expression (gnat_node));
 
+	  /* First deal with erroneous expressions.  */
 	  if (TREE_CODE (gnu_expr) == ERROR_MARK)
 	    {
 	      /* If this is a named number for which we cannot manipulate
@@ -6485,6 +6496,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	      else if (type_annotate_only)
 		gnu_expr = NULL_TREE;
 	    }
+
+	  /* Then a special case: we do not want the SLOC of the expression
+	     of the tag to pop up every time it is referenced somewhere.  */
+	  else if (EXPR_P (gnu_expr) && Is_Tag (gnat_temp))
+	    SET_EXPR_LOCATION (gnu_expr, UNKNOWN_LOCATION);
 	}
       else
 	gnu_expr = NULL_TREE;
@@ -9384,6 +9400,15 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
 						       convert (int64, lhs),
 						       convert (int64, rhs)));
+	}
+
+      /* Likewise for a 128-bit mult and a 64-bit target.  */
+      else if (code == MULT_EXPR && precision == 128 && BITS_PER_WORD < 128)
+	{
+	  tree int128 = gnat_type_for_size (128, 0);
+	  return convert (gnu_type, build_call_n_expr (mulv128_decl, 2,
+						       convert (int128, lhs),
+						       convert (int128, rhs)));
 	}
 
       enum internal_fn icode;
