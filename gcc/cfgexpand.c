@@ -2972,6 +2972,9 @@ expand_asm_stmt (gasm *stmt)
 			   regname);
 		    return;
 		  }
+		/* Clobbering the stack pointer register.  */
+		else if (reg == (int) STACK_POINTER_REGNUM)
+		  crtl->sp_is_clobbered_by_asm = true;
 
 	        SET_HARD_REG_BIT (clobbered_regs, reg);
 	        rtx x = gen_rtx_REG (reg_raw_mode[reg], reg);
