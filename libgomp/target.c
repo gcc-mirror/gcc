@@ -854,7 +854,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  int always_to_cnt = 0;
 	  if ((kind & typemask) == GOMP_MAP_TO_PSET)
 	    {
-	      bool has_nullptr;
+	      bool has_nullptr = false;
 	      size_t j;
 	      for (j = 0; j < n->tgt->list_count; j++)
 		if (n->tgt->list[j].key == n)
@@ -1017,7 +1017,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	       == GOMP_MAP_TO_PSET)
 	  {
 	    splay_tree_key k = tgt->list[i].key;
-	    bool has_nullptr;
+	    bool has_nullptr = false;
 	    size_t j;
 	    for (j = 0; j < k->tgt->list_count; j++)
 	      if (k->tgt->list[j].key == k)
