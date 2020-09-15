@@ -610,7 +610,7 @@ lhd_omp_assignment (tree clause ATTRIBUTE_UNUSED, tree dst, tree src)
 /* Finalize clause C.  */
 
 void
-lhd_omp_finish_clause (tree, gimple_seq *)
+lhd_omp_finish_clause (tree, gimple_seq *, bool)
 {
 }
 

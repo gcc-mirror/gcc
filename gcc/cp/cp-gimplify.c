@@ -2357,7 +2357,7 @@ cxx_omp_predetermined_mapping (tree decl)
 /* Finalize an implicitly determined clause.  */
 
 void
-cxx_omp_finish_clause (tree c, gimple_seq *)
+cxx_omp_finish_clause (tree c, gimple_seq *, bool /* openacc */)
 {
   tree decl, inner_type;
   bool make_shared = false;

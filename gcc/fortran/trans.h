@@ -810,7 +810,7 @@ tree gfc_omp_clause_copy_ctor (tree, tree, tree);
 tree gfc_omp_clause_assign_op (tree, tree, tree);
 tree gfc_omp_clause_linear_ctor (tree, tree, tree, tree);
 tree gfc_omp_clause_dtor (tree, tree);
-void gfc_omp_finish_clause (tree, gimple_seq *);
+void gfc_omp_finish_clause (tree, gimple_seq *, bool);
 bool gfc_omp_scalar_p (tree);
 bool gfc_omp_disregard_value_expr (tree, bool);
 bool gfc_omp_private_debug_clause (tree, bool);
