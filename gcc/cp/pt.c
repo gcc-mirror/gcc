@@ -6072,9 +6072,11 @@ push_template_decl_real (tree decl, bool is_friend)
       if (is_primary)
 	retrofit_lang_decl (decl);
       if (DECL_LANG_SPECIFIC (decl)
-	  && (!VAR_OR_FUNCTION_DECL_P (decl)
-	      || !ctx
-	      || !DECL_LOCAL_DECL_P (decl)))
+	  && !(VAR_OR_FUNCTION_DECL_P (decl)
+	       && DECL_LOCAL_DECL_P (decl)
+	       /* OMP reductions still need a template header.  */
+	       && !(TREE_CODE (decl) == FUNCTION_DECL
+		    && DECL_OMP_DECLARE_REDUCTION_P (decl))))
 	DECL_TEMPLATE_INFO (decl) = info;
     }
 
@@ -13712,7 +13714,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   gcc_assert (DECL_TEMPLATE_INFO (t) != NULL_TREE
 	      || DECL_LOCAL_DECL_P (t));
 
-  if (DECL_LOCAL_DECL_P (t))
+  if (DECL_LOCAL_DECL_P (t)
+      && !DECL_OMP_DECLARE_REDUCTION_P (t))
     {
       if (tree spec = retrieve_local_specialization (t))
 	return spec;
@@ -13967,7 +13970,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	  && !uses_template_parms (argvec))
 	tsubst_default_arguments (r, complain);
     }
-  else if (DECL_LOCAL_DECL_P (r))
+  else if (DECL_LOCAL_DECL_P (r)
+	   && !DECL_OMP_DECLARE_REDUCTION_P (r))
     {
       if (!cp_unevaluated_operand)
 	register_local_specialization (r, t);
