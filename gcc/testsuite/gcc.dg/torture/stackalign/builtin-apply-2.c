@@ -9,7 +9,7 @@
 /* arm_hf_eabi: Variadic funcs use Base AAPCS.  Normal funcs use VFP variant.
    avr: Variadic funcs don't pass arguments in registers, while normal funcs
         do.  */
-/* { dg-skip-if "Variadic funcs use different argument passing from normal funcs" { arm_hf_eabi || { avr-*-* riscv*-*-* or1k*-*-* msp430-*-* amdgcn-*-* pru-*-* } } } */
+/* { dg-skip-if "Variadic funcs use different argument passing from normal funcs" { arm_hf_eabi || { csky*-*-* avr-*-* riscv*-*-* or1k*-*-* msp430-*-* amdgcn-*-* pru-*-* } } } */
 /* { dg-skip-if "Variadic funcs have all args on stack. Normal funcs have args in registers." { nds32*-*-* } { v850*-*-* } } */
 /* { dg-require-effective-target untyped_assembly } */
    

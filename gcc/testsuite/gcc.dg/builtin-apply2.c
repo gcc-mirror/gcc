@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target untyped_assembly } */
 /* { dg-skip-if "Variadic funcs have all args on stack. Normal funcs have args in registers." { "avr-*-* nds32*-*-* amdgcn-*-*" } } */
-/* { dg-skip-if "Variadic funcs use different argument passing from normal funcs." { "riscv*-*-* or1k*-*-* msp430-*-* pru-*-*" } } */
+/* { dg-skip-if "Variadic funcs use different argument passing from normal funcs." { "csky*-*-* riscv*-*-* or1k*-*-* msp430-*-* pru-*-*" } } */
 /* { dg-skip-if "Variadic funcs use Base AAPCS.  Normal funcs use VFP variant." { arm*-*-* && arm_hf_eabi } } */
 
 /* PR target/12503 */
