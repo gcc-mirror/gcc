@@ -80,7 +80,7 @@ extern bool lhd_handle_option (size_t, const char *, HOST_WIDE_INT, int,
 extern int lhd_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern enum omp_clause_default_kind lhd_omp_predetermined_sharing (tree);
 extern tree lhd_omp_assignment (tree, tree, tree);
-extern void lhd_omp_finish_clause (tree, gimple_seq *);
+extern void lhd_omp_finish_clause (tree, gimple_seq *, bool);
 struct gimplify_omp_ctx;
 extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 					       tree);

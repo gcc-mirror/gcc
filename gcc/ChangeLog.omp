@@ -1,3 +1,20 @@
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* gimplify.c (gimplify_omp_for): Add 'bool openacc' argument;
+	update omp_finish_clause calls.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses,
+	gimplify_expr, gimplify_omp_loop): Update omp_finish_clause
+	and/or gimplify_for calls.
+	* langhooks-def.h (lhd_omp_finish_clause): Add bool openacc arg.
+	* langhooks.c (lhd_omp_finish_clause): Likewise.
+	* langhooks.h (lhd_omp_finish_clause): Likewise.
+	* omp-low.c (scan_sharing_clauses): Keep GOMP_MAP_TO_PSET cause for
+	'declare target' vars.
+
 2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

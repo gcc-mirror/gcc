@@ -954,6 +954,9 @@ struct target_var_desc {
   bool always_copy_from;
   /* True if this is for OpenACC 'attach'.  */
   bool is_attach;
+  /* If GOMP_MAP_TO_PSET had a NULL pointer; used for Fortran descriptors,
+     which were initially unallocated.  */
+  bool has_null_ptr_assoc;
   /* Relative offset against key host_start.  */
   uintptr_t offset;
   /* Actual length.  */
