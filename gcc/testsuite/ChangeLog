@@ -1,3 +1,40 @@
+2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/nop-1.c: New test.
+
+2020-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/avx512f-broadcast-pr87767-1.c: Make the test
+	run as non-dynamic for m32 Darwin.
+	* gcc.target/i386/avx512f-broadcast-pr87767-3.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-7.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-3.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-6.c: Adjust dg-requires
+	clause.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96653
+	* gcc.dg/analyzer/pr96653.c: New test.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/rhbz1878600.c: New test.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/pr97029.c: New test.
+
+2020-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/thunk1.adb: New test.
+	* gnat.dg/thunk1_pkg1.ads: New helper.
+	* gnat.dg/thunk1_pkg2.ads: Likewise.
+	* gnat.dg/thunk1_pkg2.adb: Likewise.
+
 2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/97002

@@ -1,3 +1,7 @@
+2020-09-14  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2020-09-11  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_14): New ABI tag.

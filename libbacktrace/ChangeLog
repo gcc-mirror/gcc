@@ -1,3 +1,96 @@
+2020-09-14  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/93608
+	Add support for MiniDebugInfo.
+	* elf.c (struct elf_view): Define.  Replace most uses of
+	backtrace_view with elf_view.
+	(elf_get_view): New static functions.  Replace most calls of
+	backtrace_get_view with elf_get_view.
+	(elf_release_view): New static functions.  Replace most calls of
+	backtrace_release_view with elf_release_view.
+	(elf_uncompress_failed): Rename from elf_zlib_failed.  Change all
+	callers.
+	(LZMA_STATES, LZMA_POS_STATES, LZMA_DIST_STATES): Define.
+	(LZMA_DIST_SLOTS, LZMA_DIST_MODEL_START): Define.
+	(LZMA_DIST_MODEL_END, LZMA_FULL_DISTANCES): Define.
+	(LZMA_ALIGN_SIZE, LZMA_LEN_LOW_SYMBOLS): Define.
+	(LZMA_LEN_MID_SYMBOLS, LZMA_LEN_HIGH_SYMBOLS): Define.
+	(LZMA_LITERAL_CODERS_MAX, LZMA_LITERAL_CODER_SIZE): Define.
+	(LZMA_PROB_IS_MATCH_LEN, LZMA_PROB_IS_REP_LEN): Define.
+	(LZMA_PROB_IS_REP0_LEN, LZMA_PROB_IS_REP1_LEN): Define.
+	(LZMA_PROB_IS_REP2_LEN, LZMA_PROB_IS_REP0_LONG_LEN): Define.
+	(LZMA_PROB_DIST_SLOT_LEN, LZMA_PROB_DIST_SPECIAL_LEN): Define.
+	(LZMA_PROB_DIST_ALIGN_LEN): Define.
+	(LZMA_PROB_MATCH_LEN_CHOICE_LEN): Define.
+	(LZMA_PROB_MATCH_LEN_CHOICE2_LEN): Define.
+	(LZMA_PROB_MATCH_LEN_LOW_LEN): Define.
+	(LZMA_PROB_MATCH_LEN_MID_LEN): Define.
+	(LZMA_PROB_MATCH_LEN_HIGH_LEN): Define.
+	(LZMA_PROB_REP_LEN_CHOICE_LEN): Define.
+	(LZMA_PROB_REP_LEN_CHOICE2_LEN): Define.
+	(LZMA_PROB_REP_LEN_LOW_LEN): Define.
+	(LZMA_PROB_REP_LEN_MID_LEN): Define.
+	(LZMA_PROB_REP_LEN_HIGH_LEN): Define.
+	(LZMA_PROB_LITERAL_LEN): Define.
+	(LZMA_PROB_IS_MATCH_OFFSET, LZMA_PROB_IS_REP_OFFSET): Define.
+	(LZMA_PROB_IS_REP0_OFFSET, LZMA_PROB_IS_REP1_OFFSET): Define.
+	(LZMA_PROB_IS_REP2_OFFSET): Define.
+	(LZMA_PROB_IS_REP0_LONG_OFFSET): Define.
+	(LZMA_PROB_DIST_SLOT_OFFSET): Define.
+	(LZMA_PROB_DIST_SPECIAL_OFFSET): Define.
+	(LZMA_PROB_DIST_ALIGN_OFFSET): Define.
+	(LZMA_PROB_MATCH_LEN_CHOICE_OFFSET): Define.
+	(LZMA_PROB_MATCH_LEN_CHOICE2_OFFSET): Define.
+	(LZMA_PROB_MATCH_LEN_LOW_OFFSET): Define.
+	(LZMA_PROB_MATCH_LEN_MID_OFFSET): Define.
+	(LZMA_PROB_MATCH_LEN_HIGH_OFFSET): Define.
+	(LZMA_PROB_REP_LEN_CHOICE_OFFSET): Define.
+	(LZMA_PROB_REP_LEN_CHOICE2_OFFSET): Define.
+	(LZMA_PROB_REP_LEN_LOW_OFFSET): Define.
+	(LZMA_PROB_REP_LEN_MID_OFFSET): Define.
+	(LZMA_PROB_REP_LEN_HIGH_OFFSET): Define.
+	(LZMA_PROB_LITERAL_OFFSET): Define.
+	(LZMA_PROB_TOTAL_COUNT): Define.
+	(LZMA_IS_MATCH, LZMA_IS_REP, LZMA_IS_REP0): Define.
+	(LZMA_IS_REP1, LZMA_IS_REP2, LZMA_IS_REP0_LONG): Define.
+	(LZMA_DIST_SLOT, LZMA_DIST_SPECIAL, LZMA_DIST_ALIGN): Define.
+	(LZMA_MATCH_LEN_CHOICE, LZMA_MATCH_LEN_CHOICE2): Define.
+	(LZMA_MATCH_LEN_LOW, LZMA_MATCH_LEN_MID): Define.
+	(LZMA_MATCH_LEN_HIGH, LZMA_REP_LEN_CHOICE): Define.
+	(LZMA_REP_LEN_CHOICE2, LZMA_REP_LEN_LOW): Define.
+	(LZMA_REP_LEN_MID, LZMA_REP_LEN_HIGH, LZMA_LITERAL): Define.
+	(elf_lzma_varint): New static function.
+	(elf_lzma_range_normalize): New static function.
+	(elf_lzma_bit, elf_lzma_integer): New static functions.
+	(elf_lzma_reverse_integer): New static function.
+	(elf_lzma_len, elf_uncompress_lzma_block): New static functions.
+	(elf_uncompress_lzma): New static function.
+	(backtrace_uncompress_lzma): New function.
+	(elf_add): Add memory and memory_size parameters.  Change all
+	callers.  Look for .gnu_debugdata section, and, if found,
+	decompress it and use it for symbols and debug info.  Permit the
+	descriptor parameter to be -1.
+	* internal.h (backtrace_uncompress_lzma): Declare.
+	* mtest.c: New file.
+	* xztest.c: New file.
+	* configure.ac: Check for nm, xz, and comm programs.  Check for
+	liblzma library.
+	(HAVE_MINIDEBUG): Define.
+	* Makefile.am (mtest_SOURCES): Define.
+	(mtest_CFLAGS, mtest_LDADD): Define.
+	(TESTS): Add mtest_minidebug if HAVE_MINIDEBUG.
+	(%_minidebug): New pattern rule, if HAVE_MINIDEBUG.
+	(xztest_SOURCES, xztest_CFLAGS, xztest_LDADD): Define.
+	(xztest_alloc_SOURCES, xztest_alloc_CFLAGS): Define
+	(xztest_alloc_LDADD): Define.
+	(BUILDTESTS): Add mtest, xztest, xztest_alloc.
+	(CLEANFILES): Add files created by minidebug pattern.
+	(btest.lo): Correct INCDIR reference.
+	(mtest.lo, xztest.lo, ztest.lo): New targets.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
 2020-09-09  Ian Lance Taylor  <iant@golang.org>
 
 	* pecoff.c (coff_initialize_syminfo): Add is_64 parameter.

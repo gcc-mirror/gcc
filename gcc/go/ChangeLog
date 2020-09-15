@@ -1,3 +1,9 @@
+2020-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* go-gcc.cc (Gcc_backend::function): Adjust
+	cl_optimization_save, cl_optimization_restore and
+	build_optimization_node callers.
+
 2020-08-10  Clément Chigot  <chigot.c@gmail.com>
 
 	* go-c.h (struct go_create_gogo_args): Add need_eqtype field.
