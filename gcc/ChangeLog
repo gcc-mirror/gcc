@@ -1,3 +1,282 @@
+2020-09-14  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-09-14  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/invoke.texi: fix '-fprofile-reproducibility' option
+	spelling in manual.
+
+2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md ("nop"): Re-define as `ja 0'.
+
+2020-09-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* tree-ssa-address.c (copy_ref_info): Reset flow-sensitive
+	info of the copied points-to.  Transfer bigger alignment
+	via the access type.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Reset all flow-sensitive info.
+
+2020-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97043
+	* tree-vect-slp.c (vect_analyze_slp_instance): Do not
+	elide a load permutation if the current vectorization
+	factor is one.
+
+2020-09-14  Nathan Sidwell  <nathan@acm.org>
+
+	* config/i386/sse.md (mov<mode>): Fix operand indices.
+
+2020-09-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/pa/pa.c (hppa_rtx_costs) [ASHIFT, ASHIFTRT, LSHIFTRT]:
+	Provide accurate costs for DImode shifts of integer constants.
+
+2020-09-12  Roger Sayle  <roger@nextmovesoftware.com>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (shrpsi4_1, shrpsi4_2): New define_insns split
+	out from previous shrpsi4 providing two commutitive variants using
+	plus_xor_ior_operator as a predicate.
+	(shrpdi4_1, shrpdi4_2, shrpdi_3, shrpdi_4): Likewise DImode versions
+	where _1 and _2 take register shifts, and _3 and _4 for integers.
+	(rotlsi3_internal): Name this anonymous instruction.
+	(rotrdi3): New DImode insn copied from rotrsi3.
+	(rotldi3): New DImode expander copied from rotlsi3.
+	(rotldi4_internal): New DImode insn copied from rotsi3_internal.
+
+2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_hard_regno_mode_ok): Align TImode registers.
+	* config/gcn/gcn.md: Assert that TImode registers do not early clobber.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96579
+	* tree-ssa-reassoc.c (linearize_expr_tree): If we expand
+	rhs via special ops make sure to swap operands.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96370
+	* tree-ssa-reassoc.c (rewrite_expr_tree): Add operation
+	code parameter and use it instead of picking it up from
+	the stmt that is being rewritten.
+	(reassociate_bb): Pass down the operation code.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96514
+	* tree-if-conv.c (if_convertible_bb_p): If the last stmt
+	is a call that is control-altering, fail.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96369
+	* fold-const.c (fold_range_test): Special-case constant
+	LHS for short-circuiting operations.
+
+2020-09-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96349
+	* tree-ssa-loop-split.c (stmt_semi_invariant_p_1): When the
+	condition runs into a loop PHI with an abnormal entry value give up.
+
+2020-09-11  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from master:
+	2020-07-27  Matthias Klose  <doko@ubuntu.com>
+
+	PR bootstrap/96203
+	* common.opt: Add -fcf-protection=check.
+	* flag-types.h (cf_protection_level): Add CF_CHECK.
+	* lto-wrapper.c (merge_and_complain): Issue an error for
+	mismatching -fcf-protection values with -fcf-protection=check.
+	Otherwise, merge -fcf-protection values.
+	* doc/invoke.texi: Document -fcf-protection=check.
+
+2020-09-11  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from master:
+	2020-07-14  Matthias Klose  <doko@ubuntu.com>
+
+	PR lto/95604
+	* lto-wrapper.c (merge_and_complain): Add decoded options as parameter,
+	error on different values for -fcf-protection.
+	(append_compiler_options): Pass -fcf-protection option.
+	(find_and_merge_options): Add decoded options as parameter,
+	pass decoded_options to merge_and_complain.
+	(run_gcc): Pass decoded options to find_and_merge_options.
+	* lto-opts.c (lto_write_options): Pass -fcf-protection option.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer-out.c (collect_block_tree_leafs): Recurse on
+	root rather than BLOCK_SUBBLOCKS (root).
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer.h (LTO_minor_version): Bump.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/93865
+	* lto-streamer.h (struct output_block): Add emit_pwd member.
+	* lto-streamer-out.c: Include toplev.h.
+	(clear_line_info): Set emit_pwd.
+	(lto_output_location_1): Encode the ob->current_file != xloc.file
+	bit directly into the location number.  If changing file, emit
+	additionally a bit whether pwd is emitted and emit it before the
+	first relative pathname since clear_line_info.
+	(output_function, output_constructor): Don't call clear_line_info
+	here.
+	* lto-streamer-in.c (struct string_pair_map): New type.
+	(struct string_pair_map_hasher): New type.
+	(string_pair_map_hasher::hash): New method.
+	(string_pair_map_hasher::equal): New method.
+	(path_name_pair_hash_table, string_pair_map_allocator): New variables.
+	(relative_path_prefix, canon_relative_path_prefix,
+	canon_relative_file_name): New functions.
+	(canon_file_name): Add relative_prefix argument, if non-NULL
+	and string is a relative path, return canon_relative_file_name.
+	(lto_location_cache::input_location_and_block): Decode file change
+	bit from the location number.  If changing file, unpack bit whether
+	pwd is streamed and stream in pwd.  Adjust canon_file_name caller.
+	(lto_free_file_name_hash): Delete path_name_pair_hash_table
+	and string_pair_map_allocator.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94235
+	* lto-streamer-out.c (output_cfg): Also stream goto_locus for edges.
+	Use bp_pack_var_len_unsigned instead of streamer_write_uhwi to stream
+	e->dest->index and e->flags.
+	(output_function): Call output_cfg before output_ssa_name, rather than
+	after streaming all bbs.
+	* lto-streamer-in.c (input_cfg): Stream in goto_locus for edges.
+	Use bp_unpack_var_len_unsigned instead of streamer_read_uhwi to stream
+	in dest_index and edge_flags.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer.h (stream_input_location_now): Remove declaration.
+	* lto-streamer-in.c (stream_input_location_now): Remove.
+	(input_eh_region, input_struct_function_base): Use
+	stream_input_location instead of stream_input_location_now.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-streamer.h (struct output_block): Add reset_locus member.
+	* lto-streamer-out.c (clear_line_info): Set reset_locus to true.
+	(lto_output_location_1): If reset_locus, clear it and ensure
+	current_{file,line,col} is different from xloc members.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96901
+	* tree.h (struct decl_tree_traits): New type.
+	(decl_tree_map): New typedef.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/94311
+	* gimple.h (gimple_location_ptr, gimple_phi_arg_location_ptr): New
+	functions.
+	* streamer-hooks.h (struct streamer_hooks): Add
+	output_location_and_block callback.  Fix up formatting for
+	output_location.
+	(stream_output_location_and_block): Define.
+	* lto-streamer.h (class lto_location_cache): Fix comment typo.  Add
+	current_block member.
+	(lto_location_cache::input_location_and_block): New method.
+	(lto_location_cache::lto_location_cache): Initialize current_block.
+	(lto_location_cache::cached_location): Add block member.
+	(struct output_block): Add current_block member.
+	(lto_output_location): Formatting fix.
+	(lto_output_location_and_block): Declare.
+	* lto-streamer.c (lto_streamer_hooks_init): Initialize
+	streamer_hooks.output_location_and_block.
+	* lto-streamer-in.c (lto_location_cache::cmp_loc): Also compare
+	block members.
+	(lto_location_cache::apply_location_cache): Handle blocks.
+	(lto_location_cache::accept_location_cache,
+	lto_location_cache::revert_location_cache): Fix up function comments.
+	(lto_location_cache::input_location_and_block): New method.
+	(lto_location_cache::input_location): Implement using
+	input_location_and_block.
+	(input_function): Invoke apply_location_cache after streaming in all
+	bbs.
+	* lto-streamer-out.c (clear_line_info): Set current_block.
+	(lto_output_location_1): New function, moved from lto_output_location,
+	added block handling.
+	(lto_output_location): Implement using lto_output_location_1.
+	(lto_output_location_and_block): New function.
+	* gimple-streamer-in.c (input_phi): Use input_location_and_block
+	to input and cache both location and block.
+	(input_gimple_stmt): Likewise.
+	* gimple-streamer-out.c (output_phi): Use
+	stream_output_location_and_block.
+	(output_gimple_stmt): Likewise.
+
+2020-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96729
+	* dwarf2out.c (dwarf2out_next_real_insn): Adjust function comment.
+	(dwarf2out_var_location): Look for next_note only if next_real is
+	non-NULL, in that case look for the first non-deleted
+	NOTE_INSN_VAR_LOCATION between loc_note and next_real, if any.
+
 2020-09-09  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	PR target/96357

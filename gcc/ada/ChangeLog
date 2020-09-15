@@ -1,3 +1,15 @@
+2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (type_has_variable_size): New function.
+	(create_field_decl): In the packed case, also force byte alignment
+	when the type of the field has variable size.
+
+2020-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Only
+	create extra subtypes for discriminants if the RM size of the base
+	type of the index type is lower than that of the index type.
+
 2020-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (set_rm_size): Do not take into account the
