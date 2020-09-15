@@ -3453,6 +3453,21 @@ multi_precision_range_tests ()
   small = big;
   ASSERT_TRUE (small == int_range<1> (INT (21), INT (21), VR_ANTI_RANGE));
 
+  // Copying a legacy symbolic to an int_range should normalize the
+  // symbolic at copy time.
+  {
+    tree ssa = make_ssa_name (integer_type_node);
+    value_range legacy_range (ssa, INT (25));
+    int_range<2> copy = legacy_range;
+    ASSERT_TRUE (copy == int_range<2>  (vrp_val_min (integer_type_node),
+					INT (25)));
+
+    // Test that copying ~[abc_23, abc_23] to a multi-range yields varying.
+    legacy_range = value_range (ssa, ssa, VR_ANTI_RANGE);
+    copy = legacy_range;
+    ASSERT_TRUE (copy.varying_p ());
+  }
+
   range3_tests ();
 }
 
