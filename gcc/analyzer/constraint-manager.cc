@@ -1752,7 +1752,15 @@ public:
     if (m_cm_b->eval_condition (lhs, code, rhs).is_true ())
       {
 	bool sat = m_out->add_constraint (lhs, code, rhs);
-	gcc_assert (sat);
+	if (!sat)
+	  {
+	    /* If -fanalyzer-transitivity is off, we can encounter cases
+	       where at least one of the two constraint_managers being merged
+	       is infeasible, but we only discover that infeasibility
+	       during merging (PR analyzer/96650).
+	       Silently drop such constraints.  */
+	    gcc_assert (!flag_analyzer_transitivity);
+	  }
       }
   }
 
