@@ -1,3 +1,41 @@
+2020-09-14  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-09-14  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/invoke.texi: fix '-fprofile-reproducibility' option
+	spelling in manual.
+
+2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md ("nop"): Re-define as `ja 0'.
+
+2020-09-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* tree-ssa-address.c (copy_ref_info): Reset flow-sensitive
+	info of the copied points-to.  Transfer bigger alignment
+	via the access type.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Reset all flow-sensitive info.
+
+2020-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97043
+	* tree-vect-slp.c (vect_analyze_slp_instance): Do not
+	elide a load permutation if the current vectorization
+	factor is one.
+
+2020-09-14  Nathan Sidwell  <nathan@acm.org>
+
+	* config/i386/sse.md (mov<mode>): Fix operand indices.
+
 2020-09-13  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/pa/pa.c (hppa_rtx_costs) [ASHIFT, ASHIFTRT, LSHIFTRT]:

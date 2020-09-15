@@ -1,3 +1,18 @@
+2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	Backported from master:
+	2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/nop-1.c: New test.
+
+2020-09-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* gcc.dg/torture/pr96522.c: New testcase.
+
 2020-09-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backported from master:
