@@ -11,7 +11,7 @@ import (
 )
 
 //sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (err Errno)
-//ptrace(request _C_int, pid Pid_t, addr *byte, data *byte) _C_long
+//__go_ptrace(request _C_int, pid Pid_t, addr *byte, data *byte) _C_long
 
 func ptracePeek(req int, pid int, addr uintptr, out []byte) (count int, err error) {
 	// The peek requests are machine-size oriented, so we wrap it
