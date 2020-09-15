@@ -294,6 +294,8 @@ public:
   /* For before_stmt, go to next stmt.  */
   void next_stmt () { m_function_point.next_stmt (); }
 
+  program_point get_next () const;
+
  private:
   function_point m_function_point;
   call_string m_call_string;

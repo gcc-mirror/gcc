@@ -529,6 +529,35 @@ function_point::next_stmt ()
     }
 }
 
+/* For those program points for which there is a uniquely-defined
+   successor, return it.  */
+
+program_point
+program_point::get_next () const
+{
+  switch (m_function_point.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case PK_ORIGIN:
+    case PK_AFTER_SUPERNODE:
+      gcc_unreachable (); /* Not uniquely defined.  */
+    case PK_BEFORE_SUPERNODE:
+      if (get_supernode ()->m_stmts.length () > 0)
+	return before_stmt (get_supernode (), 0, get_call_string ());
+      else
+	return after_supernode (get_supernode (), get_call_string ());
+    case PK_BEFORE_STMT:
+      {
+	unsigned next_idx = get_stmt_idx ();
+	if (next_idx < get_supernode ()->m_stmts.length ())
+	  return before_stmt (get_supernode (), next_idx, get_call_string ());
+	else
+	  return after_supernode (get_supernode (), get_call_string ());
+      }
+    }
+}
+
 #if CHECKING_P
 
 namespace selftest {

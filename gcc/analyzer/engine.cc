@@ -2458,26 +2458,10 @@ exploded_graph::process_node (exploded_node *node)
 		 &ctxt);
 	  }
 
-	if (point.get_supernode ()->m_stmts.length () > 0)
-	  {
-	    program_point next_point
-	      = program_point::before_stmt (point.get_supernode (), 0,
-					    point.get_call_string ());
-	    exploded_node *next
-	      = get_or_create_node (next_point, next_state, node);
-	    if (next)
-	      add_edge (node, next, NULL);
-	  }
-	else
-	  {
-	    program_point next_point
-	      = program_point::after_supernode (point.get_supernode (),
-						point.get_call_string ());
-	    exploded_node *next = get_or_create_node (next_point, next_state,
-						      node);
-	    if (next)
-	      add_edge (node, next, NULL);
-	  }
+	program_point next_point (point.get_next ());
+	exploded_node *next = get_or_create_node (next_point, next_state, node);
+	if (next)
+	  add_edge (node, next, NULL);
       }
       break;
     case PK_BEFORE_STMT:
