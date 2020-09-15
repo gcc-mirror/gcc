@@ -2397,6 +2397,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (plus (convert @0) (op @2 (convert @1))))))
 #endif
 
+/* (T)(A) +- (T)(B) -> (T)(A +- B) only when (A +- B) could be simplified
+   to a simple value.  */
+#if GIMPLE
+  (for op (plus minus)
+   (simplify
+    (op (convert @0) (convert @1))
+     (if (INTEGRAL_TYPE_P (type)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	  && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))
+	  && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+	  && !TYPE_OVERFLOW_TRAPS (type)
+	  && !TYPE_OVERFLOW_SANITIZED (type))
+      (convert (op! @0 @1)))))
+#endif
+
   /* ~A + A -> -1 */
   (simplify
    (plus:c (bit_not @0) @0)
@@ -2570,15 +2585,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (for plusminus (plus minus)
   (simplify
    (plusminus (mult:cs@3 @0 @1) (mult:cs@4 @0 @2))
-   (if ((!ANY_INTEGRAL_TYPE_P (type)
-	 || TYPE_OVERFLOW_WRAPS (type)
-	 || (INTEGRAL_TYPE_P (type)
-	     && tree_expr_nonzero_p (@0)
-	     && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
-	/* If @1 +- @2 is constant require a hard single-use on either
-	   original operand (but not on both).  */
-	&& (single_use (@3) || single_use (@4)))
-    (mult (plusminus @1 @2) @0)))
+   (if (!ANY_INTEGRAL_TYPE_P (type)
+	|| TYPE_OVERFLOW_WRAPS (type)
+	|| (INTEGRAL_TYPE_P (type)
+	    && tree_expr_nonzero_p (@0)
+	    && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+    (if (single_use (@3) || single_use (@4))
+     /* If @1 +- @2 is constant require a hard single-use on either
+	original operand (but not on both).  */
+     (mult (plusminus @1 @2) @0)
+#if GIMPLE
+     (mult! (plusminus @1 @2) @0)
+#endif
+  )))
   /* We cannot generate constant 1 for fract.  */
   (if (!ALL_FRACT_MODE_P (TYPE_MODE (type)))
    (simplify

@@ -46,6 +46,9 @@
    <sys/sysctl.h>. */
 #undef HAVE_KERN_PROC_ARGS
 
+/* Define if -llzma is available. */
+#undef HAVE_LIBLZMA
+
 /* Define to 1 if you have the <link.h> header file. */
 #undef HAVE_LINK_H
 

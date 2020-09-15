@@ -1,3 +1,25 @@
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (-param=analyzer-max-constraints=): New param.
+	* constraint-manager.cc
+	(constraint_manager::add_constraint_internal): Silently reject
+	attempts to add constraints when the above limit is reached.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96653
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Don't accumulate
+	transitive closure of all constraints on constants.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97029
+	* analyzer.cc (is_setjmp_call_p): Require the initial arg to be a
+	pointer.
+	* region-model.cc (region_model::deref_rvalue): Assert that the
+	svalue is of pointer type.
+
 2020-09-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96798

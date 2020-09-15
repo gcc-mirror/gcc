@@ -1276,7 +1276,7 @@ gfc_build_cond_assign_expr (stmtblock_t *block, tree cond_val,
 }
 
 void
-gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
+gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 {
   if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
     return;
@@ -1357,6 +1357,16 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
       tree type = TREE_TYPE (decl);
       tree ptr = gfc_conv_descriptor_data_get (decl);
 
+      /* OpenMP: automatically map pointer targets with the pointer;
+	 hence, always update the descriptor/pointer itself.
+	 NOTE: This also remaps the pointer for allocatable arrays with
+	 'target' attribute which also don't have the 'restrict' qualifier.  */
+      bool always_modifier = false;
+
+      if (!openacc
+	  && !(TYPE_QUALS (TREE_TYPE (ptr)) & TYPE_QUAL_RESTRICT))
+	always_modifier = true;
+
       if (present)
 	ptr = gfc_build_cond_assign_expr (&block, present, ptr,
 					  null_pointer_node);
@@ -1376,7 +1386,8 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
 	OMP_CLAUSE_DECL (c2) = decl;
       OMP_CLAUSE_SIZE (c2) = TYPE_SIZE_UNIT (type);
       c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
-      OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_POINTER);
+      OMP_CLAUSE_SET_MAP_KIND (c3, always_modifier ? GOMP_MAP_ALWAYS_POINTER
+						   : GOMP_MAP_POINTER);
       if (present)
 	{
 	  ptr = gfc_conv_descriptor_data_get (decl);
@@ -2549,10 +2560,18 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      if (!n->sym->attr.referenced)
 		continue;
 
+	      bool always_modifier = false;
 	      tree node = build_omp_clause (input_location, OMP_CLAUSE_MAP);
 	      tree node2 = NULL_TREE;
 	      tree node3 = NULL_TREE;
 	      tree node4 = NULL_TREE;
+
+	      /* OpenMP: automatically map pointer targets with the pointer;
+		 hence, always update the descriptor/pointer itself.  */
+	      if (!openacc
+		  && ((n->expr == NULL && n->sym->attr.pointer)
+		      || (n->expr && gfc_expr_attr (n->expr).pointer)))
+		always_modifier = true;
 
 	      switch (n->u.map_op)
 		{
@@ -2575,12 +2594,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_TOFROM);
 		  break;
 		case OMP_MAP_ALWAYS_TO:
+		  always_modifier = true;
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_TO);
 		  break;
 		case OMP_MAP_ALWAYS_FROM:
+		  always_modifier = true;
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_FROM);
 		  break;
 		case OMP_MAP_ALWAYS_TOFROM:
+		  always_modifier = true;
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_TOFROM);
 		  break;
 		case OMP_MAP_RELEASE:
@@ -2760,7 +2782,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  goto finalize_map_clause;
 			}
 		      else
-			OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_POINTER);
+			OMP_CLAUSE_SET_MAP_KIND (node3,
+						 always_modifier
+						 ? GOMP_MAP_ALWAYS_POINTER
+						 : GOMP_MAP_POINTER);
 
 		      /* We have to check for n->sym->attr.dimension because
 			 of scalar coarrays.  */

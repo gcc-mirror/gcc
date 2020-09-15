@@ -1,3 +1,15 @@
+2020-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (handle_optimize_attribute): Adjust
+	cl_optimization_save, cl_optimization_restore and
+	build_optimization_node callers.
+	* c-pragma.c (handle_pragma_optimize): Adjust
+	build_optimization_node caller.
+	(handle_pragma_push_options): Adjust
+	build_optimization_node and build_target_option_node callers.
+	(handle_pragma_pop_options, handle_pragma_reset_options):
+	Adjust cl_optimization_restore callers.
+
 2020-08-28  Martin Sebor  <msebor@redhat.com>
 
 	* c.opt (Wstringop-overread): New option.

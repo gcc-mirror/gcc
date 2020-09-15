@@ -3426,8 +3426,14 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  /* Re-fold the toplevel result.  It's basically an embedded
 	     gimple_build w/o actually building the stmt.  */
 	  if (!is_predicate)
-	    fprintf_indent (f, indent,
-			    "res_op->resimplify (lseq, valueize);\n");
+	    {
+	      fprintf_indent (f, indent,
+			      "res_op->resimplify (lseq, valueize);\n");
+	      if (e->force_leaf)
+		fprintf_indent (f, indent,
+				"if (!maybe_push_res_to_seq (res_op, NULL)) "
+				"goto %s;\n", fail_label);
+	    }
 	}
       else if (result->type == operand::OP_CAPTURE
 	       || result->type == operand::OP_C_EXPR)

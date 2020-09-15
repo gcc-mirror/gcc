@@ -1,3 +1,171 @@
+2020-09-14  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/invoke.texi: fix '-fprofile-reproducibility' option
+	spelling in manual.
+
+2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md ("nop"): Re-define as `ja 0'.
+
+2020-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): Make sure to set
+	cfun->tail_call_marked when forcing a tail call.
+	* function.c (assign_parm_setup_reg): Always use a register to
+	load a parameter passed by reference if cfun->tail_call_marked.
+
+2020-09-14  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/power10.md (power10-mffgpr, power10-mftgpr): Rename to
+	power10-mtvsr/power10-mfvsr.
+	* config/rs6000/power6.md (X2F_power6, power6-mftgpr, power6-mffgpr):
+	Remove.
+	* config/rs6000/power8.md (power8-mffgpr, power8-mftgpr): Rename to
+	power8-mtvsr/power8-mfvsr.
+	* config/rs6000/power9.md (power9-mffgpr, power9-mftgpr): Rename to
+	power9-mtvsr/power9-mfvsr.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Remove Power6
+	TYPE_MFFGPR cases.
+	* config/rs6000/rs6000.md (mffgpr, mftgpr, zero_extendsi<mode>2,
+	extendsi<mode>2, @signbit<mode>2_dm, lfiwax, lfiwzx, *movsi_internal1,
+	movsi_from_sf, *movdi_from_sf_zero_ext, *mov<mode>_internal,
+	movsd_hardfloat, movsf_from_si, *mov<mode>_hardfloat64, p8_mtvsrwz,
+	p8_mtvsrd_df, p8_mtvsrd_sf, p8_mfvsrd_3_<mode>, *movdi_internal64,
+	unpack<mode>_dm): Rename mffgpr/mftgpr to mtvsr/mfvsr.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit, vsx_extract_<mode>,
+	vsx_extract_si, *vsx_extract_<mode>_p8): Likewise.
+
+2020-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/arm.opt (x_arm_arch_string, x_arm_cpu_string,
+	x_arm_tune_string): Remove TargetSave entries.
+	(march=, mcpu=, mtune=): Add Save keyword.
+	* config/arm/arm.c (arm_option_save): Remove.
+	(TARGET_OPTION_SAVE): Don't redefine.
+	(arm_option_restore): Don't restore x_arm_*_string here.
+
+2020-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* opt-read.awk: Also initialize extra_target_var_types array.
+	* opth-gen.awk: Emit explicit_mask arrays to struct cl_optimization
+	and cl_target_option.  Adjust cl_optimization_save,
+	cl_optimization_restore, cl_target_option_save and
+	cl_target_option_restore declarations.
+	* optc-save-gen.awk: Add opts_set argument to cl_optimization_save,
+	cl_optimization_restore, cl_target_option_save and
+	cl_target_option_restore functions and save or restore opts_set
+	next to the opts values into or from explicit_mask arrays.
+	In cl_target_option_eq and cl_optimization_option_eq compare
+	explicit_mask arrays, in cl_target_option_hash and cl_optimization_hash
+	hash them and in cl_target_option_stream_out,
+	cl_target_option_stream_in, cl_optimization_stream_out and
+	cl_optimization_stream_in stream them.
+	* tree.h (build_optimization_node, build_target_option_node): Add
+	opts_set argument.
+	* tree.c (build_optimization_node): Add opts_set argument, pass it
+	to cl_optimization_save.
+	(build_target_option_node): Add opts_set argument, pass it to
+	cl_target_option_save.
+	* function.c (invoke_set_current_function_hook): Adjust
+	cl_optimization_restore caller.
+	* ipa-inline-transform.c (inline_call): Adjust cl_optimization_restore
+	and build_optimization_node callers.
+	* target.def (TARGET_OPTION_SAVE, TARGET_OPTION_RESTORE): Add opts_set
+	argument.
+	* target-globals.c (save_target_globals_default_opts): Adjust
+	cl_optimization_restore callers.
+	* toplev.c (process_options): Adjust build_optimization_node and
+	cl_optimization_restore callers.
+	(target_reinit): Adjust cl_optimization_restore caller.
+	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers):
+	Adjust build_optimization_node and cl_optimization_restore callers.
+	* doc/tm.texi: Updated.
+	* config/aarch64/aarch64.c (aarch64_override_options): Adjust
+	build_target_option_node caller.
+	(aarch64_option_save, aarch64_option_restore): Add opts_set argument.
+	(aarch64_set_current_function): Adjust cl_target_option_restore
+	caller.
+	(aarch64_option_valid_attribute_p): Adjust cl_target_option_save,
+	cl_target_option_restore, cl_optimization_restore,
+	build_optimization_node and build_target_option_node callers.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse): Adjust
+	cl_target_option_restore and build_target_option_node callers.
+	* config/arm/arm.c (arm_option_save, arm_option_restore): Add
+	opts_set argument.
+	(arm_option_override): Adjust cl_target_option_save,
+	build_optimization_node and build_target_option_node callers.
+	(arm_set_current_function): Adjust cl_target_option_restore caller.
+	(arm_valid_target_attribute_tree): Adjust build_target_option_node
+	caller.
+	(add_attribute): Formatting fix.
+	(arm_valid_target_attribute_p): Adjust cl_optimization_restore,
+	cl_target_option_restore, arm_valid_target_attribute_tree and
+	build_optimization_node callers.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Adjust
+	cl_target_option_restore callers.
+	* config/csky/csky.c (csky_option_override): Adjust
+	build_target_option_node and cl_target_option_save callers.
+	* config/gcn/gcn.c (gcn_fixup_accel_lto_options): Adjust
+	build_optimization_node and cl_optimization_restore callers.
+	* config/i386/i386-builtins.c (get_builtin_code_for_version):
+	Adjust cl_target_option_save and cl_target_option_restore
+	callers.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Adjust
+	build_target_option_node and cl_target_option_restore callers.
+	* config/i386/i386-options.c (ix86_function_specific_save,
+	ix86_function_specific_restore): Add opts_set arguments.
+	(ix86_valid_target_attribute_tree): Adjust build_target_option_node
+	caller.
+	(ix86_valid_target_attribute_p): Adjust build_optimization_node,
+	cl_optimization_restore, cl_target_option_restore,
+	ix86_valid_target_attribute_tree and build_optimization_node callers.
+	(ix86_option_override_internal): Adjust build_target_option_node
+	caller.
+	(ix86_reset_previous_fndecl, ix86_set_current_function): Adjust
+	cl_target_option_restore callers.
+	* config/i386/i386-options.h (ix86_function_specific_save,
+	ix86_function_specific_restore): Add opts_set argument.
+	* config/nios2/nios2.c (nios2_option_override): Adjust
+	build_target_option_node caller.
+	(nios2_option_save, nios2_option_restore): Add opts_set argument.
+	(nios2_valid_target_attribute_tree): Adjust build_target_option_node
+	caller.
+	(nios2_valid_target_attribute_p): Adjust build_optimization_node,
+	cl_optimization_restore, cl_target_option_save and
+	cl_target_option_restore callers.
+	(nios2_set_current_function, nios2_pragma_target_parse): Adjust
+	cl_target_option_restore callers.
+	* config/pru/pru.c (pru_option_override): Adjust
+	build_target_option_node caller.
+	(pru_set_current_function): Adjust cl_target_option_restore
+	callers.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust
+	cl_target_option_save caller.
+	(rs6000_option_override_internal): Adjust build_target_option_node
+	caller.
+	(rs6000_valid_attribute_p): Adjust build_optimization_node,
+	cl_optimization_restore, cl_target_option_save,
+	cl_target_option_restore and build_target_option_node callers.
+	(rs6000_pragma_target_parse): Adjust cl_target_option_restore and
+	build_target_option_node callers.
+	(rs6000_activate_target_options): Adjust cl_target_option_restore
+	callers.
+	(rs6000_function_specific_save, rs6000_function_specific_restore):
+	Add opts_set argument.
+	* config/s390/s390.c (s390_function_specific_restore): Likewise.
+	(s390_option_override_internal): Adjust s390_function_specific_restore
+	caller.
+	(s390_option_override, s390_valid_target_attribute_tree): Adjust
+	build_target_option_node caller.
+	(s390_valid_target_attribute_p): Adjust build_optimization_node,
+	cl_optimization_restore and cl_target_option_restore callers.
+	(s390_activate_target_options): Adjust cl_target_option_restore
+	caller.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins): Adjust
+	cl_target_option_save caller.
+	(s390_pragma_target_parse): Adjust build_target_option_node and
+	cl_target_option_restore callers.
+
 2020-09-13  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/pa/pa.c (hppa_rtx_costs) [ASHIFT, ASHIFTRT, LSHIFTRT]:

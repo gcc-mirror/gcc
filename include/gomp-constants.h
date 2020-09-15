@@ -171,6 +171,9 @@ enum gomp_map_kind
   (!((X) & GOMP_MAP_FLAG_SPECIAL) \
    && ((X) & GOMP_MAP_FLAG_FROM))
 
+#define GOMP_MAP_ALWAYS_POINTER_P(X) \
+  ((X) == GOMP_MAP_ALWAYS_POINTER)
+
 #define GOMP_MAP_POINTER_P(X) \
   ((X) == GOMP_MAP_POINTER)
 
