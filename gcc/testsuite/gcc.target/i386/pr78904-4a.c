@@ -1,7 +1,7 @@
 /* PR target/78904 */
 /* { dg-do compile } */
 /* { dg-require-effective-target nonpic } */
-/* { dg-options "-O2 -masm=att" } */
+/* { dg-options "-O2 -masm=att -mtune=generic" } */
 
 typedef __SIZE_TYPE__ size_t;
 
