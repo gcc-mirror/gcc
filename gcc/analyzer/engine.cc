@@ -1982,6 +1982,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       > param_analyzer_max_enodes_per_program_point)
     {
       pretty_printer pp;
+      point.print (&pp, format (false));
       print_enode_indices (&pp, per_point_data->m_enodes);
       if (logger)
 	logger->log ("not creating enode; too many at program point: %s",
