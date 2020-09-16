@@ -1,6 +1,14 @@
 2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97061
+	* trans-openmp.c (gfc_trans_omp_do): Handle simd with (last)private.
+
+2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* f95-lang.c (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.

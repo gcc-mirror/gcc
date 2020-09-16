@@ -4422,20 +4422,29 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       if (clauses)
 	{
 	  gfc_omp_namelist *n = NULL;
-	  if (op != EXEC_OMP_DISTRIBUTE)
-	    for (n = clauses->lists[(op == EXEC_OMP_SIMD && collapse == 1)
-				    ? OMP_LIST_LINEAR : OMP_LIST_LASTPRIVATE];
+	  if (op == EXEC_OMP_SIMD && collapse == 1)
+	    for (n = clauses->lists[OMP_LIST_LINEAR];
 		 n != NULL; n = n->next)
 	      if (code->ext.iterator->var->symtree->n.sym == n->sym)
-		break;
-	  if (n != NULL)
-	    dovar_found = 1;
-	  else if (n == NULL && op != EXEC_OMP_SIMD)
+		{
+		  dovar_found = 3;
+		  break;
+		}
+	  if (n == NULL && op != EXEC_OMP_DISTRIBUTE)
+	    for (n = clauses->lists[OMP_LIST_LASTPRIVATE];
+		 n != NULL; n = n->next)
+	      if (code->ext.iterator->var->symtree->n.sym == n->sym)
+		{
+		  dovar_found = 2;
+		  break;
+		}
+	  if (n == NULL)
 	    for (n = clauses->lists[OMP_LIST_PRIVATE]; n != NULL; n = n->next)
 	      if (code->ext.iterator->var->symtree->n.sym == n->sym)
-		break;
-	  if (n != NULL)
-	    dovar_found++;
+		{
+		  dovar_found = 1;
+		  break;
+		}
 	}
 
       /* Evaluate all the expressions in the iterator.  */
@@ -4533,7 +4542,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       if (orig_decls)
 	TREE_VEC_ELT (orig_decls, i) = dovar_decl;
 
-      if (dovar_found == 2
+      if (dovar_found == 3
 	  && op == EXEC_OMP_SIMD
 	  && collapse == 1
 	  && !simple)
@@ -4557,7 +4566,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	      omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	    }
 	  if (!simple)
-	    dovar_found = 2;
+	    dovar_found = 3;
 	}
       else if (!dovar_found && !simple)
 	{
@@ -4565,7 +4574,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	  OMP_CLAUSE_DECL (tmp) = dovar_decl;
 	  omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	}
-      if (dovar_found == 2)
+      if (dovar_found > 1)
 	{
 	  tree c = NULL;
 
@@ -4633,7 +4642,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	}
       if (!simple)
 	{
-	  if (op != EXEC_OMP_SIMD)
+	  if (op != EXEC_OMP_SIMD || dovar_found == 1)
 	    tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
 	  else if (collapse == 1)
 	    {
