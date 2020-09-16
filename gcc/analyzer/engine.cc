@@ -3288,8 +3288,9 @@ public:
 		 (const void *)this);
     gv->indent ();
     gv->println ("style=\"dashed\";");
-    gv->println ("label=\"SN: %i (bb: %i)\";",
-		 m_supernode->m_index, m_supernode->m_bb->index);
+    gv->println ("label=\"SN: %i (bb: %i; scc: %i)\";",
+		 m_supernode->m_index, m_supernode->m_bb->index,
+		 args.m_eg.get_scc_id (*m_supernode));
 
     int i;
     exploded_node *enode;
@@ -4040,6 +4041,7 @@ public:
 
     gv->begin_td ();
     pp_string (pp, "BEFORE");
+    pp_printf (pp, " (scc: %i)", m_eg.get_scc_id (n));
     gv->end_td ();
 
     unsigned i;

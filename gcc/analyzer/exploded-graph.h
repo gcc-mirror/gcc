@@ -652,6 +652,10 @@ public:
   exploded_node *take_next ();
   exploded_node *peek_next ();
   void add_node (exploded_node *enode);
+  int get_scc_id (const supernode &snode) const
+  {
+    return m_scc.get_scc_id (snode.m_index);
+  }
 
 private:
   class key_t
@@ -782,6 +786,11 @@ public:
 
   const call_string_data_map_t *get_per_call_string_data () const
   { return &m_per_call_string_data; }
+
+  int get_scc_id (const supernode &node) const
+  {
+    return m_worklist.get_scc_id (node);
+  }
 
 private:
   void print_bar_charts (pretty_printer *pp) const;
