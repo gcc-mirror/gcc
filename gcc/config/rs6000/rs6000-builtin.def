@@ -1145,6 +1145,14 @@
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 #endif
 
+#define BU_P10V_OVERLOAD_X(ENUM, NAME)				\
+  RS6000_BUILTIN_X (P10_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 /* Power 10 Altivec builtins  */
 
 #define BU_P10V_AV_0(ENUM, NAME, ATTR, ICODE)				\
@@ -1178,6 +1186,15 @@
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P10V_AV_X(ENUM, NAME, ATTR)					\
+  RS6000_BUILTIN_X (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 
 
 /* Insure 0 is not a legitimate index.  */
@@ -1474,6 +1491,18 @@ BU_ALTIVEC_X (LVSR,		"lvsr",		    PURE)
 BU_ALTIVEC_X (LVEBX,		"lvebx",	    PURE)
 BU_ALTIVEC_X (LVEHX,		"lvehx",	    PURE)
 BU_ALTIVEC_X (LVEWX,		"lvewx",	    PURE)
+BU_P10V_AV_X (SE_LXVRBX,	"se_lxvrbx",	    PURE)
+BU_P10V_AV_X (SE_LXVRHX,	"se_lxvrhx",	    PURE)
+BU_P10V_AV_X (SE_LXVRWX,	"se_lxvrwx",	    PURE)
+BU_P10V_AV_X (SE_LXVRDX,	"se_lxvrdx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRBX,	"ze_lxvrbx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRHX,	"ze_lxvrhx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRWX,	"ze_lxvrwx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRDX,	"ze_lxvrdx",	    PURE)
+BU_P10V_AV_X (TR_STXVRBX,	"tr_stxvrbx",	    MEM)
+BU_P10V_AV_X (TR_STXVRHX,	"tr_stxvrhx",	    MEM)
+BU_P10V_AV_X (TR_STXVRWX,	"tr_stxvrwx",	    MEM)
+BU_P10V_AV_X (TR_STXVRDX,	"tr_stxvrdx",	    MEM)
 BU_ALTIVEC_X (LVXL,		"lvxl",		    PURE)
 BU_ALTIVEC_X (LVXL_V2DF,	"lvxl_v2df",	    PURE)
 BU_ALTIVEC_X (LVXL_V2DI,	"lvxl_v2di",	    PURE)
@@ -1740,6 +1769,9 @@ BU_ALTIVEC_OVERLOAD_X (LDL,	   "ldl")
 BU_ALTIVEC_OVERLOAD_X (LVEBX,	   "lvebx")
 BU_ALTIVEC_OVERLOAD_X (LVEHX,	   "lvehx")
 BU_ALTIVEC_OVERLOAD_X (LVEWX,	   "lvewx")
+BU_P10V_OVERLOAD_X (SE_LXVRX,   "se_lxvrx")
+BU_P10V_OVERLOAD_X (ZE_LXVRX,   "ze_lxvrx")
+BU_P10V_OVERLOAD_X (TR_STXVRX,  "tr_stxvrx")
 BU_ALTIVEC_OVERLOAD_X (LVLX,	   "lvlx")
 BU_ALTIVEC_OVERLOAD_X (LVLXL,	   "lvlxl")
 BU_ALTIVEC_OVERLOAD_X (LVRX,	   "lvrx")

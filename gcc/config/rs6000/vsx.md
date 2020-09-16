@@ -1255,6 +1255,24 @@
     }
 })
 
+;; Load rightmost element from load_data
+;; using lxvrbx, lxvrhx, lxvrwx, lxvrdx.
+(define_insn "vsx_lxvr<wd>x"
+  [(set (match_operand:TI 0 "vsx_register_operand" "=wa")
+	(zero_extend:TI (match_operand:INT_ISA3  1 "memory_operand" "Z")))]
+  "TARGET_POWER10"
+  "lxvr<wd>x %x0,%y1"
+  [(set_attr "type" "vecload")])
+
+;; Store rightmost element into store_data
+;; using stxvrbx, stxvrhx, strvxwx, strvxdx.
+(define_insn "vsx_stxvr<wd>x"
+  [(set (match_operand:INT_ISA3 0 "memory_operand" "=Z")
+	(truncate:INT_ISA3 (match_operand:TI 1 "vsx_register_operand" "wa")))]
+  "TARGET_POWER10"
+  "stxvr<wd>x %x1,%y0"
+  [(set_attr "type" "vecstore")])
+
 ;; Explicit load/store expanders for the builtin functions for lxvd2x, etc.,
 ;; when you really want their element-reversing behavior.
 (define_insn "vsx_ld_elemrev_v2di"

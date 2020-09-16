@@ -1152,6 +1152,65 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
   { ALTIVEC_BUILTIN_VEC_LVEBX, ALTIVEC_BUILTIN_LVEBX,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTQI, 0 },
 
+  /* vector signed__int128 vec_xl_sext (signed long long, signed char *);
+     vector signed__int128 vec_xl_sext (signed long long, signed short *);
+     vector signed__int128 vec_xl_sext (signed long long, signed int *);
+     vector signed__int128 vec_xl_sext (signed long long, signed longlong *); */
+  { P10_BUILTIN_VEC_SE_LXVRX, P10_BUILTIN_SE_LXVRBX,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTQI, 0 },
+  { P10_BUILTIN_VEC_SE_LXVRX, P10_BUILTIN_SE_LXVRHX,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTHI, 0 },
+  { P10_BUILTIN_VEC_SE_LXVRX, P10_BUILTIN_SE_LXVRWX,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTSI, 0 },
+  { P10_BUILTIN_VEC_SE_LXVRX, P10_BUILTIN_SE_LXVRDX,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTDI, 0 },
+  { P10_BUILTIN_VEC_SE_LXVRX, P10_BUILTIN_SE_LXVRDX,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_long_long, 0 },
+
+  /* vector unsigned__int128 vec_xl_zext (signed long long, unsigned char *);
+     vector unsigned__int128 vec_xl_zext (signed long long, unsigned short *);
+     vector unsigned__int128 vec_xl_zext (signed long long, unsigned int *);
+     vector unsigned__int128 vec_xl_zext (signed long long, unsigned longlong *); */
+  { P10_BUILTIN_VEC_ZE_LXVRX, P10_BUILTIN_ZE_LXVRBX,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTQI, 0 },
+  { P10_BUILTIN_VEC_ZE_LXVRX, P10_BUILTIN_ZE_LXVRHX,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTHI, 0 },
+  { P10_BUILTIN_VEC_ZE_LXVRX, P10_BUILTIN_ZE_LXVRWX,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTSI, 0 },
+  { P10_BUILTIN_VEC_ZE_LXVRX, P10_BUILTIN_ZE_LXVRDX,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTDI, 0 },
+  { P10_BUILTIN_VEC_ZE_LXVRX, P10_BUILTIN_ZE_LXVRDX,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_unsigned_long_long, 0 },
+
+  /* void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
+     void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
+     void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
+     void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
+     void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
+     void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
+     void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
+     void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *); */
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRBX, RS6000_BTI_void,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTQI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRBX, RS6000_BTI_void,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTQI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRHX, RS6000_BTI_void,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTHI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRHX, RS6000_BTI_void,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTHI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRWX, RS6000_BTI_void,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTSI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRWX, RS6000_BTI_void,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTSI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRDX, RS6000_BTI_void,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_long_long },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRDX, RS6000_BTI_void,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_unsigned_long_long },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRDX, RS6000_BTI_void,
+    RS6000_BTI_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_INTDI },
+  { P10_BUILTIN_VEC_TR_STXVRX, P10_BUILTIN_TR_STXVRDX, RS6000_BTI_void,
+    RS6000_BTI_unsigned_V1TI, RS6000_BTI_INTSI, ~RS6000_BTI_UINTDI },
+
   /*     vector float vec_ldl (int, vector float *);
          vector float vec_ldl (int, float *); */
   { ALTIVEC_BUILTIN_VEC_LDL, ALTIVEC_BUILTIN_LVXL_V4SF,
@@ -9574,6 +9633,85 @@ swap_endian_selector_for_mode (machine_mode mode)
 						     gen_rtvec_v (16, perm)));
 }
 
+/* For the load and sign extend rightmost elements; load and zero extend
+ rightmost element builtins.  */
+static rtx
+altivec_expand_lxvr_builtin (enum insn_code icode, tree exp, rtx target, bool blk, bool sign_extend)
+{
+  rtx pat, addr;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode smode = insn_data[icode].operand[1].mode;
+  machine_mode mode0 = Pmode;
+  machine_mode mode1 = Pmode;
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
+  if (target == 0
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  op1 = copy_to_mode_reg (mode1, op1);
+
+  if (op0 == const0_rtx)
+    addr = gen_rtx_MEM (blk ? BLKmode : tmode, op1);
+  else
+    {
+      op0 = copy_to_mode_reg (mode0, op0);
+      addr = gen_rtx_MEM (blk ? BLKmode : smode,
+			  gen_rtx_PLUS (Pmode, op1, op0));
+    }
+
+  if (sign_extend)
+    {
+      rtx discratch = gen_reg_rtx (DImode);
+      rtx tiscratch = gen_reg_rtx (TImode);
+
+      /* Emit the lxvr*x insn.  */
+      pat = GEN_FCN (icode) (tiscratch, addr);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+
+      /* Emit a sign extension from QI,HI,WI to double (DI).  */
+      rtx scratch = gen_lowpart (smode, tiscratch);
+      if (icode == CODE_FOR_vsx_lxvrbx)
+	emit_insn (gen_extendqidi2 (discratch, scratch));
+      else if (icode == CODE_FOR_vsx_lxvrhx)
+	emit_insn (gen_extendhidi2 (discratch, scratch));
+      else if (icode == CODE_FOR_vsx_lxvrwx)
+	emit_insn (gen_extendsidi2 (discratch, scratch));
+      /*  Assign discratch directly if scratch is already DI.  */
+      if (icode == CODE_FOR_vsx_lxvrdx)
+	discratch = scratch;
+
+      /* Emit the sign extension from DI (double) to TI (quad).  */
+      emit_insn (gen_extendditi2 (target, discratch));
+
+      return target;
+    }
+  else
+    {
+      /* Zero extend.  */
+      pat = GEN_FCN (icode) (target, addr);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+    }
+  return 0;
+}
+
 static rtx
 altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
 {
@@ -9692,7 +9830,7 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   rtx op2 = expand_normal (arg2);
-  rtx pat, addr, rawaddr;
+  rtx pat, addr, rawaddr, truncrtx;
   machine_mode tmode = insn_data[icode].operand[0].mode;
   machine_mode smode = insn_data[icode].operand[1].mode;
   machine_mode mode1 = Pmode;
@@ -9730,6 +9868,25 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
       op0 = copy_to_mode_reg (tmode, op0);
 
       emit_insn (gen_rtx_SET (addr, op0));
+    }
+  else if (icode == CODE_FOR_vsx_stxvrbx
+	   || icode == CODE_FOR_vsx_stxvrhx
+	   || icode == CODE_FOR_vsx_stxvrwx
+	   || icode == CODE_FOR_vsx_stxvrdx)
+    {
+      truncrtx = gen_rtx_TRUNCATE (tmode, op0);
+      op0 = copy_to_mode_reg (E_TImode, truncrtx);
+
+      if (op1 == const0_rtx)
+	addr = gen_rtx_MEM (Pmode, op2);
+      else
+	{
+	  op1 = copy_to_mode_reg (mode1, op1);
+	  addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op2, op1));
+	}
+      pat = GEN_FCN (icode) (addr, op0);
+      if (pat)
+	emit_insn (pat);
     }
   else
     {
@@ -10750,6 +10907,16 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvehx, exp);
     case ALTIVEC_BUILTIN_STVEWX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvewx, exp);
+
+    case P10_BUILTIN_TR_STXVRBX:
+      return altivec_expand_stv_builtin (CODE_FOR_vsx_stxvrbx, exp);
+    case P10_BUILTIN_TR_STXVRHX:
+      return altivec_expand_stv_builtin (CODE_FOR_vsx_stxvrhx, exp);
+    case P10_BUILTIN_TR_STXVRWX:
+      return altivec_expand_stv_builtin (CODE_FOR_vsx_stxvrwx, exp);
+    case P10_BUILTIN_TR_STXVRDX:
+      return altivec_expand_stv_builtin (CODE_FOR_vsx_stxvrdx, exp);
+
     case ALTIVEC_BUILTIN_STVXL_V2DF:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v2df, exp);
     case ALTIVEC_BUILTIN_STVXL_V2DI:
@@ -11012,6 +11179,30 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case ALTIVEC_BUILTIN_LVEWX:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvewx,
 					exp, target, false);
+    case P10_BUILTIN_SE_LXVRBX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrbx,
+					exp, target, false, true);
+    case P10_BUILTIN_SE_LXVRHX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrhx,
+					exp, target, false, true);
+    case P10_BUILTIN_SE_LXVRWX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrwx,
+					exp, target, false, true);
+    case P10_BUILTIN_SE_LXVRDX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrdx,
+					exp, target, false, true);
+    case P10_BUILTIN_ZE_LXVRBX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrbx,
+					exp, target, false, false);
+    case P10_BUILTIN_ZE_LXVRHX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrhx,
+					exp, target, false, false);
+    case P10_BUILTIN_ZE_LXVRWX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrwx,
+					exp, target, false, false);
+    case P10_BUILTIN_ZE_LXVRDX:
+      return altivec_expand_lxvr_builtin (CODE_FOR_vsx_lxvrdx,
+					exp, target, false, false);
     case ALTIVEC_BUILTIN_LVXL_V2DF:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v2df,
 					exp, target, false);
@@ -13294,6 +13485,18 @@ altivec_init_builtins (void)
   def_builtin ("__builtin_altivec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEBX);
   def_builtin ("__builtin_altivec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEHX);
   def_builtin ("__builtin_altivec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEWX);
+  def_builtin ("__builtin_altivec_se_lxvrbx", v16qi_ftype_long_pcvoid, P10_BUILTIN_SE_LXVRBX);
+  def_builtin ("__builtin_altivec_se_lxvrhx", v8hi_ftype_long_pcvoid, P10_BUILTIN_SE_LXVRHX);
+  def_builtin ("__builtin_altivec_se_lxvrwx", v4si_ftype_long_pcvoid, P10_BUILTIN_SE_LXVRWX);
+  def_builtin ("__builtin_altivec_se_lxvrdx", v2di_ftype_long_pcvoid, P10_BUILTIN_SE_LXVRDX);
+  def_builtin ("__builtin_altivec_ze_lxvrbx", v16qi_ftype_long_pcvoid, P10_BUILTIN_ZE_LXVRBX);
+  def_builtin ("__builtin_altivec_ze_lxvrhx", v8hi_ftype_long_pcvoid, P10_BUILTIN_ZE_LXVRHX);
+  def_builtin ("__builtin_altivec_ze_lxvrwx", v4si_ftype_long_pcvoid, P10_BUILTIN_ZE_LXVRWX);
+  def_builtin ("__builtin_altivec_ze_lxvrdx", v2di_ftype_long_pcvoid, P10_BUILTIN_ZE_LXVRDX);
+  def_builtin ("__builtin_altivec_tr_stxvrbx", void_ftype_v1ti_long_pvoid, P10_BUILTIN_TR_STXVRBX);
+  def_builtin ("__builtin_altivec_tr_stxvrhx", void_ftype_v1ti_long_pvoid, P10_BUILTIN_TR_STXVRHX);
+  def_builtin ("__builtin_altivec_tr_stxvrwx", void_ftype_v1ti_long_pvoid, P10_BUILTIN_TR_STXVRWX);
+  def_builtin ("__builtin_altivec_tr_stxvrdx", void_ftype_v1ti_long_pvoid, P10_BUILTIN_TR_STXVRDX);
   def_builtin ("__builtin_altivec_lvxl", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVXL);
   def_builtin ("__builtin_altivec_lvxl_v2df", v2df_ftype_long_pcvoid,
 	       ALTIVEC_BUILTIN_LVXL_V2DF);
@@ -13359,6 +13562,9 @@ altivec_init_builtins (void)
   def_builtin ("__builtin_vec_lvebx", v16qi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEBX);
   def_builtin ("__builtin_vec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEHX);
   def_builtin ("__builtin_vec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LVEWX);
+  def_builtin ("__builtin_vec_se_lxvrx", v1ti_ftype_long_pcvoid, P10_BUILTIN_VEC_SE_LXVRX);
+  def_builtin ("__builtin_vec_ze_lxvrx", v1ti_ftype_long_pcvoid, P10_BUILTIN_VEC_ZE_LXVRX);
+  def_builtin ("__builtin_vec_tr_stxvrx", void_ftype_opaque_long_pvoid, P10_BUILTIN_VEC_TR_STXVRX);
   def_builtin ("__builtin_vec_st", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_ST);
   def_builtin ("__builtin_vec_ste", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STE);
   def_builtin ("__builtin_vec_stl", void_ftype_opaque_long_pvoid, ALTIVEC_BUILTIN_VEC_STL);
