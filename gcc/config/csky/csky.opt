@@ -192,3 +192,7 @@ Set the branch costs to roughly the specified number of instructions.
 msched-prolog
 Target Report Var(flag_sched_prolog) Init(0)
 Permit scheduling of function prologue and epilogue sequences.
+
+msim
+Target
+Use the simulator runtime.

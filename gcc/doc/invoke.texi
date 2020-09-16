@@ -829,7 +829,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdsp  -medsp  -mvdsp @gol
 -mdiv  -msmart  -mhigh-registers  -manchor @gol
 -mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt @gol
--mbranch-cost=@var{n}  -mcse-cc  -msched-prolog}
+-mbranch-cost=@var{n}  -mcse-cc  -msched-prolog -msim}
 
 @emph{Darwin Options}
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
@@ -20834,6 +20834,11 @@ Permit scheduling of function prologue and epilogue sequences.  Using
 this option can result in code that is not compliant with the C-SKY V2 ABI
 prologue requirements and that cannot be debugged or backtraced.
 It is disabled by default.
+
+@item -msim
+@opindex msim
+Links the library libsemi.a which is in compatible with simulator. Applicable
+to ELF compiler only.
 
 @end table
 
