@@ -2226,10 +2226,10 @@
   "vsl<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vslq"
-  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
-	(ashift:V1TI (match_operand:V1TI 1 "vsx_register_operand" "v")
-		     (match_operand:V1TI 2 "vsx_register_operand" "v")))]
+(define_insn "altivec_vslq_<mode>"
+  [(set (match_operand:VEC_TI 0 "vsx_register_operand" "=v")
+	(ashift:VEC_TI (match_operand:VEC_TI 1 "vsx_register_operand" "v")
+		     (match_operand:VEC_TI 2 "vsx_register_operand" "v")))]
   "TARGET_POWER10"
   /* Shift amount in needs to be in bits[57:63] of 128-bit operand. */
   "vslq %0,%1,%2"
@@ -2243,10 +2243,10 @@
   "vsr<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vsrq"
-  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
-	(lshiftrt:V1TI (match_operand:V1TI 1 "vsx_register_operand" "v")
-		       (match_operand:V1TI 2 "vsx_register_operand" "v")))]
+(define_insn "altivec_vsrq_<mode>"
+  [(set (match_operand:VEC_TI 0 "vsx_register_operand" "=v")
+	(lshiftrt:VEC_TI (match_operand:VEC_TI 1 "vsx_register_operand" "v")
+			   (match_operand:VEC_TI 2 "vsx_register_operand" "v")))]
   "TARGET_POWER10"
   /* Shift amount in needs to be in bits[57:63] of 128-bit operand. */
   "vsrq %0,%1,%2"

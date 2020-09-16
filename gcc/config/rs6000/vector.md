@@ -26,6 +26,9 @@
 ;; Vector int modes
 (define_mode_iterator VEC_I [V16QI V8HI V4SI V2DI])
 
+;; 128-bit int modes
+(define_mode_iterator VEC_TI [V1TI TI])
+
 ;; Vector int modes for parity
 (define_mode_iterator VEC_IP [V8HI
 			      V4SI
@@ -1620,17 +1623,17 @@
   "")
 
 ;; No immediate version of this 128-bit instruction
-(define_expand "vashlv1ti3"
-  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
-	(ashift:V1TI (match_operand:V1TI 1 "vsx_register_operand" "v")
-		     (match_operand:V1TI 2 "vsx_register_operand" "v")))]
+(define_expand "vashl<mode>3"
+  [(set (match_operand:VEC_TI 0 "vsx_register_operand" "=v")
+	(ashift:VEC_TI (match_operand:VEC_TI 1 "vsx_register_operand")
+			 (match_operand:VEC_TI 2 "vsx_register_operand")))]
   "TARGET_POWER10"
 {
   /* Shift amount in needs to be put in bits[57:63] of 128-bit operand2. */
-  rtx tmp = gen_reg_rtx (V1TImode);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
 
   emit_insn (gen_xxswapd_v1ti (tmp, operands[2]));
-  emit_insn (gen_altivec_vslq (operands[0], operands[1], tmp));
+  emit_insn(gen_altivec_vslq_<mode> (operands[0], operands[1], tmp));
   DONE;
 })
 
@@ -1643,17 +1646,17 @@
   "")
 
 ;; No immediate version of this 128-bit instruction
-(define_expand "vlshrv1ti3"
-  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
-	(lshiftrt:V1TI (match_operand:V1TI 1 "vsx_register_operand" "v")
-		       (match_operand:V1TI 2 "vsx_register_operand" "v")))]
+(define_expand "vlshr<mode>3"
+  [(set (match_operand:VEC_TI 0 "vsx_register_operand" "=v")
+	(lshiftrt:VEC_TI (match_operand:VEC_TI 1 "vsx_register_operand")
+			   (match_operand:VEC_TI 2 "vsx_register_operand")))]
   "TARGET_POWER10"
 {
   /* Shift amount in needs to be put into bits[57:63] of 128-bit operand2. */
-  rtx tmp = gen_reg_rtx (V1TImode);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
 
   emit_insn (gen_xxswapd_v1ti (tmp, operands[2]));
-  emit_insn (gen_altivec_vsrq (operands[0], operands[1], tmp));
+  emit_insn(gen_altivec_vsrq_<mode> (operands[0], operands[1], tmp));
   DONE;
 })
 
