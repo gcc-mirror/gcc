@@ -7,7 +7,7 @@ void workers (void)
   double res[65536];
   int i;
 
-#pragma acc parallel copyout(res) num_gangs(64) num_workers(64)
+#pragma acc parallel copyout(res) num_gangs(64) num_workers(16)
   {
     int i, j;
     int tmpvar;
@@ -34,7 +34,7 @@ void vectors (void)
   double res[65536];
   int i;
 
-#pragma acc parallel copyout(res) num_gangs(64) num_workers(64)
+#pragma acc parallel copyout(res) num_gangs(64) num_workers(16)
   {
     int i, j;
     int tmpvar;
