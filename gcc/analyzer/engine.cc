@@ -1615,6 +1615,9 @@ strongly_connected_components::strong_connect (unsigned index)
   superedge *sedge;
   FOR_EACH_VEC_ELT (v_snode->m_succs, i, sedge)
     {
+      if (sedge->get_kind () != SUPEREDGE_CFG_EDGE
+	  && sedge->get_kind () != SUPEREDGE_INTRAPROCEDURAL_CALL)
+	continue;
       supernode *w_snode = sedge->m_dest;
       per_node_data *w = &m_per_node[w_snode->m_index];
       if (w->m_index == -1)
@@ -1690,7 +1693,14 @@ worklist::add_node (exploded_node *enode)
 /* Comparator for implementing worklist::key_t comparison operators.
    Return negative if KA is before KB
    Return positive if KA is after KB
-   Return 0 if they are equal.  */
+   Return 0 if they are equal.
+
+   The ordering of the worklist is critical for performance and for
+   avoiding node explosions.  Ideally we want all enodes at a CFG join-point
+   with the same callstring to be sorted next to each other in the worklist
+   so that a run of consecutive enodes can be merged and processed "in bulk"
+   rather than individually or pairwise, minimizing the number of new enodes
+   created.  */
 
 int
 worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
@@ -1742,17 +1752,17 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 
   gcc_assert (snode_a == snode_b);
 
+  /* The points might vary by callstring; try sorting by callstring.  */
+  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
+  if (cs_cmp)
+    return cs_cmp;
+
   /* Order within supernode via program point.  */
   int within_snode_cmp
     = function_point::cmp_within_supernode (point_a.get_function_point (),
 					    point_b.get_function_point ());
   if (within_snode_cmp)
     return within_snode_cmp;
-
-  /* The points might vary by callstring; try sorting by callstring.  */
-  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
-  if (cs_cmp)
-    return cs_cmp;
 
   /* Otherwise, we ought to have the same program_point.  */
   gcc_assert (point_a == point_b);
