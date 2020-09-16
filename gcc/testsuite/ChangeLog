@@ -1,3 +1,39 @@
+2020-09-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backported from master:
+	2020-09-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr96139-a.c: Specify -mvsx option and update the
+	dg-require stanza to match.
+	* gcc.target/powerpc/pr96139-b.c: Same.
+	* gcc.target/powerpc/pr96139-c.c: Specify -maltivec option and update
+	the dg-require stanza to match.
+
+2020-09-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backported from master:
+	2020-09-03  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr96139-a.c: New test.
+	* gcc.target/powerpc/pr96139-b.c: New test.
+	* gcc.target/powerpc/pr96139-c.c: New test.
+
+2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97028
+	* gcc.target/i386/avx512f-pr97028.c: Untested fix.
+
+2020-09-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96690
+	* g++.dg/lto/pr96690_0.C: New testcase.
+
 2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	Backported from master:
