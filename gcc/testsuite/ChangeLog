@@ -1,3 +1,17 @@
+2020-09-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr96139-a.c: New test.
+	* gcc.target/powerpc/pr96139-b.c: New test.
+	* gcc.target/powerpc/pr96139-c.c: New test.
+
+2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97028
+	* gcc.target/i386/avx512f-pr97028.c: Untested fix.
+
 2020-09-11  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
