@@ -11,7 +11,7 @@ foo (s64 a, s64 b, s64 c)
   if (d == 0)
     return a + c;
   else
-    return b + d + c;
+    return b + c + d;
 }
 
 /* This test can be reduced to just return a + c;  */
