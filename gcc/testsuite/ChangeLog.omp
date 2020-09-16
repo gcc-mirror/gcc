@@ -1,3 +1,10 @@
+2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr79154-simd.f90: New test.
+
 2020-09-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
