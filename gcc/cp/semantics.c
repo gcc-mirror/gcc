@@ -5679,7 +5679,7 @@ cp_check_omp_declare_reduction_r (tree *tp, int *, void *data)
 
 /* Diagnose violation of OpenMP #pragma omp declare reduction restrictions.  */
 
-void
+bool
 cp_check_omp_declare_reduction (tree udr)
 {
   tree type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (udr)));
@@ -5689,7 +5689,7 @@ cp_check_omp_declare_reduction (tree udr)
   location_t loc = DECL_SOURCE_LOCATION (udr);
 
   if (type == error_mark_node)
-    return;
+    return false;
   if (ARITHMETIC_TYPE_P (type))
     {
       static enum tree_code predef_codes[]
@@ -5723,7 +5723,7 @@ cp_check_omp_declare_reduction (tree udr)
 	{
 	  error_at (loc, "predeclared arithmetic type %qT in "
 			 "%<#pragma omp declare reduction%>", type);
-	  return;
+	  return false;
 	}
     }
   else if (FUNC_OR_METHOD_TYPE_P (type)
@@ -5731,24 +5731,24 @@ cp_check_omp_declare_reduction (tree udr)
     {
       error_at (loc, "function or array type %qT in "
 		     "%<#pragma omp declare reduction%>", type);
-      return;
+      return false;
     }
   else if (TYPE_REF_P (type))
     {
       error_at (loc, "reference type %qT in %<#pragma omp declare reduction%>",
 		type);
-      return;
+      return false;
     }
   else if (TYPE_QUALS_NO_ADDR_SPACE (type))
     {
       error_at (loc, "%<const%>, %<volatile%> or %<__restrict%>-qualified "
 		"type %qT in %<#pragma omp declare reduction%>", type);
-      return;
+      return false;
     }
 
   tree body = DECL_SAVED_TREE (udr);
   if (body == NULL_TREE || TREE_CODE (body) != STATEMENT_LIST)
-    return;
+    return true;
 
   tree_stmt_iterator tsi;
   struct cp_check_omp_declare_reduction_data data;
@@ -5764,7 +5764,7 @@ cp_check_omp_declare_reduction (tree udr)
       gcc_assert (TREE_CODE (data.stmts[0]) == DECL_EXPR
 		  && TREE_CODE (data.stmts[1]) == DECL_EXPR);
       if (TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])))
-	return;
+	return true;
       data.combiner_p = true;
       if (cp_walk_tree (&data.stmts[2], cp_check_omp_declare_reduction_r,
 			&data, NULL))
@@ -5783,6 +5783,7 @@ cp_check_omp_declare_reduction (tree udr)
       if (i == 7)
 	gcc_assert (TREE_CODE (data.stmts[6]) == DECL_EXPR);
     }
+  return true;
 }
 
 /* Helper function of finish_omp_clauses.  Clone STMT as if we were making
