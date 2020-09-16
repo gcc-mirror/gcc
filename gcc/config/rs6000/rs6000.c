@@ -15190,8 +15190,8 @@ have_compare_and_set_mask (machine_mode mode)
 {
   switch (mode)
     {
-    case SFmode:
-    case DFmode:
+    case E_SFmode:
+    case E_DFmode:
       return TARGET_P9_MINMAX;
 
     default:
