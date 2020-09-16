@@ -52,6 +52,18 @@ void print_i128(__int128_t val)
 
 void abort (void);
 
+__attribute__((noinline))
+__int128_t shift_right (__int128_t a, __uint128_t b)
+{
+  return a >> b;
+}
+
+__attribute__((noinline))
+__int128_t shift_left (__int128_t a, __uint128_t b)
+{
+  return a << b;
+}
+
 int main ()
 {
   int i, result_int;
@@ -102,7 +114,7 @@ int main ()
 #endif
   }
 
-  arg1 = 3;
+  arg1 = vec_result[0];
   uarg2 = 4;
   expected_result = arg1*16;
 
@@ -186,7 +198,7 @@ int main ()
 #endif
   }
 
-  arg1 = 48;
+  arg1 = vec_uresult[0];
   uarg2 = 4;
   expected_result = arg1/16;
 

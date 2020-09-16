@@ -37,9 +37,6 @@
 				  TI
 				  V1TI])
 
-;; Iterator for 128-bit integer types that go in a single vector register.
-(define_mode_iterator VSX_TI [TI V1TI])
-
 ;; Iterator for the 2 32-bit vector types
 (define_mode_iterator VSX_W [V4SF V4SI])
 
@@ -952,9 +949,9 @@
 ;; special V1TI container class, which it is not appropriate to use vec_select
 ;; for the type.
 (define_insn "*vsx_le_permute_<mode>"
-  [(set (match_operand:VSX_TI 0 "nonimmediate_operand" "=wa,wa,Z,&r,&r,Q")
-	(rotate:VSX_TI
-	 (match_operand:VSX_TI 1 "input_operand" "wa,Z,wa,r,Q,r")
+  [(set (match_operand:VEC_TI 0 "nonimmediate_operand" "=wa,wa,Z,&r,&r,Q")
+	(rotate:VEC_TI
+	 (match_operand:VEC_TI 1 "input_operand" "wa,Z,wa,r,Q,r")
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "@
@@ -968,10 +965,10 @@
    (set_attr "type" "vecperm,vecload,vecstore,*,load,store")])
 
 (define_insn_and_split "*vsx_le_undo_permute_<mode>"
-  [(set (match_operand:VSX_TI 0 "vsx_register_operand" "=wa,wa")
-	(rotate:VSX_TI
-	 (rotate:VSX_TI
-	  (match_operand:VSX_TI 1 "vsx_register_operand" "0,wa")
+  [(set (match_operand:VEC_TI 0 "vsx_register_operand" "=wa,wa")
+	(rotate:VEC_TI
+	 (rotate:VEC_TI
+	  (match_operand:VEC_TI 1 "vsx_register_operand" "0,wa")
 	  (const_int 64))
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
@@ -1043,11 +1040,11 @@
 ;; Peepholes to catch loads and stores for TImode if TImode landed in
 ;; GPR registers on a little endian system.
 (define_peephole2
-  [(set (match_operand:VSX_TI 0 "int_reg_operand")
-	(rotate:VSX_TI (match_operand:VSX_TI 1 "memory_operand")
+  [(set (match_operand:VEC_TI 0 "int_reg_operand")
+	(rotate:VEC_TI (match_operand:VEC_TI 1 "memory_operand")
 		       (const_int 64)))
-   (set (match_operand:VSX_TI 2 "int_reg_operand")
-	(rotate:VSX_TI (match_dup 0)
+   (set (match_operand:VEC_TI 2 "int_reg_operand")
+	(rotate:VEC_TI (match_dup 0)
 		       (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && (rtx_equal_p (operands[0], operands[2])
@@ -1055,11 +1052,11 @@
    [(set (match_dup 2) (match_dup 1))])
 
 (define_peephole2
-  [(set (match_operand:VSX_TI 0 "int_reg_operand")
-	(rotate:VSX_TI (match_operand:VSX_TI 1 "int_reg_operand")
+  [(set (match_operand:VEC_TI 0 "int_reg_operand")
+	(rotate:VEC_TI (match_operand:VEC_TI 1 "int_reg_operand")
 		       (const_int 64)))
-   (set (match_operand:VSX_TI 2 "memory_operand")
-	(rotate:VSX_TI (match_dup 0)
+   (set (match_operand:VEC_TI 2 "memory_operand")
+	(rotate:VEC_TI (match_dup 0)
 		       (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && peep2_reg_dead_p (2, operands[0])"
