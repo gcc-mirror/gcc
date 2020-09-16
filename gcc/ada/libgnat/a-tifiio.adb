@@ -32,15 +32,15 @@
 --  Fixed point I/O
 --  ---------------
 
---  The following documents implementation details of the fixed point
---  input/output routines in the GNAT run time. The first part describes
---  general properties of fixed point types as defined by the Ada 95 standard,
+--  The following text documents implementation details of the fixed point
+--  input/output routines in the GNAT runtime. The first part describes the
+--  general properties of fixed point types as defined by the Ada standard,
 --  including the Information Systems Annex.
 
 --  Subsequently these are reduced to implementation constraints and the impact
---  of these constraints on a few possible approaches to I/O are given.
+--  of these constraints on a few possible approaches to input/output is given.
 --  Based on this analysis, a specific implementation is selected for use in
---  the GNAT run time. Finally, the chosen algorithm is analyzed numerically in
+--  the GNAT runtime. Finally, the chosen algorithm is analyzed numerically in
 --  order to provide user-level documentation on limits for range and precision
 --  of fixed point types as well as accuracy of input/output conversions.
 
@@ -48,24 +48,22 @@
 --  - General Properties of Fixed Point Types -
 --  -------------------------------------------
 
---  Operations on fixed point values, other than input and output, are not
---  important for the purposes of this document. Only the set of values that a
---  fixed point type can represent and the input and output operations are
---  significant.
+--  Operations on fixed point types, other than input/output, are not important
+--  for the purpose of this document. Only the set of values that a fixed point
+--  type can represent and the input/output operations are significant.
 
 --  Values
 --  ------
 
---  Set set of values of a fixed point type comprise the integral
---  multiples of a number called the small of the type. The small can
---  either be a power of ten, a power of two or (if the implementation
---  allows) an arbitrary strictly positive real value.
+--  The set of values of a fixed point type comprise the integral multiples of
+--  a number called the small of the type. The small can be either a power of
+--  two, a power of ten or (if the implementation allows) an arbitrary strictly
+--  positive real value.
 
---  Implementations need to support fixed-point types with a precision
---  of at least 24 bits, and (in order to comply with the Information
---  Systems Annex) decimal types need to support at least digits 18.
---  For the rest, however, no requirements exist for the minimal small
---  and range that need to be supported.
+--  Implementations need to support ordinary fixed point types with a precision
+--  of at least 24 bits, and (in order to comply with the Information Systems
+--  Annex) decimal fixed point types with at least 18 digits. For the rest, no
+--  requirements exist for the minimal small and range that must be supported.
 
 --  Operations
 --  ----------
@@ -112,27 +110,27 @@
 --  Implementation Strategies
 --  -------------------------
 
---  * Float arithmetic
+--  * Floating point arithmetic
 --  * Arbitrary-precision integer arithmetic
 --  * Fixed-precision integer arithmetic
 
---  Although it seems convenient to convert fixed point numbers to floating-
+--  Although it seems convenient to convert fixed point numbers to floating
 --  point and then print them, this leads to a number of restrictions.
 --  The first one is precision. The widest floating-point type generally
 --  available has 53 bits of mantissa. This means that Fine_Delta cannot
 --  be less than 2.0**(-53).
 
---  In GNAT, Fine_Delta is 2.0**(-63), and Duration for example is a
---  64-bit type. It would still be possible to use multi-precision
---  floating-point to perform calculations using longer mantissas,
---  but this is a much harder approach.
+--  In GNAT, Fine_Delta is 2.0**(-63), and Duration for example is a 64-bit
+--  type. This means that a floating-point type with 63 bits of mantissa needs
+--  to be used, which is only generally available on the x86 architecture. It
+--  would still be possible to use multi-precision floating point to perform
+--  calculations using longer mantissas, but this is a much harder approach.
 
---  The base conversions needed for input and output of (non-decimal)
---  fixed point types can be seen as pairs of integer multiplications
---  and divisions.
+--  The base conversions needed for input/output of (non-decimal) fixed point
+--  types can be seen as pairs of integer multiplications and divisions.
 
---  Arbitrary-precision integer arithmetic would be suitable for the job
---  at hand, but has the draw-back that it is very heavy implementation-wise.
+--  Arbitrary-precision integer arithmetic would be suitable for the job at
+--  hand, but has the drawback that it is very heavy implementation-wise.
 --  Especially in embedded systems, where fixed point types are often used,
 --  it may not be desirable to require large amounts of storage and time
 --  for fixed I/O operations.
@@ -181,7 +179,7 @@ package body Ada.Text_IO.Fixed_IO is
 
    --    Fore + Aft + Exp + Extra_Layout_Space
 
-   --  is always long enough for formatting any fixed point number
+   --  is always long enough for formatting any fixed point number.
 
    --  Implementation of Put routines
 
@@ -205,9 +203,9 @@ package body Ada.Text_IO.Fixed_IO is
    --  factor 10**E can be trivially handled during final output, by adjusting
    --  the decimal point or exponent.
 
-   --  Convert a value X * S of type T to a 64-bit integer value Q equal
-   --  to 10.0**D * (X * S) rounded to the nearest integer.
-   --  This conversion is a scaled integer divide of the form
+   --  Convert a value X * S of type T to a 64-bit integer value Q equal to
+   --  10.0**D * (X * S) rounded to the nearest integer. This conversion is
+   --  a scaled integer divide of the form
 
    --     Q := (X * Y) / Z,
 
@@ -242,8 +240,8 @@ package body Ada.Text_IO.Fixed_IO is
    --     S * 10.0**D = Y / Z;
 
    --  If S is an integer greater than or equal to one, then Fore must be at
-   --  least 20 in order to print T'First, which is at most -2.0**63.
-   --  This means D < 0, so use
+   --  least 20 in order to print T'First, which is at most -2.0**63. This
+   --  means that D < 0, so use
 
    --    (1)   Y = -S and Z = -10**(-D)
 
