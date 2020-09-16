@@ -1,6 +1,15 @@
 2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-06-03  Thomas Schwinge  <thomas@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/94874
+	* c-c++-common/gomp/pr94874.c: New.
+
+2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-06-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/pr79154-simd.f90: New test.

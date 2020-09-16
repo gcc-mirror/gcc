@@ -162,6 +162,8 @@ extern tree cxx_simulate_enum_decl (location_t, const char *,
 
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING cxx_omp_predetermined_sharing
+#undef LANG_HOOKS_OMP_PREDETERMINED_MAPPING
+#define LANG_HOOKS_OMP_PREDETERMINED_MAPPING cxx_omp_predetermined_mapping
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
 #define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR cxx_omp_clause_default_ctor
 #undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR

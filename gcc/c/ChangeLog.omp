@@ -1,3 +1,10 @@
+2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-objc-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redefine.
+
 2020-09-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

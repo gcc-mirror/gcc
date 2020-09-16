@@ -1,3 +1,12 @@
+2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cp-gimplify.c (cxx_omp_predetermined_mapping): New.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Redfine.
+	* cp-tree.h (cxx_omp_predetermined_mapping): Declare.
+
 2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

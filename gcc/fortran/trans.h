@@ -803,6 +803,7 @@ tree gfc_omp_check_optional_argument (tree, bool);
 tree gfc_omp_array_data (tree, bool);
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
+enum omp_clause_defaultmap_kind gfc_omp_predetermined_mapping (tree);
 tree gfc_omp_report_decl (tree);
 tree gfc_omp_clause_default_ctor (tree, tree, tree);
 tree gfc_omp_clause_copy_ctor (tree, tree, tree);

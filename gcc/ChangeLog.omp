@@ -1,3 +1,16 @@
+2020-09-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (omp_notice_variable): Use new hook.
+	* langhooks-def.h (lhd_omp_predetermined_mapping): Declare.
+	(LANG_HOOKS_OMP_PREDETERMINED_MAPPING): Define
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.c (lhd_omp_predetermined_sharing): Remove bogus unused attr.
+	(lhd_omp_predetermined_mapping): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hook.
+
 2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
