@@ -732,6 +732,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	return impl_call_calloc (cd);
       else if (is_named_call_p (callee_fndecl, "alloca", call, 1))
 	return impl_call_alloca (cd);
+      else if (is_named_call_p (callee_fndecl, "getchar", call, 0))
+	{
+	  /* No side-effects (tracking stream state is out-of-scope
+	     for the analyzer).  */
+	}
       else if (is_named_call_p (callee_fndecl, "memset", call, 3))
 	{
 	  impl_call_memset (cd);
