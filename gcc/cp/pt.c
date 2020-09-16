@@ -25458,16 +25458,14 @@ instantiate_body (tree pattern, tree args, tree d)
   tree td = pattern;
   tree code_pattern = DECL_TEMPLATE_RESULT (td);
 
-  tree fn_context = decl_function_context (d);
-  if (LAMBDA_FUNCTION_P (d))
-    /* tsubst_lambda_expr resolved any references to enclosing functions.  */
-    fn_context = NULL_TREE;
-  bool nested = current_function_decl != NULL_TREE;
-  bool push_to_top = !(nested && fn_context == current_function_decl);
-
   vec<tree> omp_privatization_save;
-  if (nested)
+  if (current_function_decl)
     save_omp_privatization_clauses (omp_privatization_save);
+
+  bool push_to_top
+    = !(current_function_decl
+	&& !LAMBDA_FUNCTION_P (d)
+	&& decl_function_context (d) == current_function_decl);
 
   if (push_to_top)
     push_to_top_level ();
@@ -25595,7 +25593,7 @@ instantiate_body (tree pattern, tree args, tree d)
   else
     pop_function_context ();
 
-  if (nested)
+  if (current_function_decl)
     restore_omp_privatization_clauses (omp_privatization_save);
 }
 
