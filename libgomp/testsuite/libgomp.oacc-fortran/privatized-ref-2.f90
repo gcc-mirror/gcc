@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-xfail-if "no alloca support" { offload_target_nvptx } }
 
 program main
   implicit none (type, external)
