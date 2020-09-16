@@ -1,3 +1,34 @@
+2020-09-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backported from master:
+	2020-09-03  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtin): Update V2DI_type_node
+	and unsigned_V2DI_type_node definitions.
+
+2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97028
+	* config/i386/sse.md (mul<mode>3<mask_name>_bcs,
+	<avx512>_div<mode>3<mask_name>_bcst): Use <avx512bcst> instead of
+	<<avx512bcst>>.
+
+2020-09-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96690
+	* dwarf2out.c (reference_to_unused): Make FUNCTION_DECL
+	processing more consistent with respect to
+	symtab->global_info_ready.
+	(tree_add_const_value_attribute): Unconditionally call
+	rtl_for_decl_init to do all mangling early but throw
+	away the result if early_dwarf.
+
 2020-09-14  Sergei Trofimovich  <siarheit@google.com>
 
 	Backported from master:
