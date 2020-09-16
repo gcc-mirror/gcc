@@ -1,3 +1,12 @@
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* trans.h (gfc_omp_finish_clause): Add bool openacc arg.
+	* trans-openmp.c (gfc_omp_finish_clause): Ditto. Use
+	GOMP_MAP_ALWAYS_POINTER with PSET for pointers.
+	(gfc_trans_omp_clauses): Like the latter and also if the always
+	modifier is used.
+
 2020-09-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/95109

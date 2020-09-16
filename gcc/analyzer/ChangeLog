@@ -1,3 +1,10 @@
+2020-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96650
+	* constraint-manager.cc (merger_fact_visitor::on_fact): Replace
+	assertion that add_constraint succeeded with an assertion that
+	if it fails, -fanalyzer-transitivity is off.
+
 2020-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.opt (-param=analyzer-max-constraints=): New param.
