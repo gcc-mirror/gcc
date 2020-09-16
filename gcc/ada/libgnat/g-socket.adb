@@ -42,6 +42,8 @@ with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
 --  Need to include pragma Linker_Options which is platform dependent
 
+with GNAT.Sockets.Poll;
+
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
@@ -252,15 +254,13 @@ package body GNAT.Sockets is
 
    procedure Wait_On_Socket
      (Socket   : Socket_Type;
-      For_Read : Boolean;
+      Event    : Poll.Wait_Event_Set;
       Timeout  : Selector_Duration;
       Selector : access Selector_Type := null;
       Status   : out Selector_Status);
    --  Common code for variants of socket operations supporting a timeout:
-   --  block in Check_Selector on Socket for at most the indicated timeout.
-   --  If For_Read is True, Socket is added to the read set for this call, else
-   --  it is added to the write set. If no selector is provided, a local one is
-   --  created for this call and destroyed prior to returning.
+   --  block in Poll.Wait on Socket for at most the indicated timeout.
+   --  Event parameter defines what the Poll.Wait is waiting for.
 
    type Sockets_Library_Controller is new Ada.Finalization.Limited_Controlled
      with null record;
@@ -371,11 +371,11 @@ package body GNAT.Sockets is
       --  Wait for socket to become available for reading
 
       Wait_On_Socket
-        (Socket    => Server,
-         For_Read  => True,
-         Timeout   => Timeout,
-         Selector  => Selector,
-         Status    => Status);
+        (Socket   => Server,
+         Event    => Poll.Input_Event,
+         Timeout  => Timeout,
+         Selector => Selector,
+         Status   => Status);
 
       --  Accept connection if available
 
@@ -729,7 +729,7 @@ package body GNAT.Sockets is
       else
          Wait_On_Socket
            (Socket   => Socket,
-            For_Read => False,
+            Event    => Poll.Output_Event,
             Timeout  => Timeout,
             Selector => Selector,
             Status   => Status);
@@ -2016,57 +2016,32 @@ package body GNAT.Sockets is
 
    procedure Wait_On_Socket
      (Socket   : Socket_Type;
-      For_Read : Boolean;
+      Event    : Poll.Wait_Event_Set;
       Timeout  : Selector_Duration;
       Selector : access Selector_Type := null;
       Status   : out Selector_Status)
    is
-      type Local_Selector_Access is access Selector_Type;
-      for Local_Selector_Access'Storage_Size use Selector_Type'Size;
+      Fd_Set : Poll.Set := Poll.To_Set (Socket, Event, 2);
+      --  Socket itself and second place for signaling socket if necessary
 
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Selector_Type, Local_Selector_Access);
-
-      Local_S : Local_Selector_Access;
-      S       : Selector_Access;
-      --  Selector to use for waiting
-
-      R_Fd_Set : Socket_Set_Type;
-      W_Fd_Set : Socket_Set_Type;
+      Count : Natural;
+      Index : Natural := 0;
 
    begin
-      --  Create selector if not provided by the user
+      --  Add signaling socket if selector defined
 
-      if Selector = null then
-         Local_S := new Selector_Type;
-         S := Local_S.all'Unchecked_Access;
-         Create_Selector (S.all);
+      if Selector /= null then
+         Poll.Append (Fd_Set, Selector.R_Sig_Socket, Poll.Input_Event);
+      end if;
 
+      Poll.Wait (Fd_Set, Timeout, Count);
+
+      if Count = 0 then
+         Status := Expired;
       else
-         S := Selector.all'Access;
+         Poll.Next (Fd_Set, Index);
+         Status := (if Index = 1 then Completed else Aborted);
       end if;
-
-      if For_Read then
-         Set (R_Fd_Set, Socket);
-      else
-         Set (W_Fd_Set, Socket);
-      end if;
-
-      Check_Selector (S.all, R_Fd_Set, W_Fd_Set, Status, Timeout);
-
-      if Selector = null then
-         Close_Selector (S.all);
-         Unchecked_Free (Local_S);
-      end if;
-
-   exception
-      when others =>
-         Status := Completed;
-
-         if Selector = null then
-            Close_Selector (S.all);
-            Unchecked_Free (Local_S);
-         end if;
    end Wait_On_Socket;
 
    -----------------
