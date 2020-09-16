@@ -1769,7 +1769,7 @@ struct processor_costs skylake_cost = {
   {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
-  2,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving SSE register to integer.  */
   20, 8,				/* Gather load static, per_elt.  */
   22, 10,				/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
