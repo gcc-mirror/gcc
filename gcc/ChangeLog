@@ -1,3 +1,75 @@
+2020-09-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* rtlanal.c (set_noop_p): Treat subregs of registers in
+	different modes conservatively.
+
+2020-09-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Make swap
+	argument by-value and do not change it.
+	(vect_build_slp_tree_2): Adjust, set swap to NULL after last
+	use.
+
+2020-09-15  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/94234
+	* match.pd (T)(A) +- (T)(B) -> (T)(A +- B): New simplification.
+
+2020-09-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/96475
+	* bb-reorder.c (duplicate_computed_gotos): If we did anything, run
+	cleanup_cfg.
+
+2020-09-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_2): Also consider
+	building an operand from scalars when building it did not
+	fail fatally but avoid messing with the upcall splitting
+	of groups.
+
+2020-09-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.c (arm_options_perform_arch_sanity_checks): Do not
+	check +D32 for CMSE if -mfloat-abi=soft
+
+2020-09-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96744
+	* config/i386/x86-tune-costs.h (struct processor_costs):
+	Increase mask <-> integer cost for non AVX512 target to avoid
+	spill gpr to mask. Also retune mask <-> integer and
+	mask_load/store for skylake_cost.
+
+2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97028
+	* config/i386/sse.md (mul<mode>3<mask_name>_bcs,
+	<avx512>_div<mode>3<mask_name>_bcst): Use <avx512bcst> instead of
+	<<avx512bcst>>.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* gimplify.c (gimplify_omp_for): Add 'bool openacc' argument;
+	update omp_finish_clause calls.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses,
+	gimplify_expr, gimplify_omp_loop): Update omp_finish_clause
+	and/or gimplify_for calls.
+	* langhooks-def.h (lhd_omp_finish_clause): Add bool openacc arg.
+	* langhooks.c (lhd_omp_finish_clause): Likewise.
+	* langhooks.h (lhd_omp_finish_clause): Likewise.
+	* omp-low.c (scan_sharing_clauses): Keep GOMP_MAP_TO_PSET cause for
+	'declare target' vars.
+
+2020-09-15  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/94234
+	* genmatch.c (dt_simplify::gen_1): Emit check on final simplification
+	result when "!" is specified on toplevel output expr.
+	* match.pd ((A * C) +- (B * C) -> (A +- B) * C): Allow folding on expr
+	with multi-use operands if final result is a simple gimple value.
+
 2020-09-14  Sergei Trofimovich  <siarheit@google.com>
 
 	* doc/invoke.texi: fix '-fprofile-reproducibility' option

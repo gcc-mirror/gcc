@@ -1,3 +1,16 @@
+2020-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (push_template_decl_real): OMP reductions retain a template
+	header.
+	(tsubst_function_decl): Likewise.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* cp-gimplify.c (cxx_omp_finish_clause): Add bool openacc arg.
+	* cp-tree.h (cxx_omp_finish_clause): Likewise
+	* semantics.c (handle_omp_for_class_iterator): Update call.
+
 2020-09-14  Marek Polacek  <polacek@redhat.com>
 
 	* pt.c (push_template_decl_real): Use VAR_OR_FUNCTION_DECL_P.

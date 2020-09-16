@@ -316,6 +316,7 @@ enum {
 SREF(dirent);
 SREF(dirent64);
 OTREF(DIR);
+EREF(DT_UNKNOWN);
 
 // From fcntl.h
 SREF(flock);
@@ -437,6 +438,7 @@ SREF(rusage);
 SREF(rlimit64);
 EREF(RLIMIT_NOFILE);
 EREF(PRIO_USER);
+EREF(RUSAGE_SELF);
 
 // From sys/select.h
 TREF(fd_set);

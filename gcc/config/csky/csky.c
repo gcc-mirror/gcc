@@ -328,6 +328,16 @@ csky_cpu_cpp_builtins (cpp_reader *pfile)
     {
       builtin_define ("__csky_hard_float__");
       builtin_define ("__CSKY_HARD_FLOAT__");
+      if (TARGET_HARD_FLOAT_ABI)
+	{
+	  builtin_define ("__csky_hard_float_abi__");
+	  builtin_define ("__CSKY_HARD_FLOAT_ABI__");
+	}
+      if (TARGET_SINGLE_FPU)
+	{
+	  builtin_define ("__csky_hard_float_fpu_sf__");
+	  builtin_define ("__CSKY_HARD_FLOAT_FPU_SF__");
+	}
     }
   else
     {
@@ -1790,9 +1800,22 @@ static rtx
 csky_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
+  int reg = pcum->reg;
+  machine_mode mode = arg.mode;
 
-  if (*pcum < CSKY_NPARM_REGS)
-    return gen_rtx_REG (arg.mode, CSKY_FIRST_PARM_REGNUM + *pcum);
+  if (FUNCTION_VARG_MODE_P(mode)
+      && !pcum->is_stdarg)
+    {
+      reg = pcum->freg;
+
+      if (reg < CSKY_NPARM_FREGS)
+	return gen_rtx_REG (mode, CSKY_FIRST_VFP_REGNUM + reg);
+      else
+	return NULL_RTX;
+    }
+
+  if (reg < CSKY_NPARM_REGS)
+    return gen_rtx_REG (mode, CSKY_FIRST_PARM_REGNUM + reg);
 
   return NULL_RTX;
 }
@@ -1802,7 +1825,7 @@ csky_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
    MODE and TYPE.  */
 
 static int
-csky_num_arg_regs (machine_mode mode, const_tree type)
+csky_num_arg_regs (machine_mode mode, const_tree type, bool is_stdarg)
 {
   int size;
 
@@ -1810,6 +1833,14 @@ csky_num_arg_regs (machine_mode mode, const_tree type)
     size = int_size_in_bytes (type);
   else
     size = GET_MODE_SIZE (mode);
+
+  if (TARGET_HARD_FLOAT_ABI
+      && !is_stdarg)
+    {
+      if (CSKY_VREG_MODE_P(mode)
+	  && !TARGET_SINGLE_FPU)
+	return ((CSKY_NUM_WORDS (size) + 1) / 2);
+    }
 
   return CSKY_NUM_WORDS (size);
 }
@@ -1822,12 +1853,23 @@ csky_function_arg_advance (cumulative_args_t pcum_v,
 			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  int param_size = csky_num_arg_regs (arg.mode, arg.type);
+  int *reg = &pcum->reg;
+  machine_mode mode = arg.mode;
 
-  if (*pcum + param_size > CSKY_NPARM_REGS)
-    *pcum = CSKY_NPARM_REGS;
+  int param_size = csky_num_arg_regs (mode, arg.type, pcum->is_stdarg);
+  int param_regs_nums = CSKY_NPARM_REGS;
+
+  if (FUNCTION_VARG_MODE_P(mode)
+      && !pcum->is_stdarg)
+    {
+      reg = &pcum->freg;
+      param_regs_nums = CSKY_NPARM_FREGS;
+    }
+
+  if (*reg + param_size > param_regs_nums)
+    *reg = param_regs_nums;
   else
-    *pcum += param_size;
+    *reg += param_size;
 }
 
 
@@ -1842,6 +1884,12 @@ csky_function_value (const_tree type, const_tree func,
 
   mode = TYPE_MODE (type);
   size = int_size_in_bytes (type);
+
+  if (FUNCTION_VARG_MODE_P(mode))
+    {
+      mode = promote_function_mode (type, mode, &unsignedp, func, 1);
+      return gen_rtx_REG (mode, CSKY_FIRST_VFP_REGNUM);
+    }
 
   /* Since we promote return types, we must promote the mode here too.  */
   if (INTEGRAL_TYPE_P (type))
@@ -1877,6 +1925,10 @@ static rtx
 csky_libcall_value (machine_mode mode,
 		    const_rtx libcall ATTRIBUTE_UNUSED)
 {
+  if (FUNCTION_VARG_MODE_P(mode))
+    {
+      return gen_rtx_REG (mode, CSKY_FIRST_VFP_REGNUM);
+    }
   return gen_rtx_REG (mode, CSKY_FIRST_RET_REGNUM);
 }
 
@@ -1887,7 +1939,11 @@ csky_libcall_value (machine_mode mode,
 static bool
 csky_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == CSKY_FIRST_RET_REGNUM);
+  if (regno == CSKY_FIRST_RET_REGNUM
+      || (TARGET_HARD_FLOAT_ABI
+	  && regno == CSKY_FIRST_VFP_REGNUM))
+    return true;
+  return false;
 }
 
 
@@ -1912,11 +1968,16 @@ static int
 csky_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  int param_size = csky_num_arg_regs (arg.mode, arg.type);
+  int param_size = csky_num_arg_regs (arg.mode, arg.type, pcum->is_stdarg);
+  int reg = pcum->reg;
 
-  if (*pcum < CSKY_NPARM_REGS
-      && *pcum + param_size > CSKY_NPARM_REGS)
-    return (CSKY_NPARM_REGS - *pcum) * UNITS_PER_WORD;
+  if (FUNCTION_VARG_MODE_P(arg.mode)
+      && !pcum->is_stdarg)
+    return 0;
+
+  if (reg < CSKY_NPARM_REGS
+      && reg + param_size > CSKY_NPARM_REGS)
+    return (CSKY_NPARM_REGS - reg) * UNITS_PER_WORD;
 
   return 0;
 }
@@ -1941,7 +2002,7 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
   csky_function_arg_advance (local_cum_v, arg);
-  regs_to_push = CSKY_NPARM_REGS - local_cum;
+  regs_to_push = CSKY_NPARM_REGS - local_cum.reg;
   if (regs_to_push)
     *pretend_size  = regs_to_push * UNITS_PER_WORD;
 }
@@ -6775,6 +6836,15 @@ csky_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
   return true;
 }
 
+void
+csky_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
+			   rtx libname ATTRIBUTE_UNUSED,
+			   tree fndecl ATTRIBUTE_UNUSED)
+{
+  memset(pcum, 0, sizeof(*pcum));
+  if (stdarg_p (fntype))
+    pcum->is_stdarg = true;
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

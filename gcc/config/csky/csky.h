@@ -133,6 +133,22 @@
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI   (csky_float_abi == CSKY_FLOAT_ABI_HARD)
 
+#define TARGET_SINGLE_FPU     (csky_fpu_index == TARGET_FPU_fpv2_sf)
+#define TARGET_DOUBLE_FPU     (TARGET_HARD_FLOAT && !TARGET_SINGLE_FPU)
+
+#define FUNCTION_VARG_REGNO_P(REGNO)      \
+  (TARGET_HARD_FLOAT_ABI                  \
+   && IN_RANGE ((REGNO), CSKY_FIRST_VFP_REGNUM, \
+		CSKY_FIRST_VFP_REGNUM + CSKY_NPARM_FREGS - 1))
+
+#define CSKY_VREG_MODE_P(mode) \
+  ((mode) == SFmode || (mode) == DFmode)
+
+#define FUNCTION_VARG_MODE_P(mode)  \
+  (TARGET_HARD_FLOAT_ABI            \
+   && CSKY_VREG_MODE_P(mode)        \
+   && !(mode == DFmode && TARGET_SINGLE_FPU))
+
 /* Number of loads/stores handled by ldm/stm.  */
 #define CSKY_MIN_MULTIPLE_STLD	3
 #define CSKY_MAX_MULTIPLE_STLD	12
@@ -360,7 +376,14 @@ extern int csky_arch_isa_features[];
 
 /* A C type for declaring a variable that is used as the first argument of
    TARGET_ FUNCTION_ARG and other related values.  */
-#define CUMULATIVE_ARGS	 int
+#if !defined (USED_FOR_TARGET)
+typedef struct
+{
+  int reg;
+  int freg;
+  bool is_stdarg;
+} CUMULATIVE_ARGS;
+#endif
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -369,15 +392,16 @@ extern int csky_arch_isa_features[];
    On CSKY, the offset always starts at 0: the first parm reg is always
    the same reg.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
-  ((CUM) = 0)
+  csky_init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (INDIRECT))
 
 /* True if N is a possible register number for function argument passing.
    On the CSKY, r0-r3 are used to pass args.
    The int cast is to prevent a complaint about unsigned comparison to
    zero, since CSKY_FIRST_PARM_REGNUM is zero.  */
-#define FUNCTION_ARG_REGNO_P(REGNO)	    \
-  (((int)(REGNO) >= CSKY_FIRST_PARM_REGNUM) &&		\
-   ((REGNO) < (CSKY_NPARM_REGS + CSKY_FIRST_PARM_REGNUM)))
+#define FUNCTION_ARG_REGNO_P(REGNO)                          \
+  (((REGNO) >= CSKY_FIRST_PARM_REGNUM                        \
+    && (REGNO) < (CSKY_NPARM_REGS + CSKY_FIRST_PARM_REGNUM)) \
+   || FUNCTION_VARG_REGNO_P(REGNO))
 
 /* How Large Values Are Returned  */
 

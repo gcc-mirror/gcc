@@ -567,7 +567,7 @@
 ; single vector register.
 (define_insn "*vec_tf_to_v1tf"
   [(set (match_operand:V1TF                   0 "nonimmediate_operand" "=v,v,R,v,v")
-	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "v,R,v,G,d")))]
+	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "f,R,f,G,d")))]
   "TARGET_VX"
   "@
    vmrhg\t%v0,%1,%N1

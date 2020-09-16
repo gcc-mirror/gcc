@@ -899,23 +899,26 @@ lower_try_finally_dup_block (gimple_seq seq, struct leh_state *outer_state,
   gtry *region = NULL;
   gimple_seq new_seq;
   gimple_stmt_iterator gsi;
+  location_t last_loc = UNKNOWN_LOCATION;
 
   new_seq = copy_gimple_seq_and_replace_locals (seq);
 
-  for (gsi = gsi_start (new_seq); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_last (new_seq); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
       /* We duplicate __builtin_stack_restore at -O0 in the hope of eliminating
-	 it on the EH paths.  When it is not eliminated, make it transparent in
-	 the debug info.  */
+	 it on the EH paths.  When it is not eliminated, give it the next
+	 location in the sequence or make it transparent in the debug info.  */
       if (gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
-	gimple_set_location (stmt, UNKNOWN_LOCATION);
+	gimple_set_location (stmt, last_loc);
       else if (LOCATION_LOCUS (gimple_location (stmt)) == UNKNOWN_LOCATION)
 	{
 	  tree block = gimple_block (stmt);
 	  gimple_set_location (stmt, loc);
 	  gimple_set_block (stmt, block);
 	}
+      else
+	last_loc = gimple_location (stmt);
     }
 
   if (outer_state->tf)
@@ -4751,15 +4754,20 @@ cleanup_all_empty_eh (void)
   eh_landing_pad lp;
   int i;
 
-  /* Ideally we'd walk the region tree and process LPs inner to outer
-     to avoid quadraticness in EH redirection.  Walking the LP array
-     in reverse seems to be an approximation of that.  */
+  /* The post-order traversal may lead to quadraticness in the redirection
+     of incoming EH edges from inner LPs, so first try to walk the region
+     tree from inner to outer LPs in order to eliminate these edges.  */
   for (i = vec_safe_length (cfun->eh->lp_array) - 1; i >= 1; --i)
     {
       lp = (*cfun->eh->lp_array)[i];
       if (lp)
 	changed |= cleanup_empty_eh (lp);
     }
+
+  /* Now do the post-order traversal to eliminate outer empty LPs.  */
+  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
+    if (lp)
+      changed |= cleanup_empty_eh (lp);
 
   return changed;
 }

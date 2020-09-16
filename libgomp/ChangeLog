@@ -1,3 +1,23 @@
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* target.c (gomp_map_vars_internal): Initialize has_nullptr.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* libgomp.h (struct target_var_desc): Add has_null_ptr_assoc member.
+	* target.c (gomp_map_vars_existing): Add always_to_flag flag.
+	(gomp_map_vars_existing): Update call to it.
+	(gomp_map_fields_existing): Likewise
+	(gomp_map_vars_internal): Update PSET handling such that if a nullptr is
+	now allocated or if GOMP_MAP_POINTER is used PSET is updated and pointer
+	remapped.
+	(GOMP_target_enter_exit_data): Hanlde GOMP_MAP_ALWAYS_POINTER like
+	GOMP_MAP_POINTER.
+	* testsuite/libgomp.fortran/map-alloc-ptr-1.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-ptr-2.f90: New test.
+
 2020-09-14  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/atomic.c: New file.  Add

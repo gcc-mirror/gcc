@@ -100,8 +100,11 @@ MULTILIB_MATCHES     += mcpu?ck807f=march?ck807ef
 MULTILIB_MATCHES     += mcpu?ck807f=march?ck807
 MULTILIB_MATCHES     += mcpu?ck807f=mcpu?ck807
 
-# For option -msoft-float/-mhard-float.
-MULTILIB_OPTIONS     += msoft-float/mhard-float
-MULTILIB_DIRNAMES    += soft-fp hard-fp
-MULTILIB_EXCEPTIONS  += *mcpu=ck801/*mhard-float*
-MULTILIB_EXCEPTIONS  += *mcpu=ck802/*mhard-float*
+# For option -mfloat-abi=
+MULTILIB_OPTIONS     += mfloat-abi=soft/mfloat-abi=softfp/mfloat-abi=hard
+MULTILIB_DIRNAMES    += soft soft-fp hard-fp
+
+MULTILIB_EXCEPTIONS  += *mcpu=ck801/*mfloat-abi=softfp*
+MULTILIB_EXCEPTIONS  += *mcpu=ck802/*mfloat-abi=softfp*
+MULTILIB_EXCEPTIONS  += *mcpu=ck801/*mfloat-abi=hard*
+MULTILIB_EXCEPTIONS  += *mcpu=ck802/*mfloat-abi=hard*

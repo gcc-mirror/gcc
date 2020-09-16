@@ -1257,8 +1257,10 @@ for (i = 0; i < n_opt_val; i++) {
 	otype = var_opt_val_type[i];
 	if (otype ~ "^const char \\**$")
 		print "  bp_pack_string (ob, bp, ptr->" name", true);";
+	else if (otype ~ "^unsigned")
+		print "  bp_pack_var_len_unsigned (bp, ptr->" name");";
 	else
-		print "  bp_pack_value (bp, ptr->" name", 64);";
+		print "  bp_pack_var_len_int (bp, ptr->" name");";
 }
 print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
 print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
@@ -1274,14 +1276,15 @@ print "{";
 for (i = 0; i < n_opt_val; i++) {
 	name = var_opt_val[i]
 	otype = var_opt_val_type[i];
-	if (otype ~ "^const char \\**$")
-	{
-	      print "  ptr->" name" = bp_unpack_string (data_in, bp);";
-	      print "  if (ptr->" name")";
-	      print "    ptr->" name" = xstrdup (ptr->" name");";
+	if (otype ~ "^const char \\**$") {
+		print "  ptr->" name" = bp_unpack_string (data_in, bp);";
+		print "  if (ptr->" name")";
+		print "    ptr->" name" = xstrdup (ptr->" name");";
 	}
+	else if (otype ~ "^unsigned")
+		print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_var_len_unsigned (bp);";
 	else
-	      print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_value (bp, 64);";
+		print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_var_len_int (bp);";
 }
 print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
 print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";

@@ -473,7 +473,7 @@ vec_info::~vec_info ()
   unsigned int i;
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
-    vect_free_slp_instance (instance, true);
+    vect_free_slp_instance (instance);
 
   destroy_cost_data (target_cost_data);
   free_stmt_vec_infos ();

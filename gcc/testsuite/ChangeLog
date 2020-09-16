@@ -1,3 +1,39 @@
+2020-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96650
+	* gcc.dg/analyzer/pr96650-1-notrans.c: New test.
+	* gcc.dg/analyzer/pr96650-1-trans.c: New test.
+	* gcc.dg/analyzer/pr96650-2-notrans.c: New test.
+	* gcc.dg/analyzer/pr96650-2-trans.c: New test.
+
+2020-09-15  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/94234
+	* gcc.dg/pr94234-3.c: New test.
+
+2020-09-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr78904-4a.c: Compile with -mtune=generic.
+
+2020-09-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-48.c: New testcase.
+	* gcc.dg/vect/bb-slp-7.c: Adjust.
+
+2020-09-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/pr95646.c: Fix testism.
+
+2020-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97028
+	* gcc.target/i386/avx512f-pr97028.c: Untested fix.
+
+2020-09-15  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/94234
+	* gcc.dg/pr94234-2.c: New test.
+
 2020-09-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* gcc.target/bpf/nop-1.c: New test.

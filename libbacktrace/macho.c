@@ -128,9 +128,11 @@ struct macho_fat_arch_64
 
 #define MACH_O_CPU_TYPE_X86 7
 #define MACH_O_CPU_TYPE_ARM 12
+#define MACH_O_CPU_TYPE_PPC 18
 
 #define MACH_O_CPU_TYPE_X86_64 (MACH_O_CPU_TYPE_X86 | MACH_O_CPU_ARCH_ABI64)
 #define MACH_O_CPU_TYPE_ARM64  (MACH_O_CPU_TYPE_ARM | MACH_O_CPU_ARCH_ABI64)
+#define MACH_O_CPU_TYPE_PPC64  (MACH_O_CPU_TYPE_PPC | MACH_O_CPU_ARCH_ABI64)
 
 /* The header of a load command.  */
 
@@ -776,6 +778,10 @@ macho_add_fat (struct backtrace_state *state, const char *filename,
   cputype = MACH_O_CPU_TYPE_ARM64;
 #elif defined (__arm__)
   cputype = MACH_O_CPU_TYPE_ARM;
+#elif defined (__ppc__)
+  cputype = MACH_O_CPU_TYPE_PPC;
+#elif defined (__ppc64__)
+  cputype = MACH_O_CPU_TYPE_PPC64;
 #else
   error_callback (data, "unknown Mach-O architecture", 0);
   goto fail;

@@ -1543,6 +1543,7 @@ csky-*-*)
 		tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} csky/csky-elf.h"
 		tmake_file="csky/t-csky csky/t-csky-elf"
 		default_use_cxa_atexit=no
+		use_gcc_stdint=wrap
 		;;
 	    csky-*-linux*)
 		tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"

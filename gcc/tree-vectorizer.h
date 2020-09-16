@@ -1223,9 +1223,6 @@ public:
   /* Whether on this stmt reduction meta is recorded.  */
   bool is_reduc_info;
 
-  /* The number of scalar stmt references from active SLP instances.  */
-  unsigned int num_slp_uses;
-
   /* If nonzero, the lhs of the statement could be truncated to this
      many bits without affecting any users of the result.  */
   unsigned int min_output_precision;
@@ -1340,7 +1337,6 @@ struct gather_scatter_info {
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
-#define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
 #define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
 #define STMT_VINFO_REDUC_FN(S)		(S)->reduc_fn
@@ -2024,7 +2020,7 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 
 /* In tree-vect-slp.c.  */
-extern void vect_free_slp_instance (slp_instance, bool);
+extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, vec<tree>,
 					  gimple_stmt_iterator *, poly_uint64,
 					  bool, unsigned *);
@@ -2047,6 +2043,7 @@ extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int, tree,
 extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 				      vec<tree>, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
+extern bool vect_update_shared_vectype (stmt_vec_info, tree);
 
 /* In tree-vect-patterns.c.  */
 /* Pattern recognition functions.
