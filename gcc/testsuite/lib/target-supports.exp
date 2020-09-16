@@ -698,7 +698,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget avr-*-*]
 	     || [istarget bfin-*-*]
 	     || [istarget cris-*-*]
-	     || [istarget csky-*-elf]
+	     || [istarget csky-*-elf*]
 	     || [istarget fido-*-elf]
 	     || [istarget h8300-*-*]
 	     || [istarget lm32-*-*]
