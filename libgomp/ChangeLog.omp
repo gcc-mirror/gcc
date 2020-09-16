@@ -1,3 +1,10 @@
+2020-09-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C (workers, vectors):
+	Reduce number of workers to 16.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C (workers, vectors):
+	Likewise.
+
 2020-07-30  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Fix for GCN
