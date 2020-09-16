@@ -3039,8 +3039,8 @@ arm_override_options_after_change (void)
 
 /* Implement TARGET_OPTION_RESTORE.  */
 static void
-arm_option_restore (struct gcc_options *opts, struct gcc_options *opts_set,
-		    struct cl_target_option *ptr)
+arm_option_restore (struct gcc_options */* opts */,
+		    struct gcc_options *opts_set, struct cl_target_option *ptr)
 {
   arm_configure_build_target (&arm_active_target, ptr, opts_set, false);
 }
