@@ -2095,11 +2095,15 @@ alignment_mask (rtx_insn *insn)
   return alignment_with_canonical_addr (SET_SRC (body));
 }
 
-/* Given INSN that's a load or store based at BASE_REG, look for a
-   feeding computation that aligns its address on a 16-byte boundary.
-   Return the rtx and its containing AND_INSN.  */
-static rtx
-find_alignment_op (rtx_insn *insn, rtx base_reg, rtx_insn **and_insn)
+/* Given INSN that's a load or store based at BASE_REG, check if
+   all of its feeding computations align its address on a 16-byte
+   boundary.  If so, return true and add all definition insns into
+   AND_INSNS and their corresponding fully-expanded rtxes for the
+   masking operations into AND_OPS.  */
+
+static bool
+find_alignment_op (rtx_insn *insn, rtx base_reg, vec<rtx_insn *> *and_insns,
+		   vec<rtx> *and_ops)
 {
   df_ref base_use;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
@@ -2111,19 +2115,28 @@ find_alignment_op (rtx_insn *insn, rtx base_reg, rtx_insn **and_insn)
 	continue;
 
       struct df_link *base_def_link = DF_REF_CHAIN (base_use);
-      if (!base_def_link || base_def_link->next)
-	break;
+      if (!base_def_link)
+	return false;
 
-      /* With stack-protector code enabled, and possibly in other
-	 circumstances, there may not be an associated insn for 
-	 the def.  */
-      if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
-	break;
+      while (base_def_link)
+	{
+	  /* With stack-protector code enabled, and possibly in other
+	     circumstances, there may not be an associated insn for
+	     the def.  */
+	  if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
+	    return false;
 
-      *and_insn = DF_REF_INSN (base_def_link->ref);
-      and_operation = alignment_mask (*and_insn);
-      if (and_operation != 0)
-	break;
+	  rtx_insn *and_insn = DF_REF_INSN (base_def_link->ref);
+	  and_operation = alignment_mask (and_insn);
+
+	  /* Stop if we find any one which doesn't align.  */
+	  if (!and_operation)
+	    return false;
+
+	  and_insns->safe_push (and_insn);
+	  and_ops->safe_push (and_operation);
+	  base_def_link = base_def_link->next;
+	}
     }
 
   return and_operation;
@@ -2143,11 +2156,14 @@ recombine_lvx_pattern (rtx_insn *insn, del_info *to_delete)
   rtx mem = XEXP (SET_SRC (body), 0);
   rtx base_reg = XEXP (mem, 0);
 
-  rtx_insn *and_insn;
-  rtx and_operation = find_alignment_op (insn, base_reg, &and_insn);
+  auto_vec<rtx_insn *> and_insns;
+  auto_vec<rtx> and_ops;
+  bool is_any_def_and
+    = find_alignment_op (insn, base_reg, &and_insns, &and_ops);
 
-  if (and_operation != 0)
+  if (is_any_def_and)
     {
+      gcc_assert (and_insns.length () == and_ops.length ());
       df_ref def;
       struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       FOR_EACH_INSN_INFO_DEF (def, insn_info)
@@ -2168,25 +2184,35 @@ recombine_lvx_pattern (rtx_insn *insn, del_info *to_delete)
 	  to_delete[INSN_UID (swap_insn)].replace = true;
 	  to_delete[INSN_UID (swap_insn)].replace_insn = swap_insn;
 
-	  /* However, first we must be sure that we make the
-	     base register from the AND operation available
-	     in case the register has been overwritten.  Copy
-	     the base register to a new pseudo and use that
-	     as the base register of the AND operation in
-	     the new LVX instruction.  */
-	  rtx and_base = XEXP (and_operation, 0);
-	  rtx new_reg = gen_reg_rtx (GET_MODE (and_base));
-	  rtx copy = gen_rtx_SET (new_reg, and_base);
-	  rtx_insn *new_insn = emit_insn_after (copy, and_insn);
-	  set_block_for_insn (new_insn, BLOCK_FOR_INSN (and_insn));
-	  df_insn_rescan (new_insn);
+	  rtx new_reg = 0;
+	  rtx and_mask = 0;
+	  for (unsigned i = 0; i < and_insns.length (); i++)
+	    {
+	      /* However, first we must be sure that we make the
+		 base register from the AND operation available
+		 in case the register has been overwritten.  Copy
+		 the base register to a new pseudo and use that
+		 as the base register of the AND operation in
+		 the new LVX instruction.  */
+	      rtx_insn *and_insn = and_insns[i];
+	      rtx and_op = and_ops[i];
+	      rtx and_base = XEXP (and_op, 0);
+	      if (!new_reg)
+		{
+		  new_reg = gen_reg_rtx (GET_MODE (and_base));
+		  and_mask = XEXP (and_op, 1);
+		}
+	      rtx copy = gen_rtx_SET (new_reg, and_base);
+	      rtx_insn *new_insn = emit_insn_after (copy, and_insn);
+	      set_block_for_insn (new_insn, BLOCK_FOR_INSN (and_insn));
+	      df_insn_rescan (new_insn);
+	    }
 
-	  XEXP (mem, 0) = gen_rtx_AND (GET_MODE (and_base), new_reg,
-				       XEXP (and_operation, 1));
+	  XEXP (mem, 0) = gen_rtx_AND (GET_MODE (new_reg), new_reg, and_mask);
 	  SET_SRC (body) = mem;
 	  INSN_CODE (insn) = -1; /* Force re-recognition.  */
 	  df_insn_rescan (insn);
-		  
+
 	  if (dump_file)
 	    fprintf (dump_file, "lvx opportunity found at %d\n",
 		     INSN_UID (insn));
@@ -2205,11 +2231,14 @@ recombine_stvx_pattern (rtx_insn *insn, del_info *to_delete)
   rtx mem = SET_DEST (body);
   rtx base_reg = XEXP (mem, 0);
 
-  rtx_insn *and_insn;
-  rtx and_operation = find_alignment_op (insn, base_reg, &and_insn);
+  auto_vec<rtx_insn *> and_insns;
+  auto_vec<rtx> and_ops;
+  bool is_any_def_and
+    = find_alignment_op (insn, base_reg, &and_insns, &and_ops);
 
-  if (and_operation != 0)
+  if (is_any_def_and)
     {
+      gcc_assert (and_insns.length () == and_ops.length ());
       rtx src_reg = XEXP (SET_SRC (body), 0);
       df_ref src_use;
       struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
@@ -2234,25 +2263,35 @@ recombine_stvx_pattern (rtx_insn *insn, del_info *to_delete)
 	  to_delete[INSN_UID (swap_insn)].replace = true;
 	  to_delete[INSN_UID (swap_insn)].replace_insn = swap_insn;
 
-	  /* However, first we must be sure that we make the
-	     base register from the AND operation available
-	     in case the register has been overwritten.  Copy
-	     the base register to a new pseudo and use that
-	     as the base register of the AND operation in
-	     the new STVX instruction.  */
-	  rtx and_base = XEXP (and_operation, 0);
-	  rtx new_reg = gen_reg_rtx (GET_MODE (and_base));
-	  rtx copy = gen_rtx_SET (new_reg, and_base);
-	  rtx_insn *new_insn = emit_insn_after (copy, and_insn);
-	  set_block_for_insn (new_insn, BLOCK_FOR_INSN (and_insn));
-	  df_insn_rescan (new_insn);
+	  rtx new_reg = 0;
+	  rtx and_mask = 0;
+	  for (unsigned i = 0; i < and_insns.length (); i++)
+	    {
+	      /* However, first we must be sure that we make the
+		 base register from the AND operation available
+		 in case the register has been overwritten.  Copy
+		 the base register to a new pseudo and use that
+		 as the base register of the AND operation in
+		 the new STVX instruction.  */
+	      rtx_insn *and_insn = and_insns[i];
+	      rtx and_op = and_ops[i];
+	      rtx and_base = XEXP (and_op, 0);
+	      if (!new_reg)
+		{
+		  new_reg = gen_reg_rtx (GET_MODE (and_base));
+		  and_mask = XEXP (and_op, 1);
+		}
+	      rtx copy = gen_rtx_SET (new_reg, and_base);
+	      rtx_insn *new_insn = emit_insn_after (copy, and_insn);
+	      set_block_for_insn (new_insn, BLOCK_FOR_INSN (and_insn));
+	      df_insn_rescan (new_insn);
+	    }
 
-	  XEXP (mem, 0) = gen_rtx_AND (GET_MODE (and_base), new_reg,
-				       XEXP (and_operation, 1));
+	  XEXP (mem, 0) = gen_rtx_AND (GET_MODE (new_reg), new_reg, and_mask);
 	  SET_SRC (body) = src_reg;
 	  INSN_CODE (insn) = -1; /* Force re-recognition.  */
 	  df_insn_rescan (insn);
-		  
+
 	  if (dump_file)
 	    fprintf (dump_file, "stvx opportunity found at %d\n",
 		     INSN_UID (insn));
