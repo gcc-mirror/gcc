@@ -6513,9 +6513,15 @@ either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @item -Wuninitialized
 @opindex Wuninitialized
 @opindex Wno-uninitialized
-Warn if an automatic variable is used without first being initialized.
-In C++, warn if a non-static reference or non-static @code{const}
-member appears in a class without constructors.
+Warn if an object with automatic or allocated storage duration is used
+without having been initialized.  In C++, also warn if a non-static
+reference or non-static @code{const} member appears in a class without
+constructors.
+
+In addition, passing a pointer (or in C++, a reference) to an uninitialized
+object to a @code{const}-qualified argument of a built-in function known to
+read the object is also diagnosed by this warning.
+(@option{-Wmaybe-uninitialized} is issued for ordinary functions.)
 
 If you want to warn about code that uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
@@ -6557,11 +6563,18 @@ void store (int *i)
 @item -Wmaybe-uninitialized
 @opindex Wmaybe-uninitialized
 @opindex Wno-maybe-uninitialized
-For an automatic (i.e.@: local) variable, if there exists a path from the
-function entry to a use of the variable that is initialized, but there exist
-some other paths for which the variable is not initialized, the compiler
-emits a warning if it cannot prove the uninitialized paths are not
-executed at run time.
+For an object with automatic or allocated storage duration, if there exists
+a path from the function entry to a use of the object that is initialized,
+but there exist some other paths for which the object is not initialized,
+the compiler emits a warning if it cannot prove the uninitialized paths
+are not executed at run time.
+
+In addition, passing a pointer (or in C++, a reference) to an uninitialized
+object to a @code{const}-qualified function argument is also diagnosed by
+this warning.  (@option{-Wuninitialized} is issued for built-in functions
+known to read the object.)  Annotating the function with attribute
+@code{access (none)} indicates that the argument isn't used to access
+the object and avoids the warning (@pxref{Common Function Attributes}).
 
 These warnings are only possible in optimizing compilation, because otherwise
 GCC does not keep track of the state of variables.
