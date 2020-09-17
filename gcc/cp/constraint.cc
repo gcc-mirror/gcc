@@ -2175,7 +2175,19 @@ tsubst_requires_expr (tree t, tree args,
   /* A requires-expression is an unevaluated context.  */
   cp_unevaluated u;
 
-  tree parms = TREE_OPERAND (t, 0);
+  args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args);
+  if (processing_template_decl)
+    {
+      /* We're partially instantiating a generic lambda.  Substituting into
+	 this requires-expression now may cause its requirements to get
+	 checked out of order, so instead just remember the template
+	 arguments and wait until we can substitute them all at once.  */
+      t = copy_node (t);
+      REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
+      return t;
+    }
+
+  tree parms = REQUIRES_EXPR_PARMS (t);
   if (parms)
     {
       parms = tsubst_constraint_variables (parms, args, info);
@@ -2183,13 +2195,10 @@ tsubst_requires_expr (tree t, tree args,
 	return boolean_false_node;
     }
 
-  tree reqs = TREE_OPERAND (t, 1);
+  tree reqs = REQUIRES_EXPR_REQS (t);
   reqs = tsubst_requirement_body (reqs, args, info);
   if (reqs == error_mark_node)
     return boolean_false_node;
-
-  if (processing_template_decl)
-    return finish_requires_expr (cp_expr_location (t), parms, reqs);
 
   return boolean_true_node;
 }
@@ -2933,7 +2942,7 @@ finish_requires_expr (location_t loc, tree parms, tree reqs)
     }
 
   /* Build the node. */
-  tree r = build_min (REQUIRES_EXPR, boolean_type_node, parms, reqs);
+  tree r = build_min (REQUIRES_EXPR, boolean_type_node, parms, reqs, NULL_TREE);
   TREE_SIDE_EFFECTS (r) = false;
   TREE_CONSTANT (r) = true;
   SET_EXPR_LOCATION (r, loc);

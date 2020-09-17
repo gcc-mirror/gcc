@@ -1618,6 +1618,21 @@ check_constraint_info (tree t)
 #define CONSTRAINED_PARM_PROTOTYPE(NODE) \
   DECL_INITIAL (TYPE_DECL_CHECK (NODE))
 
+/* The list of local parameters introduced by this requires-expression,
+   in the form of a chain of PARM_DECLs.  */
+#define REQUIRES_EXPR_PARMS(NODE) \
+  TREE_OPERAND (TREE_CHECK (NODE, REQUIRES_EXPR), 0)
+
+/* A TREE_LIST of the requirements for this requires-expression.
+   The requirements are stored in lexical order within the TREE_VALUE
+   of each TREE_LIST node.  The TREE_PURPOSE of each node is unused.  */
+#define REQUIRES_EXPR_REQS(NODE) \
+  TREE_OPERAND (TREE_CHECK (NODE, REQUIRES_EXPR), 1)
+
+/* Like PACK_EXPANSION_EXTRA_ARGS, for requires-expressions.  */
+#define REQUIRES_EXPR_EXTRA_ARGS(NODE) \
+  TREE_OPERAND (TREE_CHECK (NODE, REQUIRES_EXPR), 2)
+
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
@@ -7013,6 +7028,8 @@ extern bool template_guide_p			(const_tree);
 extern bool builtin_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
+extern tree add_extra_args			(tree, tree);
+extern tree build_extra_args			(tree, tree, tsubst_flags_t);
 
 /* in rtti.c */
 /* A vector of all tinfo decls that haven't been emitted yet.  */
