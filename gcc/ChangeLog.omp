@@ -1,6 +1,12 @@
 2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/96390
+	* omp-offload.c (omp_discover_declare_target_tgt_fn_r): Fix
+	offloadable setting with target_alias.
+
+2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/96390
 	* omp-offload.c (omp_discover_declare_target_tgt_fn_r): Handle
 	alias nodes.
 

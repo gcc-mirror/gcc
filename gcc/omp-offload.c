@@ -230,6 +230,7 @@ omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 	      while (orig_node->alias_target)
 		{
 		  orig_node = orig_node->ultimate_alias_target ();
+		  orig_node->offloadable = 1;
 		  DECL_ATTRIBUTES (orig_node->decl)
 		    = tree_cons (id, NULL_TREE,
 				 DECL_ATTRIBUTES (orig_node->decl));
