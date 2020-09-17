@@ -261,10 +261,8 @@ package body Ada.Text_IO.Fixed_IO is
    --  will not overflow.
 
    pragma Assert (System.Fine_Delta >= 2.0**(-63));
-   pragma Assert (Num'Small in 2.0**(-63) .. 2.0**63);
+   pragma Assert (Num'Small in 2.0**(-80) .. 2.0**80);
    pragma Assert (Num'Fore <= 37);
-   --  These assertions need to be relaxed to allow for a Small of
-   --  2.0**(-64) at least, since there is an ACATS test for this ???
 
    Max_Digits : constant := 18;
    --  Maximum number of decimal digits that can be represented in a
@@ -275,9 +273,9 @@ package body Ada.Text_IO.Fixed_IO is
    --  decimal point.
 
    subtype Int is Integer;
-   E0 : constant Int := -(20 * Boolean'Pos (Num'Small >= 1.0E1));
-   E1 : constant Int := E0 + 10 * Boolean'Pos (Num'Small * 10.0**E0 < 1.0E-10);
-   E2 : constant Int := E1 +  5 * Boolean'Pos (Num'Small * 10.0**E1 < 1.0E-5);
+   E0 : constant Int := -(25 * Boolean'Pos (Num'Small >= 1.0E1));
+   E1 : constant Int := E0 + 13 * Boolean'Pos (Num'Small * 10.0**E0 < 1.0E-13);
+   E2 : constant Int := E1 +  6 * Boolean'Pos (Num'Small * 10.0**E1 < 1.0E-6);
    E3 : constant Int := E2 +  3 * Boolean'Pos (Num'Small * 10.0**E2 < 1.0E-3);
    E4 : constant Int := E3 +  2 * Boolean'Pos (Num'Small * 10.0**E3 < 1.0E-1);
    E5 : constant Int := E4 +  1 * Boolean'Pos (Num'Small * 10.0**E4 < 1.0E-0);
@@ -288,10 +286,12 @@ package body Ada.Text_IO.Fixed_IO is
                    and then Num'Small * 10.0**Scale < 10.0);
 
    Exact : constant Boolean :=
-     Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-       or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
-       or else Num'Small >= 10.0**Max_Digits;
-   --  True iff a numerator and denominator can be calculated such that
+     (Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
+        or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
+        or else Num'Small >= 10.0**Max_Digits)
+     and then Num'Small >= 2.0**(-63)
+     and then Num'Small <= 2.0**63;
+   --  True iff a 64-bit numerator and denominator can be calculated such that
    --  their ratio exactly represents the small of Num.
 
    procedure Put
@@ -563,7 +563,7 @@ package body Ada.Text_IO.Fixed_IO is
 
          Q  : array (0 .. N - 1) of Int64 := (others => 0);
          --  Each element of Q has Max_Digits decimal digits, except the
-         --  last, which has eAA rem Max_Digits. Only Q (Q'First) may have an
+         --  last, which has AA rem Max_Digits. Only Q (Q'First) may have an
          --  absolute value equal to or larger than 10**Max_Digits. Only the
          --  absolute value of the elements is not significant, not the sign.
 
