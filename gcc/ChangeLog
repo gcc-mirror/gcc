@@ -1,3 +1,21 @@
+2020-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97053
+	* gimple-ssa-store-merging.c (check_no_overlap): Add FIRST_ORDER,
+	START, FIRST_EARLIER and LAST_EARLIER arguments.  Return false if
+	any stores between FIRST_EARLIER inclusive and LAST_EARLIER exclusive
+	has order in between FIRST_ORDER and LAST_ORDER and overlaps the to
+	be merged store.
+	(imm_store_chain_info::try_coalesce_bswap): Add FIRST_EARLIER argument.
+	Adjust check_no_overlap caller.
+	(imm_store_chain_info::coalesce_immediate_stores): Add first_earlier
+	and last_earlier variables, adjust them during iterations.  Adjust
+	check_no_overlap callers, call check_no_overlap even when extending
+	overlapping stores by extra INTEGER_CST stores.
+
 2020-09-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	Backported from master:
