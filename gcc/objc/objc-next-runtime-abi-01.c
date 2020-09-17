@@ -938,7 +938,7 @@ next_runtime_abi_01_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
 	ucls_super_ref =
 		objc_build_component_ref (imp->class_decl,
 					  get_identifier ("super_class"));
-	return ucls_super_ref;
+      return ucls_super_ref;
     }
   else
     {
@@ -946,7 +946,7 @@ next_runtime_abi_01_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
 	uucls_super_ref =
 		objc_build_component_ref (imp->meta_decl,
 					  get_identifier ("super_class"));
-	return uucls_super_ref;
+      return uucls_super_ref;
     }
 }
 

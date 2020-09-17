@@ -722,63 +722,63 @@ merge_fences (fence_t f, insn_t insn,
                         != BLOCK_FOR_INSN (last_scheduled_insn));
           }
 
-        /* Find edge of first predecessor (last_scheduled_insn_old->insn).  */
-        FOR_EACH_SUCC_1 (succ, si, last_scheduled_insn_old,
-                         SUCCS_NORMAL | SUCCS_SKIP_TO_LOOP_EXITS)
-          {
-            if (succ == insn)
-              {
-                /* No same successor allowed from several edges.  */
-                gcc_assert (!edge_old);
-                edge_old = si.e1;
-              }
-          }
-        /* Find edge of second predecessor (last_scheduled_insn->insn).  */
-        FOR_EACH_SUCC_1 (succ, si, last_scheduled_insn,
-                         SUCCS_NORMAL | SUCCS_SKIP_TO_LOOP_EXITS)
-          {
-            if (succ == insn)
-              {
-                /* No same successor allowed from several edges.  */
-                gcc_assert (!edge_new);
-                edge_new = si.e1;
-              }
-          }
+      /* Find edge of first predecessor (last_scheduled_insn_old->insn).  */
+      FOR_EACH_SUCC_1 (succ, si, last_scheduled_insn_old,
+		       SUCCS_NORMAL | SUCCS_SKIP_TO_LOOP_EXITS)
+	{
+	  if (succ == insn)
+	    {
+	      /* No same successor allowed from several edges.  */
+	      gcc_assert (!edge_old);
+	      edge_old = si.e1;
+	    }
+	}
+      /* Find edge of second predecessor (last_scheduled_insn->insn).  */
+      FOR_EACH_SUCC_1 (succ, si, last_scheduled_insn,
+		       SUCCS_NORMAL | SUCCS_SKIP_TO_LOOP_EXITS)
+	{
+	  if (succ == insn)
+	    {
+	      /* No same successor allowed from several edges.  */
+	      gcc_assert (!edge_new);
+	      edge_new = si.e1;
+	    }
+	}
 
-        /* Check if we can choose most probable predecessor.  */
-        if (edge_old == NULL || edge_new == NULL)
-          {
-            reset_deps_context (FENCE_DC (f));
-            delete_deps_context (dc);
-            vec_free (executing_insns);
-            free (ready_ticks);
+      /* Check if we can choose most probable predecessor.  */
+      if (edge_old == NULL || edge_new == NULL)
+	{
+	  reset_deps_context (FENCE_DC (f));
+	  delete_deps_context (dc);
+	  vec_free (executing_insns);
+	  free (ready_ticks);
 
-            FENCE_CYCLE (f) = MAX (FENCE_CYCLE (f), cycle);
-            if (FENCE_EXECUTING_INSNS (f))
-              FENCE_EXECUTING_INSNS (f)->block_remove (0,
-                                FENCE_EXECUTING_INSNS (f)->length ());
-            if (FENCE_READY_TICKS (f))
-              memset (FENCE_READY_TICKS (f), 0, FENCE_READY_TICKS_SIZE (f));
-          }
-        else
-          if (edge_new->probability > edge_old->probability)
-            {
-              delete_deps_context (FENCE_DC (f));
-              FENCE_DC (f) = dc;
-              vec_free (FENCE_EXECUTING_INSNS (f));
-              FENCE_EXECUTING_INSNS (f) = executing_insns;
-              free (FENCE_READY_TICKS (f));
-              FENCE_READY_TICKS (f) = ready_ticks;
-              FENCE_READY_TICKS_SIZE (f) = ready_ticks_size;
-              FENCE_CYCLE (f) = cycle;
-            }
-          else
-            {
-              /* Leave DC and CYCLE untouched.  */
-              delete_deps_context (dc);
-              vec_free (executing_insns);
-              free (ready_ticks);
-            }
+	  FENCE_CYCLE (f) = MAX (FENCE_CYCLE (f), cycle);
+	  if (FENCE_EXECUTING_INSNS (f))
+	    FENCE_EXECUTING_INSNS (f)->block_remove (0,
+			      FENCE_EXECUTING_INSNS (f)->length ());
+	  if (FENCE_READY_TICKS (f))
+	    memset (FENCE_READY_TICKS (f), 0, FENCE_READY_TICKS_SIZE (f));
+	}
+      else
+	if (edge_new->probability > edge_old->probability)
+	  {
+	    delete_deps_context (FENCE_DC (f));
+	    FENCE_DC (f) = dc;
+	    vec_free (FENCE_EXECUTING_INSNS (f));
+	    FENCE_EXECUTING_INSNS (f) = executing_insns;
+	    free (FENCE_READY_TICKS (f));
+	    FENCE_READY_TICKS (f) = ready_ticks;
+	    FENCE_READY_TICKS_SIZE (f) = ready_ticks_size;
+	    FENCE_CYCLE (f) = cycle;
+	  }
+	else
+	  {
+	    /* Leave DC and CYCLE untouched.  */
+	    delete_deps_context (dc);
+	    vec_free (executing_insns);
+	    free (ready_ticks);
+	  }
     }
 
   /* Fill remaining invariant fields.  */
