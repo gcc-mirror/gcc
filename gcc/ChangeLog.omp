@@ -1,5 +1,11 @@
 2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR middle-end/96390
+	* omp-offload.c (omp_discover_declare_target_tgt_fn_r): Handle
+	alias nodes.
+
+2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backport from mainline
 	2020-05-14  Jakub Jelinek  <jakub@redhat.com>
 

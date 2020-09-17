@@ -198,21 +198,55 @@ omp_declare_target_var_p (tree decl)
 static tree
 omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 {
-  if (TREE_CODE (*tp) == FUNCTION_DECL
-      && !omp_declare_target_fn_p (*tp)
-      && !lookup_attribute ("omp declare target host", DECL_ATTRIBUTES (*tp)))
+  if (TREE_CODE (*tp) == FUNCTION_DECL)
     {
-      tree id = get_identifier ("omp declare target");
-      if (!DECL_EXTERNAL (*tp) && DECL_SAVED_TREE (*tp))
-	((vec<tree> *) data)->safe_push (*tp);
-      DECL_ATTRIBUTES (*tp) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (*tp));
+      tree decl = *tp;
       symtab_node *node = symtab_node::get (*tp);
       if (node != NULL)
 	{
-	  node->offloadable = 1;
+	  /* First, find final FUNCTION_DECL; find final alias target and there
+	     ensure alias like cpp_implicit_alias are resolved by calling
+	     ultimate_alias_target; the latter does not resolve alias_target as
+	     node->analyzed = 0.  */
+	  symtab_node *orig_node = node;
+	  while (node->alias_target)
+	    node = symtab_node::get (node->alias_target);
+	  node = node->ultimate_alias_target ();
+	  decl = node->decl;
+
+	  if (omp_declare_target_fn_p (decl)
+	      || lookup_attribute ("omp declare target host",
+				   DECL_ATTRIBUTES (decl)))
+	    return NULL_TREE;
+
 	  if (ENABLE_OFFLOADING)
 	    g->have_offload = true;
+
+	  /* Now mark original node and all alias targets for offloading.  */
+	  node->offloadable = 1;
+	  if (orig_node != node)
+	    {
+	      tree id = get_identifier ("omp declare target");
+	      while (orig_node->alias_target)
+		{
+		  orig_node = orig_node->ultimate_alias_target ();
+		  DECL_ATTRIBUTES (orig_node->decl)
+		    = tree_cons (id, NULL_TREE,
+				 DECL_ATTRIBUTES (orig_node->decl));
+		  orig_node = symtab_node::get (orig_node->alias_target);
+		}
+	    }
 	}
+      else if (omp_declare_target_fn_p (decl)
+	       || lookup_attribute ("omp declare target host",
+				    DECL_ATTRIBUTES (decl)))
+	return NULL_TREE;
+
+      tree id = get_identifier ("omp declare target");
+      if (!DECL_EXTERNAL (decl) && DECL_SAVED_TREE (decl))
+	((vec<tree> *) data)->safe_push (decl);
+      DECL_ATTRIBUTES (decl) = tree_cons (id, NULL_TREE,
+					  DECL_ATTRIBUTES (decl));
     }
   else if (TYPE_P (*tp))
     *walk_subtrees = 0;
