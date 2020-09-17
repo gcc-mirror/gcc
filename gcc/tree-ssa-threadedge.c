@@ -163,8 +163,8 @@ record_temporary_equivalences_from_phis (edge e,
 	{
 	  /* Get an empty new VR we can pass to update_value_range and save
 	     away in the VR stack.  */
-	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
-	  value_range_equiv *new_vr = vr_values->allocate_value_range_equiv ();
+	  value_range_equiv *new_vr
+			  = evrp_range_analyzer->allocate_value_range_equiv ();
 	  new (new_vr) value_range_equiv ();
 
 	  /* There are three cases to consider:
@@ -178,7 +178,7 @@ record_temporary_equivalences_from_phis (edge e,
 	       Otherwise set NEW_VR to varying.  This may be overly
 	       conservative.  */
 	  if (TREE_CODE (src) == SSA_NAME)
-	    new_vr->deep_copy (vr_values->get_value_range (src));
+	    new_vr->deep_copy (evrp_range_analyzer->get_value_range (src));
 	  else if (TREE_CODE (src) == INTEGER_CST)
 	    new_vr->set (src);
 	  else

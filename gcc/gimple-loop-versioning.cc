@@ -277,7 +277,7 @@ private:
   {
   public:
     name_prop (loop_info &li) : m_li (li) {}
-    tree get_value (tree, gimple *) FINAL OVERRIDE;
+    tree value_of_expr (tree name, gimple *) FINAL OVERRIDE;
 
   private:
     /* Information about the versioning we've performed on the loop.  */
@@ -512,8 +512,7 @@ loop_versioning::lv_dom_walker::before_dom_children (basic_block bb)
   m_range_analyzer.enter (bb);
 
   if (bb == bb->loop_father->header)
-    m_lv.prune_loop_conditions (bb->loop_father,
-				m_range_analyzer.get_vr_values ());
+    m_lv.prune_loop_conditions (bb->loop_father, &m_range_analyzer);
 
   for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
        gsi_next (&si))
@@ -534,8 +533,7 @@ loop_versioning::lv_dom_walker::after_dom_children (basic_block bb)
    Return the new value if so, otherwise return null.  */
 
 tree
-loop_versioning::name_prop::get_value (tree val,
-				       gimple *stmt ATTRIBUTE_UNUSED)
+loop_versioning::name_prop::value_of_expr (tree val, gimple *)
 {
   if (TREE_CODE (val) == SSA_NAME
       && bitmap_bit_p (&m_li.unity_names, SSA_NAME_VERSION (val)))

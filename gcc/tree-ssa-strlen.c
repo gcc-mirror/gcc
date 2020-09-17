@@ -5860,7 +5860,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
 	 can be used by printf argument processing.  */
       evrp.record_ranges_from_stmt (stmt, false);
 
-      if (check_and_optimize_stmt (&gsi, &cleanup_eh, evrp.get_vr_values ()))
+      if (check_and_optimize_stmt (&gsi, &cleanup_eh, &evrp))
 	gsi_next (&gsi);
     }
 
