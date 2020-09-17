@@ -1,6 +1,13 @@
 2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/target-40.c: New test.
+
+2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/target-39.c: New test.

@@ -1,6 +1,23 @@
 2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
+	2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.h (struct function): Add has_omp_target bit.
+	* omp-offload.c (omp_discover_declare_target_fn_r): New function,
+	old renamed to ...
+	(omp_discover_declare_target_tgt_fn_r): ... this.
+	(omp_discover_declare_target_var_r): Call
+	omp_discover_declare_target_tgt_fn_r instead of
+	omp_discover_declare_target_fn_r.
+	(omp_discover_implicit_declare_target): Also queue functions with
+	has_omp_target bit set, for those walk with
+	omp_discover_declare_target_fn_r, for declare target to functions
+	walk with omp_discover_declare_target_tgt_fn_r.
+
+2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
 	2020-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-offload.h (omp_discover_implicit_declare_target): Declare.

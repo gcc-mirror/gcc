@@ -421,6 +421,9 @@ struct GTY(()) function {
 
   /* Set if this is a coroutine-related function.  */
   unsigned int coroutine_component : 1;
+
+  /* Set if there are any OMP_TARGET regions in the function.  */
+  unsigned int has_omp_target : 1;
 };
 
 /* Add the decl D to the local_decls list of FUN.  */
