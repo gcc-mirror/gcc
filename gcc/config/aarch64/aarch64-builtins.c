@@ -2140,14 +2140,14 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
       return target;
 
     case AARCH64_JSCVT:
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      op0 = force_reg (DFmode, expand_normal (arg0));
-      if (!target)
-	target = gen_reg_rtx (SImode);
-      else
-	target = force_reg (SImode, target);
-      emit_insn (GEN_FCN (CODE_FOR_aarch64_fjcvtzs) (target, op0));
-      return target;
+      {
+	expand_operand ops[2];
+	create_output_operand (&ops[0], target, SImode);
+	op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	create_input_operand (&ops[1], op0, DFmode);
+	expand_insn (CODE_FOR_aarch64_fjcvtzs, 2, ops);
+	return ops[0].value;
+      }
 
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V2SF:
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V2SF:
