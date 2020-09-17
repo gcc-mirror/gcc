@@ -1,3 +1,30 @@
+2020-09-16  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/96139
+	* gcc.target/powerpc/pr96139-a.c: New test.
+	* gcc.target/powerpc/pr96139-b.c: New test.
+	* gcc.target/powerpc/pr96139-c.c: New test.
+
+2020-09-16  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	Backported from master:
+	2019-08-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x4.c: New test.
+
+2020-09-16  Sameera Deshpande  <sameera.deshpande@linaro.org>
+
+	Backported from master:
+	2018-05-31  Sameera Deshpande  <sameera.deshpande@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: New test for
+	vld1x3 intrinsics for aarch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x2.c: New test for
+	vst1x2 intrinsics for aarch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x3.c: New test for
+	vst1x3 intrinsics for aarch64.
+
 2020-09-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
