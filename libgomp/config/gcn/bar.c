@@ -43,7 +43,8 @@ gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
       __atomic_store_n (&bar->generation, bar->generation + BAR_INCR,
 			MEMMODEL_RELAXED);
     }
-  asm ("s_barrier" ::: "memory");
+  if (bar->total > 1)
+    asm ("s_barrier" ::: "memory");
 }
 
 void
@@ -71,7 +72,8 @@ gomp_barrier_wait_last (gomp_barrier_t *bar)
 void
 gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
 {
-  asm ("s_barrier" ::: "memory");
+  if (bar->total > 1)
+    asm ("s_barrier" ::: "memory");
 }
 
 void
@@ -97,7 +99,8 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	  state &= ~BAR_CANCELLED;
 	  state += BAR_INCR - BAR_WAS_LAST;
 	  __atomic_store_n (&bar->generation, state, MEMMODEL_RELAXED);
-	  asm ("s_barrier" ::: "memory");
+	  if (bar->total > 1)
+	    asm ("s_barrier" ::: "memory");
 	  return;
 	}
     }
@@ -172,7 +175,8 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	{
 	  state += BAR_INCR - BAR_WAS_LAST;
 	  __atomic_store_n (&bar->generation, state, MEMMODEL_RELAXED);
-	  asm ("s_barrier" ::: "memory");
+	  if (bar->total > 1)
+	    asm ("s_barrier" ::: "memory");
 	  return false;
 	}
     }
@@ -195,7 +199,8 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	  abort();
 	}
 
-      asm ("s_barrier" ::: "memory");
+      if (bar->total > 1)
+	asm ("s_barrier" ::: "memory");
       gen = __atomic_load_n (&bar->generation, MEMMODEL_RELAXED);
       if (__builtin_expect (gen & BAR_CANCELLED, 0))
 	return true;
