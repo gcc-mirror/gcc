@@ -92,7 +92,12 @@ irange::copy_legacy_range (const irange &src)
   else if (src.varying_p ())
     set_varying (src.type ());
   else if (src.kind () == VR_ANTI_RANGE)
-    set (src.min (), src.max (), VR_ANTI_RANGE);
+    {
+      if (src.legacy_mode_p () && !range_has_numeric_bounds_p (&src))
+	set_varying (src.type ());
+      else
+	set (src.min (), src.max (), VR_ANTI_RANGE);
+    }
   else if (legacy_mode_p () && src.maybe_anti_range ())
     {
       int_range<3> tmp (src);
@@ -101,7 +106,17 @@ irange::copy_legacy_range (const irange &src)
 	   VR_ANTI_RANGE);
     }
   else
-    set (src.min (), src.max (), VR_RANGE);
+    {
+      // If copying legacy to int_range, normalize any symbolics.
+      if (src.legacy_mode_p () && !range_has_numeric_bounds_p (&src))
+	{
+	  value_range cst (src);
+	  cst.normalize_symbolics ();
+	  set (cst.min (), cst.max ());
+	  return;
+	}
+      set (src.min (), src.max ());
+    }
 }
 
 // Swap min/max if they are out of order.  Return TRUE if further

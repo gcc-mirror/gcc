@@ -720,6 +720,134 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
   return pos;
 }
 
+/* Return the first of DECL or TYPE attributes installed in NODE if it's
+   a DECL, or TYPE attributes if it's a TYPE, or null otherwise.  */
+
+static tree
+decl_or_type_attrs (tree node)
+{
+  if (DECL_P (node))
+    {
+      if (tree attrs = DECL_ATTRIBUTES (node))
+	return attrs;
+
+      tree type = TREE_TYPE (node);
+      return TYPE_ATTRIBUTES (type);
+    }
+
+  if (TYPE_P (node))
+    return TYPE_ATTRIBUTES (node);
+
+  return NULL_TREE;
+}
+
+/* Given a pair of NODEs for arbitrary DECLs or TYPEs, validate one or
+   two integral or string attribute arguments NEWARGS to be applied to
+   NODE[0] for the absence of conflicts with the same attribute arguments
+   already applied to NODE[1]. Issue a warning for conflicts and return
+   false.  Otherwise, when no conflicts are found, return true.  */
+
+static bool
+validate_attr_args (tree node[2], tree name, tree newargs[2])
+{
+  /* First validate the arguments against those already applied to
+     the same declaration (or type).  */
+  tree self[2] = { node[0], node[0] };
+  if (node[0] != node[1] && !validate_attr_args (self, name, newargs))
+    return false;
+
+  if (!node[1])
+    return true;
+
+  /* Extract the same attribute from the previous declaration or type.  */
+  tree prevattr = decl_or_type_attrs (node[1]);
+  const char* const namestr = IDENTIFIER_POINTER (name);
+  prevattr = lookup_attribute (namestr, prevattr);
+  if (!prevattr)
+    return true;
+
+  /* Extract one or both attribute arguments.  */
+  tree prevargs[2];
+  prevargs[0] = TREE_VALUE (TREE_VALUE (prevattr));
+  prevargs[1] = TREE_CHAIN (TREE_VALUE (prevattr));
+  if (prevargs[1])
+    prevargs[1] = TREE_VALUE (prevargs[1]);
+
+  /* Both arguments must be equal or, for the second pair, neither must
+     be provided to succeed.  */
+  bool arg1eq, arg2eq;
+  if (TREE_CODE (newargs[0]) == INTEGER_CST)
+    {
+      arg1eq = tree_int_cst_equal (newargs[0], prevargs[0]);
+      if (newargs[1] && prevargs[1])
+	arg2eq = tree_int_cst_equal (newargs[1], prevargs[1]);
+      else
+	arg2eq = newargs[1] == prevargs[1];
+    }
+  else if (TREE_CODE (newargs[0]) == STRING_CST)
+    {
+      const char *s0 = TREE_STRING_POINTER (newargs[0]);
+      const char *s1 = TREE_STRING_POINTER (prevargs[0]);
+      arg1eq = strcmp (s0, s1) == 0;
+      if (newargs[1] && prevargs[1])
+	{
+	  s0 = TREE_STRING_POINTER (newargs[1]);
+	  s1 = TREE_STRING_POINTER (prevargs[1]);
+	  arg2eq = strcmp (s0, s1) == 0;
+	}
+      else
+	arg2eq = newargs[1] == prevargs[1];
+    }
+  else
+    gcc_unreachable ();
+
+  if (arg1eq && arg2eq)
+    return true;
+
+  /* If the two locations are different print a note pointing to
+     the previous one.  */
+  const location_t curloc = input_location;
+  const location_t prevloc =
+    DECL_P (node[1]) ? DECL_SOURCE_LOCATION (node[1]) : curloc;
+
+  /* Format the attribute specification for convenience.  */
+  char newspec[80], prevspec[80];
+  if (newargs[1])
+    snprintf (newspec, sizeof newspec, "%s (%s, %s)", namestr,
+	      print_generic_expr_to_str (newargs[0]),
+	      print_generic_expr_to_str (newargs[1]));
+  else
+    snprintf (newspec, sizeof newspec, "%s (%s)", namestr,
+	      print_generic_expr_to_str (newargs[0]));
+
+  if (prevargs[1])
+    snprintf (prevspec, sizeof prevspec, "%s (%s, %s)", namestr,
+	      print_generic_expr_to_str (prevargs[0]),
+	      print_generic_expr_to_str (prevargs[1]));
+  else
+    snprintf (prevspec, sizeof prevspec, "%s (%s)", namestr,
+	      print_generic_expr_to_str (prevargs[0]));
+
+  if (warning_at (curloc, OPT_Wattributes,
+		  "ignoring attribute %qs because it conflicts "
+		  "with previous %qs",
+		  newspec, prevspec)
+      && curloc != prevloc)
+    inform (prevloc, "previous declaration here");
+
+  return false;
+}
+
+/* Convenience wrapper for validate_attr_args to validate a single
+   attribute argument.  Used by handlers for attributes that take
+   just a single argument.  */
+
+static bool
+validate_attr_arg (tree node[2], tree name, tree newarg)
+{
+  tree argarray[2] = { newarg, NULL_TREE };
+  return validate_attr_args (node, name, argarray);
+}
 
 /* Attribute handlers common to C front ends.  */
 
@@ -1889,11 +2017,13 @@ handle_mode_attribute (tree *node, tree name, tree args,
    struct attribute_spec.handler.  */
 
 static tree
-handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
-			  int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_section_attribute (tree *node, tree name, tree args,
+			  int flags, bool *no_add_attrs)
 {
   tree decl = *node;
   tree res = NULL_TREE;
+  tree argval = TREE_VALUE (args);
+  const char* new_section_name;
 
   if (!targetm_common.have_named_sections)
     {
@@ -1908,7 +2038,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
-  if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+  if (TREE_CODE (argval) != STRING_CST)
     {
       error ("section attribute argument not a string constant");
       goto fail;
@@ -1923,15 +2053,17 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
+  new_section_name = TREE_STRING_POINTER (argval);
+
   /* The decl may have already been given a section attribute
      from a previous declaration.  Ensure they match.  */
-  if (DECL_SECTION_NAME (decl) != NULL
-      && strcmp (DECL_SECTION_NAME (decl),
-		 TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
-    {
-      error ("section of %q+D conflicts with previous declaration", *node);
-      goto fail;
-    }
+  if (const char* const old_section_name = DECL_SECTION_NAME (decl))
+    if (strcmp (old_section_name, new_section_name) != 0)
+      {
+	error ("section of %q+D conflicts with previous declaration",
+	       *node);
+	goto fail;
+      }
 
   if (VAR_P (decl)
       && !targetm.have_tls && targetm.emutls.tmpl_section
@@ -1941,6 +2073,9 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
+  if (!validate_attr_arg (node, name, argval))
+    goto fail;
+
   res = targetm.handle_generic_attribute (node, name, args, flags,
 					  no_add_attrs);
 
@@ -1948,7 +2083,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
      final processing.  */
   if (!(*no_add_attrs))
     {
-      set_decl_section_name (decl, TREE_STRING_POINTER (TREE_VALUE (args)));
+      set_decl_section_name (decl, new_section_name);
       return res;
     }
 
@@ -2905,15 +3040,15 @@ handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
-/* Handle a "alloc_size" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* Handle the "alloc_size (argpos1 [, argpos2])" function type attribute.
+   *NODE is the type of the function the attribute is being applied to.  */
 
 static tree
 handle_alloc_size_attribute (tree *node, tree name, tree args,
 			     int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  tree decl = *node;
-  tree rettype = TREE_TYPE (decl);
+  tree fntype = *node;
+  tree rettype = TREE_TYPE (fntype);
   if (!POINTER_TYPE_P (rettype))
     {
       warning (OPT_Wattributes,
@@ -2923,6 +3058,7 @@ handle_alloc_size_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  tree newargs[2] = { NULL_TREE, NULL_TREE };
   for (int i = 1; args; ++i)
     {
       tree pos = TREE_VALUE (args);
@@ -2931,30 +3067,36 @@ handle_alloc_size_attribute (tree *node, tree name, tree args,
 	 the argument number in diagnostics (since there's just one
 	 mentioning it is unnecessary and coule be confusing).  */
       tree next = TREE_CHAIN (args);
-      if (tree val = positional_argument (decl, name, pos, INTEGER_TYPE,
+      if (tree val = positional_argument (fntype, name, pos, INTEGER_TYPE,
 					  next || i > 1 ? i : 0))
-	TREE_VALUE (args) = val;
+	{
+	  TREE_VALUE (args) = val;
+	  newargs[i - 1] = val;
+	}
       else
 	{
 	  *no_add_attrs = true;
-	  break;
+	  return NULL_TREE;
 	}
 
       args = next;
     }
 
+  if (!validate_attr_args (node, name, newargs))
+    *no_add_attrs = true;
+
   return NULL_TREE;
 }
 
-/* Handle a "alloc_align" attribute; arguments as in
-   struct attribute_spec.handler.  */
+
+/* Handle an "alloc_align (argpos)" attribute.  */
 
 static tree
 handle_alloc_align_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
-  tree decl = *node;
-  tree rettype = TREE_TYPE (decl);
+  tree fntype = *node;
+  tree rettype = TREE_TYPE (fntype);
   if (!POINTER_TYPE_P (rettype))
     {
       warning (OPT_Wattributes,
@@ -2964,9 +3106,12 @@ handle_alloc_align_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
-  if (!positional_argument (*node, name, TREE_VALUE (args), INTEGER_TYPE))
-    *no_add_attrs = true;
+  if (tree val = positional_argument (*node, name, TREE_VALUE (args),
+				      INTEGER_TYPE))
+    if (validate_attr_arg (node, name, val))
+      return NULL_TREE;
 
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 

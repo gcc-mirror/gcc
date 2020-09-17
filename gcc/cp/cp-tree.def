@@ -524,11 +524,13 @@ DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
    of the wildcard.  */
 DEFTREECODE (WILDCARD_DECL, "wildcard_decl", tcc_declaration, 0)
 
-/* A requires-expr is a binary expression. The first operand is
+/* A requires-expr has three operands. The first operand is
    its parameter list (possibly NULL). The second is a list of
    requirements, which are denoted by the _REQ* tree codes
-   below. */
-DEFTREECODE (REQUIRES_EXPR,   "requires_expr", tcc_expression, 2)
+   below.  The third is a TREE_VEC of template arguments to
+   be applied when substituting into the parameter list and
+   requirements, set by tsubst_requires_expr for partial instantiations.  */
+DEFTREECODE (REQUIRES_EXPR,   "requires_expr", tcc_expression, 3)
 
 /* A requirement for an expression. */
 DEFTREECODE (SIMPLE_REQ, "simple_req", tcc_expression, 1)

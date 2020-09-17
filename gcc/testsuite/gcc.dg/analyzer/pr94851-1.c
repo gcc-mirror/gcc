@@ -40,7 +40,8 @@ int pamark(void) {
       last->m_next = p;
   }
 
-  p->m_name = (char)c;
+  p->m_name = (char)c; /* { dg-bogus "leak of 'p'" "bogus leak" { xfail *-*-* } } */
+  // TODO(xfail): related to PR analyzer/97072 and PR analyzer/97074
 
   return 1;
 }

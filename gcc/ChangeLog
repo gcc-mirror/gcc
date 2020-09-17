@@ -1,3 +1,193 @@
+2020-09-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/rs6000/rs6000.c (have_compare_and_set_mask): Use
+	E_*mode in cases.
+
+2020-09-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/predicates.md (current_file_function_operand):
+	Remove argument from rs6000_pcrel_p call.
+	* config/rs6000/rs6000-logue.c (rs6000_decl_ok_for_sibcall):
+	Likewise.
+	(rs6000_global_entry_point_prologue_needed_p): Likewise.
+	(rs6000_output_function_prologue): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_function_pcrel_p): New
+	prototype.
+	(rs6000_pcrel_p): Remove argument.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Remove
+	argument from rs6000_pcrel_p call.
+	(rs6000_call_template_1): Likewise.
+	(rs6000_indirect_call_template_1): Likewise.
+	(rs6000_longcall_ref): Likewise.
+	(rs6000_call_aix): Likewise.
+	(rs6000_sibcall_aix): Likewise.
+	(rs6000_function_pcrel_p): Rename from rs6000_pcrel_p.
+	(rs6000_pcrel_p): Rewrite.
+	* config/rs6000/rs6000.md (*pltseq_plt_pcrel<mode>): Remove
+	argument from rs6000_pcrel_p call.
+	(*call_local<mode>): Likewise.
+	(*call_value_local<mode>): Likewise.
+	(*call_nonlocal_aix<mode>): Likewise.
+	(*call_value_nonlocal_aix<mode>): Likewise.
+	(*call_indirect_pcrel<mode>): Likewise.
+	(*call_value_indirect_pcrel<mode>): Likewise.
+
+2020-09-16  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/96935
+	* input.c (get_substring_ranges_for_loc): Return if start.column
+	is less than 1.
+
+2020-09-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/96295
+	* tree-ssa-uninit.c (maybe_warn_operand): Work harder to avoid
+	warning for objects of empty structs
+
+2020-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (lower_try_finally_dup_block): Backward propagate slocs
+	to stack restore builtin calls.
+	(cleanup_all_empty_eh): Do again a post-order traversal of the EH
+	region tree.
+
+2020-09-16  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* tree-vect-loop.c (vect_need_peeling_or_partial_vectors_p): New
+	function.
+	(vect_analyze_loop_2): Make use of it not to select partial
+	vectors if no peel is required.
+	(determine_peel_for_niter): Move out some logic into
+	'vect_need_peeling_or_partial_vectors_p'.
+
+2020-09-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97032
+	* cfgexpand.c (asm_clobber_reg_kind): Set sp_is_clobbered_by_asm
+	to true if the stack pointer is clobbered by asm statement.
+	* emit-rtl.h (rtl_data): Add sp_is_clobbered_by_asm.
+	* config/i386/i386.c (ix86_get_drap_rtx): Set need_drap to true
+	if the stack pointer is clobbered by asm statement.
+
+2020-09-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md(*vec_tf_to_v1tf): Use "f" instead of "v"
+	  for the source operand.
+
+2020-09-16  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config.gcc (C-SKY): Set use_gcc_stdint=wrap for elf target.
+
+2020-09-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::num_slp_uses): Remove.
+	(STMT_VINFO_NUM_SLP_USES): Likewise.
+	(vect_free_slp_instance): Adjust.
+	(vect_update_shared_vectype): Declare.
+	* tree-vectorizer.c (vec_info::~vec_info): Adjust.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	(vectorizable_live_operation): Use vector type from
+	SLP_TREE_REPRESENTATIVE.
+	(vect_transform_loop): Adjust.
+	* tree-vect-data-refs.c (vect_slp_analyze_node_alignment):
+	Set the shared vector type.
+	* tree-vect-slp.c (vect_free_slp_tree): Remove final_p
+	parameter, remove STMT_VINFO_NUM_SLP_USES updating.
+	(vect_free_slp_instance): Adjust.
+	(vect_create_new_slp_node): Remove STMT_VINFO_NUM_SLP_USES
+	updating.
+	(vect_update_shared_vectype): Always compare with the
+	present vector type, update if NULL.
+	(vect_build_slp_tree_1): Do not update the shared vector
+	type here.
+	(vect_build_slp_tree_2): Adjust.
+	(slp_copy_subtree): Likewise.
+	(vect_attempt_slp_rearrange_stmts): Likewise.
+	(vect_analyze_slp_instance): Likewise.
+	(vect_analyze_slp): Likewise.
+	(vect_slp_analyze_node_operations_1): Update the shared
+	vector type.
+	(vect_slp_analyze_operations): Adjust.
+	(vect_slp_analyze_bb_1): Likewise.
+
+2020-09-16  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config/csky/t-csky-linux (CSKY_MULTILIB_OSDIRNAMES): Use mfloat-abi.
+	(MULTILIB_OPTIONS): Likewise.
+	* config/csky/t-csky-elf (MULTILIB_OPTIONS): Likewise.
+	(MULTILIB_EXCEPTIONS): Likewise.
+
+2020-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/arm.c (arm_option_restore): Comment out opts argument
+	name to avoid unused parameter warnings.
+
+2020-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* optc-save-gen.awk: In cl_optimization_stream_out use
+	bp_pack_var_len_{int,unsigned} instead of bp_pack_value.  In
+	cl_optimization_stream_in use bp_unpack_var_len_{int,unsigned}
+	instead of bp_unpack_value.  Formatting fix.
+
+2020-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97053
+	* gimple-ssa-store-merging.c (check_no_overlap): Add FIRST_ORDER,
+	START, FIRST_EARLIER and LAST_EARLIER arguments.  Return false if
+	any stores between FIRST_EARLIER inclusive and LAST_EARLIER exclusive
+	has order in between FIRST_ORDER and LAST_ORDER and overlaps the to
+	be merged store.
+	(imm_store_chain_info::try_coalesce_bswap): Add FIRST_EARLIER argument.
+	Adjust check_no_overlap caller.
+	(imm_store_chain_info::coalesce_immediate_stores): Add first_earlier
+	and last_earlier variables, adjust them during iterations.  Adjust
+	check_no_overlap callers, call check_no_overlap even when extending
+	overlapping stores by extra INTEGER_CST stores.
+
+2020-09-16  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config/csky/csky-linux-elf.h (GLIBC_DYNAMIC_LINKER): Use mfloat-abi.
+
+2020-09-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/97019
+	* config/rs6000/rs6000-p8swap.c (find_alignment_op): Adjust to
+	support multiple defintions which are all AND operations with
+	the mask -16B.
+	(recombine_lvx_pattern): Adjust to handle multiple AND operations
+	from find_alignment_op.
+	(recombine_stvx_pattern): Likewise.
+
+2020-09-16  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config/csky/csky.md (CSKY_NPARM_FREGS): New.
+	(call_value_internal_vs/d): New.
+	(untyped_call): New.
+	* config/csky/csky.h (TARGET_SINGLE_FPU): New.
+	(TARGET_DOUBLE_FPU): New.
+	(FUNCTION_VARG_REGNO_P): New.
+	(CSKY_VREG_MODE_P): New.
+	(FUNCTION_VARG_MODE_P): New.
+	(CUMULATIVE_ARGS): Add extra regs info.
+	(INIT_CUMULATIVE_ARGS): Use csky_init_cumulative_args.
+	(FUNCTION_ARG_REGNO_P): Use FUNCTION_VARG_REGNO_P.
+	* config/csky/csky-protos.h (csky_init_cumulative_args): Extern.
+	* config/csky/csky.c (csky_cpu_cpp_builtins): Support TARGET_HARD_FLOAT_ABI.
+	(csky_function_arg): Likewise.
+	(csky_num_arg_regs): Likewise.
+	(csky_function_arg_advance): Likewise.
+	(csky_function_value): Likewise.
+	(csky_libcall_value): Likewise.
+	(csky_function_value_regno_p): Likewise.
+	(csky_arg_partial_bytes): Likewise.
+	(csky_setup_incoming_varargs): Likewise.
+	(csky_init_cumulative_args): New.
+
+2020-09-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (altivec_init_builtins): Fix name
+	of __builtin_altivec_xst_len_r.
+
 2020-09-15  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* rtlanal.c (set_noop_p): Treat subregs of registers in

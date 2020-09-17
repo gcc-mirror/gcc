@@ -227,6 +227,7 @@ static tree canonicalize_expr_argument (tree, tsubst_flags_t);
 static tree make_argument_pack (tree);
 static void register_parameter_specializations (tree, tree);
 static tree enclosing_instantiation_of (tree tctx);
+static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -6073,10 +6074,7 @@ push_template_decl_real (tree decl, bool is_friend)
 	retrofit_lang_decl (decl);
       if (DECL_LANG_SPECIFIC (decl)
 	  && !(VAR_OR_FUNCTION_DECL_P (decl)
-	       && DECL_LOCAL_DECL_P (decl)
-	       /* OMP reductions still need a template header.  */
-	       && !(TREE_CODE (decl) == FUNCTION_DECL
-		    && DECL_OMP_DECLARE_REDUCTION_P (decl))))
+	       && DECL_LOCAL_DECL_P (decl)))
 	DECL_TEMPLATE_INFO (decl) = info;
     }
 
@@ -13714,8 +13712,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   gcc_assert (DECL_TEMPLATE_INFO (t) != NULL_TREE
 	      || DECL_LOCAL_DECL_P (t));
 
-  if (DECL_LOCAL_DECL_P (t)
-      && !DECL_OMP_DECLARE_REDUCTION_P (t))
+  if (DECL_LOCAL_DECL_P (t))
     {
       if (tree spec = retrieve_local_specialization (t))
 	return spec;
@@ -13970,8 +13967,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	  && !uses_template_parms (argvec))
 	tsubst_default_arguments (r, complain);
     }
-  else if (DECL_LOCAL_DECL_P (r)
-	   && !DECL_OMP_DECLARE_REDUCTION_P (r))
+  else if (DECL_LOCAL_DECL_P (r))
     {
       if (!cp_unevaluated_operand)
 	register_local_specialization (r, t);
@@ -18083,7 +18079,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    DECL_CONTEXT (decl) = global_namespace;
 		    pushdecl (decl);
 		    DECL_CONTEXT (decl) = current_function_decl;
-		    cp_check_omp_declare_reduction (decl);
+		    if (cp_check_omp_declare_reduction (decl))
+		      instantiate_body (pattern_decl, args, decl, true);
 		  }
 		else
 		  {
@@ -25448,15 +25445,24 @@ register_parameter_specializations (tree pattern, tree inst)
 }
 
 /* Instantiate the body of D using PATTERN with ARGS.  We have
-   already determined PATTERN is the correct template to use.  */
+   already determined PATTERN is the correct template to use.
+   NESTED_P is true if this is a nested function, in which case
+   PATTERN will be a FUNCTION_DECL not a TEMPLATE_DECL.  */
 
 static void
-instantiate_body (tree pattern, tree args, tree d)
+instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 {
-  gcc_checking_assert (TREE_CODE (pattern) == TEMPLATE_DECL);
-  
-  tree td = pattern;
-  tree code_pattern = DECL_TEMPLATE_RESULT (td);
+  tree td = NULL_TREE;
+  tree code_pattern = pattern;
+
+  if (!nested_p)
+    {
+      td = pattern;
+      code_pattern = DECL_TEMPLATE_RESULT (td);
+    }
+  else
+    /* Only OMP reductions are nested.  */
+    gcc_checking_assert (DECL_OMP_DECLARE_REDUCTION_P (code_pattern));
 
   vec<tree> omp_privatization_save;
   if (current_function_decl)
@@ -25489,9 +25495,10 @@ instantiate_body (tree pattern, tree args, tree d)
      instantiate_decl do not try to instantiate it again.  */
   DECL_TEMPLATE_INSTANTIATED (d) = 1;
 
-  /* Regenerate the declaration in case the template has been modified
-     by a subsequent redeclaration.  */
-  regenerate_decl_from_template (d, td, args);
+  if (td)
+    /* Regenerate the declaration in case the template has been modified
+       by a subsequent redeclaration.  */
+    regenerate_decl_from_template (d, td, args);
 
   /* We already set the file and line above.  Reset them now in case
      they changed as a result of calling regenerate_decl_from_template.  */
@@ -25540,8 +25547,7 @@ instantiate_body (tree pattern, tree args, tree d)
       tree block = NULL_TREE;
 
       /* Set up context.  */
-      if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern)
-	  && TREE_CODE (DECL_CONTEXT (code_pattern)) == FUNCTION_DECL)
+      if (nested_p)
 	block = push_stmt_list ();
       else
 	start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
@@ -25554,7 +25560,7 @@ instantiate_body (tree pattern, tree args, tree d)
       /* Substitute into the body of the function.  */
       if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern))
 	tsubst_omp_udr (DECL_SAVED_TREE (code_pattern), args,
-			tf_warning_or_error, DECL_TI_TEMPLATE (d));
+			tf_warning_or_error, d);
       else
 	{
 	  tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
@@ -25572,8 +25578,7 @@ instantiate_body (tree pattern, tree args, tree d)
 	}
 
       /* Finish the function.  */
-      if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern)
-	  && TREE_CODE (DECL_CONTEXT (code_pattern)) == FUNCTION_DECL)
+      if (nested_p)
 	DECL_SAVED_TREE (d) = pop_stmt_list (block);
       else
 	{
@@ -25627,6 +25632,8 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 
   /* A concept is never instantiated. */
   gcc_assert (!DECL_DECLARED_CONCEPT_P (d));
+
+  gcc_checking_assert (!DECL_FUNCTION_SCOPE_P (d));
 
   /* Variables are never deferred; if instantiation is required, they
      are instantiated right away.  That allows for better code in the
@@ -25844,7 +25851,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     {
       if (variable_template_p (gen_tmpl))
 	note_variable_template_instantiation (d);
-      instantiate_body (td, args, d);
+      instantiate_body (td, args, d, false);
     }
 
   pop_deferring_access_checks ();

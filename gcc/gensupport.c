@@ -1501,7 +1501,7 @@ alter_attrs_for_subst_insn (class queue_elem * elem, int n_dup)
 	case SET_ATTR:
 	  if (strchr (XSTR (sub, 1), ',') != NULL)
 	    XSTR (sub, 1) = duplicate_alternatives (XSTR (sub, 1), n_dup);
-	    break;
+	  break;
 
 	case SET_ATTR_ALTERNATIVE:
 	case SET:

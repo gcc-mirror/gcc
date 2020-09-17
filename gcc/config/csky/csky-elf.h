@@ -70,8 +70,14 @@
  %{EL:-EL} -X"
 
 #undef	LIB_SPEC
-#define LIB_SPEC \
-  "%{pthread:-lpthread} -lc %{mccrt:-lcc-rt}"
+#define LIB_SPEC "\
+%{pthread:-lpthread} \
+--start-group \
+-lc \
+%{msim:-lsemi}%{!msim:-lnosys} \
+--end-group \
+%{mccrt:-lcc-rt} \
+"
 /* FIXME add this to LIB_SPEC when need */
 /*   %{!shared:%{profile:-lc_p}%{!profile:-lc}}" */
 

@@ -156,40 +156,49 @@ f3 (int f1line __attribute__ ((unused)), int f2line __attribute__ ((unused)))
 	}
     }
 
-  if (all[0].function == NULL)
+  if (data.index > 0)
     {
-      fprintf (stderr, "test1: [0]: missing function name\n");
-      data.failed = 1;
-    }
-  else if (strcmp (all[0].function, "f3") != 0)
-    {
-      fprintf (stderr, "test1: [0]: got %s expected %s\n",
-	       all[0].function, "f3");
-      data.failed = 1;
-    }
-
-  if (all[1].function == NULL)
-    {
-      fprintf (stderr, "test1: [1]: missing function name\n");
-      data.failed = 1;
-    }
-  else if (strcmp (all[1].function, "f2") != 0)
-    {
-      fprintf (stderr, "test1: [1]: got %s expected %s\n",
-	       all[0].function, "f2");
-      data.failed = 1;
+      if (all[0].function == NULL)
+	{
+	  fprintf (stderr, "test1: [0]: missing function name\n");
+	  data.failed = 1;
+	}
+      else if (strcmp (all[0].function, "f3") != 0)
+	{
+	  fprintf (stderr, "test1: [0]: got %s expected %s\n",
+		   all[0].function, "f3");
+	  data.failed = 1;
+	}
     }
 
-  if (all[2].function == NULL)
+  if (data.index > 1)
     {
-      fprintf (stderr, "test1: [2]: missing function name\n");
-      data.failed = 1;
+      if (all[1].function == NULL)
+	{
+	  fprintf (stderr, "test1: [1]: missing function name\n");
+	  data.failed = 1;
+	}
+      else if (strcmp (all[1].function, "f2") != 0)
+	{
+	  fprintf (stderr, "test1: [1]: got %s expected %s\n",
+		   all[0].function, "f2");
+	  data.failed = 1;
+	}
     }
-  else if (strcmp (all[2].function, "test1") != 0)
+
+  if (data.index > 2)
     {
-      fprintf (stderr, "test1: [2]: got %s expected %s\n",
-	       all[0].function, "test1");
-      data.failed = 1;
+      if (all[2].function == NULL)
+	{
+	  fprintf (stderr, "test1: [2]: missing function name\n");
+	  data.failed = 1;
+	}
+      else if (strcmp (all[2].function, "test1") != 0)
+	{
+	  fprintf (stderr, "test1: [2]: got %s expected %s\n",
+		   all[0].function, "test1");
+	  data.failed = 1;
+	}
     }
 
   printf ("%s: backtrace_full noinline\n", data.failed ? "FAIL" : "PASS");

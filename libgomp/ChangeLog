@@ -1,3 +1,7 @@
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* testsuite/libgomp.c++/udr-3.C: Add missing ctor.
+
 2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/96668

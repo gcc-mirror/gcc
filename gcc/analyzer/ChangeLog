@@ -1,3 +1,50 @@
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (strongly_connected_components::strong_connect): Only
+	consider intraprocedural edges when creating SCCs.
+	(worklist::key_t::cmp): Add comment.  Treat call_string
+	differences as more important than differences of program_point
+	within a supernode.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (supernode_cluster::dump_dot): Show the SCC id
+	in the per-supernode clusters in FILENAME.eg.dot output.
+	(exploded_graph_annotator::add_node_annotations):
+	Show the SCC of the supernode in FILENAME.supernode.eg.dot output.
+	* exploded-graph.h (worklist::scc_id): New.
+	(exploded_graph::get_scc_id): New.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::dump_dot): Show STATUS_BULK_MERGED.
+	(exploded_graph::process_worklist): Call
+	maybe_process_run_of_before_supernode_enodes.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	New.
+	(exploded_graph_annotator::print_enode): Show STATUS_BULK_MERGED.
+	* exploded-graph.h (enum exploded_node::status): Add
+	STATUS_BULK_MERGED.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc
+	(exploded_graph::process_node) <case PK_BEFORE_SUPERNODE>:
+	Simplify by using program_point::get_next.
+	* program-point.cc (program_point::get_next): New.
+	* program-point.h (program_point::get_next): New decl.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::get_or_create_node): Show the
+	program point when issuing -Wanalyzer-too-complex due to hitting
+	the per-program-point limit.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Treat getchar as
+	having no side-effects.
+
 2020-09-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96650

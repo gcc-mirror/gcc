@@ -1,3 +1,7 @@
+2020-09-16  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config.host (C-SKY): Enable crtbegin/crtend.o of libgcc for elf target.
+
 2020-09-09  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/atomic.c (__SYNC_SUBWORD_COMPARE_AND_SWAP): Fix

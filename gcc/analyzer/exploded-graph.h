@@ -161,6 +161,9 @@ class exploded_node : public dnode<eg_traits>
     /* Node was left unprocessed due to merger; it won't have had
        exploded_graph::process_node called on it.  */
     STATUS_MERGER,
+
+    /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
+    STATUS_BULK_MERGED
   };
 
   exploded_node (const point_and_state &ps, int index);
@@ -649,6 +652,10 @@ public:
   exploded_node *take_next ();
   exploded_node *peek_next ();
   void add_node (exploded_node *enode);
+  int get_scc_id (const supernode &snode) const
+  {
+    return m_scc.get_scc_id (snode.m_index);
+  }
 
 private:
   class key_t
@@ -730,6 +737,7 @@ public:
 
   void build_initial_worklist ();
   void process_worklist ();
+  bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
 
   exploded_node *get_or_create_node (const program_point &point,
@@ -778,6 +786,11 @@ public:
 
   const call_string_data_map_t *get_per_call_string_data () const
   { return &m_per_call_string_data; }
+
+  int get_scc_id (const supernode &node) const
+  {
+    return m_worklist.get_scc_id (node);
+  }
 
 private:
   void print_bar_charts (pretty_printer *pp) const;

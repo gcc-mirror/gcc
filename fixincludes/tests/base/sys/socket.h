@@ -10,12 +10,14 @@
 
 
 #if defined( AIX_EXTERNCPP1_CHECK )
+#ifndef _KERNEL
 #ifdef __cplusplus
 extern "C++" {
 #endif  /* AIX_EXTERNCPP1_CHECK */
 
 
 #if defined( AIX_EXTERNCPP2_CHECK )
+#endif /* COMPAT_43 */
 } /* extern "C++" */
 #else  /* __cplusplus */
 #endif  /* AIX_EXTERNCPP2_CHECK */

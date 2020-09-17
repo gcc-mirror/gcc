@@ -848,6 +848,8 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_printf (pp, "EN: %i", m_index);
   if (m_status == STATUS_MERGER)
     pp_string (pp, " (merger)");
+  else if (m_status == STATUS_BULK_MERGED)
+    pp_string (pp, " (bulk merged)");
   pp_newline (pp);
 
   if (args.show_enode_details_p (*this))
@@ -1613,6 +1615,9 @@ strongly_connected_components::strong_connect (unsigned index)
   superedge *sedge;
   FOR_EACH_VEC_ELT (v_snode->m_succs, i, sedge)
     {
+      if (sedge->get_kind () != SUPEREDGE_CFG_EDGE
+	  && sedge->get_kind () != SUPEREDGE_INTRAPROCEDURAL_CALL)
+	continue;
       supernode *w_snode = sedge->m_dest;
       per_node_data *w = &m_per_node[w_snode->m_index];
       if (w->m_index == -1)
@@ -1688,7 +1693,14 @@ worklist::add_node (exploded_node *enode)
 /* Comparator for implementing worklist::key_t comparison operators.
    Return negative if KA is before KB
    Return positive if KA is after KB
-   Return 0 if they are equal.  */
+   Return 0 if they are equal.
+
+   The ordering of the worklist is critical for performance and for
+   avoiding node explosions.  Ideally we want all enodes at a CFG join-point
+   with the same callstring to be sorted next to each other in the worklist
+   so that a run of consecutive enodes can be merged and processed "in bulk"
+   rather than individually or pairwise, minimizing the number of new enodes
+   created.  */
 
 int
 worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
@@ -1740,17 +1752,17 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 
   gcc_assert (snode_a == snode_b);
 
+  /* The points might vary by callstring; try sorting by callstring.  */
+  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
+  if (cs_cmp)
+    return cs_cmp;
+
   /* Order within supernode via program point.  */
   int within_snode_cmp
     = function_point::cmp_within_supernode (point_a.get_function_point (),
 					    point_b.get_function_point ());
   if (within_snode_cmp)
     return within_snode_cmp;
-
-  /* The points might vary by callstring; try sorting by callstring.  */
-  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
-  if (cs_cmp)
-    return cs_cmp;
 
   /* Otherwise, we ought to have the same program_point.  */
   gcc_assert (point_a == point_b);
@@ -1982,6 +1994,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       > param_analyzer_max_enodes_per_program_point)
     {
       pretty_printer pp;
+      point.print (&pp, format (false));
       print_enode_indices (&pp, per_point_data->m_enodes);
       if (logger)
 	logger->log ("not creating enode; too many at program point: %s",
@@ -2210,6 +2223,12 @@ exploded_graph::process_worklist ()
       if (logger)
 	logger->log ("next to process: EN: %i", node->m_index);
 
+      /* If we have a run of nodes that are before-supernode, try merging and
+	 processing them together, rather than pairwise or individually.  */
+      if (flag_analyzer_state_merge && node != m_origin)
+	if (maybe_process_run_of_before_supernode_enodes (node))
+	  goto handle_limit;
+
       /* Avoid exponential explosions of nodes by attempting to merge
 	 nodes that are at the same program point and which have
 	 sufficiently similar state.  */
@@ -2339,6 +2358,7 @@ exploded_graph::process_worklist ()
 
       process_node (node);
 
+    handle_limit:
       /* Impose a hard limit on the number of exploded nodes, to ensure
 	 that the analysis terminates in the face of pathological state
 	 explosion (or bugs).
@@ -2364,6 +2384,201 @@ exploded_graph::process_worklist ()
 	  return;
 	}
     }
+}
+
+/* Attempt to process a consecutive run of sufficiently-similar nodes in
+   the worklist at a CFG join-point (having already popped ENODE from the
+   head of the worklist).
+
+   If ENODE's point is of the form (before-supernode, SNODE) and the next
+   nodes in the worklist are a consecutive run of enodes of the same form,
+   for the same supernode as ENODE (but potentially from different in-edges),
+   process them all together, setting their status to STATUS_BULK_MERGED,
+   and return true.
+   Otherwise, return false, in which case ENODE must be processed in the
+   normal way.
+
+   When processing them all together, generate successor states based
+   on phi nodes for the appropriate CFG edges, and then attempt to merge
+   these states into a minimal set of merged successor states, partitioning
+   the inputs by merged successor state.
+
+   Create new exploded nodes for all of the merged states, and add edges
+   connecting the input enodes to the corresponding merger exploded nodes.
+
+   We hope we have a much smaller number of merged successor states
+   compared to the number of input enodes - ideally just one,
+   if all successor states can be merged.
+
+   Processing and merging many together as one operation rather than as
+   pairs avoids scaling issues where per-pair mergers could bloat the
+   graph with merger nodes (especially so after switch statements).  */
+
+bool
+exploded_graph::
+maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
+{
+  /* A struct for tracking per-input state.  */
+  struct item
+  {
+    item (exploded_node *input_enode)
+    : m_input_enode (input_enode),
+      m_processed_state (input_enode->get_state ()),
+      m_merger_idx (-1)
+    {}
+
+    exploded_node *m_input_enode;
+    program_state m_processed_state;
+    int m_merger_idx;
+  };
+
+  gcc_assert (enode->get_status () == exploded_node::STATUS_WORKLIST);
+  gcc_assert (enode->m_succs.length () == 0);
+
+  const program_point &point = enode->get_point ();
+
+  if (point.get_kind () != PK_BEFORE_SUPERNODE)
+    return false;
+
+  const supernode *snode = point.get_supernode ();
+
+  logger * const logger = get_logger ();
+  LOG_SCOPE (logger);
+
+  /* Find a run of enodes in the worklist that are before the same supernode,
+     but potentially from different in-edges.  */
+  auto_vec <exploded_node *> enodes;
+  enodes.safe_push (enode);
+  while (exploded_node *enode_2 = m_worklist.peek_next ())
+    {
+      gcc_assert (enode_2->get_status ()
+		  == exploded_node::STATUS_WORKLIST);
+      gcc_assert (enode_2->m_succs.length () == 0);
+
+      const program_point &point_2 = enode_2->get_point ();
+
+      if (point_2.get_kind () == PK_BEFORE_SUPERNODE
+	  && point_2.get_supernode () == snode
+	  && point_2.get_call_string () == point.get_call_string ())
+	{
+	  enodes.safe_push (enode_2);
+	  m_worklist.take_next ();
+	}
+      else
+	break;
+    }
+
+  /* If the only node is ENODE, then give up.  */
+  if (enodes.length () == 1)
+    return false;
+
+  if (logger)
+    logger->log ("got run of %i enodes for SN: %i",
+		 enodes.length (), snode->m_index);
+
+  /* All of these enodes have a shared successor point (even if they
+     were for different in-edges).  */
+  program_point next_point (point.get_next ());
+
+  /* Calculate the successor state for each enode in enodes.  */
+  auto_delete_vec<item> items (enodes.length ());
+  unsigned i;
+  exploded_node *iter_enode;
+  FOR_EACH_VEC_ELT (enodes, i, iter_enode)
+    {
+      item *it = new item (iter_enode);
+      items.quick_push (it);
+      const program_state &state = iter_enode->get_state ();
+      program_state *next_state = &it->m_processed_state;
+      const program_point &iter_point = iter_enode->get_point ();
+      if (const superedge *iter_sedge = iter_point.get_from_edge ())
+	{
+	  impl_region_model_context ctxt (*this, iter_enode,
+					  &state, next_state, NULL);
+	  const cfg_superedge *last_cfg_superedge
+	    = iter_sedge->dyn_cast_cfg_superedge ();
+	  if (last_cfg_superedge)
+	    next_state->m_region_model->update_for_phis
+	      (snode, last_cfg_superedge, &ctxt);
+	}
+    }
+
+  /* Attempt to partition the items into a set of merged states.
+     We hope we have a much smaller number of merged states
+     compared to the number of input enodes - ideally just one,
+     if all can be merged.  */
+  auto_delete_vec <program_state> merged_states;
+  auto_vec<item *> first_item_for_each_merged_state;
+  item *it;
+  FOR_EACH_VEC_ELT (items, i, it)
+    {
+      const program_state &it_state = it->m_processed_state;
+      program_state *merged_state;
+      unsigned iter_merger_idx;
+      FOR_EACH_VEC_ELT (merged_states, iter_merger_idx, merged_state)
+	{
+	  program_state merge (m_ext_state);
+	  if (it_state.can_merge_with_p (*merged_state, next_point, &merge))
+	    {
+	      *merged_state = merge;
+	      it->m_merger_idx = iter_merger_idx;
+	      if (logger)
+		logger->log ("reusing merger state %i for item %i (EN: %i)",
+			     it->m_merger_idx, i, it->m_input_enode->m_index);
+	      goto got_merger;
+	    }
+	}
+      /* If it couldn't be merged with any existing merged_states,
+	 create a new one.  */
+      if (it->m_merger_idx == -1)
+	{
+	  it->m_merger_idx = merged_states.length ();
+	  merged_states.safe_push (new program_state (it_state));
+	  first_item_for_each_merged_state.safe_push (it);
+	  if (logger)
+	    logger->log ("using new merger state %i for item %i (EN: %i)",
+			 it->m_merger_idx, i, it->m_input_enode->m_index);
+	}
+    got_merger:
+      gcc_assert (it->m_merger_idx >= 0);
+      gcc_assert (it->m_merger_idx < merged_states.length ());
+    }
+
+  /* Create merger nodes.  */
+  auto_vec<exploded_node *> next_enodes (merged_states.length ());
+  program_state *merged_state;
+  FOR_EACH_VEC_ELT (merged_states, i, merged_state)
+    {
+      exploded_node *src_enode
+	= first_item_for_each_merged_state[i]->m_input_enode;
+      exploded_node *next
+	= get_or_create_node (next_point, *merged_state, src_enode);
+      /* "next" could be NULL; we handle that when adding the edges below.  */
+      next_enodes.quick_push (next);
+      if (logger)
+	{
+	  if (next)
+	    logger->log ("using EN: %i for merger state %i", next->m_index, i);
+	  else
+	    logger->log ("using NULL enode for merger state %i", i);
+	}
+    }
+
+  /* Create edges from each input enode to the appropriate successor enode.
+     Update the status of the now-processed input enodes.  */
+  FOR_EACH_VEC_ELT (items, i, it)
+    {
+      exploded_node *next = next_enodes[it->m_merger_idx];
+      if (next)
+	add_edge (it->m_input_enode, next, NULL);
+      it->m_input_enode->set_status (exploded_node::STATUS_BULK_MERGED);
+    }
+
+  if (logger)
+    logger->log ("merged %i in-enodes into %i out-enode(s) at SN: %i",
+		 items.length (), merged_states.length (), snode->m_index);
+
+  return true;
 }
 
 /* Return true if STMT must appear at the start of its exploded node, and
@@ -2457,26 +2672,10 @@ exploded_graph::process_node (exploded_node *node)
 		 &ctxt);
 	  }
 
-	if (point.get_supernode ()->m_stmts.length () > 0)
-	  {
-	    program_point next_point
-	      = program_point::before_stmt (point.get_supernode (), 0,
-					    point.get_call_string ());
-	    exploded_node *next
-	      = get_or_create_node (next_point, next_state, node);
-	    if (next)
-	      add_edge (node, next, NULL);
-	  }
-	else
-	  {
-	    program_point next_point
-	      = program_point::after_supernode (point.get_supernode (),
-						point.get_call_string ());
-	    exploded_node *next = get_or_create_node (next_point, next_state,
-						      node);
-	    if (next)
-	      add_edge (node, next, NULL);
-	  }
+	program_point next_point (point.get_next ());
+	exploded_node *next = get_or_create_node (next_point, next_state, node);
+	if (next)
+	  add_edge (node, next, NULL);
       }
       break;
     case PK_BEFORE_STMT:
@@ -3099,8 +3298,9 @@ public:
 		 (const void *)this);
     gv->indent ();
     gv->println ("style=\"dashed\";");
-    gv->println ("label=\"SN: %i (bb: %i)\";",
-		 m_supernode->m_index, m_supernode->m_bb->index);
+    gv->println ("label=\"SN: %i (bb: %i; scc: %i)\";",
+		 m_supernode->m_index, m_supernode->m_bb->index,
+		 args.m_eg.get_scc_id (*m_supernode));
 
     int i;
     exploded_node *enode;
@@ -3851,6 +4051,7 @@ public:
 
     gv->begin_td ();
     pp_string (pp, "BEFORE");
+    pp_printf (pp, " (scc: %i)", m_eg.get_scc_id (n));
     gv->end_td ();
 
     unsigned i;
@@ -3958,6 +4159,9 @@ private:
 	break;
       case exploded_node::STATUS_MERGER:
 	pp_string (pp, "(M)");
+	break;
+      case exploded_node::STATUS_BULK_MERGED:
+	pp_string (pp, "(BM)");
 	break;
       }
     gv->end_tdtr ();

@@ -1289,7 +1289,7 @@ first_map_in_common_1 (line_maps *set,
    virtual location of the token inside the resulting macro, upon
    return of a non-NULL result.  */
 
-static const struct line_map*
+const struct line_map*
 first_map_in_common (line_maps *set,
 		     location_t loc0,
 		     location_t loc1,

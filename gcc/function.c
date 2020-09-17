@@ -2237,6 +2237,11 @@ use_register_for_decl (const_tree decl)
   if (optimize)
     return true;
 
+  /* Thunks force a tail call even at -O0 so we need to avoid creating a
+     dangling reference in case the parameter is passed by reference.  */
+  if (TREE_CODE (decl) == PARM_DECL && cfun->tail_call_marked)
+    return true;
+
   if (!DECL_REGISTER (decl))
     return false;
 
@@ -3328,9 +3333,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
      of the parameter instead.  */
   if (data->arg.pass_by_reference && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
     {
-      /* Use a stack slot for debugging purposes, except if a tail call is
-	 involved because this would create a dangling reference.  */
-      if (use_register_for_decl (parm) || cfun->tail_call_marked)
+      /* Use a stack slot for debugging purposes if possible.  */
+      if (use_register_for_decl (parm))
 	{
 	  parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
 	  mark_user_reg (parmreg);
