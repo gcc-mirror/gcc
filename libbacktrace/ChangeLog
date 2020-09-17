@@ -1,3 +1,20 @@
+2020-09-17  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/97080
+	* fileline.c (backtrace_syminfo_to_full_callback): New function.
+	(backtrace_syminfo_to_full_error_callback): New function.
+	* elf.c (elf_nodebug): Call syminfo_fn if possible.
+	* internal.h (struct backtrace_call_full): Define.
+	(backtrace_syminfo_to_full_callback): Declare.
+	(backtrace_syminfo_to_full_error_callback): Declare.
+	* mtest.c (f3): Only check all[i] if data.index permits.
+
+2020-09-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* macho.c (MACH_O_CPU_TYPE_PPC): New.
+	(MACH_O_CPU_TYPE_PPC64): New.
+	Add compile-tests for powerpc to the Mach-O variants.
+
 2020-09-14  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/93608

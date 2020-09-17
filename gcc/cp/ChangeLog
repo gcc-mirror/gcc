@@ -1,3 +1,28 @@
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (cp_check_omp_declare_reduction): Return bool.
+	* semantics.c (cp_check_omp_declare_reduction): Return true on for
+	success.
+	* pt.c (push_template_decl_real): OMP reductions do not get a
+	template header.
+	(tsubst_function_decl): Remove special casing for local decl omp
+	reductions.
+	(tsubst_expr): Call instantiate_body for a local omp reduction.
+	(instantiate_body): Add nested_p parm, and deal with such
+	instantiations.
+	(instantiate_decl): Reject FUNCTION_SCOPE entities, adjust
+	instantiate_body call.
+
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_body): Remove 'nested' var, simplify
+	push_to_top logic.
+
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_body): New, broken out of ..
+	(instantiate_decl): ... here.  Call it.
+
 2020-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (push_template_decl_real): OMP reductions retain a template

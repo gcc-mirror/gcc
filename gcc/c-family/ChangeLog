@@ -1,3 +1,13 @@
+2020-09-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c/78666
+	PR c/96126
+	* c-attribs.c (validate_attr_args): New function.
+	(validate_attr_arg): Same.
+	(handle_section_attribute): Call it.  Introduce a local variable.
+	(handle_alloc_size_attribute):  Same.
+	(handle_alloc_align_attribute): Same.
+
 2020-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (handle_optimize_attribute): Adjust
