@@ -34,7 +34,7 @@ contains
     integer :: i, j
     real, intent(out) :: res(:)
 
-    !$acc parallel copyout(res) num_gangs(64) num_workers(64)
+    !$acc parallel copyout(res) num_gangs(64) num_workers(16)
 
     !$acc loop gang
     do i=0,255
@@ -54,7 +54,7 @@ contains
     integer :: i, j
     real, intent(out) :: res(:)
 
-    !$acc parallel copyout(res) num_gangs(64) num_workers(64)
+    !$acc parallel copyout(res) num_gangs(64) num_workers(16)
 
     !$acc loop gang worker
     do i=0,255
