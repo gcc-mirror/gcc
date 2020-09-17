@@ -1,3 +1,8 @@
+2020-09-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95 (workers, vectors):
+	Reduce number of workers to 16.
+
 2020-09-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: XFAIL on nvptx.
