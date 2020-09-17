@@ -547,18 +547,6 @@ elf_crc32_file (struct backtrace_state *state, int descriptor,
   return ret;
 }
 
-/* A dummy callback function used when we can't find any debug info.  */
-
-static int
-elf_nodebug (struct backtrace_state *state ATTRIBUTE_UNUSED,
-	     uintptr_t pc ATTRIBUTE_UNUSED,
-	     backtrace_full_callback callback ATTRIBUTE_UNUSED,
-	     backtrace_error_callback error_callback, void *data)
-{
-  error_callback (data, "no debug info in ELF executable", -1);
-  return 0;
-}
-
 /* A dummy callback function used when we can't find a symbol
    table.  */
 
@@ -569,6 +557,33 @@ elf_nosyms (struct backtrace_state *state ATTRIBUTE_UNUSED,
 	    backtrace_error_callback error_callback, void *data)
 {
   error_callback (data, "no symbol table in ELF executable", -1);
+}
+
+/* A callback function used when we can't find any debug info.  */
+
+static int
+elf_nodebug (struct backtrace_state *state, uintptr_t pc,
+	     backtrace_full_callback callback,
+	     backtrace_error_callback error_callback, void *data)
+{
+  if (state->syminfo_fn != NULL && state->syminfo_fn != elf_nosyms)
+    {
+      struct backtrace_call_full bdata;
+
+      /* Fetch symbol information so that we can least get the
+	 function name.  */
+
+      bdata.full_callback = callback;
+      bdata.full_error_callback = error_callback;
+      bdata.full_data = data;
+      bdata.ret = 0;
+      state->syminfo_fn (state, pc, backtrace_syminfo_to_full_callback,
+			 backtrace_syminfo_to_full_error_callback, &bdata);
+      return bdata.ret;
+    }
+
+  error_callback (data, "no debug info in ELF executable", -1);
+  return 0;
 }
 
 /* Compare struct elf_symbol for qsort.  */

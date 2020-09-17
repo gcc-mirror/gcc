@@ -317,3 +317,30 @@ backtrace_syminfo (struct backtrace_state *state, uintptr_t pc,
   state->syminfo_fn (state, pc, callback, error_callback, data);
   return 1;
 }
+
+/* A backtrace_syminfo_callback that can call into a
+   backtrace_full_callback, used when we have a symbol table but no
+   debug info.  */
+
+void
+backtrace_syminfo_to_full_callback (void *data, uintptr_t pc,
+				    const char *symname,
+				    uintptr_t symval ATTRIBUTE_UNUSED,
+				    uintptr_t symsize ATTRIBUTE_UNUSED)
+{
+  struct backtrace_call_full *bdata = (struct backtrace_call_full *) data;
+
+  bdata->ret = bdata->full_callback (bdata->full_data, pc, NULL, 0, symname);
+}
+
+/* An error callback that corresponds to
+   backtrace_syminfo_to_full_callback.  */
+
+void
+backtrace_syminfo_to_full_error_callback (void *data, const char *msg,
+					  int errnum)
+{
+  struct backtrace_call_full *bdata = (struct backtrace_call_full *) data;
+
+  bdata->full_error_callback (bdata->full_data, msg, errnum);
+}
