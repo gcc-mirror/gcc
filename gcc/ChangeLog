@@ -1,3 +1,18 @@
+2020-09-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-09-16  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/96935
+	* input.c (get_substring_ranges_for_loc): Return if start.column
+	is less than 1.
+
+2020-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX_UNSET): Remove OPTION_MASK_ISA_XSAVE_UNSET.
+	(OPTION_MASK_ISA_XSAVE_UNSET): Add OPTION_MASK_ISA_AVX_UNSET.
+
 2020-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
