@@ -29,6 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "diagnostic-core.h"
 #include "pretty-print.h"
+#include "diagnostic.h"
+#include "tree-diagnostic.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -54,6 +57,17 @@ void
 state_machine::state::dump_to_pp (pretty_printer *pp) const
 {
   pp_string (pp, m_name);
+}
+
+/* Return a new json::string describing the state.  */
+
+json::value *
+state_machine::state::to_json () const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  dump_to_pp (&pp);
+  return new json::string (pp_formatted_text (&pp));
 }
 
 /* class state_machine.  */
@@ -107,6 +121,28 @@ state_machine::dump_to_pp (pretty_printer *pp) const
       s->dump_to_pp (pp);
       pp_newline (pp);
     }
+}
+
+/* Return a new json::object of the form
+   {"name" : str,
+    "states" : [str]}.  */
+
+json::object *
+state_machine::to_json () const
+{
+  json::object *sm_obj = new json::object ();
+
+  sm_obj->set ("name", new json::string (m_name));
+  {
+    json::array *states_arr = new json::array ();
+    unsigned i;
+    state *s;
+    FOR_EACH_VEC_ELT (m_states, i, s)
+      states_arr->append (s->to_json ());
+    sm_obj->set ("states", states_arr);
+  }
+
+  return sm_obj;
 }
 
 /* Create instances of the various state machines, each using LOGGER,

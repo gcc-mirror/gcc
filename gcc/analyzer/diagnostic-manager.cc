@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tristate.h"
 #include "selftest.h"
 #include "ordered-hash-map.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -112,6 +113,43 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_state == other.m_state
 	  && m_d->equal_p (*other.m_d)
 	  && m_trailing_eedge == other.m_trailing_eedge);
+}
+
+/* Return a new json::object of the form
+   {"sm": optional str,
+    "enode": int,
+    "snode": int,
+    "sval": optional str,
+    "state": optional str,
+    "path_length": int,
+    "pending_diagnostic": str}.  */
+
+json::object *
+saved_diagnostic::to_json () const
+{
+  json::object *sd_obj = new json::object ();
+
+  if (m_sm)
+    sd_obj->set ("sm", new json::string (m_sm->get_name ()));
+  sd_obj->set ("enode", new json::integer_number (m_enode->m_index));
+  sd_obj->set ("snode", new json::integer_number (m_snode->m_index));
+  if (m_sval)
+    sd_obj->set ("sval", m_sval->to_json ());
+  if (m_state)
+    sd_obj->set ("state", m_state->to_json ());
+  sd_obj->set ("path_length", new json::integer_number (m_epath_length));
+  sd_obj->set ("pending_diagnostic", new json::string (m_d->get_kind ()));
+
+  /* We're not yet JSONifying the following fields:
+     const gimple *m_stmt;
+     stmt_finder *m_stmt_finder;
+     tree m_var;
+     exploded_edge *m_trailing_eedge;
+     enum status m_status;
+     feasibility_problem *m_problem;
+  */
+
+  return sd_obj;
 }
 
 /* State for building a checker_path from a particular exploded_path.
@@ -197,6 +235,26 @@ diagnostic_manager::add_diagnostic (const exploded_node *enode,
 {
   gcc_assert (enode);
   add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE, NULL, 0, d);
+}
+
+/* Return a new json::object of the form
+   {"diagnostics"  : [obj for saved_diagnostic]}.  */
+
+json::object *
+diagnostic_manager::to_json () const
+{
+  json::object *dm_obj = new json::object ();
+
+  {
+    json::array *sd_arr = new json::array ();
+    int i;
+    saved_diagnostic *sd;
+    FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
+      sd_arr->append (sd->to_json ());
+    dm_obj->set ("diagnostics", sd_arr);
+  }
+
+  return dm_obj;
 }
 
 /* A class for identifying sets of duplicated pending_diagnostic.

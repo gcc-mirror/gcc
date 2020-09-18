@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -458,6 +459,17 @@ region::dump (bool simple) const
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Return a new json::string describing the region.  */
+
+json::value *
+region::to_json () const
+{
+  label_text desc = get_desc (true);
+  json::value *reg_js = new json::string (desc.m_buffer);
+  desc.maybe_free ();
+  return reg_js;
 }
 
 /* Generate a description of this region.  */

@@ -186,6 +186,10 @@ fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
 
+fdump-analyzer-json
+Common RejectNegative Var(flag_dump_analyzer_json)
+Dump analyzer-specific data to a SRCFILE.analyzer.json.gz file.
+
 fdump-analyzer-state-purge
 Common RejectNegative Var(flag_dump_analyzer_state_purge)
 Dump state-purging information to a SRCFILE.state-purge.dot file.

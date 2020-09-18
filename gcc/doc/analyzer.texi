@@ -488,6 +488,9 @@ truthfulness of the argument.  This is useful for writing DejaGnu tests.
 
 @subsection Other Debugging Techniques
 
+The option @option{-fdump-analyzer-json} will dump both the supergraph
+and the exploded graph in compressed JSON form.
+
 One approach when tracking down where a particular bogus state is
 introduced into the @code{exploded_graph} is to add custom code to
 @code{program_state::validate}.

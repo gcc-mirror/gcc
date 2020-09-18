@@ -407,6 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
 -fdump-analyzer-supergraph @gol
 -Wno-analyzer-double-fclose @gol
@@ -9122,6 +9123,12 @@ Dump a textual representation of the ``exploded graph'' to
 Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
+
+@item -fdump-analyzer-json
+@opindex fdump-analyzer-json
+Dump a compressed JSON representation of analyzer internals to
+@file{@var{file}.analyzer.json.gz}.  The precise format is subject
+to change.
 
 @item -fdump-analyzer-state-purge
 @opindex fdump-analyzer-state-purge

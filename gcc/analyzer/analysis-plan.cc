@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "ipa-utils.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-core.h"
 #include "analyzer/analyzer-logging.h"

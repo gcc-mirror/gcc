@@ -165,6 +165,7 @@ class exploded_node : public dnode<eg_traits>
     /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
     STATUS_BULK_MERGED
   };
+  static const char * status_to_str (enum status s);
 
   exploded_node (const point_and_state &ps, int index);
 
@@ -178,6 +179,8 @@ class exploded_node : public dnode<eg_traits>
   void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
   void dump (FILE *fp, const extrinsic_state &ext_state) const;
   void dump (const extrinsic_state &ext_state) const;
+
+  json::object *to_json (const extrinsic_state &ext_state) const;
 
   /* The result of on_stmt.  */
   struct on_stmt_flags
@@ -306,6 +309,8 @@ class exploded_edge : public dedge<eg_traits>
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
+
+  json::object *to_json () const;
 
   //private:
   const superedge *const m_sedge;
@@ -781,6 +786,8 @@ public:
   void dump_stats (FILE *) const;
   void dump_states_for_supernode (FILE *, const supernode *snode) const;
   void dump_exploded_nodes () const;
+
+  json::object *to_json () const;
 
   exploded_node *get_node_by_index (int idx) const;
 

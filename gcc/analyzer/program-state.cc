@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "diagnostic.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -97,6 +98,26 @@ DEBUG_FUNCTION void
 extrinsic_state::dump () const
 {
   dump_to_file (stderr);
+}
+
+/* Return a new json::object of the form
+   {"checkers"  : array of objects, one for each state_machine}.  */
+
+json::object *
+extrinsic_state::to_json () const
+{
+  json::object *ext_state_obj = new json::object ();
+
+  {
+    json::array *checkers_arr = new json::array ();
+    unsigned i;
+    state_machine *sm;
+    FOR_EACH_VEC_ELT (m_checkers, i, sm)
+      checkers_arr->append (sm->to_json ());
+    ext_state_obj->set ("checkers", checkers_arr);
+  }
+
+  return ext_state_obj;
 }
 
 /* Get the region_model_manager for this extrinsic_state.  */
@@ -206,6 +227,33 @@ sm_state_map::dump (bool simple) const
   print (NULL, simple, true, &pp);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Return a new json::object of the form
+   {"global"  : (optional) value for global state,
+    SVAL_DESC : value for state}.  */
+
+json::object *
+sm_state_map::to_json () const
+{
+  json::object *map_obj = new json::object ();
+
+  if (m_global_state != m_sm.get_start_state ())
+    map_obj->set ("global", m_global_state->to_json ());
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end ();
+       ++iter)
+    {
+      const svalue *sval = (*iter).first;
+      entry_t e = (*iter).second;
+
+      label_text sval_desc = sval->get_desc ();
+      map_obj->set (sval_desc.m_buffer, e.m_state->to_json ());
+      sval_desc.maybe_free ();
+
+      /* This doesn't yet JSONify e.m_origin.  */
+    }
+  return map_obj;
 }
 
 /* Return true if no states have been set within this map
@@ -731,6 +779,43 @@ program_state::dump (const extrinsic_state &ext_state,
 		     bool summarize) const
 {
   dump_to_file (ext_state, summarize, true, stderr);
+}
+
+/* Return a new json::object of the form
+   {"store"  : object for store,
+    "constraints" : object for constraint_manager,
+    "curr_frame" : (optional) str for current frame,
+    "checkers" : { STATE_NAME : object per sm_state_map },
+    "valid" : true/false}.  */
+
+json::object *
+program_state::to_json (const extrinsic_state &ext_state) const
+{
+  json::object *state_obj = new json::object ();
+
+  state_obj->set ("store", m_region_model->get_store ()->to_json ());
+  state_obj->set ("constraints",
+		  m_region_model->get_constraints ()->to_json ());
+  if (m_region_model->get_current_frame ())
+    state_obj->set ("curr_frame",
+		    m_region_model->get_current_frame ()->to_json ());
+
+  /* Provide m_checker_states as an object, using names as keys.  */
+  {
+    json::object *checkers_obj = new json::object ();
+
+    int i;
+    sm_state_map *smap;
+    FOR_EACH_VEC_ELT (m_checker_states, i, smap)
+      if (!smap->is_empty_p ())
+	checkers_obj->set (ext_state.get_name (i), smap->to_json ());
+
+    state_obj->set ("checkers", checkers_obj);
+  }
+
+  state_obj->set ("valid", new json::literal (m_valid));
+
+  return state_obj;
 }
 
 /* Update this program_state to reflect a top-level call to FUN.

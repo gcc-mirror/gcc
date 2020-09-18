@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
@@ -61,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/state-purge.h"
 #include "analyzer/bar-chart.h"
+#include <zlib.h>
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -764,6 +766,19 @@ eg_traits::dump_args_t::show_enode_details_p (const exploded_node &enode) const
 
 /* class exploded_node : public dnode<eg_traits>.  */
 
+const char *
+exploded_node::status_to_str (enum status s)
+{
+  switch (s)
+    {
+    default: gcc_unreachable ();
+    case STATUS_WORKLIST: return "WORKLIST";
+    case STATUS_PROCESSED: return "PROCESSED";
+    case STATUS_MERGER: return "MERGER";
+    case STATUS_BULK_MERGED: return "BULK_MERGED";
+    }
+}
+
 /* exploded_node's ctor.  */
 
 exploded_node::exploded_node (const point_and_state &ps,
@@ -950,6 +965,28 @@ DEBUG_FUNCTION void
 exploded_node::dump (const extrinsic_state &ext_state) const
 {
   dump (stderr, ext_state);
+}
+
+/* Return a new json::object of the form
+   {"point"  : object for program_point,
+    "state"  : object for program_state,
+    "status" : str,
+    "idx"    : int,
+    "processed_stmts" : int}.  */
+
+json::object *
+exploded_node::to_json (const extrinsic_state &ext_state) const
+{
+  json::object *enode_obj = new json::object ();
+
+  enode_obj->set ("point", get_point ().to_json ());
+  enode_obj->set ("state", get_state ().to_json (ext_state));
+  enode_obj->set ("status", new json::string (status_to_str (m_status)));
+  enode_obj->set ("idx", new json::integer_number (m_index));
+  enode_obj->set ("processed_stmts",
+		  new json::integer_number (m_num_processed_stmts));
+
+  return enode_obj;
 }
 
 } // namespace ana
@@ -1500,6 +1537,30 @@ exploded_edge::dump_dot (graphviz_out *gv, const dump_args_t &) const
   //pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
 
   pp_printf (pp, "\"];\n");
+}
+
+/* Return a new json::object of the form
+   {"src_idx": int, the index of the source exploded edge,
+    "dst_idx": int, the index of the destination exploded edge,
+    "sedge": (optional) object for the superedge, if any,
+    "custom": (optional) str, a description, if this is a custom edge}.  */
+
+json::object *
+exploded_edge::to_json () const
+{
+  json::object *eedge_obj = new json::object ();
+  eedge_obj->set ("src_idx", new json::integer_number (m_src->m_index));
+  eedge_obj->set ("dst_idx", new json::integer_number (m_dest->m_index));
+  if (m_sedge)
+    eedge_obj->set ("sedge", m_sedge->to_json ());
+  if (m_custom_info)
+    {
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      m_custom_info->print (&pp);
+      eedge_obj->set ("custom", new json::string (pp_formatted_text (&pp)));
+    }
+  return eedge_obj;
 }
 
 /* struct stats.  */
@@ -3057,6 +3118,55 @@ exploded_graph::dump_states_for_supernode (FILE *out,
 	   snode->m_index, state_idx);
 }
 
+/* Return a new json::object of the form
+   {"nodes" : [objs for enodes],
+    "edges" : [objs for eedges],
+    "ext_state": object for extrinsic_state,
+    "diagnostic_manager": object for diagnostic_manager}.  */
+
+json::object *
+exploded_graph::to_json () const
+{
+  json::object *egraph_obj = new json::object ();
+
+  /* Nodes.  */
+  {
+    json::array *nodes_arr = new json::array ();
+    unsigned i;
+    exploded_node *n;
+    FOR_EACH_VEC_ELT (m_nodes, i, n)
+      nodes_arr->append (n->to_json (m_ext_state));
+    egraph_obj->set ("nodes", nodes_arr);
+  }
+
+  /* Edges.  */
+  {
+    json::array *edges_arr = new json::array ();
+    unsigned i;
+    exploded_edge *n;
+    FOR_EACH_VEC_ELT (m_edges, i, n)
+      edges_arr->append (n->to_json ());
+    egraph_obj->set ("edges", edges_arr);
+  }
+
+  /* m_sg is JSONified at the top-level.  */
+
+  egraph_obj->set ("ext_state", m_ext_state.to_json ());
+  egraph_obj->set ("diagnostic_manager", m_diagnostic_manager.to_json ());
+
+  /* The following fields aren't yet being JSONified:
+     worklist m_worklist;
+     const state_purge_map *const m_purge_map;
+     const analysis_plan &m_plan;
+     stats m_global_stats;
+     function_stat_map_t m_per_function_stats;
+     stats m_functionless_stats;
+     call_string_data_map_t m_per_call_string_data;
+     auto_vec<int> m_PK_AFTER_SUPERNODE_per_snode;  */
+
+  return egraph_obj;
+}
+
 /* Look for the last use of SEARCH_STMT within this path.
    If found write the edge's index to *OUT_IDX and return true, otherwise
    return false.  */
@@ -4241,6 +4351,39 @@ private:
   auto_delete_vec<auto_vec <exploded_node *> > m_enodes_per_snodes;
 };
 
+/* Implement -fdump-analyzer-json.  */
+
+static void
+dump_analyzer_json (const supergraph &sg,
+		    const exploded_graph &eg)
+{
+  auto_timevar tv (TV_ANALYZER_DUMP);
+  char *filename = concat (dump_base_name, ".analyzer.json.gz", NULL);
+  gzFile output = gzopen (filename, "w");
+  if (!output)
+    {
+      error_at (UNKNOWN_LOCATION, "unable to open %qs for writing", filename);
+      free (filename);
+      return;
+    }
+
+  json::object *toplev_obj = new json::object ();
+  toplev_obj->set ("sgraph", sg.to_json ());
+  toplev_obj->set ("egraph", eg.to_json ());
+
+  pretty_printer pp;
+  toplev_obj->print (&pp);
+  pp_formatted_text (&pp);
+
+  delete toplev_obj;
+
+  if (gzputs (output, pp_formatted_text (&pp)) == EOF
+      || gzclose (output))
+    error_at (UNKNOWN_LOCATION, "error writing %qs", filename);
+
+  free (filename);
+}
+
 /* Run the analysis "engine".  */
 
 void
@@ -4340,6 +4483,9 @@ impl_run_checkers (logger *logger)
       sg.dump_dot (filename, args);
       free (filename);
     }
+
+  if (flag_dump_analyzer_json)
+    dump_analyzer_json (sg, eg);
 
   delete purge_map;
 }
