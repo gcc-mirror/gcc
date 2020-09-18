@@ -28977,6 +28977,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   tree type = TREE_TYPE (tmpl);
 
   bool try_list_ctor = false;
+  bool list_init_p = false;
 
   releasing_vec rv_args = NULL;
   vec<tree,va_gc> *&args = *&rv_args;
@@ -28984,6 +28985,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
     args = make_tree_vector ();
   else if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
+      list_init_p = true;
       try_list_ctor = TYPE_HAS_LIST_CTOR (type);
       if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1)
 	{
@@ -29016,9 +29018,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   if (cands == error_mark_node)
     return error_mark_node;
 
-  /* Prune explicit deduction guides in copy-initialization context.  */
+  /* Prune explicit deduction guides in copy-initialization context (but
+     not copy-list-initialization).  */
   bool elided = false;
-  if (flags & LOOKUP_ONLYCONVERTING)
+  if (!list_init_p && (flags & LOOKUP_ONLYCONVERTING))
     {
       for (lkp_iterator iter (cands); !elided && iter; ++iter)
 	if (DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
@@ -29087,18 +29090,42 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
       --cp_unevaluated_operand;
     }
 
-  if (call == error_mark_node
-      && (complain & tf_warning_or_error))
+  if (call == error_mark_node)
     {
-      error ("class template argument deduction failed:");
+      if (complain & tf_warning_or_error)
+	{
+	  error ("class template argument deduction failed:");
 
-      ++cp_unevaluated_operand;
-      call = build_new_function_call (cands, &args, complain | tf_decltype);
-      --cp_unevaluated_operand;
+	  ++cp_unevaluated_operand;
+	  call = build_new_function_call (cands, &args,
+					  complain | tf_decltype);
+	  --cp_unevaluated_operand;
 
-      if (elided)
-	inform (input_location, "explicit deduction guides not considered "
-		"for copy-initialization");
+	  if (elided)
+	    inform (input_location, "explicit deduction guides not considered "
+		    "for copy-initialization");
+	}
+      return error_mark_node;
+    }
+  /* [over.match.list]/1: In copy-list-initialization, if an explicit
+     constructor is chosen, the initialization is ill-formed.  */
+  else if (flags & LOOKUP_ONLYCONVERTING)
+    {
+      tree fndecl = cp_get_callee_fndecl_nofold (call);
+      if (fndecl && DECL_NONCONVERTING_P (fndecl))
+	{
+	  if (complain & tf_warning_or_error)
+	    {
+	      // TODO: Pass down location from cp_finish_decl.
+	      error ("class template argument deduction for %qT failed: "
+		     "explicit deduction guide selected in "
+		     "copy-list-initialization", type);
+	      inform (DECL_SOURCE_LOCATION (fndecl),
+		      "explicit deduction guide declared here");
+
+	    }
+	  return error_mark_node;
+	}
     }
 
   /* If CTAD succeeded but the type doesn't have any explicit deduction
