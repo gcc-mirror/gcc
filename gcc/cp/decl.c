@@ -3003,6 +3003,10 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	    }
 	}
 
+      if (deduction_guide_p (olddecl)
+	  && deduction_guide_p (newdecl))
+	return G_("deduction guide %q+D redeclared");
+
       /* [class.compare.default]: A definition of a comparison operator as
 	 defaulted that appears in a class shall be the first declaration of
 	 that function.  */
@@ -3053,24 +3057,28 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 			  "%<gnu_inline%> attribute");
 	      else
 		return G_("%q+D redeclared inline without "
-		     	  "%<gnu_inline%> attribute");
+			  "%<gnu_inline%> attribute");
 	    }
 	}
 
-      /* Core issue #226 (C++0x): 
-           
+      if (deduction_guide_p (olddecl)
+	  && deduction_guide_p (newdecl))
+	return G_("deduction guide %q+D redeclared");
+
+      /* Core issue #226 (C++11):
+
            If a friend function template declaration specifies a
            default template-argument, that declaration shall be a
            definition and shall be the only declaration of the
            function template in the translation unit.  */
-      if ((cxx_dialect != cxx98) 
+      if ((cxx_dialect != cxx98)
           && TREE_CODE (ot) == FUNCTION_DECL && DECL_FRIEND_P (ot)
-          && !check_default_tmpl_args (nt, DECL_TEMPLATE_PARMS (newdecl), 
+	  && !check_default_tmpl_args (nt, DECL_TEMPLATE_PARMS (newdecl),
                                        /*is_primary=*/true,
 				       /*is_partial=*/false,
                                        /*is_friend_decl=*/2))
         return G_("redeclaration of friend %q#D "
-	 	  "may not have default template arguments");
+		  "may not have default template arguments");
 
       return NULL;
     }
