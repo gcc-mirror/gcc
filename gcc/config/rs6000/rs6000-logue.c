@@ -714,7 +714,7 @@ rs6000_stack_info (void)
   info->altivec_size = 16 * (LAST_ALTIVEC_REGNO + 1
 				 - info->first_altivec_reg_save);
 
-  /* Does this function call anything?  */
+  /* Does this function call anything (apart from sibling calls)?  */
   info->calls_p = (!crtl->is_leaf || cfun->machine->ra_needs_full_frame);
 
   /* Determine if we need to save the condition code registers.  */
@@ -5479,7 +5479,18 @@ rs6000_expand_split_stack_prologue (void)
   gcc_assert (flag_split_stack && reload_completed);
 
   if (!info->push_p)
-    return;
+    {
+      /* We need the -fsplit-stack prologue for functions that make
+	 tail calls.  Tail calls don't count against crtl->is_leaf.
+	 Note that we are called inside a sequence.  get_insns will
+	 just return that (as yet empty) sequence, so instead we
+	 access the function rtl with get_topmost_sequence.  */
+      for (insn = get_topmost_sequence ()->first; insn; insn = NEXT_INSN (insn))
+	if (CALL_P (insn))
+	  break;
+      if (!insn)
+	return;
+    }
 
   if (global_regs[29])
     {
