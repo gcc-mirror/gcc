@@ -4824,8 +4824,11 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    }
 	}
       break;
-    case RDIV_EXPR:
     case TRUNC_DIV_EXPR:
+      if (TYPE_UNSIGNED (type))
+	break;
+      /* Fallthru.  */
+    case RDIV_EXPR:
     case MULT_EXPR:
       /* Match up ([-]a){/,*}([-])b with v=a{/,*}b, replacing it with -v.  */
       if (! HONOR_SIGN_DEPENDENT_ROUNDING (type))
