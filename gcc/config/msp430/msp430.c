@@ -3521,30 +3521,43 @@ msp430_op_not_in_high_mem (rtx op)
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND		msp430_print_operand
 
-/* A   low 16-bits of int/lower of register pair
-   B   high 16-bits of int/higher of register pair
-   C   bits 32-47 of a 64-bit value/reg 3 of a DImode value
-   D   bits 48-63 of a 64-bit value/reg 4 of a DImode value
-   H   like %B (for backwards compatibility)
-   I   inverse of value
-   J   an integer without a # prefix
-   L   like %A (for backwards compatibility)
-   O   offset of the top of the stack
-   Q   like X but generates an A postfix
-   R   inverse of condition code, unsigned.
-   W   value - 16
-   X   X instruction postfix in large mode
-   Y   value - 4
-   Z   value - 1
-   b   .B or .W or .A, depending upon the mode
-   p   bit position
-   r   inverse of condition code
-   x   like X but only for pointers.  */
+/* A   Select low 16-bits of the constant/register/memory operand.
+   B   Select high 16-bits of the constant/register/memory
+       operand.
+   C   Select bits 32-47 of the constant/register/memory operand.
+   D   Select bits 48-63 of the constant/register/memory operand.
+   H   Equivalent to @code{B} (for backwards compatibility).
+   I   Print the inverse (logical @code{NOT}) of the constant
+       value.
+   J   Print an integer without a @code{#} prefix.
+   L   Equivalent to @code{A} (for backwards compatibility).
+   O   Offset of the current frame from the top of the stack.
+   Q   Use the @code{A} instruction postfix.
+   R   Inverse of condition code, for unsigned comparisons.
+   W   Subtract 16 from the constant value.
+   X   Use the @code{X} instruction postfix.
+   Y   Subtract 4 from the constant value.
+   Z   Subtract 1 from the constant value.
+   b   Append @code{.B}, @code{.W} or @code{.A} to the
+       instruction, depending on the mode.
+   d   Offset 1 byte of a memory reference or constant value.
+   e   Offset 3 bytes of a memory reference or constant value.
+   f   Offset 5 bytes of a memory reference or constant value.
+   g   Offset 7 bytes of a memory reference or constant value.
+   p   Print the value of 2, raised to the power of the given
+       constant.  Used to select the specified bit position.
+   r   Inverse of condition code, for signed comparisons.
+   x   Equivialent to @code{X}, but only for pointers.  */
 
 static void
 msp430_print_operand (FILE * file, rtx op, int letter)
 {
   rtx addr;
+  /* These are used by the 'A', 'B', 'C', 'D', 'd', 'e', 'f' and 'g' modifiers
+     to describe how to process the operand to get the requested value.  */
+  int mem_off = 0;
+  int reg_off = 0;
+  int const_shift = 0;
 
   /* We can't use c, n, a, or l.  */
   switch (letter)
@@ -3552,17 +3565,17 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case 'Z':
       gcc_assert (CONST_INT_P (op));
       /* Print the constant value, less one.  */
-      fprintf (file, "#%ld", INTVAL (op) - 1);
+      fprintf (file, "#%ld", (long) (INTVAL (op) - 1));
       return;
     case 'Y':
       gcc_assert (CONST_INT_P (op));
       /* Print the constant value, less four.  */
-      fprintf (file, "#%ld", INTVAL (op) - 4);
+      fprintf (file, "#%ld", (long) (INTVAL (op) - 4));
       return;
     case 'W':
       gcc_assert (CONST_INT_P (op));
       /* Print the constant value, less 16.  */
-      fprintf (file, "#%ld", INTVAL (op) - 16);
+      fprintf (file, "#%ld", (long) (INTVAL (op) - 16));
       return;
     case 'I':
       if (GET_CODE (op) == CONST_INT)
@@ -3619,76 +3632,71 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	default:
 	  return;
 	}
-    case 'A':
-    case 'L': /* Low half.  */
-      switch (GET_CODE (op))
+    case 'd': case 'e': case 'f': case 'g':
+      if (REG_P (op))
 	{
-	case MEM:
-	  op = adjust_address (op, Pmode, 0);
+	  output_operand_lossage ("%%d, %%e, %%f, %%g operand modifiers are "
+				  "for memory references or constant values "
+				  "only");
+	  return;
+	}
+      /* fallthru */
+    case 'B': case 'H': /* high half */
+    case 'C':
+    case 'D':
+      switch (letter)
+	{
+	case 'd':
+	  mem_off = 1;
+	  const_shift = 8;
 	  break;
-	case REG:
+	case 'B':
+	case 'H':
+	  mem_off = 2;
+	  reg_off = 1;
+	  const_shift = 16;
 	  break;
-	case CONST_INT:
-	  op = GEN_INT (INTVAL (op) & 0xffff);
-	  letter = 0;
+	case 'e':
+	  mem_off = 3;
+	  const_shift = 24;
+	  break;
+	case 'C':
+	  mem_off = 4;
+	  reg_off = 2;
+	  const_shift = 32;
+	  break;
+	case 'f':
+	  mem_off = 5;
+	  const_shift = 40;
+	  break;
+	case 'D':
+	  mem_off = 6;
+	  reg_off = 3;
+	  const_shift = 48;
+	  break;
+	case 'g':
+	  mem_off = 7;
+	  const_shift = 56;
 	  break;
 	default:
-	  /* If you get here, figure out a test case :-) */
 	  gcc_unreachable ();
+	  break;
 	}
-      break;
-    case 'B':
-    case 'H': /* high half */
+      /* fallthru */
+    case 'A': case 'L': /* Low half.  */
       switch (GET_CODE (op))
 	{
 	case MEM:
 	  /* We don't need to adjust the address for post_inc.  */
 	  op = adjust_address (op, Pmode,
-			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 2);
+			       (GET_CODE (XEXP (op, 0)) == POST_INC)
+			       ? 0 : mem_off);
 	  break;
 	case REG:
-	  op = gen_rtx_REG (Pmode, REGNO (op) + 1);
+	  op = gen_rtx_REG (Pmode, REGNO (op) + reg_off);
 	  break;
 	case CONST_INT:
-	  op = GEN_INT (INTVAL (op) >> 16);
-	  letter = 0;
-	  break;
-	default:
-	  /* If you get here, figure out a test case :-) */
-	  gcc_unreachable ();
-	}
-      break;
-    case 'C':
-      switch (GET_CODE (op))
-	{
-	case MEM:
-	  op = adjust_address (op, Pmode,
-			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 4);
-	  break;
-	case REG:
-	  op = gen_rtx_REG (Pmode, REGNO (op) + 2);
-	  break;
-	case CONST_INT:
-	  op = GEN_INT ((long long) INTVAL (op) >> 32);
-	  letter = 0;
-	  break;
-	default:
-	  /* If you get here, figure out a test case :-) */
-	  gcc_unreachable ();
-	}
-      break;
-    case 'D':
-      switch (GET_CODE (op))
-	{
-	case MEM:
-	  op = adjust_address (op, Pmode,
-			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 6);
-	  break;
-	case REG:
-	  op = gen_rtx_REG (Pmode, REGNO (op) + 3);
-	  break;
-	case CONST_INT:
-	  op = GEN_INT ((long long) INTVAL (op) >> 48);
+	  op = GEN_INT (((long long) INTVAL (op) >> const_shift) & 0xffff);
 	  letter = 0;
 	  break;
 	default:
