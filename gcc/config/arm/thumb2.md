@@ -881,7 +881,7 @@
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_rhs_operand" "rI")])))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_THUMB2"
+  "TARGET_THUMB2 && !TARGET_COND_ARITH"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -967,6 +967,20 @@
   "@
    csinc\\t%0, %3, %2, %D1
    csinc\\t%0, zr, %2, %D1"
+  [(set_attr "type" "csel")
+   (set_attr "predicable" "no")]
+)
+
+(define_insn "*thumb2_csneg"
+  [(set (match_operand:SI 0 "arm_general_register_operand" "=r, r")
+        (if_then_else:SI
+         (match_operand 1 "arm_comparison_operation" "")
+         (neg:SI (match_operand:SI 2 "arm_general_register_operand" "r, r"))
+         (match_operand:SI 3 "reg_or_zero_operand" "r, Pz")))]
+  "TARGET_COND_ARITH"
+  "@
+   csneg\\t%0, %3, %2, %D1
+   csneg\\t%0, zr, %2, %D1"
   [(set_attr "type" "csel")
    (set_attr "predicable" "no")]
 )
