@@ -1,3 +1,18 @@
+2020-09-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2020-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/94710
+	* config/rs6000/vector.md (vec_shr_<mode> for VEC_L): Correct little
+	endian byteshift_val calculation.
+
+2020-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX_UNSET): Remove OPTION_MASK_ISA_XSAVE_UNSET.
+	(OPTION_MASK_ISA_XSAVE_UNSET): Add OPTION_MASK_ISA_AVX_UNSET.
+
 2020-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

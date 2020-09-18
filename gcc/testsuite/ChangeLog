@@ -1,3 +1,7 @@
+2020-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/xsave-avx-1.c: New test.
+
 2020-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
