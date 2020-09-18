@@ -177,6 +177,10 @@ emission of floating point pcs attributes.  */
 
 #define TARGET_CRC32			(arm_arch_crc)
 
+/* Thumb-2 but also has some conditional arithmetic instructions like csinc,
+   csinv, etc. */
+#define TARGET_COND_ARITH		(arm_arch8_1m_main)
+
 /* The following two macros concern the ability to execute coprocessor
    instructions for VFPv3 or NEON.  TARGET_VFP3/TARGET_VFPD32 are currently
    only ever tested when we know we are generating for VFP hardware; we need

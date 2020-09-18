@@ -29866,12 +29866,23 @@ arm_frame_pointer_required (void)
   return false;
 }
 
-/* Only thumb1 can't support conditional execution, so return true if
-   the target is not thumb1.  */
+/* Implement the TARGET_HAVE_CONDITIONAL_EXECUTION hook.
+   All modes except THUMB1 have conditional execution.
+   If we have conditional arithmetic, return false before reload to
+   enable some ifcvt transformations. */
 static bool
 arm_have_conditional_execution (void)
 {
-  return !TARGET_THUMB1;
+  bool has_cond_exec, enable_ifcvt_trans;
+
+  /* Only THUMB1 cannot support conditional execution. */
+  has_cond_exec = !TARGET_THUMB1;
+
+  /* Enable ifcvt transformations if we have conditional arithmetic, but only
+     before reload. */
+  enable_ifcvt_trans = TARGET_COND_ARITH && !reload_completed;
+
+  return has_cond_exec && !enable_ifcvt_trans;
 }
 
 /* The AAPCS sets the maximum alignment of a vector to 64 bits.  */
