@@ -17463,7 +17463,8 @@ complete_vars (tree type)
 	      /* Complete the type of the variable.  */
 	      complete_type (type);
 	      cp_apply_type_quals_to_decl (cp_type_quals (type), var);
-	      layout_var_decl (var);
+	      if (COMPLETE_TYPE_P (type))
+		layout_var_decl (var);
 	    }
 
 	  /* Remove this entry from the list.  */
