@@ -2456,7 +2456,6 @@ vect_recog_rotate_pattern (vec_info *vinfo,
       append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
     }
   stype = TREE_TYPE (def);
-  scalar_int_mode smode = SCALAR_INT_TYPE_MODE (stype);
 
   if (TREE_CODE (def) == INTEGER_CST)
     {
@@ -2485,7 +2484,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 	append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, vecstype);
 
       def2 = vect_recog_temp_ssa_var (stype, NULL);
-      tree mask = build_int_cst (stype, GET_MODE_PRECISION (smode) - 1);
+      tree mask = build_int_cst (stype, GET_MODE_PRECISION (mode) - 1);
       def_stmt = gimple_build_assign (def2, BIT_AND_EXPR,
 				      gimple_assign_lhs (def_stmt), mask);
       if (ext_def)

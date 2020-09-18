@@ -1,3 +1,12 @@
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c/80076
+	* objc-gnu-runtime-abi-01.c
+	(gnu_runtime_abi_01_get_class_super_ref): Reduce indentation of
+	misleadingly indented return statements.
+	* objc-next-runtime-abi-01.c
+	(next_runtime_abi_01_get_class_super_ref): Likewise.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

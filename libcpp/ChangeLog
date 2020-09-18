@@ -1,3 +1,9 @@
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c/80076
+	* include/line-map.h (first_map_in_common): Declare.
+	* line-map.c (first_map_in_common): Remove static.
+
 2020-09-07  Martin Storsjö  <martin@martin.st>
 
 	* files.c (remap_filename): Make a strchr return value pointer

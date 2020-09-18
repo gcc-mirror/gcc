@@ -10737,6 +10737,42 @@ for the compiler to know that @code{fyl2xp1} pops both inputs.
 asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 @end smallexample
 
+@anchor{msp430Operandmodifiers}
+@subsubsection MSP430 Operand Modifiers
+
+The list below describes the supported modifiers and their effects for MSP430.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{A} @tab Select low 16-bits of the constant/register/memory operand.
+@item @code{B} @tab Select high 16-bits of the constant/register/memory
+operand.
+@item @code{C} @tab Select bits 32-47 of the constant/register/memory operand.
+@item @code{D} @tab Select bits 48-63 of the constant/register/memory operand.
+@item @code{H} @tab Equivalent to @code{B} (for backwards compatibility).
+@item @code{I} @tab Print the inverse (logical @code{NOT}) of the constant
+value.
+@item @code{J} @tab Print an integer without a @code{#} prefix.
+@item @code{L} @tab Equivalent to @code{A} (for backwards compatibility).
+@item @code{O} @tab Offset of the current frame from the top of the stack.
+@item @code{Q} @tab Use the @code{A} instruction postfix.
+@item @code{R} @tab Inverse of condition code, for unsigned comparisons.
+@item @code{W} @tab Subtract 16 from the constant value.
+@item @code{X} @tab Use the @code{X} instruction postfix.
+@item @code{Y} @tab Subtract 4 from the constant value.
+@item @code{Z} @tab Subtract 1 from the constant value.
+@item @code{b} @tab Append @code{.B}, @code{.W} or @code{.A} to the
+instruction, depending on the mode.
+@item @code{d} @tab Offset 1 byte of a memory reference or constant value.
+@item @code{e} @tab Offset 3 bytes of a memory reference or constant value.
+@item @code{f} @tab Offset 5 bytes of a memory reference or constant value.
+@item @code{g} @tab Offset 7 bytes of a memory reference or constant value.
+@item @code{p} @tab Print the value of 2, raised to the power of the given
+constant.  Used to select the specified bit position.
+@item @code{r} @tab Inverse of condition code, for signed comparisons.
+@item @code{x} @tab Equivialent to @code{X}, but only for pointers.
+@end multitable
+
 @lowersections
 @include md.texi
 @raisesections

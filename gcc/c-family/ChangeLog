@@ -1,3 +1,13 @@
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c/80076
+	* c-indentation.c (should_warn_for_misleading_indentation): Move
+	declarations of local variables closer to their first use.
+	Handle virtual token locations by resolving them to their
+	respective macro expansion points.  If all three tokens are
+	produced from the same macro expansion, then instead use their
+	loci within the macro definition.
+
 2020-09-16  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78666

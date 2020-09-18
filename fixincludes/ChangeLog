@@ -1,3 +1,16 @@
+2020-09-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_externcpp1): Add more context to select.
+	(aix_externcpp2): Same.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/socket.h: Update expected results.
+
+2020-09-17  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* fixfixes.c (pz_tmp_base, pz_tmp_dot): Define only with
+	_PC_NAME_MAX.
+
 2020-02-20  Alexandre Oliva <oliva@adacore.com>
 
 	* mkheaders.in: Don't require build-time shell on host.

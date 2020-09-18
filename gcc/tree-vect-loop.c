@@ -8045,7 +8045,7 @@ vectorizable_live_operation (vec_info *vinfo,
   imm_use_iterator imm_iter;
   tree lhs, lhs_type, bitsize, vec_bitsize;
   tree vectype = (slp_node
-		  ? SLP_TREE_VECTYPE (SLP_TREE_REPRESENTATIVE (slp_node))
+		  ? SLP_TREE_VECTYPE (slp_node)
 		  : STMT_VINFO_VECTYPE (stmt_info));
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;

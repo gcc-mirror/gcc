@@ -18,6 +18,9 @@
 #ifdef HAVE_SYS_SYSCALL_H
 #include <sys/syscall.h>
 #endif
+#ifdef HAVE_SYS_PTRACE_H
+#include <sys/ptrace.h>
+#endif
 
 /* The syscall package calls C functions.  The Go compiler can not
    represent a C varargs functions.  On some systems it's important
@@ -107,6 +110,19 @@ __go_syscall6(uintptr_t flag, uintptr_t a1, uintptr_t a2, uintptr_t a3,
 	      uintptr_t a4, uintptr_t a5, uintptr_t a6)
 {
   return syscall (flag, a1, a2, a3, a4, a5, a6);
+}
+
+#endif
+
+#ifdef HAVE_SYS_PTRACE_H
+
+// Despite documented appearances, this is actually implemented as
+// a variadic function within glibc.
+
+long
+__go_ptrace(int request, pid_t pid, uintptr_t addr, uintptr_t data)
+{
+  return ptrace (request, pid, addr, data);
 }
 
 #endif

@@ -1,3 +1,8 @@
+2020-09-17  Dimitrij Mojoski  <dmjpp@hotmail.com>
+
+	* clang-format: Autodetect C++ standard in use rather than
+	forcing C++03.
+
 2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config-list.mk (LIST): Add OPT-enable-obsolete to tilegx-linux-gnu,

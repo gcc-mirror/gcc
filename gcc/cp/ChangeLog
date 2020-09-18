@@ -1,3 +1,18 @@
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96409
+	PR c++/96410
+	* constraint.cc (tsubst_requires_expr): Use REQUIRES_EXPR_PARMS
+	and REQUIRES_EXPR_REQS.  Use REQUIRES_EXPR_EXTRA_ARGS,
+	add_extra_args and build_extra_args to defer substitution until
+	we have all the template arguments.
+	(finish_requires_expr): Adjust the call to build_min so that
+	REQUIRES_EXPR_EXTRA_ARGS gets set to NULL_TREE.
+	* cp-tree.def (REQUIRES_EXPR): Give it a third operand.
+	* cp-tree.h (REQUIRES_EXPR_PARMS, REQUIRES_EXPR_REQS,
+	REQUIRES_EXPR_EXTRA_ARGS): Define.
+	(add_extra_args, build_extra_args): Declare.
+
 2020-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (cp_check_omp_declare_reduction): Return bool.

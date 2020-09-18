@@ -1,3 +1,67 @@
+2020-09-17  Sergei Trofimovich  <siarheit@google.com>
+
+	* profile.c (sort_hist_values): Clarify hist format:
+	start with a value, not counter.
+
+2020-09-17  Yeting Kuo  <fakepaper56@gmail.com>
+
+	* config/riscv/riscv.h (CSW_MAX_OFFSET): Fix typo.
+
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c/80076
+	* gensupport.c (alter_attrs_for_subst_insn) <case SET_ATTR>:
+	Reduce indentation of misleadingly indented code fragment.
+	* lra-constraints.c (multi_block_pseudo_p): Likewise.
+	* sel-sched-ir.c (merge_fences): Likewise.
+
+2020-09-17  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wuninitialized): Document -Wuninitialized for
+	allocated objects.
+	 (-Wmaybe-uninitialized): Same.
+
+2020-09-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_nary_op): Value-number multiplications
+	and divisions to negates of available negated forms.
+
+2020-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/97078
+	* function.c (use_register_for_decl): Test cfun->tail_call_marked
+	for a parameter here instead of...
+	(assign_parm_setup_reg): ...here.
+
+2020-09-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (multi_precision_range_tests): Normalize symbolics when copying to a
+	multi-range.
+	* value-range.cc (irange::copy_legacy_range): Add test.
+
+2020-09-17  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_node::get_availability): Fix availability of
+	functions in other partitions
+	* varpool.c (varpool_node::get_availability): Likewise.
+
+2020-09-17  Jojo R  <jiejie_rong@c-sky.com>
+
+	* config/csky/csky.opt (msim): New.
+	* doc/invoke.texi (C-SKY Options): Document -msim.
+	* config/csky/csky-elf.h (LIB_SPEC): Add simulator runtime.
+
+2020-09-17  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/cppenv.texi: Use @code{} instead of @samp{@command{}}
+	around 'date %s'.
+
+2020-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX_UNSET): Remove OPTION_MASK_ISA_XSAVE_UNSET.
+	(OPTION_MASK_ISA_XSAVE_UNSET): Add OPTION_MASK_ISA_AVX_UNSET.
+
 2020-09-16  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/rs6000/rs6000.c (have_compare_and_set_mask): Use

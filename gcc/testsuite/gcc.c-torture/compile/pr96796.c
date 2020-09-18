@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fcommon" } */
+/* { dg-require-effective-target non_strict_prototype } */
 
 struct S0 {
   signed f0 : 8;
