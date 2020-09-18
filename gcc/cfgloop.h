@@ -60,9 +60,9 @@ public:
      b) it is consistent with the result of number_of_iterations_exit.  */
   widest_int bound;
 
-  /* True if the statement will cause the loop to be leaved the (at most)
-     BOUND + 1-st time it is executed, that is, all the statements after it
-     are executed at most BOUND times.  */
+  /* True if, after executing the statement BOUND + 1 times, we will
+     leave the loop; that is, all the statements after it are executed at most
+     BOUND times.  */
   bool is_exit;
 
   /* The next bound in the list.  */
