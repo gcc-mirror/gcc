@@ -1,3 +1,17 @@
+2020-09-17  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/fp16.c (__gnu_h2f_internal): Add 'static inline'
+	qualifier.
+	(__gnu_f2h_ieee, __gnu_h2f_ieee, __gnu_f2h_alternative)
+	(__gnu_h2f_alternative,__gnu_d2h_ieee, __gnu_d2h_alternative): Add
+	missing prototypes.
+
+2020-09-17  Wei Wentao  <weiwt.fnst@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-unwind.h (aarch64_demangle_return_addr): Fix
+	unused variable warning.
+
 2020-09-16  Jojo R  <jiejie_rong@c-sky.com>
 
 	* config.host (C-SKY): Enable crtbegin/crtend.o of libgcc for elf target.

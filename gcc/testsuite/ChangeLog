@@ -1,3 +1,77 @@
+2020-09-17  Tom de Vries  <tdevries@suse.de>
+
+	* lib/target-supports.exp (check_effective_target_non_strict_prototype):
+	New proc.
+	* gcc.c-torture/compile/pr71109.c: Require effective target
+	non_strict_prototype.
+	* gcc.c-torture/compile/pr83051-2.c: Same.
+	* gcc.c-torture/compile/pr89663-1.c: Same.
+	* gcc.c-torture/compile/pr89663-2.c: Same.
+	* gcc.c-torture/compile/pr96796.c: Same.
+
+2020-09-17  Yeting Kuo  <fakepaper56@gmail.com>
+
+	* gcc.target/riscv/shorten-memrefs-8.c: New test.
+
+2020-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87530
+	PR c++/58156
+	PR c++/68828
+	PR c++/86002
+	PR c++/91525
+	PR c++/96223
+	PR c++/87032
+	PR c++/35098
+	* g++.dg/cpp0x/move-return4.C: New test.
+	* g++.dg/cpp0x/vt-58156.C: New test.
+	* g++.dg/cpp2a/concepts-pr68828.C: New test.
+	* g++.dg/cpp2a/concepts-pr86002.C: New test.
+	* g++.dg/cpp2a/concepts-pr91525.C: New test.
+	* g++.dg/cpp2a/constexpr-indeterminate1.C: New test.
+	* g++.dg/cpp2a/desig17.C: New test.
+	* g++.dg/ext/attrib62.C: New test.
+
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c/80076
+	* c-c++-common/Wmisleading-indentation-5.c: New test.
+
+2020-09-17  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.dg/debug/dwarf2/inline2.c: Add -gdwarf-2.
+	* g++.dg/debug/dwarf2/inline-var-1.C: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-6.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline6.c: New variant with -gdwarf-5.
+	* g++.dg/debug/dwarf2/inline-var-3.C: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-7.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-8.c: Likewise.
+
+2020-09-17  Andre Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/sve/clastb_8.c: Fix a dg-final scan
+	directive.
+
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96409
+	PR c++/96410
+	* g++.dg/cpp2a/concepts-lambda13.C: New test.
+	* g++.dg/cpp2a/concepts-lambda14.C: New test.
+
+2020-09-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-88.c: New testcase.
+
+2020-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr97078.c: New test.
+
+2020-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/xsave-avx-1.c: New test.
+
 2020-09-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96653
