@@ -1695,9 +1695,9 @@ increment_stack (HOST_WIDE_INT amount)
     {
       inc = GEN_INT (amount);
       if (TARGET_LARGE)
-	emit_insn (gen_addpsi3 (sp, sp, inc));
+	F (emit_insn (gen_addpsi3 (sp, sp, inc)));
       else
-	emit_insn (gen_addhi3 (sp, sp, inc));
+	F (emit_insn (gen_addhi3 (sp, sp, inc)));
     }
 }
 
@@ -2408,6 +2408,8 @@ msp430_expand_prologue (void)
   for (i = 15; i >= 4; i--)
     if (cfun->machine->need_to_save[i])
       {
+	/* We need to save COUNT sequential registers starting from regnum
+	   I.  */
 	int seq, count;
 	rtx note;
 
@@ -2422,6 +2424,7 @@ msp430_expand_prologue (void)
 	    p = F (emit_insn (gen_pushm (gen_rtx_REG (Pmode, i),
 					 GEN_INT (count))));
 
+	    /* Document the stack decrement as a result of PUSHM.  */
 	    note = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
 
 	    XVECEXP (note, 0, 0)
@@ -2470,8 +2473,10 @@ msp430_expand_prologue (void)
 void
 msp430_expand_epilogue (int is_eh)
 {
-  int i;
+  int i, j;
   int fs;
+  rtx sp = stack_pointer_rtx;
+  rtx p;
   int helper_n = 0;
 
   if (is_naked_func ())
@@ -2540,19 +2545,27 @@ msp430_expand_epilogue (int is_eh)
   for (i = 4; i <= 15; i++)
     if (cfun->machine->need_to_save[i])
       {
-	int seq, count;
+	/* We need to restore COUNT sequential registers starting from regnum
+	   I.  */
+	int seq;
+	int count = 1;
+	int helper_used = 0;
+	rtx note, addr;
 
-	for (seq = i + 1; seq <= 15 && cfun->machine->need_to_save[seq]; seq ++)
-	  ;
-	count = seq - i;
+	if (msp430x)
+	  {
+	    for (seq = i + 1; seq <= 15 && cfun->machine->need_to_save[seq];
+		 seq++)
+	      ;
+	    count = seq - i;
+	  }
 
 	if (msp430x)
 	  {
 	    /* Note: With TARGET_LARGE we still use
 	       POPM as POPX.A is two bytes bigger.  */
-	    emit_insn (gen_popm (stack_pointer_rtx, GEN_INT (seq - 1),
-				 GEN_INT (count)));
-	    i += count - 1;
+	    p = F (emit_insn (gen_popm (stack_pointer_rtx, GEN_INT (seq - 1),
+					GEN_INT (count))));
 	  }
 	else if (i == 11 - helper_n
 		 && ! msp430_is_interrupt_func ()
@@ -2564,11 +2577,44 @@ msp430_expand_epilogue (int is_eh)
 		 && helper_n > 1
 		 && !is_eh)
 	  {
-	    emit_jump_insn (gen_epilogue_helper (GEN_INT (helper_n)));
-	    return;
+	    p = F (emit_jump_insn (gen_epilogue_helper (GEN_INT (helper_n))));
+	    count = helper_n;
+	    helper_used = 1;
 	  }
 	else
-	  emit_insn (gen_pop (gen_rtx_REG (Pmode, i)));
+	  p = F (emit_insn (gen_pop (gen_rtx_REG (Pmode, i))));
+
+	/* Document the stack increment as a result of POPM.  */
+	note = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
+
+	addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			     GEN_INT (count * (TARGET_LARGE ? 4 : 2)));
+
+	XVECEXP (note, 0, 0) = F (gen_rtx_SET (stack_pointer_rtx, addr));
+
+
+	/* *sp++ = R[i+j] */
+	/* sp	R4
+	   ...
+	   sp+N	R10.  */
+	for (j = 0; j < count; j++)
+	  {
+	    int ofs = j * (TARGET_LARGE ? 4 : 2);
+
+	    if (ofs)
+	      addr = gen_rtx_PLUS (Pmode, sp, GEN_INT (ofs));
+	    else
+	      addr = stack_pointer_rtx;
+
+	    XVECEXP (note, 0, j + 1)
+	      = F (gen_rtx_SET (gen_rtx_MEM (Pmode, addr),
+				gen_rtx_REG (Pmode, i + j)));
+	  }
+	add_reg_note (p, REG_FRAME_RELATED_EXPR, note);
+	i += count - 1;
+
+	if (helper_used)
+	  return;
       }
 
   if (is_eh)
