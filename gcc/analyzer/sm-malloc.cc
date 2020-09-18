@@ -183,7 +183,9 @@ public:
     if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
       {
 	const region *reg = ptr->get_pointee ();
-	if (reg->get_kind () == RK_STRING)
+	const region *base_reg = reg->get_base_region ();
+	if (base_reg->get_kind () == RK_DECL
+	    || base_reg->get_kind () == RK_STRING)
 	  return m_non_heap;
       }
     return m_start;
