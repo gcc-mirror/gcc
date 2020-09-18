@@ -1,3 +1,598 @@
+2020-09-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2020-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/94710
+	* config/rs6000/vector.md (vec_shr_<mode> for VEC_L): Correct little
+	endian byteshift_val calculation.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/96729
+	* dwarf2out.c (dwarf2out_next_real_insn): Adjust function comment.
+	(dwarf2out_var_location): Look for next_note only if next_real is
+	non-NULL, in that case look for the first non-deleted
+	NOTE_INSN_VAR_LOCATION between loc_note and next_real, if any.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96722
+	* gimple.c (infer_nonnull_range): Formatting fix.
+	(infer_nonnull_range_by_dereference): Return false for clobber stmts.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93553
+	* tree-nested.c (convert_nonlocal_omp_clauses): For
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_LASTPRIVATE and OMP_CLAUSE_LINEAR
+	save info->new_local_var_chain around walks of the clause gimple
+	sequences and declare_vars if needed into the sequence.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96174
+	* config/i386/avx512fintrin.h (_mm512_cmpeq_pd_mask,
+	_mm512_mask_cmpeq_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_mask_cmplt_pd_mask, _mm512_cmple_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_cmpunord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask, _mm512_cmpneq_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_cmpnlt_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_mask_cmpnle_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_mask_cmpord_pd_mask, _mm512_cmpeq_ps_mask,
+	_mm512_mask_cmpeq_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_mask_cmplt_ps_mask, _mm512_cmple_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_cmpunord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask, _mm512_cmpneq_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_cmpnlt_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_mask_cmpnle_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_mask_cmpord_ps_mask): Move outside of __OPTIMIZE__ guarded
+	section.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95857
+	* tree-cfg.c (group_case_labels_stmt): When removing an unreachable
+	base_bb, remember all forced and non-local labels on it and later
+	treat those as if they have NULL label_to_block.  Formatting fix.
+	Fix a comment typo.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95108
+	* omp-simd-clone.c (struct modify_stmt_info): Add after_stmt member.
+	(ipa_simd_modify_stmt_ops): For PHIs, only add before first stmt in
+	entry block if info->after_stmt is NULL, otherwise add after that stmt
+	and update it after adding each stmt.
+	(ipa_simd_modify_function_body): Initialize info.after_stmt.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/95080
+	* cfgrtl.c (purge_dead_edges): Skip over debug and note insns even
+	if the last insn is a note.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94950
+	* config/riscv/riscv-builtins.c (riscv_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to old_flags.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94873
+	* combine.c (combine_instructions): Don't optimize using REG_EQUAL
+	note if SET_SRC (set) has side-effects.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/tilegx/tilegx.md
+	(insn_stnt<I124MODE:n>_add<I48MODE:bitsuffix>): Use <I124MODE:n>
+	rather than just <n>.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94832
+	* config/i386/avx512bwintrin.h (_mm512_alignr_epi8,
+	_mm512_mask_alignr_epi8, _mm512_maskz_alignr_epi8): Wrap macro operands
+	used in casts into parens.
+	* config/i386/avx512fintrin.h (_mm512_cvt_roundps_ph, _mm512_cvtps_ph,
+	_mm512_mask_cvt_roundps_ph, _mm512_mask_cvtps_ph,
+	_mm512_maskz_cvt_roundps_ph, _mm512_maskz_cvtps_ph,
+	_mm512_mask_cmp_epi64_mask, _mm512_mask_cmp_epi32_mask,
+	_mm512_mask_cmp_epu64_mask, _mm512_mask_cmp_epu32_mask,
+	_mm512_mask_cmp_round_pd_mask, _mm512_mask_cmp_round_ps_mask,
+	_mm512_mask_cmp_pd_mask, _mm512_mask_cmp_ps_mask): Likewise.
+	* config/i386/avx512vlbwintrin.h (_mm256_mask_alignr_epi8,
+	_mm256_maskz_alignr_epi8, _mm_mask_alignr_epi8, _mm_maskz_alignr_epi8,
+	_mm256_mask_cmp_epu8_mask): Likewise.
+	* config/i386/avx512vlintrin.h (_mm_mask_cvtps_ph, _mm_maskz_cvtps_ph,
+	_mm256_mask_cvtps_ph, _mm256_maskz_cvtps_ph): Likewise.
+	* config/i386/f16cintrin.h (_mm_cvtps_ph, _mm256_cvtps_ph): Likewise.
+	* config/i386/shaintrin.h (_mm_sha1rnds4_epu32): Likewise.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94832
+	* config/i386/avx2intrin.h (_mm_mask_i32gather_pd,
+	_mm256_mask_i32gather_pd, _mm_mask_i64gather_pd,
+	_mm256_mask_i64gather_pd, _mm_mask_i32gather_ps,
+	_mm256_mask_i32gather_ps, _mm_mask_i64gather_ps,
+	_mm256_mask_i64gather_ps, _mm_i32gather_epi64,
+	_mm_mask_i32gather_epi64, _mm256_i32gather_epi64,
+	_mm256_mask_i32gather_epi64, _mm_i64gather_epi64,
+	_mm_mask_i64gather_epi64, _mm256_i64gather_epi64,
+	_mm256_mask_i64gather_epi64, _mm_i32gather_epi32,
+	_mm_mask_i32gather_epi32, _mm256_i32gather_epi32,
+	_mm256_mask_i32gather_epi32, _mm_i64gather_epi32,
+	_mm_mask_i64gather_epi32, _mm256_i64gather_epi32,
+	_mm256_mask_i64gather_epi32): Surround macro parameter uses with
+	parens.
+	(_mm_i32gather_pd, _mm256_i32gather_pd, _mm_i64gather_pd,
+	_mm256_i64gather_pd, _mm_i32gather_ps, _mm256_i32gather_ps,
+	_mm_i64gather_ps, _mm256_i64gather_ps): Likewise.  Don't use
+	as mask vector containing -1.0 or -1.0f elts, but instead vector
+	with all bits set using _mm*_cmpeq_p? with zero operands.
+	* config/i386/avx512fintrin.h (_mm512_i32gather_ps,
+	_mm512_mask_i32gather_ps, _mm512_i32gather_pd,
+	_mm512_mask_i32gather_pd, _mm512_i64gather_ps,
+	_mm512_mask_i64gather_ps, _mm512_i64gather_pd,
+	_mm512_mask_i64gather_pd, _mm512_i32gather_epi32,
+	_mm512_mask_i32gather_epi32, _mm512_i32gather_epi64,
+	_mm512_mask_i32gather_epi64, _mm512_i64gather_epi32,
+	_mm512_mask_i64gather_epi32, _mm512_i64gather_epi64,
+	_mm512_mask_i64gather_epi64, _mm512_i32scatter_ps,
+	_mm512_mask_i32scatter_ps, _mm512_i32scatter_pd,
+	_mm512_mask_i32scatter_pd, _mm512_i64scatter_ps,
+	_mm512_mask_i64scatter_ps, _mm512_i64scatter_pd,
+	_mm512_mask_i64scatter_pd, _mm512_i32scatter_epi32,
+	_mm512_mask_i32scatter_epi32, _mm512_i32scatter_epi64,
+	_mm512_mask_i32scatter_epi64, _mm512_i64scatter_epi32,
+	_mm512_mask_i64scatter_epi32, _mm512_i64scatter_epi64,
+	_mm512_mask_i64scatter_epi64): Surround macro parameter uses with
+	parens.
+	* config/i386/avx512pfintrin.h (_mm512_prefetch_i32gather_pd,
+	_mm512_prefetch_i32gather_ps, _mm512_mask_prefetch_i32gather_pd,
+	_mm512_mask_prefetch_i32gather_ps, _mm512_prefetch_i64gather_pd,
+	_mm512_prefetch_i64gather_ps, _mm512_mask_prefetch_i64gather_pd,
+	_mm512_mask_prefetch_i64gather_ps, _mm512_prefetch_i32scatter_pd,
+	_mm512_prefetch_i32scatter_ps, _mm512_mask_prefetch_i32scatter_pd,
+	_mm512_mask_prefetch_i32scatter_ps, _mm512_prefetch_i64scatter_pd,
+	_mm512_prefetch_i64scatter_ps, _mm512_mask_prefetch_i64scatter_pd,
+	_mm512_mask_prefetch_i64scatter_ps): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_mmask_i32gather_ps,
+	_mm_mmask_i32gather_ps, _mm256_mmask_i32gather_pd,
+	_mm_mmask_i32gather_pd, _mm256_mmask_i64gather_ps,
+	_mm_mmask_i64gather_ps, _mm256_mmask_i64gather_pd,
+	_mm_mmask_i64gather_pd, _mm256_mmask_i32gather_epi32,
+	_mm_mmask_i32gather_epi32, _mm256_mmask_i32gather_epi64,
+	_mm_mmask_i32gather_epi64, _mm256_mmask_i64gather_epi32,
+	_mm_mmask_i64gather_epi32, _mm256_mmask_i64gather_epi64,
+	_mm_mmask_i64gather_epi64, _mm256_i32scatter_ps,
+	_mm256_mask_i32scatter_ps, _mm_i32scatter_ps, _mm_mask_i32scatter_ps,
+	_mm256_i32scatter_pd, _mm256_mask_i32scatter_pd, _mm_i32scatter_pd,
+	_mm_mask_i32scatter_pd, _mm256_i64scatter_ps,
+	_mm256_mask_i64scatter_ps, _mm_i64scatter_ps, _mm_mask_i64scatter_ps,
+	_mm256_i64scatter_pd, _mm256_mask_i64scatter_pd, _mm_i64scatter_pd,
+	_mm_mask_i64scatter_pd, _mm256_i32scatter_epi32,
+	_mm256_mask_i32scatter_epi32, _mm_i32scatter_epi32,
+	_mm_mask_i32scatter_epi32, _mm256_i32scatter_epi64,
+	_mm256_mask_i32scatter_epi64, _mm_i32scatter_epi64,
+	_mm_mask_i32scatter_epi64, _mm256_i64scatter_epi32,
+	_mm256_mask_i64scatter_epi32, _mm_i64scatter_epi32,
+	_mm_mask_i64scatter_epi32, _mm256_i64scatter_epi64,
+	_mm256_mask_i64scatter_epi64, _mm_i64scatter_epi64,
+	_mm_mask_i64scatter_epi64): Likewise.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94826
+	* config/rs6000/rs6000.c (rs6000_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to
+	fenv_var, fenv_clear and old_fenv variables.  For fenv_addr
+	take address of TARGET_EXPR of fenv_var with void_node initializer.
+	Formatting fixes.
+
+2020-09-17  Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	Backported from master:
+	2020-04-29  Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	PR target/94820
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_atomic_assign_expand_fenv): Use TARGET_EXPR instead of
+	MODIFY_EXPR for first assignment to fenv_cr, fenv_sr and
+	new_fenv_var.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94809
+	* tree.c (build_call_expr_internal_loc_array): Call
+	process_call_operands.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94780
+	* config/i386/i386.c (ix86_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for first assignment to
+	sw_var, exceptions_var, mxcsr_orig_var and mxcsr_mod_var.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94710
+	* optabs.c (expand_vec_perm_const): For shift_amt const0_rtx
+	just return v2.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94705
+	* attribs.c (decl_attribute): Don't diagnose attribute exclusions
+	if last_decl is error_mark_node or has such a TREE_TYPE.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/94641
+	* stor-layout.c (place_field, finalize_record_size): Don't emit
+	-Wpadded warning on TYPE_ARTIFICIAL rli->t.
+	* ubsan.c (ubsan_get_type_descriptor_type,
+	ubsan_get_source_location_type, ubsan_create_data): Set
+	TYPE_ARTIFICIAL.
+	* asan.c (asan_global_struct): Likewise.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94618
+	* cfgrtl.c (delete_insn_and_edges): Set purge not just when
+	insn is the BB_END of its block, but also when it is only followed
+	by DEBUG_INSNs in its block.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94524
+	* tree-vect-generic.c (expand_vector_divmod): If any elt of op1 is
+	negative for signed TRUNC_MOD_EXPR, multiply with absolute value of
+	op1 rather than op1 itself at the end.  Punt for signed modulo by
+	most negative constant.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Punt for signed
+	modulo by most negative constant.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94438
+	* config/i386/i386.c (ix86_get_mask_mode): Only use int mask for elem_size
+	1, 2, 4 and 8.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94509
+	* config/i386/i386.c (expand_vec_perm_pshufb): Fix the check
+	for inter-lane permutation for 64-byte modes.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94488
+	* config/aarch64/aarch64-simd.md (ashl<mode>3, lshr<mode>3,
+	ashr<mode>3): Force operands[2] into reg whenever it is not CONST_INT.
+	Assume it is a REG after that instead of testing it and doing FAIL
+	otherwise.  Formatting fix.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Hannes Domani  <ssbssa@yahoo.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94459
+	* dwarf2out.c (gen_subprogram_die): Look through references, pointers,
+	arrays, pointer-to-members, function types and qualifiers when
+	checking if in-class DIE had an 'auto' or 'decltype(auto)' return type
+	to emit type again on definition.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94460
+	* config/i386/sse.md (avx2_ph<plusminus_mnemonic>wv16hi3,
+	avx2_ph<plusminus_mnemonic>dv8si3): Fix up RTL pattern to do
+	second half of first lane from first lane of second operand and
+	first half of second lane from second lane of first operand.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94423
+	* tree-object-size.c (pass_object_sizes::execute): Don't call
+	replace_uses_by for SSA_NAME_OCCURS_IN_ABNORMAL_PHI lhs, instead
+	call replace_call_with_value.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Marc Glisse  <marc.glisse@inria.fr>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94412
+	* fold-const.c (fold_binary_loc) <case TRUNC_DIV_EXPR>: Use
+	ANY_INTEGRAL_TYPE_P instead of INTEGRAL_TYPE_P.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/93069
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Use
+	<store_mask_constraint> instead of m in output operand constraint.
+	(vec_extract_hi_<mode><mask_name>): Use <mask_operand2> instead of
+	%{%3%}.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94329
+	* tree-ssa-reassoc.c (reassociate_bb): When calling reassoc_remove_stmt
+	on the last stmt in a bb, make sure gsi_prev isn't done immediately
+	after gsi_last_bb.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94303
+	* varasm.c (output_constructor_array_range): If local->index
+	RANGE_EXPR doesn't start at the current location in the constructor,
+	skip needed number of bytes using assemble_zeros or assert we don't
+	go backwards.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Richard Biener  <rguenther@suse.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): Delete dead statements backwards.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94283
+	* tree-if-conv.c (ifcvt_local_dce): For gimple debug stmts, just set
+	GF_PLF_2, but don't add them to worklist.  Don't add an assigment to
+	worklist or set GF_PLF_2 just because it is used in a debug stmt in
+	another bb.  Formatting improvements.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94211
+	* tree-ssa-phiopt.c (value_replacement): Use estimate_num_insns_seq
+	instead of estimate_num_insns for bb_seq (middle_bb).  Rename
+	emtpy_or_with_defined_p variable to empty_or_with_defined_p, adjust
+	all uses.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/94167
+	* tree-inline.c (insert_init_stmt): Don't gimple_regimplify_operands
+	DEBUG_STMTs.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93566
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle {,in_,task_}reduction clauses
+	with C/C++ array sections.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94121
+	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use gen_int_mode
+	instead of GEN_INT.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/tm.texi.in (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Change
+	ASM_OUTPUT_ALIGNED_DECL in description to ASM_OUTPUT_ALIGNED_LOCAL
+	and ASM_OUTPUT_DECL to ASM_OUTPUT_LOCAL.
+	* doc/tm.texi: Regenerated.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94130
+	* tree-ssa-dse.c: Include gimplify.h.
+	(increment_start_addr): If stmt has lhs, drop the lhs from call and
+	set it after the call to the original value of the first argument.
+	Formatting fixes.
+	(decrement_count): Formatting fix.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94134
+	* config/pdp11/pdp11.c (pdp11_asm_output_var): Call switch_to_section
+	at the start to switch to data section.  Don't print extra newline if
+	.globl directive has not been emitted.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94121
+	* config/aarch64/aarch64.c (aarch64_add_offset_1): Use absu_hwi
+	instead of abs_hwi, change moffset type to unsigned HOST_WIDE_INT.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94111
+	* dfp.c (decimal_to_binary): Only use decimal128ToString if from->cl
+	is rvc_normal, otherwise use real_to_decimal to print the number to
+	string.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94114
+	* tree-loop-distribution.c (generate_memset_builtin): Call
+	rewrite_to_non_trapping_overflow even on mem.
+	(generate_memcpy_builtin): Call rewrite_to_non_trapping_overflow even
+	on dest and src.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93399
+	* tree-pretty-print.h (pretty_print_string): Declare.
+	* tree-pretty-print.c (pretty_print_string): Remove forward
+	declaration, no longer static.  Change nbytes parameter type
+	from unsigned to size_t.
+	* print-rtl.c (print_value) <case CONST_STRING>: Use
+	pretty_print_string and for shrink way too long strings.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/93888
+	* tree-inline.c (copy_decl_to_var): Copy DECL_BY_REFERENCE flag.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94046
+	* config/i386/avx2intrin.h (_mm_mask_i32gather_ps): Fix first cast of
+	SRC and MASK arguments to __m128 from __m128d.
+	(_mm256_mask_i32gather_ps): Fix first cast of MASK argument to __m256
+	from __m256d.
+	(_mm_mask_i64gather_ps): Fix first cast of MASK argument to __m128
+	from __m128d.
+	* config/i386/xopintrin.h (_mm_permute2_pd): Fix first cast of C
+	argument to __m128i from __m128d.
+	(_mm256_permute2_pd): Fix first cast of C argument to __m256i from
+	__m256d.
+	(_mm_permute2_ps): Fix first cast of C argument to __m128i from __m128.
+	(_mm256_permute2_ps): Fix first cast of C argument to __m256i from
+	__m256.
+
+2020-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/94002
+	* explow.c (plus_constant): Punt if cst has VOIDmode and
+	get_pool_mode is different from mode.
+
 2020-09-16  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR target/96139
