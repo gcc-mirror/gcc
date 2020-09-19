@@ -2032,14 +2032,19 @@ These nodes represent conditional exits from the nearest enclosing
 nonzero, then the loop should be exited.  An @code{EXIT_EXPR} will only
 appear within a @code{LOOP_EXPR}.
 
-@item SWITCH_STMT
+@item SWITCH_EXPR
 
-Used to represent a @code{switch} statement.  The @code{SWITCH_STMT_COND}
-is the expression on which the switch is occurring.  See the documentation
-for an @code{IF_STMT} for more information on the representation used
-for the condition.  The @code{SWITCH_STMT_BODY} is the body of the switch
-statement.   The @code{SWITCH_STMT_TYPE} is the original type of switch
-expression as given in the source, before any compiler conversions.
+Used to represent a @code{switch} statement.  The @code{SWITCH_COND}
+is the expression on which the switch is occurring.  The
+@code{SWITCH_BODY} is the body of the switch statement.
+@code{SWITCH_ALL_CASES_P} is true if the switch includes a default
+label or the case label ranges cover all possible values of the
+condition expression.
+
+Note that @code{TREE_TYPE} for a @code{SWITCH_EXPR} represents the
+original type of switch expression as given in the source, before any
+compiler conversions, instead of the type of the switch expression
+itself (which is not meaningful).
 
 @item CASE_LABEL_EXPR
 
@@ -2713,7 +2718,7 @@ should submit your patches for inclusion in GCC@.
 * Namespaces::                  Namespaces.
 * Classes::                     Classes.
 * Functions for C++::           Overloading and accessors for C++.
-* Statements for C++::          Statements specific to C and C++.
+* Statements for C and C++::    Statements specific to C and C++.
 * C++ Expressions::    From @code{typeid} to @code{throw}.
 @end menu
 
@@ -3256,8 +3261,8 @@ This predicate holds if the function an overloaded
 @c Function Bodies
 @c ---------------------------------------------------------------------
 
-@node Statements for C++
-@subsection Statements for C++
+@node Statements for C and C++
+@subsection Statements for C and C++
 @cindex statements
 @tindex BREAK_STMT
 @tindex CLEANUP_STMT
@@ -3299,14 +3304,12 @@ This predicate holds if the function an overloaded
 @findex WHILE_BODY
 @findex WHILE_COND
 
-A function that has a definition in the current translation unit will
-have a non-@code{NULL} @code{DECL_INITIAL}.  However, back ends should not make
+A function that has a definition in the current translation unit has
+a non-@code{NULL} @code{DECL_INITIAL}.  However, back ends should not make
 use of the particular value given by @code{DECL_INITIAL}.
 
-The @code{DECL_SAVED_TREE} macro will give the complete body of the
+The @code{DECL_SAVED_TREE} gives the complete body of the
 function.
-
-@subsubsection Statements
 
 There are tree nodes corresponding to all of the source-level
 statement constructs, used within the C and C++ frontends.  These are
@@ -3332,7 +3335,7 @@ In template functions, the same nodes are used, but sometimes in
 slightly different ways.
 
 Many of the statements have substatements.  For example, a @code{while}
-loop will have a body, which is itself a statement.  If the substatement
+loop has a body, which is itself a statement.  If the substatement
 is @code{NULL_TREE}, it is considered equivalent to a statement
 consisting of a single @code{;}, i.e., an expression statement in which
 the expression has been omitted.  A substatement may in fact be a list
@@ -3361,7 +3364,7 @@ void process_stmt (stmt)
 @end smallexample
 In other words, while the @code{then} clause of an @code{if} statement
 in C++ can be only one statement (although that one statement may be a
-compound statement), the intermediate representation will sometimes use
+compound statement), the intermediate representation sometimes uses
 several statements chained together.
 
 @table @code
@@ -3418,9 +3421,10 @@ the initialization statement for the loop.  The @code{FOR_COND} is the
 termination condition.  The @code{FOR_EXPR} is the expression executed
 right before the @code{FOR_COND} on each loop iteration; often, this
 expression increments a counter.  The body of the loop is given by
-@code{FOR_BODY}.  Note that @code{FOR_INIT_STMT} and @code{FOR_BODY}
-return statements, while @code{FOR_COND} and @code{FOR_EXPR} return
-expressions.
+@code{FOR_BODY}.  @code{FOR_SCOPE} holds the scope of the @code{for}
+statement (used in the C++ front end only).  Note that
+@code{FOR_INIT_STMT} and @code{FOR_BODY} return statements, while
+@code{FOR_COND} and @code{FOR_EXPR} return expressions.
 
 @item HANDLER
 
@@ -3441,8 +3445,6 @@ evaluated, the statement should be executed.  Then, the
 @code{TREE_VALUE} should be used as the conditional expression itself.
 This representation is used to handle C++ code like this:
 
-C++ distinguishes between this and @code{COND_EXPR} for handling templates.
-
 @smallexample
 if (int i = 7) @dots{}
 @end smallexample
@@ -3453,6 +3455,8 @@ condition.
 The @code{THEN_CLAUSE} represents the statement given by the @code{then}
 condition, while the @code{ELSE_CLAUSE} represents the statement given
 by the @code{else} condition.
+
+C++ distinguishes between this and @code{COND_EXPR} for handling templates.
 
 @item SUBOBJECT
 
@@ -3470,6 +3474,14 @@ for an @code{IF_STMT} for more information on the representation used
 for the condition.  The @code{SWITCH_STMT_BODY} is the body of the switch
 statement.   The @code{SWITCH_STMT_TYPE} is the original type of switch
 expression as given in the source, before any compiler conversions.
+The @code{SWITCH_STMT_SCOPE} is the statement scope (used in the
+C++ front end only).
+
+There are also two boolean flags used with @code{SWITCH_STMT}.
+@code{SWITCH_STMT_ALL_CASES_P} is true if the switch includes a default label
+or the case label ranges cover all possible values of the condition
+expression.  @code{SWITCH_STMT_NO_BREAK_P} is true if there are no
+@code{break} statements in the switch.
 
 @item TRY_BLOCK
 Used to represent a @code{try} block.  The body of the try block is
