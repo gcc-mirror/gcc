@@ -28830,17 +28830,19 @@ static GTY((deletable)) hash_map<tree, tree_pair_p> *dguide_cache;
 
 /* Return the non-aggregate deduction guides for deducible template TMPL.  The
    aggregate candidate is added separately because it depends on the
-   initializer.  */
+   initializer.  Set ANY_DGUIDES_P if we find a non-implicit deduction
+   guide.  */
 
 static tree
-deduction_guides_for (tree tmpl, tsubst_flags_t complain)
+deduction_guides_for (tree tmpl, bool &any_dguides_p, tsubst_flags_t complain)
 {
   tree guides = NULL_TREE;
   if (DECL_ALIAS_TEMPLATE_P (tmpl))
     {
       tree under = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
       tree tinfo = get_template_info (under);
-      guides = deduction_guides_for (TI_TEMPLATE (tinfo), complain);
+      guides = deduction_guides_for (TI_TEMPLATE (tinfo), any_dguides_p,
+				     complain);
     }
   else
     {
@@ -28849,6 +28851,8 @@ deduction_guides_for (tree tmpl, tsubst_flags_t complain)
 				      LOOK_want::NORMAL, /*complain*/false);
       if (guides == error_mark_node)
 	guides = NULL_TREE;
+      else
+	any_dguides_p = true;
     }
 
   /* Cache the deduction guides for a template.  We also remember the result of
@@ -28974,7 +28978,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   if (args == NULL)
     return error_mark_node;
 
-  tree cands = deduction_guides_for (tmpl, complain);
+  bool any_dguides_p = false;
+  tree cands = deduction_guides_for (tmpl, any_dguides_p, complain);
   if (cands == error_mark_node)
     return error_mark_node;
 
@@ -29061,6 +29066,21 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
       if (elided)
 	inform (input_location, "explicit deduction guides not considered "
 		"for copy-initialization");
+    }
+
+  /* If CTAD succeeded but the type doesn't have any explicit deduction
+     guides, this deduction might not be what the user intended.  */
+  if (call != error_mark_node && !any_dguides_p)
+    {
+      tree fndecl = cp_get_callee_fndecl_nofold (call);
+      if (fndecl != NULL_TREE
+	  && (!DECL_IN_SYSTEM_HEADER (fndecl)
+	      || global_dc->dc_warn_system_headers)
+	  && warning (OPT_Wctad_maybe_unsupported,
+		      "%qT may not intend to support class template argument "
+		      "deduction", type))
+	inform (input_location, "add a deduction guide to suppress this "
+		"warning");
     }
 
   return cp_build_qualified_type (TREE_TYPE (call), cp_type_quals (ptype));

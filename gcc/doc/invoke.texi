@@ -236,7 +236,8 @@ in the following sections.
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
--Wno-conversion-null  -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
+-Wno-conversion-null  -Wctad-maybe-unsupported @gol
+-Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
 -Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -3303,6 +3304,25 @@ void f(int *a, int b, int c) @{
 @end smallexample
 
 Enabled by default with @option{-std=c++20}.
+
+@item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
+@opindex Wctad-maybe-unsupported
+@opindex Wno-ctad-maybe-unsupported
+Warn when performing class template argument deduction (CTAD) on a type with
+no explicitly written deduction guides.  This warning will point out cases
+where CTAD succeeded only because the compiler synthesized the implicit
+deduction guides, which might not be what the programmer intended.  Certain
+style guides allow CTAD only on types that specifically "opt-in"; i.e., on
+types that are designed to support CTAD.  This warning can be suppressed with
+the following pattern:
+
+@smallexample
+struct allow_ctad_t; // any name works
+template <typename T> struct S @{
+  S(T) @{ @}
+@};
+S(allow_ctad_t) -> S<void>; // guide with incomplete parameter type will never be considered
+@end smallexample
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy

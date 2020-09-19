@@ -475,6 +475,11 @@ Wcpp
 C ObjC C++ ObjC++ CppReason(CPP_W_WARNING_DIRECTIVE)
 ; Documented in common.opt
 
+Wctad-maybe-unsupported
+C++ ObjC++ Var(warn_ctad_maybe_unsupported) Warning
+Warn when performing class template argument deduction on a type with no
+deduction guides.
+
 Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
 Warn when all constructors and destructors are private.
