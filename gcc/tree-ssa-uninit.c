@@ -474,7 +474,7 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
 
   /* Map of attribute access specifications for function arguments.  */
   rdwr_map rdwr_idx;
-  init_attr_rdwr_indices (&rdwr_idx, fntype);
+  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
   tree argtype;
   unsigned argno = 0;

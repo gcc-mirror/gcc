@@ -2209,13 +2209,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   bitmap_obstack_release (NULL);
 
+  tree fntypeattrs = TYPE_ATTRIBUTES (fntype);
   /* Extract attribute alloc_size from the type of the called expression
      (which could be a function or a function pointer) and if set, store
      the indices of the corresponding arguments in ALLOC_IDX, and then
      the actual argument(s) at those indices in ALLOC_ARGS.  */
   int alloc_idx[2] = { -1, -1 };
-  if (tree alloc_size = lookup_attribute ("alloc_size",
-					  TYPE_ATTRIBUTES (fntype)))
+  if (tree alloc_size = lookup_attribute ("alloc_size", fntypeattrs))
     {
       tree args = TREE_VALUE (alloc_size);
       alloc_idx[0] = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
@@ -2228,7 +2228,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   /* Map of attribute accewss specifications for function arguments.  */
   rdwr_map rdwr_idx;
-  init_attr_rdwr_indices (&rdwr_idx, fntype);
+  init_attr_rdwr_indices (&rdwr_idx, fntypeattrs);
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
@@ -2478,7 +2478,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	  if (POINTER_TYPE_P (type))
 	    {
 	      access->ptr = args[i].tree_value;
-	      gcc_assert (access->size == NULL_TREE);
+	      // A nonnull ACCESS->SIZE contains VLA bounds.  */
 	    }
 	  else
 	    {

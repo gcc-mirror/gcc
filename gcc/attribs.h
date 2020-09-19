@@ -224,18 +224,79 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
 
 struct attr_access
 {
+  /* The beginning and end of the internal string representation.  */
+  const char *str, *end;
   /* The attribute pointer argument.  */
   tree ptr;
-  /* The size of the pointed-to object or NULL when not specified.  */
+  /* For a declaration, a TREE_CHAIN of VLA bound expressions stored
+     in TREE_VALUE and their positions in the argument list (stored
+     in TREE_PURPOSE).  Each expression may be a PARM_DECL or some
+     other DECL (for ordinary variables), or an EXPR for other
+     expressions (e.g., funcion calls).  */
   tree size;
 
-  /* The zero-based number of each of the formal function arguments.  */
+  /* The zero-based position of each of the formal function arguments.
+     For the optional SIZARG, UINT_MAX when not specified.  For VLAs
+     with multiple variable bounds, SIZARG is the position corresponding
+     to the most significant bound in the argument list.  Positions of
+     subsequent bounds are in the TREE_PURPOSE field of the SIZE chain.  */
   unsigned ptrarg;
   unsigned sizarg;
+  /* For internal specifications only, the constant minimum size of
+     the array, zero if not specified, and HWI_M1U for the unspecified
+     VLA [*] notation.  Meaningless for external (explicit) access
+     specifications.  */
+  unsigned HOST_WIDE_INT minsize;
 
   /* The access mode.  */
   access_mode mode;
+
+  /* Set for an attribute added internally rather than by an explicit
+     declaration. */
+  bool internal_p;
+  /* Set for the T[static MINSIZE] array notation for nonzero MINSIZE
+     less than HWI_M1U.  */
+  bool static_p;
+
+  /* Return the number of specified VLA bounds.  */
+  unsigned vla_bounds (unsigned *) const;
+
+  /* Return internal representation as STRING_CST.  */
+  tree to_internal_string () const;
+
+  /* Return the human-readable representation of the external attribute
+     specification (as it might appear in the source code) as STRING_CST.  */
+  tree to_external_string () const;
+
+  /* Return argument of array type formatted as a readable string.  */
+  std::string array_as_string (tree) const;
+
+  /* Return the access mode corresponding to the character code.  */
+  static access_mode from_mode_char (char);
+
+  /* The character codes corresponding to all the access modes.  */
+  static constexpr char mode_chars[5] = { '-', 'r', 'w', 'x', '^' };
+
+  /* The strings corresponding to just the external access modes.  */
+  static constexpr char mode_names[4][11] =
+    {
+     "none", "read_only", "write_only", "read_write"
+    };
 };
+
+inline access_mode
+attr_access::from_mode_char (char c)
+{
+  switch (c)
+    {
+    case mode_chars[access_none]: return access_none;
+    case mode_chars[access_read_only]: return access_read_only;
+    case mode_chars[access_write_only]: return access_write_only;
+    case mode_chars[access_read_write]: return access_read_write;
+    case mode_chars[access_deferred]: return access_deferred;
+    }
+  gcc_unreachable ();
+}
 
 /* Used to define rdwr_map below.  */
 struct rdwr_access_hash: int_hash<int, -1> { };
@@ -246,5 +307,7 @@ struct attr_access;
 typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
 
 extern void init_attr_rdwr_indices (rdwr_map *, tree);
+extern attr_access *get_parm_access (rdwr_map &, tree,
+				     tree = current_function_decl);
 
 #endif // GCC_ATTRIBS_H

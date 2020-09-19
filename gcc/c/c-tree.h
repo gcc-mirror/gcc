@@ -620,7 +620,7 @@ extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree);
 extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
-			tree);
+			tree, location_t * = NULL);
 extern tree start_struct (location_t, enum tree_code, tree,
 			  class c_struct_parse_info **);
 extern void store_parm_decls (void);

@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
 #include "config.h"
+#define INCLUDE_STRING
 #define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
@@ -57,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/name-hint.h"
 #include "c-family/known-headers.h"
 #include "c-family/c-spellcheck.h"
+
+#include "tree-pretty-print.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -4970,6 +4973,17 @@ groktypename (struct c_type_name *type_name, tree *expr,
   return type;
 }
 
+/* Looks up the most recent pushed declaration corresponding to DECL.  */
+
+static tree
+lookup_last_decl (tree decl)
+{
+  tree last_decl = lookup_name (DECL_NAME (decl));
+  if (!last_decl)
+    last_decl = lookup_name_in_scope (DECL_NAME (decl), external_scope);
+  return last_decl;
+}
+
 /* Wrapper for decl_attributes that adds some implicit attributes
    to VAR_DECLs or FUNCTION_DECLs.  */
 
@@ -4998,10 +5012,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
      so far so that attributes on the current declaration that's
      about to be pushed that conflict with the former can be detected,
      diagnosed, and rejected as appropriate.  */
-  tree last_decl = lookup_name (DECL_NAME (*node));
-  if (!last_decl)
-    last_decl = lookup_name_in_scope (DECL_NAME (*node), external_scope);
-
+  tree last_decl = lookup_last_decl (*node);
   return decl_attributes (node, attributes, flags, last_decl);
 }
 
@@ -5011,6 +5022,8 @@ c_decl_attributes (tree *node, tree attributes, int flags)
    have been parsed, before parsing the initializer if any.
    Here we create the ..._DECL node, fill in its type,
    and put it on the list of decls for the current context.
+   When nonnull, set *LASTLOC to the location of the prior declaration
+   of the same entity if one exists.
    The ..._DECL node is returned as the value.
 
    Exception: for arrays where the length is not specified,
@@ -5023,7 +5036,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 
 tree
 start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
-	    bool initialized, tree attributes)
+	    bool initialized, tree attributes, location_t *lastloc /* = NULL */)
 {
   tree decl;
   tree tem;
@@ -5040,6 +5053,10 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 			 deprecated_state);
   if (!decl || decl == error_mark_node)
     return NULL_TREE;
+
+  if (tree lastdecl = lastloc ? lookup_last_decl (decl) : NULL_TREE)
+    if (lastdecl != error_mark_node)
+      *lastloc = DECL_SOURCE_LOCATION (lastdecl);
 
   if (expr)
     add_stmt (fold_convert (void_type_node, expr));
@@ -5478,6 +5495,14 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  if (asmspec && VAR_P (decl) && C_DECL_REGISTER (decl))
 	    DECL_HARD_REGISTER (decl) = 1;
 	  rest_of_decl_compilation (decl, true, 0);
+
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    {
+	      tree parms = DECL_ARGUMENTS (decl);
+	      const bool builtin = fndecl_built_in_p (decl);
+	      if (tree access = build_attr_access_from_parms (parms, !builtin))
+		decl_attributes (&decl, access, 0);
+	    }
 	}
       else
 	{
@@ -5630,6 +5655,175 @@ grokparm (const struct c_parm *parm, tree *expr)
   return decl;
 }
 
+/* Return attribute "arg spec" corresponding to an array/VLA parameter
+   described by PARM, concatenated onto attributes ATTRS.
+   The spec consists of one dollar symbol for each specified variable
+   bound, one asterisk for each unspecified variable bound, followed
+   by at most one specification of the most significant bound of
+   an ordinary array parameter.  For ordinary arrays the specification
+   is either the constant bound itself, or the space character for
+   an array with an unspecified bound (the [] form).  Finally, a chain
+   of specified variable bounds is appended to the spec, starting with
+   the most significant bound.  For example, the PARM T a[2][m][3][n]
+   will produce __attribute__((arg spec ("[$$2]", m, n)).
+   For T a typedef for an array with variable bounds, the bounds are
+   included in the specification in the expected order.
+   No "arg spec"  is created for parameters of pointer types, making
+   a distinction between T(*)[N] (or, equivalently, T[][N]) and
+   the T[M][N] form, all of which have the same type and are represented
+   the same, but only the last of which gets an "arg spec" describing
+   the most significant bound M.  */
+
+static tree
+get_parm_array_spec (const struct c_parm *parm, tree attrs)
+{
+  /* The attribute specification string, minor bound first.  */
+  std::string spec;
+
+  /* A list of VLA variable bounds, major first, or null if unspecified
+     or not a VLA.  */
+  tree vbchain = NULL_TREE;
+  /* True for a pointer parameter.  */
+  bool pointer = false;
+  /* True for an ordinary array with an unpecified bound.  */
+  bool nobound = false;
+
+  /* Create a string representation for the bounds of the array/VLA.  */
+  for (c_declarator *pd = parm->declarator, *next; pd; pd = next)
+    {
+      next = pd->declarator;
+      while (next && next->kind == cdk_attrs)
+	next = next->declarator;
+
+      /* Remember if a pointer has been seen to avoid storing the constant
+	 bound.  */
+      if (pd->kind == cdk_pointer)
+	pointer = true;
+
+      if ((pd->kind == cdk_pointer || pd->kind == cdk_function)
+	  && (!next || next->kind == cdk_id))
+	{
+	  /* Do nothing for the common case of a pointer.  The fact that
+	     the parameter is one can be deduced from the absence of
+	     an arg spec for it.  */
+	  return attrs;
+	}
+
+      if (pd->kind == cdk_id)
+	{
+	  if (pointer
+	      || !parm->specs->type
+	      || TREE_CODE (parm->specs->type) != ARRAY_TYPE
+	      || !TYPE_DOMAIN (parm->specs->type)
+	      || !TYPE_MAX_VALUE (TYPE_DOMAIN (parm->specs->type)))
+	    continue;
+
+	  tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm->specs->type));
+	  if (!vbchain
+	      && TREE_CODE (max) == INTEGER_CST)
+	    {
+	      /* Extract the upper bound from a parameter of an array type
+		 unless the parameter is an ordinary array of unspecified
+		 bound in which case a next iteration of the loop will
+		 exit.  */
+	      if (spec.empty () || spec.end ()[-1] != ' ')
+		{
+		  if (!tree_fits_shwi_p (max))
+		    continue;
+
+		  /* The upper bound is the value of the largest valid
+		     index.  */
+		  HOST_WIDE_INT n = tree_to_shwi (max) + 1;
+		  char buf[40];
+		  sprintf (buf, "%lu", (unsigned long)n);
+		  spec += buf;
+		}
+	      continue;
+	    }
+
+	  /* For a VLA typedef, create a list of its variable bounds and
+	     append it in the expected order to VBCHAIN.  */
+	  tree tpbnds = NULL_TREE;
+	  for (tree type = parm->specs->type; TREE_CODE (type) == ARRAY_TYPE;
+	       type = TREE_TYPE (type))
+	    {
+	      tree nelts = array_type_nelts (type);
+	      if (TREE_CODE (nelts) != INTEGER_CST)
+		{
+		  /* Each variable VLA bound is represented by the dollar
+		     sign.  */
+		  spec += "$";
+		  tpbnds = tree_cons (NULL_TREE, nelts, tpbnds);
+		}
+	    }
+	  tpbnds = nreverse (tpbnds);
+	  vbchain = chainon (vbchain, tpbnds);
+	  continue;
+	}
+
+      if (pd->kind != cdk_array)
+	continue;
+
+      if (pd->u.array.vla_unspec_p)
+	{
+	  /* Each unspecified bound is represented by a star.  There
+	     can be any number of these in a declaration (but none in
+	     a definition).  */
+	  spec += '*';
+	  continue;
+	}
+
+      tree nelts = pd->u.array.dimen;
+      if (!nelts)
+	{
+	  /* Ordinary array of unspecified size.  There can be at most
+	     one for the most significant bound.  Exit on the next
+	     iteration which determines whether or not PARM is declared
+	     as a pointer or an array.  */
+	  nobound = true;
+	  continue;
+	}
+
+      if (TREE_CODE (nelts) == INTEGER_CST)
+	{
+	  /* Skip all constant bounds except the most significant one.
+	     The interior ones are included in the array type.  */
+	  if (next && (next->kind == cdk_array || next->kind == cdk_pointer))
+	    continue;
+
+	  if (!tree_fits_uhwi_p (nelts))
+	    /* Bail completely on invalid bounds.  */
+	    return attrs;
+
+	  char buf[40];
+	  const char *code = pd->u.array.static_p ? "s" : "";
+	  unsigned HOST_WIDE_INT n = tree_to_uhwi (nelts);
+	  sprintf (buf, "%s%llu", code, (unsigned long long)n);
+	  spec += buf;
+	  break;
+	}
+
+      /* Each variable VLA bound is represented by a dollar sign.  */
+      spec += "$";
+      vbchain = tree_cons (NULL_TREE, nelts, vbchain);
+    }
+
+  if (spec.empty () && !nobound)
+    return attrs;
+
+  spec.insert (0, "[");
+  if (nobound)
+    /* Ordinary array of unspecified bound is represented by a space.
+       It must be last in the spec.  */
+    spec += ' ';
+  spec += ']';
+
+  tree acsstr = build_string (spec.length () + 1, spec.c_str ());
+  tree args = tree_cons (NULL_TREE, acsstr, vbchain);
+  tree name = get_identifier ("arg spec");
+  return tree_cons (name, args, attrs);
+}
+
 /* Given a parsed parameter declaration, decode it into a PARM_DECL
    and push that on the current scope.  EXPR is a pointer to an
    expression that needs to be evaluated for the side effects of array
@@ -5639,12 +5833,12 @@ void
 push_parm_decl (const struct c_parm *parm, tree *expr)
 {
   tree attrs = parm->attrs;
-  tree decl;
-
-  decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL,
-			 &attrs, expr, NULL, DEPRECATED_NORMAL);
+  tree decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL,
+			      &attrs, expr, NULL, DEPRECATED_NORMAL);
   if (decl && DECL_P (decl))
     DECL_SOURCE_LOCATION (decl) = parm->loc;
+
+  attrs = get_parm_array_spec (parm, attrs);
   decl_attributes (&decl, attrs, 0);
 
   decl = pushdecl (decl);
@@ -9228,6 +9422,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   old_decl = lookup_name_in_scope (DECL_NAME (decl1), current_scope);
   if (old_decl && TREE_CODE (old_decl) != FUNCTION_DECL)
     old_decl = NULL_TREE;
+
   current_function_prototype_locus = UNKNOWN_LOCATION;
   current_function_prototype_built_in = false;
   current_function_prototype_arg_types = NULL_TREE;
@@ -9358,11 +9553,21 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 		 "%qD is normally a non-static function", decl1);
     }
 
+  tree parms = current_function_arg_info->parms;
+  if (old_decl)
+    {
+      location_t origloc = DECL_SOURCE_LOCATION (old_decl);
+      warn_parm_array_mismatch (origloc, old_decl, parms);
+    }
+
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
 
   current_function_decl = pushdecl (decl1);
+
+  if (tree access = build_attr_access_from_parms (parms, false))
+    decl_attributes (&current_function_decl, access, 0, old_decl);
 
   push_scope ();
   declare_parm_level ();

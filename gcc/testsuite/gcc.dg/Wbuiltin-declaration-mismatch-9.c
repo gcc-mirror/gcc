@@ -10,3 +10,6 @@ void a (void)
 	  ""        /* { dg-warning "passing argument 2 of .sscanf. from incompatible pointer type" } */
 	  );
 }
+
+/* The scanf call may also trigger:
+   { dg-prune-output "-Wstringop-overflow" } */

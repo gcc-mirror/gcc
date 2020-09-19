@@ -1372,6 +1372,7 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool);
 extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
 extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
+extern void warn_parm_array_mismatch (location_t, tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and
@@ -1426,6 +1427,8 @@ extern tree find_tm_attribute (tree);
 extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
 extern const struct attribute_spec::exclusions attr_noreturn_exclusions[];
 extern tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
+extern tree build_attr_access_from_parms (tree, bool);
 
 /* In c-format.c.  */
 extern bool valid_format_string_type_p (tree);
@@ -1453,8 +1456,6 @@ extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
 extern tree braced_lists_to_strings (tree, tree);
-
-extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 
 #if CHECKING_P
 namespace selftest {

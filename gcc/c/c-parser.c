@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "c-family/name-hint.h"
 #include "tree-iterator.h"
+#include "tree-pretty-print.h"
 #include "memmodel.h"
 #include "c-family/known-headers.h"
 
@@ -2299,13 +2300,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  c_parser_skip_to_end_of_block_or_statement (parser);
 		  return;
 		}
-	      tree d = start_decl (declarator, specs, false,
-				   chainon (postfix_attrs,
-					    all_prefix_attrs));
-	      if (d
-		  && TREE_CODE (d) == FUNCTION_DECL
-		  && DECL_ARGUMENTS (d) == NULL_TREE
-		  && DECL_INITIAL (d) == NULL_TREE)
+
+	      location_t lastloc = UNKNOWN_LOCATION;
+	      tree attrs = chainon (postfix_attrs, all_prefix_attrs);
+	      tree d = start_decl (declarator, specs, false, attrs, &lastloc);
+	      if (d && TREE_CODE (d) == FUNCTION_DECL)
 		{
 		  /* Find the innermost declarator that is neither cdk_id
 		     nor cdk_attrs.  */
@@ -2334,10 +2333,18 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			gcc_unreachable ();
 		      }
 
-		  /* If it exists and is cdk_function, use its parameters.  */
+		  /* If it exists and is cdk_function declaration whose
+		     arguments have not been set yet, use its arguments.  */
 		  if (last_non_id_attrs
 		      && last_non_id_attrs->kind == cdk_function)
-		    DECL_ARGUMENTS (d) = last_non_id_attrs->u.arg_info->parms;
+		    {
+		      tree parms = last_non_id_attrs->u.arg_info->parms;
+		      if (DECL_ARGUMENTS (d) == NULL_TREE
+			  && DECL_INITIAL (d) == NULL_TREE)
+			DECL_ARGUMENTS (d) = parms;
+
+		      warn_parm_array_mismatch (lastloc, d, parms);
+		    }
 		}
 	      if (omp_declare_simd_clauses.exists ())
 		{
@@ -2366,7 +2373,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      if (d)
 		finish_decl (d, UNKNOWN_LOCATION, NULL_TREE,
 			     NULL_TREE, asm_name);
-	      
+
 	      if (c_parser_next_token_is_keyword (parser, RID_IN))
 		{
 		  if (d)
