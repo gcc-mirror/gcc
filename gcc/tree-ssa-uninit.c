@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -472,7 +473,8 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
      read_only.  */
   const bool save_always_executed = wlims.always_executed;
 
-  /* Map of attribute access specifications for function arguments.  */
+  /* Initialize a map of attribute access specifications for arguments
+     to the function function call.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
@@ -488,12 +490,17 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
 	continue;
 
       tree access_size = NULL_TREE;
-      attr_access *access = rdwr_idx.get (argno - 1);
+      const attr_access* access = rdwr_idx.get (argno - 1);
       if (access)
 	{
 	  if (access->mode == access_none
 	      || access->mode == access_write_only)
 	    continue;
+
+	  if (access->mode == access_deferred
+	      && !TYPE_READONLY (TREE_TYPE (argtype)))
+	    continue;
+
 	  if (save_always_executed && access->mode == access_read_only)
 	    /* Attribute read_only arguments imply read access.  */
 	    wlims.always_executed = true;
@@ -524,45 +531,48 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
       if (!argbase)
 	continue;
 
-      if (access)
+      if (access && access->mode != access_deferred)
 	{
-	  const char* const mode = (access->mode == access_read_only
-				    ? "read_only" : "read_write");
-	  char attrstr[80];
-	  int n = sprintf (attrstr, "access (%s, %u", mode, argno);
-	  if (access->sizarg < UINT_MAX)
-	    sprintf (attrstr + n, ", %u)", access->sizarg);
-	  else
-	    strcpy (attrstr + n, ")");
+	  const char* const access_str =
+	    TREE_STRING_POINTER (access->to_external_string ());
 
 	  if (fndecl)
 	    {
 	      location_t loc = DECL_SOURCE_LOCATION (fndecl);
-	      inform (loc, "in a call to %qD declared "
-		      "with attribute %<access (%s, %u)%> here",
-		      fndecl, mode, argno);
+	      inform (loc, "in a call to %qD declared with "
+		      "attribute %<%s%> here", fndecl, access_str);
 	    }
 	  else
 	    {
 	      /* Handle calls through function pointers.  */
 	      location_t loc = gimple_location (stmt);
 	      inform (loc, "in a call to %qT declared with "
-		      "attribute %<access (%s, %u)%>",
-		      fntype, mode, argno);
+		      "attribute %<%s%>", fntype, access_str);
 	    }
-	}
-      else if (fndecl)
-	{
-	  location_t loc = DECL_SOURCE_LOCATION (fndecl);
-	  inform (loc, "by argument %u of type %qT to %qD declared here",
-		  argno, argtype, fndecl);
 	}
       else
 	{
-	  /* Handle calls through function pointers.  */
-	  location_t loc = gimple_location (stmt);
-	  inform (loc, "by argument %u of type %qT to %qT",
-		  argno, argtype, fntype);
+	  /* For a declaration with no relevant attribute access create
+	     a dummy object and use the formatting function to avoid
+	     having to complicate things here.  */
+	  attr_access ptr_access = { };
+	  if (!access)
+	    access = &ptr_access;
+	  const std::string argtypestr = access->array_as_string (argtype);
+	  if (fndecl)
+	    {
+	      location_t loc (DECL_SOURCE_LOCATION (fndecl));
+	      inform (loc, "by argument %u of type %<%s%> to %qD "
+		      "declared here",
+		      argno, argtypestr.c_str (), fndecl);
+	    }
+	  else
+	    {
+	      /* Handle calls through function pointers.  */
+	      location_t loc (gimple_location (stmt));
+	      inform (loc, "by argument %u of type %<%s%> to %qT",
+		      argno, argtypestr.c_str (), fntype);
+	    }
 	}
 
       if (DECL_P (argbase))
