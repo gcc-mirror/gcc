@@ -554,7 +554,7 @@ map_arguments (tree parms, tree args)
 	TREE_PURPOSE (p) = TMPL_ARG (args, level, index);
       }
     else
-      TREE_PURPOSE (p) = TREE_VALUE (p);
+      TREE_PURPOSE (p) = template_parm_to_arg (p);
 
   return parms;
 }
@@ -1485,7 +1485,7 @@ finish_shorthand_constraint (tree decl, tree constr)
 
   /* Get the argument and overload used for the requirement
      and adjust it if we're going to expand later.  */
-  tree arg = template_parm_to_arg (build_tree_list (NULL_TREE, decl));
+  tree arg = template_parm_to_arg (decl);
   if (apply_to_each_p && declared_pack_p)
     arg = PACK_EXPANSION_PATTERN (TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg), 0));
 
