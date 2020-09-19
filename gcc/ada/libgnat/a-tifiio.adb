@@ -140,21 +140,6 @@
 --  solution. The downside however may be a too limited set of acceptable
 --  fixed point types.
 
---  Extra Precision
---  ---------------
-
---  Using a scaled divide which truncates and returns a remainder R,
---  another E trailing digits can be calculated by computing the value
---  (R * (10.0**E)) / Z using another scaled divide. This procedure
---  can be repeated to compute an arbitrary number of digits in linear
---  time and storage. The last scaled divide should be rounded, with
---  a possible carry propagating to the more significant digits, to
---  ensure correct rounding of the unit in the last place.
-
---  An extension of this technique is to limit the value of Q to 9 decimal
---  digits, since 32-bit integers can be much more efficient than 64-bit
---  integers to output.
-
 with Interfaces;                        use Interfaces;
 with System.Arith_64;                   use System.Arith_64;
 with System.Img_Real;                   use System.Img_Real;
@@ -259,6 +244,20 @@ package body Ada.Text_IO.Fixed_IO is
    --  (-2.0**63) / -9 is greater than 10**18. In these cases there is room
    --  in the denominator for the extra decimal scaling required, so case (3)
    --  will not overflow.
+
+   --  Extra Precision
+
+   --  Using a scaled divide which truncates and returns a remainder R,
+   --  another E trailing digits can be calculated by computing the value
+   --  (R * (10.0**E)) / Z using another scaled divide. This procedure
+   --  can be repeated to compute an arbitrary number of digits in linear
+   --  time and storage. The last scaled divide should be rounded, with
+   --  a possible carry propagating to the more significant digits, to
+   --  ensure correct rounding of the unit in the last place.
+
+   --  A variant of this technique is to limit the value of Q to 9 decimal
+   --  digits, since 32-bit integers can be much more efficient than 64-bit
+   --  integers to output.
 
    pragma Assert (System.Fine_Delta >= 2.0**(-63));
    pragma Assert (Num'Small in 2.0**(-80) .. 2.0**80);
