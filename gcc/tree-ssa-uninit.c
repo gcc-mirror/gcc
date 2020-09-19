@@ -562,7 +562,7 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
 	  if (fndecl)
 	    {
 	      location_t loc (DECL_SOURCE_LOCATION (fndecl));
-	      inform (loc, "by argument %u of type %<%s%> to %qD "
+	      inform (loc, "by argument %u of type %s to %qD "
 		      "declared here",
 		      argno, argtypestr.c_str (), fndecl);
 	    }
@@ -570,7 +570,7 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
 	    {
 	      /* Handle calls through function pointers.  */
 	      location_t loc (gimple_location (stmt));
-	      inform (loc, "by argument %u of type %<%s%> to %qT",
+	      inform (loc, "by argument %u of type %s to %qT",
 		      argno, argtypestr.c_str (), fntype);
 	    }
 	}

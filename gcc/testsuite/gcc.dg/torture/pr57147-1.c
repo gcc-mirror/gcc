@@ -2,11 +2,11 @@
 /* { dg-options "-fdump-tree-optimized" } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 
-struct __jmp_buf_tag {};
+struct __jmp_buf_tag { int mask; };
 typedef struct __jmp_buf_tag jmp_buf[1];
 extern int _setjmp (struct __jmp_buf_tag __env[1]);
 
-jmp_buf g_return_jmp_buf;
+extern jmp_buf g_return_jmp_buf;
 
 void SetNaClSwitchExpectations (void)
 {

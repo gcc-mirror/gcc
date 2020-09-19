@@ -42,8 +42,8 @@ void call_rdwrp1_rdwrr2_O0 (void)
   int32_t x[1] = { };
 
   rdwrp1_rdwrr2 (x, x[0]);
-  rdwrp1_rdwrr2 (x, x[1]);        // { dg-warning "writing 4 bytes into a region of size 0" }
-  rdwrp1_rdwrr2 (x + 1, x[0]);    // { dg-warning "writing 4 bytes into a region of size 0" }
+  rdwrp1_rdwrr2 (x, x[1]);        // { dg-warning "accessing 4 bytes in a region of size 0" }
+  rdwrp1_rdwrr2 (x + 1, x[0]);    // { dg-warning "accessing 4 bytes in a region of size 0" }
 }
 
 void call_wop1_wor2_O0 (void)
@@ -84,12 +84,12 @@ void call_rdwrp1_rdwrr2_O1 (void)
   int32_t &r2 = *(int32_t*)((char*)p1 + 1);
 
   rdwrp1_rdwrr2 (x, x[0]);
-  rdwrp1_rdwrr2 (x, x[1]);        // { dg-warning "writing 4 bytes into a region of size 0" }
-  rdwrp1_rdwrr2 (x + 1, x[0]);    // { dg-warning "writing 4 bytes into a region of size 0" }
+  rdwrp1_rdwrr2 (x, x[1]);        // { dg-warning "accessing 4 bytes in a region of size 0" }
+  rdwrp1_rdwrr2 (x + 1, x[0]);    // { dg-warning "accessing 4 bytes in a region of size 0" }
 
   rdwrp1_rdwrr2 (p0, r0);
-  rdwrp1_rdwrr2 (p0, r2);         // { dg-warning "writing 4 bytes into a region of size 2" }
-  rdwrp1_rdwrr2 (p1, r0);         // { dg-warning "writing 4 bytes into a region of size 3" }
+  rdwrp1_rdwrr2 (p0, r2);         // { dg-warning "accessing 4 bytes in a region of size 2" }
+  rdwrp1_rdwrr2 (p1, r0);         // { dg-warning "accessing 4 bytes in a region of size 3" }
 }
 
 void call_wop1_wor2_O1 (void)
