@@ -2630,7 +2630,8 @@ satisfy_atom (tree t, tree args, subst_info info)
     result = cxx_constant_value (result);
   else
     {
-      result = maybe_constant_value (result);
+      result = maybe_constant_value (result, NULL_TREE,
+				     /*manifestly_const_eval=*/true);
       if (!TREE_CONSTANT (result))
 	result = error_mark_node;
     }
