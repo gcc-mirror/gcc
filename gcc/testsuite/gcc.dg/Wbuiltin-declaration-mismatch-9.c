@@ -11,5 +11,5 @@ void a (void)
 	  );
 }
 
-/* The scanf call may also trigger:
-   { dg-prune-output "-Wstringop-overflow" } */
+/* The invalid scanf call may also trigger:
+   { dg-prune-output "accessing 4 bytes in a region of size 1" } */
