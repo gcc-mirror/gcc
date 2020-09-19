@@ -70,7 +70,6 @@ gomp_barrier_wait_last (gomp_barrier_t *bar)
 void
 gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
 {
-  asm ("bar.sync 1, %0;" : : "r" (32 * 8/*bar->total*/));
   if (bar->total > 1)
     asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
 }
