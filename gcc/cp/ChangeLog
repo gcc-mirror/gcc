@@ -1,3 +1,13 @@
+2020-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/97118
+	* decl.c (complete_vars): Only call layout_var_decl if completing
+	the type succeeded.
+
+2020-09-18  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (complete_vars): Call layout_var_decl.
+
 2020-09-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96409

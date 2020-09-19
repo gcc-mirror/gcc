@@ -1,3 +1,86 @@
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_csneg): New.
+	(*thumb2_negscc): Don't match if TARGET_COND_ARITH.
+	* config/arm/arm.md (*if_neg_move): Don't match if TARGET_COND_ARITH.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_csinc): New.
+	(*thumb2_cond_arith): Generate CINC where possible.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/arm.h (TARGET_COND_ARITH): New macro.
+	* config/arm/arm.c (arm_have_conditional_execution): Return false if
+	TARGET_COND_ARITH before reload.
+	* config/arm/predicates.md (arm_comparison_operation): Returns true if
+	comparing CC_REGNUM with constant zero.
+	* config/arm/thumb2.md (*thumb2_csinv): New.
+	(*thumb2_movcond): Don't match if TARGET_COND_ARITH.
+
+2020-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91957
+	* ira.c (ira_setup_eliminable_regset): Skip the special elimination
+	handling of the hard frame pointer if the hard frame pointer is fixed.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97081
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Use the
+	precision of the shifted operand to determine the mask.
+
+2020-09-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Update comment.
+	Cast to long when printing values formatted as long.
+	Support 'd', 'e', 'f' and 'g' modifiers.
+	Extract operand value with a single operation for all modifiers.
+	* doc/extend.texi (msp430Operandmodifiers): New.
+
+2020-09-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (increment_stack): Mark insns which increment
+	the stack as frame_related.
+	(msp430_expand_prologue): Add comments.
+	(msp430_expand_epilogue): Mark insns which decrement
+	the stack as frame_related.
+	Add reg_note to stack pop insns describing position of register
+	variables on the stack.
+
+2020-09-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-tree.c (execute_omp_gcn): Delete.
+	(make_pass_omp_gcn): Delete.
+	* config/gcn/t-gcn-hsa (PASSES_EXTRA): Delete.
+	* config/gcn/gcn-passes.def: Removed.
+
+2020-09-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* cfgloop.h (nb_iter_bound): Reword comment describing is_exit.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97095
+	* tree-vect-loop.c (vectorizable_live_operation): Get
+	the SLP vector type from the correct object.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97089
+	* tree-ssa-sccvn.c (visit_nary_op): Do not replace unsigned
+	divisions.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97098
+	* tree-vect-slp.c (vect_bb_slp_mark_live_stmts): Do not
+	recurse to children when all stmts were already visited.
+
 2020-09-17  Sergei Trofimovich  <siarheit@google.com>
 
 	* profile.c (sort_hist_values): Clarify hist format:

@@ -1,3 +1,56 @@
+2020-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97105
+	* g++.dg/template/pr97105.C: New test.
+
+2020-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/strdup-1.c: New test.
+	* gcc.dg/analyzer/strndup-1.c: New test.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* gcc.target/arm/csneg.c: New test.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* gcc.target/arm/csinc-1.c: New test.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* gcc.target/arm/csinv-1.c: New test.
+
+2020-09-18  H.J. Lu  <hjl.tools@gmail.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91957
+	* g++.target/i386/pr97054.C: New test.
+	* gcc.target/i386/pr82673.c: Remove redundant extra message.
+
+2020-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97081
+	* gcc.dg/vect/pr97081-2.c: New test.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97081
+	* gcc.dg/vect/pr97081.c: New testcase.
+
+2020-09-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/operand-modifiers.c: Extend test to handle new
+	modifiers.
+	* gcc.target/msp430/operand-modifiers-bad.c: New test.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97095
+	* gfortran.dg/pr97095.f: New testcase.
+
 2020-09-17  Tom de Vries  <tdevries@suse.de>
 
 	* lib/target-supports.exp (check_effective_target_non_strict_prototype):
