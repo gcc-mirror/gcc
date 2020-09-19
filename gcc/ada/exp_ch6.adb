@@ -5499,7 +5499,7 @@ package body Exp_Ch6 is
                      (Expression (Original_Node (Ret_Obj_Decl)))
 
                   --  It is a BIP object declaration that displaces the pointer
-                  --  to the object to reference a convered interface type.
+                  --  to the object to reference a converted interface type.
 
                   or else
                     Present (Unqual_BIP_Iface_Function_Call
