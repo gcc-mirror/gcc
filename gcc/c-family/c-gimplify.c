@@ -217,9 +217,10 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 		   void *data, walk_tree_fn func, walk_tree_lh lh)
 {
   tree blab, clab;
-  tree exit = NULL;
+  tree entry = NULL, exit = NULL, t;
   tree stmt_list = NULL;
-  tree debug_begin = NULL;
+  location_t cond_locus = expr_loc_or_loc (cond, start_locus);
+  location_t incr_locus = expr_loc_or_loc (incr, start_locus);
 
   protected_set_expr_location_if_unset (incr, start_locus);
 
@@ -232,35 +233,68 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   walk_tree_1 (&body, func, data, NULL, lh);
   *walk_subtrees = 0;
 
-  if (MAY_HAVE_DEBUG_MARKER_STMTS
-      && (!cond || !integer_zerop (cond)))
+  /* If condition is zero don't generate a loop construct.  */
+  if (cond && integer_zerop (cond))
     {
-      debug_begin = build0 (DEBUG_BEGIN_STMT, void_type_node);
-      SET_EXPR_LOCATION (debug_begin, expr_loc_or_loc (cond, start_locus));
+      if (cond_is_first)
+	{
+	  t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
+			  get_bc_label (bc_break));
+	  append_to_statement_list (t, &stmt_list);
+	}
+    }
+  else
+    {
+      /* Expand to gotos.  */
+      tree top = build1 (LABEL_EXPR, void_type_node,
+			 create_artificial_label (start_locus));
+
+      /* If we have an exit condition, then we build an IF with gotos either
+	 out of the loop, or to the top of it.  If there's no exit condition,
+	 then we just build a jump back to the top.  */
+      exit = build1 (GOTO_EXPR, void_type_node, LABEL_EXPR_LABEL (top));
+
+      if (cond && !integer_nonzerop (cond))
+	{
+	  /* Canonicalize the loop condition to the end.  This means
+	     generating a branch to the loop condition.  Reuse the
+	     continue label, if there is no incr expression.  */
+	  if (cond_is_first)
+	    {
+	      if (incr)
+		{
+		  entry = build1 (LABEL_EXPR, void_type_node,
+				  create_artificial_label (start_locus));
+		  t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
+				  LABEL_EXPR_LABEL (entry));
+		}
+	      else
+		t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
+				get_bc_label (bc_continue));
+	      append_to_statement_list (t, &stmt_list);
+	    }
+
+	  t = build1 (GOTO_EXPR, void_type_node, get_bc_label (bc_break));
+	  exit = fold_build3_loc (cond_locus,
+				  COND_EXPR, void_type_node, cond, exit, t);
+	}
+      else
+	{
+	  /* For the backward-goto's location of an unconditional loop
+	     use the beginning of the body, or, if there is none, the
+	     top of the loop.  */
+	  location_t loc = expr_loc_or_loc (expr_first (body),
+					    start_locus);
+	  SET_EXPR_LOCATION (exit, loc);
+	}
+      append_to_statement_list (top, &stmt_list);
     }
 
-  if (cond && TREE_CODE (cond) != INTEGER_CST)
-    {
-      /* If COND is constant, don't bother building an exit.  If it's false,
-	 we won't build a loop.  If it's true, any exits are in the body.  */
-      location_t cloc = expr_loc_or_loc (cond, start_locus);
-      exit = build1_loc (cloc, GOTO_EXPR, void_type_node,
-			 get_bc_label (bc_break));
-      exit = fold_build3_loc (cloc, COND_EXPR, void_type_node, cond,
-			      build_empty_stmt (cloc), exit);
-    }
-
-  if (exit && cond_is_first)
-    {
-      append_to_statement_list (debug_begin, &stmt_list);
-      debug_begin = NULL_TREE;
-      append_to_statement_list (exit, &stmt_list);
-    }
   append_to_statement_list (body, &stmt_list);
   finish_bc_block (&stmt_list, bc_continue, clab);
   if (incr)
     {
-      if (MAY_HAVE_DEBUG_MARKER_STMTS)
+      if (MAY_HAVE_DEBUG_MARKER_STMTS && incr_locus != UNKNOWN_LOCATION)
 	{
 	  tree d = build0 (DEBUG_BEGIN_STMT, void_type_node);
 	  SET_EXPR_LOCATION (d, expr_loc_or_loc (incr, start_locus));
@@ -268,35 +302,15 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 	}
       append_to_statement_list (incr, &stmt_list);
     }
-  append_to_statement_list (debug_begin, &stmt_list);
-  if (exit && !cond_is_first)
-    append_to_statement_list (exit, &stmt_list);
+  append_to_statement_list (entry, &stmt_list);
 
-  if (!stmt_list)
-    stmt_list = build_empty_stmt (start_locus);
-
-  tree loop;
-  if (cond && integer_zerop (cond))
+  if (MAY_HAVE_DEBUG_MARKER_STMTS && cond_locus != UNKNOWN_LOCATION)
     {
-      if (cond_is_first)
-	loop = fold_build3_loc (start_locus, COND_EXPR,
-				void_type_node, cond, stmt_list,
-				build_empty_stmt (start_locus));
-      else
-	loop = stmt_list;
+      tree d = build0 (DEBUG_BEGIN_STMT, void_type_node);
+      SET_EXPR_LOCATION (d, cond_locus);
+      append_to_statement_list (d, &stmt_list);
     }
-  else
-    {
-      location_t loc = start_locus;
-      if (!cond || integer_nonzerop (cond))
-	loc = EXPR_LOCATION (expr_first (body));
-      if (loc == UNKNOWN_LOCATION)
-	loc = start_locus;
-      loop = build1_loc (loc, LOOP_EXPR, void_type_node, stmt_list);
-    }
-
-  stmt_list = NULL;
-  append_to_statement_list (loop, &stmt_list);
+  append_to_statement_list (exit, &stmt_list);
   finish_bc_block (&stmt_list, bc_break, blab);
   if (!stmt_list)
     stmt_list = build_empty_stmt (start_locus);
