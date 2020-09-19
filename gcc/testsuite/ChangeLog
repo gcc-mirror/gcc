@@ -1,3 +1,12 @@
+2020-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97053
+	* gcc.dg/store_merging_31.c: New test.
+	* gcc.dg/store_merging_32.c: New test.
+
 2020-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
