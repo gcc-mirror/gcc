@@ -156,7 +156,7 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
       fprintf (out, "      Base %i:", (int)i);
       print_generic_expr (dump_file, n->base);
       fprintf (out, " (alias set %i)\n",
-	       get_alias_set (n->base));
+	       n->base ? get_alias_set (n->base) : 0);
       if (n->every_ref)
 	{
 	  fprintf (out, "      Every ref\n");
@@ -169,7 +169,7 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
 	  fprintf (out, "        Ref %i:", (int)j);
 	  print_generic_expr (dump_file, r->ref);
 	  fprintf (out, " (alias set %i)\n",
-		   get_alias_set (r->ref));
+		   r->ref ? get_alias_set (r->ref) : 0);
 	}
     }
 }
