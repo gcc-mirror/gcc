@@ -1,3 +1,85 @@
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82608
+	PR middle-end/94195
+	PR c/50584
+	PR middle-end/84051
+	* c-c++-common/Warray-bounds.c: Adjust.
+	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: Adjust.
+	* gcc.dg/Warray-bounds-63.c: New test.
+	* gcc.dg/Warray-bounds-64.c: New test.
+	* gcc.dg/Warray-bounds-65.c: New test.
+	* gcc.dg/Warray-bounds-66.c: New test.
+	* gcc.dg/Warray-bounds-67.c: New test.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Disable new expected
+	warnings.
+	* g++.dg/ext/attr-access.C: Update text of expected warnings.
+	* gcc.dg/Wstringop-overflow-23.c: Same.
+	* gcc.dg/Wstringop-overflow-24.c: Same.
+	* gcc.dg/attr-access-none.c: Same.
+	* gcc.dg/dfp/composite-type.c: Prune expected warnings.
+	* gcc.dg/torture/pr57147-1.c: Add a member to an otherwise empty
+	struct to avoid a warning.
+	* gcc.dg/torture/pr57147-3.c: Same.
+	* gcc.dg/Warray-bounds-30.c: Adjust.
+	* gcc.dg/attr-access-none.c: Same.
+	* gcc.dg/Wstringop-overflow-40.c: New test.
+	* gcc.dg/attr-access-2.c: New test.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/uninit-37.c: New test.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* gcc.dg/attr-access-read-write-2.c: Adjust text of expected message.
+	* c-c++-common/Warray-bounds-6.c: Correct C++ declaration, adjust
+	text of expected diagnostics.
+	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: Prune expected warning.
+	* gcc.dg/Warray-parameter-2.c: New test.
+	* gcc.dg/Warray-parameter-3.c: New test.
+	* gcc.dg/Warray-parameter-4.c: New test.
+	* gcc.dg/Warray-parameter-5.c: New test.
+	* gcc.dg/Warray-parameter.c: New test.
+	* gcc.dg/Wvla-parameter-2.c: New test.
+	* gcc.dg/Wvla-parameter-3.c: New test.
+	* gcc.dg/Wvla-parameter.c: New test.
+	* gcc.dg/Wvla-parameter-4.c: New file.
+
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/gomp/block-7.c: Update expected error message wording.
+
+2020-09-19  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr97036.f90: New test.
+
+2020-09-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96861
+	* gcc.target/i386/pr96861.c: New test.
+
+2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96531
+	PR c++/97103
+	* g++.dg/cpp2a/concepts-ttp2.C: New test.
+	* g++.dg/cpp2a/concepts-variadic1.C: New test.
+
+2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97051
+	* g++.dg/cpp2a/is-constant-evaluated11.C: New test.
+
+2020-09-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr95021-3.c: Add -mtune=generic.
+
 2020-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/97105

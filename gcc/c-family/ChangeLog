@@ -1,3 +1,79 @@
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* c-common.h (warn_parm_array_mismatch): Declare new function.
+	(has_attribute): Move declaration of an existing function.
+	(build_attr_access_from_parms): Declare new function.
+	* c-warn.c (parm_array_as_string): Define new function.
+	(plus_one):  Define new function.
+	(warn_parm_ptrarray_mismatch): Define new function.
+	(warn_parm_array_mismatch):  Define new function.
+	(vla_bound_parm_decl): New function.
+	* c.opt (-Warray-parameter, -Wvla-parameter): New options.
+	* c-pretty-print.c (pp_c_type_qualifier_list): Don't print array type
+	qualifiers here...
+	(c_pretty_printer::direct_abstract_declarator): ...but instead print
+	them in brackets here.  Also print [static].  Strip extraneous
+	expressions from VLA bounds.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* c-attribs.c (c_common_attribute_table): Add "arg spec" attribute.
+	(handle_argspec_attribute): New function.
+	(get_argument, get_argument_type): New functions.
+	(append_access_attrs): Add overload.  Handle internal attribute
+	representation in addition to external.
+	(handle_access_attribute): Handle internal attribute representation
+	in addition to external.
+	(build_attr_access_from_parms): New function.
+
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-gimplify.c (genericize_c_loop): Rewrite to match
+	c_finish_loop in c-typeck.c.
+
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-common.c (c_block_may_fallthrough): New, split from
+	cxx_block_may_fallthrough in the cp front end.
+	(c_common_init_ts): Move handling of loop and switch-related
+	statements here from the cp front end.
+	* c-common.def (FOR_STMT, WHILE_STMT, DO_STMT): Move here from
+	cp front end.
+	(BREAK_STMT, CONTINUE_STMT, SWITCH_STMT): Likewise.
+	* c-common.h (c_block_may_fallthru): Declare.
+	(bc_state_t): Move here from cp front end.
+	(save_bc_state, restore_bc_state): Declare.
+	(c_genericize_control_stmt): Declare.
+	(WHILE_COND, WHILE_BODY): Likewise.
+	(DO_COND, DO_BODY): Likewise.
+	(FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, FOR_SCOPE): Likewise.
+	(SWITCH_STMT_COND, SWITCH_STMT_BODY): Likewise.
+	(SWITCH_STMT_TYPE, SWITCH_STMT_SCOPE): Likewise.
+	(SWITCH_STMT_ALL_CASES_P, SWITCH_STMT_NO_BREAK_P): Likewise.
+	(LABEL_DECL_BREAK, LABEL_DECL_CONTINUE): Likewise.
+	* c-dump.c (dump_stmt): Copy from cp front end.
+	(c_dump_tree): Move code to handle structured loop and switch
+	tree nodes here from cp front end.
+	* c-gimplify.c: Adjust includes.
+	(enum bc_t, bc_label, begin_bc_block, finish_bc_block): Move from
+	cp front end.
+	(save_bc_state, restore_bc_state): New functions using old code
+	from cp front end.
+	(get_bc_label, expr_loc_or_loc): Move from cp front end.
+	(genericize_c_loop): Move from cp front end.
+	(genericize_for_stmt, genericize_while_stmt): Likewise.
+	(genericize_do_stmt, genericize_switch_stmt): Likewise.
+	(genericize_continue_stmt, genericize_break_stmt): Likewise.
+	(genericize_omp_for_stmt): Likewise.
+	(c_genericize_control_stmt): New function using code split from
+	cp front end.
+	(c_genericize_control_r): New.
+	(c_genericize): Call walk_tree with c_genericize_control_r.
+	* c-pretty-print.c (c_pretty_printer::statement): Move code to handle
+	structured loop and switch tree nodes here from cp front end.
+
 2020-09-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c/80076

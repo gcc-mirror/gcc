@@ -1,3 +1,13 @@
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* interface.c (gfc_compare_actual_formal): Add assertion after
+	main processing loop to silence maybe-uninitialized error.
+
+2020-09-19  Harald Anlauf  <anlauf@gmx.de>
+
+	* symbol.c (gfc_check_conflict): Allow ELEMENTAL RECURSIVE
+	procedure prefix for -std=f2018.
+
 2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/96041
