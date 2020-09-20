@@ -103,12 +103,6 @@ along with GCC; see the file COPYING3.  If not see
    %{shared:%{mt|pthread:-lpthread}}"
 #endif
 
-/* The libgcc_stub.a and milli.a libraries need to come last.  */
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "\
-  %G %{!nolibc:%L} %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}\
-  milli.a%s}}"
-
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
 
@@ -335,8 +329,12 @@ do {								\
    %{static:crtbeginT%O%s} %{!static:%{!shared:crtbegin%O%s} \
    %{shared:crtbeginS%O%s}}"
 #endif
+
+/* The libgcc_stub.a and milli.a libraries must come last.  We need
+   to link with these libraries whenever start files are needed.  */
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
+#define ENDFILE_SPEC \
+  "%{!shared:crtend%O%s libgcc_stub.a%s} %{shared:crtendS%O%s} milli.a%s"
 
 /* Since HP uses the .init and .fini sections for array initializers
    and finalizers, we need different defines for INIT_SECTION_ASM_OP
