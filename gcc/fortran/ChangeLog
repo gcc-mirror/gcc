@@ -1,3 +1,21 @@
+2020-09-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96041
+	PR fortran/93423
+	* decl.c (gfc_match_submod_proc): Avoid later double-free
+	in the error case.
+
+2020-09-19  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93423
+	* resolve.c (resolve_symbol): Avoid NULL pointer dereference.
+
 2020-07-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
