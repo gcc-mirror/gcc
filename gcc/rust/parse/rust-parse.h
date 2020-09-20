@@ -333,6 +333,10 @@ private:
 		    std::vector<AST::Attribute> outer_attrs,
 		    ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::CompoundAssignmentExpr>
+  parse_compound_assignment_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
+			 std::vector<AST::Attribute> outer_attrs, AST::CompoundAssignmentExpr::ExprType expr_type,
+			 ParseRestrictions restrictions = ParseRestrictions ());
+  std::unique_ptr<AST::CompoundAssignmentExpr>
   parse_plus_assig_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
 			 std::vector<AST::Attribute> outer_attrs,
 			 ParseRestrictions restrictions = ParseRestrictions ());

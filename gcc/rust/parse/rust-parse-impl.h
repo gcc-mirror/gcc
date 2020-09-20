@@ -12023,55 +12023,86 @@ Parser<ManagedTokenSource>::left_denotation (
     case PLUS_EQ:
       /* plus-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_plus_assig_expr (tok, std::move (left),
-				    std::move (outer_attrs), restrictions);
+      /*return parse_plus_assig_expr (tok, std::move (left),
+				    std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (tok, std::move (left),
+					     std::move (outer_attrs),
+					     AST::CompoundAssignmentExpr::ADD,
+					     restrictions);
     case MINUS_EQ:
       /* minus-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_minus_assig_expr (tok, std::move (left),
-				     std::move (outer_attrs), restrictions);
+      /*return parse_minus_assig_expr (tok, std::move (left),
+				     std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::SUBTRACT, restrictions);
     case ASTERISK_EQ:
       /* multiply-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_mult_assig_expr (tok, std::move (left),
-				    std::move (outer_attrs), restrictions);
+      /*return parse_mult_assig_expr (tok, std::move (left),
+				    std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::MULTIPLY, restrictions);
     case DIV_EQ:
       /* division-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_div_assig_expr (tok, std::move (left),
-				   std::move (outer_attrs), restrictions);
+      /*return parse_div_assig_expr (tok, std::move (left),
+				   std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::DIVIDE, restrictions);
     case PERCENT_EQ:
       /* modulo-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_mod_assig_expr (tok, std::move (left),
-				   std::move (outer_attrs), restrictions);
+      /*return parse_mod_assig_expr (tok, std::move (left),
+				   std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::MODULUS, restrictions);
     case AMP_EQ:
       /* bitwise and-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_and_assig_expr (tok, std::move (left),
-				   std::move (outer_attrs), restrictions);
+      /*return parse_and_assig_expr (tok, std::move (left),
+				   std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::BITWISE_AND, restrictions);
     case PIPE_EQ:
       /* bitwise or-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_or_assig_expr (tok, std::move (left),
-				  std::move (outer_attrs), restrictions);
+      /*return parse_or_assig_expr (tok, std::move (left),
+				  std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::BITWISE_OR, restrictions);
     case CARET_EQ:
       /* bitwise xor-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_xor_assig_expr (tok, std::move (left),
-				   std::move (outer_attrs), restrictions);
+      /*return parse_xor_assig_expr (tok, std::move (left),
+				   std::move (outer_attrs), restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::BITWISE_XOR, restrictions);
     case LEFT_SHIFT_EQ:
       /* left shift-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_left_shift_assig_expr (tok, std::move (left),
+      /*return parse_left_shift_assig_expr (tok, std::move (left),
 					  std::move (outer_attrs),
-					  restrictions);
+					  restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::LEFT_SHIFT, restrictions);
     case RIGHT_SHIFT_EQ:
       /* right shift-assignment expression - binary infix (note right-to-left
        * associativity) */
-      return parse_right_shift_assig_expr (tok, std::move (left),
+      /*return parse_right_shift_assig_expr (tok, std::move (left),
 					   std::move (outer_attrs),
-					   restrictions);
+					   restrictions);*/
+      return parse_compound_assignment_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::CompoundAssignmentExpr::RIGHT_SHIFT, restrictions);
     case DOT_DOT:
       /* range exclusive expression - binary infix (no associativity)
        * either "range" or "range from" */
@@ -12716,6 +12747,67 @@ Parser<ManagedTokenSource>::parse_assig_expr (
 
   return std::unique_ptr<AST::AssignmentExpr> (
     new AST::AssignmentExpr (std::move (left), std::move (right), locus));
+}
+
+/* Returns the left binding power for the given CompoundAssignmentExpr type.
+ * TODO make constexpr? Would that even do anything useful? */
+inline binding_powers
+get_lbp_for_compound_assignment_expr (
+  AST::CompoundAssignmentExpr::ExprType expr_type)
+{
+  switch (expr_type)
+    {
+    case AST::CompoundAssignmentExpr::ADD:
+      return LBP_PLUS;
+    case AST::CompoundAssignmentExpr::SUBTRACT:
+      return LBP_MINUS;
+    case AST::CompoundAssignmentExpr::MULTIPLY:
+      return LBP_MUL;
+    case AST::CompoundAssignmentExpr::DIVIDE:
+      return LBP_DIV;
+    case AST::CompoundAssignmentExpr::MODULUS:
+      return LBP_MOD;
+    case AST::CompoundAssignmentExpr::BITWISE_AND:
+      return LBP_AMP;
+    case AST::CompoundAssignmentExpr::BITWISE_OR:
+      return LBP_PIPE;
+    case AST::CompoundAssignmentExpr::BITWISE_XOR:
+      return LBP_CARET;
+    case AST::CompoundAssignmentExpr::LEFT_SHIFT:
+      return LBP_L_SHIFT;
+    case AST::CompoundAssignmentExpr::RIGHT_SHIFT:
+      return LBP_R_SHIFT;
+    default:
+      // WTF? should not happen, this is an error
+      rust_error_at (
+	Location (),
+	"could not get LBP for CompoundAssignmentExpr - unknown ExprType!");
+      return LBP_PLUS;
+    }
+}
+
+// Parses a compound assignment expression (with Pratt parsing).
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::CompoundAssignmentExpr>
+Parser<ManagedTokenSource>::parse_compound_assignment_expr (
+  const_TokenPtr, std::unique_ptr<AST::Expr> left, std::vector<AST::Attribute>,
+  AST::CompoundAssignmentExpr::ExprType expr_type,
+  ParseRestrictions restrictions)
+{
+  // parse RHS (as tok has already been consumed in parse_expression)
+  std::unique_ptr<AST::Expr> right
+    = parse_expr (get_lbp_for_compound_assignment_expr (expr_type) - 1,
+		  std::vector<AST::Attribute> (), restrictions);
+  if (right == nullptr)
+    return nullptr;
+  // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
+
+  // TODO: check types. actually, do so during semantic analysis
+  Location locus = left->get_locus_slow ();
+
+  return std::unique_ptr<AST::CompoundAssignmentExpr> (
+    new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
+				     expr_type, locus));
 }
 
 // Parses a binary add-assignment expression (with Pratt parsing).
