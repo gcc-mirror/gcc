@@ -872,6 +872,18 @@ Maximum size of a single store merging region in bytes.
 Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) IntegerRange(1, 65536) Param Optimization
 The maximum ratio between array size and switch branches for a switch conversion to take place.
 
+-param=modref-max-bases=
+Common Joined UInteger Var(param_modref_max_bases) Init(32)
+Maximum number of bases stored in each modref tree.
+
+-param=modref-max-refs=
+Common Joined UInteger Var(param_modref_max_refs) Init(16)
+Maximum number of refs stored in each modref tree.
+
+-param=modref-max-tests=
+Common Joined UInteger Var(param_modref_max_tests) Init(64)
+Maximum number of tests perofmed by modref query
+
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
 Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs.

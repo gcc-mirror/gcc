@@ -737,7 +737,7 @@ get_deref_alias_set (tree t)
    adjusted to point to the outermost component reference that
    can be used for assigning an alias set.  */
  
-static tree
+tree
 reference_alias_ptr_type_1 (tree *t)
 {
   tree inner;
