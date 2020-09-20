@@ -200,8 +200,8 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
 #endif
 
 	// new implementation that should be better
-  lexer.split_current_token (RIGHT_ANGLE, RIGHT_ANGLE);
-  lexer.skip_token ();
+	lexer.split_current_token (RIGHT_ANGLE, RIGHT_ANGLE);
+	lexer.skip_token ();
 	return true;
       }
       case GREATER_OR_EQUAL: {
@@ -216,9 +216,9 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
 #endif
 
 	// new implementation that should be better
-  lexer.split_current_token (RIGHT_ANGLE, EQUAL);
-  lexer.skip_token ();
-  return true;
+	lexer.split_current_token (RIGHT_ANGLE, EQUAL);
+	lexer.skip_token ();
+	return true;
       }
       case RIGHT_SHIFT_EQ: {
 #if 0
@@ -232,9 +232,9 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
 #endif
 
 	// new implementation that should be better
-  lexer.split_current_token (RIGHT_ANGLE, GREATER_OR_EQUAL);
-  lexer.skip_token ();
-  return true;
+	lexer.split_current_token (RIGHT_ANGLE, GREATER_OR_EQUAL);
+	lexer.skip_token ();
+	return true;
       }
     default:
       rust_error_at (tok->get_locus (),
@@ -379,11 +379,12 @@ Parser<ManagedTokenSource>::left_binding_power (const_TokenPtr token)
     case RIGHT_SHIFT_EQ:
       return LBP_R_SHIFT_ASSIG;
 
-    // HACK: float literal due to lexer misidentifying a dot then an integer as
-    // a float
+    /* HACK: float literal due to lexer misidentifying a dot then an integer as
+     * a float */
     case FLOAT_LITERAL:
       return LBP_FIELD_EXPR;
       // field expr is same as tuple expr in precedence, i imagine
+      // TODO: is this needed anymore? lexer shouldn't do that anymore
 
     // anything that can't appear in an infix position is given lowest priority
     default:
@@ -11687,7 +11688,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	// HACK: as struct expressions should always be value expressions,
 	// cannot be referenced
 	ParseRestrictions entered_from_unary
-	  = {.can_be_struct_expr = false, .entered_from_unary = true};
+	  = {/* can_be_struct_expr = */ false, /* entered_from_unary = */ true};
 	/*entered_from_unary.entered_from_unary = true;
 	entered_from_unary.can_be_struct_expr = false;*/
 
@@ -11883,44 +11884,74 @@ Parser<ManagedTokenSource>::left_denotation (
       }
     case PLUS:
       // sum expression - binary infix
-      return parse_binary_plus_expr (tok, std::move (left),
-				     std::move (outer_attrs), restrictions);
+      /*return parse_binary_plus_expr (tok, std::move (left),
+				     std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::ADD, restrictions);
     case MINUS:
       // difference expression - binary infix
-      return parse_binary_minus_expr (tok, std::move (left),
-				      std::move (outer_attrs), restrictions);
+      /*return parse_binary_minus_expr (tok, std::move (left),
+				      std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::SUBTRACT, restrictions);
     case ASTERISK:
       // product expression - binary infix
-      return parse_binary_mult_expr (tok, std::move (left),
-				     std::move (outer_attrs), restrictions);
+      /*return parse_binary_mult_expr (tok, std::move (left),
+				     std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::MULTIPLY, restrictions);
     case DIV:
       // quotient expression - binary infix
-      return parse_binary_div_expr (tok, std::move (left),
-				    std::move (outer_attrs), restrictions);
+      /*return parse_binary_div_expr (tok, std::move (left),
+				    std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::DIVIDE, restrictions);
     case PERCENT:
       // modulo expression - binary infix
-      return parse_binary_mod_expr (tok, std::move (left),
-				    std::move (outer_attrs), restrictions);
+      /*return parse_binary_mod_expr (tok, std::move (left),
+				    std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::MODULUS, restrictions);
     case AMP:
       // logical or bitwise and expression - binary infix
-      return parse_bitwise_and_expr (tok, std::move (left),
-				     std::move (outer_attrs), restrictions);
+      /*return parse_bitwise_and_expr (tok, std::move (left),
+				     std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::BITWISE_AND, restrictions);
     case PIPE:
       // logical or bitwise or expression - binary infix
-      return parse_bitwise_or_expr (tok, std::move (left),
-				    std::move (outer_attrs), restrictions);
+      /*return parse_bitwise_or_expr (tok, std::move (left),
+				    std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::BITWISE_OR, restrictions);
     case CARET:
       // logical or bitwise xor expression - binary infix
-      return parse_bitwise_xor_expr (tok, std::move (left),
-				     std::move (outer_attrs), restrictions);
+      /*return parse_bitwise_xor_expr (tok, std::move (left),
+				     std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::BITWISE_XOR, restrictions);
     case LEFT_SHIFT:
       // left shift expression - binary infix
-      return parse_left_shift_expr (tok, std::move (left),
-				    std::move (outer_attrs), restrictions);
+      /*return parse_left_shift_expr (tok, std::move (left),
+				    std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::LEFT_SHIFT, restrictions);
     case RIGHT_SHIFT:
       // right shift expression - binary infix
-      return parse_right_shift_expr (tok, std::move (left),
-				     std::move (outer_attrs), restrictions);
+      /*return parse_right_shift_expr (tok, std::move (left),
+				     std::move (outer_attrs), restrictions);*/
+      return parse_arithmetic_or_logical_expr (
+	tok, std::move (left), std::move (outer_attrs),
+	AST::ArithmeticOrLogicalExpr::RIGHT_SHIFT, restrictions);
     case EQUAL_EQUAL:
       // equal to expression - binary infix (no associativity)
       /*return parse_binary_equal_expr (tok, std::move (left),
@@ -12106,7 +12137,7 @@ Parser<ManagedTokenSource>::left_denotation (
 			       restrictions);
     case FLOAT_LITERAL:
       /* HACK: get around lexer mis-identifying '.0' or '.1' or whatever as a
-       * float literal */
+       * float literal - TODO does this happen anymore? It shouldn't. */
       return parse_tuple_index_expr_float (tok, std::move (left),
 					   std::move (outer_attrs),
 					   restrictions);
@@ -12116,6 +12147,66 @@ Parser<ManagedTokenSource>::left_denotation (
 		     tok->get_token_description ());
       return nullptr;
     }
+}
+
+/* Returns the left binding power for the given ArithmeticOrLogicalExpr type.
+ * TODO make constexpr? Would that even do anything useful? */
+inline binding_powers
+get_lbp_for_arithmetic_or_logical_expr (
+  AST::ArithmeticOrLogicalExpr::ExprType expr_type)
+{
+  switch (expr_type)
+    {
+    case AST::ArithmeticOrLogicalExpr::ADD:
+      return LBP_PLUS;
+    case AST::ArithmeticOrLogicalExpr::SUBTRACT:
+      return LBP_MINUS;
+    case AST::ArithmeticOrLogicalExpr::MULTIPLY:
+      return LBP_MUL;
+    case AST::ArithmeticOrLogicalExpr::DIVIDE:
+      return LBP_DIV;
+    case AST::ArithmeticOrLogicalExpr::MODULUS:
+      return LBP_MOD;
+    case AST::ArithmeticOrLogicalExpr::BITWISE_AND:
+      return LBP_AMP;
+    case AST::ArithmeticOrLogicalExpr::BITWISE_OR:
+      return LBP_PIPE;
+    case AST::ArithmeticOrLogicalExpr::BITWISE_XOR:
+      return LBP_CARET;
+    case AST::ArithmeticOrLogicalExpr::LEFT_SHIFT:
+      return LBP_L_SHIFT;
+    case AST::ArithmeticOrLogicalExpr::RIGHT_SHIFT:
+      return LBP_R_SHIFT;
+    default:
+      // WTF? should not happen, this is an error
+      rust_error_at (
+	Location (),
+	"could not get LBP for ArithmeticOrLogicalExpr - unknown ExprType!");
+      return LBP_PLUS;
+    }
+}
+
+// Parses an arithmetic or logical expression (with Pratt parsing).
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ArithmeticOrLogicalExpr>
+Parser<ManagedTokenSource>::parse_arithmetic_or_logical_expr (
+  const_TokenPtr, std::unique_ptr<AST::Expr> left, std::vector<AST::Attribute>,
+  AST::ArithmeticOrLogicalExpr::ExprType expr_type,
+  ParseRestrictions restrictions)
+{
+  // parse RHS (as tok has already been consumed in parse_expression)
+  std::unique_ptr<AST::Expr> right
+    = parse_expr (get_lbp_for_arithmetic_or_logical_expr (expr_type),
+		  std::vector<AST::Attribute> (), restrictions);
+  if (right == nullptr)
+    return nullptr;
+
+  // TODO: check types. actually, do so during semantic analysis
+  Location locus = left->get_locus_slow ();
+
+  return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
+    new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
+				      expr_type, locus));
 }
 
 // Parses a binary addition expression (with Pratt parsing).
