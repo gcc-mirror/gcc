@@ -188,15 +188,15 @@ package body Ada.Text_IO.Fixed_IO is
    --  factor 10**E can be trivially handled during final output, by adjusting
    --  the decimal point or exponent.
 
-   --  Convert a value X * S of type T to a 64-bit integer value Q equal to
-   --  10.0**D * (X * S) rounded to the nearest integer. This conversion is
+   --  The idea is to convert a value X * S of type T to a 64-bit integer value
+   --  Q equal to 10.0**D * (X * S) rounded to the nearest integer, using only
    --  a scaled integer divide of the form
 
    --     Q := (X * Y) / Z,
 
-   --  where all variables are 64-bit signed integers using 2's complement,
-   --  and both the multiplication and division are done using full
-   --  intermediate precision. The final decimal value to be output is
+   --  where the variables X, Y, Z are 64-bit integers, and both multiplication
+   --  and division are done using full intermediate precision. Then the final
+   --  decimal value to be output is
 
    --     Q * 10**(E-D)
 
@@ -204,21 +204,18 @@ package body Ada.Text_IO.Fixed_IO is
    --  according to the format described in RM A.3.10. The details of this
    --  operation are omitted here.
 
-   --  A 64-bit value can contain all integers with 18 decimal digits, but
-   --  not all with 19 decimal digits. If the total number of requested output
-   --  digits (Fore - 1) + Aft is greater than 18, for purposes of the
-   --  conversion Aft is adjusted to 18 - (Fore - 1). In that case, or
-   --  when Fore > 19, trailing zeros can complete the output after writing
-   --  the first 18 significant digits, or the technique described in the
-   --  next section can be used.
+   --  A 64-bit value can represent all integers with 18 decimal digits, but
+   --  not all with 19 decimal digits. If the total number of requested ouput
+   --  digits (Fore - 1) + Aft is greater than 18 then, for purposes of the
+   --  conversion, Aft is adjusted to 18 - (Fore - 1). In that case, trailing
+   --  zeros can complete the output after writing the first 18 significant
+   --  digits, or the technique described in the next section can be used.
 
    --  The final expression for D is
 
    --     D := Integer'Max (-18, Integer'Min (Aft, 18 - (Fore - 1)));
 
    --  For Y and Z the following expressions can be derived:
-
-   --     Q / (10.0**D) = X * S
 
    --     Q = X * S * (10.0**D) = (X * Y) / Z
 
@@ -248,8 +245,8 @@ package body Ada.Text_IO.Fixed_IO is
    --  Extra Precision
 
    --  Using a scaled divide which truncates and returns a remainder R,
-   --  another E trailing digits can be calculated by computing the value
-   --  (R * (10.0**E)) / Z using another scaled divide. This procedure
+   --  another K trailing digits can be calculated by computing the value
+   --  (R * (10.0**K)) / Z using another scaled divide. This procedure
    --  can be repeated to compute an arbitrary number of digits in linear
    --  time and storage. The last scaled divide should be rounded, with
    --  a possible carry propagating to the more significant digits, to
@@ -564,7 +561,7 @@ package body Ada.Text_IO.Fixed_IO is
          --  Each element of Q has Max_Digits decimal digits, except the
          --  last, which has AA rem Max_Digits. Only Q (Q'First) may have an
          --  absolute value equal to or larger than 10**Max_Digits. Only the
-         --  absolute value of the elements is not significant, not the sign.
+         --  absolute value of the elements is significant, not the sign.
 
          XX : Int64 := X;
          YY : Int64 := Y;
