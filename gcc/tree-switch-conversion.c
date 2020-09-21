@@ -984,9 +984,6 @@ switch_conversion::expand (gswitch *swtch)
      during gimplification).  */
   gcc_checking_assert (TREE_TYPE (m_index_expr) != error_mark_node);
 
-  /* A switch on a constant should have been optimized in tree-cfg-cleanup.  */
-  gcc_checking_assert (!TREE_CONSTANT (m_index_expr));
-
   /* Prefer bit test if possible.  */
   if (tree_fits_uhwi_p (m_range_size)
       && bit_test_cluster::can_be_handled (tree_to_uhwi (m_range_size), m_uniq)
