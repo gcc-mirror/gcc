@@ -1189,6 +1189,8 @@ maybe_add_lambda_conv_op (tree type)
   tree name = make_conv_op_name (rettype);
   tree thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
   tree fntype = build_method_type_directly (thistype, rettype, void_list_node);
+  /* DR 1722: The conversion function should be noexcept.  */
+  fntype = build_exception_variant (fntype, noexcept_true_spec);
   tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
   SET_DECL_LANGUAGE (convfn, lang_cplusplus);
   tree fn = convfn;
