@@ -6536,7 +6536,7 @@ See Ada 2012 Reference Manual for details.
 Syntax:
 
 @example
-pragma Profile (Ravenscar | Restricted | Rational |
+pragma Profile (Ravenscar | Restricted | Rational | Jorvik |
                 GNAT_Extended_Ravenscar | GNAT_Ravenscar_EDF );
 @end example
 
@@ -6544,10 +6544,12 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
 configuration pragma that establishes a set of configuration pragmas
 that depend on the argument. @code{Ravenscar} is standard in Ada 2005.
+@code{Jorvik} is standard in Ada 202x.
 The other possibilities (@code{Restricted}, @code{Rational},
 @code{GNAT_Extended_Ravenscar}, @code{GNAT_Ravenscar_EDF})
-are implementation-defined. The set of configuration pragmas
-is defined in the following sections.
+are implementation-defined.  @code{GNAT_Extended_Ravenscar} is an alias for @code{Jorvik}.
+
+The set of configuration pragmas is defined in the following sections.
 
 
 @itemize *
@@ -6647,7 +6649,7 @@ No rendezvous statements are allowed.
 @end itemize
 
 The Ravenscar profile also includes the following restrictions that specify
-that there are no semantic dependences on the corresponding predefined
+that there are no semantic dependencies on the corresponding predefined
 packages:
 
 
@@ -6699,12 +6701,10 @@ automatically causes the use of a simplified,
 more efficient version of the tasking run-time library.
 
 @item 
-Pragma Profile (GNAT_Extended_Ravenscar)
+Pragma Profile (Jorvik)
 
-This profile corresponds to a GNAT specific extension of the
-Ravenscar profile. The profile may change in the future although
-only in a compatible way: some restrictions may be removed or
-relaxed. It is defined as a variation of the Ravenscar profile.
+@code{Jorvik} is the new profile added to the Ada 202x draft standard,
+previously implemented under the name @code{GNAT_Extended_Ravenscar}.
 
 The @code{No_Implicit_Heap_Allocations} restriction has been replaced
 by @code{No_Implicit_Task_Allocations} and
@@ -6715,6 +6715,11 @@ The @code{Simple_Barriers} restriction has been replaced by
 
 The @code{Max_Protected_Entries}, @code{Max_Entry_Queue_Length}, and
 @code{No_Relative_Delay} restrictions have been removed.
+
+Details on the rationale for @code{Jorvik} and implications for use may be
+found in @cite{A New Ravenscar-Based Profile} by P. Rogers, J. Ruiz,
+T. Gingold and P. Bernardi, in @cite{Reliable Software Technologies -- Ada Europe 2017}, Springer-Verlag Lecture Notes in Computer Science,
+Number 10300.
 
 @item 
 Pragma Profile (GNAT_Ravenscar_EDF)
