@@ -21,8 +21,8 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef _X86INTRIN_H_INCLUDED
-# error "Never use <ia32intrin.h> directly; include <x86intrin.h> instead."
+#ifndef _X86GPRINTRIN_H_INCLUDED
+# error "Never use <ia32intrin.h> directly; include <x86gprintrin.h> instead."
 #endif
 
 /* 32bit bsf */
