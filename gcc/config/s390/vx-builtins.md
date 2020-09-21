@@ -1940,22 +1940,22 @@
 ; These ignore the vector result and only want CC stored to an int
 ; pointer.
 
-; vftcisb, vftcidb
+; vftcisb, vftcidb, wftcixb
 (define_insn "*vftci<mode>_cconly"
   [(set (reg:CCRAW CC_REGNUM)
-	(unspec:CCRAW [(match_operand:VECF_HW 1 "register_operand")
-		       (match_operand:HI      2 "const_int_operand")]
+	(unspec:CCRAW [(match_operand:VF_HW 1 "register_operand"  "v")
+		       (match_operand:HI    2 "const_int_operand" "J")]
 		      UNSPEC_VEC_VFTCICC))
-   (clobber (match_scratch:<tointvec> 0))]
+   (clobber (match_scratch:<tointvec> 0 "=v"))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[2]), 'J', \"J\")"
-  "vftci<sdx>b\t%v0,%v1,%x2"
+  "<vw>ftci<sdx>b\t%v0,%v1,%x2"
   [(set_attr "op_type" "VRR")])
 
 (define_expand "vftci<mode>_intcconly"
   [(parallel
     [(set (reg:CCRAW CC_REGNUM)
-	  (unspec:CCRAW [(match_operand:VECF_HW 0 "register_operand")
-			 (match_operand:HI      1 "const_int_operand")]
+	  (unspec:CCRAW [(match_operand:VF_HW 0 "register_operand")
+			 (match_operand:HI    1 "const_int_operand")]
 			UNSPEC_VEC_VFTCICC))
      (clobber (scratch:<tointvec>))])
    (set (match_operand:SI 2 "register_operand" "")
@@ -1965,27 +1965,27 @@
 ; vec_fp_test_data_class wants the result vector and the CC stored to
 ; an int pointer.
 
-; vftcisb, vftcidb
-(define_insn "*vftci<mode>"
-  [(set (match_operand:VECF_HW                  0 "register_operand"  "=v")
-	(unspec:VECF_HW [(match_operand:VECF_HW 1 "register_operand"   "v")
-			 (match_operand:HI      2 "const_int_operand"  "J")]
-			UNSPEC_VEC_VFTCI))
+; vftcisb, vftcidb, wftcixb
+(define_insn "vftci<mode>"
+  [(set (match_operand:VF_HW                0 "register_operand"  "=v")
+	(unspec:VF_HW [(match_operand:VF_HW 1 "register_operand"   "v")
+		       (match_operand:HI    2 "const_int_operand"  "J")]
+		      UNSPEC_VEC_VFTCI))
    (set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_dup 1) (match_dup 2)] UNSPEC_VEC_VFTCICC))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[2]), 'J', \"J\")"
-  "vftci<sdx>b\t%v0,%v1,%x2"
+  "<vw>ftci<sdx>b\t%v0,%v1,%x2"
   [(set_attr "op_type" "VRR")])
 
 (define_expand "vftci<mode>_intcc"
   [(parallel
-    [(set (match_operand:VECF_HW                  0 "register_operand")
-	  (unspec:VECF_HW [(match_operand:VECF_HW 1 "register_operand")
-			   (match_operand:HI      2 "const_int_operand")]
-			  UNSPEC_VEC_VFTCI))
+    [(set (match_operand:VF_HW                0 "register_operand")
+	  (unspec:VF_HW [(match_operand:VF_HW 1 "register_operand")
+			 (match_operand:HI    2 "const_int_operand")]
+			UNSPEC_VEC_VFTCI))
      (set (reg:CCRAW CC_REGNUM)
 	  (unspec:CCRAW [(match_dup 1) (match_dup 2)] UNSPEC_VEC_VFTCICC))])
-   (set (match_operand:SI 3 "memory_operand" "")
+   (set (match_operand:SI                     3 "nonimmediate_operand")
 	(unspec:SI [(reg:CCRAW CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[2]), 'J', \"J\")")
 

@@ -456,6 +456,16 @@ s390_return_addr_from_memory ()
   return cfun_gpr_save_slot(RETURN_REGNUM) == SAVE_SLOT_STACK;
 }
 
+/* Return nonzero if it's OK to use fused multiply-add for MODE.  */
+bool
+s390_fma_allowed_p (machine_mode mode)
+{
+  if (TARGET_VXE && mode == TFmode)
+    return flag_vx_long_double_fma;
+
+  return true;
+}
+
 /* Indicate which ABI has been used for passing vector args.
    0 - no vector type arguments have been passed where the ABI is relevant
    1 - the old ABI has been used
@@ -1849,6 +1859,10 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   machine_mode mode = s390_select_ccmode (code, op0, op1);
   rtx cc;
+
+  /* Force OP1 into register in order to satisfy VXE TFmode patterns.  */
+  if (TARGET_VXE && GET_MODE (op1) == TFmode)
+    op1 = force_reg (TFmode, op1);
 
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     {
@@ -6959,6 +6973,13 @@ s390_expand_vec_init (rtx target, rtx vals)
 extern rtx
 s390_build_signbit_mask (machine_mode mode)
 {
+  if (mode == TFmode && TARGET_VXE)
+    {
+      wide_int mask_val = wi::set_bit_in_zero (127, 128);
+      rtx mask = immed_wide_int_const (mask_val, TImode);
+      return gen_lowpart (TFmode, mask);
+    }
+
   /* Generate the integral element mask value.  */
   machine_mode inner_mode = GET_MODE_INNER (mode);
   int inner_bitsize = GET_MODE_BITSIZE (inner_mode);
@@ -7902,6 +7923,7 @@ print_operand_address (FILE *file, rtx addr)
 	 CONST_VECTOR: Generate a bitmask for vgbm instruction.
     'x': print integer X as if it's an unsigned halfword.
     'v': print register number as vector register (v1 instead of f1).
+    'V': print the second word of a TFmode operand as vector register.
 */
 
 void
@@ -8071,13 +8093,13 @@ print_operand (FILE *file, rtx x, int code)
     case REG:
       /* Print FP regs as fx instead of vx when they are accessed
 	 through non-vector mode.  */
-      if (code == 'v'
+      if ((code == 'v' || code == 'V')
 	  || VECTOR_NOFP_REG_P (x)
 	  || (FP_REG_P (x) && VECTOR_MODE_P (GET_MODE (x)))
 	  || (VECTOR_REG_P (x)
 	      && (GET_MODE_SIZE (GET_MODE (x)) /
 		  s390_class_max_nregs (FP_REGS, GET_MODE (x))) > 8))
-	fprintf (file, "%%v%s", reg_names[REGNO (x)] + 2);
+	fprintf (file, "%%v%s", reg_names[REGNO (x) + (code == 'V')] + 2);
       else
 	fprintf (file, "%s", reg_names[REGNO (x)]);
       break;
@@ -8623,7 +8645,7 @@ replace_constant_pool_ref (rtx_insn *insn, rtx ref, rtx offset)
 
 static machine_mode constant_modes[] =
 {
-  TFmode, TImode, TDmode,
+  TFmode, FPRX2mode, TImode, TDmode,
   V16QImode, V8HImode, V4SImode, V2DImode, V1TImode,
   V4SFmode, V2DFmode, V1TFmode,
   DFmode, DImode, DDmode,
@@ -10418,7 +10440,8 @@ s390_class_max_nregs (enum reg_class rclass, machine_mode mode)
 	 full VRs.  */
       if (TARGET_VX
 	  && SCALAR_FLOAT_MODE_P (mode)
-	  && GET_MODE_SIZE (mode) >= 16)
+	  && GET_MODE_SIZE (mode) >= 16
+	  && !(TARGET_VXE && mode == TFmode))
 	reg_pair_required_p = true;
 
       /* Even if complex types would fit into a single FPR/VR we force
@@ -10441,6 +10464,24 @@ s390_class_max_nregs (enum reg_class rclass, machine_mode mode)
   return (GET_MODE_SIZE (mode) + reg_size - 1) / reg_size;
 }
 
+/* Return nonzero if mode M describes a 128-bit float in a floating point
+   register pair.  */
+
+static bool
+s390_is_fpr128 (machine_mode m)
+{
+  return m == FPRX2mode || (!TARGET_VXE && m == TFmode);
+}
+
+/* Return nonzero if mode M describes a 128-bit float in a vector
+   register.  */
+
+static bool
+s390_is_vr128 (machine_mode m)
+{
+  return m == V1TFmode || (TARGET_VXE && m == TFmode);
+}
+
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
 static bool
@@ -10451,11 +10492,11 @@ s390_can_change_mode_class (machine_mode from_mode,
   machine_mode small_mode;
   machine_mode big_mode;
 
-  /* V1TF and TF have different representations in vector
-     registers.  */
+  /* 128-bit values have different representations in floating point and
+     vector registers.  */
   if (reg_classes_intersect_p (VEC_REGS, rclass)
-      && ((from_mode == V1TFmode && to_mode == TFmode)
-	  || (from_mode == TFmode && to_mode == V1TFmode)))
+      && ((s390_is_fpr128 (from_mode) && s390_is_vr128 (to_mode))
+	  || (s390_is_vr128 (from_mode) && s390_is_fpr128 (to_mode))))
     return false;
 
   if (GET_MODE_SIZE (from_mode) == GET_MODE_SIZE (to_mode))
