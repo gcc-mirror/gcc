@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arch_v8_1m_main_ok } */
-/* { dg-options "-O2 -march=armv8.1-m.main" } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_arch_v8_1m_main } */
 
 int
 test_csinc32_condasn1(int w0, int w1, int w2, int w3)
