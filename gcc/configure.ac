@@ -1488,7 +1488,7 @@ gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
 #endif
 ])
 
-gcc_AC_CHECK_DECLS([mallinfo, mallinfo2], , ,[
+gcc_AC_CHECK_DECLS(mallinfo mallinfo2, , ,[
 #include "ansidecl.h"
 #include "system.h"
 #ifdef HAVE_MALLOC_H
