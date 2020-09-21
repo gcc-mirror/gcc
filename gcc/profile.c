@@ -1367,7 +1367,7 @@ branch_prob (bool thunk)
 	      seen_locations.add (loc);
 	      expanded_location curr_location = expand_location (loc);
 	      output_location (&streamed_locations, curr_location.file,
-			       curr_location.line, &offset, bb);
+			       MAX (1, curr_location.line), &offset, bb);
 	    }
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1378,7 +1378,7 @@ branch_prob (bool thunk)
 		{
 		  seen_locations.add (loc);
 		  output_location (&streamed_locations, gimple_filename (stmt),
-				   gimple_lineno (stmt), &offset, bb);
+				   MAX (1, gimple_lineno (stmt)), &offset, bb);
 		}
 	    }
 
@@ -1393,7 +1393,7 @@ branch_prob (bool thunk)
 	    {
 	      expanded_location curr_location = expand_location (loc);
 	      output_location (&streamed_locations, curr_location.file,
-			       curr_location.line, &offset, bb);
+			       MAX (1, curr_location.line), &offset, bb);
 	    }
 
 	  if (offset)
