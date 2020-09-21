@@ -186,15 +186,26 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
    *  @tparam _Align An alignment value (i.e. a power of two)
    *  @tparam _Tp    An object type
    *  @param  __ptr  A pointer that is aligned to _Align
+   *
+   *  C++20 20.10.6 [ptr.align]
+   *
    *  @ingroup memory
    */
   template<size_t _Align, class _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
-    constexpr _Tp* assume_aligned(_Tp* __ptr)
+    constexpr _Tp*
+    assume_aligned(_Tp* __ptr) noexcept
     {
       static_assert(std::has_single_bit(_Align));
-      _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
-      return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
+      if (std::is_constant_evaluated())
+	return __ptr;
+      else
+	{
+	  // This function is expected to be used in hot code, where
+	  // __glibcxx_assert would add unwanted overhead.
+	  _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
+	  return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
+	}
     }
 #endif // C++2a
 
