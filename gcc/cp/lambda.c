@@ -135,7 +135,7 @@ begin_lambda_type (tree lambda)
 
   /* Create the new RECORD_TYPE for this lambda.  */
   tree type = xref_tag (/*tag_code=*/record_type, name,
-			/*scope=*/ts_lambda, /*template_header_p=*/false);
+			/*scope=*/ts_current, /*template_header_p=*/false);
   if (type == error_mark_node)
     return error_mark_node;
 
