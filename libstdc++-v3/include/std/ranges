@@ -1833,9 +1833,11 @@ namespace views
 	    requires random_access_range<_Base>
 	  { return {*__i._M_parent, __i._M_current - __n}; }
 
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3483. transform_view::iterator's difference is overconstrained
 	  friend constexpr difference_type
 	  operator-(const _Iterator& __x, const _Iterator& __y)
-	    requires random_access_range<_Base>
+	    requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>
 	  { return __x._M_current - __y._M_current; }
 
 	  friend constexpr decltype(auto)
@@ -3538,9 +3540,11 @@ namespace views
 	    requires random_access_range<_Base>
 	  { return _Iterator{__x} -= __y; }
 
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3483. transform_view::iterator's difference is overconstrained
 	  friend constexpr difference_type
 	  operator-(const _Iterator& __x, const _Iterator& __y)
-	    requires random_access_range<_Base>
+	    requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>
 	  { return __x._M_current - __y._M_current; }
 
 	  friend _Sentinel<_Const>;
