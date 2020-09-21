@@ -2238,7 +2238,10 @@ namespace views
       _Vp _M_base = _Vp();
       range_difference_t<_Vp> _M_count = 0;
 
-      static constexpr bool _S_needs_cached_begin = !random_access_range<_Vp>;
+      // ranges::next(begin(base), count, end(base)) is O(1) if _Vp satisfies
+      // both random_access_range and sized_range. Otherwise, cache its result.
+      static constexpr bool _S_needs_cached_begin
+	= !(random_access_range<const _Vp> && sized_range<const _Vp>);
       [[no_unique_address]]
 	__detail::__maybe_present_t<_S_needs_cached_begin,
 				    __detail::_CachedPosition<_Vp>>
@@ -2260,9 +2263,12 @@ namespace views
       base() &&
       { return std::move(_M_base); }
 
+      // This overload is disabled for simple views with constant-time begin().
       constexpr auto
-      begin() requires (!(__detail::__simple_view<_Vp>
-			  && random_access_range<_Vp>))
+      begin()
+	requires (!(__detail::__simple_view<_Vp>
+		    && random_access_range<const _Vp>
+		    && sized_range<const _Vp>))
       {
 	if constexpr (_S_needs_cached_begin)
 	  if (_M_cached_begin._M_has_value())
@@ -2275,8 +2281,11 @@ namespace views
 	return __it;
       }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3482. drop_view's const begin should additionally require sized_range
       constexpr auto
-      begin() const requires random_access_range<const _Vp>
+      begin() const
+	requires random_access_range<const _Vp> && sized_range<const _Vp>
       {
 	return ranges::next(ranges::begin(_M_base), _M_count,
 			    ranges::end(_M_base));
