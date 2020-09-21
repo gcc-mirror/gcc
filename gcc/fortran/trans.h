@@ -818,6 +818,10 @@ bool gfc_omp_private_outer_ref (tree);
 struct gimplify_omp_ctx;
 void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
 
+/* In trans-intrinsic.c.  */
+void gfc_conv_intrinsic_mvbits (gfc_se *, gfc_actual_arglist *,
+				gfc_loopinfo *);
+
 /* Runtime library function decls.  */
 extern GTY(()) tree gfor_fndecl_pause_numeric;
 extern GTY(()) tree gfor_fndecl_pause_string;

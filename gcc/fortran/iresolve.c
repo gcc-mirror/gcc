@@ -3311,21 +3311,7 @@ gfc_resolve_mvbits (gfc_code *c)
 {
   static const sym_intent INTENTS[] = {INTENT_IN, INTENT_IN, INTENT_IN,
 				       INTENT_INOUT, INTENT_IN};
-
   const char *name;
-  gfc_typespec ts;
-  gfc_clear_ts (&ts);
-
-  /* FROMPOS, LEN and TOPOS are restricted to small values.  As such,
-     they will be converted so that they fit into a C int.  */
-  ts.type = BT_INTEGER;
-  ts.kind = gfc_c_int_kind;
-  if (c->ext.actual->next->expr->ts.kind != gfc_c_int_kind)
-    gfc_convert_type (c->ext.actual->next->expr, &ts, 2);
-  if (c->ext.actual->next->next->expr->ts.kind != gfc_c_int_kind)
-    gfc_convert_type (c->ext.actual->next->next->expr, &ts, 2);
-  if (c->ext.actual->next->next->next->next->expr->ts.kind != gfc_c_int_kind)
-    gfc_convert_type (c->ext.actual->next->next->next->next->expr, &ts, 2);
 
   /* TO and FROM are guaranteed to have the same kind parameter.  */
   name = gfc_get_string (PREFIX ("mvbits_i%d"),
