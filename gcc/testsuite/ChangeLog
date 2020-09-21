@@ -1,3 +1,8 @@
+2020-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90199
+	* g++.dg/cpp1y/constexpr-90199.C: New test.
+
 2020-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82608

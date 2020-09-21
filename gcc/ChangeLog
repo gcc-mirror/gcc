@@ -1,3 +1,49 @@
+2020-09-20  John David Anglin  < danglin@gcc.gnu.org>
+
+	* config/pa/pa-hpux11.h (LINK_GCC_C_SEQUENCE_SPEC): Delete.
+	* config/pa/pa64-hpux.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(ENDFILE_SPEC): Link with libgcc_stub.a and mill.a.
+	* config/pa/pa32-linux.h (ENDFILE_SPEC): Link with libgcc.a.
+
+2020-09-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (dump_lto_records): Fix ICE.
+
+2020-09-20  David Cepelik  <d@dcepelik.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* Makefile.in: Add ipa-modref.c and ipa-modref-tree.c.
+	* alias.c: (reference_alias_ptr_type_1): Export.
+	* alias.h (reference_alias_ptr_type_1): Declare.
+	* common.opt (fipa-modref): New.
+	* gengtype.c (open_base_files): Add ipa-modref-tree.h and ipa-modref.h
+	* ipa-modref-tree.c: New file.
+	* ipa-modref-tree.h: New file.
+	* ipa-modref.c: New file.
+	* ipa-modref.h: New file.
+	* lto-section-in.c (lto_section_name): Add ipa_modref.
+	* lto-streamer.h (enum lto_section_type): Add LTO_section_ipa_modref.
+	* opts.c (default_options_table): Enable ipa-modref at -O1+.
+	* params.opt (-param=modref-max-bases, -param=modref-max-refs,
+	-param=modref-max-tests): New params.
+	* passes.def: Schedule pass_modref and pass_ipa_modref.
+	* timevar.def (TV_IPA_MODREF): New timevar.
+	(TV_TREE_MODREF): New timevar.
+	* tree-pass.h (make_pass_modref): Declare.
+	(make_pass_ipa_modref): Declare.
+	* tree-ssa-alias.c (dump_alias_stats): Include ipa-modref-tree.h
+	and ipa-modref.h
+	(alias_stats): Add modref_use_may_alias, modref_use_no_alias,
+	modref_clobber_may_alias, modref_clobber_no_alias, modref_tests.
+	(dump_alias_stats): Dump new stats.
+	(nonoverlapping_array_refs_p): Fix formating.
+	(modref_may_conflict): New function.
+	(ref_maybe_used_by_call_p_1): Use it.
+	(call_may_clobber_ref_p_1): Use it.
+	(call_may_clobber_ref_p): Update.
+	(stmt_may_clobber_ref_p_1): Update.
+	* tree-ssa-alias.h (call_may_clobber_ref_p_1): Update.
+
 2020-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82608
