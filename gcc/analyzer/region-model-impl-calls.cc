@@ -103,6 +103,14 @@ call_details::get_arg_tree (unsigned idx) const
   return gimple_call_arg (m_call, idx);
 }
 
+/* Get the type of argument IDX.  */
+
+tree
+call_details::get_arg_type (unsigned idx) const
+{
+  return TREE_TYPE (gimple_call_arg (m_call, idx));
+}
+
 /* Get argument IDX at the callsite as an svalue.  */
 
 const svalue *

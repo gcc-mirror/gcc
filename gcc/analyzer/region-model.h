@@ -2482,6 +2482,7 @@ public:
   bool maybe_set_lhs (const svalue *result) const;
 
   tree get_arg_tree (unsigned idx) const;
+  tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;

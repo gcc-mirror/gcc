@@ -737,12 +737,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  /* No side-effects (tracking stream state is out-of-scope
 	     for the analyzer).  */
 	}
-      else if (is_named_call_p (callee_fndecl, "memset", call, 3))
+      else if (is_named_call_p (callee_fndecl, "memset", call, 3)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  impl_call_memset (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "strlen", call, 1))
+      else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  if (impl_call_strlen (cd))
 	    return false;
