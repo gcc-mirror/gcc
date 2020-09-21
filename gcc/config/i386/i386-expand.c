@@ -11074,11 +11074,17 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
-  if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE)
+
+  if ((bisa & OPTION_MASK_ISA_MMX)
+      && !TARGET_MMX
+      && TARGET_MMX_WITH_SSE
+      /* NB: __builtin_ia32_maskmovq also requires MMX.  */
+      && fcode != IX86_BUILTIN_MASKMOVQ)
     {
       bisa &= ~OPTION_MASK_ISA_MMX;
       bisa |= OPTION_MASK_ISA_SSE2;
     }
+
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
       bool add_abi_p = bisa & OPTION_MASK_ISA_64BIT;
