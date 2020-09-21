@@ -984,7 +984,9 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_std_named_call_p (callee_fndecl, "malloc", call, 1)
 	    || is_std_named_call_p (callee_fndecl, "calloc", call, 2)
 	    || is_named_call_p (callee_fndecl, "__builtin_malloc", call, 1)
-	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2))
+	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2)
+	    || is_named_call_p (callee_fndecl, "strdup", call, 1)
+	    || is_named_call_p (callee_fndecl, "strndup", call, 2))
 	  {
 	    on_allocator_call (sm_ctxt, call, m_malloc);
 	    return true;

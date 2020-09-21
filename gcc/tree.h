@@ -5351,7 +5351,8 @@ enum access_mode
   access_none = 0,
   access_read_only = 1,
   access_write_only = 2,
-  access_read_write = access_read_only | access_write_only
+  access_read_write = access_read_only | access_write_only,
+  access_deferred = 4
 };
 
 #define tree_map_eq tree_map_base_eq

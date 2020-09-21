@@ -5217,6 +5217,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-parameter=2 @r{(C and Objective-C only)} @gol
 -Wbool-compare  @gol
 -Wbool-operation  @gol
 -Wc++11-compat  -Wc++14-compat  @gol
@@ -5268,6 +5269,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
+-Wvla-parameter @r{(C and Objective-C only)} @gol
 -Wvolatile-register-var  @gol
 -Wzero-length-bounds}
 
@@ -7134,6 +7136,54 @@ pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
 
+@item -Warray-parameter
+@itemx -Warray-parameter=@var{n}
+@opindex Wno-array-parameter
+Warn about redeclarations of functions involving arguments of array or
+pointer types of inconsistent kinds or forms, and enable the detection
+of out-of-bounds accesses to such parameters by warnings such as
+@option{-Warray-bounds}.
+
+If the first function declaration uses the array form the bound specified
+in the array is assumed to be the minimum number of elements expected to
+be provided in calls to the function and the maximum number of elements
+accessed by it.  Failing to provide arguments of sufficient size or accessing
+more than the maximum number of elements may be diagnosed by warnings such
+as @option{-Warray-bounds}.  At level 1 the warning diagnoses inconsistencies
+involving array parameters declared using the @code{T[static N]} form.
+
+For example, the warning triggers for the following redeclarations because
+the first one allows an array of any size to be passed to @code{f} while
+the second one with the keyword @code{static} specifies that the array
+argument must have at least four elements.
+
+@smallexample
+void f (int[static 4]);
+void f (int[]);           // warning (inconsistent array form)
+
+void g (void)
+@{
+  int *p = (int *)malloc (4);
+  f (p);                  // warning (array too small)
+  @dots{}
+@}
+@end smallexample
+
+At level 2 the warning also triggers for redeclarations involving any other
+inconsistency in array or pointer argument forms denoting array sizes.
+Pointers and arrays of unspecified bound are considered equivalent and do
+not trigger a warning.
+
+@smallexample
+void g (int*);
+void g (int[]);     // no warning
+void g (int[8]);    // warning (inconsistent array bound)
+@end smallexample
+
+@option{-Warray-parameter=2} is included in @option{-Wall}.  The
+@option{-Wvla-parameter} option triggers warnings for similar inconsistencies
+involving Variable Length Array arguments.
+
 @item -Wattribute-alias=@var{n}
 @itemx -Wno-attribute-alias
 @opindex Wattribute-alias
@@ -8560,6 +8610,44 @@ See also @option{-Walloca-larger-than=@var{byte-size}}.
 @opindex Wno-vla-larger-than
 Disable @option{-Wvla-larger-than=} warnings.  The option is equivalent
 to @option{-Wvla-larger-than=}@samp{SIZE_MAX} or larger.
+
+@item -Wvla-parameter
+@opindex Wno-vla-parameter
+Warn about redeclarations of functions involving arguments of Variable
+Length Array types of inconsistent kinds or forms, and enable the detection
+of out-of-bounds accesses to such parameters by warnings such as
+@option{-Warray-bounds}.
+
+If the first function declaration uses the VLA form the bound specified
+in the array is assumed to be the minimum number of elements expected to
+be provided in calls to the function and the maximum number of elements
+accessed by it.  Failing to provide arguments of sufficient size or
+accessing more than the maximum number of elements may be diagnosed.
+
+For example, the warning triggers for the following redeclarations because
+the first one allows an array of any size to be passed to @code{f} while
+the second one specifies that the array argument must have at least @code{n}
+elements.  In addition, calling @code{f} with the assotiated VLA bound
+parameter in excess of the actual VLA bound triggers a warning as well.
+
+@smallexample
+void f (int n, int[n]);
+void f (int, int[]);     // warning: argument 2 previously declared as a VLA
+
+void g (int n)
+@{
+    if (n > 4)
+      return;
+    int a[n];
+    f (sizeof a, a);     // warning: access to a by f may be out of bounds
+  @dots{}
+@}
+
+@end smallexample
+
+@option{-Wvla-parameter} is included in @option{-Wall}.  The
+@option{-Warray-parameter} option triggers warnings for similar problems
+involving ordinary array arguments.
 
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var

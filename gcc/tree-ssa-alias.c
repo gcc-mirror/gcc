@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "ipa-reference.h"
 #include "varasm.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -107,6 +109,11 @@ static struct {
   unsigned HOST_WIDE_INT nonoverlapping_refs_since_match_p_may_alias;
   unsigned HOST_WIDE_INT nonoverlapping_refs_since_match_p_must_overlap;
   unsigned HOST_WIDE_INT nonoverlapping_refs_since_match_p_no_alias;
+  unsigned HOST_WIDE_INT modref_use_may_alias;
+  unsigned HOST_WIDE_INT modref_use_no_alias;
+  unsigned HOST_WIDE_INT modref_clobber_may_alias;
+  unsigned HOST_WIDE_INT modref_clobber_no_alias;
+  unsigned HOST_WIDE_INT modref_tests;
 } alias_stats;
 
 void
@@ -153,6 +160,24 @@ dump_alias_stats (FILE *s)
 	   alias_stats.aliasing_component_refs_p_no_alias
 	   + alias_stats.aliasing_component_refs_p_may_alias);
   dump_alias_stats_in_alias_c (s);
+  fprintf (s, "\nModref stats:\n");
+  fprintf (s, "  modref use: "
+	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n",
+	   alias_stats.modref_use_no_alias,
+	   alias_stats.modref_use_no_alias
+	   + alias_stats.modref_use_may_alias);
+  fprintf (s, "  modref clobber: "
+	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n  "
+	   HOST_WIDE_INT_PRINT_DEC" tbaa querries (%f per modref querry)\n",
+	   alias_stats.modref_clobber_no_alias,
+	   alias_stats.modref_clobber_no_alias
+	   + alias_stats.modref_clobber_may_alias,
+	   alias_stats.modref_tests,
+	   ((double)alias_stats.modref_tests)
+	   / (alias_stats.modref_clobber_no_alias
+	      + alias_stats.modref_clobber_may_alias));
 }
 
 
@@ -1341,8 +1366,8 @@ nonoverlapping_array_refs_p (tree ref1, tree ref2)
 {
   tree index1 = TREE_OPERAND (ref1, 1);
   tree index2 = TREE_OPERAND (ref2, 1);
-  tree low_bound1 = cheap_array_ref_low_bound(ref1);
-  tree low_bound2 = cheap_array_ref_low_bound(ref2);
+  tree low_bound1 = cheap_array_ref_low_bound (ref1);
+  tree low_bound2 = cheap_array_ref_low_bound (ref2);
 
   /* Handle zero offsets first: we do not need to match type size in this
      case.  */
@@ -2394,6 +2419,63 @@ refs_output_dependent_p (tree store1, tree store2)
   return refs_may_alias_p_1 (&r1, &r2, false);
 }
 
+/* Returns true if and only if REF may alias any access stored in TT.
+   IF TBAA_P is true, use TBAA oracle.  */
+
+static bool
+modref_may_conflict (modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
+{
+  alias_set_type base_set, ref_set;
+  modref_base_node <alias_set_type> *base_node;
+  modref_ref_node <alias_set_type> *ref_node;
+  size_t i, j;
+
+  if (tt->every_base)
+    return true;
+
+  base_set = ao_ref_base_alias_set (ref);
+
+  ref_set = ao_ref_alias_set (ref);
+
+  int num_tests = 0, max_tests = param_modref_max_tests;
+  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
+    {
+      if (base_node->every_ref)
+	return true;
+
+      if (!base_node->base)
+	return true;
+
+      if (tbaa_p && flag_strict_aliasing)
+	{
+	  if (!alias_sets_conflict_p (base_set, base_node->base))
+	    continue;
+	  alias_stats.modref_tests++;
+	  num_tests++;
+	}
+      else
+	return true;
+      if (num_tests >= max_tests)
+	return true;
+
+      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	{
+	  /* Do not repeat same test as before.  */
+	  if (ref_set == base_set && base_node->base == ref_node->ref)
+	    return true;
+	  if (!flag_strict_aliasing)
+	    return true;
+	  if (alias_sets_conflict_p (ref_set, ref_node->ref))
+	    return true;
+	  alias_stats.modref_tests++;
+	  num_tests++;
+	  if (num_tests >= max_tests)
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* If the call CALL may use the memory reference REF return true,
    otherwise return false.  */
 
@@ -2409,13 +2491,49 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       && (flags & (ECF_CONST|ECF_NOVOPS)))
     goto process_args;
 
-  base = ao_ref_base (ref);
-  if (!base)
-    return true;
-
   /* A call that is not without side-effects might involve volatile
      accesses and thus conflicts with all other volatile accesses.  */
   if (ref->volatile_p)
+    return true;
+
+  callee = gimple_call_fndecl (call);
+
+  if (!gimple_call_chain (call) && callee != NULL_TREE)
+    {
+      struct cgraph_node *node = cgraph_node::get (callee);
+      /* We can not safely optimize based on summary of calle if it does
+	 not always bind to current def: it is possible that memory load
+	 was optimized out earlier and the interposed variant may not be
+	 optimized this way.  */
+      if (node && node->binds_to_current_def_p ())
+	{
+	  modref_summary *summary = get_modref_function_summary (node);
+	  if (summary)
+	    {
+	      if (!modref_may_conflict (summary->loads, ref, tbaa_p))
+		{
+		  alias_stats.modref_use_no_alias++;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "ipa-modref: in %s,"
+			       " call to %s does not use ",
+			       cgraph_node::get
+				   (current_function_decl)->dump_name (),
+			       node->dump_name ());
+		      print_generic_expr (dump_file, ref->ref);
+		      fprintf (dump_file, " %i->%i\n",
+			       ao_ref_base_alias_set (ref),
+			       ao_ref_alias_set (ref));
+		    }
+		  goto process_args;
+		}
+	      alias_stats.modref_use_may_alias++;
+	    }
+       }
+    }
+
+  base = ao_ref_base (ref);
+  if (!base)
     return true;
 
   /* If the reference is based on a decl that is not aliased the call
@@ -2425,8 +2543,6 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       /* But local statics can be used through recursion.  */
       && !is_global_var (base))
     goto process_args;
-
-  callee = gimple_call_fndecl (call);
 
   /* Handle those builtin functions explicitly that do not act as
      escape points.  See tree-ssa-structalias.c:find_func_aliases
@@ -2781,7 +2897,7 @@ ref_maybe_used_by_stmt_p (gimple *stmt, tree ref, bool tbaa_p)
    return true, otherwise return false.  */
 
 bool
-call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
+call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 {
   tree base;
   tree callee;
@@ -2807,6 +2923,39 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
       default:
 	break;
       }
+
+  callee = gimple_call_fndecl (call);
+
+  if (callee != NULL_TREE && !ref->volatile_p)
+    {
+      struct cgraph_node *node = cgraph_node::get (callee);
+      if (node)
+	{
+	  modref_summary *summary = get_modref_function_summary (node);
+	  if (summary)
+	    {
+	      if (!modref_may_conflict (summary->stores, ref, tbaa_p))
+		{
+		  alias_stats.modref_clobber_no_alias++;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file,
+			       "ipa-modref: in %s, "
+			       "call to %s does not clobber ",
+			       cgraph_node::get
+				  (current_function_decl)->dump_name (),
+			       node->dump_name ());
+		      print_generic_expr (dump_file, ref->ref);
+		      fprintf (dump_file, " %i->%i\n",
+			       ao_ref_base_alias_set (ref),
+			       ao_ref_alias_set (ref));
+		    }
+		  return false;
+		}
+	      alias_stats.modref_clobber_may_alias++;
+	  }
+	}
+    }
 
   base = ao_ref_base (ref);
   if (!base)
@@ -2839,8 +2988,6 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
       && SSA_NAME_POINTS_TO_READONLY_MEMORY (TREE_OPERAND (base, 0)))
     return false;
-
-  callee = gimple_call_fndecl (call);
 
   /* Handle those builtin functions explicitly that do not act as
      escape points.  See tree-ssa-structalias.c:find_func_aliases
@@ -3083,7 +3230,7 @@ call_may_clobber_ref_p (gcall *call, tree ref)
   bool res;
   ao_ref r;
   ao_ref_init (&r, ref);
-  res = call_may_clobber_ref_p_1 (call, &r);
+  res = call_may_clobber_ref_p_1 (call, &r, true);
   if (res)
     ++alias_stats.call_may_clobber_ref_p_may_alias;
   else
@@ -3110,7 +3257,7 @@ stmt_may_clobber_ref_p_1 (gimple *stmt, ao_ref *ref, bool tbaa_p)
 	    return true;
 	}
 
-      return call_may_clobber_ref_p_1 (as_a <gcall *> (stmt), ref);
+      return call_may_clobber_ref_p_1 (as_a <gcall *> (stmt), ref, tbaa_p);
     }
   else if (gimple_assign_single_p (stmt))
     {

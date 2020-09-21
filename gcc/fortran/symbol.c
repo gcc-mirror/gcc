@@ -569,7 +569,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf_std (allocatable, dummy, GFC_STD_F2003);
   conf_std (allocatable, function, GFC_STD_F2003);
   conf_std (allocatable, result, GFC_STD_F2003);
-  conf (elemental, recursive);
+  conf_std (elemental, recursive, GFC_STD_F2018);
 
   conf (in_common, dummy);
   conf (in_common, allocatable);

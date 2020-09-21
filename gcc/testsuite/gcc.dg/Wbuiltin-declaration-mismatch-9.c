@@ -10,3 +10,6 @@ void a (void)
 	  ""        /* { dg-warning "passing argument 2 of .sscanf. from incompatible pointer type" } */
 	  );
 }
+
+/* The invalid scanf call may also trigger:
+   { dg-prune-output "accessing 4 bytes in a region of size 1" } */

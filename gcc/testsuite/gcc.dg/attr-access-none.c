@@ -23,7 +23,7 @@ void nowarn_fnone_pcv1 (void)
 
 
 int __attribute__ ((access (none, 1, 2)))
-fnone_pcv1_2 (const void*, int);  // { dg-message "in a call to function 'fnone_pcv1_2' declared with attribute 'none \\\(1, 2\\\)'" }
+fnone_pcv1_2 (const void*, int);  // { dg-message "in a call to function 'fnone_pcv1_2' declared with attribute 'access \\\(none, 1, 2\\\)'" "note" }
 
 void nowarn_fnone_pcv1_2 (void)
 {

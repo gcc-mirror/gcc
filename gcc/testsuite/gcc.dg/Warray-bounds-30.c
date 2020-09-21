@@ -73,8 +73,7 @@ void test_global_int_array (void)
 
   T (&p[min]);      /* { dg-warning "subscript -\[0-9\]+ is \(below|outside\) array bounds of .int\\\[1]." } */
   T (&p[-1]);       /* { dg-warning "subscript -1 is \(below|outside\) array bounds of .int\\\[1]." } */
-  T (&p[0]);
-  T (&p[1]);
+  T (&p[0], &p[1]);
   T (&p[2]);        /* { dg-warning "subscript 2 is \(above|outside\) array bounds of .int\\\[1]." } */
   T (&p[max]);      /* { dg-warning "subscript \[0-9\]+ is \(above|outside\) array bounds of .int\\\[1]." } */
 

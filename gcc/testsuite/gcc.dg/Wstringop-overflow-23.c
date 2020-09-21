@@ -21,7 +21,7 @@ typedef __INT32_TYPE__ int32_t;
 /* Exercise null pointer detection.  */
 
 RDONLY (2, 1) void
-rd2_1 (int, const void*);       // { dg-message "in a call to function 'rd2_1' declared with attribute 'read_only \\\(2, 1\\\)" }
+rd2_1 (int, const void*);       // { dg-message "in a call to function 'rd2_1' declared with attribute 'access \\\(read_only, 2, 1\\\)" "note" }
 
 void test_rd2_1 (void)
 {
@@ -45,7 +45,7 @@ void test_rd2_1 (void)
 }
 
 WRONLY (3, 1) void
-wr3_1 (int, int, void*);        // { dg-message "in a call to function 'wr3_1' declared with attribute 'write_only \\\(3, 1\\\)" }
+wr3_1 (int, int, void*);        // { dg-message "in a call to function 'wr3_1' declared with attribute 'access \\\(write_only, 3, 1\\\)" }
 
 void test_wr3_1 (void)
 {

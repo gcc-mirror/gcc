@@ -3021,10 +3021,14 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
   bool all_visited = true;
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
-      stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
-      if (svisited.contains (orig_stmt_info))
+      if (svisited.contains (stmt_info))
 	continue;
       all_visited = false;
+      stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+      if (STMT_VINFO_IN_PATTERN_P (orig_stmt_info)
+	  && STMT_VINFO_RELATED_STMT (orig_stmt_info) != stmt_info)
+	/* Only the pattern root stmt computes the original scalar value.  */
+	continue;
       bool mark_visited = true;
       gimple *orig_stmt = orig_stmt_info->stmt;
       ssa_op_iter op_iter;
@@ -3091,7 +3095,7 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 		}
 	}
       if (mark_visited)
-	svisited.add (orig_stmt_info);
+	svisited.add (stmt_info);
     }
   if (all_visited)
     return;

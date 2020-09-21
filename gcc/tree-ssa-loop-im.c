@@ -2232,9 +2232,11 @@ sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr, unsigned *at)
 	  || (against.second == sm_other && against.from != NULL_TREE))
 	/* Found the tail of the sequence.  */
 	break;
-      if (!refs_independent_p (memory_accesses.refs_list[new_cand.first],
-			       memory_accesses.refs_list[against.first],
-			       false))
+      /* We may not ignore self-dependences here.  */
+      if (new_cand.first == against.first
+	  || !refs_independent_p (memory_accesses.refs_list[new_cand.first],
+				  memory_accesses.refs_list[against.first],
+				  false))
 	/* ???  Prune new_cand from the list of refs to apply SM to.  */
 	return false;
       std::swap (new_cand, against);

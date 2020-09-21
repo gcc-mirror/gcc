@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
+	  NEXT_PASS (pass_modref);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
 	  NEXT_PASS (pass_cleanup_eh);
@@ -156,6 +157,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
+  NEXT_PASS (pass_ipa_modref);
   NEXT_PASS (pass_ipa_free_fn_summary, false /* small_p */);
   NEXT_PASS (pass_ipa_reference);
   /* This pass needs to be scheduled after any IP code duplication.   */
@@ -346,6 +348,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_late_warn_uninitialized);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
+      NEXT_PASS (pass_modref);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_all_optimizations_g);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
@@ -378,6 +381,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_late_warn_uninitialized);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
+      NEXT_PASS (pass_modref);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_tm_init);
   PUSH_INSERT_PASSES_WITHIN (pass_tm_init)

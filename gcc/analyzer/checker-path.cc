@@ -872,11 +872,17 @@ warning_event::get_desc (bool can_colorize) const
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)
 	    {
-	      label_text result
-		= make_label_text (can_colorize,
-				   "%s (%qE is in state %qs)",
-				   ev_desc.m_buffer,
-				   m_var, m_state->get_name ());
+	      label_text result;
+	      if (m_var)
+		result = make_label_text (can_colorize,
+					  "%s (%qE is in state %qs)",
+					  ev_desc.m_buffer,
+					  m_var, m_state->get_name ());
+	      else
+		result = make_label_text (can_colorize,
+					  "%s (in global state %qs)",
+					  ev_desc.m_buffer,
+					  m_state->get_name ());
 	      ev_desc.maybe_free ();
 	      return result;
 	    }
@@ -886,9 +892,16 @@ warning_event::get_desc (bool can_colorize) const
     }
 
   if (m_sm)
-    return make_label_text (can_colorize,
-			    "here (%qE is in state %qs)",
-			    m_var, m_state->get_name ());
+    {
+      if (m_var)
+	return make_label_text (can_colorize,
+				"here (%qE is in state %qs)",
+				m_var, m_state->get_name ());
+      else
+	return make_label_text (can_colorize,
+				"here (in global state %qs)",
+				m_state->get_name ());
+    }
   else
     return label_text::borrow ("here");
 }

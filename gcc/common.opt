@@ -1825,6 +1825,10 @@ fipa-bit-cp
 Common Report Var(flag_ipa_bit_cp) Optimization
 Perform interprocedural bitwise constant propagation.
 
+fipa-modref
+Common Report Var(flag_ipa_modref) Optimization
+Perform interprocedural modref analysis
+
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation.

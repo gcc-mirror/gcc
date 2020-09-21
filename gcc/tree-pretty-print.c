@@ -1704,9 +1704,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  pp_string (pp, "atomic ");
 	if (quals & TYPE_QUAL_CONST)
 	  pp_string (pp, "const ");
-	else if (quals & TYPE_QUAL_VOLATILE)
+	if (quals & TYPE_QUAL_VOLATILE)
 	  pp_string (pp, "volatile ");
-	else if (quals & TYPE_QUAL_RESTRICT)
+	if (quals & TYPE_QUAL_RESTRICT)
 	  pp_string (pp, "restrict ");
 
 	if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))

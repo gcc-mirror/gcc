@@ -1,3 +1,211 @@
+2020-09-20  John David Anglin  < danglin@gcc.gnu.org>
+
+	* config/pa/pa-hpux11.h (LINK_GCC_C_SEQUENCE_SPEC): Delete.
+	* config/pa/pa64-hpux.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(ENDFILE_SPEC): Link with libgcc_stub.a and mill.a.
+	* config/pa/pa32-linux.h (ENDFILE_SPEC): Link with libgcc.a.
+
+2020-09-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (dump_lto_records): Fix ICE.
+
+2020-09-20  David Cepelik  <d@dcepelik.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* Makefile.in: Add ipa-modref.c and ipa-modref-tree.c.
+	* alias.c: (reference_alias_ptr_type_1): Export.
+	* alias.h (reference_alias_ptr_type_1): Declare.
+	* common.opt (fipa-modref): New.
+	* gengtype.c (open_base_files): Add ipa-modref-tree.h and ipa-modref.h
+	* ipa-modref-tree.c: New file.
+	* ipa-modref-tree.h: New file.
+	* ipa-modref.c: New file.
+	* ipa-modref.h: New file.
+	* lto-section-in.c (lto_section_name): Add ipa_modref.
+	* lto-streamer.h (enum lto_section_type): Add LTO_section_ipa_modref.
+	* opts.c (default_options_table): Enable ipa-modref at -O1+.
+	* params.opt (-param=modref-max-bases, -param=modref-max-refs,
+	-param=modref-max-tests): New params.
+	* passes.def: Schedule pass_modref and pass_ipa_modref.
+	* timevar.def (TV_IPA_MODREF): New timevar.
+	(TV_TREE_MODREF): New timevar.
+	* tree-pass.h (make_pass_modref): Declare.
+	(make_pass_ipa_modref): Declare.
+	* tree-ssa-alias.c (dump_alias_stats): Include ipa-modref-tree.h
+	and ipa-modref.h
+	(alias_stats): Add modref_use_may_alias, modref_use_no_alias,
+	modref_clobber_may_alias, modref_clobber_no_alias, modref_tests.
+	(dump_alias_stats): Dump new stats.
+	(nonoverlapping_array_refs_p): Fix formating.
+	(modref_may_conflict): New function.
+	(ref_maybe_used_by_call_p_1): Use it.
+	(call_may_clobber_ref_p_1): Use it.
+	(call_may_clobber_ref_p): Update.
+	(stmt_may_clobber_ref_p_1): Update.
+	* tree-ssa-alias.h (call_may_clobber_ref_p_1): Update.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82608
+	PR middle-end/94195
+	PR c/50584
+	PR middle-end/84051
+	* gimple-array-bounds.cc (get_base_decl): New function.
+	(get_ref_size): New function.
+	(trailing_array): New function.
+	(array_bounds_checker::check_array_ref): Call them.  Handle arrays
+	declared in function parameters.
+	(array_bounds_checker::check_mem_ref):  Same.  Handle references to
+	dynamically allocated arrays.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* builtins.c (warn_for_access): Add argument.  Distinguish between
+	reads and writes.
+	(check_access): Add argument.  Distinguish between reads and writes.
+	(gimple_call_alloc_size): Set range even on failure.
+	(gimple_parm_array_size): New function.
+	(compute_objsize): Call it.
+	(check_memop_access): Pass check_access an additional argument.
+	(expand_builtin_memchr, expand_builtin_strcat): Same.
+	(expand_builtin_strcpy, expand_builtin_stpcpy_1): Same.
+	(expand_builtin_stpncpy, check_strncat_sizes): Same.
+	(expand_builtin_strncat, expand_builtin_strncpy): Same.
+	(expand_builtin_memcmp): Same.
+	* builtins.h (compute_objsize): Declare a new overload.
+	(gimple_parm_array_size): Declare.
+	(check_access): Add argument.
+	* calls.c (append_attrname): Simplify.
+	(maybe_warn_rdwr_sizes): Handle internal attribute access.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Avoid adding
+	quotes.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Handle attribute
+	access internal representation of arrays.
+
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* attribs.c (decl_attributes): Also pass decl along with type
+	attributes to handlers.
+	(init_attr_rdwr_indices): Change second argument to attribute chain.
+	Handle internal attribute representation in addition to external.
+	(get_parm_access): New function.
+	(attr_access::to_internal_string): Define new member function.
+	(attr_access::to_external_string): Define new member function.
+	(attr_access::vla_bounds): Define new member function.
+	* attribs.h (struct attr_access): Declare new members.
+	(attr_access::from_mode_char): Define new member function.
+	(get_parm_access): Declare new function.
+	* calls.c (initialize_argument_information): Pass function type
+	attributes to init_attr_rdwr_indices.
+	* doc/invoke.texi (-Warray-parameter, -Wvla-parameter): Document.
+	* tree-pretty-print.c (dump_generic_node): Correct handling of
+	qualifiers.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Same.
+	* tree.h (access_mode): Add new enumerator.
+
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/generic.texi (Basic Statements): Document SWITCH_EXPR here,
+	not SWITCH_STMT.
+	(Statements for C and C++): Rename node to reflect what
+	the introduction already says about sharing between C and C++
+	front ends.  Copy-edit and correct documentation for structured
+	loops and switch.
+
+2020-09-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96861
+	* config/i386/x86-tune-costs.h (skylake_cost): increase rtx
+	cost of sse_to_integer from 2 to 6.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_csneg): New.
+	(*thumb2_negscc): Don't match if TARGET_COND_ARITH.
+	* config/arm/arm.md (*if_neg_move): Don't match if TARGET_COND_ARITH.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_csinc): New.
+	(*thumb2_cond_arith): Generate CINC where possible.
+
+2020-09-18  Sudi Das  <sudi.das@arm.com>
+	    Omar Tahir  <omar.tahir@arm.com>
+
+	* config/arm/arm.h (TARGET_COND_ARITH): New macro.
+	* config/arm/arm.c (arm_have_conditional_execution): Return false if
+	TARGET_COND_ARITH before reload.
+	* config/arm/predicates.md (arm_comparison_operation): Returns true if
+	comparing CC_REGNUM with constant zero.
+	* config/arm/thumb2.md (*thumb2_csinv): New.
+	(*thumb2_movcond): Don't match if TARGET_COND_ARITH.
+
+2020-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91957
+	* ira.c (ira_setup_eliminable_regset): Skip the special elimination
+	handling of the hard frame pointer if the hard frame pointer is fixed.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97081
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Use the
+	precision of the shifted operand to determine the mask.
+
+2020-09-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Update comment.
+	Cast to long when printing values formatted as long.
+	Support 'd', 'e', 'f' and 'g' modifiers.
+	Extract operand value with a single operation for all modifiers.
+	* doc/extend.texi (msp430Operandmodifiers): New.
+
+2020-09-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (increment_stack): Mark insns which increment
+	the stack as frame_related.
+	(msp430_expand_prologue): Add comments.
+	(msp430_expand_epilogue): Mark insns which decrement
+	the stack as frame_related.
+	Add reg_note to stack pop insns describing position of register
+	variables on the stack.
+
+2020-09-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-tree.c (execute_omp_gcn): Delete.
+	(make_pass_omp_gcn): Delete.
+	* config/gcn/t-gcn-hsa (PASSES_EXTRA): Delete.
+	* config/gcn/gcn-passes.def: Removed.
+
+2020-09-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* cfgloop.h (nb_iter_bound): Reword comment describing is_exit.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97095
+	* tree-vect-loop.c (vectorizable_live_operation): Get
+	the SLP vector type from the correct object.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97089
+	* tree-ssa-sccvn.c (visit_nary_op): Do not replace unsigned
+	divisions.
+
+2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97098
+	* tree-vect-slp.c (vect_bb_slp_mark_live_stmts): Do not
+	recurse to children when all stmts were already visited.
+
 2020-09-17  Sergei Trofimovich  <siarheit@google.com>
 
 	* profile.c (sort_hist_values): Clarify hist format:

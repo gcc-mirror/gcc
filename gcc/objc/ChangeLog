@@ -1,3 +1,8 @@
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* objc-act.c (objc_start_method_definition): Update to reflect
+	changes to break/continue state bookkeeping in C front end.
+
 2020-09-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c/80076

@@ -56,6 +56,7 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "lto",
   "ipa_sra",
   "odr_types",
+  "ipa_modref",
 };
 
 /* Hooks so that the ipa passes can call into the lto front end to get

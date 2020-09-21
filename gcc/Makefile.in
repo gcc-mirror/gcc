@@ -1419,6 +1419,8 @@ OBJS = \
 	ipa-visibility.o \
 	ipa-inline-analysis.o \
 	ipa-inline-transform.o \
+	ipa-modref.o \
+	ipa-modref-tree.o \
 	ipa-predicate.o \
 	ipa-profile.o \
 	ipa-prop.o \
@@ -2587,6 +2589,8 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
   $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-utils.h \
   $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.c $(srcdir)/dbxout.c \
+  $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.c \
+  $(srcdir)/ipa-modref-tree.h \
   $(srcdir)/signop.h \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \

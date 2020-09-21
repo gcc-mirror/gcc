@@ -338,6 +338,14 @@ Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
 
+Warray-parameter
+C ObjC C++ ObjC++ Warning Alias(Warray-parameter=, 2, 0)
+Warn about mismatched declarations of array parameters and unsafe accesses to them.
+
+Warray-parameter=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_array_parameter) IntegerRange(0, 2) LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) Warning
+Warn about mismatched declarations of array parameters and unsafe accesses to them.
+
 Wzero-length-bounds
 C ObjC C++ ObjC++ Var(warn_zero_length_bounds) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about accesses to interior zero-length array members.
@@ -1256,6 +1264,10 @@ larger than <number> bytes.
 Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
 Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
+
+Wvla-parameter
+C ObjC C++ ObjC++ Var(warn_vla_parameter) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about mismatched declarations of VLA parameters.
 
 Wvolatile
 C++ ObjC++ Var(warn_volatile) Warning

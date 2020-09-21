@@ -183,7 +183,6 @@ static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
-static tree compute_objsize (tree, int, access_ref *, const vr_values * = NULL);
 static bool get_range (tree, signop, offset_int[2], const vr_values * = NULL);
 static bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
 
@@ -3490,51 +3489,146 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
 }
 
 /* For an expression EXP issue an access warning controlled by option OPT
-   with access to a region SLEN bytes in size in the RANGE of sizes.  */
+   with access to a region SIZE bytes in size in the RANGE of sizes.
+   WRITE is true for a write access, READ for a read access, neither for
+   call that may or may not perform an access but for which the range
+   is expected to valid.
+   Returns true when a warning has been issued.  */
 
 static bool
-warn_for_access (location_t loc, tree func, tree exp, tree range[2],
-		 tree slen, bool access)
+warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
+		 tree size, bool write, bool read)
 {
   bool warned = false;
 
-  if (access)
+  if (write && read)
+    {
+      if (tree_int_cst_equal (range[0], range[1]))
+	warned = (func
+		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%K%qD accessing %E byte in a region "
+			       "of size %E",
+			       "%K%qD accessing %E bytes in a region "
+			       "of size %E",
+			       exp, func, range[0], size)
+		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%Kaccessing %E byte in a region "
+			       "of size %E",
+			       "%Kaccessing %E bytes in a region "
+			       "of size %E",
+			       exp, range[0], size));
+      else if (tree_int_cst_sign_bit (range[1]))
+	{
+	  /* Avoid printing the upper bound if it's invalid.  */
+	  warned = (func
+		    ? warning_at (loc, opt,
+				  "%K%qD accessing %E or more bytes in "
+				  "a region of size %E",
+				  exp, func, range[0], size)
+		    : warning_at (loc, opt,
+				  "%Kaccessing %E or more bytes in "
+				  "a region of size %E",
+				  exp, range[0], size));
+	}
+      else
+	warned = (func
+		  ? warning_at (loc, opt,
+				"%K%qD accessing between %E and %E bytes "
+				"in a region of size %E",
+				exp, func, range[0], range[1],
+				size)
+		  : warning_at (loc, opt,
+				"%Kaccessing between %E and %E bytes "
+				"in a region of size %E",
+				exp, range[0], range[1],
+				size));
+      return warned;
+    }
+
+  if (write)
+    {
+      if (tree_int_cst_equal (range[0], range[1]))
+	warned = (func
+		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%K%qD writing %E byte into a region "
+			       "of size %E overflows the destination",
+			       "%K%qD writing %E bytes into a region "
+			       "of size %E overflows the destination",
+			       exp, func, range[0], size)
+		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
+			       "%Kwriting %E byte into a region "
+			       "of size %E overflows the destination",
+			       "%Kwriting %E bytes into a region "
+			       "of size %E overflows the destination",
+			       exp, range[0], size));
+      else if (tree_int_cst_sign_bit (range[1]))
+	{
+	  /* Avoid printing the upper bound if it's invalid.  */
+	  warned = (func
+		    ? warning_at (loc, opt,
+				  "%K%qD writing %E or more bytes into "
+				  "a region of size %E overflows "
+				  "the destination",
+				  exp, func, range[0], size)
+		    : warning_at (loc, opt,
+				  "%Kwriting %E or more bytes into "
+				  "a region of size %E overflows "
+				  "the destination",
+				  exp, range[0], size));
+	}
+      else
+	warned = (func
+		  ? warning_at (loc, opt,
+				"%K%qD writing between %E and %E bytes "
+				"into a region of size %E overflows "
+				"the destination",
+				exp, func, range[0], range[1],
+				size)
+		  : warning_at (loc, opt,
+				"%Kwriting between %E and %E bytes "
+				"into a region of size %E overflows "
+				"the destination",
+				exp, range[0], range[1],
+				size));
+      return warned;
+    }
+
+  if (read)
     {
       if (tree_int_cst_equal (range[0], range[1]))
 	warned = (func
 		  ? warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
 			       "%K%qD reading %E byte from a region of size %E",
-			       "%K%qD reading %E bytes from a region of size %E",
-			       exp, func, range[0], slen)
+			       "%K%qD reading %E bytes from a region of size %E",			       exp, func, range[0], size)
 		  : warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
 			       "%Kreading %E byte from a region of size %E",
 			       "%Kreading %E bytes from a region of size %E",
-			       exp, range[0], slen));
+			       exp, range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, OPT_Wstringop_overread,
-				  "%K%qD reading %E or more bytes from a region "
-				  "of size %E",
-				  exp, func, range[0], slen)
+				  "%K%qD reading %E or more bytes from "
+				  "a region of size %E",
+				  exp, func, range[0], size)
 		    : warning_at (loc, OPT_Wstringop_overread,
 				  "%Kreading %E or more bytes from a region "
 				  "of size %E",
-				  exp, range[0], slen));
+				  exp, range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, OPT_Wstringop_overread,
 				"%K%qD reading between %E and %E bytes from "
 				"a region of size %E",
-				exp, func, range[0], range[1], slen)
-		  : warning_at (loc, OPT_Wstringop_overread,
-				"%Kreading between %E and %E bytes from "
+				exp, func, range[0], range[1], size)
+		  : warning_at (loc, opt,
+				"%K reading between %E and %E bytes from "
 				"a region of size %E",
-				exp, range[0], range[1], slen));
+				exp, range[0], range[1], size));
 
       if (warned)
 	TREE_NO_WARNING (exp) = true;
@@ -3542,18 +3636,19 @@ warn_for_access (location_t loc, tree func, tree exp, tree range[2],
       return warned;
     }
 
-  if (tree_int_cst_equal (range[0], range[1]))
+  if (tree_int_cst_equal (range[0], range[1])
+      || tree_int_cst_sign_bit (range[1]))
     warned = (func
 	      ? warning_n (loc, OPT_Wstringop_overread,
 			   tree_to_uhwi (range[0]),
 			   "%K%qD epecting %E byte in a region of size %E",
 			   "%K%qD expecting %E bytes in a region of size %E",
-			   exp, func, range[0], slen)
+			   exp, func, range[0], size)
 	      : warning_n (loc, OPT_Wstringop_overread,
 			   tree_to_uhwi (range[0]),
 			   "%Kexpecting %E byte in a region of size %E",
 			   "%Kexpecting %E bytes in a region of size %E",
-			   exp, range[0], slen));
+			   exp, range[0], size));
   else if (tree_int_cst_sign_bit (range[1]))
     {
       /* Avoid printing the upper bound if it's invalid.  */
@@ -3561,22 +3656,22 @@ warn_for_access (location_t loc, tree func, tree exp, tree range[2],
 		? warning_at (loc, OPT_Wstringop_overread,
 			      "%K%qD expecting %E or more bytes in a region "
 			      "of size %E",
-			      exp, func, range[0], slen)
+			      exp, func, range[0], size)
 		: warning_at (loc, OPT_Wstringop_overread,
 			      "%Kexpecting %E or more bytes in a region "
 			      "of size %E",
-			      exp, range[0], slen));
+			      exp, range[0], size));
     }
   else
     warned = (func
 	      ? warning_at (loc, OPT_Wstringop_overread,
 			    "%K%qD expecting between %E and %E bytes in "
 			    "a region of size %E",
-			    exp, func, range[0], range[1], slen)
+			    exp, func, range[0], range[1], size)
 	      : warning_at (loc, OPT_Wstringop_overread,
 			    "%Kexpectting between %E and %E bytes in "
 			    "a region of size %E",
-			    exp, range[0], range[1], slen));
+			    exp, range[0], range[1], size));
 
   if (warned)
     TREE_NO_WARNING (exp) = true;
@@ -3759,8 +3854,9 @@ get_size_range (tree bound, tree range[2], const offset_int bndrng[2])
    When DSTWRITE is null LEN is checked to verify that it doesn't exceed
    SIZE_MAX.
 
-   ACCESS is true for accesses, false for simple size checks in calls
-   to functions that neither read from nor write to the region.
+   WRITE is true for write accesses, READ is true for reads.  Both are
+   false for simple size checks in calls to functions that neither read
+   from nor write to the region.
 
    When nonnull, PAD points to a more detailed description of the access.
 
@@ -3857,6 +3953,11 @@ check_access (tree exp, tree dstwrite,
   get_size_range (dstwrite, range, pad ? pad->dst.bndrng : NULL);
 
   tree func = get_callee_fndecl (exp);
+  /* Read vs write access by built-ins can be determined from the const
+     qualifiers on the pointer argument.  In the absence of attribute
+     access, non-const qualified pointer arguments to user-defined
+     functions are assumed to both read and write the objects.  */
+  const bool builtin = func ? fndecl_built_in_p (func) : false;
 
   /* First check the number of bytes to be written against the maximum
      object size.  */
@@ -3913,51 +4014,18 @@ check_access (tree exp, tree dstwrite,
 				      "the destination",
 				      exp, range[0], dstsize));
 	    }
-	  else if (tree_int_cst_equal (range[0], range[1]))
-	    warned = (func
-		      ? warning_n (loc, OPT_Wstringop_overflow_,
-				   tree_to_uhwi (range[0]),
-				   "%K%qD writing %E byte into a region "
-				   "of size %E overflows the destination",
-				   "%K%qD writing %E bytes into a region "
-				   "of size %E overflows the destination",
-				   exp, func, range[0], dstsize)
-		      : warning_n (loc, OPT_Wstringop_overflow_,
-				   tree_to_uhwi (range[0]),
-				   "%Kwriting %E byte into a region "
-				   "of size %E overflows the destination",
-				   "%Kwriting %E bytes into a region "
-				   "of size %E overflows the destination",
-				   exp, range[0], dstsize));
-	  else if (tree_int_cst_sign_bit (range[1]))
-	    {
-	      /* Avoid printing the upper bound if it's invalid.  */
-	      warned = (func
-			? warning_at (loc, OPT_Wstringop_overflow_,
-				      "%K%qD writing %E or more bytes into "
-				      "a region of size %E overflows "
-				      "the destination",
-				      exp, func, range[0], dstsize)
-			: warning_at (loc, OPT_Wstringop_overflow_,
-				      "%Kwriting %E or more bytes into "
-				      "a region of size %E overflows "
-				      "the destination",
-				      exp, range[0], dstsize));
-	    }
 	  else
-	    warned = (func
-		      ? warning_at (loc, OPT_Wstringop_overflow_,
-				    "%K%qD writing between %E and %E bytes "
-				    "into a region of size %E overflows "
-				    "the destination",
-				    exp, func, range[0], range[1],
-				    dstsize)
-		      : warning_at (loc, OPT_Wstringop_overflow_,
-				    "%Kwriting between %E and %E bytes "
-				    "into a region of size %E overflows "
-				    "the destination",
-				    exp, range[0], range[1],
-				    dstsize));
+	    {
+	      const bool read
+		= mode == access_read_only || mode == access_read_write;
+	      const bool write
+		= mode == access_write_only || mode == access_read_write;
+	      warned = warn_for_access (loc, func, exp,
+					OPT_Wstringop_overflow_,
+					range, dstsize,
+					write, read && !builtin);
+	    }
+
 	  if (warned)
 	    {
 	      TREE_NO_WARNING (exp) = true;
@@ -4037,10 +4105,15 @@ check_access (tree exp, tree dstwrite,
       location_t loc = tree_nonartificial_location (exp);
       loc = expansion_point_location_if_in_system_header (loc);
 
-      if (warn_for_access (loc, func, exp, range, slen, mode)
-	  && pad)
-	inform_access (pad->src, access_read_only);
-
+      const bool read
+	= mode == access_read_only || mode == access_read_write;
+      if (warn_for_access (loc, func, exp, OPT_Wstringop_overread, range,
+			   slen, false, read))
+	{
+	  TREE_NO_WARNING (exp) = true;
+	  if (pad)
+	    inform_access (pad->src, access_read_only);
+	}
       return false;
     }
 
@@ -4065,8 +4138,11 @@ check_read_access (tree exp, tree src, tree bound /* = NULL_TREE */,
 }
 
 /* If STMT is a call to an allocation function, returns the constant
-   size of the object allocated by the call represented as sizetype.
-   If nonnull, sets RNG1[] to the range of the size.  */
+   maximum size of the object allocated by the call represented as
+   sizetype.  If nonnull, sets RNG1[] to the range of the size.
+   When nonnull, uses RVALS for range information, otherwise calls
+   get_range_info to get it.
+   Returns null when STMT is not a call to a valid allocation function.  */
 
 tree
 gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
@@ -4122,8 +4198,14 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
   if (!rng1)
     rng1 = rng1_buf;
 
+  const int prec = ADDR_MAX_PRECISION;
+  const tree size_max = TYPE_MAX_VALUE (sizetype);
   if (!get_range (size, rng1, rvals))
-    return NULL_TREE;
+    {
+      /* Use the full non-negative range on failure.  */
+      rng1[0] = wi::zero (prec);
+      rng1[1] = wi::to_wide (size_max, prec);
+    }
 
   if (argidx2 > nargs && TREE_CODE (size) == INTEGER_CST)
     return fold_convert (sizetype, size);
@@ -4133,10 +4215,13 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
   tree n = argidx2 < nargs ? gimple_call_arg (stmt, argidx2) : integer_one_node;
   wide_int rng2[2];
   if (!get_range (n, rng2, rvals))
-    return NULL_TREE;
+    {
+      /* As above, use the full non-negative range on failure.  */
+      rng2[0] = wi::zero (prec);
+      rng2[1] = wi::to_wide (size_max, prec);
+    }
 
   /* Extend to the maximum precision to avoid overflow.  */
-  const int prec = ADDR_MAX_PRECISION;
   rng1[0] = wide_int::from (rng1[0], prec, UNSIGNED);
   rng1[1] = wide_int::from (rng1[1], prec, UNSIGNED);
   rng2[0] = wide_int::from (rng2[0], prec, UNSIGNED);
@@ -4146,7 +4231,6 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
      of SIZE_MAX and the product of the upper bounds as a constant.  */
   rng1[0] = rng1[0] * rng2[0];
   rng1[1] = rng1[1] * rng2[1];
-  tree size_max = TYPE_MAX_VALUE (sizetype);
   if (wi::gtu_p (rng1[1], wi::to_wide (size_max, prec)))
     {
       rng1[1] = wi::to_wide (size_max);
@@ -4154,6 +4238,61 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
     }
 
   return wide_int_to_tree (sizetype, rng1[1]);
+}
+
+/* For an access to an object referenced to by the function parameter PTR
+   of pointer type, and set RNG[] to the range of sizes of the object
+   obtainedfrom the attribute access specification for the current function.
+   Return the function parameter on success and null otherwise.  */
+
+tree
+gimple_parm_array_size (tree ptr, wide_int rng[2],
+			const vr_values * /* = NULL */)
+{
+  /* For a function argument try to determine the byte size of the array
+     from the current function declaratation (e.g., attribute access or
+     related).  */
+  tree var = SSA_NAME_VAR (ptr);
+  if (TREE_CODE (var) != PARM_DECL)
+    return NULL_TREE;
+
+  const unsigned prec = TYPE_PRECISION (sizetype);
+
+  rdwr_map rdwr_idx;
+  attr_access *access = get_parm_access (rdwr_idx, var);
+  if (!access)
+    return NULL_TREE;
+
+  if (access->sizarg != UINT_MAX)
+    {
+      /* TODO: Try to extract the range from the argument based on
+	 those of subsequent assertions or based on known calls to
+	 the current function.  */
+      return NULL_TREE;
+    }
+
+  if (!access->minsize)
+    return NULL_TREE;
+
+  /* Only consider ordinary array bound at level 2 (or above if it's
+     ever added).  */
+  if (warn_array_parameter < 2 && !access->static_p)
+    return NULL_TREE;
+
+  rng[0] = wi::zero (prec);
+  rng[1] = wi::uhwi (access->minsize, prec);
+  /* If the PTR argument points to an array multiply MINSIZE by the size
+     of array element type.  Otherwise, multiply it by the size of what
+     the pointer points to.  */
+  tree eltype = TREE_TYPE (TREE_TYPE (ptr));
+  if (TREE_CODE (eltype) == ARRAY_TYPE)
+    eltype = TREE_TYPE (eltype);
+  tree size = TYPE_SIZE_UNIT (eltype);
+  if (!size || TREE_CODE (size) != INTEGER_CST)
+    return NULL_TREE;
+
+  rng[1] *= wi::to_wide (size, prec);
+  return var;
 }
 
 /* Wrapper around the wide_int overload of get_range.  Returns the same
@@ -4348,6 +4487,21 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	  return false;
 	}
 
+      if (gimple_nop_p (stmt))
+	{
+	  /* For a function argument try to determine the byte size
+	     of the array from the current function declaratation
+	     (e.g., attribute access or related).  */
+	  wide_int wr[2];
+	  tree ref = gimple_parm_array_size (ptr, wr, rvals);
+	  if (!ref)
+	    return NULL_TREE;
+	  pref->ref = ref;
+	  pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
+	  pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
+	  return true;
+	}
+
       /* TODO: Handle PHI.  */
 
       if (!is_gimple_assign (stmt))
@@ -4400,7 +4554,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 /* A "public" wrapper around the above.  Clients should use this overload
    instead.  */
 
-static tree
+tree
 compute_objsize (tree ptr, int ostype, access_ref *pref,
 		 const vr_values *rvals /* = NULL */)
 {
@@ -4977,7 +5131,6 @@ expand_builtin_stpncpy (tree exp, rtx)
   /* The size of the destination object.  */
   tree destsize = compute_objsize (dest, warn_stringop_overflow - 1, &data.dst);
   check_access (exp, len, /*maxread=*/len, src, destsize, data.mode, &data);
-
   return NULL_RTX;
 }
 
@@ -5130,7 +5283,6 @@ expand_builtin_strncat (tree exp, rtx)
 
   check_access (exp, /*dstwrite=*/NULL_TREE, maxread, srclen,
 		destsize, data.mode, &data);
-
   return NULL_RTX;
 }
 

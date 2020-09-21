@@ -1,3 +1,13 @@
+2020-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (warning_event::get_desc): Handle global state
+	changes.
+
+2020-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Handle strdup and
+	strndup as being malloc-like allocators.
+
 2020-09-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (strongly_connected_components::strong_connect): Only
