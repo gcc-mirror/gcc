@@ -41,7 +41,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 /**
  *  @brief Fit aligned storage in buffer.
- *  @ingroup memory
  *
  *  This function tries to fit @a __size bytes of storage with alignment
  *  @a __align into the buffer @a __ptr of size @a __space bytes.  If such
@@ -56,18 +55,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  *  @param __space   Size of the buffer pointed to by @a __ptr.
  *  @return the updated pointer if the aligned storage fits, otherwise nullptr.
  *
+ *  @ingroup memory
  */
 inline void*
 align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   const auto __intptr = reinterpret_cast<uintptr_t>(__ptr);
-#else
-  // Cannot use std::uintptr_t so assume that std::size_t can be used instead.
-  static_assert(sizeof(size_t) >= sizeof(void*),
-      "std::size_t must be a suitable substitute for std::uintptr_t");
-  const auto __intptr = reinterpret_cast<unsigned long long>(__ptr);
-#endif
   const auto __aligned = (__intptr - 1u + __align) & -__align;
   const auto __diff = __aligned - __intptr;
   if ((__size + __diff) > __space)
@@ -86,15 +79,26 @@ align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
    *  @tparam _Align An alignment value (i.e. a power of two)
    *  @tparam _Tp    An object type
    *  @param  __ptr  A pointer that is aligned to _Align
+   *
+   *  C++20 20.10.6 [ptr.align]
+   *
    *  @ingroup memory
    */
   template<size_t _Align, class _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
-    constexpr _Tp* assume_aligned(_Tp* __ptr)
+    constexpr _Tp*
+    assume_aligned(_Tp* __ptr) noexcept
     {
       static_assert(std::has_single_bit(_Align));
-      _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
-      return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
+      if (std::is_constant_evaluated())
+	return __ptr;
+      else
+	{
+	  // This function is expected to be used in hot code, where
+	  // __glibcxx_assert would add unwanted overhead.
+	  _GLIBCXX_DEBUG_ASSERT((uintptr_t)__ptr % _Align == 0);
+	  return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
+	}
     }
 #endif // C++2a
 
