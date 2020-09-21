@@ -233,7 +233,7 @@ package body Ada.Text_IO.Fixed_IO is
 
    --  or
 
-   --    (3)   Y = 1 and Z = (1.0 / S) * 10**(-D), for D < 0
+   --    (3)   Y = -1 and Z = -(1.0 / S) * 10**(-D), for D < 0
 
    --  Negative values are used for nominator Y and denominator Z, so that S
    --  can have a maximum value of 2.0**63 and a minimum of 2.0**(-63).
