@@ -115,10 +115,6 @@ package Get_Targ is
    --  Returns the maximum supported size in bits for a field that is
    --  not aligned on a storage unit boundary.
 
-   function Width_From_Size  (Size : Pos) return Pos;
-   function Digits_From_Size (Size : Pos) return Pos;
-   --  Calculate values for 'Width or 'Digits from 'Size
-
    type C_String is array (0 .. 255) of aliased Character;
    pragma Convention (C, C_String);
 

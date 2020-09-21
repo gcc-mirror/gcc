@@ -813,8 +813,6 @@ procedure Gnat1drv is
 
          Ttypes.Standard_Long_Long_Long_Integer_Size :=
            Ttypes.Standard_Long_Long_Integer_Size;
-         Ttypes.Standard_Long_Long_Long_Integer_Width :=
-           Ttypes.Standard_Long_Long_Integer_Width;
          Ttypes.System_Max_Integer_Size :=
            Ttypes.Standard_Long_Long_Integer_Size;
          Ttypes.System_Max_Binary_Modulus_Power :=
