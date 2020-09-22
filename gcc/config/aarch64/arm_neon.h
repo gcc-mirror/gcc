@@ -35659,6 +35659,55 @@ vusmmlaq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b)
 
 #pragma GCC pop_options
 
+__extension__ extern __inline poly8x8_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vadd_p8 (poly8x8_t __a, poly8x8_t __b)
+{
+  return __a ^ __b;
+}
+
+__extension__ extern __inline poly16x4_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vadd_p16 (poly16x4_t __a, poly16x4_t __b)
+{
+  return __a ^ __b;
+}
+
+__extension__ extern __inline poly64x1_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vadd_p64 (poly64x1_t __a, poly64x1_t __b)
+{
+  return __a ^ __b;
+}
+
+__extension__ extern __inline poly8x16_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vaddq_p8 (poly8x16_t __a, poly8x16_t __b)
+{
+  return __a ^ __b;
+}
+
+__extension__ extern __inline poly16x8_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vaddq_p16 (poly16x8_t __a, poly16x8_t __b)
+{
+  return __a ^__b;
+}
+
+__extension__ extern __inline poly64x2_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vaddq_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+  return __a ^ __b;
+}
+
+__extension__ extern __inline poly128_t
+__attribute ((__always_inline__, __gnu_inline__, __artificial__))
+vaddq_p128 (poly128_t __a, poly128_t __b)
+{
+  return __a ^ __b;
+}
+
 #undef __aarch64_vget_lane_any
 
 #undef __aarch64_vdup_lane_any
