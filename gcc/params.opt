@@ -882,7 +882,7 @@ Maximum number of refs stored in each modref tree.
 
 -param=modref-max-tests=
 Common Joined UInteger Var(param_modref_max_tests) Init(64)
-Maximum number of tests perofmed by modref query
+Maximum number of tests perofmed by modref query.
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization

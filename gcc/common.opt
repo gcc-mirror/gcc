@@ -1827,7 +1827,7 @@ Perform interprocedural bitwise constant propagation.
 
 fipa-modref
 Common Report Var(flag_ipa_modref) Optimization
-Perform interprocedural modref analysis
+Perform interprocedural modref analysis.
 
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
