@@ -12670,6 +12670,13 @@ vceqq_u64 (uint64x2_t __a, uint64x2_t __b)
   return (__a == __b);
 }
 
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vceqq_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+  return (__a == __b);
+}
+
 /* vceq - scalar.  */
 
 __extension__ extern __inline uint32_t
@@ -12779,6 +12786,13 @@ vceqz_u64 (uint64x1_t __a)
   return (__a == __AARCH64_UINT64_C (0));
 }
 
+__extension__ extern __inline uint64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vceqz_p64 (poly64x1_t __a)
+{
+  return (__a == __AARCH64_UINT64_C (0));
+}
+
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vceqzq_f32 (float32x4_t __a)
@@ -12852,6 +12866,13 @@ vceqzq_u32 (uint32x4_t __a)
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vceqzq_u64 (uint64x2_t __a)
+{
+  return (__a == __AARCH64_UINT64_C (0));
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vceqzq_p64 (poly64x2_t __a)
 {
   return (__a == __AARCH64_UINT64_C (0));
 }
