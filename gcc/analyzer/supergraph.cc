@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "cfganal.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -374,6 +375,38 @@ supergraph::dump_dot (const char *path, const dump_args_t &dump_args) const
   fclose (fp);
 }
 
+/* Return a new json::object of the form
+   {"nodes" : [objs for snodes],
+    "edges" : [objs for sedges]}.  */
+
+json::object *
+supergraph::to_json () const
+{
+  json::object *sgraph_obj = new json::object ();
+
+  /* Nodes.  */
+  {
+    json::array *nodes_arr = new json::array ();
+    unsigned i;
+    supernode *n;
+    FOR_EACH_VEC_ELT (m_nodes, i, n)
+      nodes_arr->append (n->to_json ());
+    sgraph_obj->set ("nodes", nodes_arr);
+  }
+
+  /* Edges.  */
+  {
+    json::array *edges_arr = new json::array ();
+    unsigned i;
+    superedge *n;
+    FOR_EACH_VEC_ELT (m_edges, i, n)
+      edges_arr->append (n->to_json ());
+    sgraph_obj->set ("edges", edges_arr);
+  }
+
+  return sgraph_obj;
+}
+
 /* Create a supernode for BB within FUN and add it to this supergraph.
 
    If RETURNING_CALL is non-NULL, the supernode represents the resumption
@@ -594,6 +627,63 @@ supernode::dump_dot_id (pretty_printer *pp) const
   pp_printf (pp, "node_%i", m_index);
 }
 
+/* Return a new json::object of the form
+   {"idx": int,
+    "bb_idx": int,
+    "m_returning_call": optional str,
+    "phis": [str],
+    "stmts" : [str]}.  */
+
+json::object *
+supernode::to_json () const
+{
+  json::object *snode_obj = new json::object ();
+
+  snode_obj->set ("idx", new json::integer_number (m_index));
+  snode_obj->set ("bb_idx", new json::integer_number (m_bb->index));
+
+  if (m_returning_call)
+    {
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      pp_gimple_stmt_1 (&pp, m_returning_call, 0, (dump_flags_t)0);
+      snode_obj->set ("returning_call",
+		      new json::string (pp_formatted_text (&pp)));
+    }
+
+  /* Phi nodes.  */
+  {
+    json::array *phi_arr = new json::array ();
+    for (gphi_iterator gpi = const_cast<supernode *> (this)->start_phis ();
+	 !gsi_end_p (gpi); gsi_next (&gpi))
+      {
+	const gimple *stmt = gsi_stmt (gpi);
+	pretty_printer pp;
+	pp_format_decoder (&pp) = default_tree_printer;
+	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
+	phi_arr->append (new json::string (pp_formatted_text (&pp)));
+      }
+    snode_obj->set ("phis", phi_arr);
+  }
+
+  /* Statements.  */
+  {
+    json::array *stmt_arr = new json::array ();
+    int i;
+    gimple *stmt;
+    FOR_EACH_VEC_ELT (m_stmts, i, stmt)
+      {
+	pretty_printer pp;
+	pp_format_decoder (&pp) = default_tree_printer;
+	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
+	stmt_arr->append (new json::string (pp_formatted_text (&pp)));
+      }
+    snode_obj->set ("stmts", stmt_arr);
+  }
+
+  return snode_obj;
+}
+
 /* Get a location_t for the start of this supernode.  */
 
 location_t
@@ -757,6 +847,28 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
   dump_label_to_pp (pp, false);
 
   pp_printf (pp, "\"];\n");
+}
+
+/* Return a new json::object of the form
+   {"src_idx": int, the index of the source supernode,
+    "dst_idx": int, the index of the destination supernode,
+    "desc"   : str.  */
+
+json::object *
+superedge::to_json () const
+{
+  json::object *sedge_obj = new json::object ();
+  sedge_obj->set ("src_idx", new json::integer_number (m_src->m_index));
+  sedge_obj->set ("dst_idx", new json::integer_number (m_dest->m_index));
+
+  {
+    pretty_printer pp;
+    pp_format_decoder (&pp) = default_tree_printer;
+    dump_label_to_pp (&pp, false);
+    sedge_obj->set ("desc", new json::string (pp_formatted_text (&pp)));
+  }
+
+  return sedge_obj;
 }
 
 /* If this is an intraprocedural superedge, return the associated

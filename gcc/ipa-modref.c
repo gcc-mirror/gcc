@@ -35,10 +35,10 @@ along with GCC; see the file COPYING3.  If not see
    propagates across the callgraph and is able to handle recursion and works on
    whole program during link-time analysis.
 
-   LTO mode differs from the local mode by not recroding alias sets but types
+   LTO mode differs from the local mode by not recording alias sets but types
    that are translated to alias sets later.  This is necessary in order stream
-   the information becaue the alias sets are rebuild at stream-in time and may
-   not correspond to ones seen during analsis.  For this reason part of analysis
+   the information because the alias sets are rebuild at stream-in time and may
+   not correspond to ones seen during analysis.  For this reason part of analysis
    is duplicated.  */
 
 #include "config.h"
@@ -77,7 +77,7 @@ public:
 			  modref_summary *src_data,
 			  modref_summary *dst_data);
   /* This flag controls whether newly inserted functions should be analyzed
-     in IPA or normal mode.  Functions inserted betweehn IPA analysis and
+     in IPA or normal mode.  Functions inserted between IPA analysis and
      ipa-modref pass execution needs to be analyzed in IPA mode while all
      other insertions leads to normal analysis.  */
   bool ipa;
@@ -413,7 +413,7 @@ analyze_call (modref_summary *cur_summary,
 
   struct cgraph_node *callee_node = cgraph_node::get_create (callee);
 
-  /* We can not safely optimize based on summary of calle if it does
+  /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
      was optimized out earlier which may not happen in the interposed
      variant.  */
@@ -815,7 +815,7 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
 /* Read a modref_tree from the input block IB using the data from DATA_IN.
    This assumes that the tree was encoded using write_modref_tree.
    Either nolto_ret or lto_ret is initialized by the tree depending whether
-   LTO streaming is expcted or not.  */
+   LTO streaming is expected or not.  */
 
 void
 read_modref_records (lto_input_block *ib, struct data_in *data_in,
@@ -1238,7 +1238,7 @@ unsigned int pass_ipa_modref::execute (function *)
 		fprintf (dump_file, "    Call to %s\n",
 			 cur->dump_name ());
 
-	      /* We can not safely optimize based on summary of calle if it
+	      /* We can not safely optimize based on summary of callee if it
 		 does not always bind to current def: it is possible that
 		 memory load was optimized out earlier which may not happen in
 		 the interposed variant.  */

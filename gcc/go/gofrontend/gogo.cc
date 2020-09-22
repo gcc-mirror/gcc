@@ -3508,6 +3508,10 @@ Finalize_methods::type(Type* t)
     case Type::TYPE_NAMED:
       {
 	Named_type* nt = t->named_type();
+
+	if (nt->is_alias())
+	  return TRAVERSE_CONTINUE;
+
 	Type* rt = nt->real_type();
 	if (rt->classification() != Type::TYPE_STRUCT)
 	  {

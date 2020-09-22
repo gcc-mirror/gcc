@@ -139,7 +139,6 @@ enum tag_scope {
 					   only, for friend class lookup
 					   according to [namespace.memdef]/3
 					   and [class.friend]/9.  */
-  ts_lambda = 3			/* Declaring a lambda closure.  */
 };
 
 struct GTY(()) cp_class_binding {

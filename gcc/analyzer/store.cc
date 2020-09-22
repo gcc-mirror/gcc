@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -120,6 +121,17 @@ binding_key::dump (bool simple) const
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Get a description of this binding_key.  */
+
+label_text
+binding_key::get_desc (bool simple) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  dump_to_pp (&pp, simple);
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
 /* qsort callback.  */
@@ -364,6 +376,37 @@ binding_map::dump (bool simple) const
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Return a new json::object of the form
+   {KEY_DESC : SVALUE_DESC,
+    ...for the various key/value pairs in this binding_map}.  */
+
+json::object *
+binding_map::to_json () const
+{
+  json::object *map_obj = new json::object ();
+
+  auto_vec <const binding_key *> binding_keys;
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end (); ++iter)
+    {
+      const binding_key *key = (*iter).first;
+      binding_keys.safe_push (key);
+    }
+  binding_keys.qsort (binding_key::cmp_ptrs);
+
+  const binding_key *key;
+  unsigned i;
+  FOR_EACH_VEC_ELT (binding_keys, i, key)
+    {
+      const svalue *value = *const_cast <map_t &> (m_map).get (key);
+      label_text key_desc = key->get_desc ();
+      map_obj->set (key_desc.m_buffer, value->to_json ());
+      key_desc.maybe_free ();
+    }
+
+  return map_obj;
 }
 
 /* Get the child region of PARENT_REG based upon INDEX within a
@@ -655,6 +698,23 @@ binding_cluster::dump (bool simple) const
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Return a new json::object of the form
+   {"escaped": true/false,
+    "touched": true/false,
+    "map" : object for the the binding_map.  */
+
+json::object *
+binding_cluster::to_json () const
+{
+  json::object *cluster_obj = new json::object ();
+
+  cluster_obj->set ("escaped", new json::literal (m_escaped));
+  cluster_obj->set ("touched", new json::literal (m_touched));
+  cluster_obj->set ("map", m_map.to_json ());
+
+  return cluster_obj;
 }
 
 /* Add a binding of SVAL of kind KIND to REG, unpacking SVAL if it is a
@@ -1573,6 +1633,64 @@ store::dump (bool simple) const
   dump_to_pp (&pp, simple, true, NULL);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Return a new json::object of the form
+   {PARENT_REGION_DESC: {BASE_REGION_DESC: object for binding_map,
+			 ... for each cluster within parent region},
+    ...for each parent region,
+    "called_unknown_function": true/false}.  */
+
+json::object *
+store::to_json () const
+{
+  json::object *store_obj = new json::object ();
+
+  /* Sort into some deterministic order.  */
+  auto_vec<const region *> base_regions;
+  for (cluster_map_t::iterator iter = m_cluster_map.begin ();
+       iter != m_cluster_map.end (); ++iter)
+    {
+      const region *base_reg = (*iter).first;
+      base_regions.safe_push (base_reg);
+    }
+  base_regions.qsort (region::cmp_ptrs);
+
+  /* Gather clusters, organize by parent region, so that we can group
+     together locals, globals, etc.  */
+  auto_vec<const region *> parent_regions;
+  get_sorted_parent_regions (&parent_regions, base_regions);
+
+  const region *parent_reg;
+  unsigned i;
+  FOR_EACH_VEC_ELT (parent_regions, i, parent_reg)
+    {
+      gcc_assert (parent_reg);
+
+      json::object *clusters_in_parent_reg_obj = new json::object ();
+
+      const region *base_reg;
+      unsigned j;
+      FOR_EACH_VEC_ELT (base_regions, j, base_reg)
+	{
+	  /* This is O(N * M), but N ought to be small.  */
+	  if (base_reg->get_parent_region () != parent_reg)
+	    continue;
+	  binding_cluster *cluster
+	    = *const_cast<cluster_map_t &> (m_cluster_map).get (base_reg);
+	  label_text base_reg_desc = base_reg->get_desc ();
+	  clusters_in_parent_reg_obj->set (base_reg_desc.m_buffer,
+					   cluster->to_json ());
+	  base_reg_desc.maybe_free ();
+	}
+      label_text parent_reg_desc = parent_reg->get_desc ();
+      store_obj->set (parent_reg_desc.m_buffer, clusters_in_parent_reg_obj);
+      parent_reg_desc.maybe_free ();
+    }
+
+  store_obj->set ("called_unknown_fn", new json::literal (m_called_unknown_fn));
+
+  return store_obj;
 }
 
 /* Get any svalue bound to REG, or NULL.  */

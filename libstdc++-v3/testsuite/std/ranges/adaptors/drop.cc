@@ -26,6 +26,7 @@
 using __gnu_test::test_range;
 using __gnu_test::forward_iterator_wrapper;
 using __gnu_test::bidirectional_iterator_wrapper;
+using __gnu_test::random_access_iterator_wrapper;
 
 namespace ranges = std::ranges;
 namespace views = ranges::views;
@@ -123,21 +124,6 @@ struct test_wrapper : forward_iterator_wrapper<T>
     forward_iterator_wrapper<T>::operator++();
     return *this;
   }
-
-  test_wrapper
-  operator--(int)
-  {
-    auto tmp = *this;
-    --*this;
-    return tmp;
-  }
-
-  test_wrapper&
-  operator--()
-  {
-    forward_iterator_wrapper<T>::operator--();
-    return *this;
-  }
 };
 
 void
@@ -146,9 +132,130 @@ test07()
   int x[] = {1,2,3,4,5};
   test_range<int, test_wrapper> rx(x);
   auto v = rx | views::drop(3);
+  VERIFY( test_wrapper<int>::increment_count == 0 );
+  (void) v.begin();
+  VERIFY( test_wrapper<int>::increment_count == 3 );
+  (void) v.begin();
+  VERIFY( test_wrapper<int>::increment_count == 3 );
   VERIFY( ranges::equal(v, (int[]){4,5}) );
+  VERIFY( test_wrapper<int>::increment_count == 5 );
   VERIFY( ranges::equal(v, (int[]){4,5}) );
   VERIFY( test_wrapper<int>::increment_count == 7 );
+}
+
+template<typename T>
+struct ra_test_wrapper : random_access_iterator_wrapper<T>
+{
+  static inline int increment_count = 0;
+
+  using random_access_iterator_wrapper<T>::random_access_iterator_wrapper;
+
+  ra_test_wrapper() : random_access_iterator_wrapper<T>()
+  { }
+
+  ra_test_wrapper
+  operator++(int)
+  {
+    auto tmp = *this;
+    ++*this;
+    return tmp;
+  }
+
+  ra_test_wrapper&
+  operator++()
+  {
+    ++increment_count;
+    random_access_iterator_wrapper<T>::operator++();
+    return *this;
+  }
+
+  ra_test_wrapper
+  operator--(int)
+  {
+    auto tmp = *this;
+    --*this;
+    return tmp;
+  }
+
+  ra_test_wrapper&
+  operator--()
+  {
+    random_access_iterator_wrapper<T>::operator--();
+    return *this;
+  }
+
+  ra_test_wrapper&
+  operator+=(std::ptrdiff_t n)
+  {
+    random_access_iterator_wrapper<T>::operator+=(n);
+    return *this;
+  }
+
+  ra_test_wrapper&
+  operator-=(std::ptrdiff_t n)
+  { return *this += -n; }
+
+  ra_test_wrapper
+  operator+(std::ptrdiff_t n) const
+  {
+    auto tmp = *this;
+    return tmp += n;
+  }
+
+  ra_test_wrapper
+  operator-(std::ptrdiff_t n) const
+  {
+    auto tmp = *this;
+    return tmp -= n;
+  }
+
+  std::ptrdiff_t
+  operator-(const ra_test_wrapper& it) const
+  {
+    return static_cast<const random_access_iterator_wrapper<T>&>(*this) - it;
+  }
+
+  friend ra_test_wrapper
+  operator+(std::ptrdiff_t n, const ra_test_wrapper& it)
+  { return it + n; }
+};
+
+void
+test08()
+{
+  // LWG 3482 - drop_view's const begin should additionally require sized_range
+
+  short a[10]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  test_range<short, ra_test_wrapper> ra(a);
+  static_assert( ranges::random_access_range<decltype(ra)> );
+  ranges::subrange nonsized = {ra.begin(), std::unreachable_sentinel};
+  using Nonsized = decltype(nonsized);
+  static_assert( ranges::random_access_range<Nonsized> );
+  static_assert( ! ranges::sized_range<Nonsized> );
+  auto v1 = nonsized | views::drop(5);
+  VERIFY( ra_test_wrapper<short>::increment_count == 0 );
+  auto b1 = v1.begin();
+  VERIFY( ra_test_wrapper<short>::increment_count == 5 );
+  VERIFY( v1.begin() == b1 );
+  VERIFY( ra_test_wrapper<short>::increment_count == 5 );
+  VERIFY( *b1 == 5 );
+  VERIFY( *v1.begin() == 5 );
+  VERIFY( ra_test_wrapper<short>::increment_count == 5 );
+
+  long b[10]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  test_range<long, ra_test_wrapper> rb(b);
+  ranges::subrange sized = {rb.begin(), rb.begin()+6};
+  using Sized = decltype(sized);
+  static_assert( ranges::random_access_range<Sized> );
+  static_assert( ranges::sized_range<Sized> );
+  auto v2 = sized | views::drop(6);
+  auto b2 = v2.begin();
+  VERIFY( ra_test_wrapper<long>::increment_count == 0 );
+  VERIFY( v2.begin() == b2 );
+  VERIFY( ra_test_wrapper<long>::increment_count == 0 );
+  VERIFY( *b2 == 6 );
+  VERIFY( *v2.begin() == 6 );
+  VERIFY( ra_test_wrapper<long>::increment_count == 0 );
 }
 
 int
@@ -161,4 +268,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }

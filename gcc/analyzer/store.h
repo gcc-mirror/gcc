@@ -159,6 +159,7 @@ public:
 
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
+  label_text get_desc (bool simple=true) const;
 
   static int cmp_ptrs (const void *, const void *);
   static int cmp (const binding_key *, const binding_key *);
@@ -340,6 +341,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
+  json::object *to_json () const;
+
   bool apply_ctor_to_region (const region *parent_reg, tree ctor,
 			     region_model_manager *mgr);
 
@@ -391,6 +394,8 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
+
+  json::object *to_json () const;
 
   void bind (store_manager *mgr, const region *, const svalue *,
 	     binding_kind kind);
@@ -516,6 +521,8 @@ public:
 		   store_manager *mgr) const;
   void dump (bool simple) const;
   void summarize_to_pp (pretty_printer *pp, bool simple) const;
+
+  json::object *to_json () const;
 
   const svalue *get_direct_binding (store_manager *mgr, const region *reg);
   const svalue *get_default_binding (store_manager *mgr, const region *reg);

@@ -1,3 +1,19 @@
+2020-09-21  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas   <pault@gcc.gnu.org>
+
+	* iresolve.c (gfc_resolve_mvbits): Remove unneeded conversion of
+	FROMPOS, LEN and TOPOS arguments to fit a C int.
+	* trans-intrinsic.c (gfc_conv_intrinsic_mvbits): Add inline
+	expansion of MVBITS intrinsic elemental subroutine and add code
+	for runtime argument checking.
+	(gfc_conv_intrinsic_subroutine): Recognise MVBITS intrinsic, but
+	defer handling to gfc_trans_call.
+	* trans-stmt.c (replace_ss):
+	(gfc_trans_call): Adjust to handle inline expansion, scalarization
+	of intrinsic subroutine MVBITS in gfc_conv_intrinsic_mvbits.
+	* trans.h (gfc_conv_intrinsic_mvbits): Add prototype for
+	gfc_conv_intrinsic_mvbits.
+
 2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* interface.c (gfc_compare_actual_formal): Add assertion after

@@ -1,3 +1,19 @@
+2020-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97130
+	* region-model-impl-calls.cc (call_details::get_arg_type): New.
+	* region-model.cc (region_model::on_call_pre): Check that the
+	initial arg is a pointer before calling impl_call_memset and
+	impl_call_strlen.
+	* region-model.h (call_details::get_arg_type): New decl.
+
+2020-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93355
+	* sm-malloc.cc (malloc_state_machine::get_default_state): Look at
+	the base region when considering pointers.  Treat pointers to
+	decls as being non-heap.
+
 2020-09-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (warning_event::get_desc): Handle global state

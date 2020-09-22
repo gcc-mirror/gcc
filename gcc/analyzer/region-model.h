@@ -256,6 +256,8 @@ public:
   void dump (bool simple=true) const;
   label_text get_desc (bool simple=true) const;
 
+  json::value *to_json () const;
+
   virtual const region_svalue *
   dyn_cast_region_svalue () const { return NULL; }
   virtual const constant_svalue *
@@ -1400,6 +1402,8 @@ public:
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const = 0;
   void dump (bool simple) const;
 
+  json::value *to_json () const;
+
   bool non_null_p () const;
 
   static int cmp_ptrs (const void *, const void *);
@@ -2482,6 +2486,7 @@ public:
   bool maybe_set_lhs (const svalue *result) const;
 
   tree get_arg_tree (unsigned idx) const;
+  tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;

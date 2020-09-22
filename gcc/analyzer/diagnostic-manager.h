@@ -46,6 +46,8 @@ public:
 
   bool operator== (const saved_diagnostic &other) const;
 
+  json::object *to_json () const;
+
   void set_feasible ()
   {
     gcc_assert (m_status == STATUS_NEW);
@@ -104,6 +106,8 @@ public:
   diagnostic_manager (logger *logger, engine *eng, int verbosity);
 
   engine *get_engine () const { return m_eng; }
+
+  json::object *to_json () const;
 
   void add_diagnostic (const state_machine *sm,
 		       const exploded_node *enode,

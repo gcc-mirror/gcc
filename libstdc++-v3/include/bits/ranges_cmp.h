@@ -22,13 +22,13 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/range_cmp.h
+/** @file bits/ranges_cmp.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{functional}
  */
 
-#ifndef _RANGE_CMP_H
-#define _RANGE_CMP_H 1
+#ifndef _RANGES_CMP_H
+#define _RANGES_CMP_H 1
 
 #if __cplusplus > 201703L
 # include <bits/move.h>
@@ -192,4 +192,4 @@ namespace ranges
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++20
-#endif // _RANGE_CMP_H
+#endif // _RANGES_CMP_H

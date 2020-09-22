@@ -701,6 +701,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 
   if (r != CUDA_SUCCESS)
     {
+      GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
       GOMP_PLUGIN_error ("cuLinkComplete error: %s", cuda_error (r));
       return false;
     }

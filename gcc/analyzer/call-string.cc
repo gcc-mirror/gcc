@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "tree.h"
 #include "options.h"
+#include "json.h"
 #include "analyzer/call-string.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -102,6 +103,34 @@ call_string::print (pretty_printer *pp) const
     }
 
   pp_string (pp, "]");
+}
+
+/* Return a new json::array of the form
+   [{"src_snode_idx" : int,
+     "dst_snode_idx" : int,
+     "funcname" : str},
+     ...for each return_superedge in the callstring].  */
+
+json::value *
+call_string::to_json () const
+{
+  json::array *arr = new json::array ();
+
+  const return_superedge *e;
+  int i;
+  FOR_EACH_VEC_ELT (m_return_edges, i, e)
+    {
+      json::object *e_obj = new json::object ();
+      e_obj->set ("src_snode_idx",
+		  new json::integer_number (e->m_src->m_index));
+      e_obj->set ("dst_snode_idx",
+		  new json::integer_number (e->m_dest->m_index));
+      e_obj->set ("funcname",
+		  new json::string (function_name (e->m_dest->m_fun)));
+      arr->append (e_obj);
+    }
+
+  return arr;
 }
 
 /* Generate a hash value for this call_string.  */

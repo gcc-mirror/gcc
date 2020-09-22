@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fibonacci_heap.h"
 #include "diagnostic-event-id.h"
 #include "shortest-paths.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"

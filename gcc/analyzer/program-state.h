@@ -53,6 +53,8 @@ public:
   void dump_to_file (FILE *outf) const;
   void dump () const;
 
+  json::object *to_json () const;
+
   engine *get_engine () const { return m_engine; }
   region_model_manager *get_model_manager () const;
 
@@ -108,6 +110,8 @@ public:
 	      bool simple, bool multiline,
 	      pretty_printer *pp) const;
   void dump (bool simple) const;
+
+  json::object *to_json () const;
 
   bool is_empty_p () const;
 
@@ -203,6 +207,8 @@ public:
   void dump_to_file (const extrinsic_state &ext_state, bool simple,
 		     bool multiline, FILE *outf) const;
   void dump (const extrinsic_state &ext_state, bool simple) const;
+
+  json::object *to_json (const extrinsic_state &ext_state) const;
 
   void push_frame (const extrinsic_state &ext_state, function *fun);
   function * get_current_function () const;

@@ -1,3 +1,10 @@
+2020-09-21  Ian Lance Taylor  <iant@golang.org>
+
+	* libbacktrace/backtrace-rename.h (backtrace_uncompress_lzma):
+	Define.
+	(backtrace_syminfo_to_full_callback): Define.
+	(backtrace_syminfo_to_full_error_callback): Define.
+
 2020-07-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sanitizer_common/sanitizer_linux.cpp: Cherry-pick llvm-project

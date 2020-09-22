@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -101,6 +102,14 @@ tree
 call_details::get_arg_tree (unsigned idx) const
 {
   return gimple_call_arg (m_call, idx);
+}
+
+/* Get the type of argument IDX.  */
+
+tree
+call_details::get_arg_type (unsigned idx) const
+{
+  return TREE_TYPE (gimple_call_arg (m_call, idx));
 }
 
 /* Get argument IDX at the callsite as an svalue.  */

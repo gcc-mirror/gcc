@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -218,6 +219,12 @@ public:
   void print (pretty_printer *pp) FINAL OVERRIDE
   {
     pp_string (pp, "signal delivered");
+  }
+
+  json::object *to_json () const
+  {
+    json::object *custom_obj = new json::object ();
+    return custom_obj;
   }
 
   void update_model (region_model *model,

@@ -40,6 +40,7 @@
 
 #include <string>
 #include <limits>
+#include <bits/ranges_base.h> // enable_borrowed_range, enable_view
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

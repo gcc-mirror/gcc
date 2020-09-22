@@ -1,3 +1,8 @@
+2020-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* mklog.py: Parse first 10 lines for PR/DR number
+	not only the first line.
+
 2020-09-17  Dimitrij Mojoski  <dmjpp@hotmail.com>
 
 	* clang-format: Autodetect C++ standard in use rather than

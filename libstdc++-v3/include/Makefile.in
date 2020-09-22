@@ -504,10 +504,12 @@ bits_headers = \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
-	${bits_srcdir}/range_cmp.h \
 	${bits_srcdir}/ranges_algobase.h \
 	${bits_srcdir}/ranges_algo.h \
+	${bits_srcdir}/ranges_base.h \
+	${bits_srcdir}/ranges_cmp.h \
 	${bits_srcdir}/ranges_uninitialized.h \
+	${bits_srcdir}/ranges_util.h \
 	${bits_srcdir}/refwrap.h \
 	${bits_srcdir}/regex.h \
 	${bits_srcdir}/regex.tcc \

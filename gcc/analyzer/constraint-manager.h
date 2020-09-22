@@ -88,6 +88,8 @@ public:
 
   void print (pretty_printer *pp) const;
 
+  json::object *to_json () const;
+
   /* An equivalence class can contain multiple constants (e.g. multiple
      different zeroes, for different types); these are just for the last
      constant added.  */
@@ -160,6 +162,8 @@ class constraint
 
   void print (pretty_printer *pp, const constraint_manager &cm) const;
 
+  json::object *to_json () const;
+
   hashval_t hash () const;
   bool operator== (const constraint &other) const;
 
@@ -214,6 +218,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool multiline) const;
   void dump (FILE *fp) const;
   void dump () const;
+
+  json::object *to_json () const;
 
   const equiv_class &get_equiv_class_by_index (unsigned idx) const
   {
