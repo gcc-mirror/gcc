@@ -2349,6 +2349,7 @@ const char *
 nvptx_output_mov_insn (rtx dst, rtx src)
 {
   machine_mode dst_mode = GET_MODE (dst);
+  machine_mode src_mode = GET_MODE (src);
   machine_mode dst_inner = (GET_CODE (dst) == SUBREG
 			    ? GET_MODE (XEXP (dst, 0)) : dst_mode);
   machine_mode src_inner = (GET_CODE (src) == SUBREG
@@ -2375,7 +2376,7 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   if (GET_MODE_SIZE (dst_inner) == GET_MODE_SIZE (src_inner))
     {
       if (GET_MODE_BITSIZE (dst_mode) == 128
-	  && GET_MODE_BITSIZE (GET_MODE (src)) == 128)
+	  && GET_MODE_BITSIZE (src_mode) == 128)
 	{
 	  /* mov.b128 is not supported.  */
 	  if (dst_inner == V2DImode && src_inner == TImode)
@@ -2387,6 +2388,10 @@ nvptx_output_mov_insn (rtx dst, rtx src)
 	}
       return "%.\tmov.b%T0\t%0, %1;";
     }
+
+  if (GET_MODE_BITSIZE (src_inner) == 128
+      && GET_MODE_BITSIZE (src_mode) == 64)
+    return "%.\tmov.b%T0\t%0, %1;";
 
   return "%.\tcvt%t0%t1\t%0, %1;";
 }
