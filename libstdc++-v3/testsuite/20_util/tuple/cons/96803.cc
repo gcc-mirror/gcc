@@ -38,4 +38,25 @@ test01()
   // std::tuple chooses wrong constructor for uses-allocator construction
   std::tuple<int> o;
   std::tuple<X> nok(std::allocator_arg, std::allocator<int>(), o);
+
+  std::tuple<int, int> oo;
+  std::tuple<X, X> nn(std::allocator_arg, std::allocator<int>(), oo);
+}
+
+struct Y
+{
+  using allocator_type = std::allocator<int>;
+
+  Y(const X&) { }
+  Y(const X&, const allocator_type&) { }
+
+  Y(X&&) { }
+  Y(std::allocator_arg_t, const allocator_type&, X&&) { }
+};
+
+void
+test02()
+{
+  std::tuple<X, X> o{1, 1};
+  std::tuple<Y, Y> oo(std::allocator_arg, std::allocator<int>(), o);
 }
