@@ -355,7 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    const _Tuple_impl<_Idx, _UHead, _UTails...>& __in)
 	: _Inherited(__tag, __a,
 		     _Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in)),
-	  _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
+	  _Base(__use_alloc<_Head, _Alloc, const _UHead&>(__a),
 		_Tuple_impl<_Idx, _UHead, _UTails...>::_M_head(__in))
 	{ }
 
