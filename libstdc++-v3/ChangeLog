@@ -1,3 +1,46 @@
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* src/c++17/fs_ops.cc (read_symlink): Use posix::lstat instead
+	of calling ::lstat directly.
+	* src/filesystem/ops.cc (read_symlink): Likewise.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Do not depend on
+	$enable_libstdcxx_filesystem_ts.
+	* configure: Regenerate.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97101
+	* include/std/functional (bind_front): Fix order of parameters
+	in is_nothrow_constructible_v specialization.
+	* testsuite/20_util/function_objects/bind_front/97101.cc: New test.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94160
+	* src/c++17/memory_resource.cc (munge_options): Round
+	max_blocks_per_chunk to a multiple of four.
+	(__pool_resource::_M_alloc_pools()): Simplify slightly.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Check that valid pointers are returned when small values are
+	used for max_blocks_per_chunk.
+
 2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
