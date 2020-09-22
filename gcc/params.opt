@@ -82,6 +82,10 @@ The maximum length of a constant string for a builtin string cmp call eligible f
 Common Joined UInteger Var(param_case_values_threshold) Param Optimization
 The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine.
 
+-param=max-switch-clustering-attempts=
+Common Joined UInteger Var(param_max_switch_clustering_attempts) Param Optimization Init(10000)
+The maximum number of clustering attempts used in bit-test and jump-table switch expansion.
+
 -param=comdat-sharing-probability=
 Common Joined UInteger Var(param_comdat_sharing_probability) Init(20) Param Optimization
 Probability that COMDAT function will be shared with different compilation unit.
