@@ -44,5 +44,6 @@ struct GTY(()) modref_summary
 };
 
 modref_summary *get_modref_function_summary (cgraph_node *func);
+void ipa_modref_c_finalize ();
 
 #endif

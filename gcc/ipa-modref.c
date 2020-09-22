@@ -767,12 +767,6 @@ class pass_modref : public gimple_opt_pass
     pass_modref (gcc::context *ctxt)
 	: gimple_opt_pass (pass_data_modref, ctxt) {}
 
-    ~pass_modref ()
-      {
-	ggc_delete (summaries);
-	summaries = NULL;
-      }
-
     /* opt_pass methods: */
     opt_pass *clone ()
     {
@@ -1371,6 +1365,16 @@ unsigned int pass_ipa_modref::execute (function *)
   ((modref_summaries *)summaries)->ipa = false;
   ipa_free_postorder_info ();
   return 0;
+}
+
+/* Summaries must stay alive until end of compilation.  */
+
+void
+ipa_modref_c_finalize ()
+{
+  if (summaries)
+    ggc_delete (summaries);
+  summaries = NULL;
 }
 
 #include "gt-ipa-modref.h"

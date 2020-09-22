@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
+namespace selftest {
 
 static void
 test_insert_search_collapse ()
@@ -156,11 +157,13 @@ test_merge ()
 
 
 void
-modref_tree_c_tests ()
+ipa_modref_tree_c_tests ()
 {
   test_insert_search_collapse ();
   test_merge ();
 }
+
+} // namespace selftest
 
 #endif
 
