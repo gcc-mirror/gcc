@@ -3832,6 +3832,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  If `__f` has a return value it is ignored.
   */
   template<typename _InputIterator, typename _Size, typename _Function>
+    _GLIBCXX20_CONSTEXPR
     _InputIterator
     for_each_n(_InputIterator __first, _Size __n, _Function __f)
     {
@@ -4251,6 +4252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @return @p __searcher(__first,__last).first
   */
   template<typename _ForwardIterator, typename _Searcher>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     search(_ForwardIterator __first, _ForwardIterator __last,
 	   const _Searcher& __searcher)
