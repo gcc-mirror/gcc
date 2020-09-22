@@ -21,6 +21,7 @@
 #include <iterator>
 #include <algorithm>
 #include <vector>
+#include <ranges>
 #include <testsuite_hooks.h>
 
 namespace ranges = std::ranges;

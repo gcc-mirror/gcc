@@ -33,6 +33,7 @@
 #if __cplusplus > 201703L
 
 #include <bits/ranges_algobase.h>
+#include <bits/ranges_util.h>
 #include <bits/uniform_int_dist.h> // concept uniform_random_bit_generator
 
 #if __cpp_lib_concepts
