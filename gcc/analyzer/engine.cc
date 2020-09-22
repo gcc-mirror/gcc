@@ -1063,62 +1063,88 @@ exploded_node::on_stmt (exploded_graph &eg,
 				  &old_state, state,
 				  stmt);
 
-  if (const gassign *assign = dyn_cast <const gassign *> (stmt))
-    state->m_region_model->on_assignment (assign, &ctxt);
-
-  if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
-    state->m_region_model->on_return (return_, &ctxt);
-
-  /* Track whether we have a gcall to a function that's not recognized by
-     anything, for which we don't have a function body, or for which we
-     don't know the fndecl.  */
   bool unknown_side_effects = false;
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+
+  switch (gimple_code (stmt))
     {
-      /* Debugging/test support.  */
-      if (is_special_named_call_p (call, "__analyzer_describe", 2))
-	state->m_region_model->impl_call_analyzer_describe (call, &ctxt);
-      else if (is_special_named_call_p (call, "__analyzer_dump", 0))
-	{
-	  /* Handle the builtin "__analyzer_dump" by dumping state
-	     to stderr.  */
-	  state->dump (eg.get_ext_state (), true);
-	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
-	{
-	  /* Handle the builtin "__analyzer_dump_path" by queuing a
-	     diagnostic at this exploded_node.  */
-	  ctxt.warn (new dump_path_diagnostic ());
-	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_region_model", 0))
-	{
-	  /* Handle the builtin "__analyzer_dump_region_model" by dumping
-	     the region model's state to stderr.  */
-	  state->m_region_model->dump (false);
-	}
-      else if (is_special_named_call_p (call, "__analyzer_eval", 1))
-	state->m_region_model->impl_call_analyzer_eval (call, &ctxt);
-      else if (is_special_named_call_p (call, "__analyzer_break", 0))
-	{
-	  /* Handle the builtin "__analyzer_break" by triggering a
-	     breakpoint.  */
-	  /* TODO: is there a good cross-platform way to do this?  */
-	  raise (SIGINT);
-	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_exploded_nodes",
-					1))
-	{
-	  /* This is handled elsewhere.  */
-	}
-      else if (is_setjmp_call_p (call))
-	state->m_region_model->on_setjmp (call, this, &ctxt);
-      else if (is_longjmp_call_p (call))
-	{
-	  on_longjmp (eg, call, state, &ctxt);
-	  return on_stmt_flags::terminate_path ();
-	}
-      else
-	unknown_side_effects = state->m_region_model->on_call_pre (call, &ctxt);
+    default:
+      /* No-op for now.  */
+      break;
+
+    case GIMPLE_ASSIGN:
+      {
+	const gassign *assign = as_a <const gassign *> (stmt);
+	state->m_region_model->on_assignment (assign, &ctxt);
+      }
+      break;
+
+    case GIMPLE_ASM:
+      /* No-op for now.  */
+      break;
+
+    case GIMPLE_CALL:
+      {
+	/* Track whether we have a gcall to a function that's not recognized by
+	   anything, for which we don't have a function body, or for which we
+	   don't know the fndecl.  */
+	const gcall *call = as_a <const gcall *> (stmt);
+
+	/* Debugging/test support.  */
+	if (is_special_named_call_p (call, "__analyzer_describe", 2))
+	  state->m_region_model->impl_call_analyzer_describe (call, &ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_dump", 0))
+	  {
+	    /* Handle the builtin "__analyzer_dump" by dumping state
+	       to stderr.  */
+	    state->dump (eg.get_ext_state (), true);
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
+	  {
+	    /* Handle the builtin "__analyzer_dump_path" by queuing a
+	       diagnostic at this exploded_node.  */
+	    ctxt.warn (new dump_path_diagnostic ());
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
+					  0))
+	  {
+	    /* Handle the builtin "__analyzer_dump_region_model" by dumping
+	       the region model's state to stderr.  */
+	    state->m_region_model->dump (false);
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_eval", 1))
+	  state->m_region_model->impl_call_analyzer_eval (call, &ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_break", 0))
+	  {
+	    /* Handle the builtin "__analyzer_break" by triggering a
+	       breakpoint.  */
+	    /* TODO: is there a good cross-platform way to do this?  */
+	    raise (SIGINT);
+	  }
+	else if (is_special_named_call_p (call,
+					  "__analyzer_dump_exploded_nodes",
+					  1))
+	  {
+	    /* This is handled elsewhere.  */
+	  }
+	else if (is_setjmp_call_p (call))
+	  state->m_region_model->on_setjmp (call, this, &ctxt);
+	else if (is_longjmp_call_p (call))
+	  {
+	    on_longjmp (eg, call, state, &ctxt);
+	    return on_stmt_flags::terminate_path ();
+	  }
+	else
+	  unknown_side_effects
+	    = state->m_region_model->on_call_pre (call, &ctxt);
+      }
+      break;
+
+    case GIMPLE_RETURN:
+      {
+	const greturn *return_ = as_a <const greturn *> (stmt);
+	state->m_region_model->on_return (return_, &ctxt);
+      }
+      break;
     }
 
   bool any_sm_changes = false;
