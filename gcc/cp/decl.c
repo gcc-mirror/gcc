@@ -15120,23 +15120,6 @@ xref_tag (enum tag_types tag_code, tree name,
   return ret;
 }
 
-
-tree
-xref_tag_from_type (tree old, tree id, tag_scope scope)
-{
-  enum tag_types tag_kind;
-
-  if (TREE_CODE (old) == RECORD_TYPE)
-    tag_kind = (CLASSTYPE_DECLARED_CLASS (old) ? class_type : record_type);
-  else
-    tag_kind  = union_type;
-
-  if (id == NULL_TREE)
-    id = TYPE_IDENTIFIER (old);
-
-  return xref_tag (tag_kind, id, scope, false);
-}
-
 /* Create the binfo hierarchy for REF with (possibly NULL) base list
    BASE_LIST.  For each element on BASE_LIST the TREE_PURPOSE is an
    access_* node, and the TREE_VALUE is the type of the base-class.

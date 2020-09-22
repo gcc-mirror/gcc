@@ -9856,12 +9856,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  && !PRIMARY_TEMPLATE_P (gen_tmpl)
 	  && !LAMBDA_TYPE_P (TREE_TYPE (gen_tmpl))
 	  && TREE_CODE (CP_DECL_CONTEXT (gen_tmpl)) == NAMESPACE_DECL)
-	{
-	  found = xref_tag_from_type (TREE_TYPE (gen_tmpl),
-				      DECL_NAME (gen_tmpl),
-				      /*tag_scope=*/ts_global);
-	  return found;
-	}
+	/* This occurs when the user has tried to define a tagged type
+	   in a scope that forbids it.  We emitted an error during the
+	   parse.  We didn't complete the bail out then, so here we
+	   are.  */
+	return error_mark_node;
 
       context = DECL_CONTEXT (gen_tmpl);
       if (context && TYPE_P (context))
