@@ -264,7 +264,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr reference
       front() const noexcept
       {
-	static_assert(extent != 0);
 	__glibcxx_assert(!empty());
 	return *this->_M_ptr;
       }
@@ -272,7 +271,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr reference
       back() const noexcept
       {
-	static_assert(extent != 0);
 	__glibcxx_assert(!empty());
 	return *(this->_M_ptr + (size() - 1));
       }
@@ -280,7 +278,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr reference
       operator[](size_type __idx) const noexcept
       {
-	static_assert(extent != 0);
 	__glibcxx_assert(__idx < size());
 	return *(this->_M_ptr + __idx);
       }

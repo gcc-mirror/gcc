@@ -18,12 +18,20 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
+#undef _GLIBCXX_ASSERTIONS
+#define _GLIBCXX_ASSERTIONS
 #include <span>
 
-void
-test01()
+constexpr bool
+test01(bool b)
 {
   std::span<int, 0> s;
-  s[99]; // { dg-error "here" }
+  if (b || !s.empty())
+    s[99];
+  return true;
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }
+
+static_assert(test01(false));
+static_assert(test01(true)); // { dg-error "non-constant" }
+// { dg-error "assert" "" { target *-*-* } 0 }
+// { dg-prune-output "in 'constexpr' expansion" }
