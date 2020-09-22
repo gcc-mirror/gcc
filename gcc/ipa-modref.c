@@ -552,6 +552,9 @@ analyze_store (gimple *, tree, tree op, void *data)
 static bool
 analyze_stmt (modref_summary *summary, gimple *stmt, bool ipa)
 {
+  /* There is no need to record clobbers.  */
+  if (gimple_clobber_p (stmt))
+    return false;
   /* Analyze all loads and stores in STMT.  */
   walk_stmt_load_store_ops (stmt, summary,
 			    analyze_load, analyze_store);
