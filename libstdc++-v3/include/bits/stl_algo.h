@@ -5775,6 +5775,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       using _Gen = remove_reference_t<_UniformRandomBitGenerator>;
       using __uc_type = common_type_t<typename _Gen::result_type, _USize>;
 
+      if (__first == __last)
+	return __out;
+
       __distrib_type __d{};
       _Size __unsampled_sz = std::distance(__first, __last);
       __n = std::min(__n, __unsampled_sz);
