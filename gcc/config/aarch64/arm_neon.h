@@ -14075,6 +14075,48 @@ vclsq_s32 (int32x4_t __a)
   return __builtin_aarch64_clrsbv4si (__a);
 }
 
+__extension__ extern __inline int8x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcls_u8 (uint8x8_t __a)
+{
+  return __builtin_aarch64_clrsbv8qi ((int8x8_t) __a);
+}
+
+__extension__ extern __inline int16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcls_u16 (uint16x4_t __a)
+{
+  return __builtin_aarch64_clrsbv4hi ((int16x4_t) __a);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcls_u32 (uint32x2_t __a)
+{
+  return __builtin_aarch64_clrsbv2si ((int32x2_t) __a);
+}
+
+__extension__ extern __inline int8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vclsq_u8 (uint8x16_t __a)
+{
+  return __builtin_aarch64_clrsbv16qi ((int8x16_t) __a);
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vclsq_u16 (uint16x8_t __a)
+{
+  return __builtin_aarch64_clrsbv8hi ((int16x8_t) __a);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vclsq_u32 (uint32x4_t __a)
+{
+  return __builtin_aarch64_clrsbv4si ((int32x4_t) __a);
+}
+
 /* vclz.  */
 
 __extension__ extern __inline int8x8_t
