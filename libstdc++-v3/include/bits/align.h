@@ -60,10 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 inline void*
 align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
 {
+  if (__space < __size)
+    return nullptr;
   const auto __intptr = reinterpret_cast<uintptr_t>(__ptr);
   const auto __aligned = (__intptr - 1u + __align) & -__align;
   const auto __diff = __aligned - __intptr;
-  if ((__size + __diff) > __space)
+  if (__diff > (__space - __size))
     return nullptr;
   else
     {
