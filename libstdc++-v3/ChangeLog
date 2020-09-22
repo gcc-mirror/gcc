@@ -1,3 +1,68 @@
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92978
+	* include/std/numeric (__abs_integral): Replace with ...
+	(__detail::__absu): New function template that returns an
+	unsigned type, guaranteeing it can represent the most
+	negative signed value.
+	(__detail::__gcd, __detail::__lcm): Require arguments to
+	be unsigned and therefore already non-negative.
+	(gcd, lcm): Convert arguments to absolute value as unsigned
+	type before calling __detail::__gcd or __detail::__lcm.
+	* include/experimental/numeric (gcd, lcm): Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust expected
+	errors.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/92978.cc: New test.
+	* testsuite/26_numerics/lcm/92978.cc: New test.
+	* testsuite/experimental/numeric/92978.cc: New test.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* src/c++17/fs_ops.cc (read_symlink): Use posix::lstat instead
+	of calling ::lstat directly.
+	* src/filesystem/ops.cc (read_symlink): Likewise.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94681
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Do not depend on
+	$enable_libstdcxx_filesystem_ts.
+	* configure: Regenerate.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97101
+	* include/std/functional (bind_front): Fix order of parameters
+	in is_nothrow_constructible_v specialization.
+	* testsuite/20_util/function_objects/bind_front/97101.cc: New test.
+
+2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94160
+	* src/c++17/memory_resource.cc (munge_options): Round
+	max_blocks_per_chunk to a multiple of four.
+	(__pool_resource::_M_alloc_pools()): Simplify slightly.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Check that valid pointers are returned when small values are
+	used for max_blocks_per_chunk.
+
 2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
