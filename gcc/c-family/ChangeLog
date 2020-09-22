@@ -1,3 +1,7 @@
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wctad-maybe-unsupported): New option.
+
 2020-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/50584

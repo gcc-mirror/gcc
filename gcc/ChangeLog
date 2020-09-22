@@ -1,3 +1,76 @@
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -Wctad-maybe-unsupported.
+
+2020-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97139
+	* tree-vect-slp.c (vect_bb_slp_mark_live_stmts): Only mark the
+	pattern root, track visited vectorized stmts.
+
+2020-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Use mallinfo mallinfo2 as first operand of
+	gcc_AC_CHECK_DECLS rather than [mallinfo, mallinfo2].
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
+2020-09-21  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_general_expand_builtin): Use expand machinery not to
+	alter the value of an rtx returned by force_reg.
+
+2020-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97135
+	* tree-ssa-loop-im.c (sm_seq_push_down): Do not ignore
+	self-dependences.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96915
+	* tree-switch-conversion.c (switch_conversion::expand): Accept
+	also integer constants.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	* print-tree.c (print_node): Remove extra space.
+
+2020-09-21  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/96968
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_expand_fpsr_fpcr_setter): Fix comment nit.
+	(aarch64_expand_fpsr_fpcr_getter): New function, expand these
+	getters using expand_insn machinery.
+	(aarch64_general_expand_builtin): Make use of.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	* ggc-common.c (ggc_rlimit_bound): Use ONE_? macro.
+	(ggc_min_expand_heuristic): Likewise.
+	(ggc_min_heapsize_heuristic): Likewise.
+	* ggc-page.c (ggc_collect): Likewise.
+	* system.h (ONE_G): Likewise.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	* ggc-common.c (ggc_prune_overhead_list): Use SIZE_AMOUNT.
+	* ggc-page.c (release_pages): Likewise.
+	(ggc_collect): Likewise.
+	(ggc_trim): Likewise.
+	(ggc_grow): Likewise.
+	* timevar.c (timer::print): Likewise.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Detect for mallinfo2.
+	* ggc-common.c (defined): Use it.
+	* system.h: Handle also HAVE_MALLINFO2.
+
 2020-09-20  John David Anglin  < danglin@gcc.gnu.org>
 
 	* config/pa/pa-hpux11.h (LINK_GCC_C_SEQUENCE_SPEC): Delete.

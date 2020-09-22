@@ -1,3 +1,28 @@
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90583
+	DR 1722
+	* lambda.c (maybe_add_lambda_conv_op): Mark the conversion function
+	as noexcept.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (deduction_guides_for): Add a bool parameter.  Set it.
+	(do_class_deduction): Warn when CTAD succeeds but the type doesn't
+	have any explicit deduction guides.
+
+2020-09-21  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (xref_tag_1): Use IDENTIFIER_LAMBDA_P to detect lambdas.
+	* lambda.c (begin_lambda_type): Use ts_current to push the tag.
+	* name-lookup.h (enum tag_scope): Drop ts_lambda.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97099
+	* decl.c (redeclaration_error_message): Detect a redeclaration of
+	deduction guides.
+
 2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* cp-gimplify.c (enum bc_t, bc_label): Move to c-family.

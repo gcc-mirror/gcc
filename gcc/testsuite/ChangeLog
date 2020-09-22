@@ -1,3 +1,76 @@
+2020-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97130
+	* gcc.dg/analyzer/pr97130.c: New test.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90583
+	DR 1722
+	* g++.dg/cpp0x/lambda/lambda-conv14.C: New test.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wctad-maybe-unsupported.C: New test.
+	* g++.dg/warn/Wctad-maybe-unsupported2.C: New test.
+	* g++.dg/warn/Wctad-maybe-unsupported3.C: New test.
+	* g++.dg/warn/Wctad-maybe-unsupported.h: New file.
+
+2020-09-21  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* gcc.dg/ipa/ipa-sra-1.c: Use a plain pointer for argv instead of array.
+	* gcc.dg/ipa/ipa-sra-12.c: Same.
+	* gcc.dg/ipa/ipa-sra-13.c: Same.
+	* gcc.dg/ipa/ipa-sra-14.c: Same.
+	* gcc.dg/ipa/ipa-sra-15.c: Same.
+
+2020-09-21  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas   <pault@gcc.gnu.org>
+
+	* gfortran.dg/check_bits_2.f90: New test.
+
+2020-09-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/ipa/symver1.c: Skip for Darwin.
+
+2020-09-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/csinc-1.c: Use dg-add-options
+	arm_arch_v8_1m_main.
+	* gcc.target/arm/csinv-1.c: Likewise.
+	* gcc.target/arm/csneg.c: Likewise.
+
+2020-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97139
+	* gcc.dg/vect/pr97139.c: New testcase.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97099
+	* g++.dg/cpp1z/class-deduction74.C: New test.
+
+2020-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97135
+	* gcc.dg/torture/pr97135.c: New testcase.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96915
+	* gcc.target/aarch64/sve/pr96915.c: New test.
+
+2020-09-21  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/96968
+	* gcc.target/aarch64/pr96968.c: New test.
+
+2020-09-21  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/timevar1.C: Prune more possible number values.
+	* g++.dg/ext/timevar2.C: Likewise.
+
 2020-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90199
