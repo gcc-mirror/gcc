@@ -9142,7 +9142,7 @@ package body Freeze is
          Check_Overriding_Indicator (E, Empty, Is_Primitive (E));
       end if;
 
-      if Modify_Tree_For_C
+      if Transform_Function_Array
         and then Nkind (Parent (E)) = N_Function_Specification
         and then Is_Array_Type (Etype (E))
         and then Is_Constrained (Etype (E))

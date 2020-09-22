@@ -167,6 +167,7 @@ procedure Gnat1drv is
 
       if Debug_Flag_Dot_U then
          Modify_Tree_For_C := True;
+         Transform_Function_Array := True;
       end if;
 
       --  -gnatd_A disables generation of ALI files
@@ -179,6 +180,7 @@ procedure Gnat1drv is
 
       if Generate_C_Code then
          Modify_Tree_For_C := True;
+         Transform_Function_Array := True;
          Unnest_Subprogram_Mode := True;
          Building_Static_Dispatch_Tables := False;
          Minimize_Expression_With_Actions := True;
@@ -246,9 +248,10 @@ procedure Gnat1drv is
          --  this way when we are doing CodePeer tests on existing test suites
          --  that may have -gnateg set, to avoid the need for special casing.
 
-         Modify_Tree_For_C      := False;
-         Generate_C_Code        := False;
-         Unnest_Subprogram_Mode := False;
+         Modify_Tree_For_C        := False;
+         Transform_Function_Array := False;
+         Generate_C_Code          := False;
+         Unnest_Subprogram_Mode   := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
@@ -454,9 +457,10 @@ procedure Gnat1drv is
          --  this way when we are doing GNATprove tests on existing test suites
          --  that may have -gnateg set, to avoid the need for special casing.
 
-         Modify_Tree_For_C := False;
-         Generate_C_Code := False;
-         Unnest_Subprogram_Mode := False;
+         Modify_Tree_For_C        := False;
+         Transform_Function_Array := False;
+         Generate_C_Code          := False;
+         Unnest_Subprogram_Mode   := False;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.

@@ -3023,10 +3023,10 @@ package body Sem_Ch6 is
          --  Required to ensure that Expand_Call rewrites calls to this
          --  function by calls to the built procedure.
 
-         if Modify_Tree_For_C
+         if Transform_Function_Array
            and then Nkind (Body_Spec) = N_Function_Specification
            and then
-              Rewritten_For_C (Defining_Entity (Specification (Subp_Decl)))
+             Rewritten_For_C (Defining_Entity (Specification (Subp_Decl)))
          then
             Set_Rewritten_For_C (Defining_Entity (Body_Spec));
             Set_Corresponding_Procedure (Defining_Entity (Body_Spec),
@@ -4073,11 +4073,11 @@ package body Sem_Ch6 is
                   Build_Subprogram_Declaration;
 
                --  If this is a function that returns a constrained array, and
-               --  we are generating C code, create subprogram declaration
-               --  to simplify subsequent C generation.
+               --  Transform_Function_Array is set, create subprogram
+               --  declaration to simplify e.g. subsequent C generation.
 
                elsif No (Spec_Id)
-                 and then Modify_Tree_For_C
+                 and then Transform_Function_Array
                  and then Nkind (Body_Spec) = N_Function_Specification
                  and then Is_Array_Type (Etype (Body_Id))
                  and then Is_Constrained (Etype (Body_Id))
@@ -4171,17 +4171,18 @@ package body Sem_Ch6 is
          Spec_Id := Build_Internal_Protected_Declaration (N);
       end if;
 
-      --  If we are generating C and this is a function returning a constrained
-      --  array type for which we must create a procedure with an extra out
-      --  parameter, build and analyze the body now. The procedure declaration
-      --  has already been created. We reuse the source body of the function,
-      --  because in an instance it may contain global references that cannot
-      --  be reanalyzed. The source function itself is not used any further,
-      --  so we mark it as having a completion. If the subprogram is a stub the
-      --  transformation is done later, when the proper body is analyzed.
+      --  If Transform_Function_Array is set and this is a function returning a
+      --  constrained array type for which we must create a procedure with an
+      --  extra out parameter, build and analyze the body now. The procedure
+      --  declaration has already been created. We reuse the source body of the
+      --  function, because in an instance it may contain global references
+      --  that cannot be reanalyzed. The source function itself is not used any
+      --  further, so we mark it as having a completion. If the subprogram is a
+      --  stub the transformation is done later, when the proper body is
+      --  analyzed.
 
       if Expander_Active
-        and then Modify_Tree_For_C
+        and then Transform_Function_Array
         and then Present (Spec_Id)
         and then Ekind (Spec_Id) = E_Function
         and then Nkind (N) /= N_Subprogram_Body_Stub
