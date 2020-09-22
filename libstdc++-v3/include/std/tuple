@@ -271,13 +271,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
 	        std::forward<_Head>(_M_head(__in))) { }
 
-      template<typename _Alloc, typename... _UElements>
+      template<typename _Alloc, typename _UHead, typename... _UTails>
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
-	            const _Tuple_impl<_Idx, _UElements...>& __in)
+		    const _Tuple_impl<_Idx, _UHead, _UTails...>& __in)
 	: _Inherited(__tag, __a,
-		     _Tuple_impl<_Idx, _UElements...>::_M_tail(__in)),
-	  _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
-		_Tuple_impl<_Idx, _UElements...>::_M_head(__in)) { }
+		     _Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in)),
+	  _Base(__use_alloc<_Head, _Alloc, const _UHead&>(__a),
+		_Tuple_impl<_Idx, _UHead, _UTails...>::_M_head(__in)) { }
 
       template<typename _Alloc, typename _UHead, typename... _UTails>
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
@@ -410,7 +410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc, typename _UHead>
 	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
 	            const _Tuple_impl<_Idx, _UHead>& __in)
-	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
+	: _Base(__use_alloc<_Head, _Alloc, const _UHead&>(__a),
 		_Tuple_impl<_Idx, _UHead>::_M_head(__in)) { }
 
       template<typename _Alloc, typename _UHead>
