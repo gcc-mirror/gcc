@@ -47,12 +47,8 @@ struct GTY(()) binding_entry_s {
 extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
 extern binding_entry binding_table_find (binding_table, tree);
 
-/* Datatype that represents binding established by a declaration between
-   a name and a C++ entity.  */
-typedef struct cxx_binding cxx_binding;
-
 /* The datatype used to implement C++ scope.  */
-typedef struct cp_binding_level cp_binding_level;
+struct cp_binding_level;
 
 /* Nonzero if this binding is for a local scope, as opposed to a class
    or namespace scope.  */
@@ -62,6 +58,8 @@ typedef struct cp_binding_level cp_binding_level;
    currently being defined.  */
 #define INHERITED_VALUE_BINDING_P(NODE) ((NODE)->value_is_inherited)
 
+/* Datatype that represents binding established by a declaration between
+   a name and a C++ entity.  */
 struct GTY(()) cxx_binding {
   /* Link to chain together various bindings for this name.  */
   cxx_binding *previous;
@@ -71,8 +69,9 @@ struct GTY(()) cxx_binding {
   tree type;
   /* The scope at which this binding was made.  */
   cp_binding_level *scope;
-  unsigned value_is_inherited : 1;
-  unsigned is_local : 1;
+
+  bool value_is_inherited : 1;
+  bool is_local : 1;
 };
 
 /* Datatype used to temporarily save C++ bindings (for implicit
