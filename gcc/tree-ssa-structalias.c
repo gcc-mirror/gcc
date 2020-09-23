@@ -4857,6 +4857,8 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 point for reachable memory of their arguments.  */
       else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
 	handle_pure_call (t, &rhsc);
+      else if (fndecl && DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (fndecl))
+	;
       else
 	handle_rhs_call (t, &rhsc);
       if (gimple_call_lhs (t))

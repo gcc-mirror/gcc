@@ -69,5 +69,5 @@ test_unused() {
   delete p;
 }
 
-/* { dg-final { scan-tree-dump-times "Deleting : operator delete" 5 "cddce1"} } */
-/* { dg-final { scan-tree-dump-times "Deleting : _\\d+ = operator new" 7 "cddce1"} } */
+/* { dg-final { scan-tree-dump-times "Deleting : operator delete" 6 "cddce1"} } */
+/* { dg-final { scan-tree-dump-times "Deleting : _\\d+ = operator new" 8 "cddce1"} } */
