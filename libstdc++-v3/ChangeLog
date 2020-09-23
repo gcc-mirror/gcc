@@ -1,3 +1,84 @@
+2020-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97167
+	* src/c++17/fs_path.cc (path::_Parser::root_path()): Check
+	for empty string before inspecting the first character.
+	* testsuite/27_io/filesystem/path/append/source.cc: Append
+	empty string_view to path.
+
+2020-09-22  Glen Joseph Fernandes  <glenjofe@gmail.com>
+
+	* include/bits/align.h (align): Fix overflow handling.
+	* testsuite/20_util/align/3.cc: New test.
+
+2020-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new headers and adjust for renamed
+	header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/iterator_concepts.h: Adjust for renamed header.
+	* include/bits/range_access.h (ranges::*): Move to new
+	<bits/ranges_base.h> header.
+	* include/bits/ranges_algobase.h: Include new <bits/ranges_base.h>
+	header instead of <ranges>.
+	* include/bits/ranges_algo.h: Include new <bits/ranges_util.h>
+	header.
+	* include/bits/range_cmp.h: Moved to...
+	* include/bits/ranges_cmp.h: ...here.
+	* include/bits/ranges_base.h: New header.
+	* include/bits/ranges_util.h: New header.
+	* include/experimental/string_view: Include new
+	<bits/ranges_base.h> header.
+	* include/std/functional: Adjust for renamed header.
+	* include/std/ranges (ranges::view_base, ranges::enable_view)
+	(ranges::dangling, ranges::borrowed_iterator_t): Move to new
+	<bits/ranges_base.h> header.
+	(ranges::view_interface, ranges::subrange)
+	(ranges::borrowed_subrange_t): Move to new <bits/ranges_util.h>
+	header.
+	* include/std/span: Include new <bits/ranges_base.h> header.
+	* include/std/string_view: Likewise.
+	* testsuite/24_iterators/back_insert_iterator/pr93884.cc: Add
+	missing <ranges> header.
+	* testsuite/24_iterators/front_insert_iterator/pr93884.cc:
+	Likewise.
+
+2020-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96803
+	* include/std/tuple
+	(_Tuple_impl(allocator_arg_t, Alloc, const _Tuple_impl<U...>&)):
+	Use correct value category in __use_alloc call.
+	* testsuite/20_util/tuple/cons/96803.cc: Check with constructors
+	that require correct value category to be used.
+
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/span (span::front): Remove static_assert.
+	(span::back): Likewise.
+	(span::operator[]): Likewise.
+	* testsuite/23_containers/span/back_neg.cc: Rewrite to verify
+	that we check the preconditions of back() only when it's called.
+	* testsuite/23_containers/span/front_neg.cc: Likewise for
+	front().
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise for
+	operator[].
+
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_algo.h (__sample): Exit early when the
+	input range is empty.
+	* testsuite/25_algorithms/sample/3.cc: New test.
+
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_algo.h (for_each_n): Mark constexpr for C++20.
+	(search): Likewise for the overload that takes a searcher.
+	* testsuite/25_algorithms/for_each/constexpr.cc: Test constexpr
+	std::for_each_n.
+	* testsuite/25_algorithms/search/constexpr.cc: Test constexpr
+	std::search overload that takes a searcher.
+
 2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (__replacement_assert): Add noreturn

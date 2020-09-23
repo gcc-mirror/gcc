@@ -1478,6 +1478,16 @@ begin cpu cortex-a76.cortex-a55
  costs cortex_a57
 end cpu cortex-a76.cortex-a55
 
+# Armv8.4 A-profile Architecture Processors
+begin cpu neoverse-v1
+  cname neoversev1
+  tune for cortex-a57
+  tune flags LDSCHED
+  architecture armv8.4-a+bf16+i8mm
+  option crypto add FP_ARMv8 CRYPTO
+  costs cortex_a57
+end cpu neoverse-v1
+
 # V8 M-profile implementations.
 begin cpu cortex-m23
  cname cortexm23

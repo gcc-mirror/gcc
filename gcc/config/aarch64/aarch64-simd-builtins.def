@@ -338,12 +338,11 @@
   BUILTIN_VHSDF (UNOP, nearbyint, 2, FP)
   BUILTIN_VHSDF (UNOP, rint, 2, FP)
   BUILTIN_VHSDF (UNOP, round, 2, FP)
-  BUILTIN_VHSDF_DF (UNOP, frintn, 2, FP)
+  BUILTIN_VHSDF_HSDF (UNOP, frintn, 2, FP)
 
   VAR1 (UNOP, btrunc, 2, FP, hf)
   VAR1 (UNOP, ceil, 2, FP, hf)
   VAR1 (UNOP, floor, 2, FP, hf)
-  VAR1 (UNOP, frintn, 2, FP, hf)
   VAR1 (UNOP, nearbyint, 2, FP, hf)
   VAR1 (UNOP, rint, 2, FP, hf)
   VAR1 (UNOP, round, 2, FP, hf)

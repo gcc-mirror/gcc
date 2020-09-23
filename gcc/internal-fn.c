@@ -2644,7 +2644,7 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   rtx_op2 = expand_normal (op2);
 
   mask = force_reg (mask_mode, mask);
-  rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
+  rtx_op1 = force_reg (mode, rtx_op1);
 
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   create_output_operand (&ops[0], target, mode);

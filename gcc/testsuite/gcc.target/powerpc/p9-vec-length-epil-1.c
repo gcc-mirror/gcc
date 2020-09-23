@@ -10,6 +10,6 @@
 
 /* { dg-final { scan-assembler-times {\mlxvx?\M} 20 } } */
 /* { dg-final { scan-assembler-times {\mstxvx?\M} 10 } } */
-/* { dg-final { scan-assembler-times {\mlxvl\M} 20 } } */
-/* { dg-final { scan-assembler-times {\mstxvl\M} 10 } } */
+/* { dg-final { scan-assembler-times {\mlxvl\M} 14 } } */
+/* { dg-final { scan-assembler-times {\mstxvl\M} 7 } } */
 

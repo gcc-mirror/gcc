@@ -1140,7 +1140,8 @@ test_sm_state_map ()
   state_machine *sm = make_malloc_state_machine (NULL);
   auto_delete_vec <state_machine> checkers;
   checkers.safe_push (sm);
-  extrinsic_state ext_state (checkers);
+  engine eng;
+  extrinsic_state ext_state (checkers, &eng);
   state_machine::state_t start = sm->get_start_state ();
 
   /* Test setting states on svalue_id instances directly.  */
@@ -1272,7 +1273,7 @@ test_program_state_1 ()
   checkers.safe_push (sm);
 
   engine eng;
-  extrinsic_state ext_state (checkers, NULL, &eng);
+  extrinsic_state ext_state (checkers, &eng);
   region_model_manager *mgr = eng.get_model_manager ();
   program_state s (ext_state);
   region_model *model = s.m_region_model;
@@ -1301,7 +1302,7 @@ test_program_state_2 ()
 
   auto_delete_vec <state_machine> checkers;
   engine eng;
-  extrinsic_state ext_state (checkers, NULL, &eng);
+  extrinsic_state ext_state (checkers, &eng);
 
   program_state s (ext_state);
   region_model *model = s.m_region_model;
@@ -1324,7 +1325,7 @@ test_program_state_merging ()
   auto_delete_vec <state_machine> checkers;
   checkers.safe_push (make_malloc_state_machine (NULL));
   engine eng;
-  extrinsic_state ext_state (checkers, NULL, &eng);
+  extrinsic_state ext_state (checkers, &eng);
   region_model_manager *mgr = eng.get_model_manager ();
 
   program_state s0 (ext_state);
@@ -1389,7 +1390,8 @@ test_program_state_merging_2 ()
   program_point point (program_point::origin ());
   auto_delete_vec <state_machine> checkers;
   checkers.safe_push (make_signal_state_machine (NULL));
-  extrinsic_state ext_state (checkers);
+  engine eng;
+  extrinsic_state ext_state (checkers, &eng);
 
   const state_machine::state test_state_0 ("test state 0", 0);
   const state_machine::state test_state_1 ("test state 1", 1);

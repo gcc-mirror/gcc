@@ -2142,10 +2142,10 @@ compare_base_decls (tree base1, tree base2)
 
   /* If we have two register decls with register specification we
      cannot decide unless their assembler names are the same.  */
-  if (DECL_REGISTER (base1)
-      && DECL_REGISTER (base2)
-      && HAS_DECL_ASSEMBLER_NAME_P (base1)
-      && HAS_DECL_ASSEMBLER_NAME_P (base2)
+  if (VAR_P (base1)
+      && VAR_P (base2)
+      && DECL_HARD_REGISTER (base1)
+      && DECL_HARD_REGISTER (base2)
       && DECL_ASSEMBLER_NAME_SET_P (base1)
       && DECL_ASSEMBLER_NAME_SET_P (base2))
     {

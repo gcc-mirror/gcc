@@ -10952,7 +10952,7 @@ build_truth_vector_type_for (tree vectype)
   unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
   tree bool_type = build_nonstandard_boolean_type (esize);
 
-  return make_vector_type (bool_type, nunits, BLKmode);
+  return make_vector_type (bool_type, nunits, VOIDmode);
 }
 
 /* Like build_vector_type, but builds a variant type with TYPE_VECTOR_OPAQUE

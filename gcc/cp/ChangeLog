@@ -1,3 +1,29 @@
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95310
+	* pt.c (corresponding_template_parameter): Define.
+	(keep_template_parm): Use it to adjust the given template
+	parameter to the corresponding in-scope one from ctx_parms.
+
+2020-09-22  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (xref_tag_from_type): Don't declare.
+	* decl.c (xref_tag_from_type): Delete.
+	* pt.c (lookup_template_class_1): Erroneously located class
+	definitions just give error_mark, don't try and inject it into the
+	namespace.
+
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97145
+	* constexpr.c (cxx_eval_builtin_function_call): Return void_node for
+	calls to __sanitize_ptr_{sub,cmp} builtins.
+
+2020-09-22  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_class_template_1): Do not repush and unhide
+	injected friend.
+
 2020-09-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90583

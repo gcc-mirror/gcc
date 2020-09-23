@@ -1,3 +1,9 @@
+2020-09-22  Sergei Trofimovich  <siarheit@google.com>
+
+	PR gcov-profile/96913
+	* libgcov-driver.c (write_one_data): Avoid function pointer
+	comparison in TOP streaming decision.
+
 2020-09-17  Torbjörn SVENSSON  <torbjorn.svensson@st.com>
 	    Christophe Lyon  <christophe.lyon@linaro.org>
 
