@@ -393,6 +393,7 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer @gol
 -fanalyzer-call-summaries @gol
 -fanalyzer-checker=@var{name} @gol
+-fno-analyzer-feasibility @gol
 -fanalyzer-fine-grained @gol
 -fanalyzer-state-merge @gol
 -fanalyzer-state-purge @gol
@@ -8992,6 +8993,17 @@ Some checkers are disabled by default (even with @option{-fanalyzer}),
 such as the @code{taint} checker that implements
 @option{-Wanalyzer-tainted-array-index}, and this option is required
 to enable them.
+
+@item -fno-analyzer-feasibility
+@opindex fanalyzer-feasibility
+@opindex fno-analyzer-feasibility
+This option is intended for analyzer developers.
+
+By default the analyzer verifies that there is a feasible control flow path
+for each diagnostic it emits: that the conditions that hold are not mutually
+exclusive.  Diagnostics for which no feasible path can be found are rejected.
+This filtering can be suppressed with @option{-fno-analyzer-feasibility}, for
+debugging issues in this code.
 
 @item -fanalyzer-fine-grained
 @opindex fanalyzer-fine-grained

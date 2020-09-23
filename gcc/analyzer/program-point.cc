@@ -199,8 +199,12 @@ function_point::get_location () const
   const gimple *stmt = get_stmt ();
   if (stmt)
     return stmt->location;
-
-  return UNKNOWN_LOCATION;
+  if (m_kind == PK_BEFORE_SUPERNODE)
+    return m_supernode->get_start_location ();
+  else if (m_kind == PK_AFTER_SUPERNODE)
+    return m_supernode->get_end_location ();
+  else
+    return UNKNOWN_LOCATION;
 }
 
 /* Create a function_point representing the entrypoint of function FUN.  */

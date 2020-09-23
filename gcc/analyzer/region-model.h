@@ -2586,7 +2586,8 @@ class region_model
 
   bool maybe_update_for_edge (const superedge &edge,
 			      const gimple *last_stmt,
-			      region_model_context *ctxt);
+			      region_model_context *ctxt,
+			      rejected_constraint **out);
 
   const region *push_frame (function *fun, const vec<const svalue *> *arg_sids,
 			    region_model_context *ctxt);
@@ -2630,6 +2631,9 @@ class region_model
 			   region_model_context *ctxt);
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
 		       region_model_context *ctxt);
+  bool add_constraint (tree lhs, enum tree_code op, tree rhs,
+		       region_model_context *ctxt,
+		       rejected_constraint **out);
 
   const region *create_region_for_heap_alloc (const svalue *size_in_bytes);
   const region *create_region_for_alloca (const svalue *size_in_bytes);
@@ -2699,12 +2703,15 @@ class region_model
 				region_model_context *ctxt);
   bool apply_constraints_for_gcond (const cfg_superedge &edge,
 				    const gcond *cond_stmt,
-				    region_model_context *ctxt);
+				    region_model_context *ctxt,
+				    rejected_constraint **out);
   bool apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 				      const gswitch *switch_stmt,
-				      region_model_context *ctxt);
+				      region_model_context *ctxt,
+				      rejected_constraint **out);
   bool apply_constraints_for_exception (const gimple *last_stmt,
-					region_model_context *ctxt);
+					region_model_context *ctxt,
+					rejected_constraint **out);
 
   int poison_any_pointers_to_descendents (const region *reg,
 					  enum poison_kind pkind);
@@ -2849,6 +2856,24 @@ struct model_merger
   const region_model *m_model_b;
   const program_point &m_point;
   region_model *m_merged_model;
+};
+
+/* A record that can (optionally) be written out when
+   region_model::add_constraint fails.  */
+
+struct rejected_constraint
+{
+  rejected_constraint (const region_model &model,
+		     tree lhs, enum tree_code op, tree rhs)
+  : m_model (model), m_lhs (lhs), m_op (op), m_rhs (rhs)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const;
+
+  region_model m_model;
+  tree m_lhs;
+  enum tree_code m_op;
+  tree m_rhs;
 };
 
 /* A bundle of state.  */

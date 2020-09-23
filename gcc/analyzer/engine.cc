@@ -3284,7 +3284,8 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 			 sedge->get_description (false));
 
 	  const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-	  if (!model.maybe_update_for_edge (*sedge, last_stmt, NULL))
+	  rejected_constraint *rc = NULL;
+	  if (!model.maybe_update_for_edge (*sedge, last_stmt, NULL, &rc))
 	    {
 	      if (logger)
 		{
@@ -3292,8 +3293,10 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 		  model.dump_to_pp (logger->get_printer (), true, false);
 		}
 	      if (out)
-		*out = new feasibility_problem (edge_idx, model, *eedge,
-						last_stmt);
+		*out = new feasibility_problem (edge_idx, *eedge,
+						last_stmt, rc);
+	      else
+		delete rc;
 	      return false;
 	    }
 	}
@@ -3397,6 +3400,22 @@ DEBUG_FUNCTION void
 exploded_path::dump () const
 {
   dump (stderr);
+}
+
+/* class feasibility_problem.  */
+
+void
+feasibility_problem::dump_to_pp (pretty_printer *pp) const
+{
+  pp_printf (pp, "edge from EN: %i to EN: %i",
+	     m_eedge.m_src->m_index, m_eedge.m_dest->m_index);
+  if (m_rc)
+    {
+      pp_string (pp, "; rejected constraint: ");
+      m_rc->dump_to_pp (pp);
+      pp_string (pp, "; rmodel: ");
+      m_rc->m_model.dump_to_pp (pp, true, false);
+    }
 }
 
 /* A family of cluster subclasses for use when generating .dot output for

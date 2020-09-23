@@ -1810,6 +1810,20 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   return true;
 }
 
+/* As above, but when returning false, if OUT is non-NULL, write a
+   new rejected_constraint to *OUT.  */
+
+bool
+region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
+			      region_model_context *ctxt,
+			      rejected_constraint **out)
+{
+  bool sat = add_constraint (lhs, op, rhs, ctxt);
+  if (!sat && out)
+    *out = new rejected_constraint (*this, lhs, op, rhs);
+  return sat;
+}
+
 /* Subroutine of region_model::add_constraint for handling optimized
    && and || conditionals.
 
@@ -2188,6 +2202,8 @@ region_model::update_for_phis (const supernode *snode,
 /* Attempt to update this model for taking EDGE (where the last statement
    was LAST_STMT), returning true if the edge can be taken, false
    otherwise.
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.
 
    For CFG superedges where LAST_STMT is a conditional or a switch
    statement, attempt to add the relevant conditions for EDGE to this
@@ -2207,7 +2223,8 @@ region_model::update_for_phis (const supernode *snode,
 bool
 region_model::maybe_update_for_edge (const superedge &edge,
 				     const gimple *last_stmt,
-				     region_model_context *ctxt)
+				     region_model_context *ctxt,
+				     rejected_constraint **out)
 {
   /* Handle frame updates for interprocedural edges.  */
   switch (edge.m_kind)
@@ -2247,20 +2264,21 @@ region_model::maybe_update_for_edge (const superedge &edge,
   if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
     {
       const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (&edge);
-      return apply_constraints_for_gcond (*cfg_sedge, cond_stmt, ctxt);
+      return apply_constraints_for_gcond (*cfg_sedge, cond_stmt, ctxt, out);
     }
 
   if (const gswitch *switch_stmt = dyn_cast <const gswitch *> (last_stmt))
     {
       const switch_cfg_superedge *switch_sedge
 	= as_a <const switch_cfg_superedge *> (&edge);
-      return apply_constraints_for_gswitch (*switch_sedge, switch_stmt, ctxt);
+      return apply_constraints_for_gswitch (*switch_sedge, switch_stmt,
+					    ctxt, out);
     }
 
   /* Apply any constraints due to an exception being thrown.  */
   if (const cfg_superedge *cfg_sedge = dyn_cast <const cfg_superedge *> (&edge))
     if (cfg_sedge->get_flags () & EDGE_EH)
-      return apply_constraints_for_exception (last_stmt, ctxt);
+      return apply_constraints_for_exception (last_stmt, ctxt, out);
 
   return true;
 }
@@ -2338,12 +2356,15 @@ region_model::update_for_call_summary (const callgraph_superedge &cg_sedge,
    If they are feasible, add the constraints and return true.
 
    Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
+   (and so the edge should not be taken).
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.  */
 
 bool
 region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
 					   const gcond *cond_stmt,
-					   region_model_context *ctxt)
+					   region_model_context *ctxt,
+					   rejected_constraint **out)
 {
   ::edge cfg_edge = sedge.get_cfg_edge ();
   gcc_assert (cfg_edge != NULL);
@@ -2354,7 +2375,7 @@ region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
   tree rhs = gimple_cond_rhs (cond_stmt);
   if (cfg_edge->flags & EDGE_FALSE_VALUE)
     op = invert_tree_comparison (op, false /* honor_nans */);
-  return add_constraint (lhs, op, rhs, ctxt);
+  return add_constraint (lhs, op, rhs, ctxt, out);
 }
 
 /* Given an EDGE guarded by SWITCH_STMT, determine appropriate constraints
@@ -2363,12 +2384,15 @@ region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
    If they are feasible, add the constraints and return true.
 
    Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
+   (and so the edge should not be taken).
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.  */
 
 bool
 region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 					     const gswitch *switch_stmt,
-					     region_model_context *ctxt)
+					     region_model_context *ctxt,
+					     rejected_constraint **out)
 {
   tree index  = gimple_switch_index (switch_stmt);
   tree case_label = edge.get_case_label ();
@@ -2380,13 +2404,13 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
       if (upper_bound)
 	{
 	  /* Range.  */
-	  if (!add_constraint (index, GE_EXPR, lower_bound, ctxt))
+	  if (!add_constraint (index, GE_EXPR, lower_bound, ctxt, out))
 	    return false;
-	  return add_constraint (index, LE_EXPR, upper_bound, ctxt);
+	  return add_constraint (index, LE_EXPR, upper_bound, ctxt, out);
 	}
       else
 	/* Single-value.  */
-	return add_constraint (index, EQ_EXPR, lower_bound, ctxt);
+	return add_constraint (index, EQ_EXPR, lower_bound, ctxt, out);
     }
   else
     {
@@ -2406,14 +2430,16 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 	      /* Exclude this range-valued case.
 		 For now, we just exclude the boundary values.
 		 TODO: exclude the values within the region.  */
-	      if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt))
+	      if (!add_constraint (index, NE_EXPR, other_lower_bound,
+				   ctxt, out))
 		return false;
-	      if (!add_constraint (index, NE_EXPR, other_upper_bound, ctxt))
+	      if (!add_constraint (index, NE_EXPR, other_upper_bound,
+				   ctxt, out))
 		return false;
 	    }
 	  else
 	    /* Exclude this single-valued case.  */
-	    if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt))
+	    if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt, out))
 	      return false;
 	}
       return true;
@@ -2425,11 +2451,14 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
    If they are feasible, add the constraints and return true.
 
    Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
+   (and so the edge should not be taken).
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.  */
 
 bool
 region_model::apply_constraints_for_exception (const gimple *last_stmt,
-					       region_model_context *ctxt)
+					       region_model_context *ctxt,
+					       rejected_constraint **out)
 {
   gcc_assert (last_stmt);
   if (const gcall *call = dyn_cast <const gcall *> (last_stmt))
@@ -2442,7 +2471,7 @@ region_model::apply_constraints_for_exception (const gimple *last_stmt,
 	     leak report due to the result being lost when following
 	     the EH edge.  */
 	  if (tree lhs = gimple_call_lhs (call))
-	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt);
+	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt, out);
 	  return true;
 	}
   return true;
@@ -2860,6 +2889,19 @@ DEBUG_FUNCTION void
 debug (const region_model &rmodel)
 {
   rmodel.dump (false);
+}
+
+/* struct rejected_constraint.  */
+
+void
+rejected_constraint::dump_to_pp (pretty_printer *pp) const
+{
+  region_model m (m_model);
+  const svalue *lhs_sval = m.get_rvalue (m_lhs, NULL);
+  const svalue *rhs_sval = m.get_rvalue (m_rhs, NULL);
+  lhs_sval->dump_to_pp (pp, true);
+  pp_printf (pp, " %s ", op_symbol_code (m_op));
+  rhs_sval->dump_to_pp (pp, true);
 }
 
 /* class engine.  */

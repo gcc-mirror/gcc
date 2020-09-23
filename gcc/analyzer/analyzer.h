@@ -71,6 +71,7 @@ class region_model;
 class region_model_context;
   class impl_region_model_context;
 class call_details;
+struct rejected_constraint;
 class constraint_manager;
 class equiv_class;
 
