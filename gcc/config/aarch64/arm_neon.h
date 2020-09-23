@@ -26073,6 +26073,13 @@ vrndmq_f64 (float64x2_t __a)
 
 /* vrndn  */
 
+__extension__ extern __inline float32_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrndns_f32 (float32_t __a)
+{
+  return __builtin_aarch64_frintnsf (__a);
+}
+
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f32 (float32x2_t __a)
