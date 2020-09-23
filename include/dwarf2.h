@@ -55,6 +55,7 @@
 #define DW_CFA_DUP(name, value) , name = value
 #define DW_IDX(name, value) , name = value
 #define DW_IDX_DUP(name, value) , name = value
+#define DW_UT(name, value) , name = value
 
 #define DW_FIRST_TAG(name, value) enum dwarf_tag { \
   name = value
@@ -77,6 +78,9 @@
 #define DW_FIRST_IDX(name, value) enum dwarf_name_index_attribute { \
   name = value
 #define DW_END_IDX };
+#define DW_FIRST_UT(name, value) enum dwarf_unit_type { \
+  name = value
+#define DW_END_UT };
 
 #include "dwarf2.def"
 
@@ -94,6 +98,8 @@
 #undef DW_END_CFA
 #undef DW_FIRST_IDX
 #undef DW_END_IDX
+#undef DW_FIRST_UT
+#undef DW_END_UT
 
 #undef DW_TAG
 #undef DW_TAG_DUP
@@ -108,6 +114,7 @@
 #undef DW_CFA_DUP
 #undef DW_IDX
 #undef DW_IDX_DUP
+#undef DW_UT
 
 /* Flag that tells whether entry has a child or not.  */
 #define DW_children_no   0
@@ -316,7 +323,6 @@ enum dwarf_location_list_entry_type
 
 #define DW_CIE_ID	  0xffffffff
 #define DW64_CIE_ID	  0xffffffffffffffffULL
-#define DW_CIE_VERSION	  1
 
 #define DW_CFA_extended   0
 
@@ -451,19 +457,6 @@ enum dwarf_range_list_entry
     DW_RLE_start_end = 0x06,
     DW_RLE_start_length = 0x07
   };
-
-/* Unit types in unit_type unit header field.  */
-enum dwarf_unit_type
-  {
-    DW_UT_compile = 0x01,
-    DW_UT_type = 0x02,
-    DW_UT_partial = 0x03,
-    DW_UT_skeleton = 0x04,
-    DW_UT_split_compile = 0x05,
-    DW_UT_split_type = 0x06,
-    DW_UT_lo_user = 0x80,
-    DW_UT_hi_user = 0xff
-  };
 
 /* @@@ For use with GNU frame unwind information.  */
 
@@ -551,6 +544,10 @@ extern const char *get_DW_CFA_name (unsigned int opc);
 /* Return the name of a DW_IDX_ constant, or NULL if the value is not
    recognized.  */
 extern const char *get_DW_IDX_name (unsigned int idx);
+
+/* Return the name of a DW_UT_ constant, or NULL if the value is not
+   recognized.  */
+extern const char *get_DW_UT_name (unsigned int ut);
 
 #ifdef __cplusplus
 }
