@@ -62,6 +62,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "value-range.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 
 /* Class (from which there is one global instance) that holds modref summaries
    for all analyzed functions.  */
@@ -347,36 +350,12 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
 static bool
 record_access_p (tree expr)
 {
-  /* Non-escaping memory is fine  */
-  tree t = get_base_address (expr);
-  if (t && (INDIRECT_REF_P (t)
-	    || TREE_CODE (t) == MEM_REF
-	    || TREE_CODE (t) == TARGET_MEM_REF)
-	&& TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
-	&& !ptr_deref_may_alias_global_p (TREE_OPERAND (t, 0)))
+  if (refs_local_or_readonly_memory_p (expr))
     {
       if (dump_file)
-	fprintf (dump_file, "   - Non-escaping memory, ignoring.\n");
+	fprintf (dump_file, "   - Read-only or local, ignoring.\n");
       return false;
     }
-
-  /* Automatic variables are fine.  */
-  if (DECL_P (t)
-      && auto_var_in_fn_p (t, current_function_decl))
-    {
-      if (dump_file)
-	fprintf (dump_file, "   - Automatic variable, ignoring.\n");
-      return false;
-    }
-
-  /* Read-only variables are fine.  */
-  if (DECL_P (t) && TREE_READONLY (t))
-    {
-      if (dump_file)
-	fprintf (dump_file, "   - Read-only variable, ignoring.\n");
-      return false;
-    }
-
   return true;
 }
 

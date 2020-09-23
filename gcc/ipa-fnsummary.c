@@ -2430,6 +2430,47 @@ fp_expression_p (gimple *stmt)
   return false;
 }
 
+/* Return true if T references memory location that is local
+   for the function (that means, dead after return) or read-only.  */
+
+bool
+refs_local_or_readonly_memory_p (tree t)
+{
+  /* Non-escaping memory is fine.  */
+  t = get_base_address (t);
+  if ((TREE_CODE (t) == MEM_REF
+      || TREE_CODE (t) == TARGET_MEM_REF))
+    return points_to_local_or_readonly_memory_p (TREE_OPERAND (t, 0));
+
+  /* Automatic variables are fine.  */
+  if (DECL_P (t)
+      && auto_var_in_fn_p (t, current_function_decl))
+    return true;
+
+  /* Read-only variables are fine.  */
+  if (DECL_P (t) && TREE_READONLY (t))
+    return true;
+
+  return false;
+}
+
+/* Return true if T is a pointer pointing to memory location that is local
+   for the function (that means, dead after return) or read-only.  */
+
+bool
+points_to_local_or_readonly_memory_p (tree t)
+{
+  /* See if memory location is clearly invalid.  */
+  if (integer_zerop (t))
+    return flag_delete_null_pointer_checks;
+  if (TREE_CODE (t) == SSA_NAME)
+    return !ptr_deref_may_alias_global_p (t);
+  if (TREE_CODE (t) == ADDR_EXPR)
+    return refs_local_or_readonly_memory_p (TREE_OPERAND (t, 0));
+  return false;
+}
+
+
 /* Analyze function body for NODE.
    EARLY indicates run from early optimization pipeline.  */
 
