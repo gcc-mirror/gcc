@@ -29,8 +29,8 @@ class extrinsic_state
 {
 public:
   extrinsic_state (auto_delete_vec <state_machine> &checkers,
-		   logger *logger = NULL,
-		   engine *eng = NULL)
+		   engine *eng,
+		   logger *logger = NULL)
   : m_checkers (checkers), m_logger (logger), m_engine (eng)
   {
   }

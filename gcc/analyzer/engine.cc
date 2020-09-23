@@ -4464,7 +4464,7 @@ impl_run_checkers (logger *logger)
     }
 
   /* Extrinsic state shared by nodes in the graph.  */
-  const extrinsic_state ext_state (checkers, logger, &eng);
+  const extrinsic_state ext_state (checkers, &eng, logger);
 
   const analysis_plan plan (sg, logger);
 
