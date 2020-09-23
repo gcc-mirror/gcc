@@ -1,3 +1,15 @@
+2020-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96803
+	* include/std/tuple
+	(_Tuple_impl(allocator_arg_t, Alloc, const _Tuple_impl<U...>&)):
+	Replace parameter pack with a type parameter and a pack and pass
+	the first type to __use_alloc.
+	* testsuite/20_util/tuple/cons/96803.cc: New test.
+
 2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,16 @@
+2020-09-22  Vlad Lazar  <vlad.lazar@arm.com>
+
+	Backported from master:
+	2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vnegd_s64): New.
+	* gcc.target/aarch64/vneg_s.c (RUN_TEST_SCALAR): New.
+	(test_vnegd_s64): Likewise.
+	* gcc.target/aarch64/vnegd_s64.c: New.
+	* gcc.target/aarch64/vabsd_s64.c: New.
+	* gcc.target/aarch64/vabs_intrinsic_3.c: New file.
+
 2020-09-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

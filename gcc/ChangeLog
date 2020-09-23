@@ -1,3 +1,12 @@
+2020-09-22  Vlad Lazar  <vlad.lazar@arm.com>
+
+	Backported from master:
+	2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vabsd_s64): New.
+	(vnegd_s64): Likewise.
+
 2020-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
