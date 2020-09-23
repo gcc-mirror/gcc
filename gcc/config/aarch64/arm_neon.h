@@ -30167,6 +30167,13 @@ vst4q_p64 (poly64_t * __a, poly64x2x4_t __val)
   __builtin_aarch64_st4v2di ((__builtin_aarch64_simd_di *) __a, __o);
 }
 
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vstrq_p128 (poly128_t * __ptr, poly128_t __val)
+{
+  *__ptr = __val;
+}
+
 /* vsub */
 
 __extension__ extern __inline int64_t
