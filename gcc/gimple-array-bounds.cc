@@ -372,6 +372,20 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   return warned;
 }
 
+/* Hack around the internal representation constraints and build a zero
+   element array type that actually renders as T[0] in diagnostcs.  */
+
+static tree
+build_zero_elt_array_type (tree eltype)
+{
+  tree idxtype = build_range_type (sizetype, size_zero_node, NULL_TREE);
+  tree arrtype = build_array_type (eltype, idxtype);
+  arrtype = build_distinct_type_copy (TYPE_MAIN_VARIANT (arrtype));
+  TYPE_SIZE (arrtype) = bitsize_zero_node;
+  TYPE_SIZE_UNIT (arrtype) = size_zero_node;
+  return arrtype;
+}
+
 /* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
    references to string constants.  If VRP can determine that the array
    subscript is a constant, check if it is outside valid range.
@@ -547,7 +561,10 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	return false;
 
       offset_int nelts = arrbounds[1] / eltsize;
-      reftype = build_array_type_nelts (reftype, nelts.to_uhwi ());
+      if (nelts == 0)
+	reftype = build_zero_elt_array_type (reftype);
+      else
+	reftype = build_array_type_nelts (reftype, nelts.to_uhwi ());
     }
   else if (TREE_CODE (arg) == ADDR_EXPR)
     {
