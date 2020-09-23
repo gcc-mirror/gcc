@@ -2,6 +2,7 @@
    with side effects.  */
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
+/* { dg-require-effective-target alloca } */
 
 #include <stdatomic.h>
 
