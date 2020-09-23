@@ -8345,8 +8345,10 @@ vectorizable_live_operation (vec_info *vinfo,
 	    if (gimple_code (use_stmt) != GIMPLE_PHI
 		&& !vect_stmt_dominates_stmt_p (gsi_stmt (*gsi), use_stmt))
 	      {
-		gcc_assert (is_gimple_assign (use_stmt)
-			    && gimple_assign_rhs_code (use_stmt) == CONSTRUCTOR);
+		enum tree_code code = gimple_assign_rhs_code (use_stmt);
+		gcc_assert (code == CONSTRUCTOR
+			    || code == VIEW_CONVERT_EXPR
+			    || CONVERT_EXPR_CODE_P (code));
 		if (dump_enabled_p ())
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				   "Using original scalar computation for "
