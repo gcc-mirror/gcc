@@ -30,7 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+#if __GNUC__ >= 10
 #pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 namespace ana {
 
