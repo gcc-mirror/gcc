@@ -19676,6 +19676,13 @@ vld4q_p64 (const poly64_t * __a)
   return ret;
 }
 
+__extension__ extern __inline poly128_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vldrq_p128 (const poly128_t * __ptr)
+{
+  return *__ptr;
+}
+
 /* vldn_dup */
 
 __extension__ extern __inline int8x8x2_t
