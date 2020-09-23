@@ -1,0 +1,35 @@
+Each image is its own process, that is forked from the master process
+at the start of the program. The number of images is determined by the
+environment variable GFORTRAN_NUM_IMAGES or, alternatively, the number
+of processors.
+
+Each coarray is identified by its address. Since coarrays always
+behave as if they had the SAVE attribute, this works even for
+allocatable coarrays. ASLR is not an issue, since the addresses are
+assigned at startup and remain valid over forks. If, on two different
+images, the allocation function is called with the same descriptor
+address, the same piece of memory is allocated.
+
+Internally, the allocator (alloc.c) uses a shared hashmap (hashmap.c)
+to remember with which ids pieces of memory allocated. If a new piece
+of memory is needed, a simple relatively allocator (allocator.c) is
+used. If the allocator doesn't hold any previously free()d memory, it
+requests it from the shared memory object (shared_memory.c), which
+also handles the translation of shared_mem_ptr's to pointers in the
+address space of the image. At the moment shared_memory relies on
+double-mapping pages for this (which might restrict the architectures
+on which this will work, I have tested this on x86 and POWER), but
+since any piece of memory should only be written to through one
+address within one alloc/free pair, it shouldn't matter that much
+performance-wise.
+
+The entry points in the library with the exception of master are
+defined in wrapper.c, master(), the function handling launching the
+images, is defined in coarraynative.c, and the other files shouldn't
+require much explanation.
+
+
+To compile a program to run with native coarrays, compile with
+-fcoarray=native -lgfor_nca -lrt (I've not yet figured out how to
+automagically link against the library).
+
