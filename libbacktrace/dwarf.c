@@ -3558,6 +3558,11 @@ report_inlined_functions (uintptr_t pc, struct function *function,
   if (function->function_addrs_count == 0)
     return 0;
 
+  /* Our search isn't safe if pc == -1, as that is the sentinel
+     value.  */
+  if (pc + 1 == 0)
+    return 0;
+
   p = ((struct function_addrs *)
        bsearch (&pc, function->function_addrs,
 		function->function_addrs_count,
@@ -3567,9 +3572,12 @@ report_inlined_functions (uintptr_t pc, struct function *function,
     return 0;
 
   /* Here pc >= p->low && pc < (p + 1)->low.  The function_addrs are
-     sorted by low, so we are at the end of a range of function_addrs
-     with the same low alue.  Walk backward and use the first range
-     that includes pc.  */
+     sorted by low, so if pc > p->low we are at the end of a range of
+     function_addrs with the same low value.  If pc == p->low walk
+     forward to the end of the range with that low value.  Then walk
+     backward and use the first range that includes pc.  */
+  while (pc == (p + 1)->low)
+    ++p;
   match = NULL;
   while (1)
     {
@@ -3636,8 +3644,10 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
 
   *found = 1;
 
-  /* Find an address range that includes PC.  */
-  entry = (ddata->addrs_count == 0
+  /* Find an address range that includes PC.  Our search isn't safe if
+     PC == -1, as we use that as a sentinel value, so skip the search
+     in that case.  */
+  entry = (ddata->addrs_count == 0 || pc + 1 == 0
 	   ? NULL
 	   : bsearch (&pc, ddata->addrs, ddata->addrs_count,
 		      sizeof (struct unit_addrs), unit_addrs_search));
@@ -3649,9 +3659,12 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
     }
 
   /* Here pc >= entry->low && pc < (entry + 1)->low.  The unit_addrs
-     are sorted by low, so we are at the end of a range of unit_addrs
-     with the same low value.  Walk backward and use the first range
-     that includes pc.  */
+     are sorted by low, so if pc > p->low we are at the end of a range
+     of unit_addrs with the same low value.  If pc == p->low walk
+     forward to the end of the range with that low value.  Then walk
+     backward and use the first range that includes pc.  */
+  while (pc == (entry + 1)->low)
+    ++entry;
   found_entry = 0;
   while (1)
     {
@@ -3832,9 +3845,12 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
     return callback (data, pc, ln->filename, ln->lineno, NULL);
 
   /* Here pc >= p->low && pc < (p + 1)->low.  The function_addrs are
-     sorted by low, so we are at the end of a range of function_addrs
-     with the same low alue.  Walk backward and use the first range
-     that includes pc.  */
+     sorted by low, so if pc > p->low we are at the end of a range of
+     function_addrs with the same low value.  If pc == p->low walk
+     forward to the end of the range with that low value.  Then walk
+     backward and use the first range that includes pc.  */
+  while (pc == (p + 1)->low)
+    ++p;
   fmatch = NULL;
   while (1)
     {
