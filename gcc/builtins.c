@@ -3480,8 +3480,14 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
   if (warned)
     {
       if (pad && pad->dst.ref)
-	inform (DECL_SOURCE_LOCATION (pad->dst.ref),
-		"destination object declared here");
+	{
+	  if (DECL_P (pad->dst.ref))
+	    inform (DECL_SOURCE_LOCATION (pad->dst.ref),
+		    "destination object declared here");
+	  else if (EXPR_HAS_LOCATION (pad->dst.ref))
+	    inform (EXPR_LOCATION (pad->dst.ref),
+		    "destination object allocated here");
+	}
       TREE_NO_WARNING (exp) = true;
     }
 
