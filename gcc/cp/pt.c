@@ -16531,6 +16531,14 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case FUNCTION_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
 	r = tsubst (t, args, complain, in_decl);
+      else if (DECL_LOCAL_DECL_P (t))
+	{
+	  /* Local specialization will have been created when we
+	     instantiated the DECL_EXPR_DECL. */
+	  r = retrieve_local_specialization (t);
+	  if (!r)
+	    r = error_mark_node;
+	}
       else if (local_variable_p (t)
 	       && uses_template_parms (DECL_CONTEXT (t)))
 	{
