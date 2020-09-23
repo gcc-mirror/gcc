@@ -1,3 +1,10 @@
+2020-09-22  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2020-09-22  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md: Add defines for signed div and mod operators.
+
 2020-09-20  John David Anglin  < danglin@gcc.gnu.org>
 
 	* config/pa/pa-hpux11.h (LINK_GCC_C_SEQUENCE_SPEC): Delete.

@@ -1,3 +1,13 @@
+2020-09-22  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2020-09-22  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/diag-sdiv.c: New test.
+	* gcc.target/bpf/diag-smod.c: New test.
+	* gcc.target/bpf/xbpf-sdiv-1.c: New test.
+	* gcc.target/bpf/xbpf-smod-1.c: New test.
+
 2020-09-18  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
