@@ -6088,6 +6088,20 @@ vreinterpretq_u32_p128 (poly128_t __a)
   return (uint32x4_t)__a;
 }
 
+__extension__ extern __inline float64x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vreinterpretq_f64_p128 (poly128_t __a)
+{
+  return (float64x2_t) __a;
+}
+
+__extension__ extern __inline poly128_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vreinterpretq_p128_f64 (float64x2_t __a)
+{
+  return (poly128_t) __a;
+}
+
 /* vset_lane  */
 
 __extension__ extern __inline float16x4_t

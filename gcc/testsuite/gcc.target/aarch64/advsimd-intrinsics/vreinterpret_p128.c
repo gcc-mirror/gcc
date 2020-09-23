@@ -33,6 +33,10 @@ VECT_VAR_DECL(vreint_expected_q_p128_f32,poly,64,2) [] = { 0xc1700000c1800000,
 							   0xc1500000c1600000 };
 VECT_VAR_DECL(vreint_expected_q_p128_f16,poly,64,2) [] = { 0xca80cb00cb80cc00,
 							   0xc880c900c980ca00 };
+#ifdef __aarch64__
+VECT_VAR_DECL(vreint_expected_q_p128_f64,poly,64,2) [] = { 0xc030000000000000,
+							   0xc02e000000000000 };
+#endif
 
 /* Expected results: vreinterpretq_*_p128.  */
 VECT_VAR_DECL(vreint_expected_q_s8_p128,int,8,16) [] = { 0xf0, 0xff, 0xff, 0xff,
@@ -75,6 +79,10 @@ VECT_VAR_DECL(vreint_expected_q_f16_p128,hfloat,16,8) [] = { 0xfff0, 0xffff,
 							     0xffff, 0xffff,
 							     0xfff1, 0xffff,
 							     0xffff, 0xffff };
+#ifdef __aarch64__
+VECT_VAR_DECL(vreint_expected_q_f64_p128,hfloat,64,2) [] = { 0xfffffffffffffff0,
+							     0xfffffffffffffff1 };
+#endif
 
 int main (void)
 {
@@ -89,6 +97,10 @@ int main (void)
   VLOAD(vreint_vector, buffer, q, float, f, 16, 8);
 #endif
   VLOAD(vreint_vector, buffer, q, float, f, 32, 4);
+
+#ifdef __aarch64__
+  VLOAD(vreint_vector, buffer, q, float, f, 64, 2);
+#endif
 
   /* vreinterpretq_p128_* tests.  */
 #undef TEST_MSG
@@ -120,6 +132,10 @@ int main (void)
   TEST_VREINTERPRET128(q, poly, p, 128, 1, float, f, 16, 8, vreint_expected_q_p128_f16);
 #endif
   TEST_VREINTERPRET128(q, poly, p, 128, 1, float, f, 32, 4, vreint_expected_q_p128_f32);
+
+#ifdef __aarch64__
+  TEST_VREINTERPRET128(q, poly, p, 128, 1, float, f, 64, 2, vreint_expected_q_p128_f64);
+#endif
 
   /* vreinterpretq_*_p128 tests.  */
 #undef TEST_MSG
@@ -161,5 +177,8 @@ int main (void)
 #endif
   TEST_VREINTERPRET_FP_FROM_P128(q, float, f, 32, 4, poly, p, 128, 1, vreint_expected_q_f32_p128);
 
+#ifdef __aarch64__
+  TEST_VREINTERPRET_FP_FROM_P128(q, float, f, 64, 2, poly, p, 128, 1, vreint_expected_q_f64_p128);
+#endif
   return 0;
 }
