@@ -1,3 +1,86 @@
+2020-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* analysis-plan.cc: Include "json.h".
+	* analyzer.opt (fdump-analyzer-json): New.
+	* call-string.cc: Include "json.h".
+	(call_string::to_json): New.
+	* call-string.h (call_string::to_json): New decl.
+	* checker-path.cc: Include "json.h".
+	* constraint-manager.cc: Include "json.h".
+	(equiv_class::to_json): New.
+	(constraint::to_json): New.
+	(constraint_manager::to_json): New.
+	* constraint-manager.h (equiv_class::to_json): New decl.
+	(constraint::to_json): New decl.
+	(constraint_manager::to_json): New decl.
+	* diagnostic-manager.cc: Include "json.h".
+	(saved_diagnostic::to_json): New.
+	(diagnostic_manager::to_json): New.
+	* diagnostic-manager.h (saved_diagnostic::to_json): New decl.
+	(diagnostic_manager::to_json): New decl.
+	* engine.cc: Include "json.h", <zlib.h>.
+	(exploded_node::status_to_str): New.
+	(exploded_node::to_json): New.
+	(exploded_edge::to_json): New.
+	(exploded_graph::to_json): New.
+	(dump_analyzer_json): New.
+	(impl_run_checkers): Call it.
+	* exploded-graph.h (exploded_node::status_to_str): New decl.
+	(exploded_node::to_json): New.
+	(exploded_edge::to_json): New.
+	(exploded_graph::to_json): New.
+	* pending-diagnostic.cc: Include "json.h".
+	* program-point.cc: Include "json.h".
+	(program_point::to_json): New.
+	* program-point.h (program_point::to_json): New decl.
+	* program-state.cc: Include "json.h".
+	(extrinsic_state::to_json): New.
+	(sm_state_map::to_json): New.
+	(program_state::to_json): New.
+	* program-state.h (extrinsic_state::to_json): New decl.
+	(sm_state_map::to_json): New decl.
+	(program_state::to_json): New decl.
+	* region-model-impl-calls.cc: Include "json.h".
+	* region-model-manager.cc: Include "json.h".
+	* region-model-reachability.cc: Include "json.h".
+	* region-model.cc: Include "json.h".
+	* region-model.h (svalue::to_json): New decl.
+	(region::to_json): New decl.
+	* region.cc: Include "json.h".
+	(region::to_json: New.
+	* sm-file.cc: Include "json.h".
+	* sm-malloc.cc: Include "json.h".
+	* sm-pattern-test.cc: Include "json.h".
+	* sm-sensitive.cc: Include "json.h".
+	* sm-signal.cc: Include "json.h".
+	(signal_delivery_edge_info_t::to_json): New.
+	* sm-taint.cc: Include "json.h".
+	* sm.cc: Include "diagnostic.h", "tree-diagnostic.h", and
+	"json.h".
+	(state_machine::state::to_json): New.
+	(state_machine::to_json): New.
+	* sm.h (state_machine::state::to_json): New.
+	(state_machine::to_json): New.
+	* state-purge.cc: Include "json.h".
+	* store.cc: Include "json.h".
+	(binding_key::get_desc): New.
+	(binding_map::to_json): New.
+	(binding_cluster::to_json): New.
+	(store::to_json): New.
+	* store.h (binding_key::get_desc): New decl.
+	(binding_map::to_json): New decl.
+	(binding_cluster::to_json): New decl.
+	(store::to_json): New decl.
+	* supergraph.cc: Include "json.h".
+	(supergraph::to_json): New.
+	(supernode::to_json): New.
+	(superedge::to_json): New.
+	* supergraph.h (supergraph::to_json): New decl.
+	(supernode::to_json): New decl.
+	(superedge::to_json): New decl.
+	* svalue.cc: Include "json.h".
+	(svalue::to_json): New.
+
 2020-09-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97130

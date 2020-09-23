@@ -1,3 +1,72 @@
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95310
+	* g++.dg/concepts/diagnostic15.C: New test.
+
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96652
+	* g++.dg/cpp0x/decltype-96652.C: New test.
+
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97145
+	* g++.dg/asan/pr97145.C: New test.
+
+2020-09-22  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/diag-sdiv.c: New test.
+	* gcc.target/bpf/diag-smod.c: New test.
+	* gcc.target/bpf/xbpf-sdiv-1.c: New test.
+	* gcc.target/bpf/xbpf-smod-1.c: New test.
+
+2020-09-22  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.pt/friend34.C: Check injected friend is still
+	invisible.
+
+2020-09-22  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/timevar1.C: Also prune N%.
+
+2020-09-22  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/timevar2.C: Also prune N%.
+
+2020-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* g++.dg/tree-ssa/pr96979.C: New test.
+
+2020-09-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/load-and-test-fp-1.c: Change test to include all
+	possible combinations of dead/live registers and comparisons (equality,
+	relational).
+	* gcc.target/s390/load-and-test-fp-2.c: Same as load-and-test-fp-1.c
+	but for fast math.
+	* gcc.target/s390/load-and-test-fp.h: New test included by
+	load-and-test-fp-{1,2}.c.
+
+2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vcls_unsigned_1.c: New test.
+
+2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vceq_poly_1.c: New test.
+
+2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vadd_poly_1.c: New test.
+
+2020-09-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/m128-check.h: Add no-strict-aliasing
+
 2020-09-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97130

@@ -1,3 +1,8 @@
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wbuiltin-declaration-mismatch): Fix typo in variable name:
+	warn_builtin_declaraion_mismatch -> warn_builtin_declaration_mismatch.
+
 2020-09-21  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt (Wctad-maybe-unsupported): New option.

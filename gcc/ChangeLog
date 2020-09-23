@@ -1,3 +1,81 @@
+2020-09-22  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (analyze_stmt): Ignore gimple clobber.
+
+2020-09-22  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref-tree.c: Add namespace selftest.
+	(modref_tree_c_tests): Rename to ...
+	(ipa_modref_tree_c_tests): ... this.
+	* ipa-modref.c (pass_modref): Remove destructor.
+	(ipa_modref_c_finalize): New function.
+	* ipa-modref.h (ipa_modref_c_finalize): Declare.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	ipa_modref_c_finalize.
+	* selftest.h (ipa_modref_tree_c_tests): Declare.
+	* toplev.c: Include ipa-modref-tree.h and ipa-modref.h
+	(toplev::finalize): Call ipa_modref_c_finalize.
+
+2020-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Other Debugging Techniques): Mention
+	-fdump-analyzer-json.
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-fdump-analyzer-json.
+
+2020-09-22  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md: Add defines for signed div and mod operators.
+
+2020-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* doc/invoke.texi: Document new param max-switch-clustering-attempts.
+	* params.opt: Add new parameter.
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+	Limit number of attempts.
+	(bit_test_cluster::find_bit_tests): Likewise.
+
+2020-09-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md ("*cmp<mode>_ccs_0", "*cmp<mode>_ccz_0",
+	"*cmp<mode>_ccs_0_fastmath"): Basically change "*cmp<mode>_ccs_0" into
+	"*cmp<mode>_ccz_0" and for fast math add "*cmp<mode>_ccs_0_fastmath".
+
+2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vcls_u8, vcls_u16, vcls_u32,
+	vclsq_u8, vclsq_u16, vclsq_u32): Define.
+
+2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vceqq_p64, vceqz_p64, vceqzq_p64): Define.
+
+2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vadd_p8, vadd_p16, vadd_p64, vaddq_p8,
+	vaddq_p16, vaddq_p64, vaddq_p128): Define.
+
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* params.opt (--param=modref-max-tests=): Fix typo in help text:
+	perofmed -> performed.
+	* common.opt: Fix typo: incrmeental -> incremental.
+	* ipa-modref.c: Fix typos: recroding -> recording, becaue -> because,
+	analsis -> analysis.
+	(class modref_summaries): Fix typo: betweehn -> between.
+	(analyze_call): Fix typo: calle -> callee.
+	(read_modref_records): Fix typo: expcted -> expected.
+	(pass_ipa_modref::execute): Fix typo: calle -> callee.
+
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (-fipa-modref): Add dot at the end of option help.
+	* params.opt (--param=modref-max-tests=): Likewise.
+
 2020-09-21  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -Wctad-maybe-unsupported.
