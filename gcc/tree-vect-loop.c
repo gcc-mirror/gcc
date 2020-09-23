@@ -814,7 +814,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     vec_outside_cost (0),
     vec_inside_cost (0),
     vectorizable (false),
-    can_use_partial_vectors_p (true),
+    can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
     using_partial_vectors_p (false),
     epil_using_partial_vectors_p (false),
     peeling_for_gaps (false),
@@ -2003,22 +2003,123 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
     }
 }
 
+/* Determine if operating on full vectors for LOOP_VINFO might leave
+   some scalar iterations still to do.  If so, decide how we should
+   handle those scalar iterations.  The possibilities are:
 
-/* Decides whether we need to create an epilogue loop to handle
-   remaining scalar iterations and sets PEELING_FOR_NITERS accordingly.  */
+   (1) Make LOOP_VINFO operate on partial vectors instead of full vectors.
+       In this case:
 
-void
-determine_peel_for_niter (loop_vec_info loop_vinfo)
+	 LOOP_VINFO_USING_PARTIAL_VECTORS_P == true
+	 LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == false
+	 LOOP_VINFO_PEELING_FOR_NITER == false
+
+   (2) Make LOOP_VINFO operate on full vectors and use an epilogue loop
+       to handle the remaining scalar iterations.  In this case:
+
+	 LOOP_VINFO_USING_PARTIAL_VECTORS_P == false
+	 LOOP_VINFO_PEELING_FOR_NITER == true
+
+       There are two choices:
+
+       (2a) Consider vectorizing the epilogue loop at the same VF as the
+	    main loop, but using partial vectors instead of full vectors.
+	    In this case:
+
+	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == true
+
+       (2b) Consider vectorizing the epilogue loop at lower VFs only.
+	    In this case:
+
+	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == false
+
+   When FOR_EPILOGUE_P is true, make this determination based on the
+   assumption that LOOP_VINFO is an epilogue loop, otherwise make it
+   based on the assumption that LOOP_VINFO is the main loop.  The caller
+   has made sure that the number of iterations is set appropriately for
+   this value of FOR_EPILOGUE_P.  */
+
+opt_result
+vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
+					    bool for_epilogue_p)
 {
-  LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
+  /* Determine whether there would be any scalar iterations left over.  */
+  bool need_peeling_or_partial_vectors_p
+    = vect_need_peeling_or_partial_vectors_p (loop_vinfo);
 
-  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-    /* The main loop handles all iterations.  */
-    LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
-  else if (vect_need_peeling_or_partial_vectors_p (loop_vinfo))
-    LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = true;
+  /* Decide whether to vectorize the loop with partial vectors.  */
+  LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+  LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && need_peeling_or_partial_vectors_p)
+    {
+      /* For partial-vector-usage=1, try to push the handling of partial
+	 vectors to the epilogue, with the main loop continuing to operate
+	 on full vectors.
+
+	 ??? We could then end up failing to use partial vectors if we
+	 decide to peel iterations into a prologue, and if the main loop
+	 then ends up processing fewer than VF iterations.  */
+      if (param_vect_partial_vector_usage == 1
+	  && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	  && !vect_known_niters_smaller_than_vf (loop_vinfo))
+	LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+      else
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+    }
+
+  if (dump_enabled_p ())
+    {
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "operating on partial vectors%s.\n",
+			 for_epilogue_p ? " for epilogue loop" : "");
+      else
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "operating only on full vectors%s.\n",
+			 for_epilogue_p ? " for epilogue loop" : "");
+    }
+
+  if (for_epilogue_p)
+    {
+      loop_vec_info orig_loop_vinfo = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo);
+      gcc_assert (orig_loop_vinfo);
+      if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+	gcc_assert (known_lt (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+			      LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)));
+    }
+
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+    {
+      /* Check that the loop processes at least one full vector.  */
+      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      tree scalar_niters = LOOP_VINFO_NITERS (loop_vinfo);
+      if (known_lt (wi::to_widest (scalar_niters), vf))
+	return opt_result::failure_at (vect_location,
+				       "loop does not have enough iterations"
+				       " to support vectorization.\n");
+
+      /* If we need to peel an extra epilogue iteration to handle data
+	 accesses with gaps, check that there are enough scalar iterations
+	 available.
+
+	 The check above is redundant with this one when peeling for gaps,
+	 but the distinction is useful for diagnostics.  */
+      tree scalar_nitersm1 = LOOP_VINFO_NITERSM1 (loop_vinfo);
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	  && known_lt (wi::to_widest (scalar_nitersm1), vf))
+	return opt_result::failure_at (vect_location,
+				       "loop does not have enough iterations"
+				       " to support peeling for gaps.\n");
+    }
+
+  LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)
+    = (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+       && need_peeling_or_partial_vectors_p);
+
+  return opt_result::success ();
 }
-
 
 /* Function vect_analyze_loop_2.
 
@@ -2272,71 +2373,31 @@ start_over:
       LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
     }
 
-  /* Decide whether to vectorize a loop with partial vectors for
-     this vectorization factor.  */
-  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-    {
-      /* Don't use partial vectors if we don't need to peel the loop.  */
-      if (param_vect_partial_vector_usage == 0
-	  || !vect_need_peeling_or_partial_vectors_p (loop_vinfo))
-	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
-      else if (vect_verify_full_masking (loop_vinfo)
-	       || vect_verify_loop_lens (loop_vinfo))
-	{
-	  /* The epilogue and other known niters less than VF
-	    cases can still use vector access with length fully.  */
-	  if (param_vect_partial_vector_usage == 1
-	      && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-	      && !vect_known_niters_smaller_than_vf (loop_vinfo))
-	    {
-	      LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
-	    }
-	  else
-	    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
-	}
-      else
-	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
-    }
-  else
-    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
-
-  if (dump_enabled_p ())
-    {
-      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "operating on partial vectors.\n");
-      else
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "operating only on full vectors.\n");
-    }
-
-  /* If epilog loop is required because of data accesses with gaps,
-     one additional iteration needs to be peeled.  Check if there is
-     enough iterations for vectorization.  */
-  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-    {
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      tree scalar_niters = LOOP_VINFO_NITERSM1 (loop_vinfo);
-
-      if (known_lt (wi::to_widest (scalar_niters), vf))
-	return opt_result::failure_at (vect_location,
-				       "loop has no enough iterations to"
-				       " support peeling for gaps.\n");
-    }
+  /* If we still have the option of using partial vectors,
+     check whether we can generate the necessary loop controls.  */
+  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && !vect_verify_full_masking (loop_vinfo)
+      && !vect_verify_loop_lens (loop_vinfo))
+    LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 
   /* If we're vectorizing an epilogue loop, the vectorized loop either needs
      to be able to handle fewer than VF scalars, or needs to have a lower VF
      than the main loop.  */
   if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      && !LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
       && maybe_ge (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 		   LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)))
     return opt_result::failure_at (vect_location,
 				   "Vectorization factor too high for"
 				   " epilogue loop.\n");
+
+  /* Decide whether this loop_vinfo should use partial vectors or peeling,
+     assuming that the loop will be used as a main loop.  We will redo
+     this analysis later if we instead decide to use the loop as an
+     epilogue loop.  */
+  ok = vect_determine_partial_vectors_and_peeling (loop_vinfo, false);
+  if (!ok)
+    return ok;
 
   /* Check the costings of the loop make vectorizing worthwhile.  */
   res = vect_analyze_loop_costing (loop_vinfo);
@@ -2350,7 +2411,6 @@ start_over:
     return opt_result::failure_at (vect_location,
 				   "Loop costings not worthwhile.\n");
 
-  determine_peel_for_niter (loop_vinfo);
   /* If an epilogue loop is required make sure we can create one.  */
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
       || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo))
