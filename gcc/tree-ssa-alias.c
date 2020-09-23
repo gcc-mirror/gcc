@@ -170,7 +170,7 @@ dump_alias_stats (FILE *s)
   fprintf (s, "  modref clobber: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n  "
-	   HOST_WIDE_INT_PRINT_DEC" tbaa querries (%f per modref querry)\n",
+	   HOST_WIDE_INT_PRINT_DEC" tbaa queries (%f per modref query)\n",
 	   alias_stats.modref_clobber_no_alias,
 	   alias_stats.modref_clobber_no_alias
 	   + alias_stats.modref_clobber_may_alias,
@@ -2448,9 +2448,9 @@ modref_may_conflict (modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
 
       if (tbaa_p && flag_strict_aliasing)
 	{
+	  alias_stats.modref_tests++;
 	  if (!alias_sets_conflict_p (base_set, base_node->base))
 	    continue;
-	  alias_stats.modref_tests++;
 	  num_tests++;
 	}
       else
@@ -2465,9 +2465,9 @@ modref_may_conflict (modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
 	    return true;
 	  if (!flag_strict_aliasing)
 	    return true;
+	  alias_stats.modref_tests++;
 	  if (alias_sets_conflict_p (ref_set, ref_node->ref))
 	    return true;
-	  alias_stats.modref_tests++;
 	  num_tests++;
 	  if (num_tests >= max_tests)
 	    return true;

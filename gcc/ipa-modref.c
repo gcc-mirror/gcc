@@ -106,6 +106,36 @@ modref_summary::~modref_summary ()
     ggc_delete (stores_lto);
 }
 
+/* Return true if lto summary is potentially useful for optimization.  */
+
+bool
+modref_summary::lto_useful_p (int ecf_flags)
+{
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    return false;
+  if (loads_lto && !loads_lto->every_base)
+    return true;
+  if (ecf_flags & ECF_PURE)
+    return false;
+  return stores_lto && !stores_lto->every_base;
+}
+
+/* Return true if summary is potentially useful for optimization.  */
+
+bool
+modref_summary::useful_p (int ecf_flags)
+{
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    return false;
+  if (lto_useful_p (ecf_flags))
+    return true;
+  if (loads && !loads->every_base)
+    return true;
+  if (ecf_flags & ECF_PURE)
+    return false;
+  return stores && !loads->every_base;
+}
+
 /* Dump records TT to OUT.  */
 
 static void
@@ -588,8 +618,10 @@ static void
 analyze_function (function *f, bool ipa)
 {
   if (dump_file)
-    fprintf (dump_file, "modref analyzing '%s' (ipa=%i)...\n",
-	     function_name (f), ipa);
+    fprintf (dump_file, "modref analyzing '%s' (ipa=%i)%s%s\n",
+	     function_name (f), ipa,
+	     TREE_READONLY (current_function_decl) ? " (const)" : "",
+	     DECL_PURE_P (current_function_decl) ? " (pure)" : "");
 
   /* Don't analyze this function if it's compiled with -fno-strict-aliasing.  */
   if (!flag_ipa_modref)
@@ -646,6 +678,7 @@ analyze_function (function *f, bool ipa)
 				    param_modref_max_refs);
     }
   summary->finished = false;
+  int ecf_flags = flags_from_decl_or_type (current_function_decl);
 
   /* Analyze each statement in each basic block of the function.  If the
      statement cannot be analyzed (for any reason), the entire function cannot
@@ -656,7 +689,8 @@ analyze_function (function *f, bool ipa)
       gimple_stmt_iterator si;
       for (si = gsi_after_labels (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  if (!analyze_stmt (summary, gsi_stmt (si), ipa))
+	  if (!analyze_stmt (summary, gsi_stmt (si), ipa)
+	      || !summary->useful_p (ecf_flags))
 	    {
 	      cgraph_node *fnode = cgraph_node::get (current_function_decl);
 	      summaries->remove (fnode);
@@ -927,9 +961,11 @@ modref_write ()
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      modref_summary *r;
 
       if (cnode && cnode->definition && !cnode->alias
-	  && summaries->get (cnode))
+	  && (r = summaries->get (cnode))
+	  && r->lto_useful_p (flags_from_decl_or_type (cnode->decl)))
 	count++;
     }
   streamer_write_uhwi (ob, count);
@@ -944,7 +980,7 @@ modref_write ()
 
 	  modref_summary *r = summaries->get (cnode);
 
-	  if (!r)
+	  if (!r || !r->lto_useful_p (flags_from_decl_or_type (cnode->decl)))
 	    continue;
 
 	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
@@ -1233,7 +1269,7 @@ unsigned int pass_ipa_modref::execute (function *)
 
 	      if (dump_file)
 		fprintf (dump_file, "    Call to %s\n",
-			 cur->dump_name ());
+			 callee_edge->callee->dump_name ());
 
 	      /* We can not safely optimize based on summary of callee if it
 		 does not always bind to current def: it is possible that
@@ -1278,7 +1314,7 @@ unsigned int pass_ipa_modref::execute (function *)
 		      its_hopeless = true;
 		      if (dump_file && avail <= AVAIL_INTERPOSABLE)
 			fprintf (dump_file, "      Call target interposable"
-				 "or not available\n");
+				 " or not available\n");
 		      else if (dump_file)
 			fprintf (dump_file, "      No call target summary\n");
 		      break;

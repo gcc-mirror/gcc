@@ -41,6 +41,8 @@ struct GTY(()) modref_summary
   modref_summary ();
   ~modref_summary ();
   void dump (FILE *);
+  bool useful_p (int ecf_flags);
+  bool lto_useful_p (int ecf_flags);
 };
 
 modref_summary *get_modref_function_summary (cgraph_node *func);
