@@ -30568,6 +30568,17 @@ vtrn1q_u32 (uint32x4_t __a, uint32x4_t __b)
 #endif
 }
 
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vtrn1q_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {3, 1});
+#else
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {0, 2});
+#endif
+}
+
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtrn1q_u64 (uint64x2_t __a, uint64x2_t __b)
@@ -30835,6 +30846,18 @@ vtrn2q_u64 (uint64x2_t __a, uint64x2_t __b)
   return __builtin_shuffle (__a, __b, (uint64x2_t) {2, 0});
 #else
   return __builtin_shuffle (__a, __b, (uint64x2_t) {1, 3});
+#endif
+}
+
+
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vtrn2q_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {2, 0});
+#else
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {1, 3});
 #endif
 }
 
@@ -31484,6 +31507,17 @@ vuzp1q_u64 (uint64x2_t __a, uint64x2_t __b)
 #endif
 }
 
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vuzp1q_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {3, 1});
+#else
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {0, 2});
+#endif
+}
+
 __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vuzp2_f16 (float16x4_t __a, float16x4_t __b)
@@ -31740,6 +31774,17 @@ vuzp2q_u64 (uint64x2_t __a, uint64x2_t __b)
   return __builtin_shuffle (__a, __b, (uint64x2_t) {2, 0});
 #else
   return __builtin_shuffle (__a, __b, (uint64x2_t) {1, 3});
+#endif
+}
+
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vuzp2q_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {2, 0});
+#else
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {1, 3});
 #endif
 }
 
@@ -32011,6 +32056,17 @@ vzip1q_u64 (uint64x2_t __a, uint64x2_t __b)
 #endif
 }
 
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vzip1q_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {3, 1});
+#else
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {0, 2});
+#endif
+}
+
 __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vzip2_f16 (float16x4_t __a, float16x4_t __b)
@@ -32272,6 +32328,17 @@ vzip2q_u64 (uint64x2_t __a, uint64x2_t __b)
   return __builtin_shuffle (__a, __b, (uint64x2_t) {2, 0});
 #else
   return __builtin_shuffle (__a, __b, (uint64x2_t) {1, 3});
+#endif
+}
+
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vzip2q_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {2, 0});
+#else
+  return __builtin_shuffle (__a, __b, (poly64x2_t) {1, 3});
 #endif
 }
 
