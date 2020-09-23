@@ -677,7 +677,11 @@ void gfc_resolve_system_sub (gfc_code *);
 void gfc_resolve_ttynam_sub (gfc_code *);
 void gfc_resolve_umask_sub (gfc_code *);
 void gfc_resolve_unlink_sub (gfc_code *);
-
+void gfc_resolve_co_sum (gfc_code *);
+void gfc_resolve_co_min (gfc_code *);
+void gfc_resolve_co_max (gfc_code *);
+void gfc_resolve_co_reduce (gfc_code *);
+void gfc_resolve_co_broadcast (gfc_code *);
 
 /* The findloc() subroutine requires the most arguments: six.  */
 

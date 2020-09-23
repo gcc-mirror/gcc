@@ -1060,7 +1060,7 @@ show_symbol (gfc_symbol *sym)
   if (sym == NULL)
     return;
 
-  fprintf (dumpfile, "|| symbol: '%s' ", sym->name);
+  fprintf (dumpfile, "|| symbol: '%s' %p ", sym->name, (void *) &(sym->backend_decl));
   len = strlen (sym->name);
   for (i=len; i<12; i++)
     fputc(' ', dumpfile);

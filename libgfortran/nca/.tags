@@ -1,0 +1,275 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ALIGN_TO	serialize.c	47;"	d	file:
+ALLOC_H	alloc.h	26;"	d
+COARRAY_LOCK_HDR	lock.h	27;"	d
+COARRAY_NATIVE_HDR	libcoarraynative.h	30;"	d
+COLLECTIVE_SUBROUTINE_HDR	collective_subroutine.h	3;"	d
+CRITICAL_LOOKAHEAD	hashmap.c	30;"	d	file:
+DEBUG_PRINTF	libcoarraynative.h	45;"	d
+DEBUG_PRINTF	libcoarraynative.h	47;"	d
+FILL_VALUE	serialize.c	57;"	d	file:
+GFC_NCA_EVENT_COARRAY	wrapper.c	/^  GFC_NCA_EVENT_COARRAY,$/;"	e	enum:gfc_coarray_allocation_type	file:
+GFC_NCA_LOCK_COARRAY	wrapper.c	/^  GFC_NCA_LOCK_COARRAY,$/;"	e	enum:gfc_coarray_allocation_type	file:
+GFC_NCA_NORMAL_COARRAY	wrapper.c	/^  GFC_NCA_NORMAL_COARRAY = 3,$/;"	e	enum:gfc_coarray_allocation_type	file:
+GFORTRAN_ENV_NUM_IMAGES	coarraynative.c	37;"	d	file:
+HASHMAP_H	hashmap.h	69;"	d
+IMAGE_FAILED	libcoarraynative.h	/^  IMAGE_FAILED$/;"	e	enum:__anon7
+IMAGE_FAILED	master.c	/^  IMAGE_FAILED$/;"	e	enum:__anon5	file:
+IMAGE_OK	libcoarraynative.h	/^  IMAGE_OK,$/;"	e	enum:__anon7
+IMAGE_OK	master.c	/^  IMAGE_OK,$/;"	e	enum:__anon5	file:
+IMAGE_UNKNOWN	libcoarraynative.h	/^  IMAGE_UNKNOWN = 0,$/;"	e	enum:__anon7
+IMAGE_UNKNOWN	master.c	/^  IMAGE_UNKNOWN = 0,$/;"	e	enum:__anon5	file:
+INDENT	hashmap.c	403;"	d	file:
+INDENT	hashmap.c	414;"	d	file:
+INDENT	hashmap.c	415;"	d	file:
+INDENT	hashmap.c	429;"	d	file:
+INDENT	hashmap.c	430;"	d	file:
+INITIAL_BITNUM	hashmap.c	28;"	d	file:
+INITIAL_SIZE	hashmap.c	29;"	d	file:
+IPSYNC_HDR	sync.h	26;"	d
+ITER	malloc_test.c	13;"	d	file:
+MAX_ALIGN	allocator.c	50;"	d	file:
+MAX_NUM	malloc_test.c	10;"	d	file:
+MEMOBJ_NAME	util.c	11;"	d	file:
+MIN_NUM	malloc_test.c	11;"	d	file:
+NUM_BITS	malloc_test.c	8;"	d	file:
+NUM_SIZES	malloc_test.c	9;"	d	file:
+PE	hashmap.c	402;"	d	file:
+PTR_BITS	util.h	32;"	d
+SHARED_ALLOCATOR_HDR	allocator.h	2;"	d
+SHARED_MEMORY_H	shared_memory.h	77;"	d
+SHARED_MEMORY_RAW_ALLOC	shared_memory.h	50;"	d
+SHARED_MEMORY_RAW_ALLOC_PTR	shared_memory.h	53;"	d
+SHMPTR_AS	shared_memory.h	46;"	d
+SHMPTR_DEREF	shared_memory.h	44;"	d
+SHMPTR_EQUALS	shared_memory.h	48;"	d
+SHMPTR_IS_NULL	shared_memory.h	42;"	d
+SHMPTR_NULL	shared_memory.h	41;"	d
+SHMPTR_SET	shared_memory.h	47;"	d
+SZ	malloc_test.c	12;"	d	file:
+UTIL_HDR	util.h	26;"	d
+a	hashmap.h	/^  allocator *a;$/;"	m	struct:hashmap
+a	sync.h	/^  allocator *a;$/;"	m	struct:__anon3
+ai	libcoarraynative.h	/^  alloc_iface ai;$/;"	m	struct:__anon11
+alignto	util.c	/^alignto(size_t size, size_t align) {$/;"	f
+alloc	alloc.h	/^  allocator alloc;$/;"	m	struct:alloc_iface
+alloc_iface	alloc.h	/^typedef struct alloc_iface$/;"	s
+alloc_iface	alloc.h	/^} alloc_iface;$/;"	t	typeref:struct:alloc_iface
+alloc_iface_init	alloc.c	/^alloc_iface_init (alloc_iface *iface, shared_memory *mem)$/;"	f
+alloc_iface_init	alloc.h	/^internal_proto (alloc_iface_init);$/;"	v
+alloc_iface_shared	alloc.h	/^typedef struct alloc_iface_shared$/;"	s
+alloc_iface_shared	alloc.h	/^} alloc_iface_shared;$/;"	t	typeref:struct:alloc_iface_shared
+allocator	allocator.h	/^} allocator;$/;"	t	typeref:struct:__anon17
+allocator_init	allocator.c	/^allocator_init (allocator *a, allocator_shared *s, shared_memory *sm)$/;"	f
+allocator_s	alloc.h	/^  allocator_shared allocator_s;$/;"	m	struct:alloc_iface_shared
+allocator_shared	allocator.h	/^} allocator_shared;$/;"	t	typeref:struct:__anon16
+allocs	shared_memory.c	/^  } allocs[];$/;"	m	struct:shared_memory_act	typeref:struct:shared_memory_act::local_alloc	file:
+arr	lock.h	/^  pthread_mutex_t arr[];$/;"	m	struct:__anon12
+as	alloc.h	/^  alloc_iface_shared *as;$/;"	m	struct:alloc_iface
+barrier	collective_subroutine.h	/^  pthread_barrier_t barrier;$/;"	m	struct:collsub_iface_shared
+barrier	libcoarraynative.h	/^  pthread_barrier_t barrier;$/;"	m	struct:__anon6
+base	shared_memory.c	/^    void *base;$/;"	m	struct:shared_memory_act::local_alloc	file:
+bitnum	hashmap.h	/^  int bitnum;$/;"	m	struct:__anon14
+bucket	allocator.c	/^} bucket;$/;"	t	typeref:struct:__anon1	file:
+ci	libcoarraynative.h	/^  collsub_iface ci;$/;"	m	struct:__anon11
+cis	sync.h	/^  sync_iface_shared *cis;$/;"	m	struct:__anon3
+collsub_broadcast	collective_subroutine.h	/^internal_proto (collsub_broadcast);$/;"	v
+collsub_buf	collective_subroutine.c	/^void *collsub_buf = NULL;$/;"	v
+collsub_buf	collective_subroutine.h	/^  shared_mem_ptr collsub_buf;$/;"	m	struct:collsub_iface_shared
+collsub_buf	collective_subroutine.h	/^  void *collsub_buf; \/* Cached pointer to shared collsub_buf.  *\/$/;"	m	struct:collsub_iface
+collsub_buf	collective_subroutine.h	/^internal_proto (collsub_buf);$/;"	v
+collsub_iface	collective_subroutine.h	/^typedef struct collsub_iface$/;"	s
+collsub_iface	collective_subroutine.h	/^} collsub_iface;$/;"	t	typeref:struct:collsub_iface
+collsub_iface_shared	collective_subroutine.h	/^typedef struct collsub_iface_shared $/;"	s
+collsub_iface_shared	collective_subroutine.h	/^} collsub_iface_shared;$/;"	t	typeref:struct:collsub_iface_shared
+collsub_reduce	collective_subroutine.c	/^collsub_reduce (void *obj, size_t nobjs, int *result_image, size_t size, $/;"	f
+collsub_reduce	collective_subroutine.h	/^internal_proto (collsub_reduce);$/;"	v
+collsub_sync	collective_subroutine.c	/^collsub_sync (void) {$/;"	f
+collsub_sync	collective_subroutine.h	/^internal_proto (collsub_sync);$/;"	v
+copy_from	collective_inline.h	/^copy_from (int image) $/;"	f
+copy_in	collective_inline.h	/^copy_in (void *obj) {$/;"	f
+copy_out	collective_inline.h	/^copy_out (void *obj, int image)$/;"	f
+copy_to	collective_inline.h	/^copy_to (void *obj, int image)$/;"	f
+curr_size	collective_subroutine.c	/^size_t curr_size = 0;$/;"	v
+curr_size	collective_subroutine.h	/^  size_t curr_size;$/;"	m	struct:collsub_iface_shared
+curr_size	collective_subroutine.h	/^internal_proto (curr_size);$/;"	v
+data	hashmap.h	/^  shared_mem_ptr data;$/;"	m	struct:__anon14
+deserialize_memory	serialize.c	/^export_proto (deserialize_memory);$/;"	v
+div_ru	wrapper.c	/^div_ru (int divident, int divisor)$/;"	f	file:
+dump_hm	hashmap.c	/^dump_hm(hashmap *hm) {$/;"	f
+enlarge_hashmap_mem	hashmap.c	/^enlarge_hashmap_mem (hashmap *hm, hashmap_entry **data, bool f)$/;"	f	file:
+ensure_initialization	coarraynative.c	/^ensure_initialization(void) {$/;"	f
+fd	shared_memory.c	/^  int fd;$/;"	m	struct:__anon18	file:
+finish_collective_subroutine	collective_inline.h	/^finish_collective_subroutine (void) $/;"	f
+free_bucket_head	allocator.h	/^  shared_mem_ptr free_bucket_head[PTR_BITS];$/;"	m	struct:__anon16
+free_memory_with_id	alloc.c	/^free_memory_with_id (alloc_iface* iface, memid id)$/;"	f
+free_memory_with_id	alloc.h	/^internal_proto (free_memory_with_id);$/;"	v
+gen_mask	hashmap.c	/^gen_mask (hashmap *hm)$/;"	f	file:
+get_allocator	alloc.c	/^get_allocator (alloc_iface * iface)$/;"	f
+get_allocator	alloc.h	/^internal_proto (get_allocator);$/;"	v
+get_data	hashmap.c	/^get_data(hashmap *hm)$/;"	f	file:
+get_environ_image_num	coarraynative.c	/^get_environ_image_num (void)$/;"	f	file:
+get_expected_offset	hashmap.c	/^get_expected_offset (hashmap *hm, memid id)$/;"	f	file:
+get_locked_table	sync.c	/^get_locked_table(sync_iface *si) { \/\/ The initialization of the table has to $/;"	f	file:
+get_master	coarraynative.c	/^get_master (void) {$/;"	f	file:
+get_memory_by_id	alloc.c	/^get_memory_by_id (alloc_iface *iface, size_t size, memid id)$/;"	f
+get_memory_by_id	alloc.h	/^internal_proto (get_memory_by_id);$/;"	v
+get_obj_ptr	collective_inline.h	/^get_obj_ptr (int image) $/;"	f
+get_shared_memory_act_size	shared_memory.c	/^get_shared_memory_act_size (int nallocs)$/;"	f	file:
+get_shmem_fd	util.c	/^get_shmem_fd (void)$/;"	f
+gfc_coarray_allocation_type	wrapper.c	/^enum gfc_coarray_allocation_type {$/;"	g	file:
+global_shared_memory_meta	shared_memory.c	/^} global_shared_memory_meta;$/;"	t	typeref:struct:__anon18	file:
+has_failed_image	libcoarraynative.h	/^  int has_failed_image;$/;"	m	struct:__anon9
+has_failed_image	master.c	/^  int has_failed_image = 0;$/;"	m	struct:__anon4	file:
+hash	hashmap.c	/^hash (uint64_t key)$/;"	f	file:
+hashmap	hashmap.h	/^typedef struct hashmap$/;"	s
+hashmap	hashmap.h	/^} hashmap;$/;"	t	typeref:struct:hashmap
+hashmap_change_refcnt	hashmap.c	/^hashmap_change_refcnt (hashmap *hm, memid id, hashmap_search_result *res,$/;"	f	file:
+hashmap_dec	hashmap.c	/^hashmap_dec (hashmap *hm, memid id, hashmap_search_result * res)$/;"	f
+hashmap_entry	hashmap.c	/^} hashmap_entry;$/;"	t	typeref:struct:__anon13	file:
+hashmap_get	hashmap.c	/^hashmap_get (hashmap *hm, memid id)$/;"	f
+hashmap_inc	hashmap.c	/^hashmap_inc (hashmap *hm, memid id, hashmap_search_result * res)$/;"	f
+hashmap_init	hashmap.c	/^hashmap_init (hashmap *hm, hashmap_shared *hs, allocator *a,$/;"	f
+hashmap_search_result	hashmap.h	/^} hashmap_search_result;$/;"	t	typeref:struct:__anon15
+hashmap_set	hashmap.c	/^hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,$/;"	f
+hashmap_shared	hashmap.h	/^} hashmap_shared;$/;"	t	typeref:struct:__anon14
+header	shared_memory.c	/^  void *header;$/;"	m	struct:shared_memory_act	file:
+hm	alloc.h	/^  hashmap hm;$/;"	m	struct:alloc_iface
+hm_search_result_contains	hashmap.c	/^hm_search_result_contains (hashmap_search_result *res)$/;"	f
+hm_search_result_ptr	hashmap.c	/^hm_search_result_ptr (hashmap_search_result *res)$/;"	f
+hm_search_result_size	hashmap.c	/^hm_search_result_size (hashmap_search_result *res)$/;"	f
+hmiadd	hashmap.c	/^hmiadd (hashmap *hm, size_t s, ssize_t o) {$/;"	f	file:
+hms	alloc.h	/^  hashmap_shared hms;$/;"	m	struct:alloc_iface_shared
+id	hashmap.c	/^  memid id;$/;"	m	struct:__anon13	file:
+image	libcoarraynative.h	/^} image;$/;"	t	typeref:struct:__anon10
+image_main_wrapper	master.c	/^image_main_wrapper (void (*image_main) (void), int this_image_num)$/;"	f	file:
+image_num	libcoarraynative.h	/^  int image_num;$/;"	m	struct:__anon10
+image_status	libcoarraynative.h	/^} image_status;$/;"	t	typeref:enum:__anon7
+image_tracker	libcoarraynative.h	/^} image_tracker;$/;"	t	typeref:struct:__anon8
+images	libcoarraynative.h	/^  image_tracker images[];$/;"	m	struct:__anon9
+images	master.c	/^  struct image_status * images;$/;"	m	struct:__anon4	typeref:struct:__anon4::image_status	file:
+init_collsub	collective_subroutine.c	/^init_collsub (void) {$/;"	f
+init_collsub	collective_subroutine.h	/^internal_proto (init_collsub);$/;"	v
+initialize_shared_mutex	util.c	/^initialize_shared_mutex (pthread_mutex_t *mutex)$/;"	f
+initialized	lock.h	/^  int initialized;$/;"	m	struct:__anon12
+ipcollsub	libcoarraynative.h	/^} ipcollsub;$/;"	t	typeref:struct:__anon6
+last_base	shared_memory.c	/^last_base (shared_memory_act *mem)$/;"	f	file:
+last_seen_size	shared_memory.c	/^  size_t last_seen_size;$/;"	m	struct:shared_memory_act	file:
+local	coarraynative.c	/^nca_local_data *local = NULL;$/;"	v
+local_alloc	shared_memory.c	/^  struct local_alloc {$/;"	s	struct:shared_memory_act	file:
+lock	alloc.h	/^  pthread_mutex_t lock;$/;"	m	struct:alloc_iface_shared
+lock_array	lock.h	/^} lock_array;$/;"	t	typeref:struct:__anon12
+lock_table	sync.c	/^lock_table (sync_iface *si)$/;"	f	file:
+m	libcoarraynative.h	/^  master *m;$/;"	m	struct:__anon10
+main	malloc_test.c	/^int main()$/;"	f
+map_memory	shared_memory.c	/^map_memory (int fd, size_t size, off_t offset)$/;"	f	file:
+master	libcoarraynative.h	/^} master;$/;"	t	typeref:struct:__anon9
+master	master.c	/^} master;$/;"	t	typeref:struct:__anon4	file:
+max_lookahead	hashmap.c	/^  int max_lookahead; $/;"	m	struct:__anon13	file:
+maximg	libcoarraynative.h	/^  int maximg;$/;"	m	struct:__anon6
+mem	alloc.h	/^  shared_memory *mem;$/;"	m	struct:alloc_iface
+memid	hashmap.h	/^typedef intptr_t memid;$/;"	t
+meta	shared_memory.c	/^  global_shared_memory_meta *meta;$/;"	m	struct:shared_memory_act	file:
+n_ent	hashmap.c	/^static ssize_t n_ent;$/;"	v	file:
+nca_co_broadcast	collective_subroutine.c	/^export_proto (nca_co_broadcast);$/;"	v
+nca_co_broadcast	collective_subroutine.c	/^nca_co_broadcast (gfc_array_char * restrict a, int source_image,$/;"	f
+nca_coarray_alloc	wrapper.c	/^export_proto (nca_coarray_alloc);$/;"	v
+nca_coarray_alloc	wrapper.c	/^nca_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,$/;"	f
+nca_coarray_free	wrapper.c	/^export_proto (nca_coarray_free);$/;"	v
+nca_coarray_free	wrapper.c	/^nca_coarray_free (gfc_array_void *desc, int alloc_type)$/;"	f
+nca_coarray_num_images	wrapper.c	/^export_proto (nca_coarray_num_images);$/;"	v
+nca_coarray_num_images	wrapper.c	/^nca_coarray_num_images (int distance __attribute__((unused)))$/;"	f
+nca_coarray_sync_all	wrapper.c	/^export_proto (nca_coarray_sync_all);$/;"	v
+nca_coarray_sync_all	wrapper.c	/^nca_coarray_sync_all (int *stat __attribute__((unused)))$/;"	f
+nca_coarray_this_image	wrapper.c	/^export_proto (nca_coarray_this_image);$/;"	v
+nca_coarray_this_image	wrapper.c	/^nca_coarray_this_image (int distance __attribute__((unused)))$/;"	f
+nca_collsub_reduce_array	wrapper.c	/^export_proto (nca_collsub_reduce_array);$/;"	v
+nca_collsub_reduce_array	wrapper.c	/^nca_collsub_reduce_array (gfc_array_void *desc, void (*assign_function) (void *, void *),$/;"	f
+nca_collsub_reduce_scalar	wrapper.c	/^export_proto (nca_collsub_reduce_scalar);$/;"	v
+nca_collsub_reduce_scalar	wrapper.c	/^nca_collsub_reduce_scalar (void *obj, index_type elem_size,$/;"	f
+nca_local_data	libcoarraynative.h	/^} nca_local_data;$/;"	t	typeref:struct:__anon11
+nca_lock	wrapper.c	/^export_proto (nca_lock);$/;"	v
+nca_lock	wrapper.c	/^nca_lock (void *lock)$/;"	f
+nca_master	coarraynative.c	/^nca_master (void (*image_main) (void)) {$/;"	f
+nca_master	master.c	/^nca_master (void (*image_main) (void)) {$/;"	f
+nca_master	master.c	/^nca_master (void (*image_main) (void))$/;"	f
+nca_sync_images	wrapper.c	/^export_proto (nca_sync_images);$/;"	v
+nca_sync_images	wrapper.c	/^nca_sync_images (size_t s, int *images,$/;"	f
+nca_unlock	wrapper.c	/^export_proto (nca_unlock);$/;"	v
+nca_unlock	wrapper.c	/^nca_unlock (void *lock)$/;"	f
+new_base_mapping	shared_memory.c	/^new_base_mapping (shared_memory_act *mem)$/;"	f	file:
+next	allocator.c	/^  shared_mem_ptr next;$/;"	m	struct:__anon1	file:
+next_power_of_two	util.c	/^next_power_of_two(size_t size) {$/;"	f
+num_entries	hashmap.c	/^num_entries (hashmap_entry *data, size_t size)$/;"	f	file:
+num_images	libcoarraynative.h	/^  int num_images;$/;"	m	struct:__anon11
+num_local_allocs	shared_memory.c	/^  size_t num_local_allocs;$/;"	m	struct:shared_memory_act	file:
+offset	shared_memory.h	/^  ssize_t offset;$/;"	m	struct:shared_mem_ptr
+owner	lock.h	/^  int owner;$/;"	m	struct:__anon12
+p	hashmap.c	/^  shared_mem_ptr p; \/* If p == SHMPTR_NULL, the entry is empty.  *\/$/;"	m	struct:__anon13	file:
+p	hashmap.h	/^  shared_mem_ptr p;$/;"	m	struct:__anon15
+pagesize	util.c	/^size_t pagesize = 1<<17;$/;"	v
+pid	libcoarraynative.h	/^  pid_t pid;$/;"	m	struct:__anon8
+prepare_collective_subroutine	collective_subroutine.c	/^prepare_collective_subroutine (size_t size)$/;"	f
+prepare_collective_subroutine	collective_subroutine.h	/^internal_proto (prepare_collective_subroutine);$/;"	v
+refcnt	hashmap.c	/^  int refcnt;$/;"	m	struct:__anon13	file:
+res_offset	hashmap.h	/^  ssize_t res_offset;$/;"	m	struct:__anon15
+resize_hm	hashmap.c	/^resize_hm (hashmap *hm, hashmap_entry **data)$/;"	f	file:
+round_to_pagesize	util.c	/^round_to_pagesize(size_t s) {$/;"	f
+s	allocator.h	/^  allocator_shared *s;$/;"	m	struct:__anon17
+s	collective_subroutine.h	/^  collsub_iface_shared *s;$/;"	m	struct:collsub_iface
+s	hashmap.c	/^  size_t s;$/;"	m	struct:__anon13	file:
+s	hashmap.h	/^  hashmap_shared *s;$/;"	m	struct:hashmap
+scan_empty	hashmap.c	/^scan_empty (hashmap *hm, ssize_t expected_off, memid id)$/;"	f	file:
+scan_inside_lookahead	hashmap.c	/^scan_inside_lookahead (hashmap *hm, ssize_t expected_off, memid id)$/;"	f	file:
+serialize_memory	serialize.c	/^export_proto (serialize_memory);$/;"	v
+serialize_memory	serialize.c	/^serialize_memory (gfc_array_char * const restrict source, char *d)$/;"	f
+shared_free	allocator.c	/^shared_free (allocator *a, shared_mem_ptr p, size_t size) {$/;"	f
+shared_malloc	allocator.c	/^shared_malloc (allocator *a, size_t size)$/;"	f
+shared_mem_ptr	shared_memory.h	/^typedef struct shared_mem_ptr$/;"	s
+shared_mem_ptr	shared_memory.h	/^} shared_mem_ptr;$/;"	t	typeref:struct:shared_mem_ptr
+shared_mem_ptr_to_void_ptr	shared_memory.c	/^shared_mem_ptr_to_void_ptr(shared_memory_act **pmem, shared_mem_ptr smp)$/;"	f
+shared_mem_ptr_to_void_ptr	shared_memory.h	/^internal_proto (shared_mem_ptr_to_void_ptr);$/;"	v
+shared_memory	shared_memory.h	/^typedef struct shared_memory_act * shared_memory;$/;"	t	typeref:struct:shared_memory_act
+shared_memory_act	shared_memory.c	/^typedef struct shared_memory_act$/;"	s	file:
+shared_memory_act	shared_memory.c	/^} shared_memory_act;$/;"	t	typeref:struct:shared_memory_act	file:
+shared_memory_get_mem_with_alignment	shared_memory.c	/^shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,$/;"	f
+shared_memory_get_mem_with_alignment	shared_memory.h	/^internal_proto (shared_memory_get_mem_with_alignment);$/;"	v
+shared_memory_init	shared_memory.c	/^shared_memory_init (shared_memory_act **pmem)$/;"	f
+shared_memory_init	shared_memory.h	/^internal_proto (shared_memory_init);$/;"	v
+shared_memory_prepare	shared_memory.c	/^shared_memory_prepare (shared_memory_act **pmem)$/;"	f
+shared_memory_prepare	shared_memory.h	/^internal_proto (shared_memory_prepare);$/;"	v
+shm	allocator.h	/^  shared_memory *shm;$/;"	m	struct:__anon17
+si	libcoarraynative.h	/^  sync_iface si;$/;"	m	struct:__anon11
+size	hashmap.h	/^  size_t size;$/;"	m	struct:__anon14
+size	hashmap.h	/^  size_t size;$/;"	m	struct:__anon15
+size	shared_memory.c	/^    size_t size;$/;"	m	struct:shared_memory_act::local_alloc	file:
+size	shared_memory.c	/^  size_t size;$/;"	m	struct:__anon18	file:
+sm	collective_subroutine.h	/^  shared_memory *sm;$/;"	m	struct:collsub_iface
+sm	hashmap.h	/^  shared_memory *sm;$/;"	m	struct:hashmap
+sm	libcoarraynative.h	/^  shared_memory sm;$/;"	m	struct:__anon11
+sm	sync.h	/^  shared_memory *sm;$/;"	m	struct:__anon3
+status	libcoarraynative.h	/^  image_status status;$/;"	m	struct:__anon8
+sync_all	sync.c	/^sync_all (sync_iface *si)$/;"	f
+sync_all	sync.h	/^  pthread_barrier_t sync_all;$/;"	m	struct:__anon2
+sync_all	sync.h	/^internal_proto (sync_all);$/;"	v
+sync_all_init	sync.c	/^sync_all_init (pthread_barrier_t *b)$/;"	f	file:
+sync_iface	sync.h	/^} sync_iface;$/;"	t	typeref:struct:__anon3
+sync_iface_init	sync.c	/^sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)$/;"	f
+sync_iface_init	sync.h	/^internal_proto (sync_iface_init);$/;"	v
+sync_iface_shared	sync.h	/^} sync_iface_shared;$/;"	t	typeref:struct:__anon2
+sync_table	sync.c	/^sync_table (sync_iface *si, int *images, size_t size)$/;"	f
+sync_table	sync.h	/^internal_proto (sync_table);$/;"	v
+table	sync.h	/^  int *table; \/\/ we can cache the table and the trigger pointers here$/;"	m	struct:__anon3
+table	sync.h	/^  shared_mem_ptr table;$/;"	m	struct:__anon2
+table_lock	sync.h	/^  pthread_mutex_t table_lock;$/;"	m	struct:__anon2
+this_image	coarraynative.c	/^image this_image;$/;"	v
+triggers	sync.h	/^  pthread_cond_t *triggers;$/;"	m	struct:__anon3
+triggers	sync.h	/^  shared_mem_ptr triggers;$/;"	m	struct:__anon2
+unlock_table	sync.c	/^unlock_table (sync_iface *si)$/;"	f	file:
+used	shared_memory.c	/^  size_t used;$/;"	m	struct:__anon18	file:
+wait_table_cond	sync.c	/^wait_table_cond (sync_iface *si, pthread_cond_t *cond)$/;"	f	file:

@@ -23,6 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
 			 tree, tree *, gfc_expr *, tree, bool);
 
+enum gfc_coarray_allocation_type {
+  GFC_NCA_NORMAL_COARRAY = 3,
+  GFC_NCA_LOCK_COARRAY,
+  GFC_NCA_EVENT_COARRAY
+};
+int gfc_native_coarray_get_allocation_type (gfc_symbol *);
+
+void gfc_allocate_native_coarray (stmtblock_t *, tree, tree, int, int);
+
 /* Allow the bounds of a loop to be set from a callee's array spec.  */
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,
 					  gfc_se *, gfc_array_spec *);
@@ -56,6 +65,10 @@ tree gfc_bcast_alloc_comp (gfc_symbol *, gfc_expr *, int, tree,
 			   tree, tree, tree);
 tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
 tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
+
+tree gfc_array_init_size (tree, int, int, tree *, gfc_expr **, gfc_expr **,
+			  stmtblock_t *, stmtblock_t *, tree *, tree, tree *,
+			  gfc_expr *, tree, bool, gfc_expr *, tree *);
 
 tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int, int);
 

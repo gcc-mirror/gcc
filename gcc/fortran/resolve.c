@@ -3585,6 +3585,53 @@ resolve_specific_s (gfc_code *c)
 
   return false;
 }
+/* Fix up references to native coarrays in call - element references
+   have to be converted to full references if the coarray has to be
+   passed fully.  */
+
+static void
+fixup_coarray_args (gfc_symbol *sym, gfc_actual_arglist *actual)
+{
+  gfc_formal_arglist *formal, *f;
+  gfc_actual_arglist *a;
+  
+  formal = gfc_sym_get_dummy_args (sym);
+
+  if (formal == NULL)
+    return;
+
+  for (a = actual, f = formal; a && f; a = a->next, f = f->next)
+    {
+      if (a->expr == NULL || f->sym == NULL)
+	continue;
+      if (a->expr->expr_type == EXPR_VARIABLE
+	  && a->expr->symtree->n.sym->attr.codimension
+	  && f->sym->attr.codimension)
+	{
+	  gfc_ref *r;
+	  for (r = a->expr->ref; r; r = r->next)
+	    {
+	      if (r->type == REF_ARRAY && r->u.ar.codimen)
+		{
+		  gfc_array_ref *ar = &r->u.ar;
+		  int i, eff_dimen = ar->dimen + ar->codimen;
+		  
+		  for (i = ar->dimen; i < eff_dimen; i++)
+		    {
+		      ar->dimen_type[i] = DIMEN_RANGE;
+		      gcc_assert (ar->start[i] == NULL);
+		      gcc_assert (ar->end[i] == NULL);
+		    }
+
+		  if (ar->type == AR_ELEMENT)
+		    ar->type = !ar->dimen ? AR_FULL : AR_SECTION;
+
+		  ar->native_coarray_argument = true;
+		}
+	    }
+	}
+    }
+}
 
 
 /* Resolve a subroutine call not known to be generic nor specific.  */
@@ -3615,7 +3662,7 @@ resolve_unknown_s (gfc_code *c)
 
 found:
   gfc_procedure_use (sym, &c->ext.actual, &c->loc);
-
+  
   c->resolved_sym = sym;
 
   return pure_subroutine (sym, sym->name, &c->loc);
@@ -3739,6 +3786,9 @@ resolve_call (gfc_code *c)
   else
     /* Typebound procedure: Assume the worst.  */
     gfc_current_ns->proc_name->attr.array_outer_dependency = 1;
+
+  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+    fixup_coarray_args (csym, c->ext.actual);
 
   return t;
 }
@@ -10117,7 +10167,7 @@ resolve_critical (gfc_code *code)
   char name[GFC_MAX_SYMBOL_LEN];
   static int serial = 0;
 
-  if (flag_coarray != GFC_FCOARRAY_LIB)
+  if (flag_coarray != GFC_FCOARRAY_LIB && flag_coarray != GFC_FCOARRAY_NATIVE)
     return;
 
   symtree = gfc_find_symtree (gfc_current_ns->sym_root,
@@ -10154,6 +10204,19 @@ resolve_critical (gfc_code *code)
   symtree->n.sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
 						   NULL, 1);
   gfc_commit_symbols();
+
+  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+    {
+      gfc_ref *r = gfc_get_ref ();
+      r->type = REF_ARRAY;
+      r->u.ar.type = AR_ELEMENT;
+      r->u.ar.as = code->resolved_sym->as;
+      for (int i = 0; i < code->resolved_sym->as->corank; i++)
+	r->u.ar.dimen_type [i] = DIMEN_THIS_IMAGE;
+
+      code->expr1 = gfc_lval_expr_from_sym (code->resolved_sym);
+      code->expr1->ref = r;
+    }
 }
 
 

@@ -1345,6 +1345,10 @@ gfc_is_nodesc_array (gfc_symbol * sym)
 
   gcc_assert (array_attr->dimension || array_attr->codimension);
 
+  /* We need a descriptor for native coarrays.	 */
+  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->as && sym->as->corank)
+    return 0;
+
   /* We only want local arrays.  */
   if ((sym->ts.type != BT_CLASS && sym->attr.pointer)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.class_pointer)
@@ -1381,12 +1385,18 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
   tree ubound[GFC_MAX_DIMENSIONS];
   int n, corank;
 
-  /* Assumed-shape arrays do not have codimension information stored in the
-     descriptor.  */
-  corank = MAX (as->corank, codim);
-  if (as->type == AS_ASSUMED_SHAPE ||
-      (as->type == AS_ASSUMED_RANK && akind == GFC_ARRAY_ALLOCATABLE))
-    corank = codim;
+  /* For -fcoarray=lib, assumed-shape arrays do not have codimension
+     information stored in the descriptor.  */
+  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+    {
+      corank = MAX (as->corank, codim);
+
+      if (as->type == AS_ASSUMED_SHAPE ||
+	  (as->type == AS_ASSUMED_RANK && akind == GFC_ARRAY_ALLOCATABLE))
+	corank = codim;
+    }
+  else
+    corank = as->corank;
 
   if (as->type == AS_ASSUMED_RANK)
     for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
@@ -1427,7 +1437,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 				    corank, lbound, ubound, 0, akind,
 				    restricted);
 }
-
+
 /* Returns the struct descriptor_dimension type.  */
 
 static tree
@@ -1598,7 +1608,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   /* We don't use build_array_type because this does not include
      lang-specific information (i.e. the bounds of the array) when checking
      for duplicates.  */
-  if (as->rank)
+  if (as->rank || (flag_coarray == GFC_FCOARRAY_NATIVE && as->corank))
     type = make_node (ARRAY_TYPE);
   else
     type = build_variant_type_copy (etype);
@@ -1665,6 +1675,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       if (packed == PACKED_NO || packed == PACKED_PARTIAL)
         known_stride = 0;
     }
+
   for (n = as->rank; n < as->rank + as->corank; n++)
     {
       expr = as->lower[n];
@@ -1672,7 +1683,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	tmp = gfc_conv_mpz_to_tree (expr->value.integer,
 				    gfc_index_integer_kind);
       else
-      	tmp = NULL_TREE;
+	tmp = NULL_TREE;
       GFC_TYPE_ARRAY_LBOUND (type, n) = tmp;
 
       expr = as->upper[n];
@@ -1680,16 +1691,16 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	tmp = gfc_conv_mpz_to_tree (expr->value.integer,
 				    gfc_index_integer_kind);
       else
- 	tmp = NULL_TREE;
+	tmp = NULL_TREE;
       if (n < as->rank + as->corank - 1)
-      GFC_TYPE_ARRAY_UBOUND (type, n) = tmp;
+	GFC_TYPE_ARRAY_UBOUND (type, n) = tmp;
     }
 
-  if (known_offset)
-    {
-      GFC_TYPE_ARRAY_OFFSET (type) =
-        gfc_conv_mpz_to_tree (offset, gfc_index_integer_kind);
-    }
+  if  (flag_coarray == GFC_FCOARRAY_NATIVE && as->rank == 0 && as->corank != 0)
+    GFC_TYPE_ARRAY_OFFSET (type) = NULL_TREE;
+  else if (known_offset)
+    GFC_TYPE_ARRAY_OFFSET (type) =
+      gfc_conv_mpz_to_tree (offset, gfc_index_integer_kind);
   else
     GFC_TYPE_ARRAY_OFFSET (type) = NULL_TREE;
 
@@ -1714,7 +1725,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       build_qualified_type (GFC_TYPE_ARRAY_DATAPTR_TYPE (type),
 			    TYPE_QUAL_RESTRICT);
 
-  if (as->rank == 0)
+  if (as->rank == 0 && (flag_coarray != GFC_FCOARRAY_NATIVE || as->corank == 0))
     {
       if (packed != PACKED_STATIC  || flag_coarray == GFC_FCOARRAY_LIB)
 	{
@@ -1982,7 +1993,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   /* TODO: known offsets for descriptors.  */
   GFC_TYPE_ARRAY_OFFSET (fat_type) = NULL_TREE;
 
-  if (dimen == 0)
+  if (flag_coarray != GFC_FCOARRAY_NATIVE && dimen == 0)
     {
       arraytype =  build_pointer_type (etype);
       if (restricted)
@@ -2281,6 +2292,10 @@ gfc_sym_type (gfc_symbol * sym)
 					 : GFC_ARRAY_POINTER;
 	  else if (sym->attr.allocatable)
 	    akind = GFC_ARRAY_ALLOCATABLE;
+
+	  /* FIXME: For normal coarrays, we pass a bool to an int here.
+	     Is this really intended?  */
+
 	  type = gfc_build_array_type (type, sym->as, akind, restricted,
 				       sym->attr.contiguous, false);
 	}

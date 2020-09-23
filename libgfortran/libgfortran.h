@@ -403,6 +403,7 @@ struct {\
 }
 
 typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_array_i4;
+typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, char) gfc_full_array_char;
 
 #define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype.rank)
 #define GFC_DESCRIPTOR_TYPE(desc) ((desc)->dtype.type)

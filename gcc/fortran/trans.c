@@ -47,6 +47,21 @@ static gfc_file *gfc_current_backend_file;
 const char gfc_msg_fault[] = N_("Array reference out of bounds");
 const char gfc_msg_wrong_return[] = N_("Incorrect function return value");
 
+/* Insert a memory barrier into the code.  */
+
+tree
+gfc_trans_memory_barrier (void)
+{
+  tree tmp;
+
+  tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+    tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+		      gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+		      tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+  ASM_VOLATILE_P (tmp) = 1;
+
+  return tmp;
+}
 
 /* Return a location_t suitable for 'tree' for a gfortran locus.  The way the
    parser works in gfortran, loc->lb->location contains only the line number
@@ -403,15 +418,16 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
   tree tmp;
   tree span = NULL_TREE;
 
-  if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0)
+  if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0
+      && flag_coarray != GFC_FCOARRAY_NATIVE)
     {
       gcc_assert (GFC_TYPE_ARRAY_CORANK (type) > 0);
 
       return fold_convert (TYPE_MAIN_VARIANT (type), base);
     }
 
-  /* Scalar coarray, there is nothing to do.  */
-  if (TREE_CODE (type) != ARRAY_TYPE)
+  /* Scalar library coarray, there is nothing to do.  */
+  if (TREE_CODE (type) != ARRAY_TYPE && flag_coarray != GFC_FCOARRAY_NATIVE)
     {
       gcc_assert (decl == NULL_TREE);
       gcc_assert (integer_zerop (offset));

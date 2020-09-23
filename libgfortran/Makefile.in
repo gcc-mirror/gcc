@@ -92,7 +92,8 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @LIBGFOR_MINIMAL_TRUE@am__append_1 = -DLIBGFOR_MINIMAL
-@LIBGFOR_MINIMAL_FALSE@am__append_2 = \
+@LIBGFOR_NATIVE_COARRAY_TRUE@am__append_2 = $(PTHREAD_CFLAGS)
+@LIBGFOR_MINIMAL_FALSE@am__append_3 = \
 @LIBGFOR_MINIMAL_FALSE@io/close.c \
 @LIBGFOR_MINIMAL_FALSE@io/file_pos.c \
 @LIBGFOR_MINIMAL_FALSE@io/format.c \
@@ -110,7 +111,7 @@ target_triplet = @target@
 @LIBGFOR_MINIMAL_FALSE@io/fbuf.c \
 @LIBGFOR_MINIMAL_FALSE@io/async.c
 
-@LIBGFOR_MINIMAL_FALSE@am__append_3 = \
+@LIBGFOR_MINIMAL_FALSE@am__append_4 = \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/access.c \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/c99_functions.c \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/chdir.c \
@@ -143,9 +144,9 @@ target_triplet = @target@
 @LIBGFOR_MINIMAL_FALSE@intrinsics/umask.c \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/unlink.c
 
-@IEEE_SUPPORT_TRUE@am__append_4 = ieee/ieee_helper.c
-@LIBGFOR_MINIMAL_TRUE@am__append_5 = runtime/minimal.c
-@LIBGFOR_MINIMAL_FALSE@am__append_6 = \
+@IEEE_SUPPORT_TRUE@am__append_5 = ieee/ieee_helper.c
+@LIBGFOR_MINIMAL_TRUE@am__append_6 = runtime/minimal.c
+@LIBGFOR_MINIMAL_FALSE@am__append_7 = \
 @LIBGFOR_MINIMAL_FALSE@runtime/backtrace.c \
 @LIBGFOR_MINIMAL_FALSE@runtime/convert_char.c \
 @LIBGFOR_MINIMAL_FALSE@runtime/environ.c \
@@ -157,7 +158,7 @@ target_triplet = @target@
 
 
 # dummy sources for libtool
-@onestep_TRUE@am__append_7 = libgfortran_c.c libgfortran_f.f90
+@onestep_TRUE@am__append_8 = libgfortran_c.c libgfortran_f.f90
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
@@ -214,10 +215,11 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
+am__installdirs = "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(mylibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"
-LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(mylib_LTLIBRARIES) \
+	$(toolexeclib_LTLIBRARIES)
 libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
@@ -467,6 +469,21 @@ am__objects_65 = $(am__objects_3) $(am__objects_53) $(am__objects_55) \
 @onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_65)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
+libnca_la_LIBADD =
+am__objects_66 = nca_minmax_i1.lo nca_minmax_i2.lo nca_minmax_i4.lo \
+	nca_minmax_i8.lo nca_minmax_i16.lo nca_minmax_r4.lo \
+	nca_minmax_r8.lo nca_minmax_r10.lo nca_minmax_r16.lo
+am__objects_67 = nca_minmax_s1.lo nca_minmax_s4.lo
+@LIBGFOR_NATIVE_COARRAY_TRUE@am_libnca_la_OBJECTS = alloc.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	allocator.lo coarraynative.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	hashmap.lo sync.lo util.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	wrapper.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	collective_subroutine.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	shared_memory.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	$(am__objects_66) \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	$(am__objects_67)
+libnca_la_OBJECTS = $(am_libnca_la_OBJECTS)
+@LIBGFOR_NATIVE_COARRAY_TRUE@am_libnca_la_rpath = -rpath $(mylibdir)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -530,7 +547,8 @@ AM_V_FC = $(am__v_FC_@AM_V@)
 am__v_FC_ = $(am__v_FC_@AM_DEFAULT_V@)
 am__v_FC_0 = @echo "  FC      " $@;
 am__v_FC_1 = 
-SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES)
+SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES) \
+	$(libnca_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -569,7 +587,7 @@ AMTAR = @AMTAR@
 
 # Some targets require additional compiler options for IEEE compatibility.
 AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS) \
-	$(IEEE_FLAGS) $(am__append_1)
+	$(IEEE_FLAGS) $(am__append_1) $(am__append_2)
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AM_FCFLAGS = @AM_FCFLAGS@ $(IEEE_FLAGS)
 AR = @AR@
@@ -637,7 +655,10 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
+RT_LIBS = @RT_LIBS@
 SECTION_FLAGS = @SECTION_FLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -698,6 +719,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -728,13 +750,15 @@ gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 
+@LIBGFOR_NATIVE_COARRAY_FALSE@COARRAY_LIBS = ""
+@LIBGFOR_NATIVE_COARRAY_TRUE@COARRAY_LIBS = $(PTHREAD_LIBS) $(RT_LIBS)
 toolexeclib_LTLIBRARIES = libgfortran.la
 toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	-lm $(extra_ldflags_libgfortran) \
+	-lm $(COARRAY_LIBS) $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
@@ -744,6 +768,31 @@ libcaf_single_la_SOURCES = caf/single.c
 libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+i_nca_minmax_c = \
+	$(srcdir)/generated/nca_minmax_i1.c \
+	$(srcdir)/generated/nca_minmax_i2.c \
+	$(srcdir)/generated/nca_minmax_i4.c \
+	$(srcdir)/generated/nca_minmax_i8.c \
+	$(srcdir)/generated/nca_minmax_i16.c \
+	$(srcdir)/generated/nca_minmax_r4.c \
+	$(srcdir)/generated/nca_minmax_r8.c \
+	$(srcdir)/generated/nca_minmax_r10.c \
+	$(srcdir)/generated/nca_minmax_r16.c
+
+i_nca_minmax_s_c = \
+	$(srcdir)/generated/nca_minmax_s1.c \
+	$(srcdir)/generated/nca_minmax_s4.c
+
+@LIBGFOR_NATIVE_COARRAY_TRUE@mylib_LTLIBRARIES = libnca.la
+@LIBGFOR_NATIVE_COARRAY_TRUE@mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
+@LIBGFOR_NATIVE_COARRAY_TRUE@libnca_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/hashmap.c  \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/sync.c nca/util.c nca/wrapper.c nca/collective_subroutine.c \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/shared_memory.c \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	$(i_nca_minmax_c) $(i_nca_minmax_s_c)
+
+@LIBGFOR_NATIVE_COARRAY_TRUE@libnca_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
+@LIBGFOR_NATIVE_COARRAY_TRUE@libnca_la_LINK = $(LINK) $(libnca_la_LDFLAGS)
 @IEEE_SUPPORT_TRUE@fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 @IEEE_SUPPORT_TRUE@nodist_finclude_HEADERS = ieee_arithmetic.mod ieee_exceptions.mod ieee_features.mod
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
@@ -755,7 +804,7 @@ AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(MULTIBUILDTOP)../libbacktrace \
 	      -I../libbacktrace
 
-gfor_io_src = io/size_from_kind.c $(am__append_2)
+gfor_io_src = io/size_from_kind.c $(am__append_3)
 gfor_io_headers = \
 io/io.h \
 io/fbuf.h \
@@ -777,7 +826,7 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/selected_int_kind.f90 \
 	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
 	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
-	runtime/in_unpack_generic.c $(am__append_3) $(am__append_4)
+	runtime/in_unpack_generic.c $(am__append_4) $(am__append_5)
 @IEEE_SUPPORT_FALSE@gfor_ieee_src = 
 @IEEE_SUPPORT_TRUE@gfor_ieee_src = \
 @IEEE_SUPPORT_TRUE@ieee/ieee_arithmetic.F90 \
@@ -785,8 +834,8 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 @IEEE_SUPPORT_TRUE@ieee/ieee_features.F90
 
 gfor_src = runtime/bounds.c runtime/compile_options.c runtime/memory.c \
-	runtime/string.c runtime/select.c $(am__append_5) \
-	$(am__append_6)
+	runtime/string.c runtime/select.c $(am__append_6) \
+	$(am__append_7)
 i_all_c = \
 $(srcdir)/generated/all_l1.c \
 $(srcdir)/generated/all_l2.c \
@@ -1540,7 +1589,7 @@ intrinsics/random_init.f90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
 	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
-	$(am__append_7)
+	$(am__append_8)
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
 
@@ -1668,6 +1717,41 @@ clean-cafexeclibLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
+install-mylibLTLIBRARIES: $(mylib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(mylib_LTLIBRARIES)'; test -n "$(mylibdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(mylibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(mylibdir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(mylibdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(mylibdir)"; \
+	}
+
+uninstall-mylibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(mylib_LTLIBRARIES)'; test -n "$(mylibdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(mylibdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(mylibdir)/$$f"; \
+	done
+
+clean-mylibLTLIBRARIES:
+	-test -z "$(mylib_LTLIBRARIES)" || rm -f $(mylib_LTLIBRARIES)
+	@list='$(mylib_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
@@ -1709,6 +1793,9 @@ libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) $
 libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES) $(EXTRA_libgfortran_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgfortran_la_LINK) -rpath $(toolexeclibdir) $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) $(LIBS)
 
+libnca.la: $(libnca_la_OBJECTS) $(libnca_la_DEPENDENCIES) $(EXTRA_libnca_la_DEPENDENCIES) 
+	$(AM_V_GEN)$(libnca_la_LINK) $(am_libnca_la_rpath) $(libnca_la_OBJECTS) $(libnca_la_LIBADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -1723,6 +1810,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l2.Plo@am__quote@
@@ -1742,6 +1831,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chmod.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/close.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coarraynative.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/collective_subroutine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_options.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convert_char.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_16_l.Plo@am__quote@
@@ -1866,6 +1957,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getXid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getcwd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getlog.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hashmap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hostnm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iall_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iall_i16.Plo@am__quote@
@@ -2125,6 +2217,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/move_alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mvbits.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_i2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nca_minmax_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/norm2_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/norm2_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/norm2_r4.Plo@am__quote@
@@ -2218,6 +2321,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shared_memory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size.Plo@am__quote@
@@ -2255,6 +2359,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sum_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sum_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/symlnk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sync.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/system.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/system_clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
@@ -2279,6 +2384,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unpack_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unpack_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unpack_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wrapper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/write.Plo@am__quote@
 
 .F90.o:
@@ -6679,6 +6786,146 @@ ieee_helper.lo: ieee/ieee_helper.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee_helper.lo `test -f 'ieee/ieee_helper.c' || echo '$(srcdir)/'`ieee/ieee_helper.c
 
+alloc.lo: nca/alloc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT alloc.lo -MD -MP -MF $(DEPDIR)/alloc.Tpo -c -o alloc.lo `test -f 'nca/alloc.c' || echo '$(srcdir)/'`nca/alloc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/alloc.Tpo $(DEPDIR)/alloc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/alloc.c' object='alloc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o alloc.lo `test -f 'nca/alloc.c' || echo '$(srcdir)/'`nca/alloc.c
+
+allocator.lo: nca/allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT allocator.lo -MD -MP -MF $(DEPDIR)/allocator.Tpo -c -o allocator.lo `test -f 'nca/allocator.c' || echo '$(srcdir)/'`nca/allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/allocator.Tpo $(DEPDIR)/allocator.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/allocator.c' object='allocator.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o allocator.lo `test -f 'nca/allocator.c' || echo '$(srcdir)/'`nca/allocator.c
+
+coarraynative.lo: nca/coarraynative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT coarraynative.lo -MD -MP -MF $(DEPDIR)/coarraynative.Tpo -c -o coarraynative.lo `test -f 'nca/coarraynative.c' || echo '$(srcdir)/'`nca/coarraynative.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/coarraynative.Tpo $(DEPDIR)/coarraynative.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/coarraynative.c' object='coarraynative.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o coarraynative.lo `test -f 'nca/coarraynative.c' || echo '$(srcdir)/'`nca/coarraynative.c
+
+hashmap.lo: nca/hashmap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hashmap.lo -MD -MP -MF $(DEPDIR)/hashmap.Tpo -c -o hashmap.lo `test -f 'nca/hashmap.c' || echo '$(srcdir)/'`nca/hashmap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hashmap.Tpo $(DEPDIR)/hashmap.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/hashmap.c' object='hashmap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hashmap.lo `test -f 'nca/hashmap.c' || echo '$(srcdir)/'`nca/hashmap.c
+
+sync.lo: nca/sync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sync.lo -MD -MP -MF $(DEPDIR)/sync.Tpo -c -o sync.lo `test -f 'nca/sync.c' || echo '$(srcdir)/'`nca/sync.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sync.Tpo $(DEPDIR)/sync.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/sync.c' object='sync.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sync.lo `test -f 'nca/sync.c' || echo '$(srcdir)/'`nca/sync.c
+
+util.lo: nca/util.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT util.lo -MD -MP -MF $(DEPDIR)/util.Tpo -c -o util.lo `test -f 'nca/util.c' || echo '$(srcdir)/'`nca/util.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/util.Tpo $(DEPDIR)/util.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/util.c' object='util.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o util.lo `test -f 'nca/util.c' || echo '$(srcdir)/'`nca/util.c
+
+wrapper.lo: nca/wrapper.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT wrapper.lo -MD -MP -MF $(DEPDIR)/wrapper.Tpo -c -o wrapper.lo `test -f 'nca/wrapper.c' || echo '$(srcdir)/'`nca/wrapper.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/wrapper.Tpo $(DEPDIR)/wrapper.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/wrapper.c' object='wrapper.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o wrapper.lo `test -f 'nca/wrapper.c' || echo '$(srcdir)/'`nca/wrapper.c
+
+collective_subroutine.lo: nca/collective_subroutine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT collective_subroutine.lo -MD -MP -MF $(DEPDIR)/collective_subroutine.Tpo -c -o collective_subroutine.lo `test -f 'nca/collective_subroutine.c' || echo '$(srcdir)/'`nca/collective_subroutine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/collective_subroutine.Tpo $(DEPDIR)/collective_subroutine.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/collective_subroutine.c' object='collective_subroutine.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o collective_subroutine.lo `test -f 'nca/collective_subroutine.c' || echo '$(srcdir)/'`nca/collective_subroutine.c
+
+shared_memory.lo: nca/shared_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shared_memory.lo -MD -MP -MF $(DEPDIR)/shared_memory.Tpo -c -o shared_memory.lo `test -f 'nca/shared_memory.c' || echo '$(srcdir)/'`nca/shared_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/shared_memory.Tpo $(DEPDIR)/shared_memory.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/shared_memory.c' object='shared_memory.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shared_memory.lo `test -f 'nca/shared_memory.c' || echo '$(srcdir)/'`nca/shared_memory.c
+
+nca_minmax_i1.lo: $(srcdir)/generated/nca_minmax_i1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_i1.lo -MD -MP -MF $(DEPDIR)/nca_minmax_i1.Tpo -c -o nca_minmax_i1.lo `test -f '$(srcdir)/generated/nca_minmax_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_i1.Tpo $(DEPDIR)/nca_minmax_i1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_i1.c' object='nca_minmax_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_i1.lo `test -f '$(srcdir)/generated/nca_minmax_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i1.c
+
+nca_minmax_i2.lo: $(srcdir)/generated/nca_minmax_i2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_i2.lo -MD -MP -MF $(DEPDIR)/nca_minmax_i2.Tpo -c -o nca_minmax_i2.lo `test -f '$(srcdir)/generated/nca_minmax_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_i2.Tpo $(DEPDIR)/nca_minmax_i2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_i2.c' object='nca_minmax_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_i2.lo `test -f '$(srcdir)/generated/nca_minmax_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i2.c
+
+nca_minmax_i4.lo: $(srcdir)/generated/nca_minmax_i4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_i4.lo -MD -MP -MF $(DEPDIR)/nca_minmax_i4.Tpo -c -o nca_minmax_i4.lo `test -f '$(srcdir)/generated/nca_minmax_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_i4.Tpo $(DEPDIR)/nca_minmax_i4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_i4.c' object='nca_minmax_i4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_i4.lo `test -f '$(srcdir)/generated/nca_minmax_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i4.c
+
+nca_minmax_i8.lo: $(srcdir)/generated/nca_minmax_i8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_i8.lo -MD -MP -MF $(DEPDIR)/nca_minmax_i8.Tpo -c -o nca_minmax_i8.lo `test -f '$(srcdir)/generated/nca_minmax_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_i8.Tpo $(DEPDIR)/nca_minmax_i8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_i8.c' object='nca_minmax_i8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_i8.lo `test -f '$(srcdir)/generated/nca_minmax_i8.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i8.c
+
+nca_minmax_i16.lo: $(srcdir)/generated/nca_minmax_i16.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_i16.lo -MD -MP -MF $(DEPDIR)/nca_minmax_i16.Tpo -c -o nca_minmax_i16.lo `test -f '$(srcdir)/generated/nca_minmax_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i16.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_i16.Tpo $(DEPDIR)/nca_minmax_i16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_i16.c' object='nca_minmax_i16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_i16.lo `test -f '$(srcdir)/generated/nca_minmax_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i16.c
+
+nca_minmax_r4.lo: $(srcdir)/generated/nca_minmax_r4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_r4.lo -MD -MP -MF $(DEPDIR)/nca_minmax_r4.Tpo -c -o nca_minmax_r4.lo `test -f '$(srcdir)/generated/nca_minmax_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_r4.Tpo $(DEPDIR)/nca_minmax_r4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_r4.c' object='nca_minmax_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_r4.lo `test -f '$(srcdir)/generated/nca_minmax_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r4.c
+
+nca_minmax_r8.lo: $(srcdir)/generated/nca_minmax_r8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_r8.lo -MD -MP -MF $(DEPDIR)/nca_minmax_r8.Tpo -c -o nca_minmax_r8.lo `test -f '$(srcdir)/generated/nca_minmax_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_r8.Tpo $(DEPDIR)/nca_minmax_r8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_r8.c' object='nca_minmax_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_r8.lo `test -f '$(srcdir)/generated/nca_minmax_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r8.c
+
+nca_minmax_r10.lo: $(srcdir)/generated/nca_minmax_r10.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_r10.lo -MD -MP -MF $(DEPDIR)/nca_minmax_r10.Tpo -c -o nca_minmax_r10.lo `test -f '$(srcdir)/generated/nca_minmax_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r10.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_r10.Tpo $(DEPDIR)/nca_minmax_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_r10.c' object='nca_minmax_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_r10.lo `test -f '$(srcdir)/generated/nca_minmax_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r10.c
+
+nca_minmax_r16.lo: $(srcdir)/generated/nca_minmax_r16.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_r16.lo -MD -MP -MF $(DEPDIR)/nca_minmax_r16.Tpo -c -o nca_minmax_r16.lo `test -f '$(srcdir)/generated/nca_minmax_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r16.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_r16.Tpo $(DEPDIR)/nca_minmax_r16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_r16.c' object='nca_minmax_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_r16.lo `test -f '$(srcdir)/generated/nca_minmax_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_r16.c
+
+nca_minmax_s1.lo: $(srcdir)/generated/nca_minmax_s1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_s1.lo -MD -MP -MF $(DEPDIR)/nca_minmax_s1.Tpo -c -o nca_minmax_s1.lo `test -f '$(srcdir)/generated/nca_minmax_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_s1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_s1.Tpo $(DEPDIR)/nca_minmax_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_s1.c' object='nca_minmax_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_s1.lo `test -f '$(srcdir)/generated/nca_minmax_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_s1.c
+
+nca_minmax_s4.lo: $(srcdir)/generated/nca_minmax_s4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_s4.lo -MD -MP -MF $(DEPDIR)/nca_minmax_s4.Tpo -c -o nca_minmax_s4.lo `test -f '$(srcdir)/generated/nca_minmax_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_s4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nca_minmax_s4.Tpo $(DEPDIR)/nca_minmax_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/nca_minmax_s4.c' object='nca_minmax_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nca_minmax_s4.lo `test -f '$(srcdir)/generated/nca_minmax_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_s4.c
+
 .f90.o:
 	$(AM_V_FC)$(FCCOMPILE) -c -o $@ $<
 
@@ -6835,7 +7082,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h all-local
 installdirs:
-	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"; do \
+	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(mylibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(gfor_cdir)" "$(DESTDIR)$(fincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -6873,7 +7120,8 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
-	clean-local clean-toolexeclibLTLIBRARIES mostlyclean-am
+	clean-local clean-mylibLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -6894,7 +7142,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-gfor_cHEADERS install-nodist_fincludeHEADERS
+install-data-am: install-gfor_cHEADERS install-mylibLTLIBRARIES \
+	install-nodist_fincludeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -6945,14 +7194,14 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
-	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
-	uninstall-toolexeclibLTLIBRARIES
+	uninstall-mylibLTLIBRARIES uninstall-nodist_fincludeHEADERS \
+	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local am--refresh check \
 	check-am clean clean-cafexeclibLTLIBRARIES clean-cscope \
-	clean-generic clean-libtool clean-local \
+	clean-generic clean-libtool clean-local clean-mylibLTLIBRARIES \
 	clean-toolexeclibLTLIBRARIES cscope cscopelist-am ctags \
 	ctags-am distclean distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-local distclean-tags \
@@ -6961,16 +7210,17 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-exec-local install-gfor_cHEADERS install-html \
 	install-html-am install-info install-info-am install-man \
-	install-nodist_fincludeHEADERS install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip install-toolexeclibDATA \
+	install-mylibLTLIBRARIES install-nodist_fincludeHEADERS \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	maintainer-clean-local mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-local pdf \
 	pdf-am ps ps-am tags tags-am uninstall uninstall-am \
 	uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
-	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
-	uninstall-toolexeclibLTLIBRARIES
+	uninstall-mylibLTLIBRARIES uninstall-nodist_fincludeHEADERS \
+	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
@@ -6983,6 +7233,9 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 `echo $(libgfortran_la_LIBADD) | \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/libcoarraynative.h nca/sync.h shared_memory.h \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/util.h nca/lock.h nca/collective_subroutine.h\
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/collective_inline.h
 
 # Turn on vectorization and loop unrolling for matmul.
 $(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4
@@ -7192,6 +7445,12 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 
 @MAINTAINER_MODE_TRUE@$(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
+
+@LIBGFOR_NATIVE_COARRAY_TRUE@@MAINTAINER_MODE_TRUE@$(i_nca_minmax_c): m4/nca_minmax.m4 $(I_M4_DEPS)
+@LIBGFOR_NATIVE_COARRAY_TRUE@@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 nca_minmax.m4 > $@
+
+@LIBGFOR_NATIVE_COARRAY_TRUE@@MAINTAINER_MODE_TRUE@$(i_nca_minmax_s_c): m4/nca-minmax-s.m4 $(I_M4_DEPS)
+@LIBGFOR_NATIVE_COARRAY_TRUE@@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 nca-minmax-s.m4 > $@
 
 # target overrides
 -include $(tmake_file)

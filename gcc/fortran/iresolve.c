@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "constructor.h"
 #include "arith.h"
 #include "trans.h"
+#include "options.h"
 
 /* Given printf-like arguments, return a stable version of the result string.
 
@@ -4028,5 +4029,102 @@ gfc_resolve_unlink_sub (gfc_code *c)
     kind = gfc_default_integer_kind;
 
   name = gfc_get_string (PREFIX ("unlink_i%d_sub"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve the CO_SUM et al. intrinsic subroutines.  */
+
+static void
+gfc_resolve_co_collective (gfc_code *c, const char *oper)
+{
+  int kind;
+  gfc_expr *e;
+  const char *name;
+
+  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+    name = gfc_get_string (PREFIX ("caf_co_sum"));
+  else
+    {
+      e = c->ext.actual->expr;
+      kind = e->ts.kind;
+
+      name = gfc_get_string (PREFIX ("nca_collsub_%s_%s_%c%d"), oper,
+			     e->rank ? "array" : "scalar",
+			     gfc_type_letter (e->ts.type), kind);
+    }
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve CO_SUM.  */
+
+void
+gfc_resolve_co_sum (gfc_code *c)
+{
+  gfc_resolve_co_collective (c, "sum");
+}
+
+/* Resolve CO_MIN.  */
+
+void
+gfc_resolve_co_min (gfc_code *c)
+{
+  gfc_resolve_co_collective (c, "min");
+}
+
+/* Resolve CO_MAX.  */
+
+void
+gfc_resolve_co_max (gfc_code *c)
+{
+  gfc_resolve_co_collective (c, "max");
+}
+
+/* Resolve CO_REDUCE.  */
+
+void
+gfc_resolve_co_reduce (gfc_code *c)
+{
+  gfc_expr *e;
+  const char *name;
+
+  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+    name = gfc_get_string (PREFIX ("caf_co_reduce"));
+
+  else
+    {
+      e = c->ext.actual->expr;
+      if (e->ts.type == BT_CHARACTER)
+	name = gfc_get_string (PREFIX ("nca_collsub_reduce_%s%c%d"),
+			       e->rank ? "array" : "scalar",
+			       gfc_type_letter (e->ts.type), e->ts.kind);
+      else
+	name = gfc_get_string (PREFIX ("nca_collsub_reduce_%s"),
+			       e->rank ? "array" : "scalar" );
+    }
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+void
+gfc_resolve_co_broadcast (gfc_code * c)
+{
+  gfc_expr *e;
+  const char *name;
+
+  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+    name = gfc_get_string (PREFIX ("caf_co_broadcast"));
+  else
+    {
+      e = c->ext.actual->expr;
+      if (e->ts.type == BT_CHARACTER)
+	name = gfc_get_string (PREFIX ("nca_collsub_broadcast_%s%c%d"),
+			       e->rank ? "array" : "scalar",
+			       gfc_type_letter (e->ts.type), e->ts.kind);
+      else
+	name = gfc_get_string (PREFIX ("nca_collsub_broadcast_%s"),
+			       e->rank ? "array" : "scalar" );
+    }
+
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }

@@ -501,6 +501,9 @@ void gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr,
 			      bool add_clobber = false);
 void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
+/* Insert a memory barrier into the code.  */
+
+tree gfc_trans_memory_barrier (void);
 
 /* trans-expr.c */
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
@@ -889,6 +892,21 @@ extern GTY(()) tree gfor_fndecl_co_min;
 extern GTY(()) tree gfor_fndecl_co_reduce;
 extern GTY(()) tree gfor_fndecl_co_sum;
 extern GTY(()) tree gfor_fndecl_caf_is_present;
+
+
+/* Native coarray library function decls.  */
+extern GTY(()) tree gfor_fndecl_nca_this_image;
+extern GTY(()) tree gfor_fndecl_nca_num_images;
+extern GTY(()) tree gfor_fndecl_nca_coarray_allocate;
+extern GTY(()) tree gfor_fndecl_nca_coarray_free;
+extern GTY(()) tree gfor_fndecl_nca_sync_images;
+extern GTY(()) tree gfor_fndecl_nca_sync_all;
+extern GTY(()) tree gfor_fndecl_nca_lock;
+extern GTY(()) tree gfor_fndecl_nca_unlock;
+extern GTY(()) tree gfor_fndecl_nca_reduce_scalar;
+extern GTY(()) tree gfor_fndecl_nca_reduce_array;
+extern GTY(()) tree gfor_fndecl_nca_broadcast_scalar;
+extern GTY(()) tree gfor_fndecl_nca_broadcast_array;
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */

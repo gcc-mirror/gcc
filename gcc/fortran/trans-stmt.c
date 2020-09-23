@@ -830,7 +830,9 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 
   /* Short cut: For single images without STAT= or LOCK_ACQUIRED
      return early. (ERRMSG= is always untouched for -fcoarray=single.)  */
-  if (!code->expr2 && !code->expr4 && flag_coarray != GFC_FCOARRAY_LIB)
+  if (!code->expr2 && !code->expr4
+      && !(flag_coarray == GFC_FCOARRAY_LIB
+	   || flag_coarray == GFC_FCOARRAY_NATIVE))
     return NULL_TREE;
 
   if (code->expr2)
@@ -989,6 +991,29 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 				      lock_acquired));
 
       return gfc_finish_block (&se.pre);
+    }
+  else if (flag_coarray == GFC_FCOARRAY_NATIVE)
+    {
+      gfc_se arg;
+      stmtblock_t res;
+      tree call;
+      tree tmp;
+
+      gfc_init_se (&arg, NULL);
+      gfc_start_block (&res);
+      gfc_conv_expr (&arg, code->expr1);
+      gfc_add_block_to_block (&res, &arg.pre);
+      call = build_call_expr_loc (input_location, op == EXEC_LOCK ?
+				   gfor_fndecl_nca_lock
+				   : gfor_fndecl_nca_unlock,
+				 1, fold_convert (pvoid_type_node,
+				   gfc_build_addr_expr (NULL, arg.expr)));
+      gfc_add_expr_to_block (&res, call);
+      gfc_add_block_to_block (&res, &arg.post);
+      tmp = gfc_trans_memory_barrier ();
+      gfc_add_expr_to_block (&res, tmp);
+
+      return gfc_finish_block (&res);
     }
 
   if (stat != NULL_TREE)
@@ -1183,7 +1208,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
   /* Short cut: For single images without bound checking or without STAT=,
      return early. (ERRMSG= is always untouched for -fcoarray=single.)  */
   if (!code->expr2 && !(gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
-      && flag_coarray != GFC_FCOARRAY_LIB)
+      && flag_coarray != GFC_FCOARRAY_LIB
+      && flag_coarray != GFC_FCOARRAY_NATIVE)
     return NULL_TREE;
 
   gfc_init_se (&se, NULL);
@@ -1206,7 +1232,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
   else
     stat = null_pointer_node;
 
-  if (code->expr3 && flag_coarray == GFC_FCOARRAY_LIB)
+  if (code->expr3 && (flag_coarray == GFC_FCOARRAY_LIB || flag_coarray == GFC_FCOARRAY_NATIVE))
     {
       gcc_assert (code->expr3->expr_type == EXPR_VARIABLE);
       gfc_init_se (&argse, NULL);
@@ -1216,7 +1242,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       errmsg = gfc_build_addr_expr (NULL, argse.expr);
       errmsglen = fold_convert (size_type_node, argse.string_length);
     }
-  else if (flag_coarray == GFC_FCOARRAY_LIB)
+  else if (flag_coarray == GFC_FCOARRAY_LIB || flag_coarray == GFC_FCOARRAY_NATIVE)
     {
       errmsg = null_pointer_node;
       errmsglen = build_int_cst (size_type_node, 0);
@@ -1229,7 +1255,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
     {
       tree images2 = fold_convert (integer_type_node, images);
       tree cond;
-      if (flag_coarray != GFC_FCOARRAY_LIB)
+      if (flag_coarray != GFC_FCOARRAY_LIB && flag_coarray != GFC_FCOARRAY_NATIVE)
 	cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				images, build_int_cst (TREE_TYPE (images), 1));
       else
@@ -1253,17 +1279,13 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 
   /* Per F2008, 8.5.1, a SYNC MEMORY is implied by calling the
      image control statements SYNC IMAGES and SYNC ALL.  */
-  if (flag_coarray == GFC_FCOARRAY_LIB)
+  if (flag_coarray == GFC_FCOARRAY_LIB || flag_coarray == GFC_FCOARRAY_NATIVE)
     {
-      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
-      tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
-			gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
-			tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
-      ASM_VOLATILE_P (tmp) = 1;
+      tmp = gfc_trans_memory_barrier ();
       gfc_add_expr_to_block (&se.pre, tmp);
     }
 
-  if (flag_coarray != GFC_FCOARRAY_LIB)
+  if (flag_coarray != GFC_FCOARRAY_LIB && flag_coarray != GFC_FCOARRAY_NATIVE)
     {
       /* Set STAT to zero.  */
       if (code->expr2)
@@ -1285,8 +1307,14 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_memory,
 				       3, stat, errmsg, errmsglen);
 	  else
-	    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
-				       3, stat, errmsg, errmsglen);
+	    {
+	      if (flag_coarray == GFC_FCOARRAY_LIB)
+		tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
+					   3, stat, errmsg, errmsglen);
+	      else
+		tmp = build_call_expr_loc (input_location, gfor_fndecl_nca_sync_all,
+					   1, stat);
+	    }
 
 	  gfc_add_expr_to_block (&se.pre, tmp);
 	}
@@ -1351,7 +1379,10 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	  if (TREE_TYPE (stat) == integer_type_node)
 	    stat = gfc_build_addr_expr (NULL, stat);
 
-	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_images,
+	  tmp = build_call_expr_loc (input_location,
+				     flag_coarray == GFC_FCOARRAY_NATIVE
+				       ? gfor_fndecl_nca_sync_images
+				       : gfor_fndecl_caf_sync_images,
 				     5, fold_convert (integer_type_node, len),
 				     images, stat, errmsg, errmsglen);
 	  gfc_add_expr_to_block (&se.pre, tmp);
@@ -1360,7 +1391,10 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	{
 	  tree tmp_stat = gfc_create_var (integer_type_node, "stat");
 
-	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_images,
+	  tmp = build_call_expr_loc (input_location,
+				     flag_coarray == GFC_FCOARRAY_NATIVE
+				       ? gfor_fndecl_nca_sync_images
+				       : gfor_fndecl_caf_sync_images,
 				     5, fold_convert (integer_type_node, len),
 				     images, gfc_build_addr_expr (NULL, tmp_stat),
 				     errmsg, errmsglen);
@@ -1596,6 +1630,11 @@ gfc_trans_critical (gfc_code *code)
 
       gfc_add_expr_to_block (&block, tmp);
     }
+  else if (flag_coarray == GFC_FCOARRAY_NATIVE)
+    {
+      tmp = gfc_trans_lock_unlock (code, EXEC_LOCK);
+      gfc_add_expr_to_block (&block, tmp);
+    }
 
   tmp = gfc_trans_code (code->block->next);
   gfc_add_expr_to_block (&block, tmp);
@@ -1618,6 +1657,11 @@ gfc_trans_critical (gfc_code *code)
 			  NULL_TREE);
       ASM_VOLATILE_P (tmp) = 1;
 
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  else if (flag_coarray == GFC_FCOARRAY_NATIVE)
+    {
+      tmp = gfc_trans_lock_unlock (code, EXEC_UNLOCK);
       gfc_add_expr_to_block (&block, tmp);
     }
 
@@ -7169,6 +7213,7 @@ gfc_trans_deallocate (gfc_code *code)
   tree apstat, pstat, stat, errmsg, errlen, tmp;
   tree label_finish, label_errmsg;
   stmtblock_t block;
+  bool is_native_coarray = false;
 
   pstat = apstat = stat = errmsg = errlen = tmp = NULL_TREE;
   label_finish = label_errmsg = NULL_TREE;
@@ -7254,8 +7299,27 @@ gfc_trans_deallocate (gfc_code *code)
 		       ? GFC_STRUCTURE_CAF_MODE_DEALLOC_ONLY : 0);
 	    }
 	}
+      else if (flag_coarray == GFC_FCOARRAY_NATIVE)
+	 {
+	  gfc_ref *ref, *last;
 
-      if (expr->rank || is_coarray_array)
+	  for (ref = expr->ref, last = ref; ref; last = ref, ref = ref->next);
+	  ref = last;
+	  if (ref->type == REF_ARRAY && ref->u.ar.codimen)
+	    {
+	      gfc_symbol *sym = expr->symtree->n.sym;
+	      int alloc_type = gfc_native_coarray_get_allocation_type (sym);
+	       tmp = build_call_expr_loc (input_location,
+					gfor_fndecl_nca_coarray_free,
+					2, gfc_build_addr_expr (pvoid_type_node, se.expr),
+					build_int_cst (integer_type_node,
+						      alloc_type));
+	      gfc_add_expr_to_block (&block, tmp);
+	      is_native_coarray = true;
+	    }
+	}
+
+      if ((expr->rank || is_coarray_array) && !is_native_coarray)
 	{
 	  gfc_ref *ref;
 
@@ -7344,7 +7408,7 @@ gfc_trans_deallocate (gfc_code *code)
 		gfc_reset_len (&se.pre, al->expr);
 	    }
 	}
-      else
+      else if (!is_native_coarray)
 	{
 	  tmp = gfc_deallocate_scalar_with_status (se.expr, pstat, label_finish,
 						   false, al->expr,

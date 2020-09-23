@@ -57,6 +57,7 @@ static int call_external_blas (gfc_code **, int *, void *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
 static int index_interchange (gfc_code **, int*, void *);
 static bool is_fe_temp (gfc_expr *e);
+static void rewrite_co_reduce (gfc_namespace *);
 
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
@@ -179,6 +180,9 @@ gfc_run_passes (gfc_namespace *ns)
 
   if (flag_realloc_lhs)
     realloc_strings (ns);
+
+  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+    rewrite_co_reduce (ns);
 }
 
 #ifdef CHECKING_P
@@ -5894,4 +5898,122 @@ gfc_fix_implicit_pure (gfc_namespace *ns)
     }
 
   return changed;
+}
+
+/* Callback function.  Create a wrapper around VALUE functions.  */
+
+static int
+co_reduce_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+{
+  gfc_code *co = *c;
+  gfc_expr *oper;
+  gfc_symbol *op_sym;
+  gfc_symbol *arg1, *arg2;
+  gfc_namespace *parent_ns;
+  gfc_namespace *proc_ns;
+  gfc_symbol *proc_sym;
+  gfc_symtree *f1t, *f2t;
+  gfc_symbol *f1, *f2;
+  gfc_code *assign;
+  gfc_expr *e1, *e2;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  static int num;
+
+  if (co->op != EXEC_CALL || co->resolved_isym == NULL
+      || co->resolved_isym->id != GFC_ISYM_CO_REDUCE)
+    return 0;
+
+  oper = co->ext.actual->next->expr;
+  op_sym = oper->symtree->n.sym;
+  arg1 = op_sym->formal->sym;
+  arg2 = op_sym->formal->next->sym;
+
+  parent_ns = (gfc_namespace *) data;
+
+  /* Generate the wrapper around the function.  */
+  proc_ns = gfc_get_namespace (parent_ns, 0);
+  snprintf (name, GFC_MAX_SYMBOL_LEN, "__coreduce_%d_%s", num++, op_sym->name);
+  gfc_get_symbol (name, proc_ns, &proc_sym);
+  proc_sym->attr.flavor = FL_PROCEDURE;
+  proc_sym->attr.subroutine = 1;
+  proc_sym->attr.referenced = 1;
+  proc_sym->attr.access = ACCESS_PRIVATE;
+  gfc_commit_symbol (proc_sym);
+  proc_ns->proc_name = proc_sym;
+
+  /* Make up the formal arguments.  */
+  gfc_get_sym_tree (arg1->name, proc_ns, &f1t, false);
+  f1 = f1t->n.sym;
+  f1->ts = arg1->ts;
+  f1->attr.flavor = FL_VARIABLE;
+  f1->attr.dummy = 1;
+  f1->attr.intent = INTENT_INOUT;
+  f1->attr.fe_temp = 1;
+  f1->declared_at = arg1->declared_at;
+  f1->attr.referenced = 1;
+  proc_sym->formal = gfc_get_formal_arglist ();
+  proc_sym->formal->sym = f1;
+  gfc_commit_symbol (f1);
+
+  gfc_get_sym_tree (arg2->name, proc_ns, &f2t, false);
+  f2 = f2t->n.sym;
+  f2->ts = arg2->ts;
+  f2->attr.flavor = FL_VARIABLE;
+  f2->attr.dummy = 1;
+  f2->attr.intent = INTENT_IN;
+  f2->attr.fe_temp = 1;
+  f2->declared_at = arg2->declared_at;
+  f2->attr.referenced = 1;
+  proc_sym->formal->next = gfc_get_formal_arglist ();
+  proc_sym->formal->next->sym = f2;
+  gfc_commit_symbol (f2);
+
+  /* Generate the assignment statement.  */
+  assign = gfc_get_code (EXEC_ASSIGN);
+
+  e1 = gfc_lval_expr_from_sym (f1);
+  e2 = gfc_get_expr ();
+  e2->where = proc_sym->declared_at;
+  e2->expr_type = EXPR_FUNCTION;
+  e2->symtree = f2t;
+  e2->ts = arg1->ts;
+  e2->value.function.esym = op_sym;
+  e2->value.function.actual = gfc_get_actual_arglist ();
+  e2->value.function.actual->expr = gfc_lval_expr_from_sym (f1);
+  e2->value.function.actual->next = gfc_get_actual_arglist ();
+  e2->value.function.actual->next->expr = gfc_lval_expr_from_sym (f2);
+  assign->expr1 = e1;
+  assign->expr2 = e2;
+  assign->loc = proc_sym->declared_at;
+
+  proc_ns->code = assign;
+
+  /* And hang it into the sibling list.  */
+  proc_ns->sibling = parent_ns->contained;
+  parent_ns->contained = proc_ns;
+
+  /* ... and finally replace the call in the statement.  */
+
+  oper->symtree->n.sym = proc_sym;
+  proc_sym->refs ++;
+  return 0;
+}
+
+/* Rewrite functions for co_reduce for a consistent calling
+   signature. This is only necessary if any of the functions
+   has a VALUE argument.  */
+
+static void
+rewrite_co_reduce (gfc_namespace *global_ns)
+{
+  gfc_namespace *ns;
+
+  gfc_code_walker (&global_ns->code, co_reduce_code, dummy_expr_callback,
+		   (void *) global_ns);
+
+  for (ns = global_ns->contained; ns; ns = ns->sibling)
+    gfc_code_walker (&ns->code, co_reduce_code, dummy_expr_callback,
+		     (void *) global_ns);
+
+  return;
 }

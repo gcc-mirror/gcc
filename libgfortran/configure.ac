@@ -683,6 +683,43 @@ LIBGFOR_CHECK_FMA4
 # Check if AVX128 works
 LIBGFOR_CHECK_AVX128
 
+# Tests related to native coarrays
+# Test whether the compiler supports the -pthread option.
+AC_CACHE_CHECK([whether -pthread is supported],
+[libgfortran_cv_lib_pthread],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([int i;])],
+[libgfortran_cv_lib_pthread=yes],
+[libgfortran_cv_lib_pthread=no])
+CFLAGS=$CFLAGS_hold])
+PTHREAD_CFLAGS=
+if test "$libgfortran_cv_lib_pthread" = yes; then
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
+fi
+AC_SUBST(PTHREAD_CFLAGS)
+
+# Test for the -lpthread library.
+PTHREAD_LIBS=
+AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS=-lpthread)
+AC_SUBST(PTHREAD_LIBS)
+
+# Test if -lrt is required
+AC_CHECK_LIB([rt], [shm_open], RT_LIBS=-lrt)
+AC_SUBST(RT_LIBS)
+
+CFLAGS_hold="$CFLAGS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+LIBS_hold="$LIBS"
+LIBS="$LIBS $PTHREAD_LIBS $RT_LIBS"
+
+# Find the functions that we need
+AC_CHECK_FUNCS([pthread_condattr_setpshared pthread_mutexattr_setpshared pthread_barrierattr_setpshared shm_open shm_unlink],[AM_CONDITIONAL(LIBGFOR_NATIVE_COARRAY,true)],[AM_CONDITIONAL(LIBGFOR_NATIVE_COARRAY,false)])
+
+CFLAGS="$CFLAGS_hold"
+LIBS="$LIBS_hold"
+
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 

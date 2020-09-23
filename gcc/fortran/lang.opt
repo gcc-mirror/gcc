@@ -761,7 +761,7 @@ Copy array sections into a contiguous block on procedure entry.
 
 fcoarray=
 Fortran RejectNegative Joined Enum(gfc_fcoarray) Var(flag_coarray) Init(GFC_FCOARRAY_NONE)
--fcoarray=<none|single|lib>	Specify which coarray parallelization should be used.
+-fcoarray=<none|single|lib|native>	Specify which coarray parallelization should be used.
 
 Enum
 Name(gfc_fcoarray) Type(enum gfc_fcoarray) UnknownError(Unrecognized option: %qs)
@@ -774,6 +774,9 @@ Enum(gfc_fcoarray) String(single) Value(GFC_FCOARRAY_SINGLE)
 
 EnumValue
 Enum(gfc_fcoarray) String(lib) Value(GFC_FCOARRAY_LIB)
+
+EnumValue
+Enum(gfc_fcoarray) String(native) Value(GFC_FCOARRAY_NATIVE)
 
 fcheck=
 Fortran RejectNegative JoinedOrMissing

@@ -36,14 +36,21 @@ gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 
+if LIBGFOR_NATIVE_COARRAY
+COARRAY_LIBS=$(PTHREAD_LIBS) $(RT_LIBS)
+else
+COARRAY_LIBS=""
+endif
+
 toolexeclib_LTLIBRARIES = libgfortran.la
 toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	-lm $(extra_ldflags_libgfortran) \
+	-lm $(COARRAY_LIBS) $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
+
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
 cafexeclib_LTLIBRARIES = libcaf_single.la
@@ -52,6 +59,37 @@ libcaf_single_la_SOURCES = caf/single.c
 libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+
+i_nca_minmax_c = \
+	$(srcdir)/generated/nca_minmax_i1.c \
+	$(srcdir)/generated/nca_minmax_i2.c \
+	$(srcdir)/generated/nca_minmax_i4.c \
+	$(srcdir)/generated/nca_minmax_i8.c \
+	$(srcdir)/generated/nca_minmax_i16.c \
+	$(srcdir)/generated/nca_minmax_r4.c \
+	$(srcdir)/generated/nca_minmax_r8.c \
+	$(srcdir)/generated/nca_minmax_r10.c \
+	$(srcdir)/generated/nca_minmax_r16.c
+
+i_nca_minmax_s_c = \
+	$(srcdir)/generated/nca_minmax_s1.c \
+	$(srcdir)/generated/nca_minmax_s4.c
+
+if LIBGFOR_NATIVE_COARRAY
+
+mylib_LTLIBRARIES = libnca.la
+mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
+libnca_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
+	nca/hashmap.c  \
+	nca/sync.c nca/util.c nca/wrapper.c nca/collective_subroutine.c \
+	nca/shared_memory.c \
+	$(i_nca_minmax_c) $(i_nca_minmax_s_c)
+libnca_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
+	nca/libcoarraynative.h nca/sync.h shared_memory.h \
+	nca/util.h nca/lock.h nca/collective_subroutine.h\
+	nca/collective_inline.h
+libnca_la_LINK = $(LINK) $(libnca_la_LDFLAGS)
+endif
 
 if IEEE_SUPPORT
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
@@ -81,6 +119,10 @@ AM_FCFLAGS += $(IEEE_FLAGS)
 
 if LIBGFOR_MINIMAL
 AM_CFLAGS += -DLIBGFOR_MINIMAL
+endif
+
+if LIBGFOR_NATIVE_COARRAY
+AM_CFLAGS += $(PTHREAD_CFLAGS)
 endif
 
 gfor_io_src= \
@@ -1231,8 +1273,19 @@ $(gfor_built_specific2_src): m4/specific2.m4 m4/head.m4
 
 $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
+
+
+if LIBGFOR_NATIVE_COARRAY
+$(i_nca_minmax_c): m4/nca_minmax.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 nca_minmax.m4 > $@
+
+$(i_nca_minmax_s_c): m4/nca-minmax-s.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 nca-minmax-s.m4 > $@
+endif
+
 ## end of maintainer mode only rules
 endif
+
 
 EXTRA_DIST = $(m4_files)
 

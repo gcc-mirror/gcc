@@ -2622,8 +2622,14 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
     }
   else if (!sym->attr.value)
     {
+
+      /* Do not derefernce native coarray dummies.  */
+      if (false && flag_coarray == GFC_FCOARRAY_NATIVE
+	  && sym->attr.codimension && sym->attr.dummy)
+	return var;
+
       /* Dereference temporaries for class array dummy arguments.  */
-      if (sym->attr.dummy && is_classarray
+      else if (sym->attr.dummy && is_classarray
 	  && GFC_ARRAY_TYPE_P (TREE_TYPE (var)))
 	{
 	  if (!descriptor_only_p)
@@ -2635,6 +2641,7 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
       /* Dereference non-character scalar dummy arguments.  */
       if (sym->attr.dummy && !sym->attr.dimension
 	  && !(sym->attr.codimension && sym->attr.allocatable)
+	  && !(sym->attr.codimension && flag_coarray == GFC_FCOARRAY_NATIVE)
 	  && (sym->ts.type != BT_CLASS
 	      || (!CLASS_DATA (sym)->attr.dimension
 		  && !(CLASS_DATA (sym)->attr.codimension
@@ -2670,6 +2677,7 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
 		   || CLASS_DATA (sym)->attr.allocatable
 		   || CLASS_DATA (sym)->attr.class_pointer))
 	var = build_fold_indirect_ref_loc (input_location, var);
+
       /* And the case where a non-dummy, non-result, non-function,
 	 non-allotable and non-pointer classarray is present.  This case was
 	 previously covered by the first if, but with introducing the
@@ -5528,7 +5536,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	nodesc_arg = nodesc_arg || !comp->attr.always_explicit;
       else
 	nodesc_arg = nodesc_arg || !sym->attr.always_explicit;
-
+#if 0
+      if (flag_coarray == GFC_FCOARRAY_NATIVE && fsym->attr.codimension)
+	nodesc_arg = false;
+#endif
       /* Class array expressions are sometimes coming completely unadorned
 	 with either arrayspec or _data component.  Correct that here.
 	 OOP-TODO: Move this to the frontend.  */
@@ -5720,7 +5731,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
               parmse.want_coarray = 1;
 	      scalar = false;
 	    }
-
+#if 0	  
+	  if (flag_coarray == GFC_FCOARRAY_NATIVE && fsym->attr.codimension)
+	    scalar = false;
+#endif
 	  /* A scalar or transformational function.  */
 	  if (scalar)
 	    {
@@ -6233,7 +6247,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
 					  sym->name, NULL);
-
+	      
 	      /* Unallocated allocatable arrays and unassociated pointer arrays
 		 need their dtype setting if they are argument associated with
 		 assumed rank dummies.  */

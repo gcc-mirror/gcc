@@ -3734,7 +3734,7 @@ add_subroutines (void)
   /* Coarray collectives.  */
   add_sym_4s ("co_broadcast", GFC_ISYM_CO_BROADCAST, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
-	      gfc_check_co_broadcast, NULL, NULL,
+	      gfc_check_co_broadcast, NULL, gfc_resolve_co_broadcast,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      "source_image", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
@@ -3742,7 +3742,7 @@ add_subroutines (void)
 
   add_sym_4s ("co_max", GFC_ISYM_CO_MAX, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
-	      gfc_check_co_minmax, NULL, NULL,
+	      gfc_check_co_minmax, NULL, gfc_resolve_co_max,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
@@ -3750,7 +3750,7 @@ add_subroutines (void)
 
   add_sym_4s ("co_min", GFC_ISYM_CO_MIN, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
-	      gfc_check_co_minmax, NULL, NULL,
+	      gfc_check_co_minmax, NULL, gfc_resolve_co_min,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
@@ -3758,7 +3758,7 @@ add_subroutines (void)
 
   add_sym_4s ("co_sum", GFC_ISYM_CO_SUM, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
-	      gfc_check_co_sum, NULL, NULL,
+	      gfc_check_co_sum, NULL, gfc_resolve_co_sum,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
@@ -3766,7 +3766,7 @@ add_subroutines (void)
 
   add_sym_5s ("co_reduce", GFC_ISYM_CO_REDUCE, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
-	      gfc_check_co_reduce, NULL, NULL,
+	      gfc_check_co_reduce, NULL, gfc_resolve_co_reduce,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
