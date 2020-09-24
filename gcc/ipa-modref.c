@@ -84,6 +84,11 @@ public:
      ipa-modref pass execution needs to be analyzed in IPA mode while all
      other insertions leads to normal analysis.  */
   bool ipa;
+  static modref_summaries *create_ggc (symbol_table *symtab)
+  {
+    return new (ggc_alloc_no_dtor<modref_summaries> ())
+	     modref_summaries (symtab);
+  }
 };
 
 /* Global variable holding all modref summaries.  */
@@ -608,8 +613,7 @@ analyze_function (function *f, bool ipa)
 
   /* Initialize the summary.  */
   if (!summaries)
-    summaries = new (ggc_alloc <modref_summaries> ())
-		     modref_summaries (symtab);
+    summaries = modref_summaries::create_ggc (symtab);
   else /* Remove existing summary if we are re-running the pass.  */
     summaries->remove (cgraph_node::get (f->decl));
 
@@ -633,28 +637,22 @@ analyze_function (function *f, bool ipa)
   if (nolto)
     {
       gcc_assert (!summary->loads);
-      summary->loads
-	 = new (ggc_alloc <modref_tree<alias_set_type> > ())
-		modref_records (param_modref_max_bases,
-				param_modref_max_refs);
+      summary->loads = modref_records::create_ggc (param_modref_max_bases,
+						   param_modref_max_refs);
       gcc_assert (!summary->stores);
-      summary->stores
-	 = new (ggc_alloc <modref_tree<alias_set_type> > ())
-		modref_records (param_modref_max_bases,
-				param_modref_max_refs);
+      summary->stores = modref_records::create_ggc (param_modref_max_bases,
+						    param_modref_max_refs);
     }
   if (lto)
     {
       gcc_assert (!summary->loads_lto);
-      summary->loads_lto
-	 = new (ggc_alloc <modref_tree<tree> > ())
-		modref_records_lto (param_modref_max_bases,
-				    param_modref_max_refs);
+      summary->loads_lto = modref_records_lto::create_ggc
+				 (param_modref_max_bases,
+				  param_modref_max_refs);
       gcc_assert (!summary->stores_lto);
-      summary->stores_lto
-	 = new (ggc_alloc <modref_tree<tree> > ())
-		modref_records_lto (param_modref_max_bases,
-				    param_modref_max_refs);
+      summary->stores_lto = modref_records_lto::create_ggc
+				 (param_modref_max_bases,
+				  param_modref_max_refs);
     }
   summary->finished = false;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
@@ -730,34 +728,30 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *,
   dst_data->finished = src_data->finished;
   if (src_data->stores)
     {
-      dst_data->stores = new (ggc_alloc <modref_tree<alias_set_type> > ())
-			      modref_records
-				 (src_data->stores->max_bases,
-				  src_data->stores->max_refs);
+      dst_data->stores = modref_records::create_ggc
+			    (src_data->stores->max_bases,
+			     src_data->stores->max_refs);
       dst_data->stores->merge (src_data->stores);
     }
   if (src_data->loads)
     {
-      dst_data->loads = new (ggc_alloc <modref_tree<alias_set_type> > ())
-			     modref_records
-				(src_data->loads->max_bases,
-				 src_data->loads->max_refs);
+      dst_data->loads = modref_records::create_ggc
+			    (src_data->loads->max_bases,
+			     src_data->loads->max_refs);
       dst_data->loads->merge (src_data->loads);
     }
   if (src_data->stores_lto)
     {
-      dst_data->stores_lto = new (ggc_alloc <modref_tree<tree> > ())
-				  modref_records_lto
-				    (src_data->stores_lto->max_bases,
-				     src_data->stores_lto->max_refs);
+      dst_data->stores_lto = modref_records_lto::create_ggc
+			    (src_data->stores_lto->max_bases,
+			     src_data->stores_lto->max_refs);
       dst_data->stores_lto->merge (src_data->stores_lto);
     }
   if (src_data->loads_lto)
     {
-      dst_data->loads_lto = new (ggc_alloc <modref_tree<tree> > ())
-				  modref_records_lto
-				    (src_data->stores_lto->max_bases,
-				     src_data->stores_lto->max_refs);
+      dst_data->loads_lto = modref_records_lto::create_ggc
+			    (src_data->loads_lto->max_bases,
+			     src_data->loads_lto->max_refs);
       dst_data->loads_lto->merge (src_data->loads_lto);
     }
 }
@@ -838,11 +832,9 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
   /* Decide whether we want to turn LTO data types to non-LTO (i.e. when
      LTO re-streaming is not going to happen).  */
   if (flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
-    *lto_ret = new (ggc_alloc <modref_records_lto> ()) modref_records_lto
-			      (max_bases, max_refs);
+    *lto_ret = modref_records_lto::create_ggc (max_bases, max_refs);
   else
-    *nolto_ret = new (ggc_alloc <modref_records> ()) modref_records
-			      (max_bases, max_refs);
+    *nolto_ret = modref_records::create_ggc (max_bases, max_refs);
 
   size_t every_base = streamer_read_uhwi (ib);
   size_t nbase = streamer_read_uhwi (ib);
@@ -1048,8 +1040,7 @@ modref_read (void)
   unsigned int j = 0;
 
   if (!summaries)
-    summaries = new (ggc_alloc <modref_summaries> ())
-		     modref_summaries (symtab);
+    summaries = modref_summaries::create_ggc (symtab);
   ((modref_summaries *)summaries)->ipa = true;
 
   while ((file_data = file_data_vec[j++]))

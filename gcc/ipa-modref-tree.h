@@ -95,7 +95,15 @@ struct GTY((user)) modref_base_node
 
   void collapse ()
   {
-    vec_free (refs);
+    size_t i;
+    modref_ref_node <T> *r;
+
+    if (refs)
+      {
+	FOR_EACH_VEC_SAFE_ELT (refs, i, r)
+	  ggc_free (r);
+	vec_free (refs);
+      }
     refs = NULL;
     every_ref = true;
   }
@@ -214,11 +222,35 @@ struct GTY((user)) modref_tree
     return NULL;
   }
 
+  /* Return ggc allocated instance.  We explicitly call destructors via
+     ggc_delete and do not want finalizers to be registered and
+     called at the garbage collection time.  */
+  static modref_tree<T> *create_ggc (size_t max_bases, size_t max_refs)
+  {
+    return new (ggc_alloc_no_dtor<modref_tree<T>> ())
+	 modref_tree<T> (max_bases, max_refs);
+  }
+
   void collapse ()
   {
-    vec_free (bases);
+    size_t i;
+    modref_base_node <T> *n;
+
+    if (bases)
+      {
+	FOR_EACH_VEC_SAFE_ELT (bases, i, n)
+	  {
+	    n->collapse ();
+	    ggc_free (n);
+	  }
+	vec_free (bases);
+      }
     bases = NULL;
     every_base = true;
+  }
+  ~modref_tree ()
+  {
+    collapse ();
   }
 };
 
