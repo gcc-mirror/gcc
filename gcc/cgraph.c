@@ -2072,6 +2072,20 @@ cgraph_edge::dump_edge_flags (FILE *f)
     fprintf (f, "(can throw external) ");
 }
 
+/* Dump edge to stderr.  */
+
+void
+cgraph_edge::debug (void)
+{
+  fprintf (stderr, "%s -> %s ", caller->dump_asm_name (),
+	   callee == NULL ? "(null)" : callee->dump_asm_name ());
+  dump_edge_flags (stderr);
+  fprintf (stderr, "\n\n");
+  caller->debug ();
+  if (callee != NULL)
+    callee->debug ();
+}
+
 /* Dump call graph node to file F.  */
 
 void
