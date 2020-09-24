@@ -245,7 +245,7 @@ in the following sections.
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
--Wredundant-move -Wredundant-tags @gol
+-Wrange-loop-construct -Wredundant-move -Wredundant-tags @gol
 -Wreorder  -Wregister @gol
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
@@ -3605,6 +3605,24 @@ treats the return value as if it were designated by an rvalue.
 
 This warning is enabled by @option{-Wextra}.
 
+@item -Wrange-loop-construct @r{(C++ and Objective-C++ only)}
+@opindex Wrange-loop-construct
+@opindex Wno-range-loop-construct
+This warning warns when a C++ range-based for-loop is creating an unnecessary
+copy.  This can happen when the range declaration is not a reference, but
+probably should be.  For example:
+
+@smallexample
+struct S @{ char arr[128]; @};
+void fn () @{
+  S arr[5];
+  for (const auto x : arr) @{ @dots{} @}
+@}
+@end smallexample
+
+It does not warn when the type being copied is a trivially-copyable type whose
+size is less than 64 bytes.  This warning is enabled by @option{-Wall}.
+
 @item -Wredundant-tags @r{(C++ and Objective-C++ only)}
 @opindex Wredundant-tags
 @opindex Wno-redundant-tags
@@ -5274,6 +5292,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wparentheses  @gol
 -Wpessimizing-move @r{(only for C++)}  @gol
 -Wpointer-sign  @gol
+-Wrange-loop-construct @r{(only for C++)}  @gol
 -Wreorder   @gol
 -Wrestrict   @gol
 -Wreturn-type  @gol

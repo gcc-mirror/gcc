@@ -8429,6 +8429,28 @@ conv_binds_ref_to_prvalue (conversion *c)
   return false;
 }
 
+/* True iff converting EXPR to a reference type TYPE does not involve
+   creating a temporary.  */
+
+bool
+ref_conv_binds_directly_p (tree type, tree expr)
+{
+  gcc_assert (TYPE_REF_P (type));
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  void *p = conversion_obstack_alloc (0);
+
+  conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+					  /*c_cast_p=*/false,
+					  LOOKUP_IMPLICIT, tf_none);
+  bool ret = conv && !conv->bad_p && !conv_binds_ref_to_prvalue (conv);
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return ret;
+}
+
 /* Call the trivial destructor for INSTANCE, which can be either an lvalue of
    class type or a pointer to class type.  If NO_PTR_DEREF is true and
    INSTANCE has pointer type, clobber the pointer rather than what it points
