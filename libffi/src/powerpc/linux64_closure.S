@@ -159,15 +159,17 @@ ffi_closure_LINUX64:
 # if defined _CALL_LINUX || _CALL_ELF == 2
 #  ifdef __PCREL__
 	bl ffi_closure_helper_LINUX64@notoc
+.Lret:
 #  else
 	bl ffi_closure_helper_LINUX64
+.Lret:
 	nop
 #  endif
 # else
 	bl .ffi_closure_helper_LINUX64
+.Lret:
 	nop
 # endif
-.Lret:
 
 	# now r3 contains the return type
 	# so use it to look up in a table
