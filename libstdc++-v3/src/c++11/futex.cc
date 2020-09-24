@@ -58,13 +58,23 @@ namespace
   std::atomic<bool> futex_clock_realtime_unavailable;
   std::atomic<bool> futex_clock_monotonic_unavailable;
 
+#if defined(SYS_futex_time64) && SYS_futex_time64 != SYS_futex
+  // Userspace knows about the new time64 syscalls, so it's possible that
+  // userspace has also updated timespec to use a 64-bit tv_sec.
+  // The SYS_futex and SYS_clock_gettime syscalls still use the old definition
+  // of timespec where tv_sec is 32 bits, so define a type that matches that.
+  struct syscall_timespec { long tv_sec; long tv_nsec; };
+#else
+  using syscall_timespec = ::timespec;
+#endif
+
   // Return the relative duration from (now_s + now_ns) to (abs_s + abs_ns)
-  // as a timespec.
-  struct timespec
+  // as a timespec suitable for syscalls.
+  syscall_timespec
   relative_timespec(chrono::seconds abs_s, chrono::nanoseconds abs_ns,
 		    time_t now_s, long now_ns)
   {
-    struct timespec rt;
+    syscall_timespec rt;
 
     // Did we already time out?
     if (now_s > abs_s.count())
@@ -119,7 +129,7 @@ namespace
 	    if (__s.count() < 0)
 	      return false;
 
-	    struct timespec rt;
+	    syscall_timespec rt;
 	    if (__s.count() > __int_traits<time_t>::__max) [[unlikely]]
 	      rt.tv_sec = __int_traits<time_t>::__max;
 	    else
@@ -195,7 +205,7 @@ namespace
 	    if (__s.count() < 0) [[unlikely]]
 	      return false;
 
-	    struct timespec rt;
+	    syscall_timespec rt;
 	    if (__s.count() > __int_traits<time_t>::__max) [[unlikely]]
 	      rt.tv_sec = __int_traits<time_t>::__max;
 	    else
@@ -224,10 +234,11 @@ namespace
 
 	// We only get to here if futex_clock_monotonic_unavailable was
 	// true or has just been set to true.
-	struct timespec ts;
 #ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+	syscall_timespec ts;
 	syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &ts);
 #else
+	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 #endif
 
