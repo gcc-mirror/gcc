@@ -1,3 +1,15 @@
+2020-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (typedef cxx_binding): Delete tdef.
+	(typedef cp_binding_level): Likewise.
+	(struct cxx_binding): Flags are bools.
+
+2020-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97171
+	* pt.c (tsubst_copy) [FUNCTION_DECL,VAR_DECL]: Retrieve local
+	specialization for DECL_LOCAL_P decls.
+
 2020-09-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95310

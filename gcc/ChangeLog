@@ -1,3 +1,186 @@
+2020-09-24  Paul A. Clarke  <pc@us.ibm.com>
+
+	* doc/extend.texi: Add 'd' for doubleword variant of
+	vector insert instruction.
+
+2020-09-23  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-array-bounds.cc (build_zero_elt_array_type): New function.
+	(array_bounds_checker::check_mem_ref): Call it.
+
+2020-09-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97175
+	* builtins.c (maybe_warn_for_bound): Handle both DECLs and EXPRESSIONs
+	in pad->dst.ref, same is pad->src.ref.
+
+2020-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (refs_local_or_readonly_memory_p): New function.
+	(points_to_local_or_readonly_memory_p): New function.
+	* ipa-fnsummary.h (refs_local_or_readonly_memory_p): Declare.
+	(points_to_local_or_readonly_memory_p): Declare.
+	* ipa-modref.c (record_access_p): Use refs_local_or_readonly_memory_p.
+	* ipa-pure-const.c (check_op): Likewise.
+
+2020-09-23  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md: Don't allow operand containing sum of
+	function ref and const.
+
+2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_salt_type): New enum.
+	(aarch64_stack_protect_canary_mem): Declare.
+	* config/aarch64/aarch64.md (UNSPEC_SALT_ADDR): New unspec.
+	(stack_protect_set): Forward to stack_protect_combined_set.
+	(stack_protect_combined_set): New pattern.  Use
+	aarch64_stack_protect_canary_mem.
+	(reg_stack_protect_address_<mode>): Add a salt operand.
+	(stack_protect_test): Forward to stack_protect_combined_test.
+	(stack_protect_combined_test): New pattern.  Use
+	aarch64_stack_protect_canary_mem.
+	* config/aarch64/aarch64.c (strip_salt): New function.
+	(strip_offset_and_salt): Likewise.
+	(tls_symbolic_operand_type): Use strip_offset_and_salt.
+	(aarch64_stack_protect_canary_mem): New function.
+	(aarch64_cannot_force_const_mem): Use strip_offset_and_salt.
+	(aarch64_classify_address): Likewise.
+	(aarch64_symbolic_address_p): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_output_addr_const_extra): New function.
+	(aarch64_tls_symbol_p): Use strip_salt.
+	(aarch64_classify_symbol): Likewise.
+	(aarch64_legitimate_pic_operand_p): Use strip_offset_and_salt.
+	(aarch64_legitimate_constant_p): Likewise.
+	(aarch64_mov_operand_p): Use strip_salt.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Override.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vreinterpretq_f64_p128,
+	vreinterpretq_p128_f64): Define.
+
+2020-09-23  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-v1): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Document support for Neoverse V1.
+
+2020-09-23  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Neoverse V1.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document support for Neoverse V1.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96453
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Remove
+	LT_EXPR -> NE_EXPR verification and also apply it for
+	non-constant masks.
+
+2020-09-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (modref_summary::lto_useful_p): New member function.
+	(modref_summary::useful_p): New member function.
+	(analyze_function): Drop useless summaries.
+	(modref_write): Skip useless summaries.
+	(pass_ipa_modref::execute): Drop useless summaries.
+	* ipa-modref.h (struct GTY): Declare useful_p and lto_useful_p.
+	* tree-ssa-alias.c (dump_alias_stats): Fix.
+	(modref_may_conflict): Fix stats.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96466
+	* internal-fn.c (expand_vect_cond_mask_optab_fn): Use
+	appropriate mode for force_reg.
+	* tree.c (build_truth_vector_type_for): Pass VOIDmode to
+	make_vector_type.
+
+2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (determine_peel_for_niter): Delete in favor of...
+	(vect_determine_partial_vectors_and_peeling): ...this new function.
+	* tree-vect-loop-manip.c (vect_update_epilogue_niters): New function.
+	Reject using vector epilogue loops for single iterations.  Install
+	the constant number of epilogue loop iterations in the associated
+	loop_vinfo.  Rely on vect_determine_partial_vectors_and_peeling
+	to do the main part of the test.
+	(vect_do_peeling): Use vect_update_epilogue_niters to handle
+	epilogue loops with a known number of iterations.  Skip recomputing
+	the number of iterations later in that case.  Otherwise, use
+	vect_determine_partial_vectors_and_peeling to decide whether the
+	epilogue loop needs to use partial vectors or peeling.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Set the
+	default can_use_partial_vectors_p to false if partial-vector-usage=0.
+	(determine_peel_for_niter): Remove in favor of...
+	(vect_determine_partial_vectors_and_peeling): ...this new function,
+	split out from...
+	(vect_analyze_loop_2): ...here.  Reflect the vect_verify_full_masking
+	and vect_verify_loop_lens results in CAN_USE_PARTIAL_VECTORS_P
+	rather than USING_PARTIAL_VECTORS_P.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/aarch64-simd-builtins.def (frintn): Use BUILTIN_VHSDF_HSDF
+	for modes.  Remove explicit hf instantiation.
+	* config/aarch64/arm_neon.h (vrndns_f32): Define.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97173
+	* tree-vect-loop.c (vectorizable_live_operation): Extend
+	assert to also conver element conversions.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vtrn1q_p64, vtrn2q_p64, vuzp1q_p64,
+	vuzp2q_p64, vzip1q_p64, vzip2q_p64): Define.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vldrq_p128): Define.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vstrq_p128): Define.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97151
+	* tree-ssa-structalias.c (find_func_aliases_for_call):
+	DECL_IS_REPLACEABLE_OPERATOR_DELETE_P has no effect on
+	arguments.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97162
+	* alias.c (compare_base_decls): Use DECL_HARD_REGISTER
+	and guard with VAR_P.
+
+2020-09-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97069
+	* profile.c (branch_prob): Line number must be at least 1.
+
+2020-09-23  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97158
+	* config/nvptx/nvptx.c (nvptx_output_mov_insn): Handle move from
+	DF subreg to DF reg.
+
+2020-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in: Add $(ZLIBINC) to CFLAGS-analyzer/engine.o.
+
 2020-09-22  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.c (analyze_stmt): Ignore gimple clobber.
