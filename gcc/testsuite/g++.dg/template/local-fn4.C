@@ -1,6 +1,6 @@
 // PR c++/97186
 // ICE in exception spec substitution
-
+// { dg-do compile { target c++11 } }
 
 template <class GG>
 struct no {
