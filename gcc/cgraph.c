@@ -2272,18 +2272,17 @@ cgraph_node::dump (FILE *f)
       edge->dump_edge_flags (f);
       if (edge->indirect_info->param_index != -1)
 	{
-	  fprintf (f, " of param:%i", edge->indirect_info->param_index);
+	  fprintf (f, "of param:%i ", edge->indirect_info->param_index);
 	  if (edge->indirect_info->agg_contents)
-	   fprintf (f, " loaded from %s %s at offset %i",
+	   fprintf (f, "loaded from %s %s at offset %i ",
 		    edge->indirect_info->member_ptr ? "member ptr" : "aggregate",
 		    edge->indirect_info->by_ref ? "passed by reference":"",
 		    (int)edge->indirect_info->offset);
 	  if (edge->indirect_info->vptr_changed)
-	    fprintf (f, " (vptr maybe changed)");
+	    fprintf (f, "(vptr maybe changed) ");
 	}
-      fprintf (f, " Num speculative call targets: %i",
+      fprintf (f, "num speculative call targets: %i\n",
 	       edge->indirect_info->num_speculative_call_targets);
-      fprintf (f, "\n");
       if (edge->indirect_info->polymorphic)
 	edge->indirect_info->context.dump (f);
     }
