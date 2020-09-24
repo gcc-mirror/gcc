@@ -1983,16 +1983,16 @@ cont:
   while(r_iter != response.end()) {
     Cody::Packet const &p = *r_iter;
 
-    if(p.GetCode() == Cody::Client::PC_INVOKED) {
-      if(strcmp(p.GetString().c_str(), "success") == 0) {
-        fprintf(stderr, "\tlto compilation succeeded\n");
-      }
-      else {
-        fprintf(stderr, "\tlto compilation failure message: %s\n", p.GetString().c_str());
-      }
+    if(p.GetCode() == Cody::Client::PC_OK) {
+      fprintf(stderr, "\tlto compilation succeeded\n");
     }
     else {
-      fprintf(stderr, "\tlto compilation unknown failure\n");
+      if(!p.GetString().empty()) {
+        fprintf(stderr, "\tlto compilation failure message: %s\n", p.GetString().c_str());
+      }
+      else {
+        fprintf(stderr, "\tlto compilation unknown failure\n");
+      }
     }
 
     ++r_iter;

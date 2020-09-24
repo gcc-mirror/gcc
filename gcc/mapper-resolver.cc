@@ -170,7 +170,7 @@ module_resolver::ConnectRequest (Cody::Server *s, unsigned version,
 int
 module_resolver::ModuleRepoRequest (Cody::Server *s)
 {
-  s->ModuleRepoResponse (repo);
+  s->PathnameResponse (repo);
   return 0;
 }
 
@@ -190,7 +190,7 @@ module_resolver::cmi_response (Cody::Server *s, std::string &module)
   if (iter->second.empty ())
     s->ErrorResponse ("no such module");
   else
-    s->ModuleCMIResponse (iter->second);
+    s->PathnameResponse (iter->second);
 
   return 0;
 }
@@ -237,9 +237,9 @@ module_resolver::IncludeTranslateRequest (Cody::Server *s,
     }
 
   if (iter == map.end () || iter->second.empty ())
-    s->IncludeTranslateResponse (false);
+    s->BoolResponse (false);
   else
-    s->ModuleCMIResponse (iter->second);
+    s->PathnameResponse (iter->second);
 
   return 0;
 }
@@ -265,7 +265,7 @@ int module_resolver::InvokeSubProcessRequest (Cody::Server *s, std::vector<std::
   fork_execute (new_argv[0], new_argv, true);
 
   // TODO: send back a compile status response
-  s->InvokedResponse("success");
+  s->OKResponse();
   return 0;
 }
 
