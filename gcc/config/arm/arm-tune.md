@@ -45,7 +45,8 @@
 	cortexa57cortexa53,cortexa72cortexa53,cortexa73cortexa35,
 	cortexa73cortexa53,cortexa55,cortexa75,
 	cortexa76,cortexa76ae,cortexa77,
-	neoversen1,cortexa75cortexa55,cortexa76cortexa55,
-	neoversev1,cortexm23,cortexm33,
-	cortexm35p,cortexm55,cortexr52"
+	neoversen1,neoversen2,cortexa75cortexa55,
+	cortexa76cortexa55,neoversev1,cortexm23,
+	cortexm33,cortexm35p,cortexm55,
+	cortexr52"
 	(const (symbol_ref "((enum attr_tune) arm_tune)")))

@@ -1,3 +1,14 @@
+2020-09-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97131
+	* c-warn.c (warn_parm_ptrarray_mismatch): Handle more invalid input.
+
+2020-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/97125
+	* c-gimplify.c (c_genericize): Only call do_warn_duplicated_branches_r
+	after loops and other structured control constructs have been lowered.
+
 2020-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wbuiltin-declaration-mismatch): Fix typo in variable name:

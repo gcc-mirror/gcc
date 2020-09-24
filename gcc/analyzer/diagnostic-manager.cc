@@ -160,10 +160,12 @@ class path_builder
 {
 public:
   path_builder (const exploded_graph &eg,
-		const exploded_path &epath)
+		const exploded_path &epath,
+		const feasibility_problem *problem)
   : m_eg (eg),
     m_diag_enode (epath.get_final_enode ()),
-    m_reachability (eg, m_diag_enode)
+    m_reachability (eg, m_diag_enode),
+    m_feasibility_problem (problem)
   {}
 
   const exploded_node *get_diag_node () const { return m_diag_enode; }
@@ -175,6 +177,11 @@ public:
 
   const extrinsic_state &get_ext_state () const { return m_eg.get_ext_state (); }
 
+  const feasibility_problem *get_feasibility_problem () const
+  {
+    return m_feasibility_problem;
+  }
+
 private:
   typedef reachability<eg_traits> enode_reachability;
 
@@ -185,6 +192,8 @@ private:
 
   /* Precompute all enodes from which the diagnostic is reachable.  */
   enode_reachability m_reachability;
+
+  const feasibility_problem *m_feasibility_problem;
 };
 
 /* class diagnostic_manager.  */
@@ -436,24 +445,38 @@ public:
 		   sd->m_snode->m_index);
 
     feasibility_problem *p = NULL;
-    if (!dc->get_path ().feasible_p (logger, &p, m_engine, eg))
+    if (dc->get_path ().feasible_p (logger, &p, m_engine, eg))
       {
 	if (logger)
-	  logger->log ("rejecting %qs at EN: %i, SN: %i"
-		       " due to infeasible path",
+	  logger->log ("accepting %qs at EN: %i, SN: %i with feasible path",
 		       sd->m_d->get_kind (), sd->m_enode->m_index,
 		       sd->m_snode->m_index);
-	sd->set_infeasible (p);
-	delete dc;
-	return;
+	sd->set_feasible ();
       }
     else
-      if (logger)
-	logger->log ("accepting %qs at EN: %i, SN: %i with feasible path",
-		     sd->m_d->get_kind (), sd->m_enode->m_index,
-		     sd->m_snode->m_index);
-
-    sd->set_feasible ();
+      {
+	if (flag_analyzer_feasibility)
+	  {
+	    if (logger)
+	      logger->log ("rejecting %qs at EN: %i, SN: %i"
+			   " due to infeasible path",
+			   sd->m_d->get_kind (), sd->m_enode->m_index,
+			   sd->m_snode->m_index);
+	    sd->set_infeasible (p);
+	    delete dc;
+	    return;
+	  }
+	else
+	  {
+	    if (logger)
+	      logger->log ("accepting %qs at EN: %i, SN: %i"
+			   " despite infeasible path (due to %qs)",
+			   sd->m_d->get_kind (), sd->m_enode->m_index,
+			   sd->m_snode->m_index,
+			   "-fno-analyzer-feasibility");
+	    sd->set_infeasible (p);
+	  }
+      }
 
     dedupe_key *key = new dedupe_key (*sd, dc->get_path ());
     if (dedupe_candidate **slot = m_map.get (key))
@@ -598,7 +621,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   pretty_printer *pp = global_dc->printer->clone ();
 
   /* Precompute all enodes from which the diagnostic is reachable.  */
-  path_builder pb (eg, epath);
+  path_builder pb (eg, epath, sd.get_feasibility_problem ());
 
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
@@ -1042,6 +1065,22 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	  }
       }
       break;
+    }
+
+  if (pb.get_feasibility_problem ()
+      && &pb.get_feasibility_problem ()->m_eedge == &eedge)
+    {
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      pp_string (&pp,
+		 "this path would have been rejected as infeasible"
+		 " at this edge: ");
+      pb.get_feasibility_problem ()->dump_to_pp (&pp);
+      emission_path->add_event (new custom_event
+				(dst_point.get_location (),
+				 dst_point.get_fndecl (),
+				 dst_stack_depth,
+				 pp_formatted_text (&pp)));
     }
 }
 

@@ -114,6 +114,7 @@ static struct {
   unsigned HOST_WIDE_INT modref_clobber_may_alias;
   unsigned HOST_WIDE_INT modref_clobber_no_alias;
   unsigned HOST_WIDE_INT modref_tests;
+  unsigned HOST_WIDE_INT modref_baseptr_tests;
 } alias_stats;
 
 void
@@ -169,13 +170,18 @@ dump_alias_stats (FILE *s)
 	   + alias_stats.modref_use_may_alias);
   fprintf (s, "  modref clobber: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
-	   HOST_WIDE_INT_PRINT_DEC" queries\n  "
-	   HOST_WIDE_INT_PRINT_DEC" tbaa queries (%f per modref query)\n",
+	   HOST_WIDE_INT_PRINT_DEC" queries\n"
+	   "  " HOST_WIDE_INT_PRINT_DEC" tbaa queries (%f per modref query)\n"
+	   "  " HOST_WIDE_INT_PRINT_DEC" base compares (%f per modref query)\n",
 	   alias_stats.modref_clobber_no_alias,
 	   alias_stats.modref_clobber_no_alias
 	   + alias_stats.modref_clobber_may_alias,
 	   alias_stats.modref_tests,
 	   ((double)alias_stats.modref_tests)
+	   / (alias_stats.modref_clobber_no_alias
+	      + alias_stats.modref_clobber_may_alias),
+	   alias_stats.modref_baseptr_tests,
+	   ((double)alias_stats.modref_baseptr_tests)
 	   / (alias_stats.modref_clobber_no_alias
 	      + alias_stats.modref_clobber_may_alias));
 }
@@ -2423,12 +2429,13 @@ refs_output_dependent_p (tree store1, tree store2)
    IF TBAA_P is true, use TBAA oracle.  */
 
 static bool
-modref_may_conflict (modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
+modref_may_conflict (const gimple *stmt,
+		     modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
 {
   alias_set_type base_set, ref_set;
   modref_base_node <alias_set_type> *base_node;
   modref_ref_node <alias_set_type> *ref_node;
-  size_t i, j;
+  size_t i, j, k;
 
   if (tt->every_base)
     return true;
@@ -2440,37 +2447,57 @@ modref_may_conflict (modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
   int num_tests = 0, max_tests = param_modref_max_tests;
   FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
     {
-      if (base_node->every_ref)
-	return true;
-
-      if (!base_node->base)
-	return true;
-
       if (tbaa_p && flag_strict_aliasing)
 	{
+	  if (num_tests >= max_tests)
+	    return true;
 	  alias_stats.modref_tests++;
 	  if (!alias_sets_conflict_p (base_set, base_node->base))
 	    continue;
 	  num_tests++;
 	}
-      else
-	return true;
-      if (num_tests >= max_tests)
+
+      if (base_node->every_ref)
 	return true;
 
       FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
 	{
 	  /* Do not repeat same test as before.  */
-	  if (ref_set == base_set && base_node->base == ref_node->ref)
+	  if ((ref_set != base_set || base_node->base != ref_node->ref)
+	      && tbaa_p && flag_strict_aliasing)
+	    {
+	      if (num_tests >= max_tests)
+		return true;
+	      alias_stats.modref_tests++;
+	      if (!alias_sets_conflict_p (ref_set, ref_node->ref))
+		continue;
+	      num_tests++;
+	    }
+
+	  /* TBAA checks did not disambiguate,  try to use base pointer, for
+	     that we however need to have ref->ref.  */
+	  if (ref_node->every_access || !ref->ref)
 	    return true;
-	  if (!flag_strict_aliasing)
-	    return true;
-	  alias_stats.modref_tests++;
-	  if (alias_sets_conflict_p (ref_set, ref_node->ref))
-	    return true;
-	  num_tests++;
-	  if (num_tests >= max_tests)
-	    return true;
+
+	  modref_access_node *access_node;
+	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	    {
+	      if (num_tests >= max_tests)
+		return true;
+
+	      if (access_node->parm_index == -1
+		  || (unsigned)access_node->parm_index
+		     >= gimple_call_num_args (stmt))
+		return true;
+
+
+	      alias_stats.modref_baseptr_tests++;
+
+	      if (ptr_deref_may_alias_ref_p_1
+		   (gimple_call_arg (stmt, access_node->parm_index), ref))
+		return true;
+	      num_tests++;
+	    }
 	}
     }
   return false;
@@ -2510,7 +2537,7 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	  modref_summary *summary = get_modref_function_summary (node);
 	  if (summary)
 	    {
-	      if (!modref_may_conflict (summary->loads, ref, tbaa_p))
+	      if (!modref_may_conflict (call, summary->loads, ref, tbaa_p))
 		{
 		  alias_stats.modref_use_no_alias++;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2934,7 +2961,7 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	  modref_summary *summary = get_modref_function_summary (node);
 	  if (summary)
 	    {
-	      if (!modref_may_conflict (summary->stores, ref, tbaa_p))
+	      if (!modref_may_conflict (call, summary->stores, ref, tbaa_p))
 		{
 		  alias_stats.modref_clobber_no_alias++;
 		  if (dump_file && (dump_flags & TDF_DETAILS))

@@ -3181,11 +3181,16 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
       while (TREE_CODE (curtyp) == POINTER_TYPE
 	     && TREE_CODE (newtyp) == POINTER_TYPE);
 
+      if (!newtyp)
+	/* Bail on error.  */
+	return;
+
       if (TREE_CODE (curtyp) != ARRAY_TYPE
 	  || TREE_CODE (newtyp) != ARRAY_TYPE)
 	{
 	  if (curtyp == error_mark_node
 	      || newtyp == error_mark_node)
+	    /* Bail on error.  */
 	    return;
 
 	  continue;

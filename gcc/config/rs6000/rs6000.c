@@ -5731,7 +5731,7 @@ direct_return (void)
 
 /* Helper for num_insns_constant.  Calculate number of instructions to
    load VALUE to a single gpr using combinations of addi, addis, ori,
-   oris and sldi instructions.  */
+   oris, sldi and rldimi instructions.  */
 
 static int
 num_insns_constant_gpr (HOST_WIDE_INT value)
@@ -5759,7 +5759,7 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
 
       high >>= 1;
 
-      if (low == 0)
+      if (low == 0 || low == high)
 	return num_insns_constant_gpr (high) + 1;
       else if (high == 0)
 	return num_insns_constant_gpr (low) + 1;
@@ -21176,9 +21176,9 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
       else if ((outer_code == PLUS
-		&& reg_or_add_cint_operand (x, VOIDmode))
+		&& reg_or_add_cint_operand (x, mode))
 	       || (outer_code == MINUS
-		   && reg_or_sub_cint_operand (x, VOIDmode))
+		   && reg_or_sub_cint_operand (x, mode))
 	       || ((outer_code == SET
 		    || outer_code == IOR
 		    || outer_code == XOR)

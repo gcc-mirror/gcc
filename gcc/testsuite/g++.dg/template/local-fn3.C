@@ -1,4 +1,6 @@
 // PR c++/97171
+
+// { dg-require-effective-target lto }
 // { dg-additional-options -flto }
 
 template <typename _UnaryOperation>

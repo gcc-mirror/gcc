@@ -872,7 +872,7 @@ program_state::on_edge (exploded_graph &eg,
 				  last_stmt);
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
-					      &ctxt))
+					      &ctxt, NULL))
     {
       logger * const logger = eg.get_logger ();
       if (logger)

@@ -1289,7 +1289,7 @@ mark_nontemporal_store (struct mem_ref *ref)
 static void
 emit_mfence_after_loop (class loop *loop)
 {
-  vec<edge> exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
   edge exit;
   gcall *call;
   gimple_stmt_iterator bsi;
@@ -1309,7 +1309,6 @@ emit_mfence_after_loop (class loop *loop)
       gsi_insert_before (&bsi, call, GSI_NEW_STMT);
     }
 
-  exits.release ();
   update_ssa (TODO_update_ssa_only_virtuals);
 }
 
@@ -1327,7 +1326,7 @@ may_use_storent_in_loop_p (class loop *loop)
      is a suitable place for it at each of the loop exits.  */
   if (FENCE_FOLLOWING_MOVNT != NULL_TREE)
     {
-      vec<edge> exits = get_loop_exit_edges (loop);
+      auto_vec<edge> exits = get_loop_exit_edges (loop);
       unsigned i;
       edge exit;
 
@@ -1335,8 +1334,6 @@ may_use_storent_in_loop_p (class loop *loop)
 	if ((exit->flags & EDGE_ABNORMAL)
 	    && exit->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  ret = false;
-
-      exits.release ();
     }
 
   return ret;

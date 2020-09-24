@@ -1,3 +1,105 @@
+2020-09-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97175
+	* gcc.dg/Wstringop-overflow-44.c: New test.
+
+2020-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/local-pure-const.c: Update template.
+
+2020-09-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97131
+	* gcc.dg/Warray-parameter-6.c: New test.
+
+2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-protector-5.c: New test.
+	* gcc.target/aarch64/stack-protector-6.c: Likewise.
+	* gcc.target/aarch64/stack-protector-7.c: Likewise.
+
+2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-protector-3.c: New test.
+	* gcc.target/aarch64/stack-protector-4.c: Likewise.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(clean_results): Add float64x2_t cleanup.
+	(DECL_VARIABLE_128BITS_VARIANTS): Add float64x2_t variable.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c: Add
+	testing of vreinterpretq_f64_p128, vreinterpretq_p128_f64.
+
+2020-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97171
+	* g++.dg/template/local10.C: New.
+
+2020-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/97125
+	* c-c++-common/Wduplicated-branches-15.c: New test.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96453
+	* gcc.dg/pr96453.c: New testcase.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96466
+	* gcc.dg/pr96466.c: New testcase.
+
+2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: Do not expect the
+	single-iteration epilogues of the 64-bit loops to be vectorized.
+	* gcc.target/powerpc/p9-vec-length-epil-7.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Likewise.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vrndns_f32_1.c: New test.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97173
+	* gcc.dg/vect/pr97173.c: New testcase.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/trn_zip_p64_1.c: New test.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vldrq_p128_1.c: New test.
+
+2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vstrq_p128_1.c: New test.
+
+2020-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97151
+	* g++.dg/cpp1y/new1.C: Adjust for two more handled transforms.
+
+2020-09-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97069
+	* g++.dg/gcov/pr97069.C: New test.
+
+2020-09-23  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/Warray-bounds-63.c: Add require-effective-target alloca.
+	* gcc.dg/Warray-bounds-66.c: Same.
+	* gcc.dg/atomic/stdatomic-vm.c: Same.
+
 2020-09-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/95310

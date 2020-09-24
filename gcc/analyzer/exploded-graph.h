@@ -880,17 +880,20 @@ class feasibility_problem
 {
 public:
   feasibility_problem (unsigned eedge_idx,
-		       const region_model &model,
 		       const exploded_edge &eedge,
-		       const gimple *last_stmt)
-  : m_eedge_idx (eedge_idx), m_model (model), m_eedge (eedge),
-    m_last_stmt (last_stmt)
+		       const gimple *last_stmt,
+		       rejected_constraint *rc)
+  : m_eedge_idx (eedge_idx), m_eedge (eedge),
+    m_last_stmt (last_stmt), m_rc (rc)
   {}
+  ~feasibility_problem () { delete m_rc; }
+
+  void dump_to_pp (pretty_printer *pp) const;
 
   unsigned m_eedge_idx;
-  region_model m_model;
   const exploded_edge &m_eedge;
   const gimple *m_last_stmt;
+  rejected_constraint *m_rc;
 };
 
 /* Finding the shortest exploded_path within an exploded_graph.  */

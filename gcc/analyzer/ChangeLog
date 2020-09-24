@@ -1,3 +1,29 @@
+2020-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97178
+	* engine.cc (impl_run_checkers): Update for change to ext_state
+	ctor.
+	* program-state.cc (selftest::test_sm_state_map): Pass an engine
+	instance to ext_state ctor.
+	(selftest::test_program_state_1): Likewise.
+	(selftest::test_program_state_2): Likewise.
+	(selftest::test_program_state_merging): Likewise.
+	(selftest::test_program_state_merging_2): Likewise.
+	* program-state.h (extrinsic_state::extrinsic_state): Remove NULL
+	default value for "eng" param.
+
+2020-09-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* analyzer-logging.cc: Guard '#pragma ... ignored "-Wformat-diag"'
+	by '#if __GNUC__ >= 10'
+	* analyzer.h: Likewise.
+	* call-string.cc: Likewise.
+
+2020-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt): Replace sequence of dyn_cast
+	with switch.
+
 2020-09-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* analysis-plan.cc: Include "json.h".

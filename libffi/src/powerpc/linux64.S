@@ -36,8 +36,10 @@
 	.cfi_startproc
 # if _CALL_ELF == 2
 ffi_call_LINUX64:
+#  ifndef __PCREL__
 	addis	%r2, %r12, .TOC.-ffi_call_LINUX64@ha
 	addi	%r2, %r2, .TOC.-ffi_call_LINUX64@l
+#  endif
 	.localentry ffi_call_LINUX64, . - ffi_call_LINUX64
 # else
 	.section	".opd","aw"
@@ -89,9 +91,15 @@ ffi_call_LINUX64:
 	/* Call ffi_prep_args64.  */
 	mr	%r4, %r1
 # if defined _CALL_LINUX || _CALL_ELF == 2
+#  ifdef __PCREL__
+	bl	ffi_prep_args64@notoc
+#  else
 	bl	ffi_prep_args64
+	nop
+#  endif
 # else
 	bl	.ffi_prep_args64
+	nop
 # endif
 
 # if _CALL_ELF == 2

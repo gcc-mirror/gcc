@@ -329,7 +329,8 @@ we only emit the simplest path (which could be intraprocedural, if
 it can be reproduced without a caller).  We apply a check that
 each duplicate warning's shortest path is feasible, rejecting any
 warnings for which the shortest path is infeasible (which could lead to
-false negatives).
+false negatives).  This check can be suppressed (for debugging purposes)
+using @option{-fno-analyzer-feasibility}.
 
 We use the shortest feasible @code{exploded_path} through the
 @code{exploded_graph} (a list of @code{exploded_edge *}) to build a

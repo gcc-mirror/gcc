@@ -30,4 +30,10 @@ void test01()
 
   std::is_nothrow_invocable_r<int, X>();		// { dg-error "required from here" }
   std::is_nothrow_invocable_r<int, X, short>();		// { dg-error "required from here" }
+
+  std::is_nothrow_invocable_r<X, X()>();		// { dg-error "required from here" }
+  std::is_nothrow_invocable_r<X, X(int), int>();		// { dg-error "required from here" }
+  std::is_nothrow_invocable_r<X, X(int, int), int, int>();		// { dg-error "required from here" }
+
+  std::is_nothrow_invocable_r<X, X(), int, int>();		// { dg-error "required from here" }
 }

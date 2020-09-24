@@ -20961,9 +20961,9 @@ given by the third argument, using natural element order in the second
 argument.  The rest of the second argument is unchanged.  If the byte
 index is greater than 14 for halfwords, greater than 12 for words, or
 greater than 8 for doublewords the result is undefined.   For little-endian,
-the generated code will be semantically equivalent to @code{vins[bhw]rx}
+the generated code will be semantically equivalent to @code{vins[bhwd]rx}
 instructions.  Similarly for big-endian it will be semantically equivalent
-to @code{vins[bhw]lx}.  Note that some fairly anomalous results can be
+to @code{vins[bhwd]lx}.  Note that some fairly anomalous results can be
 generated if the byte index is not aligned on an element boundary for the
 type of element being inserted.
 @findex vec_insertl
@@ -20996,8 +20996,8 @@ for halfwords, 12 for words, or 8 for doublewords, the intrinsic will be
 rejected. Note that the underlying hardware instruction uses the same register
 for the second argument and the result.
 For little-endian, the code generation will be semantically equivalent to
-@code{vins[bhw]lx}, while for big-endian it will be semantically equivalent to
-@code{vins[bhw]rx}.
+@code{vins[bhwd]lx}, while for big-endian it will be semantically equivalent to
+@code{vins[bhwd]rx}.
 Note that some fairly anomalous results can be generated if the byte index is
 not aligned on an element boundary for the sort of element being inserted.
 @findex vec_inserth

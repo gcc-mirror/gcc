@@ -244,6 +244,9 @@ EnumValue
 Enum(processor_type) String(neoverse-n1) Value( TARGET_CPU_neoversen1)
 
 EnumValue
+Enum(processor_type) String(neoverse-n2) Value( TARGET_CPU_neoversen2)
+
+EnumValue
 Enum(processor_type) String(cortex-a75.cortex-a55) Value( TARGET_CPU_cortexa75cortexa55)
 
 EnumValue

@@ -86,7 +86,10 @@ namespace ranges
 
   namespace __detail
   {
-    template<copy_constructible _Tp> requires is_object_v<_Tp>
+    template<typename _Tp>
+      concept __boxable = copy_constructible<_Tp> && is_object_v<_Tp>;
+
+    template<__boxable _Tp>
       struct __box : std::optional<_Tp>
       {
 	using std::optional<_Tp>::optional;
@@ -130,6 +133,59 @@ namespace ranges
 	}
       };
 
+    // For types which are already semiregular, this specialization of the
+    // semiregular wrapper stores the object directly without going through
+    // std::optional.  It provides just the subset of the primary template's
+    // API that we currently use.
+    template<__boxable _Tp> requires semiregular<_Tp>
+      struct __box<_Tp>
+      {
+      private:
+	[[no_unique_address]] _Tp _M_value;
+
+      public:
+	__box() = default;
+
+	constexpr explicit
+	__box(const _Tp& __t)
+	noexcept(is_nothrow_copy_constructible_v<_Tp>)
+	: _M_value{__t}
+	{ }
+
+	constexpr explicit
+	__box(_Tp&& __t)
+	noexcept(is_nothrow_move_constructible_v<_Tp>)
+	: _M_value{std::move(__t)}
+	{ }
+
+	template<typename... _Args>
+	  requires constructible_from<_Tp, _Args...>
+	  constexpr
+	  __box(in_place_t, _Args&&... __args)
+	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
+	  : _M_value{std::forward<_Args>(__args)...}
+	  { }
+
+	constexpr bool
+	has_value() const noexcept
+	{ return true; };
+
+	constexpr _Tp&
+	operator*() noexcept
+	{ return _M_value; }
+
+	constexpr const _Tp&
+	operator*() const noexcept
+	{ return _M_value; }
+
+	constexpr _Tp*
+	operator->() noexcept
+	{ return &_M_value; }
+
+	constexpr const _Tp*
+	operator->() const noexcept
+	{ return &_M_value; }
+      };
   } // namespace __detail
 
   /// A view that contains exactly one element.
@@ -185,7 +241,7 @@ namespace ranges
       { return _M_value.operator->(); }
 
     private:
-      __detail::__box<_Tp> _M_value;
+      [[no_unique_address]] __detail::__box<_Tp> _M_value;
     };
 
   namespace __detail
@@ -1195,7 +1251,7 @@ namespace views
       };
 
       _Vp _M_base = _Vp();
-      __detail::__box<_Pred> _M_pred;
+      [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     public:
@@ -1533,7 +1589,7 @@ namespace views
 	};
 
       _Vp _M_base = _Vp();
-      __detail::__box<_Fp> _M_fun;
+      [[no_unique_address]] __detail::__box<_Fp> _M_fun;
 
     public:
       transform_view() = default;
@@ -1787,7 +1843,7 @@ namespace views
 	};
 
       _Vp _M_base = _Vp();
-      __detail::__box<_Pred> _M_pred;
+      [[no_unique_address]] __detail::__box<_Pred> _M_pred;
 
     public:
       take_while_view() = default;
@@ -1947,7 +2003,7 @@ namespace views
     {
     private:
       _Vp _M_base = _Vp();
-      __detail::__box<_Pred> _M_pred;
+      [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     public:

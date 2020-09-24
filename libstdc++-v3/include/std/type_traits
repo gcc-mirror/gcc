@@ -2965,6 +2965,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Functor>{}),
 	"_Functor must be a complete class or an unbounded array");
+      static_assert((std::__is_complete_or_unbounded(
+	__type_identity<_ArgTypes>{}) && ...),
+	"each argument type must be a complete class or an unbounded array");
     };
 
   /// std::invoke_result_t
@@ -2978,6 +2981,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Fn>{}),
 	"_Fn must be a complete class or an unbounded array");
+      static_assert((std::__is_complete_or_unbounded(
+	__type_identity<_ArgTypes>{}) && ...),
+	"each argument type must be a complete class or an unbounded array");
     };
 
   /// std::is_invocable_r
@@ -2987,6 +2993,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Fn>{}),
 	"_Fn must be a complete class or an unbounded array");
+      static_assert((std::__is_complete_or_unbounded(
+	__type_identity<_ArgTypes>{}) && ...),
+	"each argument type must be a complete class or an unbounded array");
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Ret>{}),
+	"_Ret must be a complete class or an unbounded array");
     };
 
   /// std::is_nothrow_invocable
@@ -2997,6 +3008,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Fn>{}),
 	"_Fn must be a complete class or an unbounded array");
+      static_assert((std::__is_complete_or_unbounded(
+	__type_identity<_ArgTypes>{}) && ...),
+	"each argument type must be a complete class or an unbounded array");
     };
 
   template<typename _Result, typename _Ret, typename = void>
@@ -3017,6 +3031,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Fn>{}),
 	"_Fn must be a complete class or an unbounded array");
+      static_assert((std::__is_complete_or_unbounded(
+	__type_identity<_ArgTypes>{}) && ...),
+	"each argument type must be a complete class or an unbounded array");
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Ret>{}),
+	"_Ret must be a complete class or an unbounded array");
     };
 
   /// std::is_invocable_v

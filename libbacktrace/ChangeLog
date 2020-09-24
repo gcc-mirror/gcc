@@ -1,3 +1,9 @@
+2020-09-23  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (report_inlined_functions): Handle PC == -1 and PC ==
+	p->low.
+	(dwarf_lookup_pc): Likewise.
+
 2020-09-17  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/97080
