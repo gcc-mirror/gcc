@@ -6723,11 +6723,11 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 
       if (processing_template_decl)
 	{
-	  /* This may change after the call to
-	     push_template_decl_real, but we want the original value.  */
+	  /* This may change after the call to push_template_decl, but
+	     we want the original value.  */
 	  tree name = DECL_NAME (decl);
 
-	  decl = push_template_decl_real (decl, is_friend);
+	  decl = push_template_decl (decl, is_friend);
 	  if (decl == error_mark_node)
 	    return error_mark_node;
 
@@ -7301,7 +7301,7 @@ pushdecl_top_level_and_finish (tree x, tree init)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   do_push_to_top_level ();
-  x = pushdecl_namespace_level (x, false);
+  x = pushdecl_namespace_level (x);
   cp_finish_decl (x, init, false, NULL_TREE, 0);
   do_pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);

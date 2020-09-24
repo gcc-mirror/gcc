@@ -341,7 +341,7 @@ extern tree lookup_qualified_name (tree scope, const char *name,
 				   bool = true);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
-extern tree pushdecl_namespace_level (tree, bool);
+extern tree pushdecl_namespace_level (tree, bool is_friend = false);
 extern bool push_class_level_binding (tree, tree);
 extern tree get_local_decls ();
 extern int function_parm_depth (void);
@@ -371,7 +371,7 @@ extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);
 extern tree pushdecl_top_level_and_finish (tree, tree);
-extern tree pushtag (tree, tree, tag_scope);
+extern tree pushtag (tree, tree, tag_scope = ts_current);
 extern int push_namespace (tree, bool make_inline = false);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);

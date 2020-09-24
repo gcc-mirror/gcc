@@ -558,7 +558,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	  else if (class_template_depth)
 	    /* We rely on tsubst_friend_function to check the
 	       validity of the declaration later.  */
-	    decl = push_template_decl_real (decl, /*is_friend=*/true);
+	    decl = push_template_decl (decl, /*is_friend=*/true);
 	  else
 	    decl = check_classfn (ctype, decl,
 				  template_member_p
@@ -611,7 +611,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	       general, such a declaration depends on template
 	       parameters.  Instead, we call pushdecl when the class
 	       is instantiated.  */
-	    decl = push_template_decl_real (decl, /*is_friend=*/true);
+	    decl = push_template_decl (decl, /*is_friend=*/true);
 	  else if (current_function_decl)
 	    /* pushdecl will check there's a local decl already.  */
 	    decl = pushdecl (decl, /*is_friend=*/true);

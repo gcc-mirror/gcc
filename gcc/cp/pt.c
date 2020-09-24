@@ -5669,7 +5669,7 @@ template_parm_outer_level (tree t, void *data)
    If IS_FRIEND is true, DECL is a friend declaration.  */
 
 tree
-push_template_decl_real (tree decl, bool is_friend)
+push_template_decl (tree decl, bool is_friend)
 {
   tree tmpl;
   tree args;
@@ -5694,8 +5694,10 @@ push_template_decl_real (tree decl, bool is_friend)
 		    && DECL_TEMPLATE_SPECIALIZATION (decl)
 		    && TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (decl))));
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FRIEND_P (decl))
-    is_friend = true;
+  /* No surprising friend functions.  */
+  gcc_checking_assert (is_friend
+		       || !(TREE_CODE (decl) == FUNCTION_DECL
+			    && DECL_FRIEND_P (decl)));
 
   if (is_friend)
     /* For a friend, we want the context of the friend, not
@@ -6094,12 +6096,6 @@ push_template_decl_real (tree decl, bool is_friend)
     DECL_COMDAT (decl) = true;
 
   return DECL_TEMPLATE_RESULT (tmpl);
-}
-
-tree
-push_template_decl (tree decl)
-{
-  return push_template_decl_real (decl, false);
 }
 
 /* FN is an inheriting constructor that inherits from the constructor
@@ -9943,7 +9939,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
 	  /* A local class.  Make sure the decl gets registered properly.  */
 	  if (context == current_function_decl)
-	    if (pushtag (DECL_NAME (gen_tmpl), t, /*tag_scope=*/ts_current)
+	    if (pushtag (DECL_NAME (gen_tmpl), t)
 		== error_mark_node)
 	      return error_mark_node;
 
@@ -11897,7 +11893,7 @@ instantiate_class_template_1 (tree type)
 		     tsubst_enum.  */
 		  if (name)
 		    SET_IDENTIFIER_TYPE_VALUE (name, newtag);
-		  pushtag (name, newtag, /*tag_scope=*/ts_current);
+		  pushtag (name, newtag);
 		}
 	    }
 	  else if (DECL_DECLARES_FUNCTION_P (t))
@@ -12077,6 +12073,7 @@ instantiate_class_template_1 (tree type)
 		/* friend class C<T>;  */
 		friend_type = tsubst (friend_type, args,
 				      tf_warning_or_error, NULL_TREE);
+	      
 	      /* Otherwise it's
 
 		   friend class C;
