@@ -153,7 +153,7 @@ The small is the largest power of two that does not exceed the delta.
   "What combinations of small, range, and digits are
   supported for fixed point types.  See 3.5.9(10)."
 
-For an ordinary fixed point type, the small must lie in 2**(-80) .. 2**80
+For an ordinary fixed point type, the small must lie in 2.0**(-80) .. 2.0**80
 and the range in -10.0**36 .. 10.0**36; any combination is permitted that
 does not result in a mantissa larger than 63 bits. However, if the mantissa
 is larger than 53 bits on machines where Long_Long_Float is 64 bits (true
@@ -161,6 +161,8 @@ of all architectures except x86), then the output from Text_IO may be
 accurate to only 53 bits, rather than the full mantissa.  This is because
 floating-point conversions may be used to convert fixed point.
 
+For a decimal fixed point type, the small must lie in 10.0**(-18) .. 10.0**18
+and the digits in 1 .. 18.
 
 *
   "The result of ``Tags.Expanded_Name`` for types declared
