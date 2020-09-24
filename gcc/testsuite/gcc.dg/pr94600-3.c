@@ -31,5 +31,5 @@ foo(void)
 }
 
 /* The loop isn't unrolled. */
-/* { dg-final { scan-rtl-dump-times {\(mem/v} 1 "final" } } */
-/* { dg-final { scan-rtl-dump-times {\(set \(mem/v} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {\(mem/v} 1 "final" { target { non_strict_align } } } } */
+/* { dg-final { scan-rtl-dump-times {\(set \(mem/v} 1 "final" { target { non_strict_align } } } } */

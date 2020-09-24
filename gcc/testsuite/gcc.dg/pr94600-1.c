@@ -32,5 +32,5 @@ foo(void)
 }
 
 /* The only volatile accesses should be the obvious writes.  */
-/* { dg-final { scan-rtl-dump-times {\(mem/v} 6 "final" } } */
-/* { dg-final { scan-rtl-dump-times {\(set \(mem/v} 6 "final" } } */
+/* { dg-final { scan-rtl-dump-times {\(mem/v} 6 "final" { target { non_strict_align } } } } */
+/* { dg-final { scan-rtl-dump-times {\(set \(mem/v} 6 "final" { target { non_strict_align } } } } */
