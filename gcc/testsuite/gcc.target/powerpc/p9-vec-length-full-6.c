@@ -9,8 +9,7 @@
 #include "p9-vec-length-6.h"
 
 /* It can use normal vector load for constant vector load.  */
-/* { dg-final { scan-assembler-not   {\mstxv\M} } } */
-/* { dg-final { scan-assembler-not   {\mlxvx\M} } } */
-/* { dg-final { scan-assembler-not   {\mstxvx\M} } } */
-/* { dg-final { scan-assembler-times {\mlxvl\M} 16 } } */
-/* { dg-final { scan-assembler-times {\mstxvl\M} 16 } } */
+/* { dg-final { scan-assembler-times {\mstxvx?\M} 6 } } */
+/* 64bit/32bit pairs won't use partial vectors.  */
+/* { dg-final { scan-assembler-times {\mlxvl\M} 10 } } */
+/* { dg-final { scan-assembler-times {\mstxvl\M} 10 } } */
