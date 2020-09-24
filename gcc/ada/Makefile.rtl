@@ -483,6 +483,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-speche$(objext) \
   g-spipat$(objext) \
   g-spitbo$(objext) \
+  g-spogwa$(objext) \
   g-sptabo$(objext) \
   g-sptain$(objext) \
   g-sptavs$(objext) \
