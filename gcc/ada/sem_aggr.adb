@@ -1680,18 +1680,21 @@ package body Sem_Aggr is
          Set_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
-         --  Analyze the expression without expansion, to verify legality.
-         --  After analysis we remove references to the index variable because
-         --  the expression will be analyzed anew when the enclosing aggregate
-         --  is expanded, and the construct is rewritten as a loop with a new
-         --  index variable.
+         --  Analyze  expression without expansion, to verify legality.
+         --  When generating code, we then remove references to the index
+         --  variable, because the expression will be analyzed anew after
+         --  rewritting as a loop with a new index variable; when not
+         --  generating code we leave the analyzed expression as it is.
 
          Expr := Expression (N);
 
          Expander_Mode_Save_And_Set (False);
          Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
          Expander_Mode_Restore;
-         Remove_References (Expr);
+
+         if Operating_Mode /= Check_Semantics then
+            Remove_References (Expr);
+         end if;
 
          --  An iterated_component_association may appear in a nested
          --  aggregate for a multidimensional structure: preserve the bounds
