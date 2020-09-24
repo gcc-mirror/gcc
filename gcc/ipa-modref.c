@@ -20,14 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Mod/ref pass records summary about loads and stores performed by the
    function.  This is later used by alias analysis to disambiguate memory
-   accesses across function calls.  The summary has a form of decision tree and
-   contains:
-
-    - base alias set
-      and for each:
-      - ref alias set
-
-   In future more information will be tracked.
+   accesses across function calls.  The summary has a form of decision tree
+   described in ipa-modref-tree.h.
 
    This file contains a tree pass and an IPA pass.  Both performs the same
    analys however tree pass is executed during early and late optimization
@@ -144,6 +138,14 @@ modref_summary::useful_p (int ecf_flags)
   return stores && !loads->every_base;
 }
 
+/* Dump A to OUT.  */
+
+static void
+dump_access (modref_access_node *a, FILE *out)
+{
+   fprintf (out, "          Parm %i\n", a->parm_index);
+}
+
 /* Dump records TT to OUT.  */
 
 static void
@@ -171,6 +173,15 @@ dump_records (modref_records *tt, FILE *out)
       FOR_EACH_VEC_SAFE_ELT (n->refs, j, r)
 	{
 	  fprintf (out, "        Ref %i: alias set %i\n", (int)j, r->ref);
+	  if (r->every_access)
+	    {
+	      fprintf (out, "        Every access\n");
+	      continue;
+	    }
+	  size_t k;
+	  modref_access_node *a;
+	  FOR_EACH_VEC_SAFE_ELT (r->accesses, k, a)
+	    dump_access (a, out);
 	}
     }
 }
@@ -208,6 +219,15 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
 	  print_generic_expr (dump_file, r->ref);
 	  fprintf (out, " (alias set %i)\n",
 		   r->ref ? get_alias_set (r->ref) : 0);
+	  if (r->every_access)
+	    {
+	      fprintf (out, "      Every access\n");
+	      continue;
+	    }
+	  size_t k;
+	  modref_access_node *a;
+	  FOR_EACH_VEC_SAFE_ELT (r->accesses, k, a)
+	    dump_access (a, out);
 	}
     }
 }
@@ -268,6 +288,43 @@ get_modref_function_summary (cgraph_node *func)
   return NULL;
 }
 
+/* Construct modref_access_node from REF.  */
+static modref_access_node
+get_access (ao_ref *ref)
+{
+  modref_access_node a;
+  tree base;
+
+  base = ref->ref;
+  while (handled_component_p (base))
+    base = TREE_OPERAND (base, 0);
+  if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
+    {
+      base = TREE_OPERAND (base, 0);
+      if (TREE_CODE (base) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (base)
+	  && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL)
+	{
+	  a.parm_index = 0;
+	  for (tree t = DECL_ARGUMENTS (current_function_decl);
+	       t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
+	    {
+	      if (!t)
+		{
+		  a.parm_index = -1;
+		  break;
+		}
+	      a.parm_index++;
+	    }
+	}
+      else
+	a.parm_index = -1;
+    }
+  else
+    a.parm_index = -1;
+  return a;
+}
+
 /* Record access into the modref_records data structure.  */
 
 static void
@@ -277,12 +334,13 @@ record_access (modref_records *tt, ao_ref *ref)
 			    : ao_ref_base_alias_set (ref);
   alias_set_type ref_set = !flag_strict_aliasing ? 0
 			    : (ao_ref_alias_set (ref));
+  modref_access_node a = get_access (ref);
   if (dump_file)
     {
-       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i\n",
-	        base_set, ref_set);
+       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i parm=%i\n",
+		base_set, ref_set, a.parm_index);
     }
-  tt->insert (base_set, ref_set);
+  tt->insert (base_set, ref_set, a);
 }
 
 /* IPA version of record_access_tree.  */
@@ -335,6 +393,7 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
 		       || variably_modified_type_p (ref_type, NULL_TREE)))
 	ref_type = NULL_TREE;
     }
+  modref_access_node a = get_access (ref);
   if (dump_file)
     {
       fprintf (dump_file, "   - Recording base type:");
@@ -342,11 +401,12 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
       fprintf (dump_file, " (alias set %i) ref type:",
 	       base_type ? get_alias_set (base_type) : 0);
       print_generic_expr (dump_file, ref_type);
-      fprintf (dump_file, " (alias set %i)\n",
-	       ref_type ? get_alias_set (ref_type) : 0);
+      fprintf (dump_file, " (alias set %i) parm:%i\n",
+	       ref_type ? get_alias_set (ref_type) : 0,
+	       a.parm_index);
     }
 
-  tt->insert (base_type, ref_type);
+  tt->insert (base_type, ref_type, a);
 }
 
 /* Returns true if and only if we should store the access to EXPR.
@@ -490,17 +550,47 @@ analyze_call (modref_summary *cur_summary,
       return false;
     }
 
+  auto_vec <int, 32> parm_map;
+
+  parm_map.safe_grow (gimple_call_num_args (stmt));
+  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
+    {
+      tree op = gimple_call_arg (stmt, i);
+      STRIP_NOPS (op);
+      if (TREE_CODE (op) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (op)
+	  && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
+	{
+	  int index = 0;
+	  for (tree t = DECL_ARGUMENTS (current_function_decl);
+	       t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
+	    {
+	      if (!t)
+		{
+		  index = -1;
+		  break;
+		}
+	      index++;
+	    }
+	  parm_map[i] = index;
+	}
+      else if (points_to_local_or_readonly_memory_p (op))
+	parm_map[i] = -2;
+      else
+	parm_map[i] = -1;
+    }
+
   /* Merge with callee's summary.  */
   if (cur_summary->loads)
-    cur_summary->loads->merge (callee_summary->loads);
+    cur_summary->loads->merge (callee_summary->loads, &parm_map);
   if (cur_summary->loads_lto)
-    cur_summary->loads_lto->merge (callee_summary->loads_lto);
+    cur_summary->loads_lto->merge (callee_summary->loads_lto, &parm_map);
   if (!ignore_stores)
     {
       if (cur_summary->stores)
-	cur_summary->stores->merge (callee_summary->stores);
+	cur_summary->stores->merge (callee_summary->stores, &parm_map);
       if (cur_summary->stores_lto)
-	cur_summary->stores_lto->merge (callee_summary->stores_lto);
+	cur_summary->stores_lto->merge (callee_summary->stores_lto, &parm_map);
     }
 
   return true;
@@ -638,21 +728,25 @@ analyze_function (function *f, bool ipa)
     {
       gcc_assert (!summary->loads);
       summary->loads = modref_records::create_ggc (param_modref_max_bases,
-						   param_modref_max_refs);
+						   param_modref_max_refs,
+						   param_modref_max_accesses);
       gcc_assert (!summary->stores);
       summary->stores = modref_records::create_ggc (param_modref_max_bases,
-						    param_modref_max_refs);
+						    param_modref_max_refs,
+						    param_modref_max_accesses);
     }
   if (lto)
     {
       gcc_assert (!summary->loads_lto);
       summary->loads_lto = modref_records_lto::create_ggc
 				 (param_modref_max_bases,
-				  param_modref_max_refs);
+				  param_modref_max_refs,
+				  param_modref_max_accesses);
       gcc_assert (!summary->stores_lto);
       summary->stores_lto = modref_records_lto::create_ggc
 				 (param_modref_max_bases,
-				  param_modref_max_refs);
+				  param_modref_max_refs,
+				  param_modref_max_accesses);
     }
   summary->finished = false;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
@@ -730,29 +824,33 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *,
     {
       dst_data->stores = modref_records::create_ggc
 			    (src_data->stores->max_bases,
-			     src_data->stores->max_refs);
-      dst_data->stores->merge (src_data->stores);
+			     src_data->stores->max_refs,
+			     src_data->stores->max_accesses);
+      dst_data->stores->copy_from (src_data->stores);
     }
   if (src_data->loads)
     {
       dst_data->loads = modref_records::create_ggc
 			    (src_data->loads->max_bases,
-			     src_data->loads->max_refs);
-      dst_data->loads->merge (src_data->loads);
+			     src_data->loads->max_refs,
+			     src_data->loads->max_accesses);
+      dst_data->loads->copy_from (src_data->loads);
     }
   if (src_data->stores_lto)
     {
       dst_data->stores_lto = modref_records_lto::create_ggc
 			    (src_data->stores_lto->max_bases,
-			     src_data->stores_lto->max_refs);
-      dst_data->stores_lto->merge (src_data->stores_lto);
+			     src_data->stores_lto->max_refs,
+			     src_data->stores_lto->max_accesses);
+      dst_data->stores_lto->copy_from (src_data->stores_lto);
     }
   if (src_data->loads_lto)
     {
       dst_data->loads_lto = modref_records_lto::create_ggc
 			    (src_data->loads_lto->max_bases,
-			     src_data->loads_lto->max_refs);
-      dst_data->loads_lto->merge (src_data->loads_lto);
+			     src_data->loads_lto->max_refs,
+			     src_data->stores_lto->max_accesses);
+      dst_data->loads_lto->copy_from (src_data->loads_lto);
     }
 }
 
@@ -796,6 +894,7 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
 {
   streamer_write_uhwi (ob, tt->max_bases);
   streamer_write_uhwi (ob, tt->max_refs);
+  streamer_write_uhwi (ob, tt->max_accesses);
 
   streamer_write_uhwi (ob, tt->every_base);
   streamer_write_uhwi (ob, vec_safe_length (tt->bases));
@@ -807,11 +906,19 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
 
       streamer_write_uhwi (ob, base_node->every_ref);
       streamer_write_uhwi (ob, vec_safe_length (base_node->refs));
+
       size_t j;
       modref_ref_node <tree> *ref_node;
       FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
 	{
 	  stream_write_tree (ob, ref_node->ref, true);
+	  streamer_write_uhwi (ob, ref_node->every_access);
+	  streamer_write_uhwi (ob, vec_safe_length (ref_node->accesses));
+
+	  size_t k;
+	  modref_access_node *access_node;
+	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	    streamer_write_uhwi (ob, access_node->parm_index);
 	}
     }
 }
@@ -828,13 +935,16 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 {
   size_t max_bases = streamer_read_uhwi (ib);
   size_t max_refs = streamer_read_uhwi (ib);
+  size_t max_accesses = streamer_read_uhwi (ib);
 
   /* Decide whether we want to turn LTO data types to non-LTO (i.e. when
      LTO re-streaming is not going to happen).  */
   if (flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
-    *lto_ret = modref_records_lto::create_ggc (max_bases, max_refs);
+    *lto_ret = modref_records_lto::create_ggc (max_bases, max_refs,
+					       max_accesses);
   else
-    *nolto_ret = modref_records::create_ggc (max_bases, max_refs);
+    *nolto_ret = modref_records::create_ggc (max_bases, max_refs,
+					     max_accesses);
 
   size_t every_base = streamer_read_uhwi (ib);
   size_t nbase = streamer_read_uhwi (ib);
@@ -897,16 +1007,43 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 		  print_generic_expr (dump_file, ref_tree);
 		  fprintf (dump_file, "\n");
 		}
-	      base_tree = NULL;
+	      ref_tree = NULL;
 	    }
 
+	  modref_ref_node <alias_set_type> *nolto_ref_node = NULL;
+	  modref_ref_node <tree> *lto_ref_node = NULL;
+
 	  if (nolto_base_node)
-	    nolto_base_node->insert_ref (ref_tree ? get_alias_set (ref_tree)
-					 : 0, max_refs);
+	    nolto_ref_node
+	      = nolto_base_node->insert_ref (ref_tree
+					     ? get_alias_set (ref_tree) : 0,
+					     max_refs);
 	  if (lto_base_node)
-	    lto_base_node->insert_ref (ref_tree, max_refs);
+	    lto_ref_node = lto_base_node->insert_ref (ref_tree, max_refs);
+
+	  size_t every_access = streamer_read_uhwi (ib);
+	  size_t naccesses = streamer_read_uhwi (ib);
+
+	  if (nolto_ref_node)
+	    nolto_ref_node->every_access = every_access;
+	  if (lto_ref_node)
+	    lto_ref_node->every_access = every_access;
+
+	  for (size_t k = 0; k < naccesses; k++)
+	    {
+	      int parm_index = streamer_read_uhwi (ib);
+	      modref_access_node a = {parm_index};
+	      if (nolto_ref_node)
+		nolto_ref_node->insert_access (a, max_accesses);
+	      if (lto_ref_node)
+		lto_ref_node->insert_access (a, max_accesses);
+	    }
 	}
     }
+  if (*lto_ret)
+    (*lto_ret)->cleanup ();
+  if (*nolto_ret)
+    (*nolto_ret)->cleanup ();
 }
 
 /* Callback for write_summary.  */
@@ -1305,19 +1442,22 @@ unsigned int pass_ipa_modref::execute (function *)
 		    }
 		}
 
+	      auto_vec <int, 32> parm_map;
+	      /* TODO: compute parm_map.  */
+
 	      /* Merge in callee's information.  */
 	      if (callee_summary->loads
 		  && callee_summary->loads != loads)
-		loads->merge (callee_summary->loads);
+		loads->merge (callee_summary->loads, &parm_map);
 	      if (callee_summary->stores
 		  && callee_summary->stores != stores)
-		stores->merge (callee_summary->stores);
+		stores->merge (callee_summary->stores, &parm_map);
 	      if (callee_summary->loads_lto
 		  && callee_summary->loads_lto != loads_lto)
-		loads_lto->merge (callee_summary->loads_lto);
+		loads_lto->merge (callee_summary->loads_lto, &parm_map);
 	      if (callee_summary->stores_lto
 		  && callee_summary->stores_lto != stores_lto)
-		stores_lto->merge (callee_summary->stores_lto);
+		stores_lto->merge (callee_summary->stores_lto, &parm_map);
 	    }
 	}
 
@@ -1351,13 +1491,13 @@ unsigned int pass_ipa_modref::execute (function *)
 	      else
 		{
 		  if (loads)
-		    cur_summary->loads->merge (loads);
+		    cur_summary->loads->merge (loads, NULL);
 		  if (stores)
-		    cur_summary->stores->merge (stores);
+		    cur_summary->stores->merge (stores, NULL);
 		  if (loads_lto)
-		    cur_summary->loads_lto->merge (loads_lto);
+		    cur_summary->loads_lto->merge (loads_lto, NULL);
 		  if (stores_lto)
-		    cur_summary->stores_lto->merge (stores_lto);
+		    cur_summary->stores_lto->merge (stores_lto, NULL);
 		}
 	      cur_summary->finished = true;
 	      if (dump_file)

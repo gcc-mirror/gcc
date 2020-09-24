@@ -882,7 +882,11 @@ Maximum number of bases stored in each modref tree.
 
 -param=modref-max-refs=
 Common Joined UInteger Var(param_modref_max_refs) Init(16)
-Maximum number of refs stored in each modref tree.
+Maximum number of references stored in each modref base.
+
+-param=modref-max-accesses=
+Common Joined UInteger Var(param_modref_max_accesses) Init(16)
+Maximum number of accesse stored in each modref reference.
 
 -param=modref-max-tests=
 Common Joined UInteger Var(param_modref_max_tests) Init(64)

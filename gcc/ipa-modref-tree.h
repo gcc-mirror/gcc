@@ -18,20 +18,101 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* modref_tree represent a decision tree that can be used by alias analysis
+   oracle to determine whether given memory access can be affected by a function
+   call.  For every function we collect two trees, one for loads and other
+   for stores.  Tree consist of following levels:
+
+   1) Base: this level represent base alias set of the acecess and refers
+      to sons (ref nodes). Flag all_refs means that all possible references
+      are aliasing.
+
+      Because for LTO streaming we need to stream types rahter than alias sets
+      modref_base_node is implemented as a template.
+   2) Ref: this level represent ref alias set and links to acesses unless
+      all_refs flag is et.
+      Again ref is an template to allow LTO streaming.
+   3) Access: this level represent info about individual accesses.  Presently
+      we record whether access is trhough a dereference of a function parameter
+*/
+
 #ifndef GCC_MODREF_TREE_H
 #define GCC_MODREF_TREE_H
 
 struct ipa_modref_summary;
 
+/* Memory access.  */
+struct GTY(()) modref_access_node
+{
+  /* Index of parameter which specifies the base of access. -1 if base is not
+     a function parameter.  */
+  int parm_index;
+
+  /* Return true if access node holds no useful info.  */
+  bool useful_p ()
+    {
+      return parm_index != -1;
+    }
+};
 
 template <typename T>
 struct GTY((user)) modref_ref_node
 {
   T ref;
+  bool every_access;
+  vec <modref_access_node, va_gc> *accesses;
 
   modref_ref_node (T ref):
-    ref (ref)
+    ref (ref),
+    every_access (false),
+    accesses (NULL)
   {}
+
+  /* Search REF; return NULL if failed.  */
+  modref_access_node *search (modref_access_node access)
+  {
+    size_t i;
+    modref_access_node *a;
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
+      if (a->parm_index == access.parm_index)
+	return a;
+    return NULL;
+  }
+
+  /* Collapse the tree.  */
+  void collapse ()
+  {
+    vec_free (accesses);
+    accesses = NULL;
+    every_access = true;
+  }
+
+  /* Insert access with OFFSET and SIZE.
+     Collapse tree if it has more than MAX_ACCESSES entries.  */
+  void insert_access (modref_access_node a, size_t max_accesses)
+  {
+    /* If this base->ref pair has no access information, bail out.  */
+    if (every_access)
+      return;
+
+    /* Otherwise, insert a node for the ref of the access under the base.  */
+    modref_access_node *access_node = search (a);
+    if (access_node)
+      return;
+
+    /* If this base->ref pair has too many accesses stored, we will clear
+       all accesses and bail out.  */
+    if ((accesses && accesses->length () >= max_accesses)
+	|| !a.useful_p ())
+      {
+	if (dump_file && a.useful_p ())
+	  fprintf (dump_file,
+		   "--param param=modref-max-accesses limit reached\n");
+	collapse ();
+	return;
+      }
+    vec_safe_push (accesses, a);
+  }
 };
 
 /* Base of an access.  */
@@ -67,12 +148,6 @@ struct GTY((user)) modref_base_node
     if (every_ref)
       return NULL;
 
-    if (!ref)
-      {
-	collapse ();
-	return NULL;
-      }
-
     /* Otherwise, insert a node for the ref of the access under the base.  */
     ref_node = search (ref);
     if (ref_node)
@@ -101,7 +176,10 @@ struct GTY((user)) modref_base_node
     if (refs)
       {
 	FOR_EACH_VEC_SAFE_ELT (refs, i, r)
-	  ggc_free (r);
+	  {
+	    r->collapse ();
+	    ggc_free (r);
+	  }
 	vec_free (refs);
       }
     refs = NULL;
@@ -116,12 +194,14 @@ struct GTY((user)) modref_tree
   vec <modref_base_node <T> *, va_gc> *bases;
   size_t max_bases;
   size_t max_refs;
+  size_t max_accesses;
   bool every_base;
 
-  modref_tree (size_t max_bases, size_t max_refs):
+  modref_tree (size_t max_bases, size_t max_refs, size_t max_accesses):
     bases (NULL),
     max_bases (max_bases),
     max_refs (max_refs),
+    max_accesses (max_accesses),
     every_base (false) {}
 
   modref_base_node <T> *insert_base (T base)
@@ -153,31 +233,92 @@ struct GTY((user)) modref_tree
   }
 
   /* Insert memory access to the tree.	*/
-  void insert (T base, T ref)
+  void insert (T base, T ref, modref_access_node a)
   {
-    modref_base_node <T> *base_node;
-
-    base_node = insert_base (base);
-
-    if (!base && !ref)
+    /* No useful information tracked; collapse everything.  */
+    if (!base && !ref && !a.useful_p ())
       {
 	collapse ();
 	return;
       }
+
+    modref_base_node <T> *base_node = insert_base (base);
     if (!base_node)
       return;
     gcc_assert (search (base) != NULL);
 
-    base_node->insert_ref (ref, max_refs);
+    modref_ref_node <T> *ref_node = base_node->insert_ref (ref, max_refs);
+
+    /* No useful ref information and no useful base; collapse everyting.  */
     if (!base && base_node->every_ref)
       {
 	collapse ();
 	return;
       }
+    if (ref_node)
+      {
+	/* No useful ref and access; collapse ref.  */
+	if (!ref && !a.useful_p ())
+	  ref_node->collapse ();
+	else
+	  {
+	    ref_node->insert_access (a, max_accesses);
+	    /* If ref has collapses and there is no useful base; collapse
+	       everything.  */
+	    if (!base && !ref && ref_node->every_access)
+	      collapse ();
+	  }
+      }
   }
 
-  /* Merge OTHER into the tree.  */
-  void merge (modref_tree <T> *other)
+ /* Remove tree branches that are not useful (i.e. they will allways pass).  */
+
+ void cleanup ()
+ {
+   size_t i, j;
+   modref_base_node <T> *base_node;
+   modref_ref_node <T> *ref_node;
+
+   if (!bases)
+     return;
+
+   for (i = 0; vec_safe_iterate (bases, i, &base_node);)
+     {
+       if (base_node->refs)
+	 for (j = 0; vec_safe_iterate (base_node->refs, j, &ref_node);)
+	   {
+	     if (!ref_node->every_access
+		 && (!ref_node->accesses
+		     || !ref_node->accesses->length ()))
+	       {
+		 base_node->refs->unordered_remove (j);
+		 vec_free (ref_node->accesses);
+		 ggc_delete (ref_node);
+	       }
+	     else
+	       j++;
+	   }
+       if (!base_node->every_ref
+	   && (!base_node->refs || !base_node->refs->length ()))
+	 {
+	   bases->unordered_remove (i);
+	   vec_free (base_node->refs);
+	   ggc_delete (base_node);
+	 }
+       else
+	 i++;
+     }
+   if (bases && !bases->length ())
+     {
+       vec_free (bases);
+       bases = NULL;
+     }
+ }
+
+  /* Merge OTHER into the tree.
+     PARM_MAP, if non-NULL, maps parm indexes of callee to caller.  -2 is used
+     to signalize that parameter is local and does not need to be tracked.  */
+  void merge (modref_tree <T> *other, vec <int> *parm_map)
   {
     if (!other)
       return;
@@ -187,9 +328,10 @@ struct GTY((user)) modref_tree
 	return;
       }
 
-    size_t i, j;
+    size_t i, j, k;
     modref_base_node <T> *base_node, *my_base_node;
     modref_ref_node <T> *ref_node, *my_ref_node;
+    modref_access_node *access_node;
     FOR_EACH_VEC_SAFE_ELT (other->bases, i, base_node)
       {
 	my_base_node = insert_base (base_node->base);
@@ -207,8 +349,36 @@ struct GTY((user)) modref_tree
 	    my_ref_node = my_base_node->insert_ref (ref_node->ref, max_refs);
 	    if (!my_ref_node)
 	      continue;
+
+	    if (ref_node->every_access)
+	      {
+		my_ref_node->collapse ();
+		continue;
+	      }
+	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	      {
+		modref_access_node a = *access_node;
+		if (a.parm_index != -1 && parm_map)
+		  {
+		    if (a.parm_index >= (int)parm_map->length ())
+		      a.parm_index = -1;
+		    else if ((*parm_map) [a.parm_index] == -2)
+		      continue;
+		    else
+		      a.parm_index = (*parm_map) [a.parm_index];
+		  }
+		my_ref_node->insert_access (a, max_accesses);
+	      }
 	  }
       }
+    if (parm_map)
+      cleanup ();
+  }
+
+  /* Copy OTHER to THIS.  */
+  void copy_from (modref_tree <T> *other)
+  {
+    merge (other, NULL);
   }
 
   /* Search BASE in tree; return NULL if failed.  */
@@ -225,12 +395,14 @@ struct GTY((user)) modref_tree
   /* Return ggc allocated instance.  We explicitly call destructors via
      ggc_delete and do not want finalizers to be registered and
      called at the garbage collection time.  */
-  static modref_tree<T> *create_ggc (size_t max_bases, size_t max_refs)
+  static modref_tree<T> *create_ggc (size_t max_bases, size_t max_refs,
+				     size_t max_accesses)
   {
     return new (ggc_alloc_no_dtor<modref_tree<T>> ())
-	 modref_tree<T> (max_bases, max_refs);
+	 modref_tree<T> (max_bases, max_refs, max_accesses);
   }
 
+  /* Remove all records and mark tree to alias with everything.  */
   void collapse ()
   {
     size_t i;
@@ -248,6 +420,8 @@ struct GTY((user)) modref_tree
     bases = NULL;
     every_base = true;
   }
+
+  /* Release memory.  */
   ~modref_tree ()
   {
     collapse ();

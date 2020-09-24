@@ -486,7 +486,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion @gol
 -fif-conversion2  -findirect-inlining @gol
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
--finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
+-finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone @gol
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const @gol
 -fipa-reference  -fipa-reference-addressable @gol
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm} @gol
@@ -9688,6 +9688,7 @@ compilation time.
 -fif-conversion @gol
 -fif-conversion2 @gol
 -finline-functions-called-once @gol
+-fipa-modref @gol
 -fipa-profile @gol
 -fipa-pure-const @gol
 -fipa-reference @gol
@@ -10783,10 +10784,17 @@ default at any optimization level.
 @opindex fipa-profile
 Perform interprocedural profile propagation.  The functions called only from
 cold functions are marked as cold. Also functions executed once (such as
-@code{cold}, @code{noreturn}, static constructors or destructors) are identified. Cold
-functions and loop less parts of functions executed once are then optimized for
-size.
+@code{cold}, @code{noreturn}, static constructors or destructors) are
+identified. Cold functions and loop less parts of functions executed once are
+then optimized for size.
 Enabled by default at @option{-O} and higher.
+
+@item -fipa-modref
+@opindex fipa-modref
+Perform interprocedural mod/ref analysis.  This optimization analyzes the side
+effects of functions (memory locations that are modified or referenced) and
+enables better optimization across the function call boundary.  This flag is
+enabled by default at @option{-O} and higher.
 
 @item -fipa-cp
 @opindex fipa-cp
@@ -12763,6 +12771,18 @@ Deeper chains are still handled by late inlining.
 @item comdat-sharing-probability
 Probability (in percent) that C++ inline function with comdat visibility
 are shared across multiple compilation units.
+
+@item ipa-modref-max-bases
+@item ipa-modref-max-refs
+@item ipa-modref-max-accesses
+Specifies the maximal number of base pointers, referneces and accesses stored
+for a single function by mod/ref analysis.
+
+@item ipa-modref-max-tests
+Specifies the maxmal number of tests alias oracle can perform to disambiguate
+memory locations using the mod/ref information.  This parameter ought to be
+bigger than @option{--param ipa-modref-max-bases} and @option{--param
+ipa-modref-max-refs}.
 
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
