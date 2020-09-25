@@ -13383,8 +13383,11 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
   switch (TREE_CODE (expr))
     {
     case OACC_ENTER_DATA:
+      kind = GF_OMP_TARGET_KIND_OACC_ENTER_DATA;
+      ort = ORT_ACC;
+      break;
     case OACC_EXIT_DATA:
-      kind = GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA;
+      kind = GF_OMP_TARGET_KIND_OACC_EXIT_DATA;
       ort = ORT_ACC;
       break;
     case OACC_UPDATE:

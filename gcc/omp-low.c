@@ -3646,8 +3646,10 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    case GF_OMP_TARGET_KIND_OACC_SERIAL: stmt_name = "serial"; break;
 	    case GF_OMP_TARGET_KIND_OACC_DATA: stmt_name = "data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_UPDATE: stmt_name = "update"; break;
-	    case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
-	      stmt_name = "enter/exit data"; break;
+	    case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
+	      stmt_name = "enter data"; break;
+	    case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
+	      stmt_name = "exit data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_DECLARE: stmt_name = "declare"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA: stmt_name = "host_data";
 	      break;
@@ -12194,7 +12196,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
     case GF_OMP_TARGET_KIND_OACC_SERIAL:
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
-    case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+    case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
+    case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:

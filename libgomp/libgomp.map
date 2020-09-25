@@ -541,6 +541,12 @@ GOACC_2.0.1 {
 	GOACC_parallel_keyed;
 } GOACC_2.0;
 
+GOACC_2.0.2 {
+  global:
+	GOACC_enter_data;
+	GOACC_exit_data;
+} GOACC_2.0.1;
+
 GOMP_PLUGIN_1.0 {
   global:
 	GOMP_PLUGIN_malloc;

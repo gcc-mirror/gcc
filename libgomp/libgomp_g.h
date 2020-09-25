@@ -370,6 +370,10 @@ extern void GOACC_wait (int, int, ...);
 
 extern void GOACC_enter_exit_data (int, size_t, void **, size_t *,
 				   unsigned short *, int, int, ...);
+extern void GOACC_enter_data (int, size_t, void **, size_t *,
+			      unsigned short *, int, int, ...);
+extern void GOACC_exit_data (int, size_t, void **, size_t *,
+			     unsigned short *, int, int, ...);
 extern void GOACC_declare (int, size_t, void **, size_t *, unsigned short *);
 
 /* oacc-parallel.c */

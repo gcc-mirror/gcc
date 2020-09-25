@@ -1422,6 +1422,8 @@ goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
     }
 }
 
+/* Legacy entry point (GCC 11 and earlier).  */
+
 void
 GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 		       size_t *sizes, unsigned short *kinds, int async,
@@ -1465,6 +1467,30 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
   va_start (ap, num_waits);
   goacc_enter_exit_data_internal (flags_m, mapnum, hostaddrs, sizes, kinds,
 				  data_enter, async, num_waits, &ap);
+  va_end (ap);
+}
+
+void
+GOACC_enter_data (int flags_m, size_t mapnum, void **hostaddrs,
+		  size_t *sizes, unsigned short *kinds, int async,
+		  int num_waits, ...)
+{
+  va_list ap;
+  va_start (ap, num_waits);
+  goacc_enter_exit_data_internal (flags_m, mapnum, hostaddrs, sizes, kinds,
+				  true, async, num_waits, &ap);
+  va_end (ap);
+}
+
+void
+GOACC_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
+		 size_t *sizes, unsigned short *kinds, int async,
+		 int num_waits, ...)
+{
+  va_list ap;
+  va_start (ap, num_waits);
+  goacc_enter_exit_data_internal (flags_m, mapnum, hostaddrs, sizes, kinds,
+				  false, async, num_waits, &ap);
   va_end (ap);
 }
 
