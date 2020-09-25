@@ -869,7 +869,7 @@ Lexer::parse_in_type_suffix ()
     }
   else
     {
-      rust_error_at (get_current_location (), "unknown number suffix %<%s%>",
+      rust_error_at (get_current_location (), "unknown number suffix %qs",
 		     suffix.c_str ());
 
       return std::make_pair (CORETYPE_UNKNOWN, additional_length_offset);
@@ -969,8 +969,10 @@ Lexer::parse_escape (char opening_char)
 	if (hexLong > 255 || hexLong < 0)
 	  rust_error_at (
 	    get_current_location (),
-	    "byte \\x escape %<\\x%X%> out of range - allows up to %<\\xFF%>",
+	    "byte \\x escape %<\\x%x%> out of range - allows up to %<\\xFF%>",
 	    static_cast<unsigned int> (hexLong));
+	/* TODO: restore capital for escape output - gcc pretty-printer doesn't
+	 * support %X directly */
 	char hexChar = static_cast<char> (hexLong);
 
 	output_char = hexChar;
@@ -999,7 +1001,7 @@ Lexer::parse_escape (char opening_char)
       break;
     case 'u':
       rust_error_at (get_current_location (),
-		     "cannot have a unicode escape \\u in a byte %s!",
+		     "cannot have a unicode escape \\u in a byte %s",
 		     opening_char == '\'' ? "character" : "string");
       return std::make_tuple (output_char, additional_length_offset, false);
     case '\r':
@@ -1047,8 +1049,10 @@ Lexer::parse_utf8_escape (char opening_char)
 	if (hexLong > 127 || hexLong < 0)
 	  rust_error_at (
 	    get_current_location (),
-	    "ascii \\x escape %<\\x%X%> out of range - allows up to %<\\x7F%>",
+	    "ascii \\x escape %<\\x%x%> out of range - allows up to %<\\x7F%>",
 	    static_cast<unsigned int> (hexLong));
+	/* TODO: restore capital for escape output - gcc pretty-printer doesn't
+	 * support %X directly */
 	char hexChar = static_cast<char> (hexLong);
 
 	output_char = hexChar;
@@ -1518,7 +1522,7 @@ Lexer::parse_raw_identifier (Location loc)
       || str == "Self")
     {
       rust_error_at (get_current_location (),
-		     "%<%s%> is a forbidden raw identifier", str.c_str ());
+		     "%qs is a forbidden raw identifier", str.c_str ());
 
       return nullptr;
     }
@@ -1755,7 +1759,7 @@ Lexer::parse_non_decimal_int_literal (Location loc, IsDigitFunc is_digit_func,
   if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64)
     {
       rust_error_at (get_current_location (),
-		     "invalid type suffix %<%s%> for integer (%s) literal",
+		     "invalid type suffix %qs for integer (%s) literal",
 		     get_type_hint_string (type_hint),
 		     base == 16
 		       ? "hex"
@@ -1847,7 +1851,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	  && type_hint != CORETYPE_UNKNOWN)
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid type suffix %<%s%> for float literal",
+			 "invalid type suffix %qs for float literal",
 			 get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -1896,7 +1900,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	  && type_hint != CORETYPE_UNKNOWN)
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid type suffix %<%s%> for float literal",
+			 "invalid type suffix %qs for float literal",
 			 get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -1920,7 +1924,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	{
 	  rust_error_at (
 	    get_current_location (),
-	    "invalid type suffix %<%s%> for integer (decimal) literal",
+	    "invalid type suffix %qs for integer (decimal) literal",
 	    get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -2007,8 +2011,9 @@ Lexer::parse_char_or_lifetime (Location loc)
 	}
       else
 	{
-	  rust_error_at (get_current_location (),
-			 "expected ' after character constant in char literal");
+	  rust_error_at (
+	    get_current_location (),
+	    "expected %' after character constant in char literal");
 	  return nullptr;
 	}
     }
@@ -2320,8 +2325,8 @@ Lexer::test_peek_codepoint_input (int n)
 void
 Lexer::split_current_token (TokenId new_left, TokenId new_right)
 {
-  // TODO: assert that this TokenId is a "simple token" like punctuation and not
-  // like "IDENTIFIER"?
+  /* TODO: assert that this TokenId is a "simple token" like punctuation and not
+   * like "IDENTIFIER"? */
   Location current_loc = peek_token ()->get_locus ();
   TokenPtr new_left_tok = Token::make (new_left, current_loc);
   TokenPtr new_right_tok = Token::make (new_right, current_loc + 1);

@@ -106,8 +106,7 @@ Token::get_str () const
     {
       rust_error_at (get_locus (),
 		     "attempted to get string for '%s', which has no string. "
-		     "returning empty string "
-		     "instead.",
+		     "returning empty string instead.",
 		     get_token_description ());
       return empty;
     }

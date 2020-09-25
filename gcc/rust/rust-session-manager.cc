@@ -383,7 +383,7 @@ Session::enable_dump (std::string arg)
   else
     {
       rust_error_at (Location (),
-		     "dump option %<%s%> was unrecognised. choose %<lex%>, "
+		     "dump option %qs was unrecognised. choose %<lex%>, "
 		     "%<parse%>, or %<target_options%>",
 		     arg.c_str ());
       return false;
