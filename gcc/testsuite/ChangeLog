@@ -1,3 +1,75 @@
+2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-09-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97032
+	* gcc.target/i386/pr97032.c: New test.
+
+2020-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+		    Andrea Corallo   <andrea.corallo@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/acle/jcvt_1.c: New test.
+	* gcc.target/aarch64/acle/jcvt_2.c: New testcase.
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_fjcvtzs_hw): Add new check for
+	FJCVTZS hw.
+
+2020-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2019-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/fp16_fmul_high.h (test_vfmlal_high_u32,
+	test_vfmlalq_high_u32, test_vfmlsl_high_u32, test_vfmlslq_high_u32):
+	Rename ...
+	(test_vfmlal_high_f16, test_vfmlalq_high_f16, test_vfmlsl_high_f16,
+	test_vfmlslq_high_f16): ... To this.
+	* gcc.target/aarch64/fp16_fmul_lane_high.h (test_vfmlal_lane_high_u32,
+	tets_vfmlsl_lane_high_u32, test_vfmlal_laneq_high_u32,
+	test_vfmlsl_laneq_high_u32, test_vfmlalq_lane_high_u32,
+	test_vfmlslq_lane_high_u32, test_vfmlalq_laneq_high_u32,
+	test_vfmlslq_laneq_high_u32): Rename ...
+	(test_vfmlal_lane_high_f16, tets_vfmlsl_lane_high_f16,
+	test_vfmlal_laneq_high_f16, test_vfmlsl_laneq_high_f16,
+	test_vfmlalq_lane_high_f16, test_vfmlslq_lane_high_f16,
+	test_vfmlalq_laneq_high_f16, test_vfmlslq_laneq_high_f16): ... To this.
+	* gcc.target/aarch64/fp16_fmul_lane_low.h (test_vfmlal_lane_low_u32,
+	test_vfmlsl_lane_low_u32, test_vfmlal_laneq_low_u32,
+	test_vfmlsl_laneq_low_u32, test_vfmlalq_lane_low_u32,
+	test_vfmlslq_lane_low_u32, test_vfmlalq_laneq_low_u32,
+	test_vfmlslq_laneq_low_u32): Rename ...
+	(test_vfmlal_lane_low_f16, test_vfmlsl_lane_low_f16,
+	test_vfmlal_laneq_low_f16, test_vfmlsl_laneq_low_f16,
+	test_vfmlalq_lane_low_f16, test_vfmlslq_lane_low_f16,
+	test_vfmlalq_laneq_low_f16, test_vfmlslq_laneq_low_f16): ... To this.
+	* gcc.target/aarch64/fp16_fmul_low.h (test_vfmlal_low_u32,
+	test_vfmlalq_low_u32, test_vfmlsl_low_u32, test_vfmlslq_low_u32):
+	Rename ...
+	(test_vfmlal_low_f16, test_vfmlalq_low_f16, test_vfmlsl_low_f16,
+	test_vfmlslq_low_f16): ... To This.
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16fml_neon_ok_nocache): Update test.
+
+2020-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2018-05-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/sha3.h (veor3q_u8, veor3q_u32,
+	veor3q_u64, veor3q_s8, veor3q_s16, veor3q_s32, veor3q_s64, vbcaxq_u8,
+	vbcaxq_u32, vbcaxq_u64, vbcaxq_s8, vbcaxq_s16, vbcaxq_s32,
+	vbcaxq_s64): New.
+	* gcc.target/aarch64/sha3_1.c: Likewise.
+	* gcc.target/aarch64/sha3_2.c: Likewise.
+	* gcc.target/aarch64/sha3_3.c: Likewise.
+
 2020-09-22  Vlad Lazar  <vlad.lazar@arm.com>
 
 	Backported from master:

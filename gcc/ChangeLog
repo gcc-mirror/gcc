@@ -1,3 +1,81 @@
+2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-09-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97032
+	* cfgexpand.c (expand_asm_stmt): Set sp_is_clobbered_by_asm to
+	true if the stack pointer is clobbered by asm statement.
+	* emit-rtl.h (rtl_data): Add sp_is_clobbered_by_asm.
+	* config/i386/i386.c (ix86_get_drap_rtx): Set need_drap to true
+	if the stack pointer is clobbered by asm statement.
+
+2020-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+		    Andrea Corallo   <andrea.corallo@arm.com>
+
+	PR target/71233
+	* config/aarch64/aarch64.md (UNSPEC_FJCVTZS): Define.
+	(aarch64_fjcvtzs): New define_insn.
+	* config/aarch64/aarch64.h (TARGET_JSCVT): Define.
+	* config/aarch64/aarch64-builtins.c (aarch64_builtins):
+	Add AARCH64_JSCVT.
+	(aarch64_init_builtins): Initialize __builtin_aarch64_jcvtzs.
+	(aarch64_expand_builtin): Handle AARCH64_JSCVT.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_JCVT where appropriate.
+	* config/aarch64/arm_acle.h (__jcvt): Define.
+	* doc/sourcebuild.texi (aarch64_fjcvtzs_hw) Document new
+	target supports option.
+
+2020-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2019-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vfmlal_low_u32, vfmlsl_low_u32,
+	vfmlalq_low_u32, vfmlslq_low_u32, vfmlal_high_u32, vfmlsl_high_u32,
+	vfmlalq_high_u32, vfmlslq_high_u32, vfmlal_lane_low_u32,
+	vfmlsl_lane_low_u32, vfmlal_laneq_low_u32, vfmlsl_laneq_low_u32,
+	vfmlalq_lane_low_u32, vfmlslq_lane_low_u32, vfmlalq_laneq_low_u32,
+	vfmlslq_laneq_low_u32, vfmlal_lane_high_u32, vfmlsl_lane_high_u32,
+	vfmlal_laneq_high_u32, vfmlsl_laneq_high_u32, vfmlalq_lane_high_u32,
+	vfmlslq_lane_high_u32, vfmlalq_laneq_high_u32, vfmlslq_laneq_high_u32):
+	Rename ...
+	(vfmlal_low_f16, vfmlsl_low_f16, vfmlalq_low_f16, vfmlslq_low_f16,
+	vfmlal_high_f16, vfmlsl_high_f16, vfmlalq_high_f16, vfmlslq_high_f16,
+	vfmlal_lane_low_f16, vfmlsl_lane_low_f16, vfmlal_laneq_low_f16,
+	vfmlsl_laneq_low_f16, vfmlalq_lane_low_f16, vfmlslq_lane_low_f16,
+	vfmlalq_laneq_low_f16, vfmlslq_laneq_low_f16, vfmlal_lane_high_f16,
+	vfmlsl_lane_high_f16, vfmlal_laneq_high_f16, vfmlsl_laneq_high_f16,
+	vfmlalq_lane_high_f16, vfmlslq_lane_high_f16, vfmlalq_laneq_high_f16,
+	vfmlslq_laneq_high_f16): ... To this.
+
+2020-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2018-05-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/71233
+	* config/aarch64/aarch64-simd.md (aarch64_eor3qv8hi): Change to
+	eor3q<mode>4.
+	(aarch64_bcaxqv8hi): Change to bcaxq<mode>4.
+	* config/aarch64/aarch64-simd-builtins.def (veor3q_u8, veor3q_u32,
+	veor3q_u64, veor3q_s8, veor3q_s16, veor3q_s32, veor3q_s64, vbcaxq_u8,
+	vbcaxq_u32, vbcaxq_u64, vbcaxq_s8, vbcaxq_s16, vbcaxq_s32,
+	vbcaxq_s64): New.
+	* config/aarch64/arm_neon.h: Likewise.
+	* config/aarch64/iterators.md (VQ_I): New.
+
+2020-09-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Neoverse V1.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document support for Neoverse V1.
+
 2020-09-22  Vlad Lazar  <vlad.lazar@arm.com>
 
 	Backported from master:
