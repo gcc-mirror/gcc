@@ -42,7 +42,7 @@ compute_correct_result (__m64 *src_p, int val, unsigned int imm,
 static void
 sse2_test (void)
 {
-  int r, ck;
+  int r[2], ck[2];
   int i;
   int failed = 0;
   __v4hi y = { 3320, -3339, 48, 4392 };
@@ -50,9 +50,9 @@ sse2_test (void)
   /* Run the MMX tests */
   for (i = 0; i < 4; i++)
     {
-      test_pinsrw  ((__m64 *) &y, 0x1234, i, &r);
-      compute_correct_result ((__m64 *) &y, 0x1234, i, &ck);
-      if (r != ck)
+      test_pinsrw  ((__m64 *) &y, 0x1234, i, r);
+      compute_correct_result ((__m64 *) &y, 0x1234, i, ck);
+      if (r[0] != ck[0] || r[1] != ck[1])
 	failed++;
     }
 
