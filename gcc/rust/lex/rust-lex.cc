@@ -683,8 +683,8 @@ Lexer::build_token ()
 	  else /*if (!ISDIGIT (peek_input ()))*/
 	    {
 	      // single dot .
-	      // Only if followed by a non-number - otherwise is float 
-        // nope, float cannot start with '.'. 
+	      // Only if followed by a non-number - otherwise is float
+	      // nope, float cannot start with '.'.
 	      current_column++;
 	      return Token::make (DOT, loc);
 	    }
@@ -730,7 +730,8 @@ Lexer::build_token ()
       // int and float literals
       if (ISDIGIT (current_char))
 	{ //  _ not allowed as first char
-	  if (current_char == '0' && is_non_decimal_int_literal_separator (peek_input ()))
+	  if (current_char == '0'
+	      && is_non_decimal_int_literal_separator (peek_input ()))
 	    {
 	      // handle binary, octal, hex literals
 	      TokenPtr non_dec_int_lit_ptr
@@ -761,14 +762,15 @@ Lexer::build_token ()
 
       // DEBUG: check for specific character problems:
       if (current_char == '0')
-        fprintf(stderr, "'0' uncaught before unexpected character\n");
+	fprintf (stderr, "'0' uncaught before unexpected character\n");
       else if (current_char == ']')
-        fprintf(stderr, "']' uncaught before unexpected character\n");
+	fprintf (stderr, "']' uncaught before unexpected character\n");
       else if (current_char == 0x5d)
-        fprintf(stderr, "whatever 0x5d is (not '0' or ']') uncaught before unexpected character\n");
+	fprintf (stderr, "whatever 0x5d is (not '0' or ']') uncaught before "
+			 "unexpected character\n");
 
       // didn't match anything so error
-      rust_error_at (loc, "unexpected character '%x'", current_char);
+      rust_error_at (loc, "unexpected character %<%x%>", current_char);
       current_column++;
     }
 }
@@ -867,7 +869,7 @@ Lexer::parse_in_type_suffix ()
     }
   else
     {
-      rust_error_at (get_current_location (), "unknown number suffix '%s'",
+      rust_error_at (get_current_location (), "unknown number suffix %<%s%>",
 		     suffix.c_str ());
 
       return std::make_pair (CORETYPE_UNKNOWN, additional_length_offset);
@@ -967,7 +969,7 @@ Lexer::parse_escape (char opening_char)
 	if (hexLong > 255 || hexLong < 0)
 	  rust_error_at (
 	    get_current_location (),
-	    "byte \\x escape '\\x%X' out of range - allows up to '\\xFF'",
+	    "byte \\x escape %<\\x%X%> out of range - allows up to %<\\xFF%>",
 	    static_cast<unsigned int> (hexLong));
 	char hexChar = static_cast<char> (hexLong);
 
@@ -1005,8 +1007,8 @@ Lexer::parse_escape (char opening_char)
       // string continue
       return std::make_tuple (0, parse_partial_string_continue (), true);
     default:
-      rust_error_at (get_current_location (), "unknown escape sequence '\\%c'",
-		     current_char);
+      rust_error_at (get_current_location (),
+		     "unknown escape sequence %<\\%c%>", current_char);
       // returns false if no parsing could be done
       // return false;
       return std::make_tuple (output_char, additional_length_offset, false);
@@ -1045,7 +1047,7 @@ Lexer::parse_utf8_escape (char opening_char)
 	if (hexLong > 127 || hexLong < 0)
 	  rust_error_at (
 	    get_current_location (),
-	    "ascii \\x escape '\\x%X' out of range - allows up to '\\x7F'",
+	    "ascii \\x escape %<\\x%X%> out of range - allows up to %<\\x7F%>",
 	    static_cast<unsigned int> (hexLong));
 	char hexChar = static_cast<char> (hexLong);
 
@@ -1086,8 +1088,8 @@ Lexer::parse_utf8_escape (char opening_char)
       // string continue
       return std::make_tuple (0, parse_partial_string_continue (), true);
     default:
-      rust_error_at (get_current_location (), "unknown escape sequence '\\%c'",
-		     current_char);
+      rust_error_at (get_current_location (),
+		     "unknown escape sequence %<\\%c%>", current_char);
       // returns false if no parsing could be done
       // return false;
       return std::make_tuple (output_char, additional_length_offset, false);
@@ -1154,7 +1156,8 @@ Lexer::parse_partial_hex_escape ()
   if (!is_x_digit (current_char))
     {
       rust_error_at (get_current_location (),
-		     "invalid character '\\x%c' in \\x sequence", current_char);
+		     "invalid character %<\\x%c%> in \\x sequence",
+		     current_char);
     }
   hexNum[0] = current_char;
 
@@ -1166,7 +1169,8 @@ Lexer::parse_partial_hex_escape ()
   if (!is_x_digit (current_char))
     {
       rust_error_at (get_current_location (),
-		     "invalid character '\\x%c' in \\x sequence", current_char);
+		     "invalid character %<\\x%c%> in \\x sequence",
+		     current_char);
     }
   hexNum[1] = current_char;
 
@@ -1233,7 +1237,7 @@ Lexer::parse_partial_unicode_escape ()
 	{
 	  // actually an error, but allow propagation anyway
 	  rust_error_at (get_current_location (),
-			 "expected terminating '}' in unicode escape");
+			 "expected terminating %<}%> in unicode escape");
 	  // return false;
 	  return std::make_pair (Codepoint (0), additional_length_offset);
 	}
@@ -1283,8 +1287,8 @@ Lexer::parse_byte_char (Location loc)
 
       if (byte_char > 127)
 	{
-	  rust_error_at (get_current_location (), "byte char '%c' out of range",
-			 byte_char);
+	  rust_error_at (get_current_location (),
+			 "byte char %<%c%> out of range", byte_char);
 	  byte_char = 0;
 	}
 
@@ -1320,7 +1324,7 @@ Lexer::parse_byte_char (Location loc)
   else
     {
       rust_error_at (get_current_location (),
-		     "no character inside '' for byte char");
+		     "no character inside %<%> for byte char");
     }
 
   current_column += length;
@@ -1359,7 +1363,7 @@ Lexer::parse_byte_string (Location loc)
 	  if (output_char > 127)
 	    {
 	      rust_error_at (get_current_location (),
-			     "char '%c' in byte string out of range",
+			     "char %<%c%> in byte string out of range",
 			     output_char);
 	      output_char = 0;
 	    }
@@ -1427,7 +1431,7 @@ Lexer::parse_raw_byte_string (Location loc)
   if (current_char != '"')
     {
       rust_error_at (get_current_location (),
-		     "raw byte string has no opening '\"'");
+		     "raw byte string has no opening %<\"%>");
     }
 
   skip_input ();
@@ -1508,13 +1512,13 @@ Lexer::parse_raw_identifier (Location loc)
   // if just a single underscore, not an identifier
   if (first_is_underscore && length == 1)
     rust_error_at (get_current_location (),
-		   "'_' is not a valid raw identifier");
+		   "%<_%> is not a valid raw identifier");
 
   if (str == "crate" || str == "extern" || str == "self" || str == "super"
       || str == "Self")
     {
       rust_error_at (get_current_location (),
-		     "'%s' is a forbidden raw identifier", str.c_str ());
+		     "%<%s%> is a forbidden raw identifier", str.c_str ());
 
       return nullptr;
     }
@@ -1657,7 +1661,7 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
   current_char = peek_input ();
 
   if (current_char != '"')
-    rust_error_at (get_current_location (), "raw string has no opening '\"'");
+    rust_error_at (get_current_location (), "raw string has no opening %<\"%>");
 
   length++;
   skip_input ();
@@ -1751,7 +1755,7 @@ Lexer::parse_non_decimal_int_literal (Location loc, IsDigitFunc is_digit_func,
   if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64)
     {
       rust_error_at (get_current_location (),
-		     "invalid type suffix '%s' for integer (%s) literal",
+		     "invalid type suffix %<%s%> for integer (%s) literal",
 		     get_type_hint_string (type_hint),
 		     base == 16
 		       ? "hex"
@@ -1843,7 +1847,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	  && type_hint != CORETYPE_UNKNOWN)
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid type suffix '%s' for float literal",
+			 "invalid type suffix %<%s%> for float literal",
 			 get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -1892,7 +1896,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	  && type_hint != CORETYPE_UNKNOWN)
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid type suffix '%s' for float literal",
+			 "invalid type suffix %<%s%> for float literal",
 			 get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -1914,10 +1918,10 @@ Lexer::parse_decimal_int_or_float (Location loc)
 
       if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64)
 	{
-	  rust_error_at (get_current_location (),
-			 "invalid type suffix '%s' for integer "
-			 "(decimal) literal",
-			 get_type_hint_string (type_hint));
+	  rust_error_at (
+	    get_current_location (),
+	    "invalid type suffix %<%s%> for integer (decimal) literal",
+	    get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
 	}

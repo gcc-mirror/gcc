@@ -235,41 +235,49 @@ void
 Session::init ()
 {
 #ifndef TARGET_RUST_OS_INFO
-# define TARGET_RUST_OS_INFO()
+#define TARGET_RUST_OS_INFO()
 #endif
 //#define builtin_rust_info(KEY, VALUE) rust_add_target_info (KEY, VALUE)
 // might as well use c++ stuff
-#define builtin_rust_info(KEY, VALUE) options.target_data.insert_key_value_pair(KEY, VALUE)
+#define builtin_rust_info(KEY, VALUE)                                          \
+  options.target_data.insert_key_value_pair (KEY, VALUE)
 
-    // initialise target hooks
-    //targetrustm.rust_cpu_info();
-    //targetrustm.rust_os_info();
-    // ok, that's not working too well TODO - see if can salvage old implementation 
-    TARGET_RUST_CPU_INFO ();
-    TARGET_RUST_OS_INFO ();
+  // initialise target hooks
+  // targetrustm.rust_cpu_info();
+  // targetrustm.rust_os_info();
+  // ok, that's not working too well TODO - see if can salvage old
+  // implementation
+  TARGET_RUST_CPU_INFO ();
+  TARGET_RUST_OS_INFO ();
 
-    /* note that due to issues with gcc targets, some implementations of those two macros above 
-     * (TARGET_RUST_CPU_INFO and TARGET_RUST_OS_INFO) are not function calls, but actually inline 
-     * substitutions. As such, they can't be stored with a function pointer in a "real" target hook. 
-     * At least, that's my current understanding of it. */
-        
+  /* note that due to issues with gcc targets, some implementations of those two
+   * macros above (TARGET_RUST_CPU_INFO and TARGET_RUST_OS_INFO) are not
+   * function calls, but actually inline substitutions. As such, they can't be
+   * stored with a function pointer in a "real" target hook.
+   * At least, that's my current understanding of it. */
+
 #undef builtin_rust_info
 
-    // target-independent values that should exist in all targets
-    options.target_data.insert_key_value_pair ("target_pointer_width", std::to_string (POINTER_SIZE));
-    options.target_data.insert_key_value_pair ("target_endian", BYTES_BIG_ENDIAN ? "big" : "little");
+  // target-independent values that should exist in all targets
+  options.target_data.insert_key_value_pair ("target_pointer_width",
+					     std::to_string (POINTER_SIZE));
+  options.target_data.insert_key_value_pair ("target_endian", BYTES_BIG_ENDIAN
+								? "big"
+								: "little");
 
-    // TODO: find min atomic width and max atomic width
-    // from it, add atomic-related stuff for sizes 8, 16, 32, 64, and 128 (if inside bounds)
-    // in rustc, min atomic width is a known quantity (or 8 if not known), and max is also a known quantity (or is pointer size if not known)
-    // TODO: add atomic pointer if some criteria is satisfied
+  // TODO: find min atomic width and max atomic width
+  // from it, add atomic-related stuff for sizes 8, 16, 32, 64, and 128 (if
+  // inside bounds) in rustc, min atomic width is a known quantity (or 8 if not
+  // known), and max is also a known quantity (or is pointer size if not known)
+  // TODO: add atomic pointer if some criteria is satisfied
 
-    // TODO: find whether target has "atomic cas"
+  // TODO: find whether target has "atomic cas"
 
-    // add debug_assertions if enabled and proc_macro if crate type has it or whatever
+  // add debug_assertions if enabled and proc_macro if crate type has it or
+  // whatever
 
-    // derived values from hook
-    options.target_data.init_derived_values ();
+  // derived values from hook
+  options.target_data.init_derived_values ();
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init
@@ -328,9 +336,9 @@ Session::enable_dump (std::string arg)
    * created */
   if (arg == "all")
     {
-      rust_error_at (
-	Location (),
-	"dumping all is not supported as of now. choose 'lex', 'parse', or 'target_options");
+      rust_error_at (Location (),
+		     "dumping all is not supported as of now. choose %<lex%>, "
+		     "%<parse%>, or %<target_options%>");
       return false;
     }
   else if (arg == "lex")
@@ -356,25 +364,28 @@ Session::enable_dump (std::string arg)
   else if (arg == "resolution")
     {
       options.dump_option = CompileOptions::RESOLUTION_DUMP;
-    } 
-  else if (arg == "target_options") {
+    }
+  else if (arg == "target_options")
+    {
       // special case - dump all target options, and then quit compilation
-      // nope, option handling called before init, so have to make this an actual compile option
-      //options.target_data.dump_target_options();
-      //return false;
+      // nope, option handling called before init, so have to make this an
+      // actual compile option
+      // options.target_data.dump_target_options();
+      // return false;
       options.dump_option = CompileOptions::TARGET_OPTION_DUMP;
     }
   else if (arg == "")
     {
-      rust_error_at (Location (),
-		"dump option was not given a name. choose 'lex', 'parse', or 'target_options'");
+      rust_error_at (Location (), "dump option was not given a name. choose "
+				  "%<lex%>, %<parse%>, or %<target_options%>");
       return false;
     }
   else
     {
       rust_error_at (Location (),
-		"dump option '%s' was unrecognised. choose 'lex', 'parse', or 'target_options",
-		arg.c_str ());
+		     "dump option %<%s%> was unrecognised. choose %<lex%>, "
+		     "%<parse%>, or %<target_options%>",
+		     arg.c_str ());
       return false;
     }
   return true;
@@ -399,7 +410,7 @@ Session::parse_file (const char *filename)
 {
   RAIIFile file_wrap (filename);
 
-  if (file_wrap.get_raw() == nullptr)
+  if (file_wrap.get_raw () == nullptr)
     {
       rust_fatal_error (Location (), "cannot open filename %s: %m", filename);
     }
@@ -420,7 +431,8 @@ Session::parse_file (const char *filename)
     {
     case CompileOptions::LEXER_DUMP:
       parser.debug_dump_lex_output ();
-      // TODO: rewrite lexer dump or something so that it allows for the crate to already be parsed
+      // TODO: rewrite lexer dump or something so that it allows for the crate
+      // to already be parsed
       break;
     case CompileOptions::PARSER_AST_DUMP:
       parser.debug_dump_ast_output (parsed_crate);
@@ -583,7 +595,7 @@ contains_name (const std::vector<AST::Attribute> &attrs, std::string name)
   for (const auto &attr : attrs)
     {
       if (attr.get_path () == name)
-	    return true;
+	return true;
     }
 
   return false;
@@ -696,8 +708,7 @@ Session::injection (AST::Crate &crate)
   // create use tree and decl
   std::unique_ptr<AST::UseTreeGlob> use_tree (
     new AST::UseTreeGlob (AST::UseTreeGlob::PATH_PREFIXED,
-			  AST::SimplePath (std::move (segments)),
-			  Location ()));
+			  AST::SimplePath (std::move (segments)), Location ()));
   AST::Attribute prelude_attr (AST::SimplePath::from_str ("prelude_import"),
 			       nullptr);
   std::unique_ptr<AST::UseDeclaration> use_decl (
@@ -754,88 +765,91 @@ Session::resolution (AST::Crate &crate)
   fprintf (stderr, "finished name resolution\n");
 }
 
-void 
-TargetOptions::dump_target_options () const 
-  {
-    fprintf (stderr, "\033[0;31m--PREPARING TO DUMP ALL TARGET OPTIONS--\n\033[0m");
-    for (const auto& pairs : features) 
-      {
-        for (const auto& value : pairs.second)
-            fprintf (stderr, "%s: \"%s\"\n", pairs.first.c_str (), value.c_str ());
-        
-        if (pairs.second.empty ())
-            fprintf (stderr, "%s\n", pairs.first.c_str ());
-      }
-    if (features.empty ())
-        fprintf (stderr, "No target options available!\n");
+void
+TargetOptions::dump_target_options () const
+{
+  fprintf (stderr,
+	   "\033[0;31m--PREPARING TO DUMP ALL TARGET OPTIONS--\n\033[0m");
+  for (const auto &pairs : features)
+    {
+      for (const auto &value : pairs.second)
+	fprintf (stderr, "%s: \"%s\"\n", pairs.first.c_str (), value.c_str ());
 
-    fprintf (stderr, "\033[0;31m--END OF TARGET OPTION DUMP--\n\033[0m");
-  }
-
-void 
-TargetOptions::init_derived_values () 
-  {
-    // enable derived values based on target families
-    if (has_key_value_pair ("target_family", "unix"))
-        insert_key ("unix");
-    if (has_key_value_pair ("target_family", "windows"))
-        insert_key ("windows");
-        
-    // implicitly enable features - this should not be required in general
-    if (has_key_value_pair ("target_feature", "aes")) 
-        enable_implicit_feature_reqs ("aes");
-    if (has_key_value_pair ("target_feature", "avx"))
-        enable_implicit_feature_reqs ("sse4.2");
-    if (has_key_value_pair ("target_feature", "avx2"))
-        enable_implicit_feature_reqs ("avx");
-    if (has_key_value_pair ("target_feature", "pclmulqdq"))
-        enable_implicit_feature_reqs ("sse2");
-    if (has_key_value_pair ("target_feature", "sha"))
-        enable_implicit_feature_reqs ("sse2");
-    if (has_key_value_pair ("target_feature", "sse2"))
-        enable_implicit_feature_reqs ("sse");
-    if (has_key_value_pair ("target_feature", "sse3"))
-        enable_implicit_feature_reqs ("sse2");
-    if (has_key_value_pair ("target_feature", "sse4.1"))
-        enable_implicit_feature_reqs ("sse3");
-    if (has_key_value_pair ("target_feature", "sse4.2"))
-        enable_implicit_feature_reqs ("sse4.1");
-    if (has_key_value_pair ("target_feature", "ssse3"))
-        enable_implicit_feature_reqs ("sse3");
-  }
-
-void 
-TargetOptions::enable_implicit_feature_reqs (std::string feature) 
-  {
-    if (feature == "aes") 
-        enable_implicit_feature_reqs ("sse2");
-    else if (feature == "avx")
-        enable_implicit_feature_reqs ("sse4.2");
-    else if (feature == "avx2")
-        enable_implicit_feature_reqs ("avx");
-    else if (feature == "fma")
-        enable_implicit_feature_reqs ("avx");
-    else if (feature == "pclmulqdq") 
-        enable_implicit_feature_reqs ("sse2");
-    else if (feature == "sha")
-        enable_implicit_feature_reqs ("sse2");
-    else if (feature == "sse2")
-        enable_implicit_feature_reqs ("sse");
-    else if (feature == "sse3")
-        enable_implicit_feature_reqs ("sse2");
-    else if (feature == "sse4.1")
-        enable_implicit_feature_reqs ("sse3");
-    else if (feature == "sse4.2")
-        enable_implicit_feature_reqs ("sse4.1");
-    else if (feature == "ssse3")
-        enable_implicit_feature_reqs ("sse3");
-
-    if (!has_key_value_pair ("target_feature", feature)) {
-        insert_key_value_pair ("target_feature", feature);
-
-        fprintf (stderr, "had to implicitly enable feature '%s'!", feature.c_str ());
+      if (pairs.second.empty ())
+	fprintf (stderr, "%s\n", pairs.first.c_str ());
     }
-  }
+  if (features.empty ())
+    fprintf (stderr, "No target options available!\n");
+
+  fprintf (stderr, "\033[0;31m--END OF TARGET OPTION DUMP--\n\033[0m");
+}
+
+void
+TargetOptions::init_derived_values ()
+{
+  // enable derived values based on target families
+  if (has_key_value_pair ("target_family", "unix"))
+    insert_key ("unix");
+  if (has_key_value_pair ("target_family", "windows"))
+    insert_key ("windows");
+
+  // implicitly enable features - this should not be required in general
+  if (has_key_value_pair ("target_feature", "aes"))
+    enable_implicit_feature_reqs ("aes");
+  if (has_key_value_pair ("target_feature", "avx"))
+    enable_implicit_feature_reqs ("sse4.2");
+  if (has_key_value_pair ("target_feature", "avx2"))
+    enable_implicit_feature_reqs ("avx");
+  if (has_key_value_pair ("target_feature", "pclmulqdq"))
+    enable_implicit_feature_reqs ("sse2");
+  if (has_key_value_pair ("target_feature", "sha"))
+    enable_implicit_feature_reqs ("sse2");
+  if (has_key_value_pair ("target_feature", "sse2"))
+    enable_implicit_feature_reqs ("sse");
+  if (has_key_value_pair ("target_feature", "sse3"))
+    enable_implicit_feature_reqs ("sse2");
+  if (has_key_value_pair ("target_feature", "sse4.1"))
+    enable_implicit_feature_reqs ("sse3");
+  if (has_key_value_pair ("target_feature", "sse4.2"))
+    enable_implicit_feature_reqs ("sse4.1");
+  if (has_key_value_pair ("target_feature", "ssse3"))
+    enable_implicit_feature_reqs ("sse3");
+}
+
+void
+TargetOptions::enable_implicit_feature_reqs (std::string feature)
+{
+  if (feature == "aes")
+    enable_implicit_feature_reqs ("sse2");
+  else if (feature == "avx")
+    enable_implicit_feature_reqs ("sse4.2");
+  else if (feature == "avx2")
+    enable_implicit_feature_reqs ("avx");
+  else if (feature == "fma")
+    enable_implicit_feature_reqs ("avx");
+  else if (feature == "pclmulqdq")
+    enable_implicit_feature_reqs ("sse2");
+  else if (feature == "sha")
+    enable_implicit_feature_reqs ("sse2");
+  else if (feature == "sse2")
+    enable_implicit_feature_reqs ("sse");
+  else if (feature == "sse3")
+    enable_implicit_feature_reqs ("sse2");
+  else if (feature == "sse4.1")
+    enable_implicit_feature_reqs ("sse3");
+  else if (feature == "sse4.2")
+    enable_implicit_feature_reqs ("sse4.1");
+  else if (feature == "ssse3")
+    enable_implicit_feature_reqs ("sse3");
+
+  if (!has_key_value_pair ("target_feature", feature))
+    {
+      insert_key_value_pair ("target_feature", feature);
+
+      fprintf (stderr, "had to implicitly enable feature '%s'!",
+	       feature.c_str ());
+    }
+}
 
 // NOTEs:
 /* mrustc compile pipeline:
