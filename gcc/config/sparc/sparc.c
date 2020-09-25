@@ -1049,6 +1049,43 @@ atomic_insn_for_leon3_p (rtx_insn *insn)
     }
 }
 
+/* True if INSN is a store instruction.  */
+
+static bool
+store_insn_p (rtx_insn *insn)
+{
+  if (GET_CODE (PATTERN (insn)) != SET)
+    return false;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_STORE:
+    case TYPE_FPSTORE:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* True if INSN is a load instruction.  */
+
+static bool
+load_insn_p (rtx_insn *insn)
+{
+  if (GET_CODE (PATTERN (insn)) != SET)
+    return false;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_LOAD:
+    case TYPE_SLOAD:
+    case TYPE_FPLOAD:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* We use a machine specific pass to enable workarounds for errata.
 
    We need to have the (essentially) final form of the insn stream in order
@@ -1109,9 +1146,7 @@ sparc_do_work_around_errata (void)
 	 instruction at branch target.  */
       if (sparc_fix_ut700
 	  && NONJUMP_INSN_P (insn)
-	  && (set = single_set (insn)) != NULL_RTX
-	  && mem_ref (SET_SRC (set))
-	  && REG_P (SET_DEST (set)))
+	  && load_insn_p (insn))
 	{
 	  if (jump && jump_to_label_p (jump))
 	    {
@@ -1216,7 +1251,7 @@ sparc_do_work_around_errata (void)
       if (sparc_fix_b2bst
 	  && NONJUMP_INSN_P (insn)
 	  && (set = single_set (insn)) != NULL_RTX
-	  && MEM_P (SET_DEST (set)))
+	  && store_insn_p (insn))
 	{
 	  /* Sequence B begins with a double-word store.  */
 	  bool seq_b = GET_MODE_SIZE (GET_MODE (SET_DEST (set))) == 8;
@@ -1249,8 +1284,7 @@ sparc_do_work_around_errata (void)
 	      if (seq_b)
 		{
 		  /* Add NOP if followed by a store.  */
-		  if ((set = single_set (after)) != NULL_RTX
-		      && MEM_P (SET_DEST (set)))
+		  if (store_insn_p (after))
 		    insert_nop = true;
 
 		  /* Otherwise it is ok.  */
@@ -1272,8 +1306,7 @@ sparc_do_work_around_errata (void)
 
 	      /* Add NOP if third instruction is a store.  */
 	      if (i == 1
-		  && (set = single_set (after)) != NULL_RTX
-		  && MEM_P (SET_DEST (set)))
+		  && store_insn_p (after))
 		insert_nop = true;
 	    }
 	}
