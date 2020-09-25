@@ -1,3 +1,11 @@
+2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-09-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97032
+	* gcc.target/i386/pr97032.c: New test.
+
 2020-09-22  David Faust  <david.faust@oracle.com>
 
 	Backported from master:
