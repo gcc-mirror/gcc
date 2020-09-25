@@ -19057,21 +19057,20 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     definition of a new type; a new type can only be declared in a
 	     declaration context.  */
 
-	  tag_scope ts;
-	  bool template_p;
+	  TAG_how how;
 
 	  if (is_friend)
 	    /* Friends have special name lookup rules.  */
-	    ts = ts_within_enclosing_non_class;
+	    how = TAG_how::HIDDEN_FRIEND;
 	  else if (is_declaration
 		   && cp_lexer_next_token_is (parser->lexer,
 					      CPP_SEMICOLON))
 	    /* This is a `class-key identifier ;' */
-	    ts = ts_current;
+	    how = TAG_how::CURRENT_ONLY;
 	  else
-	    ts = ts_global;
+	    how = TAG_how::GLOBAL;
 
-	  template_p =
+	  bool template_p =
 	    (template_parm_lists_apply
 	     && (cp_parser_next_token_starts_class_definition_p (parser)
 		 || cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)));
@@ -19084,7 +19083,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 						       token->location,
 						       /*declarator=*/NULL))
 	    return error_mark_node;
-	  type = xref_tag (tag_type, identifier, ts, template_p);
+
+	  type = xref_tag (tag_type, identifier, how, template_p);
 	}
     }
 
@@ -24708,10 +24708,10 @@ cp_parser_class_head (cp_parser* parser,
       /* If the class was unnamed, create a dummy name.  */
       if (!id)
 	id = make_anon_name ();
-      tag_scope tag_scope = (parser->in_type_id_in_expr_p
-			     ? ts_within_enclosing_non_class
-			     : ts_current);
-      type = xref_tag (class_key, id, tag_scope,
+      TAG_how how = (parser->in_type_id_in_expr_p
+		     ? TAG_how::INNERMOST_NON_CLASS
+		     : TAG_how::CURRENT_ONLY);
+      type = xref_tag (class_key, id, how,
 		       parser->num_template_parameter_lists);
     }
 

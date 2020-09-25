@@ -124,22 +124,6 @@ enum scope_kind {
   sk_omp	     /* An OpenMP structured block.  */
 };
 
-/* The scope where the class/struct/union/enum tag applies.  */
-enum tag_scope {
-  ts_current = 0,	/* Current scope only.  This is for the
-			     class-key identifier;
-			   case mentioned in [basic.lookup.elab]/2,
-			   or the class/enum definition
-			     class-key identifier { ... };  */
-  ts_global = 1,	/* All scopes.  This is the 3.4.1
-			   [basic.lookup.unqual] lookup mentioned
-			   in [basic.lookup.elab]/2.  */
-  ts_within_enclosing_non_class = 2,	/* Search within enclosing non-class
-					   only, for friend class lookup
-					   according to [namespace.memdef]/3
-					   and [class.friend]/9.  */
-};
-
 struct GTY(()) cp_class_binding {
   cxx_binding *base;
   /* The bound name.  */
@@ -326,7 +310,19 @@ inline tree lookup_name (tree name, LOOK_want want)
   return lookup_name (name, LOOK_where::ALL, want);
 }
 
-extern tree lookup_type_scope (tree, tag_scope);
+enum class TAG_how
+{
+  CURRENT_ONLY = 0, // Look and insert only in current scope
+
+  GLOBAL = 1, // Unqualified lookup, innermost-non-class insertion
+
+  INNERMOST_NON_CLASS = 2, // Look and insert only into
+			   // innermost-non-class
+
+  HIDDEN_FRIEND = 3, // As INNERMOST_NON_CLASS, but hide it
+};
+
+extern tree lookup_elaborated_type (tree, TAG_how);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);
 inline tree get_global_binding (tree id)
@@ -371,7 +367,7 @@ extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);
 extern tree pushdecl_top_level_and_finish (tree, tree);
-extern tree pushtag (tree, tree, tag_scope = ts_current);
+extern tree pushtag (tree, tree, TAG_how = TAG_how::CURRENT_ONLY);
 extern int push_namespace (tree, bool make_inline = false);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);

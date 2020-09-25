@@ -6507,7 +6507,7 @@ extern void grok_special_member_properties	(tree);
 extern bool grok_ctor_properties		(const_tree, const_tree);
 extern bool grok_op_properties			(tree, bool);
 extern tree xref_tag				(tag_types, tree,
-						 tag_scope = ts_current,
+						 TAG_how = TAG_how::CURRENT_ONLY,
 						 bool tpl_header_p = false);
 extern void xref_basetypes			(tree, tree);
 extern tree start_enum				(tree, tree, tree, tree, bool, bool *);

@@ -6583,22 +6583,20 @@ lookup_name (tree name)
 }
 
 /* Look up NAME for type used in elaborated name specifier in
-   the scopes given by SCOPE.  SCOPE can be either TS_CURRENT or
-   TS_WITHIN_ENCLOSING_NON_CLASS.  Although not implied by the
-   name, more scopes are checked if cleanup or template parameter
-   scope is encountered.
+   the scopes given by HOW.
 
    Unlike lookup_name_1, we make sure that NAME is actually
    declared in the desired scope, not from inheritance, nor using
    directive.  For using declaration, there is DR138 still waiting
    to be resolved.  Hidden name coming from an earlier friend
-   declaration is also returned.
+   declaration is also returned, and will be made visible unless HOW
+   is TAG_how::HIDDEN_FRIEND.
 
    A TYPE_DECL best matching the NAME is returned.  Catching error
    and issuing diagnostics are caller's responsibility.  */
 
 static tree
-lookup_type_scope_1 (tree name, tag_scope scope)
+lookup_elaborated_type_1 (tree name, TAG_how how)
 {
   cp_binding_level *b = current_binding_level;
 
@@ -6613,28 +6611,28 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 	  if (!(b->kind == sk_cleanup
 		|| b->kind == sk_template_parms
 		|| b->kind == sk_function_parms
-		|| (b->kind == sk_class
-		    && scope == ts_within_enclosing_non_class)))
+		|| (b->kind == sk_class && how != TAG_how::CURRENT_ONLY)))
 	    return NULL_TREE;
 
 	/* Check if this is the kind of thing we're looking for.  If
-	   SCOPE is TS_CURRENT, also make sure it doesn't come from
-	   base class.  For ITER->VALUE, we can simply use
-	   INHERITED_VALUE_BINDING_P.  For ITER->TYPE, we have to
-	   use our own check.
+	   HOW is TAG_how::CURRENT_ONLY, also make sure it doesn't
+	   come from base class.  For ITER->VALUE, we can simply use
+	   INHERITED_VALUE_BINDING_P.  For ITER->TYPE, we have to use
+	   our own check.
 
 	   We check ITER->TYPE before ITER->VALUE in order to handle
 	     typedef struct C {} C;
 	   correctly.  */
+
 	if (tree type = iter->type)
 	  if (qualify_lookup (type, LOOK_want::TYPE)
-	      && (scope != ts_current
+	      && (how != TAG_how::CURRENT_ONLY
 		  || LOCAL_BINDING_P (iter)
 		  || DECL_CONTEXT (type) == iter->scope->this_entity))
 	    return type;
 
 	if (qualify_lookup (iter->value, LOOK_want::TYPE)
-	    && (scope != ts_current
+	    && (how != TAG_how::CURRENT_ONLY
 		|| !INHERITED_VALUE_BINDING_P (iter)))
 	  return iter->value;
       }
@@ -6644,8 +6642,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
     if (!(b->kind == sk_cleanup
 	  || b->kind == sk_template_parms
 	  || b->kind == sk_function_parms
-	  || (b->kind == sk_class
-	      && scope == ts_within_enclosing_non_class)))
+	  || (b->kind == sk_class && how != TAG_how::CURRENT_ONLY)))
       return NULL_TREE;
 
   /* Look in the innermost namespace.  */
@@ -6664,15 +6661,14 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 
   return NULL_TREE;
 }
- 
+
 /* Wrapper for lookup_type_scope_1.  */
 
 tree
-lookup_type_scope (tree name, tag_scope scope)
+lookup_elaborated_type (tree name, TAG_how how)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_type_scope_1 (name, scope);
+  tree ret = lookup_elaborated_type_1 (name, how);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -6782,7 +6778,7 @@ maybe_process_template_type_declaration (tree type, int is_friend,
    Returns TYPE upon success and ERROR_MARK_NODE otherwise.  */
 
 static tree
-do_pushtag (tree name, tree type, tag_scope scope)
+do_pushtag (tree name, tree type, TAG_how how)
 {
   tree decl;
 
@@ -6799,10 +6795,9 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	     declaration, these scopes are not scopes from the point of
 	     view of the language.  */
 	  || (b->kind == sk_template_parms
-	      && (b->explicit_spec_p || scope == ts_global)))
+	      && (b->explicit_spec_p || how == TAG_how::GLOBAL)))
 	b = b->level_chain;
-      else if (b->kind == sk_class
-	       && scope != ts_current)
+      else if (b->kind == sk_class && how != TAG_how::CURRENT_ONLY)
 	{
 	  b = b->level_chain;
 	  if (b->kind == sk_template_parms)
@@ -6836,7 +6831,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 			       : TYPE_P (cs) ? cs == current_class_type
 			       : cs == current_namespace);
 
-	  if (scope == ts_current
+	  if (how == TAG_how::CURRENT_ONLY
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
 	    context = cs;
 	  else if (cs && TYPE_P (cs))
@@ -6856,18 +6851,19 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       tdef = create_implicit_typedef (name, type);
       DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
-      if (scope == ts_within_enclosing_non_class)
+      bool is_friend = how == TAG_how::HIDDEN_FRIEND;
+      if (is_friend)
 	{
+	  // FIXME: can go away
 	  /* This is a friend.  Make this TYPE_DECL node hidden from
 	     ordinary name lookup.  Its corresponding TEMPLATE_DECL
-	     will be marked in push_template_decl_real.  */
+	     will be marked in push_template_decl.  */
 	  retrofit_lang_decl (tdef);
 	  DECL_ANTICIPATED (tdef) = 1;
 	  DECL_FRIEND_P (tdef) = 1;
 	}
 
-      decl = maybe_process_template_type_declaration
-	(type, scope == ts_within_enclosing_non_class, b);
+      decl = maybe_process_template_type_declaration (type, is_friend, b);
       if (decl == error_mark_node)
 	return decl;
 
@@ -6888,7 +6884,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	}
       else if (b->kind != sk_template_parms)
 	{
-	  decl = do_pushdecl_with_scope (decl, b, /*is_friend=*/false);
+	  decl = do_pushdecl_with_scope
+	    (decl, b, /*hiding=*/(how == TAG_how::HIDDEN_FRIEND));
 	  if (decl == error_mark_node)
 	    return decl;
 
@@ -6954,11 +6951,10 @@ do_pushtag (tree name, tree type, tag_scope scope)
 /* Wrapper for do_pushtag.  */
 
 tree
-pushtag (tree name, tree type, tag_scope scope)
+pushtag (tree name, tree type, TAG_how how)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = do_pushtag (name, type, scope);
+  tree ret = do_pushtag (name, type, how);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
