@@ -895,10 +895,6 @@ package body Sem_Res is
    ------------------------------
 
    function Check_Infinite_Recursion (Call : Node_Id) return Boolean is
-      function Enclosing_Declaration_Or_Statement (N : Node_Id) return Node_Id;
-      --  Return the nearest enclosing declaration or statement that houses
-      --  arbitrary node N.
-
       function Invoked_With_Different_Arguments (N : Node_Id) return Boolean;
       --  Determine whether call N invokes the related enclosing subprogram
       --  with actuals that differ from the subprogram's formals.
@@ -933,33 +929,6 @@ package body Sem_Res is
       function Within_Conditional_Statement (N : Node_Id) return Boolean;
       --  Determine whether arbitrary node N appears within a conditional
       --  construct.
-
-      ----------------------------------------
-      -- Enclosing_Declaration_Or_Statement --
-      ----------------------------------------
-
-      function Enclosing_Declaration_Or_Statement
-        (N : Node_Id) return Node_Id
-      is
-         Par : Node_Id;
-
-      begin
-         Par := N;
-         while Present (Par) loop
-            if Is_Declaration (Par) or else Is_Statement (Par) then
-               return Par;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return N;
-      end Enclosing_Declaration_Or_Statement;
 
       --------------------------------------
       -- Invoked_With_Different_Arguments --

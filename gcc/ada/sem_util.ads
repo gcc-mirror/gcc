@@ -809,6 +809,10 @@ package Sem_Util is
    --  Returns the declaration node enclosing N (including possibly N itself),
    --  if any, or Empty otherwise.
 
+   function Enclosing_Declaration_Or_Statement (N : Node_Id) return Node_Id;
+   --  Return the nearest enclosing declaration or statement that houses
+   --  arbitrary node N.
+
    function Enclosing_Generic_Body (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  body, if any. If none, then returns Empty.
