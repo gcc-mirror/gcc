@@ -133,13 +133,6 @@ extern tree fold_call_stmt (gcall *, bool);
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
-
-class vr_values;
-tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
-			     const vr_values * = NULL);
-extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
-			     const vr_values * = NULL);
-
 extern bool readonly_data_expr (tree exp);
 extern bool init_target_chars (void);
 extern unsigned HOST_WIDE_INT target_newline;
@@ -202,7 +195,15 @@ struct access_data
   access_mode mode;
 };
 
-extern bool check_access (tree, tree, tree, tree, tree,
-			  access_mode, const access_data * = NULL);
+class vr_values;
+extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
+				    const vr_values * = NULL);
+extern tree gimple_parm_array_size (tree, wide_int[2], const vr_values * = NULL);
+extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
+			     const vr_values * = NULL);
+extern tree compute_objsize (tree, int, access_ref *, const vr_values * = NULL);
+
+extern bool check_access (tree, tree, tree, tree, tree, access_mode,
+			  const access_data * = NULL);
 
 #endif /* GCC_BUILTINS_H */

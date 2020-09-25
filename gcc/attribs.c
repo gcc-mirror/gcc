@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -25,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "diagnostic-core.h"
 #include "attribs.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 #include "langhooks.h"
 #include "plugin.h"
@@ -32,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "diagnostic.h"
 #include "pretty-print.h"
+#include "tree-pretty-print.h"
 #include "intl.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
@@ -707,10 +710,16 @@ decl_attributes (tree *node, tree attributes, int flags,
 	  int cxx11_flag = (cxx11_attr_p ? ATTR_FLAG_CXX11 : 0);
 
 	  /* Pass in an array of the current declaration followed
-	     by the last pushed/merged declaration if  one exists.
+	     by the last pushed/merged declaration if one exists.
+	     For calls that modify the type attributes of a DECL
+	     and for which *ANODE is *NODE's type, also pass in
+	     the DECL as the third element to use in diagnostics.
 	     If the handler changes CUR_AND_LAST_DECL[0] replace
 	     *ANODE with its value.  */
-	  tree cur_and_last_decl[] = { *anode, last_decl };
+	  tree cur_and_last_decl[3] = { *anode, last_decl };
+	  if (anode != node && DECL_P (*node))
+	    cur_and_last_decl[2] = *node;
+
 	  tree ret = (spec->handler) (cur_and_last_decl, name, args,
 				      flags|cxx11_flag, &no_add_attrs);
 
@@ -2017,65 +2026,295 @@ maybe_diag_alias_attributes (tree alias, tree target)
     }
 }
 
-/* Initialize a mapping for a call to function FNDECL declared with
-   attribute access.  Each attribute positional operand inserts one
-   entry into the mapping with the operand number as the key.  */
+/* Initialize a mapping RWM for a call to a function declared with
+   attribute access in ATTRS.  Each attribute positional operand
+   inserts one entry into the mapping with the operand number as
+   the key.  */
 
 void
-init_attr_rdwr_indices (rdwr_map *rwm, tree fntype)
+init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
 {
-  if (!fntype)
+  if (!attrs)
     return;
 
-  for (tree access = TYPE_ATTRIBUTES (fntype);
+  for (tree access = attrs;
        (access = lookup_attribute ("access", access));
        access = TREE_CHAIN (access))
     {
       /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
 	 is the attribute argument's value.  */
       tree mode = TREE_VALUE (access);
-      gcc_assert (TREE_CODE (mode) == TREE_LIST);
+      if (!mode)
+	return;
+
+      /* The (optional) list of VLA bounds.  */
+      tree vblist = TREE_CHAIN (mode);
+
       mode = TREE_VALUE (mode);
+      if (TREE_CODE (mode) != STRING_CST)
+	continue;
       gcc_assert (TREE_CODE (mode) == STRING_CST);
 
-      const char *modestr = TREE_STRING_POINTER (mode);
-      for (const char *m = modestr; *m; )
+      for (const char *m = TREE_STRING_POINTER (mode); *m; )
 	{
 	  attr_access acc = { };
 
-	  switch (*m)
+	  /* Skip the internal-only plus sign.  */
+	  if (*m == '+')
+	    ++m;
+
+	  acc.str = m;
+	  acc.mode = acc.from_mode_char (*m);
+	  acc.sizarg = UINT_MAX;
+
+	  const char *end;
+	  acc.ptrarg = strtoul (++m, const_cast<char**>(&end), 10);
+	  m = end;
+
+	  if (*m == '[')
 	    {
-	    case 'r': acc.mode = access_read_only; break;
-	    case 'w': acc.mode = access_write_only; break;
-	    case 'x': acc.mode = access_read_write; break;
-	    case '-': acc.mode = access_none; break;
-	    default: gcc_unreachable ();
+	      /* Forms containing the square bracket are internal-only
+		 (not specified by an attribute declaration), and used
+		 for various forms of array and VLA parameters.  */
+	      acc.internal_p = true;
+
+	      /* Search to the closing bracket and look at the preceding
+		 code: it determines the form of the most significant
+		 bound of the array.  Others prior to it encode the form
+		 of interior VLA bounds.  They're not of interest here.  */
+	      end = strchr (m, ']');
+	      const char *p = end;
+	      gcc_assert (p);
+
+	      while (ISDIGIT (p[-1]))
+		--p;
+
+	      if (ISDIGIT (*p))
+		{
+		  /* A digit denotes a constant bound (as in T[3]).  */
+		  acc.static_p = p[-1] == 's';
+		  acc.minsize = strtoull (p, NULL, 10);
+		}
+	      else if (' ' == p[-1])
+		{
+		  /* A space denotes an ordinary array of unspecified bound
+		     (as in T[]).  */
+		  acc.minsize = 0;
+		}
+	      else if ('*' == p[-1] || '$' == p[-1])
+		{
+		  /* An asterisk denotes a VLA.  When the closing bracket
+		     is followed by a comma and a dollar sign its bound is
+		     on the list.  Otherwise it's a VLA with an unspecified
+		     bound.  */
+		  acc.minsize = HOST_WIDE_INT_M1U;
+		}
+
+	      m = end + 1;
 	    }
 
-	  char *end;
-	  acc.ptrarg = strtoul (++m, &end, 10);
-	  m = end;
 	  if (*m == ',')
 	    {
-	      acc.sizarg = strtoul (++m, &end, 10);
-	      m = end;
+	      ++m;
+	      do
+		{
+		  if (*m == '$')
+		    {
+		      ++m;
+		      if (!acc.size)
+			{
+			  /* Extract the list of VLA bounds for the current
+			     parameter, store it in ACC.SIZE, and advance
+			     to the list of bounds for the next VLA parameter.
+			  */
+			  acc.size = TREE_VALUE (vblist);
+			  vblist = TREE_CHAIN (vblist);
+			}
+		    }
+
+		  if (ISDIGIT (*m))
+		    {
+		      /* Extract the positional argument.  It's absent
+			 for VLAs whose bound doesn't name a function
+			 parameter.  */
+		      unsigned pos = strtoul (m, const_cast<char**>(&end), 10);
+		      if (acc.sizarg == UINT_MAX)
+			acc.sizarg = pos;
+		      m = end;
+		    }
+		}
+	      while (*m == '$');
+	    }
+
+	  acc.end = m;
+
+	  bool existing;
+	  auto &ref = rwm->get_or_insert (acc.ptrarg, &existing);
+	  if (existing)
+	    {
+	      /* Merge the new spec with the existing.  */
+	      if (acc.minsize == HOST_WIDE_INT_M1U)
+		ref.minsize = HOST_WIDE_INT_M1U;
+
+	      if (acc.sizarg != UINT_MAX)
+		ref.sizarg = acc.sizarg;
+
+	      if (acc.mode)
+		ref.mode = acc.mode;
 	    }
 	  else
-	    acc.sizarg = UINT_MAX;
-
-	  acc.ptr = NULL_TREE;
-	  acc.size = NULL_TREE;
+	    ref = acc;
 
 	  /* Unconditionally add an entry for the required pointer
 	     operand of the attribute, and one for the optional size
 	     operand when it's specified.  */
-	  rwm->put (acc.ptrarg, acc);
 	  if (acc.sizarg != UINT_MAX)
 	    rwm->put (acc.sizarg, acc);
 	}
     }
 }
 
+/* Return the access specification for a function parameter PARM
+   or null if the current function has no such specification.  */
+
+attr_access *
+get_parm_access (rdwr_map &rdwr_idx, tree parm,
+		 tree fndecl /* = current_function_decl */)
+{
+  tree fntype = TREE_TYPE (fndecl);
+  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
+
+  if (rdwr_idx.is_empty ())
+    return NULL;
+
+  unsigned argpos = 0;
+  tree fnargs = DECL_ARGUMENTS (fndecl);
+  for (tree arg = fnargs; arg; arg = TREE_CHAIN (arg), ++argpos)
+    if (arg == parm)
+      return rdwr_idx.get (argpos);
+
+  return NULL;
+}
+
+/* Return the internal representation as STRING_CST.  Internal positional
+   arguments are zero-based.  */
+
+tree
+attr_access::to_internal_string () const
+{
+  return build_string (end - str, str);
+}
+
+/* Return the human-readable representation of the external attribute
+   specification (as it might appear in the source code) as STRING_CST.
+   External positional arguments are one-based.  */
+
+tree
+attr_access::to_external_string () const
+{
+  char buf[80];
+  gcc_assert (mode != access_deferred);
+  int len = snprintf (buf, sizeof buf, "access (%s, %u",
+		      mode_names[mode], ptrarg + 1);
+  if (sizarg != UINT_MAX)
+    len += snprintf (buf + len, sizeof buf - len, ", %u", sizarg + 1);
+  strcpy (buf + len, ")");
+  return build_string (len + 2, buf);
+}
+
+/* Return the number of specified VLA bounds and set *nunspec to
+   the number of unspecified ones (those designated by [*]).  */
+
+unsigned
+attr_access::vla_bounds (unsigned *nunspec) const
+{
+  *nunspec = 0;
+  for (const char* p = strrchr (str, ']'); p && *p != '['; --p)
+    if (*p == '*')
+      ++*nunspec;
+  return list_length (size);
+}
+
+
+/* Defined in attr_access.  */
+constexpr char attr_access::mode_chars[];
+constexpr char attr_access::mode_names[][11];
+
+/* Format an array, including a VLA, pointed to by TYPE and used as
+   a function parameter as a human-readable string.  ACC describes
+   an access to the parameter and is used to determine the outermost
+   form of the array including its bound which is otherwise obviated
+   by its decay to pointer.  Return the formatted string.  */
+
+std::string
+attr_access::array_as_string (tree type) const
+{
+  std::string typstr;
+
+  if (type == error_mark_node)
+    return std::string ();
+
+  if (this->str)
+    {
+      /* For array parameters (but not pointers) create an array type
+	 that corresponds to the form of the parameter including its
+	 qualifiers even though they apply to the pointer, not the array
+	 type.  */
+      const bool vla_p = minsize == HOST_WIDE_INT_M1U;
+      tree eltype = TREE_TYPE (type);
+      tree artype;
+
+      tree index_type = NULL_TREE;
+      if (minsize == HOST_WIDE_INT_M1U)
+	{
+	  /* Determine if this is a VLA (an array whose most significant
+	     bound is nonconstant and whose access string has "$]" in it)
+	     extract the bound expression from SIZE.  */
+	  const char *p = end;
+	  for ( ; *p-- != ']'; );
+	  if (*p == '$')
+	    index_type = build_index_type (TREE_VALUE (size));
+	}
+      else  if (minsize)
+	index_type = build_index_type (size_int (minsize - 1));
+
+      artype = build_array_type (eltype, index_type);
+
+      if (static_p || vla_p)
+	{
+	  tree flag = static_p ? integer_one_node : NULL_TREE;
+	  /* Hack: there's no language-independent way to encode
+	     the "static" specifier or the "*" notation in an array type.
+	     Temporarily add an attribute to have the pretty printer add
+	     "static" or "*", and remove it later.  The static notation
+	     is only valid in the most significant bound but [*] can be
+	     used for any bound.  Because [*] is represented the same as
+	     [0] this hack only works for the most significant bound like
+	     static and the others are rendered as [0].  */
+	  tree at = tree_cons (get_identifier ("array"), flag, NULL_TREE);
+	  TYPE_ATTRIBUTES (artype) = at;
+	}
+
+      TYPE_ATOMIC (artype) = TYPE_ATOMIC (type);
+      TYPE_READONLY (artype) = TYPE_READONLY (type);
+      TYPE_RESTRICT (artype) = TYPE_RESTRICT (type);
+      TYPE_VOLATILE (artype) = TYPE_VOLATILE (type);
+      type = artype;
+    }
+
+  /* Format the type using the current pretty printer.  The generic tree
+     printer does a terrible job.  */
+  pretty_printer *pp = global_dc->printer->clone ();
+  pp_printf (pp, "%qT", type);
+  typstr = pp_formatted_text (pp);
+  delete pp;
+
+  if (this->str)
+    /* Remove the attribute that wasn't installed by decl_attributes.  */
+    TYPE_ATTRIBUTES (type) = NULL_TREE;
+
+  return typstr;
+}
 
 #if CHECKING_P
 

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -183,7 +184,9 @@ public:
     if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
       {
 	const region *reg = ptr->get_pointee ();
-	if (reg->get_kind () == RK_STRING)
+	const region *base_reg = reg->get_base_region ();
+	if (base_reg->get_kind () == RK_DECL
+	    || base_reg->get_kind () == RK_STRING)
 	  return m_non_heap;
       }
     return m_start;
@@ -984,7 +987,9 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_std_named_call_p (callee_fndecl, "malloc", call, 1)
 	    || is_std_named_call_p (callee_fndecl, "calloc", call, 2)
 	    || is_named_call_p (callee_fndecl, "__builtin_malloc", call, 1)
-	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2))
+	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2)
+	    || is_named_call_p (callee_fndecl, "strdup", call, 1)
+	    || is_named_call_p (callee_fndecl, "strndup", call, 2))
 	  {
 	    on_allocator_call (sm_ctxt, call, m_malloc);
 	    return true;

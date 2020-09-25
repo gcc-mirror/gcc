@@ -248,9 +248,12 @@ pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
   if (!TYPE_P (t))
     t = TREE_TYPE (t);
 
-  qualifiers = TYPE_QUALS (t);
-  pp_c_cv_qualifiers (pp, qualifiers,
-		      TREE_CODE (t) == FUNCTION_TYPE);
+  if (TREE_CODE (t) != ARRAY_TYPE)
+    {
+      qualifiers = TYPE_QUALS (t);
+      pp_c_cv_qualifiers (pp, qualifiers,
+			  TREE_CODE (t) == FUNCTION_TYPE);
+    }
 
   if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (t)))
     {
@@ -572,6 +575,8 @@ c_pretty_printer::abstract_declarator (tree t)
 void
 c_pretty_printer::direct_abstract_declarator (tree t)
 {
+  bool add_space = false;
+
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
@@ -585,17 +590,65 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 
     case ARRAY_TYPE:
       pp_c_left_bracket (this);
+
+      if (int quals = TYPE_QUALS (t))
+	{
+	  /* Print the array qualifiers such as in "T[const restrict 3]".  */
+	  pp_c_cv_qualifiers (this, quals, false);
+	  add_space = true;
+	}
+
+      if (tree arr = lookup_attribute ("array", TYPE_ATTRIBUTES (t)))
+	{
+	  if (TREE_VALUE (arr))
+	    {
+	      /* Print the specifier as in "T[static 3]" that's not actually
+		 part of the type but may be added by the front end.  */
+	      pp_c_ws_string (this, "static");
+	      add_space = true;
+	    }
+	  else if (!TYPE_DOMAIN (t))
+	    /* For arrays of unspecified bound using the [*] notation. */
+	    pp_character (this, '*');
+	}
+
       if (tree dom = TYPE_DOMAIN (t))
 	{
 	  if (tree maxval = TYPE_MAX_VALUE (dom))
 	    {
+	      if (add_space)
+		pp_space (this);
+
 	      tree type = TREE_TYPE (maxval);
 
 	      if (tree_fits_shwi_p (maxval))
 		pp_wide_integer (this, tree_to_shwi (maxval) + 1);
-	      else
+	      else if (TREE_CODE (maxval) == INTEGER_CST)
 		expression (fold_build2 (PLUS_EXPR, type, maxval,
 					 build_int_cst (type, 1)));
+	      else
+		{
+		  /* Strip the expressions from around a VLA bound added
+		     internally to make it fit the domain mold, including
+		     any casts.  */
+		  if (TREE_CODE (maxval) == NOP_EXPR)
+		    maxval = TREE_OPERAND (maxval, 0);
+		  if (TREE_CODE (maxval) == PLUS_EXPR
+		      && integer_all_onesp (TREE_OPERAND (maxval, 1)))
+		    {
+		      maxval = TREE_OPERAND (maxval, 0);
+		      if (TREE_CODE (maxval) == NOP_EXPR)
+			maxval = TREE_OPERAND (maxval, 0);
+		    }
+		  if (TREE_CODE (maxval) == SAVE_EXPR)
+		    {
+		      maxval = TREE_OPERAND (maxval, 0);
+		      if (TREE_CODE (maxval) == NOP_EXPR)
+			maxval = TREE_OPERAND (maxval, 0);
+		    }
+
+		  expression (maxval);
+		}
 	    }
 	  else if (TYPE_SIZE (t))
 	    /* Print zero for zero-length arrays but not for flexible
@@ -2364,15 +2417,97 @@ c_pretty_printer::expression (tree e)
 /* Statements.  */
 
 void
-c_pretty_printer::statement (tree stmt)
+c_pretty_printer::statement (tree t)
 {
-  if (stmt == NULL)
+  if (t == NULL)
     return;
 
-  if (pp_needs_newline (this))
-    pp_newline_and_indent (this, 0);
+  switch (TREE_CODE (t))
+    {
 
-  dump_generic_node (this, stmt, pp_indentation (this), TDF_NONE, true);
+    case SWITCH_STMT:
+      pp_c_ws_string (this, "switch");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (SWITCH_STMT_COND (t));
+      pp_c_right_paren (this);
+      pp_indentation (this) += 3;
+      pp_needs_newline (this) = true;
+      statement (SWITCH_STMT_BODY (t));
+      pp_newline_and_indent (this, -3);
+      break;
+
+      /* iteration-statement:
+	    while ( expression ) statement
+	    do statement while ( expression ) ;
+	    for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
+	    for ( declaration expression(opt) ; expression(opt) ) statement  */
+    case WHILE_STMT:
+      pp_c_ws_string (this, "while");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (WHILE_COND (t));
+      pp_c_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (WHILE_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
+    case DO_STMT:
+      pp_c_ws_string (this, "do");
+      pp_newline_and_indent (this, 3);
+      statement (DO_BODY (t));
+      pp_newline_and_indent (this, -3);
+      pp_c_ws_string (this, "while");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (DO_COND (t));
+      pp_c_right_paren (this);
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
+    case FOR_STMT:
+      pp_c_ws_string (this, "for");
+      pp_space (this);
+      pp_c_left_paren (this);
+      if (FOR_INIT_STMT (t))
+	statement (FOR_INIT_STMT (t));
+      else
+	pp_c_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_c_whitespace (this);
+      if (FOR_COND (t))
+	expression (FOR_COND (t));
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_c_whitespace (this);
+      if (FOR_EXPR (t))
+	expression (FOR_EXPR (t));
+      pp_c_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (FOR_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
+      /* jump-statement:
+	    goto identifier;
+	    continue ;
+	    return expression(opt) ;  */
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
+    default:
+      if (pp_needs_newline (this))
+	pp_newline_and_indent (this, 0);
+      dump_generic_node (this, t, pp_indentation (this), TDF_NONE, true);
+    }
 }
 
 

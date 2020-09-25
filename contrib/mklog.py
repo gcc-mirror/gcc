@@ -38,6 +38,7 @@ from unidiff import PatchSet
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 dr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<dr>DR [0-9]+)')
+dg_regex = re.compile(r'{\s+dg-(error|warning)')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
 comment_regex = re.compile(r'^\/\*')
 struct_regex = re.compile(r'^(class|struct|union|enum)\s+'
@@ -137,7 +138,10 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
 
         # Extract PR entries from newly added tests
         if 'testsuite' in file.path and file.is_added_file:
-            for line in list(file)[0]:
+            # Only search first ten lines as later lines may
+            # contains commented code which a note that it
+            # has not been tested due to a certain PR or DR.
+            for line in list(file)[0][0:10]:
                 m = pr_regex.search(line.value)
                 if m:
                     pr = m.group('pr')
@@ -149,7 +153,8 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                         dr = m.group('dr')
                         if dr not in prs:
                             prs.append(dr)
-                    else:
+                    elif dg_regex.search(line.value):
+                        # Found dg-warning/dg-error line
                         break
 
     if fill_pr_titles:

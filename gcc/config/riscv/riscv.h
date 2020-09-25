@@ -941,7 +941,7 @@ extern unsigned riscv_stack_boundary;
 
 /* This is the maximum value that can be represented in a compressed load/store
    offset (an unsigned 5-bit value scaled by 4).  */
-#define CSW_MAX_OFFSET ((4LL << C_S_BITS) - 1) & ~3
+#define CSW_MAX_OFFSET (((4LL << C_S_BITS) - 1) & ~3)
 
 /* Called from RISCV_REORG, this is defined in riscv-sr.c.  */
 

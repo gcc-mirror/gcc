@@ -1202,10 +1202,10 @@ release_recorded_exits (function *fn)
 
 /* Returns the list of the exit edges of a LOOP.  */
 
-vec<edge> 
+auto_vec<edge>
 get_loop_exit_edges (const class loop *loop, basic_block *body)
 {
-  vec<edge> edges = vNULL;
+  auto_vec<edge> edges;
   edge e;
   unsigned i;
   edge_iterator ei;

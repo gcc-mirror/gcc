@@ -771,7 +771,7 @@ sort_hist_values (histogram_value hist)
   int counters = hist->hvalue.counters[1];
   for (int i = 0; i < counters - 1; i++)
   /* Hist value is organized as:
-     [total_executions, N, counter1, ..., valueN, counterN]
+     [total_executions, N, value1, counter1, ..., valueN, counterN]
      Use decrease bubble sort to rearrange it.  The sort starts from <value1,
      counter1> and compares counter first.  If counter is same, compares the
      value, exchange it if small to keep stable.  */
@@ -1375,7 +1375,7 @@ branch_prob (bool thunk)
 	      seen_locations.add (loc);
 	      expanded_location curr_location = expand_location (loc);
 	      output_location (&streamed_locations, curr_location.file,
-			       curr_location.line, &offset, bb);
+			       MAX (1, curr_location.line), &offset, bb);
 	    }
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1386,7 +1386,7 @@ branch_prob (bool thunk)
 		{
 		  seen_locations.add (loc);
 		  output_location (&streamed_locations, gimple_filename (stmt),
-				   gimple_lineno (stmt), &offset, bb);
+				   MAX (1, gimple_lineno (stmt)), &offset, bb);
 		}
 	    }
 
@@ -1401,7 +1401,7 @@ branch_prob (bool thunk)
 	    {
 	      expanded_location curr_location = expand_location (loc);
 	      output_location (&streamed_locations, curr_location.file,
-			       curr_location.line, &offset, bb);
+			       MAX (1, curr_location.line), &offset, bb);
 	    }
 
 	  if (offset)

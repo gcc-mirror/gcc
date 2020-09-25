@@ -9212,7 +9212,7 @@
 	operands[2] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[2], mem);
 	}
     }
@@ -9295,7 +9295,7 @@
 	operands[3] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[3], mem);
 	}
     }
@@ -11213,7 +11213,7 @@
 	  [(match_operand 3 "cc_register" "") (const_int 0)])
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "l,r"))
 	 (match_operand:SI 1 "s_register_operand" "0,0")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && !TARGET_COND_ARITH"
   "#"
   "&& reload_completed"
   [(cond_exec (match_op_dup 4 [(match_dup 3) (const_int 0)])

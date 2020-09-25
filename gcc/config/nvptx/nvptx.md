@@ -146,6 +146,13 @@
   return true;
 })
 
+;; Test for a function symbol ref operand
+(define_predicate "symbol_ref_function_operand"
+  (match_code "symbol_ref")
+{
+  return SYMBOL_REF_FUNCTION_P (op);
+})
+
 (define_attr "predicable" "false,true"
   (const_string "true"))
 
@@ -240,6 +247,17 @@
   return nvptx_output_mov_insn (operands[0], operands[1]);
 }
   [(set_attr "subregs_ok" "true")])
+
+;; ptxas segfaults on 'mov.u64 %r24,bar+4096', so break it up.
+(define_split
+  [(set (match_operand:DI 0 "nvptx_register_operand")
+	(const:DI (plus:DI (match_operand:DI 1 "symbol_ref_function_operand")
+			   (match_operand 2 "const_int_operand"))))]
+  ""
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 2)))
+  ]
+  "")
 
 (define_insn "*mov<mode>_insn"
   [(set (match_operand:SDFM 0 "nonimmediate_operand" "=R,R,m")

@@ -82,6 +82,10 @@ The maximum length of a constant string for a builtin string cmp call eligible f
 Common Joined UInteger Var(param_case_values_threshold) Param Optimization
 The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine.
 
+-param=max-switch-clustering-attempts=
+Common Joined UInteger Var(param_max_switch_clustering_attempts) Param Optimization Init(10000)
+The maximum number of clustering attempts used in bit-test and jump-table switch expansion.
+
 -param=comdat-sharing-probability=
 Common Joined UInteger Var(param_comdat_sharing_probability) Init(20) Param Optimization
 Probability that COMDAT function will be shared with different compilation unit.
@@ -875,6 +879,22 @@ Maximum size of a single store merging region in bytes.
 -param=switch-conversion-max-branch-ratio=
 Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) IntegerRange(1, 65536) Param Optimization
 The maximum ratio between array size and switch branches for a switch conversion to take place.
+
+-param=modref-max-bases=
+Common Joined UInteger Var(param_modref_max_bases) Init(32)
+Maximum number of bases stored in each modref tree.
+
+-param=modref-max-refs=
+Common Joined UInteger Var(param_modref_max_refs) Init(16)
+Maximum number of references stored in each modref base.
+
+-param=modref-max-accesses=
+Common Joined UInteger Var(param_modref_max_accesses) Init(16)
+Maximum number of accesse stored in each modref reference.
+
+-param=modref-max-tests=
+Common Joined UInteger Var(param_modref_max_tests) Init(64)
+Maximum number of tests performed by modref query.
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization

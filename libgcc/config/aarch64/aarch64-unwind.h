@@ -55,7 +55,8 @@ aarch64_cie_signed_with_b_key (struct _Unwind_Context *context)
 
 static inline void *
 aarch64_demangle_return_addr (struct _Unwind_Context *context,
-			      _Unwind_FrameState *fs, _Unwind_Word addr_word)
+			      _Unwind_FrameState *fs ATTRIBUTE_UNUSED,
+			      _Unwind_Word addr_word)
 {
   void *addr = (void *)addr_word;
   if (context->flags & RA_SIGNED_BIT)

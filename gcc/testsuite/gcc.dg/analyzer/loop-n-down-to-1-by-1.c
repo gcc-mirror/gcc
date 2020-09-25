@@ -24,8 +24,8 @@ void test(int n)
       __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
   }
 
-  __analyzer_eval (i <= 0); /* { dg-warning "TRUE" "true" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
+  __analyzer_eval (i <= 0); /* { dg-warning "TRUE" "true" } */
+
 
   __analyzer_eval (i == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
   /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */

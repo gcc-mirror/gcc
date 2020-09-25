@@ -175,6 +175,8 @@ public:
   void print_source_line (pretty_printer *pp) const;
   void dump () const;
 
+  json::object *to_json () const;
+
   hashval_t hash () const;
   bool operator== (const program_point &other) const
   {
@@ -293,6 +295,8 @@ public:
 
   /* For before_stmt, go to next stmt.  */
   void next_stmt () { m_function_point.next_stmt (); }
+
+  program_point get_next () const;
 
  private:
   function_point m_function_point;

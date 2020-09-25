@@ -3530,6 +3530,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	}
     }
 
+  /* We should have handled the cases where the formal arglist is null
+     already.  */
+  gcc_assert (n > 0);
+
   /* The argument lists are compatible.  We now relink a new actual
      argument list with null arguments in the right places.  The head
      of the list remains the head.  */

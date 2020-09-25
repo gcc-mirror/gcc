@@ -819,7 +819,7 @@ hash_table<Descriptor, Lazy, Allocator>::expand ()
       if (!is_empty (x) && !is_deleted (x))
         {
           value_type *q = find_empty_slot_for_expand (Descriptor::hash (x));
-	  new ((void*) q) value_type (x);
+	  new ((void*) q) value_type (std::move (x));
         }
 
       p++;

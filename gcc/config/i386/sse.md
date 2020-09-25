@@ -1867,7 +1867,7 @@
 	     (match_operand:<ssescalarmode> 1 "memory_operand" "m"))
 	  (match_operand:VF_AVX512 2 "register_operand" "v")))]
   "TARGET_AVX512F && <mask_mode512bit_condition>"
-  "vmul<ssemodesuffix>\t{%1<avx512bcst>, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1<<avx512bcst>>}"
+  "vmul<ssemodesuffix>\t{%1<avx512bcst>, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1<avx512bcst>}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemul")
    (set_attr "mode" "<MODE>")])
@@ -1960,7 +1960,7 @@
 	  (vec_duplicate:VF_AVX512
 	     (match_operand:<ssescalarmode> 2 "memory_operand" "m"))))]
   "TARGET_AVX512F && <mask_mode512bit_condition>"
-  "vdiv<ssemodesuffix>\t{%2<avx512bcst>, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<<avx512bcst>>}"
+  "vdiv<ssemodesuffix>\t{%2<avx512bcst>, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<avx512bcst>}"
   [(set_attr "prefix" "evex")
     (set_attr "type" "ssediv")
    (set_attr "mode" "<MODE>")])

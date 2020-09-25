@@ -4011,7 +4011,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* 2. Types we need to define or look up.  */
 
   tree fr_name = get_fn_local_identifier (orig, "frame");
-  tree coro_frame_type = xref_tag (record_type, fr_name, ts_current, false);
+  tree coro_frame_type = xref_tag (record_type, fr_name);
   DECL_CONTEXT (TYPE_NAME (coro_frame_type)) = current_scope ();
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
   tree act_des_fn_type

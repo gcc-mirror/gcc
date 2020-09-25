@@ -161,7 +161,11 @@ class exploded_node : public dnode<eg_traits>
     /* Node was left unprocessed due to merger; it won't have had
        exploded_graph::process_node called on it.  */
     STATUS_MERGER,
+
+    /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
+    STATUS_BULK_MERGED
   };
+  static const char * status_to_str (enum status s);
 
   exploded_node (const point_and_state &ps, int index);
 
@@ -175,6 +179,8 @@ class exploded_node : public dnode<eg_traits>
   void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
   void dump (FILE *fp, const extrinsic_state &ext_state) const;
   void dump (const extrinsic_state &ext_state) const;
+
+  json::object *to_json (const extrinsic_state &ext_state) const;
 
   /* The result of on_stmt.  */
   struct on_stmt_flags
@@ -303,6 +309,8 @@ class exploded_edge : public dedge<eg_traits>
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
+
+  json::object *to_json () const;
 
   //private:
   const superedge *const m_sedge;
@@ -649,6 +657,10 @@ public:
   exploded_node *take_next ();
   exploded_node *peek_next ();
   void add_node (exploded_node *enode);
+  int get_scc_id (const supernode &snode) const
+  {
+    return m_scc.get_scc_id (snode.m_index);
+  }
 
 private:
   class key_t
@@ -730,6 +742,7 @@ public:
 
   void build_initial_worklist ();
   void process_worklist ();
+  bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
 
   exploded_node *get_or_create_node (const program_point &point,
@@ -774,10 +787,17 @@ public:
   void dump_states_for_supernode (FILE *, const supernode *snode) const;
   void dump_exploded_nodes () const;
 
+  json::object *to_json () const;
+
   exploded_node *get_node_by_index (int idx) const;
 
   const call_string_data_map_t *get_per_call_string_data () const
   { return &m_per_call_string_data; }
+
+  int get_scc_id (const supernode &node) const
+  {
+    return m_worklist.get_scc_id (node);
+  }
 
 private:
   void print_bar_charts (pretty_printer *pp) const;
@@ -860,17 +880,20 @@ class feasibility_problem
 {
 public:
   feasibility_problem (unsigned eedge_idx,
-		       const region_model &model,
 		       const exploded_edge &eedge,
-		       const gimple *last_stmt)
-  : m_eedge_idx (eedge_idx), m_model (model), m_eedge (eedge),
-    m_last_stmt (last_stmt)
+		       const gimple *last_stmt,
+		       rejected_constraint *rc)
+  : m_eedge_idx (eedge_idx), m_eedge (eedge),
+    m_last_stmt (last_stmt), m_rc (rc)
   {}
+  ~feasibility_problem () { delete m_rc; }
+
+  void dump_to_pp (pretty_printer *pp) const;
 
   unsigned m_eedge_idx;
-  region_model m_model;
   const exploded_edge &m_eedge;
   const gimple *m_last_stmt;
+  rejected_constraint *m_rc;
 };
 
 /* Finding the shortest exploded_path within an exploded_graph.  */

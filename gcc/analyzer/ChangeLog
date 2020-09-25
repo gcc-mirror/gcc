@@ -1,3 +1,214 @@
+2020-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97178
+	* engine.cc (impl_run_checkers): Update for change to ext_state
+	ctor.
+	* program-state.cc (selftest::test_sm_state_map): Pass an engine
+	instance to ext_state ctor.
+	(selftest::test_program_state_1): Likewise.
+	(selftest::test_program_state_2): Likewise.
+	(selftest::test_program_state_merging): Likewise.
+	(selftest::test_program_state_merging_2): Likewise.
+	* program-state.h (extrinsic_state::extrinsic_state): Remove NULL
+	default value for "eng" param.
+
+2020-09-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* analyzer-logging.cc: Guard '#pragma ... ignored "-Wformat-diag"'
+	by '#if __GNUC__ >= 10'
+	* analyzer.h: Likewise.
+	* call-string.cc: Likewise.
+
+2020-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt): Replace sequence of dyn_cast
+	with switch.
+
+2020-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* analysis-plan.cc: Include "json.h".
+	* analyzer.opt (fdump-analyzer-json): New.
+	* call-string.cc: Include "json.h".
+	(call_string::to_json): New.
+	* call-string.h (call_string::to_json): New decl.
+	* checker-path.cc: Include "json.h".
+	* constraint-manager.cc: Include "json.h".
+	(equiv_class::to_json): New.
+	(constraint::to_json): New.
+	(constraint_manager::to_json): New.
+	* constraint-manager.h (equiv_class::to_json): New decl.
+	(constraint::to_json): New decl.
+	(constraint_manager::to_json): New decl.
+	* diagnostic-manager.cc: Include "json.h".
+	(saved_diagnostic::to_json): New.
+	(diagnostic_manager::to_json): New.
+	* diagnostic-manager.h (saved_diagnostic::to_json): New decl.
+	(diagnostic_manager::to_json): New decl.
+	* engine.cc: Include "json.h", <zlib.h>.
+	(exploded_node::status_to_str): New.
+	(exploded_node::to_json): New.
+	(exploded_edge::to_json): New.
+	(exploded_graph::to_json): New.
+	(dump_analyzer_json): New.
+	(impl_run_checkers): Call it.
+	* exploded-graph.h (exploded_node::status_to_str): New decl.
+	(exploded_node::to_json): New.
+	(exploded_edge::to_json): New.
+	(exploded_graph::to_json): New.
+	* pending-diagnostic.cc: Include "json.h".
+	* program-point.cc: Include "json.h".
+	(program_point::to_json): New.
+	* program-point.h (program_point::to_json): New decl.
+	* program-state.cc: Include "json.h".
+	(extrinsic_state::to_json): New.
+	(sm_state_map::to_json): New.
+	(program_state::to_json): New.
+	* program-state.h (extrinsic_state::to_json): New decl.
+	(sm_state_map::to_json): New decl.
+	(program_state::to_json): New decl.
+	* region-model-impl-calls.cc: Include "json.h".
+	* region-model-manager.cc: Include "json.h".
+	* region-model-reachability.cc: Include "json.h".
+	* region-model.cc: Include "json.h".
+	* region-model.h (svalue::to_json): New decl.
+	(region::to_json): New decl.
+	* region.cc: Include "json.h".
+	(region::to_json: New.
+	* sm-file.cc: Include "json.h".
+	* sm-malloc.cc: Include "json.h".
+	* sm-pattern-test.cc: Include "json.h".
+	* sm-sensitive.cc: Include "json.h".
+	* sm-signal.cc: Include "json.h".
+	(signal_delivery_edge_info_t::to_json): New.
+	* sm-taint.cc: Include "json.h".
+	* sm.cc: Include "diagnostic.h", "tree-diagnostic.h", and
+	"json.h".
+	(state_machine::state::to_json): New.
+	(state_machine::to_json): New.
+	* sm.h (state_machine::state::to_json): New.
+	(state_machine::to_json): New.
+	* state-purge.cc: Include "json.h".
+	* store.cc: Include "json.h".
+	(binding_key::get_desc): New.
+	(binding_map::to_json): New.
+	(binding_cluster::to_json): New.
+	(store::to_json): New.
+	* store.h (binding_key::get_desc): New decl.
+	(binding_map::to_json): New decl.
+	(binding_cluster::to_json): New decl.
+	(store::to_json): New decl.
+	* supergraph.cc: Include "json.h".
+	(supergraph::to_json): New.
+	(supernode::to_json): New.
+	(superedge::to_json): New.
+	* supergraph.h (supergraph::to_json): New decl.
+	(supernode::to_json): New decl.
+	(superedge::to_json): New decl.
+	* svalue.cc: Include "json.h".
+	(svalue::to_json): New.
+
+2020-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97130
+	* region-model-impl-calls.cc (call_details::get_arg_type): New.
+	* region-model.cc (region_model::on_call_pre): Check that the
+	initial arg is a pointer before calling impl_call_memset and
+	impl_call_strlen.
+	* region-model.h (call_details::get_arg_type): New decl.
+
+2020-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93355
+	* sm-malloc.cc (malloc_state_machine::get_default_state): Look at
+	the base region when considering pointers.  Treat pointers to
+	decls as being non-heap.
+
+2020-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (warning_event::get_desc): Handle global state
+	changes.
+
+2020-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Handle strdup and
+	strndup as being malloc-like allocators.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (strongly_connected_components::strong_connect): Only
+	consider intraprocedural edges when creating SCCs.
+	(worklist::key_t::cmp): Add comment.  Treat call_string
+	differences as more important than differences of program_point
+	within a supernode.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (supernode_cluster::dump_dot): Show the SCC id
+	in the per-supernode clusters in FILENAME.eg.dot output.
+	(exploded_graph_annotator::add_node_annotations):
+	Show the SCC of the supernode in FILENAME.supernode.eg.dot output.
+	* exploded-graph.h (worklist::scc_id): New.
+	(exploded_graph::get_scc_id): New.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::dump_dot): Show STATUS_BULK_MERGED.
+	(exploded_graph::process_worklist): Call
+	maybe_process_run_of_before_supernode_enodes.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	New.
+	(exploded_graph_annotator::print_enode): Show STATUS_BULK_MERGED.
+	* exploded-graph.h (enum exploded_node::status): Add
+	STATUS_BULK_MERGED.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc
+	(exploded_graph::process_node) <case PK_BEFORE_SUPERNODE>:
+	Simplify by using program_point::get_next.
+	* program-point.cc (program_point::get_next): New.
+	* program-point.h (program_point::get_next): New decl.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::get_or_create_node): Show the
+	program point when issuing -Wanalyzer-too-complex due to hitting
+	the per-program-point limit.
+
+2020-09-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Treat getchar as
+	having no side-effects.
+
+2020-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96650
+	* constraint-manager.cc (merger_fact_visitor::on_fact): Replace
+	assertion that add_constraint succeeded with an assertion that
+	if it fails, -fanalyzer-transitivity is off.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (-param=analyzer-max-constraints=): New param.
+	* constraint-manager.cc
+	(constraint_manager::add_constraint_internal): Silently reject
+	attempts to add constraints when the above limit is reached.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96653
+	* constraint-manager.cc
+	(constraint_manager::get_or_add_equiv_class): Don't accumulate
+	transitive closure of all constraints on constants.
+
+2020-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97029
+	* analyzer.cc (is_setjmp_call_p): Require the initial arg to be a
+	pointer.
+	* region-model.cc (region_model::deref_rvalue): Assert that the
+	svalue is of pointer type.
+
 2020-09-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96798

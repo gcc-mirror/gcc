@@ -2360,7 +2360,7 @@ cgraph_node::get_availability (symtab_node *ref)
 	ref = cref->inlined_to;
     }
   enum availability avail;
-  if (!analyzed)
+  if (!analyzed && !in_other_partition)
     avail = AVAIL_NOT_AVAILABLE;
   else if (local)
     avail = AVAIL_LOCAL;

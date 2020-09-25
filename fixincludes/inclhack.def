@@ -553,24 +553,28 @@ fix = {
   hackname  = aix_externcpp1;
   mach      = "*-*-aix*";
   files     = "sys/socket.h";
-  select    = "#ifdef __cplusplus";
+  select    = "#ifndef _KERNEL\n"
+	      "#ifdef __cplusplus";
   c_fix     = format;
-  c_fix_arg = "#ifdef __cplusplus\n"
+  c_fix_arg = "#ifndef _KERNEL\n"
+	      "#ifdef __cplusplus\n"
               "extern \"C++\" {";
-  test_text = "#ifdef __cplusplus";
-
+  test_text = "#ifndef _KERNEL\n"
+	      "#ifdef __cplusplus";
 };
 
 fix = {
   hackname  = aix_externcpp2;
   mach      = "*-*-aix*";
   files     = "sys/socket.h";
-  select    = "#else  /\\* __cplusplus \\*/";
+  select    = "#endif /\\* COMPAT_43 \\*/\n"
+	      "#else  /\\* __cplusplus \\*/";
   c_fix     = format;
-  c_fix_arg = "} /* extern \"C++\" */\n"
+  c_fix_arg = "#endif /* COMPAT_43 */\n"
+	      "} /* extern \"C++\" */\n"
               "#else  /* __cplusplus */";
-  test_text = "#else  /* __cplusplus */";
-
+  test_text = "#endif /* COMPAT_43 */\n"
+	      "#else  /* __cplusplus */";
 };
 
 /*

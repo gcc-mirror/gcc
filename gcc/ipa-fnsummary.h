@@ -357,6 +357,8 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
 void ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset = true);
 void compute_fn_summary (struct cgraph_node *, bool);
+bool refs_local_or_readonly_memory_p (tree);
+bool points_to_local_or_readonly_memory_p (tree);
 
 
 void evaluate_properties_for_edge (struct cgraph_edge *e,

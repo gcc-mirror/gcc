@@ -368,11 +368,10 @@ get_loops_exits (bitmap *loop_exits)
 
   FOR_EACH_LOOP (loop, 0)
     {
-      vec<edge> exit_edges = get_loop_exit_edges (loop);
+      auto_vec<edge> exit_edges = get_loop_exit_edges (loop);
       loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);
       FOR_EACH_VEC_ELT (exit_edges, j, e)
         bitmap_set_bit (loop_exits[loop->num], e->dest->index);
-      exit_edges.release ();
     }
 }
 

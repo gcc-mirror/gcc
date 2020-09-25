@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "options.h"
@@ -114,6 +115,17 @@ svalue::get_desc (bool simple) const
   pp_format_decoder (&pp) = default_tree_printer;
   dump_to_pp (&pp, simple);
   return label_text::take (xstrdup (pp_formatted_text (&pp)));
+}
+
+/* Return a new json::string describing the svalue.  */
+
+json::value *
+svalue::to_json () const
+{
+  label_text desc = get_desc (true);
+  json::value *sval_js = new json::string (desc.m_buffer);
+  desc.maybe_free ();
+  return sval_js;
 }
 
 /* If this svalue is a constant_svalue, return the underlying tree constant.

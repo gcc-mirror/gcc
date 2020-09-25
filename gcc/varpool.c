@@ -479,7 +479,7 @@ varpool_node::add (tree decl)
 enum availability
 varpool_node::get_availability (symtab_node *ref)
 {
-  if (!definition)
+  if (!definition && !in_other_partition)
     return AVAIL_NOT_AVAILABLE;
   if (!TREE_PUBLIC (decl))
     return AVAIL_AVAILABLE;

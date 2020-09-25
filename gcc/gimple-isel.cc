@@ -138,22 +138,11 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
   if (icode == CODE_FOR_nothing)
     {
       if (tcode == LT_EXPR
-	  && op0a == op0
-	  && TREE_CODE (op0) == VECTOR_CST)
+	  && op0a == op0)
 	{
 	  /* A VEC_COND_EXPR condition could be folded from EQ_EXPR/NE_EXPR
 	     into a constant when only get_vcond_eq_icode is supported.
-	     Verify < 0 and != 0 behave the same and change it to NE_EXPR.  */
-	  unsigned HOST_WIDE_INT nelts;
-	  if (!VECTOR_CST_NELTS (op0).is_constant (&nelts))
-	    {
-	      if (VECTOR_CST_STEPPED_P (op0))
-		gcc_unreachable ();
-	      nelts = vector_cst_encoded_nelts (op0);
-	    }
-	  for (unsigned int i = 0; i < nelts; ++i)
-	    if (tree_int_cst_sgn (vector_cst_elt (op0, i)) == 1)
-	      gcc_unreachable ();
+	     Try changing it to NE_EXPR.  */
 	  tcode = NE_EXPR;
 	}
       if (tcode == EQ_EXPR || tcode == NE_EXPR)

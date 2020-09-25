@@ -4776,12 +4776,12 @@ multi_block_pseudo_p (int regno)
   if (regno < FIRST_PSEUDO_REGISTER)
     return false;
 
-    EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
-      if (bb == NULL)
-	bb = BLOCK_FOR_INSN (lra_insn_recog_data[uid]->insn);
-      else if (BLOCK_FOR_INSN (lra_insn_recog_data[uid]->insn) != bb)
-	return true;
-    return false;
+  EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
+    if (bb == NULL)
+      bb = BLOCK_FOR_INSN (lra_insn_recog_data[uid]->insn);
+    else if (BLOCK_FOR_INSN (lra_insn_recog_data[uid]->insn) != bb)
+      return true;
+  return false;
 }
 
 /* Return true if LIST contains a deleted insn.  */

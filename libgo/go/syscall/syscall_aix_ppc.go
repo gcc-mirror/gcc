@@ -8,6 +8,9 @@ package syscall
 
 import "unsafe"
 
+//sys	ptrace(request int, id int, addr uintptr, data int, buff uintptr) (val int)
+//ptrace(request _C_int, id int, addr uintptr, data _C_int, buff *byte) _C_int
+
 // AIX does not define a specific structure but instead uses separate
 // ptrace calls for the different registers.
 type PtraceRegs struct {

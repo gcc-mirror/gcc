@@ -984,9 +984,6 @@ switch_conversion::expand (gswitch *swtch)
      during gimplification).  */
   gcc_checking_assert (TREE_TYPE (m_index_expr) != error_mark_node);
 
-  /* A switch on a constant should have been optimized in tree-cfg-cleanup.  */
-  gcc_checking_assert (!TREE_CONSTANT (m_index_expr));
-
   /* Prefer bit test if possible.  */
   if (tree_fits_uhwi_p (m_range_size)
       && bit_test_cluster::can_be_handled (tree_to_uhwi (m_range_size), m_uniq)
@@ -1186,6 +1183,7 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 
   min.quick_push (min_cluster_item (0, 0, 0));
 
+  HOST_WIDE_INT attempts = 0;
   for (unsigned i = 1; i <= l; i++)
     {
       /* Set minimal # of clusters with i-th item to infinite.  */
@@ -1196,6 +1194,14 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 	  unsigned HOST_WIDE_INT s = min[j].m_non_jt_cases;
 	  if (i - j < case_values_threshold ())
 	    s += i - j;
+
+	  if (attempts++ == param_max_switch_clustering_attempts)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, ";; Bail out: "
+			 "--param=max-switch-clustering-attempts reached\n");
+	      return clusters.copy ();
+	    }
 
 	  /* Prefer clusters with smaller number of numbers covered.  */
 	  if ((min[j].m_count + 1 < min[i].m_count
@@ -1311,6 +1317,7 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 
   min.quick_push (min_cluster_item (0, 0, 0));
 
+  HOST_WIDE_INT attempts = 0;
   for (unsigned i = 1; i <= l; i++)
     {
       /* Set minimal # of clusters with i-th item to infinite.  */
@@ -1318,6 +1325,13 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 
       for (unsigned j = 0; j < i; j++)
 	{
+	  if (attempts++ == param_max_switch_clustering_attempts)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, ";; Bail out: "
+			 "--param=max-switch-clustering-attempts reached\n");
+	      return clusters.copy ();
+	    }
 	  if (min[j].m_count + 1 < min[i].m_count
 	      && can_be_handled (clusters, j, i - 1))
 	    min[i] = min_cluster_item (min[j].m_count + 1, j, INT_MAX);

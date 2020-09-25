@@ -1,3 +1,8 @@
+2020-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/trans.c (gigi): Adjust build_optimization_node
+	caller.
+
 2020-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h: Fix pilot error in previous change.

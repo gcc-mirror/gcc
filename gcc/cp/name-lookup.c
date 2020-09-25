@@ -8060,11 +8060,11 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 
       if (processing_template_decl)
 	{
-	  /* This may change after the call to
-	     push_template_decl_real, but we want the original value.  */
+	  /* This may change after the call to push_template_decl, but
+	     we want the original value.  */
 	  tree name = DECL_NAME (decl);
 
-	  decl = push_template_decl_real (decl, is_friend);
+	  decl = push_template_decl (decl, is_friend);
 	  if (decl == error_mark_node)
 	    return error_mark_node;
 

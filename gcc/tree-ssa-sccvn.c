@@ -4824,6 +4824,43 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    }
 	}
       break;
+    case TRUNC_DIV_EXPR:
+      if (TYPE_UNSIGNED (type))
+	break;
+      /* Fallthru.  */
+    case RDIV_EXPR:
+    case MULT_EXPR:
+      /* Match up ([-]a){/,*}([-])b with v=a{/,*}b, replacing it with -v.  */
+      if (! HONOR_SIGN_DEPENDENT_ROUNDING (type))
+	{
+	  tree rhs[2];
+	  rhs[0] = rhs1;
+	  rhs[1] = gimple_assign_rhs2 (stmt);
+	  for (unsigned i = 0; i <= 1; ++i)
+	    {
+	      unsigned j = i == 0 ? 1 : 0;
+	      tree ops[2];
+	      gimple_match_op match_op (gimple_match_cond::UNCOND,
+					NEGATE_EXPR, type, rhs[i]);
+	      ops[i] = vn_nary_build_or_lookup_1 (&match_op, false);
+	      ops[j] = rhs[j];
+	      if (ops[i]
+		  && (ops[0] = vn_nary_op_lookup_pieces (2, code,
+							 type, ops, NULL)))
+		{
+		  gimple_match_op match_op (gimple_match_cond::UNCOND,
+					    NEGATE_EXPR, type, ops[0]);
+		  result = vn_nary_build_or_lookup (&match_op);
+		  if (result)
+		    {
+		      bool changed = set_ssa_val_to (lhs, result);
+		      vn_nary_op_insert_stmt (stmt, result);
+		      return changed;
+		    }
+		}
+	    }
+	}
+      break;
     default:
       break;
     }
@@ -5739,6 +5776,7 @@ eliminate_dom_walker::eliminate_insert (basic_block bb,
   if (!stmt
       || (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
 	  && gimple_assign_rhs_code (stmt) != VIEW_CONVERT_EXPR
+	  && gimple_assign_rhs_code (stmt) != NEGATE_EXPR
 	  && gimple_assign_rhs_code (stmt) != BIT_FIELD_REF
 	  && (gimple_assign_rhs_code (stmt) != BIT_AND_EXPR
 	      || TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST)))

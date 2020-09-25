@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
@@ -61,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/state-purge.h"
 #include "analyzer/bar-chart.h"
+#include <zlib.h>
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -764,6 +766,19 @@ eg_traits::dump_args_t::show_enode_details_p (const exploded_node &enode) const
 
 /* class exploded_node : public dnode<eg_traits>.  */
 
+const char *
+exploded_node::status_to_str (enum status s)
+{
+  switch (s)
+    {
+    default: gcc_unreachable ();
+    case STATUS_WORKLIST: return "WORKLIST";
+    case STATUS_PROCESSED: return "PROCESSED";
+    case STATUS_MERGER: return "MERGER";
+    case STATUS_BULK_MERGED: return "BULK_MERGED";
+    }
+}
+
 /* exploded_node's ctor.  */
 
 exploded_node::exploded_node (const point_and_state &ps,
@@ -848,6 +863,8 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_printf (pp, "EN: %i", m_index);
   if (m_status == STATUS_MERGER)
     pp_string (pp, " (merger)");
+  else if (m_status == STATUS_BULK_MERGED)
+    pp_string (pp, " (bulk merged)");
   pp_newline (pp);
 
   if (args.show_enode_details_p (*this))
@@ -950,6 +967,28 @@ exploded_node::dump (const extrinsic_state &ext_state) const
   dump (stderr, ext_state);
 }
 
+/* Return a new json::object of the form
+   {"point"  : object for program_point,
+    "state"  : object for program_state,
+    "status" : str,
+    "idx"    : int,
+    "processed_stmts" : int}.  */
+
+json::object *
+exploded_node::to_json (const extrinsic_state &ext_state) const
+{
+  json::object *enode_obj = new json::object ();
+
+  enode_obj->set ("point", get_point ().to_json ());
+  enode_obj->set ("state", get_state ().to_json (ext_state));
+  enode_obj->set ("status", new json::string (status_to_str (m_status)));
+  enode_obj->set ("idx", new json::integer_number (m_index));
+  enode_obj->set ("processed_stmts",
+		  new json::integer_number (m_num_processed_stmts));
+
+  return enode_obj;
+}
+
 } // namespace ana
 
 /* Return true if FNDECL has a gimple body.  */
@@ -1024,62 +1063,88 @@ exploded_node::on_stmt (exploded_graph &eg,
 				  &old_state, state,
 				  stmt);
 
-  if (const gassign *assign = dyn_cast <const gassign *> (stmt))
-    state->m_region_model->on_assignment (assign, &ctxt);
-
-  if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
-    state->m_region_model->on_return (return_, &ctxt);
-
-  /* Track whether we have a gcall to a function that's not recognized by
-     anything, for which we don't have a function body, or for which we
-     don't know the fndecl.  */
   bool unknown_side_effects = false;
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+
+  switch (gimple_code (stmt))
     {
-      /* Debugging/test support.  */
-      if (is_special_named_call_p (call, "__analyzer_describe", 2))
-	state->m_region_model->impl_call_analyzer_describe (call, &ctxt);
-      else if (is_special_named_call_p (call, "__analyzer_dump", 0))
-	{
-	  /* Handle the builtin "__analyzer_dump" by dumping state
-	     to stderr.  */
-	  state->dump (eg.get_ext_state (), true);
-	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
-	{
-	  /* Handle the builtin "__analyzer_dump_path" by queuing a
-	     diagnostic at this exploded_node.  */
-	  ctxt.warn (new dump_path_diagnostic ());
-	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_region_model", 0))
-	{
-	  /* Handle the builtin "__analyzer_dump_region_model" by dumping
-	     the region model's state to stderr.  */
-	  state->m_region_model->dump (false);
-	}
-      else if (is_special_named_call_p (call, "__analyzer_eval", 1))
-	state->m_region_model->impl_call_analyzer_eval (call, &ctxt);
-      else if (is_special_named_call_p (call, "__analyzer_break", 0))
-	{
-	  /* Handle the builtin "__analyzer_break" by triggering a
-	     breakpoint.  */
-	  /* TODO: is there a good cross-platform way to do this?  */
-	  raise (SIGINT);
-	}
-      else if (is_special_named_call_p (call, "__analyzer_dump_exploded_nodes",
-					1))
-	{
-	  /* This is handled elsewhere.  */
-	}
-      else if (is_setjmp_call_p (call))
-	state->m_region_model->on_setjmp (call, this, &ctxt);
-      else if (is_longjmp_call_p (call))
-	{
-	  on_longjmp (eg, call, state, &ctxt);
-	  return on_stmt_flags::terminate_path ();
-	}
-      else
-	unknown_side_effects = state->m_region_model->on_call_pre (call, &ctxt);
+    default:
+      /* No-op for now.  */
+      break;
+
+    case GIMPLE_ASSIGN:
+      {
+	const gassign *assign = as_a <const gassign *> (stmt);
+	state->m_region_model->on_assignment (assign, &ctxt);
+      }
+      break;
+
+    case GIMPLE_ASM:
+      /* No-op for now.  */
+      break;
+
+    case GIMPLE_CALL:
+      {
+	/* Track whether we have a gcall to a function that's not recognized by
+	   anything, for which we don't have a function body, or for which we
+	   don't know the fndecl.  */
+	const gcall *call = as_a <const gcall *> (stmt);
+
+	/* Debugging/test support.  */
+	if (is_special_named_call_p (call, "__analyzer_describe", 2))
+	  state->m_region_model->impl_call_analyzer_describe (call, &ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_dump", 0))
+	  {
+	    /* Handle the builtin "__analyzer_dump" by dumping state
+	       to stderr.  */
+	    state->dump (eg.get_ext_state (), true);
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
+	  {
+	    /* Handle the builtin "__analyzer_dump_path" by queuing a
+	       diagnostic at this exploded_node.  */
+	    ctxt.warn (new dump_path_diagnostic ());
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
+					  0))
+	  {
+	    /* Handle the builtin "__analyzer_dump_region_model" by dumping
+	       the region model's state to stderr.  */
+	    state->m_region_model->dump (false);
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_eval", 1))
+	  state->m_region_model->impl_call_analyzer_eval (call, &ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_break", 0))
+	  {
+	    /* Handle the builtin "__analyzer_break" by triggering a
+	       breakpoint.  */
+	    /* TODO: is there a good cross-platform way to do this?  */
+	    raise (SIGINT);
+	  }
+	else if (is_special_named_call_p (call,
+					  "__analyzer_dump_exploded_nodes",
+					  1))
+	  {
+	    /* This is handled elsewhere.  */
+	  }
+	else if (is_setjmp_call_p (call))
+	  state->m_region_model->on_setjmp (call, this, &ctxt);
+	else if (is_longjmp_call_p (call))
+	  {
+	    on_longjmp (eg, call, state, &ctxt);
+	    return on_stmt_flags::terminate_path ();
+	  }
+	else
+	  unknown_side_effects
+	    = state->m_region_model->on_call_pre (call, &ctxt);
+      }
+      break;
+
+    case GIMPLE_RETURN:
+      {
+	const greturn *return_ = as_a <const greturn *> (stmt);
+	state->m_region_model->on_return (return_, &ctxt);
+      }
+      break;
     }
 
   bool any_sm_changes = false;
@@ -1500,6 +1565,30 @@ exploded_edge::dump_dot (graphviz_out *gv, const dump_args_t &) const
   pp_printf (pp, "\"];\n");
 }
 
+/* Return a new json::object of the form
+   {"src_idx": int, the index of the source exploded edge,
+    "dst_idx": int, the index of the destination exploded edge,
+    "sedge": (optional) object for the superedge, if any,
+    "custom": (optional) str, a description, if this is a custom edge}.  */
+
+json::object *
+exploded_edge::to_json () const
+{
+  json::object *eedge_obj = new json::object ();
+  eedge_obj->set ("src_idx", new json::integer_number (m_src->m_index));
+  eedge_obj->set ("dst_idx", new json::integer_number (m_dest->m_index));
+  if (m_sedge)
+    eedge_obj->set ("sedge", m_sedge->to_json ());
+  if (m_custom_info)
+    {
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      m_custom_info->print (&pp);
+      eedge_obj->set ("custom", new json::string (pp_formatted_text (&pp)));
+    }
+  return eedge_obj;
+}
+
 /* struct stats.  */
 
 /* stats' ctor.  */
@@ -1613,6 +1702,9 @@ strongly_connected_components::strong_connect (unsigned index)
   superedge *sedge;
   FOR_EACH_VEC_ELT (v_snode->m_succs, i, sedge)
     {
+      if (sedge->get_kind () != SUPEREDGE_CFG_EDGE
+	  && sedge->get_kind () != SUPEREDGE_INTRAPROCEDURAL_CALL)
+	continue;
       supernode *w_snode = sedge->m_dest;
       per_node_data *w = &m_per_node[w_snode->m_index];
       if (w->m_index == -1)
@@ -1688,7 +1780,14 @@ worklist::add_node (exploded_node *enode)
 /* Comparator for implementing worklist::key_t comparison operators.
    Return negative if KA is before KB
    Return positive if KA is after KB
-   Return 0 if they are equal.  */
+   Return 0 if they are equal.
+
+   The ordering of the worklist is critical for performance and for
+   avoiding node explosions.  Ideally we want all enodes at a CFG join-point
+   with the same callstring to be sorted next to each other in the worklist
+   so that a run of consecutive enodes can be merged and processed "in bulk"
+   rather than individually or pairwise, minimizing the number of new enodes
+   created.  */
 
 int
 worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
@@ -1740,17 +1839,17 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 
   gcc_assert (snode_a == snode_b);
 
+  /* The points might vary by callstring; try sorting by callstring.  */
+  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
+  if (cs_cmp)
+    return cs_cmp;
+
   /* Order within supernode via program point.  */
   int within_snode_cmp
     = function_point::cmp_within_supernode (point_a.get_function_point (),
 					    point_b.get_function_point ());
   if (within_snode_cmp)
     return within_snode_cmp;
-
-  /* The points might vary by callstring; try sorting by callstring.  */
-  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
-  if (cs_cmp)
-    return cs_cmp;
 
   /* Otherwise, we ought to have the same program_point.  */
   gcc_assert (point_a == point_b);
@@ -1982,6 +2081,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       > param_analyzer_max_enodes_per_program_point)
     {
       pretty_printer pp;
+      point.print (&pp, format (false));
       print_enode_indices (&pp, per_point_data->m_enodes);
       if (logger)
 	logger->log ("not creating enode; too many at program point: %s",
@@ -2210,6 +2310,12 @@ exploded_graph::process_worklist ()
       if (logger)
 	logger->log ("next to process: EN: %i", node->m_index);
 
+      /* If we have a run of nodes that are before-supernode, try merging and
+	 processing them together, rather than pairwise or individually.  */
+      if (flag_analyzer_state_merge && node != m_origin)
+	if (maybe_process_run_of_before_supernode_enodes (node))
+	  goto handle_limit;
+
       /* Avoid exponential explosions of nodes by attempting to merge
 	 nodes that are at the same program point and which have
 	 sufficiently similar state.  */
@@ -2339,6 +2445,7 @@ exploded_graph::process_worklist ()
 
       process_node (node);
 
+    handle_limit:
       /* Impose a hard limit on the number of exploded nodes, to ensure
 	 that the analysis terminates in the face of pathological state
 	 explosion (or bugs).
@@ -2364,6 +2471,201 @@ exploded_graph::process_worklist ()
 	  return;
 	}
     }
+}
+
+/* Attempt to process a consecutive run of sufficiently-similar nodes in
+   the worklist at a CFG join-point (having already popped ENODE from the
+   head of the worklist).
+
+   If ENODE's point is of the form (before-supernode, SNODE) and the next
+   nodes in the worklist are a consecutive run of enodes of the same form,
+   for the same supernode as ENODE (but potentially from different in-edges),
+   process them all together, setting their status to STATUS_BULK_MERGED,
+   and return true.
+   Otherwise, return false, in which case ENODE must be processed in the
+   normal way.
+
+   When processing them all together, generate successor states based
+   on phi nodes for the appropriate CFG edges, and then attempt to merge
+   these states into a minimal set of merged successor states, partitioning
+   the inputs by merged successor state.
+
+   Create new exploded nodes for all of the merged states, and add edges
+   connecting the input enodes to the corresponding merger exploded nodes.
+
+   We hope we have a much smaller number of merged successor states
+   compared to the number of input enodes - ideally just one,
+   if all successor states can be merged.
+
+   Processing and merging many together as one operation rather than as
+   pairs avoids scaling issues where per-pair mergers could bloat the
+   graph with merger nodes (especially so after switch statements).  */
+
+bool
+exploded_graph::
+maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
+{
+  /* A struct for tracking per-input state.  */
+  struct item
+  {
+    item (exploded_node *input_enode)
+    : m_input_enode (input_enode),
+      m_processed_state (input_enode->get_state ()),
+      m_merger_idx (-1)
+    {}
+
+    exploded_node *m_input_enode;
+    program_state m_processed_state;
+    int m_merger_idx;
+  };
+
+  gcc_assert (enode->get_status () == exploded_node::STATUS_WORKLIST);
+  gcc_assert (enode->m_succs.length () == 0);
+
+  const program_point &point = enode->get_point ();
+
+  if (point.get_kind () != PK_BEFORE_SUPERNODE)
+    return false;
+
+  const supernode *snode = point.get_supernode ();
+
+  logger * const logger = get_logger ();
+  LOG_SCOPE (logger);
+
+  /* Find a run of enodes in the worklist that are before the same supernode,
+     but potentially from different in-edges.  */
+  auto_vec <exploded_node *> enodes;
+  enodes.safe_push (enode);
+  while (exploded_node *enode_2 = m_worklist.peek_next ())
+    {
+      gcc_assert (enode_2->get_status ()
+		  == exploded_node::STATUS_WORKLIST);
+      gcc_assert (enode_2->m_succs.length () == 0);
+
+      const program_point &point_2 = enode_2->get_point ();
+
+      if (point_2.get_kind () == PK_BEFORE_SUPERNODE
+	  && point_2.get_supernode () == snode
+	  && point_2.get_call_string () == point.get_call_string ())
+	{
+	  enodes.safe_push (enode_2);
+	  m_worklist.take_next ();
+	}
+      else
+	break;
+    }
+
+  /* If the only node is ENODE, then give up.  */
+  if (enodes.length () == 1)
+    return false;
+
+  if (logger)
+    logger->log ("got run of %i enodes for SN: %i",
+		 enodes.length (), snode->m_index);
+
+  /* All of these enodes have a shared successor point (even if they
+     were for different in-edges).  */
+  program_point next_point (point.get_next ());
+
+  /* Calculate the successor state for each enode in enodes.  */
+  auto_delete_vec<item> items (enodes.length ());
+  unsigned i;
+  exploded_node *iter_enode;
+  FOR_EACH_VEC_ELT (enodes, i, iter_enode)
+    {
+      item *it = new item (iter_enode);
+      items.quick_push (it);
+      const program_state &state = iter_enode->get_state ();
+      program_state *next_state = &it->m_processed_state;
+      const program_point &iter_point = iter_enode->get_point ();
+      if (const superedge *iter_sedge = iter_point.get_from_edge ())
+	{
+	  impl_region_model_context ctxt (*this, iter_enode,
+					  &state, next_state, NULL);
+	  const cfg_superedge *last_cfg_superedge
+	    = iter_sedge->dyn_cast_cfg_superedge ();
+	  if (last_cfg_superedge)
+	    next_state->m_region_model->update_for_phis
+	      (snode, last_cfg_superedge, &ctxt);
+	}
+    }
+
+  /* Attempt to partition the items into a set of merged states.
+     We hope we have a much smaller number of merged states
+     compared to the number of input enodes - ideally just one,
+     if all can be merged.  */
+  auto_delete_vec <program_state> merged_states;
+  auto_vec<item *> first_item_for_each_merged_state;
+  item *it;
+  FOR_EACH_VEC_ELT (items, i, it)
+    {
+      const program_state &it_state = it->m_processed_state;
+      program_state *merged_state;
+      unsigned iter_merger_idx;
+      FOR_EACH_VEC_ELT (merged_states, iter_merger_idx, merged_state)
+	{
+	  program_state merge (m_ext_state);
+	  if (it_state.can_merge_with_p (*merged_state, next_point, &merge))
+	    {
+	      *merged_state = merge;
+	      it->m_merger_idx = iter_merger_idx;
+	      if (logger)
+		logger->log ("reusing merger state %i for item %i (EN: %i)",
+			     it->m_merger_idx, i, it->m_input_enode->m_index);
+	      goto got_merger;
+	    }
+	}
+      /* If it couldn't be merged with any existing merged_states,
+	 create a new one.  */
+      if (it->m_merger_idx == -1)
+	{
+	  it->m_merger_idx = merged_states.length ();
+	  merged_states.safe_push (new program_state (it_state));
+	  first_item_for_each_merged_state.safe_push (it);
+	  if (logger)
+	    logger->log ("using new merger state %i for item %i (EN: %i)",
+			 it->m_merger_idx, i, it->m_input_enode->m_index);
+	}
+    got_merger:
+      gcc_assert (it->m_merger_idx >= 0);
+      gcc_assert (it->m_merger_idx < merged_states.length ());
+    }
+
+  /* Create merger nodes.  */
+  auto_vec<exploded_node *> next_enodes (merged_states.length ());
+  program_state *merged_state;
+  FOR_EACH_VEC_ELT (merged_states, i, merged_state)
+    {
+      exploded_node *src_enode
+	= first_item_for_each_merged_state[i]->m_input_enode;
+      exploded_node *next
+	= get_or_create_node (next_point, *merged_state, src_enode);
+      /* "next" could be NULL; we handle that when adding the edges below.  */
+      next_enodes.quick_push (next);
+      if (logger)
+	{
+	  if (next)
+	    logger->log ("using EN: %i for merger state %i", next->m_index, i);
+	  else
+	    logger->log ("using NULL enode for merger state %i", i);
+	}
+    }
+
+  /* Create edges from each input enode to the appropriate successor enode.
+     Update the status of the now-processed input enodes.  */
+  FOR_EACH_VEC_ELT (items, i, it)
+    {
+      exploded_node *next = next_enodes[it->m_merger_idx];
+      if (next)
+	add_edge (it->m_input_enode, next, NULL);
+      it->m_input_enode->set_status (exploded_node::STATUS_BULK_MERGED);
+    }
+
+  if (logger)
+    logger->log ("merged %i in-enodes into %i out-enode(s) at SN: %i",
+		 items.length (), merged_states.length (), snode->m_index);
+
+  return true;
 }
 
 /* Return true if STMT must appear at the start of its exploded node, and
@@ -2457,26 +2759,10 @@ exploded_graph::process_node (exploded_node *node)
 		 &ctxt);
 	  }
 
-	if (point.get_supernode ()->m_stmts.length () > 0)
-	  {
-	    program_point next_point
-	      = program_point::before_stmt (point.get_supernode (), 0,
-					    point.get_call_string ());
-	    exploded_node *next
-	      = get_or_create_node (next_point, next_state, node);
-	    if (next)
-	      add_edge (node, next, NULL);
-	  }
-	else
-	  {
-	    program_point next_point
-	      = program_point::after_supernode (point.get_supernode (),
-						point.get_call_string ());
-	    exploded_node *next = get_or_create_node (next_point, next_state,
-						      node);
-	    if (next)
-	      add_edge (node, next, NULL);
-	  }
+	program_point next_point (point.get_next ());
+	exploded_node *next = get_or_create_node (next_point, next_state, node);
+	if (next)
+	  add_edge (node, next, NULL);
       }
       break;
     case PK_BEFORE_STMT:
@@ -2858,6 +3144,55 @@ exploded_graph::dump_states_for_supernode (FILE *out,
 	   snode->m_index, state_idx);
 }
 
+/* Return a new json::object of the form
+   {"nodes" : [objs for enodes],
+    "edges" : [objs for eedges],
+    "ext_state": object for extrinsic_state,
+    "diagnostic_manager": object for diagnostic_manager}.  */
+
+json::object *
+exploded_graph::to_json () const
+{
+  json::object *egraph_obj = new json::object ();
+
+  /* Nodes.  */
+  {
+    json::array *nodes_arr = new json::array ();
+    unsigned i;
+    exploded_node *n;
+    FOR_EACH_VEC_ELT (m_nodes, i, n)
+      nodes_arr->append (n->to_json (m_ext_state));
+    egraph_obj->set ("nodes", nodes_arr);
+  }
+
+  /* Edges.  */
+  {
+    json::array *edges_arr = new json::array ();
+    unsigned i;
+    exploded_edge *n;
+    FOR_EACH_VEC_ELT (m_edges, i, n)
+      edges_arr->append (n->to_json ());
+    egraph_obj->set ("edges", edges_arr);
+  }
+
+  /* m_sg is JSONified at the top-level.  */
+
+  egraph_obj->set ("ext_state", m_ext_state.to_json ());
+  egraph_obj->set ("diagnostic_manager", m_diagnostic_manager.to_json ());
+
+  /* The following fields aren't yet being JSONified:
+     worklist m_worklist;
+     const state_purge_map *const m_purge_map;
+     const analysis_plan &m_plan;
+     stats m_global_stats;
+     function_stat_map_t m_per_function_stats;
+     stats m_functionless_stats;
+     call_string_data_map_t m_per_call_string_data;
+     auto_vec<int> m_PK_AFTER_SUPERNODE_per_snode;  */
+
+  return egraph_obj;
+}
+
 /* Look for the last use of SEARCH_STMT within this path.
    If found write the edge's index to *OUT_IDX and return true, otherwise
    return false.  */
@@ -2949,7 +3284,8 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 			 sedge->get_description (false));
 
 	  const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-	  if (!model.maybe_update_for_edge (*sedge, last_stmt, NULL))
+	  rejected_constraint *rc = NULL;
+	  if (!model.maybe_update_for_edge (*sedge, last_stmt, NULL, &rc))
 	    {
 	      if (logger)
 		{
@@ -2957,8 +3293,10 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 		  model.dump_to_pp (logger->get_printer (), true, false);
 		}
 	      if (out)
-		*out = new feasibility_problem (edge_idx, model, *eedge,
-						last_stmt);
+		*out = new feasibility_problem (edge_idx, *eedge,
+						last_stmt, rc);
+	      else
+		delete rc;
 	      return false;
 	    }
 	}
@@ -3064,6 +3402,22 @@ exploded_path::dump () const
   dump (stderr);
 }
 
+/* class feasibility_problem.  */
+
+void
+feasibility_problem::dump_to_pp (pretty_printer *pp) const
+{
+  pp_printf (pp, "edge from EN: %i to EN: %i",
+	     m_eedge.m_src->m_index, m_eedge.m_dest->m_index);
+  if (m_rc)
+    {
+      pp_string (pp, "; rejected constraint: ");
+      m_rc->dump_to_pp (pp);
+      pp_string (pp, "; rmodel: ");
+      m_rc->m_model.dump_to_pp (pp, true, false);
+    }
+}
+
 /* A family of cluster subclasses for use when generating .dot output for
    exploded graphs (-fdump-analyzer-exploded-graph), for grouping the
    enodes into hierarchical boxes.
@@ -3099,8 +3453,9 @@ public:
 		 (const void *)this);
     gv->indent ();
     gv->println ("style=\"dashed\";");
-    gv->println ("label=\"SN: %i (bb: %i)\";",
-		 m_supernode->m_index, m_supernode->m_bb->index);
+    gv->println ("label=\"SN: %i (bb: %i; scc: %i)\";",
+		 m_supernode->m_index, m_supernode->m_bb->index,
+		 args.m_eg.get_scc_id (*m_supernode));
 
     int i;
     exploded_node *enode;
@@ -3851,6 +4206,7 @@ public:
 
     gv->begin_td ();
     pp_string (pp, "BEFORE");
+    pp_printf (pp, " (scc: %i)", m_eg.get_scc_id (n));
     gv->end_td ();
 
     unsigned i;
@@ -3959,6 +4315,9 @@ private:
       case exploded_node::STATUS_MERGER:
 	pp_string (pp, "(M)");
 	break;
+      case exploded_node::STATUS_BULK_MERGED:
+	pp_string (pp, "(BM)");
+	break;
       }
     gv->end_tdtr ();
     /* Dump any saved_diagnostics at this enode.  */
@@ -4037,6 +4396,39 @@ private:
   auto_delete_vec<auto_vec <exploded_node *> > m_enodes_per_snodes;
 };
 
+/* Implement -fdump-analyzer-json.  */
+
+static void
+dump_analyzer_json (const supergraph &sg,
+		    const exploded_graph &eg)
+{
+  auto_timevar tv (TV_ANALYZER_DUMP);
+  char *filename = concat (dump_base_name, ".analyzer.json.gz", NULL);
+  gzFile output = gzopen (filename, "w");
+  if (!output)
+    {
+      error_at (UNKNOWN_LOCATION, "unable to open %qs for writing", filename);
+      free (filename);
+      return;
+    }
+
+  json::object *toplev_obj = new json::object ();
+  toplev_obj->set ("sgraph", sg.to_json ());
+  toplev_obj->set ("egraph", eg.to_json ());
+
+  pretty_printer pp;
+  toplev_obj->print (&pp);
+  pp_formatted_text (&pp);
+
+  delete toplev_obj;
+
+  if (gzputs (output, pp_formatted_text (&pp)) == EOF
+      || gzclose (output))
+    error_at (UNKNOWN_LOCATION, "error writing %qs", filename);
+
+  free (filename);
+}
+
 /* Run the analysis "engine".  */
 
 void
@@ -4091,7 +4483,7 @@ impl_run_checkers (logger *logger)
     }
 
   /* Extrinsic state shared by nodes in the graph.  */
-  const extrinsic_state ext_state (checkers, logger, &eng);
+  const extrinsic_state ext_state (checkers, &eng, logger);
 
   const analysis_plan plan (sg, logger);
 
@@ -4136,6 +4528,9 @@ impl_run_checkers (logger *logger)
       sg.dump_dot (filename, args);
       free (filename);
     }
+
+  if (flag_dump_analyzer_json)
+    dump_analyzer_json (sg, eg);
 
   delete purge_map;
 }

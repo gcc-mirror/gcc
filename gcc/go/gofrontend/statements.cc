@@ -4627,7 +4627,8 @@ Type_case_clauses::Type_case_clause::traverse(Traverse* traverse)
 // statements.
 
 void
-Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
+Type_case_clauses::Type_case_clause::lower(Gogo* gogo,
+					   Type* switch_val_type,
 					   Block* b,
 					   Temporary_statement* descriptor_temp,
 					   Unnamed_label* break_label,
@@ -4666,9 +4667,16 @@ Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
 				       Expression::make_nil(loc),
 				       loc);
       else if (type->interface_type() == NULL)
-        cond = Expression::make_binary(OPERATOR_EQEQ, ref,
-                                       Expression::make_type_descriptor(type, loc),
-                                       loc);
+	{
+	  if (!gogo->need_eqtype())
+	    cond = Expression::make_binary(OPERATOR_EQEQ, ref,
+				           Expression::make_type_descriptor(type, loc),
+				           loc);
+	  else
+	    cond = Runtime::make_call(Runtime::EQTYPE, loc, 2,
+				      Expression::make_type_descriptor(type, loc),
+				      ref);
+	}
       else
 	cond = Runtime::make_call(Runtime::IFACET2IP, loc, 2,
 				  Expression::make_type_descriptor(type, loc),
@@ -4826,7 +4834,8 @@ Type_case_clauses::check_duplicates() const
 // BREAK_LABEL is the label at the end of the type switch.
 
 void
-Type_case_clauses::lower(Type* switch_val_type, Block* b,
+Type_case_clauses::lower(Gogo* gogo, Type* switch_val_type,
+			 Block* b,
 			 Temporary_statement* descriptor_temp,
 			 Unnamed_label* break_label) const
 {
@@ -4838,7 +4847,7 @@ Type_case_clauses::lower(Type* switch_val_type, Block* b,
        ++p)
     {
       if (!p->is_default())
-	p->lower(switch_val_type, b, descriptor_temp, break_label,
+	p->lower(gogo, switch_val_type, b, descriptor_temp, break_label,
 		 &stmts_label);
       else
 	{
@@ -4850,7 +4859,7 @@ Type_case_clauses::lower(Type* switch_val_type, Block* b,
   go_assert(stmts_label == NULL);
 
   if (default_case != NULL)
-    default_case->lower(switch_val_type, b, descriptor_temp, break_label,
+    default_case->lower(gogo, switch_val_type, b, descriptor_temp, break_label,
 			NULL);
 }
 
@@ -4905,7 +4914,7 @@ Type_switch_statement::do_traverse(Traverse* traverse)
 // equality testing.
 
 Statement*
-Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
+Type_switch_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 				Statement_inserter*)
 {
   const Location loc = this->location();
@@ -4943,7 +4952,7 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   b->add_statement(s);
 
   if (this->clauses_ != NULL)
-    this->clauses_->lower(val_type, b, descriptor_temp, this->break_label());
+    this->clauses_->lower(gogo, val_type, b, descriptor_temp, this->break_label());
 
   s = Statement::make_unnamed_label_statement(this->break_label_);
   b->add_statement(s);

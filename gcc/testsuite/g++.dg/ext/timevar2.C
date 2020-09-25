@@ -1,8 +1,10 @@
 // PR c++/57524
 // { dg-options "-ftime-report" }
 // { dg-prune-output "Time variable" }
-// { dg-prune-output " kB" }
+// { dg-prune-output "k" }
+// { dg-prune-output " 0 " }
 // { dg-prune-output "checks" }
+// { dg-prune-output "\[0-9\]+%" }
 
 namespace detail {
 namespace indirect_traits {}

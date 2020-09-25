@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -45,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "gimplify.h"
 #include "tree-pretty-print.h"
+#include "gcc-rich-location.h"
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
@@ -136,6 +138,7 @@ static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
 static tree ignore_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_split_stack_attribute (tree *, tree, tree, int, bool *);
+static tree handle_argspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_nonnull_attribute (tree *, tree, tree, int, bool *);
@@ -434,6 +437,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      ignore_attribute, NULL },
   { "no_split_stack",	      0, 0, true,  false, false, false,
 			      handle_no_split_stack_attribute, NULL },
+  /* For internal use only (marking of function arguments).
+     The name contains a space to prevent its usage in source code.  */
+  { "arg spec",		      1, -1, true, false, false, false,
+			      handle_argspec_attribute, NULL },
   /* For internal use (marking of builtins and runtime functions) only.
      The name contains space to prevent its usage in source code.  */
   { "fn spec",		      1, 1, false, true, true, false,
@@ -720,6 +727,134 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
   return pos;
 }
 
+/* Return the first of DECL or TYPE attributes installed in NODE if it's
+   a DECL, or TYPE attributes if it's a TYPE, or null otherwise.  */
+
+static tree
+decl_or_type_attrs (tree node)
+{
+  if (DECL_P (node))
+    {
+      if (tree attrs = DECL_ATTRIBUTES (node))
+	return attrs;
+
+      tree type = TREE_TYPE (node);
+      return TYPE_ATTRIBUTES (type);
+    }
+
+  if (TYPE_P (node))
+    return TYPE_ATTRIBUTES (node);
+
+  return NULL_TREE;
+}
+
+/* Given a pair of NODEs for arbitrary DECLs or TYPEs, validate one or
+   two integral or string attribute arguments NEWARGS to be applied to
+   NODE[0] for the absence of conflicts with the same attribute arguments
+   already applied to NODE[1]. Issue a warning for conflicts and return
+   false.  Otherwise, when no conflicts are found, return true.  */
+
+static bool
+validate_attr_args (tree node[2], tree name, tree newargs[2])
+{
+  /* First validate the arguments against those already applied to
+     the same declaration (or type).  */
+  tree self[2] = { node[0], node[0] };
+  if (node[0] != node[1] && !validate_attr_args (self, name, newargs))
+    return false;
+
+  if (!node[1])
+    return true;
+
+  /* Extract the same attribute from the previous declaration or type.  */
+  tree prevattr = decl_or_type_attrs (node[1]);
+  const char* const namestr = IDENTIFIER_POINTER (name);
+  prevattr = lookup_attribute (namestr, prevattr);
+  if (!prevattr)
+    return true;
+
+  /* Extract one or both attribute arguments.  */
+  tree prevargs[2];
+  prevargs[0] = TREE_VALUE (TREE_VALUE (prevattr));
+  prevargs[1] = TREE_CHAIN (TREE_VALUE (prevattr));
+  if (prevargs[1])
+    prevargs[1] = TREE_VALUE (prevargs[1]);
+
+  /* Both arguments must be equal or, for the second pair, neither must
+     be provided to succeed.  */
+  bool arg1eq, arg2eq;
+  if (TREE_CODE (newargs[0]) == INTEGER_CST)
+    {
+      arg1eq = tree_int_cst_equal (newargs[0], prevargs[0]);
+      if (newargs[1] && prevargs[1])
+	arg2eq = tree_int_cst_equal (newargs[1], prevargs[1]);
+      else
+	arg2eq = newargs[1] == prevargs[1];
+    }
+  else if (TREE_CODE (newargs[0]) == STRING_CST)
+    {
+      const char *s0 = TREE_STRING_POINTER (newargs[0]);
+      const char *s1 = TREE_STRING_POINTER (prevargs[0]);
+      arg1eq = strcmp (s0, s1) == 0;
+      if (newargs[1] && prevargs[1])
+	{
+	  s0 = TREE_STRING_POINTER (newargs[1]);
+	  s1 = TREE_STRING_POINTER (prevargs[1]);
+	  arg2eq = strcmp (s0, s1) == 0;
+	}
+      else
+	arg2eq = newargs[1] == prevargs[1];
+    }
+  else
+    gcc_unreachable ();
+
+  if (arg1eq && arg2eq)
+    return true;
+
+  /* If the two locations are different print a note pointing to
+     the previous one.  */
+  const location_t curloc = input_location;
+  const location_t prevloc =
+    DECL_P (node[1]) ? DECL_SOURCE_LOCATION (node[1]) : curloc;
+
+  /* Format the attribute specification for convenience.  */
+  char newspec[80], prevspec[80];
+  if (newargs[1])
+    snprintf (newspec, sizeof newspec, "%s (%s, %s)", namestr,
+	      print_generic_expr_to_str (newargs[0]),
+	      print_generic_expr_to_str (newargs[1]));
+  else
+    snprintf (newspec, sizeof newspec, "%s (%s)", namestr,
+	      print_generic_expr_to_str (newargs[0]));
+
+  if (prevargs[1])
+    snprintf (prevspec, sizeof prevspec, "%s (%s, %s)", namestr,
+	      print_generic_expr_to_str (prevargs[0]),
+	      print_generic_expr_to_str (prevargs[1]));
+  else
+    snprintf (prevspec, sizeof prevspec, "%s (%s)", namestr,
+	      print_generic_expr_to_str (prevargs[0]));
+
+  if (warning_at (curloc, OPT_Wattributes,
+		  "ignoring attribute %qs because it conflicts "
+		  "with previous %qs",
+		  newspec, prevspec)
+      && curloc != prevloc)
+    inform (prevloc, "previous declaration here");
+
+  return false;
+}
+
+/* Convenience wrapper for validate_attr_args to validate a single
+   attribute argument.  Used by handlers for attributes that take
+   just a single argument.  */
+
+static bool
+validate_attr_arg (tree node[2], tree name, tree newarg)
+{
+  tree argarray[2] = { newarg, NULL_TREE };
+  return validate_attr_args (node, name, argarray);
+}
 
 /* Attribute handlers common to C front ends.  */
 
@@ -1889,11 +2024,13 @@ handle_mode_attribute (tree *node, tree name, tree args,
    struct attribute_spec.handler.  */
 
 static tree
-handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
-			  int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_section_attribute (tree *node, tree name, tree args,
+			  int flags, bool *no_add_attrs)
 {
   tree decl = *node;
   tree res = NULL_TREE;
+  tree argval = TREE_VALUE (args);
+  const char* new_section_name;
 
   if (!targetm_common.have_named_sections)
     {
@@ -1908,7 +2045,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
-  if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+  if (TREE_CODE (argval) != STRING_CST)
     {
       error ("section attribute argument not a string constant");
       goto fail;
@@ -1923,15 +2060,17 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
+  new_section_name = TREE_STRING_POINTER (argval);
+
   /* The decl may have already been given a section attribute
      from a previous declaration.  Ensure they match.  */
-  if (DECL_SECTION_NAME (decl) != NULL
-      && strcmp (DECL_SECTION_NAME (decl),
-		 TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
-    {
-      error ("section of %q+D conflicts with previous declaration", *node);
-      goto fail;
-    }
+  if (const char* const old_section_name = DECL_SECTION_NAME (decl))
+    if (strcmp (old_section_name, new_section_name) != 0)
+      {
+	error ("section of %q+D conflicts with previous declaration",
+	       *node);
+	goto fail;
+      }
 
   if (VAR_P (decl)
       && !targetm.have_tls && targetm.emutls.tmpl_section
@@ -1941,6 +2080,9 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
+  if (!validate_attr_arg (node, name, argval))
+    goto fail;
+
   res = targetm.handle_generic_attribute (node, name, args, flags,
 					  no_add_attrs);
 
@@ -1948,7 +2090,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
      final processing.  */
   if (!(*no_add_attrs))
     {
-      set_decl_section_name (decl, TREE_STRING_POINTER (TREE_VALUE (args)));
+      set_decl_section_name (decl, new_section_name);
       return res;
     }
 
@@ -2905,15 +3047,15 @@ handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
-/* Handle a "alloc_size" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* Handle the "alloc_size (argpos1 [, argpos2])" function type attribute.
+   *NODE is the type of the function the attribute is being applied to.  */
 
 static tree
 handle_alloc_size_attribute (tree *node, tree name, tree args,
 			     int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  tree decl = *node;
-  tree rettype = TREE_TYPE (decl);
+  tree fntype = *node;
+  tree rettype = TREE_TYPE (fntype);
   if (!POINTER_TYPE_P (rettype))
     {
       warning (OPT_Wattributes,
@@ -2923,6 +3065,7 @@ handle_alloc_size_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  tree newargs[2] = { NULL_TREE, NULL_TREE };
   for (int i = 1; args; ++i)
     {
       tree pos = TREE_VALUE (args);
@@ -2931,30 +3074,36 @@ handle_alloc_size_attribute (tree *node, tree name, tree args,
 	 the argument number in diagnostics (since there's just one
 	 mentioning it is unnecessary and coule be confusing).  */
       tree next = TREE_CHAIN (args);
-      if (tree val = positional_argument (decl, name, pos, INTEGER_TYPE,
+      if (tree val = positional_argument (fntype, name, pos, INTEGER_TYPE,
 					  next || i > 1 ? i : 0))
-	TREE_VALUE (args) = val;
+	{
+	  TREE_VALUE (args) = val;
+	  newargs[i - 1] = val;
+	}
       else
 	{
 	  *no_add_attrs = true;
-	  break;
+	  return NULL_TREE;
 	}
 
       args = next;
     }
 
+  if (!validate_attr_args (node, name, newargs))
+    *no_add_attrs = true;
+
   return NULL_TREE;
 }
 
-/* Handle a "alloc_align" attribute; arguments as in
-   struct attribute_spec.handler.  */
+
+/* Handle an "alloc_align (argpos)" attribute.  */
 
 static tree
 handle_alloc_align_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
-  tree decl = *node;
-  tree rettype = TREE_TYPE (decl);
+  tree fntype = *node;
+  tree rettype = TREE_TYPE (fntype);
   if (!POINTER_TYPE_P (rettype))
     {
       warning (OPT_Wattributes,
@@ -2964,9 +3113,12 @@ handle_alloc_align_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
-  if (!positional_argument (*node, name, TREE_VALUE (args), INTEGER_TYPE))
-    *no_add_attrs = true;
+  if (tree val = positional_argument (*node, name, TREE_VALUE (args),
+				      INTEGER_TYPE))
+    if (validate_attr_arg (node, name, val))
+      return NULL_TREE;
 
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 
@@ -3035,8 +3187,22 @@ handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
   return NULL_TREE;
 }
 
-/* Handle a "fn spec" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* Handle the internal-only "arg spec" attribute.  */
+
+static tree
+handle_argspec_attribute (tree *, tree, tree args, int, bool *)
+{
+  /* Verify the attribute has one or two arguments and their kind.  */
+  gcc_assert (args && TREE_CODE (TREE_VALUE (args)) == STRING_CST);
+  for (tree next = TREE_CHAIN (args); next; next = TREE_CHAIN (next))
+    {
+      tree val = TREE_VALUE (next);
+      gcc_assert (DECL_P (val) || EXPR_P (val));
+    }
+  return NULL_TREE;
+}
+
+/* Handle the internal-only "fn spec" attribute.  */
 
 static tree
 handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
@@ -3822,7 +3988,8 @@ get_argument_type (tree functype, unsigned argno, unsigned *nargs)
 	  tree argtype = function_args_iter_cond (&iter);
 	  if (VOID_TYPE_P (argtype))
 	    break;
-	  return argtype;
+	  if (argtype != error_mark_node)
+	    return argtype;
 	}
     }
 
@@ -3830,143 +3997,271 @@ get_argument_type (tree functype, unsigned argno, unsigned *nargs)
   return NULL_TREE;
 }
 
-/* Appends ATTRSTR to the access string in ATTRS if one is there
-   or creates a new one and returns the concatenated access string.  */
+/* Given a function FNDECL return the function argument at the zero-
+   based position ARGNO or null if it can't be found.  */
 
 static tree
-append_access_attrs (tree t, tree attrs, const char *attrstr,
-		     char code, HOST_WIDE_INT idxs[2])
+get_argument (tree fndecl, unsigned argno)
 {
-  char attrspec[80];
-  int n1 = sprintf (attrspec, "%c%u", code, (unsigned) idxs[0] - 1);
-  int n2 = 0;
-  if (idxs[1])
-    n2 = sprintf (attrspec + n1 + 1, "%u", (unsigned) idxs[1] - 1);
+  if (!DECL_P (fndecl))
+    return NULL_TREE;
 
-  size_t newlen = n1 + n2 + !!n2;
-  char *newspec = attrspec;
+  unsigned i = 0;
+  for (tree arg = DECL_ARGUMENTS (fndecl); arg; arg = TREE_CHAIN (arg))
+    if (i++ == argno)
+      return arg;
 
-  if (tree acs = lookup_attribute ("access", attrs))
-    {
-      /* The TREE_VALUE of an attribute is a TREE_LIST whose TREE_VALUE
-	 is the attribute argument's value.  */
-      acs = TREE_VALUE (acs);
-      gcc_assert (TREE_CODE (acs) == TREE_LIST);
-      acs = TREE_VALUE (acs);
-      gcc_assert (TREE_CODE (acs) == STRING_CST);
-
-      /* Check to make sure ATTRSPEC doesn't conflict with another
-	 access attribute specified in ATTRS by searching the access
-	 string in ATTRS for the position string formatted above into
-	 ATTRSPEC, and if it's found, that the two match.  */
-
-      const char *posstr = attrspec + 1;
-      const char *str = TREE_STRING_POINTER (acs);
-      const char *pos = str;
-      for ( ; ; pos += n1)
-	{
-	  pos = strstr (pos, posstr);
-	  if (!pos)
-	    break;
-
-	  if (ISDIGIT (pos[-1]) || ISDIGIT (pos[n1 -1]))
-	    continue;
-
-	  /* Found a matching positional argument.  */
-	  if (*attrspec != pos[-1])
-	    {
-	      const char* const modestr
-		= (pos[-1] == 'r'
-		   ? "read_only"
-		   : (pos[-1] == 'w'
-		      ? "write_only"
-		      : (pos[-1] == 'x' ? "read_write" : "none")));
-	      /* Mismatch in access mode.  */
-	      auto_diagnostic_group d;
-	      if (warning (OPT_Wattributes,
-			   "attribute %qs mismatch with mode %qs",
-			   attrstr, modestr)
-		  && DECL_P (t))
-		inform (DECL_SOURCE_LOCATION (t),
-			"previous declaration here");
-	      return NULL_TREE;
-	    }
-
-	  if ((n2 && pos[n1 - 1] != ','))
-	    {
-	      /* Mismatch in the presence of the size argument.  */
-	      auto_diagnostic_group d;
-	      if (warning (OPT_Wattributes,
-			   "attribute %qs positional argument 2 conflicts "
-			   "with previous designation",
-			   attrstr)
-		  && DECL_P (t))
-		inform (DECL_SOURCE_LOCATION (t),
-			"previous declaration here");
-	      return NULL_TREE;
-	    }
-
-	  if (!n2 && pos[n1 - 1] == ',')
-	    {
-	      /* Mismatch in the presence of the size argument.  */
-	      auto_diagnostic_group d;
-	      if (warning (OPT_Wattributes,
-			   "attribute %qs missing positional argument 2 "
-			   "provided in previous designation",
-			   attrstr)
-		  && DECL_P (t))
-		inform (DECL_SOURCE_LOCATION (t),
-			"previous declaration here");
-	      return NULL_TREE;
-	    }
-
-	  if (n2 && strncmp (attrspec + n1 + 1, pos + n1, n2))
-	    {
-	      /* Mismatch in the value of the size argument.  */
-	      auto_diagnostic_group d;
-	      if (warning (OPT_Wattributes,
-			   "attribute %qs mismatched positional argument "
-			   "values %i and %i",
-			   attrstr, atoi (attrspec + n1 + 1) + 1,
-			   atoi (pos + n1) + 1)
-		  && DECL_P (t))
-		inform (DECL_SOURCE_LOCATION (t),
-			"previous declaration here");
-	      return NULL_TREE;
-	    }
-
-	  /* Avoid adding the same attribute specification.  */
-	  return NULL_TREE;
-	}
-
-      /* Connect the two substrings formatted above into a single one.  */
-      if (idxs[1])
-	attrspec[n1] = ',';
-
-      size_t len = strlen (str);
-      newspec = XNEWVEC (char, newlen + len + 1);
-      strcpy (newspec, str);
-      strcpy (newspec + len, attrspec);
-      newlen += len;
-    }
-  else if (idxs[1])
-    /* Connect the two substrings formatted above into a single one.  */
-    attrspec[n1] = ',';
-
-  tree ret = build_string (newlen + 1, newspec);
-  if (newspec != attrspec)
-    XDELETEVEC (newspec);
-  return ret;
+  return NULL_TREE;
 }
 
-/* Handle the access attribute (read_only, write_only, and read_write).  */
+/* Attempt to append attribute access specification ATTRSPEC, optionally
+   described by the human-readable string ATTRSTR, for type T, to one in
+   ATTRS. VBLIST is an optional list of bounds of variable length array
+   parameters described by ATTRSTR.
+   Issue warning for conflicts and return null if any are found.
+   Return the concatenated access string on success.  */
 
 static tree
-handle_access_attribute (tree *node, tree name, tree args,
+append_access_attr (tree node[3], tree attrs, const char *attrstr,
+		    const char *attrspec, tree vblist = NULL_TREE)
+{
+  tree argstr = build_string (strlen (attrspec) + 1, attrspec);
+  tree ataccess = tree_cons (NULL_TREE, argstr, vblist);
+  ataccess = tree_cons (get_identifier ("access"), ataccess, NULL_TREE);
+
+  /* The access specification being applied.  This may be an implicit
+     access spec synthesized for array (or VLA) parameters even for
+     a declaration with an explicit access spec already applied, if
+     this call corresponds to the first declaration of the function.  */
+  rdwr_map new_idxs;
+  init_attr_rdwr_indices (&new_idxs, ataccess);
+
+  /* The current access specification alrady applied.  */
+  rdwr_map cur_idxs;
+  init_attr_rdwr_indices (&cur_idxs, attrs);
+
+  std::string spec;
+  for (auto it = new_idxs.begin (); it != new_idxs.end (); ++it)
+    {
+      const auto &newaxsref = *it;
+
+      /* The map has two equal entries for each pointer argument that
+	 has an associated size argument.  Process just the entry for
+	 the former.  */
+      if ((unsigned)newaxsref.first != newaxsref.second.ptrarg)
+	continue;
+
+      const attr_access* const cura = cur_idxs.get (newaxsref.first);
+      if (!cura)
+	{
+	  /* The new attribute needs to be added.  */
+	  tree str = newaxsref.second.to_internal_string ();
+	  spec += TREE_STRING_POINTER (str);
+	  continue;
+	}
+
+      /* The new access spec refers to an array/pointer argument for
+	 which an access spec already exists.  Check and diagnose any
+	 conflicts.  If no conflicts are found, merge the two.  */
+      const attr_access* const newa = &newaxsref.second;
+
+      if (!attrstr)
+	{
+	  tree str = NULL_TREE;
+	  if (newa->mode != access_deferred)
+	    str = newa->to_external_string ();
+	  else if (cura->mode != access_deferred)
+	    str = cura->to_external_string ();
+	  if (str)
+	    attrstr = TREE_STRING_POINTER (str);
+	}
+
+      location_t curloc = input_location;
+      if (node[2] && DECL_P (node[2]))
+	curloc = DECL_SOURCE_LOCATION (node[2]);
+
+      location_t prevloc = UNKNOWN_LOCATION;
+      if (node[1] && DECL_P (node[1]))
+	prevloc = DECL_SOURCE_LOCATION (node[1]);
+
+      if (newa->mode != cura->mode
+	  && newa->mode != access_deferred
+	  && cura->mode != access_deferred
+	  && newa->internal_p == cura->internal_p)
+	{
+	  /* Mismatch in access mode.  */
+	  auto_diagnostic_group d;
+	  if (warning_at (curloc, OPT_Wattributes,
+			  "attribute %qs mismatch with mode %qs",
+			  attrstr, cura->mode_names[cura->mode])
+	      && prevloc != UNKNOWN_LOCATION)
+	    inform (prevloc, "previous declaration here");
+	  continue;
+	}
+
+      /* Set if PTRARG refers to a VLA with an unspecified bound (T[*]).
+	 Be prepared for either CURA or NEWA to refer to it, depending
+	 on which happens to come first in the declaration.  */
+      const bool cur_vla_ub = (cura->internal_p
+			       && cura->sizarg == UINT_MAX
+			       && cura->minsize == HOST_WIDE_INT_M1U);
+      const bool new_vla_ub = (newa->internal_p
+			       && newa->sizarg == UINT_MAX
+			       && newa->minsize == HOST_WIDE_INT_M1U);
+
+      if (newa->sizarg != cura->sizarg
+	  && attrstr
+	  && (!(cur_vla_ub ^ new_vla_ub)
+	      || (!cura->internal_p && !newa->internal_p)))
+	{
+	  /* Avoid diagnosing redeclarations of functions with no explicit
+	     attribute access that add one.  */
+	  if (newa->mode == access_deferred
+	      && cura->mode != access_deferred
+	      && newa->sizarg == UINT_MAX
+	      && cura->sizarg != UINT_MAX)
+	    continue;
+
+	  if (cura->mode == access_deferred
+	      && newa->mode != access_deferred
+	      && cura->sizarg == UINT_MAX
+	      && newa->sizarg != UINT_MAX)
+	    continue;
+
+	  /* The two specs designate different size arguments.  It's okay
+	     for the explicit spec to specify a size where none is provided
+	     by the implicit (VLA) one, as in:
+	       __attribute__ ((access (read_write, 1, 2)))
+	       void f (int*, int);
+	     but not for two explicit access attributes to do that.  */
+	  bool warned = false;
+
+	  auto_diagnostic_group d;
+
+	  if (newa->sizarg == UINT_MAX)
+	    /* Mismatch in the presence of the size argument.  */
+	    warned = warning_at (curloc, OPT_Wattributes,
+				 "attribute %qs missing positional argument 2 "
+				 "provided in previous designation by argument "
+				 "%u", attrstr, cura->sizarg + 1);
+	  else if (cura->sizarg == UINT_MAX)
+	    /* Mismatch in the presence of the size argument.  */
+	    warned = warning_at (curloc, OPT_Wattributes,
+				 "attribute %qs positional argument 2 "
+				 "missing in previous designation",
+				 attrstr);
+	  else if (newa->internal_p || cura->internal_p)
+	    {
+	      /* Mismatch in the value of the size argument and a VLA
+		 bound.  */
+	      location_t argloc = curloc;
+	      if (tree arg = get_argument (node[2], newa->sizarg))
+		argloc = DECL_SOURCE_LOCATION (arg);
+	      warned = warning_at (argloc, OPT_Wattributes,
+				   "attribute %qs positional argument 2 "
+				   "conflicts with previous designation "
+				   "by argument %u",
+				   attrstr, cura->sizarg + 1);
+	    }
+	  else
+	    /* Mismatch in the value of the size argument between two
+	       explicit access attributes.  */
+	    warned = warning_at (curloc, OPT_Wattributes,
+				 "attribute %qs mismatched positional argument "
+				 "values %i and %i",
+				 attrstr, newa->sizarg + 1, cura->sizarg + 1);
+
+	  if (warned)
+	    {
+	      /* If the previous declaration is a function (as opposed
+		 to a typedef of one), find the location of the array
+		 or pointer argument that uses the conflicting VLA bound
+		 and point to it in the note.  */
+	      const attr_access* const pa = cura->size ? cura : newa;
+	      tree size = pa->size ? TREE_VALUE (pa->size) : NULL_TREE;
+	      if (size && DECL_P (size))
+		{
+		  location_t argloc = UNKNOWN_LOCATION;
+		  if (tree arg = get_argument (node[2], pa->ptrarg))
+		    argloc = DECL_SOURCE_LOCATION (arg);
+
+		  gcc_rich_location richloc (DECL_SOURCE_LOCATION (size));
+		  if (argloc != UNKNOWN_LOCATION)
+		    richloc.add_range (argloc);
+
+		  inform (&richloc, "designating the bound of variable "
+			  "length array argument %u",
+			  pa->ptrarg + 1);
+		}
+	      else if (prevloc != UNKNOWN_LOCATION)
+		inform (prevloc, "previous declaration here");
+	    }
+
+	  continue;
+	}
+
+      if (newa->internal_p == cura->internal_p)
+	continue;
+
+      /* Merge the CURA and NEWA.  */
+      attr_access merged = newaxsref.second;
+
+      /* VLA seen in a declaration takes precedence.  */
+      if (cura->minsize == HOST_WIDE_INT_M1U)
+	merged.minsize = HOST_WIDE_INT_M1U;
+
+      /* Use the explicitly specified size positional argument.  */
+      if (cura->sizarg != UINT_MAX)
+	merged.sizarg = cura->sizarg;
+
+      /* Use the explicitly specified mode.  */
+      if (merged.mode == access_deferred)
+	merged.mode = cura->mode;
+
+      tree str = merged.to_internal_string ();
+      spec += TREE_STRING_POINTER (str);
+    }
+
+  if (!spec.length ())
+    return NULL_TREE;
+
+  return build_string (spec.length (), spec.c_str ());
+}
+
+/* Convenience wrapper for the above.  */
+
+tree
+append_access_attr (tree node[3], tree attrs, const char *attrstr,
+		    char code, HOST_WIDE_INT idxs[2])
+{
+  char attrspec[80];
+  int n = sprintf (attrspec, "%c%u", code, (unsigned) idxs[0] - 1);
+  if (idxs[1])
+    n += sprintf (attrspec + n, ",%u", (unsigned) idxs[1] - 1);
+
+  return append_access_attr (node, attrs, attrstr, attrspec);
+}
+
+/* Handle the access attribute for function type NODE[0], with the function
+   DECL optionally in NODE[1].  The handler is called both in response to
+   an explict attribute access on a declaration with a mode and one or two
+   positional arguments, and for internally synthesized access specifications
+   with a string argument optionally followd by a DECL or expression
+   representing a VLA bound.  To speed up parsing, the handler transforms
+   the attribute and its arguments into a string.  */
+
+static tree
+handle_access_attribute (tree node[3], tree name, tree args,
 			 int ARG_UNUSED (flags), bool *no_add_attrs)
 {
+  tree attrs = TYPE_ATTRIBUTES (*node);
   tree type = *node;
-  tree attrs = TYPE_ATTRIBUTES (type);
+  if (POINTER_TYPE_P (type))
+    {
+      tree ptype = TREE_TYPE (type);
+      if (FUNC_OR_METHOD_TYPE_P (ptype))
+	type = ptype;
+    }
 
   *no_add_attrs = true;
 
@@ -3984,9 +4279,32 @@ handle_access_attribute (tree *node, tree name, tree args,
   tree access_mode = TREE_VALUE (args);
   if (TREE_CODE (access_mode) == STRING_CST)
     {
-      /* This must be a recursive call to handle the condensed internal
-	 form of the attribute (see below).  Since all validation has
-	 been done simply return here, accepting the attribute as is.  */
+      const char* const str = TREE_STRING_POINTER (access_mode);
+      if (*str == '+')
+	{
+	  /* This is a request to merge an internal specification for
+	     a function declaration involving arrays but no explicit
+	     attribute access.  */
+	  tree vblist = TREE_CHAIN (args);
+	  tree axstr = append_access_attr (node, attrs, NULL, str + 1,
+					   vblist);
+	  if (!axstr)
+	    return NULL_TREE;
+
+	  /* Replace any existing access attribute specification with
+	     the concatenation above.  */
+	  tree axsat = tree_cons (NULL_TREE, axstr, vblist);
+	  axsat = tree_cons (name, axsat, NULL_TREE);
+
+	  /* Recursively call self to "replace" the documented/external
+	     form of the attribute with the condensend internal form.  */
+	  decl_attributes (node, axsat, flags);
+	  return NULL_TREE;
+	}
+
+      /* This is a recursive call to handle the condensed internal form
+	 of the attribute (see below).  Since all validation has been
+	 done simply return here, accepting the attribute as is.  */
       *no_add_attrs = false;
       return NULL_TREE;
     }
@@ -4017,16 +4335,27 @@ handle_access_attribute (tree *node, tree name, tree args,
 	ps += 2;
     }
 
-  const bool read_only = !strncmp (ps, "read_only", 9);
-  const bool write_only = !strncmp (ps, "write_only", 10);
-  const bool read_write = !strncmp (ps, "read_write", 10);
-  if (!read_only && !write_only && !read_write && strncmp (ps, "none", 4))
-    {
-      error ("attribute %qE invalid mode %qs; expected one of "
-	     "%qs, %qs, %qs, or %qs", name, access_str,
-	     "read_only", "read_write", "write_only", "none");
-      return NULL_TREE;
-    }
+  int imode;
+
+  {
+    const int nmodes =
+      sizeof attr_access::mode_names / sizeof *attr_access::mode_names;
+
+    for (imode = 0; imode != nmodes; ++imode)
+      if (!strncmp (ps, attr_access::mode_names[imode],
+		    strlen (attr_access::mode_names[imode])))
+	break;
+
+    if (imode == nmodes)
+      {
+	error ("attribute %qE invalid mode %qs; expected one of "
+	       "%qs, %qs, %qs, or %qs", name, access_str,
+	       "read_only", "read_write", "write_only", "none");
+	return NULL_TREE;
+      }
+  }
+
+  const ::access_mode mode = static_cast<::access_mode>(imode);
 
   if (funcall)
     {
@@ -4149,7 +4478,7 @@ handle_access_attribute (tree *node, tree name, tree args,
       }
   }
 
-  if (read_write || write_only)
+  if (mode == access_read_write || mode == access_write_only)
     {
       /* Read_write and write_only modes must reference non-const
 	 arguments.  */
@@ -4182,33 +4511,162 @@ handle_access_attribute (tree *node, tree name, tree args,
   /* Verify that the new attribute doesn't conflict with any existing
      attributes specified on previous declarations of the same type
      and if not, concatenate the two.  */
-  const char code
-    = read_only ? 'r' : write_only ? 'w' : read_write ? 'x' : '-';
-  tree new_attrs = append_access_attrs (node[0], attrs, attrstr, code, idxs);
+  const char code = attr_access::mode_chars[mode];
+  tree new_attrs = append_access_attr (node, attrs, attrstr, code, idxs);
   if (!new_attrs)
     return NULL_TREE;
 
   /* Replace any existing access attribute specification with
      the concatenation above.  */
   new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
-  new_attrs = tree_cons (name, new_attrs, attrs);
+  new_attrs = tree_cons (name, new_attrs, NULL_TREE);
 
   if (node[1])
     {
       /* Repeat for the previously declared type.  */
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (node[1]));
-      tree attrs1 = append_access_attrs (node[1], attrs, attrstr, code, idxs);
-      if (!attrs1)
+      new_attrs = append_access_attr (node, attrs, attrstr, code, idxs);
+      if (!new_attrs)
 	return NULL_TREE;
 
-      attrs1 = tree_cons (NULL_TREE, attrs1, NULL_TREE);
-      new_attrs = tree_cons (name, attrs1, attrs);
+      new_attrs = tree_cons (NULL_TREE, new_attrs, NULL_TREE);
+      new_attrs = tree_cons (name, new_attrs, NULL_TREE);
     }
 
   /* Recursively call self to "replace" the documented/external form
-     of the attribute with the condensend internal form.  */
+     of the attribute with the condensed internal form.  */
   decl_attributes (node, new_attrs, flags);
   return NULL_TREE;
+}
+
+/* Extract attribute "arg spec" from each FNDECL argument that has it,
+   build a single attribute access corresponding to all the arguments,
+   and return the result.  SKIP_VOIDPTR set to ignore void* parameters
+   (used for user-defined functions for which, unlike in for built-ins,
+   void* cannot be relied on to determine anything about the access
+   through it or whether it even takes place).
+
+   For example, the parameters in the declaration:
+
+     void f (int x, int y, char [x][1][y][3], char [y][2][y][5]);
+
+   result in the following attribute access:
+
+     value: "+^2[*],$0$1^3[*],$1$1"
+     chain: <0, x> <1, y>
+
+   where each <node> on the chain corresponds to one VLA bound for each
+   of the two parameters.  */
+
+tree
+build_attr_access_from_parms (tree parms, bool skip_voidptr)
+{
+  /* Maps each named integral argument DECL seen so far to its position
+     in the argument list; used to associate VLA sizes with arguments.  */
+  hash_map<tree, unsigned> arg2pos;
+
+  /* The string representation of the access specification for all
+     arguments.  */
+  std::string spec;
+  unsigned argpos = 0;
+
+  /* A TREE_LIST of VLA bounds.  */
+  tree vblist = NULL_TREE;
+
+  for (tree arg = parms; arg; arg = TREE_CHAIN (arg), ++argpos)
+    {
+      if (!DECL_P (arg))
+	continue;
+
+      tree argtype = TREE_TYPE (arg);
+      if (DECL_NAME (arg) && INTEGRAL_TYPE_P (argtype))
+	arg2pos.put (arg, argpos);
+
+      tree argspec = DECL_ATTRIBUTES (arg);
+      if (!argspec)
+	continue;
+
+      if (POINTER_TYPE_P (argtype))
+	{
+	  /* void* arguments in user-defined functions could point to
+	     anything; skip them.  */
+	  tree reftype = TREE_TYPE (argtype);
+	  if (skip_voidptr && VOID_TYPE_P (reftype))
+	    continue;
+	}
+
+      /* Each parameter should have at most one "arg spec" attribute.  */
+      argspec = lookup_attribute ("arg spec", argspec);
+      if (!argspec)
+	continue;
+
+      /* Attribute arg spec should have one or two arguments.  */
+      argspec = TREE_VALUE (argspec);
+
+      /* The attribute arg spec string.  */
+      tree str = TREE_VALUE (argspec);
+      const char *s = TREE_STRING_POINTER (str);
+
+      /* Create the attribute access string from the arg spec string,
+	 optionally followed by position of the VLA bound argument if
+	 it is one.  */
+      char specbuf[80];
+      int len = snprintf (specbuf, sizeof specbuf, "%c%u%s",
+			  attr_access::mode_chars[access_deferred],
+			  argpos, s);
+      gcc_assert ((size_t) len < sizeof specbuf);
+
+      if (!spec.length ())
+	spec += '+';
+
+      spec += specbuf;
+
+      /* The (optional) list of expressions denoting the VLA bounds
+	 N in ARGTYPE <arg>[Ni]...[Nj]...[Nk].  */
+      tree argvbs = TREE_CHAIN (argspec);
+      if (argvbs)
+	{
+	  spec += ',';
+	  /* Add ARGVBS to the list.  Their presence is indicated by
+	     appending a comma followed by the dollar sign and, when
+	     it corresponds to a function parameter, the position of
+	     each bound Ni, so it can be distinguished from
+	     an unspecified bound (as in T[*]).  The list is in reverse
+	     order of arguments and needs to be reversed to access in
+	     order.  */
+	  vblist = tree_cons (NULL_TREE, argvbs, vblist);
+
+	  unsigned nelts = 0;
+	  for (tree vb = argvbs; vb; vb = TREE_CHAIN (vb), ++nelts)
+	    {
+	      tree bound = TREE_VALUE (vb);
+	      if (const unsigned *psizpos = arg2pos.get (bound))
+		{
+		  /* BOUND previously seen in the parameter list.  */
+		  TREE_PURPOSE (vb) = size_int (*psizpos);
+		  sprintf (specbuf, "$%u", *psizpos);
+		  spec += specbuf;
+		}
+	      else
+		{
+		  /* BOUND doesn't name a parameter (it could be a global
+		     variable or an expression such as a function call).  */
+		  spec += '$';
+		}
+	    }
+	}
+    }
+
+  if (!spec.length ())
+    return NULL_TREE;
+
+  /* Build a single attribute access with the string describing all
+     array arguments and an optional list of any non-parameter VLA
+     bounds in order.  */
+  tree str = build_string (spec.length (), spec.c_str ());
+  tree attrargs = tree_cons (NULL_TREE, str, vblist);
+  tree name = get_identifier ("access");
+  return tree_cons (name, attrargs, NULL_TREE);
 }
 
 /* Handle a "nothrow" attribute; arguments as in

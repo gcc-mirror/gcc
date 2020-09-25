@@ -147,4 +147,4 @@ AlignTrailingComments: true
 AllowShortFunctionsOnASingleLine: All
 AlwaysBreakTemplateDeclarations: MultiLine
 KeepEmptyLinesAtTheStartOfBlocks: false
-Standard: Cpp03
+Standard: Auto

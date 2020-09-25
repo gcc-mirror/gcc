@@ -13490,7 +13490,7 @@ altivec_init_builtins (void)
     {
       def_builtin ("__builtin_altivec_stxvl", void_ftype_v16qi_pvoid_long,
 		   P9V_BUILTIN_STXVL);
-      def_builtin ("__builtin_xst_len_r", void_ftype_v16qi_pvoid_long,
+      def_builtin ("__builtin_altivec_xst_len_r", void_ftype_v16qi_pvoid_long,
 		   P9V_BUILTIN_XST_LEN_R);
     }
 

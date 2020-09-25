@@ -1,3 +1,193 @@
+2020-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (typedef cxx_binding): Delete tdef.
+	(typedef cp_binding_level): Likewise.
+	(struct cxx_binding): Flags are bools.
+
+2020-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97171
+	* pt.c (tsubst_copy) [FUNCTION_DECL,VAR_DECL]: Retrieve local
+	specialization for DECL_LOCAL_P decls.
+
+2020-09-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95310
+	* pt.c (corresponding_template_parameter): Define.
+	(keep_template_parm): Use it to adjust the given template
+	parameter to the corresponding in-scope one from ctx_parms.
+
+2020-09-22  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (xref_tag_from_type): Don't declare.
+	* decl.c (xref_tag_from_type): Delete.
+	* pt.c (lookup_template_class_1): Erroneously located class
+	definitions just give error_mark, don't try and inject it into the
+	namespace.
+
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97145
+	* constexpr.c (cxx_eval_builtin_function_call): Return void_node for
+	calls to __sanitize_ptr_{sub,cmp} builtins.
+
+2020-09-22  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_class_template_1): Do not repush and unhide
+	injected friend.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90583
+	DR 1722
+	* lambda.c (maybe_add_lambda_conv_op): Mark the conversion function
+	as noexcept.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (deduction_guides_for): Add a bool parameter.  Set it.
+	(do_class_deduction): Warn when CTAD succeeds but the type doesn't
+	have any explicit deduction guides.
+
+2020-09-21  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (xref_tag_1): Use IDENTIFIER_LAMBDA_P to detect lambdas.
+	* lambda.c (begin_lambda_type): Use ts_current to push the tag.
+	* name-lookup.h (enum tag_scope): Drop ts_lambda.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97099
+	* decl.c (redeclaration_error_message): Detect a redeclaration of
+	deduction guides.
+
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cp-gimplify.c (enum bc_t, bc_label): Move to c-family.
+	(begin_bc_block, finish_bc_block, get_bc_label): Likewise.
+	(genericize_cp_loop): Likewise.
+	(genericize_for_stmt, genericize_while_stmt): Likewise.
+	(genericize_do_stmt, genericize_switch_stmt): Likewise.
+	(genericize_continue_stmt, genericize_break_stmt): Likewise.
+	(genericize_omp_for_stmt): Likewise.
+	(cp_genericize_r): Call c_genericize_control_stmt instead of
+	above functions directly.
+	(cp_genericize): Call save_bc_state and restore_bc_state instead
+	of manipulating bc_label directly.
+	* cp-objcp-common.c (cxx_block_may_fallthru): Defer to
+	c_block_may_fallthru instead of handling SWITCH_STMT here.
+	(cp_common_init_ts): Move handling of loop and switch-related
+	statements to c-family.
+	* cp-tree.def (FOR_STMT, WHILE_STMT, DO_STMT): Move to c-family.
+	(BREAK_STMT, CONTINUE_STMT, SWITCH_STMT): Likewise.
+	* cp-tree.h (LABEL_DECL_BREAK, LABEL_DECL_CONTINUE): Likewise.
+	(WHILE_COND, WHILE_BODY): Likewise.
+	(DO_COND, DO_BODY): Likewise.
+	(FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, FOR_SCOPE): Likewise.
+	(SWITCH_STMT_COND, SWITCH_STMT_BODY): Likewise.
+	(SWITCH_STMT_TYPE, SWITCH_STMT_SCOPE): Likewise.
+	(SWITCH_STMT_ALL_CASES_P, SWITCH_STMT_NO_BREAK_P): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::statement): Move code
+	to handle structured loop and switch tree nodes to c-family.
+	* dump.c (cp_dump_tree): Likewise.
+
+2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96531
+	PR c++/97103
+	* constraint.cc (map_arguments): Call template_parm_to_arg
+	in the self-mapping case.
+	(finish_shorthand_constraint): No need to build a TREE_LIST
+	before calling template_parm_to_arg.
+	* pt.c (template_parm_to_arg): Rewrite to handle TEMPLATE_PARM_P
+	nodes as well as DECL_TEMPLATE_PARM_P nodes, and to make the
+	overlying TREE_LIST node optional.
+	(keep_template_parm): Don't record a BOUND_TEMPLATE_TEMPLATE_PARM,
+	instead record its corresponding TEMPLATE_TEMPLATE_PARM.
+	(convert_generic_types_to_packs): Don't call
+	template_parm_to_arg.
+
+2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97051
+	* constraint.cc (satisfy_atom): Pass true as the
+	manifestly_const_eval argument to maybe_constant_value.
+
+2020-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/97118
+	* decl.c (complete_vars): Only call layout_var_decl if completing
+	the type succeeded.
+
+2020-09-18  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (complete_vars): Call layout_var_decl.
+
+2020-09-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96409
+	PR c++/96410
+	* constraint.cc (tsubst_requires_expr): Use REQUIRES_EXPR_PARMS
+	and REQUIRES_EXPR_REQS.  Use REQUIRES_EXPR_EXTRA_ARGS,
+	add_extra_args and build_extra_args to defer substitution until
+	we have all the template arguments.
+	(finish_requires_expr): Adjust the call to build_min so that
+	REQUIRES_EXPR_EXTRA_ARGS gets set to NULL_TREE.
+	* cp-tree.def (REQUIRES_EXPR): Give it a third operand.
+	* cp-tree.h (REQUIRES_EXPR_PARMS, REQUIRES_EXPR_REQS,
+	REQUIRES_EXPR_EXTRA_ARGS): Define.
+	(add_extra_args, build_extra_args): Declare.
+
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (cp_check_omp_declare_reduction): Return bool.
+	* semantics.c (cp_check_omp_declare_reduction): Return true on for
+	success.
+	* pt.c (push_template_decl_real): OMP reductions do not get a
+	template header.
+	(tsubst_function_decl): Remove special casing for local decl omp
+	reductions.
+	(tsubst_expr): Call instantiate_body for a local omp reduction.
+	(instantiate_body): Add nested_p parm, and deal with such
+	instantiations.
+	(instantiate_decl): Reject FUNCTION_SCOPE entities, adjust
+	instantiate_body call.
+
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_body): Remove 'nested' var, simplify
+	push_to_top logic.
+
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_body): New, broken out of ..
+	(instantiate_decl): ... here.  Call it.
+
+2020-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (push_template_decl_real): OMP reductions retain a template
+	header.
+	(tsubst_function_decl): Likewise.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* cp-gimplify.c (cxx_omp_finish_clause): Add bool openacc arg.
+	* cp-tree.h (cxx_omp_finish_clause): Likewise
+	* semantics.c (handle_omp_for_class_iterator): Update call.
+
+2020-09-14  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (push_template_decl_real): Use VAR_OR_FUNCTION_DECL_P.
+
+2020-09-14  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (push_template_decl_real): Don't attach a template head to
+	local externs.
+	(tsubst_function_decl): Add support for headless local extern
+	decls.
+	(tsubst_decl): Add support for headless local extern decls.
+
 2020-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (grokfndecl): Don't attach to local extern.

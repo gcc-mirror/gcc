@@ -2760,6 +2760,10 @@ duplicate_computed_gotos (function *fun)
     if (computed_jump_p (BB_END (bb)) && can_duplicate_block_p (bb))
       changed |= maybe_duplicate_computed_goto (bb, max_size);
 
+  /* Some blocks may have become unreachable.  */
+  if (changed)
+    cleanup_cfg (0);
+
   /* Duplicating blocks will redirect edges and may cause hot blocks
     previously reached by both hot and cold blocks to become dominated
     only by cold blocks.  */

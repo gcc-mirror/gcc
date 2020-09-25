@@ -31,6 +31,10 @@ test()
 				 cam.begin(), cam.end(),
 				 std::equal_to<int>());
 
+  const auto outtt2
+    = std::search(ca0.begin(), ca0.end(),
+		  std::default_searcher(cam.begin(), cam.end()));
+
   return true;
 }
 

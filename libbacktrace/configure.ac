@@ -512,6 +512,21 @@ AC_ARG_VAR(DSYMUTIL, [location of dsymutil])
 AC_CHECK_PROG(DSYMUTIL, dsymutil, dsymutil)
 AM_CONDITIONAL(HAVE_DSYMUTIL, test -n "${DSYMUTIL}")
 
+AC_ARG_VAR(NM, [location of nm])
+AC_CHECK_PROG(NM, nm, nm)
+
+AC_CHECK_PROG(XZ, xz, xz)
+AM_CONDITIONAL(HAVE_XZ, test "$XZ" != "")
+AC_CHECK_PROG(COMM, comm, comm)
+AM_CONDITIONAL(HAVE_COMM, test "$COMM" != "")
+
+AM_CONDITIONAL(HAVE_MINIDEBUG,
+  test "${with_target_subdir}" = "" -a "$FORMAT_FILE" = "elf.lo" -a "${OBJCOPY}" != "" -a "${NM}" != "" -a "${XZ}" != "" -a "${COMM}" != "")
+
+AC_CHECK_LIB([lzma], [lzma_auto_decoder],
+    [AC_DEFINE(HAVE_LIBLZMA, 1, [Define if -llzma is available.])])
+AM_CONDITIONAL(HAVE_LIBLZMA, test "$ac_cv_lib_lzma_lzma_auto_decoder" = yes)
+
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],
   [AC_RUN_IFELSE([AC_LANG_PROGRAM([], [return 0;])],

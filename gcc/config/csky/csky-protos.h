@@ -68,4 +68,6 @@ extern int csky_compute_pushpop_length (rtx *);
 
 extern int csky_default_branch_cost (bool, bool);
 extern bool csky_default_logical_op_non_short_circuit (void);
+
+extern void csky_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 #endif /* GCC_CSKY_PROTOS_H */

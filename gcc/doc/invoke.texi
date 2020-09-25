@@ -237,7 +237,8 @@ in the following sections.
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
--Wno-conversion-null  -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
+-Wno-conversion-null  -Wctad-maybe-unsupported @gol
+-Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
 -Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -393,6 +394,7 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer @gol
 -fanalyzer-call-summaries @gol
 -fanalyzer-checker=@var{name} @gol
+-fno-analyzer-feasibility @gol
 -fanalyzer-fine-grained @gol
 -fanalyzer-state-merge @gol
 -fanalyzer-state-purge @gol
@@ -407,6 +409,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
 -fdump-analyzer-supergraph @gol
 -Wno-analyzer-double-fclose @gol
@@ -484,7 +487,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion @gol
 -fif-conversion2  -findirect-inlining @gol
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
--finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
+-finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone @gol
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const @gol
 -fipa-reference  -fipa-reference-addressable @gol
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm} @gol
@@ -559,7 +562,8 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
 -fprofile-note=@var{path} -fprofile-prefix-path=@var{path} @gol
 -fprofile-update=@var{method} -fprofile-filter-files=@var{regex} @gol
--fprofile-exclude-files=@var{regex} -fprofile-reproducibility @gol
+-fprofile-exclude-files=@var{regex} @gol
+-fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -829,7 +833,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdsp  -medsp  -mvdsp @gol
 -mdiv  -msmart  -mhigh-registers  -manchor @gol
 -mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt @gol
--mbranch-cost=@var{n}  -mcse-cc  -msched-prolog}
+-mbranch-cost=@var{n}  -mcse-cc  -msched-prolog -msim}
 
 @emph{Darwin Options}
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
@@ -3361,6 +3365,25 @@ void f(int *a, int b, int c) @{
 
 Enabled by default with @option{-std=c++20}.
 
+@item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
+@opindex Wctad-maybe-unsupported
+@opindex Wno-ctad-maybe-unsupported
+Warn when performing class template argument deduction (CTAD) on a type with
+no explicitly written deduction guides.  This warning will point out cases
+where CTAD succeeded only because the compiler synthesized the implicit
+deduction guides, which might not be what the programmer intended.  Certain
+style guides allow CTAD only on types that specifically "opt-in"; i.e., on
+types that are designed to support CTAD.  This warning can be suppressed with
+the following pattern:
+
+@smallexample
+struct allow_ctad_t; // any name works
+template <typename T> struct S @{
+  S(T) @{ @}
+@};
+S(allow_ctad_t) -> S<void>; // guide with incomplete parameter type will never be considered
+@end smallexample
+
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
 @opindex Wno-ctor-dtor-privacy
@@ -5274,6 +5297,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-parameter=2 @r{(C and Objective-C only)} @gol
 -Wbool-compare  @gol
 -Wbool-operation  @gol
 -Wc++11-compat  -Wc++14-compat  @gol
@@ -5325,6 +5349,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
+-Wvla-parameter @r{(C and Objective-C only)} @gol
 -Wvolatile-register-var  @gol
 -Wzero-length-bounds}
 
@@ -6570,9 +6595,15 @@ either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @item -Wuninitialized
 @opindex Wuninitialized
 @opindex Wno-uninitialized
-Warn if an automatic variable is used without first being initialized.
-In C++, warn if a non-static reference or non-static @code{const}
-member appears in a class without constructors.
+Warn if an object with automatic or allocated storage duration is used
+without having been initialized.  In C++, also warn if a non-static
+reference or non-static @code{const} member appears in a class without
+constructors.
+
+In addition, passing a pointer (or in C++, a reference) to an uninitialized
+object to a @code{const}-qualified argument of a built-in function known to
+read the object is also diagnosed by this warning.
+(@option{-Wmaybe-uninitialized} is issued for ordinary functions.)
 
 If you want to warn about code that uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
@@ -6614,11 +6645,18 @@ void store (int *i)
 @item -Wmaybe-uninitialized
 @opindex Wmaybe-uninitialized
 @opindex Wno-maybe-uninitialized
-For an automatic (i.e.@: local) variable, if there exists a path from the
-function entry to a use of the variable that is initialized, but there exist
-some other paths for which the variable is not initialized, the compiler
-emits a warning if it cannot prove the uninitialized paths are not
-executed at run time.
+For an object with automatic or allocated storage duration, if there exists
+a path from the function entry to a use of the object that is initialized,
+but there exist some other paths for which the object is not initialized,
+the compiler emits a warning if it cannot prove the uninitialized paths
+are not executed at run time.
+
+In addition, passing a pointer (or in C++, a reference) to an uninitialized
+object to a @code{const}-qualified function argument is also diagnosed by
+this warning.  (@option{-Wuninitialized} is issued for built-in functions
+known to read the object.)  Annotating the function with attribute
+@code{access (none)} indicates that the argument isn't used to access
+the object and avoids the warning (@pxref{Common Function Attributes}).
 
 These warnings are only possible in optimizing compilation, because otherwise
 GCC does not keep track of the state of variables.
@@ -7177,6 +7215,54 @@ arrays at the end of a struct and for arrays accessed through
 pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
+
+@item -Warray-parameter
+@itemx -Warray-parameter=@var{n}
+@opindex Wno-array-parameter
+Warn about redeclarations of functions involving arguments of array or
+pointer types of inconsistent kinds or forms, and enable the detection
+of out-of-bounds accesses to such parameters by warnings such as
+@option{-Warray-bounds}.
+
+If the first function declaration uses the array form the bound specified
+in the array is assumed to be the minimum number of elements expected to
+be provided in calls to the function and the maximum number of elements
+accessed by it.  Failing to provide arguments of sufficient size or accessing
+more than the maximum number of elements may be diagnosed by warnings such
+as @option{-Warray-bounds}.  At level 1 the warning diagnoses inconsistencies
+involving array parameters declared using the @code{T[static N]} form.
+
+For example, the warning triggers for the following redeclarations because
+the first one allows an array of any size to be passed to @code{f} while
+the second one with the keyword @code{static} specifies that the array
+argument must have at least four elements.
+
+@smallexample
+void f (int[static 4]);
+void f (int[]);           // warning (inconsistent array form)
+
+void g (void)
+@{
+  int *p = (int *)malloc (4);
+  f (p);                  // warning (array too small)
+  @dots{}
+@}
+@end smallexample
+
+At level 2 the warning also triggers for redeclarations involving any other
+inconsistency in array or pointer argument forms denoting array sizes.
+Pointers and arrays of unspecified bound are considered equivalent and do
+not trigger a warning.
+
+@smallexample
+void g (int*);
+void g (int[]);     // no warning
+void g (int[8]);    // warning (inconsistent array bound)
+@end smallexample
+
+@option{-Warray-parameter=2} is included in @option{-Wall}.  The
+@option{-Wvla-parameter} option triggers warnings for similar inconsistencies
+involving Variable Length Array arguments.
 
 @item -Wattribute-alias=@var{n}
 @itemx -Wno-attribute-alias
@@ -8605,6 +8691,44 @@ See also @option{-Walloca-larger-than=@var{byte-size}}.
 Disable @option{-Wvla-larger-than=} warnings.  The option is equivalent
 to @option{-Wvla-larger-than=}@samp{SIZE_MAX} or larger.
 
+@item -Wvla-parameter
+@opindex Wno-vla-parameter
+Warn about redeclarations of functions involving arguments of Variable
+Length Array types of inconsistent kinds or forms, and enable the detection
+of out-of-bounds accesses to such parameters by warnings such as
+@option{-Warray-bounds}.
+
+If the first function declaration uses the VLA form the bound specified
+in the array is assumed to be the minimum number of elements expected to
+be provided in calls to the function and the maximum number of elements
+accessed by it.  Failing to provide arguments of sufficient size or
+accessing more than the maximum number of elements may be diagnosed.
+
+For example, the warning triggers for the following redeclarations because
+the first one allows an array of any size to be passed to @code{f} while
+the second one specifies that the array argument must have at least @code{n}
+elements.  In addition, calling @code{f} with the assotiated VLA bound
+parameter in excess of the actual VLA bound triggers a warning as well.
+
+@smallexample
+void f (int n, int[n]);
+void f (int, int[]);     // warning: argument 2 previously declared as a VLA
+
+void g (int n)
+@{
+    if (n > 4)
+      return;
+    int a[n];
+    f (sizeof a, a);     // warning: access to a by f may be out of bounds
+  @dots{}
+@}
+
+@end smallexample
+
+@option{-Wvla-parameter} is included in @option{-Wall}.  The
+@option{-Warray-parameter} option triggers warnings for similar problems
+involving ordinary array arguments.
+
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var
 @opindex Wno-volatile-register-var
@@ -8928,6 +9052,17 @@ such as the @code{taint} checker that implements
 @option{-Wanalyzer-tainted-array-index}, and this option is required
 to enable them.
 
+@item -fno-analyzer-feasibility
+@opindex fanalyzer-feasibility
+@opindex fno-analyzer-feasibility
+This option is intended for analyzer developers.
+
+By default the analyzer verifies that there is a feasible control flow path
+for each diagnostic it emits: that the conditions that hold are not mutually
+exclusive.  Diagnostics for which no feasible path can be found are rejected.
+This filtering can be suppressed with @option{-fno-analyzer-feasibility}, for
+debugging issues in this code.
+
 @item -fanalyzer-fine-grained
 @opindex fanalyzer-fine-grained
 @opindex fno-analyzer-fine-grained
@@ -9058,6 +9193,12 @@ Dump a textual representation of the ``exploded graph'' to
 Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
+
+@item -fdump-analyzer-json
+@opindex fdump-analyzer-json
+Dump a compressed JSON representation of analyzer internals to
+@file{@var{file}.analyzer.json.gz}.  The precise format is subject
+to change.
 
 @item -fdump-analyzer-state-purge
 @opindex fdump-analyzer-state-purge
@@ -9605,6 +9746,7 @@ compilation time.
 -fif-conversion @gol
 -fif-conversion2 @gol
 -finline-functions-called-once @gol
+-fipa-modref @gol
 -fipa-profile @gol
 -fipa-pure-const @gol
 -fipa-reference @gol
@@ -10700,10 +10842,17 @@ default at any optimization level.
 @opindex fipa-profile
 Perform interprocedural profile propagation.  The functions called only from
 cold functions are marked as cold. Also functions executed once (such as
-@code{cold}, @code{noreturn}, static constructors or destructors) are identified. Cold
-functions and loop less parts of functions executed once are then optimized for
-size.
+@code{cold}, @code{noreturn}, static constructors or destructors) are
+identified. Cold functions and loop less parts of functions executed once are
+then optimized for size.
 Enabled by default at @option{-O} and higher.
+
+@item -fipa-modref
+@opindex fipa-modref
+Perform interprocedural mod/ref analysis.  This optimization analyzes the side
+effects of functions (memory locations that are modified or referenced) and
+enables better optimization across the function call boundary.  This flag is
+enabled by default at @option{-O} and higher.
 
 @item -fipa-cp
 @opindex fipa-cp
@@ -12681,6 +12830,18 @@ Deeper chains are still handled by late inlining.
 Probability (in percent) that C++ inline function with comdat visibility
 are shared across multiple compilation units.
 
+@item ipa-modref-max-bases
+@item ipa-modref-max-refs
+@item ipa-modref-max-accesses
+Specifies the maximal number of base pointers, referneces and accesses stored
+for a single function by mod/ref analysis.
+
+@item ipa-modref-max-tests
+Specifies the maxmal number of tests alias oracle can perform to disambiguate
+memory locations using the mod/ref information.  This parameter ought to be
+bigger than @option{--param ipa-modref-max-bases} and @option{--param
+ipa-modref-max-refs}.
+
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that
@@ -13388,6 +13549,10 @@ The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
 0, use the default for the machine.
 
+@item max-switch-clustering-attempts
+The maximum number of clustering attempts used
+in bit-test and jump-table switch expansion.
+
 @item jump-table-max-growth-ratio-for-size
 The maximum code size growth ratio when expanding
 into a jump table (in percent).  The parameter is used when
@@ -13960,14 +14125,14 @@ any of the regular expressions (separated by semi-colons).
 For example, @option{-fprofile-exclude-files=/usr/.*} will prevent instrumentation
 of all files that are located in the @file{/usr/} folder.
 
-@item -fprofile-reproducible
+@item -fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]}
 @opindex fprofile-reproducible
 Control level of reproducibility of profile gathered by
 @code{-fprofile-generate}.  This makes it possible to rebuild program
 with same outcome which is useful, for example, for distribution
 packages.
 
-With @option{-fprofile-reproducibility=serial} the profile gathered by
+With @option{-fprofile-reproducible=serial} the profile gathered by
 @option{-fprofile-generate} is reproducible provided the trained program
 behaves the same at each invocation of the train run, it is not
 multi-threaded and profile data streaming is always done in the same
@@ -13982,7 +14147,7 @@ Such non-reproducible part of programs may be annotated by
 @option{-l} can be used to dump gathered data and verify that they are
 indeed reproducible.
 
-With @option{-fprofile-reproducibility=parallel-runs} collected profile
+With @option{-fprofile-reproducible=parallel-runs} collected profile
 stays reproducible regardless the order of streaming of the data into
 gcda files.  This setting makes it possible to run multiple instances of
 instrumented program in parallel (such as with @code{make -j}). This
@@ -17443,7 +17608,8 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
 @samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
-@samp{neoverse-e1},@samp{neoverse-n1},@samp{qdf24xx}, @samp{saphira},
+@samp{neoverse-e1}, @samp{neoverse-n1}, @samp{neoverse-n2},
+@samp{neoverse-v1}, @samp{qdf24xx}, @samp{saphira},
 @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
@@ -19290,9 +19456,9 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-m35p}, @samp{cortex-m55},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
-@samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
-@samp{ep9312}, @samp{fa526}, @samp{fa626}, @samp{fa606te}, @samp{fa626te},
-@samp{fmp626}, @samp{fa726te}, @samp{xgene1}.
+@samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
+@samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}, @samp{fa526}, @samp{fa626},
+@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}, @samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
@@ -20904,6 +21070,11 @@ Permit scheduling of function prologue and epilogue sequences.  Using
 this option can result in code that is not compliant with the C-SKY V2 ABI
 prologue requirements and that cannot be debugged or backtraced.
 It is disabled by default.
+
+@item -msim
+@opindex msim
+Links the library libsemi.a which is in compatible with simulator. Applicable
+to ELF compiler only.
 
 @end table
 

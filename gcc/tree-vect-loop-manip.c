@@ -2386,6 +2386,34 @@ slpeel_update_phi_nodes_for_lcssa (class loop *epilog)
     rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (gsi.phi (), e));
 }
 
+/* EPILOGUE_VINFO is an epilogue loop that we now know would need to
+   iterate exactly CONST_NITERS times.  Make a final decision about
+   whether the epilogue loop should be used, returning true if so.  */
+
+static bool
+vect_update_epilogue_niters (loop_vec_info epilogue_vinfo,
+			     unsigned HOST_WIDE_INT const_niters)
+{
+  /* Avoid wrap-around when computing const_niters - 1.  Also reject
+     using an epilogue loop for a single scalar iteration, even if
+     we could in principle implement that using partial vectors.  */
+  unsigned int gap_niters = LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
+  if (const_niters <= gap_niters + 1)
+    return false;
+
+  /* Install the number of iterations.  */
+  tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (epilogue_vinfo));
+  tree niters_tree = build_int_cst (niters_type, const_niters);
+  tree nitersm1_tree = build_int_cst (niters_type, const_niters - 1);
+
+  LOOP_VINFO_NITERS (epilogue_vinfo) = niters_tree;
+  LOOP_VINFO_NITERSM1 (epilogue_vinfo) = nitersm1_tree;
+
+  /* Decide what to do if the number of epilogue iterations is not
+     a multiple of the epilogue loop's vectorization factor.  */
+  return vect_determine_partial_vectors_and_peeling (epilogue_vinfo, true);
+}
+
 /* Function vect_do_peeling.
 
    Input:
@@ -2493,6 +2521,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   int estimated_vf;
   int prolog_peeling = 0;
   bool vect_epilogues = loop_vinfo->epilogue_vinfos.length () > 0;
+  bool vect_epilogues_updated_niters = false;
   /* We currently do not support prolog peeling if the target alignment is not
      known at compile time.  'vect_gen_prolog_loop_niters' depends on the
      target alignment being constant.  */
@@ -2601,8 +2630,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (vect_epilogues
       && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && prolog_peeling >= 0
-      && known_eq (vf, lowest_vf)
-      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (epilogue_vinfo))
+      && known_eq (vf, lowest_vf))
     {
       unsigned HOST_WIDE_INT eiters
 	= (LOOP_VINFO_INT_NITERS (loop_vinfo)
@@ -2612,13 +2640,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       eiters
 	= eiters % lowest_vf + LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
 
-      unsigned int ratio;
-      unsigned int epilogue_gaps
-	= LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
-      while (!(constant_multiple_p
-	       (GET_MODE_SIZE (loop_vinfo->vector_mode),
-		GET_MODE_SIZE (epilogue_vinfo->vector_mode), &ratio)
-	       && eiters >= lowest_vf / ratio + epilogue_gaps))
+      while (!vect_update_epilogue_niters (epilogue_vinfo, eiters))
 	{
 	  delete epilogue_vinfo;
 	  epilogue_vinfo = NULL;
@@ -2629,8 +2651,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	    }
 	  epilogue_vinfo = loop_vinfo->epilogue_vinfos[0];
 	  loop_vinfo->epilogue_vinfos.ordered_remove (0);
-	  epilogue_gaps = LOOP_VINFO_PEELING_FOR_GAPS (epilogue_vinfo);
 	}
+      vect_epilogues_updated_niters = true;
     }
   /* Prolog loop may be skipped.  */
   bool skip_prolog = (prolog_peeling != 0);
@@ -2928,7 +2950,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 skip_e edge.  */
       if (skip_vector)
 	{
-	  gcc_assert (update_e != NULL && skip_e != NULL);
+	  gcc_assert (update_e != NULL
+		      && skip_e != NULL
+		      && !vect_epilogues_updated_niters);
 	  gphi *new_phi = create_phi_node (make_ssa_name (TREE_TYPE (niters)),
 					   update_e->dest);
 	  tree new_ssa = make_ssa_name (TREE_TYPE (niters));
@@ -2953,25 +2977,32 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  niters = PHI_RESULT (new_phi);
 	}
 
-      /* Subtract the number of iterations performed by the vectorized loop
-	 from the number of total iterations.  */
-      tree epilogue_niters = fold_build2 (MINUS_EXPR, TREE_TYPE (niters),
-					  before_loop_niters,
-					  niters);
-
-      LOOP_VINFO_NITERS (epilogue_vinfo) = epilogue_niters;
-      LOOP_VINFO_NITERSM1 (epilogue_vinfo)
-	= fold_build2 (MINUS_EXPR, TREE_TYPE (epilogue_niters),
-		       epilogue_niters,
-		       build_one_cst (TREE_TYPE (epilogue_niters)));
-
       /* Set ADVANCE to the number of iterations performed by the previous
 	 loop and its prologue.  */
       *advance = niters;
 
-      /* Redo the peeling for niter analysis as the NITERs and alignment
-	 may have been updated to take the main loop into account.  */
-      determine_peel_for_niter (epilogue_vinfo);
+      if (!vect_epilogues_updated_niters)
+	{
+	  /* Subtract the number of iterations performed by the vectorized loop
+	     from the number of total iterations.  */
+	  tree epilogue_niters = fold_build2 (MINUS_EXPR, TREE_TYPE (niters),
+					      before_loop_niters,
+					      niters);
+
+	  LOOP_VINFO_NITERS (epilogue_vinfo) = epilogue_niters;
+	  LOOP_VINFO_NITERSM1 (epilogue_vinfo)
+	    = fold_build2 (MINUS_EXPR, TREE_TYPE (epilogue_niters),
+			   epilogue_niters,
+			   build_one_cst (TREE_TYPE (epilogue_niters)));
+
+	  /* Decide what to do if the number of epilogue iterations is not
+	     a multiple of the epilogue loop's vectorization factor.
+	     We should have rejected the loop during the analysis phase
+	     if this fails.  */
+	  if (!vect_determine_partial_vectors_and_peeling (epilogue_vinfo,
+							   true))
+	    gcc_unreachable ();
+	}
     }
 
   adjust_vec.release ();

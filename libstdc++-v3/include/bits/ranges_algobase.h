@@ -34,9 +34,8 @@
 
 #include <compare>
 #include <iterator>
-// #include <bits/range_concepts.h>
-#include <ranges>
-#include <bits/invoke.h>
+#include <bits/ranges_base.h> // ranges::begin, ranges::range etc.
+#include <bits/invoke.h>      // __invoke
 #include <bits/cpp_type_traits.h> // __is_byte
 
 #if __cpp_lib_concepts

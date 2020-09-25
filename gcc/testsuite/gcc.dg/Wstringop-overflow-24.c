@@ -23,7 +23,7 @@ extern char d1[1], d2[2], d3[3];
    the attribute without a size operand.  */
 
 RDONLY (1) void
-rd1_int (const int32_t*);   // { dg-message "in a call to function 'rd1_int' declared with attribute 'read_only \\\(1\\\)'" }
+rd1_int (const int32_t*);   // { dg-message "in a call to function 'rd1_int' declared with attribute 'access \\\(read_only, 1\\\)'" "note" }
 
 void test_rd1_int (void)
 {
@@ -39,7 +39,7 @@ void test_rd1_int (void)
    the attribute and with non-zero size.  */
 
 RDONLY (2, 1) void
-rd2_1 (int, const void*);   // { dg-message "in a call to function 'rd2_1' declared with attribute 'read_only \\\(2, 1\\\)" }
+rd2_1 (int, const void*);   // { dg-message "in a call to function 'rd2_1' declared with attribute 'access \\\(read_only, 2, 1\\\)" "note" }
 
 void test_rd2_1 (void)
 {
@@ -49,7 +49,7 @@ void test_rd2_1 (void)
 }
 
 WRONLY (3, 1) void
-wr3_1 (int, int, void*);    // { dg-message "in a call to function 'wr3_1' declared with attribute 'write_only \\\(3, 1\\\)" }
+wr3_1 (int, int, void*);    // { dg-message "in a call to function 'wr3_1' declared with attribute 'access \\\(write_only, 3, 1\\\)" "note" }
 
 void test_wr3_1 (void)
 {
@@ -157,7 +157,7 @@ void test_rd6_1_wr5_2_rd4_3 (void)
 {
   rd6_1_wr5_2_rd4_3 (7, 2, 1, d1, d2, s3);   // { dg-warning "reading 7 bytes from a region of size 3" }
   rd6_1_wr5_2_rd4_3 (3, 8, 1, d1, d2, s3);   // { dg-warning "writing 8 bytes into a region of size 2" }
-  rd6_1_wr5_2_rd4_3 (3, 2, 9, d1, d2, s3);   // { dg-warning "writing 9 bytes into a region of size 1" }
+  rd6_1_wr5_2_rd4_3 (3, 2, 9, d1, d2, s3);   // { dg-warning "accessing 9 bytes in a region of size 1" }
 }
 
 

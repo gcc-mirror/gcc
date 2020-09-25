@@ -424,7 +424,7 @@ write_one_data (const struct gcov_info *gi_ptr,
 
 	  n_counts = ci_ptr->num;
 
-	  if (gi_ptr->merge[t_ix] == __gcov_merge_topn)
+	  if (t_ix == GCOV_COUNTER_V_TOPN || t_ix == GCOV_COUNTER_V_INDIR)
 	    write_top_counters (ci_ptr, t_ix, n_counts);
 	  else
 	    {

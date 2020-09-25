@@ -1,8 +1,7 @@
 /* Examples of switch statements with many cases (with default values).
    Adapted from Linux 5.9-rc1:drivers/media/v4l2-core/v4l2-ctrls.c.  */
 
-/* { dg-additional-options "-O1 -Wno-analyzer-too-complex" } */
-// TODO: remove need for -Wno-analyzer-too-complex
+/* { dg-additional-options "-O1" } */
 
 typedef unsigned int u32;
 typedef long long s64;

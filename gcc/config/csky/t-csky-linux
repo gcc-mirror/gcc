@@ -21,7 +21,7 @@
 
 
 MULTILIB_EXCEPTIONS  =
-CSKY_MULTILIB_OSDIRNAMES = mhard-float=/hard-fp msoft-float=/. mcpu.ck810f=/. mcpu.ck807f=/ck807
+CSKY_MULTILIB_OSDIRNAMES = mfloat-abi.softfp=/soft-fp mfloat-abi.hard=/hard-fp mfloat-abi.soft=/. mcpu.ck810f=/. mcpu.ck807f=/ck807
 
 # Arch variants.
 MULTILIB_OPTIONS     += mcpu=ck810f/mcpu=ck807f
@@ -41,6 +41,6 @@ MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810vf
 MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810ft
 MULTILIB_MATCHES     += mcpu?ck810f=mcpu?ck810vft
 
-# For option -msoft-float/-mhard-float.
-MULTILIB_OPTIONS    += msoft-float/mhard-float
-MULTILIB_DIRNAMES   += soft-fp hard-fp
+# For option -mfloat-abi=
+MULTILIB_OPTIONS     += mfloat-abi=soft/mfloat-abi=softfp/mfloat-abi=hard
+MULTILIB_DIRNAMES    += soft soft-fp hard-fp

@@ -10123,13 +10123,15 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       OMP_CLAUSE_CHAIN (clause) = nc;
       struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
       gimplify_omp_ctxp = ctx->outer_context;
-      lang_hooks.decls.omp_finish_clause (nc, pre_p);
+      lang_hooks.decls.omp_finish_clause (nc, pre_p,
+					  (ctx->region_type & ORT_ACC) != 0);
       gimplify_omp_ctxp = ctx;
     }
   *list_p = clause;
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
   gimplify_omp_ctxp = ctx->outer_context;
-  lang_hooks.decls.omp_finish_clause (clause, pre_p);
+  lang_hooks.decls.omp_finish_clause (clause, pre_p,
+				      (ctx->region_type & ORT_ACC) != 0);
   if (gimplify_omp_ctxp)
     for (; clause != chain; clause = OMP_CLAUSE_CHAIN (clause))
       if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
@@ -10539,7 +10541,9 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		  OMP_CLAUSE_SET_MAP_KIND (nc, GOMP_MAP_TOFROM);
 		  OMP_CLAUSE_DECL (nc) = decl;
 		  OMP_CLAUSE_CHAIN (c) = nc;
-		  lang_hooks.decls.omp_finish_clause (nc, pre_p);
+		  lang_hooks.decls.omp_finish_clause (nc, pre_p,
+						      (ctx->region_type
+						       & ORT_ACC) != 0);
 		  while (1)
 		    {
 		      OMP_CLAUSE_MAP_IN_REDUCTION (nc) = 1;
@@ -11040,6 +11044,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   int i;
   bitmap has_decl_expr = NULL;
   enum omp_region_type ort = ORT_WORKSHARE;
+  bool openacc = TREE_CODE (*expr_p) == OACC_LOOP;
 
   orig_for_stmt = for_stmt = *expr_p;
 
@@ -11147,7 +11152,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (for_stmt);
 		OMP_FOR_CLAUSES (for_stmt) = c;
 		OMP_CLAUSE_CODE (*pc) = OMP_CLAUSE_FIRSTPRIVATE;
-		lang_hooks.decls.omp_finish_clause (*pc, pre_p);
+		lang_hooks.decls.omp_finish_clause (*pc, pre_p, openacc);
 	      }
 	    else
 	      {
@@ -11159,7 +11164,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (*pc);
 		OMP_CLAUSE_CHAIN (c) = *pc;
 		*pc = c;
-		lang_hooks.decls.omp_finish_clause (*pc, pre_p);
+		lang_hooks.decls.omp_finish_clause (*pc, pre_p, openacc);
 	      }
 	    tree c = build_omp_clause (UNKNOWN_LOCATION,
 				       OMP_CLAUSE_FIRSTPRIVATE);
@@ -12115,7 +12120,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 				      OMP_CLAUSE_FIRSTPRIVATE);
 		OMP_CLAUSE_DECL (*gtask_clauses_ptr) = OMP_CLAUSE_DECL (c);
-		lang_hooks.decls.omp_finish_clause (*gtask_clauses_ptr, NULL);
+		lang_hooks.decls.omp_finish_clause (*gtask_clauses_ptr, NULL,
+						    openacc);
 		gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
 		*gforo_clauses_ptr = c;
 		gforo_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
@@ -12154,7 +12160,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 				      OMP_CLAUSE_FIRSTPRIVATE);
 		OMP_CLAUSE_DECL (*gtask_clauses_ptr) = OMP_CLAUSE_DECL (c);
-		lang_hooks.decls.omp_finish_clause (*gtask_clauses_ptr, NULL);
+		lang_hooks.decls.omp_finish_clause (*gtask_clauses_ptr, NULL,
+						    openacc);
 		gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
 		OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (c) = 1;
 		*gforo_clauses_ptr = build_omp_clause (OMP_CLAUSE_LOCATION (c),
@@ -12535,7 +12542,7 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 		*pc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					OMP_CLAUSE_FIRSTPRIVATE);
 		OMP_CLAUSE_DECL (*pc) = OMP_CLAUSE_DECL (c);
-		lang_hooks.decls.omp_finish_clause (*pc, NULL);
+		lang_hooks.decls.omp_finish_clause (*pc, NULL, false);
 		pc = &OMP_CLAUSE_CHAIN (*pc);
 	      }
 	    *pc = copy_node (c);
@@ -12546,7 +12553,7 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 		if (pass != last)
 		  OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (*pc) = 1;
 		else
-		  lang_hooks.decls.omp_finish_clause (*pc, NULL);
+		  lang_hooks.decls.omp_finish_clause (*pc, NULL, false);
 		OMP_CLAUSE_LASTPRIVATE_LOOP_IV (*pc) = 0;
 	      }
 	    pc = &OMP_CLAUSE_CHAIN (*pc);

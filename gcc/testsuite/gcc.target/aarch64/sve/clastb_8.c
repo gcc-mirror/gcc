@@ -23,7 +23,4 @@ TEST_TYPE (uint64_t);
 /* { dg-final { scan-assembler {\tclastb\t(h[0-9]+), p[0-7], \1, z[0-9]+\.h\n} } } */
 /* { dg-final { scan-assembler {\tclastb\t(s[0-9]+), p[0-7], \1, z[0-9]+\.s\n} } } */
 /* { dg-final { scan-assembler {\tclastb\t(d[0-9]+), p[0-7], \1, z[0-9]+\.d\n} } } */
-/* { dg-final { scan-assembler {\twhilelo\tp[0-9]+\.b,} } } */
-/* { dg-final { scan-assembler {\twhilelo\tp[0-9]+\.h,} } } */
-/* { dg-final { scan-assembler {\twhilelo\tp[0-9]+\.s,} } } */
-/* { dg-final { scan-assembler {\twhilelo\tp[0-9]+\.d,} } } */
+/* { dg-final { scan-assembler-times {\tptrue\tp[0-9]+\.b,} 4 } } */

@@ -1041,8 +1041,15 @@ grep '^const _IFF' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(IFF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _IFNAMSIZ' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(IFNAMSIZ[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
-grep '^const _SIOC' gen-sysinfo.go |
+grep '^const _SIOC' gen-sysinfo.go | \
+    grep -v '_val =' | \
     sed -e 's/^\(const \)_\(SIOC[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+if ! grep '^const SIOCGIFMTU' ${OUT} >/dev/null 2>&1; then
+	if grep '^const _SIOCGIFMTU_val' ${OUT} >/dev/null 2>&1; then
+		echo 'const SIOCGIFMTU = _SIOCGIFMTU_val' >> ${OUT}
+	fi
+fi
 
 # The ifaddrmsg struct.
 grep '^type _ifaddrmsg ' gen-sysinfo.go | \

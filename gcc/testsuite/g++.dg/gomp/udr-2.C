@@ -34,6 +34,7 @@ namespace N2
     typedef T3 T;
     #pragma omp declare reduction (foo : T : omp_out += N1::v)	// { dg-error "combiner refers to variable" }
     #pragma omp declare reduction (foo : T4 : v *= omp_in)	// { dg-error "combiner refers to variable" }
+    // { dg-error "in assignment" "" { target *-*-* } .-1 }
     #pragma omp declare reduction (foo : T5 : omp_out.w *= omp_in.w + v) // { dg-error "combiner refers to variable" }
     return 0;
   }

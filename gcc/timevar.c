@@ -661,8 +661,8 @@ timer::print_row (FILE *fp,
 #endif /* HAVE_WALL_TIME */
 
   /* Print the amount of ggc memory allocated.  */
-  fprintf (fp, "%8u kB (%3.0f%%)",
-	   (unsigned) (elapsed.ggc_mem >> 10),
+  fprintf (fp, PRsa (6) " (%3.0f%%)",
+	   SIZE_AMOUNT (elapsed.ggc_mem),
 	   (total->ggc_mem == 0
 	    ? 0
 	    : (float) elapsed.ggc_mem / total->ggc_mem) * 100);
@@ -712,7 +712,7 @@ timer::print (FILE *fp)
      TIMEVAR.  */
   m_start_time = now;
 
-  fprintf (fp, "\n%-35s%16s%14s%14s%18s\n", "Time variable", "usr", "sys",
+  fprintf (fp, "\n%-35s%16s%14s%14s%14s\n", "Time variable", "usr", "sys",
 	   "wall", "GGC");
   if (m_jit_client_items)
     fputs ("GCC items:\n", fp);
@@ -776,7 +776,7 @@ timer::print (FILE *fp)
 #ifdef HAVE_WALL_TIME
   fprintf (fp, "%8.2f      ", total->wall);
 #endif
-  fprintf (fp, "%9u kB\n", (unsigned) (total->ggc_mem >> 10));
+  fprintf (fp, PRsa (7) "\n", SIZE_AMOUNT (total->ggc_mem));
 
   if (CHECKING_P || flag_checking)
     fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");

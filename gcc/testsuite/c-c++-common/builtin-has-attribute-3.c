@@ -2,7 +2,7 @@
    { dg-do compile }
    { dg-options "-Wall -ftrack-macro-expansion=0" }
    { dg-options "-Wall -Wno-narrowing -Wno-unused-local-typedefs -ftrack-macro-expansion=0" { target c++ } } 
-   { dg-additional-options "-DSKIP_ALIAS" { target *-*-darwin* hppa*-*-hpux* } } 
+   { dg-additional-options "-DSKIP_ALIAS" { target { { *-*-darwin* hppa*-*-hpux } || { ! alias } } } }
 */
 
 #define ATTR(...) __attribute__ ((__VA_ARGS__))
@@ -75,7 +75,7 @@ void test_alloc_align (void)
   A (0, fnone, alloc_align (1));        /* { dg-warning "\\\[-Wattributes" } */
   A (0, falloc_size_1, alloc_align (1));
   A (1, falloc_align_1, alloc_align (1));
-  A (0, falloc_align_2, alloc_align (1));
+  A (0, falloc_align_2, alloc_align (1));   /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
   A (1, falloc_align_2, alloc_align (2));
 }
 
@@ -88,26 +88,26 @@ void test_alloc_size_malloc (void)
   A (0, falloc_align_1, alloc_size (1));
   A (0, falloc_align_2, alloc_size (1));
   A (1, falloc_size_1, alloc_size (1));
-  A (0, falloc_size_1, alloc_size (2));
-  A (0, falloc_size_2, alloc_size (1));
+  A (0, falloc_size_1, alloc_size (2));     /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
+  A (0, falloc_size_2, alloc_size (1));     /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
   A (1, falloc_size_2, alloc_size (2));
 
   A (1, falloc_size_2_4, alloc_size);
   /* It would probably make more sense to have the built-in return
      true only when both alloc_size arguments match, not just one
      or the other.  */
-  A (0, falloc_size_2_4, alloc_size (1));
-  A (1, falloc_size_2_4, alloc_size (2));
-  A (0, falloc_size_2_4, alloc_size (3));
-  A (1, falloc_size_2_4, alloc_size (4));
+  A (0, falloc_size_2_4, alloc_size (1));   /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
+  A (1, falloc_size_2_4, alloc_size (2));   /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
+  A (0, falloc_size_2_4, alloc_size (3));   /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
+  A (1, falloc_size_2_4, alloc_size (4));   /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
   A (1, falloc_size_2_4, alloc_size (2, 4));
 
   extern ATTR (alloc_size (3))
     void* fmalloc_size_3 (int, int, int);
 
   A (1, fmalloc_size_3, alloc_size);
-  A (0, fmalloc_size_3, alloc_size (1));
-  A (0, fmalloc_size_3, alloc_size (2));
+  A (0, fmalloc_size_3, alloc_size (1));    /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
+  A (0, fmalloc_size_3, alloc_size (2));    /* { dg-bogus "\\\[-Wattributes" "pr?????" { xfail *-*-* } }" */
   A (1, fmalloc_size_3, alloc_size (3));
   A (0, fmalloc_size_3, malloc);
 

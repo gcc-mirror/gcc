@@ -2089,7 +2089,7 @@ class Type_case_clauses
 
   // Lower to if and goto statements.
   void
-  lower(Type*, Block*, Temporary_statement* descriptor_temp,
+  lower(Gogo*, Type*, Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
   // Return true if these clauses may fall through to the statements
@@ -2138,7 +2138,7 @@ class Type_case_clauses
 
     // Lower to if and goto statements.
     void
-    lower(Type*, Block*, Temporary_statement* descriptor_temp,
+    lower(Gogo*, Type*, Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
 
     // Return true if this clause may fall through to execute the

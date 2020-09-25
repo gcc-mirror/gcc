@@ -2752,7 +2752,7 @@ tree
 find_loop_niter (class loop *loop, edge *exit)
 {
   unsigned i;
-  vec<edge> exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
   class tree_niter_desc desc;
@@ -2803,7 +2803,6 @@ find_loop_niter (class loop *loop, edge *exit)
 	  continue;
 	}
     }
-  exits.release ();
 
   return niter ? niter : chrec_dont_know;
 }
@@ -2837,21 +2836,18 @@ finite_loop_p (class loop *loop)
   if (loop->finite_p)
     {
       unsigned i;
-      vec<edge> exits = get_loop_exit_edges (loop);
+      auto_vec<edge> exits = get_loop_exit_edges (loop);
       edge ex;
 
       /* If the loop has a normal exit, we can assume it will terminate.  */
       FOR_EACH_VEC_ELT (exits, i, ex)
 	if (!(ex->flags & (EDGE_EH | EDGE_ABNORMAL | EDGE_FAKE)))
 	  {
-	    exits.release ();
 	    if (dump_file)
 	      fprintf (dump_file, "Assume loop %i to be finite: it has an exit "
 		       "and -ffinite-loops is on.\n", loop->num);
 	    return true;
 	  }
-
-      exits.release ();
     }
 
   return false;
@@ -3114,7 +3110,7 @@ tree
 find_loop_niter_by_eval (class loop *loop, edge *exit)
 {
   unsigned i;
-  vec<edge> exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
 
@@ -3123,10 +3119,7 @@ find_loop_niter_by_eval (class loop *loop, edge *exit)
   /* Loops with multiple exits are expensive to handle and less important.  */
   if (!flag_expensive_optimizations
       && exits.length () > 1)
-    {
-      exits.release ();
-      return chrec_dont_know;
-    }
+    return chrec_dont_know;
 
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
@@ -3144,7 +3137,6 @@ find_loop_niter_by_eval (class loop *loop, edge *exit)
       niter = aniter;
       *exit = ex;
     }
-  exits.release ();
 
   return niter ? niter : chrec_dont_know;
 }
@@ -4236,7 +4228,6 @@ get_upper_bound_based_on_builtin_expr_with_prob (gcond *cond)
 void
 estimate_numbers_of_iterations (class loop *loop)
 {
-  vec<edge> exits;
   tree niter, type;
   unsigned i;
   class tree_niter_desc niter_desc;
@@ -4275,7 +4266,7 @@ estimate_numbers_of_iterations (class loop *loop)
   number_of_latch_executions (loop);
 
   basic_block *body = get_loop_body (loop);
-  exits = get_loop_exit_edges (loop, body);
+  auto_vec<edge> exits = get_loop_exit_edges (loop, body);
   likely_exit = single_likely_exit (loop, exits);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
@@ -4311,7 +4302,6 @@ estimate_numbers_of_iterations (class loop *loop)
 		       true, ex == likely_exit, true);
       record_control_iv (loop, &niter_desc);
     }
-  exits.release ();
 
   if (flag_aggressive_loop_optimizations)
     infer_loop_bounds_from_undefined (loop, body);
