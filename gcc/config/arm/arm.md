@@ -7289,7 +7289,9 @@
 (define_insn "*arm32_mov<mode>"
   [(set (match_operand:HFBF 0 "nonimmediate_operand" "=r,m,r,r")
 	(match_operand:HFBF 1 "general_operand"	   " m,r,r,F"))]
-  "TARGET_32BIT && !TARGET_HARD_FLOAT
+  "TARGET_32BIT
+   && !TARGET_HARD_FLOAT
+   && !TARGET_HAVE_MVE
    && (	  s_register_operand (operands[0], <MODE>mode)
        || s_register_operand (operands[1], <MODE>mode))"
   "*

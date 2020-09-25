@@ -13,5 +13,6 @@ fn1 (__fp16 *pSrc)
       pDst[i] = high;
 }
 
-/* { dg-final { scan-assembler {vldr\.16\ts[0-9]+, \[r[0-9]+\]\n} } } */
-/* { dg-final { scan-assembler {vstr\.16\ts[0-9]+, \[r[0-9]+\]\n} } } */
+/* { dg-final { scan-assembler {vldr\.16\ts[0-9]+, \[r[0-9]+(, #-?[0-9]+)?\]\n} } } */
+/* { dg-final { scan-assembler-not {vldr\.16\t[^\n]*\]!} } } */
+/* { dg-final { scan-assembler-not {vstr\.16\t[^\n]*\]!} } } */
