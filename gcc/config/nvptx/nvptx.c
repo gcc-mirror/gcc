@@ -2101,7 +2101,7 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
       val = INTVAL (XEXP (x, 1));
       x = XEXP (x, 0);
       gcc_assert (GET_CODE (x) == SYMBOL_REF);
-      /* FALLTHROUGH */
+      gcc_fallthrough (); /* FALLTHROUGH */
 
     case SYMBOL_REF:
       gcc_assert (size == init_frag.size);
@@ -2603,7 +2603,7 @@ nvptx_print_operand (FILE *file, rtx x, int code)
     {
     case 'A':
       x = XEXP (x, 0);
-      /* FALLTHROUGH.  */
+      gcc_fallthrough (); /* FALLTHROUGH. */
 
     case 'D':
       if (GET_CODE (x) == CONST)
