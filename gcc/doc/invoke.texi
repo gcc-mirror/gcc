@@ -10879,7 +10879,7 @@ callers are impacted, therefore need to be patched as well.
 @gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
 -fipa-icf  -fipa-icf-functions  -fipa-icf-variables @gol
 -fipa-bit-cp  -fipa-vrp  -fipa-pure-const  -fipa-reference-addressable @gol
--fipa-stack-alignment}
+-fipa-stack-alignment -fipa-modref}
 
 @item inline-only-static
 
