@@ -1,3 +1,53 @@
+2020-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (struct rejected_constraint): New decl.
+	* analyzer.opt (fanalyzer-feasibility): New option.
+	* diagnostic-manager.cc (path_builder::path_builder): Add
+	"problem" param and use it to initialize new field.
+	(path_builder::get_feasibility_problem): New accessor.
+	(path_builder::m_feasibility_problem): New field.
+	(dedupe_winners::add): Remove inversion of logic in "if" clause,
+	swapping if/else suites.  In the !feasible_p suite, inspect
+	flag_analyzer_feasibility and add code to handle when this
+	is off, accepting the infeasible path, but recording the
+	feasibility_problem.
+	(diagnostic_manager::emit_saved_diagnostic): Pass the
+	feasibility_problem to the path_builder.
+	(diagnostic_manager::add_events_for_eedge): If we have
+	a feasibility_problem at this edge, use it to add a custom event.
+	* engine.cc (exploded_path::feasible_p): Pass a
+	rejected_constraint ** to model.maybe_update_for_edge and transfer
+	ownership of any created instance to any feasibility_problem.
+	(feasibility_problem::dump_to_pp): New.
+	* exploded-graph.h (feasibility_problem::feasibility_problem):
+	Drop "model" param; add rejected_constraint * param.
+	(feasibility_problem::~feasibility_problem): New.
+	(feasibility_problem::dump_to_pp): New decl.
+	(feasibility_problem::m_model): Drop field.
+	(feasibility_problem::m_rc): New field.
+	* program-point.cc (function_point::get_location): Handle
+	PK_BEFORE_SUPERNODE and PK_AFTER_SUPERNODE.
+	* program-state.cc (program_state::on_edge): Pass NULL to new
+	param of region_model::maybe_update_for_edge.
+	* region-model.cc (region_model::add_constraint): New overload
+	adding a rejected_constraint ** param.
+	(region_model::maybe_update_for_edge): Add rejected_constraint **
+	param and pass it to the various apply_constraints_for_ calls.
+	(region_model::apply_constraints_for_gcond): Add
+	rejected_constraint ** param and pass it to add_constraint calls.
+	(region_model::apply_constraints_for_gswitch): Likewise.
+	(region_model::apply_constraints_for_exception): Likewise.
+	(rejected_constraint::dump_to_pp): New.
+	* region-model.h (region_model::maybe_update_for_edge):
+	Add rejected_constraint ** param.
+	(region_model::add_constraint): New overload adding a
+	rejected_constraint ** param.
+	(region_model::apply_constraints_for_gcond): Add
+	rejected_constraint ** param.
+	(region_model::apply_constraints_for_gswitch): Likewise.
+	(region_model::apply_constraints_for_exception): Likewise.
+	(struct rejected_constraint): New.
+
 2020-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97178

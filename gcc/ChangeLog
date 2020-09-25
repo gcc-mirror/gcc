@@ -1,3 +1,142 @@
+2020-09-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-n2): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Document support for Neoverse N2.
+
+2020-09-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Neoverse N2.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document AArch64 support for Neoverse N2.
+
+2020-09-24  Richard Biener  <rguenther@suse.de>
+
+	* vec.h (auto_vec<T, 0>::auto_vec (auto_vec &&)): New move CTOR.
+	(auto_vec<T, 0>::operator=(auto_vec &&)): Delete.
+	* hash-table.h (hash_table::expand): Use std::move when expanding.
+	* cfgloop.h (get_loop_exit_edges): Return auto_vec<edge>.
+	* cfgloop.c (get_loop_exit_edges): Adjust.
+	* cfgloopmanip.c (fix_loop_placement): Likewise.
+	* ipa-fnsummary.c (analyze_function_body): Likewise.
+	* ira-build.c (create_loop_tree_nodes): Likewise.
+	(create_loop_tree_node_allocnos): Likewise.
+	(loop_with_complex_edge_p): Likewise.
+	* ira-color.c (ira_loop_edge_freq): Likewise.
+	* loop-unroll.c (analyze_insns_in_loop): Likewise.
+	* predict.c (predict_loops): Likewise.
+	* tree-predcom.c (last_always_executed_block): Likewise.
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Likewise.
+	* tree-ssa-loop-im.c (store_motion_loop): Likewise.
+	* tree-ssa-loop-ivcanon.c (loop_edge_to_cancel): Likewise.
+	(canonicalize_loop_induction_variables): Likewise.
+	* tree-ssa-loop-manip.c (get_loops_exits): Likewise.
+	* tree-ssa-loop-niter.c (find_loop_niter): Likewise.
+	(finite_loop_p): Likewise.
+	(find_loop_niter_by_eval): Likewise.
+	(estimate_numbers_of_iterations): Likewise.
+	* tree-ssa-loop-prefetch.c (emit_mfence_after_loop): Likewise.
+	(may_use_storent_in_loop_p): Likewise.
+
+2020-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi: Document -fipa-modref, ipa-modref-max-bases,
+	ipa-modref-max-refs, ipa-modref-max-accesses, ipa-modref-max-tests.
+	* ipa-modref-tree.c (test_insert_search_collapse): Update.
+	(test_merge): Update.
+	(gt_ggc_mx): New function.
+	* ipa-modref-tree.h (struct modref_access_node): New structure.
+	(struct modref_ref_node): Add every_access and accesses array.
+	(modref_ref_node::modref_ref_node): Update ctor.
+	(modref_ref_node::search): New member function.
+	(modref_ref_node::collapse): New member function.
+	(modref_ref_node::insert_access): New member function.
+	(modref_base_node::insert_ref): Do not collapse base if ref is 0.
+	(modref_base_node::collapse): Copllapse also refs.
+	(modref_tree): Add accesses.
+	(modref_tree::modref_tree): Initialize max_accesses.
+	(modref_tree::insert): Add access parameter.
+	(modref_tree::cleanup): New member function.
+	(modref_tree::merge): Add parm_map; merge accesses.
+	(modref_tree::copy_from): New member function.
+	(modref_tree::create_ggc): Add max_accesses.
+	* ipa-modref.c (dump_access): New function.
+	(dump_records): Dump accesses.
+	(dump_lto_records): Dump accesses.
+	(get_access): New function.
+	(record_access): Record access.
+	(record_access_lto): Record access.
+	(analyze_call): Compute parm_map.
+	(analyze_function): Update construction of modref records.
+	(modref_summaries::duplicate): Likewise; use copy_from.
+	(write_modref_records): Stream accesses.
+	(read_modref_records): Sream accesses.
+	(pass_ipa_modref::execute): Update call of merge.
+	* params.opt (-param=modref-max-accesses): New.
+	* tree-ssa-alias.c (alias_stats): Add modref_baseptr_tests.
+	(dump_alias_stats): Update.
+	(base_may_alias_with_dereference_p): New function.
+	(modref_may_conflict): Check accesses.
+	(ref_maybe_used_by_call_p_1): Update call to modref_may_conflict.
+	(call_may_clobber_ref_p_1): Update call to modref_may_conflict.
+
+2020-09-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.md (*stack_protect_combined_set_insn): For non-PIC,
+	load the address of the canary rather than the address of the
+	constant pool entry that points to it.
+	(*stack_protect_combined_test_insn): Likewise.
+
+2020-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97085
+	* match.pd (mask ? { false,..} : { true, ..} -> ~mask): New.
+
+2020-09-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_base::collapse): Release memory.
+	(modref_tree::create_ggc): New member function.
+	(modref_tree::colapse): Release memory.
+	(modref_tree::~modref_tree): New destructor.
+	* ipa-modref.c (modref_summaries::create_ggc): New function.
+	(analyze_function): Use create_ggc.
+	(modref_summaries::duplicate): Likewise.
+	(read_modref_records): Likewise.
+	(modref_read): Likewise.
+
+2020-09-24  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Pass mode to
+	reg_or_add_cint_operand and reg_or_sub_cint_operand.
+
+2020-09-24  Alan Modra  <amodra@gmail.com>
+
+	PR target/93012
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Count rldimi
+	constants correctly.
+
+2020-09-24  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Conditionally define __PCREL__.
+
+2020-09-24  Alan Modra  <amodra@gmail.com>
+
+	PR target/97107
+	* config/rs6000/rs6000-internal.h (struct rs6000_stack): Improve
+	calls_p comment.
+	* config/rs6000/rs6000-logue.c (rs6000_stack_info): Likewise.
+	(rs6000_expand_split_stack_prologue): Emit the prologue for
+	functions that make a sibling call.
+
+2020-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Analyzer Paths): Add note about
+	-fno-analyzer-feasibility.
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-fno-analyzer-feasibility.
+
 2020-09-24  Paul A. Clarke  <pc@us.ibm.com>
 
 	* doc/extend.texi: Add 'd' for doubleword variant of

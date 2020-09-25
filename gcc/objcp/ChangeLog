@@ -1,3 +1,9 @@
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	* objcp-decl.c (objcp_start_struct): Drop default args to
+	xref_tag.
+	(objcp_xref_tag): Likewise.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

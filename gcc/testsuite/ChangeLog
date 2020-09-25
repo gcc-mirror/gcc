@@ -1,3 +1,88 @@
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/local-var1.C: New.
+
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/local-fn4.C: Add target c++11
+
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97186
+	* g++.dg/template/local10.C: Rename ...
+	* g++.dg/template/local-fn3.C: .. here.  Require lto.
+	* g++.dg/template/local-fn4.C: New.
+
+2020-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/modref-1.c: New test.
+
+2020-09-24  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/tls/thr-cse-1.c: Scan final dump instead of assembly for
+	nvptx.
+
+2020-09-24  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/independent-cloneids-1.c: Use scan-rtl-dump instead of
+	scan-assembler.
+
+2020-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97085
+	* gcc.dg/pr97192.c: New testcase.
+
+2020-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96495
+	* gfortran.dg/alloc_comp_result_2.f90 : New test.
+
+2020-09-24  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/pr87314-1.c: Add nvptx-specific scan-assembler directive.
+
+2020-09-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/stack-protector-5.c: New test.
+	* gcc.target/arm/stack-protector-6.c: Likewise.
+
+2020-09-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/stack-protector-3.c: New test.
+	* gcc.target/arm/stack-protector-4.c: Likewise.
+
+2020-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97085
+	* gcc.dg/vect/pr97085.c: New testcase.
+
+2020-09-24  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/pr94600-1.c: Require effective target non_strict_align for
+	scan-rtl-dump-times.
+	* gcc.dg/pr94600-3.c: Same.
+
+2020-09-24  Tom de Vries  <tdevries@suse.de>
+
+	* c-c++-common/builtin-has-attribute-3.c: Compile with -DSKIP_ALIAS
+	for effective target ! alias.
+
+2020-09-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/97075
+	* gcc.target/powerpc/p9-vec-length-full-6.c: Adjust.
+
+2020-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93355
+	* gcc.dg/analyzer/pr93355-localealias-feasibility.c: New test.
+	* gcc.dg/analyzer/pr93355-localealias-simplified.c: New test.
+	* gcc.dg/analyzer/pr93355-localealias.c: New test.
+
+2020-09-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/feasibility-2.c: New test.
+
 2020-09-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/97175

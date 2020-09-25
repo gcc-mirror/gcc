@@ -1,3 +1,8 @@
+2020-09-24  Mark Wielaard  <mark@klomp.org>
+
+	* dwarfnames.c (get_DW_UT_name): Define using DW_UT_FIRST, DW_UT
+	and DW_UT_END.
+
 2020-09-08  Felix Willgerodt  <felix.willgerodt@intel.com>
 
 	* floatformat.c (floatformat_bfloat16_big): New.
