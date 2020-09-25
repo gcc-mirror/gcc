@@ -1700,8 +1700,8 @@ expand_oacc_collapse_vars (const struct omp_for_data *fd, bool inner,
    loops, do this only for the rectangular loops.  Then pick
    the loops which reference outer vars in their bound expressions
    and the loops which they refer to and for this sub-nest compute
-   number of iterations.  For triangular loops use Faulhaber's formula
-   (TBD.), otherwise as a fallback, compute by iterating the loops.
+   number of iterations.  For triangular loops use Faulhaber's formula,
+   otherwise as a fallback, compute by iterating the loops.
    If e.g. the sub-nest is
 	for (I = N11; I COND1 N12; I += STEP1)
 	for (J = M21 * I + N21; J COND2 M22 * I + N22; J += STEP2)
@@ -2383,7 +2383,7 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
    into its _looptemp_ temporaries instead.
    For non-rectangular loops (between fd->first_nonrect and fd->last_nonrect
    inclusive), use the count of all those loops together, and either
-   find quadratic etc. equation roots (TBD), or as a fallback, do:
+   find quadratic etc. equation roots, or as a fallback, do:
 	COUNT = 0;
 	for (tmpi = N11; tmpi COND1 N12; tmpi += STEP1)
 	for (tmpj = M21 * tmpi + N21;
@@ -6203,49 +6203,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	if (V cond N2) goto L0; else goto L2;
     L2:
 
-    For collapsed loops, given parameters:
-      collapse(3)
-      for (V1 = N11; V1 cond1 N12; V1 += STEP1)
-	for (V2 = N21; V2 cond2 N22; V2 += STEP2)
-	  for (V3 = N31; V3 cond3 N32; V3 += STEP3)
-	    BODY;
-
-    we generate pseudocode
-
-	if (cond3 is <)
-	  adj = STEP3 - 1;
-	else
-	  adj = STEP3 + 1;
-	count3 = (adj + N32 - N31) / STEP3;
-	if (cond2 is <)
-	  adj = STEP2 - 1;
-	else
-	  adj = STEP2 + 1;
-	count2 = (adj + N22 - N21) / STEP2;
-	if (cond1 is <)
-	  adj = STEP1 - 1;
-	else
-	  adj = STEP1 + 1;
-	count1 = (adj + N12 - N11) / STEP1;
-	count = count1 * count2 * count3;
-	V = 0;
-	V1 = N11;
-	V2 = N21;
-	V3 = N31;
-	goto L1;
-    L0:
-	BODY;
-	V += 1;
-	V3 += STEP3;
-	V2 += (V3 cond3 N32) ? 0 : STEP2;
-	V3 = (V3 cond3 N32) ? V3 : N31;
-	V1 += (V2 cond2 N22) ? 0 : STEP1;
-	V2 = (V2 cond2 N22) ? V2 : N21;
-    L1:
-	if (V < count) goto L0; else goto L2;
-    L2:
-
-      */
+    For collapsed loops, emit the outer loops as scalar
+    and only try to vectorize the innermost loop.  */
 
 static void
 expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
@@ -6319,7 +6278,9 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
   /* Not needed in SSA form right now.  */
   gcc_assert (!gimple_in_ssa_p (cfun));
-  if (fd->collapse > 1)
+  if (fd->collapse > 1
+      && (gimple_omp_for_combined_into_p (fd->for_stmt)
+	  || broken_loop))
     {
       int first_zero_iter = -1, dummy = -1;
       basic_block zero_iter_bb = l2_bb, dummy_bb = NULL;
@@ -6383,25 +6344,114 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       step = fold_build2 (MULT_EXPR, TREE_TYPE (step), step, vf);
     }
 
-  expand_omp_build_assign (&gsi, fd->loop.v, fold_convert (type, n1));
+  tree n2var = NULL_TREE;
+  tree n2v = NULL_TREE;
+  tree *nonrect_bounds = NULL;
   if (fd->collapse > 1)
     {
-      if (gimple_omp_for_combined_into_p (fd->for_stmt))
+      if (broken_loop || gimple_omp_for_combined_into_p (fd->for_stmt))
 	{
+	  if (fd->non_rect)
+	    {
+	      nonrect_bounds = XALLOCAVEC (tree, fd->last_nonrect + 1);
+	      memset (nonrect_bounds, 0,
+		      sizeof (tree) * (fd->last_nonrect + 1));
+	    }
+	  expand_omp_build_assign (&gsi, fd->loop.v, fold_convert (type, n1));
+	  gcc_assert (entry_bb == gsi_bb (gsi));
+	  gcc_assert (fd->for_stmt == gsi_stmt (gsi));
 	  gsi_prev (&gsi);
-	  expand_omp_for_init_vars (fd, &gsi, counts, NULL, NULL, n1);
-	  gsi_next (&gsi);
+	  entry_bb = split_block (entry_bb, gsi_stmt (gsi))->dest;
+	  expand_omp_for_init_vars (fd, &gsi, counts, nonrect_bounds,
+				    NULL, n1);
+	  gsi = gsi_for_stmt (fd->for_stmt);
+	}
+      if (broken_loop)
+	;
+      else if (gimple_omp_for_combined_into_p (fd->for_stmt))
+	{
+	  /* Compute in n2var the limit for the first innermost loop,
+	     i.e. fd->loop.v + MIN (n2 - fd->loop.v, cnt)
+	     where cnt is how many iterations would the loop have if
+	     all further iterations were assigned to the current task.  */
+	  n2var = create_tmp_var (type);
+	  i = fd->collapse - 1;
+	  tree itype = TREE_TYPE (fd->loops[i].v);
+	  if (POINTER_TYPE_P (itype))
+	    itype = signed_type_for (itype);
+	  t = build_int_cst (itype, (fd->loops[i].cond_code == LT_EXPR
+				     ? -1 : 1));
+	  t = fold_build2 (PLUS_EXPR, itype,
+			   fold_convert (itype, fd->loops[i].step), t);
+	  t = fold_build2 (PLUS_EXPR, itype, t,
+			   fold_convert (itype, fd->loops[i].n2));
+	  if (fd->loops[i].m2)
+	    {
+	      tree t2 = fold_convert (itype,
+				      fd->loops[i - fd->loops[i].outer].v);
+	      tree t3 = fold_convert (itype, fd->loops[i].m2);
+	      t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
+	      t = fold_build2 (PLUS_EXPR, itype, t, t2);
+	    }
+	  t = fold_build2 (MINUS_EXPR, itype, t,
+			   fold_convert (itype, fd->loops[i].v));
+	  if (TYPE_UNSIGNED (itype) && fd->loops[i].cond_code == GT_EXPR)
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype,
+			     fold_build1 (NEGATE_EXPR, itype, t),
+			     fold_build1 (NEGATE_EXPR, itype,
+					  fold_convert (itype,
+							fd->loops[i].step)));
+	  else
+	    t = fold_build2 (TRUNC_DIV_EXPR, itype, t,
+			     fold_convert (itype, fd->loops[i].step));
+	  t = fold_convert (type, t);
+	  tree t2 = fold_build2 (MINUS_EXPR, type, n2, n1);
+	  t = fold_build2 (MIN_EXPR, type, t2, t);
+	  t = fold_build2 (PLUS_EXPR, type, fd->loop.v, t);
+	  expand_omp_build_assign (&gsi, n2var, t);
 	}
       else
-	for (i = 0; i < fd->collapse; i++)
-	  {
-	    tree itype = TREE_TYPE (fd->loops[i].v);
-	    if (POINTER_TYPE_P (itype))
-	      itype = signed_type_for (itype);
-	    t = fold_convert (TREE_TYPE (fd->loops[i].v), fd->loops[i].n1);
-	    expand_omp_build_assign (&gsi, fd->loops[i].v, t);
-	  }
+	{
+	  if (TREE_CODE (n2) == INTEGER_CST)
+	    {
+	      /* Indicate for lastprivate handling that at least one iteration
+		 has been performed, without wasting runtime.  */
+	      if (integer_nonzerop (n2))
+		expand_omp_build_assign (&gsi, fd->loop.v,
+					 fold_convert (type, n2));
+	      else
+		/* Indicate that no iteration has been performed.  */
+		expand_omp_build_assign (&gsi, fd->loop.v,
+					 build_one_cst (type));
+	    }
+	  else
+	    {
+	      expand_omp_build_assign (&gsi, fd->loop.v,
+				       build_zero_cst (type));
+	      expand_omp_build_assign (&gsi, n2, build_one_cst (type));
+	    }
+	  for (i = 0; i < fd->collapse; i++)
+	    {
+	      t = fold_convert (TREE_TYPE (fd->loops[i].v), fd->loops[i].n1);
+	      if (fd->loops[i].m1)
+		{
+		  tree t2
+		    = fold_convert (TREE_TYPE (t),
+				    fd->loops[i - fd->loops[i].outer].v);
+		  tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i].m1);
+		  t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
+		  t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+		}
+	      expand_omp_build_assign (&gsi, fd->loops[i].v, t);
+	      /* For normal non-combined collapsed loops just initialize
+		 the outermost iterator in the entry_bb.  */
+	      if (!broken_loop)
+		break;
+	    }
+	}
     }
+  else
+    expand_omp_build_assign (&gsi, fd->loop.v, fold_convert (type, n1));
   if (cond_var)
     {
       if (POINTER_TYPE_P (type)
@@ -6425,11 +6475,17 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       stmt = gsi_stmt (gsi);
       gcc_assert (gimple_code (stmt) == GIMPLE_OMP_CONTINUE);
 
-      if (POINTER_TYPE_P (type))
-	t = fold_build_pointer_plus (fd->loop.v, step);
-      else
-	t = fold_build2 (PLUS_EXPR, type, fd->loop.v, step);
-      expand_omp_build_assign (&gsi, fd->loop.v, t);
+      if (fd->collapse == 1
+	  || gimple_omp_for_combined_into_p (fd->for_stmt))
+	{
+	  if (POINTER_TYPE_P (type))
+	    t = fold_build_pointer_plus (fd->loop.v, step);
+	  else
+	    t = fold_build2 (PLUS_EXPR, type, fd->loop.v, step);
+	  expand_omp_build_assign (&gsi, fd->loop.v, t);
+	}
+      else if (TREE_CODE (n2) != INTEGER_CST)
+	expand_omp_build_assign (&gsi, fd->loop.v, build_one_cst (type));
 
       if (fd->collapse > 1)
 	{
@@ -6447,37 +6503,6 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 			       fd->loops[i].v, t);
 	    }
 	  expand_omp_build_assign (&gsi, fd->loops[i].v, t);
-
-	  for (i = fd->collapse - 1; i > 0; i--)
-	    {
-	      tree itype = TREE_TYPE (fd->loops[i].v);
-	      tree itype2 = TREE_TYPE (fd->loops[i - 1].v);
-	      if (POINTER_TYPE_P (itype2))
-		itype2 = signed_type_for (itype2);
-	      t = fold_convert (itype2, fd->loops[i - 1].step);
-	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true,
-					    GSI_SAME_STMT);
-	      t = build3 (COND_EXPR, itype2,
-			  build2 (fd->loops[i].cond_code, boolean_type_node,
-				  fd->loops[i].v,
-				  fold_convert (itype, fd->loops[i].n2)),
-			  build_int_cst (itype2, 0), t);
-	      if (POINTER_TYPE_P (TREE_TYPE (fd->loops[i - 1].v)))
-		t = fold_build_pointer_plus (fd->loops[i - 1].v, t);
-	      else
-		t = fold_build2 (PLUS_EXPR, itype2, fd->loops[i - 1].v, t);
-	      expand_omp_build_assign (&gsi, fd->loops[i - 1].v, t);
-
-	      t = fold_convert (itype, fd->loops[i].n1);
-	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true,
-					    GSI_SAME_STMT);
-	      t = build3 (COND_EXPR, itype,
-			  build2 (fd->loops[i].cond_code, boolean_type_node,
-				  fd->loops[i].v,
-				  fold_convert (itype, fd->loops[i].n2)),
-			  fd->loops[i].v, t);
-	      expand_omp_build_assign (&gsi, fd->loops[i].v, t);
-	    }
 	}
       if (cond_var)
 	{
@@ -6500,14 +6525,38 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   /* Emit the condition in L1_BB.  */
   gsi = gsi_start_bb (l1_bb);
 
-  t = fold_convert (type, n2);
-  t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-				false, GSI_CONTINUE_LINKING);
-  tree v = fd->loop.v;
-  if (DECL_P (v) && TREE_ADDRESSABLE (v))
-    v = force_gimple_operand_gsi (&gsi, v, true, NULL_TREE,
-				  false, GSI_CONTINUE_LINKING);
-  t = build2 (fd->loop.cond_code, boolean_type_node, v, t);
+  if (fd->collapse > 1
+      && !gimple_omp_for_combined_into_p (fd->for_stmt)
+      && !broken_loop)
+    {
+      i = fd->collapse - 1;
+      tree itype = TREE_TYPE (fd->loops[i].v);
+      if (fd->loops[i].m2)
+	t = n2v = create_tmp_var (itype);
+      else
+	t = fold_convert (itype, fd->loops[i].n2);
+      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+				    false, GSI_CONTINUE_LINKING);
+      tree v = fd->loops[i].v;
+      if (DECL_P (v) && TREE_ADDRESSABLE (v))
+	v = force_gimple_operand_gsi (&gsi, v, true, NULL_TREE,
+				      false, GSI_CONTINUE_LINKING);
+      t = build2 (fd->loops[i].cond_code, boolean_type_node, v, t);
+    }
+  else
+    {
+      if (fd->collapse > 1 && !broken_loop)
+	t = n2var;
+      else
+	t = fold_convert (type, n2);
+      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+				    false, GSI_CONTINUE_LINKING);
+      tree v = fd->loop.v;
+      if (DECL_P (v) && TREE_ADDRESSABLE (v))
+	v = force_gimple_operand_gsi (&gsi, v, true, NULL_TREE,
+				      false, GSI_CONTINUE_LINKING);
+      t = build2 (fd->loop.cond_code, boolean_type_node, v, t);
+    }
   cond_stmt = gimple_build_cond_empty (t);
   gsi_insert_after (&gsi, cond_stmt, GSI_CONTINUE_LINKING);
   if (walk_tree (gimple_cond_lhs_ptr (cond_stmt), expand_omp_regimplify_p,
@@ -6572,12 +6621,160 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       FALLTHRU_EDGE (entry_bb)->flags = EDGE_TRUE_VALUE;
       FALLTHRU_EDGE (entry_bb)->probability
 	 = profile_probability::guessed_always ().apply_scale (7, 8);
-      BRANCH_EDGE (entry_bb)->probability 
+      BRANCH_EDGE (entry_bb)->probability
 	 = FALLTHRU_EDGE (entry_bb)->probability.invert ();
       l2_dom_bb = entry_bb;
     }
   set_immediate_dominator (CDI_DOMINATORS, l2_bb, l2_dom_bb);
 
+  if (!broken_loop && fd->collapse > 1)
+    {
+      basic_block last_bb = l1_bb;
+      basic_block init_bb = NULL;
+      for (i = fd->collapse - 2; i >= 0; i--)
+	{
+	  tree nextn2v = NULL_TREE;
+	  if (EDGE_SUCC (last_bb, 0)->flags & EDGE_FALSE_VALUE)
+	    e = EDGE_SUCC (last_bb, 0);
+	  else
+	    e = EDGE_SUCC (last_bb, 1);
+	  basic_block bb = split_edge (e);
+	  if (POINTER_TYPE_P (TREE_TYPE (fd->loops[i].v)))
+	    {
+	      t = fold_convert (sizetype, fd->loops[i].step);
+	      t = fold_build_pointer_plus (fd->loops[i].v, t);
+	    }
+	  else
+	    {
+	      t = fold_convert (TREE_TYPE (fd->loops[i].v),
+				fd->loops[i].step);
+	      t = fold_build2 (PLUS_EXPR, TREE_TYPE (fd->loops[i].v),
+			       fd->loops[i].v, t);
+	    }
+	  gsi = gsi_after_labels (bb);
+	  expand_omp_build_assign (&gsi, fd->loops[i].v, t);
+
+	  bb = split_block (bb, last_stmt (bb))->dest;
+	  gsi = gsi_start_bb (bb);
+	  tree itype = TREE_TYPE (fd->loops[i].v);
+	  if (fd->loops[i].m2)
+	    t = nextn2v = create_tmp_var (itype);
+	  else
+	    t = fold_convert (itype, fd->loops[i].n2);
+	  t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+					false, GSI_CONTINUE_LINKING);
+	  tree v = fd->loops[i].v;
+	  if (DECL_P (v) && TREE_ADDRESSABLE (v))
+	    v = force_gimple_operand_gsi (&gsi, v, true, NULL_TREE,
+					  false, GSI_CONTINUE_LINKING);
+	  t = build2 (fd->loops[i].cond_code, boolean_type_node, v, t);
+	  cond_stmt = gimple_build_cond_empty (t);
+	  gsi_insert_after (&gsi, cond_stmt, GSI_CONTINUE_LINKING);
+	  if (walk_tree (gimple_cond_lhs_ptr (cond_stmt),
+			 expand_omp_regimplify_p, NULL, NULL)
+	      || walk_tree (gimple_cond_rhs_ptr (cond_stmt),
+			    expand_omp_regimplify_p, NULL, NULL))
+	    {
+	      gsi = gsi_for_stmt (cond_stmt);
+	      gimple_regimplify_operands (cond_stmt, &gsi);
+	    }
+	  ne = single_succ_edge (bb);
+	  ne->flags = EDGE_FALSE_VALUE;
+
+	  init_bb = create_empty_bb (bb);
+	  set_immediate_dominator (CDI_DOMINATORS, init_bb, bb);
+	  add_bb_to_loop (init_bb, bb->loop_father);
+	  e = make_edge (bb, init_bb, EDGE_TRUE_VALUE);
+	  e->probability
+	    = profile_probability::guessed_always ().apply_scale (7, 8);
+	  ne->probability = e->probability.invert ();
+
+	  gsi = gsi_after_labels (init_bb);
+	  t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
+			    fd->loops[i + 1].n1);
+	  if (fd->loops[i + 1].m1)
+	    {
+	      tree t2 = fold_convert (TREE_TYPE (t),
+				      fd->loops[i + 1
+						- fd->loops[i + 1].outer].v);
+	      tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i + 1].m1);
+	      t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
+	      t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+	    }
+	  expand_omp_build_assign (&gsi, fd->loops[i + 1].v, t);
+	  if (fd->loops[i + 1].m2)
+	    {
+	      if (i + 2 == fd->collapse && n2var)
+		{
+		  gcc_assert (n2v == NULL_TREE);
+		  n2v = create_tmp_var (TREE_TYPE (fd->loops[i + 1].v));
+		}
+	      t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
+				fd->loops[i + 1].n2);
+	      tree t2 = fold_convert (TREE_TYPE (t),
+				      fd->loops[i + 1
+						- fd->loops[i + 1].outer].v);
+	      tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i + 1].m2);
+	      t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
+	      t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+	      expand_omp_build_assign (&gsi, n2v, t);
+	    }
+	  if (i + 2 == fd->collapse && n2var)
+	    {
+	      /* For composite simd, n2 is the first iteration the current
+		 task shouldn't already handle, so we effectively want to use
+		 for (V3 = N31; V < N2 && V3 < N32; V++, V3 += STEP3)
+		 as the vectorized loop.  Except the vectorizer will not
+		 vectorize that, so instead compute N2VAR as
+		 N2VAR = V + MIN (N2 - V, COUNTS3) and use
+		 for (V3 = N31; V < N2VAR; V++, V3 += STEP3)
+		 as the loop to vectorize.  */
+	      tree t2 = fold_build2 (MINUS_EXPR, type, n2, fd->loop.v);
+	      if (fd->loops[i + 1].m1 || fd->loops[i + 1].m2)
+		{
+		  t = build_int_cst (itype, (fd->loops[i + 1].cond_code
+					     == LT_EXPR ? -1 : 1));
+		  t = fold_build2 (PLUS_EXPR, itype,
+				   fold_convert (itype,
+						 fd->loops[i + 1].step), t);
+		  if (fd->loops[i + 1].m2)
+		    t = fold_build2 (PLUS_EXPR, itype, t, n2v);
+		  else
+		    t = fold_build2 (PLUS_EXPR, itype, t,
+				     fold_convert (itype,
+						   fd->loops[i + 1].n2));
+		  t = fold_build2 (MINUS_EXPR, itype, t,
+				   fold_convert (itype, fd->loops[i + 1].v));
+		  tree step = fold_convert (itype, fd->loops[i + 1].step);
+		  if (TYPE_UNSIGNED (itype)
+		      && fd->loops[i + 1].cond_code == GT_EXPR)
+		    t = fold_build2 (TRUNC_DIV_EXPR, itype,
+				     fold_build1 (NEGATE_EXPR, itype, t),
+				     fold_build1 (NEGATE_EXPR, itype, step));
+		  else
+		    t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+		  t = fold_convert (type, t);
+		}
+	      else
+		t = counts[i + 1];
+	      t = fold_build2 (MIN_EXPR, type, t2, t);
+	      t = fold_build2 (PLUS_EXPR, type, fd->loop.v, t);
+	      expand_omp_build_assign (&gsi, n2var, t);
+	    }
+	  n2v = nextn2v;
+
+	  make_edge (init_bb, last_bb, EDGE_FALLTHRU);
+	  if (!gimple_omp_for_combined_into_p (fd->for_stmt))
+	    {
+	      e = find_edge (entry_bb, last_bb);
+	      redirect_edge_succ (e, bb);
+	      set_immediate_dominator (CDI_DOMINATORS, bb, entry_bb);
+	      set_immediate_dominator (CDI_DOMINATORS, last_bb, init_bb);
+	    }
+
+	  last_bb = bb;
+	}
+    }
   if (!broken_loop)
     {
       class loop *loop = alloc_loop ();
@@ -7643,12 +7840,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
     loops_state_set (LOOPS_NEED_FIXUP);
 
   if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
-    {
-      if (fd.non_rect)
-	sorry_at (gimple_location (fd.for_stmt),
-		  "non-rectangular %<simd%> not supported yet");
-      expand_omp_simd (region, &fd);
-    }
+    expand_omp_simd (region, &fd);
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
       gcc_assert (!inner_stmt && !fd.non_rect);

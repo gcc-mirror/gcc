@@ -10510,3 +10510,12 @@ proc check_symver_available { } {
 	    }
 	}]
 }
+
+# Return 1 if emitted assembly contains .ident directive.
+
+proc check_effective_target_ident_directive {} {
+    return [check_no_messages_and_pattern ident_directive \
+		"(?n)^\[\t\]+\\.ident" assembly {
+	int i;
+    }]
+}

@@ -332,8 +332,12 @@ debug_overload (tree node)
       tree decl = *iter;
       auto xloc = expand_location (DECL_SOURCE_LOCATION (decl));
       auto fullname = decl_as_string (decl, 0);
+      bool using_p = iter.using_p ();
+      bool hidden_p = iter.hidden_p ();
 
-      fprintf (file, "%p: %s:%d:%d \"%s\"\n", (void *)decl,
+      fprintf (file, "%p:%c%c %s:%d:%d \"%s\"\n", (void *)decl,
+	       hidden_p ? 'H' : '-',
+	       using_p ? 'U' : '-',
 	       xloc.file, xloc.line, xloc.column, fullname);
     }
 }

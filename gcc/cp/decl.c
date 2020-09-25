@@ -75,7 +75,7 @@ static void record_unknown_type (tree, const char *);
 static int member_function_or_else (tree, tree, enum overload_flags);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static const char *tag_name (enum tag_types);
-static tree lookup_and_check_tag (enum tag_types, tree, tag_scope, bool);
+static tree lookup_and_check_tag (enum tag_types, tree, TAG_how, bool);
 static void maybe_deduce_size_from_array_init (tree, tree);
 static void layout_var_decl (tree);
 static tree check_initializer (tree, tree, int, vec<tree, va_gc> **);
@@ -1464,9 +1464,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   /* Check for redeclaration and other discrepancies.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
-      && DECL_ARTIFICIAL (olddecl)
-      /* A C++20 implicit friend operator== uses the normal path (94462).  */
-      && !DECL_HIDDEN_FRIEND_P (olddecl))
+      && DECL_BUILTIN_P (olddecl))
     {
       if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
@@ -1507,15 +1505,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      "declaration of %q#D conflicts with built-in "
 		      "declaration %q#D", newdecl, olddecl);
 	  return NULL_TREE;
-	}
-      else if (DECL_OMP_DECLARE_REDUCTION_P (olddecl))
-	{
-	  gcc_assert (DECL_OMP_DECLARE_REDUCTION_P (newdecl));
-	  error_at (newdecl_loc,
-		    "redeclaration of %<pragma omp declare reduction%>");
-	  inform (olddecl_loc,
-		  "previous %<pragma omp declare reduction%> declaration");
-	  return error_mark_node;
 	}
       else if (!types_match)
 	{
@@ -1814,6 +1803,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		  "previous declaration as %q#D", olddecl);
 	  return error_mark_node;
 	}
+    }
+  else if (TREE_CODE (newdecl) == FUNCTION_DECL
+	   && DECL_OMP_DECLARE_REDUCTION_P (newdecl))
+    {
+      /* OMP UDRs are never duplicates. */
+      gcc_assert (DECL_OMP_DECLARE_REDUCTION_P (olddecl));
+      error_at (newdecl_loc,
+		"redeclaration of %<pragma omp declare reduction%>");
+      inform (olddecl_loc,
+	      "previous %<pragma omp declare reduction%> declaration");
+      return error_mark_node;
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL
 	    && ((DECL_TEMPLATE_SPECIALIZATION (olddecl)
@@ -5361,8 +5361,7 @@ start_decl (const cp_declarator *declarator,
 		 about this situation, and so we check here.  */
 	      if (initialized && DECL_INITIALIZED_IN_CLASS_P (field))
 		error ("duplicate initialization of %qD", decl);
-	      field = duplicate_decls (decl, field,
-				       /*newdecl_is_friend=*/false);
+	      field = duplicate_decls (decl, field);
 	      if (field == error_mark_node)
 		return error_mark_node;
 	      else if (field)
@@ -5376,8 +5375,7 @@ start_decl (const cp_declarator *declarator,
 				      ? current_template_parms
 				      : NULL_TREE);
 	  if (field && field != error_mark_node
-	      && duplicate_decls (decl, field,
-				 /*newdecl_is_friend=*/false))
+	      && duplicate_decls (decl, field))
 	    decl = field;
 	}
 
@@ -14864,11 +14862,10 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 
 static tree
 lookup_and_check_tag (enum tag_types tag_code, tree name,
-		      tag_scope scope, bool template_header_p)
+		      TAG_how how, bool template_header_p)
 {
-  tree t;
   tree decl;
-  if (scope == ts_global)
+  if (how == TAG_how::GLOBAL)
     {
       /* First try ordinary name lookup, ignoring hidden class name
 	 injected via friend declaration.  */
@@ -14881,16 +14878,16 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 	 If we find one, that name will be made visible rather than
 	 creating a new tag.  */
       if (!decl)
-	decl = lookup_type_scope (name, ts_within_enclosing_non_class);
+	decl = lookup_elaborated_type (name, TAG_how::INNERMOST_NON_CLASS);
     }
   else
-    decl = lookup_type_scope (name, scope);
+    decl = lookup_elaborated_type (name, how);
 
   if (decl
       && (DECL_CLASS_TEMPLATE_P (decl)
-	  /* If scope is ts_current we're defining a class, so ignore a
-	     template template parameter.  */
-	  || (scope != ts_current
+	  /* If scope is TAG_how::CURRENT_ONLY we're defining a class,
+	     so ignore a template template parameter.  */
+	  || (how != TAG_how::CURRENT_ONLY
 	      && DECL_TEMPLATE_TEMPLATE_PARM_P (decl))))
     decl = DECL_TEMPLATE_RESULT (decl);
 
@@ -14900,11 +14897,10 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 	   class C {
 	     class C {};
 	   };  */
-      if (scope == ts_current && DECL_SELF_REFERENCE_P (decl))
+      if (how == TAG_how::CURRENT_ONLY && DECL_SELF_REFERENCE_P (decl))
 	{
 	  error ("%qD has the same name as the class in which it is "
-		 "declared",
-		 decl);
+		 "declared", decl);
 	  return error_mark_node;
 	}
 
@@ -14924,10 +14920,10 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 	     class C *c2;		// DECL_SELF_REFERENCE_P is true
 	   };  */
 
-      t = check_elaborated_type_specifier (tag_code,
-					   decl,
-					   template_header_p
-					   | DECL_SELF_REFERENCE_P (decl));
+      tree t = check_elaborated_type_specifier (tag_code,
+						decl,
+						template_header_p
+						| DECL_SELF_REFERENCE_P (decl));
       if (template_header_p && t && CLASS_TYPE_P (t)
 	  && (!CLASSTYPE_TEMPLATE_INFO (t)
 	      || (!PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))))
@@ -14971,7 +14967,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 
 static tree
 xref_tag_1 (enum tag_types tag_code, tree name,
-            tag_scope scope, bool template_header_p)
+            TAG_how how, bool template_header_p)
 {
   enum tree_code code;
   tree context = NULL_TREE;
@@ -14998,22 +14994,22 @@ xref_tag_1 (enum tag_types tag_code, tree name,
      make type node and push name.  Name lookup is not required.  */
   tree t = NULL_TREE;
   if (!IDENTIFIER_ANON_P (name))
-    t = lookup_and_check_tag  (tag_code, name, scope, template_header_p);
+    t = lookup_and_check_tag  (tag_code, name, how, template_header_p);
 
   if (t == error_mark_node)
     return error_mark_node;
 
-  if (scope != ts_current && t && current_class_type
+  if (how != TAG_how::CURRENT_ONLY && t && current_class_type
       && template_class_depth (current_class_type)
       && template_header_p)
     {
       if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
 	return t;
 
-      /* Since SCOPE is not TS_CURRENT, we are not looking at a
-	 definition of this tag.  Since, in addition, we are currently
-	 processing a (member) template declaration of a template
-	 class, we must be very careful; consider:
+      /* Since HOW is not TAG_how::CURRENT_ONLY, we are not looking at
+	 a definition of this tag.  Since, in addition, we are
+	 currently processing a (member) template declaration of a
+	 template class, we must be very careful; consider:
 
 	   template <class X> struct S1
 
@@ -15059,7 +15055,7 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	/* Mark it as a lambda type right now.  Our caller will
 	   correct the value.  */
 	CLASSTYPE_LAMBDA_EXPR (t) = error_mark_node;
-      t = pushtag (name, t, scope);
+      t = pushtag (name, t, how);
     }
   else
     {
@@ -15085,7 +15081,7 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  return error_mark_node;
 	}
 
-      if (scope != ts_within_enclosing_non_class && TYPE_HIDDEN_P (t))
+      if (how != TAG_how::HIDDEN_FRIEND && TYPE_HIDDEN_P (t))
 	{
 	  /* This is no longer an invisible friend.  Make it
 	     visible.  */
@@ -15110,12 +15106,10 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 
 tree
 xref_tag (enum tag_types tag_code, tree name,
-          tag_scope scope, bool template_header_p)
+	  TAG_how how, bool template_header_p)
 {
-  tree ret;
-  bool subtime;
-  subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = xref_tag_1 (tag_code, name, scope, template_header_p);
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  tree ret = xref_tag_1 (tag_code, name, how, template_header_p);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -15414,7 +15408,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
      forward reference.  */
   if (!enumtype)
     enumtype = lookup_and_check_tag (enum_type, name,
-				     /*tag_scope=*/ts_current,
+				     /*tag_scope=*/TAG_how::CURRENT_ONLY,
 				     /*template_header_p=*/false);
 
   /* In case of a template_decl, the only check that should be deferred
@@ -15476,7 +15470,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	  || TREE_CODE (enumtype) != ENUMERAL_TYPE)
 	{
 	  enumtype = cxx_make_type (ENUMERAL_TYPE);
-	  enumtype = pushtag (name, enumtype, /*tag_scope=*/ts_current);
+	  enumtype = pushtag (name, enumtype);
 
 	  /* std::byte aliases anything.  */
 	  if (enumtype != error_mark_node
@@ -15485,8 +15479,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	    TYPE_ALIAS_SET (enumtype) = 0;
 	}
       else
-	  enumtype = xref_tag (enum_type, name, /*tag_scope=*/ts_current,
-			       false);
+	  enumtype = xref_tag (enum_type, name);
 
       if (enumtype == error_mark_node)
 	return error_mark_node;
@@ -16257,7 +16250,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
      by push_nested_class.)  */
   if (processing_template_decl)
     {
-      tree newdecl1 = push_template_decl (decl1);
+      tree newdecl1 = push_template_decl (decl1, DECL_FRIEND_P (decl1));
       if (newdecl1 == error_mark_node)
 	{
 	  if (ctype || DECL_STATIC_FUNCTION_P (decl1))
@@ -17362,7 +17355,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
   /* We process method specializations in finish_struct_1.  */
   if (processing_template_decl && !DECL_TEMPLATE_SPECIALIZATION (fndecl))
     {
-      fndecl = push_template_decl (fndecl);
+      fndecl = push_template_decl (fndecl, DECL_FRIEND_P (fndecl));
       if (fndecl == error_mark_node)
 	return fndecl;
     }

@@ -1,3 +1,43 @@
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (duplicate_decls): Default is_friend to false.
+	(xref_tag): Default tag_scope & tpl_header_p to ts_current & false.
+	(push_template_decl_real): Default is_friend to false.  Rename to
+	...
+	(push_template_decl): ... here.  Delete original decl.
+	* name-lookup.h (pushdecl_namespace_level): Default is_friend to
+	false.
+	(pushtag): Default tag_scope to ts_current.
+	* coroutines.cc (morph_fn_to_coro): Drop default args to xref_tag.
+	* decl.c (start_decl): Drop default args to duplicate_decls.
+	(start_enum): Drop default arg to pushtag & xref_tag.
+	(start_preparsed_function): Pass DECL_FRIEND_P to
+	push_template_decl.
+	(grokmethod): Likewise.
+	* friend.c (do_friend): Rename push_template_decl_real calls.
+	* lambda.c (begin_lamnbda_type): Drop default args to xref_tag.
+	(vla_capture_type): Likewise.
+	* name-lookup.c (maybe_process_template_type_declaration): Rename
+	push_template_decl_real call.
+	(pushdecl_top_level_and_finish): Drop default arg to
+	pushdecl_namespace_level.
+	* pt.c (push_template_decl_real): Assert no surprising friend
+	functions.  Rename to ...
+	(push_template_decl): ... here.  Delete original function.
+	(lookup_template_class_1): Drop default args from pushtag.
+	(instantiate_class_template_1): Likewise.
+	* ptree.c (debug_overload): Print hidden and using markers.
+	* rtti.c (init_rtti_processing): Drop refault args from xref_tag.
+	(build_dynamic_cast_1, tinfo_base_init): Likewise.
+	* semantics.c (begin_class_definition): Drop default args to
+	pushtag.
+
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97186
+	* pt.c (maybe_instantiate_noexcept): Local externs are never
+	member fns.
+
 2020-09-23  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.h (typedef cxx_binding): Delete tdef.

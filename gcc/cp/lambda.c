@@ -134,8 +134,7 @@ begin_lambda_type (tree lambda)
   IDENTIFIER_LAMBDA_P (name) = true;
 
   /* Create the new RECORD_TYPE for this lambda.  */
-  tree type = xref_tag (/*tag_code=*/record_type, name,
-			/*scope=*/ts_current, /*template_header_p=*/false);
+  tree type = xref_tag (/*tag_code=*/record_type, name);
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -476,7 +475,7 @@ static GTY(()) tree max_id;
 static tree
 vla_capture_type (tree array_type)
 {
-  tree type = xref_tag (record_type, make_anon_name (), ts_current, false);
+  tree type = xref_tag (record_type, make_anon_name ());
   xref_basetypes (type, NULL_TREE);
   type = begin_class_definition (type);
   if (!ptr_id)
