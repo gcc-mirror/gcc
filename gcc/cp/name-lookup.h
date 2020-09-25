@@ -337,7 +337,7 @@ extern tree lookup_qualified_name (tree scope, const char *name,
 				   bool = true);
 extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
-extern tree pushdecl_namespace_level (tree, bool is_friend = false);
+extern tree pushdecl_namespace_level (tree, bool hiding = false);
 extern bool push_class_level_binding (tree, tree);
 extern tree get_local_decls ();
 extern int function_parm_depth (void);
@@ -363,9 +363,9 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_nonmember_using_decl (tree scope, tree name);
 extern void finish_using_directive (tree target, tree attribs);
-extern tree pushdecl (tree, bool is_friend = false);
+extern tree pushdecl (tree, bool hiding = false);
 extern tree pushdecl_outermost_localscope (tree);
-extern tree pushdecl_top_level (tree, bool is_friend = false);
+extern tree pushdecl_top_level (tree);
 extern tree pushdecl_top_level_and_finish (tree, tree);
 extern tree pushtag (tree, tree, TAG_how = TAG_how::CURRENT_ONLY);
 extern int push_namespace (tree, bool make_inline = false);
