@@ -4040,6 +4040,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
 
+/* True if NODE is a builtin decl.  */
+#define DECL_BUILTIN_P(NODE) \
+  (DECL_SOURCE_LOCATION(NODE) == BUILTINS_LOCATION)
+
 /* Nonzero if NODE is a DECL which we know about but which has not
    been explicitly declared, such as a built-in function or a friend
    declared inside a class.  In the latter case DECL_HIDDEN_FRIEND_P

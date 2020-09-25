@@ -2119,10 +2119,10 @@ anticipated_builtin_p (tree ovl)
   tree fn = OVL_FUNCTION (ovl);
   gcc_checking_assert (DECL_ANTICIPATED (fn));
 
-  if (DECL_HIDDEN_FRIEND_P (fn))
-    return false;
+  if (DECL_BUILTIN_P (fn))
+    return true;
 
-  return true;
+  return false;
 }
 
 /* BINDING records an existing declaration for a name in the current scope.
@@ -2857,9 +2857,12 @@ set_decl_context_in_fn (tree ctx, tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL
       || (VAR_P (decl) && DECL_EXTERNAL (decl)))
-    /* Make sure local externs are marked as such.  */
+    /* Make sure local externs are marked as such.  OMP UDRs really
+       are nested functions.  */
     gcc_checking_assert (DECL_LOCAL_DECL_P (decl)
-			 && DECL_NAMESPACE_SCOPE_P (decl));
+			 && (DECL_NAMESPACE_SCOPE_P (decl)
+			     || (TREE_CODE (decl) == FUNCTION_DECL
+				 && DECL_OMP_DECLARE_REDUCTION_P (decl))));
 
   if (!DECL_CONTEXT (decl)
       /* When parsing the parameter list of a function declarator,
@@ -3934,7 +3937,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		}
 	      else if (old.using_p ())
 		continue; /* This is a using decl. */
-	      else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
+	      else if (old.hidden_p () && DECL_BUILTIN_P (old_fn))
 		continue; /* This is an anticipated builtin.  */
 	      else if (!matching_fn_p (new_fn, old_fn))
 		continue; /* Parameters do not match.  */

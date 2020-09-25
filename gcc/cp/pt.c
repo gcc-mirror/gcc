@@ -18109,16 +18109,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		else if (DECL_IMPLICIT_TYPEDEF_P (t))
 		  /* We already did a pushtag.  */;
 		else if (TREE_CODE (decl) == FUNCTION_DECL
-			 && DECL_OMP_DECLARE_REDUCTION_P (decl)
-			 && DECL_FUNCTION_SCOPE_P (pattern_decl))
+			 && DECL_LOCAL_DECL_P (decl)
+			 && DECL_OMP_DECLARE_REDUCTION_P (decl))
 		  {
-		    /* We pretend this is regular local extern decl of
-		       a namespace-scope fn.  Then we make it really
-		       local, it is a nested function.  */
-		    gcc_checking_assert (DECL_LOCAL_DECL_P (decl));
-		    DECL_CONTEXT (decl) = global_namespace;
-		    pushdecl (decl);
 		    DECL_CONTEXT (decl) = current_function_decl;
+		    pushdecl (decl);
 		    if (cp_check_omp_declare_reduction (decl))
 		      instantiate_body (pattern_decl, args, decl, true);
 		  }

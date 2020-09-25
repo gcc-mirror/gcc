@@ -42567,7 +42567,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       if (current_function_decl)
 	{
 	  block_scope = true;
-	  DECL_CONTEXT (fndecl) = global_namespace;
+	  DECL_CONTEXT (fndecl) = current_function_decl;
 	  DECL_LOCAL_DECL_P (fndecl) = true;
 	  if (!processing_template_decl)
 	    pushdecl (fndecl);
@@ -42592,7 +42592,9 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       else
 	{
 	  DECL_CONTEXT (fndecl) = current_namespace;
-	  pushdecl (fndecl);
+	  tree d = pushdecl (fndecl);
+	  /* We should never meet a matched duplicate decl.  */
+	  gcc_checking_assert (d == error_mark_node || d == fndecl);
 	}
       if (!block_scope)
 	start_preparsed_function (fndecl, NULL_TREE, SF_PRE_PARSED);
