@@ -323,9 +323,10 @@ next_runtime_abi_02_init_metadata_attributes (void)
 
   meta_sel_refs = get_identifier ("V2_SRFS");
 
-  meta_class_name =
-  meta_meth_name =
-  meta_meth_type =
+  meta_class_name = get_identifier ("V2_CNAM");
+  meta_meth_name = get_identifier ("V2_MNAM");
+
+  meta_meth_type = get_identifier ("V2_MTYP");
   meta_prop_name_attr = get_identifier ("V2_STRG");
 
   meta_mref = get_identifier ("V2_MREF");

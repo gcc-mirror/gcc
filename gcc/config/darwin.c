@@ -174,10 +174,12 @@ output_objc_section_asm_op (const void *directive)
       /* ABI=2 */
       static const enum darwin_section_enum tomarkv2[] =
 	{
+	  objc2_method_names_section,
 	  objc2_message_refs_section,
 	  objc2_classdefs_section,
 	  objc2_metadata_section,
 	  objc2_classrefs_section,
+	  objc2_class_names_section,
 	  objc2_classlist_section,
 	  objc2_categorylist_section,
 	  objc2_selector_refs_section,
@@ -1447,6 +1449,12 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
      first.  */
   if      (!strncmp (p, "V2_BASE", 7))
     return base;
+  else if (!strncmp (p, "V2_CNAM", 7))
+    return darwin_sections[objc2_class_names_section];
+  else if (!strncmp (p, "V2_MNAM", 7))
+    return darwin_sections[objc2_method_names_section];
+  else if (!strncmp (p, "V2_MTYP", 7))
+    return darwin_sections[objc2_method_types_section];
   else if (!strncmp (p, "V2_STRG", 7))
     return darwin_sections[cstring_section];
 
