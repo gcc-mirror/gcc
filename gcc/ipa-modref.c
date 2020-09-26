@@ -175,7 +175,7 @@ dump_records (modref_records *tt, FILE *out)
 	  fprintf (out, "        Ref %i: alias set %i\n", (int)j, r->ref);
 	  if (r->every_access)
 	    {
-	      fprintf (out, "        Every access\n");
+	      fprintf (out, "          Every access\n");
 	      continue;
 	    }
 	  size_t k;
@@ -437,11 +437,70 @@ ignore_stores_p (tree caller, int flags)
   return false;
 }
 
-/* Analyze function call STMT in function F.  */
+/* Merge side effects of call STMT to function with CALLEE_SUMMARY
+   int CUR_SUMMARY.  Return true if something changed.
+   If IGNORE_STORES is true, do not merge stores.  */
+
+bool
+merge_call_side_effects (modref_summary *cur_summary,
+			 gimple *stmt, modref_summary *callee_summary,
+			 bool ignore_stores)
+{
+  auto_vec <int, 32> parm_map;
+  bool changed = false;
+
+  parm_map.safe_grow (gimple_call_num_args (stmt));
+  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
+    {
+      tree op = gimple_call_arg (stmt, i);
+      STRIP_NOPS (op);
+      if (TREE_CODE (op) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (op)
+	  && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
+	{
+	  int index = 0;
+	  for (tree t = DECL_ARGUMENTS (current_function_decl);
+	       t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
+	    {
+	      if (!t)
+		{
+		  index = -1;
+		  break;
+		}
+	      index++;
+	    }
+	  parm_map[i] = index;
+	}
+      else if (points_to_local_or_readonly_memory_p (op))
+	parm_map[i] = -2;
+      else
+	parm_map[i] = -1;
+    }
+
+  /* Merge with callee's summary.  */
+  if (cur_summary->loads)
+    changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map);
+  if (cur_summary->loads_lto)
+    changed |= cur_summary->loads_lto->merge (callee_summary->loads_lto,
+					      &parm_map);
+  if (!ignore_stores)
+    {
+      if (cur_summary->stores)
+	changed |= cur_summary->stores->merge (callee_summary->stores,
+					       &parm_map);
+      if (cur_summary->stores_lto)
+	changed |= cur_summary->stores_lto->merge (callee_summary->stores_lto,
+						   &parm_map);
+    }
+  return changed;
+}
+
+/* Analyze function call STMT in function F.
+   Remember recursive calls in RECURSIVE_CALLS.  */
 
 static bool
 analyze_call (modref_summary *cur_summary,
-	      gimple *stmt)
+	      gimple *stmt, vec <gimple *> *recursive_calls)
 {
   /* Check flags on the function call.  In certain cases, analysis can be
      simplified.  */
@@ -505,6 +564,7 @@ analyze_call (modref_summary *cur_summary,
      there's nothing to do.  */
   if (recursive_call_p (current_function_decl, callee))
     {
+      recursive_calls->safe_push (stmt);
       if (dump_file)
 	fprintf (dump_file, " - Skipping recursive call.\n");
       return true;
@@ -550,48 +610,7 @@ analyze_call (modref_summary *cur_summary,
       return false;
     }
 
-  auto_vec <int, 32> parm_map;
-
-  parm_map.safe_grow (gimple_call_num_args (stmt));
-  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
-    {
-      tree op = gimple_call_arg (stmt, i);
-      STRIP_NOPS (op);
-      if (TREE_CODE (op) == SSA_NAME
-	  && SSA_NAME_IS_DEFAULT_DEF (op)
-	  && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
-	{
-	  int index = 0;
-	  for (tree t = DECL_ARGUMENTS (current_function_decl);
-	       t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
-	    {
-	      if (!t)
-		{
-		  index = -1;
-		  break;
-		}
-	      index++;
-	    }
-	  parm_map[i] = index;
-	}
-      else if (points_to_local_or_readonly_memory_p (op))
-	parm_map[i] = -2;
-      else
-	parm_map[i] = -1;
-    }
-
-  /* Merge with callee's summary.  */
-  if (cur_summary->loads)
-    cur_summary->loads->merge (callee_summary->loads, &parm_map);
-  if (cur_summary->loads_lto)
-    cur_summary->loads_lto->merge (callee_summary->loads_lto, &parm_map);
-  if (!ignore_stores)
-    {
-      if (cur_summary->stores)
-	cur_summary->stores->merge (callee_summary->stores, &parm_map);
-      if (cur_summary->stores_lto)
-	cur_summary->stores_lto->merge (callee_summary->stores_lto, &parm_map);
-    }
+  merge_call_side_effects (cur_summary, stmt, callee_summary, ignore_stores);
 
   return true;
 }
@@ -654,7 +673,8 @@ analyze_store (gimple *, tree, tree op, void *data)
    If IPA is true do not merge in side effects of calls.  */
 
 static bool
-analyze_stmt (modref_summary *summary, gimple *stmt, bool ipa)
+analyze_stmt (modref_summary *summary, gimple *stmt, bool ipa,
+	      vec <gimple *> *recursive_calls)
 {
   /* There is no need to record clobbers.  */
   if (gimple_clobber_p (stmt))
@@ -677,7 +697,7 @@ analyze_stmt (modref_summary *summary, gimple *stmt, bool ipa)
      return false;
    case GIMPLE_CALL:
      if (!ipa)
-       return analyze_call (summary, stmt);
+       return analyze_call (summary, stmt, recursive_calls);
      return true;
    default:
      /* Nothing to do for other types of statements.  */
@@ -750,6 +770,7 @@ analyze_function (function *f, bool ipa)
     }
   summary->finished = false;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
+  auto_vec <gimple *, 32> recursive_calls;
 
   /* Analyze each statement in each basic block of the function.  If the
      statement cannot be analyzed (for any reason), the entire function cannot
@@ -760,7 +781,7 @@ analyze_function (function *f, bool ipa)
       gimple_stmt_iterator si;
       for (si = gsi_after_labels (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  if (!analyze_stmt (summary, gsi_stmt (si), ipa)
+	  if (!analyze_stmt (summary, gsi_stmt (si), ipa, &recursive_calls)
 	      || !summary->useful_p (ecf_flags))
 	    {
 	      cgraph_node *fnode = cgraph_node::get (current_function_decl);
@@ -769,6 +790,34 @@ analyze_function (function *f, bool ipa)
 		fprintf (dump_file,
 			 " - modref done with result: not tracked.\n");
 	      return;
+	    }
+	}
+    }
+
+  /* In non-IPA mode we need to perform iterative datafow on recursive calls.
+     This needs to be done after all other side effects are computed.  */
+  if (!ipa)
+    {
+      bool changed = true;
+      while (changed)
+	{
+	  changed = false;
+	  for (unsigned i = 0; i < recursive_calls.length (); i++)
+	    {
+	      changed |= merge_call_side_effects
+			  (summary, recursive_calls[i], summary,
+			   ignore_stores_p (current_function_decl,
+					    gimple_call_flags
+						 (recursive_calls[i])));
+	      if (!summary->useful_p (ecf_flags))
+		{
+		  cgraph_node *fnode = cgraph_node::get (current_function_decl);
+		  summaries->remove (fnode);
+		  if (dump_file)
+		    fprintf (dump_file,
+			     " - modref done with result: not tracked.\n");
+		  return;
+		}
 	    }
 	}
     }
@@ -1276,12 +1325,335 @@ ignore_edge (struct cgraph_edge *e)
 	     & (ECF_CONST | ECF_NOVOPS));
 }
 
+/* Compute parm_map for CALLE_EDGE.  */
+
+static void
+compute_parm_map (cgraph_edge *callee_edge, vec<int> *parm_map)
+{
+  class ipa_edge_args *args;
+  if (ipa_node_params_sum
+      && !callee_edge->call_stmt_cannot_inline_p
+      && (args = IPA_EDGE_REF (callee_edge)) != NULL)
+    {
+      int i, count = ipa_get_cs_argument_count (args);
+      class ipa_node_params *caller_parms_info, *callee_pi;
+      class ipa_call_summary *es
+	     = ipa_call_summaries->get (callee_edge);
+      cgraph_node *callee
+	 = callee_edge->callee->function_or_virtual_thunk_symbol
+			      (NULL, callee_edge->caller);
+
+      caller_parms_info = IPA_NODE_REF (callee_edge->caller->inlined_to
+					? callee_edge->caller->inlined_to
+					: callee_edge->caller);
+      callee_pi = IPA_NODE_REF (callee);
+
+      (*parm_map).safe_grow (count);
+
+      for (i = 0; i < count; i++)
+	{
+	  if (es && es->param[i].points_to_local_or_readonly_memory)
+	    {
+	      (*parm_map)[i] = -2;
+	      continue;
+	    }
+
+	  struct ipa_jump_func *jf
+	     = ipa_get_ith_jump_func (args, i);
+	  if (jf)
+	    {
+	      tree cst = ipa_value_from_jfunc (caller_parms_info,
+					       jf,
+					       ipa_get_type
+						 (callee_pi, i));
+	      if (cst && points_to_local_or_readonly_memory_p (cst))
+		{
+		  (*parm_map)[i] = -2;
+		  continue;
+		}
+	    }
+	  if (jf && jf->type == IPA_JF_PASS_THROUGH)
+	    {
+	      (*parm_map)[i]
+		 = ipa_get_jf_pass_through_formal_id (jf);
+	      continue;
+	    }
+	  if (jf && jf->type == IPA_JF_ANCESTOR)
+	    (*parm_map)[i] = ipa_get_jf_ancestor_formal_id (jf);
+	  else
+	    (*parm_map)[i] = -1;
+	}
+      if (dump_file)
+	{
+	  fprintf (dump_file, "  Parm map: ");
+	  for (i = 0; i < count; i++)
+	    fprintf (dump_file, " %i", (*parm_map)[i]);
+	  fprintf (dump_file, "\n");
+	}
+    }
+}
+
+/* Call EDGE was inlined; merge summary from callee to the caller.  */
+
+void
+ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
+{
+  if (!summaries)
+    return;
+
+  struct cgraph_node *to = (edge->caller->inlined_to
+			    ? edge->caller->inlined_to : edge->caller);
+  class modref_summary *to_info = summaries->get (to);
+
+  if (!to_info)
+    return;
+
+  class modref_summary *callee_info = summaries->get (edge->callee);
+  int flags = flags_from_decl_or_type (edge->callee->decl);
+
+  if (!callee_info)
+    {
+      if (ignore_stores_p (edge->callee->decl, flags))
+	{
+	  if (to_info->loads)
+	    to_info->loads->collapse ();
+	  if (to_info->loads_lto)
+	    to_info->loads_lto->collapse ();
+	}
+      else
+	{
+	  summaries->remove (to);
+	  summaries->remove (edge->callee);
+	  return;
+	}
+    }
+  else
+    {
+      auto_vec <int, 32> parm_map;
+
+      compute_parm_map (edge, &parm_map);
+
+      if (to_info->loads)
+	to_info->loads->merge (callee_info->loads, &parm_map);
+      if (to_info->stores)
+	to_info->stores->merge (callee_info->stores, &parm_map);
+      if (to_info->loads_lto)
+	to_info->loads_lto->merge (callee_info->loads_lto, &parm_map);
+      if (to_info->stores_lto)
+	to_info->stores_lto->merge (callee_info->stores_lto, &parm_map);
+    }
+  if (!to_info->useful_p (flags))
+    summaries->remove (to);
+  summaries->remove (edge->callee);
+  return;
+}
+
+/* Collapse loads and return true if something changed.  */
+
+bool
+collapse_loads (modref_summary *cur_summary)
+{
+  bool changed = false;
+
+  if (cur_summary->loads && !cur_summary->loads->every_base)
+    {
+      cur_summary->loads->collapse ();
+      changed = true;
+    }
+  if (cur_summary->loads_lto
+      && !cur_summary->loads_lto->every_base)
+    {
+      cur_summary->loads_lto->collapse ();
+      changed = true;
+    }
+  return changed;
+}
+
+/* Perform iterative dataflow on SCC component starting in COMPONENT_NODE.  */
+
+static void
+modref_propagate_in_scc (cgraph_node *component_node)
+{
+  bool changed = true;
+  int iteration = 0;
+
+  while (changed)
+    {
+      changed = false;
+      for (struct cgraph_node *cur = component_node; cur;
+	   cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+	{
+	  cgraph_node *node = cur->inlined_to ? cur->inlined_to : cur;
+	  modref_summary *cur_summary = summaries->get (node);
+
+	  if (!cur_summary)
+	    continue;
+
+	  if (dump_file)
+	    fprintf (dump_file, "  Processing %s%s%s\n",
+		     cur->dump_name (),
+		     TREE_READONLY (cur->decl) ? " (const)" : "",
+		     DECL_PURE_P (cur->decl) ? " (pure)" : "");
+
+	  for (cgraph_edge *e = cur->indirect_calls; e; e = e->next_callee)
+	    {
+	      if (e->indirect_info->ecf_flags & (ECF_CONST | ECF_NOVOPS))
+		continue;
+	      if (ignore_stores_p (cur->decl, e->indirect_info->ecf_flags))
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "    Indirect call: "
+			     "collapsing loads\n");
+		  changed |= collapse_loads (cur_summary);
+		}
+	      else
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "    Indirect call: giving up\n");
+		  summaries->remove (node);
+		  changed = true;
+		  cur_summary = NULL;
+		  break;
+		}
+	    }
+
+	  if (!cur_summary)
+	    continue;
+
+	  for (cgraph_edge *callee_edge = cur->callees; callee_edge;
+	       callee_edge = callee_edge->next_callee)
+	    {
+	      int flags = flags_from_decl_or_type (callee_edge->callee->decl);
+	      modref_summary *callee_summary;
+	      struct cgraph_node *callee;
+
+	      if (flags & (ECF_CONST | ECF_NOVOPS)
+		  || !callee_edge->inline_failed)
+		continue;
+
+	      /* Get the callee and its summary.  */
+	      enum availability avail;
+	      callee = callee_edge->callee->function_or_virtual_thunk_symbol
+			 (&avail, cur);
+
+	      /* It is not necessary to re-process calls outside of the
+		 SCC component.  */
+	      if (iteration > 0
+		  && (!callee->aux
+		      || ((struct ipa_dfs_info *)cur->aux)->scc_no
+			  != ((struct ipa_dfs_info *)callee->aux)->scc_no))
+		continue;
+
+	      if (dump_file)
+		fprintf (dump_file, "    Call to %s\n",
+			 callee_edge->callee->dump_name ());
+
+	      bool ignore_stores = ignore_stores_p (cur->decl, flags);
+
+	      /* We don't know anything about CALLEE, hence we cannot tell
+		 anything about the entire component.  */
+
+	      if (avail <= AVAIL_INTERPOSABLE
+		  || !(callee_summary = summaries->get (callee)))
+		{
+		  if (!ignore_stores)
+		    {
+		      if (dump_file && avail <= AVAIL_INTERPOSABLE)
+			fprintf (dump_file, "      Call target interposable"
+				 " or not available\n");
+		      else if (dump_file)
+			fprintf (dump_file, "      No call target summary\n");
+
+		      summaries->remove (node);
+		      changed = true;
+		      break;
+		    }
+		  else
+		    {
+		      if (dump_file && avail <= AVAIL_INTERPOSABLE)
+			fprintf (dump_file, "      Call target interposable"
+				 " or not available; collapsing loads\n");
+		      else if (dump_file)
+			fprintf (dump_file, "      No call target summary;"
+				 " collapsing loads\n");
+
+		      changed |= collapse_loads (cur_summary);
+		      continue;
+		    }
+		}
+
+	      /* We can not safely optimize based on summary of callee if it
+		 does not always bind to current def: it is possible that
+		 memory load was optimized out earlier which may not happen in
+		 the interposed variant.  */
+	      if (!callee_edge->binds_to_current_def_p ())
+		{
+		  changed |= collapse_loads (cur_summary);
+		  if (dump_file)
+		    fprintf (dump_file, "      May not bind local;"
+			     " collapsing loads\n");
+		}
+
+
+	      auto_vec <int, 32> parm_map;
+
+	      compute_parm_map (callee_edge, &parm_map);
+
+	      /* Merge in callee's information.  */
+	      if (callee_summary->loads)
+		changed |= cur_summary->loads->merge
+				(callee_summary->loads, &parm_map);
+	      if (callee_summary->stores)
+		changed |= cur_summary->stores->merge
+				(callee_summary->stores, &parm_map);
+	      if (callee_summary->loads_lto)
+		changed |= cur_summary->loads_lto->merge
+				(callee_summary->loads_lto, &parm_map);
+	      if (callee_summary->stores_lto)
+		changed |= cur_summary->stores_lto->merge
+				(callee_summary->stores_lto, &parm_map);
+	      if (dump_file && changed)
+		cur_summary->dump (dump_file);
+	    }
+	}
+      iteration++;
+    }
+  for (struct cgraph_node *cur = component_node; cur;
+       cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+    {
+      modref_summary *cur_summary = summaries->get (cur);
+      if (cur_summary)
+	cur_summary->finished = true;
+    }
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "Propagation finished in %i iterations\n", iteration);
+      for (struct cgraph_node *cur = component_node; cur;
+	   cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+	if (!cur->inlined_to)
+	  {
+	    modref_summary *cur_summary = summaries->get (cur);
+
+	    fprintf (dump_file, "Propagated modref for %s%s%s\n",
+		     cur->dump_name (),
+		     TREE_READONLY (cur->decl) ? " (const)" : "",
+		     DECL_PURE_P (cur->decl) ? " (pure)" : "");
+	    if (cur_summary)
+	      cur_summary->dump (dump_file);
+	    else
+	      fprintf (dump_file, "  Not tracked\n");
+	  }
+   }
+}
+
 /* Run the IPA pass.  This will take a function's summaries and calls and
    construct new summaries which represent a transitive closure.  So that
    summary of an analyzed function contains information about the loads and
    stores that the function or any function that it calls does.  */
 
-unsigned int pass_ipa_modref::execute (function *)
+unsigned int
+pass_ipa_modref::execute (function *)
 {
   if (!summaries)
     return 0;
@@ -1295,224 +1667,19 @@ unsigned int pass_ipa_modref::execute (function *)
   /* Iterate over all strongly connected components in post-order.  */
   for (i = 0; i < order_pos; i++)
     {
-      bool its_hopeless = false;
-      modref_records *loads = NULL;
-      modref_records *stores = NULL;
-      modref_records_lto *loads_lto = NULL;
-      modref_records_lto *stores_lto = NULL;
-
       /* Get the component's representative.  That's just any node in the
 	 component from which we can traverse the entire component.  */
       struct cgraph_node *component_node = order[i];
-      cgraph_node *first = NULL;
 
       if (dump_file)
-	fprintf (dump_file, "Start of SCC component\n");
+	fprintf (dump_file, "\n\nStart of SCC component\n");
 
-      /* Walk the component.  CUR is the current node of the component that's
-	 being processed.  */
-      for (struct cgraph_node *cur = component_node; cur && !its_hopeless;
-	   cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
-	{
-	  /* Merge in summaries from CUR.  */
-	  modref_summary *cur_summary = summaries->get (cur);
-
-	  if (dump_file)
-	    fprintf (dump_file, "  Processing %s\n",
-		     cur->dump_name ());
-
-	  /* We don't know anything about CUR, hence we cannot tell anything
-	     about the entire component.  */
-	  if (!cur_summary)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "    No summary\n");
-	      its_hopeless = true;
-	      break;
-	    }
-
-	  /* Summaries are all going to be same, pick first ones and merge
-	     everything in.  */
-	  if (!first)
-	    {
-	      first = cur;
-	      loads = cur_summary->loads;
-	      stores = cur_summary->stores;
-	      loads_lto = cur_summary->loads_lto;
-	      stores_lto = cur_summary->stores_lto;
-	    }
-	  for (cgraph_edge *e = cur->indirect_calls; e; e = e->next_callee)
-	    {
-	      if (e->indirect_info->ecf_flags & (ECF_CONST | ECF_NOVOPS))
-		continue;
-	      if (ignore_stores_p (cur->decl, e->indirect_info->ecf_flags))
-		{
-		  if (dump_file)
-		    fprintf (dump_file, "    Indirect call: "
-			     "collapsing loads\n");
-		  if (loads)
-		    loads->collapse ();
-		  if (loads_lto)
-		    loads_lto->collapse ();
-		}
-	      else
-		{
-		  if (dump_file)
-		    fprintf (dump_file, "    Indirect call: giving up\n");
-		  its_hopeless = true;
-		}
-	    }
-
-	  /* Walk every function that CUR calls and merge its summary.  */
-	  for (cgraph_edge *callee_edge = cur->callees; callee_edge;
-	       callee_edge = callee_edge->next_callee)
-	    {
-	      int flags = flags_from_decl_or_type (callee_edge->callee->decl);
-	      modref_summary *callee_summary;
-	      struct cgraph_node *callee;
-
-	      if (flags & (ECF_CONST | ECF_NOVOPS))
-		continue;
-
-	      if (dump_file)
-		fprintf (dump_file, "    Call to %s\n",
-			 callee_edge->callee->dump_name ());
-
-	      /* We can not safely optimize based on summary of callee if it
-		 does not always bind to current def: it is possible that
-		 memory load was optimized out earlier which may not happen in
-		 the interposed variant.  */
-	      if (!callee_edge->binds_to_current_def_p ())
-		{
-		  if (loads)
-		    loads->collapse ();
-		  if (loads_lto)
-		    loads_lto->collapse ();
-		  if (dump_file)
-		    fprintf (dump_file, "      May not bind local;"
-			     " collapsing loads\n");
-		}
-
-	      /* Get the callee and its summary.  */
-	      enum availability avail;
-	      callee = callee_edge->callee->function_or_virtual_thunk_symbol
-			 (&avail, cur);
-
-	      /* See if we can derive something from ECF flags.  Be careful on
-		 not skipping calls within the SCC component:  we must merge
-		 all their summaries.
-		 If we switch to iterative dataflow that may be necessary
-		 for future improvements this may go away.  */
-	      if (callee->aux
-		  && ((struct ipa_dfs_info *)cur->aux)->scc_no
-		     == ((struct ipa_dfs_info *)callee->aux)->scc_no)
-		flags = 0;
-
-	      bool ignore_stores = ignore_stores_p (cur->decl, flags);
-
-	      /* We don't know anything about CALLEE, hence we cannot tell
-		 anything about the entire component.  */
-
-	      if (avail <= AVAIL_INTERPOSABLE
-		  || !(callee_summary = summaries->get (callee)))
-		{
-		  if (!ignore_stores)
-		    {
-		      its_hopeless = true;
-		      if (dump_file && avail <= AVAIL_INTERPOSABLE)
-			fprintf (dump_file, "      Call target interposable"
-				 " or not available\n");
-		      else if (dump_file)
-			fprintf (dump_file, "      No call target summary\n");
-		      break;
-		    }
-		  else
-		    {
-		      if (loads)
-			loads->collapse ();
-		      if (loads_lto)
-			loads_lto->collapse ();
-		      if (dump_file && avail <= AVAIL_INTERPOSABLE)
-			fprintf (dump_file, "      Call target interposable"
-				 "or not available; collapsing loads\n");
-		      else if (dump_file)
-			fprintf (dump_file, "      No call target summary;"
-				 " collapsing loads\n");
-		      continue;
-		    }
-		}
-
-	      auto_vec <int, 32> parm_map;
-	      /* TODO: compute parm_map.  */
-
-	      /* Merge in callee's information.  */
-	      if (callee_summary->loads
-		  && callee_summary->loads != loads)
-		loads->merge (callee_summary->loads, &parm_map);
-	      if (callee_summary->stores
-		  && callee_summary->stores != stores)
-		stores->merge (callee_summary->stores, &parm_map);
-	      if (callee_summary->loads_lto
-		  && callee_summary->loads_lto != loads_lto)
-		loads_lto->merge (callee_summary->loads_lto, &parm_map);
-	      if (callee_summary->stores_lto
-		  && callee_summary->stores_lto != stores_lto)
-		stores_lto->merge (callee_summary->stores_lto, &parm_map);
-	    }
-	}
-
-	/* At this time, ipa_loads and ipa_stores contain information
-	   about all loads and stores done by any of the component's nodes and
-	   all functions that any of the nodes calls.  We will now propagate
-	   this information to all nodes in the component.  Therefore, we will
-	   walk the component one more time to do it.  */
-	for (struct cgraph_node *cur = component_node; cur;
-	   cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
-	{
-	  modref_summary *cur_summary = summaries->get (cur);
-	  if (!cur_summary)
-	    {
-	      /* The function doesn't have a summary.  We must have noticed
-		 that during the first pass and the hopeless flag must
-		 therefore be set.  Skip the function.  */
-	      gcc_assert (its_hopeless);
-	    }
-	  else if (its_hopeless)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Cleared modref info for %s\n",
-			 cur->dump_name ());
-	      summaries->remove (cur);
-	    }
-	  else
-	    {
-	      if (cur == first)
-		;
-	      else
-		{
-		  if (loads)
-		    cur_summary->loads->merge (loads, NULL);
-		  if (stores)
-		    cur_summary->stores->merge (stores, NULL);
-		  if (loads_lto)
-		    cur_summary->loads_lto->merge (loads_lto, NULL);
-		  if (stores_lto)
-		    cur_summary->stores_lto->merge (stores_lto, NULL);
-		}
-	      cur_summary->finished = true;
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Propagated modref for %s%s%s\n",
-			   cur->dump_name (),
-			   TREE_READONLY (cur->decl) ? " (const)" : "",
-			   DECL_PURE_P (cur->decl) ? " (pure)" : "");
-		  cur_summary->dump (dump_file);
-		}
-	    }
-	}
+      modref_propagate_in_scc (component_node);
     }
   ((modref_summaries *)summaries)->ipa = false;
   ipa_free_postorder_info ();
+  /* Free ipa-prop structures if they are no longer needed.  */
+  ipa_free_all_structures_after_iinln ();
   return 0;
 }
 

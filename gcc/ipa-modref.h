@@ -47,5 +47,6 @@ struct GTY(()) modref_summary
 
 modref_summary *get_modref_function_summary (cgraph_node *func);
 void ipa_modref_c_finalize ();
+void ipa_merge_modref_summary_after_inlining (cgraph_edge *e);
 
 #endif

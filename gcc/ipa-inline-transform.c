@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "basic-block.h"
 #include "ipa-utils.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -487,6 +489,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   gcc_assert (curr->callee->inlined_to == to);
 
   old_size = ipa_size_summaries->get (to)->size;
+  ipa_merge_modref_summary_after_inlining (e);
   ipa_merge_fn_summary_after_inlining (e);
   if (e->in_polymorphic_cdtor)
     mark_all_inlined_calls_cdtor (e->callee);
