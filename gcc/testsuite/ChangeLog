@@ -1,3 +1,23 @@
+2020-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2020-06-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/95464
+	* gcc.target/i386/pr95464.c: New.
+
+2020-09-25  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	Backported from master:
+	2020-08-20  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	PR target/96683
+	* gcc.target/arm/mve/intrinsics/vst1q_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_s8.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_u16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_u8.c: New test.
+
 2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
