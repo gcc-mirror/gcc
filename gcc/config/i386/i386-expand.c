@@ -1045,7 +1045,8 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
   rtx src2 = operands[2];
 
   /* Both source operands cannot be in memory.  */
-  if (MEM_P (src1) && MEM_P (src2))
+  if ((MEM_P (src1) || bcst_mem_operand (src1, mode))
+      && (MEM_P (src2) || bcst_mem_operand (src2, mode)))
     return false;
 
   /* Canonicalize operand order for commutative operators.  */

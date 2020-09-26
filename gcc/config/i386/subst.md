@@ -60,7 +60,9 @@
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
 (define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
+(define_subst_attr "bcst_mask_prefix3" "mask" "orig,maybe_evex" "evex,evex")
 (define_subst_attr "mask_prefix4" "mask" "orig,orig,vex" "evex,evex,evex")
+(define_subst_attr "bcst_mask_prefix4" "mask" "orig,orig,maybe_evex" "evex,evex,evex")
 (define_subst_attr "mask_expand_op3" "mask" "3" "5")
 
 (define_subst "mask"
@@ -130,9 +132,11 @@
 (define_subst_attr "round_mask_op4" "round" "" "<round_mask_operand4>")
 (define_subst_attr "round_sd_mask_op4" "round" "" "<round_sd_mask_operand4>")
 (define_subst_attr "round_constraint" "round" "vm" "v")
+(define_subst_attr "bcst_round_constraint" "round" "vmBr" "v")
 (define_subst_attr "round_constraint2" "round" "m" "v")
 (define_subst_attr "round_constraint3" "round" "rm" "r")
 (define_subst_attr "round_nimm_predicate" "round" "vector_operand" "register_operand")
+(define_subst_attr "bcst_round_nimm_predicate" "round" "bcst_vector_operand" "register_operand")
 (define_subst_attr "round_nimm_scalar_predicate" "round" "nonimmediate_operand" "register_operand")
 (define_subst_attr "round_prefix" "round" "vex" "evex")
 (define_subst_attr "round_mode512bit_condition" "round" "1" "(<MODE>mode == V16SFmode

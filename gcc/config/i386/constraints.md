@@ -183,6 +183,10 @@
   "@internal Memory operand without REX prefix."
   (match_operand 0 "norex_memory_operand"))
 
+(define_special_memory_constraint "Br"
+  "@internal bcst memory operand."
+  (match_operand 0 "bcst_mem_operand"))
+
 (define_constraint "Bs"
   "@internal Sibcall memory operand."
   (ior (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
