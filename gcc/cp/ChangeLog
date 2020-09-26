@@ -1,3 +1,69 @@
+2020-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (duplicate_decls): Replace 'is_friend' with 'hiding'
+	and add 'was_hidden'.
+	* name-lookup.h (pushdecl_namespace_level): Replace 'is_friend'
+	with 'hiding'.
+	(pushdecl): Likewise.
+	(pushdecl_top_level): Drop is_friend parm.
+	* decl.c (check_no_redeclaration_friend_default_args): Rename parm
+	olddelc_hidden_p.
+	(duplicate_decls): Replace 'is_friend' with 'hiding'
+	and 'was_hidden'.  Do minimal adjustments in body.
+	(cxx_builtin_function): Pass 'hiding' to pushdecl.
+	* friend.c (do_friend): Pass 'hiding' to pushdecl.
+	* name-lookup.c (supplement_binding_1): Drop defaulted arg to
+	duplicate_decls.
+	(update_binding): Replace 'is_friend' with 'hiding'.  Drop
+	defaulted arg to duplicate_decls.
+	(do_pushdecl): Replace 'is_friend' with 'hiding'.  Assert no
+	surprise hidhing.  Adjust duplicate_decls calls to inform of old
+	decl's hiddennes.
+	(pushdecl): Replace 'is_friend' with 'hiding'.
+	(set_identifier_type_value_with_scope): Adjust update_binding
+	call.
+	(do_pushdecl_with_scope): Replace 'is_friend' with 'hiding'.
+	(pushdecl_outermost_localscope): Drop default arg to
+	do_pushdecl_with_scope.
+	(pushdecl_namespace_level): Replace 'is_friend' with 'hiding'.
+	(pushdecl_top_level): Drop is_friend parm.
+	* pt.c (register_specialization): Comment duplicate_decls call
+	args.
+	(push_template_decl): Commont pushdecl_namespace_level.
+	(tsubst_friend_function, tsubst_friend_class): Likewise.
+
+2020-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (enum tag_scope): Replace with ...
+	(enum class TAG_how): ... this.  Add HIDDEN_FRIEND value.
+	(lookup_type_scope): Replace with ...
+	(lookup_elaborated_type): ... this.
+	(pushtag): Use TAG_how, not tag_scope.
+	* cp-tree.h (xref_tag): Parameter is TAG_how, not tag_scope.
+	* decl.c (lookup_and_check_tag): Likewise.  Adjust.
+	(xref_tag_1, xref_tag): Likewise. adjust.
+	(start_enum): Adjust lookup_and_check_tag call.
+	* name-lookup.c (lookup_type_scope_1): Rename to ...
+	(lookup_elaborated_type_1) ... here. Use TAG_how, not tag_scope.
+	(lookup_type_scope): Rename to ...
+	(lookup_elaborated_type): ... here.  Use TAG_how, not tag_scope.
+	(do_pushtag): Use TAG_how, not tag_scope.  Adjust.
+	(pushtag): Likewise.
+	* parser.c (cp_parser_elaborated_type_specifier): Adjust.
+	(cp_parser_class_head): Likewise.
+
+2020-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_BUILTIN_P): New.
+	* decl.c (duplicate_decls): Use it.  Do not treat omp-udr as a
+	builtin.
+	* name-lookup.c (anticipated_builtin): Use it.
+	(set_decl_context_in_fn): Function-scope OMP UDRs have function context.
+	(do_nonmember_using_decl): Use DECL_BUILTIN_P.
+	* parser.c (cp_parser_omp_declare_reduction): Function-scope OMP
+	UDRs have function context.  Assert we never find a valid duplicate.
+	* pt.c (tsubst_expr): Function-scope OMP UDRs have function context.
+
 2020-09-24  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (duplicate_decls): Default is_friend to false.

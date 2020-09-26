@@ -1,3 +1,88 @@
+2020-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi: Add -fno-ipa-modref to flags disabled by
+	-flive-patching.
+	* opts.c (control_options_for_live_patching): Disable ipa-modref.
+
+2020-09-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (analyze_stmt): Fix return value for gimple_clobber.
+
+2020-09-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (rng): Add
+	cpuinfo string.
+
+2020-09-25  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-v1): Add FP16.
+
+2020-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/64636
+	* value-prof.c (stream_out_histogram_value): Allow negative
+	values for HIST_TYPE_IOR.
+
+2020-09-25  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_integer, nvptx_print_operand):
+	Use gcc_fallthrough ().
+
+2020-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96814
+	* expr.c (store_constructor): Handle VECTOR_BOOLEAN_TYPE_P
+	CTORs correctly.
+
+2020-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97207
+	* vec.h (auto_vec<T>::operator=(auto_vec<T>&&)): Implement.
+
+2020-09-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm-protos.h (arm_mve_mode_and_operands_type_check):
+	Delete.
+	* config/arm/arm.c (arm_coproc_mem_operand_wb): Use a scale factor
+	of 2 rather than 4 for 16-bit modes.
+	(arm_mve_mode_and_operands_type_check): Delete.
+	* config/arm/constraints.md (Uj): Allow writeback for Neon,
+	but continue to disallow it for MVE.
+	* config/arm/arm.md (*arm32_mov<HFBF:mode>): Add !TARGET_HAVE_MVE.
+	* config/arm/vfp.md (*mov_load_vfp_hf16, *mov_store_vfp_hf16): Fold
+	back into...
+	(*mov<mode>_vfp_<mode>16): ...here but use Uj for the FPR memory
+	constraints.  Use for base MVE too.
+
+2020-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97199
+	* tree-if-conv.c (combine_blocks): Remove edges only
+	after looking at virtual PHI args.
+
+2020-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (scan_omp_1_stmt): Don't call scan_omp_simd for
+	collapse > 1 loops as simt doesn't support collapsed loops yet.
+	* omp-expand.c (expand_omp_for_init_counts, expand_omp_for_init_vars):
+	Small tweaks to function comment.
+	(expand_omp_simd): Rewritten collapse > 1 support to only attempt
+	to vectorize the innermost loop and emit set of outer loops around it.
+	For non-composite simd with collapse > 1 without broken loop don't
+	even try to compute number of iterations first.  Add support for
+	non-rectangular simd loops.
+	(expand_omp_for): Don't sorry_at on non-rectangular simd loops.
+
+2020-09-25  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_edge::debug): New.
+	* cgraph.h (cgraph_edge::debug): New.
+
+2020-09-25  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Always print space at the end
+	of a message.  Remove one extra space.
+
 2020-09-24  Alex Coplan  <alex.coplan@arm.com>
 
 	* config/arm/arm-cpus.in (neoverse-n2): New.

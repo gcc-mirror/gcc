@@ -1,3 +1,45 @@
+2020-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96814
+	* gcc.target/i386/pr96814.c: New testcase.
+
+2020-09-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve-vldstr16-no-writeback.c: Allow
+	the store to use GPRs instead of FPRs.  Add scan-assembler-nots
+	for writeback.
+	* gcc.target/arm/armv8_1m-fp16-move-1.c: New test.
+	* gcc.target/arm/armv8_1m-fp32-move-1.c: Likewise.
+	* gcc.target/arm/armv8_1m-fp64-move-1.c: Likewise.
+
+2020-09-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn_half.c: Remove
+	declarations of vector, vector2, vector_res for float64x2 type.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp_half.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip_half.c: Likewise.
+
+2020-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97204
+	* gcc.target/i386/sse2-mmx-pinsrw.c: Fix.
+
+2020-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-17.c: New test.
+
+2020-09-25  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/analyzer/pr93355-localealias.c: Require effective target
+	alloca.
+
+2020-09-25  Tom de Vries  <tdevries@suse.de>
+
+	* lib/target-supports.exp (check_effective_target_ident_directive): New proc.
+	* c-c++-common/ident-1b.c: Require effective target ident_directive.
+	* c-c++-common/ident-2b.c: Same.
+
 2020-09-24  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/template/local-var1.C: New.

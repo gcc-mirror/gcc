@@ -1,3 +1,7 @@
+2020-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (supplement_binding): Use DECL_BULTIN_P.
+
 2020-09-24  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (supplement_binding): Drop default args to
