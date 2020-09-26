@@ -34,10 +34,26 @@
 #include <bits/c++config.h>
 #include <bits/gthr.h>
 #include <bits/atomic_word.h>
+#if __has_include(<sys/single_threaded.h>)
+# include <sys/single_threaded.h>
+#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  __attribute__((__always_inline__))
+  inline bool
+  __is_single_threaded() _GLIBCXX_NOTHROW
+  {
+#ifndef __GTHREADS
+    return true;
+#elif __has_include(<sys/single_threaded.h>)
+    return ::__libc_single_threaded;
+#else
+    return !__gthread_active_p();
+#endif
+  }
 
   // Functions for portable atomic access.
   // To abstract locking primitives across all thread policies, use:
@@ -79,25 +95,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __attribute__ ((__always_inline__))
   __exchange_and_add_dispatch(_Atomic_word* __mem, int __val)
   {
-#ifdef __GTHREADS
-    if (__gthread_active_p())
+    if (__is_single_threaded())
+      return __exchange_and_add_single(__mem, __val);
+    else
       return __exchange_and_add(__mem, __val);
-#endif
-    return __exchange_and_add_single(__mem, __val);
   }
 
   inline void
   __attribute__ ((__always_inline__))
   __atomic_add_dispatch(_Atomic_word* __mem, int __val)
   {
-#ifdef __GTHREADS
-    if (__gthread_active_p())
-      {
-	__atomic_add(__mem, __val);
-	return;
-      }
-#endif
-    __atomic_add_single(__mem, __val);
+    if (__is_single_threaded())
+      __atomic_add_single(__mem, __val);
+    else
+      __atomic_add(__mem, __val);
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION
