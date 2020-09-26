@@ -980,6 +980,9 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	    else if (prob != REG_BR_PROB_BASE)
 	      fprintf (f, "%*s op%i change %f%% of time\n", indent + 2, "", i,
 		       prob * 100.0 / REG_BR_PROB_BASE);
+	    if (es->param[i].points_to_local_or_readonly_memory)
+	      fprintf (f, "%*s op%i points to local or readonly memory\n",
+		       indent + 2, "", i);
 	  }
       if (!edge->inline_failed)
 	{
@@ -2671,6 +2674,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		      int prob = param_change_prob (&fbi, stmt, i);
 		      gcc_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
 		      es->param[i].change_prob = prob;
+		      es->param[i].points_to_local_or_readonly_memory
+			 = points_to_local_or_readonly_memory_p
+			     (gimple_call_arg (stmt, i));
 		    }
 		}
 
@@ -3781,15 +3787,17 @@ inline_update_callee_summaries (struct cgraph_node *node, int depth)
     ipa_call_summaries->get (e)->loop_depth += depth;
 }
 
-/* Update change_prob of EDGE after INLINED_EDGE has been inlined.
+/* Update change_prob and points_to_local_or_readonly_memory of EDGE after
+   INLINED_EDGE has been inlined.
+
    When function A is inlined in B and A calls C with parameter that
    changes with probability PROB1 and C is known to be passthrough
    of argument if B that change with probability PROB2, the probability
    of change is now PROB1*PROB2.  */
 
 static void
-remap_edge_change_prob (struct cgraph_edge *inlined_edge,
-			struct cgraph_edge *edge)
+remap_edge_params (struct cgraph_edge *inlined_edge,
+		   struct cgraph_edge *edge)
 {
   if (ipa_node_params_sum)
     {
@@ -3823,7 +3831,16 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 		    prob = 1;
 
 		  es->param[i].change_prob = prob;
+
+		  if (inlined_es
+			->param[id].points_to_local_or_readonly_memory)
+		    es->param[i].points_to_local_or_readonly_memory = true;
 		}
+	      if (!es->param[i].points_to_local_or_readonly_memory
+		  && jfunc->type == IPA_JF_CONST
+		  && points_to_local_or_readonly_memory_p
+			 (ipa_get_jf_constant (jfunc)))
+		es->param[i].points_to_local_or_readonly_memory = true;
 	    }
 	}
     }
@@ -3856,7 +3873,7 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
       if (e->inline_failed)
 	{
           class ipa_call_summary *es = ipa_call_summaries->get (e);
-	  remap_edge_change_prob (inlined_edge, e);
+	  remap_edge_params (inlined_edge, e);
 
 	  if (es->predicate)
 	    {
@@ -3882,7 +3899,7 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
       predicate p;
       next = e->next_callee;
 
-      remap_edge_change_prob (inlined_edge, e);
+      remap_edge_params (inlined_edge, e);
       if (es->predicate)
 	{
 	  p = es->predicate->remap_after_inlining
@@ -4208,12 +4225,19 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
     {
       es->param.safe_grow_cleared (length, true);
       for (i = 0; i < length; i++)
-	es->param[i].change_prob = streamer_read_uhwi (ib);
+	{
+	  es->param[i].change_prob = streamer_read_uhwi (ib);
+	  es->param[i].points_to_local_or_readonly_memory
+	    = streamer_read_uhwi (ib);
+	}
     }
   else
     {
       for (i = 0; i < length; i++)
-	streamer_read_uhwi (ib);
+	{
+	  streamer_read_uhwi (ib);
+	  streamer_read_uhwi (ib);
+	}
     }
 }
 
@@ -4438,7 +4462,10 @@ write_ipa_call_summary (struct output_block *ob, struct cgraph_edge *e)
     streamer_write_uhwi (ob, 0);
   streamer_write_uhwi (ob, es->param.length ());
   for (i = 0; i < (int) es->param.length (); i++)
-    streamer_write_uhwi (ob, es->param[i].change_prob);
+    {
+      streamer_write_uhwi (ob, es->param[i].change_prob);
+      streamer_write_uhwi (ob, es->param[i].points_to_local_or_readonly_memory);
+    }
 }
 
 
