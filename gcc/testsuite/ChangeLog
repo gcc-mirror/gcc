@@ -1,3 +1,20 @@
+2020-09-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/71233
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_3a_complex_neon_ok_nocache,
+	check_effective_target_arm_v8_3a_complex_neon_ok,
+	add_options_for_arm_v8_3a_complex_neon,
+	check_effective_target_arm_v8_3a_complex_neon_hw,
+	check_effective_target_vect_complex_rot_N): New.
+	* gcc.target/aarch64/advsimd-intrinsics/vector-complex.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vector-complex_f16.c: New test.
+
+2020-09-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/acle/rng_1.c: New test.
+
 2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
