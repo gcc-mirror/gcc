@@ -2868,14 +2868,6 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs (
 {
   std::vector<AST::LifetimeParam> lifetime_params;
 
-  // DEBUG:
-  fprintf (
-    stderr,
-    "about to start parse_lifetime_params_objs - current token: '%s', "
-    "is_end_token(...): '%s'\n",
-    lexer.peek_token ()->get_token_description (),
-    std::to_string (is_end_token (lexer.peek_token ()->get_id ())).c_str ());
-
   while (!is_end_token (lexer.peek_token ()->get_id ()))
     {
       AST::LifetimeParam lifetime_param = parse_lifetime_param ();
@@ -2900,22 +2892,17 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs (
 
   lifetime_params.shrink_to_fit ();
 
-  // DEBUG:
-  fprintf (stderr,
-	   "returned lifetime_params of length %d. Current token is '%s'\n",
-	   static_cast<int> (lifetime_params.size ()),
-	   lexer.peek_token ()->get_token_description ());
-
   return lifetime_params;
 }
 
-/* Parses various types of generic parameters (templated). Will also consume any
- * trailing comma. Has extra is_end_token predicate checking.
+/* Parses a sequence of a certain grammar rule in object form (not pointer or
+ * smart pointer), delimited by commas and ending when 'is_end_token' is
+ * satisfied (templated). Will also consume any trailing comma.
  * TODO: is this best solution? implements most of the same algorithm. */
 template <typename ManagedTokenSource>
 template <typename ParseFunction, typename EndTokenPred>
 auto
-Parser<ManagedTokenSource>::parse_generic_params (
+Parser<ManagedTokenSource>::parse_non_ptr_sequence (
   ParseFunction parsing_function, EndTokenPred is_end_token,
   std::string error_msg) -> std::vector<decltype (parsing_function ())>
 {
@@ -3316,7 +3303,10 @@ Parser<ManagedTokenSource>::parse_for_lifetimes ()
 
   /* cannot specify end token due to parsing problems with '>' tokens being
    * nested */
-  params = parse_lifetime_params_objs (is_right_angle_tok);
+  //params = parse_lifetime_params_objs (is_right_angle_tok);
+  params = parse_non_ptr_sequence (
+    parse_lifetime_param, is_right_angle_tok,
+    "failed to parse lifetime param in lifetime params");
 
   if (!skip_generics_right_angle ())
     {

@@ -156,7 +156,7 @@ private:
   template <typename EndTokenPred>
   std::vector<AST::LifetimeParam> parse_lifetime_params_objs (EndTokenPred is_end_token);
   template <typename ParseFunction, typename EndTokenPred>
-  auto parse_generic_params (ParseFunction parsing_function, EndTokenPred is_end_token, std::string error_msg = "failed to parse generic param in generic params") -> std::vector<decltype(parsing_function ())>;
+  auto parse_non_ptr_sequence (ParseFunction parsing_function, EndTokenPred is_end_token, std::string error_msg = "failed to parse generic param in generic params") -> std::vector<decltype(parsing_function ())>;
   AST::LifetimeParam parse_lifetime_param ();
   std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params ();
   std::unique_ptr<AST::TypeParam> parse_type_param ();
