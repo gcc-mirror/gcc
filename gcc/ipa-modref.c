@@ -676,13 +676,16 @@ static bool
 analyze_stmt (modref_summary *summary, gimple *stmt, bool ipa,
 	      vec <gimple *> *recursive_calls)
 {
-  /* There is no need to record clobbers.  */
-  if (gimple_clobber_p (stmt))
+  /* In general we can not ignore clobbers because they are barries for code
+     motion, however after inlining it is safe to do becuase local optimization
+     passes do not consider clobbers from other functions.
+     Similar logic is in ipa-pure-consts.  */
+  if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
     return true;
+
   /* Analyze all loads and stores in STMT.  */
   walk_stmt_load_store_ops (stmt, summary,
 			    analyze_load, analyze_store);
-  /* or call analyze_load_ipa, analyze_store_ipa */
 
   switch (gimple_code (stmt))
    {
@@ -705,7 +708,7 @@ analyze_stmt (modref_summary *summary, gimple *stmt, bool ipa,
    }
 }
 
-/* Analyze function F.  IPA indicates whether we're running in tree mode (false)
+/* Analyze function F.  IPA indicates whether we're running in local mode (false)
    or the IPA mode (true).  */
 
 static void
