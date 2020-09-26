@@ -1,3 +1,8 @@
+2020-09-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/acle/rng_1.c: New test.
+
 2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
