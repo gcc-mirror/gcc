@@ -939,6 +939,19 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       decl_or_type = type;
     }
 
+  /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
+  if ((OUTGOING_REG_PARM_STACK_SPACE (type)
+       != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl)))
+      || (REG_PARM_STACK_SPACE (decl_or_type)
+	  != REG_PARM_STACK_SPACE (current_function_decl)))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "inconsistent size of stack space"
+				      " allocated for arguments which are"
+				      " passed in registers");
+      return false;
+    }
+
   /* Check that the return value locations are the same.  Like
      if we are returning floats on the 80387 register stack, we cannot
      make a sibcall from a function that doesn't return a float to a
