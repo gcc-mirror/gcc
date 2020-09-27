@@ -115,6 +115,7 @@ init_internal_fns ()
 #define vec_condeq_direct { 0, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
+#define vec_set_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
@@ -2658,6 +2659,45 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 
 #define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn
 
+/* Expand VEC_SET internal functions.  */
+
+static void
+expand_vec_set_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree op0 = gimple_call_arg (stmt, 0);
+  tree op1 = gimple_call_arg (stmt, 1);
+  tree op2 = gimple_call_arg (stmt, 2);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx src = expand_normal (op0);
+
+  machine_mode outermode = TYPE_MODE (TREE_TYPE (op0));
+  scalar_mode innermode = GET_MODE_INNER (outermode);
+
+  rtx value = expand_normal (op1);
+  rtx pos = expand_normal (op2);
+
+  class expand_operand ops[3];
+  enum insn_code icode = optab_handler (optab, outermode);
+
+  if (icode != CODE_FOR_nothing)
+    {
+      rtx temp = gen_reg_rtx (outermode);
+      emit_move_insn (temp, src);
+
+      create_fixed_operand (&ops[0], temp);
+      create_input_operand (&ops[1], value, innermode);
+      create_convert_operand_from (&ops[2], pos, TYPE_MODE (TREE_TYPE (op2)),
+				   true);
+      if (maybe_expand_insn (icode, 3, ops))
+	{
+	  emit_move_insn (target, temp);
+	  return;
+	}
+    }
+  gcc_unreachable ();
+}
+
 static void
 expand_ABNORMAL_DISPATCHER (internal_fn, gcall *)
 {
@@ -3253,6 +3293,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_check_ptrs_optab_supported_p direct_optab_supported_p
+#define direct_vec_set_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 

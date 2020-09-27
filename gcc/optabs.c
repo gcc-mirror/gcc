@@ -3841,6 +3841,27 @@ can_vcond_compare_p (enum rtx_code code, machine_mode value_mode,
 	 && insn_operand_matches (icode, 3, test);
 }
 
+/* Return whether the backend can emit vector set instructions for inserting
+   element into vector at variable index position.  */
+
+bool
+can_vec_set_var_idx_p (machine_mode vec_mode)
+{
+  if (!VECTOR_MODE_P (vec_mode))
+    return false;
+
+  machine_mode inner_mode = GET_MODE_INNER (vec_mode);
+  rtx reg1 = alloca_raw_REG (vec_mode, LAST_VIRTUAL_REGISTER + 1);
+  rtx reg2 = alloca_raw_REG (inner_mode, LAST_VIRTUAL_REGISTER + 2);
+  rtx reg3 = alloca_raw_REG (VOIDmode, LAST_VIRTUAL_REGISTER + 3);
+
+  enum insn_code icode = optab_handler (vec_set_optab, vec_mode);
+
+  return icode != CODE_FOR_nothing && insn_operand_matches (icode, 0, reg1)
+	 && insn_operand_matches (icode, 1, reg2)
+	 && insn_operand_matches (icode, 2, reg3);
+}
+
 /* This function is called when we are going to emit a compare instruction that
    compares the values found in X and Y, using the rtl operator COMPARISON.
 
