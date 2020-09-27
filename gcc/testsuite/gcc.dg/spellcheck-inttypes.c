@@ -1,7 +1,7 @@
 /* { dg-options "-std=c99" } */
 /* Prevent AIX from implicitly including inttypes.h.  */
 #ifdef _AIX
-#define _H_INTTYPES_TYPE_TS
+#define _STD_TYPES_T
 #endif
 #include <stdio.h>
 #include <stdint.h>
