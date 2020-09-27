@@ -135,7 +135,7 @@ modref_summary::useful_p (int ecf_flags)
     return true;
   if (ecf_flags & ECF_PURE)
     return false;
-  return stores && !loads->every_base;
+  return stores && !stores->every_base;
 }
 
 /* Dump A to OUT.  */
