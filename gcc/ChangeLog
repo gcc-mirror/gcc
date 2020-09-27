@@ -1,3 +1,65 @@
+2020-09-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (analyze_stmt): Do not skip clobbers in early pass.
+	* ipa-pure-const.c (analyze_stmt): Update comment.
+
+2020-09-26  David Edelsohn  <dje.gcc@gmail.com>
+	    Clement Chigot  <clement.chigot@atos.com>
+
+	* collect2.c (visibility_flag): New.
+	(main): Detect -fvisibility.
+	(write_c_file_stat): Push and pop default visibility.
+
+2020-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c: Include ipa-modref-tree.h and ipa-modref.h.
+	(inline_call): Call ipa_merge_modref_summary_after_inlining.
+	* ipa-inline.c (ipa_inline): Do not free summaries.
+	* ipa-modref.c (dump_records): Fix formating.
+	(merge_call_side_effects): Break out from ...
+	(analyze_call): ... here; record recursive calls.
+	(analyze_stmt): Add new parameter RECURSIVE_CALLS.
+	(analyze_function): Do iterative dataflow on recursive calls.
+	(compute_parm_map): New function.
+	(ipa_merge_modref_summary_after_inlining): New function.
+	(collapse_loads): New function.
+	(modref_propagate_in_scc): Break out from ...
+	(pass_ipa_modref::execute): ... here; Do iterative dataflow.
+	* ipa-modref.h (ipa_merge_modref_summary_after_inlining): Declare.
+
+2020-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_simd): Help vectorizer for the collapse == 1
+	and non-composite collapse > 1 case with non-constant innermost loop
+	step by precomputing number of iterations before loop and using an
+	alternate IV from 0 to number of iterations - 1 with step of 1.
+
+2020-09-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (dump_ipa_call_summary): Dump
+	points_to_local_or_readonly_memory flag.
+	(analyze_function_body): Compute points_to_local_or_readonly_memory
+	flag.
+	(remap_edge_change_prob): Rename to ...
+	(remap_edge_params): ... this one; update
+	points_to_local_or_readonly_memory.
+	(remap_edge_summaries): Update.
+	(read_ipa_call_summary): Stream the new flag.
+	(write_ipa_call_summary): Likewise.
+	* ipa-predicate.h (struct inline_param_summary): Add
+	points_to_local_or_readonly_memory.
+	(inline_param_summary::equal_to): Update.
+	(inline_param_summary::useless_p): Update.
+
+2020-09-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_ref_node::insert_access): Track if something
+	changed.
+	(modref_base_node::insert_ref): Likewise (and add a new optional
+	argument)
+	(modref_tree::insert): Likewise.
+	(modref_tree::merge): Rewrite
+
 2020-09-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi: Add -fno-ipa-modref to flags disabled by

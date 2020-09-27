@@ -1,3 +1,38 @@
+2020-09-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96495
+	* gfortran.dg/alloc_comp_result_2.f90 : Restore original.
+	* gfortran.dg/alloc_comp_result_3.f90 : New test.
+
+2020-09-26  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/modref-1_0.c: New test.
+	* gcc.dg/lto/modref-1_1.c: New test.
+	* gcc.dg/tree-ssa/modref-2.c: New test.
+
+2020-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-17.c: Expect 11 or more vectorized loops.
+	* gcc.dg/vect/vect-simd-18.c: New test.
+	* gcc.dg/vect/vect-simd-19.c: New test.
+	* gcc.dg/vect/vect-simd-20.c: New test.
+
+2020-09-26  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/ipa-pta-13.c: Disable modref.
+
+2020-09-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94355
+	* g++.dg/analyzer/placement-new.C: New test.
+
+2020-09-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96646
+	PR analyzer/96841
+	* gcc.dg/analyzer/pr96646.c: New test.
+	* gcc.dg/analyzer/pr96841.c: New test.
+
 2020-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/96814

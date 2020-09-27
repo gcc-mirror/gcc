@@ -1,3 +1,13 @@
+2020-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96817
+	* include/ext/atomicity.h (__gnu_cxx::__is_single_threaded()):
+	New function wrapping __libc_single_threaded if available.
+	(__exchange_and_add_dispatch, __atomic_add_dispatch): Use it.
+	* libsupc++/guard.cc (__cxa_guard_acquire, __cxa_guard_abort)
+	(__cxa_guard_release): Likewise.
+	* testsuite/18_support/96817.cc: New test.
+
 2020-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/Makefile.am: Remove redundant -std=gnu++1z flags.
