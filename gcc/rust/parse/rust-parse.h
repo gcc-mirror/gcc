@@ -149,6 +149,8 @@ private:
   std::vector<std::unique_ptr<AST::GenericParam> >
   parse_generic_params_in_angles ();
   std::vector<std::unique_ptr<AST::GenericParam> > parse_generic_params ();
+  template <typename EndTokenPred>
+  std::vector<std::unique_ptr<AST::GenericParam> > parse_generic_params (EndTokenPred is_end_token);
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params (EndTokenPred is_end_token);
@@ -159,6 +161,8 @@ private:
   auto parse_non_ptr_sequence (ParseFunction parsing_function, EndTokenPred is_end_token, std::string error_msg = "failed to parse generic param in generic params") -> std::vector<decltype(parsing_function ())>;
   AST::LifetimeParam parse_lifetime_param ();
   std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params ();
+  template <typename EndTokenPred>
+  std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params (EndTokenPred is_end_token);
   std::unique_ptr<AST::TypeParam> parse_type_param ();
   std::vector<AST::FunctionParam> parse_function_params ();
   AST::FunctionParam parse_function_param ();
@@ -170,10 +174,14 @@ private:
   std::unique_ptr<AST::TypeBoundWhereClauseItem>
   parse_type_bound_where_clause_item ();
   std::vector<AST::LifetimeParam> parse_for_lifetimes ();
+  template <typename EndTokenPred>
+  std::vector<std::unique_ptr<AST::TypeParamBound> > parse_type_param_bounds (EndTokenPred is_end_token);
   std::vector<std::unique_ptr<AST::TypeParamBound> > parse_type_param_bounds ();
   std::unique_ptr<AST::TypeParamBound> parse_type_param_bound ();
   std::unique_ptr<AST::TraitBound> parse_trait_bound ();
   std::vector<AST::Lifetime> parse_lifetime_bounds ();
+  template <typename EndTokenPred>
+  std::vector<AST::Lifetime> parse_lifetime_bounds (EndTokenPred is_end_token);
   AST::Lifetime parse_lifetime ();
   std::unique_ptr<AST::TypeAlias>
   parse_type_alias (AST::Visibility vis,
@@ -187,6 +195,8 @@ private:
   std::unique_ptr<AST::Enum>
   parse_enum (AST::Visibility vis, std::vector<AST::Attribute> outer_attrs);
   std::vector<std::unique_ptr<AST::EnumItem> > parse_enum_items ();
+  template <typename EndTokenPred>
+  std::vector<std::unique_ptr<AST::EnumItem> > parse_enum_items (EndTokenPred is_end_token);
   std::unique_ptr<AST::EnumItem> parse_enum_item ();
   std::unique_ptr<AST::Union>
   parse_union (AST::Visibility vis, std::vector<AST::Attribute> outer_attrs);

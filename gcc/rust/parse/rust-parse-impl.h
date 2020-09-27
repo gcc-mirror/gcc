@@ -546,19 +546,15 @@ Parser<ManagedTokenSource>::parse_simple_path ()
 
   // get location if not gotten already
   if (locus == Linemap::unknown_location ())
-    {
-      locus = segment.get_locus ();
-    }
+    locus = segment.get_locus ();
 
   std::vector<AST::SimplePathSegment> segments;
 
   // Return empty vector if first, actually required segment is an error
   if (segment.is_error ())
-    {
-      return AST::SimplePath::create_empty ();
-    }
+    return AST::SimplePath::create_empty ();
 
-  segments.push_back (segment);
+  segments.push_back (std::move (segment));
 
   // Parse all other simple path segments
   while (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION)
@@ -570,10 +566,9 @@ Parser<ManagedTokenSource>::parse_simple_path ()
 
       // Return path as currently constructed if segment in error state.
       if (new_segment.is_error ())
-	{
-	  break;
-	}
-      segments.push_back (new_segment);
+	break;
+
+      segments.push_back (std::move (new_segment));
     }
 
   // DEBUG: check for any empty segments
@@ -2203,9 +2198,9 @@ Parser<ManagedTokenSource>::parse_use_tree ()
    * top two then try parse :: - if fails, one of top two. Next is deciding
    * character for top two. */
 
-  // Thus, parsing smaller parts of use tree may require feeding into function
-  // via parameters (or could handle all in this single function because other
-  // use tree types aren't recognised) as separate in the spec
+  /* Thus, parsing smaller parts of use tree may require feeding into function
+   * via parameters (or could handle all in this single function because other
+   * use tree types aren't recognised as separate in the spec) */
 
   // TODO: I think this function is too complex, probably should split it
 
@@ -2546,7 +2541,7 @@ Parser<ManagedTokenSource>::parse_generic_params_in_angles ()
   fprintf (stderr, "skipped left angle in generic param\n");
 
   std::vector<std::unique_ptr<AST::GenericParam> > generic_params
-    = parse_generic_params ();
+    = parse_generic_params (is_right_angle_tok);
 
   // DEBUG:
   fprintf (stderr,
@@ -2579,12 +2574,12 @@ Parser<ManagedTokenSource>::parse_generic_params ()
   fprintf (stderr,
 	   "starting to parse generic params (inside angle brackets)\n");
 
-  // HACK: used to retain attribute data if a lifetime param is tentatively
-  // parsed but it turns out to be type param
+  /* HACK: used to retain attribute data if a lifetime param is tentatively
+   * parsed but it turns out to be type param */
   AST::Attribute parsed_outer_attr = AST::Attribute::create_empty ();
 
-  // HACK: generic params always in angle brackets with current syntax, so have
-  // that as end char
+  /* HACK: generic params always in angle brackets with current syntax, so have
+   * that as end char */
   const_TokenPtr t = lexer.peek_token ();
   // parse lifetime params
   while (!is_right_angle_tok (t->get_id ()))
@@ -2618,7 +2613,8 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	{
 	  lexer.skip_token ();
 	  // parse required bounds
-	  lifetime_bounds = parse_lifetime_bounds ();
+	  lifetime_bounds = parse_lifetime_bounds (
+	    [] (TokenId id) { return is_right_angle_tok (id) || id == COMMA; });
 	}
 
       std::unique_ptr<AST::LifetimeParam> param (
@@ -2752,6 +2748,163 @@ Parser<ManagedTokenSource>::parse_generic_params ()
   return generic_params;
 }
 
+/* Parse generic (lifetime or type) params NOT INSIDE ANGLE BRACKETS!!! Almost
+ * always parse_generic_params_in_angles is what is wanted. */
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<std::unique_ptr<AST::GenericParam> >
+Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
+{
+  std::vector<std::unique_ptr<AST::GenericParam> > generic_params;
+
+  /* can't parse lifetime and type params separately due to lookahead issues
+   * thus, parse them all here */
+
+  /* HACK: used to retain attribute data if a lifetime param is tentatively
+   * parsed but it turns out to be type param */
+  AST::Attribute parsed_outer_attr = AST::Attribute::create_empty ();
+
+  const_TokenPtr t = lexer.peek_token ();
+  // parse lifetime params
+  while (!is_end_token (t->get_id ()))
+    {
+      // HACK: reimpl of lifetime param parsing
+      AST::Attribute outer_attr = parse_outer_attribute ();
+
+      // move attribute outward if type param
+      if (lexer.peek_token ()->get_id () != LIFETIME)
+	{
+	  parsed_outer_attr = std::move (outer_attr);
+	  break;
+	}
+
+      Location locus = lexer.peek_token ()->get_locus ();
+      AST::Lifetime lifetime = parse_lifetime ();
+
+      // parse optional bounds
+      std::vector<AST::Lifetime> lifetime_bounds;
+      if (lexer.peek_token ()->get_id () == COLON)
+	{
+	  lexer.skip_token ();
+	  // parse required bounds
+	  lifetime_bounds = parse_lifetime_bounds ([is_end_token] (TokenId id) {
+	    return is_end_token (id) || id == COMMA;
+	  });
+	}
+
+      std::unique_ptr<AST::LifetimeParam> param (
+	new AST::LifetimeParam (std::move (lifetime), locus,
+				std::move (lifetime_bounds),
+				std::move (outer_attr)));
+      generic_params.push_back (std::move (param));
+
+      if (lexer.peek_token ()->get_id () != COMMA)
+	break;
+
+      lexer.skip_token ();
+      t = lexer.peek_token ();
+    }
+
+  // parse type params (reimpl required for first one but not others)
+  if (!is_end_token (lexer.peek_token ()->get_id ())
+      && !parsed_outer_attr.is_empty ())
+    {
+      // reimpl as type param definitely exists
+      const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+      if (ident_tok == nullptr)
+	{
+	  rust_error_at (
+	    lexer.peek_token ()->get_locus (),
+	    "failed to parse identifier in type param in generic params");
+	  return {};
+	}
+      Identifier ident = ident_tok->get_str ();
+
+      // parse optional bounds
+      std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+      if (lexer.peek_token ()->get_id () == COLON)
+	{
+	  lexer.skip_token ();
+
+	  // parse optional type param bounds
+	  type_param_bounds = parse_type_param_bounds ();
+	}
+
+      // parse optional type
+      std::unique_ptr<AST::Type> type = nullptr;
+      if (lexer.peek_token ()->get_id () == EQUAL)
+	{
+	  lexer.skip_token ();
+
+	  // parse required type
+	  type = parse_type ();
+	  if (type == nullptr)
+	    {
+	      rust_error_at (
+		lexer.peek_token ()->get_locus (),
+		"failed to parse type in type param in generic params");
+	      return {};
+	    }
+	}
+
+      std::unique_ptr<AST::TypeParam> param (
+	new AST::TypeParam (std::move (ident), ident_tok->get_locus (),
+			    std::move (type_param_bounds), std::move (type),
+			    std::move (parsed_outer_attr)));
+      generic_params.push_back (std::move (param));
+
+      // handle comma
+      if (lexer.peek_token ()->get_id () == COMMA)
+	lexer.skip_token ();
+    }
+
+  // parse rest of type params - reimpl due to right angle tokens
+  t = lexer.peek_token ();
+  while (!is_end_token (t->get_id ()))
+    {
+      std::unique_ptr<AST::TypeParam> type_param = parse_type_param ();
+
+      if (type_param == nullptr)
+	{
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse type param in generic params");
+	  return {};
+	}
+
+      generic_params.push_back (std::move (type_param));
+
+      if (lexer.peek_token ()->get_id () != COMMA)
+	break;
+
+      // skip commas, including trailing commas
+      lexer.skip_token ();
+      t = lexer.peek_token ();
+    }
+
+  // old code
+  /*
+  // parse lifetime params (optional), allowed to end with a trailing comma
+  std::vector<std::unique_ptr<AST::LifetimeParam>> lifetime_params
+    = parse_lifetime_params();
+  if (!lifetime_params.empty()) {
+      // C++11 code:
+      generic_params.insert(generic_params.end(),
+	std::make_move_iterator(lifetime_params.begin()),
+	std::make_move_iterator(lifetime_params.end()));
+  }
+
+  // parse type params (optional)
+  std::vector<std::unique_ptr<AST::TypeParam>> type_params =
+  parse_type_params(); if (!type_params.empty()) {
+      // C++11 code:
+      generic_params.insert(generic_params.end(),
+	std::make_move_iterator(type_params.begin()),
+	std::make_move_iterator(type_params.end()));
+  }*/
+
+  return generic_params;
+}
+
 /* Parses lifetime generic parameters (pointers). Will also consume any trailing
  * comma. No extra checks for end token. */
 template <typename ManagedTokenSource>
@@ -2801,8 +2954,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params (EndTokenPred is_end_token)
 
       if (lifetime_param.is_error ())
 	{
-	  // TODO: is it worth throwing away all lifetime params just because
-	  // one failed?
+	  /* TODO: is it worth throwing away all lifetime params just because
+	   * one failed? */
 	  rust_error_at (lexer.peek_token ()->get_locus (),
 			 "failed to parse lifetime param in lifetime params");
 	  return {};
@@ -2898,7 +3051,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs (
 /* Parses a sequence of a certain grammar rule in object form (not pointer or
  * smart pointer), delimited by commas and ending when 'is_end_token' is
  * satisfied (templated). Will also consume any trailing comma.
- * TODO: is this best solution? implements most of the same algorithm. */
+ * FIXME: this cannot be used due to member function pointer problems (i.e.
+ * parsing_function cannot be specified properly) */
 template <typename ManagedTokenSource>
 template <typename ParseFunction, typename EndTokenPred>
 auto
@@ -2960,6 +3114,7 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
     {
       // parse lifetime bounds
       lifetime_bounds = parse_lifetime_bounds ();
+      // TODO: have end token passed in?
     }
 
   return AST::LifetimeParam (std::move (lifetime), lifetime_tok->get_locus (),
@@ -2974,8 +3129,7 @@ Parser<ManagedTokenSource>::parse_type_params ()
 {
   std::vector<std::unique_ptr<AST::TypeParam> > type_params;
 
-  // TODO: think of better control structure than infinite loop with break on
-  // failure?
+  // infinite loop with break on failure as no info on ending token
   while (true)
     {
       std::unique_ptr<AST::TypeParam> type_param = parse_type_param ();
@@ -2989,16 +3143,46 @@ Parser<ManagedTokenSource>::parse_type_params ()
       type_params.push_back (std::move (type_param));
 
       if (lexer.peek_token ()->get_id () != COMMA)
-	{
-	  break;
-	}
+	break;
+
       // skip commas, including trailing commas
       lexer.skip_token ();
     }
 
   return type_params;
-  // TODO: this shares most code with parse_lifetime_params - good place to use
-  // template?
+}
+
+// Parses type generic parameters. Will also consume any trailing comma.
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<std::unique_ptr<AST::TypeParam> >
+Parser<ManagedTokenSource>::parse_type_params (EndTokenPred is_end_token)
+{
+  std::vector<std::unique_ptr<AST::TypeParam> > type_params;
+
+  while (!is_end_token (lexer.peek_token ()->get_id ()))
+    {
+      std::unique_ptr<AST::TypeParam> type_param = parse_type_param ();
+
+      if (type_param == nullptr)
+	{
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse type param in type params");
+	  return {};
+	}
+
+      type_params.push_back (std::move (type_param));
+
+      if (lexer.peek_token ()->get_id () != COMMA)
+	break;
+
+      // skip commas, including trailing commas
+      lexer.skip_token ();
+    }
+
+  return type_params;
+  /* TODO: this shares most code with parse_lifetime_params - good place to use
+   * template (i.e. parse_non_ptr_sequence if doable) */
 }
 
 /* Parses a single type (generic) parameter, not including commas. May change to
@@ -3244,6 +3428,7 @@ Parser<ManagedTokenSource>::parse_lifetime_where_clause_item ()
     }
 
   std::vector<AST::Lifetime> lifetime_bounds = parse_lifetime_bounds ();
+  // TODO: have end token passed in?
 
   return std::unique_ptr<AST::LifetimeWhereClauseItem> (
     new AST::LifetimeWhereClauseItem (std::move (lifetime),
@@ -3303,10 +3488,7 @@ Parser<ManagedTokenSource>::parse_for_lifetimes ()
 
   /* cannot specify end token due to parsing problems with '>' tokens being
    * nested */
-  //params = parse_lifetime_params_objs (is_right_angle_tok);
-  params = parse_non_ptr_sequence (
-    parse_lifetime_param, is_right_angle_tok,
-    "failed to parse lifetime param in lifetime params");
+  params = parse_lifetime_params_objs (is_right_angle_tok);
 
   if (!skip_generics_right_angle ())
     {
@@ -3335,34 +3517,74 @@ Parser<ManagedTokenSource>::parse_type_param_bounds ()
   // quick exit if null
   if (initial_bound == nullptr)
     {
-      // error? type param bounds must have at least one term, but are bounds
-      // optional?
+      /* error? type param bounds must have at least one term, but are bounds
+       * optional? */
       return type_param_bounds;
     }
-
   type_param_bounds.push_back (std::move (initial_bound));
 
-  // TODO think of better control structure than infinite loop
-  while (true)
+  while (lexer.peek_token ()->get_id () == PLUS)
     {
-      // Quick exit for no more bounds
-      if (lexer.peek_token ()->get_id () != PLUS)
-	{
-	  return type_param_bounds;
-	}
       lexer.skip_token ();
 
       std::unique_ptr<AST::TypeParamBound> bound = parse_type_param_bound ();
       if (bound == nullptr)
 	{
-	  // not an error: bound is allowed to be null as trailing plus is
-	  // allowed
+	  /* not an error: bound is allowed to be null as trailing plus is
+	   * allowed */
 	  return type_param_bounds;
 	}
 
       type_param_bounds.push_back (std::move (bound));
     }
 
+  type_param_bounds.shrink_to_fit ();
+  return type_param_bounds;
+}
+
+// Parses type parameter bounds in where clause or generic arguments, with end
+// token handling.
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<std::unique_ptr<AST::TypeParamBound> >
+Parser<ManagedTokenSource>::parse_type_param_bounds (EndTokenPred is_end_token)
+{
+  std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+
+  std::unique_ptr<AST::TypeParamBound> initial_bound
+    = parse_type_param_bound ();
+
+  // quick exit if null
+  if (initial_bound == nullptr)
+    {
+      /* error? type param bounds must have at least one term, but are bounds
+       * optional? */
+      return type_param_bounds;
+    }
+  type_param_bounds.push_back (std::move (initial_bound));
+
+  while (lexer.peek_token ()->get_id () == PLUS)
+    {
+      lexer.skip_token ();
+
+      // break if end token character
+      if (is_end_token (lexer.peek_token ()->get_id ()))
+	break;
+
+      std::unique_ptr<AST::TypeParamBound> bound = parse_type_param_bound ();
+      if (bound == nullptr)
+	{
+	  // TODO how wise is it to ditch all bounds if only one failed?
+	  rust_error_at (
+	    lexer.peek_token ()->get_locus (),
+	    "failed to parse type param bound in type param bounds");
+	  return {};
+	}
+
+      type_param_bounds.push_back (std::move (bound));
+    }
+
+  type_param_bounds.shrink_to_fit ();
   return type_param_bounds;
 }
 
@@ -3451,29 +3673,60 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds ()
 {
   std::vector<AST::Lifetime> lifetime_bounds;
 
-  // TODO: think of better control structure
   while (true)
     {
       AST::Lifetime lifetime = parse_lifetime ();
 
       // quick exit for parsing failure
       if (lifetime.is_error ())
-	{
-	  return lifetime_bounds;
-	}
+	break;
 
       lifetime_bounds.push_back (std::move (lifetime));
 
-      // plus is maybe required - spec defines it poorly, so assuming not
-      // required
+      /* plus is maybe not allowed at end - spec defines it weirdly, so assuming
+       * allowed at end */
       if (lexer.peek_token ()->get_id () != PLUS)
-	{
-	  return lifetime_bounds;
-	}
+	break;
 
       lexer.skip_token ();
     }
 
+  lifetime_bounds.shrink_to_fit ();
+  return lifetime_bounds;
+}
+
+// Parses lifetime bounds, with added check for ending token.
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<AST::Lifetime>
+Parser<ManagedTokenSource>::parse_lifetime_bounds (EndTokenPred is_end_token)
+{
+  std::vector<AST::Lifetime> lifetime_bounds;
+
+  while (!is_end_token (lexer.peek_token ()->get_id ()))
+    {
+      AST::Lifetime lifetime = parse_lifetime ();
+
+      if (lifetime.is_error ())
+	{
+	  /* TODO: is it worth throwing away all lifetime bound info just
+	   * because one failed? */
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse lifetime in lifetime bounds");
+	  return {};
+	}
+
+      lifetime_bounds.push_back (std::move (lifetime));
+
+      /* plus is maybe not allowed at end - spec defines it weirdly, so assuming
+       * allowed at end */
+      if (lexer.peek_token ()->get_id () != PLUS)
+	break;
+
+      lexer.skip_token ();
+    }
+
+  lifetime_bounds.shrink_to_fit ();
   return lifetime_bounds;
 }
 
@@ -3871,7 +4124,8 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
     }
 
   // parse actual enum variant definitions
-  std::vector<std::unique_ptr<AST::EnumItem> > enum_items = parse_enum_items ();
+  std::vector<std::unique_ptr<AST::EnumItem> > enum_items
+    = parse_enum_items ([] (TokenId id) { return id == RIGHT_CURLY; });
 
   if (!skip_token (RIGHT_CURLY))
     {
@@ -3896,47 +4150,72 @@ Parser<ManagedTokenSource>::parse_enum_items ()
 
   // Return empty item list if no field there
   if (initial_item == nullptr)
-    {
-      return items;
-    }
+    return items;
 
   items.push_back (std::move (initial_item));
 
-  // maybe think of a better control structure here - do-while with an initial
-  // error state? basically, loop through item list until can't find any more
-  // params
-  while (true)
+  while (lexer.peek_token ()->get_id () == COMMA)
     {
-      if (lexer.peek_token ()->get_id () != COMMA)
-	{
-	  break;
-	}
-
-      // skip comma if applies
       lexer.skip_token ();
 
       std::unique_ptr<AST::EnumItem> item = parse_enum_item ();
-
-      if (item != nullptr)
-	{
-	  items.push_back (std::move (item));
-	}
-      else
+      if (item == nullptr)
 	{
 	  // this would occur with a trailing comma, which is allowed
 	  break;
 	}
+
+      items.push_back (std::move (item));
     }
 
-  // TODO: does this need move?
   return items;
 
-  // TODO: shares virtually all code with function params, tuple and struct
-  // fields - templates?
+  /* TODO: use template if doable (parse_non_ptr_sequence) */
 }
 
-// Parses a single enum variant item in an enum definition. Does not parse
-// commas.
+// Parses the enum variants inside an enum definiton.
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<std::unique_ptr<AST::EnumItem> >
+Parser<ManagedTokenSource>::parse_enum_items (EndTokenPred is_end_tok)
+{
+  std::vector<std::unique_ptr<AST::EnumItem> > items;
+
+  std::unique_ptr<AST::EnumItem> initial_item = parse_enum_item ();
+
+  // Return empty item list if no field there
+  if (initial_item == nullptr)
+    return items;
+
+  items.push_back (std::move (initial_item));
+
+  while (lexer.peek_token ()->get_id () == COMMA)
+    {
+      lexer.skip_token ();
+
+      if (is_end_tok (lexer.peek_token ()->get_id ()))
+	break;
+
+      std::unique_ptr<AST::EnumItem> item = parse_enum_item ();
+      if (item == nullptr)
+	{
+	  /* TODO should this ignore all successfully parsed enum items just
+	   * because one failed? */
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse enum item in enum items");
+	  return {};
+	}
+
+      items.push_back (std::move (item));
+    }
+
+  return items;
+
+  /* TODO: use template if doable (parse_non_ptr_sequence) */
+}
+
+/* Parses a single enum variant item in an enum definition. Does not parse
+ * commas. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::EnumItem>
 Parser<ManagedTokenSource>::parse_enum_item ()
@@ -4016,11 +4295,12 @@ std::unique_ptr<AST::Union>
 Parser<ManagedTokenSource>::parse_union (
   AST::Visibility vis, std::vector<AST::Attribute> outer_attrs)
 {
-  // hack - "weak keyword" by finding identifier called "union" (lookahead in
-  // item switch)
-  Location locus = lexer.peek_token ()->get_locus ();
-  // skip union "identifier"
-  skip_token (IDENTIFIER);
+  /* hack - "weak keyword" by finding identifier called "union" (lookahead in
+   * item switch) */
+  const_TokenPtr union_keyword = expect_token (IDENTIFIER);
+  rust_assert (union_keyword->get_str () == "union");
+  Location locus = union_keyword->get_locus ();
+  lexer.skip_token ();
 
   // parse actual union name
   const_TokenPtr union_name_tok = expect_token (IDENTIFIER);
@@ -4044,8 +4324,8 @@ Parser<ManagedTokenSource>::parse_union (
       return nullptr;
     }
 
-  // parse union inner items as "struct fields" because hey, syntax reuse. Spec
-  // said so.
+  /* parse union inner items as "struct fields" because hey, syntax reuse. Spec
+   * said so. */
   std::vector<AST::StructField> union_fields = parse_struct_fields ();
 
   if (!skip_token (RIGHT_CURLY))
@@ -4070,8 +4350,8 @@ Parser<ManagedTokenSource>::parse_const_item (
   Location locus = lexer.peek_token ()->get_locus ();
   skip_token (CONST);
 
-  // get constant identifier - this is either a proper identifier or the _
-  // wildcard
+  /* get constant identifier - this is either a proper identifier or the _
+   * wildcard */
   const_TokenPtr ident_tok = lexer.peek_token ();
   // make default identifier the underscore wildcard one
   std::string ident ("_");
@@ -4206,8 +4486,9 @@ Parser<ManagedTokenSource>::parse_trait (
     {
       lexer.skip_token ();
 
-      // TODO: does this need move?
-      type_param_bounds = parse_type_param_bounds ();
+      type_param_bounds = parse_type_param_bounds (
+	[] (TokenId id) { return id == WHERE || id == LEFT_CURLY; });
+      // type_param_bounds = parse_type_param_bounds ();
     }
 
   // parse where clause (if it exists)
@@ -4229,11 +4510,10 @@ Parser<ManagedTokenSource>::parse_trait (
 
       if (trait_item == nullptr)
 	{
-	  // TODO: this is probably an error as next character should equal
-	  // RIGHT_CURLY
-	  break;
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse trait item in trait");
+	  return nullptr;
 	}
-
       trait_items.push_back (std::move (trait_item));
 
       t = lexer.peek_token ();
@@ -4435,7 +4715,9 @@ Parser<ManagedTokenSource>::parse_trait_type (
       lexer.skip_token ();
 
       // parse optional type param bounds
-      bounds = parse_type_param_bounds ();
+      bounds
+	= parse_type_param_bounds ([] (TokenId id) { return id == SEMICOLON; });
+      // bounds = parse_type_param_bounds ();
     }
 
   if (!skip_token (SEMICOLON))
@@ -4582,11 +4864,10 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 
 	  if (impl_item == nullptr)
 	    {
-	      // TODO: this is probably an error as next character should equal
-	      // RIGHT_CURLY
-	      fprintf (stderr, "impl item is null and next char wasn't "
-			       "RIGHT_CURLY - probably an error");
-	      break;
+	      rust_error_at (
+		lexer.peek_token ()->get_locus (),
+		"failed to parse inherent impl item in inherent impl");
+	      return nullptr;
 	    }
 
 	  impl_items.push_back (std::move (impl_item));
@@ -4652,13 +4933,9 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 
 	  if (impl_item == nullptr)
 	    {
-	      // DEBUG
-	      fprintf (stderr, "break out of parsing trait impl items (due to "
-			       "parse giving null)\n");
-
-	      // TODO: this is probably an error as next character should equal
-	      // RIGHT_CURLY
-	      break;
+	      rust_error_at (lexer.peek_token ()->get_locus (),
+			     "failed to parse trait impl item in trait impl");
+	      return nullptr;
 	    }
 
 	  impl_items.push_back (std::move (impl_item));
@@ -4765,8 +5042,8 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
       return parse_inherent_impl_function_or_method (
 	AST::Visibility::create_error (), std::move (outer_attrs));
     case CONST:
-      // lookahead to resolve production - could be function/method or const
-      // item
+      /* lookahead to resolve production - could be function/method or const
+       * item */
       t = lexer.peek_token (1);
 
       switch (t->get_id ())
