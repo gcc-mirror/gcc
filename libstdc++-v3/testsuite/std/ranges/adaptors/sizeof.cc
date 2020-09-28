@@ -33,20 +33,20 @@ using V = ranges::subrange<int*, int*>;
 constexpr auto ptr = sizeof(int*);
 static_assert(sizeof(V) == 2*ptr);
 
-static_assert(sizeof(ranges::take_view<V>) == 4*ptr);
-static_assert(sizeof(ranges::drop_view<V>) == 4*ptr);
+static_assert(sizeof(ranges::take_view<V>) == 3*ptr);
+static_assert(sizeof(ranges::drop_view<V>) == 3*ptr);
 
-static_assert(sizeof(ranges::filter_view<V, decltype(&pred_f)>) == 5*ptr);
-static_assert(sizeof(ranges::take_while_view<V, decltype(&pred_f)>) == 4*ptr);
-static_assert(sizeof(ranges::drop_while_view<V, decltype(&pred_f)>) == 5*ptr);
-static_assert(sizeof(ranges::transform_view<V, decltype(&func_f)>) == 4*ptr);
+static_assert(sizeof(ranges::filter_view<V, decltype(&pred_f)>) == 4*ptr);
+static_assert(sizeof(ranges::take_while_view<V, decltype(&pred_f)>) == 3*ptr);
+static_assert(sizeof(ranges::drop_while_view<V, decltype(&pred_f)>) == 4*ptr);
+static_assert(sizeof(ranges::transform_view<V, decltype(&func_f)>) == 3*ptr);
 
-static_assert(sizeof(ranges::filter_view<V, decltype(pred_l)>) == 4*ptr);
+static_assert(sizeof(ranges::filter_view<V, decltype(pred_l)>) == 3*ptr);
 static_assert(sizeof(ranges::take_while_view<V, decltype(pred_l)>) == 3*ptr);
-static_assert(sizeof(ranges::drop_while_view<V, decltype(pred_l)>) == 4*ptr);
+static_assert(sizeof(ranges::drop_while_view<V, decltype(pred_l)>) == 3*ptr);
 static_assert(sizeof(ranges::transform_view<V, decltype(func_l)>) == 3*ptr);
 
-static_assert(sizeof(ranges::split_view<V, std::string_view>) == 5*ptr);
+static_assert(sizeof(ranges::split_view<V, std::string_view>) == 4*ptr);
 
 static_assert
- (sizeof(ranges::reverse_view<ranges::filter_view<V, decltype(pred_l)>>) == 5*ptr);
+ (sizeof(ranges::reverse_view<ranges::filter_view<V, decltype(pred_l)>>) == 4*ptr);

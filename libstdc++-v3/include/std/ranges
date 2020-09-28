@@ -1250,16 +1250,16 @@ namespace views
 	{ return __y.__equal(__x); }
       };
 
-      _Vp _M_base = _Vp();
       [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
+      _Vp _M_base = _Vp();
 
     public:
       filter_view() = default;
 
       constexpr
       filter_view(_Vp __base, _Pred __pred)
-	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
+	: _M_pred(std::move(__pred)), _M_base(std::move(__base))
       { }
 
       constexpr _Vp
@@ -1588,15 +1588,15 @@ namespace views
 	  friend _Sentinel<!_Const>;
 	};
 
-      _Vp _M_base = _Vp();
       [[no_unique_address]] __detail::__box<_Fp> _M_fun;
+      _Vp _M_base = _Vp();
 
     public:
       transform_view() = default;
 
       constexpr
       transform_view(_Vp __base, _Fp __fun)
-	: _M_base(std::move(__base)), _M_fun(std::move(__fun))
+	: _M_fun(std::move(__fun)), _M_base(std::move(__base))
       { }
 
       constexpr _Vp
@@ -1695,15 +1695,15 @@ namespace views
 	  friend _Sentinel<!_Const>;
 	};
 
-      _Vp _M_base = _Vp();
       range_difference_t<_Vp> _M_count = 0;
+      _Vp _M_base = _Vp();
 
     public:
       take_view() = default;
 
       constexpr
       take_view(_Vp base, range_difference_t<_Vp> __count)
-	: _M_base(std::move(base)), _M_count(std::move(__count))
+	: _M_count(std::move(__count)), _M_base(std::move(base))
       { }
 
       constexpr _Vp
@@ -1842,17 +1842,16 @@ namespace views
 	  friend _Sentinel<!_Const>;
 	};
 
-      _Vp _M_base = _Vp();
       [[no_unique_address]] __detail::__box<_Pred> _M_pred;
+      _Vp _M_base = _Vp();
 
     public:
       take_while_view() = default;
 
       constexpr
       take_while_view(_Vp base, _Pred __pred)
-	: _M_base(std::move(base)), _M_pred(std::move(__pred))
-      {
-      }
+	: _M_pred(std::move(__pred)), _M_base(std::move(base))
+      { }
 
       constexpr _Vp
       base() const& requires copy_constructible<_Vp>
@@ -1902,8 +1901,8 @@ namespace views
     class drop_view : public view_interface<drop_view<_Vp>>
     {
     private:
-      _Vp _M_base = _Vp();
       range_difference_t<_Vp> _M_count = 0;
+      _Vp _M_base = _Vp();
 
       // ranges::next(begin(base), count, end(base)) is O(1) if _Vp satisfies
       // both random_access_range and sized_range. Otherwise, cache its result.
@@ -1919,7 +1918,7 @@ namespace views
 
       constexpr
       drop_view(_Vp __base, range_difference_t<_Vp> __count)
-	: _M_base(std::move(__base)), _M_count(__count)
+	: _M_count(__count), _M_base(std::move(__base))
       { __glibcxx_assert(__count >= 0); }
 
       constexpr _Vp
@@ -2002,16 +2001,16 @@ namespace views
     class drop_while_view : public view_interface<drop_while_view<_Vp, _Pred>>
     {
     private:
-      _Vp _M_base = _Vp();
       [[no_unique_address]] __detail::__box<_Pred> _M_pred;
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
+      _Vp _M_base = _Vp();
 
     public:
       drop_while_view() = default;
 
       constexpr
       drop_while_view(_Vp __base, _Pred __pred)
-	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
+	: _M_pred(std::move(__pred)), _M_base(std::move(__base))
       { }
 
       constexpr _Vp
@@ -2300,12 +2299,11 @@ namespace views
 	  friend _Sentinel<!_Const>;
 	};
 
-      _Vp _M_base = _Vp();
-
       // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
       [[no_unique_address]]
 	__detail::__maybe_present_t<!is_reference_v<_InnerRange>,
 				    views::all_t<_InnerRange>> _M_inner;
+      _Vp _M_base = _Vp();
 
     public:
       join_view() = default;
@@ -2680,13 +2678,12 @@ namespace views
 	  { ranges::iter_swap(__x._M_i_current(), __y._M_i_current()); }
 	};
 
-      _Vp _M_base = _Vp();
       _Pattern _M_pattern = _Pattern();
-
       // XXX: _M_current is "present only if !forward_range<V>"
       [[no_unique_address]]
-	__detail::__maybe_present_t<!forward_range<_Vp>, iterator_t<_Vp>>
-	  _M_current;
+	__detail::__maybe_present_t<!forward_range<_Vp>,
+				    iterator_t<_Vp>> _M_current;
+      _Vp _M_base = _Vp();
 
 
     public:
@@ -2694,7 +2691,7 @@ namespace views
 
       constexpr
       split_view(_Vp __base, _Pattern __pattern)
-	: _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
+	: _M_pattern(std::move(__pattern)), _M_base(std::move(__base))
       { }
 
       template<input_range _Range>
@@ -2702,8 +2699,8 @@ namespace views
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
 	constexpr
 	split_view(_Range&& __r, range_value_t<_Range> __e)
-	  : _M_base(views::all(std::forward<_Range>(__r))),
-	    _M_pattern(std::move(__e))
+	  : _M_pattern(std::move(__e)),
+	    _M_base(views::all(std::forward<_Range>(__r)))
 	{ }
 
       constexpr _Vp
@@ -2892,14 +2889,14 @@ namespace views
     class reverse_view : public view_interface<reverse_view<_Vp>>
     {
     private:
-      _Vp _M_base = _Vp();
-
       static constexpr bool _S_needs_cached_begin
 	= !common_range<_Vp> && !random_access_range<_Vp>;
+
       [[no_unique_address]]
 	__detail::__maybe_present_t<_S_needs_cached_begin,
 				    __detail::_CachedPosition<_Vp>>
 				      _M_cached_begin;
+      _Vp _M_base = _Vp();
 
     public:
       reverse_view() = default;
