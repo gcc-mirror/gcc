@@ -1395,6 +1395,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       if (target == 0
 	  || target == op0
 	  || target == op1
+	  || reg_overlap_mentioned_p (target, op0)
+	  || reg_overlap_mentioned_p (target, op1)
 	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (int_mode);
 
@@ -1475,6 +1477,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  if (target == 0
 	      || target == op0
 	      || target == op1
+	      || reg_overlap_mentioned_p (target, op0)
+	      || reg_overlap_mentioned_p (target, op1)
 	      || !valid_multiword_target_p (target))
 	    target = gen_reg_rtx (int_mode);
 
@@ -1533,6 +1537,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  || target == op0
 	  || target == op1
 	  || !REG_P (target)
+	  || reg_overlap_mentioned_p (target, op0)
+	  || reg_overlap_mentioned_p (target, op1)
 	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (int_mode);
 
@@ -2670,6 +2676,7 @@ expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
 
   if (target == 0
       || target == op0
+      || reg_overlap_mentioned_p (target, op0)
       || (nwords > 1 && !valid_multiword_target_p (target)))
     target = gen_reg_rtx (mode);
 
@@ -2948,7 +2955,10 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       int i;
       rtx_insn *insns;
 
-      if (target == 0 || target == op0 || !valid_multiword_target_p (target))
+      if (target == 0
+	  || target == op0
+	  || reg_overlap_mentioned_p (target, op0)
+	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (int_mode);
 
       start_sequence ();
@@ -3469,6 +3479,8 @@ expand_copysign_bit (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
   if (target == 0
       || target == op0
       || target == op1
+      || reg_overlap_mentioned_p (target, op0)
+      || reg_overlap_mentioned_p (target, op1)
       || (nwords > 1 && !valid_multiword_target_p (target)))
     target = gen_reg_rtx (mode);
 

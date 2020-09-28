@@ -905,8 +905,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Fn, typename... _Args>
     constexpr _Bind_front_t<_Fn, _Args...>
     bind_front(_Fn&& __fn, _Args&&... __args)
-    noexcept(is_nothrow_constructible_v<int, _Bind_front_t<_Fn, _Args...>,
-					_Fn, _Args...>)
+    noexcept(is_nothrow_constructible_v<_Bind_front_t<_Fn, _Args...>,
+					int, _Fn, _Args...>)
     {
       return _Bind_front_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
 					  std::forward<_Args>(__args)...);

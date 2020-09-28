@@ -81,7 +81,7 @@ struct path::_Parser
     const size_t len = input.size();
 
     // look for root name or root directory
-    if (is_dir_sep(input[0]))
+    if (len && is_dir_sep(input[0]))
       {
 #if SLASHSLASH_IS_ROOTNAME
 	// look for root name, such as "//foo"

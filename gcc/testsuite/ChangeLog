@@ -1,3 +1,79 @@
+2020-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97073
+	* gcc.c-torture/execute/pr97073.c: New test.
+
+2020-09-27  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Backported from master:
+	2020-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* gfortran.dg/pr95614_1.f90: New test.
+	* gfortran.dg/pr95614_2.f90: New test.
+
+2020-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2020-06-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/95464
+	* gcc.target/i386/pr95464.c: New.
+
+2020-09-25  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	Backported from master:
+	2020-08-20  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	PR target/96683
+	* gcc.target/arm/mve/intrinsics/vst1q_f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_s8.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_u16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vst1q_u8.c: New test.
+
+2020-09-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-09-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97032
+	* gcc.target/i386/pr97032.c: New test.
+
+2020-09-22  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2020-09-22  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/diag-sdiv.c: New test.
+	* gcc.target/bpf/diag-smod.c: New test.
+	* gcc.target/bpf/xbpf-sdiv-1.c: New test.
+	* gcc.target/bpf/xbpf-smod-1.c: New test.
+
+2020-09-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-07-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93423
+	* gfortran.dg/pr93423.f90: New file.
+
+2020-09-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-09-16  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/96935
+	* gcc.dg/format/pr96935.c: New test.
+
+2020-09-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/xsave-avx-1.c: New test.
+
 2020-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

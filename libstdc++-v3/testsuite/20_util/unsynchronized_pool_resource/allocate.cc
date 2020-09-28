@@ -239,6 +239,25 @@ test06()
   }
 }
 
+void
+test08()
+{
+  std::pmr::pool_options opts;
+  opts.largest_required_pool_block = 64;
+
+  // PR libstdc++/94160
+  // max_blocks_per_chunk=1 causes pool resources to return null pointers
+  for (int i = 0; i < 8; ++i)
+  {
+    opts.max_blocks_per_chunk = i;
+    std::pmr::unsynchronized_pool_resource upr(opts);
+    auto* p = (int*)upr.allocate(4);
+    VERIFY( p != nullptr );
+    *p = i;
+    upr.deallocate(p, 4);
+  }
+}
+
 int
 main()
 {
@@ -248,4 +267,5 @@ main()
   test04();
   test05();
   test06();
+  test08();
 }

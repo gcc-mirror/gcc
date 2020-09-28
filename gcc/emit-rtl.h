@@ -275,6 +275,9 @@ struct GTY(()) rtl_data {
      pass_stack_ptr_mod has run.  */
   bool sp_is_unchanging;
 
+  /* True if the stack pointer is clobbered by asm statement.  */
+  bool sp_is_clobbered_by_asm;
+
   /* Nonzero if function being compiled doesn't contain any calls
      (ignoring the prologue and epilogue).  This is set prior to
      register allocation in IRA and is valid for the remaining

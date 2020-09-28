@@ -165,6 +165,16 @@
   "div<msuffix>\t%0,%2"
   [(set_attr "type" "<mtype>")])
 
+;; However, xBPF does provide a signed division operator, sdiv.
+
+(define_insn "div<AM:mode>3"
+  [(set (match_operand:AM 0 "register_operand" "=r,r")
+        (div:AM (match_operand:AM 1 "register_operand" " 0,0")
+                (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
+  "TARGET_XBPF"
+  "sdiv<msuffix>\t%0,%2"
+  [(set_attr "type" "<mtype>")])
+
 ;;; Modulus
 
 ;; Note that eBPF doesn't provide instructions for signed integer
@@ -176,6 +186,16 @@
                  (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
   "mod<msuffix>\t%0,%2"
+  [(set_attr "type" "<mtype>")])
+
+;; Again, xBPF provides a signed version, smod.
+
+(define_insn "mod<AM:mode>3"
+  [(set (match_operand:AM 0 "register_operand" "=r,r")
+        (mod:AM (match_operand:AM 1 "register_operand" " 0,0")
+                (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
+  "TARGET_XBPF"
+  "smod<msuffix>\t%0,%2"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical AND
