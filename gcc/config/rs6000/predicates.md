@@ -297,6 +297,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 1)")))
 
+;; Match op = -1, op = 0, or op = 1.
+(define_predicate "const_m1_to_1_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -1, 1)")))
+
 ;; Match op = 0..3.
 (define_predicate "const_0_to_3_operand"
   (and (match_code "const_int")
@@ -846,6 +851,15 @@
 		&& (GET_CODE (XEXP (op, 0)) == PRE_INC
 		    || GET_CODE (XEXP (op, 0)) == PRE_DEC
 		    || GET_CODE (XEXP (op, 0)) == PRE_MODIFY))"))
+
+;; Anything that matches memory_operand but does not update the address.
+(define_predicate "non_update_memory_operand"
+  (match_code "mem")
+{
+  if (update_address_mem (op, mode))
+    return 0;
+  return memory_operand (op, mode);
+})
 
 ;; Return 1 if the operand is a MEM with an indexed-form address.
 (define_special_predicate "indexed_address_mem"
