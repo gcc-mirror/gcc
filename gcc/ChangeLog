@@ -1,3 +1,27 @@
+2020-09-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_summary::useful_p): Fix testing of stores.
+
+2020-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97073
+	* optabs.c (expand_binop, expand_absneg_bit, expand_unop,
+	expand_copysign_bit): Check reg_overlap_mentioned_p between target
+	and operand(s) and if it returns true, force a pseudo as target.
+
+2020-09-27  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gimple-isel.cc (gimple_expand_vec_set_expr): New function.
+	(gimple_expand_vec_cond_exprs): Rename to ...
+	(gimple_expand_vec_exprs): ... this and call
+	gimple_expand_vec_set_expr.
+	* internal-fn.c (vec_set_direct): New define.
+	(expand_vec_set_optab_fn): New function.
+	(direct_vec_set_optab_supported_p): New define.
+	* internal-fn.def (VEC_SET): New DEF_INTERNAL_OPTAB_FN.
+	* optabs.c (can_vec_set_var_idx_p): New function.
+	* optabs.h (can_vec_set_var_idx_p): New declaration.
+
 2020-09-26  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.c (analyze_stmt): Do not skip clobbers in early pass.

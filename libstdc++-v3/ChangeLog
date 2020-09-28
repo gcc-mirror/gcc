@@ -1,3 +1,7 @@
+2020-09-27  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/os/aix/t-aix: Use $(AR) without -X32_64.
+
 2020-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/96817
