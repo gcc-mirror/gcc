@@ -131,10 +131,10 @@ TESTS = $(am__append_4) $(am__append_7) $(am__append_9) \
 @NATIVE_TRUE@	test_unknown unittest unittest_alloc btest
 @NATIVE_TRUE@am__append_3 = allocfail
 @NATIVE_TRUE@am__append_4 = allocfail.sh
-@HAVE_DSYMUTIL_TRUE@@NATIVE_TRUE@am__append_5 = allocfail.dSYM \
-@HAVE_DSYMUTIL_TRUE@@NATIVE_TRUE@	btest.dSYM btest_alloc.dSYM \
-@HAVE_DSYMUTIL_TRUE@@NATIVE_TRUE@	stest.dSYM stest_alloc.dSYM \
-@HAVE_DSYMUTIL_TRUE@@NATIVE_TRUE@	edtest.dSYM edtest_alloc.dSYM
+@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_5 = allocfail.dSYM \
+@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	btest.dSYM btest_alloc.dSYM \
+@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	stest.dSYM stest_alloc.dSYM \
+@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	edtest.dSYM edtest_alloc.dSYM
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_6 = b2test
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = b2test_buildid
 @HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_8 = b3test
@@ -148,15 +148,17 @@ TESTS = $(am__append_4) $(am__append_7) $(am__append_9) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__append_16 = ztest ztest_alloc
 @NATIVE_TRUE@am__append_17 = edtest edtest_alloc
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_18 = ttest ttest_alloc
-@HAVE_DSYMUTIL_TRUE@@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_19 = ttest.dSYM \
-@HAVE_DSYMUTIL_TRUE@@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc.dSYM
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_19 =  \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	ttest.dSYM \
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	ttest_alloc.dSYM
 @HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_20 = btest_gnudebuglink
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_21 = ctestg ctesta \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc \
 @HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__append_22 = dwarf5 dwarf5_alloc
-@HAVE_DSYMUTIL_TRUE@@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__append_23 = dwarf5.dSYM \
-@HAVE_DSYMUTIL_TRUE@@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc.dSYM
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_23 =  \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	dwarf5.dSYM \
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	dwarf5_alloc.dSYM
 @NATIVE_TRUE@am__append_24 = mtest
 @HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@am__append_25 = mtest_minidebug
 @HAVE_ELF_TRUE@@HAVE_LIBLZMA_TRUE@am__append_26 = -llzma
@@ -2392,8 +2394,8 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-@HAVE_DSYMUTIL_TRUE@%.dSYM: %
-@HAVE_DSYMUTIL_TRUE@	$(DSYMUTIL) $<
+@USE_DSYMUTIL_TRUE@%.dSYM: %
+@USE_DSYMUTIL_TRUE@	$(DSYMUTIL) $<
 
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@elf_for_test.c: elf.c
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	SEARCH='^#define SYSTEM_BUILD_ID_DIR.*$$'; \
