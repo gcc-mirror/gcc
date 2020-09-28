@@ -511,7 +511,7 @@ namespace ranges
       };
 
       _Winc _M_value = _Winc();
-      _Bound _M_bound = _Bound();
+      [[no_unique_address]] _Bound _M_bound = _Bound();
 
     public:
       iota_view() = default;
