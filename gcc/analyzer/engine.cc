@@ -1277,6 +1277,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
 			   region_model_context *ctxt) const
 {
   tree buf_ptr = gimple_call_arg (longjmp_call, 0);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (buf_ptr)));
 
   region_model *new_region_model = new_state->m_region_model;
   const svalue *buf_ptr_sval = new_region_model->get_rvalue (buf_ptr, ctxt);
