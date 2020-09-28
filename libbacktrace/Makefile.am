@@ -484,6 +484,10 @@ mtest_LDADD = libbacktrace.la
 
 BUILDTESTS += mtest
 
+if USE_DSYMUTIL
+check_DATA += mtest.dSYM
+endif USE_DSYMUTIL
+
 if HAVE_MINIDEBUG
 
 TESTS += mtest_minidebug

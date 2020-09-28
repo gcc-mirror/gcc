@@ -124,7 +124,7 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 	$(am__EXEEXT_14)
 TESTS = $(am__append_4) $(am__append_7) $(am__append_9) \
 	$(am__append_12) $(am__append_13) $(am__append_20) \
-	$(am__append_25) $(am__EXEEXT_14)
+	$(am__append_26) $(am__EXEEXT_14)
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_1 = libbacktrace_elf_for_test.la
 @NATIVE_TRUE@am__append_2 = test_elf_32 test_elf_64 test_macho \
 @NATIVE_TRUE@	test_xcoff_32 test_xcoff_64 test_pecoff \
@@ -160,10 +160,11 @@ TESTS = $(am__append_4) $(am__append_7) $(am__append_9) \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	dwarf5.dSYM \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	dwarf5_alloc.dSYM
 @NATIVE_TRUE@am__append_24 = mtest
-@HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@am__append_25 = mtest_minidebug
-@HAVE_ELF_TRUE@@HAVE_LIBLZMA_TRUE@am__append_26 = -llzma
+@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_25 = mtest.dSYM
+@HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@am__append_26 = mtest_minidebug
 @HAVE_ELF_TRUE@@HAVE_LIBLZMA_TRUE@am__append_27 = -llzma
-@HAVE_ELF_TRUE@am__append_28 = xztest xztest_alloc
+@HAVE_ELF_TRUE@@HAVE_LIBLZMA_TRUE@am__append_28 = -llzma
+@HAVE_ELF_TRUE@am__append_29 = xztest xztest_alloc
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/cet.m4 \
@@ -991,10 +992,11 @@ libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 BUILDTESTS = $(am__append_2) $(am__append_10) $(am__append_11) \
 	$(am__append_16) $(am__append_17) $(am__append_18) \
 	$(am__append_21) $(am__append_22) $(am__append_24) \
-	$(am__append_28)
+	$(am__append_29)
 
 # Add a file to this variable if you want it to be built for testing.
-check_DATA = $(am__append_5) $(am__append_19) $(am__append_23)
+check_DATA = $(am__append_5) $(am__append_19) $(am__append_23) \
+	$(am__append_25)
 
 # Flags to use when compiling test programs.
 libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
@@ -1121,12 +1123,12 @@ libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
 @NATIVE_TRUE@mtest_LDADD = libbacktrace.la
 @HAVE_ELF_TRUE@xztest_SOURCES = xztest.c testlib.c
 @HAVE_ELF_TRUE@xztest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -DSRCDIR=\"$(srcdir)\"
-@HAVE_ELF_TRUE@xztest_LDADD = libbacktrace.la $(am__append_26) \
+@HAVE_ELF_TRUE@xztest_LDADD = libbacktrace.la $(am__append_27) \
 @HAVE_ELF_TRUE@	$(CLOCK_GETTIME_LINK)
 @HAVE_ELF_TRUE@xztest_alloc_SOURCES = $(xztest_SOURCES)
 @HAVE_ELF_TRUE@xztest_alloc_CFLAGS = $(xztest_CFLAGS)
 @HAVE_ELF_TRUE@xztest_alloc_LDADD = libbacktrace_alloc.la \
-@HAVE_ELF_TRUE@	$(am__append_27) $(CLOCK_GETTIME_LINK)
+@HAVE_ELF_TRUE@	$(am__append_28) $(CLOCK_GETTIME_LINK)
 CLEANFILES = \
 	$(TESTS) *.debug elf_for_test.c edtest2_build.c gen_edtest2_build \
 	*.dsyms *.fsyms *.keepsyms *.dbg *.mdbg *.mdbg.xz *.strip
