@@ -4437,7 +4437,17 @@ package body Sem_Prag is
          --  Subprogram declaration
 
          elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
-            null;
+
+            --  Pragmas Global and Depends are forbidden on null procedures
+            --  (SPARK RM 6.1.2(2)).
+
+            if Nkind (Specification (Subp_Decl)) = N_Procedure_Specification
+              and then Null_Present (Specification (Subp_Decl))
+            then
+               Error_Msg_N (Fix_Error
+                 ("pragma % cannot apply to null procedure"), N);
+               return;
+            end if;
 
          --  Task type
 
