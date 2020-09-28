@@ -3072,6 +3072,10 @@ package body Sem_Aggr is
                   Error_Msg_N
                     ("others not allowed in delta aggregate", Choice);
 
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
+
                else
                   Analyze_And_Resolve (Choice, Index_Type);
                end if;
@@ -3109,28 +3113,31 @@ package body Sem_Aggr is
          else
             Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
+               Analyze (Choice);
+
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
                     ("others not allowed in delta aggregate", Choice);
 
-               else
-                  Analyze (Choice);
+               elsif Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+               then
+                  --  Choice covers a range of values
 
-                  if Is_Entity_Name (Choice)
-                    and then Is_Type (Entity (Choice))
+                  if Base_Type (Entity (Choice)) /=
+                     Base_Type (Index_Type)
                   then
-                     --  Choice covers a range of values
-
-                     if Base_Type (Entity (Choice)) /=
-                        Base_Type (Index_Type)
-                     then
-                        Error_Msg_NE
-                          ("choice does not match index type of &",
-                           Choice, Typ);
-                     end if;
-                  else
-                     Resolve (Choice, Index_Type);
+                     Error_Msg_NE
+                       ("choice does not match index type of &",
+                        Choice, Typ);
                   end if;
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
+
+               else
+                  Resolve (Choice, Index_Type);
                end if;
 
                Next (Choice);
