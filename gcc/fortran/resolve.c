@@ -936,16 +936,9 @@ static void
 resolve_common_vars (gfc_common_head *common_block, bool named_common)
 {
   gfc_symbol *csym = common_block->head;
-  gfc_gsymbol *gsym;
 
   for (; csym; csym = csym->common_next)
     {
-      gsym = gfc_find_gsymbol (gfc_gsym_root, csym->name);
-      if (gsym && gsym->type != GSYM_UNKNOWN && gsym->type != GSYM_COMMON)
-	gfc_error_now ("Global entity %qs at %L cannot appear in a "
-			"COMMON block at %L", gsym->name,
-			&gsym->where, &csym->common_block->where);
-
       /* gfc_add_in_common may have been called before, but the reported errors
 	 have been ignored to continue parsing.
 	 We do the checks again here.  */
