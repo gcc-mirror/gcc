@@ -340,7 +340,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
          elsif Arg (J) = '.' then
             Index := J - 1;
             exit;
-         else
+         elsif Arg (J) /= '_' then
             Pow := Pow + 1;
          end if;
       end loop;
