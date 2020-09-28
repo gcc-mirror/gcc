@@ -1,6 +1,6 @@
 /* { dg-additional-options "-fopenmp-simd -fno-tree-vectorize" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
-/* { dg-final { scan-tree-dump "vectorized \(\[4-9]\|1\[0-2]\) loops" "vect" { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1\[1-2] loops" "vect" { target i?86-*-* x86_64-*-* } } } */
 
 #include "tree-vect.h"
 

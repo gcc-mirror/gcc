@@ -1341,17 +1341,16 @@ check_redeclaration_no_default_args (tree decl)
 
 static void
 check_no_redeclaration_friend_default_args (tree olddecl, tree newdecl,
-					    bool olddecl_hidden_friend_p)
+					    bool olddecl_hidden_p)
 {
-  if (!olddecl_hidden_friend_p && !DECL_FRIEND_P (newdecl))
+  if (!olddecl_hidden_p && !DECL_FRIEND_P (newdecl))
     return;
 
-  tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
-  tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
-
-  for (; t1 && t1 != void_list_node;
+  for (tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl),
+	 t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
+       t1 && t1 != void_list_node;
        t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-    if ((olddecl_hidden_friend_p && TREE_PURPOSE (t1))
+    if ((olddecl_hidden_p && TREE_PURPOSE (t1))
 	|| (DECL_FRIEND_P (newdecl) && TREE_PURPOSE (t2)))
       {
 	auto_diagnostic_group d;
@@ -1435,10 +1434,14 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
    If NEWDECL is not a redeclaration of OLDDECL, NULL_TREE is
    returned.
 
-   NEWDECL_IS_FRIEND is true if NEWDECL was declared as a friend.  */
+   HIDING is true if the new decl is being hidden.  WAS_HIDDEN is true
+   if the old decl was hidden.
+
+   Hidden decls can be anticipated builtins, injected friends, or
+   (coming soon) injected from a local-extern decl.   */
 
 tree
-duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
+duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 {
   unsigned olddecl_uid = DECL_UID (olddecl);
   int olddecl_friend = 0, types_match = 0, hidden_friend = 0;
@@ -1510,7 +1513,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	{
 	  /* Avoid warnings redeclaring built-ins which have not been
 	     explicitly declared.  */
-	  if (DECL_ANTICIPATED (olddecl))
+	  if (was_hidden)
 	    {
 	      tree t1, t2;
 
@@ -1550,7 +1553,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 			    types_match = decls_match (newdecl, olddecl);
 			    if (types_match)
 			      return duplicate_decls (newdecl, olddecl,
-						      newdecl_is_friend);
+						      hiding, was_hidden);
 			    TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
 			  }
 			goto next_arg;
@@ -1985,7 +1988,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		 declaration of the function or function template in the
 		 translation unit."  */
 	      check_no_redeclaration_friend_default_args
-		(olddecl, newdecl, DECL_HIDDEN_FRIEND_P (olddecl));
+		(olddecl, newdecl, was_hidden);
 	    }
 	}
     }
@@ -2075,8 +2078,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  && !(new_defines_function && DECL_INITIAL (olddecl) == NULL_TREE)
 	  /* Don't warn about extern decl followed by definition.  */
 	  && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl))
-	  /* Don't warn about friends, let add_friend take care of it.  */
-	  && ! (newdecl_is_friend || DECL_FRIEND_P (olddecl))
+	  /* Don't warn if at least one is/was hidden.  */
+	  && !(hiding || was_hidden)
 	  /* Don't warn about declaration followed by specialization.  */
 	  && (! DECL_TEMPLATE_SPECIALIZATION (newdecl)
 	      || DECL_TEMPLATE_SPECIALIZATION (olddecl)))
@@ -2134,11 +2137,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   if (DECL_DECLARES_FUNCTION_P (olddecl))
     {
-      olddecl_friend = DECL_FRIEND_P (olddecl);
-      olddecl_hidden_friend = DECL_HIDDEN_FRIEND_P (olddecl);
-      hidden_friend = (DECL_ANTICIPATED (olddecl)
-		       && DECL_HIDDEN_FRIEND_P (olddecl)
-		       && newdecl_is_friend);
+      olddecl_friend = DECL_FRIEND_P (STRIP_TEMPLATE (olddecl));
+      olddecl_hidden_friend = olddecl_friend && was_hidden;
+      hidden_friend = olddecl_hidden_friend && hiding;
       if (!hidden_friend)
 	{
 	  DECL_ANTICIPATED (olddecl) = 0;
@@ -4714,16 +4715,23 @@ cxx_builtin_function (tree decl)
 
   tree id = DECL_NAME (decl);
   const char *name = IDENTIFIER_POINTER (id);
+  bool hiding = false;
   if (name[0] != '_' || name[1] != '_')
-    /* In the user's namespace, it must be declared before use.  */
-    DECL_ANTICIPATED (decl) = 1;
+    {
+      /* In the user's namespace, it must be declared before use.  */
+      DECL_ANTICIPATED (decl) = 1;
+      hiding = true;
+    }
   else if (IDENTIFIER_LENGTH (id) > strlen ("___chk")
 	   && 0 != strncmp (name + 2, "builtin_", strlen ("builtin_"))
 	   && 0 == memcmp (name + IDENTIFIER_LENGTH (id) - strlen ("_chk"),
 			   "_chk", strlen ("_chk") + 1))
-    /* Treat __*_chk fortification functions as anticipated as well,
-       unless they are __builtin_*_chk.  */
-    DECL_ANTICIPATED (decl) = 1;
+    {
+      /* Treat __*_chk fortification functions as anticipated as well,
+	 unless they are __builtin_*_chk.  */
+      DECL_ANTICIPATED (decl) = 1;
+      hiding = true;
+    }
 
   /* All builtins that don't begin with an '_' should additionally
      go in the 'std' namespace.  */
@@ -4733,12 +4741,12 @@ cxx_builtin_function (tree decl)
 
       push_nested_namespace (std_node);
       DECL_CONTEXT (std_decl) = FROB_CONTEXT (std_node);
-      pushdecl (std_decl);
+      pushdecl (std_decl, hiding);
       pop_nested_namespace (std_node);
     }
 
   DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
-  decl = pushdecl (decl);
+  decl = pushdecl (decl, hiding);
 
   return decl;
 }
@@ -9925,7 +9933,7 @@ grokfndecl (tree ctype,
 	  /* Attempt to merge the declarations.  This can fail, in
 	     the case of some invalid specialization declarations.  */
 	  pushed_scope = push_scope (ctype);
-	  ok = duplicate_decls (decl, old_decl, friendp);
+	  ok = duplicate_decls (decl, old_decl);
 	  if (pushed_scope)
 	    pop_scope (pushed_scope);
 	  if (!ok)

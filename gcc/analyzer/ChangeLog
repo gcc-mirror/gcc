@@ -1,3 +1,13 @@
+2020-09-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96646
+	PR analyzer/96841
+	* region-model.cc (region_model::get_representative_path_var):
+	When handling offset_region, wrap the MEM_REF's first argument in
+	an ADDR_EXPR of pointer type, rather than simply using the tree
+	for the parent region.  Require the MEM_REF's second argument to
+	be an integer constant.
+
 2020-09-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (struct rejected_constraint): New decl.

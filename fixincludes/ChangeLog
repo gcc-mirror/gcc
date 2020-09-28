@@ -1,3 +1,10 @@
+2020-09-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/97044
+	* inclhack.def (aix_inttypes): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/inttypes.h: New file.
+
 2020-09-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (aix_externcpp1): Add more context to select.

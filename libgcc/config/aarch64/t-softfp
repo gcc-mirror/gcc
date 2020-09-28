@@ -8,3 +8,4 @@ softfp_extras := fixhfti fixunshfti floattihf floatuntihf
 TARGET_LIBGCC2_CFLAGS += -Wno-missing-prototypes
 
 LIB2ADD += $(srcdir)/config/aarch64/sfp-exceptions.c
+SHLIB_MAPFILES += $(srcdir)/config/aarch64/libgcc-softfp.ver

@@ -588,6 +588,13 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__ENQCMD__");
   if (isa_flag2 & OPTION_MASK_ISA2_TSXLDTRK)
     def_or_undef (parse_in, "__TSXLDTRK__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_TILE)
+    def_or_undef (parse_in, "__AMX_TILE__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_INT8)
+    def_or_undef (parse_in, "__AMX_INT8__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_BF16)
+    def_or_undef (parse_in, "__AMX_BF16__");
+
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

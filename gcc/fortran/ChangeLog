@@ -1,3 +1,20 @@
+2020-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* decl.c (gfc_get_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* decl.c (gfc_bind_idents): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.c : Rename match_common_name to gfc_match_common_name.
+	* match.c (gfc_match_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.h : Rename match_common_name to gfc_match_common_name.
+	* resolve.c (resolve_common_vars): Check each symbol in a
+	common block has a global symbol.  If there is a global symbol
+	issue an error if the symbol type is known as is not a common
+	block name.
+
 2020-09-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/96495

@@ -8956,6 +8956,39 @@ proc check_effective_target_avx512vaes { } {
     } "-mvaes" ]
 }
 
+# Return 1 if amx-tile instructions can be compiled.
+proc check_effective_target_amx_tile { } {
+    return [check_no_compiler_messages amx_tile object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tilerelease" ::);
+	}
+    } "-mamx-tile" ]
+}
+
+# Return 1 if amx-int8 instructions can be compiled.
+proc check_effective_target_amx_int8 { } {
+    return [check_no_compiler_messages amx_int8 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbssd\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-int8" ]
+}
+
+# Return 1 if amx-bf16 instructions can be compiled.
+proc check_effective_target_amx_bf16 { } {
+    return [check_no_compiler_messages amx_bf16 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbf16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-bf16" ]
+}
+
 # Return 1 if vpclmulqdq instructions can be compiled.
 proc check_effective_target_vpclmulqdq { } {
     return [check_no_compiler_messages vpclmulqdq object {

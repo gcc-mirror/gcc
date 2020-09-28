@@ -598,8 +598,8 @@ do_friend (tree ctype, tree declarator, tree decl,
       if (! DECL_USE_TEMPLATE (decl))
 	{
 	  /* We must check whether the decl refers to template
-	     arguments before push_template_decl_real adds a
-	     reference to the containing template class.  */
+	     arguments before push_template_decl adds a reference to
+	     the containing template class.  */
 	  int warn = (warn_nontemplate_friend
 		      && ! funcdef_flag && ! is_friend_template
 		      && current_template_parms
@@ -614,7 +614,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	    decl = push_template_decl (decl, /*is_friend=*/true);
 	  else if (current_function_decl)
 	    /* pushdecl will check there's a local decl already.  */
-	    decl = pushdecl (decl, /*is_friend=*/true);
+	    decl = pushdecl (decl, /*hiding=*/true);
 	  else
 	    {
 	      /* We can't use pushdecl, as we might be in a template
@@ -624,7 +624,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	      tree ns = decl_namespace_context (decl);
 
 	      push_nested_namespace (ns);
-	      decl = pushdecl_namespace_level (decl, /*is_friend=*/true);
+	      decl = pushdecl_namespace_level (decl, /*hiding=*/true);
 	      pop_nested_namespace (ns);
 	    }
 

@@ -184,7 +184,8 @@ static int strip_flag;			/* true if -s */
 static int export_flag;                 /* true if -bE */
 static int aix64_flag;			/* true if -b64 */
 static int aixrtl_flag;			/* true if -brtl */
-static int aixlazy_flag;               /* true if -blazy */
+static int aixlazy_flag;		/* true if -blazy */
+static int visibility_flag;		/* true if -fvisibility */
 #endif
 
 enum lto_mode_d {
@@ -1239,6 +1240,11 @@ main (int argc, char **argv)
 	      *c_ptr++ = xstrdup (q);
 	    }
 	}
+#ifdef COLLECT_EXPORT_LIST
+      /* Detect any invocation with -fvisibility.  */
+      if (strncmp (q, "-fvisibility", 12) == 0)
+	visibility_flag = 1;
+#endif
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
   *c_ptr++ = "-fno-profile-arcs";
@@ -2131,6 +2137,11 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
       fprintf (stream, "\t}\n");
     }
 
+#ifdef COLLECT_EXPORT_LIST
+  /* Set visibility of initializers to default.  */
+  if (visibility_flag)
+    fprintf (stream, "#pragma GCC visibility push(default)\n");
+#endif
   fprintf (stream, "void %s() {\n", initname);
   if (constructors.number > 0 || frames)
     {
@@ -2163,11 +2174,24 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 	       destructors.number + frames);
     }
   fprintf (stream, "}\n");
+#ifdef COLLECT_EXPORT_LIST
+  if (visibility_flag)
+    fprintf (stream, "#pragma GCC visibility pop\n");
+#endif
 
   if (shared_obj)
     {
+#ifdef COLLECT_EXPORT_LIST
+      /* Set visibility of initializers to default.  */
+      if (visibility_flag)
+	fprintf (stream, "#pragma GCC visibility push(default)\n");
+#endif
       COLLECT_SHARED_INIT_FUNC (stream, initname);
       COLLECT_SHARED_FINI_FUNC (stream, fininame);
+#ifdef COLLECT_EXPORT_LIST
+      if (visibility_flag)
+	fprintf (stream, "#pragma GCC visibility pop\n");
+#endif
     }
 }
 

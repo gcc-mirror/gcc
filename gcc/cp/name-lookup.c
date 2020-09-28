@@ -2232,7 +2232,7 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 	   && DECL_EXTERNAL (target_decl) && DECL_EXTERNAL (target_bval)
 	   && !DECL_CLASS_SCOPE_P (target_decl))
     {
-      duplicate_decls (decl, binding->value, /*newdecl_is_friend=*/false);
+      duplicate_decls (decl, binding->value);
       ok = false;
     }
   else if (TREE_CODE (decl) == NAMESPACE_DECL
@@ -2354,7 +2354,7 @@ matching_fn_p (tree one, tree two)
 
 static tree
 update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
-		tree old, tree decl, bool is_friend)
+		tree old, tree decl, bool hiding = false)
 {
   tree to_val = decl;
   tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
@@ -2410,13 +2410,14 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
 	      if (iter.using_p () && matching_fn_p (fn, decl))
 		{
+		  gcc_checking_assert (!iter.hidden_p ());
 		  /* If a function declaration in namespace scope or
 		     block scope has the same name and the same
 		     parameter-type- list (8.3.5) as a function
 		     introduced by a using-declaration, and the
 		     declarations do not declare the same function,
 		     the program is ill-formed.  [namespace.udecl]/14 */
-		  if (tree match = duplicate_decls (decl, fn, is_friend))
+		  if (tree match = duplicate_decls (decl, fn, hiding))
 		    return match;
 		  else
 		    /* FIXME: To preserve existing error behavior, we
@@ -2468,7 +2469,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	 variable, so long as they are `extern' declarations.  */
       if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
 	goto conflict;
-      else if (tree match = duplicate_decls (decl, old, false))
+      else if (tree match = duplicate_decls (decl, old))
 	return match;
       else
 	goto conflict;
@@ -2989,12 +2990,12 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
    says.  */
 
 static tree
-do_pushdecl (tree decl, bool is_friend)
+do_pushdecl (tree decl, bool hiding)
 {
   if (decl == error_mark_node)
     return error_mark_node;
 
-  if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl && !is_friend)
+  if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl && !hiding)
     set_decl_context_in_fn (current_function_decl, decl);
 
   /* The binding level we will be pushing into.  During local class
@@ -3013,6 +3014,14 @@ do_pushdecl (tree decl, bool is_friend)
       tree ns = NULL_TREE; /* Searched namespace.  */
       tree *slot = NULL; /* Binding slot in namespace.  */
       tree old = NULL_TREE;
+
+      if (!hiding)
+	/* We should never unknownly push an anticipated decl.  */
+	gcc_checking_assert (!((TREE_CODE (decl) == TYPE_DECL
+				|| TREE_CODE (decl) == FUNCTION_DECL
+				|| TREE_CODE (decl) == TEMPLATE_DECL)
+			       && DECL_LANG_SPECIFIC (decl)
+			       && DECL_ANTICIPATED (decl)));
 
       if (level->kind == sk_namespace)
 	{
@@ -3044,7 +3053,8 @@ do_pushdecl (tree decl, bool is_friend)
       for (ovl_iterator iter (old); iter; ++iter)
 	if (iter.using_p ())
 	  ; /* Ignore using decls here.  */
-	else if (tree match = duplicate_decls (decl, *iter, is_friend))
+	else if (tree match
+		 = duplicate_decls (decl, *iter, hiding, iter.hidden_p ()))
 	  {
 	    if (match == error_mark_node)
 	      ;
@@ -3052,7 +3062,7 @@ do_pushdecl (tree decl, bool is_friend)
 	      /* The IDENTIFIER will have the type referring to the
 		 now-smashed TYPE_DECL, because ...?  Reset it.  */
 	      SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
-	    else if (iter.hidden_p () && !DECL_HIDDEN_P (match))
+	    else if (iter.hidden_p () && !hiding)
 	      {
 		/* Unhiding a previously hidden decl.  */
 		tree head = iter.reveal_node (old);
@@ -3088,7 +3098,7 @@ do_pushdecl (tree decl, bool is_friend)
 	{
 	  check_default_args (decl);
 
-	  if (is_friend)
+	  if (hiding)
 	    {
 	      if (level->kind != sk_namespace)
 		{
@@ -3126,7 +3136,7 @@ do_pushdecl (tree decl, bool is_friend)
 	  old = MAYBE_STAT_DECL (*slot);
 	}
 
-      old = update_binding (level, binding, slot, old, decl, is_friend);
+      old = update_binding (level, binding, slot, old, decl, hiding);
 
       if (old != decl)
 	/* An existing decl matched, use it.  */
@@ -3170,10 +3180,10 @@ do_pushdecl (tree decl, bool is_friend)
    we push it.  */
 
 tree
-pushdecl (tree x, bool is_friend)
+pushdecl (tree x, bool hiding)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = do_pushdecl (x, is_friend);
+  tree ret = do_pushdecl (x, hiding);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -3780,7 +3790,7 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
     {
       tree *slot = find_namespace_slot (current_namespace, id, true);
       gcc_assert (decl);
-      update_binding (b, NULL, slot, MAYBE_STAT_DECL (*slot), decl, false);
+      update_binding (b, NULL, slot, MAYBE_STAT_DECL (*slot), decl);
 
       /* Store marker instead of real type.  */
       type = global_type_node;
@@ -3836,12 +3846,13 @@ constructor_name_p (tree name, tree type)
    closer binding level than LEVEL.  */
 
 static tree
-do_pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
+do_pushdecl_with_scope (tree x, cp_binding_level *level, bool hiding = false)
 {
   cp_binding_level *b;
 
   if (level->kind == sk_class)
     {
+      gcc_checking_assert (!hiding);
       b = class_binding_level;
       class_binding_level = level;
       pushdecl_class_level (x);
@@ -3854,7 +3865,7 @@ do_pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
 	current_function_decl = NULL_TREE;
       b = current_binding_level;
       current_binding_level = level;
-      x = pushdecl (x, is_friend);
+      x = pushdecl (x, hiding);
       current_binding_level = b;
       current_function_decl = function_decl;
     }
@@ -3874,7 +3885,7 @@ pushdecl_outermost_localscope (tree x)
        n->kind != sk_function_parms; n = b->level_chain)
     b = n;
 
-  tree ret = b ? do_pushdecl_with_scope (x, b, false) : error_mark_node;
+  tree ret = b ? do_pushdecl_with_scope (x, b) : error_mark_node;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 
   return ret;
@@ -5072,14 +5083,13 @@ do_namespace_alias (tree alias, tree name_space)
    if appropriate.  */
 
 tree
-pushdecl_namespace_level (tree x, bool is_friend)
+pushdecl_namespace_level (tree x, bool hiding)
 {
   cp_binding_level *b = current_binding_level;
   tree t;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  t = do_pushdecl_with_scope
-    (x, NAMESPACE_LEVEL (current_namespace), is_friend);
+  t = do_pushdecl_with_scope (x, NAMESPACE_LEVEL (current_namespace), hiding);
 
   /* Now, the type_shadowed stack may screw us.  Munge it so it does
      what we want.  */
@@ -7282,11 +7292,11 @@ finish_using_directive (tree target, tree attribs)
 /* Pushes X into the global namespace.  */
 
 tree
-pushdecl_top_level (tree x, bool is_friend)
+pushdecl_top_level (tree x)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   do_push_to_top_level ();
-  x = pushdecl_namespace_level (x, is_friend);
+  x = pushdecl_namespace_level (x);
   do_pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return x;

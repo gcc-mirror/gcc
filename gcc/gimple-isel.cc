@@ -35,6 +35,74 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "bitmap.h"
 #include "tree-ssa-dce.h"
+#include "memmodel.h"
+#include "optabs.h"
+
+/* Expand all ARRAY_REF(VIEW_CONVERT_EXPR) gimple assignments into calls to
+   internal function based on vector type of selected expansion.
+   i.e.:
+     VIEW_CONVERT_EXPR<int[4]>(u)[_1] =  = i_4(D);
+   =>
+     _7 = u;
+     _8 = .VEC_SET (_7, i_4(D), _1);
+     u = _8;  */
+
+static gimple *
+gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
+{
+  enum tree_code code;
+  gcall *new_stmt = NULL;
+  gassign *ass_stmt = NULL;
+
+  /* Only consider code == GIMPLE_ASSIGN.  */
+  gassign *stmt = dyn_cast<gassign *> (gsi_stmt (*gsi));
+  if (!stmt)
+    return NULL;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  code = TREE_CODE (lhs);
+  if (code != ARRAY_REF)
+    return NULL;
+
+  tree val = gimple_assign_rhs1 (stmt);
+  tree op0 = TREE_OPERAND (lhs, 0);
+  if (TREE_CODE (op0) == VIEW_CONVERT_EXPR && DECL_P (TREE_OPERAND (op0, 0))
+      && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
+      && TYPE_MODE (TREE_TYPE (lhs))
+	   == TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 0)))))
+    {
+      tree pos = TREE_OPERAND (lhs, 1);
+      tree view_op0 = TREE_OPERAND (op0, 0);
+      machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
+      if (auto_var_in_fn_p (view_op0, cfun->decl)
+	  && !TREE_ADDRESSABLE (view_op0) && can_vec_set_var_idx_p (outermode))
+	{
+	  location_t loc = gimple_location (stmt);
+	  tree var_src = make_ssa_name (TREE_TYPE (view_op0));
+	  tree var_dst = make_ssa_name (TREE_TYPE (view_op0));
+
+	  ass_stmt = gimple_build_assign (var_src, view_op0);
+	  gimple_set_vuse (ass_stmt, gimple_vuse (stmt));
+	  gimple_set_location (ass_stmt, loc);
+	  gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
+
+	  new_stmt
+	    = gimple_build_call_internal (IFN_VEC_SET, 3, var_src, val, pos);
+	  gimple_call_set_lhs (new_stmt, var_dst);
+	  gimple_set_location (new_stmt, loc);
+	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+
+	  ass_stmt = gimple_build_assign (view_op0, var_dst);
+	  gimple_set_location (ass_stmt, loc);
+	  gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
+
+	  gimple_move_vops (ass_stmt, stmt);
+	  gsi_remove (gsi, true);
+	}
+    }
+
+  return ass_stmt;
+}
 
 /* Expand all VEC_COND_EXPR gimple assignments into calls to internal
    function based on type of selected expansion.  */
@@ -165,7 +233,7 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
    VEC_COND_EXPR assignments.  */
 
 static unsigned int
-gimple_expand_vec_cond_exprs (void)
+gimple_expand_vec_exprs (void)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
@@ -178,12 +246,15 @@ gimple_expand_vec_cond_exprs (void)
 	{
 	  gimple *g = gimple_expand_vec_cond_expr (&gsi,
 						   &vec_cond_ssa_name_uses);
+
 	  if (g != NULL)
 	    {
 	      tree lhs = gimple_assign_lhs (gsi_stmt (gsi));
 	      gimple_set_lhs (g, lhs);
 	      gsi_replace (&gsi, g, false);
 	    }
+
+	  gimple_expand_vec_set_expr (&gsi);
 	}
     }
 
@@ -226,7 +297,7 @@ public:
 
   virtual unsigned int execute (function *)
     {
-      return gimple_expand_vec_cond_exprs ();
+      return gimple_expand_vec_exprs ();
     }
 
 }; // class pass_gimple_isel

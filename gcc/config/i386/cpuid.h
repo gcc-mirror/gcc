@@ -127,6 +127,9 @@
 #define bit_PCONFIG	(1 << 18)
 #define bit_SERIALIZE	(1 << 14)
 #define bit_TSXLDTRK    (1 << 16)
+#define bit_AMX_BF16    (1 << 22)
+#define bit_AMX_TILE    (1 << 24)
+#define bit_AMX_INT8    (1 << 25)
 
 /* XFEATURE_ENABLED_MASK register bits (%eax == 0xd, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)

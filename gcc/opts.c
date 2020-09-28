@@ -792,6 +792,13 @@ control_options_for_live_patching (struct gcc_options *opts,
       else
 	opts->x_flag_ipa_pure_const = 0;
 
+      if (opts_set->x_flag_ipa_modref && opts->x_flag_ipa_modref)
+	error_at (loc,
+		  "%<-fipa-modref%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_modref = 0;
+
       /* FIXME: disable unreachable code removal.  */
 
       /* discovery of functions/variables with no address taken.  */

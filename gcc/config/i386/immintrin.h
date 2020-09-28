@@ -144,6 +144,12 @@
 
 #include <tsxldtrkintrin.h>
 
+#include <amxtileintrin.h>
+
+#include <amxint8intrin.h>
+
+#include <amxbf16intrin.h>
+
 #include <rdseedintrin.h>
 
 #include <prfchwintrin.h>

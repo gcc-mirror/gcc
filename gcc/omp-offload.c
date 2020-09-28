@@ -196,21 +196,53 @@ omp_declare_target_var_p (tree decl)
 static tree
 omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 {
-  if (TREE_CODE (*tp) == FUNCTION_DECL
-      && !omp_declare_target_fn_p (*tp)
-      && !lookup_attribute ("omp declare target host", DECL_ATTRIBUTES (*tp)))
+  if (TREE_CODE (*tp) == FUNCTION_DECL)
     {
+      tree decl = *tp;
       tree id = get_identifier ("omp declare target");
-      if (!DECL_EXTERNAL (*tp) && DECL_SAVED_TREE (*tp))
-	((vec<tree> *) data)->safe_push (*tp);
-      DECL_ATTRIBUTES (*tp) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (*tp));
       symtab_node *node = symtab_node::get (*tp);
       if (node != NULL)
 	{
+	  while (node->alias_target)
+	    {
+	      if (!omp_declare_target_fn_p (node->decl)
+		  && !lookup_attribute ("omp declare target host",
+					DECL_ATTRIBUTES (node->decl)))
+		{
+		  node->offloadable = 1;
+		  DECL_ATTRIBUTES (node->decl)
+		    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (node->decl));
+		}
+	      node = symtab_node::get (node->alias_target);
+	    }
+	  symtab_node *new_node = node->ultimate_alias_target ();
+	  decl = new_node->decl;
+	  while (node != new_node)
+	    {
+	      if (!omp_declare_target_fn_p (node->decl)
+		  && !lookup_attribute ("omp declare target host",
+					DECL_ATTRIBUTES (node->decl)))
+		{
+		  node->offloadable = 1;
+		  DECL_ATTRIBUTES (node->decl)
+		    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (node->decl));
+		}
+	      gcc_assert (node->alias && node->analyzed);
+	      node = node->get_alias_target ();
+	    }
 	  node->offloadable = 1;
 	  if (ENABLE_OFFLOADING)
 	    g->have_offload = true;
 	}
+      if (omp_declare_target_fn_p (decl)
+	  || lookup_attribute ("omp declare target host",
+				    DECL_ATTRIBUTES (decl)))
+	return NULL_TREE;
+
+      if (!DECL_EXTERNAL (decl) && DECL_SAVED_TREE (decl))
+	((vec<tree> *) data)->safe_push (decl);
+      DECL_ATTRIBUTES (decl) = tree_cons (id, NULL_TREE,
+					  DECL_ATTRIBUTES (decl));
     }
   else if (TYPE_P (*tp))
     *walk_subtrees = 0;

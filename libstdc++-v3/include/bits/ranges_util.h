@@ -208,7 +208,7 @@ namespace ranges
 	= _Kind == subrange_kind::sized && !sized_sentinel_for<_Sent, _It>;
 
       _It _M_begin = _It();
-      _Sent _M_end = _Sent();
+      [[no_unique_address]] _Sent _M_end = _Sent();
 
       template<typename, bool = _S_store_size>
 	struct _Size

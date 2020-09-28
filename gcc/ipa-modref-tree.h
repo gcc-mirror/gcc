@@ -88,17 +88,18 @@ struct GTY((user)) modref_ref_node
   }
 
   /* Insert access with OFFSET and SIZE.
-     Collapse tree if it has more than MAX_ACCESSES entries.  */
-  void insert_access (modref_access_node a, size_t max_accesses)
+     Collapse tree if it has more than MAX_ACCESSES entries.
+     Return true if record was changed.  */
+  bool insert_access (modref_access_node a, size_t max_accesses)
   {
     /* If this base->ref pair has no access information, bail out.  */
     if (every_access)
-      return;
+      return false;
 
     /* Otherwise, insert a node for the ref of the access under the base.  */
     modref_access_node *access_node = search (a);
     if (access_node)
-      return;
+      return false;
 
     /* If this base->ref pair has too many accesses stored, we will clear
        all accesses and bail out.  */
@@ -109,9 +110,10 @@ struct GTY((user)) modref_ref_node
 	  fprintf (dump_file,
 		   "--param param=modref-max-accesses limit reached\n");
 	collapse ();
-	return;
+	return true;
       }
     vec_safe_push (accesses, a);
+    return true;
   }
 };
 
@@ -139,8 +141,11 @@ struct GTY((user)) modref_base_node
     return NULL;
   }
 
-  /* Insert REF; collapse tree if there are more than MAX_REFS.  */
-  modref_ref_node <T> *insert_ref (T ref, size_t max_refs)
+  /* Insert REF; collapse tree if there are more than MAX_REFS.
+     Return inserted ref and if CHANGED is non-null set it to true if
+     something changed.  */
+  modref_ref_node <T> *insert_ref (T ref, size_t max_refs,
+				   bool *changed = NULL)
   {
     modref_ref_node <T> *ref_node;
 
@@ -152,6 +157,9 @@ struct GTY((user)) modref_base_node
     ref_node = search (ref);
     if (ref_node)
       return ref_node;
+
+    if (changed)
+      *changed = true;
 
     /* Collapse the node if too full already.  */
     if (refs && refs->length () >= max_refs)
@@ -204,7 +212,11 @@ struct GTY((user)) modref_tree
     max_accesses (max_accesses),
     every_base (false) {}
 
-  modref_base_node <T> *insert_base (T base)
+  /* Insert BASE; collapse tree if there are more than MAX_REFS.
+     Return inserted base and if CHANGED is non-null set it to true if
+     something changed.  */
+
+  modref_base_node <T> *insert_base (T base, bool *changed = NULL)
   {
     modref_base_node <T> *base_node;
 
@@ -216,6 +228,9 @@ struct GTY((user)) modref_tree
     base_node = search (base);
     if (base_node)
       return base_node;
+
+    if (changed)
+      *changed = true;
 
     /* Collapse the node if too full already.  */
     if (bases && bases->length () >= max_bases)
@@ -232,43 +247,72 @@ struct GTY((user)) modref_tree
     return base_node;
   }
 
-  /* Insert memory access to the tree.	*/
-  void insert (T base, T ref, modref_access_node a)
+  /* Insert memory access to the tree.
+     Return true if something changed.  */
+  bool insert (T base, T ref, modref_access_node a)
   {
+    if (every_base)
+      return false;
+
+    bool changed = false;
+
     /* No useful information tracked; collapse everything.  */
     if (!base && !ref && !a.useful_p ())
       {
 	collapse ();
-	return;
+	return true;
       }
 
-    modref_base_node <T> *base_node = insert_base (base);
-    if (!base_node)
-      return;
-    gcc_assert (search (base) != NULL);
+    modref_base_node <T> *base_node = insert_base (base, &changed);
+    if (!base_node || base_node->every_ref)
+      return changed;
+    gcc_checking_assert (search (base) != NULL);
 
-    modref_ref_node <T> *ref_node = base_node->insert_ref (ref, max_refs);
-
-    /* No useful ref information and no useful base; collapse everyting.  */
-    if (!base && base_node->every_ref)
+    /* No useful ref info tracked; collapse base.  */
+    if (!ref && !a.useful_p ())
       {
-	collapse ();
-	return;
+	base_node->collapse ();
+	return true;
       }
-    if (ref_node)
+
+    modref_ref_node <T> *ref_node = base_node->insert_ref (ref, max_refs,
+							   &changed);
+
+    /* If we failed to insert ref, just see if there is a cleanup possible.  */
+    if (!ref_node)
       {
-	/* No useful ref and access; collapse ref.  */
-	if (!ref && !a.useful_p ())
-	  ref_node->collapse ();
-	else
+	/* No useful ref information and no useful base; collapse everyting.  */
+	if (!base && base_node->every_ref)
 	  {
-	    ref_node->insert_access (a, max_accesses);
-	    /* If ref has collapses and there is no useful base; collapse
-	       everything.  */
-	    if (!base && !ref && ref_node->every_access)
-	      collapse ();
+	    collapse ();
+	    gcc_checking_assert (changed);
+	  }
+	else if (changed)
+	  cleanup ();
+      }
+    else
+      {
+	if (ref_node->every_access)
+	  return changed;
+	changed |= ref_node->insert_access (a, max_accesses);
+	/* See if we failed to add useful access.  */
+	if (ref_node->every_access)
+	  {
+	    /* Collapse everything if there is no useful base and ref.  */
+	    if (!base && !ref)
+	      {
+		collapse ();
+		gcc_checking_assert (changed);
+	      }
+	    /* Collapse base if there is no useful ref.  */
+	    else if (!ref)
+	      {
+		base_node->collapse ();
+		gcc_checking_assert (changed);
+	      }
 	  }
       }
+    return changed;
   }
 
  /* Remove tree branches that are not useful (i.e. they will allways pass).  */
@@ -317,62 +361,74 @@ struct GTY((user)) modref_tree
 
   /* Merge OTHER into the tree.
      PARM_MAP, if non-NULL, maps parm indexes of callee to caller.  -2 is used
-     to signalize that parameter is local and does not need to be tracked.  */
-  void merge (modref_tree <T> *other, vec <int> *parm_map)
+     to signalize that parameter is local and does not need to be tracked.
+     Return true if something has changed.  */
+  bool merge (modref_tree <T> *other, vec <int> *parm_map)
   {
-    if (!other)
-      return;
+    if (!other || every_base)
+      return false;
     if (other->every_base)
       {
 	collapse ();
-	return;
+	return true;
       }
 
+    bool changed = false;
     size_t i, j, k;
     modref_base_node <T> *base_node, *my_base_node;
-    modref_ref_node <T> *ref_node, *my_ref_node;
+    modref_ref_node <T> *ref_node;
     modref_access_node *access_node;
+    bool release = false;
+
+    /* For self-recursive functions we may end up merging summary into itself;
+       produce copy first so we do not modify summary under our own hands.  */
+    if (other == this)
+      {
+	release = true;
+	other = modref_tree<T>::create_ggc (max_bases, max_refs, max_accesses);
+	other->copy_from (this);
+      }
+
     FOR_EACH_VEC_SAFE_ELT (other->bases, i, base_node)
       {
-	my_base_node = insert_base (base_node->base);
-	if (!my_base_node)
-	  continue;
-
 	if (base_node->every_ref)
 	  {
-	    my_base_node->collapse ();
-	    continue;
-	  }
-
-	FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
-	  {
-	    my_ref_node = my_base_node->insert_ref (ref_node->ref, max_refs);
-	    if (!my_ref_node)
-	      continue;
-
-	    if (ref_node->every_access)
+	    my_base_node = insert_base (base_node->base, &changed);
+	    if (my_base_node && !my_base_node->every_ref)
 	      {
-		my_ref_node->collapse ();
-		continue;
+		my_base_node->collapse ();
+		cleanup ();
+		changed = true;
 	      }
-	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	      {
-		modref_access_node a = *access_node;
-		if (a.parm_index != -1 && parm_map)
+	  }
+	else
+	  FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	    {
+	      if (ref_node->every_access)
+		{
+		  modref_access_node a = {-1};
+		  changed |= insert (base_node->base, ref_node->ref, a);
+		}
+	      else
+		FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
 		  {
-		    if (a.parm_index >= (int)parm_map->length ())
-		      a.parm_index = -1;
-		    else if ((*parm_map) [a.parm_index] == -2)
-		      continue;
-		    else
-		      a.parm_index = (*parm_map) [a.parm_index];
+		    modref_access_node a = *access_node;
+		    if (a.parm_index != -1 && parm_map)
+		      {
+			if (a.parm_index >= (int)parm_map->length ())
+			  a.parm_index = -1;
+			else if ((*parm_map) [a.parm_index] == -2)
+			  continue;
+			else
+			  a.parm_index = (*parm_map) [a.parm_index];
+		      }
+		    changed |= insert (base_node->base, ref_node->ref, a);
 		  }
-		my_ref_node->insert_access (a, max_accesses);
-	      }
-	  }
+	    }
       }
-    if (parm_map)
-      cleanup ();
+    if (release)
+      ggc_delete (other);
+    return changed;
   }
 
   /* Copy OTHER to THIS.  */
