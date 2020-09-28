@@ -140,15 +140,21 @@ trampoline_size = .-trampoline_initial
 /* R5 = function address */
 /* R6 = static chain */
 
+#ifndef __PCREL__
 	.pushsection ".toc","aw"
 .LC0:
 	.quad	trampoline_initial-8
 	.popsection
+#endif
 
 FUNC_START(__trampoline_setup)
 	.cfi_startproc
+#ifdef __PCREL__
+	pla 7,(trampoline_initial-8)@pcrel
+#else
 	addis 7,2,.LC0@toc@ha
 	ld 7,.LC0@toc@l(7)	/* trampoline address -8 */
+#endif
 
 	li	r8,trampoline_size	/* verify that the trampoline is big enough */
 	cmpw	cr1,r8,r4

@@ -26,7 +26,23 @@
 
 #include "asmcfi.h"
 
-#if defined(__powerpc64__) && _CALL_ELF == 2
+#if defined(__powerpc64__) && _CALL_ELF == 2 && defined(__PCREL__)
+.macro FUNC name
+	.globl	\name
+	.type	\name, @function
+\name:
+	.localentry \name, 1
+.endm
+.macro END name
+	.size	\name, . - \name
+.endm
+.macro HIDDEN name
+	.hidden	\name
+.endm
+.macro CALL name
+	bl	\name @notoc
+.endm
+#elif defined(__powerpc64__) && _CALL_ELF == 2
 .macro FUNC name
         .globl  \name
         .type   \name, @function
