@@ -5028,8 +5028,7 @@ gfc_get_common (const char *name, int from_module)
 
 /* Match a common block name.  */
 
-match
-gfc_match_common_name (char *name)
+match match_common_name (char *name)
 {
   match m;
 
@@ -5073,7 +5072,7 @@ gfc_match_common (void)
 
   for (;;)
     {
-      m = gfc_match_common_name (name);
+      m = match_common_name (name);
       if (m == MATCH_ERROR)
 	goto cleanup;
 
