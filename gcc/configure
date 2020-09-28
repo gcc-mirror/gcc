@@ -29897,7 +29897,7 @@ supported if the default cpu is power7 or newer" "$LINENO" 5
 	;;
       esac
       ;;
-  xpowerpc64*-*-linux*:*)
+  powerpc64*-*-linux*:*)
     as_fn_error $? "--with-long-double-format argument should be ibm or ieee" "$LINENO" 5
     with_long_double_format=""
     ;;

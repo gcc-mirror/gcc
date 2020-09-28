@@ -6260,7 +6260,7 @@ supported if the default cpu is power7 or newer])
 	;;
       esac
       ;;
-  xpowerpc64*-*-linux*:*)
+  powerpc64*-*-linux*:*)
     AC_MSG_ERROR([--with-long-double-format argument should be ibm or ieee])
     with_long_double_format=""
     ;;
