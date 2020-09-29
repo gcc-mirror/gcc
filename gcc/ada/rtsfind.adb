@@ -423,7 +423,7 @@ package body Rtsfind is
                          (Unit_Name (Current_Sem_Unit));
 
                   begin
-                     if Parent_Name /= No_Unit_Name then
+                     if Present (Parent_Name) then
                         Get_Name_String (Parent_Name);
 
                         declare

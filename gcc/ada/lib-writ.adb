@@ -837,7 +837,7 @@ package body Lib.Writ is
             --  preprocessing data and definition files, there is no Unit_Name,
             --  check for that first.
 
-            if Unit_Name (J) /= No_Unit_Name
+            if Present (Unit_Name (J))
               and then (With_Flags (J) or else Unit_Name (J) = Pname)
             then
                Num_Withs := Num_Withs + 1;
