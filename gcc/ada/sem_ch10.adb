@@ -828,6 +828,7 @@ package body Sem_Ch10 is
                      --  of the child unit does not act as spec any longer.
 
                      Set_Acts_As_Spec (N, False);
+                     Move_Aspects (From => Unit_Node, To => Unit (Lib_Unit));
                      Set_Is_Child_Unit (Defining_Entity (Unit_Node));
                      Set_Debug_Info_Needed (Defining_Entity (Unit (Lib_Unit)));
                      Set_Comes_From_Source_Default (SCS);
