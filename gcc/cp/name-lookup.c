@@ -2365,33 +2365,24 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   if (old == error_mark_node)
     old = NULL_TREE;
 
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+  if (DECL_IMPLICIT_TYPEDEF_P (decl))
     {
-      tree other = to_type;
-
-      if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-	other = old;
-
-      /* Pushing an artificial typedef.  See if this matches either
-	 the type slot or the old value slot.  */
-      if (!other)
-	;
-      else if (same_type_p (TREE_TYPE (other), TREE_TYPE (decl)))
-	/* Two artificial decls to same type.  Do nothing.  */
-	return other;
-      else
-	goto conflict;
+      /* Pushing an artificial decl.  We should not find another
+         artificial decl here already -- lookup_elaborated_type will
+         have already found it.  */
+      gcc_checking_assert (!to_type
+			   && !(old && DECL_IMPLICIT_TYPEDEF_P (old)));
 
       if (old)
 	{
 	  /* Slide decl into the type slot, keep old unaltered  */
 	  to_type = decl;
 	  to_val = old;
-	  goto done;
 	}
+      goto done;
     }
 
-  if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+  if (old && DECL_IMPLICIT_TYPEDEF_P (old))
     {
       /* Slide old into the type slot.  */
       to_type = old;
@@ -3122,7 +3113,7 @@ do_pushdecl (tree decl, bool hiding)
 
 	  if (TREE_CODE (decl) == NAMESPACE_DECL)
 	    /* A local namespace alias.  */
-	    set_identifier_type_value (name, NULL_TREE);
+	    set_identifier_type_value_with_scope (name, NULL_TREE, level);
 
 	  if (!binding)
 	    binding = create_local_binding (level, name);
@@ -3150,10 +3141,7 @@ do_pushdecl (tree decl, bool hiding)
 	      if (TYPE_NAME (type) != decl)
 		set_underlying_type (decl);
 
-	      if (!ns)
-		set_identifier_type_value_with_scope (name, decl, level);
-	      else
-		SET_IDENTIFIER_TYPE_VALUE (name, global_type_node);
+	      set_identifier_type_value_with_scope (name, decl, level);
 	    }
 
 	  /* If this is a locally defined typedef in a function that
@@ -3768,8 +3756,9 @@ identifier_type_value (tree id)
 }
 
 /* Push a definition of struct, union or enum tag named ID.  into
-   binding_level B.  DECL is a TYPE_DECL for the type.  We assume that
-   the tag ID is not already defined.  */
+   binding_level B.  DECL is a TYPE_DECL for the type.  DECL has
+   already been pushed into its binding level.  This is bookkeeping to
+   find it easily.  */
 
 static void
 set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
@@ -3781,20 +3770,25 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
       /* Shadow the marker, not the real thing, so that the marker
 	 gets restored later.  */
       tree old_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
-      b->type_shadowed
-	= tree_cons (id, old_type_value, b->type_shadowed);
+      b->type_shadowed = tree_cons (id, old_type_value, b->type_shadowed);
       type = decl ? TREE_TYPE (decl) : NULL_TREE;
       TREE_TYPE (b->type_shadowed) = type;
     }
   else
     {
-      tree *slot = find_namespace_slot (current_namespace, id, true);
       gcc_assert (decl);
-      update_binding (b, NULL, slot, MAYBE_STAT_DECL (*slot), decl);
+      if (CHECKING_P)
+	{
+	  tree *slot = find_namespace_slot (current_namespace, id);
+	  gcc_checking_assert (slot
+			       && (decl == MAYBE_STAT_TYPE (*slot)
+				   || decl == MAYBE_STAT_DECL (*slot)));
+	}
 
       /* Store marker instead of real type.  */
       type = global_type_node;
     }
+
   SET_IDENTIFIER_TYPE_VALUE (id, type);
 }
 
