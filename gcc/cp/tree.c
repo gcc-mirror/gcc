@@ -2237,13 +2237,13 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-/* Add FN to the (potentially NULL) overload set OVL.  USING_P is
-   true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  We keep the hidden decls first, but remaining ones
-   are unordered.  */
+/* Add FN to the (potentially NULL) overload set OVL.  USING_OR_HIDDEN
+   is > 0, if FN is via a using declaration.  USING_OR_HIDDEN is < 0,
+   if FN is hidden.  (A decl cannot be both using and hidden.)  We
+   keep the hidden decls first, but remaining ones are unordered.  */
 
 tree
-ovl_insert (tree fn, tree maybe_ovl, bool using_p)
+ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
 {
   tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
@@ -2257,13 +2257,15 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
       insert_after = maybe_ovl;
     }
 
-  bool hidden_p = DECL_HIDDEN_P (fn);
-  if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
+  if (maybe_ovl || using_or_hidden || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       maybe_ovl = ovl_make (fn, maybe_ovl);
-      if (hidden_p)
+
+      gcc_checking_assert ((using_or_hidden < 0) == DECL_HIDDEN_P (fn));
+
+      if (using_or_hidden < 0)
 	OVL_HIDDEN_P (maybe_ovl) = true;
-      if (using_p)
+      if (using_or_hidden > 0)
 	OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
     }
   else
@@ -2290,13 +2292,9 @@ ovl_skip_hidden (tree ovl)
        ovl = OVL_CHAIN (ovl))
     gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
 
-  if (ovl && TREE_CODE (ovl) != OVERLOAD && DECL_HIDDEN_P (ovl))
-    {
-      /* Any hidden functions should have been wrapped in an
-	 overload, but injected friend classes will not.  */
-      gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
-      ovl = NULL_TREE;
-    }
+  /* We should not see a naked hidden decl.  */
+  gcc_checking_assert (!(ovl && TREE_CODE (ovl) != OVERLOAD
+			 && DECL_HIDDEN_P (ovl)));
 
   return ovl;
 }

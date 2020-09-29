@@ -7371,7 +7371,7 @@ inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
-						 bool using_p = false);
+						 int using_or_hidden = 0);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
