@@ -63,9 +63,15 @@ along with GCC; see the file COPYING3.  If not see
 #define TAG_GETMETACLASS	"objc_getMetaClass"
 
 #define TAG_MSGSEND		"objc_msgSend"
-#define TAG_MSGSENDSUPER	"objc_msgSendSuper"
+#define TAG_MSGSENDID		"objc_msgSendId"
+#define TAG_MSGSENDSUPER	"objc_msgSendSuper2"
 #define TAG_MSGSEND_STRET	"objc_msgSend_stret"
-#define TAG_MSGSENDSUPER_STRET	"objc_msgSendSuper_stret"
+#define TAG_MSGSENDID_STRET	"objc_msgSendId_stret"
+#define TAG_MSGSENDSUPER_STRET	"objc_msgSendSuper2_stret"
+
+#define FIXUP_NEEDED		100600
+#define TAG_FIXUP		"_fixup"
+
 
 #define TAG_NEXT_EHVTABLE_NAME	"objc_ehtype_vtable"
 #define TAG_V2_EH_TYPE		"objc_ehtype_t"
@@ -386,32 +392,43 @@ static void next_runtime_02_initialize (void)
   build_v2_protocol_template ();
   build_v2_category_template ();
 
-  /* id objc_msgSend_fixup_rtp (id, struct message_ref_t*, ...); */
-  type = build_varargs_function_type_list (objc_object_type,
-						   objc_object_type,
-						   objc_v2_selector_type,
-						   NULL_TREE);
-  umsg_fixup_decl =  add_builtin_function ("objc_msgSend_fixup",
-					   type, 0, NOT_BUILT_IN,
+  bool fixup_p = flag_next_runtime < FIXUP_NEEDED;
+  if (fixup_p)
+    {
+      /* id objc_msgSend_fixup_rtp (id, struct message_ref_t*, ...); */
+      type = build_varargs_function_type_list (objc_object_type,
+					       objc_object_type,
+					       objc_v2_selector_type,
+					       NULL_TREE);
+    }
+  else
+    {
+      /* id objc_msgSendXXXX (id, SEL, ...); */
+      type = build_varargs_function_type_list (objc_object_type,
+					       objc_object_type,
+					       objc_selector_type,
+					       NULL_TREE);
+    }
+  const char *fnam = fixup_p ? TAG_MSGSEND TAG_FIXUP : TAG_MSGSEND;
+  umsg_fixup_decl =  add_builtin_function (fnam, type, 0, NOT_BUILT_IN,
 					   NULL, NULL_TREE);
   TREE_NOTHROW (umsg_fixup_decl) = 0;
 
   /* id objc_msgSend_stret_fixup_rtp (id, struct message_ref_t*, ...); */
-  umsg_stret_fixup_decl = add_builtin_function ("objc_msgSend_stret_fixup",
-						type, 0, NOT_BUILT_IN,
+  fnam = fixup_p ? TAG_MSGSEND_STRET TAG_FIXUP : TAG_MSGSEND_STRET;
+  umsg_stret_fixup_decl = add_builtin_function (fnam, type, 0, NOT_BUILT_IN,
 						NULL, NULL_TREE);
   TREE_NOTHROW (umsg_stret_fixup_decl) = 0;
 
   /* id objc_msgSendId_fixup_rtp (id, struct message_ref_t*, ...); */
-  umsg_id_fixup_decl = add_builtin_function ("objc_msgSendId_fixup",
-					     type, 0, NOT_BUILT_IN,
+  fnam = fixup_p ? TAG_MSGSENDID TAG_FIXUP : TAG_MSGSENDID;
+  umsg_id_fixup_decl = add_builtin_function (fnam, type, 0, NOT_BUILT_IN,
 					     NULL, NULL_TREE);
   TREE_NOTHROW (umsg_id_fixup_decl) = 0;
 
-  /* id objc_msgSendId_stret_fixup_rtp
-			(id, struct message_ref_t*, ...); */
-  umsg_id_stret_fixup_decl = add_builtin_function ("objc_msgSendId_stret_fixup",
-						   type, 0, NOT_BUILT_IN,
+  /* id objc_msgSendId_stret_fixup_rtp (id, struct message_ref_t*, ...); */
+  fnam = fixup_p ? TAG_MSGSENDID_STRET TAG_FIXUP : TAG_MSGSENDID_STRET;
+  umsg_id_stret_fixup_decl = add_builtin_function (fnam, type, 0, NOT_BUILT_IN,
 						   NULL, NULL_TREE);
   TREE_NOTHROW (umsg_id_stret_fixup_decl) = 0;
 
@@ -421,17 +438,17 @@ static void next_runtime_02_initialize (void)
 					   objc_super_type,
 					   objc_v2_super_selector_type,
 					   NULL_TREE);
-  umsg_id_super2_fixup_decl = add_builtin_function ("objc_msgSendSuper2_fixup",
-						    type, 0, NOT_BUILT_IN,
+  fnam = fixup_p ? TAG_MSGSENDSUPER TAG_FIXUP : TAG_MSGSENDSUPER;
+  umsg_id_super2_fixup_decl = add_builtin_function (fnam, type, 0, NOT_BUILT_IN,
 						    NULL, NULL_TREE);
   TREE_NOTHROW (umsg_id_super2_fixup_decl) = 0;
 
   /* id objc_msgSendSuper2_stret_fixup_rtp
 			(struct objc_super *, struct message_ref_t*, ...); */
-  umsg_id_super2_stret_fixup_decl =
-			add_builtin_function ("objc_msgSendSuper2_stret_fixup",
-					      type, 0, NOT_BUILT_IN,
-					      NULL, NULL_TREE);
+  fnam = fixup_p ? TAG_MSGSENDSUPER_STRET TAG_FIXUP : TAG_MSGSENDSUPER_STRET;
+  umsg_id_super2_stret_fixup_decl = add_builtin_function (fnam, type, 0,
+							  NOT_BUILT_IN,  NULL,
+							  NULL_TREE);
   TREE_NOTHROW (umsg_id_super2_stret_fixup_decl) = 0;
 
   /* Present in the library, but unused by the FE.  */
@@ -1134,10 +1151,12 @@ next_runtime_abi_02_get_arg_type_list_base (vec<tree, va_gc> **argtypes,
     receiver_type = objc_object_type;
 
   vec_safe_push (*argtypes, receiver_type);
-  /* Selector type - will eventually change to `int'.  */
-  vec_safe_push (*argtypes,
-		 superflag ? objc_v2_super_selector_type
-		           : objc_v2_selector_type);
+  if (flag_next_runtime < FIXUP_NEEDED)
+    /* Selector type - will eventually change to `int'.  */
+    vec_safe_push (*argtypes, superflag ? objc_v2_super_selector_type
+					: objc_v2_selector_type);
+  else
+    vec_safe_push (*argtypes, objc_selector_type);
 }
 
 /* TODO: Merge this with the message refs.  */
@@ -1589,10 +1608,9 @@ objc_copy_to_temp_side_effect_params (tree fntype, tree values)
    (*_msg.messenger) (receiver, &_msg, ...) */
 
 static tree
-build_v2_build_objc_method_call (int super_flag, tree method_prototype,
-				 tree lookup_object, tree selector,
-				 tree method_params,
-				 bool check_for_nil)
+build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
+				tree lookup_object, tree selector,
+				tree method_params, bool check_for_nil)
 {
   tree ret_val;
   tree sender, rcv_p, t;
@@ -1673,6 +1691,118 @@ build_v2_build_objc_method_call (int super_flag, tree method_prototype,
 }
 
 static tree
+build_v2_build_objc_method_call (int super, tree method_prototype,
+				 tree lookup_object, tree selector,
+				 tree method_params, location_t loc,
+				 bool check_for_nil, bool rx_is_id)
+{
+  tree sender, sender_cast, method, t;
+  tree rcv_p = (super ? objc_super_type : objc_object_type);
+  vec<tree, va_gc> *parms;
+  unsigned nparm = (method_params ? list_length (method_params) : 0);
+
+  /* If a prototype for the method to be called exists, then cast
+     the sender's return type and arguments to match that of the method.
+     Otherwise, leave sender as is.  */
+  tree ret_type
+    = (method_prototype
+       ? TREE_VALUE (TREE_TYPE (method_prototype))
+       : objc_object_type);
+  tree ftype = build_function_type_for_method (ret_type, method_prototype,
+					       METHOD_REF, super);
+
+  if (method_prototype && METHOD_TYPE_ATTRIBUTES (method_prototype))
+    ftype = build_type_attribute_variant (ftype,
+					  METHOD_TYPE_ATTRIBUTES
+					  (method_prototype));
+
+  sender_cast = build_pointer_type (ftype);
+
+  lookup_object = build_c_cast (loc, rcv_p, lookup_object);
+
+  /* Use SAVE_EXPR to avoid evaluating the receiver twice.  */
+  lookup_object = save_expr (lookup_object);
+
+  /* Param list + 2 slots for object and selector.  */
+  vec_alloc (parms, nparm + 2);
+
+  /* If we are returning a struct in memory, and the address
+     of that memory location is passed as a hidden first
+     argument, then change which messenger entry point this
+     expr will call.  NB: Note that sender_cast remains
+     unchanged (it already has a struct return type).  */
+  if (!targetm.calls.struct_value_rtx (0, 0)
+      && (TREE_CODE (ret_type) == RECORD_TYPE
+	  || TREE_CODE (ret_type) == UNION_TYPE)
+      && targetm.calls.return_in_memory (ret_type, 0))
+    {
+      if (super)
+	sender = umsg_id_super2_stret_fixup_decl;
+      else
+	sender = rx_is_id ? umsg_id_stret_fixup_decl
+			  : umsg_stret_fixup_decl;
+    }
+  else
+    {
+      if (super)
+	sender = umsg_id_super2_fixup_decl;
+      else
+	sender = rx_is_id ? umsg_id_fixup_decl
+			  : umsg_fixup_decl;
+    }
+
+  method = build_fold_addr_expr_loc (loc, sender);
+
+  /* Pass the object to the method.  */
+  parms->quick_push (lookup_object);
+  /* Pass the selector to the method.  */
+  parms->quick_push (selector);
+  /* Now append the remainder of the parms.  */
+  if (nparm)
+    for (; method_params; method_params = TREE_CHAIN (method_params))
+      parms->quick_push (TREE_VALUE (method_params));
+
+  /* Build an obj_type_ref, with the correct cast for the method call.  */
+  t = build3 (OBJ_TYPE_REF, sender_cast, method,
+			    lookup_object, size_zero_node);
+  tree ret_val = build_function_call_vec (loc, vNULL, t, parms, NULL);
+  vec_free (parms);
+  if (check_for_nil)
+    {
+      /* receiver != nil ? ret_val : 0 */
+      tree ftree;
+      tree ifexp;
+
+      if (TREE_CODE (ret_type) == RECORD_TYPE
+	  || TREE_CODE (ret_type) == UNION_TYPE)
+	{
+	  vec<constructor_elt, va_gc> *rtt = NULL;
+	  /* ??? CHECKME. hmmm..... think we need something more
+	     here.  */
+	  CONSTRUCTOR_APPEND_ELT (rtt, NULL_TREE, NULL_TREE);
+	  ftree = objc_build_constructor (ret_type, rtt);
+	}
+      else
+	ftree = fold_convert (ret_type, integer_zero_node);
+
+      ifexp = build_binary_op (loc, NE_EXPR,
+			       lookup_object,
+			       fold_convert (rcv_p, integer_zero_node), 1);
+
+#ifdef OBJCPLUS
+      ret_val = build_conditional_expr (loc, ifexp, ret_val, ftree,
+					tf_warning_or_error);
+#else
+     /* ??? CHECKME.   */
+      ret_val = build_conditional_expr (loc, ifexp, 1,
+					ret_val, NULL_TREE, loc,
+					ftree, NULL_TREE, loc);
+#endif
+    }
+  return ret_val;
+}
+
+static tree
 next_runtime_abi_02_build_objc_method_call (location_t loc,
 					    tree method_prototype,
 					    tree receiver,
@@ -1681,27 +1811,38 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
 					    tree method_params,
 					    int super)
 {
-  tree ret_type, selector;
-  tree message_func_decl;
-  bool check_for_nil = flag_objc_nilcheck;
-
-  ret_type = method_prototype
-	     ? TREE_VALUE (TREE_TYPE (method_prototype))
-	     : objc_object_type;
-
   /* Do we need to check for nil receivers ? */
   /* For now, message sent to classes need no nil check.  In the
       future, class declaration marked as weak_import must be nil
       checked.  */
+  bool check_for_nil = flag_objc_nilcheck;
   if (super
       || (TREE_CODE (receiver) == VAR_DECL
 	  && TREE_TYPE (receiver) == objc_class_type))
     check_for_nil = false;
 
+  if (flag_next_runtime >= FIXUP_NEEDED)
+    {
+      tree selector
+	= next_runtime_abi_02_build_selector_reference (loc, sel_name,
+						    method_prototype);
+      return build_v2_build_objc_method_call (super, method_prototype,
+					      receiver, selector,
+					      method_params, loc,
+					      check_for_nil,
+					      objc_is_id (rtype));
+    }
+
+  /* else we have to build a pair of the function and selector.  */
+  tree message_func_decl;
+  tree  ret_type = method_prototype
+	     ? TREE_VALUE (TREE_TYPE (method_prototype))
+	     : objc_object_type;
+
   if (!targetm.calls.struct_value_rtx (0, 0)
-          && (TREE_CODE (ret_type) == RECORD_TYPE
-	      || TREE_CODE (ret_type) == UNION_TYPE)
-          && targetm.calls.return_in_memory (ret_type, 0))
+      && (TREE_CODE (ret_type) == RECORD_TYPE
+	  || TREE_CODE (ret_type) == UNION_TYPE)
+      && targetm.calls.return_in_memory (ret_type, 0))
     {
       if (super)
 	message_func_decl = umsg_id_super2_stret_fixup_decl;
@@ -1720,7 +1861,7 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
 			    : umsg_fixup_decl;
     }
 
-  selector = build_v2_selector_messenger_reference (sel_name,
+  tree selector = build_v2_selector_messenger_reference (sel_name,
 						      message_func_decl);
 
   /* selector = &_msg; */
@@ -1731,9 +1872,9 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
 			   selector);
 
   /* (*_msg.messenger) (receiver, &_msg, ...); */
-  return build_v2_build_objc_method_call (super, method_prototype,
-					  receiver, selector,
-					  method_params, check_for_nil);
+  return build_v2_objc_method_fixup_call (super, method_prototype, receiver,
+					  selector, method_params,
+					  check_for_nil);
 }
 
 /* NOTE --- Constant String Class Stuff --- */
