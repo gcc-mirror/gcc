@@ -9606,14 +9606,15 @@ possible.
 @itemx -gdwarf-@var{version}
 @opindex gdwarf
 Produce debugging information in DWARF format (if that is supported).
-The value of @var{version} may be either 2, 3, 4 or 5; the default version
-for most targets is 4.  DWARF Version 5 is only experimental.
+The value of @var{version} may be either 2, 3, 4 or 5; the default
+version for most targets is 5 (with the exception of VxWorks and
+Darwin/Mac OS X which default to version 2).
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.
 
 Version 4 may require GDB 7.0 and @option{-fvar-tracking-assignments}
-for maximum benefit.
+for maximum benefit. Version 5 requires GDB 8.0 or higher.
 
 GCC no longer supports DWARF Version 1, which is substantially
 different than Version 2 and later.  For historical reasons, some
