@@ -16,16 +16,16 @@ void f11(svfloat32_t) {}
 void f12(svfloat64_t) {}
 void f13(svbfloat16_t) {}
 
-/* { dg-final { scan-assembler "_Z2f110__SVBool_t:" } } */
-/* { dg-final { scan-assembler "_Z2f210__SVInt8_t:" } } */
-/* { dg-final { scan-assembler "_Z2f311__SVInt16_t:" } } */
-/* { dg-final { scan-assembler "_Z2f411__SVInt32_t:" } } */
-/* { dg-final { scan-assembler "_Z2f511__SVInt64_t:" } } */
-/* { dg-final { scan-assembler "_Z2f611__SVUint8_t:" } } */
-/* { dg-final { scan-assembler "_Z2f712__SVUint16_t:" } } */
-/* { dg-final { scan-assembler "_Z2f812__SVUint32_t:" } } */
-/* { dg-final { scan-assembler "_Z2f912__SVUint64_t:" } } */
-/* { dg-final { scan-assembler "_Z3f1013__SVFloat16_t:" } } */
-/* { dg-final { scan-assembler "_Z3f1113__SVFloat32_t:" } } */
-/* { dg-final { scan-assembler "_Z3f1213__SVFloat64_t:" } } */
-/* { dg-final { scan-assembler "_Z3f1314__SVBfloat16_t:" } } */
+/* { dg-final { scan-assembler "_Z2f1u10__SVBool_t:" } } */
+/* { dg-final { scan-assembler "_Z2f2u10__SVInt8_t:" } } */
+/* { dg-final { scan-assembler "_Z2f3u11__SVInt16_t:" } } */
+/* { dg-final { scan-assembler "_Z2f4u11__SVInt32_t:" } } */
+/* { dg-final { scan-assembler "_Z2f5u11__SVInt64_t:" } } */
+/* { dg-final { scan-assembler "_Z2f6u11__SVUint8_t:" } } */
+/* { dg-final { scan-assembler "_Z2f7u12__SVUint16_t:" } } */
+/* { dg-final { scan-assembler "_Z2f8u12__SVUint32_t:" } } */
+/* { dg-final { scan-assembler "_Z2f9u12__SVUint64_t:" } } */
+/* { dg-final { scan-assembler "_Z3f10u13__SVFloat16_t:" } } */
+/* { dg-final { scan-assembler "_Z3f11u13__SVFloat32_t:" } } */
+/* { dg-final { scan-assembler "_Z3f12u13__SVFloat64_t:" } } */
+/* { dg-final { scan-assembler "_Z3f13u14__SVBfloat16_t:" } } */
