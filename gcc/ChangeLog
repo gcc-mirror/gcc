@@ -1,3 +1,73 @@
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vreinterpretq_f64_p128,
+	vreinterpretq_p128_f64): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/aarch64-simd-builtins.def (frintn): Use BUILTIN_VHSDF_HSDF
+	for modes.  Remove explicit hf instantiation.
+	* config/aarch64/arm_neon.h (vrndns_f32): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vtrn1q_p64, vtrn2q_p64, vuzp1q_p64,
+	vuzp2q_p64, vzip1q_p64, vzip2q_p64): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vldrq_p128): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vstrq_p128): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vcls_u8, vcls_u16, vcls_u32,
+	vclsq_u8, vclsq_u16, vclsq_u32): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vceqq_p64, vceqz_p64, vceqzq_p64): Define.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* config/aarch64/arm_neon.h (vadd_p8, vadd_p16, vadd_p64, vaddq_p8,
+	vaddq_p16, vaddq_p64, vaddq_p128): Define.
+
 2020-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

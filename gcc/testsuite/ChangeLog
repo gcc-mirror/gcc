@@ -1,3 +1,92 @@
+2020-09-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-09-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn_half.c: Remove
+	declarations of vector, vector2, vector_res for float64x2 type.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp_half.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip_half.c: Likewise.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(clean_results): Add float64x2_t cleanup.
+	(DECL_VARIABLE_128BITS_VARIANTS): Add float64x2_t variable.
+	* gcc.target/aarch64/advsimd-intrinsics/vreinterpret_p128.c: Add
+	testing of vreinterpretq_f64_p128, vreinterpretq_p128_f64.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vrndns_f32_1.c: New test.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/trn_zip_p64_1.c: New test.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vldrq_p128_1.c: New test.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vstrq_p128_1.c: New test.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vcls_unsigned_1.c: New test.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vceq_poly_1.c: New test.
+
+2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71233
+	* gcc.target/aarch64/simd/vadd_poly_1.c: New test.
+
+2020-09-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Revert:
+	2020-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* gfortran.dg/pr95614_1.f90: New test.
+	* gfortran.dg/pr95614_2.f90: New test.
+
 2020-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
