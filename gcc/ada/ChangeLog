@@ -1,3 +1,14 @@
+2020-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Set the end locus
+	of body and declaration earlier.
+
+2020-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (maybe_saturate_size): Add ALIGN parameter
+	and round down the result to ALIGN.
+	(gnat_to_gnu_entity): Adjust calls to maybe_saturate_size.
+
 2020-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/trans.c (gigi): Adjust build_optimization_node

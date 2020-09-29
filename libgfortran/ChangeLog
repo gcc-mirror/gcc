@@ -1,3 +1,22 @@
+2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* m4/unpack.m4 (unpack0_'rtype_code`,
+	unpack1_'rtype_code`): Move 'rstride[0]' initialization outside
+	conditional branch to silence -Wmaybe-uninitialized.
+	* generated/unpack_c10.c: Regenerate.
+	* generated/unpack_c16.c: Regenerate.
+	* generated/unpack_c4.c: Regenerate.
+	* generated/unpack_c8.c: Regenerate.
+	* generated/unpack_i1.c: Regenerate.
+	* generated/unpack_i16.c: Regenerate.
+	* generated/unpack_i2.c: Regenerate.
+	* generated/unpack_i4.c: Regenerate.
+	* generated/unpack_i8.c: Regenerate.
+	* generated/unpack_r10.c: Regenerate.
+	* generated/unpack_r16.c: Regenerate.
+	* generated/unpack_r4.c: Regenerate.
+	* generated/unpack_r8.c: Regenerate.
+
 2020-09-27  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/t-aix: Use $(AR) without -X32_64.

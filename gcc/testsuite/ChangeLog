@@ -1,3 +1,56 @@
+2020-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97233
+	* gcc.dg/analyzer/pr97233.c: New test.
+
+2020-09-28  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-pinsrb.c: New test.
+	* gcc.target/powerpc/sse4_1-pinsrd.c: New test.
+	* gcc.target/powerpc/sse4_1-pinsrq.c: New test.
+
+2020-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* lib/target-supports.exp (check_effective_target_amx_tile,
+	check_effective_target_amx_int8,
+	check_effective_target_amx_bf16): New proc.
+	* g++.dg/other/i386-2.C: Add -mamx-tile, -mamx-int8, -mamx-bf16.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/amx-check.h: New header file.
+	* gcc.target/i386/amxbf16-asmatt-1.c: New test.
+	* gcc.target/i386/amxint8-asmatt-1.c: New test.
+	* gcc.target/i386/amxtile-asmatt-1.c: Ditto.
+	* gcc.target/i386/amxbf16-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxint8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtile-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxbf16-dpbf16ps-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbssd-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbsud-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbusd-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbuud-2.c: Ditto.
+	* gcc.target/i386/amxtile-2.c: Ditto.
+
+2020-09-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Revert:
+	2020-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* gfortran.dg/pr95614_1.f90: New test.
+	* gfortran.dg/pr95614_2.f90: New test.
+
+2020-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/addr16.adb: New test.
+	* gnat.dg/addr16_pkg.ads: New helper.
+
 2020-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/97073

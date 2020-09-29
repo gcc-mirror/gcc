@@ -1,3 +1,17 @@
+2020-09-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/97082
+	* Makefile.am (check_DATA): Add mtest.dSYM if USE_DSYMUTIL.
+	* Makefile.in: Regenerate.
+
+2020-09-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/97227
+	* configure.ac (USE_DSYMUTIL): Define instead of HAVE_DSYMUTIL.
+	* Makefile.am: Change all uses of HAVE_DSYMUTIL to USE_DSYMUTIL.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2020-09-23  Ian Lance Taylor  <iant@golang.org>
 
 	* dwarf.c (report_inlined_functions): Handle PC == -1 and PC ==

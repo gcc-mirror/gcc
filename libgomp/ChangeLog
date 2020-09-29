@@ -1,3 +1,9 @@
+2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/96390
+	* testsuite/libgomp.c++/pr96390.C: New test.
+	* testsuite/libgomp.c-c++-common/pr96390.c: New test.
+
 2020-09-27  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/t-aix: Use $(AR) without -X32_64.
