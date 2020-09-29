@@ -138,34 +138,41 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEF_C94_BUILTIN
 #define DEF_C94_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, !flag_isoc94, ATTRS, targetm.libc_has_function (function_c94), true)
+	       true, true, !flag_isoc94, ATTRS, \
+	       targetm.libc_has_function (function_c94, NULL_TREE), true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C99 or above.  */
 #undef DEF_C99_BUILTIN
 #define DEF_C99_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, !flag_isoc99, ATTRS, targetm.libc_has_function (function_c99_misc), true)
+	       true, true, !flag_isoc99, ATTRS, \
+	       targetm.libc_has_function (function_c99_misc, NULL_TREE), true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C11 or above.  */
 #undef DEF_C11_BUILTIN
 #define DEF_C11_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, !flag_isoc11, ATTRS, targetm.libc_has_function (function_c11_misc), true)
+	       true, true, !flag_isoc11, ATTRS, \
+	       targetm.libc_has_function (function_c11_misc, NULL_TREE), true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C2x or above.  */
 #undef DEF_C2X_BUILTIN
 #define DEF_C2X_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, !flag_isoc2x, ATTRS, targetm.libc_has_function (function_c2x_misc), true)
+	       true, true, !flag_isoc2x, ATTRS, \
+	       targetm.libc_has_function (function_c2x_misc, NULL_TREE), true)
 
 /* Like DEF_C99_BUILTIN, but for complex math functions.  */
 #undef DEF_C99_COMPL_BUILTIN
 #define DEF_C99_COMPL_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, !flag_isoc99, ATTRS, targetm.libc_has_function (function_c99_math_complex), true)
+	       true, true, !flag_isoc99, ATTRS, \
+	       targetm.libc_has_function (function_c99_math_complex, \
+					  NULL_TREE), \
+	       true)
 
 /* Builtin that is specified by C99 and C90 reserve the name for future use.
    We can still recognize the builtin in C90 mode but we can't produce it
@@ -173,7 +180,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEF_C99_C90RES_BUILTIN
 #define DEF_C99_C90RES_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, !flag_isoc99, ATTRS, targetm.libc_has_function (function_c99_misc), true)
+	       true, true, !flag_isoc99, ATTRS, \
+	       targetm.libc_has_function (function_c99_misc, NULL_TREE), true)
 
 /* Builtin that C99 reserve the name for future use. We can still recognize
    the builtin in C99 mode but we can't produce it implicitly.  */

@@ -208,10 +208,10 @@ extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
 
-extern bool default_libc_has_function (enum function_class);
+extern bool default_libc_has_function (enum function_class, tree);
 extern bool default_libc_has_fast_function (int fcode);
-extern bool no_c99_libc_has_function (enum function_class);
-extern bool gnu_libc_has_function (enum function_class);
+extern bool no_c99_libc_has_function (enum function_class, tree);
+extern bool gnu_libc_has_function (enum function_class, tree);
 
 extern tree default_builtin_tm_load_store (tree);
 
