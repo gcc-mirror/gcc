@@ -40,7 +40,11 @@ void test_rd2_1 (void)
 
   {
     void *null = 0;
-    rd2_1 (SR (1, 2), null);    // { dg-warning "argument 2 is null but the corresponding size argument 1 range is \\\[1, 2]" }
+    /* Ideally the message would say "range" for a range and "value"
+       for a singular value but using the same reduces the complexity
+       of the code and keeps down the number of messages that need to
+       be translated, withot sacrificing (too much) clarity.  */
+    rd2_1 (SR (1, 2), null);    // { dg-warning "argument 2 is null but the corresponding size argument 1 range|value is \\\[1, 2]" }
   }
 }
 
@@ -59,7 +63,7 @@ void test_wr3_1 (void)
 
   void *null = 0;
 
-  wr3_1 (SR (1, 2), 1, null);   // { dg-warning "argument 3 is null but the corresponding size argument 1 range is \\\[1, 2]" }
+  wr3_1 (SR (1, 2), 1, null);   // { dg-warning "argument 3 is null but the corresponding size argument 1 range|value is \\\[1, 2]" }
 }
 
 
@@ -71,7 +75,7 @@ void test_wrd2_1 (int n)
   wr2_1 (0, 0);
   wr2_1 (SR (-1, 1), 0);
   wr2_1 (SR (0, 1), 0);
-  wr2_1 (SR (1, 2), 0);         // { dg-warning "argument 2 is null but the corresponding size argument 1 range is \\\[1, 2]" }
+  wr2_1 (SR (1, 2), 0);         // { dg-warning "argument 2 is null but the corresponding size argument 1 range|value is \\\[1, 2]" }
 
   /* This should probably be diagnosed but to avoid false positives
      caused by jump threading and such it would have to be done
@@ -127,7 +131,7 @@ void test_rd1_3_wr2_4 (const void *s, void *d, int n1, int n2)
   rd1_3_wr2_4 (s, d, -1, 2);    // { dg-warning "argument 3 value -1 is negative" }
 
   const int ir_min_m1 = SR (INT_MIN, -1);
-  rd1_3_wr2_4 (s, d, ir_min_m1, 2);   // { dg-warning "argument 3 range \\\[-\[0-9\]+, -1] is negative" }
+  rd1_3_wr2_4 (s, d, ir_min_m1, 2);   // { dg-warning "argument 3 range|value \\\[-\[0-9\]+, -1] is negative" }
 
   rd1_3_wr2_4 (s, d, SR (-1, 0), 2);
   rd1_3_wr2_4 (s, d, SR (INT_MIN, INT_MAX), 2);
