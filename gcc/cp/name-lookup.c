@@ -77,7 +77,6 @@ create_local_binding (cp_binding_level *level, tree name)
 {
   cxx_binding *binding = cxx_binding_make (NULL, NULL);
 
-  INHERITED_VALUE_BINDING_P (binding) = false;
   LOCAL_BINDING_P (binding) = true;
   binding->scope = level;
   binding->previous = IDENTIFIER_BINDING (name);
@@ -480,21 +479,16 @@ name_lookup::add_type (tree new_type)
 }
 
 /* Process a found binding containing NEW_VAL and NEW_TYPE.  Returns
-   true if we actually found something noteworthy.  */
+   true if we actually found something noteworthy.  Hiddenness has
+   already been handled in the caller.  */
 
 bool
 name_lookup::process_binding (tree new_val, tree new_type)
 {
   /* Did we really see a type? */
   if (new_type
-      && ((want & LOOK_want::TYPE_NAMESPACE) == LOOK_want::NAMESPACE
-	  || (!bool (want & LOOK_want::HIDDEN_FRIEND)
-	      && DECL_LANG_SPECIFIC (new_type)
-	      && DECL_ANTICIPATED (new_type))))
+      && (want & LOOK_want::TYPE_NAMESPACE) == LOOK_want::NAMESPACE)
     new_type = NULL_TREE;
-
-  if (new_val && !bool (want & LOOK_want::HIDDEN_FRIEND))
-    new_val = ovl_skip_hidden (new_val);
 
   /* Do we really see a value? */
   if (new_val)
@@ -544,8 +538,25 @@ name_lookup::search_namespace_only (tree scope)
   bool found = false;
 
   if (tree *binding = find_namespace_slot (scope, name))
-    found |= process_binding (MAYBE_STAT_DECL (*binding),
-			      MAYBE_STAT_TYPE (*binding));
+    {
+      tree value = *binding, type = NULL_TREE;
+
+      if (STAT_HACK_P (value))
+	{
+	  type = STAT_TYPE (value);
+	  value = STAT_DECL (value);
+      
+	  if (!bool (want & LOOK_want::HIDDEN_FRIEND)
+	      && DECL_LANG_SPECIFIC (type)
+	      && DECL_ANTICIPATED (type))
+	    type = NULL_TREE;
+	}
+
+      if (!bool (want & LOOK_want::HIDDEN_FRIEND))
+	value = ovl_skip_hidden (value);
+
+      found |= process_binding (value, type);
+    }
 
   return found;
 }
@@ -1954,14 +1965,16 @@ cxx_binding_init (cxx_binding *binding, tree value, tree type)
 static cxx_binding *
 cxx_binding_make (tree value, tree type)
 {
-  cxx_binding *binding;
-  if (free_bindings)
-    {
-      binding = free_bindings;
-      free_bindings = binding->previous;
-    }
+  cxx_binding *binding = free_bindings;
+
+  if (binding)
+    free_bindings = binding->previous;
   else
     binding = ggc_alloc<cxx_binding> ();
+
+  /* Clear flags by default.  */
+  LOCAL_BINDING_P (binding) = false;
+  INHERITED_VALUE_BINDING_P (binding) = false;
 
   cxx_binding_init (binding, value, type);
 
@@ -2009,7 +2022,6 @@ push_binding (tree id, tree decl, cp_binding_level* level)
 
   /* Now, fill in the binding information.  */
   binding->previous = IDENTIFIER_BINDING (id);
-  INHERITED_VALUE_BINDING_P (binding) = 0;
   LOCAL_BINDING_P (binding) = (level != class_binding_level);
 
   /* And put it on the front of the list of bindings for ID.  */
@@ -2022,8 +2034,6 @@ push_binding (tree id, tree decl, cp_binding_level* level)
 void
 pop_local_binding (tree id, tree decl)
 {
-  cxx_binding *binding;
-
   if (id == NULL_TREE)
     /* It's easiest to write the loops that call this function without
        checking whether or not the entities involved have names.  We
@@ -2031,7 +2041,7 @@ pop_local_binding (tree id, tree decl)
     return;
 
   /* Get the innermost binding for ID.  */
-  binding = IDENTIFIER_BINDING (id);
+  cxx_binding *binding = IDENTIFIER_BINDING (id);
 
   /* The name should be bound.  */
   gcc_assert (binding != NULL);
@@ -2356,9 +2366,16 @@ static tree
 update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 		tree old, tree decl, bool hiding = false)
 {
+  tree old_type = NULL_TREE;
+
+  if (!slot)
+    old_type = binding->type;
+  else if (STAT_HACK_P (*slot))
+      old_type = STAT_TYPE (*slot);
+
   tree to_val = decl;
-  tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
   tree to_type = old_type;
+  bool local_overload = false;
 
   gcc_assert (level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
@@ -2375,16 +2392,20 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
       if (old)
 	{
-	  /* Slide decl into the type slot, keep old unaltered  */
+	  /* Put DECL into the type slot.  */
+	  gcc_checking_assert (!to_type);
 	  to_type = decl;
 	  to_val = old;
 	}
+
       goto done;
     }
 
   if (old && DECL_IMPLICIT_TYPEDEF_P (old))
     {
-      /* Slide old into the type slot.  */
+      /* OLD is an implicit typedef.  Move it to to_type.  */
+      gcc_checking_assert (!to_type);
+
       to_type = old;
       old = NULL_TREE;
     }
@@ -2428,60 +2449,66 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	warning (OPT_Wshadow, "%q#D hides constructor for %q#D",
 		 decl, to_type);
 
+      local_overload = old && level->kind != sk_namespace;
       to_val = ovl_insert (decl, old);
     }
-  else if (!old)
-    ;
-  else if (TREE_CODE (old) != TREE_CODE (decl))
-    /* Different kinds of decls conflict.  */
-    goto conflict;
-  else if (TREE_CODE (old) == TYPE_DECL)
+  else if (old)
     {
-      if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
-	/* Two type decls to the same type.  Do nothing.  */
-	return old;
-      else
+      if (TREE_CODE (old) != TREE_CODE (decl))
+	/* Different kinds of decls conflict.  */
 	goto conflict;
-    }
-  else if (TREE_CODE (old) == NAMESPACE_DECL)
-    {
-      /* Two maybe-aliased namespaces.  If they're to the same target
-	 namespace, that's ok.  */
-      if (ORIGINAL_NAMESPACE (old) != ORIGINAL_NAMESPACE (decl))
-	goto conflict;
+      else if (TREE_CODE (old) == TYPE_DECL)
+	{
+	  if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
+	    {
+	      /* Two type decls to the same type.  Do nothing.  */
+	      gcc_checking_assert (!hiding);
+	      return old;
+	    }
+	  else
+	    goto conflict;
+	}
+      else if (TREE_CODE (old) == NAMESPACE_DECL)
+	{
+	  /* Two maybe-aliased namespaces.  If they're to the same target
+	     namespace, that's ok.  */
+	  if (ORIGINAL_NAMESPACE (old) != ORIGINAL_NAMESPACE (decl))
+	    goto conflict;
 
-      /* The new one must be an alias at this point.  */
-      gcc_assert (DECL_NAMESPACE_ALIAS (decl));
-      return old;
-    }
-  else if (TREE_CODE (old) == VAR_DECL)
-    {
-      /* There can be two block-scope declarations of the same
-	 variable, so long as they are `extern' declarations.  */
-      if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
-	goto conflict;
-      else if (tree match = duplicate_decls (decl, old))
-	return match;
+	  /* The new one must be an alias at this point.  */
+	  gcc_assert (DECL_NAMESPACE_ALIAS (decl) && !hiding);
+	  return old;
+	}
+      else if (TREE_CODE (old) == VAR_DECL)
+	{
+	  /* There can be two block-scope declarations of the same
+	     variable, so long as they are `extern' declarations.  */
+	  // FIXME: This is DECL_LOCAL_DECL_P type stuff.
+	  if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
+	    goto conflict;
+	  else if (tree match = duplicate_decls (decl, old))
+	    return match;
+	  else
+	    goto conflict;
+	}
       else
-	goto conflict;
-    }
-  else
-    {
-    conflict:
-      diagnose_name_conflict (decl, old);
-      to_val = NULL_TREE;
+	{
+	conflict:
+	  diagnose_name_conflict (decl, old);
+	  to_val = NULL_TREE;
+	}
     }
 
  done:
   if (to_val)
     {
-      if (level->kind == sk_namespace || to_type == decl || to_val == decl)
-	add_decl_to_level (level, decl);
-      else
+      if (local_overload)
 	{
 	  gcc_checking_assert (binding->value && OVL_P (binding->value));
 	  update_local_overload (binding, to_val);
 	}
+      else
+	add_decl_to_level (level, decl);
 
       if (slot)
 	{
@@ -3059,12 +3086,8 @@ do_pushdecl (tree decl, bool hiding)
 		tree head = iter.reveal_node (old);
 		if (head != old)
 		  {
-		    if (!ns)
-		      {
-			update_local_overload (binding, head);
-			binding->value = head;
-		      }
-		    else if (STAT_HACK_P (*slot))
+		    gcc_checking_assert (ns);
+		    if (STAT_HACK_P (*slot))
 		      STAT_DECL (*slot) = head;
 		    else
 		      *slot = head;
@@ -3859,7 +3882,7 @@ do_pushdecl_with_scope (tree x, cp_binding_level *level, bool hiding = false)
 	current_function_decl = NULL_TREE;
       b = current_binding_level;
       current_binding_level = level;
-      x = pushdecl (x, hiding);
+      x = do_pushdecl (x, hiding);
       current_binding_level = b;
       current_function_decl = function_decl;
     }
@@ -4398,8 +4421,6 @@ get_class_binding (tree name, cp_binding_level *scope)
 				   value_binding,
 				   type_binding,
 				   scope);
-      /* This is a class-scope binding, not a block-scope binding.  */
-      LOCAL_BINDING_P (binding) = 0;
       set_inherited_value_binding_p (binding, value_binding, class_type);
     }
   else
