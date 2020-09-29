@@ -22,11 +22,11 @@
    <http://www.gnu.org/licenses/>.  */
 
 #if !defined _IMMINTRIN_H_INCLUDED
-# error "Never use <enqcmdntrin.h> directly; include <x86intrin.h> instead."
+# error "Never use <enqcmdintrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef _ENQCMDNTRIN_H_INCLUDED
-#define _ENQCMDNTRIN_H_INCLUDED
+#ifndef _ENQCMDINTRIN_H_INCLUDED
+#define _ENQCMDINTRIN_H_INCLUDED
 
 #ifndef __ENQCMD__
 #pragma GCC push_options
@@ -52,4 +52,4 @@ _enqcmds (void * __P, const void * __Q)
 #undef __DISABLE_ENQCMD__
 #pragma GCC pop_options
 #endif /* __DISABLE_ENQCMD__ */
-#endif /* _ENQCMDNTRIN_H_INCLUDED.  */
+#endif /* _ENQCMDINTRIN_H_INCLUDED.  */

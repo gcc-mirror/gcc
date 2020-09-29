@@ -218,7 +218,10 @@ is_longjmp_call_p (const gcall *call)
 {
   if (is_special_named_call_p (call, "longjmp", 2)
       || is_special_named_call_p (call, "siglongjmp", 2))
-    return true;
+    /* exploded_node::on_longjmp requires a pointer for the initial
+       argument.  */
+    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))))
+      return true;
 
   return false;
 }

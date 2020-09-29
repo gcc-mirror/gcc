@@ -501,55 +501,12 @@
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (plus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
 		  (match_operand:VDQ 2 "s_register_operand" "w")))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_addsub_s<q>")
                     (const_string "neon_add<q>")))]
-)
-
-;; As with SFmode, full support for HFmode vector arithmetic is only available
-;; when flag-unsafe-math-optimizations is enabled.
-
-;; Add pattern with modes V8HF and V4HF is split into separate patterns to add
-;; support for standard pattern addv8hf3 in MVE.  Following pattern is called
-;; from "addv8hf3" standard pattern inside vec-common.md file.
-
-(define_insn "addv8hf3_neon"
-  [(set
-    (match_operand:V8HF 0 "s_register_operand" "=w")
-    (plus:V8HF
-     (match_operand:V8HF 1 "s_register_operand" "w")
-     (match_operand:V8HF 2 "s_register_operand" "w")))]
- "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
- "vadd.f16\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set_attr "type" "neon_fp_addsub_s_q")]
-)
-
-(define_insn "addv4hf3"
-  [(set
-    (match_operand:V4HF 0 "s_register_operand" "=w")
-    (plus:V4HF
-     (match_operand:V4HF 1 "s_register_operand" "w")
-     (match_operand:V4HF 2 "s_register_operand" "w")))]
- "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
- "vadd.f16\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set_attr "type" "neon_fp_addsub_s_q")]
-)
-
-(define_insn "add<mode>3_fp16"
-  [(set
-    (match_operand:VH 0 "s_register_operand" "=w")
-    (plus:VH
-     (match_operand:VH 1 "s_register_operand" "w")
-     (match_operand:VH 2 "s_register_operand" "w")))]
- "TARGET_NEON_FP16INST"
- "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set (attr "type")
-   (if_then_else (match_test "<Is_float_mode>")
-    (const_string "neon_fp_addsub_s<q>")
-    (const_string "neon_add<q>")))]
 )
 
 (define_insn "*sub<mode>3_neon"
@@ -1837,7 +1794,7 @@
    (match_operand:VH 2 "s_register_operand")]
   "TARGET_NEON_FP16INST"
 {
-  emit_insn (gen_add<mode>3_fp16 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
   DONE;
 })
 

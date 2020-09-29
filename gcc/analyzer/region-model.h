@@ -806,7 +806,10 @@ public:
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_BINOP; }
-  virtual const binop_svalue *dyn_cast_binop_svalue () const { return this; }
+  const binop_svalue *dyn_cast_binop_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1067,7 +1070,10 @@ public:
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_WIDENING; }
-  const widening_svalue *dyn_cast_widening_svalue () const { return this; }
+  const widening_svalue *dyn_cast_widening_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1158,7 +1164,10 @@ public:
   compound_svalue (tree type, const binding_map &map);
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_COMPOUND; }
-  const compound_svalue *dyn_cast_compound_svalue () const { return this; }
+  const compound_svalue *dyn_cast_compound_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1263,7 +1272,10 @@ public:
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_CONJURED; }
-  const conjured_svalue *dyn_cast_conjured_svalue () const { return this; }
+  const conjured_svalue *dyn_cast_conjured_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;

@@ -931,7 +931,6 @@ struct null_assignment_sm_context : public sm_context
   const program_state *m_new_state;
   const gimple *m_stmt;
   const program_point *m_point;
-  state_change_visitor *m_visitor;
   checker_path *m_emission_path;
   const extrinsic_state &m_ext_state;
 };

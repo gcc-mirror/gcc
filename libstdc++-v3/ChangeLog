@@ -1,3 +1,36 @@
+2020-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (filter_view): Declare the data member
+	_M_base last instead of first, and adjust constructors' member
+	initializer lists accordingly.
+	(transform_view): Likewise.
+	(take_view): Likewise.
+	(take_while_view): Likewise.
+	(drop_view): Likewise.
+	(drop_while_view): Likewise.
+	(join_view): Likewise.
+	(split_view): Likewise (and tweak nearby formatting).
+	(reverse_view): Likewise.
+	* testsuite/std/ranges/adaptors/sizeof.cc: Update expected
+	sizes.
+
+2020-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/std/ranges/adaptors/sizeof.cc: New test.
+
+2020-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::_M_end): Give it
+	[[no_unique_address]].
+	* testsuite/std/ranges/subrange/sizeof.cc: New test.
+
+2020-09-28  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (iota_view::_M_bound): Give it
+	[[no_unique_address]].
+	* testsuite/std/ranges/iota/iota_view.cc: Check that an
+	unbounded iota_view has minimal size.
+
 2020-09-27  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/os/aix/t-aix: Use $(AR) without -X32_64.

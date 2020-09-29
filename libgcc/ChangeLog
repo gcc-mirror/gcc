@@ -1,3 +1,8 @@
+2020-09-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/libgcc-softfp.ver: New file.
+	* config/aarch64/t-softfp (SHLIB_MAPFILES): Add it.
+
 2020-09-27  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/rs6000/t-slibgcc-aix: Use $(AR) without -X32_64.

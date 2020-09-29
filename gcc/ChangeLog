@@ -1,3 +1,70 @@
+2020-09-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (class irange): Add irange_allocator friend.
+	(class irange_allocator): New.
+
+2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/96390
+	* omp-offload.c (omp_discover_declare_target_tgt_fn_r): Handle
+	alias nodes.
+
+2020-09-28  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_insert_epi8): New.
+	(_mm_insert_epi32): New.
+	(_mm_insert_epi64): New.
+
+2020-09-28  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_AMX_TILE_SET,
+	OPTION_MASK_ISA2_AMX_INT8_SET, OPTION_MASK_ISA2_AMX_BF16_SET,
+	OPTION_MASK_ISA2_AMX_TILE_UNSET, OPTION_MASK_ISA2_AMX_INT8_UNSET,
+	OPTION_MASK_ISA2_AMX_BF16_UNSET, OPTION_MASK_ISA2_XSAVE_UNSET):
+	New marcos.
+	(ix86_handle_option): Hanlde -mamx-tile, -mamx-int8, -mamx-bf16.
+	* common/config/i386/i386-cpuinfo.h (processor_types): Add
+	FEATURE_AMX_TILE, FEATURE_AMX_INT8, FEATURE_AMX_BF16.
+	* common/config/i386/cpuinfo.h (XSTATE_TILECFG,
+	XSTATE_TILEDATA, XCR_AMX_ENABLED_MASK): New macro.
+	(get_available_features): Enable AMX features only if
+	their states are suoorited by OSXSAVE.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY
+	for amx-tile, amx-int8, amx-bf16.
+	* config.gcc: Add amxtileintrin.h, amxint8intrin.h,
+	amxbf16intrin.h to extra headers.
+	* config/i386/amxbf16intrin.h: New file.
+	* config/i386/amxint8intrin.h: Ditto.
+	* config/i386/amxtileintrin.h: Ditto.
+	* config/i386/cpuid.h (bit_AMX_BF16, bit_AMX_TILE, bit_AMX_INT8):
+	New macro.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AMX_TILE__, __AMX_INT8__, AMX_BF16__.
+	* config/i386/i386-options.c (ix86_target_string): Add
+	-mamx-tile, -mamx-int8, -mamx-bf16.
+	(ix86_option_override_internal): Handle AMX-TILE,
+	AMX-INT8, AMX-BF16.
+	* config/i386/i386.h (TARGET_AMX_TILE, TARGET_AMX_TILE_P,
+	TARGET_AMX_INT8, TARGET_AMX_INT8_P, TARGET_AMX_BF16_P,
+	PTA_AMX_TILE, PTA_AMX_INT8, PTA_AMX_BF16): New macros.
+	* config/i386/i386.opt: Add -mamx-tile, -mamx-int8, -mamx-bf16.
+	* config/i386/immintrin.h: Include amxtileintrin.h,
+	amxint8intrin.h, amxbf16intrin.h.
+	* doc/invoke.texi: Document -mamx-tile, -mamx-int8, -mamx-bf16.
+	* doc/extend.texi: Document amx-tile, amx-int8, amx-bf16.
+	* doc/sourcebuild.texi ((Effective-Target Keywords, Other
+	hardware attributes): Document amx_int8, amx_tile, amx_bf16.
+
+2020-09-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_general_expand_builtin): Do not alter value on a
+	force_reg returned rtx.
+
+2020-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (lower_try_finally_dup_block): Revert latest change.
+
 2020-09-27  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.c (modref_summary::useful_p): Fix testing of stores.

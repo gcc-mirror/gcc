@@ -1,3 +1,28 @@
+2020-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.h (binop_svalue::dyn_cast_binop_svalue): Remove
+	redundant "virtual".  Add FINAL OVERRIDE.
+	(widening_svalue::dyn_cast_widening_svalue): Add FINAL OVERRIDE.
+	(compound_svalue::dyn_cast_compound_svalue): Likewise.
+	(conjured_svalue::dyn_cast_conjured_svalue): Likewise.
+
+2020-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (null_assignment_sm_context::m_visitor):
+	Remove unused field.
+
+2020-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97233
+	* analyzer.cc (is_longjmp_call_p): Require the initial argument
+	to be a pointer.
+	* engine.cc (exploded_node::on_longjmp): Likewise.
+
+2020-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::print): Update check
+	for m_global_state being the start state.
+
 2020-09-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96646

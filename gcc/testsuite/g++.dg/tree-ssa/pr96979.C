@@ -1,6 +1,6 @@
 /* PR tree-optimization/96979 */
 /* { dg-do compile } */
-/* { dg-options "-std=c++17 -O2 -fdump-tree-switchlower1" } */
+/* { dg-options "-std=c++17 -O2" } */
 
 using u64 = unsigned long long;
 
@@ -46,5 +46,3 @@ baz (const char *s)
   const u64 h = foo (s);
   return V::bar (h);
 }
-
-/* { dg-final { scan-tree-dump-times ";; Bail out: --param=max-switch-clustering-attempts reached" 2 "switchlower1" } } */
