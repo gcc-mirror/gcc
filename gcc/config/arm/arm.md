@@ -9212,7 +9212,7 @@
 	operands[2] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[2], mem);
 	}
     }
@@ -9295,7 +9295,7 @@
 	operands[3] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[3], mem);
 	}
     }
