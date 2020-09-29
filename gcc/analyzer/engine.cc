@@ -2629,7 +2629,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 	}
     got_merger:
       gcc_assert (it->m_merger_idx >= 0);
-      gcc_assert (it->m_merger_idx < merged_states.length ());
+      gcc_assert ((unsigned)it->m_merger_idx < merged_states.length ());
     }
 
   /* Create merger nodes.  */
