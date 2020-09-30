@@ -11364,19 +11364,26 @@ package body Sem_Prag is
       --  Deal with unrecognized pragma
 
       if not Is_Pragma_Name (Pname) then
-         if Warn_On_Unrecognized_Pragma then
-            Error_Msg_Name_1 := Pname;
-            Error_Msg_N ("?g?unrecognized pragma%!", Pragma_Identifier (N));
+         declare
+            Msg_Issued : Boolean := False;
+         begin
+            Check_Restriction
+              (Msg_Issued, No_Unrecognized_Pragmas, Pragma_Identifier (N));
+            if not Msg_Issued and then Warn_On_Unrecognized_Pragma then
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_N ("?g?unrecognized pragma%!", Pragma_Identifier (N));
 
-            for PN in First_Pragma_Name .. Last_Pragma_Name loop
-               if Is_Bad_Spelling_Of (Pname, PN) then
-                  Error_Msg_Name_1 := PN;
-                  Error_Msg_N -- CODEFIX
-                    ("\?g?possible misspelling of %!", Pragma_Identifier (N));
-                  exit;
-               end if;
-            end loop;
-         end if;
+               for PN in First_Pragma_Name .. Last_Pragma_Name loop
+                  if Is_Bad_Spelling_Of (Pname, PN) then
+                     Error_Msg_Name_1 := PN;
+                     Error_Msg_N -- CODEFIX
+                       ("\?g?possible misspelling of %!",
+                        Pragma_Identifier (N));
+                     exit;
+                  end if;
+               end loop;
+            end if;
+         end;
 
          return;
       end if;
