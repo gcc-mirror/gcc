@@ -2270,11 +2270,11 @@ attr_access::array_as_string (tree type) const
 	     bound is nonconstant and whose access string has "$]" in it)
 	     extract the bound expression from SIZE.  */
 	  const char *p = end;
-	  for ( ; *p-- != ']'; );
+	  for ( ; p != str && *p-- != ']'; );
 	  if (*p == '$')
 	    index_type = build_index_type (TREE_VALUE (size));
 	}
-      else  if (minsize)
+      else if (minsize)
 	index_type = build_index_type (size_int (minsize - 1));
 
       tree arat = NULL_TREE;

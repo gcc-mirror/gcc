@@ -112,5 +112,11 @@ typedef void G1 (int n, int[n], int);
 
 G1 g1;
 
-RW (2, 3) void g1 (int n, int[n], int);     // { dg-warning "24: attribute 'access *\\\(read_write, 2, 3\\\)' positional argument 2 conflicts with previous designation by argument 3" }
-// { dg-message "designating the bound of variable length array argument 2" "note" { target *-*-* } .-1 }
+/* The warning is about the attribute positional argument 2 which refers
+   to the last function argument.  Ideally, the caret would be under
+   the corresponding function argument, i.e., the last one here) but
+   that location isn't available yet.  Verify that the caret doesn't
+   point to function argument 1 which is the VLA bound (that's what
+   the caret in the note points to).  */
+RW (2, 3) void g1 (int n, int[n], int);     // { dg-warning "16: attribute 'access *\\\(read_write, 2, 3\\\)' positional argument 2 conflicts with previous designation by argument 3" }
+// { dg-message "24:designating the bound of variable length array argument 2" "note" { target *-*-* } .-1 }
