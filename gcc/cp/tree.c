@@ -2262,13 +2262,14 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-/* Add FN to the (potentially NULL) overload set OVL.  USINGNESS is
-   > zero if this is a using-decl.  It is > 1 if we're exporting the
-   using decl.  We also pay attention to DECL_HIDDEN.  We keep the
-   hidden decls first, but remaining ones are unordered.  */
+/* Add FN to the (potentially NULL) overload set OVL.  USINGNESS is >
+   zero if this is a using-decl.  It is > 1 if we're exporting the
+   using decl.  USING_OR_HIDDEN is < 0, if FN is hidden.  (A decl
+   cannot be both using and hidden.)  We keep the hidden decls first,
+   but remaining ones are unordered.  */
 
 tree
-ovl_insert (tree fn, tree maybe_ovl, unsigned usingness)
+ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
 {
   tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
@@ -2282,16 +2283,15 @@ ovl_insert (tree fn, tree maybe_ovl, unsigned usingness)
       insert_after = maybe_ovl;
     }
 
-  bool hidden_p = DECL_HIDDEN_P (fn);
-  if (maybe_ovl || usingness || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
+  if (maybe_ovl || using_or_hidden || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       maybe_ovl = ovl_make (fn, maybe_ovl);
-      if (hidden_p)
+      if (using_or_hidden < 0)
 	OVL_HIDDEN_P (maybe_ovl) = true;
-      if (usingness)
+      if (using_or_hidden > 0)
 	{
 	  OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
-	  if (usingness > 1)
+	  if (using_or_hidden > 1)
 	    OVL_EXPORT_P (maybe_ovl) = true;
 	}
     }
@@ -2317,17 +2317,11 @@ ovl_skip_hidden (tree ovl)
   for (;
        ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
        ovl = OVL_CHAIN (ovl))
-    gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
+    continue;
 
-  if (ovl && TREE_CODE (ovl) != OVERLOAD && DECL_HIDDEN_P (ovl))
-    {
-      /* Any hidden functions should have been wrapped in an
-	 overload, but injected friend classes will not.  */
-      // FIXME: This is temporarily wrong -- consider builtin that is
-      // anticipated in current TU, but known by an import
-      if (!DECL_DECLARES_FUNCTION_P (ovl))
-	ovl = NULL_TREE;
-    }
+  /* We should not see a naked hidden decl.  */
+  gcc_checking_assert (!(ovl && TREE_CODE (ovl) != OVERLOAD
+			 && DECL_HIDDEN_P (ovl)));
 
   return ovl;
 }

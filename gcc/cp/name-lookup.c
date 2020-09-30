@@ -65,9 +65,18 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 #define STAT_VISIBLE(N) OVL_CHAIN (N)
 #define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
 #define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
-#define STAT_TYPE_HIDDEN_P(N) OVL_DEDUP_P (N)
+
 /* When a STAT_HACK_P is true, OVL_USING_P and OVL_EXPORT_P are valid
    and apply to the hacked type.  */
+
+/* For regular (maybe) overloaded functions, we have OVL_HIDDEN_P.
+   But we also need to indicate hiddenness on implicit type decls
+   (injected friend classes), and (coming soon) decls injected from
+   block-scope externs.  It is too awkward to press the existing
+   overload marking for that.  If we have a hidden non-function, we
+   always create a STAT_HACK, and use these two markers as needed.  */
+#define STAT_TYPE_HIDDEN_P(N) OVL_HIDDEN_P (N)
+#define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
 
 /* Create a STAT_HACK node with DECL as the value binding and TYPE as
    the type binding.  */
@@ -841,23 +850,27 @@ name_lookup::search_namespace_only (tree scope)
 		    dup_detect |= 1;
 		}
 	      tree type = NULL_TREE;
+	      tree value = bind;
 
 	      if (STAT_HACK_P (bind))
 		{
 		  type = STAT_TYPE (bind);
-		  bind = STAT_DECL (bind);
+		  value = STAT_DECL (bind);
 
-		  if (!bool (want & LOOK_want::HIDDEN_FRIEND)
-		      && type
-		      && DECL_LANG_SPECIFIC (type)
-		      && DECL_ANTICIPATED (type))
-		    type = NULL_TREE;
+		  if (!bool (want & LOOK_want::HIDDEN_FRIEND))
+		    {
+		      if (STAT_TYPE_HIDDEN_P (bind))
+			type = NULL_TREE;
+		      if (STAT_DECL_HIDDEN_P (bind))
+			value = NULL_TREE;
+		      else
+			value = ovl_skip_hidden (value);
+		    }
 		}
+	      else if (!bool (want & LOOK_want::HIDDEN_FRIEND))
+		value = ovl_skip_hidden (value);
 
-	      if (!bool (want & LOOK_want::HIDDEN_FRIEND))
-		bind = ovl_skip_hidden (bind);
-
-	      marker = process_module_binding (bind, type, marker);
+	      marker = process_module_binding (value, type, marker);
 	    }
 
 	  /* Scan the imported bindings.  */
@@ -938,23 +951,28 @@ name_lookup::search_namespace_only (tree scope)
       else
 	{
 	  /* Only a current module binding, visible from the current module.  */
-	  tree bind = *binding, type = NULL_TREE;
+	  tree bind = *binding;
+	  tree value = bind, type = NULL_TREE;
 
 	  if (STAT_HACK_P (bind))
 	    {
 	      type = STAT_TYPE (bind);
-	      bind = STAT_DECL (bind);
+	      value = STAT_DECL (bind);
 
-	      if (!bool (want & LOOK_want::HIDDEN_FRIEND)
-		  && DECL_LANG_SPECIFIC (type)
-		  && DECL_ANTICIPATED (type))
-		type = NULL_TREE;
+	      if (!bool (want & LOOK_want::HIDDEN_FRIEND))
+		{
+		  if (STAT_TYPE_HIDDEN_P (bind))
+		    type = NULL_TREE;
+		  if (STAT_DECL_HIDDEN_P (bind))
+		    value = NULL_TREE;
+		  else
+		    value = ovl_skip_hidden (value);
+		}
 	    }
+	  else if (!bool (want & LOOK_want::HIDDEN_FRIEND))
+	    value = ovl_skip_hidden (value);
 
-	  if (!bool (want & LOOK_want::HIDDEN_FRIEND))
-	    bind = ovl_skip_hidden (bind);
-
-	  found |= process_binding (bind, type);
+	  found |= process_binding (value, type);
 	}
     }
 
@@ -2582,6 +2600,7 @@ cxx_binding_make (tree value, tree type)
   /* Clear flags by default.  */
   LOCAL_BINDING_P (binding) = false;
   INHERITED_VALUE_BINDING_P (binding) = false;
+  HIDDEN_TYPE_BINDING_P (binding) = false;
 
   cxx_binding_init (binding, value, type);
 
@@ -2653,13 +2672,15 @@ pop_local_binding (tree id, tree decl)
   /* The name should be bound.  */
   gcc_assert (binding != NULL);
 
-  /* The DECL will be either the ordinary binding or the type
-     binding for this identifier.  Remove that binding.  */
+  /* The DECL will be either the ordinary binding or the type binding
+     for this identifier.  Remove that binding.  We don't have to
+     clear HIDDEN_TYPE_BINDING_P, as the whole binding will be going
+     away.  */
   if (binding->value == decl)
     binding->value = NULL_TREE;
   else
     {
-      gcc_assert (binding->type == decl);
+      gcc_checking_assert (binding->type == decl);
       binding->type = NULL_TREE;
     }
 
@@ -2974,11 +2995,22 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 		tree old, tree decl, bool hiding = false)
 {
   tree old_type = NULL_TREE;
+  bool hide_type = false;
+  bool hide_value = false;
 
   if (!slot)
-    old_type = binding->type;
+    {
+      old_type = binding->type;
+      hide_type = HIDDEN_TYPE_BINDING_P (binding);
+      if (!old_type)
+	hide_value = hide_type, hide_type = false;
+    }
   else if (STAT_HACK_P (*slot))
+    {
       old_type = STAT_TYPE (*slot);
+      hide_type = STAT_TYPE_HIDDEN_P (*slot);
+      hide_value = STAT_DECL_HIDDEN_P (*slot);
+    }
 
   tree to_val = decl;
   tree to_type = old_type;
@@ -3002,9 +3034,12 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	{
 	  /* Put DECL into the type slot.  */
 	  gcc_checking_assert (!to_type);
+	  hide_type = hiding;
 	  to_type = decl;
 	  to_val = old;
 	}
+      else
+	hide_value = hiding;
 
       goto done;
     }
@@ -3015,7 +3050,9 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       gcc_checking_assert (!to_type);
 
       to_type = old;
+      hide_type = hide_value;
       old = NULL_TREE;
+      hide_value = false;
     }
 
   if (DECL_DECLARES_FUNCTION_P (decl))
@@ -3058,7 +3095,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 		 decl, to_type);
 
       local_overload = old && level && level->kind != sk_namespace;
-      to_val = ovl_insert (decl, old);
+      to_val = ovl_insert (decl, old, -int (hiding));
     }
   else if (old)
     {
@@ -3091,7 +3128,10 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
 	    goto conflict;
 	  else if (tree match = duplicate_decls (decl, old))
-	    return match;
+	    {
+	      gcc_checking_assert (!hide_value && !hiding);
+	      return match;
+	    }
 	  else
 	    goto conflict;
 	}
@@ -3102,6 +3142,8 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  to_val = NULL_TREE;
 	}
     }
+  else if (hiding)
+    hide_value = true;
 
  done:
   if (to_val)
@@ -3126,16 +3168,26 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	    {
 	      STAT_TYPE (*slot) = to_type;
 	      STAT_DECL (*slot) = to_val;
+	      STAT_TYPE_HIDDEN_P (*slot) = hide_type;
+	      STAT_DECL_HIDDEN_P (*slot) = hide_value;
 	    }
-	  else if (to_type)
-	    *slot = stat_hack (to_val, to_type);
+	  else if (to_type || hide_value)
+	    {
+	      *slot = stat_hack (to_val, to_type);
+	      STAT_TYPE_HIDDEN_P (*slot) = hide_type;
+	      STAT_DECL_HIDDEN_P (*slot) = hide_value;
+	    }
 	  else
-	    *slot = to_val;
+	    {
+	      gcc_checking_assert (!hide_type);
+	      *slot = to_val;
+	    }
 	}
       else
 	{
 	  binding->type = to_type;
 	  binding->value = to_val;
+	  HIDDEN_TYPE_BINDING_P (binding) = hide_type || hide_value;
 	}
     }
 
@@ -7757,85 +7809,37 @@ lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
     for (cxx_binding *iter = nullptr;
 	 (iter = outer_binding (name, iter, bool (where & LOOK_where::CLASS)));)
       {
-	tree binding;
-
 	/* Skip entities we don't want.  */
 	if (!bool (where & (LOCAL_BINDING_P (iter)
 			    ? LOOK_where::BLOCK : LOOK_where::CLASS)))
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if (iter->value
-	    && (bool (want & LOOK_want::HIDDEN_LAMBDA)
-		|| !is_lambda_ignored_entity (iter->value))
-	    && qualify_lookup (iter->value, want))
-	  binding = iter->value;
-	else if (bool (want & LOOK_want::TYPE)
-		 && qualify_lookup (iter->type, want))
-	  binding = iter->type;
-	else
-	  binding = NULL_TREE;
-
-	if (binding)
+	if (iter->value)
 	  {
-	    if (TREE_CODE (binding) == TYPE_DECL && DECL_HIDDEN_P (binding))
+	    tree binding = NULL_TREE;
+
+	    if (!(!iter->type && HIDDEN_TYPE_BINDING_P (iter))
+		&& (bool (want & LOOK_want::HIDDEN_LAMBDA)
+		    || !is_lambda_ignored_entity (iter->value))
+		&& qualify_lookup (iter->value, want))
+	      binding = iter->value;
+	    else if (bool (want & LOOK_want::TYPE)
+		     && !HIDDEN_TYPE_BINDING_P (iter)
+		     && iter->type)
+	      binding = iter->type;
+
+	    if (binding)
 	      {
-		/* A non namespace-scope binding can only be hidden in the
-		   presence of a local class, due to friend declarations.
+		/* The saved lookups for an operator record 'nothing
+		   found' as error_mark_node.  We need to stop the search
+		   here, but not return the error mark node.  */
+		if (binding == error_mark_node)
+		  binding = NULL_TREE;
 
-		   In particular, consider:
-
-		   struct C;
-		   void f() {
-		     struct A {
-		       friend struct B;
-		       friend struct C;
-		       void g() {
-		         B* b; // error: B is hidden
-			 C* c; // OK, finds ::C
-		       } 
-		     };
-		     B *b;  // error: B is hidden
-		     C *c;  // OK, finds ::C
-		     struct B {};
-		     B *bb; // OK
-		   }
-
-		   The standard says that "B" is a local class in "f"
-		   (but not nested within "A") -- but that name lookup
-		   for "B" does not find this declaration until it is
-		   declared directly with "f".
-
-		   In particular:
-
-		   [class.friend]
-
-		   If a friend declaration appears in a local class and
-		   the name specified is an unqualified name, a prior
-		   declaration is looked up without considering scopes
-		   that are outside the innermost enclosing non-class
-		   scope. For a friend function declaration, if there is
-		   no prior declaration, the program is ill-formed. For a
-		   friend class declaration, if there is no prior
-		   declaration, the class that is specified belongs to the
-		   innermost enclosing non-class scope, but if it is
-		   subsequently referenced, its name is not found by name
-		   lookup until a matching declaration is provided in the
-		   innermost enclosing nonclass scope.
-
-		   So just keep looking for a non-hidden binding.
-		*/
-		continue;
+		val = binding;
+		goto found;
 	      }
-
-	    /* The saved lookups for an operator record 'nothing
-	       found' as error_mark_node.  We need to stop the search
-	       here, but not return the error mark node.  */
-	    if (binding == error_mark_node)
-	      binding = NULL_TREE;
-
-	    val = binding;
-	    goto found;
 	  }
       }
 
@@ -7917,17 +7921,55 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 	     typedef struct C {} C;
 	   correctly.  */
 
+	tree found = NULL_TREE;
+	bool reveal = false;
 	if (tree type = iter->type)
-	  if (qualify_lookup (type, LOOK_want::TYPE)
-	      && (how != TAG_how::CURRENT_ONLY
-		  || LOCAL_BINDING_P (iter)
-		  || DECL_CONTEXT (type) == iter->scope->this_entity))
-	    return type;
+	  {
+	    if (qualify_lookup (type, LOOK_want::TYPE)
+		&& (how != TAG_how::CURRENT_ONLY
+		    || LOCAL_BINDING_P (iter)
+		    || DECL_CONTEXT (type) == iter->scope->this_entity))
+	      {
+		found = type;
+		if (how != TAG_how::HIDDEN_FRIEND)
+		  reveal = HIDDEN_TYPE_BINDING_P (iter);
+	      }
+	  }
+	else
+	  {
+	    if (qualify_lookup (iter->value, LOOK_want::TYPE)
+		&& (how != TAG_how::CURRENT_ONLY
+		    || !INHERITED_VALUE_BINDING_P (iter)))
+	      {
+		found = iter->value;
+		if (how != TAG_how::HIDDEN_FRIEND)
+		  reveal = !iter->type && HIDDEN_TYPE_BINDING_P (iter);
+	      }
+	  }
 
-	if (qualify_lookup (iter->value, LOOK_want::TYPE)
-	    && (how != TAG_how::CURRENT_ONLY
-		|| !INHERITED_VALUE_BINDING_P (iter)))
-	  return iter->value;
+	if (found)
+	  {
+	    if (reveal)
+	      {
+		/* It is no longer a hidden binding.  */
+		HIDDEN_TYPE_BINDING_P (iter) = false;
+
+		/* Unanticipate the decl itself.  */
+		DECL_ANTICIPATED (found) = false;
+		DECL_FRIEND_P (found) = false;
+
+		gcc_checking_assert (TREE_CODE (found) != TEMPLATE_DECL);
+
+		if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
+		  {
+		    tree tmpl = TI_TEMPLATE (ti);
+		    DECL_ANTICIPATED (tmpl) = false;
+		    DECL_FRIEND_P (tmpl) = false;
+		  }
+	      }
+
+	    return found;
+	  }
       }
 
   /* Now check if we can look in namespace scope.  */
@@ -7942,8 +7984,10 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
   tree ns = b->this_entity;
   if (tree *slot = find_namespace_slot (ns, name))
     {
-      tree bind = *slot;
+      tree found = NULL_TREE;
+      bool reveal = false;
 
+      tree bind = *slot;
       if (TREE_CODE (bind) == MODULE_VECTOR)
 	bind = MODULE_VECTOR_CLUSTER (bind, 0).slots[MODULE_SLOT_CURRENT];
 
@@ -7951,12 +7995,67 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 	{
 	  /* If this is the kind of thing we're looking for, we're done.  */
 	  if (tree type = MAYBE_STAT_TYPE (bind))
-	    if (qualify_lookup (type, LOOK_want::TYPE))
-	      return type;
+	    {
+	      found = type;
+	      if (how != TAG_how::HIDDEN_FRIEND)
+		{
+		  reveal = STAT_TYPE_HIDDEN_P (bind);
+		  STAT_TYPE_HIDDEN_P (bind) = false;
+		}
+	    }
+	  else if (tree decl = MAYBE_STAT_DECL (bind))
+	    {
+	      if (qualify_lookup (decl, LOOK_want::TYPE))
+		{
+		  found = decl;
 
-	  tree decl = MAYBE_STAT_DECL (*slot);
-	  if (qualify_lookup (decl, LOOK_want::TYPE))
-	    return decl;
+		  if (how != TAG_how::HIDDEN_FRIEND  && STAT_HACK_P (bind))
+		    {
+		      reveal = STAT_DECL_HIDDEN_P (bind);
+		      if (reveal)
+			{
+			  if (STAT_TYPE (bind))
+			    STAT_DECL_HIDDEN_P (bind) = false;
+			  else
+			    {
+			      /* There is no type, just remove the stat
+				 hack.  */
+			      if (*slot == bind)
+				*slot = decl;
+			      else
+				MODULE_VECTOR_CLUSTER (bind, 0).slots[MODULE_SLOT_CURRENT] = decl;
+			    }
+			}
+		    }
+		}
+	    }
+
+	  if (found)
+	    {
+	      if (reveal)
+		{
+		  /* Reveal the previously hidden thing.  */
+		  DECL_ANTICIPATED (found) = false;
+		  DECL_FRIEND_P (found) = false;
+
+		  if (TREE_CODE (found) == TEMPLATE_DECL)
+		    {
+		      DECL_ANTICIPATED (DECL_TEMPLATE_RESULT (found)) = false;
+		      DECL_FRIEND_P (DECL_TEMPLATE_RESULT (found)) = false;
+		    }
+		  else if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
+		    {
+		      tree tmpl = TI_TEMPLATE (ti);
+		      DECL_ANTICIPATED (tmpl) = false;
+		      DECL_FRIEND_P (tmpl) = false;
+		    }
+#if 0
+		  if (flag_modules)
+		    set_instantiating_module (found);
+#endif
+		}
+	      return found;
+	    }
 	}
 
       if (TREE_CODE (*slot) == MODULE_VECTOR)
@@ -8002,6 +8101,9 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		  /* Load errors could mean there's nothing here.  */
 		  continue;
 
+		// FIXME: if HOW is !GLOBAL, don't we need to inject
+		// this into the current tu's slot?
+		
 		/* Extract what we can see from here.  If there's no
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;

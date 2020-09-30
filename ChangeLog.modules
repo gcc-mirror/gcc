@@ -1,5 +1,8 @@
 2020-09-30  Nathan Sidwell  <nathan@acm.org>
 
+	Apply trunk 7cbfe0894de
+	c++: Hiddenness is a property of the symbol table
+
 	Apply trunk adcf8a11c77
 	c++: Name lookup simplifications
 

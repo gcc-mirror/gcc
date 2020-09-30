@@ -58,6 +58,12 @@ struct cp_binding_level;
    currently being defined.  */
 #define INHERITED_VALUE_BINDING_P(NODE) ((NODE)->value_is_inherited)
 
+/* The IMPLICIT_TYPEDEF is hidden from ordinary name lookup (it was
+   injected via a local class's friend decl). The typdef may be in the
+   VALUE or the TYPE slot.  We do not get the situation where the
+   value and type slots are both filled and both hidden.  */
+#define HIDDEN_TYPE_BINDING_P(NODE) ((NODE)->type_is_hidden)
+
 /* Datatype that represents binding established by a declaration between
    a name and a C++ entity.  */
 struct GTY(()) cxx_binding {
@@ -72,6 +78,7 @@ struct GTY(()) cxx_binding {
 
   bool value_is_inherited : 1;
   bool is_local : 1;
+  bool type_is_hidden : 1;
 };
 
 /* Datatype used to temporarily save C++ bindings (for implicit

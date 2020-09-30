@@ -15165,25 +15165,9 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  return error_mark_node;
 	}
 
-      if (how != TAG_how::HIDDEN_FRIEND && TYPE_HIDDEN_P (t))
-	{
-	  /* This is no longer an invisible friend.  Make it
-	     visible.  */
-	  tree decl = TYPE_NAME (t);
-
-	  DECL_ANTICIPATED (decl) = false;
-	  DECL_FRIEND_P (decl) = false;
-
-	  if (TYPE_TEMPLATE_INFO (t))
-	    {
-	      tree tmpl = TYPE_TI_TEMPLATE (t);
-	      DECL_ANTICIPATED (tmpl) = false;
-	      DECL_FRIEND_P (tmpl) = false;
-	    }
-
-	  if (flag_modules)
-	    set_instantiating_module (TYPE_NAME (t));
-	}
+      // FIXME: Do we need to push into current TU's slot?
+      if (how == TAG_how::CURRENT_ONLY)
+	set_instantiating_module (TYPE_NAME (t));
     }
 
   return t;
