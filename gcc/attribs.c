@@ -2256,15 +2256,14 @@ attr_access::array_as_string (tree type) const
 
   if (this->str)
     {
-      /* For array parameters (but not pointers) create an array type
-	 that corresponds to the form of the parameter including its
+      /* For array parameters (but not pointers) create a temporary array
+	 type that corresponds to the form of the parameter including its
 	 qualifiers even though they apply to the pointer, not the array
 	 type.  */
       const bool vla_p = minsize == HOST_WIDE_INT_M1U;
       tree eltype = TREE_TYPE (type);
-      tree artype;
-
       tree index_type = NULL_TREE;
+
       if (minsize == HOST_WIDE_INT_M1U)
 	{
 	  /* Determine if this is a VLA (an array whose most significant
@@ -2278,28 +2277,24 @@ attr_access::array_as_string (tree type) const
       else  if (minsize)
 	index_type = build_index_type (size_int (minsize - 1));
 
-      artype = build_array_type (eltype, index_type);
-
+      tree arat = NULL_TREE;
       if (static_p || vla_p)
 	{
 	  tree flag = static_p ? integer_one_node : NULL_TREE;
 	  /* Hack: there's no language-independent way to encode
 	     the "static" specifier or the "*" notation in an array type.
-	     Temporarily add an attribute to have the pretty printer add
-	     "static" or "*", and remove it later.  The static notation
-	     is only valid in the most significant bound but [*] can be
-	     used for any bound.  Because [*] is represented the same as
-	     [0] this hack only works for the most significant bound like
-	     static and the others are rendered as [0].  */
-	  tree at = tree_cons (get_identifier ("array"), flag, NULL_TREE);
-	  TYPE_ATTRIBUTES (artype) = at;
+	     Add a "fake" attribute to have the pretty-printer add "static"
+	     or "*".  The "[static N]" notation is only valid in the most
+	     significant bound but [*] can be used for any bound.  Because
+	     [*] is represented the same as [0] this hack only works for
+	     the most significant bound like static and the others are
+	     rendered as [0].  */
+	  arat = build_tree_list (get_identifier ("array"), flag);
 	}
 
-      TYPE_ATOMIC (artype) = TYPE_ATOMIC (type);
-      TYPE_READONLY (artype) = TYPE_READONLY (type);
-      TYPE_RESTRICT (artype) = TYPE_RESTRICT (type);
-      TYPE_VOLATILE (artype) = TYPE_VOLATILE (type);
-      type = artype;
+      const int quals = TYPE_QUALS (type);
+      type = build_array_type (eltype, index_type);
+      type = build_type_attribute_qual_variant (type, arat, quals);
     }
 
   /* Format the type using the current pretty printer.  The generic tree
@@ -2308,10 +2303,6 @@ attr_access::array_as_string (tree type) const
   pp_printf (pp, "%qT", type);
   typstr = pp_formatted_text (pp);
   delete pp;
-
-  if (this->str)
-    /* Remove the attribute that wasn't installed by decl_attributes.  */
-    TYPE_ATTRIBUTES (type) = NULL_TREE;
 
   return typstr;
 }
