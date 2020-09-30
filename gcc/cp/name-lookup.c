@@ -3172,7 +3172,7 @@ do_pushdecl (tree decl, bool hiding)
 		  return error_mark_node;
 		}
 	      /* Hide it from ordinary lookup.  */
-	      DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
+	      DECL_ANTICIPATED (decl) = true;
 	    }
 	}
 
@@ -4924,8 +4924,15 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
   /* Since decl is a function, old should contain a function decl.  */
   if (!OVL_P (old))
-    goto not_found;
+    {
+    not_found:
+      /* It didn't work, go back to the explicit scope.  */
+      DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
+      error ("%qD should have been declared inside %qD", decl, scope);
 
+      return;
+    }
+  
   /* We handle these in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
     return;
@@ -4935,13 +4942,14 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
        match.  But, we'll check later, when we construct the
        template.  */
     return;
+
   /* Instantiations or specializations of templates may be declared as
      friends in any namespace.  */
   if (friendp && DECL_USE_TEMPLATE (decl))
     return;
 
-  tree found;
-  found = NULL_TREE;
+  tree found = NULL_TREE;
+  bool hidden_p = false;
 
   for (lkp_iterator iter (old); iter; ++iter)
     {
@@ -4957,17 +4965,20 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	{
 	  if (found)
 	    {
-	      /* We found more than one matching declaration.  */
+	      /* We found more than one matching declaration.  This
+		 can happen if we have two inline namespace children,
+		 each containing a suitable declaration.  */
 	      DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
 	      goto ambiguous;
 	    }
 	  found = ofn;
+	  hidden_p = iter.hidden_p ();
 	}
     }
 
   if (found)
     {
-      if (DECL_HIDDEN_FRIEND_P (found))
+      if (hidden_p)
 	{
 	  pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 		   "%qD has not been declared within %qD", decl, scope);
@@ -4978,10 +4989,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       goto found;
     }
 
- not_found:
-  /* It didn't work, go back to the explicit scope.  */
-  DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
-  error ("%qD should have been declared inside %qD", decl, scope);
+  goto not_found;
 }
 
 /* Return the namespace where the current declaration is declared.  */

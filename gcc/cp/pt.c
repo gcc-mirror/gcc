@@ -2988,6 +2988,7 @@ check_explicit_specialization (tree declarator,
       tree tmpl = NULL_TREE;
       tree targs = NULL_TREE;
       bool was_template_id = (TREE_CODE (declarator) == TEMPLATE_ID_EXPR);
+      bool found_hidden = false;
 
       /* Make sure that the declarator is a TEMPLATE_ID_EXPR.  */
       if (!was_template_id)
@@ -3008,12 +3009,15 @@ check_explicit_specialization (tree declarator,
 	      fns = lookup_qualified_name (CP_DECL_CONTEXT (decl), dname,
 					   LOOK_want::NORMAL, true);
 	      if (fns == error_mark_node)
-		/* If lookup fails, look for a friend declaration so we can
-		   give a better diagnostic.  */
-		fns = (lookup_qualified_name
-		       (CP_DECL_CONTEXT (decl), dname,
-			LOOK_want::NORMAL | LOOK_want::HIDDEN_FRIEND,
-			/*complain*/true));
+		{
+		  /* If lookup fails, look for a friend declaration so we can
+		     give a better diagnostic.  */
+		  fns = (lookup_qualified_name
+			 (CP_DECL_CONTEXT (decl), dname,
+			  LOOK_want::NORMAL | LOOK_want::HIDDEN_FRIEND,
+			  /*complain*/true));
+		  found_hidden = true;
+		}
 
 	      if (fns == error_mark_node || !is_overloaded_fn (fns))
 		{
@@ -3122,8 +3126,7 @@ check_explicit_specialization (tree declarator,
 	return error_mark_node;
       else
 	{
-	  if (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_HIDDEN_FRIEND_P (tmpl))
+	  if (found_hidden && TREE_CODE (decl) == FUNCTION_DECL)
 	    {
 	      auto_diagnostic_group d;
 	      if (pedwarn (DECL_SOURCE_LOCATION (decl), 0,
@@ -3132,8 +3135,9 @@ check_explicit_specialization (tree declarator,
 		inform (DECL_SOURCE_LOCATION (tmpl),
 			"friend declaration here");
 	    }
-	  else if (!ctype && !is_friend
-		   && CP_DECL_CONTEXT (decl) == current_namespace)
+
+	  if (!ctype && !is_friend
+	      && CP_DECL_CONTEXT (decl) == current_namespace)
 	    check_unqualified_spec_or_inst (tmpl, DECL_SOURCE_LOCATION (decl));
 
 	  tree gen_tmpl = most_general_template (tmpl);

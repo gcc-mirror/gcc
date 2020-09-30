@@ -2220,11 +2220,6 @@ add_function_candidate (struct z_candidate **candidates,
   int viable = 1;
   struct rejection_reason *reason = NULL;
 
-  /* At this point we should not see any functions which haven't been
-     explicitly declared, except for friend functions which will have
-     been found using argument dependent lookup.  */
-  gcc_assert (!DECL_ANTICIPATED (fn) || DECL_HIDDEN_FRIEND_P (fn));
-
   /* The `this', `in_chrg' and VTT arguments to constructors are not
      considered in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))
@@ -6343,11 +6338,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    {
 	      tree call = extract_call_expr (result);
 	      CALL_EXPR_OPERATOR_SYNTAX (call) = true;
-
-	      if (processing_template_decl && DECL_HIDDEN_FRIEND_P (cand->fn))
-		/* This prevents build_new_function_call from discarding this
-		   function during instantiation of the enclosing template.  */
-		KOENIG_LOOKUP_P (call) = 1;
 
 	      /* Specify evaluation order as per P0145R2.  */
 	      CALL_EXPR_ORDERED_ARGS (call) = false;

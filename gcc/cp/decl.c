@@ -2141,10 +2141,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       olddecl_hidden_friend = olddecl_friend && was_hidden;
       hidden_friend = olddecl_hidden_friend && hiding;
       if (!hidden_friend)
-	{
-	  DECL_ANTICIPATED (olddecl) = 0;
-	  DECL_HIDDEN_FRIEND_P (olddecl) = 0;
-	}
+	DECL_ANTICIPATED (olddecl) = false;
     }
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -2892,12 +2889,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
   DECL_UID (olddecl) = olddecl_uid;
   if (olddecl_friend)
-    DECL_FRIEND_P (olddecl) = 1;
+    DECL_FRIEND_P (olddecl) = true;
   if (hidden_friend)
-    {
-      DECL_ANTICIPATED (olddecl) = 1;
-      DECL_HIDDEN_FRIEND_P (olddecl) = 1;
-    }
+    DECL_ANTICIPATED (olddecl) = true;
 
   /* NEWDECL contains the merged attribute lists.
      Update OLDDECL to be the same.  */
