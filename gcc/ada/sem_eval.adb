@@ -7318,7 +7318,7 @@ package body Sem_Eval is
 
             elsif Ekind (E) = E_Constant then
 
-               --  One case we can give a metter message is when we have a
+               --  One case we can give a better message is when we have a
                --  string literal created by concatenating an aggregate with
                --  an others expression.
 

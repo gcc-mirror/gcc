@@ -3202,7 +3202,8 @@ package body Einfo is
 
    function Related_Expression (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) in Type_Kind | E_Constant | E_Variable);
+      pragma Assert
+        (Ekind (Id) in Type_Kind | E_Constant | E_Variable | E_Function);
       return Node24 (Id);
    end Related_Expression;
 
@@ -6478,7 +6479,8 @@ package body Einfo is
    procedure Set_Related_Expression (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind (Id) in Type_Kind | E_Constant | E_Variable | E_Void);
+        (Ekind (Id) in
+           Type_Kind | E_Constant | E_Variable | E_Function | E_Void);
       Set_Node24 (Id, V);
    end Set_Related_Expression;
 

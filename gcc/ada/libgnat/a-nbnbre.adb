@@ -318,7 +318,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Real is
+   function From_String (Arg : String) return Valid_Big_Real is
       Ten   : constant Big_Integer := To_Big_Integer (10);
       Frac  : Big_Integer;
       Exp   : Integer := 0;
@@ -371,6 +371,13 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
          Normalize (Result);
          return Result;
       end;
+   end From_String;
+
+   function From_String
+     (Numerator, Denominator : String) return Valid_Big_Real is
+   begin
+      return Big_Integers.From_String (Numerator) /
+        Big_Integers.From_String (Denominator);
    end From_String;
 
    --------------------------

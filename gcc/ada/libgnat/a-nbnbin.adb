@@ -235,7 +235,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Integer is
+   function From_String (Arg : String) return Valid_Big_Integer is
       procedure Scan_Decimal
         (Arg : String; J : in out Natural; Result : out Big_Integer);
       --  Scan decimal value starting at Arg (J). Store value in Result if
