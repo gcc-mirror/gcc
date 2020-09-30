@@ -2091,6 +2091,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  /* Obtain a temporary class container for the result.  */
 	  gfc_conv_derived_to_class (&se, e, sym->ts, tmp, false, false);
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
+	  need_len_assign = false;
 	}
       else
 	{

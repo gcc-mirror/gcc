@@ -728,7 +728,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	  gfc_expr *len;
 	  gfc_se se;
 
-	  len = gfc_copy_expr (e);
+	  len = gfc_find_and_cut_at_last_class_ref (e);
 	  gfc_add_len_component (len);
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr (&se, len);
@@ -739,6 +739,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 					    integer_zero_node));
 	  else
 	    tmp = se.expr;
+	  gfc_free_expr (len);
 	}
       else
 	tmp = integer_zero_node;
