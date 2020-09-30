@@ -1361,13 +1361,14 @@
 
 (define_insn "*movti_aarch64"
   [(set (match_operand:TI 0
-	 "nonimmediate_operand"  "=   r,w, r,w,r,m,m,w,m")
+	 "nonimmediate_operand"  "=   r,w,w, r,w,r,m,m,w,m")
 	(match_operand:TI 1
-	 "aarch64_movti_operand" " rUti,r, w,w,m,r,Z,m,w"))]
+	 "aarch64_movti_operand" " rUti,Z,r, w,w,m,r,Z,m,w"))]
   "(register_operand (operands[0], TImode)
     || aarch64_reg_or_zero (operands[1], TImode))"
   "@
    #
+   movi\\t%0.2d, #0
    #
    #
    mov\\t%0.16b, %1.16b
@@ -1376,11 +1377,11 @@
    stp\\txzr, xzr, %0
    ldr\\t%q0, %1
    str\\t%q1, %0"
-  [(set_attr "type" "multiple,f_mcr,f_mrc,neon_logic_q, \
+  [(set_attr "type" "multiple,neon_move,f_mcr,f_mrc,neon_logic_q, \
 		             load_16,store_16,store_16,\
                              load_16,store_16")
-   (set_attr "length" "8,8,8,4,4,4,4,4,4")
-   (set_attr "arch" "*,*,*,simd,*,*,*,fp,fp")]
+   (set_attr "length" "8,4,8,8,4,4,4,4,4,4")
+   (set_attr "arch" "*,simd,*,*,simd,*,*,*,fp,fp")]
 )
 
 ;; Split a TImode register-register or register-immediate move into
@@ -1511,9 +1512,9 @@
 
 (define_insn "*movtf_aarch64"
   [(set (match_operand:TF 0
-	 "nonimmediate_operand" "=w,?&r,w ,?r,w,?w,w,m,?r,m ,m")
+	 "nonimmediate_operand" "=w,?r ,w ,?r,w,?w,w,m,?r,m ,m")
 	(match_operand:TF 1
-	 "general_operand"      " w,?r, ?r,w ,Y,Y ,m,w,m ,?r,Y"))]
+	 "general_operand"      " w,?rY,?r,w ,Y,Y ,m,w,m ,?r,Y"))]
   "TARGET_FLOAT && (register_operand (operands[0], TFmode)
     || aarch64_reg_or_fp_zero (operands[1], TFmode))"
   "@
@@ -1536,7 +1537,7 @@
 
 (define_split
    [(set (match_operand:TF 0 "register_operand" "")
-	 (match_operand:TF 1 "aarch64_reg_or_imm" ""))]
+	 (match_operand:TF 1 "nonmemory_operand" ""))]
   "reload_completed && aarch64_split_128bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
   {
