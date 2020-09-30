@@ -5602,9 +5602,12 @@ refers to the global ``variable'' @code{errno}.  (On certain systems,
 macro, a reasonable default is used.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_LIBC_HAS_FUNCTION (enum function_class @var{fn_class})
+@deftypefn {Target Hook} bool TARGET_LIBC_HAS_FUNCTION (enum function_class @var{fn_class}, tree @var{type})
 This hook determines whether a function from a class of functions
-@var{fn_class} is present in the target C library.
+@var{fn_class} is present in the target C library.  If @var{type} is NULL,
+the caller asks for support for all standard (float, double, long double)
+types.  If @var{type} is non-NULL, the caller asks for support for a
+specific type.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})

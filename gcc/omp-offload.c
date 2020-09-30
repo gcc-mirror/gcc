@@ -327,11 +327,18 @@ omp_discover_implicit_declare_target (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (DECL_SAVED_TREE (node->decl))
       {
+	struct cgraph_node *cgn;
         if (omp_declare_target_fn_p (node->decl))
 	  worklist.safe_push (node->decl);
 	else if (DECL_STRUCT_FUNCTION (node->decl)
 		 && DECL_STRUCT_FUNCTION (node->decl)->has_omp_target)
 	  worklist.safe_push (node->decl);
+	for (cgn = node->nested; cgn; cgn = cgn->next_nested)
+	  if (omp_declare_target_fn_p (cgn->decl))
+	    worklist.safe_push (cgn->decl);
+	  else if (DECL_STRUCT_FUNCTION (cgn->decl)
+		   && DECL_STRUCT_FUNCTION (cgn->decl)->has_omp_target)
+	    worklist.safe_push (cgn->decl);
       }
   FOR_EACH_STATIC_INITIALIZER (vnode)
     if (omp_declare_target_var_p (vnode->decl))

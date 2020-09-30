@@ -2720,14 +2720,13 @@ struct GTY(()) lang_decl_fn {
   unsigned thunk_p : 1;
 
   unsigned this_thunk_p : 1;
-  unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
   unsigned has_dependent_explicit_spec_p : 1;
   unsigned immediate_fn_p : 1;
   unsigned maybe_deleted : 1;
   unsigned coroutine_p : 1;
 
-  unsigned spare : 9;
+  unsigned spare : 10;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -4066,12 +4065,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    data members.  */
 #define DECL_OMP_PRIVATIZED_MEMBER(NODE) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.anticipated_p)
-
-/* Nonzero if NODE is a FUNCTION_DECL which was declared as a friend
-   within a class but has not been declared in the surrounding scope.
-   The function is invisible except via argument dependent lookup.  */
-#define DECL_HIDDEN_FRIEND_P(NODE) \
-  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->hidden_friend_p)
 
 /* Nonzero if NODE is an artificial FUNCTION_DECL for
    #pragma omp declare reduction.  */
@@ -6225,6 +6218,7 @@ extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
 extern tree extract_call_expr			(tree);
 extern tree build_trivial_dtor_call		(tree, bool = false);
+extern bool ref_conv_binds_directly_p		(tree, tree);
 extern tree build_user_type_conversion		(tree, tree, int,
 						 tsubst_flags_t);
 extern tree build_new_function_call		(tree, vec<tree, va_gc> **,
@@ -7371,7 +7365,7 @@ inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree fn, tree maybe_ovl,
-						 bool using_p = false);
+						 int using_or_hidden = 0);
 extern tree ovl_skip_hidden			(tree) ATTRIBUTE_PURE;
 extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);

@@ -2220,11 +2220,6 @@ add_function_candidate (struct z_candidate **candidates,
   int viable = 1;
   struct rejection_reason *reason = NULL;
 
-  /* At this point we should not see any functions which haven't been
-     explicitly declared, except for friend functions which will have
-     been found using argument dependent lookup.  */
-  gcc_assert (!DECL_ANTICIPATED (fn) || DECL_HIDDEN_FRIEND_P (fn));
-
   /* The `this', `in_chrg' and VTT arguments to constructors are not
      considered in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))
@@ -6344,11 +6339,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      tree call = extract_call_expr (result);
 	      CALL_EXPR_OPERATOR_SYNTAX (call) = true;
 
-	      if (processing_template_decl && DECL_HIDDEN_FRIEND_P (cand->fn))
-		/* This prevents build_new_function_call from discarding this
-		   function during instantiation of the enclosing template.  */
-		KOENIG_LOOKUP_P (call) = 1;
-
 	      /* Specify evaluation order as per P0145R2.  */
 	      CALL_EXPR_ORDERED_ARGS (call) = false;
 	      switch (op_is_ordered (code))
@@ -8427,6 +8417,28 @@ conv_binds_ref_to_prvalue (conversion *c)
     return true;
 
   return false;
+}
+
+/* True iff converting EXPR to a reference type TYPE does not involve
+   creating a temporary.  */
+
+bool
+ref_conv_binds_directly_p (tree type, tree expr)
+{
+  gcc_assert (TYPE_REF_P (type));
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  void *p = conversion_obstack_alloc (0);
+
+  conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+					  /*c_cast_p=*/false,
+					  LOOKUP_IMPLICIT, tf_none);
+  bool ret = conv && !conv->bad_p && !conv_binds_ref_to_prvalue (conv);
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return ret;
 }
 
 /* Call the trivial destructor for INSTANCE, which can be either an lvalue of

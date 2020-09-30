@@ -429,7 +429,28 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
   /* If decl or vptr are non-null, pointer arithmetic for the array reference
      is likely. Generate the 'span' for the array reference.  */
   if (vptr)
-    span = gfc_vptr_size_get (vptr);
+    {
+      span = gfc_vptr_size_get (vptr);
+
+      /* Check if this is an unlimited polymorphic object carrying a character
+	 payload. In this case, the 'len' field is non-zero.  */
+      if (decl && GFC_CLASS_TYPE_P (TREE_TYPE (decl)))
+	{
+	  tmp = gfc_class_len_or_zero_get (decl);
+	  if (!integer_zerop (tmp))
+	    {
+	      tree cond;
+	      tree stype = TREE_TYPE (span);
+	      tmp = fold_convert (stype, tmp);
+	      cond = fold_build2_loc (input_location, EQ_EXPR,
+				      logical_type_node, tmp,
+				      build_int_cst (stype, 0));
+	      tmp = fold_build2 (MULT_EXPR, stype, span, tmp);
+	      span = fold_build3_loc (input_location, COND_EXPR, stype,
+				      cond, span, tmp);
+	    }
+	}
+    }
   else if (decl)
     span = get_array_span (type, decl);
 

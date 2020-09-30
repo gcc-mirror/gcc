@@ -3542,7 +3542,8 @@ darwin_rename_builtins (void)
 }
 
 bool
-darwin_libc_has_function (enum function_class fn_class)
+darwin_libc_has_function (enum function_class fn_class,
+			  tree type ATTRIBUTE_UNUSED)
 {
   if (fn_class == function_sincos)
     return (strverscmp (darwin_macosx_version_min, "10.9") >= 0);

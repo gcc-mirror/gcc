@@ -1,3 +1,55 @@
+2020-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* call.c (ref_conv_binds_directly_p): New function.
+	* cp-tree.h (ref_conv_binds_directly_p): Declare.
+	* parser.c (warn_for_range_copy): New function.
+	(cp_convert_range_for): Call it.
+
+2020-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (ovl_insert): Change final parm to hidden-or-using
+	indicator.
+	* name-lookup.h (HIDDEN_TYPE_BINDING_P): New.
+	(struct cxx_binding): Add type_is_hidden flag.
+	* tree.c (ovl_insert): Change using_p parm to using_or_hidden,
+	adjust.
+	(ovl_skip_hidden): Assert we never see a naked hidden decl.
+	* decl.c (xref_tag_1): Delete unhiding friend from here (moved to
+	lookup_elaborated_type_1).
+	* name-lookup.c (STAT_TYPE_HIDDEN_P, STAT_DECL_HIDDEN_P): New.
+	(name_lookup::search_namespace_only): Check new hidden markers.
+	(cxx_binding_make): Clear HIDDEN_TYPE_BINDING_P.
+	(update_binding): Update new hidden markers.
+	(lookup_name_1): Check HIDDEN_TYPE_BINDING_P and simplify friend
+	ignoring.
+	(lookup_elaborated_type_1): Use new hidden markers.  Reveal the
+	decl here.
+
+2020-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (create_local_binding): Do not clear
+	INHERITED_VALUE_BINDING_P here.
+	(name_lookup::process_binding): Move done hidden-decl triage to ...
+	(name_lookup::search_namespace_only): ... here, its only caller.
+	(cxx_binding_make): Clear flags here.
+	(push_binding): Not here.
+	(pop_local_binding): RAII.
+	(update_binding): Refactor.
+	(do_pushdecl): Assert we're never revealing a local binding.
+	(do_pushdecl_with_scope): Directly call do_pushdecl.
+	(get_class_binding): Do not clear LOCAL_BINDING_P here.
+	* pt.c (push_template_decl): Set friend & anticipated before
+	pushing.
+
+2020-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (update_binding): We never meet two implicit
+	typedefs.
+	(do_pushdecl): Adjust set_identifier_type_value_with_scope calls.
+	(set_identifier_type_value_with_scope): Do not update binding in
+	the namespace-case.  Assert it is already there.
+
 2020-09-25  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (duplicate_decls): Replace 'is_friend' with 'hiding'

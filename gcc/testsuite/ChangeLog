@@ -1,3 +1,97 @@
+2020-09-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97188
+	* gcc.dg/Wstringop-overflow-23.c: Adjust text of expected warnings.
+	* gcc.dg/Wnonnull-4.c: New test.
+
+2020-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* g++.dg/warn/Wrange-loop-construct.C: New test.
+
+2020-09-29  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/align-1.C: Remove AIX XFAIL.
+	* g++.dg/debug/dwarf2/align-2.C: Same.
+	* g++.dg/debug/dwarf2/align-3.C: Same.
+	* g++.dg/debug/dwarf2/align-4.C: Same.
+	* g++.dg/debug/dwarf2/align-5.C: Same.
+	* g++.dg/debug/dwarf2/align-6.C: Same.
+	* g++.dg/debug/dwarf2/defaulted-member-function-1.C: Same.
+	* g++.dg/debug/dwarf2/defaulted-member-function-2.C: Same.
+	* g++.dg/debug/dwarf2/defaulted-member-function-3.C: Same.
+	* g++.dg/debug/dwarf2/inline-var-1.C: Same.
+	* g++.dg/debug/dwarf2/inline-var-2.C: Same.
+	* g++.dg/debug/dwarf2/inline-var-3.C: Same.
+	* g++.dg/debug/dwarf2/noreturn-function.C: Same.
+	* g++.dg/debug/dwarf2/ptrdmem-1.C: Same.
+	* g++.dg/debug/dwarf2/ref-2.C: Same.
+	* g++.dg/debug/dwarf2/ref-3.C: Same.
+	* g++.dg/debug/dwarf2/ref-4.C: Same.
+	* g++.dg/debug/dwarf2/refqual-1.C: Same.
+	* g++.dg/debug/dwarf2/refqual-2.C: Same.
+	* gcc.dg/debug/dwarf2/align-1.c: Same.
+	* gcc.dg/debug/dwarf2/align-2.c: Same.
+	* gcc.dg/debug/dwarf2/align-3.c: Same.
+	* gcc.dg/debug/dwarf2/align-4.c: Same.
+	* gcc.dg/debug/dwarf2/align-5.c: Same.
+	* gcc.dg/debug/dwarf2/align-6.c: Same.
+	* gcc.dg/debug/dwarf2/align-as-1.c: Same.
+	* gcc.dg/debug/dwarf2/dwarf2-macro.c: Same.
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: Same.
+	* gcc.dg/debug/dwarf2/lang-c89.c: Same.
+	* gcc.dg/debug/dwarf2/noreturn-function-attribute.c: Same.
+	* gcc.dg/debug/dwarf2/noreturn-function-keyword.c: Same.
+	* gcc.dg/debug/dwarf2/pr71855.c: Same.
+	* gcc.dg/debug/dwarf2/inline5.c: Add XFAIL on AIX.
+
+2020-09-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95188
+	* gcc.dg/analyzer/signal-registration-loc.c: New test.
+
+2020-09-29  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/spellcheck-inttypes.C: Define _STD_TYPES_T on AIX.
+	* gcc.dg/spellcheck-inttypes.c: Same.
+
+2020-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97241
+	* gcc.dg/vect/pr97241.c: New testcase.
+
+2020-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97238
+	* gcc.dg/pr97238.c: New testcase.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-arith-2.c: Expect FP16 vectorization
+	even without -ffast-math.
+
+2020-09-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/predef-3.c: Update testcase.
+	* gcc.target/riscv/predef-6.c: Ditto.
+
+2020-09-29  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* g++.dg/tree-ssa/pr96979.C: New test.
+
+2020-09-29  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2020-09-29  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* g++.dg/tree-ssa/pr96979.C: New test.
+
+2020-09-29  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/ipa/symver1.c: Skip on AIX.
+
 2020-09-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97233

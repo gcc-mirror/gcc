@@ -1,3 +1,8 @@
+2020-09-29  Maciej W. Rozycki  <macro@wdc.com>
+
+	* config/riscv/t-elf (LIB2_DIVMOD_EXCEPTION_FLAGS): New
+	variable.
+
 2020-09-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/libgcc-softfp.ver: New file.

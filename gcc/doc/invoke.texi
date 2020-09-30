@@ -245,7 +245,7 @@ in the following sections.
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
--Wredundant-move -Wredundant-tags @gol
+-Wrange-loop-construct -Wredundant-move -Wredundant-tags @gol
 -Wreorder  -Wregister @gol
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
@@ -3605,6 +3605,24 @@ treats the return value as if it were designated by an rvalue.
 
 This warning is enabled by @option{-Wextra}.
 
+@item -Wrange-loop-construct @r{(C++ and Objective-C++ only)}
+@opindex Wrange-loop-construct
+@opindex Wno-range-loop-construct
+This warning warns when a C++ range-based for-loop is creating an unnecessary
+copy.  This can happen when the range declaration is not a reference, but
+probably should be.  For example:
+
+@smallexample
+struct S @{ char arr[128]; @};
+void fn () @{
+  S arr[5];
+  for (const auto x : arr) @{ @dots{} @}
+@}
+@end smallexample
+
+It does not warn when the type being copied is a trivially-copyable type whose
+size is less than 64 bytes.  This warning is enabled by @option{-Wall}.
+
 @item -Wredundant-tags @r{(C++ and Objective-C++ only)}
 @opindex Wredundant-tags
 @opindex Wno-redundant-tags
@@ -5274,6 +5292,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wparentheses  @gol
 -Wpessimizing-move @r{(only for C++)}  @gol
 -Wpointer-sign  @gol
+-Wrange-loop-construct @r{(only for C++)}  @gol
 -Wreorder   @gol
 -Wrestrict   @gol
 -Wreturn-type  @gol
@@ -17533,6 +17552,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
 @samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
+@samp{cortex-a78}, @samp{cortex-a78ae},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-e1}, @samp{neoverse-n1}, @samp{neoverse-n2},
 @samp{neoverse-v1}, @samp{qdf24xx}, @samp{saphira},
@@ -17548,7 +17568,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{cortex-r82}, @samp{native}.
+@samp{cortex-r82}, @samp{cortex-x1}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -19375,11 +19395,12 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
+@samp{cortex-a78}, @samp{cortex-a78ae},
 @samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p}, @samp{cortex-m55},
+@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},

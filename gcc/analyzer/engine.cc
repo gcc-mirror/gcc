@@ -2629,7 +2629,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 	}
     got_merger:
       gcc_assert (it->m_merger_idx >= 0);
-      gcc_assert (it->m_merger_idx < merged_states.length ());
+      gcc_assert ((unsigned)it->m_merger_idx < merged_states.length ());
     }
 
   /* Create merger nodes.  */
@@ -2677,13 +2677,23 @@ static bool
 stmt_requires_new_enode_p (const gimple *stmt,
 			   const gimple *prev_stmt)
 {
-  /* Stop consolidating at calls to
-     "__analyzer_dump_exploded_nodes", so they always appear at the
-     start of an exploded_node.  */
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (is_special_named_call_p (call, "__analyzer_dump_exploded_nodes",
-			 1))
-      return true;
+    {
+      /* Stop consolidating at calls to
+	 "__analyzer_dump_exploded_nodes", so they always appear at the
+	 start of an exploded_node.  */
+      if (is_special_named_call_p (call, "__analyzer_dump_exploded_nodes",
+				   1))
+	return true;
+
+      /* sm-signal.cc injects an additional custom eedge at "signal" calls
+	 from the registration enode to the handler enode, separate from the
+	 regular next state, which defeats the "detect state change" logic
+	 in process_node.  Work around this via special-casing, to ensure
+	 we split the enode immediately before any "signal" call.  */
+      if (is_special_named_call_p (call, "signal", 2))
+	return true;
+    }
 
   /* If we had a PREV_STMT with an unknown location, and this stmt
      has a known location, then if a state change happens here, it

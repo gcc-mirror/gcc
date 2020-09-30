@@ -2141,10 +2141,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       olddecl_hidden_friend = olddecl_friend && was_hidden;
       hidden_friend = olddecl_hidden_friend && hiding;
       if (!hidden_friend)
-	{
-	  DECL_ANTICIPATED (olddecl) = 0;
-	  DECL_HIDDEN_FRIEND_P (olddecl) = 0;
-	}
+	DECL_ANTICIPATED (olddecl) = false;
     }
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -2892,12 +2889,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
   DECL_UID (olddecl) = olddecl_uid;
   if (olddecl_friend)
-    DECL_FRIEND_P (olddecl) = 1;
+    DECL_FRIEND_P (olddecl) = true;
   if (hidden_friend)
-    {
-      DECL_ANTICIPATED (olddecl) = 1;
-      DECL_HIDDEN_FRIEND_P (olddecl) = 1;
-    }
+    DECL_ANTICIPATED (olddecl) = true;
 
   /* NEWDECL contains the merged attribute lists.
      Update OLDDECL to be the same.  */
@@ -15089,22 +15083,9 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  return error_mark_node;
 	}
 
-      if (how != TAG_how::HIDDEN_FRIEND && TYPE_HIDDEN_P (t))
-	{
-	  /* This is no longer an invisible friend.  Make it
-	     visible.  */
-	  tree decl = TYPE_NAME (t);
-
-	  DECL_ANTICIPATED (decl) = false;
-	  DECL_FRIEND_P (decl) = false;
-
-	  if (TYPE_TEMPLATE_INFO (t))
-	    {
-	      tree tmpl = TYPE_TI_TEMPLATE (t);
-	      DECL_ANTICIPATED (tmpl) = false;
-	      DECL_FRIEND_P (tmpl) = false;
-	    }
-	}
+      gcc_checking_assert (how == TAG_how::HIDDEN_FRIEND
+			   || !(DECL_LANG_SPECIFIC (TYPE_NAME (t))
+				&& DECL_ANTICIPATED (TYPE_NAME (t))));
     }
 
   return t;

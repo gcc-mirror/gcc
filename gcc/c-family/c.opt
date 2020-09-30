@@ -800,6 +800,10 @@ Wpacked-not-aligned
 C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when fields in a struct with the packed attribute are misaligned.
 
+Wrange-loop-construct
+C++ ObjC++ Var(warn_range_loop_construct) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn when a range-based for-loop is creating unnecessary copies.
+
 Wredundant-tags
 C++ ObjC++ Var(warn_redundant_tags) Warning
 Warn when a class or enumerated type is referenced using a redundant class-key.

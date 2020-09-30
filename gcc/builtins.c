@@ -2733,7 +2733,7 @@ expand_builtin_cexpi (tree exp, rtx target)
       /* Compute into op1 and op2.  */
       expand_twoval_unop (sincos_optab, op0, op2, op1, 0);
     }
-  else if (targetm.libc_has_function (function_sincos))
+  else if (targetm.libc_has_function (function_sincos, type))
     {
       tree call, fn = NULL_TREE;
       tree top1, top2;
@@ -9770,7 +9770,7 @@ fold_builtin_sincos (location_t loc,
     }
   if (!call)
     {
-      if (!targetm.libc_has_function (function_c99_math_complex)
+      if (!targetm.libc_has_function (function_c99_math_complex, type)
 	  || !builtin_decl_implicit_p (fn))
 	return NULL_TREE;
       fndecl = builtin_decl_explicit (fn);

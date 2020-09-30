@@ -5185,7 +5185,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with {
        const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (@0);
        bool use_exp2 = false;
-       if (targetm.libc_has_function (function_c99_misc)
+       if (targetm.libc_has_function (function_c99_misc, TREE_TYPE (@0))
 	   && value->cl == rvc_normal)
 	 {
 	   REAL_VALUE_TYPE frac_rvt = *value;
@@ -5484,7 +5484,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       cexpis (CEXPI)
   (simplify
    (cexps compositional_complex@0)
-   (if (targetm.libc_has_function (function_c99_math_complex))
+   (if (targetm.libc_has_function (function_c99_math_complex, TREE_TYPE (@0)))
     (complex
      (mult (exps@1 (realpart @0)) (realpart (cexpis:type@2 (imagpart @0))))
      (mult @1 (imagpart @2)))))))
@@ -5536,7 +5536,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* truncl(extend(x)) and trunc(extend(x)) -> extend(truncf(x)), etc.,
     if x is a float.  */
  (if (optimize && canonicalize_math_p ()
-      && targetm.libc_has_function (function_c99_misc))
+      && targetm.libc_has_function (function_c99_misc, NULL_TREE))
   (simplify
    (froms (convert float_value_p@0))
    (convert (tos @0)))))

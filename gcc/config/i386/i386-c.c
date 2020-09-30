@@ -594,6 +594,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AMX_INT8__");
   if (isa_flag2 & OPTION_MASK_ISA2_AMX_BF16)
     def_or_undef (parse_in, "__AMX_BF16__");
+  if (isa_flag & OPTION_MASK_ISA_SAHF)
+    def_or_undef (parse_in, "__LAHF_SAHF__");
+  if (isa_flag2 & OPTION_MASK_ISA2_MOVBE)
+    def_or_undef (parse_in, "__MOVBE__");
 
   if (TARGET_IAMCU)
     {
