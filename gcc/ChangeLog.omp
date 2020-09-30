@@ -1,6 +1,14 @@
 2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-offload.c (omp_discover_implicit_declare_target): Also
+	handled nested functions.
+
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* langhooks-def.h (lhd_get_decl_init): New.
