@@ -1,5 +1,10 @@
 2020-09-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* tree.h (ovl_insert): Make usingness unsigned.
+	* tree.c (ovl_insert): Make usingness unsigned, change semantics.
+	* name-lookup.c (do_nonmember_using_decl): Adjust ovl_insert call.
+
 	Merge trunk 00aaae03db2
 	c++: Replace tag_scope with TAG_how
 

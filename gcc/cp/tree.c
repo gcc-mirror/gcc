@@ -2263,12 +2263,12 @@ ovl_make (tree fn, tree next)
 }
 
 /* Add FN to the (potentially NULL) overload set OVL.  USINGNESS is
-   non-zero if this is a using-decl.  It is < if we're exporting the
+   > zero if this is a using-decl.  It is > 1 if we're exporting the
    using decl.  We also pay attention to DECL_HIDDEN.  We keep the
    hidden decls first, but remaining ones are unordered.  */
 
 tree
-ovl_insert (tree fn, tree maybe_ovl, int usingness)
+ovl_insert (tree fn, tree maybe_ovl, unsigned usingness)
 {
   tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
@@ -2291,7 +2291,7 @@ ovl_insert (tree fn, tree maybe_ovl, int usingness)
       if (usingness)
 	{
 	  OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
-	  if (usingness < 0)
+	  if (usingness > 1)
 	    OVL_EXPORT_P (maybe_ovl) = true;
 	}
     }

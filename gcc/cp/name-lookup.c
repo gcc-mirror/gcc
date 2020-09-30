@@ -5115,7 +5115,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	    /* Unlike the decl-pushing case we don't drop anticipated
 	       builtins here.  They don't cause a problem, and we'd
 	       like to match them with a future declaration.  */
-	    value = ovl_insert (new_fn, value, exporting ? -1 : +1);
+	    value = ovl_insert (new_fn, value, 1 + exporting);
 	}
     }
   else if (value
