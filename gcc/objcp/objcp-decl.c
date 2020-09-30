@@ -41,7 +41,7 @@ objcp_start_struct (location_t loc ATTRIBUTE_UNUSED,
   if (!name)
     name = make_anon_name ();
 
-  s = xref_tag (record_type, name, ts_global);
+  s = xref_tag (record_type, name, TAG_how::GLOBAL);
   CLASSTYPE_DECLARED_CLASS (s) = 0;  /* this is a 'struct', not a 'class'.  */
   xref_basetypes (s, NULL_TREE);     /* no base classes here!  */
 
@@ -84,7 +84,7 @@ objcp_finish_function (void)
 tree
 objcp_xref_tag (enum tree_code code ATTRIBUTE_UNUSED, tree name)
 {
-  return xref_tag (record_type, name, ts_global);
+  return xref_tag (record_type, name, TAG_how::GLOBAL);
 }
 
 int

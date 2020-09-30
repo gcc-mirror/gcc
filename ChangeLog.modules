@@ -1,5 +1,8 @@
 2020-09-30  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 00aaae03db2
+	c++: Replace tag_scope with TAG_how
+
 	Merge trunk 0d8f3f612d6
 
 2020-09-24  Nathan Sidwell  <nathan@acm.org>
