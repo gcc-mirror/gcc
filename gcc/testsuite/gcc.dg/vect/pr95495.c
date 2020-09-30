@@ -14,3 +14,5 @@ h()
     d += e[f].b >> 1 | e[f].b & 1;
   }
 }
+
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" } } */

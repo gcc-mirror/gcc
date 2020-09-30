@@ -21,3 +21,5 @@ int main()
     __builtin_abort ();
   return 0;
 }
+
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" } } */
