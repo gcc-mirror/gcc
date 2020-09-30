@@ -1,4 +1,5 @@
 /* { dg-do run { target { ! ia32 } } } */
+/* { dg-require-effective-target amx_tile } */
 /* { dg-options "-O2 -mamx-tile " } */
 #include <immintrin.h>
 
