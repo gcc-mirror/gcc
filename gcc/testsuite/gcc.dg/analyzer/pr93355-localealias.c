@@ -5,6 +5,7 @@
 /* { dg-do "compile" } */
 /* { dg-additional-options "-Wno-analyzer-too-complex -fno-analyzer-feasibility" } */
 /* TODO: remove the need for these options.  */
+/* { dg-require-effective-target alloca } */
 
 /* Handle aliases for locale names.
    Copyright (C) 1995-1999, 2000-2001, 2003 Free Software Foundation, Inc.

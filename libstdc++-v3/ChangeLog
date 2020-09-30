@@ -1,3 +1,37 @@
+2020-09-24  Antony Polukhin  <antoshkka@gmail.com>
+
+	PR libstdc++/71579
+	* include/std/type_traits (invoke_result, is_invocable)
+	(is_invocable_r, is_nothrow_invocable, is_nothrow_invocable_r):
+	Add static_asserts to make sure that the arguments of the type
+	traits are not misused with incomplete types.
+	* testsuite/20_util/invoke_result/incomplete_args_neg.cc: New test.
+	* testsuite/20_util/is_invocable/incomplete_args_neg.cc: New test.
+	* testsuite/20_util/is_invocable/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_nothrow_invocable/incomplete_args_neg.cc:
+	New test.
+	* testsuite/20_util/is_nothrow_invocable/incomplete_neg.cc: Check
+	for error on incomplete type usage in trait.
+
+2020-09-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__boxable): Split out the
+	associated constraints of __box into here.
+	(__detail::__box): Use the __boxable concept.  Define a leaner
+	partial specialization for semiregular types.
+	(single_view::_M_value): Give it [[no_unique_address]].
+	(filter_view::_M_pred): Likewise.
+	(transform_view::_M_fun): Likewise.
+	(take_while_view::_M_pred): Likewise.
+	(drop_while_view::_M_pred):: Likewise.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc: New
+	test.
+
+2020-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Correct name of option.
+	* doc/html/*: Regenerate.
+
 2020-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/97167

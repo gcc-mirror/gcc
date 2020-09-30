@@ -2022,6 +2022,9 @@ private:
   /* Output flags of edge to a file F.  */
   void dump_edge_flags (FILE *f);
 
+  /* Dump edge to stderr.  */
+  void DEBUG_FUNCTION debug (void);
+
   /* Verify that call graph edge corresponds to DECL from the associated
      statement.  Return true if the verification should fail.  */
   bool verify_corresponds_to_fndecl (tree decl);

@@ -64,6 +64,11 @@ Boston, MA 02110-1301, USA.  */
   switch (idx) {					\
   DW_IDX (name, value)
 #define DW_END_IDX } return 0; }
+#define DW_FIRST_UT(name, value) \
+  const char *get_DW_UT_name (unsigned int ut) {	\
+  switch (ut) {					\
+  DW_UT (name, value)
+#define DW_END_UT } return 0; }
 
 #define DW_TAG(name, value) case name: return # name ;
 #define DW_TAG_DUP(name, value)
@@ -78,6 +83,7 @@ Boston, MA 02110-1301, USA.  */
 #define DW_CFA_DUP(name, value)
 #define DW_IDX(name, value) case name: return # name ;
 #define DW_IDX_DUP(name, value)
+#define DW_UT(name, value) case name: return # name ;
 
 #include "dwarf2.def"
 
@@ -95,6 +101,7 @@ Boston, MA 02110-1301, USA.  */
 #undef DW_END_CFA
 #undef DW_FIRST_IDX
 #undef DW_END_IDX
+#undef DW_END_UT
 
 #undef DW_TAG
 #undef DW_TAG_DUP

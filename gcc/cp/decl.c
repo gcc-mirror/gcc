@@ -1464,9 +1464,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   /* Check for redeclaration and other discrepancies.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
-      && DECL_ARTIFICIAL (olddecl)
-      /* A C++20 implicit friend operator== uses the normal path (94462).  */
-      && !DECL_HIDDEN_FRIEND_P (olddecl))
+      && DECL_BUILTIN_P (olddecl))
     {
       if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
@@ -1507,15 +1505,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      "declaration of %q#D conflicts with built-in "
 		      "declaration %q#D", newdecl, olddecl);
 	  return NULL_TREE;
-	}
-      else if (DECL_OMP_DECLARE_REDUCTION_P (olddecl))
-	{
-	  gcc_assert (DECL_OMP_DECLARE_REDUCTION_P (newdecl));
-	  error_at (newdecl_loc,
-		    "redeclaration of %<pragma omp declare reduction%>");
-	  inform (olddecl_loc,
-		  "previous %<pragma omp declare reduction%> declaration");
-	  return error_mark_node;
 	}
       else if (!types_match)
 	{
@@ -1814,6 +1803,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		  "previous declaration as %q#D", olddecl);
 	  return error_mark_node;
 	}
+    }
+  else if (TREE_CODE (newdecl) == FUNCTION_DECL
+	   && DECL_OMP_DECLARE_REDUCTION_P (newdecl))
+    {
+      /* OMP UDRs are never duplicates. */
+      gcc_assert (DECL_OMP_DECLARE_REDUCTION_P (olddecl));
+      error_at (newdecl_loc,
+		"redeclaration of %<pragma omp declare reduction%>");
+      inform (olddecl_loc,
+	      "previous %<pragma omp declare reduction%> declaration");
+      return error_mark_node;
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL
 	    && ((DECL_TEMPLATE_SPECIALIZATION (olddecl)

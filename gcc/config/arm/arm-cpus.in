@@ -1494,7 +1494,7 @@ begin cpu neoverse-v1
   cname neoversev1
   tune for cortex-a57
   tune flags LDSCHED
-  architecture armv8.4-a+bf16+i8mm
+  architecture armv8.4-a+fp16+bf16+i8mm
   option crypto add FP_ARMv8 CRYPTO
   costs cortex_a57
 end cpu neoverse-v1

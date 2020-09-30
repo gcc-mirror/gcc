@@ -1,3 +1,10 @@
+2020-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96495
+	* trans-expr.c (gfc_conv_procedure_call): Take the deallocation
+	of allocatable result components of a scalar result outside the
+	scalarization loop. Find and use the stored result.
+
 2020-09-21  Harald Anlauf  <anlauf@gmx.de>
 	    Paul Thomas   <pault@gcc.gnu.org>
 

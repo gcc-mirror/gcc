@@ -73,11 +73,8 @@ void exec_vtrn_half (void)
   /* Input vector can only have 64 bits.  */
   DECL_VARIABLE_ALL_VARIANTS(vector);
   DECL_VARIABLE_ALL_VARIANTS(vector2);
-  DECL_VARIABLE(vector, float, 64, 2);
-  DECL_VARIABLE(vector2, float, 64, 2);
 
   DECL_VARIABLE_ALL_VARIANTS(vector_res);
-  DECL_VARIABLE(vector_res, float, 64, 2);
 
   clean_results ();
   /* We don't have vtrn1_T64x1, so set expected to the clean value.  */

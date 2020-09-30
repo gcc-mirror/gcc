@@ -1546,7 +1546,13 @@ public:
       this->m_vec = r.m_vec;
       r.m_vec = NULL;
     }
-  void operator= (auto_vec&&) = delete;
+  auto_vec& operator= (auto_vec&& r)
+    {
+      this->release ();
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+      return *this;
+    }
 };
 
 

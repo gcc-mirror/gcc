@@ -805,3 +805,14 @@ DW_IDX (DW_IDX_hi_user, 0x3fff)
 DW_IDX (DW_IDX_GNU_internal, 0x2000)
 DW_IDX (DW_IDX_GNU_external, 0x2001)
 DW_END_IDX
+
+/* DWARF5 Unit type header encodings  */
+DW_FIRST_UT (DW_UT_compile, 0x01)
+DW_UT (DW_UT_type, 0x02)
+DW_UT (DW_UT_partial, 0x03)
+DW_UT (DW_UT_skeleton, 0x04)
+DW_UT (DW_UT_split_compile, 0x05)
+DW_UT (DW_UT_split_type, 0x06)
+DW_UT (DW_UT_lo_user, 0x80)
+DW_UT (DW_UT_hi_user, 0xff)
+DW_END_UT

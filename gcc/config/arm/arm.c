@@ -13277,14 +13277,18 @@ arm_coproc_mem_operand_wb (rtx op, int wb_level)
 
   /* Match:
      (plus (reg)
-	   (const)).  */
+	   (const))
+
+     The encoded immediate for 16-bit modes is multiplied by 2,
+     while the encoded immediate for 32-bit and 64-bit modes is
+     multiplied by 4.  */
+  int factor = MIN (GET_MODE_SIZE (GET_MODE (op)), 4);
   if (GET_CODE (ind) == PLUS
       && REG_P (XEXP (ind, 0))
       && REG_MODE_OK_FOR_BASE_P (XEXP (ind, 0), VOIDmode)
       && CONST_INT_P (XEXP (ind, 1))
-      && INTVAL (XEXP (ind, 1)) > -1024
-      && INTVAL (XEXP (ind, 1)) <  1024
-      && (INTVAL (XEXP (ind, 1)) & 3) == 0)
+      && IN_RANGE (INTVAL (XEXP (ind, 1)), -255 * factor, 255 * factor)
+      && (INTVAL (XEXP (ind, 1)) & (factor - 1)) == 0)
     return TRUE;
 
   return FALSE;
@@ -33577,18 +33581,5 @@ arm_mode_base_reg_class (machine_mode mode)
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
-
-bool
-arm_mve_mode_and_operands_type_check (machine_mode mode, rtx op0, rtx op1)
-{
-  if (!(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT))
-    return true;
-  else if (mode == E_BFmode)
-    return false;
-  else if ((s_register_operand (op0, mode) && MEM_P (op1))
-	   || (s_register_operand (op1, mode) && MEM_P (op0)))
-    return false;
-  return true;
-}
 
 #include "gt-arm.h"

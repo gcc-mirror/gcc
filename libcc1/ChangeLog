@@ -1,3 +1,14 @@
+2020-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (supplement_binding): Drop default args to
+	duplicate_decls.
+	(safe_pushtag): Drop scope parm.  Drop default args to pushtag.
+	(safe_pushdecl_maybe_friend): Rename to ...
+	(safe_pushdecl): ... here. Drop is_friend parm.  Drop default args
+	to pushdecl.
+	(plugin_build_decl): Adjust safe_pushdecl & safe_pushtag calls.
+	(plugin_build_constant): Adjust safe_pushdecl call.
+
 2020-09-10  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_call_expr): Use DECL_LOCAL_DECL_P.

@@ -3729,7 +3729,8 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       if ((gimple_omp_for_kind (as_a <gomp_for *> (stmt))
 	   == GF_OMP_FOR_KIND_SIMD)
 	  && omp_maybe_offloaded_ctx (ctx)
-	  && omp_max_simt_vf ())
+	  && omp_max_simt_vf ()
+	  && gimple_omp_for_collapse (stmt) == 1)
 	scan_omp_simd (gsi, as_a <gomp_for *> (stmt), ctx);
       else
 	scan_omp_for (as_a <gomp_for *> (stmt), ctx);

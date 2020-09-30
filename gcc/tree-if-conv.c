@@ -2544,8 +2544,7 @@ combine_blocks (class loop *loop)
   if (need_to_predicate)
     predicate_statements (loop);
 
-  /* Merge basic blocks: first remove all the edges in the loop,
-     except for those from the exit block.  */
+  /* Merge basic blocks.  */
   exit_bb = NULL;
   bool *predicated = XNEWVEC (bool, orig_loop_num_nodes);
   for (i = 0; i < orig_loop_num_nodes; i++)
@@ -2560,43 +2559,6 @@ combine_blocks (class loop *loop)
 	}
     }
   gcc_assert (exit_bb != loop->latch);
-
-  for (i = 1; i < orig_loop_num_nodes; i++)
-    {
-      bb = ifc_bbs[i];
-
-      for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei));)
-	{
-	  if (e->src == exit_bb)
-	    ei_next (&ei);
-	  else
-	    remove_edge (e);
-	}
-    }
-
-  if (exit_bb != NULL)
-    {
-      if (exit_bb != loop->header)
-	{
-	  /* Connect this node to loop header.  */
-	  make_single_succ_edge (loop->header, exit_bb, EDGE_FALLTHRU);
-	  set_immediate_dominator (CDI_DOMINATORS, exit_bb, loop->header);
-	}
-
-      /* Redirect non-exit edges to loop->latch.  */
-      FOR_EACH_EDGE (e, ei, exit_bb->succs)
-	{
-	  if (!loop_exit_edge_p (loop, e))
-	    redirect_edge_and_branch (e, loop->latch);
-	}
-      set_immediate_dominator (CDI_DOMINATORS, loop->latch, exit_bb);
-    }
-  else
-    {
-      /* If the loop does not have an exit, reconnect header and latch.  */
-      make_edge (loop->header, loop->latch, EDGE_FALLTHRU);
-      set_immediate_dominator (CDI_DOMINATORS, loop->latch, loop->header);
-    }
 
   merge_target_bb = loop->header;
 
@@ -2682,13 +2644,9 @@ combine_blocks (class loop *loop)
       last = gsi_last_bb (merge_target_bb);
       gsi_insert_seq_after_without_update (&last, bb_seq (bb), GSI_NEW_STMT);
       set_bb_seq (bb, NULL);
-
-      delete_basic_block (bb);
     }
 
-  /* If possible, merge loop header to the block with the exit edge.
-     This reduces the number of basic blocks to two, to please the
-     vectorizer that handles only loops with two nodes.  */
+  /* Fixup virtual operands in the exit block.  */
   if (exit_bb
       && exit_bb != loop->header)
     {
@@ -2698,6 +2656,11 @@ combine_blocks (class loop *loop)
       vphi = get_virtual_phi (exit_bb);
       if (vphi)
 	{
+	  /* When there's just loads inside the loop a stray virtual
+	     PHI merging the uses can appear, update last_vdef from
+	     it.  */
+	  if (!last_vdef)
+	    last_vdef = gimple_phi_arg_def (vphi, 0);
 	  imm_use_iterator iter;
 	  use_operand_p use_p;
 	  gimple *use_stmt;
@@ -2711,7 +2674,63 @@ combine_blocks (class loop *loop)
 	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi); 
 	  remove_phi_node (&gsi, true);
 	}
+    }
 
+  /* Now remove all the edges in the loop, except for those from the exit
+     block and delete the blocks we elided.  */
+  for (i = 1; i < orig_loop_num_nodes; i++)
+    {
+      bb = ifc_bbs[i];
+
+      for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei));)
+	{
+	  if (e->src == exit_bb)
+	    ei_next (&ei);
+	  else
+	    remove_edge (e);
+	}
+    }
+  for (i = 1; i < orig_loop_num_nodes; i++)
+    {
+      bb = ifc_bbs[i];
+
+      if (bb == exit_bb || bb == loop->latch)
+	continue;
+
+      delete_basic_block (bb);
+    }
+
+  /* Re-connect the exit block.  */
+  if (exit_bb != NULL)
+    {
+      if (exit_bb != loop->header)
+	{
+	  /* Connect this node to loop header.  */
+	  make_single_succ_edge (loop->header, exit_bb, EDGE_FALLTHRU);
+	  set_immediate_dominator (CDI_DOMINATORS, exit_bb, loop->header);
+	}
+
+      /* Redirect non-exit edges to loop->latch.  */
+      FOR_EACH_EDGE (e, ei, exit_bb->succs)
+	{
+	  if (!loop_exit_edge_p (loop, e))
+	    redirect_edge_and_branch (e, loop->latch);
+	}
+      set_immediate_dominator (CDI_DOMINATORS, loop->latch, exit_bb);
+    }
+  else
+    {
+      /* If the loop does not have an exit, reconnect header and latch.  */
+      make_edge (loop->header, loop->latch, EDGE_FALLTHRU);
+      set_immediate_dominator (CDI_DOMINATORS, loop->latch, loop->header);
+    }
+
+  /* If possible, merge loop header to the block with the exit edge.
+     This reduces the number of basic blocks to two, to please the
+     vectorizer that handles only loops with two nodes.  */
+  if (exit_bb
+      && exit_bb != loop->header)
+    {
       if (can_merge_blocks_p (loop->header, exit_bb))
 	merge_blocks (loop->header, exit_bb);
     }
