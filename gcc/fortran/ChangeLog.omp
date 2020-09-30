@@ -1,3 +1,12 @@
+2021-02-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+	2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97242
+	* expr.c (gfc_is_not_contiguous): Fix check.
+	(gfc_check_pointer_assign): Use it.
+
 2021-02-24  Julian Brown  <julian@codesourcery.com>
 
 	Backport from mainline
