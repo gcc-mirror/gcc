@@ -2125,7 +2125,7 @@
 	(match_operand:DF 1 "const_double_operand" "F"))
    (clobber (match_operand:DF 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
-   && TARGET_HARD_FLOAT
+   && TARGET_VFP_BASE
    && !arm_const_double_rtx (operands[1])
    && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1]))"
   "#"
@@ -2151,7 +2151,7 @@
 	(match_operand:SF 1 "const_double_operand" "E"))
    (clobber (match_operand:SF 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
-   && TARGET_HARD_FLOAT
+   && TARGET_VFP_BASE
    && !vfp3_const_double_rtx (operands[1])"
   "#"
   ""

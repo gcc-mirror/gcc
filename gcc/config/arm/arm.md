@@ -7357,7 +7357,7 @@
   if (arm_disable_literal_pool
       && (REG_P (operands[0]) || SUBREG_P (operands[0]))
       && CONST_DOUBLE_P (operands[1])
-      && TARGET_HARD_FLOAT
+      && TARGET_VFP_BASE
       && !vfp3_const_double_rtx (operands[1]))
     {
       rtx clobreg = gen_reg_rtx (SFmode);
@@ -7454,7 +7454,7 @@
   if (arm_disable_literal_pool
       && (REG_P (operands[0]) || SUBREG_P (operands[0]))
       && CONSTANT_P (operands[1])
-      && TARGET_HARD_FLOAT
+      && TARGET_VFP_BASE
       && !arm_const_double_rtx (operands[1])
       && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
     {
