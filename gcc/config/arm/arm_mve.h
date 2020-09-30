@@ -35651,6 +35651,7 @@ enum {
 	short: __ARM_mve_type_int_n, \
 	int: __ARM_mve_type_int_n, \
 	long: __ARM_mve_type_int_n, \
+	double: __ARM_mve_type_fp_n, \
 	long long: __ARM_mve_type_int_n, \
 	unsigned char: __ARM_mve_type_int_n, \
 	unsigned short: __ARM_mve_type_int_n, \
@@ -35723,6 +35724,8 @@ extern void *__ARM_undef;
     _Generic(param, type: param, default: *(type *)__ARM_undef)
 #define __ARM_mve_coerce1(param, type) \
     _Generic(param, type: param, const type: param, default: *(type *)__ARM_undef)
+#define __ARM_mve_coerce2(param, type) \
+    _Generic(param, type: param, float16_t: param, float32_t: param, default: *(type *)__ARM_undef)
 
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 
@@ -35939,14 +35942,14 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vaddq_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t)), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vaddq_f16 (__ARM_mve_coerce(p0, float16x8_t), __ARM_mve_coerce(p1, float16x8_t)), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vaddq_f32 (__ARM_mve_coerce(p0, float32x4_t), __ARM_mve_coerce(p1, float32x4_t)), \
-  int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t)), \
-  int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t)), \
-  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t)), \
-  int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t)), \
-  int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t)), \
-  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vaddq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vaddq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)));})
+  int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vaddq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vaddq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)));})
 
 #define __arm_vandq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -35997,8 +36000,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vmulq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t)), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vmulq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t)), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vmulq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vmulq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vmulq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vmulq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vmulq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)), \
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int8x16_t]: __arm_vmulq_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8x16_t)), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int16x8_t]: __arm_vmulq_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16x8_t)), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t]: __arm_vmulq_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32x4_t)), \
@@ -36029,8 +36032,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vcmpeqq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t)), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vcmpeqq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t)), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vcmpeqq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)), \
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int8x16_t]: __arm_vcmpeqq_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8x16_t)), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int16x8_t]: __arm_vcmpeqq_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16x8_t)), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t]: __arm_vcmpeqq_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32x4_t)), \
@@ -36069,8 +36072,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vcmpeqq_m_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t), p2), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmpeqq_m_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmpeqq_m_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), p2), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t), p2), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t), p2));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double), p2), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpeqq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double), p2));})
 
 #define __arm_vcmpgtq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -36083,8 +36086,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpgtq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmpgtq_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t)), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmpgtq_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)));})
 
 #define __arm_vcmpleq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -36097,8 +36100,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vcmpleq_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t)), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vcmpleq_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t)), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpleq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)));})
 
 #define __arm_vcmpltq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -36111,8 +36114,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpltq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmpltq_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t)), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmpltq_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)));})
 
 #define __arm_vcmpneq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -36123,8 +36126,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vcmpneq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t)), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vcmpneq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t)), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vcmpneq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)), \
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int8x16_t]: __arm_vcmpneq_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8x16_t)), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int16x8_t]: __arm_vcmpneq_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16x8_t)), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t]: __arm_vcmpneq_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32x4_t)), \
@@ -36179,8 +36182,8 @@ extern void *__ARM_undef;
 #define __arm_vmaxnmavq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmavq_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t)), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmavq_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t)));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmavq_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t)), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmavq_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t)));})
 
 #define __arm_vmaxnmq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -36191,14 +36194,14 @@ extern void *__ARM_undef;
 #define __arm_vmaxnmvq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmvq_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t)), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmvq_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t)));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmvq_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t)), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmvq_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t)));})
 
 #define __arm_vmaxnmvq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmvq_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t)), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmvq_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t)));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmvq_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t)), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmvq_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t)));})
 
 #define __arm_vminnmaq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -36209,8 +36212,8 @@ extern void *__ARM_undef;
 #define __arm_vminnmavq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmavq_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t)), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmavq_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t)));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmavq_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t)), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmavq_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t)));})
 
 #define __arm_vbrsrq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)])0, \
@@ -36232,8 +36235,8 @@ extern void *__ARM_undef;
 #define __arm_vsubq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vsubq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vsubq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vsubq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vsubq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)), \
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vsubq_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t)), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vsubq_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t)), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vsubq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)), \
@@ -36252,8 +36255,8 @@ extern void *__ARM_undef;
 #define __arm_vminnmvq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmvq_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t)), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmvq_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t)));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmvq_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t)), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmvq_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t)));})
 
 #define __arm_vshlq_r(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)])0, \
@@ -37011,8 +37014,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vcmpgtq_m_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t), p2), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vcmpgtq_m_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t), p2), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpgtq_m_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t), p2), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t), p2), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t), p2), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double), p2), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgtq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double), p2), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmpgtq_m_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmpgtq_m_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
@@ -37027,8 +37030,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vcmpleq_m_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t), p2), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vcmpleq_m_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t), p2), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpleq_m_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t), p2), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t), p2), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t), p2));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double), p2), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpleq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double), p2));})
 
 #define __arm_vcmpltq_m(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37041,8 +37044,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vcmpltq_m_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t), p2), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vcmpltq_m_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t), p2), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpltq_m_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t), p2), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t), p2), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t), p2));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double), p2), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpltq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double), p2));})
 
 #define __arm_vcmpneq_m(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37061,8 +37064,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vcmpneq_m_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t), p2), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vcmpneq_m_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t), p2), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vcmpneq_m_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t), p2), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t), p2), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t), p2));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double), p2), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpneq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double), p2));})
 
 #define __arm_vcvtbq_m(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37116,8 +37119,8 @@ extern void *__ARM_undef;
   __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmaq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmaq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t)), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmaq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmaq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double)), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vfmaq_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t)), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vfmaq_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t)));})
 
@@ -37132,8 +37135,8 @@ extern void *__ARM_undef;
   __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmasq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmasq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t)));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmasq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmasq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double)));})
 
 #define __arm_vmaxnmaq_m(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37156,14 +37159,14 @@ extern void *__ARM_undef;
 #define __arm_vmaxnmavq_p(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmavq_p_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmavq_p_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmavq_p_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t), p2), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmavq_p_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
 #define __arm_vmaxnmvq_p(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmvq_p_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmvq_p_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vmaxnmvq_p_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t), p2), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vmaxnmvq_p_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
 #define __arm_vminnmaq_m(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37174,14 +37177,14 @@ extern void *__ARM_undef;
 #define __arm_vminnmavq_p(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmavq_p_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmavq_p_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmavq_p_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t), p2), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmavq_p_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
 #define __arm_vminnmvq_p(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmvq_p_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmvq_p_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vminnmvq_p_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t), p2), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vminnmvq_p_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
 #define __arm_vrndnq_m(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37248,8 +37251,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpgeq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmpgeq_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t)), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmpgeq_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t)));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double)), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double)));})
 
 #define __arm_vrshrnbq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37353,8 +37356,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vcmpgeq_m_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t), p2), \
   int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vcmpgeq_m_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t), p2), \
   int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vcmpgeq_m_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t), p2), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16_t), p2), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32_t), p2), \
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce2(__p1, double), p2), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vcmpgeq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce2(__p1, double), p2), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmpgeq_m_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmpgeq_m_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
@@ -37389,8 +37392,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_m_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8x16_t), __ARM_mve_coerce(__p2, int), p3), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_m_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16x8_t), __ARM_mve_coerce(__p2, int), p3), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_m_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, int), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vaddq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vaddq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vaddq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vaddq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vandq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37531,15 +37534,15 @@ extern void *__ARM_undef;
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vfmaq_m_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vfmaq_m_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmaq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmaq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmaq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmaq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vfmasq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmasq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmasq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmasq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmasq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vfmsq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37580,8 +37583,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vmulq_m_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8x16_t), __ARM_mve_coerce(__p2, uint8_t), p3), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vmulq_m_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16x8_t), __ARM_mve_coerce(__p2, uint16_t), p3), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vmulq_m_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vmulq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vmulq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vmulq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vmulq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vornq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -37614,8 +37617,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vsubq_m_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8x16_t), __ARM_mve_coerce(__p2, uint8_t), p3), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vsubq_m_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16x8_t), __ARM_mve_coerce(__p2, uint16_t), p3), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vsubq_m_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vsubq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vsubq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vsubq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vsubq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vorrq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
@@ -38113,8 +38116,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_x_n_u32 (__ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32_t), p3), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vaddq_x_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vaddq_x_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vaddq_x_n_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vaddq_x_n_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vaddq_x_n_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vaddq_x_n_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vandq_x(p1,p2,p3) ({ __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
@@ -38248,8 +38251,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vmulq_x_n_u32 (__ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32_t), p3), \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vmulq_x_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vmulq_x_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vmulq_x_n_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vmulq_x_n_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vmulq_x_n_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vmulq_x_n_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vnegq_x(p1,p2) ({ __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p1)])0, \
@@ -38337,8 +38340,8 @@ extern void *__ARM_undef;
   _Generic( (int (*)[__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vsubq_x_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vsubq_x_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vsubq_x_n_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vsubq_x_n_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32_t), p3));})
+  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vsubq_x_n_f16 (__ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(__p2, double), p3), \
+  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vsubq_x_n_f32 (__ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(__p2, double), p3));})
 
 #define __arm_vcmulq_rot90_x(p1,p2,p3)  ({ __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
@@ -38370,8 +38373,8 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int_n][__ARM_mve_type_uint16x8_t]: __arm_vsetq_lane_u16 (__ARM_mve_coerce(__p0, uint16_t), __ARM_mve_coerce(__p1, uint16x8_t), p2), \
   int (*)[__ARM_mve_type_int_n][__ARM_mve_type_uint32x4_t]: __arm_vsetq_lane_u32 (__ARM_mve_coerce(__p0, uint32_t), __ARM_mve_coerce(__p1, uint32x4_t), p2), \
   int (*)[__ARM_mve_type_int_n][__ARM_mve_type_uint64x2_t]: __arm_vsetq_lane_u64 (__ARM_mve_coerce(__p0, uint64_t), __ARM_mve_coerce(__p1, uint64x2_t), p2), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vsetq_lane_f16 (__ARM_mve_coerce(__p0, float16_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
-  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vsetq_lane_f32 (__ARM_mve_coerce(__p0, float32_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float16x8_t]: __arm_vsetq_lane_f16 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float16x8_t), p2), \
+  int (*)[__ARM_mve_type_fp_n][__ARM_mve_type_float32x4_t]: __arm_vsetq_lane_f32 (__ARM_mve_coerce2(__p0, double), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
 #else /* MVE Integer.  */
 
@@ -38895,12 +38898,12 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_uint8x16_t]: __arm_vaddq_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8x16_t)), \
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t]: __arm_vaddq_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16x8_t)), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vaddq_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t)), \
-  int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, uint8_t)), \
-  int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, uint16_t)), \
-  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32_t)), \
-  int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int8_t)), \
-  int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int16_t)), \
-  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32_t)));})
+  int (*)[__ARM_mve_type_uint8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u8 (__ARM_mve_coerce(__p0, uint8x16_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_int8x16_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s8 (__ARM_mve_coerce(__p0, int8x16_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_int16x8_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s16 (__ARM_mve_coerce(__p0, int16x8_t), __ARM_mve_coerce(__p1, int)), \
+  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int_n]: __arm_vaddq_n_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int)));})
 
 #define __arm_vandq(p0,p1) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
