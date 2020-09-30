@@ -1960,7 +1960,8 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
   /* Reduction (there are no data-refs in the root).
      In reduction chain the order of the loads is not important.  */
   if (!STMT_VINFO_DATA_REF (stmt_info)
-      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+      && !SLP_INSTANCE_ROOT_STMT (slp_instn))
     vect_attempt_slp_rearrange_stmts (slp_instn);
 
   /* In basic block vectorization we allow any subchain of an interleaving
