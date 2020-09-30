@@ -66,7 +66,7 @@ _slp_tree::_slp_tree ()
   SLP_TREE_CODE (this) = ERROR_MARK;
   SLP_TREE_VECTYPE (this) = NULL_TREE;
   SLP_TREE_REPRESENTATIVE (this) = NULL;
-  this->refcnt = 1;
+  SLP_TREE_REF_COUNT (this) = 1;
   this->max_nunits = 1;
   this->lanes = 0;
 }
@@ -92,7 +92,7 @@ vect_free_slp_tree (slp_tree node)
   int i;
   slp_tree child;
 
-  if (--node->refcnt != 0)
+  if (--SLP_TREE_REF_COUNT (node) != 0)
     return;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -1180,7 +1180,7 @@ vect_build_slp_tree (vec_info *vinfo,
 			 *leader ? "" : "failed ", *leader);
       if (*leader)
 	{
-	  (*leader)->refcnt++;
+	  SLP_TREE_REF_COUNT (*leader)++;
 	  vect_update_max_nunits (max_nunits, (*leader)->max_nunits);
 	}
       return *leader;
@@ -1194,7 +1194,7 @@ vect_build_slp_tree (vec_info *vinfo,
       res->max_nunits = this_max_nunits;
       vect_update_max_nunits (max_nunits, this_max_nunits);
       /* Keep a reference for the bst_map use.  */
-      res->refcnt++;
+      SLP_TREE_REF_COUNT (res)++;
     }
   bst_map->put (stmts.copy (), res);
   return res;
@@ -1590,7 +1590,7 @@ fail:
       SLP_TREE_CHILDREN (two).safe_splice (children);
       slp_tree child;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (two), i, child)
-	child->refcnt++;
+	SLP_TREE_REF_COUNT (child)++;
 
       /* Here we record the original defs since this
 	 node represents the final lane configuration.  */
@@ -1650,7 +1650,8 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
 		      ? " (constant)"
 		      : ""), node,
-		   estimated_poly_value (node->max_nunits), node->refcnt);
+		   estimated_poly_value (node->max_nunits),
+					 SLP_TREE_REF_COUNT (node));
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
       dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
@@ -1802,7 +1803,7 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   SLP_TREE_REPRESENTATIVE (copy) = SLP_TREE_REPRESENTATIVE (node);
   SLP_TREE_LANES (copy) = SLP_TREE_LANES (node);
   copy->max_nunits = node->max_nunits;
-  copy->refcnt = 0;
+  SLP_TREE_REF_COUNT (copy) = 0;
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     SLP_TREE_SCALAR_STMTS (copy) = SLP_TREE_SCALAR_STMTS (node).copy ();
   if (SLP_TREE_SCALAR_OPS (node).exists ())
@@ -1819,7 +1820,7 @@ slp_copy_subtree (slp_tree node, hash_map<slp_tree, slp_tree> &map)
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (copy), i, child)
     {
       SLP_TREE_CHILDREN (copy)[i] = slp_copy_subtree (child, map);
-      SLP_TREE_CHILDREN (copy)[i]->refcnt++;
+      SLP_TREE_REF_COUNT (SLP_TREE_CHILDREN (copy)[i])++;
     }
   return copy;
 }
@@ -1935,7 +1936,7 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
   hash_map<slp_tree, slp_tree> map;
   slp_tree unshared = slp_copy_subtree (SLP_INSTANCE_TREE (slp_instn), map);
   vect_free_slp_tree (SLP_INSTANCE_TREE (slp_instn));
-  unshared->refcnt++;
+  SLP_TREE_REF_COUNT (unshared)++;
   SLP_INSTANCE_TREE (slp_instn) = unshared;
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
     SLP_INSTANCE_LOADS (slp_instn)[i] = *map.get (node);
