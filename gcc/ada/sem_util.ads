@@ -1879,7 +1879,9 @@ package Sem_Util is
    --  . machine_emax = 2**10
    --  . machine_emin = 3 - machine_emax
 
-   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
+   function Is_Effectively_Volatile
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile (SPARK RM 7.1.2). To qualify as such, the entity must be either
    --    * Volatile without No_Caching
@@ -1887,9 +1889,14 @@ package Sem_Util is
    --    * An array type whose component type is effectively volatile
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+   --
+   --  If Ignore_Protected is True, then a protected object/type is treated
+   --  like a non-protected record object/type for computing the result of
+   --  this query.
 
    function Is_Effectively_Volatile_For_Reading
-     (Id : Entity_Id) return Boolean;
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile for reading (SPARK RM 7.1.2). To qualify as such, the entity
    --  must be either
@@ -1901,6 +1908,10 @@ package Sem_Util is
    --      reading
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+   --
+   --  If Ignore_Protected is True, then a protected object/type is treated
+   --  like a non-protected record object/type for computing the result of
+   --  this query.
 
    function Is_Effectively_Volatile_Object
      (N : Node_Id) return Boolean;

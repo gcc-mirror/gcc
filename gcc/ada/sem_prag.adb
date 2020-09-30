@@ -2476,11 +2476,22 @@ package body Sem_Prag is
                  and then Ekind (Item_Id) = E_Variable
                  and then Is_Effectively_Volatile_For_Reading (Item_Id)
                then
+                  --  The current instance of a protected unit is not an
+                  --  effectively volatile object, unless the protected unit
+                  --  is already volatile for another reason (SPARK RM 7.1.2).
+
+                  if Is_Single_Protected_Object (Item_Id)
+                    and then Is_CCT_Instance (Etype (Item_Id), Spec_Id)
+                    and then not Is_Effectively_Volatile_For_Reading
+                      (Item_Id, Ignore_Protected => True)
+                  then
+                     null;
+
                   --  An effectively volatile object for reading cannot appear
                   --  as a global item of a nonvolatile function (SPARK RM
                   --  7.1.3(8)).
 
-                  if Ekind (Spec_Id) in E_Function | E_Generic_Function
+                  elsif Ekind (Spec_Id) in E_Function | E_Generic_Function
                     and then not Is_Volatile_Function (Spec_Id)
                   then
                      Error_Msg_NE
