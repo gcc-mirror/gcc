@@ -24046,42 +24046,42 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovun_s16 (int16x8_t __a)
 {
-  return (uint8x8_t) __builtin_aarch64_sqmovunv8hi (__a);
+  return __builtin_aarch64_sqmovunv8hi_us (__a);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovun_s32 (int32x4_t __a)
 {
-  return (uint16x4_t) __builtin_aarch64_sqmovunv4si (__a);
+  return __builtin_aarch64_sqmovunv4si_us (__a);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovun_s64 (int64x2_t __a)
 {
-  return (uint32x2_t) __builtin_aarch64_sqmovunv2di (__a);
+  return __builtin_aarch64_sqmovunv2di_us (__a);
 }
 
-__extension__ extern __inline int8_t
+__extension__ extern __inline uint8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovunh_s16 (int16_t __a)
 {
-  return (int8_t) __builtin_aarch64_sqmovunhi (__a);
+  return __builtin_aarch64_sqmovunhi_us (__a);
 }
 
-__extension__ extern __inline int16_t
+__extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovuns_s32 (int32_t __a)
 {
-  return (int16_t) __builtin_aarch64_sqmovunsi (__a);
+  return __builtin_aarch64_sqmovunsi_us (__a);
 }
 
-__extension__ extern __inline int32_t
+__extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovund_s64 (int64_t __a)
 {
-  return (int32_t) __builtin_aarch64_sqmovundi (__a);
+  return __builtin_aarch64_sqmovundi_us (__a);
 }
 
 /* vqneg */
