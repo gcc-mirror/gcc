@@ -1,3 +1,65 @@
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-18  H.J. Lu  <hjl.tools@gmail.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/97054
+	* g++.target/i386/pr97054.C: New test.
+	* gcc.target/i386/pr82673.c: Remove redundant extra message.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/stack-protector-3.c: New test.
+	* gcc.target/arm/stack-protector-4.c: Likewise.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stack-protector-5.c: New test.
+	* gcc.target/aarch64/stack-protector-6.c: Likewise.
+	* gcc.target/aarch64/stack-protector-7.c: Likewise.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/attributes_1.c: Rename
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS to
+	__ARM_FEATURE_SVE_VECTOR_OPERATORS.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/attributes_2.C: New test.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_6.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_7.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_8.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_9.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_10.C: Likewise.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Check the
+	error messages reported when arm_sve_vector_bits is applied to
+	SVE tuple types or to existing fixed-length SVE types.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_1.C: Add a leading
+	"u" to the mangling of each SVE vector and predicate type.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_2.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_3.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/mangle_5.C: Likewise.
+
 2020-09-28  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

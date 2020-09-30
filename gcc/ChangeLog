@@ -1,3 +1,122 @@
+2020-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97247
+	* config/i386/enqcmdintrin.h: Replace <enqcmdntrin.h> with
+	<enqcmdintrin.h>.  Replace _ENQCMDNTRIN_H_INCLUDED with
+	_ENQCMDINTRIN_H_INCLUDED.
+
+2020-09-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2020-09-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/97231
+	* config/i386/avx512vp2intersectintrin.h: Add FSF copyright notes.
+	* config/i386/avx512vp2intersectvlintrin.h: Ditto.
+	* config/i386/pconfigintrin.h: Ditto.
+	* config/i386/wbnoinvdintrin.h: Ditto.
+
+2020-09-29  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Neoverse N2.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document AArch64 support for Neoverse N2.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/97054
+	* ira.c (ira_setup_eliminable_regset): Skip the special elimination
+	handling of the hard frame pointer if the hard frame pointer is fixed.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.md (*stack_protect_combined_set_insn): For non-PIC,
+	load the address of the canary rather than the address of the
+	constant pool entry that points to it.
+	(*stack_protect_combined_test_insn): Likewise.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_salt_type): New enum.
+	(aarch64_stack_protect_canary_mem): Declare.
+	* config/aarch64/aarch64.md (UNSPEC_SALT_ADDR): New unspec.
+	(stack_protect_set): Forward to stack_protect_combined_set.
+	(stack_protect_combined_set): New pattern.  Use
+	aarch64_stack_protect_canary_mem.
+	(reg_stack_protect_address_<mode>): Add a salt operand.
+	(stack_protect_test): Forward to stack_protect_combined_test.
+	(stack_protect_combined_test): New pattern.  Use
+	aarch64_stack_protect_canary_mem.
+	* config/aarch64/aarch64.c (strip_salt): New function.
+	(strip_offset_and_salt): Likewise.
+	(tls_symbolic_operand_type): Use strip_offset_and_salt.
+	(aarch64_stack_protect_canary_mem): New function.
+	(aarch64_cannot_force_const_mem): Use strip_offset_and_salt.
+	(aarch64_classify_address): Likewise.
+	(aarch64_symbolic_address_p): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_output_addr_const_extra): New function.
+	(aarch64_tls_symbol_p): Use strip_salt.
+	(aarch64_classify_symbol): Likewise.
+	(aarch64_legitimate_pic_operand_p): Use strip_offset_and_salt.
+	(aarch64_legitimate_constant_p): Likewise.
+	(aarch64_mov_operand_p): Use strip_salt.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Override.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Rename
+	__ARM_FEATURE_SVE_VECTOR_OPERATIONS to
+	__ARM_FEATURE_SVE_VECTOR_OPERATORS.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (add_sve_type_attribute):
+	Take the ACLE name of the type as a parameter and add it as fourth
+	argument to the "SVE type" attribute.
+	(register_builtin_types): Update call accordingly.
+	(register_tuple_type): Likewise.  Construct the name of the type
+	earlier in order to do this.
+	(get_arm_sve_vector_bits_attributes): New function.
+	(handle_arm_sve_vector_bits_attribute): Report a more sensible
+	error message if the attribute is applied to an SVE tuple type.
+	Don't allow the attribute to be applied to an existing fixed-length
+	SVE type.  Mangle the new type as __SVE_VLS<type, vector-bits>.
+	Add a dummy TYPE_DECL to the new type.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (DEF_SVE_TYPE): Add a
+	leading "u" to each mangled name.
+
+2020-09-29  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-v1): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Document AArch32 support for Neoverse V1.
+
 2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
