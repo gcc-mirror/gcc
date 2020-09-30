@@ -10890,11 +10890,20 @@ trees_in::is_matching_decl (tree existing, tree decl)
       // FIXME: Might be template specialization from a module, not
       // necessarily global module
     mismatch:
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"conflicting global module declaration %#qD", decl);
-      inform (DECL_SOURCE_LOCATION (existing),
-	      "existing declaration %#qD", existing);
-      return false;
+      if (DECL_IS_BUILTIN (existing))
+	// FIXME: it'd be nice if we had a way of determining
+	// whether this builtin had already met a proper decl.  For
+	// now just copy the type.  Perhaps we should update
+	// SOURCE_LOCATION in those cases?
+	TREE_TYPE (existing) = TREE_TYPE (decl);
+      else
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "conflicting global module declaration %#qD", decl);
+	  inform (DECL_SOURCE_LOCATION (existing),
+		  "existing declaration %#qD", existing);
+	  return false;
+	}
     }
 
   if (DECL_IS_BUILTIN (existing) && DECL_ANTICIPATED (existing))

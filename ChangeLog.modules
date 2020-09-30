@@ -1,5 +1,8 @@
 2020-09-30  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk c74e6f7cfd7
+	c++: Adjust pushdecl/duplicate_decls API
+
 	gcc/cp/
 	* tree.h (ovl_insert): Make usingness unsigned.
 	* tree.c (ovl_insert): Make usingness unsigned, change semantics.

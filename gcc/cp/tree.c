@@ -2323,8 +2323,10 @@ ovl_skip_hidden (tree ovl)
     {
       /* Any hidden functions should have been wrapped in an
 	 overload, but injected friend classes will not.  */
-      gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
-      ovl = NULL_TREE;
+      // FIXME: This is temporarily wrong -- consider builtin that is
+      // anticipated in current TU, but known by an import
+      if (!DECL_DECLARES_FUNCTION_P (ovl))
+	ovl = NULL_TREE;
     }
 
   return ovl;
