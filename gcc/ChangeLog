@@ -1,3 +1,19 @@
+2020-09-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2020-09-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/97231
+	* config/i386/pconfigintrin.h: Add FSF copyright notes.
+	* config/i386/wbnoinvdintrin.h: Ditto.
+
+2020-09-29  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-v1): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Document AArch32 support for Neoverse V1.
+
 2020-09-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
