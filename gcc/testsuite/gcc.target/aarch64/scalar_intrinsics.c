@@ -661,7 +661,7 @@ test_vqnegs_s32 (int32_t a)
 
 /* { dg-final { scan-assembler-times "\\tsqxtun\\tb\[0-9\]+" 1 } } */
 
-int8_t
+uint8_t
 test_vqmovunh_s16 (int16_t a)
 {
   return vqmovunh_s16 (a);
@@ -669,7 +669,7 @@ test_vqmovunh_s16 (int16_t a)
 
 /* { dg-final { scan-assembler-times "\\tsqxtun\\th\[0-9\]+" 1 } } */
 
-int16_t
+uint16_t
 test_vqmovuns_s32 (int32_t a)
 {
   return vqmovuns_s32 (a);
@@ -677,7 +677,7 @@ test_vqmovuns_s32 (int32_t a)
 
 /* { dg-final { scan-assembler-times "\\tsqxtun\\ts\[0-9\]+" 1 } } */
 
-int32_t
+uint32_t
 test_vqmovund_s64 (int64_t a)
 {
   return vqmovund_s64 (a);
