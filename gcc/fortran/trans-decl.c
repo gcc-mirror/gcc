@@ -3484,16 +3484,16 @@ gfc_build_intrinsic_function_decls (void)
   /* Misc. functions.  */
 
   gfor_fndecl_ttynam = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("ttynam")), ".W",
+	get_identifier (PREFIX("ttynam")), ".W..",
 	void_type_node, 3, pchar_type_node, gfc_charlen_type_node,
 	integer_type_node);
 
   gfor_fndecl_fdate = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("fdate")), ".W",
+	get_identifier (PREFIX("fdate")), ".W.",
 	void_type_node, 2, pchar_type_node, gfc_charlen_type_node);
 
   gfor_fndecl_ctime = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("ctime")), ".W",
+	get_identifier (PREFIX("ctime")), ".W..",
 	void_type_node, 3, pchar_type_node, gfc_charlen_type_node,
 	gfc_int8_type_node);
 
@@ -3662,7 +3662,7 @@ gfc_build_intrinsic_function_decls (void)
   TREE_NOTHROW (gfor_fndecl_size0) = 1;
 
   gfor_fndecl_size1 = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("size1")), ".R",
+	get_identifier (PREFIX("size1")), ".R.",
 	gfc_array_index_type, 2, pvoid_type_node, gfc_array_index_type);
   DECL_PURE_P (gfor_fndecl_size1) = 1;
   TREE_NOTHROW (gfor_fndecl_size1) = 1;
@@ -3701,7 +3701,7 @@ gfc_build_builtin_function_decls (void)
   TREE_THIS_VOLATILE (gfor_fndecl_stop_numeric) = 1;
 
   gfor_fndecl_stop_string = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("stop_string")), ".R.",
+	get_identifier (PREFIX("stop_string")), ".R..",
 	void_type_node, 3, pchar_type_node, size_type_node,
 	boolean_type_node);
   /* STOP doesn't return.  */
@@ -3714,7 +3714,7 @@ gfc_build_builtin_function_decls (void)
   TREE_THIS_VOLATILE (gfor_fndecl_error_stop_numeric) = 1;
 
   gfor_fndecl_error_stop_string = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("error_stop_string")), ".R.",
+	get_identifier (PREFIX("error_stop_string")), ".R..",
 	void_type_node, 3, pchar_type_node, size_type_node,
 	boolean_type_node);
   /* ERROR STOP doesn't return.  */
@@ -3892,15 +3892,15 @@ gfc_build_builtin_function_decls (void)
 	    integer_type_node);
 
       gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sync_all")), ".WW", void_type_node,
+	get_identifier (PREFIX("caf_sync_all")), ".WW.", void_type_node,
 	3, pint_type, pchar_type_node, size_type_node);
 
       gfor_fndecl_caf_sync_memory = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sync_memory")), ".WW", void_type_node,
+	get_identifier (PREFIX("caf_sync_memory")), ".WW.", void_type_node,
 	3, pint_type, pchar_type_node, size_type_node);
 
       gfor_fndecl_caf_sync_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sync_images")), ".RRWW", void_type_node,
+	get_identifier (PREFIX("caf_sync_images")), "..RWW.", void_type_node,
 	5, integer_type_node, pint_type, pint_type,
 	pchar_type_node, size_type_node);
 
@@ -3916,8 +3916,8 @@ gfc_build_builtin_function_decls (void)
       /* CAF's ERROR STOP doesn't return.  */
       TREE_THIS_VOLATILE (gfor_fndecl_caf_error_stop_str) = 1;
 
-      gfor_fndecl_caf_stop_numeric = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_stop_numeric")), ".R.",
+      gfor_fndecl_caf_stop_numeric = gfc_build_library_function_decl (
+	get_identifier (PREFIX("caf_stop_numeric")),
 	void_type_node, 1, integer_type_node);
       /* CAF's STOP doesn't return.  */
       TREE_THIS_VOLATILE (gfor_fndecl_caf_stop_numeric) = 1;
@@ -4003,8 +4003,8 @@ gfc_build_builtin_function_decls (void)
 	    get_identifier (PREFIX("caf_end_team")), void_type_node, 0);
 
       gfor_fndecl_caf_get_team
-	= gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_get_team")), "R",
+	= gfc_build_library_function_decl (
+	    get_identifier (PREFIX("caf_get_team")),
 	    void_type_node, 1, integer_type_node);
 
       gfor_fndecl_caf_sync_team
