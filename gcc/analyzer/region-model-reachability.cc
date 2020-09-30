@@ -58,9 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-reachable_regions::reachable_regions (store *store,
+reachable_regions::reachable_regions (region_model *model,
 				      region_model_manager *mgr)
-: m_store (store), m_mgr (mgr),
+: m_model (model), m_store (model->get_store ()), m_mgr (mgr),
   m_reachable_base_regs (), m_mutable_base_regs ()
 {
 }
@@ -135,7 +135,7 @@ reachable_regions::add (const region *reg, bool is_mutable)
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
     bind_cluster->for_each_value (handle_sval_cb, this);
   else
-    handle_sval (m_mgr->get_or_create_initial_value (base_reg));
+    handle_sval (m_model->get_store_value (reg));
 }
 
 void
@@ -206,17 +206,24 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
     }
 }
 
-/* Update m_store to mark the clusters that were found to be mutable
-   as having escaped.  */
+/* Update the store to mark the clusters that were found to be mutable
+   as having escaped.
+   Notify CTXT about escaping function_decls.  */
 
 void
-reachable_regions::mark_escaped_clusters ()
+reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
 {
+  gcc_assert (ctxt);
   for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
        iter != m_mutable_base_regs.end (); ++iter)
     {
       const region *base_reg = *iter;
       m_store->mark_as_escaped (base_reg);
+
+      /* If we have a function that's escaped, potentially add
+	 it to the worklist.  */
+      if (const function_region *fn_reg = base_reg->dyn_cast_function_region ())
+	ctxt->on_escaped_function (fn_reg->get_fndecl ());
     }
 }
 

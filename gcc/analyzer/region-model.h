@@ -2795,6 +2795,9 @@ class region_model_context
      know how to handle the tree code of T at LOC.  */
   virtual void on_unexpected_tree_code (tree t,
 					const dump_location_t &loc) = 0;
+
+  /* Hook for clients to be notified when a function_decl escapes.  */
+  virtual void on_escaped_function (tree fndecl) = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -2821,6 +2824,8 @@ public:
   {
   }
   void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
+
+  void on_escaped_function (tree) OVERRIDE {}
 };
 
 /* A subclass of region_model_context for determining if operations fail
