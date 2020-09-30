@@ -161,6 +161,8 @@ struct _slp_tree {
   unsigned int lanes;
   /* The operation of this node.  */
   enum tree_code code;
+
+  int vertex;
 };
 
 

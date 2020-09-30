@@ -841,7 +841,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
 
   /* The stores of this instance are at the root of the SLP tree.  */
   slp_tree store = SLP_INSTANCE_TREE (instance);
-  if (! STMT_VINFO_DATA_REF (SLP_TREE_SCALAR_STMTS (store)[0]))
+  if (! STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (store)))
     store = NULL;
 
   /* Verify we can sink stores to the vectorized stmt insert location.  */
