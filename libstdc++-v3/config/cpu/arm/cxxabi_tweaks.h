@@ -39,13 +39,18 @@ namespace __cxxabiv1
 
 #ifdef __ARM_EABI__
   // The ARM EABI uses the least significant bit of a 32-bit
-  // guard variable.  */
+  // guard variable.
 #define _GLIBCXX_GUARD_TEST(x) ((*(x) & 1) != 0)
 #define _GLIBCXX_GUARD_SET(x) *(x) = 1
 #define _GLIBCXX_GUARD_BIT 1
 #define _GLIBCXX_GUARD_PENDING_BIT __guard_test_bit (1, 1)
 #define _GLIBCXX_GUARD_WAITING_BIT __guard_test_bit (2, 1)
   typedef int __guard;
+
+#define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(x) \
+  _GLIBCXX_GUARD_TEST(__atomic_load_n(x, __ATOMIC_ACQUIRE))
+#define _GLIBCXX_GUARD_SET_AND_RELEASE(x) \
+  __atomic_store_n(x, 1, __ATOMIC_RELEASE)
 
   // We also want the element size in array cookies.
 #define _GLIBCXX_ELTSIZE_IN_COOKIE 1
