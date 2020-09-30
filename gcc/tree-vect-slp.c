@@ -2503,7 +2503,8 @@ vect_optimize_slp (vec_info *vinfo)
       /* Reduction (there are no data-refs in the root).
 	 In reduction chain the order of the loads is not important.  */
       if (!STMT_VINFO_DATA_REF (stmt_info)
-	  && !REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+	  && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	  && !SLP_INSTANCE_ROOT_STMT (instance))
 	vect_attempt_slp_rearrange_stmts (instance);
     }
 
