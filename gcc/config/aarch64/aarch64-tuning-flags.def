@@ -46,4 +46,7 @@ AARCH64_EXTRA_TUNING_OPTION ("no_ldp_stp_qregs", NO_LDP_STP_QREGS)
 
 AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
 
+/* Prefer Advanced SIMD over SVE for auto-vectorization.  */
+AARCH64_EXTRA_TUNING_OPTION ("prefer_advsimd_autovec", PREFER_ADVSIMD_AUTOVEC)
+
 #undef AARCH64_EXTRA_TUNING_OPTION
