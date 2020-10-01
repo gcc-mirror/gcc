@@ -1492,17 +1492,6 @@ begin cpu neoverse-n1
  part d0c
 end cpu neoverse-n1
 
-begin cpu neoverse-n2
-  cname neoversen2
-  tune for cortex-a57
-  tune flags LDSCHED
-  architecture armv8.5-a+fp16+bf16+i8mm
-  option crypto add FP_ARMv8 CRYPTO
-  costs cortex_a57
-  vendor 41
-  part 0xd49
-end cpu neoverse-n2
-
 # ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
 begin cpu cortex-a75.cortex-a55
  cname cortexa75cortexa55
@@ -1531,6 +1520,18 @@ begin cpu neoverse-v1
   option crypto add FP_ARMv8 CRYPTO
   costs cortex_a57
 end cpu neoverse-v1
+
+# Armv8.5 A-profile Architecture Processors
+begin cpu neoverse-n2
+  cname neoversen2
+  tune for cortex-a57
+  tune flags LDSCHED
+  architecture armv8.5-a+fp16+bf16+i8mm
+  option crypto add FP_ARMv8 CRYPTO
+  costs cortex_a57
+  vendor 41
+  part 0xd49
+end cpu neoverse-n2
 
 # V8 M-profile implementations.
 begin cpu cortex-m23
