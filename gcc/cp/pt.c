@@ -6032,10 +6032,6 @@ push_template_decl (tree decl, bool is_friend)
       if (!ctx
 	  && !(is_friend && template_class_depth (current_class_type) > 0))
 	{
-	  tmpl = pushdecl_namespace_level (tmpl, /*hiding=*/is_friend);
-	  if (tmpl == error_mark_node)
-	    return error_mark_node;
-
 	  /* Hide template friend classes that haven't been declared yet.  */
 	  // FIXME: See pushtag, can we copy from the TYPE_DECL?
 	  if (is_friend && TREE_CODE (decl) == TYPE_DECL)
@@ -6043,6 +6039,10 @@ push_template_decl (tree decl, bool is_friend)
 	      DECL_ANTICIPATED (tmpl) = 1;
 	      DECL_FRIEND_P (tmpl) = 1;
 	    }
+
+	  tmpl = pushdecl_namespace_level (tmpl, /*hiding=*/is_friend);
+	  if (tmpl == error_mark_node)
+	    return error_mark_node;
 	}
       else if (is_friend)
 	{
