@@ -16228,7 +16228,7 @@ package body Sem_Ch13 is
          Is_Match := False;
 
          if Ekind (It.Nam) = E_Function
-           and then Base_Type (Etype (It.Nam)) = Typ
+           and then Base_Type (Etype (It.Nam)) = Base_Type (Typ)
          then
             declare
                Params     : constant List_Id :=
