@@ -2342,9 +2342,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      tree arg = CALL_EXPR_ARG (t, i);
 	      arg = cxx_eval_constant_expression (ctx, arg, false,
 						  non_constant_p, overflow_p);
-	      VERIFY_CONSTANT (arg);
 	      if (i == 1)
 		arg1 = arg;
+	      else
+		VERIFY_CONSTANT (arg);
 	    }
 	  gcc_assert (arg1);
 	  return arg1;
