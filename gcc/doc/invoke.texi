@@ -29244,7 +29244,7 @@ Generate instructions for the machine type @var{cpu-type}.  In contrast to
 for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
 to generate code that may not run at all on processors other than the one
 indicated.  Specifying @option{-march=@var{cpu-type}} implies 
-@option{-mtune=@var{cpu-type}}.
+@option{-mtune=@var{cpu-type}}, except where noted otherwise.
 
 The choices for @var{cpu-type} are:
 
@@ -29259,6 +29259,19 @@ of the selected instruction set.
 
 @item x86-64
 A generic CPU with 64-bit extensions.
+
+@item x86-64-v2
+@itemx x86-64-v3
+@itemx x86-64-v4
+These choices for @var{cpu-type} select the corresponding
+micro-architecture level from the x86-64 psABI.  They are only available
+when compiling for an x86-64 target that uses the System V psABI@.
+
+Since these @var{cpu-type} values do not have a corresponding
+@option{-mtune} setting, using @option{-march} with these values enables
+generic tuning.  Specific tuning can be enabled using the
+@option{-mtune=@var{other-cpu-type}} option with an appropriate
+@var{other-cpu-type} value.
 
 @item i386
 Original Intel i386 CPU@.
