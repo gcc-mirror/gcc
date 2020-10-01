@@ -195,13 +195,13 @@ struct access_data
   access_mode mode;
 };
 
-class vr_values;
+class range_query;
 extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
-				    const vr_values * = NULL);
-extern tree gimple_parm_array_size (tree, wide_int[2], const vr_values * = NULL);
+				    range_query * = NULL);
+extern tree gimple_parm_array_size (tree, wide_int[2], range_query * = NULL);
 extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
-			     const vr_values * = NULL);
-extern tree compute_objsize (tree, int, access_ref *, const vr_values * = NULL);
+			     range_query * = NULL);
+extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
 
 extern bool check_access (tree, tree, tree, tree, tree, access_mode,
 			  const access_data * = NULL);

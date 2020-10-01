@@ -14885,71 +14885,73 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   else
     decl = lookup_elaborated_type (name, how);
 
-  if (decl
-      && (DECL_CLASS_TEMPLATE_P (decl)
-	  /* If scope is TAG_how::CURRENT_ONLY we're defining a class,
-	     so ignore a template template parameter.  */
-	  || (how != TAG_how::CURRENT_ONLY
-	      && DECL_TEMPLATE_TEMPLATE_PARM_P (decl))))
-    decl = DECL_TEMPLATE_RESULT (decl);
 
-  if (decl && TREE_CODE (decl) == TYPE_DECL)
-    {
-      /* Look for invalid nested type:
-	   class C {
-	     class C {};
-	   };  */
-      if (how == TAG_how::CURRENT_ONLY && DECL_SELF_REFERENCE_P (decl))
-	{
-	  error ("%qD has the same name as the class in which it is "
-		 "declared", decl);
-	  return error_mark_node;
-	}
+  if (!decl)
+    /* We found nothing.  */
+    return NULL_TREE;
 
-      /* Two cases we need to consider when deciding if a class
-	 template is allowed as an elaborated type specifier:
-	 1. It is a self reference to its own class.
-	 2. It comes with a template header.
-
-	 For example:
-
-	   template <class T> class C {
-	     class C *c1;		// DECL_SELF_REFERENCE_P is true
-	     class D;
-	   };
-	   template <class U> class C; // template_header_p is true
-	   template <class T> class C<T>::D {
-	     class C *c2;		// DECL_SELF_REFERENCE_P is true
-	   };  */
-
-      tree t = check_elaborated_type_specifier (tag_code,
-						decl,
-						template_header_p
-						| DECL_SELF_REFERENCE_P (decl));
-      if (template_header_p && t && CLASS_TYPE_P (t)
-	  && (!CLASSTYPE_TEMPLATE_INFO (t)
-	      || (!PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))))
-	{
-	  error ("%qT is not a template", t);
-	  inform (location_of (t), "previous declaration here");
-	  if (TYPE_CLASS_SCOPE_P (t)
-	      && CLASSTYPE_TEMPLATE_INFO (TYPE_CONTEXT (t)))
-	    inform (input_location,
-		    "perhaps you want to explicitly add %<%T::%>",
-		    TYPE_CONTEXT (t));
-	  t = error_mark_node;
-	}
-
-      return t;
-    }
-  else if (decl && TREE_CODE (decl) == TREE_LIST)
+  if (TREE_CODE (decl) == TREE_LIST)
     {
       error ("reference to %qD is ambiguous", name);
       print_candidates (decl);
       return error_mark_node;
     }
-  else
+
+  if (DECL_CLASS_TEMPLATE_P (decl)
+      /* If scope is TAG_how::CURRENT_ONLY we're defining a class,
+	 so ignore a template template parameter.  */
+      || (how != TAG_how::CURRENT_ONLY && DECL_TEMPLATE_TEMPLATE_PARM_P (decl)))
+    decl = DECL_TEMPLATE_RESULT (decl);
+
+  if (TREE_CODE (decl) != TYPE_DECL)
+    /* Found not-a-type.  */
     return NULL_TREE;
+
+    /* Look for invalid nested type:
+     class C {
+     class C {};
+     };  */
+  if (how == TAG_how::CURRENT_ONLY && DECL_SELF_REFERENCE_P (decl))
+    {
+      error ("%qD has the same name as the class in which it is "
+	     "declared", decl);
+      return error_mark_node;
+    }
+
+  /* Two cases we need to consider when deciding if a class
+     template is allowed as an elaborated type specifier:
+     1. It is a self reference to its own class.
+     2. It comes with a template header.
+
+     For example:
+
+     template <class T> class C {
+       class C *c1;		// DECL_SELF_REFERENCE_P is true
+       class D;
+     };
+     template <class U> class C; // template_header_p is true
+     template <class T> class C<T>::D {
+       class C *c2;		// DECL_SELF_REFERENCE_P is true
+     };  */
+
+  tree t = check_elaborated_type_specifier (tag_code, decl,
+					    template_header_p
+					    | DECL_SELF_REFERENCE_P (decl));
+  if (template_header_p && t && CLASS_TYPE_P (t)
+      && (!CLASSTYPE_TEMPLATE_INFO (t)
+	  || (!PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))))
+    {
+      error ("%qT is not a template", t);
+      inform (location_of (t), "previous declaration here");
+      if (TYPE_CLASS_SCOPE_P (t)
+	  && CLASSTYPE_TEMPLATE_INFO (TYPE_CONTEXT (t)))
+	inform (input_location,
+		"perhaps you want to explicitly add %<%T::%>",
+		TYPE_CONTEXT (t));
+      return error_mark_node;
+    }
+
+  return t;
 }
 
 /* Get the struct, enum or union (TAG_CODE says which) with tag NAME.

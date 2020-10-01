@@ -8,8 +8,9 @@
 # See: https://github.com/golang/go/issues/8912
 [linux] [ppc64] skip
 
-# External linking is not supported on linux/riscv64.
+# External linking is not supported on linux/riscv, linux/riscv64.
 # See: https://github.com/golang/go/issues/36739
+[linux] [riscv] skip
 [linux] [riscv64] skip
 
 cc -c -o syso/objTestImpl.syso syso/src/objTestImpl.c

@@ -183,7 +183,8 @@ static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
-static bool get_range (tree, signop, offset_int[2], const vr_values * = NULL);
+static bool get_range (tree, gimple *, signop, offset_int[2],
+		       range_query * = NULL);
 static bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
 
 unsigned HOST_WIDE_INT target_newline;
@@ -4152,7 +4153,7 @@ check_read_access (tree exp, tree src, tree bound /* = NULL_TREE */,
 
 tree
 gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
-			const vr_values *rvals /* = NULL */)
+			range_query *rvals /* = NULL */)
 {
   if (!stmt)
     return NULL_TREE;
@@ -4206,7 +4207,7 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
 
   const int prec = ADDR_MAX_PRECISION;
   const tree size_max = TYPE_MAX_VALUE (sizetype);
-  if (!get_range (size, rng1, rvals))
+  if (!get_range (size, stmt, rng1, rvals))
     {
       /* Use the full non-negative range on failure.  */
       rng1[0] = wi::zero (prec);
@@ -4220,7 +4221,7 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
      of the upper bounds as a constant.  Ignore anti-ranges.  */
   tree n = argidx2 < nargs ? gimple_call_arg (stmt, argidx2) : integer_one_node;
   wide_int rng2[2];
-  if (!get_range (n, rng2, rvals))
+	  if (!get_range (n, stmt, rng2, rvals))
     {
       /* As above, use the full non-negative range on failure.  */
       rng2[0] = wi::zero (prec);
@@ -4252,8 +4253,7 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
    Return the function parameter on success and null otherwise.  */
 
 tree
-gimple_parm_array_size (tree ptr, wide_int rng[2],
-			const vr_values * /* = NULL */)
+gimple_parm_array_size (tree ptr, wide_int rng[2], range_query * /* = NULL */)
 {
   /* For a function argument try to determine the byte size of the array
      from the current function declaratation (e.g., attribute access or
@@ -4305,11 +4305,11 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
    result but accepts offset_int instead.  */
 
 static bool
-get_range (tree x, signop sgn, offset_int r[2],
-	   const vr_values *rvals /* = NULL */)
+get_range (tree x, gimple *stmt, signop sgn, offset_int r[2],
+	   range_query *rvals /* = NULL */)
 {
   wide_int wr[2];
-  if (!get_range (x, wr, rvals))
+  if (!get_range (x, stmt, wr, rvals))
     return false;
 
   r[0] = offset_int::from (wr[0], sgn);
@@ -4333,7 +4333,7 @@ get_range (tree x, signop sgn, offset_int r[2],
 
 static bool
 compute_objsize (tree ptr, int ostype, access_ref *pref,
-		 bitmap *visited, const vr_values *rvals /* = NULL */)
+		 bitmap *visited, range_query *rvals /* = NULL */)
 {
   const bool addr = TREE_CODE (ptr) == ADDR_EXPR;
   if (addr)
@@ -4431,7 +4431,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 
       offset_int orng[2];
       tree off = TREE_OPERAND (ptr, 1);
-      if (!get_range (off, SIGNED, orng, rvals))
+      if (!get_range (off, NULL, SIGNED, orng, rvals))
 	/* Fail unless the size of the object is zero.  */
 	return pref->sizrng[0] == 0 && pref->sizrng[0] == pref->sizrng[1];
 
@@ -4527,7 +4527,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	     offset to the maximum.  */
 	  offset_int orng[2];
 	  tree off = gimple_assign_rhs2 (stmt);
-	  if (!get_range (off, SIGNED, orng, rvals))
+	  if (!get_range (off, stmt, SIGNED, orng, rvals))
 	    {
 	      orng[0] = wi::to_offset (TYPE_MIN_VALUE (ptrdiff_type_node));
 	      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
@@ -4551,7 +4551,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
       && !array_at_struct_end_p (ptr))
     {
       if (tree size = TYPE_SIZE_UNIT (type))
-	return get_range (size, UNSIGNED, pref->sizrng, rvals);
+	return get_range (size, NULL, UNSIGNED, pref->sizrng, rvals);
     }
 
   return false;
@@ -4562,7 +4562,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 
 tree
 compute_objsize (tree ptr, int ostype, access_ref *pref,
-		 const vr_values *rvals /* = NULL */)
+		 range_query *rvals /* = NULL */)
 {
   bitmap visited = NULL;
 
@@ -4603,7 +4603,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 
 tree
 compute_objsize (tree ptr, int ostype, tree *pdecl /* = NULL */,
-		 tree *poff /* = NULL */, const vr_values *rvals /* = NULL */)
+		 tree *poff /* = NULL */, class range_query *rvals /* = NULL */)
 {
   /* Set the initial offsets to zero and size to negative to indicate
      none has been computed yet.  */

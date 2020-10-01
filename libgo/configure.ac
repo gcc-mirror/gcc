@@ -342,8 +342,14 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 [GOARCH=ppc64le],
 [GOARCH=ppc64])])
     ;;
-  riscv64-*-*)
-    GOARCH=riscv64
+  riscv*-*-*)
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#if __riscv_xlen == 64
+#error 64-bit
+#endif
+])],
+[GOARCH=riscv],
+[GOARCH=riscv64])
     ;;
   s390*-*-*)
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([

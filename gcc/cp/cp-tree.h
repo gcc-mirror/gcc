@@ -4045,21 +4045,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Nonzero if NODE is a DECL which we know about but which has not
    been explicitly declared, such as a built-in function or a friend
-   declared inside a class.  In the latter case DECL_HIDDEN_FRIEND_P
-   will be set.  */
+   declared inside a class.  */
 #define DECL_ANTICIPATED(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
    ->u.base.anticipated_p)
-
-/* Is DECL NODE a hidden name?  */
-#define DECL_HIDDEN_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE) && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (NODE) \
-   && DECL_ANTICIPATED (NODE))
-
-/* True if this is a hidden class type.    */
-#define TYPE_HIDDEN_P(NODE) \
-  (DECL_LANG_SPECIFIC (TYPE_NAME (NODE)) \
-   && DECL_ANTICIPATED (TYPE_NAME (NODE)))
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */

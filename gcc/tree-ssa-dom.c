@@ -1500,7 +1500,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
-  x_vr_values = evrp_range_analyzer.get_vr_values ();
+  x_vr_values = &evrp_range_analyzer;
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
 			 m_avail_exprs_stack,
 			 &evrp_range_analyzer,
@@ -1970,7 +1970,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
   opt_stats.num_stmts++;
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
-  cprop_into_stmt (stmt, evrp_range_analyzer.get_vr_values ());
+  cprop_into_stmt (stmt, &evrp_range_analyzer);
 
   /* If the statement has been modified with constant replacements,
      fold its RHS before checking for redundant computations.  */

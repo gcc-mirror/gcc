@@ -75,6 +75,7 @@
 #endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
+#include "value-range.h"
 #include "tree-ssa-propagate.h"
 #include "tree-vrp.h"
 #include "tree-ssanames.h"

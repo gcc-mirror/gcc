@@ -93,7 +93,7 @@ init_internal_fns ()
 {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
   if (FNSPEC) internal_fn_fnspec_array[IFN_##CODE] = \
-    build_string ((int) sizeof (FNSPEC), FNSPEC ? FNSPEC : "");
+    build_string ((int) sizeof (FNSPEC) - 1, FNSPEC ? FNSPEC : "");
 #include "internal-fn.def"
   internal_fn_fnspec_array[IFN_LAST] = 0;
 }

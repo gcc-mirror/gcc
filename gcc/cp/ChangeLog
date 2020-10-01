@@ -1,3 +1,16 @@
+2020-09-30  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_decl_fn): Remove hidden_friend_p.
+	(DECL_HIDDEN_FRIEND_P): Delete.
+	* call.c (add_function_candidate): Drop assert about anticipated
+	decl.
+	(build_new_op_1): Drop koenig lookup flagging for hidden friend.
+	* decl.c (duplicate_decls): Drop HIDDEN_FRIEND_P updating.
+	* name-lookup.c (do_pushdecl): Likewise.
+	(set_decl_namespace): Discover hiddenness from OVL_HIDDEN_P.
+	* pt.c (check_explicit_specialization): Record found_hidden
+	explicitly.
+
 2020-09-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94695

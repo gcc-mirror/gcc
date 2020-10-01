@@ -7404,6 +7404,8 @@ pushdecl_top_level (tree x)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   do_push_to_top_level ();
+  gcc_checking_assert (!DECL_CONTEXT (x));
+  DECL_CONTEXT (x) = FROB_CONTEXT (global_namespace);
   x = pushdecl_namespace_level (x);
   do_pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
@@ -7418,6 +7420,8 @@ pushdecl_top_level_and_finish (tree x, tree init)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   do_push_to_top_level ();
+  gcc_checking_assert (!DECL_CONTEXT (x));
+  DECL_CONTEXT (x) = FROB_CONTEXT (global_namespace);
   x = pushdecl_namespace_level (x);
   cp_finish_decl (x, init, false, NULL_TREE, 0);
   do_pop_from_top_level ();

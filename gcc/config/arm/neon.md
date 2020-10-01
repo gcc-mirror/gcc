@@ -1530,6 +1530,30 @@
   [(set_attr "type" "neon_qsub<q>")]
 )
 
+(define_expand "vec_cmp<mode><v_cmp_result>"
+  [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
+	(match_operator:<V_cmp_result> 1 "comparison_operator"
+	  [(match_operand:VDQW 2 "s_register_operand")
+	   (match_operand:VDQW 3 "reg_or_zero_operand")]))]
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(match_operator:VDQIW 1 "comparison_operator"
+	  [(match_operand:VDQIW 2 "s_register_operand")
+	   (match_operand:VDQIW 3 "reg_or_zero_operand")]))]
+  "TARGET_NEON"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
 ;; Conditional instructions.  These are comparisons with conditional moves for
 ;; vectors.  They perform the assignment:
 ;;   
@@ -1543,230 +1567,53 @@
 	(if_then_else:VDQW
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:VDQW 4 "s_register_operand")
-	     (match_operand:VDQW 5 "nonmemory_operand")])
+	     (match_operand:VDQW 5 "reg_or_zero_operand")])
 	  (match_operand:VDQW 1 "s_register_operand")
 	  (match_operand:VDQW 2 "s_register_operand")))]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
-  int inverse = 0;
-  int use_zero_form = 0;
-  int swap_bsl_operands = 0;
-  rtx mask = gen_reg_rtx (<V_cmp_result>mode);
-  rtx tmp = gen_reg_rtx (<V_cmp_result>mode);
-
-  rtx (*base_comparison) (rtx, rtx, rtx);
-  rtx (*complimentary_comparison) (rtx, rtx, rtx);
-
-  switch (GET_CODE (operands[3]))
-    {
-    case GE:
-    case GT:
-    case LE:
-    case LT:
-    case EQ:
-      if (operands[5] == CONST0_RTX (<MODE>mode))
-	{
-	  use_zero_form = 1;
-	  break;
-	}
-      /* Fall through.  */
-    default:
-      if (!REG_P (operands[5]))
-	operands[5] = force_reg (<MODE>mode, operands[5]);
-    }
-
-  switch (GET_CODE (operands[3]))
-    {
-    case LT:
-    case UNLT:
-      inverse = 1;
-      /* Fall through.  */
-    case GE:
-    case UNGE:
-    case ORDERED:
-    case UNORDERED:
-      base_comparison = gen_neon_vcge<mode>;
-      complimentary_comparison = gen_neon_vcgt<mode>;
-      break;
-    case LE:
-    case UNLE:
-      inverse = 1;
-      /* Fall through.  */
-    case GT:
-    case UNGT:
-      base_comparison = gen_neon_vcgt<mode>;
-      complimentary_comparison = gen_neon_vcge<mode>;
-      break;
-    case EQ:
-    case NE:
-    case UNEQ:
-      base_comparison = gen_neon_vceq<mode>;
-      complimentary_comparison = gen_neon_vceq<mode>;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  switch (GET_CODE (operands[3]))
-    {
-    case LT:
-    case LE:
-    case GT:
-    case GE:
-    case EQ:
-      /* The easy case.  Here we emit one of vcge, vcgt or vceq.
-	 As a LT b <=> b GE a && a LE b <=> b GT a.  Our transformations are:
-	 a GE b -> a GE b
-	 a GT b -> a GT b
-	 a LE b -> b GE a
-	 a LT b -> b GT a
-	 a EQ b -> a EQ b
-	 Note that there also exist direct comparison against 0 forms,
-	 so catch those as a special case.  */
-      if (use_zero_form)
-	{
-	  inverse = 0;
-	  switch (GET_CODE (operands[3]))
-	    {
-	    case LT:
-	      base_comparison = gen_neon_vclt<mode>;
-	      break;
-	    case LE:
-	      base_comparison = gen_neon_vcle<mode>;
-	      break;
-	    default:
-	      /* Do nothing, other zero form cases already have the correct
-		 base_comparison.  */
-	      break;
-	    }
-	}
-
-      if (!inverse)
-	emit_insn (base_comparison (mask, operands[4], operands[5]));
-      else
-	emit_insn (complimentary_comparison (mask, operands[5], operands[4]));
-      break;
-    case UNLT:
-    case UNLE:
-    case UNGT:
-    case UNGE:
-    case NE:
-      /* Vector compare returns false for lanes which are unordered, so if we use
-	 the inverse of the comparison we actually want to emit, then
-	 swap the operands to BSL, we will end up with the correct result.
-	 Note that a NE NaN and NaN NE b are true for all a, b.
-
-	 Our transformations are:
-	 a GE b -> !(b GT a)
-	 a GT b -> !(b GE a)
-	 a LE b -> !(a GT b)
-	 a LT b -> !(a GE b)
-	 a NE b -> !(a EQ b)  */
-
-      if (inverse)
-	emit_insn (base_comparison (mask, operands[4], operands[5]));
-      else
-	emit_insn (complimentary_comparison (mask, operands[5], operands[4]));
-
-      swap_bsl_operands = 1;
-      break;
-    case UNEQ:
-      /* We check (a > b ||  b > a).  combining these comparisons give us
-	 true iff !(a != b && a ORDERED b), swapping the operands to BSL
-	 will then give us (a == b ||  a UNORDERED b) as intended.  */
-
-      emit_insn (gen_neon_vcgt<mode> (mask, operands[4], operands[5]));
-      emit_insn (gen_neon_vcgt<mode> (tmp, operands[5], operands[4]));
-      emit_insn (gen_ior<v_cmp_result>3 (mask, mask, tmp));
-      swap_bsl_operands = 1;
-      break;
-    case UNORDERED:
-       /* Operands are ORDERED iff (a > b || b >= a).
-	 Swapping the operands to BSL will give the UNORDERED case.  */
-     swap_bsl_operands = 1;
-     /* Fall through.  */
-    case ORDERED:
-      emit_insn (gen_neon_vcgt<mode> (tmp, operands[4], operands[5]));
-      emit_insn (gen_neon_vcge<mode> (mask, operands[5], operands[4]));
-      emit_insn (gen_ior<v_cmp_result>3 (mask, mask, tmp));
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  if (swap_bsl_operands)
-    emit_insn (gen_neon_vbsl<mode> (operands[0], mask, operands[2],
-				    operands[1]));
-  else
-    emit_insn (gen_neon_vbsl<mode> (operands[0], mask, operands[1],
-				    operands[2]));
+  arm_expand_vcond (operands, <V_cmp_result>mode);
   DONE;
 })
 
-(define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(if_then_else:VDQIW
+(define_expand "vcond<V_cvtto><mode>"
+  [(set (match_operand:<V_CVTTO> 0 "s_register_operand")
+	(if_then_else:<V_CVTTO>
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:V32 4 "s_register_operand")
+	     (match_operand:V32 5 "reg_or_zero_operand")])
+	  (match_operand:<V_CVTTO> 1 "s_register_operand")
+	  (match_operand:<V_CVTTO> 2 "s_register_operand")))]
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  arm_expand_vcond (operands, <V_cmp_result>mode);
+  DONE;
+})
+
+(define_expand "vcondu<mode><v_cmp_result>"
+  [(set (match_operand:VDQW 0 "s_register_operand")
+	(if_then_else:VDQW
 	  (match_operator 3 "arm_comparison_operator"
-	    [(match_operand:VDQIW 4 "s_register_operand")
-	     (match_operand:VDQIW 5 "s_register_operand")])
-	  (match_operand:VDQIW 1 "s_register_operand")
-	  (match_operand:VDQIW 2 "s_register_operand")))]
+	    [(match_operand:<V_cmp_result> 4 "s_register_operand")
+	     (match_operand:<V_cmp_result> 5 "reg_or_zero_operand")])
+	  (match_operand:VDQW 1 "s_register_operand")
+	  (match_operand:VDQW 2 "s_register_operand")))]
   "TARGET_NEON"
 {
-  rtx mask;
-  int inverse = 0, immediate_zero = 0;
-  
-  mask = gen_reg_rtx (<V_cmp_result>mode);
-  
-  if (operands[5] == CONST0_RTX (<MODE>mode))
-    immediate_zero = 1;
-  else if (!REG_P (operands[5]))
-    operands[5] = force_reg (<MODE>mode, operands[5]);
-  
-  switch (GET_CODE (operands[3]))
-    {
-    case GEU:
-      emit_insn (gen_neon_vcgeu<mode> (mask, operands[4], operands[5]));
-      break;
-    
-    case GTU:
-      emit_insn (gen_neon_vcgtu<mode> (mask, operands[4], operands[5]));
-      break;
-    
-    case EQ:
-      emit_insn (gen_neon_vceq<mode> (mask, operands[4], operands[5]));
-      break;
-    
-    case LEU:
-      if (immediate_zero)
-	emit_insn (gen_neon_vcle<mode> (mask, operands[4], operands[5]));
-      else
-	emit_insn (gen_neon_vcgeu<mode> (mask, operands[5], operands[4]));
-      break;
-    
-    case LTU:
-      if (immediate_zero)
-        emit_insn (gen_neon_vclt<mode> (mask, operands[4], operands[5]));
-      else
-	emit_insn (gen_neon_vcgtu<mode> (mask, operands[5], operands[4]));
-      break;
-    
-    case NE:
-      emit_insn (gen_neon_vceq<mode> (mask, operands[4], operands[5]));
-      inverse = 1;
-      break;
-    
-    default:
-      gcc_unreachable ();
-    }
-  
-  if (inverse)
-    emit_insn (gen_neon_vbsl<mode> (operands[0], mask, operands[2],
-				    operands[1]));
-  else
-    emit_insn (gen_neon_vbsl<mode> (operands[0], mask, operands[1],
-				    operands[2]));
+  arm_expand_vcond (operands, <V_cmp_result>mode);
+  DONE;
+})
 
+(define_expand "vcond_mask_<mode><v_cmp_result>"
+  [(set (match_operand:VDQW 0 "s_register_operand")
+	(if_then_else:VDQW
+	  (match_operand:<V_cmp_result> 3 "s_register_operand")
+	  (match_operand:VDQW 1 "s_register_operand")
+	  (match_operand:VDQW 2 "s_register_operand")))]
+  "TARGET_NEON"
+{
+  emit_insn (gen_neon_vbsl<mode> (operands[0], operands[3], operands[1],
+				  operands[2]));
   DONE;
 })
 
@@ -2601,7 +2448,7 @@
 
 ;; These may expand to an UNSPEC pattern when a floating point mode is used
 ;; without unsafe math optimizations.
-(define_expand "neon_vc<cmp_op><mode>"
+(define_expand "@neon_vc<cmp_op><mode>"
   [(match_operand:<V_cmp_result> 0 "s_register_operand")
      (neg:<V_cmp_result>
        (COMPARISONS:VDQW (match_operand:VDQW 1 "s_register_operand")
@@ -2641,7 +2488,7 @@
   }
 )
 
-(define_insn "neon_vc<cmp_op><mode>_insn"
+(define_insn "@neon_vc<cmp_op><mode>_insn"
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w,w")
         (neg:<V_cmp_result>
           (COMPARISONS:<V_cmp_result>
@@ -2685,7 +2532,7 @@
   [(set_attr "type" "neon_fp_compare_s<q>")]
 )
 
-(define_expand "neon_vc<cmp_op><mode>"
+(define_expand "@neon_vc<cmp_op><mode>"
  [(match_operand:<V_cmp_result> 0 "s_register_operand")
   (neg:<V_cmp_result>
    (COMPARISONS:VH
@@ -2751,7 +2598,7 @@
 }
  [(set_attr "type" "neon_fp_compare_s<q>")])
 
-(define_insn "neon_vc<cmp_op>u<mode>"
+(define_insn "@neon_vc<code><mode>"
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w")
         (neg:<V_cmp_result>
           (GTUGEU:<V_cmp_result>
@@ -4708,7 +4555,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_bsl<q>")]
 )
 
-(define_expand "neon_vbsl<mode>"
+(define_expand "@neon_vbsl<mode>"
   [(set (match_operand:VDQX 0 "s_register_operand")
         (unspec:VDQX [(match_operand:<V_cmp_result> 1 "s_register_operand")
                       (match_operand:VDQX 2 "s_register_operand")

@@ -4151,18 +4151,12 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
 				 "missing in previous designation",
 				 attrstr);
 	  else if (newa->internal_p || cura->internal_p)
-	    {
-	      /* Mismatch in the value of the size argument and a VLA
-		 bound.  */
-	      location_t argloc = curloc;
-	      if (tree arg = get_argument (node[2], newa->sizarg))
-		argloc = DECL_SOURCE_LOCATION (arg);
-	      warned = warning_at (argloc, OPT_Wattributes,
-				   "attribute %qs positional argument 2 "
-				   "conflicts with previous designation "
-				   "by argument %u",
-				   attrstr, cura->sizarg + 1);
-	    }
+	    /* Mismatch in the value of the size argument and a VLA bound.  */
+	    warned = warning_at (curloc, OPT_Wattributes,
+				 "attribute %qs positional argument 2 "
+				 "conflicts with previous designation "
+				 "by argument %u",
+				 attrstr, cura->sizarg + 1);
 	  else
 	    /* Mismatch in the value of the size argument between two
 	       explicit access attributes.  */

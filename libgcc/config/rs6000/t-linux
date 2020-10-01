@@ -1,3 +1,8 @@
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-glibc.ver
 
-HOST_LIBGCC2_CFLAGS += -mlong-double-128 -mno-minimal-toc
+HOST_LIBGCC2_CFLAGS += -mlong-double-128
+
+# This is a way of selecting -mcmodel=small for ppc64, which gives
+# smaller and faster libgcc code.  Directly specifying -mcmodel=small
+# would need to take into account targets for which -mcmodel is invalid.
+HOST_LIBGCC2_CFLAGS += -mno-minimal-toc
