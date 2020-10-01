@@ -4857,7 +4857,13 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 point for reachable memory of their arguments.  */
       else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
 	handle_pure_call (t, &rhsc);
-      else if (fndecl && DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (fndecl))
+      /* If the call is to a replaceable operator delete and results
+	 from a delete expression as opposed to a direct call to
+	 such operator, then the effects for PTA (in particular
+	 the escaping of the pointer) can be ignored.  */
+      else if (fndecl
+	       && DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (fndecl)
+	       && gimple_call_from_new_or_delete (t))
 	;
       else
 	handle_rhs_call (t, &rhsc);
