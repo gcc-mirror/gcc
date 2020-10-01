@@ -278,11 +278,11 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 		   || TREE_CODE (not_tmpl) == VAR_DECL)
 		  && DECL_THIS_STATIC (not_tmpl))
 		/* Internal linkage.  */
+		// FIXME: Is this right given the new header-unit
+		// meaning?
 		continue;
 
-	      if (!iter.hidden_p ()
-		  || DECL_HIDDEN_FRIEND_P (decl))
-		init_global_partition (cluster, decl);
+	      init_global_partition (cluster, decl);
 	    }
 
 	  if (cluster[0].slots[MODULE_SLOT_GLOBAL]
@@ -8057,10 +8057,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		      DECL_ANTICIPATED (tmpl) = false;
 		      DECL_FRIEND_P (tmpl) = false;
 		    }
-#if 0
-		  if (flag_modules)
-		    set_instantiating_module (found);
-#endif
 		}
 	      return found;
 	    }
