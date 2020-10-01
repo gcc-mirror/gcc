@@ -1681,8 +1681,6 @@ pass_ipa_modref::execute (function *)
     }
   ((modref_summaries *)summaries)->ipa = false;
   ipa_free_postorder_info ();
-  /* Free ipa-prop structures if they are no longer needed.  */
-  ipa_free_all_structures_after_iinln ();
   return 0;
 }
 

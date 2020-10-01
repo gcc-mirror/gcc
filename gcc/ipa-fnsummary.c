@@ -4680,6 +4680,8 @@ public:
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
+      /* Free ipa-prop structures if they are no longer needed.  */
+      ipa_free_all_structures_after_iinln ();
       if (!flag_wpa)
 	ipa_free_size_summary ();
       return 0;
