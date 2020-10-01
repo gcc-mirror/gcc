@@ -704,12 +704,12 @@ void
 TypeResolution::visit (AST::IfLetExprConseqIfLet &expr)
 {}
 // void TypeResolution::visit(MatchCase& match_case) {}
-void
+/*void
 TypeResolution::visit (AST::MatchCaseBlockExpr &match_case)
-{}
-void
+{}*/
+/*void
 TypeResolution::visit (AST::MatchCaseExpr &match_case)
-{}
+{}*/
 void
 TypeResolution::visit (AST::MatchExpr &expr)
 {}

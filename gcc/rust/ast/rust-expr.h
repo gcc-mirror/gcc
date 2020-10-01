@@ -28,6 +28,8 @@ protected:
     return clone_expr_with_block_impl ();
   }
 
+  bool is_expr_without_block () const final override { return false; };
+
 public:
   // Unique pointer custom clone function
   std::unique_ptr<ExprWithBlock> clone_expr_with_block () const
@@ -889,12 +891,12 @@ protected:
 // Value array elements
 class ArrayElemsValues : public ArrayElems
 {
-  std::vector<std::unique_ptr<Expr>> values;
+  std::vector<std::unique_ptr<Expr> > values;
 
   // TODO: should this store location data?
 
 public:
-  ArrayElemsValues (std::vector<std::unique_ptr<Expr>> elems)
+  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems)
     : values (std::move (elems))
   {}
 
@@ -1117,7 +1119,7 @@ class TupleExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> inner_attrs;
 
-  std::vector<std::unique_ptr<Expr>> tuple_elems;
+  std::vector<std::unique_ptr<Expr> > tuple_elems;
   // replaces (inlined version of) TupleElements
 
   Location locus;
@@ -1127,7 +1129,7 @@ public:
 
   std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
 
-  TupleExpr (std::vector<std::unique_ptr<Expr>> tuple_elements,
+  TupleExpr (std::vector<std::unique_ptr<Expr> > tuple_elements,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (outer_attribs)),
@@ -1493,7 +1495,7 @@ class StructExprStructFields : public StructExprStruct
 {
 public:
   // std::vector<StructExprField> fields;
-  std::vector<std::unique_ptr<StructExprField>> fields;
+  std::vector<std::unique_ptr<StructExprField> > fields;
 
   // bool has_struct_base;
   StructBase struct_base;
@@ -1513,7 +1515,7 @@ public:
   // Constructor for StructExprStructFields when no struct base is used
   StructExprStructFields (
     PathInExpression struct_path,
-    std::vector<std::unique_ptr<StructExprField>> expr_fields, Location locus,
+    std::vector<std::unique_ptr<StructExprField> > expr_fields, Location locus,
     StructBase base_struct = StructBase::error (),
     std::vector<Attribute> inner_attribs = std::vector<Attribute> (),
     std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
@@ -1608,7 +1610,7 @@ protected:
 class StructExprTuple : public StructExpr
 {
   std::vector<Attribute> inner_attrs;
-  std::vector<std::unique_ptr<Expr>> exprs;
+  std::vector<std::unique_ptr<Expr> > exprs;
 
   Location locus;
 
@@ -1622,7 +1624,7 @@ public:
   }*/
 
   StructExprTuple (PathInExpression struct_path,
-		   std::vector<std::unique_ptr<Expr>> tuple_exprs,
+		   std::vector<std::unique_ptr<Expr> > tuple_exprs,
 		   std::vector<Attribute> inner_attribs,
 		   std::vector<Attribute> outer_attribs, Location locus)
     : StructExpr (std::move (struct_path), std::move (outer_attribs)),
@@ -1867,7 +1869,7 @@ protected:
 class EnumExprStruct : public EnumVariantExpr
 {
   // std::vector<EnumExprField> fields;
-  std::vector<std::unique_ptr<EnumExprField>> fields;
+  std::vector<std::unique_ptr<EnumExprField> > fields;
 
   Location locus;
 
@@ -1879,7 +1881,7 @@ public:
   }*/
 
   EnumExprStruct (PathInExpression enum_variant_path,
-		  std::vector<std::unique_ptr<EnumExprField>> variant_fields,
+		  std::vector<std::unique_ptr<EnumExprField> > variant_fields,
 		  std::vector<Attribute> outer_attribs, Location locus)
     : EnumVariantExpr (std::move (enum_variant_path),
 		       std::move (outer_attribs)),
@@ -1936,7 +1938,7 @@ protected:
 // Tuple-like syntax enum variant instance creation AST node
 class EnumExprTuple : public EnumVariantExpr
 {
-  std::vector<std::unique_ptr<Expr>> values;
+  std::vector<std::unique_ptr<Expr> > values;
 
   Location locus;
 
@@ -1948,7 +1950,7 @@ public:
   }*/
 
   EnumExprTuple (PathInExpression enum_variant_path,
-		 std::vector<std::unique_ptr<Expr>> variant_values,
+		 std::vector<std::unique_ptr<Expr> > variant_values,
 		 std::vector<Attribute> outer_attribs, Location locus)
     : EnumVariantExpr (std::move (enum_variant_path),
 		       std::move (outer_attribs)),
@@ -2051,7 +2053,7 @@ class CallExpr : public ExprWithoutBlock
 public:
   std::unique_ptr<Expr> function;
   // inlined form of CallParams
-  std::vector<std::unique_ptr<Expr>> params;
+  std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
 
@@ -2064,7 +2066,7 @@ public:
   }*/
 
   CallExpr (std::unique_ptr<Expr> function_expr,
-	    std::vector<std::unique_ptr<Expr>> function_params,
+	    std::vector<std::unique_ptr<Expr> > function_params,
 	    std::vector<Attribute> outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (outer_attribs)),
       function (std::move (function_expr)),
@@ -2128,7 +2130,7 @@ class MethodCallExpr : public ExprWithoutBlock
   std::unique_ptr<Expr> receiver;
   PathExprSegment method_name;
   // inlined form of CallParams
-  std::vector<std::unique_ptr<Expr>> params;
+  std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
 
@@ -2141,7 +2143,7 @@ public:
 
   MethodCallExpr (std::unique_ptr<Expr> call_receiver,
 		  PathExprSegment method_path,
-		  std::vector<std::unique_ptr<Expr>> method_params,
+		  std::vector<std::unique_ptr<Expr> > method_params,
 		  std::vector<Attribute> outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (outer_attribs)),
       receiver (std::move (call_receiver)),
@@ -2407,7 +2409,7 @@ public:
   std::vector<Attribute> inner_attrs;
 
   // bool has_statements;
-  std::vector<std::unique_ptr<Stmt>> statements;
+  std::vector<std::unique_ptr<Stmt> > statements;
   // bool has_expr;
   std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
 
@@ -2421,7 +2423,7 @@ public:
   // Returns whether the block contains an expression
   bool has_expr () const { return expr != nullptr; }
 
-  BlockExpr (std::vector<std::unique_ptr<Stmt>> block_statements,
+  BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<ExprWithoutBlock> block_expr,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
@@ -3278,14 +3280,14 @@ protected:
 class WhileLetLoopExpr : public BaseLoopExpr
 {
   // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
+  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
   std::unique_ptr<Expr> condition;
 
 public:
   std::string as_string () const override;
 
   // Constructor with a loop label
-  WhileLetLoopExpr (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+  WhileLetLoopExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 		    std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> loop_block, Location locus,
 		    LoopLabel loop_label = LoopLabel::error (),
@@ -3622,7 +3624,7 @@ protected:
 class IfLetExpr : public ExprWithBlock
 {
   // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
+  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
   std::unique_ptr<Expr> value;
   std::unique_ptr<BlockExpr> if_block;
 
@@ -3631,7 +3633,7 @@ class IfLetExpr : public ExprWithBlock
 public:
   std::string as_string () const override;
 
-  IfLetExpr (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+  IfLetExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
 	     Location locus)
     : ExprWithBlock (std::vector<Attribute> ()),
@@ -3774,7 +3776,7 @@ public:
   std::string as_string () const override;
 
   IfLetExprConseqElse (
-    std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+    std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
     std::unique_ptr<BlockExpr> else_block, Location locus)
     : IfLetExpr (std::move (match_arm_patterns), std::move (value),
@@ -3839,7 +3841,7 @@ class IfLetExprConseqIf : public IfLetExpr
 public:
   std::string as_string () const override;
 
-  IfLetExprConseqIf (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+  IfLetExprConseqIf (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 		     std::unique_ptr<Expr> value,
 		     std::unique_ptr<BlockExpr> if_block,
 		     std::unique_ptr<IfExpr> if_expr, Location locus)
@@ -3905,7 +3907,7 @@ public:
   std::string as_string () const override;
 
   IfLetExprConseqIfLet (
-    std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+    std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
     std::unique_ptr<IfLetExpr> if_let_expr, Location locus)
     : IfLetExpr (std::move (match_arm_patterns), std::move (value),
@@ -3966,7 +3968,7 @@ struct MatchArm
 private:
   std::vector<Attribute> outer_attrs;
   // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
+  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
 
   // bool has_match_arm_guard;
   // inlined from MatchArmGuard
@@ -3979,7 +3981,7 @@ public:
   bool has_match_arm_guard () const { return guard_expr != nullptr; }
 
   // Constructor for match arm with a guard expression
-  MatchArm (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+  MatchArm (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	    std::unique_ptr<Expr> guard_expr = nullptr,
 	    std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)),
@@ -3988,9 +3990,7 @@ public:
   {}
 
   // Copy constructor with clone
-  MatchArm (MatchArm const &other)
-    : /*match_arm_patterns(other.match_arm_patterns),*/ outer_attrs (
-      other.outer_attrs)
+  MatchArm (MatchArm const &other) : outer_attrs (other.outer_attrs)
   {
     // guard to protect from null pointer dereference
     if (other.guard_expr != nullptr)
@@ -4006,9 +4006,10 @@ public:
   // Overload assignment operator to clone
   MatchArm &operator= (MatchArm const &other)
   {
-    // match_arm_patterns = other.match_arm_patterns;
     outer_attrs = other.outer_attrs;
-    guard_expr = other.guard_expr->clone_expr ();
+
+    if (other.guard_expr != nullptr)
+      guard_expr = other.guard_expr->clone_expr ();
 
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
@@ -4027,12 +4028,13 @@ public:
   // Creates a match arm in an error state.
   static MatchArm create_error ()
   {
-    return MatchArm (std::vector<std::unique_ptr<Pattern>> ());
+    return MatchArm (std::vector<std::unique_ptr<Pattern> > ());
   }
 
   std::string as_string () const;
 };
 
+/*
 // Base "match case" for a match expression - abstract
 class MatchCase
 {
@@ -4059,7 +4061,45 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 };
+*/
 
+/* A "match case" - a correlated match arm and resulting expression. Not
+ * abstract. */
+struct MatchCase
+{
+private:
+  MatchArm arm;
+  std::unique_ptr<Expr> expr;
+
+  /* TODO: does whether trailing comma exists need to be stored? currently
+   * assuming it is only syntactical and has no effect on meaning. */
+
+public:
+  MatchCase (MatchArm arm, std::unique_ptr<Expr> expr)
+    : arm (std::move (arm)), expr (std::move (expr))
+  {}
+
+  MatchCase (const MatchCase &other)
+    : arm (other.arm), expr (other.expr->clone_expr ())
+  {}
+
+  MatchCase &operator= (const MatchCase &other)
+  {
+    arm = other.arm;
+    expr = other.expr->clone_expr ();
+
+    return *this;
+  }
+
+  MatchCase (MatchCase &&other) = default;
+  MatchCase &operator= (MatchCase &&other) = default;
+
+  ~MatchCase () = default;
+
+  std::string as_string () const;
+};
+
+#if 0
 // Block expression match case
 class MatchCaseBlockExpr : public MatchCase
 {
@@ -4147,6 +4187,7 @@ protected:
     return new MatchCaseExpr (*this);
   }
 };
+#endif
 
 // Match expression AST node
 class MatchExpr : public ExprWithBlock
@@ -4156,7 +4197,9 @@ class MatchExpr : public ExprWithBlock
 
   // bool has_match_arms;
   // MatchArms match_arms;
-  std::vector<std::unique_ptr<MatchCase>> match_arms; // inlined from MatchArms
+  // std::vector<std::unique_ptr<MatchCase> > match_arms; // inlined from
+  // MatchArms
+  std::vector<MatchCase> match_arms;
 
   Location locus;
 
@@ -4167,7 +4210,8 @@ public:
   bool has_match_arms () const { return !match_arms.empty (); }
 
   MatchExpr (std::unique_ptr<Expr> branch_value,
-	     std::vector<std::unique_ptr<MatchCase>> match_arms,
+	     // std::vector<std::unique_ptr<MatchCase> > match_arms,
+	     std::vector<MatchCase> match_arms,
 	     std::vector<Attribute> inner_attrs,
 	     std::vector<Attribute> outer_attrs, Location locus)
     : ExprWithBlock (std::move (outer_attrs)),
@@ -4178,14 +4222,13 @@ public:
 
   // Copy constructor requires clone due to unique_ptr
   MatchExpr (MatchExpr const &other)
-    : ExprWithBlock (other),
-      branch_value (
-	other.branch_value->clone_expr ()), /*match_arms(other.match_arms),*/
-      inner_attrs (other.inner_attrs), locus (other.locus)
+    : ExprWithBlock (other), branch_value (other.branch_value->clone_expr ()),
+      inner_attrs (other.inner_attrs), match_arms (other.match_arms),
+      locus (other.locus)
   {
-    match_arms.reserve (other.match_arms.size ());
+    /*match_arms.reserve (other.match_arms.size ());
     for (const auto &e : other.match_arms)
-      match_arms.push_back (e->clone_match_case ());
+      match_arms.push_back (e->clone_match_case ());*/
   }
 
   // Overloaded assignment operator to clone due to unique_ptr
@@ -4193,14 +4236,14 @@ public:
   {
     ExprWithBlock::operator= (other);
     branch_value = other.branch_value->clone_expr ();
-    // match_arms = other.match_arms;
     inner_attrs = other.inner_attrs;
+    match_arms = other.match_arms;
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
 
-    match_arms.reserve (other.match_arms.size ());
+    /*match_arms.reserve (other.match_arms.size ());
     for (const auto &e : other.match_arms)
-      match_arms.push_back (e->clone_match_case ());
+      match_arms.push_back (e->clone_match_case ());*/
 
     return *this;
   }

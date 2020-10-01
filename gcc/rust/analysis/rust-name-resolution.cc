@@ -361,12 +361,12 @@ void
 NameResolution::visit (AST::IfLetExprConseqIfLet &expr)
 {}
 // void NameResolution::visit(MatchCase& match_case) {}
-void
+/*void
 NameResolution::visit (AST::MatchCaseBlockExpr &match_case)
-{}
-void
+{}*/
+/*void
 NameResolution::visit (AST::MatchCaseExpr &match_case)
-{}
+{}*/
 void
 NameResolution::visit (AST::MatchExpr &expr)
 {}

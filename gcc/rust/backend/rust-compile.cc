@@ -889,12 +889,12 @@ Compilation::visit (AST::IfLetExprConseqIfLet &expr)
 }
 
 // void Compilation::visit(MatchCase& match_case) {}
-void
+/*void
 Compilation::visit (AST::MatchCaseBlockExpr &match_case)
-{}
-void
+{}*/
+/*void
 Compilation::visit (AST::MatchCaseExpr &match_case)
-{}
+{}*/
 void
 Compilation::visit (AST::MatchExpr &expr)
 {}

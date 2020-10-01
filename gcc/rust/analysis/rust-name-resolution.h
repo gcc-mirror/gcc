@@ -112,8 +112,8 @@ public:
   void visit (AST::IfLetExprConseqIf &expr) override;
   void visit (AST::IfLetExprConseqIfLet &expr) override;
   //  void visit(MatchCase& match_case) override;
-  void visit (AST::MatchCaseBlockExpr &match_case) override;
-  void visit (AST::MatchCaseExpr &match_case) override;
+  // void visit (AST::MatchCaseBlockExpr &match_case) override;
+  // void visit (AST::MatchCaseExpr &match_case) override;
   void visit (AST::MatchExpr &expr) override;
   void visit (AST::AwaitExpr &expr) override;
   void visit (AST::AsyncBlockExpr &expr) override;

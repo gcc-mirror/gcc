@@ -2391,11 +2391,12 @@ MatchCase::as_string () const
   std::string str ("MatchCase: (match arm) ");
 
   str += "\n Match arm matcher: \n" + arm.as_string ();
+  str += "\n Expr: " + expr->as_string ();
 
   return str;
 }
 
-std::string
+/*std::string
 MatchCaseBlockExpr::as_string () const
 {
   std::string str = MatchCase::as_string ();
@@ -2413,7 +2414,7 @@ MatchCaseExpr::as_string () const
   str += "\n Expr: " + expr->as_string ();
 
   return str;
-}
+}*/
 
 std::string
 MatchExpr::as_string () const
@@ -2447,9 +2448,7 @@ MatchExpr::as_string () const
   else
     {
       for (const auto &arm : match_arms)
-	{
-	  str += "\n  " + arm->as_string ();
-	}
+	  str += "\n  " + arm.as_string ();
     }
 
   return str;
@@ -5759,7 +5758,7 @@ IfLetExprConseqIfLet::accept_vis (ASTVisitor &vis)
   vis.visit (*this);
 }
 
-void
+/*void
 MatchCaseBlockExpr::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
@@ -5769,7 +5768,7 @@ void
 MatchCaseExpr::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
-}
+}*/
 
 void
 MatchExpr::accept_vis (ASTVisitor &vis)

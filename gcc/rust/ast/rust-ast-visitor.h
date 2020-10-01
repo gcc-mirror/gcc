@@ -113,8 +113,8 @@ public:
   virtual void visit (IfLetExprConseqIf &expr) = 0;
   virtual void visit (IfLetExprConseqIfLet &expr) = 0;
   // virtual void visit(MatchCase& match_case) = 0;
-  virtual void visit (MatchCaseBlockExpr &match_case) = 0;
-  virtual void visit (MatchCaseExpr &match_case) = 0;
+  // virtual void visit (MatchCaseBlockExpr &match_case) = 0;
+  // virtual void visit (MatchCaseExpr &match_case) = 0;
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;

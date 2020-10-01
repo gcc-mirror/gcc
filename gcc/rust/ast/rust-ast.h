@@ -2,11 +2,6 @@
 #define RUST_AST_BASE_H
 // Base for AST used in gccrs, basically required by all specific ast things
 
-// GCC imports
-#include "config.h"
-#include "system.h"
-#include "coretypes.h" // order: config, system, coretypes
-
 #include "rust-system.h"
 
 // STL imports
@@ -847,6 +842,9 @@ public:
    * methods. */
   virtual Location get_locus_slow () const { return Location (); }
 
+  // HACK: strictly not needed, but faster than full downcast clone
+  virtual bool is_expr_without_block () const = 0;
+
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
 protected:
@@ -886,6 +884,8 @@ protected:
   {
     return clone_expr_without_block_impl ();
   }
+
+  bool is_expr_without_block () const final override { return true; };
 
 public:
   // Unique pointer custom clone function

@@ -189,6 +189,8 @@ private:
   std::unique_ptr<AST::Struct>
   parse_struct (AST::Visibility vis, std::vector<AST::Attribute> outer_attrs);
   std::vector<AST::StructField> parse_struct_fields ();
+  template <typename EndTokenPred>
+  std::vector<AST::StructField> parse_struct_fields (EndTokenPred is_end_token);
   AST::StructField parse_struct_field ();
   std::vector<AST::TupleField> parse_tuple_fields ();
   AST::TupleField parse_tuple_field ();
@@ -528,6 +530,7 @@ private:
 			       = std::vector<AST::Attribute> (),
 			       bool pratt_parse = false);
   std::unique_ptr<AST::StructExprField> parse_struct_expr_field ();
+  bool will_be_expr_with_block ();
 
   // Type-related
   std::unique_ptr<AST::Type> parse_type ();

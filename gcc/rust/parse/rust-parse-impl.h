@@ -3895,7 +3895,8 @@ Parser<ManagedTokenSource>::parse_struct (
 	lexer.skip_token ();
 
 	// parse struct fields, if any
-	std::vector<AST::StructField> struct_fields = parse_struct_fields ();
+	std::vector<AST::StructField> struct_fields
+	  = parse_struct_fields ([] (TokenId id) { return id == RIGHT_CURLY; });
 
 	if (!skip_token (RIGHT_CURLY))
 	  {
@@ -3938,42 +3939,69 @@ Parser<ManagedTokenSource>::parse_struct_fields ()
 
   // Return empty field list if no field there
   if (initial_field.is_error ())
-    {
-      return fields;
-    }
+    return fields;
 
   fields.push_back (std::move (initial_field));
 
-  // maybe think of a better control structure here - do-while with an initial
-  // error state? basically, loop through field list until can't find any more
-  // params
-  while (true)
+  while (lexer.peek_token ()->get_id () == COMMA)
     {
-      if (lexer.peek_token ()->get_id () != COMMA)
-	{
-	  break;
-	}
-
-      // skip comma if applies
       lexer.skip_token ();
 
       AST::StructField field = parse_struct_field ();
 
-      if (!field.is_error ())
+      if (field.is_error ())
 	{
-	  fields.push_back (std::move (field));
-	}
-      else
-	{
-	  // this would occur with a trailing comma, which is allowed
+	  // would occur with trailing comma, so allowed
 	  break;
 	}
+
+      fields.push_back (std::move (field));
     }
 
+  fields.shrink_to_fit ();
   return fields;
+  // TODO: template if possible (parse_non_ptr_seq)
+}
 
-  // TODO: this shares basically all code with function params and tuple fields
-  // - templates?
+// Parses struct fields in struct declarations.
+template <typename ManagedTokenSource>
+template <typename EndTokenPred>
+std::vector<AST::StructField>
+Parser<ManagedTokenSource>::parse_struct_fields (EndTokenPred is_end_tok)
+{
+  std::vector<AST::StructField> fields;
+
+  AST::StructField initial_field = parse_struct_field ();
+
+  // Return empty field list if no field there
+  if (initial_field.is_error ())
+    return fields;
+
+  fields.push_back (std::move (initial_field));
+
+  while (lexer.peek_token ()->get_id () == COMMA)
+    {
+      lexer.skip_token ();
+
+      if (is_end_tok (lexer.peek_token ()->get_id ()))
+	break;
+
+      AST::StructField field = parse_struct_field ();
+      if (field.is_error ())
+	{
+	  /* TODO: should every field be ditched just because one couldn't be
+	   * parsed? */
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse struct field in struct fields");
+	  return {};
+	}
+
+      fields.push_back (std::move (field));
+    }
+
+  fields.shrink_to_fit ();
+  return fields;
+  // TODO: template if possible (parse_non_ptr_seq)
 }
 
 // Parses a single struct field (in a struct definition). Does not parse commas.
@@ -4257,7 +4285,8 @@ Parser<ManagedTokenSource>::parse_enum_item ()
 	// struct enum item
 	lexer.skip_token ();
 
-	std::vector<AST::StructField> struct_fields = parse_struct_fields ();
+	std::vector<AST::StructField> struct_fields
+	  = parse_struct_fields ([] (TokenId id) { return id == RIGHT_CURLY; });
 
 	if (!skip_token (RIGHT_CURLY))
 	  {
@@ -4326,7 +4355,8 @@ Parser<ManagedTokenSource>::parse_union (
 
   /* parse union inner items as "struct fields" because hey, syntax reuse. Spec
    * said so. */
-  std::vector<AST::StructField> union_fields = parse_struct_fields ();
+  std::vector<AST::StructField> union_fields
+    = parse_struct_fields ([] (TokenId id) { return id == RIGHT_CURLY; });
 
   if (!skip_token (RIGHT_CURLY))
     {
@@ -8017,18 +8047,20 @@ Parser<ManagedTokenSource>::parse_match_expr (
   std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
   // parse match arms (if they exist)
-  std::vector<std::unique_ptr<AST::MatchCase> > match_arms;
+  // std::vector<std::unique_ptr<AST::MatchCase> > match_arms;
+  std::vector<AST::MatchCase> match_arms;
 
-  // FIXME: absolute worst control structure ever
   // parse match cases
-  while (true)
+  while (lexer.peek_token ()->get_id () != RIGHT_CURLY)
     {
       // parse match arm itself, which is required
       AST::MatchArm arm = parse_match_arm ();
       if (arm.is_error ())
 	{
-	  // not necessarily an error
-	  break;
+	  // TODO is this worth throwing everything away?
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse match arm in match arms");
+	  return nullptr;
 	}
 
       if (!skip_token (MATCH_ARROW))
@@ -8038,6 +8070,45 @@ Parser<ManagedTokenSource>::parse_match_expr (
 	  return nullptr;
 	}
 
+      std::unique_ptr<AST::Expr> expr = parse_expr ();
+      if (expr == nullptr)
+	{
+	  rust_error_at (lexer.peek_token ()->get_locus (),
+			 "failed to parse expr in match arm in match expr");
+	  // skip somewhere?
+	  return nullptr;
+	}
+      bool is_expr_without_block = expr->is_expr_without_block ();
+
+      // construct match case expr and add to cases
+      match_arms.push_back (AST::MatchCase (std::move (arm), std::move (expr)));
+
+      // handle comma presence
+      if (lexer.peek_token ()->get_id () != COMMA)
+	{
+	  if (!is_expr_without_block)
+	    {
+	      // allowed even if not final case
+	      continue;
+	    }
+	  else if (is_expr_without_block
+		   && lexer.peek_token ()->get_id () != RIGHT_CURLY)
+	    {
+	      // not allowed if not final case
+	      rust_error_at (lexer.peek_token ()->get_locus (),
+			     "exprwithoutblock requires comma after match case "
+			     "expression in match arm (if not final case)");
+	      return nullptr;
+	    }
+	  else
+	    {
+	      // otherwise, must be final case, so fine
+	      break;
+	    }
+	}
+      lexer.skip_token ();
+
+#if 0
       // branch on next token - if '{', block expr, otherwise just expr
       if (lexer.peek_token ()->get_id () == LEFT_CURLY)
 	{
@@ -8089,6 +8160,7 @@ Parser<ManagedTokenSource>::parse_match_expr (
 	    }
 	  lexer.skip_token ();
 	}
+#endif
     }
 
   if (!skip_token (RIGHT_CURLY))

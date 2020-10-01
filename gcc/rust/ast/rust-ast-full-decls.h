@@ -134,9 +134,10 @@ namespace Rust {
         class IfLetExprConseqIf;
         class IfLetExprConseqIfLet;
         struct MatchArm;
-        class MatchCase;
-        class MatchCaseBlockExpr;
-        class MatchCaseExpr;
+        // class MatchCase;
+        // class MatchCaseBlockExpr;
+        // class MatchCaseExpr;
+        struct MatchCase;
         class MatchExpr;
         class AwaitExpr;
         class AsyncBlockExpr;

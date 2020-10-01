@@ -297,12 +297,12 @@ void
 TopLevelScan::visit (AST::IfLetExprConseqIfLet &expr)
 {}
 // void TopLevelScan::visit(MatchCase& match_case) {}
-void
+/*void
 TopLevelScan::visit (AST::MatchCaseBlockExpr &match_case)
-{}
-void
+{}*/
+/*void
 TopLevelScan::visit (AST::MatchCaseExpr &match_case)
-{}
+{}*/
 void
 TopLevelScan::visit (AST::MatchExpr &expr)
 {}
