@@ -12970,7 +12970,12 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
 static machine_mode
 aarch64_preferred_simd_mode (scalar_mode mode)
 {
-  poly_int64 bits = TARGET_SVE ? BITS_PER_SVE_VECTOR : 128;
+  /* If current tuning prefers Advanced SIMD, bypass SVE.  */
+  bool use_sve
+    = TARGET_SVE
+      && !(aarch64_tune_params.extra_tuning_flags
+	   & AARCH64_EXTRA_TUNE_PREFER_ADVSIMD_AUTOVEC);
+  poly_int64 bits = use_sve ? BITS_PER_SVE_VECTOR : 128;
   return aarch64_simd_container_mode (mode, bits);
 }
 
@@ -12979,7 +12984,11 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 static void
 aarch64_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  if (TARGET_SVE)
+  bool use_sve
+    = TARGET_SVE
+      && !(aarch64_tune_params.extra_tuning_flags
+	   & AARCH64_EXTRA_TUNE_PREFER_ADVSIMD_AUTOVEC);
+  if (use_sve)
     sizes->safe_push (BYTES_PER_SVE_VECTOR);
   sizes->safe_push (16);
   sizes->safe_push (8);

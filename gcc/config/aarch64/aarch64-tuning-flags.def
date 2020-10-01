@@ -41,4 +41,7 @@ AARCH64_EXTRA_TUNING_OPTION ("slow_unaligned_ldpw", SLOW_UNALIGNED_LDPW)
    are not considered cheap.  */
 AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 
+/* Prefer Advanced SIMD over SVE for auto-vectorization.  */
+AARCH64_EXTRA_TUNING_OPTION ("prefer_advsimd_autovec", PREFER_ADVSIMD_AUTOVEC)
+
 #undef AARCH64_EXTRA_TUNING_OPTION
