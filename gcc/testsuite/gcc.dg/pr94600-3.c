@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target size32plus } */
 /* { dg-options "-fdump-rtl-final -O2 -fno-unroll-loops" } */
+/* { dg-additional-options "-DALIGN_VAR" { target { ! non_strict_align } } } */
 
 /* Same-address version of pr94600-1.c. */
 
@@ -11,7 +12,11 @@ typedef struct {
   unsigned int f3 : 7;
 } t0;
 
-static t0 a0[] = {
+static t0 a0[]
+#ifdef ALIGN_VAR
+__attribute__((aligned (4)))
+#endif
+  = {
  { .f0 = 7, .f1 = 99, .f3 = 1, },
  { .f0 = 7, .f1 = 251, .f3 = 1, },
  { .f0 = 8, .f1 = 127, .f3 = 5, },
@@ -31,5 +36,5 @@ foo(void)
 }
 
 /* The loop isn't unrolled. */
-/* { dg-final { scan-rtl-dump-times {\(mem/v} 1 "final" { target { non_strict_align || pcc_bitfield_type_matters } } } } */
-/* { dg-final { scan-rtl-dump-times {\(set \(mem/v} 1 "final" { target { non_strict_align || pcc_bitfield_type_matters } } } } */
+/* { dg-final { scan-rtl-dump-times {\(mem/v} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {\(set \(mem/v} 1 "final" } } */
