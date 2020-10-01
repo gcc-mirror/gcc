@@ -1,5 +1,7 @@
 2020-10-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk c2978b34058
+
 	Merge trunk 734eed68537
 	c++: Kill DECL_HIDDEN_FRIEND_P
 

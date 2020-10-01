@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _TREE_SSA_PROPAGATE_H
 #define _TREE_SSA_PROPAGATE_H 1
 
+#include "value-query.h"
+
 /* If SIM_P is true, statement S will be simulated again.  */
 
 static inline void
@@ -97,14 +99,13 @@ class ssa_propagation_engine
   void simulate_block (basic_block);
 };
 
-class substitute_and_fold_engine
+class substitute_and_fold_engine : public value_query
 {
  public:
   substitute_and_fold_engine (bool fold_all_stmts = false)
     : fold_all_stmts (fold_all_stmts) { }
   virtual ~substitute_and_fold_engine (void) { }
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
-  virtual tree get_value (tree, gimple *) { return NULL_TREE; }
 
   bool substitute_and_fold (basic_block = NULL);
   bool replace_uses_in (gimple *);

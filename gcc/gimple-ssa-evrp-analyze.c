@@ -54,7 +54,6 @@ evrp_range_analyzer::evrp_range_analyzer (bool update_global_ranges)
       FOR_EACH_EDGE (e, ei, bb->preds)
         e->flags |= EDGE_EXECUTABLE;
     }
-  vr_values = new class vr_values;
 }
 
 /* Push an unwinding marker onto the unwinding stack.  */
@@ -87,15 +86,14 @@ evrp_range_analyzer::try_find_new_range (tree name,
   const value_range_equiv *old_vr = get_value_range (name);
 
   /* Discover VR when condition is true.  */
-  vr_values->extract_range_for_var_from_comparison_expr (name, code, op,
-							 limit, &vr);
+  extract_range_for_var_from_comparison_expr (name, code, op, limit, &vr);
   /* If we found any usable VR, set the VR to ssa_name and create a
      PUSH old value in the stack with the old VR.  */
   if (!vr.undefined_p () && !vr.varying_p ())
     {
       if (old_vr->equal_p (vr, /*ignore_equivs=*/true))
 	return NULL;
-      value_range_equiv *new_vr = vr_values->allocate_value_range_equiv ();
+      value_range_equiv *new_vr = allocate_value_range_equiv ();
       new_vr->move (&vr);
       return new_vr;
     }
@@ -214,7 +212,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      tem.intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
 		{
-		  vr_values->free_value_range (vrs[i].second);
+		  free_value_range (vrs[i].second);
 		  continue;
 		}
 	      push_value_range (vrs[i].first, vrs[i].second);
@@ -261,7 +259,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       value_range_equiv vr_result;
       bool interesting = stmt_interesting_for_vrp (phi);
       if (!has_unvisited_preds && interesting)
-	vr_values->extract_range_from_phi_node (phi, &vr_result);
+	extract_range_from_phi_node (phi, &vr_result);
       else
 	{
 	  vr_result.set_varying (TREE_TYPE (lhs));
@@ -274,9 +272,9 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	      && interesting
 	      && (l = loop_containing_stmt (phi))
 	      && l->header == gimple_bb (phi))
-	  vr_values->adjust_range_with_scev (&vr_result, l, phi, lhs);
+	  adjust_range_with_scev (&vr_result, l, phi, lhs);
 	}
-      vr_values->update_value_range (lhs, &vr_result);
+      update_value_range (lhs, &vr_result);
 
       /* Set the SSA with the value range.  */
       if (m_update_global_ranges)
@@ -303,7 +301,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
     {
       edge taken_edge;
       value_range_equiv vr;
-      vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
+      extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
       if (output)
 	{
 	  /* Set the SSA with the value range.  There are two cases to
@@ -321,7 +319,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 	    {
 	      /* Case one.  We can just update the underlying range
 		 information as well as the global information.  */
-	      vr_values->update_value_range (output, &vr);
+	      update_value_range (output, &vr);
 	      if (m_update_global_ranges)
 		set_ssa_range_info (output, &vr);
 	    }
@@ -332,18 +330,17 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 a new range and push the old range onto the stack.  We
 		 also have to be very careful about sharing the underlying
 		 bitmaps.  Ugh.  */
-	      value_range_equiv *new_vr
-		= vr_values->allocate_value_range_equiv ();
+	      value_range_equiv *new_vr = allocate_value_range_equiv ();
 	      new_vr->set (vr.min (), vr.max (), NULL, vr.kind ());
 	      vr.equiv_clear ();
 	      push_value_range (output, new_vr);
 	    }
 	}
       else
-	vr_values->set_defs_to_varying (stmt);
+	set_defs_to_varying (stmt);
     }
   else
-    vr_values->set_defs_to_varying (stmt);
+    set_defs_to_varying (stmt);
 
   /* See if we can derive a range for any of STMT's operands.  */
   tree op;
@@ -429,7 +426,7 @@ evrp_range_analyzer::push_value_range (tree var, value_range_equiv *vr)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  value_range_equiv *old_vr = vr_values->swap_vr_value (var, vr);
+  value_range_equiv *old_vr = swap_vr_value (var, vr);
   stack.safe_push (std::make_pair (var, old_vr));
 }
 
@@ -451,7 +448,7 @@ evrp_range_analyzer::pop_value_range ()
     }
   /* We saved off a lattice entry, now give it back and release
      the one we popped.  */
-  value_range_equiv *popped_vr = vr_values->swap_vr_value (var, vr);
+  value_range_equiv *popped_vr = swap_vr_value (var, vr);
   if (popped_vr)
-    vr_values->free_value_range (popped_vr);
+    free_value_range (popped_vr);
 }

@@ -546,8 +546,8 @@ fmtresult::type_max_digits (tree type, int base)
 }
 
 static bool
-get_int_range (tree, HOST_WIDE_INT *, HOST_WIDE_INT *, bool, HOST_WIDE_INT,
-	       const vr_values *);
+get_int_range (tree, gimple *, HOST_WIDE_INT *, HOST_WIDE_INT *,
+	       bool, HOST_WIDE_INT, range_query *);
 
 struct call_info;
 
@@ -597,7 +597,7 @@ struct directive
 
   /* Format conversion function that given a directive and an argument
      returns the formatting result.  */
-  fmtresult (*fmtfunc) (const directive &, tree, const vr_values *);
+  fmtresult (*fmtfunc) (const directive &, tree, range_query *);
 
   /* Return True when the format flag CHR has been used.  */
   bool get_flag (char chr) const
@@ -634,10 +634,7 @@ struct directive
      or 0, whichever is greater.  For a non-constant ARG in some range
      set width to its range adjusting each bound to -1 if it's less.
      For an indeterminate ARG set width to [0, INT_MAX].  */
-  void set_width (tree arg, const vr_values *vr)
-  {
-    get_int_range (arg, width, width + 1, true, 0, vr);
-  }
+  void set_width (tree arg, range_query *);
 
   /* Set both bounds of the precision range to VAL.  */
   void set_precision (HOST_WIDE_INT val)
@@ -650,10 +647,7 @@ struct directive
      or -1 whichever is greater.  For a non-constant ARG in some range
      set precision to its range adjusting each bound to -1 if it's less.
      For an indeterminate ARG set precision to [-1, INT_MAX].  */
-  void set_precision (tree arg, const vr_values *vr)
-  {
-    get_int_range (arg, prec, prec + 1, false, -1, vr);
-  }
+  void set_precision (tree arg, range_query *query);
 
   /* Return true if both width and precision are known to be
      either constant or in some range, false otherwise.  */
@@ -956,10 +950,22 @@ struct call_info
   }
 };
 
+void
+directive::set_width (tree arg, range_query *query)
+{
+  get_int_range (arg, info->callstmt, width, width + 1, true, 0, query);
+}
+
+void
+directive::set_precision (tree arg, range_query *query)
+{
+  get_int_range (arg, info->callstmt, prec, prec + 1, false, -1, query);
+}
+
 /* Return the result of formatting a no-op directive (such as '%n').  */
 
 static fmtresult
-format_none (const directive &, tree, const vr_values *)
+format_none (const directive &, tree, range_query *)
 {
   fmtresult res (0);
   return res;
@@ -968,7 +974,7 @@ format_none (const directive &, tree, const vr_values *)
 /* Return the result of formatting the '%%' directive.  */
 
 static fmtresult
-format_percent (const directive &, tree, const vr_values *)
+format_percent (const directive &, tree, range_query *)
 {
   fmtresult res (1);
   return res;
@@ -1026,9 +1032,10 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
    the determined range are replaced with NEGBOUND.  */
 
 static bool
-get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
+get_int_range (tree arg, gimple *stmt,
+	       HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	       bool absolute, HOST_WIDE_INT negbound,
-	       const class vr_values *vr_values)
+	       range_query *query)
 {
   /* The type of the result.  */
   const_tree type = integer_type_node;
@@ -1067,10 +1074,10 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	  && TYPE_PRECISION (argtype) <= TYPE_PRECISION (type))
 	{
 	  /* Try to determine the range of values of the integer argument.  */
-	  const value_range_equiv *vr
-	    = CONST_CAST (class vr_values *, vr_values)->get_value_range (arg);
+	  value_range vr;
+	  query->range_of_expr (vr, arg, stmt);
 
-	  if (!vr->undefined_p () && !vr->varying_p () && !vr->symbolic_p ())
+	  if (!vr.undefined_p () && !vr.varying_p ())
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -1080,8 +1087,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
 
 	      tree type = TREE_TYPE (arg);
-	      tree tmin = wide_int_to_tree (type, vr->lower_bound ());
-	      tree tmax = wide_int_to_tree (type, vr->upper_bound ());
+	      tree tmin = wide_int_to_tree (type, vr.lower_bound ());
+	      tree tmax = wide_int_to_tree (type, vr.upper_bound ());
 	      *pmin = TREE_INT_CST_LOW (tmin);
 	      *pmax = TREE_INT_CST_LOW (tmax);
 
@@ -1103,8 +1110,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
       /* Handle an argument with an unknown range as if none had been
 	 provided.  */
       if (unknown)
-	return get_int_range (NULL_TREE, pmin, pmax, absolute,
-			      negbound, vr_values);
+	return get_int_range (NULL_TREE, NULL, pmin, pmax, absolute,
+			      negbound, query);
     }
 
   /* Adjust each bound as specified by ABSOLUTE and NEGBOUND.  */
@@ -1189,7 +1196,7 @@ adjust_range_for_overflow (tree dirtype, tree *argmin, tree *argmax)
    used when the directive argument or its value isn't known.  */
 
 static fmtresult
-format_integer (const directive &dir, tree arg, const vr_values *vr_values)
+format_integer (const directive &dir, tree arg, range_query *query)
 {
   tree intmax_type_node;
   tree uintmax_type_node;
@@ -1372,13 +1379,13 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
-      const value_range_equiv *vr
-	= CONST_CAST (class vr_values *, vr_values)->get_value_range (arg);
+      value_range vr;
+      query->range_of_expr (vr, arg, dir.info->callstmt);
 
-      if (!vr->varying_p () && !vr->undefined_p () && !vr->symbolic_p ())
+      if (!vr.varying_p () && !vr.undefined_p ())
 	{
-	  argmin = wide_int_to_tree (TREE_TYPE (arg), vr->lower_bound ());
-	  argmax = wide_int_to_tree (TREE_TYPE (arg), vr->upper_bound ());
+	  argmin = wide_int_to_tree (TREE_TYPE (arg), vr.lower_bound ());
+	  argmax = wide_int_to_tree (TREE_TYPE (arg), vr.upper_bound ());
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
 	     of the directive's type and neither width nor precision
@@ -1404,7 +1411,7 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
 	      if (code == INTEGER_CST)
 		{
 		  arg = gimple_assign_rhs1 (def);
-		  return format_integer (dir, arg, vr_values);
+		  return format_integer (dir, arg, query);
 		}
 
 	      if (code == NOP_EXPR)
@@ -1449,16 +1456,16 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
       /* For unsigned conversions/directives or signed when
 	 the minimum is positive, use the minimum and maximum to compute
 	 the shortest and longest output, respectively.  */
-      res.range.min = format_integer (dir, argmin, vr_values).range.min;
-      res.range.max = format_integer (dir, argmax, vr_values).range.max;
+      res.range.min = format_integer (dir, argmin, query).range.min;
+      res.range.max = format_integer (dir, argmax, query).range.max;
     }
   else if (tree_int_cst_sgn (argmax) < 0)
     {
       /* For signed conversions/directives if maximum is negative,
 	 use the minimum as the longest output and maximum as the
 	 shortest output.  */
-      res.range.min = format_integer (dir, argmax, vr_values).range.min;
-      res.range.max = format_integer (dir, argmin, vr_values).range.max;
+      res.range.min = format_integer (dir, argmax, query).range.min;
+      res.range.max = format_integer (dir, argmin, query).range.max;
     }
   else
     {
@@ -1467,11 +1474,11 @@ format_integer (const directive &dir, tree arg, const vr_values *vr_values)
 	 length of the output of both minimum and maximum and pick the
 	 longer.  */
       unsigned HOST_WIDE_INT max1
-	= format_integer (dir, argmin, vr_values).range.max;
+	= format_integer (dir, argmin, query).range.max;
       unsigned HOST_WIDE_INT max2
-	= format_integer (dir, argmax, vr_values).range.max;
+	= format_integer (dir, argmax, query).range.max;
       res.range.min
-	= format_integer (dir, integer_zero_node, vr_values).range.min;
+	= format_integer (dir, integer_zero_node, query).range.min;
       res.range.max = MAX (max1, max2);
     }
 
@@ -1820,7 +1827,7 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
    ARG.  */
 
 static fmtresult
-format_floating (const directive &dir, tree arg, const vr_values *)
+format_floating (const directive &dir, tree arg, range_query *)
 {
   HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
   tree type = (dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
@@ -2014,7 +2021,8 @@ format_floating (const directive &dir, tree arg, const vr_values *)
    Used by the format_string function below.  */
 
 static fmtresult
-get_string_length (tree str, unsigned eltsize, const vr_values *vr)
+get_string_length (tree str, gimple *stmt, unsigned eltsize,
+		   range_query *query)
 {
   if (!str)
     return fmtresult ();
@@ -2025,7 +2033,7 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
   c_strlen_data lendata = { };
   lendata.maxbound = str;
   if (eltsize == 1)
-    get_range_strlen_dynamic (str, &lendata, vr);
+    get_range_strlen_dynamic (str, stmt, &lendata, query);
   else
     {
       /* Determine the length of the shortest and longest string referenced
@@ -2122,7 +2130,7 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
    vsprinf).  */
 
 static fmtresult
-format_character (const directive &dir, tree arg, const vr_values *vr_values)
+format_character (const directive &dir, tree arg, range_query *query)
 {
   fmtresult res;
 
@@ -2135,7 +2143,7 @@ format_character (const directive &dir, tree arg, const vr_values *vr_values)
       res.range.min = 0;
 
       HOST_WIDE_INT min, max;
-      if (get_int_range (arg, &min, &max, false, 0, vr_values))
+      if (get_int_range (arg, dir.info->callstmt, &min, &max, false, 0, query))
 	{
 	  if (min == 0 && max == 0)
 	    {
@@ -2433,7 +2441,7 @@ alias_offset (tree arg, tree dst, HOST_WIDE_INT dst_fld)
    vsprinf).  */
 
 static fmtresult
-format_string (const directive &dir, tree arg, const vr_values *vr_values)
+format_string (const directive &dir, tree arg, range_query *query)
 {
   fmtresult res;
 
@@ -2462,7 +2470,7 @@ format_string (const directive &dir, tree arg, const vr_values *vr_values)
       gcc_checking_assert (count_by == 2 || count_by == 4);
     }
 
-  fmtresult slen = get_string_length (arg, count_by, vr_values);
+  fmtresult slen = get_string_length (arg, dir.info->callstmt, count_by, query);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)
     {
@@ -2634,7 +2642,7 @@ format_string (const directive &dir, tree arg, const vr_values *vr_values)
 /* Format plain string (part of the format string itself).  */
 
 static fmtresult
-format_plain (const directive &dir, tree, const vr_values *)
+format_plain (const directive &dir, tree, range_query *)
 {
   fmtresult res (dir.len);
   return res;
@@ -3030,7 +3038,7 @@ bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
 static bool
 format_directive (const call_info &info,
 		  format_result *res, const directive &dir,
-		  const class vr_values *vr_values)
+		  range_query *query)
 {
   /* Offset of the beginning of the directive from the beginning
      of the format string.  */
@@ -3055,7 +3063,7 @@ format_directive (const call_info &info,
     return false;
 
   /* Compute the range of lengths of the formatted output.  */
-  fmtresult fmtres = dir.fmtfunc (dir, dir.arg, vr_values);
+  fmtresult fmtres = dir.fmtfunc (dir, dir.arg, query);
 
   /* Record whether the output of all directives is known to be
      bounded by some maximum, implying that their arguments are
@@ -3386,7 +3394,7 @@ static size_t
 parse_directive (call_info &info,
 		 directive &dir, format_result *res,
 		 const char *str, unsigned *argno,
-		 const vr_values *vr_values)
+		 range_query *query)
 {
   const char *pcnt = strchr (str, target_percent);
   dir.beg = str;
@@ -3711,7 +3719,7 @@ parse_directive (call_info &info,
   if (star_width)
     {
       if (INTEGRAL_TYPE_P (TREE_TYPE (star_width)))
-	dir.set_width (star_width, vr_values);
+	dir.set_width (star_width, query);
       else
 	{
 	  /* Width specified by a va_list takes on the range [0, -INT_MIN]
@@ -3744,7 +3752,7 @@ parse_directive (call_info &info,
   if (star_precision)
     {
       if (INTEGRAL_TYPE_P (TREE_TYPE (star_precision)))
-	dir.set_precision (star_precision, vr_values);
+	dir.set_precision (star_precision, query);
       else
 	{
 	  /* Precision specified by a va_list takes on the range [-1, INT_MAX]
@@ -3958,7 +3966,7 @@ maybe_warn_overlap (call_info &info, format_result *res)
    that caused the processing to be terminated early).  */
 
 static bool
-compute_format_length (call_info &info, format_result *res, const vr_values *vr)
+compute_format_length (call_info &info, format_result *res, range_query *query)
 {
   if (dump_file)
     {
@@ -3995,10 +4003,10 @@ compute_format_length (call_info &info, format_result *res, const vr_values *vr)
     {
       directive dir (&info, dirno);
 
-      size_t n = parse_directive (info, dir, res, pf, &argno, vr);
+      size_t n = parse_directive (info, dir, res, pf, &argno, query);
 
       /* Return failure if the format function fails.  */
-      if (!format_directive (info, res, dir, vr))
+      if (!format_directive (info, res, dir, query))
 	return false;
 
       /* Return success when the directive is zero bytes long and it's
@@ -4288,7 +4296,7 @@ get_user_idx_format (tree fndecl, unsigned *idx_args)
    gsi_next should not be performed in the caller.  */
 
 bool
-handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
+handle_printf_call (gimple_stmt_iterator *gsi, range_query *query)
 {
   init_target_to_host_charmap ();
 
@@ -4557,14 +4565,14 @@ handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
 	  /* Try to determine the range of values of the argument
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
-	  const value_range_equiv *vr
-	    = CONST_CAST (class vr_values *, vr_values)->get_value_range (size);
+	  value_range vr;
+	  query->range_of_expr (vr, size, info.callstmt);
 
-	  if (!vr->undefined_p () && !vr->symbolic_p ())
+	  if (!vr.undefined_p ())
 	    {
 	      tree type = TREE_TYPE (size);
-	      tree tmin = wide_int_to_tree (type, vr->lower_bound ());
-	      tree tmax = wide_int_to_tree (type, vr->upper_bound ());
+	      tree tmin = wide_int_to_tree (type, vr.lower_bound ());
+	      tree tmax = wide_int_to_tree (type, vr.upper_bound ());
 	      unsigned HOST_WIDE_INT minsize = TREE_INT_CST_LOW (tmin);
 	      unsigned HOST_WIDE_INT maxsize = TREE_INT_CST_LOW (tmax);
 	      dstsize = warn_level < 2 ? maxsize : minsize;
@@ -4675,7 +4683,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, const vr_values *vr_values)
      never set to true again).  */
   res.posunder4k = posunder4k && dstptr;
 
-  bool success = compute_format_length (info, &res, vr_values);
+  bool success = compute_format_length (info, &res, query);
   if (res.warned)
     gimple_set_no_warning (info.callstmt, true);
 

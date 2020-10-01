@@ -1,3 +1,9 @@
+2020-09-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97189
+	* c-attribs.c (append_access_attr): Use the function declaration
+	location for a warning about an attribute access argument.
+
 2020-09-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94695

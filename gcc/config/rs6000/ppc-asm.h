@@ -262,6 +262,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef toc
 
 #define FUNC_NAME(name) GLUE(__USER_LABEL_PREFIX__,name)
+#ifdef __PCREL__
+#define JUMP_TARGET(name) GLUE(FUNC_NAME(name),@notoc)
+#define FUNC_START(name) \
+	.type FUNC_NAME(name),@function; \
+	.globl FUNC_NAME(name); \
+FUNC_NAME(name): \
+	.localentry FUNC_NAME(name),1
+#else
 #define JUMP_TARGET(name) FUNC_NAME(name)
 #define FUNC_START(name) \
 	.type FUNC_NAME(name),@function; \
@@ -270,6 +278,7 @@ FUNC_NAME(name): \
 0:	addis 2,12,(.TOC.-0b)@ha; \
 	addi 2,2,(.TOC.-0b)@l; \
 	.localentry FUNC_NAME(name),.-FUNC_NAME(name)
+#endif /* !__PCREL__ */
 
 #define HIDDEN_FUNC(name) \
   FUNC_START(name) \

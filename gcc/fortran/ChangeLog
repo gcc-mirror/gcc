@@ -1,3 +1,40 @@
+2020-09-30  Jan Hubicka  <jh@suse.cz>
+
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Add traling dots
+	to spec strings so they match the number of parameters; do not use
+	R and W for non-pointer parameters. Drop pointless specifier on
+	caf_stop_numeric and caf_get_team.
+
+2020-09-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Add trailing dots so
+	length of spec string matches number of arguments.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97242
+	* expr.c (gfc_is_not_contiguous): Fix check.
+	(gfc_check_pointer_assign): Use it.
+
+2020-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97045
+	* trans-array.c (gfc_conv_array_ref): Make sure that the class
+	decl is passed to build_array_ref in the case of unlimited
+	polymorphic entities.
+	* trans-expr.c (gfc_conv_derived_to_class): Ensure that array
+	refs do not preceed the _len component. Free the _len expr.
+	* trans-stmt.c (trans_associate_var): Reset 'need_len_assign'
+	for polymorphic scalars.
+	* trans.c (gfc_build_array_ref): When the vptr size is used for
+	span, multiply by the _len field of unlimited polymorphic
+	entities, when non-zero.
+
+2020-09-30  Tom de Vries  <tdevries@suse.de>
+
+	* f95-lang.c (gfc_init_builtin_functions):  Update
+	targetm.libc_has_function call.
+
 2020-09-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Revert:

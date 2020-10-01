@@ -1,3 +1,12 @@
+2020-09-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* parallel.c (gomp_resolve_num_threads): Ignore nest_var on nvptx
+	and amdgcn targets.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/declare-target-3.f90: New test.
+
 2020-09-29  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/bar.c (gomp_barrier_wait_end): Skip the barrier if the

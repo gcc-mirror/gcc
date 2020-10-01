@@ -4124,7 +4124,8 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
-  ggc_delete (ipa_node_params_sum);
+  if (ipa_node_params_sum)
+    ggc_delete (ipa_node_params_sum);
   ipa_node_params_sum = NULL;
 }
 
@@ -4368,7 +4369,8 @@ ipa_register_cgraph_hooks (void)
 static void
 ipa_unregister_cgraph_hooks (void)
 {
-  symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
+  if (function_insertion_hook_holder)
+    symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
   function_insertion_hook_holder = NULL;
 }
 

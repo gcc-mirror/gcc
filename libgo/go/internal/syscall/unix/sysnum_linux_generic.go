@@ -9,7 +9,7 @@ package unix
 
 // This file is named "generic" because at a certain point Linux started
 // standardizing on system call numbers across architectures. So far this
-// means only arm64, nios2 and riscv use the standard numbers.
+// means only arm64, nios2, riscv and riscv64 use the standard numbers.
 
 const (
 	getrandomTrap     uintptr = 278

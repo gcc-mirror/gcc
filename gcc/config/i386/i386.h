@@ -2433,7 +2433,7 @@ const wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
 const wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
 const wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
 const wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
-/* Hole after PTA_MPX was removed.  */
+const wide_int_bitmask PTA_NO_TUNE (HOST_WIDE_INT_1U << 44);
 const wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
 const wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
 const wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
@@ -2476,6 +2476,15 @@ const wide_int_bitmask PTA_AMX_TILE(0, HOST_WIDE_INT_1U << 19);
 const wide_int_bitmask PTA_AMX_INT8(0, HOST_WIDE_INT_1U << 20);
 const wide_int_bitmask PTA_AMX_BF16(0, HOST_WIDE_INT_1U << 21);
 
+const wide_int_bitmask PTA_X86_64_BASELINE = PTA_64BIT | PTA_MMX | PTA_SSE
+  | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR;
+const wide_int_bitmask PTA_X86_64_V2 = (PTA_X86_64_BASELINE & (~PTA_NO_SAHF))
+  | PTA_CX16 | PTA_POPCNT | PTA_SSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_SSSE3;
+const wide_int_bitmask PTA_X86_64_V3 = PTA_X86_64_V2
+  | PTA_AVX | PTA_AVX2 | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_LZCNT
+  | PTA_MOVBE | PTA_XSAVE;
+const wide_int_bitmask PTA_X86_64_V4 = PTA_X86_64_V3
+  | PTA_AVX512F | PTA_AVX512BW | PTA_AVX512CD | PTA_AVX512DQ | PTA_AVX512VL;
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
 const wide_int_bitmask PTA_NEHALEM = PTA_CORE2 | PTA_SSE4_1 | PTA_SSE4_2

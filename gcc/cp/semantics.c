@@ -3030,6 +3030,7 @@ finish_compound_literal (tree type, tree compound_literal,
       && initializer_constant_valid_p (compound_literal, type))
     {
       tree decl = create_temporary_var (type);
+      DECL_CONTEXT (decl) = NULL_TREE;
       DECL_INITIAL (decl) = compound_literal;
       TREE_STATIC (decl) = 1;
       if (literal_type_p (type) && CP_TYPE_CONST_NON_VOLATILE_P (type))

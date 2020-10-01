@@ -45,11 +45,11 @@ along with GCC; see the file COPYING3.  If not see
 class evrp_folder : public substitute_and_fold_engine
 {
 public:
-  evrp_folder () : m_range_analyzer (/*update_global_ranges=*/true),
-    m_vr_values (m_range_analyzer.get_vr_values ()),
-    simplifier (m_vr_values)
-  {
-  }
+  evrp_folder () :
+    substitute_and_fold_engine (),
+    m_range_analyzer (/*update_global_ranges=*/true),
+    simplifier (&m_range_analyzer)
+  { }
 
   ~evrp_folder ()
   {
@@ -61,9 +61,9 @@ public:
       }
   }
 
-  tree get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED) OVERRIDE
+  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
   {
-    return m_vr_values->op_with_constant_singleton_value_range (op);
+    return m_range_analyzer.value_of_expr (name, stmt);
   }
 
   void pre_fold_bb (basic_block bb) OVERRIDE
@@ -95,14 +95,12 @@ public:
 
   void post_new_stmt (gimple *stmt) OVERRIDE
   {
-    m_range_analyzer.get_vr_values ()->set_defs_to_varying (stmt);
+    m_range_analyzer.set_defs_to_varying (stmt);
   }
 
 private:
   DISABLE_COPY_AND_ASSIGN (evrp_folder);
-  class evrp_range_analyzer m_range_analyzer;
-  class vr_values *m_vr_values;
-
+  evrp_range_analyzer m_range_analyzer;
   simplify_using_ranges simplifier;
 };
 

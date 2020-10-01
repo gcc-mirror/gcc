@@ -1,3 +1,184 @@
+2020-09-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97189
+	* attribs.c (attr_access::array_as_string): Avoid assuming a VLA
+	access specification string contains a closing bracket.
+
+2020-09-30  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97206
+	* attribs.c (attr_access::array_as_string): Avoid modifying a shared
+	type in place and use build_type_attribute_qual_variant instead.
+
+2020-09-30  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/arm/arm-cpus.in: Add Cortex-A78 and Cortex-A78AE cores.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2020-09-30  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Cortex-A78 and Cortex-A78AE cores.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add -mtune=cortex-a78 and -mtune=cortex-a78ae.
+
+2020-09-30  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/96795
+	* config/arm/arm_mve.h (__ARM_mve_coerce2): Define.
+	(__arm_vaddq): Correct the scalar argument.
+	(__arm_vaddq_m): Likewise.
+	(__arm_vaddq_x): Likewise.
+	(__arm_vcmpeqq_m): Likewise.
+	(__arm_vcmpeqq): Likewise.
+	(__arm_vcmpgeq_m): Likewise.
+	(__arm_vcmpgeq): Likewise.
+	(__arm_vcmpgtq_m): Likewise.
+	(__arm_vcmpgtq): Likewise.
+	(__arm_vcmpleq_m): Likewise.
+	(__arm_vcmpleq): Likewise.
+	(__arm_vcmpltq_m): Likewise.
+	(__arm_vcmpltq): Likewise.
+	(__arm_vcmpneq_m): Likewise.
+	(__arm_vcmpneq): Likewise.
+	(__arm_vfmaq_m): Likewise.
+	(__arm_vfmaq): Likewise.
+	(__arm_vfmasq_m): Likewise.
+	(__arm_vfmasq): Likewise.
+	(__arm_vmaxnmavq): Likewise.
+	(__arm_vmaxnmavq_p): Likewise.
+	(__arm_vmaxnmvq): Likewise.
+	(__arm_vmaxnmvq_p): Likewise.
+	(__arm_vminnmavq): Likewise.
+	(__arm_vminnmavq_p): Likewise.
+	(__arm_vminnmvq): Likewise.
+	(__arm_vminnmvq_p): Likewise.
+	(__arm_vmulq_m): Likewise.
+	(__arm_vmulq): Likewise.
+	(__arm_vmulq_x): Likewise.
+	(__arm_vsetq_lane): Likewise.
+	(__arm_vsubq_m): Likewise.
+	(__arm_vsubq): Likewise.
+	(__arm_vsubq_x): Likewise.
+
+2020-09-30  Joel Hutton  <joel.hutton@arm.com>
+
+	PR target/96837
+	* tree-vect-slp.c (vect_analyze_slp): Do not call
+	vect_attempt_slp_rearrange_stmts for vector constructors.
+
+2020-09-30  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vectorizer.h (SLP_TREE_REF_COUNT): New.
+	* tree-vect-slp.c (_slp_tree::_slp_tree, _slp_tree::~_slp_tree,
+	vect_free_slp_tree, vect_build_slp_tree, vect_print_slp_tree,
+	slp_copy_subtree, vect_attempt_slp_rearrange_stmts): Use it.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-offload.c (omp_discover_implicit_declare_target): Also
+	handled nested functions.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* builtins.c (expand_builtin_cexpi, fold_builtin_sincos): Update
+	targetm.libc_has_function call.
+	* builtins.def (DEF_C94_BUILTIN, DEF_C99_BUILTIN, DEF_C11_BUILTIN):
+	(DEF_C2X_BUILTIN, DEF_C99_COMPL_BUILTIN, DEF_C99_C90RES_BUILTIN):
+	Same.
+	* config/darwin-protos.h (darwin_libc_has_function): Update prototype.
+	* config/darwin.c (darwin_libc_has_function): Add arg.
+	* config/linux-protos.h (linux_libc_has_function): Update prototype.
+	* config/linux.c (linux_libc_has_function): Add arg.
+	* config/i386/i386.c (ix86_libc_has_function): Update
+	targetm.libc_has_function call.
+	* config/nvptx/nvptx.c (nvptx_libc_has_function): New function.
+	(TARGET_LIBC_HAS_FUNCTION): Redefine to nvptx_libc_has_function.
+	* convert.c (convert_to_integer_1): Update targetm.libc_has_function
+	call.
+	* match.pd: Same.
+	* target.def (libc_has_function): Add arg.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_libc_has_function, gnu_libc_has_function)
+	(no_c99_libc_has_function): Add arg.
+	* targhooks.h (default_libc_has_function, no_c99_libc_has_function)
+	(gnu_libc_has_function): Update prototype.
+	* tree-ssa-math-opts.c (pass_cse_sincos::execute): Update
+	targetm.libc_has_function call.
+
+2020-09-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97184
+	* config/i386/i386.md (UNSPECV_MOVDIRI): Renamed to ...
+	(UNSPEC_MOVDIRI): This.
+	(UNSPECV_MOVDIR64B): Renamed to ...
+	(UNSPEC_MOVDIR64B): This.
+	(movdiri<mode>): Use SET operation.
+	(@movdir64b_<mode>): Likewise.
+
+2020-09-30  Florian Weimer  <fweimer@redhat.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__LAHF_SAHF__ and __MOVBE__ based on ISA flags.
+
+2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97150
+	* config/aarch64/arm_neon.h (vqrshlb_u8): Make second argument
+	signed.
+	(vqrshlh_u16): Likewise.
+	(vqrshls_u32): Likewise.
+	(vqrshld_u64): Likewise.
+	(vqshlb_u8): Likewise.
+	(vqshlh_u16): Likewise.
+	(vqshls_u32): Likewise.
+	(vqshld_u64): Likewise.
+	(vshld_u64): Likewise.
+
+2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/96313
+	* config/aarch64/aarch64-simd-builtins.def (sqmovun): Use UNOPUS
+	qualifiers.
+	* config/aarch64/arm_neon.h (vqmovun_s16): Adjust builtin call.
+	Remove unnecessary result cast.
+	(vqmovun_s32): Likewise.
+	(vqmovun_s64): Likewise.
+	(vqmovunh_s16): Likewise.  Fix return type.
+	(vqmovuns_s32): Likewise.
+	(vqmovund_s64): Likewise.
+
+2020-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_split_128bit_move_p): Add a
+	function comment.  Tighten check for FP moves.
+	* config/aarch64/aarch64.md (*movti_aarch64): Add a w<-Z alternative.
+	(*movtf_aarch64): Handle r<-Y like r<-r.  Remove unnecessary
+	earlyclobber.  Change splitter predicate from aarch64_reg_or_imm
+	to nonmemory_operand.
+
+2020-09-30  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97251
+	* config/arm/arm.md (movsf): Relax TARGET_HARD_FLOAT to
+	TARGET_VFP_BASE.
+	(movdf): Likewise.
+	* config/arm/vfp.md (no_literal_pool_df_immediate): Likewise.
+	(no_literal_pool_sf_immediate): Likewise.
+
+2020-09-30  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (--with-long-double-format): Typo fix.
+	* configure: Regenerate.
+
+2020-09-30  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (@tablejump<mode>_normal): Don't use
+	non-existent operands[].
+	(@tablejump<mode>_nospec): Likewise.
+
 2020-09-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (tablejump): Simplify.

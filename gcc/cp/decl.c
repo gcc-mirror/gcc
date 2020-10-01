@@ -4727,11 +4727,6 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   if (release_name)
     free (CONST_CAST (char *, name));
 
-  /* As we're using pushdecl_with_scope, we must set the context.  */
-  DECL_CONTEXT (decl) = (current_function_decl
-			 ? current_function_decl
-			 : FROB_CONTEXT (global_namespace));
-
   TREE_READONLY (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_DECLARED_CONSTEXPR_P (decl) = 1;

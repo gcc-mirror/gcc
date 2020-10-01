@@ -2058,10 +2058,27 @@ ix86_option_override_internal (bool main_args_p,
 	    return false;
 	  }
 
+	/* The feature-only micro-architecture levels that use
+	   PTA_NO_TUNE are only defined for the x86-64 psABI.  */
+	if ((processor_alias_table[i].flags & PTA_NO_TUNE) != 0
+	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+		|| opts->x_ix86_abi != SYSV_ABI))
+	  {
+	    error (G_("%<%s%> architecture level is only defined"
+		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
+	    return false;
+	  }
+
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_arch = processor_alias_table[i].processor;
-	/* Default cpu tuning to the architecture.  */
-	ix86_tune = ix86_arch;
+
+	/* Default cpu tuning to the architecture, unless the table
+	   entry requests not to do this.  Used by the x86-64 psABI
+	   micro-architecture levels.  */
+	if ((processor_alias_table[i].flags & PTA_NO_TUNE) == 0)
+	  ix86_tune = ix86_arch;
+	else
+	  ix86_tune = PROCESSOR_GENERIC;
 
 	if (((processor_alias_table[i].flags & PTA_MMX) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MMX))
@@ -2384,7 +2401,8 @@ ix86_option_override_internal (bool main_args_p,
     ix86_arch_features[i] = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
 
   for (i = 0; i < pta_size; i++)
-    if (! strcmp (opts->x_ix86_tune_string, processor_alias_table[i].name))
+    if (! strcmp (opts->x_ix86_tune_string, processor_alias_table[i].name)
+	&& (processor_alias_table[i].flags & PTA_NO_TUNE) == 0)
       {
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_tune = processor_alias_table[i].processor;
@@ -2428,8 +2446,9 @@ ix86_option_override_internal (bool main_args_p,
 
       auto_vec <const char *> candidates;
       for (i = 0; i < pta_size; i++)
-	if (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
-	    || ((processor_alias_table[i].flags & PTA_64BIT) != 0))
+	if ((!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	     || ((processor_alias_table[i].flags & PTA_64BIT) != 0))
+	    && (processor_alias_table[i].flags & PTA_NO_TUNE) == 0)
 	  candidates.safe_push (processor_alias_table[i].name);
 
 #ifdef HAVE_LOCAL_CPU_DETECT

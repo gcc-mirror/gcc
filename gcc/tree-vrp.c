@@ -4010,9 +4010,12 @@ class vrp_folder : public substitute_and_fold_engine
     : substitute_and_fold_engine (/* Fold all stmts.  */ true),
       m_vr_values (v), simplifier (v)
     {  }
-  tree get_value (tree, gimple *stmt) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 
+  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
+    {
+      return m_vr_values->value_of_expr (name, stmt);
+    }
   class vr_values *m_vr_values;
 
 private:
@@ -4023,8 +4026,6 @@ private:
     { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     { return simplifier.simplify (gsi); }
- tree op_with_constant_singleton_value_range (tree op)
-    { return m_vr_values->op_with_constant_singleton_value_range (op); }
 
   simplify_using_ranges simplifier;
 };
@@ -4100,18 +4101,6 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
     return true;
 
   return simplify_stmt_using_ranges (si);
-}
-
-/* If OP has a value range with a single constant value return that,
-   otherwise return NULL_TREE.  This returns OP itself if OP is a
-   constant.
-
-   Implemented as a pure wrapper right now, but this will change.  */
-
-tree
-vrp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
-{
-  return op_with_constant_singleton_value_range (op);
 }
 
 /* Return the LHS of any ASSERT_EXPR where OP appears as the first

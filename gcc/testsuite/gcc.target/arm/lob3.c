@@ -2,7 +2,7 @@
    if causes VFP emulation library calls to happen inside the loop.  */
 /* { dg-do compile } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main -O3 --save-temps -mfloat-abi=soft" } */
+/* { dg-options "-march=armv8.1-m.main -mthumb -O3 --save-temps -mfloat-abi=soft" } */
 /* { dg-require-effective-target arm_softfloat } */
 #include <stdlib.h>
 #include "lob.h"

@@ -1,3 +1,16 @@
+2020-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/cpu/arm/cxxabi_tweaks.h (_GLIBCXX_GUARD_TEST_AND_ACQUIRE):
+	(_GLIBCXX_GUARD_SET_AND_RELEASE): Define for EABI.
+
+2020-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_IS_SAME):
+	Define for GCC 11 or when !__is_identifier(__is_same).
+	(_GLIBCXX_BUILTIN_IS_SAME_AS): Remove.
+	* include/std/type_traits (is_same, is_same_v): Replace uses
+	of _GLIBCXX_BUILTIN_IS_SAME_AS.
+
 2020-09-28  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (filter_view): Declare the data member

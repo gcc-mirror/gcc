@@ -617,6 +617,8 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 		return f.applyRelocationsMIPS(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_MIPS:
 		return f.applyRelocationsMIPS64(dst, rels)
+	case f.Class == ELFCLASS32 && f.Machine == EM_RISCV:
+		return f.applyRelocationsRISCV(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_RISCV:
 		return f.applyRelocationsRISCV64(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_S390:
@@ -998,6 +1000,47 @@ func (f *File) applyRelocationsMIPS64(dst []byte, rels []byte) error {
 			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], val64)
 		case R_MIPS_32:
 			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			val32 := uint32(val) + uint32(rela.Addend)
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], val32)
+		}
+	}
+
+	return nil
+}
+
+func (f *File) applyRelocationsRISCV(dst []byte, rels []byte) error {
+	// 12 is the size of Rela32.
+	if len(rels)%12 != 0 {
+		return errors.New("length of relocation section is not a multiple of 12")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela32
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 8
+		t := R_RISCV(rela.Info & 0xff)
+
+		if symNo == 0 || symNo > uint32(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		needed, val := relocSymbolTargetOK(sym)
+		if !needed {
+			continue
+		}
+
+		switch t {
+		case R_RISCV_32:
+			if rela.Off+4 >= uint32(len(dst)) || rela.Addend < 0 {
 				continue
 			}
 			val32 := uint32(val) + uint32(rela.Addend)

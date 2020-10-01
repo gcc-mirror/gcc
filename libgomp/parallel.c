@@ -48,7 +48,14 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
 
   if (specified == 1)
     return 1;
-  else if (thr->ts.active_level >= 1 && !icv->nest_var)
+
+  if (thr->ts.active_level >= 1
+  /* Accelerators with fixed thread counts require this to return 1 for
+     nested parallel regions.  */
+#if !defined(__AMDGCN__) && !defined(__nvptx__)
+      && !icv->nest_var
+#endif
+      )
     return 1;
   else if (thr->ts.active_level >= gomp_max_active_levels_var)
     return 1;
