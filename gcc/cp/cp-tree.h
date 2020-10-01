@@ -464,7 +464,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
-      CALL_FROM_NEW_OR_DELETE_P (in CALL_EXPR)
    3: IMPLICIT_RVALUE_P (in NON_LVALUE_EXPR or STATIC_CAST_EXPR)
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -3838,11 +3837,6 @@ struct GTY(()) lang_decl {
 /* In a CALL_EXPR appearing in a template, true if Koenig lookup
    should be performed at instantiation time.  */
 #define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (CALL_EXPR_CHECK (NODE))
-
-/* In a CALL_EXPR, true for allocator calls from new or delete
-   expressions.  */
-#define CALL_FROM_NEW_OR_DELETE_P(NODE) \
-  TREE_LANG_FLAG_2 (CALL_EXPR_CHECK (NODE))
 
 /* True if the arguments to NODE should be evaluated in left-to-right
    order regardless of PUSH_ARGS_REVERSED.  */
@@ -7268,6 +7262,7 @@ extern bool lambda_fn_in_template_p		(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
+extern bool call_from_lambda_thunk_p		(tree);
 extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
 extern tree cp_build_vec_convert		(tree, location_t, tree,

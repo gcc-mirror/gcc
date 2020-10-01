@@ -1325,6 +1325,13 @@ lambda_static_thunk_p (tree fn)
 	  && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fn)));
 }
 
+bool
+call_from_lambda_thunk_p (tree call)
+{
+  return (CALL_FROM_THUNK_P (call)
+	  && lambda_static_thunk_p (current_function_decl));
+}
+
 /* Returns true iff VAL is a lambda-related declaration which should
    be ignored by unqualified lookup.  */
 
