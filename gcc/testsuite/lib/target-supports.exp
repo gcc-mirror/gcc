@@ -10380,7 +10380,7 @@ proc check_effective_target_arm_v8_3a_bkey_directive { } {
 # Overhead Loop, 0 otherwise.  The test is valid for ARM.
 
 proc check_effective_target_arm_v8_1_lob_ok { } {
-    if { ![istarget arm*-*-*] } {
+    if { ![check_effective_target_arm_cortex_m] } {
         return 0;
     } else {
 	return [check_runtime arm_v8_1_lob_hw_available {
@@ -10394,7 +10394,7 @@ proc check_effective_target_arm_v8_1_lob_ok { } {
 		  asm goto ("le lr, %l0" : : : "lr" : loop);
 		  return i != 10;
 		}
-	} "-march=armv8.1-m.main" ]
+	} "-march=armv8.1-m.main -mthumb" ]
     }
 }
 

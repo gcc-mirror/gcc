@@ -3,7 +3,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_v8_1_lob_ok } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main -O3 --save-temps" } */
+/* { dg-options "-march=armv8.1-m.main -mthumb -O3 --save-temps" } */
 #include <stdlib.h>
 #include "lob.h"
 
