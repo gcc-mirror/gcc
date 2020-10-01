@@ -6360,6 +6360,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       n2 = OMP_CLAUSE_DECL (innerc);
     }
   tree step = fd->loop.step;
+  tree orig_step = step; /* May be different from step if is_simt.  */
 
   bool is_simt = omp_find_clause (gimple_omp_for_clauses (fd->for_stmt),
 				  OMP_CLAUSE__SIMT_);
@@ -6510,7 +6511,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   tree altv = NULL_TREE, altn2 = NULL_TREE;
   if (fd->collapse == 1
       && !broken_loop
-      && TREE_CODE (fd->loops[0].step) != INTEGER_CST)
+      && TREE_CODE (orig_step) != INTEGER_CST)
     {
       /* The vectorizer currently punts on loops with non-constant steps
 	 for the main IV (can't compute number of iterations and gives up
@@ -6526,7 +6527,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	itype = signed_type_for (itype);
       t = build_int_cst (itype, (fd->loop.cond_code == LT_EXPR ? -1 : 1));
       t = fold_build2 (PLUS_EXPR, itype,
-		       fold_convert (itype, fd->loop.step), t);
+		       fold_convert (itype, step), t);
       t = fold_build2 (PLUS_EXPR, itype, t, fold_convert (itype, n2));
       t = fold_build2 (MINUS_EXPR, itype, t,
 		       fold_convert (itype, fd->loop.v));
@@ -6534,10 +6535,10 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	t = fold_build2 (TRUNC_DIV_EXPR, itype,
 			 fold_build1 (NEGATE_EXPR, itype, t),
 			 fold_build1 (NEGATE_EXPR, itype,
-				      fold_convert (itype, fd->loop.step)));
+				      fold_convert (itype, step)));
       else
 	t = fold_build2 (TRUNC_DIV_EXPR, itype, t,
-			 fold_convert (itype, fd->loop.step));
+			 fold_convert (itype, step));
       t = fold_convert (TREE_TYPE (altv), t);
       altn2 = create_tmp_var (TREE_TYPE (altv));
       expand_omp_build_assign (&gsi, altn2, t);
@@ -6685,7 +6686,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   if (is_simt)
     {
       gsi = gsi_start_bb (l2_bb);
-      step = fold_build2 (MINUS_EXPR, TREE_TYPE (step), fd->loop.step, step);
+      step = fold_build2 (MINUS_EXPR, TREE_TYPE (step), orig_step, step);
       if (POINTER_TYPE_P (type))
 	t = fold_build_pointer_plus (fd->loop.v, step);
       else
