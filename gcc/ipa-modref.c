@@ -1363,7 +1363,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<int> *parm_map)
 
 	  struct ipa_jump_func *jf
 	     = ipa_get_ith_jump_func (args, i);
-	  if (jf)
+	  if (jf && callee_pi)
 	    {
 	      tree cst = ipa_value_from_jfunc (caller_parms_info,
 					       jf,
