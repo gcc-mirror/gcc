@@ -1,3 +1,17 @@
+2020-09-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95188
+	* engine.cc (stmt_requires_new_enode_p): Split enodes before
+	"signal" calls.
+
+2020-09-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* constraint-manager.cc
+	(constraint_manager::add_constraint_internal): Whitespace fixes.
+	Silence -Wsign-compare warning.
+	* engine.cc (maybe_process_run_of_before_supernode_enodes):
+	Silence -Wsign-compare warning.
+
 2020-09-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.h (binop_svalue::dyn_cast_binop_svalue): Remove

@@ -3787,7 +3787,20 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	decl = sym->backend_decl;
     }
   else if (sym->ts.type == BT_CLASS)
-    decl = NULL_TREE;
+    {
+      if (UNLIMITED_POLY (sym))
+	{
+	  gfc_expr *class_expr = gfc_find_and_cut_at_last_class_ref (expr);
+	  gfc_init_se (&tmpse, NULL);
+	  gfc_conv_expr (&tmpse, class_expr);
+	  if (!se->class_vptr)
+	    se->class_vptr = gfc_class_vptr_get (tmpse.expr);
+	  gfc_free_expr (class_expr);
+	  decl = tmpse.expr;
+	}
+      else
+	decl = NULL_TREE;
+    }
 
   se->expr = build_array_ref (se->expr, offset, decl, se->class_vptr);
 }

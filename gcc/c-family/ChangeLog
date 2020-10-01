@@ -1,3 +1,8 @@
+2020-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* c.opt (Wrange-loop-construct): New option.
+
 2020-09-23  Martin Sebor  <msebor@redhat.com>
 
 	PR c/97131

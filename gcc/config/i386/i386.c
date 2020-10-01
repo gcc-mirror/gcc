@@ -1484,7 +1484,7 @@ ix86_reg_parm_stack_space (const_tree fndecl)
 bool
 ix86_libc_has_function (enum function_class fn_class)
 {
-  return targetm.libc_has_function (fn_class);
+  return targetm.libc_has_function (fn_class, NULL_TREE);
 }
 
 /* Returns value SYSV_ABI, MS_ABI dependent on fntype,

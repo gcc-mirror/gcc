@@ -3422,11 +3422,16 @@ aarch64_split_128bit_move (rtx dst, rtx src)
     }
 }
 
+/* Return true if we should split a move from 128-bit value SRC
+   to 128-bit register DEST.  */
+
 bool
 aarch64_split_128bit_move_p (rtx dst, rtx src)
 {
-  return (! REG_P (src)
-	  || ! (FP_REGNUM_P (REGNO (dst)) && FP_REGNUM_P (REGNO (src))));
+  if (FP_REGNUM_P (REGNO (dst)))
+    return REG_P (src) && !FP_REGNUM_P (REGNO (src));
+  /* All moves to GPRs need to be split.  */
+  return true;
 }
 
 /* Split a complex SIMD combine.  */

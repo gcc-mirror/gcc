@@ -1,3 +1,138 @@
+2020-09-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (tablejump): Simplify.
+	(tablejumpsi): Merge this ...
+	(tablejumpdi): ... and this ...
+	(@tablejump<mode>_normal): ... into this.
+	(tablejumpsi_nospec): Merge this ...
+	(tablejumpdi_nospec): ... and this ...
+	(@tablejump<mode>_nospec): ... into this.
+	(*tablejump<mode>_internal1): Delete, rename to ...
+	(@tablejump<mode>_insn_normal): ... this.
+	(*tablejump<mode>_internal1_nospec): Delete, rename to ...
+	(@tablejump<mode>_insn_nospec): ... this.
+
+2020-09-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97188
+	* calls.c (maybe_warn_rdwr_sizes): Simplify warning messages.
+	Correct handling of VLA argumments.
+
+2020-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* doc/invoke.texi: Document -Wrange-loop-construct.
+
+2020-09-29  Jim Wilson  <jimw@sifive.com>
+
+	PR bootstrap/97183
+	* configure.ac (gcc_cv_header_zstd_h): Check ZSTD_VERISON_NUMBER.
+	* configure: Regenerated.
+
+2020-09-29  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/arm/arm-cpus.in: Add Cortex-X1 core.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2020-09-29  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Cortex-X1 Arm core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add -mtune=cortex-x1 docs.
+
+2020-09-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97247
+	* config/i386/enqcmdintrin.h: Replace <enqcmdntrin.h> with
+	<enqcmdintrin.h>.  Replace _ENQCMDNTRIN_H_INCLUDED with
+	_ENQCMDINTRIN_H_INCLUDED.
+
+2020-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97241
+	* tree-vect-loop.c (vectorizable_reduction): Move finding
+	the SLP node for the reduction stmt to a better place.
+
+2020-09-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp): Move SLP reduction
+	re-arrangement and SLP graph load gathering...
+	(vect_optimize_slp): ... here.
+	* tree-vectorizer.h (vec_info::slp_loads): Remove.
+
+2020-09-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/97231
+	* config/i386/amxbf16intrin.h: Add FSF copyright notes.
+	* config/i386/amxint8intrin.h: Ditto.
+	* config/i386/amxtileintrin.h: Ditto.
+	* config/i386/avx512vp2intersectintrin.h: Ditto.
+	* config/i386/avx512vp2intersectvlintrin.h: Ditto.
+	* config/i386/pconfigintrin.h: Ditto.
+	* config/i386/tsxldtrkintrin.h: Ditto.
+	* config/i386/wbnoinvdintrin.h: Ditto.
+
+2020-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97238
+	* tree-ssa-reassoc.c (ovce_extract_ops): Fix typo.
+
+2020-09-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.h (ARM_HAVE_NEON_V8QI_ARITH, ARM_HAVE_NEON_V4HI_ARITH)
+	(ARM_HAVE_NEON_V2SI_ARITH, ARM_HAVE_NEON_V16QI_ARITH): New macros.
+	(ARM_HAVE_NEON_V8HI_ARITH, ARM_HAVE_NEON_V4SI_ARITH): Likewise.
+	(ARM_HAVE_NEON_V2DI_ARITH, ARM_HAVE_NEON_V4HF_ARITH): Likewise.
+	(ARM_HAVE_NEON_V8HF_ARITH, ARM_HAVE_NEON_V2SF_ARITH): Likewise.
+	(ARM_HAVE_NEON_V4SF_ARITH, ARM_HAVE_V8QI_ARITH, ARM_HAVE_V4HI_ARITH)
+	(ARM_HAVE_V2SI_ARITH, ARM_HAVE_V16QI_ARITH, ARM_HAVE_V8HI_ARITH)
+	(ARM_HAVE_V4SI_ARITH, ARM_HAVE_V2DI_ARITH, ARM_HAVE_V4HF_ARITH)
+	(ARM_HAVE_V2SF_ARITH, ARM_HAVE_V8HF_ARITH, ARM_HAVE_V4SF_ARITH):
+	Likewise.
+	* config/arm/iterators.md (VNIM, VNINOTM): Delete.
+	* config/arm/vec-common.md (add<VNIM:mode>3, addv8hf3)
+	(add<VNINOTM:mode>3): Replace with...
+	(add<VDQ:mode>3): ...this new expander.
+	* config/arm/neon.md (*add<VDQ:mode>3_neon): Use the new
+	ARM_HAVE_NEON_<MODE>_ARITH macros as the C condition.
+	(addv8hf3_neon, addv4hf3, add<VFH:mode>3_fp16): Delete in
+	favor of the above.
+	(neon_vadd<VH:mode>): Use gen_add<mode>3 instead of
+	gen_add<mode>3_fp16.
+
+2020-09-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-c.c (riscv_cpu_cpp_builtins): Define
+	__riscv_cmodel_medany when PIC mode.
+
+2020-09-29  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Move neoverse-n2 after saphira.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2020-09-29  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
+	Make a fast bail out.
+	(bit_test_cluster::can_be_handled): Likewise here.
+	* tree-switch-conversion.h (get_range): Use wi::to_wide instead
+	of a folding.
+
+2020-09-29  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2020-09-22  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* doc/invoke.texi: Document new param max-switch-clustering-attempts.
+	* params.opt: Add new parameter.
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+	Limit number of attempts.
+	(bit_test_cluster::find_bit_tests): Likewise.
+
 2020-09-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.h (class irange): Add irange_allocator friend.

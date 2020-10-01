@@ -1378,8 +1378,13 @@ LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
 
 AC_MSG_CHECKING(for zstd.h)
 AC_CACHE_VAL(gcc_cv_header_zstd_h,
+# We require version 1.3.0 or later.  This is the first version that has
+# ZSTD_getFrameContentSize.
 [AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-[[#include <zstd.h>]])],
+[[#include <zstd.h>
+#if ZSTD_VERSION_NUMBER < 10300
+#error "need zstd 1.3.0 or better"
+#endif]])],
   [gcc_cv_header_zstd_h=yes],
   [gcc_cv_header_zstd_h=no])])
 AC_MSG_RESULT($gcc_cv_header_zstd_h)
@@ -6390,7 +6395,7 @@ supported if the default cpu is power7 or newer])
 	;;
       esac
       ;;
-  xpowerpc64*-*-linux*:*)
+  powerpc64*-*-linux*:*)
     AC_MSG_ERROR([--with-long-double-format argument should be ibm or ieee])
     with_long_double_format=""
     ;;

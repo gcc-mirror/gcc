@@ -6536,6 +6536,23 @@ nvptx_set_current_function (tree fndecl)
   oacc_bcast_partition = 0;
 }
 
+/* Implement TARGET_LIBC_HAS_FUNCTION.  */
+
+bool
+nvptx_libc_has_function (enum function_class fn_class, tree type)
+{
+  if (fn_class == function_sincos)
+    {
+      if (type != NULL_TREE)
+	/* Currently, newlib does not support sincosl.  */
+	return type == float_type_node || type == double_type_node;
+      else
+	return true;
+    }
+
+  return default_libc_has_function (fn_class, type);
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -6680,6 +6697,9 @@ nvptx_set_current_function (tree fndecl)
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION nvptx_set_current_function
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION nvptx_libc_has_function
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

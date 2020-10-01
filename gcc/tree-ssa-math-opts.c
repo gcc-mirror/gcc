@@ -2176,12 +2176,14 @@ pass_cse_sincos::execute (function *fun)
 		CASE_CFN_COS:
 		CASE_CFN_SIN:
 		CASE_CFN_CEXPI:
+		  arg = gimple_call_arg (stmt, 0);
 		  /* Make sure we have either sincos or cexp.  */
-		  if (!targetm.libc_has_function (function_c99_math_complex)
-		      && !targetm.libc_has_function (function_sincos))
+		  if (!targetm.libc_has_function (function_c99_math_complex,
+						  TREE_TYPE (arg))
+		      && !targetm.libc_has_function (function_sincos,
+						     TREE_TYPE (arg)))
 		    break;
 
-		  arg = gimple_call_arg (stmt, 0);
 		  if (TREE_CODE (arg) == SSA_NAME)
 		    cfg_changed |= execute_cse_sincos_1 (arg);
 		  break;

@@ -8,4 +8,4 @@ foo (const char *format, ...)
 {
 }
 
-// { dg-final { scan-assembler-times "DIE.*DW_TAG_unspecified_parameters" 1 { xfail { powerpc-ibm-aix* } } } }
+// { dg-final { scan-assembler-times "DIE.*DW_TAG_unspecified_parameters" 1 } }

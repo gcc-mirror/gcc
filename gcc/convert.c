@@ -501,7 +501,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_CEIL):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_CEIL):
 	  /* Only convert in ISO C99 mode.  */
-	  if (!targetm.libc_has_function (function_c99_misc))
+	  if (!targetm.libc_has_function (function_c99_misc, intype))
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -518,7 +518,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_FLOOR):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_FLOOR):
 	  /* Only convert in ISO C99 mode.  */
-	  if (!targetm.libc_has_function (function_c99_misc))
+	  if (!targetm.libc_has_function (function_c99_misc, intype))
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -535,7 +535,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_ROUND):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
-	  if (!targetm.libc_has_function (function_c99_misc)
+	  if (!targetm.libc_has_function (function_c99_misc, intype)
 	      || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
@@ -559,7 +559,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	CASE_FLT_FN (BUILT_IN_RINT):
 	CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
-	  if (!targetm.libc_has_function (function_c99_misc)
+	  if (!targetm.libc_has_function (function_c99_misc, intype)
 	      || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)

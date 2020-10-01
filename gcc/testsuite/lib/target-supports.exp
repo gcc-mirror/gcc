@@ -10552,3 +10552,20 @@ proc check_effective_target_ident_directive {} {
 	int i;
     }]
 }
+
+# Return 1 if we're able to assemble movdiri and movdir64b
+
+proc check_effective_target_movdir { } {
+    return [check_no_compiler_messages movdir object {
+	void
+	foo (unsigned int *d, unsigned int s)
+	{
+	  __builtin_ia32_directstoreu_u32 (d, s);
+	}
+	void
+	bar (void *d, const void *s)
+	{
+	  __builtin_ia32_movdir64b (d, s);
+	}
+    } "-mmovdiri -mmovdir64b" ]
+}
