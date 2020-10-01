@@ -8287,7 +8287,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	low_int = 0;
       high_int = INTVAL (XEXP (x, 1)) - low_int;
       sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (x, 0),
-					 GEN_INT (high_int)), 0);
+					 gen_int_mode (high_int, Pmode)), 0);
       return plus_constant (Pmode, sum, low_int);
     }
   else if (GET_CODE (x) == PLUS
