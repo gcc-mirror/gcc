@@ -363,7 +363,10 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_SINGLE_VALUE && i == 0)
+      if ((hist->type == HIST_TYPE_SINGLE_VALUE && i == 0)
+	  || hist->type == HIST_TYPE_IOR)
+	/* Note that the IOR counter tracks pointer values and these can have
+	   sign bit set.  */
 	;
       else
 	gcc_assert (value >= 0);
