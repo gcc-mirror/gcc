@@ -201,6 +201,7 @@ DEF_SECTION (objc2_constant_string_object_section, 0,
 
 /* Additions for compatibility with later runtime conventions especially for
    sections containing strings.  */
+
 DEF_SECTION (objc2_data_section, 0, ".section __DATA, __data", 1)
 
 DEF_SECTION (objc2_ivar_section, 0, ".section __DATA, __objc_ivar", 1)

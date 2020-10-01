@@ -79,6 +79,8 @@ enum objc_runtime_tree_index
   OCTI_RT_META_MAX
 };
 
+extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
+
 /* Tags for the META data so that the backend can put them in the correct
    sections for targets/runtimes (Darwin/NeXT) that require this.
    This information also survives LTO - which might produce mixed language
