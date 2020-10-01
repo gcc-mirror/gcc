@@ -3706,14 +3706,18 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 
   var = gimple_assign_rhs1 (last_stmt);
   lhs = gimple_assign_lhs (last_stmt);
+  rhs_code = gimple_assign_rhs_code (last_stmt);
+
+  if (rhs_code == VIEW_CONVERT_EXPR)
+    var = TREE_OPERAND (var, 0);
 
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (var)))
     return NULL;
 
   hash_set<gimple *> bool_stmts;
 
-  rhs_code = gimple_assign_rhs_code (last_stmt);
-  if (CONVERT_EXPR_CODE_P (rhs_code))
+  if (CONVERT_EXPR_CODE_P (rhs_code)
+      || rhs_code == VIEW_CONVERT_EXPR)
     {
       if (! INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	  || TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
