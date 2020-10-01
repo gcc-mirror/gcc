@@ -8353,9 +8353,15 @@ visl")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")] UNSPEC_SP_SET))
    (set (match_scratch:SI 2 "=&r") (const_int 0))]
   "TARGET_ARCH32"
-  "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2"
+{
+  if (sparc_fix_b2bst)
+    return "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2\;nop";
+  else
+    return "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2";
+}
   [(set_attr "type" "multi")
-   (set_attr "length" "3")])
+   (set (attr "length") (if_then_else (eq_attr "fix_b2bst" "true")
+		      (const_int 4) (const_int 3)))])
 
 (define_insn "stack_protect_setdi"
   [(set (match_operand:DI 0 "memory_operand" "=m")
