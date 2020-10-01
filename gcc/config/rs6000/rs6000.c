@@ -3494,8 +3494,7 @@ rs6000_linux64_override_options ()
 	}
       if (!global_options_set.x_rs6000_current_cmodel)
 	SET_CMODEL (CMODEL_MEDIUM);
-      if ((rs6000_isa_flags_explicit
-	   & OPTION_MASK_MINIMAL_TOC) != 0)
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_MINIMAL_TOC) != 0)
 	{
 	  if (global_options_set.x_rs6000_current_cmodel
 	      && rs6000_current_cmodel != CMODEL_SMALL)
@@ -3504,23 +3503,18 @@ rs6000_linux64_override_options ()
 	    SET_CMODEL (CMODEL_SMALL);
 	  else if (TARGET_PCREL
 		   || (PCREL_SUPPORTED_BY_OS
-		       && (rs6000_isa_flags_explicit
-			   & OPTION_MASK_PCREL) == 0))
+		       && (rs6000_isa_flags_explicit & OPTION_MASK_PCREL) == 0))
 	    /* Ignore -mno-minimal-toc.  */
 	    ;
 	  else
 	    SET_CMODEL (CMODEL_SMALL);
 	}
-      else
+      if (rs6000_current_cmodel != CMODEL_SMALL)
 	{
-	  if (rs6000_current_cmodel != CMODEL_SMALL)
-	    {
-	      if (!global_options_set.x_TARGET_NO_FP_IN_TOC)
-		TARGET_NO_FP_IN_TOC
-		  = rs6000_current_cmodel == CMODEL_MEDIUM;
-	      if (!global_options_set.x_TARGET_NO_SUM_IN_TOC)
-		TARGET_NO_SUM_IN_TOC = 0;
-	    }
+	  if (!global_options_set.x_TARGET_NO_FP_IN_TOC)
+	    TARGET_NO_FP_IN_TOC = rs6000_current_cmodel == CMODEL_MEDIUM;
+	  if (!global_options_set.x_TARGET_NO_SUM_IN_TOC)
+	    TARGET_NO_SUM_IN_TOC = 0;
 	}
       if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)
 	{
