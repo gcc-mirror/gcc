@@ -16039,12 +16039,13 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
      fenv_var = __builtin_s390_efpc ();
      __builtin_s390_sfpc (fenv_var & mask) */
-  tree old_fpc = build2 (MODIFY_EXPR, unsigned_type_node, fenv_var, call_efpc);
-  tree new_fpc =
-    build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
-	    build_int_cst (unsigned_type_node,
-			   ~(FPC_DXC_MASK | FPC_FLAGS_MASK |
-			     FPC_EXCEPTION_MASK)));
+  tree old_fpc = build4 (TARGET_EXPR, unsigned_type_node, fenv_var, call_efpc,
+			 NULL_TREE, NULL_TREE);
+  tree new_fpc
+    = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
+	      build_int_cst (unsigned_type_node,
+			     ~(FPC_DXC_MASK | FPC_FLAGS_MASK
+			       | FPC_EXCEPTION_MASK)));
   tree set_new_fpc = build_call_expr (sfpc, 1, new_fpc);
   *hold = build2 (COMPOUND_EXPR, void_type_node, old_fpc, set_new_fpc);
 
@@ -16063,8 +16064,8 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
 
   old_fpc = create_tmp_var_raw (unsigned_type_node);
-  tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
-			       old_fpc, call_efpc);
+  tree store_old_fpc = build4 (TARGET_EXPR, void_type_node, old_fpc, call_efpc,
+			       NULL_TREE, NULL_TREE);
 
   set_new_fpc = build_call_expr (sfpc, 1, fenv_var);
 
