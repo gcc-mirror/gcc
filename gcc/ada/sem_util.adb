@@ -18324,7 +18324,10 @@ package body Sem_Util is
 
             --  In Ada 95 an aggregate is an object reference
 
-            when N_Aggregate =>
+            when N_Aggregate
+               | N_Delta_Aggregate
+               | N_Extension_Aggregate
+            =>
                return Ada_Version >= Ada_95;
 
             --  A string literal is not an object reference, but it might come
