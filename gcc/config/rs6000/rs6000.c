@@ -3452,6 +3452,102 @@ rs6000_override_options_after_change (void)
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 }
 
+#ifdef TARGET_USES_LINUX64_OPT
+static void
+rs6000_linux64_override_options ()
+{
+  if (!global_options_set.x_rs6000_alignment_flags)
+    rs6000_alignment_flags = MASK_ALIGN_NATURAL;
+  if (rs6000_isa_flags & OPTION_MASK_64BIT)
+    {
+      if (DEFAULT_ABI != ABI_AIX)
+	{
+	  rs6000_current_abi = ABI_AIX;
+	  error (INVALID_64BIT, "call");
+	}
+      dot_symbols = !strcmp (rs6000_abi_name, "aixdesc");
+      if (ELFv2_ABI_CHECK)
+	{
+	  rs6000_current_abi = ABI_ELFv2;
+	  if (dot_symbols)
+	    error ("%<-mcall-aixdesc%> incompatible with %<-mabi=elfv2%>");
+	}
+      if (rs6000_isa_flags & OPTION_MASK_RELOCATABLE)
+	{
+	  rs6000_isa_flags &= ~OPTION_MASK_RELOCATABLE;
+	  error (INVALID_64BIT, "relocatable");
+	}
+      if (rs6000_isa_flags & OPTION_MASK_EABI)
+	{
+	  rs6000_isa_flags &= ~OPTION_MASK_EABI;
+	  error (INVALID_64BIT, "eabi");
+	}
+      if (TARGET_PROTOTYPE)
+	{
+	  target_prototype = 0;
+	  error (INVALID_64BIT, "prototype");
+	}
+      if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) == 0)
+	{
+	  rs6000_isa_flags |= OPTION_MASK_POWERPC64;
+	  error ("%<-m64%> requires a PowerPC64 cpu");
+	}
+      if (!global_options_set.x_rs6000_current_cmodel)
+	SET_CMODEL (CMODEL_MEDIUM);
+      if ((rs6000_isa_flags_explicit
+	   & OPTION_MASK_MINIMAL_TOC) != 0)
+	{
+	  if (global_options_set.x_rs6000_current_cmodel
+	      && rs6000_current_cmodel != CMODEL_SMALL)
+	    error ("%<-mcmodel incompatible with other toc options%>");
+	  if (TARGET_MINIMAL_TOC)
+	    SET_CMODEL (CMODEL_SMALL);
+	  else if (TARGET_PCREL
+		   || (PCREL_SUPPORTED_BY_OS
+		       && (rs6000_isa_flags_explicit
+			   & OPTION_MASK_PCREL) == 0))
+	    /* Ignore -mno-minimal-toc.  */
+	    ;
+	  else
+	    SET_CMODEL (CMODEL_SMALL);
+	}
+      else
+	{
+	  if (rs6000_current_cmodel != CMODEL_SMALL)
+	    {
+	      if (!global_options_set.x_TARGET_NO_FP_IN_TOC)
+		TARGET_NO_FP_IN_TOC
+		  = rs6000_current_cmodel == CMODEL_MEDIUM;
+	      if (!global_options_set.x_TARGET_NO_SUM_IN_TOC)
+		TARGET_NO_SUM_IN_TOC = 0;
+	    }
+	}
+      if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)
+	{
+	  if (global_options_set.x_rs6000_pltseq)
+	    warning (0, "%qs unsupported for this ABI",
+		     "-mpltseq");
+	  rs6000_pltseq = false;
+	}
+    }
+  else if (TARGET_64BIT)
+    error (INVALID_32BIT, "32");
+  else
+    {
+      if (TARGET_PROFILE_KERNEL)
+	{
+	  profile_kernel = 0;
+	  error (INVALID_32BIT, "profile-kernel");
+	}
+      if (global_options_set.x_rs6000_current_cmodel)
+	{
+	  SET_CMODEL (CMODEL_SMALL);
+	  error (INVALID_32BIT, "cmodel");
+	}
+    }
+}
+#endif
+
 /* Override command line options.
 
    Combine build-specific configuration information with options
