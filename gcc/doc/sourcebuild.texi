@@ -2249,6 +2249,15 @@ Target supports the execution of @code{avx512f} instructions.
 @item avx512vp2intersect
 Target supports the execution of @code{avx512vp2intersect} instructions.
 
+@item amx_tile
+Target supports the execution of @code{amx-tile} instructions.
+
+@item amx_int8
+Target supports the execution of @code{amx-int8} instructions.
+
+@item amx_bf16
+Target supports the execution of @code{amx-bf16} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 

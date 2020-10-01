@@ -742,6 +742,8 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   /* Do consider clobber as side effects before IPA, so we rather inline
      C++ destructors and keep clobber semantics than eliminate them.
 
+     Similar logic is in ipa-modref.
+
      TODO: We may get smarter during early optimizations on these and let
      functions containing only clobbers to be optimized more.  This is a common
      case of C++ destructors.  */

@@ -145,6 +145,8 @@ DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_condu)
 DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_condeq)
 DEF_INTERNAL_OPTAB_FN (VCOND_MASK, 0, vcond_mask, vec_cond_mask)
 
+DEF_INTERNAL_OPTAB_FN (VEC_SET, 0, vec_set, vec_set)
+
 DEF_INTERNAL_OPTAB_FN (LEN_STORE, 0, len_store, len_store)
 
 DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)

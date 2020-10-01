@@ -2091,20 +2091,13 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = force_reg (Pmode, expand_normal (arg0));
 
-      if (!target)
-	target = gen_reg_rtx (Pmode);
-      else
-	target = force_reg (Pmode, target);
-
-      emit_move_insn (target, op0);
-
       if (fcode == AARCH64_PAUTH_BUILTIN_XPACLRI)
 	{
 	  rtx lr = gen_rtx_REG (Pmode, R30_REGNUM);
 	  icode = CODE_FOR_xpaclri;
 	  emit_move_insn (lr, op0);
 	  emit_insn (GEN_FCN (icode) ());
-	  emit_move_insn (target, lr);
+	  return lr;
 	}
       else
 	{
@@ -2134,10 +2127,8 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
 	  emit_move_insn (x17_reg, op0);
 	  emit_move_insn (x16_reg, op1);
 	  emit_insn (GEN_FCN (icode) ());
-	  emit_move_insn (target, x17_reg);
+	  return x17_reg;
 	}
-
-      return target;
 
     case AARCH64_JSCVT:
       {

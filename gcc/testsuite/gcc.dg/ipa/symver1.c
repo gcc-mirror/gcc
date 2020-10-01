@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "only works for ELF targets" { *-*-darwin* } } */
+/* { dg-skip-if "only works for ELF targets" { *-*-darwin* *-*-aix* } } */
 
 __attribute__ ((__symver__ ("foo@VER_2")))
 __attribute__ ((__symver__ ("foo@VER_3")))

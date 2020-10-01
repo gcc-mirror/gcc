@@ -2140,11 +2140,14 @@ region_model::get_representative_path_var (const region *reg,
 	path_var offset_pv
 	  = get_representative_path_var (offset_reg->get_byte_offset (),
 					 visited);
-	if (!offset_pv)
+	if (!offset_pv || TREE_CODE (offset_pv.m_tree) != INTEGER_CST)
 	  return path_var (NULL_TREE, 0);
+	tree addr_parent = build1 (ADDR_EXPR,
+				   build_pointer_type (reg->get_type ()),
+				   parent_pv.m_tree);
 	return path_var (build2 (MEM_REF,
 				 reg->get_type (),
-				 parent_pv.m_tree, offset_pv.m_tree),
+				 addr_parent, offset_pv.m_tree),
 			 parent_pv.m_stack_depth);
       }
 

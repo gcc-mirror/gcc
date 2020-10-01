@@ -509,15 +509,20 @@ get_available_features (struct __processor_model *cpu_model,
 #define XSTATE_OPMASK			0x20
 #define XSTATE_ZMM			0x40
 #define XSTATE_HI_ZMM			0x80
+#define XSTATE_TILECFG			0x20000
+#define XSTATE_TILEDATA		0x40000
 
 #define XCR_AVX_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM)
 #define XCR_AVX512F_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
+#define XCR_AMX_ENABLED_MASK \
+  (XSTATE_TILECFG | XSTATE_TILEDATA)
 
   /* Check if AVX and AVX512 are usable.  */
   int avx_usable = 0;
   int avx512_usable = 0;
+  int amx_usable = 0;
   if ((ecx & bit_OSXSAVE))
     {
       /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
@@ -533,6 +538,8 @@ get_available_features (struct __processor_model *cpu_model,
 	  avx512_usable = ((xcrlow & XCR_AVX512F_ENABLED_MASK)
 			   == XCR_AVX512F_ENABLED_MASK);
 	}
+      amx_usable = ((xcrlow & XCR_AMX_ENABLED_MASK)
+		    == XCR_AMX_ENABLED_MASK);
     }
 
 #define set_feature(f) \
@@ -651,6 +658,15 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_PCONFIG);
       if (edx & bit_IBT)
 	set_feature (FEATURE_IBT);
+      if (amx_usable)
+	{
+	  if (edx & bit_AMX_TILE)
+	    set_feature (FEATURE_AMX_TILE);
+	  if (edx & bit_AMX_INT8)
+	    set_feature (FEATURE_AMX_INT8);
+	  if (edx & bit_AMX_BF16)
+	    set_feature (FEATURE_AMX_BF16);
+	}
       if (avx512_usable)
 	{
 	  if (ebx & bit_AVX512F)

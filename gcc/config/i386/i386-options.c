@@ -209,7 +209,10 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
   { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD },
   { "-mserialize",	OPTION_MASK_ISA2_SERIALIZE },
-  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK }
+  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK },
+  { "-mamx-tile",	OPTION_MASK_ISA2_AMX_TILE },
+  { "-mamx-int8",	OPTION_MASK_ISA2_AMX_INT8 },
+  { "-mamx-bf16",	OPTION_MASK_ISA2_AMX_BF16 }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1033,6 +1036,9 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
     IX86_ATTR_ISA ("serialize", OPT_mserialize),
     IX86_ATTR_ISA ("tsxldtrk", OPT_mtsxldtrk),
+    IX86_ATTR_ISA ("amx-tile", OPT_mamx_tile),
+    IX86_ATTR_ISA ("amx-int8", OPT_mamx_int8),
+    IX86_ATTR_ISA ("amx-bf16", OPT_mamx_bf16),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -2258,6 +2264,18 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags2_explicit
 		 & OPTION_MASK_ISA2_AVX512BF16))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512BF16;
+	if (((processor_alias_table[i].flags & PTA_AMX_TILE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AMX_TILE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_TILE;
+	if (((processor_alias_table[i].flags & PTA_AMX_INT8) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AMX_INT8))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_INT8;
+	if (((processor_alias_table[i].flags & PTA_AMX_BF16) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AMX_BF16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_BF16;
         if (((processor_alias_table[i].flags & PTA_MOVDIRI) != 0)
             && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVDIRI))
           opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI;

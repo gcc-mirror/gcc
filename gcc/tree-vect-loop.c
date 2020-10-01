@@ -6357,12 +6357,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
 
   /* Verify following REDUC_IDX from the latch def leads us back to the PHI
-     and compute the reduction chain length.  */
+     and compute the reduction chain length.  Discover the real
+     reduction operation stmt on the way (stmt_info and slp_for_stmt_info).  */
   tree reduc_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
 					  loop_latch_edge (loop));
   unsigned reduc_chain_length = 0;
   bool only_slp_reduc_chain = true;
   stmt_info = NULL;
+  slp_tree slp_for_stmt_info = slp_node ? slp_node_instance->root : NULL;
   while (reduc_def != PHI_RESULT (reduc_def_phi))
     {
       stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
@@ -6405,6 +6407,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	stmt_info = vdef;
       reduc_def = gimple_op (vdef->stmt, 1 + STMT_VINFO_REDUC_IDX (vdef));
       reduc_chain_length++;
+      if (!stmt_info && slp_node)
+	slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
     }
   /* PHIs should not participate in patterns.  */
   gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
@@ -6491,17 +6495,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
-  /* ???  To get at invariant/constant uses on the SLP node we have to
-     get to it here, slp_node is still the reduction PHI.  */
-  slp_tree slp_for_stmt_info = NULL;
-  if (slp_node)
-    {
-      slp_for_stmt_info = slp_node_instance->root;
-      /* And then there's reduction chain with a conversion ...  */
-      if (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) != stmt_info)
-	slp_for_stmt_info = SLP_TREE_CHILDREN (slp_for_stmt_info)[0];
-      gcc_assert (SLP_TREE_REPRESENTATIVE (slp_for_stmt_info) == stmt_info);
-    }
   slp_tree *slp_op = XALLOCAVEC (slp_tree, op_type);
   /* We need to skip an extra operand for COND_EXPRs with embedded
      comparison.  */

@@ -79,6 +79,8 @@ unpack0_i16 (gfc_array_i16 *ret, const gfc_array_i16 *vector,
   else
     runtime_error ("Funny sized logical array");
 
+  /* Initialize to avoid -Wmaybe-uninitialized complaints.  */
+  rstride[0] = 1;
   if (ret->base_addr == NULL)
     {
       /* The front end has signalled that we need to populate the
@@ -102,8 +104,6 @@ unpack0_i16 (gfc_array_i16 *ret, const gfc_array_i16 *vector,
   else
     {
       dim = GFC_DESCRIPTOR_RANK (ret);
-      /* Initialize to avoid -Wmaybe-uninitialized complaints.  */
-      rstride[0] = 1;
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;
@@ -225,6 +225,8 @@ unpack1_i16 (gfc_array_i16 *ret, const gfc_array_i16 *vector,
   else
     runtime_error ("Funny sized logical array");
 
+  /* Initialize to avoid -Wmaybe-uninitialized complaints.  */
+  rstride[0] = 1;
   if (ret->base_addr == NULL)
     {
       /* The front end has signalled that we need to populate the
@@ -249,8 +251,6 @@ unpack1_i16 (gfc_array_i16 *ret, const gfc_array_i16 *vector,
   else
     {
       dim = GFC_DESCRIPTOR_RANK (ret);
-      /* Initialize to avoid -Wmaybe-uninitialized complaints.  */
-      rstride[0] = 1;
       for (n = 0; n < dim; n++)
 	{
 	  count[n] = 0;

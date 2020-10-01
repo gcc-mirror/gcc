@@ -4017,6 +4017,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_poplevel ();
   gnu_result = end_stmt_group ();
 
+  /* Attempt setting the end_locus of our GCC body tree, typically a BIND_EXPR,
+     then the end_locus of our GCC subprogram declaration tree.  */
+  set_end_locus_from_node (gnu_result, gnat_node);
+  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
+
   /* If we populated the parameter attributes cache, we need to make sure that
      the cached expressions are evaluated on all the possible paths leading to
      their uses.  So we force their evaluation on entry of the function.  */
@@ -4110,12 +4115,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   gnu_return_label_stack->pop ();
-
-  /* Attempt setting the end_locus of our GCC body tree, typically a
-     BIND_EXPR or STATEMENT_LIST, then the end_locus of our GCC subprogram
-     declaration tree.  */
-  set_end_locus_from_node (gnu_result, gnat_node);
-  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
 
   /* On SEH targets, install an exception handler around the main entry
      point to catch unhandled exceptions.  */

@@ -1115,3 +1115,15 @@ Support SERIALIZE built-in functions and code generation.
 mtsxldtrk
 Target Report Mask(ISA2_TSXLDTRK) Var(ix86_isa_flags2) Save
 Support TSXLDTRK built-in functions and code generation.
+
+mamx-tile
+Target Report Mask(ISA2_AMX_TILE) Var(ix86_isa_flags2) Save
+Support AMX-TILE built-in functions and code generation.
+
+mamx-int8
+Target Report Mask(ISA2_AMX_INT8) Var(ix86_isa_flags2) Save
+Support AMX-INT8 built-in functions and code generation.
+
+mamx-bf16
+Target Report Mask(ISA2_AMX_BF16) Var(ix86_isa_flags2) Save
+Support AMX-BF16 built-in functions and code generation.

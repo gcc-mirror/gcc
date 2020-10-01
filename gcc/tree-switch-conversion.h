@@ -84,11 +84,10 @@ public:
      then return 0.  */
   static unsigned HOST_WIDE_INT get_range (tree low, tree high)
   {
-    tree r = fold_build2 (MINUS_EXPR, TREE_TYPE (low), high, low);
-    if (!tree_fits_uhwi_p (r))
+    wide_int w = wi::to_wide (high) - wi::to_wide (low);
+    if (wi::neg_p (w, TYPE_SIGN (TREE_TYPE (low))) || !wi::fits_uhwi_p (w))
       return 0;
-
-    return tree_to_uhwi (r) + 1;
+    return w.to_uhwi () + 1;
   }
 
   /* Case label.  */

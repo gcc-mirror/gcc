@@ -2486,8 +2486,15 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
       vect_free_slp_tree ((*it).second);
   delete bst_map;
 
+  return opt_result::success ();
+}
+
+void
+vect_optimize_slp (vec_info *vinfo)
+{
   /* Optimize permutations in SLP reductions.  */
   slp_instance instance;
+  unsigned i;
   FOR_EACH_VEC_ELT (vinfo->slp_instances, i, instance)
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
@@ -2500,20 +2507,14 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
     }
 
   /* Gather all loads in the SLP graph.  */
+  auto_vec<slp_tree> slp_loads;
   hash_set<slp_tree> visited;
   FOR_EACH_VEC_ELT (vinfo->slp_instances, i, instance)
-    vect_gather_slp_loads (vinfo->slp_loads, SLP_INSTANCE_TREE (instance),
+    vect_gather_slp_loads (slp_loads, SLP_INSTANCE_TREE (instance),
 			   visited);
 
-  return opt_result::success ();
-}
-
-void
-vect_optimize_slp (vec_info *vinfo)
-{
   slp_tree node;
-  unsigned i;
-  FOR_EACH_VEC_ELT (vinfo->slp_loads, i, node)
+  FOR_EACH_VEC_ELT (slp_loads, i, node)
     {
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;

@@ -6452,6 +6452,56 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
     }
   else
     expand_omp_build_assign (&gsi, fd->loop.v, fold_convert (type, n1));
+  tree altv = NULL_TREE, altn2 = NULL_TREE;
+  if (fd->collapse == 1
+      && !broken_loop
+      && TREE_CODE (fd->loops[0].step) != INTEGER_CST)
+    {
+      /* The vectorizer currently punts on loops with non-constant steps
+	 for the main IV (can't compute number of iterations and gives up
+	 because of that).  As for OpenMP loops it is always possible to
+	 compute the number of iterations upfront, use an alternate IV
+	 as the loop iterator:
+	 altn2 = n1 < n2 ? (n2 - n1 + step - 1) / step : 0;
+	 for (i = n1, altv = 0; altv < altn2; altv++, i += step)  */
+      altv = create_tmp_var (unsigned_type_for (TREE_TYPE (fd->loops[0].v)));
+      expand_omp_build_assign (&gsi, altv, build_zero_cst (TREE_TYPE (altv)));
+      tree itype = TREE_TYPE (fd->loop.v);
+      if (POINTER_TYPE_P (itype))
+	itype = signed_type_for (itype);
+      t = build_int_cst (itype, (fd->loop.cond_code == LT_EXPR ? -1 : 1));
+      t = fold_build2 (PLUS_EXPR, itype,
+		       fold_convert (itype, fd->loop.step), t);
+      t = fold_build2 (PLUS_EXPR, itype, t, fold_convert (itype, n2));
+      t = fold_build2 (MINUS_EXPR, itype, t,
+		       fold_convert (itype, fd->loop.v));
+      if (TYPE_UNSIGNED (itype) && fd->loop.cond_code == GT_EXPR)
+	t = fold_build2 (TRUNC_DIV_EXPR, itype,
+			 fold_build1 (NEGATE_EXPR, itype, t),
+			 fold_build1 (NEGATE_EXPR, itype,
+				      fold_convert (itype, fd->loop.step)));
+      else
+	t = fold_build2 (TRUNC_DIV_EXPR, itype, t,
+			 fold_convert (itype, fd->loop.step));
+      t = fold_convert (TREE_TYPE (altv), t);
+      altn2 = create_tmp_var (TREE_TYPE (altv));
+      expand_omp_build_assign (&gsi, altn2, t);
+      tree t2 = fold_convert (TREE_TYPE (fd->loop.v), n2);
+      t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      t2 = fold_build2 (fd->loop.cond_code, boolean_type_node, fd->loop.v, t2);
+      gassign *g = gimple_build_assign (altn2, COND_EXPR, t2, altn2,
+					build_zero_cst (TREE_TYPE (altv)));
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    }
+  else if (fd->collapse > 1
+	   && !broken_loop
+	   && !gimple_omp_for_combined_into_p (fd->for_stmt)
+	   && TREE_CODE (fd->loops[fd->collapse - 1].step) != INTEGER_CST)
+    {
+      altv = create_tmp_var (unsigned_type_for (TREE_TYPE (fd->loops[0].v)));
+      altn2 = create_tmp_var (TREE_TYPE (altv));
+    }
   if (cond_var)
     {
       if (POINTER_TYPE_P (type)
@@ -6486,6 +6536,12 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	}
       else if (TREE_CODE (n2) != INTEGER_CST)
 	expand_omp_build_assign (&gsi, fd->loop.v, build_one_cst (type));
+      if (altv)
+	{
+	  t = fold_build2 (PLUS_EXPR, TREE_TYPE (altv), altv,
+			   build_one_cst (TREE_TYPE (altv)));
+	  expand_omp_build_assign (&gsi, altv, t);
+	}
 
       if (fd->collapse > 1)
 	{
@@ -6525,9 +6581,11 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   /* Emit the condition in L1_BB.  */
   gsi = gsi_start_bb (l1_bb);
 
-  if (fd->collapse > 1
-      && !gimple_omp_for_combined_into_p (fd->for_stmt)
-      && !broken_loop)
+  if (altv)
+    t = build2 (LT_EXPR, boolean_type_node, altv, altn2);
+  else if (fd->collapse > 1
+	   && !gimple_omp_for_combined_into_p (fd->for_stmt)
+	   && !broken_loop)
     {
       i = fd->collapse - 1;
       tree itype = TREE_TYPE (fd->loops[i].v);
@@ -6704,7 +6762,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  expand_omp_build_assign (&gsi, fd->loops[i + 1].v, t);
 	  if (fd->loops[i + 1].m2)
 	    {
-	      if (i + 2 == fd->collapse && n2var)
+	      if (i + 2 == fd->collapse && (n2var || altv))
 		{
 		  gcc_assert (n2v == NULL_TREE);
 		  n2v = create_tmp_var (TREE_TYPE (fd->loops[i + 1].v));
@@ -6760,6 +6818,50 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	      t = fold_build2 (MIN_EXPR, type, t2, t);
 	      t = fold_build2 (PLUS_EXPR, type, fd->loop.v, t);
 	      expand_omp_build_assign (&gsi, n2var, t);
+	    }
+	  if (i + 2 == fd->collapse && altv)
+	    {
+	      /* The vectorizer currently punts on loops with non-constant
+		 steps for the main IV (can't compute number of iterations
+		 and gives up because of that).  As for OpenMP loops it is
+		 always possible to compute the number of iterations upfront,
+		 use an alternate IV as the loop iterator.  */
+	      expand_omp_build_assign (&gsi, altv,
+				       build_zero_cst (TREE_TYPE (altv)));
+	      tree itype = TREE_TYPE (fd->loops[i + 1].v);
+	      if (POINTER_TYPE_P (itype))
+		itype = signed_type_for (itype);
+	      t = build_int_cst (itype, (fd->loops[i + 1].cond_code == LT_EXPR
+					 ? -1 : 1));
+	      t = fold_build2 (PLUS_EXPR, itype,
+			       fold_convert (itype, fd->loops[i + 1].step), t);
+	      t = fold_build2 (PLUS_EXPR, itype, t,
+			       fold_convert (itype,
+					     fd->loops[i + 1].m2
+					     ? n2v : fd->loops[i + 1].n2));
+	      t = fold_build2 (MINUS_EXPR, itype, t,
+			       fold_convert (itype, fd->loops[i + 1].v));
+	      tree step = fold_convert (itype, fd->loops[i + 1].step);
+	      if (TYPE_UNSIGNED (itype)
+		  && fd->loops[i + 1].cond_code == GT_EXPR)
+		t = fold_build2 (TRUNC_DIV_EXPR, itype,
+				 fold_build1 (NEGATE_EXPR, itype, t),
+				 fold_build1 (NEGATE_EXPR, itype, step));
+	      else
+		t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+	      t = fold_convert (TREE_TYPE (altv), t);
+	      expand_omp_build_assign (&gsi, altn2, t);
+	      tree t2 = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
+				      fd->loops[i + 1].m2
+				      ? n2v : fd->loops[i + 1].n2);
+	      t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      t2 = fold_build2 (fd->loops[i + 1].cond_code, boolean_type_node,
+				fd->loops[i + 1].v, t2);
+	      gassign *g
+		= gimple_build_assign (altn2, COND_EXPR, t2, altn2,
+				       build_zero_cst (TREE_TYPE (altv)));
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	    }
 	  n2v = nextn2v;
 

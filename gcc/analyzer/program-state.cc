@@ -160,7 +160,7 @@ sm_state_map::print (const region_model *model,
   bool first = true;
   if (!multiline)
     pp_string (pp, "{");
-  if (m_global_state != 0)
+  if (m_global_state != m_sm.get_start_state ())
     {
       if (multiline)
 	pp_string (pp, "  ");

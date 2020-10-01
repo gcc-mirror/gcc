@@ -1,3 +1,8 @@
+2020-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	* objcp-decl.c (objcp_start_struct): Use TAG_how not tag_scope.
+	(objcp_xref_tag): Likewise.
+
 2020-09-24  Nathan Sidwell  <nathan@acm.org>
 
 	* objcp-decl.c (objcp_start_struct): Drop default args to
