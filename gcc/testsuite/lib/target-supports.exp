@@ -7233,6 +7233,8 @@ proc check_effective_target_vect_cond_mixed { } {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*] 
+	     || ([istarget arm*-*-*]
+		 && [check_effective_target_arm_neon_ok])
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
