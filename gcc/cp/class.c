@@ -1006,10 +1006,6 @@ add_method (tree type, tree method, bool via_using)
   for (ovl_iterator iter (current_fns); iter; ++iter)
     {
       tree fn = *iter;
-      tree fn_type;
-      tree method_type;
-      tree parms1;
-      tree parms2;
 
       if (TREE_CODE (fn) != TREE_CODE (method))
 	continue;
@@ -1037,10 +1033,8 @@ add_method (tree type, tree method, bool via_using)
 	 functions in the derived class override and/or hide member
 	 functions with the same name and parameter types in a base
 	 class (rather than conflicting).  */
-      fn_type = TREE_TYPE (fn);
-      method_type = TREE_TYPE (method);
-      parms1 = TYPE_ARG_TYPES (fn_type);
-      parms2 = TYPE_ARG_TYPES (method_type);
+      tree fn_type = TREE_TYPE (fn);
+      tree method_type = TREE_TYPE (method);
 
       /* Compare the quals on the 'this' parm.  Don't compare
 	 the whole types, as used functions are treated as
@@ -1055,137 +1049,149 @@ add_method (tree type, tree method, bool via_using)
 	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
 	  continue;
 
-      /* For templates, the return type and template parameters
-	 must be identical.  */
-      if (TREE_CODE (fn) == TEMPLATE_DECL
-	  && (!same_type_p (TREE_TYPE (fn_type),
-			    TREE_TYPE (method_type))
-	      || !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
-				       DECL_TEMPLATE_PARMS (method))))
+      tree real_fn = fn;
+      tree real_method = method;
+
+      /* Templates and conversion ops must match return types.  */
+      if ((DECL_CONV_FN_P (fn) || TREE_CODE (fn) == TEMPLATE_DECL)
+	  && !same_type_p (TREE_TYPE (fn_type), TREE_TYPE (method_type)))
 	continue;
-
-      if (! DECL_STATIC_FUNCTION_P (fn))
-	parms1 = TREE_CHAIN (parms1);
-      if (! DECL_STATIC_FUNCTION_P (method))
-	parms2 = TREE_CHAIN (parms2);
-
-      /* Bring back parameters omitted from an inherited ctor.  */
-      if (ctor_omit_inherited_parms (fn))
-	parms1 = FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (fn));
-      if (ctor_omit_inherited_parms (method))
-	parms2 = FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (method));
-
-      if (compparms (parms1, parms2)
-	  && (!DECL_CONV_FN_P (fn)
-	      || same_type_p (TREE_TYPE (fn_type),
-			      TREE_TYPE (method_type))))
+      
+      /* For templates, the template parameters must be identical.  */
+      if (TREE_CODE (fn) == TEMPLATE_DECL)
 	{
-          if (!equivalently_constrained (fn, method))
-	    {
-	      if (processing_template_decl)
-		/* We can't check satisfaction in dependent context, wait until
-		   the class is instantiated.  */
-		continue;
-
-	      special_function_kind sfk = special_memfn_p (method);
-
-	      if (sfk == sfk_none
-		  || DECL_INHERITED_CTOR (fn)
-		  || TREE_CODE (fn) == TEMPLATE_DECL)
-		/* Member function templates and non-special member functions
-		   coexist if they are not equivalently constrained.  A member
-		   function is not hidden by an inherited constructor.  */
-		continue;
-
-	      /* P0848: For special member functions, deleted, unsatisfied, or
-		 less constrained overloads are ineligible.  We implement this
-		 by removing them from CLASSTYPE_MEMBER_VEC.  Destructors don't
-		 use the notion of eligibility, and the selected destructor can
-		 be deleted, but removing unsatisfied or less constrained
-		 overloads has the same effect as overload resolution.  */
-	      bool dtor = (sfk == sfk_destructor);
-	      if (losem == -1)
-		losem = ((!dtor && DECL_DELETED_FN (method))
-			 || !constraints_satisfied_p (method));
-	      bool losef = ((!dtor && DECL_DELETED_FN (fn))
-			    || !constraints_satisfied_p (fn));
-	      int win;
-	      if (losem || losef)
-		win = losem - losef;
-	      else
-		win = more_constrained (fn, method);
-	      if (win > 0)
-		/* Leave FN in the method vec, discard METHOD.  */
-		return false;
-	      else if (win < 0)
-		{
-		  /* Remove FN, add METHOD.  */
-		  current_fns = iter.remove_node (current_fns);
-		  continue;
-		}
-	      else
-		/* Let them coexist for now.  */
-		continue;
-	    }
-
-	  /* If these are versions of the same function, process and
-	     move on.  */
-	  if (TREE_CODE (fn) == FUNCTION_DECL
-	      && maybe_version_functions (method, fn, true))
+	  if (!comp_template_parms (DECL_TEMPLATE_PARMS (fn),
+				    DECL_TEMPLATE_PARMS (method)))
 	    continue;
 
-	  if (DECL_INHERITED_CTOR (method))
-	    {
-	      if (DECL_INHERITED_CTOR (fn))
-		{
-		  tree basem = DECL_INHERITED_CTOR_BASE (method);
-		  tree basef = DECL_INHERITED_CTOR_BASE (fn);
-		  if (flag_new_inheriting_ctors)
-		    {
-		      if (basem == basef)
-			{
-			  /* Inheriting the same constructor along different
-			     paths, combine them.  */
-			  SET_DECL_INHERITED_CTOR
-			    (fn, ovl_make (DECL_INHERITED_CTOR (method),
-					   DECL_INHERITED_CTOR (fn)));
-			  /* And discard the new one.  */
-			  return false;
-			}
-		      else
-			/* Inherited ctors can coexist until overload
-			   resolution.  */
-			continue;
-		    }
-		  error_at (DECL_SOURCE_LOCATION (method),
-			    "%q#D conflicts with version inherited from %qT",
-			    method, basef);
-		  inform (DECL_SOURCE_LOCATION (fn),
-			  "version inherited from %qT declared here",
-			  basef);
-		}
-	      /* Otherwise defer to the other function.  */
-	      return false;
-	    }
+	  real_fn = DECL_TEMPLATE_RESULT (fn);
+	  real_method = DECL_TEMPLATE_RESULT (method);
+	}
 
-	  if (via_using)
-	    /* Defer to the local function.  */
+      tree parms1 = TYPE_ARG_TYPES (fn_type);
+      tree parms2 = TYPE_ARG_TYPES (method_type);
+      if (! DECL_STATIC_FUNCTION_P (real_fn))
+	parms1 = TREE_CHAIN (parms1);
+      if (! DECL_STATIC_FUNCTION_P (real_method))
+	parms2 = TREE_CHAIN (parms2);
+
+      /* Bring back parameters omitted from an inherited ctor.  The
+	 method and the function can have different omittedness.  */
+      if (ctor_omit_inherited_parms (real_fn))
+	parms1 = FUNCTION_FIRST_USER_PARMTYPE (DECL_CLONED_FUNCTION (real_fn));
+      if (ctor_omit_inherited_parms (real_method))
+	parms2 = (FUNCTION_FIRST_USER_PARMTYPE
+		  (DECL_CLONED_FUNCTION (real_method)));
+
+      if (!compparms (parms1, parms2))
+	continue;
+
+      if (!equivalently_constrained (fn, method))
+	{
+	  if (processing_template_decl)
+	    /* We can't check satisfaction in dependent context, wait until
+	       the class is instantiated.  */
+	    continue;
+
+	  special_function_kind sfk = special_memfn_p (method);
+
+	  if (sfk == sfk_none
+	      || DECL_INHERITED_CTOR (fn)
+	      || TREE_CODE (fn) == TEMPLATE_DECL)
+	    /* Member function templates and non-special member functions
+	       coexist if they are not equivalently constrained.  A member
+	       function is not hidden by an inherited constructor.  */
+	    continue;
+
+	  /* P0848: For special member functions, deleted, unsatisfied, or
+	     less constrained overloads are ineligible.  We implement this
+	     by removing them from CLASSTYPE_MEMBER_VEC.  Destructors don't
+	     use the notion of eligibility, and the selected destructor can
+	     be deleted, but removing unsatisfied or less constrained
+	     overloads has the same effect as overload resolution.  */
+	  bool dtor = (sfk == sfk_destructor);
+	  if (losem == -1)
+	    losem = ((!dtor && DECL_DELETED_FN (method))
+		     || !constraints_satisfied_p (method));
+	  bool losef = ((!dtor && DECL_DELETED_FN (fn))
+			|| !constraints_satisfied_p (fn));
+	  int win;
+	  if (losem || losef)
+	    win = losem - losef;
+	  else
+	    win = more_constrained (fn, method);
+	  if (win > 0)
+	    /* Leave FN in the method vec, discard METHOD.  */
 	    return false;
-	  else if (flag_new_inheriting_ctors
-		   && DECL_INHERITED_CTOR (fn))
+	  else if (win < 0)
 	    {
-	      /* Remove the inherited constructor.  */
+	      /* Remove FN, add METHOD.  */
 	      current_fns = iter.remove_node (current_fns);
 	      continue;
 	    }
 	  else
+	    /* Let them coexist for now.  */
+	    continue;
+	}
+
+      /* If these are versions of the same function, process and
+	 move on.  */
+      if (TREE_CODE (fn) == FUNCTION_DECL
+	  && maybe_version_functions (method, fn, true))
+	continue;
+
+      if (DECL_INHERITED_CTOR (method))
+	{
+	  if (!DECL_INHERITED_CTOR (fn))
+	    /* Defer to the other function.  */
+	    return false;
+	    
+	  tree basem = DECL_INHERITED_CTOR_BASE (method);
+	  tree basef = DECL_INHERITED_CTOR_BASE (fn);
+	  if (flag_new_inheriting_ctors)
 	    {
-	      error_at (DECL_SOURCE_LOCATION (method),
-			"%q#D cannot be overloaded with %q#D", method, fn);
-	      inform (DECL_SOURCE_LOCATION (fn),
-		      "previous declaration %q#D", fn);
-	      return false;
+	      if (basem == basef)
+		{
+		  /* Inheriting the same constructor along different
+		     paths, combine them.  */
+		  SET_DECL_INHERITED_CTOR
+		    (fn, ovl_make (DECL_INHERITED_CTOR (method),
+				   DECL_INHERITED_CTOR (fn)));
+		  /* And discard the new one.  */
+		  return false;
+		}
+	      else
+		/* Inherited ctors can coexist until overload
+		   resolution.  */
+		continue;
 	    }
+
+	  error_at (DECL_SOURCE_LOCATION (method),
+		    "%q#D conflicts with version inherited from %qT",
+		    method, basef);
+	  inform (DECL_SOURCE_LOCATION (fn),
+		  "version inherited from %qT declared here",
+		  basef);
+	  return false;
+	}
+
+      if (via_using)
+	/* Defer to the local function.  */
+	return false;
+      else if (flag_new_inheriting_ctors
+	       && DECL_INHERITED_CTOR (fn))
+	{
+	  /* Remove the inherited constructor.  */
+	  current_fns = iter.remove_node (current_fns);
+	  continue;
+	}
+      else
+	{
+	  error_at (DECL_SOURCE_LOCATION (method),
+		    "%q#D cannot be overloaded with %q#D", method, fn);
+	  inform (DECL_SOURCE_LOCATION (fn),
+		  "previous declaration %q#D", fn);
+	  return false;
 	}
     }
 
@@ -4892,7 +4898,7 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
    will be inserted onto DECL_CHAIN of FN.  */
 
 static unsigned
-build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
+build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
 {
   unsigned count = 0;
 
@@ -4901,8 +4907,8 @@ build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
       build_clone (fn, complete_ctor_identifier, false, false);
-      build_clone (fn, base_ctor_identifier, needs_vtt_parm_p,
-		   omit_inherited_parms_p);
+      build_clone (fn, base_ctor_identifier, needs_vtt_p,
+		   base_omits_inherited_p);
       count += 2;
     }
   else
@@ -4924,7 +4930,7 @@ build_cdtor_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
 	  count++;
 	}
       build_clone (fn, complete_dtor_identifier, false, false);
-      build_clone (fn, base_dtor_identifier, needs_vtt_parm_p, false);
+      build_clone (fn, base_dtor_identifier, needs_vtt_p, false);
       count += 2;
     }
 
@@ -4948,9 +4954,10 @@ clone_cdtor (tree fn, bool update_methods)
 
   /* Base ctor omits inherited parms it needs a vttparm and inherited
      from a virtual nase ctor.  */
-  bool omit_inherited = ctor_omit_inherited_parms (fn);
+  bool base_omits_inherited = (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
+			       && base_ctor_omit_inherited_parms (fn));
 
-  unsigned count = build_cdtor_clones (fn, vtt, omit_inherited);
+  unsigned count = build_cdtor_clones (fn, vtt, base_omits_inherited);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
