@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "attr-fnspec.h"
+#include "errors.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -4012,3 +4014,42 @@ walk_aliased_vdefs (ao_ref *ref, tree vdef,
   return ret;
 }
 
+/* Verify validity of the fnspec string.
+   See attr-fnspec.h for details.  */
+
+void
+attr_fnspec::verify ()
+{
+  /* FIXME: Fortran trans-decl.c contains multiple wrong fnspec strings.
+     re-enable verification after these are fixed.  */
+  return;
+  bool err = false;
+
+  /* Check return value specifier.  */
+  if (len < return_desc_size)
+    err = true;
+  else if ((str[0] < '1' || str[0] > '4')
+	   && str[0] != '.' && str[0] != 'm')
+    err = true;
+
+  /* Now check all parameters.  */
+  for (unsigned int i = 0; arg_specified_p (i); i++)
+    {
+      unsigned int idx = arg_idx (i);
+      switch (str[idx])
+	{
+	  case 'x':
+	  case 'X':
+	  case 'r':
+	  case 'R':
+	  case 'w':
+	  case 'W':
+	  case '.':
+	    break;
+	  default:
+	    err = true;
+	}
+    }
+  if (err)
+    internal_error ("invalid fn spec attribute %s", str);
+}

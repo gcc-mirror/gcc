@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "langhooks.h"
+#include "attr-fnspec.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -1512,31 +1513,26 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 {
   const_tree attr = gimple_call_fnspec (stmt);
 
-  if (!attr || 1 + arg >= (unsigned) TREE_STRING_LENGTH (attr))
+  if (!attr)
     return 0;
 
-  switch (TREE_STRING_POINTER (attr)[1 + arg])
+  int flags = 0;
+  attr_fnspec fnspec (attr);
+
+  if (!fnspec.arg_specified_p (arg))
+    ;
+  else if (!fnspec.arg_used_p (arg))
+    flags = EAF_UNUSED;
+  else
     {
-    case 'x':
-    case 'X':
-      return EAF_UNUSED;
-
-    case 'R':
-      return EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
-
-    case 'r':
-      return EAF_NOCLOBBER | EAF_NOESCAPE;
-
-    case 'W':
-      return EAF_DIRECT | EAF_NOESCAPE;
-
-    case 'w':
-      return EAF_NOESCAPE;
-
-    case '.':
-    default:
-      return 0;
+      if (fnspec.arg_direct_p (arg))
+	flags |= EAF_DIRECT;
+      if (fnspec.arg_noescape_p (arg))
+	flags |= EAF_NOESCAPE;
+      if (fnspec.arg_readonly_p (arg))
+	flags |= EAF_NOCLOBBER;
     }
+  return flags;
 }
 
 /* Detects return flags for the call STMT.  */
@@ -1550,24 +1546,17 @@ gimple_call_return_flags (const gcall *stmt)
     return ERF_NOALIAS;
 
   attr = gimple_call_fnspec (stmt);
-  if (!attr || TREE_STRING_LENGTH (attr) < 1)
+  if (!attr)
     return 0;
+  attr_fnspec fnspec (attr);
 
-  switch (TREE_STRING_POINTER (attr)[0])
-    {
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+  unsigned int arg_no;
+  if (fnspec.returns_arg (&arg_no))
+    return ERF_RETURNS_ARG | arg_no;
 
-    case 'm':
-      return ERF_NOALIAS;
-
-    case '.':
-    default:
-      return 0;
-    }
+  if (fnspec.returns_noalias_p ())
+    return ERF_NOALIAS;
+  return 0;
 }
 
 
