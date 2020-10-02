@@ -81,6 +81,7 @@ public:
   bool operator!= (const irange &r) const { return !(*this == r); }
 
   // Misc methods.
+  bool fits_p (const irange &r) { return m_max_ranges >= r.num_pairs (); }
   void dump (FILE * = stderr) const;
 
   // Deprecated legacy public methods.
