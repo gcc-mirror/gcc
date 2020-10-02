@@ -286,7 +286,7 @@ typedef struct
 typedef __gthread_tcb *__gthread_t;
 
 /* Typedefs specific to different vxworks versions.  */
-#if _VXW_PRE_69
+#if _VXWORKS_PRE(6,9)
   typedef int _Vx_usr_arg_t;
   #define TASK_ID_NULL ((TASK_ID)NULL)
   #define SEM_ID_NULL ((SEM_ID)NULL)
