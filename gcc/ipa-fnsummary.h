@@ -287,6 +287,29 @@ public:
 			  ipa_call_summary *dst_data);
 };
 
+/* Estimated execution times, code sizes and other information about the
+   code executing a call described by ipa_call_context.  */
+
+struct ipa_call_estimates
+{
+  /* Estimated size needed to execute call in the given context. */
+  int size;
+
+  /* Minimal size needed for the call that is + independent on the call context
+     and can be used for fast estimates.  */
+  int min_size;
+
+  /* Estimated time needed to execute call in the given context. */
+  sreal time;
+
+  /* Estimated time needed to execute the function when not ignoring
+     computations known to be constant in this context.  */
+  sreal nonspecialized_time;
+
+  /* Further discovered reasons why to inline or specialize the give calls.  */
+  ipa_hints hints;
+};
+
 class ipa_cached_call_context;
 
 /* This object describe a context of call.  That is a summary of known
@@ -305,10 +328,8 @@ public:
   : m_node(NULL)
   {
   }
-  void estimate_size_and_time (int *ret_size, int *ret_min_size,
-			       sreal *ret_time,
-			       sreal *ret_nonspecialized_time,
-			       ipa_hints *ret_hints);
+  void estimate_size_and_time (ipa_call_estimates *estimates,
+			       bool est_times = true, bool est_hints = true);
   bool equal_to (const ipa_call_context &);
   bool exists_p ()
   {
@@ -353,10 +374,9 @@ void ipa_dump_hints (FILE *f, ipa_hints);
 void ipa_free_fn_summary (void);
 void ipa_free_size_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
-void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					ipa_auto_call_arg_values *,
-					int *, sreal *, sreal *,
-				        ipa_hints *);
+void estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
+					ipa_auto_call_arg_values *avals,
+					ipa_call_estimates *estimates);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
 void ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset = true);
 void compute_fn_summary (struct cgraph_node *, bool);

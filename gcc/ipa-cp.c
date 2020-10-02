@@ -3196,12 +3196,13 @@ devirtualization_time_bonus (struct cgraph_node *node,
   return res;
 }
 
-/* Return time bonus incurred because of HINTS.  */
+/* Return time bonus incurred because of hints stored in ESTIMATES.  */
 
 static int
-hint_time_bonus (cgraph_node *node, ipa_hints hints)
+hint_time_bonus (cgraph_node *node, const ipa_call_estimates &estimates)
 {
   int result = 0;
+  ipa_hints hints = estimates.hints;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
     result += opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
   return result;
@@ -3397,15 +3398,13 @@ perform_estimation_of_a_value (cgraph_node *node,
 			       int removable_params_cost, int est_move_cost,
 			       ipcp_value_base *val)
 {
-  int size, time_benefit;
-  sreal time, base_time;
-  ipa_hints hints;
+  int time_benefit;
+  ipa_call_estimates estimates;
 
-  estimate_ipcp_clone_size_and_time (node, avals, &size, &time,
-				     &base_time, &hints);
-  base_time -= time;
-  if (base_time > 65535)
-    base_time = 65535;
+  estimate_ipcp_clone_size_and_time (node, avals, &estimates);
+  sreal time_delta = estimates.nonspecialized_time - estimates.time;
+  if (time_delta > 65535)
+    time_delta = 65535;
 
   /* Extern inline functions have no cloning local time benefits because they
      will be inlined anyway.  The only reason to clone them is if it enables
@@ -3413,11 +3412,12 @@ perform_estimation_of_a_value (cgraph_node *node,
   if (DECL_EXTERNAL (node->decl) && DECL_DECLARED_INLINE_P (node->decl))
     time_benefit = 0;
   else
-    time_benefit = base_time.to_int ()
+    time_benefit = time_delta.to_int ()
       + devirtualization_time_bonus (node, avals)
-      + hint_time_bonus (node, hints)
+      + hint_time_bonus (node, estimates)
       + removable_params_cost + est_move_cost;
 
+  int size = estimates.size;
   gcc_checking_assert (size >=0);
   /* The inliner-heuristics based estimates may think that in certain
      contexts some functions do not have any size at all but we want
@@ -3472,23 +3472,21 @@ estimate_local_effects (struct cgraph_node *node)
       || (removable_params_cost && node->can_change_signature))
     {
       struct caller_statistics stats;
-      ipa_hints hints;
-      sreal time, base_time;
-      int size;
+      ipa_call_estimates estimates;
 
       init_caller_stats (&stats);
       node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
 					      false);
-      estimate_ipcp_clone_size_and_time (node, &avals, &size, &time,
-					 &base_time, &hints);
-      time -= devirt_bonus;
-      time -= hint_time_bonus (node, hints);
-      time -= removable_params_cost;
-      size -= stats.n_calls * removable_params_cost;
+      estimate_ipcp_clone_size_and_time (node, &avals, &estimates);
+      sreal time = estimates.nonspecialized_time - estimates.time;
+      time += devirt_bonus;
+      time += hint_time_bonus (node, estimates);
+      time += removable_params_cost;
+      int size = estimates.size - stats.n_calls * removable_params_cost;
 
       if (dump_file)
 	fprintf (dump_file, " - context independent values, size: %i, "
-		 "time_benefit: %f\n", size, (base_time - time).to_double ());
+		 "time_benefit: %f\n", size, (time).to_double ());
 
       if (size <= 0 || node->local)
 	{
@@ -3499,8 +3497,7 @@ estimate_local_effects (struct cgraph_node *node)
 		     "known contexts, code not going to grow.\n");
 	}
       else if (good_cloning_opportunity_p (node,
-					   MIN ((base_time - time).to_int (),
-						65536),
+					   MIN ((time).to_int (), 65536),
 					   stats.freq_sum, stats.count_sum,
 					   size))
 	{

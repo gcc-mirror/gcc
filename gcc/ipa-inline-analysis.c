@@ -208,16 +208,12 @@ do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
 	      && !opt_for_fn (callee->decl, flag_profile_partial_training)
 	      && !callee->count.ipa_p ())
 	    {
-	      sreal chk_time, chk_nonspec_time;
-	      int chk_size, chk_min_size;
-
-	      ipa_hints chk_hints;
-	      ctx.estimate_size_and_time (&chk_size, &chk_min_size,
-					  &chk_time, &chk_nonspec_time,
-					  &chk_hints);
-	      gcc_assert (chk_size == size && chk_time == time
-		  	  && chk_nonspec_time == nonspec_time
-			  && chk_hints == hints);
+	      ipa_call_estimates chk_estimates;
+	      ctx.estimate_size_and_time (&chk_estimates);
+	      gcc_assert (chk_estimates.size == size
+			  && chk_estimates.time == time
+		  	  && chk_estimates.nonspecialized_time == nonspec_time
+			  && chk_estimates.hints == hints);
 	    }
 	}
       else
@@ -227,18 +223,28 @@ do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
 	  else
 	    node_context_cache_clear++;
 	  e->entry.ctx.release ();
-	  ctx.estimate_size_and_time (&size, &min_size,
-				      &time, &nonspec_time, &hints);
+	  ipa_call_estimates estimates;
+	  ctx.estimate_size_and_time (&estimates);
+	  size = estimates.size;
 	  e->entry.size = size;
+	  time = estimates.time;
 	  e->entry.time = time;
+	  nonspec_time = estimates.nonspecialized_time;
 	  e->entry.nonspec_time = nonspec_time;
+	  hints = estimates.hints;
 	  e->entry.hints = hints;
 	  e->entry.ctx.duplicate_from (ctx);
 	}
     }
   else
-    ctx.estimate_size_and_time (&size, &min_size,
-				&time, &nonspec_time, &hints);
+    {
+      ipa_call_estimates estimates;
+      ctx.estimate_size_and_time (&estimates);
+      size = estimates.size;
+      time = estimates.time;
+      nonspec_time = estimates.nonspecialized_time;
+      hints = estimates.hints;
+    }
 
   /* When we have profile feedback, we can quite safely identify hot
      edges and for those we disable size limits.  Don't do that when
@@ -321,8 +327,9 @@ do_estimate_edge_size (struct cgraph_edge *edge)
   evaluate_properties_for_edge (edge, true, &clause, &nonspec_clause,
 				&avals, true);
   ipa_call_context ctx (callee, clause, nonspec_clause, vNULL, &avals);
-  ctx.estimate_size_and_time (&size, NULL, NULL, NULL, NULL);
-  return size;
+  ipa_call_estimates estimates;
+  ctx.estimate_size_and_time (&estimates, false, false);
+  return estimates.size;
 }
 
 
@@ -332,7 +339,6 @@ do_estimate_edge_size (struct cgraph_edge *edge)
 ipa_hints
 do_estimate_edge_hints (struct cgraph_edge *edge)
 {
-  ipa_hints hints;
   struct cgraph_node *callee;
   clause_t clause, nonspec_clause;
 
@@ -341,7 +347,7 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   if (edge_growth_cache != NULL)
     {
       do_estimate_edge_time (edge);
-      hints = edge_growth_cache->get (edge)->hints;
+      ipa_hints hints = edge_growth_cache->get (edge)->hints;
       gcc_checking_assert (hints);
       return hints - 1;
     }
@@ -354,8 +360,9 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   evaluate_properties_for_edge (edge, true, &clause, &nonspec_clause,
 				&avals, true);
   ipa_call_context ctx (callee, clause, nonspec_clause, vNULL, &avals);
-  ctx.estimate_size_and_time (NULL, NULL, NULL, NULL, &hints);
-  hints |= simple_edge_hints (edge);
+  ipa_call_estimates estimates;
+  ctx.estimate_size_and_time (&estimates, false, true);
+  ipa_hints hints = estimates.hints | simple_edge_hints (edge);
   return hints;
 }
 

@@ -3536,18 +3536,14 @@ ipa_call_context::equal_to (const ipa_call_context &ctx)
   return true;
 }
 
-/* Estimate size and time needed to execute call in the given context.
-   Additionally determine hints determined by the context.  Finally compute
-   minimal size needed for the call that is independent on the call context and
-   can be used for fast estimates.  Return the values in RET_SIZE,
-   RET_MIN_SIZE, RET_TIME and RET_HINTS.  */
+/* Fill in the selected fields in ESTIMATES with value estimated for call in
+   this context.  Always compute size and min_size.  Only compute time and
+   nonspecialized_time if EST_TIMES is true.  Only compute hints if EST_HINTS
+   is true.  */
 
 void
-ipa_call_context::estimate_size_and_time (int *ret_size,
-					  int *ret_min_size,
-					  sreal *ret_time,
-					  sreal *ret_nonspecialized_time,
-					  ipa_hints *ret_hints)
+ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
+					  bool est_times, bool est_hints)
 {
   class ipa_fn_summary *info = ipa_fn_summaries->get (m_node);
   size_time_entry *e;
@@ -3577,8 +3573,8 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 
   if (m_node->callees || m_node->indirect_calls)
     estimate_calls_size_and_time (m_node, &size, &min_size,
-				  ret_time ? &time : NULL,
-				  ret_hints ? &hints : NULL, m_possible_truths,
+				  est_times ? &time : NULL,
+				  est_hints ? &hints : NULL, m_possible_truths,
 				  &m_avals);
 
   sreal nonspecialized_time = time;
@@ -3605,7 +3601,7 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 	     known to be constant in a specialized setting.  */
 	  if (nonconst)
 	    size += e->size;
-	  if (!ret_time)
+	  if (!est_times)
 	    continue;
 	  nonspecialized_time += e->time;
 	  if (!nonconst)
@@ -3645,7 +3641,7 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
   if (time > nonspecialized_time)
     time = nonspecialized_time;
 
-  if (ret_hints)
+  if (est_hints)
     {
       if (info->loop_iterations
 	  && !info->loop_iterations->evaluate (m_possible_truths))
@@ -3663,18 +3659,23 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
   min_size = RDIV (min_size, ipa_fn_summary::size_scale);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n   size:%i time:%f nonspec time:%f\n", (int) size,
-	     time.to_double (), nonspecialized_time.to_double ());
-  if (ret_time)
-    *ret_time = time;
-  if (ret_nonspecialized_time)
-    *ret_nonspecialized_time = nonspecialized_time;
-  if (ret_size)
-    *ret_size = size;
-  if (ret_min_size)
-    *ret_min_size = min_size;
-  if (ret_hints)
-    *ret_hints = hints;
+    {
+      if (est_times)
+	fprintf (dump_file, "\n   size:%i time:%f nonspec time:%f\n",
+		 (int) size, time.to_double (),
+		 nonspecialized_time.to_double ());
+      else
+	fprintf (dump_file, "\n   size:%i (time not estimated)\n", (int) size);
+    }
+  if (est_times)
+    {
+      estimates->time = time;
+      estimates->nonspecialized_time = nonspecialized_time;
+    }
+  estimates->size = size;
+  estimates->min_size = min_size;
+  if (est_hints)
+    estimates->hints = hints;
   return;
 }
 
@@ -3687,17 +3688,14 @@ ipa_call_context::estimate_size_and_time (int *ret_size,
 void
 estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 				   ipa_auto_call_arg_values *avals,
-				   int *ret_size, sreal *ret_time,
-				   sreal *ret_nonspec_time,
-				   ipa_hints *hints)
+				   ipa_call_estimates *estimates)
 {
   clause_t clause, nonspec_clause;
 
   evaluate_conditions_for_known_args (node, false, avals, &clause,
 				      &nonspec_clause);
   ipa_call_context ctx (node, clause, nonspec_clause, vNULL, avals);
-  ctx.estimate_size_and_time (ret_size, NULL, ret_time,
-			      ret_nonspec_time, hints);
+  ctx.estimate_size_and_time (estimates);
 }
 
 /* Return stack frame offset where frame of NODE is supposed to start inside
