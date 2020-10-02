@@ -735,14 +735,21 @@ ao_ref_alias_set (ao_ref *ref)
 }
 
 /* Init an alias-oracle reference representation from a gimple pointer
-   PTR and a gimple size SIZE in bytes.  If SIZE is NULL_TREE then the
-   size is assumed to be unknown.  The access is assumed to be only
-   to or after of the pointer target, not before it.  */
+   PTR a range specified by OFFSET, SIZE and MAX_SIZE under the assumption
+   that RANGE_KNOWN is set.
 
-void
-ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
+   The access is assumed to be only to or after of the pointer target adjusted
+   by the offset, not before it (even in the case RANGE_KNOWN is false).  */
+
+static void
+ao_ref_init_from_ptr_and_range (ao_ref *ref, tree ptr,
+				bool range_known,
+				poly_int64 offset,
+				poly_int64 size,
+				poly_int64 max_size)
 {
-  poly_int64 t, size_hwi, extra_offset = 0;
+  poly_int64 t, extra_offset = 0;
+
   ref->ref = NULL_TREE;
   if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -766,7 +773,7 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 	ref->offset = BITS_PER_UNIT * t;
       else
 	{
-	  size = NULL_TREE;
+	  range_known = false;
 	  ref->offset = 0;
 	  ref->base = get_base_address (TREE_OPERAND (ptr, 0));
 	}
@@ -778,16 +785,37 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 			  ptr, null_pointer_node);
       ref->offset = 0;
     }
-  ref->offset += extra_offset;
-  if (size
-      && poly_int_tree_p (size, &size_hwi)
-      && coeffs_in_range_p (size_hwi, 0, HOST_WIDE_INT_MAX / BITS_PER_UNIT))
-    ref->max_size = ref->size = size_hwi * BITS_PER_UNIT;
+  ref->offset += extra_offset + offset;
+  if (range_known)
+    {
+      ref->max_size = max_size;
+      ref->size = size;
+    }
   else
     ref->max_size = ref->size = -1;
   ref->ref_alias_set = 0;
   ref->base_alias_set = 0;
   ref->volatile_p = false;
+}
+
+/* Init an alias-oracle reference representation from a gimple pointer
+   PTR and a gimple size SIZE in bytes.  If SIZE is NULL_TREE then the
+   size is assumed to be unknown.  The access is assumed to be only
+   to or after of the pointer target, not before it.  */
+
+void
+ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
+{
+  poly_int64 size_hwi;
+  if (size
+      && poly_int_tree_p (size, &size_hwi)
+      && coeffs_in_range_p (size_hwi, 0, HOST_WIDE_INT_MAX / BITS_PER_UNIT))
+    {
+      size_hwi = size_hwi * BITS_PER_UNIT;
+      ao_ref_init_from_ptr_and_range (ref, ptr, true, 0, size_hwi, size_hwi);
+    }
+  else
+    ao_ref_init_from_ptr_and_range (ref, ptr, false, 0, -1, -1);
 }
 
 /* S1 and S2 are TYPE_SIZE or DECL_SIZE.  Compare them:
