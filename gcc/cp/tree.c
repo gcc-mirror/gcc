@@ -2286,6 +2286,7 @@ ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
   if (maybe_ovl || using_or_hidden || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       maybe_ovl = ovl_make (fn, maybe_ovl);
+
       if (using_or_hidden < 0)
 	OVL_HIDDEN_P (maybe_ovl) = true;
       if (using_or_hidden > 0)
@@ -2314,14 +2315,8 @@ ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
 tree
 ovl_skip_hidden (tree ovl)
 {
-  for (;
-       ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
-       ovl = OVL_CHAIN (ovl))
-    continue;
-
-  /* We should not see a naked hidden decl.  */
-  gcc_checking_assert (!(ovl && TREE_CODE (ovl) != OVERLOAD
-			 && DECL_HIDDEN_P (ovl)));
+  while (ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl))
+    ovl = OVL_CHAIN (ovl);
 
   return ovl;
 }
