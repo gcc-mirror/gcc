@@ -1,3 +1,110 @@
+2020-10-01  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-09-29  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96979
+	* g++.dg/tree-ssa/pr96979.C: New test.
+
+2020-10-01  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-09-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97069
+	* g++.dg/gcov/pr97069.C: New test.
+
+2020-10-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-09-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/96827
+	* gcc.target/i386/pr96827.c: New test.
+
+2020-10-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-09-30  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/96795
+	* gcc.target/arm/mve/intrinsics/mve_fp_vaddq_n.c: New Test.
+	* gcc.target/arm/mve/intrinsics/mve_vaddq_n.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_x_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vaddq_x_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmaq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmaq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmaq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmaq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmasq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmasq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmasq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vfmasq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_p_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_p_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_p_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_p_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_p_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_p_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_p_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_p_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_x_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulq_x_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsubq_m_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsubq_m_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsubq_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsubq_n_f32-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsubq_x_n_f16-1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsubq_x_n_f32-1.c: Likewise.
+
+2020-10-01  Joel Hutton  <joel.hutton@arm.com>
+
+	Backported from master:
+	2020-09-30  Joel Hutton  <joel.hutton@arm.com>
+
+	PR target/96827
+	* gcc.dg/vect/bb-slp-49.c: New test.
+
 2020-09-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
