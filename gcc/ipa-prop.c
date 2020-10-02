@@ -5797,4 +5797,14 @@ ipa_agg_value::equal_to (const ipa_agg_value &other)
   return offset == other.offset
 	 && operand_equal_p (value, other.value, 0);
 }
+
+/* Destructor also removing individual aggregate values.  */
+
+ipa_auto_call_arg_values::~ipa_auto_call_arg_values ()
+{
+  ipa_release_agg_values (m_known_aggs, false);
+}
+
+
+
 #include "gt-ipa-prop.h"

@@ -3117,30 +3117,40 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   return target;
 }
 
-
-/* If an indirect edge IE can be turned into a direct one based on KNOWN_CSTS,
-   KNOWN_CONTEXTS (which can be vNULL) or KNOWN_AGGS (which also can be vNULL)
-   return the destination.  */
+/* If an indirect edge IE can be turned into a direct one based on data in
+   AVALS, return the destination.  Store into *SPECULATIVE a boolean determinig
+   whether the discovered target is only speculative guess.  */
 
 tree
 ipa_get_indirect_edge_target (struct cgraph_edge *ie,
-			      vec<tree> known_csts,
-			      vec<ipa_polymorphic_call_context> known_contexts,
-			      vec<ipa_agg_value_set> known_aggs,
+			      ipa_call_arg_values *avals,
 			      bool *speculative)
 {
-  return ipa_get_indirect_edge_target_1 (ie, known_csts, known_contexts,
-					 known_aggs, NULL, speculative);
+  return ipa_get_indirect_edge_target_1 (ie, avals->m_known_vals,
+					 avals->m_known_contexts,
+					 avals->m_known_aggs,
+					 NULL, speculative);
 }
 
-/* Calculate devirtualization time bonus for NODE, assuming we know KNOWN_CSTS
-   and KNOWN_CONTEXTS.  */
+/* The same functionality as above overloaded for ipa_auto_call_arg_values.  */
+
+tree
+ipa_get_indirect_edge_target (struct cgraph_edge *ie,
+			      ipa_auto_call_arg_values *avals,
+			      bool *speculative)
+{
+  return ipa_get_indirect_edge_target_1 (ie, avals->m_known_vals,
+					 avals->m_known_contexts,
+					 avals->m_known_aggs,
+					 NULL, speculative);
+}
+
+/* Calculate devirtualization time bonus for NODE, assuming we know information
+   about arguments stored in AVALS.  */
 
 static int
 devirtualization_time_bonus (struct cgraph_node *node,
-			     vec<tree> known_csts,
-			     vec<ipa_polymorphic_call_context> known_contexts,
-			     vec<ipa_agg_value_set> known_aggs)
+			     ipa_auto_call_arg_values *avals)
 {
   struct cgraph_edge *ie;
   int res = 0;
@@ -3153,8 +3163,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       tree target;
       bool speculative;
 
-      target = ipa_get_indirect_edge_target (ie, known_csts, known_contexts,
-					     known_aggs, &speculative);
+      target = ipa_get_indirect_edge_target (ie, avals, &speculative);
       if (!target)
 	continue;
 
@@ -3306,32 +3315,27 @@ context_independent_aggregate_values (class ipcp_param_lattices *plats)
   return res;
 }
 
-/* Allocate KNOWN_CSTS, KNOWN_CONTEXTS and, if non-NULL, KNOWN_AGGS and
-   populate them with values of parameters that are known independent of the
-   context.  INFO describes the function.  If REMOVABLE_PARAMS_COST is
-   non-NULL, the movement cost of all removable parameters will be stored in
-   it.  */
+/* Grow vectors in AVALS and fill them with information about values of
+   parameters that are known to be independent of the context.  Only calculate
+   m_known_aggs if CALCULATE_AGGS is true.  INFO describes the function.  If
+   REMOVABLE_PARAMS_COST is non-NULL, the movement cost of all removable
+   parameters will be stored in it.
+
+   TODO: Also grow context independent value range vectors.  */
 
 static bool
 gather_context_independent_values (class ipa_node_params *info,
-				   vec<tree> *known_csts,
-				   vec<ipa_polymorphic_call_context>
-				   *known_contexts,
-				   vec<ipa_agg_value_set> *known_aggs,
+				   ipa_auto_call_arg_values *avals,
+				   bool calculate_aggs,
 				   int *removable_params_cost)
 {
   int i, count = ipa_get_param_count (info);
   bool ret = false;
 
-  known_csts->create (0);
-  known_contexts->create (0);
-  known_csts->safe_grow_cleared (count, true);
-  known_contexts->safe_grow_cleared (count, true);
-  if (known_aggs)
-    {
-      known_aggs->create (0);
-      known_aggs->safe_grow_cleared (count, true);
-    }
+  avals->m_known_vals.safe_grow_cleared (count, true);
+  avals->m_known_contexts.safe_grow_cleared (count, true);
+  if (calculate_aggs)
+    avals->m_known_aggs.safe_grow_cleared (count, true);
 
   if (removable_params_cost)
     *removable_params_cost = 0;
@@ -3345,7 +3349,7 @@ gather_context_independent_values (class ipa_node_params *info,
 	{
 	  ipcp_value<tree> *val = lat->values;
 	  gcc_checking_assert (TREE_CODE (val->value) != TREE_BINFO);
-	  (*known_csts)[i] = val->value;
+	  avals->m_known_vals[i] = val->value;
 	  if (removable_params_cost)
 	    *removable_params_cost
 	      += estimate_move_cost (TREE_TYPE (val->value), false);
@@ -3363,15 +3367,15 @@ gather_context_independent_values (class ipa_node_params *info,
       /* Do not account known context as reason for cloning.  We can see
 	 if it permits devirtualization.  */
       if (ctxlat->is_single_const ())
-	(*known_contexts)[i] = ctxlat->values->value;
+	avals->m_known_contexts[i] = ctxlat->values->value;
 
-      if (known_aggs)
+      if (calculate_aggs)
 	{
 	  vec<ipa_agg_value> agg_items;
 	  struct ipa_agg_value_set *agg;
 
 	  agg_items = context_independent_aggregate_values (plats);
-	  agg = &(*known_aggs)[i];
+	  agg = &avals->m_known_aggs[i];
 	  agg->items = agg_items;
 	  agg->by_ref = plats->aggs_by_ref;
 	  ret |= !agg_items.is_empty ();
@@ -3381,25 +3385,23 @@ gather_context_independent_values (class ipa_node_params *info,
   return ret;
 }
 
-/* Perform time and size measurement of NODE with the context given in
-   KNOWN_CSTS, KNOWN_CONTEXTS and KNOWN_AGGS, calculate the benefit and cost
-   given BASE_TIME of the node without specialization, REMOVABLE_PARAMS_COST of
-   all context-independent removable parameters and EST_MOVE_COST of estimated
-   movement of the considered parameter and store it into VAL.  */
+/* Perform time and size measurement of NODE with the context given in AVALS,
+   calculate the benefit compared to the node without specialization and store
+   it into VAL.  Take into account REMOVABLE_PARAMS_COST of all
+   context-independent or unused removable parameters and EST_MOVE_COST, the
+   estimated movement of the considered parameter.  */
 
 static void
-perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
-			       vec<ipa_polymorphic_call_context> known_contexts,
-			       vec<ipa_agg_value_set> known_aggs,
-			       int removable_params_cost,
-			       int est_move_cost, ipcp_value_base *val)
+perform_estimation_of_a_value (cgraph_node *node,
+			       ipa_auto_call_arg_values *avals,
+			       int removable_params_cost, int est_move_cost,
+			       ipcp_value_base *val)
 {
   int size, time_benefit;
   sreal time, base_time;
   ipa_hints hints;
 
-  estimate_ipcp_clone_size_and_time (node, known_csts, known_contexts,
-				     known_aggs, &size, &time,
+  estimate_ipcp_clone_size_and_time (node, avals, &size, &time,
 				     &base_time, &hints);
   base_time -= time;
   if (base_time > 65535)
@@ -3412,8 +3414,7 @@ perform_estimation_of_a_value (cgraph_node *node, vec<tree> known_csts,
     time_benefit = 0;
   else
     time_benefit = base_time.to_int ()
-      + devirtualization_time_bonus (node, known_csts, known_contexts,
-				     known_aggs)
+      + devirtualization_time_bonus (node, avals)
       + hint_time_bonus (node, hints)
       + removable_params_cost + est_move_cost;
 
@@ -3454,9 +3455,6 @@ estimate_local_effects (struct cgraph_node *node)
 {
   class ipa_node_params *info = IPA_NODE_REF (node);
   int i, count = ipa_get_param_count (info);
-  vec<tree> known_csts;
-  vec<ipa_polymorphic_call_context> known_contexts;
-  vec<ipa_agg_value_set> known_aggs;
   bool always_const;
   int removable_params_cost;
 
@@ -3466,11 +3464,10 @@ estimate_local_effects (struct cgraph_node *node)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nEstimating effects for %s.\n", node->dump_name ());
 
-  always_const = gather_context_independent_values (info, &known_csts,
-						    &known_contexts, &known_aggs,
+  ipa_auto_call_arg_values avals;
+  always_const = gather_context_independent_values (info, &avals, true,
 						    &removable_params_cost);
-  int devirt_bonus = devirtualization_time_bonus (node, known_csts,
-					   known_contexts, known_aggs);
+  int devirt_bonus = devirtualization_time_bonus (node, &avals);
   if (always_const || devirt_bonus
       || (removable_params_cost && node->can_change_signature))
     {
@@ -3482,8 +3479,7 @@ estimate_local_effects (struct cgraph_node *node)
       init_caller_stats (&stats);
       node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
 					      false);
-      estimate_ipcp_clone_size_and_time (node, known_csts, known_contexts,
-					 known_aggs, &size, &time,
+      estimate_ipcp_clone_size_and_time (node, &avals, &size, &time,
 					 &base_time, &hints);
       time -= devirt_bonus;
       time -= hint_time_bonus (node, hints);
@@ -3536,18 +3532,17 @@ estimate_local_effects (struct cgraph_node *node)
 
       if (lat->bottom
 	  || !lat->values
-	  || known_csts[i])
+	  || avals.m_known_vals[i])
 	continue;
 
       for (val = lat->values; val; val = val->next)
 	{
 	  gcc_checking_assert (TREE_CODE (val->value) != TREE_BINFO);
-	  known_csts[i] = val->value;
+	  avals.m_known_vals[i] = val->value;
 
 	  int emc = estimate_move_cost (TREE_TYPE (val->value), true);
-	  perform_estimation_of_a_value (node, known_csts, known_contexts,
-					 known_aggs,
-					 removable_params_cost, emc, val);
+	  perform_estimation_of_a_value (node, &avals, removable_params_cost,
+					 emc, val);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -3559,7 +3554,7 @@ estimate_local_effects (struct cgraph_node *node)
 		       val->local_time_benefit, val->local_size_cost);
 	    }
 	}
-      known_csts[i] = NULL_TREE;
+      avals.m_known_vals[i] = NULL_TREE;
     }
 
   for (i = 0; i < count; i++)
@@ -3574,15 +3569,14 @@ estimate_local_effects (struct cgraph_node *node)
 
       if (ctxlat->bottom
 	  || !ctxlat->values
-	  || !known_contexts[i].useless_p ())
+	  || !avals.m_known_contexts[i].useless_p ())
 	continue;
 
       for (val = ctxlat->values; val; val = val->next)
 	{
-	  known_contexts[i] = val->value;
-	  perform_estimation_of_a_value (node, known_csts, known_contexts,
-					 known_aggs,
-					 removable_params_cost, 0, val);
+	  avals.m_known_contexts[i] = val->value;
+	  perform_estimation_of_a_value (node, &avals, removable_params_cost,
+					 0, val);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -3594,20 +3588,18 @@ estimate_local_effects (struct cgraph_node *node)
 		       val->local_time_benefit, val->local_size_cost);
 	    }
 	}
-      known_contexts[i] = ipa_polymorphic_call_context ();
+      avals.m_known_contexts[i] = ipa_polymorphic_call_context ();
     }
 
   for (i = 0; i < count; i++)
     {
       class ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-      struct ipa_agg_value_set *agg;
-      struct ipcp_agg_lattice *aglat;
 
       if (plats->aggs_bottom || !plats->aggs)
 	continue;
 
-      agg = &known_aggs[i];
-      for (aglat = plats->aggs; aglat; aglat = aglat->next)
+      ipa_agg_value_set *agg = &avals.m_known_aggs[i];
+      for (ipcp_agg_lattice *aglat = plats->aggs; aglat; aglat = aglat->next)
 	{
 	  ipcp_value<tree> *val;
 	  if (aglat->bottom || !aglat->values
@@ -3624,8 +3616,7 @@ estimate_local_effects (struct cgraph_node *node)
 	      item.value = val->value;
 	      agg->items.safe_push (item);
 
-	      perform_estimation_of_a_value (node, known_csts, known_contexts,
-					     known_aggs,
+	      perform_estimation_of_a_value (node, &avals,
 					     removable_params_cost, 0, val);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3645,10 +3636,6 @@ estimate_local_effects (struct cgraph_node *node)
 	    }
 	}
     }
-
-  known_csts.release ();
-  known_contexts.release ();
-  ipa_release_agg_values (known_aggs);
 }
 
 
@@ -5372,31 +5359,34 @@ copy_useful_known_contexts (vec<ipa_polymorphic_call_context> known_contexts)
     return vNULL;
 }
 
-/* Copy KNOWN_CSTS and modify the copy according to VAL and INDEX.  If
-   non-empty, replace KNOWN_CONTEXTS with its copy too.  */
+/* Copy known scalar values from AVALS into KNOWN_CSTS and modify the copy
+   according to VAL and INDEX.  If non-empty, replace KNOWN_CONTEXTS with its
+   copy too.  */
 
 static void
-modify_known_vectors_with_val (vec<tree> *known_csts,
-			       vec<ipa_polymorphic_call_context> *known_contexts,
-			       ipcp_value<tree> *val,
-			       int index)
+copy_known_vectors_add_val (ipa_auto_call_arg_values *avals,
+			    vec<tree> *known_csts,
+			    vec<ipa_polymorphic_call_context> *known_contexts,
+			    ipcp_value<tree> *val, int index)
 {
-  *known_csts = known_csts->copy ();
-  *known_contexts = copy_useful_known_contexts (*known_contexts);
+  *known_csts = avals->m_known_vals.copy ();
+  *known_contexts = copy_useful_known_contexts (avals->m_known_contexts);
   (*known_csts)[index] = val->value;
 }
 
-/* Replace KNOWN_CSTS with its copy.  Also copy KNOWN_CONTEXTS and modify the
-   copy according to VAL and INDEX.  */
+/* Copy known scalar values from AVALS into KNOWN_CSTS.  Similarly, copy
+   contexts to KNOWN_CONTEXTS and modify the copy according to VAL and
+   INDEX.  */
 
 static void
-modify_known_vectors_with_val (vec<tree> *known_csts,
-			       vec<ipa_polymorphic_call_context> *known_contexts,
-			       ipcp_value<ipa_polymorphic_call_context> *val,
-			       int index)
+copy_known_vectors_add_val (ipa_auto_call_arg_values *avals,
+			    vec<tree> *known_csts,
+			    vec<ipa_polymorphic_call_context> *known_contexts,
+			    ipcp_value<ipa_polymorphic_call_context> *val,
+			    int index)
 {
-  *known_csts = known_csts->copy ();
-  *known_contexts = known_contexts->copy ();
+  *known_csts = avals->m_known_vals.copy ();
+  *known_contexts = avals->m_known_contexts.copy ();
   (*known_contexts)[index] = val->value;
 }
 
@@ -5433,16 +5423,15 @@ ipcp_val_agg_replacement_ok_p (ipa_agg_replacement_value *,
   return offset == -1;
 }
 
-/* Decide whether to create a special version of NODE for value VAL of parameter
-   at the given INDEX.  If OFFSET is -1, the value is for the parameter itself,
-   otherwise it is stored at the given OFFSET of the parameter.  KNOWN_CSTS,
-   KNOWN_CONTEXTS and KNOWN_AGGS describe the other already known values.  */
+/* Decide whether to create a special version of NODE for value VAL of
+   parameter at the given INDEX.  If OFFSET is -1, the value is for the
+   parameter itself, otherwise it is stored at the given OFFSET of the
+   parameter.  AVALS describes the other already known values.  */
 
 template <typename valtype>
 static bool
 decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
-		    ipcp_value<valtype> *val, vec<tree> known_csts,
-		    vec<ipa_polymorphic_call_context> known_contexts)
+		    ipcp_value<valtype> *val, ipa_auto_call_arg_values *avals)
 {
   struct ipa_agg_replacement_value *aggvals;
   int freq_sum, caller_count;
@@ -5492,13 +5481,16 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
     fprintf (dump_file, "  Creating a specialized node of %s.\n",
 	     node->dump_name ());
 
+  vec<tree> known_csts;
+  vec<ipa_polymorphic_call_context> known_contexts;
+
   callers = gather_edges_for_value (val, node, caller_count);
   if (offset == -1)
-    modify_known_vectors_with_val (&known_csts, &known_contexts, val, index);
+    copy_known_vectors_add_val (avals, &known_csts, &known_contexts, val, index);
   else
     {
-      known_csts = known_csts.copy ();
-      known_contexts = copy_useful_known_contexts (known_contexts);
+      known_csts = avals->m_known_vals.copy ();
+      known_contexts = copy_useful_known_contexts (avals->m_known_contexts);
     }
   find_more_scalar_values_for_callers_subset (node, known_csts, callers);
   find_more_contexts_for_caller_subset (node, &known_contexts, callers);
@@ -5522,8 +5514,6 @@ decide_whether_version_node (struct cgraph_node *node)
 {
   class ipa_node_params *info = IPA_NODE_REF (node);
   int i, count = ipa_get_param_count (info);
-  vec<tree> known_csts;
-  vec<ipa_polymorphic_call_context> known_contexts;
   bool ret = false;
 
   if (count == 0)
@@ -5533,8 +5523,8 @@ decide_whether_version_node (struct cgraph_node *node)
     fprintf (dump_file, "\nEvaluating opportunities for %s.\n",
 	     node->dump_name ());
 
-  gather_context_independent_values (info, &known_csts, &known_contexts,
-				     NULL, NULL);
+  ipa_auto_call_arg_values avals;
+  gather_context_independent_values (info, &avals, false, NULL);
 
   for (i = 0; i < count;i++)
     {
@@ -5543,12 +5533,11 @@ decide_whether_version_node (struct cgraph_node *node)
       ipcp_lattice<ipa_polymorphic_call_context> *ctxlat = &plats->ctxlat;
 
       if (!lat->bottom
-	  && !known_csts[i])
+	  && !avals.m_known_vals[i])
 	{
 	  ipcp_value<tree> *val;
 	  for (val = lat->values; val; val = val->next)
-	    ret |= decide_about_value (node, i, -1, val, known_csts,
-				       known_contexts);
+	    ret |= decide_about_value (node, i, -1, val, &avals);
 	}
 
       if (!plats->aggs_bottom)
@@ -5557,22 +5546,20 @@ decide_whether_version_node (struct cgraph_node *node)
 	  ipcp_value<tree> *val;
 	  for (aglat = plats->aggs; aglat; aglat = aglat->next)
 	    if (!aglat->bottom && aglat->values
-		/* If the following is false, the one value is in
-		   known_aggs.  */
+		/* If the following is false, the one value has been considered
+		   for cloning for all contexts.  */
 		&& (plats->aggs_contain_variable
 		    || !aglat->is_single_const ()))
 	      for (val = aglat->values; val; val = val->next)
-		ret |= decide_about_value (node, i, aglat->offset, val,
-					   known_csts, known_contexts);
+		ret |= decide_about_value (node, i, aglat->offset, val, &avals);
 	}
 
       if (!ctxlat->bottom
-	  && known_contexts[i].useless_p ())
+	  && avals.m_known_contexts[i].useless_p ())
 	{
 	  ipcp_value<ipa_polymorphic_call_context> *val;
 	  for (val = ctxlat->values; val; val = val->next)
-	    ret |= decide_about_value (node, i, -1, val, known_csts,
-				       known_contexts);
+	    ret |= decide_about_value (node, i, -1, val, &avals);
 	}
 
 	info = IPA_NODE_REF (node);
@@ -5595,11 +5582,9 @@ decide_whether_version_node (struct cgraph_node *node)
       if (!adjust_callers_for_value_intersection (callers, node))
 	{
 	  /* If node is not called by anyone, or all its caller edges are
-	     self-recursive, the node is not really be in use, no need to
-	     do cloning.  */
+	     self-recursive, the node is not really in use, no need to do
+	     cloning.  */
 	  callers.release ();
-	  known_csts.release ();
-	  known_contexts.release ();
 	  info->do_clone_for_all_contexts = false;
 	  return ret;
 	}
@@ -5608,6 +5593,9 @@ decide_whether_version_node (struct cgraph_node *node)
 	fprintf (dump_file, " - Creating a specialized node of %s "
 		 "for all known contexts.\n", node->dump_name ());
 
+      vec<tree> known_csts = avals.m_known_vals.copy ();
+      vec<ipa_polymorphic_call_context> known_contexts
+	= copy_useful_known_contexts (avals.m_known_contexts);
       find_more_scalar_values_for_callers_subset (node, known_csts, callers);
       find_more_contexts_for_caller_subset (node, &known_contexts, callers);
       ipa_agg_replacement_value *aggvals
@@ -5624,11 +5612,6 @@ decide_whether_version_node (struct cgraph_node *node)
       info->do_clone_for_all_contexts = false;
       IPA_NODE_REF (clone)->is_all_contexts_clone = true;
       ret = true;
-    }
-  else
-    {
-      known_csts.release ();
-      known_contexts.release ();
     }
 
   return ret;

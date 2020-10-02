@@ -433,6 +433,107 @@ ipa_get_jf_ancestor_type_preserved (struct ipa_jump_func *jfunc)
   return jfunc->value.ancestor.agg_preserved;
 }
 
+/* Class for allocating a bundle of various potentially known properties about
+   actual arguments of a particular call on stack for the usual case and on
+   heap only if there are unusually many arguments.  The data is deallocated
+   when the instance of this class goes out of scope or is otherwise
+   destructed.  */
+
+class ipa_auto_call_arg_values
+{
+public:
+  ~ipa_auto_call_arg_values ();
+
+  /* If m_known_vals (vector of known "scalar" values) is sufficiantly long,
+     return its element at INDEX, otherwise return NULL.  */
+  tree safe_sval_at (int index)
+  {
+    /* TODO: Assert non-negative index here and test.  */
+    if ((unsigned) index < m_known_vals.length ())
+      return m_known_vals[index];
+    return NULL;
+  }
+
+  /* If m_known_aggs is sufficiantly long, return the pointer rto its element
+     at INDEX, otherwise return NULL.  */
+  ipa_agg_value_set *safe_aggval_at (int index)
+  {
+    /* TODO: Assert non-negative index here and test.  */
+    if ((unsigned) index < m_known_aggs.length ())
+      return &m_known_aggs[index];
+    return NULL;
+  }
+
+  /* Vector describing known values of parameters.  */
+  auto_vec<tree, 32> m_known_vals;
+
+  /* Vector describing known polymorphic call contexts.  */
+  auto_vec<ipa_polymorphic_call_context, 32> m_known_contexts;
+
+  /* Vector describing known aggregate values.  */
+  auto_vec<ipa_agg_value_set, 32> m_known_aggs;
+
+  /* Vector describing known value ranges of arguments.  */
+  auto_vec<value_range, 32> m_known_value_ranges;
+};
+
+/* Class bundling the various potentially known properties about actual
+   arguments of a particular call.  This variant does not deallocate the
+   bundled data in any way.  */
+
+class ipa_call_arg_values
+{
+public:
+  /* Default constructor, setting the vectors to empty ones.  */
+  ipa_call_arg_values ()
+  {}
+
+  /* Construct this general variant of the bundle from the variant which uses
+     auto_vecs to hold the vectors.  This means that vectors of objects
+     constructed with this constructor should not be changed because if they
+     get reallocated, the member vectors and the underlying auto_vecs would get
+     out of sync.  */
+  ipa_call_arg_values (ipa_auto_call_arg_values *aavals)
+    : m_known_vals (aavals->m_known_vals),
+      m_known_contexts (aavals->m_known_contexts),
+      m_known_aggs (aavals->m_known_aggs),
+      m_known_value_ranges (aavals->m_known_value_ranges)
+  {}
+
+  /* If m_known_vals (vector of known "scalar" values) is sufficiantly long,
+     return its element at INDEX, otherwise return NULL.  */
+  tree safe_sval_at (int index)
+  {
+    /* TODO: Assert non-negative index here and test.  */
+    if ((unsigned) index < m_known_vals.length ())
+      return m_known_vals[index];
+    return NULL;
+  }
+
+  /* If m_known_aggs is sufficiantly long, return the pointer rto its element
+     at INDEX, otherwise return NULL.  */
+  ipa_agg_value_set *safe_aggval_at (int index)
+  {
+    /* TODO: Assert non-negative index here and test.  */
+    if ((unsigned) index < m_known_aggs.length ())
+      return &m_known_aggs[index];
+    return NULL;
+  }
+
+  /* Vector describing known values of parameters.  */
+  vec<tree> m_known_vals = vNULL;
+
+  /* Vector describing known polymorphic call contexts.  */
+  vec<ipa_polymorphic_call_context> m_known_contexts = vNULL;
+
+  /* Vector describing known aggregate values.  */
+  vec<ipa_agg_value_set> m_known_aggs = vNULL;
+
+  /* Vector describing known value ranges of arguments.  */
+  vec<value_range> m_known_value_ranges = vNULL;
+};
+
+
 /* Summary describing a single formal parameter.  */
 
 struct GTY(()) ipa_param_descriptor
@@ -970,12 +1071,13 @@ void ipa_initialize_node_params (struct cgraph_node *node);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					vec<cgraph_edge *> *new_edges);
 
-/* Indirect edge and binfo processing.  */
+/* Indirect edge processing and target discovery.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
-				   vec<tree>,
-				   vec<ipa_polymorphic_call_context>,
-				   vec<ipa_agg_value_set>,
-				   bool *);
+				   ipa_call_arg_values *avals,
+				   bool *speculative);
+tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
+				   ipa_auto_call_arg_values *avals,
+				   bool *speculative);
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
 tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);

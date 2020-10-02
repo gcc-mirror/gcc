@@ -297,10 +297,8 @@ public:
   ipa_call_context (cgraph_node *node,
       		    clause_t possible_truths,
 		    clause_t nonspec_possible_truths,
-		    vec<tree> known_vals,
-		    vec<ipa_polymorphic_call_context> known_contexts,
-		    vec<ipa_agg_value_set> known_aggs,
-		    vec<inline_param_summary> m_inline_param_summary);
+		    vec<inline_param_summary> inline_param_summary,
+		    ipa_auto_call_arg_values *arg_values);
   ipa_call_context ()
   : m_node(NULL)
   {
@@ -328,14 +326,9 @@ private:
   /* Inline summary maintains info about change probabilities.  */
   vec<inline_param_summary> m_inline_param_summary;
 
-  /* The following is used only to resolve indirect calls.  */
-
-  /* Vector describing known values of parameters.  */
-  vec<tree> m_known_vals;
-  /* Vector describing known polymorphic call contexts.  */
-  vec<ipa_polymorphic_call_context> m_known_contexts;
-  /* Vector describing known aggregate values.  */
-  vec<ipa_agg_value_set> m_known_aggs;
+  /* Even after having calculated clauses, the information about argument
+     values is used to resolve indirect calls.  */
+  ipa_call_arg_values m_avals;
 };
 
 extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
@@ -349,9 +342,7 @@ void ipa_free_fn_summary (void);
 void ipa_free_size_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					vec<tree>,
-					vec<ipa_polymorphic_call_context>,
-					vec<ipa_agg_value_set>,
+					ipa_auto_call_arg_values *,
 					int *, sreal *, sreal *,
 				        ipa_hints *);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
@@ -365,10 +356,8 @@ void evaluate_properties_for_edge (struct cgraph_edge *e,
 	       		           bool inline_p,
 				   clause_t *clause_ptr,
 				   clause_t *nonspec_clause_ptr,
-				   vec<tree> *known_vals_ptr,
-				   vec<ipa_polymorphic_call_context>
-				   *known_contexts_ptr,
-				   vec<ipa_agg_value_set> *);
+				   ipa_auto_call_arg_values *avals,
+				   bool compute_contexts);
 
 void ipa_fnsummary_c_finalize (void);
 HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);
