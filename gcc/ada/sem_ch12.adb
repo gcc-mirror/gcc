@@ -1998,7 +1998,7 @@ package body Sem_Ch12 is
                         Gen_Par : Entity_Id;
 
                         Needs_Freezing : Boolean;
-                        S              : Entity_Id;
+                        P              : Node_Id;
 
                         procedure Check_Generic_Parent;
                         --  The actual may be an instantiation of a unit
@@ -2102,18 +2102,15 @@ package body Sem_Ch12 is
 
                            Needs_Freezing := True;
 
-                           S := Current_Scope;
-                           while Present (S) loop
-                              if Ekind (S) in E_Block
-                                            | E_Function
-                                            | E_Loop
-                                            | E_Procedure
+                           P := Parent (I_Node);
+                           while Nkind (P) /= N_Compilation_Unit loop
+                              if Nkind (P) = N_Handled_Sequence_Of_Statements
                               then
                                  Needs_Freezing := False;
                                  exit;
                               end if;
 
-                              S := Scope (S);
+                              P := Parent (P);
                            end loop;
 
                            if Needs_Freezing then
@@ -9084,7 +9081,7 @@ package body Sem_Ch12 is
          --
          --    procedure P ...  --  this body freezes Parent_Inst
          --
-         --    package Inst is new ...
+         --    procedure Inst is new ...
          --
          --  In this particular scenario, the freeze node for Inst must be
          --  inserted in the same manner as that of Parent_Inst - before the
@@ -9097,7 +9094,7 @@ package body Sem_Ch12 is
 
          elsif List_Containing (Get_Unit_Instantiation_Node (Par)) =
                List_Containing (Inst_Node)
-           and then Sloc (Freeze_Node (Par)) < Sloc (Inst_Node)
+           and then Sloc (Freeze_Node (Par)) <= Sloc (Inst_Node)
          then
             Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
@@ -9938,7 +9935,7 @@ package body Sem_Ch12 is
 
                if Parent (List_Containing (Get_Unit_Instantiation_Node (Par)))
                     = Parent (List_Containing (N))
-                 and then Sloc (Freeze_Node (Par)) < Sloc (N)
+                 and then Sloc (Freeze_Node (Par)) <= Sloc (N)
                then
                   Insert_Freeze_Node_For_Instance (N, F_Node);
                else
