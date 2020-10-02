@@ -3063,7 +3063,8 @@
 (define_expand "while_ultsidi"
   [(match_operand:DI 0 "register_operand")
    (match_operand:SI 1 "")
-   (match_operand:SI 2 "")]
+   (match_operand:SI 2 "")
+   (match_operand:SI 3 "")]
   ""
   {
     if (GET_CODE (operands[1]) != CONST_INT
@@ -3088,6 +3089,11 @@
 			      : ~((unsigned HOST_WIDE_INT)-1 << diff));
 	emit_move_insn (operands[0], gen_rtx_CONST_INT (VOIDmode, mask));
       }
+    if (INTVAL (operands[3]) < 64)
+      emit_insn (gen_anddi3 (operands[0], operands[0],
+			     gen_rtx_CONST_INT (VOIDmode,
+						~((unsigned HOST_WIDE_INT)-1
+						  << INTVAL (operands[3])))));
     DONE;
   })
 

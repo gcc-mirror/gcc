@@ -3644,7 +3644,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 static void
 expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  expand_operand ops[3];
+  expand_operand ops[4];
   tree rhs_type[2];
 
   tree lhs = gimple_call_lhs (stmt);
@@ -3660,10 +3660,24 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
       create_input_operand (&ops[i + 1], rhs_rtx, TYPE_MODE (rhs_type[i]));
     }
 
+  int opcnt;
+  if (!VECTOR_MODE_P (TYPE_MODE (lhs_type)))
+    {
+      /* When the mask is an integer mode the exact vector length may not
+	 be clear to the backend, so we pass it in operand[3].
+         Use the vector in arg2 for the most reliable intended size.  */
+      tree type = TREE_TYPE (gimple_call_arg (stmt, 2));
+      create_integer_operand (&ops[3], TYPE_VECTOR_SUBPARTS (type));
+      opcnt = 4;
+    }
+  else
+    /* The mask has a vector type so the length operand is unnecessary.  */
+    opcnt = 3;
+
   insn_code icode = convert_optab_handler (optab, TYPE_MODE (rhs_type[0]),
 					   TYPE_MODE (lhs_type));
 
-  expand_insn (icode, 3, ops);
+  expand_insn (icode, opcnt, ops);
   if (!rtx_equal_p (lhs_rtx, ops[0].value))
     emit_move_insn (lhs_rtx, ops[0].value);
 }
