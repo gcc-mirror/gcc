@@ -4592,38 +4592,6 @@ cxx_init_decl_processing (void)
     using_eh_for_cleanups ();
 }
 
-/* Generate an initializer for a function naming variable from
-   NAME. NAME may be NULL, to indicate a dependent name.  TYPE_P is
-   filled in with the type of the init.  */
-
-tree
-cp_fname_init (const char* name, tree *type_p)
-{
-  tree domain = NULL_TREE;
-  tree type;
-  tree init = NULL_TREE;
-  size_t length = 0;
-
-  if (name)
-    {
-      length = strlen (name);
-      domain = build_index_type (size_int (length));
-      init = build_string (length + 1, name);
-    }
-
-  type = cp_build_qualified_type (char_type_node, TYPE_QUAL_CONST);
-  type = build_cplus_array_type (type, domain);
-
-  *type_p = type;
-
-  if (init)
-    TREE_TYPE (init) = type;
-  else
-    init = error_mark_node;
-
-  return init;
-}
-
 /* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give
    the decl, LOC is the location to give the decl, NAME is the
    initialization string and TYPE_DEP indicates whether NAME depended
@@ -4634,31 +4602,45 @@ cp_fname_init (const char* name, tree *type_p)
 static tree
 cp_make_fname_decl (location_t loc, tree id, int type_dep)
 {
-  const char * name = NULL;
-  bool release_name = false;
+  tree domain = NULL_TREE;
+  tree init = NULL_TREE;
+
   if (!(type_dep && in_template_function ()))
     {
+      const char *name = NULL;
+      bool release_name = false;
+
       if (current_function_decl == NULL_TREE)
 	name = "top level";
-      else if (type_dep == 1) /* __PRETTY_FUNCTION__ */
-	name = cxx_printable_name (current_function_decl, 2);
-      else if (type_dep == 0) /* __FUNCTION__ */
+      else if (type_dep == 0)
 	{
+	  /* __FUNCTION__ */	  
 	  name = fname_as_string (type_dep);
 	  release_name = true;
 	}
       else
-	gcc_unreachable ();
+	{
+	  /* __PRETTY_FUNCTION__ */
+	  gcc_checking_assert (type_dep == 1);
+	  name = cxx_printable_name (current_function_decl, 2);
+	}
+
+      size_t length = strlen (name);
+      domain = build_index_type (size_int (length));
+      init = build_string (length + 1, name);
+      if (release_name)
+	free (const_cast<char *> (name));
     }
-  tree type;
-  tree init = cp_fname_init (name, &type);
+
+  tree type = cp_build_qualified_type (char_type_node, TYPE_QUAL_CONST);
+  type = build_cplus_array_type (type, domain);
+
+  if (init)
+    TREE_TYPE (init) = type;
+  else
+    init = error_mark_node;
+
   tree decl = build_decl (loc, VAR_DECL, id, type);
-
-  if (release_name)
-    free (CONST_CAST (char *, name));
-
-  /* As we're using pushdecl_with_scope, we must set the context.  */
-  DECL_CONTEXT (decl) = current_function_decl;
 
   TREE_READONLY (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
@@ -4667,13 +4649,10 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
 
   TREE_USED (decl) = 1;
 
-  if (init)
-    {
-      SET_DECL_VALUE_EXPR (decl, init);
-      DECL_HAS_VALUE_EXPR_P (decl) = 1;
-      /* For decl_constant_var_p.  */
-      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
-    }
+  SET_DECL_VALUE_EXPR (decl, init);
+  DECL_HAS_VALUE_EXPR_P (decl) = 1;
+  /* For decl_constant_var_p.  */
+  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
 
   if (current_function_decl)
     {
@@ -4685,7 +4664,7 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   else
     {
       DECL_THIS_STATIC (decl) = true;
-      pushdecl_top_level_and_finish (decl, NULL_TREE);
+      decl = pushdecl_top_level_and_finish (decl, NULL_TREE);
     }
 
   return decl;
