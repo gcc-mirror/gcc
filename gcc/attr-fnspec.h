@@ -25,15 +25,22 @@
      '1'...'4'  specifies number of argument function returns (as in memset)
      'm'	specifies that returned value is noalias (as in malloc)
      '.'	specifies that nothing is known.
+   character 1  specifies additional function properties
+     ' '        specifies that nothing is known
 
-   character 1+i specifies properties of argument number i as follows:
+   character 2+2i specifies properties of argument number i as follows:
      'x' or 'X' specifies that parameter is unused.
      'r' or 'R' specifies that parameter is only read and memory pointed to is
 		never dereferenced.
      'w' or 'W' specifies that parameter is only written to.
      '.'	specifies that nothing is known.
    The uppercase letter in addition specifies that parameter
-   is non-escaping.  */
+   is non-escaping. 
+
+   character 3+2i specifies additional properties of argument number i
+   as follows:
+     ' '        nothing is known
+ */
 
 #ifndef ATTR_FNSPEC_H
 #define ATTR_FNSPEC_H
@@ -46,9 +53,9 @@ private:
   /* length of the fn spec string.  */
   const unsigned len;
   /* Number of characters specifying return value.  */
-  const unsigned int return_desc_size = 1;
+  const unsigned int return_desc_size = 2;
   /* Number of characters specifying size.  */
-  const unsigned int arg_desc_size = 1;
+  const unsigned int arg_desc_size = 2;
 
   /* Return start of specifier of arg i.  */
   unsigned int arg_idx (int i)

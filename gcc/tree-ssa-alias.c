@@ -4020,16 +4020,21 @@ walk_aliased_vdefs (ao_ref *ref, tree vdef,
 void
 attr_fnspec::verify ()
 {
-  /* FIXME: Fortran trans-decl.c contains multiple wrong fnspec strings.
-     re-enable verification after these are fixed.  */
-  return;
   bool err = false;
 
   /* Check return value specifier.  */
   if (len < return_desc_size)
     err = true;
+  else if ((len - return_desc_size) % arg_desc_size)
+    err = true;
   else if ((str[0] < '1' || str[0] > '4')
-	   && str[0] != '.' && str[0] != 'm')
+	   && str[0] != '.' && str[0] != 'm'
+	   /* FIXME: Fortran trans-decl.c contains multiple wrong fnspec
+	      strings.  The following characters have no meaning.  */
+	   && str[0] != 'R' && str[0] != 'W')
+    err = true;
+
+  if (str[1] != ' ')
     err = true;
 
   /* Now check all parameters.  */
@@ -4049,7 +4054,9 @@ attr_fnspec::verify ()
 	  default:
 	    err = true;
 	}
+      if (str[idx + 1] != ' ')
+	err = true;
     }
   if (err)
-    internal_error ("invalid fn spec attribute %s", str);
+    internal_error ("invalid fn spec attribute \"%s\"", str);
 }
