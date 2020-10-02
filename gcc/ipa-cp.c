@@ -3517,7 +3517,8 @@ estimate_local_effects (struct cgraph_node *node)
 
 	      if (dump_file)
 		fprintf (dump_file, "     Decided to specialize for all "
-			 "known contexts, growth deemed beneficial.\n");
+			 "known contexts, growth (to %li) deemed "
+			 "beneficial.\n", overall_size);
 	    }
 	  else if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Not cloning for all contexts because "
@@ -5506,6 +5507,9 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   val->spec_node = create_specialized_node (node, known_csts, known_contexts,
 					    aggvals, callers);
   overall_size += val->local_size_cost;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "     overall size reached %li\n",
+	     overall_size);
 
   /* TODO: If for some lattice there is only one other known value
      left, make a special node for it too. */
