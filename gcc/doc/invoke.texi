@@ -638,7 +638,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-gnu-unique @gol
 -finhibit-size-directive  -fcommon  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt @gol
--fno-jump-tables @gol
+-fno-jump-tables -fno-bit-tests @gol
 -frecord-gcc-switches @gol
 -freg-struct-return  -fshort-enums  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  @gol
@@ -15988,6 +15988,12 @@ of use in conjunction with @option{-fpic} or @option{-fPIC} for
 building code that forms part of a dynamic linker and cannot
 reference the address of a jump table.  On some targets, jump tables
 do not require a GOT and this option is not needed.
+
+@item -fno-bit-tests
+@opindex fno-bit-tests
+@opindex fbit-tests
+Do not use bit tests for switch statements even where it would be
+more efficient than other code generation strategies.
 
 @item -ffixed-@var{reg}
 @opindex ffixed

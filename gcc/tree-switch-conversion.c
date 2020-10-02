@@ -1310,6 +1310,9 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 vec<cluster *>
 bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 {
+  if (!is_enabled ())
+    return clusters.copy ();
+
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
