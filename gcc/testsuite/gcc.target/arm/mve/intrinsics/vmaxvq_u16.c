@@ -10,7 +10,6 @@ foo (uint16_t a, uint16x8_t b)
   return vmaxvq_u16 (a, b);
 }
 
-/* { dg-final { scan-assembler "vmaxv.u16"  }  } */
 
 uint16_t
 foo1 (uint16_t a, uint16x8_t b)
@@ -18,4 +17,12 @@ foo1 (uint16_t a, uint16x8_t b)
   return vmaxvq (a, b);
 }
 
-/* { dg-final { scan-assembler "vmaxv.u16"  }  } */
+
+uint16_t
+foo2 (uint32_t a, uint16x8_t b)
+{
+  return vmaxvq (a, b);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vmaxv.u16" 3 } } */
