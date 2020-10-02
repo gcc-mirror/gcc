@@ -253,7 +253,8 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wsign-promo @gol
 -Wsized-deallocation  -Wsuggest-final-methods @gol
 -Wsuggest-final-types  -Wsuggest-override  @gol
--Wno-terminate  -Wuseless-cast  -Wvirtual-inheritance  @gol
+-Wno-terminate  -Wuseless-cast  -Wno-vexing-parse  @gol
+-Wvirtual-inheritance  @gol
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
@@ -3885,6 +3886,37 @@ use the STL.  One may also use using directives and qualified names.
 @opindex Wno-terminate
 Disable the warning about a throw-expression that will immediately
 result in a call to @code{terminate}.
+
+@item -Wno-vexing-parse @r{(C++ and Objective-C++ only)}
+@opindex Wvexing-parse
+@opindex Wno-vexing-parse
+Warn about the most vexing parse syntactic ambiguity.  This warns about
+the cases when a declaration looks like a variable definition, but the
+C++ language requires it to be interpreted as a function declaration.
+For instance:
+
+@smallexample
+void f(double a) @{
+  int i();        // extern int i (void);
+  int n(int(a));  // extern int n (int);
+@}
+@end smallexample
+
+Another example:
+
+@smallexample
+struct S @{ S(int); @};
+void f(double a) @{
+  S x(int(a));   // extern struct S x (int);
+  S y(int());    // extern struct S y (int (*) (void));
+  S z();         // extern struct S z (void);
+@}
+@end smallexample
+
+The warning will suggest options how to deal with such an ambiguity; e.g.,
+it can suggest removing the parentheses or using braces instead.
+
+This warning is enabled by default.
 
 @item -Wno-class-conversion @r{(C++ and Objective-C++ only)}
 @opindex Wno-class-conversion

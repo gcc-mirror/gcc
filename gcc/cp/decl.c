@@ -4384,6 +4384,9 @@ cxx_init_decl_processing (void)
   init_list_type_node = make_node (LANG_TYPE);
   record_unknown_type (init_list_type_node, "init list");
 
+  /* Used when parsing to distinguish parameter-lists () and (void).  */
+  explicit_void_list_node = build_void_list_node ();
+
   {
     /* Make sure we get a unique function type, so we can give
        its pointer type a name.  (This wins for gdb.) */
@@ -14037,7 +14040,7 @@ grokparms (tree parmlist, tree *parms)
       tree init = TREE_PURPOSE (parm);
       tree decl = TREE_VALUE (parm);
 
-      if (parm == void_list_node)
+      if (parm == void_list_node || parm == explicit_void_list_node)
 	break;
 
       if (! decl || TREE_TYPE (decl) == error_mark_node)

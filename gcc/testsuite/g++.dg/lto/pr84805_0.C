@@ -149,5 +149,5 @@ public:
 class XclImpRoot : XclRoot {}; 
 class XclImpColRowSettings : XclImpRoot {};
 void lcl_ExportExcelBiff() {
-XclRootData aExpData();
+extern XclRootData aExpData();
 }

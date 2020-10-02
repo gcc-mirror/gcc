@@ -1438,7 +1438,8 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier, tree, tree, tree, tree);
+  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier,
+   tree, tree, tree, tree, location_t);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1621,7 +1622,8 @@ make_call_declarator (cp_declarator *target,
 		      tree tx_qualifier,
 		      tree exception_specification,
 		      tree late_return_type,
-		      tree requires_clause)
+		      tree requires_clause,
+		      location_t parens_loc)
 {
   cp_declarator *declarator;
 
@@ -1635,6 +1637,7 @@ make_call_declarator (cp_declarator *target,
   declarator->u.function.exception_specification = exception_specification;
   declarator->u.function.late_return_type = late_return_type;
   declarator->u.function.requires_clause = requires_clause;
+  declarator->u.function.parens_loc = parens_loc;
   if (target)
     {
       declarator->id_loc = target->id_loc;
@@ -11246,7 +11249,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       tx_qual,
 				       exception_spec,
                                        return_type,
-				       trailing_requires_clause);
+				       trailing_requires_clause,
+				       UNKNOWN_LOCATION);
     declarator->std_attributes = std_attrs;
 
     fco = grokmethod (&return_type_specs,
@@ -20613,6 +20617,129 @@ strip_declarator_types (tree type, cp_declarator *declarator)
   return type;
 }
 
+/* Warn about the most vexing parse syntactic ambiguity, i.e., warn when
+   a construct looks like a variable definition but is actually a function
+   declaration.  DECL_SPECIFIERS is the decl-specifier-seq and DECLARATOR
+   is the declarator for this function declaration.  */
+
+static void
+warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
+			    const cp_declarator *declarator)
+{
+  /* Only warn if we are declaring a function at block scope.  */
+  if (!at_function_scope_p ())
+    return;
+
+  /* And only if there is no storage class specified.  */
+  if (decl_specifiers->storage_class != sc_none
+      || decl_spec_seq_has_spec_p (decl_specifiers, ds_typedef))
+    return;
+
+  if (declarator->kind != cdk_function
+      || !declarator->declarator
+      || declarator->declarator->kind != cdk_id
+      || !identifier_p (get_unqualified_id
+			(const_cast<cp_declarator *>(declarator))))
+    return;
+
+  /* Don't warn when the whole declarator (not just the declarator-id!)
+     was parenthesized.  That is, don't warn for int(n()) but do warn
+     for int(f)().  */
+  if (declarator->parenthesized != UNKNOWN_LOCATION)
+    return;
+
+  tree type = decl_specifiers->type;
+  if (TREE_CODE (type) == TYPE_DECL)
+   type = TREE_TYPE (type);
+
+  /* If the return type is void there is no ambiguity.  */
+  if (same_type_p (type, void_type_node))
+    return;
+
+  auto_diagnostic_group d;
+  location_t loc = declarator->u.function.parens_loc;
+  tree params = declarator->u.function.parameters;
+  const bool has_list_ctor_p = CLASS_TYPE_P (type) && TYPE_HAS_LIST_CTOR (type);
+
+  /* The T t() case.  */
+  if (params == void_list_node)
+    {
+      if (warning_at (loc, OPT_Wvexing_parse,
+		      "empty parentheses were disambiguated as a function "
+		      "declaration"))
+	{
+	  /* () means value-initialization (C++03 and up); {} (C++11 and up)
+	     means value-initialization or aggregate-initialization, nothing
+	     means default-initialization.  We can only suggest removing the
+	     parentheses/adding {} if T has a default constructor.  */
+	  if (!CLASS_TYPE_P (type) || TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
+	    {
+	      gcc_rich_location iloc (loc);
+	      iloc.add_fixit_remove ();
+	      inform (&iloc, "remove parentheses to default-initialize "
+		      "a variable");
+	      if (cxx_dialect >= cxx11 && !has_list_ctor_p)
+		{
+		  if (CP_AGGREGATE_TYPE_P (type))
+		    inform (loc, "or replace parentheses with braces to "
+			    "aggregate-initialize a variable");
+		  else
+		    inform (loc, "or replace parentheses with braces to "
+			    "value-initialize a variable");
+		}
+	    }
+	}
+      return;
+    }
+
+  /* If we had (...) or the parameter-list wasn't parenthesized,
+     we're done.  */
+  if (params == NULL_TREE || !PARENTHESIZED_LIST_P (params))
+    return;
+
+  /* The T t(X()) case.  */
+  if (list_length (params) == 2)
+    {
+      if (warning_at (loc, OPT_Wvexing_parse,
+		      "parentheses were disambiguated as a function "
+		      "declaration"))
+	{
+	  gcc_rich_location iloc (loc);
+	  /* {}-initialization means that we can use an initializer-list
+	     constructor if no default constructor is available, so don't
+	     suggest using {} for classes that have an initializer_list
+	     constructor.  */
+	  if (cxx_dialect >= cxx11 && !has_list_ctor_p)
+	    {
+	      iloc.add_fixit_replace (get_start (loc), "{");
+	      iloc.add_fixit_replace (get_finish (loc), "}");
+	      inform (&iloc, "replace parentheses with braces to declare a "
+		      "variable");
+	    }
+	  else
+	    {
+	      iloc.add_fixit_insert_after (get_start (loc), "(");
+	      iloc.add_fixit_insert_before (get_finish (loc), ")");
+	      inform (&iloc, "add parentheses to declare a variable");
+	    }
+	}
+    }
+  /* The T t(X(), X()) case.  */
+  else if (warning_at (loc, OPT_Wvexing_parse,
+		       "parentheses were disambiguated as a function "
+		       "declaration"))
+    {
+      gcc_rich_location iloc (loc);
+      if (cxx_dialect >= cxx11 && !has_list_ctor_p)
+	{
+	  iloc.add_fixit_replace (get_start (loc), "{");
+	  iloc.add_fixit_replace (get_finish (loc), "}");
+	  inform (&iloc, "replace parentheses with braces to declare a "
+		  "variable");
+	}
+    }
+}
+
 /* Declarators [gram.dcl.decl] */
 
 /* Parse an init-declarator.
@@ -20807,6 +20934,9 @@ cp_parser_init_declarator (cp_parser* parser,
 	      ctor_dtor_or_conv_p = 1;
 	    }
 	}
+
+      if (!member_p && !cp_parser_error_occurred (parser))
+	warn_about_ambiguous_parse (decl_specifiers, declarator);
 
       /* Check to see if the token indicates the start of a
 	 function-definition.  */
@@ -21202,7 +21332,7 @@ cp_parser_declarator (cp_parser* parser,
       /* If a ptr-operator was found, then this declarator was not
 	 parenthesized.  */
       if (parenthesized_p)
-	*parenthesized_p = true;
+	*parenthesized_p = false;
       /* The dependent declarator is optional if we are parsing an
 	 abstract-declarator.  */
       if (dcl_kind != CP_PARSER_DECLARATOR_NAMED)
@@ -21349,6 +21479,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		cp_parser_parse_tentatively (parser);
 
 	      /* Consume the `('.  */
+	      const location_t parens_start = token->location;
 	      matching_parens parens;
 	      parens.consume_open (parser);
 	      if (first)
@@ -21368,6 +21499,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      /* Parse the parameter-declaration-clause.  */
 	      params
 		= cp_parser_parameter_declaration_clause (parser, flags);
+	      const location_t parens_end
+		= cp_lexer_peek_token (parser->lexer)->location;
 
 	      /* Consume the `)'.  */
 	      parens.require_close (parser);
@@ -21432,6 +21565,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* Parse the virt-specifier-seq.  */
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
+		  location_t parens_loc = make_location (parens_start,
+							 parens_start,
+							 parens_end);
 		  /* Create the function-declarator.  */
 		  declarator = make_call_declarator (declarator,
 						     params,
@@ -21441,7 +21577,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     tx_qual,
 						     exception_specification,
 						     late_return,
-						     requires_clause);
+						     requires_clause,
+						     parens_loc);
 		  declarator->std_attributes = attrs;
 		  declarator->attributes = gnu_attrs;
 		  /* Any subsequent parameter lists are to do with
@@ -22708,7 +22845,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
       /* Consume the `void' token.  */
       cp_lexer_consume_token (parser->lexer);
       /* There are no parameters.  */
-      return void_list_node;
+      return explicit_void_list_node;
     }
 
   /* Parse the parameter-declaration-list.  */
@@ -22831,6 +22968,12 @@ cp_parser_parameter_declaration_list (cp_parser* parser, cp_parser_flags flags)
       /* Add the new parameter to the list.  */
       *tail = build_tree_list (parameter->default_argument, decl);
       tail = &TREE_CHAIN (*tail);
+
+      /* If the parameters were parenthesized, it's the case of
+	 T foo(X(x)) which looks like a variable definition but
+	 is a function declaration.  */
+      if (index == 1 || PARENTHESIZED_LIST_P (parameters))
+	PARENTHESIZED_LIST_P (parameters) = parenthesized_p;
 
       /* Peek at the next token.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN)

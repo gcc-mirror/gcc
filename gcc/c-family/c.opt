@@ -1274,6 +1274,10 @@ Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)
 Warn about questionable usage of the macros used to retrieve variable arguments.
 
+Wvexing-parse
+C++ ObjC++ Warning Var(warn_vexing_parse) Init(1)
+Warn about the most vexing parse syntactic ambiguity.
+
 Wvla
 C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
 Warn if a variable length array is used.

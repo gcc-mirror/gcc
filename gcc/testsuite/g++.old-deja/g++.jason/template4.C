@@ -17,5 +17,5 @@ template <class T>
 ccList <T> cc_List<T>::copy (){}
 
 int main (int, char **) {
-  ccList <int> size1();
+  ccList <int> size1(); // { dg-warning "empty parentheses" }
 }
