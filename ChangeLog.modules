@@ -1,5 +1,12 @@
 2020-10-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 7ee1c0413e2
+	c++: Hash table iteration for namespace-member spelling
+	gcc/cp/
+	* name-lookup.c (consider_binding): New, broken out of ...
+	(consider_binding_level): ... here.  Use it, add MODULE_VECTOR
+	support.
+
 	Merge trunk 9340d1c97b8
 	c++: cleanup ctor_omit_inherited_parms
 	gcc/cp/
