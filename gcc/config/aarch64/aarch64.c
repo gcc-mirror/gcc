@@ -3717,24 +3717,6 @@ aarch64_pfalse_reg (machine_mode mode)
   return gen_lowpart (mode, reg);
 }
 
-/* Return true if predicate PRED1[0] is true whenever predicate PRED2 is
-   true, or alternatively if we know that the operation predicated by
-   PRED1[0] is safe to perform whenever PRED2 is true.  PRED1[1] is a
-   aarch64_sve_gp_strictness operand that describes the operation
-   predicated by PRED1[0].  */
-
-bool
-aarch64_sve_pred_dominates_p (rtx *pred1, rtx pred2)
-{
-  machine_mode mode = GET_MODE (pred2);
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
-	      && mode == GET_MODE (pred1[0])
-	      && aarch64_sve_gp_strictness (pred1[1], SImode));
-  return (pred1[0] == CONSTM1_RTX (mode)
-	  || INTVAL (pred1[1]) == SVE_RELAXED_GP
-	  || rtx_equal_p (pred1[0], pred2));
-}
-
 /* PRED1[0] is a PTEST predicate and PRED1[1] is an aarch64_sve_ptrue_flag
    for it.  PRED2[0] is the predicate for the instruction whose result
    is tested by the PTEST and PRED2[1] is again an aarch64_sve_ptrue_flag
