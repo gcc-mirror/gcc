@@ -267,7 +267,7 @@ extern int __gthread_cond_wait_recursive (__gthread_cond_t *cond,
 /* We do not support C++0x threads on that VxWorks 653, which we can
    recognize by VTHREADS being defined.  */
 
-#ifndef VTHREADS
+#if _VXWORKS_MAJOR_GE(6) && !defined(VTHREADS)
 
 #define __GTHREADS_CXX0X 1
 
@@ -330,7 +330,7 @@ extern int __gthread_detach (__gthread_t thread);
 
 extern __gthread_t __gthread_self (void);
 
-#endif
+#endif /* _VXWORKS_MAJOR_GE(6) && !defined(VTHREADS) */
 
 #ifdef __cplusplus
 }
