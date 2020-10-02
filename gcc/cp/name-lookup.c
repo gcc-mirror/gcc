@@ -1597,6 +1597,7 @@ tree
 name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
   gcc_checking_assert (!vec_safe_length (scopes));
+  
   /* Gather each associated entity onto the lookup's scope list.  */
   unsigned ix;
   tree arg;
@@ -2748,19 +2749,9 @@ strip_using_decl (tree decl)
 static bool
 anticipated_builtin_p (tree ovl)
 {
-  if (TREE_CODE (ovl) != OVERLOAD)
-    return false;
-
-  if (!OVL_HIDDEN_P (ovl))
-    return false;
-
-  tree fn = OVL_FUNCTION (ovl);
-  gcc_checking_assert (DECL_ANTICIPATED (fn));
-
-  if (DECL_BUILTIN_P (fn))
-    return true;
-
-  return false;
+  return (TREE_CODE (ovl) == OVERLOAD
+	  && OVL_HIDDEN_P (ovl)
+	  && DECL_BUILTIN_P (OVL_FUNCTION (ovl)));
 }
 
 /* BINDING records an existing declaration for a name in the current scope.
@@ -3872,14 +3863,6 @@ do_pushdecl (tree decl, bool hiding)
       tree *mslot = NULL; /* Current module slot in namespace.  */
       tree old = NULL_TREE;
 
-      if (!hiding)
-	/* We should never unknownly push an anticipated decl.  */
-	gcc_checking_assert (!((TREE_CODE (decl) == TYPE_DECL
-				|| TREE_CODE (decl) == FUNCTION_DECL
-				|| TREE_CODE (decl) == TEMPLATE_DECL)
-			       && DECL_LANG_SPECIFIC (decl)
-			       && DECL_ANTICIPATED (decl)));
-
       if (level->kind == sk_namespace)
 	{
 	  /* We look in the decl's namespace for an existing
@@ -3989,8 +3972,6 @@ do_pushdecl (tree decl, bool hiding)
 		  /* Don't attempt to push it.  */
 		  return error_mark_node;
 		}
-	      /* Hide it from ordinary lookup.  */
-	      DECL_ANTICIPATED (decl) = true;
 	    }
 	}
 
@@ -8072,7 +8053,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		HIDDEN_TYPE_BINDING_P (iter) = false;
 
 		/* Unanticipate the decl itself.  */
-		DECL_ANTICIPATED (found) = false;
 		DECL_FRIEND_P (found) = false;
 
 		gcc_checking_assert (TREE_CODE (found) != TEMPLATE_DECL);
@@ -8080,7 +8060,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
 		  {
 		    tree tmpl = TI_TEMPLATE (ti);
-		    DECL_ANTICIPATED (tmpl) = false;
 		    DECL_FRIEND_P (tmpl) = false;
 		  }
 	      }
@@ -8153,18 +8132,17 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 	      if (reveal)
 		{
 		  /* Reveal the previously hidden thing.  */
-		  DECL_ANTICIPATED (found) = false;
 		  DECL_FRIEND_P (found) = false;
 
 		  if (TREE_CODE (found) == TEMPLATE_DECL)
 		    {
-		      DECL_ANTICIPATED (DECL_TEMPLATE_RESULT (found)) = false;
-		      DECL_FRIEND_P (DECL_TEMPLATE_RESULT (found)) = false;
+		      tree res = DECL_TEMPLATE_RESULT (found);
+		      if (DECL_LANG_SPECIFIC (res))
+			DECL_FRIEND_P (res) = false;
 		    }
 		  else if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
 		    {
 		      tree tmpl = TI_TEMPLATE (ti);
-		      DECL_ANTICIPATED (tmpl) = false;
 		      DECL_FRIEND_P (tmpl) = false;
 		    }
 		}
@@ -8444,7 +8422,6 @@ do_pushtag (tree name, tree type, TAG_how how)
 	     ordinary name lookup.  Its corresponding TEMPLATE_DECL
 	     will be marked in push_template_decl.  */
 	  retrofit_lang_decl (tdef);
-	  DECL_ANTICIPATED (tdef) = 1;
 	  DECL_FRIEND_P (tdef) = 1;
 	}
 

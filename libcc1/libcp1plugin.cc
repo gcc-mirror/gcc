@@ -353,7 +353,6 @@ supplement_binding (cxx_binding *binding, tree decl)
 	   /* If TARGET_BVAL is anticipated but has not yet been
 	      declared, pretend it is not there at all.  */
 	   || (TREE_CODE (target_bval) == FUNCTION_DECL
-	       && DECL_ANTICIPATED (target_bval)
 	       && DECL_BUILTIN_P (target_bval)))
     binding->value = decl;
   else if (TREE_CODE (target_bval) == TYPE_DECL

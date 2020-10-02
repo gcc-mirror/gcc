@@ -1,5 +1,8 @@
 2020-10-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 679dbc9dcec
+	c++: Kill DECL_ANTICIPATED
+
 	Merge trunk 7ee1c0413e2
 	c++: Hash table iteration for namespace-member spelling
 	gcc/cp/
