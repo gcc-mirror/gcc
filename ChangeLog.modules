@@ -1,5 +1,8 @@
 2020-10-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (walk_module_binding): Update for new HIDDEN markers.
+
 	Merge trunk c2978b34058
 
 2020-10-01  Nathan Sidwell  <nathan@acm.org>

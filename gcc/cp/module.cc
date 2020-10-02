@@ -12344,6 +12344,8 @@ struct add_binding_data
 bool
 depset::hash::add_binding_entity (tree decl, bool maybe_dups,
 				  bool hiddenness, int usingness,
+				  // FIXME: Make this API match the
+				  // new ovl_insert's
 				  void *data_)
 {
   auto data = static_cast <add_binding_data *> (data_);

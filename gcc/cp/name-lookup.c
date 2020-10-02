@@ -4139,13 +4139,24 @@ walk_module_binding (tree binding, bitmap partitions,
   if (TREE_CODE (binding) == MODULE_VECTOR)
     current = MODULE_VECTOR_CLUSTER (binding, 0).slots[MODULE_SLOT_CURRENT];
 
+  bool decl_hidden = false;
   if (tree type = MAYBE_STAT_TYPE (current))
-    count += callback (type, false, DECL_HIDDEN_P (type), 0, data);
-  
+    {
+      count += callback (type, false, STAT_TYPE_HIDDEN_P (current), 0, data);
+      decl_hidden = STAT_DECL_HIDDEN_P (current);
+    }
+
   for (ovl_iterator iter (MAYBE_STAT_DECL (current)); iter; ++iter)
-    count += callback (*iter, false, iter.hidden_p (),
-		       !iter.using_p () ? 0 : iter.exporting_p () ? -1 : +1,
-		       data);
+    {
+      if (iter.hidden_p ())
+	decl_hidden = true;
+      if (!(decl_hidden && DECL_BUILTIN_P (*iter)))
+	count += callback (*iter, false, decl_hidden,
+			   !iter.using_p () ? 0
+			   : iter.exporting_p () ? -1 : +1,
+			   data);
+      decl_hidden = false;
+    }
 
   if (partitions && TREE_CODE (binding) == MODULE_VECTOR)
     {
@@ -4185,12 +4196,20 @@ walk_module_binding (tree binding, bitmap partitions,
 		      count += callback (btype, maybe_dups,
 					 STAT_TYPE_HIDDEN_P (bind),
 					 0, data);
+		    bool hidden = STAT_DECL_HIDDEN_P (bind);
 		    for (ovl_iterator iter (MAYBE_STAT_DECL (STAT_DECL (bind)));
 			 iter; ++iter)
-		      count += callback (*iter, maybe_dups, iter.hidden_p (),
-					 !iter.using_p () ? 0
-					 : iter.exporting_p () ? -1 : +1,
-					 data);
+		      {
+			if (iter.hidden_p ())
+			  hidden = true;
+			gcc_checking_assert (!(hidden
+					       && DECL_BUILTIN_P (*iter)));
+			count += callback (*iter, maybe_dups, hidden,
+					   !iter.using_p () ? 0
+					   : iter.exporting_p () ? -1 : +1,
+					   data);
+			hidden = false;
+		      }
 		  }
 	      }
     }
@@ -8031,7 +8050,8 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 			      if (*slot == bind)
 				*slot = decl;
 			      else
-				MODULE_VECTOR_CLUSTER (bind, 0).slots[MODULE_SLOT_CURRENT] = decl;
+				MODULE_VECTOR_CLUSTER (bind, 0)
+				  .slots[MODULE_SLOT_CURRENT] = decl;
 			    }
 			}
 		    }
