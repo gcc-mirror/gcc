@@ -101,6 +101,19 @@ public:
   }
 };
 
+/* Structure to capture how frequently some interesting events occur given a
+   particular predicate.  The structure is used to estimate how often we
+   encounter loops with known iteration count or stride in various
+   contexts.  */
+
+struct GTY(()) ipa_freqcounting_predicate
+{
+  /* The described event happens with this frequency... */
+  sreal freq;
+  /* ...when this predicate evaluates to false. */
+  class predicate * GTY((skip)) predicate;
+};
+
 /* Function inlining information.  */
 class GTY(()) ipa_fn_summary
 {
@@ -112,8 +125,9 @@ public:
       inlinable (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
       time (0), conds (NULL),
-      size_time_table (NULL), call_size_time_table (NULL), loop_iterations (NULL),
-      loop_stride (NULL), growth (0), scc_no (0)
+      size_time_table (NULL), call_size_time_table (NULL),
+      loop_iterations (NULL), loop_strides (NULL),
+      growth (0), scc_no (0)
   {
   }
 
@@ -125,7 +139,7 @@ public:
     estimated_stack_size (s.estimated_stack_size),
     time (s.time), conds (s.conds), size_time_table (s.size_time_table),
     call_size_time_table (NULL),
-    loop_iterations (s.loop_iterations), loop_stride (s.loop_stride),
+    loop_iterations (s.loop_iterations), loop_strides (s.loop_strides),
     growth (s.growth), scc_no (s.scc_no)
   {}
 
@@ -164,12 +178,10 @@ public:
   vec<size_time_entry, va_gc> *size_time_table;
   vec<size_time_entry, va_gc> *call_size_time_table;
 
-  /* Predicate on when some loop in the function becomes to have known
-     bounds.   */
-  predicate * GTY((skip)) loop_iterations;
-  /* Predicate on when some loop in the function becomes to have known
-     stride.   */
-  predicate * GTY((skip)) loop_stride;
+  /* Predicates on when some loops in the function can have known bounds.  */
+  vec<ipa_freqcounting_predicate, va_gc> *loop_iterations;
+  /* Predicates on when some loops in the function can have known strides.  */
+  vec<ipa_freqcounting_predicate, va_gc> *loop_strides;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but
@@ -308,6 +320,14 @@ struct ipa_call_estimates
 
   /* Further discovered reasons why to inline or specialize the give calls.  */
   ipa_hints hints;
+
+  /* Frequency how often a loop with known number of iterations is encountered.
+     Calculated with hints.  */
+  sreal loops_with_known_iterations;
+
+  /* Frequency how often a loop with known strides is encountered.  Calculated
+     with hints.  */
+  sreal loops_with_known_strides;
 };
 
 class ipa_cached_call_context;

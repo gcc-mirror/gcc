@@ -3205,6 +3205,15 @@ hint_time_bonus (cgraph_node *node, const ipa_call_estimates &estimates)
   ipa_hints hints = estimates.hints;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
     result += opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
+
+  sreal bonus_for_one = opt_for_fn (node->decl, param_ipa_cp_loop_hint_bonus);
+
+  if (hints & INLINE_HINT_loop_iterations)
+    result += (estimates.loops_with_known_iterations * bonus_for_one).to_int ();
+
+  if (hints & INLINE_HINT_loop_stride)
+    result += (estimates.loops_with_known_strides * bonus_for_one).to_int ();
+
   return result;
 }
 

@@ -230,6 +230,10 @@ Maximum number of aggregate content items for a parameter in jump functions and 
 Common Joined UInteger Var(param_ipa_max_param_expr_ops) Init(10) Param Optimization
 Maximum number of operations in a parameter expression that can be handled by IPA analysis.
 
+-param=ipa-max-loop-predicates=
+Common Joined UInteger Var(param_ipa_max_loop_predicates) Init(16) Param Optimization
+Maximum number of different predicates used to track properties of loops in IPA analysis.
+
 -param=ipa-max-switch-predicate-bounds=
 Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
 Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation.

@@ -310,6 +310,36 @@ set_hint_predicate (predicate **p, predicate new_predicate)
     }
 }
 
+/* Find if NEW_PREDICATE is already in V and if so, increment its freq.
+   Otherwise add a new item to the vector with this predicate and frerq equal
+   to add_freq, unless the number of predicates would exceed MAX_NUM_PREDICATES
+   in which case the function does nothing.  */
+
+static void
+add_freqcounting_predicate (vec<ipa_freqcounting_predicate, va_gc> **v,
+			    const predicate &new_predicate, sreal add_freq,
+			    unsigned max_num_predicates)
+{
+  if (new_predicate == false || new_predicate == true)
+    return;
+  ipa_freqcounting_predicate *f;
+  for (int i = 0; vec_safe_iterate (*v, i, &f); i++)
+    if (new_predicate == f->predicate)
+      {
+	f->freq += add_freq;
+	return;
+      }
+  if (vec_safe_length (*v) >= max_num_predicates)
+    /* Too many different predicates to account for.  */
+    return;
+
+  ipa_freqcounting_predicate fcp;
+  fcp.predicate = NULL;
+  set_hint_predicate (&fcp.predicate, new_predicate);
+  fcp.freq = add_freq;
+  vec_safe_push (*v, fcp);
+  return;
+}
 
 /* Compute what conditions may or may not hold given information about
    parameters.  RET_CLAUSE returns truths that may hold in a specialized copy,
@@ -710,13 +740,17 @@ ipa_call_summary::~ipa_call_summary ()
 
 ipa_fn_summary::~ipa_fn_summary ()
 {
-  if (loop_iterations)
-    edge_predicate_pool.remove (loop_iterations);
-  if (loop_stride)
-    edge_predicate_pool.remove (loop_stride);
+  unsigned len = vec_safe_length (loop_iterations);
+  for (unsigned i = 0; i < len; i++)
+    edge_predicate_pool.remove ((*loop_iterations)[i].predicate);
+  len = vec_safe_length (loop_strides);
+  for (unsigned i = 0; i < len; i++)
+    edge_predicate_pool.remove ((*loop_strides)[i].predicate);
   vec_free (conds);
   vec_free (size_time_table);
   vec_free (call_size_time_table);
+  vec_free (loop_iterations);
+  vec_free (loop_strides);
 }
 
 void
@@ -729,24 +763,33 @@ ipa_fn_summary_t::remove_callees (cgraph_node *node)
     ipa_call_summaries->remove (e);
 }
 
-/* Same as remap_predicate_after_duplication but handle hint predicate *P.
-   Additionally care about allocating new memory slot for updated predicate
-   and set it to NULL when it becomes true or false (and thus uninteresting).
- */
+/* Duplicate predicates in loop hint vector, allocating memory for them and
+   remove and deallocate any uninteresting (true or false) ones.  Return the
+   result.  */
 
-static void
-remap_hint_predicate_after_duplication (predicate **p,
-					clause_t possible_truths)
+static vec<ipa_freqcounting_predicate, va_gc> *
+remap_freqcounting_preds_after_dup (vec<ipa_freqcounting_predicate, va_gc> *v,
+				    clause_t possible_truths)
 {
-  predicate new_predicate;
+  if (vec_safe_length (v) == 0)
+    return NULL;
 
-  if (!*p)
-    return;
+  vec<ipa_freqcounting_predicate, va_gc> *res = v->copy ();
+  int len = res->length();
+  for (int i = len - 1; i >= 0; i--)
+    {
+      predicate new_predicate
+	= (*res)[i].predicate->remap_after_duplication (possible_truths);
+      /* We do not want to free previous predicate; it is used by node
+	 origin.  */
+      (*res)[i].predicate = NULL;
+      set_hint_predicate (&(*res)[i].predicate, new_predicate);
 
-  new_predicate = (*p)->remap_after_duplication (possible_truths);
-  /* We do not want to free previous predicate; it is used by node origin.  */
-  *p = NULL;
-  set_hint_predicate (p, new_predicate);
+      if (!(*res)[i].predicate)
+	res->unordered_remove (i);
+    }
+
+  return res;
 }
 
 
@@ -859,9 +902,11 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	    optimized_out_size += es->call_stmt_size * ipa_fn_summary::size_scale;
 	  edge_set_predicate (edge, &new_predicate);
 	}
-      remap_hint_predicate_after_duplication (&info->loop_iterations,
+      info->loop_iterations
+	= remap_freqcounting_preds_after_dup (info->loop_iterations,
 					      possible_truths);
-      remap_hint_predicate_after_duplication (&info->loop_stride,
+      info->loop_strides
+	= remap_freqcounting_preds_after_dup (info->loop_strides,
 					      possible_truths);
 
       /* If inliner or someone after inliner will ever start producing
@@ -873,17 +918,21 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
   else
     {
       info->size_time_table = vec_safe_copy (info->size_time_table);
-      if (info->loop_iterations)
+      info->loop_iterations = vec_safe_copy (info->loop_iterations);
+      info->loop_strides = vec_safe_copy (info->loop_strides);
+
+      ipa_freqcounting_predicate *f;
+      for (int i = 0; vec_safe_iterate (info->loop_iterations, i, &f); i++)
 	{
-	  predicate p = *info->loop_iterations;
-	  info->loop_iterations = NULL;
-	  set_hint_predicate (&info->loop_iterations, p);
+	  predicate p = *f->predicate;
+	  f->predicate = NULL;
+	  set_hint_predicate (&f->predicate, p);
 	}
-      if (info->loop_stride)
+      for (int i = 0; vec_safe_iterate (info->loop_strides, i, &f); i++)
 	{
-	  predicate p = *info->loop_stride;
-	  info->loop_stride = NULL;
-	  set_hint_predicate (&info->loop_stride, p);
+	  predicate p = *f->predicate;
+	  f->predicate = NULL;
+	  set_hint_predicate (&f->predicate, p);
 	}
     }
   if (!dst->inlined_to)
@@ -1045,15 +1094,28 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 		}
 	      fprintf (f, "\n");
 	    }
-	  if (s->loop_iterations)
+	  ipa_freqcounting_predicate *fcp;
+	  bool first_fcp = true;
+	  for (int i = 0; vec_safe_iterate (s->loop_iterations, i, &fcp); i++)
 	    {
-	      fprintf (f, "  loop iterations:");
-	      s->loop_iterations->dump (f, s->conds);
+	      if (first_fcp)
+		{
+		  fprintf (f, "  loop iterations:");
+		  first_fcp = false;
+		}
+	      fprintf (f, "  %3.2f for ", fcp->freq.to_double ());
+	      fcp->predicate->dump (f, s->conds);
 	    }
-	  if (s->loop_stride)
+	  first_fcp = true;
+	  for (int i = 0; vec_safe_iterate (s->loop_strides, i, &fcp); i++)
 	    {
-	      fprintf (f, "  loop stride:");
-	      s->loop_stride->dump (f, s->conds);
+	      if (first_fcp)
+		{
+		  fprintf (f, "  loop strides:");
+		  first_fcp = false;
+		}
+	      fprintf (f, "  %3.2f for :", fcp->freq.to_double ());
+	      fcp->predicate->dump (f, s->conds);
 	    }
 	  fprintf (f, "  calls:\n");
 	  dump_ipa_call_summary (f, 4, node, s);
@@ -2543,12 +2605,13 @@ analyze_function_body (struct cgraph_node *node, bool early)
 
   if (fbi.info)
     compute_bb_predicates (&fbi, node, info, params_summary);
+  const profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   nblocks = pre_and_rev_post_order_compute (NULL, order, false);
   for (n = 0; n < nblocks; n++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, order[n]);
-      freq = bb->count.to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
+      freq = bb->count.to_sreal_scale (entry_count);
       if (clobber_only_eh_bb_p (bb))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2790,23 +2853,28 @@ analyze_function_body (struct cgraph_node *node, bool early)
 
   if (nonconstant_names.exists () && !early)
     {
+      ipa_fn_summary *s = ipa_fn_summaries->get (node);
       class loop *loop;
-      predicate loop_iterations = true;
-      predicate loop_stride = true;
+      unsigned max_loop_predicates = opt_for_fn (node->decl,
+						 param_ipa_max_loop_predicates);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
       FOR_EACH_LOOP (loop, 0)
 	{
+	  predicate loop_iterations = true;
+	  sreal header_freq;
 	  edge ex;
 	  unsigned int j;
 	  class tree_niter_desc niter_desc;
-	  if (loop->header->aux)
-	    bb_predicate = *(predicate *) loop->header->aux;
-	  else
-	    bb_predicate = false;
+	  if (!loop->header->aux)
+	    continue;
 
+	  profile_count phdr_count = loop_preheader_edge (loop)->count ();
+	  sreal phdr_freq = phdr_count.to_sreal_scale (entry_count);
+
+	  bb_predicate = *(predicate *) loop->header->aux;
 	  auto_vec<edge> exits = get_loop_exit_edges (loop);
 	  FOR_EACH_VEC_ELT (exits, j, ex)
 	    if (number_of_iterations_exit (loop, ex, &niter_desc, false)
@@ -2821,10 +2889,10 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		will_be_nonconstant = bb_predicate & will_be_nonconstant;
 	      if (will_be_nonconstant != true
 		  && will_be_nonconstant != false)
-		/* This is slightly inprecise.  We may want to represent each
-		   loop with independent predicate.  */
 		loop_iterations &= will_be_nonconstant;
 	    }
+	  add_freqcounting_predicate (&s->loop_iterations, loop_iterations,
+				      phdr_freq, max_loop_predicates);
 	}
 
       /* To avoid quadratic behavior we analyze stride predicates only
@@ -2833,14 +2901,17 @@ analyze_function_body (struct cgraph_node *node, bool early)
       for (loop = loops_for_fn (cfun)->tree_root->inner;
 	   loop != NULL; loop = loop->next)
 	{
+	  predicate loop_stride = true;
 	  basic_block *body = get_loop_body (loop);
+	  profile_count phdr_count = loop_preheader_edge (loop)->count ();
+	  sreal phdr_freq = phdr_count.to_sreal_scale (entry_count);
 	  for (unsigned i = 0; i < loop->num_nodes; i++)
 	    {
 	      gimple_stmt_iterator gsi;
-	      if (body[i]->aux)
-		bb_predicate = *(predicate *) body[i]->aux;
-	      else
-		bb_predicate = false;
+	      if (!body[i]->aux)
+		continue;
+
+	      bb_predicate = *(predicate *) body[i]->aux;
 	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{
@@ -2869,16 +2940,13 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    will_be_nonconstant = bb_predicate & will_be_nonconstant;
 		  if (will_be_nonconstant != true
 		      && will_be_nonconstant != false)
-		    /* This is slightly inprecise.  We may want to represent
-		       each loop with independent predicate.  */
 		    loop_stride = loop_stride & will_be_nonconstant;
 		}
 	    }
+	  add_freqcounting_predicate (&s->loop_strides, loop_stride,
+				      phdr_freq, max_loop_predicates);
 	  free (body);
 	}
-      ipa_fn_summary *s = ipa_fn_summaries->get (node);
-      set_hint_predicate (&s->loop_iterations, loop_iterations);
-      set_hint_predicate (&s->loop_stride, loop_stride);
       scev_finalize ();
     }
   FOR_ALL_BB_FN (bb, my_function)
@@ -3551,6 +3619,8 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
   sreal time = 0;
   int min_size = 0;
   ipa_hints hints = 0;
+  sreal loops_with_known_iterations = 0;
+  sreal loops_with_known_strides = 0;
   int i;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3643,16 +3713,27 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 
   if (est_hints)
     {
-      if (info->loop_iterations
-	  && !info->loop_iterations->evaluate (m_possible_truths))
-	hints |= INLINE_HINT_loop_iterations;
-      if (info->loop_stride
-	  && !info->loop_stride->evaluate (m_possible_truths))
-	hints |= INLINE_HINT_loop_stride;
       if (info->scc_no)
 	hints |= INLINE_HINT_in_scc;
       if (DECL_DECLARED_INLINE_P (m_node->decl))
 	hints |= INLINE_HINT_declared_inline;
+
+      ipa_freqcounting_predicate *fcp;
+      for (i = 0; vec_safe_iterate (info->loop_iterations, i, &fcp); i++)
+	if (!fcp->predicate->evaluate (m_possible_truths))
+	  {
+	    hints |= INLINE_HINT_loop_iterations;
+	    loops_with_known_iterations += fcp->freq;
+	  }
+      estimates->loops_with_known_iterations = loops_with_known_iterations;
+
+      for (i = 0; vec_safe_iterate (info->loop_strides, i, &fcp); i++)
+	if (!fcp->predicate->evaluate (m_possible_truths))
+	  {
+	    hints |= INLINE_HINT_loop_stride;
+	    loops_with_known_strides += fcp->freq;
+	  }
+      estimates->loops_with_known_strides = loops_with_known_strides;
     }
 
   size = RDIV (size, ipa_fn_summary::size_scale);
@@ -3660,12 +3741,15 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
+      fprintf (dump_file, "\n   size:%i", (int) size);
       if (est_times)
-	fprintf (dump_file, "\n   size:%i time:%f nonspec time:%f\n",
-		 (int) size, time.to_double (),
-		 nonspecialized_time.to_double ());
-      else
-	fprintf (dump_file, "\n   size:%i (time not estimated)\n", (int) size);
+	fprintf (dump_file, " time:%f nonspec time:%f",
+		 time.to_double (), nonspecialized_time.to_double ());
+      if (est_hints)
+	fprintf (dump_file, " loops with known iterations:%f "
+		 "known strides:%f", loops_with_known_iterations.to_double (),
+		 loops_with_known_strides.to_double ());
+      fprintf (dump_file, "\n");
     }
   if (est_times)
     {
@@ -3865,32 +3949,29 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
     }
 }
 
-/* Same as remap_predicate, but set result into hint *HINT.  */
+/* Run remap_after_inlining on each predicate in V.  */
 
 static void
-remap_hint_predicate (class ipa_fn_summary *info,
-		      class ipa_node_params *params_summary,
-		      class ipa_fn_summary *callee_info,
-		      predicate **hint,
-		      vec<int> operand_map,
-		      vec<int> offset_map,
-		      clause_t possible_truths,
-		      predicate *toplev_predicate)
-{
-  predicate p;
+remap_freqcounting_predicate (class ipa_fn_summary *info,
+			      class ipa_node_params *params_summary,
+			      class ipa_fn_summary *callee_info,
+			      vec<ipa_freqcounting_predicate, va_gc> *v,
+			      vec<int> operand_map,
+			      vec<int> offset_map,
+			      clause_t possible_truths,
+			      predicate *toplev_predicate)
 
-  if (!*hint)
-    return;
-  p = (*hint)->remap_after_inlining
-			 (info, params_summary, callee_info,
-			  operand_map, offset_map,
-			  possible_truths, *toplev_predicate);
-  if (p != false && p != true)
+{
+  ipa_freqcounting_predicate *fcp;
+  for (int i = 0; vec_safe_iterate (v, i, &fcp); i++)
     {
-      if (!*hint)
-	set_hint_predicate (hint, p);
-      else
-	**hint &= p;
+      predicate p
+	= fcp->predicate->remap_after_inlining (info, params_summary,
+						callee_info, operand_map,
+						offset_map, possible_truths,
+						*toplev_predicate);
+      if (p != false && p != true)
+	*fcp->predicate &= p;
     }
 }
 
@@ -3998,12 +4079,12 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   remap_edge_summaries (edge, edge->callee, info, params_summary,
 		 	callee_info, operand_map,
 			offset_map, clause, &toplev_predicate);
-  remap_hint_predicate (info, params_summary, callee_info,
-			&callee_info->loop_iterations,
-			operand_map, offset_map, clause, &toplev_predicate);
-  remap_hint_predicate (info, params_summary, callee_info,
-			&callee_info->loop_stride,
-			operand_map, offset_map, clause, &toplev_predicate);
+  remap_freqcounting_predicate (info, params_summary, callee_info,
+				info->loop_iterations, operand_map,
+				offset_map, clause, &toplev_predicate);
+  remap_freqcounting_predicate (info, params_summary, callee_info,
+				info->loop_strides, operand_map,
+				offset_map, clause, &toplev_predicate);
 
   HOST_WIDE_INT stack_frame_offset = ipa_get_stack_frame_offset (edge->callee);
   HOST_WIDE_INT peak = stack_frame_offset + callee_info->estimated_stack_size;
@@ -4334,12 +4415,34 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	    info->size_time_table->quick_push (e);
 	}
 
-      p.stream_in (&ib);
-      if (info)
-        set_hint_predicate (&info->loop_iterations, p);
-      p.stream_in (&ib);
-      if (info)
-        set_hint_predicate (&info->loop_stride, p);
+      count2 = streamer_read_uhwi (&ib);
+      for (j = 0; j < count2; j++)
+	{
+	  p.stream_in (&ib);
+	  sreal fcp_freq = sreal::stream_in (&ib);
+	  if (info)
+	    {
+	      ipa_freqcounting_predicate fcp;
+	      fcp.predicate = NULL;
+	      set_hint_predicate (&fcp.predicate, p);
+	      fcp.freq = fcp_freq;
+	      vec_safe_push (info->loop_iterations, fcp);
+	    }
+	}
+      count2 = streamer_read_uhwi (&ib);
+      for (j = 0; j < count2; j++)
+	{
+	  p.stream_in (&ib);
+	  sreal fcp_freq = sreal::stream_in (&ib);
+	  if (info)
+	    {
+	      ipa_freqcounting_predicate fcp;
+	      fcp.predicate = NULL;
+	      set_hint_predicate (&fcp.predicate, p);
+	      fcp.freq = fcp_freq;
+	      vec_safe_push (info->loop_strides, fcp);
+	    }
+	}
       for (e = node->callees; e; e = e->next_callee)
 	read_ipa_call_summary (&ib, e, info != NULL);
       for (e = node->indirect_calls; e; e = e->next_callee)
@@ -4502,14 +4605,19 @@ ipa_fn_summary_write (void)
 	      e->exec_predicate.stream_out (ob);
 	      e->nonconst_predicate.stream_out (ob);
 	    }
-	  if (info->loop_iterations)
-	    info->loop_iterations->stream_out (ob);
- 	  else
-	    streamer_write_uhwi (ob, 0);
-	  if (info->loop_stride)
-	    info->loop_stride->stream_out (ob);
- 	  else
-	    streamer_write_uhwi (ob, 0);
+	  ipa_freqcounting_predicate *fcp;
+	  streamer_write_uhwi (ob, vec_safe_length (info->loop_iterations));
+	  for (i = 0; vec_safe_iterate (info->loop_iterations, i, &fcp); i++)
+	    {
+	      fcp->predicate->stream_out (ob);
+	      fcp->freq.stream_out (ob);
+	    }
+	  streamer_write_uhwi (ob, vec_safe_length (info->loop_strides));
+	  for (i = 0; vec_safe_iterate (info->loop_strides, i, &fcp); i++)
+	    {
+	      fcp->predicate->stream_out (ob);
+	      fcp->freq.stream_out (ob);
+	    }
 	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_ipa_call_summary (ob, edge);
 	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)
