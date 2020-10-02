@@ -7687,7 +7687,8 @@ trees_out::decl_value (tree decl, depset *dep)
       bool needs_vtt_parm_p
 	= (cloned_p && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (decl)));
       bool omit_inherited_parms_p
-	= (cloned_p && ctor_omit_inherited_parms (decl, false));
+	= (cloned_p && DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
+	   && base_ctor_omit_inherited_parms (decl));
       unsigned flags = (int (cloned_p) << 0
 			| int (needs_vtt_parm_p) << 1
 			| int (omit_inherited_parms_p) << 2);

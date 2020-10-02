@@ -6962,7 +6962,8 @@ extern tree get_default_ctor			(tree);
 extern tree get_dtor				(tree, tsubst_flags_t);
 extern tree strip_inheriting_ctors		(tree);
 extern tree inherited_ctor_binfo		(tree);
-extern bool ctor_omit_inherited_parms		(tree, bool exact_name = true);
+extern bool base_ctor_omit_inherited_parms	(tree);
+extern bool ctor_omit_inherited_parms		(tree);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);

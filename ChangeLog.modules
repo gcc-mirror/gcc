@@ -1,5 +1,10 @@
 2020-10-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 9340d1c97b8
+	c++: cleanup ctor_omit_inherited_parms
+	gcc/cp/
+	* module.cc (trees_out::decl_value): Adjust for new ctor_omit API.
+
 	Merge trunk 31584824665
 
 	Merge trunk dfaa24c974b
