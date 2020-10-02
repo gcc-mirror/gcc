@@ -328,165 +328,165 @@ gfc_build_io_library_fndecls (void)
   dt_parm_type = build_pointer_type (st_parameter[IOPARM_ptype_dt].type);
 
   iocall[IOCALL_X_INTEGER] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_integer")), ".wW.",
+	get_identifier (PREFIX("transfer_integer")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_INTEGER_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_integer_write")), ".wR.",
+	get_identifier (PREFIX("transfer_integer_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_LOGICAL] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_logical")), ".wW.",
+	get_identifier (PREFIX("transfer_logical")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_LOGICAL_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_logical_write")), ".wR.",
+	get_identifier (PREFIX("transfer_logical_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_CHARACTER] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_character")), ".wW.",
+	get_identifier (PREFIX("transfer_character")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_CHARACTER_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_character_write")), ".wR.",
+	get_identifier (PREFIX("transfer_character_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_CHARACTER_WIDE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_character_wide")), ".wW..",
+	get_identifier (PREFIX("transfer_character_wide")), ". w W . . ",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	gfc_charlen_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_CHARACTER_WIDE_WRITE] =
     gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_character_wide_write")), ".wR..",
+	get_identifier (PREFIX("transfer_character_wide_write")), ". w R . . ",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	gfc_charlen_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_REAL] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_real")), ".wW.",
+	get_identifier (PREFIX("transfer_real")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_REAL_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_real_write")), ".wR.",
+	get_identifier (PREFIX("transfer_real_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_COMPLEX] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_complex")), ".wW.",
+	get_identifier (PREFIX("transfer_complex")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_COMPLEX_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_complex_write")), ".wR.",
+	get_identifier (PREFIX("transfer_complex_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   /* Version for __float128.  */
   iocall[IOCALL_X_REAL128] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_real128")), ".wW.",
+	get_identifier (PREFIX("transfer_real128")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_REAL128_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_real128_write")), ".wR.",
+	get_identifier (PREFIX("transfer_real128_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_COMPLEX128] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_complex128")), ".wW.",
+	get_identifier (PREFIX("transfer_complex128")), ". w W . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_COMPLEX128_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_complex128_write")), ".wR.",
+	get_identifier (PREFIX("transfer_complex128_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_ARRAY] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_array")), ".ww..",
+	get_identifier (PREFIX("transfer_array")), ". w w . . ",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	integer_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_ARRAY_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_array_write")), ".wr..",
+	get_identifier (PREFIX("transfer_array_write")), ". w r . . ",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	integer_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_DERIVED] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_derived")), ".wr",
+	get_identifier (PREFIX("transfer_derived")), ". w r ",
 	void_type_node, 2, dt_parm_type, pvoid_type_node);
 
   /* Library entry points */
 
   iocall[IOCALL_READ] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_read")), ".w",
+	get_identifier (PREFIX("st_read")), ". w ",
 	void_type_node, 1, dt_parm_type);
 
   iocall[IOCALL_WRITE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_write")), ".w",
+	get_identifier (PREFIX("st_write")), ". w ",
 	void_type_node, 1, dt_parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_open].type);
   iocall[IOCALL_OPEN] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_open")), ".w",
+	get_identifier (PREFIX("st_open")), ". w ",
 	void_type_node, 1, parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_close].type);
   iocall[IOCALL_CLOSE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_close")), ".w",
+	get_identifier (PREFIX("st_close")), ". w ",
 	void_type_node, 1, parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_inquire].type);
   iocall[IOCALL_INQUIRE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_inquire")), ".w",
+	get_identifier (PREFIX("st_inquire")), ". w ",
 	void_type_node, 1, parm_type);
 
   iocall[IOCALL_IOLENGTH] = gfc_build_library_function_decl_with_spec(
-	get_identifier (PREFIX("st_iolength")), ".w",
+	get_identifier (PREFIX("st_iolength")), ". w ",
 	void_type_node, 1, dt_parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_wait].type);
   iocall[IOCALL_WAIT] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_wait_async")), ".w",
+	get_identifier (PREFIX("st_wait_async")), ". w ",
 	void_type_node, 1, parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_filepos].type);
   iocall[IOCALL_REWIND] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_rewind")), ".w",
+	get_identifier (PREFIX("st_rewind")), ". w ",
 	void_type_node, 1, parm_type);
 
   iocall[IOCALL_BACKSPACE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_backspace")), ".w",
+	get_identifier (PREFIX("st_backspace")), ". w ",
 	void_type_node, 1, parm_type);
 
   iocall[IOCALL_ENDFILE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_endfile")), ".w",
+	get_identifier (PREFIX("st_endfile")), ". w ",
 	void_type_node, 1, parm_type);
 
   iocall[IOCALL_FLUSH] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_flush")), ".w",
+	get_identifier (PREFIX("st_flush")), ". w ",
 	void_type_node, 1, parm_type);
 
   /* Library helpers */
 
   iocall[IOCALL_READ_DONE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_read_done")), ".w",
+	get_identifier (PREFIX("st_read_done")), ". w ",
 	void_type_node, 1, dt_parm_type);
 
   iocall[IOCALL_WRITE_DONE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_write_done")), ".w",
+	get_identifier (PREFIX("st_write_done")), ". w ",
 	void_type_node, 1, dt_parm_type);
 
   iocall[IOCALL_IOLENGTH_DONE] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_iolength_done")), ".w",
+	get_identifier (PREFIX("st_iolength_done")), ". w ",
 	void_type_node, 1, dt_parm_type);
 
   iocall[IOCALL_SET_NML_VAL] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_set_nml_var")), ".w.R...",
+	get_identifier (PREFIX("st_set_nml_var")), ". w . R . . . ",
 	void_type_node, 6, dt_parm_type, pvoid_type_node, pvoid_type_node,
 	gfc_int4_type_node, gfc_charlen_type_node, get_dtype_type_node());
 
   iocall[IOCALL_SET_NML_DTIO_VAL] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_set_nml_dtio_var")), ".w.R.....",
+	get_identifier (PREFIX("st_set_nml_dtio_var")), ". w . R . . . . . ",
 	void_type_node, 8, dt_parm_type, pvoid_type_node, pvoid_type_node,
 	gfc_int4_type_node, gfc_charlen_type_node, get_dtype_type_node(),
 	pvoid_type_node, pvoid_type_node);
 
   iocall[IOCALL_SET_NML_VAL_DIM] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("st_set_nml_var_dim")), ".w....",
+	get_identifier (PREFIX("st_set_nml_var_dim")), ". w . . . . ",
 	void_type_node, 5, dt_parm_type, gfc_int4_type_node,
 	gfc_array_index_type, gfc_array_index_type, gfc_array_index_type);
 }

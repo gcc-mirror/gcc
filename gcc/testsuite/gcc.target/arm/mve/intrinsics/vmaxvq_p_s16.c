@@ -10,7 +10,6 @@ foo (int16_t a, int16x8_t b, mve_pred16_t p)
   return vmaxvq_p_s16 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vmaxvt.s16"  }  } */
 
 int16_t
 foo1 (int16_t a, int16x8_t b, mve_pred16_t p)
@@ -18,4 +17,12 @@ foo1 (int16_t a, int16x8_t b, mve_pred16_t p)
   return vmaxvq_p (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vmaxvt.s16"  }  } */
+
+int16_t
+foo2 (int8_t a, int16x8_t b, mve_pred16_t p)
+{
+  return vmaxvq_p (a, b, p);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vmaxvt.s16" 3 } } */

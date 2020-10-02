@@ -10,7 +10,6 @@ foo (float32_t a, float32x4_t b, mve_pred16_t p)
   return vmaxnmavq_p_f32 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vmaxnmavt.f32"  }  } */
 
 float32_t
 foo1 (float32_t a, float32x4_t b, mve_pred16_t p)
@@ -18,4 +17,12 @@ foo1 (float32_t a, float32x4_t b, mve_pred16_t p)
   return vmaxnmavq_p (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vmaxnmavt.f32"  }  } */
+
+float32_t
+foo2 (float16_t a, float32x4_t b, mve_pred16_t p)
+{
+  return vmaxnmavq_p (a, b, p);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vmaxnmavt.f32" 3 } } */

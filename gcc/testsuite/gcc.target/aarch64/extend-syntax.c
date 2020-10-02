@@ -20,6 +20,7 @@ unsigned long long *add1(unsigned long long *p, unsigned x)
 */
 unsigned long long add2(unsigned long long x, unsigned y)
 {
+  /* { dg-final { scan-assembler-times "add\tx0, x0, w1, uxtw" 1 { target ilp32 } } } */
   return x + y;
 }
 
@@ -34,6 +35,9 @@ double *add3(double *p, int x)
   return p + x;
 }
 
+// add1 and add3 should both generate this on ILP32:
+/* { dg-final { scan-assembler-times "add\tw0, w0, w1, lsl 3" 2 { target ilp32 } } } */
+
 // Hits *sub_zero_extendsi_di (*sub_<optab><ALLX:mode>_<GPI:mode>).
 /*
 ** sub1:
@@ -42,6 +46,7 @@ double *add3(double *p, int x)
 */
 unsigned long long sub1(unsigned long long x, unsigned n)
 {
+    /* { dg-final { scan-assembler-times "sub\tx0, x0, w1, uxtw" 1 { target ilp32 } } } */
     return x - n;
 }
 
@@ -66,6 +71,9 @@ double *sub3(double *p, int n)
 {
   return p - n;
 }
+
+// sub2 and sub3 should both generate this on ILP32:
+/* { dg-final { scan-assembler-times "sub\tw0, w0, w1, lsl 3" 2 { target ilp32 } } } */
 
 // Hits *adds_zero_extendsi_di (*adds_<optab><ALLX:mode>_<GPI:mode>).
 int adds1(unsigned long long x, unsigned y)
@@ -97,7 +105,8 @@ int subs1(unsigned long long x, unsigned y)
 unsigned long long *w;
 int subs2(unsigned long long *x, int y)
 {
-  /* { dg-final { scan-assembler-times "subs\tx\[0-9\]+, x\[0-9\]+, w\[0-9\]+, sxtw 3" 1 } } */
+  /* { dg-final { scan-assembler-times "subs\tx\[0-9\]+, x\[0-9\]+, w\[0-9\]+, sxtw 3" 1 { target lp64 } } } */
+  /* { dg-final { scan-assembler-times "subs\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" 1 { target ilp32 } } } */
   unsigned long long *t = x - y;
   w = t;
   return !!t;
@@ -117,4 +126,4 @@ int cmp2(unsigned long long x, int y)
   return x == ((unsigned long long)y << 3);
 }
 
-/* { dg-final { check-function-bodies "**" "" "" } } */
+/* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */

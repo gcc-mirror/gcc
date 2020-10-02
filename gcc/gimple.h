@@ -149,6 +149,7 @@ enum gf_mask {
     GF_CALL_MUST_TAIL_CALL	= 1 << 9,
     GF_CALL_BY_DESCRIPTOR	= 1 << 10,
     GF_CALL_NOCF_CHECK		= 1 << 11,
+    GF_CALL_FROM_NEW_OR_DELETE	= 1 << 12,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
     GF_OMP_TASK_TASKWAIT	= 1 << 1,
@@ -1604,7 +1605,7 @@ extern alias_set_type gimple_get_alias_set (tree);
 extern bool gimple_ior_addresses_taken (bitmap, gimple *);
 extern bool gimple_builtin_call_types_compatible_p (const gimple *, tree);
 extern combined_fn gimple_call_combined_fn (const gimple *);
-extern bool gimple_call_replaceable_operator_delete_p (const gcall *);
+extern bool gimple_call_operator_delete_p (const gcall *);
 extern bool gimple_call_builtin_p (const gimple *);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_class);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_function);
@@ -3384,6 +3385,29 @@ static inline bool
 gimple_call_from_thunk_p (gcall *s)
 {
   return (s->subcode & GF_CALL_FROM_THUNK) != 0;
+}
+
+
+/* If FROM_NEW_OR_DELETE_P is true, mark GIMPLE_CALL S as being a call
+   to operator new or delete created from a new or delete expression.  */
+
+static inline void
+gimple_call_set_from_new_or_delete (gcall *s, bool from_new_or_delete_p)
+{
+  if (from_new_or_delete_p)
+    s->subcode |= GF_CALL_FROM_NEW_OR_DELETE;
+  else
+    s->subcode &= ~GF_CALL_FROM_NEW_OR_DELETE;
+}
+
+
+/* Return true if GIMPLE_CALL S is a call to operator new or delete from
+   from a new or delete expression.  */
+
+static inline bool
+gimple_call_from_new_or_delete (gcall *s)
+{
+  return (s->subcode & GF_CALL_FROM_NEW_OR_DELETE) != 0;
 }
 
 

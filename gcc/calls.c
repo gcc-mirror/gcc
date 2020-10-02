@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 #include "gimple-fold.h"
+#include "attr-fnspec.h"
 
 #include "tree-pretty-print.h"
 
@@ -642,25 +643,15 @@ decl_return_flags (tree fndecl)
   if (!attr)
     return 0;
 
-  attr = TREE_VALUE (TREE_VALUE (attr));
-  if (!attr || TREE_STRING_LENGTH (attr) < 1)
-    return 0;
+  attr_fnspec fnspec (TREE_VALUE (TREE_VALUE (attr)));
 
-  switch (TREE_STRING_POINTER (attr)[0])
-    {
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+  unsigned int arg;
+  if (fnspec.returns_arg (&arg))
+    return ERF_RETURNS_ARG | arg;
 
-    case 'm':
-      return ERF_NOALIAS;
-
-    case '.':
-    default:
-      return 0;
-    }
+  if (fnspec.returns_noalias_p ())
+    return ERF_NOALIAS;
+  return 0;
 }
 
 /* Return nonzero when FNDECL represents a call to setjmp.  */
