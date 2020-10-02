@@ -1,3 +1,83 @@
+2020-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_cond_mixed): Add
+	arm neon targets.
+	* gcc.target/arm/neon-compare-1.c: New test.
+	* gcc.target/arm/neon-compare-2.c: Likewise.
+	* gcc.target/arm/neon-compare-3.c: Likewise.
+	* gcc.target/arm/neon-compare-4.c: Likewise.
+	* gcc.target/arm/neon-compare-5.c: Likewise.
+	* gcc.target/arm/neon-vcond-gt.c: Expect comparisons with zero.
+	* gcc.target/arm/neon-vcond-ltgt.c: Likewise.
+	* gcc.target/arm/neon-vcond-unordered.c: Likewise.
+
+2020-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/movtf_1.c: Restrict the asm matching to lp64.
+	* gcc.target/aarch64/movti_1.c: Likewise.
+
+2020-10-01  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/96375
+	* gcc.target/arm/lob1.c: Fix missing flag.
+	* gcc.target/arm/lob2.c: Likewise.
+	* gcc.target/arm/lob3.c: Likewise.
+	* gcc.target/arm/lob4.c: Likewise.
+	* gcc.target/arm/lob5.c: Likewise.
+	* gcc.target/arm/lob6.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1_lob_ok): Return 1 only for
+	cortex-m targets, add '-mthumb' flag.
+
+2020-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97236
+	* gcc.dg/vect/pr97236.c: New testcase.
+
+2020-10-01  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97243
+	* gcc.c-torture/compile/pr97243.c: New test.
+
+2020-10-01  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97244
+	* gcc.dg/ipa/remref-2a.c: Add -fno-ipa-modref
+
+2020-10-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/pr94600-1.c: Force 32-bit alignment for a0 for !non_strict_align
+	targets.  Remove target clauses from scan tests.
+	* gcc.dg/pr94600-3.c: Same.
+
+2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96994
+	* g++.dg/cpp2a/consteval18.C: New test.
+
+2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97195
+	* g++.dg/cpp2a/constexpr-new14.C: New test.
+
+2020-10-01  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/pr97255.cc: New testcase.
+
+2020-10-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR target/97250
+	* gcc.target/i386/x86-64-v2.c: New test.
+	* gcc.target/i386/x86-64-v3.c: New test.
+	* gcc.target/i386/x86-64-v3-haswell.c: New test.
+	* gcc.target/i386/x86-64-v3-skylake.c: New test.
+	* gcc.target/i386/x86-64-v4.c: New test.
+
+2020-10-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90210
+	* g++.dg/cpp1z/class-deduction73.C: New test.
+
 2020-09-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/97189

@@ -1,3 +1,8 @@
+2020-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/cpu/arm/cxxabi_tweaks.h (_GLIBCXX_GUARD_TEST_AND_ACQUIRE):
+	Do not try to dereference return value of __atomic_load_n.
+
 2020-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/cpu/arm/cxxabi_tweaks.h (_GLIBCXX_GUARD_TEST_AND_ACQUIRE):
