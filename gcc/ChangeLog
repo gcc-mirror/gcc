@@ -1,3 +1,32 @@
+2020-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def
+	(PREFER_ADVSIMD_AUTOVEC): Define.
+	* config/aarch64/aarch64.c (aarch64_preferred_simd_mode): Use
+	it.
+	(aarch64_autovectorize_vector_sizes): Likewise.
+
+2020-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (zeus): Add AARCH64_FL_RNG to
+	features.
+	(neoverse-v1): Likewise.
+
+2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.c (s390_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for the first assignments to
+	fenv_var and old_fpc.  Formatting fixes.
+
+2020-10-01  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add Neoverse N2.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document AArch64 support for Neoverse N2.
+
 2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
