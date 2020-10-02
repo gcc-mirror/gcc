@@ -30,7 +30,7 @@ void test (const char *buf, char ch)
 {
   __builtin_strtchr (buf, ch); /* { dg-line misspelled_reserved } */
   /* { dg-warning "did you mean '__builtin_strchr'" "" { target c } misspelled_reserved } */
-  /* { dg-error "'__builtin_strtchr' was not declared in this scope; did you mean '__builtin_strrchr'\\?" "" { target c++ } misspelled_reserved } */
+  /* { dg-error "'__builtin_strtchr' was not declared in this scope; did you mean '__builtin_strchr'\\?" "" { target c++ } misspelled_reserved } */
 }
 
 /* Similarly for a name that begins with a single underscore.  */
