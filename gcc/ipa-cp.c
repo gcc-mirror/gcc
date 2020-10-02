@@ -3448,7 +3448,7 @@ static long
 get_max_overall_size (cgraph_node *node)
 {
   long max_new_size = orig_overall_size;
-  long large_unit = opt_for_fn (node->decl, param_large_unit_insns);
+  long large_unit = opt_for_fn (node->decl, param_ipa_cp_large_unit_insns);
   if (max_new_size < large_unit)
     max_new_size = large_unit;
   int unit_growth = opt_for_fn (node->decl, param_ipa_cp_unit_growth);

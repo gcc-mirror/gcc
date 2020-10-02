@@ -214,6 +214,10 @@ Percentage penalty functions containing a single call to another function will r
 Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param Optimization
 How much can given compilation unit grow because of the interprocedural constant propagation (in percent).
 
+-param=ipa-cp-large-unit-insns=
+Common Joined UInteger Var(param_ipa_cp_large_unit_insns) Optimization Init(16000) Param
+The size of translation unit that IPA-CP pass considers large.
+
 -param=ipa-cp-value-list-size=
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
