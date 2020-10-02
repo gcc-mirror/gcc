@@ -186,6 +186,17 @@ streamer_read_poly_uint64 (class lto_input_block *ib)
   return res;
 }
 
+/* Read a poly_int64 from IB.  */
+
+poly_int64
+streamer_read_poly_int64 (class lto_input_block *ib)
+{
+  poly_int64 res;
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    res.coeffs[i] = streamer_read_hwi (ib);
+  return res;
+}
+
 /* Read gcov_type value from IB.  */
 
 gcov_type

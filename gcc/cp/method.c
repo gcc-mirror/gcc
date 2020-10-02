@@ -551,29 +551,49 @@ inherited_ctor_binfo (tree fndecl)
   return inherited_ctor_binfo (binfo, fndecl);
 }
 
+
+/* True if we should omit all user-declared parameters from a base
+   construtor built from complete constructor FN.
+   That's when the ctor is inherited from a virtual base.  */
+
+bool
+base_ctor_omit_inherited_parms (tree comp_ctor)
+{
+  gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (comp_ctor));
+
+  if (!flag_new_inheriting_ctors)
+    /* We only optimize away the parameters in the new model.  */
+    return false;
+
+  if (!CLASSTYPE_VBASECLASSES (DECL_CONTEXT (comp_ctor)))
+    return false;
+
+  if (FUNCTION_FIRST_USER_PARMTYPE (comp_ctor) == void_list_node)
+    /* No user-declared parameters to omit.  */
+    return false;
+
+  for (tree binfo = inherited_ctor_binfo (comp_ctor);
+       binfo;
+       binfo = BINFO_INHERITANCE_CHAIN (binfo))
+    if (BINFO_VIRTUAL_P (binfo))
+      return true;
+
+  return false;
+}
+
+
 /* True if we should omit all user-declared parameters from constructor FN,
    because it is a base clone of a ctor inherited from a virtual base.  */
 
 bool
 ctor_omit_inherited_parms (tree fn)
 {
-  if (!flag_new_inheriting_ctors)
-    /* We only optimize away the parameters in the new model.  */
-    return false;
-  if (!DECL_BASE_CONSTRUCTOR_P (fn)
-      || !CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
+  gcc_checking_assert (TREE_CODE (fn) == FUNCTION_DECL);
+
+  if (!DECL_BASE_CONSTRUCTOR_P (fn))
     return false;
 
-  if (FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (fn)) == void_list_node)
-    /* No user-declared parameters to omit.  */
-    return false;
-
-  tree binfo = inherited_ctor_binfo (fn);
-  for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
-    if (BINFO_VIRTUAL_P (binfo))
-      return true;
-
-  return false;
+  return base_ctor_omit_inherited_parms (DECL_CLONED_FUNCTION (fn));
 }
 
 /* True iff constructor(s) INH inherited into BINFO initializes INIT_BINFO.

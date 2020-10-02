@@ -921,7 +921,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK (NODE, PARM_DECL)->decl_common.decl_nonshareable_flag)
 
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
-   thunked-to function.  */
+   thunked-to function.  Be careful to avoid using this macro when one of the
+   next two applies instead.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a CALL_EXPR, if the function being called is BUILT_IN_ALLOCA, means that
@@ -929,6 +930,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    function being called is BUILT_IN_MEMCPY, means that it has been built for
    the assignment of a variable-sized object.  */
 #define CALL_ALLOCA_FOR_VAR_P(NODE) \
+  (CALL_EXPR_CHECK (NODE)->base.protected_flag)
+
+/* In a CALL_EXPR, if the function being called is DECL_IS_OPERATOR_NEW_P or
+   DECL_IS_OPERATOR_DELETE_P, true for allocator calls from C++ new or delete
+   expressions.  */
+#define CALL_FROM_NEW_OR_DELETE_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* Used in classes in C++.  */
@@ -3066,9 +3073,6 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
    C++ operator delete.  */
 #define DECL_IS_OPERATOR_DELETE_P(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_DELETE)
-
-#define DECL_IS_REPLACEABLE_OPERATOR_DELETE_P(NODE) \
-  (DECL_IS_OPERATOR_DELETE_P (NODE) && DECL_IS_REPLACEABLE_OPERATOR (NODE))
 
 #define DECL_SET_IS_OPERATOR_DELETE(NODE, VAL) \
   set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_DELETE, VAL)

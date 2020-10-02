@@ -1336,6 +1336,32 @@ static const struct tune_params neoversen1_tunings =
   &generic_prefetch_tune
 };
 
+static const struct tune_params neoversev1_tunings =
+{
+  &cortexa57_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &cortexa57_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_256, /* sve_width  */
+  4, /* memmov_cost  */
+  3, /* issue_rate  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  "32:16",	/* function_align.  */
+  "4",		/* jump_align.  */
+  "32:16",	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &generic_prefetch_tune
+};
+
 static const struct tune_params a64fx_tunings =
 {
   &generic_extra_costs,
@@ -3715,24 +3741,6 @@ aarch64_pfalse_reg (machine_mode mode)
   gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
   rtx reg = force_reg (VNx16BImode, CONST0_RTX (VNx16BImode));
   return gen_lowpart (mode, reg);
-}
-
-/* Return true if predicate PRED1[0] is true whenever predicate PRED2 is
-   true, or alternatively if we know that the operation predicated by
-   PRED1[0] is safe to perform whenever PRED2 is true.  PRED1[1] is a
-   aarch64_sve_gp_strictness operand that describes the operation
-   predicated by PRED1[0].  */
-
-bool
-aarch64_sve_pred_dominates_p (rtx *pred1, rtx pred2)
-{
-  machine_mode mode = GET_MODE (pred2);
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
-	      && mode == GET_MODE (pred1[0])
-	      && aarch64_sve_gp_strictness (pred1[1], SImode));
-  return (pred1[0] == CONSTM1_RTX (mode)
-	  || INTVAL (pred1[1]) == SVE_RELAXED_GP
-	  || rtx_equal_p (pred1[0], pred2));
 }
 
 /* PRED1[0] is a PTEST predicate and PRED1[1] is an aarch64_sve_ptrue_flag

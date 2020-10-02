@@ -54,11 +54,11 @@ struct some_thing test_6; // { dg-error "aggregate 'some_thing test_6' has incom
    { dg-end-multiline-output "" } */
 
 typedef long int64_t;
-int64 i; // { dg-error "1: 'int64' does not name a type; did you mean 'int64_t'?" }
+int64 i; // { dg-error "1: 'int64' does not name a type; did you mean 'int'?" }
 /* { dg-begin-multiline-output "" }
  int64 i;
  ^~~~~
- int64_t
+ int
    { dg-end-multiline-output "" } */
 
 /* Verify that gcc doesn't offer nonsensical suggestions.  */

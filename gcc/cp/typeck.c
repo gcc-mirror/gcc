@@ -10171,7 +10171,7 @@ check_return_expr (tree retval, bool *no_warning)
 
       /* The call in a (lambda) thunk needs no conversions.  */
       if (TREE_CODE (retval) == CALL_EXPR
-	  && CALL_FROM_THUNK_P (retval))
+	  && call_from_lambda_thunk_p (retval))
 	converted = true;
 
       /* First convert the value to the function's return type, then

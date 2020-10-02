@@ -1,3 +1,12 @@
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S,
+	* config/rs6000/tramp.S: Support __PCREL__ code.
+
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/t-linux: Document purpose of -mno-minimal-toc.
+
 2020-09-29  Maciej W. Rozycki  <macro@wdc.com>
 
 	* config/riscv/t-elf (LIB2_DIVMOD_EXCEPTION_FLAGS): New

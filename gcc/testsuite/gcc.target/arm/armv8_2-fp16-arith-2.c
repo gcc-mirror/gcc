@@ -6,9 +6,9 @@
 /* Test instructions generated for half-precision arithmetic without
    unsafe-math-optimizations.  */
 
-typedef __fp16 float16_t;
-typedef __simd64_float16_t float16x4_t;
-typedef __simd128_float16_t float16x8_t;
+typedef _Float16 float16_t;
+typedef _Float16 float16x4_t __attribute__ ((vector_size (8)));
+typedef _Float16 float16x8_t __attribute__ ((vector_size (16)));
 
 typedef short int16x4_t __attribute__ ((vector_size (8)));
 typedef short int int16x8_t  __attribute__ ((vector_size (16)));
@@ -16,7 +16,7 @@ typedef short int int16x8_t  __attribute__ ((vector_size (16)));
 float16_t
 fp16_abs (float16_t a)
 {
-  return (a < 0) ? -a : a;
+  return __builtin_fabsf16 (a);
 }
 
 #define TEST_UNOP(NAME, OPERATOR, TY)		\

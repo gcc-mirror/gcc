@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "langhooks.h"
+#include "attr-fnspec.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -387,6 +388,10 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
       && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
       && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
     gimple_call_set_alloca_for_var (call, CALL_ALLOCA_FOR_VAR_P (t));
+  else if (fndecl
+	   && (DECL_IS_OPERATOR_NEW_P (fndecl)
+	       || DECL_IS_OPERATOR_DELETE_P (fndecl)))
+    gimple_call_set_from_new_or_delete (call, CALL_FROM_NEW_OR_DELETE_P (t));
   else
     gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
   gimple_call_set_va_arg_pack (call, CALL_EXPR_VA_ARG_PACK (t));
@@ -1508,31 +1513,26 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 {
   const_tree attr = gimple_call_fnspec (stmt);
 
-  if (!attr || 1 + arg >= (unsigned) TREE_STRING_LENGTH (attr))
+  if (!attr)
     return 0;
 
-  switch (TREE_STRING_POINTER (attr)[1 + arg])
+  int flags = 0;
+  attr_fnspec fnspec (attr);
+
+  if (!fnspec.arg_specified_p (arg))
+    ;
+  else if (!fnspec.arg_used_p (arg))
+    flags = EAF_UNUSED;
+  else
     {
-    case 'x':
-    case 'X':
-      return EAF_UNUSED;
-
-    case 'R':
-      return EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
-
-    case 'r':
-      return EAF_NOCLOBBER | EAF_NOESCAPE;
-
-    case 'W':
-      return EAF_DIRECT | EAF_NOESCAPE;
-
-    case 'w':
-      return EAF_NOESCAPE;
-
-    case '.':
-    default:
-      return 0;
+      if (fnspec.arg_direct_p (arg))
+	flags |= EAF_DIRECT;
+      if (fnspec.arg_noescape_p (arg))
+	flags |= EAF_NOESCAPE;
+      if (fnspec.arg_readonly_p (arg))
+	flags |= EAF_NOCLOBBER;
     }
+  return flags;
 }
 
 /* Detects return flags for the call STMT.  */
@@ -1546,24 +1546,17 @@ gimple_call_return_flags (const gcall *stmt)
     return ERF_NOALIAS;
 
   attr = gimple_call_fnspec (stmt);
-  if (!attr || TREE_STRING_LENGTH (attr) < 1)
+  if (!attr)
     return 0;
+  attr_fnspec fnspec (attr);
 
-  switch (TREE_STRING_POINTER (attr)[0])
-    {
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+  unsigned int arg_no;
+  if (fnspec.returns_arg (&arg_no))
+    return ERF_RETURNS_ARG | arg_no;
 
-    case 'm':
-      return ERF_NOALIAS;
-
-    case '.':
-    default:
-      return 0;
-    }
+  if (fnspec.returns_noalias_p ())
+    return ERF_NOALIAS;
+  return 0;
 }
 
 
@@ -2713,12 +2706,12 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 /* Return true when STMT is operator a replaceable delete call.  */
 
 bool
-gimple_call_replaceable_operator_delete_p (const gcall *stmt)
+gimple_call_operator_delete_p (const gcall *stmt)
 {
   tree fndecl;
 
   if ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE)
-    return DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (fndecl);
+    return DECL_IS_OPERATOR_DELETE_P (fndecl);
   return false;
 }
 

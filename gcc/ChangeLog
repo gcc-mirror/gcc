@@ -1,3 +1,256 @@
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Use
+	gen_int_mode for high part of address constant.
+
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_linux64_override_options):
+	Formatting.  Correct setting of TARGET_NO_FP_IN_TOC and
+	TARGET_NO_SUM_IN_TOC.
+
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/freebsd64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use
+	rs6000_linux64_override_options.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Break
+	out to..
+	* config/rs6000/rs6000.c (rs6000_linux64_override_options): ..this,
+	new function.  Tweak non-biarch test and clearing of
+	profile_kernel to work with freebsd64.h.
+
+2020-10-01  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.c: Include value-range.h.
+	* config/rs6000/rs6000.c: Likewise.
+
+2020-10-01  Tom de Vries  <tdevries@suse.de>
+
+	PR target/80845
+	* config/nvptx/nvptx.md (define_insn "truncsi<QHIM>2"): Emit mov.u32
+	instead of cvt.u32.u32.
+
+2020-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96528
+	PR target/97288
+	* config/arm/arm-protos.h (arm_expand_vector_compare): Declare.
+	(arm_expand_vcond): Likewise.
+	* config/arm/arm.c (arm_expand_vector_compare): New function.
+	(arm_expand_vcond): Likewise.
+	* config/arm/neon.md (vec_cmp<VDQW:mode><v_cmp_result>): New pattern.
+	(vec_cmpu<VDQW:mode><VDQW:mode>): Likewise.
+	(vcond<VDQW:mode><VDQW:mode>): Require operand 5 to be a register
+	or zero.  Use arm_expand_vcond.
+	(vcond<V_cvtto><V32:mode>): New pattern.
+	(vcondu<VDQIW:mode><VDQIW:mode>): Generalize to...
+	(vcondu<VDQW:mode><v_cmp_result): ...this.  Require operand 5
+	to be a register or zero.  Use arm_expand_vcond.
+	(vcond_mask_<VDQW:mode><v_cmp_result>): New pattern.
+	(neon_vc<cmp_op><mode>, neon_vc<cmp_op><mode>_insn): Add "@" marker.
+	(neon_vbsl<mode>): Likewise.
+	(neon_vc<cmp_op>u<mode>): Reexpress as...
+	(@neon_vc<code><mode>): ...this.
+
+2020-10-01  Michael Davidsaver  <mdavidsaver@gmail.com>
+
+	* config/i386/t-rtems: Change from mtune to march when building
+	multilibs.  The mtune argument tunes or optimizes for a specific
+	CPU model but does not ensure the generated code is appropriate
+	for the CPU model. Prior to this patch, i386 compatible code
+	was always generated but tuned for later models.
+
+2020-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.c (compute_objsize): Replace vr_values with range_query.
+	(get_range): Same.
+	(gimple_call_alloc_size): Same.
+	* builtins.h (class vr_values):  Remove.
+	(gimple_call_alloc_size): Replace vr_values with range_query.
+	* gimple-ssa-sprintf.c (get_int_range): Same.
+	(struct directive): Pass gimple context to fmtfunc callback.
+	(directive::set_width): Replace inline with out-of-line version.
+	(directive::set_precision): Same.
+	(format_none): New gimple argument.
+	(format_percent): New gimple argument.
+	(format_integer): New gimple argument.
+	(format_floating): New gimple argument.
+	(get_string_length): Use range_query API.
+	(format_character): New gimple argument.
+	(format_string): New gimple argument.
+	(format_plain): New gimple argument.
+	(format_directive): New gimple argument.
+	(parse_directive): Replace vr_values with range_query.
+	(compute_format_length): Same.
+	(handle_printf_call): Same.  Adjust for range_query API.
+	* tree-ssa-strlen.c (get_range): Same.
+	(compare_nonzero_chars): Same.
+	(get_addr_stridx) Replace vr_values with range_query.
+	(get_stridx): Same.
+	(dump_strlen_info): Same.
+	(get_range_strlen_dynamic): Adjust for range_query API.
+	(set_strlen_range): Same
+	(maybe_warn_overflow): Replace vr_values with range_query.
+	(handle_builtin_strcpy): Same.
+	(maybe_diag_stxncpy_trunc): Add FIXME comment.
+	(handle_builtin_memcpy): Replace vr_values with range_query.
+	(handle_builtin_memset): Same.
+	(get_len_or_size): Same.
+	(strxcmp_eqz_result): Same.
+	(handle_builtin_string_cmp): Same.
+	(count_nonzero_bytes_addr): Same, plus adjust for range_query API.
+	(count_nonzero_bytes): Replace vr_values with range_query.
+	(handle_store): Same.
+	(strlen_check_and_optimize_call): Same.
+	(handle_integral_assign): Same.
+	(check_and_optimize_stmt): Same.
+	* tree-ssa-strlen.h (class vr_values): Remove.
+	(get_range): Replace vr_values with range_query.
+	(get_range_strlen_dynamic): Same.
+	(handle_printf_call): Same.
+
+2020-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-loop-versioning.cc (lv_dom_walker::before_dom_children):
+	Pass m_range_analyzer instead of get_vr_values.
+	(loop_versioning::name_prop::get_value): Rename to...
+	(loop_versioning::name_prop::value_of_expr): ...this.
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::evrp_range_analyzer):
+	Adjust for evrp_range_analyzer
+	inheriting from vr_values.
+	(evrp_range_analyzer::try_find_new_range): Same.
+	(evrp_range_analyzer::record_ranges_from_incoming_edge): Same.
+	(evrp_range_analyzer::record_ranges_from_phis): Same.
+	(evrp_range_analyzer::record_ranges_from_stmt): Same.
+	(evrp_range_analyzer::push_value_range): Same.
+	(evrp_range_analyzer::pop_value_range): Same.
+	* gimple-ssa-evrp-analyze.h (class evrp_range_analyzer): Inherit from
+	vr_values.  Adjust accordingly.
+	* gimple-ssa-evrp.c: Adjust for evrp_range_analyzer inheriting from
+	vr_values.
+	(evrp_folder::value_of_evrp): Rename from get_value.
+	* tree-ssa-ccp.c (class ccp_folder): Rename get_value to
+	value_of_expr.
+	(ccp_folder::get_value): Rename to...
+	(ccp_folder::value_of_expr): ...this.
+	* tree-ssa-copy.c (class copy_folder): Rename get_value to
+	value_of_expr.
+	(copy_folder::get_value): Rename to...
+	(copy_folder::value_of_expr): ...this.
+	* tree-ssa-dom.c (dom_opt_dom_walker::after_dom_children): Adjust
+	for evrp_range_analyzer inheriting from vr_values.
+	(dom_opt_dom_walker::optimize_stmt): Same.
+	* tree-ssa-propagate.c (substitute_and_fold_engine::replace_uses_in):
+	Call value_of_* instead of get_value.
+	(substitute_and_fold_engine::replace_phi_args_in): Same.
+	(substitute_and_fold_engine::propagate_into_phi_args): Same.
+	(substitute_and_fold_dom_walker::before_dom_children): Same.
+	* tree-ssa-propagate.h: Include value-query.h.
+	(class substitute_and_fold_engine): Inherit from value_query.
+	* tree-ssa-strlen.c (strlen_dom_walker::before_dom_children):
+	Adjust for evrp_range_analyzer inheriting from vr_values.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Same.
+	* tree-vrp.c (class vrp_folder): Same.
+	(vrp_folder::get_value): Rename to value_of_expr.
+	* vr-values.c (vr_values::get_lattice_entry): Adjust for
+	vr_values inheriting from range_query.
+	(vr_values::range_of_expr): New.
+	(vr_values::value_of_expr): New.
+	(vr_values::value_on_edge): New.
+	(vr_values::value_of_stmt): New.
+	(simplify_using_ranges::op_with_boolean_value_range_p): Call
+	get_value_range through query.
+	(check_for_binary_op_overflow): Rename store to query.
+	(vr_values::vr_values): Remove vrp_value_range_pool.
+	(vr_values::~vr_values): Same.
+	(simplify_using_ranges::get_vr_for_comparison): Call get_value_range
+	through query.
+	(simplify_using_ranges::compare_names): Same.
+	(simplify_using_ranges::vrp_evaluate_conditional): Same.
+	(simplify_using_ranges::vrp_visit_cond_stmt): Same.
+	(simplify_using_ranges::simplify_abs_using_ranges): Same.
+	(simplify_using_ranges::simplify_cond_using_ranges_1): Same.
+	(simplify_cond_using_ranges_2): Same.
+	(simplify_using_ranges::simplify_switch_using_ranges): Same.
+	(simplify_using_ranges::two_valued_val_range_p): Same.
+	(simplify_using_ranges::simplify_using_ranges): Rename store to query.
+	(simplify_using_ranges::simplify): Assert that we have a query.
+	* vr-values.h (class range_query): Remove.
+	(class simplify_using_ranges): Remove inheritance of range_query.
+	(class vr_values): Add virtuals for range_of_expr, value_of_expr,
+	value_on_edge, value_of_stmt, and get_value_range.
+	Call range_query allocator instead of using vrp_value_range_pool.
+	Remove vrp_value_range_pool.
+	(simplify_using_ranges::get_value_range): Remove.
+
+2020-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97236
+	* tree-vect-stmts.c (get_group_load_store_type): Keep
+	VMAT_ELEMENTWISE for single-element vectors.
+
+2020-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (compute_parm_map): Be ready for callee_pi to be NULL.
+
+2020-10-01  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97244
+	* ipa-fnsummary.c (pass_free_fnsummary::execute): Free
+	also indirect inlining datastructure.
+	* ipa-modref.c (pass_ipa_modref::execute): Do not free them here.
+	* ipa-prop.c (ipa_free_all_node_params): Do not crash when info does
+	not exist.
+	(ipa_unregister_cgraph_hooks): Likewise.
+
+2020-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* internal-fn.c (DEF_INTERNAL_FN): Fix handling of fnspec
+
+2020-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in: Add value-query.o.
+	* value-query.cc: New file.
+	* value-query.h: New file.
+
+2020-10-01  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in: Fix ordering, move Neoverse N2 down.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+
+2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.c (s390_atomic_assign_expand_fenv): Use
+	TARGET_EXPR instead of MODIFY_EXPR for the first assignments to
+	fenv_var and old_fpc.  Formatting fixes.
+
+2020-10-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Also handle
+	VIEW_CONVERT_EXPR.
+
+2020-10-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR target/97250
+	* config/i386/i386.h (PTA_NO_TUNE, PTA_X86_64_BASELINE)
+	(PTA_X86_64_V2, PTA_X86_64_V3, PTA_X86_64_V4): New.
+	* common/config/i386/i386-common.c (processor_alias_table):
+	Add "x86-64-v2", "x86-64-v3", "x86-64-v4".
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Handle new PTA_NO_TUNE processor table entries.
+	* doc/invoke.texi (x86 Options): Document new -march values.
+
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/ppc-asm.h: Support __PCREL__ code.
+
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Don't
+	set -mcmodel=small for -mno-minimal-toc when pcrel.
+
 2020-09-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/97189

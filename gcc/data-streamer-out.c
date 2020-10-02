@@ -229,6 +229,15 @@ streamer_write_poly_uint64 (struct output_block *ob, poly_uint64 work)
     streamer_write_uhwi_stream (ob->main_stream, work.coeffs[i]);
 }
 
+/* Write a poly_int64 value WORK to OB->main_stream.  */
+
+void
+streamer_write_poly_int64 (struct output_block *ob, poly_int64 work)
+{
+  for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    streamer_write_hwi_stream (ob->main_stream, work.coeffs[i]);
+}
+
 /* Write a gcov counter value WORK to OB->main_stream.  */
 
 void

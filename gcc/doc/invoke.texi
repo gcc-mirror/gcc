@@ -13453,6 +13453,10 @@ of iterations of a loop known, it adds a bonus of
 @option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
+@item ipa-max-loop-predicates
+The maximum number of different predicates IPA will use to describe when
+loops in a function have known properties.
+
 @item ipa-max-aa-steps
 During its analysis of function bodies, IPA-CP employs alias analysis
 in order to track values pointed to by function parameters.  In order

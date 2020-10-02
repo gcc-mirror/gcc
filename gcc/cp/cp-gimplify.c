@@ -962,7 +962,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     omp_cxx_notice_variable (wtd->omp_ctx, stmt);
 
   /* Don't dereference parms in a thunk, pass the references through. */
-  if ((TREE_CODE (stmt) == CALL_EXPR && CALL_FROM_THUNK_P (stmt))
+  if ((TREE_CODE (stmt) == CALL_EXPR && call_from_lambda_thunk_p (stmt))
       || (TREE_CODE (stmt) == AGGR_INIT_EXPR && AGGR_INIT_FROM_THUNK_P (stmt)))
     {
       *walk_subtrees = 0;

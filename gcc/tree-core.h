@@ -1220,7 +1220,8 @@ struct GTY(()) tree_base {
            all decls
 
        CALL_FROM_THUNK_P and
-       CALL_ALLOCA_FOR_VAR_P in
+       CALL_ALLOCA_FOR_VAR_P and
+       CALL_FROM_NEW_OR_DELETE_P in
            CALL_EXPR
 
        OMP_CLAUSE_LINEAR_VARIABLE_STRIDE in
