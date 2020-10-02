@@ -57,7 +57,7 @@ fast_call_summary<edge_growth_cache_entry *, va_heap> *edge_growth_cache = NULL;
 class node_context_cache_entry
 {
 public:
-  ipa_call_context ctx;
+  ipa_cached_call_context ctx;
   sreal time, nonspec_time;
   int size;
   ipa_hints hints;
@@ -226,7 +226,7 @@ do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
 	    node_context_cache_miss++;
 	  else
 	    node_context_cache_clear++;
-	  e->entry.ctx.release (true);
+	  e->entry.ctx.release ();
 	  ctx.estimate_size_and_time (&size, &min_size,
 				      &time, &nonspec_time, &hints);
 	  e->entry.size = size;

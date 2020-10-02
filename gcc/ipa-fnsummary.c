@@ -3329,7 +3329,7 @@ ipa_call_context::ipa_call_context (cgraph_node *node, clause_t possible_truths,
 /* Set THIS to be a duplicate of CTX.  Copy all relevant info.  */
 
 void
-ipa_call_context::duplicate_from (const ipa_call_context &ctx)
+ipa_cached_call_context::duplicate_from (const ipa_call_context &ctx)
 {
   m_node = ctx.m_node;
   m_possible_truths = ctx.m_possible_truths;
@@ -3399,24 +3399,19 @@ ipa_call_context::duplicate_from (const ipa_call_context &ctx)
   m_avals.m_known_value_ranges = vNULL;
 }
 
-/* Release memory used by known_vals/contexts/aggs vectors.
-   If ALL is true release also inline_param_summary.
-   This happens when context was previously duplicated to be stored
-   into cache.  */
+/* Release memory used by known_vals/contexts/aggs vectors.  and
+   inline_param_summary.  */
 
 void
-ipa_call_context::release (bool all)
+ipa_cached_call_context::release ()
 {
   /* See if context is initialized at first place.  */
   if (!m_node)
     return;
-  ipa_release_agg_values (m_avals.m_known_aggs, all);
-  if (all)
-    {
-      m_avals.m_known_vals.release ();
-      m_avals.m_known_contexts.release ();
-      m_inline_param_summary.release ();
-    }
+  ipa_release_agg_values (m_avals.m_known_aggs, true);
+  m_avals.m_known_vals.release ();
+  m_avals.m_known_contexts.release ();
+  m_inline_param_summary.release ();
 }
 
 /* Return true if CTX describes the same call context as THIS.  */

@@ -287,6 +287,8 @@ public:
 			  ipa_call_summary *dst_data);
 };
 
+class ipa_cached_call_context;
+
 /* This object describe a context of call.  That is a summary of known
    information about its parameters.  Main purpose of this context is
    to give more realistic estimations of function runtime, size and
@@ -307,8 +309,6 @@ public:
 			       sreal *ret_time,
 			       sreal *ret_nonspecialized_time,
 			       ipa_hints *ret_hints);
-  void duplicate_from (const ipa_call_context &ctx);
-  void release (bool all = false);
   bool equal_to (const ipa_call_context &);
   bool exists_p ()
   {
@@ -329,6 +329,18 @@ private:
   /* Even after having calculated clauses, the information about argument
      values is used to resolve indirect calls.  */
   ipa_call_arg_values m_avals;
+
+  friend ipa_cached_call_context;
+};
+
+/* Variant of ipa_call_context that is stored in a cache over a longer period
+   of time.  */
+
+class ipa_cached_call_context : public ipa_call_context
+{
+public:
+  void duplicate_from (const ipa_call_context &ctx);
+  void release ();
 };
 
 extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
