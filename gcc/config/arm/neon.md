@@ -513,7 +513,7 @@
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
                    (match_operand:VDQ 2 "s_register_operand" "w")))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
@@ -527,7 +527,7 @@
    (minus:VH
     (match_operand:VH 1 "s_register_operand" "w")
     (match_operand:VH 2 "s_register_operand" "w")))]
- "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+ "ARM_HAVE_NEON_<MODE>_ARITH"
  "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_sub<q>")]
 )
@@ -547,7 +547,7 @@
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (mult:VDQW (match_operand:VDQW 1 "s_register_operand" "w")
                    (match_operand:VDQW 2 "s_register_operand" "w")))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmul.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
@@ -592,7 +592,7 @@
         (plus:VDQW (mult:VDQW (match_operand:VDQW 2 "s_register_operand" "w")
                             (match_operand:VDQW 3 "s_register_operand" "w"))
 		  (match_operand:VDQW 1 "s_register_operand" "0")))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
@@ -605,7 +605,7 @@
 	(plus:VH (mult:VH (match_operand:VH 2 "s_register_operand" "w")
 			  (match_operand:VH 3 "s_register_operand" "w"))
 		  (match_operand:VH 1 "s_register_operand" "0")))]
-  "TARGET_NEON_FP16INST && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmla.f16\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set_attr "type" "neon_fp_mla_s<q>")]
 )
@@ -615,7 +615,7 @@
         (minus:VDQW (match_operand:VDQW 1 "s_register_operand" "0")
                     (mult:VDQW (match_operand:VDQW 2 "s_register_operand" "w")
                                (match_operand:VDQW 3 "s_register_operand" "w"))))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
@@ -633,7 +633,7 @@
         (fma:VCVTF (match_operand:VCVTF 1 "register_operand" "w")
 		 (match_operand:VCVTF 2 "register_operand" "w")
 		 (match_operand:VCVTF 3 "register_operand" "0")))]
-  "TARGET_NEON && TARGET_FMA && flag_unsafe_math_optimizations"
+  "ARM_HAVE_NEON_<MODE>_ARITH && TARGET_FMA"
   "vfma.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "neon_fp_mla_s<q>")]
 )
@@ -654,18 +654,7 @@
     (match_operand:VH 1 "register_operand" "w")
     (match_operand:VH 2 "register_operand" "w")
     (match_operand:VH 3 "register_operand" "0")))]
- "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
- "vfma.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set_attr "type" "neon_fp_mla_s<q>")]
-)
-
-(define_insn "fma<VH:mode>4_intrinsic"
- [(set (match_operand:VH 0 "register_operand" "=w")
-   (fma:VH
-    (match_operand:VH 1 "register_operand" "w")
-    (match_operand:VH 2 "register_operand" "w")
-    (match_operand:VH 3 "register_operand" "0")))]
- "TARGET_NEON_FP16INST"
+ "ARM_HAVE_NEON_<MODE>_ARITH"
  "vfma.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
@@ -675,7 +664,7 @@
         (fma:VCVTF (neg:VCVTF (match_operand:VCVTF 1 "register_operand" "w"))
 		   (match_operand:VCVTF 2 "register_operand" "w")
 		   (match_operand:VCVTF 3 "register_operand" "0")))]
-  "TARGET_NEON && TARGET_FMA && flag_unsafe_math_optimizations"
+  "ARM_HAVE_NEON_<MODE>_ARITH && TARGET_FMA"
   "vfms.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "neon_fp_mla_s<q>")]
 )
@@ -1195,7 +1184,7 @@
                            (parallel [(const_int 0) (const_int 1)]))
           (vec_select:V2SF (match_dup 1)
                            (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_NEON && flag_unsafe_math_optimizations"
+  "ARM_HAVE_NEON_V4SF_ARITH"
   "<VQH_mnem>.f32\t%P0, %e1, %f1"
   [(set_attr "vqh_mnem" "<VQH_mnem>")
    (set_attr "type" "neon_fp_reduc_<VQH_type>_s_q")]
@@ -1262,7 +1251,7 @@
 (define_expand "reduc_plus_scal_<mode>"
   [(match_operand:<V_elem> 0 "nonimmediate_operand")
    (match_operand:VD 1 "s_register_operand")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
 {
   rtx vec = gen_reg_rtx (<MODE>mode);
   neon_pairwise_reduce (vec, operands[1], <MODE>mode,
@@ -1275,8 +1264,7 @@
 (define_expand "reduc_plus_scal_<mode>"
   [(match_operand:<V_elem> 0 "nonimmediate_operand")
    (match_operand:VQ 1 "s_register_operand")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
-   && !BYTES_BIG_ENDIAN"
+  "ARM_HAVE_NEON_<MODE>_ARITH && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
 
@@ -1311,7 +1299,7 @@
 (define_expand "reduc_smin_scal_<mode>"
   [(match_operand:<V_elem> 0 "nonimmediate_operand")
    (match_operand:VD 1 "s_register_operand")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
 {
   rtx vec = gen_reg_rtx (<MODE>mode);
 
@@ -1325,8 +1313,7 @@
 (define_expand "reduc_smin_scal_<mode>"
   [(match_operand:<V_elem> 0 "nonimmediate_operand")
    (match_operand:VQ 1 "s_register_operand")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
-   && !BYTES_BIG_ENDIAN"
+  "ARM_HAVE_NEON_<MODE>_ARITH && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
 
@@ -1339,7 +1326,7 @@
 (define_expand "reduc_smax_scal_<mode>"
   [(match_operand:<V_elem> 0 "nonimmediate_operand")
    (match_operand:VD 1 "s_register_operand")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
 {
   rtx vec = gen_reg_rtx (<MODE>mode);
   neon_pairwise_reduce (vec, operands[1], <MODE>mode,
@@ -1352,8 +1339,7 @@
 (define_expand "reduc_smax_scal_<mode>"
   [(match_operand:<V_elem> 0 "nonimmediate_operand")
    (match_operand:VQ 1 "s_register_operand")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
-   && !BYTES_BIG_ENDIAN"
+  "ARM_HAVE_NEON_<MODE>_ARITH && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
 
@@ -1627,7 +1613,7 @@
    (match_operand:VCVTF 2 "s_register_operand")]
   "TARGET_NEON"
 {
-  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+  if (ARM_HAVE_NEON_<MODE>_ARITH)
     emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vadd<mode>_unspec (operands[0], operands[1],
@@ -1752,7 +1738,7 @@
    (mult:VH
     (match_operand:VH 1 "s_register_operand" "w")
     (match_operand:VH 2 "s_register_operand" "w")))]
-  "TARGET_NEON_FP16INST && flag_unsafe_math_optimizations"
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmul.f16\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_mul_<VH_elem_ch><q>")]
 )
@@ -1775,7 +1761,7 @@
    (match_operand:VDQW 3 "s_register_operand")]
   "TARGET_NEON"
 {
-  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+  if (ARM_HAVE_NEON_<MODE>_ARITH)
     emit_insn (gen_mul<mode>3add<mode>_neon (operands[0], operands[1],
 				             operands[2], operands[3]));
   else
@@ -1803,8 +1789,8 @@
    (match_operand:VH 3 "s_register_operand")]
   "TARGET_NEON_FP16INST"
 {
-  emit_insn (gen_fma<mode>4_intrinsic (operands[0], operands[2], operands[3],
-				       operands[1]));
+  emit_insn (gen_fma<mode>4 (operands[0], operands[2], operands[3],
+			     operands[1]));
   DONE;
 })
 
@@ -2266,7 +2252,7 @@
    (match_operand:VDQW 3 "s_register_operand")]
   "TARGET_NEON"
 {
-  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+  if (ARM_HAVE_NEON_<MODE>_ARITH)
     emit_insn (gen_mul<mode>3neg<mode>add<mode>_neon (operands[0],
 		 operands[1], operands[2], operands[3]));
   else
@@ -2373,7 +2359,7 @@
    (match_operand:VCVTF 2 "s_register_operand")]
   "TARGET_NEON"
 {
-  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+  if (ARM_HAVE_NEON_<MODE>_ARITH)
     emit_insn (gen_sub<mode>3 (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vsub<mode>_unspec (operands[0], operands[1],
@@ -6462,7 +6448,7 @@ if (BYTES_BIG_ENDIAN)
  [(set (match_operand:VF 0 "s_register_operand" "=w")
        (abs:VF (minus:VF (match_operand:VF 1 "s_register_operand" "w")
 			 (match_operand:VF 2 "s_register_operand" "w"))))]
- "TARGET_NEON && flag_unsafe_math_optimizations"
+ "ARM_HAVE_NEON_<MODE>_ARITH"
  "vabd.<V_s_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_fp_abd_s<q>")]
 )
@@ -6472,7 +6458,7 @@ if (BYTES_BIG_ENDIAN)
        (abs:VF (unspec:VF [(match_operand:VF 1 "s_register_operand" "w")
 			    (match_operand:VF 2 "s_register_operand" "w")]
 		UNSPEC_VSUB)))]
- "TARGET_NEON && flag_unsafe_math_optimizations"
+ "ARM_HAVE_NEON_<MODE>_ARITH"
  "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_fp_abd_s<q>")]
 )
