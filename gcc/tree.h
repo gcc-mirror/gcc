@@ -3074,9 +3074,6 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
 #define DECL_IS_OPERATOR_DELETE_P(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_DELETE)
 
-#define DECL_IS_REPLACEABLE_OPERATOR_DELETE_P(NODE) \
-  (DECL_IS_OPERATOR_DELETE_P (NODE) && DECL_IS_REPLACEABLE_OPERATOR (NODE))
-
 #define DECL_SET_IS_OPERATOR_DELETE(NODE, VAL) \
   set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_DELETE, VAL)
 

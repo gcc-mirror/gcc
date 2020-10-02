@@ -612,7 +612,7 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 
       if (callee != NULL_TREE
 	  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
-	      || DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (callee))
+	      || DECL_IS_OPERATOR_DELETE_P (callee))
 	  && gimple_call_from_new_or_delete (call))
 	return false;
     }
@@ -877,7 +877,7 @@ propagate_necessity (bool aggressive)
 	  bool is_delete_operator
 	    = (is_gimple_call (stmt)
 	       && gimple_call_from_new_or_delete (as_a <gcall *> (stmt))
-	       && gimple_call_replaceable_operator_delete_p (as_a <gcall *> (stmt)));
+	       && gimple_call_operator_delete_p (as_a <gcall *> (stmt)));
 	  if (is_delete_operator
 	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE))
 	    {
@@ -975,7 +975,7 @@ propagate_necessity (bool aggressive)
 
 	      if (callee != NULL_TREE
 		  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
-		      || DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (callee))
+		      || DECL_IS_OPERATOR_DELETE_P (callee))
 		  && gimple_call_from_new_or_delete (call))
 		continue;
 
@@ -1402,7 +1402,7 @@ eliminate_unnecessary_stmts (void)
 	      && (gimple_call_builtin_p (stmt, BUILT_IN_FREE)
 		  || (is_gimple_call (stmt)
 		      && gimple_call_from_new_or_delete (as_a <gcall *> (stmt))
-		      && gimple_call_replaceable_operator_delete_p (as_a <gcall *> (stmt)))))
+		      && gimple_call_operator_delete_p (as_a <gcall *> (stmt)))))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      if (TREE_CODE (ptr) == SSA_NAME)

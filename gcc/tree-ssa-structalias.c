@@ -4862,7 +4862,7 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 such operator, then the effects for PTA (in particular
 	 the escaping of the pointer) can be ignored.  */
       else if (fndecl
-	       && DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (fndecl)
+	       && DECL_IS_OPERATOR_DELETE_P (fndecl)
 	       && gimple_call_from_new_or_delete (t))
 	;
       else

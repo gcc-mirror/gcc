@@ -78,5 +78,5 @@ int main(){
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Deleting : operator delete" 1 "cddce1"} } */
+/* { dg-final { scan-tree-dump-not "Deleting : operator delete" "cddce1"} } */
 /* { dg-final { scan-tree-dump-not "Deleting : B::operator delete" "cddce1"} } */
