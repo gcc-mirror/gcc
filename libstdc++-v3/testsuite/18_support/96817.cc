@@ -21,6 +21,9 @@
 
 // PR libstdc++/96817
 
+#include <exception>
+#include <stdlib.h>
+
 int init()
 {
 #if __has_include(<sys/single_threaded.h>)
@@ -32,8 +35,11 @@ int init()
   return 0;
 }
 
+void clean_terminate() { _Exit(0); }
+
 int
 main (int argc, char **argv)
 {
+  std::set_terminate(clean_terminate);
   init();
 }
