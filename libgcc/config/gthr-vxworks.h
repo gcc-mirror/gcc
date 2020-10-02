@@ -234,6 +234,12 @@ extern int __gthread_setspecific (__gthread_key_t __key, void *__ptr);
 
 /* ------------------ Base condition variables support ------------------- */
 
+/* VxWorks prio to 6 misses a few services key to a correct
+   implementation of condition variables with reasonable complexity.
+   semExchange in particular.  */
+
+#if _VXWORKS_MAJOR_GE(6)
+
 #define __GTHREAD_HAS_COND 1
 
 typedef SEM_ID __gthread_cond_t;
@@ -253,6 +259,8 @@ extern int __gthread_cond_wait (__gthread_cond_t *cond,
 
 extern int __gthread_cond_wait_recursive (__gthread_cond_t *cond,
 					  __gthread_recursive_mutex_t *mutex);
+
+#endif
 
 /* -----------------------  C++0x thread support ------------------------- */
 
