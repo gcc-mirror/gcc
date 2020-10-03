@@ -35,7 +35,7 @@ test_insert_search_collapse ()
 {
   modref_base_node<alias_set_type> *base_node;
   modref_ref_node<alias_set_type> *ref_node;
-  modref_access_node a = { -1 };
+  modref_access_node a = unspecified_modref_access_node;
 
   modref_tree<alias_set_type> *t = new modref_tree<alias_set_type>(1, 2, 2);
   ASSERT_FALSE (t->every_base);
@@ -118,7 +118,7 @@ test_merge ()
 {
   modref_tree<alias_set_type> *t1, *t2;
   modref_base_node<alias_set_type> *base_node;
-  modref_access_node a = { -1 };
+  modref_access_node a = unspecified_modref_access_node;
 
   t1 = new modref_tree<alias_set_type>(3, 4, 1);
   t1->insert (1, 1, a);

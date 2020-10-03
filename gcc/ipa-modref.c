@@ -143,7 +143,26 @@ modref_summary::useful_p (int ecf_flags)
 static void
 dump_access (modref_access_node *a, FILE *out)
 {
-   fprintf (out, "          Parm %i\n", a->parm_index);
+  fprintf (out, "          access:");
+  if (a->parm_index != -1)
+    {
+      fprintf (out, " Parm %i", a->parm_index);
+      if (a->parm_offset_known)
+	{
+	  fprintf (out, " param offset:");
+	  print_dec ((poly_int64_pod)a->parm_offset, out, SIGNED);
+	}
+    }
+  if (a->range_info_useful_p ())
+    {
+      fprintf (out, " offset:");
+      print_dec ((poly_int64_pod)a->offset, out, SIGNED);
+      fprintf (out, " size:");
+      print_dec ((poly_int64_pod)a->size, out, SIGNED);
+      fprintf (out, " max_size:");
+      print_dec ((poly_int64_pod)a->max_size, out, SIGNED);
+    }
+  fprintf (out, "\n");
 }
 
 /* Dump records TT to OUT.  */
@@ -292,14 +311,15 @@ get_modref_function_summary (cgraph_node *func)
 static modref_access_node
 get_access (ao_ref *ref)
 {
-  modref_access_node a;
   tree base;
 
-  base = ref->ref;
-  while (handled_component_p (base))
-    base = TREE_OPERAND (base, 0);
+  base = ao_ref_base (ref);
+  modref_access_node a = {ref->offset, ref->size, ref->max_size,
+			  0, -1, false};
   if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
     {
+      tree offset = TREE_CODE (base) == MEM_REF
+		    ? TREE_OPERAND (base, 1) : NULL_TREE;
       base = TREE_OPERAND (base, 0);
       if (TREE_CODE (base) == SSA_NAME
 	  && SSA_NAME_IS_DEFAULT_DEF (base)
@@ -316,6 +336,8 @@ get_access (ao_ref *ref)
 		}
 	      a.parm_index++;
 	    }
+	  a.parm_offset_known
+	    = offset && wi::to_poly_offset (offset).to_shwi (&a.parm_offset);
 	}
       else
 	a.parm_index = -1;
@@ -446,7 +468,7 @@ merge_call_side_effects (modref_summary *cur_summary,
 			 gimple *stmt, modref_summary *callee_summary,
 			 bool ignore_stores)
 {
-  auto_vec <int, 32> parm_map;
+  auto_vec <modref_parm_map, 32> parm_map;
   bool changed = false;
 
   parm_map.safe_grow (gimple_call_num_args (stmt));
@@ -469,12 +491,14 @@ merge_call_side_effects (modref_summary *cur_summary,
 		}
 	      index++;
 	    }
-	  parm_map[i] = index;
+	  parm_map[i].parm_index = index;
+	  parm_map[i].parm_offset_known = true;
+	  parm_map[i].parm_offset = 0;
 	}
       else if (points_to_local_or_readonly_memory_p (op))
-	parm_map[i] = -2;
+	parm_map[i].parm_index = -2;
       else
-	parm_map[i] = -1;
+	parm_map[i].parm_index = -1;
     }
 
   /* Merge with callee's summary.  */
@@ -970,7 +994,20 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
 	  size_t k;
 	  modref_access_node *access_node;
 	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	    streamer_write_uhwi (ob, access_node->parm_index);
+	    {
+	      streamer_write_uhwi (ob, access_node->parm_index);
+	      if (access_node->parm_index != -1)
+		{
+		  streamer_write_uhwi (ob, access_node->parm_offset_known);
+		  if (access_node->parm_offset_known)
+		    {
+		      streamer_write_poly_int64 (ob, access_node->parm_offset);
+		      streamer_write_poly_int64 (ob, access_node->offset);
+		      streamer_write_poly_int64 (ob, access_node->size);
+		      streamer_write_poly_int64 (ob, access_node->max_size);
+		    }
+		}
+	    }
 	}
     }
 }
@@ -1084,7 +1121,25 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 	  for (size_t k = 0; k < naccesses; k++)
 	    {
 	      int parm_index = streamer_read_uhwi (ib);
-	      modref_access_node a = {parm_index};
+	      bool parm_offset_known = false;
+	      poly_int64 parm_offset = 0;
+	      poly_int64 offset = 0;
+	      poly_int64 size = -1;
+	      poly_int64 max_size = -1;
+
+	      if (parm_index != -1)
+		{
+		  parm_offset_known = streamer_read_uhwi (ib);
+		  if (parm_offset_known)
+		    {
+		      parm_offset = streamer_read_poly_int64 (ib);
+		      offset = streamer_read_poly_int64 (ib);
+		      size = streamer_read_poly_int64 (ib);
+		      max_size = streamer_read_poly_int64 (ib);
+		    }
+		}
+	      modref_access_node a = {offset, size, max_size, parm_offset,
+				      parm_index, parm_offset_known};
 	      if (nolto_ref_node)
 		nolto_ref_node->insert_access (a, max_accesses);
 	      if (lto_ref_node)
@@ -1331,7 +1386,7 @@ ignore_edge (struct cgraph_edge *e)
 /* Compute parm_map for CALLE_EDGE.  */
 
 static void
-compute_parm_map (cgraph_edge *callee_edge, vec<int> *parm_map)
+compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 {
   class ipa_edge_args *args;
   if (ipa_node_params_sum
@@ -1357,7 +1412,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<int> *parm_map)
 	{
 	  if (es && es->param[i].points_to_local_or_readonly_memory)
 	    {
-	      (*parm_map)[i] = -2;
+	      (*parm_map)[i].parm_index = -2;
 	      continue;
 	    }
 
@@ -1371,26 +1426,33 @@ compute_parm_map (cgraph_edge *callee_edge, vec<int> *parm_map)
 						 (callee_pi, i));
 	      if (cst && points_to_local_or_readonly_memory_p (cst))
 		{
-		  (*parm_map)[i] = -2;
+		  (*parm_map)[i].parm_index = -2;
 		  continue;
 		}
 	    }
 	  if (jf && jf->type == IPA_JF_PASS_THROUGH)
 	    {
-	      (*parm_map)[i]
+	      (*parm_map)[i].parm_index
 		 = ipa_get_jf_pass_through_formal_id (jf);
+	      (*parm_map)[i].parm_offset_known
+		= ipa_get_jf_pass_through_operation (jf) == NOP_EXPR;
+	      (*parm_map)[i].parm_offset = 0;
 	      continue;
 	    }
 	  if (jf && jf->type == IPA_JF_ANCESTOR)
-	    (*parm_map)[i] = ipa_get_jf_ancestor_formal_id (jf);
+	    {
+	      (*parm_map)[i].parm_index = ipa_get_jf_ancestor_formal_id (jf);
+	      (*parm_map)[i].parm_offset_known = true;
+	      (*parm_map)[i].parm_offset = ipa_get_jf_ancestor_offset (jf);
+ 	    }
 	  else
-	    (*parm_map)[i] = -1;
+	    (*parm_map)[i].parm_index = -1;
 	}
       if (dump_file)
 	{
 	  fprintf (dump_file, "  Parm map: ");
 	  for (i = 0; i < count; i++)
-	    fprintf (dump_file, " %i", (*parm_map)[i]);
+	    fprintf (dump_file, " %i", (*parm_map)[i].parm_index);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -1432,7 +1494,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     }
   else
     {
-      auto_vec <int, 32> parm_map;
+      auto_vec <modref_parm_map, 32> parm_map;
 
       compute_parm_map (edge, &parm_map);
 
@@ -1598,7 +1660,7 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		}
 
 
-	      auto_vec <int, 32> parm_map;
+	      auto_vec <modref_parm_map, 32> parm_map;
 
 	      compute_parm_map (callee_edge, &parm_map);
 
