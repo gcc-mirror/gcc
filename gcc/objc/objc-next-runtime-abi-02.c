@@ -920,21 +920,25 @@ create_extern_decl (tree type, const char *name)
 
 /* Create a globally visible definition for variable NAME of a given TYPE. The
    finish_var_decl() routine will need to be called on it afterwards.  */
+static tree
+create_global_decl (tree type, const char *name, bool is_def = false);
 
 static tree
-create_global_decl (tree type, const char *name)
+create_global_decl (tree type, const char *name, bool is_def)
 {
   tree id = get_identifier (name);
   tree var = hash_name_lookup (extern_names, id);
   if (var)
-    {
-      DECL_EXTERNAL (var) = 0;
-      TREE_STATIC (var) = 1;
-    }
+    is_def = true;
   else
     {
       var = start_var_decl (type, name);
       hash_name_enter (extern_names, var);
+    }
+  if (is_def)
+    {
+      DECL_EXTERNAL (var) = 0;
+      TREE_STATIC (var) = 1;
     }
   TREE_PUBLIC (var) = 1;
   return var;
@@ -942,11 +946,13 @@ create_global_decl (tree type, const char *name)
 
 /* Create a symbol with __attribute__ ((visibility ("hidden")))
    attribute (private extern).  */
+static tree
+create_hidden_decl (tree type, const char *name, bool is_def = false);
 
 static tree
-create_hidden_decl (tree type, const char *name)
+create_hidden_decl (tree type, const char *name, bool is_def)
 {
-    tree decl = create_global_decl (type, name);
+    tree decl = create_global_decl (type, name, is_def);
     DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
     DECL_VISIBILITY_SPECIFIED (decl) = 1;
     return decl;
@@ -1014,7 +1020,13 @@ next_runtime_abi_02_protocol_decl (tree p)
   /* static struct _objc_protocol _OBJC_Protocol_<mumble>; */
   snprintf (buf, BUFSIZE, "_OBJC_Protocol_%s",
 	    IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
-  decl = start_var_decl (objc_v2_protocol_template, buf);
+  if (flag_next_runtime >= USE_FIXUP_BEFORE)
+    {
+      decl = create_hidden_decl (objc_v2_protocol_template, buf);
+      DECL_WEAK (decl) = true;
+    }
+  else
+    decl = start_var_decl (objc_v2_protocol_template, buf);
   OBJCMETA (decl, objc_meta, meta_protocol);
   return decl;
 }
@@ -2295,7 +2307,13 @@ build_v2_protocol_list_address_table (void)
       gcc_assert (ref->id && TREE_CODE (ref->id) == PROTOCOL_INTERFACE_TYPE);
       snprintf (buf, BUFSIZE, "_OBJC_LabelProtocol_%s",
 		IDENTIFIER_POINTER (PROTOCOL_NAME (ref->id)));
-      decl = create_global_decl (objc_protocol_type, buf);
+      if (flag_next_runtime >= USE_FIXUP_BEFORE)
+	{
+	  decl = create_hidden_decl (objc_protocol_type, buf, /*is def=*/true);
+	  DECL_WEAK (decl) = true;
+	}
+      else
+	decl = create_global_decl (objc_protocol_type, buf, /*is def=*/true);
       expr = convert (objc_protocol_type, build_fold_addr_expr (ref->refdecl));
       OBJCMETA (decl, objc_meta, meta_label_protocollist);
       finish_var_decl (decl, expr);
