@@ -1,3 +1,17 @@
+2020-10-02  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-n2): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/driver-arm.c (arm_cpu_table): Add Neoverse N2.
+	* doc/invoke.texi: Document support for Neoverse N2.
+
+2020-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (neoversev1_tunings): Define.
+	* config/aarch64/aarch64-cores.def (zeus): Use it.
+	(neoverse-v1): Likewise.
+
 2020-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-tuning-flags.def
