@@ -1876,6 +1876,11 @@ darwin_globalize_label (FILE *stream, const char *name)
 {
   if (!!strncmp (name, "_OBJC_", 6))
     default_globalize_label (stream, name);
+  /* We have some Objective C cases that need to be global.  */
+  if (!strncmp (name+6, "LabelPro", 8))
+    default_globalize_label (stream, name);
+  if (!strncmp (name+6, "Protocol_", 9))
+    default_globalize_label (stream, name);
 }
 
 /* This routine returns non-zero if 'name' starts with the special objective-c
@@ -1894,7 +1899,43 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
     while (*p >= '0' && *p <= '9')
       p++;
   }
-  return (!strncmp ((const char *)p, "_OBJC_", 6));
+  if (strncmp ((const char *)p, "_OBJC_", 6) != 0)
+    return false;
+  /* We need some of the objective c meta-data symbols to be visible to the
+     linker.  FIXME: this is horrible, we need a better mechanism.  */
+  p += 6;
+  if (!strncmp ((const char *)p, "ClassRef", 8))
+    return false;
+  else if (!strncmp ((const char *)p, "SelRef", 6))
+    return false;
+  else if (!strncmp ((const char *)p, "Category", 8))
+    {
+      if (p[8] == '_' || p[8] == 'I' || p[8] == 'P' || p[8] == 'C' )
+	return false;
+      return true;
+    }
+  else if (!strncmp ((const char *)p, "ClassMethods", 12))
+    return false;
+  else if (!strncmp ((const char *)p, "Instance", 8))
+    {
+      if (p[8] == 'I' || p[8] == 'M')
+	return false;
+      return true;
+    }
+  else if (!strncmp ((const char *)p, "CLASS_RO", 8))
+    return false;
+  else if (!strncmp ((const char *)p, "METACLASS_RO", 12))
+    return false;
+  else if (!strncmp ((const char *)p, "Protocol", 8))
+    {
+      if (p[8] == '_' || p[8] == 'I' || p[8] == 'P'
+	  || p[8] == 'M' || p[8] == 'C' || p[8] == 'O')
+	return false;
+      return true;
+    }
+  else if (!strncmp ((const char *)p, "LabelPro", 8))
+    return false;
+  return true;
 }
 
 /* LTO support for Mach-O.
