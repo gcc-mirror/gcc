@@ -1,3 +1,11 @@
+2020-10-02  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-09-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97069
+	* g++.dg/gcov/pr97069.C: New test.
+
 2020-09-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

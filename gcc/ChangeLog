@@ -1,3 +1,42 @@
+2020-10-02  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-n2): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Document support for Neoverse N2.
+
+2020-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (neoversev1_tunings): Define.
+	* config/aarch64/aarch64-cores.def (zeus): Use it.
+	(neoverse-v1): Likewise.
+
+2020-10-02  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97193
+	* coverage.c (coverage_init): GCDA note files should not be
+	mangled and should end in output directory.
+
+2020-10-02  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/64636
+	* value-prof.c (stream_out_histogram_value): Allow negative
+	values for HIST_TYPE_IOR.
+
+2020-10-02  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-09-23  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97069
+	* profile.c (branch_prob): Line number must be at least 1.
+
 2020-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-tuning-flags.def
