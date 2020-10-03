@@ -64,6 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 }
 - (const char *)name
 {
-  return class_getName (isa);
+  return object_getClassName (self);
 }
 @end

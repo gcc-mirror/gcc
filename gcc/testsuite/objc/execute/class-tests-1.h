@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include "../../objc-obj-c++-shared/runtime.h"
 
+extern int strcmp(const char *, const char *);
+
 /*
  * Standard Tests For Classes and Objects - abort upon failing; return
  * normally if all is well.
