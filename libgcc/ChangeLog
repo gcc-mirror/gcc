@@ -1,3 +1,12 @@
+2020-10-02  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2020-09-22  Sergei Trofimovich  <siarheit@google.com>
+
+	PR gcov-profile/96913
+	* libgcov-driver.c (write_one_data): Avoid function pointer
+	comparison in TOP streaming decision.
+
 2020-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
