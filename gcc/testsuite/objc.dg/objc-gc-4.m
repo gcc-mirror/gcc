@@ -3,7 +3,7 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "GC API is an error from Darwin16." { *-*-darwin1[6-8]* } { "-fnext-runtime" } { "" } } */
+/* { dg-skip-if "GC API is an error from Darwin16." { *-*-darwin1[6-9]* *-*-darwin2[0-9]* } { "-fnext-runtime" } { "" } } */
 /* { dg-options "-fobjc-gc" } */
 /* { dg-prune-output "cc1obj: warning: '-fobjc-gc' is ignored for '-fgnu-runtime'" } */
 

@@ -20,6 +20,7 @@
 /* { dg-do run } */
 /* { dg-skip-if "No API#2 pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-DOBJC_OLD_DISPATCH_PROTOTYPES" { target { *-*-darwin* } } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -28,6 +29,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#if __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyRootClass
 { Class isa; }
 + alloc;
@@ -65,7 +69,7 @@ static id static_variable = nil;
 + (id) mySelf;
 @end
 
-int main(int argc, void **args)
+int main(int argc, char **args)
 {
   /* Functions are tested in alphabetical order.  */
 

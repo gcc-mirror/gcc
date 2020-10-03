@@ -18,6 +18,7 @@ int someivar = 1;
   int someivar;
 }
 
++ (id) initialize;
 + (id) alloc;
 - (id) init;
 - (int) getGlobal;
@@ -26,6 +27,11 @@ int someivar = 1;
 @end
 
 @implementation MyClass
++ (id) initialize
+{
+  return self;
+}
+
 + (id) alloc
 {
   return class_createInstance (self, 0);
