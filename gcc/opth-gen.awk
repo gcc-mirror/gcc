@@ -209,6 +209,7 @@ n_target_int = 0;
 n_target_enum = 0;
 n_target_other = 0;
 n_target_explicit = n_extra_target_vars;
+n_target_explicit_mask = 0;
 
 for (i = 0; i < n_target_save; i++) {
 	if (target_save_decl[i] ~ "^((un)?signed +)?int +[_" alnum "]+$")
@@ -240,6 +241,12 @@ if (have_save) {
 			var_save_seen[name]++;
 			n_target_explicit++;
 			otype = var_type_struct(flags[i])
+
+			if (opt_args("Mask", flags[i]) != "" \
+			    || opt_args("InverseMask", flags[i]))
+				var_target_explicit_mask[n_target_explicit_mask++] \
+				    = otype "explicit_mask_" name;
+
 			if (otype ~ "^((un)?signed +)?int *$")
 				var_target_int[n_target_int++] = otype "x_" name;
 
@@ -259,6 +266,8 @@ if (have_save) {
 } else {
 	var_target_int[n_target_int++] = "int x_target_flags";
 	n_target_explicit++;
+	var_target_explicit_mask[n_target_explicit_mask++] \
+	    = "int explicit_mask_target_flags";
 }
 
 for (i = 0; i < n_target_other; i++) {
@@ -281,8 +290,12 @@ for (i = 0; i < n_target_char; i++) {
 	print "  " var_target_char[i] ";";
 }
 
-print "  /* " n_target_explicit " members */";
-print "  unsigned HOST_WIDE_INT explicit_mask[" int ((n_target_explicit + 63) / 64) "];";
+print "  /* " n_target_explicit - n_target_explicit_mask " members */";
+print "  unsigned HOST_WIDE_INT explicit_mask[" int ((n_target_explicit - n_target_explicit_mask + 63) / 64) "];";
+
+for (i = 0; i < n_target_explicit_mask; i++) {
+	print "  " var_target_explicit_mask[i] ";";
+}
 
 print "};";
 print "";

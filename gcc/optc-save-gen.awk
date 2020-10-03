@@ -516,6 +516,10 @@ if (have_save) {
 
 			var_save_seen[name]++;
 			otype = var_type_struct(flags[i])
+			if (opt_args("Mask", flags[i]) != "" \
+			    || opt_args("InverseMask", flags[i]))
+				var_target_explicit_mask[name] = 1;
+
 			if (otype ~ "^((un)?signed +)?int *$")
 				var_target_int[n_target_int++] = name;
 
@@ -545,6 +549,7 @@ if (have_save) {
 	}
 } else {
 	var_target_int[n_target_int++] = "target_flags";
+	var_target_explicit_mask["target_flags"] = 1;
 }
 
 have_assert = 0;
@@ -608,6 +613,10 @@ for (i = 0; i < n_extra_target_vars; i++) {
 }
 
 for (i = 0; i < n_target_other; i++) {
+	if (var_target_other[i] in var_target_explicit_mask) {
+		print "  ptr->explicit_mask_" var_target_other[i] " = opts_set->x_" var_target_other[i] ";";
+		continue;
+	}
 	print "  if (opts_set->x_" var_target_other[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -630,6 +639,10 @@ for (i = 0; i < n_target_enum; i++) {
 }
 
 for (i = 0; i < n_target_int; i++) {
+	if (var_target_int[i] in var_target_explicit_mask) {
+		print "  ptr->explicit_mask_" var_target_int[i] " = opts_set->x_" var_target_int[i] ";";
+		continue;
+	}
 	print "  if (opts_set->x_" var_target_int[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -739,6 +752,10 @@ for (i = 0; i < n_extra_target_vars; i++) {
 }
 
 for (i = 0; i < n_target_other; i++) {
+	if (var_target_other[i] in var_target_explicit_mask) {
+		print "  opts_set->x_" var_target_other[i] " = ptr->explicit_mask_" var_target_other[i] ";";
+		continue;
+	}
 	if (j == 64) {
 		print "  mask = ptr->explicit_mask[" k "];";
 		k++;
@@ -761,6 +778,10 @@ for (i = 0; i < n_target_enum; i++) {
 }
 
 for (i = 0; i < n_target_int; i++) {
+	if (var_target_int[i] in var_target_explicit_mask) {
+		print "  opts_set->x_" var_target_int[i] " = ptr->explicit_mask_" var_target_int[i] ";";
+		continue;
+	}
 	if (j == 64) {
 		print "  mask = ptr->explicit_mask[" k "];";
 		k++;
@@ -1058,6 +1079,20 @@ print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->exp
 print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
 print "      return false;"
 
+for (i = 0; i < n_target_other; i++) {
+	if (var_target_other[i] in var_target_explicit_mask) {
+		print "  if (ptr1->explicit_mask_" var_target_other[i] " != ptr2->explicit_mask_" var_target_other[i] ")";
+		print "    return false;";
+	}
+}
+
+for (i = 0; i < n_target_int; i++) {
+	if (var_target_int[i] in var_target_explicit_mask) {
+		print "  if (ptr1->explicit_mask_" var_target_int[i] " != ptr2->explicit_mask_" var_target_int[i] ")";
+		print "    return false;";
+	}
+}
+
 print "  return true;";
 
 print "}";
@@ -1088,6 +1123,17 @@ for (i = 0; i < n_target_val; i++) {
 }
 print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
 print "    hstate.add_hwi (ptr->explicit_mask[i]);";
+
+for (i = 0; i < n_target_other; i++) {
+	if (var_target_other[i] in var_target_explicit_mask)
+		print "  hstate.add_hwi (ptr->explicit_mask_" var_target_other[i] ");";
+}
+
+for (i = 0; i < n_target_int; i++) {
+	if (var_target_int[i] in var_target_explicit_mask)
+		print "  hstate.add_hwi (ptr->explicit_mask_" var_target_int[i] ");";
+}
+
 print "  return hstate.end ();";
 print "}";
 
