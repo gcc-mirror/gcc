@@ -14,6 +14,7 @@
 #include "rust-name-resolution.h"
 #include "rust-type-resolution.h"
 #include "rust-compile.h"
+#include "rust-macro-expand.h"
 
 #include "rust-target.h"
 
@@ -507,35 +508,6 @@ Session::parse_file (const char *filename)
   Compile::Compilation::Compile (parsed_crate, backend);
 }
 
-// Checks whether 'cfg' attribute prevents compilation.
-bool
-check_cfg (const AST::Attribute &attr ATTRIBUTE_UNUSED)
-{
-  // if "has sub items", and if 'cfg' attr, recursively call this on sub items?
-
-  // TODO: actually implement. assume true for now
-
-  return true;
-}
-// TODO: deprecated - don't use
-
-// Checks whether any 'cfg' attribute on the item prevents compilation of that
-// item.
-bool
-check_item_cfg (std::vector<AST::Attribute> attrs)
-{
-  for (const auto &attr : attrs)
-    {
-      if (attr.get_path () == "cfg" && !check_cfg (attr))
-	{
-	  return false;
-	}
-    }
-
-  return true;
-}
-// TODO: deprecated - don't use
-
 // TODO: actually implement method
 void
 load_extern_crate (std::string crate_name ATTRIBUTE_UNUSED)
@@ -729,19 +701,22 @@ Session::injection (AST::Crate &crate)
 }
 
 void
-Session::expansion (AST::Crate &crate ATTRIBUTE_UNUSED)
+Session::expansion (AST::Crate &crate)
 {
   fprintf (stderr, "started expansion\n");
 
-  // rustc has a modification to windows PATH temporarily here, which may end up
-  // being required
+  /* rustc has a modification to windows PATH temporarily here, which may end up
+   * being required */
 
   // create macro expansion config?
   // if not, would at least have to configure recursion_limit
+  ExpansionCfg cfg;
 
   // create extctxt? from parse session, cfg, and resolver?
-  // expand by calling cxtctxt object's monotonic_expander's expand_crate
-  // method.
+  /* expand by calling cxtctxt object's monotonic_expander's expand_crate
+   * method. */
+  MacroExpander expander (crate, cfg);
+  expander.expand_crate ();
 
   // error reporting - check unused macros, get missing fragment specifiers
 

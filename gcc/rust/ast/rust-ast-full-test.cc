@@ -2448,7 +2448,7 @@ MatchExpr::as_string () const
   else
     {
       for (const auto &arm : match_arms)
-	  str += "\n  " + arm.as_string ();
+	str += "\n  " + arm.as_string ();
     }
 
   return str;
@@ -4635,16 +4635,10 @@ DelimTokenTree::parse_to_meta_item () const
 
   /* assume top-level delim token tree in attribute - convert all nested ones
    * to token stream */
-  std::vector<std::unique_ptr<Token>> token_stream = to_token_stream ();
+  std::vector<std::unique_ptr<Token> > token_stream = to_token_stream ();
 
-  // TODO: replace this with a specialised converter that the token stream is
-  // moved into
-  /*int i = 0;
-  std::vector<std::unique_ptr<MetaItemInner>> meta_items(
-    parse_meta_item_seq(token_stream, i));*/
-  // something like:
   MacroParser parser (std::move (token_stream));
-  std::vector<std::unique_ptr<MetaItemInner>> meta_items (
+  std::vector<std::unique_ptr<MetaItemInner> > meta_items (
     parser.parse_meta_item_seq ());
 
   return new AttrInputMetaItemContainer (std::move (meta_items));
@@ -4729,15 +4723,14 @@ MacroParser::parse_meta_item_inner ()
 
   /* HACK: parse parenthesised sequence, and then try conversions to other
    * stuff */
-  std::vector<std::unique_ptr<MetaItemInner>> meta_items
+  std::vector<std::unique_ptr<MetaItemInner> > meta_items
     = parse_meta_item_seq ();
 
   // pass for meta name value str
   std::vector<MetaNameValueStr> meta_name_value_str_items;
   for (const auto &item : meta_items)
     {
-      std::unique_ptr<MetaNameValueStr> converted_item (
-	item->to_meta_name_value_str ());
+      std::unique_ptr<MetaNameValueStr> converted_item = item->to_meta_name_value_str ();
       if (converted_item == nullptr)
 	{
 	  meta_name_value_str_items.clear ();
@@ -4814,7 +4807,7 @@ MacroParser::parse_path_meta_item ()
   switch (peek_token ()->get_id ())
     {
       case LEFT_PAREN: {
-	std::vector<std::unique_ptr<MetaItemInner>> meta_items
+	std::vector<std::unique_ptr<MetaItemInner> > meta_items
 	  = parse_meta_item_seq ();
 
 	return std::unique_ptr<MetaItemSeq> (
@@ -4852,7 +4845,7 @@ MacroParser::parse_path_meta_item ()
 
 /* Parses a parenthesised sequence of meta item inners. Parentheses are
  * required here. */
-std::vector<std::unique_ptr<MetaItemInner>>
+std::vector<std::unique_ptr<MetaItemInner> >
 MacroParser::parse_meta_item_seq ()
 {
   if (stream_pos != 0)
@@ -4864,7 +4857,7 @@ MacroParser::parse_meta_item_seq ()
 
   // int i = 0;
   int vec_length = token_stream.size ();
-  std::vector<std::unique_ptr<MetaItemInner>> meta_items;
+  std::vector<std::unique_ptr<MetaItemInner> > meta_items;
 
   if (peek_token ()->get_id () != LEFT_PAREN)
     {
@@ -4905,10 +4898,10 @@ MacroParser::parse_meta_item_seq ()
 
 /* Collects any nested token trees into a flat token stream, suitable for
  * parsing. */
-std::vector<std::unique_ptr<Token>>
+std::vector<std::unique_ptr<Token> >
 DelimTokenTree::to_token_stream () const
 {
-  std::vector<std::unique_ptr<Token>> tokens;
+  std::vector<std::unique_ptr<Token> > tokens;
 
   // simulate presence of delimiters
   tokens.push_back (
@@ -4917,7 +4910,7 @@ DelimTokenTree::to_token_stream () const
 
   for (const auto &tree : token_trees)
     {
-      std::vector<std::unique_ptr<Token>> stream = tree->to_token_stream ();
+      std::vector<std::unique_ptr<Token> > stream = tree->to_token_stream ();
 
       tokens.insert (tokens.end (), std::make_move_iterator (stream.begin ()),
 		     std::make_move_iterator (stream.end ()));
@@ -5060,9 +5053,7 @@ AttrInputMetaItemContainer::check_cfg_predicate (const Session &session) const
   for (const auto &inner_item : items)
     {
       if (!inner_item->check_cfg_predicate (session))
-	{
-	  return false;
-	}
+	return false;
     }
 
   /* TODO: as far as I can tell, there should only be a single element to
@@ -5088,9 +5079,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
       for (const auto &str : strs)
 	{
 	  if (!str.check_cfg_predicate (session))
-	    {
-	      return false;
-	    }
+	    return false;
 	}
       return true;
     }
@@ -5099,9 +5088,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
       for (const auto &str : strs)
 	{
 	  if (str.check_cfg_predicate (session))
-	    {
-	      return true;
-	    }
+	    return true;
 	}
       return false;
     }
@@ -5140,9 +5127,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
       for (const auto &path : paths)
 	{
 	  if (!check_path_exists_in_cfg (session, path))
-	    {
-	      return false;
-	    }
+	    return false;
 	}
       return true;
     }
@@ -5151,9 +5136,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
       for (const auto &path : paths)
 	{
 	  if (check_path_exists_in_cfg (session, path))
-	    {
-	      return true;
-	    }
+	    return true;
 	}
       return false;
     }
@@ -5190,9 +5173,7 @@ MetaListPaths::check_path_exists_in_cfg (const Session &session,
 {
   auto it = session.options.target_data.features.find (path.as_string ());
   if (it != session.options.target_data.features.end ())
-    {
-      return true;
-    }
+    return true;
   return false;
 }
 
@@ -5204,9 +5185,7 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
       for (const auto &item : seq)
 	{
 	  if (!item->check_cfg_predicate (session))
-	    {
-	      return false;
-	    }
+	    return false;
 	}
       return true;
     }
@@ -5215,9 +5194,7 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
       for (const auto &item : seq)
 	{
 	  if (item->check_cfg_predicate (session))
-	    {
-	      return true;
-	    }
+	    return true;
 	}
       return false;
     }
@@ -5225,8 +5202,8 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
     {
       if (seq.size () != 1)
 	{
-	  // HACK: convert vector platform-dependent size_type to string to
-	  // use in printf
+	  /* HACK: convert vector platform-dependent size_type to string to
+	   * use in printf */
 	  rust_error_at (Linemap::unknown_location (),
 			 "cfg predicate could not be checked for MetaItemSeq "
 			 "with ident of 'not' "
@@ -5253,9 +5230,7 @@ MetaWord::check_cfg_predicate (const Session &session) const
 {
   auto it = session.options.target_data.features.find (ident);
   if (it != session.options.target_data.features.end ())
-    {
-      return true;
-    }
+    return true;
   return false;
 }
 
@@ -5268,9 +5243,7 @@ MetaItemPath::check_cfg_predicate (const Session &session) const
    * (though this shouldn't occur). */
   auto it = session.options.target_data.features.find (path.as_string ());
   if (it != session.options.target_data.features.end ())
-    {
-      return true;
-    }
+    return true;
   return false;
 }
 
@@ -5287,15 +5260,90 @@ MetaItemPathLit::check_cfg_predicate (const Session &session) const
 							 lit.as_string ());
 }
 
-std::vector<std::unique_ptr<Token>>
+std::vector<std::unique_ptr<Token> >
 Token::to_token_stream () const
 {
-  // initialisation list doesn't work as it needs copy constructor, so have to
-  // do this
-  std::vector<std::unique_ptr<Token>> dummy_vector;
+  /* initialisation list doesn't work as it needs copy constructor, so have to
+   * do this */
+  std::vector<std::unique_ptr<Token> > dummy_vector;
   dummy_vector.reserve (1);
   dummy_vector.push_back (std::unique_ptr<Token> (clone_token_impl ()));
   return dummy_vector;
+}
+
+Attribute
+MetaNameValueStr::to_attribute () const
+{
+  LiteralExpr lit_expr (str, Literal::LitType::STRING, Location ());
+  return Attribute (SimplePath::from_str (ident),
+		    std::unique_ptr<AttrInputLiteral> (
+		      new AttrInputLiteral (std::move (lit_expr))));
+}
+
+Attribute
+MetaItemPath::to_attribute () const
+{
+  return Attribute (path, nullptr);
+}
+
+Attribute
+MetaItemSeq::to_attribute () const
+{
+  std::vector<std::unique_ptr<MetaItemInner> > new_seq;
+  new_seq.reserve (seq.size ());
+  for (const auto &e : seq)
+    new_seq.push_back (e->clone_meta_item_inner ());
+
+  std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
+    new AttrInputMetaItemContainer (std::move (new_seq)));
+  return Attribute (path, std::move (new_seq_container));
+}
+
+Attribute
+MetaWord::to_attribute () const
+{
+  return Attribute (SimplePath::from_str (ident), nullptr);
+}
+
+Attribute
+MetaListPaths::to_attribute () const
+{
+  /* probably one of the most annoying conversions - have to lose specificity by
+   * turning it into just AttrInputMetaItemContainer (i.e. paths-only nature is
+   * no longer known). If conversions back are required, might have to do a
+   * "check all are paths" pass or something. */
+
+  std::vector<std::unique_ptr<MetaItemInner> > new_seq;
+  new_seq.reserve (paths.size ());
+  for (const auto &e : paths)
+    new_seq.push_back (std::unique_ptr<MetaItemPath> (new MetaItemPath (e)));
+
+  std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
+    new AttrInputMetaItemContainer (std::move (new_seq)));
+  return Attribute (SimplePath::from_str (ident),
+		    std::move (new_seq_container));
+}
+
+Attribute
+MetaListNameValueStr::to_attribute () const
+{
+  std::vector<std::unique_ptr<MetaItemInner> > new_seq;
+  new_seq.reserve (strs.size ());
+  for (const auto &e : strs)
+    new_seq.push_back (
+      std::unique_ptr<MetaNameValueStr> (new MetaNameValueStr (e)));
+
+  std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
+    new AttrInputMetaItemContainer (std::move (new_seq)));
+  return Attribute (SimplePath::from_str (ident),
+		    std::move (new_seq_container));
+}
+
+Attribute
+MetaItemPathLit::to_attribute () const
+{
+  return Attribute (path, std::unique_ptr<AttrInputLiteral> (
+			    new AttrInputLiteral (lit)));
 }
 
 /* Visitor implementations - these are short but inlining can't happen anyway

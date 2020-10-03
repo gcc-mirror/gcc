@@ -8254,9 +8254,7 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
 
   // quick break out if end_token_id
   if (lexer.peek_token ()->get_id () == end_token_id)
-    {
-      return patterns;
-    }
+    return patterns;
 
   // parse required pattern - if doesn't exist, return empty
   std::unique_ptr<AST::Pattern> initial_pattern = parse_pattern ();
@@ -8279,9 +8277,7 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
 
       // break if hit end token id
       if (lexer.peek_token ()->get_id () == end_token_id)
-	{
-	  break;
-	}
+	break;
 
       // parse pattern
       std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
@@ -8291,7 +8287,7 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
 	  rust_error_at (lexer.peek_token ()->get_locus (),
 			 "failed to parse pattern in match arm patterns");
 	  // skip somewhere?
-	  return std::vector<std::unique_ptr<AST::Pattern> > ();
+	  return {};
 	}
 
       patterns.push_back (std::move (pattern));
@@ -8459,9 +8455,7 @@ Parser<ManagedTokenSource>::parse_array_expr (
 
 	      // quick break if right square bracket
 	      if (lexer.peek_token ()->get_id () == RIGHT_SQUARE)
-		{
-		  break;
-		}
+		break;
 
 	      // parse expression (required)
 	      std::unique_ptr<AST::Expr> expr = parse_expr ();
@@ -8604,9 +8598,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_expr (
 
 	  // break out if right paren
 	  if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-	    {
-	      break;
-	    }
+	    break;
 
 	  // parse expr, which is now required
 	  std::unique_ptr<AST::Expr> expr = parse_expr ();
@@ -11848,16 +11840,12 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
   return expr;
 }
 
-/* Parse expression with lowest left binding power. FIXME: this may only apply
- * to expressions without blocks as they are the only ones to have precedence?
- */
+// Parse expression with lowest left binding power.
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Expr>
 Parser<ManagedTokenSource>::parse_expr (std::vector<AST::Attribute> outer_attrs,
 					ParseRestrictions restrictions)
 {
-  /* HACK: only call parse_expr(LBP_LOWEST) after ensuring it is not an
-   * expression with block? */
   return parse_expr (LBP_LOWEST, std::move (outer_attrs), restrictions);
 }
 
@@ -14273,9 +14261,7 @@ Parser<ManagedTokenSource>::parse_tuple_index_expr_float (
 {
   // only works on float literals
   if (tok->get_id () != FLOAT_LITERAL)
-    {
       return nullptr;
-    }
 
   // DEBUG:
   fprintf (stderr, "exact string form of float: '%s'\n",

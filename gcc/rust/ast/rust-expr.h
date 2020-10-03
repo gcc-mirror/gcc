@@ -180,6 +180,8 @@ public:
   /* TODO: return true if "ident" is defined and value of it is "lit", return
    * false otherwise */
 
+  Attribute to_attribute () const override;
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaItemPathLit *clone_meta_item_inner_impl () const override

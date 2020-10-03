@@ -33,15 +33,15 @@ struct MacroExpander
   ~MacroExpander () = default;
 
   // Expands all macros in the crate passed in.
-  void expand_crate (AST::Crate &crate);
+  void expand_crate ();
 
   /* Expands a macro invocation (not macro invocation semi) - possibly make both
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
-  void expand_invoc (::std::unique_ptr<AST::MacroInvocation> &invoc);
+  void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
 
-  // TODO: make it extend ASTVisitor so that individual items can be accessed
-  // properly?
+  /* TODO: make it extend ASTVisitor so that individual items can be accessed
+   * properly? */
 
 private:
   AST::Crate &crate;

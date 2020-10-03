@@ -112,7 +112,7 @@ public:
   };
 
 private:
-  std::vector<std::unique_ptr<MacroMatch>> matches;
+  std::vector<std::unique_ptr<MacroMatch> > matches;
   MacroRepOp op;
 
   // bool has_sep;
@@ -126,7 +126,7 @@ public:
   // Returns whether macro match repetition has separator token.
   bool has_sep () const { return sep != NULL; }
 
-  MacroMatchRepetition (std::vector<std::unique_ptr<MacroMatch>> matches,
+  MacroMatchRepetition (std::vector<std::unique_ptr<MacroMatch> > matches,
 			MacroRepOp op, std::unique_ptr<MacroRepSep> sep)
     : matches (std::move (matches)), op (op), sep (std::move (sep))
   {}
@@ -174,7 +174,7 @@ protected:
 class MacroMatcher : public MacroMatch
 {
   DelimType delim_type;
-  std::vector<std::unique_ptr<MacroMatch>> matches;
+  std::vector<std::unique_ptr<MacroMatch> > matches;
 
   // TODO: think of way to mark invalid that doesn't take up more space
   bool is_invalid;
@@ -183,7 +183,7 @@ class MacroMatcher : public MacroMatch
 
 public:
   MacroMatcher (DelimType delim_type,
-		std::vector<std::unique_ptr<MacroMatch>> matches)
+		std::vector<std::unique_ptr<MacroMatch> > matches)
     : delim_type (delim_type), matches (std::move (matches)), is_invalid (false)
   {}
 
@@ -392,6 +392,8 @@ public:
 
   bool check_cfg_predicate (const Session &session) const override;
 
+  Attribute to_attribute () const override;
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaItemPath *clone_meta_item_inner_impl () const override
@@ -404,11 +406,11 @@ protected:
 class MetaItemSeq : public MetaItem
 {
   SimplePath path;
-  std::vector<std::unique_ptr<MetaItemInner>> seq;
+  std::vector<std::unique_ptr<MetaItemInner> > seq;
 
 public:
   MetaItemSeq (SimplePath path,
-	       std::vector<std::unique_ptr<MetaItemInner>> seq)
+	       std::vector<std::unique_ptr<MetaItemInner> > seq)
     : path (std::move (path)), seq (std::move (seq))
   {}
 
@@ -443,6 +445,8 @@ public:
 
   bool check_cfg_predicate (const Session &session) const override;
 
+  Attribute to_attribute () const override;
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaItemSeq *clone_meta_item_inner_impl () const override
@@ -464,6 +468,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   bool check_cfg_predicate (const Session &session) const override;
+
+  Attribute to_attribute () const override;
 
 protected:
   // Use covariance to implement clone function as returning this type
@@ -489,12 +495,14 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // HACK: used to simplify parsing - creates a copy of this
-  MetaNameValueStr *to_meta_name_value_str () const override
+  std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const override
   {
-    return clone_meta_item_inner_impl ();
+    return std::unique_ptr<MetaNameValueStr> (clone_meta_item_inner_impl ());
   }
 
   bool check_cfg_predicate (const Session &session) const override;
+
+  Attribute to_attribute () const override;
 
 protected:
   // Use covariance to implement clone function as returning this type
@@ -521,6 +529,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   bool check_cfg_predicate (const Session &session) const override;
+
+  Attribute to_attribute () const override;
 
 private:
   bool check_path_exists_in_cfg (const Session &session,
@@ -551,6 +561,8 @@ public:
 
   bool check_cfg_predicate (const Session &session) const override;
 
+  Attribute to_attribute () const override;
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaListNameValueStr *clone_meta_item_inner_impl () const override
@@ -563,7 +575,7 @@ protected:
 struct MacroParser
 {
 private:
-  std::vector<std::unique_ptr<Token>> token_stream;
+  std::vector<std::unique_ptr<Token> > token_stream;
   /* probably have to make this mutable (mutable int stream_pos) otherwise const
    * has to be removed up to DelimTokenTree or further ok since this changing
    * would have an effect on the results of the methods run (i.e. not logically
@@ -571,14 +583,14 @@ private:
   int stream_pos;
 
 public:
-  MacroParser (std::vector<std::unique_ptr<Token>> token_stream,
+  MacroParser (std::vector<std::unique_ptr<Token> > token_stream,
 	       int stream_start_pos = 0)
     : token_stream (std::move (token_stream)), stream_pos (stream_start_pos)
   {}
 
   ~MacroParser () = default;
 
-  std::vector<std::unique_ptr<MetaItemInner>> parse_meta_item_seq ();
+  std::vector<std::unique_ptr<MetaItemInner> > parse_meta_item_seq ();
 
 private:
   // Parses a MetaItemInner.

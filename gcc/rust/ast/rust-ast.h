@@ -638,13 +638,15 @@ public:
 
   /* HACK: used to simplify parsing - creates a copy of that type, or returns
    * null */
-  virtual MetaNameValueStr *to_meta_name_value_str () const { return nullptr; }
+  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const { return nullptr; }
 
   // HACK: used to simplify parsing - same thing
   virtual SimplePath to_path_item () const
   {
     return SimplePath::create_empty ();
   }
+
+  virtual Attribute to_attribute() const { return Attribute::create_empty (); }
 
   virtual bool check_cfg_predicate (const Session &session) const = 0;
 };
