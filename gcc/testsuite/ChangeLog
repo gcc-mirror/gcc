@@ -1,3 +1,95 @@
+2020-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/spellcheck-reserved.c: Adjust diagnostic.
+	* g++.dg/spellcheck-typenames.C: Adjust diagnostic.
+
+2020-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/inherit/pr97268.C: New.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-loophint-1.c: New test.
+
+2020-10-02  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vmaxavq_p_s16.c: Add test for mismatched
+	width of scalar argument.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_u8.c: Likewise.
+
+2020-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-arith-2.c (float16_t): Use _Float16_t
+	rather than __fp16.
+	(float16x4_t, float16x4_t): Likewise.
+	(fp16_abs): Use __builtin_fabsf16.
+
+2020-10-02  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/extend-syntax.c: Fix assembler checks for
+	ilp32, disable check-function-bodies on ilp32.
+	* gcc.target/aarch64/subsp.c: Only check second scan-assembler
+	on lp64 since the code on ilp32 is missing the optimization
+	needed for this test to pass.
+
+2020-10-02  Jason Merril  <jason@redhat.com>
+
+	* g++.dg/pr94314.C: new/delete no longer omitted.
+
+2020-10-02  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/pta-delete-1.C: New testcase.
+
 2020-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_cond_mixed): Add

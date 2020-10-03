@@ -1,3 +1,68 @@
+2020-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97014
+	* cxx-pretty-print.c (pp_cxx_template_argument_list): If the
+	argument is template_parm_object_p, print its DECL_INITIAL.
+
+2020-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (lang_decl_base): anticipated_p is not used for
+	anticipatedness.
+	(DECL_ANTICIPATED): Delete.
+	* decl.c (duplicate_decls): Delete DECL_ANTICIPATED_management,
+	use was_hidden.
+	(cxx_builtin_function): Drop DECL_ANTICIPATED setting.
+	(xref_tag_1): Drop DECL_ANTICIPATED assert.
+	* name-lookup.c (name_lookup::adl_class_only): Drop
+	DECL_ANTICIPATED check.
+	(name_lookup::search_adl): Always dedup.
+	(anticipated_builtin_p): Reimplement.
+	(do_pushdecl): Drop DECL_ANTICIPATED asserts & update.
+	(lookup_elaborated_type_1): Drop DECL_ANTICIPATED update.
+	(do_pushtag): Drop DECL_ANTICIPATED setting.
+	* pt.c (push_template_decl): Likewise.
+	(tsubst_friend_class): Likewise.
+
+2020-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (consider_decl): New, broken out of ...
+	(consider_binding_level): ... here.  Iterate the hash table for
+	namespace bindings.
+
+2020-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (base_ctor_omit_inherited_parms): Declare.
+	* class.c (add_method): Refactor main loop, only pass fns to
+	ctor_omit_inherited_parms.
+	(build_cdtor_clones): Rename bool parms.
+	(clone_cdtor): Call base_ctor_omit_inherited_parms.
+	* method.c (base_ctor_omit_inherited_parms): New, broken out of
+	...
+	(ctor_omit_inherited_parms): ... here, call it with
+	DECL_CLONED_FUNCTION.
+
+2020-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (cp_fname_init): Delete declaration.
+	* decl.c (cp_fname_init): Merge into only caller ...
+	(cp_make_fname): ... here & refactor.
+
+2020-10-02  Jason Merril  <jason@redhat.com>
+
+	* call.c (build_operator_new_call): Set CALL_FROM_NEW_OR_DELETE_P.
+	(build_op_delete_call): Likewise.
+	* init.c (build_new_1, build_vec_delete_1, build_delete): Not here.
+	(build_delete):
+
+2020-10-02  Jason Merril  <jason@redhat.com>
+
+	* lambda.c (call_from_lambda_thunk_p): New.
+	* cp-gimplify.c (cp_genericize_r): Use it.
+	* pt.c (tsubst_copy_and_build): Use it.
+	* typeck.c (check_return_expr): Use it.
+	* cp-tree.h: Declare it.
+	(CALL_FROM_NEW_OR_DELETE_P): Move to gcc/tree.h.
+
 2020-10-01  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (DECL_ANTICIPATED): Adjust comment.

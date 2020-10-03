@@ -1,3 +1,375 @@
+2020-10-02  David Edelsohn  <dje.gcc@gmail.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/rs6000/rs6000.c: Include ssa.h. Reorder some headers.
+	* config/rs6000/rs6000-call.c: Same.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (ipa-cp-large-unit-insns): New parameter.
+	* ipa-cp.c (get_max_overall_size): Use the new parameter.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (estimate_local_effects): Add overeall_size to dumped
+	string.
+	(decide_about_value): Add dumping new overall_size.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-fnsummary.h (ipa_freqcounting_predicate): New type.
+	(ipa_fn_summary): Change the type of loop_iterations and loop_strides
+	to vectors of ipa_freqcounting_predicate.
+	(ipa_fn_summary::ipa_fn_summary): Construct the new vectors.
+	(ipa_call_estimates): New fields loops_with_known_iterations and
+	loops_with_known_strides.
+	* ipa-cp.c (hint_time_bonus): Multiply param_ipa_cp_loop_hint_bonus
+	with the expected frequencies of loops with known iteration count or
+	stride.
+	* ipa-fnsummary.c (add_freqcounting_predicate): New function.
+	(ipa_fn_summary::~ipa_fn_summary): Release the new vectors instead of
+	just two predicates.
+	(remap_hint_predicate_after_duplication): Replace with function
+	remap_freqcounting_preds_after_dup.
+	(ipa_fn_summary_t::duplicate): Use it or duplicate new vectors.
+	(ipa_dump_fn_summary): Dump the new vectors.
+	(analyze_function_body): Compute the loop property vectors.
+	(ipa_call_context::estimate_size_and_time): Calculate also
+	loops_with_known_iterations and loops_with_known_strides.  Adjusted
+	dumping accordinly.
+	(remap_hint_predicate): Replace with function
+	remap_freqcounting_predicate.
+	(ipa_merge_fn_summary_after_inlining): Use it.
+	(inline_read_section): Stream loopcounting vectors instead of two
+	simple predicates.
+	(ipa_fn_summary_write): Likewise.
+	* params.opt (ipa-max-loop-predicates): New parameter.
+	* doc/invoke.texi (ipa-max-loop-predicates): Document new param.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline-analysis.c (do_estimate_edge_time): Adjusted to use
+	ipa_call_estimates.
+	(do_estimate_edge_size): Likewise.
+	(do_estimate_edge_hints): Likewise.
+	* ipa-fnsummary.h (struct ipa_call_estimates): New type.
+	(ipa_call_context::estimate_size_and_time): Adjusted declaration.
+	(estimate_ipcp_clone_size_and_time): Likewise.
+	* ipa-cp.c (hint_time_bonus): Changed the type of the second argument
+	to ipa_call_estimates.
+	(perform_estimation_of_a_value): Adjusted to use ipa_call_estimates.
+	(estimate_local_effects): Likewise.
+	* ipa-fnsummary.c (ipa_call_context::estimate_size_and_time): Adjusted
+	to return estimates in a single ipa_call_estimates parameter.
+	(estimate_ipcp_clone_size_and_time): Likewise.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-fnsummary.h (ipa_cached_call_context): New forward declaration
+	and class.
+	(class ipa_call_context): Make friend ipa_cached_call_context.  Moved
+	methods duplicate_from and release to it too.
+	* ipa-fnsummary.c (ipa_call_context::duplicate_from): Moved to class
+	ipa_cached_call_context.
+	(ipa_call_context::release): Likewise, removed the parameter.
+	* ipa-inline-analysis.c (node_context_cache_entry): Change the type of
+	ctx to ipa_cached_call_context.
+	(do_estimate_edge_time): Remove parameter from the call to
+	ipa_cached_call_context::release.
+
+2020-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_auto_call_arg_values): New type.
+	(class ipa_call_arg_values): Likewise.
+	(ipa_get_indirect_edge_target): Replaced vector arguments with
+	ipa_call_arg_values in declaration.  Added an overload for
+	ipa_auto_call_arg_values.
+	* ipa-fnsummary.h (ipa_call_context): Removed members m_known_vals,
+	m_known_contexts, m_known_aggs, duplicate_from, release and equal_to,
+	new members m_avals, store_to_cache and equivalent_to_p.  Adjusted
+	construcotr arguments.
+	(estimate_ipcp_clone_size_and_time): Replaced vector arguments
+	with ipa_auto_call_arg_values in declaration.
+	(evaluate_properties_for_edge): Likewise.
+	* ipa-cp.c (ipa_get_indirect_edge_target): Adjusted to work on
+	ipa_call_arg_values rather than on separate vectors.  Added an
+	overload for ipa_auto_call_arg_values.
+	(devirtualization_time_bonus): Adjusted to work on
+	ipa_auto_call_arg_values rather than on separate vectors.
+	(gather_context_independent_values): Adjusted to work on
+	ipa_auto_call_arg_values rather than on separate vectors.
+	(perform_estimation_of_a_value): Likewise.
+	(estimate_local_effects): Likewise.
+	(modify_known_vectors_with_val): Adjusted both variants to work on
+	ipa_auto_call_arg_values and rename them to
+	copy_known_vectors_add_val.
+	(decide_about_value): Adjusted to work on ipa_call_arg_values rather
+	than on separate vectors.
+	(decide_whether_version_node): Likewise.
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Likewise.
+	(evaluate_properties_for_edge): Likewise.
+	(ipa_fn_summary_t::duplicate): Likewise.
+	(estimate_edge_devirt_benefit): Adjusted to work on
+	ipa_call_arg_values rather than on separate vectors.
+	(estimate_edge_size_and_time): Likewise.
+	(estimate_calls_size_and_time_1): Likewise.
+	(summarize_calls_size_and_time): Adjusted calls to
+	estimate_edge_size_and_time.
+	(estimate_calls_size_and_time): Adjusted to work on
+	ipa_call_arg_values rather than on separate vectors.
+	(ipa_call_context::ipa_call_context): Construct from a pointer to
+	ipa_auto_call_arg_values instead of inividual vectors.
+	(ipa_call_context::duplicate_from): Adjusted to access vectors within
+	m_avals.
+	(ipa_call_context::release): Likewise.
+	(ipa_call_context::equal_to): Likewise.
+	(ipa_call_context::estimate_size_and_time): Adjusted to work on
+	ipa_call_arg_values rather than on separate vectors.
+	(estimate_ipcp_clone_size_and_time): Adjusted to work with
+	ipa_auto_call_arg_values rather than on separate vectors.
+	(ipa_merge_fn_summary_after_inlining): Likewise.  Adjusted call to
+	estimate_edge_size_and_time.
+	(ipa_update_overall_fn_summary): Adjusted call to
+	estimate_edge_size_and_time.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Adjusted to work with
+	ipa_auto_call_arg_values rather than with separate vectors.
+	(do_estimate_edge_size): Likewise.
+	(do_estimate_edge_hints): Likewise.
+	* ipa-prop.c (ipa_auto_call_arg_values::~ipa_auto_call_arg_values):
+	New destructor.
+
+2020-10-02  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vmaxnmavq): Remove coercion of scalar
+	argument.
+	(__arm_vmaxnmvq): Likewise.
+	(__arm_vminnmavq): Likewise.
+	(__arm_vminnmvq): Likewise.
+	(__arm_vmaxnmavq_p): Likewise.
+	(__arm_vmaxnmvq_p): Likewise (and delete duplicate definition).
+	(__arm_vminnmavq_p): Likewise.
+	(__arm_vminnmvq_p): Likewise.
+	(__arm_vmaxavq): Likewise.
+	(__arm_vmaxavq_p): Likewise.
+	(__arm_vmaxvq): Likewise.
+	(__arm_vmaxvq_p): Likewise.
+	(__arm_vminavq): Likewise.
+	(__arm_vminavq_p): Likewise.
+	(__arm_vminvq): Likewise.
+	(__arm_vminvq_p): Likewise.
+
+2020-10-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (neoversev1_tunings): Define.
+	* config/aarch64/aarch64-cores.def (zeus): Use it.
+	(neoverse-v1): Likewise.
+
+2020-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* attr-fnspec.h: Update documentation.
+	(attr_fnsec::return_desc_size): Set to 2
+	(attr_fnsec::arg_desc_size): Set to 2
+	* builtin-attrs.def (STR1): Update fnspec.
+	* internal-fn.def (UBSAN_NULL): Update fnspec.
+	(UBSAN_VPTR): Update fnspec.
+	(UBSAN_PTR): Update fnspec.
+	(ASAN_CHECK): Update fnspec.
+	(GOACC_DIM_SIZE): Remove fnspec.
+	(GOACC_DIM_POS): Remove fnspec.
+	* tree-ssa-alias.c (attr_fnspec::verify): Update verification.
+
+2020-10-02  Jan Hubicka  <jh@suse.cz>
+
+	* attr-fnspec.h: New file.
+	* calls.c (decl_return_flags): Use attr_fnspec.
+	* gimple.c (gimple_call_arg_flags): Use attr_fnspec.
+	(gimple_call_return_flags): Use attr_fnspec.
+	* tree-into-ssa.c (pass_build_ssa::execute): Use attr_fnspec.
+	* tree-ssa-alias.c (attr_fnspec::verify): New member fuction.
+
+2020-10-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_range): Break out from ...
+	(ao_ref_init_from_ptr_and_size): ... here.
+
+2020-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* data-streamer-in.c (streamer_read_poly_int64): New function.
+	* data-streamer-out.c (streamer_write_poly_int64): New function.
+	* data-streamer.h (streamer_write_poly_int64): Declare.
+	(streamer_read_poly_int64): Declare.
+
+2020-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve_pred_dominates_p):
+	Delete.
+	* config/aarch64/aarch64.c (aarch64_sve_pred_dominates_p): Likewise.
+	* config/aarch64/aarch64-sve.md: Add banner comment describing
+	how merging predicated FP operations are represented.
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any_relaxed): ...this
+	and...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_2_const): Split into...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_2_const_relaxed): ...this
+	and...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_2_const_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_3): Split into...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_3_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_3_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_any_const): Split into...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_any_const_relaxed): ...this
+	and...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_any_const_strict): ...this.
+	(*cond_add<mode>_2_const): Split into...
+	(*cond_add<mode>_2_const_relaxed): ...this and...
+	(*cond_add<mode>_2_const_strict): ...this.
+	(*cond_add<mode>_any_const): Split into...
+	(*cond_add<mode>_any_const_relaxed): ...this and...
+	(*cond_add<mode>_any_const_strict): ...this.
+	(*cond_<SVE_COND_FCADD:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FCADD:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FCADD:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FCADD:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FCADD:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FCADD:optab><mode>_any_strict): ...this.
+	(*cond_sub<mode>_3_const): Split into...
+	(*cond_sub<mode>_3_const_relaxed): ...this and...
+	(*cond_sub<mode>_3_const_strict): ...this.
+	(*aarch64_pred_abd<mode>): Split into...
+	(*aarch64_pred_abd<mode>_relaxed): ...this and...
+	(*aarch64_pred_abd<mode>_strict): ...this.
+	(*aarch64_cond_abd<mode>_2): Split into...
+	(*aarch64_cond_abd<mode>_2_relaxed): ...this and...
+	(*aarch64_cond_abd<mode>_2_strict): ...this.
+	(*aarch64_cond_abd<mode>_3): Split into...
+	(*aarch64_cond_abd<mode>_3_relaxed): ...this and...
+	(*aarch64_cond_abd<mode>_3_strict): ...this.
+	(*aarch64_cond_abd<mode>_any): Split into...
+	(*aarch64_cond_abd<mode>_any_relaxed): ...this and...
+	(*aarch64_cond_abd<mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_4): Split into...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_4_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_4_strict): ...this.
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4): Split into...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4_relaxed): ...this and...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4_strict): ...this.
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any_strict): ...this.
+	(*aarch64_pred_fac<cmp_op><mode>): Split into...
+	(*aarch64_pred_fac<cmp_op><mode>_relaxed): ...this and...
+	(*aarch64_pred_fac<cmp_op><mode>_strict): ...this.
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>): Split
+	into...
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_relaxed):
+	...this and...
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_strict):
+	...this.
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>): Split
+	into...
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_relaxed):
+	...this and...
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_strict):
+	...this.
+	* config/aarch64/aarch64-sve2.md
+	(*cond_<SVE2_COND_FP_UNARY_LONG:optab><mode>): Split into...
+	(*cond_<SVE2_COND_FP_UNARY_LONG:optab><mode>_relaxed): ...this and...
+	(*cond_<SVE2_COND_FP_UNARY_LONG:optab><mode>_strict): ...this.
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:optab><mode>_any): Split into...
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:optab><mode>_any_relaxed): ...this
+	and...
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:optab><mode>_any_strict): ...this.
+	(*cond_<SVE2_COND_INT_UNARY_FP:optab><mode>): Split into...
+	(*cond_<SVE2_COND_INT_UNARY_FP:optab><mode>_relaxed): ...this and...
+	(*cond_<SVE2_COND_INT_UNARY_FP:optab><mode>_strict): ...this.
+
+2020-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/neon.md (*sub<VDQ:mode>3_neon): Use the new mode macros
+	for the insn condition.
+	(sub<VH:mode>3, *mul<VDQW:mode>3_neon): Likewise.
+	(mul<VDQW:mode>3add<VDQW:mode>_neon): Likewise.
+	(mul<VH:mode>3add<VH:mode>_neon): Likewise.
+	(mul<VDQW:mode>3neg<VDQW:mode>add<VDQW:mode>_neon): Likewise.
+	(fma<VCVTF:mode>4, fma<VH:mode>4, *fmsub<VCVTF:mode>4): Likewise.
+	(quad_halves_<code>v4sf, reduc_plus_scal_<VD:mode>): Likewise.
+	(reduc_plus_scal_<VQ:mode>, reduc_smin_scal_<VD:mode>): Likewise.
+	(reduc_smin_scal_<VQ:mode>, reduc_smax_scal_<VD:mode>): Likewise.
+	(reduc_smax_scal_<VQ:mode>, mul<VH:mode>3): Likewise.
+	(neon_vabd<VF:mode>_2, neon_vabd<VF:mode>_3): Likewise.
+	(fma<VH:mode>4_intrinsic): Delete.
+	(neon_vadd<VCVTF:mode>): Use the new mode macros to decide which
+	form of instruction to generate.
+	(neon_vmla<VDQW:mode>, neon_vmls<VDQW:mode>): Likewise.
+	(neon_vsub<VCVTF:mode>): Likewise.
+	(neon_vfma<VH:mode>): Generate the main fma<mode>4 form instead
+	of using fma<mode>4_intrinsic.
+
+2020-10-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97193
+	* coverage.c (coverage_init): GCDA note files should not be
+	mangled and should end in output directory.
+
+2020-10-02  Jason Merril  <jason@redhat.com>
+
+	* gimple.h (gimple_call_operator_delete_p): Rename from
+	gimple_call_replaceable_operator_delete_p.
+	* gimple.c (gimple_call_operator_delete_p): Likewise.
+	* tree.h (DECL_IS_REPLACEABLE_OPERATOR_DELETE_P): Remove.
+	* tree-ssa-dce.c (mark_all_reaching_defs_necessary_1): Adjust.
+	(propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases_for_call): Likewise.
+
+2020-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (GF_CALL_FROM_NEW_OR_DELETE): New call flag.
+	(gimple_call_set_from_new_or_delete): New.
+	(gimple_call_from_new_or_delete): Likewise.
+	* gimple.c (gimple_build_call_from_tree): Set
+	GF_CALL_FROM_NEW_OR_DELETE appropriately.
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call):
+	Compare gimple_call_from_new_or_delete.
+	* tree-ssa-dce.c (mark_all_reaching_defs_necessary_1): Make
+	sure to only consider new/delete calls from new or delete
+	expressions.
+	(propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases_for_call):
+	Likewise.
+
+2020-10-02  Jason Merril  <jason@redhat.com>
+
+	* tree.h (CALL_FROM_NEW_OR_DELETE_P): Move from cp-tree.h.
+	* tree-core.h: Document new usage of protected_flag.
+
+2020-10-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (irange::fits_p): New.
+
 2020-10-01  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_address): Use

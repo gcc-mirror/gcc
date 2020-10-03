@@ -1,3 +1,22 @@
+2020-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_float/value_init.cc: Use float
+	instead of double so that __atomic_load_8 isn't needed.
+
+2020-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/96817.cc: Use terminate handler that
+	calls _Exit(0).
+
+2020-10-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (reverse_iterator::iter_move):
+	Define for C++20 as per P0896.
+	(reverse_iterator::iter_swap): Likewise.
+	(move_iterator::operator*): Apply P0896 changes for C++20.
+	(move_iterator::operator[]): Likewise.
+	* testsuite/24_iterators/reverse_iterator/cust.cc: New test.
+
 2020-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/cpu/arm/cxxabi_tweaks.h (_GLIBCXX_GUARD_TEST_AND_ACQUIRE):

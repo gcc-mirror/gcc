@@ -1,3 +1,12 @@
+2020-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* trans-decl.c (gfc_build_library_function_decl_with_spec): Verify
+	fnspec.
+	(gfc_build_intrinsic_function_decls): Update fnspecs.
+	(gfc_build_builtin_function_decls): Update fnspecs.
+	* trans-io.c (gfc_build_io_library_fndecls): Update fnspecs.
+	* trans-types.c (create_fn_spec): Update fnspecs.
+
 2020-09-30  Jan Hubicka  <jh@suse.cz>
 
 	* trans-decl.c (gfc_build_intrinsic_function_decls): Add traling dots
