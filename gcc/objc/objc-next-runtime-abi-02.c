@@ -305,8 +305,8 @@ next_runtime_abi_02_init_metadata_attributes (void)
 
   meta_class = get_identifier ("G2_CLAS");
   meta_metaclass = get_identifier ("G2_META");
-  meta_category =
-  meta_protocol = meta_base;
+  meta_category = meta_base;
+  meta_protocol = get_identifier ("V2_PCOL");
 
   meta_clac_vars =
   meta_clai_vars = meta_base;
