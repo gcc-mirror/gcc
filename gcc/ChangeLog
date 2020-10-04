@@ -1,3 +1,38 @@
+2020-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* opth-gen.awk: For variables referenced in Mask and InverseMask,
+	don't use the explicit_mask bitmask array, but add separate
+	explicit_mask_* members with the same types as the variables.
+	* optc-save-gen.awk: Save, restore, compare and hash the separate
+	explicit_mask_* members.
+
+2020-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c (test_insert_search_collapse): Update andling
+	of accesses.
+	(test_merge): Likewise.
+	* ipa-modref-tree.h (struct modref_access_node): Add offset, size,
+	max_size, parm_offset and parm_offset_known.
+	(modref_access_node::useful_p): Constify.
+	(modref_access_node::range_info_useful_p): New predicate.
+	(modref_access_node::operator==): New.
+	(struct modref_parm_map): New structure.
+	(modref_tree::merge): Update for racking parameters)
+	* ipa-modref.c (dump_access): Dump new fields.
+	(get_access): Fill in new fields.
+	(merge_call_side_effects): Update handling of parm map.
+	(write_modref_records): Stream new fields.
+	(read_modref_records): Stream new fields.
+	(compute_parm_map): Update for new parm map.
+	(ipa_merge_modref_summary_after_inlining): Update.
+	(modref_propagate_in_scc): Update.
+	* tree-ssa-alias.c (modref_may_conflict): Handle known ranges.
+
+2020-10-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR other/97280
+	* doc/extend.texi: Replace roudnevenl with roundevenl
+
 2020-10-02  David Edelsohn  <dje.gcc@gmail.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
 

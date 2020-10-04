@@ -1,3 +1,9 @@
+2020-10-03  Clément Chigot  <clement.chigot@atos.net>
+
+	* inclhack.def (aix_malloc): Add more context to select.
+	* fixincl.x: Regenerate.
+	* tests/base/malloc.h: Update expected results.
+
 2020-09-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/97044

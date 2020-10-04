@@ -1,3 +1,7 @@
+2020-10-03  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/modref-3.c: New test.
+
 2020-10-02  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/spellcheck-reserved.c: Adjust diagnostic.
