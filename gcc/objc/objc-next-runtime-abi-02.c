@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TAG_MSGSENDID_STRET	"objc_msgSendId_stret"
 #define TAG_MSGSENDSUPER_STRET	"objc_msgSendSuper2_stret"
 
-#define FIXUP_NEEDED		100600
+#define USE_FIXUP_BEFORE	100600
 #define TAG_FIXUP		"_fixup"
 
 
@@ -392,7 +392,7 @@ static void next_runtime_02_initialize (void)
   build_v2_protocol_template ();
   build_v2_category_template ();
 
-  bool fixup_p = flag_next_runtime < FIXUP_NEEDED;
+  bool fixup_p = flag_next_runtime < USE_FIXUP_BEFORE;
   if (fixup_p)
     {
       /* id objc_msgSend_fixup_rtp (id, struct message_ref_t*, ...); */
@@ -1151,7 +1151,7 @@ next_runtime_abi_02_get_arg_type_list_base (vec<tree, va_gc> **argtypes,
     receiver_type = objc_object_type;
 
   vec_safe_push (*argtypes, receiver_type);
-  if (flag_next_runtime < FIXUP_NEEDED)
+  if (flag_next_runtime < USE_FIXUP_BEFORE)
     /* Selector type - will eventually change to `int'.  */
     vec_safe_push (*argtypes, superflag ? objc_v2_super_selector_type
 					: objc_v2_selector_type);
@@ -1821,7 +1821,7 @@ next_runtime_abi_02_build_objc_method_call (location_t loc,
 	  && TREE_TYPE (receiver) == objc_class_type))
     check_for_nil = false;
 
-  if (flag_next_runtime >= FIXUP_NEEDED)
+  if (flag_next_runtime >= USE_FIXUP_BEFORE)
     {
       tree selector
 	= next_runtime_abi_02_build_selector_reference (loc, sel_name,

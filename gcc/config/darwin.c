@@ -1876,7 +1876,10 @@ darwin_globalize_label (FILE *stream, const char *name)
 {
   if (!!strncmp (name, "_OBJC_", 6))
     default_globalize_label (stream, name);
-  /* We have some Objective C cases that need to be global.  */
+  /* We have some Objective C cases that need to be global, but only on newer
+     OS versions.  */
+  if (flag_objc_abi < 2 || flag_next_runtime < 100700)
+    return;
   if (!strncmp (name+6, "LabelPro", 8))
     default_globalize_label (stream, name);
   if (!strncmp (name+6, "Protocol_", 9))
@@ -1901,8 +1904,14 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
   }
   if (strncmp ((const char *)p, "_OBJC_", 6) != 0)
     return false;
+
   /* We need some of the objective c meta-data symbols to be visible to the
-     linker.  FIXME: this is horrible, we need a better mechanism.  */
+     linker (when the target OS version is newer).  FIXME: this is horrible,
+     we need a better mechanism.  */
+
+  if (flag_objc_abi < 2 || flag_next_runtime < 100700)
+    return true;
+
   p += 6;
   if (!strncmp ((const char *)p, "ClassRef", 8))
     return false;
@@ -3183,10 +3192,14 @@ darwin_override_options (void)
   /* Keep track of which (major) version we're generating code for.  */
   if (darwin_macosx_version_min)
     {
-      if (strverscmp (darwin_macosx_version_min, "10.6") >= 0)
+      if (strverscmp (darwin_macosx_version_min, "10.7") >= 0)
+	generating_for_darwin_version = 11;
+      else if (strverscmp (darwin_macosx_version_min, "10.6") >= 0)
 	generating_for_darwin_version = 10;
       else if (strverscmp (darwin_macosx_version_min, "10.5") >= 0)
 	generating_for_darwin_version = 9;
+      else if (strverscmp (darwin_macosx_version_min, "10.4") >= 0)
+	generating_for_darwin_version = 8;
 
       /* Earlier versions are not specifically accounted, until required.  */
     }
@@ -3201,6 +3214,20 @@ darwin_override_options (void)
      set sensible defaults for LTO as well, since the section selection stuff
      should check for correctness re. the ABI.  TODO: check and provide the
      flags (runtime & ABI) from the lto wrapper).  */
+
+  /* At present, make a hard update to the runtime version based on the target
+     OS version.  */
+  if (flag_next_runtime)
+    {
+      if (generating_for_darwin_version > 10)
+	flag_next_runtime = 100705;
+      else if (generating_for_darwin_version > 9)
+	flag_next_runtime = 100608;
+      else if (generating_for_darwin_version > 8)
+	flag_next_runtime = 100508;
+      else
+	flag_next_runtime = 100000;
+    }
 
   /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */
   if (!global_options_set.x_flag_objc_abi)
