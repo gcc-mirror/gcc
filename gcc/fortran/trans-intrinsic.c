@@ -5048,6 +5048,24 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Remove unneeded kind= argument from actual argument list when the
+   result conversion is dealt with in a different place.  */
+
+static void
+strip_kind_from_actual (gfc_actual_arglist * actual)
+{
+  for (gfc_actual_arglist *a = actual; a; a = a->next)
+    {
+      gfc_actual_arglist *b = a->next;
+      if (b && b->name && strcmp (b->name, "kind") == 0)
+	{
+	  a->next = b->next;
+	  b->next = NULL;
+	  gfc_free_actual_arglist (b);
+	}
+    }
+}
+
 /* Emit code for minloc or maxloc intrinsic.  There are many different cases
    we need to handle.  For performance reasons we sometimes create two
    loops instead of one, where the second one is much simpler.
@@ -5183,6 +5201,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     {
       gfc_actual_arglist *a, *b;
       a = actual;
+      strip_kind_from_actual (a);
       while (a->next)
 	{
 	  b = a->next;
