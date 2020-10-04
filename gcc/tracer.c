@@ -53,7 +53,7 @@
 #include "fibonacci_heap.h"
 #include "tracer.h"
 
-static int count_insns (basic_block);
+static void analyze_bb (basic_block, int *);
 static bool better_p (const_edge, const_edge);
 static edge find_best_successor (basic_block);
 static edge find_best_predecessor (basic_block);
@@ -143,6 +143,33 @@ can_duplicate_bb_p (const_basic_block bb)
   return true;
 }
 
+static sbitmap can_duplicate_bb;
+
+/* Cache VAL as value of can_duplicate_bb_p for BB.  */
+static inline void
+cache_can_duplicate_bb_p (const_basic_block bb, bool val)
+{
+  if (val)
+    bitmap_set_bit (can_duplicate_bb, bb->index);
+}
+
+/* Return cached value of can_duplicate_bb_p for BB.  */
+static bool
+cached_can_duplicate_bb_p (const_basic_block bb)
+{
+  if (can_duplicate_bb)
+    {
+      unsigned int size = SBITMAP_SIZE (can_duplicate_bb);
+      if ((unsigned int)bb->index < size)
+	return bitmap_bit_p (can_duplicate_bb, bb->index);
+
+      /* Assume added bb's should not be duplicated.  */
+      return false;
+    }
+
+  return can_duplicate_bb_p (bb);
+}
+
 /* Return true if we should ignore the basic block for purposes of tracing.  */
 bool
 ignore_bb_p (const_basic_block bb)
@@ -152,24 +179,27 @@ ignore_bb_p (const_basic_block bb)
   if (optimize_bb_for_size_p (bb))
     return true;
 
-  return !can_duplicate_bb_p (bb);
+  return !cached_can_duplicate_bb_p (bb);
 }
 
 /* Return number of instructions in the block.  */
 
-static int
-count_insns (basic_block bb)
+static void
+analyze_bb (basic_block bb, int *count)
 {
   gimple_stmt_iterator gsi;
   gimple *stmt;
   int n = 0;
+  bool can_duplicate = can_duplicate_bb_no_insn_iter_p (bb);
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
       n += estimate_num_insns (stmt, &eni_size_weights);
+      can_duplicate = can_duplicate && can_duplicate_insn_p (stmt);
     }
-  return n;
+  *count = n;
+  cache_can_duplicate_bb_p (bb, can_duplicate);
 }
 
 /* Return true if E1 is more frequent than E2.  */
@@ -317,6 +347,8 @@ tail_duplicate (void)
      resize it.  */
   bb_seen = sbitmap_alloc (last_basic_block_for_fn (cfun) * 2);
   bitmap_clear (bb_seen);
+  can_duplicate_bb = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  bitmap_clear (can_duplicate_bb);
   initialize_original_copy_tables ();
 
   if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
@@ -330,7 +362,8 @@ tail_duplicate (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      int n = count_insns (bb);
+      int n;
+      analyze_bb (bb, &n);
       if (!ignore_bb_p (bb))
 	blocks[bb->index] = heap.insert (-bb->count.to_frequency (cfun), bb);
 
@@ -420,6 +453,8 @@ tail_duplicate (void)
 
   free_original_copy_tables ();
   sbitmap_free (bb_seen);
+  sbitmap_free (can_duplicate_bb);
+  can_duplicate_bb = NULL;
   free (trace);
   free (counts);
 
