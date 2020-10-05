@@ -689,6 +689,10 @@ for (i = 0; i < n_target_string; i++) {
 if (j != 0) {
 	print "  ptr->explicit_mask[" k "] = mask;";
 }
+has_target_explicit_mask = 0;
+if (j != 0 || k != 0) {
+	has_target_explicit_mask = 1;
+}
 
 print "}";
 
@@ -1075,9 +1079,11 @@ for (i = 0; i < n_target_val; i++) {
 	print "    return false;";
 }
 
-print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->explicit_mask[0]); i++)";
-print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
-print "      return false;"
+if (has_target_explicit_mask) {
+	print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->explicit_mask[0]); i++)";
+	print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
+	print "      return false;"
+}
 
 for (i = 0; i < n_target_other; i++) {
 	if (var_target_other[i] in var_target_explicit_mask) {
@@ -1121,8 +1127,10 @@ for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
 	print "  hstate.add_hwi (ptr->" name");";
 }
-print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
-print "    hstate.add_hwi (ptr->explicit_mask[i]);";
+if (has_target_explicit_mask) {
+	print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+	print "    hstate.add_hwi (ptr->explicit_mask[i]);";
+}
 
 for (i = 0; i < n_target_other; i++) {
 	if (var_target_other[i] in var_target_explicit_mask)
@@ -1159,8 +1167,22 @@ for (i = 0; i < n_target_val; i++) {
 	print "  bp_pack_value (bp, ptr->" name", 64);";
 }
 
-print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
-print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
+if (has_target_explicit_mask) {
+	print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+	print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
+}
+
+for (i = 0; i < n_target_other; i++) {
+	if (var_target_other[i] in var_target_explicit_mask) {
+		print "  bp_pack_value (bp, ptr->explicit_mask_" var_target_other[i] ", 64);";
+	}
+}
+
+for (i = 0; i < n_target_int; i++) {
+	if (var_target_int[i] in var_target_explicit_mask) {
+		print "  bp_pack_value (bp, ptr->explicit_mask_" var_target_int[i] ", 64);";
+	}
+}
 
 print "}";
 
@@ -1188,8 +1210,22 @@ for (i = 0; i < n_target_val; i++) {
 	print "  ptr->" name" = (" var_target_val_type[i] ") bp_unpack_value (bp, 64);";
 }
 
-print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
-print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";
+if (has_target_explicit_mask) {
+	print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+	print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";
+}
+
+for (i = 0; i < n_target_other; i++) {
+	if (var_target_other[i] in var_target_explicit_mask) {
+		print "  ptr->explicit_mask_" var_target_other[i] " = bp_unpack_value (bp, 64);";
+	}
+}
+
+for (i = 0; i < n_target_int; i++) {
+	if (var_target_int[i] in var_target_explicit_mask) {
+		print "  ptr->explicit_mask_" var_target_int[i] " = bp_unpack_value (bp, 64);";
+	}
+}
 
 print "}";
 

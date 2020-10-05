@@ -291,7 +291,10 @@ for (i = 0; i < n_target_char; i++) {
 }
 
 print "  /* " n_target_explicit - n_target_explicit_mask " members */";
-print "  unsigned HOST_WIDE_INT explicit_mask[" int ((n_target_explicit - n_target_explicit_mask + 63) / 64) "];";
+if (n_target_explicit > n_target_explicit_mask) {
+	print "  unsigned HOST_WIDE_INT explicit_mask[" \
+	  int ((n_target_explicit - n_target_explicit_mask + 63) / 64) "];";
+}
 
 for (i = 0; i < n_target_explicit_mask; i++) {
 	print "  " var_target_explicit_mask[i] ";";
