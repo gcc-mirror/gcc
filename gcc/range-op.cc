@@ -3901,6 +3901,27 @@ range_tests ()
   r0.invert ();
   ASSERT_TRUE (r0.nonzero_p ());
 
+  // test legacy interaction
+  // r0 = ~[1,1]
+  r0 = int_range<1> (UINT (1), UINT (1), VR_ANTI_RANGE);
+  // r1 = ~[3,3]
+  r1 = int_range<1> (UINT (3), UINT (3), VR_ANTI_RANGE);
+
+  // vv = [0,0][2,2][4, MAX]
+  int_range<3> vv = r0;
+  vv.intersect (r1);
+
+  ASSERT_TRUE (vv.contains_p (UINT (2)));
+  ASSERT_TRUE (vv.num_pairs () == 3);
+
+  // create r0 as legacy [1,1]
+  r0 = int_range<1> (UINT (1), UINT (1));
+  // And union it with  [0,0][2,2][4,MAX] multi range
+  r0.union_ (vv);
+  // The result should be [0,2][4,MAX], or ~[3,3]  but it must contain 2
+  ASSERT_TRUE (r0.contains_p (UINT (2)));
+
+
   multi_precision_range_tests ();
   int_range_max_tests ();
   operator_tests ();
