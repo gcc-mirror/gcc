@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "tree-pretty-print.h"
 #include "selftest.h"
+#include "langhooks.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -1640,6 +1641,7 @@ c_pretty_printer::postfix_expression (tree e)
       break;
 
     case MEM_REF:
+    case TARGET_MEM_REF:
       expression (e);
       break;
 
@@ -1804,6 +1806,62 @@ c_pretty_printer::unary_expression (tree e)
 	      pp_c_right_paren (this);
 	    }
 	}
+      break;
+
+    case TARGET_MEM_REF:
+      /* TARGET_MEM_REF can't appear directly from source, but can appear
+	 during late GIMPLE optimizations and through late diagnostic we might
+	 need to support it.  Print it as dereferencing of a pointer after
+	 cast to the TARGET_MEM_REF type, with pointer arithmetics on some
+	 pointer to single byte types, so
+	 *(type *)((char *) ptr + step * index + index2) if all the operands
+	 are present and the casts are needed.  */
+      pp_c_star (this);
+      if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (TMR_BASE (e)))) == NULL_TREE
+	  || !integer_onep (TYPE_SIZE_UNIT
+				(TREE_TYPE (TREE_TYPE (TMR_BASE (e))))))
+	{
+	  if (TYPE_SIZE_UNIT (TREE_TYPE (e))
+	      && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (e))))
+	    {
+	      pp_c_left_paren (this);
+	      pp_c_type_cast (this, build_pointer_type (TREE_TYPE (e)));
+	    }
+	  else
+	    {
+	      pp_c_type_cast (this, build_pointer_type (TREE_TYPE (e)));
+	      pp_c_left_paren (this);
+	      pp_c_type_cast (this, build_pointer_type (char_type_node));
+	    }
+	}
+      else if (!lang_hooks.types_compatible_p
+		  (TREE_TYPE (e), TREE_TYPE (TREE_TYPE (TMR_BASE (e)))))
+	{
+	  pp_c_type_cast (this, build_pointer_type (TREE_TYPE (e)));
+	  pp_c_left_paren (this);
+	}
+      else
+	pp_c_left_paren (this);
+      pp_c_cast_expression (this, TMR_BASE (e));
+      if (TMR_STEP (e) && TMR_INDEX (e))
+	{
+	  pp_plus (this);
+	  pp_c_cast_expression (this, TMR_INDEX (e));
+	  pp_c_star (this);
+	  pp_c_cast_expression (this, TMR_STEP (e));
+	}
+      if (TMR_INDEX2 (e))
+	{
+	  pp_plus (this);
+	  pp_c_cast_expression (this, TMR_INDEX2 (e));
+	}
+      if (!integer_zerop (TMR_OFFSET (e)))
+	{
+	  pp_plus (this);
+	  pp_c_integer_constant (this,
+				 fold_convert (ssizetype, TMR_OFFSET (e)));
+	}
+      pp_c_right_paren (this);
       break;
 
     case REALPART_EXPR:
@@ -2233,6 +2291,7 @@ c_pretty_printer::expression (tree e)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case MEM_REF:
+    case TARGET_MEM_REF:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:

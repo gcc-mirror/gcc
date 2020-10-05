@@ -2402,6 +2402,64 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	}
       break;
 
+    case TARGET_MEM_REF:
+      /* TARGET_MEM_REF can't appear directly from source, but can appear
+	 during late GIMPLE optimizations and through late diagnostic we might
+	 need to support it.  Print it as dereferencing of a pointer after
+	 cast to the TARGET_MEM_REF type, with pointer arithmetics on some
+	 pointer to single byte types, so
+	 *(type *)((char *) ptr + step * index + index2) if all the operands
+	 are present and the casts are needed.  */
+      pp_cxx_star (pp);
+      pp_cxx_left_paren (pp);
+      if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (TMR_BASE (t)))) == NULL_TREE
+	  || !integer_onep (TYPE_SIZE_UNIT
+				(TREE_TYPE (TREE_TYPE (TMR_BASE (t))))))
+	{
+	  if (TYPE_SIZE_UNIT (TREE_TYPE (t))
+	      && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (t))))
+	    {
+	      pp_cxx_left_paren (pp);
+	      dump_type (pp, build_pointer_type (TREE_TYPE (t)), flags);
+	    }
+	  else
+	    {
+	      dump_type (pp, build_pointer_type (TREE_TYPE (t)), flags);
+	      pp_cxx_right_paren (pp);
+	      pp_cxx_left_paren (pp);
+	      pp_cxx_left_paren (pp);
+	      dump_type (pp, build_pointer_type (char_type_node), flags);
+	    }
+	  pp_cxx_right_paren (pp);
+	}
+      else if (!same_type_p (TREE_TYPE (t),
+			     TREE_TYPE (TREE_TYPE (TMR_BASE (t)))))
+	{
+	  dump_type (pp, build_pointer_type (TREE_TYPE (t)), flags);
+	  pp_cxx_right_paren (pp);
+	  pp_cxx_left_paren (pp);
+	}
+      dump_expr (pp, TMR_BASE (t), flags);
+      if (TMR_STEP (t) && TMR_INDEX (t))
+	{
+	  pp_cxx_ws_string (pp, "+");
+	  dump_expr (pp, TMR_INDEX (t), flags);
+	  pp_cxx_ws_string (pp, "*");
+	  dump_expr (pp, TMR_STEP (t), flags);
+	}
+      if (TMR_INDEX2 (t))
+	{
+	  pp_cxx_ws_string (pp, "+");
+	  dump_expr (pp, TMR_INDEX2 (t), flags);
+	}
+      if (!integer_zerop (TMR_OFFSET (t)))
+	{
+	  pp_cxx_ws_string (pp, "+");
+	  dump_expr (pp, fold_convert (ssizetype, TMR_OFFSET (t)), flags);
+	}
+      pp_cxx_right_paren (pp);
+      break;
+
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
