@@ -32,7 +32,7 @@
 #define _GLIBCXX_BITS_UNIFORM_INT_DIST_H
 
 #include <type_traits>
-#include <limits>
+#include <ext/numeric_traits.h>
 #if __cplusplus > 201703L
 # include <concepts>
 #endif
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	explicit
 	param_type(_IntType __a,
-		   _IntType __b = numeric_limits<_IntType>::max())
+		   _IntType __b = __gnu_cxx::__int_traits<_IntType>::__max)
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_a <= _M_b);
@@ -126,7 +126,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       explicit
       uniform_int_distribution(_IntType __a,
-			       _IntType __b = numeric_limits<_IntType>::max())
+			       _IntType __b
+				 = __gnu_cxx::__int_traits<_IntType>::__max)
       : _M_param(__a, __b)
       { }
 

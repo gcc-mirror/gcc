@@ -32,8 +32,8 @@
 #define _HASHTABLE_POLICY_H 1
 
 #include <tuple>		// for std::tuple, std::forward_as_tuple
-#include <limits>		// for std::numeric_limits
 #include <bits/stl_algobase.h>	// for std::min, std::is_permutation.
+#include <ext/numeric_traits.h>	// for __gnu_cxx::__int_traits
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -506,6 +506,7 @@ namespace __detail
   inline std::size_t
   __clp2(std::size_t __n) noexcept
   {
+    using __gnu_cxx::__int_traits;
     // Equivalent to return __n ? std::bit_ceil(__n) : 0;
     if (__n < 2)
       return __n;
@@ -513,7 +514,7 @@ namespace __detail
       ? __builtin_clzll(__n - 1ull)
       : __builtin_clzl(__n - 1ul);
     // Doing two shifts avoids undefined behaviour when __lz == 0.
-    return (size_t(1) << (numeric_limits<size_t>::digits - __lz - 1)) << 1;
+    return (size_t(1) << (__int_traits<size_t>::__digits - __lz - 1)) << 1;
   }
 
   /// Rehash policy providing power of 2 bucket numbers. Avoids modulo
@@ -556,7 +557,7 @@ namespace __detail
 	// Set next resize to the max value so that we never try to rehash again
 	// as we already reach the biggest possible bucket number.
 	// Note that it might result in max_load_factor not being respected.
-	_M_next_resize = numeric_limits<size_t>::max();
+	_M_next_resize = size_t(-1);
       else
 	_M_next_resize
 	  = __builtin_floorl(__res * (long double)_M_max_load_factor);
