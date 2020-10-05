@@ -21788,8 +21788,14 @@ cp_parser_direct_declarator (cp_parser* parser,
 		       templates, assume S::p to name a type.  Otherwise,
 		       don't.  */
 		    tree decl
-		      = cp_parser_lookup_name_simple (parser, unqualified_name,
-						      token->location);
+		      = cp_parser_lookup_name (parser, unqualified_name,
+					       none_type,
+					       /*is_template=*/false,
+					       /*is_namespace=*/false,
+					       /*check_dependency=*/false,
+					       /*ambiguous_decls=*/NULL,
+					       token->location);
+
 		    if (!is_overloaded_fn (decl)
 			/* Allow
 			   template<typename T>
