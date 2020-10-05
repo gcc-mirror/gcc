@@ -10351,3 +10351,14 @@ proc check_effective_target_movdir { } {
 proc check_effective_target_tune_cortex_a76 { } {
     return [check_configured_with "with-tune=cortex-a76"]
 }
+
+# Return 1 if target is not support address sanitize, 1 otherwise.
+
+proc check_effective_target_no_fsanitize_address {} {
+    if ![check_no_compiler_messages fsanitize_address executable {
+	int main (void) { return 0; }
+    }] {
+	return 1;
+    }
+    return 0;
+}

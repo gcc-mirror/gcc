@@ -1,5 +1,6 @@
 /* PR target/91441 */
 /* { dg-do compile  } */
+/* { dg-require-effective-target no_fsanitize_address }*/
 /* { dg-options "--param asan-stack=1 -fsanitize=kernel-address" } */
 
 int *bar(int *);
