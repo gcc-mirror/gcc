@@ -115,10 +115,8 @@ ignore_bb_p (const_basic_block bb)
 
       /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
 	 duplicated as part of its group, or not at all.
-	 The IFN_GOMP_SIMT_VOTE_ANY is currently part of such a group,
-	 so the same holds there, but it could be argued that the
-	 IFN_GOMP_SIMT_VOTE_ANY could be generated after that group,
-	 in which case it could be duplicated.  */
+	 The IFN_GOMP_SIMT_VOTE_ANY is part of such a group, so the same holds
+	 there.  */
       if (is_gimple_call (g)
 	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
