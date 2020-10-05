@@ -1375,8 +1375,8 @@ Import::read_name()
 
 // Read LENGTH bytes from the stream.
 
-std::string
-Import::read(size_t length)
+void
+Import::read(size_t length, std::string* out)
 {
   const char* data;
   if (!this->stream_->peek(length, &data))
@@ -1385,10 +1385,11 @@ Import::read(size_t length)
 	go_error_at(this->location_, "import error at %d: expected %d bytes",
 		    this->stream_->pos(), static_cast<int>(length));
       this->stream_->set_saw_error();
-      return "";
+      *out = std::string("");
+      return;
     }
+  *out = std::string(data, length);
   this->advance(length);
-  return std::string(data, length);
 }
 
 // Turn a string into a integer with appropriate error handling.
