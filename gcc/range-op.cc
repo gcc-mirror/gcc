@@ -1317,10 +1317,10 @@ operator_div::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  // If we know we will divide by zero, return undefined.
+  // If we know we will divide by zero...
   if (rh_lb == 0 && rh_ub == 0)
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -1429,6 +1429,27 @@ public:
 				const wide_int &,
 				const wide_int &) const;
 } op_lshift;
+
+class operator_rshift : public cross_product_operator
+{
+public:
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub) const;
+  virtual bool wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &w0,
+				const wide_int &w1) const;
+  virtual bool op1_range (irange &, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+} op_rshift;
+
 
 bool
 operator_lshift::fold_range (irange &r, tree type,
@@ -1546,59 +1567,46 @@ operator_lshift::op1_range (irange &r,
   tree shift_amount;
   if (op2.singleton_p (&shift_amount))
     {
-      int_range<1> shifted (shift_amount, shift_amount), ub, lb;
-      const range_operator *rshift_op = range_op_handler (RSHIFT_EXPR, type);
-      rshift_op->fold_range (ub, type, lhs, shifted);
-      if (TYPE_UNSIGNED (type))
+      wide_int shift = wi::to_wide (shift_amount);
+      gcc_checking_assert (wi::gt_p (shift, 0, SIGNED));
+
+      // Work completely in unsigned mode to start.
+      tree utype = type;
+      if (TYPE_SIGN (type) == SIGNED)
 	{
-	  r = ub;
-	  return true;
+	  int_range_max tmp = lhs;
+	  utype = unsigned_type_for (type);
+	  range_cast (tmp, utype);
+	  op_rshift.fold_range (r, utype, tmp, op2);
 	}
-      // For signed types, we can't just do an arithmetic rshift,
-      // because that will propagate the sign bit.
-      //
-      //  LHS
-      // 1110 = OP1 << 1
-      //
-      // Assuming a 4-bit signed integer, a right shift will result in
-      // OP1=1111, but OP1 could have also been 0111.  What we want is
-      // a range from 0111 to 1111.  That is, a range from the logical
-      // rshift (0111) to the arithmetic rshift (1111).
-      //
-      // Perform a logical rshift by doing the rshift as unsigned.
-      tree unsigned_type = unsigned_type_for (type);
-      int_range_max unsigned_lhs = lhs;
-      range_cast (unsigned_lhs, unsigned_type);
-      rshift_op = range_op_handler (RSHIFT_EXPR, unsigned_type);
-      rshift_op->fold_range (lb, unsigned_type, unsigned_lhs, shifted);
-      range_cast (lb, type);
-      r = lb;
-      r.union_ (ub);
+      else
+	op_rshift.fold_range (r, utype, lhs, op2);
+
+      // Start with ranges which can produce the LHS by right shifting the
+      // result by the shift amount.
+      // ie   [0x08, 0xF0] = op1 << 2 will start with
+      //      [00001000, 11110000] = op1 << 2
+      //  [0x02, 0x4C] aka [00000010, 00111100]
+
+      // Then create a range from the LB with the least significant upper bit
+      // set, to the upper bound with all the bits set.
+      // This would be [0x42, 0xFC] aka [01000010, 11111100].
+
+      // Ideally we do this for each subrange, but just lump them all for now.
+      unsigned low_bits = TYPE_PRECISION (utype)
+			  - TREE_INT_CST_LOW (shift_amount);
+      wide_int up_mask = wi::mask (low_bits, true, TYPE_PRECISION (utype));
+      wide_int new_ub = wi::bit_or (up_mask, r.upper_bound ());
+      wide_int new_lb = wi::set_bit (r.lower_bound (), low_bits);
+      int_range<2> fill_range (utype, new_lb, new_ub);
+      r.union_ (fill_range);
+
+      if (utype != type)
+	range_cast (r, type);
       return true;
     }
   return false;
 }
-
-
-class operator_rshift : public cross_product_operator
-{
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual bool wi_op_overflows (wide_int &res,
-				tree type,
-				const wide_int &w0,
-				const wide_int &w1) const;
-  virtual bool op1_range (irange &, tree type,
-			  const irange &lhs,
-			  const irange &op2) const;
-} op_rshift;
 
 bool
 operator_rshift::op1_range (irange &r,
@@ -2825,9 +2833,19 @@ operator_abs::wi_fold (irange &r, tree type,
   // ABS_EXPR may flip the range around, if the original range
   // included negative values.
   if (wi::eq_p (lh_lb, min_value))
-    min = max_value;
+    {
+      // ABS ([-MIN, -MIN]) isn't representable, but we have traditionally
+      // returned [-MIN,-MIN] so this preserves that behaviour.  PR37078
+      if (wi::eq_p (lh_ub, min_value))
+	{
+	  r = int_range<1> (type, min_value, min_value);
+	  return;
+	}
+      min = max_value;
+    }
   else
     min = wi::abs (lh_lb);
+
   if (wi::eq_p (lh_ub, min_value))
     max = max_value;
   else
@@ -3551,6 +3569,52 @@ operator_tests ()
       int_range_max negatives = range_negatives (integer_type_node);
       negatives.intersect (op1);
       ASSERT_TRUE (negatives.undefined_p ());
+    }
+
+  if (TYPE_PRECISION (unsigned_type_node) > 31)
+    {
+      // unsigned VARYING = op1 << 1 should be VARYING.
+      int_range<2> lhs (unsigned_type_node);
+      int_range<2> shift (INT (1), INT (1));
+      int_range_max op1;
+      op_lshift.op1_range (op1, unsigned_type_node, lhs, shift);
+      ASSERT_TRUE (op1.varying_p ());
+
+      // 0 = op1 << 1  should be [0,0], [0x8000000, 0x8000000].
+      int_range<2> zero (UINT (0), UINT (0));
+      op_lshift.op1_range (op1, unsigned_type_node, zero, shift);
+      ASSERT_TRUE (op1.num_pairs () == 2);
+      // Remove the [0,0] range.
+      op1.intersect (zero);
+      ASSERT_TRUE (op1.num_pairs () == 1);
+      //  op1 << 1   should be [0x8000,0x8000] << 1,
+      //  which should result in [0,0].
+      int_range_max result;
+      op_lshift.fold_range (result, unsigned_type_node, op1, shift);
+      ASSERT_TRUE (result == zero);
+    }
+  // signed VARYING = op1 << 1 should be VARYING.
+  if (TYPE_PRECISION (integer_type_node) > 31)
+    {
+      // unsigned VARYING = op1 << 1  hould be VARYING.
+      int_range<2> lhs (integer_type_node);
+      int_range<2> shift (INT (1), INT (1));
+      int_range_max op1;
+      op_lshift.op1_range (op1, integer_type_node, lhs, shift);
+      ASSERT_TRUE (op1.varying_p ());
+
+      //  0 = op1 << 1  should be [0,0], [0x8000000, 0x8000000].
+      int_range<2> zero (INT (0), INT (0));
+      op_lshift.op1_range (op1, integer_type_node, zero, shift);
+      ASSERT_TRUE (op1.num_pairs () == 2);
+      // Remove the [0,0] range.
+      op1.intersect (zero);
+      ASSERT_TRUE (op1.num_pairs () == 1);
+      //  op1 << 1   shuould be [0x8000,0x8000] << 1,
+      //  which should result in [0,0].
+      int_range_max result;
+      op_lshift.fold_range (result, unsigned_type_node, op1, shift);
+      ASSERT_TRUE (result == zero);
     }
 }
 
