@@ -1,3 +1,8 @@
+2020-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97272
+	* gfortran.dg/pr97272.f90: New test.
+
 2020-10-03  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/modref-3.c: New test.

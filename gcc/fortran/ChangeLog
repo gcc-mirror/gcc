@@ -1,3 +1,11 @@
+2020-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97272
+	* trans-intrinsic.c (strip_kind_from_actual): Helper function for
+	removal of KIND argument.
+	(gfc_conv_intrinsic_minmaxloc): Ignore KIND argument here, as it
+	is treated elsewhere.
+
 2020-10-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* trans-decl.c (gfc_build_library_function_decl_with_spec): Verify
