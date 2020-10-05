@@ -2322,6 +2322,9 @@ GLIBCXX_3.4.29 {
     # std::__atomic_futex_unsigned_base::_M_futex_wait_until_steady
     _ZNSt28__atomic_futex_unsigned_base26_M_futex_wait_until_steady*;
 
+    # std::__throw_bad_array_new_length()
+    _ZSt28__throw_bad_array_new_lengthv;
+
 } GLIBCXX_3.4.28;
 
 # Symbols in the support library (libsupc++) have their own tag.
