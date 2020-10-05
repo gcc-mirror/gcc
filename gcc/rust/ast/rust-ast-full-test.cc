@@ -5048,18 +5048,19 @@ MacroParser::parse_meta_item_lit ()
 bool
 AttrInputMetaItemContainer::check_cfg_predicate (const Session &session) const
 {
-  /* cfg value of container is purely based on cfg of each inner item - all
-   * must be true */
-  for (const auto &inner_item : items)
+  /* NOTE: assuming that only first item must be true - cfg should only have one item, and cfg_attr only has first item as predicate. TODO ensure that this is correct. */
+  if (items.empty ())
+    return false;
+
+  return items[0]->check_cfg_predicate (session);
+
+  /*for (const auto &inner_item : items)
     {
       if (!inner_item->check_cfg_predicate (session))
 	return false;
     }
 
-  /* TODO: as far as I can tell, there should only be a single element to
-   * check here, so ensure there is only a single element in items too? */
-
-  return true;
+  return true;*/
 }
 
 bool
@@ -5345,6 +5346,53 @@ MetaItemPathLit::to_attribute () const
   return Attribute (path, std::unique_ptr<AttrInputLiteral> (
 			    new AttrInputLiteral (lit)));
 }
+
+std::vector<Attribute> AttrInputMetaItemContainer::separate_cfg_attrs () const {
+    rust_assert (!items.empty ());
+
+    if (items.size () == 1)
+      return {};
+
+    std::vector<Attribute> attrs;
+    attrs.reserve (items.size () - 1);
+
+    for (auto it = items.begin () + 1; it != items.end (); ++it) {
+      Attribute attr = (*it)->to_attribute ();
+      if (attr.is_empty ()) {
+        // TODO should this be an error that causes us to chuck out everything?
+        continue;
+      }
+      attrs.push_back (std::move (attr));
+    }
+
+    attrs.shrink_to_fit ();
+    return attrs;
+  }
+
+bool Attribute::check_cfg_predicate (const Session &session)
+  {
+    /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
+     * cfg_attr path */
+    if (!has_attr_input () || (path.as_string () != "cfg" && path.as_string () != "cfg_attr"))
+      return false;
+
+    // TODO: maybe replace with storing a "has been parsed" variable?
+    parse_attr_to_meta_item ();
+    // can't be const because of this anyway
+
+    return attr_input->check_cfg_predicate (session);
+  }
+
+std::vector<Attribute> Attribute::separate_cfg_attrs () {
+    if (!has_attr_input () || path.as_string () != "cfg_attr")
+      return {};
+
+      // TODO: maybe replace with storing a "has been parsed" variable?
+      parse_attr_to_meta_item ();
+      // can't be const because of this anyway
+
+    return attr_input->separate_cfg_attrs ();
+  }
 
 /* Visitor implementations - these are short but inlining can't happen anyway
  * due to virtual functions and I didn't want to make the ast header includes

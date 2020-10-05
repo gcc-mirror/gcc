@@ -25,19 +25,23 @@ namespace Rust {
     }
 
     /* Determines whether cfg predicate is true and item with attribute should not
-     * be stripped. */
-    bool check_cfg_predicate() {}
-
-    /* Determines whether cfg predicate is true and item with attribute should not
-     * be stripped. */
-    bool check_cfg(AST::Attribute& attr) {}
+     * be stripped. TODO can this be const reference or does it have to mutate? */
+    bool MacroExpander::check_cfg(AST::Attribute& attr) {}
 
     // Expands cfg_attr attributes.
-    void expand_attrs_cfgattr(std::vector<AST::Attribute>& attrs) {
-        for (auto it = attrs.begin(); it != attrs.end();) {
-            auto& attr = *it;
+    void MacroExpander::expand_cfg_attrs(std::vector<AST::Attribute>& attrs) {
+        for (int i = 0; i < attrs.size (); ) {
+            auto& attr = attrs[i];
             if (attr.get_path() == "cfg_attr") {
-                if (check_cfg(attr)) {
+                if (attr.check_cfg_predicate (session)) {
+                    // split off cfg_attr
+                    std::vector<AST::Attribute> new_attrs = attr.separate_cfg_attrs ();
+
+                    // remove attr from vector
+                    attrs.erase (attrs.begin () + i);
+
+                    // add new attrs to vector
+                    attrs.insert (attrs.begin() + i, std::make_move_iterator (new_attrs.begin ()), std::make_move_iterator (new_attrs.end ()));
                 }
 
                 /* do something - if feature (first token in tree) is in fact enabled,
@@ -47,17 +51,18 @@ namespace Rust {
                  * recursive, so check for expanded attributes being recursive and
                  * possibly recursively call the expand_attrs? */
             } else {
-                ++it;
+                i++;
             }
         }
+        attrs.shrink_to_fit ();
     }
 
     void MacroExpander::expand_crate() {
         /* fill macro/decorator map from init list? not sure where init list comes
          * from? */
 
-        // expand crate attributes
-        expand_attrs_cfgattr(crate.inner_attrs);
+        // expand crate cfg_attr attributes
+        expand_cfg_attrs(crate.inner_attrs);
 
         // expand module attributes?
 

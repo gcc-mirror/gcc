@@ -572,6 +572,8 @@ protected:
 };
 
 // Object that parses macros from a token stream.
+/* TODO: would "AttributeParser" be a better name? MetaItems are only for
+ * attributes, I believe */
 struct MacroParser
 {
 private:

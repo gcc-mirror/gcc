@@ -83,6 +83,8 @@ public:
   // Parse attribute input to meta item, if possible
   virtual AttrInput *parse_to_meta_item () const { return nullptr; }
 
+  virtual std::vector<Attribute> separate_cfg_attrs () const { return {}; }
+
 protected:
   // pure virtual clone implementation
   virtual AttrInput *clone_attr_input_impl () const = 0;
@@ -590,20 +592,9 @@ public:
 
   /* Determines whether cfg predicate is true and item with attribute should not
    * be stripped. */
-  bool check_cfg_predicate (const Session &session)
-  {
-    /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
-     * cfg_attr path */
+  bool check_cfg_predicate (const Session &session);
 
-    if (!has_attr_input ())
-      return false;
-
-    // TODO: maybe replace with storing a "has been parsed" variable?
-    parse_attr_to_meta_item ();
-    // can't be const because of this anyway
-
-    return attr_input->check_cfg_predicate (session);
-  }
+  std::vector<Attribute> separate_cfg_attrs ();
 
 protected:
   // not virtual as currently no subclasses of Attribute, but could be in future
@@ -682,6 +673,8 @@ public:
     return std::unique_ptr<AttrInputMetaItemContainer> (
       clone_attr_input_meta_item_container_impl ());
   }
+
+  std::vector<Attribute> separate_cfg_attrs () const override;
 
 protected:
   // Use covariance to implement clone function as returning this type
