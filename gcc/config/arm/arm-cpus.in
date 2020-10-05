@@ -1519,6 +1519,8 @@ begin cpu neoverse-v1
   architecture armv8.4-a+fp16+bf16+i8mm
   option crypto add FP_ARMv8 CRYPTO
   costs cortex_a57
+  vendor 41
+  part 0xd40
 end cpu neoverse-v1
 
 # Armv8.5 A-profile Architecture Processors

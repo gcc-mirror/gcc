@@ -1,3 +1,10 @@
+2020-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.in: Regenerate with automake 1.15.1.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2020-09-30  Andrew Stubbs  <ams@codesourcery.com>
 
 	* parallel.c (gomp_resolve_num_threads): Ignore nest_var on nvptx

@@ -5,41 +5,49 @@
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
-//
+
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-pthread"  }
-// { dg-do run { target *-*-linux-gnu } }
-// { dg-require-effective-target pthread }
+// { dg-do run { target c++11 } }
 
-// PR libstdc++/96817
+#include <memory>
+#include <new>
+#include <limits>
+#include <testsuite_hooks.h>
 
-#include <exception>
-#include <stdlib.h>
+// LWG 3190. std::allocator::allocate sometimes returns too little storage
 
-int init()
+void
+test01()
 {
-#if __has_include(<sys/single_threaded.h>)
-  // This deadlocks unless __libc_single_threaded is available in Glibc,
-  // because __cxa_guard_acquire uses __gthread_active_p and the
-  // multithreaded init can't detect recursion (see PR 97211).
-  static int i = init();
+  struct A { char biiiiig[1 << 16]; };
+  std::allocator<A> a;
+  try
+  {
+    std::size_t max = std::numeric_limits<std::size_t>::max() / sizeof(A);
+    A* p = a.allocate(max + 1);
+    throw p;
+  }
+#if __cplusplus >= 201103L
+  catch (const std::bad_array_new_length&)
+  {
+  }
 #endif
-  return 0;
+  catch (const std::bad_alloc&)
+  {
+    VERIFY( __cplusplus < 201103L );
+  }
 }
 
-void clean_terminate() { _Exit(0); }
-
 int
-main (int argc, char **argv)
+main()
 {
-  std::set_terminate(clean_terminate);
-  init();
+  test01();
 }

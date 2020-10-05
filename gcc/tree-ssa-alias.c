@@ -2505,8 +2505,8 @@ modref_may_conflict (const gimple *stmt,
 	    }
 
 	  /* TBAA checks did not disambiguate,  try to use base pointer, for
-	     that we however need to have ref->ref.  */
-	  if (ref_node->every_access || !ref->ref)
+	     that we however need to have ref->ref or ref->base.  */
+	  if (ref_node->every_access || (!ref->ref && !ref->base))
 	    return true;
 
 	  modref_access_node *access_node;
@@ -2520,12 +2520,40 @@ modref_may_conflict (const gimple *stmt,
 		     >= gimple_call_num_args (stmt))
 		return true;
 
-
 	      alias_stats.modref_baseptr_tests++;
 
-	      if (ptr_deref_may_alias_ref_p_1
-		   (gimple_call_arg (stmt, access_node->parm_index), ref))
+	      tree arg = gimple_call_arg (stmt, access_node->parm_index);
+
+	      if (integer_zerop (arg) && flag_delete_null_pointer_checks)
+		continue;
+
+	      if (!POINTER_TYPE_P (TREE_TYPE (arg)))
 		return true;
+
+	      /* ao_ref_init_from_ptr_and_range assumes that memory access
+		 starts by the pointed to location.  If we did not track the
+		 offset it is possible that it starts before the actual
+		 pointer.  */
+	      if (!access_node->parm_offset_known)
+		{
+		  if (ptr_deref_may_alias_ref_p_1 (arg, ref))
+		    return true;
+		}
+	      else
+		{
+		  ao_ref ref2;
+
+		  ao_ref_init_from_ptr_and_range
+			 (&ref2, arg, true,
+			  access_node->offset
+			  + (access_node->parm_offset
+			     << LOG2_BITS_PER_UNIT), access_node->size,
+			  access_node->max_size);
+		  ref2.ref_alias_set = ref_set;
+		  ref2.base_alias_set = base_set;
+		  if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
+		    return true;
+		}
 	      num_tests++;
 	    }
 	}

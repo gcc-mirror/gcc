@@ -2657,8 +2657,10 @@ struct GTY(()) lang_decl_base {
   unsigned not_really_extern : 1;	   /* var or fn */
   unsigned initialized_in_class : 1;	   /* var or fn */
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
-  unsigned anticipated_p : 1;		   /* fn, type or template */
-  /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
+  /* anticipated_p is no longer used for anticipated_decls (fn, type
+     or template).  It is used as DECL_OMP_PRIVATIZED_MEMBER in
+     var.  */
+  unsigned anticipated_p : 1;
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
@@ -4036,13 +4038,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if NODE is a builtin decl.  */
 #define DECL_BUILTIN_P(NODE) \
   (DECL_SOURCE_LOCATION(NODE) == BUILTINS_LOCATION)
-
-/* Nonzero if NODE is a DECL which we know about but which has not
-   been explicitly declared, such as a built-in function or a friend
-   declared inside a class.  */
-#define DECL_ANTICIPATED(NODE) \
-  (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
-   ->u.base.anticipated_p)
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */

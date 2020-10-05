@@ -6024,10 +6024,7 @@ push_template_decl (tree decl, bool is_friend)
 	{
 	  /* Hide template friend classes that haven't been declared yet.  */
 	  if (is_friend && TREE_CODE (decl) == TYPE_DECL)
-	    {
-	      DECL_ANTICIPATED (tmpl) = 1;
-	      DECL_FRIEND_P (tmpl) = 1;
-	    }
+	    DECL_FRIEND_P (tmpl) = 1;
 
 	  tmpl = pushdecl_namespace_level (tmpl, /*hiding=*/is_friend);
 	  if (tmpl == error_mark_node)
@@ -11310,11 +11307,6 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	  CLASSTYPE_USE_TEMPLATE (TREE_TYPE (tmpl)) = 0;
 	  CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl))
 	    = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl)));
-
-	  /* It is hidden.  */
-	  retrofit_lang_decl (DECL_TEMPLATE_RESULT (tmpl));
-	  DECL_ANTICIPATED (tmpl)
-	    = DECL_ANTICIPATED (DECL_TEMPLATE_RESULT (tmpl)) = true;
 
 	  /* Substitute into and set the constraints on the new declaration.  */
 	  if (tree ci = get_constraints (friend_tmpl))

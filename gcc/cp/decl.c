@@ -1444,7 +1444,7 @@ tree
 duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 {
   unsigned olddecl_uid = DECL_UID (olddecl);
-  int olddecl_friend = 0, types_match = 0, hidden_friend = 0;
+  int olddecl_friend = 0, types_match = 0;
   int olddecl_hidden_friend = 0;
   int new_defines_function = 0;
   tree new_template_info;
@@ -1473,7 +1473,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	{
 	  /* Avoid warnings redeclaring built-ins which have not been
 	     explicitly declared.  */
-	  if (DECL_ANTICIPATED (olddecl))
+	  if (was_hidden)
 	    {
 	      if (TREE_PUBLIC (newdecl)
 		  && CP_DECL_CONTEXT (newdecl) == global_namespace)
@@ -1645,7 +1645,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       /* If a function is explicitly declared "throw ()", propagate that to
 	 the corresponding builtin.  */
       if (DECL_BUILT_IN_CLASS (olddecl) == BUILT_IN_NORMAL
-	  && DECL_ANTICIPATED (olddecl)
+	  && was_hidden
 	  && TREE_NOTHROW (newdecl)
 	  && !TREE_NOTHROW (olddecl))
 	{
@@ -2139,9 +2139,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
     {
       olddecl_friend = DECL_FRIEND_P (STRIP_TEMPLATE (olddecl));
       olddecl_hidden_friend = olddecl_friend && was_hidden;
-      hidden_friend = olddecl_hidden_friend && hiding;
-      if (!hidden_friend)
-	DECL_ANTICIPATED (olddecl) = false;
     }
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -2890,8 +2887,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   DECL_UID (olddecl) = olddecl_uid;
   if (olddecl_friend)
     DECL_FRIEND_P (olddecl) = true;
-  if (hidden_friend)
-    DECL_ANTICIPATED (olddecl) = true;
 
   /* NEWDECL contains the merged attribute lists.
      Update OLDDECL to be the same.  */
@@ -4690,21 +4685,15 @@ cxx_builtin_function (tree decl)
   const char *name = IDENTIFIER_POINTER (id);
   bool hiding = false;
   if (name[0] != '_' || name[1] != '_')
-    {
-      /* In the user's namespace, it must be declared before use.  */
-      DECL_ANTICIPATED (decl) = 1;
-      hiding = true;
-    }
+    /* In the user's namespace, it must be declared before use.  */
+    hiding = true;
   else if (IDENTIFIER_LENGTH (id) > strlen ("___chk")
 	   && 0 != strncmp (name + 2, "builtin_", strlen ("builtin_"))
 	   && 0 == memcmp (name + IDENTIFIER_LENGTH (id) - strlen ("_chk"),
 			   "_chk", strlen ("_chk") + 1))
-    {
-      /* Treat __*_chk fortification functions as anticipated as well,
-	 unless they are __builtin_*_chk.  */
-      DECL_ANTICIPATED (decl) = 1;
-      hiding = true;
-    }
+    /* Treat __*_chk fortification functions as anticipated as well,
+       unless they are __builtin_*_chk.  */
+    hiding = true;
 
   /* All builtins that don't begin with an '_' should additionally
      go in the 'std' namespace.  */
@@ -15063,10 +15052,6 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  inform (location_of (t), "previous declaration %qD", t);
 	  return error_mark_node;
 	}
-
-      gcc_checking_assert (how == TAG_how::HIDDEN_FRIEND
-			   || !(DECL_LANG_SPECIFIC (TYPE_NAME (t))
-				&& DECL_ANTICIPATED (TYPE_NAME (t))));
     }
 
   return t;

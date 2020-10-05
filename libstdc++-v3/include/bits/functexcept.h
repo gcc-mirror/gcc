@@ -51,6 +51,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_bad_alloc(void) __attribute__((__noreturn__));
 
+  void
+  __throw_bad_array_new_length(void) __attribute__((__noreturn__));
+
   // Helper for exception objects in <typeinfo>
   void
   __throw_bad_cast(void) __attribute__((__noreturn__));
