@@ -312,6 +312,7 @@
 
 2020-09-11  Mike Crowe  <mac@mcrowe.com>
 
+	PR libstdc++/93542
 	* include/bits/atomic_futex.h (__atomic_futex_unsigned): Change
 	__clock_t typedef to use steady_clock so that unknown clocks are
 	synced to it rather than system_clock. Change existing __clock_t
@@ -322,6 +323,7 @@
 
 2020-09-11  Mike Crowe  <mac@mcrowe.com>
 
+	PR libstdc++/93542
 	* config/abi/pre/gnu.ver: Update for addition of
 	__atomic_futex_unsigned_base::_M_futex_wait_until_steady.
 	* include/bits/atomic_futex.h (__atomic_futex_unsigned_base):
