@@ -3804,7 +3804,7 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	 Similarly, if there is a whole region clear first, prefer expanding
 	 it together compared to expanding clear first followed by merged
 	 further stores.  */
-      unsigned cnt[4] = { ~0, ~0, ~0, ~0 };
+      unsigned cnt[4] = { ~0U, ~0U, ~0U, ~0U };
       int pass_min = 0;
       for (int pass = 0; pass < 4; ++pass)
 	{
