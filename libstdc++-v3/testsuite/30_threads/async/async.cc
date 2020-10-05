@@ -157,7 +157,7 @@ void test04()
   }
 }
 
-void test_pr91486()
+void test_pr91486_wait_for()
 {
   future<void> f1 = async(launch::async, []() {
       std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -171,6 +171,63 @@ void test_pr91486()
   VERIFY( elapsed_steady >= std::chrono::seconds(1) );
 }
 
+// This is a clock with a very recent epoch which ensures that the difference
+// between now() and one second in the future is representable in a float so
+// that when the generic clock version of
+// __atomic_futex_unsigned::_M_load_when_equal_until calculates the delta it
+// gets a duration of 1.0f.  When chrono::steady_clock has moved sufficiently
+// far from its epoch (about 208.5 days in my testing - about 2^54ns because
+// there's a promotion to double happening too somewhere) adding 1.0f to the
+// current time has no effect.  Using this clock ensures that
+// __atomic_futex_unsigned::_M_load_when_equal_until is using
+// chrono::__detail::ceil correctly so that the function actually sleeps rather
+// than spinning.
+struct float_steady_clock
+{
+  using duration = std::chrono::duration<float>;
+  using rep = typename duration::rep;
+  using period = typename duration::period;
+  using time_point = std::chrono::time_point<float_steady_clock, duration>;
+  static constexpr bool is_steady = true;
+
+  static chrono::steady_clock::time_point epoch;
+  static int call_count;
+
+  static time_point now()
+  {
+    ++call_count;
+    auto real = std::chrono::steady_clock::now();
+    return time_point{real - epoch};
+  }
+};
+
+chrono::steady_clock::time_point float_steady_clock::epoch = chrono::steady_clock::now();
+int float_steady_clock::call_count = 0;
+
+void test_pr91486_wait_until()
+{
+  future<void> f1 = async(launch::async, []() {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    });
+
+  float_steady_clock::time_point const now = float_steady_clock::now();
+
+  std::chrono::duration<float> const wait_time = std::chrono::seconds(1);
+  float_steady_clock::time_point const expire = now + wait_time;
+  VERIFY( expire > now );
+
+  auto const start_steady = chrono::steady_clock::now();
+  auto status = f1.wait_until(expire);
+  auto const elapsed_steady = chrono::steady_clock::now() - start_steady;
+
+  // This checks that we didn't come back too soon
+  VERIFY( elapsed_steady >= std::chrono::seconds(1) );
+
+  // This checks that wait_until didn't busy wait checking the clock more times
+  // than necessary.
+  VERIFY( float_steady_clock::call_count <= 3 );
+}
+
 int main()
 {
   test01();
@@ -179,6 +236,7 @@ int main()
   test03<std::chrono::steady_clock>();
   test03<steady_clock_copy>();
   test04();
-  test_pr91486();
+  test_pr91486_wait_for();
+  test_pr91486_wait_until();
   return 0;
 }
