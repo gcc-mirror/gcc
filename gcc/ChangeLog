@@ -1,3 +1,8 @@
+2020-10-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-v1): Add missing vendor and
+	part numbers.
+
 2020-10-02  Alex Coplan  <alex.coplan@arm.com>
 
 	* config/arm/arm-cpus.in (neoverse-n2): New.
