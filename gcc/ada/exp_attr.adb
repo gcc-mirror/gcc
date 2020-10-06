@@ -2923,8 +2923,6 @@ package body Exp_Attr is
       when Attribute_Constrained => Constrained : declare
          Formal_Ent : constant Entity_Id := Param_Entity (Pref);
 
-      --  Start of processing for Constrained
-
       begin
          --  Reference to a parameter where the value is passed as an extra
          --  actual, corresponding to the extra formal referenced by the
@@ -2938,7 +2936,7 @@ package body Exp_Attr is
          then
             Rewrite (N,
               New_Occurrence_Of
-                (Extra_Constrained (Formal_Ent), Sloc (N)));
+                (Extra_Constrained (Formal_Ent), Loc));
 
          --  If the prefix is an access to object, the attribute applies to
          --  the designated object, so rewrite with an explicit dereference.
@@ -2949,8 +2947,6 @@ package body Exp_Attr is
          then
             Rewrite (Pref,
               Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
-            Analyze_And_Resolve (N, Standard_Boolean);
-            return;
 
          --  For variables with a Extra_Constrained field, we use the
          --  corresponding entity.
@@ -2961,7 +2957,7 @@ package body Exp_Attr is
          then
             Rewrite (N,
               New_Occurrence_Of
-                (Extra_Constrained (Entity (Pref)), Sloc (N)));
+                (Extra_Constrained (Entity (Pref)), Loc));
 
          --  For all other cases, we can tell at compile time
 
@@ -2978,8 +2974,7 @@ package body Exp_Attr is
             Rewrite (N,
               New_Occurrence_Of
                 (Boolean_Literals
-                   (Exp_Util.Attribute_Constrained_Static_Value
-                      (Pref)), Sloc (N)));
+                   (Exp_Util.Attribute_Constrained_Static_Value (Pref)), Loc));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);

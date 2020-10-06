@@ -25694,7 +25694,7 @@ package body Sem_Util is
          end if;
       end if;
 
-      return (Empty);
+      return Empty;
    end Param_Entity;
 
    ----------------------
