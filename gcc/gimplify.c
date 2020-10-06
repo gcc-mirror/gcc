@@ -1468,15 +1468,22 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 
 	  if (flag_openacc && oacc_declare_returns != NULL)
 	    {
-	      tree *c = oacc_declare_returns->get (t);
+	      tree key = t;
+	      if (DECL_HAS_VALUE_EXPR_P (key))
+		{
+		  key = DECL_VALUE_EXPR (key);
+		  if (TREE_CODE (key) == INDIRECT_REF)
+		    key = TREE_OPERAND (key, 0);
+		}
+	      tree *c = oacc_declare_returns->get (key);
 	      if (c != NULL)
 		{
 		  if (ret_clauses)
 		    OMP_CLAUSE_CHAIN (*c) = ret_clauses;
 
-		  ret_clauses = *c;
+		  ret_clauses = unshare_expr (*c);
 
-		  oacc_declare_returns->remove (t);
+		  oacc_declare_returns->remove (key);
 
 		  if (oacc_declare_returns->is_empty ())
 		    {
