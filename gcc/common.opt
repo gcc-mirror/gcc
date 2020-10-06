@@ -1202,7 +1202,7 @@ Common Report Var(flag_data_sections)
 Place data items into their own section.
 
 fdbg-cnt-list
-Common Report Var(common_deferred_options) Defer
+Common Report Var(flag_dbg_cnt_list)
 List all available debugging counters with their limits and counts.
 
 fdbg-cnt=

@@ -45,6 +45,7 @@ static struct string2counter_map map[debug_counter_number_of_counters] =
 typedef std::pair<unsigned int, unsigned int> limit_tuple;
 
 static vec<limit_tuple> limits[debug_counter_number_of_counters];
+static vec<limit_tuple> original_limits[debug_counter_number_of_counters];
 
 static unsigned int count[debug_counter_number_of_counters];
 
@@ -133,6 +134,8 @@ dbg_cnt_set_limit_by_index (enum debug_counter index, const char *name,
 	  return false;
 	}
     }
+
+  original_limits[index] = limits[index].copy ();
 
   return true;
 }
@@ -226,25 +229,27 @@ void
 dbg_cnt_list_all_counters (void)
 {
   int i;
-  printf ("  %-30s %s\n", G_("counter name"), G_("closed intervals"));
-  printf ("-----------------------------------------------------------------\n");
+  fprintf (stderr, "  %-30s%-15s   %s\n", G_("counter name"),
+	   G_("counter value"), G_("closed intervals"));
+  fprintf (stderr, "-----------------------------------------------------------------\n");
   for (i = 0; i < debug_counter_number_of_counters; i++)
     {
-      printf ("  %-30s ", map[i].name);
-      if (limits[i].exists ())
+      fprintf (stderr, "  %-30s%-15d   ", map[i].name, count[i]);
+      if (original_limits[i].exists ())
 	{
-	  for (int j = limits[i].length () - 1; j >= 0; j--)
+	  for (int j = original_limits[i].length () - 1; j >= 0; j--)
 	    {
-	      printf ("[%u, %u]", limits[i][j].first, limits[i][j].second);
+	      fprintf (stderr, "[%u, %u]", original_limits[i][j].first,
+		       original_limits[i][j].second);
 	      if (j > 0)
-		printf (", ");
+		fprintf (stderr, ", ");
 	    }
-	  putchar ('\n');
+	  fprintf (stderr, "\n");
 	}
       else
-	printf ("unset\n");
+	fprintf (stderr, "unset\n");
     }
-  printf ("\n");
+  fprintf (stderr, "\n");
 }
 
 #if CHECKING_P
