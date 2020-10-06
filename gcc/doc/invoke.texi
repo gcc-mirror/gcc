@@ -4345,7 +4345,8 @@ options:
 @gccoptlist{-fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-line-numbers @gol
 -fdiagnostics-color=never @gol
--fdiagnostics-urls=never}
+-fdiagnostics-urls=never @gol
+-fdiagnostics-path-format=separate-events}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
 
