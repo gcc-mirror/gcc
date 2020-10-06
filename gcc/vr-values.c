@@ -3606,6 +3606,35 @@ simplify_using_ranges::fold_cond (gcond *cond)
      some point we should merge all variants of this code.  */
   edge taken_edge;
   vrp_visit_cond_stmt (cond, &taken_edge);
+
+  int_range_max r;
+  if (query->range_of_stmt (r, cond) && r.singleton_p ())
+    {
+      // COND has already been folded if arguments are constant.
+      if (TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
+	  && TREE_CODE (gimple_cond_rhs (cond)) != SSA_NAME)
+	return false;
+
+      if (r.zero_p ())
+	{
+	  gcc_checking_assert (!taken_edge
+			       || taken_edge->flags & EDGE_FALSE_VALUE);
+	  if (dump_file && (dump_flags & TDF_DETAILS) && !taken_edge)
+	    fprintf (dump_file, "\nPredicate evaluates to: 0\n");
+	  gimple_cond_make_false (cond);
+	}
+      else
+	{
+	  gcc_checking_assert (!taken_edge
+			       || taken_edge->flags & EDGE_TRUE_VALUE);
+	  if (dump_file && (dump_flags & TDF_DETAILS) && !taken_edge)
+	    fprintf (dump_file, "\nPredicate evaluates to: 1\n");
+	  gimple_cond_make_true (cond);
+	}
+      update_stmt (cond);
+      return true;
+    }
+
   if (taken_edge)
     {
       if (taken_edge->flags & EDGE_TRUE_VALUE)
@@ -3947,7 +3976,7 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
   su.stmt = stmt;
   su.vec = vec2;
   to_update_switch_stmts.safe_push (su);
-  return false;
+  return true;
 }
 
 void

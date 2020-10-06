@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "explow.h"
+#include "rtl-iter.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -2985,6 +2986,32 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
     emit_move_insn (lhs_rtx, ops[0].value);
 }
 
+/* Helper for expand_DIVMOD.  Return true if the sequence starting with
+   INSN contains any call insns or insns with {,U}{DIV,MOD} rtxes.  */
+
+static bool
+contains_call_div_mod (rtx_insn *insn)
+{
+  subrtx_iterator::array_type array;
+  for (; insn; insn = NEXT_INSN (insn))
+    if (CALL_P (insn))
+      return true;
+    else if (INSN_P (insn))
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	switch (GET_CODE (*iter))
+	  {
+	  case CALL:
+	  case DIV:
+	  case UDIV:
+	  case MOD:
+	  case UMOD:
+	    return true;
+	  default:
+	    break;
+	  }
+  return false;
+ }
+
 /* Expand DIVMOD() using:
  a) optab handler for udivmod/sdivmod if it is available.
  b) If optab_handler doesn't exist, generate call to
@@ -3007,10 +3034,44 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
   rtx op1 = expand_normal (arg1);
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
-  rtx quotient, remainder, libfunc;
+  rtx quotient = NULL_RTX, remainder = NULL_RTX;
+  rtx_insn *insns = NULL;
+
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    {
+      /* For DIVMOD by integral constants, there could be efficient code
+	 expanded inline e.g. using shifts and plus/minus.  Try to expand
+	 the division and modulo and if it emits any library calls or any
+	 {,U}{DIV,MOD} rtxes throw it away and use a divmod optab or
+	 divmod libcall.  */
+      struct separate_ops ops;
+      ops.code = TRUNC_DIV_EXPR;
+      ops.type = type;
+      ops.op0 = make_tree (ops.type, op0);
+      ops.op1 = arg1;
+      ops.op2 = NULL_TREE;
+      ops.location = gimple_location (call_stmt);
+      start_sequence ();
+      quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+      if (contains_call_div_mod (get_insns ()))
+	quotient = NULL_RTX;
+      else
+	{
+	  ops.code = TRUNC_MOD_EXPR;
+	  remainder = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  if (contains_call_div_mod (get_insns ()))
+	    remainder = NULL_RTX;
+	}
+      if (remainder)
+	insns = get_insns ();
+      end_sequence ();
+    }
+
+  if (remainder)
+    emit_insn (insns);
 
   /* Check if optab_handler exists for divmod_optab for given mode.  */
-  if (optab_handler (tab, mode) != CODE_FOR_nothing)
+  else if (optab_handler (tab, mode) != CODE_FOR_nothing)
     {
       quotient = gen_reg_rtx (mode);
       remainder = gen_reg_rtx (mode);
@@ -3018,7 +3079,7 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
     }
 
   /* Generate call to divmod libfunc if it exists.  */
-  else if ((libfunc = optab_libfunc (tab, mode)) != NULL_RTX)
+  else if (rtx libfunc = optab_libfunc (tab, mode))
     targetm.expand_divmod_libfunc (libfunc, mode, op0, op1,
 				   &quotient, &remainder);
 

@@ -15,23 +15,35 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O1 -g0" }
+// { dg-final { scan-assembler-not "St15__exception_ptr13exception_ptr" } }
 
-#include <ranges>
-#include <vector>
+#include <exception>
 
 void
 test01()
 {
-  // LWG 3474. Nesting join_views is broken because of CTAD
-  std::vector<std::vector<std::vector<int>>> nested_vectors = {
-    {{1, 2, 3}, {4, 5}, {6}},
-    {{7},       {8, 9}, {10, 11, 12}},
-    {{13}}
-  };
-  auto joined = nested_vectors | std::views::join | std::views::join;
+  // PR libstdc++/90295
+  // Operations on null exception_ptr objects should be optimised away.
 
-  using V = decltype(joined);
-  static_assert( std::same_as<std::ranges::range_value_t<V>, int> );
+  std::exception_ptr p1;
+  if (!(p1 == nullptr))
+    std::rethrow_exception(p1);
+
+  std::exception_ptr p2 = p1;
+  if (!(p2 == p1))
+    std::rethrow_exception(p2);
+
+  p1 = p2;
+  if (p1 != p2)
+    std::rethrow_exception(p1);
+
+  swap(p1, p2);
+  if (nullptr != p1)
+    std::rethrow_exception(p1);
+
+  p1 = std::exception_ptr(nullptr);
+  if (!(p1 == p2))
+    std::rethrow_exception(p1);
 }

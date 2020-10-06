@@ -1191,7 +1191,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  unsigned int sh_link;
 	  sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				     shdr, sh_link, Elf_Word);
-	  symtab_indices_shndx[sh_link - 1] = i;
+	  symtab_indices_shndx[sh_link - 1] = i - 1;
 	  /* Always discard the extended index sections, after
 	     copying it will not be needed.  This way we don't need to
 	     update it and deal with the ordering constraints of
@@ -1372,19 +1372,22 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	{
 	  unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 					      shdr, sh_entsize, Elf_Addr);
-	  unsigned strtab = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-					     shdr, sh_link, Elf_Word);
 	  size_t prevailing_name_idx = 0;
 	  unsigned char *ent;
 	  unsigned *shndx_table = NULL;
 	  /* Read the section index table if present.  */
 	  if (symtab_indices_shndx[i - 1] != 0)
 	    {
-	      unsigned char *sidxhdr = shdrs + (strtab - 1) * shdr_size;
+	      unsigned char *sidxhdr = shdrs + symtab_indices_shndx[i - 1] * shdr_size;
 	      off_t sidxoff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 					       sidxhdr, sh_offset, Elf_Addr);
 	      size_t sidxsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 					       sidxhdr, sh_size, Elf_Addr);
+	      unsigned int shndx_type
+		= ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				   sidxhdr, sh_type, Elf_Word);
+	      if (shndx_type != SHT_SYMTAB_SHNDX)
+		return "Wrong section type of a SYMTAB SECTION INDICES section";
 	      shndx_table = (unsigned *)XNEWVEC (char, sidxsz);
 	      simple_object_internal_read (sobj->descriptor,
 					   sobj->offset + sidxoff,

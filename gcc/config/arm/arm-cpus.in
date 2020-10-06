@@ -135,10 +135,6 @@ define feature armv8_1m_main
 # Floating point and Neon extensions.
 # VFPv1 is not supported in GCC.
 
-# This feature bit is enabled for all VFP, MVE and
-# MVE with floating point extensions.
-define feature vfp_base
-
 # Vector floating point v2.
 define feature vfpv2
 
@@ -251,7 +247,7 @@ define fgroup ALL_SIMD	ALL_SIMD_INTERNAL ALL_SIMD_EXTERNAL
 
 # List of all FPU bits to strip out if -mfpu is used to override the
 # default.  fp16 is deliberately missing from this list.
-define fgroup ALL_FPU_INTERNAL	vfp_base vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
+define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
 # Similarly, but including fp16 and other extensions that aren't part of
 # -mfpu support.
 define fgroup ALL_FPU_EXTERNAL fp16 bf16
@@ -296,11 +292,11 @@ define fgroup ARMv8r      ARMv8a
 define fgroup ARMv8_1m_main ARMv8m_main armv8_1m_main
 
 # Useful combinations.
-define fgroup VFPv2	vfp_base vfpv2
+define fgroup VFPv2	vfpv2
 define fgroup VFPv3	VFPv2 vfpv3
 define fgroup VFPv4	VFPv3 vfpv4 fp16conv
 define fgroup FPv5	VFPv4 fpv5
-define fgroup MVE      mve vfp_base armv7em
+define fgroup MVE      mve armv7em
 define fgroup MVE_FP   MVE FPv5 fp16 mve_float
 
 define fgroup FP_DBL	fp_dbl
@@ -309,6 +305,18 @@ define fgroup FP_ARMv8	FPv5 FP_D32
 define fgroup NEON	FP_D32 neon
 define fgroup CRYPTO	NEON crypto
 define fgroup DOTPROD	NEON dotprod
+
+# Implied feature bits.  These are for non-named features shared between fgroups.
+# Shared feature f belonging to fgroups A and B will be erroneously removed if:
+# A and B are enabled by default AND A is disabled by a removal flag.
+# To ensure that f is retained, we must add such bits to the ISA after
+# processing the removal flags.  This is implemented by 'implied bits':
+# define implied <name> [<feature-or-fgroup>]+
+# This indicates that, if any of the listed features are enabled, or if any
+# member of a listed fgroup is enabled, then <name> will be implicitly enabled.
+
+# Enabled for all VFP, MVE and MVE with floating point extensions.
+define implied vfp_base MVE MVE_FP ALL_FP
 
 # List of all quirk bits to strip out when comparing CPU features with
 # architectures.
@@ -1565,6 +1573,10 @@ begin cpu cortex-m55
  cname cortexm55
  tune flags LDSCHED
  architecture armv8.1-m.main+mve.fp+fp.dp
+ option nomve.fp remove mve_float
+ option nomve remove mve mve_float
+ option nofp remove ALL_FP mve_float
+ option nodsp remove MVE mve_float
  isa quirk_no_asmcpu
  costs v7m
  vendor 41

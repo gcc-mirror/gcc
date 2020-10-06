@@ -78,7 +78,7 @@ namespace __detail
       // Set next resize to the max value so that we never try to rehash again
       // as we already reach the biggest possible bucket number.
       // Note that it might result in max_load_factor not being respected.
-      _M_next_resize = numeric_limits<size_t>::max();
+      _M_next_resize = size_t(-1);
     else
       _M_next_resize =
 	__builtin_floorl(*__next_bkt * (long double)_M_max_load_factor);
