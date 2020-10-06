@@ -605,11 +605,7 @@ vec_info::remove_stmt (stmt_vec_info stmt_info)
   set_vinfo_for_stmt (stmt_info->stmt, NULL);
   unlink_stmt_vdef (stmt_info->stmt);
   gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
-  gimple_stmt_iterator *psi = &si;
-  if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (this))
-    if (gsi_stmt (bb_vinfo->region_begin) == stmt_info->stmt)
-      psi = &bb_vinfo->region_begin;
-  gsi_remove (psi, true);
+  gsi_remove (&si, true);
   release_defs (stmt_info->stmt);
   free_stmt_vec_info (stmt_info);
 }
@@ -653,7 +649,8 @@ vec_info::insert_seq_on_entry (stmt_vec_info context, gimple_seq seq)
   else
     {
       bb_vec_info bb_vinfo = as_a <bb_vec_info> (this);
-      gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
+      gimple_stmt_iterator gsi_region_begin
+	= gsi_after_labels (bb_vinfo->bbs[0]);
       gsi_insert_seq_before (&gsi_region_begin, seq, GSI_SAME_STMT);
     }
 }
@@ -1416,6 +1413,13 @@ pass_slp_vectorize::execute (function *fun)
   /* Mark all stmts as not belonging to the current region and unvisited.  */
   FOR_EACH_BB_FN (bb, fun)
     {
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *stmt = gsi.phi ();
+	  gimple_set_uid (stmt, -1);
+	  gimple_set_visited (stmt, false);
+	}
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -1425,8 +1429,7 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
-  FOR_EACH_BB_FN (bb, fun)
-    vect_slp_bb (bb);
+  vect_slp_function (fun);
 
   if (!in_loop_pipeline)
     {

@@ -45,7 +45,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "internal-fn.h"
 #include "dump-context.h"
-
+#include "cfganal.h"
+#include "tree-eh.h"
+#include "tree-cfg.h"
 
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
@@ -761,8 +763,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "Build SLP for %G", stmt);
 
-      /* Fail to vectorize statements marked as unvectorizable.  */
-      if (!STMT_VINFO_VECTORIZABLE (stmt_info))
+      /* Fail to vectorize statements marked as unvectorizable, throw
+	 or are volatile.  */
+      if (!STMT_VINFO_VECTORIZABLE (stmt_info)
+	  || stmt_can_throw_internal (cfun, stmt)
+	  || gimple_has_volatile_ops (stmt))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1239,7 +1244,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
   if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
     {
       tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
-      tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+      tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
+						  group_size);
       if (!vect_record_max_nunits (vinfo, stmt_info, group_size, vectype,
 				   max_nunits))
 	return NULL;
@@ -2728,26 +2734,31 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 }
 
 
-/* Initialize a bb_vec_info struct for the statements between
-   REGION_BEGIN_IN (inclusive) and REGION_END_IN (exclusive).  */
+/* Initialize a bb_vec_info struct for the statements in BBS basic blocks.  */
 
-_bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
-			    gimple_stmt_iterator region_end_in,
-			    vec_info_shared *shared)
-  : vec_info (vec_info::bb, init_cost (NULL), shared),
-    bb (gsi_bb (region_begin_in)),
-    region_begin (region_begin_in),
-    region_end (region_end_in)
+_bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
+  : vec_info (vec_info::bb, init_cost (NULL), shared), bbs (_bbs)
 {
-  for (gimple *stmt : this->region_stmts ())
+  for (unsigned i = 0; i < bbs.length (); ++i)
     {
-      gimple_set_uid (stmt, 0);
-      if (is_gimple_debug (stmt))
-	continue;
-      add_stmt (stmt);
+      if (i != 0)
+	for (gphi_iterator si = gsi_start_phis (bbs[i]); !gsi_end_p (si);
+	     gsi_next (&si))
+	  {
+	    gphi *phi = si.phi ();
+	    gimple_set_uid (phi, 0);
+	    add_stmt (phi);
+	  }
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, 0);
+	  if (is_gimple_debug (stmt))
+	    continue;
+	  add_stmt (stmt);
+	}
     }
-
-  bb->aux = this;
 }
 
 
@@ -2756,11 +2767,23 @@ _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
 
 _bb_vec_info::~_bb_vec_info ()
 {
-  for (gimple *stmt : this->region_stmts ())
-    /* Reset region marker.  */
-    gimple_set_uid (stmt, -1);
-
-  bb->aux = NULL;
+  /* Reset region marker.  */
+  for (unsigned i = 0; i < bbs.length (); ++i)
+    {
+      if (i != 0)
+	for (gphi_iterator si = gsi_start_phis (bbs[i]); !gsi_end_p (si);
+	     gsi_next (&si))
+	  {
+	    gphi *phi = si.phi ();
+	    gimple_set_uid (phi, -1);
+	  }
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, -1);
+	}
+    }
 }
 
 /* Subroutine of vect_slp_analyze_node_operations.  Handle the root of NODE,
@@ -3461,9 +3484,11 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 static void
 vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 {
-  for (gimple *stmt : bb_vinfo->region_stmts ())
+  for (unsigned i = 0; i < bb_vinfo->bbs.length (); ++i)
+    for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[i]);
+	 !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      gassign *assign = dyn_cast<gassign *> (stmt);
+      gassign *assign = dyn_cast<gassign *> (gsi_stmt (gsi));
       if (!assign || gimple_assign_rhs_code (assign) != CONSTRUCTOR)
 	continue;
 
@@ -3602,17 +3627,13 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
   return true;
 }
 
-/* Subroutine of vect_slp_bb.  Try to vectorize the statements between
-   REGION_BEGIN (inclusive) and REGION_END (exclusive), returning true
-   on success.  The region has N_STMTS statements and has the datarefs
-   given by DATAREFS.  */
+/* Subroutine of vect_slp_bb.  Try to vectorize the statements for all
+   basic blocks in BBS, returning true on success.
+   The region has N_STMTS statements and has the datarefs given by DATAREFS.  */
 
 static bool
-vect_slp_region (gimple_stmt_iterator region_begin,
-		 gimple_stmt_iterator region_end,
-		 vec<data_reference_p> datarefs,
-		 vec<int> *dataref_groups,
-		 unsigned int n_stmts)
+vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
+		 vec<int> *dataref_groups, unsigned int n_stmts)
 {
   bb_vec_info bb_vinfo;
   auto_vector_modes vector_modes;
@@ -3629,7 +3650,7 @@ vect_slp_region (gimple_stmt_iterator region_begin,
     {
       bool vectorized = false;
       bool fatal = false;
-      bb_vinfo = new _bb_vec_info (region_begin, region_end, &shared);
+      bb_vinfo = new _bb_vec_info (bbs, &shared);
 
       bool first_time_p = shared.datarefs.is_empty ();
       BB_VINFO_DATAREFS (bb_vinfo) = datarefs;
@@ -3754,50 +3775,113 @@ vect_slp_region (gimple_stmt_iterator region_begin,
     }
 }
 
+
+/* Main entry for the BB vectorizer.  Analyze and transform BBS, returns
+   true if anything in the basic-block was vectorized.  */
+
+static bool
+vect_slp_bbs (vec<basic_block> bbs)
+{
+  vec<data_reference_p> datarefs = vNULL;
+  vec<int> dataref_groups = vNULL;
+  int insns = 0;
+  int current_group = 0;
+
+  for (unsigned i = 0; i < bbs.length (); i++)
+    {
+      basic_block bb = bbs[i];
+      for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    continue;
+
+	  insns++;
+
+	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
+	    vect_location = stmt;
+
+	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs,
+					      &dataref_groups, current_group))
+	    ++current_group;
+
+	  if (insns > param_slp_max_insns_in_bb)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "not vectorized: too many instructions in "
+				 "region.\n");
+	    }
+	}
+    }
+
+  return vect_slp_region (bbs, datarefs, &dataref_groups, insns);
+}
+
 /* Main entry for the BB vectorizer.  Analyze and transform BB, returns
    true if anything in the basic-block was vectorized.  */
 
 bool
 vect_slp_bb (basic_block bb)
 {
-  vec<data_reference_p> datarefs = vNULL;
-  vec<int> dataref_groups = vNULL;
-  int insns = 0;
-  int current_group = 0;
-  gimple_stmt_iterator region_begin = gsi_start_nondebug_after_labels_bb (bb);
-  gimple_stmt_iterator region_end = gsi_last_bb (bb);
-  if (!gsi_end_p (region_end))
-    gsi_next (&region_end);
-
-  for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
-       gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      if (is_gimple_debug (stmt))
-	continue;
-
-      insns++;
-
-      if (gimple_location (stmt) != UNKNOWN_LOCATION)
-	vect_location = stmt;
-
-      if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs,
-					  &dataref_groups, current_group))
-	++current_group;
-
-      if (insns > param_slp_max_insns_in_bb)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: too many instructions in "
-			     "basic block.\n");
-	}
-    }
-
-  return vect_slp_region (region_begin, region_end, datarefs,
-			  &dataref_groups, insns);
+  auto_vec<basic_block> bbs;
+  bbs.safe_push (bb);
+  return vect_slp_bbs (bbs);
 }
 
+/* Main entry for the BB vectorizer.  Analyze and transform BB, returns
+   true if anything in the basic-block was vectorized.  */
+
+bool
+vect_slp_function (function *fun)
+{
+  bool r = false;
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun));
+  unsigned n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+
+  /* For the moment split the function into pieces to avoid making
+     the iteration on the vector mode moot.  Split at points we know
+     to not handle well which is CFG merges (SLP discovery doesn't
+     handle non-loop-header PHIs) and loop exits.  Since pattern
+     recog requires reverse iteration to visit uses before defs
+     simply chop RPO into pieces.  */
+  auto_vec<basic_block> bbs;
+  for (unsigned i = 0; i < n; i++)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
+
+      /* Split when a basic block has multiple predecessors or when the
+	 edge into it exits a loop (because of implementation issues with
+	 respect to placement of CTORs for externals).  */
+      bool split = false;
+      edge e;
+      if (!single_pred_p (bb)
+	  || ((e = single_pred_edge (bb)),
+	      loop_exit_edge_p (e->src->loop_father, e)))
+	split = true;
+      /* Split when a BB is not dominated by the first block.  */
+      else if (!bbs.is_empty ()
+	       && !dominated_by_p (CDI_DOMINATORS, bb, bbs[0]))
+	split = true;
+
+      if (split && !bbs.is_empty ())
+	{
+	  r |= vect_slp_bbs (bbs);
+	  bbs.truncate (0);
+	  bbs.quick_push (bb);
+	}
+      else
+	bbs.safe_push (bb);
+    }
+
+  if (!bbs.is_empty ())
+    r |= vect_slp_bbs (bbs);
+
+  free (rpo);
+
+  return r;
+}
 
 /* Build a variable-length vector in which the elements in ELTS are repeated
    to a fill NRESULTS vectors of type VECTOR_TYPE.  Store the vectors in
@@ -4059,8 +4143,19 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 		{
 		  if (insert_after)
 		    {
-		      gimple_stmt_iterator gsi
-			= gsi_for_stmt (insert_after->stmt);
+		      gimple_stmt_iterator gsi;
+		      if (!stmt_ends_bb_p (insert_after->stmt))
+			gsi = gsi_for_stmt (insert_after->stmt);
+		      else
+			{
+			  /* When we want to insert after a def where the
+			     defining stmt throws then insert on the fallthru
+			     edge.  */
+			  edge e = find_fallthru_edge
+				     (gimple_bb (insert_after->stmt)->succs);
+			  gcc_assert (single_pred_p (e->dest));
+			  gsi = gsi_after_labels (e->dest);
+			}
 		      gsi_insert_seq_after (&gsi, ctor_seq,
 					    GSI_CONTINUE_LINKING);
 		    }
@@ -4674,7 +4769,8 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	       we do not insert before the region boundary.  */
 	    if (SLP_TREE_SCALAR_OPS (child).is_empty ()
 		&& !vinfo->lookup_def (SLP_TREE_VEC_DEFS (child)[0]))
-	      last_stmt = gsi_stmt (as_a <bb_vec_info> (vinfo)->region_begin);
+	      last_stmt = gsi_stmt (gsi_after_labels
+				      (as_a <bb_vec_info> (vinfo)->bbs[0]));
 	    else
 	      {
 		unsigned j;

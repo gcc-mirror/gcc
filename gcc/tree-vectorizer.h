@@ -827,94 +827,14 @@ loop_vec_info_for_loop (class loop *loop)
 typedef class _bb_vec_info : public vec_info
 {
 public:
-
-  /* GIMPLE statement iterator going from region_begin to region_end.  */
-
-  struct const_iterator
-  {
-    const_iterator (gimple_stmt_iterator _gsi) : gsi (_gsi) {}
-
-    const const_iterator &
-    operator++ ()
-    {
-      gsi_next (&gsi); return *this;
-    }
-
-    gimple *operator* () const { return gsi_stmt (gsi); }
-
-    bool
-    operator== (const const_iterator &other) const
-    {
-      return gsi_stmt (gsi) == gsi_stmt (other.gsi);
-    }
-
-    bool
-    operator!= (const const_iterator &other) const
-    {
-      return !(*this == other);
-    }
-
-    gimple_stmt_iterator gsi;
-  };
-
-  /* GIMPLE statement iterator going from region_end to region_begin.  */
-
-  struct const_reverse_iterator
-  {
-    const_reverse_iterator (gimple_stmt_iterator _gsi) : gsi (_gsi) {}
-
-    const const_reverse_iterator &
-    operator++ ()
-    {
-      gsi_prev (&gsi); return *this;
-    }
-
-    gimple *operator* () const { return gsi_stmt (gsi); }
-
-    bool
-    operator== (const const_reverse_iterator &other) const
-    {
-      return gsi_stmt (gsi) == gsi_stmt (other.gsi);
-    }
-
-    bool
-    operator!= (const const_reverse_iterator &other) const
-    {
-      return !(*this == other);
-    }
-
-    gimple_stmt_iterator gsi;
-  };
-
-  _bb_vec_info (gimple_stmt_iterator, gimple_stmt_iterator, vec_info_shared *);
+  _bb_vec_info (vec<basic_block> bbs, vec_info_shared *);
   ~_bb_vec_info ();
 
-  /* Returns iterator_range for range-based loop.  */
-
-  iterator_range<const_iterator>
-  region_stmts ()
-  {
-    return iterator_range<const_iterator> (region_begin, region_end);
-  }
-
-  /* Returns iterator_range for range-based loop in a reverse order.  */
-
-  iterator_range<const_reverse_iterator>
-  reverse_region_stmts ()
-  {
-    const_reverse_iterator begin = region_end;
-    if (*begin == NULL)
-      begin = const_reverse_iterator (gsi_last_bb (gsi_bb (region_end)));
-    else
-      ++begin;
-
-    const_reverse_iterator end = region_begin;
-    return iterator_range<const_reverse_iterator> (begin, ++end);
-  }
-
-  basic_block bb;
-  gimple_stmt_iterator region_begin;
-  gimple_stmt_iterator region_end;
+  /* The region we are operating on.  bbs[0] is the entry, excluding
+     its PHI nodes.  In the future we might want to track an explicit
+     entry edge to cover bbs[0] PHI nodes and have a region entry
+     insert location.  */
+  vec<basic_block> bbs;
 } *bb_vec_info;
 
 #define BB_VINFO_BB(B)               (B)->bb
@@ -2035,6 +1955,7 @@ extern void vect_get_slp_defs (slp_tree, vec<tree> *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
+extern bool vect_slp_function (function *);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern stmt_vec_info vect_find_first_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);
