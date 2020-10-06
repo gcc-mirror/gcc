@@ -17,5 +17,5 @@ void f2 (void)
   int A_f2[N_f2];
 #pragma acc declare copy(A_f2)
   /* { dg-final { scan-tree-dump-times {#pragma omp target oacc_declare map\(to:\(\*A_f2} 1 gimple } }
-     { dg-final { scan-tree-dump-times {#pragma omp target oacc_declare map\(from:\(\*A_f2} 1 gimple { xfail *-*-* } } } TODO PR90861 */
+     { dg-final { scan-tree-dump-times {#pragma omp target oacc_declare map\(from:\(\*A_f2} 1 gimple } } */
 }
