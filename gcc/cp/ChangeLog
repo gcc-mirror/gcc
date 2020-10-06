@@ -1,3 +1,30 @@
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96994
+	* call.c (build_over_call): If obj_arg is non-NULL, return INIT_EXPR
+	setting obj_arg to call.
+
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97195
+	* constexpr.c (cxx_eval_call_expression): Don't VERIFY_CONSTANT the
+	second argument.
+
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97145
+	* constexpr.c (cxx_eval_builtin_function_call): Return void_node for
+	calls to __sanitize_ptr_{sub,cmp} builtins.
+
 2020-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

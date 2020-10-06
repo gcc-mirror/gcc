@@ -1,3 +1,27 @@
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96994
+	* g++.dg/cpp2a/consteval18.C: New test.
+
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97195
+	* g++.dg/cpp2a/constexpr-new14.C: New test.
+
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97145
+	* g++.dg/asan/pr97145.C: New test.
+
 2020-10-01  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

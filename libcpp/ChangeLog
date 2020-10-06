@@ -1,3 +1,12 @@
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/97163
+	* lex.c (search_line_fast): Only use _ARCH_PWR8 Altivec version
+	for GCC >= 4.5.
+
 2020-07-29  Tiziano Müller  <tiziano.mueller@chem.uzh.ch>
 
 	* init.c (builtin_array): Add xref comment.
