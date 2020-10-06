@@ -670,7 +670,7 @@ irange_allocator::allocate (unsigned num_pairs)
 
   struct newir {
     irange range;
-    tree mem[1];
+    tree mem[2];
   };
   size_t nbytes = (sizeof (newir) + sizeof (tree) * 2 * (num_pairs - 1));
   struct newir *r = (newir *) obstack_alloc (&m_obstack, nbytes);
