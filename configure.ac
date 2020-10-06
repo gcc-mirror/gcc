@@ -1037,6 +1037,7 @@ case "${target}" in
     ;;
   *-*-freebsd*)
     if test "x$with_gmp" = x && test "x$with_gmp_dir" = x \
+	&& ! test -d ${srcdir}/gmp \
 	&& test -f /usr/local/include/gmp.h; then
       with_gmp=/usr/local
     fi
