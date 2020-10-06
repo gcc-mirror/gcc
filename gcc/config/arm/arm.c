@@ -3391,6 +3391,20 @@ arm_configure_build_target (struct arm_build_target *target,
       bitmap_ior (target->isa, target->isa, fpu_bits);
     }
 
+  /* There may be implied bits which we still need to enable. These are
+     non-named features which are needed to complete other sets of features,
+     but cannot be enabled from arm-cpus.in due to being shared between
+     multiple fgroups. Each entry in all_implied_fbits is of the form
+     ante -> cons, meaning that if the feature "ante" is enabled, we should
+     implicitly enable "cons".  */
+  const struct fbit_implication *impl = all_implied_fbits;
+  while (impl->ante)
+    {
+      if (bitmap_bit_p (target->isa, impl->ante))
+	bitmap_set_bit (target->isa, impl->cons);
+      impl++;
+    }
+
   if (!arm_selected_tune)
     arm_selected_tune = arm_selected_cpu;
   else /* Validate the features passed to -mtune.  */

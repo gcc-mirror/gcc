@@ -190,6 +190,23 @@ function gen_isa () {
 	ORS = z
 	print "\n"
     }
+
+    print "struct fbit_implication {"
+    print "  /* Represents a feature implication, where:"
+    print "     ante IMPLIES cons"
+    print "     meaning that if ante is enabled then we should"
+    print "     also implicitly enable cons.  */"
+    print "  enum isa_feature ante;"
+    print "  enum isa_feature cons;"
+    print "};\n"
+    print "static const struct fbit_implication all_implied_fbits[] ="
+    print "{"
+    for (impl in implied_bits) {
+      split (impl, impl_parts, SUBSEP)
+      print "  { isa_bit_" impl_parts[2] ", isa_bit_" impl_parts[1] " },"
+    }
+    print "  { isa_nobit, isa_nobit }"
+    print "};\n"
 }
 
 function gen_data () {
@@ -598,6 +615,40 @@ BEGIN {
     }
     fgroup[fgrp] = 1
     parse_ok = 1
+}
+
+/^define implied / {
+  if (NF < 4) fatal("syntax: define implied <name> [<feature-or-fgroup>]+\n" \
+		    "Implied bits must be defined with at least one antecedent.")
+  toplevel()
+  fbit = $3
+  if (fbit in features) fatal("implied feature " fbit " aliases a real feature")
+  if (fbit in fgroup) fatal("implied feature " fbit " aliases a feature group")
+  fcount = NF
+  features[fbit] = 1
+  for (n = 4; n <= fcount; n++) {
+    ante = $n
+    if (fbit == ante) fatal("feature cannot imply itself")
+    else if (ante in features) {
+      for (impl in implied_bits) {
+	split(impl, impl_sep, SUBSEP)
+	if (ante == impl_sep[1])
+	  fatal(ante " implies implied bit " fbit		\
+		". Chained implications not currently supported")
+      }
+      implied_bits[fbit, ante] = 1
+    } else if (ante in fgroup) {
+      for (bitcomb in fgrp_bits) {
+	split(bitcomb, bitsep, SUBSEP)
+	if (bitsep[1] == ante) {
+	  implied_bits[fbit, bitsep[2]] = 1
+	}
+      }
+    } else {
+      fatal("implied bit antecedent " ante " unrecognized")
+    }
+  }
+  parse_ok = 1
 }
 
 /^begin fpu / {
