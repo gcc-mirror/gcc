@@ -1,3 +1,54 @@
+2020-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::legacy_intersect): Only handle
+	legacy ranges.
+	(irange::legacy_union): Same.
+	(irange::union_): When unioning legacy with non-legacy,
+	first convert to legacy and do everything in legacy mode.
+	(irange::intersect): Same, but for intersect.
+	* range-op.cc (range_tests): Adjust for above changes.
+
+2020-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_div::wi_fold): Return varying for
+	division by zero.
+	(class operator_rshift): Move class up.
+	(operator_abs::wi_fold): Return [-MIN,-MIN] for ABS([-MIN,-MIN]).
+	(operator_tests): Adjust tests.
+
+2020-10-05  Tom de Vries  <tdevries@suse.de>
+
+	* tracer.c (ignore_bb_p): Ignore GOMP_SIMT_XCHG_*.
+
+2020-10-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/arm/arm-cpus.in (neoverse-v1): Add missing vendor and
+	part numbers.
+
+2020-10-05  Tom de Vries  <tdevries@suse.de>
+
+	* tracer.c (ignore_bb_p): Remove incorrect suggestion.
+
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* opth-gen.awk: Don't emit explicit_mask array if n_target_explicit
+	is equal to n_target_explicit_mask.
+	* optc-save-gen.awk: Compute has_target_explicit_mask and if false,
+	don't emit code iterating over explicit_mask array elements.  Stream
+	also explicit_mask_* target members.
+
+2020-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Use ~0U instead of ~0 in
+	unsigned int array initializer.
+
+2020-10-05  Tom de Vries  <tdevries@suse.de>
+
+	PR fortran/95654
+	* tracer.c (ignore_bb_p): Ignore GOMP_SIMT_ENTER_ALLOC,
+	GOMP_SIMT_VOTE_ANY and GOMP_SIMT_EXIT.
+
 2020-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* opth-gen.awk: For variables referenced in Mask and InverseMask,

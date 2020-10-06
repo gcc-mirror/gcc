@@ -1,3 +1,7 @@
+2020-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/spellcheck-reserved.c: Restore diagnostic.
+
 2020-10-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/97272

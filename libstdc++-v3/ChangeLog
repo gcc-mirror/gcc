@@ -1,3 +1,60 @@
+2020-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h: Use __int_traits<int> instead of
+	std::numeric_limits<int>.
+	* include/bits/uniform_int_dist.h: Use __int_traits<T>::__max
+	instead of std::numeric_limits<T>::max().
+	* include/bits/hashtable_policy.h: Use size_t(-1) instead of
+	std::numeric_limits<size_t>::max().
+	* include/std/regex: Include <ext/numeric_traits.h>.
+	* include/std/string_view: Use typedef for __int_traits<int>.
+	* src/c++11/hashtable_c++0x.cc: Use size_t(-1) instead of
+	std::numeric_limits<size_t>::max().
+	* testsuite/std/ranges/iota/96042.cc: Include <limits>.
+	* testsuite/std/ranges/iota/difference_type.cc: Likewise.
+	* testsuite/std/ranges/subrange/96042.cc: Likewise.
+
+2020-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric: Move all #include directives to the top
+	of the header.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+
+2020-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Add new symbol.
+	* include/bits/functexcept.h (__throw_bad_array_new_length):
+	Declare new function.
+	* include/ext/malloc_allocator.h (malloc_allocator::allocate):
+	Throw bad_array_new_length for impossible sizes (LWG 3190).
+	* include/ext/new_allocator.h (new_allocator::allocate):
+	Likewise.
+	* include/std/memory_resource (polymorphic_allocator::allocate)
+	(polymorphic_allocator::allocate_object): Use new function,
+	__throw_bad_array_new_length.
+	* src/c++11/functexcept.cc (__throw_bad_array_new_length):
+	Define.
+	* testsuite/20_util/allocator/lwg3190.cc: New test.
+
+2020-10-05  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/91486
+	* include/bits/atomic_futex.h:
+	(__atomic_futex_unsigned::_M_load_when_equal_until): Use target
+	clock duration type when rounding.
+	* testsuite/30_threads/async/async.cc (test_pr91486_wait_for):
+	Rename from test_pr91486.
+	(float_steady_clock): New class for test.
+	(test_pr91486_wait_until): New test.
+
+2020-10-05  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/20_util/duration_cast/rounding_c++11.cc: Copy
+	rounding.cc and alter to support compilation for C++11 and to
+	test std::chrono::__detail::ceil.
+
 2020-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/29_atomics/atomic_float/value_init.cc: Use float

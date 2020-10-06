@@ -1,3 +1,20 @@
+2020-10-05  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (NON_UNION_CLASS_TYPE_P): Fix typo in a comment.
+
+2020-10-05  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97197
+	* error.c (dump_expr): Handle TARGET_MEM_REF.
+
+2020-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (maybe_add_fuzzy_decl): New.
+	(maybe_add_fuzzy_binding): New.
+	(consider_binding_level): Use intermediate sortable vector for
+	namespace bindings.
+
 2020-10-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97014
