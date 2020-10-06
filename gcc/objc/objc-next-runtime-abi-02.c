@@ -1439,13 +1439,12 @@ build_v2_superclass_ref_decl (tree ident, bool inst)
 static GTY (()) vec<ident_data_tuple, va_gc> *class_super_refs;
 static GTY (()) vec<ident_data_tuple, va_gc> *metaclass_super_refs;
 
+/* Find or build a superclass reference decl for class NAME.  */
+
 static tree
-next_runtime_abi_02_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
-					 struct imp_entry *imp, bool inst_meth)
+objc_get_superclass_ref_decl (tree name, bool inst_meth)
 {
   tree decl;
-  ident_data_tuple e;
-  tree id = CLASS_NAME (imp->imp_context);
   vec<ident_data_tuple, va_gc> *list = inst_meth  ? class_super_refs
 						: metaclass_super_refs;
 
@@ -1455,10 +1454,10 @@ next_runtime_abi_02_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
       ident_data_tuple *ref;
       FOR_EACH_VEC_ELT (*list, count, ref)
 	{
-	  if (ref->ident == id)
+	  if (ref->ident == name)
 	    {
 	      if (!ref->data)
-		ref->data = build_v2_superclass_ref_decl (id, inst_meth);
+		ref->data = build_v2_superclass_ref_decl (name, inst_meth);
 	      return ref->data;
 	    }
 	}
@@ -1479,48 +1478,49 @@ next_runtime_abi_02_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
     }
   /* We come here if we don't find the entry - or if the table was yet
      to be created.  */
-  decl = build_v2_superclass_ref_decl (id, inst_meth);
-  e.ident = id;
+  decl = build_v2_superclass_ref_decl (name, inst_meth);
+  ident_data_tuple e;
+  e.ident = name;
   e.data = decl;
   vec_safe_push (list, e);
   return decl;
 }
 
+/* Get a reference to the superclass for IMP.  */
+
+static tree
+next_runtime_abi_02_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
+					 struct imp_entry *imp, bool inst_meth)
+{
+  tree name = CLASS_NAME (imp->imp_context);
+  return objc_get_superclass_ref_decl (name, inst_meth);
+}
+
+/* Get a reference to the superclass for category IMP.  */
+
 static tree
 next_runtime_abi_02_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED,
-					   struct imp_entry *imp, bool inst_meth)
+					    struct imp_entry *imp,
+					    bool inst_meth)
 {
-  /* ??? is this OK when zero-link = true?  */
-  tree super_name = CLASS_SUPER_NAME (imp->imp_template);
-  tree super_class;
-
-  if (!flag_zero_link)
+  if (flag_zero_link)
     {
-      super_class = objc_get_class_reference (CLASS_NAME (imp->imp_template));
-
-      if (!inst_meth)
-
-	/* If we are in a class method, we must retrieve the
-	   _metaclass_ for the current class, pointed at by the
-	   class's "isa" pointer.  The following assumes that "isa" is
-	   the first ivar in a class (which it must be).  */
-	   super_class =
-		build_indirect_ref (input_location,
-				    build_c_cast (input_location,
-					build_pointer_type (objc_class_type),
-					super_class),
-				    RO_UNARY_STAR);
-      return super_class;
+      /* Do it the slow way.  */
+      tree get_cl_fn = inst_meth ? objc_get_class_decl
+				 : objc_get_meta_class_decl;
+      tree super_name = CLASS_SUPER_NAME (imp->imp_template);
+      super_name = my_build_string_pointer (IDENTIFIER_LENGTH (super_name) + 1,
+					    IDENTIFIER_POINTER (super_name));
+      /* super_class = objc_get{Meta}Class("CLASS_SUPER_NAME"); */
+      return build_function_call (input_location, get_cl_fn,
+				  build_tree_list (NULL_TREE, super_name));
     }
-  /* ??? Do we need to add the class ref anway for zero-link?  */
-  /* else do it the slow way.  */
-  super_class = (inst_meth ? objc_get_class_decl : objc_get_meta_class_decl);
-  super_name = my_build_string_pointer (IDENTIFIER_LENGTH (super_name) + 1,
-					IDENTIFIER_POINTER (super_name));
-  /* super_class = objc_get{Meta}Class("CLASS_SUPER_NAME"); */
-  return build_function_call (input_location,
-			      super_class,
-			      build_tree_list (NULL_TREE, super_name));
+
+  /* This is the 'usual' path.  */
+  tree cls_name = CLASS_NAME (imp->imp_template);
+  if (!inst_meth)
+    return objc_get_superclass_ref_decl (cls_name, inst_meth);
+  return objc_get_class_reference (cls_name);
 }
 
 static tree
