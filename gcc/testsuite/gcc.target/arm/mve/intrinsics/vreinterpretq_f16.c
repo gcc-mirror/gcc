@@ -1,6 +1,6 @@
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
-/* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2 -fno-ipa-icf" } */
 
 #include "arm_mve.h"
 int8x16_t value1;
@@ -41,4 +41,4 @@ foo1 ()
   return vaddq_f16 (r7, vreinterpretq_f16 (value9));
 }
 
-/* { dg-final { scan-assembler-times "vadd.f16" 8 } } */
+/* { dg-final { scan-assembler-times "vadd.f16" 16 } } */

@@ -1,3 +1,17 @@
+2020-10-05  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_f16.c: Use additional
+	option -fno-ipa-icf and change the instruction count from 8 to 16.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u8.c: Likewise.
+
 2020-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/spellcheck-reserved.c: Restore diagnostic.

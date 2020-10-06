@@ -28964,6 +28964,30 @@ arm_preferred_simd_mode (scalar_mode mode)
       default:;
       }
 
+  if (TARGET_HAVE_MVE)
+    switch (mode)
+      {
+      case QImode:
+	return V16QImode;
+      case HImode:
+	return V8HImode;
+      case SImode:
+	return V4SImode;
+
+      default:;
+      }
+
+  if (TARGET_HAVE_MVE_FLOAT)
+    switch (mode)
+      {
+      case HFmode:
+	return V8HFmode;
+      case SFmode:
+	return V4SFmode;
+
+      default:;
+      }
+
   return word_mode;
 }
 

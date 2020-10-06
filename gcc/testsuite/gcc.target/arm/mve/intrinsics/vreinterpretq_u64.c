@@ -1,6 +1,6 @@
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
-/* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2 -fno-ipa-icf" } */
 
 #include "arm_mve.h"
 int16x8_t value1;
@@ -42,4 +42,4 @@ foo1 (mve_pred16_t __p)
   return vpselq_u64 (r7, vreinterpretq_u64 (value9), __p);
 }
 
-/* { dg-final { scan-assembler-times "vpsel" 8 } } */
+/* { dg-final { scan-assembler-times "vpsel" 16 } } */
