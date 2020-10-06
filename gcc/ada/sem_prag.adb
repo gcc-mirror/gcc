@@ -11437,6 +11437,12 @@ package body Sem_Prag is
          end if;
       end if;
 
+      --  Mark assertion pragmas as Ghost depending on their enclosing context
+
+      if Assertion_Expression_Pragma (Prag_Id) then
+         Mark_Ghost_Pragma (N, Current_Scope);
+      end if;
+
       --  Preset arguments
 
       Arg_Count := 0;
