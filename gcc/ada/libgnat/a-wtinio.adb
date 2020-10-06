@@ -65,9 +65,6 @@ package body Ada.Wide_Text_IO.Integer_IO is
    --  Boolean is used to test for these cases and since it is a constant, only
    --  code for the relevant case will be included in the instance.
 
-   subtype TFT is Ada.Wide_Text_IO.File_Type;
-   --  File type required for calls to routines in Aux
-
    ---------
    -- Get --
    ---------
@@ -84,9 +81,9 @@ package body Ada.Wide_Text_IO.Integer_IO is
 
    begin
       if Need_LLI then
-         Aux_LLI.Get (TFT (File), Long_Long_Integer (Item), Width);
+         Aux_LLI.Get (File, Long_Long_Integer (Item), Width);
       else
-         Aux_Int.Get (TFT (File), Integer (Item), Width);
+         Aux_Int.Get (File, Integer (Item), Width);
       end if;
 
    exception
@@ -140,9 +137,9 @@ package body Ada.Wide_Text_IO.Integer_IO is
    is
    begin
       if Need_LLI then
-         Aux_LLI.Put (TFT (File), Long_Long_Integer (Item), Width, Base);
+         Aux_LLI.Put (File, Long_Long_Integer (Item), Width, Base);
       else
-         Aux_Int.Put (TFT (File), Integer (Item), Width, Base);
+         Aux_Int.Put (File, Integer (Item), Width, Base);
       end if;
    end Put;
 

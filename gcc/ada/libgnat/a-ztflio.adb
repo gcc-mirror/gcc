@@ -35,9 +35,6 @@ with System.WCh_WtS; use System.WCh_WtS;
 
 package body Ada.Wide_Wide_Text_IO.Float_IO is
 
-   subtype TFT is Ada.Wide_Wide_Text_IO.File_Type;
-   --  File type required for calls to routines in Aux
-
    package Aux renames Ada.Wide_Wide_Text_IO.Float_Aux;
 
    ---------
@@ -50,7 +47,7 @@ package body Ada.Wide_Wide_Text_IO.Float_IO is
       Width : Field := 0)
    is
    begin
-      Aux.Get (TFT (File), Long_Long_Float (Item), Width);
+      Aux.Get (File, Long_Long_Float (Item), Width);
 
    exception
       when Constraint_Error => raise Data_Error;
@@ -94,7 +91,7 @@ package body Ada.Wide_Wide_Text_IO.Float_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Put (TFT (File), Long_Long_Float (Item), Fore, Aft, Exp);
+      Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
    end Put;
 
    procedure Put

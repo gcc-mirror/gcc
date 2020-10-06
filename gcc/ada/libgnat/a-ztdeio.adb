@@ -36,9 +36,6 @@ with System.WCh_WtS; use System.WCh_WtS;
 
 package body Ada.Wide_Wide_Text_IO.Decimal_IO is
 
-   subtype TFT is Ada.Wide_Wide_Text_IO.File_Type;
-   --  File type required for calls to routines in Aux
-
    package Aux renames Ada.Wide_Wide_Text_IO.Decimal_Aux;
 
    Scale : constant Integer := Num'Scale;
@@ -54,9 +51,9 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
    is
    begin
       if Num'Size > Integer'Size then
-         Item := Num'Fixed_Value (Aux.Get_LLD (TFT (File), Width, Scale));
+         Item := Num'Fixed_Value (Aux.Get_LLD (File, Width, Scale));
       else
-         Item := Num'Fixed_Value (Aux.Get_Dec (TFT (File), Width, Scale));
+         Item := Num'Fixed_Value (Aux.Get_Dec (File, Width, Scale));
       end if;
    exception
       when Constraint_Error => raise Data_Error;
@@ -112,15 +109,15 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
    begin
       if Num'Size > Integer'Size then
          Aux.Put_LLD
---           (TFT (File), Long_Long_Integer'Integer_Value (Item),
+--           (File, Long_Long_Integer'Integer_Value (Item),
 --  ???
-           (TFT (File), Long_Long_Integer (Item),
+           (File, Long_Long_Integer (Item),
             Fore, Aft, Exp, Scale);
       else
          Aux.Put_Dec
---           (TFT (File), Integer'Integer_Value (Item), Fore, Aft, Exp, Scale);
+--           (File, Integer'Integer_Value (Item), Fore, Aft, Exp, Scale);
 --  ???
-           (TFT (File), Integer (Item), Fore, Aft, Exp, Scale);
+           (File, Integer (Item), Fore, Aft, Exp, Scale);
 
       end if;
    end Put;
