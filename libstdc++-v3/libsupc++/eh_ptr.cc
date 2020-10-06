@@ -61,41 +61,18 @@ static_assert( adjptr<__cxa_exception>()
 #endif
 }
 
-std::__exception_ptr::exception_ptr::exception_ptr() noexcept
-: _M_exception_object(0) { }
-
-
 std::__exception_ptr::exception_ptr::exception_ptr(void* obj) noexcept
 : _M_exception_object(obj)  { _M_addref(); }
 
 
 std::__exception_ptr::exception_ptr::exception_ptr(__safe_bool) noexcept
-: _M_exception_object(0) { }
-
-
-std::__exception_ptr::
-exception_ptr::exception_ptr(const exception_ptr& other) noexcept
-: _M_exception_object(other._M_exception_object)
-{ _M_addref(); }
-
-
-std::__exception_ptr::exception_ptr::~exception_ptr() noexcept
-{ _M_release(); }
-
-
-std::__exception_ptr::exception_ptr&
-std::__exception_ptr::
-exception_ptr::operator=(const exception_ptr& other) noexcept
-{
-  exception_ptr(other).swap(*this);
-  return *this;
-}
+: _M_exception_object(nullptr) { }
 
 
 void
 std::__exception_ptr::exception_ptr::_M_addref() noexcept
 {
-  if (_M_exception_object)
+  if (__builtin_expect(_M_exception_object != nullptr, true))
     {
       __cxa_refcounted_exception *eh =
 	__get_refcounted_exception_header_from_obj (_M_exception_object);
@@ -107,7 +84,7 @@ std::__exception_ptr::exception_ptr::_M_addref() noexcept
 void
 std::__exception_ptr::exception_ptr::_M_release() noexcept
 {
-  if (_M_exception_object)
+  if (__builtin_expect(_M_exception_object != nullptr, true))
     {
       __cxa_refcounted_exception *eh =
 	__get_refcounted_exception_header_from_obj (_M_exception_object);
@@ -117,7 +94,7 @@ std::__exception_ptr::exception_ptr::_M_release() noexcept
 	    eh->exc.exceptionDestructor (_M_exception_object);
 
           __cxa_free_exception (_M_exception_object);
-          _M_exception_object = 0;
+          _M_exception_object = nullptr;
         }
     }
 }
@@ -128,14 +105,6 @@ std::__exception_ptr::exception_ptr::_M_get() const noexcept
 { return _M_exception_object; }
 
 
-void
-std::__exception_ptr::exception_ptr::swap(exception_ptr &other) noexcept
-{
-  void *tmp = _M_exception_object;
-  _M_exception_object = other._M_exception_object;
-  other._M_exception_object = tmp;
-}
-
 
 // Retained for compatibility with CXXABI_1.3.
 void
@@ -145,15 +114,14 @@ std::__exception_ptr::exception_ptr::_M_safe_bool_dummy() noexcept { }
 // Retained for compatibility with CXXABI_1.3.
 bool
 std::__exception_ptr::exception_ptr::operator!() const noexcept
-{ return _M_exception_object == 0; }
+{ return _M_exception_object == nullptr; }
 
 
 // Retained for compatibility with CXXABI_1.3.
 std::__exception_ptr::exception_ptr::operator __safe_bool() const noexcept
 {
-  return _M_exception_object ? &exception_ptr::_M_safe_bool_dummy : 0;
+  return _M_exception_object ? &exception_ptr::_M_safe_bool_dummy : nullptr;
 }
-
 
 const std::type_info*
 std::__exception_ptr::exception_ptr::__cxa_exception_type() const noexcept
@@ -162,15 +130,17 @@ std::__exception_ptr::exception_ptr::__cxa_exception_type() const noexcept
   return eh->exceptionType;
 }
 
-
-bool std::__exception_ptr::operator==(const exception_ptr& lhs,
-				      const exception_ptr& rhs) noexcept
+// Retained for compatibility with CXXABI_1.3.12.
+bool
+std::__exception_ptr::operator==(const exception_ptr& lhs,
+				 const exception_ptr& rhs) noexcept
 { return lhs._M_exception_object == rhs._M_exception_object; }
 
-
-bool std::__exception_ptr::operator!=(const exception_ptr& lhs,
-				      const exception_ptr& rhs) noexcept
-{ return !(lhs == rhs);}
+// Retained for compatibility with CXXABI_1.3.12.
+bool
+std::__exception_ptr::operator!=(const exception_ptr& lhs,
+				 const exception_ptr& rhs) noexcept
+{ return !(lhs == rhs); }
 
 
 std::exception_ptr
