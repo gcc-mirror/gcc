@@ -3662,7 +3662,7 @@
    (set_attr "length""8")])
 
 ;;
-;; [vqdmlahq_n_s, vqdmlahq_n_u])
+;; [vqdmlahq_n_s])
 ;;
 (define_insn "mve_vqdmlahq_n_<supf><mode>"
   [
@@ -3742,7 +3742,7 @@
 ])
 
 ;;
-;; [vqrdmlahq_n_s, vqrdmlahq_n_u])
+;; [vqrdmlahq_n_s])
 ;;
 (define_insn "mve_vqrdmlahq_n_<supf><mode>"
   [
@@ -3758,7 +3758,7 @@
 ])
 
 ;;
-;; [vqrdmlashq_n_s, vqrdmlashq_n_u])
+;; [vqrdmlashq_n_s])
 ;;
 (define_insn "mve_vqrdmlashq_n_<supf><mode>"
   [
@@ -6498,7 +6498,7 @@
    (set_attr "length""8")])
 
 ;;
-;; [vmlaldavaxq_p_u, vmlaldavaxq_p_s])
+;; [vmlaldavaxq_p_s])
 ;;
 (define_insn "mve_vmlaldavaxq_p_<supf><mode>"
   [
