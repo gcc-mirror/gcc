@@ -31768,6 +31768,27 @@ dwarf2out_finish (const char *filename)
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
   if (! output_asm_line_debug_info ())
     output_line_info (false);
+  else if (asm_outputs_debug_line_str ())
+    {
+      /* When gas outputs DWARF5 .debug_line[_str] then we have to
+	 tell it the comp_dir and main file name for the zero entry
+	 line table.  */
+      const char *comp_dir, *filename0;
+
+      comp_dir = comp_dir_string ();
+      if (comp_dir == NULL)
+	comp_dir = "";
+
+      filename0 = get_AT_string (comp_unit_die (), DW_AT_name);
+      if (filename0 == NULL)
+	filename0 = "";
+
+      fprintf (asm_out_file, "\t.file 0 ");
+      output_quoted_string (asm_out_file, remap_debug_filename (comp_dir));
+      fputc (' ', asm_out_file);
+      output_quoted_string (asm_out_file, remap_debug_filename (filename0));
+      fputc ('\n', asm_out_file);
+    }
 
   if (dwarf_split_debug_info && info_section_emitted)
     {
