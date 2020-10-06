@@ -79,7 +79,10 @@ dbg_cnt (enum debug_counter index)
     {
       print_limit_reach (map[index].name, v, false);
       if (min == max)
-	limits[index].pop ();
+	{
+	  print_limit_reach (map[index].name, v, true);
+	  limits[index].pop ();
+	}
       return true;
     }
   else if (v < max)
