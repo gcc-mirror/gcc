@@ -369,10 +369,9 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	return false;
 
       /* If this is a load then do not sink past any stores.
-	 ???  This is overly simple but cheap.  We basically look
-	 for an existing load with the same VUSE in the path to one
-	 of the sink candidate blocks and we adjust commondom to the
-	 nearest to commondom.  */
+	 Look for virtual definitions in the path from frombb to the sink
+	 location computed from the real uses and if found, adjust
+	 that it a common dominator.  */
       if (gimple_vuse (stmt))
 	{
 	  /* Do not sink loads from hard registers.  */
@@ -383,29 +382,33 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 
 	  imm_use_iterator imm_iter;
 	  use_operand_p use_p;
-	  basic_block found = NULL;
 	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_vuse (stmt))
 	    {
 	      gimple *use_stmt = USE_STMT (use_p);
 	      basic_block bb = gimple_bb (use_stmt);
-	      /* For PHI nodes the block we know sth about
-		 is the incoming block with the use.  */
+	      /* For PHI nodes the block we know sth about is the incoming block
+		 with the use.  */
 	      if (gimple_code (use_stmt) == GIMPLE_PHI)
-		bb = EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
-	      /* Any dominator of commondom would be ok with
-	         adjusting commondom to that block.  */
-	      bb = nearest_common_dominator (CDI_DOMINATORS, bb, commondom);
-	      if (!found)
-		found = bb;
-	      else if (dominated_by_p (CDI_DOMINATORS, bb, found))
-		found = bb;
-	      /* If we can't improve, stop.  */
-	      if (found == commondom)
-		break;
+		{
+		  /* In case the PHI node post-dominates the current insert location
+		     we can disregard it.  */
+		  if (commondom != bb
+		      && dominated_by_p (CDI_POST_DOMINATORS, commondom, bb))
+		    continue;
+		  bb = EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
+		}
+	      else if (!gimple_vdef (use_stmt))
+		continue;
+	      /* If the use is not dominated by the path entry it is not on
+		 the path.  */
+	      if (!dominated_by_p (CDI_DOMINATORS, bb, frombb))
+		continue;
+	      /* There is no easy way to disregard defs not on the path from
+		 frombb to commondom so just consider them all.  */
+	      commondom = nearest_common_dominator (CDI_DOMINATORS, bb, commondom);
+	      if (commondom == frombb)
+		return false;
 	    }
-	  commondom = found;
-	  if (commondom == frombb)
-	    return false;
 	}
 
       /* Our common dominator has to be dominated by frombb in order to be a
