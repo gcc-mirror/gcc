@@ -3696,10 +3696,10 @@ namespace ranges
 } // namespace ranges
 
 #define __cpp_lib_shift 201806L
-  template<class ForwardIterator>
-    constexpr ForwardIterator
-    shift_left(ForwardIterator __first, ForwardIterator __last,
-	       typename iterator_traits<ForwardIterator>::difference_type __n)
+  template<typename _ForwardIterator>
+    constexpr _ForwardIterator
+    shift_left(_ForwardIterator __first, _ForwardIterator __last,
+	       typename iterator_traits<_ForwardIterator>::difference_type __n)
     {
       __glibcxx_assert(__n >= 0);
       if (__n == 0)
@@ -3711,16 +3711,17 @@ namespace ranges
       return std::move(std::move(__mid), std::move(__last), std::move(__first));
     }
 
-  template<class ForwardIterator>
-    constexpr ForwardIterator
-    shift_right(ForwardIterator __first, ForwardIterator __last,
-		typename iterator_traits<ForwardIterator>::difference_type __n)
+  template<typename _ForwardIterator>
+    constexpr _ForwardIterator
+    shift_right(_ForwardIterator __first, _ForwardIterator __last,
+		typename iterator_traits<_ForwardIterator>::difference_type __n)
     {
       __glibcxx_assert(__n >= 0);
       if (__n == 0)
 	return __first;
 
-      using _Cat = typename iterator_traits<ForwardIterator>::iterator_category;
+      using _Cat
+	= typename iterator_traits<_ForwardIterator>::iterator_category;
       if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
 	{
 	  auto __mid = ranges::next(__last, -__n, __first);

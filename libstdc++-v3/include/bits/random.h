@@ -6063,7 +6063,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { }
 
     template<typename _IntType>
-      seed_seq(std::initializer_list<_IntType> il);
+      seed_seq(std::initializer_list<_IntType> __il);
 
     template<typename _InputIterator>
       seed_seq(_InputIterator __begin, _InputIterator __end);
