@@ -104,6 +104,11 @@
 #define uses_allocator  (
 #endif
 
+#if __cplusplus < 201402L
+// <complex> defines operator""il
+#define il  (
+#endif
+
 #if __cplusplus < 201703L
 // <charconv> defines to_chars_result::ptr and to_chars_result::ec
 #define ec (
