@@ -108,6 +108,22 @@ ignore_bb_p (const_basic_block bb)
 	return true;
     }
 
+  for (gimple_stmt_iterator gsi = gsi_start_bb (CONST_CAST_BB (bb));
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *g = gsi_stmt (gsi);
+
+      /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
+	 duplicated as part of its group, or not at all.
+	 The IFN_GOMP_SIMT_VOTE_ANY is part of such a group, so the same holds
+	 there.  */
+      if (is_gimple_call (g)
+	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)))
+	return true;
+    }
+
   return false;
 }
 

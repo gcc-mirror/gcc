@@ -57,17 +57,14 @@
 #include "gimplify.h"
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
+#include "ssa.h"
+#include "tree-ssa-propagate.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
 #include "ppc-auxv.h"
-#include "value-range.h"
-#include "tree-ssa-propagate.h"
-#include "tree-vrp.h"
-#include "tree-ssanames.h"
 #include "targhooks.h"
 #include "opts.h"
 

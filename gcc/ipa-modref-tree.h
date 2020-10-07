@@ -44,16 +44,55 @@ struct ipa_modref_summary;
 /* Memory access.  */
 struct GTY(()) modref_access_node
 {
+
+  /* Access range information (in bits).  */
+  poly_int64 offset;
+  poly_int64 size;
+  poly_int64 max_size;
+
+  /* Offset from parmeter pointer to the base of the access (in bytes).  */
+  poly_int64 parm_offset;
+
   /* Index of parameter which specifies the base of access. -1 if base is not
      a function parameter.  */
   int parm_index;
+  bool parm_offset_known;
 
   /* Return true if access node holds no useful info.  */
-  bool useful_p ()
+  bool useful_p () const
     {
       return parm_index != -1;
     }
+  /* Return true if range info is useful.  */
+  bool range_info_useful_p () const
+    {
+      return parm_index != -1 && parm_offset_known;
+    }
+  /* Return true if both accesses are the same.  */
+  bool operator == (modref_access_node &a) const
+    {
+      if (parm_index != a.parm_index)
+	return false;
+      if (parm_index >= 0)
+	{
+	  if (parm_offset_known != a.parm_offset_known)
+	    return false;
+	  if (parm_offset_known
+	      && !known_eq (parm_offset, a.parm_offset))
+	    return false;
+	}
+      if (range_info_useful_p ()
+	  && (!known_eq (a.offset, offset)
+	      || !known_eq (a.size, size)
+	      || !known_eq (a.max_size, max_size)))
+	return false;
+      return true;
+    }
 };
+
+/* Access node specifying no useful info.  */
+const modref_access_node unspecified_modref_access_node
+		 = {0, -1, -1, 0, -1, false};
 
 template <typename T>
 struct GTY((user)) modref_ref_node
@@ -74,7 +113,7 @@ struct GTY((user)) modref_ref_node
     size_t i;
     modref_access_node *a;
     FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
-      if (a->parm_index == access.parm_index)
+      if (*a == access)
 	return a;
     return NULL;
   }
@@ -193,6 +232,19 @@ struct GTY((user)) modref_base_node
     refs = NULL;
     every_ref = true;
   }
+};
+
+/* Map translating parameters across function call.  */
+
+struct modref_parm_map
+{
+  /* Index of parameter we translate to.
+     -1 indicates that parameter is unknown
+     -2 indicates that parmaeter points to local memory and access can be
+	discarded.  */
+  int parm_index;
+  bool parm_offset_known;
+  poly_int64 parm_offset;
 };
 
 /* Access tree for a single function.  */
@@ -363,7 +415,7 @@ struct GTY((user)) modref_tree
      PARM_MAP, if non-NULL, maps parm indexes of callee to caller.  -2 is used
      to signalize that parameter is local and does not need to be tracked.
      Return true if something has changed.  */
-  bool merge (modref_tree <T> *other, vec <int> *parm_map)
+  bool merge (modref_tree <T> *other, vec <modref_parm_map> *parm_map)
   {
     if (!other || every_base)
       return false;
@@ -406,21 +458,31 @@ struct GTY((user)) modref_tree
 	    {
 	      if (ref_node->every_access)
 		{
-		  modref_access_node a = {-1};
-		  changed |= insert (base_node->base, ref_node->ref, a);
+		  changed |= insert (base_node->base,
+				     ref_node->ref,
+				     unspecified_modref_access_node);
 		}
 	      else
 		FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
 		  {
 		    modref_access_node a = *access_node;
+
 		    if (a.parm_index != -1 && parm_map)
 		      {
 			if (a.parm_index >= (int)parm_map->length ())
 			  a.parm_index = -1;
-			else if ((*parm_map) [a.parm_index] == -2)
+			else if ((*parm_map) [a.parm_index].parm_index == -2)
 			  continue;
 			else
-			  a.parm_index = (*parm_map) [a.parm_index];
+			  {
+			    a.parm_offset
+				 += (*parm_map) [a.parm_index].parm_offset;
+			    a.parm_offset_known
+				 &= (*parm_map)
+					 [a.parm_index].parm_offset_known;
+			    a.parm_index
+				 = (*parm_map) [a.parm_index].parm_index;
+			  }
 		      }
 		    changed |= insert (base_node->base, ref_node->ref, a);
 		  }

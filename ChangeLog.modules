@@ -1,3 +1,7 @@
+2020-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk bf490f06360
+
 2020-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	Pick 255aa06d40d (c++: Make spell corrections consistent)
