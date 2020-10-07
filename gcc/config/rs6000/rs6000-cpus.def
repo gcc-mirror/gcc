@@ -77,6 +77,7 @@
 /* Flags that need to be turned off if -mno-power10.  */
 #define OTHER_POWER10_MASKS	(OPTION_MASK_MMA			\
 				 | OPTION_MASK_PCREL			\
+				 | OPTION_MASK_PCREL_OPT		\
 				 | OPTION_MASK_PREFIXED)
 
 #define ISA_3_1_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
@@ -147,6 +148,7 @@
 				 | OPTION_MASK_P9_MISC			\
 				 | OPTION_MASK_P9_VECTOR		\
 				 | OPTION_MASK_PCREL			\
+				 | OPTION_MASK_PCREL_OPT		\
 				 | OPTION_MASK_POPCNTB			\
 				 | OPTION_MASK_POPCNTD			\
 				 | OPTION_MASK_POWERPC64		\

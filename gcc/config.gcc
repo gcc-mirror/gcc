@@ -509,7 +509,8 @@ or1k*-*-*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o rs6000-call.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
+	extra_objs="${extra_objs} rs6000-call.o rs6000-pcrel-opt.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
@@ -524,6 +525,7 @@ powerpc*-*-*)
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c \$(srcdir)/config/rs6000/rs6000-call.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-pcrel-opt.c"
 	;;
 pru-*-*)
 	cpu_type=pru
@@ -535,8 +537,10 @@ riscv*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o rs6000-call.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
+	extra_objs="${extra_objs} rs6000-call.o rs6000-pcrel-opt.o"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c \$(srcdir)/config/rs6000/rs6000-call.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-pcrel-opt.c"
 	;;
 sparc*-*-*)
 	cpu_type=sparc

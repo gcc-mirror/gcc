@@ -1904,3 +1904,24 @@
 {
   return address_is_prefixed (XEXP (op, 0), mode, NON_PREFIXED_DEFAULT);
 })
+
+;; Return true if the operand is a valid memory operand with a D-form
+;; address that could be merged with the load of a PC-relative external address
+;; with the PCREL_OPT optimization.  We don't check here whether or not the
+;; offset needs to be used in a DS-FORM (bottom 2 bits 0) or DQ-FORM (bottom 4
+;; bits 0) instruction.
+(define_predicate "d_form_memory"
+  (match_code "mem")
+{
+  if (!memory_operand (op, mode))
+    return false;
+
+  rtx addr = XEXP (op, 0);
+
+  if (REG_P (addr))
+    return true;
+  if (SUBREG_P (addr) && REG_P (SUBREG_REG (addr)))
+    return true;
+
+  return !indexed_address (addr, mode);
+})

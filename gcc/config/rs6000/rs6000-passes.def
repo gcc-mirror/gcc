@@ -24,4 +24,12 @@ along with GCC; see the file COPYING3.  If not see
    REPLACE_PASS (PASS, INSTANCE, TGT_PASS)
  */
 
+  /* Pass to add the appropriate vector swaps on power8 little endian systems.
+     The power8 does not have instructions that automaticaly do the byte swaps
+     for loads and stores.  */
   INSERT_PASS_BEFORE (pass_cse, 1, pass_analyze_swaps);
+
+  /* Pass to do the PCREL_OPT optimization that combines the load of an
+     external symbol's address along with a single load or store using that
+     address as a base register.  */
+  INSERT_PASS_BEFORE (pass_sched2, 1, pass_pcrel_opt);
