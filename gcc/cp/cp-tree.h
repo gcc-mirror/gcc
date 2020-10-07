@@ -4035,8 +4035,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
 
-/* True if NODE is a builtin decl.  */
-#define DECL_BUILTIN_P(NODE) \
+/* True if NODE is an undeclared builtin decl.  As soon as the user
+   declares it, the location will be updated.  */
+#define DECL_UNDECLARED_BUILTIN_P(NODE) \
   (DECL_SOURCE_LOCATION(NODE) == BUILTINS_LOCATION)
 
 /* True for artificial decls added for OpenMP privatized non-static
