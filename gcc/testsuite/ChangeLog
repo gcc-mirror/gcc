@@ -1,3 +1,75 @@
+2020-10-06  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	Backported from master:
+	2020-10-02  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vmaxavq_p_s16.c: Add test for mismatched
+	width of scalar argument.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxavq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmavq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxnmvq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmaxvq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminavq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmavq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminnmvq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vminvq_u8.c: Likewise.
+
+2020-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97236
+	* gcc.dg/vect/pr97236.c: New testcase.
+
+2020-10-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2020-08-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/96456
+	* gcc.target/s390/pr96456.c: New test.
+
 2020-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
