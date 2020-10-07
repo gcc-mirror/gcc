@@ -1,3 +1,42 @@
+2020-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90295
+	* config/abi/pre/gnu.ver (CXXABI_1.3.13): New symbol version.
+	(exception_ptr::_M_addref(), exception_ptr::_M_release()):
+	Export symbols.
+	* libsupc++/eh_ptr.cc (exception_ptr::exception_ptr()):
+	Remove out-of-line definition.
+	(exception_ptr::exception_ptr(const exception_ptr&)):
+	Likewise.
+	(exception_ptr::~exception_ptr()): Likewise.
+	(exception_ptr::operator=(const exception_ptr&)):
+	Likewise.
+	(exception_ptr::swap(exception_ptr&)): Likewise.
+	(exception_ptr::_M_addref()): Add branch prediction.
+	* libsupc++/exception_ptr.h (exception_ptr::operator bool):
+	Add noexcept.
+	[!_GLIBCXX_EH_PTR_COMPAT] (operator==, operator!=): Define
+	inline as hidden friends. Remove declarations at namespace
+	scope.
+	(exception_ptr::exception_ptr()): Define inline.
+	(exception_ptr::exception_ptr(const exception_ptr&)):
+	Likewise.
+	(exception_ptr::~exception_ptr()): Likewise.
+	(exception_ptr::operator=(const exception_ptr&)):
+	Likewise.
+	(exception_ptr::swap(exception_ptr&)): Likewise.
+	* testsuite/util/testsuite_abi.cc: Add CXXABI_1.3.13.
+	* testsuite/18_support/exception_ptr/90295.cc: New test.
+
+2020-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (join_view): Remove deduction guide.
+	(views::join): Add explicit template argument list to prevent
+	deducing the wrong type.
+	* testsuite/std/ranges/adaptors/join.cc: Move test for LWG 3474
+	here, from ...
+	* testsuite/std/ranges/adaptors/join_lwg3474.cc: Removed.
+
 2020-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h: Use __int_traits<int> instead of

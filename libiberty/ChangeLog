@@ -1,3 +1,9 @@
+2020-10-06  Martin Liska  <mliska@suse.cz>
+
+	PR lto/97290
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Use sh_link of a .symtab_shndx section.
+
 2020-09-24  Mark Wielaard  <mark@klomp.org>
 
 	* dwarfnames.c (get_DW_UT_name): Define using DW_UT_FIRST, DW_UT
